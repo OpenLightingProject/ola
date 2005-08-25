@@ -1,0 +1,66 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * port.h
+ * Header file for the Port class
+ * Copyright (C) 2005  Simon Newton
+ */
+
+#ifndef PORT_H
+#define PORT_H
+
+#include <stdint.h>
+#include <stdlib.h>
+
+class Device ;
+class Universe ;
+
+class Port {
+
+	public:
+		Port(Device *parent, int id) ;
+		virtual ~Port() {} ;
+
+		Device *get_device() 						{ return m_parent; }
+		int get_id() 								{ return m_pid; }
+		virtual int set_universe(Universe *uni) 	{ m_universe = uni; }
+		virtual Universe *get_universe() 			{ return m_universe; }
+		int dmx_changed() ;
+		
+		// register a dmx handler for this port
+		int register_dmx(int (*fh)(void *data), void *data) ;
+
+		// subclasses must implement these
+		virtual int write(uint8_t *data, int length) = 0;
+		virtual int read(uint8_t *data, int length ) = 0;
+
+		// indicate our ports capability
+		// default is read/write
+		virtual int can_read() { return 1; }
+		virtual int can_write() { return 1; }
+
+		// possible rdm functions here
+	
+	protected:
+		int (*m_fh)(void *data);		// function to call when buffer changes
+		void *m_fh_data;				// data for function
+
+	private:
+		int m_pid ;
+		Universe *m_universe;			// universe this port belongs to
+		Device *m_parent;				// pointer to the device this port belongs to
+};
+
+#endif

@@ -1,0 +1,10 @@
+Licencing Information for liblla and llad
+-----------------------------------------
+
+The files required for liblla are licenced under the LGPL, this means you
+are free to link against liblla for commercial projects. 
+
+The files required for llad is licenced under the GPL.
+
+Simon Newton
+15/7/2005

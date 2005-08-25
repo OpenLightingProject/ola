@@ -1,0 +1,62 @@
+
+Contents
+========
+
+ A. Basic Installation
+ B. Installation Paths
+
+
+A. Basic Installation
+==================
+
+  1.  Extract the archive
+  	
+	tar -zxf lla-0.x.y.tar.gz
+	
+  2.  Enter the directory
+  
+  	cd lla-0.x.y.tar.gz
+	
+  3.  Run the configure script. If you're using `csh' on an old version of
+      System V, you might need to type `sh ./configure' instead to prevent 
+      `csh' from trying to execute `configure' itself.
+		 
+	./configure
+	
+  4.  Build the source files.
+  
+  	make
+ 
+  5. Become root
+  	
+	su
+	(enter root password)
+
+  6. Install
+
+  	make install
+
+
+C. Installation Paths
+=====================
+
+   By default, `make install' will install the package's files in
+`/usr/local/bin', `/usr/local/man', etc.  You can specify an
+installation prefix other than `/usr/local' by giving `configure' the
+option `--prefix=PATH'.
+
+   You can specify separate installation prefixes for
+architecture-specific files and architecture-independent files.  If you
+give `configure' the option `--exec-prefix=PATH', the package will use
+PATH as the prefix for installing programs and libraries.
+Documentation and other data files will still use the regular prefix.
+
+   In addition, if you use an unusual directory layout you can give
+options like `--bindir=PATH' to specify different values for particular
+kinds of files.  Run `configure --help' for a list of the directories
+you can set and what kinds of files go in them.
+
+   If the package supports it, you can cause programs to be installed
+with an extra prefix or suffix on their names by giving `configure' the
+option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
+

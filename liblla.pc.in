@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+
+Name: liblla
+Version: @VERSION@
+Description: Linux Lighting Architecture
+Requires:
+Libs: -L${libdir} -llla
+Cflags: -I${includedir}/liblla
+

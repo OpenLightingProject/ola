@@ -1,0 +1,4 @@
+Linux Lighting Architecture - lla
+---------------------------------
+
+lla consists of two parts, the daemon llad and the library, liblla.
