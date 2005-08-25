@@ -1,0 +1,41 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.57)
+AC_INIT(configure.in)
+AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE(lla-examples, 0.1.1)
+
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+
+# Checks for libraries.
+# FIXME: Replace `main' with a function in `-lncurses':
+AC_CHECK_LIB([ncurses], [initscr])
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([endian.h ppc/endian.h arpa/inet.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/socket.h unistd.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+AC_HEADER_TIME
+AC_HEADER_STDBOOL
+
+# Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
+AC_FUNC_MALLOC
+AC_FUNC_MEMCMP
+AC_FUNC_SELECT_ARGTYPES
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS([gettimeofday ftime inet_ntoa memset select socket strerror])
+
+
+
+AC_OUTPUT( Makefile \
+	   src/Makefile \
+	    )
