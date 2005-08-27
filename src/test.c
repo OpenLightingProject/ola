@@ -77,7 +77,7 @@ int main(int argc, char*argv[]) {
 		exit(1) ;
 	}
 
-	if( lla_get_info(con) ) {
+	if( lla_req_dev_info(con) ) {
 		printf("write failed\n") ;
 		exit(1);
 	}
