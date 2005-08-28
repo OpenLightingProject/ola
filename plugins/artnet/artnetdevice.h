@@ -30,7 +30,7 @@
 class ArtNetDevice : public Device, public FDListener {
 
 	public:
-		ArtNetDevice(Plugin *owner) ;
+		ArtNetDevice(Plugin *owner, const char *name) ;
 		~ArtNetDevice() ;
 
 		int start() ;

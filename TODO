@@ -2,4 +2,14 @@
 serialise so that plugins can store state
 perhaps start llad if not already running ?
 
+remember pid : plugin mappings
 implement CTIP
+
+fix artnet and espnet plugins to check return values
+fix esp plugin - number of ports?
+
+support HTP merge mode (currently LTP)
+checksum ?
+implement universe subscribe - monitor
+send debug to remote client - need to watch looping here (maybe lev 1&2)
+universe comments

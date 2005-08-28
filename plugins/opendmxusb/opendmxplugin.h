@@ -35,6 +35,7 @@ class OpenDmxPlugin : public Plugin {
 		int stop();
 		bool is_enabled() 	{ return m_enabled; }
 		char *get_name() 	{ return "Open DMX Plugin"; }
+		char *get_desc() ;
 
 	private:
 		OpenDmxDevice *m_dev ;		// only have one device

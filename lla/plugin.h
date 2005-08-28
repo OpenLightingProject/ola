@@ -38,6 +38,7 @@ class Plugin {
 		virtual int start() = 0 ;
 		virtual int stop() = 0 ;
 		virtual bool is_enabled() = 0;
+		virtual char *get_desc() = 0;
 
 	protected:
 		PluginAdaptor *m_pa ;

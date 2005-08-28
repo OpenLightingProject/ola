@@ -20,9 +20,51 @@
 
 #include <stdint.h>
 
+#define	LLA_PORT_CAP_IN 0x01
+#define	LLA_PORT_CAP_OUT 0x02
+
+#define	LLA_PORT_ACTION_PATCH 0x01
+#define	LLA_PORT_ACTION_UNPATCH 0x00
 
 typedef void * lla_con ;
 
+struct lla_plugin_s {
+	int id;			// id of this plugin
+	char *name;		// plugin name
+	struct lla_plugin_s *next;	// pointer to next plugins
+};
+
+typedef struct lla_plugin_s lla_plugin ;
+
+
+
+struct lla_universe_s {
+	int id;			// id of this universe
+	struct lla_universe_s *next;	// pointer to next plugins
+};
+
+typedef struct lla_universe_s lla_universe ;
+
+struct lla_port_s {
+	int id;			// id of this port
+	int cap;		// port capability
+	int uni;		// universe
+	int actv;		// active
+	struct lla_port_s *next;	// pointer to next port
+};
+
+typedef struct lla_port_s lla_port ;
+
+
+struct lla_device_s {
+	int id ;
+	char *name;
+	int count;
+	struct lla_port_s *ports;
+	struct lla_device_s *next;
+};
+
+typedef struct lla_device_s lla_device ;
 
 extern lla_con lla_connect() ;
 extern int lla_disconnect(lla_con c) ;
@@ -41,6 +83,11 @@ extern int lla_read_dmx(lla_con c, int universe, uint8_t *data, int length) ;
 //read/write rdm ?
 
 
-extern int lla_get_info(lla_con c) ;
+extern lla_device *lla_req_dev_info(lla_con c) ;
+extern lla_plugin *lla_req_plugin_info(lla_con c) ;
+extern lla_universe *lla_req_universe_info(lla_con c) ;
+
+extern char *lla_req_plugin_desc(lla_con c, int pid) ;
+
 extern int lla_patch(lla_con c, int dev, int port, int action, int uni) ;
 

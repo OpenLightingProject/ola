@@ -33,11 +33,16 @@
  *
  * this should rather return the number of ports allocated
  */
-Device::Device(Plugin *owner) {
+Device::Device(Plugin *owner, const char *name) {
 	int i;
-	
+	m_name = strdup(name) ;
 	m_owner = owner ;
 	
+}
+
+
+Device::~Device() {
+	free(m_name) ;
 }
 
 /*
@@ -64,7 +69,7 @@ Port *Device::get_port(int pid) const {
  *
  *
  */
-inline int Device::get_ports() const {
+inline int Device::port_count() const {
 	return m_ports_vect.size() ;
 }
 
@@ -76,4 +81,8 @@ inline int Device::get_ports() const {
 int Device::add_port(Port *prt) {
 	m_ports_vect.push_back(prt) ;
 	return 0;
+}
+
+char *Device::get_name() const {
+	return m_name ;
 }

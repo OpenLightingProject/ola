@@ -24,10 +24,21 @@
 
 #include <signal.h>
 #include <stdio.h>
+#include <getopt.h>
+#include <sys/resource.h>
+#include <fcntl.h>
 
 using namespace std;
 
 Llad *llad ;
+
+typedef struct {
+	Logger::Level level;
+	Logger::Output output;
+	int daemon;
+	int help;
+} lla_options ;
+
 
 /*
  * Terminate cleanly on interrupt
@@ -52,27 +63,75 @@ static int install_signal() {
 		Logger::instance()->log(Logger::WARN, "Failed to install signal") ;
 		return -1 ;
 	}
+	
+	if (sigaction(SIGTERM, &act, &oact) < 0) {
+		Logger::instance()->log(Logger::WARN, "Failed to install signal") ;
+		return -1 ;
+	}
 
 	return 0;
 }
 
 
 /*
- * parse our cmd line options
+ * Display the help message
+ */
+void display_help() {
+
+	printf(
+"Usage: llad [--no-daemon] [--debug <level>] [--no-syslog]\n"
+"\n"
+"Start the lla daemon.\n"
+"\n"
+"  -f, --no-daemon      Don't fork into background.\n"
+"  -d, --debug <level>  Set the debug level 0 .. 4 .\n"
+"  -h, --help           Display this help message and exit.\n"
+"  -s, --no-syslog      Log to stderr rather than syslog.\n"
+"\n"
+	) ;
+
+}
+
+
+/*
+ * parse the command line options
  *
  */
-int parse_options(int argc, char *argv[]) {
-	int optc, ll ;
+int parse_options(int argc, char *argv[], lla_options *opts) {
+	static struct option long_options[] = {
+			{"no-daemon", no_argument, 		0, 'f'},
+			{"debug", 	required_argument, 	0, 'd'},
+			{"help", 		no_argument, 	0, 'h'},
+			{"no-syslog", no_argument, 		0, 's'},		
+			{0, 0, 0, 0}
+		};
+
+	int c, ll ;
+	int option_index = 0;
 	
-	Logger::Output log_output = Logger::STDERR ;
-	Logger::Level log_level = Logger::CRIT ;
-	
-	while ((optc = getopt (argc, argv, "sd:")) != EOF) {
-		switch (optc) {
+	while (1) {
+     
+		c = getopt_long(argc, argv, "fd:hs", long_options, &option_index);
+		
+		if (c == -1)
+			break;
+
+		switch (c) {
+			case 0:
+				break;
+				
+			case 'f':
+				opts->daemon = 0 ;
+				break;
+
+			case 'h':
+				opts->help = 1 ;
+				break;
+
 			case 's':
-				// log to syslog instead
-				log_output = Logger::SYSLOG ;
-		        break;
+				opts->output = Logger::STDERR  ;
+				break;
+				
 			case 'd':
 				ll = atoi(optarg) ;
 
@@ -80,31 +139,128 @@ int parse_options(int argc, char *argv[]) {
 					case 0:
 						// nothing is written at this level
 						// so this turns logging off
-						log_level = Logger::EMERG ;
+						opts->level = Logger::EMERG ;
 						break ;
 					case 1:
-						log_level = Logger::CRIT ;
+						opts->level = Logger::CRIT ;
 						break ;
 					case 2:
-						log_level = Logger::WARN ;
+						opts->level = Logger::WARN ;
 						break;
 					case 3:
-						log_level = Logger::INFO ;
+						opts->level = Logger::INFO ;
 						break ;
 					case 4:
-						log_level = Logger::DEBUG ;
+						opts->level = Logger::DEBUG ;
 						break ;
 					default :
 						break;
 				}
 				break ;
-			default:
+
+			case '?':
 				break;
-    	}
+     
+			default:
+				;
+		}
+	}
+}
+
+
+/*
+ * Set the default options
+ */
+int init_options(lla_options *opts) {
+	opts->level = Logger::CRIT ;
+	opts->output = Logger::SYSLOG ;
+	opts->daemon = 1;
+	opts->help = 0;
+}
+
+/*
+ * Run as a daemon
+ *
+ * Taken from apue
+ */
+int daemonise() {
+	pid_t pid;
+	int i, fd0, fd1, fd2 ;
+	struct rlimit rl;
+	struct sigaction sa;
+	
+	if(getrlimit(RLIMIT_NOFILE, &rl) < 0) {
+		printf("Could not determine file limit\n") ;
+		exit(1) ;
 	}
 
-	Logger::instance(log_level, log_output) ;
+	// fork
+	if ((pid = fork()) < 0) {
+		printf("Could not fork\n") ;
+		exit(1) ;
+	} else if (pid != 0)
+		exit(0) ;
+	
+	// start a new session
+	setsid();
+	
+	sa.sa_handler = SIG_IGN ;
+	sigemptyset(&sa.sa_mask) ;
+	sa.sa_flags = 0;
+
+	if(sigaction(SIGHUP, &sa, NULL) < 0) {
+		printf("Could not install signal\n");
+		exit(1) ;
+	}
+
+	if((pid= fork()) < 0) {
+		printf("Could not fork\n") ;
+		exit(1) ;
+	} else if (pid != 0)
+		exit(0) ;
+
+	// close all fds
+	if(rl.rlim_max == RLIM_INFINITY) 
+		rl.rlim_max = 1024;
+	for(i=0; i < rl.rlim_max; i++) 
+		close(i) ;
+	
+	// send stdout, in and err to /dev/null
+	fd0 = open("/dev/null", O_RDWR);
+	fd1 = dup(0) ;
+	fd2 = dup(0) ;
 }
+
+
+/*
+ * Take actions based upon the options
+ */
+int handle_options(lla_options *opts) {
+
+	if(opts->help) {
+		display_help() ;
+		exit(0);
+	}
+	
+	Logger::instance(opts->level, opts->output) ;
+
+	if(opts->daemon)
+		daemonise();
+
+}
+
+
+/*
+ *
+ */
+int setup(int argc, char*argv[]) {
+	lla_options opts ;
+	
+	init_options(&opts);
+	parse_options(argc, argv, &opts) ;
+	handle_options(&opts) ;
+}	
+
 
 /*
  * Main
@@ -112,12 +268,13 @@ int parse_options(int argc, char *argv[]) {
  * need to sort out logging here
  */
 int main(int argc, char*argv[]) {
-
-	parse_options(argc, argv) ;
 	
-	llad = new Llad() ;
+	setup(argc, argv) ;
 	
 	install_signal() ;
+
+	llad = new Llad() ;
+	
 
 	if(llad->init() == 0 ) {
 		llad->run() ;

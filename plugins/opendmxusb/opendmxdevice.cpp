@@ -34,7 +34,7 @@
  * should prob pass the ip to bind to
  *
  */
-OpenDmxDevice::OpenDmxDevice(Plugin *owner) : Device(owner) {
+OpenDmxDevice::OpenDmxDevice(Plugin *owner, const char *name) : Device(owner, name) {
 	m_enabled = false ;
 }
 
@@ -76,7 +76,7 @@ int OpenDmxDevice::stop() {
 	if (!m_enabled)
 		return 0 ;
 
-	for(int i=0; i < get_ports() ; i++) {
+	for(int i=0; i < port_count() ; i++) {
 		prt = get_port(i) ;
 		if(prt != NULL)
 			delete prt ;

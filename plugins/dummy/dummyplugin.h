@@ -35,6 +35,7 @@ class DummyPlugin : public Plugin {
 		int stop();
 		bool is_enabled() 	{ return m_enabled; }
 		char *get_name() 	{ return "Dummy Plugin"; }
+		char *get_desc();
 	
 	private:
 		DummyDevice *m_dev ;		// the dummy device

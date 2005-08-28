@@ -52,7 +52,7 @@ int DummyPlugin::start() {
 		return -1 ;
 	
 	/* create new lla device */
-	m_dev = new DummyDevice(this) ;
+	m_dev = new DummyDevice(this, "Dummy Device") ;
 	
 	if(m_dev == NULL) 
 		return -1  ;
@@ -84,4 +84,14 @@ int DummyPlugin::stop() {
 	m_enabled = false ;
 	delete m_dev ;
 	return 0;
+}
+
+char *DummyPlugin::get_desc() {
+	return
+"Dummy Plugin\n"
+"----------------------------\n"
+"\n"
+"The plugin creates a single device with one port. "
+"When used as an output port it prints the first two bytes of dmx data to "
+"stdout.\n" ;
 }

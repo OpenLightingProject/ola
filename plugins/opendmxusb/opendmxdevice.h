@@ -27,7 +27,7 @@
 class OpenDmxDevice : public Device {
 
 	public:
-		OpenDmxDevice(Plugin *owner) ;
+		OpenDmxDevice(Plugin *owner, const char *name) ;
 		~OpenDmxDevice() ;
 
 		int start() ;

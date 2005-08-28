@@ -80,7 +80,7 @@ int DeviceManager::unregister_device(Device *dev) {
 }
 
 
-inline int DeviceManager::get_dev_count() {
+int DeviceManager::device_count() {
 	return m_dev_vect.size();
 }
 

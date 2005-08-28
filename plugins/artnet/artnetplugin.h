@@ -35,7 +35,8 @@ class ArtNetPlugin : public Plugin {
 		int stop();
 		bool is_enabled() 	{ return m_enabled; }
 		char *get_name() 	{ return "ArtNet Plugin"; }
-
+		char *get_desc() ;
+				
 	private:
 		ArtNetDevice *m_dev ;		// only have one device
 		bool m_enabled ;			// are we running

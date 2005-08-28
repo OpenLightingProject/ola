@@ -88,6 +88,11 @@ int ArtNetPort::set_universe(Universe *uni) {
 	
 	Port::set_universe(uni) ;
 
+	// this is a bit of a hack but currently in libartnet there is no 
+	// way to disable a port once it's been enabled.
+	if(uni == NULL)
+		return 0 ;
+	
 	// carefull here, a port that we read from (input) is actually
 	// an ArtNet output port
 	if(id >= 0 && id <= 3) {
@@ -99,5 +104,5 @@ int ArtNetPort::set_universe(Universe *uni) {
 		artnet_set_port_type(node, id, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX) ;
 		artnet_set_port_addr(node, id, ARTNET_INPUT_PORT, uni->get_uid() ) ;
 	}
-
+	return 0 ;
 }

@@ -202,6 +202,11 @@ int Universe::update_dependants() {
 //-----------------------------------------------------------------------------
 
 /*
+ * We should probably use a hash here if the number of universes get large
+ * 
+ */
+
+/*
  * lookup a universe from it's address, creates one if it does not exist
  *
  *
@@ -242,4 +247,18 @@ int Universe::clean_up() {
 }
 
 
+/*
+ * returns the number of universes
+ */
+int Universe::universe_count() {
+
+	return uni_vect.size() ;
+}
+
+/*
+ * returns the number of universes
+ */
+Universe *Universe::get_universe_at_pos(int index) {
+	return uni_vect[index] ;
+}
 

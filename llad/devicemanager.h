@@ -35,7 +35,7 @@ class DeviceManager {
 		
 		int register_device(Device *dev) ;
 		int unregister_device(Device *dev) ;
-		int get_dev_count() ;
+		int device_count() ;
 		Device *get_dev(int id) ;
 
 	protected:

@@ -54,7 +54,7 @@ int EspNetPlugin::start() {
 		return -1 ;
 	
 	/* create new lla device */
-	m_dev = new EspNetDevice(this) ;
+	m_dev = new EspNetDevice(this, "ESPNet Device") ;
 
 	if(m_dev == NULL) 
 		return -1  ;
@@ -94,4 +94,14 @@ int EspNetPlugin::stop() {
 	m_enabled = false ;
 	delete m_dev ;
 	return 0;
+}
+
+char *EspNetPlugin::get_desc() {
+	return 
+"EspNet Plugin\n"
+"----------------------------\n"
+"\n"
+"The plugin creates a single device with five input and five output ports. "
+"Currently this plugin binds to the first non-loopback IP. This should "
+"be made configurable in the future...\n" ;
 }

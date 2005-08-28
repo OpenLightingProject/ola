@@ -76,7 +76,7 @@ int program_handler(artnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-ArtNetDevice::ArtNetDevice(Plugin *owner) : Device(owner) {
+ArtNetDevice::ArtNetDevice(Plugin *owner, const char *name) : Device(owner, name) {
 	m_node = NULL ;
 	m_enabled = false ;
 }
@@ -151,7 +151,7 @@ int ArtNetDevice::stop() {
 	if (!m_enabled)
 		return 0 ;
 
-	for(int i=0; i < get_ports() ; i++) {
+	for(int i=0; i < port_count() ; i++) {
 		prt = get_port(i) ;
 		if(prt != NULL) 
 			delete prt ;

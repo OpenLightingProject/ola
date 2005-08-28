@@ -31,9 +31,22 @@ static int handle_msg(lla_connection *con, lla_msg *msg) ;
 static int handle_dmx(lla_connection *con, lla_msg *msg) ;
 static int handle_syn_ack(lla_connection *con, lla_msg *msg) ;
 static int handle_fin_ack(lla_connection *con, lla_msg *msg) ;
+static int handle_dev_info(lla_connection *con, lla_msg *msg) ;
+static int handle_plugin_info(lla_connection *con, lla_msg *msg) ;
+static int handle_port_info(lla_connection *con, lla_msg *msg) ;
+static int handle_plugin_desc(lla_connection *con, lla_msg *msg) ;
+static int handle_universe_info(lla_connection *con, lla_msg *msg) ;
 
 static int send_syn(lla_connection *con) ;
 static int send_fin(lla_connection *con) ;
+static int send_port_info_req(lla_connection *con, lla_device *dev) ;
+
+static int free_plugins(lla_connection *con) ;
+static int free_universes(lla_connection *con) ;
+static int free_devices(lla_connection *con) ;
+static int free_ports(lla_device *dev) ;
+
+static int lla_recv(lla_connection *con, int delay) ;
 
 /*
  * open a connection to the daemon
@@ -42,7 +55,7 @@ static int send_fin(lla_connection *con) ;
  */
 lla_con lla_connect() {
 	struct sockaddr_in servaddr ;
-	lla_connection *c = malloc(sizeof(lla_con)) ;
+	lla_connection *c = malloc(sizeof(lla_connection)) ;
 	
 	if(c == NULL)
 		goto e_malloc ;
@@ -51,7 +64,11 @@ lla_con lla_connect() {
 	c->connected = 0 ;
 	c->dmx_c.fh = NULL ;
 	c->dmx_c.data = NULL ;
-	
+	c->devices = NULL ;
+	c->plugins = NULL ;
+	c->universes = NULL ;
+	c->desc = NULL ;
+
 	//connect to socket
 	c->sd = socket(AF_INET, SOCK_DGRAM, 0) ;
 
@@ -69,14 +86,26 @@ lla_con lla_connect() {
 	// send syn to server
 	send_syn(c) ;
 
-	// wait up to 1 second for reply
-	lla_sd_action((lla_con) c, 1) ;
-	
-	if(c->connected)
-		return (lla_con) c ;
+	while(!c->connected) {
+		switch(lla_recv(c, 1)) {
+			case 0:
+				break;
+			case 1:
+				// timeout
+				printf("failed to get syn ack\n");
+				goto e_connect;
+			case -1:
+				// error
+				goto e_connect;
+			case -2:
+				// interupt
+				break;
+		}
+	}
+
+	return (lla_con) c ;
 		
 	// failed to connect
-	printf("failed to get syn ack\n");
 
 e_connect:
 	close(c->sd) ;
@@ -96,20 +125,32 @@ e_malloc:
  */
 int lla_disconnect(lla_con c) {
 	lla_connection *con = (lla_connection*) c ;
-	if(con == NULL)
-		return -1 ;
+
+	return_if_null(con) ;
 	
 	send_fin(con) ;
 
-	// wait up to 1 second for reply
-	lla_sd_action((lla_con) c, 1) ;
-
-	if(con->connected) {
-		printf("failed to get fin ack\n");
-		return -1 ;
+	while(con->connected) {
+		switch(lla_recv(c, 1)) {
+			case 0:
+				break;
+			case 1:
+				// timeout
+				printf("failed to get fin ack\n");
+				return -1;
+			case -1:
+				// error
+				return -1;
+			case -2:
+				// interupt
+				break;
+		}
 	}
 
 	close(con->sd) ;
+	free_plugins(con);
+	free_devices(con);
+	free(con->desc) ;
 	free(con) ;
 
 	return 0;
@@ -124,9 +165,8 @@ int lla_disconnect(lla_con c) {
  */
 int lla_get_sd(lla_con c) {
 	lla_connection *con = (lla_connection*) c ;
-
-	if(con == NULL) 
-		return -1 ;
+	
+	return_if_null(con) ;
 
 	return con->sd ;
 }
@@ -144,42 +184,61 @@ int lla_get_sd(lla_con c) {
  */
 int lla_sd_action(lla_con c, int delay) {
 	lla_connection *con = (lla_connection*) c ;
-	fd_set rset;
-	struct timeval tv;
 	
-	if(con == NULL) 
-		return -1 ;
+	return_if_null(con) ;
 	
 	while(1) {
-		tv.tv_usec = 0 ;
-		tv.tv_sec = delay ;
-
-		FD_ZERO(&rset) ;
-		FD_SET(con->sd, &rset) ;
-
-		switch ( select( con->sd+1, &rset, NULL, NULL, &tv ) ) {
+		switch(lla_recv(con, delay)) {
 			case 0:
+				break;
+			case 1:
 				// timeout
 				return 0;
-				break ;
-			case -1 :
-				//error
-				if( errno != EINTR) {
-					printf("%s : select error", strerror(errno) ) ;
-					return -1;
-				}
-				// we were interupted
-				return 0 ;
-				break ;
-			default:
-				// ok something there to read
-				printf("got reply\n");
-				return read_msg(con) ;
+			case -1:
+				// error
+				return -1;
+			case -2:
+				// interupt
 				break;
 		}
 	}
 	
 	return 0;
+}
+
+/*
+ *
+ *
+ */
+static int lla_recv(lla_connection *con, int delay) {
+	struct timeval tv;
+	fd_set rset;
+	
+	tv.tv_usec = 0 ;
+	tv.tv_sec = delay ;
+
+	FD_ZERO(&rset) ;
+	FD_SET(con->sd, &rset) ;
+
+	switch ( select( con->sd+1, &rset, NULL, NULL, &tv ) ) {
+		case 0:
+			// timeout
+			return 1;
+			break ;
+		case -1 :
+			//error
+			if( errno != EINTR) {
+				printf("%s : select error", strerror(errno) ) ;
+				return -1;
+			}
+			// we were interupted
+			return -2 ;
+			break ;
+		default:
+			// ok something there to read
+			return read_msg(con) ;
+			break;
+	}
 }
 
 
@@ -192,8 +251,7 @@ int lla_sd_action(lla_con c, int delay) {
 int lla_set_dmx_handler(lla_con c, int (*fh)(lla_con c, int uni, void *d), void *data ) {
 	lla_connection *con = (lla_connection*) c ;
 
-	if(con == NULL) 
-		return -1 ;
+	return_if_null(con) ;
 
 	if(fh == NULL) {
 		con->dmx_c.fh = NULL ;
@@ -230,8 +288,7 @@ int lla_reg_uni(lla_con c, int uni, int action) {
 	lla_connection *con = (lla_connection*) c ;
 	lla_msg reg ;
 	
-	if(con == NULL) 
-		return -1 ;
+	return_if_null(con) ;
 
 	reg.len = sizeof(lla_msg_register) ;
 
@@ -264,8 +321,7 @@ int lla_send_dmx(lla_con c, int uni, uint8_t *data, int length) {
 	lla_connection *con = (lla_connection*) c ;
 	lla_msg msg ;
 	
-	if(con == NULL) 
-		return -1 ;
+	return_if_null(con) ;
 
 	msg.len = sizeof(lla_msg_dmx_data) ;
 	msg.data.dmx.op = LLA_MSG_DMX_DATA ;
@@ -302,8 +358,7 @@ int lla_read_dmx(lla_con c, int universe, uint8_t *data, int length) {
 	//send request
 	lla_connection *con = (lla_connection*) c ;
 	
-	if(con == NULL) 
-		return -1 ;
+	return_if_null(con) ;
 	
 	universe++ ;
 	length++;
@@ -314,25 +369,173 @@ int lla_read_dmx(lla_con c, int universe, uint8_t *data, int length) {
 	return 0;
 }
 
+
 /*
  * This is supposed to give us info on what devices are out there
  *
  *
  */
-int lla_get_info(lla_con c) {
+lla_plugin *lla_req_plugin_info(lla_con c) {
 	lla_connection *con = (lla_connection*) c ;
 	lla_msg msg ;
 	
-	if(con == NULL) 
-		return -1 ;
-
-	//msg.len = sizeof(lla_msg_info_request) ;
-//	msg.data.dmx.op = LLA_MSG_INFO_REQUEST ;
+	if(con == NULL)
+		return NULL ;
 	
-	return send_msg(con, &msg) ;
+	msg.len = sizeof(lla_msg_plugin_info_request) ;
+	msg.data.plreq.op = LLA_MSG_PLUGIN_INFO_REQUEST ;
+	
+	send_msg(con, &msg) ;
+	
+	free_plugins(con) ;
+	
+	while(con->plugins == NULL) {
+		switch(lla_recv(c, 1)) {
+			case 0:
+				break;
+			case 1:
+				// timeout
+				printf("failed to get plugin info\n");
+				return NULL;
+			case -1:
+				// error
+				return NULL;
+			case -2:
+				// interupt
+				break;
+		}
+	}
 
-	return 0;
+	// this will be null if we didn't get a response in time
+	return con->plugins ;
+	
+}
 
+
+
+/*
+ * This is supposed to give us info on what devices are out there
+ *
+ *
+ */
+lla_device *lla_req_dev_info(lla_con c) {
+	lla_connection *con = (lla_connection*) c ;
+	lla_msg msg ;
+	
+	if(con == NULL)
+		return NULL ;
+
+	msg.len = sizeof(lla_msg_device_info_request) ;
+	msg.data.dreq.op = LLA_MSG_DEVICE_INFO_REQUEST ;
+	
+	send_msg(con, &msg) ;
+	
+	free_devices(con) ;
+
+	while(con->devices == NULL) {
+		switch(lla_recv(c, 1)) {
+			case 0:
+				break;
+			case 1:
+				// timeout
+				printf("failed to get device info\n");
+				return NULL;
+			case -1:
+				// error
+				return NULL;
+			case -2:
+				// interupt
+				break;
+		}
+	}
+
+	return con->devices;
+}
+
+
+/*
+ * This is supposed to give us info on what devices are out there
+ *
+ *
+ */
+char *lla_req_plugin_desc(lla_con c, int pid) {
+	lla_connection *con = (lla_connection*) c ;
+	lla_msg msg ;
+	
+	if(con == NULL)
+		return NULL ;
+	
+	free(con->desc) ;
+	con->desc = NULL;
+
+	msg.len = sizeof(lla_msg_plugin_desc_request) ;
+	msg.data.pldreq.op = LLA_MSG_PLUGIN_DESC_REQUEST ;
+	msg.data.pldreq.pid = pid ;
+	
+	send_msg(con, &msg) ;
+		
+	while(con->desc == NULL) {
+		switch(lla_recv(c, 1)) {
+			case 0:
+				break;
+			case 1:
+				// timeout
+				printf("failed to get plugin desc\n");
+				return NULL;
+			case -1:
+				// error
+				return NULL;
+			case -2:
+				// interupt
+				break;
+		}
+	}
+
+	// this will be null if we didn't get a response in time
+	return con->desc ;
+	
+}
+
+
+/*
+ * This is supposed to give us info on what universes are in use
+ *
+ *
+ */
+lla_universe *lla_req_universe_info(lla_con c) {
+	lla_connection *con = (lla_connection*) c ;
+	lla_msg msg ;
+	
+	if(con == NULL)
+		return NULL ;
+	
+	msg.len = sizeof(lla_msg_plugin_info_request) ;
+	msg.data.unireq.op = LLA_MSG_UNI_INFO_REQUEST ;
+	
+	send_msg(con, &msg) ;
+	
+	free_universes(con) ;
+	
+	while(con->universes == NULL) {
+		switch(lla_recv(c, 1)) {
+			case 0:
+				break;
+			case 1:
+				// timeout
+				printf("failed to get universe info\n");
+				return NULL;
+			case -1:
+				// error
+				return NULL;
+			case -2:
+				// interupt
+				break;
+		}
+	}
+
+	// this will be null if we didn't get a response in time
+	return con->universes ;
+	
 }
 
 
@@ -341,8 +544,7 @@ int lla_patch(lla_con c, int dev, int port, int action, int uni) {
 	lla_connection *con = (lla_connection*) c ;
 	lla_msg msg ;
 	
-	if(con == NULL) 
-		return -1 ;
+	return_if_null(con) ;
 
 	msg.len = sizeof(lla_msg_patch) ;
 	msg.data.patch.op = LLA_MSG_PATCH ;
@@ -358,10 +560,6 @@ int lla_patch(lla_con c, int dev, int port, int action, int uni) {
 	return send_msg(con, &msg) ;
 
 	return 0;
-
-
-
-
 
 }
 
@@ -427,11 +625,21 @@ static int handle_msg(lla_connection *con, lla_msg *msg) {
 		case LLA_MSG_DMX_DATA :
 			return handle_dmx(con, msg) ;
 			break;
-				
-//		case LLA_MSG_INFO :
-//			printf("got msg info datagram\n") ;
-//			break ;
-
+		case LLA_MSG_PLUGIN_INFO :
+			return handle_plugin_info(con, msg) ;
+			break ;
+		case LLA_MSG_DEVICE_INFO :
+			return handle_dev_info(con, msg) ;
+			break ;
+		case LLA_MSG_PORT_INFO :
+			return handle_port_info(con, msg) ;
+			break ;
+		case LLA_MSG_PLUGIN_DESC :
+			return handle_plugin_desc(con, msg) ;
+			break ;
+		case LLA_MSG_UNI_INFO :
+			return handle_universe_info(con, msg) ;
+			break ;
 		default:
 			printf("msg recv'ed but we're not interested, opcode %d\n", msg->data.dmx.op) ;
 			break;
@@ -455,7 +663,6 @@ static int handle_dmx(lla_connection *con, lla_msg *msg) {
 static int handle_syn_ack(lla_connection *con, lla_msg *msg) {
 
 	if(!con->connected) {
-		printf("got syn ack!\n");
 		con->connected = 1 ;
 	}
 	msg = NULL ;
@@ -468,7 +675,6 @@ static int handle_syn_ack(lla_connection *con, lla_msg *msg) {
 static int handle_fin_ack(lla_connection *con, lla_msg *msg) {
 
 	if(con->connected) {
-		printf("got fin ack!\n");
 		con->connected = 0 ;
 	}
 	msg = NULL;
@@ -476,6 +682,182 @@ static int handle_fin_ack(lla_connection *con, lla_msg *msg) {
 }
 
 
+/*
+ * Get info on the plugins loaded
+ * 
+ */
+static int handle_plugin_info(lla_connection *con, lla_msg *msg) {
+	int i, plugins ;
+	lla_plugin *plug, *plug_tail = NULL;
+
+	plugins = min(msg->data.plinfo.nplugins, PLUGINS_PER_DATAGRAM) ;
+
+	free_plugins(con) ;
+
+	for(i=0; i < plugins; i++) {
+		plug = malloc(sizeof(lla_plugin)) ;
+
+		if(plug == NULL) {
+			printf("malloc failed\n") ;
+			return -1 ;
+		}
+
+		plug->id = msg->data.plinfo.plugins[i].id ;
+		plug->name = strdup(msg->data.plinfo.plugins[i].name) ;
+		plug->next = NULL ;
+		
+		if(con->plugins == NULL) {
+			con->plugins = plug ;
+			plug_tail = plug ;
+		} else {
+			plug_tail->next = plug ;
+			plug_tail = plug ;
+		}
+	}
+	return 0 ;
+}
+
+
+/*
+ * 
+ * 
+ */
+static int handle_universe_info(lla_connection *con, lla_msg *msg) {
+	int i, universes ;
+	lla_universe *uni, *uni_tail = NULL;
+
+	universes = min(msg->data.uniinfo.nunis, UNIVERSES_PER_DATAGRAM) ;
+
+	free_universes(con) ;
+
+	// this is prob not a good way, we should malloc once straight up
+	for(i=0; i < universes; i++) {
+		uni = malloc(sizeof(lla_universe)) ;
+
+		if(uni == NULL) {
+			printf("malloc failed\n") ;
+			return -1 ;
+		}
+
+		uni->id = msg->data.uniinfo.universes[i].id ;
+		uni->next = NULL ;
+		
+		if(con->universes == NULL) {
+			con->universes = uni ;
+			uni_tail = uni ;
+		} else {
+			uni_tail->next = uni ;
+			uni_tail = uni ;
+		}
+	}
+	return 0 ;
+}
+
+/*
+ *
+ * 
+ */
+static int handle_dev_info(lla_connection *con, lla_msg *msg) {
+	int i, devs ;
+	lla_device *dev, *dev_tail = NULL;
+	
+	devs = min(msg->data.dinfo.ndevs, DEVICES_PER_DATAGRAM) ;
+
+	for(i=0; i < devs; i++) {
+		dev = malloc(sizeof(lla_device)) ;
+
+		if(dev == NULL) {
+			printf("malloc failed\n") ;
+			return -1 ;
+		}
+
+		dev->id = msg->data.dinfo.devices[i].id ;
+		dev->name = strdup(msg->data.dinfo.devices[i].name) ;
+		dev->count = msg->data.dinfo.devices[i].ports ;
+		dev->ports = NULL ;
+		dev->next = NULL ;
+		
+		if(con->devices == NULL) {
+			con->devices = dev ;
+			dev_tail = dev ;
+		} else {
+			dev_tail->next = dev ;
+			dev_tail = dev ;
+		}
+
+		send_port_info_req(con, dev) ;
+	}
+	return 0 ;
+}
+
+
+/*
+ *
+ * 
+ */
+static int handle_port_info(lla_connection *con, lla_msg *msg) {
+	int i, ports ;
+	lla_port *prt, *prt_tail = NULL;
+	lla_device *dev ;
+
+	for( dev = con->devices ; dev != NULL; dev = dev->next) {
+		if (dev->id == msg->data.prinfo.dev)
+			break ;
+	}
+
+	if( dev == NULL) {
+		printf("Could not locate device %d\n", msg->data.prinfo.dev) ;
+		return -1 ;
+	}
+	
+	free_ports(dev) ;
+	
+	ports = min(msg->data.prinfo.nports, DEVICES_PER_DATAGRAM) ;
+
+	for(i=0; i < ports; i++) {
+		prt = malloc(sizeof(lla_port)) ;
+
+		if(prt == NULL) {
+			printf("malloc failed\n") ;
+			return -1 ;
+		}
+
+		prt->id = msg->data.prinfo.ports[i].id ;
+		prt->cap = msg->data.prinfo.ports[i].cap ;
+		prt->uni = msg->data.prinfo.ports[i].uni ;
+		prt->actv = msg->data.prinfo.ports[i].actv ;
+		prt->next = NULL ;
+
+		if(dev->ports == NULL) {
+			dev->ports = prt ;
+			prt_tail = prt ;
+		} else {
+			prt_tail->next = prt ;
+			prt_tail = prt ;
+		}
+	}
+	return 0 ;
+}
+
+
+/*
+ * Get info on the plugins loaded
+ * This will block until we get a response (or time out and return NULL)
+ * 
+ */
+static int handle_plugin_desc(lla_connection *con, lla_msg *msg) {
+
+	con->desc = malloc(PLUGIN_DESC_LENGTH) ;
+
+	if(con->desc == NULL) {
+		printf("malloc failed\n") ;
+		return -1 ;
+	}
+	
+	strncpy(con->desc , msg->data.pldesc.desc, PLUGIN_DESC_LENGTH) ;
+	
+	return 0 ;
+}
 
 // datagram senders
 //-----------------------------------------------------------------------------
@@ -505,3 +887,128 @@ static int send_fin(lla_connection *con) {
 
 	return send_msg(con, &msg) ;
 }
+
+
+/*
+ * send a syn to the server
+ */
+static int send_port_info_req(lla_connection *con, lla_device *dev) {
+	lla_msg msg ;
+	
+	msg.len = sizeof(lla_msg_port_info_request) ;
+	
+	msg.data.prreq.op = LLA_MSG_PORT_INFO_REQUEST ;
+	msg.data.prreq.devid = dev->id ;
+
+	send_msg(con, &msg) ;
+
+	free_ports(dev) ;
+	
+	while(dev->ports == NULL) {
+		switch(lla_recv(con, 1)) {
+			case 0:
+				break;
+			case 1:
+				// timeout
+				printf("failed to get port info\n");
+				return -1;
+			case -1:
+				// error
+				return -1;
+			case -2:
+				// interupt
+				break;
+		}
+	}
+
+	return 0 ;
+}
+
+
+
+/*
+ * Free the plugin linked list
+ *
+ */
+static int free_plugins(lla_connection *con) {
+	lla_plugin *plug_itr, *plug;
+		
+	plug_itr = con->plugins; 
+	con->plugins = NULL ;
+	
+	while( plug_itr != NULL) {
+		plug = plug_itr;
+		plug_itr = plug_itr->next ;
+		
+		free(plug->name);
+		free(plug);
+	}
+	return 0;
+}
+
+
+/*
+ * Free the universe linked list
+ *
+ */
+static int free_universes(lla_connection *con) {
+	lla_universe *uni_itr, *uni;
+		
+	uni_itr = con->universes; 
+	con->universes = NULL ;
+	
+	while( uni_itr != NULL) {
+		uni = uni_itr;
+		uni_itr = uni_itr->next ;
+		
+		free(uni);
+	}
+	return 0;
+}
+
+
+/*
+ * Free the device linked list (including all ports)
+ *
+ *
+ */
+static int free_devices(lla_connection *con) {
+	lla_device *dev_itr, *dev;
+		
+	dev_itr = con->devices; 
+	con->devices = NULL ;
+	
+	while( dev_itr != NULL) {
+		dev = dev_itr;
+		dev_itr = dev_itr->next ;
+		
+		free_ports(dev);
+		free(dev->name);
+		free(dev);
+	}
+	return 0;
+}
+
+
+/*
+ * Free the ports associated with this device
+ *
+ *
+ */
+static int free_ports(lla_device *dev) {
+	lla_port *prt_itr, *prt;
+		
+	prt_itr = dev->ports ;
+	dev->ports = NULL ;
+	
+	// free all ports
+	while (prt_itr != NULL) {
+		prt = prt_itr;
+		prt_itr = prt_itr->next ;
+	
+		free(prt);
+	}
+
+	return 0;
+}
+

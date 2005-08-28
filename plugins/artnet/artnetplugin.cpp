@@ -54,7 +54,7 @@ int ArtNetPlugin::start() {
 		return -1 ;
 	
 	/* create new lla device */
-	m_dev = new ArtNetDevice(this) ;
+	m_dev = new ArtNetDevice(this, "Art-Net Device") ;
 
 	if(m_dev == NULL) 
 		return -1  ;
@@ -94,4 +94,15 @@ int ArtNetPlugin::stop() {
 	m_enabled = false ;
 	delete m_dev ;
 	return 0;
+}
+
+
+char *ArtNetPlugin::get_desc() {
+		return
+"ArtNet Plugin\n"
+"----------------------------\n"
+"\n"
+"The plugin creates a single device with four input and four output ports. "
+"Currently this plugin binds to the first non-loopback IP. This should "
+"be made configurable in the future...\n" ;
 }

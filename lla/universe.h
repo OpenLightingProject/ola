@@ -49,6 +49,9 @@ class Universe {
 
 		static Universe *get_universe(int uid) ;
 		static Universe *get_universe_or_create(int uid) ;
+		static int	universe_count() ;
+		static Universe *get_universe_at_pos(int index) ;
+
 		static int clean_up();
 
 	protected :

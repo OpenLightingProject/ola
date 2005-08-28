@@ -41,12 +41,22 @@ class Llad {
 		int handle_syn(lla_msg *msg) ;
 		int handle_fin(lla_msg *msg) ;
 		int handle_msg(lla_msg *msg) ;
-//		int	handle_info_request(Msg *msg) ;
+		int	handle_plugin_info_request(lla_msg *msg) ;
+		int	handle_plugin_desc_request(lla_msg *msg) ;
+		int	handle_device_info_request(lla_msg *msg) ;
+		int	handle_port_info_request(lla_msg *msg) ;
+		int	handle_universe_info_request(lla_msg *msg) ;
+
 		int handle_patch(lla_msg *msg) ;
 //		int handle_register(Msg *msg) ;
 		int handle_dmx_data(lla_msg *msg) ;
 //		int handle_read_request(Msg *msg) ;
 
+		int send_plugin_info(struct sockaddr_in dst) ;
+		int send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) ;
+		int send_device_info(struct sockaddr_in dst) ;
+		int send_universe_info(struct sockaddr_in dst) ;
+		int send_port_info(struct sockaddr_in dst, Device *dev, int devid) ;
 		int unpatch_port(Port *prt) ;
 		int patch_port(Port *prt, Universe *uni) ;
 		

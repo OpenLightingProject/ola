@@ -43,6 +43,11 @@
 #define LLAD_ADDR "127.0.0.1"		// address to bind to
 #define LLAD_PORT 8898				// port to listen on
 
+// check if the connection is null and return an error
+#define return_if_null(con) if (con == NULL) { \
+	return -1 ; \
+}
+
 /*
  * the dmx callback is triggered when a dmx packet arrives
  */
@@ -64,6 +69,11 @@ typedef struct {
 	dmx_callback_t dmx_c ;
 	int	buf_map[MAX_BUF] ;
 	uint8_t buf[MAX_BUF][MAX_DMX] ;
+	lla_device *devices;
+	lla_plugin *plugins;
+	lla_universe *universes;
+	char *desc ;
 } lla_connection;
+
 
 

@@ -24,7 +24,6 @@
 #include <stdint.h>
 #include <netinet/in.h>
 
-#define DMX_LENGTH 512
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,9 +44,29 @@ extern "C" {
 #define	LLA_MSG_PATCH 0x13
 #define	LLA_MSG_PLUGIN_INFO_REQUEST 0x14
 #define	LLA_MSG_PLUGIN_INFO 0x15
-#define	LLA_MSG_DEVICE_INFO_REQUEST 0x16
-#define	LLA_MSG_DEVICE_INFO 0x17
-	
+#define	LLA_MSG_PLUGIN_DESC_REQUEST 0x16
+#define	LLA_MSG_PLUGIN_DESC 0x17
+#define	LLA_MSG_DEVICE_INFO_REQUEST 0x18
+#define	LLA_MSG_DEVICE_INFO 0x19
+#define	LLA_MSG_PORT_INFO_REQUEST 0x1A
+#define	LLA_MSG_PORT_INFO 0x1B
+#define	LLA_MSG_UNI_INFO_REQUEST 0x1C
+#define	LLA_MSG_UNI_INFO 0x1D
+
+
+// defines
+
+// mtu on the loopback is going to be around 16k
+#define PLUGINS_PER_DATAGRAM		30			// sets datagram to 1213 bytes
+#define DEVICES_PER_DATAGRAM		30			// sets datagram to 1217 bytes
+#define PORTS_PER_DATAGRAM			60			// sets datagram to 497 bytes
+#define UNIVERSES_PER_DATAGRAM		512			// 
+		
+#define DMX_LENGTH 				512
+#define PLUGIN_DESC_LENGTH 		1024
+#define PLUGIN_NAME_LENGTH		30
+#define DEVICE_NAME_LENGTH		30
+		
 /*
  * sent on client connect
  */
@@ -173,7 +192,7 @@ typedef struct lla_msg_patch_s lla_msg_patch ;
 
 
 /*
- * get info about available plugins
+ * request info about available plugins
  *
  */
 struct lla_msg_plugin_info_request_s {
@@ -183,13 +202,98 @@ struct lla_msg_plugin_info_request_s {
 typedef struct lla_msg_plugin_info_request_s lla_msg_plugin_info_request ;
 
 
+/*
+ * request the description for a plugins
+ *
+ */
+struct lla_msg_plugin_desc_request_s {
+	uint8_t op;		// op code
+	int pid ;
+}__attribute__( ( packed ) ) ; 
+
+typedef struct lla_msg_plugin_desc_request_s lla_msg_plugin_desc_request ;
 
 
+
+/*
+ * Request info on all available devices
+ *
+ */
+struct lla_msg_device_info_request_s {
+	uint8_t op;		// op code
+}__attribute__( ( packed ) ) ; 
+
+typedef struct lla_msg_device_info_request_s lla_msg_device_info_request ;
+
+/*
+ * Request info about ports for a device
+ *
+ */
+struct lla_msg_port_info_request_s {
+	uint8_t op;		// op code
+	int devid ;		// device id
+}__attribute__( ( packed ) ) ; 
+
+typedef struct lla_msg_port_info_request_s lla_msg_port_info_request ;
+
+
+/*
+ * Request info about all universes
+ *
+ */
+struct lla_msg_uni_info_request_s {
+	uint8_t op;		// op code
+}__attribute__( ( packed ) ) ; 
+
+typedef struct lla_msg_uni_info_request_s lla_msg_uni_info_request ;
+
+
+
+
+/*
+ * represents a plugin
+ *
+ */
 struct lla_msg_plugin_s {
-	int id ;				// plugin id
-	int devs ;				// number of devices
-	char name[30];
+	int id ;								// plugin id
+	char name[PLUGIN_NAME_LENGTH];			// plugin name
 };
+
+
+
+/*
+ * represents a device
+ */
+struct lla_msg_device_s {
+	int id ;				// device id
+	int ports ;				// number of ports
+	char name[30];			// name
+};
+
+
+#define	LLA_MSG_PORT_CAP_IN 0x01
+#define	LLA_MSG_PORT_CAP_OUT 0x02
+
+/*
+ * represents a port
+ */
+struct lla_msg_port_s {
+	int id ;				// port id
+	int uni;				// universe
+	uint8_t cap ;			// capability ?
+	uint8_t	actv;
+};
+
+
+
+/*
+ * represents a universe
+ */
+struct lla_msg_info_s {
+	int id;				// universe id
+//	int mode				// merge mode
+};
+
 
 /*
  * returns info about available plugins
@@ -197,47 +301,76 @@ struct lla_msg_plugin_s {
  */
 struct lla_msg_plugin_info_s {
 	uint8_t op;		// op code
-	int count;	// total plugin count
+	int nplugins;	// total plugin count
 	int offset ;	// offset of this msg
-	struct lla_msg_plugin_s plugins[10] ;	//plugin struct
+	int count ;		// number of plugins in this msg
+	struct lla_msg_plugin_s plugins[PLUGINS_PER_DATAGRAM] ;	//plugin struct
 }__attribute__( ( packed ) ) ; 
 
 typedef struct lla_msg_plugin_info_s lla_msg_plugin_info ;
 
 
-
 /*
- * get info about a device
+ * returns the description for the plugin
  *
  */
-struct lla_msg_device_info_request_s {
-	uint8_t op;		// op code
-	int pid ;
-
+struct lla_msg_plugin_desc_s {
+	uint8_t op;						// op code
+	int pid;
+	char desc[PLUGIN_DESC_LENGTH];	//desc
 }__attribute__( ( packed ) ) ; 
 
-typedef struct lla_msg_device_info_request_s lla_msg_device_info_request ;
+typedef struct lla_msg_plugin_desc_s lla_msg_plugin_desc ;
 
 
+/*
+ * return info about available devices
+ *
+ */
+struct lla_msg_device_info_s  {
+	uint8_t op;		// op code
+	int ndevs;		// number of ports in total
+	int offset;		// offset of this msg
+	int count;		// number of ports in this msg
+	struct lla_msg_device_s devices[DEVICES_PER_DATAGRAM] ;
+}__attribute__( ( packed ) ) ;
 
+typedef struct lla_msg_device_info_s lla_msg_device_info;
 
 
 
 /*
- * return a device, how are we going to do this ?
+ * return info about available ports
  *
- 
-struct lla_msg_info_s  {
+ */
+struct lla_msg_port_info_s  {
 	uint8_t op;		// op code
-	int dev ;
-	char plugin[10] ;
-	int nports;
-	int offset;
-	struct lla_msg_port_s ports[10] ;
+	int dev ;		// device id
+	int nports;		// number of ports in total
+	int offset;		// offset of this msg
+	int count;		// number of ports in this msg
+	struct lla_msg_port_s ports[PORTS_PER_DATAGRAM] ;
 }__attribute__( ( packed ) ) ;
 
-typedef struct lla_msg_info_s lla_msg_info;
-*/
+typedef struct lla_msg_port_info_s lla_msg_port_info;
+
+
+
+/*
+ * return info about available ports
+ *
+ */
+struct lla_msg_uni_info_s  {
+	uint8_t op;		// op code
+	int nunis;		// number of universe in total
+	int offset;		// offset of this msg
+	int count;		// number of ports in this msg
+	struct lla_msg_info_s universes[UNIVERSES_PER_DATAGRAM] ;
+}__attribute__( ( packed ) ) ;
+
+typedef struct lla_msg_uni_info_s lla_msg_uni_info;
+
+
 
 /* 
  * union of all our messages
@@ -255,9 +388,17 @@ typedef union {
 	lla_msg_dmx_data dmx;
 	lla_msg_register reg;
 	lla_msg_patch patch;
-	lla_msg_plugin_info_request preq;
-	lla_msg_plugin_info	pinfo ;
+	lla_msg_plugin_info_request plreq;
+	lla_msg_plugin_info	plinfo ;
 	lla_msg_device_info_request dreq;
+	lla_msg_device_info dinfo;
+	lla_msg_port_info_request prreq;
+	lla_msg_port_info prinfo;
+	lla_msg_plugin_desc_request pldreq;
+	lla_msg_plugin_desc pldesc ;
+	lla_msg_uni_info_request unireq;
+	lla_msg_uni_info uniinfo ;
+
 } lla_msg_data ;
 
 

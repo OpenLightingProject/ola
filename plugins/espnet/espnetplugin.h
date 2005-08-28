@@ -35,6 +35,7 @@ class EspNetPlugin : public Plugin {
 		int stop();
 		bool is_enabled() 	{ return m_enabled; }
 		char *get_name() 	{ return "EspNet Plugin"; }
+		char *get_desc() ;
 
 	private:
 		EspNetDevice *m_dev ;		// only have one device

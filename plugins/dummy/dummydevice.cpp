@@ -30,7 +30,7 @@
  * Create a new dummy device
  *
  */
-DummyDevice::DummyDevice(Plugin *owner) : Device(owner) {
+DummyDevice::DummyDevice(Plugin *owner, const char *name) : Device(owner, name) {
 	m_enabled = false ;
 }
 
@@ -81,7 +81,7 @@ int DummyDevice::stop() {
 	if (!m_enabled)
 		return 0 ;
 
-	for(int i=0; i < get_ports() ; i++) {
+	for(int i=0; i < port_count() ; i++) {
 		prt = get_port(i) ;
 		if(prt != NULL) 
 			delete prt ;

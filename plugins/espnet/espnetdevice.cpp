@@ -45,7 +45,7 @@ int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 	EspNetDevice *dev = (EspNetDevice *) d ;
 	EspNetPort *prt ;
 	Universe *uni ;
-	for(int i =0 ; i < dev->get_ports(); i++) {
+	for(int i =0 ; i < dev->port_count(); i++) {
 		prt = (EspNetPort*) dev->get_port(i) ;
 		uni = prt->get_universe() ;
 		if( prt->can_read() && uni != NULL && uni->get_uid() == uid) {
@@ -77,7 +77,7 @@ int program_handler(espnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-EspNetDevice::EspNetDevice(Plugin *owner) : Device(owner) {
+EspNetDevice::EspNetDevice(Plugin *owner, const char *name) : Device(owner, name) {
 	m_node = NULL ;
 	m_enabled = false ;
 }
@@ -149,7 +149,7 @@ int EspNetDevice::stop() {
 	if (!m_enabled)
 		return 0 ;
 
-	for(int i=0; i < get_ports() ; i++) {
+	for(int i=0; i < port_count() ; i++) {
 		prt = get_port(i) ;
 		if(prt != NULL) 
 			delete prt ;

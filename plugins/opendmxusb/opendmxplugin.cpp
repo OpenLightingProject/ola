@@ -54,7 +54,7 @@ int OpenDmxPlugin::start() {
 		return -1 ;
 	
 	/* create new lla device */
-	m_dev = new OpenDmxDevice(this) ;
+	m_dev = new OpenDmxDevice(this, "Open DMX USB Device") ;
 
 	if(m_dev == NULL) 
 		return -1  ;
@@ -86,4 +86,14 @@ int OpenDmxPlugin::stop() {
 	m_enabled = false ;
 	delete m_dev ;
 	return 0;
+}
+
+char *OpenDmxPlugin::get_desc() {
+		return 
+"OpenDMXUSB Plugin\n"
+"----------------------------\n"
+"\n"
+"The plugin creates a single device with one output port."
+"It expects to find the device at /dev/dmx0 ."
+"This should be made configurable in the future..." ;
 }
