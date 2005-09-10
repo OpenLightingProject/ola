@@ -59,9 +59,13 @@ int EspNetPlugin::start() {
 	if(m_dev == NULL) 
 		return -1  ;
 
-	m_dev->start() ;
+	if(m_dev->start()) {
+		delete m_dev ;
+		return -1 ;
+	}
 
 	// register our descriptors
+	//
 	m_pa->register_fd( m_dev->get_sd(0), PluginAdaptor::READ, m_dev)  ;
 	m_pa->register_fd( m_dev->get_sd(1), PluginAdaptor::READ, m_dev)  ;
 
@@ -101,7 +105,13 @@ char *EspNetPlugin::get_desc() {
 "EspNet Plugin\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with five input and five output ports. "
+"This plugin creates a single device with five input and five output ports. "
 "Currently this plugin binds to the first non-loopback IP. This should "
-"be made configurable in the future...\n" ;
+"be made configurable in the future...\n"
+"\n"
+"Esp supports up to 255 universes. As ESP has no notion of ports, we provide "
+"a fixed number of ports which can be patched to any universe. When sending "
+"data from a port, the data is addressed to the universe the port is patched "
+"to. For example if port 0 is patched to universe 10, the data will be sent to "
+"ESP universe 10.";
 }

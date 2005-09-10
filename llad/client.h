@@ -13,22 +13,36 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * llad.hpp
- * The provides operations on a lla_device.
- * Copyright (C) 2005  Simon Newton
+ * client.h
+ * Header file for the client class
+ * Copyright (C) 2005 Simon Newton
  */
+
+#ifndef CLIENT_H
+#define CLIENT_H
+
+#include <map>
+
+using namespace std;
 
 class Client {
 
 	public :
-		Client(struct sockaddr_in to) ;
-		int set_dst() ;
-		int 
-		int send() ;
+		~Client() ;
+
+		int get_port() ;
+
+		static Client *get_client(int port) ;
+		static Client *get_client_or_create(int port) ;
+		static int clean_up() ;
 
 	protected :
-		struct sockaddr_in to;
-		int type ;
+		Client(int port) ;
 		
+	private:
+		int m_port;
+		static map<int, Client *> cli_map;				// map of port to clients;
 
 };
+
+#endif

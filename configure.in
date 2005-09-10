@@ -41,6 +41,10 @@ AM_CONDITIONAL(HAVE_ARTNET, test "${have_artnet}" = "yes")
 AC_CHECK_LIB(espnet, espnet_new,[have_espnet="yes"])
 AM_CONDITIONAL(HAVE_ESPNET, test "${have_espnet}" = "yes")
 
+# check for shownet
+AC_CHECK_LIB(shownet, shownet_new,[have_shownet="yes"])
+AM_CONDITIONAL(HAVE_SHOWNET, test "${have_shownet}" = "yes")
+
 
 dnl ##################################################################
 dnl Check if sockaddr{} has sa_len member.
@@ -65,5 +69,6 @@ AC_OUTPUT( Makefile \
 	   plugins/dummy/Makefile	\
 	   plugins/opendmxusb/Makefile	\
 	   plugins/espnet/Makefile	\
+	   plugins/shownet/Makefile	\
 	   liblla.pc
 	    )

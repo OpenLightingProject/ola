@@ -14,23 +14,23 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * espnetport.h
- * The Esp-Net plugin for lla
+ * shownetport.h
+ * The ShowNet plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef ESPNETPORT_H
-#define ESPNETPORT_H
+#ifndef SHOWNETPORT_H
+#define SHOWNETPORT_H
 
 #include <lla/port.h>
 
-#include <espnet/espnet.h>
+#include <shownet/shownet.h>
 
-class EspNetPort : public Port  {
+class ShowNetPort : public Port  {
 
 	public:
-		EspNetPort(Device *parent, int id) ;
-		~EspNetPort() ;
+		ShowNetPort(Device *parent, int id) ;
+		~ShowNetPort() ;
 		
 		int write(uint8_t *data, int length);
 		int read(uint8_t *data, int length); 

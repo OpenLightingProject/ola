@@ -31,8 +31,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define LLAD_PORT 8898				// port to listen on
-#define LLAD_ADDR "127.0.0.1"		// address to bind to
 
 
 /*
@@ -253,6 +251,8 @@ int Network::fetch_msg_from_client(lla_msg *msg) {
 		msg->len = status ;
 		Logger::instance()->log(Logger::DEBUG, "Recv msg from client on port %d" , ntohs(msg->from.sin_port) ) ;
 	}
+	Logger::instance()->log(Logger::DEBUG, "Recv msg from client on port %d" , ntohs(msg->from.sin_port) ) ;
+
 	return status;
 }
 
@@ -263,7 +263,7 @@ int Network::fetch_msg_from_client(lla_msg *msg) {
  *
  */
 int Network::send_msg(lla_msg *msg) {
-		
+	
 	int ret = sendto(m_sd, &msg->data, msg->len, 0, (struct sockaddr *) &msg->to, sizeof(msg->to))  ;
 	
 	if ( -1 == ret ) {
@@ -276,6 +276,3 @@ int Network::send_msg(lla_msg *msg) {
 
 	return 0;
 }
-
-
-

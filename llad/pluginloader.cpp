@@ -194,7 +194,6 @@ int PluginLoader::unload_plugin(void *handle) {
 		return -1;
 	}
 
-	// init plugin
 	destroy(m_plugin_map[handle]) ;
 	
 	dlclose(handle) ;

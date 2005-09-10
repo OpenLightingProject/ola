@@ -21,8 +21,6 @@
 #ifndef PLUGINLOADER_H
 #define PLUGINLOADER_H
 
-#define MAX_PLUGINS 10
-
 #include <map>
 #include <vector>
 

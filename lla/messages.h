@@ -42,16 +42,18 @@ extern "C" {
 #define	LLA_MSG_DMX_DATA 0x11
 #define	LLA_MSG_REGISTER 0x12
 #define	LLA_MSG_PATCH 0x13
-#define	LLA_MSG_PLUGIN_INFO_REQUEST 0x14
-#define	LLA_MSG_PLUGIN_INFO 0x15
-#define	LLA_MSG_PLUGIN_DESC_REQUEST 0x16
-#define	LLA_MSG_PLUGIN_DESC 0x17
-#define	LLA_MSG_DEVICE_INFO_REQUEST 0x18
-#define	LLA_MSG_DEVICE_INFO 0x19
-#define	LLA_MSG_PORT_INFO_REQUEST 0x1A
-#define	LLA_MSG_PORT_INFO 0x1B
-#define	LLA_MSG_UNI_INFO_REQUEST 0x1C
-#define	LLA_MSG_UNI_INFO 0x1D
+#define	LLA_MSG_UNI_NAME 0x14
+		
+#define	LLA_MSG_PLUGIN_INFO_REQUEST 0x24
+#define	LLA_MSG_PLUGIN_INFO 0x25
+#define	LLA_MSG_PLUGIN_DESC_REQUEST 0x26
+#define	LLA_MSG_PLUGIN_DESC 0x27
+#define	LLA_MSG_DEVICE_INFO_REQUEST 0x28
+#define	LLA_MSG_DEVICE_INFO 0x29
+#define	LLA_MSG_PORT_INFO_REQUEST 0x2A
+#define	LLA_MSG_PORT_INFO 0x2B
+#define	LLA_MSG_UNI_INFO_REQUEST 0x2C
+#define	LLA_MSG_UNI_INFO 0x2D
 
 
 // defines
@@ -66,6 +68,7 @@ extern "C" {
 #define PLUGIN_DESC_LENGTH 		1024
 #define PLUGIN_NAME_LENGTH		30
 #define DEVICE_NAME_LENGTH		30
+#define UNIVERSE_NAME_LENGTH	30
 		
 /*
  * sent on client connect
@@ -146,11 +149,10 @@ typedef struct lla_msg_read_request_s lla_msg_read_request ;
  *
  */
 struct lla_msg_dmx_data_s {
-	uint8_t op;		// op code
-	uint16_t len;				// data length
+	uint8_t op;					// op code
 	uint8_t uni;				// uni address
-	uint8_t	pad1;				// padding
-	uint8_t data[DMX_LENGTH];			// dmx data
+	uint16_t len;				// data length
+	uint8_t data[DMX_LENGTH];	// dmx data
 }__attribute__( ( packed ) ) ;
 
 typedef struct lla_msg_dmx_data_s lla_msg_dmx_data ;
@@ -189,6 +191,19 @@ struct lla_msg_patch_s {
 }__attribute__( ( packed ) )  ;
 
 typedef struct lla_msg_patch_s lla_msg_patch ; 
+
+
+/*
+ * set the name of a universe
+ *
+ */
+struct lla_msg_uni_name_s {
+	uint8_t op;			// op code
+	int uni;			// universe
+	char name[UNIVERSE_NAME_LENGTH];		// universe name
+}__attribute__( ( packed ) )  ;
+
+typedef struct lla_msg_uni_name_s lla_msg_uni_name ; 
 
 
 /*
@@ -290,8 +305,9 @@ struct lla_msg_port_s {
  * represents a universe
  */
 struct lla_msg_info_s {
-	int id;				// universe id
-//	int mode				// merge mode
+	int id;								// universe id
+	char name[UNIVERSE_NAME_LENGTH] ;	//name
+//	int mode							// merge mode
 };
 
 
@@ -388,6 +404,8 @@ typedef union {
 	lla_msg_dmx_data dmx;
 	lla_msg_register reg;
 	lla_msg_patch patch;
+	lla_msg_uni_name uniname;
+	
 	lla_msg_plugin_info_request plreq;
 	lla_msg_plugin_info	plinfo ;
 	lla_msg_device_info_request dreq;

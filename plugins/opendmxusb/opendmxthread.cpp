@@ -178,9 +178,6 @@ int OpenDmxThread::do_write(uint8_t *buf, int length) {
 		return -1 ;
 	}
 
-	if(res > 0)
-		printf("wrote: 0x%02hhx, 0x%02hhx, 0x%02hhx, 0x%02hhx length %d\n", buf[1], buf[2], buf[3], buf[4] , length) ;
-	
 	return 0;
 }
 

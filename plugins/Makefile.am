@@ -1,2 +1,2 @@
 
-SUBDIRS = dummy artnet opendmxusb espnet
+SUBDIRS = dummy artnet opendmxusb espnet shownet

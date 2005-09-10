@@ -14,37 +14,37 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * espnetdevice.h
- * Interface for the espnet device
+ * shownetdevice.h
+ * Interface for the shownet device
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef ESPNETDEVICE_H
-#define ESPNETDEVICE_H
+#ifndef SHOWNETDEVICE_H
+#define SHOWNETDEVICE_H
 
 #include <lla/device.h>
 #include <lla/fdlistener.h>
 
-#include <espnet/espnet.h>
+#include <shownet/shownet.h>
 
 #include "common.h"
 
-class EspNetDevice : public Device, public FDListener {
+class ShowNetDevice : public Device, public FDListener {
 
 	public:
-		EspNetDevice(Plugin *owner, const char *name) ;
-		~EspNetDevice() ;
+		ShowNetDevice(Plugin *owner, const char *name) ;
+		~ShowNetDevice() ;
 
 		int start() ;
 		int stop() ;
-		espnet_node get_node() const;
+		shownet_node get_node() const;
 		int get_sd(int id) const ;
 		int fd_action() ;
 		int save_config() ;
 		int configure(void *req, int len) ;
 
 	private:
-		espnet_node m_node ;
+		shownet_node m_node ;
 		bool m_enabled ;
 };
 

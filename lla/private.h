@@ -52,7 +52,7 @@
  * the dmx callback is triggered when a dmx packet arrives
  */
 typedef struct {
-	int (*fh)(lla_con c, int uni, void *data) ;
+	int (*fh)(lla_con c, int uni, int length, uint8_t *data, void *d) ;
 	void *data;	
 } dmx_callback_t ;
 

@@ -15,7 +15,7 @@
  *
  *
  * espnetport.cpp
- * The Art-Net plugin for lla
+ * The Esp-Net plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -39,7 +39,7 @@ EspNetPort::EspNetPort(Device *parent, int id) : Port(parent, id) {
 
 		// we should handle this better
 		if(m_buf == NULL) 
-			Logger::instance()->log(Logger::CRIT, "Malloc failed in espnet plugin") ;
+			Logger::instance()->log(Logger::CRIT, "EspNetPlugin: malloc failed") ;
 		else
 			memset(m_buf, 0x00, m_len) ;
 	} else {
@@ -79,7 +79,10 @@ int EspNetPort::write(uint8_t *data, int length) {
 	if( !can_write())
 		return -1 ;
 	
-	ret = espnet_send_dmx(dev->get_node() , this->get_universe()->get_uid() , length, data) ;
+	if(espnet_send_dmx(dev->get_node() , this->get_universe()->get_uid() , length, data)) {
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_send_dmx failed %s", espnet_strerror() ) ;
+		return -1 ;
+	}
 	return 0;
 }
 

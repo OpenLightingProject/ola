@@ -42,8 +42,6 @@ Logger::~Logger() {
 	if(m_output == Logger::SYSLOG) {
 		closelog() ;
 	}
-
-
 }
 
 
@@ -113,7 +111,14 @@ Logger *Logger::instance(Logger::Level level, Logger::Output output) {
 
 	if(Logger::s_instance == NULL) {
 		Logger::s_instance = new Logger(level, output) ;
-
 	}
 	return Logger::s_instance ;
+}
+
+
+void Logger::clean_up() {
+	if(Logger::s_instance != NULL) {
+		delete Logger::s_instance ;
+		Logger::s_instance = NULL ;
+	}
 }

@@ -6,7 +6,7 @@ INCLUDES = @LLAD_DEFINES@
 
 llad_SOURCES = main.cpp devicemanager.cpp  pluginadaptor.cpp\
 				llad.cpp network.cpp  device.cpp port.cpp\
-				pluginloader.cpp universe.cpp logger.cpp
+				pluginloader.cpp universe.cpp logger.cpp client.cpp
 
 
 llad_LDADD = @LIBS@ -ldl

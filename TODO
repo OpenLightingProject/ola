@@ -1,15 +1,30 @@
 
-serialise so that plugins can store state
-perhaps start llad if not already running ?
+--URGENT--
 
-remember pid : plugin mappings
-implement CTIP
+* complete audit for return values
+* implement universe subscribe - monitor + sample program
+* fix up the lla_req_* functions
+* remove hard coded ip address from plugins
+* shownet recv 
 
-fix artnet and espnet plugins to check return values
-fix esp plugin - number of ports?
+--REQUIRED--
+* serialise so that plugins can store state
+* perhaps start llad if not already running ?
+* remember pid : plugin mappings
 
-support HTP merge mode (currently LTP)
-checksum ?
-implement universe subscribe - monitor
-send debug to remote client - need to watch looping here (maybe lev 1&2)
-universe comments
+-- NICE--
+* send debug to remote client - need to watch looping here (maybe lev 1&2)
+
+
+--WISH LIST--
+
+* support HTP merge mode (currently LTP) - do we need to be able to 
+set the mode on a per channel or per universe basis ? Think about if we
+might need "filters" to modify the data from plugins. Could get really funky:
+	o split dmx to different universes OUT = SPLIT(1,0,255)
+	o invert channels OUT = INV(1)
+	o different merge modes (OUT = HTP(1,2))
+	o change offset / map  OUT = OFFSET(1, +50)
+	o scaler (OUT = SCALE(1, %40) )
+	o clip (OUT = CLIP(1,%80) )
+ 

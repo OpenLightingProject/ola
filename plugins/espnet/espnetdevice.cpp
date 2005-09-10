@@ -42,6 +42,7 @@
  */
 int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 
+//	Logger::instance()->log(Logger::WARN, "EspNetPlugin: got data") ;
 	EspNetDevice *dev = (EspNetDevice *) d ;
 	EspNetPort *prt ;
 	Universe *uni ;
@@ -108,33 +109,42 @@ int EspNetDevice::start() {
 	}
 
 	// create new espnet node, and set config values
-    m_node = espnet_new("2.0.0.3", 1) ;
+    m_node = espnet_new(NULL, 1) ;
 
 	if(!m_node) {
-		// need a good way to return here
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: call to espnet_new failed") ;
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_new failed: %s", espnet_strerror()) ;
 		return -1 ;
 	}
 
-	// node config
-	// should be checking for errors here...
-	espnet_set_name(m_node, "esp lla") ;
-	espnet_set_type(m_node, ESPNET_NODE_TYPE_IO) ;
-
+	// setup node
+	if (espnet_set_name(m_node, "esp lla") ) {
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_name failed: %s", espnet_strerror()) ;
+		goto e_espnet_start; 
+	}
+	
+	if(espnet_set_type(m_node, ESPNET_NODE_TYPE_IO)) {
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_type failed: %s", espnet_strerror()) ;
+		goto e_espnet_start; 
+	}
+	
 	// we want to be notified when the node config changes
-	espnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ; 
+	if(espnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_dmx_handler failed: %s", espnet_strerror()) ;
+		goto e_espnet_start; 
+	}
 
-	if(espnet_start(m_node) != 0)
+	if(espnet_start(m_node) ) {
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_start failed: %s", espnet_strerror()) ;
 		goto e_espnet_start ;
+	}
 	
 	m_enabled = true ;
-
 	return 0;
 
 e_espnet_start:
-	espnet_destroy(m_node) ;
+	if(espnet_destroy(m_node)) 
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_destory failed: %s", espnet_strerror()) ;			
 e_dev:
-	printf("start failed\n") ;
 	return -1 ;
 }
 
@@ -155,12 +165,16 @@ int EspNetDevice::stop() {
 			delete prt ;
 	}
 
-	if(espnet_stop(m_node))
+	if(espnet_stop(m_node)) {
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_stop failed: %s", espnet_strerror()) ;	
 		return -1 ;
+	}
 	
-	if(espnet_destroy(m_node)) 
+	if(espnet_destroy(m_node)) {
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_destroy failed: %s", espnet_strerror()) ;			
 		return -1 ;
-
+	}
+	
 	m_enabled = false ;
 
 	return 0;
@@ -181,8 +195,15 @@ espnet_node EspNetDevice::get_node() const {
  *
  */
 int EspNetDevice::get_sd(int sd) const {
-	int fd = sd==0?0:1;
-	return espnet_get_sd(m_node,fd) ;
+	int ret ;
+	sd = sd==0?0:1;
+	ret = espnet_get_sd(m_node,sd) ;
+
+	if(ret < 0) {
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_get_sd failed: %s", espnet_strerror()) ;
+		return -1 ;
+	}
+	return ret;
 }
 
 /*
@@ -191,7 +212,11 @@ int EspNetDevice::get_sd(int sd) const {
  * @param	data	user data (pointer to espnet_device_priv
  */
 int EspNetDevice::fd_action() {
-	return espnet_read(m_node, 0) ;
+	if (espnet_read(m_node, 0) ) {
+		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_read failed: %s", espnet_strerror()) ;
+		return -1 ;
+	}
+	return 0;
 }
 
 
@@ -219,15 +244,3 @@ int EspNetDevice::configure(void *req, int len) {
 
 	return 0;
 }
-
-
-
-
-
-// Private functions
-//-----------------------------------------------------------------------------
-
-
-
-
-

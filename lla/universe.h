@@ -25,7 +25,9 @@
 
 #include <stdint.h>
 #include <lla/port.h>
+
 #include <vector>
+#include <map>
 
 #define DMX_LENGTH 512
 
@@ -39,33 +41,42 @@ class Universe {
 		int 	remove_port(Port *prt) ;
 		int 	get_num_ports() const ;
 	
-		// int	add_client(Client *cli) ;
-		// int 	remove_client(Client *cli) ;
-		
+		int 	add_client(class Client *cli) ;
+		int 	remove_client(class Client *cli) ;
+
 		int set_dmx(uint8_t *dmx, int length) ;
 		int get_dmx(uint8_t *dmx, int length) ;
 		int get_uid() ;
 		int port_data_changed(Port *prt) ;
-
+		bool in_use() ;
+		char *get_name() ;
+		void set_name(char *name) ;
+		int send_dmx(class Client *cli) ;
+		
 		static Universe *get_universe(int uid) ;
 		static Universe *get_universe_or_create(int uid) ;
 		static int	universe_count() ;
 		static Universe *get_universe_at_pos(int index) ;
 
 		static int clean_up();
+		static int Universe::get_list(Universe ***head) ;
+		static int Universe::set_net(class Network *net) ;
 
 	protected :
 		Universe(int uid) ;
 		
 	private:
 		 
-		int uid;									// universe address
-//		merge_mode mm;								// merge mode
-		vector<Port*> ports_vect ;		// ports assigned to the universe
-//		vector<Clients *clients[MAX_CLIENTS_PER_UNIVERSE]	// clients listening to this universe
-		uint8_t	data[DMX_LENGTH] ;					// buffer for this universe
-		int length ;
-		static vector<Universe*> uni_vect ;
+		int m_uid;											// universe address
+//		merge_mode mm;										// merge mode
+		vector<Port*> ports_vect ;							// ports assigned to the universe
+		vector<class Client *> clients_vect ;						// clients listening to this universe
+		uint8_t	m_data[DMX_LENGTH] ;						// buffer for this universe
+		int m_length ;								
+		char *m_name ;										// name of this universe
+				
+		static map<int, Universe *> uni_map;				// map of uid to universes
+		static Network *c_net ;								// network object
 		int update_dependants() ;
 } ;
 

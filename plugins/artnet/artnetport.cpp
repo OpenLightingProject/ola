@@ -22,7 +22,7 @@
 #include "artnetport.h"
 #include "artnetdevice.h"
 #include <lla/universe.h>
-
+#include <lla/logger.h>
 #include <string.h>
 
 #define min(a,b) a<b?a:b
@@ -52,7 +52,10 @@ int ArtNetPort::write(uint8_t *data, int length) {
 	if( !can_write())
 		return -1 ;
 	
-	ret = artnet_send_dmx(dev->get_node() , this->get_id()/4 , length, data) ;
+	if(artnet_send_dmx(dev->get_node() , this->get_id()/4 , length, data) ) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_send_dmx failed %s", artnet_strerror() ) ;
+		return -1 ;
+	}
 	return 0;
 }
 
@@ -73,6 +76,11 @@ int ArtNetPort::read(uint8_t *data, int length) {
 		return -1 ;
 	
 	dmx = artnet_read_dmx(dev->get_node(), get_id(), &len) ;
+	
+	if(dmx == NULL) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_read_dmx failed %s", artnet_strerror() ) ;
+		return -1 ;
+	}
 	
 	memcpy(data, dmx, len ) ;
 	return len;
@@ -97,12 +105,25 @@ int ArtNetPort::set_universe(Universe *uni) {
 	// an ArtNet output port
 	if(id >= 0 && id <= 3) {
 		// input port
-		artnet_set_port_type(node, id, ARTNET_ENABLE_OUTPUT, ARTNET_PORT_DMX) ;
-		artnet_set_port_addr(node, id, ARTNET_OUTPUT_PORT, uni->get_uid()) ;
+		if(artnet_set_port_type(node, id, ARTNET_ENABLE_OUTPUT, ARTNET_PORT_DMX)) {
+			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_type failed %s", artnet_strerror() ) ;
+			return -1 ;
+		}
+		
+		if( artnet_set_port_addr(node, id, ARTNET_OUTPUT_PORT, uni->get_uid())) {
+			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_addr failed %s", artnet_strerror() ) ;
+			return -1 ;
+		}
 		
 	} else if (id >= 4 && id <= 7) {
-		artnet_set_port_type(node, id, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX) ;
-		artnet_set_port_addr(node, id, ARTNET_INPUT_PORT, uni->get_uid() ) ;
+		if(artnet_set_port_type(node, id-4, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX) ) {
+			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_type failed %s", artnet_strerror() ) ;
+			return -1 ;
+		}	
+		if(artnet_set_port_addr(node, id-4, ARTNET_INPUT_PORT, uni->get_uid() ) ) {
+			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_addr failed %s", artnet_strerror() ) ;
+			return -1 ;
+		}
 	}
 	return 0 ;
 }

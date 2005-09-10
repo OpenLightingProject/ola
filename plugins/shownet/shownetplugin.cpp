@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * espnetplugin.cpp
- * The Esp Net plugin for lla
+ * shownetplugin.cpp
+ * The ShowNet plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -24,14 +24,14 @@
 
 #include <lla/pluginadaptor.h>
 
-#include "espnetplugin.h"
-#include "espnetdevice.h"
+#include "shownetplugin.h"
+#include "shownetdevice.h"
 
 /*
  * Entry point to this plugin
  */
 extern "C" Plugin* create(PluginAdaptor *pa) {
-  return new EspNetPlugin(pa);
+  return new ShowNetPlugin(pa);
 }
 
 /*
@@ -48,13 +48,13 @@ extern "C" void destroy(Plugin* plug) {
  * For now we just have one device.
  * TODO: allow multiple devices on different IPs ?
  */
-int EspNetPlugin::start() {
+int ShowNetPlugin::start() {
 	
 	if(m_enabled)
 		return -1 ;
 	
 	/* create new lla device */
-	m_dev = new EspNetDevice(this, "ESPNet Device") ;
+	m_dev = new ShowNetDevice(this, "ShowNet Device") ;
 
 	if(m_dev == NULL) 
 		return -1  ;
@@ -81,7 +81,7 @@ int EspNetPlugin::start() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int EspNetPlugin::stop() {
+int ShowNetPlugin::stop() {
 			
 	if (!m_enabled)
 		return -1 ;
@@ -100,12 +100,15 @@ int EspNetPlugin::stop() {
 	return 0;
 }
 
-char *EspNetPlugin::get_desc() {
+char *ShowNetPlugin::get_desc() {
 	return 
-"EspNet Plugin\n"
+"ShowNet Plugin\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with five input and five output ports. "
+"This plugin creates a single device with 8 input and 8 output ports. "
 "Currently this plugin binds to the first non-loopback IP. This should "
-"be made configurable in the future...\n" ;
+"be made configurable in the future...\n"
+"\n"
+"The ports correspond to the DMX channels used in the shownet protocol. "
+"For example port 0 is channels 1 - 512, port 1 is channels 513 - 1024. ";
 }

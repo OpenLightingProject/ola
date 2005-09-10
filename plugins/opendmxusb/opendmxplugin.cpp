@@ -93,7 +93,7 @@ char *OpenDmxPlugin::get_desc() {
 "OpenDMXUSB Plugin\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with one output port."
-"It expects to find the device at /dev/dmx0 ."
+"The plugin creates a single device with one output port. "
+"It expects to find the device at /dev/dmx0 . "
 "This should be made configurable in the future..." ;
 }

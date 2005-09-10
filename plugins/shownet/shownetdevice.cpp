@@ -13,8 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * espnetdevice.cpp
- * Esp-Net device
+ * shownetdevice.cpp
+ * ShowNet device
  * Copyright (C) 2005  Simon Newton
  *
  *
@@ -24,52 +24,40 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "espnetdevice.h"
-#include "espnetport.h"
+#include "shownetdevice.h"
+#include "shownetport.h"
 
 #include <lla/logger.h>
 #include <lla/universe.h>
 
 /*
- * Handle dmx from the network, called from libespnet
+ * Handle dmx from the network, called from libshownet
  * 
- * @param n		the espnet_node
+ * @param n		the shownet_node
  * @param uni	the universe this data is for
  * @param len	the length of the received data
  * @param data	pointer the the dmx data
- * @param d		pointer to our EspNetDevice
+ * @param d		pointer to our ShowNetDevice
  *
  */
-int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
+int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 
-//	Logger::instance()->log(Logger::WARN, "EspNetPlugin: got data") ;
-	EspNetDevice *dev = (EspNetDevice *) d ;
-	EspNetPort *prt ;
+	ShowNetDevice *dev = (ShowNetDevice *) d ;
+	ShowNetPort *prt ;
 	Universe *uni ;
-	for(int i =0 ; i < dev->port_count(); i++) {
-		prt = (EspNetPort*) dev->get_port(i) ;
-		uni = prt->get_universe() ;
-		if( prt->can_read() && uni != NULL && uni->get_uid() == uid) {
-			prt->update_buffer(data,len) ;
-		}
+
+	if ( uid > SHOWNET_MAX_UNIVERSES) 
+		return 0 ;
+	
+	prt = (ShowNetPort*) dev->get_port(uid) ;
+	uni = prt->get_universe() ;
+	if( prt->can_read() && uni != NULL && uni->get_uid() == uid) {
+		prt->update_buffer(data,len) ;
 	}
 	
 	return 0;
 }
 
-
-/*
- * get notify of remote programming
- *
- *
- *
- */
-int program_handler(espnet_node n, void *d) {
-	EspNetDevice *dev = (EspNetDevice *) d ;
-
-	dev->save_config() ;
-	return 0;
-}
 
 
 /*
@@ -78,7 +66,7 @@ int program_handler(espnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-EspNetDevice::EspNetDevice(Plugin *owner, const char *name) : Device(owner, name) {
+ShowNetDevice::ShowNetDevice(Plugin *owner, const char *name) : Device(owner, name) {
 	m_node = NULL ;
 	m_enabled = false ;
 }
@@ -87,7 +75,7 @@ EspNetDevice::EspNetDevice(Plugin *owner, const char *name) : Device(owner, name
 /*
  *
  */
-EspNetDevice::~EspNetDevice() {
+ShowNetDevice::~ShowNetDevice() {
 	if (m_enabled)
 		stop() ;
 }
@@ -97,53 +85,48 @@ EspNetDevice::~EspNetDevice() {
  * Start this device
  *
  */
-int EspNetDevice::start() {
-	EspNetPort *port ;
+int ShowNetDevice::start() {
+	ShowNetPort *port ;
 
 	/* set up ports */
 	for(int i=0; i < 2*PORTS_PER_DEVICE; i++) {
-		port = new EspNetPort(this,i) ;
+		port = new ShowNetPort(this,i) ;
 
 		if(port != NULL) 
 			this->add_port(port) ;
 	}
 
-	// create new espnet node, and set config values
-    m_node = espnet_new("192.168.1.1", 1) ;
+	// create new shownet node, and set config values
+    m_node = shownet_new(NULL, 1) ;
 
 	if(!m_node) {
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_new failed: %s", espnet_strerror()) ;
+		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_new failed: %s", shownet_strerror()) ;
 		return -1 ;
 	}
 
 	// setup node
-	if (espnet_set_name(m_node, "esp lla") ) {
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_name failed: %s", espnet_strerror()) ;
-		goto e_espnet_start; 
+	if (shownet_set_name(m_node, "lla") ) {
+		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_name failed: %s", shownet_strerror()) ;
+		goto e_shownet_start; 
 	}
-	
-	if(espnet_set_type(m_node, ESPNET_NODE_TYPE_IO)) {
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_type failed: %s", espnet_strerror()) ;
-		goto e_espnet_start; 
-	}
-	
+		
 	// we want to be notified when the node config changes
-	if(espnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_dmx_handler failed: %s", espnet_strerror()) ;
-		goto e_espnet_start; 
+	if(shownet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
+		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_dmx_handler failed: %s", shownet_strerror()) ;
+		goto e_shownet_start; 
 	}
 
-	if(espnet_start(m_node) ) {
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_start failed: %s", espnet_strerror()) ;
-		goto e_espnet_start ;
+	if(shownet_start(m_node) ) {
+		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_start failed: %s", shownet_strerror()) ;
+		goto e_shownet_start ;
 	}
 	
 	m_enabled = true ;
 	return 0;
 
-e_espnet_start:
-	if(espnet_destroy(m_node)) 
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_destory failed: %s", espnet_strerror()) ;			
+e_shownet_start:
+	if(shownet_destroy(m_node)) 
+		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_destory failed: %s", shownet_strerror()) ;			
 e_dev:
 	return -1 ;
 }
@@ -153,7 +136,7 @@ e_dev:
  * stop this device
  *
  */
-int EspNetDevice::stop() {
+int ShowNetDevice::stop() {
 	Port *prt ;
 
 	if (!m_enabled)
@@ -165,13 +148,13 @@ int EspNetDevice::stop() {
 			delete prt ;
 	}
 
-	if(espnet_stop(m_node)) {
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_stop failed: %s", espnet_strerror()) ;	
+	if(shownet_stop(m_node)) {
+		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_stop failed: %s", shownet_strerror()) ;	
 		return -1 ;
 	}
 	
-	if(espnet_destroy(m_node)) {
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_destroy failed: %s", espnet_strerror()) ;			
+	if(shownet_destroy(m_node)) {
+		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_destroy failed: %s", shownet_strerror()) ;			
 		return -1 ;
 	}
 	
@@ -186,7 +169,7 @@ int EspNetDevice::stop() {
  *
  *
  */
-espnet_node EspNetDevice::get_node() const {
+shownet_node ShowNetDevice::get_node() const {
 	return m_node ;
 }
 
@@ -194,13 +177,13 @@ espnet_node EspNetDevice::get_node() const {
  * return the sd of this device
  *
  */
-int EspNetDevice::get_sd(int sd) const {
+int ShowNetDevice::get_sd(int sd) const {
 	int ret ;
 	sd = sd==0?0:1;
-	ret = espnet_get_sd(m_node,sd) ;
+	ret = shownet_get_sd(m_node,sd) ;
 
 	if(ret < 0) {
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_get_sd failed: %s", espnet_strerror()) ;
+		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_get_sd failed: %s", shownet_strerror()) ;
 		return -1 ;
 	}
 	return ret;
@@ -209,11 +192,11 @@ int EspNetDevice::get_sd(int sd) const {
 /*
  * Called when there is activity on our descriptors
  *
- * @param	data	user data (pointer to espnet_device_priv
+ * @param	data	user data (pointer to shownet_device_priv
  */
-int EspNetDevice::fd_action() {
-	if (espnet_read(m_node, 0) ) {
-		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_read failed: %s", espnet_strerror()) ;
+int ShowNetDevice::fd_action() {
+	if (shownet_read(m_node, 0) ) {
+		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_read failed: %s", shownet_strerror()) ;
 		return -1 ;
 	}
 	return 0;
@@ -223,7 +206,7 @@ int EspNetDevice::fd_action() {
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int EspNetDevice::save_config() {
+int ShowNetDevice::save_config() {
 
 
 	return 0;
@@ -236,7 +219,7 @@ int EspNetDevice::save_config() {
  * make sure the user app knows the format though...
  *
  */
-int EspNetDevice::configure(void *req, int len) {
+int ShowNetDevice::configure(void *req, int len) {
 	// handle short/ long name & subnet and port addresses
 	
 	req = 0 ;

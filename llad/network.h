@@ -33,6 +33,9 @@ typedef struct {
 } fd_listener_t ;
 
 
+#define LLAD_PORT 8898				// port to listen on
+#define LLAD_ADDR "127.0.0.1"		// address to bind to
+
 class Network {
 
 	public :

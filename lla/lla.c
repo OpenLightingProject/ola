@@ -248,7 +248,7 @@ static int lla_recv(lla_connection *con, int delay) {
  *
  *
  */
-int lla_set_dmx_handler(lla_con c, int (*fh)(lla_con c, int uni, void *d), void *data ) {
+int lla_set_dmx_handler(lla_con c, int (*fh)(lla_con c, int uni, int length, uint8_t *data, void *d), void *data ) {
 	lla_connection *con = (lla_connection*) c ;
 
 	return_if_null(con) ;
@@ -307,6 +307,32 @@ int lla_reg_uni(lla_con c, int uni, int action) {
 }
 
 
+/*
+ * set the name of this universe
+ *
+ */
+int lla_set_name(lla_con c, int uni, char *name) {
+	lla_connection *con = (lla_connection*) c ;
+	lla_msg msg ;
+	
+	return_if_null(con) ;
+
+	msg.len = sizeof(lla_msg_uni_name) ;
+
+	// new reg packet
+	msg.data.uniname.op = LLA_MSG_UNI_NAME ;
+	msg.data.uniname.uni = uni ;
+	
+	if(name != NULL) {
+		strncpy(msg.data.uniname.name, name , UNIVERSE_NAME_LENGTH) ;
+	
+		// send
+		return send_msg(con, &msg) ;
+	} 
+
+	return -1 ;
+}
+
 
 /*
  * Write some dmx data
@@ -326,7 +352,6 @@ int lla_send_dmx(lla_con c, int uni, uint8_t *data, int length) {
 	msg.len = sizeof(lla_msg_dmx_data) ;
 	msg.data.dmx.op = LLA_MSG_DMX_DATA ;
 	msg.data.dmx.uni = uni;
-	msg.data.dmx.pad1 = 0;
 	msg.data.dmx.len = min(length, MAX_DMX) ;
 	
 	memcpy(&msg.data.dmx.data, data, msg.data.dmx.len) ;
@@ -354,19 +379,21 @@ int lla_send_rdm(lla_con c, int universe, uint8_t *data, int length) {
  * poll it I suppose.
  *
  */
-int lla_read_dmx(lla_con c, int universe, uint8_t *data, int length) {
-	//send request
+int lla_read_dmx(lla_con c, int universe) {
+	//send read request
 	lla_connection *con = (lla_connection*) c ;
+	lla_msg msg ;
 	
 	return_if_null(con) ;
 	
-	universe++ ;
-	length++;
-	data++;
+	msg.len = sizeof(lla_msg_uni_name) ;
 
+	// new read request packet
+	msg.data.rreq.op = LLA_MSG_READ_REQ ;
+	msg.data.rreq.uni = universe ;
 	
-	//read reply
-	return 0;
+	// send
+	return send_msg(con, &msg) ;
 }
 
 
@@ -500,14 +527,17 @@ char *lla_req_plugin_desc(lla_con c, int pid) {
 /*
  * This is supposed to give us info on what universes are in use
  *
+ * @param	c	the lla connection
+ * @param 	head	address of a pointer (result argument)
  *
+ * @return 
  */
-lla_universe *lla_req_universe_info(lla_con c) {
+int lla_req_universe_info(lla_con c, lla_universe **head) {
 	lla_connection *con = (lla_connection*) c ;
 	lla_msg msg ;
 	
 	if(con == NULL)
-		return NULL ;
+		return -1 ;
 	
 	msg.len = sizeof(lla_msg_plugin_info_request) ;
 	msg.data.unireq.op = LLA_MSG_UNI_INFO_REQUEST ;
@@ -517,25 +547,31 @@ lla_universe *lla_req_universe_info(lla_con c) {
 	free_universes(con) ;
 	
 	while(con->universes == NULL) {
+		// this isn't a real timeout, lots of traffic will cause us to loop here
+		// without returning
 		switch(lla_recv(c, 1)) {
 			case 0:
 				break;
 			case 1:
 				// timeout
 				printf("failed to get universe info\n");
-				return NULL;
+				return -1;
 			case -1:
 				// error
-				return NULL;
+				return -1;
 			case -2:
 				// interupt
 				break;
 		}
 	}
 
-	// this will be null if we didn't get a response in time
-	return con->universes ;
-	
+	if( con->universes->id == -1) {
+		*head = NULL;
+		return 0 ;
+	}
+
+	*head = con->universes ;
+	return 0;
 }
 
 
@@ -649,11 +685,9 @@ static int handle_msg(lla_connection *con, lla_msg *msg) {
 
 static int handle_dmx(lla_connection *con, lla_msg *msg) {
 
-	// now we want to store the dmx data in the buffer
-	// only if we're interested in it
-	con = NULL ;
-	msg = NULL ;
-
+	if(con->dmx_c.fh != NULL) {
+		con->dmx_c.fh((lla_con) con, msg->data.dmx.uni ,msg->data.dmx.len, msg->data.dmx.data , con->dmx_c.data) ;
+	}
 	return 0 ;
 }
 
@@ -740,6 +774,8 @@ static int handle_universe_info(lla_connection *con, lla_msg *msg) {
 		}
 
 		uni->id = msg->data.uniinfo.universes[i].id ;
+		uni->name = strdup(msg->data.uniinfo.universes[i].name) ;
+		
 		uni->next = NULL ;
 		
 		if(con->universes == NULL) {
@@ -750,6 +786,21 @@ static int handle_universe_info(lla_connection *con, lla_msg *msg) {
 			uni_tail = uni ;
 		}
 	}
+
+	// we make a dud entry here so the call returns
+	if(universes == 0) {
+		uni = malloc(sizeof(lla_universe)) ;
+
+		if(uni == NULL) {
+			printf("malloc failed\n") ;
+			return -1 ;
+		}
+		uni->id = -1;
+		uni->name = NULL ;
+		uni->next = NULL ;
+		con->universes = uni ;
+	}
+
 	return 0 ;
 }
 
@@ -961,6 +1012,7 @@ static int free_universes(lla_connection *con) {
 		uni = uni_itr;
 		uni_itr = uni_itr->next ;
 		
+		free(uni->name);
 		free(uni);
 	}
 	return 0;

@@ -14,31 +14,31 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * espnetplugin.h
- * Interface for the espnet plugin class
+ * shownetplugin.h
+ * Interface for the shownet plugin class
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef ESPNETPLUGIN_H
-#define ESPNETPLUGIN_H
+#ifndef SHOWNETPLUGIN_H
+#define SHOWNETPLUGIN_H
 
 #include <lla/plugin.h>
 
-class EspNetDevice ;
+class ShowNetDevice ;
 
-class EspNetPlugin : public Plugin {
+class ShowNetPlugin : public Plugin {
 
 	public:
-		EspNetPlugin(PluginAdaptor *pa) : Plugin(pa) {m_enabled = false; }
+		ShowNetPlugin(PluginAdaptor *pa) : Plugin(pa) {m_enabled = false; }
 
 		int start();
 		int stop();
 		bool is_enabled() 	{ return m_enabled; }
-		char *get_name() 	{ return "EspNet Plugin"; }
+		char *get_name() 	{ return "ShowNet Plugin"; }
 		char *get_desc() ;
 
 	private:
-		EspNetDevice *m_dev ;		// only have one device
+		ShowNetDevice *m_dev ;		// only have one device
 		bool m_enabled ;			// are we running
 };
 

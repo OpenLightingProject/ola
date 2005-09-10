@@ -275,11 +275,11 @@ int main(int argc, char*argv[]) {
 
 	llad = new Llad() ;
 	
-
 	if(llad->init() == 0 ) {
 		llad->run() ;
 	}
 	delete llad;
+	Logger::clean_up() ;
 
 	return 0 ;
 }

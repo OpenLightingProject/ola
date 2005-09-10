@@ -1,7 +1,7 @@
 
 libdir = $(plugindir)
 
-if HAVE_ESPNET
+if HAVE_SHOWNET
 
 lib_LTLIBRARIES = libllashownet.la
 

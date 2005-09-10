@@ -21,12 +21,16 @@
 
 #include <lla/universe.h>
 #include <lla/logger.h>
+#include "network.h"
+#include "client.h" 
 
+#include <arpa/inet.h>
 #include <iterator>
 #include <string.h>
 #include <stdio.h>
 
-vector<Universe*> Universe::uni_vect ;
+map<int ,Universe *> Universe::uni_map ;
+Network *Universe::c_net;
 
 /*
  * Create a new universe
@@ -35,24 +39,39 @@ vector<Universe*> Universe::uni_vect ;
 Universe::Universe(int uid) {
 	int i;
 	
-	this->uid = uid ;
+	m_uid = uid ;
 	
+	m_name = NULL ;
 	// zero dmx buffer
-	memset(data, 0x00, DMX_LENGTH) ;
-	length = DMX_LENGTH ;
+	memset(m_data, 0x00, DMX_LENGTH) ;
+	m_length = DMX_LENGTH ;
 
 }
 
 
 /*
- *
+ * destory this universe
+ * we remove ourself out the map
  *
  */
 Universe::~Universe() {
+	uni_map.erase(m_uid) ;
+}
 
+/*
+ * GEt the name of this universe
+ *
+ */
+char *Universe::get_name() {
+	return m_name ;
+}
 
-
-
+/*
+ * Set the name of this universe
+ */
+void Universe::set_name(char *name) {
+	free(m_name) ;
+	m_name = strdup(name) ;
 }
 
 /*
@@ -74,10 +93,14 @@ int Universe::add_port(Port *prt) {
 
 		// we need to check here and destroy this universe if that was the last port
 		// or do we? what if we had a client listening ?
+		if(! uni->in_use() ) {
+			delete uni ;
+		}
+		
 	}
 
 	// patch to this universe
-	Logger::instance()->log(Logger::INFO, "Patched %d to universe %d",prt->get_id() , uid) ;
+	Logger::instance()->log(Logger::INFO, "Patched %d to universe %d",prt->get_id() , m_uid) ;
 	ports_vect.push_back(prt) ;
 	
 	prt->set_universe(this) ;	
@@ -91,7 +114,7 @@ int Universe::add_port(Port *prt) {
  *
  */
 int Universe::remove_port(Port *prt) {
-	int i ;
+//	int i ;
 	vector<Port*>::iterator it;
 	
 	it = find(ports_vect.begin(),ports_vect.end(),prt); // first position
@@ -120,14 +143,54 @@ int Universe::get_num_ports() const {
 
 
 /*
+ * Add this client to this universe
+ *
+ * @param cli	the client to add
+ * 
+ */
+int Universe::add_client(Client *cli) {
+	vector<Client*>::iterator it ;
+	
+	// add to this universe
+	Logger::instance()->log(Logger::INFO, "Added client %p to universe %d", cli , m_uid) ;
+	clients_vect.push_back(cli) ;
+	
+	return 0;
+
+}
+
+
+/*
+ * Remove this client from the universe
+ *
+ * @param cli	the client to remove
+ */
+int Universe::remove_client(Client *cli) {
+	vector<Client*>::iterator it;
+	
+	it = find(clients_vect.begin(), clients_vect.end(),cli); // first position
+
+	if(it != clients_vect.end() ) {
+		clients_vect.erase(it) ;
+		Logger::instance()->log(Logger::DEBUG, "Client %p has been removed from uni %d", cli, get_uid()) ;
+	} else {
+		Logger::instance()->log(Logger::WARN, "Could not find client in universe") ;
+		return -1 ;
+	}
+
+	return 0;
+}
+
+
+/*
  * Set the dmx data for this universe
  *
  *
  */
 int Universe::set_dmx(uint8_t *dmx, int len) {
 	
-	length = len < DMX_LENGTH ? len : DMX_LENGTH ;
-	memcpy(data, dmx, length) ;
+	m_length = len < DMX_LENGTH ? len : DMX_LENGTH ;
+	memcpy(m_data, dmx, m_length) ;
 
 	return this->update_dependants() ;
 }
@@ -142,14 +205,14 @@ int Universe::get_dmx(uint8_t *dmx, int length) {
 	int len ;
 	
 	len = length < DMX_LENGTH ? length : DMX_LENGTH ;
-	memcpy(dmx, data, len) ;
+	memcpy(dmx, m_data, len) ;
 
 	return len ;
 }
 
 
 int Universe::get_uid() {
-	return uid ;
+	return m_uid ;
 }
 
 
@@ -165,12 +228,21 @@ int Universe::port_data_changed(Port *prt) {
 	for(int i =0 ; i < ports_vect.size() ; i++) {
 		if(ports_vect[i] == prt && prt->can_read() ) {
 			// read the new data and update our dependants
-			length = prt->read(data, DMX_LENGTH) ;
+			m_length = prt->read(m_data, DMX_LENGTH) ;
 
 			update_dependants() ;
 		}
 	}
 	return 0;
+}
+
+
+/*
+ * Return true if this universe is in use
+ *
+ */
+bool Universe::in_use() {
+	return  ports_vect.size()>0 ;
 }
 
 
@@ -188,44 +260,73 @@ int Universe::update_dependants() {
 
 	// write to all ports assigned to this unviverse
 	for(i=0 ; i < ports_vect.size() ; i++) {
-		ports_vect[i]->write(data, length);
+		ports_vect[i]->write(m_data, m_length);
 	}
 
 	// write to all clients
-
+	for(i=0 ; i < clients_vect.size() ; i++) {
+		send_dmx(clients_vect[i]) ;
+	}
 
 	return 0;
 }
 
 
+
+/*
+ * Send a dmx message to the client
+ *
+ * @param cli	the client to send the msg to
+ *
+ */
+int Universe::send_dmx(Client *cli) {
+	lla_msg reply ;
+	int len ;
+	
+	memset(&reply, 0x00, sizeof(reply) );
+	
+	reply.to.sin_family = AF_INET ;
+	reply.to.sin_port = cli->get_port() ;
+	inet_aton(LLAD_ADDR, &reply.to.sin_addr) ;
+	
+	reply.len = sizeof(lla_msg_dmx_data) ;
+	reply.data.dmx.op = LLA_MSG_DMX_DATA ;
+	
+	memcpy(reply.data.dmx.data, m_data, m_length) ;
+	reply.data.dmx.len = m_length ;
+	reply.data.dmx.uni = get_uid() ;
+
+	Logger::instance()->log(Logger::DEBUG, "Sending dmx data msg to client %d", reply.to.sin_port );
+	c_net->send_msg(&reply);
+}
+
+
+
 // Class Methods
 //-----------------------------------------------------------------------------
 
-/*
- * We should probably use a hash here if the number of universes get large
- * 
- */
 
 /*
- * lookup a universe from it's address, creates one if it does not exist
- *
+ * Lookup a universe from it's address, creates one if it does not exist
  *
  */
 Universe *Universe::get_universe(int uid) {
 	int i ;
+	map<int , Universe *>::iterator iter;
 
-	for(i=0; i < uni_vect.size() ; i++) {
-		if(uni_vect[i]->get_uid() == uid) 
-			return uni_vect[i] ;
-	}
-
+	iter = uni_map.find(uid);
+	if (iter != uni_map.end()) {
+	   return iter->second ;
+   	}
+	
 	return NULL ;
 }
 
 /*
+ * Lookup a universe, or create it if it does not exist
  *
- *
- *
+ * @param uid	the universe id
+ * @return	the universe, or NULL on error
  */
 Universe *Universe::get_universe_or_create(int uid) {
 	int i ;
@@ -233,32 +334,71 @@ Universe *Universe::get_universe_or_create(int uid) {
 
 	if(uni == NULL) {
 		uni = new Universe(uid) ;
-		uni_vect.push_back(uni) ;
+		pair<int , Universe*> p (uid, uni) ;
+		uni_map.insert(p) ;
 	}
 
 	// this could still be NULL
 	return uni ;
 }
 
+
+/*
+ * delete all universes
+ *
+ */
 int Universe::clean_up() {
-	for(int i=0; i < uni_vect.size() ; i++) {
-		delete uni_vect[i] ;
+	map<int, Universe*>::iterator iter;
+	
+	//unload all plugins
+	for(iter = uni_map.begin(); iter != uni_map.end(); ) {
+		// increment the iter here
+		// the universe will remove itself from the map
+		// and invalidate the iter
+		delete (*iter++).second ;
 	}
+
+	uni_map.clear() ;
 }
 
 
 /*
- * returns the number of universes
+ * returns the number of universes active
  */
 int Universe::universe_count() {
 
-	return uni_vect.size() ;
+	return uni_map.size() ;
 }
+
 
 /*
- * returns the number of universes
+ * returns a list of universes
+ * 
+ * this must be freed when you're done with it
+ *
  */
-Universe *Universe::get_universe_at_pos(int index) {
-	return uni_vect[index] ;
+int Universe::get_list(Universe ***head) {
+	int i, numb = Universe::universe_count() ;
+	Universe **ptr ;
+	map<int ,Universe*>::iterator iter;
+	
+	*head = (Universe**) malloc(sizeof(Universe *) * numb) ;
+	
+	if(*head == NULL) {
+		Logger::instance()->log(Logger::WARN, "malloc failed\n") ;
+		return 0 ;
+	}
+	
+	ptr = *head ;
+	// populate list
+	for(iter = uni_map.begin(); iter != uni_map.end(); iter++) {
+		*ptr = (*iter).second ;
+		ptr++ ;
+	}
+	return numb;
 }
 
+
+int Universe::set_net(Network *net) {
+	c_net = net ;
+}

@@ -48,7 +48,7 @@ int DummyPort::write(uint8_t *data, int length) {
 	memcpy(m_dmx, data, len) ;
 	m_length = len ;
 
-	printf("Dummy port: got %d bytes: 0x%hhx 0x%hhx\n", length, data[0], data[1] ) ;
+	printf("Dummy port: got %d bytes: 0x%hhx 0x%hhx 0x%hhx 0x%hhx \n", length, data[0], data[1], data[42], data[43] ) ;
 
 	return 0;
 }

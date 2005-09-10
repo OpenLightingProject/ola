@@ -49,6 +49,7 @@ extern "C" void destroy(Plugin* plug) {
  * TODO: allow multiple devices on different IPs ?
  */
 int ArtNetPlugin::start() {
+	int sd ;
 	
 	if(m_enabled)
 		return -1 ;
@@ -59,11 +60,17 @@ int ArtNetPlugin::start() {
 	if(m_dev == NULL) 
 		return -1  ;
 
-	m_dev->start() ;
+	if(m_dev->start()) {
+		delete m_dev ;
+		return -1 ;
+	}
 
-	// register our descriptors
-	m_pa->register_fd( m_dev->get_sd(0), PluginAdaptor::READ, m_dev)  ;
-	m_pa->register_fd( m_dev->get_sd(1), PluginAdaptor::READ, m_dev)  ;
+	// register our descriptors, this should really be fatal for this plugin if it fails
+	if ((sd = m_dev->get_sd(0)) >= 0)
+		m_pa->register_fd( sd, PluginAdaptor::READ, m_dev) ;
+	
+	if ((sd = m_dev->get_sd(1)) >= 0)
+		m_pa->register_fd( sd, PluginAdaptor::READ, m_dev)  ;
 
 	m_pa->register_device(m_dev) ;
 
@@ -102,7 +109,13 @@ char *ArtNetPlugin::get_desc() {
 "ArtNet Plugin\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with four input and four output ports. "
+"This plugin creates a single device with four input and four output ports. "
 "Currently this plugin binds to the first non-loopback IP. This should "
-"be made configurable in the future...\n" ;
+"be made configurable in the future...\n"
+"\n"
+"Art-Net has the concept of 'ports' on a device. Each device can support a maximum "
+"of 4 ports in each direction and each port is assigned a universe address in "
+"the range 0-255. When sending data from a (lla) port, the data is addressed to the "
+"universe the (lla) port is patched to. For example if (lla) port 0 is patched "
+"to universe 10, the data will be sent to Art-Net universe 10.";
 }

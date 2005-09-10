@@ -15,14 +15,14 @@
  *
  *
  * common.h
- * Constants for the esp plugin
+ * Constants for the shownet plugin
  * Copyright (C) 2005  Simon Newton
  */
 
 #ifndef COMMON_H
 #define COMMON_H
 
-// stick to 5 ports per direction per device for now
-#define PORTS_PER_DEVICE	5
+// this should be set to SHOWNET_MAX_UNIVERSES
+#define PORTS_PER_DEVICE	8
 
 #endif

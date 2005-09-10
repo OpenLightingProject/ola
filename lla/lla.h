@@ -26,6 +26,7 @@
 #define	LLA_PORT_ACTION_PATCH 0x01
 #define	LLA_PORT_ACTION_UNPATCH 0x00
 
+
 typedef void * lla_con ;
 
 struct lla_plugin_s {
@@ -40,6 +41,7 @@ typedef struct lla_plugin_s lla_plugin ;
 
 struct lla_universe_s {
 	int id;			// id of this universe
+	char *name;
 	struct lla_universe_s *next;	// pointer to next plugins
 };
 
@@ -72,20 +74,21 @@ extern int lla_get_sd(lla_con c) ;
 extern int lla_sd_action(lla_con c, int delay) ;
 
 
-extern int lla_set_dmx_handler(lla_con c, int (*fh)(lla_con c, int uni, void *d), void *data ) ;
+extern int lla_set_dmx_handler(lla_con c, int (*fh)(lla_con c, int uni, int length, uint8_t *data, void *d), void *data ) ;
 // extern int lla_set_rdm_handler(lla_con c, int (*fh)(lla_con c, int uni, void *d), void *data ) ;
 extern int lla_reg_uni(lla_con c, int uni, int action) ;
 
+extern int lla_set_name(lla_con c, int uni, char *name) ;
 
 extern int lla_send_dmx(lla_con c, int universe, uint8_t *data, int length) ;
-extern int lla_read_dmx(lla_con c, int universe, uint8_t *data, int length) ;
+extern int lla_read_dmx(lla_con c, int universe) ;
 
 //read/write rdm ?
 
 
 extern lla_device *lla_req_dev_info(lla_con c) ;
 extern lla_plugin *lla_req_plugin_info(lla_con c) ;
-extern lla_universe *lla_req_universe_info(lla_con c) ;
+extern int lla_req_universe_info(lla_con c, lla_universe **head) ;
 
 extern char *lla_req_plugin_desc(lla_con c, int pid) ;
 

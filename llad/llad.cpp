@@ -19,6 +19,7 @@
  */
 
 #include "llad.h" 
+#include "client.h"
 
 #include <lla/universe.h>
 #include <lla/logger.h>
@@ -38,6 +39,8 @@ Llad::Llad() {
 	net = new Network() ;
 	pa = new PluginAdaptor(dm,net) ;
 	pm = new PluginLoader(pa) ;
+
+	Universe::set_net(net) ;
 }
 
 /*
@@ -53,6 +56,7 @@ Llad::~Llad() {
 
 	// delete all universes
 	Universe::clean_up() ;
+	Client::clean_up() ;
 
 	delete net;
 	delete pa;
@@ -77,15 +81,14 @@ int Llad::init() {
 		plug = pm->get_plugin(i) ;
 
 		if (plug->start())
-			Logger::instance()->log(Logger::WARN, "Failed to start %s plugin\n", plug->get_name()) ;
+			Logger::instance()->log(Logger::WARN, "Failed to start %s", plug->get_name()) ;
 		else
-			Logger::instance()->log(Logger::INFO, "%s plugin enabled", plug->get_name()) ;
+			Logger::instance()->log(Logger::INFO, "Started %s", plug->get_name()) ;
 	}
 
 	// init the network socket
-	net->init() ;
+	return net->init() ;
 
-	return 0;
 }
 
 
@@ -96,21 +99,12 @@ int Llad::init() {
 int Llad::run() {
 	lla_msg msg ;
 	int ret ;
-	Device *dev = dm->get_dev(0) ;
-	Port *prt = dev->get_port(0) ;
-	Universe *uni = Universe::get_universe_or_create(1) ;
-
-	uni->add_port(prt) ;
-	
 	
 	Logger::instance()->log(Logger::DEBUG, "Size of lla_msg_plugin_info is %d",  sizeof(lla_msg_plugin_info)) ;
 	Logger::instance()->log(Logger::DEBUG, "Size of lla_msg_device_info is %d",  sizeof(lla_msg_device_info)) ;
 	Logger::instance()->log(Logger::DEBUG, "Size of lla_msg_port_info is %d",  sizeof(lla_msg_port_info)) ;
+	Logger::instance()->log(Logger::DEBUG, "Size of lla_msg_uni_info is %d",  sizeof(lla_msg_uni_info)) ;
 	
-	dev = dm->get_dev(3) ;
-	prt = dev->get_port(0) ;
-	uni->add_port(prt) ;
-
 	while(!term) {
 		ret = net->read(&msg) ;
 
@@ -145,13 +139,31 @@ void Llad::terminate() {
  */
 int Llad::handle_syn(lla_msg *msg) {
 	lla_msg reply ;
-
+	Client *cli ;
+	
 	reply.data.sack.op = LLA_MSG_SYN_ACK ;
 
 	reply.to = msg->from ;
 	reply.len = sizeof(reply.data.sack);
 	
-	Logger::instance()->log(Logger::DEBUG, "Got SYN, sending SYN ACK");
+		Logger::instance()->log(Logger::DEBUG, "locating client %d", msg->from.sin_port);
+
+	cli = Client::get_client(msg->from.sin_port) ;
+
+	if (cli) {
+		// the client already exists
+		Logger::instance()->log(Logger::WARN, "Got SYN, but client already exists!");
+		delete cli ;
+	}
+	
+	cli = Client::get_client_or_create(msg->from.sin_port) ;
+
+	if(! cli) {
+		Logger::instance()->log(Logger::WARN, "Failed to create new client");
+		return 0 ;
+	}
+		
+	Logger::instance()->log(Logger::DEBUG, "Got SYN, created client, sending SYN ACK");
 	net->send_msg(&reply);
 	
 	return 0;
@@ -159,12 +171,35 @@ int Llad::handle_syn(lla_msg *msg) {
 
 
 /*
- * handle a fin
+ * handle a fin (client disconnect)
  *
  * we send a fin/ack to the client
  */
 int Llad::handle_fin(lla_msg *msg) {
 	lla_msg reply ;
+	Client *cli ;
+	Universe **head, **ptr ;
+	int nunis, i ;
+
+	cli = Client::get_client_or_create(msg->from.sin_port) ;
+
+	if(cli != NULL) {
+		Logger::instance()->log(Logger::DEBUG, "Got FIN, deleting client");		
+			
+		// remove from all unvierses
+		// uni points to the first member
+		nunis = Universe::get_list(&head) ;
+		ptr = head ;
+
+		for(i=0; i < nunis ; i++) {
+			(*ptr)->remove_client(cli) ;
+			ptr++ ;
+		}
+	
+		free(head) ;
+		Logger::instance()->log(Logger::DEBUG, "Got FIN, deleting client");		
+		delete cli ;
+	}
 
 	reply.data.fack.op = LLA_MSG_FIN_ACK ;
 
@@ -183,25 +218,20 @@ int Llad::handle_fin(lla_msg *msg) {
  *
  *
  */
-/*int Llad::handle_read_request(ReadMsg *msg) {
-	DmxMsg reply = new DmxMsg() ;
-	int uid = msg->get_uid() ;
-	Universe *uni = Universe::get_universe(uid) ;
+int Llad::handle_read_request(lla_msg *msg) {
+		
+	Universe *uni = Universe::get_universe(msg->data.rreq.uni) ;
 
 	if(uni) {
-		reply->set_to(msg->get_from) ;
-		reply->set_uid(uid) ;
+
+		return send_dmx(uni, msg->from) ;
 		
-		reply->data.dmx.len = 512 ;
-		uni->get_dmx(reply.data.dmx.data, 512) ;
-		
-		return reply->send(net) ;
-	} else {
-		printf("request for a universe not in use %d\n" , msg->get_uid()) ;
-	}
+	} else 
+		Logger::instance()->log(Logger::DEBUG, "Request for a universe not in use updating universe %d", msg->data.rreq.uni );
+
 	return 0;
 }
-*/
+
 
 /*
  * handle a dmx datagram
@@ -227,38 +257,55 @@ int Llad::handle_dmx_data (lla_msg *msg) {
  *
  *
  */
-/*
-int Llad::handle_register (Msg *msg) {
-
+int Llad::handle_register(lla_msg *msg) {
 
 	int uid = msg->data.reg.uni ; 
- 	Client *cli = Client::get_from_addr(msg->from) ;
+	
+ 	Client *cli = Client::get_client_or_create(msg->from.sin_port) ;
+	Universe *uni = Universe::get_universe(msg->data.reg.uni) ;
 
-	Universe *uni = Universe::get_universe(uid) ;
-
+	// if universe does not exist, ignore
+	if(uni == NULL)
+		return 0 ;
+	
 	// check if uni exists here, if not create it
-
-	if(cli == NULL) {
-		cli = new Client(msg->from) ;
-
-		if(cli == NULL) 
-			return -1 ;
+	if(!cli) {
+		Logger::instance()->log(Logger::WARN, "Failed to create new client");
+		return 0 ;
 	}
 	
-	if add
+	if (msg->data.reg.action == LLA_MSG_REG_REG)
 		uni->add_client(cli) ;
-	else remove
+	else
 		uni->remove_client(cli) ;
 
 	return 0;
 }
-*/
+
+
+/*
+ * Handle a universe name message
+ *
+ */
+int Llad::handle_uni_name (lla_msg *msg) {
+	Universe *uni ;
+	int uid = msg->data.uniname.uni ;
+
+	Logger::instance()->log(Logger::DEBUG, "Setting name for universe %d to %s", msg->data.uniname.uni, msg->data.uniname.name ) ;
+
+	uni = Universe::get_universe(uid) ;
+
+	if(uni != NULL) {
+		uni->set_name(msg->data.uniname.name) ;
+	}
+	return 0 ;
+
+}
 
 /*
  * Handle a patch request
  *
  */
-
 int Llad::handle_patch (lla_msg *msg) {
 	Device  *dev ;
 	Port *prt ;
@@ -268,18 +315,18 @@ int Llad::handle_patch (lla_msg *msg) {
 	dev = dm->get_dev(msg->data.patch.dev ) ;
 
 	if(dev == NULL) {
-		Logger::instance()->log(Logger::WARN, "Device index out of bounds %d\n", msg->data.patch.dev ) ;
+		Logger::instance()->log(Logger::WARN, "Device index out of bounds %d", msg->data.patch.dev ) ;
 		return 0;
 	}
 
 	prt = dev->get_port(msg->data.patch.port) ;
 
 	if(prt == NULL) {
-		Logger::instance()->log(Logger::WARN, "Port index out of bounds %d\n", msg->data.patch.port ) ;
+		Logger::instance()->log(Logger::WARN, "Port index out of bounds %d", msg->data.patch.port ) ;
 		return 0;
 	}
 
-	Logger::instance()->log(Logger::WARN, "Patch request for %d:%d to %d act %d\n", msg->data.patch.dev, msg->data.patch.port, msg->data.patch.uni, msg->data.patch.action   ) ;
+	Logger::instance()->log(Logger::DEBUG, "Patch request for %d:%d to %d act %d", msg->data.patch.dev, msg->data.patch.port, msg->data.patch.uni, msg->data.patch.action   ) ;
 	
 	// patch request
 	if (msg->data.patch.action == LLA_MSG_PATCH_ADD) {
@@ -296,13 +343,13 @@ int Llad::handle_patch (lla_msg *msg) {
 		return unpatch_port(prt) ;		
 		
 	} else {
-		printf("undefined action in patch datagram 0x%hhx\n", msg->data.patch.action ) ;
+		Logger::instance()->log(Logger::WARN, "Undefined action in patch datagram 0x%hhx", msg->data.patch.action ) ;
 	}
 
 	return 0 ;
 	
 e_param:
-	printf("patch msg: (unknown dev or port)\n") ;
+	Logger::instance()->log(Logger::WARN, "Patch msg: (unknown dev or port)\n") ;
 	return 0 ;
 }
 
@@ -393,11 +440,14 @@ int Llad::handle_msg(lla_msg *msg) {
 			handle_dmx_data(msg);
 			break;
 		case LLA_MSG_REGISTER :
-	//		handle_register(msg);
+			handle_register(msg);
 			break ;
 
 		case LLA_MSG_PATCH :
 			handle_patch(msg) ;
+			break ;
+		case LLA_MSG_UNI_NAME :
+			handle_uni_name(msg) ;
 			break ;
 
 		case LLA_MSG_PLUGIN_INFO_REQUEST:
@@ -451,7 +501,6 @@ int Llad::send_plugin_info(struct sockaddr_in dst) {
 	// if oneday people need to use more than 30 plugins !!!, we can change it
 	nplugins = nplugins > PLUGINS_PER_DATAGRAM ? PLUGINS_PER_DATAGRAM : nplugins ;
 
-	printf("sending info reply\n") ;
 	memset(&reply, 0x00, sizeof(reply) );
 	reply.to = dst ;
 	reply.len = sizeof(lla_msg_plugin_info) ;
@@ -471,8 +520,8 @@ int Llad::send_plugin_info(struct sockaddr_in dst) {
 				
 		}
 	}
+	Logger::instance()->log(Logger::DEBUG, "Got plugin req, sending reply");
 	
-	printf("sending...\n") ;
 	net->send_msg(&reply);
 	return 0;
 
@@ -496,7 +545,6 @@ int Llad::send_device_info(struct sockaddr_in dst) {
 	// if oneday people need to use more than 30 devices !!!, we can change it
 	ndevs = ndevs > DEVICES_PER_DATAGRAM ? DEVICES_PER_DATAGRAM : ndevs ;
 
-	printf("sending dev info reply\n") ;
 	memset(&reply, 0x00, sizeof(reply) );
 	reply.to = dst ;
 	reply.len = sizeof(lla_msg_device_info) ;
@@ -517,8 +565,8 @@ int Llad::send_device_info(struct sockaddr_in dst) {
 				
 		}
 	}
+	Logger::instance()->log(Logger::DEBUG, "Got device req, sending reply");
 	
-	printf("sending...\n") ;
 	net->send_msg(&reply);
 	return 0;
 
@@ -542,7 +590,6 @@ int Llad::send_port_info(struct sockaddr_in dst, Device *dev, int devid) {
 	// if oneday people need to use more than 60 ports (insane?) !!!, we can change it
 	nprts = nprts > PORTS_PER_DATAGRAM ? PORTS_PER_DATAGRAM : nprts ;
 
-	printf("sending port info reply\n") ;
 	memset(&reply, 0x00, sizeof(reply) );
 	reply.to = dst ;
 	reply.len = sizeof(lla_msg_port_info) ;
@@ -562,7 +609,6 @@ int Llad::send_port_info(struct sockaddr_in dst, Device *dev, int devid) {
 			reply.data.prinfo.ports[i].cap = (prt->can_read()?LLA_MSG_PORT_CAP_IN:0) |
 												(prt->can_write()?LLA_MSG_PORT_CAP_OUT:0) ;
 
-			printf("id %d, cap %hx\n", i, reply.data.prinfo.ports[i].cap ) ;
 			if( (uni = prt->get_universe() ) ) {
 				reply.data.prinfo.ports[i].uni = uni->get_uid();
 				reply.data.prinfo.ports[i].actv = 1;
@@ -573,8 +619,8 @@ int Llad::send_port_info(struct sockaddr_in dst, Device *dev, int devid) {
 			}
 		}
 	}
+	Logger::instance()->log(Logger::DEBUG, "Got port req, sending reply");
 	
-	printf("sending...\n") ;
 	net->send_msg(&reply);
 	return 0;
 
@@ -599,11 +645,11 @@ int Llad::send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) {
 	reply.to = dst ;
 	reply.len = sizeof(lla_msg_plugin_info) ;
 	
-	printf("pid is %d\n", pid) ;
 	reply.data.pldesc.op = LLA_MSG_PLUGIN_DESC ;
 	reply.data.pldesc.pid = pid ;
 	strncpy(reply.data.pldesc.desc , plug->get_desc()  , PLUGIN_DESC_LENGTH) ;
-
+	
+	Logger::instance()->log(Logger::DEBUG, "Got plugin desc req, sending reply");
 	net->send_msg(&reply);
 	return 0;
 
@@ -617,19 +663,21 @@ int Llad::send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) {
  *
  */
 int Llad::send_universe_info(struct sockaddr_in dst) {
-	Universe *uni ;
+	Universe **head, **ptr ;
 	
 	lla_msg reply ;
 	int i ;
-	int nunis = Universe::universe_count();
+	int nunis ;
 	
+	// uni points to the first member
+	nunis = Universe::get_list(&head) ;
+
 	// for now we don't worry about sending multiple datagrams
-	// if oneday people need to use more than 512 plugins !!!, we can change it
+	// if oneday people need to use more than 512 universes !!!, we can change it
 	// FIX: introducing a universe comment will drop the limit and
 	// we'll need to send more than one datagram
 	nunis = nunis > UNIVERSES_PER_DATAGRAM ? UNIVERSES_PER_DATAGRAM : nunis ;
 
-	printf("sending uni info reply\n") ;
 	memset(&reply, 0x00, sizeof(reply) );
 	reply.to = dst ;
 	reply.len = sizeof(lla_msg_uni_info) ;
@@ -639,23 +687,33 @@ int Llad::send_universe_info(struct sockaddr_in dst) {
 	reply.data.uniinfo.offset = 0 ;
 	reply.data.uniinfo.count = nunis ;
 	
-	// FIX : damnit all these loops need fixing, if the object is null we incorrectly 
-	// increment
+	ptr = head ;
 	for(i=0; i < nunis ; i++) {
-		uni = Universe::get_universe_at_pos(i) ;
+		reply.data.uniinfo.universes[i].id = (*ptr)->get_uid() ;
 
-		if(uni != NULL) {
-			reply.data.uniinfo.universes[i].id = uni->get_uid() ;
-		}
+		if( (*ptr)->get_name() != NULL ) 
+			strncpy(reply.data.uniinfo.universes[i].name, (*ptr)->get_name(), UNIVERSE_NAME_LENGTH) ;
+		
+		ptr++;
 	}
 	
-	printf("sending...\n") ;
+	free(head) ;
+	Logger::instance()->log(Logger::DEBUG, "Got universe req, sending reply");
 	net->send_msg(&reply);
 	return 0;
 
 }
 
+/*
+ * Send a dmx msg to a client
+ *
+ * @param universe
+ * @param dst	client to send to
+ */
+int Llad::send_dmx(Universe *uni, struct sockaddr_in dst) {
 
+
+}
 
 /*
  * Unpatch a port
@@ -674,8 +732,11 @@ int Llad::unpatch_port(Port *prt) {
 	uni->remove_port(prt) ;
 
 	// if there are no ports left we can destroy this universe
-	if(uni->get_num_ports() == 0) {
+	if( ! uni->in_use() ) {
 		delete uni ;
 	}
+
 	return 0;
 }
+
+

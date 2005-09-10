@@ -33,6 +33,7 @@
 #include "artnetdevice.h"
 #include "artnetport.h"
 
+#include <lla/logger.h>
 #include <artnet/artnet.h>
 
 /*
@@ -110,33 +111,56 @@ int ArtNetDevice::start() {
     m_node = artnet_new("2.0.0.3", 1) ;
 
 	if(!m_node) {
-		// need a good way to return here
-		printf("ArtNetPlugin: call to artnet_new failed\n") ;
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_new failed %s", artnet_strerror() ) ;
 		return -1 ;
 	}
 
 	// node config
 	// should be checking for errors here...
-	artnet_set_short_name(m_node, "short") ;
-	artnet_set_long_name(m_node, "long") ;
-	artnet_set_node_type(m_node, ARTNET_SRV) ;
-	artnet_set_subnet_addr(m_node, 0x00) ;
+	if(artnet_set_short_name(m_node, "short") ) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_short_name failed: %s", artnet_strerror()) ;
+		goto e_artnet_start ;
+	}
+	
+	if (artnet_set_long_name(m_node, "long") ) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_long_name failed: %s", artnet_strerror()) ;
+		goto e_artnet_start ;
+	}
+	
+	if(artnet_set_node_type(m_node, ARTNET_SRV)) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_node_type failed: %s", artnet_strerror()) ;
+		goto e_artnet_start ;
+	}
+	
+	if(artnet_set_subnet_addr(m_node, 0x00) ) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_subnet_addr failed: %s", artnet_strerror()) ;
+		goto e_artnet_start ;
+	}
 
 	// we want to be notified when the node config changes
-	artnet_set_program_handler(m_node, ::program_handler, (void*) this) ; 
-	artnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ; 
-
-	if(artnet_start(m_node) != 0)
+	if(artnet_set_program_handler(m_node, ::program_handler, (void*) this) ) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_program_handler failed: %s", artnet_strerror()) ;
 		goto e_artnet_start ;
+	}
 	
+	if(artnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_dmx_handler failed: %s", artnet_strerror()) ;
+		goto e_artnet_start ;
+	}
+
+	if(artnet_start(m_node) ) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_start failed: %s", artnet_strerror()) ;
+		goto e_artnet_start ;
+	}
 	m_enabled = true ;
 
 	return 0;
 
 e_artnet_start:
-	artnet_destroy(m_node) ;
+	if(artnet_destroy(m_node)) 
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_destroy failed: %s", artnet_strerror()) ;
+			
 e_dev:
-	printf("start failed\n") ;
 	return -1 ;
 }
 
@@ -157,11 +181,15 @@ int ArtNetDevice::stop() {
 			delete prt ;
 	}
 
-	if(artnet_stop(m_node))
+	if(artnet_stop(m_node)) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_stop failed: %s", artnet_strerror()) ;
 		return -1 ;
+	}
 	
-	if(artnet_destroy(m_node)) 
+	if(artnet_destroy(m_node)) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_destroy failed: %s", artnet_strerror()) ;			
 		return -1 ;
+	}
 
 	m_enabled = false ;
 
@@ -183,8 +211,16 @@ artnet_node ArtNetDevice::get_node() const {
  *
  */
 int ArtNetDevice::get_sd(int id) const {
+	int ret ;
 	id = id?1:0 ;
-	return artnet_get_sd(m_node,id) ;
+	
+	ret = artnet_get_sd(m_node,id) ;
+
+	if(ret < 0) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_get_sd failed: %s", artnet_strerror()) ;
+		return -1 ;
+	}
+	return ret;
 }
 
 /*
@@ -193,7 +229,11 @@ int ArtNetDevice::get_sd(int id) const {
  * @param	data	user data (pointer to artnet_device_priv
  */
 int ArtNetDevice::fd_action() {
-	return artnet_read(m_node, 0) ;
+	if( artnet_read(m_node, 0) ) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_read failed: %s", artnet_strerror()) ;
+		return -1 ;
+	}
+	return 0;
 }
 
 
@@ -221,15 +261,3 @@ int ArtNetDevice::configure(void *req, int len) {
 
 	return 0;
 }
-
-
-
-
-
-// Private functions
-//-----------------------------------------------------------------------------
-
-
-
-
-
