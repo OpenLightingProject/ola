@@ -29,7 +29,6 @@ class Client {
 
 	public :
 		~Client() ;
-
 		int get_port() ;
 
 		static Client *get_client(int port) ;

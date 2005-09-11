@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * device.cpp
- * The provides operations on a lla_device.
- * Copyright (C) 2005  Simon Newton
+ * Base implementation of the device class.
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <lla/device.h>
@@ -26,28 +26,30 @@
 
 
 /*
- * Allocate memory for a device. More ports can be added later if required
+ * Create a new device
  *
- * @param	ports	the number of ports to allocate
- * @return	0 on sucess, -1 on failure
- *
- * this should rather return the number of ports allocated
+ * @param	owner	the plugin that owns this device
+ * @param	name	a nice name for this device
+ * 
  */
 Device::Device(Plugin *owner, const char *name) {
 	int i;
 	m_name = strdup(name) ;
-	m_owner = owner ;
-	
+	m_owner = owner ;	
 }
 
-
+/*
+ * Destroy this device
+ */
 Device::~Device() {
 	free(m_name) ;
 }
 
+
 /*
- * Return the owner of this device
+ * Return the plugin owner of this device
  *
+ * @return	the plugin that owns this device
  */
 inline Plugin *Device::get_owner() const {
 	return m_owner ;
@@ -55,9 +57,10 @@ inline Plugin *Device::get_owner() const {
 
 
 /*
- * get a port on the device
+ * Get a port on the device
  *
- *
+ * @param pid	the id of the port to fetch
+ * @return the port if it exists, or NULL on error
  *
  */
 Port *Device::get_port(int pid) const {
@@ -65,9 +68,9 @@ Port *Device::get_port(int pid) const {
 }
 
 /*
- * get the number of ports on the device
+ * Get the number of ports on the device
  *
- *
+ * @return the number of ports in this device
  */
 inline int Device::port_count() const {
 	return m_ports_vect.size() ;
@@ -75,14 +78,21 @@ inline int Device::port_count() const {
 
 
 /*
- * add a port
+ * Add a port to this device
  *
+ * @param prt	the port to add
+ * @return 0 on success, non 0 on failure
  */
 int Device::add_port(Port *prt) {
 	m_ports_vect.push_back(prt) ;
 	return 0;
 }
 
+/*
+ * get the name of this device
+ *
+ * @return the name of the device
+ */
 char *Device::get_name() const {
 	return m_name ;
 }

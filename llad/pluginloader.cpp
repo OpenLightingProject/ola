@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * pluginloader.cpp
- * The provides operations on a lla_device.
+ * This class is responsible for loading and unloading the plugins
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -34,9 +34,9 @@
 #define SHARED_LIB_EXT ".so"
 
 /*
+ * Create a new plugin loader
  *
- *
- *
+ * @param pa	pointer to a pluginAdaptor object
  */
 PluginLoader::PluginLoader(PluginAdaptor *pa) {
 	this->pa = pa ;
@@ -44,15 +44,16 @@ PluginLoader::PluginLoader(PluginAdaptor *pa) {
 
 
 /*
- * Disable all plugins
+ * Destroy this object, this will disable and unload all plugins
  *
  */
 PluginLoader::~PluginLoader() {
-	int i, retval = 0;
+	int i;
 	map<void*,Plugin*>::iterator iter;
 	
 	for(i=0; i < m_plugin_vect.size() ; i++) {
-		retval |= m_plugin_vect[i]->stop() ;
+		// FIX: this better not fail ...
+		m_plugin_vect[i]->stop() ;
 	}
 
 	//unload all plugins
@@ -62,7 +63,6 @@ PluginLoader::~PluginLoader() {
 
 	m_plugin_map.clear() ;
 }
-
 
 
 /*
@@ -115,8 +115,9 @@ int PluginLoader::load_plugins(char *dirname) {
 
 
 /*
- * return the number of plugins loaded
+ * Return the number of plugins loaded
  *
+ * @return the number of plugins loaded
  */
 int PluginLoader::plugin_count() {
 	return m_plugin_vect.size() ;
@@ -124,13 +125,14 @@ int PluginLoader::plugin_count() {
 
 
 /*
+ * Return the plugin with the specified id
  *
- *
+ * @param id 	the id of the plugin to fetch
+ * @return	the plugin with the specified id
  */
 Plugin *PluginLoader::get_plugin(int id) {
 	return m_plugin_vect[id] ;
 }
-
 
 
 // Private Functions
@@ -180,7 +182,8 @@ Plugin *PluginLoader::load_plugin(char *path) {
 /*
  * Unload the plugin
  *
- *
+ * @param handle	the handle of the plugin to unload
+ * @return	0 on success, non 0 on failure
  */
 int PluginLoader::unload_plugin(void *handle) {
 	destroy_t *destroy ;
@@ -190,14 +193,12 @@ int PluginLoader::unload_plugin(void *handle) {
 	destroy =  (destroy_t*) dlsym(handle, "destroy");
 
 	if(dlerror() != NULL) {
-		Logger::instance()->log(Logger::WARN, "Could not locate symbol") ;
+		Logger::instance()->log(Logger::WARN, "Could not locate destory symbol") ;
 		return -1;
 	}
 
 	destroy(m_plugin_map[handle]) ;
-	
 	dlclose(handle) ;
 
 	return 0 ;
-
 }

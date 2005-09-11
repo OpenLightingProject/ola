@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * llad.h
- * The provides operations on a lla_device.
+ * Interface for the llad class
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -47,10 +47,8 @@ class Llad {
 		int	handle_device_info_request(lla_msg *msg) ;
 		int	handle_port_info_request(lla_msg *msg) ;
 		int	handle_universe_info_request(lla_msg *msg) ;
-
 		int handle_patch(lla_msg *msg) ;
 		int handle_uni_name(lla_msg *msg) ;
-		
 		int handle_register(lla_msg *msg) ;
 		int handle_dmx_data(lla_msg *msg) ;
 //		int handle_read_request(Msg *msg) ;
@@ -61,8 +59,8 @@ class Llad {
 		int send_device_info(struct sockaddr_in dst) ;
 		int send_universe_info(struct sockaddr_in dst) ;
 		int send_port_info(struct sockaddr_in dst, Device *dev, int devid) ;
+
 		int unpatch_port(Port *prt) ;
-		int patch_port(Port *prt, Universe *uni) ;
 		
 		bool term ;
 		int sd ;

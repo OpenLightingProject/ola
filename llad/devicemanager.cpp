@@ -13,26 +13,25 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * devicemanagersingleton.cpp
- * The provides operations on a lla_device.
- * Copyright (C) 2005  Simon Newton
+ * devicemanager.cpp
+ * Implementation of the device manager, this object tracks what devices are in use
+ * Copyright (C) 2005 Simon Newton
  */
 
+#include <lla/logger.h>
 #include "devicemanager.h"
 
 #include <stdio.h>
-#include <lla/logger.h>
 
 /*
  * Create a new DeviceManager object
- *
  *
  */
 DeviceManager::DeviceManager() {}
 
 
 /*
- *
+ * Destroy this device manager object
  *
  */
 DeviceManager::~DeviceManager() {
@@ -42,9 +41,9 @@ DeviceManager::~DeviceManager() {
 
 
 /*
- * Register this device, called from plugins
+ * Register this device, called from the plugins
  * 
- * @param 	dev		pointer to the Device to register
+ * @param dev		pointer to the device to register
  * @return 0 on sucess, -1 on failure
  *
  */
@@ -52,18 +51,16 @@ int DeviceManager::register_device(Device *dev) {
 
 	m_dev_vect.push_back(dev);
 	
-	// installed ok
 	Logger::instance()->log(Logger::INFO, "Installed device") ;
-
 	return 0;
 }
 
 
 /*
- * Unregister this device, called from plugins
+ * Unregister this device, called from the plugins
  * 
- * @param 	dev		pointer to the Device to unregister
- * @return 0 on sucess, -1 on failure
+ * @param dev pointer to the Device to unregister
+ * @return 0 on sucess, non 0 on failure
  *
  */
 int DeviceManager::unregister_device(Device *dev) {
@@ -79,12 +76,22 @@ int DeviceManager::unregister_device(Device *dev) {
 	return 1;
 }
 
-
+/*
+ * return the number of devices registered
+ *
+ * @return the number of devices
+ */
 int DeviceManager::device_count() {
 	return m_dev_vect.size();
 }
 
-
+/*
+ * fetch the device at a particular position
+ *
+ * @param id	the index of the device to fetch
+ * @return	the device at position id, or NULL on error
+ *
+ */
 Device *DeviceManager::get_dev(int id) {
 
 	if(id < 0 || id >= m_dev_vect.size())
@@ -92,4 +99,3 @@ Device *DeviceManager::get_dev(int id) {
 	
 	return m_dev_vect[id] ;
 }
-

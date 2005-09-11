@@ -35,14 +35,13 @@ Network *Universe::c_net;
 /*
  * Create a new universe
  *
+ * @param uid	the universe id of this universe
  */
 Universe::Universe(int uid) {
 	int i;
 	
 	m_uid = uid ;
-	
 	m_name = NULL ;
-	// zero dmx buffer
 	memset(m_data, 0x00, DMX_LENGTH) ;
 	m_length = DMX_LENGTH ;
 
@@ -50,24 +49,30 @@ Universe::Universe(int uid) {
 
 
 /*
- * destory this universe
- * we remove ourself out the map
+ * Destroy this universe
+ * Removes this object from the universe map
  *
  */
 Universe::~Universe() {
+	free(m_name) ;
 	uni_map.erase(m_uid) ;
 }
 
+
 /*
- * GEt the name of this universe
+ * Get the name of this universe
  *
+ * @return the name of this universe
  */
 char *Universe::get_name() {
 	return m_name ;
 }
 
+
 /*
  * Set the name of this universe
+ *
+ * @param name	the name to give this universe
  */
 void Universe::set_name(char *name) {
 	free(m_name) ;
@@ -77,7 +82,7 @@ void Universe::set_name(char *name) {
 /*
  * Add a port to this universe
  *
- *
+ * @param prt	the port to add
  */
 int Universe::add_port(Port *prt) {
 	int i ;
@@ -91,12 +96,10 @@ int Universe::add_port(Port *prt) {
 		Logger::instance()->log(Logger::DEBUG, "Port %p is bound to universe %d", prt, uni->get_uid()) ;
 		uni->remove_port(prt) ;
 
-		// we need to check here and destroy this universe if that was the last port
-		// or do we? what if we had a client listening ?
+		// destroy this universe if it's no longer in use
 		if(! uni->in_use() ) {
 			delete uni ;
 		}
-		
 	}
 
 	// patch to this universe
@@ -108,13 +111,14 @@ int Universe::add_port(Port *prt) {
 	return 0;
 }
 
+
 /*
- * Remove a port from this universe
+ * Remove a port from this universe. After calling this method you need to
+ * check if this universe is still in use, and if not delete it
  *
- *
+ * @param prt the port to remove
  */
 int Universe::remove_port(Port *prt) {
-//	int i ;
 	vector<Port*>::iterator it;
 	
 	it = find(ports_vect.begin(),ports_vect.end(),prt); // first position
@@ -135,7 +139,8 @@ int Universe::remove_port(Port *prt) {
 
 /*
  * Returns the number of ports assigned to this universe
- *
+ * 
+ * @return	the number of ports in this universe
  */
 int Universe::get_num_ports() const {
 	return ports_vect.size() ;
@@ -161,7 +166,8 @@ int Universe::add_client(Client *cli) {
 
 
 /*
- * Remove this client from the universe
+ * Remove this client from the universe. After calling this method you need to
+ * check if this universe is still in use, and if not delete it
  *
  * @param cli	the client to remove
  */
@@ -172,7 +178,7 @@ int Universe::remove_client(Client *cli) {
 
 	if(it != clients_vect.end() ) {
 		clients_vect.erase(it) ;
-		Logger::instance()->log(Logger::DEBUG, "Client %p has been removed from uni %d", cli, get_uid()) ;
+		Logger::instance()->log(Logger::INFO, "Client %p has been removed from uni %d", cli, get_uid()) ;
 	} else {
 		Logger::instance()->log(Logger::WARN, "Could not find client in universe") ;
 		return -1 ;
@@ -185,7 +191,8 @@ int Universe::remove_client(Client *cli) {
 /*
  * Set the dmx data for this universe
  *
- *
+ * @param	dmx	pointer to the dmx data
+ * @param	len	the length of the dmx buffer
  */
 int Universe::set_dmx(uint8_t *dmx, int len) {
 	
@@ -199,7 +206,8 @@ int Universe::set_dmx(uint8_t *dmx, int len) {
 /*
  * Set the dmx data for this universe
  *
- *
+ * @param dmx		the buffer to copy data into
+ * @param length	the length of the buffer
  */
 int Universe::get_dmx(uint8_t *dmx, int length) {
 	int len ;
@@ -210,17 +218,20 @@ int Universe::get_dmx(uint8_t *dmx, int length) {
 	return len ;
 }
 
-
+/*
+ * Get the universe id for this universe
+ *
+ * @return the uid
+ */
 int Universe::get_uid() {
 	return m_uid ;
 }
 
 
-
 /*
- * Call when a port that is part of this universe changes
+ * Call this when the dmx in a port that is part of this universe changes
  *
- *
+ * @param prt 	the port that has changed
  */
 int Universe::port_data_changed(Port *prt) {
 	
@@ -242,7 +253,7 @@ int Universe::port_data_changed(Port *prt) {
  *
  */
 bool Universe::in_use() {
-	return  ports_vect.size()>0 ;
+	return  ports_vect.size()>0 && clients_vect.size()>0;
 }
 
 
@@ -252,7 +263,7 @@ bool Universe::in_use() {
 
 /*
  * Called when the dmx data for this universe changes,
- * updates everyone who needs to know (bound ports and network clients)
+ * updates everyone who needs to know (patched ports and network clients)
  *
  */
 int Universe::update_dependants() {
@@ -309,6 +320,7 @@ int Universe::send_dmx(Client *cli) {
 /*
  * Lookup a universe from it's address, creates one if it does not exist
  *
+ * @param uid	the uid of the required universe
  */
 Universe *Universe::get_universe(int uid) {
 	int i ;
@@ -363,7 +375,9 @@ int Universe::clean_up() {
 
 
 /*
- * returns the number of universes active
+ * Returns the number of universes active
+ *
+ * @return 	the number of active universes
  */
 int Universe::universe_count() {
 
@@ -372,10 +386,11 @@ int Universe::universe_count() {
 
 
 /*
- * returns a list of universes
- * 
- * this must be freed when you're done with it
+ * Returns a list of universes. This must be freed when you're
+ * done with it.
  *
+ * @param address of a pointer to set to the start of the list
+ * @return	the number of entries in the list
  */
 int Universe::get_list(Universe ***head) {
 	int i, numb = Universe::universe_count() ;
@@ -398,7 +413,9 @@ int Universe::get_list(Universe ***head) {
 	return numb;
 }
 
-
+/*
+ * Set the network connection this class can use to send msgs
+ */
 int Universe::set_net(Network *net) {
 	c_net = net ;
 }

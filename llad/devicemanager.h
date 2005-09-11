@@ -13,17 +13,17 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * llad.cpp
- * The provides operations on a lla_device.
- * Copyright (C) 2005  Simon Newton
+ * devicemanager.h
+ * Interface to the devicemanager class
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef DEVICEMANAGER_H
 #define DEVICEMANAGER_H
 
-#include <vector>
-
 #include <lla/device.h> 
+
+#include <vector>
 
 using namespace std;
 
@@ -41,7 +41,7 @@ class DeviceManager {
 	protected:
 
 	private:
-		vector<Device*> m_dev_vect ;
+		vector<Device*> m_dev_vect ;		// list of the devices
 } ;
 
 #endif

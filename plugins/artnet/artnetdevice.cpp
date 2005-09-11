@@ -108,7 +108,7 @@ int ArtNetDevice::start() {
 	}
 
 	// create new artnet node, and set config values
-    m_node = artnet_new("2.0.0.3", 1) ;
+    m_node = artnet_new(NULL, 1) ;
 
 	if(!m_node) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_new failed %s", artnet_strerror() ) ;

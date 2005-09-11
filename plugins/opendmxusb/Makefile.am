@@ -6,5 +6,7 @@ INCLUDES = -I$(top_builddir) -I$(top_srcdir)
 AM_CFLAGS = -Wall -Werror -Wformat -W
 
 
-libllaopendmx_la_SOURCES =  opendmxplugin.cpp opendmxdevice.cpp opendmxport.cpp opendmxthread.cpp
+libllaopendmx_la_SOURCES =  opendmxplugin.cpp opendmxplugin.h opendmxdevice.cpp\
+							opendmxdevice.h opendmxport.cpp opendmxport.h \
+							opendmxthread.cpp opendmxthread.h
 libllaopendmx_la_LIBADD = @LIBS@  -lpthread

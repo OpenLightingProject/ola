@@ -13,8 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * networksingleton.cpp
- * The provides operations on a lla_device.
+ * network.cpp
+ * Implementation of the Network class
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -32,11 +32,8 @@
 #include <stdlib.h>
 
 
-
 /*
  * Create a new Network object
- *
- *
  */
 Network::Network() {
 	m_sd = 0;
@@ -65,7 +62,7 @@ Network::~Network() {
 
 
 /*
- * initialise this network object
+ * Initialise this network object
  *
  *
  */

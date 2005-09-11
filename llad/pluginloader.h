@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * pluginloader.h
- * The provides operations on a lla_device.
+ * Interface for the pluginloader class
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -25,16 +25,13 @@
 #include <vector>
 
 #include <lla/plugin.h>
-#include <lla/pluginadaptor.h>
 
 using namespace std;
-
-class DeviceManager ;
 
 class PluginLoader {
 
 	public:
-		PluginLoader(PluginAdaptor *pa) ;
+		PluginLoader(class PluginAdaptor *pa) ;
 		~PluginLoader() ;
 
 		int load_plugins(char *dirname) ;		
@@ -47,7 +44,7 @@ class PluginLoader {
 		int unload_plugin(void *handle) ;
 		
 		vector<Plugin*>	 m_plugin_vect ;
-		PluginAdaptor *pa ;
+		class PluginAdaptor *pa ;
 		map<void*, Plugin*> m_plugin_map ;
 
 };

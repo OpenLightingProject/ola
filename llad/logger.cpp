@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * logger.cpp
- * Header file for the logger class
- * Copyright (C) 2005  Simon Newton
+ * Implementation of the logger class
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <lla/logger.h>
@@ -27,6 +27,9 @@ Logger *Logger::s_instance = NULL ;
 /*
  * create a new logger
  *
+ * @param level		the level to log at
+ * @param output	where to send the logs to
+ *
  */
 Logger::Logger(Logger::Level level, Logger::Output output) {
 	m_level = level ;
@@ -37,7 +40,9 @@ Logger::Logger(Logger::Level level, Logger::Output output) {
 	}
 }
 
-
+/*
+ * Destroy this logger object
+ */
 Logger::~Logger() {
 	if(m_output == Logger::SYSLOG) {
 		closelog() ;
@@ -86,12 +91,13 @@ void Logger::log(Logger::Level level, const char *fmt, ...) {
 		}
 	}
 	va_end(ap) ;
-
 }
 
+
 /*
- * grab an instance of the logger
+ * Grab an instance of the logger
  *
+ * @return the logger object
  */
 Logger *Logger::instance() {
 
@@ -103,9 +109,13 @@ Logger *Logger::instance() {
 
 
 /*
- * grab an instanceo of the logger
+ * Grab an instanceo of the logger, setting the level and output
+ * if it doesn't already exists
  *
+ * @param level		the log level
+ * @param output	where to send the logs to
  *
+ * @return the logger object
  */
 Logger *Logger::instance(Logger::Level level, Logger::Output output) {
 
@@ -116,6 +126,10 @@ Logger *Logger::instance(Logger::Level level, Logger::Output output) {
 }
 
 
+/*
+ * Delete the logger instance
+ *
+ */
 void Logger::clean_up() {
 	if(Logger::s_instance != NULL) {
 		delete Logger::s_instance ;

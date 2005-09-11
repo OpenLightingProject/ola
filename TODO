@@ -1,18 +1,15 @@
 
 --URGENT--
 
-* complete audit for return values
-* implement universe subscribe - monitor + sample program
 * fix up the lla_req_* functions
-* remove hard coded ip address from plugins
-* shownet recv 
 
 --REQUIRED--
+* shownet recv 
 * serialise so that plugins can store state
-* perhaps start llad if not already running ?
-* remember pid : plugin mappings
 
 -- NICE--
+* perhaps start llad if not already running ?
+* remember pid : plugin mappings
 * send debug to remote client - need to watch looping here (maybe lev 1&2)
 
 

@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * llad.cpp
- * The provides operations on a lla_device.
+ * This is the main lla daemon
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -23,28 +23,22 @@
 
 #include <lla/universe.h>
 #include <lla/logger.h>
+#include <lla/pluginadaptor.h>
+
 #include <stdio.h>
 #include <string.h>
 
 /*
- * create a new Llad
- *
+ * Create a new Llad
  *
  */
 Llad::Llad() {
-
 	term = false ;
 	sd = 0;
-	dm = new DeviceManager() ;
-	net = new Network() ;
-	pa = new PluginAdaptor(dm,net) ;
-	pm = new PluginLoader(pa) ;
-
-	Universe::set_net(net) ;
 }
 
 /*
- * Clean up
+ * Destroy this object
  *
  */
 Llad::~Llad() {
@@ -56,6 +50,8 @@ Llad::~Llad() {
 
 	// delete all universes
 	Universe::clean_up() ;
+
+	// FIX: we prob want to send disconnect msgs here
 	Client::clean_up() ;
 
 	delete net;
@@ -65,15 +61,33 @@ Llad::~Llad() {
 
 
 /*
- * initialise the dameon
+ * Initialise this object
  *
  * @return	0 on success, -1 on failure
  */
 int Llad::init() {
 	Plugin *plug ;
 	int i;
+	
+	// setup the objects
+	dm = new DeviceManager() ;
+	net = new Network() ;
+	pa = new PluginAdaptor(dm,net) ;
+	pm = new PluginLoader(pa) ;
 
-	// load plugins
+	if(dm == NULL || net == NULL || pa == NULL || pm == NULL) {
+		delete pm;
+		delete net;
+		delete pa;
+		delete dm;
+		return -1 ;
+	}
+
+	// the universe class needs access to the network object to send updates
+	Universe::set_net(net) ;
+
+	// load plugins, this doesn't fail as such
+	// rather just tries to load as many plugins as possible
 	pm->load_plugins(PLUGIN_DIR) ;
 
 	// enable all plugins
@@ -88,12 +102,11 @@ int Llad::init() {
 
 	// init the network socket
 	return net->init() ;
-
 }
 
 
 /*
- * run the daemon
+ * Run the daemon
  * 
  */
 int Llad::run() {
@@ -192,6 +205,7 @@ int Llad::handle_fin(lla_msg *msg) {
 		ptr = head ;
 
 		for(i=0; i < nunis ; i++) {
+
 			(*ptr)->remove_client(cli) ;
 			ptr++ ;
 		}
@@ -219,12 +233,12 @@ int Llad::handle_fin(lla_msg *msg) {
  *
  */
 int Llad::handle_read_request(lla_msg *msg) {
-		
 	Universe *uni = Universe::get_universe(msg->data.rreq.uni) ;
+	Client *cli = Client::get_client(msg->from.sin_port) ;
+	
+	if(uni && cli) {
 
-	if(uni) {
-
-		return send_dmx(uni, msg->from) ;
+		uni->send_dmx(cli) ;
 		
 	} else 
 		Logger::instance()->log(Logger::DEBUG, "Request for a universe not in use updating universe %d", msg->data.rreq.uni );
@@ -276,8 +290,14 @@ int Llad::handle_register(lla_msg *msg) {
 	
 	if (msg->data.reg.action == LLA_MSG_REG_REG)
 		uni->add_client(cli) ;
-	else
+	else {
 		uni->remove_client(cli) ;
+
+		// if this universe is no longer in use we delete it
+		if(! uni->in_use() ) {
+			delete uni ;
+		}
+	}
 
 	return 0;
 }
@@ -701,17 +721,6 @@ int Llad::send_universe_info(struct sockaddr_in dst) {
 	Logger::instance()->log(Logger::DEBUG, "Got universe req, sending reply");
 	net->send_msg(&reply);
 	return 0;
-
-}
-
-/*
- * Send a dmx msg to a client
- *
- * @param universe
- * @param dst	client to send to
- */
-int Llad::send_dmx(Universe *uni, struct sockaddr_in dst) {
-
 
 }
 

@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * port.cpp
- * methods for the port class
+ * Base implementation of the port class
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -23,6 +23,12 @@
 
 #include <stdio.h>
 
+/*
+ * Create a new port
+ *
+ * @param parent	the device that owns this port
+ * @param id		the id of this port
+ */
 Port::Port(Device *parent, int id) {
 	m_pid = id ;
 	m_fh = NULL ;
@@ -31,13 +37,19 @@ Port::Port(Device *parent, int id) {
 	m_parent = parent ;
 }
 
+/*
+ * Signal that the data for this port has changed
+ */
 int Port::dmx_changed() {
 	if(m_universe)
 		return m_universe->port_data_changed(this) ;
 	return 0;
 }
 
-// register a dmx handler for this port
+/*
+ * Register a dmx handler for this port. The handler function
+ * is called when the dmx for this port changes
+ */
 int Port::register_dmx(int (*fh)(void *data), void *data) {
 	m_fh = fh;
 	m_fh_data = data;

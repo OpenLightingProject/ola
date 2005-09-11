@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
  *
  * plugin.h
- * Header file for llad / plugin interface
- * Copyright (C) 2005  Simon Newton
+ * Header file for plugin class
+ * Copyright (C) 2005 Simon Newton
  *
  *
  */

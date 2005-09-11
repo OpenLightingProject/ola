@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
  *
  * main.cpp
- * The main daemon file
+ * Main file for llad, parses the options, forks if required and runs the daemon
  * Copyright (C) 2005  Simon Newton
  *
  */
@@ -30,8 +30,10 @@
 
 using namespace std;
 
+// the daemon
 Llad *llad ;
 
+// options struct
 typedef struct {
 	Logger::Level level;
 	Logger::Output output;
@@ -51,6 +53,7 @@ static void sig_interupt(int signo) {
 /*
  * Set up the interrupt signal
  *
+ * @return 0 on success, non 0 on failure
  */
 static int install_signal() {
 	struct sigaction act, oact;
@@ -76,7 +79,7 @@ static int install_signal() {
 /*
  * Display the help message
  */
-void display_help() {
+static void display_help() {
 
 	printf(
 "Usage: llad [--no-daemon] [--debug <level>] [--no-syslog]\n"
@@ -94,10 +97,13 @@ void display_help() {
 
 
 /*
- * parse the command line options
+ * Parse the command line options
  *
+ * @param argc
+ * @param argv
+ * @param opts	pointer to the options struct
  */
-int parse_options(int argc, char *argv[], lla_options *opts) {
+static void parse_options(int argc, char *argv[], lla_options *opts) {
 	static struct option long_options[] = {
 			{"no-daemon", no_argument, 		0, 'f'},
 			{"debug", 	required_argument, 	0, 'd'},
@@ -170,8 +176,10 @@ int parse_options(int argc, char *argv[], lla_options *opts) {
 
 /*
  * Set the default options
+ *
+ * @param opts	pointer to the optiojs struct 
  */
-int init_options(lla_options *opts) {
+static void init_options(lla_options *opts) {
 	opts->level = Logger::CRIT ;
 	opts->output = Logger::SYSLOG ;
 	opts->daemon = 1;
@@ -183,7 +191,7 @@ int init_options(lla_options *opts) {
  *
  * Taken from apue
  */
-int daemonise() {
+static int daemonise() {
 	pid_t pid;
 	int i, fd0, fd1, fd2 ;
 	struct rlimit rl;
@@ -235,13 +243,14 @@ int daemonise() {
 /*
  * Take actions based upon the options
  */
-int handle_options(lla_options *opts) {
+static void handle_options(lla_options *opts) {
 
 	if(opts->help) {
 		display_help() ;
 		exit(0);
 	}
 	
+	// setup the logger object
 	Logger::instance(opts->level, opts->output) ;
 
 	if(opts->daemon)
@@ -251,9 +260,12 @@ int handle_options(lla_options *opts) {
 
 
 /*
+ * Parse the options, and take action
  *
+ * @param argc
+ * @param argv
  */
-int setup(int argc, char*argv[]) {
+static int setup(int argc, char*argv[]) {
 	lla_options opts ;
 	
 	init_options(&opts);
@@ -265,19 +277,20 @@ int setup(int argc, char*argv[]) {
 /*
  * Main
  *
- * need to sort out logging here
  */
 int main(int argc, char*argv[]) {
 	
 	setup(argc, argv) ;
 	
-	install_signal() ;
+	if(install_signal())
+		Logger::instance()->log(Logger::WARN, "Failed to install signal handlers") ;
 
 	llad = new Llad() ;
 	
-	if(llad->init() == 0 ) {
+	if(llad && llad->init() == 0 ) {
 		llad->run() ;
 	}
+
 	delete llad;
 	Logger::clean_up() ;
 
