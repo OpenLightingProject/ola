@@ -6,6 +6,7 @@
 --REQUIRED--
 * shownet recv 
 * serialise so that plugins can store state
+* config files  / preferences
 
 -- NICE--
 * perhaps start llad if not already running ?
