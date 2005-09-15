@@ -8,7 +8,7 @@ liblla_la_SOURCES = lla.c private.h lla.h
 EXTRA_DIST = lla.h plugin.h
 
 pkginclude_HEADERS = lla.h messages.h device.h fdlistener.h logger.h \
-						pluginadaptor.h plugin.h port.h universe.h
+						pluginadaptor.h plugin.h port.h universe.h preferences.h
 
 pkgincludedir = $(includedir)/lla
 
