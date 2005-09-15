@@ -71,7 +71,7 @@ enum {
 int MAXCHANNELS=512;
 int MAXFKEY=12;
 
-int verbose = 0;
+int universe = 0;
 
 typedef unsigned char dmx_t ;
 
@@ -128,7 +128,7 @@ unsigned long timeGetTime()
 /* set all DMX channels */
 void setall()
 {
-	lla_send_dmx(con, 0, dmx, MAXCHANNELS) ;
+	lla_send_dmx(con, universe, dmx, MAXCHANNELS) ;
 }
 
 /* set current DMX channel */
@@ -550,9 +550,8 @@ void cleanup()
 int main (int argc, char *argv[])
 {
   int c=0;
-  int optc, subnet_addr = 0 , port_addr = 0 ;
+  int optc ;
   const char *f ;
-  char *ip_addr = NULL ;
 
   int lla_sd ;
   int sigcrash[] = {
@@ -617,29 +616,10 @@ int main (int argc, char *argv[])
   CHECK(dmxundo);
 
   // parse options 
-  while ((optc = getopt (argc, argv, "va:p:s:")) != EOF) {
+  while ((optc = getopt (argc, argv, "u:")) != EOF) {
     switch (optc) {
-      case 'a':
-        ip_addr = (char *) strdup(optarg) ;
-        break;
-      case 's':
-         subnet_addr = atoi(optarg) ;
-
-         if(subnet_addr < 0 && subnet_addr > 15) {
-           printf("Subnet address must be between 0 and 15\n") ;
-           exit(1) ;
-         }
-         break ;
-      case 'p':
-         port_addr = atoi(optarg) ;
-
-         if(port_addr < 0 && port_addr > 15) {
-           printf("Port address must be between 0 and 15\n") ;
-           exit(1) ;
-         }
-         break ;
-	  case 'v':
-		 verbose = 1 ;
+	  case 'u':
+		 universe = atoi(optarg) ;
 		 break ;
       default:
          break;

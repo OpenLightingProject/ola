@@ -2,13 +2,16 @@
 AM_CFLAGS = -Wall -Werror 
 AM_LDFLAGS =  -LLIBDIR
 
-bin_PROGRAMS = test lla_dmxconsole lla_patch lla_dev_info lla_plugin_info lla_uni_info
+bin_PROGRAMS = test lla_dmxconsole lla_dmxmonitor lla_patch lla_dev_info lla_plugin_info lla_uni_info lla_uni_name lla_uni_data
 
 test_SOURCES = test.c
 test_LDADD = @LIBS@ -llla
 
 lla_dmxconsole_SOURCES = lla-dmxconsole.c
 lla_dmxconsole_LDADD = @LIBS@ -llla -lcurses
+
+lla_dmxmonitor_SOURCES = lla-dmxmonitor.c
+lla_dmxmonitor_LDADD = @LIBS@ -llla -lcurses
 
 lla_patch_SOURCES = lla-patch.c
 lla_patch_LDADD = @LIBS@ -llla 
@@ -21,3 +24,9 @@ lla_plugin_info_LDADD = @LIBS@ -llla
 
 lla_uni_info_SOURCES = lla-uni-info.c
 lla_uni_info_LDADD = @LIBS@ -llla 
+
+lla_uni_name_SOURCES = lla-uni-name.c
+lla_uni_name_LDADD = @LIBS@ -llla 
+
+lla_uni_data_SOURCES = lla-uni-data.c
+lla_uni_data_LDADD = @LIBS@ -llla 

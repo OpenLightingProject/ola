@@ -120,15 +120,15 @@ int main(int argc, char*argv[]) {
 	}
 
 
-	if( (uniitr =  lla_req_universe_info(con)) ) {
-		printf("   ID\tName\t\tMerge Mode\n");
-		printf("--------------------------------------\n");
+	if( !(lla_req_universe_info(con, &uniitr)) ) {
+		printf("   ID\t%30s\t\tMerge Mode\n", "Name");
+		printf("----------------------------------------------------------\n");
 		while( uniitr != NULL) {
-			printf("%5d\t\n", uniitr->id) ;
+			printf("%5d\t%30s\n", uniitr->id, uniitr->name) ;
 			uniitr = uniitr->next ;
 		}
 			
-		printf("--------------------------------------\n");
+		printf("----------------------------------------------------------\n");
 	} else {
 		printf("Failed to fetch universe info!\n") ;
 	}
