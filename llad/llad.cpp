@@ -276,7 +276,7 @@ int Llad::handle_register(lla_msg *msg) {
 	int uid = msg->data.reg.uni ; 
 	
  	Client *cli = Client::get_client_or_create(msg->from.sin_port) ;
-	Universe *uni = Universe::get_universe(msg->data.reg.uni) ;
+	Universe *uni = Universe::get_universe_or_create(msg->data.reg.uni) ;
 
 	// if universe does not exist, ignore
 	if(uni == NULL)

@@ -4,7 +4,7 @@
 AC_PREREQ(2.57)
 AC_INIT(configure.in)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(lla, 0.1.1)
+AM_INIT_AUTOMAKE(lla, 0.1.1-b1)
 
 # Checks for programs.
 AC_PROG_CC
