@@ -1,32 +1,20 @@
 
-AM_CFLAGS = -Wall -Werror 
-AM_LDFLAGS =  -LLIBDIR
+AM_CFLAGS = -Wall -Werror $(liblla_CFLAGS)
+AM_LDFLAGS =  -LLIBDIR $(liblla_LIBS)
 
-bin_PROGRAMS = test lla_dmxconsole lla_dmxmonitor lla_patch lla_dev_info lla_plugin_info lla_uni_info lla_uni_name lla_uni_data
-
-test_SOURCES = test.c
-test_LDADD = @LIBS@ -llla
-
+if HAVE_NCURSES
+NCURSES_PROGS = lla_dmxconsole lla_dmxmonitor
 lla_dmxconsole_SOURCES = lla-dmxconsole.c
 lla_dmxconsole_LDADD = @LIBS@ -llla -lcurses
-
 lla_dmxmonitor_SOURCES = lla-dmxmonitor.c
 lla_dmxmonitor_LDADD = @LIBS@ -llla -lcurses
+endif 
+
+bin_PROGRAMS = lla_patch lla_dev_info lla_plugin_info lla_uni_info lla_uni_name lla_uni_data $(NCURSES_PROGS)
 
 lla_patch_SOURCES = lla-patch.c
-lla_patch_LDADD = @LIBS@ -llla 
-
 lla_dev_info_SOURCES = lla-dev-info.c
-lla_dev_info_LDADD = @LIBS@ -llla 
-
 lla_plugin_info_SOURCES = lla-plugin-info.c
-lla_plugin_info_LDADD = @LIBS@ -llla 
-
 lla_uni_info_SOURCES = lla-uni-info.c
-lla_uni_info_LDADD = @LIBS@ -llla 
-
 lla_uni_name_SOURCES = lla-uni-name.c
-lla_uni_name_LDADD = @LIBS@ -llla 
-
 lla_uni_data_SOURCES = lla-uni-data.c
-lla_uni_data_LDADD = @LIBS@ -llla 
