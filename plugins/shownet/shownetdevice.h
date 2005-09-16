@@ -32,7 +32,7 @@
 class ShowNetDevice : public Device, public FDListener {
 
 	public:
-		ShowNetDevice(Plugin *owner, const char *name) ;
+		ShowNetDevice(Plugin *owner, const char *name, class Preferences *prefs) ;
 		~ShowNetDevice() ;
 
 		int start() ;
@@ -44,6 +44,7 @@ class ShowNetDevice : public Device, public FDListener {
 		int configure(void *req, int len) ;
 
 	private:
+		class Preferences *m_prefs ;
 		shownet_node m_node ;
 		bool m_enabled ;
 };

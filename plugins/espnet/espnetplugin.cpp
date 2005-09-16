@@ -23,10 +23,12 @@
 #include <stdio.h>
 
 #include <lla/pluginadaptor.h>
+#include <lla/preferences.h>
 
 #include "espnetplugin.h"
 #include "espnetdevice.h"
 
+#define ESPNET_NAME "lla-EspNet" 
 /*
  * Entry point to this plugin
  */
@@ -46,15 +48,20 @@ extern "C" void destroy(Plugin* plug) {
  * Start the plugin
  *
  * For now we just have one device.
- * TODO: allow multiple devices on different IPs ?
  */
 int EspNetPlugin::start() {
 	
 	if(m_enabled)
 		return -1 ;
 	
+	// setup prefs
+	m_prefs = load_prefs() ;
+
+	if(m_prefs == NULL) 
+		return -1 ;
+
 	/* create new lla device */
-	m_dev = new EspNetDevice(this, "ESPNet Device") ;
+	m_dev = new EspNetDevice(this, "ESPNet Device", m_prefs) ;
 
 	if(m_dev == NULL) 
 		return -1  ;
@@ -97,21 +104,62 @@ int EspNetPlugin::stop() {
 	m_pa->unregister_device(m_dev) ;
 	m_enabled = false ;
 	delete m_dev ;
+	delete m_prefs ;
 	return 0;
 }
 
+/*
+ * return the description for this plugin
+ *
+ */
 char *EspNetPlugin::get_desc() {
 	return 
 "EspNet Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin creates a single device with five input and five output ports. "
-"Currently this plugin binds to the first non-loopback IP. This should "
-"be made configurable in the future...\n"
+"This plugin creates a single device with five input and five output ports.\n"
 "\n"
 "Esp supports up to 255 universes. As ESP has no notion of ports, we provide "
 "a fixed number of ports which can be patched to any universe. When sending "
 "data from a port, the data is addressed to the universe the port is patched "
 "to. For example if port 0 is patched to universe 10, the data will be sent to "
-"ESP universe 10.";
+"ESP universe 10.\n"
+"\n"
+"--- Config file : lla-espnet.conf ---\n"
+"\n"
+"ip = a.b.c.d\n"
+"The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
+"\n"
+"name = lla-EspNet\n"
+"The name of the node.\n" ;
+
+}
+
+/*
+ * load the plugin prefs and default to sensible values
+ *
+ */
+Preferences *EspNetPlugin::load_prefs() {
+	Preferences *prefs = new Preferences("espnet") ;
+
+	if(prefs == NULL)
+		return NULL ;
+
+	prefs->load() ;
+
+	// we don't worry about ip here
+	// if it's non existant it will choose one
+	if( prefs->get_val("name") == "") {
+		prefs->set_val("name",ESPNET_NAME) ;
+		prefs->save() ;
+	}
+
+	// check if this save correctly
+	// we don't want to use it if null
+	if( prefs->get_val("name") == "" ) {
+		delete prefs;
+		return NULL ;
+	}
+
+	return prefs ;
 }

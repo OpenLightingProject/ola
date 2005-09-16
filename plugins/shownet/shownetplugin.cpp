@@ -23,9 +23,12 @@
 #include <stdio.h>
 
 #include <lla/pluginadaptor.h>
+#include <lla/preferences.h>
 
 #include "shownetplugin.h"
 #include "shownetdevice.h"
+
+#define SHOWNET_NAME "lla-ShowNet"
 
 /*
  * Entry point to this plugin
@@ -46,15 +49,20 @@ extern "C" void destroy(Plugin* plug) {
  * Start the plugin
  *
  * For now we just have one device.
- * TODO: allow multiple devices on different IPs ?
  */
 int ShowNetPlugin::start() {
 	
 	if(m_enabled)
 		return -1 ;
 	
+	// setup prefs
+	m_prefs = load_prefs() ;
+
+	if(m_prefs == NULL) 
+		return -1 ;
+	
 	/* create new lla device */
-	m_dev = new ShowNetDevice(this, "ShowNet Device") ;
+	m_dev = new ShowNetDevice(this, "ShowNet Device", m_prefs) ;
 
 	if(m_dev == NULL) 
 		return -1  ;
@@ -97,18 +105,60 @@ int ShowNetPlugin::stop() {
 	m_pa->unregister_device(m_dev) ;
 	m_enabled = false ;
 	delete m_dev ;
+	delete m_prefs;
 	return 0;
 }
 
+/*
+ * return the description for this plugin
+ *
+ */
 char *ShowNetPlugin::get_desc() {
 	return 
 "ShowNet Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin creates a single device with 8 input and 8 output ports. "
-"Currently this plugin binds to the first non-loopback IP. This should "
-"be made configurable in the future...\n"
+"This plugin creates a single device with 8 input and 8 output ports.\n"
 "\n"
 "The ports correspond to the DMX channels used in the shownet protocol. "
-"For example port 0 is channels 1 - 512, port 1 is channels 513 - 1024. ";
+"For example port 0 is channels 1 - 512, port 1 is channels 513 - 1024.\n"
+"\n"
+"--- Config file : lla-shownet.conf ---\n"
+"\n"
+"ip = a.b.c.d\n"
+"The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
+"\n"
+"name = lla-ShowNet\n"
+"The name of the node.\n" ;
+
+}
+
+
+/*
+ * load the plugin prefs and default to sensible values
+ *
+ */
+Preferences *ShowNetPlugin::load_prefs() {
+	Preferences *prefs = new Preferences("shownet") ;
+
+	if(prefs == NULL)
+		return NULL ;
+
+	prefs->load() ;
+
+	// we don't worry about ip here
+	// if it's non existant it will choose one
+	if( prefs->get_val("name") == "") {
+		prefs->set_val("name",SHOWNET_NAME) ;
+		prefs->save() ;
+	}
+
+	// check if this save correctly
+	// we don't want to use it if null
+	if( prefs->get_val("name") == "" ) {
+		delete prefs;
+		return NULL ;
+	}
+
+	return prefs ;
 }

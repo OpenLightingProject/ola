@@ -38,6 +38,9 @@ class ShowNetPlugin : public Plugin {
 		char *get_desc() ;
 
 	private:
+		class Preferences *load_prefs() ;
+		
+		class Preferences *m_prefs ;
 		ShowNetDevice *m_dev ;		// only have one device
 		bool m_enabled ;			// are we running
 };

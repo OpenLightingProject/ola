@@ -30,7 +30,7 @@
 class ArtNetDevice : public Device, public FDListener {
 
 	public:
-		ArtNetDevice(Plugin *owner, const char *name) ;
+		ArtNetDevice(Plugin *owner, const char *name, class Preferences *prefs) ;
 		~ArtNetDevice() ;
 
 		int start() ;
@@ -42,6 +42,7 @@ class ArtNetDevice : public Device, public FDListener {
 		int configure(void *req, int len) ;
 
 	private:
+		class Preferences *m_prefs;
 		artnet_node m_node ;
 		bool m_enabled ;
 };

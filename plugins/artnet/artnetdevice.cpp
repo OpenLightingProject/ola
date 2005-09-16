@@ -34,6 +34,7 @@
 #include "artnetport.h"
 
 #include <lla/logger.h>
+#include <lla/preferences.h>
 #include <artnet/artnet.h>
 
 /*
@@ -77,7 +78,8 @@ int program_handler(artnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-ArtNetDevice::ArtNetDevice(Plugin *owner, const char *name) : Device(owner, name) {
+ArtNetDevice::ArtNetDevice(Plugin *owner, const char *name, Preferences *prefs) : Device(owner, name) {
+	m_prefs = prefs ;
 	m_node = NULL ;
 	m_enabled = false ;
 }
@@ -107,22 +109,27 @@ int ArtNetDevice::start() {
 			this->add_port(port) ;
 	}
 
-	// create new artnet node, and set config values
-    m_node = artnet_new(NULL, 1) ;
+	
+	// create new artnet node, and and set config values
 
+    if(m_prefs->get_val("ip") == "")
+		m_node = artnet_new(NULL, 1) ;
+	else {
+		m_node = artnet_new(m_prefs->get_val("ip").c_str(), 1) ;
+	}
+	
 	if(!m_node) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_new failed %s", artnet_strerror() ) ;
 		return -1 ;
 	}
 
 	// node config
-	// should be checking for errors here...
-	if(artnet_set_short_name(m_node, "short") ) {
+	if(artnet_set_short_name(m_node, m_prefs->get_val("short_name").c_str()) ) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_short_name failed: %s", artnet_strerror()) ;
 		goto e_artnet_start ;
 	}
 	
-	if (artnet_set_long_name(m_node, "long") ) {
+	if (artnet_set_long_name(m_node, m_prefs->get_val("long_name").c_str()) ) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_long_name failed: %s", artnet_strerror()) ;
 		goto e_artnet_start ;
 	}
@@ -132,7 +139,7 @@ int ArtNetDevice::start() {
 		goto e_artnet_start ;
 	}
 	
-	if(artnet_set_subnet_addr(m_node, 0x00) ) {
+	if(artnet_set_subnet_addr(m_node, atoi(m_prefs->get_val("subnet").c_str()) ) ) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_subnet_addr failed: %s", artnet_strerror()) ;
 		goto e_artnet_start ;
 	}

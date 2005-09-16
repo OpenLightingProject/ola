@@ -38,6 +38,9 @@ class EspNetPlugin : public Plugin {
 		char *get_desc() ;
 
 	private:
+		Preferences *load_prefs() ;
+		
+		class Preferences *m_prefs ;
 		EspNetDevice *m_dev ;		// only have one device
 		bool m_enabled ;			// are we running
 };

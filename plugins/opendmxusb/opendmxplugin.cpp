@@ -109,14 +109,13 @@ char *OpenDmxPlugin::get_desc() {
 "OpenDMXUSB Plugin\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with one output port using\n"
+"The plugin creates a single device with one output port using "
 "the Enttec Open DMX USB widget.\n"
 "\n"
-"--- Options ---\n"
+"--- Config file : lla-opendmx.conf ---\n"
 "\n"
-"The path to the device is controlled with the following line:\n"
-"	device = " DEFAULT_PATH "\n"
-"in the lla-opendmx.conf file." ;
+"device = " DEFAULT_PATH "\n"
+"The path to the open dmx usb device.\n" ;
 }
 
 
@@ -135,6 +134,13 @@ Preferences *OpenDmxPlugin::load_prefs() {
 	if( prefs->get_val("device") == "") {
 		prefs->set_val("device",DEFAULT_PATH) ;
 		prefs->save() ;
+	}
+
+	// check if this save correctly
+	// we don't want to use it if null
+	if( prefs->get_val("device") == "") {
+		delete prefs;
+		return NULL ;
 	}
 
 	return prefs ;

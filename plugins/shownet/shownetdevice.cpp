@@ -28,6 +28,7 @@
 #include "shownetport.h"
 
 #include <lla/logger.h>
+#include <lla/preferences.h>
 #include <lla/universe.h>
 
 /*
@@ -66,7 +67,8 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
  * should prob pass the ip to bind to
  *
  */
-ShowNetDevice::ShowNetDevice(Plugin *owner, const char *name) : Device(owner, name) {
+ShowNetDevice::ShowNetDevice(Plugin *owner, const char *name, Preferences *prefs) : Device(owner, name) {
+	m_prefs = prefs ;
 	m_node = NULL ;
 	m_enabled = false ;
 }
@@ -97,7 +99,11 @@ int ShowNetDevice::start() {
 	}
 
 	// create new shownet node, and set config values
-    m_node = shownet_new(NULL, 1) ;
+    if(m_prefs->get_val("ip") == "")
+		m_node = shownet_new(NULL, 1) ;
+	else {
+		m_node = shownet_new(m_prefs->get_val("ip").c_str(), 1) ;
+	}
 
 	if(!m_node) {
 		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_new failed: %s", shownet_strerror()) ;
@@ -105,7 +111,7 @@ int ShowNetDevice::start() {
 	}
 
 	// setup node
-	if (shownet_set_name(m_node, "lla") ) {
+	if (shownet_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
 		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_name failed: %s", shownet_strerror()) ;
 		goto e_shownet_start; 
 	}

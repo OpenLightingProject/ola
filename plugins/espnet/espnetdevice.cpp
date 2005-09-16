@@ -28,6 +28,8 @@
 #include "espnetport.h"
 
 #include <lla/logger.h>
+#include <lla/preferences.h>
+
 #include <lla/universe.h>
 
 /*
@@ -78,7 +80,8 @@ int program_handler(espnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-EspNetDevice::EspNetDevice(Plugin *owner, const char *name) : Device(owner, name) {
+EspNetDevice::EspNetDevice(Plugin *owner, const char *name, Preferences *prefs) : Device(owner, name) {
+	m_prefs = prefs ;
 	m_node = NULL ;
 	m_enabled = false ;
 }
@@ -109,7 +112,11 @@ int EspNetDevice::start() {
 	}
 
 	// create new espnet node, and set config values
-    m_node = espnet_new(NULL, 1) ;
+	if(m_prefs->get_val("ip") == "")
+		m_node = espnet_new(NULL, 1) ;
+	else {
+		m_node = espnet_new(m_prefs->get_val("ip").c_str(), 1) ;
+	}
 
 	if(!m_node) {
 		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_new failed: %s", espnet_strerror()) ;
@@ -117,7 +124,7 @@ int EspNetDevice::start() {
 	}
 
 	// setup node
-	if (espnet_set_name(m_node, "esp lla") ) {
+	if (espnet_set_name(m_node, m_prefs->get_val("name").c_str() ) ) {
 		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_name failed: %s", espnet_strerror()) ;
 		goto e_espnet_start; 
 	}
