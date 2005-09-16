@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * artnetport.cpp
- * The Art-Net plugin for lla
+ * opendmxport.cpp
+ * The Open DMX plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -26,10 +26,9 @@
 
 #define min(a,b) a<b?a:b
 
-OpenDmxPort::OpenDmxPort(Device *parent, int id) : Port(parent, id) {
-
+OpenDmxPort::OpenDmxPort(Device *parent, int id, string path) : Port(parent, id) {
 	m_thread = new OpenDmxThread() ;
-	m_thread->start() ;
+	m_thread->start(path) ;
 
 }
 

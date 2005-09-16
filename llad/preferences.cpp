@@ -18,32 +18,39 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#include <lla/preferences.h> 
+#include <lla/preferences.h>
 #include <lla/logger.h>
 
 #include <string.h>
 #include <dirent.h>
 #include <stdio.h>
+#include <pwd.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
 
+#define LLA_CONFIG_DIR ".lla"
+#define LLA_CONFIG_PREFIX "lla-"
+#define LLA_CONFIG_SUFFIX ".conf"
 
 /*
  * Create a new preference container
  *
  * @param id	the id of the container
  */
-Preferences::Preferences(const char *id) {
+Preferences::Preferences(string id) {
 
-
+	this->id = id ;
 
 }
 
 
 /*
- * Destroy this object, this will disable and unload all plugins
+ * Destroy this object
  *
  */
 Preferences::~Preferences() {
-
 	m_pref_map.clear() ;
 }
 
@@ -53,17 +60,18 @@ Preferences::~Preferences() {
  *
  */
 int Preferences::load() {
-/*
 	#define BUF_SIZE 1024
 	FILE *fh ;
-	char buf[1024], *c ;
-	char *key, *data ;
+	string filename, line ;
+	char buf[BUF_SIZE], *k_c, *v_c ;
+	string key, val ;
 	
-	if(ops->config_file == NULL)
-		return -1;
+	if(change_dir())
+		return -1 ;
 
-	if ((fh = fopen(ops->config_file, "r")) == NULL ) {
-		perror("fopen") ;
+	filename = LLA_CONFIG_PREFIX + id + LLA_CONFIG_SUFFIX ;
+	if ((fh = fopen(filename.c_str(), "r")) == NULL ) {
+		Logger::instance()->log(Logger::INFO, "Failed to open %s:  %s", filename.c_str(), strerror(errno)) ;
 		return -1 ;
 	}
 
@@ -71,33 +79,21 @@ int Preferences::load() {
 		if(*buf == '#')
 			continue ;
 
-		// strip \n
-		for(c = buf ; *c != '\n' ; c++) ;
-			*c = '\0' ;
-
-		key = strtok(buf, "=") ;
-		data = strtok(NULL, "=") ;
-
-		if(key == NULL || data == NULL)
+		k_c = strtok(buf, "=") ;
+		v_c = strtok(NULL, "=") ;
+		
+		if(k_c == NULL || v_c == NULL)
 			continue ;
+		
+		key = strtrim(k_c);
+		val = strtrim(v_c);
 
-		if(strcmp(key, "Shortname") == 0) {
-			free(ops->short_name) ;
-			ops->short_name = strdup(data) ;
-		} else if(strcmp(key, "Longname") == 0) {
-			free(ops->long_name) ;
-			ops->long_name = strdup(data) ;
-		} else if(strcmp(key, "Subnet") == 0) {
-			ops->subnet_addr = atoi(data) ;
-		} else if(strcmp(key, "Port") == 0 ) {
-			ops->port_addr = atoi(data) ;
-		} 
-
+		m_pref_map[key] = val ;
 	}
 
 	fclose(fh) ;
 	return 0 ;
-*/
+
 }
 
 
@@ -107,20 +103,26 @@ int Preferences::load() {
  *
  */
 int Preferences::save() {
-/*	FILE *fh ;
+    map<string, string>::const_iterator iter;
+	string filename ;
+	FILE *fh ;
+
+	if(change_dir())
+		return -1 ;
 	
-	printf("in save config\n") ;
-	if ((fh = fopen(ops->config_file, "w")) == NULL ) {
+	filename = LLA_CONFIG_PREFIX + id + LLA_CONFIG_SUFFIX ;
+	if ((fh = fopen(filename.c_str(), "w")) == NULL ) {
 		perror("fopen") ;
 		return -1 ;
 	}
-
-	fprintf(fh, "# artnet_usb config file\n") ;
-
+	
+    for (iter=m_pref_map.begin(); iter != m_pref_map.end(); ++iter) {
+		fprintf(fh, "%s = %s\n", iter->first.c_str() , iter->second.c_str() ) ;
+    }
+	
 	fclose(fh) ;
 
 	return 0 ;
-*/
 }
 
 
@@ -130,13 +132,8 @@ int Preferences::save() {
  * @param key
  * @param value
  */
-int Preferences::set_val(const char *key, const char *val) {
-	char *skey = strdup(key) ;
-	char *sval = strdup(val) ;
-	
-	m_pref_map[skey] = sval ;
-	
-
+int Preferences::set_val(string key, string val) {
+	m_pref_map[key] = val ;
 }
 
 
@@ -147,14 +144,58 @@ int Preferences::set_val(const char *key, const char *val) {
  * @return the value corrosponding to key
  *
  */
-char *Preferences::get_val(const char *key) {
-	int i ;
+string Preferences::get_val(string key) {
 
-	map<char *, char *>::iterator iter = m_pref_map.find((char*)key);
+	return m_pref_map[key] ;
+}
+
+
+
+
+int Preferences::change_dir() {
+	struct passwd  *ptr = getpwuid(getuid()) ;
+	if(ptr == NULL) 
+		return -1 ;
+
+	if(chdir(ptr->pw_dir))
+		return -1 ;
+
+	if(chdir(LLA_CONFIG_DIR)) {
+		// try and create it
+		if(mkdir(LLA_CONFIG_DIR, 0777)) 
+			return -1 ;
+
+		if(chdir(LLA_CONFIG_DIR))
+			return -1 ;
+	}
+	return 0 ;
+}
+
+
+/*
+ * trim leading and trailing whitespace from the string
+ *
+ * @param str	pointer to the string
+ *
+ *
+ */
+char *Preferences::strtrim(char *str) {
+	int n = strlen(str) ;
+	char *beg, *end;
+	beg = str;
+	end = str + (n-1); /* Point to the last non-null character in the string */
 	
-	if (iter != m_pref_map.end()) {
-	   return iter->second ;
-   	}
-	
-	return NULL ;
+	while(*beg == ' ' || *beg == '\t') {
+		beg++;
+	}
+
+	/* Remove trailing whitespace and null-terminate */
+	while(*end == ' ' || *end == '\n' || *end == '\r' || *beg == '\t' ) {
+		end--;
+	}
+
+	*(end+1) = '\0';
+	/* Shift the string */
+	memmove(str, beg, (end - beg + 2));
+	return str;
 }

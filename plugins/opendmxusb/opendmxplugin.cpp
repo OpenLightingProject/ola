@@ -15,7 +15,7 @@
  *
  *
  * opendmxplugin.cpp
- * The Art-Net plugin for lla
+ * The Open DMX plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -23,9 +23,12 @@
 #include <stdio.h>
 
 #include <lla/pluginadaptor.h>
+#include <lla/preferences.h>
 
 #include "opendmxplugin.h"
 #include "opendmxdevice.h"
+
+#define DEFAULT_PATH "/dev/dmx0"
 
 /*
  * Entry point to this plugin
@@ -53,8 +56,15 @@ int OpenDmxPlugin::start() {
 	if(m_enabled)
 		return -1 ;
 	
+	// setup prefs
+	m_prefs = load_prefs() ;
+
+	if(m_prefs == NULL) 
+		return -1 ;
+	
 	/* create new lla device */
-	m_dev = new OpenDmxDevice(this, "Open DMX USB Device") ;
+	// should we maybe be making a copy of the string here ?
+	m_dev = new OpenDmxDevice(this, "Open DMX USB Device", m_prefs->get_val("device")) ;
 
 	if(m_dev == NULL) 
 		return -1  ;
@@ -85,15 +95,47 @@ int OpenDmxPlugin::stop() {
 	m_pa->unregister_device(m_dev) ;
 	m_enabled = false ;
 	delete m_dev ;
+	delete m_prefs ;
+
 	return 0;
 }
 
+/*
+ * return the description for this plugin
+ *
+ */
 char *OpenDmxPlugin::get_desc() {
 		return 
 "OpenDMXUSB Plugin\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with one output port. "
-"It expects to find the device at /dev/dmx0 . "
-"This should be made configurable in the future..." ;
+"The plugin creates a single device with one output port using\n"
+"the Enttec Open DMX USB widget.\n"
+"\n"
+"--- Options ---\n"
+"\n"
+"The path to the device is controlled with the following line:\n"
+"	device = " DEFAULT_PATH "\n"
+"in the lla-opendmx.conf file." ;
+}
+
+
+/*
+ * load the plugin prefs and default to sensible values
+ *
+ */
+Preferences *OpenDmxPlugin::load_prefs() {
+	Preferences *prefs = new Preferences("opendmx") ;
+
+	if(prefs == NULL)
+		return NULL ;
+
+	prefs->load() ;
+
+	if( prefs->get_val("device") == "") {
+		prefs->set_val("device",DEFAULT_PATH) ;
+		prefs->save() ;
+	}
+
+	return prefs ;
 }

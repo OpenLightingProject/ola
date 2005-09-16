@@ -22,24 +22,28 @@
 #define PREFERENCES_H
 
 #include <map>
+#include <string>
 
 using namespace std;
 
 class Preferences {
 
 	public:
-		Preferences(const char *id) ;
+		Preferences(string id) ;
 		~Preferences() ;
 
 		int load() ;
 		int save() ;
 
-		int set_val(const char *key, const char *value) ;
-		char *get_val(const char *key) ;
+		int set_val(string key, string value) ;
+		string get_val(string key) ;
 		
 	private:
-		
-		map<char*, char*> m_pref_map ;
+		int change_dir() ;
+		char *strtrim(char *str) ;
+
+		string id ;
+		map<string, string> m_pref_map ;
 
 };
 

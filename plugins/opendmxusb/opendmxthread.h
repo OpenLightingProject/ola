@@ -25,6 +25,10 @@
 #include <stdint.h>
 #include <pthread.h>
 
+#include <string>
+
+using namespace std;
+
 #define MAX_DMX 512
 
 class OpenDmxThread {
@@ -33,10 +37,10 @@ class OpenDmxThread {
 		OpenDmxThread();
 		~OpenDmxThread();
 
-		int start () ;
+		int start (string path) ;
 		int stop() ;
 		int write_dmx(uint8_t *data , int channels) ;
-		void *run() ;
+		void *run(string path) ;
 
 	private:
 		int do_write(uint8_t *buf, int length) ;

@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * artnetdevice.h
- * Interface for the artnet device
+ * opendmxdevice.h
+ * Interface for the Open DMX device
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -23,11 +23,14 @@
 #define OPENDMXDEVICE_H
 
 #include <lla/device.h>
+#include <string>
+
+using namespace std;
 
 class OpenDmxDevice : public Device {
 
 	public:
-		OpenDmxDevice(Plugin *owner, const char *name) ;
+		OpenDmxDevice(Plugin *owner, const char *name, string path) ;
 		~OpenDmxDevice() ;
 
 		int start() ;
@@ -36,6 +39,7 @@ class OpenDmxDevice : public Device {
 		int configure(void *req, int len) ;
 
 	private:
+		string m_path ;
 		bool m_enabled ;
 };
 

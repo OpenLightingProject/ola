@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * opendmxdevice.cpp
- * Art-Net device
+ * The open dmx device
  * Copyright (C) 2005  Simon Newton
  *
  * 
@@ -31,16 +31,18 @@
 /*
  * Create a new device
  *
- * should prob pass the ip to bind to
- *
+ * @param owner
+ * @param name
+ * @param path to device
  */
-OpenDmxDevice::OpenDmxDevice(Plugin *owner, const char *name) : Device(owner, name) {
+OpenDmxDevice::OpenDmxDevice(Plugin *owner, const char *name, string path) : Device(owner, name) {
+	m_path = path ;
 	m_enabled = false ;
 }
 
 
 /*
- *
+ * destroy this device
  */
 OpenDmxDevice::~OpenDmxDevice() {
 	if (m_enabled)
@@ -55,7 +57,8 @@ OpenDmxDevice::~OpenDmxDevice() {
 int OpenDmxDevice::start() {
 	OpenDmxPort *port ;
 
-	port = new OpenDmxPort(this,0) ;
+							// owner, id, path
+	port = new OpenDmxPort(this,0, m_path) ;
 
 	if(port != NULL) 
 		this->add_port(port) ;
@@ -112,15 +115,3 @@ int OpenDmxDevice::configure(void *req, int len) {
 
 	return 0;
 }
-
-
-
-
-
-// Private functions
-//-----------------------------------------------------------------------------
-
-
-
-
-

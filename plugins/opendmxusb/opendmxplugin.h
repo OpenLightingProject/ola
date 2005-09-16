@@ -38,7 +38,10 @@ class OpenDmxPlugin : public Plugin {
 		char *get_desc() ;
 
 	private:
+		Preferences *OpenDmxPlugin::load_prefs() ;
+		
 		OpenDmxDevice *m_dev ;		// only have one device
+		class Preferences *m_prefs;	// preferences object
 		bool m_enabled ;			// are we running
 };
 

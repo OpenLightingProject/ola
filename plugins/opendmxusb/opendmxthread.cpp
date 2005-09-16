@@ -39,10 +39,15 @@
 #include <sys/time.h>
 #include <time.h>
 
-void *thread_run(void *d) {
-	OpenDmxThread *th = (OpenDmxThread*) d ;
+typedef struct {
+	OpenDmxThread *th ;
+	string path ;
+} t_args ;
 
-	th->run() ;
+void *thread_run(void *d) {
+	t_args *args = (t_args*) d ;
+
+	args->th->run(args->path) ;
 	
 }
 
@@ -75,7 +80,7 @@ OpenDmxThread::~OpenDmxThread() {
  * run this thread
  *
  */
-void *OpenDmxThread::run() {
+void *OpenDmxThread::run(string path) {
 
 	uint8_t buf[MAX_DMX+1] ;
 	struct timeval tv ;
@@ -83,7 +88,7 @@ void *OpenDmxThread::run() {
 	
 	// start code
 	buf[0] = 0x00 ;
-	m_fd = open("/dev/dmx0",O_WRONLY) ;
+	m_fd = open(path.c_str(),O_WRONLY) ;
 	
 	while(1) {
 		pthread_mutex_lock(&m_term_mutex) ;
@@ -105,7 +110,7 @@ void *OpenDmxThread::run() {
 			pthread_cond_timedwait(&m_term_cond, &m_term_mutex, &ts) ;
 			pthread_mutex_unlock(&m_term_mutex) ;
 			
-			m_fd = open("/dev/dmx0",O_WRONLY) ;
+			m_fd = open(path.c_str(),O_WRONLY) ;
 
 //			if(m_fd == -1)
 //				printf("open %d: %s\n",m_fd, strerror(errno) ) ;
@@ -127,8 +132,13 @@ void *OpenDmxThread::run() {
  * Start this thread
  *
  */
-int OpenDmxThread::start () {
-	if( pthread_create(&m_tid, NULL, ::thread_run, (void*) this) ) {
+int OpenDmxThread::start (string path) {
+	t_args args ;
+
+	args.th = this ;
+	args.path = path ;
+	
+	if( pthread_create(&m_tid, NULL, ::thread_run, (void*) &args) ) {
 		Logger::instance()->log(Logger::WARN, "pthread create failed") ;
 		return -1 ;
 	}

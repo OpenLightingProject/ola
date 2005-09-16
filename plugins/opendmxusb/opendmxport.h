@@ -15,7 +15,7 @@
  *
  *
  * opendmxport.h
- * The Art-Net plugin for lla
+ * The Open DMX plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -24,11 +24,14 @@
 
 #include <lla/port.h>
 #include <opendmxthread.h>
+#include <string>
+
+using namespace std;
 
 class OpenDmxPort : public Port  {
 
 	public:
-		OpenDmxPort(Device *parent, int id) ;
+		OpenDmxPort(Device *parent, int id,  string path) ;
 		~OpenDmxPort() ;
 
 		int write(uint8_t *data, int length);
