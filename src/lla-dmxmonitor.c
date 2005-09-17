@@ -336,8 +336,6 @@ int main (int argc, char *argv[]) {
 
 	dmx = malloc(MAXCHANNELS) ;
 
-	dmx[1] = 0x50 ;
-	
 	if(!dmx) {
 		printf("malloc failed\n") ;
 		return 1 ;
