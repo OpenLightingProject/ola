@@ -11,3 +11,4 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = liblla.pc
 
 ACLOCAL                 = aclocal -I $(auxdir)
+

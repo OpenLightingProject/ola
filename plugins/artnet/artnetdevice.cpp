@@ -37,6 +37,12 @@
 #include <lla/preferences.h>
 #include <artnet/artnet.h>
 
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+
 /*
  * Handle dmx from the network, called from libartnet
  * 
@@ -100,7 +106,8 @@ ArtNetDevice::~ArtNetDevice() {
  */
 int ArtNetDevice::start() {
 	ArtNetPort *port ;
-
+	int debug = 0 ;
+	
 	/* set up ports */
 	for(int i=0; i < 2*ARTNET_MAX_PORTS; i++) {
 		port = new ArtNetPort(this,i) ;
@@ -109,13 +116,16 @@ int ArtNetDevice::start() {
 			this->add_port(port) ;
 	}
 
+#ifdef DEBUG
+	debug = 1;
+#endif
 	
 	// create new artnet node, and and set config values
 
     if(m_prefs->get_val("ip") == "")
-		m_node = artnet_new(NULL, 1) ;
+		m_node = artnet_new(NULL, debug) ;
 	else {
-		m_node = artnet_new(m_prefs->get_val("ip").c_str(), 1) ;
+		m_node = artnet_new(m_prefs->get_val("ip").c_str(), debug) ;
 	}
 	
 	if(!m_node) {

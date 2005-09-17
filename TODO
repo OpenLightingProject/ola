@@ -6,13 +6,11 @@
 --REQUIRED--
 * shownet recv 
 * serialise so that plugins can store state
-* config files  / preferences
 
 -- NICE--
 * perhaps start llad if not already running ?
 * remember pid : plugin mappings
 * send debug to remote client - need to watch looping here (maybe lev 1&2)
-
 
 --WISH LIST--
 

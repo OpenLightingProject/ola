@@ -31,6 +31,11 @@
 #include <lla/preferences.h>
 #include <lla/universe.h>
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+
 /*
  * Handle dmx from the network, called from libshownet
  * 
@@ -89,7 +94,8 @@ ShowNetDevice::~ShowNetDevice() {
  */
 int ShowNetDevice::start() {
 	ShowNetPort *port ;
-
+	int debug = 0 ;
+	
 	/* set up ports */
 	for(int i=0; i < 2*PORTS_PER_DEVICE; i++) {
 		port = new ShowNetPort(this,i) ;
@@ -98,11 +104,15 @@ int ShowNetDevice::start() {
 			this->add_port(port) ;
 	}
 
+#ifdef DEBUG
+	debug = 1 ;
+#endif
+	
 	// create new shownet node, and set config values
     if(m_prefs->get_val("ip") == "")
-		m_node = shownet_new(NULL, 1) ;
+		m_node = shownet_new(NULL, debug) ;
 	else {
-		m_node = shownet_new(m_prefs->get_val("ip").c_str(), 1) ;
+		m_node = shownet_new(m_prefs->get_val("ip").c_str(), debug) ;
 	}
 
 	if(!m_node) {

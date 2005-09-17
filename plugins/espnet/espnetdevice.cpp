@@ -32,6 +32,10 @@
 
 #include <lla/universe.h>
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 /*
  * Handle dmx from the network, called from libespnet
  * 
@@ -102,7 +106,8 @@ EspNetDevice::~EspNetDevice() {
  */
 int EspNetDevice::start() {
 	EspNetPort *port ;
-
+	int debug = 0 ;
+	
 	/* set up ports */
 	for(int i=0; i < 2*PORTS_PER_DEVICE; i++) {
 		port = new EspNetPort(this,i) ;
@@ -111,11 +116,15 @@ int EspNetDevice::start() {
 			this->add_port(port) ;
 	}
 
+#ifdef	 DEBUG
+	debug = 1 ;
+#endif
+
 	// create new espnet node, and set config values
 	if(m_prefs->get_val("ip") == "")
-		m_node = espnet_new(NULL, 1) ;
+		m_node = espnet_new(NULL, debug) ;
 	else {
-		m_node = espnet_new(m_prefs->get_val("ip").c_str(), 1) ;
+		m_node = espnet_new(m_prefs->get_val("ip").c_str(), debug) ;
 	}
 
 	if(!m_node) {
