@@ -253,7 +253,7 @@ int Universe::port_data_changed(Port *prt) {
  *
  */
 bool Universe::in_use() {
-	return  ports_vect.size()>0 && clients_vect.size()>0;
+	return  ports_vect.size()>0 || clients_vect.size()>0;
 }
 
 
