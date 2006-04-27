@@ -33,7 +33,6 @@
  * 
  */
 Device::Device(Plugin *owner, const char *name) {
-	int i;
 	m_name = strdup(name) ;
 	m_owner = owner ;	
 }

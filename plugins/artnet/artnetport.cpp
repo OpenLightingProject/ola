@@ -52,7 +52,7 @@ int ArtNetPort::write(uint8_t *data, int length) {
 	if( !can_write())
 		return -1 ;
 	
-	if(artnet_send_dmx(dev->get_node() , this->get_id()/4 , length, data) ) {
+	if(artnet_send_dmx(dev->get_node() , this->get_id()%4 , length, data) ) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_send_dmx failed %s", artnet_strerror() ) ;
 		return -1 ;
 	}
@@ -68,7 +68,7 @@ int ArtNetPort::write(uint8_t *data, int length) {
  * @return	the amount of data read
  */
 int ArtNetPort::read(uint8_t *data, int length) {
-	uint8_t *dmx ;
+	uint8_t *dmx = NULL;
 	int len ;
 	ArtNetDevice *dev = (ArtNetDevice*) get_device() ;
 	
@@ -120,6 +120,7 @@ int ArtNetPort::set_universe(Universe *uni) {
 			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_type failed %s", artnet_strerror() ) ;
 			return -1 ;
 		}	
+		printf("patching artnet input port %i\n" , uni->get_uid() ) ;
 		if(artnet_set_port_addr(node, id-4, ARTNET_INPUT_PORT, uni->get_uid() ) ) {
 			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_addr failed %s", artnet_strerror() ) ;
 			return -1 ;

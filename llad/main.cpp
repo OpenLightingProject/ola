@@ -49,6 +49,23 @@ static void sig_interupt(int signo) {
 	llad->terminate() ;
 }
 
+/*
+ * Reload plugins
+ */
+static void sig_hup(int signo) {
+//	llad->reload_plugins() ;
+}
+
+/*
+ * Change logging level
+ *
+ * need to fix race conditions here
+ */
+static void sig_user1(int signo) {
+	Logger::instance()->increment_log_level();	
+}
+
+
 
 /*
  * Set up the interrupt signal
@@ -63,14 +80,29 @@ static int install_signal() {
 	act.sa_flags = 0;
 
 	if (sigaction(SIGINT, &act, &oact) < 0) {
-		Logger::instance()->log(Logger::WARN, "Failed to install signal") ;
+		Logger::instance()->log(Logger::WARN, "Failed to install signal SIGINT") ;
 		return -1 ;
 	}
 	
 	if (sigaction(SIGTERM, &act, &oact) < 0) {
-		Logger::instance()->log(Logger::WARN, "Failed to install signal") ;
+		Logger::instance()->log(Logger::WARN, "Failed to install signal SIGTERM") ;
 		return -1 ;
 	}
+
+	act.sa_handler = sig_hup;
+
+	if (sigaction(SIGHUP, &act, &oact) < 0) {
+		Logger::instance()->log(Logger::WARN, "Failed to install signal SIGHUP") ;
+		return -1 ;
+	}
+
+	act.sa_handler = sig_user1;
+
+	if (sigaction(SIGUSR1, &act, &oact) < 0) {
+		Logger::instance()->log(Logger::WARN, "Failed to install signal SIGUSR1") ;
+		return -1 ;
+	}
+
 
 	return 0;
 }
@@ -193,7 +225,8 @@ static void init_options(lla_options *opts) {
  */
 static int daemonise() {
 	pid_t pid;
-	int i, fd0, fd1, fd2 ;
+	unsigned int i ;
+	int fd0, fd1, fd2 ;
 	struct rlimit rl;
 	struct sigaction sa;
 	
@@ -237,6 +270,8 @@ static int daemonise() {
 	fd0 = open("/dev/null", O_RDWR);
 	fd1 = dup(0) ;
 	fd2 = dup(0) ;
+
+	return 0 ;
 }
 
 
@@ -265,7 +300,7 @@ static void handle_options(lla_options *opts) {
  * @param argc
  * @param argv
  */
-static int setup(int argc, char*argv[]) {
+static void setup(int argc, char*argv[]) {
 	lla_options opts ;
 	
 	init_options(&opts);
@@ -290,7 +325,6 @@ int main(int argc, char*argv[]) {
 	if(llad && llad->init() == 0 ) {
 		llad->run() ;
 	}
-
 	delete llad;
 	Logger::clean_up() ;
 

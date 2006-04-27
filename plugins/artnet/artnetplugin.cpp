@@ -54,7 +54,7 @@ extern "C" void destroy(Plugin* plug) {
  * TODO: allow multiple devices on different IPs ?
  */
 int ArtNetPlugin::start() {
-	int sd ;
+	int sd;
 	
 	if(m_enabled)
 		return -1 ;

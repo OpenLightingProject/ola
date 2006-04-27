@@ -33,6 +33,7 @@ class Plugin {
 	
 	public :
 		Plugin(PluginAdaptor *pa) { m_pa = pa; } 
+		virtual ~Plugin() {};
 
 		virtual char *get_name() = 0 ;
 		virtual int start() = 0 ;

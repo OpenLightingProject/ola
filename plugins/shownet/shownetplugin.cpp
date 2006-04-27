@@ -73,7 +73,6 @@ int ShowNetPlugin::start() {
 	}
 
 	// register our descriptors
-	//
 	m_pa->register_fd( m_dev->get_sd(0), PluginAdaptor::READ, m_dev)  ;
 	m_pa->register_fd( m_dev->get_sd(1), PluginAdaptor::READ, m_dev)  ;
 

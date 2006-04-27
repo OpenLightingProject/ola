@@ -31,11 +31,11 @@ class Port {
 
 	public:
 		Port(Device *parent, int id) ;
-		virtual ~Port() {} ;
+		virtual ~Port() { } ;
 
 		Device *get_device() 						{ return m_parent; }
 		int get_id() 								{ return m_pid; }
-		virtual int set_universe(Universe *uni) 	{ m_universe = uni; }
+		virtual int set_universe(Universe *uni) 	{ m_universe = uni;  return 0;}
 		virtual Universe *get_universe() 			{ return m_universe; }
 		int dmx_changed() ;
 		

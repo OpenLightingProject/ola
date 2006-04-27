@@ -105,7 +105,7 @@ EspNetDevice::~EspNetDevice() {
  *
  */
 int EspNetDevice::start() {
-	EspNetPort *port ;
+	EspNetPort *port = NULL;
 	int debug = 0 ;
 	
 	/* set up ports */
@@ -170,7 +170,7 @@ e_dev:
  *
  */
 int EspNetDevice::stop() {
-	Port *prt ;
+	Port *prt = NULL;
 
 	if (!m_enabled)
 		return 0 ;

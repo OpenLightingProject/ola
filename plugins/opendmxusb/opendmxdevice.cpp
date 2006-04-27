@@ -55,10 +55,10 @@ OpenDmxDevice::~OpenDmxDevice() {
  *
  */
 int OpenDmxDevice::start() {
-	OpenDmxPort *port ;
+	OpenDmxPort *port = NULL;
 
-							// owner, id, path
-	port = new OpenDmxPort(this,0, m_path) ;
+	// owner, id, path
+	port = new OpenDmxPort(this,0, &m_path) ;
 
 	if(port != NULL) 
 		this->add_port(port) ;
@@ -74,7 +74,7 @@ int OpenDmxDevice::start() {
  *
  */
 int OpenDmxDevice::stop() {
-	Port *prt ;
+	Port *prt = NULL;
 
 	if (!m_enabled)
 		return 0 ;

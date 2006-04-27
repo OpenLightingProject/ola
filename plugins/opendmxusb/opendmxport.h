@@ -31,7 +31,7 @@ using namespace std;
 class OpenDmxPort : public Port  {
 
 	public:
-		OpenDmxPort(Device *parent, int id,  string path) ;
+		OpenDmxPort(Device *parent, int id,  string *path) ;
 		~OpenDmxPort() ;
 
 		int write(uint8_t *data, int length);

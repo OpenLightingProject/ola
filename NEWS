@@ -1,0 +1,10 @@
+27/4/2006 lla-0.1.3
+
+	Bugfixes
+
+17/4/2006 lla-0.1.2
+
+	Support for multiple Enttec Pro devices
+	Logging levels can be changed with -USR1 signals
+
+

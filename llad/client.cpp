@@ -60,7 +60,6 @@ int Client::get_port() {
  * @return the client corrosponding to the port, or NULL if no such client exists
  */
 Client *Client::get_client(int port) {
-	int i ;
 	map<int , Client *>::iterator iter;
 
 	iter = cli_map.find(port);
@@ -78,7 +77,6 @@ Client *Client::get_client(int port) {
  * @return the client corrosponding to the port, or NULL if an error occurs
  */
 Client *Client::get_client_or_create(int port) {
-	int i ;
 	Client *cli = get_client(port) ;
 
 	if(cli == NULL) {

@@ -37,10 +37,10 @@ class OpenDmxThread {
 		OpenDmxThread();
 		~OpenDmxThread();
 
-		int start (string path) ;
+		int start (string *path) ;
 		int stop() ;
 		int write_dmx(uint8_t *data , int channels) ;
-		void *run(string path) ;
+		void *run(string *path) ;
 
 	private:
 		int do_write(uint8_t *buf, int length) ;

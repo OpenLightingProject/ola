@@ -49,8 +49,8 @@
 int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 
 	ShowNetDevice *dev = (ShowNetDevice *) d ;
-	ShowNetPort *prt ;
-	Universe *uni ;
+	ShowNetPort *prt = NULL;
+	Universe *uni = NULL ;
 
 	if ( uid > SHOWNET_MAX_UNIVERSES) 
 		return 0 ;
@@ -93,7 +93,7 @@ ShowNetDevice::~ShowNetDevice() {
  *
  */
 int ShowNetDevice::start() {
-	ShowNetPort *port ;
+	ShowNetPort *port = NULL;
 	int debug = 0 ;
 	
 	/* set up ports */
@@ -153,7 +153,7 @@ e_dev:
  *
  */
 int ShowNetDevice::stop() {
-	Port *prt ;
+	Port *prt = NULL;
 
 	if (!m_enabled)
 		return 0 ;

@@ -46,7 +46,7 @@ Network::Network() {
  *
  */
 Network::~Network() {
-	int i ;
+	unsigned int i ;
 	vector<Listener*>::iterator it ;
 
 	for (i = 0 ; i < m_rhandlers_vect.size(); i++) {
@@ -162,10 +162,11 @@ int Network::unregister_fd(int fd, Network::Direction dir) {
 /*
  *
  *
- * @return -1 on error, 0 on timeout, else the number of bytes read
+ * @return -1 on error, 0 on timeout or interrupt, else the number of bytes read
  */
 int Network::read(lla_msg *msg) {
-	int maxsd, i;
+	int maxsd ;
+	unsigned int i;
 	fd_set r_fds, w_fds;
 	struct timeval tv;
 
@@ -196,10 +197,11 @@ int Network::read(lla_msg *msg) {
 				return 0;
 				break;
 			case -1:
-				if( errno != EINTR) {
-					Logger::instance()->log(Logger::WARN, "select error: %s", strerror(errno)) ;
+				if( errno == EINTR) {
+					return 0;
 				}
-				return -1;
+				Logger::instance()->log(Logger::WARN, "select error: %s", strerror(errno)) ;
+				return -1 ;
 				break ;
 			default:
 

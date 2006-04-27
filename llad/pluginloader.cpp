@@ -48,20 +48,8 @@ PluginLoader::PluginLoader(PluginAdaptor *pa) {
  *
  */
 PluginLoader::~PluginLoader() {
-	int i;
-	map<void*,Plugin*>::iterator iter;
-	
-	for(i=0; i < m_plugin_vect.size() ; i++) {
-		// FIX: this better not fail ...
-		m_plugin_vect[i]->stop() ;
-	}
 
-	//unload all plugins
-	for(iter = m_plugin_map.begin(); iter != m_plugin_map.end(); iter++) {
-		unload_plugin((*iter).first) ;
-	}
-
-	m_plugin_map.clear() ;
+	unload_plugins() ;
 }
 
 
@@ -112,6 +100,33 @@ int PluginLoader::load_plugins(char *dirname) {
 
 	return 0 ;
 }
+
+
+
+/*
+ * unload all plugins
+ *
+ */
+int PluginLoader::unload_plugins() {
+	unsigned int i;
+	map<void*,Plugin*>::iterator iter;
+	
+	for(i=0; i < m_plugin_vect.size() ; i++) {
+		// FIX: this better not fail ...
+		m_plugin_vect[i]->stop() ;
+	}
+
+	//unload all plugins
+	for(iter = m_plugin_map.begin(); iter != m_plugin_map.end(); iter++) {
+		unload_plugin((*iter).first) ;
+	}
+
+	m_plugin_map.clear() ;	
+
+	return 0;
+}
+
+
 
 
 /*
@@ -193,7 +208,7 @@ int PluginLoader::unload_plugin(void *handle) {
 	destroy =  (destroy_t*) dlsym(handle, "destroy");
 
 	if(dlerror() != NULL) {
-		Logger::instance()->log(Logger::WARN, "Could not locate destory symbol") ;
+		Logger::instance()->log(Logger::WARN, "Could not locate destroy symbol") ;
 		return -1;
 	}
 

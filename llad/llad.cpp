@@ -33,8 +33,8 @@
  *
  */
 Llad::Llad() {
-	term = false ;
-	sd = 0;
+	m_term = false ;
+	m_reload_plugins = false;
 }
 
 /*
@@ -105,6 +105,8 @@ int Llad::init() {
 }
 
 
+
+
 /*
  * Run the daemon
  * 
@@ -118,16 +120,22 @@ int Llad::run() {
 	Logger::instance()->log(Logger::DEBUG, "Size of lla_msg_port_info is %d",  sizeof(lla_msg_port_info)) ;
 	Logger::instance()->log(Logger::DEBUG, "Size of lla_msg_uni_info is %d",  sizeof(lla_msg_uni_info)) ;
 	
-	while(!term) {
+	while(!m_term) {
+
+		if(m_reload_plugins) {
+			_reload_plugins() ;
+		}
+
 		ret = net->read(&msg) ;
 
-		if(ret < 0) 
+		if(ret < 0) {
 			// error
 			break;
-		else if (ret > 0)
+		} else if (ret > 0)
 			// got msg
 			this->handle_msg(&msg) ;
 	}
+	return 0;
 }
 
 
@@ -136,9 +144,50 @@ int Llad::run() {
  *
  */
 void Llad::terminate() {
-	term = true ;
+	m_term = true ;
 }
 
+/*
+ * Signal to reload plugins
+ */
+void Llad::reload_plugins() {
+
+	m_reload_plugins = true ;
+
+}
+
+
+/*
+ * Reload all plugins
+ */
+int Llad::_reload_plugins() {
+	int i;
+	Plugin *plug ;
+
+	Logger::instance()->log(Logger::WARN, "Reloading...") ;
+
+	pm->unload_plugins() ;
+	
+	// load plugins, this doesn't fail as such
+	// rather just tries to load as many plugins as possible
+	pm->load_plugins(PLUGIN_DIR) ;
+
+	// enable all plugins
+	for( i =0 ; i < pm->plugin_count() ; i++) {
+		plug = pm->get_plugin(i) ;
+
+		if (plug->start())
+			Logger::instance()->log(Logger::WARN, "Failed to start %s", plug->get_name()) ;
+		else
+			Logger::instance()->log(Logger::INFO, "Started %s", plug->get_name()) ;
+	}
+
+
+
+	
+	m_reload_plugins = false ;
+	return 0;
+}
 
 
 
@@ -273,8 +322,6 @@ int Llad::handle_dmx_data (lla_msg *msg) {
  */
 int Llad::handle_register(lla_msg *msg) {
 
-	int uid = msg->data.reg.uni ; 
-	
  	Client *cli = Client::get_client_or_create(msg->from.sin_port) ;
 	Universe *uni = Universe::get_universe_or_create(msg->data.reg.uni) ;
 
@@ -368,9 +415,6 @@ int Llad::handle_patch (lla_msg *msg) {
 
 	return 0 ;
 	
-e_param:
-	Logger::instance()->log(Logger::WARN, "Patch msg: (unknown dev or port)\n") ;
-	return 0 ;
 }
 
 
@@ -657,8 +701,6 @@ int Llad::send_port_info(struct sockaddr_in dst, Device *dev, int devid) {
 int Llad::send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) {
 	
 	lla_msg reply ;
-	int i ;
-	int nplugins = pm->plugin_count();
 	
 
 	memset(&reply, 0x00, sizeof(reply) );

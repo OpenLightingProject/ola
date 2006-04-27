@@ -24,6 +24,7 @@
 class FDListener {
 
 	public :
+		virtual ~FDListener() {} ;
 		virtual int fd_action() = 0 ;
 
 };

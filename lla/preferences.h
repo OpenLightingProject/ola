@@ -15,13 +15,14 @@
  *
  * preferences.h
  * Interface for the preferences class
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2006  Simon Newton
  */
 
 #ifndef PREFERENCES_H
 #define PREFERENCES_H
 
 #include <map>
+#include <vector>
 #include <string>
 
 using namespace std;
@@ -36,14 +37,17 @@ class Preferences {
 		int save() ;
 
 		int set_val(string key, string value) ;
+		int set_single_val(string key, string value) ;
+		
 		string get_val(string key) ;
+		vector<string> *get_multiple_val(string key) ;
 		
 	private:
 		int change_dir() ;
 		char *strtrim(char *str) ;
 
 		string id ;
-		map<string, string> m_pref_map ;
+		multimap<string, string> m_pref_map ;
 
 };
 

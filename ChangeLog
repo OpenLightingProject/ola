@@ -1,0 +1,13 @@
+27/4/2006 Simon Newton <<nomis52@westnet.com.au>
+
+	* Art-Net plugin bug fix
+
+17/4/2006 Simon Newton <<nomis52@westnet.com.au>
+
+    * Added support for multiple preference values per key
+	* Pro Plugin now supports multiple devices
+
+16/4/2006 Simon Newton <<nomis52@westnet.com.au>
+
+    * USR1 signals now used to change logging levels
+

@@ -30,6 +30,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+#include <list>
+
 #define LLA_CONFIG_DIR ".lla"
 #define LLA_CONFIG_PREFIX "lla-"
 #define LLA_CONFIG_SUFFIX ".conf"
@@ -88,7 +90,8 @@ int Preferences::load() {
 		key = strtrim(k_c);
 		val = strtrim(v_c);
 
-		m_pref_map[key] = val ;
+		m_pref_map.insert(pair<string,string>(key,val)) ;
+		
 	}
 
 	fclose(fh) ;
@@ -133,7 +136,20 @@ int Preferences::save() {
  * @param value
  */
 int Preferences::set_val(string key, string val) {
-	m_pref_map[key] = val ;
+	m_pref_map.insert(pair<string,string>(key,val)) ;
+	return 0;	
+}
+
+
+/*
+ * Set a preference value
+ *
+ * @param key
+ * @param value
+ */
+int Preferences::set_single_val(string key, string val) {
+	m_pref_map.insert(pair<string,string>(key,val)) ;
+	return 0;	
 }
 
 
@@ -145,10 +161,37 @@ int Preferences::set_val(string key, string val) {
  *
  */
 string Preferences::get_val(string key) {
+    map<string, string>::const_iterator iter;
 
-	return m_pref_map[key] ;
+	iter = m_pref_map.find(key) ;
+
+	if( iter != m_pref_map.end() ) {
+		return iter->second.c_str() ;
+	}
+	
+	return "" ;
 }
 
+
+/*
+ * returns all preference values corrosponding to this key
+ *
+ * the vector must be freed once used.
+ */
+vector<string> *Preferences::get_multiple_val(string key) {
+	vector<string> *vec = new vector<string> ;
+    map<string, string>::const_iterator iter;
+
+	
+	if(vec == NULL) 
+		return NULL ;
+
+	for ( iter = m_pref_map.find(key) ;  iter != m_pref_map.end() && iter->first == key ; ++iter ) {
+		vec->insert(vec->end(),  iter->second) ;
+	}
+	return vec ;
+
+}
 
 
 

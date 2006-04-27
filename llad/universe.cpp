@@ -38,8 +38,6 @@ Network *Universe::c_net;
  * @param uid	the universe id of this universe
  */
 Universe::Universe(int uid) {
-	int i;
-	
 	m_uid = uid ;
 	m_name = NULL ;
 	memset(m_data, 0x00, DMX_LENGTH) ;
@@ -85,7 +83,6 @@ void Universe::set_name(char *name) {
  * @param prt	the port to add
  */
 int Universe::add_port(Port *prt) {
-	int i ;
 	Universe *uni ;
 	vector<Port*>::iterator it ;
 	
@@ -234,9 +231,10 @@ int Universe::get_uid() {
  * @param prt 	the port that has changed
  */
 int Universe::port_data_changed(Port *prt) {
+	unsigned int i ;
 	
 	// if the port is in the current list
-	for(int i =0 ; i < ports_vect.size() ; i++) {
+	for(i =0 ; i < ports_vect.size() ; i++) {
 		if(ports_vect[i] == prt && prt->can_read() ) {
 			// read the new data and update our dependants
 			m_length = prt->read(m_data, DMX_LENGTH) ;
@@ -267,7 +265,7 @@ bool Universe::in_use() {
  *
  */
 int Universe::update_dependants() {
-	int i ;
+	unsigned int i ;
 
 	// write to all ports assigned to this unviverse
 	for(i=0 ; i < ports_vect.size() ; i++) {
@@ -292,7 +290,6 @@ int Universe::update_dependants() {
  */
 int Universe::send_dmx(Client *cli) {
 	lla_msg reply ;
-	int len ;
 	
 	memset(&reply, 0x00, sizeof(reply) );
 	
@@ -308,7 +305,7 @@ int Universe::send_dmx(Client *cli) {
 	reply.data.dmx.uni = get_uid() ;
 
 	Logger::instance()->log(Logger::DEBUG, "Sending dmx data msg to client %d", reply.to.sin_port );
-	c_net->send_msg(&reply);
+	return c_net->send_msg(&reply);
 }
 
 
@@ -323,7 +320,6 @@ int Universe::send_dmx(Client *cli) {
  * @param uid	the uid of the required universe
  */
 Universe *Universe::get_universe(int uid) {
-	int i ;
 	map<int , Universe *>::iterator iter;
 
 	iter = uni_map.find(uid);
@@ -341,7 +337,6 @@ Universe *Universe::get_universe(int uid) {
  * @return	the universe, or NULL on error
  */
 Universe *Universe::get_universe_or_create(int uid) {
-	int i ;
 	Universe *uni = get_universe(uid) ;
 
 	if(uni == NULL) {
@@ -371,6 +366,7 @@ int Universe::clean_up() {
 	}
 
 	uni_map.clear() ;
+	return 0;
 }
 
 
@@ -393,7 +389,7 @@ int Universe::universe_count() {
  * @return	the number of entries in the list
  */
 int Universe::get_list(Universe ***head) {
-	int i, numb = Universe::universe_count() ;
+	int numb = Universe::universe_count() ;
 	Universe **ptr ;
 	map<int ,Universe*>::iterator iter;
 	
@@ -418,4 +414,5 @@ int Universe::get_list(Universe ***head) {
  */
 int Universe::set_net(Network *net) {
 	c_net = net ;
+	return 0;
 }

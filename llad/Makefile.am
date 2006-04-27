@@ -9,7 +9,7 @@ llad_SOURCES = main.cpp devicemanager.cpp devicemanager.h  pluginadaptor.cpp\
 				pluginloader.cpp pluginloader.h universe.cpp logger.cpp\
 				client.cpp client.h preferences.cpp
 
-
+llad_CFLAGS = -Wall -Werror
 llad_LDADD = @LIBS@ -ldl
 llad_LDFLAGS = -rdynamic
 

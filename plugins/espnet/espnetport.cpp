@@ -95,7 +95,7 @@ int EspNetPort::write(uint8_t *data, int length) {
  * @return	the amount of data read
  */
 int EspNetPort::read(uint8_t *data, int length) {
-	uint8_t *dmx ;
+	uint8_t *dmx = NULL ;
 	int len ;
 	EspNetDevice *dev = (EspNetDevice*) get_device() ;
 	

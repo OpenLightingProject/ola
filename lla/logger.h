@@ -27,7 +27,7 @@ class Logger {
 
 	public:
 
-		enum Level{EMERG,CRIT,WARN,INFO,DEBUG};
+		enum Level{EMERG,CRIT,WARN,INFO,DEBUG, LOG_MAX};
 		enum Output{STDERR,SYSLOG};
 		
 		static Logger *instance() ;
@@ -35,6 +35,7 @@ class Logger {
 		static void clean_up() ;
 		
 		void log(Logger::Level lev, const char *fmt, ...) ;
+		void increment_log_level() ;
 
 	private :
 		Logger(Logger::Level level, Logger::Output output) ;

@@ -105,7 +105,8 @@ ArtNetDevice::~ArtNetDevice() {
  *
  */
 int ArtNetDevice::start() {
-	ArtNetPort *port ;
+	ArtNetPort *port = NULL ;
+	Port *prt = NULL;
 	int debug = 0 ;
 	
 	/* set up ports */
@@ -130,7 +131,7 @@ int ArtNetDevice::start() {
 	
 	if(!m_node) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_new failed %s", artnet_strerror() ) ;
-		return -1 ;
+		goto e_dev ;
 	}
 
 	// node config
@@ -178,6 +179,12 @@ e_artnet_start:
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_destroy failed: %s", artnet_strerror()) ;
 			
 e_dev:
+	for(int i=0; i < port_count() ; i++) {
+		prt = get_port(i) ;
+		if(prt != NULL) 
+			delete prt ;
+	}
+
 	return -1 ;
 }
 
@@ -187,7 +194,7 @@ e_dev:
  *
  */
 int ArtNetDevice::stop() {
-	Port *prt ;
+	Port *prt = NULL;
 
 	if (!m_enabled)
 		return 0 ;

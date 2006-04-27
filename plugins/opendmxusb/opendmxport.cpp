@@ -26,21 +26,26 @@
 
 #define min(a,b) a<b?a:b
 
-OpenDmxPort::OpenDmxPort(Device *parent, int id, string path) : Port(parent, id) {
+OpenDmxPort::OpenDmxPort(Device *parent, int id, string *path) : Port(parent, id) {
 	m_thread = new OpenDmxThread() ;
-	m_thread->start(path) ;
+	
+	if(m_thread != NULL) {
+		m_thread->start(path) ;
+	}
 
 }
 
 #include <stdio.h>
 
 OpenDmxPort::~OpenDmxPort() {
-	m_thread->stop() ;
-	delete m_thread;
+	if(m_thread != NULL) {
+		m_thread->stop() ;
+		delete m_thread;
+	}
 }
 
 /*
- * The read operation is not supported in drivers)
+ * The read operation is not supported in drivers
  *
  */
 inline int OpenDmxPort::can_read() { return 0; }
@@ -61,7 +66,7 @@ int OpenDmxPort::write(uint8_t *data, int length) {
 	if( !can_write())
 		return -1 ;
 
-	m_thread->write_dmx(data,length) ;
+//	m_thread->write_dmx(data,length) ;
 	return 0;
 }
 

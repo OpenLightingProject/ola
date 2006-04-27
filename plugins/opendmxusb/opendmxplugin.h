@@ -29,7 +29,7 @@ class OpenDmxDevice ;
 class OpenDmxPlugin : public Plugin {
 
 	public:
-		OpenDmxPlugin(PluginAdaptor *pa) : Plugin(pa) { m_enabled = false; }
+		OpenDmxPlugin(PluginAdaptor *pa) : Plugin(pa) { m_enabled = false; m_dev = NULL; m_prefs = NULL; }
 
 		int start();
 		int stop();

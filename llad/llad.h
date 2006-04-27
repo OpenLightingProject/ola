@@ -36,6 +36,7 @@ class Llad {
 		int init() ;
 		int run() ;
 		void terminate() ;
+		void reload_plugins() ;
 
 	private :
 		int handle_syn(lla_msg *msg) ;
@@ -61,9 +62,10 @@ class Llad {
 		int send_port_info(struct sockaddr_in dst, Device *dev, int devid) ;
 
 		int unpatch_port(Port *prt) ;
-		
-		bool term ;
-		int sd ;
+		int _reload_plugins() ;
+
+		bool m_term ;
+		bool m_reload_plugins ;
 
 		DeviceManager *dm ;
 		PluginLoader *pm ;

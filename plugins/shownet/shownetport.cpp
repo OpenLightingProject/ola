@@ -95,7 +95,7 @@ int ShowNetPort::write(uint8_t *data, int length) {
  * @return	the amount of data read
  */
 int ShowNetPort::read(uint8_t *data, int length) {
-	uint8_t *dmx ;
+	uint8_t *dmx = NULL;
 	int len ;
 	ShowNetDevice *dev = (ShowNetDevice*) get_device() ;
 	

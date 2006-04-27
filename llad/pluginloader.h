@@ -34,7 +34,8 @@ class PluginLoader {
 		PluginLoader(class PluginAdaptor *pa) ;
 		~PluginLoader() ;
 
-		int load_plugins(char *dirname) ;		
+		int load_plugins(char *dirname) ;
+		int unload_plugins() ;
 		int plugin_count() ;
 		Plugin *get_plugin(int id) ;
 	protected:

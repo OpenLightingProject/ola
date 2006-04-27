@@ -41,13 +41,15 @@
 
 typedef struct {
 	OpenDmxThread *th ;
-	string path ;
+	string *path ;
 } t_args ;
+
 
 void *thread_run(void *d) {
 	t_args *args = (t_args*) d ;
 
 	args->th->run(args->path) ;
+	free(args) ;
 	
 }
 
@@ -76,11 +78,12 @@ OpenDmxThread::~OpenDmxThread() {
 	pthread_mutex_destroy(&m_mutex);
 }
 
+
 /*
  * run this thread
  *
  */
-void *OpenDmxThread::run(string path) {
+void *OpenDmxThread::run(string *path) {
 
 	uint8_t buf[MAX_DMX+1] ;
 	struct timeval tv ;
@@ -88,7 +91,7 @@ void *OpenDmxThread::run(string path) {
 	
 	// start code
 	buf[0] = 0x00 ;
-	m_fd = open(path.c_str(),O_WRONLY) ;
+	m_fd = open(path->c_str(),O_WRONLY) ;
 	
 	while(1) {
 		pthread_mutex_lock(&m_term_mutex) ;
@@ -97,8 +100,7 @@ void *OpenDmxThread::run(string path) {
 			break ;
 		}
 		pthread_mutex_unlock(&m_term_mutex) ;
-		
-		
+	
 		if(m_fd == -1) {
 			if(gettimeofday(&tv,NULL) < 0 ) {
 				printf("gettimeofday error\n") ;
@@ -110,10 +112,10 @@ void *OpenDmxThread::run(string path) {
 			pthread_cond_timedwait(&m_term_cond, &m_term_mutex, &ts) ;
 			pthread_mutex_unlock(&m_term_mutex) ;
 			
-			m_fd = open(path.c_str(),O_WRONLY) ;
+			m_fd = open(path->c_str(),O_WRONLY) ;
 
-//			if(m_fd == -1)
-//				printf("open %d: %s\n",m_fd, strerror(errno) ) ;
+			if(m_fd == -1)
+				printf("open %d: %s\n",m_fd, strerror(errno) ) ;
 
 		} else {
 			pthread_mutex_lock(&m_mutex) ;
@@ -132,16 +134,18 @@ void *OpenDmxThread::run(string path) {
  * Start this thread
  *
  */
-int OpenDmxThread::start (string path) {
-	t_args args ;
+int OpenDmxThread::start (string *path) {
+	// this is passed to the thread and free'ed there
+	t_args *args = (t_args*) malloc(sizeof(t_args)) ;
 
-	args.th = this ;
-	args.path = path ;
+	args->th = this ;
+	args->path = path ;
 	
-	if( pthread_create(&m_tid, NULL, ::thread_run, (void*) &args) ) {
+	if( pthread_create(&m_tid, NULL, ::thread_run, (void*) args) ) {
 		Logger::instance()->log(Logger::WARN, "pthread create failed") ;
 		return -1 ;
 	}
+
 	return 0;
 }
 
@@ -150,7 +154,7 @@ int OpenDmxThread::start (string path) {
  *
  */
 int OpenDmxThread::stop() {
-		
+
 	pthread_mutex_lock(&m_term_mutex) ;
 	m_term = true;
 	pthread_mutex_unlock(&m_term_mutex) ;

@@ -51,7 +51,7 @@ DummyDevice::~DummyDevice() {
  *
  */
 int DummyDevice::start() {
-	DummyPort *port ;
+	DummyPort *port = NULL;
 
 	if(m_enabled)
 		return -1 ;
@@ -76,7 +76,7 @@ int DummyDevice::start() {
  *
  */
 int DummyDevice::stop() {
-	Port *prt ;
+	Port *prt = NULL;
 	
 	if (!m_enabled)
 		return 0 ;

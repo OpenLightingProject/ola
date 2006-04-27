@@ -4,7 +4,7 @@
 AC_PREREQ(2.57)
 AC_INIT(configure.in)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(lla, 0.1.1-b2)
+AM_INIT_AUTOMAKE(lla, 0.1.3)
 
 # Checks for programs.
 AC_PROG_CC
@@ -79,8 +79,8 @@ AC_OUTPUT( Makefile \
 	   lla/Makefile		\
 	   plugins/artnet/Makefile	\
 	   plugins/dummy/Makefile	\
-	   plugins/opendmxusb/Makefile	\
 	   plugins/espnet/Makefile	\
 	   plugins/shownet/Makefile	\
+	   plugins/usbpro/Makefile	\
 	   liblla.pc
 	    )

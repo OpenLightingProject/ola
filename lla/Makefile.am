@@ -4,6 +4,8 @@ AM_CFLAGS = -Wall -Werror -Wformat -W
 
 lib_LTLIBRARIES = liblla.la
 liblla_la_SOURCES = lla.c private.h lla.h
+liblla_la_LDFLAGS = -version-info 0:0:0
+
 
 EXTRA_DIST = lla.h plugin.h
 

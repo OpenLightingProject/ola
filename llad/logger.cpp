@@ -24,6 +24,10 @@
 
 Logger *Logger::s_instance = NULL ;
 
+Logger::Level operator++(Logger::Level &l) {
+	return l = static_cast<Logger::Level>(l+1) ;
+
+}
 /*
  * create a new logger
  *
@@ -93,6 +97,16 @@ void Logger::log(Logger::Level level, const char *fmt, ...) {
 	va_end(ap) ;
 }
 
+void Logger::increment_log_level() {
+	++m_level;
+
+	if(m_level == LOG_MAX) {
+		m_level = EMERG ;
+	}
+
+	log(EMERG, "Changed log level to %i\n", m_level) ;
+
+}
 
 /*
  * Grab an instance of the logger
@@ -109,8 +123,8 @@ Logger *Logger::instance() {
 
 
 /*
- * Grab an instanceo of the logger, setting the level and output
- * if it doesn't already exists
+ * Grab an instance of the logger, setting the level and output
+ * if it doesn't already exist
  *
  * @param level		the log level
  * @param output	where to send the logs to
@@ -136,3 +150,6 @@ void Logger::clean_up() {
 		Logger::s_instance = NULL ;
 	}
 }
+
+
+
