@@ -10,7 +10,7 @@ lla_dmxmonitor_SOURCES = lla-dmxmonitor.c
 lla_dmxmonitor_LDADD = @LIBS@ -llla -lcurses
 endif 
 
-bin_PROGRAMS = lla_patch lla_dev_info lla_plugin_info lla_uni_info lla_uni_name lla_uni_data lla_latency $(NCURSES_PROGS)
+bin_PROGRAMS = lla_patch lla_dev_info lla_plugin_info lla_uni_info lla_uni_name lla_uni_data lla_latency lla_latency2 $(NCURSES_PROGS)
 
 lla_patch_SOURCES = lla-patch.c
 lla_dev_info_SOURCES = lla-dev-info.c
@@ -19,3 +19,4 @@ lla_uni_info_SOURCES = lla-uni-info.c
 lla_uni_name_SOURCES = lla-uni-name.c
 lla_uni_data_SOURCES = lla-uni-data.c
 lla_latency_SOURCES = lla-latency.c
+lla_latency2_SOURCES = lla-latency2.c
