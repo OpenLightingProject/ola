@@ -2,3 +2,9 @@ Linux Lighting Architecture - lla
 ---------------------------------
 
 lla consists of two parts, the daemon llad and the library, liblla.
+
+
+Credits
+---------------------------------
+
+Thanks to Enttec who provided a DMX USB Pro for testing.

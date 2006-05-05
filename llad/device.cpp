@@ -63,6 +63,9 @@ inline Plugin *Device::get_owner() const {
  *
  */
 Port *Device::get_port(int pid) const {
+	if (pid < 0 || pid > m_ports_vect.size() ) 
+		return NULL ;
+
 	return m_ports_vect[pid] ;
 }
 

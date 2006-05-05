@@ -146,6 +146,10 @@ int PluginLoader::plugin_count() {
  * @return	the plugin with the specified id
  */
 Plugin *PluginLoader::get_plugin(int id) {
+
+	if ( id < 0 || id > m_plugin_vect.size() ) 
+		return NULL ;
+
 	return m_plugin_vect[id] ;
 }
 

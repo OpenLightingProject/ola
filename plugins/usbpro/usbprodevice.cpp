@@ -481,7 +481,8 @@ int UsbProDevice::w_handle_snorep(pms_snorep *rep, int len) {
  *
  */
 int UsbProDevice::w_recv() {
-	uint8_t byte, label ;
+	uint8_t byte = 0x00;
+	uint8_t label ;
 	int cnt, unread, plen, bytes_read;
 	pmu buf ;
 	
