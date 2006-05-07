@@ -193,10 +193,8 @@ shownet_node ShowNetDevice::get_node() const {
  * return the sd of this device
  *
  */
-int ShowNetDevice::get_sd(int sd) const {
-	int ret ;
-	sd = sd==0?0:1;
-	ret = shownet_get_sd(m_node,sd) ;
+int ShowNetDevice::get_sd() const {
+	int ret = shownet_get_sd(m_node) ;
 
 	if(ret < 0) {
 		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_get_sd failed: %s", shownet_strerror()) ;

@@ -73,8 +73,7 @@ int ShowNetPlugin::start() {
 	}
 
 	// register our descriptors
-	m_pa->register_fd( m_dev->get_sd(0), PluginAdaptor::READ, m_dev)  ;
-	m_pa->register_fd( m_dev->get_sd(1), PluginAdaptor::READ, m_dev)  ;
+	m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev)  ;
 
 	m_pa->register_device(m_dev) ;
 
@@ -93,8 +92,7 @@ int ShowNetPlugin::stop() {
 	if (!m_enabled)
 		return -1 ;
 	
-	m_pa->unregister_fd( m_dev->get_sd(0), PluginAdaptor::READ)  ;
-	m_pa->unregister_fd( m_dev->get_sd(1), PluginAdaptor::READ)  ;
+	m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ)  ;
 
 	// stop the device
 	if (m_dev->stop())

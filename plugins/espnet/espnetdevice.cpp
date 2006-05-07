@@ -15,7 +15,7 @@
  *
  * espnetdevice.cpp
  * Esp-Net device
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2006  Simon Newton
  *
  *
  */
@@ -48,14 +48,16 @@
  */
 int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 
-//	Logger::instance()->log(Logger::WARN, "EspNetPlugin: got data") ;
+	Logger::instance()->log(Logger::WARN, "EspNetPlugin: got data for uni %i", uid) ;
 	EspNetDevice *dev = (EspNetDevice *) d ;
 	EspNetPort *prt ;
 	Universe *uni ;
 	for(int i =0 ; i < dev->port_count(); i++) {
 		prt = (EspNetPort*) dev->get_port(i) ;
 		uni = prt->get_universe() ;
+		
 		if( prt->can_read() && uni != NULL && uni->get_uid() == uid) {
+				
 			prt->update_buffer(data,len) ;
 		}
 	}
@@ -210,10 +212,8 @@ espnet_node EspNetDevice::get_node() const {
  * return the sd of this device
  *
  */
-int EspNetDevice::get_sd(int sd) const {
-	int ret ;
-	sd = sd==0?0:1;
-	ret = espnet_get_sd(m_node,sd) ;
+int EspNetDevice::get_sd() const {
+	int ret = espnet_get_sd(m_node) ;
 
 	if(ret < 0) {
 		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_get_sd failed: %s", espnet_strerror()) ;
