@@ -77,12 +77,9 @@ int ArtNetPlugin::start() {
 	}
 
 	// register our descriptors, this should really be fatal for this plugin if it fails
-	if ((sd = m_dev->get_sd(0)) >= 0)
+	if ((sd = m_dev->get_sd()) >= 0)
 		m_pa->register_fd( sd, PluginAdaptor::READ, m_dev) ;
 	
-	if ((sd = m_dev->get_sd(1)) >= 0)
-		m_pa->register_fd( sd, PluginAdaptor::READ, m_dev)  ;
-
 	m_pa->register_device(m_dev) ;
 
 	m_enabled = true ;
@@ -100,8 +97,7 @@ int ArtNetPlugin::stop() {
 	if (!m_enabled)
 		return -1 ;
 	
-	m_pa->unregister_fd( m_dev->get_sd(0), PluginAdaptor::READ)  ;
-	m_pa->unregister_fd( m_dev->get_sd(1), PluginAdaptor::READ)  ;
+	m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ)  ;
 
 	// stop the device
 	if (m_dev->stop())

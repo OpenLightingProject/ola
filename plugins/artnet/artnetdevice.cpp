@@ -234,11 +234,10 @@ artnet_node ArtNetDevice::get_node() const {
  * return the sd of this device
  *
  */
-int ArtNetDevice::get_sd(int id) const {
+int ArtNetDevice::get_sd() const {
 	int ret ;
-	id = id?1:0 ;
 	
-	ret = artnet_get_sd(m_node,id) ;
+	ret = artnet_get_sd(m_node) ;
 
 	if(ret < 0) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_get_sd failed: %s", artnet_strerror()) ;

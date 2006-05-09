@@ -36,7 +36,7 @@ class ArtNetDevice : public Device, public FDListener {
 		int start() ;
 		int stop() ;
 		artnet_node get_node() const;
-		int get_sd(int id) const ;
+		int get_sd() const ;
 		int fd_action() ;
 		int save_config() ;
 		int configure(void *req, int len) ;
