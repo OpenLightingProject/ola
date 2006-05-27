@@ -10,7 +10,7 @@ liblla_la_LDFLAGS = -version-info 0:0:0
 EXTRA_DIST = lla.h plugin.h
 
 pkginclude_HEADERS = lla.h messages.h device.h fdlistener.h logger.h \
-						pluginadaptor.h plugin.h port.h universe.h preferences.h
+						pluginadaptor.h plugin.h port.h universe.h preferences.h fdmanager.h
 
 pkgincludedir = $(includedir)/lla
 
