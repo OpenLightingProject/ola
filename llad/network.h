@@ -23,6 +23,7 @@
 
 #include <lla/messages.h>
 #include <lla/fdlistener.h>
+#include <lla/fdmanager.h>
 #include <vector>
 
 using namespace std;
@@ -45,7 +46,7 @@ class Network {
 		~Network() ;
 		int init() ;
 		int run() ;
-		int register_fd(int fd, Network::Direction dir, FDListener *listener) ;
+		int register_fd(int fd, Network::Direction dir, FDListener *listener, FDManager *manager) ;
 		int unregister_fd(int fd, Network::Direction dir) ;
 		
 		int read(lla_msg *msg) ;
@@ -54,11 +55,9 @@ class Network {
 	private :
 		class Listener {
 			public:
-				Listener(int fd, FDListener *listener ) { 
-					m_fd = fd ;
-					m_listener = listener;
-				}
+				Listener(int fd, FDListener *listener, FDManager *manager ) : m_fd(fd) , m_listener(listener) , m_manager(manager) {} ;
 				FDListener *m_listener ;
+				FDManager *m_manager ;
 				int	m_fd;
 		};
 

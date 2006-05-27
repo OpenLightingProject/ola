@@ -57,7 +57,8 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 	
 	prt = (ShowNetPort*) dev->get_port(uid) ;
 	uni = prt->get_universe() ;
-	if( prt->can_read() && uni != NULL && uni->get_uid() == uid) {
+
+	if( prt->can_read() && uni != NULL && prt->get_id()%8  == uid) {
 		prt->update_buffer(data,len) ;
 	}
 	

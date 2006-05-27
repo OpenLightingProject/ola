@@ -30,12 +30,12 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
+#include <lla/logger.h>
+#include <lla/preferences.h>
+#include <lla/universe.h>
 
 #include "usbprodevice.h"
 #include "usbproport.h"
-
-#include <lla/logger.h>
-#include <lla/preferences.h>
 
 
 #if HAVE_CONFIG_H
@@ -138,7 +138,8 @@ e_dev:
  */
 int UsbProDevice::stop() {
 	Port *prt = NULL;
-
+	Universe *uni ;
+	
 	if (!m_enabled)
 		return 0 ;
 
@@ -147,8 +148,14 @@ int UsbProDevice::stop() {
 	
 	for(int i=0; i < port_count() ; i++) {
 		prt = get_port(i) ;
-		if(prt != NULL) 
+		if(prt != NULL) {
+			uni = prt->get_universe() ;
+
+			if(uni) 
+				uni->remove_port(prt) ;
+				
 			delete prt ;
+		}
 	}
 
 	m_enabled = false ;
@@ -172,7 +179,15 @@ int UsbProDevice::get_sd() const {
  * @param	data	user data (pointer to usbpro_device_priv
  */
 int UsbProDevice::fd_action() {
+	int unread ;
+	// check if there is data to be read 
+	if ( ioctl( m_fd, FIONREAD , &unread) ) {
+		// the device has been removed
+		Logger::instance()->log(Logger::WARN, "UsbProPlugin: device removed" ) ;
+		return -1 ;
+	}
 
+							
 	w_recv() ;
 	
 	return 0;
@@ -413,7 +428,7 @@ int UsbProDevice::w_send_snoreq() {
  */
 int UsbProDevice::w_handle_dmx(pms_rdmx *dmx, int len) {
 
-	printf(" stc %hhx  %hhx %hhx\n", dmx->dmx[0], dmx->dmx[1], dmx->dmx[2]) ;
+//	printf(" stc %hhx  %hhx %hhx\n", dmx->dmx[0], dmx->dmx[1], dmx->dmx[2]) ;
 
 	//copy to buffer here
 	return 0;
@@ -453,11 +468,11 @@ int UsbProDevice::w_handle_cos(pms_cos *cos, int len) {
 int UsbProDevice::w_handle_prmrep(pms_prmrep *rep, int len) {
 	int frmvr = rep->firmv + (rep->firmv_hi <<8) ;
 	
-	printf("got param reply\n") ;
-	printf(" firmware is %i\n", frmvr ) ;
-	printf(" brk tm %hhx\n", rep->brtm) ;
-	printf(" mab tm %hhx\n", rep->mabtm) ;
-	printf(" rate %hhx\n", rep->rate) ;
+//	printf("got param reply\n") ;
+//	printf(" firmware is %i\n", frmvr ) ;
+//	printf(" brk tm %hhx\n", rep->brtm) ;
+//	printf(" mab tm %hhx\n", rep->mabtm) ;
+//	printf(" rate %hhx\n", rep->rate) ;
 
 //	send_snoreq() ;
 }
@@ -467,11 +482,11 @@ int UsbProDevice::w_handle_prmrep(pms_prmrep *rep, int len) {
  */
 int UsbProDevice::w_handle_snorep(pms_snorep *rep, int len) {
 	
-	printf("got serno reply\n") ;
-	printf(" 1 %hhx\n", rep->srno[0] ) ;
-	printf(" 2 %hhx\n", rep->srno[1]) ;
-	printf(" 3 %hhx\n", rep->srno[2]) ;
-	printf(" 4 %hhx\n", rep->srno[3]) ;
+//	printf("got serno reply\n") ;
+//	printf(" 1 %hhx\n", rep->srno[0] ) ;
+//	printf(" 2 %hhx\n", rep->srno[1]) ;
+//	printf(" 3 %hhx\n", rep->srno[2]) ;
+//	printf(" 4 %hhx\n", rep->srno[3]) ;
 
 //	send_rcmode(1) ;
 }
@@ -490,7 +505,7 @@ int UsbProDevice::w_recv() {
 		cnt = read(m_fd,&byte,1) ;
 
 		if(cnt != 1) {
-			printf("read to much %i\n", cnt) ;
+			printf("1, read to much %i\n", cnt) ;
 			return -1 ;
 		}
 
@@ -500,20 +515,20 @@ int UsbProDevice::w_recv() {
 	cnt = read(m_fd,&label,1) ;
 	
 	if(cnt != 1) {
-		printf("read to much %i\n", cnt);
+		printf("2, read to much %i\n", cnt);
 		return 1 ;
 	}
 
 	cnt = read(m_fd, &byte,1);
 	if (cnt != 1) { 
-	    printf("read to much %i\n", cnt);
+	    printf("3, read to much %i\n", cnt);
     	return 1;
 	}
 	plen = byte ;
 	
 	cnt = read(m_fd, &byte,1);
 	if (cnt != 1) { 
-	    printf("read to much %i\n", cnt);
+	    printf("4, read to much %i\n", cnt);
     	return 1;
 	}
 	plen += byte<<8;
@@ -530,13 +545,12 @@ int UsbProDevice::w_recv() {
 	// check this is a valid frame with an end byte
 	cnt = read(m_fd, &byte,1);
 	if (cnt != 1) { 
-	    printf("read to much %i\n", cnt);
+	    printf("5, read to much %i\n", cnt);
     	return 1;
 	}
 
 	if(byte == 0xe7) {
 		// looks ok
-//		printf("read %i bytes\n", plen) ;
 	
 		switch(label) {
 			case ID_RDMX:
@@ -557,7 +571,6 @@ int UsbProDevice::w_recv() {
 	}
 
 	ioctl(m_fd, FIONREAD, &unread) ;
-//	printf("finished reading,  %d bytes remain\n", unread) ;
 
 
 }

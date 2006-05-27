@@ -45,9 +45,9 @@ PluginAdaptor::PluginAdaptor(DeviceManager *dm, Network *net) {
  *
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener) {
+int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager ) {
 	Network::Direction ndir = dir==PluginAdaptor::READ ? Network::READ : Network::WRITE ;
-	return net->register_fd(fd,ndir,listener) ;
+	return net->register_fd(fd,ndir,listener, manager) ;
 }
 
 /*

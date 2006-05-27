@@ -118,7 +118,7 @@ char *ShowNetPlugin::get_desc() {
 "This plugin creates a single device with 8 input and 8 output ports.\n"
 "\n"
 "The ports correspond to the DMX channels used in the shownet protocol. "
-"For example port 0 is channels 1 - 512, port 1 is channels 513 - 1024.\n"
+"For example port 0 (and 8)  is channels 1 - 512, port 1 (and 9) are channels 513 - 1024.\n"
 "\n"
 "--- Config file : lla-shownet.conf ---\n"
 "\n"

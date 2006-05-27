@@ -58,6 +58,7 @@ Network::~Network() {
 	}
 	m_rhandlers_vect.clear() ;
 	m_whandlers_vect.clear() ;
+
 }
 
 
@@ -108,10 +109,10 @@ e_socket:
  *
  * @return 0 on sucess, -1 on failure
  */
-int Network::register_fd(int fd, Network::Direction dir, FDListener *listener) {
+int Network::register_fd(int fd, Network::Direction dir, FDListener *listener, FDManager *manager ) {
 	Listener *list ;
 	
-	list = new Listener(fd, listener) ;
+	list = new Listener(fd, listener, manager) ;
 
 	// add to handlers
 	if( dir == Network::READ ) {
@@ -165,7 +166,7 @@ int Network::unregister_fd(int fd, Network::Direction dir) {
  * @return -1 on error, 0 on timeout or interrupt, else the number of bytes read
  */
 int Network::read(lla_msg *msg) {
-	int maxsd ;
+	int maxsd, ret ;
 	unsigned int i;
 	fd_set r_fds, w_fds;
 	struct timeval tv;
@@ -207,13 +208,22 @@ int Network::read(lla_msg *msg) {
 
 				// loop thru registered sd's
 				for(i=0; i < m_rhandlers_vect.size() ; i++) {
-					if(FD_ISSET(m_rhandlers_vect[i]->m_fd,&r_fds) )
-						m_rhandlers_vect[i]->m_listener->fd_action() ;
+					if(FD_ISSET(m_rhandlers_vect[i]->m_fd,&r_fds) ) {
+						ret = m_rhandlers_vect[i]->m_listener->fd_action() ;
+
+						if( ret < 0) {
+							m_rhandlers_vect[i]->m_manager->fd_error(ret, m_rhandlers_vect[i]->m_listener ) ;
+						}
+					}
 				}
 
 				for(i=0; i < m_whandlers_vect.size() ; i++) {
 					if(FD_ISSET(m_whandlers_vect[i]->m_fd,&r_fds) ) {
-						m_whandlers_vect[i]->m_listener->fd_action() ;
+						ret = m_whandlers_vect[i]->m_listener->fd_action() ;
+
+						if( ret < 0) {
+							m_whandlers_vect[i]->m_manager->fd_error(ret, m_whandlers_vect[i]->m_listener ) ;
+						}
 					}
 				}
 				

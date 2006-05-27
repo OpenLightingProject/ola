@@ -24,10 +24,11 @@
 
 #include <vector>
 #include <lla/plugin.h>
+#include <lla/fdmanager.h>
 
 class UsbProDevice ;
 
-class UsbProPlugin : public Plugin {
+class UsbProPlugin : public Plugin, public FDManager {
 
 	public:
 		UsbProPlugin(PluginAdaptor *pa) : Plugin(pa) {m_enabled = false; }
@@ -37,7 +38,7 @@ class UsbProPlugin : public Plugin {
 		bool is_enabled() 	{ return m_enabled; }
 		char *get_name() 	{ return "UsbPro Plugin"; }
 		char *get_desc() ;
-				
+		int fd_error(int error, FDListener *listener) ;
 	private:
 		Preferences *load_prefs() ;
 		

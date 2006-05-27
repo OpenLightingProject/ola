@@ -48,7 +48,6 @@
  */
 int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 
-	Logger::instance()->log(Logger::WARN, "EspNetPlugin: got data for uni %i", uid) ;
 	EspNetDevice *dev = (EspNetDevice *) d ;
 	EspNetPort *prt ;
 	Universe *uni ;

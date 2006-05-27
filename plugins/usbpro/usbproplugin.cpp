@@ -23,6 +23,7 @@
 
 #include <lla/pluginadaptor.h>
 #include <lla/preferences.h>
+#include <lla/logger.h>
 
 #include "usbproplugin.h"
 #include "usbprodevice.h"
@@ -84,9 +85,10 @@ int UsbProPlugin::start() {
 			continue ;
 		}
 
-		// register our descriptors, this should really be fatal
+		// register our descriptors, with us as the manager
+		// this should really be fatal
 		if ((sd = dev->get_sd()) >= 0)
-			m_pa->register_fd( sd, PluginAdaptor::READ, dev) ;
+			m_pa->register_fd( sd, PluginAdaptor::READ, dev, this) ;
 	
 		m_pa->register_device(dev) ;
 
@@ -153,7 +155,35 @@ char *UsbProPlugin::get_desc() {
 "The device to use. Multiple devices are allowed\n";
 }
 
+/*
+ * Called if fd_action returns an error for one of our devices
+ *
+ */
+int UsbProPlugin::fd_error(int error, FDListener *listener) {
+	UsbProDevice *dev  = dynamic_cast<UsbProDevice *> (listener) ;
+	vector<UsbProDevice *>::iterator iter ;
+	
+	if( ! dev) {
+		Logger::instance()->log(Logger::WARN, "fd_error : dynamic cast failed") ;
+		return 0;
+	}
 
+	// stop this device
+	m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ)  ;
+
+	// stop the device
+	dev->stop() ;
+		
+	m_pa->unregister_device(dev) ;
+
+	iter = find(m_devices.begin() , m_devices.end(), dev) ;
+	if(*iter == dev)
+		m_devices.erase(iter) ;
+	
+	delete dev ;
+
+	return 0;
+}
 
 /*
  * load the plugin prefs and default to sensible values

@@ -27,6 +27,7 @@
 
 class DeviceManager ;
 class Network ;
+class FDManager ;
 
 class PluginAdaptor {
 
@@ -34,8 +35,9 @@ class PluginAdaptor {
 		enum Direction{READ, WRITE};
 			
 		PluginAdaptor(DeviceManager *dm, Network *net) ;
-		int register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener) ;
+		int register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager = NULL ) ;
 		int unregister_fd(int fd, PluginAdaptor::Direction dir) ;
+
 		int register_device(Device *dev) ;
 		int unregister_device(Device *dev) ;
 
