@@ -135,6 +135,12 @@ int ArtNetDevice::start() {
 	}
 
 	// node config
+	if(artnet_setoem(m_node, 0x04, 0x31)  ) {
+		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_setoem failed: %s", artnet_strerror()) ;
+		goto e_artnet_start ;
+	}
+
+	
 	if(artnet_set_short_name(m_node, m_prefs->get_val("short_name").c_str()) ) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_short_name failed: %s", artnet_strerror()) ;
 		goto e_artnet_start ;
