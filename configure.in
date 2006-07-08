@@ -45,6 +45,11 @@ AC_CHECK_FUNCS([gettimeofday strdup strrchr inet_ntoa memset select socket strer
 AC_CHECK_LIB(artnet, artnet_new,[have_artnet="yes"]) 
 AM_CONDITIONAL(HAVE_ARTNET, test "${have_artnet}" = "yes")
 
+
+# check for libeartnet
+AC_CHECK_LIB(eartnet, eartnet_new,[have_eartnet="yes"]) 
+AM_CONDITIONAL(HAVE_EARTNET, test "${have_eartnet}" = "yes")
+
 # check for esp
 AC_CHECK_LIB(espnet, espnet_new,[have_espnet="yes"])
 AM_CONDITIONAL(HAVE_ESPNET, test "${have_espnet}" = "yes")
@@ -78,6 +83,7 @@ AC_OUTPUT( Makefile \
 	   plugins/Makefile \
 	   lla/Makefile		\
 	   plugins/artnet/Makefile	\
+	   plugins/eartnet/Makefile	\
 	   plugins/dummy/Makefile	\
 	   plugins/espnet/Makefile	\
 	   plugins/shownet/Makefile	\

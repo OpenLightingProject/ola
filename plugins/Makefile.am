@@ -1,2 +1,2 @@
 
-SUBDIRS = dummy artnet  espnet shownet usbpro
+SUBDIRS = dummy artnet  espnet shownet usbpro eartnet
