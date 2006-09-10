@@ -24,6 +24,7 @@
 
 #include <lla/device.h>
 #include <lla/fdlistener.h>
+#include <lla/timeoutlistener.h>
 
 class DeviceManager ;
 class Network ;
@@ -38,6 +39,7 @@ class PluginAdaptor {
 		int register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager = NULL ) ;
 		int unregister_fd(int fd, PluginAdaptor::Direction dir) ;
 
+		int register_timeout(int seconds, TimeoutListener *listener ) ;
 		int register_device(Device *dev) ;
 		int unregister_device(Device *dev) ;
 

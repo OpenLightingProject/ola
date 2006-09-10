@@ -88,11 +88,13 @@ void *OpenDmxThread::run(string *path) {
 	uint8_t buf[MAX_DMX+1] ;
 	struct timeval tv ;
 	struct timespec ts ;
+
+	// should close other fd here
 	
 	// start code
 	buf[0] = 0x00 ;
 	m_fd = open(path->c_str(),O_WRONLY) ;
-	
+
 	while(1) {
 		pthread_mutex_lock(&m_term_mutex) ;
 		if (m_term) {

@@ -21,17 +21,22 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+#include <sys/time.h>
+
 #include <lla/messages.h>
 #include <lla/fdlistener.h>
+#include <lla/timeoutlistener.h>
 #include <lla/fdmanager.h>
 #include <vector>
 
 using namespace std;
 
+
 typedef struct {
 	FDListener *listener ;
 	int	fd;						// file descriptor
 } fd_listener_t ;
+
 
 
 #define LLAD_PORT 8898				// port to listen on
@@ -48,7 +53,7 @@ class Network {
 		int run() ;
 		int register_fd(int fd, Network::Direction dir, FDListener *listener, FDManager *manager) ;
 		int unregister_fd(int fd, Network::Direction dir) ;
-		
+		int register_timeout(int seconds, TimeoutListener *listener) ;
 		int read(lla_msg *msg) ;
 		int send_msg(lla_msg *msg) ;
 
@@ -61,13 +66,36 @@ class Network {
 				int	m_fd;
 		};
 
+		class Timeout {
+			public:
+				Timeout(int seconds, TimeoutListener *listener) : m_sec(seconds), m_listener(listener) {
+					timerclear(&m_tv) ;
+				} ;
+
+				int check_expiry(struct timeval *now) {
+					
+					if( timercmp(now, &m_tv, >= ) ) {
+						m_listener->timeout_action() ;
+						m_tv.tv_sec = now->tv_sec + m_sec ;
+						m_tv.tv_usec = now->tv_usec;
+					}
+				}
+				struct timeval m_tv;
+
+			private:
+				int m_sec;
+				TimeoutListener *m_listener ;
+
+
+		};
 		int m_sd ;
 		int fetch_msg_from_client(lla_msg *msg) ;
-		
+		int check_timeouts(struct timeval *now) ;
+		int get_remaining(struct timeval *now, struct timeval *tv) ;
+
 		vector<Listener*> m_rhandlers_vect ;
 		vector<Listener*> m_whandlers_vect ;
-		
-
+		vector<Timeout*>  m_timeouts_vect ;
 };
 
 #endif

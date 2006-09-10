@@ -182,9 +182,6 @@ int Llad::_reload_plugins() {
 			Logger::instance()->log(Logger::INFO, "Started %s", plug->get_name()) ;
 	}
 
-
-
-	
 	m_reload_plugins = false ;
 	return 0;
 }

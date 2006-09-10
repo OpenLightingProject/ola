@@ -159,6 +159,22 @@ int Network::unregister_fd(int fd, Network::Direction dir) {
 	return 0;
 }
 
+
+/*
+ * Register a timeout function
+ *
+ * @param seconds		the delay between function calls
+ */
+int Network::register_timeout(int seconds, TimeoutListener *listener) {
+
+	Timeout *to = new Timeout(seconds, listener) ;
+
+	m_timeouts_vect.push_back(to) ;
+
+	return m_timeouts_vect.size() -1 ;
+
+}
+
 #define max(a,b) a>b?a:b
 /*
  *
@@ -170,6 +186,7 @@ int Network::read(lla_msg *msg) {
 	unsigned int i;
 	fd_set r_fds, w_fds;
 	struct timeval tv;
+	struct timeval now;
 
 	while(1) {
 		FD_ZERO(&r_fds);
@@ -189,8 +206,9 @@ int Network::read(lla_msg *msg) {
 			maxsd = max(maxsd, m_whandlers_vect[i]->m_fd) ;
 		}
 
-		tv.tv_sec = 1;
-		tv.tv_usec = 0;
+		gettimeofday(&now, NULL);
+		check_timeouts(&now) ;
+		get_remaining(&now, &tv) ;
 
 		switch( select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
 			case 0:
@@ -205,6 +223,8 @@ int Network::read(lla_msg *msg) {
 				return -1 ;
 				break ;
 			default:
+				gettimeofday(&now, NULL);
+				check_timeouts(&now) ;
 
 				// loop thru registered sd's
 				for(i=0; i < m_rhandlers_vect.size() ; i++) {
@@ -285,3 +305,38 @@ int Network::send_msg(lla_msg *msg) {
 
 	return 0;
 }
+
+/*
+ * Check for expired timeouts
+ */
+int Network::check_timeouts(struct timeval *now) {
+	
+	for(int i=0; i < m_timeouts_vect.size(); i++) {
+		m_timeouts_vect[i]->check_expiry(now) ;
+	}
+}
+
+/*
+ * Get the time remaining before the next timeout
+ *
+ */
+int Network::get_remaining(struct timeval *now, struct timeval *tv) {
+	long now_l, ex_l, res, min;
+
+	min = 1000000 * 2;
+	now_l = now->tv_sec * 1000000 + now->tv_usec ;
+
+	for(int i=0; i < m_timeouts_vect.size() ; i++) {
+		ex_l = m_timeouts_vect[i]->m_tv.tv_sec * 1000000 + m_timeouts_vect[i]->m_tv.tv_usec ;
+		res = ex_l - now_l ;
+
+		if(res < min)
+			min = res;
+
+	}
+	tv->tv_sec = min / 1000000;
+	tv->tv_usec = min % 1000000;
+
+	return 0;
+}
+

@@ -63,6 +63,20 @@ int PluginAdaptor::unregister_fd(int fd, PluginAdaptor::Direction dir) {
 	return net->unregister_fd(fd,ndir) ;
 }
 
+
+/*
+ * register a timeout
+ *
+ * @param second	the time between function calls
+ *
+ * @return the timeout id on success, 0 on error
+ */
+int PluginAdaptor::register_timeout(int seconds , TimeoutListener *listener ) {
+	return net->register_timeout(seconds, listener) ;
+}
+
+
+
 /*
  * Register a device
  *

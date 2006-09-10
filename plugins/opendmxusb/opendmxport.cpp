@@ -66,7 +66,7 @@ int OpenDmxPort::write(uint8_t *data, int length) {
 	if( !can_write())
 		return -1 ;
 
-//	m_thread->write_dmx(data,length) ;
+	m_thread->write_dmx(data,length) ;
 	return 0;
 }
 

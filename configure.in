@@ -59,6 +59,11 @@ AC_CHECK_LIB(shownet, shownet_new,[have_shownet="yes"])
 AM_CONDITIONAL(HAVE_SHOWNET, test "${have_shownet}" = "yes")
 
 
+# check for libsandnet
+AC_CHECK_LIB(sandnet, sandnet_new,[have_sandnet="yes"]) 
+AM_CONDITIONAL(HAVE_SANDNET, test "${have_sandnet}" = "yes")
+
+
 dnl ##################################################################
 dnl Check if sockaddr{} has sa_len member.
 dnl
@@ -87,6 +92,8 @@ AC_OUTPUT( Makefile \
 	   plugins/dummy/Makefile	\
 	   plugins/espnet/Makefile	\
 	   plugins/shownet/Makefile	\
+	   plugins/sandnet/Makefile	\
 	   plugins/usbpro/Makefile	\
+	   plugins/opendmxusb/Makefile	\
 	   liblla.pc
 	    )

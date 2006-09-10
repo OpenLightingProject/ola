@@ -59,8 +59,8 @@ class Universe {
 		static Universe *get_universe_at_pos(int index) ;
 
 		static int clean_up();
-		static int Universe::get_list(Universe ***head) ;
-		static int Universe::set_net(class Network *net) ;
+		static int get_list(Universe ***head) ;
+		static int set_net(class Network *net) ;
 
 	protected :
 		Universe(int uid) ;
