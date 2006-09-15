@@ -105,11 +105,12 @@ int dmx_handler(lla_con c, int uni, int length, uint8_t *sdmx, void *d ) {
 		gettimeofday(&tv1, NULL) ;
 
 		
-		printf("%i %li %li 0x%hhx 0x%hhx 0x%hhx 0x%hhx 0x%hhx\n", universe1 ,  tv1.tv_sec , tv1.tv_usec, sdmx[0] , sdmx[1], sdmx[2] , sdmx[3], sdmx[4] ) ;
+//		printf("%i %li %li 0x%hhx 0x%hhx 0x%hhx 0x%hhx 0x%hhx\n", universe1 ,  tv1.tv_sec , tv1.tv_usec, sdmx[0] , sdmx[1], sdmx[2] , sdmx[3], sdmx[4] ) ;
 
 		if( memcmp(sdmx, dmx2, len) == 0 ) {
 			delay = tv1.tv_usec - tv2.tv_usec ;
-			printf("universe %i is %li behind \n", universe1 , delay) ;
+		//	printf("universe %i is %li behind \n", universe1 , delay) ;
+			printf("-%li\n", delay) ;
 			count ++ ;
 			total += delay ;
 			behind1 ++ ;
@@ -118,11 +119,12 @@ int dmx_handler(lla_con c, int uni, int length, uint8_t *sdmx, void *d ) {
 		memcpy(dmx2, sdmx, len) ;
 		gettimeofday(&tv2, NULL) ;
 
-		printf("%i %li %li 0x%hhx 0x%hhx 0x%hhx 0x%hhx 0x%hhx\n",universe2,   tv2.tv_sec , tv2.tv_usec,  sdmx[0] , sdmx[1], sdmx[2] , sdmx[3], sdmx[4] ) ;
+//		printf("%i %li %li 0x%hhx 0x%hhx 0x%hhx 0x%hhx 0x%hhx\n",universe2,   tv2.tv_sec , tv2.tv_usec,  sdmx[0] , sdmx[1], sdmx[2] , sdmx[3], sdmx[4] ) ;
 
 		if( memcmp(sdmx, dmx1, len) == 0 ) {
 			delay = tv2.tv_usec - tv1.tv_usec ;
-			printf("universe %i is %li behind \n", universe2 , delay) ;
+		//	printf("universe %i is %li behind \n", universe2 , delay) ;
+			printf("%li\n", delay) ;
 			count++;
 			total+= delay;
 			behind2++ ;
