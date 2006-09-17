@@ -1,5 +1,12 @@
 #!/bin/sh
 
+ltmain=/usr/share/libtool/ltmain.sh
+
+if [ \( ! -f ltmain.sh \) -a \( -f $ltmain \) ]; then
+	ln -s $ltmain ltmain.sh
+fi
+
+	
 rm -f config.cache
 aclocal
 autoconf
