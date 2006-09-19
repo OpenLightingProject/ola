@@ -21,6 +21,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
+
 
 #include <lla/pluginadaptor.h>
 #include <lla/preferences.h>
@@ -52,6 +54,7 @@ extern "C" void destroy(Plugin* plug) {
  * TODO: scan /dev for devices?
  */
 int OpenDmxPlugin::start() {
+	int fd;
 	
 	if(m_enabled)
 		return -1 ;
@@ -63,17 +66,23 @@ int OpenDmxPlugin::start() {
 		return -1 ;
 	
 	/* create new lla device */
-	// should we maybe be making a copy of the string here ?
-	m_dev = new OpenDmxDevice(this, "Open DMX USB Device", m_prefs->get_val("device")) ;
+	// first check if it's there
+	fd = open( m_prefs->get_val("device").c_str(),O_WRONLY) ;
+	
+	if ( fd > 0 ) {
+		close(fd) ;
+		m_dev = new OpenDmxDevice(this, "Open DMX USB Device", m_prefs->get_val("device")) ;
 
-	if(m_dev == NULL) 
-		return -1  ;
+		if(m_dev == NULL) 
+			return -1  ;
 
-	m_dev->start() ;
+		m_dev->start() ;
 
-	m_pa->register_device(m_dev) ;
+		m_pa->register_device(m_dev) ;
 
-	m_enabled = true ;
+		m_enabled = true ;
+	}
+	
 	return 0;
 }
 

@@ -129,7 +129,7 @@ char *SandNetPlugin::get_desc() {
 "This plugin creates a single device with 2 input and 8 output ports.\n"
 "\n"
 "The ports correspond to the DMX channels used in the sandnet protocol. "
-"For example port 0 (and 8)  is channels 1 - 512, port 1 (and 9) are channels 513 - 1024.\n"
+"For example port 0 (and 2)  is channels 1 - 512, port 1 (and 3) are channels 513 - 1024.\n"
 "\n"
 "--- Config file : lla-sandnet.conf ---\n"
 "\n"
