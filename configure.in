@@ -12,14 +12,17 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
-# Checks for libraries.
-# FIXME: Replace `main' with a function in `-lncurses':
+# Check for ncurses
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
 AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
 
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([endian.h ppc/endian.h arpa/inet.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/socket.h unistd.h])
+
+
+# check for liblla
+AC_CHECK_LIB( lla, lla_connect, , AC_MSG_ERROR(Can't find lla - is it installed?) ) 
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
