@@ -61,7 +61,7 @@ Logger::~Logger() {
  * @param fmt
  * @param ap
  */
-void Logger::log(Logger::Level level, const char *fmt, ...) {
+void Logger::log(Logger::Level level, const char *fmt, ...) const {
 	int pri ;
 	va_list ap;
 	va_start(ap, fmt) ;

@@ -35,9 +35,11 @@
  * @param name
  * @param path to device
  */
-OpenDmxDevice::OpenDmxDevice(Plugin *owner, const char *name, string path) : Device(owner, name) {
-	m_path = path ;
-	m_enabled = false ;
+OpenDmxDevice::OpenDmxDevice(Plugin *owner, const char *name, const string &path) :
+	Device(owner, name),
+	m_path(path),
+	m_enabled(false) {
+
 }
 
 
@@ -94,7 +96,7 @@ int OpenDmxDevice::stop() {
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int OpenDmxDevice::save_config() {
+int OpenDmxDevice::save_config() const {
 
 
 	return 0;

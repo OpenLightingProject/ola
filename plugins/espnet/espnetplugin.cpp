@@ -32,7 +32,7 @@
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(PluginAdaptor *pa) {
+extern "C" Plugin* create(const PluginAdaptor *pa) {
   return new EspNetPlugin(pa);
 }
 
@@ -109,7 +109,7 @@ int EspNetPlugin::stop() {
  * return the description for this plugin
  *
  */
-char *EspNetPlugin::get_desc() {
+const char *EspNetPlugin::get_desc() const {
 	return 
 "EspNet Plugin\n"
 "----------------------------\n"

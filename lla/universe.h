@@ -46,11 +46,11 @@ class Universe {
 
 		int set_dmx(uint8_t *dmx, int length) ;
 		int get_dmx(uint8_t *dmx, int length) ;
-		int get_uid() ;
+		int get_uid() const;
 		int port_data_changed(Port *prt) ;
-		bool in_use() ;
-		char *get_name() ;
-		void set_name(char *name) ;
+		bool in_use() const;
+		const char *get_name() const;
+		void set_name(const char *name) ;
 		int send_dmx(class Client *cli) ;
 		
 		static Universe *get_universe(int uid) ;
@@ -59,7 +59,7 @@ class Universe {
 		static Universe *get_universe_at_pos(int index) ;
 
 		static int clean_up();
-		static int get_list(Universe ***head) ;
+		static vector<Universe *> *get_list() ;
 		static int set_net(class Network *net) ;
 
 	protected :
@@ -70,7 +70,7 @@ class Universe {
 		int m_uid;											// universe address
 //		merge_mode mm;										// merge mode
 		vector<Port*> ports_vect ;							// ports assigned to the universe
-		vector<class Client *> clients_vect ;						// clients listening to this universe
+		vector<class Client *> clients_vect ;				// clients listening to this universe
 		uint8_t	m_data[DMX_LENGTH] ;						// buffer for this universe
 		int m_length ;								
 		char *m_name ;										// name of this universe

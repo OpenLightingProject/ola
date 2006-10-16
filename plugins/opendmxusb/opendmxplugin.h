@@ -29,13 +29,17 @@ class OpenDmxDevice ;
 class OpenDmxPlugin : public Plugin {
 
 	public:
-		OpenDmxPlugin(PluginAdaptor *pa) : Plugin(pa) { m_enabled = false; m_dev = NULL; m_prefs = NULL; }
+		OpenDmxPlugin(const PluginAdaptor *pa) : 
+			Plugin(pa),
+			m_enabled(false),
+			m_dev(NULL),
+			m_prefs(NULL) {} ;
 
 		int start();
 		int stop();
-		bool is_enabled() 	{ return m_enabled; }
-		char *get_name() 	{ return "Open DMX Plugin"; }
-		char *get_desc() ;
+		bool is_enabled() const         { return m_enabled; }
+		const char *get_name() const	{ return "Open DMX Plugin"; }
+		const char *get_desc() const;
 
 	private:
 		Preferences *load_prefs() ;

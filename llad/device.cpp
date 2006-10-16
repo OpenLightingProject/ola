@@ -24,17 +24,16 @@
 #include <stdio.h>
 #include <string.h>
 
-
 /*
  * Create a new device
  *
  * @param	owner	the plugin that owns this device
  * @param	name	a nice name for this device
- * 
  */
-Device::Device(Plugin *owner, const char *name) {
+Device::Device(Plugin *owner, const char *name) 
+	: m_owner(owner)  {
+
 	m_name = strdup(name) ;
-	m_owner = owner ;	
 }
 
 /*
@@ -54,13 +53,20 @@ inline Plugin *Device::get_owner() const {
 	return m_owner ;
 }
 
+/*
+ * get the name of this device
+ *
+ * @return the name of the device
+ */
+const char *Device::get_name() const {
+	return m_name ;
+}
 
 /*
  * Get a port on the device
  *
  * @param pid	the id of the port to fetch
  * @return the port if it exists, or NULL on error
- *
  */
 Port *Device::get_port(int pid) const {
 	if (pid < 0 || pid > m_ports_vect.size() ) 
@@ -88,13 +94,4 @@ inline int Device::port_count() const {
 int Device::add_port(Port *prt) {
 	m_ports_vect.push_back(prt) ;
 	return 0;
-}
-
-/*
- * get the name of this device
- *
- * @return the name of the device
- */
-char *Device::get_name() const {
-	return m_name ;
 }

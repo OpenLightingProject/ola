@@ -27,12 +27,12 @@
 
 
 
-int UsbProPort::can_read() {
+int UsbProPort::can_read() const {
 	// even ports are input
 	return ( (get_id()+1) % 2);
 }
 
-int UsbProPort::can_write() {
+int UsbProPort::can_write() const {
 	// odd ports are output
 	return ( get_id() % 2 );
 }
@@ -70,7 +70,6 @@ int UsbProPort::read(uint8_t *data, int length) {
 	int len ;
 	UsbProDevice *dev = (UsbProDevice*) get_device() ;
 	
-//	printf("in read %i\n", can_read() ) ;
 	if( !can_read()) 
 		return -1 ;
 	

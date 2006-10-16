@@ -34,7 +34,7 @@ class Logger {
 		static Logger *instance(Logger::Level level, Logger::Output output) ;
 		static void clean_up() ;
 		
-		void log(Logger::Level lev, const char *fmt, ...) ;
+		void log(Logger::Level lev, const char *fmt, ...) const ;
 		void increment_log_level() ;
 
 	private :

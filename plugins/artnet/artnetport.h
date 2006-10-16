@@ -35,8 +35,8 @@ class ArtNetPort : public Port  {
 		int write(uint8_t *data, int length);
 		int read(uint8_t *data, int length); 
 		
-		int can_read() ;
-		int can_write() ;
+		int can_read() const;
+		int can_write() const ;
 
 };
 

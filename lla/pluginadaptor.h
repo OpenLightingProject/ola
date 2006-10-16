@@ -36,12 +36,12 @@ class PluginAdaptor {
 		enum Direction{READ, WRITE};
 			
 		PluginAdaptor(DeviceManager *dm, Network *net) ;
-		int register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager = NULL ) ;
-		int unregister_fd(int fd, PluginAdaptor::Direction dir) ;
+		int register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager = NULL ) const;
+		int unregister_fd(int fd, PluginAdaptor::Direction dir) const;
 
-		int register_timeout(int seconds, TimeoutListener *listener ) ;
-		int register_device(Device *dev) ;
-		int unregister_device(Device *dev) ;
+		int register_timeout(int seconds, TimeoutListener *listener ) const;
+		int register_device(Device *dev) const ;
+		int unregister_device(Device *dev) const;
 
 	private :
 		DeviceManager *dm ;

@@ -30,25 +30,20 @@
 
 #define SANDNET_NAME "lla-SandNet"
 
+
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(PluginAdaptor *pa) {
+extern "C" Plugin* create(const PluginAdaptor *pa) {
   return new SandNetPlugin(pa);
 }
+
 
 /*
  * Called when the plugin is unloaded
  */
 extern "C" void destroy(Plugin* plug) {
   delete plug;
-}
-
-
-
-int SandNetPlugin::test(void *data) {
-	printf("test\n") ;
-
 }
 
 
@@ -121,7 +116,7 @@ int SandNetPlugin::stop() {
  * return the description for this plugin
  *
  */
-char *SandNetPlugin::get_desc() {
+const char *SandNetPlugin::get_desc() const {
 	return 
 "SandNet Plugin\n"
 "----------------------------\n"

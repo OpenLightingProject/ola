@@ -29,13 +29,13 @@ class ArtNetDevice ;
 class ArtNetPlugin : public Plugin {
 
 	public:
-		ArtNetPlugin(PluginAdaptor *pa) : Plugin(pa) {m_enabled = false; }
+		ArtNetPlugin(const PluginAdaptor *pa) : Plugin(pa), m_enabled(false) {}
 
 		int start();
 		int stop();
-		bool is_enabled() 	{ return m_enabled; }
-		char *get_name() 	{ return "ArtNet Plugin"; }
-		char *get_desc() ;
+		bool is_enabled() const 	    { return m_enabled; }
+		const char *get_name() const 	{ return "ArtNet Plugin"; }
+		const char *get_desc() const ;
 				
 	private:
 		Preferences *load_prefs() ;

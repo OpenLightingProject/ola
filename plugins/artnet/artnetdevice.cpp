@@ -84,10 +84,12 @@ int program_handler(artnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-ArtNetDevice::ArtNetDevice(Plugin *owner, const char *name, Preferences *prefs) : Device(owner, name) {
-	m_prefs = prefs ;
-	m_node = NULL ;
-	m_enabled = false ;
+ArtNetDevice::ArtNetDevice(Plugin *owner, const char *name, Preferences *prefs) :
+	Device(owner, name),
+	m_prefs(prefs),
+	m_node(NULL),
+	m_enabled(false) {
+
 }
 
 
@@ -269,7 +271,7 @@ int ArtNetDevice::fd_action() {
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int ArtNetDevice::save_config() {
+int ArtNetDevice::save_config() const {
 
 
 	return 0;

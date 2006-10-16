@@ -55,12 +55,12 @@ ShowNetPort::~ShowNetPort() {
 		free(m_buf) ;
 }
 
-int ShowNetPort::can_read() {
+int ShowNetPort::can_read() const {
 	// ports 0 to 7 are input
 	return ( get_id()>=0 && get_id() < PORTS_PER_DEVICE);
 }
 
-int ShowNetPort::can_write() {
+int ShowNetPort::can_write() const {
 	// ports 8 to 13 are output
 	return ( get_id()>= PORTS_PER_DEVICE && get_id() <2*PORTS_PER_DEVICE);
 }

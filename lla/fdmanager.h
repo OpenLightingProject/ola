@@ -28,7 +28,5 @@ class FDManager {
 	public :
 		virtual ~FDManager() {} ;
 		virtual int fd_error(int error, FDListener *listener) = 0 ;
-
 };
-
 #endif

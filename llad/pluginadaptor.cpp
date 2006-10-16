@@ -42,10 +42,11 @@ PluginAdaptor::PluginAdaptor(DeviceManager *dm, Network *net) {
  * @param fd		the file descriptor to register
  * @param dir		the direction we want
  * @param listener	the object to be notifies when the descriptor is ready
+ * @param manager	the object to be notified if the listener returns an error
  *
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager ) {
+int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager ) const {
 	Network::Direction ndir = dir==PluginAdaptor::READ ? Network::READ : Network::WRITE ;
 	return net->register_fd(fd,ndir,listener, manager) ;
 }
@@ -58,7 +59,7 @@ int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, FDListener 
  *
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::unregister_fd(int fd, PluginAdaptor::Direction dir) {
+int PluginAdaptor::unregister_fd(int fd, PluginAdaptor::Direction dir) const {
 	Network::Direction ndir =  dir==PluginAdaptor::READ ? Network::READ : Network::WRITE ;
 	return net->unregister_fd(fd,ndir) ;
 }
@@ -71,7 +72,7 @@ int PluginAdaptor::unregister_fd(int fd, PluginAdaptor::Direction dir) {
  *
  * @return the timeout id on success, 0 on error
  */
-int PluginAdaptor::register_timeout(int seconds , TimeoutListener *listener ) {
+int PluginAdaptor::register_timeout(int seconds , TimeoutListener *listener ) const {
 	return net->register_timeout(seconds, listener) ;
 }
 
@@ -83,7 +84,7 @@ int PluginAdaptor::register_timeout(int seconds , TimeoutListener *listener ) {
  * @param dev	the device to register
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::register_device(Device *dev) {
+int PluginAdaptor::register_device(Device *dev) const {
 	return dm->register_device(dev) ;
 }
 
@@ -93,7 +94,7 @@ int PluginAdaptor::register_device(Device *dev) {
  * @param dev	the device to unregister
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::unregister_device(Device *dev) {
+int PluginAdaptor::unregister_device(Device *dev) const {
 	return dm->unregister_device(dev) ;
 }
 

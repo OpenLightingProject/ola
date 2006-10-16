@@ -62,7 +62,7 @@ Universe::~Universe() {
  *
  * @return the name of this universe
  */
-char *Universe::get_name() {
+const char *Universe::get_name() const {
 	return m_name ;
 }
 
@@ -72,7 +72,7 @@ char *Universe::get_name() {
  *
  * @param name	the name to give this universe
  */
-void Universe::set_name(char *name) {
+void Universe::set_name(const char *name) {
 	free(m_name) ;
 	m_name = strdup(name) ;
 }
@@ -220,7 +220,7 @@ int Universe::get_dmx(uint8_t *dmx, int length) {
  *
  * @return the uid
  */
-int Universe::get_uid() {
+int Universe::get_uid() const {
 	return m_uid ;
 }
 
@@ -250,7 +250,7 @@ int Universe::port_data_changed(Port *prt) {
  * Return true if this universe is in use
  *
  */
-bool Universe::in_use() {
+bool Universe::in_use() const {
 	return  ports_vect.size()>0 || clients_vect.size()>0;
 }
 
@@ -320,7 +320,7 @@ int Universe::send_dmx(Client *cli) {
  * @param uid	the uid of the required universe
  */
 Universe *Universe::get_universe(int uid) {
-	map<int , Universe *>::iterator iter;
+	map<int , Universe *>::const_iterator iter;
 
 	iter = uni_map.find(uid);
 	if (iter != uni_map.end()) {
@@ -375,8 +375,7 @@ int Universe::clean_up() {
  *
  * @return 	the number of active universes
  */
-int Universe::universe_count() {
-
+inline int Universe::universe_count() {
 	return uni_map.size() ;
 }
 
@@ -385,28 +384,20 @@ int Universe::universe_count() {
  * Returns a list of universes. This must be freed when you're
  * done with it.
  *
- * @param address of a pointer to set to the start of the list
  * @return	the number of entries in the list
  */
-int Universe::get_list(Universe ***head) {
+vector<Universe *> *Universe::get_list() {
 	int numb = Universe::universe_count() ;
-	Universe **ptr ;
-	map<int ,Universe*>::iterator iter;
+	vector<Universe *> *list = new vector<Universe *> ;
+	list->reserve(numb);
+
+	map<int ,Universe*>::const_iterator iter;
 	
-	*head = (Universe**) malloc(sizeof(Universe *) * numb) ;
-	
-	if(*head == NULL) {
-		Logger::instance()->log(Logger::WARN, "malloc failed\n") ;
-		return 0 ;
-	}
-	
-	ptr = *head ;
 	// populate list
-	for(iter = uni_map.begin(); iter != uni_map.end(); iter++) {
-		*ptr = (*iter).second ;
-		ptr++ ;
+	for(iter = uni_map.begin(); iter != uni_map.end(); ++iter) {
+		list->push_back( iter->second );
 	}
-	return numb;
+	return list;
 }
 
 /*

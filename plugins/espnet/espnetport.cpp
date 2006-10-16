@@ -55,12 +55,12 @@ EspNetPort::~EspNetPort() {
 		free(m_buf) ;
 }
 
-int EspNetPort::can_read() {
+int EspNetPort::can_read() const {
 	// ports 0 to 4 are input
 	return ( get_id()>=0 && get_id() < PORTS_PER_DEVICE);
 }
 
-int EspNetPort::can_write() {
+int EspNetPort::can_write() const {
 	// ports 5 to 9 are output
 	return ( get_id()>= PORTS_PER_DEVICE && get_id() <2*PORTS_PER_DEVICE);
 }

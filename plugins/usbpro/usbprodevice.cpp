@@ -63,10 +63,12 @@
 /*
  * Create a new device
  */
-UsbProDevice::UsbProDevice(Plugin *owner, const char *name, string dev_path) : Device(owner, name) {
-	m_dev_path = dev_path ;
-	m_fd = 0;
-	m_enabled = false ;
+UsbProDevice::UsbProDevice(Plugin *owner, const char *name, const string dev_path) :
+	Device(owner, name),
+	m_dev_path(dev_path),
+	m_fd(-1),
+	m_enabled(false) {
+
 }
 
 
@@ -186,8 +188,7 @@ int UsbProDevice::fd_action() {
 		Logger::instance()->log(Logger::WARN, "UsbProPlugin: device removed" ) ;
 		return -1 ;
 	}
-
-							
+				
 	w_recv() ;
 	
 	return 0;
@@ -211,7 +212,7 @@ int UsbProDevice::send_dmx(uint8_t *data, int len) {
  *
  * @return 	the length of the dmx data copied
  */
-int UsbProDevice::get_dmx(uint8_t *data, int len) {
+int UsbProDevice::get_dmx(uint8_t *data, int len) const {
 
 	int l = min(len, DMX_BUF_LEN-1) ;
 
@@ -232,7 +233,7 @@ int UsbProDevice::get_dmx(uint8_t *data, int len) {
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int UsbProDevice::save_config() {
+int UsbProDevice::save_config() const {
 
 
 	return 0;
@@ -287,6 +288,7 @@ int UsbProDevice::w_disconnect() {
 	if(m_fd)
 		close(m_fd);
 
+	m_fd = -1;
 	return 0;
 }
 
@@ -313,7 +315,7 @@ int UsbProDevice::w_init() {
 /*
  * Set the length of the msg
  */
-int UsbProDevice::w_set_msg_len(promsg *msg, int len) {
+int UsbProDevice::w_set_msg_len(promsg *msg, int len) const {
 	msg->len = len & 0xFF ;
 	msg->len_hi = (len & 0xFF00) >> 8 ;
 }
@@ -321,7 +323,7 @@ int UsbProDevice::w_set_msg_len(promsg *msg, int len) {
 /*
  * Send the msg
  */
-int UsbProDevice::w_send_msg(promsg *msg) {
+int UsbProDevice::w_send_msg(promsg *msg) const {
 	int len = (msg->len_hi << 8) + msg->len ;
 	write(m_fd, msg, len+4) ;
 	write(m_fd, EOM, sizeof(EOM) ) ;
@@ -332,7 +334,7 @@ int UsbProDevice::w_send_msg(promsg *msg) {
  *
  *
  */
-int UsbProDevice::w_send_dmx(uint8_t *buf, int len) {
+int UsbProDevice::w_send_dmx(uint8_t *buf, int len) const {
 	int l = min(DMX_BUF_LEN, len) ;
 	promsg msg ;
 
@@ -353,7 +355,7 @@ int UsbProDevice::w_send_dmx(uint8_t *buf, int len) {
  *
  *
  */
-int UsbProDevice::w_send_rdm(uint8_t *buf, int len) {
+int UsbProDevice::w_send_rdm(uint8_t *buf, int len) const {
 
 	promsg msg ;
 
@@ -369,7 +371,7 @@ int UsbProDevice::w_send_rdm(uint8_t *buf, int len) {
  * Send a get param request
  *
  */
-int UsbProDevice::w_send_prmreq(int usrsz) {
+int UsbProDevice::w_send_prmreq(int usrsz) const {
 
 	promsg msg ;
 
@@ -409,7 +411,7 @@ int UsbProDevice::w_send_rcmode(int mode) {
  * Send a serial number request
  *
  */
-int UsbProDevice::w_send_snoreq() {
+int UsbProDevice::w_send_snoreq() const {
 
 	promsg msg ;
 

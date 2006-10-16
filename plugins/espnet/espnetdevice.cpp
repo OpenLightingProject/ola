@@ -66,7 +66,7 @@ int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 
 
 /*
- * get notify of remote programming
+ * get notification of remote programming
  *
  *
  *
@@ -85,10 +85,12 @@ int program_handler(espnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-EspNetDevice::EspNetDevice(Plugin *owner, const char *name, Preferences *prefs) : Device(owner, name) {
-	m_prefs = prefs ;
-	m_node = NULL ;
-	m_enabled = false ;
+EspNetDevice::EspNetDevice(Plugin *owner, const char *name, Preferences *prefs) : 
+	Device(owner, name),
+	m_prefs(prefs),
+	m_node(NULL),
+	m_enabled(false) {
+
 }
 
 
@@ -238,7 +240,7 @@ int EspNetDevice::fd_action() {
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int EspNetDevice::save_config() {
+int EspNetDevice::save_config() const {
 
 
 	return 0;

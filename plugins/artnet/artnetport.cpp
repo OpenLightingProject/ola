@@ -28,12 +28,12 @@
 #define min(a,b) a<b?a:b
 
 
-int ArtNetPort::can_read() {
+int ArtNetPort::can_read() const {
 	// ports 0 to 3 are input
 	return ( get_id()>=0 && get_id() <ARTNET_MAX_PORTS);
 }
 
-int ArtNetPort::can_write() {
+int ArtNetPort::can_write() const {
 	// ports 4 to 7 are output
 	return ( get_id()>=ARTNET_MAX_PORTS && get_id() <2*ARTNET_MAX_PORTS);
 }

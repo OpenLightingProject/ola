@@ -69,10 +69,12 @@ int dmx_handler(sandnet_node n, uint8_t grp, uint8_t uid, int len, uint8_t *data
  * should prob pass the ip to bind to
  *
  */
-SandNetDevice::SandNetDevice(Plugin *owner, const char *name, Preferences *prefs) : Device(owner, name) {
-	m_prefs = prefs ;
-	m_node = NULL ;
-	m_enabled = false ;
+SandNetDevice::SandNetDevice(Plugin *owner, const char *name, Preferences *prefs) :
+	Device(owner, name),
+	m_prefs(prefs),
+	m_node(NULL),
+	m_enabled(false) {
+
 }
 
 
@@ -237,7 +239,7 @@ int SandNetDevice::timeout_action() {
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int SandNetDevice::save_config() {
+int SandNetDevice::save_config() const {
 
 
 	return 0;

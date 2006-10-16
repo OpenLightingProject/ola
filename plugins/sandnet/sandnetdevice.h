@@ -25,7 +25,6 @@
 #include <map>
 
 #include <lla/device.h>
-
 #include <lla/fdlistener.h>
 #include <lla/timeoutlistener.h>
 
@@ -45,7 +44,7 @@ class SandNetDevice : public Device, public FDListener, public TimeoutListener {
 		int get_sd(int i) const ;
 		int fd_action() ;
 		int timeout_action();
-		int save_config() ;
+		int save_config() const;
 		int configure(void *req, int len) ;
 
 		int port_map(class Universe *uni, class SandNetPort *prt);

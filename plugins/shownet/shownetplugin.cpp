@@ -33,7 +33,7 @@
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(PluginAdaptor *pa) {
+extern "C" Plugin* create(const PluginAdaptor *pa) {
   return new ShowNetPlugin(pa);
 }
 
@@ -110,7 +110,7 @@ int ShowNetPlugin::stop() {
  * return the description for this plugin
  *
  */
-char *ShowNetPlugin::get_desc() {
+const char *ShowNetPlugin::get_desc() const {
 	return 
 "ShowNet Plugin\n"
 "----------------------------\n"

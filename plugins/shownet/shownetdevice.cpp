@@ -73,10 +73,12 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
  * should prob pass the ip to bind to
  *
  */
-ShowNetDevice::ShowNetDevice(Plugin *owner, const char *name, Preferences *prefs) : Device(owner, name) {
-	m_prefs = prefs ;
-	m_node = NULL ;
-	m_enabled = false ;
+ShowNetDevice::ShowNetDevice(Plugin *owner, const char *name, Preferences *prefs) :
+	Device(owner, name),
+	m_prefs(prefs),
+	m_node(NULL),
+	m_enabled(false) {
+
 }
 
 
@@ -221,7 +223,7 @@ int ShowNetDevice::fd_action() {
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int ShowNetDevice::save_config() {
+int ShowNetDevice::save_config() const {
 
 
 	return 0;

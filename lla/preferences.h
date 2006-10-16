@@ -34,16 +34,16 @@ class Preferences {
 		~Preferences() ;
 
 		int load() ;
-		int save() ;
+		int save() const;
 
-		int set_val(string key, string value) ;
-		int set_single_val(string key, string value) ;
+		int set_val(const string &key, const string &value) ;
+		int set_single_val(const string &key, const string &value) ;
 		
-		string get_val(string key) ;
-		vector<string> *get_multiple_val(string key) ;
+		string get_val(const string &key) ;
+		vector<string> *get_multiple_val(const string &key) ;
 		
 	private:
-		int change_dir() ;
+		int change_dir() const;
 		char *strtrim(char *str) ;
 
 		string id ;

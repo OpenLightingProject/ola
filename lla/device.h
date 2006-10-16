@@ -31,26 +31,22 @@ using namespace std;
 class Device {
 
 	public:
-
-		Device(Plugin *Owner, const char *name) ;
+		Device(Plugin *owner, const char *name);
 		virtual ~Device() ;
-		char *get_name() const ;
+		const char  *get_name() const ;
 		Plugin	 	*get_owner() const ;
 			
 		// for the subclasses
 		virtual int 	configure(void *req, int len) = 0;
-		virtual int 	save_config() = 0;
+		virtual int 	save_config() const = 0;
 		virtual int 	add_port(Port *prt) ;
 		virtual Port	*get_port(int pid) const ;
 		virtual int 	port_count() const ;
 
-
 	private:
-		Plugin *m_owner;					// which plugin owns this device
-		int id;								// device id
-		char *m_name;
+		Plugin 			*m_owner;			// which plugin owns this device
+		char 			*m_name;
 		vector<Port*>	m_ports_vect ;		// ports on the device
-
 };
 
 #endif

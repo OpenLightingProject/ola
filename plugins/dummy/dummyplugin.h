@@ -29,13 +29,13 @@ class DummyDevice ;
 class DummyPlugin : public Plugin {
 
 	public:
-		DummyPlugin(PluginAdaptor *pa) : Plugin(pa) { m_enabled = false; }
+		DummyPlugin(const PluginAdaptor *pa) : Plugin(pa), m_enabled(false) {}
 
 		int start();
 		int stop();
-		bool is_enabled() 	{ return m_enabled; }
-		char *get_name() 	{ return "Dummy Plugin"; }
-		char *get_desc();
+		bool is_enabled() const         { return m_enabled; }
+		const char *get_name() const 	{ return "Dummy Plugin"; }
+		const char *get_desc() const;
 	
 	private:
 		DummyDevice *m_dev ;		// the dummy device

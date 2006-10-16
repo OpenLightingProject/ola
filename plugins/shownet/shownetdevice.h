@@ -40,7 +40,7 @@ class ShowNetDevice : public Device, public FDListener {
 		shownet_node get_node() const;
 		int get_sd() const ;
 		int fd_action() ;
-		int save_config() ;
+		int save_config() const ;
 		int configure(void *req, int len) ;
 
 	private:

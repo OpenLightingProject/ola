@@ -237,8 +237,10 @@ int Llad::handle_syn(lla_msg *msg) {
 int Llad::handle_fin(lla_msg *msg) {
 	lla_msg reply ;
 	Client *cli ;
-	Universe **head, **ptr ;
-	int nunis, i ;
+	vector<Universe *> *uni_v;
+	vector<Universe *>::iterator iter ;
+
+	int i ;
 
 	cli = Client::get_client_or_create(msg->from.sin_port) ;
 
@@ -246,17 +248,14 @@ int Llad::handle_fin(lla_msg *msg) {
 		Logger::instance()->log(Logger::DEBUG, "Got FIN, deleting client");		
 			
 		// remove from all unvierses
-		// uni points to the first member
-		nunis = Universe::get_list(&head) ;
-		ptr = head ;
+		uni_v = Universe::get_list() ;
 
-		for(i=0; i < nunis ; i++) {
-
-			(*ptr)->remove_client(cli) ;
-			ptr++ ;
+		for(iter = uni_v->begin(); iter != uni_v->end(); ++iter) {
+			(*iter)->remove_client(cli) ;
 		}
+
+		free(uni_v);
 	
-		free(head) ;
 		Logger::instance()->log(Logger::DEBUG, "Got FIN, deleting client");		
 		delete cli ;
 	}
@@ -722,18 +721,19 @@ int Llad::send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) {
  *
  */
 int Llad::send_universe_info(struct sockaddr_in dst) {
-	Universe **head, **ptr ;
-	
+	vector<Universe *> *uni_v ;
+	vector<Universe *>::const_iterator iter;
+	Universe *uni;
 	lla_msg reply ;
-	int i ;
-	int nunis ;
+	int i, nunis ;
 	
 	// uni points to the first member
-	nunis = Universe::get_list(&head) ;
+	uni_v = Universe::get_list() ;
+	nunis = uni_v->size() ;
 
 	// for now we don't worry about sending multiple datagrams
 	// if oneday people need to use more than 512 universes !!!, we can change it
-	// FIX: introducing a universe comment will drop the limit and
+	// TODO: introducing a universe comment will drop the limit and
 	// we'll need to send more than one datagram
 	nunis = nunis > UNIVERSES_PER_DATAGRAM ? UNIVERSES_PER_DATAGRAM : nunis ;
 
@@ -746,21 +746,17 @@ int Llad::send_universe_info(struct sockaddr_in dst) {
 	reply.data.uniinfo.offset = 0 ;
 	reply.data.uniinfo.count = nunis ;
 	
-	ptr = head ;
-	for(i=0; i < nunis ; i++) {
-		reply.data.uniinfo.universes[i].id = (*ptr)->get_uid() ;
+	for(iter = uni_v->begin(), i=0; iter != uni_v->end() && i < nunis ; ++iter, ++i) {
+		reply.data.uniinfo.universes[i].id = (*iter)->get_uid() ;
 
-		if( (*ptr)->get_name() != NULL ) 
-			strncpy(reply.data.uniinfo.universes[i].name, (*ptr)->get_name(), UNIVERSE_NAME_LENGTH) ;
-		
-		ptr++;
+		if( (*iter)->get_name() != NULL ) 
+			strncpy(reply.data.uniinfo.universes[i].name, (*iter)->get_name(), UNIVERSE_NAME_LENGTH) ;
 	}
 	
-	free(head) ;
+	free(uni_v) ;
 	Logger::instance()->log(Logger::DEBUG, "Got universe req, sending reply");
 	net->send_msg(&reply);
 	return 0;
-
 }
 
 /*

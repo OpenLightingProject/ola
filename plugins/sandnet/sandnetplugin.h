@@ -29,14 +29,14 @@ class SandNetDevice ;
 class SandNetPlugin : public Plugin {
 
 	public:
-		SandNetPlugin(PluginAdaptor *pa) : Plugin(pa) {m_enabled = false; }
+		SandNetPlugin(const PluginAdaptor *pa) : Plugin(pa) {m_enabled = false; }
 
 		int start();
 		int stop();
 		int test(void *data);
-		bool is_enabled() 	{ return m_enabled; }
-		char *get_name() 	{ return "SandNet Plugin"; }
-		char *get_desc() ;
+		bool is_enabled() const         { return m_enabled; }
+		const char *get_name() const 	{ return "SandNet Plugin"; }
+		const char *get_desc() const;
 
 	private:
 		class Preferences *load_prefs() ;

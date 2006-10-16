@@ -15,25 +15,27 @@
  *
  *
  * dummyport.cpp
- * The Art-Net plugin for lla
+ * The Dummy plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
 #include <stdio.h>
 #include <string.h>
 
+#include <lla/logger.h>
+
 #include "dummyport.h"
 
-#define min(a,b) a<b?a:b
-
 /*
- *
+ * 
+ * @param parent	the parent device of this port
+ * @param id		the port id
  *
  */
-DummyPort::DummyPort(Device *parent, int id) : Port(parent, id) {
-	memset(m_dmx, 0x00, 512) ;
-	m_length = 512 ;
+DummyPort::DummyPort(Device *parent, int id) : Port(parent, id), m_length(512) {
+	memset(m_dmx, 0x00, m_length) ;
 }
+
 
 /*
  * Write operation
@@ -43,18 +45,19 @@ DummyPort::DummyPort(Device *parent, int id) : Port(parent, id) {
  *
  */
 int DummyPort::write(uint8_t *data, int length) {
-	int len = min(length, 512) ;
+	int len = length < 512 ? length : 512 ;
 	
 	memcpy(m_dmx, data, len) ;
 	m_length = len ;
 
-	printf("Dummy port: got %d bytes: 0x%hhx 0x%hhx 0x%hhx 0x%hhx \n", length, data[0], data[1], data[42], data[43] ) ;
+	Logger::instance()->log(Logger::INFO, "Dummy port: got %d bytes: 0x%hhx 0x%hhx 0x%hhx 0x%hhx \n", length, data[0], data[1], data[42], data[43] ) ;
 
 	return 0;
 }
 
+
 /*
- * Read operation
+ * Read operation, this isn't used for now else we'd create loops
  *
  * @param 	data	buffer to read data into
  * @param 	length	length of data to read
@@ -65,7 +68,7 @@ int DummyPort::read(uint8_t *data, int length) {
 	int len ;
 
 	// copy to mem
-	len = min(length, m_length) ;
+	len = length < m_length ? length : m_length ;
 	memcpy(data, m_dmx, len) ;
 
 	return len;

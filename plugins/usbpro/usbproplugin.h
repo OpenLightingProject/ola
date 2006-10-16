@@ -31,13 +31,13 @@ class UsbProDevice ;
 class UsbProPlugin : public Plugin, public FDManager {
 
 	public:
-		UsbProPlugin(PluginAdaptor *pa) : Plugin(pa) {m_enabled = false; }
+		UsbProPlugin(const PluginAdaptor *pa) : Plugin(pa), m_enabled(false) {}
 
 		int start();
 		int stop();
-		bool is_enabled() 	{ return m_enabled; }
-		char *get_name() 	{ return "UsbPro Plugin"; }
-		char *get_desc() ;
+		bool is_enabled() const         { return m_enabled; }
+		const char *get_name() const 	{ return "UsbPro Plugin"; }
+		const char *get_desc() const;
 		int fd_error(int error, FDListener *listener) ;
 	private:
 		Preferences *load_prefs() ;

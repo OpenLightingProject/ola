@@ -36,7 +36,7 @@
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(PluginAdaptor *pa) {
+extern "C" Plugin* create(const PluginAdaptor *pa) {
   return new UsbProPlugin(pa);
 }
 
@@ -142,7 +142,7 @@ int UsbProPlugin::stop() {
  * return the description for this plugin
  *
  */
-char *UsbProPlugin::get_desc() {
+const char *UsbProPlugin::get_desc() const {
 		return
 "Enttec Usb Pro Plugin\n"
 "----------------------------\n"

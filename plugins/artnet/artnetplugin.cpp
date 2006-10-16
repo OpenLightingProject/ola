@@ -35,7 +35,7 @@
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(PluginAdaptor *pa) {
+extern "C" Plugin* create(const PluginAdaptor *pa) {
   return new ArtNetPlugin(pa);
 }
 
@@ -116,7 +116,7 @@ int ArtNetPlugin::stop() {
  * return the description for this plugin
  *
  */
-char *ArtNetPlugin::get_desc() {
+const char *ArtNetPlugin::get_desc() const {
 		return
 "ArtNet Plugin\n"
 "----------------------------\n"

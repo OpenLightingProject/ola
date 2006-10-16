@@ -32,21 +32,21 @@ class PluginAdaptor ;
 class Plugin {
 	
 	public :
-		Plugin(PluginAdaptor *pa) { m_pa = pa; } 
+		Plugin(const PluginAdaptor *pa) { m_pa = pa; } 
 		virtual ~Plugin() {};
 
-		virtual char *get_name() = 0 ;
+		virtual const char *get_name() const = 0 ;
 		virtual int start() = 0 ;
 		virtual int stop() = 0 ;
-		virtual bool is_enabled() = 0;
-		virtual char *get_desc() = 0;
+		virtual bool is_enabled() const = 0;
+		virtual const char *get_desc() const = 0;
 
 	protected:
-		PluginAdaptor *m_pa ;
+		const PluginAdaptor *m_pa ;
 } ;
 
 // interface functions
-typedef Plugin* create_t(PluginAdaptor *pa);
+typedef Plugin* create_t(const PluginAdaptor *pa);
 typedef void destroy_t(Plugin*);
 
 #endif

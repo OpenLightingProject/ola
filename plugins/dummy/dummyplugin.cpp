@@ -29,7 +29,7 @@
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(PluginAdaptor *pa) {
+extern "C" Plugin* create(const PluginAdaptor *pa) {
   return new DummyPlugin(pa);
 }
 
@@ -86,7 +86,7 @@ int DummyPlugin::stop() {
 	return 0;
 }
 
-char *DummyPlugin::get_desc() {
+const char *DummyPlugin::get_desc() const {
 	return
 "Dummy Plugin\n"
 "----------------------------\n"

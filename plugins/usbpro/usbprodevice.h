@@ -118,37 +118,37 @@ typedef struct {
 class UsbProDevice : public Device, public FDListener {
 
 	public:
-		UsbProDevice(Plugin *owner, const char *name, string dev_path) ;
+		UsbProDevice(Plugin *owner, const char *name, const string dev_path) ;
 		~UsbProDevice() ;
 
 		int start() ;
 		int stop() ;
 		int get_sd() const ;
 		int fd_action() ;
-		int save_config();
+		int save_config() const;
 		int configure(void *req, int len) ;
 		int send_dmx(uint8_t *data, int len) ;
-		int get_dmx(uint8_t *data, int len) ;
+		int get_dmx(uint8_t *data, int len) const ;
 
 	private:
 		// these methods are for communicating with the device
 		int w_connect(const char *dev) ;
 		int w_disconnect() ;
 		int w_init() ;
-		int w_set_msg_len(promsg *msg, int len);
-		int w_send_msg(promsg *msg);
-		int w_send_dmx(uint8_t *buf, int len);
-		int w_send_rdm(uint8_t *buf, int len);
-		int w_send_prmreq(int usrsz)  ;
-		int w_send_rcmode(int mode) ;
-		int w_send_snoreq();
+		int w_set_msg_len(promsg *msg, int len) const;
+		int w_send_msg(promsg *msg) const;
+		int w_send_dmx(uint8_t *buf, int len) const;
+		int w_send_rdm(uint8_t *buf, int len) const;
+		int w_send_prmreq(int usrsz) const;
+		int w_send_rcmode(int mode);
+		int w_send_snoreq() const;
 		int w_handle_dmx(pms_rdmx *dmx, int len) ;
 		int w_handle_cos(pms_cos *cos, int len);
 		int w_handle_prmrep(pms_prmrep *rep, int len);
 		int w_handle_snorep(pms_snorep *rep, int len);
 		int w_recv() ;
 
-		string m_dev_path ;
+		const string m_dev_path ;
 		int m_fd ;
 		uint8_t	m_dmx[DMX_BUF_LEN] ;
 		bool m_enabled ;

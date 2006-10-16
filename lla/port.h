@@ -22,7 +22,6 @@
 #define PORT_H
 
 #include <stdint.h>
-#include <stdlib.h>
 
 class Device ;
 class Universe ;
@@ -33,10 +32,10 @@ class Port {
 		Port(Device *parent, int id) ;
 		virtual ~Port() { } ;
 
-		Device *get_device() 						{ return m_parent; }
-		int get_id() 								{ return m_pid; }
+		Device *get_device() const					{ return m_parent; }
+		int get_id() const							{ return m_pid; }
 		virtual int set_universe(Universe *uni) 	{ m_universe = uni;  return 0;}
-		virtual Universe *get_universe() 			{ return m_universe; }
+		virtual Universe *get_universe() const		{ return m_universe; }
 		int dmx_changed() ;
 		
 		// register a dmx handler for this port
@@ -48,8 +47,8 @@ class Port {
 
 		// indicate our ports capability
 		// default is read/write
-		virtual int can_read() { return 1; }
-		virtual int can_write() { return 1; }
+		virtual int can_read() const  { return 1; }
+		virtual int can_write() const { return 1; }
 
 		// possible rdm functions here
 	

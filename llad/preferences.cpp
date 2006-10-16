@@ -41,11 +41,7 @@
  *
  * @param id	the id of the container
  */
-Preferences::Preferences(string id) {
-
-	this->id = id ;
-
-}
+Preferences::Preferences(string id) : id(id) {}
 
 
 /*
@@ -58,7 +54,7 @@ Preferences::~Preferences() {
 
 
 /*
- * Load from storage
+ * Load the preferences from storage
  *
  */
 int Preferences::load() {
@@ -96,16 +92,15 @@ int Preferences::load() {
 
 	fclose(fh) ;
 	return 0 ;
-
 }
 
 
 /*
- * save to storage
+ * Save the preferences to storage
  *
  *
  */
-int Preferences::save() {
+int Preferences::save() const {
     map<string, string>::const_iterator iter;
 	string filename ;
 	FILE *fh ;
@@ -135,7 +130,7 @@ int Preferences::save() {
  * @param key
  * @param value
  */
-int Preferences::set_val(string key, string val) {
+int Preferences::set_val(const string &key, const string &val) {
 	m_pref_map.insert(pair<string,string>(key,val)) ;
 	return 0;	
 }
@@ -147,7 +142,7 @@ int Preferences::set_val(string key, string val) {
  * @param key
  * @param value
  */
-int Preferences::set_single_val(string key, string val) {
+int Preferences::set_single_val(const string &key, const string &val) {
 	m_pref_map.insert(pair<string,string>(key,val)) ;
 	return 0;	
 }
@@ -160,7 +155,7 @@ int Preferences::set_single_val(string key, string val) {
  * @return the value corrosponding to key
  *
  */
-string Preferences::get_val(string key) {
+string Preferences::get_val(const string &key) {
     map<string, string>::const_iterator iter;
 
 	iter = m_pref_map.find(key) ;
@@ -178,16 +173,15 @@ string Preferences::get_val(string key) {
  *
  * the vector must be freed once used.
  */
-vector<string> *Preferences::get_multiple_val(string key) {
+vector<string> *Preferences::get_multiple_val(const string &key) {
 	vector<string> *vec = new vector<string> ;
     map<string, string>::const_iterator iter;
 
-	
 	if(vec == NULL) 
 		return NULL ;
 
 	for ( iter = m_pref_map.find(key) ;  iter != m_pref_map.end() && iter->first == key ; ++iter ) {
-		vec->insert(vec->end(),  iter->second) ;
+		vec->push_back(iter->second) ;
 	}
 	return vec ;
 
@@ -195,7 +189,7 @@ vector<string> *Preferences::get_multiple_val(string key) {
 
 
 
-int Preferences::change_dir() {
+int Preferences::change_dir() const {
 	struct passwd  *ptr = getpwuid(getuid()) ;
 	if(ptr == NULL) 
 		return -1 ;

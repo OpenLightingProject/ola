@@ -30,12 +30,12 @@ using namespace std;
 class OpenDmxDevice : public Device {
 
 	public:
-		OpenDmxDevice(Plugin *owner, const char *name, string path) ;
+		OpenDmxDevice(Plugin *owner, const char *name, const string &path) ;
 		~OpenDmxDevice() ;
 
 		int start() ;
 		int stop() ;
-		int save_config() ;
+		int save_config() const ;
 		int configure(void *req, int len) ;
 
 	private:

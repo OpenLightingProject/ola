@@ -30,8 +30,10 @@
  * Create a new dummy device
  *
  */
-DummyDevice::DummyDevice(Plugin *owner, const char *name) : Device(owner, name) {
-	m_enabled = false ;
+DummyDevice::DummyDevice(Plugin *owner, const char *name) :
+	Device(owner, name),
+	m_enabled(false) {
+
 }
 
 
@@ -94,10 +96,8 @@ int DummyDevice::stop() {
 
 // call this when something changes
 // where to store data to ?
-// I'm thinking a config file in /etc/llad/llad.conf
-int DummyDevice::save_config() {
-
-
+// I'm thinking a config file in .lla
+int DummyDevice::save_config() const {
 	return 0;
 }
 
@@ -115,4 +115,3 @@ int DummyDevice::configure(void *req, int len) {
 
 	return 0;
 }
-

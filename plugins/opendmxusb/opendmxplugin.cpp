@@ -35,7 +35,7 @@
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(PluginAdaptor *pa) {
+extern "C" Plugin* create(const PluginAdaptor *pa) {
   return new OpenDmxPlugin(pa);
 }
 
@@ -113,7 +113,7 @@ int OpenDmxPlugin::stop() {
  * return the description for this plugin
  *
  */
-char *OpenDmxPlugin::get_desc() {
+const char *OpenDmxPlugin::get_desc() const {
 		return 
 "OpenDMXUSB Plugin\n"
 "----------------------------\n"

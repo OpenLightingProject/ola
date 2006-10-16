@@ -30,7 +30,7 @@ class DummyDevice : public Device {
 		DummyDevice(Plugin *owner, const char *name) ;
 		~DummyDevice() ;
 
-		int save_config() ;
+		int save_config() const;
 		int configure(void *req, int len) ;
 
 		int start() ;
