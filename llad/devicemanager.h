@@ -41,6 +41,9 @@ class DeviceManager {
 	protected:
 
 	private:
+		DeviceManager(const DeviceManager&);
+		DeviceManager& operator=(const DeviceManager&);
+
 		vector<Device*> m_dev_vect ;		// list of the devices
 } ;
 

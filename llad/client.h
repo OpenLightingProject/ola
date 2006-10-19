@@ -37,8 +37,12 @@ class Client {
 
 	protected :
 		Client(int port) ;
+
 		
 	private:
+		Client(const Client&);
+		Client& operator=(const Client&);
+
 		int m_port;
 		static map<int, Client *> cli_map;				// map of port to clients;
 

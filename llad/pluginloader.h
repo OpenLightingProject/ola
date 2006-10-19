@@ -41,6 +41,9 @@ class PluginLoader {
 	protected:
 		
 	private:
+		PluginLoader(const PluginLoader&);
+		PluginLoader operator=(const PluginLoader&);
+
 		Plugin *load_plugin(char *path) ;
 		int unload_plugin(void *handle) ;
 		

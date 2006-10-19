@@ -43,6 +43,13 @@ class Plugin {
 
 	protected:
 		const PluginAdaptor *m_pa ;
+
+	private:
+		Plugin(const Plugin&);
+		Plugin& operator=(const Plugin&);
+
+	
+	
 } ;
 
 // interface functions

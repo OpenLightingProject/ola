@@ -31,8 +31,6 @@
  */
 Port::Port(Device *parent, int id) {
 	m_pid = id ;
-	m_fh = NULL ;
-	m_fh_data = NULL ;
 	m_universe = NULL ;
 	m_parent = parent ;
 }
@@ -43,15 +41,5 @@ Port::Port(Device *parent, int id) {
 int Port::dmx_changed() {
 	if(m_universe)
 		return m_universe->port_data_changed(this) ;
-	return 0;
-}
-
-/*
- * Register a dmx handler for this port. The handler function
- * is called when the dmx for this port changes
- */
-int Port::register_dmx(int (*fh)(void *data), void *data) {
-	m_fh = fh;
-	m_fh_data = data;
 	return 0;
 }

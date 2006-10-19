@@ -43,6 +43,9 @@ class Preferences {
 		vector<string> *get_multiple_val(const string &key) ;
 		
 	private:
+		Preferences(const Preferences&);
+		Preferences& operator=(const Preferences&);
+
 		int change_dir() const;
 		char *strtrim(char *str) ;
 

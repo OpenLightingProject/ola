@@ -58,6 +58,9 @@ class Network {
 		int send_msg(lla_msg *msg) ;
 
 	private :
+		Network(const Network&);
+		Network operator=(const Network&);
+
 		class Listener {
 			public:
 				Listener(int fd, FDListener *listener, FDManager *manager ) : m_fd(fd) , m_listener(listener) , m_manager(manager) {} ;

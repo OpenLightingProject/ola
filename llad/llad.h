@@ -39,6 +39,9 @@ class Llad {
 		void reload_plugins() ;
 
 	private :
+		Llad(const Llad&);
+		Llad& operator=(const Llad&);
+
 		int handle_syn(lla_msg *msg) ;
 		int handle_fin(lla_msg *msg) ;
 		int handle_msg(lla_msg *msg) ;

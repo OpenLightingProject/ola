@@ -66,6 +66,8 @@ class Universe {
 		Universe(int uid) ;
 		
 	private:
+		Universe(const Universe&);
+		Universe& operator=(const Universe&);
 		 
 		int m_uid;											// universe address
 //		merge_mode mm;										// merge mode

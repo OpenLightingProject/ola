@@ -44,6 +44,9 @@ class PluginAdaptor {
 		int unregister_device(Device *dev) const;
 
 	private :
+		PluginAdaptor(const PluginAdaptor&);
+		PluginAdaptor& operator=(const PluginAdaptor&);
+
 		DeviceManager *dm ;
 		Network *net;
 		

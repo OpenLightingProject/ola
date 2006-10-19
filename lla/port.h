@@ -52,11 +52,10 @@ class Port {
 
 		// possible rdm functions here
 	
-	protected:
-		int (*m_fh)(void *data);		// function to call when buffer changes
-		void *m_fh_data;				// data for function
-
 	private:
+		Port(const Port&);
+		Port& operator=(const Port&);
+
 		int m_pid ;
 		Universe *m_universe;			// universe this port belongs to
 		Device *m_parent;				// pointer to the device this port belongs to

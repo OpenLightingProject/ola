@@ -38,6 +38,9 @@ class Logger {
 		void increment_log_level() ;
 
 	private :
+		Logger(const Logger&);
+		Logger& operator=(const Logger&);
+
 		Logger(Logger::Level level, Logger::Output output) ;
 		~Logger() ;
 		
