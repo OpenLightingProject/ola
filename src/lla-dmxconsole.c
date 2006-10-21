@@ -327,7 +327,7 @@ void crossfade(int new_cue)
 	{
 	  const float p=(float)(t-tstart)/1000.0f/fadetime;
 	  const float q=1.0f-p;
-	  for(i=1; i<max; i++)
+	  for(i=0; i<max; i++)
 	    if(dmxold[i] || dmxnew[i]) /* avoid calculating with only 0 */
 	      dmx[i]=(int)((float)dmxold[i]*q + (float)dmxnew[i]*p);
 	  setall();
