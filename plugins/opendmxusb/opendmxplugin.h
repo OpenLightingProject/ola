@@ -23,14 +23,15 @@
 #define OPENDMXPLUGIN_H
 
 #include <lla/plugin.h>
+#include <lla/plugin_id.h>
 
 class OpenDmxDevice ;
 
 class OpenDmxPlugin : public Plugin {
 
 	public:
-		OpenDmxPlugin(const PluginAdaptor *pa) : 
-			Plugin(pa),
+		OpenDmxPlugin(const PluginAdaptor *pa, lla_plugin_id id) : 
+			Plugin(pa, id),
 			m_enabled(false),
 			m_dev(NULL),
 			m_prefs(NULL) {} ;

@@ -34,7 +34,7 @@
  * Entry point to this plugin
  */
 extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new ShowNetPlugin(pa);
+  return new ShowNetPlugin(pa, LLA_PLUGIN_SHOWNET);
 }
 
 /*

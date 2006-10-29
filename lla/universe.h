@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <map>
+#include <string>
 
 #define DMX_LENGTH 512
 
@@ -49,8 +50,8 @@ class Universe {
 		int get_uid() const;
 		int port_data_changed(Port *prt) ;
 		bool in_use() const;
-		const char *get_name() const;
-		void set_name(const char *name) ;
+		string get_name() const;
+		void set_name(const string &name) ;
 		int send_dmx(class Client *cli) ;
 		
 		static Universe *get_universe(int uid) ;
@@ -59,6 +60,7 @@ class Universe {
 		static Universe *get_universe_at_pos(int index) ;
 
 		static int clean_up();
+		static int check_for_unused();
 		static vector<Universe *> *get_list() ;
 		static int set_net(class Network *net) ;
 
@@ -75,7 +77,7 @@ class Universe {
 		vector<class Client *> clients_vect ;				// clients listening to this universe
 		uint8_t	m_data[DMX_LENGTH] ;						// buffer for this universe
 		int m_length ;								
-		char *m_name ;										// name of this universe
+		string m_name ;										// name of this universe
 				
 		static map<int, Universe *> uni_map;				// map of uid to universes
 		static Network *c_net ;								// network object

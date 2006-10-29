@@ -49,7 +49,7 @@ Device::~Device() {
  *
  * @return	the plugin that owns this device
  */
-inline Plugin *Device::get_owner() const {
+Plugin *Device::get_owner() const {
 	return m_owner ;
 }
 

@@ -19,6 +19,7 @@
  */
 
 #include <stdint.h>
+#include <lla/plugin_id.h>
 
 #define	LLA_PORT_CAP_IN 0x01
 #define	LLA_PORT_CAP_OUT 0x02
@@ -60,8 +61,9 @@ typedef struct lla_port_s lla_port ;
 
 struct lla_device_s {
 	int id ;
-	char *name;
 	int count;
+	char *name;
+	lla_plugin_id plugin;
 	struct lla_port_s *ports;
 	struct lla_device_s *next;
 };
@@ -86,7 +88,7 @@ extern int lla_read_dmx(lla_con c, int universe) ;
 //read/write rdm ?
 
 
-extern lla_device *lla_req_dev_info(lla_con c) ;
+extern lla_device *lla_req_dev_info(lla_con c, lla_plugin_id filter) ;
 extern lla_plugin *lla_req_plugin_info(lla_con c) ;
 extern int lla_req_universe_info(lla_con c, lla_universe **head) ;
 

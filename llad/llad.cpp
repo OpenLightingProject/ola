@@ -32,7 +32,7 @@
  * Create a new Llad
  *
  */
-Llad::Llad() {
+Llad::Llad() : m_uni_names("universes") {
 	m_term = false ;
 	m_reload_plugins = false;
 }
@@ -254,8 +254,10 @@ int Llad::handle_fin(lla_msg *msg) {
 			(*iter)->remove_client(cli) ;
 		}
 
-		free(uni_v);
+		delete uni_v;
 	
+		Universe::check_for_unused();
+
 		Logger::instance()->log(Logger::DEBUG, "Got FIN, deleting client");		
 		delete cli ;
 	}
@@ -358,8 +360,12 @@ int Llad::handle_uni_name (lla_msg *msg) {
 
 	uni = Universe::get_universe(uid) ;
 
+
 	if(uni != NULL) {
-		uni->set_name(msg->data.uniname.name) ;
+		string name(msg->data.uniname.name);
+		uni->set_name(name) ;
+
+
 	}
 	return 0 ;
 
@@ -423,6 +429,7 @@ int Llad::handle_plugin_info_request(lla_msg *msg) {
 	return send_plugin_info(msg->from) ;
 }
 
+
 /*
  * handle a plugin desc request
  *
@@ -445,8 +452,7 @@ int Llad::handle_plugin_desc_request(lla_msg *msg) {
  *
  */
 int Llad::handle_device_info_request(lla_msg *msg) {
-
-	return send_device_info(msg->from) ;
+	return send_device_info(msg->from, msg->data.dreq.plugin) ;
 }
 
 
@@ -593,13 +599,12 @@ int Llad::send_plugin_info(struct sockaddr_in dst) {
  * This provides a client with details on all devices active on the system
  *
  */
-int Llad::send_device_info(struct sockaddr_in dst) {
+int Llad::send_device_info(struct sockaddr_in dst, lla_plugin_id filter) {
 	Device *dev ;
 	
 	lla_msg reply ;
 	int i ;
 	int ndevs = dm->device_count();
-	
 
 	// for now we don't worry about sending multiple datagrams
 	// if oneday people need to use more than 30 devices !!!, we can change it
@@ -610,21 +615,28 @@ int Llad::send_device_info(struct sockaddr_in dst) {
 	reply.len = sizeof(lla_msg_device_info) ;
 	
 	reply.data.dinfo.op = LLA_MSG_DEVICE_INFO ;
-	reply.data.dinfo.ndevs = ndevs ;
 	reply.data.dinfo.offset = 0 ;
-	reply.data.dinfo.count = ndevs ;
 	
+	int j=0 ;
 	for(i=0; i < ndevs ; i++) {
 		dev = dm->get_dev(i) ;
 
 		if(dev != NULL) {
-
-			reply.data.dinfo.devices[i].id = i ;
-			reply.data.dinfo.devices[i].ports = dev->port_count() ;
-			strncpy(reply.data.dinfo.devices[i].name, dev->get_name(), DEVICE_NAME_LENGTH) ;
-				
+			Plugin *owner = dev->get_owner() ;
+			if (filter == LLA_PLUGIN_ALL || ( owner != NULL && filter == owner->get_id() ) ) {
+				reply.data.dinfo.devices[j].id = i ;
+				reply.data.dinfo.devices[j].plugin = owner->get_id() ;
+				reply.data.dinfo.devices[j].ports = dev->port_count() ;
+				strncpy(reply.data.dinfo.devices[j].name, dev->get_name(), DEVICE_NAME_LENGTH) ;
+				++j;
+				if (j == DEVICES_PER_DATAGRAM)
+					break;
+			}		
 		}
 	}
+
+	reply.data.dinfo.ndevs = j ;
+	reply.data.dinfo.count = j ;
 	Logger::instance()->log(Logger::DEBUG, "Got device req, sending reply");
 	
 	net->send_msg(&reply);
@@ -749,11 +761,10 @@ int Llad::send_universe_info(struct sockaddr_in dst) {
 	for(iter = uni_v->begin(), i=0; iter != uni_v->end() && i < nunis ; ++iter, ++i) {
 		reply.data.uniinfo.universes[i].id = (*iter)->get_uid() ;
 
-		if( (*iter)->get_name() != NULL ) 
-			strncpy(reply.data.uniinfo.universes[i].name, (*iter)->get_name(), UNIVERSE_NAME_LENGTH) ;
+		strncpy(reply.data.uniinfo.universes[i].name, (*iter)->get_name().c_str(), UNIVERSE_NAME_LENGTH) ;
 	}
 	
-	free(uni_v) ;
+	delete uni_v ;
 	Logger::instance()->log(Logger::DEBUG, "Got universe req, sending reply");
 	net->send_msg(&reply);
 	return 0;

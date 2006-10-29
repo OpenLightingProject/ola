@@ -23,13 +23,18 @@
 #define ARTNETPLUGIN_H
 
 #include <lla/plugin.h>
+#include <lla/plugin_id.h>
 
 class ArtNetDevice ;
 
 class ArtNetPlugin : public Plugin {
 
 	public:
-		ArtNetPlugin(const PluginAdaptor *pa) : Plugin(pa), m_enabled(false) {}
+		ArtNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
+			Plugin(pa,id),
+			m_enabled(false),
+			m_dev(NULL),
+			m_prefs(NULL) {}
 
 		int start();
 		int stop();

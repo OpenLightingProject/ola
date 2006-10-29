@@ -48,7 +48,7 @@ OpenDmxPort::~OpenDmxPort() {
  * The read operation is not supported in drivers
  *
  */
-inline int OpenDmxPort::can_read() { return 0; }
+int OpenDmxPort::can_read() const { return 0; }
 inline int OpenDmxPort::read(uint8_t *data, int length) { return 0; } 
 
 

@@ -36,7 +36,7 @@
  * Entry point to this plugin
  */
 extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new ArtNetPlugin(pa);
+  return new ArtNetPlugin(pa, LLA_PLUGIN_ARTNET);
 }
 
 /*

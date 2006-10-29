@@ -25,13 +25,17 @@
 #include <vector>
 #include <lla/plugin.h>
 #include <lla/fdmanager.h>
+#include <lla/plugin_id.h>
 
 class UsbProDevice ;
 
 class UsbProPlugin : public Plugin, public FDManager {
 
 	public:
-		UsbProPlugin(const PluginAdaptor *pa) : Plugin(pa), m_enabled(false) {}
+		UsbProPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
+			Plugin(pa, id),
+			m_enabled(false),
+			m_prefs(NULL) {}
 
 		int start();
 		int stop();

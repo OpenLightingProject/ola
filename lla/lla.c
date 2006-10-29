@@ -445,7 +445,7 @@ lla_plugin *lla_req_plugin_info(lla_con c) {
  *
  *
  */
-lla_device *lla_req_dev_info(lla_con c) {
+lla_device *lla_req_dev_info(lla_con c, lla_plugin_id filter) {
 	lla_connection *con = (lla_connection*) c ;
 	lla_msg msg ;
 	
@@ -454,6 +454,7 @@ lla_device *lla_req_dev_info(lla_con c) {
 
 	msg.len = sizeof(lla_msg_device_info_request) ;
 	msg.data.dreq.op = LLA_MSG_DEVICE_INFO_REQUEST ;
+	msg.data.dreq.plugin = filter;
 	
 	send_msg(con, &msg) ;
 	

@@ -24,10 +24,12 @@
 
 #include <lla/port.h>
 #include <lla/messages.h>
+#include <lla/preferences.h>
+#include <lla/plugin_id.h>
+
 #include "devicemanager.h"
 #include "pluginloader.h" 
 #include "network.h"
-
 class Llad {
 
 	public :
@@ -60,7 +62,7 @@ class Llad {
 		int send_dmx(Universe *uni, struct sockaddr_in dst) ;
 		int send_plugin_info(struct sockaddr_in dst) ;
 		int send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) ;
-		int send_device_info(struct sockaddr_in dst) ;
+		int send_device_info(struct sockaddr_in dst, lla_plugin_id filter) ;
 		int send_universe_info(struct sockaddr_in dst) ;
 		int send_port_info(struct sockaddr_in dst, Device *dev, int devid) ;
 
@@ -74,6 +76,7 @@ class Llad {
 		PluginLoader *pm ;
 		Network *net ;
 		PluginAdaptor *pa;
+		Preferences m_uni_names;
 };
 
 #endif

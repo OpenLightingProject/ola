@@ -30,7 +30,7 @@
  * Entry point to this plugin
  */
 extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new DummyPlugin(pa);
+  return new DummyPlugin(pa, LLA_PLUGIN_DUMMY);
 }
 
 /*

@@ -36,7 +36,7 @@ class OpenDmxPort : public Port  {
 
 		int write(uint8_t *data, int length);
 		int read(uint8_t *data, int length); 
-		int can_read() ;
+		int can_read() const ;
 	private:
 		OpenDmxThread *m_thread;
 };

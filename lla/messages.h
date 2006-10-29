@@ -23,7 +23,7 @@
 
 #include <stdint.h>
 #include <netinet/in.h>
-
+#include <lla/plugin_id.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -235,7 +235,8 @@ typedef struct lla_msg_plugin_desc_request_s lla_msg_plugin_desc_request ;
  *
  */
 struct lla_msg_device_info_request_s {
-	uint8_t op;		// op code
+	uint8_t op;				// op code
+	lla_plugin_id plugin;	// device filter
 }__attribute__( ( packed ) ) ; 
 
 typedef struct lla_msg_device_info_request_s lla_msg_device_info_request ;
@@ -282,6 +283,7 @@ struct lla_msg_plugin_s {
 struct lla_msg_device_s {
 	int id ;				// device id
 	int ports ;				// number of ports
+	lla_plugin_id	plugin;	// the id of the owner
 	char name[30];			// name
 };
 
@@ -345,7 +347,7 @@ typedef struct lla_msg_plugin_desc_s lla_msg_plugin_desc ;
  */
 struct lla_msg_device_info_s  {
 	uint8_t op;		// op code
-	int ndevs;		// number of ports in total
+	int ndevs;		// number of devices in total
 	int offset;		// offset of this msg
 	int count;		// number of ports in this msg
 	struct lla_msg_device_s devices[DEVICES_PER_DATAGRAM] ;

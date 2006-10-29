@@ -33,7 +33,7 @@
  * Entry point to this plugin
  */
 extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new EspNetPlugin(pa);
+  return new EspNetPlugin(pa, LLA_PLUGIN_ESPNET);
 }
 
 /*

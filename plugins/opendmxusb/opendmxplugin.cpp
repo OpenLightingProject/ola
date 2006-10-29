@@ -36,7 +36,7 @@
  * Entry point to this plugin
  */
 extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new OpenDmxPlugin(pa);
+  return new OpenDmxPlugin(pa, LLA_PLUGIN_OPEN);
 }
 
 /*

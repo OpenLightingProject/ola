@@ -23,13 +23,18 @@
 #define ESPNETPLUGIN_H
 
 #include <lla/plugin.h>
+#include <lla/plugin_id.h>
 
 class EspNetDevice ;
 
 class EspNetPlugin : public Plugin {
 
 	public:
-		EspNetPlugin(const PluginAdaptor *pa) : Plugin(pa), m_enabled(false) {}
+		EspNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) : 
+			Plugin(pa,id),
+			m_enabled(false),
+			m_dev(NULL),
+			m_prefs(NULL) {}
 
 		int start();
 		int stop();

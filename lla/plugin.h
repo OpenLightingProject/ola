@@ -23,6 +23,8 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
+#include <lla/plugin_id.h>
+
 class PluginAdaptor ;
 
 /*
@@ -32,7 +34,7 @@ class PluginAdaptor ;
 class Plugin {
 	
 	public :
-		Plugin(const PluginAdaptor *pa) { m_pa = pa; } 
+		Plugin(const PluginAdaptor *pa, lla_plugin_id id) : m_pa(pa), m_id(id) {} 
 		virtual ~Plugin() {};
 
 		virtual const char *get_name() const = 0 ;
@@ -40,6 +42,7 @@ class Plugin {
 		virtual int stop() = 0 ;
 		virtual bool is_enabled() const = 0;
 		virtual const char *get_desc() const = 0;
+		lla_plugin_id get_id() { return m_id;}
 
 	protected:
 		const PluginAdaptor *m_pa ;
@@ -47,7 +50,7 @@ class Plugin {
 	private:
 		Plugin(const Plugin&);
 		Plugin& operator=(const Plugin&);
-
+		lla_plugin_id m_id;
 	
 	
 } ;

@@ -35,7 +35,7 @@
  * Entry point to this plugin
  */
 extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new SandNetPlugin(pa);
+  return new SandNetPlugin(pa, LLA_PLUGIN_SANDNET);
 }
 
 

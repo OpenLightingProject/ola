@@ -33,6 +33,7 @@
 #include <lla/logger.h>
 #include <lla/preferences.h>
 #include <lla/universe.h>
+#include <usbpro_messages.h>
 
 #include "usbprodevice.h"
 #include "usbproport.h"
@@ -247,10 +248,32 @@ int UsbProDevice::save_config() const {
  *
  */
 int UsbProDevice::configure(void *req, int len) {
-	// handle short/ long name & subnet and port addresses
-	
-	req = 0 ;
-	len = 0;
+	lla_usbpro_msg *msg = (lla_usbpro_msg *) req;
+
+	if(len < 1) {
+
+		return -1 ;
+	}
+
+	switch(msg->op) {
+		case LLA_USBPRO_MSG_PREQ:
+			// get widget params
+			w_send_prmreq(0);
+		case LLA_USBPRO_MSG_SREQ:
+			// get serial
+			w_send_snoreq();
+
+		case LLA_USBPRO_MSG_PRMS:
+			// set widget params
+	//		if(len >  ) {
+				
+	//		}
+
+			break;
+		default:
+			Logger::instance()->log(Logger::WARN ,"Invalid request to usbpro configure %i", msg->op);
+			return -1;
+	}
 
 	return 0;
 }
@@ -447,8 +470,6 @@ int UsbProDevice::w_handle_cos(pms_cos *cos, int len) {
 	//get our input port
 	Port *prt = get_port(0) ;
 	
-//	printf(" %hhx  %hhx %hhx %hhx %hhx\n", cos->changed[0], cos->changed[1], cos->changed[2], cos->changed[3], cos->changed[4]) ;
-
 	// should be checking length here
 	offset = 0 ;
 	for(i = 0; i< 40; i++) {
@@ -470,13 +491,12 @@ int UsbProDevice::w_handle_cos(pms_cos *cos, int len) {
 int UsbProDevice::w_handle_prmrep(pms_prmrep *rep, int len) {
 	int frmvr = rep->firmv + (rep->firmv_hi <<8) ;
 	
-//	printf("got param reply\n") ;
-//	printf(" firmware is %i\n", frmvr ) ;
-//	printf(" brk tm %hhx\n", rep->brtm) ;
-//	printf(" mab tm %hhx\n", rep->mabtm) ;
-//	printf(" rate %hhx\n", rep->rate) ;
+	printf("got param reply\n") ;
+	printf(" firmware is %i\n", frmvr ) ;
+	printf(" brk tm %hhx\n", rep->brtm) ;
+	printf(" mab tm %hhx\n", rep->mabtm) ;
+	printf(" rate %hhx\n", rep->rate) ;
 
-//	send_snoreq() ;
 }
 
 /*
@@ -484,13 +504,12 @@ int UsbProDevice::w_handle_prmrep(pms_prmrep *rep, int len) {
  */
 int UsbProDevice::w_handle_snorep(pms_snorep *rep, int len) {
 	
-//	printf("got serno reply\n") ;
-//	printf(" 1 %hhx\n", rep->srno[0] ) ;
-//	printf(" 2 %hhx\n", rep->srno[1]) ;
-//	printf(" 3 %hhx\n", rep->srno[2]) ;
-//	printf(" 4 %hhx\n", rep->srno[3]) ;
+	printf("got serno reply\n") ;
+	printf(" 1 %hhx\n", rep->srno[0] ) ;
+	printf(" 2 %hhx\n", rep->srno[1]) ;
+	printf(" 3 %hhx\n", rep->srno[2]) ;
+	printf(" 4 %hhx\n", rep->srno[3]) ;
 
-//	send_rcmode(1) ;
 }
 
 /*

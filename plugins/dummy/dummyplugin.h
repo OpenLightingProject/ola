@@ -23,13 +23,17 @@
 #define DUMMYPLUGIN_H
 
 #include <lla/plugin.h>
+#include <lla/plugin_id.h>
 
 class DummyDevice ;
 
 class DummyPlugin : public Plugin {
 
 	public:
-		DummyPlugin(const PluginAdaptor *pa) : Plugin(pa), m_enabled(false) {}
+		DummyPlugin(const PluginAdaptor *pa, lla_plugin_id id) : 
+			Plugin(pa, id),
+			m_enabled(false),
+			m_dev(NULL) {}
 
 		int start();
 		int stop();

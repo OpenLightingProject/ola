@@ -37,7 +37,7 @@
  * Entry point to this plugin
  */
 extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new UsbProPlugin(pa);
+  return new UsbProPlugin(pa, LLA_PLUGIN_USBPRO);
 }
 
 /*

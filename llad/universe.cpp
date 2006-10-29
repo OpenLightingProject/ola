@@ -37,12 +37,9 @@ Network *Universe::c_net;
  *
  * @param uid	the universe id of this universe
  */
-Universe::Universe(int uid) {
-	m_uid = uid ;
-	m_name = NULL ;
+Universe::Universe(int uid) : m_name(""), m_uid(uid) {
 	memset(m_data, 0x00, DMX_LENGTH) ;
 	m_length = DMX_LENGTH ;
-
 }
 
 
@@ -52,7 +49,6 @@ Universe::Universe(int uid) {
  *
  */
 Universe::~Universe() {
-	free(m_name) ;
 	uni_map.erase(m_uid) ;
 }
 
@@ -62,7 +58,7 @@ Universe::~Universe() {
  *
  * @return the name of this universe
  */
-const char *Universe::get_name() const {
+string Universe::get_name() const {
 	return m_name ;
 }
 
@@ -72,9 +68,8 @@ const char *Universe::get_name() const {
  *
  * @param name	the name to give this universe
  */
-void Universe::set_name(const char *name) {
-	free(m_name) ;
-	m_name = strdup(name) ;
+void Universe::set_name(const string &name) {
+	m_name = name ;
 }
 
 /*
@@ -398,6 +393,25 @@ vector<Universe *> *Universe::get_list() {
 		list->push_back( iter->second );
 	}
 	return list;
+}
+
+
+int Universe::check_for_unused() {
+	map<int ,Universe*>::const_iterator iter;
+	vector<Universe *>::iterator iterv;
+	vector<Universe *> list ;
+
+	// populate list
+	for(iter = uni_map.begin(); iter != uni_map.end(); ++iter) {
+		if( ! iter->second->in_use() ) {
+			list.push_back(iter->second) ;
+		}
+	}
+
+	for(iterv = list.begin(); iterv != list.end() ; ++iterv) {
+		delete *iterv;
+	}
+
 }
 
 /*
