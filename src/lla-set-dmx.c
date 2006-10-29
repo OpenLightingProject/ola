@@ -67,7 +67,7 @@ void parse_args(opts_t *ops, int argc, char *argv[]) {
 				ops->dmx = (char *) strdup(optarg)  ;	
 		        break;
 			case 'u':
-				ops->uni = optarg;	
+				ops->uni = atoi(optarg);	
 		        break;
 			case 'h':
 				ops->help = 1 ;
@@ -109,21 +109,39 @@ void display_help_and_exit(opts_t *ops, char *argv[]) {
 
 
 /*
+ * Set our default options, command line args will overide this
+ */
+void init_ops(opts_t *ops) {
+	
+	ops->verbose = 0;
+	ops->help = 0;
+	ops->dmx = NULL ;
+	ops->uni = -1 ;
+}
+
+
+
+/*
  * Connect, fetch the device listing and display
  *
  *
  */
 int main(int argc, char*argv[]) {
 	lla_con con ;
-	lla_device *devitr ;
-	lla_port *prtitr ;
 	opts_t ops;
+	uint8_t buf[512];
+	char *s; 
 
+	init_ops(&ops) ;
 	parse_args(&ops, argc, argv) ;
 
 	// do some checks
 	if( ops.help)
 		display_help_and_exit(&ops, argv) ;
+
+	if( ops.uni < 0 ) {
+		display_help_and_exit(&ops, argv) ;
+	}
 
 	// connect
 	con = lla_connect() ;
@@ -133,8 +151,17 @@ int main(int argc, char*argv[]) {
 		exit(1) ;
 	}
 
+	int i=0;
+	for( s = strtok(ops.dmx, ",") ; s != NULL ; s = strtok(NULL, ",") ) {
+		int v  = atoi(s) ;
+		buf[i++] = v > 255 ? 255 : v;
+	}
 
-	
+	int ret = lla_send_dmx(con, ops.uni, buf, i) ;
+
+	if( ret) {
+		printf("Send DMX failed:\n") ;
+	}
 
 	lla_disconnect(con) ;
 

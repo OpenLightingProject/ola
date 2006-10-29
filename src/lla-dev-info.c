@@ -43,8 +43,8 @@ int main(int argc, char*argv[]) {
 		printf("error: %s\n", strerror(errno) ) ;
 		exit(1) ;
 	}
-	
-	if( (devitr = lla_req_dev_info(con)) ) {
+
+	if( (devitr = lla_req_dev_info(con, LLA_PLUGIN_ALL)) ) {
 		while( devitr != NULL) {
 			printf("Device %d: %s\n", devitr->id,  devitr->name ) ;
 
