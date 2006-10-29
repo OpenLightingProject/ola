@@ -30,18 +30,15 @@
  * @param	owner	the plugin that owns this device
  * @param	name	a nice name for this device
  */
-Device::Device(Plugin *owner, const char *name) 
-	: m_owner(owner)  {
+Device::Device(Plugin *owner, const string &name) 
+	: m_owner(owner), m_name(name)  {
 
-	m_name = strdup(name) ;
 }
 
 /*
  * Destroy this device
  */
-Device::~Device() {
-	free(m_name) ;
-}
+Device::~Device() {}
 
 
 /*
@@ -58,7 +55,7 @@ Plugin *Device::get_owner() const {
  *
  * @return the name of the device
  */
-const char *Device::get_name() const {
+const string Device::get_name() const {
 	return m_name ;
 }
 

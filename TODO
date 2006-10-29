@@ -1,16 +1,24 @@
 
 --URGENT--
 
-* fix up the lla_req_* functions
+* fix up the lla_req_* functions (wtf does this mean?)
+* convert char *name in device.h (twice)
 
 --REQUIRED--
-* shownet recv 
-* serialise so that plugins can store state
+* shownet recv  - DONE
+* enttec open - DONE
+* sandnet - DONE
+* pro support working ??
 
 -- NICE--
-* perhaps start llad if not already running ?
-* remember pid : plugin mappings
+* serialise so that plugins can store state
+* perhaps lla_con could start llad if not already running ?
+* remember plugin id : plugin mappings
 * send debug to remote client - need to watch looping here (maybe lev 1&2)
+* let the devices save what universe they are attached to
+* save universe names (universe manager??)
+* get dev msgs working
+
 
 --WISH LIST--
 

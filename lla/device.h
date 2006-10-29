@@ -31,9 +31,9 @@ using namespace std;
 class Device {
 
 	public:
-		Device(Plugin *owner, const char *name);
+		Device(Plugin *owner, const string &name);
 		virtual ~Device() ;
-		const char  *get_name() const ;
+		const string get_name() const ;
 		Plugin	 	*get_owner() const ;
 			
 		// for the subclasses
@@ -48,7 +48,7 @@ class Device {
 		Device& operator=(const Device&);
 
 		Plugin 			*m_owner;			// which plugin owns this device
-		char 			*m_name;
+		string 			m_name;				// device name
 		vector<Port*>	m_ports_vect ;		// ports on the device
 };
 

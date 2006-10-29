@@ -35,6 +35,13 @@ Tips and Gotchas
    If your device has the potential to block, you should either register a
    file descriptor and callback for writing or run a separate thread 
    (see the opendmxusb plugin for an example)
+
+ * Register a callback for a fd by using the register_fd method in PluginAdaptor.
+
+ * You can also register a FDManager class in the register_fd call. The fd_error
+   method will be invoked if the fd_action method returns an error (usefull for
+   discovering if your device had been disconnected)
    
+ * You can use register_timeout to register a method to be called every x seconds.
 
 
