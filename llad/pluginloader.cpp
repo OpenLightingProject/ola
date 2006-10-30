@@ -59,42 +59,36 @@ PluginLoader::~PluginLoader() {
  * @param dirname	the plugins directory
  * @return 	0 on sucess, -1 on failure
  */
-int PluginLoader::load_plugins(char *dirname) {
+int PluginLoader::load_plugins(const string &dirname) {
 	int slen ;
-	char *filename, *ext ;
 	Plugin *plug = NULL ;
 	DIR *dir;
 	struct dirent *ent;
 	struct stat statbuf;
 
-	dir = opendir(dirname);
+	dir = opendir(dirname.c_str());
 	
 	if (!dir)
 		return 0;
 
 	while ((ent = readdir(dir)) != NULL) {
+		string fname = dirname ;
+		fname.append("/") ;
+		fname.append(ent->d_name);
+	
+		int i = fname.find_last_of(".");
+		if ( i == string::npos) 
+			continue;
 
-		// this needs to be cleaned up -> strdup_printf
-		slen = strlen(dirname) + strlen(ent->d_name ) + 2 ;
-		filename = (char *) malloc(slen) ;
+		if (!stat(fname.c_str(), &statbuf) && S_ISREG(statbuf.st_mode) && fname.substr(i) == SHARED_LIB_EXT) {
 
-		if(filename == NULL)
-			break;
-
-		strcpy(filename, dirname) ;
-		strcat(filename, "/") ;
-		strcat(filename, ent->d_name) ;
-		
-		if (!stat(filename, &statbuf) && S_ISREG(statbuf.st_mode) && (ext = strrchr(ent->d_name, '.')) != NULL)
-		if (!strcmp(ext, SHARED_LIB_EXT)) {
-				// ok try and load it
-				if( (plug = this->load_plugin(filename)) == NULL) {
-						Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", filename) ;
-				} else {
-					m_plugin_vect.push_back(plug) ;
-				}
+			// ok try and load it
+			if( (plug = this->load_plugin(fname)) == NULL) {
+				Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", fname.c_str()) ;
+			} else {
+				m_plugin_vect.push_back(plug) ;
 			}
-		free(filename) ;
+		}
 	}
 	closedir(dir);
 
@@ -112,7 +106,7 @@ int PluginLoader::unload_plugins() {
 	map<void*,Plugin*>::iterator iter;
 	
 	for(i=0; i < m_plugin_vect.size() ; i++) {
-		// FIX: this better not fail ...
+		// TODO: this better not fail ...
 		m_plugin_vect[i]->stop() ;
 	}
 
@@ -163,12 +157,12 @@ Plugin *PluginLoader::get_plugin(int id) {
  * @param	path	the path to the plugin
  * @return 0 on sucess, -1 on failure
  */
-Plugin *PluginLoader::load_plugin(char *path) {
+Plugin *PluginLoader::load_plugin(const string &path) {
 	void* handle = NULL;
 	Plugin *plug ;
 	create_t *create ;
 	
-	if ( (handle = dlopen(path, RTLD_LAZY)) == NULL) {
+	if ( (handle = dlopen(path.c_str(), RTLD_LAZY)) == NULL) {
 		Logger::instance()->log(Logger::WARN, "dlopen: %s", dlerror()) ;
 		return NULL ;
 	}
@@ -192,7 +186,7 @@ Plugin *PluginLoader::load_plugin(char *path) {
 	pair<void*, Plugin*> p (handle, plug) ;
 	m_plugin_map.insert(p) ;
 
-	Logger::instance()->log(Logger::WARN, "Loaded plugin %s", plug->get_name()) ;
+	Logger::instance()->log(Logger::WARN, "Loaded plugin %s", plug->get_name().c_str()) ;
 	
 	return plug ;
 }

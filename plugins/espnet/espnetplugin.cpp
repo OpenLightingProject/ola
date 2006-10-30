@@ -109,7 +109,7 @@ int EspNetPlugin::stop() {
  * return the description for this plugin
  *
  */
-const char *EspNetPlugin::get_desc() const {
+string EspNetPlugin::get_desc() const {
 	return 
 "EspNet Plugin\n"
 "----------------------------\n"

@@ -35,7 +35,7 @@
  * @param name
  * @param path to device
  */
-OpenDmxDevice::OpenDmxDevice(Plugin *owner, const char *name, const string &path) :
+OpenDmxDevice::OpenDmxDevice(Plugin *owner, const string &name, const string &path) :
 	Device(owner, name),
 	m_path(path),
 	m_enabled(false) {

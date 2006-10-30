@@ -34,7 +34,7 @@ class PluginLoader {
 		PluginLoader(class PluginAdaptor *pa) ;
 		~PluginLoader() ;
 
-		int load_plugins(char *dirname) ;
+		int load_plugins(const string &dirname) ;
 		int unload_plugins() ;
 		int plugin_count() ;
 		Plugin *get_plugin(int id) ;
@@ -44,7 +44,7 @@ class PluginLoader {
 		PluginLoader(const PluginLoader&);
 		PluginLoader operator=(const PluginLoader&);
 
-		Plugin *load_plugin(char *path) ;
+		Plugin *load_plugin(const string &path) ;
 		int unload_plugin(void *handle) ;
 		
 		vector<Plugin*>	 m_plugin_vect ;

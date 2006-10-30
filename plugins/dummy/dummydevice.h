@@ -27,7 +27,7 @@
 class DummyDevice : public Device {
 
 	public:
-		DummyDevice(Plugin *owner, const char *name) ;
+		DummyDevice(Plugin *owner, const string &name) ;
 		~DummyDevice() ;
 
 		int save_config() const;

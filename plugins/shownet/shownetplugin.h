@@ -39,8 +39,8 @@ class ShowNetPlugin : public Plugin {
 		int start();
 		int stop();
 		bool is_enabled() const 	    { return m_enabled; }
-		const char *get_name() const 	{ return "ShowNet Plugin"; }
-		const char *get_desc() const;
+		string get_name() const 	    { return "ShowNet Plugin"; }
+		string get_desc() const;
 
 	private:
 		class Preferences *load_prefs() ;

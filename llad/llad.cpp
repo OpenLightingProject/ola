@@ -95,9 +95,9 @@ int Llad::init() {
 		plug = pm->get_plugin(i) ;
 
 		if (plug->start())
-			Logger::instance()->log(Logger::WARN, "Failed to start %s", plug->get_name()) ;
+			Logger::instance()->log(Logger::WARN, "Failed to start %s", plug->get_name().c_str()) ;
 		else
-			Logger::instance()->log(Logger::INFO, "Started %s", plug->get_name()) ;
+			Logger::instance()->log(Logger::INFO, "Started %s", plug->get_name().c_str()) ;
 	}
 
 	// init the network socket
@@ -177,9 +177,9 @@ int Llad::_reload_plugins() {
 		plug = pm->get_plugin(i) ;
 
 		if (plug->start())
-			Logger::instance()->log(Logger::WARN, "Failed to start %s", plug->get_name()) ;
+			Logger::instance()->log(Logger::WARN, "Failed to start %s", plug->get_name().c_str()) ;
 		else
-			Logger::instance()->log(Logger::INFO, "Started %s", plug->get_name()) ;
+			Logger::instance()->log(Logger::INFO, "Started %s", plug->get_name().c_str()) ;
 	}
 
 	m_reload_plugins = false ;
@@ -543,12 +543,6 @@ int Llad::handle_msg(lla_msg *msg) {
 }
 
 
-
-
-
-
-
-
 /*
  * Send a plugin_info reply
  *
@@ -562,7 +556,6 @@ int Llad::send_plugin_info(struct sockaddr_in dst) {
 	int i ;
 	int nplugins = pm->plugin_count();
 	
-
 	// for now we don't worry about sending multiple datagrams
 	// if oneday people need to use more than 30 plugins !!!, we can change it
 	nplugins = nplugins > PLUGINS_PER_DATAGRAM ? PLUGINS_PER_DATAGRAM : nplugins ;
@@ -582,7 +575,7 @@ int Llad::send_plugin_info(struct sockaddr_in dst) {
 		if(plug != NULL) {
 
 			reply.data.plinfo.plugins[i].id = i ;
-			strncpy(reply.data.plinfo.plugins[i].name, plug->get_name(), PLUGIN_NAME_LENGTH) ;
+			strncpy(reply.data.plinfo.plugins[i].name, plug->get_name().c_str(), PLUGIN_NAME_LENGTH) ;
 				
 		}
 	}
@@ -592,6 +585,7 @@ int Llad::send_plugin_info(struct sockaddr_in dst) {
 	return 0;
 
 }
+
 
 /*
  * Send a device_info reply
@@ -627,7 +621,7 @@ int Llad::send_device_info(struct sockaddr_in dst, lla_plugin_id filter) {
 				reply.data.dinfo.devices[j].id = i ;
 				reply.data.dinfo.devices[j].plugin = owner->get_id() ;
 				reply.data.dinfo.devices[j].ports = dev->port_count() ;
-				strncpy(reply.data.dinfo.devices[j].name, dev->get_name(), DEVICE_NAME_LENGTH) ;
+				strncpy(reply.data.dinfo.devices[j].name, dev->get_name().c_str(), DEVICE_NAME_LENGTH) ;
 				++j;
 				if (j == DEVICES_PER_DATAGRAM)
 					break;
@@ -643,6 +637,7 @@ int Llad::send_device_info(struct sockaddr_in dst, lla_plugin_id filter) {
 	return 0;
 
 }
+
 
 /*
  * Send a port_info reply
@@ -699,7 +694,6 @@ int Llad::send_port_info(struct sockaddr_in dst, Device *dev, int devid) {
 }
 
 
-
 /*
  * Send a plugin_info reply
  *
@@ -717,7 +711,7 @@ int Llad::send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) {
 	
 	reply.data.pldesc.op = LLA_MSG_PLUGIN_DESC ;
 	reply.data.pldesc.pid = pid ;
-	strncpy(reply.data.pldesc.desc , plug->get_desc()  , PLUGIN_DESC_LENGTH) ;
+	strncpy(reply.data.pldesc.desc , plug->get_desc().c_str() , PLUGIN_DESC_LENGTH) ;
 	
 	Logger::instance()->log(Logger::DEBUG, "Got plugin desc req, sending reply");
 	net->send_msg(&reply);

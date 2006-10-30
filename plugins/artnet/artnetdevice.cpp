@@ -84,7 +84,7 @@ int program_handler(artnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-ArtNetDevice::ArtNetDevice(Plugin *owner, const char *name, Preferences *prefs) :
+ArtNetDevice::ArtNetDevice(Plugin *owner, const string &name, Preferences *prefs) :
 	Device(owner, name),
 	m_prefs(prefs),
 	m_node(NULL),

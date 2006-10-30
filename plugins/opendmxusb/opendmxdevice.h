@@ -30,7 +30,7 @@ using namespace std;
 class OpenDmxDevice : public Device {
 
 	public:
-		OpenDmxDevice(Plugin *owner, const char *name, const string &path) ;
+		OpenDmxDevice(Plugin *owner, const string &name, const string &path) ;
 		~OpenDmxDevice() ;
 
 		int start() ;

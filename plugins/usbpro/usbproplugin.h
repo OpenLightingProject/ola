@@ -40,8 +40,8 @@ class UsbProPlugin : public Plugin, public FDManager {
 		int start();
 		int stop();
 		bool is_enabled() const         { return m_enabled; }
-		const char *get_name() const 	{ return "UsbPro Plugin"; }
-		const char *get_desc() const;
+		string get_name() const 	    { return "UsbPro Plugin"; }
+		string get_desc() const;
 		int fd_error(int error, FDListener *listener) ;
 	private:
 		Preferences *load_prefs() ;

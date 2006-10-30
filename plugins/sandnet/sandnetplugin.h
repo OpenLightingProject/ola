@@ -40,8 +40,8 @@ class SandNetPlugin : public Plugin {
 		int stop();
 		int test(void *data);
 		bool is_enabled() const         { return m_enabled; }
-		const char *get_name() const 	{ return "SandNet Plugin"; }
-		const char *get_desc() const;
+		string get_name() const 	{ return "SandNet Plugin"; }
+		string get_desc() const;
 
 	private:
 		class Preferences *load_prefs() ;

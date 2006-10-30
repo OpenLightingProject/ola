@@ -116,7 +116,7 @@ int eArtNetPlugin::stop() {
  * return the description for this plugin
  *
  */
-char *eArtNetPlugin::get_desc() {
+string *eArtNetPlugin::get_desc() {
 		return
 "eArtNet Plugin\n"
 "----------------------------\n"
@@ -138,7 +138,7 @@ char *eArtNetPlugin::get_desc() {
 "The long name of the node.\n"
 "\n"
 "short_name = lla - eArtNet node\n"
-"The short name of the node (first 17 chars will be used)\n"
+"The short name of the node (first 17 string s will be used)\n"
 "\n"
 "subnet = 0\n"
 "The eArtNet subnet to use (0-15).\n" ;

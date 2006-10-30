@@ -69,7 +69,7 @@ int dmx_handler(sandnet_node n, uint8_t grp, uint8_t uid, int len, uint8_t *data
  * should prob pass the ip to bind to
  *
  */
-SandNetDevice::SandNetDevice(Plugin *owner, const char *name, Preferences *prefs) :
+SandNetDevice::SandNetDevice(Plugin *owner, const string &name, Preferences *prefs) :
 	Device(owner, name),
 	m_prefs(prefs),
 	m_node(NULL),

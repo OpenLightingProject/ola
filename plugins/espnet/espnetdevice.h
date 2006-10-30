@@ -32,7 +32,7 @@
 class EspNetDevice : public Device, public FDListener {
 
 	public:
-		EspNetDevice(Plugin *owner, const char *name, class Preferences *prefs) ;
+		EspNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
 		~EspNetDevice() ;
 
 		int start() ;

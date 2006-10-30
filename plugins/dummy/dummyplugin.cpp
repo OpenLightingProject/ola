@@ -86,7 +86,7 @@ int DummyPlugin::stop() {
 	return 0;
 }
 
-const char *DummyPlugin::get_desc() const {
+string DummyPlugin::get_desc() const {
 	return
 "Dummy Plugin\n"
 "----------------------------\n"

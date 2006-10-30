@@ -34,8 +34,8 @@ class eArtNetPlugin : public Plugin {
 		int start();
 		int stop();
 		bool is_enabled() 	{ return m_enabled; }
-		char *get_name() 	{ return "eArtNet Plugin"; }
-		char *get_desc() ;
+		string *get_name() 	{ return "eArtNet Plugin"; }
+		string *get_desc() ;
 				
 	private:
 		Preferences *load_prefs() ;

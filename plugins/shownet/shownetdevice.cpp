@@ -73,7 +73,7 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
  * should prob pass the ip to bind to
  *
  */
-ShowNetDevice::ShowNetDevice(Plugin *owner, const char *name, Preferences *prefs) :
+ShowNetDevice::ShowNetDevice(Plugin *owner, const string &name, Preferences *prefs) :
 	Device(owner, name),
 	m_prefs(prefs),
 	m_node(NULL),

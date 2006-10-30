@@ -85,7 +85,7 @@ int program_handler(espnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-EspNetDevice::EspNetDevice(Plugin *owner, const char *name, Preferences *prefs) : 
+EspNetDevice::EspNetDevice(Plugin *owner, const string &name, Preferences *prefs) : 
 	Device(owner, name),
 	m_prefs(prefs),
 	m_node(NULL),

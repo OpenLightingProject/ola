@@ -110,7 +110,7 @@ int ShowNetPlugin::stop() {
  * return the description for this plugin
  *
  */
-const char *ShowNetPlugin::get_desc() const {
+string ShowNetPlugin::get_desc() const {
 	return 
 "ShowNet Plugin\n"
 "----------------------------\n"

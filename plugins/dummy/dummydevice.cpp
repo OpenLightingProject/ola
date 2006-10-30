@@ -30,7 +30,7 @@
  * Create a new dummy device
  *
  */
-DummyDevice::DummyDevice(Plugin *owner, const char *name) :
+DummyDevice::DummyDevice(Plugin *owner, const string &name) :
 	Device(owner, name),
 	m_enabled(false) {
 

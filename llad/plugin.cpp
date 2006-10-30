@@ -16,14 +16,12 @@
  *
  * plugin.cpp
  * Base plugin class for lla
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2006 Simon Newton
  */
 
 #include <lla/plugin.h>
 
-char *Plugin::name = "No Name Defined!" ;
-
-char *Plugin::get_name() {
-	return name ;
+string Plugin::get_name() {
+	return "No Name Defined!" ;
 }
 

@@ -118,7 +118,7 @@ typedef struct {
 class UsbProDevice : public Device, public FDListener {
 
 	public:
-		UsbProDevice(Plugin *owner, const char *name, const string dev_path) ;
+		UsbProDevice(Plugin *owner, const string &name, const string dev_path) ;
 		~UsbProDevice() ;
 
 		int start() ;
@@ -132,7 +132,7 @@ class UsbProDevice : public Device, public FDListener {
 
 	private:
 		// these methods are for communicating with the device
-		int w_connect(const char *dev) ;
+		int w_connect(const string &dev) ;
 		int w_disconnect() ;
 		int w_init() ;
 		int w_set_msg_len(promsg *msg, int len) const;

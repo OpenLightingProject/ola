@@ -64,7 +64,7 @@
 /*
  * Create a new device
  */
-UsbProDevice::UsbProDevice(Plugin *owner, const char *name, const string dev_path) :
+UsbProDevice::UsbProDevice(Plugin *owner, const string &name, const string dev_path) :
 	Device(owner, name),
 	m_dev_path(dev_path),
 	m_fd(-1),
@@ -101,7 +101,7 @@ int UsbProDevice::start() {
 	}
 	
 	// create new usbpro node, and and set config values
-	ret = w_connect(m_dev_path.c_str() ) ;
+	ret = w_connect(m_dev_path) ;
 
 	if(ret) {
 		Logger::instance()->log(Logger::WARN, "UsbProPlugin: failed to connect to %s", m_dev_path.c_str()  ) ;
@@ -288,9 +288,9 @@ int UsbProDevice::configure(void *req, int len) {
  * TODO: allow the widget to be removed
  *
  */
-int UsbProDevice::w_connect(const char *dev) {
+int UsbProDevice::w_connect(const string &dev) {
 	struct termios oldtio, newtio ;
-	m_fd = open(dev, O_RDWR | O_NONBLOCK ) ;
+	m_fd = open(dev.c_str(), O_RDWR | O_NONBLOCK ) ;
 
 	if(m_fd == -1) {
 		return 1 ;

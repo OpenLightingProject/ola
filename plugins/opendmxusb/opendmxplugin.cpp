@@ -113,7 +113,7 @@ int OpenDmxPlugin::stop() {
  * return the description for this plugin
  *
  */
-const char *OpenDmxPlugin::get_desc() const {
+string OpenDmxPlugin::get_desc() const {
 		return 
 "OpenDMXUSB Plugin\n"
 "----------------------------\n"

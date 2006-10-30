@@ -38,8 +38,8 @@ class DummyPlugin : public Plugin {
 		int start();
 		int stop();
 		bool is_enabled() const         { return m_enabled; }
-		const char *get_name() const 	{ return "Dummy Plugin"; }
-		const char *get_desc() const;
+		string get_name() const 	{ return "Dummy Plugin"; }
+		string get_desc() const;
 	
 	private:
 		DummyDevice *m_dev ;		// the dummy device

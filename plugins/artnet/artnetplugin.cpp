@@ -116,7 +116,7 @@ int ArtNetPlugin::stop() {
  * return the description for this plugin
  *
  */
-const char *ArtNetPlugin::get_desc() const {
+string ArtNetPlugin::get_desc() const {
 		return
 "ArtNet Plugin\n"
 "----------------------------\n"

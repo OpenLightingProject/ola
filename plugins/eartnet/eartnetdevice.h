@@ -30,7 +30,7 @@
 class eArtNetDevice : public Device, public FDListener {
 
 	public:
-		eArtNetDevice(Plugin *owner, const char *name, class Preferences *prefs) ;
+		eArtNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
 		~eArtNetDevice() ;
 
 		int start() ;

@@ -35,7 +35,7 @@
 class SandNetDevice : public Device, public FDListener, public TimeoutListener {
 
 	public:
-		SandNetDevice(Plugin *owner, const char *name, class Preferences *prefs) ;
+		SandNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
 		~SandNetDevice() ;
 
 		int start() ;

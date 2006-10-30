@@ -142,7 +142,7 @@ int UsbProPlugin::stop() {
  * return the description for this plugin
  *
  */
-const char *UsbProPlugin::get_desc() const {
+string UsbProPlugin::get_desc() const {
 		return
 "Enttec Usb Pro Plugin\n"
 "----------------------------\n"

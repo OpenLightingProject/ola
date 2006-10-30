@@ -116,7 +116,7 @@ int SandNetPlugin::stop() {
  * return the description for this plugin
  *
  */
-const char *SandNetPlugin::get_desc() const {
+string SandNetPlugin::get_desc() const {
 	return 
 "SandNet Plugin\n"
 "----------------------------\n"

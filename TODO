@@ -2,7 +2,6 @@
 --URGENT--
 
 * fix up the lla_req_* functions (wtf does this mean?)
-* convert char *name in device.h (twice)
 
 --REQUIRED--
 * shownet recv  - DONE
@@ -27,8 +26,7 @@ set the mode on a per channel or per universe basis ? Think about if we
 might need "filters" to modify the data from plugins. Could get really funky:
 	o split dmx to different universes OUT = SPLIT(1,0,255)
 	o invert channels OUT = INV(1)
-	o different merge modes (OUT = HTP(1,2))
+	o different merge modes OUT = HTP(1,2)
 	o change offset / map  OUT = OFFSET(1, +50)
 	o scaler (OUT = SCALE(1, %40) )
 	o clip (OUT = CLIP(1,%80) )
- 

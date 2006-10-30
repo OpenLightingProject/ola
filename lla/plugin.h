@@ -24,6 +24,9 @@
 #define PLUGIN_H
 
 #include <lla/plugin_id.h>
+#include <string>
+
+using namespace std;
 
 class PluginAdaptor ;
 
@@ -37,11 +40,11 @@ class Plugin {
 		Plugin(const PluginAdaptor *pa, lla_plugin_id id) : m_pa(pa), m_id(id) {} 
 		virtual ~Plugin() {};
 
-		virtual const char *get_name() const = 0 ;
+		virtual string get_name() const = 0 ;
 		virtual int start() = 0 ;
 		virtual int stop() = 0 ;
 		virtual bool is_enabled() const = 0;
-		virtual const char *get_desc() const = 0;
+		virtual string get_desc() const = 0;
 		lla_plugin_id get_id() { return m_id;}
 
 	protected:

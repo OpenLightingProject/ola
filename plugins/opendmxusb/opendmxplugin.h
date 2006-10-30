@@ -39,8 +39,8 @@ class OpenDmxPlugin : public Plugin {
 		int start();
 		int stop();
 		bool is_enabled() const         { return m_enabled; }
-		const char *get_name() const	{ return "Open DMX Plugin"; }
-		const char *get_desc() const;
+		string get_name() const	{ return "Open DMX Plugin"; }
+		string get_desc() const;
 
 	private:
 		Preferences *load_prefs() ;
