@@ -13,7 +13,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * usbprodevice.h
  * Interface for the usbpro device
  * Copyright (C) 2006  Simon Newton
@@ -26,30 +25,34 @@
 #include <stdint.h>
 #include <lla/device.h>
 #include <lla/fdlistener.h>
+#include <lla/usbpro_messages.h>
 
-#define DMX_BUF_LEN 	513
-#define USER_CONFIG_LEN	508
+enum { DMX_BUF_LEN = 513 };
+enum { USER_CONFIG_LEN = 508 };
 
+// dmx message
 typedef struct {
-	uint8_t dmx[DMX_BUF_LEN] ;
-} pms_dmx ;
+	uint8_t dmx[DMX_BUF_LEN];
+} pms_dmx;
 
+// 
 typedef struct {
 	uint8_t status;
-	uint8_t dmx[DMX_BUF_LEN] ;
-} pms_rdmx ;
+	uint8_t dmx[DMX_BUF_LEN];
+} pms_rdmx;
 
-
+//
 typedef struct {
-	uint8_t dmx[DMX_BUF_LEN] ;
-} pms_rdm ;
+	uint8_t dmx[DMX_BUF_LEN];
+} pms_rdm;
 
-
+// param request
 typedef struct {
-	uint8_t len ;
-	uint8_t	len_hi ;
+	uint8_t len;
+	uint8_t	len_hi;
 } pms_prmreq;
 
+// param reply
 typedef struct {
 	uint8_t firmv ;
 	uint8_t firmv_hi;
@@ -59,49 +62,59 @@ typedef struct {
 	uint8_t user[USER_CONFIG_LEN];
 } pms_prmrep;
 
-
+// param set
 typedef struct {
-	uint8_t	mode ;
+	uint8_t len ;
+	uint8_t len_hi;
+	uint8_t brk ;
+	uint8_t mab;
+	uint8_t rate;
+	uint8_t user[USER_CONFIG_LEN];
+} pms_prmset;
+
+// change recv mode
+typedef struct {
+	uint8_t	mode;
 } pms_rcmode;
 
+// change of state message
 typedef struct {
 	uint8_t	start;
 	uint8_t	changed[5];
 	uint8_t data[40];
 } pms_cos;
 
-
+// serial number request
 typedef struct {
-
 } pms_snoreq;
 
-
+// serial number reply
 typedef struct {
 	uint8_t srno[4] ;
 } pms_snorep;
 
-
+// union of all messages
 typedef union {
-		pms_dmx 		pmu_dmx ;
-		pms_rdmx 		pmu_rdmx ;
-		pms_rdm 		pmu_rdm ;
+		pms_dmx 		pmu_dmx;
+		pms_rdmx 		pmu_rdmx;
+		pms_rdm 		pmu_rdm;
 		pms_prmreq 		pmu_prmreq;
 		pms_prmrep		pmu_prmrep;
-		pms_prmrep		pmu_prmset;
+		pms_prmset		pmu_prmset;
 		pms_rcmode		pmu_rcmode;
 		pms_cos			pmu_cos;
 		pms_snoreq		pmu_snoreq;
 		pms_snorep		pmu_snorep;
 } pmu;
 
-
+// the entire message
 typedef struct {
 	uint8_t som;
 	uint8_t label;
 	uint8_t len;
 	uint8_t len_hi;
 	pmu pm_pmu;
-} promsg ;
+} promsg;
 
 #define pm_dmx		pm_pmu.pmu_dmx
 #define pm_rdmx		pm_pmu.pmu_rdmx
@@ -118,40 +131,49 @@ typedef struct {
 class UsbProDevice : public Device, public FDListener {
 
 	public:
-		UsbProDevice(Plugin *owner, const string &name, const string dev_path) ;
-		~UsbProDevice() ;
+		UsbProDevice(Plugin *owner, const string &name, const string dev_path);
+		~UsbProDevice();
 
-		int start() ;
-		int stop() ;
-		int get_sd() const ;
-		int fd_action() ;
+		int start();
+		int stop();
+		int get_sd() const;
+		int fd_action();
 		int save_config() const;
-		int configure(void *req, int len) ;
-		int send_dmx(uint8_t *data, int len) ;
-		int get_dmx(uint8_t *data, int len) const ;
+		int configure(const void *request, int reql, void *reply, int repl);
+		int send_dmx(uint8_t *data, int len);
+		int get_dmx(uint8_t *data, int len) const;
 
 	private:
 		// these methods are for communicating with the device
-		int w_connect(const string &dev) ;
-		int w_disconnect() ;
-		int w_init() ;
+		int w_connect(const string &dev);
+		int w_disconnect();
+		int w_init();
 		int w_set_msg_len(promsg *msg, int len) const;
 		int w_send_msg(promsg *msg) const;
 		int w_send_dmx(uint8_t *buf, int len) const;
 		int w_send_rdm(uint8_t *buf, int len) const;
 		int w_send_prmreq(int usrsz) const;
+		int w_send_prmset(uint8_t *data, int len, uint8_t brk, uint8_t mab, uint8_t rate) const;
 		int w_send_rcmode(int mode);
 		int w_send_snoreq() const;
-		int w_handle_dmx(pms_rdmx *dmx, int len) ;
+		int w_handle_dmx(pms_rdmx *dmx, int len);
 		int w_handle_cos(pms_cos *cos, int len);
 		int w_handle_prmrep(pms_prmrep *rep, int len);
 		int w_handle_snorep(pms_snorep *rep, int len);
-		int w_recv() ;
+		int w_recv();
 
-		const string m_dev_path ;
-		int m_fd ;
-		uint8_t	m_dmx[DMX_BUF_LEN] ;
-		bool m_enabled ;
+		// these handle the config requests
+		int config_get_params(lla_usbpro_msg *msg, int msgl, lla_usbpro_msg *rep, int repl) const;
+		int config_get_serial(lla_usbpro_msg *msg, int msgl, lla_usbpro_msg *rep, int repl) const;
+		int config_set_params(lla_usbpro_msg *msg, int msgl, lla_usbpro_msg *rep, int repl);
+
+		// instance variables
+		const string m_dev_path;		// path
+		int m_fd;						// file descriptor
+		uint8_t	m_dmx[DMX_BUF_LEN-1];	// dmx buffer
+		uint8_t m_serial[4];			// serial number
+		pms_prmrep m_params;			// widget params
+		bool m_enabled;					// are we enabled
 };
 
 #endif

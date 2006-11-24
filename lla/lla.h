@@ -21,11 +21,11 @@
 #include <stdint.h>
 #include <lla/plugin_id.h>
 
-#define	LLA_PORT_CAP_IN 0x01
-#define	LLA_PORT_CAP_OUT 0x02
+static const uint8_t LLA_PORT_CAP_IN = 0x01;
+static const uint8_t LLA_PORT_CAP_OUT = 0x02;
 
-#define	LLA_PORT_ACTION_PATCH 0x01
-#define	LLA_PORT_ACTION_UNPATCH 0x00
+static const uint8_t LLA_PORT_ACTION_PATCH = 0x01;
+static const uint8_t LLA_PORT_ACTION_UNPATCH = 0x00;
 
 
 typedef void * lla_con ;
@@ -95,4 +95,5 @@ extern int lla_req_universe_info(lla_con c, lla_universe **head) ;
 extern char *lla_req_plugin_desc(lla_con c, int pid) ;
 
 extern int lla_patch(lla_con c, int dev, int port, int action, int uni) ;
+extern int lla_device_config(lla_con c, int dev, const uint8_t *req, int len);
 

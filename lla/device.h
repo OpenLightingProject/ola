@@ -21,27 +21,28 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
-class Plugin ;
-class Port ;
 #include <vector>
 #include <string>
+
+class Plugin;
+class Port;
 
 using namespace std;
 
 class Device {
-
 	public:
 		Device(Plugin *owner, const string &name);
-		virtual ~Device() ;
-		const string get_name() const ;
-		Plugin	 	*get_owner() const ;
+		virtual ~Device();
+		const string get_name() const;
+		Plugin	 	*get_owner() const;
 			
 		// for the subclasses
-		virtual int 	configure(void *req, int len) = 0;
+		// configure needs to be made pure virtual eventually
+		virtual int 	configure(const void *request, int reql, void *reply, int repl) {};
 		virtual int 	save_config() const = 0;
-		virtual int 	add_port(Port *prt) ;
-		virtual Port	*get_port(int pid) const ;
-		virtual int 	port_count() const ;
+		virtual int 	add_port(Port *prt);
+		virtual Port	*get_port(int pid) const;
+		virtual int 	port_count() const;
 
 	private:
 		Device(const Device&);
@@ -49,7 +50,7 @@ class Device {
 
 		Plugin 			*m_owner;			// which plugin owns this device
 		string 			m_name;				// device name
-		vector<Port*>	m_ports_vect ;		// ports on the device
+		vector<Port*>	m_ports_vect;		// ports on the device
 };
 
 #endif

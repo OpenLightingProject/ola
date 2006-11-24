@@ -56,9 +56,14 @@ Network::~Network() {
 	for (i = 0 ; i < m_whandlers_vect.size(); i++) {
 		delete m_whandlers_vect[i] ;
 	}
+
+	for (i = 0 ; i < m_timeouts_vect.size(); i++) {
+		delete m_timeouts_vect[i] ;
+	}
+
 	m_rhandlers_vect.clear() ;
 	m_whandlers_vect.clear() ;
-
+	m_timeouts_vect.clear();
 }
 
 

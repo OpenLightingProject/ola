@@ -35,13 +35,13 @@
 #define max(a,b)    ((a) > (b) ? (a) : (b))
 
 // this should prob be somewhere else									
-#define MAX_DMX 512
+enum { MAX_DMX = 512 };
 
 // the number of DMX buffers we hold (number of simultaneous universes we can use)
-#define MAX_BUF	10
+enum {MAX_BUF = 10 };
 	
 #define LLAD_ADDR "127.0.0.1"		// address to bind to
-#define LLAD_PORT 8898				// port to listen on
+static const int LLAD_PORT = 8898;	// port to listen on
 
 // check if the connection is null and return an error
 #define return_if_null(con) if (con == NULL) { \
@@ -73,6 +73,7 @@ typedef struct {
 	lla_plugin *plugins;
 	lla_universe *universes;
 	char *desc ;
+	int seq;
 } lla_connection;
 
 

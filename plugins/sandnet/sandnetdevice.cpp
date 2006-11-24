@@ -52,11 +52,8 @@ int dmx_handler(sandnet_node n, uint8_t grp, uint8_t uid, int len, uint8_t *data
 	SandNetPort *prt = dev->get_port(uid) ;
 
 	if (prt != NULL) {
-		printf("found port\n") ;
-
 		prt->update_buffer(data,len) ;
 	}
-	printf("got data for %i %hhx\n", uid, data[0] ) ;
 	
 	return 0;
 }

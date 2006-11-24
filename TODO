@@ -8,15 +8,18 @@
 * enttec open - DONE
 * sandnet - DONE
 * pro support working ??
+* standarise plugin id
+* bug if no devices of a type exist (call times out)
 
 -- NICE--
-* serialise so that plugins can store state
+* remember plugin id : plugin mappings											DONE (static maps)
 * perhaps lla_con could start llad if not already running ?
-* remember plugin id : plugin mappings
 * send debug to remote client - need to watch looping here (maybe lev 1&2)
-* let the devices save what universe they are attached to
+* let the devices save what universe they are attached to (do this in the plugin)
+* serialise so that plugins can store state
 * save universe names (universe manager??)
 * get dev msgs working
+* split dependancy between universe and port attributes
 
 
 --WISH LIST--

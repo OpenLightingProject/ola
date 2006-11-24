@@ -68,6 +68,7 @@ lla_con lla_connect() {
 	c->plugins = NULL ;
 	c->universes = NULL ;
 	c->desc = NULL ;
+	c->seq = 0;
 
 	//connect to socket
 	c->sd = socket(AF_INET, SOCK_DGRAM, 0) ;
@@ -594,6 +595,35 @@ int lla_patch(lla_con c, int dev, int port, int action, int uni) {
 	} else {
 		msg.data.patch.action = LLA_MSG_PATCH_REMOVE ;
 	}
+	return send_msg(con, &msg) ;
+
+	return 0;
+
+}
+
+
+/*
+ * sends a device config request
+ *
+ */
+int lla_device_config(lla_con c, int dev, const uint8_t *req, int len) {
+
+	lla_connection *con = (lla_connection*) c ;
+	lla_msg msg ;
+	int buf_len = sizeof(msg.data.devreq.req) ;
+
+	return_if_null(con) ;
+
+	if(len > buf_len)
+		return 0;
+
+	msg.len = sizeof(lla_msg_device_config_req) - buf_len + len ;
+	printf("len issss %i %i %i\n", msg.len, sizeof(lla_msg_device_config_req) , buf_len  ) ;
+	msg.data.devreq.op = LLA_MSG_DEV_CONFIG_REQ ;
+	msg.data.devreq.len = len ;
+	msg.data.devreq.seq = con->seq++ ;
+	msg.data.devreq.devid = dev ;
+	memcpy(&msg.data.devreq.req, req, len);
 	return send_msg(con, &msg) ;
 
 	return 0;

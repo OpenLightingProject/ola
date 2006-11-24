@@ -447,12 +447,13 @@ int Llad::handle_plugin_desc_request(lla_msg *msg) {
 	return 0;
 }
 
+
 /*
  * handle a device info request
  *
  */
 int Llad::handle_device_info_request(lla_msg *msg) {
-	return send_device_info(msg->from, msg->data.dreq.plugin) ;
+	return send_device_info(msg->from, msg->data.dreq.plugin);
 }
 
 
@@ -462,7 +463,7 @@ int Llad::handle_device_info_request(lla_msg *msg) {
  */
 int Llad::handle_universe_info_request(lla_msg *msg) {
 
-	return send_universe_info(msg->from) ;
+	return send_universe_info(msg->from);
 }
 
 
@@ -472,15 +473,46 @@ int Llad::handle_universe_info_request(lla_msg *msg) {
  *
  */
 int Llad::handle_port_info_request(lla_msg *msg) {
-	Device *dev;
-
-	dev = dm->get_dev(msg->data.prreq.devid) ;
+	Device *dev = dm->get_dev(msg->data.prreq.devid);
 
 	if(dev != NULL)
 		// this is a bit of a hack, devices don't know there own id
 		// so we have to pass it here as well
-		return send_port_info(msg->from, dev, msg->data.prreq.devid) ;
+		return send_port_info(msg->from, dev, msg->data.prreq.devid);
 
+	return 0;
+}
+
+
+/*
+ * handle a device config request
+ *
+ */
+int Llad::handle_device_config_request(lla_msg *msg) {
+	Device *dev = dm->get_dev(msg->data.devreq.devid);
+	lla_msg reply;
+	int ret;
+
+	reply.to = msg->from;
+	reply.len = sizeof(lla_msg_device_config_rep) - sizeof(reply.data.devrep.rep);
+
+	reply.data.devrep.op = LLA_MSG_DEV_CONFIG_REP;
+	reply.data.devrep.status = 1;
+	reply.data.devrep.seq = msg->data.devreq.seq;
+	reply.data.devrep.len = 0;
+
+	if(dev != NULL) {
+		memset(&reply, 0x00, sizeof(reply) );
+		ret = dev->configure(msg->data.devreq.req, msg->data.devreq.len, reply.data.devrep.rep, sizeof(reply.data.devrep.rep) );
+
+		if(ret > 0) {
+			reply.data.devrep.status = 0;
+			reply.data.devrep.len = ret;
+			reply.len += ret;
+		}
+	}
+	
+	net->send_msg(&reply);
 	return 0;
 }
 
@@ -492,15 +524,17 @@ int Llad::handle_port_info_request(lla_msg *msg) {
  */
 int Llad::handle_msg(lla_msg *msg) {
 
+	Logger::instance()->log(Logger::DEBUG, "Got msg of type 0x%hhx", msg->data.syn.op );
+
 	switch (msg->data.syn.op) {
 		case LLA_MSG_SYN:
-			return handle_syn(msg) ;
+			return handle_syn(msg);
 			break ;
 		case LLA_MSG_FIN:
-			return handle_fin(msg) ;
+			return handle_fin(msg);
 			break ;
 		case LLA_MSG_READ_REQ :
-	//		return handle_read_request(msg) ;
+	//		return handle_read_request(msg);
 			break;
 		case LLA_MSG_DMX_DATA :
 			handle_dmx_data(msg);
@@ -510,33 +544,37 @@ int Llad::handle_msg(lla_msg *msg) {
 			break ;
 
 		case LLA_MSG_PATCH :
-			handle_patch(msg) ;
+			handle_patch(msg);
 			break ;
 		case LLA_MSG_UNI_NAME :
-			handle_uni_name(msg) ;
+			handle_uni_name(msg);
 			break ;
 
 		case LLA_MSG_PLUGIN_INFO_REQUEST:
-			handle_plugin_info_request(msg) ;
+			handle_plugin_info_request(msg);
 			break;
 		case LLA_MSG_DEVICE_INFO_REQUEST:
-			handle_device_info_request(msg) ;
+			handle_device_info_request(msg);
 			break;
 		case LLA_MSG_PORT_INFO_REQUEST:
-			handle_port_info_request(msg) ;
+			handle_port_info_request(msg);
 			break;
 		case LLA_MSG_PLUGIN_DESC_REQUEST:
-			handle_plugin_desc_request(msg) ;
+			handle_plugin_desc_request(msg);
 			break;
 		case LLA_MSG_UNI_INFO_REQUEST:
-			handle_universe_info_request(msg) ;
+			handle_universe_info_request(msg);
+			break;
+
+		case LLA_MSG_DEV_CONFIG_REQ:
+			handle_device_config_request(msg);
 			break;
 
 //		case LLA_MSG_INFO:
 			// we don't receive these
 //			break ;
 		default:
-			Logger::instance()->log(Logger::INFO, "Unknown msg type from client %d\n", msg->data.syn.op) ;
+			Logger::instance()->log(Logger::INFO, "Unknown msg type from client %d\n", msg->data.syn.op);
 	}
 
 	return 0 ;
@@ -561,22 +599,20 @@ int Llad::send_plugin_info(struct sockaddr_in dst) {
 	nplugins = nplugins > PLUGINS_PER_DATAGRAM ? PLUGINS_PER_DATAGRAM : nplugins ;
 
 	memset(&reply, 0x00, sizeof(reply) );
-	reply.to = dst ;
-	reply.len = sizeof(lla_msg_plugin_info) ;
+	reply.to = dst;
+	reply.len = sizeof(lla_msg_plugin_info);
 	
-	reply.data.plinfo.op = LLA_MSG_PLUGIN_INFO ;
-	reply.data.plinfo.nplugins = nplugins ;
-	reply.data.plinfo.offset = 0 ;
-	reply.data.plinfo.count = nplugins ;
+	reply.data.plinfo.op = LLA_MSG_PLUGIN_INFO;
+	reply.data.plinfo.nplugins = nplugins;
+	reply.data.plinfo.offset = 0;
+	reply.data.plinfo.count = nplugins;
 	
 	for(i=0; i < nplugins ; i++) {
-		plug = pm->get_plugin(i) ;
+		plug = pm->get_plugin(i);
 
 		if(plug != NULL) {
-
-			reply.data.plinfo.plugins[i].id = i ;
-			strncpy(reply.data.plinfo.plugins[i].name, plug->get_name().c_str(), PLUGIN_NAME_LENGTH) ;
-				
+			reply.data.plinfo.plugins[i].id = i;
+			strncpy(reply.data.plinfo.plugins[i].name, plug->get_name().c_str(), PLUGIN_NAME_LENGTH);
 		}
 	}
 	Logger::instance()->log(Logger::DEBUG, "Got plugin req, sending reply");

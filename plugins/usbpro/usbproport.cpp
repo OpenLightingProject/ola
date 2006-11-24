@@ -13,9 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * usbproport.cpp
- * The Usb Prp plugin for lla
+ * The USB Pro plugin for lla
  * Copyright (C) 2006  Simon Newton
  */
 
@@ -24,7 +23,6 @@
 #include <lla/universe.h>
 #include <lla/logger.h>
 #include <string.h>
-
 
 
 int UsbProPort::can_read() const {
@@ -46,10 +44,9 @@ int UsbProPort::can_write() const {
  * @return 	0 on success, non 0 on failure
  */
 int UsbProPort::write(uint8_t *data, int length) {
-	UsbProDevice *dev = (UsbProDevice*) get_device() ;
-	int ret ;
+	UsbProDevice *dev = (UsbProDevice*) get_device();
 
-	if( !can_write())
+	if(!can_write())
 		return -1 ;
 	
 	// send to device
@@ -66,16 +63,11 @@ int UsbProPort::write(uint8_t *data, int length) {
  * @return	the amount of data read
  */
 int UsbProPort::read(uint8_t *data, int length) {
-	uint8_t *dmx = NULL;
-	int len ;
-	UsbProDevice *dev = (UsbProDevice*) get_device() ;
+	UsbProDevice *dev = (UsbProDevice*) get_device();
 	
 	if( !can_read()) 
-		return -1 ;
+		return -1;
 	
 	// get the device to copy into the buffer
-	return dev->get_dmx(data, length) ;
-	
+	return dev->get_dmx(data, length);
 }
-
-

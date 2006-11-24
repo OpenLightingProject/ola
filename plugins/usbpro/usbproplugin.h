@@ -13,7 +13,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * usbproplugin.h
  * Interface for the usbpro plugin class
  * Copyright (C) 2006  Simon Newton
@@ -27,7 +26,7 @@
 #include <lla/fdmanager.h>
 #include <lla/plugin_id.h>
 
-class UsbProDevice ;
+class UsbProDevice;
 
 class UsbProPlugin : public Plugin, public FDManager {
 
@@ -42,13 +41,13 @@ class UsbProPlugin : public Plugin, public FDManager {
 		bool is_enabled() const         { return m_enabled; }
 		string get_name() const 	    { return "UsbPro Plugin"; }
 		string get_desc() const;
-		int fd_error(int error, FDListener *listener) ;
+		int fd_error(int error, FDListener *listener);
 	private:
-		Preferences *load_prefs() ;
+		Preferences *load_prefs();
 		
-		class Preferences *m_prefs ;
+		class Preferences *m_prefs;				// prefs container
 		vector<UsbProDevice *>  m_devices;		// list of out devices
-		bool m_enabled ;		// are we running
+		bool m_enabled;							// are we running
 };
 
 #endif

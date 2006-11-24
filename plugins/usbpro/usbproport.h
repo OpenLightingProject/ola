@@ -13,7 +13,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * usbproport.h
  * The UsbPro plugin for lla
  * Copyright (C) 2006  Simon Newton
@@ -24,11 +23,10 @@
 
 #include <lla/port.h>
 
-
-class UsbProPort : public Port  {
+class UsbProPort : public Port {
 
 	public:
-		UsbProPort(Device *parent, int id) : Port(parent, id) {} ;
+		UsbProPort(Device *parent, int id) : Port(parent, id) {};
 		
 		int write(uint8_t *data, int length);
 		int read(uint8_t *data, int length); 

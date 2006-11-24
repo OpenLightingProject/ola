@@ -58,7 +58,8 @@ class Llad {
 		int handle_register(lla_msg *msg) ;
 		int handle_dmx_data(lla_msg *msg) ;
 //		int handle_read_request(Msg *msg) ;
-
+		int handle_device_config_request(lla_msg *msg) ;
+		
 		int send_dmx(Universe *uni, struct sockaddr_in dst) ;
 		int send_plugin_info(struct sockaddr_in dst) ;
 		int send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) ;
