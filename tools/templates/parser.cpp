@@ -7,7 +7,7 @@
 
 #include <llad/logger.h>
 #include "[% module %][% name %]Parser.h"
-#include "[% module %][% name %]Message.h"
+#include "[% module %][% name %]Msg.h"
 
 [% FOREACH msg = msgs -%]
 #include "[% module %][% name %]Msg[% msg.cls_name %].h"
