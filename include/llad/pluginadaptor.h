@@ -22,9 +22,9 @@
 #ifndef PLUGINADAPTOR_H
 #define PLUGINADAPTOR_H
 
-#include <lla/device.h>
-#include <lla/fdlistener.h>
-#include <lla/timeoutlistener.h>
+#include <llad/device.h>
+#include <llad/fdlistener.h>
+#include <llad/timeoutlistener.h>
 
 class DeviceManager ;
 class Network ;

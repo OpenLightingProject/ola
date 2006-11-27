@@ -38,7 +38,7 @@ class Device {
 			
 		// for the subclasses
 		// configure needs to be made pure virtual eventually
-		virtual int 	configure(const void *request, int reql, void *reply, int repl) {};
+		virtual uint8_t *configure(const uint8_t *request, int reql, int *rep_len) {};
 		virtual int 	save_config() const = 0;
 		virtual int 	add_port(Port *prt);
 		virtual Port	*get_port(int pid) const;
