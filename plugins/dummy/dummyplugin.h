@@ -22,7 +22,7 @@
 #ifndef DUMMYPLUGIN_H
 #define DUMMYPLUGIN_H
 
-#include <lla/plugin.h>
+#include <llad/plugin.h>
 #include <lla/plugin_id.h>
 
 class DummyDevice ;

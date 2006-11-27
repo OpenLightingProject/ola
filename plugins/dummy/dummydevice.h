@@ -22,7 +22,7 @@
 #ifndef DUMMYDEVICE_H
 #define DUMMYDEVICE_H
 
-#include <lla/device.h>
+#include <llad/device.h>
 
 class DummyDevice : public Device {
 

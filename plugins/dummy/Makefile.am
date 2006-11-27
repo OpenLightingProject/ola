@@ -2,7 +2,7 @@ lib_LTLIBRARIES = liblladummy.la
 
 libdir = $(plugindir)
 
-INCLUDES = -I$(top_builddir) -I$(top_srcdir)
+INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 AM_CFLAGS = -Wall -Werror -Wformat -W
 
 

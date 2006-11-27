@@ -22,7 +22,7 @@
 #ifndef DUMMYPORT_H
 #define DUMMYPORT_H
 
-#include <lla/port.h>
+#include <llad/port.h>
 
 class DummyPort : public Port  {
 
@@ -30,7 +30,7 @@ class DummyPort : public Port  {
 		DummyPort(Device *parent, int id) ;
 		
 		int write(uint8_t *data, int length) ;
-		int read(uint8_t *data, int length) ;
+		int read(uint8_t *data, int length) { return 0;} ;
 			
 	private:
 		uint8_t m_dmx[512] ;				// pointer to our dmx buffer

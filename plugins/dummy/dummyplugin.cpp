@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <lla/pluginadaptor.h>
+#include <llad/pluginadaptor.h>
 
 #include "dummyplugin.h"
 #include "dummydevice.h"
