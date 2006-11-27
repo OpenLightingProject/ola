@@ -22,7 +22,7 @@
 #ifndef SANDNETPLUGIN_H
 #define SANDNETPLUGIN_H
 
-#include <lla/plugin.h>
+#include <llad/plugin.h>
 #include <lla/plugin_id.h>
 
 class SandNetDevice ;

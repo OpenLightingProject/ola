@@ -27,9 +27,9 @@
 #include "sandnetdevice.h"
 #include "sandnetport.h"
 
-#include <lla/logger.h>
-#include <lla/preferences.h>
-#include <lla/universe.h>
+#include <llad/logger.h>
+#include <llad/preferences.h>
+#include <llad/universe.h>
 
 #if HAVE_CONFIG_H
 #  include <config.h>

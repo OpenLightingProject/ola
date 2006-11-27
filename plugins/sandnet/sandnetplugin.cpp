@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <lla/pluginadaptor.h>
-#include <lla/preferences.h>
+#include <llad/pluginadaptor.h>
+#include <llad/preferences.h>
 
 #include "sandnetplugin.h"
 #include "sandnetdevice.h"
