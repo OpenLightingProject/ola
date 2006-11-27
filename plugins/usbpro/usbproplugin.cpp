@@ -21,9 +21,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <lla/pluginadaptor.h>
-#include <lla/preferences.h>
-#include <lla/logger.h>
+#include <llad/pluginadaptor.h>
+#include <llad/preferences.h>
+#include <llad/logger.h>
 
 #include "usbproplugin.h"
 #include "usbprodevice.h"

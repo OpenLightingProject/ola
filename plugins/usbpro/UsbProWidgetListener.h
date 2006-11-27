@@ -13,27 +13,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbproport.h
- * The UsbPro plugin for lla
- * Copyright (C) 2006  Simon Newton
+ * UsbProWidgetListener.h
+ * The interface for the UsbPro Widget Listener class
+ * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef USBPROPORT_H
-#define USBPROPORT_H
+#ifndef USBPRODWIDGETLISTENER_H
+#define USBPRODWIDGETLISTENER_H
 
-#include <llad/port.h>
+class UsbProWidgetListener {
 
-class UsbProPort : public Port {
+	public :
+		UsbProWidgetListener() {};
+		virtual ~UsbProWidgetListener() {} ;
+		virtual void new_dmx() = 0 ;
 
-	public:
-		UsbProPort(Device *parent, int id) : Port(parent, id) {};
-		
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
-		
-		int can_read() const;
-		int can_write() const;
-
+	private:
+		UsbProWidgetListener(const UsbProWidgetListener&);
+		UsbProWidgetListener& operator=(const UsbProWidgetListener&);
 };
-
 #endif

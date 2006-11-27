@@ -1,0 +1,24 @@
+<contract library="lla" module="UsbPro" name="Conf">
+ <message name="prm_req" doc="param request">
+ </message>
+ <message name="prm_rep" doc="param reply">
+  <uint16_t name="firmware"/>
+  <uint8_t name="brk"/>
+  <uint8_t name="mab"/>
+  <uint8_t name="rate"/>
+ </message>
+ <message name="sprm_req" doc="set param request">
+  <uint8_t name="brk"/>
+  <uint8_t name="mab"/>
+  <uint8_t name="rate"/>
+ </message>
+ <message name="sprm_rep" doc="set param reply">
+  <uint8_t name="status"/>
+ </message>
+ <message name="ser_req" doc="serial number request">
+ </message>
+ <message name="ser_rep" doc="serial number reply">
+  <uint8_t name="status"/>
+  <array type="uint8_t" name="serial" len="4"/>
+ </message>
+</contract>

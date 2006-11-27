@@ -22,8 +22,8 @@
 #define USBPROPLUGIN_H
 
 #include <vector>
-#include <lla/plugin.h>
-#include <lla/fdmanager.h>
+#include <llad/plugin.h>
+#include <llad/fdmanager.h>
 #include <lla/plugin_id.h>
 
 class UsbProDevice;
