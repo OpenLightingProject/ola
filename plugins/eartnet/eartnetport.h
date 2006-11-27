@@ -22,7 +22,7 @@
 #ifndef EARTNETPORT_H
 #define EARTNETPORT_H
 
-#include <lla/port.h>
+#include <llad/port.h>
 
 #include <eartnet/eartnet.h>
 

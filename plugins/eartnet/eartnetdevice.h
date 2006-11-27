@@ -22,8 +22,8 @@
 #ifndef EARTNETDEVICE_H
 #define EARTNETDEVICE_H
 
-#include <lla/device.h>
-#include <lla/fdlistener.h>
+#include <llad/device.h>
+#include <llad/fdlistener.h>
 
 #include <eartnet/eartnet.h>
 

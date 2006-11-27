@@ -33,8 +33,8 @@
 #include "eartnetdevice.h"
 #include "eartnetport.h"
 
-#include <lla/logger.h>
-#include <lla/preferences.h>
+#include <llad/logger.h>
+#include <llad/preferences.h>
 #include <eartnet/eartnet.h>
 
 
