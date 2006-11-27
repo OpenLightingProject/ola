@@ -3,7 +3,7 @@ auxdir                  = @ac_aux_dir@
 AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
                         $(auxdir)/mkinstalldirs
 
-SUBDIRS = lla llad plugins
+SUBDIRS = lla llad plugins include
 
 EXTRA_DIST = reconf 
 

@@ -1,3 +1,7 @@
+28/11/2006 Simon Newton <<nomis52@westnet.com.au>
+	* Started on a general RPC framework
+	* Changed the client to C++, events are now handled asynchronously
+
 27/4/2006 Simon Newton <<nomis52@westnet.com.au>
 
 	* Art-Net plugin bug fix

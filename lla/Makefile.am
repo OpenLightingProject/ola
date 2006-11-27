@@ -1,17 +1,16 @@
 
-INCLUDES = -I$(top_builddir) -I$(top_srcdir)
+INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 AM_CFLAGS = -Wall -Werror -Wformat -W 
 
 lib_LTLIBRARIES = liblla.la
-liblla_la_SOURCES = lla.c private.h lla.h plugin_id.h
-liblla_la_LDFLAGS = -version-info 0:0:0
+
+liblla_la_SOURCES = LlaClient.cpp LlaDevice.cpp LlaPort.cpp 
+liblla_la_LDFLAGS = -version-info 1:0:0
 
 
-EXTRA_DIST = lla.h plugin.h fdlistener.h fdmanager.h timeoutlistener.h plugin_id.h
-
-pkginclude_HEADERS = lla.h messages.h device.h fdlistener.h logger.h \
-						pluginadaptor.h plugin.h port.h universe.h preferences.h fdmanager.h \
-						plugin_id.h
+EXTRA_DIST = LlaClient.h LlaPlugin.h LlaDevice.h LlaPort.h LlaUniverse.h LlaClientObserver.h
+				
+pkginclude_HEADERS = LlaClient.h LlaPlugin.h LlaDevice.h LlaPort.h LlaUniverse.h LlaClientObserver.h
 
 pkgincludedir = $(includedir)/lla
 
