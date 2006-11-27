@@ -20,19 +20,19 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <lla/lla.h>
 #include <stdint.h>
 #include <errno.h>
 #include <string.h>
-
 #include <getopt.h>
+
+#include <lla/LlaClient.h>
 
 
 typedef struct {
 	int dev;
 	int prt;
 	int uni;
-	int act;
+	LlaClient::PatchAction act;
 	int help;
 } options;
 
@@ -66,7 +66,7 @@ int parse_options(int argc, char *argv[], options *opts) {
 				break;
 				
 			case 'a':
-				opts->act = LLA_PORT_ACTION_PATCH;	
+				opts->act = LlaClient::PATCH;	
 		        break;
 			case 'd':
 				opts->dev = atoi(optarg) ;
@@ -75,7 +75,7 @@ int parse_options(int argc, char *argv[], options *opts) {
 				opts->prt = atoi(optarg) ;
 				break ;
 			case 'r':
-				opts->act = LLA_PORT_ACTION_UNPATCH;	
+				opts->act = LlaClient::UNPATCH;	
 		        break;
 			case 'u':
 				opts->uni = atoi(optarg) ;
@@ -101,7 +101,7 @@ void init_options(options *opts) {
 	opts->dev = -1 ;
 	opts->prt = -1 ;
 	opts->uni = 0 ;
-	opts->act = LLA_PORT_ACTION_PATCH ;
+	opts->act = LlaClient::PATCH ;
 	opts->help = 0 ;
 }
 
@@ -131,7 +131,7 @@ void display_help_and_exit() {
  * main
  */
 int main(int argc, char*argv[]) {
-	lla_con con ;
+	LlaClient *lla ;
 	options opts ;
 
 	init_options(&opts);
@@ -145,18 +145,19 @@ int main(int argc, char*argv[]) {
 		exit(1) ;
 	}
 
-	con = lla_connect() ;
-
-	if (!con) {
+	lla = new LlaClient() ;
+	
+	if (lla == NULL) {
 		printf("error: %s\n", strerror(errno) ) ;
 		exit(1) ;
 	}
+	lla->start();
 
-	if( lla_patch(con, opts.dev, opts.prt, opts.act, opts.uni) ) {
+	if( lla->patch(opts.dev, opts.prt, opts.act, opts.uni) ) {
 		printf("patch failed\n") ;
 	}
 
-	lla_disconnect(con) ;
+	delete lla;
 
 	return 0;
 }

@@ -25,17 +25,17 @@
 #include <errno.h>
 #include <string.h>
 
-
+#include <lla/usbpro_messages.h>
 /*
  * Connect, fetch the device listing and display
- *
  *
  */
 int main(int argc, char*argv[]) {
 	lla_con con ;
 	lla_device *devitr ;
 	lla_port *prtitr ;
-	
+	lla_usbpro_msg msg;
+
 	// connect
 	con = lla_connect() ;
 
@@ -47,6 +47,10 @@ int main(int argc, char*argv[]) {
 	if( (devitr = lla_req_dev_info(con, LLA_PLUGIN_USBPRO)) ) {
 		while( devitr != NULL) {
 			printf("Device %d: %s\n", devitr->id,  devitr->name ) ;
+
+			msg.op = LLA_USBPRO_MSG_PREQ;
+
+			lla_device_config(con,  devitr->id, (void*) &msg, 1);
 
 			for( prtitr = devitr->ports; prtitr != NULL; prtitr = prtitr->next ) {
 				printf("  port %d, cap ", prtitr->id) ;

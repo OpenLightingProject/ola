@@ -45,7 +45,8 @@
 #include <unistd.h>
 #include <sys/timeb.h>
 
-#include <lla/lla.h>
+#include <lla/LlaClient.h>
+#include <lla/LlaClientObserver.h>
 
 /* color names used */
 enum {
@@ -87,8 +88,39 @@ static char *errorstr=NULL;
 static int channels_offset=1;
 
 WINDOW  *w=NULL;
-static lla_con con ;
 
+static LlaClient *con;
+
+
+/*
+ * The observer class which repsonds to events
+ */
+class Observer : public LlaClientObserver {
+
+	public:
+		Observer( void (*fh)()) : m_fh(fh) {};
+
+		int new_dmx(int uni,int length, uint8_t *data);
+		int universes(const vector <class LlaUniverse *> unis) {};
+		int plugins(const vector <class LlaPlugin *> plugins) {};
+		int devices(const vector <class LlaDevice *> devices) {};
+		int ports(class LlaDevice *dev) {};
+		int plugin_desc(class LlaPlugin *plug) {};
+
+	private:
+		void (*m_fh)();
+};
+
+
+int Observer::new_dmx(int uni,int length, uint8_t *data) {
+	int len = length > MAXCHANNELS ? MAXCHANNELS : length ;
+	memcpy(dmx, data,len) ;
+
+ 	if(m_fh != NULL) 
+		m_fh();
+
+	return 0;
+}
 
 
 
@@ -314,16 +346,13 @@ void cleanup() {
 		endwin();
 	}
 
-	lla_disconnect(con) ;
+	con->stop() ;
 }
 
-int dmx_handler(lla_con c, int uni, int length, uint8_t *sdmx, void *d ) {
-	int len = length > MAXCHANNELS ? MAXCHANNELS : length ;
-	memcpy(dmx, sdmx,len) ;
-    values();
-    refresh();
 
-	return 0 ;
+void dmx_handler() {
+	values();
+	refresh();
 }
 
 
@@ -331,10 +360,11 @@ int main (int argc, char *argv[]) {
 	int c=0;
 	int optc ;
 	int lla_sd ;
+	Observer *ob = new Observer(dmx_handler);
 
 	atexit(cleanup);
 
-	dmx = malloc(MAXCHANNELS) ;
+	dmx = (uint8_t *) malloc(MAXCHANNELS) ;
 
 	if(!dmx) {
 		printf("malloc failed\n") ;
@@ -355,25 +385,25 @@ int main (int argc, char *argv[]) {
 	}
 
 	/* set up lla connection */
-	con = lla_connect() ; ;
+	con = new LlaClient() ; ;
 	
-	if(con == NULL) {
+	if(con->start()) {
 		printf("Unable to connect\n") ;
 		return 1 ;
 	}
 
-	if(lla_set_dmx_handler(con, dmx_handler, NULL) ) {
+	if(con->set_observer(ob) ) {
 		printf("Failed to install handler\n") ;
 		return 1 ;
 	}
 
-	if(lla_reg_uni(con, universe, 1) ) {
-		printf("REgister uni %d failed\n", universe) ;
+	if(con->register_uni(universe, LlaClient::REGISTER) ) {
+		printf("Register uni %d failed\n", universe) ;
 		return 1 ;
 	}
 
 	// store the sds
-	lla_sd = lla_get_sd(con) ;
+	lla_sd = con->fd() ;
   
 	/* init curses */
 	w = initscr();
@@ -499,7 +529,7 @@ int main (int argc, char *argv[]) {
 			}
 
 			if (FD_ISSET(lla_sd, &rd_fds) )
-	    		lla_sd_action(con,0);
+	    		con->fd_action(0);
 		}
 
     	values();

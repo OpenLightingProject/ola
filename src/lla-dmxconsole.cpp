@@ -45,7 +45,7 @@
 #include <unistd.h>
 #include <sys/timeb.h>
 
-#include <lla/lla.h>
+#include <lla/LlaClient.h>
 
 /* color names used */
 enum {
@@ -93,7 +93,7 @@ static int palette[MAXCOLOR];
 static char *errorstr=NULL;
 static int channels_offset=1;
 
-static lla_con con ;
+static LlaClient *con ;
 
 void DMXsleep(int usec)
 {
@@ -128,7 +128,7 @@ unsigned long timeGetTime()
 /* set all DMX channels */
 void setall()
 {
-	lla_send_dmx(con, universe, dmx, MAXCHANNELS) ;
+	con->send_dmx(universe, dmx, MAXCHANNELS) ;
 }
 
 /* set current DMX channel */
@@ -541,7 +541,7 @@ void cleanup()
       endwin();
     }
 
-  lla_disconnect(con) ;
+  con->stop() ;
 
   if(errorstr)
     puts(errorstr);
@@ -606,13 +606,13 @@ int main (int argc, char *argv[])
   atexit(cleanup);
 
   /* alloc */
-  dmx=calloc(MAXCHANNELS+10, sizeof(dmx_t)); /* 10 bytes security, for file IO routines, will be optimized and checked later */
+  dmx= (dmx_t*) calloc(MAXCHANNELS+10, sizeof(dmx_t)); /* 10 bytes security, for file IO routines, will be optimized and checked later */
   CHECK(dmx);
 
-  dmxsave=calloc(MAXCHANNELS*MAXFKEY, sizeof(dmx_t));
+  dmxsave=(dmx_t*)  calloc(MAXCHANNELS*MAXFKEY, sizeof(dmx_t));
   CHECK(dmxsave);
 
-  dmxundo=calloc(MAXCHANNELS, sizeof(dmx_t));
+  dmxundo=(dmx_t*) calloc(MAXCHANNELS, sizeof(dmx_t));
   CHECK(dmxundo);
 
   // parse options 
@@ -638,16 +638,15 @@ int main (int argc, char *argv[])
   }
 
   /* set up lla connection */
-  con = lla_connect() ; ;
+  con = new LlaClient();
 	
-  if(con == NULL) {
+  if(con->start()) {
 	printf ("Unable to connect\n") ;
 	return 1 ;
   }
 
-
   // store the sds
-  lla_sd = lla_get_sd(con) ;
+  lla_sd = con->fd();
   
   /* init curses */
   w = initscr();
@@ -864,8 +863,8 @@ int main (int argc, char *argv[])
 		}
             }
 
-          if (FD_ISSET(lla_sd, &rd_fds)  )
-	    lla_sd_action(con,0);
+        if (FD_ISSET(lla_sd, &rd_fds)  )
+	    	con->fd_action(0);
 
         }
 
