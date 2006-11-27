@@ -26,7 +26,7 @@
 
 #include "opendmxthread.h"
 
-#include <lla/logger.h>
+#include <llad/logger.h>
 
 #include <stdio.h>
 #include <stdlib.h>

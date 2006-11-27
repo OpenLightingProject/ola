@@ -24,8 +24,8 @@
 #include <fcntl.h>
 
 
-#include <lla/pluginadaptor.h>
-#include <lla/preferences.h>
+#include <llad/pluginadaptor.h>
+#include <llad/preferences.h>
 
 #include "opendmxplugin.h"
 #include "opendmxdevice.h"

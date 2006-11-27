@@ -22,7 +22,7 @@
 #ifndef OPENDMXPORT_H
 #define OPENDMXPORT_H
 
-#include <lla/port.h>
+#include <llad/port.h>
 #include <opendmxthread.h>
 #include <string>
 

@@ -22,7 +22,7 @@
 #ifndef OPENDMXDEVICE_H
 #define OPENDMXDEVICE_H
 
-#include <lla/device.h>
+#include <llad/device.h>
 #include <string>
 
 using namespace std;
