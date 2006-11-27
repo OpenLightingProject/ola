@@ -22,7 +22,7 @@
 #ifndef SHOWNETPLUGIN_H
 #define SHOWNETPLUGIN_H
 
-#include <lla/plugin.h>
+#include <llad/plugin.h>
 #include <lla/plugin_id.h>
 
 class ShowNetDevice ;

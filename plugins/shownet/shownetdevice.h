@@ -22,8 +22,8 @@
 #ifndef SHOWNETDEVICE_H
 #define SHOWNETDEVICE_H
 
-#include <lla/device.h>
-#include <lla/fdlistener.h>
+#include <llad/device.h>
+#include <llad/fdlistener.h>
 
 #include <shownet/shownet.h>
 
