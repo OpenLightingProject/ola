@@ -27,10 +27,10 @@
 #include "espnetdevice.h"
 #include "espnetport.h"
 
-#include <lla/logger.h>
-#include <lla/preferences.h>
+#include <llad/logger.h>
+#include <llad/preferences.h>
 
-#include <lla/universe.h>
+#include <llad/universe.h>
 
 #if HAVE_CONFIG_H
 #  include <config.h>

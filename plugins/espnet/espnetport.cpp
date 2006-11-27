@@ -23,8 +23,8 @@
 #include "espnetdevice.h"
 #include "common.h"
 
-#include <lla/universe.h>
-#include <lla/logger.h>
+#include <llad/universe.h>
+#include <llad/logger.h>
 
 #include <string.h>
 

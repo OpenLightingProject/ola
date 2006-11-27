@@ -6,7 +6,7 @@ if HAVE_ESPNET
 lib_LTLIBRARIES = libllaespnet.la
 
 
-INCLUDES = -I$(top_builddir) -I$(top_srcdir)
+INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 AM_CFLAGS = -Wall -Werror -Wformat -W
 
 libllaespnet_la_SOURCES = espnetplugin.cpp espnetplugin.h espnetdevice.cpp\

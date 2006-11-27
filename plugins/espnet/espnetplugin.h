@@ -22,7 +22,7 @@
 #ifndef ESPNETPLUGIN_H
 #define ESPNETPLUGIN_H
 
-#include <lla/plugin.h>
+#include <llad/plugin.h>
 #include <lla/plugin_id.h>
 
 class EspNetDevice ;
