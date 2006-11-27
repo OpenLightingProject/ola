@@ -18,8 +18,8 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#include <lla/port.h>
-#include <lla/universe.h>
+#include <llad/port.h>
+#include <llad/universe.h>
 
 #include <stdio.h>
 

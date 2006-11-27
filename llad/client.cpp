@@ -18,7 +18,7 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include <lla/logger.h>
+#include <llad/logger.h>
 #include "client.h"
 
 map<int ,Client *> Client::cli_map ;

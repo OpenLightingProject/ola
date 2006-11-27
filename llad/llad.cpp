@@ -21,9 +21,9 @@
 #include "llad.h" 
 #include "client.h"
 
-#include <lla/universe.h>
-#include <lla/logger.h>
-#include <lla/pluginadaptor.h>
+#include <llad/universe.h>
+#include <llad/logger.h>
+#include <llad/pluginadaptor.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -491,7 +491,8 @@ int Llad::handle_port_info_request(lla_msg *msg) {
 int Llad::handle_device_config_request(lla_msg *msg) {
 	Device *dev = dm->get_dev(msg->data.devreq.devid);
 	lla_msg reply;
-	int ret;
+	int ret, reply_len;
+	uint8_t *reply_data = NULL;
 
 	reply.to = msg->from;
 	reply.len = sizeof(lla_msg_device_config_rep) - sizeof(reply.data.devrep.rep);
@@ -501,13 +502,14 @@ int Llad::handle_device_config_request(lla_msg *msg) {
 	reply.data.devrep.seq = msg->data.devreq.seq;
 	reply.data.devrep.len = 0;
 
+printf("got config!\n");
 	if(dev != NULL) {
 		memset(&reply, 0x00, sizeof(reply) );
-		ret = dev->configure(msg->data.devreq.req, msg->data.devreq.len, reply.data.devrep.rep, sizeof(reply.data.devrep.rep) );
+		reply_data = dev->configure(msg->data.devreq.req, msg->data.devreq.len, &reply_len);
 
-		if(ret > 0) {
+		if(reply_data != NULL) {
 			reply.data.devrep.status = 0;
-			reply.data.devrep.len = ret;
+			reply.data.devrep.len = reply_len;
 			reply.len += ret;
 		}
 	}

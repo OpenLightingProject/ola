@@ -19,8 +19,8 @@
  *
  */
 
-#include <lla/universe.h>
-#include <lla/logger.h>
+#include <llad/universe.h>
+#include <llad/logger.h>
 #include "network.h"
 #include "client.h" 
 

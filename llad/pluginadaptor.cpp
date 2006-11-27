@@ -21,7 +21,7 @@
  * 
  */
 
-#include <lla/pluginadaptor.h>
+#include <llad/pluginadaptor.h>
 #include "devicemanager.h"
 #include "network.h"
 

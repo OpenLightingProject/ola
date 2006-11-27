@@ -21,7 +21,7 @@
 #ifndef DEVICEMANAGER_H
 #define DEVICEMANAGER_H
 
-#include <lla/device.h> 
+#include <llad/device.h> 
 
 #include <vector>
 

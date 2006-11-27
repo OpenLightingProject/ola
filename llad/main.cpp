@@ -20,7 +20,7 @@
  */
 
 #include "llad.h" 
-#include <lla/logger.h>
+#include <llad/logger.h>
 
 #include <signal.h>
 #include <stdio.h>

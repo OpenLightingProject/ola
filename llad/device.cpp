@@ -18,7 +18,7 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include <lla/device.h>
+#include <llad/device.h>
 
 #include <stdlib.h>
 #include <stdio.h>

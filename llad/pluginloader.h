@@ -24,7 +24,7 @@
 #include <map>
 #include <vector>
 
-#include <lla/plugin.h>
+#include <llad/plugin.h>
 
 using namespace std;
 

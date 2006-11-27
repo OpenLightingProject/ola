@@ -22,9 +22,9 @@
 #define LLAD_H 
 
 
-#include <lla/port.h>
+#include <llad/port.h>
 #include <lla/messages.h>
-#include <lla/preferences.h>
+#include <llad/preferences.h>
 #include <lla/plugin_id.h>
 
 #include "devicemanager.h"

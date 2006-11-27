@@ -20,7 +20,7 @@
 
 #include "pluginloader.h" 
 
-#include <lla/logger.h>
+#include <llad/logger.h>
 
 #include <string.h>
 #include <dirent.h>

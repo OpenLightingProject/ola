@@ -18,8 +18,8 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#include <lla/preferences.h>
-#include <lla/logger.h>
+#include <llad/preferences.h>
+#include <llad/logger.h>
 
 #include <string.h>
 #include <dirent.h>

@@ -19,7 +19,7 @@
  * Copyright (C) 2005-2006 Simon Newton
  */
 
-#include <lla/plugin.h>
+#include <llad/plugin.h>
 
 string Plugin::get_name() {
 	return "No Name Defined!" ;
