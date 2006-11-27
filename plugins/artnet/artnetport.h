@@ -22,7 +22,7 @@
 #ifndef ARTNETPORT_H
 #define ARTNETPORT_H
 
-#include <lla/port.h>
+#include <llad/port.h>
 
 #include <artnet/artnet.h>
 

@@ -22,7 +22,7 @@
 #ifndef ARTNETPLUGIN_H
 #define ARTNETPLUGIN_H
 
-#include <lla/plugin.h>
+#include <llad/plugin.h>
 #include <lla/plugin_id.h>
 
 class ArtNetDevice ;

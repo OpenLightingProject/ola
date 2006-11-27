@@ -33,8 +33,8 @@
 #include "artnetdevice.h"
 #include "artnetport.h"
 
-#include <lla/logger.h>
-#include <lla/preferences.h>
+#include <llad/logger.h>
+#include <llad/preferences.h>
 #include <artnet/artnet.h>
 
 
