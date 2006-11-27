@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 
-#include <lla/logger.h>
+#include <llad/logger.h>
 #include "[% module %][% name %]Parser.h"
 #include "[% module %][% name %]Message.h"
 
