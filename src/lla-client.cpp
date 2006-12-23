@@ -66,8 +66,9 @@ typedef struct {
 class Observer : public LlaClientObserver {
 
 	public:
-		Observer(options *opts, LlaClient *cli) : m_opts(opts), m_cli(cli) {};
+		Observer(options *opts, LlaClient *cli) : m_term(0), m_opts(opts), m_cli(cli) {};
 
+		int spin();
 		int new_dmx(int uni,int length, uint8_t *data) {};
 		int universes(const vector <class LlaUniverse *> unis);
 		int plugins(const vector <class LlaPlugin *> plugins);
@@ -76,9 +77,44 @@ class Observer : public LlaClientObserver {
 		int plugin_desc(class LlaPlugin *plug) ;
 
 	private:
+		int m_term;
 		options *m_opts;
 		LlaClient *m_cli;
 };
+
+
+/*
+ * Loop calling select until we terminate.
+ */
+int Observer::spin() {
+	struct timeval tv;
+	fd_set rd_fds;
+	int fd = m_cli->fd();
+	int n;
+
+	while(! m_term) {
+		FD_ZERO(&rd_fds);
+		FD_SET(fd, &rd_fds);
+		tv.tv_sec = 1;
+		tv.tv_usec = 0;
+
+		n = select(fd+1, &rd_fds, NULL, NULL, &tv);
+
+		switch(n) {
+			case 0:
+				// terminate on timeout
+				m_term = 1;
+			break ;
+			case -1:
+			 	printf("select error\n") ;
+				break ;
+			default:
+				if ( FD_ISSET(fd, &rd_fds)) {
+					m_cli->fd_action(0);
+				}
+		}
+	}
+}
 
 
 /*
@@ -95,6 +131,7 @@ int Observer::universes(const vector <class LlaUniverse *> unis) {
 		printf("%5d\t%30s\n", (*iter)->get_id(), (*iter)->get_name().c_str()) ;
 	}
 	printf("----------------------------------------------------------\n");
+	m_term = 1;
 	return 0;
 }
 
@@ -104,6 +141,7 @@ int Observer::universes(const vector <class LlaUniverse *> unis) {
  */
 int Observer::plugin_desc(LlaPlugin *plug) {
 	printf("%s", plug->get_desc().c_str() ) ;
+	m_term = 1;
 	return 0;
 }
 
@@ -128,6 +166,7 @@ int Observer::plugins(const vector <class LlaPlugin *> plugins) {
 			printf("%5d\t%s\n", (*iter)->get_id(), (*iter)->get_name().c_str()) ;
 		}
 		printf("--------------------------------------\n");
+		m_term = 1;
 	}
 	return 0;
 }
@@ -171,6 +210,8 @@ int Observer::ports(LlaDevice *dev) {
 			printf(", universe %d", (*iter)->get_uni()) ;
 		printf("\n");
 	}
+
+	m_term = 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -397,7 +438,6 @@ int fetch_dev_info(LlaClient *cli, options *opts) {
 		pid = (lla_plugin_id) opts->pid;
 
 	cli->fetch_dev_info(pid);
-	cli->fd_action(1);
 
 	return 0;
 }
@@ -481,17 +521,19 @@ int main(int argc, char*argv[]) {
 
 	if(opts.m == DEV_INFO) {
 		fetch_dev_info(&lla, &opts);
+		ob->spin();
 	} else if (opts.m == PLUGIN_INFO || opts.m == PLUGIN_DESC) {
 		lla.fetch_plugin_info();
-		lla.fd_action(1);
+		ob->spin();
 	} else if (opts.m == UNI_INFO) {
 		lla.fetch_uni_info();
-		lla.fd_action(1);
+		ob->spin();
 	} else if (opts.m == UNI_NAME) {
 		set_uni_name(&lla, &opts);
 	} else if (opts.m == SET_DMX) {
 		set_dmx(&lla, &opts);
 	}
 
+	delete ob;
 	return 0;
 }
