@@ -36,6 +36,9 @@ using namespace std;
 #include <lla/LlaUniverse.h>
 #include <lla/LlaClientObserver.h>
 
+/*
+ * the mode is determined by the name in which we were called
+ */
 typedef enum {
 	DEV_INFO,
 	PLUGIN_INFO,
@@ -47,14 +50,14 @@ typedef enum {
 
 
 typedef struct {
-	mode m;
-	string cmd;
-	string uni_name;
-	string dmx;
-	int uni;
-	int pid;
-	int help;
-	int verbose;
+	mode m;				// mode
+	string cmd;			// argv[0]
+	string uni_name;	// universe name
+	string dmx;			// dmx string
+	int uni;			// universe id
+	int pid;			// plugin id
+	int help;			// help ?
+	int verbose;		// verbose
 } options;
 
 /*
@@ -79,7 +82,8 @@ class Observer : public LlaClientObserver {
 
 
 /*
- *
+ * This is called when we recieve universe results from the client
+ * @param unis	a vector of LlaUniverses
  */
 int Observer::universes(const vector <class LlaUniverse *> unis) {
 	vector<LlaUniverse *>::const_iterator iter;
@@ -169,10 +173,7 @@ int Observer::ports(LlaDevice *dev) {
 	}
 }
 
-
 //-----------------------------------------------------------------------------
-//
-
 
 /*
  * Init options
@@ -187,7 +188,7 @@ void init_options(options *opts) {
 
 
 /*
- *
+ * Decide what mode we're running in
  */
 void set_mode(options *opts) {
 	int pos = opts->cmd.find_last_of("/");
@@ -268,7 +269,9 @@ int parse_options(int argc, char *argv[], options *opts) {
 }
 
 
-
+/*
+ * help message for device info
+ */
 void display_dev_info_help(options *opts) {
 	printf(
 "Usage: %s [--pid <pid> ]\n"
@@ -276,11 +279,15 @@ void display_dev_info_help(options *opts) {
 "Get info on the devices loaded by llad.\n"
 "\n"
 "  -h, --help          Display this help message and exit.\n"
+"  -p, --pid <pid>	   The plugin id to filter by\n"
 "\n",
 	opts->cmd.c_str()) ;
 }
 
 
+/*
+ * help message for plugin info
+ */
 void display_plugin_info_help(options *opts) {
 	printf(
 "Usage: %s [--pid <pid> ]\n"
@@ -297,7 +304,7 @@ void display_plugin_info_help(options *opts) {
 
 
 /*
- *
+ * help message for uni info
  */
 void display_uni_info_help(options *opts) {
 
@@ -313,7 +320,7 @@ void display_uni_info_help(options *opts) {
 
 
 /*
- * Display the help message
+ * Help message for set uni name
  */
 void display_uni_name_help(options *opts) {
 
@@ -331,7 +338,7 @@ void display_uni_name_help(options *opts) {
 
 
 /*
- *
+ * Help message for set dmx
  */
 void display_set_dmx_help(options *opts) {
 	printf(
@@ -378,6 +385,29 @@ void display_help_and_exit(options *opts) {
 }
 
 
+/*
+ * send a fetch device info request
+ * @param cli	the lla client
+ * @param opts	the options
+ */
+int fetch_dev_info(LlaClient *cli, options *opts) {
+	lla_plugin_id pid = LLA_PLUGIN_ALL;
+
+	if(opts->pid > 0 && opts->pid < LLA_PLUGIN_LAST) 
+		pid = (lla_plugin_id) opts->pid;
+
+	cli->fetch_dev_info(pid);
+	cli->fd_action(1);
+
+	return 0;
+}
+
+
+/*
+ * send a set name request
+ * @param cli	the lla client
+ * @param opts	the options
+ */
 int set_uni_name(LlaClient *cli, options *opts) {
 
 	if(opts->uni_name == "") {
@@ -391,6 +421,11 @@ int set_uni_name(LlaClient *cli, options *opts) {
 }
 
 
+/*
+ * Send a dmx message
+ * @param cli	the lla client
+ * @param opts	the options
+ */
 int set_dmx(LlaClient *cli, options *opts) {
 	int i=0;
 	char *s;
@@ -417,8 +452,6 @@ int set_dmx(LlaClient *cli, options *opts) {
 
 
 /*
- * Connect, fetch the device listing and display
- *
  *
  */
 int main(int argc, char*argv[]) {
@@ -429,12 +462,16 @@ int main(int argc, char*argv[]) {
 	init_options(&opts);
 	opts.cmd = argv[0];
 	parse_options(argc, argv, &opts) ;
+
+	// decide how we should behave
 	set_mode(&opts);
 
 	if(opts.help)
 		display_help_and_exit(&opts) ;
 
+	// this handles the lla events
 	ob = new Observer(&opts, &lla);
+	lla.set_observer(ob);
 
 	// connect
 	if ( lla.start() ) {
@@ -442,11 +479,8 @@ int main(int argc, char*argv[]) {
 		exit(1) ;
 	}
 
-	lla.set_observer(ob);
-
 	if(opts.m == DEV_INFO) {
-		lla.fetch_dev_info(LLA_PLUGIN_ALL);
-		lla.fd_action(1);
+		fetch_dev_info(&lla, &opts);
 	} else if (opts.m == PLUGIN_INFO || opts.m == PLUGIN_DESC) {
 		lla.fetch_plugin_info();
 		lla.fd_action(1);
