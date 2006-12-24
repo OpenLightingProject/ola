@@ -112,7 +112,7 @@ int UsbProPlugin::start() {
  */
 int UsbProPlugin::stop() {
 	UsbProDevice *dev ;
-	int i = 0 ;
+	unsigned int i = 0 ;
 	
 	if (!m_enabled)
 		return -1 ;
@@ -182,6 +182,7 @@ int UsbProPlugin::fd_error(int error, FDListener *listener) {
 	
 	delete dev ;
 
+	error = 0;
 	return 0;
 }
 

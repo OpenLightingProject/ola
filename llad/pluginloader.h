@@ -36,8 +36,8 @@ class PluginLoader {
 
 		int load_plugins(const string &dirname) ;
 		int unload_plugins() ;
-		int plugin_count() ;
-		Plugin *get_plugin(int id) ;
+		int plugin_count() const;
+		Plugin *get_plugin(unsigned int id) const ;
 	protected:
 		
 	private:

@@ -56,17 +56,24 @@ typedef struct [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER l
 /*
  * union of all the msgs
  */
-struct [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_s {
-  uint8_t op;
-  union {
+union [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_u {
 [% FOREACH msg = msgs -%]
     [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_[% msg.name FILTER lower %] [% msg.name FILTER lower %];
 [% END -%]
-  } data;
+};
+
+
+struct [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_s {
+  uint8_t op;
+[% FOREACH stat = statics -%]
+  [% stat.type %] [% stat.name %];	// [% stat.value %]
+[% END -%]
+  union [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_u data;
 };
 
 typedef struct [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_s [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg;
 
+const int [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_header_size = sizeof([% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg) - sizeof(union [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_u);
 #ifdef __cplusplus
 }
 #endif

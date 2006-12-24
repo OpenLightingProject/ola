@@ -314,9 +314,9 @@ int Network::send_msg(lla_msg *msg) {
 /*
  * Check for expired timeouts
  */
-int Network::check_timeouts(struct timeval *now) {
+void Network::check_timeouts(struct timeval *now) {
 	
-	for(int i=0; i < m_timeouts_vect.size(); i++) {
+	for(unsigned int i=0; i < m_timeouts_vect.size(); i++) {
 		m_timeouts_vect[i]->check_expiry(now) ;
 	}
 }
@@ -331,7 +331,7 @@ int Network::get_remaining(struct timeval *now, struct timeval *tv) {
 	min = 1000000 * 2;
 	now_l = now->tv_sec * 1000000 + now->tv_usec ;
 
-	for(int i=0; i < m_timeouts_vect.size() ; i++) {
+	for(unsigned int i=0; i < m_timeouts_vect.size() ; i++) {
 		ex_l = m_timeouts_vect[i]->m_tv.tv_sec * 1000000 + m_timeouts_vect[i]->m_tv.tv_usec ;
 		res = ex_l - now_l ;
 

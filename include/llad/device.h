@@ -37,11 +37,10 @@ class Device {
 		Plugin	 	*get_owner() const;
 			
 		// for the subclasses
-		// configure needs to be made pure virtual eventually
-		virtual uint8_t *configure(const uint8_t *request, int reql, int *rep_len) {};
+		virtual class 	LlaDevConfMsg *configure(const uint8_t *req, int l) { req = NULL; l =0; return NULL; }
 		virtual int 	save_config() const = 0;
 		virtual int 	add_port(Port *prt);
-		virtual Port	*get_port(int pid) const;
+		virtual Port	*get_port(unsigned int pid) const;
 		virtual int 	port_count() const;
 
 	private:

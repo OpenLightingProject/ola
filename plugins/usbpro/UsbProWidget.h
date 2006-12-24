@@ -139,12 +139,12 @@ class UsbProWidget {
 		int connect(const string &path);
 		int disconnect();
 		int fd() {return m_fd;}
-		int send_dmx(uint8_t *buf, int len) const;
-		int send_rdm(uint8_t *buf, int len) const;
-		int set_params(uint8_t *data, int len, uint8_t brk, uint8_t mab, uint8_t rate);
+		int send_dmx(uint8_t *buf, unsigned int len) const;
+		int send_rdm(uint8_t *buf, unsigned int len) const;
+		int set_params(uint8_t *data, unsigned int len, uint8_t brk, uint8_t mab, uint8_t rate);
 		void get_params(uint16_t *firmware, uint8_t *brk, uint8_t *mab, uint8_t *rate) const;
-		void get_serial(uint8_t *serial, int len) const;
-		int get_dmx(uint8_t *data, int len);
+		void get_serial(uint8_t *serial, unsigned int len) const;
+		int get_dmx(uint8_t *data, unsigned int len);
 		void set_listener(UsbProWidgetListener *l);
 		int recv();
 
@@ -157,7 +157,7 @@ class UsbProWidget {
 		int send_prmreq(int usrsz) const;
 		int handle_dmx(pms_rdmx *dmx, int len);
 		int handle_cos(pms_cos *cos, int len);
-		int handle_prmrep(pms_prmrep *rep, int len);
+		int handle_prmrep(pms_prmrep *rep, unsigned int len);
 		int handle_snorep(pms_snorep *rep, int len);
 		int do_recv();
 

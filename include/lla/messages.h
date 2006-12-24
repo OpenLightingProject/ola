@@ -15,7 +15,12 @@
  *
  * messages.h
  * Defines the format of the datagrams passed between liblla and llad 
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005 - 2006 Simon Newton
+ */
+
+/*
+ * Hopefully this will all become autogen'ed once that tool can support nested structures
+ *
  */
 
 #ifndef MESSAGES_H
@@ -45,6 +50,7 @@ enum {
 	LLA_MSG_REGISTER = 0x12,
 	LLA_MSG_PATCH = 0x13,
 	LLA_MSG_UNI_NAME = 0x14,
+	LLA_MSG_UNI_MERGE = 0x15,
 		
 	LLA_MSG_PLUGIN_INFO_REQUEST = 0x24,
 	LLA_MSG_PLUGIN_INFO = 0x25,
@@ -76,6 +82,11 @@ enum { PLUGIN_NAME_LENGTH = 30};
 enum { DEVICE_NAME_LENGTH = 30};
 enum { UNIVERSE_NAME_LENGTH = 30};
 
+
+enum uni_merge_mode {
+	UNI_MERGE_MODE_HTP,
+	UNI_MERGE_MODE_LTP
+};
 
 /*
  * sent on client connect
@@ -210,7 +221,22 @@ struct lla_msg_uni_name_s {
 	char name[UNIVERSE_NAME_LENGTH];		// universe name
 }__attribute__( ( packed ) ) ;
 
+
 typedef struct lla_msg_uni_name_s lla_msg_uni_name; 
+
+
+/*
+ * set the merge mode of a universe
+ *
+ */
+struct lla_msg_uni_merge_s {
+	uint8_t op;			// op code
+	int uni;			// universe
+	int mode;			// universe merge mode
+}__attribute__( ( packed ) ) ;
+
+
+typedef struct lla_msg_uni_merge_s lla_msg_uni_merge; 
 
 
 /*
@@ -315,8 +341,8 @@ struct lla_msg_port_s {
  */
 struct lla_msg_info_s {
 	int id;								// universe id
+	int merge;							// merge mode
 	char name[UNIVERSE_NAME_LENGTH];	//name
-//	int mode							// merge mode
 };
 
 
@@ -420,6 +446,7 @@ struct lla_msg_device_config_rep_s {
 	uint8_t op;			// op code
 	uint8_t status;		// error code
 	uint16_t seq;		// sequence number
+	int	dev;			// device id
 	uint32_t len;		// request length
 	uint8_t	rep[1400];	// reply data
 }__attribute__( ( packed ) );
@@ -444,6 +471,7 @@ typedef union {
 	lla_msg_register reg;
 	lla_msg_patch patch;
 	lla_msg_uni_name uniname;
+	lla_msg_uni_merge unimerge;
 	
 	lla_msg_plugin_info_request plreq;
 	lla_msg_plugin_info	plinfo;

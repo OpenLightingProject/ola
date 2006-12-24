@@ -65,8 +65,8 @@ const string Device::get_name() const {
  * @param pid	the id of the port to fetch
  * @return the port if it exists, or NULL on error
  */
-Port *Device::get_port(int pid) const {
-	if (pid < 0 || pid > m_ports_vect.size() ) 
+Port *Device::get_port(unsigned int pid) const {
+	if (pid > m_ports_vect.size() ) 
 		return NULL ;
 
 	return m_ports_vect[pid] ;

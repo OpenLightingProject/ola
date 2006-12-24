@@ -25,8 +25,12 @@
 #  - module_name_messages.h		the structs
 #  - ModuleNameParser.h			the parser interface
 #  - ModuleNameParser.cpp		the parser class
-#  - ModuleNameMessage.h		the interface for the messages
-#  - ModuleNameMessageXXXX.cpp	one class for each message type
+#  - ModuleNameMsg.h			the base abstract class for the messages
+#  - ModuleNameMsgXXXX.h		one class for each message type
+#  - ModuleNameMsgXXXX.cpp		one class for each message type
+#  - ModuleNameMsgs.h			includes all the ModuleNameMsgXXXX.h files
+#  - Makefile_XXX_YYY.am		the makefile listing the source files generated
+#  - ModuleNameCheck.cpp		the testing program
 #
 # Once complete you can do the following to decode messages:
 #
@@ -42,6 +46,12 @@
 # Bugs:
 #  can't handle more than 256 messages
 #
+# Todo:
+#  sequence numbers
+#  endianness
+#  nested structures
+#  create test framework
+#
 use strict;
 use warnings;
 
@@ -49,6 +59,18 @@ my $TMPL_PATH = "./templates";
 
 use XML::Simple;
 use Template;
+
+
+my %TYPES = (
+ uint8_t => 1,
+ uint16_t => 2,
+ uint32_t => 4,
+ int8_t => 1,
+ int16_t => 2,
+ int32_t => 4,
+ 'char' => 1,
+ 'int' => 4,
+);
 
 main();
 exit 0;
@@ -79,15 +101,21 @@ sub main {
 	my $vars = parse($xml);
 	return if ( !defined($vars) );
 
-	if ( ! -d $vars->{lib} ) {
-		mkdir $vars->{lib} or die "Could not create directory" . $vars->{lib};
+	my $dir = $vars->{lib} . '-' . $vars->{module} ;
+
+	if ( ! -d $dir ) {
+		mkdir ($dir) or die "Could not create directory:" . $dir;
 	}
 
-	output_structs($vars);
-	output_msg_header($vars);
-	output_parser_header($vars);
-	output_parser_class($vars);
-	output_subclasses($vars);
+	my @files = ();
+	push @files, output_structs($dir, $vars);
+	push @files, output_msg_header($dir, $vars);
+	push @files, output_parser_header($dir, $vars);
+	push @files, output_parser_class($dir, $vars);
+	push @files, output_include_all($dir, $vars);
+	push @files, output_subclasses($dir, $vars);
+	output_makefile($dir, $vars, \@files);
+	output_test_class($dir, $vars);
 
 }
 
@@ -118,6 +146,51 @@ sub parse {
 		return;
 	}
 	$vars{name} = $xml->{name};
+
+	# allows this message family to inherit from another
+	$vars{parent} = '';
+	if(defined($xml->{parent})) {
+		my $parentx = shift @{$xml->{parent}} ;
+		print Dumper($parentx) ;
+		if ($parentx->{name} && $parentx->{include}) {
+
+			my $parent = {  name => $parentx->{name}->[0],
+							include => $parentx->{include}->[0]
+						 };
+			$vars{parent} = $parent;
+		}
+	}
+
+	# do we build this set of messages as a library 
+	$vars{install} = 0;
+	$vars{install} = 1, if(defined($xml->{install}) && $xml->{install});
+
+	# version info for the library (only used with install)
+	$vars{version} = $vars{install} ? '0:0:1' : '';
+	$vars{version} = $xml->{version}, if defined($xml->{version});
+
+
+	# static fields (aka proto identifiers)
+	$vars{statics} = undef;
+	if ($xml->{static}) {
+		my @statics = ();
+		my $static_size = 0;
+		foreach my $statx (@{$xml->{static}}) {
+			my $type = $statx->{type} || '';
+			if(defined($statx->{value}) && $type && $statx->{name} && defined($TYPES{$type}) ) {
+				my %static;
+				$static{value} = $statx->{value};
+				$static{type} = $statx->{type};
+				$static{name} = $statx->{name};
+				push @statics, \%static;
+				$static_size += $TYPES{$type};
+			}
+		}
+		$vars{statics} = \@statics;
+		$vars{statics_size} = $static_size;
+	}
+
+print Dumper(%vars) ;
 
 	my @msgs;
 	foreach my $msgx (@{$xml->{message}}) {
@@ -163,7 +236,7 @@ sub parse {
 			}
 		}
 
-		print Dumper(%msg);
+#		print Dumper(%msg);
 		push @msgs, \%msg;
 	}
 
@@ -172,56 +245,102 @@ sub parse {
 }
 
 sub output_structs {
-	my $vars = shift;
+	my ($dir, $vars) = @_;
 	my $t = Template->new(INCLUDE_PATH => $TMPL_PATH);
 
-
-	my $file = $vars->{lib}. '/' . lc($vars->{module}) . '_' . lc($vars->{name}) . '_messages.h';
+	my $file = $dir . '/' . lc($vars->{module}) . '_' . lc($vars->{name}) . '_messages.h';
 	$t->process( "structs.tmpl", $vars, $file) || die "Can't output " . $t->error();
+
+	return ($file);
 }
 
 
 sub output_msg_header {
-	my $vars = shift;
+	my ($dir, $vars) = @_;
 	my $t = Template->new(INCLUDE_PATH => $TMPL_PATH);
 
-	my $file = $vars->{lib}. '/' . $vars->{module} . $vars->{name} . 'Msg.h';
+	my $file = $dir. '/' . $vars->{module} . $vars->{name} . 'Msg.h';
 	$t->process( "message.h", $vars, $file) || die "Can't output " . $t->error();
+	return ($file);
 }
 
 sub output_parser_header {
-	my $vars = shift;
+	my ($dir, $vars) = @_;
 	my $t = Template->new(INCLUDE_PATH => $TMPL_PATH);
 
-	my $file = $vars->{lib}. '/' . $vars->{module} . $vars->{name} . 'Parser.h';
+	my $file = $dir. '/' . $vars->{module} . $vars->{name} . 'Parser.h';
 	$t->process( "parser.h", $vars, $file) || die "Can't output " . $t->error();
+	return ($file);
 }
 
 sub output_parser_class {
-	my $vars = shift;
+	my ($dir, $vars) = @_;
 	my $t = Template->new(INCLUDE_PATH => $TMPL_PATH);
 
-	my $file = $vars->{lib}. '/' . $vars->{module} . $vars->{name} . 'Parser.cpp';
+	my $file = $dir. '/' . $vars->{module} . $vars->{name} . 'Parser.cpp';
 	$t->process( "parser.cpp", $vars, $file) || die "Can't output " . $t->error();
+	return ($file);
 }
 
 
 sub output_subclasses {
-	my $vars = shift;
+	my ($dir, $vars) = @_;
 	my $t = Template->new(INCLUDE_PATH => $TMPL_PATH);
+	my @files;
 
 	foreach my $msg (@{$vars->{msgs}}) {
 		my %params = ( 	name => $vars->{name},
 						lib => $vars->{lib},
 						module => $vars->{module},
 						cls_name => $msg->{cls_name},
-						msg => $msg
+						msg => $msg,
+						statics => $vars->{statics},
+						statics_size => $vars->{statics_size},
 					 );
 
-		my $file = $vars->{lib}. '/' . $vars->{module} . $vars->{name} . 'Msg' . $msg->{cls_name} . '.cpp';
+		my $file = $dir. '/' . $vars->{module} . $vars->{name} . 'Msg' . $msg->{cls_name} . '.cpp';
 		$t->process( "sub_class.cpp", \%params, $file) || die "Can't output " . $t->error();
+		push @files, $file;
 
-		$file = $vars->{lib}. '/' . $vars->{module} . $vars->{name} . 'Msg' . $msg->{cls_name} . '.h';
+		$file = $dir. '/' . $vars->{module} . $vars->{name} . 'Msg' . $msg->{cls_name} . '.h';
 		$t->process( "sub_class.h", \%params, $file) || die "Can't output " . $t->error();
+		push @files, $file;
 	}
+	return @files;
 }
+
+
+sub output_include_all {
+	my ($dir, $vars) = @_;
+	my $t = Template->new(INCLUDE_PATH => $TMPL_PATH);
+
+	my $file = $dir. '/' . $vars->{module} . $vars->{name} . 'Msgs.h';
+	$t->process( "include_all.h", $vars, $file) || die "Can't output " . $t->error();
+	return ($file);
+}
+
+
+sub output_makefile {
+	my ($dir, $vars, $files) = @_;
+	map { s/.*\/(.*?)$/$1/ } @{$files};
+	my @files = grep { /\.cpp$/ } @$files;
+	my @headers = grep { /\.h$/ } @$files;
+
+	my $t = Template->new(INCLUDE_PATH => $TMPL_PATH);
+	$vars->{files} = \@files;
+	$vars->{headers} = \@headers;
+
+	my $file = $dir. '/' . 'Makefile_' . $vars->{name} . '_Msg.am';
+	$t->process( "Makefile_msg.am", $vars, $file) || die "Can't output " . $t->error();
+}
+
+
+sub output_test_class {
+	my ($dir, $vars) = @_;
+	my $t = Template->new(INCLUDE_PATH => $TMPL_PATH);
+
+	my $file = $dir. '/' . $vars->{module} . $vars->{name} . 'Test.cpp';
+	$t->process( "test.cpp", $vars, $file) || die "Can't output " . $t->error();
+	return ();
+}
+

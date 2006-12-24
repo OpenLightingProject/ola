@@ -5,7 +5,6 @@
 
 #include <stdio.h>
 
-#include <llad/logger.h>
 #include "[% module %][% name %]Parser.h"
 #include "[% module %][% name %]Msg.h"
 
@@ -25,8 +24,13 @@
 [% module %][% name %]Msg *[% module %][% name %]Parser::parse(const uint8_t *data, int len) {
   [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg *req = ([% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg *) data;
 
-  if(len < 1)
+  if(len < [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_header_size)
     return NULL;
+
+  [% FOREACH stat = statics %] 
+  if ( req->[% stat.name %] != [% stat.value %])
+    return NULL;
+  [% END -%]
 
   switch(req->op) {
 [% FOREACH msg = msgs -%]
@@ -34,7 +38,6 @@
       return parse_[% msg.name %](req, len);
 [% END -%]
     default:
-      Logger::instance()->log(Logger::WARN ,"%s: Invalid op code %i", __FUNCTION__, req->op);
       return NULL;
   }
 }
@@ -48,7 +51,7 @@
  */
 [% module %][% name %]Msg *[% module %][% name %]Parser::parse_[% msg.name %]([% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg *req, int len) {
 	
-  if( len != sizeof([% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_[% msg.name FILTER lower %]) + 1)
+  if( len != sizeof([% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_[% msg.name FILTER lower %]) + [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_header_size)
     return NULL;
 
   [% module %][% name %]Msg[% msg.cls_name %] *m = new [% module %][% name %]Msg[% msg.cls_name %]();

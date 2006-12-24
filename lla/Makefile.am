@@ -1,6 +1,6 @@
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
-AM_CFLAGS = -Wall -Werror -Wformat -W 
+AM_CXXFLAGS = -Wall  -Wformat 
 
 lib_LTLIBRARIES = liblla.la
 

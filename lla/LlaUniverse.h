@@ -28,18 +28,26 @@ using namespace std;
 class LlaUniverse {
 
 	public:
-		LlaUniverse(int id, const string &name) : m_id(id), m_name(name) {};
+
+		enum merge_mode { 
+			MERGE_HTP,
+			MERGE_LTP,
+		};
+
+		LlaUniverse(int id, merge_mode m, const string &name) : m_id(id), m_merge(m), m_name(name) {};
 		~LlaUniverse() {};
 
 		int get_id() { return m_id;}
+		merge_mode get_merge_mode() { return m_merge; }
 		string get_name() { return m_name;}
 
 	private:
 		LlaUniverse(const LlaUniverse&);
 		LlaUniverse operator=(const LlaUniverse&);
 
-		int m_id;		// id of this universe
-		string m_name;	// universe name
+		int m_id;			// id of this universe
+		merge_mode m_merge;	// merge mode
+		string m_name;		// universe name
 
 };
 #endif

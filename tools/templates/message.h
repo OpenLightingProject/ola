@@ -9,13 +9,17 @@
 #include <stdint.h>
 #include "[% module FILTER lower %]_[% name FILTER lower %]_messages.h"
 
-class [% module %][% name %]Msg {
+[%- IF parent -%]
+#include [% parent.include %]
+[%- END %]
+
+class [% module %][% name %]Msg [%- IF parent -%] : public [% parent.name %] [%- END -%] {
 
   public:
     [% module %][% name %]Msg() {};
-    virtual ~[% module %][% name %]Msg();
+    virtual ~[% module %][% name %]Msg() {};
 
-    virtual uint8_t *pack(int *len) = 0;
+    virtual int pack(uint8_t *buf, int len) const= 0;
     virtual [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_op type() = 0;
 };
 

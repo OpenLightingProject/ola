@@ -26,13 +26,17 @@ A. Basic Installation
   4.  Build the source files.
   
   	make
+
+  5.  Run the (simple) unit tests
+   
+    make check
  
-  5. Become root
+  6. Become root
   	
 	su
 	(enter root password)
 
-  6. Install
+  7. Install
 
   	make install
 

@@ -55,6 +55,7 @@ class Llad {
 		int	handle_universe_info_request(lla_msg *msg) ;
 		int handle_patch(lla_msg *msg) ;
 		int handle_uni_name(lla_msg *msg) ;
+		int handle_uni_merge(lla_msg *msg) ;
 		int handle_register(lla_msg *msg) ;
 		int handle_dmx_data(lla_msg *msg) ;
 //		int handle_read_request(Msg *msg) ;

@@ -46,6 +46,7 @@ typedef struct {
  * Terminate cleanly on interrupt
  */
 static void sig_interupt(int signo) {
+	signo =0 ;
 	llad->terminate() ;
 }
 
@@ -53,6 +54,7 @@ static void sig_interupt(int signo) {
  * Reload plugins
  */
 static void sig_hup(int signo) {
+	signo = 0;
 //	llad->reload_plugins() ;
 }
 
@@ -62,6 +64,7 @@ static void sig_hup(int signo) {
  * need to fix race conditions here
  */
 static void sig_user1(int signo) {
+	signo = 0;
 	Logger::instance()->increment_log_level();	
 }
 

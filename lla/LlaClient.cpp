@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 #include <lla/messages.h>
+#include <lla/LlaDevConfMsg.h>
 
 #include "LlaClient.h"
 #include "LlaClientObserver.h"
@@ -143,7 +144,7 @@ int LlaClient::stop() {
  *
  * @return -1 on error, the sd on sucess
  */
-int LlaClient::fd() {
+int LlaClient::fd() const {
 	return m_sd;
 }
 
@@ -157,7 +158,7 @@ int LlaClient::fd() {
  * @param delay		0 to non-block, else the delay to wait for data before returning
  * @return 0 on success, -1 on error
  */
-int LlaClient::fd_action(int delay) {
+int LlaClient::fd_action(unsigned int delay) {
 	
 	while(1) {
 		switch(receive(delay)) {
@@ -197,7 +198,7 @@ int LlaClient::set_observer(LlaClientObserver *o) {
  * @param 	length	length of dmx data
  * @return	0 on sucess, -1 on failure
  */
-int LlaClient::send_dmx(int uni, uint8_t *data, int length) {
+int LlaClient::send_dmx(unsigned int uni, uint8_t *data, unsigned int length) {
 	lla_msg msg;
 	
 	msg.len = sizeof(lla_msg_dmx_data);
@@ -218,7 +219,7 @@ int LlaClient::send_dmx(int uni, uint8_t *data, int length) {
  * poll it I suppose.
  *
  */
-int LlaClient::fetch_dmx(int universe) {
+int LlaClient::fetch_dmx(unsigned int universe) {
 	//send read request
 	lla_msg msg;
 	
@@ -327,7 +328,7 @@ int LlaClient::fetch_plugin_desc(LlaPlugin *plug) {
  * Set the name of a universe
  *
  */
-int LlaClient::set_uni_name(int uni, const string &name) {
+int LlaClient::set_uni_name(unsigned int uni, const string &name) {
 	lla_msg msg;
 	int l = min(name.length(), UNIVERSE_NAME_LENGTH);
 
@@ -341,13 +342,29 @@ int LlaClient::set_uni_name(int uni, const string &name) {
 
 
 /*
+ * Set the merge mode of a universe
+ *
+ */
+int LlaClient::set_uni_merge_mode(unsigned int uni, LlaUniverse::merge_mode mode) {
+	lla_msg msg;
+
+	msg.len = sizeof(lla_msg_uni_merge);
+	msg.data.unimerge.op = LLA_MSG_UNI_MERGE;
+	msg.data.unimerge.uni = uni;
+	msg.data.unimerge.mode = mode;
+	
+	return send_msg(&msg);
+}
+
+
+/*
  * Register our interest in a universe, the observer object will then
  * be notifed when the dmx values in this universe change.
  *
  * @param uni	the universe id
  * @param action
  */
-int LlaClient::register_uni(int uni, LlaClient::RegisterAction action) {
+int LlaClient::register_uni(unsigned int uni, LlaClient::RegisterAction action) {
 	lla_msg reg;
 	
 	reg.len = sizeof(lla_msg_register);
@@ -371,7 +388,7 @@ int LlaClient::register_uni(int uni, LlaClient::RegisterAction action) {
  * @param action	LlaClient::PATCH or LlaClient::UNPATCH
  * @param uni		universe id
  */
-int LlaClient::patch(int dev, int port, LlaClient::PatchAction action, int uni) {
+int LlaClient::patch(unsigned int dev, unsigned int port, LlaClient::PatchAction action, unsigned int uni) {
 
 	lla_msg msg;
 	
@@ -397,21 +414,27 @@ int LlaClient::patch(int dev, int port, LlaClient::PatchAction action, int uni) 
  * @param req	the request buffer
  * @param len	the length of the request buffer
  */
-int LlaClient::dev_config(int dev, const uint8_t *req, int len) {
+int LlaClient::dev_config(unsigned int dev, const class LlaDevConfMsg *dmsg) {
 
 	lla_msg msg;
+	memset(&msg, 0x00, sizeof(msg));
+	int l;
 	int buf_len = sizeof(msg.data.devreq.req);
 
-	if(len > buf_len)
-		return 0;
+	if(dmsg == NULL)
+		return -1;
 
-	msg.len = sizeof(lla_msg_device_config_req) - buf_len + len;
-	printf("len issss %i %i %i\n", msg.len, sizeof(lla_msg_device_config_req) , buf_len  );
+	l = dmsg->pack(msg.data.devreq.req, sizeof(msg.data.devreq.req));
+
+	if( l < 0)
+		return -1;
+
 	msg.data.devreq.op = LLA_MSG_DEV_CONFIG_REQ;
-	msg.data.devreq.len = len;
-	msg.data.devreq.seq = m_seq++;
+	msg.data.devreq.len = l;
 	msg.data.devreq.devid = dev;
-	memcpy(&msg.data.devreq.req, req, len);
+	msg.len = sizeof(lla_msg_device_config_req) - buf_len + l;
+	msg.data.devreq.seq = m_seq++;
+
 	return send_msg(&msg);
 }
 
@@ -424,7 +447,7 @@ int LlaClient::dev_config(int dev, const uint8_t *req, int len) {
  *
  * @param delay		the max delay to wait
  */
-int LlaClient::receive(int delay) {
+int LlaClient::receive(unsigned int delay) {
 	struct timeval tv;
 	fd_set rset;
 	
@@ -524,6 +547,9 @@ int LlaClient::handle_msg(lla_msg *msg) {
 		case LLA_MSG_UNI_INFO :
 			return handle_universe_info(msg);
 			break;
+		case LLA_MSG_DEV_CONFIG_REP:
+			return handle_dev_conf(msg);
+			break;
 		default:
 			printf("msg recv'ed but we're not interested, opcode %d\n", msg->data.dmx.op);
 			break;
@@ -610,12 +636,12 @@ int LlaClient::handle_universe_info(lla_msg *msg) {
 
 	clear_universes();
 
-	// this is prob not a good way, we should malloc once straight up
 	for(i=0; i < universes; i++) {
 		int id = msg->data.uniinfo.universes[i].id;
+		LlaUniverse::merge_mode mode = msg->data.uniinfo.universes[i].merge == UNI_MERGE_MODE_HTP ? LlaUniverse::MERGE_HTP : LlaUniverse::MERGE_LTP;
 		string name(msg->data.uniinfo.universes[i].name);
 
-		uni = new LlaUniverse(id,name);
+		uni = new LlaUniverse(id, mode, name);
 
 		if(uni == NULL) {
 			printf("malloc failed\n");
@@ -708,12 +734,9 @@ int LlaClient::handle_port_info(lla_msg *msg) {
 
 
 /*
- * Get info on the plugins loaded
- * This will block until we get a response (or time out and return NULL)
- * 
+ * handle plugin desc response 
  */
 int LlaClient::handle_plugin_desc(lla_msg *msg) {
-	int i, ports;
 	LlaPlugin *plug  = NULL;
 	vector<LlaPlugin *>::iterator iter;
 
@@ -734,6 +757,19 @@ int LlaClient::handle_plugin_desc(lla_msg *msg) {
 	
 	if(m_observer != NULL) 
 		m_observer->plugin_desc(plug);
+
+	return 0;
+}
+
+
+
+/*
+ * handle a device config response
+ * 
+ */
+int LlaClient::handle_dev_conf(lla_msg *msg) {
+	if(m_observer != NULL)
+		m_observer->dev_config(msg->data.devrep.dev, msg->data.devrep.rep, msg->data.devrep.len);
 
 	return 0;
 }

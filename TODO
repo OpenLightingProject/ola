@@ -1,6 +1,5 @@
 
 --URGENT--
-* fix timeout issues in client programs
 
 
 --REQUIRED--
@@ -8,22 +7,21 @@
 * fix potential for NULL pointers in client (eg. devices freed on call to req_dev_info)
 * support fragmented messages in the client and notify when all fragments arrive
 * pathport support
-* pro support working ??
+* test pro support carefully
 
 -- NICE--
-* get dev msgs working
 * save universe names (universe manager??)
 * let the devices save what universe they are attached to (do this in the plugin)
 * serialise so that plugins can store state
 * split dependancy between universe and port attributes
 * send debug to remote client - need to watch looping here (maybe lev 1&2)
+* convert to using autogen'ed messages:
+    * need to be able to nest msg structures
 
 
 --WISH LIST--
 
-* support HTP merge mode (currently LTP) - do we need to be able to 
-set the mode on a per channel or per universe basis ? Think about if we
-might need "filters" to modify the data from plugins. Could get really funky:
+* consider using filters:
 	o split dmx to different universes OUT = SPLIT(1,0,255)
 	o invert channels OUT = INV(1)
 	o different merge modes OUT = HTP(1,2)

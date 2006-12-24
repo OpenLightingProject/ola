@@ -3,7 +3,7 @@ lib_LTLIBRARIES = liblladummy.la
 libdir = $(plugindir)
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
-AM_CFLAGS = -Wall -Werror -Wformat -W
+AM_CXXFLAGS = -Wall -Werror -Wformat -W
 
 
 liblladummy_la_SOURCES =  dummyplugin.cpp dummyplugin.h dummyport.cpp\

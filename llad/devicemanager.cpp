@@ -81,7 +81,7 @@ int DeviceManager::unregister_device(Device *dev) {
  *
  * @return the number of devices
  */
-int DeviceManager::device_count() {
+int DeviceManager::device_count() const {
 	return m_dev_vect.size();
 }
 
@@ -92,9 +92,9 @@ int DeviceManager::device_count() {
  * @return	the device at position id, or NULL on error
  *
  */
-Device *DeviceManager::get_dev(int id) {
+Device *DeviceManager::get_dev(unsigned int id) const {
 
-	if(id < 0 || id >= m_dev_vect.size())
+	if(id >= m_dev_vect.size())
 		return NULL ;
 	
 	return m_dev_vect[id] ;

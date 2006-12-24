@@ -1,4 +1,12 @@
 28/11/2006 Simon Newton <<nomis52@westnet.com.au>
+
+	* Got device config messages working
+	* Add configuration commands to the Pro Device
+	* Added universe merge capability
+	* Improved the tool to autogen protocol messages
+	* Added merge mode for universes with device sources (no client support yet)
+
+28/11/2006 Simon Newton <<nomis52@westnet.com.au>
 	* Started on a general RPC framework
 	* Changed the client to C++, events are now handled asynchronously
 

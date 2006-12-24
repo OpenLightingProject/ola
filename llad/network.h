@@ -61,21 +61,31 @@ class Network {
 		Network(const Network&);
 		Network operator=(const Network&);
 
+		/*
+		 * This represents a listener
+		 */
 		class Listener {
 			public:
-				Listener(int fd, FDListener *listener, FDManager *manager ) : m_fd(fd) , m_listener(listener) , m_manager(manager) {} ;
+				Listener(int fd, FDListener *listener, FDManager *manager ) : m_listener(listener) , m_manager(manager), m_fd(fd) {} ;
 				FDListener *m_listener ;
 				FDManager *m_manager ;
 				int	m_fd;
 		};
 
+		/*
+		 * Represents a timeout we need to check
+		 */
 		class Timeout {
 			public:
 				Timeout(int seconds, TimeoutListener *listener) : m_sec(seconds), m_listener(listener) {
 					timerclear(&m_tv) ;
 				} ;
 
-				int check_expiry(struct timeval *now) {
+				/*
+				 * Check if this timeout has expired and invoke the action if
+				 * is has
+				 */
+				void check_expiry(struct timeval *now) {
 					
 					if( timercmp(now, &m_tv, >= ) ) {
 						m_listener->timeout_action() ;
@@ -93,7 +103,7 @@ class Network {
 		};
 		int m_sd ;
 		int fetch_msg_from_client(lla_msg *msg) ;
-		int check_timeouts(struct timeval *now) ;
+		void check_timeouts(struct timeval *now) ;
 		int get_remaining(struct timeval *now, struct timeval *tv) ;
 
 		vector<Listener*> m_rhandlers_vect ;

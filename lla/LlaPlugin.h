@@ -36,7 +36,7 @@ class LlaPlugin {
 		int get_id() { return m_id; }
 		string get_name() { return m_name; }
 		string get_desc() { return m_desc; }
-		int set_desc(const string &desc) { m_desc = desc; }
+		void set_desc(const string &desc) { m_desc = desc; }
 	private:
 		LlaPlugin(const LlaPlugin&);
 		LlaPlugin operator=(const LlaPlugin&);

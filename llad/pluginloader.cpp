@@ -60,7 +60,6 @@ PluginLoader::~PluginLoader() {
  * @return 	0 on sucess, -1 on failure
  */
 int PluginLoader::load_plugins(const string &dirname) {
-	int slen ;
 	Plugin *plug = NULL ;
 	DIR *dir;
 	struct dirent *ent;
@@ -76,7 +75,7 @@ int PluginLoader::load_plugins(const string &dirname) {
 		fname.append("/") ;
 		fname.append(ent->d_name);
 	
-		int i = fname.find_last_of(".");
+		unsigned int i = fname.find_last_of(".");
 		if ( i == string::npos) 
 			continue;
 
@@ -128,7 +127,7 @@ int PluginLoader::unload_plugins() {
  *
  * @return the number of plugins loaded
  */
-int PluginLoader::plugin_count() {
+int PluginLoader::plugin_count() const {
 	return m_plugin_vect.size() ;
 }
 
@@ -139,9 +138,9 @@ int PluginLoader::plugin_count() {
  * @param id 	the id of the plugin to fetch
  * @return	the plugin with the specified id
  */
-Plugin *PluginLoader::get_plugin(int id) {
+Plugin *PluginLoader::get_plugin(unsigned int id) const {
 
-	if ( id < 0 || id > m_plugin_vect.size() ) 
+	if ( id > m_plugin_vect.size() ) 
 		return NULL ;
 
 	return m_plugin_vect[id] ;

@@ -20,7 +20,6 @@
 
 #include "usbproport.h"
 #include "usbprodevice.h"
-#include <llad/universe.h>
 #include <llad/logger.h>
 #include <string.h>
 

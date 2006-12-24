@@ -35,8 +35,8 @@ class DeviceManager {
 		
 		int register_device(Device *dev) ;
 		int unregister_device(Device *dev) ;
-		int device_count() ;
-		Device *get_dev(int id) ;
+		int device_count() const;
+		Device *get_dev(unsigned int id) const;
 
 	protected:
 

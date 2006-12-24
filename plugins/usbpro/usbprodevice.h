@@ -25,9 +25,8 @@
 #include <stdint.h>
 #include <llad/device.h>
 #include <llad/fdlistener.h>
-#include <usbpro_conf_messages.h>
+#include <lla/usbpro/usbpro_conf_messages.h>
 
-#include "UsbProConfParser.h"
 #include "UsbProWidgetListener.h"
 #include "UsbProWidget.h"
 
@@ -43,7 +42,7 @@ class UsbProDevice : public Device, public FDListener, public UsbProWidgetListen
 		int get_sd() const;
 		int fd_action();
 		int save_config() const;
-		uint8_t *configure(const uint8_t *request, int reql, int *repl);
+		class LlaDevConfMsg *configure(const uint8_t *request, int reql);
 		int send_dmx(uint8_t *data, int len);
 		int get_dmx(uint8_t *data, int len) const;
 		void new_dmx();
@@ -56,7 +55,7 @@ class UsbProDevice : public Device, public FDListener, public UsbProWidgetListen
 		// instance variables
 		string m_path;
 		bool m_enabled;					// are we enabled
-		UsbProConfParser *m_parser;		// parser for config msgs
+		class UsbProConfParser *m_parser;		// parser for config msgs
 		UsbProWidget *m_widget;
 };
 

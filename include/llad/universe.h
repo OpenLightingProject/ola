@@ -36,6 +36,12 @@ using namespace std;
 class Universe {
 
 	public:
+
+		enum merge_mode { 
+			MERGE_HTP,
+			MERGE_LTP
+		};
+				
 		~Universe() ;
 		int add_port(Port *prt);
 		int remove_port(Port *prt);
@@ -52,6 +58,9 @@ class Universe {
 		string get_name() const;
 		void set_name(const string &name);
 		int send_dmx(class Client *cli);
+
+		void set_merge_mode(Universe::merge_mode mode);
+		Universe::merge_mode get_merge_mode();
 		
 		static Universe *get_universe(int uid);
 		static Universe *get_universe_or_create(int uid);
@@ -59,7 +68,7 @@ class Universe {
 		static Universe *get_universe_at_pos(int index);
 
 		static int clean_up();
-		static int check_for_unused();
+		static void check_for_unused();
 		static vector<Universe *> *get_list();
 		static int set_net(class Network *net);
 
@@ -70,12 +79,16 @@ class Universe {
 		Universe(const Universe&);
 		Universe& operator=(const Universe&);
 		 
-		int m_uid;											// universe address
-//		merge_mode mm;										// merge mode
+		void merge();										// HTP merge the merge and data buffers
+		int m_uid;
+		enum merge_mode m_merge_mode;						// merge mode
 		vector<Port*> ports_vect;							// ports assigned to the universe
 		vector<class Client *> clients_vect;				// clients listening to this universe
 		uint8_t	m_data[DMX_LENGTH];							// buffer for this universe
-		int m_length;								
+		uint8_t	m_merge[DMX_LENGTH];						// merge buffer for this universe
+
+		int m_length;										// length of valid data in m_data
+		int m_mlength;										// length of valid data in m_merge
 		string m_name;										// name of this universe
 				
 		static map<int, Universe *> uni_map;				// map of uid to universes

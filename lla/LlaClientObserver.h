@@ -31,14 +31,14 @@ class LlaClientObserver {
 	public:
 
 		virtual ~LlaClientObserver() {};
-		// devices, uni, plugin
 
-		virtual int new_dmx(int uni,int length, uint8_t *data) = 0;
-		virtual int universes(const vector <class LlaUniverse *> unis) = 0;
-		virtual int plugins(const vector <class LlaPlugin *> plugins) = 0;
-		virtual int devices(const vector <class LlaDevice *> devices) = 0;
-		virtual int ports(class LlaDevice *dev) =0;
-		virtual int plugin_desc(class LlaPlugin *plug) = 0;
+		virtual int new_dmx(unsigned int uni, unsigned int length, uint8_t *data) { printf("base\n"); return 0; }
+		virtual int universes(const vector <class LlaUniverse *> unis) { return 0; }
+		virtual int plugins(const vector <class LlaPlugin *> plugins) { return 0; }
+		virtual int devices(const vector <class LlaDevice *> devices) { return 0; }
+		virtual int ports(class LlaDevice *dev) { return 0; }
+		virtual int plugin_desc(class LlaPlugin *plug) { return 0; }
+		virtual int dev_config(unsigned int dev, uint8_t *res, unsigned int len) { return 0; }
 
 	private:
 

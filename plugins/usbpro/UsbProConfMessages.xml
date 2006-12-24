@@ -1,4 +1,9 @@
-<contract library="lla" module="UsbPro" name="Conf">
+<contract library="lla" module="UsbPro" name="Conf" install="y" version="1:0:0">
+ <parent>
+  <name>LlaDevConfMsg</name>
+  <include>&lt;lla/LlaDevConfMsg.h&gt;</include>
+ </parent>
+ <static name="plugid" value="5" type="uint16_t"/>
  <message name="prm_req" doc="param request">
  </message>
  <message name="prm_rep" doc="param reply">

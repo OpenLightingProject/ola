@@ -32,8 +32,8 @@ class DummyPlugin : public Plugin {
 	public:
 		DummyPlugin(const PluginAdaptor *pa, lla_plugin_id id) : 
 			Plugin(pa, id),
-			m_enabled(false),
-			m_dev(NULL) {}
+			m_dev(NULL),
+			m_enabled(false) {}
 
 		int start();
 		int stop();

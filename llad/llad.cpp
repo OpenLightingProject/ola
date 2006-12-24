@@ -21,6 +21,7 @@
 #include "llad.h" 
 #include "client.h"
 
+#include <lla/LlaDevConfMsg.h>
 #include <llad/universe.h>
 #include <llad/logger.h>
 #include <llad/pluginadaptor.h>
@@ -240,8 +241,6 @@ int Llad::handle_fin(lla_msg *msg) {
 	vector<Universe *> *uni_v;
 	vector<Universe *>::iterator iter ;
 
-	int i ;
-
 	cli = Client::get_client_or_create(msg->from.sin_port) ;
 
 	if(cli != NULL) {
@@ -352,7 +351,7 @@ int Llad::handle_register(lla_msg *msg) {
  * Handle a universe name message
  *
  */
-int Llad::handle_uni_name (lla_msg *msg) {
+int Llad::handle_uni_name(lla_msg *msg) {
 	Universe *uni ;
 	int uid = msg->data.uniname.uni ;
 
@@ -360,16 +359,33 @@ int Llad::handle_uni_name (lla_msg *msg) {
 
 	uni = Universe::get_universe(uid) ;
 
-
 	if(uni != NULL) {
 		string name(msg->data.uniname.name);
 		uni->set_name(name) ;
-
-
 	}
 	return 0 ;
-
 }
+
+
+/*
+ * Handle a universe name message
+ *
+ */
+int Llad::handle_uni_merge(lla_msg *msg) {
+	Universe *uni ;
+	int uid = msg->data.unimerge.uni ;
+
+	Logger::instance()->log(Logger::DEBUG, "Setting merge mode for universe %d to %i", msg->data.unimerge.uni, msg->data.unimerge.mode ) ;
+
+	uni = Universe::get_universe(uid) ;
+
+	if(uni != NULL) {
+		uni->set_merge_mode( msg->data.unimerge.mode == UNI_MERGE_MODE_HTP ? Universe::MERGE_HTP : Universe::MERGE_LTP) ;
+	}
+	return 0 ;
+}
+
+
 
 /*
  * Handle a patch request
@@ -490,9 +506,10 @@ int Llad::handle_port_info_request(lla_msg *msg) {
  */
 int Llad::handle_device_config_request(lla_msg *msg) {
 	Device *dev = dm->get_dev(msg->data.devreq.devid);
+	LlaDevConfMsg *res = NULL;
+
 	lla_msg reply;
-	int ret, reply_len;
-	uint8_t *reply_data = NULL;
+	int l;
 
 	reply.to = msg->from;
 	reply.len = sizeof(lla_msg_device_config_rep) - sizeof(reply.data.devrep.rep);
@@ -502,19 +519,22 @@ int Llad::handle_device_config_request(lla_msg *msg) {
 	reply.data.devrep.seq = msg->data.devreq.seq;
 	reply.data.devrep.len = 0;
 
-printf("got config!\n");
 	if(dev != NULL) {
-		memset(&reply, 0x00, sizeof(reply) );
-		reply_data = dev->configure(msg->data.devreq.req, msg->data.devreq.len, &reply_len);
+		res = dev->configure(msg->data.devreq.req, msg->data.devreq.len);
 
-		if(reply_data != NULL) {
+		if(res != NULL) {
 			reply.data.devrep.status = 0;
-			reply.data.devrep.len = reply_len;
-			reply.len += ret;
+			l = res->pack(reply.data.devrep.rep, sizeof(reply.data.devrep.rep)); 
+
+			reply.data.devrep.len = l;
+			reply.data.devrep.dev = msg->data.devreq.devid;
+			reply.len += l;
+
+			delete res;
+			net->send_msg(&reply);
 		}
 	}
 	
-	net->send_msg(&reply);
 	return 0;
 }
 
@@ -550,6 +570,9 @@ int Llad::handle_msg(lla_msg *msg) {
 			break ;
 		case LLA_MSG_UNI_NAME :
 			handle_uni_name(msg);
+			break ;
+		case LLA_MSG_UNI_MERGE :
+			handle_uni_merge(msg);
 			break ;
 
 		case LLA_MSG_PLUGIN_INFO_REQUEST:
@@ -767,10 +790,8 @@ int Llad::send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) {
 int Llad::send_universe_info(struct sockaddr_in dst) {
 	vector<Universe *> *uni_v ;
 	vector<Universe *>::const_iterator iter;
-	Universe *uni;
 	lla_msg reply ;
 	int i, nunis ;
-	
 	// uni points to the first member
 	uni_v = Universe::get_list() ;
 	nunis = uni_v->size() ;
@@ -792,7 +813,8 @@ int Llad::send_universe_info(struct sockaddr_in dst) {
 	
 	for(iter = uni_v->begin(), i=0; iter != uni_v->end() && i < nunis ; ++iter, ++i) {
 		reply.data.uniinfo.universes[i].id = (*iter)->get_uid() ;
-
+		(*iter)->get_merge_mode();
+		reply.data.uniinfo.universes[i].merge = (*iter)->get_merge_mode() == Universe::MERGE_HTP ? UNI_MERGE_MODE_HTP : UNI_MERGE_MODE_LTP;
 		strncpy(reply.data.uniinfo.universes[i].name, (*iter)->get_name().c_str(), UNIVERSE_NAME_LENGTH) ;
 	}
 	

@@ -37,9 +37,13 @@ Network *Universe::c_net;
  *
  * @param uid	the universe id of this universe
  */
-Universe::Universe(int uid) : m_name(""), m_uid(uid) {
+Universe::Universe(int uid) : 
+	m_uid(uid),
+	m_merge_mode(Universe::MERGE_LTP),
+	m_length(DMX_LENGTH),
+	m_name("") {
+
 	memset(m_data, 0x00, DMX_LENGTH) ;
-	m_length = DMX_LENGTH ;
 }
 
 
@@ -188,9 +192,17 @@ int Universe::remove_client(Client *cli) {
  */
 int Universe::set_dmx(uint8_t *dmx, int len) {
 	
-	m_length = len < DMX_LENGTH ? len : DMX_LENGTH ;
-	memcpy(m_data, dmx, m_length) ;
+	if( m_merge_mode == Universe::MERGE_LTP) {
+		m_length = len < DMX_LENGTH ? len : DMX_LENGTH ;
+		memcpy(m_data, dmx, m_length) ;
+	} else {
+		// HTP, this is more difficult
+		// we'll need a buffer per client
+		// for now just set it
+		m_length = len < DMX_LENGTH ? len : DMX_LENGTH ;
+		memcpy(m_data, dmx, m_length) ;
 
+	}
 	return this->update_dependants() ;
 }
 
@@ -226,17 +238,39 @@ int Universe::get_uid() const {
  * @param prt 	the port that has changed
  */
 int Universe::port_data_changed(Port *prt) {
-	unsigned int i ;
-	
-	// if the port is in the current list
-	for(i =0 ; i < ports_vect.size() ; i++) {
-		if(ports_vect[i] == prt && prt->can_read() ) {
-			// read the new data and update our dependants
-			m_length = prt->read(m_data, DMX_LENGTH) ;
+	unsigned int i, len ;
+	int first = 1;
 
-			update_dependants() ;
+	if ( m_merge_mode == Universe::MERGE_LTP) {
+		// LTP merge mode
+		// this is simple, find the port and copy the data
+		for(i =0 ; i < ports_vect.size() ; i++) {
+			if(ports_vect[i] == prt && prt->can_read() ) {
+				// read the new data and update our dependants
+				m_length = prt->read(m_data, DMX_LENGTH) ;
+				update_dependants() ;
+				break;
+			}
 		}
+	} else {
+		// htp merge mode
+		// iterate over ports which we can read and take the highest value
+		// of each channel
+		for(i =0 ; i < ports_vect.size() ; i++) {
+			if(prt->can_read() ) {
+				if( first) {
+					m_length = prt->read(m_data, DMX_LENGTH) ;
+					first = 0;
+				} else {
+					len = prt->read(m_merge, DMX_LENGTH) ;
+					merge();
+				}
+			}
+		}
+		update_dependants() ;
 	}
+
+
 	return 0;
 }
 
@@ -247,6 +281,21 @@ int Universe::port_data_changed(Port *prt) {
  */
 bool Universe::in_use() const {
 	return  ports_vect.size()>0 || clients_vect.size()>0;
+}
+
+
+/*
+ * Set the merge mode
+ */
+void Universe::set_merge_mode(Universe::merge_mode mode) {
+	m_merge_mode = mode;
+}
+
+/*
+ * Get the merge mode
+ */
+Universe::merge_mode Universe::get_merge_mode() {
+	return m_merge_mode;
 }
 
 
@@ -303,6 +352,27 @@ int Universe::send_dmx(Client *cli) {
 	return c_net->send_msg(&reply);
 }
 
+
+/*
+ * HTP merge the merge buffer into the data buffer
+ *
+ */
+void Universe::merge() {
+	int i, l;
+
+	// l is the length we merge over
+	l = m_mlength < m_length ? m_mlength : m_length;
+
+	for(i=0; i < l; i++) {
+		m_data[i] = m_data[i] > m_merge[i] ? m_data[i] : m_merge[i];
+	}
+
+	if( m_mlength > m_length) {
+		// copy the remaining over
+		memcpy(&m_data[l], &m_merge[l], m_mlength - m_length);
+		m_length = m_mlength;
+	}
+}
 
 
 // Class Methods
@@ -396,7 +466,7 @@ vector<Universe *> *Universe::get_list() {
 }
 
 
-int Universe::check_for_unused() {
+void Universe::check_for_unused() {
 	map<int ,Universe*>::const_iterator iter;
 	vector<Universe *>::iterator iterv;
 	vector<Universe *> list ;
