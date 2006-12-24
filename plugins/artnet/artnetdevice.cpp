@@ -59,7 +59,8 @@ int dmx_handler(artnet_node n, int prt, void *d) {
 	// signal to the port that the data has changed
 	port = (ArtNetPort*) dev->get_port(prt) ;
 	port->dmx_changed() ;
-	
+
+	n = NULL;
 	return 0;
 }
 
@@ -74,6 +75,7 @@ int program_handler(artnet_node n, void *d) {
 	ArtNetDevice *dev = (ArtNetDevice *) d ;
 
 	dev->save_config() ;
+	n = NULL;
 	return 0;
 }
 

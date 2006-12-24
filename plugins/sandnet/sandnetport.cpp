@@ -74,7 +74,6 @@ int SandNetPort::can_write() const {
  */
 int SandNetPort::write(uint8_t *data, int length) {
 	SandNetDevice *dev = (SandNetDevice*) get_device() ;
-	int ret ;
 
 	if( !can_write())
 		return -1 ;
@@ -95,10 +94,8 @@ int SandNetPort::write(uint8_t *data, int length) {
  * @return	the amount of data read
  */
 int SandNetPort::read(uint8_t *data, int length) {
-	uint8_t *dmx = NULL;
-	int len ;
-	SandNetDevice *dev = (SandNetDevice*) get_device() ;
-	
+	int len;
+
 	if( !can_read()) 
 		return -1 ;
 	
@@ -121,6 +118,7 @@ int SandNetPort::update_buffer(uint8_t *data, int length) {
 	Logger::instance()->log(Logger::DEBUG, "SandNet: Updating dmx buffer for port %d", length);
 	memcpy(m_buf, data, len);
 	dmx_changed() ;
+	return 0;
 }
 
 

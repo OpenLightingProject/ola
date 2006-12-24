@@ -74,7 +74,6 @@ int ShowNetPort::can_write() const {
  */
 int ShowNetPort::write(uint8_t *data, int length) {
 	ShowNetDevice *dev = (ShowNetDevice*) get_device() ;
-	int ret ;
 
 	if( !can_write())
 		return -1 ;
@@ -95,9 +94,7 @@ int ShowNetPort::write(uint8_t *data, int length) {
  * @return	the amount of data read
  */
 int ShowNetPort::read(uint8_t *data, int length) {
-	uint8_t *dmx = NULL;
 	int len ;
-	ShowNetDevice *dev = (ShowNetDevice*) get_device() ;
 	
 	if( !can_read()) 
 		return -1 ;
@@ -122,4 +119,5 @@ int ShowNetPort::update_buffer(uint8_t *data, int length) {
 	memcpy(m_buf, data, len);
 
 	dmx_changed() ;
+	return 0;
 }

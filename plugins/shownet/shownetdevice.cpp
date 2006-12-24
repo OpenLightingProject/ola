@@ -61,7 +61,8 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 	if( prt->can_read() && uni != NULL && prt->get_id()%8  == uid) {
 		prt->update_buffer(data,len) ;
 	}
-	
+
+	n = NULL;
 	return 0;
 }
 
@@ -146,7 +147,6 @@ int ShowNetDevice::start() {
 e_shownet_start:
 	if(shownet_destroy(m_node)) 
 		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_destory failed: %s", shownet_strerror()) ;			
-e_dev:
 	return -1 ;
 }
 

@@ -47,7 +47,6 @@ int ArtNetPort::can_write() const {
  */
 int ArtNetPort::write(uint8_t *data, int length) {
 	ArtNetDevice *dev = (ArtNetDevice*) get_device() ;
-	int ret ;
 
 	if( !can_write())
 		return -1 ;
@@ -81,6 +80,7 @@ int ArtNetPort::read(uint8_t *data, int length) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_read_dmx failed %s", artnet_strerror() ) ;
 		return -1 ;
 	}
+	len = min(len, length);
 	
 	memcpy(data, dmx, len ) ;
 	return len;

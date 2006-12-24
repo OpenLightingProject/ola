@@ -60,7 +60,8 @@ int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 			prt->update_buffer(data,len) ;
 		}
 	}
-	
+
+	n = NULL;
 	return 0;
 }
 
@@ -75,6 +76,8 @@ int program_handler(espnet_node n, void *d) {
 	EspNetDevice *dev = (EspNetDevice *) d ;
 
 	dev->save_config() ;
+
+	n = NULL;
 	return 0;
 }
 
@@ -163,7 +166,6 @@ int EspNetDevice::start() {
 e_espnet_start:
 	if(espnet_destroy(m_node)) 
 		Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_destory failed: %s", espnet_strerror()) ;			
-e_dev:
 	return -1 ;
 }
 

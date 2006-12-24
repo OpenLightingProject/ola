@@ -54,7 +54,9 @@ int dmx_handler(sandnet_node n, uint8_t grp, uint8_t uid, int len, uint8_t *data
 	if (prt != NULL) {
 		prt->update_buffer(data,len) ;
 	}
-	
+
+	grp=0;
+	n = NULL;
 	return 0;
 }
 
@@ -147,7 +149,6 @@ int SandNetDevice::start() {
 e_sandnet_start:
 	if(sandnet_destroy(m_node)) 
 		Logger::instance()->log(Logger::WARN, "SandNetPlugin: sandnet_destory failed: %s", sandnet_strerror()) ;			
-e_dev:
 	return -1 ;
 }
 
@@ -265,7 +266,7 @@ int SandNetDevice::configure(void *req, int len) {
 int SandNetDevice::port_map(Universe *uni, SandNetPort *prt) {
 
 	m_portmap[uni->get_uid()] = prt ;
-
+	return 0;
 }
 
 SandNetPort *SandNetDevice::get_port(int uni) {
