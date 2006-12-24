@@ -91,6 +91,7 @@ AC_OUTPUT( Makefile \
 	   llad/Makefile \
 	   plugins/Makefile \
 	   plugins/artnet/Makefile	\
+	   plugins/artnet/conf_msgs/Makefile	\
 	   plugins/eartnet/Makefile	\
 	   plugins/dummy/Makefile	\
 	   plugins/espnet/Makefile	\
@@ -101,4 +102,5 @@ AC_OUTPUT( Makefile \
 	   plugins/opendmxusb/Makefile	\
 	   liblla.pc \
 	   plugins/usbpro/conf_msgs/libllausbproconf.pc
+	   plugins/artnet/conf_msgs/libllaartnetconf.pc
 	    )
