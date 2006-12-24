@@ -101,7 +101,7 @@ sub main {
 	my $vars = parse($xml);
 	return if ( !defined($vars) );
 
-	my $dir = $vars->{lib} . '-' . $vars->{module} ;
+	my $dir = $vars->{lib} . '-' . lc($vars->{module}) ;
 
 	if ( ! -d $dir ) {
 		mkdir ($dir) or die "Could not create directory:" . $dir;

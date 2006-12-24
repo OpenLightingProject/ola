@@ -17,7 +17,7 @@ lib[% lib FILTER lower %][% module FILTER lower %][% name FILTER lower %]_la_LDF
 
 [% module FILTER upper %]_[% name FILTER upper %]_MSG_HEADERS = [%- FOREACH header = headers -%] [% header %] [%- END %]
 
-USBPRO_CONF_MSGdir = $(includedir)/[% lib FILTER lower %]/[% module FILTER lower %]
+[% module FILTER upper %]_[% name FILTER upper %]_MSGdir = $(includedir)/[% lib FILTER lower %]/[% module FILTER lower %]
 
 [% ELSE %]
 
