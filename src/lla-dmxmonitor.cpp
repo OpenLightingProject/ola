@@ -100,20 +100,15 @@ class Observer : public LlaClientObserver {
 	public:
 		Observer( void (*fh)()) : m_fh(fh) {};
 
-		int new_dmx(int uni,int length, uint8_t *data);
-		int universes(const vector <class LlaUniverse *> unis) {};
-		int plugins(const vector <class LlaPlugin *> plugins) {};
-		int devices(const vector <class LlaDevice *> devices) {};
-		int ports(class LlaDevice *dev) {};
-		int plugin_desc(class LlaPlugin *plug) {};
+		int new_dmx(unsigned int uni, unsigned int length, uint8_t *data);
 
 	private:
 		void (*m_fh)();
 };
 
 
-int Observer::new_dmx(int uni,int length, uint8_t *data) {
-	int len = length > MAXCHANNELS ? MAXCHANNELS : length ;
+int Observer::new_dmx(unsigned int uni, unsigned int length, uint8_t *data) {
+	unsigned int len = length > (unsigned int) MAXCHANNELS ?  (unsigned int) MAXCHANNELS : length ;
 	memcpy(dmx, data,len) ;
 
  	if(m_fh != NULL) 
@@ -391,7 +386,6 @@ int main (int argc, char *argv[]) {
 		printf("Unable to connect\n") ;
 		return 1 ;
 	}
-
 	if(con->set_observer(ob) ) {
 		printf("Failed to install handler\n") ;
 		return 1 ;

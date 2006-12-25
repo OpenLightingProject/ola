@@ -69,7 +69,7 @@ enum {
 };
 
 int MAXCHANNELS=512;
-int MAXFKEY=12;
+unsigned int MAXFKEY=12;
 
 int universe = 0;
 
@@ -283,7 +283,7 @@ void loadcue()
 }
 
 /* fade cue "new_cue" into current cue */
-void crossfade(int new_cue)
+void crossfade(unsigned int new_cue)
 {
   dmx_t *dmxold;
   dmx_t *dmxnew;
@@ -549,7 +549,7 @@ void cleanup()
 
 int main (int argc, char *argv[])
 {
-  int c=0;
+  unsigned int c=0;
   int optc ;
   const char *f ;
 

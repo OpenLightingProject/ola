@@ -45,6 +45,7 @@ typedef enum {
 	PLUGIN_DESC,
 	UNI_INFO,
 	UNI_NAME,
+	UNI_MERGE,
 	SET_DMX,
 } mode;
 
@@ -58,6 +59,7 @@ typedef struct {
 	int pid;			// plugin id
 	int help;			// help ?
 	int verbose;		// verbose
+	int merge;			// merge mode, 0: HTP, ! 0: LTP
 } options;
 
 /*
@@ -69,7 +71,6 @@ class Observer : public LlaClientObserver {
 		Observer(options *opts, LlaClient *cli) : m_term(0), m_opts(opts), m_cli(cli) {};
 
 		int spin();
-		int new_dmx(int uni,int length, uint8_t *data) {};
 		int universes(const vector <class LlaUniverse *> unis);
 		int plugins(const vector <class LlaPlugin *> plugins);
 		int devices(const vector <class LlaDevice *> devices);
@@ -114,6 +115,7 @@ int Observer::spin() {
 				}
 		}
 	}
+	return 0;
 }
 
 
@@ -123,12 +125,15 @@ int Observer::spin() {
  */
 int Observer::universes(const vector <class LlaUniverse *> unis) {
 	vector<LlaUniverse *>::const_iterator iter;
+	LlaUniverse *uni;
 
 	printf("   ID\t%30s\t\tMerge Mode\n", "Name");
 	printf("----------------------------------------------------------\n");
 
 	for(iter = unis.begin(); iter != unis.end(); ++iter) {
-		printf("%5d\t%30s\n", (*iter)->get_id(), (*iter)->get_name().c_str()) ;
+		uni = *iter;
+		printf("%5d\t%30s\t\t%s\n", uni->get_id(), uni->get_name().c_str() , 
+				uni->get_merge_mode() == LlaUniverse::MERGE_HTP ? "HTP" : "LTP") ;
 	}
 	printf("----------------------------------------------------------\n");
 	m_term = 1;
@@ -212,6 +217,7 @@ int Observer::ports(LlaDevice *dev) {
 	}
 
 	m_term = 1;
+	return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -225,6 +231,7 @@ void init_options(options *opts) {
 	opts->pid = -1 ;
 	opts->help = 0 ;
 	opts->verbose = 0;
+	opts->merge = 0;
 }
 
 
@@ -232,7 +239,7 @@ void init_options(options *opts) {
  * Decide what mode we're running in
  */
 void set_mode(options *opts) {
-	int pos = opts->cmd.find_last_of("/");
+	unsigned int pos = opts->cmd.find_last_of("/");
 
 	if(pos != string::npos) {
 		opts->cmd = opts->cmd.substr(pos+1);
@@ -247,6 +254,8 @@ void set_mode(options *opts) {
 		opts->m = UNI_INFO;
 	} else if ( opts->cmd == "lla_uni_name") {
 		opts->m = UNI_NAME;
+	} else if ( opts->cmd == "lla_uni_merge") {
+		opts->m = UNI_MERGE;
 	} else if ( opts->cmd == "lla_set_dmx") {
 		opts->m = SET_DMX;
 	}
@@ -262,6 +271,7 @@ int parse_options(int argc, char *argv[], options *opts) {
 	static struct option long_options[] = {
 			{"pid", 		required_argument, 	0, 'p'},
 			{"help", 		no_argument, 		0, 'h'},
+			{"ltp", 		no_argument, 		0, 'l'},
 			{"name", 		required_argument, 	0, 'n'},
 			{"universe", 	required_argument, 	0, 'u'},
 			{"dmx", 		required_argument,	0, 'x'},
@@ -274,7 +284,7 @@ int parse_options(int argc, char *argv[], options *opts) {
 	
 	while (1) {
      
-		c = getopt_long(argc, argv, "x:n:u:p:hv", long_options, &option_index);
+		c = getopt_long(argc, argv, "lx:n:u:p:hv", long_options, &option_index);
 		
 		if (c == -1)
 			break;
@@ -288,6 +298,10 @@ int parse_options(int argc, char *argv[], options *opts) {
 			case 'h':
 				opts->help = 1;
 				break;
+			case 'l':
+				opts->merge = 1;
+				break;
+
 			case 'n':
 				opts->uni_name = optarg;
 				break;
@@ -366,7 +380,7 @@ void display_uni_info_help(options *opts) {
 void display_uni_name_help(options *opts) {
 
 	printf(
-"Usage: %s --name <name> [--universe <uni>]\n"
+"Usage: %s --name <name> --universe <uni>\n"
 "\n"
 "Set a name for the specified universe\n"
 "\n"
@@ -376,6 +390,26 @@ void display_uni_name_help(options *opts) {
 "\n",
 	opts->cmd.c_str()) ;
 }
+
+
+/*
+ * Help message for set uni merge mode
+ */
+void display_uni_merge_help(options *opts) {
+
+	printf(
+"Usage: %s --universe <uni> [ --ltp]\n"
+"\n"
+"Change the merge mode for the specified universe. Without --ltp it will\n"
+"revert to HTP mode.\n"
+"\n"
+"  -h, --help               Display this help message and exit.\n"
+"  -l, --ltp                Change to ltp mode.\n"
+"  -u, --universe <uni>     Id of the universe to change.\n"
+"\n",
+	opts->cmd.c_str()) ;
+}
+
 
 
 /*
@@ -416,6 +450,10 @@ void display_help_and_exit(options *opts) {
 		case UNI_NAME:
 			display_uni_name_help(opts);
 			break;
+		case UNI_MERGE:
+			display_uni_merge_help(opts);
+			break;
+
 		case SET_DMX:
 			display_set_dmx_help(opts);
 			break;
@@ -450,7 +488,7 @@ int fetch_dev_info(LlaClient *cli, options *opts) {
  */
 int set_uni_name(LlaClient *cli, options *opts) {
 
-	if(opts->uni_name == "") {
+	if(opts->uni_name == "" || opts->uni == -1) {
 		display_uni_name_help(opts);
 		exit(1) ;
 	}
@@ -458,7 +496,28 @@ int set_uni_name(LlaClient *cli, options *opts) {
 	if (cli->set_uni_name(opts->uni, opts->uni_name.c_str())) {
 		printf("Failed to set name\n") ;
 	}
+	return 0;
 }
+
+
+/*
+ * send a set name request
+ * @param cli	the lla client
+ * @param opts	the options
+ */
+int set_uni_merge(LlaClient *cli, options *opts) {
+
+	if(opts->uni == -1) {
+		display_uni_name_help(opts);
+		exit(1) ;
+	}
+
+	if (cli->set_uni_merge_mode(opts->uni, opts->merge ? LlaUniverse::MERGE_LTP: LlaUniverse::MERGE_HTP) ) {
+		printf("Failed to set merge mode\n") ;
+	}
+	return 0;
+}
+
 
 
 /*
@@ -530,6 +589,8 @@ int main(int argc, char*argv[]) {
 		ob->spin();
 	} else if (opts.m == UNI_NAME) {
 		set_uni_name(&lla, &opts);
+	} else if (opts.m == UNI_MERGE) {
+		set_uni_merge(&lla, &opts);
 	} else if (opts.m == SET_DMX) {
 		set_dmx(&lla, &opts);
 	}
