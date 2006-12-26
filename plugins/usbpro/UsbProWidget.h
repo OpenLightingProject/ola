@@ -86,8 +86,11 @@ typedef struct {
 } pms_cos;
 
 // serial number request
-typedef struct {
-} pms_snoreq;
+struct pms_snoreq_s {
+	uint8_t i[];		// required for a struct size of 0
+}__attribute__( ( packed ) );
+
+typedef struct pms_snoreq_s pms_snoreq;
 
 // serial number reply
 typedef struct {

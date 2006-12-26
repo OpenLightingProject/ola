@@ -49,7 +49,7 @@
 int dmx_handler(sandnet_node n, uint8_t grp, uint8_t uid, int len, uint8_t *data, void *d) {
 
 	SandNetDevice *dev = (SandNetDevice *) d ;
-	SandNetPort *prt = dev->get_port(uid) ;
+	SandNetPort *prt = dev->get_port_from_uni(uid) ;
 
 	if (prt != NULL) {
 		prt->update_buffer(data,len) ;
@@ -98,7 +98,7 @@ int SandNetDevice::start() {
 	for(int i=0; i < SANDNET_MAX_PORTS + INPUT_PORTS ; i++) {
 		port = new SandNetPort(this,i) ;
 
-		if(port != NULL) 
+		if(port != NULL)
 			this->add_port(port) ;
 	}
 
@@ -269,7 +269,7 @@ int SandNetDevice::port_map(Universe *uni, SandNetPort *prt) {
 	return 0;
 }
 
-SandNetPort *SandNetDevice::get_port(int uni) {
+SandNetPort *SandNetDevice::get_port_from_uni(int uni) {
 
 	return m_portmap[uni] ;
 }

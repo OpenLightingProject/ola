@@ -36,6 +36,8 @@ class ArtNetPlugin : public Plugin {
 			m_dev(NULL),
 			m_enabled(false) {}
 
+		~ArtNetPlugin();
+
 		int start();
 		int stop();
 		bool is_enabled() const 	    { return m_enabled; }
@@ -43,11 +45,11 @@ class ArtNetPlugin : public Plugin {
 		string get_desc() const ;
 				
 	private:
-		Preferences *load_prefs() ;
+		int load_prefs() ;
 		
 		class Preferences *m_prefs ;
 		ArtNetDevice *m_dev ;		// only have one device
-		bool m_enabled ;			// are we running
+		bool m_enabled ;			// did the node start correctly
 };
 
 #endif

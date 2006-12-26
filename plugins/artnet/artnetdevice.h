@@ -39,12 +39,14 @@ class ArtNetDevice : public Device, public FDListener {
 		int get_sd() const ;
 		int fd_action() ;
 		int save_config() const;
-		int configure(void *req, int len) ;
+		class LlaDevConfMsg *configure(const uint8_t *req, int len) ;
 
 	private:
 		class Preferences *m_prefs;
 		artnet_node m_node ;
 		bool m_enabled ;
+		class ArtNetConfParser *m_parser;		// parser for config msgs
+
 };
 
 #endif

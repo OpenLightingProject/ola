@@ -1,10 +1,18 @@
-Linux Lighting Architecture - lla
+Linux Lighting Architecture - LLA
 ---------------------------------
 
-lla consists of two parts, the daemon llad and the library, liblla.
+lla consists of three parts, the daemon llad, the llad plugins and the client
+library, liblla.
 
 
 Credits
 ---------------------------------
 
-Thanks to Enttec who provided a DMX USB Pro for testing.
+Thanks to the following people/organisations:
+
+ * Wayne and Simon from Artistic Licence for providing a Net-Lynx
+ * Nic from Enttec who provided a DMX USB Pro for testing.
+ * West Australian Academy of Performing Arts (WAAPA) for access to a Strand
+    console.
+ * Shaun Jackman from Pathway, for answering questions about the Pathport
+    protocol

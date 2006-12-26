@@ -30,6 +30,7 @@
 #include "devicemanager.h"
 #include "pluginloader.h" 
 #include "network.h"
+
 class Llad {
 
 	public :
@@ -79,6 +80,7 @@ class Llad {
 		Network *net ;
 		PluginAdaptor *pa;
 		Preferences m_uni_names;
+		class UniverseStore *uni_store;
 };
 
 #endif

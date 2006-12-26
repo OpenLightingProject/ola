@@ -124,24 +124,27 @@ int Preferences::save() const {
 
 
 /*
- * Set a preference value
+ * Set a preference value, overiding the existing value.
  *
  * @param key
  * @param value
  */
 int Preferences::set_val(const string &key, const string &val) {
+
+	m_pref_map.erase(key);
+
 	m_pref_map.insert(pair<string,string>(key,val)) ;
 	return 0;	
 }
 
 
 /*
- * Set a preference value
+ * Adds this preference value to the store
  *
  * @param key
  * @param value
  */
-int Preferences::set_single_val(const string &key, const string &val) {
+int Preferences::set_multiple_val(const string &key, const string &val) {
 	m_pref_map.insert(pair<string,string>(key,val)) ;
 	return 0;	
 }
@@ -186,6 +189,9 @@ vector<string> *Preferences::get_multiple_val(const string &key) {
 
 }
 
+
+//-----------------------------------------------------------------------------
+// Private functions follow
 
 
 int Preferences::change_dir() const {

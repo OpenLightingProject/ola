@@ -43,7 +43,7 @@ class UsbProPlugin : public Plugin, public FDManager {
 		string get_desc() const;
 		int fd_error(int error, FDListener *listener);
 	private:
-		Preferences *load_prefs();
+		int load_prefs();
 		
 		class Preferences *m_prefs;				// prefs container
 		vector<UsbProDevice *>  m_devices;		// list of out devices

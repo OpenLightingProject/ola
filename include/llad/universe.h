@@ -56,10 +56,10 @@ class Universe {
 		int port_data_changed(Port *prt);
 		bool in_use() const;
 		string get_name() const;
-		void set_name(const string &name);
+		void set_name(const string &name, bool save = true);
 		int send_dmx(class Client *cli);
 
-		void set_merge_mode(Universe::merge_mode mode);
+		void set_merge_mode(Universe::merge_mode mode, bool save = true);
 		Universe::merge_mode get_merge_mode();
 		
 		static Universe *get_universe(int uid);
@@ -71,6 +71,7 @@ class Universe {
 		static void check_for_unused();
 		static vector<Universe *> *get_list();
 		static int set_net(class Network *net);
+		static int set_store(class UniverseStore *store);
 
 	protected :
 		Universe(int uid);
@@ -78,6 +79,7 @@ class Universe {
 	private:
 		Universe(const Universe&);
 		Universe& operator=(const Universe&);
+		int update_dependants();
 		 
 		void merge();										// HTP merge the merge and data buffers
 		int m_uid;
@@ -93,8 +95,7 @@ class Universe {
 				
 		static map<int, Universe *> uni_map;				// map of uid to universes
 		static Network *c_net;								// network object
-		int update_dependants();
-} ;
-
+		static UniverseStore *c_uni_store;					// the universe store object
+};
 
 #endif

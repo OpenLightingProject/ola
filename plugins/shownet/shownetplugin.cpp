@@ -53,32 +53,35 @@ extern "C" void destroy(Plugin* plug) {
 int ShowNetPlugin::start() {
 	
 	if(m_enabled)
-		return -1 ;
+		return -1;
 	
 	// setup prefs
-	m_prefs = load_prefs() ;
+	if (load_prefs() != 0)
+		return -1;
 
-	if(m_prefs == NULL) 
-		return -1 ;
-	
 	/* create new lla device */
-	m_dev = new ShowNetDevice(this, "ShowNet Device", m_prefs) ;
+	m_dev = new ShowNetDevice(this, "ShowNet Device", m_prefs);
 
 	if(m_dev == NULL) 
-		return -1  ;
+		goto e_prefs;
 
-	if(m_dev->start()) {
-		delete m_dev ;
-		return -1 ;
-	}
+	if(m_dev->start())
+		goto e_dev;
 
 	// register our descriptors
-	m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev)  ;
+	m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev) ;
 
-	m_pa->register_device(m_dev) ;
+	m_pa->register_device(m_dev);
 
-	m_enabled = true ;
+	m_enabled = true;
 	return 0;
+
+	e_dev:
+		delete m_dev;
+	e_prefs:
+		delete m_prefs;
+		return -1;
+
 }
 
 
@@ -90,18 +93,18 @@ int ShowNetPlugin::start() {
 int ShowNetPlugin::stop() {
 			
 	if (!m_enabled)
-		return -1 ;
+		return -1;
 	
-	m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ)  ;
+	m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ) ;
 
 	// stop the device
 	if (m_dev->stop())
-		return -1 ;
+		return -1;
 	
 
-	m_pa->unregister_device(m_dev) ;
-	m_enabled = false ;
-	delete m_dev ;
+	m_pa->unregister_device(m_dev);
+	m_enabled = false;
+	delete m_dev;
 	delete m_prefs;
 	return 0;
 }
@@ -126,7 +129,7 @@ string ShowNetPlugin::get_desc() const {
 "The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
 "\n"
 "name = lla-ShowNet\n"
-"The name of the node.\n" ;
+"The name of the node.\n";
 
 }
 
@@ -135,27 +138,30 @@ string ShowNetPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-Preferences *ShowNetPlugin::load_prefs() {
-	Preferences *prefs = new Preferences("shownet") ;
+int ShowNetPlugin::load_prefs() {
+	if (m_prefs != NULL)
+		delete m_prefs;
 
-	if(prefs == NULL)
-		return NULL ;
+	m_prefs = new Preferences("shownet");
 
-	prefs->load() ;
+	if(m_prefs == NULL)
+		return -1;
+
+	m_prefs->load();
 
 	// we don't worry about ip here
 	// if it's non existant it will choose one
-	if( prefs->get_val("name") == "") {
-		prefs->set_val("name",SHOWNET_NAME) ;
-		prefs->save() ;
+	if( m_prefs->get_val("name") == "") {
+		m_prefs->set_val("name", SHOWNET_NAME);
+		m_prefs->save();
 	}
 
 	// check if this save correctly
 	// we don't want to use it if null
-	if( prefs->get_val("name") == "" ) {
-		delete prefs;
-		return NULL ;
+	if( m_prefs->get_val("name") == "" ) {
+		delete m_prefs;
+		return -1;
 	}
 
-	return prefs ;
+	return 0;
 }

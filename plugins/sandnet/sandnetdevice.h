@@ -48,7 +48,7 @@ class SandNetDevice : public Device, public FDListener, public TimeoutListener {
 		int configure(void *req, int len) ;
 
 		int port_map(class Universe *uni, class SandNetPort *prt);
-		class SandNetPort *get_port(int uni);
+		class SandNetPort *get_port_from_uni(int uni);
 	private:
 		class Preferences *m_prefs ;
 		sandnet_node m_node ;

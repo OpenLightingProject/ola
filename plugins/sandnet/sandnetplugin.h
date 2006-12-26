@@ -44,7 +44,7 @@ class SandNetPlugin : public Plugin {
 		string get_desc() const;
 
 	private:
-		class Preferences *load_prefs() ;
+		int load_prefs();
 		
 		class Preferences *m_prefs ;
 		SandNetDevice *m_dev ;		// only have one device

@@ -1,4 +1,9 @@
-28/11/2006 Simon Newton <<nomis52@westnet.com.au>
+245/12/2006 Simon Newton <<nomis52@westnet.com.au>
+
+	* universes now save names and merge mode
+	* fixed a bunch of memory leaks
+
+24/12/2006 Simon Newton <<nomis52@westnet.com.au>
 
 	* Got device config messages working
 	* Add configuration commands to the Pro Device

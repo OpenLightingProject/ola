@@ -43,7 +43,7 @@ class OpenDmxPlugin : public Plugin {
 		string get_desc() const;
 
 	private:
-		Preferences *load_prefs() ;
+		int load_prefs();
 		
 		OpenDmxDevice *m_dev ;		// only have one device
 		class Preferences *m_prefs;	// preferences object

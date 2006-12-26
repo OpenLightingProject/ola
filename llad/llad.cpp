@@ -25,6 +25,7 @@
 #include <llad/universe.h>
 #include <llad/logger.h>
 #include <llad/pluginadaptor.h>
+#include "UniverseStore.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -51,10 +52,12 @@ Llad::~Llad() {
 
 	// delete all universes
 	Universe::clean_up() ;
+	uni_store->save();
 
 	// FIX: we prob want to send disconnect msgs here
 	Client::clean_up() ;
 
+	delete uni_store;
 	delete net;
 	delete pa;
 	delete dm;
@@ -75,8 +78,10 @@ int Llad::init() {
 	net = new Network() ;
 	pa = new PluginAdaptor(dm,net) ;
 	pm = new PluginLoader(pa) ;
+	uni_store = new UniverseStore();
 
-	if(dm == NULL || net == NULL || pa == NULL || pm == NULL) {
+	if(dm == NULL || net == NULL || pa == NULL || pm == NULL || uni_store == NULL) {
+		delete uni_store;
 		delete pm;
 		delete net;
 		delete pa;
@@ -86,6 +91,10 @@ int Llad::init() {
 
 	// the universe class needs access to the network object to send updates
 	Universe::set_net(net) ;
+
+	// load the univserse settings
+	uni_store->load();
+	Universe::set_store(uni_store);
 
 	// load plugins, this doesn't fail as such
 	// rather just tries to load as many plugins as possible

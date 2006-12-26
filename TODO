@@ -2,21 +2,23 @@
 --URGENT--
 
 
+* save universe names & merge mode(universe manager??)
+
 --REQUIRED--
 
-* fix potential for NULL pointers in client (eg. devices freed on call to req_dev_info)
-* support fragmented messages in the client and notify when all fragments arrive
 * pathport support
 * test pro support carefully
 
 -- NICE--
-* save universe names (universe manager??)
-* let the devices save what universe they are attached to (do this in the plugin)
+* let the ports save what universe they are attached to (do this in the plugin)
 * serialise so that plugins can store state
-* split dependancy between universe and port attributes
-* send debug to remote client - need to watch looping here (maybe lev 1&2)
 * convert to using autogen'ed messages:
     * need to be able to nest msg structures
+* fix potential for NULL pointers in client (eg. devices freed on call to req_dev_info)
+* support fragmented messages in the client and notify when all fragments arrive
+
+--UNIMPORTANT--
+* send debug to remote client - need to watch looping here (maybe lev 1&2)
 
 
 --WISH LIST--

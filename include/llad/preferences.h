@@ -37,7 +37,7 @@ class Preferences {
 		int save() const;
 
 		int set_val(const string &key, const string &value) ;
-		int set_single_val(const string &key, const string &value) ;
+		int set_multiple_val(const string &key, const string &value) ;
 		
 		string get_val(const string &key) ;
 		vector<string> *get_multiple_val(const string &key) ;

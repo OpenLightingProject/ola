@@ -54,6 +54,7 @@
 UsbProDevice::UsbProDevice(Plugin *owner, const string &name, const string &dev_path) :
 	Device(owner, name),
 	m_path(dev_path),
+	m_enabled(false),
 	m_parser(NULL),
 	m_widget(NULL) {
 		m_parser = new UsbProConfParser();

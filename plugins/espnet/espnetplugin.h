@@ -25,7 +25,7 @@
 #include <llad/plugin.h>
 #include <lla/plugin_id.h>
 
-class EspNetDevice ;
+class EspNetDevice;
 
 class EspNetPlugin : public Plugin {
 
@@ -43,11 +43,11 @@ class EspNetPlugin : public Plugin {
 		string get_desc() const;
 
 	private:
-		Preferences *load_prefs() ;
+		int load_prefs();
 		
-		class Preferences *m_prefs ;
-		EspNetDevice *m_dev ;		// only have one device
-		bool m_enabled ;			// are we running
+		class Preferences *m_prefs;
+		EspNetDevice *m_dev;		// only have one device
+		bool m_enabled;			// are we running
 };
 
 #endif

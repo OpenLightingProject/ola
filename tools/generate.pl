@@ -96,7 +96,6 @@ sub main {
 	my $xml = XMLin($ARGV[0], ForceArray => 1, KeyAttr => []) ;
 
 	use Data::Dumper ;
-#	print Dumper($xml);
 
 	my $vars = parse($xml);
 	return if ( !defined($vars) );
@@ -116,6 +115,7 @@ sub main {
 	push @files, output_subclasses($dir, $vars);
 	output_makefile($dir, $vars, \@files);
 	output_test_class($dir, $vars);
+	print "Done " . $vars->{lib} . '-' . $vars->{module} . "\n";
 
 }
 
@@ -151,7 +151,6 @@ sub parse {
 	$vars{parent} = '';
 	if(defined($xml->{parent})) {
 		my $parentx = shift @{$xml->{parent}} ;
-		print Dumper($parentx) ;
 		if ($parentx->{name} && $parentx->{include}) {
 
 			my $parent = {  name => $parentx->{name}->[0],
@@ -169,6 +168,9 @@ sub parse {
 	$vars{version} = $vars{install} ? '0:0:1' : '';
 	$vars{version} = $xml->{version}, if defined($xml->{version});
 
+	# licence
+	$vars{licence} = 'gpl';
+	$vars{licence} = $xml->{licence}, if defined($xml->{licence});
 
 	# static fields (aka proto identifiers)
 	$vars{statics} = undef;
@@ -189,8 +191,6 @@ sub parse {
 		$vars{statics} = \@statics;
 		$vars{statics_size} = $static_size;
 	}
-
-print Dumper(%vars) ;
 
 	my @msgs;
 	foreach my $msgx (@{$xml->{message}}) {
@@ -236,7 +236,6 @@ print Dumper(%vars) ;
 			}
 		}
 
-#		print Dumper(%msg);
 		push @msgs, \%msg;
 	}
 
@@ -289,21 +288,22 @@ sub output_subclasses {
 	my @files;
 
 	foreach my $msg (@{$vars->{msgs}}) {
-		my %params = ( 	name => $vars->{name},
-						lib => $vars->{lib},
-						module => $vars->{module},
-						cls_name => $msg->{cls_name},
-						msg => $msg,
-						statics => $vars->{statics},
-						statics_size => $vars->{statics_size},
-					 );
+		$vars->{msg} = $msg;
+#		my %params = ( 	name => $vars->{name},
+#						lib => $vars->{lib},
+#						module => $vars->{module},
+#						cls_name => $msg->{cls_name},
+#						msg => $msg,
+#						statics => $vars->{statics},
+#						statics_size => $vars->{statics_size},
+#					 );
 
 		my $file = $dir. '/' . $vars->{module} . $vars->{name} . 'Msg' . $msg->{cls_name} . '.cpp';
-		$t->process( "sub_class.cpp", \%params, $file) || die "Can't output " . $t->error();
+		$t->process( "sub_class.cpp", $vars, $file) || die "Can't output " . $t->error();
 		push @files, $file;
 
 		$file = $dir. '/' . $vars->{module} . $vars->{name} . 'Msg' . $msg->{cls_name} . '.h';
-		$t->process( "sub_class.h", \%params, $file) || die "Can't output " . $t->error();
+		$t->process( "sub_class.h", $vars, $file) || die "Can't output " . $t->error();
 		push @files, $file;
 	}
 	return @files;

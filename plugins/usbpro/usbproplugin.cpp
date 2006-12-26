@@ -55,52 +55,52 @@ extern "C" void destroy(Plugin* plug) {
  */
 int UsbProPlugin::start() {
 	int sd;
-	vector<string> *dev_nm_v ;
-	vector<string>::iterator it ;
-	UsbProDevice *dev ;
+	vector<string> *dev_nm_v;
+	vector<string>::iterator it;
+	UsbProDevice *dev;
 	
-	if(m_enabled)
-		return -1 ;
+	if (m_enabled)
+		return -1;
 	
 	// setup prefs
-	m_prefs = load_prefs() ;
-
-	if(m_prefs == NULL) 
-		return -1 ;
+	if (load_prefs() != 0)
+		return -1;
 
 	// fetch device listing
-	dev_nm_v = m_prefs->get_multiple_val("device") ;
+	dev_nm_v = m_prefs->get_multiple_val("device");
 
 	// for each device
-	for ( it = dev_nm_v->begin() ; it != dev_nm_v->end(); ++it) {
+	for ( it = dev_nm_v->begin(); it != dev_nm_v->end(); ++it) {
 
 		/* create new lla device */
-		dev = new UsbProDevice(this, "Enttec Usb Pro Device", *it) ;
+		dev = new UsbProDevice(this, "Enttec Usb Pro Device", *it);
 
-		if(dev == NULL) 
-			continue ;
+		if (dev == NULL) 
+			continue;
 
-		if(dev->start()) {
-			delete dev ;
-			continue ;
+		if (dev->start()) {
+			delete dev;
+			continue;
 		}
 
 		// register our descriptors, with us as the manager
 		// this should really be fatal
 		if ((sd = dev->get_sd()) >= 0)
-			m_pa->register_fd( sd, PluginAdaptor::READ, dev, this) ;
+			m_pa->register_fd( sd, PluginAdaptor::READ, dev, this);
 	
-		m_pa->register_device(dev) ;
+		m_pa->register_device(dev);
 
-		m_devices.insert(m_devices.end(), dev) ;
+		m_devices.insert(m_devices.end(), dev);
 
 	}
 
-	delete dev_nm_v ;
+	delete dev_nm_v;
 
-	if(m_devices.size() > 0) {
-		m_enabled = true ;
-	}
+	if (m_devices.size() > 0)
+		m_enabled = true;
+	else 
+		delete m_prefs;		
+
 	return 0;
 }
 
@@ -111,29 +111,29 @@ int UsbProPlugin::start() {
  * @return 0 on sucess, -1 on failure
  */
 int UsbProPlugin::stop() {
-	UsbProDevice *dev ;
-	unsigned int i = 0 ;
+	UsbProDevice *dev;
+	unsigned int i = 0;
 	
 	if (!m_enabled)
-		return -1 ;
+		return -1;
 	
-	for ( i = 0 ; i < m_devices.size() ; i++) {
-		dev = m_devices[i] ;
+	for ( i = 0; i < m_devices.size(); i++) {
+		dev = m_devices[i];
 			
-		m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ)  ;
+		m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ) ;
 
 		// stop the device
 		if (dev->stop())
-			continue ;
+			continue;
 		
-		m_pa->unregister_device(dev) ;
+		m_pa->unregister_device(dev);
 
-		delete dev ;
+		delete dev;
 	}
 	
-	m_devices.clear() ;
-	m_enabled = false ;
-	delete m_prefs ;
+	m_devices.clear();
+	m_enabled = false;
+	delete m_prefs;
 
 	return 0;
 }
@@ -160,27 +160,27 @@ string UsbProPlugin::get_desc() const {
  *
  */
 int UsbProPlugin::fd_error(int error, FDListener *listener) {
-	UsbProDevice *dev  = dynamic_cast<UsbProDevice *> (listener) ;
-	vector<UsbProDevice *>::iterator iter ;
+	UsbProDevice *dev  = dynamic_cast<UsbProDevice *> (listener);
+	vector<UsbProDevice *>::iterator iter;
 	
-	if( ! dev) {
-		Logger::instance()->log(Logger::WARN, "fd_error : dynamic cast failed") ;
+	if ( ! dev) {
+		Logger::instance()->log(Logger::WARN, "fd_error : dynamic cast failed");
 		return 0;
 	}
 
 	// stop this device
-	m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ)  ;
+	m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ) ;
 
 	// stop the device
-	dev->stop() ;
+	dev->stop();
 		
-	m_pa->unregister_device(dev) ;
+	m_pa->unregister_device(dev);
 
-	iter = find(m_devices.begin() , m_devices.end(), dev) ;
-	if(*iter == dev)
-		m_devices.erase(iter) ;
+	iter = find(m_devices.begin() , m_devices.end(), dev);
+	if (*iter == dev)
+		m_devices.erase(iter);
 	
-	delete dev ;
+	delete dev;
 
 	error = 0;
 	return 0;
@@ -190,25 +190,28 @@ int UsbProPlugin::fd_error(int error, FDListener *listener) {
  * load the plugin prefs and default to sensible values
  *
  */
-Preferences *UsbProPlugin::load_prefs() {
-	Preferences *prefs = new Preferences("usbpro") ;
+int UsbProPlugin::load_prefs() {
+	if( m_prefs != NULL)
+		delete m_prefs;
 
-	if(prefs == NULL)
-		return NULL ;
+	m_prefs = new Preferences("usbpro");
 
-	prefs->load() ;
+	if (m_prefs == NULL)
+		return -1;
 
-	if( prefs->get_val("device") == "") {
-		prefs->set_val("device", USBPRO_DEVICE) ;
-		prefs->save() ;
+	m_prefs->load();
+
+	if ( m_prefs->get_val("device") == "") {
+		m_prefs->set_val("device", USBPRO_DEVICE);
+		m_prefs->save();
 	}
 
 	// check if this saved correctly
 	// we don't want to use it if null
-	if( prefs->get_val("device") == "" ) { 
-		delete prefs;
-		return NULL ;
+	if (m_prefs->get_val("device") == "") { 
+		delete m_prefs;
+		return -1;
 	}
 
-	return prefs ;
+	return 0;
 }

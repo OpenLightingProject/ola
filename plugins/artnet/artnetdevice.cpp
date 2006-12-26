@@ -36,6 +36,8 @@
 #include <llad/logger.h>
 #include <llad/preferences.h>
 #include <artnet/artnet.h>
+#include <lla/artnet/ArtNetConfMsgs.h>
+#include <lla/artnet/ArtNetConfParser.h>
 
 
 #if HAVE_CONFIG_H
@@ -91,7 +93,8 @@ ArtNetDevice::ArtNetDevice(Plugin *owner, const string &name, Preferences *prefs
 	m_prefs(prefs),
 	m_node(NULL),
 	m_enabled(false) {
-
+		m_parser = new ArtNetConfParser();
+		
 }
 
 
@@ -100,7 +103,8 @@ ArtNetDevice::ArtNetDevice(Plugin *owner, const string &name, Preferences *prefs
  */
 ArtNetDevice::~ArtNetDevice() {
 	if (m_enabled)
-		stop() ;
+		stop();
+	delete m_parser;
 }
 
 
@@ -174,6 +178,29 @@ int ArtNetDevice::start() {
 	if(artnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
 		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_dmx_handler failed: %s", artnet_strerror()) ;
 		goto e_artnet_start ;
+	}
+
+	for(int i=0; i < ARTNET_MAX_PORTS; i++) {
+		// output ports
+		if(artnet_set_port_type(m_node, i, ARTNET_ENABLE_OUTPUT, ARTNET_PORT_DMX)) {
+			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_type failed %s", artnet_strerror() );
+			goto e_artnet_start ;
+		}
+		
+		if( artnet_set_port_addr(m_node, i, ARTNET_OUTPUT_PORT, i)) {
+			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_addr failed %s", artnet_strerror() );
+			goto e_artnet_start ;
+		}
+
+		if(artnet_set_port_type(m_node, i, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX) ) {
+			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_type failed %s", artnet_strerror() );
+			goto e_artnet_start ;
+		}
+
+		if(artnet_set_port_addr(m_node, i, ARTNET_INPUT_PORT, i ) ) {
+			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_addr failed %s", artnet_strerror() );
+			goto e_artnet_start ;
+		}
 	}
 
 	if(artnet_start(m_node) ) {
@@ -286,11 +313,33 @@ int ArtNetDevice::save_config() const {
  * make sure the user app knows the format though...
  *
  */
-int ArtNetDevice::configure(void *req, int len) {
+class LlaDevConfMsg *ArtNetDevice::configure(const uint8_t *req, int len) {
 	// handle short/ long name & subnet and port addresses
-	
-	req = 0 ;
-	len = 0;
+
+	ArtNetConfMsg *m = m_parser->parse(req, len);
+
+	if( m == NULL) {
+		Logger::instance()->log(Logger::WARN ,"ArtNetDevice::configure Could not parse message");
+		return NULL;
+	}
+
+	switch(m->type()) {
+//		case LLA_USBPRO_CONF_MSG_PRM_REQ:
+//			return config_get_params(dynamic_cast<UsbProConfMsgPrmReq*>(m));
+		default:
+			Logger::instance()->log(Logger::WARN ,"Invalid request to artnet configure %i", m->type());
+			return NULL;
+	}
 
 	return 0;
 }
+
+/*
+ * Handle a set param config request
+ */
+/*ArtNetConfMsg *ArtNetDevice::config_get_ports(ArtNetConfMsgSprmReq *req) {
+	ArtNetConfMsgSprmRep *r = new ArtNetConfMsgSprmRep();
+	
+	r->set_status(ret);
+	return r;
+}*/

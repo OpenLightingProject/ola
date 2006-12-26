@@ -1,4 +1,5 @@
 <contract library="lla" module="UsbPro" name="Conf" install="y" version="1:0:0">
+ <licence>lgpl</licence>
  <parent>
   <name>LlaDevConfMsg</name>
   <include>&lt;lla/LlaDevConfMsg.h&gt;</include>

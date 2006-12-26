@@ -22,6 +22,7 @@
 #include <llad/universe.h>
 #include <llad/logger.h>
 #include "network.h"
+#include "UniverseStore.h"
 #include "client.h" 
 
 #include <arpa/inet.h>
@@ -31,6 +32,7 @@
 
 map<int ,Universe *> Universe::uni_map ;
 Network *Universe::c_net;
+UniverseStore *Universe::c_uni_store;
 
 /*
  * Create a new universe
@@ -72,9 +74,12 @@ string Universe::get_name() const {
  *
  * @param name	the name to give this universe
  */
-void Universe::set_name(const string &name) {
+void Universe::set_name(const string &name, bool save) {
 	m_name = name ;
+	if(c_uni_store != NULL && save)
+		c_uni_store->store_uni(this);
 }
+
 
 /*
  * Add a port to this universe
@@ -280,15 +285,18 @@ int Universe::port_data_changed(Port *prt) {
  *
  */
 bool Universe::in_use() const {
-	return  ports_vect.size()>0 || clients_vect.size()>0;
+	return  ports_vect.size() > 0 || clients_vect.size() > 0;
 }
 
 
 /*
  * Set the merge mode
  */
-void Universe::set_merge_mode(Universe::merge_mode mode) {
+void Universe::set_merge_mode(Universe::merge_mode mode, bool save) {
 	m_merge_mode = mode;
+	if(c_uni_store != NULL && save)
+		c_uni_store->store_uni(this);
+
 }
 
 /*
@@ -406,8 +414,14 @@ Universe *Universe::get_universe_or_create(int uid) {
 
 	if(uni == NULL) {
 		uni = new Universe(uid) ;
-		pair<int , Universe*> p (uid, uni) ;
-		uni_map.insert(p) ;
+
+		if(uni != NULL) {
+			pair<int , Universe*> p (uid, uni) ;
+			uni_map.insert(p) ;
+
+			if(c_uni_store != NULL)
+				c_uni_store->retrieve_uni(uni);
+		}
 	}
 
 	// this could still be NULL
@@ -484,10 +498,20 @@ void Universe::check_for_unused() {
 
 }
 
+
 /*
  * Set the network connection this class can use to send msgs
  */
 int Universe::set_net(Network *net) {
 	c_net = net ;
+	return 0;
+}
+
+
+/*
+ * Set the universe store
+ */
+int Universe::set_store(UniverseStore *store) {
+	c_uni_store = store ;
 	return 0;
 }

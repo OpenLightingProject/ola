@@ -103,10 +103,11 @@ int PluginLoader::load_plugins(const string &dirname) {
 int PluginLoader::unload_plugins() {
 	unsigned int i;
 	map<void*,Plugin*>::iterator iter;
-	
 	for(i=0; i < m_plugin_vect.size() ; i++) {
 		// TODO: this better not fail ...
-		m_plugin_vect[i]->stop() ;
+		if( m_plugin_vect[i]->is_enabled()) {
+			m_plugin_vect[i]->stop() ;
+		}
 	}
 
 	//unload all plugins

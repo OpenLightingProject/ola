@@ -52,38 +52,41 @@ extern "C" void destroy(Plugin* plug) {
  *
  * For now we just have one device.
  * TODO: scan /dev for devices?
+ * 	Need to get multi-device support working first :)
  */
 int OpenDmxPlugin::start() {
 	int fd;
 	
-	if(m_enabled)
-		return -1 ;
+	if (m_enabled)
+		return -1;
 	
 	// setup prefs
-	m_prefs = load_prefs() ;
-
-	if(m_prefs == NULL) 
-		return -1 ;
+	if (load_prefs() != 0)
+		return -1;
 	
 	/* create new lla device */
 	// first check if it's there
-	fd = open( m_prefs->get_val("device").c_str(),O_WRONLY) ;
+	fd = open( m_prefs->get_val("device").c_str(), O_WRONLY);
 	
 	if ( fd > 0 ) {
-		close(fd) ;
-		m_dev = new OpenDmxDevice(this, "Open DMX USB Device", m_prefs->get_val("device")) ;
+		close(fd);
+		m_dev = new OpenDmxDevice(this, "Open DMX USB Device", m_prefs->get_val("device"));
 
-		if(m_dev == NULL) 
-			return -1  ;
+		if (m_dev == NULL) {
+			delete m_prefs;
+			return 0;
+		}
 
-		m_dev->start() ;
+		m_dev->start();
 
-		m_pa->register_device(m_dev) ;
+		m_pa->register_device(m_dev);
 
-		m_enabled = true ;
+		m_enabled = true;
+		return 0;
+	} else {
+		delete m_prefs;
+		return 0;
 	}
-	
-	return 0;
 }
 
 
@@ -95,16 +98,16 @@ int OpenDmxPlugin::start() {
 int OpenDmxPlugin::stop() {
 			
 	if (!m_enabled)
-		return -1 ;
+		return -1;
 
 	// stop the device
 	if (m_dev->stop())
-		return -1 ;
+		return -1;
 		
-	m_pa->unregister_device(m_dev) ;
-	m_enabled = false ;
-	delete m_dev ;
-	delete m_prefs ;
+	m_pa->unregister_device(m_dev);
+	m_enabled = false;
+	delete m_dev;
+	delete m_prefs;
 
 	return 0;
 }
@@ -124,7 +127,7 @@ string OpenDmxPlugin::get_desc() const {
 "--- Config file : lla-opendmx.conf ---\n"
 "\n"
 "device = " DEFAULT_PATH "\n"
-"The path to the open dmx usb device.\n" ;
+"The path to the open dmx usb device.\n";
 }
 
 
@@ -132,25 +135,29 @@ string OpenDmxPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-Preferences *OpenDmxPlugin::load_prefs() {
-	Preferences *prefs = new Preferences("opendmx") ;
+int OpenDmxPlugin::load_prefs() {
 
-	if(prefs == NULL)
-		return NULL ;
+	if (m_prefs != NULL)
+		delete m_prefs;
 
-	prefs->load() ;
+	m_prefs = new Preferences("opendmx");
 
-	if( prefs->get_val("device") == "") {
-		prefs->set_val("device",DEFAULT_PATH) ;
-		prefs->save() ;
+	if (m_prefs == NULL)
+		return -1;
+
+	m_prefs->load();
+
+	if (m_prefs->get_val("device") == "") {
+		m_prefs->set_val("device", DEFAULT_PATH);
+		m_prefs->save();
 	}
 
 	// check if this save correctly
 	// we don't want to use it if null
-	if( prefs->get_val("device") == "") {
-		delete prefs;
-		return NULL ;
+	if (m_prefs->get_val("device") == "") {
+		delete m_prefs;
+		return NULL;
 	}
 
-	return prefs ;
+	return 0;
 }
