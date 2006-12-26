@@ -35,7 +35,7 @@ enum lla_plugin_id_e {
 	LLA_PLUGIN_OPEN,
 	LLA_PLUGIN_SANDNET,
 	LLA_PLUGIN_LAST
-}__attribute__( ( packed ) );
+};
 
 typedef enum lla_plugin_id_e lla_plugin_id;
 

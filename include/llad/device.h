@@ -21,6 +21,8 @@
 #ifndef DEVICE_H
 #define DEVICE_H
 
+#include <stdint.h>
+
 #include <vector>
 #include <string>
 
@@ -37,7 +39,7 @@ class Device {
 		Plugin	 	*get_owner() const;
 			
 		// for the subclasses
-		virtual class 	LlaDevConfMsg *configure(const uint8_t *req, int l) { req = NULL; l =0; return NULL; }
+		virtual class 	LlaDevConfMsg *configure(const uint8_t *req, int l) { req = NULL; l = 0; return NULL; }
 		virtual int 	save_config() const = 0;
 		virtual int 	add_port(Port *prt);
 		virtual Port	*get_port(unsigned int pid) const;
