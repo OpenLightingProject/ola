@@ -6,7 +6,13 @@ if [ \( ! -f ltmain.sh \) -a \( -f $ltmain \) ]; then
 	ln -s $ltmain ltmain.sh
 fi
 
-	
+pushd ./ > /dev/null
+cd tools
+echo "Generating source files..."
+./generate.sh
+popd > /dev/null
+
+echo "Running autotools"
 rm -f config.cache
 aclocal
 autoconf

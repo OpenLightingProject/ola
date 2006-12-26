@@ -17,30 +17,26 @@ A. Basic Installation
   
   	cd lla-0.x.y.tar.gz
 
-  3.  Run the autogenerate script
-
-    cd tools && ./generate.sh
-	
-  4.  Run the configure script. If you're using `csh' on an old version of
+  3.  Run the configure script. If you're using `csh' on an old version of
       System V, you might need to type `sh ./configure' instead to prevent 
       `csh' from trying to execute `configure' itself.
 		 
 	./configure
 	
-  5.  Build the source files.
+  4.  Build the source files.
   
   	make
 
-  6.  Run the (simple) unit tests
+  5.  Run the (simple) unit tests
    
     make check
  
-  7. Become root
+  6. Become root
   	
 	su
 	(enter root password)
 
-  8. Install
+  7. Install
 
   	make install
 
