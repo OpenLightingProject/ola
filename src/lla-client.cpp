@@ -28,6 +28,7 @@ using namespace std;
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include <lla/LlaClient.h>
 #include <lla/LlaDevice.h>
@@ -79,6 +80,7 @@ class Observer : public LlaClientObserver {
 
 	private:
 		int m_term;
+		set<int> m_device_set;
 		options *m_opts;
 		LlaClient *m_cli;
 };
@@ -162,7 +164,6 @@ int Observer::plugins(const vector <class LlaPlugin *> plugins) {
 			if((*iter)->get_id() == m_opts->pid) 
 				m_cli->fetch_plugin_desc((*iter));
 		}
-
 	} else {
 		printf("   ID\tDevice Name\n");
 		printf("--------------------------------------\n");
@@ -176,6 +177,7 @@ int Observer::plugins(const vector <class LlaPlugin *> plugins) {
 	return 0;
 }
 
+
 /*
  *
  *
@@ -186,6 +188,7 @@ int Observer::devices(const vector <LlaDevice *> devices) {
 	// get the ports for each device
 	for(iter = devices.begin(); iter != devices.end(); ++iter) {
 		m_cli->fetch_port_info(*iter);
+		m_device_set.insert((*iter)->get_id());
 	}
 	return 0;
 }
@@ -216,11 +219,16 @@ int Observer::ports(LlaDevice *dev) {
 		printf("\n");
 	}
 
-	m_term = 1;
+	m_device_set.erase(dev->get_id());
+
+	if(m_device_set.size() == 0) {
+		m_term = 1;
+	}
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
+
 
 /*
  * Init options
@@ -595,6 +603,7 @@ int main(int argc, char*argv[]) {
 		set_dmx(&lla, &opts);
 	}
 
+	lla.stop();
 	delete ob;
 	return 0;
 }

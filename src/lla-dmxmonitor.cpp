@@ -529,6 +529,6 @@ int main (int argc, char *argv[]) {
     	values();
     	refresh();
 	}
-
+	con->stop();
 	return 0;
 }

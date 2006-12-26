@@ -872,5 +872,6 @@ int main (int argc, char *argv[])
       refresh();
     }
 
+  con->stop();	
   return 0;
 }
