@@ -156,7 +156,7 @@ int OpenDmxPlugin::load_prefs() {
 	// we don't want to use it if null
 	if (m_prefs->get_val("device") == "") {
 		delete m_prefs;
-		return NULL;
+		return -1;
 	}
 
 	return 0;

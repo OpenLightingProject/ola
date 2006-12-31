@@ -12,6 +12,8 @@ libllaartnet_la_SOURCES = artnetplugin.cpp artnetplugin.h artnetdevice.cpp\
 
 libllaartnet_la_LIBADD = ./conf_msgs/libllaartnetconf.la -lartnet
 
+EXTRA_DIST = ConfMessages.xml
+
 SUBDIRS = conf_msgs
 
 endif

@@ -8,11 +8,12 @@ INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include -I./conf_
 AM_CXXFLAGS = -Wall -Wformat -W
 
 libllausbpro_la_SOURCES = usbproplugin.cpp usbproplugin.h usbprodevice.cpp\
-						 usbprodevice.h UsbProWidget.h UsbProWidget.cpp\
+						 usbprodevice.h UsbProWidget.cpp\
 						 usbproport.cpp usbproport.h
 
 libllausbpro_la_LIBADD = ./conf_msgs/libllausbproconf.la
 
+EXTRA_DIST = ConfMessages.xml UsbProWidgetListener.h UsbProWidget.h
 
 SUBDIRS = conf_msgs
 

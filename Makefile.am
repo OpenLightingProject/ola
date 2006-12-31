@@ -7,7 +7,7 @@ AM_CXXFLAGS = -Wall -Werror -Wformat -W
 
 SUBDIRS = lla llad plugins include
 
-EXTRA_DIST = reconf 
+EXTRA_DIST = reconf tools
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = liblla.pc 
