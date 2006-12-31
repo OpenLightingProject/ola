@@ -129,7 +129,7 @@ sub parse {
 
 	my %vars;
 
-	if(! defined($xml->{library}) || $xml->{library} !~ /^\w+$/ ) {
+	if(! defined($xml->{library}) || $xml->{library} !~ /^[\w]+$/ ) {
 		print "Library name not defined or invalid\n";
 		return;
 	}

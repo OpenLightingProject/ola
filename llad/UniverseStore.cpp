@@ -61,7 +61,6 @@ int UniverseStore::store_uni(Universe *uni) {
 		// save merge mode
 		key = "uni_" + oss.str() + "_merge";
 		mode = (uni->get_merge_mode() == Universe::MERGE_HTP ? "HTP" : "LTP");
-		printf("store: mode is %s\n", mode.c_str());
 		m_prefs.set_val(key, mode);
 	}
 
@@ -90,7 +89,6 @@ int UniverseStore::retrieve_uni(Universe *uni) {
 		key = "uni_" + oss.str() + "_merge";
 		val = m_prefs.get_val(key);
 
-		printf("load: mode is %s\n", val.c_str());
 		if (val == "LTP")
 			uni->set_merge_mode(Universe::MERGE_LTP, false);
 		else 

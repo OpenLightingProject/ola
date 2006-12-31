@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <[% lib FILTER lower %]/[% module FILTER lower %]/[% module %][% name %]Msgs.h>
-#include <[% lib FILTER lower %]/[% module FILTER lower %]/[% module %][% name %]Parser.h>
-#include <[% lib FILTER lower %]/[% module FILTER lower %]/[% module FILTER lower %]_[% name FILTER lower %]_messages.h>
+#include "[% module %][% name %]Msgs.h"
+#include "[% module %][% name %]Parser.h"
+#include "[% module FILTER lower %]_[% name FILTER lower %]_messages.h"
 
 [% FOREACH msg = msgs %]
 /*

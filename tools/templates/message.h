@@ -19,7 +19,7 @@ class [% module %][% name %]Msg [%- IF parent -%] : public [% parent.name %] [%-
     [% module %][% name %]Msg() {};
     virtual ~[% module %][% name %]Msg() {};
 
-    virtual int pack(uint8_t *buf, int len) const= 0;
+    virtual int pack(uint8_t *buf, unsigned int len) const= 0;
     virtual [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_op type() = 0;
 };
 

@@ -37,8 +37,8 @@
 #include "usbprodevice.h"
 #include "usbproport.h"
 
-#include <lla/usbpro/UsbProConfMsgs.h>
-#include <lla/usbpro/UsbProConfParser.h>
+#include "UsbProConfMsgs.h"
+#include "UsbProConfParser.h"
 
 #if HAVE_CONFIG_H
 #  include <config.h>

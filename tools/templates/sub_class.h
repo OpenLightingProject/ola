@@ -9,10 +9,10 @@
 [% END -%]
 
 [%- MACRO array_publics(type) BLOCK %]
-    static const int [% array.name FILTER upper %]_SIZE = [% array.len %];
-    const [% type %] *get_[% array.name %](int *len) const;
-    int get_[% array.name %]([% type %] *buf, int len) const;
-    void set_[% array.name %]([% type %] *v, int len);
+    static const unsigned int [% array.name FILTER upper %]_SIZE = [% array.len %];
+    const [% type %] *get_[% array.name %](unsigned int *len) const;
+    int get_[% array.name %]([% type %] *buf, unsigned int len) const;
+    void set_[% array.name %]([% type %] *v, unsigned int len);
 [% END -%]
 
 #ifndef [% module %][% name %]Msg[% msg.cls_name %]_H
@@ -28,7 +28,7 @@ class [% module %][% name %]Msg[% msg.cls_name %] : public [% module %][% name %
     [% module %][% name %]Msg[% msg.cls_name %]();
     ~[% module %][% name %]Msg[% msg.cls_name %]();
 
-    int pack(uint8_t *buf, int len) const;
+    int pack(uint8_t *buf, unsigned int len) const;
     void print() const;
     [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_op type() { return [% lib FILTER upper %]_[% module FILTER upper %]_[% name FILTER upper %]_MSG_[% msg.name FILTER upper %]; }
 

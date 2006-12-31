@@ -1,5 +1,4 @@
-<contract library="lla" module="ArtNet" name="Conf" install="y" version="1:0:0">
- <licence>lgpl</licence>
+<contract library="lla" module="ArtNet" name="Conf" install="y" licence="lgpl" version="1:0:0">
  <parent>
   <name>LlaDevConfMsg</name>
   <include>&lt;lla/LlaDevConfMsg.h&gt;</include>

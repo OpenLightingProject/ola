@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <llad/device.h>
 #include <llad/fdlistener.h>
-#include <lla/usbpro/usbpro_conf_messages.h>
+#include "usbpro_conf_messages.h"
 
 #include "UsbProWidgetListener.h"
 #include "UsbProWidget.h"

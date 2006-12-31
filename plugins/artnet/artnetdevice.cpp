@@ -36,8 +36,8 @@
 #include <llad/logger.h>
 #include <llad/preferences.h>
 #include <artnet/artnet.h>
-#include <lla/artnet/ArtNetConfMsgs.h>
-#include <lla/artnet/ArtNetConfParser.h>
+#include "ArtNetConfMsgs.h"
+#include "ArtNetConfParser.h"
 
 
 #if HAVE_CONFIG_H

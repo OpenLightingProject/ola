@@ -16,7 +16,7 @@
 /*
  *
  */
-const [% type %] *[% module %][% name %]Msg[% msg.cls_name %]::get_[% array.name %](int *len) const {
+const [% type %] *[% module %][% name %]Msg[% msg.cls_name %]::get_[% array.name %](unsigned int *len) const {
   *len = [% module %][% name %]Msg[% msg.cls_name %]::[% array.name FILTER upper %]_SIZE;
   return m_[% array.name %];
 }
@@ -24,8 +24,11 @@ const [% type %] *[% module %][% name %]Msg[% msg.cls_name %]::get_[% array.name
 /*
  *
  */
-int [% module %][% name %]Msg[% msg.cls_name %]::get_[% array.name %]([% type %] *buf, int len) const {
-  int l = [% module %][% name %]Msg[% msg.cls_name %]::[% array.name FILTER upper %]_SIZE < len ? [% module %][% name %]Msg[% msg.cls_name %]::[% array.name FILTER upper %]_SIZE  : len ;
+int [% module %][% name %]Msg[% msg.cls_name %]::get_[% array.name %]([% type %] *buf, unsigned int len) const {
+  unsigned int l = [% module %][% name %]Msg[% msg.cls_name %]::[% array.name FILTER upper %]_SIZE < len ? [% module %][% name %]Msg[% msg.cls_name %]::[% array.name FILTER upper %]_SIZE  : len ;
+
+  if( buf == NULL)
+  	return -1;
   memcpy(buf, m_[% array.name %], l);
   return l ;
 }
@@ -33,8 +36,8 @@ int [% module %][% name %]Msg[% msg.cls_name %]::get_[% array.name %]([% type %]
 /*
  *
  */
-void [% module %][% name %]Msg[% msg.cls_name %]::set_[% array.name %]([% type %] *v, int len) {
-  int l = sizeof(m_[% array.name %]) < len ? sizeof(m_[% array.name %]) : len;
+void [% module %][% name %]Msg[% msg.cls_name %]::set_[% array.name %]([% type %] *v, unsigned int len) {
+  unsigned int l = sizeof(m_[% array.name %]) < len ? sizeof(m_[% array.name %]) : len;
   memcpy(m_[% array.name %], v, l);
 }
 [% END %]
@@ -53,8 +56,8 @@ void [% module %][% name %]Msg[% msg.cls_name %]::set_[% array.name %]([% type %
  * Pack this object into it's struct
  *
  */
-int [% module %][% name %]Msg[% msg.cls_name %]::pack(uint8_t *buf, int len) const {
-  int l = sizeof([% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_[% msg.name FILTER lower %]) + [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_header_size;
+int [% module %][% name %]Msg[% msg.cls_name %]::pack(uint8_t *buf, unsigned int len) const {
+  unsigned int l = sizeof([% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_[% msg.name FILTER lower %]) + [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_header_size;
   [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg *p = ([% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg*) buf;
 
   if (buf == NULL || len < l) {
