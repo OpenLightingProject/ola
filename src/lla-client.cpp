@@ -282,7 +282,7 @@ int parse_options(int argc, char *argv[], options *opts) {
 			{"ltp", 		no_argument, 		0, 'l'},
 			{"name", 		required_argument, 	0, 'n'},
 			{"universe", 	required_argument, 	0, 'u'},
-			{"dmx", 		required_argument,	0, 'x'},
+			{"dmx", 		required_argument,	0, 'd'},
 			{"verbose", 	no_argument, 		0, 'v'},			
 			{0, 0, 0, 0}
 		};
@@ -292,7 +292,7 @@ int parse_options(int argc, char *argv[], options *opts) {
 	
 	while (1) {
      
-		c = getopt_long(argc, argv, "lx:n:u:p:hv", long_options, &option_index);
+		c = getopt_long(argc, argv, "ld:n:u:p:hv", long_options, &option_index);
 		
 		if (c == -1)
 			break;
@@ -316,7 +316,7 @@ int parse_options(int argc, char *argv[], options *opts) {
 			case 'u':
 				opts->uni = atoi(optarg);
 				break;
-			case 'x':
+			case 'd':
 				opts->dmx = optarg;
 		        break;
 			case 'v':
@@ -394,7 +394,7 @@ void display_uni_name_help(options *opts) {
 "\n"
 "  -h, --help               Display this help message and exit.\n"
 "  -n, --name <name>        Name for the universe.\n"
-"  -u, --universe <uni>     Id of the universe to patch to (default 0).\n"
+"  -u, --universe <uni>     Id of the universe to name (default 0).\n"
 "\n",
 	opts->cmd.c_str()) ;
 }
@@ -549,10 +549,12 @@ int set_dmx(LlaClient *cli, options *opts) {
 		buf[i++] = v > 255 ? 255 : v;
 	}
 
-	if( cli->send_dmx(opts->uni, buf, i)) {
-		printf("Send DMX failed:\n") ;
-		return 1;
-	}
+	if(i > 0) 
+		if( cli->send_dmx(opts->uni, buf, i)) {
+			printf("Send DMX failed:\n") ;
+			return 1;
+		}
+
 	free(str);
 	return 0;
 }
