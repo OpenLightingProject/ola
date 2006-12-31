@@ -10,7 +10,7 @@ lib_LTLIBRARIES = libllaartnet.la
 libllaartnet_la_SOURCES = artnetplugin.cpp artnetplugin.h artnetdevice.cpp\
                           artnetdevice.h artnetport.cpp artnetport.h
 
-libllaartnet_la_LIBADD = -L./conf_msgs/.libs -lllaartnetconf -lartnet
+libllaartnet_la_LIBADD = ./conf_msgs/libllaartnetconf.la -lartnet
 
 SUBDIRS = conf_msgs
 

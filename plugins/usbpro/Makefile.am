@@ -11,7 +11,7 @@ libllausbpro_la_SOURCES = usbproplugin.cpp usbproplugin.h usbprodevice.cpp\
 						 usbprodevice.h UsbProWidget.h UsbProWidget.cpp\
 						 usbproport.cpp usbproport.h
 
-libllausbpro_la_LIBADD = -L./conf_msgs/.libs -lllausbproconf
+libllausbpro_la_LIBADD = ./conf_msgs/libllausbproconf.la
 
 
 SUBDIRS = conf_msgs
