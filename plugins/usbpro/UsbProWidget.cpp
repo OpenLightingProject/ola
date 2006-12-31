@@ -57,7 +57,7 @@ enum usbpro_packet_type_e {
 	ID_COS =	0x09,
 	ID_SNOREQ =	0x0A,
 	ID_SNOREP =	0x0A
-} __attribute__( ( packed ) );
+};
 
 typedef enum usbpro_packet_type_e usbpro_packet_type;
 
