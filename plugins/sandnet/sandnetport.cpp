@@ -77,13 +77,14 @@ int SandNetPort::write(uint8_t *data, int length) {
 
 	if( !can_write())
 		return -1 ;
-	
+
 	if(sandnet_send_dmx(dev->get_node() , get_id() , length, data)) {
 		Logger::instance()->log(Logger::WARN, "SandnetPlugin: sandnet_send_dmx failed %s", sandnet_strerror() ) ;
 		return -1 ;
 	}
 	return 0;
 }
+
 
 /*
  * Read operation

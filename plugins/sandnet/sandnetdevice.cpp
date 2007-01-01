@@ -264,7 +264,7 @@ int SandNetDevice::configure(void *req, int len) {
  * Add a port to our hash map
  */
 int SandNetDevice::port_map(Universe *uni, SandNetPort *prt) {
-
+	sandnet_set_port(m_node, prt->get_id(), SANDNET_PORT_MODE_IN, 0, uni->get_uid());
 	m_portmap[uni->get_uid()] = prt ;
 	return 0;
 }
