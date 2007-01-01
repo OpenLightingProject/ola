@@ -184,6 +184,15 @@ int UsbProWidget::get_dmx(uint8_t *data, unsigned int len) {
 
 
 /*
+ * Force the widget back into receiving mode
+ */
+int UsbProWidget::recv_mode() {
+	return send_rcmode(1);
+
+}
+
+
+/*
  * read data from the widget
  */
 int UsbProWidget::recv() {
@@ -233,7 +242,7 @@ int UsbProWidget::send_prmreq(int usrsz) const {
 
 
 /*
- * Send a mode msg
+ * Send a mode msg. 
  * @param mode the mode to change to
  */
 int UsbProWidget::send_rcmode(int mode) {

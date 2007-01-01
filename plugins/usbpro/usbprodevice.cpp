@@ -55,6 +55,8 @@ UsbProDevice::UsbProDevice(Plugin *owner, const string &name, const string &dev_
 	Device(owner, name),
 	m_path(dev_path),
 	m_enabled(false),
+	m_mode(RECV_MODE),
+	m_tx_count(0),
 	m_parser(NULL),
 	m_widget(NULL) {
 		m_parser = new UsbProConfParser();
@@ -170,6 +172,7 @@ int UsbProDevice::fd_action() {
  * @return 	0 on success, non 0 on failure
  */
 int UsbProDevice::send_dmx(uint8_t *data, int len) {
+	m_tx_count++;
 	return m_widget->send_dmx(data,len);
 }
 
@@ -235,6 +238,19 @@ void UsbProDevice::new_dmx() {
 	// notify our port
 	Port *prt = get_port(0);
 	prt->dmx_changed();
+}
+
+
+/*
+ * We call this every to seconds to check if we should go back into rx mode
+ */
+int UsbProDevice::timeout_action() {
+
+	if(m_tx_count == 0) {
+		// we've stopping sending, change back to rx mode
+		m_widget->recv_mode();
+	}
+	m_tx_count = 0;
 }
 
 

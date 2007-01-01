@@ -148,6 +148,7 @@ class UsbProWidget {
 		void get_params(uint16_t *firmware, uint8_t *brk, uint8_t *mab, uint8_t *rate) const;
 		void get_serial(uint8_t *serial, unsigned int len) const;
 		int get_dmx(uint8_t *data, unsigned int len);
+		int recv_mode();
 		void set_listener(UsbProWidgetListener *l);
 		int recv();
 

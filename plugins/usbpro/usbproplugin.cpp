@@ -88,6 +88,8 @@ int UsbProPlugin::start() {
 		if ((sd = dev->get_sd()) >= 0)
 			m_pa->register_fd( sd, PluginAdaptor::READ, dev, this);
 	
+		// timeout to check mode every 2 seconds
+		m_pa->register_timeout(2, dev);
 		m_pa->register_device(dev);
 
 		m_devices.insert(m_devices.end(), dev);

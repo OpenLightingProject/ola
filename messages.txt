@@ -33,7 +33,3 @@ Sample transaction:
 >patch 0 2 2
 >patch 0 3 3
 >patch 1 0 0
-
-
-
-

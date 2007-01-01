@@ -25,15 +25,17 @@
 #include <stdint.h>
 #include <llad/device.h>
 #include <llad/fdlistener.h>
+#include <llad/timeoutlistener.h>
 #include "usbpro_conf_messages.h"
 
 #include "UsbProWidgetListener.h"
 #include "UsbProWidget.h"
 
 
-class UsbProDevice : public Device, public FDListener, public UsbProWidgetListener {
+class UsbProDevice : public Device, public FDListener, public UsbProWidgetListener, public TimeoutListener {
 
 	public:
+
 		UsbProDevice(Plugin *owner, const string &name, const string &dev_path);
 		~UsbProDevice();
 
@@ -46,15 +48,23 @@ class UsbProDevice : public Device, public FDListener, public UsbProWidgetListen
 		int send_dmx(uint8_t *data, int len);
 		int get_dmx(uint8_t *data, int len) const;
 		void new_dmx();
+		int timeout_action();
 
 	private:
 		class UsbProConfMsg *config_get_params(class UsbProConfMsgPrmReq *req) const;
 		class UsbProConfMsg *config_get_serial(class UsbProConfMsgSerReq *req) const;
 		class UsbProConfMsg *config_set_params(class UsbProConfMsgSprmReq *req);
+
+		enum {
+			SEND_MODE,
+			RECV_MODE
+		};
 		
 		// instance variables
 		string m_path;
-		bool m_enabled;					// are we enabled
+		bool m_enabled;							// are we enabled
+		bool m_mode;							// are we sending or receiving?
+		bool m_tx_count;						// number of dmx msgs send in last time period
 		class UsbProConfParser *m_parser;		// parser for config msgs
 		UsbProWidget *m_widget;
 };
