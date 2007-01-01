@@ -135,6 +135,7 @@ int LlaClient::stop() {
 	clear_plugins();
 	clear_devices();
 	clear_universes();
+	m_connected = false;
 	return 0;
 }
 

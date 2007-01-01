@@ -347,7 +347,8 @@ int UsbProWidget::handle_snorep(pms_snorep *rep, int len) {
 /*
  * Get the serial number and params so we can cache them
  * TODO: This sleeping is ok while the plugins are loaded on startup, but
- * we can't afford to be sleeping once we are running
+ * we can't afford to be sleeping once we are running. We may have to move this
+ * to a separate thread.
  */
 int UsbProWidget::init() {
 	struct timespec tv;
