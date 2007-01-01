@@ -111,31 +111,34 @@ e_socket:
  * @return 0 on sucess, -1 on failure
  */
 int LlaClient::stop() {
+
+	if(m_connected) {
 	
-	send_fin();
+		send_fin();
 
-	while(m_connected) {
-		switch(receive(1)) {
-			case 0:
-				break;
-			case 1:
-				// timeout
-				printf("failed to get fin ack\n");
-				return -1;
-			case -1:
-				// error
-				return -1;
-			case -2:
-				// interupt
-				break;
+		while(m_connected) {
+			switch(receive(1)) {
+				case 0:
+					break;
+				case 1:
+					// timeout
+					printf("failed to get fin ack\n");
+					return -1;
+				case -1:
+					// error
+					return -1;
+				case -2:
+					// interupt
+					break;
+			}
 		}
-	}
 
-	close(m_sd);
-	clear_plugins();
-	clear_devices();
-	clear_universes();
-	m_connected = false;
+		close(m_sd);
+		clear_plugins();
+		clear_devices();
+		clear_universes();
+		m_connected = false;
+	}
 	return 0;
 }
 
