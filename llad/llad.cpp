@@ -314,7 +314,7 @@ int Llad::handle_dmx_data (lla_msg *msg) {
 	if(uni == NULL) 
 		return 0 ;
 
-	Logger::instance()->log(Logger::DEBUG, "updating universe %d", uni->get_uid() );
+	Logger::instance()->log(Logger::DEBUG, "updating universe %d, length %d", uni->get_uid(), msg->data.dmx.len);
 	uni->set_dmx(msg->data.dmx.data, msg->data.dmx.len) ;
 
 	return 0;

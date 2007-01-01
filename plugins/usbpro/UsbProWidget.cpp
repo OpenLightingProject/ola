@@ -290,7 +290,7 @@ int UsbProWidget::handle_cos(pms_cos *cos, int len) {
 	offset = 0;
 	for(i = 0; i< 40; i++) {
 
-		if(chn_st+i >= DMX_BUF_LEN-1 || offset + 6 >= len)
+		if(chn_st+i > DMX_BUF_LEN-1 || offset + 6 >= len)
 			break;
 
 		if( cos->changed[i/8] & (1 << (i%8)) ) {
