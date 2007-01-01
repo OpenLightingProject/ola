@@ -83,17 +83,20 @@ int UniverseStore::retrieve_uni(Universe *uni) {
 		// load name
 		key = "uni_" + oss.str() + "_name";
 		val = m_prefs.get_val(key);
-		uni->set_name(val, false);
+
+		if (val != "")
+			uni->set_name(val, false);
 
 		// load merge mode
 		key = "uni_" + oss.str() + "_merge";
 		val = m_prefs.get_val(key);
 
-		if (val == "LTP")
-			uni->set_merge_mode(Universe::MERGE_LTP, false);
-		else 
-			uni->set_merge_mode(Universe::MERGE_HTP, false);
-
+		if (val != "") {
+			if ( val == "HTP")
+				uni->set_merge_mode(Universe::MERGE_HTP, false);
+			else 
+				uni->set_merge_mode(Universe::MERGE_LTP, false);
+		}
 	}
 	return 0;
 }
