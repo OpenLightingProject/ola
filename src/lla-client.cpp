@@ -496,7 +496,7 @@ int fetch_dev_info(LlaClient *cli, options *opts) {
  */
 int set_uni_name(LlaClient *cli, options *opts) {
 
-	if(opts->uni_name == "" || opts->uni == -1) {
+	if( opts->uni == -1) {
 		display_uni_name_help(opts);
 		exit(1) ;
 	}
