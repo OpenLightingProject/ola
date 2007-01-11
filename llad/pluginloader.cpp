@@ -75,7 +75,7 @@ int PluginLoader::load_plugins(const string &dirname) {
 		fname.append("/") ;
 		fname.append(ent->d_name);
 	
-		unsigned int i = fname.find_last_of(".");
+		string::size_type i = fname.find_last_of(".");
 		if ( i == string::npos) 
 			continue;
 

@@ -2,12 +2,11 @@
 --URGENT--
 
 default ip address issue
-pro device, change back to recv mode
+universe not created when a single client sends (make sense really)
 
 --REQUIRED--
 
 * pathport support
-* test pro support carefully
 
 -- NICE--
 * let the ports save what universe they are attached to (do this in the plugin)
