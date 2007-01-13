@@ -98,6 +98,7 @@ AC_OUTPUT( Makefile \
 	   plugins/shownet/Makefile	\
 	   plugins/sandnet/Makefile	\
 	   plugins/usbpro/Makefile	\
+	   plugins/stageprofi/Makefile	\
 	   plugins/usbpro/conf_msgs/Makefile	\
 	   plugins/opendmxusb/Makefile	\
 	   liblla.pc \
