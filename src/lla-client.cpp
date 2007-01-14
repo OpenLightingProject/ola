@@ -247,7 +247,7 @@ void init_options(options *opts) {
  * Decide what mode we're running in
  */
 void set_mode(options *opts) {
-	unsigned int pos = opts->cmd.find_last_of("/");
+	string::size_type pos = opts->cmd.find_last_of("/");
 
 	if(pos != string::npos) {
 		opts->cmd = opts->cmd.substr(pos+1);
