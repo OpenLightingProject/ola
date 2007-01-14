@@ -64,7 +64,6 @@ int StageProfiWidget::connect(const string &path) {
 
 	bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
 	tcgetattr(m_fd, &newtio);
-	cfmakeraw(&newtio);
 	cfsetospeed(&newtio, B38400);
 	tcsetattr(m_fd,TCSANOW,&newtio);
 
