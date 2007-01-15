@@ -52,5 +52,7 @@ int StageProfiPort::write(uint8_t *data, int length) {
  * @return	the amount of data read
  */
 int StageProfiPort::read(uint8_t *data, int length) {
+	data = NULL;
+	length = 0;
 	return -1;
 }

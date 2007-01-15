@@ -87,6 +87,17 @@ int UsbProDevice::start() {
 	Port *prt = NULL;
 	int ret;
 	
+	
+	// connect to the widget
+	ret = m_widget->connect(m_path);
+
+	if(ret) {
+		Logger::instance()->log(Logger::WARN, "UsbProPlugin: failed to connect to %s", m_path.c_str()  );
+		return -1;
+	}
+
+	m_widget->set_listener(this);
+
 	/* set up ports */
 	for(int i=0; i < 2; i++) {
 		port = new UsbProPort(this,i);
@@ -94,27 +105,10 @@ int UsbProDevice::start() {
 		if(port != NULL) 
 			this->add_port(port);
 	}
-	
-	// connect to the widget
-	ret = m_widget->connect(m_path);
-
-	if(ret) {
-		Logger::instance()->log(Logger::WARN, "UsbProPlugin: failed to connect to %s", m_path.c_str()  );
-		goto e_dev;
-	}
-
-	m_widget->set_listener(this);
 
 	m_enabled = true;
 	return 0;
 
-e_dev:
-	for(int i=0; i < port_count() ; i++) {
-		prt = get_port(i);
-		if(prt != NULL) 
-			delete prt;
-	}
-	return -1;
 }
 
 
@@ -251,6 +245,7 @@ int UsbProDevice::timeout_action() {
 		m_widget->recv_mode();
 	}
 	m_tx_count = 0;
+	return 0;
 }
 
 

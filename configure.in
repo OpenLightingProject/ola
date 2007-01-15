@@ -4,7 +4,7 @@
 AC_PREREQ(2.57)
 AC_INIT(configure.in)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(lla, 0.2.0)
+AM_INIT_AUTOMAKE(lla, 0.2.1)
 
 # Checks for programs.
 AC_PROG_CC
@@ -45,7 +45,6 @@ AC_CHECK_FUNCS([gettimeofday strdup strrchr inet_ntoa memset select socket strer
 AC_CHECK_LIB(artnet, artnet_new,[have_artnet="yes"]) 
 AM_CONDITIONAL(HAVE_ARTNET, test "${have_artnet}" = "yes")
 
-
 # check for libeartnet
 AC_CHECK_LIB(eartnet, eartnet_new,[have_eartnet="yes"]) 
 AM_CONDITIONAL(HAVE_EARTNET, test "${have_eartnet}" = "yes")
@@ -58,10 +57,13 @@ AM_CONDITIONAL(HAVE_ESPNET, test "${have_espnet}" = "yes")
 AC_CHECK_LIB(shownet, shownet_new,[have_shownet="yes"])
 AM_CONDITIONAL(HAVE_SHOWNET, test "${have_shownet}" = "yes")
 
-
 # check for libsandnet
 AC_CHECK_LIB(sandnet, sandnet_new,[have_sandnet="yes"]) 
 AM_CONDITIONAL(HAVE_SANDNET, test "${have_sandnet}" = "yes")
+
+# check for libpathport
+AC_CHECK_LIB(pathport, pathport_new,[have_pathport="yes"]) 
+AM_CONDITIONAL(HAVE_PATHPORT, test "${have_pathport}" = "yes")
 
 
 dnl ##################################################################
@@ -95,6 +97,7 @@ AC_OUTPUT( Makefile \
 	   plugins/eartnet/Makefile	\
 	   plugins/dummy/Makefile	\
 	   plugins/espnet/Makefile	\
+	   plugins/pathport/Makefile	\
 	   plugins/shownet/Makefile	\
 	   plugins/sandnet/Makefile	\
 	   plugins/usbpro/Makefile	\

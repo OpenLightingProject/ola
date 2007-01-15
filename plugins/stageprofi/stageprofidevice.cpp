@@ -63,7 +63,7 @@ StageProfiDevice::StageProfiDevice(Plugin *owner, const string &name, const stri
 StageProfiDevice::~StageProfiDevice() {
 	if (m_enabled)
 		stop();
-		
+
 	if (m_widget != NULL)
 		delete m_widget;
 }
@@ -77,11 +77,6 @@ int StageProfiDevice::start() {
 	Port *prt = NULL;
 	int ret;
 	
-	port = new StageProfiPort(this,0);
-
-	if(port != NULL) 
-		this->add_port(port);
-	
 	// connect to the widget
 	ret = m_widget->connect(m_path);
 
@@ -89,6 +84,11 @@ int StageProfiDevice::start() {
 		Logger::instance()->log(Logger::WARN, "StageProfiPlugin: failed to connect to %s", m_path.c_str() );
 		goto e_dev;
 	}
+
+	port = new StageProfiPort(this,0);
+
+	if(port != NULL) 
+		this->add_port(port);
 
 	m_enabled = true;
 	return 0;
