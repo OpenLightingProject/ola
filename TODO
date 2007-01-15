@@ -6,9 +6,10 @@ universe not created when a single client sends (make sense really)
 
 --REQUIRED--
 
-* pathport support
+* tx pathport support
 
 -- NICE--
+* testing framework
 * let the ports save what universe they are attached to (do this in the plugin)
 * serialise so that plugins can store state
 * convert to using autogen'ed messages:
@@ -18,7 +19,6 @@ universe not created when a single client sends (make sense really)
 
 --UNIMPORTANT--
 * send debug to remote client - need to watch looping here (maybe lev 1&2)
-
 
 --WISH LIST--
 
