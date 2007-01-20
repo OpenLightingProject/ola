@@ -33,54 +33,54 @@
 
 class Llad {
 
-	public :
-		Llad() ;
-		~Llad() ;
-		int init() ;
-		int run() ;
-		void terminate() ;
-		void reload_plugins() ;
+  public :
+    Llad();
+    ~Llad();
+    int init();
+    int run();
+    void terminate();
+    void reload_plugins();
 
-	private :
-		Llad(const Llad&);
-		Llad& operator=(const Llad&);
+  private :
+    Llad(const Llad&);
+    Llad& operator=(const Llad&);
 
-		int handle_syn(lla_msg *msg) ;
-		int handle_fin(lla_msg *msg) ;
-		int handle_msg(lla_msg *msg) ;
-		int handle_read_request(lla_msg *msg) ;
-		int	handle_plugin_info_request(lla_msg *msg) ;
-		int	handle_plugin_desc_request(lla_msg *msg) ;
-		int	handle_device_info_request(lla_msg *msg) ;
-		int	handle_port_info_request(lla_msg *msg) ;
-		int	handle_universe_info_request(lla_msg *msg) ;
-		int handle_patch(lla_msg *msg) ;
-		int handle_uni_name(lla_msg *msg) ;
-		int handle_uni_merge(lla_msg *msg) ;
-		int handle_register(lla_msg *msg) ;
-		int handle_dmx_data(lla_msg *msg) ;
-//		int handle_read_request(Msg *msg) ;
-		int handle_device_config_request(lla_msg *msg) ;
-		
-		int send_dmx(Universe *uni, struct sockaddr_in dst) ;
-		int send_plugin_info(struct sockaddr_in dst) ;
-		int send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid) ;
-		int send_device_info(struct sockaddr_in dst, lla_plugin_id filter) ;
-		int send_universe_info(struct sockaddr_in dst) ;
-		int send_port_info(struct sockaddr_in dst, Device *dev, int devid) ;
+    int handle_syn(lla_msg *msg);
+    int handle_fin(lla_msg *msg);
+    int handle_msg(lla_msg *msg);
+    int handle_read_request(lla_msg *msg);
+    int handle_plugin_info_request(lla_msg *msg);
+    int handle_plugin_desc_request(lla_msg *msg);
+    int handle_device_info_request(lla_msg *msg);
+    int handle_port_info_request(lla_msg *msg);
+    int handle_universe_info_request(lla_msg *msg);
+    int handle_patch(lla_msg *msg);
+    int handle_uni_name(lla_msg *msg);
+    int handle_uni_merge(lla_msg *msg);
+    int handle_register(lla_msg *msg);
+    int handle_dmx_data(lla_msg *msg);
+//    int handle_read_request(Msg *msg);
+    int handle_device_config_request(lla_msg *msg);
 
-		int unpatch_port(Port *prt) ;
-		int _reload_plugins() ;
+    int send_dmx(Universe *uni, struct sockaddr_in dst);
+    int send_plugin_info(struct sockaddr_in dst);
+    int send_plugin_desc(struct sockaddr_in dst, Plugin *plug, int pid);
+    int send_device_info(struct sockaddr_in dst, lla_plugin_id filter);
+    int send_universe_info(struct sockaddr_in dst);
+    int send_port_info(struct sockaddr_in dst, Device *dev, int devid);
 
-		bool m_term ;
-		bool m_reload_plugins ;
+    int unpatch_port(Port *prt);
+    int _reload_plugins();
 
-		DeviceManager *dm ;
-		PluginLoader *pm ;
-		Network *net ;
-		PluginAdaptor *pa;
-		Preferences m_uni_names;
-		class UniverseStore *uni_store;
+    bool m_term;
+    bool m_reload_plugins;
+
+    DeviceManager *dm;
+    PluginLoader *pm;
+    Network *net;
+    PluginAdaptor *pa;
+    Preferences m_uni_names;
+    class UniverseStore *uni_store;
 };
 
 #endif
