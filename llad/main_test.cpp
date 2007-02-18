@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * main.cpp
+ * main_test.cpp
  * Main file for llad, parses the options, forks if required and runs the daemon
  * Copyright (C) 2005-2007 Simon Newton
  *
@@ -27,8 +27,7 @@
 
 #include <llad/logger.h>
 #include "llad.h"
-#include "PluginLoader.h"
-#include "DlOpenPluginLoader.h"
+#include "DynamicPluginLoader.h"
 
 using namespace std;
 
@@ -324,13 +323,14 @@ int main(int argc, char*argv[]) {
   if(install_signal())
     Logger::instance()->log(Logger::WARN, "Failed to install signal handlers");
 
-  pl = new DlOpenPluginLoader(PLUGIN_DIR);
+  pl = new DynamicPluginLoader();
   llad = new Llad(pl);
 
   if(llad && llad->init() == 0 ) {
     llad->run();
   }
   delete llad;
+  delete pl;
   Logger::clean_up();
 
   return 0;

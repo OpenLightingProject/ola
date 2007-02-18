@@ -15,7 +15,7 @@
  *
  * llad.cpp
  * This is the main lla daemon
- * Copyright (C) 2005-2007  Simon Newton
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
 #include "llad.h"
@@ -27,18 +27,25 @@
 #include <llad/pluginadaptor.h>
 #include "UniverseStore.h"
 
+#include "devicemanager.h"
+#include "PluginLoader.h"
+#include "network.h"
+#include <llad/preferences.h>
+
+
 #include <stdio.h>
 #include <string.h>
 
 /*
  * Create a new Llad
  *
+ * @param PluginLoader what to use to access the plugins
  */
-Llad::Llad() :
+Llad::Llad(PluginLoader *pl) :
   m_term(false),
   m_reload_plugins(false),
   dm(NULL),
-  pm(NULL),
+  pm(pl),
   net(NULL),
   pa(NULL),
   m_uni_names("universes"),
@@ -51,9 +58,9 @@ Llad::Llad() :
  *
  */
 Llad::~Llad() {
-
-  // this stops and unloads all our plugins
-  delete pm;
+  // stops and unloads all our plugins
+  pm->set_plugin_adaptor(NULL);
+  pm->unload_plugins();
 
   // delete all universes
   Universe::clean_up();
@@ -78,14 +85,17 @@ int Llad::init() {
   Plugin *plug;
   int i;
 
+  if ( pm == NULL)
+    return -1;
+
   // setup the objects
   dm = new DeviceManager();
   net = new Network();
   pa = new PluginAdaptor(dm,net);
-  pm = new PluginLoader(pa);
+  pm->set_plugin_adaptor(pa);
   uni_store = new UniverseStore();
 
-  if(dm == NULL || net == NULL || pa == NULL || pm == NULL || uni_store == NULL) {
+  if(dm == NULL || net == NULL || pa == NULL || uni_store == NULL) {
     delete uni_store;
     delete pm;
     delete net;
@@ -103,7 +113,7 @@ int Llad::init() {
 
   // load plugins, this doesn't fail as such
   // rather just tries to load as many plugins as possible
-  pm->load_plugins(PLUGIN_DIR);
+  pm->load_plugins();
 
   // enable all plugins
   for( i =0; i < pm->plugin_count(); i++) {
@@ -180,7 +190,7 @@ int Llad::_reload_plugins() {
 
   // load plugins, this doesn't fail as such
   // rather just tries to load as many plugins as possible
-  pm->load_plugins(PLUGIN_DIR);
+  pm->load_plugins();
 
   // enable all plugins
   for( i =0; i < pm->plugin_count(); i++) {

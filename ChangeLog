@@ -1,3 +1,8 @@
+16/2/2007 Simon Newton <<nomis52@westnet.com.au>
+
+   * reduced memory usage in plugins
+   * started on test framework
+
 14/1/2007 Simon Newton <<nomis52@westnet.com.au>
 
 	* Pathport plugin added

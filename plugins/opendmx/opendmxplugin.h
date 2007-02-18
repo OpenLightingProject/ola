@@ -32,9 +32,9 @@ class OpenDmxPlugin : public Plugin {
 	public:
 		OpenDmxPlugin(const PluginAdaptor *pa, lla_plugin_id id) : 
 			Plugin(pa, id),
-			m_enabled(false),
 			m_dev(NULL),
-			m_prefs(NULL) {} ;
+			m_prefs(NULL),
+			m_enabled(false) {};
 
 		int start();
 		int stop();

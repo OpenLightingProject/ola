@@ -11,7 +11,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * plugin.h
  * Header file for plugin class
@@ -37,7 +37,7 @@ class PluginAdaptor ;
 class Plugin {
 	
 	public :
-		Plugin(const PluginAdaptor *pa, lla_plugin_id id) : m_pa(pa), m_id(id) {} 
+		Plugin(const PluginAdaptor *pa, lla_plugin_id id) : m_pa(pa), m_id(id) {}
 		virtual ~Plugin() {};
 
 		virtual string get_name() const = 0 ;

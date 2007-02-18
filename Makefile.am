@@ -5,7 +5,7 @@ AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
 
 AM_CXXFLAGS = -Wall -Werror -Wformat -W
 
-SUBDIRS = lla llad plugins include
+SUBDIRS = lla plugins llad include
 
 EXTRA_DIST = reconf tools
 

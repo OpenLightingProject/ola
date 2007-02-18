@@ -18,11 +18,18 @@ int test_[% msg.name %]() {
   int l = sizeof([% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_msg_[% msg.name FILTER lower %]) + [% lib FILTER lower %]_[% module FILTER lower %]_[% name FILTER lower %]_header_size;
   uint8_t buf[l];
   int r = 0;
+  int res = 0;
 
   [% module %][% name %]Msg[% msg.cls_name %] *m = new [% module %][% name %]Msg[% msg.cls_name %]();
+  [% module %][% name %]Parser *p = new [% module %][% name %]Parser() ;
   [% module %][% name %]Msg *m2 ;
   [% module %][% name %]Msg[% msg.cls_name %] *m3 ;
-  [% module %][% name %]Parser *p = new [% module %][% name %]Parser() ;
+
+  if ( m == NULL || p == NULL) {
+    printf("new failed\n");
+    res = -1;
+    goto free_initial;
+  }
 
 [% FOREACH var = msg.uint32_t -%]
   m->set_[% var %]( rand()  );
@@ -32,49 +39,60 @@ int test_[% msg.name %]() {
 [% END -%]
 [% FOREACH var = msg.uint8_t -%]
   m->set_[% var %]( rand() );
-[% END -%] 
+[% END -%]
 
   r = m->pack(buf,l);
 
   if ( r != l ) {
     printf("Failed to pack [% module %][% name %]Msg[% msg.cls_name %]\n");
-    return 1;
+    res = -1;
+    goto free_initial;
   }
 
   m2 = p->parse(buf,r);
-	
+
   if (m2 == NULL) {
     printf("Failed to parse a [% module %][% name %]Msg[% msg.cls_name %] message\n");
-    return 1;
+    res = -1;
+    goto free_initial;
   }
 
   if( m->type() != m2->type() ) {
     printf("Invalid msg type %i != %i\n", m->type(),  m2->type() );
-    return 1;
+    res = -1;
+    goto free_all;
   }
-	
+
   m3 = ([% module %][% name %]Msg[% msg.cls_name %]*) m2;
 
 [% FOREACH var = msg.uint32_t -%]
   if( m3->get_[% var %]() != m->get_[% var %]() ) {
     printf("int32 check failed\n");
-    return 1;
+    res = -1;
+    goto free_all;
   }
 [% END -%]
 [% FOREACH var = msg.uint16_t -%]
   if( m3->get_[% var %]() != m->get_[% var %]() ) {
     printf("int16 check failed\n");
-    return 1;
+    res = -1;
+    goto free_all;
   }
 [% END -%]
 [% FOREACH var = msg.uint8_t -%]
   if( m3->get_[% var %]() != m->get_[% var %]() ) {
     printf("int8 check failed\n");
-    return 1;
+    res = -1;
+    goto free_all;
   }
-[% END -%] 
+[% END -%]
 
-  return 0;
+free_all:
+  delete m2;
+free_initial:
+  delete p;
+  delete m;
+  return res;
 }
 [% END %]
 

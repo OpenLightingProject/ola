@@ -30,78 +30,66 @@
 
 #define min(a,b) a<b?a:b
 
-ShowNetPort::ShowNetPort(Device *parent, int id) : Port(parent, id) {
-
-	// if this is an in port, setup the buffer
-	if(can_read()) {
-		m_len = DMX_LENGTH ;
-		m_buf = (uint8_t*) malloc(m_len) ;
-
-		// we should handle this better
-		if(m_buf == NULL) 
-			Logger::instance()->log(Logger::CRIT, "ShownetPlugin: malloc failed") ;
-		else
-			memset(m_buf, 0x00, m_len) ;
-	} else {
-		m_buf  = NULL ;
-		m_len = 0;
-	}
+ShowNetPort::ShowNetPort(Device *parent, int id) :
+  Port(parent, id),
+  m_buf(NULL),
+  m_len(DMX_LENGTH) {
 
 }
 
 ShowNetPort::~ShowNetPort() {
 
-	if(can_read())
-		free(m_buf) ;
+  if(can_read())
+    free(m_buf) ;
 }
 
 int ShowNetPort::can_read() const {
-	// ports 0 to 7 are input
-	return ( get_id()>=0 && get_id() < PORTS_PER_DEVICE);
+  // ports 0 to 7 are input
+  return ( get_id()>=0 && get_id() < PORTS_PER_DEVICE);
 }
 
 int ShowNetPort::can_write() const {
-	// ports 8 to 13 are output
-	return ( get_id()>= PORTS_PER_DEVICE && get_id() <2*PORTS_PER_DEVICE);
+  // ports 8 to 13 are output
+  return ( get_id()>= PORTS_PER_DEVICE && get_id() <2*PORTS_PER_DEVICE);
 }
 
 /*
  * Write operation
- * 
- * @param	data	pointer to the dmx data
- * @param	length	the length of the data
+ *
+ * @param  data  pointer to the dmx data
+ * @param  length  the length of the data
  *
  */
 int ShowNetPort::write(uint8_t *data, int length) {
-	ShowNetDevice *dev = (ShowNetDevice*) get_device() ;
+  ShowNetDevice *dev = (ShowNetDevice*) get_device() ;
 
-	if( !can_write())
-		return -1 ;
-	
-	if(shownet_send_dmx(dev->get_node() , get_id()%8 , length, data)) {
-		Logger::instance()->log(Logger::WARN, "ShownetPlugin: shownet_send_dmx failed %s", shownet_strerror() ) ;
-		return -1 ;
-	}
-	return 0;
+  if( !can_write())
+    return -1 ;
+
+  if(shownet_send_dmx(dev->get_node() , get_id()%8 , length, data)) {
+    Logger::instance()->log(Logger::WARN, "ShownetPlugin: shownet_send_dmx failed %s", shownet_strerror() ) ;
+    return -1 ;
+  }
+  return 0;
 }
 
 /*
  * Read operation
  *
- * @param 	data	buffer to read data into
- * @param 	length	length of data to read
+ * @param   data  buffer to read data into
+ * @param   length  length of data to read
  *
- * @return	the amount of data read
+ * @return  the amount of data read
  */
 int ShowNetPort::read(uint8_t *data, int length) {
-	int len ;
-	
-	if( !can_read()) 
-		return -1 ;
-	
-	len = min(m_len, length) ;
-	memcpy(data, m_buf, len ) ;
-	return len;
+  int len ;
+  
+  if( !can_read()) 
+    return -1 ;
+  
+  len = min(m_len, length) ;
+  memcpy(data, m_buf, len ) ;
+  return len;
 }
 
 /*
@@ -109,15 +97,27 @@ int ShowNetPort::read(uint8_t *data, int length) {
  *
  */
 int ShowNetPort::update_buffer(uint8_t *data, int length) {
-	int len = min(DMX_LENGTH, length) ;
+  int len = min(DMX_LENGTH, length) ;
 
-	// we can't update if this isn't a input port
-	if(! can_read())
-		return -1 ;
-	
-	Logger::instance()->log(Logger::DEBUG, "ShowNet: Updating dmx buffer for port %d", length);
-	memcpy(m_buf, data, len);
+  // we can't update if this isn't a input port
+  if(! can_read())
+    return -1 ;
 
-	dmx_changed() ;
-	return 0;
+  // allocate buffer as needed
+  if(m_buf == NULL) {
+    m_buf = (uint8_t*) malloc(m_len) ;
+
+    // we should handle this better
+    if(m_buf == NULL) {
+      Logger::instance()->log(Logger::CRIT, "ShownetPlugin: malloc failed") ;
+      return -1;
+    } else
+      memset(m_buf, 0x00, m_len) ;
+  }
+
+  Logger::instance()->log(Logger::DEBUG, "ShowNet: Updating dmx buffer for port %d", length);
+  memcpy(m_buf, data, len);
+
+  dmx_changed() ;
+  return 0;
 }

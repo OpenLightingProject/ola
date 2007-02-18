@@ -13,43 +13,43 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * pluginloader.h
- * Interface for the pluginloader class
- * Copyright (C) 2005  Simon Newton
+ * DlOpenPluginLoader.h
+ * Interface for the DlOpenPluginLoader class
+ * Copyright (C) 2005-2007  Simon Newton
  */
 
-#ifndef PLUGINLOADER_H
-#define PLUGINLOADER_H
+#ifndef DLOPENPLUGINLOADER_H
+#define DLOPENPLUGINLOADER_H
 
 #include <map>
 #include <vector>
 
 #include <llad/plugin.h>
+#include "PluginLoader.h"
 
 using namespace std;
 
-class PluginLoader {
+class DlOpenPluginLoader : public PluginLoader {
 
-	public:
-		PluginLoader(class PluginAdaptor *pa) ;
-		~PluginLoader() ;
+  public:
+    DlOpenPluginLoader(const string &dirname) : m_dirname(dirname) {};
+    ~DlOpenPluginLoader() { unload_plugins(); }
 
-		int load_plugins(const string &dirname) ;
-		int unload_plugins() ;
-		int plugin_count() const;
-		Plugin *get_plugin(unsigned int id) const ;
-	protected:
-		
-	private:
-		PluginLoader(const PluginLoader&);
-		PluginLoader operator=(const PluginLoader&);
+    int load_plugins();
+    int unload_plugins();
+    int plugin_count() const;
+    Plugin *get_plugin(unsigned int id) const;
 
-		Plugin *load_plugin(const string &path) ;
-		int unload_plugin(void *handle) ;
-		
-		vector<Plugin*>	 m_plugin_vect ;
-		class PluginAdaptor *pa ;
-		map<void*, Plugin*> m_plugin_map ;
+  private:
+    DlOpenPluginLoader(const DlOpenPluginLoader&);
+    DlOpenPluginLoader operator=(const DlOpenPluginLoader&);
+
+    Plugin *load_plugin(const string &path);
+    int unload_plugin(void *handle);
+
+    string m_dirname;
+    vector<Plugin*>   m_plugin_vect;
+    map<void*, Plugin*> m_plugin_map;
 
 };
 

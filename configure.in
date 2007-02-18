@@ -3,12 +3,13 @@
 
 AC_PREREQ(2.57)
 AC_INIT(configure.in)
+AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(lla, 0.2.1)
 
 # Checks for programs.
-AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -19,52 +20,49 @@ AC_PROG_RANLIB
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([fcntl.h arpa/inet.h netinet/in.h stdint.h stdlib.h string.h sys/socket.h sys/time.h syslog.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
 AC_HEADER_STDBOOL
+AC_C_CONST
 AC_C_INLINE
 AC_TYPE_PID_T
-
+AC_HEADER_TIME
+AC_TYPE_UINT16_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT8_T
 
 # Checks for library functions.
+AC_FUNC_CLOSEDIR_VOID
+AC_FUNC_FORK
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MALLOC
 AC_FUNC_MEMCMP
 AC_FUNC_SELECT_ARGTYPES
-AC_FUNC_VPRINTF
 AC_FUNC_STAT
-AC_FUNC_FORK
 AC_FUNC_CLOSEDIR_VOID
-AC_CHECK_FUNCS([gettimeofday strdup strrchr inet_ntoa memset select socket strerror])
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr inet_ntoa select socket strerror])
 
-# check for libartnet
-AC_CHECK_LIB(artnet, artnet_new,[have_artnet="yes"]) 
-AM_CONDITIONAL(HAVE_ARTNET, test "${have_artnet}" = "yes")
+# check for plugin dependencies. We also build a list of plugins that we're
+# going to compile here
+PLUGINS="dummy opendmx stageprofi usbpro"
 
-# check for libeartnet
-AC_CHECK_LIB(eartnet, eartnet_new,[have_eartnet="yes"]) 
-AM_CONDITIONAL(HAVE_EARTNET, test "${have_eartnet}" = "yes")
+PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
+PLUGIN_LIBRARY(eartnet, eartnet_new, EARTNET)
+PLUGIN_LIBRARY(espnet, espnet_new, ESPNET)
+PLUGIN_LIBRARY(shownet, shownet_new, SHOWNET)
+PLUGIN_LIBRARY(sandnet, sandnet_new, SANDNET)
+PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
 
-# check for esp
-AC_CHECK_LIB(espnet, espnet_new,[have_espnet="yes"])
-AM_CONDITIONAL(HAVE_ESPNET, test "${have_espnet}" = "yes")
+# create a list of plugin libs that will be used for testing
+PLUGIN_LIBS=''
+for p in $PLUGINS
+do PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/$p/liblla$p.la"
+done
 
-# check for shownet
-AC_CHECK_LIB(shownet, shownet_new,[have_shownet="yes"])
-AM_CONDITIONAL(HAVE_SHOWNET, test "${have_shownet}" = "yes")
-
-# check for libsandnet
-AC_CHECK_LIB(sandnet, sandnet_new,[have_sandnet="yes"]) 
-AM_CONDITIONAL(HAVE_SANDNET, test "${have_sandnet}" = "yes")
-
-# check for libpathport
-AC_CHECK_LIB(pathport, pathport_new,[have_pathport="yes"]) 
-AM_CONDITIONAL(HAVE_PATHPORT, test "${have_pathport}" = "yes")
-
+AC_SUBST(PLUGIN_LIBS)
 
 dnl ##################################################################
 dnl Check if sockaddr{} has sa_len member.
@@ -103,7 +101,7 @@ AC_OUTPUT( Makefile \
 	   plugins/usbpro/Makefile	\
 	   plugins/stageprofi/Makefile	\
 	   plugins/usbpro/conf_msgs/Makefile	\
-	   plugins/opendmxusb/Makefile	\
+	   plugins/opendmx/Makefile	\
 	   liblla.pc \
 	   plugins/usbpro/conf_msgs/libllausbproconf.pc
 	   plugins/artnet/conf_msgs/libllaartnetconf.pc

@@ -35,6 +35,7 @@ class StageProfiPlugin : public Plugin, public FDManager {
 			Plugin(pa, id),
 			m_prefs(NULL),
 			m_enabled(false) {}
+		~StageProfiPlugin() {}
 
 		int start();
 		int stop();

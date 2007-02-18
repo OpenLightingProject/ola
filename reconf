@@ -2,8 +2,8 @@
 
 ltmain=/usr/share/libtool/ltmain.sh
 
-if [ \( ! -f ltmain.sh \) -a \( -f $ltmain \) ]; then
-	ln -s $ltmain ltmain.sh
+if [ \( ! -f config/ltmain.sh \) -a \( -f $ltmain \) ]; then
+	ln -s $ltmain config/ltmain.sh
 fi
 
 pushd ./ > /dev/null
@@ -14,7 +14,8 @@ popd > /dev/null
 
 echo "Running autotools"
 rm -f config.cache
-aclocal
+set -x
+aclocal -I config
 autoconf
 autoheader
 automake -a

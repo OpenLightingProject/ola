@@ -1,2 +1,2 @@
 
-SUBDIRS = artnet dummy eartnet espnet opendmxusb pathport sandnet shownet stageprofi usbpro
+SUBDIRS = artnet dummy eartnet espnet opendmx pathport sandnet shownet stageprofi usbpro
