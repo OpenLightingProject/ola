@@ -104,7 +104,7 @@ public:
   ~LlaDevice();
 
   int get_id();
-  int get_count();
+  int port_count();
   std::string get_name();
   int get_plugid();
   int add_port(class LlaPort *prt);

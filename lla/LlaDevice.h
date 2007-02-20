@@ -33,8 +33,8 @@ class LlaDevice {
     ~LlaDevice();
 
     int get_id() { return m_id; }
-    int get_count() { return m_count; }
     string get_name() { return m_name; }
+    int port_count() { return m_count; }
     int get_plugid() { return m_plugin; }
 
     int add_port(class LlaPort *prt);
@@ -46,7 +46,7 @@ class LlaDevice {
     LlaDevice operator=(const LlaDevice&);
 
     int m_id ;    // device id
-    int m_count;  // wtf is this ?
+    int m_count;  // number of ports
     string m_name;  // device name
     int m_plugin;  // parent plugin id
     vector<class LlaPort *> m_ports;

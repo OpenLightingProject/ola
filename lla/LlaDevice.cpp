@@ -25,34 +25,34 @@
  *
  */
 LlaDevice::LlaDevice(int id, int count, const string &name, int pid) :
-	m_id(id),
-	m_count(count),
-	m_name(name),
-	m_plugin(pid) {
+ m_id(id),
+ m_count(count),
+ m_name(name),
+ m_plugin(pid) {
 
 }
 
 LlaDevice::~LlaDevice() {
-	reset_ports();
+ reset_ports();
 }
 
 
 int LlaDevice::add_port(LlaPort *prt) {
-	m_ports.push_back(prt);
-	return 0;
+ m_ports.push_back(prt);
+ return 0;
 }
 
 const vector<LlaPort *> LlaDevice::get_ports() {
-	return m_ports;
+ return m_ports;
 }
 
 int LlaDevice::reset_ports() {
-	vector<LlaPort *>::iterator iter;
+ vector<LlaPort *>::iterator iter;
 
-	for(iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-		delete (*iter);
-	}
+ for(iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
+  delete (*iter);
+ }
 
-	m_ports.clear();
-	return 0;
+ m_ports.clear();
+ return 0;
 }
