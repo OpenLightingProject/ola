@@ -15,11 +15,11 @@
  *
  * LlaClientObserver.h
  * The interface for the LLA Connection Observer class
- * Copyright (C) 2006  Simon Newton
+ * Copyright (C) 2006-2007 Simon Newton
  */
 
-#ifndef LLACONOBSERVER_H
-#define LLACONOBSERVER_H
+#ifndef LLA_CLIENT_OBSERVER_H
+#define LLA_CLIENT_OBSERVER_H
 
 using namespace std;
 
@@ -28,19 +28,18 @@ using namespace std;
 
 class LlaClientObserver {
 
-	public:
+  public:
+    virtual ~LlaClientObserver() { printf("ob dead\n");}
 
-		virtual ~LlaClientObserver() {};
+    virtual int new_dmx(unsigned int uni, unsigned int length, uint8_t *data) { return 0; }
+    virtual int universes(const vector <class LlaUniverse *> unis) { return 0; }
+    virtual int plugins(const vector <class LlaPlugin *> plugins) { return 0; }
+    virtual int devices(const vector <class LlaDevice *> devices) { return 0; }
+    virtual int ports(class LlaDevice *dev) { return 0; }
+    virtual int plugin_desc(class LlaPlugin *plug) { return 0; }
+    virtual int dev_config(unsigned int dev, uint8_t *req, unsigned int len) { return 0; }
 
-		virtual int new_dmx(unsigned int uni, unsigned int length, uint8_t *data) { printf("base\n"); return 0; }
-		virtual int universes(const vector <class LlaUniverse *> unis) { return 0; }
-		virtual int plugins(const vector <class LlaPlugin *> plugins) { return 0; }
-		virtual int devices(const vector <class LlaDevice *> devices) { return 0; }
-		virtual int ports(class LlaDevice *dev) { return 0; }
-		virtual int plugin_desc(class LlaPlugin *plug) { return 0; }
-		virtual int dev_config(unsigned int dev, uint8_t *res, unsigned int len) { return 0; }
-
-	private:
+  private:
 
 };
 #endif

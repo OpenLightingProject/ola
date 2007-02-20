@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2006 Simon Newton
  */
 
-#ifndef LLADEVICE_H
-#define LLADEVICE_H
+#ifndef LLA_CLIENT_DEVICE_H
+#define LLA_CLIENT_DEVICE_H
 
 using namespace std;
 
@@ -28,27 +28,27 @@ using namespace std;
 
 class LlaDevice {
 
-	public:
-		LlaDevice(int id, int count, const string &name, int pid);
-		~LlaDevice();
+  public:
+    LlaDevice(int id, int count, const string &name, int pid);
+    ~LlaDevice();
 
-		int get_id() { return m_id; }
-		int get_count() { return m_count; }
-		string get_name() { return m_name; }
-		int get_plugid() { return m_plugin; }
+    int get_id() { return m_id; }
+    int get_count() { return m_count; }
+    string get_name() { return m_name; }
+    int get_plugid() { return m_plugin; }
 
-		int add_port(class LlaPort *prt);
-		int reset_ports();
-		const vector<class LlaPort *> get_ports();
+    int add_port(class LlaPort *prt);
+    int reset_ports();
+    const vector<class LlaPort *> get_ports();
 
-	private:
-		LlaDevice(const LlaDevice&);
-		LlaDevice operator=(const LlaDevice&);
+  private:
+    LlaDevice(const LlaDevice&);
+    LlaDevice operator=(const LlaDevice&);
 
-		int m_id ;		// device id
-		int m_count;	// wtf is this ?
-		string m_name;	// device name
-		int m_plugin;	// parent plugin id
-		vector<class LlaPort *> m_ports;
+    int m_id ;    // device id
+    int m_count;  // wtf is this ?
+    string m_name;  // device name
+    int m_plugin;  // parent plugin id
+    vector<class LlaPort *> m_ports;
 };
 #endif

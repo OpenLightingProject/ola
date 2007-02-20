@@ -15,11 +15,11 @@
  *
  * LlaClient.h
  * Interface to the LLA Client class
- * Copyright (C) 2005-2006 Simon Newton
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
-#ifndef LLACON_H
-#define LLACON_H
+#ifndef LLA_CLIENT_H
+#define LLA_CLIENT_H
 
 using namespace std;
 
@@ -33,78 +33,78 @@ using namespace std;
 
 class LlaClient {
 
-	public:
-		enum PatchAction {PATCH, UNPATCH};
-		enum RegisterAction {REGISTER, UNREGISTER};
+  public:
+    enum PatchAction {PATCH, UNPATCH};
+    enum RegisterAction {REGISTER, UNREGISTER};
 
-		LlaClient() {};
-		~LlaClient();
+    LlaClient();
+    ~LlaClient();
 
-		int start();
-		int stop();
-		int fd() const;
-		int fd_action(unsigned int delay);
+    int start();
+    int stop();
+    int fd() const;
+    int fd_action(unsigned int delay);
 
-		int set_observer(class LlaClientObserver *o);
+    int set_observer(class LlaClientObserver *o);
 
-		// dmx methods
-		int send_dmx(unsigned int universe, uint8_t *data, unsigned int length);
-		int fetch_dmx(unsigned int uni);
+    // dmx methods
+    int send_dmx(unsigned int universe, uint8_t *data, unsigned int length);
+    int fetch_dmx(unsigned int uni);
 
-		// rdm methods
-		// int send_rdm(int universe, uint8_t *data, int length);
+    // rdm methods
+    // int send_rdm(int universe, uint8_t *data, int length);
 
-		int fetch_dev_info(lla_plugin_id filter);
-		int fetch_port_info(class LlaDevice *dev);
-		int fetch_uni_info();
-		int fetch_plugin_info();
-		int fetch_plugin_desc(class LlaPlugin *plug);
+    int fetch_dev_info(lla_plugin_id filter);
+    int fetch_port_info(class LlaDevice *dev);
+    int fetch_uni_info();
+    int fetch_plugin_info();
+    int fetch_plugin_desc(class LlaPlugin *plug);
 
-		int set_uni_name(unsigned int uni, const string &name);
-		int set_uni_merge_mode(unsigned int uni, LlaUniverse::merge_mode mode);
+    int set_uni_name(unsigned int uni, const string &name);
+    int set_uni_merge_mode(unsigned int uni, LlaUniverse::merge_mode mode);
 
-		int register_uni(unsigned int uni, LlaClient::RegisterAction action);
-		int patch(unsigned int dev, unsigned int port, LlaClient::PatchAction action, unsigned int uni);
-		int dev_config(unsigned int dev, const class LlaDevConfMsg *msg);
+    int register_uni(unsigned int uni, LlaClient::RegisterAction action);
+    int patch(unsigned int dev, unsigned int port, LlaClient::PatchAction action, unsigned int uni);
+    int dev_config(unsigned int dev, const class LlaDevConfMsg *msg);
 
-	private:
-		LlaClient(const LlaClient&);
-		LlaClient operator=(const LlaClient&);
-		
-		static const unsigned int LLAD_PORT = 8898;	// port to connect to
-		static const string LLAD_ADDR;				// address to bind to
-		static const unsigned int MAX_DMX = 512;
+  private:
+    LlaClient(const LlaClient&);
+    LlaClient operator=(const LlaClient&);
 
-		int receive(unsigned int delay);
-		int send_msg(lla_msg *msg);
-		int read_msg();
-		int handle_msg(lla_msg *msg);
-		int handle_dmx(lla_msg *msg);
-		int handle_syn_ack(lla_msg *msg);
-		int handle_fin_ack(lla_msg *msg);
-		int handle_dev_info(lla_msg *msg);
-		int handle_plugin_info(lla_msg *msg);
-		int handle_port_info(lla_msg *msg);
-		int handle_plugin_desc(lla_msg *msg);
-		int handle_universe_info(lla_msg *msg);
-		int handle_dev_conf(lla_msg *msg);
+    static const unsigned int LLAD_PORT = 8898;  // port to connect to
+    static const string LLAD_ADDR;        // address to bind to
+    static const unsigned int MAX_DMX = 512;
 
-		int send_syn();
-		int send_fin();
+    int receive(unsigned int delay);
+    int send_msg(lla_msg *msg);
+    int read_msg();
+    int handle_msg(lla_msg *msg);
+    int handle_dmx(lla_msg *msg);
+    int handle_syn_ack(lla_msg *msg);
+    int handle_fin_ack(lla_msg *msg);
+    int handle_dev_info(lla_msg *msg);
+    int handle_plugin_info(lla_msg *msg);
+    int handle_port_info(lla_msg *msg);
+    int handle_plugin_desc(lla_msg *msg);
+    int handle_universe_info(lla_msg *msg);
+    int handle_dev_conf(lla_msg *msg);
 
-		int clear_plugins();
-		int clear_universes();
-		int clear_devices();
-		int lla_recv(unsigned int delay);
+    int send_syn();
+    int send_fin();
 
-		// instance vars
-		int m_sd;
-		int m_connected;
-		class LlaClientObserver *m_observer;
-		int m_seq;
-		vector<class LlaDevice *> m_devices;
-		vector<class LlaPlugin *> m_plugins;
-		vector<class LlaUniverse*> m_unis;
-		char *desc;
+    int clear_plugins();
+    int clear_universes();
+    int clear_devices();
+    int lla_recv(unsigned int delay);
+
+    // instance vars
+    int m_sd;
+    int m_connected;
+    class LlaClientObserver *m_observer;
+    int m_seq;
+    vector<class LlaDevice *> m_devices;
+    vector<class LlaPlugin *> m_plugins;
+    vector<class LlaUniverse*> m_unis;
+    char *desc;
 };
 #endif

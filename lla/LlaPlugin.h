@@ -34,7 +34,7 @@ class LlaPlugin {
 		~LlaPlugin() {};
 
 		int get_id() { return m_id; }
-		string get_name() { return m_name; }
+		string get_name() { printf("in get name\n"); return m_name; }
 		string get_desc() { return m_desc; }
 		void set_desc(const string &desc) { m_desc = desc; }
 	private:

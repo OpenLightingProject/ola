@@ -15,11 +15,11 @@
  *
  * LlaPort.h
  * Interface to the LLA Client Port class
- * Copyright (C) 2005-2006 Simon Newton
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
-#ifndef LLAPORT_H
-#define LLAPORT_H
+#ifndef LLA_CLIENT_PORT_H
+#define LLA_CLIENT_PORT_H
 
 using namespace std;
 
@@ -27,24 +27,24 @@ using namespace std;
 
 class LlaPort {
 
-	public:
-		enum PortCapability { LLA_PORT_CAP_IN, LLA_PORT_CAP_OUT};
+  public:
+    enum PortCapability { LLA_PORT_CAP_IN, LLA_PORT_CAP_OUT};
 
-		LlaPort(int id, PortCapability cap, int uni, int active);
-		~LlaPort() {};
+    LlaPort(int id, PortCapability cap, int uni, int active);
+    ~LlaPort() {};
 
-		int get_id() { return m_id; }
-		PortCapability get_capability() { return m_cap; }
-		int get_uni() { return m_uni; }
-		int is_active() { return m_active; }
+    int get_id() { return m_id; }
+    PortCapability get_capability() { return m_cap; }
+    int get_uni() { return m_uni; }
+    int is_active() { return m_active; }
 
-	private:
-		LlaPort(const LlaPort&);
-		LlaPort operator=(const LlaPort&);
+  private:
+    LlaPort(const LlaPort&);
+    LlaPort operator=(const LlaPort&);
 
-		int m_id;				// id of this port
-		PortCapability m_cap;	// port capability
-		int m_uni;				// universe
-		int m_active;			// active
+    int m_id;        // id of this port
+    PortCapability m_cap;  // port capability
+    int m_uni;        // universe
+    int m_active;      // active
 };
 #endif
