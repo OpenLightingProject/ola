@@ -409,22 +409,22 @@ int Llad::handle_uni_merge(lla_msg *msg) {
  *
  */
 int Llad::handle_patch (lla_msg *msg) {
-  Device  *dev;
+  Device *dev;
   Port *prt;
   Universe *uni;
   int uid = msg->data.patch.uni;
 
-  dev = dm->get_dev(msg->data.patch.dev );
+  dev = dm->get_dev(msg->data.patch.dev);
 
   if(dev == NULL) {
-    Logger::instance()->log(Logger::WARN, "Device index out of bounds %d", msg->data.patch.dev );
+    Logger::instance()->log(Logger::WARN, "Device index out of bounds %d", msg->data.patch.dev);
     return 0;
   }
 
   prt = dev->get_port(msg->data.patch.port);
 
   if(prt == NULL) {
-    Logger::instance()->log(Logger::WARN, "Port index out of bounds %d", msg->data.patch.port );
+    Logger::instance()->log(Logger::WARN, "Port index out of bounds %d", msg->data.patch.port);
     return 0;
   }
 

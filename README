@@ -4,6 +4,10 @@ Linux Lighting Architecture - LLA
 lla consists of three parts, the daemon llad, the llad plugins and the client
 library, liblla.
 
+In addition there are experimental Python libraries you can build these by
+running configure with --enable-python-libs. For examples see the python
+directory.
+
 
 Credits
 ---------------------------------

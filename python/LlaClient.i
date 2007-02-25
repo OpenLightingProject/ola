@@ -3,7 +3,7 @@
 
 %include "std_string.i"
 %include "std_vector.i"
-
+%include "carrays.i"
 
 %{
 #include <lla/LlaClient.h>
@@ -23,13 +23,35 @@
  */
 %feature("director") LlaClientObserver;
 
-
+/*
+ * maps vectors to lists
+ */
 namespace std {
    %template(UniverseVector) vector<LlaUniverse*>;
    %template(PluginVector) vector<LlaPlugin*>;
    %template(DeviceVector) vector<LlaDevice*>;
    %template(PortVector) vector<LlaPort*>;
 };
+
+/*
+ * map uint8_t to ints
+ */
+%typemap(in) uint8_t {
+    $1 = PyInt_AsLong($input);
+}
+
+%typemap(out) uint8_t {
+    $result = PyInt_FromLong($1);
+}
+
+/*
+ * Map uint8_t * to ArrayObjects
+ */
+%array_class(uint8_t, dmxBuffer);
+
+
+
+
 
 enum lla_plugin_id {
     LLA_PLUGIN_ALL = 0,
@@ -165,5 +187,7 @@ public:
   int register_uni(unsigned int uni, LlaClient::RegisterAction action);
   int patch(unsigned int dev, unsigned int port, LlaClient::PatchAction action, unsigned int uni);
   int dev_config(unsigned int dev, const class LlaDevConfMsg *msg);
+
+
 };
 

@@ -29,7 +29,7 @@ using namespace std;
 class LlaClientObserver {
 
   public:
-    virtual ~LlaClientObserver() { printf("ob dead\n");}
+    virtual ~LlaClientObserver() {}
 
     virtual int new_dmx(unsigned int uni, unsigned int length, uint8_t *data) { return 0; }
     virtual int universes(const vector <class LlaUniverse *> unis) { return 0; }

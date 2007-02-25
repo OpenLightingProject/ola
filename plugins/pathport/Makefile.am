@@ -1,7 +1,7 @@
 
 libdir = $(plugindir)
 
-if HAVE_SHOWNET
+if HAVE_PATHPORT
 
 lib_LTLIBRARIES = libllapathport.la
 
