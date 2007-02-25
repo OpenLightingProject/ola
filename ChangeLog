@@ -1,55 +1,61 @@
+26/2/2007 Simon Newton <<nomis52@westnet.com.au>
+
+  * Integrated the python libs into autotools
+  * Minor bugfix
+  * Wrote port patching regression tests
+
 16/2/2007 Simon Newton <<nomis52@westnet.com.au>
 
-   * reduced memory usage in plugins
-   * started on test framework
+  * reduced memory usage in plugins
+  * started on test framework
 
 14/1/2007 Simon Newton <<nomis52@westnet.com.au>
 
-	* Pathport plugin added
+  * Pathport plugin added
 
 13/1/2007 Simon Newton <<nomis52@westnet.com.au>
 
-	* Added a plugin for the Stage Profi USB Device
+  * Added a plugin for the Stage Profi USB Device
 
 1/1/2007 Simon Newton <<nomis52@westnet.com.au>
 
-	* fixed the problem on the USB Pro when changing modes
+  * fixed the problem on the USB Pro when changing modes
 
 30/12/2006 Simon Newton <<nomis52@westnet.com.au>
 
-	* Fixed the Usb Pro last-channel-corrupt bug
+  * Fixed the Usb Pro last-channel-corrupt bug
 
 30/12/2006 Simon Newton <<nomis52@westnet.com.au>
 
-	* Fixed problems so that it would acutally compile again
+  * Fixed problems so that it would acutally compile again
 
 25/12/2006 Simon Newton <<nomis52@westnet.com.au>
 
-	* universes now save names and merge mode
-	* fixed a bunch of memory leaks
+  * universes now save names and merge mode
+  * fixed a bunch of memory leaks
 
 24/12/2006 Simon Newton <<nomis52@westnet.com.au>
 
-	* Got device config messages working
-	* Add configuration commands to the Pro Device
-	* Added universe merge capability
-	* Improved the tool to autogen protocol messages
-	* Added merge mode for universes with device sources (no client support yet)
+  * Got device config messages working
+  * Add configuration commands to the Pro Device
+  * Added universe merge capability
+  * Improved the tool to autogen protocol messages
+  * Added merge mode for universes with device sources (no client support yet)
 
 28/11/2006 Simon Newton <<nomis52@westnet.com.au>
-	* Started on a general RPC framework
-	* Changed the client to C++, events are now handled asynchronously
+  * Started on a general RPC framework
+  * Changed the client to C++, events are now handled asynchronously
 
 27/4/2006 Simon Newton <<nomis52@westnet.com.au>
 
-	* Art-Net plugin bug fix
+  * Art-Net plugin bug fix
 
 17/4/2006 Simon Newton <<nomis52@westnet.com.au>
 
-    * Added support for multiple preference values per key
-	* Pro Plugin now supports multiple devices
+  * Added support for multiple preference values per key
+  * Pro Plugin now supports multiple devices
 
 16/4/2006 Simon Newton <<nomis52@westnet.com.au>
 
-    * USR1 signals now used to change logging levels
+  * USR1 signals now used to change logging levels
 
