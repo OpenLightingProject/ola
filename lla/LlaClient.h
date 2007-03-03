@@ -23,10 +23,15 @@
 
 using namespace std;
 
+#ifdef LLA_HAVE_PTHREAD
+#include <pthread.h>
+#endif
+
 #include <string>
 #include <vector>
 #include <stdint.h>
 
+#include <lla/common.h>
 #include <lla/plugin_id.h>
 #include <lla/messages.h>
 #include <lla/LlaUniverse.h>
@@ -76,6 +81,7 @@ class LlaClient {
     static const unsigned int MAX_DMX = 512;
 
     int receive(unsigned int delay);
+    int lock_and_send_msg(lla_msg *msg);
     int send_msg(lla_msg *msg);
     int read_msg();
     int handle_msg(lla_msg *msg);
@@ -98,6 +104,9 @@ class LlaClient {
     int lla_recv(unsigned int delay);
 
     // instance vars
+#ifdef LLA_HAVE_PTHREAD
+    pthread_mutex_t m_mutex;
+#endif
     int m_sd;
     int m_connected;
     class LlaClientObserver *m_observer;

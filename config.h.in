@@ -71,6 +71,9 @@
 /* define if libpathport is installed */
 #undef HAVE_PATHPORT
 
+/* define if pthread is installed */
+#undef HAVE_PTHREAD
+
 /* define if libsandnet is installed */
 #undef HAVE_SANDNET
 

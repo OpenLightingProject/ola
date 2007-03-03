@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>  
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 
@@ -41,6 +41,14 @@
 #define min(a,b)    ((a) < (b) ? (a) : (b))
 #define max(a,b)    ((a) > (b) ? (a) : (b))
 
+#ifdef HAVE_PTHREAD
+#define acquire_lock pthread_mutex_lock(&m_mutex)
+#define release_lock pthread_mutex_unlock(&m_mutex)
+#else
+#define acquire_lock
+#define release_lock
+#endif
+
 const string LlaClient::LLAD_ADDR("127.0.0.1");
 
 LlaClient::LlaClient() :
@@ -49,11 +57,15 @@ LlaClient::LlaClient() :
   m_observer(NULL),
   m_seq(0),
   desc(NULL) {
+#ifdef HAVE_PTHREAD
+  pthread_mutex_init(&m_mutex, NULL);
+#endif
 }
 
 LlaClient::~LlaClient() {
   if(m_connected)
     stop();
+
 }
 
 
@@ -65,14 +77,15 @@ LlaClient::~LlaClient() {
 int LlaClient::start() {
   struct sockaddr_in servaddr;
 
-  // init members
-  m_connected = 0;
-  m_seq = 0;
+  if (m_connected)
+    return 0;
+
+  acquire_lock;
 
   //connect to socket
   m_sd = socket(AF_INET, SOCK_DGRAM, 0);
 
-  if(!m_sd)
+  if (!m_sd)
     goto e_socket;
 
   memset(&servaddr, 0x00, sizeof(servaddr) );
@@ -80,13 +93,13 @@ int LlaClient::start() {
   servaddr.sin_port = htons(LLAD_PORT);
   inet_aton(LLAD_ADDR.c_str(), &servaddr.sin_addr);
 
-  if (-1 == connect(m_sd, (struct sockaddr *) &servaddr, sizeof(servaddr) ) ) 
+  if (-1 == connect(m_sd, (struct sockaddr *) &servaddr, sizeof(servaddr) ))
     goto e_connect;
 
   // send syn to server
   send_syn();
 
-  while(!m_connected) {
+  while (!m_connected) {
     switch (receive(1)) {
       case 0:
         break;
@@ -102,12 +115,14 @@ int LlaClient::start() {
         break;
     }
   }
+  release_lock;
   return 0;
 
 e_connect:
   close(m_sd);
 
 e_socket:
+  release_lock;
   return -1;
 }
 
@@ -118,7 +133,8 @@ e_socket:
  * @return 0 on sucess, -1 on failure
  */
 int LlaClient::stop() {
-
+  acquire_lock;
+  printf("stopping\n");
   if(m_connected) {
     send_fin();
 
@@ -129,10 +145,10 @@ int LlaClient::stop() {
         case 1:
           // timeout
           printf("failed to get fin ack\n");
-          return -1;
+          goto e_error;
         case -1:
           // error
-          return -1;
+          goto e_error;
         case -2:
           // interupt
           break;
@@ -144,7 +160,12 @@ int LlaClient::stop() {
     clear_universes();
     m_connected = false;
   }
+  release_lock;
   return 0;
+
+e_error:
+  release_lock;
+  return -1;
 }
 
 
@@ -160,7 +181,7 @@ int LlaClient::fd() const {
 
 /*
  * Call when there is action on the sd
- * 
+ *
  * delay sets a delay to wait for IO before returning, note this is a max delay,
  * we will return before this if we got data.
  *
@@ -168,23 +189,30 @@ int LlaClient::fd() const {
  * @return 0 on success, -1 on error
  */
 int LlaClient::fd_action(unsigned int delay) {
-  
-  while(1) {
-    switch(receive(delay)) {
+  int ret = 0;
+  int term = false;
+  acquire_lock;
+  while (!term) {
+    switch (receive(delay)) {
       case 0:
         break;
-      case 1:
-        // timeout
-        return 0;
-      case -1:
-        // error
-        return -1;
       case -2:
         // interupt
+      case 1:
+        // timeout
+        term = true;
+        break;
+      case -1:
+        // error
+        ret = -1;
+        term = true;
+        break;
+      default:
         break;
     }
   }
-  return 0;
+  release_lock;
+  return ret;
 }
 
 
@@ -209,34 +237,32 @@ int LlaClient::set_observer(LlaClientObserver *o) {
  */
 int LlaClient::send_dmx(unsigned int uni, uint8_t *data, unsigned int length) {
   lla_msg msg;
-  
+
   msg.len = sizeof(lla_msg_dmx_data);
   msg.data.dmx.op = LLA_MSG_DMX_DATA;
   msg.data.dmx.uni = uni;
   msg.data.dmx.len = min(length, MAX_DMX);
-  
+
   memcpy(&msg.data.dmx.data, data, msg.data.dmx.len);
 
-  return send_msg(&msg);
+  return lock_and_send_msg(&msg);
 }
 
 
 /*
  * read dmx data
  *
- * Usually you want to call this in the dmx callback. Or you could
- * poll it I suppose.
  *
  */
 int LlaClient::fetch_dmx(unsigned int universe) {
   //send read request
   lla_msg msg;
-  
+
   msg.len = sizeof(lla_msg_uni_name);
   msg.data.rreq.op = LLA_MSG_READ_REQ;
   msg.data.rreq.uni = universe;
-  
-  return send_msg(&msg);
+
+  return lock_and_send_msg(&msg);
 }
 
 /*
@@ -246,14 +272,15 @@ int LlaClient::fetch_dmx(unsigned int universe) {
  */
 int LlaClient::fetch_dev_info(lla_plugin_id filter) {
   lla_msg msg;
-  
+
   msg.len = sizeof(lla_msg_device_info_request);
   msg.data.dreq.op = LLA_MSG_DEVICE_INFO_REQUEST;
   msg.data.dreq.plugin = filter;
-  
+
+  acquire_lock;
   send_msg(&msg);
-  
   clear_devices();
+  release_lock;
   return 0;
 }
 
@@ -264,33 +291,32 @@ int LlaClient::fetch_dev_info(lla_plugin_id filter) {
 int LlaClient::fetch_port_info(LlaDevice *dev) {
   lla_msg msg;
 
-  if(dev == NULL)
+  if (!dev)
     return -1;
-  
+
   msg.len = sizeof(lla_msg_port_info_request);
-  
   msg.data.prreq.op = LLA_MSG_PORT_INFO_REQUEST;
   msg.data.prreq.devid = dev->get_id();
-  send_msg(&msg);
-
-  return 0;
+  return lock_and_send_msg(&msg);
 }
 
 
 /*
  * Request a universe listing
  *
- * @return 
+ * @return
  */
 int LlaClient::fetch_uni_info() {
   lla_msg msg;
-  
+
   msg.len = sizeof(lla_msg_plugin_info_request);
   msg.data.unireq.op = LLA_MSG_UNI_INFO_REQUEST;
-  
+
+  acquire_lock;
   send_msg(&msg);
-  
   clear_universes();
+  release_lock;
+
   return 0;
 }
 
@@ -302,14 +328,15 @@ int LlaClient::fetch_uni_info() {
  */
 int LlaClient::fetch_plugin_info() {
   lla_msg msg;
-  
+
   msg.len = sizeof(lla_msg_plugin_info_request);
   msg.data.plreq.op = LLA_MSG_PLUGIN_INFO_REQUEST;
-  
+
+  acquire_lock;
   send_msg(&msg);
-  
   clear_plugins();
-  return 0;  
+  release_lock;
+  return 0;
 }
 
 
@@ -323,13 +350,12 @@ int LlaClient::fetch_plugin_desc(LlaPlugin *plug) {
 
   if (plug == NULL)
     return -1;
-  
+
   msg.len = sizeof(lla_msg_plugin_desc_request);
   msg.data.pldreq.op = LLA_MSG_PLUGIN_DESC_REQUEST;
   msg.data.pldreq.pid = plug->get_id();
-  
-  send_msg(&msg);
-  return 0;
+
+  return lock_and_send_msg(&msg);
 }
 
 
@@ -344,9 +370,9 @@ int LlaClient::set_uni_name(unsigned int uni, const string &name) {
   msg.len = sizeof(lla_msg_uni_name);
   msg.data.uniname.op = LLA_MSG_UNI_NAME;
   msg.data.uniname.uni = uni;
-  
+
   strncpy(msg.data.uniname.name, name.c_str(), l);
-  return send_msg(&msg);
+  return lock_and_send_msg(&msg);
 }
 
 
@@ -361,8 +387,8 @@ int LlaClient::set_uni_merge_mode(unsigned int uni, LlaUniverse::merge_mode mode
   msg.data.unimerge.op = LLA_MSG_UNI_MERGE;
   msg.data.unimerge.uni = uni;
   msg.data.unimerge.mode = mode;
-  
-  return send_msg(&msg);
+
+  return lock_and_send_msg(&msg);
 }
 
 
@@ -375,7 +401,7 @@ int LlaClient::set_uni_merge_mode(unsigned int uni, LlaUniverse::merge_mode mode
  */
 int LlaClient::register_uni(unsigned int uni, LlaClient::RegisterAction action) {
   lla_msg reg;
-  
+
   reg.len = sizeof(lla_msg_register);
   reg.data.reg.op = LLA_MSG_REGISTER;
   reg.data.reg.uni = uni;
@@ -384,8 +410,8 @@ int LlaClient::register_uni(unsigned int uni, LlaClient::RegisterAction action) 
     reg.data.reg.action = LLA_MSG_REG_REG;
   else
     reg.data.reg.action = LLA_MSG_REG_UNREG;
-  
-  return send_msg(&reg);
+
+  return lock_and_send_msg(&reg);
 }
 
 
@@ -400,7 +426,7 @@ int LlaClient::register_uni(unsigned int uni, LlaClient::RegisterAction action) 
 int LlaClient::patch(unsigned int dev, unsigned int port, LlaClient::PatchAction action, unsigned int uni) {
 
   lla_msg msg;
-  
+
   msg.len = sizeof(lla_msg_patch);
   msg.data.patch.op = LLA_MSG_PATCH;
   msg.data.patch.dev = dev;
@@ -412,7 +438,7 @@ int LlaClient::patch(unsigned int dev, unsigned int port, LlaClient::PatchAction
   } else {
     msg.data.patch.action = LLA_MSG_PATCH_REMOVE;
   }
-  return send_msg(&msg);
+  return lock_and_send_msg(&msg);
 }
 
 
@@ -430,12 +456,12 @@ int LlaClient::dev_config(unsigned int dev, const class LlaDevConfMsg *dmsg) {
   int l;
   int buf_len = sizeof(msg.data.devreq.req);
 
-  if(dmsg == NULL)
+  if (!dmsg)
     return -1;
 
   l = dmsg->pack(msg.data.devreq.req, sizeof(msg.data.devreq.req));
 
-  if( l < 0)
+  if (l < 0)
     return -1;
 
   msg.data.devreq.op = LLA_MSG_DEV_CONFIG_REQ;
@@ -444,7 +470,7 @@ int LlaClient::dev_config(unsigned int dev, const class LlaDevConfMsg *dmsg) {
   msg.len = sizeof(lla_msg_device_config_req) - buf_len + l;
   msg.data.devreq.seq = m_seq++;
 
-  return send_msg(&msg);
+  return lock_and_send_msg(&msg);
 }
 
 
@@ -459,7 +485,7 @@ int LlaClient::dev_config(unsigned int dev, const class LlaDevConfMsg *dmsg) {
 int LlaClient::receive(unsigned int delay) {
   struct timeval tv;
   fd_set rset;
- 
+
   tv.tv_usec = 0;
   tv.tv_sec = delay;
 
@@ -473,8 +499,8 @@ int LlaClient::receive(unsigned int delay) {
       break;
     case -1 :
       //error
-      if( errno != EINTR) {
-        printf("%s : select error", strerror(errno) );
+      if (errno != EINTR) {
+        printf("%s : select error", strerror(errno));
         return -1;
       }
       // we were interupted
@@ -497,11 +523,22 @@ int LlaClient::receive(unsigned int delay) {
  */
 int LlaClient::send_msg(lla_msg *msg) {
 
-  if ( 0 >= send(m_sd, &msg->data, msg->len, 0 ) ) {
-    printf("send msg failure: %s\n", strerror(errno) );
+  if ( 0 >= send(m_sd, &msg->data, msg->len, 0) ) {
+    printf("send msg failure: %s\n", strerror(errno));
     return -1;
   }
   return 0;
+}
+
+
+/*
+ * acquire the lock and send
+ */
+int LlaClient::lock_and_send_msg(lla_msg *msg) {
+  acquire_lock;
+  int ret = send_msg(msg);
+  release_lock;
+  return ret;
 }
 
 
@@ -513,7 +550,7 @@ int LlaClient::read_msg() {
   lla_msg msg;
   int len;
 
-  if ( (len = recv(m_sd, &msg.data, sizeof(lla_msg_data), 0 )< 0) ) {
+  if ( (len = recv(m_sd, &msg.data, sizeof(lla_msg_data), 0)) < 0 ) {
     // call err func here
     printf("Error in recv from: %s\n", strerror(errno));
     return -1;
@@ -531,7 +568,7 @@ int LlaClient::read_msg() {
  *
  */
 int LlaClient::handle_msg(lla_msg *msg) {
-  
+
   // we're only interested in a couple of msgs here
   switch(msg->data.dmx.op) {
     case LLA_MSG_SYN_ACK:
@@ -573,9 +610,11 @@ int LlaClient::handle_msg(lla_msg *msg) {
 int LlaClient::handle_dmx(lla_msg *msg) {
 
   // notify observer
-  if(m_observer != NULL) {
+  if (m_observer != NULL) {
     // TODO: keep a map of registrations and filter
+    release_lock;
     m_observer->new_dmx(msg->data.dmx.uni ,msg->data.dmx.len, msg->data.dmx.data);
+    acquire_lock;
   }
   return 0;
 }
@@ -585,8 +624,8 @@ int LlaClient::handle_dmx(lla_msg *msg) {
  * A syn ack marks us as connected
  */
 int LlaClient::handle_syn_ack(lla_msg *msg) {
-  if(!m_connected) {
-    m_connected = 1;
+  if (!m_connected) {
+    m_connected = true;
   }
   msg = NULL;
   return 0;
@@ -598,8 +637,8 @@ int LlaClient::handle_syn_ack(lla_msg *msg) {
  */
 int LlaClient::handle_fin_ack(lla_msg *msg) {
 
-  if(m_connected) {
-    m_connected = 0;
+  if (m_connected) {
+    m_connected = false;
   }
   msg = NULL;
   return 0;
@@ -618,15 +657,18 @@ int LlaClient::handle_plugin_info(lla_msg *msg) {
 
   clear_plugins();
 
-  for(i=0; i < plugins; i++) {
+  for (i=0; i < plugins; i++) {
     int id = msg->data.plinfo.plugins[i].id;
     string name(msg->data.plinfo.plugins[i].name);
     plug = new LlaPlugin(id, name);
     m_plugins.push_back(plug);
   }
 
-  if(m_observer != NULL)
+  if (m_observer) {
+    release_lock;
     m_observer->plugins(m_plugins);
+    acquire_lock;
+  }
   return 0;
 }
 
@@ -644,22 +686,25 @@ int LlaClient::handle_universe_info(lla_msg *msg) {
 
   clear_universes();
 
-  for(i=0; i < universes; i++) {
+  for (i=0; i < universes; i++) {
     int id = msg->data.uniinfo.universes[i].id;
     LlaUniverse::merge_mode mode = msg->data.uniinfo.universes[i].merge == UNI_MERGE_MODE_HTP ? LlaUniverse::MERGE_HTP : LlaUniverse::MERGE_LTP;
     string name(msg->data.uniinfo.universes[i].name);
 
     uni = new LlaUniverse(id, mode, name);
 
-    if(uni == NULL) {
+    if (!uni) {
       printf("malloc failed\n");
       return -1;
     }
     m_unis.push_back(uni);
   }
 
-  if(m_observer != NULL) 
+  if (m_observer) {
+    release_lock;
     m_observer->universes(m_unis);
+    acquire_lock;
+  }
 
   return 0;
 }
@@ -668,12 +713,12 @@ int LlaClient::handle_universe_info(lla_msg *msg) {
 /*
  * Handle a device info message
  * TODO: support fragmentation
- * 
+ *
  */
 int LlaClient::handle_dev_info(lla_msg *msg) {
   int i, devs;
   LlaDevice *dev = NULL;
-  
+
   devs = min(msg->data.dinfo.ndevs, DEVICES_PER_DATAGRAM);
 
   for(i=0; i < devs; i++) {
@@ -681,13 +726,16 @@ int LlaClient::handle_dev_info(lla_msg *msg) {
     int pid = msg->data.dinfo.devices[i].plugin;
     string name(msg->data.dinfo.devices[i].name);
     int count = msg->data.dinfo.devices[i].ports;
-    dev = new LlaDevice(id, count, name, pid) ;
+    dev = new LlaDevice(id, count, name, pid);
 
     m_devices.push_back(dev);
   }
 
-  if(m_observer != NULL)
+  if (m_observer != NULL) {
+    release_lock;
     m_observer->devices(m_devices);
+    acquire_lock;
+  }
   return 0;
 }
 
@@ -698,27 +746,27 @@ int LlaClient::handle_dev_info(lla_msg *msg) {
  */
 int LlaClient::handle_port_info(lla_msg *msg) {
   int i, ports;
-  LlaPort *prt  = NULL;
+  LlaPort *prt = NULL;
   LlaDevice *dev = NULL;
   vector<LlaDevice *>::iterator iter;
 
-  for( iter = m_devices.begin(); iter != m_devices.end(); iter++) {
+  for (iter = m_devices.begin(); iter != m_devices.end(); iter++) {
     if ((*iter)->get_id() == msg->data.prinfo.dev) {
       dev = *iter;
       break;
     }
   }
 
-  if( dev == NULL) {
+  if (!dev) {
     printf("Could not locate device %d\n", msg->data.prinfo.dev);
     return -1;
   }
-  
+
   dev->reset_ports();
-  
+
   ports = min(msg->data.prinfo.nports, DEVICES_PER_DATAGRAM);
 
-  for(i=0; i < ports; i++) {
+  for (i=0; i < ports; i++) {
     int id = msg->data.prinfo.ports[i].id;
     LlaPort::PortCapability cap = msg->data.prinfo.ports[i].cap == LLA_MSG_PORT_CAP_IN ? LlaPort::LLA_PORT_CAP_IN : LlaPort::LLA_PORT_CAP_OUT;
     int uni = msg->data.prinfo.ports[i].uni;
@@ -726,44 +774,50 @@ int LlaClient::handle_port_info(lla_msg *msg) {
 
     prt = new LlaPort(id, cap, uni, active);
 
-    if(prt == NULL) {
+    if (!prt) {
       printf("malloc failed\n");
       return -1;
     }
     dev->add_port(prt);
   }
 
-  if(m_observer != NULL) 
+  if (m_observer) {
+    release_lock;
     m_observer->ports(dev);
+    acquire_lock;
+  }
 
   return 0;
 }
 
 
 /*
- * handle plugin desc response 
+ * handle plugin desc response
  */
 int LlaClient::handle_plugin_desc(lla_msg *msg) {
   LlaPlugin *plug  = NULL;
   vector<LlaPlugin *>::iterator iter;
 
-  for( iter = m_plugins.begin(); iter != m_plugins.end(); iter++) {
+  for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++) {
     if ((*iter)->get_id() == msg->data.pldesc.pid) {
       plug = *iter;
       break;
     }
   }
 
-  if( plug == NULL) {
+  if (!plug) {
     printf("Could not locate plugin %d\n", msg->data.pldesc.pid);
     return -1;
   }
 
   string desc(msg->data.pldesc.desc, PLUGIN_DESC_LENGTH);
   plug->set_desc(desc);
-  
-  if(m_observer != NULL) 
+
+  if (m_observer) {
+    release_lock;
     m_observer->plugin_desc(plug);
+    acquire_lock;
+  }
 
   return 0;
 }
@@ -771,12 +825,15 @@ int LlaClient::handle_plugin_desc(lla_msg *msg) {
 
 
 /*
- * handle a device config response
- * 
+ * Handle a device config response
+ *
  */
 int LlaClient::handle_dev_conf(lla_msg *msg) {
-  if(m_observer != NULL)
+  if (m_observer) {
+    release_lock;
     m_observer->dev_config(msg->data.devrep.dev, msg->data.devrep.rep, msg->data.devrep.len);
+    acquire_lock;
+  }
 
   return 0;
 }
@@ -791,7 +848,7 @@ int LlaClient::handle_dev_conf(lla_msg *msg) {
  */
 int LlaClient::send_syn() {
   lla_msg msg;
-  
+
   msg.len = sizeof(lla_msg_syn);
   msg.data.syn.op = LLA_MSG_SYN;
 
@@ -803,7 +860,6 @@ int LlaClient::send_syn() {
  */
 int LlaClient::send_fin() {
   lla_msg msg;
-
   msg.len = sizeof(lla_msg_fin);
   msg.data.fin.op = LLA_MSG_FIN;
 
@@ -818,7 +874,7 @@ int LlaClient::send_fin() {
 int LlaClient::clear_plugins() {
   vector<LlaPlugin *>::iterator iter;
 
-  for(iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
+  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
     delete *iter;
   }
   m_plugins.clear();
@@ -833,7 +889,7 @@ int LlaClient::clear_plugins() {
 int LlaClient::clear_universes() {
   vector<LlaUniverse *>::iterator iter;
 
-  for(iter = m_unis.begin(); iter != m_unis.end(); ++iter) {
+  for (iter = m_unis.begin(); iter != m_unis.end(); ++iter) {
     delete *iter;
   }
   m_unis.clear();
@@ -848,7 +904,7 @@ int LlaClient::clear_universes() {
 int LlaClient::clear_devices() {
   vector<LlaDevice *>::iterator iter;
 
-  for(iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     delete *iter;
   }
   m_devices.clear();
