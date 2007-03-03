@@ -134,7 +134,6 @@ e_socket:
  */
 int LlaClient::stop() {
   acquire_lock;
-  printf("stopping\n");
   if(m_connected) {
     send_fin();
 
