@@ -9,6 +9,6 @@ liblla_la_LDFLAGS = -version-info 1:0:0
 liblla_la_CXXFLAGS = -Wall -Wformat
 
 pkgincludedir = $(includedir)/lla
-pkginclude_HEADERS = $(LLA_HEADERS)
+pkginclude_HEADERS = $(HEADER_FILES)
 
-EXTRA_DIST = $(LLA_HEADERS)
+EXTRA_DIST = $(HEADER_FILES)

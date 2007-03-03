@@ -9,8 +9,7 @@
 --REQUIRED--
 
 * tx pathport support
-* testing framework - plugable plugin loaders
-* regression tests for plugins - python
+* regression tests for plugins
 
 -- NICE--
 * let the ports save what universe they are attached to (do this in the plugin)
