@@ -3,42 +3,48 @@ Contents
 ========
 
  A. Basic Installation
- B. Installation Paths
+ B. Configure Options
+ C. Installation Paths
 
 
 A. Basic Installation
 ==================
 
   1.  Extract the archive
-  	
-	tar -zxf lla-0.x.y.tar.gz
-	
+
+  tar -zxf lla-0.x.y.tar.gz
+
   2.  Enter the directory
-  
-  	cd lla-0.x.y.tar.gz
+
+    cd lla-0.x.y.tar.gz
 
   3.  Run the configure script. If you're using `csh' on an old version of
-      System V, you might need to type `sh ./configure' instead to prevent 
+      System V, you might need to type `sh ./configure' instead to prevent
       `csh' from trying to execute `configure' itself.
-		 
-	./configure
-	
+
+    ./configure
+
   4.  Build the source files.
-  
-  	make
+
+    make
 
   5.  Run the (simple) unit tests
-   
+
     make check
- 
+
   6. Become root
-  	
-	su
-	(enter root password)
+
+  su
+  (enter root password)
 
   7. Install
 
-  	make install
+    make install
+
+B. Configure Options
+====================
+
+--enable-python-libs    builds the python libraries
 
 
 C. Installation Paths

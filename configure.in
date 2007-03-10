@@ -92,7 +92,7 @@ AC_DEFINE(DEBUG, 1, [Enable debugging]) )
 
 # python wrappers
 AC_ARG_ENABLE(python-libs,
- [ --enable-python-libs Build the python wrappers],
+ [  --enable-python-libs Build the python wrappers],
  [ build_python_libs="yes"]
 )
 

@@ -1,3 +1,7 @@
+3/3/2007 Simon Newton <<nomis52@westnet.com.au>
+
+  * initial thread support in the client libraries
+
 26/2/2007 Simon Newton <<nomis52@westnet.com.au>
 
   * Integrated the python libs into autotools

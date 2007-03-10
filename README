@@ -1,22 +1,46 @@
 Linux Lighting Architecture - LLA
----------------------------------
+===============================================================================
 
-lla consists of three parts, the daemon llad, the llad plugins and the client
+LLA consists of three parts, the daemon llad, the llad plugins and the client
 library, liblla.
 
-In addition there are experimental Python libraries you can build these by
-running configure with --enable-python-libs. For examples see the python
-directory.
+
+Plugins
+------------------------------------------------------------------------------
+
+Are located in ./plugins. To create a new plugin you'll need to subclass the
+Plugin, Device and Port classes. See any of the current plugins for an example.
+
+
+C++ Library
+-------------------------------------------------------------------------------
+
+Is located in ./lla . You'll want to create a new LlaClient and call start().
+To do anything useful you'll need to subclass LlaClientObserver and implement
+some of the methods.
+
+If you have pthreads installed this library *should* be thread safe (currently
+implemented with one big lock).
+
+
+Libraries in Other Languages (Python)
+-------------------------------------------------------------------------------
+
+There are experimental Python libraries you can build by running configure with
+--enable-python-libs. For examples see the tests directory.
+
+The python library seems to be working well. Perl isn't supported as the
+current version of SWIG doesn't support Perl directors.
 
 
 Credits
----------------------------------
+-------------------------------------------------------------------------------
 
 Thanks to the following people/organisations:
 
- * Wayne and Simon from Artistic Licence for providing a Net-Lynx
- * Nic from Enttec who provided a DMX USB Pro for testing.
- * West Australian Academy of Performing Arts (WAAPA) for access to a Strand
+ - Wayne and Simon from Artistic Licence for providing a Net-Lynx
+ - Nic from Enttec who provided a DMX USB Pro for testing.
+ - West Australian Academy of Performing Arts (WAAPA) for access to a Strand
     console.
- * Shaun Jackman from Pathway, for answering questions about the Pathport
+ - Shaun Jackman from Pathway, for answering my questions about the Pathport
     protocol
