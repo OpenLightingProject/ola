@@ -23,13 +23,13 @@
 
 class FDListener {
 
-	public :
-		FDListener() {};
-		virtual ~FDListener() {} ;
-		virtual int fd_action() = 0 ;
+  public :
+    FDListener() {};
+    virtual ~FDListener() {};
+    virtual int fd_action() = 0;
 
-	private:
-		FDListener(const FDListener&);
-		FDListener& operator=(const FDListener&);
+  private:
+    FDListener(const FDListener&);
+    FDListener& operator=(const FDListener&);
 };
 #endif

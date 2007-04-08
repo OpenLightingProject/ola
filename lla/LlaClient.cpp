@@ -517,7 +517,7 @@ int LlaClient::receive(unsigned int delay) {
  * Send an msg on the connection
  *
  * @param msg  the msg to send
- * 
+ *
  * @return 0 on sucess, -1 on failure
  */
 int LlaClient::send_msg(lla_msg *msg) {
@@ -675,7 +675,7 @@ int LlaClient::handle_plugin_info(lla_msg *msg) {
 /*
  * Handle a universe info message
  * TODO: support fragmentation
- * 
+ *
  */
 int LlaClient::handle_universe_info(lla_msg *msg) {
   int i, universes;
@@ -741,7 +741,7 @@ int LlaClient::handle_dev_info(lla_msg *msg) {
 
 /*
  * port info message
- * 
+ *
  */
 int LlaClient::handle_port_info(lla_msg *msg) {
   int i, ports;

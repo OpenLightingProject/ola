@@ -32,26 +32,26 @@ class Port;
 using namespace std;
 
 class Device {
-	public:
-		Device(Plugin *owner, const string &name);
-		virtual ~Device();
-		const string get_name() const;
-		Plugin	 	*get_owner() const;
-			
-		// for the subclasses
-		virtual class 	LlaDevConfMsg *configure(const uint8_t *req, int l) { req = NULL; l = 0; return NULL; }
-		virtual int 	save_config() const = 0;
-		virtual int 	add_port(Port *prt);
-		virtual Port	*get_port(unsigned int pid) const;
-		virtual int 	port_count() const;
+  public:
+    Device(Plugin *owner, const string &name);
+    virtual ~Device();
+    const string get_name() const;
+    Plugin     *get_owner() const;
 
-	private:
-		Device(const Device&);
-		Device& operator=(const Device&);
+    // for the subclasses
+    virtual class   LlaDevConfMsg *configure(const uint8_t *req, int l) { req = NULL; l = 0; return NULL; }
+    virtual int   save_config() const = 0;
+    virtual int   add_port(Port *prt);
+    virtual Port  *get_port(unsigned int pid) const;
+    virtual int   port_count() const;
 
-		Plugin 			*m_owner;			// which plugin owns this device
-		string 			m_name;				// device name
-		vector<Port*>	m_ports_vect;		// ports on the device
+  private:
+    Device(const Device&);
+    Device& operator=(const Device&);
+
+    Plugin       *m_owner;      // which plugin owns this device
+    string       m_name;        // device name
+    vector<Port*>  m_ports_vect;    // ports on the device
 };
 
 #endif

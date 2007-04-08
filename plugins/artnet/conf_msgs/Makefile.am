@@ -1,6 +1,6 @@
 
 
-lib_LTLIBRARIES = 
+lib_LTLIBRARIES =
 include ./Makefile_Conf_Msg.am
 
 AM_CXXFLAGS = -Wall -Wformat -W

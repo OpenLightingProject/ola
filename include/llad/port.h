@@ -23,42 +23,42 @@
 
 #include <stdint.h>
 
-class Device ;
-class Universe ;
+class Device;
+class Universe;
 
 class Port {
 
-	public:
-		Port(Device *parent, int id) ;
-		virtual ~Port() { } ;
+  public:
+    Port(Device *parent, int id);
+    virtual ~Port() {};
 
-		Device *get_device() const					{ return m_parent; }
-		int get_id() const							{ return m_pid; }
-		virtual int set_universe(Universe *uni) 	{ m_universe = uni;  return 0;}
-		virtual Universe *get_universe() const		{ return m_universe; }
-		int dmx_changed() ;
-		
-		// register a dmx handler for this port
-		int register_dmx(int (*fh)(void *data), void *data) ;
+    Device *get_device() const                { return m_parent; }
+    int get_id() const                        { return m_pid; }
+    virtual int set_universe(Universe *uni)   { m_universe = uni; return 0; }
+    virtual Universe *get_universe() const    { return m_universe; }
+    int dmx_changed();
 
-		// subclasses must implement these
-		virtual int write(uint8_t *data, int length) = 0;
-		virtual int read(uint8_t *data, int length ) = 0;
+    // register a dmx handler for this port
+    int register_dmx(int (*fh)(void *data), void *data);
 
-		// indicate our ports capability
-		// default is read/write
-		virtual int can_read() const  { return 1; }
-		virtual int can_write() const { return 1; }
+    // subclasses must implement these
+    virtual int write(uint8_t *data, int length) = 0;
+    virtual int read(uint8_t *data, int length) = 0;
 
-		// possible rdm functions here
-	
-	private:
-		Port(const Port&);
-		Port& operator=(const Port&);
+    // indicate our ports capability
+    // default is read/write
+    virtual int can_read() const  { return 1; }
+    virtual int can_write() const { return 1; }
 
-		int m_pid ;
-		Universe *m_universe;			// universe this port belongs to
-		Device *m_parent;				// pointer to the device this port belongs to
+    // possible rdm functions here
+
+  private:
+    Port(const Port&);
+    Port& operator=(const Port&);
+
+    int m_pid;
+    Universe *m_universe; // universe this port belongs to
+    Device *m_parent;     // pointer to the device this port belongs to
 };
 
 #endif

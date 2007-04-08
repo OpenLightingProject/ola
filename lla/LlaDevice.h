@@ -45,7 +45,7 @@ class LlaDevice {
     LlaDevice(const LlaDevice&);
     LlaDevice operator=(const LlaDevice&);
 
-    int m_id ;    // device id
+    int m_id;    // device id
     int m_count;  // number of ports
     string m_name;  // device name
     int m_plugin;  // parent plugin id

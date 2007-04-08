@@ -28,35 +28,35 @@
 
 using namespace std;
 
-class PluginAdaptor ;
+class PluginAdaptor;
 
 /*
  * Represents a plugin
  *
  */
 class Plugin {
-	
-	public :
-		Plugin(const PluginAdaptor *pa, lla_plugin_id id) : m_pa(pa), m_id(id) {}
-		virtual ~Plugin() {};
 
-		virtual string get_name() const = 0 ;
-		virtual int start() = 0 ;
-		virtual int stop() = 0 ;
-		virtual bool is_enabled() const = 0;
-		virtual string get_desc() const = 0;
-		lla_plugin_id get_id() { return m_id;}
+  public :
+    Plugin(const PluginAdaptor *pa, lla_plugin_id id) : m_pa(pa), m_id(id) {}
+    virtual ~Plugin() {};
 
-	protected:
-		const PluginAdaptor *m_pa ;
+    virtual string get_name() const = 0;
+    virtual int start() = 0;
+    virtual int stop() = 0;
+    virtual bool is_enabled() const = 0;
+    virtual string get_desc() const = 0;
+    lla_plugin_id get_id() { return m_id;}
 
-	private:
-		Plugin(const Plugin&);
-		Plugin& operator=(const Plugin&);
-		lla_plugin_id m_id;
-	
-	
-} ;
+  protected:
+    const PluginAdaptor *m_pa;
+
+  private:
+    Plugin(const Plugin&);
+    Plugin& operator=(const Plugin&);
+    lla_plugin_id m_id;
+
+
+};
 
 // interface functions
 typedef Plugin* create_t(const PluginAdaptor *pa);

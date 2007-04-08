@@ -29,21 +29,21 @@ using namespace std;
 
 class LlaPlugin {
 
-	public:
-		LlaPlugin(int id, const string &name) : m_id(id), m_name(name) {};
-		~LlaPlugin() {};
+  public:
+    LlaPlugin(int id, const string &name) : m_id(id), m_name(name) {};
+    ~LlaPlugin() {};
 
-		int get_id() { return m_id; }
-		string get_name() { printf("in get name\n"); return m_name; }
-		string get_desc() { return m_desc; }
-		void set_desc(const string &desc) { m_desc = desc; }
-	private:
-		LlaPlugin(const LlaPlugin&);
-		LlaPlugin operator=(const LlaPlugin&);
+    int get_id() { return m_id; }
+    string get_name() { printf("in get name\n"); return m_name; }
+    string get_desc() { return m_desc; }
+    void set_desc(const string &desc) { m_desc = desc; }
+  private:
+    LlaPlugin(const LlaPlugin&);
+    LlaPlugin operator=(const LlaPlugin&);
 
-		int m_id;		// id of this plugin
-		string m_name;	// plugin name
-		string m_desc;
+    int m_id;    // id of this plugin
+    string m_name;  // plugin name
+    string m_desc;
 
 };
 #endif

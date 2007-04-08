@@ -23,14 +23,14 @@
 
 class TimeoutListener {
 
-	public :
-		TimeoutListener() {} ;
-		virtual ~TimeoutListener() {} ;
-		virtual int timeout_action() = 0 ;
-	
-	private:
-		TimeoutListener(const TimeoutListener&);
-		TimeoutListener& operator=(const TimeoutListener&);
+  public :
+    TimeoutListener() {};
+    virtual ~TimeoutListener() {};
+    virtual int timeout_action() = 0;
+
+  private:
+    TimeoutListener(const TimeoutListener&);
+    TimeoutListener& operator=(const TimeoutListener&);
 
 };
 

@@ -26,30 +26,30 @@
 #include <llad/fdlistener.h>
 #include <llad/timeoutlistener.h>
 
-class DeviceManager ;
-class Network ;
-class FDManager ;
+class DeviceManager;
+class Network;
+class FDManager;
 
 class PluginAdaptor {
 
-	public :
-		enum Direction{READ, WRITE};
-			
-		PluginAdaptor(DeviceManager *dm, Network *net) ;
-		int register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager = NULL ) const;
-		int unregister_fd(int fd, PluginAdaptor::Direction dir) const;
+  public :
+    enum Direction{READ, WRITE};
 
-		int register_timeout(int seconds, TimeoutListener *listener ) const;
-		int register_device(Device *dev) const ;
-		int unregister_device(Device *dev) const;
+    PluginAdaptor(DeviceManager *dm, Network *net);
+    int register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager = NULL ) const;
+    int unregister_fd(int fd, PluginAdaptor::Direction dir) const;
 
-	private :
-		PluginAdaptor(const PluginAdaptor&);
-		PluginAdaptor& operator=(const PluginAdaptor&);
+    int register_timeout(int seconds, TimeoutListener *listener ) const;
+    int register_device(Device *dev) const;
+    int unregister_device(Device *dev) const;
 
-		DeviceManager *dm ;
-		Network *net;
-		
+  private :
+    PluginAdaptor(const PluginAdaptor&);
+    PluginAdaptor& operator=(const PluginAdaptor&);
+
+    DeviceManager *dm;
+    Network *net;
+
 };
 
 #endif

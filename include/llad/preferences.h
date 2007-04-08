@@ -29,29 +29,28 @@ using namespace std;
 
 class Preferences {
 
-	public:
-		Preferences(string id) ;
-		~Preferences() ;
+  public:
+    Preferences(string id);
+    ~Preferences();
 
-		int load() ;
-		int save() const;
+    int load();
+    int save() const;
 
-		int set_val(const string &key, const string &value) ;
-		int set_multiple_val(const string &key, const string &value) ;
-		
-		string get_val(const string &key) ;
-		vector<string> *get_multiple_val(const string &key) ;
-		
-	private:
-		Preferences(const Preferences&);
-		Preferences& operator=(const Preferences&);
+    int set_val(const string &key, const string &value);
+    int set_multiple_val(const string &key, const string &value);
 
-		int change_dir() const;
-		char *strtrim(char *str) ;
+    string get_val(const string &key);
+    vector<string> *get_multiple_val(const string &key);
 
-		string id ;
-		multimap<string, string> m_pref_map ;
+  private:
+    Preferences(const Preferences&);
+    Preferences& operator=(const Preferences&);
 
+    int change_dir() const;
+    char *strtrim(char *str);
+
+    string id;
+    multimap<string, string> m_pref_map;
 };
 
 #endif

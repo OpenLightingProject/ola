@@ -25,9 +25,8 @@
  *
  */
 LlaPort::LlaPort(int id, PortCapability cap, int uni, int active) :
-	m_id(id),
-	m_cap(cap),
-	m_uni(uni),
-	m_active(active) {
-
+  m_id(id),
+  m_cap(cap),
+  m_uni(uni),
+  m_active(active) {
 }

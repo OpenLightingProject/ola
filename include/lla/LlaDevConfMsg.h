@@ -27,7 +27,6 @@ class LlaDevConfMsg {
   public:
     LlaDevConfMsg() {};
     virtual ~LlaDevConfMsg() {};
-
     virtual int pack(uint8_t *buf, unsigned int len) const = 0;
 };
 
