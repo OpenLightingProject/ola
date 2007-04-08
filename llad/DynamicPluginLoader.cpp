@@ -44,7 +44,7 @@
 #endif
 
 #ifdef HAVE_SANDNET
-#include "plugins/sandnet/sandnetplugin.h"
+#include "plugins/sandnet/SandnetPlugin.h"
 #endif
 
 #ifdef HAVE_SHOWNET

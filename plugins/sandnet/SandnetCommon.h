@@ -22,6 +22,6 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define INPUT_PORTS		8
+#define INPUT_PORTS    8
 
 #endif

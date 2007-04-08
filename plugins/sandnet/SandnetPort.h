@@ -28,22 +28,22 @@
 
 class SandNetPort : public Port  {
 
-	public:
-		SandNetPort(Device *parent, int id) ;
-		~SandNetPort() ;
-		
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
-		int set_universe(Universe *uni);
+  public:
+    SandNetPort(Device *parent, int id);
+    ~SandNetPort();
 
-		int can_read() const;
-		int can_write() const;
-		
-		int update_buffer(uint8_t *data, int length) ;
+    int write(uint8_t *data, int length);
+    int read(uint8_t *data, int length);
+    int set_universe(Universe *uni);
 
-	private :
-		uint8_t *m_buf ;
-		int m_len ;
+    int can_read() const;
+    int can_write() const;
+
+    int update_buffer(uint8_t *data, int length);
+
+  private :
+    uint8_t *m_buf;
+    int m_len;
 };
 
 #endif

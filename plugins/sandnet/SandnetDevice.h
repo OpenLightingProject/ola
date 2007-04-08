@@ -30,30 +30,30 @@
 
 #include <sandnet/sandnet.h>
 
-#include "common.h"
+#include "SandnetCommon.h"
 
 class SandNetDevice : public Device, public FDListener, public TimeoutListener {
 
-	public:
-		SandNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
-		~SandNetDevice() ;
+  public:
+    SandNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
+    ~SandNetDevice();
 
-		int start() ;
-		int stop() ;
-		sandnet_node get_node() const;
-		int get_sd(int i) const ;
-		int fd_action() ;
-		int timeout_action();
-		int save_config() const;
-		int configure(void *req, int len) ;
+    int start();
+    int stop();
+    sandnet_node get_node() const;
+    int get_sd(int i) const;
+    int fd_action();
+    int timeout_action();
+    int save_config() const;
+    int configure(void *req, int len);
 
-		int port_map(class Universe *uni, class SandNetPort *prt);
-		class SandNetPort *get_port_from_uni(int uni);
-	private:
-		class Preferences *m_prefs ;
-		sandnet_node m_node ;
-		bool m_enabled ;
-		map<int, class SandNetPort *> m_portmap;
+    int port_map(class Universe *uni, class SandNetPort *prt);
+    class SandNetPort *get_port_from_uni(int uni);
+  private:
+    class Preferences *m_prefs;
+    sandnet_node m_node;
+    bool m_enabled;
+    map<int, class SandNetPort *> m_portmap;
 };
 
 #endif
