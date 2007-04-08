@@ -26,20 +26,20 @@
 /*
  * Create a new port
  *
- * @param parent	the device that owns this port
- * @param id		the id of this port
+ * @param parent  the device that owns this port
+ * @param id    the id of this port
  */
 Port::Port(Device *parent, int id) {
-	m_pid = id ;
-	m_universe = NULL ;
-	m_parent = parent ;
+  m_pid = id;
+  m_universe = NULL;
+  m_parent = parent;
 }
 
 /*
  * Signal that the data for this port has changed
  */
 int Port::dmx_changed() {
-	if(m_universe)
-		return m_universe->port_data_changed(this) ;
-	return 0;
+  if(m_universe)
+    return m_universe->port_data_changed(this);
+  return 0;
 }

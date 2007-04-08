@@ -38,7 +38,7 @@
 /*
  * Create a new preference container
  *
- * @param id	the id of the container
+ * @param id  the id of the container
  */
 Preferences::Preferences(string id) : id(id) {}
 
@@ -48,7 +48,7 @@ Preferences::Preferences(string id) : id(id) {}
  *
  */
 Preferences::~Preferences() {
-	m_pref_map.clear() ;
+  m_pref_map.clear();
 }
 
 
@@ -57,40 +57,40 @@ Preferences::~Preferences() {
  *
  */
 int Preferences::load() {
-	#define BUF_SIZE 1024
-	FILE *fh ;
-	string filename, line ;
-	char buf[BUF_SIZE], *k_c, *v_c ;
-	string key, val ;
-	
-	if(change_dir())
-		return -1 ;
+  #define BUF_SIZE 1024
+  FILE *fh;
+  string filename, line;
+  char buf[BUF_SIZE], *k_c, *v_c;
+  string key, val;
 
-	filename = LLA_CONFIG_PREFIX + id + LLA_CONFIG_SUFFIX ;
-	if ((fh = fopen(filename.c_str(), "r")) == NULL ) {
-		Logger::instance()->log(Logger::INFO, "Failed to open %s:  %s", filename.c_str(), strerror(errno)) ;
-		return -1 ;
-	}
+  if(change_dir())
+    return -1;
 
-	while (  fgets(buf, 1024, fh) != NULL) {
-		if(*buf == '#')
-			continue ;
+  filename = LLA_CONFIG_PREFIX + id + LLA_CONFIG_SUFFIX;
+  if ((fh = fopen(filename.c_str(), "r")) == NULL ) {
+    Logger::instance()->log(Logger::INFO, "Failed to open %s:  %s", filename.c_str(), strerror(errno));
+    return -1;
+  }
 
-		k_c = strtok(buf, "=") ;
-		v_c = strtok(NULL, "=") ;
-		
-		if(k_c == NULL || v_c == NULL)
-			continue ;
-		
-		key = strtrim(k_c);
-		val = strtrim(v_c);
+  while (  fgets(buf, 1024, fh) != NULL) {
+    if(*buf == '#')
+      continue;
 
-		m_pref_map.insert(pair<string,string>(key,val)) ;
-		
-	}
+    k_c = strtok(buf, "=");
+    v_c = strtok(NULL, "=");
 
-	fclose(fh) ;
-	return 0 ;
+    if(k_c == NULL || v_c == NULL)
+      continue;
+
+    key = strtrim(k_c);
+    val = strtrim(v_c);
+
+    m_pref_map.insert(pair<string,string>(key,val));
+
+  }
+
+  fclose(fh);
+  return 0;
 }
 
 
@@ -101,25 +101,25 @@ int Preferences::load() {
  */
 int Preferences::save() const {
     map<string, string>::const_iterator iter;
-	string filename ;
-	FILE *fh ;
+  string filename;
+  FILE *fh;
 
-	if(change_dir())
-		return -1 ;
-	
-	filename = LLA_CONFIG_PREFIX + id + LLA_CONFIG_SUFFIX ;
-	if ((fh = fopen(filename.c_str(), "w")) == NULL ) {
-		perror("fopen") ;
-		return -1 ;
-	}
-	
+  if(change_dir())
+    return -1;
+
+  filename = LLA_CONFIG_PREFIX + id + LLA_CONFIG_SUFFIX;
+  if ((fh = fopen(filename.c_str(), "w")) == NULL ) {
+    perror("fopen");
+    return -1;
+  }
+
     for (iter=m_pref_map.begin(); iter != m_pref_map.end(); ++iter) {
-		fprintf(fh, "%s = %s\n", iter->first.c_str() , iter->second.c_str() ) ;
+    fprintf(fh, "%s = %s\n", iter->first.c_str() , iter->second.c_str() );
     }
-	
-	fclose(fh) ;
 
-	return 0 ;
+  fclose(fh);
+
+  return 0;
 }
 
 
@@ -131,10 +131,10 @@ int Preferences::save() const {
  */
 int Preferences::set_val(const string &key, const string &val) {
 
-	m_pref_map.erase(key);
+  m_pref_map.erase(key);
 
-	m_pref_map.insert(pair<string,string>(key,val)) ;
-	return 0;	
+  m_pref_map.insert(pair<string,string>(key,val));
+  return 0;
 }
 
 
@@ -145,8 +145,8 @@ int Preferences::set_val(const string &key, const string &val) {
  * @param value
  */
 int Preferences::set_multiple_val(const string &key, const string &val) {
-	m_pref_map.insert(pair<string,string>(key,val)) ;
-	return 0;	
+  m_pref_map.insert(pair<string,string>(key,val));
+  return 0;
 }
 
 
@@ -160,13 +160,13 @@ int Preferences::set_multiple_val(const string &key, const string &val) {
 string Preferences::get_val(const string &key) {
     map<string, string>::const_iterator iter;
 
-	iter = m_pref_map.find(key) ;
+  iter = m_pref_map.find(key);
 
-	if( iter != m_pref_map.end() ) {
-		return iter->second.c_str() ;
-	}
-	
-	return "" ;
+  if( iter != m_pref_map.end() ) {
+    return iter->second.c_str();
+  }
+
+  return "";
 }
 
 
@@ -176,16 +176,16 @@ string Preferences::get_val(const string &key) {
  * the vector must be freed once used.
  */
 vector<string> *Preferences::get_multiple_val(const string &key) {
-	vector<string> *vec = new vector<string> ;
+  vector<string> *vec = new vector<string>;
     map<string, string>::const_iterator iter;
 
-	if(vec == NULL) 
-		return NULL ;
+  if(vec == NULL)
+    return NULL;
 
-	for ( iter = m_pref_map.find(key) ;  iter != m_pref_map.end() && iter->first == key ; ++iter ) {
-		vec->push_back(iter->second) ;
-	}
-	return vec ;
+  for ( iter = m_pref_map.find(key);  iter != m_pref_map.end() && iter->first == key; ++iter ) {
+    vec->push_back(iter->second);
+  }
+  return vec;
 
 }
 
@@ -195,49 +195,49 @@ vector<string> *Preferences::get_multiple_val(const string &key) {
 
 
 int Preferences::change_dir() const {
-	struct passwd  *ptr = getpwuid(getuid()) ;
-	if(ptr == NULL) 
-		return -1 ;
+  struct passwd  *ptr = getpwuid(getuid());
+  if(ptr == NULL)
+    return -1;
 
-	if(chdir(ptr->pw_dir))
-		return -1 ;
+  if(chdir(ptr->pw_dir))
+    return -1;
 
-	if(chdir(LLA_CONFIG_DIR)) {
-		// try and create it
-		if(mkdir(LLA_CONFIG_DIR, 0777)) 
-			return -1 ;
+  if(chdir(LLA_CONFIG_DIR)) {
+    // try and create it
+    if(mkdir(LLA_CONFIG_DIR, 0777))
+      return -1;
 
-		if(chdir(LLA_CONFIG_DIR))
-			return -1 ;
-	}
-	return 0 ;
+    if(chdir(LLA_CONFIG_DIR))
+      return -1;
+  }
+  return 0;
 }
 
 
 /*
  * trim leading and trailing whitespace from the string
  *
- * @param str	pointer to the string
+ * @param str  pointer to the string
  *
  *
  */
 char *Preferences::strtrim(char *str) {
-	int n = strlen(str) ;
-	char *beg, *end;
-	beg = str;
-	end = str + (n-1); /* Point to the last non-null character in the string */
-	
-	while(*beg == ' ' || *beg == '\t') {
-		beg++;
-	}
+  int n = strlen(str);
+  char *beg, *end;
+  beg = str;
+  end = str + (n-1); /* Point to the last non-null character in the string */
 
-	/* Remove trailing whitespace and null-terminate */
-	while(*end == ' ' || *end == '\n' || *end == '\r' || *beg == '\t' ) {
-		end--;
-	}
+  while(*beg == ' ' || *beg == '\t') {
+    beg++;
+  }
 
-	*(end+1) = '\0';
-	/* Shift the string */
-	memmove(str, beg, (end - beg + 2));
-	return str;
+  /* Remove trailing whitespace and null-terminate */
+  while(*end == ' ' || *end == '\n' || *end == '\r' || *beg == '\t' ) {
+    end--;
+  }
+
+  *(end+1) = '\0';
+  /* Shift the string */
+  memmove(str, beg, (end - beg + 2));
+  return str;
 }

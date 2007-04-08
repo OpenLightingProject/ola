@@ -18,7 +18,7 @@
  * can register devices and file handles for events
  * Copyright (C) 2005  Simon Newton
  *
- * 
+ *
  */
 
 #include <llad/pluginadaptor.h>
@@ -28,52 +28,52 @@
 /*
  * Create a new pluginadaptor
  *
- * @param	dm	pointer to a devicemanager object
- * @param	net	pointer to the network object
+ * @param  dm  pointer to a devicemanager object
+ * @param  net  pointer to the network object
  */
 PluginAdaptor::PluginAdaptor(DeviceManager *dm, Network *net) {
-	this->dm = dm ;
-	this->net = net;
+  this->dm = dm;
+  this->net = net;
 }
 
 /*
  * register a fd
  *
- * @param fd		the file descriptor to register
- * @param dir		the direction we want
- * @param listener	the object to be notifies when the descriptor is ready
- * @param manager	the object to be notified if the listener returns an error
+ * @param fd    the file descriptor to register
+ * @param dir    the direction we want
+ * @param listener  the object to be notifies when the descriptor is ready
+ * @param manager  the object to be notified if the listener returns an error
  *
  * @return 0 on success, non 0 on error
  */
 int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager ) const {
-	Network::Direction ndir = dir==PluginAdaptor::READ ? Network::READ : Network::WRITE ;
-	return net->register_fd(fd,ndir,listener, manager) ;
+  Network::Direction ndir = dir==PluginAdaptor::READ ? Network::READ : Network::WRITE;
+  return net->register_fd(fd,ndir,listener, manager);
 }
 
 /*
  * Unregister a fd
  *
- * @param fd	the file descriptor to unregister
- * @param dir	the direction we'll interested in
+ * @param fd  the file descriptor to unregister
+ * @param dir  the direction we'll interested in
  *
  * @return 0 on success, non 0 on error
  */
 int PluginAdaptor::unregister_fd(int fd, PluginAdaptor::Direction dir) const {
-	Network::Direction ndir =  dir==PluginAdaptor::READ ? Network::READ : Network::WRITE ;
-	return net->unregister_fd(fd,ndir) ;
+  Network::Direction ndir =  dir==PluginAdaptor::READ ? Network::READ : Network::WRITE;
+  return net->unregister_fd(fd,ndir);
 }
 
 
 /*
  * register a timeout
  *
- * @param second	the time between function calls
+ * @param second  the time between function calls
  *
  * @return the timeout id on success, 0 on error
  */
 int PluginAdaptor::register_timeout(int seconds , TimeoutListener *listener ) const {
-	return net->register_timeout(seconds, listener) ;
+  return net->register_timeout(seconds, listener);
 }
 
 
@@ -81,20 +81,20 @@ int PluginAdaptor::register_timeout(int seconds , TimeoutListener *listener ) co
 /*
  * Register a device
  *
- * @param dev	the device to register
+ * @param dev  the device to register
  * @return 0 on success, non 0 on error
  */
 int PluginAdaptor::register_device(Device *dev) const {
-	return dm->register_device(dev) ;
+  return dm->register_device(dev);
 }
 
 /*
  * Unregister a device
  *
- * @param dev	the device to unregister
+ * @param dev  the device to unregister
  * @return 0 on success, non 0 on error
  */
 int PluginAdaptor::unregister_device(Device *dev) const {
-	return dm->unregister_device(dev) ;
+  return dm->unregister_device(dev);
 }
 

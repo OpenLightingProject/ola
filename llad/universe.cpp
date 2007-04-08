@@ -90,7 +90,7 @@ int Universe::add_port(Port *prt) {
   Universe *uni;
   vector<Port*>::iterator it;
 
-  uni = prt->get_universe() ;
+  uni = prt->get_universe();
 
   if (uni == this)
     return 0;

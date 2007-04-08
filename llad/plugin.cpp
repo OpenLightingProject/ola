@@ -22,6 +22,6 @@
 #include <llad/plugin.h>
 
 string Plugin::get_name() {
-	return "No Name Defined!" ;
+  return "No Name Defined!";
 }
 

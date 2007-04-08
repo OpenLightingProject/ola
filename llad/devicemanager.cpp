@@ -42,38 +42,38 @@ DeviceManager::~DeviceManager() {
 
 /*
  * Register this device, called from the plugins
- * 
- * @param dev		pointer to the device to register
+ *
+ * @param dev    pointer to the device to register
  * @return 0 on sucess, -1 on failure
  *
  */
 int DeviceManager::register_device(Device *dev) {
 
-	m_dev_vect.push_back(dev);
-	
-	Logger::instance()->log(Logger::INFO, "Installed device") ;
-	return 0;
+  m_dev_vect.push_back(dev);
+
+  Logger::instance()->log(Logger::INFO, "Installed device");
+  return 0;
 }
 
 
 /*
  * Unregister this device, called from the plugins
- * 
+ *
  * @param dev pointer to the Device to unregister
  * @return 0 on sucess, non 0 on failure
  *
  */
 int DeviceManager::unregister_device(Device *dev) {
-	vector<Device*>::iterator it ;
+  vector<Device*>::iterator it;
 
-	for (it = m_dev_vect.begin(); it != m_dev_vect.end(); ++it) {
-		if(*it  == dev) {
-			m_dev_vect.erase(it) ;
-			return 0;
-		}
-	}
+  for (it = m_dev_vect.begin(); it != m_dev_vect.end(); ++it) {
+    if(*it  == dev) {
+      m_dev_vect.erase(it);
+      return 0;
+    }
+  }
 
-	return 1;
+  return 1;
 }
 
 /*
@@ -82,20 +82,20 @@ int DeviceManager::unregister_device(Device *dev) {
  * @return the number of devices
  */
 int DeviceManager::device_count() const {
-	return m_dev_vect.size();
+  return m_dev_vect.size();
 }
 
 /*
  * fetch the device at a particular position
  *
- * @param id	the index of the device to fetch
- * @return	the device at position id, or NULL on error
+ * @param id  the index of the device to fetch
+ * @return  the device at position id, or NULL on error
  *
  */
 Device *DeviceManager::get_dev(unsigned int id) const {
 
-	if(id >= m_dev_vect.size())
-		return NULL ;
-	
-	return m_dev_vect[id] ;
+  if(id >= m_dev_vect.size())
+    return NULL;
+
+  return m_dev_vect[id];
 }

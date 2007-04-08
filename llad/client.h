@@ -27,24 +27,24 @@ using namespace std;
 
 class Client {
 
-	public :
-		~Client() ;
-		int get_port() ;
+  public :
+    ~Client();
+    int get_port();
 
-		static Client *get_client(int port) ;
-		static Client *get_client_or_create(int port) ;
-		static int clean_up() ;
+    static Client *get_client(int port);
+    static Client *get_client_or_create(int port);
+    static int clean_up();
 
-	protected :
-		Client(int port) ;
+  protected :
+    Client(int port);
 
-		
-	private:
-		Client(const Client&);
-		Client& operator=(const Client&);
 
-		int m_port;
-		static map<int, Client *> cli_map;				// map of port to clients;
+  private:
+    Client(const Client&);
+    Client& operator=(const Client&);
+
+    int m_port;
+    static map<int, Client *> cli_map;        // map of port to clients;
 
 };
 

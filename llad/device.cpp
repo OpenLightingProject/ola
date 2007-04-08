@@ -27,11 +27,11 @@
 /*
  * Create a new device
  *
- * @param	owner	the plugin that owns this device
- * @param	name	a nice name for this device
+ * @param  owner  the plugin that owns this device
+ * @param  name  a nice name for this device
  */
-Device::Device(Plugin *owner, const string &name) 
-	: m_owner(owner), m_name(name)  {
+Device::Device(Plugin *owner, const string &name)
+  : m_owner(owner), m_name(name)  {
 
 }
 
@@ -44,10 +44,10 @@ Device::~Device() {}
 /*
  * Return the plugin owner of this device
  *
- * @return	the plugin that owns this device
+ * @return  the plugin that owns this device
  */
 Plugin *Device::get_owner() const {
-	return m_owner ;
+  return m_owner;
 }
 
 /*
@@ -56,20 +56,20 @@ Plugin *Device::get_owner() const {
  * @return the name of the device
  */
 const string Device::get_name() const {
-	return m_name ;
+  return m_name;
 }
 
 /*
  * Get a port on the device
  *
- * @param pid	the id of the port to fetch
+ * @param pid  the id of the port to fetch
  * @return the port if it exists, or NULL on error
  */
 Port *Device::get_port(unsigned int pid) const {
-	if (pid > m_ports_vect.size() ) 
-		return NULL ;
+  if (pid > m_ports_vect.size() )
+    return NULL;
 
-	return m_ports_vect[pid] ;
+  return m_ports_vect[pid];
 }
 
 /*
@@ -78,17 +78,17 @@ Port *Device::get_port(unsigned int pid) const {
  * @return the number of ports in this device
  */
 inline int Device::port_count() const {
-	return m_ports_vect.size() ;
+  return m_ports_vect.size();
 }
 
 
 /*
  * Add a port to this device
  *
- * @param prt	the port to add
+ * @param prt  the port to add
  * @return 0 on success, non 0 on failure
  */
 int Device::add_port(Port *prt) {
-	m_ports_vect.push_back(prt) ;
-	return 0;
+  m_ports_vect.push_back(prt);
+  return 0;
 }

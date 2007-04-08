@@ -30,7 +30,7 @@
  * Load from disk
  */
 int UniverseStore::load() {
-	return m_prefs.load();
+  return m_prefs.load();
 }
 
 
@@ -38,65 +38,65 @@ int UniverseStore::load() {
  * Save all settings to disk
  */
 int UniverseStore::save() {
-	return m_prefs.save();
+  return m_prefs.save();
 }
 
 
 /*
  * Save this universe's settings in the store
  *
- * @param uni	the universe to save
+ * @param uni  the universe to save
  */
 int UniverseStore::store_uni(Universe *uni) {
-	string key, mode;
-	std::ostringstream oss ;
+  string key, mode;
+  std::ostringstream oss;
 
-	if(uni != NULL) {
-		oss << std::dec << uni->get_uid();
+  if(uni != NULL) {
+    oss << std::dec << uni->get_uid();
 
-		// save name
-		key = "uni_" + oss.str() + "_name";
-		m_prefs.set_val(key, uni->get_name());
+    // save name
+    key = "uni_" + oss.str() + "_name";
+    m_prefs.set_val(key, uni->get_name());
 
-		// save merge mode
-		key = "uni_" + oss.str() + "_merge";
-		mode = (uni->get_merge_mode() == Universe::MERGE_HTP ? "HTP" : "LTP");
-		m_prefs.set_val(key, mode);
-	}
+    // save merge mode
+    key = "uni_" + oss.str() + "_merge";
+    mode = (uni->get_merge_mode() == Universe::MERGE_HTP ? "HTP" : "LTP");
+    m_prefs.set_val(key, mode);
+  }
 
-	return 0;
+  return 0;
 }
 
 
 /*
  * Restore a universe's settings
  *
- * @param uni	the universe to update
+ * @param uni  the universe to update
  */
 int UniverseStore::retrieve_uni(Universe *uni) {
-	string key, val;
-	std::ostringstream oss ;
+  string key, val;
+  std::ostringstream oss;
 
-	if(uni != NULL) {
-		oss << std::dec << uni->get_uid();
+  if(uni != NULL) {
+    oss << std::dec << uni->get_uid();
 
-		// load name
-		key = "uni_" + oss.str() + "_name";
-		val = m_prefs.get_val(key);
+    // load name
+    key = "uni_" + oss.str() + "_name";
+    val = m_prefs.get_val(key);
 
-		if (val != "")
-			uni->set_name(val, false);
+    if (val != "")
+      uni->set_name(val, false);
 
-		// load merge mode
-		key = "uni_" + oss.str() + "_merge";
-		val = m_prefs.get_val(key);
+    // load merge mode
+    key = "uni_" + oss.str() + "_merge";
+    val = m_prefs.get_val(key);
 
-		if (val != "") {
-			if ( val == "HTP")
-				uni->set_merge_mode(Universe::MERGE_HTP, false);
-			else 
-				uni->set_merge_mode(Universe::MERGE_LTP, false);
-		}
-	}
-	return 0;
+    if (val != "") {
+      if ( val == "HTP")
+        uni->set_merge_mode(Universe::MERGE_HTP, false);
+      else
+        uni->set_merge_mode(Universe::MERGE_LTP, false);
+    }
+  }
+  return 0;
 }

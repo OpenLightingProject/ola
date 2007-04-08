@@ -21,23 +21,23 @@
 #include <llad/logger.h>
 #include "client.h"
 
-map<int ,Client *> Client::cli_map ;
+map<int ,Client *> Client::cli_map;
 
 /*
  * Create a new client
  *
- * @param port	the port the client is on
+ * @param port  the port the client is on
  */
 Client::Client(int port) {
-	m_port = port ;
+  m_port = port;
 }
 
 /*
  * Destroy this client
- * 
+ *
  */
 Client::~Client() {
-	cli_map.erase(m_port) ;
+  cli_map.erase(m_port);
 }
 
 /*
@@ -46,7 +46,7 @@ Client::~Client() {
  * @return the port of the client
  */
 int Client::get_port() {
-	return m_port ;
+  return m_port;
 }
 
 
@@ -56,37 +56,37 @@ int Client::get_port() {
 /*
  * Lookup a client from the port number
  *
- * @param port	the port of the client
+ * @param port  the port of the client
  * @return the client corrosponding to the port, or NULL if no such client exists
  */
 Client *Client::get_client(int port) {
-	map<int , Client *>::iterator iter;
+  map<int , Client *>::iterator iter;
 
-	iter = cli_map.find(port);
-	if (iter != cli_map.end()) {
-	   return iter->second ;
-   	}
-	
-	return NULL ;
+  iter = cli_map.find(port);
+  if (iter != cli_map.end()) {
+     return iter->second;
+     }
+
+  return NULL;
 }
 
 /*
  * Lookup the client or create if needed
- * 
- * @param port	the port of the client
+ *
+ * @param port  the port of the client
  * @return the client corrosponding to the port, or NULL if an error occurs
  */
 Client *Client::get_client_or_create(int port) {
-	Client *cli = get_client(port) ;
+  Client *cli = get_client(port);
 
-	if(cli == NULL) {
-		cli = new Client(port) ;
-		pair<int , Client*> p (port, cli) ;
-		cli_map.insert(p) ;
-	}
+  if(cli == NULL) {
+    cli = new Client(port);
+    pair<int , Client*> p (port, cli);
+    cli_map.insert(p);
+  }
 
-	// this could still be NULL
-	return cli ;
+  // this could still be NULL
+  return cli;
 }
 
 /*
@@ -95,17 +95,17 @@ Client *Client::get_client_or_create(int port) {
  * @return 0 on sucess, non 0 on error
  */
 int Client::clean_up() {
-	map<int, Client*>::iterator iter;
-	
-	//unload all plugins
-	for(iter = cli_map.begin(); iter != cli_map.end(); ) {
-		// increment the iter here
-		// the universe will remove itself from the map
-		// and invalidate the iter
-		delete (*iter++).second ;
-	}
+  map<int, Client*>::iterator iter;
 
-	cli_map.clear() ;
+  //unload all plugins
+  for(iter = cli_map.begin(); iter != cli_map.end(); ) {
+    // increment the iter here
+    // the universe will remove itself from the map
+    // and invalidate the iter
+    delete (*iter++).second;
+  }
 
-	return 0;
+  cli_map.clear();
+
+  return 0;
 }

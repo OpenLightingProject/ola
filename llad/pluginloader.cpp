@@ -18,7 +18,7 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#include "pluginloader.h" 
+#include "pluginloader.h"
 
 #include <llad/logger.h>
 
@@ -36,10 +36,10 @@
 /*
  * Create a new plugin loader
  *
- * @param pa	pointer to a pluginAdaptor object
+ * @param pa  pointer to a pluginAdaptor object
  */
 PluginLoader::PluginLoader(PluginAdaptor *pa) {
-	this->pa = pa ;
+  this->pa = pa;
 }
 
 
@@ -49,49 +49,49 @@ PluginLoader::PluginLoader(PluginAdaptor *pa) {
  */
 PluginLoader::~PluginLoader() {
 
-	unload_plugins() ;
+  unload_plugins();
 }
 
 
 /*
  * Read the directory and load all .so files
  *
- * @param dirname	the plugins directory
- * @return 	0 on sucess, -1 on failure
+ * @param dirname  the plugins directory
+ * @return   0 on sucess, -1 on failure
  */
 int PluginLoader::load_plugins(const string &dirname) {
-	Plugin *plug = NULL ;
-	DIR *dir;
-	struct dirent *ent;
-	struct stat statbuf;
+  Plugin *plug = NULL;
+  DIR *dir;
+  struct dirent *ent;
+  struct stat statbuf;
 
-	dir = opendir(dirname.c_str());
-	
-	if (!dir)
-		return 0;
+  dir = opendir(dirname.c_str());
 
-	while ((ent = readdir(dir)) != NULL) {
-		string fname = dirname ;
-		fname.append("/") ;
-		fname.append(ent->d_name);
-	
-		string::size_type i = fname.find_last_of(".");
-		if ( i == string::npos) 
-			continue;
+  if (!dir)
+    return 0;
 
-		if (!stat(fname.c_str(), &statbuf) && S_ISREG(statbuf.st_mode) && fname.substr(i) == SHARED_LIB_EXT) {
+  while ((ent = readdir(dir)) != NULL) {
+    string fname = dirname;
+    fname.append("/");
+    fname.append(ent->d_name);
 
-			// ok try and load it
-			if( (plug = this->load_plugin(fname)) == NULL) {
-				Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", fname.c_str()) ;
-			} else {
-				m_plugin_vect.push_back(plug) ;
-			}
-		}
-	}
-	closedir(dir);
+    string::size_type i = fname.find_last_of(".");
+    if ( i == string::npos)
+      continue;
 
-	return 0 ;
+    if (!stat(fname.c_str(), &statbuf) && S_ISREG(statbuf.st_mode) && fname.substr(i) == SHARED_LIB_EXT) {
+
+      // ok try and load it
+      if( (plug = this->load_plugin(fname)) == NULL) {
+        Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", fname.c_str());
+      } else {
+        m_plugin_vect.push_back(plug);
+      }
+    }
+  }
+  closedir(dir);
+
+  return 0;
 }
 
 
@@ -101,23 +101,23 @@ int PluginLoader::load_plugins(const string &dirname) {
  *
  */
 int PluginLoader::unload_plugins() {
-	unsigned int i;
-	map<void*,Plugin*>::iterator iter;
-	for(i=0; i < m_plugin_vect.size() ; i++) {
-		// TODO: this better not fail ...
-		if( m_plugin_vect[i]->is_enabled()) {
-			m_plugin_vect[i]->stop() ;
-		}
-	}
+  unsigned int i;
+  map<void*,Plugin*>::iterator iter;
+  for(i=0; i < m_plugin_vect.size(); i++) {
+    // TODO: this better not fail ...
+    if( m_plugin_vect[i]->is_enabled()) {
+      m_plugin_vect[i]->stop();
+    }
+  }
 
-	//unload all plugins
-	for(iter = m_plugin_map.begin(); iter != m_plugin_map.end(); iter++) {
-		unload_plugin((*iter).first) ;
-	}
+  //unload all plugins
+  for(iter = m_plugin_map.begin(); iter != m_plugin_map.end(); iter++) {
+    unload_plugin((*iter).first);
+  }
 
-	m_plugin_map.clear() ;	
+  m_plugin_map.clear();
 
-	return 0;
+  return 0;
 }
 
 
@@ -129,22 +129,22 @@ int PluginLoader::unload_plugins() {
  * @return the number of plugins loaded
  */
 int PluginLoader::plugin_count() const {
-	return m_plugin_vect.size() ;
+  return m_plugin_vect.size();
 }
 
 
 /*
  * Return the plugin with the specified id
  *
- * @param id 	the id of the plugin to fetch
- * @return	the plugin with the specified id
+ * @param id   the id of the plugin to fetch
+ * @return  the plugin with the specified id
  */
 Plugin *PluginLoader::get_plugin(unsigned int id) const {
 
-	if ( id > m_plugin_vect.size() ) 
-		return NULL ;
+  if ( id > m_plugin_vect.size() )
+    return NULL;
 
-	return m_plugin_vect[id] ;
+  return m_plugin_vect[id];
 }
 
 
@@ -154,64 +154,64 @@ Plugin *PluginLoader::get_plugin(unsigned int id) const {
 /*
  * Load a plugin from a file
  *
- * @param	path	the path to the plugin
+ * @param  path  the path to the plugin
  * @return 0 on sucess, -1 on failure
  */
 Plugin *PluginLoader::load_plugin(const string &path) {
-	void* handle = NULL;
-	Plugin *plug ;
-	create_t *create ;
-	
-	if ( (handle = dlopen(path.c_str(), RTLD_LAZY)) == NULL) {
-		Logger::instance()->log(Logger::WARN, "dlopen: %s", dlerror()) ;
-		return NULL ;
-	}
+  void* handle = NULL;
+  Plugin *plug;
+  create_t *create;
 
-	// reset dlerror
-	dlerror() ;
-	create = (create_t*) dlsym(handle, "create");
+  if ( (handle = dlopen(path.c_str(), RTLD_LAZY)) == NULL) {
+    Logger::instance()->log(Logger::WARN, "dlopen: %s", dlerror());
+    return NULL;
+  }
 
-	if(dlerror() != NULL) {
-		Logger::instance()->log(Logger::WARN, "Could not locate symbol") ;
-		dlclose(handle) ;
-		return NULL;
-	}
+  // reset dlerror
+  dlerror();
+  create = (create_t*) dlsym(handle, "create");
 
-	// init plugin
-	if ( (plug = create(pa)) == NULL) {
-		dlclose(handle) ;
-		return NULL ;
-	}
-	
-	pair<void*, Plugin*> p (handle, plug) ;
-	m_plugin_map.insert(p) ;
+  if(dlerror() != NULL) {
+    Logger::instance()->log(Logger::WARN, "Could not locate symbol");
+    dlclose(handle);
+    return NULL;
+  }
 
-	Logger::instance()->log(Logger::WARN, "Loaded plugin %s", plug->get_name().c_str()) ;
-	
-	return plug ;
+  // init plugin
+  if ( (plug = create(pa)) == NULL) {
+    dlclose(handle);
+    return NULL;
+  }
+
+  pair<void*, Plugin*> p (handle, plug);
+  m_plugin_map.insert(p);
+
+  Logger::instance()->log(Logger::WARN, "Loaded plugin %s", plug->get_name().c_str());
+
+  return plug;
 }
 
 
 /*
  * Unload the plugin
  *
- * @param handle	the handle of the plugin to unload
- * @return	0 on success, non 0 on failure
+ * @param handle  the handle of the plugin to unload
+ * @return  0 on success, non 0 on failure
  */
 int PluginLoader::unload_plugin(void *handle) {
-	destroy_t *destroy ;
+  destroy_t *destroy;
 
-	// reset dlerror
-	dlerror() ;
-	destroy =  (destroy_t*) dlsym(handle, "destroy");
+  // reset dlerror
+  dlerror();
+  destroy =  (destroy_t*) dlsym(handle, "destroy");
 
-	if(dlerror() != NULL) {
-		Logger::instance()->log(Logger::WARN, "Could not locate destroy symbol") ;
-		return -1;
-	}
+  if(dlerror() != NULL) {
+    Logger::instance()->log(Logger::WARN, "Could not locate destroy symbol");
+    return -1;
+  }
 
-	destroy(m_plugin_map[handle]) ;
-	dlclose(handle) ;
+  destroy(m_plugin_map[handle]);
+  dlclose(handle);
 
-	return 0 ;
+  return 0;
 }

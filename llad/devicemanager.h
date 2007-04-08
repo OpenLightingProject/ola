@@ -21,7 +21,7 @@
 #ifndef DEVICEMANAGER_H
 #define DEVICEMANAGER_H
 
-#include <llad/device.h> 
+#include <llad/device.h>
 
 #include <vector>
 
@@ -29,22 +29,22 @@ using namespace std;
 
 class DeviceManager {
 
-	public:
-		DeviceManager();
-		~DeviceManager();
-		
-		int register_device(Device *dev) ;
-		int unregister_device(Device *dev) ;
-		int device_count() const;
-		Device *get_dev(unsigned int id) const;
+  public:
+    DeviceManager();
+    ~DeviceManager();
 
-	protected:
+    int register_device(Device *dev);
+    int unregister_device(Device *dev);
+    int device_count() const;
+    Device *get_dev(unsigned int id) const;
 
-	private:
-		DeviceManager(const DeviceManager&);
-		DeviceManager& operator=(const DeviceManager&);
+  protected:
 
-		vector<Device*> m_dev_vect ;		// list of the devices
-} ;
+  private:
+    DeviceManager(const DeviceManager&);
+    DeviceManager& operator=(const DeviceManager&);
+
+    vector<Device*> m_dev_vect;    // list of the devices
+};
 
 #endif

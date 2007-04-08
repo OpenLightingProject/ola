@@ -19,26 +19,26 @@
  */
 
 #ifndef UNIVERSE_MANAGER_H
-#define UNIVERSE_MANAGER_H 
+#define UNIVERSE_MANAGER_H
 
 #include <string>
 
 #include <llad/preferences.h>
 
 class UniverseStore {
-	public:
-	
-		UniverseStore() : m_prefs("universes") {};
-		~UniverseStore() {};
+  public:
 
-		int load();
-		int save();
+    UniverseStore() : m_prefs("universes") {};
+    ~UniverseStore() {};
 
-		int store_uni(Universe *uni);
-		int retrieve_uni(Universe *uni);
-	
-	private:
-		Preferences m_prefs;
+    int load();
+    int save();
+
+    int store_uni(Universe *uni);
+    int retrieve_uni(Universe *uni);
+
+  private:
+    Preferences m_prefs;
 
 
 };

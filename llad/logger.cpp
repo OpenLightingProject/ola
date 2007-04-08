@@ -22,89 +22,89 @@
 #include <stdio.h>
 #include <syslog.h>
 
-Logger *Logger::s_instance = NULL ;
+Logger *Logger::s_instance = NULL;
 
 Logger::Level operator++(Logger::Level &l) {
-	return l = static_cast<Logger::Level>(l+1) ;
+  return l = static_cast<Logger::Level>(l+1);
 
 }
 /*
  * create a new logger
  *
- * @param level		the level to log at
- * @param output	where to send the logs to
+ * @param level    the level to log at
+ * @param output  where to send the logs to
  *
  */
 Logger::Logger(Logger::Level level, Logger::Output output) {
-	m_level = level ;
-	m_output = output ;
+  m_level = level;
+  m_output = output;
 
-	if(m_output == Logger::SYSLOG) {
-		openlog("llad", 0, LOG_USER);
-	}
+  if(m_output == Logger::SYSLOG) {
+    openlog("llad", 0, LOG_USER);
+  }
 }
 
 /*
  * Destroy this logger object
  */
 Logger::~Logger() {
-	if(m_output == Logger::SYSLOG) {
-		closelog() ;
-	}
+  if(m_output == Logger::SYSLOG) {
+    closelog();
+  }
 }
 
 
 /*
  * Log function
- * 
- * @param level	level this msg is at
+ *
+ * @param level  level this msg is at
  * @param fmt
  * @param ap
  */
 void Logger::log(Logger::Level level, const char *fmt, ...) const {
-	int pri ;
-	va_list ap;
-	va_start(ap, fmt) ;
-	
-	if(level <= m_level) {
+  int pri;
+  va_list ap;
+  va_start(ap, fmt);
 
-		if(m_output == Logger::SYSLOG) {
-			switch (m_level) {
-				case Logger::EMERG:
-					pri = LOG_EMERG ;
-					break ;
-				case Logger::CRIT:
-					pri = LOG_CRIT ;
-					break ;
-				case Logger::WARN:
-					pri = LOG_WARNING ;
-					break ;
-				case Logger::INFO:
-					pri = LOG_INFO ;
-					break ;
-				case Logger::DEBUG:
-					pri = LOG_DEBUG ;
-					break ;
-				default :
-					pri = LOG_INFO ;
-			}	
-			vsyslog(pri, fmt, ap);
-		} else {
-			vprintf(fmt, ap) ;
-			printf("\n");
-		}
-	}
-	va_end(ap) ;
+  if(level <= m_level) {
+
+    if(m_output == Logger::SYSLOG) {
+      switch (m_level) {
+        case Logger::EMERG:
+          pri = LOG_EMERG;
+          break;
+        case Logger::CRIT:
+          pri = LOG_CRIT;
+          break;
+        case Logger::WARN:
+          pri = LOG_WARNING;
+          break;
+        case Logger::INFO:
+          pri = LOG_INFO;
+          break;
+        case Logger::DEBUG:
+          pri = LOG_DEBUG;
+          break;
+        default :
+          pri = LOG_INFO;
+      }
+      vsyslog(pri, fmt, ap);
+    } else {
+      vprintf(fmt, ap);
+      printf("\n");
+    }
+  }
+  va_end(ap);
 }
 
 void Logger::increment_log_level() {
-	++m_level;
+  ++m_level;
 
-	if(m_level == LOG_MAX) {
-		m_level = EMERG ;
-	}
+  if(m_level == LOG_MAX) {
+    m_level = EMERG;
+  }
 
-	log(EMERG, "Changed log level to %i\n", m_level) ;
+  log(EMERG, "Changed log level to %i\n", m_level);
 
 }
 
@@ -115,10 +115,10 @@ void Logger::increment_log_level() {
  */
 Logger *Logger::instance() {
 
-	if(Logger::s_instance == NULL) {
-		Logger::s_instance = new Logger(Logger::CRIT, Logger::STDERR) ;
-	}
-	return Logger::s_instance ;
+  if(Logger::s_instance == NULL) {
+    Logger::s_instance = new Logger(Logger::CRIT, Logger::STDERR);
+  }
+  return Logger::s_instance;
 }
 
 
@@ -126,17 +126,17 @@ Logger *Logger::instance() {
  * Grab an instance of the logger, setting the level and output
  * if it doesn't already exist
  *
- * @param level		the log level
- * @param output	where to send the logs to
+ * @param level    the log level
+ * @param output  where to send the logs to
  *
  * @return the logger object
  */
 Logger *Logger::instance(Logger::Level level, Logger::Output output) {
 
-	if(Logger::s_instance == NULL) {
-		Logger::s_instance = new Logger(level, output) ;
-	}
-	return Logger::s_instance ;
+  if(Logger::s_instance == NULL) {
+    Logger::s_instance = new Logger(level, output);
+  }
+  return Logger::s_instance;
 }
 
 
@@ -145,10 +145,10 @@ Logger *Logger::instance(Logger::Level level, Logger::Output output) {
  *
  */
 void Logger::clean_up() {
-	if(Logger::s_instance != NULL) {
-		delete Logger::s_instance ;
-		Logger::s_instance = NULL ;
-	}
+  if(Logger::s_instance != NULL) {
+    delete Logger::s_instance;
+    Logger::s_instance = NULL;
+  }
 }
 
 
