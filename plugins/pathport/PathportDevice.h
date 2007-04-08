@@ -29,29 +29,29 @@
 
 #include <pathport/pathport.h>
 
-#include "common.h"
+#include "PathportCommon.h"
 
 class PathportDevice : public Device, public FDListener {
 
-	public:
-		PathportDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
-		~PathportDevice() ;
+  public:
+    PathportDevice(Plugin *owner, const string &name, class Preferences *prefs);
+    ~PathportDevice();
 
-		int start() ;
-		int stop() ;
-		pathport_node get_node() const;
-		int get_sd(unsigned int i) const ;
-		int fd_action() ;
-		int save_config() const ;
-		int configure(void *req, int len) ;
+    int start();
+    int stop();
+    pathport_node get_node() const;
+    int get_sd(unsigned int i) const;
+    int fd_action();
+    int save_config() const;
+    int configure(void *req, int len);
         int port_map(class Universe *uni, class PathportPort *prt);
         class PathportPort *get_port_from_uni(int uni);
 
-	private:
-		class Preferences *m_prefs ;
-		pathport_node m_node ;
-	 	bool m_enabled ;
-		map<int, class PathportPort *> m_portmap;
+  private:
+    class Preferences *m_prefs;
+    pathport_node m_node;
+     bool m_enabled;
+    map<int, class PathportPort *> m_portmap;
 };
 
 #endif

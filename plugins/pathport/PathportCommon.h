@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * common.h
+ * PathportCommon.h
  * Constants for the shownet plugin
  * Copyright (C) 2005  Simon Newton
  */
@@ -24,6 +24,6 @@
 
 // number of pathport ports we have per device
 // this is split between input and ouput ports
-#define PORTS_PER_DEVICE	8
+#define PORTS_PER_DEVICE  8
 
 #endif

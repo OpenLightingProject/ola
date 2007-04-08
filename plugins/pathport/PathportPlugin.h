@@ -29,25 +29,25 @@ class PathportDevice;
 
 class PathportPlugin : public Plugin {
 
-	public:
-		PathportPlugin(const PluginAdaptor *pa, lla_plugin_id id) : 
-			Plugin(pa, id),
-			m_prefs(NULL),
-			m_dev(NULL),
-			m_enabled(false) {}
+  public:
+    PathportPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
+      Plugin(pa, id),
+      m_prefs(NULL),
+      m_dev(NULL),
+      m_enabled(false) {}
 
-		int start();
-		int stop();
-		bool is_enabled() const 	    { return m_enabled; }
-		string get_name() const 	    { return "Pathport Plugin"; }
-		string get_desc() const;
+    int start();
+    int stop();
+    bool is_enabled() const       { return m_enabled; }
+    string get_name() const       { return "Pathport Plugin"; }
+    string get_desc() const;
 
-	private:
-		int load_prefs();
-		
-		class Preferences *m_prefs;
-		PathportDevice *m_dev;		// only have one device
-		bool m_enabled;			// are we running
+  private:
+    int load_prefs();
+
+    class Preferences *m_prefs;
+    PathportDevice *m_dev;    // only have one device
+    bool m_enabled;      // are we running
 };
 
 #endif

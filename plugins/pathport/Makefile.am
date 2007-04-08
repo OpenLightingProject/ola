@@ -13,6 +13,6 @@ libllapathport_la_SOURCES = PathportPlugin.cpp PathportDevice.cpp PathportPort.c
 
 libllapathport_la_LIBADD = @LIBS@  -lpathport
 
-EXTRA_DIST = PathportPlugin.h PathportDevice.h PathportPort.h
+EXTRA_DIST = PathportPlugin.h PathportDevice.h PathportPort.h PathportCommon.h
 
 endif

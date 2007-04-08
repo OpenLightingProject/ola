@@ -30,7 +30,7 @@
 
 #include "PathportDevice.h"
 #include "PathportPort.h"
-#include "common.h"
+#include "PathportCommon.h"
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -39,32 +39,32 @@
 
 /*
  * Handle dmx from the network, called from libpathport
- * 
- * @param n		the pathport_node
- * @param uni	the universe this data is for
- * @param len	the length of the received data
- * @param data	pointer the the dmx data
- * @param d		pointer to our PathportDevice
+ *
+ * @param n    the pathport_node
+ * @param uni  the universe this data is for
+ * @param len  the length of the received data
+ * @param data  pointer the the dmx data
+ * @param d    pointer to our PathportDevice
  *
  */
 int dmx_handler(pathport_node n, unsigned int uid, unsigned int len, const uint8_t *data, void *d) {
 
-	PathportDevice *dev = (PathportDevice *) d;
-	PathportPort *prt;
-	Universe *uni;
+  PathportDevice *dev = (PathportDevice *) d;
+  PathportPort *prt;
+  Universe *uni;
 
-	if ( uid > PATHPORT_MAX_UNIVERSES) 
-		return 0;
-	
-	prt = (PathportPort*) dev->get_port_from_uni(uid);
-	uni = prt->get_universe();
+  if ( uid > PATHPORT_MAX_UNIVERSES)
+    return 0;
 
-	if( prt != NULL && prt->can_read() && uni != NULL) {
-		prt->update_buffer(data, len);
-	}
+  prt = (PathportPort*) dev->get_port_from_uni(uid);
+  uni = prt->get_universe();
 
-	n = NULL;
-	return 0;
+  if ( prt != NULL && prt->can_read() && uni != NULL) {
+    prt->update_buffer(data, len);
+  }
+
+  n = NULL;
+  return 0;
 }
 
 
@@ -76,11 +76,10 @@ int dmx_handler(pathport_node n, unsigned int uid, unsigned int len, const uint8
  *
  */
 PathportDevice::PathportDevice(Plugin *owner, const string &name, Preferences *prefs) :
-	Device(owner, name),
-	m_prefs(prefs),
-	m_node(NULL),
-	m_enabled(false) {
-
+  Device(owner, name),
+  m_prefs(prefs),
+  m_node(NULL),
+  m_enabled(false) {
 }
 
 
@@ -88,8 +87,8 @@ PathportDevice::PathportDevice(Plugin *owner, const string &name, Preferences *p
  *
  */
 PathportDevice::~PathportDevice() {
-	if (m_enabled)
-		stop();
+  if (m_enabled)
+    stop();
 }
 
 
@@ -98,63 +97,63 @@ PathportDevice::~PathportDevice() {
  *
  */
 int PathportDevice::start() {
-	PathportPort *port = NULL;
-	int debug = 0;
-	
-	/* set up ports */
-	for(int i=0; i < PORTS_PER_DEVICE; i++) {
-		port = new PathportPort(this, i);
+  PathportPort *port = NULL;
+  int debug = 0;
 
-		if(port != NULL) 
-			this->add_port(port);
-	}
+  /* set up ports */
+  for (int i=0; i < PORTS_PER_DEVICE; i++) {
+    port = new PathportPort(this, i);
+
+    if (port != NULL)
+      this->add_port(port);
+  }
 
 #ifdef DEBUG
-	debug = 1;
+  debug = 1;
 #endif
-	
-	// create new pathport node, and set config values
-    if(m_prefs->get_val("ip") == "")
-		m_node = pathport_new(NULL, debug);
-	else {
-		m_node = pathport_new(m_prefs->get_val("ip").c_str(), debug);
-	}
 
-	if(!m_node) {
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_new failed: %s", pathport_strerror());
-		return -1;
-	}
+  // create new pathport node, and set config values
+    if (m_prefs->get_val("ip") == "")
+    m_node = pathport_new(NULL, debug);
+  else {
+    m_node = pathport_new(m_prefs->get_val("ip").c_str(), debug);
+  }
 
-	// setup node
-	if (pathport_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_name failed: %s", pathport_strerror());
-		goto e_pathport_start; 
-	}
+  if (!m_node) {
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_new failed: %s", pathport_strerror());
+    return -1;
+  }
 
-	// setup node
-	if (pathport_set_type(m_node, PATHPORT_MANUF_ZP_TECH, PATHPORT_CLASS_NODE, PATHPORT_CLASS_NODE_PATHPORT) ) {
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_type failed: %s", pathport_strerror());
-		goto e_pathport_start; 
-	}
+  // setup node
+  if (pathport_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_name failed: %s", pathport_strerror());
+    goto e_pathport_start;
+  }
 
-	// we want to be notified when the node config changes
-	if(pathport_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_dmx_handler failed: %s", pathport_strerror());
-		goto e_pathport_start; 
-	}
+  // setup node
+  if (pathport_set_type(m_node, PATHPORT_MANUF_ZP_TECH, PATHPORT_CLASS_NODE, PATHPORT_CLASS_NODE_PATHPORT) ) {
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_type failed: %s", pathport_strerror());
+    goto e_pathport_start;
+  }
 
-	if(pathport_start(m_node) ) {
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_start failed: %s", pathport_strerror());
-		goto e_pathport_start;
-	}
-	
-	m_enabled = true;
-	return 0;
+  // we want to be notified when the node config changes
+  if (pathport_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_dmx_handler failed: %s", pathport_strerror());
+    goto e_pathport_start;
+  }
+
+  if (pathport_start(m_node) ) {
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_start failed: %s", pathport_strerror());
+    goto e_pathport_start;
+  }
+
+  m_enabled = true;
+  return 0;
 
 e_pathport_start:
-	if(pathport_destroy(m_node)) 
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_destory failed: %s", pathport_strerror());			
-	return -1;
+  if (pathport_destroy(m_node))
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_destory failed: %s", pathport_strerror());
+  return -1;
 }
 
 
@@ -163,30 +162,30 @@ e_pathport_start:
  *
  */
 int PathportDevice::stop() {
-	Port *prt = NULL;
+  Port *prt = NULL;
 
-	if (!m_enabled)
-		return 0;
+  if (!m_enabled)
+    return 0;
 
-	for(int i=0; i < port_count(); i++) {
-		prt = get_port(i);
-		if(prt != NULL) 
-			delete prt;
-	}
+  for (int i=0; i < port_count(); i++) {
+    prt = get_port(i);
+    if (prt != NULL)
+      delete prt;
+  }
 
-	if(pathport_stop(m_node)) {
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_stop failed: %s", pathport_strerror());	
-		return -1;
-	}
-	
-	if(pathport_destroy(m_node)) {
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_destroy failed: %s", pathport_strerror());			
-		return -1;
-	}
-	
-	m_enabled = false;
+  if (pathport_stop(m_node)) {
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_stop failed: %s", pathport_strerror());
+    return -1;
+  }
 
-	return 0;
+  if (pathport_destroy(m_node)) {
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_destroy failed: %s", pathport_strerror());
+    return -1;
+  }
+
+  m_enabled = false;
+
+  return 0;
 }
 
 
@@ -196,7 +195,7 @@ int PathportDevice::stop() {
  *
  */
 pathport_node PathportDevice::get_node() const {
-	return m_node;
+  return m_node;
 }
 
 /*
@@ -204,26 +203,26 @@ pathport_node PathportDevice::get_node() const {
  *
  */
 int PathportDevice::get_sd(unsigned int i) const {
-	int ret = pathport_get_sd(m_node, i);
+  int ret = pathport_get_sd(m_node, i);
 
-	if(ret < 0) {
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_get_sd failed: %s", pathport_strerror());
-		return -1;
-	}
-	return ret;
+  if (ret < 0) {
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_get_sd failed: %s", pathport_strerror());
+    return -1;
+  }
+  return ret;
 }
 
 /*
  * Called when there is activity on our descriptors
  *
- * @param	data	user data (pointer to pathport_device_priv
+ * @param  data  user data (pointer to pathport_device_priv
  */
 int PathportDevice::fd_action() {
-	if (pathport_read(m_node, 0) ) {
-		Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_read failed: %s", pathport_strerror());
-		return -1;
-	}
-	return 0;
+  if (pathport_read(m_node, 0) ) {
+    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_read failed: %s", pathport_strerror());
+    return -1;
+  }
+  return 0;
 }
 
 
@@ -233,7 +232,7 @@ int PathportDevice::fd_action() {
 int PathportDevice::save_config() const {
 
 
-	return 0;
+  return 0;
 }
 
 
@@ -244,12 +243,12 @@ int PathportDevice::save_config() const {
  *
  */
 int PathportDevice::configure(void *req, int len) {
-	// handle short/ long name & subnet and port addresses
-	
-	req = 0;
-	len = 0;
+  // handle short/ long name & subnet and port addresses
 
-	return 0;
+  req = 0;
+  len = 0;
+
+  return 0;
 }
 
 

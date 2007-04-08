@@ -28,22 +28,22 @@
 
 class PathportPort : public Port {
 
-	public:
-		PathportPort(Device *parent, int id);
-		~PathportPort();
-		
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
-		
-		int can_read() const;
-		int can_write() const;
-		
-		int update_buffer(const uint8_t *data, int length);
-		int set_universe(Universe *uni);
+  public:
+    PathportPort(Device *parent, int id);
+    ~PathportPort();
 
-	private :
-		uint8_t *m_buf;
-		int m_len;
+    int write(uint8_t *data, int length);
+    int read(uint8_t *data, int length);
+
+    int can_read() const;
+    int can_write() const;
+
+    int update_buffer(const uint8_t *data, int length);
+    int set_universe(Universe *uni);
+
+  private :
+    uint8_t *m_buf;
+    int m_len;
 };
 
 #endif
