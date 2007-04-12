@@ -59,8 +59,8 @@ class Universe {
     void set_name(const string &name, bool save = true);
     int send_dmx(class Client *cli);
 
-    void set_merge_mode(Universe::merge_mode mode, bool save = true);
-    Universe::merge_mode get_merge_mode();
+    void set_merge_mode(merge_mode mode, bool save = true);
+    merge_mode get_merge_mode();
 
     static Universe *get_universe(int uid);
     static Universe *get_universe_or_create(int uid);
