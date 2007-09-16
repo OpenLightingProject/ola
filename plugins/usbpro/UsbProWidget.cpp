@@ -199,7 +199,7 @@ int UsbProWidget::recv() {
   int unread;
 
   // check if there is data to be read
-  if ( ioctl( m_fd, FIONREAD , &unread) ) {
+  if (ioctl( m_fd, FIONREAD , &unread)) {
     // the device has been removed
     Logger::instance()->log(Logger::WARN, "UsbProPlugin: device removed" );
     return -1;

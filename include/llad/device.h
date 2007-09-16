@@ -46,10 +46,10 @@ class Device {
     virtual int   port_count() const;
 
   private:
+    Plugin       *m_owner;      // which plugin owns this device
     Device(const Device&);
     Device& operator=(const Device&);
 
-    Plugin       *m_owner;      // which plugin owns this device
     string       m_name;        // device name
     vector<Port*>  m_ports_vect;    // ports on the device
 };

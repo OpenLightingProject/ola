@@ -64,6 +64,7 @@ AC_CHECK_MEMBER([struct sockaddr.sa_len],
 PLUGINS="dummy opendmx stageprofi usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
+PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
 PLUGIN_LIBRARY(eartnet, eartnet_new, EARTNET)
 PLUGIN_LIBRARY(espnet, espnet_new, ESPNET)
 PLUGIN_LIBRARY(shownet, shownet_new, SHOWNET)
@@ -174,6 +175,7 @@ AC_OUTPUT( Makefile \
     plugins/artnet/conf_msgs/Makefile \
     plugins/eartnet/Makefile \
     plugins/dummy/Makefile \
+    plugins/dmx4linux/Makefile \
     plugins/espnet/Makefile \
     plugins/pathport/Makefile \
     plugins/shownet/Makefile \

@@ -331,6 +331,7 @@ int main(int argc, char*argv[]) {
     llad->run();
   }
   delete llad;
+  delete pl;
   Logger::clean_up();
 
   return 0;

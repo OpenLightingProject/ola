@@ -95,6 +95,7 @@ int DlOpenPluginLoader::unload_plugins() {
   }
 
   m_plugin_map.clear();
+  m_plugin_vect.clear();
 
   return 0;
 }

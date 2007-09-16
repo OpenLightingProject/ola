@@ -51,6 +51,11 @@
 #include "plugins/shownet/shownetplugin.h"
 #endif
 
+#ifdef HAVE_DMX4LINUX
+#include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
+#endif
+
+
 #include <string.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -100,6 +105,11 @@ int DynamicPluginLoader::load_plugins() {
 
 #ifdef HAVE_SHOWNET
   plug = new ShowNetPlugin(m_pa, LLA_PLUGIN_SHOWNET);
+  m_plugin_vect.push_back(plug);
+#endif
+
+#ifdef HAVE_DMX4LINUX
+  plug = new Dmx4LinuxPlugin(m_pa, LLA_PLUGIN_DMX4LINUX);
   m_plugin_vect.push_back(plug);
 #endif
 
