@@ -83,14 +83,13 @@ UsbProDevice::~UsbProDevice() {
  */
 int UsbProDevice::start() {
   UsbProPort *port = NULL;
-  Port *prt = NULL;
   int ret;
 
   // connect to the widget
   ret = m_widget->connect(m_path);
 
   if (ret) {
-    Logger::instance()->log(Logger::WARN, "UsbProPlugin: failed to connect to %s", m_path.c_str()  );
+    Logger::instance()->log(Logger::WARN, "UsbProPlugin: failed to connect to %s", m_path.c_str());
     return -1;
   }
 

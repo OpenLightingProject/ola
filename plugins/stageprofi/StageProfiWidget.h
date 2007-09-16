@@ -37,14 +37,16 @@ class StageProfiWidget {
     int disconnect();
     int fd() {return m_fd;}
     int send_dmx(uint8_t *buf, unsigned int len) const;
+    int detect_device() const;
     int recv();
 
   protected:
     int send_255(unsigned int start, uint8_t *buf, unsigned int len) const;
+    int set_channel(unsigned int chan, uint8_t val) const;
 
     // instance variables
     int m_fd;            // file descriptor
-    bool m_enabled;          // are we enabled
+    bool m_enabled;      // are we enabled
 
   private:
     int do_recv();

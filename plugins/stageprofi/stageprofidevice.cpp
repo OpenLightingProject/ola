@@ -81,13 +81,14 @@ StageProfiDevice::~StageProfiDevice() {
 int StageProfiDevice::start() {
   StageProfiPort *port = NULL;
   Port *prt = NULL;
-  int ret;
 
-  // connect to the widget
-  ret = m_widget->connect(m_path);
+  if (m_widget->connect(m_path)) {
+    Logger::instance()->log(Logger::WARN, "StageProfiPlugin: failed to connect to %s", m_path.c_str());
+    goto e_dev;
+  }
 
-  if (ret) {
-    Logger::instance()->log(Logger::WARN, "StageProfiPlugin: failed to connect to %s", m_path.c_str() );
+  if (m_widget->detect_device()) {
+    Logger::instance()->log(Logger::WARN, "StageProfiPlugin: no device found at %s", m_path.c_str());
     goto e_dev;
   }
 

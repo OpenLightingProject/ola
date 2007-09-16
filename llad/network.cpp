@@ -260,7 +260,6 @@ int Network::read(lla_msg *msg) {
         break;
     }
   }
-  // unreachable ?
   return 0;
 }
 

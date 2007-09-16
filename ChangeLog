@@ -1,3 +1,8 @@
+15/9/2007 Simon Newton <<nomis52@westnet.com.au>
+
+  * stageprofi plugin
+  * fixed the bug with the DMX USB Pro
+
 3/3/2007 Simon Newton <<nomis52@westnet.com.au>
 
   * initial thread support in the client libraries

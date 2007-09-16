@@ -40,6 +40,11 @@
  */
 int StageProfiWidgetUsb::connect(const string &path) {
   struct termios newtio;
+  uint8_t byte = 0x00;
+  fd_set r_fds;
+  struct timeval tv;
+  int maxsd, ret;
+
   m_fd = open(path.c_str(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
   if (m_fd == -1) {
@@ -49,8 +54,7 @@ int StageProfiWidgetUsb::connect(const string &path) {
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
   tcgetattr(m_fd, &newtio);
   cfsetospeed(&newtio, B38400);
-  tcsetattr(m_fd,TCSANOW,&newtio);
+  tcsetattr(m_fd, TCSANOW, &newtio);
 
   return 0;
 }
-

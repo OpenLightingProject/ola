@@ -21,10 +21,7 @@
  */
 
 #include <stdlib.h>
-//#include <stdio.h>
 #include <string.h>
-//#include <termios.h>
-//#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -105,10 +102,67 @@ int StageProfiWidget::recv() {
   return 0;
 }
 
+/*
+ * Check if this is actually a StageProfi device
+ * @return zero if this is a stageprofi, false otherwise
+ */
+int StageProfiWidget::detect_device() const {
+  uint8_t byte = 0x00;
+  fd_set r_fds;
+  struct timeval tv;
+  int maxsd, ret;
+
+  // try a command, we should get a response
+  set_channel(0,0);
+
+  FD_ZERO(&r_fds);
+  FD_SET(m_fd, &r_fds);
+  maxsd = m_fd + 1;
+
+  // wait 100ms for a response
+  tv.tv_sec = 0;
+  tv.tv_usec = 100000;
+
+  while (1) {
+    switch( select(maxsd+1, &r_fds, NULL, NULL, &tv)) {
+      case 0:
+        // timeout
+        goto e_close;
+        break;
+      case -1:
+        goto e_close;
+        break;
+      default:
+        ret = read(m_fd, &byte, 1);
+        if ( ! ret || byte != 'G') {
+          goto e_close;
+        }
+        return 0;
+    }
+  }
+
+e_close:
+    close(m_fd);
+    return -1;
+}
+
+
 
 
 //-----------------------------------------------------------------------------
 // Private methods used for communicating with the widget
+
+/*
+ * Set a single channel
+ */
+int StageProfiWidget::set_channel(unsigned int chan, uint8_t val) const {
+  uint8_t msg[3];
+
+  msg[0] = chan > DMX_MSG_LEN ? ID_SETHI : ID_SETLO;
+  msg[1] = chan & 0xFF;
+  msg[2] = val;
+  return write(m_fd, msg, sizeof(msg));
+}
 
 
 /*
