@@ -5,6 +5,7 @@
 
 --REQUIRED--
 
+* allow for finer grained channel control (set_block, set_channel)
 * tx pathport support
 * regression tests for plugins
 
