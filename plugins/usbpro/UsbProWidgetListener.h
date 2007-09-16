@@ -23,13 +23,13 @@
 
 class UsbProWidgetListener {
 
-	public :
-		UsbProWidgetListener() {};
-		virtual ~UsbProWidgetListener() {} ;
-		virtual void new_dmx() = 0 ;
+  public :
+    UsbProWidgetListener() {};
+    virtual ~UsbProWidgetListener() {};
+    virtual void new_dmx() = 0;
 
-	private:
-		UsbProWidgetListener(const UsbProWidgetListener&);
-		UsbProWidgetListener& operator=(const UsbProWidgetListener&);
+  private:
+    UsbProWidgetListener(const UsbProWidgetListener&);
+    UsbProWidgetListener& operator=(const UsbProWidgetListener&);
 };
 #endif

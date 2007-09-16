@@ -21,7 +21,7 @@
 #ifndef USBPRODEVICE_H
 #define USBPRODEVICE_H
 
-#include <string> 
+#include <string>
 #include <stdint.h>
 #include <llad/device.h>
 #include <llad/fdlistener.h>
@@ -32,41 +32,40 @@
 #include "UsbProWidget.h"
 
 
-class UsbProDevice : public Device, public FDListener, public UsbProWidgetListener, public TimeoutListener {
+class UsbProDevice : public Device, public FDListener, public UsbProWidgetListener {
 
-	public:
+  public:
 
-		UsbProDevice(Plugin *owner, const string &name, const string &dev_path);
-		~UsbProDevice();
+    UsbProDevice(Plugin *owner, const string &name, const string &dev_path);
+    ~UsbProDevice();
 
-		int start();
-		int stop();
-		int get_sd() const;
-		int fd_action();
-		int save_config() const;
-		class LlaDevConfMsg *configure(const uint8_t *request, int reql);
-		int send_dmx(uint8_t *data, int len);
-		int get_dmx(uint8_t *data, int len) const;
-		void new_dmx();
-		int timeout_action();
+    int start();
+    int stop();
+    int get_sd() const;
+    int fd_action();
+    int save_config() const;
+    class LlaDevConfMsg *configure(const uint8_t *request, int reql);
+    int send_dmx(uint8_t *data, int len);
+    int get_dmx(uint8_t *data, int len) const;
+    void new_dmx();
+    int recv_mode();
 
-	private:
-		class UsbProConfMsg *config_get_params(class UsbProConfMsgPrmReq *req) const;
-		class UsbProConfMsg *config_get_serial(class UsbProConfMsgSerReq *req) const;
-		class UsbProConfMsg *config_set_params(class UsbProConfMsgSprmReq *req);
+  private:
+    class UsbProConfMsg *config_get_params(class UsbProConfMsgPrmReq *req) const;
+    class UsbProConfMsg *config_get_serial(class UsbProConfMsgSerReq *req) const;
+    class UsbProConfMsg *config_set_params(class UsbProConfMsgSprmReq *req);
 
-		enum {
-			SEND_MODE,
-			RECV_MODE
-		};
-		
-		// instance variables
-		string m_path;
-		bool m_enabled;							// are we enabled
-		bool m_mode;							// are we sending or receiving?
-		bool m_tx_count;						// number of dmx msgs send in last time period
-		class UsbProConfParser *m_parser;		// parser for config msgs
-		UsbProWidget *m_widget;
+    enum {
+      SEND_MODE,
+      RECV_MODE
+    };
+
+    // instance variables
+    string m_path;
+    bool m_enabled;              // are we enabled
+    bool m_mode;              // are we sending or receiving?
+    class UsbProConfParser *m_parser;    // parser for config msgs
+    UsbProWidget *m_widget;
 };
 
 #endif

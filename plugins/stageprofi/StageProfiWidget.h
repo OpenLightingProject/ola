@@ -23,29 +23,31 @@
 
 using namespace std;
 
-#include <string> 
+#include <string>
 #include <stdint.h>
 
 class StageProfiWidget {
 
-	public:
-		StageProfiWidget() {};
-		~StageProfiWidget() {};
+  public:
+    StageProfiWidget() {};
+    virtual ~StageProfiWidget() {};
 
-		// these methods are for communicating with the device
-		int connect(const string &path);
-		int disconnect();
-		int fd() {return m_fd;}
-		int send_dmx(uint8_t *buf, unsigned int len) const;
-		int recv();
+    // these methods are for communicating with the device
+    virtual int connect(const string &path) = 0;
+    int disconnect();
+    int fd() {return m_fd;}
+    int send_dmx(uint8_t *buf, unsigned int len) const;
+    int recv();
 
-	private:
-		int send_256(unsigned int start, uint8_t *buf, unsigned int len) const;
-		int do_recv();
+  protected:
+    int send_255(unsigned int start, uint8_t *buf, unsigned int len) const;
 
-		// instance variables
-		int m_fd;						// file descriptor
-		bool m_enabled;					// are we enabled
+    // instance variables
+    int m_fd;            // file descriptor
+    bool m_enabled;          // are we enabled
+
+  private:
+    int do_recv();
 };
 
 #endif

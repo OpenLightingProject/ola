@@ -25,14 +25,14 @@
 
 class UsbProPort : public Port {
 
-	public:
-		UsbProPort(Device *parent, int id) : Port(parent, id) {};
-		
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
-		
-		int can_read() const;
-		int can_write() const;
+  public:
+    UsbProPort(Device *parent, int id) : Port(parent, id) {};
+
+    int write(uint8_t *data, int length);
+    int read(uint8_t *data, int length);
+    int set_universe(Universe *uni);
+    int can_read() const;
+    int can_write() const;
 
 };
 

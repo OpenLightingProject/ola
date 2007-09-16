@@ -47,20 +47,19 @@
 /*
  * Create a new device
  *
- * @param owner	the plugin that owns this device
- * @param name	the device name
- * @param dev_path	path to the pro widget
+ * @param owner  the plugin that owns this device
+ * @param name  the device name
+ * @param dev_path  path to the pro widget
  */
 UsbProDevice::UsbProDevice(Plugin *owner, const string &name, const string &dev_path) :
-	Device(owner, name),
-	m_path(dev_path),
-	m_enabled(false),
-	m_mode(RECV_MODE),
-	m_tx_count(0),
-	m_parser(NULL),
-	m_widget(NULL) {
-		m_parser = new UsbProConfParser();
-		m_widget = new UsbProWidget();
+  Device(owner, name),
+  m_path(dev_path),
+  m_enabled(false),
+  m_mode(RECV_MODE),
+  m_parser(NULL),
+  m_widget(NULL) {
+    m_parser = new UsbProConfParser();
+    m_widget = new UsbProWidget();
 }
 
 
@@ -68,14 +67,14 @@ UsbProDevice::UsbProDevice(Plugin *owner, const string &name, const string &dev_
  * Destroy this device
  */
 UsbProDevice::~UsbProDevice() {
-	if (m_enabled)
-		stop();
-		
-	if (m_parser != NULL)
-		delete m_parser;
+  if (m_enabled)
+    stop();
 
-	if (m_widget != NULL)
-		delete m_widget;
+  if (m_parser != NULL)
+    delete m_parser;
+
+  if (m_widget != NULL)
+    delete m_widget;
 }
 
 
@@ -83,31 +82,30 @@ UsbProDevice::~UsbProDevice() {
  * Start this device
  */
 int UsbProDevice::start() {
-	UsbProPort *port = NULL;
-	Port *prt = NULL;
-	int ret;
-	
-	
-	// connect to the widget
-	ret = m_widget->connect(m_path);
+  UsbProPort *port = NULL;
+  Port *prt = NULL;
+  int ret;
 
-	if(ret) {
-		Logger::instance()->log(Logger::WARN, "UsbProPlugin: failed to connect to %s", m_path.c_str()  );
-		return -1;
-	}
+  // connect to the widget
+  ret = m_widget->connect(m_path);
 
-	m_widget->set_listener(this);
+  if (ret) {
+    Logger::instance()->log(Logger::WARN, "UsbProPlugin: failed to connect to %s", m_path.c_str()  );
+    return -1;
+  }
 
-	/* set up ports */
-	for(int i=0; i < 2; i++) {
-		port = new UsbProPort(this,i);
+  m_widget->set_listener(this);
 
-		if(port != NULL) 
-			this->add_port(port);
-	}
+  /* set up ports */
+  for (int i=0; i < 2; i++) {
+    port = new UsbProPort(this,i);
 
-	m_enabled = true;
-	return 0;
+    if (port != NULL)
+      this->add_port(port);
+  }
+
+  m_enabled = true;
+  return 0;
 
 }
 
@@ -116,29 +114,29 @@ int UsbProDevice::start() {
  * Stop this device
  */
 int UsbProDevice::stop() {
-	Port *prt = NULL;
-	Universe *uni;
-	
-	if (!m_enabled)
-		return 0;
+  Port *prt = NULL;
+  Universe *uni;
 
-	// disconnect from widget
-	m_widget->disconnect();
-	
-	for(int i=0; i < port_count() ; i++) {
-		prt = get_port(i);
-		if(prt != NULL) {
-			uni = prt->get_universe();
+  if (!m_enabled)
+    return 0;
 
-			if(uni) 
-				uni->remove_port(prt);
-				
-			delete prt;
-		}
-	}
+  // disconnect from widget
+  m_widget->disconnect();
 
-	m_enabled = false;
-	return 0;
+  for (int i=0; i < port_count(); i++) {
+    prt = get_port(i);
+    if (prt != NULL) {
+      uni = prt->get_universe();
+
+      if (uni)
+        uni->remove_port(prt);
+
+      delete prt;
+    }
+  }
+
+  m_enabled = false;
+  return 0;
 }
 
 
@@ -146,7 +144,7 @@ int UsbProDevice::stop() {
  * return the sd for this device
  */
 int UsbProDevice::get_sd() const {
-	return m_widget->fd();
+  return m_widget->fd();
 }
 
 
@@ -154,8 +152,8 @@ int UsbProDevice::get_sd() const {
  * Called when there is activity on our descriptors
  */
 int UsbProDevice::fd_action() {
-	m_widget->recv();
-	return 0;
+  m_widget->recv();
+  return 0;
 }
 
 
@@ -163,11 +161,10 @@ int UsbProDevice::fd_action() {
  * Send the dmx out the widget
  * called from the UsbProPort
  *
- * @return 	0 on success, non 0 on failure
+ * @return   0 on success, non 0 on failure
  */
 int UsbProDevice::send_dmx(uint8_t *data, int len) {
-	m_tx_count++;
-	return m_widget->send_dmx(data,len);
+  return m_widget->send_dmx(data,len);
 }
 
 
@@ -175,10 +172,10 @@ int UsbProDevice::send_dmx(uint8_t *data, int len) {
  * Copy the dmx buffer into the arguments
  * Called from the UsbProPort
  *
- * @return 	the length of the dmx data copied
+ * @return   the length of the dmx data copied
  */
 int UsbProDevice::get_dmx(uint8_t *data, int len) const {
-	return m_widget->get_dmx(data,len);
+  return m_widget->get_dmx(data,len);
 }
 
 
@@ -188,7 +185,7 @@ int UsbProDevice::get_dmx(uint8_t *data, int len) const {
 int UsbProDevice::save_config() const {
 
 
-	return 0;
+  return 0;
 }
 
 
@@ -196,32 +193,32 @@ int UsbProDevice::save_config() const {
  * For now we can't block in a configure call, so we keep
  * a cache of the widget parameters and return those.
  *
- * @param req		the request data
- * @param reql		the request length
- * @param repl		the length of the reply buffer
+ * @param req    the request data
+ * @param reql    the request length
+ * @param repl    the length of the reply buffer
  *
- * @return	the length of the reply
+ * @return  the length of the reply
  */
 LlaDevConfMsg *UsbProDevice::configure(const uint8_t *request, int reql) {
 
-	UsbProConfMsg *m = m_parser->parse(request, reql);
+  UsbProConfMsg *m = m_parser->parse(request, reql);
 
-	if( m == NULL) {
-		Logger::instance()->log(Logger::WARN ,"UsbProDevice::configure Could not parse message");
-		return NULL;
-	}
+  if ( m == NULL) {
+    Logger::instance()->log(Logger::WARN ,"UsbProDevice::configure Could not parse message");
+    return NULL;
+  }
 
-	switch(m->type()) {
-		case LLA_USBPRO_CONF_MSG_PRM_REQ:
-			return config_get_params(dynamic_cast<UsbProConfMsgPrmReq*>(m));
-		case LLA_USBPRO_CONF_MSG_SER_REQ:
-			return config_get_serial(dynamic_cast<UsbProConfMsgSerReq*>(m));
-		case LLA_USBPRO_CONF_MSG_SPRM_REQ:
-			return config_set_params(dynamic_cast<UsbProConfMsgSprmReq*>(m));
-		default:
-			Logger::instance()->log(Logger::WARN ,"Invalid request to usbpro configure %i", m->type());
-			return NULL;
-	}
+  switch(m->type()) {
+    case LLA_USBPRO_CONF_MSG_PRM_REQ:
+      return config_get_params(dynamic_cast<UsbProConfMsgPrmReq*>(m));
+    case LLA_USBPRO_CONF_MSG_SER_REQ:
+      return config_get_serial(dynamic_cast<UsbProConfMsgSerReq*>(m));
+    case LLA_USBPRO_CONF_MSG_SPRM_REQ:
+      return config_set_params(dynamic_cast<UsbProConfMsgSprmReq*>(m));
+    default:
+      Logger::instance()->log(Logger::WARN ,"Invalid request to usbpro configure %i", m->type());
+      return NULL;
+  }
 
 }
 
@@ -229,40 +226,33 @@ LlaDevConfMsg *UsbProDevice::configure(const uint8_t *request, int reql) {
  * Called when the dmx changes
  */
 void UsbProDevice::new_dmx() {
-	// notify our port
-	Port *prt = get_port(0);
-	prt->dmx_changed();
+  // notify our port
+  Port *prt = get_port(0);
+  prt->dmx_changed();
 }
 
 
 /*
- * We call this every to seconds to check if we should go back into rx mode
+ * put the device back into recv mode
  */
-int UsbProDevice::timeout_action() {
-
-	if(m_tx_count == 0) {
-		// we've stopping sending, change back to rx mode
-		m_widget->recv_mode();
-	}
-	m_tx_count = 0;
-	return 0;
+int UsbProDevice::recv_mode() {
+  m_widget->recv_mode();
 }
-
 
 /*
  * Handle a get params request
  */
 UsbProConfMsg *UsbProDevice::config_get_params(UsbProConfMsgPrmReq *req) const {
-	UsbProConfMsgPrmRep *r = new UsbProConfMsgPrmRep();
-	uint16_t firmware;
-	uint8_t brk, mab, rate;
-	m_widget->get_params(&firmware, &brk, &mab, &rate);
-	r->set_firmware(firmware);
-	r->set_brk(brk);
-	r->set_mab(mab);
-	r->set_rate(rate);
-	req = NULL;
-	return r;
+  UsbProConfMsgPrmRep *r = new UsbProConfMsgPrmRep();
+  uint16_t firmware;
+  uint8_t brk, mab, rate;
+  m_widget->get_params(&firmware, &brk, &mab, &rate);
+  r->set_firmware(firmware);
+  r->set_brk(brk);
+  r->set_mab(mab);
+  r->set_rate(rate);
+  req = NULL;
+  return r;
 }
 
 
@@ -270,12 +260,12 @@ UsbProConfMsg *UsbProDevice::config_get_params(UsbProConfMsgPrmReq *req) const {
  * Handle a serial number request
  */
 UsbProConfMsg *UsbProDevice::config_get_serial(UsbProConfMsgSerReq *req) const {
-	UsbProConfMsgSerRep *r = new UsbProConfMsgSerRep();
-	uint8_t serial[UsbProConfMsgSerRep::SERIAL_SIZE];
-	m_widget->get_serial(serial, UsbProConfMsgSerRep::SERIAL_SIZE);
-	r->set_serial(serial, UsbProConfMsgSerRep::SERIAL_SIZE);
-	req = NULL;
-	return r;
+  UsbProConfMsgSerRep *r = new UsbProConfMsgSerRep();
+  uint8_t serial[UsbProConfMsgSerRep::SERIAL_SIZE];
+  m_widget->get_serial(serial, UsbProConfMsgSerRep::SERIAL_SIZE);
+  r->set_serial(serial, UsbProConfMsgSerRep::SERIAL_SIZE);
+  req = NULL;
+  return r;
 }
 
 
@@ -283,9 +273,9 @@ UsbProConfMsg *UsbProDevice::config_get_serial(UsbProConfMsgSerReq *req) const {
  * Handle a set param config request
  */
 UsbProConfMsg *UsbProDevice::config_set_params(UsbProConfMsgSprmReq *req) {
-	UsbProConfMsgSprmRep *r = new UsbProConfMsgSprmRep();
-	
-	int ret = m_widget->set_params(NULL, 0, req->get_brk(), req->get_mab(), req->get_rate());
-	r->set_status(ret);
-	return r;
+  UsbProConfMsgSprmRep *r = new UsbProConfMsgSprmRep();
+
+  int ret = m_widget->set_params(NULL, 0, req->get_brk(), req->get_mab(), req->get_rate());
+  r->set_status(ret);
+  return r;
 }

@@ -30,7 +30,7 @@
 
 #define STAGEPROFI_DEVICE "/dev/ttyUSB0"
 
-#include <vector> 
+#include <vector>
 
 
 /*
@@ -54,54 +54,49 @@ extern "C" void destroy(Plugin* plug) {
  * Multiple devices now supported
  */
 int StageProfiPlugin::start() {
-	int sd;
-	vector<string> *dev_nm_v;
-	vector<string>::iterator it;
-	StageProfiDevice *dev;
-	
-	if (m_enabled)
-		return -1;
-	
-	// setup prefs
-	if (load_prefs() != 0)
-		return -1;
+  int sd;
+  vector<string> *dev_nm_v;
+  vector<string>::iterator it;
+  StageProfiDevice *dev;
 
-	// fetch device listing
-	dev_nm_v = m_prefs->get_multiple_val("device");
+  if (m_enabled)
+    return -1;
 
-	// for each device
-	for ( it = dev_nm_v->begin(); it != dev_nm_v->end(); ++it) {
+  // setup prefs
+  if (load_prefs() != 0)
+    return -1;
 
-		/* create new lla device */
-		dev = new StageProfiDevice(this, "Stage Profi Device", *it);
+  // fetch device listing
+  dev_nm_v = m_prefs->get_multiple_val("device");
 
-		if (dev == NULL) 
-			continue;
+  for (it = dev_nm_v->begin(); it != dev_nm_v->end(); ++it) {
+    dev = new StageProfiDevice(this, "Stage Profi Device", *it);
 
-		if (dev->start()) {
-			delete dev;
-			continue;
-		}
+    if (dev == NULL)
+      continue;
 
-		// register our descriptors, with us as the manager
-		// this should really be fatal
-		if ((sd = dev->get_sd()) >= 0)
-			m_pa->register_fd( sd, PluginAdaptor::READ, dev, this);
-	
-		m_pa->register_device(dev);
+    if (dev->start()) {
+      delete dev;
+      continue;
+    }
 
-		m_devices.insert(m_devices.end(), dev);
+    // register our descriptors, with us as the manager
+    // this should really be fatal
+    if ((sd = dev->get_sd()) >= 0)
+      m_pa->register_fd( sd, PluginAdaptor::READ, dev, this);
 
-	}
+    m_pa->register_device(dev);
+    m_devices.insert(m_devices.end(), dev);
+  }
 
-	delete dev_nm_v;
+  delete dev_nm_v;
 
-	if (m_devices.size() > 0)
-		m_enabled = true;
-	else 
-		delete m_prefs;		
+  if (m_devices.size() > 0)
+    m_enabled = true;
+  else
+    delete m_prefs;
 
-	return 0;
+  return 0;
 }
 
 
@@ -111,31 +106,29 @@ int StageProfiPlugin::start() {
  * @return 0 on sucess, -1 on failure
  */
 int StageProfiPlugin::stop() {
-	StageProfiDevice *dev;
-	unsigned int i = 0;
-	
-	if (!m_enabled)
-		return -1;
-	
-	for ( i = 0; i < m_devices.size(); i++) {
-		dev = m_devices[i];
-			
-		m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ) ;
+  StageProfiDevice *dev;
+  unsigned int i = 0;
 
-		// stop the device
-		if (dev->stop())
-			continue;
-		
-		m_pa->unregister_device(dev);
+  if (!m_enabled)
+    return -1;
 
-		delete dev;
-	}
-	
-	m_devices.clear();
-	m_enabled = false;
-	delete m_prefs;
+  for (i = 0; i < m_devices.size(); i++) {
+    dev = m_devices[i];
 
-	return 0;
+    m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ);
+
+    if (dev->stop())
+      continue;
+
+    m_pa->unregister_device(dev);
+    delete dev;
+  }
+
+  m_devices.clear();
+  m_enabled = false;
+  delete m_prefs;
+
+  return 0;
 }
 
 /*
@@ -143,7 +136,7 @@ int StageProfiPlugin::stop() {
  *
  */
 string StageProfiPlugin::get_desc() const {
-		return
+    return
 "Stage Profi Plugin\n"
 "----------------------------\n"
 "\n"
@@ -161,30 +154,30 @@ string StageProfiPlugin::get_desc() const {
  *
  */
 int StageProfiPlugin::fd_error(int error, FDListener *listener) {
-	StageProfiDevice *dev  = dynamic_cast<StageProfiDevice *> (listener);
-	vector<StageProfiDevice *>::iterator iter;
-	
-	if (!dev) {
-		Logger::instance()->log(Logger::WARN, "fd_error : dynamic cast failed");
-		return 0;
-	}
+  StageProfiDevice *dev  = dynamic_cast<StageProfiDevice *> (listener);
+  vector<StageProfiDevice *>::iterator iter;
 
-	// stop this device
-	m_pa->unregister_fd(dev->get_sd(), PluginAdaptor::READ);
+  if (!dev) {
+    Logger::instance()->log(Logger::WARN, "fd_error : dynamic cast failed");
+    return 0;
+  }
 
-	// stop the device
-	dev->stop();
-		
-	m_pa->unregister_device(dev);
+  // stop this device
+  m_pa->unregister_fd(dev->get_sd(), PluginAdaptor::READ);
 
-	iter = find(m_devices.begin(), m_devices.end(), dev);
-	if (*iter == dev)
-		m_devices.erase(iter);
-	
-	delete dev;
+  // stop the device
+  dev->stop();
 
-	error = 0;
-	return 0;
+  m_pa->unregister_device(dev);
+
+  iter = find(m_devices.begin(), m_devices.end(), dev);
+  if (*iter == dev)
+    m_devices.erase(iter);
+
+  delete dev;
+
+  error = 0;
+  return 0;
 }
 
 
@@ -193,27 +186,27 @@ int StageProfiPlugin::fd_error(int error, FDListener *listener) {
  *
  */
 int StageProfiPlugin::load_prefs() {
-	if( m_prefs != NULL)
-		delete m_prefs;
+  if ( m_prefs != NULL)
+    delete m_prefs;
 
-	m_prefs = new Preferences("stageprofi");
+  m_prefs = new Preferences("stageprofi");
 
-	if (m_prefs == NULL)
-		return -1;
+  if (m_prefs == NULL)
+    return -1;
 
-	m_prefs->load();
+  m_prefs->load();
 
-	if ( m_prefs->get_val("device") == "") {
-		m_prefs->set_val("device", STAGEPROFI_DEVICE);
-		m_prefs->save();
-	}
+  if ( m_prefs->get_val("device") == "") {
+    m_prefs->set_val("device", STAGEPROFI_DEVICE);
+    m_prefs->save();
+  }
 
-	// check if this saved correctly
-	// we don't want to use it if null
-	if (m_prefs->get_val("device") == "") { 
-		delete m_prefs;
-		return -1;
-	}
+  // check if this saved correctly
+  // we don't want to use it if null
+  if (m_prefs->get_val("device") == "") {
+    delete m_prefs;
+    return -1;
+  }
 
-	return 0;
+  return 0;
 }

@@ -25,14 +25,14 @@
 
 class StageProfiPort : public Port {
 
-	public:
-		StageProfiPort(Device *parent, int id) : Port(parent, id) {};
-		
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
-		
-		int can_read() const { return 0;}
-		int can_write() const { return 1;}
+  public:
+    StageProfiPort(Device *parent, int id) : Port(parent, id) {};
+
+    int write(uint8_t *data, int length);
+    int read(uint8_t *data, int length);
+
+    int can_read() const { return 0;}
+    int can_write() const { return 1;}
 };
 
 #endif

@@ -8,7 +8,8 @@ llad_SOURCES = main.cpp devicemanager.cpp pluginadaptor.cpp\
 				DlOpenPluginLoader.cpp universe.cpp logger.cpp\
 				client.cpp preferences.cpp UniverseStore.cpp
 
-EXTRA_DIST = devicemanager.h llad.h network.h PluginLoader.h client.h UniverseStore.h
+EXTRA_DIST = devicemanager.h llad.h network.h PluginLoader.h client.h UniverseStore.h \
+			  DlOpenPluginLoader.h DynamicPluginLoader.h
 
 llad_CXXFLAGS = -Wall -Werror  -Wformat -W
 llad_LDADD = @LIBS@ -ldl

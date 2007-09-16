@@ -21,34 +21,32 @@
 #ifndef STAGEPROFIDEVICE_H
 #define STAGEPROFIDEVICE_H
 
-#include <string> 
+#include <string>
 #include <stdint.h>
 #include <llad/device.h>
 #include <llad/fdlistener.h>
 
-#include "StageProfiWidget.h"
-
 class StageProfiDevice : public Device, public FDListener {
 
-	public:
+  public:
 
-		StageProfiDevice(Plugin *owner, const string &name, const string &dev_path);
-		~StageProfiDevice();
+    StageProfiDevice(Plugin *owner, const string &name, const string &dev_path);
+    ~StageProfiDevice();
 
-		int start();
-		int stop();
-		int get_sd() const;
-		int fd_action();
-		int save_config() const;
-		class LlaDevConfMsg *configure(const uint8_t *request, int reql);
-		int send_dmx(uint8_t *data, int len);
+    int start();
+    int stop();
+    int get_sd() const;
+    int fd_action();
+    int save_config() const;
+    class LlaDevConfMsg *configure(const uint8_t *request, int reql);
+    int send_dmx(uint8_t *data, int len);
 
-	private:
-	
-		// instance variables
-		string m_path;
-		bool m_enabled;							// are we enabled
-		StageProfiWidget *m_widget;
+  private:
+
+    // instance variables
+    string m_path;
+    bool m_enabled;        // are we enabled
+    class StageProfiWidget *m_widget;
 };
 
 #endif

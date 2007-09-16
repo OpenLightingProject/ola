@@ -15,7 +15,7 @@ liblla_la_CXXFLAGS = -Wall -Wformat
 pkgincludedir = $(includedir)/lla
 pkginclude_HEADERS = $(HEADER_FILES)
 
-EXTRA_DIST = $(HEADER_FILES)
+EXTRA_DIST = $(HEADER_FILES) common-h.in
 
 ## @end 1
 ## @start 2
