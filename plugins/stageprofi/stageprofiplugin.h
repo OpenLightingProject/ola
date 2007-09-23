@@ -22,9 +22,13 @@
 #define STAGEPROFIPLUGIN_H
 
 #include <vector>
+#include <string>
+
 #include <llad/plugin.h>
 #include <llad/fdmanager.h>
 #include <lla/plugin_id.h>
+
+using namespace std;
 
 class StageProfiDevice;
 
@@ -39,8 +43,8 @@ class StageProfiPlugin : public Plugin, public FDManager {
 
     int start();
     int stop();
-    bool is_enabled() const         { return m_enabled; }
-    string get_name() const       { return "StageProfi Plugin"; }
+    bool is_enabled() const { return m_enabled; }
+    string get_name() const { return PLUGIN_NAME }
     string get_desc() const;
     int fd_error(int error, FDListener *listener);
   private:
@@ -49,6 +53,7 @@ class StageProfiPlugin : public Plugin, public FDManager {
     class Preferences *m_prefs;        // prefs container
     vector<StageProfiDevice *>  m_devices;  // list of out devices
     bool m_enabled;              // are we running
+    static const string PLUGIN_NAME;
 };
 
 #endif

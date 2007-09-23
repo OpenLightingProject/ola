@@ -32,6 +32,7 @@
 
 #include <vector>
 
+const string StageProfiPlugin::PLUGIN_NAME = "StageProfi Plugin";
 
 /*
  * Entry point to this plugin
