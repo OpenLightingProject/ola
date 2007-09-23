@@ -53,7 +53,9 @@ class StageProfiPlugin : public Plugin, public FDManager {
     class Preferences *m_prefs;        // prefs container
     vector<StageProfiDevice *>  m_devices;  // list of out devices
     bool m_enabled;              // are we running
+
     static const string PLUGIN_NAME;
+    static const string STAGEPROFI_DEVICE;
 };
 
 #endif

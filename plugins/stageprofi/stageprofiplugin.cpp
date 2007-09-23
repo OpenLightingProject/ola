@@ -18,6 +18,7 @@
  * Copyright (C) 2006-2007 Simon Newton
  */
 
+#include <vector>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -28,10 +29,8 @@
 #include "stageprofiplugin.h"
 #include "stageprofidevice.h"
 
-#define STAGEPROFI_DEVICE "/dev/ttyUSB0"
 
-#include <vector>
-
+const string StageProfiPlugin::STAGEPROFI_DEVICE = "/dev/ttyUSB0";
 const string StageProfiPlugin::PLUGIN_NAME = "StageProfi Plugin";
 
 /*
