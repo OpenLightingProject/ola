@@ -22,34 +22,41 @@
 #ifndef ARTNETPLUGIN_H
 #define ARTNETPLUGIN_H
 
+#include <string>
 #include <llad/plugin.h>
 #include <lla/plugin_id.h>
+
+using namespace std;
 
 class ArtNetDevice ;
 
 class ArtNetPlugin : public Plugin {
 
-	public:
-		ArtNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
-			Plugin(pa,id),
-			m_prefs(NULL),
-			m_dev(NULL),
-			m_enabled(false) {}
+  public:
+    ArtNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
+      Plugin(pa,id),
+      m_prefs(NULL),
+      m_dev(NULL),
+      m_enabled(false) {}
 
-		~ArtNetPlugin();
+    ~ArtNetPlugin();
 
-		int start();
-		int stop();
-		bool is_enabled() const 	    { return m_enabled; }
-		string get_name() const	 	    { return "ArtNet Plugin"; }
-		string get_desc() const ;
-				
-	private:
-		int load_prefs() ;
-		
-		class Preferences *m_prefs ;
-		ArtNetDevice *m_dev ;		// only have one device
-		bool m_enabled ;			// did the node start correctly
+    int start();
+    int stop();
+    bool is_enabled() const       { return m_enabled; }
+    string get_name() const         { return "ArtNet Plugin"; }
+    string get_desc() const ;
+
+  private:
+    int load_prefs() ;
+
+    class Preferences *m_prefs ;
+    ArtNetDevice *m_dev ;    // only have one device
+    bool m_enabled ;      // did the node start correctly
+
+    static const int ARTNET_SUBNET;
+    static const string ARTNET_LONG_NAME;
+    static const string ARTNET_SHORT_NAME;
 };
 
 #endif
