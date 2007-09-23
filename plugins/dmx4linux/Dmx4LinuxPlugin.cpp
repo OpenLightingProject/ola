@@ -40,7 +40,6 @@ static const string DMX4LINUX_OUT_DEVICE = "/dev/dmx";
 static const string DMX4LINUX_IN_DEVICE  = "/dev/dmxin";
 static const string IN_DEV_KEY = "in_device";
 static const string OUT_DEV_KEY = "out_device";
-static const string PREF_SUFFIX = "dmx4linux";
 static const int CHANNELS_PER_UNI = 512;
 static const char PLUG_NAME[] = "Dmx4LinuxPlugin";
 
@@ -62,33 +61,23 @@ extern "C" void destroy(Plugin* plug) {
 /*
  * Start the plugin
  */
-int Dmx4LinuxPlugin::start() {
-
-  if (m_enabled)
-    return -1;
-
-  // setup prefs
-  if (load_prefs() != 0)
-    return -1;
+int Dmx4LinuxPlugin::start_hook() {
 
   if(open_fds())
-    goto e_prefs;
+    return -1;
 
-  if(setup())
-    goto e_prefs;
+  if(setup()) {
+    close_fds();
+    return -1;
+  }
 
   if (m_devices.size() > 0) {
     m_pa->register_fd(m_in_fd, PluginAdaptor::READ, this, NULL);
-    m_enabled = true;
+    return 0;
   } else {
     close_fds();
-    delete m_prefs;
+    return 0;
   }
-  return 0;
-
-e_prefs:
-  delete m_prefs;
-  return -1;
 }
 
 
@@ -97,11 +86,8 @@ e_prefs:
  *
  * @return 0 on sucess, -1 on failure
  */
-int Dmx4LinuxPlugin::stop() {
+int Dmx4LinuxPlugin::stop_hook() {
   vector<Dmx4LinuxDevice *>::iterator it;
-
-  if (!m_enabled)
-    return -1;
 
   m_pa->unregister_fd(m_in_fd, PluginAdaptor::READ);
 
@@ -115,8 +101,6 @@ int Dmx4LinuxPlugin::stop() {
 
   close_fds();
   m_devices.clear();
-  m_enabled = false;
-  delete m_prefs;
   return 0;
 }
 
@@ -175,18 +159,11 @@ int Dmx4LinuxPlugin::send_dmx(int d4l_uni, uint8_t *data, int len) {
  * load the plugin prefs and default to sensible values
  *
  */
-int Dmx4LinuxPlugin::load_prefs() {
+int Dmx4LinuxPlugin::set_default_prefs() {
   bool save = false;
 
-  if ( m_prefs != NULL)
-    delete m_prefs;
-
-  m_prefs = new Preferences(PREF_SUFFIX);
-
-  if (m_prefs == NULL)
+  if ( m_prefs == NULL)
     return -1;
-
-  m_prefs->load();
 
   if ( m_prefs->get_val(IN_DEV_KEY) == "") {
     m_prefs->set_val(IN_DEV_KEY, DMX4LINUX_IN_DEVICE);
@@ -201,10 +178,8 @@ int Dmx4LinuxPlugin::load_prefs() {
   if (save)
     m_prefs->save();
 
-  if (m_prefs->get_val(IN_DEV_KEY) == "" || m_prefs->get_val(OUT_DEV_KEY) == "") {
-    delete m_prefs;
+  if (m_prefs->get_val(IN_DEV_KEY) == "" || m_prefs->get_val(OUT_DEV_KEY) == "")
     return -1;
-  }
 
   m_in_dev = m_prefs->get_val(IN_DEV_KEY);
   m_out_dev = m_prefs->get_val(OUT_DEV_KEY);

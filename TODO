@@ -3,6 +3,7 @@
 
 * default ip address issue (wtf is this ?)
 * allow plugins to be disabled / refactor plugin / device classes
+* fix python problem (.h not created)
 
 --REQUIRED--
 

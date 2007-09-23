@@ -24,6 +24,7 @@
 #define PLUGIN_H
 
 #include <lla/plugin_id.h>
+
 #include <string>
 
 using namespace std;
@@ -37,24 +38,37 @@ class PluginAdaptor;
 class Plugin {
 
   public :
-    Plugin(const PluginAdaptor *pa, lla_plugin_id id) : m_pa(pa), m_id(id) {}
+    Plugin(const PluginAdaptor *pa, lla_plugin_id id) :
+      m_pa(pa),
+      m_prefs(NULL),
+      m_enabled(false),
+      m_id(id) {}
+
     virtual ~Plugin() {};
 
     virtual string get_name() const = 0;
-    virtual int start() = 0;
-    virtual int stop() = 0;
+    virtual int start();
+    virtual int stop();
     virtual bool is_enabled() const = 0;
     virtual string get_desc() const = 0;
     lla_plugin_id get_id() { return m_id;}
 
   protected:
+    virtual int start_hook() { return 0; }
+    virtual int stop_hook() { return 0; }
+    virtual int load_prefs();
+    virtual int set_default_prefs() { return 0; }
+    virtual string pref_suffix() { return ""; }
+
     const PluginAdaptor *m_pa;
+    class Preferences *m_prefs;  // prefs container
+    bool m_enabled;              // are we running
+    static const string ENABLED_KEY;
 
   private:
     Plugin(const Plugin&);
     Plugin& operator=(const Plugin&);
     lla_plugin_id m_id;
-
 
 };
 

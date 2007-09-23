@@ -34,23 +34,24 @@ class Dmx4LinuxPlugin : public Plugin, public FDListener {
   public:
     Dmx4LinuxPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
       Plugin(pa, id),
-      m_prefs(NULL),
-      m_enabled(false),
       m_out_fd(-1),
       m_in_fd(-1) {}
     ~Dmx4LinuxPlugin() {}
 
-    int start();
-    int stop();
     bool is_enabled() const   { return m_enabled; }
     string get_name() const   { return "Dmx4Linux Plugin"; }
     string get_desc() const;
     int fd_action();
     int fd_error(int error, FDListener *listener);
-
     int send_dmx(int d4l_uni, uint8_t *data, int length);
+
+  protected:
+    string pref_suffix() { return "dmx4linux"; }
+
   private:
-    int load_prefs();
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
     int open_fds();
     int close_fds();
     int get_uni_count(int dir);
@@ -58,9 +59,7 @@ class Dmx4LinuxPlugin : public Plugin, public FDListener {
     int setup_devices(int dir);
     int setup();
 
-    class Preferences *m_prefs;        // prefs container
     vector<Dmx4LinuxDevice *>  m_devices;  // list of out devices
-    bool m_enabled;              // are we running
     string m_out_dev;           // path the the dmx device
     string m_in_dev;           // path the the dmx device
     int m_out_fd;                // fd for the output dmx device

@@ -4,7 +4,7 @@ bin_PROGRAMS = llad llad_test
 INCLUDES = -I$(top_builddir)/include @LLAD_DEFINES@
 
 llad_SOURCES = main.cpp devicemanager.cpp pluginadaptor.cpp\
-				llad.cpp network.cpp device.cpp port.cpp\
+				llad.cpp network.cpp plugin.cpp device.cpp port.cpp\
 				DlOpenPluginLoader.cpp universe.cpp logger.cpp\
 				client.cpp preferences.cpp UniverseStore.cpp
 
@@ -17,7 +17,7 @@ llad_LDFLAGS = -rdynamic
 
 
 llad_test_SOURCES = main_test.cpp devicemanager.cpp pluginadaptor.cpp\
-				llad.cpp network.cpp device.cpp port.cpp\
+				llad.cpp network.cpp plugin.cpp device.cpp port.cpp\
 				DynamicPluginLoader.cpp universe.cpp logger.cpp\
 				client.cpp preferences.cpp UniverseStore.cpp
 

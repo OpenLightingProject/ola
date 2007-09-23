@@ -50,7 +50,6 @@ int UsbProPort::write(uint8_t *data, int length) {
 
   // send to device
   return dev->send_dmx(data, length);
-
 }
 
 /*
@@ -83,4 +82,5 @@ int UsbProPort::set_universe(Universe *uni) {
   if (uni == NULL && can_write()) {
     dev->recv_mode();
   }
+  return 0;
 }

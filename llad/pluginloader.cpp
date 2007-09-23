@@ -186,7 +186,7 @@ Plugin *PluginLoader::load_plugin(const string &path) {
   pair<void*, Plugin*> p (handle, plug);
   m_plugin_map.insert(p);
 
-  Logger::instance()->log(Logger::WARN, "Loaded plugin %s", plug->get_name().c_str());
+  Logger::instance()->log(Logger::INFO, "Loaded plugin %s", plug->get_name().c_str());
 
   return plug;
 }
