@@ -32,7 +32,7 @@
 #include "plugins/stageprofi/stageprofiplugin.h"
 
 #ifdef HAVE_ARTNET
-#include "plugins/artnet/artnetplugin.h"
+#include "plugins/artnet/ArtNetPlugin.h"
 #endif
 
 #ifdef HAVE_ESPNET
