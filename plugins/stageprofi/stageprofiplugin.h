@@ -44,7 +44,7 @@ class StageProfiPlugin : public Plugin, public FDManager {
     int start();
     int stop();
     bool is_enabled() const { return m_enabled; }
-    string get_name() const { return PLUGIN_NAME }
+    string get_name() const { return PLUGIN_NAME; }
     string get_desc() const;
     int fd_error(int error, FDListener *listener);
   private:
