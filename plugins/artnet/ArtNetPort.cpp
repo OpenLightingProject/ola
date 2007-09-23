@@ -18,8 +18,8 @@
  * Copyright (C) 2005 - 2006 Simon Newton
  */
 
-#include "artnetport.h"
-#include "artnetdevice.h"
+#include "ArtNetPort.h"
+#include "ArtNetDevice.h"
 #include <llad/universe.h>
 #include <llad/logger.h>
 #include <string.h>

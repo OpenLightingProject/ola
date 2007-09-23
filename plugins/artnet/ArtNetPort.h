@@ -23,21 +23,19 @@
 #define ARTNETPORT_H
 
 #include <llad/port.h>
-
 #include <artnet/artnet.h>
 
 class ArtNetPort : public Port  {
 
-	public:
-		ArtNetPort(Device *parent, int id) : Port(parent, id) {} ;
-		
-		int set_universe(Universe *uni) ;
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
-		
-		int can_read() const;
-		int can_write() const ;
+  public:
+    ArtNetPort(Device *parent, int id) : Port(parent, id) {};
 
+    int set_universe(Universe *uni) ;
+    int write(uint8_t *data, int length);
+    int read(uint8_t *data, int length);
+
+    int can_read() const;
+    int can_write() const ;
 };
 
 #endif

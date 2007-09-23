@@ -30,8 +30,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "artnetdevice.h"
-#include "artnetport.h"
+#include "ArtNetDevice.h"
+#include "ArtNetPort.h"
 
 #include <llad/logger.h>
 #include <llad/preferences.h>

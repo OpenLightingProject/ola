@@ -29,23 +29,23 @@
 
 class ArtNetDevice : public Device, public FDListener {
 
-	public:
-		ArtNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
-		~ArtNetDevice() ;
+  public:
+    ArtNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
+    ~ArtNetDevice() ;
 
-		int start() ;
-		int stop() ;
-		artnet_node get_node() const;
-		int get_sd() const ;
-		int fd_action() ;
-		int save_config() const;
-		class LlaDevConfMsg *configure(const uint8_t *req, int len) ;
+    int start() ;
+    int stop() ;
+    artnet_node get_node() const;
+    int get_sd() const ;
+    int fd_action() ;
+    int save_config() const;
+    class LlaDevConfMsg *configure(const uint8_t *req, int len) ;
 
-	private:
-		class Preferences *m_prefs;
-		artnet_node m_node ;
-		bool m_enabled ;
-		class ArtNetConfParser *m_parser;		// parser for config msgs
+  private:
+    class Preferences *m_prefs;
+    artnet_node m_node ;
+    bool m_enabled ;
+    class ArtNetConfParser *m_parser;    // parser for config msgs
 
 };
 

@@ -24,8 +24,8 @@
 #include <llad/pluginadaptor.h>
 #include <llad/preferences.h>
 
-#include "artnetplugin.h"
-#include "artnetdevice.h"
+#include "ArtNetPlugin.h"
+#include "ArtNetDevice.h"
 
 const string ArtNetPlugin::ARTNET_LONG_NAME = "lla - ArtNet node";
 const string ArtNetPlugin::ARTNET_SHORT_NAME = "lla - ArtNet node";
