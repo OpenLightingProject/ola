@@ -43,8 +43,8 @@ class ArtNetPlugin : public Plugin {
 
     int start();
     int stop();
-    bool is_enabled() const       { return m_enabled; }
-    string get_name() const         { return "ArtNet Plugin"; }
+    bool is_enabled() const { return m_enabled; }
+    string get_name() const { return PLUGIN_NAME; }
     string get_desc() const ;
 
   private:
@@ -57,6 +57,7 @@ class ArtNetPlugin : public Plugin {
     static const int ARTNET_SUBNET;
     static const string ARTNET_LONG_NAME;
     static const string ARTNET_SHORT_NAME;
+    static const string PLUGIN_NAME;
 };
 
 #endif

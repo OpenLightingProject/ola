@@ -30,6 +30,7 @@
 const string ArtNetPlugin::ARTNET_LONG_NAME = "lla - ArtNet node";
 const string ArtNetPlugin::ARTNET_SHORT_NAME = "lla - ArtNet node";
 const int ArtNetPlugin::ARTNET_SUBNET = 0;
+const string ArtNetPlugin::PLUGIN_NAME = "ArtNet Plugin";
 
 /*
  * Entry point to this plugin
