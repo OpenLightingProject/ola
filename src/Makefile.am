@@ -17,8 +17,8 @@ lla_usbpro_SOURCES = lla-usbpro.cpp
 lla_usbpro_LDADD = @LIBS@ -lllausbproconf
 
 install-exec-hook:
-	$(LN_S) $(bindir)/lla_dev_info $(bindir)/lla_plugin_info
-	$(LN_S) $(bindir)/lla_dev_info $(bindir)/lla_uni_info
-	$(LN_S) $(bindir)/lla_dev_info $(bindir)/lla_uni_name
-	$(LN_S) $(bindir)/lla_dev_info $(bindir)/lla_uni_merge
-	$(LN_S) $(bindir)/lla_dev_info $(bindir)/lla_set_dmx
+	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_plugin_info
+	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_uni_info
+	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_uni_name
+	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_uni_merge
+	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_set_dmx

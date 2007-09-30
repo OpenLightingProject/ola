@@ -380,7 +380,7 @@ int main (int argc, char *argv[]) {
 	}
 
 	/* set up lla connection */
-	con = new LlaClient() ; ;
+	con = new LlaClient();
 	
 	if(con->start()) {
 		printf("Unable to connect\n") ;
