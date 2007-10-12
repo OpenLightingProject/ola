@@ -6,16 +6,23 @@ if [ \( ! -f config/ltmain.sh \) -a \( -f $ltmain \) ]; then
 	ln -s $ltmain config/ltmain.sh
 fi
 
-pushd ./ > /dev/null
-cd tools
-echo "Generating source files..."
 perl -e "use Template" 2> /dev/null
-
 if [ $? != 0 ]; then
   echo "ERROR: Could not find Template.pm, you need this to autogenerate\
  parts of the code"
   exit 1
 fi
+
+perl -e "use XML::Simple" 2> /dev/null
+if [ $? != 0 ]; then
+  echo "ERROR: Could not find XML::Simple, you need this to autogenerate\
+ parts of the code"
+  exit 1
+fi
+
+echo "Generating source files..."
+pushd ./ > /dev/null
+cd tools
 ./generate.sh
 popd > /dev/null
 
