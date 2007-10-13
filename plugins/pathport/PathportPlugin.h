@@ -16,7 +16,7 @@
  *
  * pathportplugin.h
  * Interface for the pathport plugin class
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
 #ifndef PATHPORTPLUGIN_H
@@ -30,25 +30,25 @@ class PathportDevice;
 class PathportPlugin : public Plugin {
 
   public:
-    PathportPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
+    PathportPlugin(const PluginAdaptor *pa, lla_plugin_id id):
       Plugin(pa, id),
-      m_prefs(NULL),
-      m_dev(NULL),
-      m_enabled(false) {}
+      m_dev(NULL) {}
 
-    int start();
-    int stop();
-    bool is_enabled() const       { return m_enabled; }
-    string get_name() const       { return "Pathport Plugin"; }
+    string get_name() const { return PLUGIN_NAME; }
     string get_desc() const;
 
-  private:
-    int load_prefs();
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
 
-    class Preferences *m_prefs;
-    PathportDevice *m_dev;    // only have one device
-    bool m_enabled;      // are we running
+  private:
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
+
+    PathportDevice *m_dev; // only have one device
+    static const string PATHPORT_NODE_NAME;
+    static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
 };
 
 #endif
-

@@ -51,36 +51,36 @@ extern "C" void destroy(Plugin* plug) {
  * For now we just have one device.
  */
 int ShowNetPlugin::start() {
-	
-	if(m_enabled)
-		return -1;
-	
-	// setup prefs
-	if (load_prefs() != 0)
-		return -1;
 
-	/* create new lla device */
-	m_dev = new ShowNetDevice(this, "ShowNet Device", m_prefs);
+  if (m_enabled)
+    return -1;
 
-	if(m_dev == NULL) 
-		goto e_prefs;
+  // setup prefs
+  if (load_prefs() != 0)
+    return -1;
 
-	if(m_dev->start())
-		goto e_dev;
+  /* create new lla device */
+  m_dev = new ShowNetDevice(this, "ShowNet Device", m_prefs);
 
-	// register our descriptors
-	m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev) ;
+  if (m_dev == NULL)
+    goto e_prefs;
 
-	m_pa->register_device(m_dev);
+  if (m_dev->start())
+    goto e_dev;
 
-	m_enabled = true;
-	return 0;
+  // register our descriptors
+  m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev);
 
-	e_dev:
-		delete m_dev;
-	e_prefs:
-		delete m_prefs;
-		return -1;
+  m_pa->register_device(m_dev);
+
+  m_enabled = true;
+  return 0;
+
+  e_dev:
+    delete m_dev;
+  e_prefs:
+    delete m_prefs;
+    return -1;
 
 }
 
@@ -91,22 +91,22 @@ int ShowNetPlugin::start() {
  * @return 0 on sucess, -1 on failure
  */
 int ShowNetPlugin::stop() {
-			
-	if (!m_enabled)
-		return -1;
-	
-	m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ) ;
 
-	// stop the device
-	if (m_dev->stop())
-		return -1;
-	
+  if (!m_enabled)
+    return -1;
 
-	m_pa->unregister_device(m_dev);
-	m_enabled = false;
-	delete m_dev;
-	delete m_prefs;
-	return 0;
+  m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ);
+
+  // stop the device
+  if (m_dev->stop())
+    return -1;
+
+
+  m_pa->unregister_device(m_dev);
+  m_enabled = false;
+  delete m_dev;
+  delete m_prefs;
+  return 0;
 }
 
 /*
@@ -114,7 +114,7 @@ int ShowNetPlugin::stop() {
  *
  */
 string ShowNetPlugin::get_desc() const {
-	return 
+  return
 "ShowNet Plugin\n"
 "----------------------------\n"
 "\n"
@@ -139,29 +139,29 @@ string ShowNetPlugin::get_desc() const {
  *
  */
 int ShowNetPlugin::load_prefs() {
-	if (m_prefs != NULL)
-		delete m_prefs;
+  if (m_prefs != NULL)
+    delete m_prefs;
 
-	m_prefs = new Preferences("shownet");
+  m_prefs = new Preferences("shownet");
 
-	if(m_prefs == NULL)
-		return -1;
+  if (m_prefs == NULL)
+    return -1;
 
-	m_prefs->load();
+  m_prefs->load();
 
-	// we don't worry about ip here
-	// if it's non existant it will choose one
-	if( m_prefs->get_val("name") == "") {
-		m_prefs->set_val("name", SHOWNET_NAME);
-		m_prefs->save();
-	}
+  // we don't worry about ip here
+  // if it's non existant it will choose one
+  if ( m_prefs->get_val("name") == "") {
+    m_prefs->set_val("name", SHOWNET_NAME);
+    m_prefs->save();
+  }
 
-	// check if this save correctly
-	// we don't want to use it if null
-	if( m_prefs->get_val("name") == "" ) {
-		delete m_prefs;
-		return -1;
-	}
+  // check if this save correctly
+  // we don't want to use it if null
+  if ( m_prefs->get_val("name") == "" ) {
+    delete m_prefs;
+    return -1;
+  }
 
-	return 0;
+  return 0;
 }

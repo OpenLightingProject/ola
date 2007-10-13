@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * espnetplugin.cpp
+ * EspNetPlugin.cpp
  * The Esp Net plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
@@ -25,10 +25,13 @@
 #include <llad/pluginadaptor.h>
 #include <llad/preferences.h>
 
-#include "espnetplugin.h"
-#include "espnetdevice.h"
+#include "EspNetPlugin.h"
+#include "EspNetDevice.h"
 
-#define ESPNET_NAME "lla-EspNet" 
+const string EspNetPlugin::ESPNET_NODE_NAME = "lla-EspNet";
+const string EspNetPlugin::PLUGIN_NAME = "EspNet Plugin";
+const string EspNetPlugin::PLUGIN_PREFIX = "espnet";
+
 /*
  * Entry point to this plugin
  */
@@ -49,39 +52,23 @@ extern "C" void destroy(Plugin* plug) {
  *
  * For now we just have one device.
  */
-int EspNetPlugin::start() {
-	
-	if(m_enabled)
-		return -1;
-	
-	// setup prefs
-	if (load_prefs() != 0)
-		return -1;
+int EspNetPlugin::start_hook() {
+  /* create new lla device */
+  m_dev = new EspNetDevice(this, "ESPNet Device", m_prefs);
 
-	/* create new lla device */
-	m_dev = new EspNetDevice(this, "ESPNet Device", m_prefs);
+  if(m_dev == NULL)
+    return -1;
 
-	if(m_dev == NULL) 
-		goto e_prefs;
+  if(m_dev->start()) {
+    delete m_dev;
+    return -1;
+  }
 
-	if(m_dev->start()) {
-		goto e_dev;
-	}
+  // register our descriptors
+  m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev);
+  m_pa->register_device(m_dev);
 
-	// register our descriptors
-	//
-	m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev) ;
-	m_pa->register_device(m_dev);
-
-	m_enabled = true;
-	return 0;
-
-	e_dev:
-		delete m_dev;
-	e_prefs:
-		delete m_prefs;
-		return -1;
-
+  return 0;
 }
 
 
@@ -90,23 +77,15 @@ int EspNetPlugin::start() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int EspNetPlugin::stop() {
-			
-	if (!m_enabled)
-		return -1;
-	
-	m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ) ;
+int EspNetPlugin::stop_hook() {
+  m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ) ;
 
-	// stop the device
-	if (m_dev->stop())
-		return -1;
-	
+  if (m_dev->stop())
+    return -1;
 
-	m_pa->unregister_device(m_dev);
-	m_enabled = false;
-	delete m_dev;
-	delete m_prefs;
-	return 0;
+  m_pa->unregister_device(m_dev);
+  delete m_dev;
+  return 0;
 }
 
 /*
@@ -114,7 +93,7 @@ int EspNetPlugin::stop() {
  *
  */
 string EspNetPlugin::get_desc() const {
-	return 
+  return
 "EspNet Plugin\n"
 "----------------------------\n"
 "\n"
@@ -132,7 +111,10 @@ string EspNetPlugin::get_desc() const {
 "The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
 "\n"
 "name = lla-EspNet\n"
-"The name of the node.\n";
+"The name of the node.\n"
+"\n"
+"debug = [true|false]\n"
+"Turn libespnet debugging on.\n";
 
 }
 
@@ -140,30 +122,33 @@ string EspNetPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-int EspNetPlugin::load_prefs() {
-	if( m_prefs != NULL)
-		delete m_prefs;
+int EspNetPlugin::set_default_prefs() {
+  bool save = false;
 
-	m_prefs = new Preferences("espnet");
+  if (m_prefs != NULL)
+    return -1;
 
-	if(m_prefs == NULL)
-		return -1;
+  // we don't worry about ip here
+  // if it's non existant it will choose one
+  if (m_prefs->get_val("name") == "") {
+    m_prefs->set_val("name", ESPNET_NODE_NAME);
+    save = true;
+  }
 
-	m_prefs->load();
+  // we don't worry about ip here
+  // if it's non existant it will choose one
+  if (m_prefs->get_val("debug") == "") {
+    m_prefs->set_val("false", ESPNET_NODE_NAME);
+    save = true;
+  }
 
-	// we don't worry about ip here
-	// if it's non existant it will choose one
-	if( m_prefs->get_val("name") == "") {
-		m_prefs->set_val("name",ESPNET_NAME);
-		m_prefs->save();
-	}
+  if (save)
+    m_prefs->save();
 
-	// check if this save correctly
-	// we don't want to use it if null
-	if( m_prefs->get_val("name") == "" ) {
-		delete m_prefs;
-		return -1;
-	}
+  // check if this save correctly
+  // we don't want to use it if null
+  if (m_prefs->get_val("name") == "")
+    return -1;
 
-	return 0;
+  return 0;
 }

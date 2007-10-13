@@ -28,21 +28,21 @@
 
 class ShowNetPort : public Port  {
 
-	public:
-		ShowNetPort(Device *parent, int id) ;
-		~ShowNetPort() ;
-		
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
-		
-		int can_read() const;
-		int can_write() const;
-		
-		int update_buffer(uint8_t *data, int length) ;
+  public:
+    ShowNetPort(Device *parent, int id);
+    ~ShowNetPort();
 
-	private :
-		uint8_t *m_buf ;
-		int m_len ;
+    int write(uint8_t *data, int length);
+    int read(uint8_t *data, int length);
+
+    int can_read() const;
+    int can_write() const;
+
+    int update_buffer(uint8_t *data, int length);
+
+  private :
+    uint8_t *m_buf;
+    int m_len;
 };
 
 #endif

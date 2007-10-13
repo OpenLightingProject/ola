@@ -28,8 +28,10 @@
 #include "SandnetPlugin.h"
 #include "SandnetDevice.h"
 
-#define SANDNET_NAME "lla-SandNet"
-
+const string SandNetPlugin::SANDNET_NODE_NAME = "lla-SandNet";
+const string SandNetPlugin::SANDNET_DEVICE_NAME = "SandNet Device";
+const string SandNetPlugin::PLUGIN_NAME = "SandNet Plugin";
+const string SandNetPlugin::PLUGIN_PREFIX = "dmx4linux";
 
 /*
  * Entry point to this plugin
@@ -52,23 +54,18 @@ extern "C" void destroy(Plugin* plug) {
  *
  * For now we just have one device.
  */
-int SandNetPlugin::start() {
-
-  if (m_enabled)
-    return -1;
-
-  // setup prefs
-  if (load_prefs() != 0)
-    return -1;
+int SandNetPlugin::start_hook() {
 
   /* create new lla device */
-  m_dev = new SandNetDevice(this, "SandNet Device", m_prefs);
+  m_dev = new SandNetDevice(this, SANDNET_DEVICE_NAME, m_prefs);
 
   if (m_dev == NULL)
-    goto e_prefs;
+    return -1;
 
-  if (m_dev->start())
-    goto e_dev;
+  if (m_dev->start()) {
+    delete m_dev;
+    return -1;
+  }
 
   // register our descriptors
   m_pa->register_fd( m_dev->get_sd(0), PluginAdaptor::READ, m_dev);
@@ -78,15 +75,7 @@ int SandNetPlugin::start() {
   m_pa->register_timeout(2, m_dev);
   m_pa->register_device(m_dev);
 
-  m_enabled = true;
   return 0;
-
-  e_dev:
-    delete m_dev;
-  e_prefs:
-    delete m_prefs;
-    return -1;
-
 }
 
 
@@ -96,11 +85,7 @@ int SandNetPlugin::start() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int SandNetPlugin::stop() {
-
-  if (!m_enabled)
-    return -1;
-
+int SandNetPlugin::stop_hook() {
   m_pa->unregister_fd( m_dev->get_sd(0), PluginAdaptor::READ);
   m_pa->unregister_fd( m_dev->get_sd(1), PluginAdaptor::READ);
 
@@ -109,9 +94,7 @@ int SandNetPlugin::stop() {
     return -1;
 
   m_pa->unregister_device(m_dev);
-  m_enabled = false;
   delete m_dev;
-  delete m_prefs;
   return 0;
 }
 
@@ -144,30 +127,21 @@ string SandNetPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-int SandNetPlugin::load_prefs() {
+int SandNetPlugin::set_default_prefs() {
   if (m_prefs != NULL)
     delete m_prefs;
-
-  m_prefs = new Preferences("sandnet");
-
-  if (m_prefs == NULL)
-    return -1;
-
-  m_prefs->load();
 
   // we don't worry about ip here
   // if it's non existant it will choose one
   if ( m_prefs->get_val("name") == "") {
-    m_prefs->set_val("name", SANDNET_NAME);
+    m_prefs->set_val("name", SANDNET_NODE_NAME);
     m_prefs->save();
   }
 
   // check if this save correctly
   // we don't want to use it if null
-  if ( m_prefs->get_val("name") == "" ) {
-    delete m_prefs;
+  if ( m_prefs->get_val("name") == "" )
     return -1;
-  }
 
   return 0;
 }

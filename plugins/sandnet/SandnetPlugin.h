@@ -32,23 +32,26 @@ class SandNetPlugin : public Plugin {
   public:
     SandNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
       Plugin(pa, id),
-      m_prefs(NULL),
-      m_dev(NULL),
-      m_enabled(false) {}
+      m_dev(NULL) {}
 
-    int start();
-    int stop();
     int test(void *data);
-    bool is_enabled() const         { return m_enabled; }
-    string get_name() const   { return "SandNet Plugin"; }
+    string get_name() const   { return PLUGIN_NAME; }
     string get_desc() const;
 
-  private:
-    int load_prefs();
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
 
-    class Preferences *m_prefs;
+  private:
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
     SandNetDevice *m_dev;    // only have one device
-    bool m_enabled;      // are we running
+
+    static const string SANDNET_NODE_NAME;
+    static const string SANDNET_DEVICE_NAME;
+    static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
+
 };
 
 #endif

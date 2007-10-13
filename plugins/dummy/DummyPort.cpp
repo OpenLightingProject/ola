@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * dummyport.cpp
+ * DummyPort.cpp
  * The Dummy plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
@@ -24,52 +24,52 @@
 
 #include <llad/logger.h>
 
-#include "dummyport.h"
+#include "DummyPort.h"
 
 /*
- * 
- * @param parent	the parent device of this port
- * @param id		the port id
+ * @param parent  the parent device of this port
+ * @param id    the port id
  *
  */
 DummyPort::DummyPort(Device *parent, int id) : Port(parent, id), m_length(512) {
-	memset(m_dmx, 0x00, m_length) ;
+  memset(m_dmx, 0x00, m_length);
 }
 
 
 /*
  * Write operation
- * 
- * @param	data	pointer to the dmx data
- * @param	length	the length of the data
+ * @param  data  pointer to the dmx data
+ * @param  length  the length of the data
  *
  */
 int DummyPort::write(uint8_t *data, int length) {
-	int len = length < 512 ? length : 512 ;
-	
-	memcpy(m_dmx, data, len) ;
-	m_length = len ;
+  int len = length < 512 ? length : 512;
 
-	Logger::instance()->log(Logger::INFO, "Dummy port: got %d bytes: 0x%hhx 0x%hhx 0x%hhx 0x%hhx \n", length, data[0], data[1], data[42], data[43] ) ;
+  memcpy(m_dmx, data, len);
+  m_length = len;
 
-	return 0;
+  Logger::instance()->log(Logger::INFO,
+    "Dummy port: got %d bytes: 0x%hhx 0x%hhx 0x%hhx 0x%hhx \n",
+    length, data[0], data[1], data[2], data[3]);
+
+  return 0;
 }
 
 
 /*
  * Read operation, this isn't used for now else we'd create loops
  *
- * @param 	data	buffer to read data into
- * @param 	length	length of data to read
+ * @param   data  buffer to read data into
+ * @param   length  length of data to read
  *
- * @return	the amount of data read
+ * @return  the amount of data read
  */
 int DummyPort::read(uint8_t *data, int length) {
-	int len ;
+  int len ;
 
-	// copy to mem
-	len = length < m_length ? length : m_length ;
-	memcpy(data, m_dmx, len) ;
+  // copy to mem
+  len = length < m_length ? length : m_length;
+  memcpy(data, m_dmx, len);
 
-	return len;
+  return len;
 }

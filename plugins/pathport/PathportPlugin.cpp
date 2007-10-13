@@ -28,7 +28,9 @@
 #include "PathportPlugin.h"
 #include "PathportDevice.h"
 
-#define PATHPORT_NAME "lla-Pathport"
+const string PathportPlugin::PATHPORT_NODE_NAME = "lla-Pathport";
+const string PathportPlugin::PLUGIN_NAME = "Dmx4Linux Plugin";
+const string PathportPlugin::PLUGIN_PREFIX = "dmx4linux";
 
 /*
  * Entry point to this plugin
@@ -50,39 +52,24 @@ extern "C" void destroy(Plugin* plug) {
  *
  * For now we just have one device.
  */
-int PathportPlugin::start() {
-
-  if (m_enabled)
-    return -1;
-
-  // setup prefs
-  if (load_prefs() != 0)
-    return -1;
-
+int PathportPlugin::start_hook() {
   /* create new lla device */
   m_dev = new PathportDevice(this, "Pathport Device", m_prefs);
 
   if (m_dev == NULL)
-    goto e_prefs;
+    return -1;
 
-  if (m_dev->start())
-    goto e_dev;
+  if (m_dev->start()) {
+    delete m_dev;
+    return -1;
+  }
 
   // register our descriptors
   for (int i = 0; i < PATHPORT_MAX_SD; i++)
     m_pa->register_fd( m_dev->get_sd(i), PluginAdaptor::READ, m_dev);
 
   m_pa->register_device(m_dev);
-
-  m_enabled = true;
   return 0;
-
-  e_dev:
-    delete m_dev;
-  e_prefs:
-    delete m_prefs;
-    return -1;
-
 }
 
 
@@ -91,11 +78,7 @@ int PathportPlugin::start() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int PathportPlugin::stop() {
-
-  if (!m_enabled)
-    return -1;
-
+int PathportPlugin::stop_hook() {
   for (int i = 0; i < PATHPORT_MAX_SD; i++)
     m_pa->unregister_fd( m_dev->get_sd(i), PluginAdaptor::READ);
 
@@ -103,11 +86,8 @@ int PathportPlugin::stop() {
   if (m_dev->stop())
     return -1;
 
-
   m_pa->unregister_device(m_dev);
-  m_enabled = false;
   delete m_dev;
-  delete m_prefs;
   return 0;
 }
 
@@ -140,28 +120,21 @@ string PathportPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-int PathportPlugin::load_prefs() {
-  if (m_prefs != NULL)
-    delete m_prefs;
-
-  m_prefs = new Preferences("pathport");
+int PathportPlugin::set_default_prefs() {
 
   if (m_prefs == NULL)
     return -1;
 
-  m_prefs->load();
-
   // we don't worry about ip here
   // if it's non existant it will choose one
   if ( m_prefs->get_val("name") == "") {
-    m_prefs->set_val("name", PATHPORT_NAME);
+    m_prefs->set_val("name", PATHPORT_NODE_NAME);
     m_prefs->save();
   }
 
   // check if this save correctly
   // we don't want to use it if null
   if ( m_prefs->get_val("name") == "" ) {
-    delete m_prefs;
     return -1;
   }
 

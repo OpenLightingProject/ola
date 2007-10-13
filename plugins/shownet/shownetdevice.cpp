@@ -38,32 +38,32 @@
 
 /*
  * Handle dmx from the network, called from libshownet
- * 
- * @param n		the shownet_node
- * @param uni	the universe this data is for
- * @param len	the length of the received data
- * @param data	pointer the the dmx data
- * @param d		pointer to our ShowNetDevice
+ *
+ * @param n    the shownet_node
+ * @param uni  the universe this data is for
+ * @param len  the length of the received data
+ * @param data  pointer the the dmx data
+ * @param d    pointer to our ShowNetDevice
  *
  */
 int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 
-	ShowNetDevice *dev = (ShowNetDevice *) d ;
-	ShowNetPort *prt = NULL;
-	Universe *uni = NULL ;
+  ShowNetDevice *dev = (ShowNetDevice *) d;
+  ShowNetPort *prt = NULL;
+  Universe *uni = NULL;
 
-	if ( uid > SHOWNET_MAX_UNIVERSES) 
-		return 0 ;
-	
-	prt = (ShowNetPort*) dev->get_port(uid) ;
-	uni = prt->get_universe() ;
+  if ( uid > SHOWNET_MAX_UNIVERSES)
+    return 0;
 
-	if( prt->can_read() && uni != NULL && prt->get_id()%8  == uid) {
-		prt->update_buffer(data,len) ;
-	}
+  prt = (ShowNetPort*) dev->get_port(uid);
+  uni = prt->get_universe();
 
-	n = NULL;
-	return 0;
+  if ( prt->can_read() && uni != NULL && prt->get_id()%8  == uid) {
+    prt->update_buffer(data,len);
+  }
+
+  n = NULL;
+  return 0;
 }
 
 
@@ -75,10 +75,10 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
  *
  */
 ShowNetDevice::ShowNetDevice(Plugin *owner, const string &name, Preferences *prefs) :
-	Device(owner, name),
-	m_prefs(prefs),
-	m_node(NULL),
-	m_enabled(false) {
+  Device(owner, name),
+  m_prefs(prefs),
+  m_node(NULL),
+  m_enabled(false) {
 
 }
 
@@ -87,8 +87,8 @@ ShowNetDevice::ShowNetDevice(Plugin *owner, const string &name, Preferences *pre
  *
  */
 ShowNetDevice::~ShowNetDevice() {
-	if (m_enabled)
-		stop() ;
+  if (m_enabled)
+    stop();
 }
 
 
@@ -97,57 +97,57 @@ ShowNetDevice::~ShowNetDevice() {
  *
  */
 int ShowNetDevice::start() {
-	ShowNetPort *port = NULL;
-	int debug = 0 ;
-	
-	/* set up ports */
-	for(int i=0; i < 2*PORTS_PER_DEVICE; i++) {
-		port = new ShowNetPort(this,i) ;
+  ShowNetPort *port = NULL;
+  int debug = 0;
 
-		if(port != NULL) 
-			this->add_port(port) ;
-	}
+  /* set up ports */
+  for (int i=0; i < 2*PORTS_PER_DEVICE; i++) {
+    port = new ShowNetPort(this,i);
+
+    if (port != NULL)
+      this->add_port(port);
+  }
 
 #ifdef DEBUG
-	debug = 1 ;
+  debug = 1;
 #endif
-	
-	// create new shownet node, and set config values
-    if(m_prefs->get_val("ip") == "")
-		m_node = shownet_new(NULL, debug) ;
-	else {
-		m_node = shownet_new(m_prefs->get_val("ip").c_str(), debug) ;
-	}
 
-	if(!m_node) {
-		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_new failed: %s", shownet_strerror()) ;
-		return -1 ;
-	}
+  // create new shownet node, and set config values
+    if (m_prefs->get_val("ip") == "")
+    m_node = shownet_new(NULL, debug);
+  else {
+    m_node = shownet_new(m_prefs->get_val("ip").c_str(), debug);
+  }
 
-	// setup node
-	if (shownet_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
-		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_name failed: %s", shownet_strerror()) ;
-		goto e_shownet_start; 
-	}
-		
-	// we want to be notified when the node config changes
-	if(shownet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_dmx_handler failed: %s", shownet_strerror()) ;
-		goto e_shownet_start; 
-	}
+  if (!m_node) {
+    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_new failed: %s", shownet_strerror());
+    return -1;
+  }
 
-	if(shownet_start(m_node) ) {
-		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_start failed: %s", shownet_strerror()) ;
-		goto e_shownet_start ;
-	}
-	
-	m_enabled = true ;
-	return 0;
+  // setup node
+  if (shownet_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
+    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_name failed: %s", shownet_strerror());
+    goto e_shownet_start;
+  }
+
+  // we want to be notified when the node config changes
+  if (shownet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
+    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_dmx_handler failed: %s", shownet_strerror());
+    goto e_shownet_start;
+  }
+
+  if (shownet_start(m_node) ) {
+    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_start failed: %s", shownet_strerror());
+    goto e_shownet_start;
+  }
+
+  m_enabled = true;
+  return 0;
 
 e_shownet_start:
-	if(shownet_destroy(m_node)) 
-		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_destory failed: %s", shownet_strerror()) ;			
-	return -1 ;
+  if (shownet_destroy(m_node))
+    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_destory failed: %s", shownet_strerror());
+  return -1;
 }
 
 
@@ -156,30 +156,30 @@ e_shownet_start:
  *
  */
 int ShowNetDevice::stop() {
-	Port *prt = NULL;
+  Port *prt = NULL;
 
-	if (!m_enabled)
-		return 0 ;
+  if (!m_enabled)
+    return 0;
 
-	for(int i=0; i < port_count() ; i++) {
-		prt = get_port(i) ;
-		if(prt != NULL) 
-			delete prt ;
-	}
+  for (int i=0; i < port_count(); i++) {
+    prt = get_port(i);
+    if (prt != NULL)
+      delete prt;
+  }
 
-	if(shownet_stop(m_node)) {
-		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_stop failed: %s", shownet_strerror()) ;	
-		return -1 ;
-	}
-	
-	if(shownet_destroy(m_node)) {
-		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_destroy failed: %s", shownet_strerror()) ;			
-		return -1 ;
-	}
-	
-	m_enabled = false ;
+  if (shownet_stop(m_node)) {
+    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_stop failed: %s", shownet_strerror());
+    return -1;
+  }
 
-	return 0;
+  if (shownet_destroy(m_node)) {
+    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_destroy failed: %s", shownet_strerror());
+    return -1;
+  }
+
+  m_enabled = false;
+
+  return 0;
 }
 
 
@@ -189,7 +189,7 @@ int ShowNetDevice::stop() {
  *
  */
 shownet_node ShowNetDevice::get_node() const {
-	return m_node ;
+  return m_node;
 }
 
 /*
@@ -197,26 +197,26 @@ shownet_node ShowNetDevice::get_node() const {
  *
  */
 int ShowNetDevice::get_sd() const {
-	int ret = shownet_get_sd(m_node) ;
+  int ret = shownet_get_sd(m_node);
 
-	if(ret < 0) {
-		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_get_sd failed: %s", shownet_strerror()) ;
-		return -1 ;
-	}
-	return ret;
+  if (ret < 0) {
+    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_get_sd failed: %s", shownet_strerror());
+    return -1;
+  }
+  return ret;
 }
 
 /*
  * Called when there is activity on our descriptors
  *
- * @param	data	user data (pointer to shownet_device_priv
+ * @param  data  user data (pointer to shownet_device_priv
  */
 int ShowNetDevice::fd_action() {
-	if (shownet_read(m_node, 0) ) {
-		Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_read failed: %s", shownet_strerror()) ;
-		return -1 ;
-	}
-	return 0;
+  if (shownet_read(m_node, 0) ) {
+    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_read failed: %s", shownet_strerror());
+    return -1;
+  }
+  return 0;
 }
 
 
@@ -226,7 +226,7 @@ int ShowNetDevice::fd_action() {
 int ShowNetDevice::save_config() const {
 
 
-	return 0;
+  return 0;
 }
 
 
@@ -237,10 +237,10 @@ int ShowNetDevice::save_config() const {
  *
  */
 int ShowNetDevice::configure(void *req, int len) {
-	// handle short/ long name & subnet and port addresses
-	
-	req = 0 ;
-	len = 0;
+  // handle short/ long name & subnet and port addresses
 
-	return 0;
+  req = 0;
+  len = 0;
+
+  return 0;
 }

@@ -38,15 +38,14 @@ class Dmx4LinuxPlugin : public Plugin, public FDListener {
       m_in_fd(-1) {}
     ~Dmx4LinuxPlugin() {}
 
-    bool is_enabled() const   { return m_enabled; }
-    string get_name() const   { return "Dmx4Linux Plugin"; }
+    string get_name() const { return PLUGIN_NAME; }
     string get_desc() const;
     int fd_action();
     int fd_error(int error, FDListener *listener);
     int send_dmx(int d4l_uni, uint8_t *data, int length);
 
   protected:
-    string pref_suffix() { return "dmx4linux"; }
+    string pref_suffix() const { return PLUGIN_PREFIX; }
 
   private:
     int start_hook();
@@ -60,10 +59,13 @@ class Dmx4LinuxPlugin : public Plugin, public FDListener {
     int setup();
 
     vector<Dmx4LinuxDevice *>  m_devices;  // list of out devices
-    string m_out_dev;           // path the the dmx device
-    string m_in_dev;           // path the the dmx device
-    int m_out_fd;                // fd for the output dmx device
-    int m_in_fd;                 // fd for the input dmx device
+    string m_out_dev;  // path the the dmx device
+    string m_in_dev;   // path the the dmx device
+    int m_out_fd;      // fd for the output dmx device
+    int m_in_fd;       // fd for the input dmx device
+
+    static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
 };
 
 #endif

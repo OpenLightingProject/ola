@@ -14,36 +14,43 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * dummyplugin.h
- * Interface for the dummyplugin class
- * Copyright (C) 2005  Simon Newton
+ * OpenDmxPlugin.h
+ * Interface for the opendmx plugin class
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
-#ifndef DUMMYPLUGIN_H
-#define DUMMYPLUGIN_H
+#ifndef OPENDMXPLUGIN_H
+#define OPENDMXPLUGIN_H
 
 #include <llad/plugin.h>
 #include <lla/plugin_id.h>
 
-class DummyDevice ;
+class OpenDmxDevice;
 
-class DummyPlugin : public Plugin {
+class OpenDmxPlugin : public Plugin {
 
-	public:
-		DummyPlugin(const PluginAdaptor *pa, lla_plugin_id id) : 
-			Plugin(pa, id),
-			m_dev(NULL),
-			m_enabled(false) {}
+  public:
+    OpenDmxPlugin(const PluginAdaptor *pa, lla_plugin_id id):
+      Plugin(pa, id),
+      m_dev(NULL) {}
 
-		int start();
-		int stop();
-		bool is_enabled() const         { return m_enabled; }
-		string get_name() const 	{ return "Dummy Plugin"; }
-		string get_desc() const;
-	
-	private:
-		DummyDevice *m_dev ;		// the dummy device
-		bool m_enabled ;			// are we running
+    string get_name() const  { return PLUGIN_NAME; }
+    string get_desc() const;
+
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
+
+  private:
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
+
+    OpenDmxDevice *m_dev;    // only have one device
+    static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
+    static const string OPENDMX_DEVICE_PATH;
+    static const string OPENDMX_DEVICE_NAME;
 };
 
 #endif
+

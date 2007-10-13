@@ -46,19 +46,19 @@ class Plugin {
 
     virtual ~Plugin() {};
 
-    virtual string get_name() const = 0;
     virtual int start();
     virtual int stop();
-    virtual bool is_enabled() const = 0;
+    virtual bool is_enabled() const { return m_enabled; }
+    lla_plugin_id get_id() { return m_id; }
+
+    virtual string get_name() const = 0;
     virtual string get_desc() const = 0;
-    lla_plugin_id get_id() { return m_id;}
 
   protected:
     virtual int start_hook() { return 0; }
     virtual int stop_hook() { return 0; }
-    virtual int load_prefs();
     virtual int set_default_prefs() { return 0; }
-    virtual string pref_suffix() { return ""; }
+    virtual string pref_suffix() const = 0;
 
     const PluginAdaptor *m_pa;
     class Preferences *m_prefs;  // prefs container
@@ -66,6 +66,7 @@ class Plugin {
     static const string ENABLED_KEY;
 
   private:
+    int load_prefs();
     Plugin(const Plugin&);
     Plugin& operator=(const Plugin&);
     lla_plugin_id m_id;

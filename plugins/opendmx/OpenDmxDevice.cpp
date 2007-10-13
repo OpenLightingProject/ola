@@ -13,19 +13,19 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * opendmxdevice.cpp
+ * OpenDmxDevice.cpp
  * The open dmx device
  * Copyright (C) 2005  Simon Newton
  *
- * 
+ *
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "opendmxdevice.h"
-#include "opendmxport.h"
+#include "OpenDmxDevice.h"
+#include "OpenDmxPort.h"
 
 
 /*
@@ -35,10 +35,10 @@
  * @param name
  * @param path to device
  */
-OpenDmxDevice::OpenDmxDevice(Plugin *owner, const string &name, const string &path) :
-	Device(owner, name),
-	m_path(path),
-	m_enabled(false) {
+OpenDmxDevice::OpenDmxDevice(Plugin *owner, const string &name, const string &path):
+  Device(owner, name),
+  m_path(path),
+  m_enabled(false) {
 
 }
 
@@ -47,8 +47,8 @@ OpenDmxDevice::OpenDmxDevice(Plugin *owner, const string &name, const string &pa
  * destroy this device
  */
 OpenDmxDevice::~OpenDmxDevice() {
-	if (m_enabled)
-		stop() ;
+  if (m_enabled)
+    stop();
 }
 
 
@@ -57,17 +57,16 @@ OpenDmxDevice::~OpenDmxDevice() {
  *
  */
 int OpenDmxDevice::start() {
-	OpenDmxPort *port = NULL;
+  OpenDmxPort *port = NULL;
 
-	// owner, id, path
-	port = new OpenDmxPort(this,0, &m_path) ;
+  // owner, id, path
+  port = new OpenDmxPort(this,0, &m_path);
 
-	if(port != NULL) 
-		this->add_port(port) ;
+  if (port != NULL)
+    this->add_port(port);
 
-	m_enabled = true ;
-
-	return 0;
+  m_enabled = true;
+  return 0;
 }
 
 
@@ -76,32 +75,28 @@ int OpenDmxDevice::start() {
  *
  */
 int OpenDmxDevice::stop() {
-	Port *prt = NULL;
+  Port *prt = NULL;
 
-	if (!m_enabled)
-		return 0 ;
+  if (!m_enabled)
+    return 0;
 
-	for(int i=0; i < port_count() ; i++) {
-		prt = get_port(i) ;
-		if(prt != NULL)
-			delete prt ;
-	}
+  for (int i=0; i < port_count(); i++) {
+    prt = get_port(i);
+    if (prt != NULL)
+      delete prt;
+  }
 
-	m_enabled = false ;
-	return 0;
+  m_enabled = false;
+  return 0;
 }
-
 
 
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
 int OpenDmxDevice::save_config() const {
-
-
-	return 0;
+  return 0;
 }
-
 
 
 /*
@@ -110,10 +105,10 @@ int OpenDmxDevice::save_config() const {
  *
  */
 int OpenDmxDevice::configure(void *req, int len) {
-	// handle short/ long name & subnet and port addresses
-	
-	req = 0 ;
-	len = 0;
+  // handle short/ long name & subnet and port addresses
 
-	return 0;
+  req = 0;
+  len = 0;
+
+  return 0;
 }

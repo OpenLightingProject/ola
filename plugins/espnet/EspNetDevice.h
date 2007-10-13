@@ -13,30 +13,39 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * dummydevice.h
- * Interface for the dummy device
- * Copyright (C) 2005  Simon Newton
+ * EspNetDevice.h
+ * Interface for the espnet device
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
-#ifndef DUMMYDEVICE_H
-#define DUMMYDEVICE_H
+#ifndef ESPNETDEVICE_H
+#define ESPNETDEVICE_H
 
 #include <llad/device.h>
+#include <llad/fdlistener.h>
 
-class DummyDevice : public Device {
+#include <espnet/espnet.h>
 
-	public:
-		DummyDevice(Plugin *owner, const string &name) ;
-		~DummyDevice() ;
+#include "common.h"
 
-		int save_config() const;
-		int configure(void *req, int len) ;
+class EspNetDevice : public Device, public FDListener {
 
-		int start() ;
-		int stop() ;
-	private:
-		bool m_enabled ;
+  public:
+    EspNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
+    ~EspNetDevice();
+
+    int start();
+    int stop();
+    espnet_node get_node() const;
+    int get_sd() const;
+    int fd_action();
+    int save_config() const;
+    int configure(void *req, int len);
+
+  private:
+    class Preferences *m_prefs;
+    espnet_node m_node;
+    bool m_enabled;
 };
 
 #endif

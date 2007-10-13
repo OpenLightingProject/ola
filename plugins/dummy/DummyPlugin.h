@@ -13,40 +13,40 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * espnetdevice.h
- * Interface for the espnet device
- * Copyright (C) 2005  Simon Newton
+ * DummyPlugin.h
+ * Interface for the dummyplugin class
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
-#ifndef ESPNETDEVICE_H
-#define ESPNETDEVICE_H
+#ifndef DUMMYPLUGIN_H
+#define DUMMYPLUGIN_H
 
-#include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <llad/plugin.h>
+#include <lla/plugin_id.h>
 
-#include <espnet/espnet.h>
+class DummyDevice;
 
-#include "common.h"
+class DummyPlugin : public Plugin {
 
-class EspNetDevice : public Device, public FDListener {
+  public:
+    DummyPlugin(const PluginAdaptor *pa, lla_plugin_id id):
+      Plugin(pa, id),
+      m_dev(NULL) {}
 
-	public:
-		EspNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
-		~EspNetDevice() ;
+    string get_name() const { return PLUGIN_NAME; }
+    string get_desc() const;
 
-		int start() ;
-		int stop() ;
-		espnet_node get_node() const;
-		int get_sd() const ;
-		int fd_action() ;
-		int save_config() const;
-		int configure(void *req, int len) ;
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
 
-	private:
-		class Preferences *m_prefs;
-		espnet_node m_node ;
-		bool m_enabled ;
+  private:
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
+
+    DummyDevice *m_dev ;    // the dummy device
+    static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
 };
 
 #endif

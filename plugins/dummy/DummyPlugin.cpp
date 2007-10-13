@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * dummyplugin.cpp
+ * DummyPlugin.cpp
  * The Dummy plugin for lla, contains a single dummy device
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
 #include <stdlib.h>
@@ -23,8 +23,11 @@
 
 #include <llad/pluginadaptor.h>
 
-#include "dummyplugin.h"
-#include "dummydevice.h"
+#include "DummyPlugin.h"
+#include "DummyDevice.h"
+
+const string DummyPlugin::PLUGIN_NAME = "Dummy Plugin";
+const string DummyPlugin::PLUGIN_PREFIX = "dummy";
 
 /*
  * Entry point to this plugin
@@ -46,23 +49,18 @@ extern "C" void destroy(Plugin *plug) {
  *
  * Lets keep it simple, one device for this plugin
  */
-int DummyPlugin::start() {
+int DummyPlugin::start_hook() {
 
-	if(m_enabled)
-		return -1 ;
-	
-	/* create new lla device */
-	m_dev = new DummyDevice(this, "Dummy Device") ;
-	
-	if(m_dev == NULL) 
-		return -1  ;
+  /* create new lla device */
+  m_dev = new DummyDevice(this, "Dummy Device");
 
-	// start this device and register it
-	m_dev->start() ;
-	m_pa->register_device(m_dev) ;
+  if (m_dev == NULL)
+    return -1;
 
-	m_enabled = true ;
-	return 0;
+  // start this device and register it
+  m_dev->start();
+  m_pa->register_device(m_dev);
+  return 0;
 }
 
 
@@ -71,27 +69,23 @@ int DummyPlugin::start() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int DummyPlugin::stop() {
-	
-	if (!m_enabled)
-		return -1 ;
+int DummyPlugin::stop_hook() {
+  // stop the device
+  if (m_dev->stop())
+    return -1;
 
-	// stop the device
-	if (m_dev->stop())
-		return -1 ;
-	
-	m_pa->unregister_device(m_dev) ;
-	m_enabled = false ;
-	delete m_dev ;
-	return 0;
+  m_pa->unregister_device(m_dev);
+  delete m_dev;
+  return 0;
 }
 
+
 string DummyPlugin::get_desc() const {
-	return
+  return
 "Dummy Plugin\n"
 "----------------------------\n"
 "\n"
 "The plugin creates a single device with one port. "
 "When used as an output port it prints the first two bytes of dmx data to "
-"stdout.\n" ;
+"stdout.\n";
 }

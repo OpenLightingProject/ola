@@ -14,41 +14,34 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * espnetplugin.h
- * Interface for the espnet plugin class
+ * espnetport.h
+ * The Esp-Net plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef ESPNETPLUGIN_H
-#define ESPNETPLUGIN_H
+#ifndef ESPNETPORT_H
+#define ESPNETPORT_H
 
-#include <llad/plugin.h>
-#include <lla/plugin_id.h>
+#include <llad/port.h>
 
-class EspNetDevice;
+#include <espnet/espnet.h>
 
-class EspNetPlugin : public Plugin {
+class EspNetPort : public Port  {
 
-	public:
-		EspNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) : 
-			Plugin(pa,id),
-			m_prefs(NULL),
-			m_dev(NULL),
-			m_enabled(false) {}
+  public:
+    EspNetPort(Device *parent, int id);
+    ~EspNetPort();
 
-		int start();
-		int stop();
-		bool is_enabled() const 	    { return m_enabled; }
-		string get_name() const 	{ return "EspNet Plugin"; }
-		string get_desc() const;
+    int write(uint8_t *data, int length);
+    int read(uint8_t *data, int length);
 
-	private:
-		int load_prefs();
-		
-		class Preferences *m_prefs;
-		EspNetDevice *m_dev;		// only have one device
-		bool m_enabled;			// are we running
+    int can_read() const;
+    int can_write() const;
+    int update_buffer(uint8_t *data, int length);
+
+  private :
+    uint8_t *m_buf;
+    int m_len;
 };
 
 #endif
-

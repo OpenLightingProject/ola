@@ -13,10 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * opendmxplugin.cpp
+ * OpenDmxPlugin.cpp
  * The Open DMX plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
 #include <stdlib.h>
@@ -27,10 +26,14 @@
 #include <llad/pluginadaptor.h>
 #include <llad/preferences.h>
 
-#include "opendmxplugin.h"
-#include "opendmxdevice.h"
+#include "OpenDmxPlugin.h"
+#include "OpenDmxDevice.h"
 
-#define DEFAULT_PATH "/dev/dmx0"
+const string OpenDmxPlugin::OPENDMX_DEVICE_PATH = "/dev/dmx0";
+const string OpenDmxPlugin::OPENDMX_DEVICE_NAME = "OpenDmx USB Device";
+const string OpenDmxPlugin::PLUGIN_NAME = "OpenDmx Plugin";
+const string OpenDmxPlugin::PLUGIN_PREFIX = "opendmx";
+
 
 /*
  * Entry point to this plugin
@@ -52,41 +55,28 @@ extern "C" void destroy(Plugin* plug) {
  *
  * For now we just have one device.
  * TODO: scan /dev for devices?
- * 	Need to get multi-device support working first :)
+ *   Need to get multi-device support working first :)
  */
-int OpenDmxPlugin::start() {
-	int fd;
-	
-	if (m_enabled)
-		return -1;
-	
-	// setup prefs
-	if (load_prefs() != 0)
-		return -1;
-	
-	/* create new lla device */
-	// first check if it's there
-	fd = open( m_prefs->get_val("device").c_str(), O_WRONLY);
-	
-	if ( fd > 0 ) {
-		close(fd);
-		m_dev = new OpenDmxDevice(this, "Open DMX USB Device", m_prefs->get_val("device"));
+int OpenDmxPlugin::start_hook() {
+  int fd;
 
-		if (m_dev == NULL) {
-			delete m_prefs;
-			return 0;
-		}
+  /* create new lla device */
+  // first check if it's there
+  fd = open( m_prefs->get_val("device").c_str(), O_WRONLY);
 
-		m_dev->start();
+  if (fd > 0) {
+    close(fd);
+    m_dev = new OpenDmxDevice(this, OPENDMX_DEVICE_NAME, m_prefs->get_val("device"));
 
-		m_pa->register_device(m_dev);
+    if (m_dev == NULL)
+      return -1;
 
-		m_enabled = true;
-		return 0;
-	} else {
-		delete m_prefs;
-		return 0;
-	}
+    m_dev->start();
+    m_pa->register_device(m_dev);
+
+    return 0;
+  }
+  return 0;
 }
 
 
@@ -95,21 +85,15 @@ int OpenDmxPlugin::start() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int OpenDmxPlugin::stop() {
-			
-	if (!m_enabled)
-		return -1;
+int OpenDmxPlugin::stop_hook() {
 
-	// stop the device
-	if (m_dev->stop())
-		return -1;
-		
-	m_pa->unregister_device(m_dev);
-	m_enabled = false;
-	delete m_dev;
-	delete m_prefs;
+  // stop the device
+  if (m_dev->stop())
+    return -1;
 
-	return 0;
+  m_pa->unregister_device(m_dev);
+  delete m_dev;
+  return 0;
 }
 
 /*
@@ -117,7 +101,7 @@ int OpenDmxPlugin::stop() {
  *
  */
 string OpenDmxPlugin::get_desc() const {
-		return 
+    return
 "OpenDMXUSB Plugin\n"
 "----------------------------\n"
 "\n"
@@ -126,7 +110,7 @@ string OpenDmxPlugin::get_desc() const {
 "\n"
 "--- Config file : lla-opendmx.conf ---\n"
 "\n"
-"device = " DEFAULT_PATH "\n"
+"device = /dev/dmx0\n"
 "The path to the open dmx usb device.\n";
 }
 
@@ -135,29 +119,20 @@ string OpenDmxPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-int OpenDmxPlugin::load_prefs() {
+int OpenDmxPlugin::set_default_prefs() {
 
-	if (m_prefs != NULL)
-		delete m_prefs;
+  if (m_prefs == NULL)
+    return -1;
 
-	m_prefs = new Preferences("opendmx");
+  if (m_prefs->get_val("device") == "") {
+    m_prefs->set_val("device", OPENDMX_DEVICE_PATH);
+    m_prefs->save();
+  }
 
-	if (m_prefs == NULL)
-		return -1;
+  // check if this save correctly
+  // we don't want to use it if null
+  if (m_prefs->get_val("device") == "")
+    return -1;
 
-	m_prefs->load();
-
-	if (m_prefs->get_val("device") == "") {
-		m_prefs->set_val("device", DEFAULT_PATH);
-		m_prefs->save();
-	}
-
-	// check if this save correctly
-	// we don't want to use it if null
-	if (m_prefs->get_val("device") == "") {
-		delete m_prefs;
-		return -1;
-	}
-
-	return 0;
+  return 0;
 }

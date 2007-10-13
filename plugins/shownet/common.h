@@ -23,6 +23,6 @@
 #define COMMON_H
 
 // this should be set to SHOWNET_MAX_UNIVERSES
-#define PORTS_PER_DEVICE	8
+#define PORTS_PER_DEVICE  8
 
 #endif

@@ -14,34 +14,34 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * opendmxport.cpp
+ * OpenDmxPort.cpp
  * The Open DMX plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
-#include "opendmxport.h"
-#include "opendmxdevice.h"
+#include "OpenDmxPort.h"
+#include "OpenDmxDevice.h"
 
 #include "string.h"
 
 #define min(a,b) a<b?a:b
 
 OpenDmxPort::OpenDmxPort(Device *parent, int id, string *path) : Port(parent, id) {
-	m_thread = new OpenDmxThread() ;
-	
-	if(m_thread != NULL) {
-		m_thread->start(path) ;
-	}
+  m_thread = new OpenDmxThread();
+
+  if (m_thread != NULL) {
+    m_thread->start(path);
+  }
 
 }
 
 #include <stdio.h>
 
 OpenDmxPort::~OpenDmxPort() {
-	if(m_thread != NULL) {
-		m_thread->stop() ;
-		delete m_thread;
-	}
+  if (m_thread != NULL) {
+    m_thread->stop();
+    delete m_thread;
+  }
 }
 
 /*
@@ -49,25 +49,23 @@ OpenDmxPort::~OpenDmxPort() {
  *
  */
 int OpenDmxPort::can_read() const { return 0; }
-inline int OpenDmxPort::read(uint8_t *data, int length) { return 0; } 
+inline int OpenDmxPort::read(uint8_t *data, int length) { return 0; }
 
 
 /*
  * Write operation
- * 
- * @param	data	pointer to the dmx data
- * @param	length	the length of the data
+ *
+ * @param  data  pointer to the dmx data
+ * @param  length  the length of the data
  *
  */
 #include <stdio.h>
 
 int OpenDmxPort::write(uint8_t *data, int length) {
 
-	if( !can_write())
-		return -1 ;
+  if (!can_write())
+    return -1;
 
-	m_thread->write_dmx(data,length) ;
-	return 0;
+  m_thread->write_dmx(data,length);
+  return 0;
 }
-
-

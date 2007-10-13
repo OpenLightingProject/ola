@@ -13,32 +13,27 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * opendmxport.h
- * The Open DMX plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * DummyPort_h
+ * Dummy port
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
-#ifndef OPENDMXPORT_H
-#define OPENDMXPORT_H
+#ifndef DUMMYPORT_H
+#define DUMMYPORT_H
 
 #include <llad/port.h>
-#include <opendmxthread.h>
-#include <string>
 
-using namespace std;
+class DummyPort : public Port {
+  public:
+    DummyPort(Device *parent, int id);
+    int can_read() { return 0; }
 
-class OpenDmxPort : public Port  {
+    int write(uint8_t *data, int length);
+    int read(uint8_t *data, int length);
 
-	public:
-		OpenDmxPort(Device *parent, int id,  string *path) ;
-		~OpenDmxPort() ;
-
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
-		int can_read() const ;
-	private:
-		OpenDmxThread *m_thread;
+  private:
+    uint8_t m_dmx[512]; // pointer to our dmx buffer
+    int m_length;       // length of dmx buffer
 };
 
 #endif

@@ -31,22 +31,22 @@
 
 class ShowNetDevice : public Device, public FDListener {
 
-	public:
-		ShowNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
-		~ShowNetDevice() ;
+  public:
+    ShowNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
+    ~ShowNetDevice();
 
-		int start() ;
-		int stop() ;
-		shownet_node get_node() const;
-		int get_sd() const ;
-		int fd_action() ;
-		int save_config() const ;
-		int configure(void *req, int len) ;
+    int start();
+    int stop();
+    shownet_node get_node() const;
+    int get_sd() const;
+    int fd_action();
+    int save_config() const;
+    int configure(void *req, int len);
 
-	private:
-		class Preferences *m_prefs ;
-		shownet_node m_node ;
-		bool m_enabled ;
+  private:
+    class Preferences *m_prefs;
+    shownet_node m_node;
+    bool m_enabled;
 };
 
 #endif

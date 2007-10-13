@@ -14,33 +14,45 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * opendmxdevice.h
- * Interface for the Open DMX device
+ * OpenDmxThread.h
+ * Thread for the open dmx device
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef OPENDMXDEVICE_H
-#define OPENDMXDEVICE_H
+#ifndef OPENDMXTHREAD_H
+#define OPENDMXTHREAD_H
 
-#include <llad/device.h>
+#include <stdint.h>
+#include <pthread.h>
+
 #include <string>
 
 using namespace std;
 
-class OpenDmxDevice : public Device {
+#define MAX_DMX 512
 
-	public:
-		OpenDmxDevice(Plugin *owner, const string &name, const string &path) ;
-		~OpenDmxDevice() ;
+class OpenDmxThread {
 
-		int start() ;
-		int stop() ;
-		int save_config() const ;
-		int configure(void *req, int len) ;
+  public:
+    OpenDmxThread();
+    ~OpenDmxThread();
 
-	private:
-		string m_path ;
-		bool m_enabled ;
+    int start (string *path);
+    int stop();
+    int write_dmx(uint8_t *data , int channels);
+    void *run(string *path);
+
+  private:
+    int do_write(uint8_t *buf, int length);
+
+    int m_fd;
+    uint8_t m_dmx[MAX_DMX];
+    pthread_mutex_t m_mutex;
+    bool m_term;
+    pthread_mutex_t m_term_mutex;
+    pthread_cond_t m_term_cond;
+    pthread_t m_tid;
+
 };
 
 #endif

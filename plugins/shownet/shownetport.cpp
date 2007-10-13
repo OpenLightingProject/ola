@@ -39,8 +39,8 @@ ShowNetPort::ShowNetPort(Device *parent, int id) :
 
 ShowNetPort::~ShowNetPort() {
 
-  if(can_read())
-    free(m_buf) ;
+  if (can_read())
+    free(m_buf);
 }
 
 int ShowNetPort::can_read() const {
@@ -61,14 +61,14 @@ int ShowNetPort::can_write() const {
  *
  */
 int ShowNetPort::write(uint8_t *data, int length) {
-  ShowNetDevice *dev = (ShowNetDevice*) get_device() ;
+  ShowNetDevice *dev = (ShowNetDevice*) get_device();
 
-  if( !can_write())
-    return -1 ;
+  if ( !can_write())
+    return -1;
 
-  if(shownet_send_dmx(dev->get_node() , get_id()%8 , length, data)) {
-    Logger::instance()->log(Logger::WARN, "ShownetPlugin: shownet_send_dmx failed %s", shownet_strerror() ) ;
-    return -1 ;
+  if (shownet_send_dmx(dev->get_node() , get_id()%8 , length, data)) {
+    Logger::instance()->log(Logger::WARN, "ShownetPlugin: shownet_send_dmx failed %s", shownet_strerror() );
+    return -1;
   }
   return 0;
 }
@@ -82,13 +82,13 @@ int ShowNetPort::write(uint8_t *data, int length) {
  * @return  the amount of data read
  */
 int ShowNetPort::read(uint8_t *data, int length) {
-  int len ;
-  
-  if( !can_read()) 
-    return -1 ;
-  
-  len = min(m_len, length) ;
-  memcpy(data, m_buf, len ) ;
+  int len;
+
+  if ( !can_read())
+    return -1;
+
+  len = min(m_len, length);
+  memcpy(data, m_buf, len );
   return len;
 }
 
@@ -97,27 +97,27 @@ int ShowNetPort::read(uint8_t *data, int length) {
  *
  */
 int ShowNetPort::update_buffer(uint8_t *data, int length) {
-  int len = min(DMX_LENGTH, length) ;
+  int len = min(DMX_LENGTH, length);
 
   // we can't update if this isn't a input port
-  if(! can_read())
-    return -1 ;
+  if (! can_read())
+    return -1;
 
   // allocate buffer as needed
-  if(m_buf == NULL) {
-    m_buf = (uint8_t*) malloc(m_len) ;
+  if (m_buf == NULL) {
+    m_buf = (uint8_t*) malloc(m_len);
 
     // we should handle this better
-    if(m_buf == NULL) {
-      Logger::instance()->log(Logger::CRIT, "ShownetPlugin: malloc failed") ;
+    if (m_buf == NULL) {
+      Logger::instance()->log(Logger::CRIT, "ShownetPlugin: malloc failed");
       return -1;
     } else
-      memset(m_buf, 0x00, m_len) ;
+      memset(m_buf, 0x00, m_len);
   }
 
   Logger::instance()->log(Logger::DEBUG, "ShowNet: Updating dmx buffer for port %d", length);
   memcpy(m_buf, data, len);
 
-  dmx_changed() ;
+  dmx_changed();
   return 0;
 }

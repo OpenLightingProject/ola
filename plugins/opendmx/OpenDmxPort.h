@@ -14,34 +14,31 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * espnetport.h
- * The Esp-Net plugin for lla
+ * opendmxport.h
+ * The Open DMX plugin for lla
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef ESPNETPORT_H
-#define ESPNETPORT_H
+#ifndef OPENDMXPORT_H
+#define OPENDMXPORT_H
 
 #include <llad/port.h>
+#include <OpenDmxThread.h>
+#include <string>
 
-#include <espnet/espnet.h>
+using namespace std;
 
-class EspNetPort : public Port  {
+class OpenDmxPort : public Port  {
 
-	public:
-		EspNetPort(Device *parent, int id) ;
-		~EspNetPort() ;
-		
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
+  public:
+    OpenDmxPort(Device *parent, int id,  string *path);
+    ~OpenDmxPort();
 
-		int can_read() const;
-		int can_write() const;
-		int update_buffer(uint8_t *data, int length) ;
-
-	private :
-		uint8_t *m_buf ;
-		int m_len ;
+    int write(uint8_t *data, int length);
+    int read(uint8_t *data, int length);
+    int can_read() const;
+  private:
+    OpenDmxThread *m_thread;
 };
 
 #endif

@@ -13,41 +13,42 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * opendmxplugin.h
- * Interface for the opendmx plugin class
- * Copyright (C) 2005  Simon Newton
+ * EspNetPlugin.h
+ * Interface for the espnet plugin class
+ * Copyright (C) 2005-2007  Simon Newton
  */
 
-#ifndef OPENDMXPLUGIN_H
-#define OPENDMXPLUGIN_H
+#ifndef ESPNETPLUGIN_H
+#define ESPNETPLUGIN_H
 
 #include <llad/plugin.h>
 #include <lla/plugin_id.h>
 
-class OpenDmxDevice ;
+class EspNetDevice;
 
-class OpenDmxPlugin : public Plugin {
+class EspNetPlugin : public Plugin {
 
-	public:
-		OpenDmxPlugin(const PluginAdaptor *pa, lla_plugin_id id) : 
-			Plugin(pa, id),
-			m_dev(NULL),
-			m_prefs(NULL),
-			m_enabled(false) {};
+  public:
+    EspNetPlugin(const PluginAdaptor *pa, lla_plugin_id id):
+      Plugin(pa,id),
+      m_dev(NULL) {}
 
-		int start();
-		int stop();
-		bool is_enabled() const         { return m_enabled; }
-		string get_name() const	{ return "Open DMX Plugin"; }
-		string get_desc() const;
+    string get_name() const { return PLUGIN_NAME; }
+    string get_desc() const;
 
-	private:
-		int load_prefs();
-		
-		OpenDmxDevice *m_dev ;		// only have one device
-		class Preferences *m_prefs;	// preferences object
-		bool m_enabled ;			// are we running
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
+
+  private:
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
+
+    EspNetDevice *m_dev;    // only have one device
+    static const string ESPNET_NODE_NAME;
+    static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
+
 };
 
 #endif

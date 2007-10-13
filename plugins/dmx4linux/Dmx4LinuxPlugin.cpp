@@ -36,12 +36,16 @@
 #include "Dmx4LinuxDevice.h"
 #include "Dmx4LinuxPort.h"
 
+// TODO: clean this up
 static const string DMX4LINUX_OUT_DEVICE = "/dev/dmx";
 static const string DMX4LINUX_IN_DEVICE  = "/dev/dmxin";
 static const string IN_DEV_KEY = "in_device";
 static const string OUT_DEV_KEY = "out_device";
 static const int CHANNELS_PER_UNI = 512;
 static const char PLUG_NAME[] = "Dmx4LinuxPlugin";
+const string Dmx4LinuxPlugin::PLUGIN_NAME = "Dmx4Linux Plugin";
+const string Dmx4LinuxPlugin::PLUGIN_PREFIX = "dmx4linux";
+
 
 /*
  * Entry point to this plugin

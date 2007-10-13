@@ -13,10 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * artnetplugin.h
+ * ArtNetPlugin.h
  * Interface for the artnet plugin class
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
 #ifndef ARTNETPLUGIN_H
@@ -28,36 +27,34 @@
 
 using namespace std;
 
-class ArtNetDevice ;
+class ArtNetDevice;
 
 class ArtNetPlugin : public Plugin {
 
   public:
-    ArtNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
+    ArtNetPlugin(const PluginAdaptor *pa, lla_plugin_id id):
       Plugin(pa,id),
-      m_prefs(NULL),
-      m_dev(NULL),
-      m_enabled(false) {}
+      m_dev(NULL) {}
 
-    ~ArtNetPlugin();
+    ~ArtNetPlugin() {}
 
-    int start();
-    int stop();
-    bool is_enabled() const { return m_enabled; }
     string get_name() const { return PLUGIN_NAME; }
-    string get_desc() const ;
+    string get_desc() const;
+
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int load_prefs() ;
-
-    class Preferences *m_prefs ;
-    ArtNetDevice *m_dev ;    // only have one device
-    bool m_enabled ;      // did the node start correctly
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
+    ArtNetDevice *m_dev; // only have one device
 
     static const int ARTNET_SUBNET;
     static const string ARTNET_LONG_NAME;
     static const string ARTNET_SHORT_NAME;
     static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
 };
 
 #endif

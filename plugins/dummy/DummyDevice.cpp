@@ -14,27 +14,24 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * dummydevice.cpp
+ * DummyDevice.cpp
  * Art-Net device
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "dummydevice.h"
-#include "dummyport.h"
+#include "DummyDevice.h"
+#include "DummyPort.h"
 
 /*
  * Create a new dummy device
  *
  */
 DummyDevice::DummyDevice(Plugin *owner, const string &name) :
-	Device(owner, name),
-	m_enabled(false) {
-
-}
+  Device(owner, name) {}
 
 
 /*
@@ -42,9 +39,8 @@ DummyDevice::DummyDevice(Plugin *owner, const string &name) :
  *
  */
 DummyDevice::~DummyDevice() {
-	if (m_enabled)
-		this->stop() ;
-
+  if (m_enabled)
+    this->stop();
 }
 
 
@@ -53,23 +49,23 @@ DummyDevice::~DummyDevice() {
  *
  */
 int DummyDevice::start() {
-	DummyPort *port = NULL;
+  DummyPort *port = NULL;
 
-	if(m_enabled)
-		return -1 ;
+  if (m_enabled)
+    return -1;
 
-	port = new DummyPort(this, 0) ;
+  port = new DummyPort(this, 0);
 
-	if(port == NULL)
-		return -1 ;
+  if (port == NULL)
+    return -1;
 
-	if (add_port(port)) {
-		delete port ;
-		return -1 ;
-	}
+  if (add_port(port)) {
+    delete port;
+    return -1;
+  }
 
-	m_enabled = true ;
-	return 0 ;
+  m_enabled = true;
+  return 0;
 }
 
 
@@ -78,19 +74,19 @@ int DummyDevice::start() {
  *
  */
 int DummyDevice::stop() {
-	Port *prt = NULL;
-	
-	if (!m_enabled)
-		return 0 ;
+  Port *prt = NULL;
 
-	for(int i=0; i < port_count() ; i++) {
-		prt = get_port(i) ;
-		if(prt != NULL) 
-			delete prt ;
-	}
+  if (!m_enabled)
+    return 0;
 
-	m_enabled = false ;
-	return 0;
+  for (int i=0; i < port_count() ; i++) {
+    prt = get_port(i);
+    if (prt != NULL)
+      delete prt;
+  }
+
+  m_enabled = false;
+  return 0;
 }
 
 
@@ -98,7 +94,7 @@ int DummyDevice::stop() {
 // where to store data to ?
 // I'm thinking a config file in .lla
 int DummyDevice::save_config() const {
-	return 0;
+  return 0;
 }
 
 
@@ -108,10 +104,10 @@ int DummyDevice::save_config() const {
  *
  */
 int DummyDevice::configure(void *req, int len) {
-	// handle short/ long name & subnet and port addresses
-	
-	req = 0 ;
-	len = 0;
+  // handle short/ long name & subnet and port addresses
 
-	return 0;
+  req = 0;
+  len = 0;
+
+  return 0;
 }
