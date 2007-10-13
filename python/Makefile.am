@@ -3,6 +3,7 @@
 #
 #
 pkgpyexecdir = @pythondir@
+pkgpythondir = @pythondir@
 if BUILD_PYTHON_LIBS
 
 SWIG_SOURCES = LlaClient.i
