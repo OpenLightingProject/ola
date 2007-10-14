@@ -13,22 +13,21 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * shownetdevice.cpp
+ * ShowNetDevice.cpp
  * ShowNet device
- * Copyright (C) 2005  Simon Newton
- *
- *
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "shownetdevice.h"
-#include "shownetport.h"
+#include "ShowNetDevice.h"
+#include "ShowNetPort.h"
 
 #include <llad/logger.h>
 #include <llad/preferences.h>
+#include <llad/plugin.h>
 #include <llad/universe.h>
 
 #if HAVE_CONFIG_H
@@ -52,13 +51,13 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
   ShowNetPort *prt = NULL;
   Universe *uni = NULL;
 
-  if ( uid > SHOWNET_MAX_UNIVERSES)
+  if (uid > SHOWNET_MAX_UNIVERSES)
     return 0;
 
   prt = (ShowNetPort*) dev->get_port(uid);
   uni = prt->get_universe();
 
-  if ( prt->can_read() && uni != NULL && prt->get_id()%8  == uid) {
+  if ( prt->can_read() && uni != NULL && prt->get_id()%8 == uid) {
     prt->update_buffer(data,len);
   }
 
@@ -74,13 +73,11 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
  * should prob pass the ip to bind to
  *
  */
-ShowNetDevice::ShowNetDevice(Plugin *owner, const string &name, Preferences *prefs) :
+ShowNetDevice::ShowNetDevice(Plugin *owner, const string &name, Preferences *prefs):
   Device(owner, name),
   m_prefs(prefs),
   m_node(NULL),
-  m_enabled(false) {
-
-}
+  m_enabled(false) {}
 
 
 /*
@@ -98,25 +95,20 @@ ShowNetDevice::~ShowNetDevice() {
  */
 int ShowNetDevice::start() {
   ShowNetPort *port = NULL;
-  int debug = 0;
 
   /* set up ports */
   for (int i=0; i < 2*PORTS_PER_DEVICE; i++) {
-    port = new ShowNetPort(this,i);
+    port = new ShowNetPort(this, i);
 
     if (port != NULL)
       this->add_port(port);
   }
 
-#ifdef DEBUG
-  debug = 1;
-#endif
-
   // create new shownet node, and set config values
-    if (m_prefs->get_val("ip") == "")
-    m_node = shownet_new(NULL, debug);
+  if (m_prefs->get_val("ip") == "")
+    m_node = shownet_new(NULL, get_owner()->debug_on());
   else {
-    m_node = shownet_new(m_prefs->get_val("ip").c_str(), debug);
+    m_node = shownet_new(m_prefs->get_val("ip").c_str(), get_owner()->debug_on());
   }
 
   if (!m_node) {

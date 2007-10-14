@@ -23,13 +23,14 @@
 #include <llad/logger.h>
 
 const string Plugin::ENABLED_KEY = "enabled";
+const string Plugin::DEBUG_KEY = "debug";
 
 /*
  * Start the plugin. Calls start_hook() which can be over-ridden by the
  * derrived classes.
  */
 int Plugin::start() {
-  string enabled;
+  string enabled, debug;
 
   if (m_enabled)
     return -1;
@@ -43,6 +44,12 @@ int Plugin::start() {
     Logger::instance()->log(Logger::INFO, "Plugin: %s disabled", get_name().c_str());
     delete m_prefs;
     return 0;
+  }
+
+  debug = m_prefs->get_val(DEBUG_KEY);
+  if(debug == "true") {
+    Logger::instance()->log(Logger::INFO, "Plugin: %s debug on", get_name().c_str());
+    m_debug = true;
   }
 
   if(start_hook()) {
@@ -93,6 +100,7 @@ int Plugin::load_prefs() {
 
   if (set_default_prefs()) {
     delete m_prefs;
+    Logger::instance()->log(Logger::INFO, "%s:set_default_prefs failed", get_name().c_str());
     return -1;
   }
 

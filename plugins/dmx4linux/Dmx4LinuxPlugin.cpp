@@ -295,7 +295,7 @@ int Dmx4LinuxPlugin::setup_devices(int dir) {
     cap.direction = dir ? DMX_DIRECTION_INPUT : DMX_DIRECTION_OUTPUT;
     cap.universe = i;
 
-    if (ioctl (m_in_fd, DMX_IOCTL_GET_CAP, &cap)>=0) {
+    if (ioctl(m_in_fd, DMX_IOCTL_GET_CAP, &cap)>=0) {
       if (cap.maxSlots > 0) {
         setup_device(cap.family, cap.universe, cap.direction);
       }

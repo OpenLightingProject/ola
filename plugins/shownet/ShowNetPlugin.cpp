@@ -13,10 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * shownetplugin.cpp
+ * ShowNetPlugin.cpp
  * The ShowNet plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
 #include <stdlib.h>
@@ -25,10 +24,14 @@
 #include <llad/pluginadaptor.h>
 #include <llad/preferences.h>
 
-#include "shownetplugin.h"
-#include "shownetdevice.h"
+#include "ShowNetPlugin.h"
+#include "ShowNetDevice.h"
 
-#define SHOWNET_NAME "lla-ShowNet"
+const string ShowNetPlugin::SHOWNET_NODE_NAME = "lla-ShowNet";
+const string ShowNetPlugin::SHOWNET_DEVICE_NAME = "ShowNet Device";
+const string ShowNetPlugin::PLUGIN_NAME = "ShowNet Plugin";
+const string ShowNetPlugin::PLUGIN_PREFIX = "shownet";
+
 
 /*
  * Entry point to this plugin
@@ -50,38 +53,23 @@ extern "C" void destroy(Plugin* plug) {
  *
  * For now we just have one device.
  */
-int ShowNetPlugin::start() {
-
-  if (m_enabled)
-    return -1;
-
-  // setup prefs
-  if (load_prefs() != 0)
-    return -1;
-
+int ShowNetPlugin::start_hook() {
   /* create new lla device */
-  m_dev = new ShowNetDevice(this, "ShowNet Device", m_prefs);
+  m_dev = new ShowNetDevice(this, SHOWNET_DEVICE_NAME, m_prefs);
 
   if (m_dev == NULL)
-    goto e_prefs;
+    return -1;
 
-  if (m_dev->start())
-    goto e_dev;
+  if (m_dev->start()) {
+    delete m_dev;
+    return -1;
+  }
 
   // register our descriptors
   m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev);
-
   m_pa->register_device(m_dev);
 
-  m_enabled = true;
   return 0;
-
-  e_dev:
-    delete m_dev;
-  e_prefs:
-    delete m_prefs;
-    return -1;
-
 }
 
 
@@ -90,22 +78,15 @@ int ShowNetPlugin::start() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int ShowNetPlugin::stop() {
-
-  if (!m_enabled)
-    return -1;
-
+int ShowNetPlugin::stop_hook() {
   m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ);
 
   // stop the device
   if (m_dev->stop())
     return -1;
 
-
   m_pa->unregister_device(m_dev);
-  m_enabled = false;
   delete m_dev;
-  delete m_prefs;
   return 0;
 }
 
@@ -138,21 +119,14 @@ string ShowNetPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-int ShowNetPlugin::load_prefs() {
-  if (m_prefs != NULL)
-    delete m_prefs;
-
-  m_prefs = new Preferences("shownet");
-
+int ShowNetPlugin::set_default_prefs() {
   if (m_prefs == NULL)
     return -1;
-
-  m_prefs->load();
 
   // we don't worry about ip here
   // if it's non existant it will choose one
   if ( m_prefs->get_val("name") == "") {
-    m_prefs->set_val("name", SHOWNET_NAME);
+    m_prefs->set_val("name", SHOWNET_NODE_NAME);
     m_prefs->save();
   }
 

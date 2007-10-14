@@ -29,6 +29,7 @@
 
 #include <llad/logger.h>
 #include <llad/preferences.h>
+#include <llad/plugin.h>
 
 #include <llad/universe.h>
 
@@ -110,7 +111,6 @@ EspNetDevice::~EspNetDevice() {
  */
 int EspNetDevice::start() {
   EspNetPort *port = NULL;
-  int debug = 0;
 
   /* set up ports */
   for(int i=0; i < 2*PORTS_PER_DEVICE; i++) {
@@ -120,14 +120,11 @@ int EspNetDevice::start() {
       this->add_port(port);
   }
 
-  if (m_prefs->get_val("debug") == "true")
-    debug = 1;
-
   // create new espnet node, and set config values
   if(m_prefs->get_val("ip") == "")
-    m_node = espnet_new(NULL, debug);
+    m_node = espnet_new(NULL, get_owner()->debug_on());
   else {
-    m_node = espnet_new(m_prefs->get_val("ip").c_str(), debug);
+    m_node = espnet_new(m_prefs->get_val("ip").c_str(), get_owner()->debug_on());
   }
 
   if(!m_node) {

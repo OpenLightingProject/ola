@@ -26,17 +26,17 @@
 
 #include "DynamicPluginLoader.h"
 
-#include "plugins/dummy/dummyplugin.h"
-#include "plugins/opendmx/opendmxplugin.h"
-#include "plugins/usbpro/usbproplugin.h"
-#include "plugins/stageprofi/stageprofiplugin.h"
+#include "plugins/dummy/DummyPlugin.h"
+#include "plugins/opendmx/OpenDmxPlugin.h"
+#include "plugins/usbpro/UsbProPlugin.h"
+#include "plugins/stageprofi/StageProfiPlugin.h"
 
 #ifdef HAVE_ARTNET
 #include "plugins/artnet/ArtNetPlugin.h"
 #endif
 
 #ifdef HAVE_ESPNET
-#include "plugins/espnet/espnetplugin.h"
+#include "plugins/espnet/EspNetPlugin.h"
 #endif
 
 #ifdef HAVE_PATHPORT
@@ -48,7 +48,7 @@
 #endif
 
 #ifdef HAVE_SHOWNET
-#include "plugins/shownet/shownetplugin.h"
+#include "plugins/shownet/ShowNetPlugin.h"
 #endif
 
 #ifdef HAVE_DMX4LINUX

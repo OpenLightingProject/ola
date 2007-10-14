@@ -46,6 +46,7 @@ class EspNetPlugin : public Plugin {
 
     EspNetDevice *m_dev;    // only have one device
     static const string ESPNET_NODE_NAME;
+    static const string ESPNET_DEVICE_NAME;
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
 

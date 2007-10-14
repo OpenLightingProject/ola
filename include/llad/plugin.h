@@ -42,6 +42,7 @@ class Plugin {
       m_pa(pa),
       m_prefs(NULL),
       m_enabled(false),
+      m_debug(false),
       m_id(id) {}
 
     virtual ~Plugin() {};
@@ -49,6 +50,7 @@ class Plugin {
     virtual int start();
     virtual int stop();
     virtual bool is_enabled() const { return m_enabled; }
+    virtual bool debug_on() const { return m_debug; }
     lla_plugin_id get_id() { return m_id; }
 
     virtual string get_name() const = 0;
@@ -63,7 +65,9 @@ class Plugin {
     const PluginAdaptor *m_pa;
     class Preferences *m_prefs;  // prefs container
     bool m_enabled;              // are we running
+    bool m_debug;              // debug mode on
     static const string ENABLED_KEY;
+    static const string DEBUG_KEY;
 
   private:
     int load_prefs();

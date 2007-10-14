@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbproplugin.cpp
+ * UsbProPlugin.cpp
  * The UsbPro plugin for lla
- * Copyright (C) 2006  Simon Newton
+ * Copyright (C) 2006-2007 Simon Newton
  */
 
 #include <stdlib.h>
@@ -25,13 +25,15 @@
 #include <llad/preferences.h>
 #include <llad/logger.h>
 
-#include "usbproplugin.h"
-#include "usbprodevice.h"
-
-#define USBPRO_DEVICE "/dev/ttyUSB0"
+#include "UsbProPlugin.h"
+#include "UsbProDevice.h"
 
 #include <vector>
 
+const string UsbProPlugin::USBPRO_DEVICE_PATH = "/dev/ttyUSB0";
+const string UsbProPlugin::USBPRO_DEVICE_NAME = "Enttec Usb Pro Device";
+const string UsbProPlugin::PLUGIN_NAME = "UsbPro Plugin";
+const string UsbProPlugin::PLUGIN_PREFIX = "usbpro";
 
 /*
  * Entry point to this plugin
@@ -53,18 +55,11 @@ extern "C" void destroy(Plugin* plug) {
  *
  * Multiple devices now supported
  */
-int UsbProPlugin::start() {
+int UsbProPlugin::start_hook() {
   int sd;
   vector<string> *dev_nm_v;
   vector<string>::iterator it;
   UsbProDevice *dev;
-
-  if (m_enabled)
-    return -1;
-
-  // setup prefs
-  if (load_prefs() != 0)
-    return -1;
 
   // fetch device listing
   dev_nm_v = m_prefs->get_multiple_val("device");
@@ -73,7 +68,7 @@ int UsbProPlugin::start() {
   for (it = dev_nm_v->begin(); it != dev_nm_v->end(); ++it) {
 
     /* create new lla device */
-    dev = new UsbProDevice(this, "Enttec Usb Pro Device", *it);
+    dev = new UsbProDevice(this, USBPRO_DEVICE_NAME, *it);
 
     if (dev == NULL)
       continue;
@@ -95,12 +90,6 @@ int UsbProPlugin::start() {
   }
 
   delete dev_nm_v;
-
-  if (m_devices.size() > 0)
-    m_enabled = true;
-  else
-    delete m_prefs;
-
   return 0;
 }
 
@@ -110,14 +99,11 @@ int UsbProPlugin::start() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int UsbProPlugin::stop() {
+int UsbProPlugin::stop_hook() {
   UsbProDevice *dev;
   unsigned int i = 0;
 
-  if (!m_enabled)
-    return -1;
-
-  for ( i = 0; i < m_devices.size(); i++) {
+  for (i = 0; i < m_devices.size(); i++) {
     dev = m_devices[i];
 
     m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ);
@@ -127,14 +113,10 @@ int UsbProPlugin::stop() {
       continue;
 
     m_pa->unregister_device(dev);
-
     delete dev;
   }
 
   m_devices.clear();
-  m_enabled = false;
-  delete m_prefs;
-
   return 0;
 }
 
@@ -181,7 +163,6 @@ int UsbProPlugin::fd_error(int error, FDListener *listener) {
     m_devices.erase(iter);
 
   delete dev;
-
   error = 0;
   return 0;
 }
@@ -190,19 +171,12 @@ int UsbProPlugin::fd_error(int error, FDListener *listener) {
  * load the plugin prefs and default to sensible values
  *
  */
-int UsbProPlugin::load_prefs() {
-  if ( m_prefs != NULL)
-    delete m_prefs;
-
-  m_prefs = new Preferences("usbpro");
-
+int UsbProPlugin::set_default_prefs() {
   if (m_prefs == NULL)
     return -1;
 
-  m_prefs->load();
-
   if ( m_prefs->get_val("device") == "") {
-    m_prefs->set_val("device", USBPRO_DEVICE);
+    m_prefs->set_val("device", USBPRO_DEVICE_PATH);
     m_prefs->save();
   }
 
@@ -212,6 +186,5 @@ int UsbProPlugin::load_prefs() {
     delete m_prefs;
     return -1;
   }
-
   return 0;
 }

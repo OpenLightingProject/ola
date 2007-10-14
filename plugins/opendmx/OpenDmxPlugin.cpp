@@ -62,7 +62,7 @@ int OpenDmxPlugin::start_hook() {
 
   /* create new lla device */
   // first check if it's there
-  fd = open( m_prefs->get_val("device").c_str(), O_WRONLY);
+  fd = open(m_prefs->get_val("device").c_str(), O_WRONLY);
 
   if (fd > 0) {
     close(fd);
@@ -88,7 +88,7 @@ int OpenDmxPlugin::start_hook() {
 int OpenDmxPlugin::stop_hook() {
 
   // stop the device
-  if (m_dev->stop())
+  if (m_dev && m_dev->stop())
     return -1;
 
   m_pa->unregister_device(m_dev);

@@ -13,42 +13,50 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbproplugin.h
- * Interface for the usbpro plugin class
- * Copyright (C) 2006  Simon Newton
+ * stageprofiplugin.h
+ * Interface for the stageprofi plugin class
+ * Copyright (C) 2006-2007 Simon Newton
  */
 
-#ifndef USBPROPLUGIN_H
-#define USBPROPLUGIN_H
+#ifndef STAGEPROFIPLUGIN_H
+#define STAGEPROFIPLUGIN_H
 
 #include <vector>
+#include <string>
+
 #include <llad/plugin.h>
 #include <llad/fdmanager.h>
 #include <lla/plugin_id.h>
 
-class UsbProDevice;
+using namespace std;
 
-class UsbProPlugin : public Plugin, public FDManager {
+class StageProfiDevice;
+
+class StageProfiPlugin : public Plugin, public FDManager {
 
   public:
-    UsbProPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
-      Plugin(pa, id),
-      m_prefs(NULL),
-      m_enabled(false) {}
+    StageProfiPlugin(const PluginAdaptor *pa, lla_plugin_id id):
+      Plugin(pa, id) {}
+    ~StageProfiPlugin() {}
 
-    int start();
-    int stop();
-    bool is_enabled() const         { return m_enabled; }
-    string get_name() const       { return "UsbPro Plugin"; }
+    string get_name() const { return PLUGIN_NAME; }
     string get_desc() const;
     int fd_error(int error, FDListener *listener);
-  private:
-    int load_prefs();
 
-    class Preferences *m_prefs;        // prefs container
-    vector<UsbProDevice *>  m_devices;    // list of out devices
-    bool m_enabled;              // are we running
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
+
+  private:
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
+
+    vector<StageProfiDevice *>  m_devices;  // list of our devices
+
+    static const string STAGEPROFI_DEVICE_PATH;
+    static const string STAGEPROFI_DEVICE_NAME;
+    static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
 };
 
 #endif
-

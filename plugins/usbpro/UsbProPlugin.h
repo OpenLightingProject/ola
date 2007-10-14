@@ -13,42 +13,45 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * shownetplugin.h
- * Interface for the shownet plugin class
- * Copyright (C) 2005  Simon Newton
+ * usbproplugin.h
+ * Interface for the usbpro plugin class
+ * Copyright (C) 2006  Simon Newton
  */
 
-#ifndef SHOWNETPLUGIN_H
-#define SHOWNETPLUGIN_H
+#ifndef USBPROPLUGIN_H
+#define USBPROPLUGIN_H
 
+#include <vector>
 #include <llad/plugin.h>
+#include <llad/fdmanager.h>
 #include <lla/plugin_id.h>
 
-class ShowNetDevice;
+class UsbProDevice;
 
-class ShowNetPlugin : public Plugin {
+class UsbProPlugin : public Plugin, public FDManager {
 
   public:
-    ShowNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
-      Plugin(pa, id),
-      m_prefs(NULL),
-      m_dev(NULL),
-      m_enabled(false) {}
+    UsbProPlugin(const PluginAdaptor *pa, lla_plugin_id id):
+      Plugin(pa, id) {}
 
-    int start();
-    int stop();
-    bool is_enabled() const       { return m_enabled; }
-    string get_name() const       { return "ShowNet Plugin"; }
+    string get_name() const { return PLUGIN_NAME; }
     string get_desc() const;
+    int fd_error(int error, FDListener *listener);
+
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int load_prefs();
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
 
-    class Preferences *m_prefs;
-    ShowNetDevice *m_dev;    // only have one device
-    bool m_enabled;      // are we running
+    vector<UsbProDevice *> m_devices; // list of our devices
+
+    static const string USBPRO_DEVICE_PATH;
+    static const string USBPRO_DEVICE_NAME;
+    static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
 };
 
 #endif
-

@@ -42,7 +42,7 @@ class DummyPlugin : public Plugin {
   private:
     int start_hook();
     int stop_hook();
-    int set_default_prefs();
+    int set_default_prefs() { return 0; }
 
     DummyDevice *m_dev ;    // the dummy device
     static const string PLUGIN_NAME;

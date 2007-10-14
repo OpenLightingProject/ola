@@ -128,7 +128,7 @@ string SandNetPlugin::get_desc() const {
  *
  */
 int SandNetPlugin::set_default_prefs() {
-  if (m_prefs != NULL)
+  if (m_prefs == NULL)
     delete m_prefs;
 
   // we don't worry about ip here

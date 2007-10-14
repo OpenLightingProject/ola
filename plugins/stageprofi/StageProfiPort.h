@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * stageprofiport.h
+ * StageProfiPort.h
  * The StageProfi plugin for lla
  * Copyright (C) 2006-2007 Simon Newton
  */
@@ -31,8 +31,8 @@ class StageProfiPort : public Port {
     int write(uint8_t *data, int length);
     int read(uint8_t *data, int length);
 
-    int can_read() const { return 0;}
-    int can_write() const { return 1;}
+    int can_read() const { return 0; }
+    int can_write() const { return 1; }
 };
 
 #endif

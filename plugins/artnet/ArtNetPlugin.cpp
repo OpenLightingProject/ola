@@ -56,7 +56,6 @@ extern "C" void destroy(Plugin* plug) {
  */
 int ArtNetPlugin::start_hook() {
   int sd;
-
   /* create new lla device */
   m_dev = new ArtNetDevice(this, "Art-Net Device", m_prefs);
 
@@ -136,7 +135,7 @@ string ArtNetPlugin::get_desc() const {
 int ArtNetPlugin::set_default_prefs() {
   bool save = false;
 
-  if (m_prefs != NULL)
+  if (m_prefs == NULL)
     return -1;
 
   // we don't worry about ip here

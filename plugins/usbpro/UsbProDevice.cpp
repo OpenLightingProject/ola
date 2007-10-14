@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbprodevice.cpp
+ * UsbProDevice.cpp
  * UsbPro device
- * Copyright (C) 2006  Simon Newton
+ * Copyright (C) 2006-2007 Simon Newton
  *
  * The device creates two ports, one in and one out, but you can only use one at a time.
  */
@@ -34,8 +34,8 @@
 #include <llad/preferences.h>
 #include <llad/universe.h>
 
-#include "usbprodevice.h"
-#include "usbproport.h"
+#include "UsbProDevice.h"
+#include "UsbProPort.h"
 
 #include "UsbProConfMsgs.h"
 #include "UsbProConfParser.h"
@@ -97,15 +97,14 @@ int UsbProDevice::start() {
 
   /* set up ports */
   for (int i=0; i < 2; i++) {
-    port = new UsbProPort(this,i);
+    port = new UsbProPort(this, i);
 
     if (port != NULL)
-      this->add_port(port);
+      add_port(port);
   }
 
   m_enabled = true;
   return 0;
-
 }
 
 
@@ -181,8 +180,6 @@ int UsbProDevice::get_dmx(uint8_t *data, int len) const {
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
 int UsbProDevice::save_config() const {
-
-
   return 0;
 }
 

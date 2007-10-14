@@ -13,49 +13,43 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * stageprofiplugin.h
- * Interface for the stageprofi plugin class
- * Copyright (C) 2006-2007 Simon Newton
+ *
+ * shownetplugin.h
+ * Interface for the shownet plugin class
+ * Copyright (C) 2005-2007 Simon Newton
  */
 
-#ifndef STAGEPROFIPLUGIN_H
-#define STAGEPROFIPLUGIN_H
-
-#include <vector>
-#include <string>
+#ifndef SHOWNETPLUGIN_H
+#define SHOWNETPLUGIN_H
 
 #include <llad/plugin.h>
-#include <llad/fdmanager.h>
 #include <lla/plugin_id.h>
 
-using namespace std;
+class ShowNetDevice;
 
-class StageProfiDevice;
-
-class StageProfiPlugin : public Plugin, public FDManager {
+class ShowNetPlugin : public Plugin {
 
   public:
-    StageProfiPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
+    ShowNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
       Plugin(pa, id),
-      m_prefs(NULL),
-      m_enabled(false) {}
-    ~StageProfiPlugin() {}
+      m_dev(NULL) {}
 
-    int start();
-    int stop();
-    bool is_enabled() const { return m_enabled; }
     string get_name() const { return PLUGIN_NAME; }
     string get_desc() const;
-    int fd_error(int error, FDListener *listener);
+
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
+
   private:
-    int load_prefs();
+    int start_hook();
+    int stop_hook();
+    int set_default_prefs();
 
-    class Preferences *m_prefs;        // prefs container
-    vector<StageProfiDevice *>  m_devices;  // list of out devices
-    bool m_enabled;              // are we running
-
+    ShowNetDevice *m_dev;    // only have one device
+    static const string SHOWNET_NODE_NAME;
+    static const string SHOWNET_DEVICE_NAME;
     static const string PLUGIN_NAME;
-    static const string STAGEPROFI_DEVICE;
+    static const string PLUGIN_PREFIX;
 };
 
 #endif

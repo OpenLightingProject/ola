@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbproport.h
+ * UsbProPort.h
  * The UsbPro plugin for lla
- * Copyright (C) 2006  Simon Newton
+ * Copyright (C) 2006-2007 Simon Newton
  */
 
 #ifndef USBPROPORT_H

@@ -29,6 +29,7 @@
 #include "EspNetDevice.h"
 
 const string EspNetPlugin::ESPNET_NODE_NAME = "lla-EspNet";
+const string EspNetPlugin::ESPNET_DEVICE_NAME = "EspNet Device";
 const string EspNetPlugin::PLUGIN_NAME = "EspNet Plugin";
 const string EspNetPlugin::PLUGIN_PREFIX = "espnet";
 
@@ -54,7 +55,7 @@ extern "C" void destroy(Plugin* plug) {
  */
 int EspNetPlugin::start_hook() {
   /* create new lla device */
-  m_dev = new EspNetDevice(this, "ESPNet Device", m_prefs);
+  m_dev = new EspNetDevice(this, ESPNET_DEVICE_NAME, m_prefs);
 
   if(m_dev == NULL)
     return -1;
@@ -111,10 +112,7 @@ string EspNetPlugin::get_desc() const {
 "The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
 "\n"
 "name = lla-EspNet\n"
-"The name of the node.\n"
-"\n"
-"debug = [true|false]\n"
-"Turn libespnet debugging on.\n";
+"The name of the node.\n";
 
 }
 
@@ -123,27 +121,15 @@ string EspNetPlugin::get_desc() const {
  *
  */
 int EspNetPlugin::set_default_prefs() {
-  bool save = false;
-
-  if (m_prefs != NULL)
+  if (m_prefs == NULL)
     return -1;
 
   // we don't worry about ip here
   // if it's non existant it will choose one
   if (m_prefs->get_val("name") == "") {
     m_prefs->set_val("name", ESPNET_NODE_NAME);
-    save = true;
-  }
-
-  // we don't worry about ip here
-  // if it's non existant it will choose one
-  if (m_prefs->get_val("debug") == "") {
-    m_prefs->set_val("false", ESPNET_NODE_NAME);
-    save = true;
-  }
-
-  if (save)
     m_prefs->save();
+  }
 
   // check if this save correctly
   // we don't want to use it if null

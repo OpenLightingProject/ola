@@ -119,6 +119,7 @@ int Llad::init() {
   for( i =0; i < pm->plugin_count(); i++) {
     plug = pm->get_plugin(i);
 
+    Logger::instance()->log(Logger::INFO, "Trying to start %s", plug->get_name().c_str());
     if (plug->start())
       Logger::instance()->log(Logger::WARN, "Failed to start %s", plug->get_name().c_str());
     else

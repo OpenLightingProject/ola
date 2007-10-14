@@ -13,25 +13,31 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * stageprofidevice.h
- * Interface for the stageprofi device
+ * UsbProDevice.h
+ * Interface for the usbpro device
  * Copyright (C) 2006-2007 Simon Newton
  */
 
-#ifndef STAGEPROFIDEVICE_H
-#define STAGEPROFIDEVICE_H
+#ifndef USBPRODEVICE_H
+#define USBPRODEVICE_H
 
 #include <string>
 #include <stdint.h>
 #include <llad/device.h>
 #include <llad/fdlistener.h>
+#include <llad/timeoutlistener.h>
+#include "usbpro_conf_messages.h"
 
-class StageProfiDevice : public Device, public FDListener {
+#include "UsbProWidgetListener.h"
+#include "UsbProWidget.h"
+
+
+class UsbProDevice : public Device, public FDListener, public UsbProWidgetListener {
 
   public:
 
-    StageProfiDevice(Plugin *owner, const string &name, const string &dev_path);
-    ~StageProfiDevice();
+    UsbProDevice(Plugin *owner, const string &name, const string &dev_path);
+    ~UsbProDevice();
 
     int start();
     int stop();
@@ -40,13 +46,26 @@ class StageProfiDevice : public Device, public FDListener {
     int save_config() const;
     class LlaDevConfMsg *configure(const uint8_t *request, int reql);
     int send_dmx(uint8_t *data, int len);
+    int get_dmx(uint8_t *data, int len) const;
+    void new_dmx();
+    int recv_mode();
 
   private:
+    class UsbProConfMsg *config_get_params(class UsbProConfMsgPrmReq *req) const;
+    class UsbProConfMsg *config_get_serial(class UsbProConfMsgSerReq *req) const;
+    class UsbProConfMsg *config_set_params(class UsbProConfMsgSprmReq *req);
+
+    enum {
+      SEND_MODE,
+      RECV_MODE
+    };
 
     // instance variables
     string m_path;
-    bool m_enabled;        // are we enabled
-    class StageProfiWidget *m_widget;
+    bool m_enabled;            // are we enabled
+    bool m_mode;              // are we sending or receiving?
+    class UsbProConfParser *m_parser; // parser for config msgs
+    UsbProWidget *m_widget;
 };
 
 #endif

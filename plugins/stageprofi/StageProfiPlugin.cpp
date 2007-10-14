@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * stageprofiplugin.cpp
+ * StageProfiPlugin.cpp
  * The StageProfi plugin for lla
  * Copyright (C) 2006-2007 Simon Newton
  */
@@ -26,12 +26,14 @@
 #include <llad/preferences.h>
 #include <llad/logger.h>
 
-#include "stageprofiplugin.h"
-#include "stageprofidevice.h"
+#include "StageProfiPlugin.h"
+#include "StageProfiDevice.h"
 
 
-const string StageProfiPlugin::STAGEPROFI_DEVICE = "/dev/ttyUSB0";
+const string StageProfiPlugin::STAGEPROFI_DEVICE_PATH = "/dev/ttyUSB0";
+const string StageProfiPlugin::STAGEPROFI_DEVICE_NAME = "StageProfi Device";
 const string StageProfiPlugin::PLUGIN_NAME = "StageProfi Plugin";
+const string StageProfiPlugin::PLUGIN_PREFIX = "stageprofi";
 
 /*
  * Entry point to this plugin
@@ -53,24 +55,17 @@ extern "C" void destroy(Plugin* plug) {
  *
  * Multiple devices now supported
  */
-int StageProfiPlugin::start() {
+int StageProfiPlugin::start_hook() {
   int sd;
   vector<string> *dev_nm_v;
   vector<string>::iterator it;
   StageProfiDevice *dev;
 
-  if (m_enabled)
-    return -1;
-
-  // setup prefs
-  if (load_prefs() != 0)
-    return -1;
-
   // fetch device listing
   dev_nm_v = m_prefs->get_multiple_val("device");
 
   for (it = dev_nm_v->begin(); it != dev_nm_v->end(); ++it) {
-    dev = new StageProfiDevice(this, "Stage Profi Device", *it);
+    dev = new StageProfiDevice(this, STAGEPROFI_DEVICE_NAME, *it);
 
     if (dev == NULL)
       continue;
@@ -90,12 +85,6 @@ int StageProfiPlugin::start() {
   }
 
   delete dev_nm_v;
-
-  if (m_devices.size() > 0)
-    m_enabled = true;
-  else
-    delete m_prefs;
-
   return 0;
 }
 
@@ -105,7 +94,7 @@ int StageProfiPlugin::start() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int StageProfiPlugin::stop() {
+int StageProfiPlugin::stop_hook() {
   StageProfiDevice *dev;
   unsigned int i = 0;
 
@@ -114,7 +103,6 @@ int StageProfiPlugin::stop() {
 
   for (i = 0; i < m_devices.size(); i++) {
     dev = m_devices[i];
-
     m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ);
 
     if (dev->stop())
@@ -125,9 +113,6 @@ int StageProfiPlugin::stop() {
   }
 
   m_devices.clear();
-  m_enabled = false;
-  delete m_prefs;
-
   return 0;
 }
 
@@ -187,19 +172,12 @@ int StageProfiPlugin::fd_error(int error, FDListener *listener) {
  * load the plugin prefs and default to sensible values
  *
  */
-int StageProfiPlugin::load_prefs() {
-  if ( m_prefs != NULL)
-    delete m_prefs;
-
-  m_prefs = new Preferences("stageprofi");
-
+int StageProfiPlugin::set_default_prefs() {
   if (m_prefs == NULL)
     return -1;
 
-  m_prefs->load();
-
   if ( m_prefs->get_val("device") == "") {
-    m_prefs->set_val("device", STAGEPROFI_DEVICE);
+    m_prefs->set_val("device", STAGEPROFI_DEVICE_NAME);
     m_prefs->save();
   }
 

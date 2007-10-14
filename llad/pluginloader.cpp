@@ -82,7 +82,7 @@ int PluginLoader::load_plugins(const string &dirname) {
     if (!stat(fname.c_str(), &statbuf) && S_ISREG(statbuf.st_mode) && fname.substr(i) == SHARED_LIB_EXT) {
 
       // ok try and load it
-      if( (plug = this->load_plugin(fname)) == NULL) {
+      if( (plug = load_plugin(fname)) == NULL) {
         Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", fname.c_str());
       } else {
         m_plugin_vect.push_back(plug);

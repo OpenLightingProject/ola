@@ -13,14 +13,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * shownetport.cpp
+ * ShowNetPort.cpp
  * The ShowNet plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2007  Simon Newton
  */
 
-#include "shownetport.h"
-#include "shownetdevice.h"
+#include "ShowNetPort.h"
+#include "ShowNetDevice.h"
 #include "common.h"
 
 #include <llad/universe.h>
@@ -38,7 +37,6 @@ ShowNetPort::ShowNetPort(Device *parent, int id) :
 }
 
 ShowNetPort::~ShowNetPort() {
-
   if (can_read())
     free(m_buf);
 }
@@ -63,11 +61,12 @@ int ShowNetPort::can_write() const {
 int ShowNetPort::write(uint8_t *data, int length) {
   ShowNetDevice *dev = (ShowNetDevice*) get_device();
 
-  if ( !can_write())
+  if (!can_write())
     return -1;
 
   if (shownet_send_dmx(dev->get_node() , get_id()%8 , length, data)) {
-    Logger::instance()->log(Logger::WARN, "ShownetPlugin: shownet_send_dmx failed %s", shownet_strerror() );
+    Logger::instance()->log(Logger::WARN, "ShownetPlugin: shownet_send_dmx failed %s",
+      shownet_strerror());
     return -1;
   }
   return 0;
@@ -84,11 +83,11 @@ int ShowNetPort::write(uint8_t *data, int length) {
 int ShowNetPort::read(uint8_t *data, int length) {
   int len;
 
-  if ( !can_read())
+  if (!can_read())
     return -1;
 
   len = min(m_len, length);
-  memcpy(data, m_buf, len );
+  memcpy(data, m_buf, len);
   return len;
 }
 
@@ -100,7 +99,7 @@ int ShowNetPort::update_buffer(uint8_t *data, int length) {
   int len = min(DMX_LENGTH, length);
 
   // we can't update if this isn't a input port
-  if (! can_read())
+  if (!can_read())
     return -1;
 
   // allocate buffer as needed

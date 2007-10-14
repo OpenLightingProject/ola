@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * stageprofidevice.cpp
+ * StageProfiDevice.cpp
  * StageProfi device
- * Copyright (C) 2006  Simon Newton
+ * Copyright (C) 2006-2007 Simon Newton
  *
  * The device creates two ports, one in and one out, but you can only use one at a time.
  */
@@ -34,8 +34,8 @@
 #include <llad/preferences.h>
 #include <llad/universe.h>
 
-#include "stageprofidevice.h"
-#include "stageprofiport.h"
+#include "StageProfiDevice.h"
+#include "StageProfiPort.h"
 #include "StageProfiWidgetLan.h"
 #include "StageProfiWidgetUsb.h"
 
@@ -50,7 +50,7 @@
  * @param name  the device name
  * @param dev_path  path to the pro widget
  */
-StageProfiDevice::StageProfiDevice(Plugin *owner, const string &name, const string &dev_path) :
+StageProfiDevice::StageProfiDevice(Plugin *owner, const string &name, const string &dev_path):
   Device(owner, name),
   m_path(dev_path),
   m_enabled(false),
@@ -92,10 +92,10 @@ int StageProfiDevice::start() {
     goto e_dev;
   }
 
-  port = new StageProfiPort(this,0);
+  port = new StageProfiPort(this, 0);
 
   if (port != NULL)
-    this->add_port(port);
+    add_port(port);
 
   m_enabled = true;
   return 0;
@@ -168,7 +168,6 @@ int StageProfiDevice::send_dmx(uint8_t *data, int len) {
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
 int StageProfiDevice::save_config() const {
-
   return 0;
 }
 
