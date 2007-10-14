@@ -1,3 +1,6 @@
+14/10/2007 Simon Newton <<nomis52@westnet.com.au>
+ * refactored the plugins and cleaned up all the plugin code
+
 15/9/2007 Simon Newton <<nomis52@westnet.com.au>
   * fixed a memory leak
   * fixed a bug in calling upload_plugins multiple times
