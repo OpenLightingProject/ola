@@ -131,7 +131,7 @@ string StageProfiPlugin::get_desc() const {
 "\n"
 "device = /dev/ttyUSB0\n"
 "device = 192.168.1.250\n"
-"The device to use either as a part for the USB version or an IP address\n"
+"The device to use either as a path for the USB version or an IP address\n"
 "for the LAN version. Multiple devices are supported.\n";
 }
 
