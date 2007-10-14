@@ -29,8 +29,8 @@
 #include "PathportDevice.h"
 
 const string PathportPlugin::PATHPORT_NODE_NAME = "lla-Pathport";
-const string PathportPlugin::PLUGIN_NAME = "Dmx4Linux Plugin";
-const string PathportPlugin::PLUGIN_PREFIX = "dmx4linux";
+const string PathportPlugin::PLUGIN_NAME = "Pathport Plugin";
+const string PathportPlugin::PLUGIN_PREFIX = "pathport";
 
 /*
  * Entry point to this plugin
