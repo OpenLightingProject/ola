@@ -1,5 +1,7 @@
 14/10/2007 Simon Newton <<nomis52@westnet.com.au>
  * refactored the plugins and cleaned up all the plugin code
+ * added 'enable' and 'debug' parameters for the plugins
+ * bugfixes to the python buildfiles
 
 15/9/2007 Simon Newton <<nomis52@westnet.com.au>
   * fixed a memory leak
