@@ -1,12 +1,10 @@
 
 --URGENT--
 
-* default ip address issue (wtf is this ?)
-* allow plugins to be disabled / refactor plugin / device classes
-* fix python problem (.h not created)
 
 --REQUIRED--
 
+* fix recv dmx with the python libs
 * allow for finer grained channel control (set_block, set_channel)
 * tx pathport support
 * regression tests for plugins
