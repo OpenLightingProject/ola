@@ -1,5 +1,5 @@
 
-AM_CXXFLAGS = -Wall -Werror $(liblla_CFLAGS)
+AM_CXXFLAGS = -Wall $(liblla_CFLAGS)
 AM_LDFLAGS =  -LLIBDIR $(liblla_LIBS)
 
 if HAVE_NCURSES
