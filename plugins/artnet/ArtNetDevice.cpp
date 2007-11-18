@@ -47,23 +47,23 @@
 
 /*
  * Handle dmx from the network, called from libartnet
- * 
+ *
  */
 int dmx_handler(artnet_node n, int prt, void *d) {
-	ArtNetDevice *dev = (ArtNetDevice *) d ;
-	ArtNetPort *port ;
-	
-	// don't return non zero here else libartnet will stop processing
-	// this should never happen anyway
-	if( prt < 0 || prt > ARTNET_MAX_PORTS) 
-		return 0 ;
+  ArtNetDevice *dev = (ArtNetDevice *) d;
+  ArtNetPort *port;
 
-	// signal to the port that the data has changed
-	port = (ArtNetPort*) dev->get_port(prt) ;
-	port->dmx_changed() ;
+  // don't return non zero here else libartnet will stop processing
+  // this should never happen anyway
+  if( prt < 0 || prt > ARTNET_MAX_PORTS)
+    return 0;
 
-	n = NULL;
-	return 0;
+  // signal to the port that the data has changed
+  port = (ArtNetPort*) dev->get_port(prt);
+  port->dmx_changed();
+
+  n = NULL;
+  return 0;
 }
 
 
@@ -74,11 +74,11 @@ int dmx_handler(artnet_node n, int prt, void *d) {
  *
  */
 int program_handler(artnet_node n, void *d) {
-	ArtNetDevice *dev = (ArtNetDevice *) d ;
+  ArtNetDevice *dev = (ArtNetDevice *) d;
 
-	dev->save_config() ;
-	n = NULL;
-	return 0;
+  dev->save_config();
+  n = NULL;
+  return 0;
 }
 
 
@@ -89,12 +89,12 @@ int program_handler(artnet_node n, void *d) {
  *
  */
 ArtNetDevice::ArtNetDevice(Plugin *owner, const string &name, Preferences *prefs) :
-	Device(owner, name),
-	m_prefs(prefs),
-	m_node(NULL),
-	m_enabled(false) {
-		m_parser = new ArtNetConfParser();
-		
+  Device(owner, name),
+  m_prefs(prefs),
+  m_node(NULL),
+  m_enabled(false) {
+    m_parser = new ArtNetConfParser();
+
 }
 
 
@@ -102,9 +102,9 @@ ArtNetDevice::ArtNetDevice(Plugin *owner, const string &name, Preferences *prefs
  *
  */
 ArtNetDevice::~ArtNetDevice() {
-	if (m_enabled)
-		stop();
-	delete m_parser;
+  if (m_enabled)
+    stop();
+  delete m_parser;
 }
 
 
@@ -113,116 +113,116 @@ ArtNetDevice::~ArtNetDevice() {
  *
  */
 int ArtNetDevice::start() {
-	ArtNetPort *port = NULL ;
-	Port *prt = NULL;
-	int debug = 0 ;
-	
-	/* set up ports */
-	for(int i=0; i < 2*ARTNET_MAX_PORTS; i++) {
-		port = new ArtNetPort(this,i) ;
+  ArtNetPort *port = NULL;
+  Port *prt = NULL;
+  int debug = 0;
 
-		if(port != NULL) 
-			this->add_port(port) ;
-	}
+  /* set up ports */
+  for(int i=0; i < 2*ARTNET_MAX_PORTS; i++) {
+    port = new ArtNetPort(this,i);
+
+    if(port != NULL)
+      this->add_port(port);
+  }
 
 #ifdef DEBUG
-	debug = 1;
+  debug = 1;
 #endif
-	
-	// create new artnet node, and and set config values
 
-    if(m_prefs->get_val("ip") == "")
-		m_node = artnet_new(NULL, debug) ;
-	else {
-		m_node = artnet_new(m_prefs->get_val("ip").c_str(), debug) ;
-	}
-	
-	if(!m_node) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_new failed %s", artnet_strerror() ) ;
-		goto e_dev ;
-	}
+  // create new artnet node, and and set config values
 
-	// node config
-	if(artnet_setoem(m_node, 0x04, 0x31)  ) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_setoem failed: %s", artnet_strerror()) ;
-		goto e_artnet_start ;
-	}
+  if(m_prefs->get_val("ip") == "")
+    m_node = artnet_new(NULL, debug);
+  else {
+    m_node = artnet_new(m_prefs->get_val("ip").c_str(), debug);
+  }
 
-	
-	if(artnet_set_short_name(m_node, m_prefs->get_val("short_name").c_str()) ) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_short_name failed: %s", artnet_strerror()) ;
-		goto e_artnet_start ;
-	}
-	
-	if (artnet_set_long_name(m_node, m_prefs->get_val("long_name").c_str()) ) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_long_name failed: %s", artnet_strerror()) ;
-		goto e_artnet_start ;
-	}
-	
-	if(artnet_set_node_type(m_node, ARTNET_SRV)) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_node_type failed: %s", artnet_strerror()) ;
-		goto e_artnet_start ;
-	}
-	
-	if(artnet_set_subnet_addr(m_node, atoi(m_prefs->get_val("subnet").c_str()) ) ) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_subnet_addr failed: %s", artnet_strerror()) ;
-		goto e_artnet_start ;
-	}
+  if (!m_node) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_new failed %s", artnet_strerror() );
+    goto e_dev;
+  }
 
-	// we want to be notified when the node config changes
-	if(artnet_set_program_handler(m_node, ::program_handler, (void*) this) ) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_program_handler failed: %s", artnet_strerror()) ;
-		goto e_artnet_start ;
-	}
-	
-	if(artnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_dmx_handler failed: %s", artnet_strerror()) ;
-		goto e_artnet_start ;
-	}
+  // node config
+  if (artnet_setoem(m_node, 0x04, 0x31)) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_setoem failed: %s", artnet_strerror());
+    goto e_artnet_start;
+  }
 
-	for(int i=0; i < ARTNET_MAX_PORTS; i++) {
-		// output ports
-		if(artnet_set_port_type(m_node, i, ARTNET_ENABLE_OUTPUT, ARTNET_PORT_DMX)) {
-			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_type failed %s", artnet_strerror() );
-			goto e_artnet_start ;
-		}
-		
-		if( artnet_set_port_addr(m_node, i, ARTNET_OUTPUT_PORT, i)) {
-			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_addr failed %s", artnet_strerror() );
-			goto e_artnet_start ;
-		}
 
-		if(artnet_set_port_type(m_node, i, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX) ) {
-			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_type failed %s", artnet_strerror() );
-			goto e_artnet_start ;
-		}
+  if (artnet_set_short_name(m_node, m_prefs->get_val("short_name").c_str())) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_short_name failed: %s", artnet_strerror());
+    goto e_artnet_start;
+  }
 
-		if(artnet_set_port_addr(m_node, i, ARTNET_INPUT_PORT, i ) ) {
-			Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_addr failed %s", artnet_strerror() );
-			goto e_artnet_start ;
-		}
-	}
+  if (artnet_set_long_name(m_node, m_prefs->get_val("long_name").c_str())) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_long_name failed: %s", artnet_strerror());
+    goto e_artnet_start;
+  }
 
-	if(artnet_start(m_node) ) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_start failed: %s", artnet_strerror()) ;
-		goto e_artnet_start ;
-	}
-	m_enabled = true ;
+  if (artnet_set_node_type(m_node, ARTNET_SRV)) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_node_type failed: %s", artnet_strerror());
+    goto e_artnet_start;
+  }
 
-	return 0;
+  if (artnet_set_subnet_addr(m_node, atoi(m_prefs->get_val("subnet").c_str()) ) ) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_subnet_addr failed: %s", artnet_strerror());
+    goto e_artnet_start;
+  }
+
+  // we want to be notified when the node config changes
+  if (artnet_set_program_handler(m_node, ::program_handler, (void*) this) ) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_program_handler failed: %s", artnet_strerror());
+    goto e_artnet_start;
+  }
+
+  if (artnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_dmx_handler failed: %s", artnet_strerror());
+    goto e_artnet_start;
+  }
+
+  for (int i=0; i < ARTNET_MAX_PORTS; i++) {
+    // output ports
+    if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_OUTPUT, ARTNET_PORT_DMX)) {
+      Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_type failed %s", artnet_strerror() );
+      goto e_artnet_start;
+    }
+
+    if (artnet_set_port_addr(m_node, i, ARTNET_OUTPUT_PORT, i)) {
+      Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_addr failed %s", artnet_strerror() );
+      goto e_artnet_start;
+    }
+
+    if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX)) {
+      Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_type failed %s", artnet_strerror() );
+      goto e_artnet_start;
+    }
+
+    if (artnet_set_port_addr(m_node, i, ARTNET_INPUT_PORT, i)) {
+      Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_port_addr failed %s", artnet_strerror() );
+      goto e_artnet_start;
+    }
+  }
+
+  if (artnet_start(m_node)) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_start failed: %s", artnet_strerror());
+    goto e_artnet_start;
+  }
+  m_enabled = true;
+
+  return 0;
 
 e_artnet_start:
-	if(artnet_destroy(m_node)) 
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_destroy failed: %s", artnet_strerror()) ;
-			
-e_dev:
-	for(int i=0; i < port_count() ; i++) {
-		prt = get_port(i) ;
-		if(prt != NULL) 
-			delete prt ;
-	}
+  if(artnet_destroy(m_node))
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_destroy failed: %s", artnet_strerror());
 
-	return -1 ;
+e_dev:
+  for(int i=0; i < port_count(); i++) {
+    prt = get_port(i);
+    if(prt != NULL)
+      delete prt;
+  }
+
+  return -1;
 }
 
 
@@ -231,30 +231,30 @@ e_dev:
  *
  */
 int ArtNetDevice::stop() {
-	Port *prt = NULL;
+  Port *prt = NULL;
 
-	if (!m_enabled)
-		return 0 ;
+  if (!m_enabled)
+    return 0;
 
-	for(int i=0; i < port_count() ; i++) {
-		prt = get_port(i) ;
-		if(prt != NULL) 
-			delete prt ;
-	}
+  for (int i=0; i < port_count(); i++) {
+    prt = get_port(i);
+    if (prt)
+      delete prt;
+  }
 
-	if(artnet_stop(m_node)) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_stop failed: %s", artnet_strerror()) ;
-		return -1 ;
-	}
-	
-	if(artnet_destroy(m_node)) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_destroy failed: %s", artnet_strerror()) ;			
-		return -1 ;
-	}
+  if (artnet_stop(m_node)) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_stop failed: %s", artnet_strerror());
+    return -1;
+  }
 
-	m_enabled = false ;
+  if (artnet_destroy(m_node)) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_destroy failed: %s", artnet_strerror());
+    return -1;
+  }
 
-	return 0;
+  m_enabled = false;
+
+  return 0;
 }
 
 
@@ -264,7 +264,7 @@ int ArtNetDevice::stop() {
  *
  */
 artnet_node ArtNetDevice::get_node() const {
-	return m_node ;
+  return m_node;
 }
 
 /*
@@ -272,28 +272,28 @@ artnet_node ArtNetDevice::get_node() const {
  *
  */
 int ArtNetDevice::get_sd() const {
-	int ret ;
-	
-	ret = artnet_get_sd(m_node) ;
+  int ret;
 
-	if(ret < 0) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_get_sd failed: %s", artnet_strerror()) ;
-		return -1 ;
-	}
-	return ret;
+  ret = artnet_get_sd(m_node);
+
+  if (ret < 0) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_get_sd failed: %s", artnet_strerror());
+    return -1;
+  }
+  return ret;
 }
 
 /*
  * Called when there is activity on our descriptors
  *
- * @param	data	user data (pointer to artnet_device_priv
+ * @param  data  user data (pointer to artnet_device_priv
  */
 int ArtNetDevice::fd_action() {
-	if( artnet_read(m_node, 0) ) {
-		Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_read failed: %s", artnet_strerror()) ;
-		return -1 ;
-	}
-	return 0;
+  if (artnet_read(m_node, 0)) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_read failed: %s", artnet_strerror());
+    return -1;
+  }
+  return 0;
 }
 
 
@@ -303,7 +303,7 @@ int ArtNetDevice::fd_action() {
 int ArtNetDevice::save_config() const {
 
 
-	return 0;
+  return 0;
 }
 
 
@@ -314,32 +314,30 @@ int ArtNetDevice::save_config() const {
  *
  */
 class LlaDevConfMsg *ArtNetDevice::configure(const uint8_t *req, int len) {
-	// handle short/ long name & subnet and port addresses
+  // handle short/ long name & subnet and port addresses
 
-	ArtNetConfMsg *m = m_parser->parse(req, len);
+  ArtNetConfMsg *m = m_parser->parse(req, len);
 
-	if( m == NULL) {
-		Logger::instance()->log(Logger::WARN ,"ArtNetDevice::configure Could not parse message");
-		return NULL;
-	}
+  if (!m) {
+    Logger::instance()->log(Logger::WARN ,"ArtNetDevice::configure Could not parse message");
+    return NULL;
+  }
 
-	switch(m->type()) {
-//		case LLA_USBPRO_CONF_MSG_PRM_REQ:
-//			return config_get_params(dynamic_cast<UsbProConfMsgPrmReq*>(m));
-		default:
-			Logger::instance()->log(Logger::WARN ,"Invalid request to artnet configure %i", m->type());
-			return NULL;
-	}
+  switch (m->type()) {
+    default:
+      Logger::instance()->log(Logger::WARN ,"Invalid request to artnet configure %i", m->type());
+      return NULL;
+  }
 
-	return 0;
+  return 0;
 }
 
 /*
  * Handle a set param config request
  */
 /*ArtNetConfMsg *ArtNetDevice::config_get_ports(ArtNetConfMsgSprmReq *req) {
-	ArtNetConfMsgSprmRep *r = new ArtNetConfMsgSprmRep();
-	
-	r->set_status(ret);
-	return r;
+  ArtNetConfMsgSprmRep *r = new ArtNetConfMsgSprmRep();
+
+  r->set_status(ret);
+  return r;
 }*/

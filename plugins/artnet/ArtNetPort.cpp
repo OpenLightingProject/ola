@@ -134,4 +134,3 @@ int ArtNetPort::set_universe(Universe *uni) {
   }
   return 0 ;
 }
-
