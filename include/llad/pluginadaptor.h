@@ -39,7 +39,7 @@ class PluginAdaptor {
     int register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager = NULL ) const;
     int unregister_fd(int fd, PluginAdaptor::Direction dir) const;
 
-    int register_timeout(int seconds, TimeoutListener *listener ) const;
+    int register_timeout(int ms, TimeoutListener *listener) const;
     int register_device(Device *dev) const;
     int unregister_device(Device *dev) const;
 

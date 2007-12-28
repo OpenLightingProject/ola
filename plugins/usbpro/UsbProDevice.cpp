@@ -232,6 +232,7 @@ void UsbProDevice::new_dmx() {
  */
 int UsbProDevice::recv_mode() {
   m_widget->recv_mode();
+  return 0;
 }
 
 /*

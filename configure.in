@@ -23,12 +23,10 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADER(pthread.h, have_threads=posix)
 
-
 AM_CONDITIONAL(HAVE_PTHREAD, test "${have_threads}" = "posix")
 if test "${have_threads}" = "posix"; then
   AC_DEFINE(HAVE_PTHREAD, 1, [define if pthread is installed])
 fi
-
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
@@ -70,6 +68,18 @@ PLUGIN_LIBRARY(espnet, espnet_new, ESPNET)
 PLUGIN_LIBRARY(shownet, shownet_new, SHOWNET)
 PLUGIN_LIBRARY(sandnet, sandnet_new, SANDNET)
 PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
+
+# check for libacn
+PKG_CHECK_MODULES(libacn, [libacn >= 0.0.1], [
+ have_acn="yes"
+ PLUGINS="${PLUGINS} e131"
+ AC_DEFINE(HAVE_ACN, 1, [define if libacn is installed])
+ ], break)
+
+AM_CONDITIONAL(HAVE_ACN, test "${have_acn}" = "yes")
+
+AC_SUBST(libacn_CFLAGS)
+AC_SUBST(libacn_LIBS)
 
 # create a list of plugin libs that will be used for testing
 PLUGIN_LIBS=''
@@ -174,6 +184,7 @@ AC_OUTPUT( Makefile \
     plugins/artnet/Makefile \
     plugins/artnet/conf_msgs/Makefile \
     plugins/eartnet/Makefile \
+    plugins/e131/Makefile \
     plugins/dummy/Makefile \
     plugins/dmx4linux/Makefile \
     plugins/espnet/Makefile \

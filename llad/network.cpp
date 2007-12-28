@@ -57,13 +57,8 @@ Network::~Network() {
     delete m_whandlers_vect[i];
   }
 
-  for (i = 0; i < m_timeouts_vect.size(); i++) {
-    delete m_timeouts_vect[i];
-  }
-
   m_rhandlers_vect.clear();
   m_whandlers_vect.clear();
-  m_timeouts_vect.clear();
 }
 
 
@@ -170,14 +165,20 @@ int Network::unregister_fd(int fd, Network::Direction dir) {
  *
  * @param seconds    the delay between function calls
  */
-int Network::register_timeout(int seconds, TimeoutListener *listener) {
+int Network::register_timeout(int ms, TimeoutListener *listener, bool recur,
+                              bool free) {
+  event_t event;
+  event.listener = listener;
+  event.interval = recur ? ms : 0;
+  event.free = free;
 
-  Timeout *to = new Timeout(seconds, listener);
+  gettimeofday(&event.next, NULL);
+  event.next.tv_sec += ms / 1000;
+  event.next.tv_usec += 1000 * (ms % 1000);
 
-  m_timeouts_vect.push_back(to);
-
-  return m_timeouts_vect.size() -1;
-
+  m_event_cbs.push(event);
+  printf("registed %d\n", ms);
+  return 1;
 }
 
 #define max(a,b) a>b?a:b
@@ -211,9 +212,19 @@ int Network::read(lla_msg *msg) {
       maxsd = max(maxsd, m_whandlers_vect[i]->m_fd);
     }
 
-    gettimeofday(&now, NULL);
-    check_timeouts(&now);
-    get_remaining(&now, &tv);
+    now = check_timeouts();
+
+    if (m_event_cbs.empty()) {
+      tv.tv_sec = 1;
+      tv.tv_usec = 0;
+    } else {
+      struct timeval next = m_event_cbs.top().next;
+      long long now_l = (long long) now.tv_sec * 1000000 + now.tv_usec;
+      long long next_l = (long long) next.tv_sec * 1000000 + next.tv_usec;
+      long rem = next_l - now_l;
+      tv.tv_sec = rem / 1000000;
+      tv.tv_usec = rem % 1000000;
+    }
 
     switch( select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
       case 0:
@@ -228,8 +239,7 @@ int Network::read(lla_msg *msg) {
         return -1;
         break;
       default:
-        gettimeofday(&now, NULL);
-        check_timeouts(&now);
+        check_timeouts();
 
         // loop thru registered sd's
         for(i=0; i < m_rhandlers_vect.size(); i++) {
@@ -310,37 +320,33 @@ int Network::send_msg(lla_msg *msg) {
   return 0;
 }
 
+
 /*
  * Check for expired timeouts
  */
-void Network::check_timeouts(struct timeval *now) {
+struct timeval Network::check_timeouts() {
+  struct timeval now;
+  gettimeofday(&now, NULL);
 
-  for(unsigned int i=0; i < m_timeouts_vect.size(); i++) {
-    m_timeouts_vect[i]->check_expiry(now);
+  event_t e;
+  if (m_event_cbs.empty())
+    return now;
+
+  for (e = m_event_cbs.top(); !m_event_cbs.empty() && timercmp(&e.next, &now, <); e = m_event_cbs.top()) {
+    if (e.listener != NULL)
+      e.listener->timeout_action();
+    m_event_cbs.pop();
+
+    if(e.interval) {
+      e.next = now;
+      e.next.tv_sec += e.interval / 1000;
+      e.next.tv_usec += e.interval / 1000;
+      m_event_cbs.push(e);
+    }
+
+    if(!e.interval && e.free)
+      delete e.listener;
+    gettimeofday(&now, NULL);
   }
+  return now;
 }
-
-/*
- * Get the time remaining before the next timeout
- *
- */
-int Network::get_remaining(struct timeval *now, struct timeval *tv) {
-  long now_l, ex_l, res, min;
-
-  min = 1000000 * 2;
-  now_l = now->tv_sec * 1000000 + now->tv_usec;
-
-  for(unsigned int i=0; i < m_timeouts_vect.size(); i++) {
-    ex_l = m_timeouts_vect[i]->m_tv.tv_sec * 1000000 + m_timeouts_vect[i]->m_tv.tv_usec;
-    res = ex_l - now_l;
-
-    if(res < min)
-      min = res;
-
-  }
-  tv->tv_sec = min / 1000000;
-  tv->tv_usec = min % 1000000;
-
-  return 0;
-}
-

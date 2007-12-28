@@ -72,7 +72,7 @@ int SandNetPlugin::start_hook() {
   m_pa->register_fd( m_dev->get_sd(1), PluginAdaptor::READ, m_dev);
 
   // timeout to send an advertisment every 2 seconds
-  m_pa->register_timeout(2, m_dev);
+  m_pa->register_timeout(2000, m_dev);
   m_pa->register_device(m_dev);
 
   return 0;

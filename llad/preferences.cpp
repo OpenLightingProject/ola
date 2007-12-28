@@ -72,21 +72,20 @@ int Preferences::load() {
     return -1;
   }
 
-  while (  fgets(buf, 1024, fh) != NULL) {
+  while (fgets(buf, 1024, fh) != NULL) {
     if(*buf == '#')
       continue;
 
     k_c = strtok(buf, "=");
     v_c = strtok(NULL, "=");
 
-    if(k_c == NULL || v_c == NULL)
+    if (k_c == NULL || v_c == NULL)
       continue;
 
     key = strtrim(k_c);
     val = strtrim(v_c);
 
     m_pref_map.insert(pair<string,string>(key,val));
-
   }
 
   fclose(fh);

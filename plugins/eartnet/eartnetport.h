@@ -28,15 +28,15 @@
 
 class eArtNetPort : public Port  {
 
-	public:
-		eArtNetPort(Device *parent, int id) : Port(parent, id) {} ;
-		
-		int set_universe(Universe *uni) ;
-		int write(uint8_t *data, int length);
-		int read(uint8_t *data, int length); 
-		
-		int can_read() ;
-		int can_write() ;
+  public:
+    eArtNetPort(Device *parent, int id) : Port(parent, id) {} ;
+
+    int set_universe(Universe *uni) ;
+    int write(uint8_t *data, unsigned int length);
+    int read(uint8_t *data, unsigned int length);
+
+    int can_read() ;
+    int can_write() ;
 
 };
 

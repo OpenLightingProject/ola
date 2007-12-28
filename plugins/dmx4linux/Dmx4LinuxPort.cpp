@@ -38,7 +38,7 @@ Dmx4LinuxPort::Dmx4LinuxPort(Device *parent, int id, int d4l_uni, bool in, bool 
  *
  * @return   0 on success, non 0 on failure
  */
-int Dmx4LinuxPort::write(uint8_t *data, int length) {
+int Dmx4LinuxPort::write(uint8_t *data, unsigned int length) {
   Dmx4LinuxDevice *dev = (Dmx4LinuxDevice*) get_device();
 
   if (!can_write())
@@ -57,7 +57,7 @@ int Dmx4LinuxPort::write(uint8_t *data, int length) {
  *
  * @return  the amount of data read
  */
-int Dmx4LinuxPort::read(uint8_t *data, int length) {
+int Dmx4LinuxPort::read(uint8_t *data, unsigned int length) {
   data = NULL;
   length = 0;
   return -1;

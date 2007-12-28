@@ -72,8 +72,8 @@ int PluginAdaptor::unregister_fd(int fd, PluginAdaptor::Direction dir) const {
  *
  * @return the timeout id on success, 0 on error
  */
-int PluginAdaptor::register_timeout(int seconds , TimeoutListener *listener ) const {
-  return net->register_timeout(seconds, listener);
+int PluginAdaptor::register_timeout(int ms, TimeoutListener *listener ) const {
+  return net->register_timeout(ms, listener);
 }
 
 

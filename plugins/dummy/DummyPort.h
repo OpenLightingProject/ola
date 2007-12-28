@@ -28,12 +28,12 @@ class DummyPort : public Port {
     DummyPort(Device *parent, int id);
     int can_read() { return 0; }
 
-    int write(uint8_t *data, int length);
-    int read(uint8_t *data, int length);
+    int write(uint8_t *data, unsigned int length);
+    int read(uint8_t *data, unsigned int length);
 
   private:
     uint8_t m_dmx[512]; // pointer to our dmx buffer
-    int m_length;       // length of dmx buffer
+    unsigned int m_length;       // length of dmx buffer
 };
 
 #endif

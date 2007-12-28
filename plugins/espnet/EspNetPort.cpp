@@ -59,7 +59,7 @@ int EspNetPort::can_write() const {
  * @param  length  the length of the data
  *
  */
-int EspNetPort::write(uint8_t *data, int length) {
+int EspNetPort::write(uint8_t *data, unsigned int length) {
   EspNetDevice *dev = (EspNetDevice*) get_device() ;
 
   if (!can_write())
@@ -80,14 +80,14 @@ int EspNetPort::write(uint8_t *data, int length) {
  *
  * @return  the amount of data read
  */
-int EspNetPort::read(uint8_t *data, int length) {
-  int len;
+int EspNetPort::read(uint8_t *data, unsigned int length) {
+  unsigned int len;
 
   if (!can_read())
     return -1;
 
   len = min(m_len, length);
-  memcpy(data, m_buf, len );
+  memcpy(data, m_buf, len);
   return len;
 }
 

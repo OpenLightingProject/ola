@@ -60,10 +60,10 @@ int SandNetPort::can_write() const {
  * @param  length  the length of the data
  *
  */
-int SandNetPort::write(uint8_t *data, int length) {
+int SandNetPort::write(uint8_t *data, unsigned int length) {
   SandNetDevice *dev = (SandNetDevice*) get_device();
 
-  if ( !can_write())
+  if (!can_write())
     return -1;
 
   if (sandnet_send_dmx(dev->get_node(), get_id(), length, data)) {
@@ -82,8 +82,8 @@ int SandNetPort::write(uint8_t *data, int length) {
  *
  * @return  the amount of data read
  */
-int SandNetPort::read(uint8_t *data, int length) {
-  int len;
+int SandNetPort::read(uint8_t *data, unsigned int length) {
+  unsigned int len;
 
   if (!can_read())
     return -1;

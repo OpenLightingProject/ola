@@ -60,7 +60,7 @@ int PathportPort::can_write() const {
  * @param  length  the length of the data
  *
  */
-int PathportPort::write(uint8_t *data, int length) {
+int PathportPort::write(uint8_t *data, unsigned int length) {
   PathportDevice *dev = (PathportDevice*) get_device();
   Universe *uni = get_universe();
 
@@ -86,8 +86,8 @@ int PathportPort::write(uint8_t *data, int length) {
  *
  * @return  the amount of data read
  */
-int PathportPort::read(uint8_t *data, int length) {
-  int len;
+int PathportPort::read(uint8_t *data, unsigned int length) {
+  unsigned int len;
 
   if (!can_read())
     return -1;
