@@ -152,7 +152,6 @@ int Network::register_timeout(int ms, TimeoutListener *listener, bool recur,
   event.next.tv_usec += 1000 * (ms % 1000);
 
   m_event_cbs.push(event);
-  printf("registed %d\n", ms);
   return 1;
 }
 
