@@ -20,7 +20,7 @@
 
 #include <llad/pluginadaptor.h>
 #include <llad/timeoutlistener.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 
 #include "LlaNetServer.h"
 
@@ -28,12 +28,12 @@
  * glue the NetServers function callbacks with the PluginAdaptor's object 
  * callbacks
  */
-class NetServerFDListener : public FDListener {
+class NetServerListener : public Listener {
   public:
-    NetServerFDListener(NetServer::callback_fn fn, void *data) :
+    NetServerListener(NetServer::callback_fn fn, void *data) :
       m_fn(fn), m_data(data) {}
 
-    int fd_action() {
+    int action() {
       if (m_fn)
         m_fn(m_data);
       return 0;
@@ -63,12 +63,17 @@ class NetServerTimeoutListener : public TimeoutListener {
  * remove all the callbacks
  */
 LlaNetServer::~LlaNetServer() {
-  map<int, NetServerFDListener*>::iterator iter;
+  map<int, NetServerListener*>::iterator iter;
+  vector<NetServerListener*>::iterator iter2;
 
   for(iter = m_lmap.begin(); iter != m_lmap.end(); ++iter)
     delete iter->second;
 
+  for(iter2 = m_loop_ls.begin(); iter2 != m_loop_ls.end(); ++iter2)
+    delete *iter2;
+
   m_lmap.clear();
+  m_loop_ls.clear();
 }
 
 
@@ -76,7 +81,7 @@ LlaNetServer::~LlaNetServer() {
  * add a fd callback
  */
 int LlaNetServer::add_fd(int fd, callback_fn fn, void *data) {
-  NetServerFDListener *l = new NetServerFDListener(fn, data);
+  NetServerListener *l = new NetServerListener(fn, data);
   if (m_lmap.find(fd) != m_lmap.end())
     delete m_lmap[fd];
 
@@ -110,8 +115,8 @@ int LlaNetServer::register_event(int ms, callback_fn fn, void *data) {
 
 
 int LlaNetServer::loop_callback(callback_fn fn, void *data) {
-  fn = NULL;
-  data = NULL;
+  NetServerListener *l = new NetServerListener(fn, data);
+  m_loop_ls.push_back(l);
 
-  return 0;
+  return m_pa->register_loop_fn(l);
 }

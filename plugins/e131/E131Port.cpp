@@ -105,7 +105,5 @@ void E131Port::new_data(const uint8_t *data, unsigned int len) {
  */
 void E131Port::data_callback(const uint8_t *dmx, unsigned int len, void *data) {
   E131Port *prt = (E131Port*) data;
-  printf("in callback\n");
   prt->new_data(dmx, len);
-
 }

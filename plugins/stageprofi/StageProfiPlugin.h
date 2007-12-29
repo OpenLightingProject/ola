@@ -41,7 +41,7 @@ class StageProfiPlugin : public Plugin, public FDManager {
 
     string get_name() const { return PLUGIN_NAME; }
     string get_desc() const;
-    int fd_error(int error, FDListener *listener);
+    int fd_error(int error, Listener *listener);
 
   protected:
     string pref_suffix() const { return PLUGIN_PREFIX; }

@@ -217,7 +217,7 @@ int PathportDevice::get_sd(unsigned int i) const {
  *
  * @param  data  user data (pointer to pathport_device_priv
  */
-int PathportDevice::fd_action() {
+int PathportDevice::action() {
   if (pathport_read(m_node, 0) ) {
     Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_read failed: %s", pathport_strerror());
     return -1;

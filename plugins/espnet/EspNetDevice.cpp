@@ -223,7 +223,7 @@ int EspNetDevice::get_sd() const {
  *
  * @param  data  user data (pointer to espnet_device_priv
  */
-int EspNetDevice::fd_action() {
+int EspNetDevice::action() {
   if (espnet_read(m_node, 0) ) {
     Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_read failed: %s", espnet_strerror());
     return -1;

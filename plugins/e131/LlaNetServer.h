@@ -23,6 +23,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <acn/NetServer.h>
 
 using namespace std;
@@ -45,7 +46,8 @@ class LlaNetServer : public NetServer {
 
   private:
     const class PluginAdaptor *m_pa;
-    map<int, class NetServerFDListener*> m_lmap;
+    map<int, class NetServerListener*> m_lmap;
+    vector<class NetServerListener*> m_loop_ls;
 };
 
 #endif

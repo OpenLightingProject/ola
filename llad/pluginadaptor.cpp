@@ -46,9 +46,9 @@ PluginAdaptor::PluginAdaptor(DeviceManager *dm, Network *net) {
  *
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager ) const {
+int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, Listener *listener, FDManager *manager) const {
   Network::Direction ndir = dir==PluginAdaptor::READ ? Network::READ : Network::WRITE;
-  return net->register_fd(fd,ndir,listener, manager);
+  return net->register_fd(fd, ndir, listener, manager);
 }
 
 /*
@@ -76,6 +76,12 @@ int PluginAdaptor::register_timeout(int ms, TimeoutListener *listener ) const {
   return net->register_timeout(ms, listener);
 }
 
+/*
+ * register a loop function
+ */
+int PluginAdaptor::register_loop_fn(Listener *l) const {
+  return net->register_loop_fn(l);
+}
 
 
 /*

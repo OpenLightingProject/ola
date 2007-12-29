@@ -23,7 +23,7 @@
 #define PLUGINADAPTOR_H
 
 #include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 #include <llad/timeoutlistener.h>
 
 class DeviceManager;
@@ -36,10 +36,11 @@ class PluginAdaptor {
     enum Direction{READ, WRITE};
 
     PluginAdaptor(DeviceManager *dm, Network *net);
-    int register_fd(int fd, PluginAdaptor::Direction dir, FDListener *listener, FDManager *manager = NULL ) const;
+    int register_fd(int fd, PluginAdaptor::Direction dir, Listener *listener, FDManager *manager = NULL) const;
     int unregister_fd(int fd, PluginAdaptor::Direction dir) const;
 
     int register_timeout(int ms, TimeoutListener *listener) const;
+    int register_loop_fn(Listener *l) const;
     int register_device(Device *dev) const;
     int unregister_device(Device *dev) const;
 

@@ -149,7 +149,7 @@ int UsbProDevice::get_sd() const {
 /*
  * Called when there is activity on our descriptors
  */
-int UsbProDevice::fd_action() {
+int UsbProDevice::action() {
   return m_widget->recv();
 }
 

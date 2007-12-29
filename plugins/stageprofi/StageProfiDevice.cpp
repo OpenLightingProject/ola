@@ -147,7 +147,7 @@ int StageProfiDevice::get_sd() const {
 /*
  * Called when there is activity on our descriptors
  */
-int StageProfiDevice::fd_action() {
+int StageProfiDevice::action() {
   m_widget->recv();
   return 0;
 }

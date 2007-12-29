@@ -21,14 +21,14 @@
 #ifndef FDMANAGER_H
 #define FDMANAGER_H
 
-class FDListener;
+class Listener;
 
 class FDManager {
 
   public :
     FDManager() {};
     virtual ~FDManager() {};
-    virtual int fd_error(int error, FDListener *listener) = 0;
+    virtual int fd_error(int error, Listener *listener) = 0;
 
   private:
     FDManager(const FDManager&);

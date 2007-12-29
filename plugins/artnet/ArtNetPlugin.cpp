@@ -69,7 +69,7 @@ int ArtNetPlugin::start_hook() {
 
   // register our descriptors, this should really be fatal for this plugin if it fails
   if ((sd = m_dev->get_sd()) >= 0)
-    m_pa->register_fd( sd, PluginAdaptor::READ, m_dev);
+    m_pa->register_fd(sd, PluginAdaptor::READ, m_dev);
 
   m_pa->register_device(m_dev);
   return 0;

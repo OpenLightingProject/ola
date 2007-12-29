@@ -35,30 +35,7 @@
 /*
  * Create a new Network object
  */
-Network::Network() {
-  m_sd = 0;
-
-}
-
-/*
- * Clean up handlers
- *
- *
- */
-Network::~Network() {
-  unsigned int i;
-  vector<Listener*>::iterator it;
-
-  for (i = 0; i < m_rhandlers_vect.size(); i++) {
-    delete m_rhandlers_vect[i];
-  }
-
-  for (i = 0; i < m_whandlers_vect.size(); i++) {
-    delete m_whandlers_vect[i];
-  }
-
-  m_rhandlers_vect.clear();
-  m_whandlers_vect.clear();
+Network::Network() : m_sd(0) {
 }
 
 
@@ -109,21 +86,21 @@ e_socket:
  *
  * @return 0 on sucess, -1 on failure
  */
-int Network::register_fd(int fd, Network::Direction dir, FDListener *listener, FDManager *manager ) {
-  Listener *list;
-
-  list = new Listener(fd, listener, manager);
+int Network::register_fd(int fd, Network::Direction dir, Listener *listener, FDManager *manager ) {
+  listener_t l;
+  l.fd = fd;
+  l.listener = listener;
+  l.manager = manager;
 
   // add to handlers
   if( dir == Network::READ ) {
-    m_rhandlers_vect.push_back(list);
+    m_rhandlers_vect.push_back(l);
   } else {
-    m_whandlers_vect.push_back(list);
+    m_whandlers_vect.push_back(l);
   }
   Logger::instance()->log(Logger::INFO, "Registered fd %d", fd);
 
   return 0;
-
 }
 
 
@@ -134,12 +111,11 @@ int Network::register_fd(int fd, Network::Direction dir, FDListener *listener, F
  * @return 0 on sucess, -1 on failure
  */
 int Network::unregister_fd(int fd, Network::Direction dir) {
-  vector<Listener*>::iterator it;
+  vector<listener_t>::iterator it;
 
   if( dir == Network::READ ) {
     for (it = m_rhandlers_vect.begin(); it != m_rhandlers_vect.end(); ++it) {
-      if((*it)->m_fd == fd) {
-        delete *it;
+      if(it->fd == fd) {
         m_rhandlers_vect.erase(it);
         Logger::instance()->log(Logger::INFO, "Unregistered fd %d", fd);
         break;
@@ -147,8 +123,7 @@ int Network::unregister_fd(int fd, Network::Direction dir) {
     }
   } else {
     for (it = m_whandlers_vect.begin(); it != m_whandlers_vect.end(); ++it) {
-      if((*it)->m_fd == fd) {
-        delete *it;
+      if(it->fd == fd) {
         m_rhandlers_vect.erase(it);
         Logger::instance()->log(Logger::INFO, "Unregistered fd %d!!\n", fd);
         break;
@@ -181,6 +156,17 @@ int Network::register_timeout(int ms, TimeoutListener *listener, bool recur,
   return 1;
 }
 
+
+/*
+ * register a listener to be called on each iteration through the select loop
+ */
+int Network::register_loop_fn(Listener *l) {
+  if (l)
+    m_loop_listeners.push_back(l);
+  return 0;
+}
+
+
 #define max(a,b) a>b?a:b
 /*
  *
@@ -188,6 +174,7 @@ int Network::register_timeout(int ms, TimeoutListener *listener, bool recur,
  * @return -1 on error, 0 on timeout or interrupt, else the number of bytes read
  */
 int Network::read(lla_msg *msg) {
+  vector<Listener*>::iterator iter;
   int maxsd, ret;
   unsigned int i;
   fd_set r_fds, w_fds;
@@ -203,13 +190,13 @@ int Network::read(lla_msg *msg) {
     maxsd = m_sd;
 
     for(i=0; i < m_rhandlers_vect.size(); i++) {
-      FD_SET(m_rhandlers_vect[i]->m_fd, &r_fds);
-      maxsd = max(maxsd, m_rhandlers_vect[i]->m_fd);
+      FD_SET(m_rhandlers_vect[i].fd, &r_fds);
+      maxsd = max(maxsd, m_rhandlers_vect[i].fd);
     }
 
     for(i=0; i < m_whandlers_vect.size(); i++) {
-      FD_SET(m_whandlers_vect[i]->m_fd, &r_fds);
-      maxsd = max(maxsd, m_whandlers_vect[i]->m_fd);
+      FD_SET(m_whandlers_vect[i].fd, &r_fds);
+      maxsd = max(maxsd, m_whandlers_vect[i].fd);
     }
 
     now = check_timeouts();
@@ -226,7 +213,7 @@ int Network::read(lla_msg *msg) {
       tv.tv_usec = rem % 1000000;
     }
 
-    switch( select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
+    switch (select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
       case 0:
         // timeout
         return 0;
@@ -242,22 +229,22 @@ int Network::read(lla_msg *msg) {
         check_timeouts();
 
         // loop thru registered sd's
-        for(i=0; i < m_rhandlers_vect.size(); i++) {
-          if(FD_ISSET(m_rhandlers_vect[i]->m_fd,&r_fds) ) {
-            ret = m_rhandlers_vect[i]->m_listener->fd_action();
+        for (i=0; i < m_rhandlers_vect.size(); i++) {
+          if (FD_ISSET(m_rhandlers_vect[i].fd,&r_fds)) {
+            ret = m_rhandlers_vect[i].listener->action();
 
-            if( ret < 0) {
-              m_rhandlers_vect[i]->m_manager->fd_error(ret, m_rhandlers_vect[i]->m_listener );
+            if (ret < 0) {
+              m_rhandlers_vect[i].manager->fd_error(ret, m_rhandlers_vect[i].listener);
             }
           }
         }
 
-        for(i=0; i < m_whandlers_vect.size(); i++) {
-          if(FD_ISSET(m_whandlers_vect[i]->m_fd,&r_fds) ) {
-            ret = m_whandlers_vect[i]->m_listener->fd_action();
+        for (i=0; i < m_whandlers_vect.size(); i++) {
+          if (FD_ISSET(m_whandlers_vect[i].fd,&r_fds)) {
+            ret = m_whandlers_vect[i].listener->action();
 
-            if( ret < 0) {
-              m_whandlers_vect[i]->m_manager->fd_error(ret, m_whandlers_vect[i]->m_listener );
+            if (ret < 0) {
+              m_whandlers_vect[i].manager->fd_error(ret, m_whandlers_vect[i].listener);
             }
           }
         }
@@ -269,10 +256,12 @@ int Network::read(lla_msg *msg) {
         }
         break;
     }
+
+    for (iter = m_loop_listeners.begin(); iter != m_loop_listeners.end(); ++iter)
+      (*iter)->action();
   }
   return 0;
 }
-
 
 
 /*

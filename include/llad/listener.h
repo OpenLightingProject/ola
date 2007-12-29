@@ -13,23 +13,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * fdlistener.h
+ * Listener.h
  * The interface for the fdlistener class
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef FDLISTENER_H
-#define FDLISTENER_H
+#ifndef LISTENER_H
+#define LISTENER_H
 
-class FDListener {
+class Listener {
 
   public :
-    FDListener() {};
-    virtual ~FDListener() {};
-    virtual int fd_action() = 0;
+    Listener() {};
+    virtual ~Listener() {};
+    virtual int action() = 0;
 
   private:
-    FDListener(const FDListener&);
-    FDListener& operator=(const FDListener&);
+    Listener(const Listener&);
+    Listener& operator=(const Listener&);
 };
 #endif

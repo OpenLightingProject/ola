@@ -25,13 +25,13 @@
 #include <map>
 
 #include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 
 #include <pathport/pathport.h>
 
 #include "PathportCommon.h"
 
-class PathportDevice : public Device, public FDListener {
+class PathportDevice : public Device, public Listener {
 
   public:
     PathportDevice(Plugin *owner, const string &name, class Preferences *prefs);
@@ -41,7 +41,7 @@ class PathportDevice : public Device, public FDListener {
     int stop();
     pathport_node get_node() const;
     int get_sd(unsigned int i) const;
-    int fd_action();
+    int action();
     int save_config() const;
     int configure(void *req, int len);
         int port_map(class Universe *uni, class PathportPort *prt);

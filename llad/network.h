@@ -24,21 +24,13 @@
 #include <sys/time.h>
 
 #include <lla/messages.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 #include <llad/timeoutlistener.h>
 #include <llad/fdmanager.h>
 #include <vector>
 #include <queue>
 
 using namespace std;
-
-/*
-typedef struct {
-  FDListener *listener;
-  int  fd;            // file descriptor
-} fd_listener_t;
-*/
-
 
 #define LLAD_PORT 8898        // port to listen on
 #define LLAD_ADDR "127.0.0.1"    // address to bind to
@@ -49,13 +41,14 @@ class Network {
     enum Direction{READ, WRITE};
 
     Network();
-    ~Network();
+    ~Network() {};
     int init();
     int run();
-    int register_fd(int fd, Network::Direction dir, FDListener *listener, FDManager *manager);
+    int register_fd(int fd, Network::Direction dir, Listener *listener, FDManager *manager);
     int unregister_fd(int fd, Network::Direction dir);
     int register_timeout(int ms, TimeoutListener *listener, bool recur = true,
                          bool free = false);
+    int register_loop_fn(Listener *l);
     int read(lla_msg *msg);
     int send_msg(lla_msg *msg);
 
@@ -66,13 +59,11 @@ class Network {
     /*
      * This represents a listener
      */
-    class Listener {
-      public:
-        Listener(int fd, FDListener *listener, FDManager *manager ) : m_listener(listener) , m_manager(manager), m_fd(fd) {};
-        FDListener *m_listener;
-        FDManager *m_manager;
-        int  m_fd;
-    };
+    typedef struct {
+      int fd;
+      Listener *listener;
+      FDManager *manager;
+    } listener_t;
 
     typedef struct {
       struct timeval next;
@@ -91,8 +82,9 @@ class Network {
     int fetch_msg_from_client(lla_msg *msg);
     struct timeval check_timeouts();
 
-    vector<Listener*> m_rhandlers_vect;
-    vector<Listener*> m_whandlers_vect;
+    vector<listener_t> m_rhandlers_vect;
+    vector<listener_t> m_whandlers_vect;
+    vector<Listener*> m_loop_listeners;
 
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_q_t;
     event_q_t m_event_cbs;

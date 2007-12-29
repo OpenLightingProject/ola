@@ -41,28 +41,15 @@
 #  include <config.h>
 #endif
 
-
 /*
- * Handle dmx from the network, called from libartnet
- *
-int dmx_handler(artnet_node n, int prt, void *d) {
-  E131Device *dev = (E131Device *) d ;
-  E131Port *port ;
-
-  // don't return non zero here else libartnet will stop processing
-  // this should never happen anyway
-  if( prt < 0 || prt > ARTNET_MAX_PORTS)
-    return 0 ;
-
-  // signal to the port that the data has changed
-  port = (E131Port*) dev->get_port(prt) ;
-  port->dmx_changed() ;
-
-  n = NULL;
-  return 0;
-}
+ * called every iteration through the select loop
  */
-
+void process_data(void *data) {
+  E131DmpLayer *l = (E131DmpLayer*) data;
+  if (l)
+    l->process();
+  return;
+}
 
 /*
  * Create a new device
@@ -122,6 +109,7 @@ int E131Device::start() {
       this->add_port(port) ;
   }
 
+  m_ns->loop_callback(process_data, (void*) m_layer);
   m_enabled = true ;
 
   return 0;
