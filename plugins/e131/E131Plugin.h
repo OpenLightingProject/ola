@@ -13,23 +13,44 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * fdlistener.h
- * The interface for the fdlistener class
- * Copyright (C) 2005  Simon Newton
+ * E131Plugin.h
+ * Interface for the E1.131 plugin class
+ * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef FDLISTENER_H
-#define FDLISTENER_H
+#ifndef E131PLUGIN_H
+#define E131PLUGIN_H
 
-class FDListener {
+#include <string>
+#include <llad/plugin.h>
+#include <lla/plugin_id.h>
 
-  public :
-    FDListener() {};
-    virtual ~FDListener() {};
-    virtual int fd_action() = 0;
+using namespace std;
+
+class E131Plugin : public Plugin {
+
+  public:
+    E131Plugin(const PluginAdaptor *pa, lla_plugin_id id):
+      Plugin(pa,id),
+      m_dev(NULL) {}
+
+    ~E131Plugin() {}
+
+    string get_name() const { return PLUGIN_NAME; }
+    string get_desc() const;
+
+  protected:
+    string pref_suffix() const { return PLUGIN_PREFIX; }
 
   private:
-    FDListener(const FDListener&);
-    FDListener& operator=(const FDListener&);
+    int start_hook();
+    int stop_hook();
+    class E131Device *m_dev; // only have one device
+    class NetServer *m_ns;
+
+    static const string PLUGIN_NAME;
+    static const string PLUGIN_PREFIX;
 };
+
 #endif
+

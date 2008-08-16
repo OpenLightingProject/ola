@@ -58,7 +58,7 @@ int ShowNetPort::can_write() const {
  * @param  length  the length of the data
  *
  */
-int ShowNetPort::write(uint8_t *data, int length) {
+int ShowNetPort::write(uint8_t *data, unsigned int length) {
   ShowNetDevice *dev = (ShowNetDevice*) get_device();
 
   if (!can_write())
@@ -80,7 +80,7 @@ int ShowNetPort::write(uint8_t *data, int length) {
  *
  * @return  the amount of data read
  */
-int ShowNetPort::read(uint8_t *data, int length) {
+int ShowNetPort::read(uint8_t *data, unsigned int length) {
   int len;
 
   if (!can_read())

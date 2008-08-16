@@ -23,11 +23,11 @@
 #define ARTNETDEVICE_H
 
 #include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 
 #include <artnet/artnet.h>
 
-class ArtNetDevice : public Device, public FDListener {
+class ArtNetDevice : public Device, public Listener {
 
   public:
     ArtNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
@@ -37,7 +37,7 @@ class ArtNetDevice : public Device, public FDListener {
     int stop() ;
     artnet_node get_node() const;
     int get_sd() const ;
-    int fd_action() ;
+    int action() ;
     int save_config() const;
     class LlaDevConfMsg *configure(const uint8_t *req, int len) ;
 

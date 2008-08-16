@@ -14,21 +14,21 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * artnetport.h
- * The Art-Net plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * E131Port.h
+ * The E1.31 plugin for lla
+ * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef ARTNETPORT_H
-#define ARTNETPORT_H
+#ifndef E131PORT_H
+#define E131PORT_H
 
 #include <llad/port.h>
-#include <artnet/artnet.h>
 
-class ArtNetPort : public Port  {
+class E131Port : public Port  {
 
   public:
-    ArtNetPort(Device *parent, int id) : Port(parent, id) {};
+    E131Port(Device *parent, int id, class E131DmpLayer *l) : Port(parent, id),
+             m_layer(l) {};
 
     int set_universe(Universe *uni) ;
     int write(uint8_t *data, unsigned int length);
@@ -36,6 +36,16 @@ class ArtNetPort : public Port  {
 
     int can_read() const;
     int can_write() const ;
+
+    static const int NUMB_PORTS = 5;
+    static void data_callback(const uint8_t *dmx, unsigned int len, void *data);
+  private:
+    void new_data(const uint8_t *data, unsigned int len);
+
+    static const unsigned int DMX_LENGTH = 512;
+    class E131DmpLayer *m_layer;
+    uint8_t m_data[DMX_LENGTH];
+    unsigned int m_len;
 };
 
 #endif

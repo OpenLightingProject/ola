@@ -31,7 +31,7 @@
  *
  */
 DummyDevice::DummyDevice(Plugin *owner, const string &name) :
-  Device(owner, name) {}
+  Device(owner, name), m_enabled(false) {}
 
 
 /*

@@ -141,7 +141,7 @@ string UsbProPlugin::get_desc() const {
  * Called if fd_action returns an error for one of our devices
  *
  */
-int UsbProPlugin::fd_error(int error, FDListener *listener) {
+int UsbProPlugin::fd_error(int error, Listener *listener) {
   UsbProDevice *dev  = dynamic_cast<UsbProDevice *> (listener);
   vector<UsbProDevice *>::iterator iter;
 

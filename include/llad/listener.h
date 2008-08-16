@@ -13,29 +13,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * artnetport.h
- * The Art-Net plugin for lla
+ * Listener.h
+ * The interface for the fdlistener class
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef ARTNETPORT_H
-#define ARTNETPORT_H
+#ifndef LISTENER_H
+#define LISTENER_H
 
-#include <llad/port.h>
-#include <artnet/artnet.h>
+class Listener {
 
-class ArtNetPort : public Port  {
+  public :
+    Listener() {};
+    virtual ~Listener() {};
+    virtual int action() = 0;
 
-  public:
-    ArtNetPort(Device *parent, int id) : Port(parent, id) {};
-
-    int set_universe(Universe *uni) ;
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
-
-    int can_read() const;
-    int can_write() const ;
+  private:
+    Listener(const Listener&);
+    Listener& operator=(const Listener&);
 };
-
 #endif

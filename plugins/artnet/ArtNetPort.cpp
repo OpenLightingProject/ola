@@ -45,7 +45,7 @@ int ArtNetPort::can_write() const {
  * @param  length  the length of the data
  *
  */
-int ArtNetPort::write(uint8_t *data, int length) {
+int ArtNetPort::write(uint8_t *data, unsigned int length) {
   ArtNetDevice *dev = (ArtNetDevice*) get_device();
 
   if( !can_write())
@@ -67,12 +67,12 @@ int ArtNetPort::write(uint8_t *data, int length) {
  *
  * @return  the amount of data read
  */
-int ArtNetPort::read(uint8_t *data, int length) {
+int ArtNetPort::read(uint8_t *data, unsigned int length) {
   uint8_t *dmx = NULL;
   int len;
   ArtNetDevice *dev = (ArtNetDevice*) get_device();
 
-  if( !can_read())
+  if (!can_read())
     return -1;
 
   dmx = artnet_read_dmx(dev->get_node(), get_id(), &len);
@@ -81,7 +81,7 @@ int ArtNetPort::read(uint8_t *data, int length) {
     Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_read_dmx failed %s", artnet_strerror() );
     return -1;
   }
-  len = min(len, length);
+  len = len < (int) length ? len : (int) length;
 
   memcpy(data, dmx, len );
   return len;

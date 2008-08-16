@@ -14,28 +14,36 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * artnetport.h
- * The Art-Net plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * E131Device.h
+ * Interface for the E1.31 device
+ * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef ARTNETPORT_H
-#define ARTNETPORT_H
+#ifndef E131DEVICE_H
+#define E131DEVICE_H
 
-#include <llad/port.h>
-#include <artnet/artnet.h>
+#include <llad/device.h>
+#include <llad/fdlistener.h>
 
-class ArtNetPort : public Port  {
+class E131Device : public Device {
 
   public:
-    ArtNetPort(Device *parent, int id) : Port(parent, id) {};
+    E131Device(Plugin *owner, const string &name, class NetServer *ns, class Preferences *prefs) ;
+    ~E131Device() ;
 
-    int set_universe(Universe *uni) ;
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
+    int start() ;
+    int stop() ;
+    int fd_action() ;
+    int save_config() const;
+    class LlaDevConfMsg *configure(const uint8_t *req, int len) ;
 
-    int can_read() const;
-    int can_write() const ;
+  private:
+    class Preferences *m_prefs;
+    class NetServer *m_ns;
+    class E131Node *m_node;
+    class E131DmpLayer *m_layer;
+    bool m_enabled ;
+
 };
 
 #endif

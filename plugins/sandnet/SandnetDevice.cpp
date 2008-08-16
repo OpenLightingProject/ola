@@ -210,7 +210,7 @@ int SandNetDevice::get_sd(int i) const {
  *
  * @param  data  user data (pointer to sandnet_device_priv
  */
-int SandNetDevice::fd_action() {
+int SandNetDevice::action() {
   if (sandnet_read(m_node, 0) ) {
     Logger::instance()->log(Logger::WARN, "SandNetPlugin: sandnet_read failed: %s", sandnet_strerror());
     return -1;

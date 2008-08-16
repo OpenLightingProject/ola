@@ -140,7 +140,7 @@ string StageProfiPlugin::get_desc() const {
  * Called if fd_action returns an error for one of our devices
  *
  */
-int StageProfiPlugin::fd_error(int error, FDListener *listener) {
+int StageProfiPlugin::fd_error(int error, Listener *listener) {
   StageProfiDevice *dev  = dynamic_cast<StageProfiDevice *> (listener);
   vector<StageProfiDevice *>::iterator iter;
 

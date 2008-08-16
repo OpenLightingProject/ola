@@ -49,7 +49,7 @@ OpenDmxPort::~OpenDmxPort() {
  *
  */
 int OpenDmxPort::can_read() const { return 0; }
-inline int OpenDmxPort::read(uint8_t *data, int length) { return 0; }
+inline int OpenDmxPort::read(uint8_t *data, unsigned int length) { return 0; }
 
 
 /*
@@ -59,9 +59,7 @@ inline int OpenDmxPort::read(uint8_t *data, int length) { return 0; }
  * @param  length  the length of the data
  *
  */
-#include <stdio.h>
-
-int OpenDmxPort::write(uint8_t *data, int length) {
+int OpenDmxPort::write(uint8_t *data, unsigned int length) {
 
   if (!can_write())
     return -1;

@@ -35,35 +35,7 @@
 /*
  * Create a new Network object
  */
-Network::Network() {
-  m_sd = 0;
-
-}
-
-/*
- * Clean up handlers
- *
- *
- */
-Network::~Network() {
-  unsigned int i;
-  vector<Listener*>::iterator it;
-
-  for (i = 0; i < m_rhandlers_vect.size(); i++) {
-    delete m_rhandlers_vect[i];
-  }
-
-  for (i = 0; i < m_whandlers_vect.size(); i++) {
-    delete m_whandlers_vect[i];
-  }
-
-  for (i = 0; i < m_timeouts_vect.size(); i++) {
-    delete m_timeouts_vect[i];
-  }
-
-  m_rhandlers_vect.clear();
-  m_whandlers_vect.clear();
-  m_timeouts_vect.clear();
+Network::Network() : m_sd(0) {
 }
 
 
@@ -114,21 +86,21 @@ e_socket:
  *
  * @return 0 on sucess, -1 on failure
  */
-int Network::register_fd(int fd, Network::Direction dir, FDListener *listener, FDManager *manager ) {
-  Listener *list;
-
-  list = new Listener(fd, listener, manager);
+int Network::register_fd(int fd, Network::Direction dir, Listener *listener, FDManager *manager ) {
+  listener_t l;
+  l.fd = fd;
+  l.listener = listener;
+  l.manager = manager;
 
   // add to handlers
   if( dir == Network::READ ) {
-    m_rhandlers_vect.push_back(list);
+    m_rhandlers_vect.push_back(l);
   } else {
-    m_whandlers_vect.push_back(list);
+    m_whandlers_vect.push_back(l);
   }
   Logger::instance()->log(Logger::INFO, "Registered fd %d", fd);
 
   return 0;
-
 }
 
 
@@ -139,12 +111,11 @@ int Network::register_fd(int fd, Network::Direction dir, FDListener *listener, F
  * @return 0 on sucess, -1 on failure
  */
 int Network::unregister_fd(int fd, Network::Direction dir) {
-  vector<Listener*>::iterator it;
+  vector<listener_t>::iterator it;
 
   if( dir == Network::READ ) {
     for (it = m_rhandlers_vect.begin(); it != m_rhandlers_vect.end(); ++it) {
-      if((*it)->m_fd == fd) {
-        delete *it;
+      if(it->fd == fd) {
         m_rhandlers_vect.erase(it);
         Logger::instance()->log(Logger::INFO, "Unregistered fd %d", fd);
         break;
@@ -152,8 +123,7 @@ int Network::unregister_fd(int fd, Network::Direction dir) {
     }
   } else {
     for (it = m_whandlers_vect.begin(); it != m_whandlers_vect.end(); ++it) {
-      if((*it)->m_fd == fd) {
-        delete *it;
+      if(it->fd == fd) {
         m_rhandlers_vect.erase(it);
         Logger::instance()->log(Logger::INFO, "Unregistered fd %d!!\n", fd);
         break;
@@ -170,15 +140,31 @@ int Network::unregister_fd(int fd, Network::Direction dir) {
  *
  * @param seconds    the delay between function calls
  */
-int Network::register_timeout(int seconds, TimeoutListener *listener) {
+int Network::register_timeout(int ms, TimeoutListener *listener, bool recur,
+                              bool free) {
+  event_t event;
+  event.listener = listener;
+  event.interval = recur ? ms : 0;
+  event.free = free;
 
-  Timeout *to = new Timeout(seconds, listener);
+  gettimeofday(&event.next, NULL);
+  event.next.tv_sec += ms / 1000;
+  event.next.tv_usec += 1000 * (ms % 1000);
 
-  m_timeouts_vect.push_back(to);
-
-  return m_timeouts_vect.size() -1;
-
+  m_event_cbs.push(event);
+  return 1;
 }
+
+
+/*
+ * register a listener to be called on each iteration through the select loop
+ */
+int Network::register_loop_fn(Listener *l) {
+  if (l)
+    m_loop_listeners.push_back(l);
+  return 0;
+}
+
 
 #define max(a,b) a>b?a:b
 /*
@@ -187,6 +173,7 @@ int Network::register_timeout(int seconds, TimeoutListener *listener) {
  * @return -1 on error, 0 on timeout or interrupt, else the number of bytes read
  */
 int Network::read(lla_msg *msg) {
+  vector<Listener*>::iterator iter;
   int maxsd, ret;
   unsigned int i;
   fd_set r_fds, w_fds;
@@ -202,20 +189,30 @@ int Network::read(lla_msg *msg) {
     maxsd = m_sd;
 
     for(i=0; i < m_rhandlers_vect.size(); i++) {
-      FD_SET(m_rhandlers_vect[i]->m_fd, &r_fds);
-      maxsd = max(maxsd, m_rhandlers_vect[i]->m_fd);
+      FD_SET(m_rhandlers_vect[i].fd, &r_fds);
+      maxsd = max(maxsd, m_rhandlers_vect[i].fd);
     }
 
     for(i=0; i < m_whandlers_vect.size(); i++) {
-      FD_SET(m_whandlers_vect[i]->m_fd, &r_fds);
-      maxsd = max(maxsd, m_whandlers_vect[i]->m_fd);
+      FD_SET(m_whandlers_vect[i].fd, &r_fds);
+      maxsd = max(maxsd, m_whandlers_vect[i].fd);
     }
 
-    gettimeofday(&now, NULL);
-    check_timeouts(&now);
-    get_remaining(&now, &tv);
+    now = check_timeouts();
 
-    switch( select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
+    if (m_event_cbs.empty()) {
+      tv.tv_sec = 1;
+      tv.tv_usec = 0;
+    } else {
+      struct timeval next = m_event_cbs.top().next;
+      long long now_l = (long long) now.tv_sec * 1000000 + now.tv_usec;
+      long long next_l = (long long) next.tv_sec * 1000000 + next.tv_usec;
+      long rem = next_l - now_l;
+      tv.tv_sec = rem / 1000000;
+      tv.tv_usec = rem % 1000000;
+    }
+
+    switch (select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
       case 0:
         // timeout
         return 0;
@@ -228,26 +225,25 @@ int Network::read(lla_msg *msg) {
         return -1;
         break;
       default:
-        gettimeofday(&now, NULL);
-        check_timeouts(&now);
+        check_timeouts();
 
         // loop thru registered sd's
-        for(i=0; i < m_rhandlers_vect.size(); i++) {
-          if(FD_ISSET(m_rhandlers_vect[i]->m_fd,&r_fds) ) {
-            ret = m_rhandlers_vect[i]->m_listener->fd_action();
+        for (i=0; i < m_rhandlers_vect.size(); i++) {
+          if (FD_ISSET(m_rhandlers_vect[i].fd,&r_fds)) {
+            ret = m_rhandlers_vect[i].listener->action();
 
-            if( ret < 0) {
-              m_rhandlers_vect[i]->m_manager->fd_error(ret, m_rhandlers_vect[i]->m_listener );
+            if (ret < 0) {
+              m_rhandlers_vect[i].manager->fd_error(ret, m_rhandlers_vect[i].listener);
             }
           }
         }
 
-        for(i=0; i < m_whandlers_vect.size(); i++) {
-          if(FD_ISSET(m_whandlers_vect[i]->m_fd,&r_fds) ) {
-            ret = m_whandlers_vect[i]->m_listener->fd_action();
+        for (i=0; i < m_whandlers_vect.size(); i++) {
+          if (FD_ISSET(m_whandlers_vect[i].fd,&r_fds)) {
+            ret = m_whandlers_vect[i].listener->action();
 
-            if( ret < 0) {
-              m_whandlers_vect[i]->m_manager->fd_error(ret, m_whandlers_vect[i]->m_listener );
+            if (ret < 0) {
+              m_whandlers_vect[i].manager->fd_error(ret, m_whandlers_vect[i].listener);
             }
           }
         }
@@ -259,10 +255,12 @@ int Network::read(lla_msg *msg) {
         }
         break;
     }
+
+    for (iter = m_loop_listeners.begin(); iter != m_loop_listeners.end(); ++iter)
+      (*iter)->action();
   }
   return 0;
 }
-
 
 
 /*
@@ -310,37 +308,33 @@ int Network::send_msg(lla_msg *msg) {
   return 0;
 }
 
+
 /*
  * Check for expired timeouts
  */
-void Network::check_timeouts(struct timeval *now) {
+struct timeval Network::check_timeouts() {
+  struct timeval now;
+  gettimeofday(&now, NULL);
 
-  for(unsigned int i=0; i < m_timeouts_vect.size(); i++) {
-    m_timeouts_vect[i]->check_expiry(now);
+  event_t e;
+  if (m_event_cbs.empty())
+    return now;
+
+  for (e = m_event_cbs.top(); !m_event_cbs.empty() && timercmp(&e.next, &now, <); e = m_event_cbs.top()) {
+    if (e.listener != NULL)
+      e.listener->timeout_action();
+    m_event_cbs.pop();
+
+    if(e.interval) {
+      e.next = now;
+      e.next.tv_sec += e.interval / 1000;
+      e.next.tv_usec += e.interval / 1000;
+      m_event_cbs.push(e);
+    }
+
+    if(!e.interval && e.free)
+      delete e.listener;
+    gettimeofday(&now, NULL);
   }
+  return now;
 }
-
-/*
- * Get the time remaining before the next timeout
- *
- */
-int Network::get_remaining(struct timeval *now, struct timeval *tv) {
-  long now_l, ex_l, res, min;
-
-  min = 1000000 * 2;
-  now_l = now->tv_sec * 1000000 + now->tv_usec;
-
-  for(unsigned int i=0; i < m_timeouts_vect.size(); i++) {
-    ex_l = m_timeouts_vect[i]->m_tv.tv_sec * 1000000 + m_timeouts_vect[i]->m_tv.tv_usec;
-    res = ex_l - now_l;
-
-    if(res < min)
-      min = res;
-
-  }
-  tv->tv_sec = min / 1000000;
-  tv->tv_usec = min % 1000000;
-
-  return 0;
-}
-

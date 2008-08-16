@@ -32,8 +32,8 @@ class SandNetPort : public Port  {
     SandNetPort(Device *parent, int id);
     ~SandNetPort();
 
-    int write(uint8_t *data, int length);
-    int read(uint8_t *data, int length);
+    int write(uint8_t *data, unsigned int length);
+    int read(uint8_t *data, unsigned int length);
     int set_universe(Universe *uni);
 
     int can_read() const;
@@ -43,7 +43,7 @@ class SandNetPort : public Port  {
 
   private :
     uint8_t *m_buf;
-    int m_len;
+    unsigned int m_len;
 };
 
 #endif

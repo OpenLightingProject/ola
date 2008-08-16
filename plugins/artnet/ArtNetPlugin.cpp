@@ -29,7 +29,7 @@
 
 const string ArtNetPlugin::ARTNET_LONG_NAME = "lla - ArtNet node";
 const string ArtNetPlugin::ARTNET_SHORT_NAME = "lla - ArtNet node";
-const int ArtNetPlugin::ARTNET_SUBNET = 0;
+const string ArtNetPlugin::ARTNET_SUBNET = "0";
 const string ArtNetPlugin::PLUGIN_NAME = "ArtNet Plugin";
 const string ArtNetPlugin::PLUGIN_PREFIX = "artnet";
 
@@ -69,7 +69,7 @@ int ArtNetPlugin::start_hook() {
 
   // register our descriptors, this should really be fatal for this plugin if it fails
   if ((sd = m_dev->get_sd()) >= 0)
-    m_pa->register_fd( sd, PluginAdaptor::READ, m_dev);
+    m_pa->register_fd(sd, PluginAdaptor::READ, m_dev);
 
   m_pa->register_device(m_dev);
   return 0;

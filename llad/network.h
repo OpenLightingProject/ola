@@ -24,20 +24,13 @@
 #include <sys/time.h>
 
 #include <lla/messages.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 #include <llad/timeoutlistener.h>
 #include <llad/fdmanager.h>
 #include <vector>
+#include <queue>
 
 using namespace std;
-
-
-typedef struct {
-  FDListener *listener;
-  int  fd;            // file descriptor
-} fd_listener_t;
-
-
 
 #define LLAD_PORT 8898        // port to listen on
 #define LLAD_ADDR "127.0.0.1"    // address to bind to
@@ -48,12 +41,14 @@ class Network {
     enum Direction{READ, WRITE};
 
     Network();
-    ~Network();
+    ~Network() {};
     int init();
     int run();
-    int register_fd(int fd, Network::Direction dir, FDListener *listener, FDManager *manager);
+    int register_fd(int fd, Network::Direction dir, Listener *listener, FDManager *manager);
     int unregister_fd(int fd, Network::Direction dir);
-    int register_timeout(int seconds, TimeoutListener *listener);
+    int register_timeout(int ms, TimeoutListener *listener, bool recur = true,
+                         bool free = false);
+    int register_loop_fn(Listener *l);
     int read(lla_msg *msg);
     int send_msg(lla_msg *msg);
 
@@ -64,51 +59,35 @@ class Network {
     /*
      * This represents a listener
      */
-    class Listener {
-      public:
-        Listener(int fd, FDListener *listener, FDManager *manager ) : m_listener(listener) , m_manager(manager), m_fd(fd) {};
-        FDListener *m_listener;
-        FDManager *m_manager;
-        int  m_fd;
+    typedef struct {
+      int fd;
+      Listener *listener;
+      FDManager *manager;
+    } listener_t;
+
+    typedef struct {
+      struct timeval next;
+      int interval; // non 0 if this event is recurring
+      bool free; // true if we delete the listener once we're done
+      TimeoutListener *listener;
+    } event_t;
+
+    struct ltevent {
+      bool operator()(const event_t &e1, const event_t &e2) const {
+        return timercmp(&e1.next, &e2.next, >);
+      }
     };
 
-    /*
-     * Represents a timeout we need to check
-     */
-    class Timeout {
-      public:
-        Timeout(int seconds, TimeoutListener *listener) : m_sec(seconds), m_listener(listener) {
-          timerclear(&m_tv);
-        };
-
-        /*
-         * Check if this timeout has expired and invoke the action if
-         * is has
-         */
-        void check_expiry(struct timeval *now) {
-
-          if( timercmp(now, &m_tv, >= ) ) {
-            m_listener->timeout_action();
-            m_tv.tv_sec = now->tv_sec + m_sec;
-            m_tv.tv_usec = now->tv_usec;
-          }
-        }
-        struct timeval m_tv;
-
-      private:
-        int m_sec;
-        TimeoutListener *m_listener;
-
-
-    };
     int m_sd;
     int fetch_msg_from_client(lla_msg *msg);
-    void check_timeouts(struct timeval *now);
-    int get_remaining(struct timeval *now, struct timeval *tv);
+    struct timeval check_timeouts();
 
-    vector<Listener*> m_rhandlers_vect;
-    vector<Listener*> m_whandlers_vect;
-    vector<Timeout*>  m_timeouts_vect;
+    vector<listener_t> m_rhandlers_vect;
+    vector<listener_t> m_whandlers_vect;
+    vector<Listener*> m_loop_listeners;
+
+    typedef priority_queue<event_t, vector<event_t>, ltevent> event_q_t;
+    event_q_t m_event_cbs;
 };
 
 #endif

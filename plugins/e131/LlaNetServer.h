@@ -13,29 +13,42 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * artnetport.h
- * The Art-Net plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * LlaNetServer.h
+ * Override the libacn NetServer to interface with LLA
+ * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef ARTNETPORT_H
-#define ARTNETPORT_H
+#ifndef LLANETSERVER_H
+#define LLANETSERVER_H
 
-#include <llad/port.h>
-#include <artnet/artnet.h>
+#include <string>
+#include <map>
+#include <vector>
+#include <acn/NetServer.h>
 
-class ArtNetPort : public Port  {
+using namespace std;
+
+class LlaNetServer : public NetServer {
 
   public:
-    ArtNetPort(Device *parent, int id) : Port(parent, id) {};
+    LlaNetServer(const PluginAdaptor *pa):
+      NetServer(), m_pa(pa) {}
+    ~LlaNetServer();
 
-    int set_universe(Universe *uni) ;
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
+    int add_fd(int fd, callback_fn fn, void *data);
+    int remove_fd(int fd);
 
-    int can_read() const;
-    int can_write() const ;
+    int register_event(int ms, callback_fn fn, void *data);
+
+    int loop_callback(callback_fn fn, void *data);
+
+    int run() { return 0; }
+
+  private:
+    const class PluginAdaptor *m_pa;
+    map<int, class NetServerListener*> m_lmap;
+    vector<class NetServerListener*> m_loop_ls;
 };
 
 #endif
+

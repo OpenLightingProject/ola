@@ -42,7 +42,7 @@ int UsbProPort::can_write() const {
  *
  * @return   0 on success, non 0 on failure
  */
-int UsbProPort::write(uint8_t *data, int length) {
+int UsbProPort::write(uint8_t *data, unsigned int length) {
   UsbProDevice *dev = (UsbProDevice*) get_device();
 
   if (!can_write())
@@ -60,7 +60,7 @@ int UsbProPort::write(uint8_t *data, int length) {
  *
  * @return  the amount of data read
  */
-int UsbProPort::read(uint8_t *data, int length) {
+int UsbProPort::read(uint8_t *data, unsigned int length) {
   UsbProDevice *dev = (UsbProDevice*) get_device();
 
   if (!can_read())

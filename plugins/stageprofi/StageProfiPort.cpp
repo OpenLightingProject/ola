@@ -31,7 +31,7 @@
  *
  * @return   0 on success, non 0 on failure
  */
-int StageProfiPort::write(uint8_t *data, int length) {
+int StageProfiPort::write(uint8_t *data, unsigned int length) {
   StageProfiDevice *dev = (StageProfiDevice*) get_device();
 
   if (!can_write())
@@ -49,7 +49,7 @@ int StageProfiPort::write(uint8_t *data, int length) {
  *
  * @return  the amount of data read
  */
-int StageProfiPort::read(uint8_t *data, int length) {
+int StageProfiPort::read(uint8_t *data, unsigned int length) {
   data = NULL;
   length = 0;
   return -1;

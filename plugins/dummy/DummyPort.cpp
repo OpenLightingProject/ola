@@ -42,7 +42,7 @@ DummyPort::DummyPort(Device *parent, int id) : Port(parent, id), m_length(512) {
  * @param  length  the length of the data
  *
  */
-int DummyPort::write(uint8_t *data, int length) {
+int DummyPort::write(uint8_t *data, unsigned int length) {
   int len = length < 512 ? length : 512;
 
   memcpy(m_dmx, data, len);
@@ -64,8 +64,8 @@ int DummyPort::write(uint8_t *data, int length) {
  *
  * @return  the amount of data read
  */
-int DummyPort::read(uint8_t *data, int length) {
-  int len ;
+int DummyPort::read(uint8_t *data, unsigned int length) {
+  unsigned int len ;
 
   // copy to mem
   len = length < m_length ? length : m_length;

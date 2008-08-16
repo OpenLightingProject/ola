@@ -34,8 +34,8 @@ class OpenDmxPort : public Port  {
     OpenDmxPort(Device *parent, int id,  string *path);
     ~OpenDmxPort();
 
-    int write(uint8_t *data, int length);
-    int read(uint8_t *data, int length);
+    int write(uint8_t *data, unsigned int length);
+    int read(uint8_t *data, unsigned int length);
     int can_read() const;
   private:
     OpenDmxThread *m_thread;

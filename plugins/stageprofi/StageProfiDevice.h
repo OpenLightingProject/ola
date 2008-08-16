@@ -24,9 +24,9 @@
 #include <string>
 #include <stdint.h>
 #include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 
-class StageProfiDevice : public Device, public FDListener {
+class StageProfiDevice : public Device, public Listener {
 
   public:
 
@@ -36,7 +36,7 @@ class StageProfiDevice : public Device, public FDListener {
     int start();
     int stop();
     int get_sd() const;
-    int fd_action();
+    int action();
     int save_config() const;
     class LlaDevConfMsg *configure(const uint8_t *request, int reql);
     int send_dmx(uint8_t *data, int len);

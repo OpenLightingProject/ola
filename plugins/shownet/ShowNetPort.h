@@ -31,8 +31,8 @@ class ShowNetPort : public Port {
     ShowNetPort(Device *parent, int id);
     ~ShowNetPort();
 
-    int write(uint8_t *data, int length);
-    int read(uint8_t *data, int length);
+    int write(uint8_t *data, unsigned int length);
+    int read(uint8_t *data, unsigned int length);
 
     int can_read() const;
     int can_write() const;
@@ -41,7 +41,7 @@ class ShowNetPort : public Port {
 
   private :
     uint8_t *m_buf;
-    int m_len;
+    unsigned int m_len;
 };
 
 #endif

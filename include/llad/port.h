@@ -38,12 +38,9 @@ class Port {
     virtual Universe *get_universe() const    { return m_universe; }
     int dmx_changed();
 
-    // register a dmx handler for this port
-    int register_dmx(int (*fh)(void *data), void *data);
-
     // subclasses must implement these
-    virtual int write(uint8_t *data, int length) = 0;
-    virtual int read(uint8_t *data, int length) = 0;
+    virtual int write(uint8_t *data, unsigned int length) = 0;
+    virtual int read(uint8_t *data, unsigned int length) = 0;
 
     // indicate our ports capability
     // default is read/write

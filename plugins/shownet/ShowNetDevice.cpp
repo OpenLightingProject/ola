@@ -203,7 +203,7 @@ int ShowNetDevice::get_sd() const {
  *
  * @param  data  user data (pointer to shownet_device_priv
  */
-int ShowNetDevice::fd_action() {
+int ShowNetDevice::action() {
   if (shownet_read(m_node, 0) ) {
     Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_read failed: %s", shownet_strerror());
     return -1;

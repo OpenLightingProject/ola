@@ -50,7 +50,7 @@ class ArtNetPlugin : public Plugin {
     int set_default_prefs();
     ArtNetDevice *m_dev; // only have one device
 
-    static const int ARTNET_SUBNET;
+    static const string ARTNET_SUBNET;
     static const string ARTNET_LONG_NAME;
     static const string ARTNET_SHORT_NAME;
     static const string PLUGIN_NAME;

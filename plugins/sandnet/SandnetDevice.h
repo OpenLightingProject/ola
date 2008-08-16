@@ -25,14 +25,14 @@
 #include <map>
 
 #include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 #include <llad/timeoutlistener.h>
 
 #include <sandnet/sandnet.h>
 
 #include "SandnetCommon.h"
 
-class SandNetDevice : public Device, public FDListener, public TimeoutListener {
+class SandNetDevice : public Device, public Listener, public TimeoutListener {
 
   public:
     SandNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
@@ -42,7 +42,7 @@ class SandNetDevice : public Device, public FDListener, public TimeoutListener {
     int stop();
     sandnet_node get_node() const;
     int get_sd(int i) const;
-    int fd_action();
+    int action();
     int timeout_action();
     int save_config() const;
     int configure(void *req, int len);

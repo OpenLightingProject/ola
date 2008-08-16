@@ -22,13 +22,13 @@
 #define ESPNETDEVICE_H
 
 #include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 
 #include <espnet/espnet.h>
 
 #include "common.h"
 
-class EspNetDevice : public Device, public FDListener {
+class EspNetDevice : public Device, public Listener {
 
   public:
     EspNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
@@ -38,7 +38,7 @@ class EspNetDevice : public Device, public FDListener {
     int stop();
     espnet_node get_node() const;
     int get_sd() const;
-    int fd_action();
+    int action();
     int save_config() const;
     int configure(void *req, int len);
 

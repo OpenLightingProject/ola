@@ -23,13 +23,13 @@
 #define SHOWNETDEVICE_H
 
 #include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 
 #include <shownet/shownet.h>
 
 #include "common.h"
 
-class ShowNetDevice : public Device, public FDListener {
+class ShowNetDevice : public Device, public Listener {
 
   public:
     ShowNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
@@ -39,7 +39,7 @@ class ShowNetDevice : public Device, public FDListener {
     int stop();
     shownet_node get_node() const;
     int get_sd() const;
-    int fd_action();
+    int action();
     int save_config() const;
     int configure(void *req, int len);
 

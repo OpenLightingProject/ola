@@ -28,8 +28,8 @@ class Dmx4LinuxPort : public Port {
   public:
     Dmx4LinuxPort(Device *parent, int id, int d4l, bool in, bool out);
 
-    int write(uint8_t *data, int length);
-    int read(uint8_t *data, int length);
+    int write(uint8_t *data, unsigned int length);
+    int read(uint8_t *data, unsigned int length);
 
     int can_read() const { return m_in; }
     int can_write() const { return m_out; }

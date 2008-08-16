@@ -24,7 +24,7 @@
 #include <string>
 #include <stdint.h>
 #include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 #include <llad/timeoutlistener.h>
 #include "usbpro_conf_messages.h"
 
@@ -32,7 +32,7 @@
 #include "UsbProWidget.h"
 
 
-class UsbProDevice : public Device, public FDListener, public UsbProWidgetListener {
+class UsbProDevice : public Device, public Listener, public UsbProWidgetListener {
 
   public:
 
@@ -42,7 +42,7 @@ class UsbProDevice : public Device, public FDListener, public UsbProWidgetListen
     int start();
     int stop();
     int get_sd() const;
-    int fd_action();
+    int action();
     int save_config() const;
     class LlaDevConfMsg *configure(const uint8_t *request, int reql);
     int send_dmx(uint8_t *data, int len);

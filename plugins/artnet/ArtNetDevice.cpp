@@ -288,10 +288,10 @@ int ArtNetDevice::get_sd() const {
  *
  * @param  data  user data (pointer to artnet_device_priv
  */
-int ArtNetDevice::fd_action() {
-  if (artnet_read(m_node, 0)) {
-    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_read failed: %s", artnet_strerror());
-    return -1;
+int ArtNetDevice::action() {
+  if( artnet_read(m_node, 0) ) {
+    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_read failed: %s", artnet_strerror()) ;
+    return -1 ;
   }
   return 0;
 }
