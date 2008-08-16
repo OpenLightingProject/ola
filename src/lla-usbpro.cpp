@@ -162,7 +162,7 @@ void Observer::display_params(int dev, UsbProConfMsgPrmRep *rep) {
   printf(" Firmware: %hhi.%hhi\n", (firm & 0xFF00) >> 8 , firm & 0x00FF);
   printf(" Break Time: %0.2f us\n", rep->get_brk() * 10.67);
   printf(" MAB Time: %0.2f us\n", rep->get_mab() * 10.67);
-  printf(" Packet Rate: %i packlets/sec\n", rep->get_rate());
+  printf(" Packet Rate: %i packets/sec\n", rep->get_rate());
 }
 
 
