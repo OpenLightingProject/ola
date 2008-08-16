@@ -24,12 +24,12 @@
 #include <vector>
 #include <string>
 #include <llad/plugin.h>
-#include <llad/fdlistener.h>
+#include <llad/listener.h>
 #include <lla/plugin_id.h>
 
 class Dmx4LinuxDevice;
 
-class Dmx4LinuxPlugin : public Plugin, public FDListener {
+class Dmx4LinuxPlugin : public Plugin, public Listener {
 
   public:
     Dmx4LinuxPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
@@ -40,8 +40,7 @@ class Dmx4LinuxPlugin : public Plugin, public FDListener {
 
     string get_name() const { return PLUGIN_NAME; }
     string get_desc() const;
-    int fd_action();
-    int fd_error(int error, FDListener *listener);
+    int action();
     int send_dmx(int d4l_uni, uint8_t *data, int length);
 
   protected:

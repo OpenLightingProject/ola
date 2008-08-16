@@ -76,7 +76,7 @@ string Universe::get_name() const {
  */
 void Universe::set_name(const string &name, bool save) {
   m_name = name;
-  if(c_uni_store != NULL && save)
+  if (c_uni_store != NULL && save)
     c_uni_store->store_uni(this);
 }
 
@@ -101,7 +101,7 @@ int Universe::add_port(Port *prt) {
     uni->remove_port(prt);
 
     // destroy this universe if it's no longer in use
-    if (! uni->in_use()) {
+    if (!uni->in_use()) {
       delete uni;
     }
   }
@@ -127,7 +127,7 @@ int Universe::remove_port(Port *prt) {
 
   it = find(ports_vect.begin(),ports_vect.end(),prt); // first position
 
-  if (it != ports_vect.end() ) {
+  if (it != ports_vect.end()) {
     ports_vect.erase(it);
     prt->set_universe(NULL);
     Logger::instance()->log(Logger::DEBUG, "Port %p has been removed from uni %d", prt, get_uid());
@@ -161,7 +161,7 @@ int Universe::add_client(Client *cli) {
   vector<Client*>::iterator it;
 
   // add to this universe
-  Logger::instance()->log(Logger::INFO, "Added client %p to universe %d", cli , m_uid);
+  Logger::instance()->log(Logger::INFO, "Added client %p to universe %d", cli, m_uid);
   clients_vect.push_back(cli);
 
   return 0;
@@ -179,7 +179,7 @@ int Universe::remove_client(Client *cli) {
   vector<Client*>::iterator it;
   it = find(clients_vect.begin(), clients_vect.end(),cli); // first position
 
-  if (it != clients_vect.end() ) {
+  if (it != clients_vect.end()) {
     clients_vect.erase(it);
     Logger::instance()->log(Logger::INFO, "Client %p has been removed from uni %d", cli, get_uid());
   } else {
@@ -250,7 +250,7 @@ int Universe::port_data_changed(Port *prt) {
     // LTP merge mode
     // this is simple, find the port and copy the data
     for(i =0; i < ports_vect.size(); i++) {
-      if(ports_vect[i] == prt && prt->can_read() ) {
+      if(ports_vect[i] == prt && prt->can_read()) {
         // read the new data and update our dependants
         m_length = prt->read(m_data, DMX_LENGTH);
         update_dependants();
@@ -262,8 +262,8 @@ int Universe::port_data_changed(Port *prt) {
     // iterate over ports which we can read and take the highest value
     // of each channel
     for(i =0; i < ports_vect.size(); i++) {
-      if(prt->can_read() ) {
-        if( first) {
+      if(prt->can_read()) {
+        if(first) {
           m_length = prt->read(m_data, DMX_LENGTH);
           first = 0;
         } else {
@@ -342,7 +342,7 @@ int Universe::update_dependants() {
 int Universe::send_dmx(Client *cli) {
   lla_msg reply;
 
-  memset(&reply, 0x00, sizeof(reply) );
+  memset(&reply, 0x00, sizeof(reply));
 
   reply.to.sin_family = AF_INET;
   reply.to.sin_port = cli->get_port();
@@ -355,7 +355,7 @@ int Universe::send_dmx(Client *cli) {
   reply.data.dmx.len = m_length;
   reply.data.dmx.uni = get_uid();
 
-  Logger::instance()->log(Logger::DEBUG, "Sending dmx data msg to client %d", reply.to.sin_port );
+  Logger::instance()->log(Logger::DEBUG, "Sending dmx data msg to client %d", reply.to.sin_port);
   return c_net->send_msg(&reply);
 }
 
@@ -436,7 +436,7 @@ int Universe::clean_up() {
   map<int, Universe*>::iterator iter;
 
   //unload all plugins
-  for (iter = uni_map.begin(); iter != uni_map.end(); ) {
+  for (iter = uni_map.begin(); iter != uni_map.end();) {
     // increment the iter here
     // the universe will remove itself from the map
     // and invalidate the iter

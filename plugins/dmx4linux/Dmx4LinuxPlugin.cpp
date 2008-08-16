@@ -131,7 +131,7 @@ string Dmx4LinuxPlugin::get_desc() const {
  * TODO: get reads working
  * why do we get input on the in_fd when we write ??
  */
-int Dmx4LinuxPlugin::fd_action() {
+int Dmx4LinuxPlugin::action() {
   uint8_t buf[512];
   int r;
   r = read(m_in_fd, buf, sizeof(buf));
