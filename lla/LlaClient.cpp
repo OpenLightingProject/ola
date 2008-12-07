@@ -23,10 +23,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include <lla/messages.h>
-#include <lla/LlaDevConfMsg.h>
-#include <lla/select_server/Socket.h>
 #include <google/protobuf/stubs/common.h>
+#include <lla/select_server/Socket.h>
 
 #include "common/protocol/Lla.pb.h"
 #include "common/rpc/StreamRpcChannel.h"

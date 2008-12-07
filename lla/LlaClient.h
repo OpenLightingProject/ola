@@ -31,7 +31,6 @@
 
 #include <lla/common.h>
 #include <lla/plugin_id.h>
-#include <lla/messages.h>
 #include <lla/LlaDevice.h>
 
 #include "common/protocol/Lla.pb.h"

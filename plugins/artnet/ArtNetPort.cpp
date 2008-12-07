@@ -20,7 +20,7 @@
 
 #include "ArtNetPort.h"
 #include "ArtNetDevice.h"
-#include <llad/universe.h>
+#include <llad/Universe.h>
 #include <llad/logger.h>
 #include <string.h>
 
