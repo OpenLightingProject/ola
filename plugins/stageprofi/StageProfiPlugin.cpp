@@ -15,39 +15,43 @@
  *
  * StageProfiPlugin.cpp
  * The StageProfi plugin for lla
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2008 Simon Newton
  */
 
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
 #include <llad/logger.h>
 
 #include "StageProfiPlugin.h"
 #include "StageProfiDevice.h"
 
-
-const string StageProfiPlugin::STAGEPROFI_DEVICE_PATH = "/dev/ttyUSB0";
-const string StageProfiPlugin::STAGEPROFI_DEVICE_NAME = "StageProfi Device";
-const string StageProfiPlugin::PLUGIN_NAME = "StageProfi Plugin";
-const string StageProfiPlugin::PLUGIN_PREFIX = "stageprofi";
-
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new StageProfiPlugin(pa, LLA_PLUGIN_STAGEPROFI);
+extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+  return new lla::plugin::StageProfiPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(Plugin* plug) {
-  delete plug;
+extern "C" void destroy(lla::AbstractPlugin *plugin) {
+  delete plugin;
 }
+
+namespace lla {
+namespace plugin {
+
+using std::string;
+
+const string StageProfiPlugin::STAGEPROFI_DEVICE_PATH = "/dev/ttyUSB0";
+const string StageProfiPlugin::STAGEPROFI_DEVICE_NAME = "StageProfi Device";
+const string StageProfiPlugin::PLUGIN_NAME = "StageProfi Plugin";
+const string StageProfiPlugin::PLUGIN_PREFIX = "stageprofi";
 
 
 /*
@@ -55,37 +59,33 @@ extern "C" void destroy(Plugin* plug) {
  *
  * Multiple devices now supported
  */
-int StageProfiPlugin::start_hook() {
-  int sd;
-  vector<string> *dev_nm_v;
+bool StageProfiPlugin::StartHook() {
+  vector<string> device_names;
   vector<string>::iterator it;
-  StageProfiDevice *dev;
+  StageProfiDevice *device;
 
   // fetch device listing
-  dev_nm_v = m_prefs->get_multiple_val("device");
+  device_names = m_preferences->GetMultipleValue("device");
 
-  for (it = dev_nm_v->begin(); it != dev_nm_v->end(); ++it) {
-    dev = new StageProfiDevice(this, STAGEPROFI_DEVICE_NAME, *it);
-
-    if (dev == NULL)
+  for (it = device_names.begin(); it != device_names.end(); ++it) {
+    if (it->empty())
       continue;
 
-    if (dev->start()) {
-      delete dev;
+    device = new StageProfiDevice(this, STAGEPROFI_DEVICE_NAME, *it);
+
+    if (!device)
+      continue;
+
+    if (!device->Start()) {
+      delete device;
       continue;
     }
 
-    // register our descriptors, with us as the manager
-    // this should really be fatal
-    if ((sd = dev->get_sd()) >= 0)
-      m_pa->register_fd( sd, PluginAdaptor::READ, dev, this);
-
-    m_pa->register_device(dev);
-    m_devices.insert(m_devices.end(), dev);
+    m_plugin_adaptor->AddSocket(device->GetSocket(), this);
+    m_plugin_adaptor->RegisterDevice(device);
+    m_devices.insert(m_devices.end(), device);
   }
-
-  delete dev_nm_v;
-  return 0;
+  return true;
 }
 
 
@@ -94,33 +94,20 @@ int StageProfiPlugin::start_hook() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int StageProfiPlugin::stop_hook() {
-  StageProfiDevice *dev;
-  unsigned int i = 0;
-
-  if (!m_enabled)
-    return -1;
-
-  for (i = 0; i < m_devices.size(); i++) {
-    dev = m_devices[i];
-    m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ);
-
-    if (dev->stop())
-      continue;
-
-    m_pa->unregister_device(dev);
-    delete dev;
+bool StageProfiPlugin::StopHook() {
+  vector<StageProfiDevice*>::iterator iter;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    DeleteDevice(*iter);
   }
-
   m_devices.clear();
-  return 0;
+  return true;
 }
 
+
 /*
- * return the description for this plugin
- *
+ * Return the description for this plugin
  */
-string StageProfiPlugin::get_desc() const {
+string StageProfiPlugin::Description() const {
     return
 "Stage Profi Plugin\n"
 "----------------------------\n"
@@ -140,31 +127,21 @@ string StageProfiPlugin::get_desc() const {
  * Called if fd_action returns an error for one of our devices
  *
  */
-int StageProfiPlugin::fd_error(int error, Listener *listener) {
-  StageProfiDevice *dev  = dynamic_cast<StageProfiDevice *> (listener);
-  vector<StageProfiDevice *>::iterator iter;
+void StageProfiPlugin::SocketClosed(Socket *socket) {
+  vector<StageProfiDevice*>::iterator iter;
 
-  if (!dev) {
-    Logger::instance()->log(Logger::WARN, "fd_error : dynamic cast failed");
-    return 0;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    if ((*iter)->GetSocket() == socket)
+      break;
   }
 
-  // stop this device
-  m_pa->unregister_fd(dev->get_sd(), PluginAdaptor::READ);
+  if (iter == m_devices.end()) {
+    Logger::instance()->log(Logger::WARN, "unknown fd closed in stageprofi device");
+    return;
+  }
 
-  // stop the device
-  dev->stop();
-
-  m_pa->unregister_device(dev);
-
-  iter = find(m_devices.begin(), m_devices.end(), dev);
-  if (*iter == dev)
-    m_devices.erase(iter);
-
-  delete dev;
-
-  error = 0;
-  return 0;
+  DeleteDevice(*iter);
+  m_devices.erase(iter);
 }
 
 
@@ -172,21 +149,34 @@ int StageProfiPlugin::fd_error(int error, Listener *listener) {
  * load the plugin prefs and default to sensible values
  *
  */
-int StageProfiPlugin::set_default_prefs() {
-  if (m_prefs == NULL)
+int StageProfiPlugin::SetDefaultPreferences() {
+  if (!m_preferences)
     return -1;
 
-  if ( m_prefs->get_val("device") == "") {
-    m_prefs->set_val("device", STAGEPROFI_DEVICE_NAME);
-    m_prefs->save();
+  if (m_preferences->GetValue("device").empty()) {
+    m_preferences->SetValue("device", STAGEPROFI_DEVICE_NAME);
+    m_preferences->Save();
   }
 
   // check if this saved correctly
   // we don't want to use it if null
-  if (m_prefs->get_val("device") == "") {
-    delete m_prefs;
+  if (m_preferences->GetValue("device").empty()) {
+    delete m_preferences;
     return -1;
   }
-
   return 0;
 }
+
+
+/*
+ * Cleanup a single device
+ */
+void StageProfiPlugin::DeleteDevice(StageProfiDevice *device) {
+  m_plugin_adaptor->RemoveSocket(device->GetSocket());
+  device->Stop();
+  m_plugin_adaptor->UnregisterDevice(device);
+  delete device;
+}
+
+} //plugin
+} //lla

@@ -21,19 +21,24 @@
 #ifndef DUMMYPORT_H
 #define DUMMYPORT_H
 
-#include <llad/port.h>
+#include <llad/Port.h>
 
-class DummyPort : public Port {
+namespace lla {
+namespace plugin {
+
+class DummyPort: public Port {
   public:
-    DummyPort(Device *parent, int id);
-    int can_read() { return 0; }
+    DummyPort(AbstractDevice *parent, int id);
+    bool CanRead() { return false; }
 
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
+    int WriteDMX(uint8_t *data, unsigned int length);
+    int ReadDMX(uint8_t *data, unsigned int length);
 
   private:
     uint8_t m_dmx[512]; // pointer to our dmx buffer
     unsigned int m_length;       // length of dmx buffer
 };
 
+} //plugin
+} //lla
 #endif

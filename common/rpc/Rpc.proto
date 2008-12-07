@@ -1,0 +1,45 @@
+/*
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Rpc.proto
+ * Defines the protocol buffers used in the underlying RPC implementation.
+ * Copyright (C) 2005 - 2008 Simon Newton
+ */
+
+/*
+ * Based on, but not guarenteed to be the same as the specification here:
+ * http://protorpc.likbilen.com/Protorpcdocprotobuf.html
+ */
+
+package lla.rpc;
+
+enum Type {
+  REQUEST = 1;
+  RESPONSE = 2;
+  RESPONSE_CANCEL = 3;
+  RESPONSE_FAILED = 4;
+  RESPONSE_NOT_IMPLEMENTED = 5;
+  DISCONNECT = 6;
+  DESCRIPTOR_REQUEST = 7; // not implemented
+  DESCRIPTOR_RESPONSE = 8; // not implemented
+  REQUEST_CANCEL = 9;
+};
+
+message RpcMessage {
+  required Type type = 1;
+  optional uint32 id = 2;
+  optional string name = 3;
+  optional bytes buffer = 4;
+}

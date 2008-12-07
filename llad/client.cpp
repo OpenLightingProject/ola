@@ -13,99 +13,48 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * client.cpp
- * Represents a client connection to llad
- * Copyright (C) 2005 Simon Newton
+ * Client.cpp
+ * Represents a connected client.
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <google/protobuf/stubs/common.h>
 #include <llad/logger.h>
-#include "client.h"
+#include "common/rpc/SimpleRpcController.h"
+#include "common/protocol/Lla.pb.h"
+#include "Client.h"
 
-map<int ,Client *> Client::cli_map;
+namespace lla {
 
-/*
- * Create a new client
- *
- * @param port  the port the client is on
- */
-Client::Client(int port) {
-  m_port = port;
-}
+using google::protobuf::NewCallback;
+using lla::rpc::SimpleRpcController;
 
-/*
- * Destroy this client
- *
- */
-Client::~Client() {
-  cli_map.erase(m_port);
-}
+int Client::SendDMX(unsigned int universe_id,
+                    uint8_t *data,
+                    unsigned int length) {
 
-/*
- * Get this port of this client
- *
- * @return the port of the client
- */
-int Client::get_port() {
-  return m_port;
-}
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::DmxData *dmx_data = new lla::proto::DmxData();
+  lla::proto::Ack *ack = new lla::proto::Ack();
+  string dmx_string;
+  dmx_string.append((char*) data, length);
 
+  dmx_data->set_universe(universe_id);
+  dmx_data->set_data(dmx_string);
 
-// Class Methods
-//-----------------------------------------------------------------------------
-
-/*
- * Lookup a client from the port number
- *
- * @param port  the port of the client
- * @return the client corrosponding to the port, or NULL if no such client exists
- */
-Client *Client::get_client(int port) {
-  map<int , Client *>::iterator iter;
-
-  iter = cli_map.find(port);
-  if (iter != cli_map.end()) {
-     return iter->second;
-     }
-
-  return NULL;
-}
-
-/*
- * Lookup the client or create if needed
- *
- * @param port  the port of the client
- * @return the client corrosponding to the port, or NULL if an error occurs
- */
-Client *Client::get_client_or_create(int port) {
-  Client *cli = get_client(port);
-
-  if(cli == NULL) {
-    cli = new Client(port);
-    pair<int , Client*> p (port, cli);
-    cli_map.insert(p);
-  }
-
-  // this could still be NULL
-  return cli;
-}
-
-/*
- * Cleanup all clients
- *
- * @return 0 on sucess, non 0 on error
- */
-int Client::clean_up() {
-  map<int, Client*>::iterator iter;
-
-  //unload all plugins
-  for(iter = cli_map.begin(); iter != cli_map.end(); ) {
-    // increment the iter here
-    // the universe will remove itself from the map
-    // and invalidate the iter
-    delete (*iter++).second;
-  }
-
-  cli_map.clear();
+  m_client_stub->UpdateDmxData(controller,
+                               dmx_data,
+                               ack,
+                               NewCallback(this, &lla::Client::SendDMXCallback));
 
   return 0;
 }
+
+
+void Client::SendDMXCallback() {
+  printf("send dmx to client callback complete\n");
+
+
+}
+
+} //lla

@@ -1,10 +1,7 @@
+EXTRA_DIST = Device.h logger.h PluginAdaptor.h Plugin.h \
+             Port.h Preferences.h Universe.h
 
-EXTRA_DIST = device.h listener.h fdmanager.h logger.h pluginadaptor.h plugin.h\
-             port.h preferences.h timeoutlistener.h universe.h
-
-pkginclude_HEADERS = device.h listener.h fdmanager.h logger.h pluginadaptor.h plugin.h\
-                     port.h preferences.h timeoutlistener.h universe.h
+pkginclude_HEADERS = Device.h logger.h PluginAdaptor.h Plugin.h\
+                     Port.h Preferences.h Universe.h
 
 pkgincludedir = $(includedir)/llad
-
-

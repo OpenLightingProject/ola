@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2007 Simon Newton
  */
 
+#include <string>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -26,61 +27,65 @@
 #include "DummyPlugin.h"
 #include "DummyDevice.h"
 
-const string DummyPlugin::PLUGIN_NAME = "Dummy Plugin";
-const string DummyPlugin::PLUGIN_PREFIX = "dummy";
-
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new DummyPlugin(pa, LLA_PLUGIN_DUMMY);
+extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+  return new lla::plugin::DummyPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(Plugin *plug) {
-  delete plug;
+extern "C" void destroy(lla::AbstractPlugin *plugin) {
+  delete plugin;
 }
 
+
+namespace lla {
+namespace plugin {
+
+using std::string;
+
+const string DummyPlugin::PLUGIN_NAME = "Dummy Plugin";
+const string DummyPlugin::PLUGIN_PREFIX = "dummy";
 
 /*
  * Start the plugin
  *
  * Lets keep it simple, one device for this plugin
  */
-int DummyPlugin::start_hook() {
-
+bool DummyPlugin::StartHook() {
   /* create new lla device */
-  m_dev = new DummyDevice(this, "Dummy Device");
+  m_device = new DummyDevice(this, "Dummy Device");
 
-  if (m_dev == NULL)
-    return -1;
+  if (!m_device)
+    return false;
 
   // start this device and register it
-  m_dev->start();
-  m_pa->register_device(m_dev);
-  return 0;
+  m_device->Start();
+  m_plugin_adaptor->RegisterDevice(m_device);
+  return true;
 }
 
 
 /*
  * Stop the plugin
  *
- * @return 0 on sucess, -1 on failure
+ * @return true on sucess, false on failure
  */
-int DummyPlugin::stop_hook() {
-  // stop the device
-  if (m_dev->stop())
-    return -1;
-
-  m_pa->unregister_device(m_dev);
-  delete m_dev;
-  return 0;
+bool DummyPlugin::StopHook() {
+  if (m_device) {
+    bool ret = m_device->Stop();
+    m_plugin_adaptor->UnregisterDevice(m_device);
+    delete m_device;
+    return ret;
+  }
+  return true;
 }
 
 
-string DummyPlugin::get_desc() const {
+string DummyPlugin::Description() const {
   return
 "Dummy Plugin\n"
 "----------------------------\n"
@@ -89,3 +94,6 @@ string DummyPlugin::get_desc() const {
 "When used as an output port it prints the first two bytes of dmx data to "
 "stdout.\n";
 }
+
+} // plugin
+} // lla

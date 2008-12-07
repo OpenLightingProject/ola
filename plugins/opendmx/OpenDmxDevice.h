@@ -22,25 +22,29 @@
 #ifndef OPENDMXDEVICE_H
 #define OPENDMXDEVICE_H
 
-#include <llad/device.h>
+#include <llad/Device.h>
 #include <string>
+
+namespace lla {
+namespace plugin {
 
 using namespace std;
 
-class OpenDmxDevice : public Device {
-
+class OpenDmxDevice: public lla::Device {
   public:
-    OpenDmxDevice(Plugin *owner, const string &name, const string &path);
+    OpenDmxDevice(lla::AbstractPlugin *owner, const string &name, const string &path);
     ~OpenDmxDevice();
 
-    int start();
-    int stop();
-    int save_config() const;
-    int configure(void *req, int len);
+    bool Start();
+    bool Stop();
+    int SaveConfig() const;
 
   private:
     string m_path;
     bool m_enabled;
 };
+
+} //plugins
+} //lla
 
 #endif

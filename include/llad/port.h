@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * port.h
+ * Port.h
  * Header file for the Port class
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef PORT_H
@@ -23,39 +23,56 @@
 
 #include <stdint.h>
 
-class Device;
+namespace lla {
+
+class AbstractDevice;
 class Universe;
 
-class Port {
-
+class AbstractPort {
   public:
-    Port(Device *parent, int id);
+    AbstractPort() {}
+    virtual ~AbstractPort() {};
+
+    virtual AbstractDevice *GetDevice() const = 0;
+    virtual int PortId() const = 0;
+    virtual int SetUniverse(Universe *universe) = 0;
+    virtual Universe *GetUniverse() const = 0;
+    virtual int DmxChanged() = 0;
+
+    // read/write dmx data to this port
+    virtual int WriteDMX(uint8_t *data, unsigned int length) = 0;
+    virtual int ReadDMX(uint8_t *data, unsigned int length) = 0;
+
+    // indicate our port's capability
+    virtual bool CanRead()  const = 0;
+    virtual bool CanWrite() const = 0;
+};
+
+
+class Port: public AbstractPort {
+  public:
+    Port(AbstractDevice *parent, int id);
     virtual ~Port() {};
 
-    Device *get_device() const                { return m_parent; }
-    int get_id() const                        { return m_pid; }
-    virtual int set_universe(Universe *uni)   { m_universe = uni; return 0; }
-    virtual Universe *get_universe() const    { return m_universe; }
-    int dmx_changed();
+    AbstractDevice *GetDevice() const               { return m_parent; }
+    int PortId() const                      { return m_port_id; }
+    int SetUniverse(Universe *uni)  { m_universe = uni; return 0; }
+    Universe *GetUniverse() const   { return m_universe; }
+    int DmxChanged();
 
-    // subclasses must implement these
-    virtual int write(uint8_t *data, unsigned int length) = 0;
-    virtual int read(uint8_t *data, unsigned int length) = 0;
-
-    // indicate our ports capability
     // default is read/write
-    virtual int can_read() const  { return 1; }
-    virtual int can_write() const { return 1; }
-
-    // possible rdm functions here
+    virtual bool CanRead()  const { return true; }
+    virtual bool CanWrite() const { return true; }
 
   private:
     Port(const Port&);
     Port& operator=(const Port&);
 
-    int m_pid;
+    int m_port_id;
     Universe *m_universe; // universe this port belongs to
-    Device *m_parent;     // pointer to the device this port belongs to
+    AbstractDevice *m_parent;     // pointer to the device this port belongs to
 };
 
+
+} //lla
 #endif

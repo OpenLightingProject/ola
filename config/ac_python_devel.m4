@@ -1,4 +1,6 @@
-##### http://autoconf-archive.cryp.to/ac_python_devel.html
+# ===========================================================================
+#            http://autoconf-archive.cryp.to/ac_python_devel.html
+# ===========================================================================
 #
 # SYNOPSIS
 #
@@ -6,73 +8,67 @@
 #
 # DESCRIPTION
 #
-#   Note: Defines as a precious variable "PYTHON_VERSION". Don't
-#   override it in your configure.ac.
+#   Note: Defines as a precious variable "PYTHON_VERSION". Don't override it
+#   in your configure.ac.
 #
 #   This macro checks for Python and tries to get the include path to
-#   'Python.h'. It provides the $(PYTHON_CPPFLAGS) and
-#   $(PYTHON_LDFLAGS) output variables. It also exports
-#   $(PYTHON_EXTRA_LIBS) and $(PYTHON_EXTRA_LDFLAGS) for embedding
-#   Python in your code.
+#   'Python.h'. It provides the $(PYTHON_CPPFLAGS) and $(PYTHON_LDFLAGS)
+#   output variables. It also exports $(PYTHON_EXTRA_LIBS) and
+#   $(PYTHON_EXTRA_LDFLAGS) for embedding Python in your code.
 #
 #   You can search for some particular version of Python by passing a
-#   parameter to this macro, for example ">= '2.3.1'", or "== '2.4'".
-#   Please note that you *have* to pass also an operator along with the
-#   version to match, and pay special attention to the single quotes
-#   surrounding the version number. Don't use "PYTHON_VERSION" for
-#   this: that environment variable is declared as precious and thus
-#   reserved for the end-user.
+#   parameter to this macro, for example ">= '2.3.1'", or "== '2.4'". Please
+#   note that you *have* to pass also an operator along with the version to
+#   match, and pay special attention to the single quotes surrounding the
+#   version number. Don't use "PYTHON_VERSION" for this: that environment
+#   variable is declared as precious and thus reserved for the end-user.
 #
-#   This macro should work for all versions of Python >= 2.1.0. As an
-#   end user, you can disable the check for the python version by
-#   setting the PYTHON_NOVERSIONCHECK environment variable to something
-#   else than the empty string.
+#   This macro should work for all versions of Python >= 2.1.0. As an end
+#   user, you can disable the check for the python version by setting the
+#   PYTHON_NOVERSIONCHECK environment variable to something else than the
+#   empty string.
 #
 #   If you need to use this macro for an older Python version, please
 #   contact the authors. We're always open for feedback.
 #
 # LAST MODIFICATION
 #
-#   2006-10-22
+#   2008-04-12
 #
 # COPYLEFT
 #
-#   Copyright (c) 2006 Sebastian Huber <sebastian-huber@web.de>
-#   Copyright (c) 2006 Alan W. Irwin <irwin@beluga.phys.uvic.ca>
-#   Copyright (c) 2006 Rafael Laboissiere <rafael@laboissiere.net>
-#   Copyright (c) 2006 Andrew Collier <colliera@ukzn.ac.za>
-#   Copyright (c) 2006 Matteo Settenvini <matteo@member.fsf.org>
-#   Copyright (c) 2006 Horst Knorr <hk_classes@knoda.org>
+#   Copyright (c) 2008 Sebastian Huber <sebastian-huber@web.de>
+#   Copyright (c) 2008 Alan W. Irwin <irwin@beluga.phys.uvic.ca>
+#   Copyright (c) 2008 Rafael Laboissiere <rafael@laboissiere.net>
+#   Copyright (c) 2008 Andrew Collier <colliera@ukzn.ac.za>
+#   Copyright (c) 2008 Matteo Settenvini <matteo@member.fsf.org>
+#   Copyright (c) 2008 Horst Knorr <hk_classes@knoda.org>
 #
-#   This program is free software; you can redistribute it and/or
-#   modify it under the terms of the GNU General Public License as
-#   published by the Free Software Foundation; either version 2 of the
-#   License, or (at your option) any later version.
+#   This program is free software: you can redistribute it and/or modify it
+#   under the terms of the GNU General Public License as published by the
+#   Free Software Foundation, either version 3 of the License, or (at your
+#   option) any later version.
 #
 #   This program is distributed in the hope that it will be useful, but
 #   WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-#   General Public License for more details.
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+#   Public License for more details.
 #
-#   You should have received a copy of the GNU General Public License
-#   along with this program; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-#   02111-1307, USA.
+#   You should have received a copy of the GNU General Public License along
+#   with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-#   As a special exception, the respective Autoconf Macro's copyright
-#   owner gives unlimited permission to copy, distribute and modify the
-#   configure scripts that are the output of Autoconf when processing
-#   the Macro. You need not follow the terms of the GNU General Public
-#   License when using or distributing such scripts, even though
-#   portions of the text of the Macro appear in them. The GNU General
-#   Public License (GPL) does govern all other use of the material that
-#   constitutes the Autoconf Macro.
+#   As a special exception, the respective Autoconf Macro's copyright owner
+#   gives unlimited permission to copy, distribute and modify the configure
+#   scripts that are the output of Autoconf when processing the Macro. You
+#   need not follow the terms of the GNU General Public License when using
+#   or distributing such scripts, even though portions of the text of the
+#   Macro appear in them. The GNU General Public License (GPL) does govern
+#   all other use of the material that constitutes the Autoconf Macro.
 #
-#   This special exception to the GPL applies to versions of the
-#   Autoconf Macro released by the Autoconf Macro Archive. When you
-#   make and distribute a modified version of the Autoconf Macro, you
-#   may extend this special exception to the GPL to apply to your
-#   modified version as well.
+#   This special exception to the GPL applies to versions of the Autoconf
+#   Macro released by the Autoconf Macro Archive. When you make and
+#   distribute a modified version of the Autoconf Macro, you may extend this
+#   special exception to the GPL to apply to your modified version as well.
 
 AC_DEFUN([AC_PYTHON_DEVEL],[
 	#
@@ -234,6 +230,8 @@ $ac_distutils_result])
 	AC_MSG_CHECKING([consistency of all components of python development environment])
 	AC_LANG_PUSH([C])
 	# save current global flags
+    ac_save_CPPFLAGS="$CPPFLAGS"
+    ac_save_LIBS="$LIBS"
 	LIBS="$ac_save_LIBS $PYTHON_LDFLAGS"
 	CPPFLAGS="$ac_save_CPPFLAGS $PYTHON_CPPFLAGS"
 	AC_TRY_LINK([

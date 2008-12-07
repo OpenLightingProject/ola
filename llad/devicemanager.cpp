@@ -18,84 +18,65 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#include <llad/logger.h>
-#include "devicemanager.h"
-
 #include <stdio.h>
+#include <llad/logger.h>
+#include "DeviceManager.h"
+
+namespace lla {
 
 /*
- * Create a new DeviceManager object
+ * Register a device
  *
- */
-DeviceManager::DeviceManager() {}
-
-
-/*
- * Destroy this device manager object
- *
- */
-DeviceManager::~DeviceManager() {
-
-
-}
-
-
-/*
- * Register this device, called from the plugins
- *
- * @param dev    pointer to the device to register
+ * @param device pointer to the device to register
  * @return 0 on sucess, -1 on failure
- *
  */
-int DeviceManager::register_device(Device *dev) {
-
-  m_dev_vect.push_back(dev);
-
+int DeviceManager::RegisterDevice(AbstractDevice *device) {
+  device->SetDeviceId(m_next_device_id);
+  m_devices.push_back(device);
+  m_next_device_id++;
   Logger::instance()->log(Logger::INFO, "Installed device");
   return 0;
 }
 
 
 /*
- * Unregister this device, called from the plugins
+ * Unregister this device
  *
- * @param dev pointer to the Device to unregister
+ * @param dev pointer to the AbstractDevice to unregister
  * @return 0 on sucess, non 0 on failure
- *
  */
-int DeviceManager::unregister_device(Device *dev) {
-  vector<Device*>::iterator it;
-
-  for (it = m_dev_vect.begin(); it != m_dev_vect.end(); ++it) {
-    if(*it  == dev) {
-      m_dev_vect.erase(it);
-      return 0;
+int DeviceManager::UnregisterDevice(AbstractDevice *device) {
+  vector<AbstractDevice*>::iterator iter;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    if ((*iter)->DeviceId() == device->DeviceId()) {
+      m_devices.erase(iter);
+      break;
     }
   }
-
-  return 1;
+  return 0;
 }
+
 
 /*
- * return the number of devices registered
- *
- * @return the number of devices
+ * Return the device with the id of device_id
  */
-int DeviceManager::device_count() const {
-  return m_dev_vect.size();
+AbstractDevice* DeviceManager::GetDevice(unsigned int device_id) {
+  vector<AbstractDevice*>::iterator iter;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    if ((*iter)->DeviceId() == device_id) {
+      return *iter;
+    }
+  }
+  return NULL;
 }
+
 
 /*
- * fetch the device at a particular position
- *
- * @param id  the index of the device to fetch
- * @return  the device at position id, or NULL on error
- *
+ * Remove all devices and reset the device counter
  */
-Device *DeviceManager::get_dev(unsigned int id) const {
-
-  if(id >= m_dev_vect.size())
-    return NULL;
-
-  return m_dev_vect[id];
+void DeviceManager::UnregisterAllDevices() {
+  m_devices.clear();
+  m_next_device_id = 1;
 }
+
+} //lla

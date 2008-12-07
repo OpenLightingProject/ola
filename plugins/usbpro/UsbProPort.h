@@ -21,19 +21,29 @@
 #ifndef USBPROPORT_H
 #define USBPROPORT_H
 
-#include <llad/port.h>
+#include <llad/Port.h>
+#include "UsbProDevice.h"
 
-class UsbProPort : public Port {
+namespace lla {
+namespace plugin {
 
+class UsbProPort: public lla::Port {
   public:
-    UsbProPort(Device *parent, int id) : Port(parent, id) {};
+    UsbProPort(UsbProDevice *parent, int id):
+      lla::Port(parent, id),
+      m_usb_device(parent) {};
 
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
-    int set_universe(Universe *uni);
-    int can_read() const;
-    int can_write() const;
+    int WriteDMX(uint8_t *data, unsigned int length);
+    int ReadDMX(uint8_t *data, unsigned int length);
+    int SetUniverse(Universe *uni);
+    bool CanRead() const;
+    bool CanWrite() const;
 
+  private:
+    UsbProDevice *m_usb_device;
 };
+
+} // plugin
+} //lla
 
 #endif

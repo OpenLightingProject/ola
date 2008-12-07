@@ -15,36 +15,38 @@
  *
  * DynamicPluginLoader.h
  * Interface for the DynamicPluginLoader class
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef DYNAIMCPLUGINLOADER_H
-#define DYNAIMCPLUGINLOADER_H
+#ifndef LLA_DYNAMICPLUGINLOADER_H
+#define LLA_DYNAMICPLUGINLOADER_H
 
-#include <map>
 #include <vector>
 
-#include <llad/plugin.h>
 #include "PluginLoader.h"
 
-using namespace std;
+namespace lla {
 
-class DynamicPluginLoader : public PluginLoader {
+using std::vector;
+class AbstractPlugin;
 
+class DynamicPluginLoader: public PluginLoader {
   public:
     DynamicPluginLoader() {};
-    ~DynamicPluginLoader() { unload_plugins(); }
+    ~DynamicPluginLoader() { UnloadPlugins(); }
 
-    int load_plugins();
-    int unload_plugins();
-    int plugin_count() const;
-    Plugin *get_plugin(unsigned int id) const;
+    int LoadPlugins();
+    int UnloadPlugins();
+    int PluginCount() const;
+    AbstractPlugin *GetPlugin(unsigned int plugin_id) const;
+    vector<AbstractPlugin*> Plugins() const;
 
   private:
     DynamicPluginLoader(const DynamicPluginLoader&);
     DynamicPluginLoader operator=(const DynamicPluginLoader&);
 
-    vector<Plugin*> m_plugin_vect;
+    vector<AbstractPlugin*> m_plugins;
 };
 
+} //lla
 #endif

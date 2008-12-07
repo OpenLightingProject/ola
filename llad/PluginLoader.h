@@ -14,34 +14,37 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PluginLoader.h
- * Interface for the pluginloader classes
- * Copyright (C) 2005-2007  Simon Newton
+ * Interface for the PluginLoader classes
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef PLUGINLOADER_H
-#define PLUGINLOADER_H
+#ifndef LLA_PLUGINLOADER_H
+#define LLA_PLUGINLOADER_H
 
-#include <map>
 #include <vector>
 
-#include <llad/plugin.h>
+namespace lla {
 
-using namespace std;
+using std::vector;
+class AbstractPlugin;
 
 class PluginLoader {
-
   public:
-    PluginLoader() {};
+    PluginLoader() {}
     virtual ~PluginLoader() {};
 
-    void set_plugin_adaptor(class PluginAdaptor *pa) { m_pa = pa; }
-    virtual int load_plugins() = 0;
-    virtual int unload_plugins() { return 0; }
-    virtual int plugin_count() const = 0;
-    virtual Plugin *get_plugin(unsigned int id) const = 0;
+    void SetPluginAdaptor(class PluginAdaptor *adaptor) {
+      m_plugin_adaptor = adaptor;
+    }
+    virtual int LoadPlugins() = 0;
+    virtual int UnloadPlugins() = 0;
+    virtual int PluginCount() const = 0;
+    virtual AbstractPlugin *GetPlugin(unsigned int plugin_id) const = 0;
+    virtual vector<AbstractPlugin*> Plugins() const = 0;
 
   protected:
-    class PluginAdaptor *m_pa;
+    class PluginAdaptor *m_plugin_adaptor;
 };
 
+} //lla
 #endif

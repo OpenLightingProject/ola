@@ -15,27 +15,30 @@
  *
  * DummyDevice.h
  * Interface for the dummy device
- * Copyright (C) 2005-2007  Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef DUMMYDEVICE_H
 #define DUMMYDEVICE_H
 
-#include <llad/device.h>
+#include <string>
+#include <llad/Device.h>
 
-class DummyDevice : public Device {
+namespace lla {
 
+class AbstractPlugin;
+
+namespace plugin {
+
+using std::string;
+
+class DummyDevice: public Device {
   public:
-    DummyDevice(Plugin *owner, const string &name);
-    ~DummyDevice();
-
-    int save_config() const;
-    int configure(void *req, int len);
-
-    int start();
-    int stop();
-  private:
-    bool m_enabled;
+    DummyDevice(AbstractPlugin *owner, const string &name): Device(owner, name) {}
+    bool Start();
+    bool Stop();
 };
 
+} //plugin
+} // lla
 #endif

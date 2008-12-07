@@ -20,15 +20,32 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <vector>
 
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
 #include <llad/logger.h>
 
 #include "UsbProPlugin.h"
 #include "UsbProDevice.h"
 
-#include <vector>
+
+/*
+ * Entry point to this plugin
+ */
+extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+  return new lla::plugin::UsbProPlugin(plugin_adaptor);
+}
+
+/*
+ * Called when the plugin is unloaded
+ */
+extern "C" void destroy(lla::AbstractPlugin* plugin) {
+  delete plugin;
+}
+
+namespace lla {
+namespace plugin {
 
 const string UsbProPlugin::USBPRO_DEVICE_PATH = "/dev/ttyUSB0";
 const string UsbProPlugin::USBPRO_DEVICE_NAME = "Enttec Usb Pro Device";
@@ -36,95 +53,53 @@ const string UsbProPlugin::PLUGIN_NAME = "UsbPro Plugin";
 const string UsbProPlugin::PLUGIN_PREFIX = "usbpro";
 
 /*
- * Entry point to this plugin
- */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new UsbProPlugin(pa, LLA_PLUGIN_USBPRO);
-}
-
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(Plugin* plug) {
-  delete plug;
-}
-
-
-/*
  * Start the plugin
  *
- * Multiple devices now supported
  */
-int UsbProPlugin::start_hook() {
-  int sd;
-  vector<string> *dev_nm_v;
-  vector<string>::iterator it;
+bool UsbProPlugin::StartHook() {
   UsbProDevice *dev;
 
-  // fetch device listing
-  dev_nm_v = m_prefs->get_multiple_val("device");
+  vector<string> device_names = m_preferences->GetMultipleValue("device");
+  vector<string>::iterator it;
 
-  // for each device
-  for (it = dev_nm_v->begin(); it != dev_nm_v->end(); ++it) {
-
-    /* create new lla device */
+  for (it = device_names.begin(); it != device_names.end(); ++it) {
     dev = new UsbProDevice(this, USBPRO_DEVICE_NAME, *it);
 
-    if (dev == NULL)
+    if (!dev)
       continue;
 
-    if (dev->start()) {
+    if (dev->Start()) {
       delete dev;
       continue;
     }
 
-    // register our descriptors, with us as the manager
-    // this should really be fatal
-    if ((sd = dev->get_sd()) >= 0)
-      m_pa->register_fd( sd, PluginAdaptor::READ, dev, this);
-
-    m_pa->register_device(dev);
-
-    m_devices.insert(m_devices.end(), dev);
-
+    m_plugin_adaptor->AddSocket(dev->GetSocket(), this);
+    m_plugin_adaptor->RegisterDevice(dev);
+    m_devices.push_back(dev);
   }
-
-  delete dev_nm_v;
-  return 0;
+  return true;
 }
 
 
 /*
  * Stop the plugin
  *
- * @return 0 on sucess, -1 on failure
+ * @return true on sucess, -1 on failure
  */
-int UsbProPlugin::stop_hook() {
-  UsbProDevice *dev;
-  unsigned int i = 0;
-
-  for (i = 0; i < m_devices.size(); i++) {
-    dev = m_devices[i];
-
-    m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ);
-
-    // stop the device
-    if (dev->stop())
-      continue;
-
-    m_pa->unregister_device(dev);
-    delete dev;
+bool UsbProPlugin::StopHook() {
+  vector<UsbProDevice*>::iterator iter;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    DeleteDevice(*iter);
   }
-
   m_devices.clear();
-  return 0;
+  return true;
 }
 
+
 /*
- * return the description for this plugin
- *
+ * Return the description for this plugin
  */
-string UsbProPlugin::get_desc() const {
+string UsbProPlugin::Description() const {
     return
 "Enttec Usb Pro Plugin\n"
 "----------------------------\n"
@@ -137,54 +112,57 @@ string UsbProPlugin::get_desc() const {
 "The device to use. Multiple devices are allowed\n";
 }
 
+
 /*
  * Called if fd_action returns an error for one of our devices
  *
  */
-int UsbProPlugin::fd_error(int error, Listener *listener) {
-  UsbProDevice *dev  = dynamic_cast<UsbProDevice *> (listener);
-  vector<UsbProDevice *>::iterator iter;
+void UsbProPlugin::SocketClosed(Socket *socket) {
+  vector<UsbProDevice*>::iterator iter;
 
-  if ( ! dev) {
-    Logger::instance()->log(Logger::WARN, "fd_error : dynamic cast failed");
-    return 0;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    if ((*iter)->GetSocket() == socket) {
+      break;
+    }
   }
 
-  // stop this device
-  m_pa->unregister_fd( dev->get_sd(), PluginAdaptor::READ);
+  if (iter == m_devices.end()) {
+    Logger::instance()->log(Logger::WARN, "fd_error : dynamic cast failed");
+    return;
+  }
 
-  // stop the device
-  dev->stop();
-
-  m_pa->unregister_device(dev);
-
-  iter = find(m_devices.begin() , m_devices.end(), dev);
-  if (*iter == dev)
-    m_devices.erase(iter);
-
-  delete dev;
-  error = 0;
-  return 0;
+  DeleteDevice(*iter);
+  m_devices.erase(iter);
 }
 
+
 /*
- * load the plugin prefs and default to sensible values
- *
+ * Default to sensible values
  */
-int UsbProPlugin::set_default_prefs() {
-  if (m_prefs == NULL)
+int UsbProPlugin::SetDefaultPreferences() {
+  if (!m_preferences)
     return -1;
 
-  if ( m_prefs->get_val("device") == "") {
-    m_prefs->set_val("device", USBPRO_DEVICE_PATH);
-    m_prefs->save();
+  if (m_preferences->GetValue("device").empty()) {
+    m_preferences->SetValue("device", USBPRO_DEVICE_PATH);
+    m_preferences->Save();
   }
 
   // check if this saved correctly
   // we don't want to use it if null
-  if (m_prefs->get_val("device") == "") {
-    delete m_prefs;
+  if (m_preferences->GetValue("device").empty()) {
+    delete m_preferences;
     return -1;
   }
   return 0;
 }
+
+void UsbProPlugin::DeleteDevice(UsbProDevice *device) {
+  m_plugin_adaptor->RemoveSocket(device->GetSocket());
+  device->Stop();
+  m_plugin_adaptor->UnregisterDevice(device);
+  delete device;
+}
+
+} // plugins
+} //lla

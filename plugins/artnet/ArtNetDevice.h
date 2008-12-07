@@ -22,31 +22,43 @@
 #ifndef ARTNETDEVICE_H
 #define ARTNETDEVICE_H
 
-#include <llad/device.h>
-#include <llad/listener.h>
+#include <llad/Device.h>
+#include <lla/select_server/FDListener.h>
 
 #include <artnet/artnet.h>
 
-class ArtNetDevice : public Device, public Listener {
+namespace lla {
 
+class Preferences;
+
+namespace plugin {
+
+using lla::Device;
+using lla::select_server::FDListener;
+using std::string;
+
+class ArtNetDevice : public Device, public FDListener {
   public:
-    ArtNetDevice(Plugin *owner, const string &name, class Preferences *prefs) ;
-    ~ArtNetDevice() ;
+    ArtNetDevice(AbstractPlugin *owner,
+                 const string &name,
+                 class Preferences *prefs);
+    ~ArtNetDevice();
 
-    int start() ;
-    int stop() ;
-    artnet_node get_node() const;
-    int get_sd() const ;
-    int action() ;
-    int save_config() const;
-    class LlaDevConfMsg *configure(const uint8_t *req, int len) ;
+    bool Start();
+    bool Stop();
+    artnet_node GetArtnetNode() const;
+    int get_sd() const;
+    int FDReady();
+    int SaveConfig() const;
 
   private:
-    class Preferences *m_prefs;
-    artnet_node m_node ;
-    bool m_enabled ;
-    class ArtNetConfParser *m_parser;    // parser for config msgs
+    class Preferences *m_preferences;
+    artnet_node m_node;
+    bool m_enabled;
 
 };
+
+} //plugin
+} //lla
 
 #endif

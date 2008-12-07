@@ -13,28 +13,42 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * pluginadaptor.cpp
- * Provides a wrapper for the DeviceManager and Network objects so that the plugins
- * can register devices and file handles for events
- * Copyright (C) 2005  Simon Newton
+ * PluginAdaptor.cpp
+ * Provides a wrapper for the DeviceManager and SelectServer objects so that
+ * the plugins can register devices and file handles for events
+ * Copyright (C) 2005-2008 Simon Newton
  *
  *
  */
 
-#include <llad/pluginadaptor.h>
-#include "devicemanager.h"
-#include "network.h"
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
+#include <lla/select_server/FdListener.h>
+#include <lla/select_server/TimeoutListener.h>
+#include <lla/select_server/SelectServer.h>
+
+#include "DeviceManager.h"
+
+namespace lla {
+
+using lla::select_server::SelectServer;
+using lla::select_server::FDListener;
+using lla::select_server::TimeoutListener;
 
 /*
  * Create a new pluginadaptor
  *
- * @param  dm  pointer to a devicemanager object
- * @param  net  pointer to the network object
+ * @param  m_device_manager  pointer to a devicemanager object
+ * @param  m_ss  pointer to the m_sswork object
  */
-PluginAdaptor::PluginAdaptor(DeviceManager *dm, Network *net) {
-  this->dm = dm;
-  this->net = net;
+PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
+                             SelectServer *select_server,
+                             PreferencesFactory *preferences_factory):
+  m_device_manager(device_manager),
+  m_ss(select_server),
+  m_preferences_factory(preferences_factory) {
 }
+
 
 /*
  * register a fd
@@ -46,10 +60,14 @@ PluginAdaptor::PluginAdaptor(DeviceManager *dm, Network *net) {
  *
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, Listener *listener, FDManager *manager) const {
-  Network::Direction ndir = dir==PluginAdaptor::READ ? Network::READ : Network::WRITE;
-  return net->register_fd(fd, ndir, listener, manager);
+int PluginAdaptor::RegisterFD(int fd, PluginAdaptor::Direction direction,
+                              FDListener *listener,
+                              FDManager *manager) const {
+  SelectServer::Direction dir = (direction == PluginAdaptor::READ ?
+                                 SelectServer::READ : SelectServer::WRITE);
+  return m_ss->RegisterFD(fd, dir, listener, manager);
 }
+
 
 /*
  * Unregister a fd
@@ -59,9 +77,22 @@ int PluginAdaptor::register_fd(int fd, PluginAdaptor::Direction dir, Listener *l
  *
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::unregister_fd(int fd, PluginAdaptor::Direction dir) const {
-  Network::Direction ndir =  dir==PluginAdaptor::READ ? Network::READ : Network::WRITE;
-  return net->unregister_fd(fd,ndir);
+int PluginAdaptor::UnregisterFD(int fd,
+                                PluginAdaptor::Direction direction) const {
+  SelectServer::Direction dir = (direction == PluginAdaptor::READ ?
+                                 SelectServer::READ : SelectServer::WRITE);
+  return m_ss->UnregisterFD(fd, dir);
+}
+
+
+int PluginAdaptor::AddSocket(Socket *socket,
+                             SocketManager *manager) const {
+  return m_ss->AddSocket(socket, manager);
+}
+
+
+int PluginAdaptor::RemoveSocket(Socket *socket) const {
+  return m_ss->RemoveSocket(socket);
 }
 
 
@@ -72,15 +103,16 @@ int PluginAdaptor::unregister_fd(int fd, PluginAdaptor::Direction dir) const {
  *
  * @return the timeout id on success, 0 on error
  */
-int PluginAdaptor::register_timeout(int ms, TimeoutListener *listener ) const {
-  return net->register_timeout(ms, listener);
+int PluginAdaptor::RegisterTimeout(int ms, TimeoutListener *listener) const {
+  return m_ss->RegisterTimeout(ms, listener);
 }
+
 
 /*
  * register a loop function
  */
-int PluginAdaptor::register_loop_fn(Listener *l) const {
-  return net->register_loop_fn(l);
+int PluginAdaptor::RegisterLoopCallback(FDListener *listener) const {
+  return m_ss->RegisterLoopCallback(listener);
 }
 
 
@@ -90,9 +122,10 @@ int PluginAdaptor::register_loop_fn(Listener *l) const {
  * @param dev  the device to register
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::register_device(Device *dev) const {
-  return dm->register_device(dev);
+int PluginAdaptor::RegisterDevice(AbstractDevice *device) const {
+  return m_device_manager->RegisterDevice(device);
 }
+
 
 /*
  * Unregister a device
@@ -100,7 +133,19 @@ int PluginAdaptor::register_device(Device *dev) const {
  * @param dev  the device to unregister
  * @return 0 on success, non 0 on error
  */
-int PluginAdaptor::unregister_device(Device *dev) const {
-  return dm->unregister_device(dev);
+int PluginAdaptor::UnregisterDevice(AbstractDevice *device) const {
+  return m_device_manager->UnregisterDevice(device);
 }
 
+
+/*
+ * Create a new preferences container
+ *
+ * @return a Preferences object
+ */
+Preferences *PluginAdaptor::NewPreference(const string &name) const {
+  return m_preferences_factory->NewPreference(name);
+}
+
+
+} //lla

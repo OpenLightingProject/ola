@@ -19,40 +19,22 @@
  */
 
 #include "LlaDevice.h"
-#include "LlaPort.h"
 
-/*
- *
- */
-LlaDevice::LlaDevice(int id, int count, const string &name, int pid) :
- m_id(id),
- m_count(count),
- m_name(name),
- m_plugin(pid) {
+namespace lla {
 
-}
-
-LlaDevice::~LlaDevice() {
- reset_ports();
-}
+using std::string;
+using std::vector;
 
 
-int LlaDevice::add_port(LlaPort *prt) {
- m_ports.push_back(prt);
+int LlaDevice::AddPort(const LlaPort &port) {
+ m_ports.push_back(port);
  return 0;
 }
 
-const vector<LlaPort *> LlaDevice::get_ports() {
- return m_ports;
-}
 
-int LlaDevice::reset_ports() {
- vector<LlaPort *>::iterator iter;
-
- for(iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-  delete (*iter);
- }
-
+int LlaDevice::ClearPorts() {
  m_ports.clear();
  return 0;
 }
+
+} // lla

@@ -14,7 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * preferences.h
- * Interface for the preferences class
+ * Interface for the Preferences class - this allows storing user preferences /
+ * settings.
  * Copyright (C) 2005-2006  Simon Newton
  */
 
@@ -27,30 +28,94 @@
 
 using namespace std;
 
+namespace lla {
+
+/*
+ * The abstract Preferences class
+ */
 class Preferences {
-
   public:
-    Preferences(string id);
-    ~Preferences();
+    Preferences(const string name): m_preference_name(name) {}
+    virtual ~Preferences() {}
 
-    int load();
-    int save() const;
+    virtual int Load() = 0;
+    virtual int Save() const = 0;
 
-    int set_val(const string &key, const string &value);
-    int set_multiple_val(const string &key, const string &value);
+    virtual int SetValue(const string &key, const string &value) = 0;
+    virtual int SetMultipleValue(const string &key, const string &value) = 0;
 
-    string get_val(const string &key);
-    vector<string> *get_multiple_val(const string &key);
+    virtual string GetValue(const string &key) const = 0;
+    virtual vector<string> GetMultipleValue(const string &key) const = 0;
 
+  protected:
+    string m_preference_name;
   private:
     Preferences(const Preferences&);
     Preferences& operator=(const Preferences&);
 
-    int change_dir() const;
-    char *strtrim(char *str);
+};
 
-    string id;
+
+/*
+ * A PreferencesFactory creates preferences objects
+ */
+class PreferencesFactory {
+  public:
+    PreferencesFactory() {}
+    virtual ~PreferencesFactory() {}
+    virtual Preferences *NewPreference(const string &name) = 0;
+};
+
+
+/*
+ * MemoryPreferences just stores the preferences in memory. Useful for testing.
+ */
+class MemoryPreferences: public Preferences {
+  public:
+    MemoryPreferences(const string name): Preferences(name) {}
+    virtual ~MemoryPreferences();
+    virtual int Load() { return 0; }
+    virtual int Save() const { return 0; }
+    virtual int SetValue(const string &key, const string &value);
+    virtual int SetMultipleValue(const string &key, const string &value);
+    virtual string GetValue(const string &key) const;
+    virtual vector<string> GetMultipleValue(const string &key) const;
+
+  protected:
     multimap<string, string> m_pref_map;
 };
 
+
+class MemoryPreferencesFactory: public PreferencesFactory {
+  public:
+    MemoryPreferences *NewPreference(const string &name) {
+      return new MemoryPreferences(name);
+    }
+};
+
+
+/*
+ * FilePreferences uses one file per namespace
+ */
+class FileBackedPreferences: public MemoryPreferences {
+  public:
+    FileBackedPreferences(const string name): MemoryPreferences(name) {}
+    virtual int Load();
+    virtual int Save() const;
+
+  private:
+    int ChangeDir() const;
+    char *StrTrim(char *str);
+};
+
+class FileBackedPreferencesFactory: public PreferencesFactory {
+  public:
+    FileBackedPreferences *NewPreference(const string &name) {
+      return new FileBackedPreferences(name);
+    }
+};
+
+
+
+} //lla
 #endif

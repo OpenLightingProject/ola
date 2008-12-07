@@ -5,9 +5,10 @@ AC_PREREQ(2.57)
 AC_INIT(configure.in)
 AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(lla, 0.2.3)
+AM_INIT_AUTOMAKE(lla, 0.3.0)
 
 # Checks for programs.
+AC_LANG(C++)
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_CPP
@@ -22,6 +23,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADER(pthread.h, have_threads=posix)
+AC_CHECK_HEADER(google/protobuf/stubs/common.h, , AC_MSG_ERROR('protobuf library not installed'))
 
 AM_CONDITIONAL(HAVE_PTHREAD, test "${have_threads}" = "posix")
 if test "${have_threads}" = "posix"; then
@@ -63,7 +65,6 @@ PLUGINS="dummy opendmx stageprofi usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
 PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
-PLUGIN_LIBRARY(eartnet, eartnet_new, EARTNET)
 PLUGIN_LIBRARY(espnet, espnet_new, ESPNET)
 PLUGIN_LIBRARY(shownet, shownet_new, SHOWNET)
 PLUGIN_LIBRARY(sandnet, sandnet_new, SANDNET)
@@ -115,6 +116,9 @@ if test "${build_python_libs}" = "yes"; then
  SWIG_ENABLE_CXX
  SWIG_PYTHON
 fi
+
+# check for cppunit
+AM_PATH_CPPUNIT(1.9.6)
 
 
 AC_OUTPUT_COMMANDS([
@@ -173,17 +177,20 @@ _EOF_
 ])
 
 # output
-AC_OUTPUT( Makefile \
+AC_OUTPUT( Makefile\
+    common/Makefile\
+    common/protocol/Makefile\
+    common/rpc/Makefile\
+    common/select_server/Makefile\
     include/Makefile\
     include/lla/Makefile\
+    include/lla/select_server/Makefile\
     include/llad/Makefile\
     lla/Makefile \
     python/Makefile \
     llad/Makefile \
     plugins/Makefile \
     plugins/artnet/Makefile \
-    plugins/artnet/conf_msgs/Makefile \
-    plugins/eartnet/Makefile \
     plugins/e131/Makefile \
     plugins/dummy/Makefile \
     plugins/dmx4linux/Makefile \
@@ -193,9 +200,6 @@ AC_OUTPUT( Makefile \
     plugins/sandnet/Makefile \
     plugins/usbpro/Makefile \
     plugins/stageprofi/Makefile \
-    plugins/usbpro/conf_msgs/Makefile \
     plugins/opendmx/Makefile \
     liblla.pc \
-    plugins/usbpro/conf_msgs/libllausbproconf.pc \
-    plugins/artnet/conf_msgs/libllaartnetconf.pc
     )

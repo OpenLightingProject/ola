@@ -23,7 +23,6 @@
  *
  * Ids 0-3 : Input ports (recv dmx)
  * Ids 4-7 : Output ports (send dmx)
- *
  */
 
 #include <stdlib.h>
@@ -34,10 +33,8 @@
 #include "ArtNetPort.h"
 
 #include <llad/logger.h>
-#include <llad/preferences.h>
+#include <llad/Preferences.h>
 #include <artnet/artnet.h>
-#include "ArtNetConfMsgs.h"
-#include "ArtNetConfParser.h"
 
 
 #if HAVE_CONFIG_H
@@ -45,22 +42,25 @@
 #endif
 
 
+using lla::plugin::ArtNetDevice;
+using lla::plugin::ArtNetPort;
+using lla::Preferences;
+
 /*
  * Handle dmx from the network, called from libartnet
  *
  */
 int dmx_handler(artnet_node n, int prt, void *d) {
-  ArtNetDevice *dev = (ArtNetDevice *) d;
-  ArtNetPort *port;
+  ArtNetDevice *device = (ArtNetDevice *) d;
 
   // don't return non zero here else libartnet will stop processing
   // this should never happen anyway
-  if( prt < 0 || prt > ARTNET_MAX_PORTS)
+  if (prt < 0 || prt > ARTNET_MAX_PORTS)
     return 0;
 
   // signal to the port that the data has changed
-  port = (ArtNetPort*) dev->get_port(prt);
-  port->dmx_changed();
+  ArtNetPort *port = (ArtNetPort*) device->GetPort(prt);
+  port->DmxChanged();
 
   n = NULL;
   return 0;
@@ -74,13 +74,15 @@ int dmx_handler(artnet_node n, int prt, void *d) {
  *
  */
 int program_handler(artnet_node n, void *d) {
-  ArtNetDevice *dev = (ArtNetDevice *) d;
-
-  dev->save_config();
+  ArtNetDevice *device = (ArtNetDevice *) d;
+  device->SaveConfig();
   n = NULL;
   return 0;
 }
 
+
+namespace lla {
+namespace plugin {
 
 /*
  * Create a new device
@@ -88,13 +90,13 @@ int program_handler(artnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-ArtNetDevice::ArtNetDevice(Plugin *owner, const string &name, Preferences *prefs) :
+ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
+                           const string &name,
+                           lla::Preferences *prefs) :
   Device(owner, name),
-  m_prefs(prefs),
+  m_preferences(prefs),
   m_node(NULL),
   m_enabled(false) {
-    m_parser = new ArtNetConfParser();
-
 }
 
 
@@ -103,8 +105,7 @@ ArtNetDevice::ArtNetDevice(Plugin *owner, const string &name, Preferences *prefs
  */
 ArtNetDevice::~ArtNetDevice() {
   if (m_enabled)
-    stop();
-  delete m_parser;
+    Stop();
 }
 
 
@@ -112,17 +113,16 @@ ArtNetDevice::~ArtNetDevice() {
  * Start this device
  *
  */
-int ArtNetDevice::start() {
+bool ArtNetDevice::Start() {
   ArtNetPort *port = NULL;
-  Port *prt = NULL;
   int debug = 0;
 
   /* set up ports */
-  for(int i=0; i < 2*ARTNET_MAX_PORTS; i++) {
-    port = new ArtNetPort(this,i);
+  for(int i=0; i < 2 * ARTNET_MAX_PORTS; i++) {
+    port = new ArtNetPort(this, i);
 
     if(port != NULL)
-      this->add_port(port);
+      this->AddPort(port);
   }
 
 #ifdef DEBUG
@@ -131,10 +131,10 @@ int ArtNetDevice::start() {
 
   // create new artnet node, and and set config values
 
-  if(m_prefs->get_val("ip") == "")
+  if (m_preferences->GetValue("ip") == "")
     m_node = artnet_new(NULL, debug);
   else {
-    m_node = artnet_new(m_prefs->get_val("ip").c_str(), debug);
+    m_node = artnet_new(m_preferences->GetValue("ip").c_str(), debug);
   }
 
   if (!m_node) {
@@ -149,12 +149,12 @@ int ArtNetDevice::start() {
   }
 
 
-  if (artnet_set_short_name(m_node, m_prefs->get_val("short_name").c_str())) {
+  if (artnet_set_short_name(m_node, m_preferences->GetValue("short_name").c_str())) {
     Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_short_name failed: %s", artnet_strerror());
     goto e_artnet_start;
   }
 
-  if (artnet_set_long_name(m_node, m_prefs->get_val("long_name").c_str())) {
+  if (artnet_set_long_name(m_node, m_preferences->GetValue("long_name").c_str())) {
     Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_long_name failed: %s", artnet_strerror());
     goto e_artnet_start;
   }
@@ -164,7 +164,7 @@ int ArtNetDevice::start() {
     goto e_artnet_start;
   }
 
-  if (artnet_set_subnet_addr(m_node, atoi(m_prefs->get_val("subnet").c_str()) ) ) {
+  if (artnet_set_subnet_addr(m_node, atoi(m_preferences->GetValue("subnet").c_str()) ) ) {
     Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_subnet_addr failed: %s", artnet_strerror());
     goto e_artnet_start;
   }
@@ -216,11 +216,7 @@ e_artnet_start:
     Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_destroy failed: %s", artnet_strerror());
 
 e_dev:
-  for(int i=0; i < port_count(); i++) {
-    prt = get_port(i);
-    if(prt != NULL)
-      delete prt;
-  }
+  DeleteAllPorts();
 
   return -1;
 }
@@ -230,17 +226,11 @@ e_dev:
  * stop this device
  *
  */
-int ArtNetDevice::stop() {
-  Port *prt = NULL;
-
+bool ArtNetDevice::Stop() {
   if (!m_enabled)
     return 0;
 
-  for (int i=0; i < port_count(); i++) {
-    prt = get_port(i);
-    if (prt)
-      delete prt;
-  }
+  DeleteAllPorts();
 
   if (artnet_stop(m_node)) {
     Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_stop failed: %s", artnet_strerror());
@@ -253,17 +243,15 @@ int ArtNetDevice::stop() {
   }
 
   m_enabled = false;
-
   return 0;
 }
 
 
 /*
- * return the Art-Net node associated with this device
- *
+ * Return the Art-Net node associated with this device
  *
  */
-artnet_node ArtNetDevice::get_node() const {
+artnet_node ArtNetDevice::GetArtnetNode() const {
   return m_node;
 }
 
@@ -272,9 +260,7 @@ artnet_node ArtNetDevice::get_node() const {
  *
  */
 int ArtNetDevice::get_sd() const {
-  int ret;
-
-  ret = artnet_get_sd(m_node);
+  int ret = artnet_get_sd(m_node);
 
   if (ret < 0) {
     Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_get_sd failed: %s", artnet_strerror());
@@ -288,8 +274,8 @@ int ArtNetDevice::get_sd() const {
  *
  * @param  data  user data (pointer to artnet_device_priv
  */
-int ArtNetDevice::action() {
-  if( artnet_read(m_node, 0) ) {
+int ArtNetDevice::FDReady() {
+  if (artnet_read(m_node, 0)) {
     Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_read failed: %s", artnet_strerror()) ;
     return -1 ;
   }
@@ -300,7 +286,7 @@ int ArtNetDevice::action() {
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int ArtNetDevice::save_config() const {
+int ArtNetDevice::SaveConfig() const {
 
 
   return 0;
@@ -308,36 +294,5 @@ int ArtNetDevice::save_config() const {
 
 
 
-/*
- * we can pass plugin specific messages here
- * make sure the user app knows the format though...
- *
- */
-class LlaDevConfMsg *ArtNetDevice::configure(const uint8_t *req, int len) {
-  // handle short/ long name & subnet and port addresses
-
-  ArtNetConfMsg *m = m_parser->parse(req, len);
-
-  if (!m) {
-    Logger::instance()->log(Logger::WARN ,"ArtNetDevice::configure Could not parse message");
-    return NULL;
-  }
-
-  switch (m->type()) {
-    default:
-      Logger::instance()->log(Logger::WARN ,"Invalid request to artnet configure %i", m->type());
-      return NULL;
-  }
-
-  return 0;
-}
-
-/*
- * Handle a set param config request
- */
-/*ArtNetConfMsg *ArtNetDevice::config_get_ports(ArtNetConfMsgSprmReq *req) {
-  ArtNetConfMsgSprmRep *r = new ArtNetConfMsgSprmRep();
-
-  r->set_status(ret);
-  return r;
-}*/
+} //plugin
+} //lla

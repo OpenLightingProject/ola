@@ -18,34 +18,40 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef LLA_CLIENT_H
+#define LLA_CLIENT_H
 
-#include <map>
+#include <stdint.h>
+
+namespace lla {
+namespace proto {
+class LlaClientService_Stub;
+}
+}
+
+namespace lla {
 
 using namespace std;
+using lla::proto::LlaClientService_Stub;
 
 class Client {
 
   public :
-    ~Client();
-    int get_port();
+    Client(LlaClientService_Stub *client_stub):
+      m_client_stub(client_stub) {}
+    ~Client() {};
+    int SendDMX(unsigned int universe_id, uint8_t *data, unsigned int length);
 
-    static Client *get_client(int port);
-    static Client *get_client_or_create(int port);
-    static int clean_up();
-
-  protected :
-    Client(int port);
-
+    void SendDMXCallback();
+    class LlaClientService_Stub *Stub() const { return m_client_stub; }
 
   private:
     Client(const Client&);
     Client& operator=(const Client&);
 
-    int m_port;
-    static map<int, Client *> cli_map;        // map of port to clients;
+    class LlaClientService_Stub *m_client_stub;
 
 };
 
+} //lla
 #endif

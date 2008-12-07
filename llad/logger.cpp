@@ -25,9 +25,10 @@
 Logger *Logger::s_instance = NULL;
 
 Logger::Level operator++(Logger::Level &l) {
-  return l = static_cast<Logger::Level>(l+1);
-
+  return l = static_cast<Logger::Level>(l + 1);
 }
+
+
 /*
  * create a new logger
  *
@@ -39,7 +40,7 @@ Logger::Logger(Logger::Level level, Logger::Output output) {
   m_level = level;
   m_output = output;
 
-  if(m_output == Logger::SYSLOG) {
+  if (m_output == Logger::SYSLOG) {
     openlog("llad", 0, LOG_USER);
   }
 }
@@ -48,7 +49,7 @@ Logger::Logger(Logger::Level level, Logger::Output output) {
  * Destroy this logger object
  */
 Logger::~Logger() {
-  if(m_output == Logger::SYSLOG) {
+  if (m_output == Logger::SYSLOG) {
     closelog();
   }
 }
@@ -66,9 +67,9 @@ void Logger::log(Logger::Level level, const char *fmt, ...) const {
   va_list ap;
   va_start(ap, fmt);
 
-  if(level <= m_level) {
+  if (level <= m_level) {
 
-    if(m_output == Logger::SYSLOG) {
+    if (m_output == Logger::SYSLOG) {
       switch (m_level) {
         case Logger::EMERG:
           pri = LOG_EMERG;
@@ -100,12 +101,11 @@ void Logger::log(Logger::Level level, const char *fmt, ...) const {
 void Logger::increment_log_level() {
   ++m_level;
 
-  if(m_level == LOG_MAX) {
+  if (m_level == LOG_MAX) {
     m_level = EMERG;
   }
 
   log(EMERG, "Changed log level to %i\n", m_level);
-
 }
 
 /*
@@ -114,8 +114,7 @@ void Logger::increment_log_level() {
  * @return the logger object
  */
 Logger *Logger::instance() {
-
-  if(Logger::s_instance == NULL) {
+  if (Logger::s_instance == NULL) {
     Logger::s_instance = new Logger(Logger::CRIT, Logger::STDERR);
   }
   return Logger::s_instance;
@@ -132,8 +131,7 @@ Logger *Logger::instance() {
  * @return the logger object
  */
 Logger *Logger::instance(Logger::Level level, Logger::Output output) {
-
-  if(Logger::s_instance == NULL) {
+  if (Logger::s_instance == NULL) {
     Logger::s_instance = new Logger(level, output);
   }
   return Logger::s_instance;
@@ -145,11 +143,8 @@ Logger *Logger::instance(Logger::Level level, Logger::Output output) {
  *
  */
 void Logger::clean_up() {
-  if(Logger::s_instance != NULL) {
+  if (Logger::s_instance != NULL) {
     delete Logger::s_instance;
     Logger::s_instance = NULL;
   }
 }
-
-
-

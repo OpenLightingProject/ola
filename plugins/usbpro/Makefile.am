@@ -3,16 +3,20 @@ libdir = $(plugindir)
 
 lib_LTLIBRARIES = libllausbpro.la
 
-INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include -I./conf_msgs
+INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 AM_CXXFLAGS = -Wall -Wformat -W
 
-libllausbpro_la_SOURCES = UsbProPlugin.cpp UsbProPlugin.h UsbProDevice.cpp\
-						 UsbProDevice.h UsbProWidget.cpp\
-						 UsbProPort.cpp UsbProPort.h
+BUILT_SOURCES = ConfigMessages.pb.cc ConfigMessages.pb.h
 
-libllausbpro_la_LIBADD = ./conf_msgs/libllausbproconf.la
+libllausbpro_la_SOURCES = UsbProPlugin.cpp UsbProDevice.cpp\
+                          UsbProWidget.cpp UsbProPort.cpp \
+                          ConfigMessages.pb.cc
 
-EXTRA_DIST = ConfMessages.xml UsbProWidgetListener.h UsbProWidget.h
+EXTRA_DIST = ConfigMessages.proto UsbProWidgetListener.h UsbProWidget.h \
+             UsbProPlugin.h UsbProDevice.h UsbProPort.h
 
-SUBDIRS = conf_msgs
+ConfigMessages.pb.cc ConfigMessages.pb.h: ConfigMessages.proto
+	protoc --cpp_out ./ ConfigMessages.proto
 
+clean-local:
+	rm *.pb.{h,cc}

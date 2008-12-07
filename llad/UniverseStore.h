@@ -13,34 +13,44 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * universemanager.h
- * the universe manager class
- * Copyright (C) 2005-2006  Simon Newton
+ * UniverseStore.h
+ * The Universe Store class - this manages the universes
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef UNIVERSE_MANAGER_H
-#define UNIVERSE_MANAGER_H
+#ifndef UNIVERSE_STORE_H
+#define UNIVERSE_STORE_H
 
+#include <map>
 #include <string>
 
-#include <llad/preferences.h>
+namespace lla {
+
+class Universe;
 
 class UniverseStore {
   public:
-
-    UniverseStore() : m_prefs("universes") {};
+    UniverseStore(class Preferences *preferences): m_preferences(preferences) {}
     ~UniverseStore() {};
 
-    int load();
-    int save();
+    Universe *GetUniverse(int universe_id);
+    Universe *GetUniverseOrCreate(int universe_id);
 
-    int store_uni(Universe *uni);
-    int retrieve_uni(Universe *uni);
+    int UniverseCount() const { return m_universe_map.size(); }
+    vector<Universe*> *GetList() const;
+    //Universe *GetUniverseAtPos(int index) const;
+
+    int DeleteAll();
+    bool DeleteUniverseIfInactive(Universe *universe);
+    //void CheckForUnused();
 
   private:
-    Preferences m_prefs;
+    int RestoreUniverseSettings(Universe *universe) const;
+    int SaveUniverseSettings(Universe *universe);
 
-
+    Preferences *m_preferences;
+    std::map<int, Universe *> m_universe_map;  // map of universe_id to Universe
 };
 
+} //lla
 #endif

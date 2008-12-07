@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * stageprofiplugin.h
+ * StageProfiPlugin.h
  * Interface for the stageprofi plugin class
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2008 Simon Newton
  */
 
 #ifndef STAGEPROFIPLUGIN_H
@@ -24,34 +24,40 @@
 #include <vector>
 #include <string>
 
-#include <llad/plugin.h>
-#include <llad/fdmanager.h>
+#include <llad/Plugin.h>
+#include <lla/select_server/Socket.h>
 #include <lla/plugin_id.h>
 
-using namespace std;
+namespace lla {
+namespace plugin {
+
+using lla::select_server::SocketManager;
+using lla::select_server::Socket;
+using std::string;
 
 class StageProfiDevice;
 
-class StageProfiPlugin : public Plugin, public FDManager {
-
+class StageProfiPlugin: public Plugin, public SocketManager {
   public:
-    StageProfiPlugin(const PluginAdaptor *pa, lla_plugin_id id):
-      Plugin(pa, id) {}
+    StageProfiPlugin(const PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor) {}
     ~StageProfiPlugin() {}
 
-    string get_name() const { return PLUGIN_NAME; }
-    string get_desc() const;
-    int fd_error(int error, Listener *listener);
+    string Name() const { return PLUGIN_NAME; }
+    lla_plugin_id Id() const { return LLA_PLUGIN_STAGEPROFI; }
+    string Description() const;
+    void SocketClosed(Socket *socket);
 
   protected:
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    int set_default_prefs();
+    bool StartHook();
+    bool StopHook();
+    int SetDefaultPreferences();
+    void DeleteDevice(StageProfiDevice *device);
 
-    vector<StageProfiDevice *>  m_devices;  // list of our devices
+    vector<StageProfiDevice*> m_devices;  // list of our devices
 
     static const string STAGEPROFI_DEVICE_PATH;
     static const string STAGEPROFI_DEVICE_NAME;
@@ -59,4 +65,6 @@ class StageProfiPlugin : public Plugin, public FDManager {
     static const string PLUGIN_PREFIX;
 };
 
+} //plugin
+} //lla
 #endif

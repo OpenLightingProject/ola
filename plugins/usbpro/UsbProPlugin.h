@@ -22,31 +22,38 @@
 #define USBPROPLUGIN_H
 
 #include <vector>
-#include <llad/plugin.h>
-#include <llad/fdmanager.h>
+#include <llad/Plugin.h>
 #include <lla/plugin_id.h>
+#include <lla/select_server/Socket.h>
+
+namespace lla {
+namespace plugin {
+
+using lla::select_server::SocketManager;
+using lla::select_server::Socket;
 
 class UsbProDevice;
 
-class UsbProPlugin : public Plugin, public FDManager {
-
+class UsbProPlugin: public lla::Plugin, public SocketManager {
   public:
-    UsbProPlugin(const PluginAdaptor *pa, lla_plugin_id id):
-      Plugin(pa, id) {}
+    UsbProPlugin(const PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor) {}
 
-    string get_name() const { return PLUGIN_NAME; }
-    string get_desc() const;
-    int fd_error(int error, Listener *listener);
+    string Name() const { return PLUGIN_NAME; }
+    string Description() const;
+    lla_plugin_id Id() const { return LLA_PLUGIN_USBPRO; }
+    void SocketClosed(Socket *socket);
 
   protected:
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    int set_default_prefs();
+    bool StartHook();
+    bool StopHook();
+    int SetDefaultPreferences();
+    void DeleteDevice(UsbProDevice *device);
 
-    vector<UsbProDevice *> m_devices; // list of our devices
+    vector<UsbProDevice*> m_devices; // list of our devices
 
     static const string USBPRO_DEVICE_PATH;
     static const string USBPRO_DEVICE_NAME;
@@ -54,4 +61,6 @@ class UsbProPlugin : public Plugin, public FDManager {
     static const string PLUGIN_PREFIX;
 };
 
+} //plugins
+} //lla
 #endif

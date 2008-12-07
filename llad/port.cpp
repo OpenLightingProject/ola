@@ -13,33 +13,36 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * port.cpp
+ * Port.cpp
  * Base implementation of the port class
  * Copyright (C) 2005  Simon Newton
  */
 
-#include <llad/port.h>
-#include <llad/universe.h>
+#include <llad/Port.h>
+#include <llad/Universe.h>
 
-#include <stdio.h>
+namespace lla {
 
 /*
  * Create a new port
  *
  * @param parent  the device that owns this port
- * @param id    the id of this port
+ * @param port_id    the port id of this port
  */
-Port::Port(Device *parent, int id) {
-  m_pid = id;
-  m_universe = NULL;
-  m_parent = parent;
+Port::Port(AbstractDevice *parent, int port_id):
+  AbstractPort(),
+  m_port_id(port_id),
+  m_universe(NULL),
+  m_parent(parent) {
 }
 
 /*
  * Signal that the data for this port has changed
  */
-int Port::dmx_changed() {
+int Port::DmxChanged() {
   if(m_universe)
-    return m_universe->port_data_changed(this);
+    return m_universe->PortDataChanged(this);
   return 0;
 }
+
+} //lla

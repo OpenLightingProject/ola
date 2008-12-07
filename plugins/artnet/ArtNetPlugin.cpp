@@ -21,11 +21,30 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
 
 #include "ArtNetPlugin.h"
 #include "ArtNetDevice.h"
+
+
+/*
+ * Entry point to this plugin
+ */
+extern "C" lla::Plugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+  return new lla::plugin::ArtNetPlugin(plugin_adaptor);
+}
+
+/*
+ * Called when the plugin is unloaded
+ */
+extern "C" void destroy(lla::Plugin* plugin) {
+  delete plugin;
+}
+
+
+namespace lla {
+namespace plugin {
 
 const string ArtNetPlugin::ARTNET_LONG_NAME = "lla - ArtNet node";
 const string ArtNetPlugin::ARTNET_SHORT_NAME = "lla - ArtNet node";
@@ -34,72 +53,60 @@ const string ArtNetPlugin::PLUGIN_NAME = "ArtNet Plugin";
 const string ArtNetPlugin::PLUGIN_PREFIX = "artnet";
 
 /*
- * Entry point to this plugin
- */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new ArtNetPlugin(pa, LLA_PLUGIN_ARTNET);
-}
-
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(Plugin* plug) {
-  delete plug;
-}
-
-
-/*
  * Start the plugin
  *
  * For now we just have one device.
  * TODO: allow multiple devices on different IPs ?
+ *
+ * @returns true if we started ok, false otherwise
  */
-int ArtNetPlugin::start_hook() {
+bool ArtNetPlugin::StartHook() {
   int sd;
   /* create new lla device */
-  m_dev = new ArtNetDevice(this, "Art-Net Device", m_prefs);
+  m_device = new ArtNetDevice(this, "Art-Net Device", m_preferences);
 
-  if (m_dev == NULL)
-    return -1;
+  if (!m_device)
+    return false;
 
-  if (m_dev->start()) {
-    delete m_dev;
-    return -1;
+  if (m_device->Start()) {
+    delete m_device;
+    return false;
   }
 
   // register our descriptors, this should really be fatal for this plugin if it fails
-  if ((sd = m_dev->get_sd()) >= 0)
-    m_pa->register_fd(sd, PluginAdaptor::READ, m_dev);
+  if ((sd = m_device->get_sd()) >= 0)
+    m_plugin_adaptor->RegisterFD(sd, PluginAdaptor::READ, m_device);
 
-  m_pa->register_device(m_dev);
-  return 0;
+  m_plugin_adaptor->RegisterDevice(m_device);
+  return true;
 }
 
 
 /*
  * Stop the plugin
  *
- * @return 0 on sucess, -1 on failure
+ * @return true on sucess, false on failure
  */
-int ArtNetPlugin::stop_hook() {
-  if (m_dev != NULL) {
-    m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ);
+bool ArtNetPlugin::StopHook() {
+  if (m_device) {
+    m_plugin_adaptor->UnregisterFD(m_device->get_sd(), PluginAdaptor::READ);
 
     // stop the device
-    if (m_dev->stop())
-      return -1;
+    bool ret = m_device->Stop();
 
-    m_pa->unregister_device(m_dev);
-    delete m_dev;
+    m_plugin_adaptor->UnregisterDevice(m_device);
+    delete m_device;
+    return ret;
   }
-  return 0;
+  return true ;
 }
+
 
 /*
  * return the description for this plugin
  *
  */
-string ArtNetPlugin::get_desc() const {
+string ArtNetPlugin::Description() const {
     return
 "ArtNet Plugin\n"
 "----------------------------\n"
@@ -132,38 +139,41 @@ string ArtNetPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-int ArtNetPlugin::set_default_prefs() {
+int ArtNetPlugin::SetDefaultPreferences() {
   bool save = false;
 
-  if (m_prefs == NULL)
+  if (!m_preferences)
     return -1;
 
   // we don't worry about ip here
   // if it's non existant it will choose one
-  if (m_prefs->get_val("short_name") == "") {
-    m_prefs->set_val("short_name", ARTNET_SHORT_NAME);
+  if (m_preferences->GetValue("short_name") == "") {
+    m_preferences->SetValue("short_name", ARTNET_SHORT_NAME);
     save = true;
   }
 
-  if (m_prefs->get_val("long_name") == "") {
-    m_prefs->set_val("long_name", ARTNET_LONG_NAME);
+  if (m_preferences->GetValue("long_name") == "") {
+    m_preferences->SetValue("long_name", ARTNET_LONG_NAME);
     save = true;
   }
 
-  if (m_prefs->get_val("subnet") == "") {
-    m_prefs->set_val("subnet", ARTNET_SUBNET);
+  if (m_preferences->GetValue("subnet") == "") {
+    m_preferences->SetValue("subnet", ARTNET_SUBNET);
     save = true;
   }
 
   if (save)
-    m_prefs->save();
+    m_preferences->Save();
 
   // check if this save correctly
   // we don't want to use it if null
-  if (m_prefs->get_val("short_name") == "" ||
-      m_prefs->get_val("long_name") == "" ||
-      m_prefs->get_val("subnet") == "" )
+  if (m_preferences->GetValue("short_name") == "" ||
+      m_preferences->GetValue("long_name") == "" ||
+      m_preferences->GetValue("subnet") == "" )
     return -1;
 
   return 0;
 }
+
+} //plugin
+} // lla

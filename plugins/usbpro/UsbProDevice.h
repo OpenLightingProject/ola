@@ -22,50 +22,80 @@
 #define USBPRODEVICE_H
 
 #include <string>
-#include <stdint.h>
-#include <llad/device.h>
-#include <llad/listener.h>
-#include <llad/timeoutlistener.h>
-#include "usbpro_conf_messages.h"
+#include <deque>
+#include <lla/select_server/Socket.h>
+#include <llad/Device.h>
 
-#include "UsbProWidgetListener.h"
+#include "ConfigMessages.pb.h"
 #include "UsbProWidget.h"
+#include "UsbProWidgetListener.h"
 
+namespace lla {
+namespace plugin {
 
-class UsbProDevice : public Device, public Listener, public UsbProWidgetListener {
+using google::protobuf::Closure;
+using google::protobuf::RpcController;
+using lla::plugin::usbpro::Request;
+using lla::select_server::ConnectedSocket;
+using std::deque;
 
+class UsbProDevice: public Device, public UsbProWidgetListener {
   public:
-
-    UsbProDevice(Plugin *owner, const string &name, const string &dev_path);
+    UsbProDevice(lla::AbstractPlugin *owner,
+                 const string &name,
+                 const string &dev_path);
     ~UsbProDevice();
 
-    int start();
-    int stop();
-    int get_sd() const;
-    int action();
-    int save_config() const;
-    class LlaDevConfMsg *configure(const uint8_t *request, int reql);
-    int send_dmx(uint8_t *data, int len);
-    int get_dmx(uint8_t *data, int len) const;
-    void new_dmx();
-    int recv_mode();
+    bool Start();
+    bool Stop();
+    void Configure(RpcController *controller,
+                   const string &request,
+                   string *response,
+                   Closure *done);
+
+    ConnectedSocket *GetSocket() const;
+    int SendDmx(uint8_t *data, int len);
+    int FetchDmx(uint8_t *data, int len) const;
+    int ChangeToReceiveMode();
+
+    // callbacks from the widget
+    void NewDmx();
+    void Parameters(uint8_t firmware,
+                    uint8_t firmware_high,
+                    uint8_t break_time,
+                    uint8_t mab_time,
+                    uint8_t rate);
+    void SerialNumber(const uint8_t serial[4]);
 
   private:
-    class UsbProConfMsg *config_get_params(class UsbProConfMsgPrmReq *req) const;
-    class UsbProConfMsg *config_get_serial(class UsbProConfMsgSerReq *req) const;
-    class UsbProConfMsg *config_set_params(class UsbProConfMsgSprmReq *req);
+    void HandleGetParameters(RpcController *controller,
+                             const Request *request,
+                             string *response,
+                             Closure *done);
 
-    enum {
-      SEND_MODE,
-      RECV_MODE
-    };
+    void HandleSetParameters(RpcController *controller,
+                             const Request *request,
+                             string *response,
+                             Closure *done);
 
-    // instance variables
+    void HandleGetSerial(RpcController *controller,
+                         const Request *request,
+                         string *response,
+                         Closure *done);
+
+    typedef struct {
+      RpcController *controller;
+      string *response;
+      Closure *done;
+    } outstanding_request;
+
     string m_path;
     bool m_enabled;            // are we enabled
-    bool m_mode;              // are we sending or receiving?
-    class UsbProConfParser *m_parser; // parser for config msgs
     UsbProWidget *m_widget;
+    deque<outstanding_request> m_outstanding_param_requests;
+    deque<outstanding_request> m_outstanding_serial_requests;
 };
 
+} //plugin
+} //lla
 #endif

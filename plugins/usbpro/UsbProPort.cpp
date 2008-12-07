@@ -23,16 +23,19 @@
 #include <llad/logger.h>
 #include <string.h>
 
+namespace lla {
+namespace plugin {
 
-int UsbProPort::can_read() const {
+bool UsbProPort::CanRead() const {
   // even ports are input
-  return ( (get_id()+1) % 2);
+  return ((PortId()) % 2) == 0;
 }
 
-int UsbProPort::can_write() const {
+bool UsbProPort::CanWrite() const {
   // odd ports are output
-  return ( get_id() % 2 );
+  return (PortId() % 2) == 1;
 }
+
 
 /*
  * Write operation
@@ -42,15 +45,13 @@ int UsbProPort::can_write() const {
  *
  * @return   0 on success, non 0 on failure
  */
-int UsbProPort::write(uint8_t *data, unsigned int length) {
-  UsbProDevice *dev = (UsbProDevice*) get_device();
-
-  if (!can_write())
+int UsbProPort::WriteDMX(uint8_t *data, unsigned int length) {
+  if (!CanWrite())
     return -1;
 
-  // send to device
-  return dev->send_dmx(data, length);
+  return m_usb_device->SendDmx(data, length);
 }
+
 
 /*
  * Read operation
@@ -60,27 +61,26 @@ int UsbProPort::write(uint8_t *data, unsigned int length) {
  *
  * @return  the amount of data read
  */
-int UsbProPort::read(uint8_t *data, unsigned int length) {
-  UsbProDevice *dev = (UsbProDevice*) get_device();
-
-  if (!can_read())
+int UsbProPort::ReadDMX(uint8_t *data, unsigned int length) {
+  if (!CanRead())
     return -1;
 
-  // get the device to copy into the buffer
-  return dev->get_dmx(data, length);
+  return m_usb_device->FetchDmx(data, length);
 }
 
+
 /*
- * Override set_port.
+ * Override SetUniverse.
  * Setting the universe to NULL for an output port will put us back into
  * recv mode.
  */
-int UsbProPort::set_universe(Universe *uni) {
-  UsbProDevice *dev = (UsbProDevice*) get_device();
-
-  Port::set_universe(uni);
-  if (uni == NULL && can_write()) {
-    dev->recv_mode();
+int UsbProPort::SetUniverse(Universe *uni) {
+  Port::SetUniverse(uni);
+  if (uni == NULL && CanWrite()) {
+    m_usb_device->ChangeToReceiveMode();
   }
   return 0;
 }
+
+} // plugin
+} //lla

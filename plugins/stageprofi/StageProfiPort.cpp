@@ -18,39 +18,44 @@
  * Copyright (C) 2006-2007 Simon Newton
  */
 
+#include <string.h>
+#include <llad/logger.h>
 #include "StageProfiPort.h"
 #include "StageProfiDevice.h"
-#include <llad/logger.h>
-#include <string.h>
+
+namespace lla {
+namespace plugin {
 
 /*
  * Write operation
  *
  * @param  data  pointer to the dmx data
  * @param  length  the length of the data
- *
  * @return   0 on success, non 0 on failure
  */
-int StageProfiPort::write(uint8_t *data, unsigned int length) {
-  StageProfiDevice *dev = (StageProfiDevice*) get_device();
+int StageProfiPort::WriteDMX(uint8_t *data, unsigned int length) {
+  StageProfiDevice *dev = (StageProfiDevice*) GetDevice();
 
-  if (!can_write())
+  if (!CanWrite())
     return -1;
 
   // send to device
-  return dev->send_dmx(data, length);
+  return dev->SendDmx(data, length);
 }
+
 
 /*
  * Read operation
  *
  * @param   data  buffer to read data into
  * @param   length  length of data to read
- *
  * @return  the amount of data read
  */
-int StageProfiPort::read(uint8_t *data, unsigned int length) {
+int StageProfiPort::ReadDMX(uint8_t *data, unsigned int length) {
   data = NULL;
   length = 0;
   return -1;
 }
+
+} //plugin
+} //lla

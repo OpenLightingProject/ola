@@ -15,7 +15,7 @@
  *
  * StageProfiDevice.h
  * Interface for the stageprofi device
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2008 Simon Newton
  */
 
 #ifndef STAGEPROFIDEVICE_H
@@ -23,29 +23,34 @@
 
 #include <string>
 #include <stdint.h>
-#include <llad/device.h>
-#include <llad/listener.h>
+#include <llad/Device.h>
+#include <lla/select_server/Socket.h>
 
-class StageProfiDevice : public Device, public Listener {
+namespace lla {
 
+class AbstractPlugin;
+
+namespace plugin {
+
+using lla::Device;
+using lla::select_server::Socket;
+
+class StageProfiDevice: public Device {
   public:
-
-    StageProfiDevice(Plugin *owner, const string &name, const string &dev_path);
+    StageProfiDevice(AbstractPlugin *owner, const string &name, const string &dev_path);
     ~StageProfiDevice();
 
-    int start();
-    int stop();
-    int get_sd() const;
-    int action();
-    int save_config() const;
-    class LlaDevConfMsg *configure(const uint8_t *request, int reql);
-    int send_dmx(uint8_t *data, int len);
+    bool Start();
+    bool Stop();
+    Socket *GetSocket() const;
+    int SendDmx(uint8_t *data, int len);
 
   private:
-
     string m_path;
     bool m_enabled;  // are we enabled
     class StageProfiWidget *m_widget;
 };
 
+} // plugin
+} // lla
 #endif

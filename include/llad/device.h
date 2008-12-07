@@ -13,45 +13,89 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * device.h
+ * Device.h
  * Header file for the Device class
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef DEVICE_H
-#define DEVICE_H
+#ifndef LLA_DEVICE_H
+#define LLA_DEVICE_H
 
 #include <stdint.h>
-
 #include <vector>
 #include <string>
 
-class Plugin;
-class Port;
+namespace google {
+namespace protobuf {
+  class Closure;
+  class RpcController;
+}
+}
 
-using namespace std;
+namespace lla {
 
-class Device {
+class AbstractPlugin;
+class AbstractPort;
+
+using std::vector;
+using std::string;
+
+class AbstractDevice {
   public:
-    Device(Plugin *owner, const string &name);
-    virtual ~Device();
-    const string get_name() const;
-    Plugin     *get_owner() const;
+    AbstractDevice() {}
+    virtual ~AbstractDevice() {}
+
+    virtual const string Name() const = 0;
+    virtual AbstractPlugin *Owner() const = 0;
+    virtual unsigned int DeviceId() const = 0;
+    virtual void SetDeviceId(unsigned int device_id) = 0;
 
     // for the subclasses
-    virtual class   LlaDevConfMsg *configure(const uint8_t *req, int l) { req = NULL; l = 0; return NULL; }
-    virtual int   save_config() const = 0;
-    virtual int   add_port(Port *prt);
-    virtual Port  *get_port(unsigned int pid) const;
-    virtual int   port_count() const;
-
-  private:
-    Plugin       *m_owner;      // which plugin owns this device
-    Device(const Device&);
-    Device& operator=(const Device&);
-
-    string       m_name;        // device name
-    vector<Port*>  m_ports_vect;    // ports on the device
+    virtual bool Stop() = 0;
+    virtual void Configure(google::protobuf::RpcController *controller,
+                           const string &request,
+                           string *response,
+                           google::protobuf::Closure *done) = 0;
+    virtual int SaveConfig() const = 0;
+    virtual int AddPort(AbstractPort *port) = 0;
+    virtual const vector<AbstractPort*> Ports() const = 0;
+    virtual AbstractPort *GetPort(unsigned int port_id) const = 0;
 };
 
+
+class Device: public AbstractDevice {
+  public:
+    Device(AbstractPlugin *owner, const string &name);
+    virtual ~Device();
+
+    const string Name() const { return m_name; }
+    AbstractPlugin *Owner() const { return m_owner; }
+    void SetDeviceId(unsigned int device_id) { m_device_id = device_id; }
+    unsigned int DeviceId() const { return m_device_id; }
+
+    // for the subclasses
+    virtual bool Stop() { m_enabled = false; return true; }
+    virtual void Configure(class google::protobuf::RpcController *controller,
+                           const string &request,
+                           string *response,
+                           google::protobuf::Closure *done);
+    virtual int SaveConfig() const { return 0; }
+    virtual int AddPort(AbstractPort *port);
+    virtual const vector<AbstractPort*> Ports() const;
+    virtual AbstractPort *GetPort(unsigned int port_id) const;
+    virtual void DeleteAllPorts();
+
+  protected:
+    bool m_enabled;
+
+  private:
+    Device(const Device&);
+    Device& operator=(const Device&);
+    AbstractPlugin *m_owner;        // which plugin owns this device
+    string m_name;          // device name
+    unsigned int m_device_id;
+    vector<lla::AbstractPort*> m_ports;  // ports on the device
+};
+
+} //lla
 #endif

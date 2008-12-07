@@ -15,27 +15,26 @@
  *
  * LlaClient.cpp
  * Implementation of LlaClient
- * Copyright (C) 2005-2006 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
 
 #include <lla/messages.h>
 #include <lla/LlaDevConfMsg.h>
+#include <lla/select_server/Socket.h>
+#include <google/protobuf/stubs/common.h>
+
+#include "common/protocol/Lla.pb.h"
+#include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/SimpleRpcController.h"
 
 #include "LlaClient.h"
-#include "LlaClientObserver.h"
-#include "LlaPlugin.h"
+#include "LlaClientServiceImpl.h"
 #include "LlaDevice.h"
-#include "LlaPort.h"
-#include "LlaUniverse.h"
 
 
 #define min(a,b)    ((a) < (b) ? (a) : (b))
@@ -49,14 +48,21 @@
 #define release_lock
 #endif
 
-const string LlaClient::LLAD_ADDR("127.0.0.1");
+namespace lla {
 
-LlaClient::LlaClient() :
-  m_sd(-1),
+using google::protobuf::NewCallback;
+using google::protobuf::Closure;
+using lla::select_server::ConnectedSocket;
+using lla::rpc::StreamRpcChannel;
+using lla::rpc::SimpleRpcController;
+
+LlaClient::LlaClient(ConnectedSocket *socket):
+  m_socket(socket),
+  m_client_service(NULL),
+  m_channel(NULL),
+  m_stub(NULL),
   m_connected(false),
-  m_observer(NULL),
-  m_seq(0),
-  desc(NULL) {
+  m_observer(NULL) {
 #ifdef HAVE_PTHREAD
   pthread_mutex_init(&m_mutex, NULL);
 #endif
@@ -64,66 +70,34 @@ LlaClient::LlaClient() :
 
 LlaClient::~LlaClient() {
   if(m_connected)
-    stop();
-
+    Stop();
 }
 
 
 /*
- * Open a connection to the LLA daemon. This call may block.
- *
- * @return 0 on sucess, non-0 on failure
+ * Setup this client
  */
-int LlaClient::start() {
-  struct sockaddr_in servaddr;
+bool LlaClient::Setup() {
+  m_client_service = new LlaClientServiceImpl(m_observer);
 
-  if (m_connected)
-    return 0;
+  if (!m_client_service)
+    return false;
 
-  acquire_lock;
+  m_channel = new StreamRpcChannel(m_client_service, m_socket);
 
-  //connect to socket
-  m_sd = socket(AF_INET, SOCK_DGRAM, 0);
-
-  if (!m_sd)
-    goto e_socket;
-
-  memset(&servaddr, 0x00, sizeof(servaddr) );
-  servaddr.sin_family = AF_INET;
-  servaddr.sin_port = htons(LLAD_PORT);
-  inet_aton(LLAD_ADDR.c_str(), &servaddr.sin_addr);
-
-  if (-1 == connect(m_sd, (struct sockaddr *) &servaddr, sizeof(servaddr) ))
-    goto e_connect;
-
-  // send syn to server
-  send_syn();
-
-  while (!m_connected) {
-    switch (receive(1)) {
-      case 0:
-        break;
-      case 1:
-        // timeout
-        printf("failed to get syn ack\n");
-        goto e_connect;
-      case -1:
-        // error
-        goto e_connect;
-      case -2:
-        // interupt
-        break;
-    }
+  if (!m_channel) {
+    delete m_client_service;
+    return false;
   }
-  release_lock;
-  return 0;
+  m_stub = new LlaServerService_Stub(m_channel);
 
-e_connect:
-  close(m_sd);
+  if (!m_stub) {
+    delete m_channel;
+    delete m_client_service;
+    return false;
+  }
 
-e_socket:
-  release_lock;
-  return -1;
+  return true;
 }
 
 
@@ -132,9 +106,10 @@ e_socket:
  *
  * @return 0 on sucess, -1 on failure
  */
-int LlaClient::stop() {
+bool LlaClient::Stop() {
   acquire_lock;
   if(m_connected) {
+    /*
     send_fin();
 
     while(m_connected) {
@@ -158,71 +133,47 @@ int LlaClient::stop() {
     clear_devices();
     clear_universes();
     m_connected = false;
+    */
   }
   release_lock;
   return 0;
-
+/*
 e_error:
   release_lock;
   return -1;
-}
-
-
-/*
- * return the socket descriptor
- *
- * @return -1 on error, the sd on sucess
- */
-int LlaClient::fd() const {
-  return m_sd;
-}
-
-
-/*
- * Call when there is action on the sd
- *
- * delay sets a delay to wait for IO before returning, note this is a max delay,
- * we will return before this if we got data.
- *
- * @param delay    0 to non-block, else the delay to wait for data before returning
- * @return 0 on success, -1 on error
- */
-int LlaClient::fd_action(unsigned int delay) {
-  int ret = 0;
-  int term = false;
-  acquire_lock;
-  while (!term) {
-    switch (receive(delay)) {
-      case 0:
-        break;
-      case -2:
-        // interupt
-      case 1:
-        // timeout
-        term = true;
-        break;
-      case -1:
-        // error
-        ret = -1;
-        term = true;
-        break;
-      default:
-        break;
-    }
-  }
-  release_lock;
-  return ret;
+  */
 }
 
 
 /*
  * set the observer object
  */
-int LlaClient::set_observer(LlaClientObserver *o) {
-  // the client owns the observer
-  m_observer = o;
+int LlaClient::SetObserver(LlaClientObserver *observer) {
+  m_observer = observer;
   return 0;
 }
+
+
+
+bool LlaClient::FetchPluginInfo(int plugin_id, bool include_description) {
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::PluginInfoRequest request;
+  lla::proto::PluginInfoReply *reply = new lla::proto::PluginInfoReply();
+
+  if (plugin_id > 0)
+    request.set_plugin_id(plugin_id);
+  request.set_include_description(include_description);
+
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandlePluginInfo,
+                            controller,
+                            reply);
+  m_stub->GetPluginInfo(controller, &request, reply, cb);
+  return true;
+}
+
+
+
 
 
 /*
@@ -234,69 +185,66 @@ int LlaClient::set_observer(LlaClientObserver *o) {
  * @param   length  length of dmx data
  * @return  0 on sucess, -1 on failure
  */
-int LlaClient::send_dmx(unsigned int uni, uint8_t *data, unsigned int length) {
-  lla_msg msg;
+bool LlaClient::SendDmx(unsigned int universe, uint8_t *data, unsigned int length) {
+  unsigned int dmx_length = min(length, MAX_DMX);
+  lla::proto::DmxData request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::Ack *reply = new lla::proto::Ack();
 
-  msg.len = sizeof(lla_msg_dmx_data);
-  msg.data.dmx.op = LLA_MSG_DMX_DATA;
-  msg.data.dmx.uni = uni;
-  msg.data.dmx.len = min(length, MAX_DMX);
+  string dmx_data;
+  dmx_data.append((char*) data, dmx_length);
+  request.set_universe(universe);
+  request.set_data(dmx_data);
 
-  memcpy(&msg.data.dmx.data, data, msg.data.dmx.len);
-
-  return lock_and_send_msg(&msg);
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandleSendDmx,
+                            controller,
+                            reply);
+  m_stub->UpdateDmxData(controller, &request, reply, cb);
+  return true;
 }
 
 
 /*
- * read dmx data
+ * Read dmx data
  *
- *
+ * @param universe the universe id to get data for
  */
-int LlaClient::fetch_dmx(unsigned int universe) {
-  //send read request
-  lla_msg msg;
+int LlaClient::FetchDmx(unsigned int universe) {
+  lla::proto::DmxReadRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::DmxData *reply = new lla::proto::DmxData();
 
-  msg.len = sizeof(lla_msg_uni_name);
-  msg.data.rreq.op = LLA_MSG_READ_REQ;
-  msg.data.rreq.uni = universe;
+  request.set_universe(universe);
 
-  return lock_and_send_msg(&msg);
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandleGetDmx,
+                            controller,
+                            reply);
+  m_stub->GetDmx(controller, &request, reply, cb);
+  return true;
 }
+
 
 /*
  * Request a listing of what devices are attached
  *
- *
+ * @param filter only get
  */
-int LlaClient::fetch_dev_info(lla_plugin_id filter) {
-  lla_msg msg;
+int LlaClient::FetchDeviceInfo(lla_plugin_id filter) {
+  lla::proto::DeviceInfoRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::DeviceInfoReply *reply = new lla::proto::DeviceInfoReply();
 
-  msg.len = sizeof(lla_msg_device_info_request);
-  msg.data.dreq.op = LLA_MSG_DEVICE_INFO_REQUEST;
-  msg.data.dreq.plugin = filter;
+  if (filter != LLA_PLUGIN_ALL)
+    request.set_plugin_id(filter);
 
-  acquire_lock;
-  send_msg(&msg);
-  clear_devices();
-  release_lock;
-  return 0;
-}
-
-
-/*
- * send a port info request
- */
-int LlaClient::fetch_port_info(LlaDevice *dev) {
-  lla_msg msg;
-
-  if (!dev)
-    return -1;
-
-  msg.len = sizeof(lla_msg_port_info_request);
-  msg.data.prreq.op = LLA_MSG_PORT_INFO_REQUEST;
-  msg.data.prreq.devid = dev->get_id();
-  return lock_and_send_msg(&msg);
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandleDeviceInfo,
+                            controller,
+                            reply);
+  m_stub->GetDeviceInfo(controller, &request, reply, cb);
+  return true;
 }
 
 
@@ -305,56 +253,17 @@ int LlaClient::fetch_port_info(LlaDevice *dev) {
  *
  * @return
  */
-int LlaClient::fetch_uni_info() {
-  lla_msg msg;
+int LlaClient::FetchUniverseInfo() {
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::UniverseInfoRequest request;
+  lla::proto::UniverseInfoReply *reply = new lla::proto::UniverseInfoReply();
 
-  msg.len = sizeof(lla_msg_plugin_info_request);
-  msg.data.unireq.op = LLA_MSG_UNI_INFO_REQUEST;
-
-  acquire_lock;
-  send_msg(&msg);
-  clear_universes();
-  release_lock;
-
-  return 0;
-}
-
-
-/*
- * Request a plugin info listing
- *
- *
- */
-int LlaClient::fetch_plugin_info() {
-  lla_msg msg;
-
-  msg.len = sizeof(lla_msg_plugin_info_request);
-  msg.data.plreq.op = LLA_MSG_PLUGIN_INFO_REQUEST;
-
-  acquire_lock;
-  send_msg(&msg);
-  clear_plugins();
-  release_lock;
-  return 0;
-}
-
-
-/*
- * This is supposed to give us info on what devices are out there
- *
- *
- */
-int LlaClient::fetch_plugin_desc(LlaPlugin *plug) {
-  lla_msg msg;
-
-  if (plug == NULL)
-    return -1;
-
-  msg.len = sizeof(lla_msg_plugin_desc_request);
-  msg.data.pldreq.op = LLA_MSG_PLUGIN_DESC_REQUEST;
-  msg.data.pldreq.pid = plug->get_id();
-
-  return lock_and_send_msg(&msg);
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandleUniverseInfo,
+                            controller,
+                            reply);
+  m_stub->GetUniverseInfo(controller, &request, reply, cb);
+  return true;
 }
 
 
@@ -362,16 +271,20 @@ int LlaClient::fetch_plugin_desc(LlaPlugin *plug) {
  * Set the name of a universe
  *
  */
-int LlaClient::set_uni_name(unsigned int uni, const string &name) {
-  lla_msg msg;
-  int l = min(name.length(), UNIVERSE_NAME_LENGTH);
+int LlaClient::SetUniverseName(unsigned int universe, const string &name) {
+  lla::proto::UniverseNameRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::Ack *reply = new lla::proto::Ack();
 
-  msg.len = sizeof(lla_msg_uni_name);
-  msg.data.uniname.op = LLA_MSG_UNI_NAME;
-  msg.data.uniname.uni = uni;
+  request.set_universe(universe);
+  request.set_name(name);
 
-  strncpy(msg.data.uniname.name, name.c_str(), l);
-  return lock_and_send_msg(&msg);
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandleUniverseName,
+                            controller,
+                            reply);
+  m_stub->SetUniverseName(controller, &request, reply, cb);
+  return true;
 }
 
 
@@ -379,15 +292,22 @@ int LlaClient::set_uni_name(unsigned int uni, const string &name) {
  * Set the merge mode of a universe
  *
  */
-int LlaClient::set_uni_merge_mode(unsigned int uni, LlaUniverse::merge_mode mode) {
-  lla_msg msg;
+int LlaClient::SetUniverseMergeMode(unsigned int universe,
+                                    LlaUniverse::merge_mode mode) {
+  lla::proto::MergeModeRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::Ack *reply = new lla::proto::Ack();
 
-  msg.len = sizeof(lla_msg_uni_merge);
-  msg.data.unimerge.op = LLA_MSG_UNI_MERGE;
-  msg.data.unimerge.uni = uni;
-  msg.data.unimerge.mode = mode;
+  lla::proto::MergeMode merge_mode = mode == LlaUniverse::MERGE_HTP ? HTP : LTP;
+  request.set_universe(universe);
+  request.set_merge_mode(merge_mode);
 
-  return lock_and_send_msg(&msg);
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandleUniverseMergeMode,
+                            controller,
+                            reply);
+  m_stub->SetMergeMode(controller, &request, reply, cb);
+  return true;
 }
 
 
@@ -398,19 +318,23 @@ int LlaClient::set_uni_merge_mode(unsigned int uni, LlaUniverse::merge_mode mode
  * @param uni  the universe id
  * @param action
  */
-int LlaClient::register_uni(unsigned int uni, LlaClient::RegisterAction action) {
-  lla_msg reg;
+int LlaClient::RegisterUniverse(unsigned int universe,
+                                LlaClient::RegisterAction register_action) {
+  lla::proto::RegisterDmxRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::Ack *reply = new lla::proto::Ack();
 
-  reg.len = sizeof(lla_msg_register);
-  reg.data.reg.op = LLA_MSG_REGISTER;
-  reg.data.reg.uni = uni;
+  lla::proto::RegisterAction action = (
+      register_action == REGISTER ? lla::proto::REGISTER : lla::proto::UNREGISTER);
+  request.set_universe(universe);
+  request.set_action(action);
 
-  if(action == REGISTER)
-    reg.data.reg.action = LLA_MSG_REG_REG;
-  else
-    reg.data.reg.action = LLA_MSG_REG_UNREG;
-
-  return lock_and_send_msg(&reg);
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandleRegister,
+                            controller,
+                            reply);
+  m_stub->RegisterForDmx(controller, &request, reply, cb);
+  return true;
 }
 
 
@@ -422,22 +346,27 @@ int LlaClient::register_uni(unsigned int uni, LlaClient::RegisterAction action) 
  * @param action  LlaClient::PATCH or LlaClient::UNPATCH
  * @param uni    universe id
  */
-int LlaClient::patch(unsigned int dev, unsigned int port, LlaClient::PatchAction action, unsigned int uni) {
+int LlaClient::Patch(unsigned int device_id,
+                     unsigned int port_id,
+                     LlaClient::PatchAction patch_action,
+                     unsigned int universe) {
+  lla::proto::PatchPortRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::Ack *reply = new lla::proto::Ack();
 
-  lla_msg msg;
+  lla::proto::PatchAction action = (
+      patch_action == PATCH ? lla::proto::PATCH : lla::proto::UNPATCH);
+  request.set_universe(universe);
+  request.set_device_id(device_id);
+  request.set_port_id(port_id);
+  request.set_action(action);
 
-  msg.len = sizeof(lla_msg_patch);
-  msg.data.patch.op = LLA_MSG_PATCH;
-  msg.data.patch.dev = dev;
-  msg.data.patch.port = port;
-  msg.data.patch.uni = uni;
-
-  if (action == PATCH) {
-    msg.data.patch.action = LLA_MSG_PATCH_ADD;
-  } else {
-    msg.data.patch.action = LLA_MSG_PATCH_REMOVE;
-  }
-  return lock_and_send_msg(&msg);
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandlePatch,
+                            controller,
+                            reply);
+  m_stub->PatchPort(controller, &request, reply, cb);
+  return true;
 }
 
 
@@ -448,464 +377,235 @@ int LlaClient::patch(unsigned int dev, unsigned int port, LlaClient::PatchAction
  * @param req  the request buffer
  * @param len  the length of the request buffer
  */
-int LlaClient::dev_config(unsigned int dev, const class LlaDevConfMsg *dmsg) {
+int LlaClient::ConfigureDevice(unsigned int device_id, const string &msg) {
 
-  lla_msg msg;
-  memset(&msg, 0x00, sizeof(msg));
-  int l;
-  int buf_len = sizeof(msg.data.devreq.req);
+  lla::proto::DeviceConfigRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  lla::proto::DeviceConfigReply *reply = new lla::proto::DeviceConfigReply();
 
-  if (!dmsg)
-    return -1;
+  string configure_request;
+  //configure_request.append(
+  request.set_device_id(device_id);
+  request.set_data(msg);
 
-  l = dmsg->pack(msg.data.devreq.req, sizeof(msg.data.devreq.req));
-
-  if (l < 0)
-    return -1;
-
-  msg.data.devreq.op = LLA_MSG_DEV_CONFIG_REQ;
-  msg.data.devreq.len = l;
-  msg.data.devreq.devid = dev;
-  msg.len = sizeof(lla_msg_device_config_req) - buf_len + l;
-  msg.data.devreq.seq = m_seq++;
-
-  return lock_and_send_msg(&msg);
+  Closure *cb = NewCallback(this,
+                            &lla::LlaClient::HandleDeviceConfig,
+                            controller,
+                            reply);
+  m_stub->ConfigureDevice(controller, &request, reply, cb);
+  return true;
 }
 
 
-// private methods follow
-//-----------------------------------------------------------------------------
+// The following are RPC callbacks
 
 /*
- * Do the receive thing...
- *
- * @param delay    the max delay to wait
+ * Called once PluginInfo completes
  */
-int LlaClient::receive(unsigned int delay) {
-  struct timeval tv;
-  fd_set rset;
+void LlaClient::HandlePluginInfo(SimpleRpcController *controller,
+                                 lla::proto::PluginInfoReply *reply) {
+  string error_string = "";
+  vector<LlaPlugin> lla_plugins;
 
-  tv.tv_usec = 0;
-  tv.tv_sec = delay;
-
-  FD_ZERO(&rset);
-  FD_SET(m_sd, &rset);
-
-  switch ( select( m_sd+1, &rset, NULL, NULL, &tv) ) {
-    case 0:
-      // timeout
-      return 1;
-      break;
-    case -1 :
-      //error
-      if (errno != EINTR) {
-        printf("%s : select error", strerror(errno));
-        return -1;
+  if (m_observer) {
+    if (controller->Failed())
+      error_string = controller->ErrorText();
+    else {
+      for (int i=0; i < reply->plugin_size(); ++i) {
+        PluginInfo plugin_info = reply->plugin(i);
+        LlaPlugin plugin(plugin_info.plugin_id(), plugin_info.name());
+        if (plugin_info.has_description())
+          plugin.SetDescription(plugin_info.description());
+        lla_plugins.push_back(plugin);
       }
-      // we were interupted
-      return -2;
-      break;
-    default:
-      // something to read
-      return read_msg();
-      break;
+    }
+    release_lock;
+    m_observer->Plugins(lla_plugins, error_string);
+    acquire_lock;
   }
+  delete controller;
+  delete reply;
 }
 
 
 /*
- * Send an msg on the connection
- *
- * @param msg  the msg to send
- *
- * @return 0 on sucess, -1 on failure
+ * Called once UpdateDmxData completes
  */
-int LlaClient::send_msg(lla_msg *msg) {
+void LlaClient::HandleSendDmx(SimpleRpcController *controller,
+                              lla::proto::Ack *reply) {
+  if (controller->Failed())
+    printf("send dmx failed: %s\n", controller->ErrorText().c_str());
 
-  if ( 0 >= send(m_sd, &msg->data, msg->len, 0) ) {
-    printf("send msg failure: %s\n", strerror(errno));
-    return -1;
-  }
-  return 0;
+  delete controller;
+  delete reply;
 }
 
 
 /*
- * acquire the lock and send
+ * Called once GetDmx completes
  */
-int LlaClient::lock_and_send_msg(lla_msg *msg) {
-  acquire_lock;
-  int ret = send_msg(msg);
-  release_lock;
-  return ret;
-}
-
-
-/*
- * receive a msg on the sd and handle it
- *
- */
-int LlaClient::read_msg() {
-  lla_msg msg;
-  int len;
-
-  if ( (len = recv(m_sd, &msg.data, sizeof(lla_msg_data), 0)) < 0 ) {
-    // call err func here
-    printf("Error in recv from: %s\n", strerror(errno));
-    return -1;
-  }
-
-  return handle_msg(&msg);
-}
-
-
-// datagram handlers
-//-----------------------------------------------------------------------------
-
-/*
- * handle a msg
- *
- */
-int LlaClient::handle_msg(lla_msg *msg) {
-
-  // we're only interested in a couple of msgs here
-  switch(msg->data.dmx.op) {
-    case LLA_MSG_SYN_ACK:
-      return handle_syn_ack(msg);
-    case LLA_MSG_FIN_ACK:
-      return handle_fin_ack(msg);
-    case LLA_MSG_DMX_DATA :
-      return handle_dmx(msg);
-      break;
-    case LLA_MSG_PLUGIN_INFO :
-      return handle_plugin_info(msg);
-      break;
-    case LLA_MSG_DEVICE_INFO :
-      return handle_dev_info(msg);
-      break;
-    case LLA_MSG_PORT_INFO :
-      return handle_port_info(msg);
-      break;
-    case LLA_MSG_PLUGIN_DESC :
-      return handle_plugin_desc(msg);
-      break;
-    case LLA_MSG_UNI_INFO :
-      return handle_universe_info(msg);
-      break;
-    case LLA_MSG_DEV_CONFIG_REP:
-      return handle_dev_conf(msg);
-      break;
-    default:
-      printf("msg recv'ed but we're not interested, opcode %d\n", msg->data.dmx.op);
-      break;
-  }
-  return 0;
-}
-
-
-/*
- *
- */
-int LlaClient::handle_dmx(lla_msg *msg) {
-
-  // notify observer
-  if (m_observer != NULL) {
+void LlaClient::HandleGetDmx(lla::rpc::SimpleRpcController *controller,
+                             lla::proto::DmxData *reply) {
+  string error_string;
+  if (m_observer) {
+    if (controller->Failed())
+      error_string = controller->ErrorText();
+    release_lock;
     // TODO: keep a map of registrations and filter
-    release_lock;
-    m_observer->new_dmx(msg->data.dmx.uni ,msg->data.dmx.len, msg->data.dmx.data);
+    m_observer->NewDmx(reply->universe(),
+                       reply->data().length(),
+                       (uint8_t*) reply->data().c_str(),
+                       error_string);
     acquire_lock;
   }
-  return 0;
+  delete controller;
+  delete reply;
 }
 
 
 /*
- * A syn ack marks us as connected
+ * Called once DeviceInfo completes.
  */
-int LlaClient::handle_syn_ack(lla_msg *msg) {
-  if (!m_connected) {
-    m_connected = true;
-  }
-  msg = NULL;
-  return 0;
-}
-
-
-/*
- * A fin ack marks us as connected
- */
-int LlaClient::handle_fin_ack(lla_msg *msg) {
-
-  if (m_connected) {
-    m_connected = false;
-  }
-  msg = NULL;
-  return 0;
-}
-
-
-/*
- * Get info on the plugins loaded
- * TODO: support framenation
- */
-int LlaClient::handle_plugin_info(lla_msg *msg) {
-  int i, plugins;
-  LlaPlugin *plug = NULL;
-
-  plugins = min(msg->data.plinfo.nplugins, PLUGINS_PER_DATAGRAM);
-
-  clear_plugins();
-
-  for (i=0; i < plugins; i++) {
-    int id = msg->data.plinfo.plugins[i].id;
-    string name(msg->data.plinfo.plugins[i].name);
-    plug = new LlaPlugin(id, name);
-    m_plugins.push_back(plug);
-  }
+void LlaClient::HandleDeviceInfo(lla::rpc::SimpleRpcController *controller,
+                                 lla::proto::DeviceInfoReply *reply) {
+  string error_string = "";
+  vector<LlaDevice> lla_devices;
 
   if (m_observer) {
+    if (controller->Failed())
+      error_string = controller->ErrorText();
+    else {
+      for (int i=0; i < reply->device_size(); ++i) {
+        DeviceInfo device_info = reply->device(i);
+
+        LlaDevice device(device_info.device_id(),
+                         device_info.device_name(),
+                         device_info.plugin_id());
+
+        for (int j=0; j < device_info.port_size(); ++j) {
+          PortInfo port_info = device_info.port(j);
+          LlaPort::PortCapability capability = port_info.output_port() ?
+            LlaPort::LLA_PORT_CAP_OUT : LlaPort::LLA_PORT_CAP_IN;
+          LlaPort port(port_info.port_id(),
+                       capability,
+                       port_info.universe(),
+                       port_info.active());
+          device.AddPort(port);
+        }
+        lla_devices.push_back(device);
+      }
+    }
     release_lock;
-    m_observer->plugins(m_plugins);
+    m_observer->Devices(lla_devices, error_string);
     acquire_lock;
   }
-  return 0;
+  delete controller;
+  delete reply;
 }
 
 
+
 /*
- * Handle a universe info message
- * TODO: support fragmentation
- *
+ * Called once PluginInfo completes
  */
-int LlaClient::handle_universe_info(lla_msg *msg) {
-  int i, universes;
-  LlaUniverse *uni = NULL;
-
-  universes = min(msg->data.uniinfo.nunis, UNIVERSES_PER_DATAGRAM);
-
-  clear_universes();
-
-  for (i=0; i < universes; i++) {
-    int id = msg->data.uniinfo.universes[i].id;
-    LlaUniverse::merge_mode mode = msg->data.uniinfo.universes[i].merge == UNI_MERGE_MODE_HTP ? LlaUniverse::MERGE_HTP : LlaUniverse::MERGE_LTP;
-    string name(msg->data.uniinfo.universes[i].name);
-
-    uni = new LlaUniverse(id, mode, name);
-
-    if (!uni) {
-      printf("malloc failed\n");
-      return -1;
-    }
-    m_unis.push_back(uni);
-  }
+void LlaClient::HandleUniverseInfo(SimpleRpcController *controller,
+                                   lla::proto::UniverseInfoReply *reply) {
+  string error_string = "";
+  vector<LlaUniverse> lla_universes;
 
   if (m_observer) {
+    if (controller->Failed())
+      error_string = controller->ErrorText();
+    else {
+      for (int i=0; i < reply->universe_size(); ++i) {
+        UniverseInfo universe_info = reply->universe(i);
+        LlaUniverse::merge_mode merge_mode = (
+          universe_info.merge_mode() == lla::proto::HTP ?
+          LlaUniverse::MERGE_HTP: LlaUniverse::MERGE_LTP);
+
+        LlaUniverse universe(universe_info.universe(),
+                             merge_mode,
+                             universe_info.name());
+        lla_universes.push_back(universe);
+      }
+    }
     release_lock;
-    m_observer->universes(m_unis);
+    m_observer->Universes(lla_universes, error_string);
     acquire_lock;
   }
 
-  return 0;
+  delete controller;
+  delete reply;
 }
 
 
 /*
- * Handle a device info message
- * TODO: support fragmentation
- *
+ * Called once SetUniverseName completes
  */
-int LlaClient::handle_dev_info(lla_msg *msg) {
-  int i, devs;
-  LlaDevice *dev = NULL;
-
-  devs = min(msg->data.dinfo.ndevs, DEVICES_PER_DATAGRAM);
-
-  for(i=0; i < devs; i++) {
-    int id = msg->data.dinfo.devices[i].id;
-    int pid = msg->data.dinfo.devices[i].plugin;
-    string name(msg->data.dinfo.devices[i].name);
-    int count = msg->data.dinfo.devices[i].ports;
-    dev = new LlaDevice(id, count, name, pid);
-
-    m_devices.push_back(dev);
-  }
-
-  if (m_observer != NULL) {
-    release_lock;
-    m_observer->devices(m_devices);
-    acquire_lock;
-  }
-  return 0;
+void LlaClient::HandleUniverseName(SimpleRpcController *controller,
+                                   lla::proto::Ack *reply) {
+  if (controller->Failed())
+    printf("set name failed: %s\n", controller->ErrorText().c_str());
+  delete controller;
+  delete reply;
 }
 
 
 /*
- * port info message
- *
+ * Called once SetMergeMode completes
  */
-int LlaClient::handle_port_info(lla_msg *msg) {
-  int i, ports;
-  LlaPort *prt = NULL;
-  LlaDevice *dev = NULL;
-  vector<LlaDevice *>::iterator iter;
-
-  for (iter = m_devices.begin(); iter != m_devices.end(); iter++) {
-    if ((*iter)->get_id() == msg->data.prinfo.dev) {
-      dev = *iter;
-      break;
-    }
-  }
-
-  if (!dev) {
-    printf("Could not locate device %d\n", msg->data.prinfo.dev);
-    return -1;
-  }
-
-  dev->reset_ports();
-
-  ports = min(msg->data.prinfo.nports, DEVICES_PER_DATAGRAM);
-
-  for (i=0; i < ports; i++) {
-    int id = msg->data.prinfo.ports[i].id;
-    LlaPort::PortCapability cap = msg->data.prinfo.ports[i].cap == LLA_MSG_PORT_CAP_IN ? LlaPort::LLA_PORT_CAP_IN : LlaPort::LLA_PORT_CAP_OUT;
-    int uni = msg->data.prinfo.ports[i].uni;
-    int active = msg->data.prinfo.ports[i].actv;
-
-    prt = new LlaPort(id, cap, uni, active);
-
-    if (!prt) {
-      printf("malloc failed\n");
-      return -1;
-    }
-    dev->add_port(prt);
-  }
-
-  if (m_observer) {
-    release_lock;
-    m_observer->ports(dev);
-    acquire_lock;
-  }
-
-  return 0;
+void LlaClient::HandleUniverseMergeMode(SimpleRpcController *controller,
+                                        lla::proto::Ack *reply) {
+  if (controller->Failed())
+    printf("set merge mode failed: %s\n", controller->ErrorText().c_str());
+  delete controller;
+  delete reply;
 }
 
 
 /*
- * handle plugin desc response
+ * Called once SetMergeMode completes
  */
-int LlaClient::handle_plugin_desc(lla_msg *msg) {
-  LlaPlugin *plug  = NULL;
-  vector<LlaPlugin *>::iterator iter;
-
-  for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++) {
-    if ((*iter)->get_id() == msg->data.pldesc.pid) {
-      plug = *iter;
-      break;
-    }
-  }
-
-  if (!plug) {
-    printf("Could not locate plugin %d\n", msg->data.pldesc.pid);
-    return -1;
-  }
-
-  string desc(msg->data.pldesc.desc, PLUGIN_DESC_LENGTH);
-  plug->set_desc(desc);
-
-  if (m_observer) {
-    release_lock;
-    m_observer->plugin_desc(plug);
-    acquire_lock;
-  }
-
-  return 0;
+void LlaClient::HandleRegister(SimpleRpcController *controller,
+                              lla::proto::Ack *reply) {
+  if (controller->Failed())
+    printf("register failed: %s\n", controller->ErrorText().c_str());
+  delete controller;
+  delete reply;
 }
 
+
+/*
+ * Called once SetMergeMode completes
+ */
+void LlaClient::HandlePatch(SimpleRpcController *controller,
+                                        lla::proto::Ack *reply) {
+  if (controller->Failed())
+    printf("patch failed: %s\n", controller->ErrorText().c_str());
+  delete controller;
+  delete reply;
+}
 
 
 /*
  * Handle a device config response
  *
  */
-int LlaClient::handle_dev_conf(lla_msg *msg) {
+void LlaClient::HandleDeviceConfig(lla::rpc::SimpleRpcController *controller,
+                                   lla::proto::DeviceConfigReply *reply) {
+  string error_string;
   if (m_observer) {
+    if (controller->Failed())
+      error_string = controller->ErrorText();
+
     release_lock;
-    m_observer->dev_config(msg->data.devrep.dev, msg->data.devrep.rep, msg->data.devrep.len);
+    //TODO: add the device id here
+    m_observer->DeviceConfig(reply->data(), error_string)
     acquire_lock;
   }
-
-  return 0;
-}
-
-// datagram senders
-//-----------------------------------------------------------------------------
-
-
-
-/*
- * send a syn to the server
- */
-int LlaClient::send_syn() {
-  lla_msg msg;
-
-  msg.len = sizeof(lla_msg_syn);
-  msg.data.syn.op = LLA_MSG_SYN;
-
-  return send_msg(&msg);
-}
-
-/*
- * send a fin to the server
- */
-int LlaClient::send_fin() {
-  lla_msg msg;
-  msg.len = sizeof(lla_msg_fin);
-  msg.data.fin.op = LLA_MSG_FIN;
-
-  return send_msg(&msg);
+  delete controller;
+  delete reply;
 }
 
 
-/*
- * clear the plugin list
- *
- */
-int LlaClient::clear_plugins() {
-  vector<LlaPlugin *>::iterator iter;
-
-  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
-    delete *iter;
-  }
-  m_plugins.clear();
-  return 0;
-}
-
-
-/*
- * clear the universe list
- *
- */
-int LlaClient::clear_universes() {
-  vector<LlaUniverse *>::iterator iter;
-
-  for (iter = m_unis.begin(); iter != m_unis.end(); ++iter) {
-    delete *iter;
-  }
-  m_unis.clear();
-  return 0;
-}
-
-
-/*
- * Free the device (including all ports)
- *
- */
-int LlaClient::clear_devices() {
-  vector<LlaDevice *>::iterator iter;
-
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    delete *iter;
-  }
-  m_devices.clear();
-  return 0;
-}
+} // lla

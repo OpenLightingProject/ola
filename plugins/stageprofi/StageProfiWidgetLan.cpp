@@ -21,40 +21,33 @@
  */
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <errno.h>
 
 #include <llad/logger.h>
+#include <lla/select_server/Socket.h>
+
 #include "StageProfiWidgetLan.h"
 
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
+namespace lla {
+namespace plugin {
+
+using std::string;
+using lla::select_server::TcpSocket;
+
 static const unsigned int STAGEPROFI_PORT = 10001;
 
 /*
  * Connect to the widget
  */
-int StageProfiWidgetLan::connect(const string &path) {
-  struct sockaddr_in servaddr;
-
-  m_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-  if (! m_fd) {
-    Logger::instance()->log(Logger::CRIT, "StageProfiWidget: could not create socket %s", strerror(errno));
-    return -1;
-  }
-
-  memset(&servaddr, 0x00, sizeof(servaddr));
-  servaddr.sin_family = AF_INET;
-  servaddr.sin_port = htons(STAGEPROFI_PORT);
-  inet_aton(path.c_str(), &servaddr.sin_addr);
-
-  if (::connect(m_fd, (struct sockaddr *) &servaddr, sizeof(servaddr))) {
-    Logger::instance()->log(Logger::CRIT, "StageProfiWidget: could not connect %s", strerror(errno));
-    return -1;
-  }
-  return 0;
+int StageProfiWidgetLan::Connect(const string &ip) {
+  TcpSocket *socket = new TcpSocket();
+  int ret = socket->Connect(ip, STAGEPROFI_PORT);
+  m_socket = socket;
+  return ret;
 }
+
+} // plugin
+} // lla

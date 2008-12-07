@@ -20,29 +20,24 @@
  * The device creates two ports, one in and one out, but you can only use one at a time.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
-#include <termios.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
+
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/service.h>
 
 #include <llad/logger.h>
-#include <llad/preferences.h>
-#include <llad/universe.h>
+#include <llad/Preferences.h>
 
 #include "UsbProDevice.h"
 #include "UsbProPort.h"
 
-#include "UsbProConfMsgs.h"
-#include "UsbProConfParser.h"
+namespace lla {
+namespace plugin {
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
+using google::protobuf::RpcController;
+using google::protobuf::Closure;
+using lla::plugin::usbpro::Request;
+using lla::plugin::usbpro::Reply;
 
 /*
  * Create a new device
@@ -51,14 +46,13 @@
  * @param name  the device name
  * @param dev_path  path to the pro widget
  */
-UsbProDevice::UsbProDevice(Plugin *owner, const string &name, const string &dev_path) :
+UsbProDevice::UsbProDevice(lla::AbstractPlugin *owner,
+                           const string &name,
+                           const string &dev_path):
   Device(owner, name),
   m_path(dev_path),
   m_enabled(false),
-  m_mode(RECV_MODE),
-  m_parser(NULL),
   m_widget(NULL) {
-    m_parser = new UsbProConfParser();
     m_widget = new UsbProWidget();
 }
 
@@ -68,12 +62,9 @@ UsbProDevice::UsbProDevice(Plugin *owner, const string &name, const string &dev_
  */
 UsbProDevice::~UsbProDevice() {
   if (m_enabled)
-    stop();
+    Stop();
 
-  if (m_parser != NULL)
-    delete m_parser;
-
-  if (m_widget != NULL)
+  if (m_widget)
     delete m_widget;
 }
 
@@ -81,26 +72,26 @@ UsbProDevice::~UsbProDevice() {
 /*
  * Start this device
  */
-int UsbProDevice::start() {
+bool UsbProDevice::Start() {
   UsbProPort *port = NULL;
   int ret;
 
   // connect to the widget
-  ret = m_widget->connect(m_path);
+  ret = m_widget->Connect(m_path);
 
   if (ret) {
     Logger::instance()->log(Logger::WARN, "UsbProPlugin: failed to connect to %s", m_path.c_str());
     return -1;
   }
 
-  m_widget->set_listener(this);
+  m_widget->SetListener(this);
 
   /* set up ports */
   for (int i=0; i < 2; i++) {
     port = new UsbProPort(this, i);
 
-    if (port != NULL)
-      add_port(port);
+    if (port)
+      AddPort(port);
   }
 
   m_enabled = true;
@@ -111,46 +102,22 @@ int UsbProDevice::start() {
 /*
  * Stop this device
  */
-int UsbProDevice::stop() {
-  Port *prt = NULL;
-  Universe *uni;
-
+bool UsbProDevice::Stop() {
   if (!m_enabled)
-    return 0;
+    return false;
 
-  // disconnect from widget
-  m_widget->disconnect();
-
-  for (int i=0; i < port_count(); i++) {
-    prt = get_port(i);
-    if (prt != NULL) {
-      uni = prt->get_universe();
-
-      if (uni)
-        uni->remove_port(prt);
-
-      delete prt;
-    }
-  }
-
+  m_widget->Disconnect();
+  DeleteAllPorts();
   m_enabled = false;
-  return 0;
+  return true;
 }
 
 
 /*
  * return the sd for this device
  */
-int UsbProDevice::get_sd() const {
-  return m_widget->fd();
-}
-
-
-/*
- * Called when there is activity on our descriptors
- */
-int UsbProDevice::action() {
-  return m_widget->recv();
+lla::select_server::ConnectedSocket *UsbProDevice::GetSocket() const {
+  return m_widget->GetSocket();
 }
 
 
@@ -160,8 +127,8 @@ int UsbProDevice::action() {
  *
  * @return   0 on success, non 0 on failure
  */
-int UsbProDevice::send_dmx(uint8_t *data, int len) {
-  return m_widget->send_dmx(data,len);
+int UsbProDevice::SendDmx(uint8_t *data, int len) {
+  return m_widget->SendDmx(data,len);
 }
 
 
@@ -171,107 +138,190 @@ int UsbProDevice::send_dmx(uint8_t *data, int len) {
  *
  * @return   the length of the dmx data copied
  */
-int UsbProDevice::get_dmx(uint8_t *data, int len) const {
-  return m_widget->get_dmx(data,len);
-}
-
-
-// call this when something changes
-// where to store data to ?
-// I'm thinking a config file in /etc/llad/llad.conf
-int UsbProDevice::save_config() const {
-  return 0;
+int UsbProDevice::FetchDmx(uint8_t *data, int len) const {
+  return m_widget->FetchDmx(data, len);
 }
 
 
 /*
- * For now we can't block in a configure call, so we keep
- * a cache of the widget parameters and return those.
+ * Handle device config messages
  *
- * @param req    the request data
- * @param reql    the request length
- * @param repl    the length of the reply buffer
- *
- * @return  the length of the reply
+ * @param controller An RpcController
+ * @param request the request data
+ * @param response the response to return
+ * @param done the closure to call once the request is complete
  */
-LlaDevConfMsg *UsbProDevice::configure(const uint8_t *request, int reql) {
+void UsbProDevice::Configure(RpcController *controller,
+                             const string &request,
+                             string *response,
+                             Closure *done) {
+    Request request_pb;
+    if (!request_pb.ParseFromString(request)) {
+      controller->SetFailed("Invalid Request");
+      done->Run();
+      return;
+    }
 
-  UsbProConfMsg *m = m_parser->parse(request, reql);
-
-  if ( m == NULL) {
-    Logger::instance()->log(Logger::WARN ,"UsbProDevice::configure Could not parse message");
-    return NULL;
-  }
-
-  switch(m->type()) {
-    case LLA_USBPRO_CONF_MSG_PRM_REQ:
-      return config_get_params(dynamic_cast<UsbProConfMsgPrmReq*>(m));
-    case LLA_USBPRO_CONF_MSG_SER_REQ:
-      return config_get_serial(dynamic_cast<UsbProConfMsgSerReq*>(m));
-    case LLA_USBPRO_CONF_MSG_SPRM_REQ:
-      return config_set_params(dynamic_cast<UsbProConfMsgSprmReq*>(m));
-    default:
-      Logger::instance()->log(Logger::WARN ,"Invalid request to usbpro configure %i", m->type());
-      return NULL;
-  }
-
+    switch (request_pb.type()) {
+      case lla::plugin::usbpro::Request::USBPRO_PARAMETER_REQUEST:
+        HandleGetParameters(controller, &request_pb, response, done);
+        break;
+      case lla::plugin::usbpro::Request::USBPRO_SET_PARAMETER_REQUEST:
+        HandleSetParameters(controller, &request_pb, response, done);
+        break;
+      case lla::plugin::usbpro::Request::USBPRO_SERIAL_REQUEST:
+        HandleGetSerial(controller, &request_pb, response, done);
+        break;
+      default:
+        controller->SetFailed("Invalid Request");
+        done->Run();
+    }
 }
 
-/*
- * Called when the dmx changes
- */
-void UsbProDevice::new_dmx() {
-  // notify our port
-  Port *prt = get_port(0);
-  prt->dmx_changed();
-}
 
 
 /*
  * put the device back into recv mode
  */
-int UsbProDevice::recv_mode() {
-  m_widget->recv_mode();
+int UsbProDevice::ChangeToReceiveMode() {
+  m_widget->ChangeToReceiveMode();
   return 0;
 }
 
 /*
  * Handle a get params request
  */
-UsbProConfMsg *UsbProDevice::config_get_params(UsbProConfMsgPrmReq *req) const {
-  UsbProConfMsgPrmRep *r = new UsbProConfMsgPrmRep();
-  uint16_t firmware;
-  uint8_t brk, mab, rate;
-  m_widget->get_params(&firmware, &brk, &mab, &rate);
-  r->set_firmware(firmware);
-  r->set_brk(brk);
-  r->set_mab(mab);
-  r->set_rate(rate);
-  req = NULL;
-  return r;
+void UsbProDevice::HandleGetParameters(RpcController *controller,
+                                       const Request *request,
+                                       string *response,
+                                       Closure *done) {
+
+  if (!m_widget->GetParameters()) {
+    controller->SetFailed("GetParameters failed");
+    done->Run();
+  } else {
+    // TODO: we should time these out if we don't get a response
+    outstanding_request parameters_request;
+    parameters_request.controller = controller;
+    parameters_request.response = response;
+    parameters_request.done = done;
+    m_outstanding_param_requests.push_back(parameters_request);
+  }
 }
 
 
 /*
- * Handle a serial number request
+ * Handle a set params request
  */
-UsbProConfMsg *UsbProDevice::config_get_serial(UsbProConfMsgSerReq *req) const {
-  UsbProConfMsgSerRep *r = new UsbProConfMsgSerRep();
-  uint8_t serial[UsbProConfMsgSerRep::SERIAL_SIZE];
-  m_widget->get_serial(serial, UsbProConfMsgSerRep::SERIAL_SIZE);
-  r->set_serial(serial, UsbProConfMsgSerRep::SERIAL_SIZE);
-  req = NULL;
-  return r;
+void UsbProDevice::HandleSetParameters(RpcController *controller,
+                                       const Request *request,
+                                       string *response,
+                                       Closure *done) {
+
+  if (!request->has_set_parameters()) {
+    controller->SetFailed("Missing set parameters message");
+    done->Run();
+    return;
+  }
+
+  bool ret = m_widget->SetParameters(NULL,
+                                     0,
+                                     request->set_parameters().break_time(),
+                                     request->set_parameters().mab_time(),
+                                     request->set_parameters().rate());
+
+  if (!ret) {
+    controller->SetFailed("GetParameters failed");
+    done->Run();
+    return;
+  }
+
+  Reply reply;
+  reply.set_type(lla::plugin::usbpro::Reply::USBPRO_SET_PARAMETER_REPLY);
+  reply.SerializeToString(response);
+  done->Run();
+
+}
+
+
+void UsbProDevice::HandleGetSerial(RpcController *controller,
+                                   const Request *request,
+                                   string *response,
+                                   Closure *done) {
+
+  if (!m_widget->GetSerial()) {
+    controller->SetFailed("GetSerial failed");
+    done->Run();
+  } else {
+    // TODO: we should time these out if we don't get a response
+    outstanding_request serial_request;
+    serial_request.controller = controller;
+    serial_request.response = response;
+    serial_request.done = done;
+    m_outstanding_serial_requests.push_back(serial_request);
+  }
 }
 
 
 /*
- * Handle a set param config request
+ * Called when the dmx changes
  */
-UsbProConfMsg *UsbProDevice::config_set_params(UsbProConfMsgSprmReq *req) {
-  UsbProConfMsgSprmRep *r = new UsbProConfMsgSprmRep();
-
-  int ret = m_widget->set_params(NULL, 0, req->get_brk(), req->get_mab(), req->get_rate());
-  r->set_status(ret);
-  return r;
+void UsbProDevice::NewDmx() {
+  AbstractPort *port = GetPort(0);
+  port->DmxChanged();
 }
+
+
+/*
+ * Called when the GetParameters request returns
+ */
+void UsbProDevice::Parameters(uint8_t firmware,
+                              uint8_t firmware_high,
+                              uint8_t break_time,
+                              uint8_t mab_time,
+                              uint8_t rate) {
+
+  if (!m_outstanding_param_requests.empty()) {
+    outstanding_request parameter_request = m_outstanding_param_requests.front();
+    m_outstanding_param_requests.pop_front();
+
+    Reply reply;
+    reply.set_type(lla::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
+    lla::plugin::usbpro::ParameterReply *parameters_reply = reply.mutable_parameters();
+
+    parameters_reply->set_firmware_high(firmware_high);
+    parameters_reply->set_firmware(firmware);
+    parameters_reply->set_break_time(break_time);
+    parameters_reply->set_mab_time(mab_time);
+    parameters_reply->set_rate(rate);
+
+    reply.SerializeToString(parameter_request.response);
+    parameter_request.done->Run();
+
+  }
+}
+
+
+
+/*
+ * Called when the GetSerial request returns
+ */
+void UsbProDevice::SerialNumber(const uint8_t serial_number[4]) {
+  if (!m_outstanding_serial_requests.empty()) {
+    outstanding_request serial_request = m_outstanding_serial_requests.front();
+    m_outstanding_serial_requests.pop_front();
+
+    Reply reply;
+    reply.set_type(lla::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
+    lla::plugin::usbpro::SerialNumberReply *serial_reply =
+      reply.mutable_serial_number();
+
+    serial_reply->set_serial((char*) serial_number);
+
+    reply.SerializeToString(serial_request.response);
+    serial_request.done->Run();
+  }
+}
+
+} // plugin
+} // lla

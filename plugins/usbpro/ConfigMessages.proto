@@ -1,0 +1,76 @@
+/*
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * ConfigMessages.proto
+ * Defines the protocol buffers used to configure the Usb Pro device
+ * Copyright (C) 2005 - 2008 Simon Newton
+ */
+
+package lla.plugin.usbpro;
+
+message ParameterRequest {
+}
+
+message ParameterReply {
+  required uint32 firmware_high = 1;
+  required uint32 firmware = 2;
+  required uint32 break_time = 3;
+  required uint32 mab_time = 4;
+  required uint32 rate = 5;
+}
+
+message SetParameterRequest {
+  required uint32 break_time = 2;
+  required uint32 mab_time = 3;
+  required uint32 rate = 4;
+}
+
+message SetParameterReply {
+  required uint32 status = 1;
+}
+
+message SerialNumberRequest {
+}
+
+message SerialNumberReply {
+  required bytes serial = 1;
+}
+
+message Request {
+  enum RequestType {
+    USBPRO_PARAMETER_REQUEST = 1;
+    USBPRO_SET_PARAMETER_REQUEST = 2;
+    USBPRO_SERIAL_REQUEST = 3;
+  }
+
+  required RequestType type = 1;
+
+  optional ParameterRequest get_parameters = 2;
+  optional SetParameterRequest set_parameters = 3;
+  optional SerialNumberRequest get_serial_number = 4;
+}
+
+message Reply {
+  enum ReplyType {
+    USBPRO_PARAMETER_REPLY = 1;
+    USBPRO_SET_PARAMETER_REPLY = 2;
+    USBPRO_SERIAL_REPLY = 3;
+  }
+  required ReplyType type = 1;
+
+  optional ParameterReply parameters = 2;
+  optional SetParameterReply set_parameters = 3;
+  optional SerialNumberReply serial_number = 4;
+}

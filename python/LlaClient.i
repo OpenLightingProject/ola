@@ -7,13 +7,8 @@
 
 %{
 #include <lla/LlaClient.h>
-#include <lla/LlaClientObserver.h>
-#include <lla/LlaPlugin.h>
-#include <lla/LlaUniverse.h>
 #include <lla/LlaDevice.h>
-#include <lla/LlaPort.h>
 #include <lla/plugin_id.h>
-#include <lla/messages.h>
 #include <lla/LlaUniverse.h>
 %}
 

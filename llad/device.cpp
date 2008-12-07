@@ -13,16 +13,24 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * device.cpp
+ * Device.cpp
  * Base implementation of the device class.
- * Copyright (C) 2005 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
-
-#include <llad/device.h>
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/service.h>
+#include <llad/Device.h>
+#include <llad/Port.h>
+#include <llad/Universe.h>
+
+namespace lla {
+
+using google::protobuf::RpcController;
+using google::protobuf::Closure;
 
 /*
  * Create a new device
@@ -30,65 +38,82 @@
  * @param  owner  the plugin that owns this device
  * @param  name  a nice name for this device
  */
-Device::Device(Plugin *owner, const string &name)
-  : m_owner(owner), m_name(name)  {
-
+Device::Device(AbstractPlugin *owner, const string &name):
+  AbstractDevice(),
+  m_enabled(false),
+  m_owner(owner),
+  m_name(name),
+  m_device_id(-1) {
 }
 
-/*
- * Destroy this device
- */
-Device::~Device() {}
-
 
 /*
- * Return the plugin owner of this device
- *
- * @return  the plugin that owns this device
+ * Stop this device
  */
-Plugin *Device::get_owner() const {
-  return m_owner;
+Device::~Device() {
+  if (m_enabled)
+    Stop();
 }
 
-/*
- * get the name of this device
- *
- * @return the name of the device
- */
-const string Device::get_name() const {
-  return m_name;
-}
 
 /*
- * Get a port on the device
- *
- * @param pid  the id of the port to fetch
- * @return the port if it exists, or NULL on error
+ * Device Config request
  */
-Port *Device::get_port(unsigned int pid) const {
-  if (pid > m_ports_vect.size() )
-    return NULL;
+void Device::Configure(RpcController *controller,
+                       const string &request,
+                       string *response,
+                       Closure *done) {
 
-  return m_ports_vect[pid];
-}
-
-/*
- * Get the number of ports on the device
- *
- * @return the number of ports in this device
- */
-inline int Device::port_count() const {
-  return m_ports_vect.size();
+  done->Run();
 }
 
 
 /*
  * Add a port to this device
  *
- * @param prt  the port to add
+ * @param port  the port to add
  * @return 0 on success, non 0 on failure
  */
-int Device::add_port(Port *prt) {
-  m_ports_vect.push_back(prt);
+int Device::AddPort(AbstractPort *port) {
+  m_ports.push_back(port);
   return 0;
 }
+
+
+/*
+ * Returns a vector of ports in this device
+ *
+ * @return a vector of Port*
+ */
+const vector<AbstractPort*> Device::Ports() const {
+  return m_ports;
+}
+
+
+/*
+ * Returns the Port with the id port_id
+ */
+AbstractPort *Device::GetPort(unsigned int port_id) const {
+  if(port_id >= m_ports.size())
+    return NULL;
+
+  return m_ports[port_id];
+}
+
+
+/*
+ * Delete all ports and clear the port list
+ */
+void Device::DeleteAllPorts() {
+  vector<AbstractPort*>::iterator iter;
+  for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
+    Universe *universe = (*iter)->GetUniverse();
+    if (universe)
+      universe->RemovePort(*iter);
+    delete *iter;
+  }
+  m_ports.clear();
+}
+
+
+} //lla

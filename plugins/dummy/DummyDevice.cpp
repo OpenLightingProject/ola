@@ -13,10 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * DummyDevice.cpp
- * Art-Net device
- * Copyright (C) 2005-2007 Simon Newton
+ * A dummy device
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #include <stdlib.h>
@@ -26,46 +25,32 @@
 #include "DummyDevice.h"
 #include "DummyPort.h"
 
-/*
- * Create a new dummy device
- *
- */
-DummyDevice::DummyDevice(Plugin *owner, const string &name) :
-  Device(owner, name), m_enabled(false) {}
-
-
-/*
- * Stop this device
- *
- */
-DummyDevice::~DummyDevice() {
-  if (m_enabled)
-    this->stop();
-}
+namespace lla {
+namespace plugin {
 
 
 /*
  * Start this device
  *
  */
-int DummyDevice::start() {
+bool DummyDevice::Start() {
   DummyPort *port = NULL;
 
   if (m_enabled)
-    return -1;
+    return true;
 
   port = new DummyPort(this, 0);
 
-  if (port == NULL)
-    return -1;
+  if (!port)
+    return false;
 
-  if (add_port(port)) {
+  if (AddPort(port)) {
     delete port;
-    return -1;
+    return false;
   }
 
   m_enabled = true;
-  return 0;
+  return true;
 }
 
 
@@ -73,41 +58,22 @@ int DummyDevice::start() {
  * Stop this device
  *
  */
-int DummyDevice::stop() {
-  Port *prt = NULL;
+bool DummyDevice::Stop() {
+  vector<AbstractPort*> ports;
+  vector<AbstractPort*>::iterator iter;
 
   if (!m_enabled)
-    return 0;
+    return true;
 
-  for (int i=0; i < port_count() ; i++) {
-    prt = get_port(i);
-    if (prt != NULL)
-      delete prt;
+  ports = Ports();
+  for (iter = ports.begin(); iter != ports.end(); ++iter) {
+    if (*iter)
+      delete *iter;
   }
 
   m_enabled = false;
-  return 0;
+  return true;
 }
 
-
-// call this when something changes
-// where to store data to ?
-// I'm thinking a config file in .lla
-int DummyDevice::save_config() const {
-  return 0;
-}
-
-
-/*
- * we can pass plugin specific messages here
- * make sure the user app knows the format though...
- *
- */
-int DummyDevice::configure(void *req, int len) {
-  // handle short/ long name & subnet and port addresses
-
-  req = 0;
-  len = 0;
-
-  return 0;
-}
+} //plugin
+} //laa

@@ -21,18 +21,24 @@
 #ifndef STAGEPROFIPORT_H
 #define STAGEPROFIPORT_H
 
-#include <llad/port.h>
+#include <llad/Port.h>
 
-class StageProfiPort : public Port {
+namespace lla {
 
+class AbstractDevice;
+
+namespace plugin {
+
+class StageProfiPort: public Port {
   public:
-    StageProfiPort(Device *parent, int id) : Port(parent, id) {};
+    StageProfiPort(AbstractDevice *parent, int id): Port(parent, id) {};
 
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
+    int WriteDMX(uint8_t *data, unsigned int length);
+    int ReadDMX(uint8_t *data, unsigned int length);
 
-    int can_read() const { return 0; }
-    int can_write() const { return 1; }
+    bool CanRead() const { return false; }
 };
 
+} // plugin
+} // lla
 #endif

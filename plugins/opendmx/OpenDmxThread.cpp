@@ -18,11 +18,6 @@
  * Copyright (C) 2005-2007  Simon Newton
  */
 
-
-#include "OpenDmxThread.h"
-
-#include <llad/logger.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,16 +29,24 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include <llad/logger.h>
+#include "OpenDmxThread.h"
+
+namespace lla {
+namespace plugin {
+
+using std::string;
+
 typedef struct {
   OpenDmxThread *th;
-  string *path;
+  string path;
 } t_args;
 
 
 void *thread_run(void *d) {
   t_args *args = (t_args*) d;
 
-  args->th->run(args->path);
+  args->th->Run(args->path);
   free(args);
 }
 
@@ -62,8 +65,8 @@ OpenDmxThread::OpenDmxThread() {
   m_tid = 0;
 }
 
+
 /*
- *
  *
  */
 OpenDmxThread::~OpenDmxThread() {
@@ -77,8 +80,7 @@ OpenDmxThread::~OpenDmxThread() {
  * run this thread
  *
  */
-void *OpenDmxThread::run(string *path) {
-
+void *OpenDmxThread::Run(const string &path) {
   uint8_t buf[MAX_DMX+1];
   struct timeval tv;
   struct timespec ts;
@@ -87,9 +89,9 @@ void *OpenDmxThread::run(string *path) {
 
   // start code
   buf[0] = 0x00;
-  m_fd = open(path->c_str(),O_WRONLY);
+  m_fd = open(path.c_str(), O_WRONLY);
 
-  while(1) {
+  while (1) {
     pthread_mutex_lock(&m_term_mutex);
     if (m_term) {
       pthread_mutex_unlock(&m_term_mutex);
@@ -98,59 +100,57 @@ void *OpenDmxThread::run(string *path) {
     pthread_mutex_unlock(&m_term_mutex);
 
     if (m_fd == -1) {
-      if (gettimeofday(&tv,NULL) < 0 ) {
+      if (gettimeofday(&tv, NULL) < 0) {
         printf("gettimeofday error\n");
         break;
       }
-      ts.tv_sec = tv.tv_sec +1;
+      ts.tv_sec = tv.tv_sec + 1;
       ts.tv_nsec = tv.tv_usec * 1000;
 
       pthread_cond_timedwait(&m_term_cond, &m_term_mutex, &ts);
       pthread_mutex_unlock(&m_term_mutex);
 
-      m_fd = open(path->c_str(),O_WRONLY);
+      m_fd = open(path.c_str(), O_WRONLY);
 
       if (m_fd == -1)
-        printf("open %d: %s\n",m_fd, strerror(errno) );
+        printf("open %d: %s\n", m_fd, strerror(errno));
 
     } else {
       pthread_mutex_lock(&m_mutex);
-      memcpy(&buf[1], m_dmx, MAX_DMX+1);
+      memcpy(&buf[1], m_dmx, MAX_DMX + 1);
       pthread_mutex_unlock(&m_mutex);
 
-      do_write(buf, MAX_DMX+1);
+      do_write(buf, MAX_DMX + 1);
     }
   }
   return NULL;
 }
 
 
-
 /*
  * Start this thread
  *
  */
-int OpenDmxThread::start (string *path) {
+int OpenDmxThread::Start(const string &path) {
   // this is passed to the thread and free'ed there
   t_args *args = (t_args*) malloc(sizeof(t_args));
 
   args->th = this;
   args->path = path;
 
-  if ( pthread_create(&m_tid, NULL, ::thread_run, (void*) args) ) {
+  if (pthread_create(&m_tid, NULL, lla::plugin::thread_run, (void*) args)) {
     Logger::instance()->log(Logger::WARN, "pthread create failed");
     return -1;
   }
-
   return 0;
 }
+
 
 /*
  * Stop the thread
  *
  */
-int OpenDmxThread::stop() {
-
+int OpenDmxThread::Stop() {
   pthread_mutex_lock(&m_term_mutex);
   m_term = true;
   pthread_mutex_unlock(&m_term_mutex);
@@ -160,11 +160,12 @@ int OpenDmxThread::stop() {
 }
 
 
+
 /*
  * Store the data in the shared buffer
  *
  */
-int OpenDmxThread::write_dmx(uint8_t *data, int length) {
+int OpenDmxThread::WriteDmx(uint8_t *data, int length) {
   pthread_mutex_lock(&m_mutex);
   memcpy(m_dmx, data, length);
   pthread_mutex_unlock(&m_mutex);
@@ -181,13 +182,14 @@ int OpenDmxThread::do_write(uint8_t *buf, int length) {
 
     res = close(m_fd);
     if (res < 0)
-      perror("close ");
+      perror("close");
     else
       m_fd = -1;
 
     return -1;
   }
-
   return 0;
 }
 
+} // plugin
+} // lla

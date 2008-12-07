@@ -13,89 +13,72 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * universe.hpp
+ * Universe.h
  * Header file for the Universe class
- * Copyright (C) 2005  Simon Newton
- *
+ * Copyright (C) 2005-2008 Simon Newton
  */
-
 
 #ifndef UNIVERSE_H
 #define UNIVERSE_H
 
 #include <stdint.h>
-#include <llad/port.h>
+#include <vector>
+#include <string>
 #include <lla/messages.h>
 
-#include <vector>
-#include <map>
-#include <string>
+namespace lla {
 
 using namespace std;
+class AbstractPort;
 
 class Universe {
-
   public:
-
     enum merge_mode {
       MERGE_HTP,
       MERGE_LTP
     };
 
-    ~Universe();
-    int add_port(Port *prt);
-    int remove_port(Port *prt);
-    int get_num_ports() const;
+    Universe(int uid, class UniverseStore *store);
+    ~Universe() {};
 
-    int add_client(class Client *cli);
-    int remove_client(class Client *cli);
+    string Name() const { return m_universe_name; }
+    void SetName(const string &name) { m_universe_name = name; }
+    merge_mode MergeMode() const { return m_merge_mode; }
+    void SetMergeMode(merge_mode merge_mode) { m_merge_mode = merge_mode; }
+    int UniverseId() const { return m_universe_id; }
+    bool IsActive() const;
 
-    int set_dmx(uint8_t *dmx, int length);
-    int get_dmx(uint8_t *dmx, int length);
-    int get_uid() const;
-    int port_data_changed(Port *prt);
-    bool in_use() const;
-    string get_name() const;
-    void set_name(const string &name, bool save = true);
-    int send_dmx(class Client *cli);
+    int AddPort(class AbstractPort *prt);
+    int RemovePort(class AbstractPort *prt);
+    int PortCount() const { return m_ports.size(); }
 
-    void set_merge_mode(merge_mode mode, bool save = true);
-    merge_mode get_merge_mode();
+    int AddClient(class Client *client);
+    int RemoveClient(class Client *client);
 
-    static Universe *get_universe(int uid);
-    static Universe *get_universe_or_create(int uid);
-    static int  universe_count();
-    static Universe *get_universe_at_pos(int index);
-
-    static int clean_up();
-    static void check_for_unused();
-    static vector<Universe *> *get_list();
-    static int set_net(class Network *net);
-    static int set_store(class UniverseStore *store);
-
-  protected :
-    Universe(int uid);
+    int SetDMX(uint8_t *dmx, unsigned int length);
+    int GetDMX(uint8_t *dmx, unsigned int length) const;
+    const uint8_t *GetDMX(int &length) const;
+    int PortDataChanged(AbstractPort *port);
 
   private:
     Universe(const Universe&);
     Universe& operator=(const Universe&);
-    int update_dependants();
+    int UpdateDependants();
+    void Merge();                      // HTP merge the merge and data buffers
 
-    void merge();                         // HTP merge the merge and data buffers
-    int m_uid;
-    enum merge_mode m_merge_mode;         // merge mode
-    vector<Port*> ports_vect;             // ports assigned to the universe
-    vector<class Client *> clients_vect;  // clients listening to this universe
-    uint8_t  m_data[DMX_LENGTH];          // buffer for this universe
-    uint8_t  m_merge[DMX_LENGTH];         // merge buffer for this universe
+    string m_universe_name;
+    int m_universe_id;
+    enum merge_mode m_merge_mode;      // merge mode
+    vector<class AbstractPort*> m_ports;       // ports patched to this universe
+    vector<class Client *> m_clients;  // clients listening to this universe
+    class UniverseStore *m_universe_store;
 
-    int m_length;   // length of valid data in m_data
-    int m_mlength;  // length of valid data in m_merge
-    string m_name;  // name of this universe
+    uint8_t m_data[DMX_LENGTH];        // buffer for this universe
+    uint8_t m_merge[DMX_LENGTH];       // merge buffer for this universe
 
-    static map<int, Universe *> uni_map;  // map of uid to universes
-    static Network *c_net;                // network object
-    static UniverseStore *c_uni_store;    // the universe store object
+    unsigned int m_length;   // length of valid data in m_data
+    unsigned int m_mlength;  // length of valid data in m_merge
 };
 
+} //lla
 #endif

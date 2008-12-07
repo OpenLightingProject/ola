@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbprodevice.h
+ * UsbProWidget.h
  * Interface for the usbpro device
  * Copyright (C) 2006  Simon Newton
  */
@@ -21,12 +21,17 @@
 #ifndef USBPROWIDGET_H
 #define USBPROWIDGET_H
 
-using namespace std;
-
 #include <string>
 #include <stdint.h>
+#include <lla/select_server/Socket.h>
 
 #include "UsbProWidgetListener.h"
+
+namespace lla {
+namespace plugin {
+
+using std::string;
+using lla::select_server::ConnectedSocket;
 
 enum { DMX_BUF_LEN = 513 };
 enum { USER_CONFIG_LEN = 508 };
@@ -132,46 +137,44 @@ typedef struct {
 #define pm_snorep  pm_pmu.pmu_snorep
 
 
-class UsbProWidget {
-
+class UsbProWidget: public lla::select_server::SocketListener {
   public:
-    UsbProWidget() {};
-    ~UsbProWidget() {};
+    UsbProWidget():
+      m_enabled(false),
+      m_socket(NULL) {}
+    ~UsbProWidget() {}
 
-    // these methods are for communicating with the device
-    int connect(const string &path);
-    int disconnect();
-    int fd() {return m_fd;}
-    int send_dmx(uint8_t *buf, unsigned int len) const;
-    int send_rdm(uint8_t *buf, unsigned int len) const;
-    int set_params(uint8_t *data, unsigned int len, uint8_t brk, uint8_t mab, uint8_t rate);
-    void get_params(uint16_t *firmware, uint8_t *brk, uint8_t *mab, uint8_t *rate) const;
-    void get_serial(uint8_t *serial, unsigned int len) const;
-    int get_dmx(uint8_t *data, unsigned int len);
-    int recv_mode();
-    void set_listener(UsbProWidgetListener *l);
-    int recv();
+    int Connect(const string &path);
+    int Disconnect();
+    ConnectedSocket *GetSocket() { return m_socket; }
+
+    int SendDmx(uint8_t *buf, unsigned int len) const;
+    int SendRdm(uint8_t *buf, unsigned int len) const;
+    bool GetParameters();
+    bool GetSerial();
+    int SetParameters(uint8_t *data, unsigned int len, uint8_t brk, uint8_t mab, uint8_t rate);
+    int FetchDmx(uint8_t *data, unsigned int len);
+
+    int ChangeToReceiveMode();
+    void SetListener(UsbProWidgetListener *listener);
+    int SocketReady(ConnectedSocket *socket);
 
   private:
-    int init();
     int send_msg(promsg *msg) const;
     int set_msg_len(promsg *msg, int len) const;
     int send_rcmode(int mode);
-    int send_snoreq() const;
-    int send_prmreq(int usrsz) const;
     int handle_dmx(pms_rdmx *dmx, int len);
     int handle_cos(pms_cos *cos, int len);
     int handle_prmrep(pms_prmrep *rep, unsigned int len);
     int handle_snorep(pms_snorep *rep, int len);
     int do_recv();
 
-    // instance variables
-    int m_fd;            // file descriptor
-    uint8_t  m_dmx[DMX_BUF_LEN-1];  // dmx buffer
-    uint8_t m_serial[4];      // serial number
-    pms_prmrep m_params;      // widget params
-    bool m_enabled;          // are we enabled
+    uint8_t m_dmx[DMX_BUF_LEN - 1];  // dmx buffer
+    bool m_enabled;
     UsbProWidgetListener *m_listener;
+    ConnectedSocket *m_socket;
 };
 
+} // plugin
+} //lla
 #endif

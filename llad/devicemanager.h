@@ -13,38 +13,42 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * devicemanager.h
- * Interface to the devicemanager class
- * Copyright (C) 2005 Simon Newton
+ * DeviceManager.h
+ * Interface to the DeviceManager class
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef DEVICEMANAGER_H
-#define DEVICEMANAGER_H
-
-#include <llad/device.h>
+#ifndef LLA_DEVICEMANAGER_H
+#define LLA_DEVICEMANAGER_H
 
 #include <vector>
+#include <llad/Device.h>
 
-using namespace std;
+namespace lla {
+
+using std::vector;
 
 class DeviceManager {
-
   public:
-    DeviceManager();
-    ~DeviceManager();
+    DeviceManager(): m_next_device_id(1) {}
+    ~DeviceManager() {}
 
-    int register_device(Device *dev);
-    int unregister_device(Device *dev);
-    int device_count() const;
-    Device *get_dev(unsigned int id) const;
+    int RegisterDevice(AbstractDevice *device);
+    int UnregisterDevice(AbstractDevice *device);
+    vector<AbstractDevice*> Devices() const { return m_devices; }
+    unsigned int DeviceCount() const { return m_devices.size(); }
+    AbstractDevice* GetDevice(unsigned int device_id);
 
-  protected:
+    void UnregisterAllDevices();
 
   private:
     DeviceManager(const DeviceManager&);
     DeviceManager& operator=(const DeviceManager&);
 
-    vector<Device*> m_dev_vect;    // list of the devices
+    vector<AbstractDevice*> m_devices;    // list of devices
+    unsigned int m_next_device_id;
 };
 
+
+} //lla
 #endif

@@ -15,23 +15,28 @@
  *
  *
  * DummyPort.cpp
- * The Dummy plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * The Dummy Port for lla
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #include <stdio.h>
 #include <string.h>
 
 #include <llad/logger.h>
-
 #include "DummyPort.h"
+
+namespace lla {
+namespace plugin {
 
 /*
  * @param parent  the parent device of this port
  * @param id    the port id
  *
  */
-DummyPort::DummyPort(Device *parent, int id) : Port(parent, id), m_length(512) {
+DummyPort::DummyPort(AbstractDevice *parent, int id):
+  Port(parent, id),
+  m_length(512) {
+
   memset(m_dmx, 0x00, m_length);
 }
 
@@ -42,7 +47,7 @@ DummyPort::DummyPort(Device *parent, int id) : Port(parent, id), m_length(512) {
  * @param  length  the length of the data
  *
  */
-int DummyPort::write(uint8_t *data, unsigned int length) {
+int DummyPort::WriteDMX(uint8_t *data, unsigned int length) {
   int len = length < 512 ? length : 512;
 
   memcpy(m_dmx, data, len);
@@ -64,7 +69,7 @@ int DummyPort::write(uint8_t *data, unsigned int length) {
  *
  * @return  the amount of data read
  */
-int DummyPort::read(uint8_t *data, unsigned int length) {
+int DummyPort::ReadDMX(uint8_t *data, unsigned int length) {
   unsigned int len ;
 
   // copy to mem
@@ -73,3 +78,6 @@ int DummyPort::read(uint8_t *data, unsigned int length) {
 
   return len;
 }
+
+} //plugin
+} //lla

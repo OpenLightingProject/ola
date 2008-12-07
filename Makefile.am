@@ -5,9 +5,7 @@ AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
 
 AM_CXXFLAGS = -Wall -Werror -Wformat -W
 
-SUBDIRS = lla plugins llad include python
-
-EXTRA_DIST = reconf tools
+SUBDIRS = common lla plugins llad include python
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = liblla.pc

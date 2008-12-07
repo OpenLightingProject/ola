@@ -15,19 +15,23 @@
  *
  * OpenDmxPlugin.cpp
  * The Open DMX plugin for lla
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
 
-
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
 
 #include "OpenDmxPlugin.h"
 #include "OpenDmxDevice.h"
+
+namespace lla {
+namespace plugin {
+
+using lla::PluginAdaptor;
 
 const string OpenDmxPlugin::OPENDMX_DEVICE_PATH = "/dev/dmx0";
 const string OpenDmxPlugin::OPENDMX_DEVICE_NAME = "OpenDmx USB Device";
@@ -38,14 +42,14 @@ const string OpenDmxPlugin::PLUGIN_PREFIX = "opendmx";
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new OpenDmxPlugin(pa, LLA_PLUGIN_OPENDMX);
+extern "C" lla::AbstractPlugin* create(const PluginAdaptor *plugin_adaptor) {
+  return new OpenDmxPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(Plugin* plug) {
+extern "C" void destroy(lla::AbstractPlugin* plug) {
   delete plug;
 }
 
@@ -57,50 +61,49 @@ extern "C" void destroy(Plugin* plug) {
  * TODO: scan /dev for devices?
  *   Need to get multi-device support working first :)
  */
-int OpenDmxPlugin::start_hook() {
+bool OpenDmxPlugin::StartHook() {
   int fd;
 
   /* create new lla device */
   // first check if it's there
-  fd = open(m_prefs->get_val("device").c_str(), O_WRONLY);
+  fd = open(m_preferences->GetValue("device").c_str(), O_WRONLY);
 
   if (fd > 0) {
     close(fd);
-    m_dev = new OpenDmxDevice(this, OPENDMX_DEVICE_NAME, m_prefs->get_val("device"));
+    m_device = new OpenDmxDevice(this, OPENDMX_DEVICE_NAME, m_preferences->GetValue("device"));
 
-    if (m_dev == NULL)
-      return -1;
+    if (!m_device)
+      return false;
 
-    m_dev->start();
-    m_pa->register_device(m_dev);
+    m_device->Start();
+    m_plugin_adaptor->RegisterDevice(m_device);
 
-    return 0;
+    return true;
   }
-  return 0;
+  return true;
 }
 
 
 /*
  * Stop the plugin
  *
- * @return 0 on sucess, -1 on failure
+ * @return true on success, false on failure
  */
-int OpenDmxPlugin::stop_hook() {
-
-  // stop the device
-  if (m_dev && m_dev->stop())
-    return -1;
-
-  m_pa->unregister_device(m_dev);
-  delete m_dev;
-  return 0;
+bool OpenDmxPlugin::StopHook() {
+  if (m_device) {
+    bool ret = m_device->Stop();
+    m_plugin_adaptor->UnregisterDevice(m_device);
+    delete m_device;
+    return ret;
+  }
+  return true;
 }
 
 /*
- * return the description for this plugin
+ * Return the description for this plugin
  *
  */
-string OpenDmxPlugin::get_desc() const {
+string OpenDmxPlugin::Description() const {
     return
 "OpenDMXUSB Plugin\n"
 "----------------------------\n"
@@ -116,23 +119,24 @@ string OpenDmxPlugin::get_desc() const {
 
 
 /*
- * load the plugin prefs and default to sensible values
- *
+ * Load the plugin prefs and default to sensible values
  */
-int OpenDmxPlugin::set_default_prefs() {
+int OpenDmxPlugin::SetDefaultPreferences() {
+  if (!m_preferences)
+    return false;
 
-  if (m_prefs == NULL)
-    return -1;
-
-  if (m_prefs->get_val("device") == "") {
-    m_prefs->set_val("device", OPENDMX_DEVICE_PATH);
-    m_prefs->save();
+  if (m_preferences->GetValue("device").empty()) {
+    m_preferences->SetValue("device", OPENDMX_DEVICE_PATH);
+    m_preferences->Save();
   }
 
   // check if this save correctly
   // we don't want to use it if null
-  if (m_prefs->get_val("device") == "")
-    return -1;
+  if (m_preferences->GetValue("device").empty())
+    return false;
 
-  return 0;
+  return true;
 }
+
+} //plugins
+} //lla

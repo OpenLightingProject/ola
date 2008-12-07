@@ -13,14 +13,17 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * plugin.cpp
+ * Plugin.cpp
  * Base plugin class for lla
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <llad/plugin.h>
-#include <llad/preferences.h>
+#include <llad/Plugin.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
 #include <llad/logger.h>
+
+namespace lla {
 
 const string Plugin::ENABLED_KEY = "enabled";
 const string Plugin::DEBUG_KEY = "debug";
@@ -28,81 +31,86 @@ const string Plugin::DEBUG_KEY = "debug";
 /*
  * Start the plugin. Calls start_hook() which can be over-ridden by the
  * derrived classes.
+ *
+ * @returns true if started sucessfully, false otherwise.
  */
-int Plugin::start() {
+bool Plugin::Start() {
   string enabled, debug;
 
   if (m_enabled)
-    return -1;
+    return false;
 
   // setup prefs
-  if (load_prefs())
-    return -1;
+  if (LoadPreferences())
+    return false;
 
-  enabled = m_prefs->get_val(ENABLED_KEY);
-  if(enabled == "false") {
-    Logger::instance()->log(Logger::INFO, "Plugin: %s disabled", get_name().c_str());
-    delete m_prefs;
+  enabled = m_preferences->GetValue(ENABLED_KEY);
+  if (enabled == "false") {
+    Logger::instance()->log(Logger::INFO, "Plugin: %s disabled", Name().c_str());
+    delete m_preferences;
     return 0;
   }
 
-  debug = m_prefs->get_val(DEBUG_KEY);
-  if(debug == "true") {
-    Logger::instance()->log(Logger::INFO, "Plugin: %s debug on", get_name().c_str());
+  debug = m_preferences->GetValue(DEBUG_KEY);
+  if (debug == "true") {
+    Logger::instance()->log(Logger::INFO, "Plugin: %s debug on", Name().c_str());
     m_debug = true;
   }
 
-  if(start_hook()) {
-    delete m_prefs;
-    return -1;
+  if (!StartHook()) {
+    delete m_preferences;
+    return false;
   }
 
   m_enabled = true;
-  return 0;
+  return true;
 }
 
 
 /*
- * Stop the plugin. Called stop_hook which can be over-ridden by the
+ * Stop the plugin. Calls stop_hook which can be over-ridden by the
  * derrived classes.
+ *
+ * @returns true if stopped sucessfully, false otherwise.
  */
-int Plugin::stop() {
+bool Plugin::Stop() {
+  if (!m_enabled)
+    return false;
 
- if (!m_enabled)
-     return -1;
-
-  stop_hook();
+  bool ret = StopHook();
 
   m_enabled = false;
-  delete m_prefs;
-  return 0;
+  delete m_preferences;
+  return ret;
 }
 
 
 /*
  * Load the preferences and set defaults
  */
-int Plugin::load_prefs() {
-  if (pref_suffix() == "") {
+int Plugin::LoadPreferences() {
+  if (PreferencesSuffix() == "") {
     Logger::instance()->log(Logger::WARN, "Plugin: no suffix provided");
     return -1;
   }
 
-  if (m_prefs != NULL)
-    delete m_prefs;
+  if (m_preferences != NULL)
+    delete m_preferences;
 
-  m_prefs = new Preferences(pref_suffix());
+  m_preferences = m_plugin_adaptor->NewPreference(PreferencesSuffix());
 
-  if (m_prefs == NULL)
+  if (m_preferences == NULL)
     return -1;
 
-  m_prefs->load();
+  m_preferences->Load();
 
-  if (set_default_prefs()) {
-    delete m_prefs;
-    Logger::instance()->log(Logger::INFO, "%s:set_default_prefs failed", get_name().c_str());
+  if (SetDefaultPreferences()) {
+    delete m_preferences;
+    Logger::instance()->log(Logger::INFO, "%s:set_default_prefs failed", Name().c_str());
     return -1;
   }
 
   return 0;
 }
+
+} // lla

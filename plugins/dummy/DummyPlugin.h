@@ -21,32 +21,41 @@
 #ifndef DUMMYPLUGIN_H
 #define DUMMYPLUGIN_H
 
-#include <llad/plugin.h>
+#include <llad/Plugin.h>
 #include <lla/plugin_id.h>
+
+namespace lla {
+namespace plugin {
+
+using lla::Plugin;
+using lla::PluginAdaptor;
 
 class DummyDevice;
 
-class DummyPlugin : public Plugin {
-
+class DummyPlugin: public Plugin {
   public:
-    DummyPlugin(const PluginAdaptor *pa, lla_plugin_id id):
-      Plugin(pa, id),
-      m_dev(NULL) {}
+    DummyPlugin(const PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor),
+      m_device(NULL) {}
 
-    string get_name() const { return PLUGIN_NAME; }
-    string get_desc() const;
+    string Name() const { return PLUGIN_NAME; }
+    string Description() const;
+    lla_plugin_id Id() const { return LLA_PLUGIN_DUMMY; }
 
   protected:
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    int set_default_prefs() { return 0; }
+    bool StartHook();
+    bool StopHook();
+    int SetDefaultPreferences() { return 0; }
 
-    DummyDevice *m_dev ;    // the dummy device
+    DummyDevice *m_device ; // the dummy device
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
 };
+
+} // plugin
+} // lla
 
 #endif

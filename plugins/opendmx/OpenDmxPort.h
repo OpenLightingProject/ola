@@ -13,32 +13,37 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * opendmxport.h
+ * OpenDmxPort.h
  * The Open DMX plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef OPENDMXPORT_H
 #define OPENDMXPORT_H
 
-#include <llad/port.h>
+#include <llad/Port.h>
 #include <OpenDmxThread.h>
 #include <string>
 
-using namespace std;
+namespace lla {
+namespace plugin {
 
-class OpenDmxPort : public Port  {
+using std::string;
 
+class OpenDmxPort: public lla::Port {
   public:
-    OpenDmxPort(Device *parent, int id,  string *path);
+    OpenDmxPort(lla::AbstractDevice *parent, int id, const string &path);
     ~OpenDmxPort();
 
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
-    int can_read() const;
+    int WriteDMX(uint8_t *data, unsigned int length);
+    // reading isn't supported in the drive
+    int ReadDMX(uint8_t *data, unsigned int length) { return 0; }
+    bool CanRead() const { return false; }
   private:
     OpenDmxThread *m_thread;
 };
+
+} //plugins
+} //lla
 
 #endif

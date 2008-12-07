@@ -31,9 +31,6 @@
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
 
-/* define if libeartnet is installed */
-#undef HAVE_EARTNET
-
 /* define if libespnet is installed */
 #undef HAVE_ESPNET
 

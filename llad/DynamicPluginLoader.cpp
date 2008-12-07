@@ -23,18 +23,18 @@
 #endif
 
 #include <llad/logger.h>
-
+#include <llad/Plugin.h>
 #include "DynamicPluginLoader.h"
 
 #include "plugins/dummy/DummyPlugin.h"
 #include "plugins/opendmx/OpenDmxPlugin.h"
-#include "plugins/usbpro/UsbProPlugin.h"
 #include "plugins/stageprofi/StageProfiPlugin.h"
+#include "plugins/usbpro/UsbProPlugin.h"
 
 #ifdef HAVE_ARTNET
 #include "plugins/artnet/ArtNetPlugin.h"
 #endif
-
+/*
 #ifdef HAVE_ESPNET
 #include "plugins/espnet/EspNetPlugin.h"
 #endif
@@ -54,82 +54,78 @@
 #ifdef HAVE_DMX4LINUX
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #endif
+*/
 
 
-#include <string.h>
-#include <dirent.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <dlfcn.h>
-#include <stdio.h>
+namespace lla {
 
+using std::vector;
 
 /*
  * Load the plugins that we were linked against
  *
  * @return   0 on sucess, -1 on failure
  */
-int DynamicPluginLoader::load_plugins() {
-  Plugin *plug;
+int DynamicPluginLoader::LoadPlugins() {
+  AbstractPlugin *plugin;
 
-  plug = new DummyPlugin(m_pa, LLA_PLUGIN_DUMMY);
-  m_plugin_vect.push_back(plug);
-  plug = new OpenDmxPlugin(m_pa, LLA_PLUGIN_OPENDMX);
-  m_plugin_vect.push_back(plug);
-  plug = new StageProfiPlugin(m_pa, LLA_PLUGIN_STAGEPROFI);
-  m_plugin_vect.push_back(plug);
-  plug = new UsbProPlugin(m_pa, LLA_PLUGIN_USBPRO);
-  m_plugin_vect.push_back(plug);
+  plugin = new lla::plugin::DummyPlugin(m_plugin_adaptor);
+  m_plugins.push_back(plugin);
+  plugin = new lla::plugin::OpenDmxPlugin(m_plugin_adaptor);
+  m_plugins.push_back(plugin);
+  plugin = new lla::plugin::StageProfiPlugin(m_plugin_adaptor);
+  m_plugins.push_back(plugin);
+  plugin = new lla::plugin::UsbProPlugin(m_plugin_adaptor);
+  m_plugins.push_back(plugin);
 
 #ifdef HAVE_ARTNET
-  plug = new ArtNetPlugin(m_pa, LLA_PLUGIN_ARTNET);
-  m_plugin_vect.push_back(plug);
+  plugin = new lla::plugin::ArtNetPlugin(m_plugin_adaptor);
+  m_plugins.push_back(plugin);
 #endif
+  /*
 
 #ifdef HAVE_ESPNET
   plug = new EspNetPlugin(m_pa, LLA_PLUGIN_ESPNET);
-  m_plugin_vect.push_back(plug);
+  m_plugins.push_back(plug);
 #endif
 
 #ifdef HAVE_PATHPORT
   plug = new PathportPlugin(m_pa, LLA_PLUGIN_PATHPORT);
-  m_plugin_vect.push_back(plug);
+  m_plugins.push_back(plug);
 #endif
 
 #ifdef HAVE_SANDNET
   plug = new SandNetPlugin(m_pa, LLA_PLUGIN_SANDNET);
-  m_plugin_vect.push_back(plug);
+  m_plugins.push_back(plug);
 #endif
 
 #ifdef HAVE_SHOWNET
   plug = new ShowNetPlugin(m_pa, LLA_PLUGIN_SHOWNET);
-  m_plugin_vect.push_back(plug);
+  m_plugins.push_back(plug);
 #endif
 
 #ifdef HAVE_DMX4LINUX
   plug = new Dmx4LinuxPlugin(m_pa, LLA_PLUGIN_DMX4LINUX);
-  m_plugin_vect.push_back(plug);
+  m_plugins.push_back(plug);
 #endif
+*/
 
   return 0;
 }
 
 
 /*
- * unload all plugins
- *
+ * Unload all plugins, this also stops them if they aren't already.
  */
-int DynamicPluginLoader::unload_plugins() {
-  unsigned int i;
-  for (i=0; i < m_plugin_vect.size(); i++) {
-    if (m_plugin_vect[i]->is_enabled()) {
-      m_plugin_vect[i]->stop();
-    }
-    delete m_plugin_vect[i];
+int DynamicPluginLoader::UnloadPlugins() {
+  vector<AbstractPlugin*>::iterator iter;
+
+  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
+    if ((*iter)->IsEnabled())
+      (*iter)->Stop();
+    delete *iter;
   }
-  m_plugin_vect.clear();
+  m_plugins.clear();
   return 0;
 }
 
@@ -139,8 +135,8 @@ int DynamicPluginLoader::unload_plugins() {
  *
  * @return the number of plugins loaded
  */
-int DynamicPluginLoader::plugin_count() const {
-  return m_plugin_vect.size();
+int DynamicPluginLoader::PluginCount() const {
+  return m_plugins.size();
 }
 
 
@@ -150,10 +146,18 @@ int DynamicPluginLoader::plugin_count() const {
  * @param id   the id of the plugin to fetch
  * @return  the plugin with the specified id
  */
-Plugin *DynamicPluginLoader::get_plugin(unsigned int id) const {
-
-  if (id > m_plugin_vect.size())
+AbstractPlugin *DynamicPluginLoader::GetPlugin(unsigned int plugin_id) const {
+  if (plugin_id > m_plugins.size())
     return NULL;
-
-  return m_plugin_vect[id];
+  return m_plugins[plugin_id];
 }
+
+
+/*
+ * Returns a list of plugins
+ */
+vector<class AbstractPlugin*> DynamicPluginLoader::Plugins() const {
+  return m_plugins;
+}
+
+} //lla

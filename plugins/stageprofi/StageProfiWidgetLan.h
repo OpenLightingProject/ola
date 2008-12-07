@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * StageOrofiDeviceLan.h
+ * StageProfiDeviceLan.h
  * Interface for the StageProfi LAN device
  * Copyright (C) 2006-2007 Simon Newton
  */
@@ -21,21 +21,21 @@
 #ifndef STAGEPROFIWIDGETLAN_H
 #define STAGEPROFIWIDGETLAN_H
 
+#include <string>
 #include "StageProfiWidget.h"
 
-using namespace std;
+namespace lla {
+namespace plugin {
 
-#include <string>
-#include <stdint.h>
-
-class StageProfiWidgetLan : public StageProfiWidget {
-
+class StageProfiWidgetLan: public StageProfiWidget {
   public:
     StageProfiWidgetLan() : StageProfiWidget() {}
     ~StageProfiWidgetLan() {}
 
-    int connect(const string &ip);
-
+    int Connect(const std::string &ip);
 };
+
+} // plugin
+} // lla
 
 #endif

@@ -21,21 +21,20 @@
 #ifndef STAGEPROFIWIDGETUSB_H
 #define STAGEPROFIWIDGETUSB_H
 
+#include <string>
 #include "StageProfiWidget.h"
 
-using namespace std;
+namespace lla {
+namespace plugin {
 
-#include <string>
-#include <stdint.h>
-
-class StageProfiWidgetUsb : public StageProfiWidget {
-
+class StageProfiWidgetUsb: public StageProfiWidget {
   public:
     StageProfiWidgetUsb() : StageProfiWidget() {}
     ~StageProfiWidgetUsb() {}
 
-    int connect(const string &ip);
-
+    int Connect(const std::string &ip);
 };
 
+} // plugin
+} // lla
 #endif

@@ -24,12 +24,15 @@
 #include <map>
 #include <vector>
 
-#include <llad/plugin.h>
 #include "PluginLoader.h"
 
-using namespace std;
+namespace lla {
 
-class DlOpenPluginLoader : public PluginLoader {
+using std::vector;
+using std::map;
+class AbstractPlugin;
+
+class DlOpenPluginLoader: public PluginLoader {
 
   public:
     DlOpenPluginLoader(const string &dirname) : m_dirname(dirname) {};
@@ -38,19 +41,19 @@ class DlOpenPluginLoader : public PluginLoader {
     int load_plugins();
     int unload_plugins();
     int plugin_count() const;
-    Plugin *get_plugin(unsigned int id) const;
+    class AbstractPlugin *GetPlugin(unsigned int id) const;
 
   private:
     DlOpenPluginLoader(const DlOpenPluginLoader&);
     DlOpenPluginLoader operator=(const DlOpenPluginLoader&);
 
-    Plugin *load_plugin(const string &path);
+    AbstractPlugin *load_plugin(const string &path);
     int unload_plugin(void *handle);
 
     string m_dirname;
-    vector<Plugin*>   m_plugin_vect;
-    map<void*, Plugin*> m_plugin_map;
-
+    std::vector<AbstractPlugin*> m_plugin_vect;
+    std::map<void*, AbstractPlugin*> m_plugin_map;
 };
 
+} //lla
 #endif

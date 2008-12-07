@@ -15,7 +15,7 @@
  *
  * OpenDmxDevice.cpp
  * The open dmx device
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  *
  *
  */
@@ -27,6 +27,11 @@
 #include "OpenDmxDevice.h"
 #include "OpenDmxPort.h"
 
+namespace lla {
+namespace plugin {
+
+using lla::Device;
+
 
 /*
  * Create a new device
@@ -35,11 +40,12 @@
  * @param name
  * @param path to device
  */
-OpenDmxDevice::OpenDmxDevice(Plugin *owner, const string &name, const string &path):
+OpenDmxDevice::OpenDmxDevice(AbstractPlugin *owner,
+                             const string &name,
+                             const string &path):
   Device(owner, name),
   m_path(path),
   m_enabled(false) {
-
 }
 
 
@@ -48,7 +54,7 @@ OpenDmxDevice::OpenDmxDevice(Plugin *owner, const string &name, const string &pa
  */
 OpenDmxDevice::~OpenDmxDevice() {
   if (m_enabled)
-    stop();
+    Stop();
 }
 
 
@@ -56,17 +62,15 @@ OpenDmxDevice::~OpenDmxDevice() {
  * Start this device
  *
  */
-int OpenDmxDevice::start() {
-  OpenDmxPort *port = NULL;
-
+bool OpenDmxDevice::Start() {
   // owner, id, path
-  port = new OpenDmxPort(this,0, &m_path);
+  OpenDmxPort *port = new OpenDmxPort(this, 0, m_path);
 
-  if (port != NULL)
-    this->add_port(port);
+  if (!port)
+    this->AddPort(port);
 
   m_enabled = true;
-  return 0;
+  return true;
 }
 
 
@@ -74,41 +78,22 @@ int OpenDmxDevice::start() {
  * stop this device
  *
  */
-int OpenDmxDevice::stop() {
-  Port *prt = NULL;
-
+bool OpenDmxDevice::Stop() {
   if (!m_enabled)
-    return 0;
+    return true;
 
-  for (int i=0; i < port_count(); i++) {
-    prt = get_port(i);
-    if (prt != NULL)
-      delete prt;
-  }
-
+  DeleteAllPorts();
   m_enabled = false;
-  return 0;
+  return true;
 }
 
 
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int OpenDmxDevice::save_config() const {
+int OpenDmxDevice::SaveConfig() const {
   return 0;
 }
 
-
-/*
- * we can pass plugin specific messages here
- * make sure the user app knows the format though...
- *
- */
-int OpenDmxDevice::configure(void *req, int len) {
-  // handle short/ long name & subnet and port addresses
-
-  req = 0;
-  len = 0;
-
-  return 0;
-}
+} //plugins
+} //lla

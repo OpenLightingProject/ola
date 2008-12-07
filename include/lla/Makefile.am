@@ -1,7 +1,9 @@
 
-EXTRA_DIST = messages.h plugin_id.h LlaDevConfMsg.h
+SUBDIRS = select_server .
 
-pkginclude_HEADERS = messages.h  plugin_id.h LlaDevConfMsg.h
+EXTRA_DIST = plugin_id.h
+
+pkginclude_HEADERS = plugin_id.h
 
 pkgincludedir = $(includedir)/lla
 

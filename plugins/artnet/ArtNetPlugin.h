@@ -15,40 +15,46 @@
  *
  * ArtNetPlugin.h
  * Interface for the artnet plugin class
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef ARTNETPLUGIN_H
 #define ARTNETPLUGIN_H
 
 #include <string>
-#include <llad/plugin.h>
+#include <llad/Plugin.h>
 #include <lla/plugin_id.h>
 
+namespace lla {
+namespace plugin {
+
+using lla::Plugin;
+using lla::PluginAdaptor;
 using namespace std;
 
 class ArtNetDevice;
 
 class ArtNetPlugin : public Plugin {
-
   public:
-    ArtNetPlugin(const PluginAdaptor *pa, lla_plugin_id id):
-      Plugin(pa,id),
-      m_dev(NULL) {}
+    ArtNetPlugin(const PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor),
+      m_device(NULL) {}
 
     ~ArtNetPlugin() {}
 
-    string get_name() const { return PLUGIN_NAME; }
-    string get_desc() const;
+    string Name() const { return PLUGIN_NAME; }
+    lla_plugin_id Id() const { return LLA_PLUGIN_ARTNET; }
+    string Description() const;
 
   protected:
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    int set_default_prefs();
-    ArtNetDevice *m_dev; // only have one device
+    bool StartHook();
+    bool StopHook();
+    int SetDefaultPreferences();
+
+    ArtNetDevice *m_device; // only have one device
 
     static const string ARTNET_SUBNET;
     static const string ARTNET_LONG_NAME;
@@ -57,5 +63,7 @@ class ArtNetPlugin : public Plugin {
     static const string PLUGIN_PREFIX;
 };
 
+} //plugin
+} //lla
 #endif
 

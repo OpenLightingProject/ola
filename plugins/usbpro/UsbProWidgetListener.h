@@ -15,18 +15,23 @@
  *
  * UsbProWidgetListener.h
  * The interface for the UsbPro Widget Listener class
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef USBPRODWIDGETLISTENER_H
 #define USBPRODWIDGETLISTENER_H
 
 class UsbProWidgetListener {
-
   public :
     UsbProWidgetListener() {};
     virtual ~UsbProWidgetListener() {};
-    virtual void new_dmx() = 0;
+    virtual void NewDmx() = 0;
+    virtual void Parameters(uint8_t firmware,
+                            uint8_t firmware_high,
+                            uint8_t break_time,
+                            uint8_t mab_time,
+                            uint8_t rate) = 0;
+    virtual void SerialNumber(const uint8_t serial[4]) = 0;
 
   private:
     UsbProWidgetListener(const UsbProWidgetListener&);

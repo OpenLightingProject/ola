@@ -25,31 +25,50 @@ using namespace std;
 
 #include <string>
 #include <stdint.h>
+#include <lla/select_server/Socket.h>
+#include <lla/select_server/SelectServer.h>
 
-class StageProfiWidget {
+namespace lla {
+namespace plugin {
 
+using lla::select_server::ConnectedSocket;
+using lla::select_server::SelectServer;
+using lla::select_server::Socket;
+using lla::select_server::SocketListener;
+using lla::select_server::TimeoutListener;
+
+class StageProfiWidget: public SocketListener,
+                        public TimeoutListener {
   public:
-    StageProfiWidget() {};
-    virtual ~StageProfiWidget() {};
+    StageProfiWidget():
+      m_enabled(false),
+      m_got_response(false),
+      m_socket(NULL) {};
+    virtual ~StageProfiWidget();
 
     // these methods are for communicating with the device
-    virtual int connect(const string &path) = 0;
-    int disconnect();
-    int fd() {return m_fd;}
-    int send_dmx(uint8_t *buf, unsigned int len) const;
-    int detect_device() const;
-    int recv();
+    virtual int Connect(const string &path) = 0;
+    int Disconnect();
+    Socket *GetSocket() { return m_socket; }
+    int SendDmx(uint8_t *buf, unsigned int len) const;
+    bool DetectDevice();
+    int SocketReady(ConnectedSocket *socket);
+    int Timeout();
 
   protected:
-    int send_255(unsigned int start, uint8_t *buf, unsigned int len) const;
-    int set_channel(unsigned int chan, uint8_t val) const;
+    int Send255(unsigned int start, uint8_t *buf, unsigned int len) const;
+    int SetChannel(unsigned int chan, uint8_t val) const;
 
     // instance variables
-    int m_fd;            // file descriptor
     bool m_enabled;      // are we enabled
+    bool m_got_response;
+    ConnectedSocket *m_socket;
+    SelectServer *m_ss;
 
   private:
-    int do_recv();
+    int DoRecv();
 };
 
+} // plugin
+} // lla
 #endif

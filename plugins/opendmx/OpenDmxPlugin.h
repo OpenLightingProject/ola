@@ -13,44 +13,51 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * OpenDmxPlugin.h
  * Interface for the opendmx plugin class
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef OPENDMXPLUGIN_H
 #define OPENDMXPLUGIN_H
 
-#include <llad/plugin.h>
+#include <llad/Plugin.h>
 #include <lla/plugin_id.h>
+
+namespace lla {
+namespace plugin {
+
+using lla::PluginAdaptor;
 
 class OpenDmxDevice;
 
-class OpenDmxPlugin : public Plugin {
-
+class OpenDmxPlugin: public Plugin {
   public:
-    OpenDmxPlugin(const PluginAdaptor *pa, lla_plugin_id id):
-      Plugin(pa, id),
-      m_dev(NULL) {}
+    OpenDmxPlugin(const PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor),
+      m_device(NULL) {}
 
-    string get_name() const  { return PLUGIN_NAME; }
-    string get_desc() const;
+    string Name() const { return PLUGIN_NAME; }
+    string Description() const;
+    lla_plugin_id Id() const { return LLA_PLUGIN_OPENDMX; }
 
   protected:
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    int set_default_prefs();
+    bool StartHook();
+    bool StopHook();
+    int SetDefaultPreferences();
 
-    OpenDmxDevice *m_dev;    // only have one device
+    OpenDmxDevice *m_device;    // only have one device
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
     static const string OPENDMX_DEVICE_PATH;
     static const string OPENDMX_DEVICE_NAME;
 };
+
+} //plugins
+} //lla
 
 #endif
 

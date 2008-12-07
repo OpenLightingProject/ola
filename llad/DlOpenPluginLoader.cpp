@@ -31,8 +31,11 @@
 #include <dlfcn.h>
 #include <stdio.h>
 
-#define SHARED_LIB_EXT ".so"
+#define SHARED_LIB_EXT ".dylib"
 
+namespace lla {
+
+using namespace std;
 
 /*
  * Read the directory and load all .so files
@@ -40,7 +43,7 @@
  * @return   0 on sucess, -1 on failure
  */
 int DlOpenPluginLoader::load_plugins() {
-  Plugin *plug = NULL;
+  AbstractPlugin *plug = NULL;
   DIR *dir;
   struct dirent *ent;
   struct stat statbuf;
@@ -56,13 +59,12 @@ int DlOpenPluginLoader::load_plugins() {
     fname.append(ent->d_name);
 
     string::size_type i = fname.find_last_of(".");
-    if ( i == string::npos)
+    if (i == string::npos)
       continue;
 
     if (!stat(fname.c_str(), &statbuf) && S_ISREG(statbuf.st_mode) && fname.substr(i) == SHARED_LIB_EXT) {
-
       // ok try and load it
-      if( (plug = this->load_plugin(fname)) == NULL) {
+      if ((plug = this->load_plugin(fname)) == NULL) {
         Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", fname.c_str());
       } else {
         m_plugin_vect.push_back(plug);
@@ -81,7 +83,7 @@ int DlOpenPluginLoader::load_plugins() {
  */
 int DlOpenPluginLoader::unload_plugins() {
   unsigned int i;
-  map<void*,Plugin*>::iterator iter;
+  map<void*, AbstractPlugin*>::iterator iter;
   for(i=0; i < m_plugin_vect.size(); i++) {
     // TODO: this better not fail ...
     if( m_plugin_vect[i]->is_enabled()) {
@@ -117,7 +119,7 @@ int DlOpenPluginLoader::plugin_count() const {
  * @param id   the id of the plugin to fetch
  * @return  the plugin with the specified id
  */
-Plugin *DlOpenPluginLoader::get_plugin(unsigned int id) const {
+AbstractPlugin *DlOpenPluginLoader::get_plugin(unsigned int id) const {
 
   if ( id > m_plugin_vect.size() )
     return NULL;
@@ -135,9 +137,9 @@ Plugin *DlOpenPluginLoader::get_plugin(unsigned int id) const {
  * @param  path  the path to the plugin
  * @return 0 on sucess, -1 on failure
  */
-Plugin *DlOpenPluginLoader::load_plugin(const string &path) {
+AbstractPlugin *DlOpenPluginLoader::load_plugin(const string &path) {
   void* handle = NULL;
-  Plugin *plug;
+  AbstractPlugin *plug;
   create_t *create;
 
   if ( (handle = dlopen(path.c_str(), RTLD_LAZY)) == NULL) {
@@ -161,7 +163,7 @@ Plugin *DlOpenPluginLoader::load_plugin(const string &path) {
     return NULL;
   }
 
-  pair<void*, Plugin*> p (handle, plug);
+  pair<void*, AbstractPlugin*> p (handle, plug);
   m_plugin_map.insert(p);
 
   Logger::instance()->log(Logger::INFO, "Loaded plugin %s", plug->get_name().c_str());
@@ -193,3 +195,5 @@ int DlOpenPluginLoader::unload_plugin(void *handle) {
 
   return 0;
 }
+
+} //lla

@@ -13,72 +13,81 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * plugin.h
- * Header file for plugin class
- * Copyright (C) 2005 Simon Newton
- *
- *
+ * Plugin.h
+ * Header file for plugin class - plugins inherit from this.
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef PLUGIN_H
-#define PLUGIN_H
-
-#include <lla/plugin_id.h>
+#ifndef LLA_PLUGIN_H
+#define LLA_PLUGIN_H
 
 #include <string>
+#include <lla/plugin_id.h>
 
-using namespace std;
+namespace lla {
 
+using std::string;
 class PluginAdaptor;
 
-/*
- * Represents a plugin
- *
- */
-class Plugin {
-
+class AbstractPlugin {
   public :
-    Plugin(const PluginAdaptor *pa, lla_plugin_id id) :
-      m_pa(pa),
-      m_prefs(NULL),
+    AbstractPlugin() {}
+    virtual ~AbstractPlugin() {};
+
+    virtual bool Start() = 0;
+    virtual bool Stop() = 0;
+    virtual bool IsEnabled() const = 0;
+    virtual bool DebugOn() const = 0;
+    virtual lla_plugin_id Id() const = 0;
+    virtual string Name() const = 0;
+    virtual string Description() const = 0;
+};
+
+
+class Plugin: public AbstractPlugin {
+  public :
+    Plugin(const PluginAdaptor *plugin_adaptor):
+      AbstractPlugin(),
+      m_plugin_adaptor(plugin_adaptor),
+      m_preferences(NULL),
       m_enabled(false),
-      m_debug(false),
-      m_id(id) {}
+      m_debug(false) {}
 
     virtual ~Plugin() {};
 
-    virtual int start();
-    virtual int stop();
-    virtual bool is_enabled() const { return m_enabled; }
-    virtual bool debug_on() const { return m_debug; }
-    lla_plugin_id get_id() { return m_id; }
+    virtual bool Start();
+    virtual bool Stop();
+    virtual bool IsEnabled() const { return m_enabled; }
+    virtual bool DebugOn() const { return m_debug; }
+    virtual lla_plugin_id Id() const = 0;
 
-    virtual string get_name() const = 0;
-    virtual string get_desc() const = 0;
+    virtual string Name() const = 0;
+    virtual string Description() const = 0;
 
   protected:
-    virtual int start_hook() { return 0; }
-    virtual int stop_hook() { return 0; }
-    virtual int set_default_prefs() { return 0; }
-    virtual string pref_suffix() const = 0;
+    virtual bool StartHook() { return 0; }
+    virtual bool StopHook() { return 0; }
+    virtual int SetDefaultPreferences() { return 0; }
+    virtual string PreferencesSuffix() const = 0;
 
-    const PluginAdaptor *m_pa;
-    class Preferences *m_prefs;  // prefs container
+    const PluginAdaptor *m_plugin_adaptor;
+    class Preferences *m_preferences;  // preferences container
     bool m_enabled;              // are we running
     bool m_debug;              // debug mode on
     static const string ENABLED_KEY;
     static const string DEBUG_KEY;
 
   private:
-    int load_prefs();
+    int LoadPreferences();
     Plugin(const Plugin&);
     Plugin& operator=(const Plugin&);
-    lla_plugin_id m_id;
-
 };
 
+
+} // lla
+
 // interface functions
-typedef Plugin* create_t(const PluginAdaptor *pa);
-typedef void destroy_t(Plugin*);
+typedef lla::AbstractPlugin* create_t(const lla::PluginAdaptor *plugin_adaptor);
+typedef void destroy_t(lla::AbstractPlugin*);
 
 #endif

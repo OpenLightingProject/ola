@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbprowidget.cpp
+ * UsbProWidget.cpp
  * UsbPro Widget
- * Copyright (C) 2006  Simon Newton
+ * Copyright (C) 2006-2008 Simon Newton
  *
  * The device represents the widget.
  */
@@ -40,6 +40,11 @@
 
 #define min(a,b) a<b?a:b
 
+namespace lla {
+namespace plugin {
+
+using std::string;
+
 static const uint8_t RCMODE_ALWAYS = 0x00;
 static const uint8_t RCMODE_CHANGE = 0x01;
 
@@ -61,21 +66,33 @@ enum usbpro_packet_type_e {
 
 typedef enum usbpro_packet_type_e usbpro_packet_type;
 
+
 /*
  * Connect to the widget
  */
-int UsbProWidget::connect(const string &path) {
-  struct termios newtio;
-  m_fd = open(path.c_str(), O_RDWR | O_NONBLOCK);
+int UsbProWidget::Connect(const string &path) {
+  if (m_enabled)
+    return -1;
 
-  if (m_fd == -1) {
+  if (m_socket) {
+    m_socket->Close();
+    delete m_socket;
+  }
+
+  struct termios newtio;
+  int fd = open(path.c_str(), O_RDWR | O_NONBLOCK);
+
+  if (fd == -1) {
     return 1;
   }
 
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
-  tcsetattr(m_fd,TCSANOW,&newtio);
+  tcsetattr(fd, TCSANOW, &newtio);
+  m_socket = new ConnectedSocket(fd, fd);
+  m_enabled = true;
 
-  init();
+  // put us into receiving mode
+  send_rcmode(1);
   return 0;
 }
 
@@ -83,11 +100,16 @@ int UsbProWidget::connect(const string &path) {
 /*
  * Disconnect from the widget
  */
-int UsbProWidget::disconnect() {
-  if (m_fd)
-    close(m_fd);
+int UsbProWidget::Disconnect() {
+  if (!m_enabled)
+    return 0;
 
-  m_fd = -1;
+  if (m_socket) {
+    m_socket->Close();
+    delete m_socket;
+    m_socket = NULL;
+  }
+  m_enabled = false;
   return 0;
 }
 
@@ -95,7 +117,7 @@ int UsbProWidget::disconnect() {
 /*
  * Send a dmx msg
  */
-int UsbProWidget::send_dmx(uint8_t *buf, unsigned int len) const {
+int UsbProWidget::SendDmx(uint8_t *buf, unsigned int len) const {
   unsigned int l = min((unsigned int) DMX_BUF_LEN, len);
   promsg msg;
 
@@ -113,9 +135,8 @@ int UsbProWidget::send_dmx(uint8_t *buf, unsigned int len) const {
 
 /*
  * Send a rdm msg, rdm support is a bit sucky
- *
  */
-int UsbProWidget::send_rdm(uint8_t *buf, unsigned int len) const {
+int UsbProWidget::SendRdm(uint8_t *buf, unsigned int len) const {
   promsg msg;
   msg.som = som;
   msg.label = ID_RDM;
@@ -131,7 +152,11 @@ int UsbProWidget::send_rdm(uint8_t *buf, unsigned int len) const {
  *
  * @param usrsz  size of user configurable memory to fetch
  */
-int UsbProWidget::set_params(uint8_t *data, unsigned int len, uint8_t brk, uint8_t mab, uint8_t rate) {
+int UsbProWidget::SetParameters(uint8_t *data,
+                                unsigned int len,
+                                uint8_t brk,
+                                uint8_t mab,
+                                uint8_t rate) {
   int l = min( (unsigned int) USER_CONFIG_LEN, len);
   promsg msg;
   msg.som = som;
@@ -144,41 +169,47 @@ int UsbProWidget::set_params(uint8_t *data, unsigned int len, uint8_t brk, uint8
   msg.pm_prmset.rate = rate;
   memcpy(msg.pm_prmset.user, data, l);
   send_msg(&msg);
-
-  // send a param request to get the new values
-  send_prmreq(0);
   return 0;
 }
 
 
 /*
- * Fetch the widget parameters
+ * Fetch the widget parameters, causes listener->Parameters() to be called
+ * later.
  */
-void UsbProWidget::get_params(uint16_t *firmware, uint8_t *brk, uint8_t *mab, uint8_t *rate) const {
-  *firmware = m_params.firmv_hi << 8 | m_params.firmv;
-  *brk = m_params.brtm;
-  *mab = m_params.mabtm;
-  *rate = m_params.rate;
+bool UsbProWidget::GetParameters() {
+  int user_size = 0;
+  promsg msg;
+  msg.som = som;
+  msg.label = ID_PRMREQ;
+  set_msg_len(&msg, sizeof(pms_prmreq));
+  msg.pm_prmreq.len = user_size & 0xFF;
+  msg.pm_prmreq.len_hi = (user_size & 0xFF) >> 8;
+  return send_msg(&msg);
 }
 
 
 /*
- * Fetch the serial number
+ * Fetch the serial number, causes listener->SerialNumber() to be called sometime
+ * later.
  */
-void UsbProWidget::get_serial(uint8_t *serial, unsigned int len) const {
-  unsigned int l = min(len, sizeof(pms_snorep));
-  memcpy(serial, m_serial, l);
+bool UsbProWidget::GetSerial() {
+  promsg msg;
+  msg.som = som;
+  msg.label = ID_SNOREQ;
+  set_msg_len(&msg, sizeof(pms_snoreq));
+  return send_msg(&msg);
 }
 
 
 /*
  * get the dmx
  */
-int UsbProWidget::get_dmx(uint8_t *data, unsigned int len) {
-  int l = min(len, DMX_BUF_LEN-1);
+int UsbProWidget::FetchDmx(uint8_t *data, unsigned int len) {
+  int l = min(len, DMX_BUF_LEN - 1);
 
   // byte 0 is the start code which we ignore
-  memcpy(data,m_dmx+1, l);
+  memcpy(data, m_dmx + 1, l);
   return l;
 }
 
@@ -186,30 +217,18 @@ int UsbProWidget::get_dmx(uint8_t *data, unsigned int len) {
 /*
  * Force the widget back into receiving mode
  */
-int UsbProWidget::recv_mode() {
+int UsbProWidget::ChangeToReceiveMode() {
   return send_rcmode(1);
-
 }
 
 
 /*
  * read data from the widget
  */
-int UsbProWidget::recv() {
-  int unread;
-
-  // check if there is data to be read
-  if (ioctl( m_fd, FIONREAD , &unread)) {
-    // the device has been removed
-    Logger::instance()->log(Logger::WARN, "UsbProPlugin: device removed" );
-    return -1;
-  }
-
-  while (unread != 0) {
+int UsbProWidget::SocketReady(ConnectedSocket *socket) {
+  while (socket->UnreadData() > 0) {
     do_recv();
-    ioctl(m_fd, FIONREAD, &unread);
   }
-
   return 0;
 }
 
@@ -217,28 +236,13 @@ int UsbProWidget::recv() {
 /*
  * Set the object to be notified when the dmx changes
  */
-void UsbProWidget::set_listener(UsbProWidgetListener *l) {
-  m_listener = l;
+void UsbProWidget::SetListener(UsbProWidgetListener *listener) {
+  m_listener = listener;
 }
 
 
 //-----------------------------------------------------------------------------
 // Private methods used for communicating with the widget
-
-/*
- * Send a get param request
- *
- * @param usrsz  size of user configurable memory to fetch
- */
-int UsbProWidget::send_prmreq(int usrsz) const {
-  promsg msg;
-  msg.som = som;
-  msg.label = ID_PRMREQ;
-  set_msg_len(&msg, sizeof(pms_prmreq));
-  msg.pm_prmreq.len = usrsz & 0xFF;
-  msg.pm_prmreq.len_hi = (usrsz & 0xFF) >> 8;
-  return send_msg(&msg);
-}
 
 
 /*
@@ -260,19 +264,6 @@ int UsbProWidget::send_rcmode(int mode) {
   if (!ret && m)
     memset(m_dmx, 0x00, DMX_BUF_LEN);
   return ret;
-}
-
-
-/*
- * Send a serial number request
- */
-int UsbProWidget::send_snoreq() const {
-  promsg msg;
-  msg.som = som;
-  msg.label = ID_SNOREQ;
-  set_msg_len(&msg, sizeof(pms_snoreq));
-
-  return send_msg(&msg);
 }
 
 
@@ -302,14 +293,14 @@ int UsbProWidget::handle_cos(pms_cos *cos, int len) {
     if (chn_st+i > DMX_BUF_LEN-1 || offset + 6 >= len)
       break;
 
-    if ( cos->changed[i/8] & (1 << (i%8)) ) {
+    if (cos->changed[i/8] & (1 << (i % 8)) ) {
       m_dmx[chn_st + i] = cos->data[offset];
       offset++;
     }
   }
 
-  if (m_listener != NULL)
-    m_listener->new_dmx();
+  if (m_listener)
+    m_listener->NewDmx();
 
   return 0;
 }
@@ -322,9 +313,12 @@ int UsbProWidget::handle_cos(pms_cos *cos, int len) {
  * @param len length of the message
  */
 int UsbProWidget::handle_prmrep(pms_prmrep *rep, unsigned int len) {
-
-  if ( len >= 5 && len <= sizeof(pms_prmrep) ) {
-    memcpy(&m_params, rep, sizeof(pms_prmrep));
+  if (m_listener && len == sizeof(pms_prmrep)) {
+    m_listener->Parameters(rep->firmv,
+                           rep->firmv_hi,
+                           rep->brtm,
+                           rep->mabtm,
+                           rep->rate);
   }
   return 0;
 }
@@ -337,33 +331,8 @@ int UsbProWidget::handle_prmrep(pms_prmrep *rep, unsigned int len) {
  * @param len length of the message
  */
 int UsbProWidget::handle_snorep(pms_snorep *rep, int len) {
-
-  if ( len == sizeof(pms_snorep) ) {
-    memcpy(m_serial , rep->srno, 4);
-  }
-  return 0;
-}
-
-/*
- * Get the serial number and params so we can cache them
- * TODO: This sleeping is ok while the plugins are loaded on startup, but
- * we can't afford to be sleeping once we are running. We may have to move this
- * to a separate thread.
- */
-int UsbProWidget::init() {
-  struct timespec tv;
-
-  tv.tv_sec = 0;
-  tv.tv_nsec = 1000000;
-
-  // set a serial number and params request
-  send_prmreq(0);
-  nanosleep(&tv, NULL);
-  send_snoreq();
-
-  // put us into receiving mode
-  send_rcmode(1);
-
+  if (m_listener && len == sizeof(pms_snorep))
+    m_listener->SerialNumber(rep->srno);
   return 0;
 }
 
@@ -382,11 +351,11 @@ int UsbProWidget::set_msg_len(promsg *msg, int len) const {
  * Send the msg
  */
 int UsbProWidget::send_msg(promsg *msg) const {
-
   int len = (msg->len_hi << 8) + msg->len;
-  write(m_fd, msg, len+4);
-  write(m_fd, &eom, sizeof(eom));
-  return 0;
+  unsigned int bytes_sent = 0;
+  bytes_sent += m_socket->Send((uint8_t*) msg, len + 4);
+  bytes_sent += m_socket->Send(&eom, sizeof(eom));
+  return (bytes_sent == len + 4 + sizeof(eom));
 }
 
 
@@ -395,12 +364,13 @@ int UsbProWidget::send_msg(promsg *msg) const {
  */
 int UsbProWidget::do_recv() {
   uint8_t byte = 0x00;
-    uint8_t label;
-    int cnt, plen, bytes_read;
-    pmu buf;
+  uint8_t label;
+  int plen, bytes_read;
+  unsigned int cnt;
+  pmu buf;
 
-    while(byte != 0x7e) {
-    cnt = read(m_fd,&byte,1);
+  while(byte != 0x7e) {
+    m_socket->Receive((uint8_t*) &byte, 1, cnt);
 
     if (cnt != 1) {
       printf("1, read to much %i\n", cnt);
@@ -408,40 +378,41 @@ int UsbProWidget::do_recv() {
     }
   }
 
-    // try to read the label
-    cnt = read(m_fd,&label,1);
+  // try to read the label
+  m_socket->Receive((uint8_t*) &label, 1, cnt);
 
-    if (cnt != 1) {
+  if (cnt != 1) {
     printf("2, could not read label %i\n", cnt);
     return 1;
-    }
+  }
 
-    cnt = read(m_fd, &byte,1);
-    if (cnt != 1) {
+  m_socket->Receive((uint8_t*) &byte, 1, cnt);
+  if (cnt != 1) {
     printf("3, could not read len hi%i\n", cnt);
     return 1;
-    }
-    plen = byte;
+  }
+  plen = byte;
 
-    cnt = read(m_fd, &byte,1);
-    if (cnt != 1) {
-        printf("4, could not read len lo %i\n", cnt);
+  m_socket->Receive((uint8_t*) &byte, 1, cnt);
+  if (cnt != 1) {
+    printf("4, could not read len lo %i\n", cnt);
     return 1;
-    }
-    plen += byte<<8;
+  }
+  plen += byte << 8;
 
-    for (bytes_read = 0; bytes_read < plen;) {
-    bytes_read += read(m_fd, (uint8_t*) &buf +bytes_read, plen-bytes_read);
-    }
+  for (bytes_read = 0; bytes_read < plen;) {
+    m_socket->Receive((uint8_t*) &buf + bytes_read, plen-bytes_read, cnt);
+    bytes_read += cnt;
+  }
 
-    // check this is a valid frame with an end byte
-    cnt = read(m_fd, &byte,1);
-    if (cnt != 1) {
-        printf("5, read to much %i\n", cnt);
-      return 1;
-    }
+  // check this is a valid frame with an end byte
+  m_socket->Receive((uint8_t*) &byte, 1, cnt);
+  if (cnt != 1) {
+    printf("5, read to much %i\n", cnt);
+    return 1;
+  }
 
-    if (byte == 0xe7) {
+  if (byte == 0xe7) {
     switch(label) {
       case ID_RDMX:
         handle_dmx( &buf.pmu_rdmx, plen);
@@ -461,3 +432,6 @@ int UsbProWidget::do_recv() {
   }
   return 0;
 }
+
+} // plugin
+} //lla

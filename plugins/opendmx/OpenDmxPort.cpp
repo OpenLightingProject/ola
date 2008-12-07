@@ -13,43 +13,31 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * OpenDmxPort.cpp
  * The Open DMX plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #include "OpenDmxPort.h"
 #include "OpenDmxDevice.h"
 
-#include "string.h"
+namespace lla {
+namespace plugin {
 
-#define min(a,b) a<b?a:b
-
-OpenDmxPort::OpenDmxPort(Device *parent, int id, string *path) : Port(parent, id) {
+OpenDmxPort::OpenDmxPort(AbstractDevice *parent, int id, const string &path): Port(parent, id) {
   m_thread = new OpenDmxThread();
 
-  if (m_thread != NULL) {
-    m_thread->start(path);
-  }
-
+  if (m_thread)
+    m_thread->Start(path);
 }
 
-#include <stdio.h>
 
 OpenDmxPort::~OpenDmxPort() {
-  if (m_thread != NULL) {
-    m_thread->stop();
+  if (m_thread) {
+    m_thread->Stop();
     delete m_thread;
   }
 }
-
-/*
- * The read operation is not supported in drivers
- *
- */
-int OpenDmxPort::can_read() const { return 0; }
-inline int OpenDmxPort::read(uint8_t *data, unsigned int length) { return 0; }
 
 
 /*
@@ -59,11 +47,13 @@ inline int OpenDmxPort::read(uint8_t *data, unsigned int length) { return 0; }
  * @param  length  the length of the data
  *
  */
-int OpenDmxPort::write(uint8_t *data, unsigned int length) {
-
-  if (!can_write())
+int OpenDmxPort::WriteDMX(uint8_t *data, unsigned int length) {
+  if (!CanWrite())
     return -1;
 
-  m_thread->write_dmx(data,length);
+  m_thread->WriteDmx(data, length);
   return 0;
 }
+
+} //plugins
+} //lla

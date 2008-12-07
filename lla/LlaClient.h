@@ -15,13 +15,11 @@
  *
  * LlaClient.h
  * Interface to the LLA Client class
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef LLA_CLIENT_H
 #define LLA_CLIENT_H
-
-using namespace std;
 
 #ifdef LLA_HAVE_PTHREAD
 #include <pthread.h>
@@ -34,86 +32,128 @@ using namespace std;
 #include <lla/common.h>
 #include <lla/plugin_id.h>
 #include <lla/messages.h>
-#include <lla/LlaUniverse.h>
+#include <lla/LlaDevice.h>
+
+#include "common/protocol/Lla.pb.h"
+
+namespace google {
+namespace protobuf {
+class Closure;
+}
+}
+
+namespace lla {
+
+class LlaClientServiceImpl;
+
+namespace proto {
+class LlaServerService_Stub;
+}
+
+namespace rpc {
+class StreamRpcChannel;
+class SimpleRpcController;
+}
+
+namespace select_server {
+class ConnectedSocket;
+}
+
+
+class LlaClientObserver {
+  public:
+    virtual ~LlaClientObserver() {}
+
+    virtual int NewDmx(unsigned int universe,
+                       unsigned int length,
+                       uint8_t *data,
+                       const string &error) { return 0; }
+    virtual int Plugins(const std::vector <class LlaPlugin> &plugins,
+                        const string &error) { return 0; }
+    virtual int Devices(const std::vector <class LlaDevice> devices,
+                        const string &error) { return 0; }
+    virtual int Universes(const std::vector <class LlaUniverse> universes,
+                          const string &error) { return 0; }
+    virtual int PluginDescription(class LlaPlugin *plug) { return 0; }
+    virtual int DeviceConfig(const string &reply,
+                             const string &error) { return 0; }
+};
+
 
 class LlaClient {
-
   public:
     enum PatchAction {PATCH, UNPATCH};
     enum RegisterAction {REGISTER, UNREGISTER};
 
-    LlaClient();
+    LlaClient(lla::select_server::ConnectedSocket *socket);
     ~LlaClient();
 
-    int start();
-    int stop();
-    int fd() const;
-    int fd_action(unsigned int delay);
+    bool Setup();
+    bool Stop();
+    int SetObserver(LlaClientObserver *o);
 
-    int set_observer(class LlaClientObserver *o);
+    bool FetchPluginInfo(int plugin_id=-1, bool include_description=false);
+    int FetchDeviceInfo(lla_plugin_id filter=LLA_PLUGIN_ALL);
+    int FetchUniverseInfo();
 
     // dmx methods
-    int send_dmx(unsigned int universe, uint8_t *data, unsigned int length);
-    int fetch_dmx(unsigned int uni);
+    bool SendDmx(unsigned int universe, uint8_t *data, unsigned int length);
+    int FetchDmx(unsigned int uni);
 
     // rdm methods
     // int send_rdm(int universe, uint8_t *data, int length);
+    int SetUniverseName(unsigned int uni, const std::string &name);
+    int SetUniverseMergeMode(unsigned int uni, LlaUniverse::merge_mode mode);
 
-    int fetch_dev_info(lla_plugin_id filter);
-    int fetch_port_info(class LlaDevice *dev);
-    int fetch_uni_info();
-    int fetch_plugin_info();
-    int fetch_plugin_desc(class LlaPlugin *plug);
+    int RegisterUniverse(unsigned int universe, LlaClient::RegisterAction action);
 
-    int set_uni_name(unsigned int uni, const string &name);
-    int set_uni_merge_mode(unsigned int uni, LlaUniverse::merge_mode mode);
+    int Patch(unsigned int device,
+              unsigned int port,
+              LlaClient::PatchAction action,
+              unsigned int uni);
 
-    int register_uni(unsigned int uni, LlaClient::RegisterAction action);
-    int patch(unsigned int dev, unsigned int port, LlaClient::PatchAction action, unsigned int uni);
-    int dev_config(unsigned int dev, const class LlaDevConfMsg *msg);
+    int ConfigureDevice(unsigned int dev, const string &msg);
+
+    // request callbacks
+    void HandlePluginInfo(lla::rpc::SimpleRpcController *controller,
+                          lla::proto::PluginInfoReply *reply);
+    void HandleSendDmx(lla::rpc::SimpleRpcController *controller,
+                       lla::proto::Ack *reply);
+    void HandleGetDmx(lla::rpc::SimpleRpcController *controller,
+                      lla::proto::DmxData *reply);
+    void HandleDeviceInfo(lla::rpc::SimpleRpcController *controller,
+                          lla::proto::DeviceInfoReply *reply);
+    void HandleUniverseInfo(lla::rpc::SimpleRpcController *controller,
+                            lla::proto::UniverseInfoReply *reply);
+    void HandleUniverseName(lla::rpc::SimpleRpcController *controller,
+                            lla::proto::Ack *reply);
+    void HandleUniverseMergeMode(lla::rpc::SimpleRpcController *controller,
+                                 lla::proto::Ack *reply);
+    void HandleRegister(lla::rpc::SimpleRpcController *controller,
+                        lla::proto::Ack *reply);
+    void HandlePatch(lla::rpc::SimpleRpcController *controller,
+                     lla::proto::Ack *reply);
+    void HandleDeviceConfig(lla::rpc::SimpleRpcController *controller,
+                            lla::proto::DeviceConfigReply *reply);
 
   private:
     LlaClient(const LlaClient&);
     LlaClient operator=(const LlaClient&);
-
-    static const unsigned int LLAD_PORT = 8898;  // port to connect to
-    static const string LLAD_ADDR;        // address to bind to
     static const unsigned int MAX_DMX = 512;
 
-    int receive(unsigned int delay);
-    int lock_and_send_msg(lla_msg *msg);
-    int send_msg(lla_msg *msg);
-    int read_msg();
-    int handle_msg(lla_msg *msg);
-    int handle_dmx(lla_msg *msg);
-    int handle_syn_ack(lla_msg *msg);
-    int handle_fin_ack(lla_msg *msg);
-    int handle_dev_info(lla_msg *msg);
-    int handle_plugin_info(lla_msg *msg);
-    int handle_port_info(lla_msg *msg);
-    int handle_plugin_desc(lla_msg *msg);
-    int handle_universe_info(lla_msg *msg);
-    int handle_dev_conf(lla_msg *msg);
-
-    int send_syn();
-    int send_fin();
-
-    int clear_plugins();
-    int clear_universes();
-    int clear_devices();
-    int lla_recv(unsigned int delay);
+    lla::select_server::ConnectedSocket *m_socket;
+    lla::LlaClientServiceImpl *m_client_service;
+    lla::rpc::StreamRpcChannel *m_channel;
+    lla::proto::LlaServerService_Stub *m_stub;
 
     // instance vars
 #ifdef LLA_HAVE_PTHREAD
     pthread_mutex_t m_mutex;
 #endif
-    int m_sd;
+
     int m_connected;
-    class LlaClientObserver *m_observer;
-    int m_seq;
-    vector<class LlaDevice *> m_devices;
-    vector<class LlaPlugin *> m_plugins;
-    vector<class LlaUniverse*> m_unis;
-    char *desc;
+    LlaClientObserver *m_observer;
 };
+
+} // lla
 #endif

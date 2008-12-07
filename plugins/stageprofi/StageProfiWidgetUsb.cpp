@@ -29,27 +29,36 @@
 #include <errno.h>
 
 #include <llad/logger.h>
+#include <lla/select_server/Socket.h>
 #include "StageProfiWidgetUsb.h"
 
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
+namespace lla {
+namespace plugin {
+
+using std::string;
+
 /*
  * Connect to the widget
  */
-int StageProfiWidgetUsb::connect(const string &path) {
+int StageProfiWidgetUsb::Connect(const string &path) {
   struct termios newtio;
 
-  m_fd = open(path.c_str(), O_RDWR | O_NONBLOCK | O_NOCTTY);
+  int fd = open(path.c_str(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
-  if (m_fd == -1)
-    return 1;
+  if (fd == -1)
+    return -1;
 
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
-  tcgetattr(m_fd, &newtio);
+  tcgetattr(fd, &newtio);
   cfsetospeed(&newtio, B38400);
-  tcsetattr(m_fd, TCSANOW, &newtio);
-
+  tcsetattr(fd, TCSANOW, &newtio);
+  m_socket = new ConnectedSocket(fd, fd);
   return 0;
 }
+
+} // plugin
+} // lla
