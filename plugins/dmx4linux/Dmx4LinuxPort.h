@@ -13,30 +13,37 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * dmx4linuxport.h
+ * Dmx4LinuxPort.h
  * The Dmx4Linux plugin for lla
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2008 Simon Newton
  */
 
 #ifndef DMX4LINUXPORT_H
 #define DMX4LINUXPORT_H
 
-#include <llad/port.h>
+#include <llad/Port.h>
+#include "Dmx4LinuxDevice.h"
 
-class Dmx4LinuxPort : public Port {
+namespace lla {
+namespace plugin {
 
+class Dmx4LinuxPort: public lla::Port {
   public:
-    Dmx4LinuxPort(Device *parent, int id, int d4l, bool in, bool out);
+    Dmx4LinuxPort(Dmx4LinuxDevice *parent, int id, int d4l, bool in, bool out);
 
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
+    int WriteDMX(uint8_t *data, unsigned int length);
+    int ReadDMX(uint8_t *data, unsigned int length);
 
-    int can_read() const { return m_in; }
-    int can_write() const { return m_out; }
+    bool CanRead() const { return m_in; }
+    bool CanWrite() const { return m_out; }
   private:
     bool m_in;
     bool m_out;
-    int m_d4l_uni;       // dmx4linux universe that this maps to
+    int m_dmx_universe;  // dmx4linux universe that this maps to
+    Dmx4LinuxDevice *m_device;
 };
+
+} //plugin
+} //lla
 
 #endif

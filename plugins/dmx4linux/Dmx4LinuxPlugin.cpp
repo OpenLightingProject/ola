@@ -28,15 +28,33 @@
 
 #include <dmx/dmxioctl.h>
 
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
 #include <llad/logger.h>
 
 #include "Dmx4LinuxPlugin.h"
 #include "Dmx4LinuxDevice.h"
 #include "Dmx4LinuxPort.h"
 
-// TODO: clean this up
+
+/*
+ * Entry point to this plugin
+ */
+extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+  return new lla::plugin::Dmx4LinuxPlugin(plugin_adaptor);
+}
+
+/*
+ * Called when the plugin is unloaded
+ */
+extern "C" void destroy(lla::AbstractPlugin* plugin) {
+  delete plugin;
+}
+
+
+namespace lla {
+namespace plugin {
+
 static const string DMX4LINUX_OUT_DEVICE = "/dev/dmx";
 static const string DMX4LINUX_IN_DEVICE  = "/dev/dmxin";
 static const string IN_DEV_KEY = "in_device";
@@ -47,39 +65,28 @@ const string Dmx4LinuxPlugin::PLUGIN_NAME = "Dmx4Linux Plugin";
 const string Dmx4LinuxPlugin::PLUGIN_PREFIX = "dmx4linux";
 
 
-/*
- * Entry point to this plugin
- */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new Dmx4LinuxPlugin(pa, LLA_PLUGIN_DMX4LINUX);
-}
-
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(Plugin* plug) {
-  delete plug;
+Dmx4LinuxPlugin::~Dmx4LinuxPlugin() {
+  CleanupSockets();
 }
 
 
 /*
  * Start the plugin
  */
-int Dmx4LinuxPlugin::start_hook() {
+bool Dmx4LinuxPlugin::StartHook() {
+  if(!SetupSockets())
+    return false;
 
-  if(open_fds())
-    return -1;
-
-  if(setup()) {
-    close_fds();
+  if(Setup()) {
+    CleanupSockets();
     return -1;
   }
 
   if (m_devices.size() > 0) {
-    m_pa->register_fd(m_in_fd, PluginAdaptor::READ, this, NULL);
+    m_plugin_adaptor->AddSocket(m_in_socket, NULL);
     return 0;
   } else {
-    close_fds();
+    CleanupSockets();
     return 0;
   }
 }
@@ -88,22 +95,18 @@ int Dmx4LinuxPlugin::start_hook() {
 /*
  * Stop the plugin
  *
- * @return 0 on sucess, -1 on failure
+ * @return true on sucess, false on failure
  */
-int Dmx4LinuxPlugin::stop_hook() {
+bool Dmx4LinuxPlugin::StopHook() {
   vector<Dmx4LinuxDevice *>::iterator it;
-
-  m_pa->unregister_fd(m_in_fd, PluginAdaptor::READ);
+  m_plugin_adaptor->RemoveSocket(m_in_socket);
 
   for (it = m_devices.begin(); it != m_devices.end(); ++it) {
-    if ((*it)->stop())
-      continue;
-
-    m_pa->unregister_device(*it);
+    (*it)->Stop();
+    m_plugin_adaptor->UnregisterDevice(*it);
     delete *it;
   }
-
-  close_fds();
+  CleanupSockets();
   m_devices.clear();
   return 0;
 }
@@ -112,7 +115,7 @@ int Dmx4LinuxPlugin::stop_hook() {
  * return the description for this plugin
  *
  */
-string Dmx4LinuxPlugin::get_desc() const {
+string Dmx4LinuxPlugin::Description() const {
     return
 "DMX 4 Linux Plugin\n"
 "----------------------------\n"
@@ -131,10 +134,10 @@ string Dmx4LinuxPlugin::get_desc() const {
  * TODO: get reads working
  * why do we get input on the in_fd when we write ??
  */
-int Dmx4LinuxPlugin::action() {
+int Dmx4LinuxPlugin::SocketReady(lla::select_server::ConnectedSocket *socket) {
   uint8_t buf[512];
-  int r;
-  r = read(m_in_fd, buf, sizeof(buf));
+  unsigned int data_read;
+  socket->Receive((uint8_t*) buf, sizeof(buf), data_read);
   // map d4l_uni to ports
   // prt->new_data(buf, len)
   return 0;
@@ -144,9 +147,11 @@ int Dmx4LinuxPlugin::action() {
 /*
  * Send dmx
  */
-int Dmx4LinuxPlugin::send_dmx(int d4l_uni, uint8_t *data, int len) {
-  if (lseek(m_out_fd, CHANNELS_PER_UNI * d4l_uni, SEEK_SET) == CHANNELS_PER_UNI * d4l_uni) {
-    int r = write(m_out_fd, data, len);
+int Dmx4LinuxPlugin::SendDmx(int d4l_uni, uint8_t *data, int len) {
+  int fd = m_out_socket->WriteDescriptor();
+  if (lseek(fd, CHANNELS_PER_UNI * d4l_uni, SEEK_SET) == CHANNELS_PER_UNI * d4l_uni) {
+
+    int r = m_out_socket->Send(data, len);
     if (r != len) {
       Logger::instance()->log(Logger::WARN, "%s: only wrote %d/%d bytes: %s",
         PLUG_NAME, r, len, strerror(errno));
@@ -161,32 +166,32 @@ int Dmx4LinuxPlugin::send_dmx(int d4l_uni, uint8_t *data, int len) {
 
 /*
  * load the plugin prefs and default to sensible values
- *
  */
-int Dmx4LinuxPlugin::set_default_prefs() {
+int Dmx4LinuxPlugin::SetDefaultPreferences() {
   bool save = false;
 
-  if ( m_prefs == NULL)
+  if (!m_preferences)
     return -1;
 
-  if ( m_prefs->get_val(IN_DEV_KEY) == "") {
-    m_prefs->set_val(IN_DEV_KEY, DMX4LINUX_IN_DEVICE);
+  if (m_preferences->GetValue(IN_DEV_KEY).empty()) {
+    m_preferences->SetValue(IN_DEV_KEY, DMX4LINUX_IN_DEVICE);
     save = true;
   }
 
-  if ( m_prefs->get_val(OUT_DEV_KEY) == "") {
-    m_prefs->set_val(OUT_DEV_KEY, DMX4LINUX_OUT_DEVICE);
+  if (m_preferences->GetValue(OUT_DEV_KEY).empty()) {
+    m_preferences->SetValue(OUT_DEV_KEY, DMX4LINUX_OUT_DEVICE);
     save = true;
   }
 
   if (save)
-    m_prefs->save();
+    m_preferences->Save();
 
-  if (m_prefs->get_val(IN_DEV_KEY) == "" || m_prefs->get_val(OUT_DEV_KEY) == "")
+  if (m_preferences->GetValue(IN_DEV_KEY).empty() ||
+      m_preferences->GetValue(OUT_DEV_KEY).empty())
     return -1;
 
-  m_in_dev = m_prefs->get_val(IN_DEV_KEY);
-  m_out_dev = m_prefs->get_val(OUT_DEV_KEY);
+  m_in_dev = m_preferences->GetValue(IN_DEV_KEY);
+  m_out_dev = m_preferences->GetValue(OUT_DEV_KEY);
   return 0;
 }
 
@@ -194,35 +199,46 @@ int Dmx4LinuxPlugin::set_default_prefs() {
 /*
  * open the input and output fds
  */
-int Dmx4LinuxPlugin::open_fds() {
-  if(m_in_fd < 0 && m_out_fd < 0) {
-    m_out_fd = open(m_out_dev.c_str(), O_WRONLY);
+bool Dmx4LinuxPlugin::SetupSockets() {
+  if(!m_in_socket && !m_out_socket) {
+    int fd = open(m_out_dev.c_str(), O_WRONLY);
 
-    if (m_out_fd < 0) {
+    if (fd < 0) {
       Logger::instance()->log(Logger::WARN, "%s: failed to open %s %s",
         PLUG_NAME, m_out_dev.c_str(), strerror(errno));
-      return -1;
+      return false;
     }
+    m_in_socket = new ConnectedSocket(fd, fd);
 
-    m_in_fd = open(m_in_dev.c_str(), O_RDONLY | O_NONBLOCK);
-    if (m_out_fd < 0) {
+    fd = open(m_in_dev.c_str(), O_RDONLY | O_NONBLOCK);
+    if (fd < 0) {
       Logger::instance()->log(Logger::WARN, "%s: failed to open %s %s",
         PLUG_NAME, m_in_dev.c_str(), strerror(errno));
-      close(m_out_fd);
-      return -1;
+      CleanupSockets();
+      return false;
     }
-    return 0;
+    m_out_socket = new ConnectedSocket(fd, fd);
+    return true;
   }
-  return -1;
+  return false;
 }
 
 
 /*
  * Close all fds
  */
-int Dmx4LinuxPlugin::close_fds() {
-  close(m_in_fd);
-  close(m_out_fd);
+int Dmx4LinuxPlugin::CleanupSockets() {
+  if (m_in_socket) {
+    m_in_socket->Close();
+    delete m_in_socket;
+    m_in_socket = NULL;
+  }
+
+  if (m_out_socket) {
+    m_out_socket->Close();
+    delete m_out_socket;
+    m_out_socket = NULL;
+  }
   return 0;
 }
 
@@ -231,10 +247,10 @@ int Dmx4LinuxPlugin::close_fds() {
  * Return the max # of dmx4linux universes
  * @param dir 0 if ouput, 1 for input
  */
-int Dmx4LinuxPlugin::get_uni_count(int dir) {
+int Dmx4LinuxPlugin::GetDmx4LinuxDeviceCount(int dir) {
   struct dmx_info info;
 
-  if (ioctl(m_in_fd, DMX_IOCTL_GET_INFO, &info) >= 0) {
+  if (ioctl(m_in_socket->ReadDescriptor(), DMX_IOCTL_GET_INFO, &info) >= 0) {
     return dir ? info.max_in_universes : info.max_out_universes;
   }
   return -1;
@@ -247,68 +263,70 @@ int Dmx4LinuxPlugin::get_uni_count(int dir) {
  * @param d4l_uni the dmx4linux universe
  * @param dir   in|out
  */
-int Dmx4LinuxPlugin::setup_device(string family, int d4l_uni, int dir) {
+bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
   Dmx4LinuxPort *prt;
   Dmx4LinuxDevice *dev = new Dmx4LinuxDevice(this, family);
 
-  if (dev == NULL)
-    return -1;
+  if (!dev)
+    return false;
 
-  if (dev->start()) {
+  if (dev->Start()) {
     Logger::instance()->log(Logger::WARN, "%s: couldn't start device",
       PLUG_NAME);
     delete dev;
-    return -1;
+    return false;
   }
 
   prt = new Dmx4LinuxPort(dev, 0, d4l_uni, dir > 0, dir == 0);
 
-  if (prt == NULL) {
+  if (!prt) {
     Logger::instance()->log(Logger::WARN, "%s: couldn't create port",
       PLUG_NAME);
     delete dev;
-    return -1;
+    return false;
   }
 
-  dev->add_port(prt);
-  m_pa->register_device(dev);
+  dev->AddPort(prt);
+  m_plugin_adaptor->RegisterDevice(dev);
   m_devices.insert(m_devices.end(), dev);
-
-  return 0;
+  return true;
 }
 
 
 /*
  * Find all the devices connected and setup ports for them.
  */
-int Dmx4LinuxPlugin::setup_devices(int dir) {
+bool Dmx4LinuxPlugin::SetupDevices(int dir) {
   struct dmx_capabilities cap;
-  int unis = get_uni_count(dir);
+  int device_count = GetDmx4LinuxDeviceCount(dir);
 
-  if (unis < 0) {
+  if (device_count < 0) {
     Logger::instance()->log(Logger::WARN, "%s: failed to fetch universe list",
       PLUG_NAME);
-    return -1;
+    return false;
   }
 
-  for (int i=0; i < unis; i++) {
+  for (int i = 0; i < device_count; i++) {
     cap.direction = dir ? DMX_DIRECTION_INPUT : DMX_DIRECTION_OUTPUT;
     cap.universe = i;
 
-    if (ioctl(m_in_fd, DMX_IOCTL_GET_CAP, &cap)>=0) {
+    if (ioctl(m_in_socket->ReadDescriptor(), DMX_IOCTL_GET_CAP, &cap) >= 0) {
       if (cap.maxSlots > 0) {
-        setup_device(cap.family, cap.universe, cap.direction);
+        SetupDevice(cap.family, cap.universe, cap.direction);
       }
     }
   }
-  return 0;
+  return true;
 }
 
 /*
  * check what universes are available and setup devices for them
  */
-int Dmx4LinuxPlugin::setup() {
-  int r = setup_devices(DMX_DIRECTION_INPUT);
-  r |= setup_devices(DMX_DIRECTION_OUTPUT);
-  return r;
+bool Dmx4LinuxPlugin::Setup() {
+  bool ret = SetupDevices(DMX_DIRECTION_INPUT);
+  ret &= SetupDevices(DMX_DIRECTION_OUTPUT);
+  return ret;
 }
+
+} //plugin
+} //lla

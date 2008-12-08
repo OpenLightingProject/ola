@@ -15,7 +15,7 @@
  *
  * dmx4linuxdevice.cpp
  * Dmx4Linux device
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2008 Simon Newton
  *
  */
 
@@ -24,8 +24,8 @@
 #include <string.h>
 
 #include <llad/logger.h>
-#include <llad/preferences.h>
-#include <llad/universe.h>
+#include <llad/Preferences.h>
+#include <llad/Universe.h>
 
 #include "Dmx4LinuxPlugin.h"
 #include "Dmx4LinuxDevice.h"
@@ -35,12 +35,17 @@
 #  include <config.h>
 #endif
 
+namespace lla {
+namespace plugin {
+
+using lla::Device;
+using lla::Universe;
+
 /*
  * Create a new device
  *
  * @param owner  the plugin that owns this device
  * @param name  the device name
- * @param dev_path  path to the pro widget
  */
 Dmx4LinuxDevice::Dmx4LinuxDevice(Dmx4LinuxPlugin *owner, const string &name) :
   Device(owner, name),
@@ -54,14 +59,14 @@ Dmx4LinuxDevice::Dmx4LinuxDevice(Dmx4LinuxPlugin *owner, const string &name) :
  */
 Dmx4LinuxDevice::~Dmx4LinuxDevice() {
   if (m_enabled)
-    stop();
+    Stop();
 }
 
 
 /*
  * Start this device
  */
-int Dmx4LinuxDevice::start() {
+bool Dmx4LinuxDevice::Start() {
   m_enabled = true;
   return 0;
 }
@@ -69,27 +74,12 @@ int Dmx4LinuxDevice::start() {
 
 /*
  * Stop this device
- * TODO: move into base class
  */
-int Dmx4LinuxDevice::stop() {
-  Port *prt = NULL;
-  Universe *uni;
-
+bool Dmx4LinuxDevice::Stop() {
   if (!m_enabled)
-    return 0;
+    return true;
 
-  for (int i=0; i < port_count(); i++) {
-    prt = get_port(i);
-    if (prt != NULL) {
-      uni = prt->get_universe();
-
-      if (uni)
-        uni->remove_port(prt);
-
-      delete prt;
-    }
-  }
-
+  DeleteAllPorts();
   m_enabled = false;
   return 0;
 }
@@ -101,28 +91,9 @@ int Dmx4LinuxDevice::stop() {
  *
  * @return   0 on success, non 0 on failure
  */
-int Dmx4LinuxDevice::send_dmx(int d4l_uni, uint8_t *data, int len) {
-  return m_plugin->send_dmx(d4l_uni, data, len);
+int Dmx4LinuxDevice::SendDmx(int d4l_uni, uint8_t *data, int len) {
+  return m_plugin->SendDmx(d4l_uni, data, len);
 }
 
-
-// call this when something changes
-// where to store data to ?
-int Dmx4LinuxDevice::save_config() const {
-  return 0;
-}
-
-
-/*
- * This device doesn't support configuring...
- *
- * @param req    the request data
- * @param reql    the request length
- *
- * @return  the length of the reply
- */
-LlaDevConfMsg *Dmx4LinuxDevice::configure(const uint8_t *req, int l) {
-  req = NULL;
-  l = 0;
-  return NULL;
-}
+} //plugin
+} //lla

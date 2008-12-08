@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/pluginadaptor.h>
+#include <llad/PluginAdaptor.h>
 
 #include "DummyPlugin.h"
 #include "DummyDevice.h"

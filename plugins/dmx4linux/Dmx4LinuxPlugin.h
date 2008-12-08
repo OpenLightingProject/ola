@@ -23,48 +23,58 @@
 
 #include <vector>
 #include <string>
-#include <llad/plugin.h>
-#include <llad/listener.h>
+#include <llad/Plugin.h>
+#include <lla/select_server/Socket.h>
 #include <lla/plugin_id.h>
 
+namespace lla {
+namespace plugin {
+
 class Dmx4LinuxDevice;
+using lla::select_server::SocketListener;
+using lla::select_server::ConnectedSocket;
 
-class Dmx4LinuxPlugin : public Plugin, public Listener {
-
+class Dmx4LinuxPlugin: public lla::Plugin, public SocketListener {
   public:
-    Dmx4LinuxPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
-      Plugin(pa, id),
-      m_out_fd(-1),
-      m_in_fd(-1) {}
-    ~Dmx4LinuxPlugin() {}
+    Dmx4LinuxPlugin(const PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor),
+      m_in_socket(NULL),
+      m_out_socket(NULL) {}
+    ~Dmx4LinuxPlugin();
 
-    string get_name() const { return PLUGIN_NAME; }
-    string get_desc() const;
-    int action();
-    int send_dmx(int d4l_uni, uint8_t *data, int length);
+    string Name() const { return PLUGIN_NAME; }
+    string Description() const;
+    lla_plugin_id Id() const { return LLA_PLUGIN_DMX4LINUX; }
+
+    int SocketReady(lla::select_server::ConnectedSocket *socket);
+    int SendDmx(int d4l_uni, uint8_t *data, int length);
 
   protected:
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    int set_default_prefs();
-    int open_fds();
-    int close_fds();
-    int get_uni_count(int dir);
-    int setup_device(string family, int d4l_uni, int dir);
-    int setup_devices(int dir);
-    int setup();
+    bool StartHook();
+    bool StopHook();
+    int SetDefaultPreferences();
 
-    vector<Dmx4LinuxDevice *>  m_devices;  // list of out devices
+    bool SetupSockets();
+    int CleanupSockets();
+    int GetDmx4LinuxDeviceCount(int dir);
+    bool SetupDevice(string family, int d4l_uni, int dir);
+    bool SetupDevices(int dir);
+    bool Setup();
+
+    vector<Dmx4LinuxDevice*>  m_devices;  // list of out devices
     string m_out_dev;  // path the the dmx device
     string m_in_dev;   // path the the dmx device
-    int m_out_fd;      // fd for the output dmx device
-    int m_in_fd;       // fd for the input dmx device
+    ConnectedSocket *m_in_socket;
+    ConnectedSocket *m_out_socket;
 
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
 };
+
+} //plugin
+} //lla
 
 #endif

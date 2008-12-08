@@ -90,6 +90,7 @@ class ConnectedSocket: public Socket {
     virtual ~ConnectedSocket() { Close(); }
 
     virtual int ReadDescriptor() const { return m_read_fd; }
+    virtual int WriteDescriptor() const { return m_write_fd; }
     virtual ssize_t Send(const uint8_t *buffer, unsigned int size);
     virtual int Receive(uint8_t *buffer,
                         unsigned int size,

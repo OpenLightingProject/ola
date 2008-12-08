@@ -23,20 +23,19 @@
 
 #include <string>
 #include <stdint.h>
-#include <llad/device.h>
+#include <llad/Device.h>
 
-class Dmx4LinuxDevice : public Device {
+namespace lla {
+namespace plugin {
 
+class Dmx4LinuxDevice: public lla::Device {
   public:
-
     Dmx4LinuxDevice(class Dmx4LinuxPlugin *owner, const string &name);
     ~Dmx4LinuxDevice();
 
-    int start();
-    int stop();
-    int save_config() const;
-    class LlaDevConfMsg *configure(const uint8_t *request, int reql);
-    int send_dmx(int d4l_uni, uint8_t *data, int len);
+    bool Start();
+    bool Stop();
+    int SendDmx(int d4l_uni, uint8_t *data, int len);
 
   private:
 
@@ -44,5 +43,8 @@ class Dmx4LinuxDevice : public Device {
     class Dmx4LinuxPlugin *m_plugin; //
     bool m_enabled;        // are we enabled
 };
+
+} //plugin
+} //lla
 
 #endif

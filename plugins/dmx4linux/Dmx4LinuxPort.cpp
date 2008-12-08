@@ -13,22 +13,31 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * dmx4linuxport.cpp
- * The USB Pro plugin for lla
- * Copyright (C) 2006  Simon Newton
+ * Dmx4LinuxPort.cpp
+ * The DMX 4 Linux plugin
+ * Copyright (C) 2006-2008 Simon Newton
  */
 
+#include <string.h>
+#include <llad/logger.h>
 #include "Dmx4LinuxPort.h"
 #include "Dmx4LinuxDevice.h"
-#include <llad/logger.h>
-#include <string.h>
 
-Dmx4LinuxPort::Dmx4LinuxPort(Device *parent, int id, int d4l_uni, bool in, bool out):
+namespace lla {
+namespace plugin {
+
+Dmx4LinuxPort::Dmx4LinuxPort(Dmx4LinuxDevice *parent,
+                             int id,
+                             int dmx_universe,
+                             bool in,
+                             bool out):
   Port(parent, id),
-  m_d4l_uni(d4l_uni),
   m_in(in),
-  m_out(out) {
+  m_out(out),
+  m_dmx_universe(dmx_universe),
+  m_device(parent) {
 }
+
 
 /*
  * Write operation
@@ -38,14 +47,12 @@ Dmx4LinuxPort::Dmx4LinuxPort(Device *parent, int id, int d4l_uni, bool in, bool 
  *
  * @return   0 on success, non 0 on failure
  */
-int Dmx4LinuxPort::write(uint8_t *data, unsigned int length) {
-  Dmx4LinuxDevice *dev = (Dmx4LinuxDevice*) get_device();
-
-  if (!can_write())
+int Dmx4LinuxPort::WriteDMX(uint8_t *data, unsigned int length) {
+  if (!CanWrite())
     return -1;
 
   // send to device
-  return dev->send_dmx(m_d4l_uni, data, length);
+  return m_device->SendDmx(m_dmx_universe, data, length);
 
 }
 
@@ -57,8 +64,11 @@ int Dmx4LinuxPort::write(uint8_t *data, unsigned int length) {
  *
  * @return  the amount of data read
  */
-int Dmx4LinuxPort::read(uint8_t *data, unsigned int length) {
+int Dmx4LinuxPort::ReadDMX(uint8_t *data, unsigned int length) {
   data = NULL;
   length = 0;
   return -1;
 }
+
+} //plugin
+} //lla
