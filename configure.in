@@ -15,7 +15,15 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_LIBTOOL_DLOPEN
+AC_LIBLTDL_CONVENIENCE
 AC_PROG_LIBTOOL
+
+AC_CONFIG_SUBDIRS(libltdl)
+
+AC_SUBST(INCLTDL)
+AC_SUBST(LIBLTDL)
+
 
 # Checks for header files.
 AC_HEADER_DIRENT
@@ -174,6 +182,8 @@ _EOF_
   srcdir=$srcdir
   have_threads=$have_threads
 ])
+
+
 
 # output
 AC_OUTPUT( Makefile\

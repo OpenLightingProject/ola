@@ -18,22 +18,15 @@
  * Copyright (C) 2005-2007 Simon Newton
  */
 
-#include <llad/logger.h>
-
-#include "DlOpenPluginLoader.h"
-#include <llad/Plugin.h>
-
 #include <string.h>
 #include <dirent.h>
 #include <stdlib.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <dlfcn.h>
 #include <stdio.h>
 
-#define SHARED_LIB_EXT ".dylib"
-#include <iostream>
+#include <llad/logger.h>
+#include <llad/Plugin.h>
+
+#include "DlOpenPluginLoader.h"
 
 namespace lla {
 
@@ -46,64 +39,65 @@ using namespace std;
  * @return   0 on sucess, -1 on failure
  */
 int DlOpenPluginLoader::LoadPlugins() {
-  AbstractPlugin *plug = NULL;
-  DIR *dir;
-  struct dirent *ent;
-  struct stat statbuf;
+  AbstractPlugin *plugin = NULL;
+  set<string>::iterator iter;
+  set<string> plugin_names = FindPlugins(m_dirname);
 
-  cout << m_dirname << endl;
-  dir = opendir(m_dirname.c_str());
-
-  if (!dir)
-    return 0;
-
-  printf("load\n");
-  while ((ent = readdir(dir)) != NULL) {
-    string fname = m_dirname;
-    fname.append("/");
-    fname.append(ent->d_name);
-
-    string::size_type i = fname.find_last_of(".");
-    if (i == string::npos)
-      continue;
-
-    if (!stat(fname.c_str(), &statbuf) && S_ISREG(statbuf.st_mode) && fname.substr(i) == SHARED_LIB_EXT) {
-      // ok try and load it
-      if ((plug = this->LoadPlugin(fname)) == NULL) {
-        Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", fname.c_str());
-      } else {
-        m_plugins.push_back(plug);
-      }
+  if (!m_dl_active) {
+    if (lt_dlinit()) {
+      Logger::instance()->log(Logger::CRIT, "lt_dlinit failed");
+      return -1;
     }
   }
-  closedir(dir);
-  printf("laod done\n");
+
+  if (lt_dlsetsearchpath(m_dirname.c_str())) {
+    Logger::instance()->log(Logger::CRIT, "lt_setpath failed");
+    lt_dlexit();
+    return -1;
+  }
+  m_dl_active = true;
+
+  for (iter = plugin_names.begin(); iter != plugin_names.end(); ++iter) {
+    string path = m_dirname;
+    path.append("/");
+    path.append(*iter);
+
+    if ((plugin = this->LoadPlugin(path)) == NULL) {
+      Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", path.c_str());
+    } else {
+      m_plugins.push_back(plugin);
+    }
+  }
+
   return 0;
 }
 
 
 /*
- * unload all plugins
+ * Unload all plugins
  *
  */
 int DlOpenPluginLoader::UnloadPlugins() {
-  map<void*, AbstractPlugin*>::iterator map_iter;
+  map<lt_dlhandle, AbstractPlugin*>::iterator map_iter;
   vector<AbstractPlugin*>::iterator iter;
 
   for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
-    if((*iter)->IsEnabled()) {
+    if((*iter)->IsEnabled())
       (*iter)->Stop();
-    }
   }
 
-  //unload all plugins
-  for (map_iter = m_plugin_map.begin(); map_iter != m_plugin_map.end(); map_iter++) {
+  for (map_iter = m_plugin_map.begin(); map_iter != m_plugin_map.end(); map_iter++)
     UnloadPlugin((*map_iter).first);
-  }
 
   m_plugin_map.clear();
   m_plugins.clear();
 
+  if (m_dl_active) {
+    if (lt_dlexit()) {
+      printf("dlexit: %s\n", (char *) lt_dlerror());
+    }
+    m_dl_active = false;
+  }
   return 0;
 }
 
@@ -134,6 +128,38 @@ AbstractPlugin *DlOpenPluginLoader::GetPlugin(unsigned int id) const {
 // Private Functions
 //-----------------------------------------------------------------------------
 
+
+/*
+ * Find a list of possible plugins
+ */
+set<string> DlOpenPluginLoader::FindPlugins(const string &path) {
+  DIR *dir;
+  struct dirent *ent;
+  set<string> plugin_names;
+
+  dir = opendir(path.c_str());
+
+  if (!dir) {
+    Logger::instance()->log(Logger::WARN,
+                            "Plugin directory %s doesn't exist",
+                            path.c_str());
+    return plugin_names;
+  }
+
+  // find files that could be plugins
+  while ((ent = readdir(dir)) != NULL) {
+    string fname = ent->d_name;
+    string::size_type i = fname.find_first_of(".");
+    if (i == string::npos || i == 0)
+      continue;
+    plugin_names.insert(fname.substr(0, i));
+  }
+
+  closedir(dir);
+  return plugin_names;
+}
+
+
 /*
  * Load a plugin from a file
  *
@@ -141,33 +167,34 @@ AbstractPlugin *DlOpenPluginLoader::GetPlugin(unsigned int id) const {
  * @return 0 on sucess, -1 on failure
  */
 AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
-  void* handle = NULL;
+  lt_dlhandle module = NULL;
   AbstractPlugin *plugin;
   create_t *create;
 
-  if ((handle = dlopen(path.c_str(), RTLD_LAZY)) == NULL) {
-    Logger::instance()->log(Logger::WARN, "dlopen: %s", dlerror());
+  module = lt_dlopenext(path.c_str());
+
+  if (!module) {
+    printf("failed to dlopen\n");
+    Logger::instance()->log(Logger::WARN, "lt_dlopen: %s", lt_dlerror());
     return NULL;
   }
 
-  // reset dlerror
-  dlerror();
-  create = (create_t*) dlsym(handle, "create");
+  create = (create_t*) lt_dlsym(module, "create");
 
-  if(dlerror() != NULL) {
+  if (lt_dlerror()) {
     Logger::instance()->log(Logger::WARN, "Could not locate symbol");
-    dlclose(handle);
+    lt_dlclose(module);
     return NULL;
   }
 
   // init plugin
   if ((plugin = create(m_plugin_adaptor)) == NULL) {
-    dlclose(handle);
+    lt_dlclose(module);
     return NULL;
   }
 
-  pair<void*, AbstractPlugin*> p (handle, plugin);
-  m_plugin_map.insert(p);
+  pair<lt_dlhandle, AbstractPlugin*> pair (module, plugin);
+  m_plugin_map.insert(pair);
 
   Logger::instance()->log(Logger::INFO, "Loaded plugin %s", plugin->Name().c_str());
   return plugin;
@@ -180,20 +207,16 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
  * @param handle  the handle of the plugin to unload
  * @return  0 on success, non 0 on failure
  */
-int DlOpenPluginLoader::UnloadPlugin(void *handle) {
-  destroy_t *destroy;
+int DlOpenPluginLoader::UnloadPlugin(lt_dlhandle handle) {
+  destroy_t *destroy = (destroy_t*) lt_dlsym(handle, "destroy");
 
-  // reset dlerror
-  dlerror();
-  destroy =  (destroy_t*) dlsym(handle, "destroy");
-
-  if(dlerror() != NULL) {
+  if (lt_dlerror() != NULL) {
     Logger::instance()->log(Logger::WARN, "Could not locate destroy symbol");
     return -1;
   }
 
   destroy(m_plugin_map[handle]);
-  dlclose(handle);
+  lt_dlclose(handle);
   return 0;
 }
 

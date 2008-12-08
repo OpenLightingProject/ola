@@ -31,7 +31,7 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::Plugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
   return new lla::plugin::ArtNetPlugin(plugin_adaptor);
 }
 

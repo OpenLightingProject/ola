@@ -6,9 +6,9 @@ libllaserver_la_SOURCES = LlaServer.cpp LlaServerServiceImpl.cpp \
                           UniverseStore.cpp Port.cpp Client.cpp \
                           Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
                           DynamicPluginLoader.cpp Plugin.cpp \
-						  DlOpenPluginLoader.cpp
+                          DlOpenPluginLoader.cpp
 libllaserver_la_LDFLAGS = -lprotobuf
-libllaserver_la_LIBADD = $(top_builddir)/common/libllacommon.la
+libllaserver_la_LIBADD = @LIBLTDL@ $(top_builddir)/common/libllacommon.la
 libllaserver_la_CXXFLAGS = -Wall -Wformat -W
 
 # LlaDaemon.cpp

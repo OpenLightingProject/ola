@@ -24,21 +24,25 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <set>
+#include <ltdl.h>
 
 #include "PluginLoader.h"
 
 namespace lla {
 
-using std::vector;
 using std::map;
+using std::set;
 using std::string;
+using std::vector;
 
 class AbstractPlugin;
 
 class DlOpenPluginLoader: public PluginLoader {
-
   public:
-    DlOpenPluginLoader(const string &dirname): m_dirname(dirname) {};
+    DlOpenPluginLoader(const string &dirname):
+      m_dirname(dirname),
+      m_dl_active(false) {};
     ~DlOpenPluginLoader() { UnloadPlugins(); }
 
     int LoadPlugins();
@@ -51,12 +55,14 @@ class DlOpenPluginLoader: public PluginLoader {
     DlOpenPluginLoader(const DlOpenPluginLoader&);
     DlOpenPluginLoader operator=(const DlOpenPluginLoader&);
 
+    set<string> FindPlugins(const string &path);
     AbstractPlugin *LoadPlugin(const string &path);
-    int UnloadPlugin(void *handle);
+    int UnloadPlugin(lt_dlhandle handle);
 
     string m_dirname;
+    bool m_dl_active;
     std::vector<AbstractPlugin*> m_plugins;
-    std::map<void*, AbstractPlugin*> m_plugin_map;
+    std::map<lt_dlhandle, AbstractPlugin*> m_plugin_map;
 };
 
 } //lla
