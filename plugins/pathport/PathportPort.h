@@ -22,28 +22,35 @@
 #ifndef PATHPORTPORT_H
 #define PATHPORTPORT_H
 
-#include <llad/port.h>
+#include <llad/Port.h>
 
 #include <pathport/pathport.h>
 
-class PathportPort : public Port {
+namespace lla {
+namespace plugin {
 
+class PathportPort: public lla::Port {
   public:
     PathportPort(Device *parent, int id);
     ~PathportPort();
 
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
+    int WriteDMX(uint8_t *data, unsigned int length);
+    int ReadDMX(uint8_t *data, unsigned int length);
 
-    int can_read() const;
-    int can_write() const;
+    bool CanRead() const;
+    bool CanWrite() const;
 
     int update_buffer(const uint8_t *data, int length);
-    int set_universe(Universe *uni);
+    int SetUniverse(Universe *uni);
 
   private :
     uint8_t *m_buf;
     unsigned int m_len;
+    PathportDevice *m_device;
+
 };
+
+} //plugin
+} //lla
 
 #endif

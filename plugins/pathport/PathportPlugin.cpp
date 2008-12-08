@@ -13,38 +13,41 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * pathportplugin.cpp
+ * PathportPlugin.cpp
  * The Pathport plugin for lla
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
 
 #include "PathportPlugin.h"
 #include "PathportDevice.h"
 
-const string PathportPlugin::PATHPORT_NODE_NAME = "lla-Pathport";
-const string PathportPlugin::PLUGIN_NAME = "Pathport Plugin";
-const string PathportPlugin::PLUGIN_PREFIX = "pathport";
-
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new PathportPlugin(pa, LLA_PLUGIN_PATHPORT);
+extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+  return new lla::plugin::PathportPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(Plugin* plug) {
-  delete plug;
+extern "C" void destroy(lla::AbstractPlugin* plugin) {
+  delete plugin;
 }
+
+
+namespace lla {
+namespace plugin {
+
+const string PathportPlugin::PATHPORT_NODE_NAME = "lla-Pathport";
+const string PathportPlugin::PLUGIN_NAME = "Pathport Plugin";
+const string PathportPlugin::PLUGIN_PREFIX = "pathport";
 
 
 /*
@@ -52,24 +55,24 @@ extern "C" void destroy(Plugin* plug) {
  *
  * For now we just have one device.
  */
-int PathportPlugin::start_hook() {
+bool PathportPlugin::StartHook() {
   /* create new lla device */
-  m_dev = new PathportDevice(this, "Pathport Device", m_prefs);
+  m_device = new PathportDevice(this, "Pathport Device", m_preferences);
 
-  if (m_dev == NULL)
-    return -1;
+  if (!m_device)
+    return false;
 
-  if (m_dev->start()) {
-    delete m_dev;
-    return -1;
+  if (!m_device->Start()) {
+    delete m_device;
+    return false;
   }
 
   // register our descriptors
   for (int i = 0; i < PATHPORT_MAX_SD; i++)
-    m_pa->register_fd( m_dev->get_sd(i), PluginAdaptor::READ, m_dev);
+    m_plugin_adaptor->RegisterFD(m_device->get_sd(i), PluginAdaptor::READ, m_device);
 
-  m_pa->register_device(m_dev);
-  return 0;
+  m_plugin_adaptor->RegisterDevice(m_device);
+  return true;
 }
 
 
@@ -78,24 +81,22 @@ int PathportPlugin::start_hook() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int PathportPlugin::stop_hook() {
+bool PathportPlugin::StopHook() {
   for (int i = 0; i < PATHPORT_MAX_SD; i++)
-    m_pa->unregister_fd( m_dev->get_sd(i), PluginAdaptor::READ);
+    m_plugin_adaptor->UnregisterFD(m_device->get_sd(i), PluginAdaptor::READ);
 
-  // stop the device
-  if (m_dev->stop())
-    return -1;
+  m_device->Stop();
 
-  m_pa->unregister_device(m_dev);
-  delete m_dev;
-  return 0;
+  m_plugin_adaptor->UnregisterDevice(m_device);
+  delete m_device;
+  return true;
 }
 
+
 /*
- * return the description for this plugin
- *
+ * Return the description for this plugin
  */
-string PathportPlugin::get_desc() const {
+string PathportPlugin::Description() const {
   return
 "Pathport Plugin\n"
 "----------------------------\n"
@@ -120,23 +121,26 @@ string PathportPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-int PathportPlugin::set_default_prefs() {
+int PathportPlugin::SetDefaultPreferences() {
 
-  if (m_prefs == NULL)
+  if (!m_preferences)
     return -1;
 
   // we don't worry about ip here
   // if it's non existant it will choose one
-  if ( m_prefs->get_val("name") == "") {
-    m_prefs->set_val("name", PATHPORT_NODE_NAME);
-    m_prefs->save();
+  if (m_preferences->GetValue("name").empty()) {
+    m_preferences->SetValue("name", PATHPORT_NODE_NAME);
+    m_preferences->Save();
   }
 
   // check if this save correctly
   // we don't want to use it if null
-  if ( m_prefs->get_val("name") == "" ) {
+  if (m_preferences->GetValue("name").empty()) {
     return -1;
   }
 
   return 0;
 }
+
+} //plugin
+} //lla

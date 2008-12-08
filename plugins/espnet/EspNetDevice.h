@@ -55,8 +55,8 @@ class EspNetDevice: public lla::Device, public SocketListener {
     int SocketReady(ConnectedSocket *socket);
 
   private:
-    lla::Preferences *m_preferences;
-    const lla::PluginAdaptor *m_plugin_adaptor;
+    Preferences *m_preferences;
+    const PluginAdaptor *m_plugin_adaptor;
     espnet_node m_node;
     ConnectedSocket *m_socket;
     bool m_enabled;

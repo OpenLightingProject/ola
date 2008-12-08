@@ -25,7 +25,7 @@
 #include <string.h>
 
 #include <llad/logger.h>
-#include <llad/preferences.h>
+#include <llad/Preferences.h>
 #include <llad/universe.h>
 
 #include "PathportDevice.h"
@@ -36,6 +36,8 @@
 #  include <config.h>
 #endif
 
+namespace lla {
+namespace plugin {
 
 /*
  * Handle dmx from the network, called from libpathport
@@ -56,7 +58,7 @@ int dmx_handler(pathport_node n, unsigned int uid, unsigned int len, const uint8
   if ( uid > PATHPORT_MAX_UNIVERSES)
     return 0;
 
-  prt = (PathportPort*) dev->get_port_from_uni(uid);
+  prt = (PathportPort*) dev->GetPort_from_uni(uid);
   uni = prt->get_universe();
 
   if ( prt != NULL && prt->can_read() && uni != NULL) {
@@ -75,9 +77,13 @@ int dmx_handler(pathport_node n, unsigned int uid, unsigned int len, const uint8
  * should prob pass the ip to bind to
  *
  */
-PathportDevice::PathportDevice(Plugin *owner, const string &name, Preferences *prefs) :
+PathportDevice::PathportDevice(Plugin *owner,
+                               const string &name,
+                               Preferences *prefs,
+                               const PluginAdaptor *plugin_adaptor) {
   Device(owner, name),
-  m_prefs(prefs),
+  m_preferences(prefs),
+  m_plugin_adaptor(plugin_adaptor),
   m_node(NULL),
   m_enabled(false) {
 }
@@ -88,7 +94,7 @@ PathportDevice::PathportDevice(Plugin *owner, const string &name, Preferences *p
  */
 PathportDevice::~PathportDevice() {
   if (m_enabled)
-    stop();
+    Stop();
 }
 
 
@@ -96,36 +102,32 @@ PathportDevice::~PathportDevice() {
  * Start this device
  *
  */
-int PathportDevice::start() {
+bool PathportDevice::Start() {
   PathportPort *port = NULL;
-  int debug = 0;
 
   /* set up ports */
   for (int i=0; i < PORTS_PER_DEVICE; i++) {
     port = new PathportPort(this, i);
 
-    if (port != NULL)
-      this->add_port(port);
+    if (port)
+      this->AddPort(port);
   }
 
-#ifdef DEBUG
-  debug = 1;
-#endif
-
+  bool debug = Owner()->DebugOn();
   // create new pathport node, and set config values
-    if (m_prefs->get_val("ip") == "")
+    if (m_preferences->GetValue("ip") == "")
     m_node = pathport_new(NULL, debug);
   else {
-    m_node = pathport_new(m_prefs->get_val("ip").c_str(), debug);
+    m_node = pathport_new(m_preferences->GetValue("ip").c_str(), debug);
   }
 
   if (!m_node) {
     Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_new failed: %s", pathport_strerror());
-    return -1;
+    return false;
   }
 
   // setup node
-  if (pathport_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
+  if (pathport_set_name(m_node, m_preferences->GetValue("name").c_str()) ) {
     Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_name failed: %s", pathport_strerror());
     goto e_pathport_start;
   }
@@ -148,7 +150,7 @@ int PathportDevice::start() {
   }
 
   m_enabled = true;
-  return 0;
+  return true;
 
 e_pathport_start:
   if (pathport_destroy(m_node))
@@ -161,14 +163,14 @@ e_pathport_start:
  * stop this device
  *
  */
-int PathportDevice::stop() {
+bool PathportDevice::Stop() {
   Port *prt = NULL;
 
   if (!m_enabled)
     return 0;
 
   for (int i=0; i < port_count(); i++) {
-    prt = get_port(i);
+    prt = GetPort(i);
     if (prt != NULL)
       delete prt;
   }
@@ -226,32 +228,6 @@ int PathportDevice::action() {
 }
 
 
-// call this when something changes
-// where to store data to ?
-// I'm thinking a config file in /etc/llad/llad.conf
-int PathportDevice::save_config() const {
-
-
-  return 0;
-}
-
-
-
-/*
- * we can pass plugin specific messages here
- * make sure the user app knows the format though...
- *
- */
-int PathportDevice::configure(void *req, int len) {
-  // handle short/ long name & subnet and port addresses
-
-  req = 0;
-  len = 0;
-
-  return 0;
-}
-
-
 /*
  * Add a port to our hash map
  */
@@ -260,7 +236,10 @@ int PathportDevice::port_map(Universe *uni, PathportPort *prt) {
     return 0;
 }
 
-PathportPort *PathportDevice::get_port_from_uni(int uni) {
+PathportPort *PathportDevice::GetPort_from_uni(int uni) {
     return m_portmap[uni];
 }
+
+} //plugin
+} //lla
 

@@ -13,17 +13,24 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * PathportCommon.h
  * Constants for the shownet plugin
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef COMMON_H
 #define COMMON_H
 
+namespace lla {
+namespace plugin {
+namespace pathport {
+
 // number of pathport ports we have per device
 // this is split between input and ouput ports
-#define PORTS_PER_DEVICE  8
+static const unsigned int PORTS_PER_DEVICE = 8;
+
+} // pathport
+} // plugin
+} // lla
 
 #endif

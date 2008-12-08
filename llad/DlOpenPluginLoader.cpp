@@ -21,6 +21,7 @@
 #include <llad/logger.h>
 
 #include "DlOpenPluginLoader.h"
+#include <llad/Plugin.h>
 
 #include <string.h>
 #include <dirent.h>
@@ -32,27 +33,31 @@
 #include <stdio.h>
 
 #define SHARED_LIB_EXT ".dylib"
+#include <iostream>
 
 namespace lla {
 
 using namespace std;
+
 
 /*
  * Read the directory and load all .so files
  *
  * @return   0 on sucess, -1 on failure
  */
-int DlOpenPluginLoader::load_plugins() {
+int DlOpenPluginLoader::LoadPlugins() {
   AbstractPlugin *plug = NULL;
   DIR *dir;
   struct dirent *ent;
   struct stat statbuf;
 
+  cout << m_dirname << endl;
   dir = opendir(m_dirname.c_str());
 
   if (!dir)
     return 0;
 
+  printf("load\n");
   while ((ent = readdir(dir)) != NULL) {
     string fname = m_dirname;
     fname.append("/");
@@ -64,15 +69,15 @@ int DlOpenPluginLoader::load_plugins() {
 
     if (!stat(fname.c_str(), &statbuf) && S_ISREG(statbuf.st_mode) && fname.substr(i) == SHARED_LIB_EXT) {
       // ok try and load it
-      if ((plug = this->load_plugin(fname)) == NULL) {
+      if ((plug = this->LoadPlugin(fname)) == NULL) {
         Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", fname.c_str());
       } else {
-        m_plugin_vect.push_back(plug);
+        m_plugins.push_back(plug);
       }
     }
   }
   closedir(dir);
-
+  printf("laod done\n");
   return 0;
 }
 
@@ -81,23 +86,23 @@ int DlOpenPluginLoader::load_plugins() {
  * unload all plugins
  *
  */
-int DlOpenPluginLoader::unload_plugins() {
-  unsigned int i;
-  map<void*, AbstractPlugin*>::iterator iter;
-  for(i=0; i < m_plugin_vect.size(); i++) {
-    // TODO: this better not fail ...
-    if( m_plugin_vect[i]->is_enabled()) {
-      m_plugin_vect[i]->stop();
+int DlOpenPluginLoader::UnloadPlugins() {
+  map<void*, AbstractPlugin*>::iterator map_iter;
+  vector<AbstractPlugin*>::iterator iter;
+
+  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
+    if((*iter)->IsEnabled()) {
+      (*iter)->Stop();
     }
   }
 
   //unload all plugins
-  for(iter = m_plugin_map.begin(); iter != m_plugin_map.end(); iter++) {
-    unload_plugin((*iter).first);
+  for (map_iter = m_plugin_map.begin(); map_iter != m_plugin_map.end(); map_iter++) {
+    UnloadPlugin((*map_iter).first);
   }
 
   m_plugin_map.clear();
-  m_plugin_vect.clear();
+  m_plugins.clear();
 
   return 0;
 }
@@ -108,8 +113,8 @@ int DlOpenPluginLoader::unload_plugins() {
  *
  * @return the number of plugins loaded
  */
-int DlOpenPluginLoader::plugin_count() const {
-  return m_plugin_vect.size();
+int DlOpenPluginLoader::PluginCount() const {
+  return m_plugins.size();
 }
 
 
@@ -119,12 +124,10 @@ int DlOpenPluginLoader::plugin_count() const {
  * @param id   the id of the plugin to fetch
  * @return  the plugin with the specified id
  */
-AbstractPlugin *DlOpenPluginLoader::get_plugin(unsigned int id) const {
-
-  if ( id > m_plugin_vect.size() )
+AbstractPlugin *DlOpenPluginLoader::GetPlugin(unsigned int id) const {
+  if (id > m_plugins.size() )
     return NULL;
-
-  return m_plugin_vect[id];
+  return m_plugins[id];
 }
 
 
@@ -137,12 +140,12 @@ AbstractPlugin *DlOpenPluginLoader::get_plugin(unsigned int id) const {
  * @param  path  the path to the plugin
  * @return 0 on sucess, -1 on failure
  */
-AbstractPlugin *DlOpenPluginLoader::load_plugin(const string &path) {
+AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
   void* handle = NULL;
-  AbstractPlugin *plug;
+  AbstractPlugin *plugin;
   create_t *create;
 
-  if ( (handle = dlopen(path.c_str(), RTLD_LAZY)) == NULL) {
+  if ((handle = dlopen(path.c_str(), RTLD_LAZY)) == NULL) {
     Logger::instance()->log(Logger::WARN, "dlopen: %s", dlerror());
     return NULL;
   }
@@ -158,17 +161,16 @@ AbstractPlugin *DlOpenPluginLoader::load_plugin(const string &path) {
   }
 
   // init plugin
-  if ( (plug = create(m_pa)) == NULL) {
+  if ((plugin = create(m_plugin_adaptor)) == NULL) {
     dlclose(handle);
     return NULL;
   }
 
-  pair<void*, AbstractPlugin*> p (handle, plug);
+  pair<void*, AbstractPlugin*> p (handle, plugin);
   m_plugin_map.insert(p);
 
-  Logger::instance()->log(Logger::INFO, "Loaded plugin %s", plug->get_name().c_str());
-
-  return plug;
+  Logger::instance()->log(Logger::INFO, "Loaded plugin %s", plugin->Name().c_str());
+  return plugin;
 }
 
 
@@ -178,7 +180,7 @@ AbstractPlugin *DlOpenPluginLoader::load_plugin(const string &path) {
  * @param handle  the handle of the plugin to unload
  * @return  0 on success, non 0 on failure
  */
-int DlOpenPluginLoader::unload_plugin(void *handle) {
+int DlOpenPluginLoader::UnloadPlugin(void *handle) {
   destroy_t *destroy;
 
   // reset dlerror
@@ -192,7 +194,6 @@ int DlOpenPluginLoader::unload_plugin(void *handle) {
 
   destroy(m_plugin_map[handle]);
   dlclose(handle);
-
   return 0;
 }
 

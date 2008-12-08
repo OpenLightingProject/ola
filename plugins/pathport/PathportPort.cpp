@@ -30,26 +30,30 @@
 
 #define min(a,b) a<b?a:b
 
-PathportPort::PathportPort(Device *parent, int id) :
+namespace lla {
+namespace plugin {
+
+PathportPort::PathportPort(PathportDevice *parent, int id) :
   Port(parent, id),
   m_buf(NULL),
-  m_len(DMX_LENGTH) {
+  m_len(DMX_UNIVERSE_SIZE),
+  m_device(parent) {
 }
 
 
 PathportPort::~PathportPort() {
-  if (can_read())
+  if (CanRead())
     free(m_buf);
 }
 
 
-int PathportPort::can_read() const {
-  return ( get_id() >=0 && get_id() < PORTS_PER_DEVICE/2);
+int PathportPort::CanRead() const {
+  return ( PortId() >=0 && PortId() < PORTS_PER_DEVICE / 2);
 }
 
 
-int PathportPort::can_write() const {
-  return ( get_id() >= PORTS_PER_DEVICE/2 && get_id() < PORTS_PER_DEVICE);
+bool PathportPort::CanWrite() const {
+  return ( PortId() >= PORTS_PER_DEVICE / 2 && PortId() < PORTS_PER_DEVICE);
 }
 
 
@@ -60,17 +64,17 @@ int PathportPort::can_write() const {
  * @param  length  the length of the data
  *
  */
-int PathportPort::write(uint8_t *data, unsigned int length) {
-  PathportDevice *dev = (PathportDevice*) get_device();
-  Universe *uni = get_universe();
+int PathportPort::WriteDMX(uint8_t *data, unsigned int length) {
+  PathportDevice *dev = (PathportDevice*) GetDevice();
+  Universe *uni = GetUniverse();
 
-  if (!can_write())
+  if (!CanWrite())
     return -1;
 
-  if (uni == NULL)
+  if (!uni)
     return 0;
 
-  if (pathport_send_dmx(dev->get_node(), uni->get_uid(), length, data)) {
+  if (pathport_send_dmx(dev->PathportNode(), uni->UniverseId(), length, data)) {
     Logger::instance()->log(Logger::WARN, "ShownetPlugin: pathport_send_dmx failed %s", pathport_strerror());
     return -1;
   }
@@ -86,10 +90,10 @@ int PathportPort::write(uint8_t *data, unsigned int length) {
  *
  * @return  the amount of data read
  */
-int PathportPort::read(uint8_t *data, unsigned int length) {
+int PathportPort::ReadDMX(uint8_t *data, unsigned int length) {
   unsigned int len;
 
-  if (!can_read())
+  if (!CanRead())
     return -1;
 
   len = min(m_len, length);
@@ -102,11 +106,11 @@ int PathportPort::read(uint8_t *data, unsigned int length) {
  * Update the data buffer for this port
  *
  */
-int PathportPort::update_buffer(const uint8_t *data, int length) {
-  int len = min(DMX_LENGTH, length);
+int PathportPort::UpdateBuffer(const uint8_t *data, int length) {
+  int len = min(DMX_UNIVERSE_SIZE, length);
 
   // we can't update if this isn't a input port
-  if (!can_read())
+  if (!CanRead())
     return -1;
 
   if (m_buf == NULL) {
@@ -122,7 +126,7 @@ int PathportPort::update_buffer(const uint8_t *data, int length) {
   Logger::instance()->log(Logger::DEBUG, "Pathport: Updating dmx buffer for port %d", length);
   memcpy(m_buf, data, len);
 
-  dmx_changed();
+  DmxChanged();
   return 0;
 }
 
@@ -131,25 +135,27 @@ int PathportPort::update_buffer(const uint8_t *data, int length) {
  * We override the set universe method to register our interest in
  * pathport universes
  */
-int PathportPort::set_universe(Universe *uni) {
-  PathportDevice *dev = (PathportDevice*) get_device();
-  pathport_node node = dev->get_node();
+int PathportPort::SetUniverse(Universe *uni) {
+  pathport_node node = m_device->PathportNode();
 
-  Universe *old = get_universe();
+  Universe *old = GetUniverse();
 
-  Port::set_universe(uni);
+  Port::SetUniverse(uni);
 
-  if (can_read()) {
+  if (CanRead()) {
     // Unregister our interest in this universe
-      if (old != NULL) {
-      pathport_unregister_uni(node, old->get_uid());
-      dev->port_map(old,NULL);
+    if (old) {
+      pathport_unregister_uni(node, old->UniverseId());
+      m_device->port_map(old, NULL);
     }
 
-    if (uni != NULL) {
-      dev->port_map(uni,this);
-      pathport_register_uni(node, uni->get_uid());
+    if (uni) {
+      m_device->port_map(uni, this);
+      pathport_register_uni(node, uni->UniverseId());
     }
   }
   return 0;
 }
+
+} //plugin
+} //lla

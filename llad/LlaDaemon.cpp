@@ -24,7 +24,7 @@
 #include <llad/logger.h>
 #include "LlaDaemon.h"
 #include "LlaServer.h"
-#include "DynamicPluginLoader.h"
+#include "DlOpenPluginLoader.h"
 
 #include "PluginLoader.h"
 
@@ -73,7 +73,7 @@ LlaDaemon::~LlaDaemon() {
 bool LlaDaemon::Init() {
   m_ss = new SelectServer();
   m_service_factory = new LlaServerServiceImplFactory();
-  m_plugin_loader = new DynamicPluginLoader();
+  m_plugin_loader = new DlOpenPluginLoader(PLUGIN_DIR);
 
   m_preferences_factory = new FileBackedPreferencesFactory();
   m_listening_socket = new TcpListeningSocket("127.0.0.1", 9010);

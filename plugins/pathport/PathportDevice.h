@@ -13,10 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * pathportdevice.h
+ * PathportDevice.h
  * Interface for the pathport device
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef PATHPORTDEVICE_H
@@ -24,34 +23,48 @@
 
 #include <map>
 
-#include <llad/device.h>
-#include <llad/listener.h>
+#include <llad/Device.h>
+#include <lla/select_server/Socket.h>
 
 #include <pathport/pathport.h>
 
 #include "PathportCommon.h"
 
-class PathportDevice : public Device, public Listener {
+namespace lla {
+namespace plugin {
 
+using lla::Plugin;
+using lla::PluginAdaptor;
+using lla::Preferences;
+using lla::select_server::ConnectedSocket;
+using lla::select_server::SocketListener;
+using std::string;
+
+class PathportDevice: public lla::Device, public SocketListener {
   public:
-    PathportDevice(Plugin *owner, const string &name, class Preferences *prefs);
+    PathportDevice(Plugin *owner,
+                   const string &name,
+                   class Preferences *prefs,
+                   const PluginAdaptor *plugin_adaptor);
     ~PathportDevice();
 
-    int start();
-    int stop();
-    pathport_node get_node() const;
-    int get_sd(unsigned int i) const;
-    int action();
-    int save_config() const;
-    int configure(void *req, int len);
-        int port_map(class Universe *uni, class PathportPort *prt);
-        class PathportPort *get_port_from_uni(int uni);
+    bool Start();
+    bool Stop();
+    pathport_node PathportNode() const;
+    int SocketReady(ConnectedSocket *socket);
+
+    int port_map(class Universe *uni, class PathportPort *prt);
+    class PathportPort *GetPort_from_uni(int uni);
 
   private:
-    class Preferences *m_prefs;
+    class Preferences *m_preferences;
+    const PluginAdaptor *m_plugin_adaptor;
     pathport_node m_node;
-     bool m_enabled;
-    map<int, class PathportPort *> m_portmap;
+    bool m_enabled;
+    map<int, class PathportPort*> m_portmap;
 };
+
+} //plugin
+} //lla
 
 #endif

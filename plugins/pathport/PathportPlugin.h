@@ -13,42 +13,49 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * pathportplugin.h
+ * PathPortPlugin.h
  * Interface for the pathport plugin class
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef PATHPORTPLUGIN_H
 #define PATHPORTPLUGIN_H
 
-#include <llad/plugin.h>
+#include <llad/Plugin.h>
+#include <llad/PluginAdaptor.h>
 #include <lla/plugin_id.h>
 
+namespace lla {
+namespace plugin {
+
 class PathportDevice;
+using lla::Plugin;
 
-class PathportPlugin : public Plugin {
-
+class PathportPlugin: public Plugin {
   public:
-    PathportPlugin(const PluginAdaptor *pa, lla_plugin_id id):
-      Plugin(pa, id),
-      m_dev(NULL) {}
+    PathportPlugin(const lla::PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor),
+      m_device(NULL) {}
 
-    string get_name() const { return PLUGIN_NAME; }
-    string get_desc() const;
+    string Name() const { return PLUGIN_NAME; }
+    string Description() const;
+    lla_plugin_id Id() const { return LLA_PLUGIN_PATHPORT; }
 
   protected:
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    int set_default_prefs();
+    bool StartHook();
+    bool StopHook();
+    int SetDefaultPreferences();
 
-    PathportDevice *m_dev; // only have one device
+    PathportDevice *m_device; // only have one device
     static const string PATHPORT_NODE_NAME;
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
 };
+
+} //plugin
+} //lla
 
 #endif
