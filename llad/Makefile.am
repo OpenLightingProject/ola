@@ -32,15 +32,8 @@ bin_PROGRAMS = LlaDummy llad
 LlaDummy_SOURCES = LlaDummy.cpp
 LlaDummy_CXXFLAGS = $(CPPUNIT_CFLAGS)
 LlaDummy_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
-LlaDummy_LDADD = @LIBS@ libllaserver.la \
+LlaDummy_LDADD = @LIBS@ ${PLUGIN_LIBS} libllaserver.la \
                  $(top_builddir)/common/libllacommon.la \
-                 $(top_builddir)/plugins/dummy/liblladummy.la \
-                 $(top_builddir)/plugins/artnet/libllaartnet.la \
-                 $(top_builddir)/plugins/espnet/libllaespnet.la \
-                 $(top_builddir)/plugins/dmx4linux/liblladmx4linux.la \
-                 $(top_builddir)/plugins/opendmx/libllaopendmx.la \
-                 $(top_builddir)/plugins/stageprofi/libllastageprofi.la \
-                 $(top_builddir)/plugins/usbpro/libllausbpro.la \
                  $(top_builddir)/lla/liblla.la
 
 
@@ -49,15 +42,8 @@ llad_SOURCES = Llad.cpp LlaDaemon.cpp
 #llad_CXXFLAGS = -Wall -Werror  -Wformat -W
 llad_CXXFLAGS = -Wall -Wformat -W
 llad_LDFLAGS = -rdynamic -ldl -lprotobuf
-llad_LDADD = @LIBS@ libllaserver.la \
+llad_LDADD = @LIBS@ ${PLUGIN_LIBS} libllaserver.la \
              $(top_builddir)/common/libllacommon.la \
-             $(top_builddir)/plugins/dummy/liblladummy.la \
-             $(top_builddir)/plugins/artnet/libllaartnet.la \
-             $(top_builddir)/plugins/opendmx/libllaopendmx.la \
-             $(top_builddir)/plugins/stageprofi/libllastageprofi.la \
-             $(top_builddir)/plugins/usbpro/libllausbpro.la \
-             $(top_builddir)/plugins/dmx4linux/liblladmx4linux.la \
-             $(top_builddir)/plugins/espnet/libllaespnet.la \
              $(top_builddir)/lla/liblla.la
 
 #-------------------------------------
