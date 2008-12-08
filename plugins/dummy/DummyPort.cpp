@@ -35,7 +35,7 @@ namespace plugin {
  */
 DummyPort::DummyPort(AbstractDevice *parent, int id):
   Port(parent, id),
-  m_length(512) {
+  m_length(DMX_UNIVERSE_SIZE) {
 
   memset(m_dmx, 0x00, m_length);
 }
@@ -48,7 +48,7 @@ DummyPort::DummyPort(AbstractDevice *parent, int id):
  *
  */
 int DummyPort::WriteDMX(uint8_t *data, unsigned int length) {
-  int len = length < 512 ? length : 512;
+  int len = length < (int) DMX_UNIVERSE_SIZE ? length : (int) DMX_UNIVERSE_SIZE;
 
   memcpy(m_dmx, data, len);
   m_length = len;

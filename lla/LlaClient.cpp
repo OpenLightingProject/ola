@@ -25,6 +25,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <lla/select_server/Socket.h>
+#include <lla/BaseTypes.h>
 
 #include "common/protocol/Lla.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
@@ -184,7 +185,7 @@ bool LlaClient::FetchPluginInfo(int plugin_id, bool include_description) {
  * @return  0 on sucess, -1 on failure
  */
 bool LlaClient::SendDmx(unsigned int universe, uint8_t *data, unsigned int length) {
-  unsigned int dmx_length = min(length, MAX_DMX);
+  unsigned int dmx_length = min(length, DMX_UNIVERSE_SIZE);
   lla::proto::DmxData request;
   SimpleRpcController *controller = new SimpleRpcController();
   lla::proto::Ack *reply = new lla::proto::Ack();

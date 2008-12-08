@@ -35,6 +35,8 @@ LlaDummy_LDADD = @LIBS@ libllaserver.la \
                  $(top_builddir)/common/libllacommon.la \
                  $(top_builddir)/plugins/dummy/liblladummy.la \
                  $(top_builddir)/plugins/artnet/libllaartnet.la \
+                 $(top_builddir)/plugins/espnet/libllaespnet.la \
+                 $(top_builddir)/plugins/dmx4linux/liblladmx4linux.la \
                  $(top_builddir)/plugins/opendmx/libllaopendmx.la \
                  $(top_builddir)/plugins/stageprofi/libllastageprofi.la \
                  $(top_builddir)/plugins/usbpro/libllausbpro.la \
@@ -53,6 +55,8 @@ llad_LDADD = @LIBS@ libllaserver.la \
              $(top_builddir)/plugins/opendmx/libllaopendmx.la \
              $(top_builddir)/plugins/stageprofi/libllastageprofi.la \
              $(top_builddir)/plugins/usbpro/libllausbpro.la \
+             $(top_builddir)/plugins/dmx4linux/liblladmx4linux.la \
+             $(top_builddir)/plugins/espnet/libllaespnet.la \
              $(top_builddir)/lla/liblla.la
 
 #-------------------------------------

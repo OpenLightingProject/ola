@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-enum { DMX_LENGTH = 512 };
+enum { DMX_UNIVERSE_SIZE = 512 };
 
 typedef uint8_t dmx_t;
 

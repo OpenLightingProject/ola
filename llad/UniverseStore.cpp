@@ -22,7 +22,7 @@
 #include <sstream>
 #include <iostream>
 
-#include <llad/universe.h>
+#include <llad/Universe.h>
 #include <llad/Preferences.h>
 #include "UniverseStore.h"
 

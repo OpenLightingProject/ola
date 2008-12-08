@@ -58,8 +58,8 @@ LlaDaemon::~LlaDaemon() {
 
   delete m_preferences_factory;
   delete m_service_factory;
-  delete m_plugin_loader;
   delete m_server;
+  delete m_plugin_loader;
   delete m_ss;
   delete m_listening_socket;
 }
@@ -78,12 +78,12 @@ bool LlaDaemon::Init() {
   m_preferences_factory = new FileBackedPreferencesFactory();
   m_listening_socket = new TcpListeningSocket("127.0.0.1", 9010);
 
-  LlaServer *server = new LlaServer(m_service_factory,
-                                    m_plugin_loader,
-                                    m_preferences_factory,
-                                    m_ss,
-                                    m_listening_socket);
-  return server->Init();
+  m_server = new LlaServer(m_service_factory,
+                           m_plugin_loader,
+                           m_preferences_factory,
+                           m_ss,
+                           m_listening_socket);
+  return m_server->Init();
 }
 
 

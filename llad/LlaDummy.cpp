@@ -30,7 +30,7 @@
 #include <lla/LlaClient.h>
 #include <lla/LlaDevice.h>
 #include <llad/Preferences.h>
-#include <llad/Logger.h>
+#include <llad/logger.h>
 
 #include "DynamicPluginLoader.h"
 #include "PluginLoader.h"

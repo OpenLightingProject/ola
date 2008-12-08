@@ -15,42 +15,48 @@
  *
  * EspNetPlugin.h
  * Interface for the espnet plugin class
- * Copyright (C) 2005-2007  Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef ESPNETPLUGIN_H
 #define ESPNETPLUGIN_H
 
-#include <llad/plugin.h>
+#include <llad/Plugin.h>
+#include <llad/PluginAdaptor.h>
 #include <lla/plugin_id.h>
+
+namespace lla {
+namespace plugin {
 
 class EspNetDevice;
 
-class EspNetPlugin : public Plugin {
-
+class EspNetPlugin: public lla::Plugin {
   public:
-    EspNetPlugin(const PluginAdaptor *pa, lla_plugin_id id):
-      Plugin(pa,id),
-      m_dev(NULL) {}
+    EspNetPlugin(const lla::PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor),
+      m_device(NULL) {}
 
-    string get_name() const { return PLUGIN_NAME; }
-    string get_desc() const;
+    string Name() const { return PLUGIN_NAME; }
+    string Description() const;
+    lla_plugin_id Id() const { return LLA_PLUGIN_ESPNET; }
 
   protected:
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    int set_default_prefs();
+    bool StartHook();
+    bool StopHook();
+    int SetDefaultPreferences();
 
-    EspNetDevice *m_dev;    // only have one device
+    EspNetDevice *m_device;    // only have one device
     static const string ESPNET_NODE_NAME;
     static const string ESPNET_DEVICE_NAME;
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
-
 };
+
+} //plugin
+} //lla
 
 #endif
 

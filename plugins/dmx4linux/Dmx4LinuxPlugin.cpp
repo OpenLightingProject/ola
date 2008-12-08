@@ -31,6 +31,7 @@
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
 #include <llad/logger.h>
+#include <lla/BaseTypes.h>
 
 #include "Dmx4LinuxPlugin.h"
 #include "Dmx4LinuxDevice.h"
@@ -59,7 +60,6 @@ static const string DMX4LINUX_OUT_DEVICE = "/dev/dmx";
 static const string DMX4LINUX_IN_DEVICE  = "/dev/dmxin";
 static const string IN_DEV_KEY = "in_device";
 static const string OUT_DEV_KEY = "out_device";
-static const int CHANNELS_PER_UNI = 512;
 static const char PLUG_NAME[] = "Dmx4LinuxPlugin";
 const string Dmx4LinuxPlugin::PLUGIN_NAME = "Dmx4Linux Plugin";
 const string Dmx4LinuxPlugin::PLUGIN_PREFIX = "dmx4linux";
@@ -135,7 +135,7 @@ string Dmx4LinuxPlugin::Description() const {
  * why do we get input on the in_fd when we write ??
  */
 int Dmx4LinuxPlugin::SocketReady(lla::select_server::ConnectedSocket *socket) {
-  uint8_t buf[512];
+  uint8_t buf[DMX_UNIVERSE_SIZE];
   unsigned int data_read;
   socket->Receive((uint8_t*) buf, sizeof(buf), data_read);
   // map d4l_uni to ports
@@ -149,7 +149,8 @@ int Dmx4LinuxPlugin::SocketReady(lla::select_server::ConnectedSocket *socket) {
  */
 int Dmx4LinuxPlugin::SendDmx(int d4l_uni, uint8_t *data, int len) {
   int fd = m_out_socket->WriteDescriptor();
-  if (lseek(fd, CHANNELS_PER_UNI * d4l_uni, SEEK_SET) == CHANNELS_PER_UNI * d4l_uni) {
+  int offset = DMX_UNIVERSE_SIZE * d4l_uni;
+  if (lseek(fd, offset, SEEK_SET) == offset) {
 
     int r = m_out_socket->Send(data, len);
     if (r != len) {

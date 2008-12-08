@@ -234,7 +234,7 @@ void LlaServer::StartPlugins() {
 
 void LlaServer::StopPlugins() {
   m_plugin_loader->UnloadPlugins();
-  vector<AbstractDevice *> devices = m_device_manager->Devices();
+  vector<AbstractDevice*> devices = m_device_manager->Devices();
 
   if (devices.size() != 0) {
     printf("some devices failed to unload, we're probably leaking memory now\n");

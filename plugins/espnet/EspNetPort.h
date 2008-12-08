@@ -22,26 +22,34 @@
 #ifndef ESPNETPORT_H
 #define ESPNETPORT_H
 
-#include <llad/port.h>
+#include <llad/Port.h>
+#include <lla/BaseTypes.h>
+#include "EspNetDevice.h"
 
 #include <espnet/espnet.h>
 
-class EspNetPort : public Port  {
+namespace lla {
+namespace plugin {
 
+class EspNetPort: public lla::Port {
   public:
-    EspNetPort(Device *parent, int id);
-    ~EspNetPort();
+    EspNetPort(EspNetDevice *parent, int id);
+    ~EspNetPort() {}
 
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
+    int WriteDMX(uint8_t *data, unsigned int length);
+    int ReadDMX(uint8_t *data, unsigned int length);
 
-    int can_read() const;
-    int can_write() const;
-    int update_buffer(uint8_t *data, int length);
+    bool CanRead() const;
+    bool CanWrite() const;
+    int UpdateBuffer(uint8_t *data, int length);
 
   private :
-    uint8_t *m_buf;
+    uint8_t m_buf[DMX_UNIVERSE_SIZE];
     unsigned int m_len;
+    EspNetDevice *m_device;
 };
+
+} //plugin
+} //lla
 
 #endif

@@ -25,10 +25,10 @@
 #include <pthread.h>
 #include <string>
 
+#include <lla/BaseTypes.h>
+
 namespace lla {
 namespace plugin {
-
-#define MAX_DMX 512
 
 class OpenDmxThread {
   public:
@@ -44,7 +44,7 @@ class OpenDmxThread {
     int do_write(uint8_t *buf, int length);
 
     int m_fd;
-    uint8_t m_dmx[MAX_DMX];
+    uint8_t m_dmx[DMX_UNIVERSE_SIZE];
     pthread_mutex_t m_mutex;
     bool m_term;
     pthread_mutex_t m_term_mutex;

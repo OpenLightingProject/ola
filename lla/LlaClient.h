@@ -138,7 +138,6 @@ class LlaClient {
   private:
     LlaClient(const LlaClient&);
     LlaClient operator=(const LlaClient&);
-    static const unsigned int MAX_DMX = 512;
 
     lla::select_server::ConnectedSocket *m_socket;
     lla::LlaClientServiceImpl *m_client_service;

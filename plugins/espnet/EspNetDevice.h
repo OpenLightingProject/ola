@@ -15,37 +15,54 @@
  *
  * EspNetDevice.h
  * Interface for the espnet device
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2008 Simon Newton
  */
 
 #ifndef ESPNETDEVICE_H
 #define ESPNETDEVICE_H
 
-#include <llad/device.h>
-#include <llad/listener.h>
+#include <llad/Device.h>
+#include <llad/Plugin.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
+#include <lla/select_server/Socket.h>
 
 #include <espnet/espnet.h>
 
 #include "common.h"
 
-class EspNetDevice : public Device, public Listener {
+namespace lla {
+namespace plugin {
 
+using std::string;
+using lla::select_server::ConnectedSocket;
+using lla::select_server::SocketListener;
+using lla::Plugin;
+using lla::Preferences;
+using lla::PluginAdaptor;
+
+class EspNetDevice: public lla::Device, public SocketListener {
   public:
-    EspNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
+    EspNetDevice(Plugin *owner,
+                 const string &name,
+                 Preferences *prefs,
+                 const PluginAdaptor *plugin_adaptor);
     ~EspNetDevice();
 
-    int start();
-    int stop();
-    espnet_node get_node() const;
-    int get_sd() const;
-    int action();
-    int save_config() const;
-    int configure(void *req, int len);
+    bool Start();
+    bool Stop();
+    espnet_node EspnetNode() const;
+    int SocketReady(ConnectedSocket *socket);
 
   private:
-    class Preferences *m_prefs;
+    lla::Preferences *m_preferences;
+    const lla::PluginAdaptor *m_plugin_adaptor;
     espnet_node m_node;
+    ConnectedSocket *m_socket;
     bool m_enabled;
 };
+
+} //plugin
+} //lla
 
 #endif

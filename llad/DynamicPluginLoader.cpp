@@ -34,11 +34,11 @@
 #ifdef HAVE_ARTNET
 #include "plugins/artnet/ArtNetPlugin.h"
 #endif
-/*
 #ifdef HAVE_ESPNET
 #include "plugins/espnet/EspNetPlugin.h"
 #endif
 
+/*
 #ifdef HAVE_PATHPORT
 #include "plugins/pathport/PathportPlugin.h"
 #endif
@@ -50,11 +50,11 @@
 #ifdef HAVE_SHOWNET
 #include "plugins/shownet/ShowNetPlugin.h"
 #endif
+*/
 
 #ifdef HAVE_DMX4LINUX
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #endif
-*/
 
 
 namespace lla {
@@ -82,13 +82,13 @@ int DynamicPluginLoader::LoadPlugins() {
   plugin = new lla::plugin::ArtNetPlugin(m_plugin_adaptor);
   m_plugins.push_back(plugin);
 #endif
-  /*
 
 #ifdef HAVE_ESPNET
-  plug = new EspNetPlugin(m_pa, LLA_PLUGIN_ESPNET);
-  m_plugins.push_back(plug);
+  plugin = new lla::plugin::EspNetPlugin(m_plugin_adaptor);
+  m_plugins.push_back(plugin);
 #endif
 
+  /*
 #ifdef HAVE_PATHPORT
   plug = new PathportPlugin(m_pa, LLA_PLUGIN_PATHPORT);
   m_plugins.push_back(plug);
@@ -103,12 +103,12 @@ int DynamicPluginLoader::LoadPlugins() {
   plug = new ShowNetPlugin(m_pa, LLA_PLUGIN_SHOWNET);
   m_plugins.push_back(plug);
 #endif
+*/
 
 #ifdef HAVE_DMX4LINUX
-  plug = new Dmx4LinuxPlugin(m_pa, LLA_PLUGIN_DMX4LINUX);
-  m_plugins.push_back(plug);
+  plugin = new lla::plugin::Dmx4LinuxPlugin(m_plugin_adaptor);
+  m_plugins.push_back(plugin);
 #endif
-*/
 
   return 0;
 }

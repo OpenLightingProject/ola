@@ -23,50 +23,50 @@
 #include "EspNetDevice.h"
 #include "common.h"
 
-#include <llad/universe.h>
+#include <llad/Universe.h>
 #include <llad/logger.h>
 
 #include <string.h>
 
+namespace lla {
+namespace plugin {
+
 #define min(a,b) a<b?a:b
 
-EspNetPort::EspNetPort(Device *parent, int id):
+EspNetPort::EspNetPort(EspNetDevice *parent, int id):
   Port(parent, id),
-  m_buf(NULL),
-  m_len(DMX_LENGTH) {
-
+  m_len(DMX_UNIVERSE_SIZE),
+  m_device(parent) {
+    memset(m_buf, 0, DMX_UNIVERSE_SIZE);
 }
 
-EspNetPort::~EspNetPort() {
-  if(can_read())
-    free(m_buf);
-}
 
-int EspNetPort::can_read() const {
+bool EspNetPort::CanRead() const {
   // ports 0 to 4 are input
-  return ( get_id()>=0 && get_id() < PORTS_PER_DEVICE);
+  return ( PortId()>=0 && PortId() < PORTS_PER_DEVICE);
 }
 
-int EspNetPort::can_write() const {
+bool EspNetPort::CanWrite() const {
   // ports 5 to 9 are output
-  return ( get_id()>= PORTS_PER_DEVICE && get_id() <2*PORTS_PER_DEVICE);
+  return ( PortId()>= PORTS_PER_DEVICE && PortId() < 2 * PORTS_PER_DEVICE);
 }
+
 
 /*
  * Write operation
- * 
+ *
  * @param  data  pointer to the dmx data
  * @param  length  the length of the data
  *
  */
-int EspNetPort::write(uint8_t *data, unsigned int length) {
-  EspNetDevice *dev = (EspNetDevice*) get_device() ;
-
-  if (!can_write())
+int EspNetPort::WriteDMX(uint8_t *data, unsigned int length) {
+  if (!CanWrite())
     return -1;
 
-  if (espnet_send_dmx(dev->get_node(), this->get_universe()->get_uid(), length, data)) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_send_dmx failed %s", espnet_strerror() );
+  if (espnet_send_dmx(m_device->EspnetNode(), GetUniverse()->UniverseId(), length, data)) {
+    Logger::instance()->log(Logger::WARN,
+                            "EspNetPlugin: espnet_send_dmx failed %s",
+                            espnet_strerror());
     return -1;
   }
   return 0;
@@ -80,10 +80,10 @@ int EspNetPort::write(uint8_t *data, unsigned int length) {
  *
  * @return  the amount of data read
  */
-int EspNetPort::read(uint8_t *data, unsigned int length) {
+int EspNetPort::ReadDMX(uint8_t *data, unsigned int length) {
   unsigned int len;
 
-  if (!can_read())
+  if (!CanRead())
     return -1;
 
   len = min(m_len, length);
@@ -95,27 +95,19 @@ int EspNetPort::read(uint8_t *data, unsigned int length) {
  * Update the data buffer for this port
  *
  */
-int EspNetPort::update_buffer(uint8_t *data, int length) {
-  int len = min(DMX_LENGTH, length);
+int EspNetPort::UpdateBuffer(uint8_t *data, int length) {
+  int len = min(DMX_UNIVERSE_SIZE, length);
 
   // we can't update if this isn't a input port
-  if (!can_read())
+  if (!CanRead())
     return -1;
-
-  if (m_buf == NULL) {
-    m_buf = (uint8_t*) malloc(m_len);
-
-    // we should handle this better
-    if(m_buf == NULL) {
-      Logger::instance()->log(Logger::CRIT, "EspNetPlugin: malloc failed");
-     return -1;
-    } else
-      memset(m_buf, 0x00, m_len);
-  }
 
   Logger::instance()->log(Logger::DEBUG, "ESP: Updating dmx buffer for port %d", length);
   memcpy(m_buf, data, len);
 
-  dmx_changed();
+  DmxChanged();
   return 0;
 }
+
+} //plugin
+} //lla

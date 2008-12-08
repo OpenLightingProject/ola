@@ -56,7 +56,7 @@ void *thread_run(void *d) {
  */
 OpenDmxThread::OpenDmxThread() {
   m_fd = -1;
-  memset(m_dmx, 0x00, MAX_DMX);
+  memset(m_dmx, 0x00, DMX_UNIVERSE_SIZE);
   pthread_mutex_init(&m_mutex, NULL);
   m_term = false;
   pthread_mutex_init(&m_term_mutex, NULL);
@@ -81,7 +81,7 @@ OpenDmxThread::~OpenDmxThread() {
  *
  */
 void *OpenDmxThread::Run(const string &path) {
-  uint8_t buf[MAX_DMX+1];
+  uint8_t buf[DMX_UNIVERSE_SIZE+1];
   struct timeval tv;
   struct timespec ts;
 
@@ -117,10 +117,10 @@ void *OpenDmxThread::Run(const string &path) {
 
     } else {
       pthread_mutex_lock(&m_mutex);
-      memcpy(&buf[1], m_dmx, MAX_DMX + 1);
+      memcpy(&buf[1], m_dmx, DMX_UNIVERSE_SIZE + 1);
       pthread_mutex_unlock(&m_mutex);
 
-      do_write(buf, MAX_DMX + 1);
+      do_write(buf, DMX_UNIVERSE_SIZE + 1);
     }
   }
   return NULL;

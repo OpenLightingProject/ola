@@ -28,14 +28,15 @@
 #include "EspNetPort.h"
 
 #include <llad/logger.h>
-#include <llad/preferences.h>
-#include <llad/plugin.h>
-
-#include <llad/universe.h>
+#include <llad/Plugin.h>
+#include <llad/Universe.h>
 
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
+
+namespace lla {
+namespace plugin {
 
 /*
  * Handle dmx from the network, called from libespnet
@@ -48,16 +49,17 @@
  *
  */
 int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
+  EspNetDevice *device = (EspNetDevice *) d;
 
-  EspNetDevice *dev = (EspNetDevice *) d;
-  EspNetPort *prt;
-  Universe *uni;
-  for (int i =0 ; i < dev->port_count(); i++) {
-    prt = (EspNetPort*) dev->get_port(i);
-    uni = prt->get_universe();
+  vector<lla::AbstractPort*> ports;
+  vector<lla::AbstractPort*>::iterator iter;
 
-    if (prt->can_read() && uni != NULL && uni->get_uid() == uid) {
-      prt->update_buffer(data,len);
+  ports = device->Ports();
+  for (iter = ports.begin(); iter != ports.end(); ++iter) {
+    Universe *universe = (*iter)->GetUniverse();
+
+    if ((*iter)->CanRead() && universe && universe->UniverseId() == uid) {
+      ((EspNetPort*) (*iter))->UpdateBuffer(data,len);
     }
   }
 
@@ -69,13 +71,11 @@ int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
 /*
  * get notification of remote programming
  *
- *
- *
  */
 int program_handler(espnet_node n, void *d) {
   EspNetDevice *dev = (EspNetDevice *) d;
 
-  dev->save_config();
+  dev->SaveConfig();
   n = NULL;
   return 0;
 }
@@ -87,12 +87,16 @@ int program_handler(espnet_node n, void *d) {
  * should prob pass the ip to bind to
  *
  */
-EspNetDevice::EspNetDevice(Plugin *owner, const string &name, Preferences *prefs):
+EspNetDevice::EspNetDevice(Plugin *owner,
+                           const string &name,
+                           Preferences *prefs,
+                           const PluginAdaptor *plugin_adaptor):
   Device(owner, name),
-  m_prefs(prefs),
+  m_preferences(prefs),
+  m_plugin_adaptor(plugin_adaptor),
   m_node(NULL),
+  m_socket(NULL),
   m_enabled(false) {
-
 }
 
 
@@ -101,7 +105,7 @@ EspNetDevice::EspNetDevice(Plugin *owner, const string &name, Preferences *prefs
  */
 EspNetDevice::~EspNetDevice() {
   if (m_enabled)
-    stop();
+    Stop();
 }
 
 
@@ -109,31 +113,34 @@ EspNetDevice::~EspNetDevice() {
  * Start this device
  *
  */
-int EspNetDevice::start() {
+bool EspNetDevice::Start() {
   EspNetPort *port = NULL;
 
   /* set up ports */
-  for(int i=0; i < 2*PORTS_PER_DEVICE; i++) {
-    port = new EspNetPort(this,i);
+  for(int i=0; i < 2 * PORTS_PER_DEVICE; i++) {
+    port = new EspNetPort(this, i);
 
-    if(port != NULL)
-      this->add_port(port);
+    if(port)
+      this->AddPort(port);
   }
 
   // create new espnet node, and set config values
-  if(m_prefs->get_val("ip") == "")
-    m_node = espnet_new(NULL, get_owner()->debug_on());
+  bool debug = Owner()->DebugOn();
+  int sd;
+
+  if (m_preferences->GetValue("ip").empty())
+    m_node = espnet_new(NULL, debug);
   else {
-    m_node = espnet_new(m_prefs->get_val("ip").c_str(), get_owner()->debug_on());
+    m_node = espnet_new(m_preferences->GetValue("ip").c_str(), debug);
   }
 
-  if(!m_node) {
+  if (!m_node) {
     Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_new failed: %s", espnet_strerror());
-    return -1 ;
+    return false;
   }
 
   // setup node
-  if (espnet_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
+  if (espnet_set_name(m_node, m_preferences->GetValue("name").c_str()) ) {
     Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_name failed: %s", espnet_strerror());
     goto e_espnet_start;
   }
@@ -144,7 +151,7 @@ int EspNetDevice::start() {
   }
 
   // we want to be notified when the node config changes
-  if (espnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
+  if (espnet_set_dmx_handler(m_node, lla::plugin::dmx_handler, (void*) this) ) {
     Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_dmx_handler failed: %s", espnet_strerror());
     goto e_espnet_start;
   }
@@ -154,13 +161,15 @@ int EspNetDevice::start() {
     goto e_espnet_start ;
   }
 
+  sd = espnet_get_sd(m_node);
+  m_socket = new ConnectedSocket(sd, sd);
   m_enabled = true;
-  return 0;
+  return true;
 
 e_espnet_start:
   if (espnet_destroy(m_node))
     Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_destory failed: %s", espnet_strerror());
-  return -1 ;
+  return false;
 }
 
 
@@ -168,30 +177,26 @@ e_espnet_start:
  * stop this device
  *
  */
-int EspNetDevice::stop() {
-  Port *prt = NULL;
-
+bool EspNetDevice::Stop() {
   if (!m_enabled)
-    return 0;
+    return true;
 
-  for (int i=0; i < port_count() ; i++) {
-    prt = get_port(i);
-    if (prt != NULL)
-      delete prt;
-  }
+  DeleteAllPorts();
 
   if(espnet_stop(m_node)) {
     Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_stop failed: %s", espnet_strerror());
-    return -1;
+    return false;
   }
 
   if(espnet_destroy(m_node)) {
     Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_destroy failed: %s", espnet_strerror());
-    return -1;
+    return false;
   }
 
+  delete m_socket;
+  m_socket = NULL;
   m_enabled = false;
-  return 0;
+  return true;
 }
 
 
@@ -200,57 +205,24 @@ int EspNetDevice::stop() {
  *
  *
  */
-espnet_node EspNetDevice::get_node() const {
+espnet_node EspNetDevice::EspnetNode() const {
   return m_node;
 }
 
-/*
- * return the sd of this device
- *
- */
-int EspNetDevice::get_sd() const {
-  int ret = espnet_get_sd(m_node) ;
-
-  if(ret < 0) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_get_sd failed: %s", espnet_strerror());
-    return -1;
-  }
-  return ret;
-}
 
 /*
  * Called when there is activity on our descriptors
  *
  * @param  data  user data (pointer to espnet_device_priv
  */
-int EspNetDevice::action() {
-  if (espnet_read(m_node, 0) ) {
+int EspNetDevice::SocketReady(ConnectedSocket *socket) {
+  if (espnet_read(m_node, 0)) {
     Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_read failed: %s", espnet_strerror());
     return -1;
   }
+  socket = 0;
   return 0;
 }
 
-
-// call this when something changes
-// where to store data to ?
-// I'm thinking a config file in /etc/llad/llad.conf
-int EspNetDevice::save_config() const {
-
-  return 0;
-}
-
-
-
-/*
- * we can pass plugin specific messages here
- * make sure the user app knows the format though...
- *
- */
-int EspNetDevice::configure(void *req, int len) {
-  // handle short/ long name & subnet and port addresses
-  req = 0 ;
-  len = 0;
-
-  return 0;
-}
+} //plugin
+} //lla

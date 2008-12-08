@@ -22,30 +22,33 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <llad/Preferences.h>
 
 #include "EspNetPlugin.h"
 #include "EspNetDevice.h"
 
-const string EspNetPlugin::ESPNET_NODE_NAME = "lla-EspNet";
-const string EspNetPlugin::ESPNET_DEVICE_NAME = "EspNet Device";
-const string EspNetPlugin::PLUGIN_NAME = "EspNet Plugin";
-const string EspNetPlugin::PLUGIN_PREFIX = "espnet";
-
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new EspNetPlugin(pa, LLA_PLUGIN_ESPNET);
+extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+  return new lla::plugin::EspNetPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(Plugin* plug) {
-  delete plug;
+extern "C" void destroy(lla::AbstractPlugin* plugin) {
+  delete plugin;
 }
+
+
+namespace lla {
+namespace plugin {
+
+const string EspNetPlugin::ESPNET_NODE_NAME = "lla-EspNet";
+const string EspNetPlugin::ESPNET_DEVICE_NAME = "EspNet Device";
+const string EspNetPlugin::PLUGIN_NAME = "EspNet Plugin";
+const string EspNetPlugin::PLUGIN_PREFIX = "espnet";
 
 
 /*
@@ -53,23 +56,21 @@ extern "C" void destroy(Plugin* plug) {
  *
  * For now we just have one device.
  */
-int EspNetPlugin::start_hook() {
-  /* create new lla device */
-  m_dev = new EspNetDevice(this, ESPNET_DEVICE_NAME, m_prefs);
+bool EspNetPlugin::StartHook() {
+  m_device = new EspNetDevice(this,
+                              ESPNET_DEVICE_NAME,
+                              m_preferences,
+                              m_plugin_adaptor);
 
-  if(m_dev == NULL)
-    return -1;
+  if (!m_device)
+    return false;
 
-  if(m_dev->start()) {
-    delete m_dev;
-    return -1;
+  if(!m_device->Start()) {
+    delete m_device;
+    return false;
   }
-
-  // register our descriptors
-  m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev);
-  m_pa->register_device(m_dev);
-
-  return 0;
+  m_plugin_adaptor->RegisterDevice(m_device);
+  return true;
 }
 
 
@@ -78,22 +79,18 @@ int EspNetPlugin::start_hook() {
  *
  * @return 0 on sucess, -1 on failure
  */
-int EspNetPlugin::stop_hook() {
-  m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ) ;
-
-  if (m_dev->stop())
-    return -1;
-
-  m_pa->unregister_device(m_dev);
-  delete m_dev;
-  return 0;
+bool EspNetPlugin::StopHook() {
+  m_device->Stop();
+  m_plugin_adaptor->UnregisterDevice(m_device);
+  delete m_device;
+  return true;
 }
 
+
 /*
- * return the description for this plugin
- *
+ * Return the description for this plugin
  */
-string EspNetPlugin::get_desc() const {
+string EspNetPlugin::Description() const {
   return
 "EspNet Plugin\n"
 "----------------------------\n"
@@ -120,21 +117,24 @@ string EspNetPlugin::get_desc() const {
  * load the plugin prefs and default to sensible values
  *
  */
-int EspNetPlugin::set_default_prefs() {
-  if (m_prefs == NULL)
+int EspNetPlugin::SetDefaultPreferences() {
+  if (!m_preferences)
     return -1;
 
   // we don't worry about ip here
   // if it's non existant it will choose one
-  if (m_prefs->get_val("name") == "") {
-    m_prefs->set_val("name", ESPNET_NODE_NAME);
-    m_prefs->save();
+  if (m_preferences->GetValue("name").empty()) {
+    m_preferences->SetValue("name", ESPNET_NODE_NAME);
+    m_preferences->Save();
   }
 
   // check if this save correctly
   // we don't want to use it if null
-  if (m_prefs->get_val("name") == "")
+  if (m_preferences->GetValue("name").empty())
     return -1;
 
   return 0;
 }
+
+} //plugin
+} //lla

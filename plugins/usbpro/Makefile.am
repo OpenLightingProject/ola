@@ -19,4 +19,4 @@ ConfigMessages.pb.cc ConfigMessages.pb.h: ConfigMessages.proto
 	protoc --cpp_out ./ ConfigMessages.proto
 
 clean-local:
-	rm *.pb.{h,cc}
+	rm -f *.pb.{h,cc}

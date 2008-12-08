@@ -22,6 +22,7 @@
 #define DUMMYPORT_H
 
 #include <llad/Port.h>
+#include <lla/BaseTypes.h>
 
 namespace lla {
 namespace plugin {
@@ -35,7 +36,7 @@ class DummyPort: public Port {
     int ReadDMX(uint8_t *data, unsigned int length);
 
   private:
-    uint8_t m_dmx[512]; // pointer to our dmx buffer
+    uint8_t m_dmx[DMX_UNIVERSE_SIZE]; // pointer to our dmx buffer
     unsigned int m_length;       // length of dmx buffer
 };
 

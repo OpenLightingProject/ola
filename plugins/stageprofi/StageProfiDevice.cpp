@@ -27,7 +27,7 @@
 
 #include <llad/logger.h>
 #include <llad/Preferences.h>
-#include <llad/universe.h>
+#include <llad/Universe.h>
 
 #include "StageProfiDevice.h"
 #include "StageProfiPort.h"
