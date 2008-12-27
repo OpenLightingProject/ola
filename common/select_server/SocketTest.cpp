@@ -170,8 +170,8 @@ void SocketTest::tearDown() {
  */
 void SocketTest::testLoopbackSocket() {
   LoopbackSocket socket;
-  CPPUNIT_ASSERT(!socket.Init());
   CPPUNIT_ASSERT(socket.Init());
+  CPPUNIT_ASSERT(!socket.Init());
   socket.SetListener(this);
   CPPUNIT_ASSERT(!m_ss->AddSocket(&socket));
 
@@ -189,8 +189,8 @@ void SocketTest::testLoopbackSocket() {
  */
 void SocketTest::testPipeSocketClientClose() {
   PipeSocket socket;
-  CPPUNIT_ASSERT(!socket.Init());
   CPPUNIT_ASSERT(socket.Init());
+  CPPUNIT_ASSERT(!socket.Init());
   socket.SetListener(this);
 
   PipeSocket *other_end = socket.OppositeEnd();
@@ -215,8 +215,8 @@ void SocketTest::testPipeSocketClientClose() {
  */
 void SocketTest::testPipeSocketServerClose() {
   PipeSocket socket;
-  CPPUNIT_ASSERT(!socket.Init());
   CPPUNIT_ASSERT(socket.Init());
+  CPPUNIT_ASSERT(!socket.Init());
   socket.SetListener(this);
 
   PipeSocket *other_end = socket.OppositeEnd();
@@ -245,15 +245,15 @@ void SocketTest::testTcpSocketClientClose() {
   string ip_address = "127.0.0.1";
   unsigned short server_port = 9010;
   TcpListeningSocket socket(ip_address, server_port);
-  CPPUNIT_ASSERT(!socket.Listen());
   CPPUNIT_ASSERT(socket.Listen());
+  CPPUNIT_ASSERT(!socket.Listen());
 
   EchoSocketManager manager(m_ss);
   EchoAcceptSocketListener accept_listener(m_ss, &manager);
   socket.SetListener(&accept_listener);
 
   TcpSocket client_socket;
-  CPPUNIT_ASSERT(!client_socket.Connect(ip_address, server_port));
+  CPPUNIT_ASSERT(client_socket.Connect(ip_address, server_port));
   client_socket.SetListener(this);
 
   CPPUNIT_ASSERT(!m_ss->AddSocket(&socket));
@@ -271,15 +271,15 @@ void SocketTest::testTcpSocketServerClose() {
   string ip_address = "127.0.0.1";
   unsigned short server_port = 9010;
   TcpListeningSocket socket(ip_address, server_port);
-  CPPUNIT_ASSERT(!socket.Listen());
   CPPUNIT_ASSERT(socket.Listen());
+  CPPUNIT_ASSERT(!socket.Listen());
 
   EchoSocketManager manager(m_ss, false);
   EchoAcceptSocketListener accept_listener(m_ss, &manager, true);
   socket.SetListener(&accept_listener);
 
   TcpSocket client_socket;
-  CPPUNIT_ASSERT(!client_socket.Connect(ip_address, server_port));
+  CPPUNIT_ASSERT(client_socket.Connect(ip_address, server_port));
   client_socket.SetListener(this);
 
   CPPUNIT_ASSERT(!m_ss->AddSocket(&socket));

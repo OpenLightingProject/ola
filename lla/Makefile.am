@@ -1,7 +1,7 @@
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 
-HEADER_FILES = LlaClient.h LlaDevice.h common.h
+HEADER_FILES = LlaClient.h LlaDevice.h SimpleClient.h common.h
 
 if HAVE_PTHREAD
 THREAD_LIBS = -lpthread
@@ -9,20 +9,18 @@ endif
 
 lib_LTLIBRARIES = liblla.la
 liblla_la_SOURCES = LlaClient.cpp LlaDevice.cpp \
-                    LlaClientServiceImpl.cpp
+                    LlaClientServiceImpl.cpp LlaClientCore.cpp \
+                    SimpleClient.cpp
 liblla_la_LDFLAGS = -version-info 1:1:0 $(THREAD_LIBS)
+liblla_la_LIBADD = $(top_builddir)/common/libllacommon.la
 liblla_la_CXXFLAGS = -Wall -Wformat
 
 pkgincludedir = $(includedir)/lla
 pkginclude_HEADERS = $(HEADER_FILES)
 
-EXTRA_DIST = $(HEADER_FILES) LlaClientServiceImpl.h common-h.in
+EXTRA_DIST = $(HEADER_FILES) LlaClientServiceImpl.h LlaClientCore.h \
+             common-h.in
 
-#noinst_PROGRAMS = test
-#test_SOURCES = Test.cpp LlaServiceImpl.cpp
-#test_LDADD = @LIBS@  ../common/libllacommon.la
-#test_LDFLAGS = -lprotobuf
-#test_CXXFLAGS = -Wall -Werror  -Wformat -W
 
 ## @end 1
 ## @start 2

@@ -97,14 +97,14 @@ class ConnectedSocket: public Socket {
                         unsigned int &data_read);
     virtual int SocketReady();
     virtual void SetListener(SocketListener *listener) { m_listener = listener; }
-    virtual int SetReadNonBlocking() { return SetNonBlocking(m_read_fd); }
+    virtual bool SetReadNonBlocking() { return SetNonBlocking(m_read_fd); }
     virtual bool Close();
     virtual bool IsClosed() const;
     virtual int UnreadData() const;
 
   protected:
     int m_read_fd, m_write_fd;
-    int SetNonBlocking(int sd);
+    bool SetNonBlocking(int sd);
   private:
     SocketListener *m_listener;
 };
@@ -117,7 +117,7 @@ class ConnectedSocket: public Socket {
 class LoopbackSocket: public ConnectedSocket {
   public:
     LoopbackSocket(): ConnectedSocket() {}
-    int Init();
+    bool Init();
 };
 
 
@@ -127,7 +127,7 @@ class LoopbackSocket: public ConnectedSocket {
 class PipeSocket: public ConnectedSocket {
   public:
     PipeSocket(): ConnectedSocket() {}
-    int Init();
+    bool Init();
     PipeSocket *OppositeEnd();
   private:
     int m_in_pair[2];
@@ -143,7 +143,7 @@ class TcpSocket: public ConnectedSocket {
   public:
     TcpSocket(): ConnectedSocket() {}
     TcpSocket(int sd): ConnectedSocket(sd, sd) {}
-    int Connect(std::string ip_address, unsigned short port);
+    bool Connect(std::string ip_address, unsigned short port);
 };
 
 
@@ -153,7 +153,7 @@ class TcpSocket: public ConnectedSocket {
 class ListeningSocket: public Socket {
   public:
     ListeningSocket(): m_listener(NULL) {}
-    virtual int Listen() { return 0; }
+    virtual bool Listen() { return 0; }
     virtual bool Close() = 0;
     virtual int SocketReady() = 0;
     virtual void SetListener(AcceptSocketListener *listener) { m_listener = listener; }
@@ -169,7 +169,7 @@ class TcpListeningSocket: public ListeningSocket {
   public:
     TcpListeningSocket(std::string address, unsigned short port, int backlog=10);
     ~TcpListeningSocket() { Close(); }
-    int Listen();
+    bool Listen();
     int SocketReady();
     int ReadDescriptor() const { return m_sd; }
     bool Close();

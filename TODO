@@ -2,8 +2,6 @@
 
 --NEXT VER--
 embed http server
-dylib issue on mac (document mac port)
-
 
 --URGENT--
 resend DMX on idle (artnet every 4s)

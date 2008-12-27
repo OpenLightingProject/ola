@@ -84,7 +84,7 @@ bool StageProfiDevice::Start() {
   if (m_enabled || !m_widget)
     return false;
 
-  if (m_widget->Connect(m_path)) {
+  if (!m_widget->Connect(m_path)) {
     Logger::instance()->log(Logger::WARN, "StageProfiPlugin: failed to connect to %s", m_path.c_str());
     return false;
   }

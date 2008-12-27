@@ -32,7 +32,7 @@ class StageProfiWidgetLan: public StageProfiWidget {
     StageProfiWidgetLan() : StageProfiWidget() {}
     ~StageProfiWidgetLan() {}
 
-    int Connect(const std::string &ip);
+    bool Connect(const std::string &ip);
 };
 
 } // plugin

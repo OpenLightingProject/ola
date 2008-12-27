@@ -41,8 +41,10 @@ static const unsigned int STAGEPROFI_PORT = 10001;
 
 /*
  * Connect to the widget
+ *
+ * @returns true on success, false on failure
  */
-int StageProfiWidgetLan::Connect(const string &ip) {
+bool StageProfiWidgetLan::Connect(const string &ip) {
   TcpSocket *socket = new TcpSocket();
   int ret = socket->Connect(ip, STAGEPROFI_PORT);
   m_socket = socket;

@@ -44,20 +44,20 @@ using std::string;
 /*
  * Connect to the widget
  */
-int StageProfiWidgetUsb::Connect(const string &path) {
+bool StageProfiWidgetUsb::Connect(const string &path) {
   struct termios newtio;
 
   int fd = open(path.c_str(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
   if (fd == -1)
-    return -1;
+    return false;
 
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
   tcgetattr(fd, &newtio);
   cfsetospeed(&newtio, B38400);
   tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ConnectedSocket(fd, fd);
-  return 0;
+  return true;
 }
 
 } // plugin

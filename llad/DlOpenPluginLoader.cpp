@@ -112,19 +112,6 @@ int DlOpenPluginLoader::PluginCount() const {
 }
 
 
-/*
- * Return the plugin with the specified id
- *
- * @param id   the id of the plugin to fetch
- * @return  the plugin with the specified id
- */
-AbstractPlugin *DlOpenPluginLoader::GetPlugin(unsigned int id) const {
-  if (id > m_plugins.size() )
-    return NULL;
-  return m_plugins[id];
-}
-
-
 // Private Functions
 //-----------------------------------------------------------------------------
 

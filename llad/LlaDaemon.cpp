@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <lla/BaseTypes.h>
 #include <llad/logger.h>
 #include "LlaDaemon.h"
 #include "LlaServer.h"
@@ -76,7 +77,7 @@ bool LlaDaemon::Init() {
   m_plugin_loader = new DlOpenPluginLoader(PLUGIN_DIR);
 
   m_preferences_factory = new FileBackedPreferencesFactory();
-  m_listening_socket = new TcpListeningSocket("127.0.0.1", 9010);
+  m_listening_socket = new TcpListeningSocket("127.0.0.1", LLA_DEFAULT_PORT);
 
   m_server = new LlaServer(m_service_factory,
                            m_plugin_loader,
@@ -90,8 +91,8 @@ bool LlaDaemon::Init() {
 /*
  * Run the daemon
  */
-int LlaDaemon::Run() {
-  return m_ss->Run();
+void LlaDaemon::Run() {
+  m_ss->Run();
 }
 
 

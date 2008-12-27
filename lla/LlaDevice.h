@@ -42,6 +42,10 @@ class LlaPlugin {
     void SetDescription(const string &description) {
       m_description = description;
     }
+
+    bool operator<(const LlaPlugin &other) const {
+      return m_id < other.m_id;
+    }
   private:
     int m_id;    // id of this plugin
     string m_name;  // plugin name
@@ -89,6 +93,10 @@ class LlaDevice {
     int AddPort(const LlaPort &port);
     int ClearPorts();
     const vector<LlaPort> Ports() const { return m_ports; }
+
+    bool operator<(const LlaDevice &other) const {
+      return m_id < other.m_id;
+    }
 
   private:
     int m_id;            // device id

@@ -81,13 +81,14 @@ int ConnectedSocket::SocketReady() {
 /*
  * Turn on non-blocking reads.
  */
-int ConnectedSocket::SetNonBlocking(int fd) {
+bool ConnectedSocket::SetNonBlocking(int fd) {
   int val = fcntl(fd, F_GETFL, 0);
   int ret = fcntl(fd, F_SETFL, val | O_NONBLOCK);
   if (ret) {
     printf("failed to set non-blocking\n");
-    return -1;
+    return false;
   }
+  return true;
 }
 
 
@@ -130,45 +131,45 @@ int ConnectedSocket::UnreadData() const {
 
 // LoopbackSocket
 // ------------------------------------------------
-int LoopbackSocket::Init() {
+bool LoopbackSocket::Init() {
   if (m_read_fd >= 0 || m_write_fd >= 0)
-    return -1;
+    return false;
 
   int fd_pair[2];
   if (pipe(fd_pair) < 0) {
     printf("pipe failed\n");
-    return -1;
+    return false;
   }
   m_read_fd = fd_pair[0];
   m_write_fd = fd_pair[1];
 
   SetReadNonBlocking();
-  return 0;
+  return true;
 }
 
 
 // PipeSocket
 // ------------------------------------------------
-int PipeSocket::Init() {
+bool PipeSocket::Init() {
   if (m_read_fd >= 0 || m_write_fd >= 0)
-    return -1;
+    return false;
 
   if (pipe(m_in_pair) < 0) {
     printf("pipe failed\n");
-    return -1;
+    return false;
   }
 
   if (pipe(m_out_pair) < 0) {
     printf("pipe failed\n");
     close(m_in_pair[0]);
     close(m_in_pair[1]);
-    return -1;
+    return false;
   }
 
   m_read_fd = m_in_pair[0];
   m_write_fd = m_out_pair[1];
   SetReadNonBlocking();
-  return 0;
+  return true;
 }
 
 
@@ -188,17 +189,17 @@ PipeSocket *PipeSocket::OppositeEnd() {
  * @param ip_address the IP to connect to
  * @param port the port to connect to
  */
-int TcpSocket::Connect(std::string ip_address, unsigned short port) {
+bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
   struct sockaddr_in server_address;
   socklen_t length;
 
   if (m_read_fd > 0 || m_write_fd > 0)
-    return -1;
+    return false;
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
     printf("socket call failed: %s\n", strerror(errno));
-    goto e_socket;
+    return false;
   }
 
   // setup
@@ -210,15 +211,12 @@ int TcpSocket::Connect(std::string ip_address, unsigned short port) {
   length = sizeof(server_address);
   if(connect(sd, (struct sockaddr*) &server_address, length)) {
     printf("connect failed: %s\n", strerror(errno));
-    return -1;
+    return false;
   }
   m_read_fd = sd;
   m_write_fd = sd;
   SetReadNonBlocking();
-  return 0;
-
-e_socket:
-  return -1;
+  return true;
 }
 
 
@@ -237,22 +235,23 @@ TcpListeningSocket::TcpListeningSocket(std::string address, unsigned short port,
 /*
  * Start listening
  */
-int TcpListeningSocket::Listen() {
+bool TcpListeningSocket::Listen() {
   struct sockaddr_in server_address;
   int reuse_flag = 1;
 
   if (m_sd > 0)
-    return -1;
+    return false;
 
   m_sd = socket(AF_INET, SOCK_STREAM, 0);
   if (m_sd < 0) {
     printf("socket call failed: %s\n", strerror(errno));
-    goto e_socket;
+    return false;
   }
 
   if (setsockopt(m_sd, SOL_SOCKET, SO_REUSEADDR, &reuse_flag, sizeof(reuse_flag))) {
     printf("can't set reuse\n");
-    goto e_bind;
+    close(m_sd);
+    return false;
   }
 
   // setup
@@ -263,20 +262,15 @@ int TcpListeningSocket::Listen() {
 
   if (bind(m_sd, (struct sockaddr *) &server_address, sizeof(server_address)) == -1) {
     printf("bind failed: %s\n", strerror(errno));
-    goto e_bind;
+    close(m_sd);
+    return false;
   }
 
   if (listen(m_sd, m_backlog)) {
     printf("listen failed: %s\n", strerror(errno));
-    return -1;
+    return false;
   }
-
-  return 0;
-
-e_bind:
-  close(m_sd);
-e_socket:
-  return -1;
+  return true;
 }
 
 

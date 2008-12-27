@@ -47,7 +47,7 @@ class StageProfiWidget: public SocketListener,
     virtual ~StageProfiWidget();
 
     // these methods are for communicating with the device
-    virtual int Connect(const string &path) = 0;
+    virtual bool Connect(const string &path) = 0;
     int Disconnect();
     Socket *GetSocket() { return m_socket; }
     int SendDmx(uint8_t *buf, unsigned int len) const;

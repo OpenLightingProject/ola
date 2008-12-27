@@ -125,6 +125,8 @@ bool LlaServer::Init() {
     m_ss->AddSocket(m_listening_socket);
   }
 
+  signal(SIGPIPE, SIG_IGN);
+
   m_universe_preferences = m_preferences_factory->NewPreference(UNIVERSE_PREFERENCES);
   m_universe_preferences->Load();
   m_universe_store = new UniverseStore(m_universe_preferences);
@@ -208,7 +210,6 @@ void LlaServer::SocketClosed(lla::select_server::Socket *socket) {
 
   CleanupConnection(iter->second);
   m_sd_to_service.erase(iter);
-  m_ss->Terminate();
 }
 
 

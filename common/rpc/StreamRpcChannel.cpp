@@ -178,13 +178,12 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
 
   if (-1 == ret) {
     printf("%s\n", strerror(errno));
-    //Logger::instance()->log(Logger::CRIT, "Sendto failed: %s", strerror(errno) );
+    //Logger::instance()->log(Logger::CRIT, "Send failed: %s", strerror(errno) );
     return -1;
   } else if (length != ret) {
     //Logger::instance()->log(Logger::CRIT, "Failed to send full datagram");
     return -1;
   }
-
   return 0;
 }
 

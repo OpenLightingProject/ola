@@ -39,7 +39,6 @@ class PluginLoader {
     virtual int LoadPlugins() = 0;
     virtual int UnloadPlugins() = 0;
     virtual int PluginCount() const = 0;
-    virtual AbstractPlugin *GetPlugin(unsigned int plugin_id) const = 0;
     virtual vector<AbstractPlugin*> Plugins() const = 0;
 
   protected:

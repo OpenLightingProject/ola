@@ -51,13 +51,13 @@ class SimpleObserver: public lla::LlaClientObserver {
   public:
     SimpleObserver() {}
     ~SimpleObserver() {}
-    int Plugins(const vector <LlaPlugin> &plugins, const string &error);
-    int Devices(const vector <LlaDevice> devices, const string &error);
-    int Universes(const vector <LlaUniverse> universes, const string &error); 
+    void Plugins(const vector <LlaPlugin> &plugins, const string &error);
+    void Devices(const vector <LlaDevice> devices, const string &error);
+    void Universes(const vector <LlaUniverse> universes, const string &error); 
 };
 
 
-int SimpleObserver::Plugins(const vector <LlaPlugin> &plugins,
+void SimpleObserver::Plugins(const vector <LlaPlugin> &plugins,
                             const string &error) {
   printf("--Plugin--\n");
   vector<LlaPlugin>::const_iterator iter;
@@ -68,7 +68,7 @@ int SimpleObserver::Plugins(const vector <LlaPlugin> &plugins,
 }
 
 
-int SimpleObserver::Devices(const vector<LlaDevice> devices,
+void SimpleObserver::Devices(const vector<LlaDevice> devices,
                             const string &error) {
   printf("--Device--\n");
   vector<LlaDevice>::const_iterator iter;
@@ -83,7 +83,7 @@ int SimpleObserver::Devices(const vector<LlaDevice> devices,
   client->FetchUniverseInfo();
 }
 
-int SimpleObserver::Universes(const vector<LlaUniverse> universes,
+void SimpleObserver::Universes(const vector<LlaUniverse> universes,
                               const string &error) {
   printf("--Universe--\n");
   vector<LlaUniverse>::const_iterator iter;

@@ -8,5 +8,5 @@ Name: liblla
 Version: @VERSION@
 Description: Linux Lighting Architecture
 Requires:
-Libs: -L${libdir} -llla
+Libs: -L${libdir} -llla -lllacommon -lprotobuf
 Cflags: -I${includedir}/liblla

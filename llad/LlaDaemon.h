@@ -35,7 +35,7 @@ class LlaDaemon {
     LlaDaemon();
     ~LlaDaemon();
     bool Init();
-    int Run();
+    void Run();
     void Terminate();
     void ReloadPlugins();
 

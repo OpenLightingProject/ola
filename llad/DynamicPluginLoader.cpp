@@ -141,19 +141,6 @@ int DynamicPluginLoader::PluginCount() const {
 
 
 /*
- * Return the plugin with the specified id
- *
- * @param id   the id of the plugin to fetch
- * @return  the plugin with the specified id
- */
-AbstractPlugin *DynamicPluginLoader::GetPlugin(unsigned int plugin_id) const {
-  if (plugin_id > m_plugins.size())
-    return NULL;
-  return m_plugins[plugin_id];
-}
-
-
-/*
  * Returns a list of plugins
  */
 vector<class AbstractPlugin*> DynamicPluginLoader::Plugins() const {

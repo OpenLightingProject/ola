@@ -186,11 +186,10 @@ void LlaServerServiceImpl::GetUniverseInfo(
     Closure* done) {
 
   UniverseInfo *universe_info;
-  Universe *universe;
 
   if (request->has_universe()) {
     // return info for a single universe
-    universe = m_universe_store->GetUniverse(request->universe());
+    Universe *universe = m_universe_store->GetUniverse(request->universe());
     if (!universe)
       return MissingUniverseError(controller, done);
 
@@ -208,6 +207,8 @@ void LlaServerServiceImpl::GetUniverseInfo(
       universe_info = response->add_universe();
       universe_info->set_universe((*iter)->UniverseId());
       universe_info->set_name((*iter)->Name());
+      universe_info->set_merge_mode((*iter)->MergeMode() == Universe::MERGE_HTP?
+        HTP: LTP);
     }
     delete uni_list;
   }
@@ -222,24 +223,17 @@ void LlaServerServiceImpl::GetPluginInfo(RpcController* controller,
                                          const PluginInfoRequest* request,
                                          PluginInfoReply* response,
                                          Closure* done) {
-
   AbstractPlugin *plugin;
 
-  if (request->has_plugin_id()) {
-    // return info for a single universe
-    plugin = m_plugin_loader->GetPlugin(request->plugin_id());
-    if (!plugin)
-      return MissingPluginError(controller, done);
+  vector<AbstractPlugin*> plugin_list = m_plugin_loader->Plugins();
+  vector<AbstractPlugin*>::const_iterator iter;
 
-    AddPlugin(plugin, response, request->include_description());
-  } else {
-    vector<AbstractPlugin *> plugin_list = m_plugin_loader->Plugins();
-    vector<AbstractPlugin *>::const_iterator iter;
-
-    for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter) {
+  for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter) {
+    if (! (request->has_plugin_id() && (*iter)->Id() != request->plugin_id()))
       AddPlugin(*iter, response, request->include_description());
-    }
   }
+  if (!response->plugin_size() && request->has_plugin_id())
+    controller->SetFailed("Plugin not loaded");
   done->Run();
 }
 
