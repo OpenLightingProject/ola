@@ -87,6 +87,7 @@ class Observer: public lla::LlaClientObserver {
     void PatchComplete(const string &error);
     void UniverseNameComplete(const string &error);
     void UniverseMergeModeComplete(const string &error);
+    void SendDmxComplete(const string &error);
 
   private:
     options *m_opts;
@@ -210,6 +211,13 @@ void Observer::UniverseMergeModeComplete(const string &error) {
 }
 
 
+void Observer::SendDmxComplete(const string &error) {
+  if (!error.empty())
+    cout << error << endl;
+  m_ss->Terminate();
+}
+
+
 /*
  * Init options
  */
@@ -293,7 +301,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'd':
         opts->dmx = optarg;
-            break;
+        break;
       case '?':
         break;
       default:
@@ -465,7 +473,7 @@ void display_set_dmx_help(options *opts) {
   "\n"
   "  -h, --help                Display this help message and exit.\n"
   "  -u, --universe <universe> Universe number.\n"
-  "  -x, --dmx <values>        Comma separated DMX values.\n"
+  "  -d, --dmx <values>        Comma separated DMX values.\n"
   << endl;
 }
 
@@ -591,7 +599,7 @@ int SendDmx(LlaClient *client, options *opts) {
   }
 
   if(i > 0)
-    if (client->SendDmx(opts->uni, buf, i)) {
+    if (!client->SendDmx(opts->uni, buf, i)) {
       cout << "Send DMX failed" << endl;
       return 1;
     }

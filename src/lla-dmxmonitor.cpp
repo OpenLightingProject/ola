@@ -14,11 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-*/
-
-/*
- * Modified by Simon Newton (nomis52<AT>westnet.com.au)
- * to use lla
+ *
+ * Modified by Simon Newton (nomis52<AT>gmail.com) to use lla
  *
  */
 
@@ -45,8 +42,29 @@
 #include <unistd.h>
 #include <sys/timeb.h>
 
+#include <string>
+
 #include <lla/LlaClient.h>
-#include <lla/LlaClientObserver.h>
+#include <lla/SimpleClient.h>
+#include <lla/select_server/SelectServer.h>
+
+using lla::SimpleClient;
+using lla::LlaClient;
+using lla::select_server::SelectServer;
+using lla::LlaClientObserver;
+
+using std::string;
+
+class StdinFileDescriptor: public lla::select_server::Socket {
+  public:
+    StdinFileDescriptor() {}
+    ~StdinFileDescriptor() {}
+    int ReadDescriptor() const { return 0; }
+    int SocketReady();
+    bool IsClosed() const { return false; }
+    bool Close() { return true; }
+};
+
 
 /* color names used */
 enum {
@@ -78,8 +96,8 @@ typedef unsigned char dmx_t ;
 static dmx_t *dmx;
 
 static int display_mode = DISP_MODE_DMX;
-static int current_channel = 0;	/* channel cursor is positioned on */
-static int first_channel = 0;	/* channel in upper left corner */
+static int current_channel = 0;    /* channel cursor is positioned on */
+static int first_channel = 0;    /* channel in upper left corner */
 static int channels_per_line=80/4;
 static int channels_per_screen=80/4*24/2;
 static int palette_number=0;
@@ -89,32 +107,33 @@ static int channels_offset=1;
 
 WINDOW  *w=NULL;
 
-static LlaClient *con;
+LlaClient *client;
+SelectServer *ss;
 
 
 /*
  * The observer class which repsonds to events
  */
-class Observer : public LlaClientObserver {
+class Observer: public LlaClientObserver {
+  public:
+    Observer(void (*fh)()): m_fh(fh) {};
 
-	public:
-		Observer( void (*fh)()) : m_fh(fh) {};
+    void NewDmx(unsigned int universe, unsigned int length,
+                uint8_t *data, const string &error);
 
-		int new_dmx(unsigned int uni, unsigned int length, uint8_t *data);
-
-	private:
-		void (*m_fh)();
+  private:
+    void (*m_fh)();
 };
 
 
-int Observer::new_dmx(unsigned int uni, unsigned int length, uint8_t *data) {
-	unsigned int len = length > (unsigned int) MAXCHANNELS ?  (unsigned int) MAXCHANNELS : length ;
-	memcpy(dmx, data,len) ;
+void Observer::NewDmx(unsigned int universe, unsigned int length,
+                      uint8_t *data, const string &error) {
+  unsigned int len = length > (unsigned int) MAXCHANNELS ?
+                     (unsigned int) MAXCHANNELS : length;
+  memcpy(dmx, data,len);
 
- 	if(m_fh != NULL) 
-		m_fh();
-
-	return 0;
+  if(m_fh != NULL)
+    m_fh();
 }
 
 
@@ -136,15 +155,15 @@ void mask() {
   for(y=1; y<LINES && z<MAXCHANNELS && i<channels_per_screen; y+=2) {
       move(y,0);
       for(x=0; x<channels_per_line && z<MAXCHANNELS && i<channels_per_screen; x++, i++, z++)
-	switch(display_mode) {
-	  case DISP_MODE_DMX:
-	  case DISP_MODE_DEC:
-	  default:
-	    printw("%03d ",z+channels_offset); break;
+    switch(display_mode) {
+      case DISP_MODE_DMX:
+      case DISP_MODE_DEC:
+      default:
+        printw("%03d ",z+channels_offset); break;
 
-	  case DISP_MODE_HEX: 
-	    printw("%03X ",z+channels_offset); break;
-	  }
+      case DISP_MODE_HEX:
+        printw("%03X ",z+channels_offset); break;
+      }
     }
 
 }
@@ -177,42 +196,42 @@ void values() {
     {
       move(y,0);
       for(x=0; x<channels_per_line && z<MAXCHANNELS && i<channels_per_screen; x++, z++, i++)
-	{
-	  const int d=dmx[z];
-	  switch(d)
-	    {
-	    case 0: attrset(palette[ZERO]); break;
-	    case 255: attrset(palette[FULL]); break;
-	    default: attrset(palette[NORM]);
-	    }
-	  if(z==current_channel)
-	    attron(A_REVERSE);
-	  switch(display_mode)
-	    {
-	    case DISP_MODE_HEX: 
-	      if(d==0)
-		addstr("    ");
-	      else
-		printw(" %02x ", d);
-	      break;
-	    case DISP_MODE_DEC:
-	      if(d==0)
-		addstr("    ");
-	      else if(d<100)
-		printw(" %02d ", d);
-	      else
-		printw("%03d ", d);
-	      break;
-	    case DISP_MODE_DMX:
-	    default:
-	      switch(d)
-		{
-		case 0: addstr("    "); break;
-		case 255: addstr(" FL "); break;
-		default: printw(" %02d ", (d*100)/255);
-		}
-	    }
-	}
+    {
+      const int d=dmx[z];
+      switch(d)
+        {
+        case 0: attrset(palette[ZERO]); break;
+        case 255: attrset(palette[FULL]); break;
+        default: attrset(palette[NORM]);
+        }
+      if(z==current_channel)
+        attron(A_REVERSE);
+      switch(display_mode)
+        {
+        case DISP_MODE_HEX:
+          if(d==0)
+        addstr("    ");
+          else
+        printw(" %02x ", d);
+          break;
+        case DISP_MODE_DEC:
+          if(d==0)
+        addstr("    ");
+          else if(d<100)
+        printw(" %02d ", d);
+          else
+        printw("%03d ", d);
+          break;
+        case DISP_MODE_DMX:
+        default:
+          switch(d)
+        {
+        case 0: addstr("    "); break;
+        case 255: addstr(" FL "); break;
+        default: printw(" %02d ", (d*100)/255);
+        }
+        }
+    }
     }
 }
 
@@ -220,27 +239,27 @@ void values() {
 /* change palette to "p". If p is invalid new palette is number "0". */
 void changepalette(int p)
 {
-  /* COLOR_BLACK 
-     COLOR_RED 
-     COLOR_GREEN 
-     COLOR_YELLOW 
-     COLOR_BLUE 
-     COLOR_MAGENTA 
-     COLOR_CYAN 
+  /* COLOR_BLACK
+     COLOR_RED
+     COLOR_GREEN
+     COLOR_YELLOW
+     COLOR_BLUE
+     COLOR_MAGENTA
+     COLOR_CYAN
      COLOR_WHITE
 
-     A_NORMAL    
+     A_NORMAL
      A_ATTRIBUTES
-     A_CHARTEXT  
-     A_COLOR	    
-     A_STANDOUT  
-     A_UNDERLINE 
-     A_REVERSE   
-     A_BLINK	    
-     A_DIM	    
-     A_BOLD	    
+     A_CHARTEXT
+     A_COLOR
+     A_STANDOUT
+     A_UNDERLINE
+     A_REVERSE
+     A_BLINK
+     A_DIM
+     A_BOLD
      A_ALTCHARSET
-     A_INVIS	    
+     A_INVIS
   */
   switch(p)
     {
@@ -312,7 +331,7 @@ void calcscreengeometry() {
       errorstr="screen to small, we need at least 3 lines";
       exit(1);
   }
-  c--;				/* one line for headline */
+  c--;                /* one line for headline */
   if(c%2==1)
     c--;
   channels_per_line=COLS/4;
@@ -322,13 +341,13 @@ void calcscreengeometry() {
 
 /* signal handler for SIGWINCH */
 void terminalresize(int sig) {
-	struct winsize size;
-	if(ioctl(0, TIOCGWINSZ, &size) < 0)
-		return;
+    struct winsize size;
+    if(ioctl(0, TIOCGWINSZ, &size) < 0)
+        return;
 
-	resizeterm(size.ws_row, size.ws_col);
-	calcscreengeometry();
-	mask();
+    resizeterm(size.ws_row, size.ws_col);
+    calcscreengeometry();
+    mask();
 }
 
 
@@ -336,199 +355,171 @@ void terminalresize(int sig) {
 
 /* cleanup handler for program exit. */
 void cleanup() {
-	if(w) {
-		resetty();
-		endwin();
-	}
-
-	con->stop() ;
+    if(w) {
+        resetty();
+        endwin();
+    }
 }
 
 
 void dmx_handler() {
-	values();
-	refresh();
+    values();
+    refresh();
+}
+
+int StdinFileDescriptor::SocketReady() {
+  int n;
+  int c = wgetch(w);
+
+  switch (c) {
+    case KEY_HOME:
+      current_channel=0;
+      first_channel=0;
+      mask();
+      break;
+    case KEY_RIGHT:
+      if(current_channel < MAXCHANNELS-1) {
+        current_channel++;
+        if(current_channel >= first_channel+channels_per_screen) {
+            first_channel+=channels_per_line;
+            mask();
+        }
+      }
+      break;
+    case KEY_LEFT:
+      if(current_channel > 0) {
+        current_channel--;
+        if(current_channel < first_channel) {
+          first_channel-=channels_per_line;
+          if(first_channel<0)
+            first_channel=0;
+          mask();
+        }
+      }
+      break;
+
+    case KEY_DOWN:
+      current_channel+=channels_per_line;
+      if(current_channel>=MAXCHANNELS)
+        current_channel=MAXCHANNELS-1;
+      if(current_channel >= first_channel+channels_per_screen) {
+        first_channel+=channels_per_line;
+        mask();
+      }
+      break;
+
+    case KEY_UP:
+      current_channel-=channels_per_line;
+      if(current_channel<0)
+        current_channel=0;
+      if(current_channel < first_channel) {
+        first_channel-=channels_per_line;
+        if(first_channel<0)
+          first_channel=0;
+        mask();
+      }
+      break;
+
+    case KEY_IC:
+      for(n=MAXCHANNELS-1; n>current_channel && n>0; n--)
+        dmx[n]=dmx[n-1];
+      break;
+
+    case KEY_DC:
+      for(n=current_channel; n<MAXCHANNELS-1; n++)
+        dmx[n]=dmx[n+1];
+      break;
+
+
+    case 'M':
+            case 'm':
+      if(++display_mode>=DISP_MODE_MAX)
+        display_mode=0;
+      mask();
+      break;
+
+    case 'N':
+    case 'n':
+      if(++channels_offset>1)
+        channels_offset=0;
+      mask();
+      break;
+
+    case 'P':
+    case 'p':
+      changepalette(++palette_number);
+      break;
+    case 'Q':
+    case 'q':
+      ss->Terminate();
+      break;
+    default:
+        break;
+  }
+  return 0;
 }
 
 
 int main (int argc, char *argv[]) {
-	int c=0;
-	int optc ;
-	int lla_sd ;
-	Observer *ob = new Observer(dmx_handler);
+  int optc ;
+  Observer observer(dmx_handler);
 
-	atexit(cleanup);
+  atexit(cleanup);
+  dmx = (uint8_t *) malloc(MAXCHANNELS) ;
 
-	dmx = (uint8_t *) malloc(MAXCHANNELS) ;
+  if (!dmx) {
+    printf("malloc failed\n") ;
+    return 1 ;
+  }
 
-	if(!dmx) {
-		printf("malloc failed\n") ;
-		return 1 ;
-	}
-	
-	memset(dmx, 0x00, MAXCHANNELS) ;
+  memset(dmx, 0x00, MAXCHANNELS) ;
 
-	// parse options 
-	while ((optc = getopt (argc, argv, "u:")) != EOF) {
-		switch (optc) {
-			case 'u':
-			universe= atoi(optarg) ;
-			break ;
-		default:
-			break;
-		}
-	}
+  // parse options
+  while ((optc = getopt (argc, argv, "u:")) != EOF) {
+      switch (optc) {
+          case 'u':
+          universe= atoi(optarg) ;
+          break ;
+      default:
+          break;
+      }
+  }
 
-	/* set up lla connection */
-	con = new LlaClient();
-	
-	if(con->start()) {
-		printf("Unable to connect\n") ;
-		return 1 ;
-	}
-	if(con->set_observer(ob) ) {
-		printf("Failed to install handler\n") ;
-		return 1 ;
-	}
+  /* set up lla connection */
+  SimpleClient lla_client;
+  StdinFileDescriptor stdin_fd;
 
-	if(con->register_uni(universe, LlaClient::REGISTER) ) {
-		printf("Register uni %d failed\n", universe) ;
-		return 1 ;
-	}
+  if (!lla_client.Setup()) {
+    printf("error: %s", strerror(errno));
+    exit(1);
+  }
 
-	// store the sds
-	lla_sd = con->fd() ;
-  
-	/* init curses */
-	w = initscr();
-	if (!w) {
-		printf ("unable to open main-screen\n");
-		return 1;
-	}
+  client = lla_client.GetClient();
+  ss = lla_client.GetSelectServer();
+  ss->AddSocket(&stdin_fd);
 
-	savetty();
-	start_color();
-	noecho();
-	raw();
-	keypad(w, TRUE);
+  client->SetObserver(&observer);
 
-	calcscreengeometry();
-	changepalette(palette_number);
+  client->RegisterUniverse(universe, lla::REGISTER);
 
-	/* main loop */
-	c=0;
-	while (c!='q') {
-		int n, max;
-		fd_set rd_fds;
-		struct timeval tv;
+  /* init curses */
+  w = initscr();
+  if (!w) {
+      printf ("unable to open main-screen\n");
+      return 1;
+  }
 
-		FD_ZERO(&rd_fds);
-		FD_SET(0, &rd_fds);
-		FD_SET(lla_sd, &rd_fds) ;
+  savetty();
+  start_color();
+  noecho();
+  raw();
+  keypad(w, TRUE);
 
-		max = lla_sd ;
+  calcscreengeometry();
+  changepalette(palette_number);
 
-		tv.tv_sec = 1;
-		tv.tv_usec = 0;
-
-		n = select(max+1, &rd_fds, NULL, NULL, &tv);
-		if(n>0) {
-			if(FD_ISSET(0, &rd_fds)) {
-				c=wgetch(w);
-				switch (c) {
-				case KEY_HOME:
-				  current_channel=0;
-				  first_channel=0;
-				  mask();
-				  break;
-				case KEY_RIGHT:
-				  if(current_channel < MAXCHANNELS-1) {
-					current_channel++;
-					if(current_channel >= first_channel+channels_per_screen) {
-						first_channel+=channels_per_line;
-						mask();	
-					}
-				  }
-				  break;
-				case KEY_LEFT:
-				  if(current_channel > 0) {
-				      current_channel--;
-				      if(current_channel < first_channel) {
-						  first_channel-=channels_per_line;
-						  if(first_channel<0)
-						    first_channel=0;
-						  mask();
-						}
-				  }
-				  break;
-
-				case KEY_DOWN:
-				  current_channel+=channels_per_line;
-		  if(current_channel>=MAXCHANNELS)
-		    current_channel=MAXCHANNELS-1;
-		  if(current_channel >= first_channel+channels_per_screen)
-		    {
-		      first_channel+=channels_per_line;
-		      mask();
-		    }
-		  break;
-
-		case KEY_UP:
-		  current_channel-=channels_per_line;
-		  if(current_channel<0)
-		    current_channel=0;
-		  if(current_channel < first_channel)
-		    {
-		      first_channel-=channels_per_line;
-		      if(first_channel<0)
-			first_channel=0;
-		      mask();
-		    }
-		  break;
-
-		case KEY_IC:
-		  for(n=MAXCHANNELS-1; n>current_channel && n>0; n--)
-		    dmx[n]=dmx[n-1];
-		  break;
-
-		case KEY_DC:
-		  for(n=current_channel; n<MAXCHANNELS-1; n++)
-		    dmx[n]=dmx[n+1];
-		  break;
-
-
-		case 'M':
-                case 'm':
-		  if(++display_mode>=DISP_MODE_MAX)
-		    display_mode=0;
-		  mask();
-		  break;
-
-		case 'N':
-		case 'n':
-		  if(++channels_offset>1)
-		    channels_offset=0;
-		  mask();
-		  break;
-
-		case 'P':
-		case 'p':
-		  changepalette(++palette_number);
-		  break;
-
-				default:
-					break;
-
-				}
-			}
-
-			if (FD_ISSET(lla_sd, &rd_fds) )
-	    		con->fd_action(0);
-		}
-
-    	values();
-    	refresh();
-	}
-	con->stop();
-	return 0;
+  values();
+  refresh();
+  ss->Run();
+  return 0;
 }

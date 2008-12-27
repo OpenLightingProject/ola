@@ -533,8 +533,8 @@ int StdinFileDescriptor::SocketReady() {
       if(current_channel < MAXCHANNELS-1) {
         current_channel++;
         if(current_channel >= first_channel+channels_per_screen) {
-        first_channel+=channels_per_line;
-        mask();
+          first_channel+=channels_per_line;
+          mask();
         }
       }
       break;
@@ -555,22 +555,22 @@ int StdinFileDescriptor::SocketReady() {
       current_channel+=channels_per_line;
       if(current_channel>=MAXCHANNELS)
         current_channel=MAXCHANNELS-1;
-        if(current_channel >= first_channel+channels_per_screen) {
-          first_channel+=channels_per_line;
-          mask();
-        }
+      if(current_channel >= first_channel+channels_per_screen) {
+        first_channel+=channels_per_line;
+        mask();
+      }
       break;
 
     case KEY_UP:
       current_channel-=channels_per_line;
       if(current_channel<0)
         current_channel=0;
-        if(current_channel < first_channel) {
-          first_channel-=channels_per_line;
-          if(first_channel<0)
-            first_channel=0;
-          mask();
-        }
+      if(current_channel < first_channel) {
+        first_channel-=channels_per_line;
+        if(first_channel<0)
+          first_channel=0;
+        mask();
+      }
       break;
 
     case KEY_IC:
