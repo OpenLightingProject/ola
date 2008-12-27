@@ -35,8 +35,6 @@ using namespace std;
 #include <lla/LlaClient.h>
 #include <lla/select_server/SelectServer.h>
 
-using std::setw;
-
 using lla::LlaPlugin;
 using lla::LlaUniverse;
 using lla::LlaDevice;
@@ -178,7 +176,8 @@ void Observer::Devices(const vector <LlaDevice> devices, const string &error) {
         cout << "OUT";
 
       if (port_iter->IsActive())
-        cout << ", universe " << port_iter->Universe() << endl;
+        cout << ", universe " << port_iter->Universe();
+      cout << endl;
     }
   }
   m_ss->Terminate();
