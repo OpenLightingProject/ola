@@ -10,15 +10,15 @@ lla_dmxmonitor_SOURCES = lla-dmxmonitor.cpp
 lla_dmxmonitor_LDADD = @LIBS@ -lcurses
 endif
 
-bin_PROGRAMS = lla_patch lla_dev_info lla_usbpro $(NCURSES_PROGS)
-lla_patch_SOURCES = lla-patch.cpp
+bin_PROGRAMS = lla_dev_info $(NCURSES_PROGS)
 lla_dev_info_SOURCES = lla-client.cpp
-lla_usbpro_SOURCES = lla-usbpro.cpp
-lla_usbpro_LDADD = @LIBS@ -lllausbproconf
+#lla_usbpro_SOURCES = lla-usbpro.cpp
+#lla_usbpro_LDADD = @LIBS@ -lllausbproconf
 
 install-exec-hook:
 	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_plugin_info
 	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_uni_info
+	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_patch
 	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_uni_name
 	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_uni_merge
 	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_set_dmx

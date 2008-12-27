@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *  lla-dev-info.cpp
- *  Displays the available devices and ports 
- *  Copyright (C) 2005-2006 Simon Newton
+ *  lla-client.cpp
+ *  The multi purpose lla client.
+ *  Copyright (C) 2005-2008 Simon Newton
  */
 
 using namespace std;
@@ -28,246 +28,221 @@ using namespace std;
 
 #include <string>
 #include <vector>
-#include <set>
 
+#include <lla/SimpleClient.h>
 #include <lla/LlaClient.h>
-#include <lla/LlaDevice.h>
-#include <lla/LlaPort.h>
-#include <lla/LlaPlugin.h>
-#include <lla/LlaUniverse.h>
-#include <lla/LlaClientObserver.h>
+#include <lla/select_server/SelectServer.h>
+
+using lla::LlaPlugin;
+using lla::LlaUniverse;
+using lla::LlaDevice;
+using lla::LlaPort;
+using lla::SimpleClient;
+using lla::LlaClient;
+using lla::select_server::SelectServer;
+
 
 /*
- * the mode is determined by the name in which we were called
+ * The mode is determined by the name in which we were called
  */
 typedef enum {
-  DEV_INFO,
+  DEVICE_INFO,
+  DEVICE_PATCH,
   PLUGIN_INFO,
-  PLUGIN_DESC,
-  UNI_INFO,
-  UNI_NAME,
+  UNIVERSE_INFO,
+  UNIVERSE_NAME,
   UNI_MERGE,
   SET_DMX,
 } mode;
 
 
 typedef struct {
-  mode m;        // mode
+  mode m;          // mode
+  int uni;         // universe id
+  int plugin_id;   // plugin id
+  int help;        // show the help
+  int device_id;   // device id
+  int port_id;     // port id
+  lla::PatchAction patch_action;      // patch or unpatch
+  LlaUniverse::merge_mode merge_mode; // the merge mode
   string cmd;      // argv[0]
-  string uni_name;  // universe name
+  string uni_name; // universe name
   string dmx;      // dmx string
-  int uni;      // universe id
-  int pid;      // plugin id
-  int help;      // help ?
-  int verbose;    // verbose
-  int merge;      // merge mode, 0: HTP, ! 0: LTP
 } options;
+
 
 /*
  * The observer class which repsonds to events
  */
-class Observer : public LlaClientObserver {
-
+class Observer: public lla::LlaClientObserver {
   public:
-    Observer(options *opts, LlaClient *cli) : m_term(0), m_opts(opts), m_cli(cli) {};
+    Observer(options *opts, SelectServer *ss) : m_opts(opts), m_ss(ss) {}
 
-    int spin();
-    int universes(const vector <class LlaUniverse *> unis);
-    int plugins(const vector <class LlaPlugin *> plugins);
-    int devices(const vector <class LlaDevice *> devices);
-    int ports(class LlaDevice *dev);
-    int plugin_desc(class LlaPlugin *plug) ;
+    void Plugins(const vector <LlaPlugin> &plugins, const string &error);
+    void Devices(const vector <LlaDevice> devices, const string &error);
+    void Universes(const vector <LlaUniverse> universes, const string &error);
+    void PatchComplete(const string &error);
+    void UniverseNameComplete(const string &error);
+    void UniverseMergeModeComplete(const string &error);
 
   private:
-    int m_term;
-    set<int> m_device_set;
     options *m_opts;
-    LlaClient *m_cli;
+    SelectServer *m_ss;
 };
 
 
 /*
- * Loop calling select until we terminate.
- */
-int Observer::spin() {
-  struct timeval tv;
-  fd_set rd_fds;
-  int fd = m_cli->fd();
-  int n;
-
-  while(! m_term) {
-    FD_ZERO(&rd_fds);
-    FD_SET(fd, &rd_fds);
-    tv.tv_sec = 1;
-    tv.tv_usec = 0;
-
-    n = select(fd+1, &rd_fds, NULL, NULL, &tv);
-
-    switch(n) {
-      case 0:
-        // terminate on timeout
-        m_term = 1;
-      break ;
-      case -1:
-         printf("select error\n") ;
-        break ;
-      default:
-        if ( FD_ISSET(fd, &rd_fds)) {
-          m_cli->fd_action(0);
-        }
-    }
-  }
-  return 0;
-}
-
-
-/*
  * This is called when we recieve universe results from the client
- * @param unis  a vector of LlaUniverses
+ * @param universes a vector of LlaUniverses
  */
-int Observer::universes(const vector <class LlaUniverse *> unis) {
-  vector<LlaUniverse *>::const_iterator iter;
-  LlaUniverse *uni;
+void Observer::Universes(const vector <LlaUniverse> universes, const string &error) {
+  vector<LlaUniverse>::const_iterator iter;
+
+  if (!error.empty()) {
+    printf("%s\n", error.c_str());
+    m_ss->Terminate();
+    return;
+  }
 
   printf("   ID\t%30s\t\tMerge Mode\n", "Name");
   printf("----------------------------------------------------------\n");
 
-  for(iter = unis.begin(); iter != unis.end(); ++iter) {
-    uni = *iter;
-    printf("%5d\t%30s\t\t%s\n", uni->get_id(), uni->get_name().c_str() , 
-        uni->get_merge_mode() == LlaUniverse::MERGE_HTP ? "HTP" : "LTP") ;
+  for(iter = universes.begin(); iter != universes.end(); ++iter) {
+    printf("%5d\t%30s\t\t%s\n", iter->Id(), iter->Name().c_str(),
+           iter->MergeMode() == LlaUniverse::MERGE_HTP ? "HTP" : "LTP") ;
   }
   printf("----------------------------------------------------------\n");
-  m_term = 1;
-  return 0;
+  m_ss->Terminate();
 }
 
 
 /*
- *
+ * @params plugins a vector of LlaPlugins
  */
-int Observer::plugin_desc(LlaPlugin *plug) {
-  printf("%s", plug->get_desc().c_str() ) ;
-  m_term = 1;
-  return 0;
-}
+void Observer::Plugins(const vector <LlaPlugin> &plugins, const string &error) {
+  vector<LlaPlugin>::const_iterator iter;
 
+  if (!error.empty()) {
+    printf("%s\n", error.c_str());
+    m_ss->Terminate();
+    return;
+  }
 
-/*
- *
- */
-int Observer::plugins(const vector <class LlaPlugin *> plugins) {
-  vector<LlaPlugin *>::const_iterator iter;
-
-  if(m_opts->m == PLUGIN_DESC) {
+  if (m_opts->plugin_id > 0 && m_opts->plugin_id < LLA_PLUGIN_LAST) {
     for(iter = plugins.begin(); iter != plugins.end(); ++iter) {
-      if((*iter)->get_id() == m_opts->pid) 
-        m_cli->fetch_plugin_desc((*iter));
+      if(iter->Id() == m_opts->plugin_id)
+        printf("%s\n", iter->Description().c_str());
     }
   } else {
     printf("   ID\tDevice Name\n");
     printf("--------------------------------------\n");
 
     for(iter = plugins.begin(); iter != plugins.end(); ++iter) {
-      printf("%5d\t%s\n", (*iter)->get_id(), (*iter)->get_name().c_str()) ;
+      printf("%5d\t%s\n", iter->Id(), iter->Name().c_str()) ;
     }
     printf("--------------------------------------\n");
-    m_term = 1;
   }
-  return 0;
+  m_ss->Terminate();
 }
 
 
 /*
- *
- *
+ * @param devices a vector of LlaDevices
  */
-int Observer::devices(const vector <LlaDevice *> devices) {
-  vector<LlaDevice *>::const_iterator iter;
+void Observer::Devices(const vector <LlaDevice> devices, const string &error) {
+  vector<LlaDevice>::const_iterator iter;
 
-  // get the ports for each device
-  for(iter = devices.begin(); iter != devices.end(); ++iter) {
-    m_cli->fetch_port_info(*iter);
-    m_device_set.insert((*iter)->get_id());
+  if (!error.empty()) {
+    printf("%s\n", error.c_str());
+    m_ss->Terminate();
+    return;
   }
-  return 0;
+
+  for (iter = devices.begin(); iter != devices.end(); ++iter) {
+    printf("Device %d: %s\n", iter->Id(), iter->Name().c_str());
+    vector<LlaPort> ports = iter->Ports();
+    vector<LlaPort>::const_iterator port_iter;
+
+    for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
+      printf("  port %d, cap ", port_iter->Id());
+
+      if (port_iter->Capability() == LlaPort::LLA_PORT_CAP_IN)
+        printf("IN");
+      else
+        printf("OUT");
+
+      if (port_iter->IsActive())
+        printf(", universe %d", port_iter->Universe()) ;
+      printf("\n");
+    }
+  }
+  m_ss->Terminate();
 }
 
 
 /*
- *
- *
+ * Called when the patch command completes.
  */
-int Observer::ports(LlaDevice *dev) {
-  vector<LlaPort *> ports;
-  vector<LlaPort *>::const_iterator iter;
+void Observer::PatchComplete(const string &error) {
 
-  printf("Device %d: %s\n", dev->get_id(),  dev->get_name().c_str() ) ;
-
-  ports = dev->get_ports();
-
-  for( iter = ports.begin(); iter != ports.end(); ++iter) {
-    printf("  port %d, cap ", (*iter)->get_id()) ;
-
-    if((*iter)->get_capability() == LlaPort::LLA_PORT_CAP_IN)
-      printf("IN");
-    else
-      printf("OUT");
-
-    if((*iter)->is_active())
-      printf(", universe %d", (*iter)->get_uni()) ;
-    printf("\n");
-  }
-
-  m_device_set.erase(dev->get_id());
-
-  if(m_device_set.size() == 0) {
-    m_term = 1;
-  }
-  return 0;
+  if (!error.empty())
+    printf("%s\n", error.c_str());
+  m_ss->Terminate();
 }
 
-//-----------------------------------------------------------------------------
+/*
+ * Called when the name command completes.
+ */
+void Observer::UniverseNameComplete(const string &error) {
+  if (!error.empty())
+    printf("%s\n", error.c_str());
+  m_ss->Terminate();
+}
+
+
+void Observer::UniverseMergeModeComplete(const string &error) {
+  if (!error.empty())
+    printf("%s\n", error.c_str());
+  m_ss->Terminate();
+}
 
 
 /*
  * Init options
  */
-void init_options(options *opts) {
-  opts->m = DEV_INFO;
+void InitOptions(options *opts) {
+  opts->m = DEVICE_INFO;
   opts->uni = -1;
-  opts->pid = -1 ;
+  opts->plugin_id = -1 ;
   opts->help = 0 ;
-  opts->verbose = 0;
-  opts->merge = 0;
+  opts->patch_action = lla::PATCH;
+  opts->port_id = -1;
+  opts->device_id = -1;
+  opts->merge_mode = LlaUniverse::MERGE_HTP;
 }
 
 
 /*
  * Decide what mode we're running in
  */
-void set_mode(options *opts) {
+void SetMode(options *opts) {
   string::size_type pos = opts->cmd.find_last_of("/");
 
-  if(pos != string::npos) {
-    opts->cmd = opts->cmd.substr(pos+1);
-  }
+  if (pos != string::npos)
+    opts->cmd = opts->cmd.substr(pos + 1);
 
-  if( opts->cmd == "lla_plugin_info") {
-    if( opts->pid == -1) 
-      opts->m = PLUGIN_INFO;
-    else
-      opts->m = PLUGIN_DESC;
-  } else if ( opts->cmd == "lla_uni_info") {
-    opts->m = UNI_INFO;
-  } else if ( opts->cmd == "lla_uni_name") {
-    opts->m = UNI_NAME;
-  } else if ( opts->cmd == "lla_uni_merge") {
+  if (opts->cmd == "lla_plugin_info")
+    opts->m = PLUGIN_INFO;
+  else if (opts->cmd == "lla_patch")
+    opts->m = DEVICE_PATCH;
+  else if (opts->cmd == "lla_uni_info")
+    opts->m = UNIVERSE_INFO;
+  else if (opts->cmd == "lla_uni_name")
+    opts->m = UNIVERSE_NAME;
+  else if (opts->cmd == "lla_uni_merge")
     opts->m = UNI_MERGE;
-  } else if ( opts->cmd == "lla_set_dmx") {
+  else if (opts->cmd == "lla_set_dmx")
     opts->m = SET_DMX;
-  }
-
 }
 
 
@@ -275,25 +250,23 @@ void set_mode(options *opts) {
  * parse our cmd line options
  *
  */
-int parse_options(int argc, char *argv[], options *opts) {
+void ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
-      {"pid",     required_argument,   0, 'p'},
-      {"help",     no_argument,     0, 'h'},
-      {"ltp",     no_argument,     0, 'l'},
-      {"name",     required_argument,   0, 'n'},
-      {"universe",   required_argument,   0, 'u'},
-      {"dmx",     required_argument,  0, 'd'},
-      {"verbose",   no_argument,     0, 'v'},      
+      {"plugin_id", required_argument, 0, 'p'},
+      {"help", no_argument, 0, 'h'},
+      {"ltp", no_argument, 0, 'l'},
+      {"name", required_argument, 0, 'n'},
+      {"universe", required_argument, 0, 'u'},
+      {"dmx", required_argument, 0, 'd'},
       {0, 0, 0, 0}
     };
 
   int c;
   int option_index = 0;
-  
+
   while (1) {
-     
     c = getopt_long(argc, argv, "ld:n:u:p:hv", long_options, &option_index);
-    
+
     if (c == -1)
       break;
 
@@ -301,15 +274,14 @@ int parse_options(int argc, char *argv[], options *opts) {
       case 0:
         break;
       case 'p':
-        opts->pid = atoi(optarg);
+        opts->plugin_id = atoi(optarg);
         break;
       case 'h':
         opts->help = 1;
         break;
       case 'l':
-        opts->merge = 1;
+        opts->merge_mode = LlaUniverse::MERGE_LTP;
         break;
-
       case 'n':
         opts->uni_name = optarg;
         break;
@@ -319,13 +291,63 @@ int parse_options(int argc, char *argv[], options *opts) {
       case 'd':
         opts->dmx = optarg;
             break;
-      case 'v':
-        opts->verbose = 1;
-        break;
       case '?':
-        break;  
+        break;
       default:
         ;
+    }
+  }
+}
+
+
+/*
+ * parse our cmd line options for the patch command
+ */
+int ParsePatchOptions(int argc, char *argv[], options *opts) {
+  static struct option long_options[] = {
+      {"patch", no_argument, 0, 'a'},
+      {"unpatch", no_argument, 0, 'r'},
+      {"device", required_argument, 0, 'd'},
+      {"port", required_argument, 0, 'p'},
+      {"universe", required_argument, 0, 'u'},
+      {"help", no_argument, 0, 'h'},
+      {0, 0, 0, 0}
+    };
+
+  int c;
+  int option_index = 0;
+
+  while (1) {
+    c = getopt_long(argc, argv, "ard:p:u:h", long_options, &option_index);
+
+    if (c == -1)
+      break;
+
+    switch (c) {
+      case 0:
+        break;
+      case 'a':
+        opts->patch_action = lla::PATCH;
+            break;
+      case 'd':
+        opts->device_id = atoi(optarg);
+        break;
+      case 'p':
+        opts->port_id = atoi(optarg);
+        break;
+      case 'r':
+        opts->patch_action = lla::UNPATCH;
+            break;
+      case 'u':
+        opts->uni = atoi(optarg);
+        break;
+      case 'h':
+        opts->help = 1;
+        break;
+      case '?':
+        break;
+      default:
+        break;
     }
   }
   return 0;
@@ -335,42 +357,61 @@ int parse_options(int argc, char *argv[], options *opts) {
 /*
  * help message for device info
  */
-void display_dev_info_help(options *opts) {
+void DisplayDeviceInfoHelp(options *opts) {
   printf(
-"Usage: %s [--pid <pid> ]\n"
+"Usage: %s [--plugin_id <plugin_id>]\n"
 "\n"
-"Get info on the devices loaded by llad.\n"
+"Show information on the devices loaded by llad.\n"
 "\n"
 "  -h, --help          Display this help message and exit.\n"
-"  -p, --pid <pid>     The plugin id to filter by\n"
+"  -p, --plugin_id <plugin_id> Show only devices owned by this plugin.\n"
 "\n",
-  opts->cmd.c_str()) ;
+  opts->cmd.c_str());
+}
+
+
+/*
+ * Display the Patch help
+ */
+void DisplayPatchHelp(options *opts) {
+  printf(
+"Usage: %s [--patch | --unpatch] --device <dev> --port <port> [--universe <uni>]\n"
+"\n"
+"Control lla port <-> universe mappings.\n"
+"\n"
+"  -a, --patch              Patch this port (default).\n"
+"  -d, --device <device>    Id of device to patch.\n"
+"  -h, --help               Display this help message and exit.\n"
+"  -p, --port <port>        Id of the port to patch.\n"
+"  -r, --unpatch            Unpatch this port.\n"
+"  -u, --universe <uni>     Id of the universe to patch to (default 0).\n"
+"\n",
+  opts->cmd.c_str());
 }
 
 
 /*
  * help message for plugin info
  */
-void display_plugin_info_help(options *opts) {
+void DisplayPluginInfoHelp(options *opts) {
   printf(
-"Usage: %s [--pid <pid> ]\n"
+"Usage: %s [--plugin_id <plugin_id>]\n"
 "\n"
 "Get info on the plugins loaded by llad. Called without arguments this will\n"
-"display the plugins loaded by llad. When used with --pid this wilk display\n"
+"display the plugins loaded by llad. When used with --plugin_id this wilk display\n"
 "the specified plugin's description\n"
 "\n"
 "  -h, --help          Display this help message and exit.\n"
-"  -p, --pid <pid>     Id of the plugin to fetch the description of.\n"
+"  -p, --plugin_id <plugin_id>     Id of the plugin to fetch the description of.\n"
 "\n",
-  opts->cmd.c_str()) ;
+  opts->cmd.c_str());
 }
 
 
 /*
  * help message for uni info
  */
-void display_uni_info_help(options *opts) {
-
+void DisplayUniverseInfoHelp(options *opts) {
   printf(
 "Usage: %s\n"
 "\n"
@@ -378,15 +419,14 @@ void display_uni_info_help(options *opts) {
 "\n"
 "  -h, --help          Display this help message and exit.\n"
 "\n",
-  opts->cmd.c_str()) ;
+  opts->cmd.c_str());
 }
 
 
 /*
  * Help message for set uni name
  */
-void display_uni_name_help(options *opts) {
-
+void DisplayUniverseNameHelp(options *opts) {
   printf(
 "Usage: %s --name <name> --universe <uni>\n"
 "\n"
@@ -403,8 +443,7 @@ void display_uni_name_help(options *opts) {
 /*
  * Help message for set uni merge mode
  */
-void display_uni_merge_help(options *opts) {
-
+void DisplayUniverseMergeHelp(options *opts) {
   printf(
 "Usage: %s --universe <uni> [ --ltp]\n"
 "\n"
@@ -430,8 +469,7 @@ void display_set_dmx_help(options *opts) {
 "Sets the DMX values for a universe.\n"
 "\n"
 "  -h, --help                      Display this help message and exit.\n"
-"  -u, --universe <universe>      Universe number.\n"
-"  -v, --verbose                   Be verbose.\n"
+"  -u, --universe <universe>       Universe number.\n"
 "  -x, --dmx <values>              Comma separated DMX values.\n"
 "\n",
   opts->cmd.c_str()) ;
@@ -441,88 +479,99 @@ void display_set_dmx_help(options *opts) {
 /*
  * Display the help message
  */
-void display_help_and_exit(options *opts) {
-  switch(opts->m) {
-    case DEV_INFO:
-      display_dev_info_help(opts);
+void DisplayHelpAndExit(options *opts) {
+  switch (opts->m) {
+    case DEVICE_INFO:
+      DisplayDeviceInfoHelp(opts);
+      break;
+    case DEVICE_PATCH:
+      DisplayPatchHelp(opts);
       break;
     case PLUGIN_INFO:
-      display_plugin_info_help(opts);
+      DisplayPluginInfoHelp(opts);
       break;
-    case PLUGIN_DESC:
-      display_plugin_info_help(opts);
+    case UNIVERSE_INFO:
+      DisplayUniverseInfoHelp(opts);
       break;
-    case UNI_INFO:
-      display_uni_info_help(opts);
-      break;
-    case UNI_NAME:
-      display_uni_name_help(opts);
+    case UNIVERSE_NAME:
+      DisplayUniverseNameHelp(opts);
       break;
     case UNI_MERGE:
-      display_uni_merge_help(opts);
+      DisplayUniverseMergeHelp(opts);
       break;
-
     case SET_DMX:
       display_set_dmx_help(opts);
       break;
-    default:
-      ;
   }
   exit(0);
 }
 
 
 /*
- * send a fetch device info request
- * @param cli  the lla client
+ * Send a fetch device info request
+ * @param client  the lla client
  * @param opts  the options
  */
-int fetch_dev_info(LlaClient *cli, options *opts) {
-  lla_plugin_id pid = LLA_PLUGIN_ALL;
+int FetchDeviceInfo(LlaClient *client, options *opts) {
+  if (opts->plugin_id > 0 && opts->plugin_id < LLA_PLUGIN_LAST)
+    client->FetchDeviceInfo((lla_plugin_id) opts->plugin_id);
+  else
+    client->FetchDeviceInfo();
+  return 0;
+}
 
-  if(opts->pid > 0 && opts->pid < LLA_PLUGIN_LAST) 
-    pid = (lla_plugin_id) opts->pid;
 
-  cli->fetch_dev_info(pid);
+int Patch(LlaClient *client, options *opts) {
+  if (opts->device_id == -1 || opts->port_id == -1) {
+    DisplayPatchHelp(opts);
+    exit(1);
+  }
 
+  client->Patch(opts->device_id, opts->port_id, opts->patch_action, opts->uni);
+}
+
+
+/*
+ * Fetch information on plugins.
+ */
+int FetchPluginInfo(LlaClient *client, options *opts) {
+  if (opts->plugin_id > 0 && opts->plugin_id < LLA_PLUGIN_LAST)
+    client->FetchPluginInfo((lla_plugin_id) opts->plugin_id, true);
+  else
+    client->FetchPluginInfo();
+  return 0;
+}
+
+
+
+/*
+ * send a set name request
+ * @param client the lla client
+ * @param opts  the options
+ */
+int SetUniverseName(LlaClient *client, options *opts) {
+  if (opts->uni == -1) {
+    DisplayUniverseNameHelp(opts);
+    exit(1) ;
+  }
+
+  client->SetUniverseName(opts->uni, opts->uni_name);
   return 0;
 }
 
 
 /*
  * send a set name request
- * @param cli  the lla client
+ * @param client the lla client
  * @param opts  the options
  */
-int set_uni_name(LlaClient *cli, options *opts) {
-
-  if( opts->uni == -1) {
-    display_uni_name_help(opts);
+int SetUniverseMergeMode(LlaClient *client, options *opts) {
+  if (opts->uni == -1) {
+    DisplayUniverseMergeHelp(opts);
     exit(1) ;
   }
 
-  if (cli->set_uni_name(opts->uni, opts->uni_name.c_str())) {
-    printf("Failed to set name\n") ;
-  }
-  return 0;
-}
-
-
-/*
- * send a set name request
- * @param cli  the lla client
- * @param opts  the options
- */
-int set_uni_merge(LlaClient *cli, options *opts) {
-
-  if(opts->uni == -1) {
-    display_uni_name_help(opts);
-    exit(1) ;
-  }
-
-  if (cli->set_uni_merge_mode(opts->uni, opts->merge ? LlaUniverse::MERGE_LTP: LlaUniverse::MERGE_HTP) ) {
-    printf("Failed to set merge mode\n") ;
-  }
+  client->SetUniverseMergeMode(opts->uni, opts->merge_mode);
   return 0;
 }
 
@@ -530,27 +579,27 @@ int set_uni_merge(LlaClient *cli, options *opts) {
 
 /*
  * Send a dmx message
- * @param cli  the lla client
+ * @param client the lla client
  * @param opts  the options
  */
-int set_dmx(LlaClient *cli, options *opts) {
-  int i=0;
+int SendDmx(LlaClient *client, options *opts) {
+  int i = 0;
   char *s;
   uint8_t buf[512];
   char *str = strdup(opts->dmx.c_str());
 
-  if( opts->uni < 0 ) {
+  if (opts->uni < 0) {
     display_set_dmx_help(opts) ;
     exit(1);
   }
 
-  for( s = strtok(str, ",") ; s != NULL ; s = strtok(NULL, ",") ) {
+  for (s = strtok(str, ","); s != NULL; s = strtok(NULL, ",")) {
     int v  = atoi(s) ;
     buf[i++] = v > 255 ? 255 : v;
   }
 
-  if(i > 0) 
-    if( cli->send_dmx(opts->uni, buf, i)) {
+  if(i > 0)
+    if (client->SendDmx(opts->uni, buf, i)) {
       printf("Send DMX failed:\n") ;
       return 1;
     }
@@ -564,56 +613,58 @@ int set_dmx(LlaClient *cli, options *opts) {
  *
  */
 int main(int argc, char*argv[]) {
-  LlaClient *lla;
-  Observer *ob = NULL;;
+  SimpleClient lla_client;
   options opts;
 
-  init_options(&opts);
+  InitOptions(&opts);
   opts.cmd = argv[0];
-  parse_options(argc, argv, &opts) ;
 
   // decide how we should behave
-  set_mode(&opts);
+  SetMode(&opts);
 
-  if(opts.help)
-    display_help_and_exit(&opts) ;
+  if (opts.m == DEVICE_PATCH)
+    ParsePatchOptions(argc, argv, &opts);
+  else
+    ParseOptions(argc, argv, &opts);
 
-  lla = new LlaClient();
 
-  if(!lla) {
-    printf("lla failed\n");
-    return -1;
+  if (opts.help)
+    DisplayHelpAndExit(&opts);
+
+  if (!lla_client.Setup()) {
+    printf("error: %s\n", strerror(errno));
+    exit(1);
   }
 
-  // this handles the lla events
-  ob = new Observer(&opts, lla);
-  lla->set_observer(ob);
+  LlaClient *client = lla_client.GetClient();
+  SelectServer *ss = lla_client.GetSelectServer();
 
-  // connect
-  if ( lla->start() ) {
-    printf("error: %s\n", strerror(errno) ) ;
-    exit(1) ;
+  Observer observer(&opts, ss);
+  client->SetObserver(&observer);
+
+  switch (opts.m) {
+    case DEVICE_INFO:
+      FetchDeviceInfo(client, &opts);
+      break;
+    case DEVICE_PATCH:
+      Patch(client, &opts);
+    case PLUGIN_INFO:
+      FetchPluginInfo(client, &opts);
+      break;
+    case UNIVERSE_INFO:
+      client->FetchUniverseInfo();
+      break;
+    case UNIVERSE_NAME:
+      SetUniverseName(client, &opts);
+      break;
+    case UNI_MERGE:
+      SetUniverseMergeMode(client, &opts);
+      break;
+    case SET_DMX:
+      SendDmx(client, &opts);
+      break;
   }
 
-  if(opts.m == DEV_INFO) {
-    fetch_dev_info(lla, &opts);
-    ob->spin();
-  } else if (opts.m == PLUGIN_INFO || opts.m == PLUGIN_DESC) {
-    lla->fetch_plugin_info();
-    ob->spin();
-  } else if (opts.m == UNI_INFO) {
-    lla->fetch_uni_info();
-    ob->spin();
-  } else if (opts.m == UNI_NAME) {
-    set_uni_name(lla, &opts);
-  } else if (opts.m == UNI_MERGE) {
-    set_uni_merge(lla, &opts);
-  } else if (opts.m == SET_DMX) {
-    set_dmx(lla, &opts);
-  }
-
-  lla->stop();
-  delete ob;
-  delete lla;
+  ss->Run();
   return 0;
 }

@@ -3,8 +3,9 @@
 
 AC_PREREQ(2.57)
 AC_INIT(configure.in)
+AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(lla-examples, 0.2.0)
+AM_INIT_AUTOMAKE(lla-examples, 0.3.0)
 
 # Checks for programs.
 AC_PROG_CC
@@ -35,12 +36,12 @@ AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([gettimeofday ftime inet_ntoa memset select socket strerror])
 
-PKG_CHECK_MODULES(liblla, [liblla >= 0.2.0])
+PKG_CHECK_MODULES(liblla, [liblla >= 0.3.0])
 PKG_CHECK_MODULES(libllausbproconf, [libllausbproconf >= 0.0.1])
 
 AC_SUBST(liblla_CFLAGS)
 AC_SUBST(liblla_LIBS)
 
 AC_OUTPUT( Makefile \
-	   src/Makefile \
-	    )
+           src/Makefile \
+         )
