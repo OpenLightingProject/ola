@@ -41,11 +41,12 @@ using namespace lla::select_server;
 using lla::proto::LlaServerService_Stub;
 using google::protobuf::Closure;
 using google::protobuf::NewCallback;
+using lla::select_server::TcpSocket;
 
 SelectServer ss;
 LlaClient *client;
 PipeSocket *client_socket;
-
+int i = 0;
 
 class SimpleObserver: public lla::LlaClientObserver {
   public:
@@ -53,7 +54,8 @@ class SimpleObserver: public lla::LlaClientObserver {
     ~SimpleObserver() {}
     void Plugins(const vector <LlaPlugin> &plugins, const string &error);
     void Devices(const vector <LlaDevice> devices, const string &error);
-    void Universes(const vector <LlaUniverse> universes, const string &error); 
+    void Universes(const vector <LlaUniverse> universes, const string &error);
+    void NewClient();
 };
 
 
@@ -85,15 +87,33 @@ void SimpleObserver::Devices(const vector<LlaDevice> devices,
 
 void SimpleObserver::Universes(const vector<LlaUniverse> universes,
                               const string &error) {
-  printf("--Universe--\n");
+  cout << "--Universe--" << endl;
   vector<LlaUniverse>::const_iterator iter;
   for (iter = universes.begin(); iter != universes.end(); ++iter) {
     cout << (*iter).Id() << ": " << (*iter).Name() << endl;
   }
-  ss.RemoveSocket(client_socket);
-  client_socket->Close();
+  //ss.RemoveSocket(client_socket);
+  //client_socket->Close();
+  NewClient();
 }
 
+
+void SimpleObserver::NewClient() {
+  TcpSocket *socket = new TcpSocket();
+  if (!socket->Connect("127.0.0.1", LLA_DEFAULT_PORT)) {
+    delete socket;
+    printf("connect failed\n");
+    return;
+  }
+
+  client = new LlaClient(socket);
+  SimpleObserver *observer = new SimpleObserver();
+  client->SetObserver(observer);
+  client->Setup();
+  ss.AddSocket(socket);
+  client->FetchUniverseInfo();
+  printf("new client done %d\n", i++);
+}
 
 int main(int argc, char *argv[]) {
   // setup the logger object
@@ -103,7 +123,7 @@ int main(int argc, char *argv[]) {
   PluginLoader *plugin_loader = new DynamicPluginLoader();
 
   MemoryPreferencesFactory preferences_factory;
-  TcpListeningSocket listening_socket("127.0.0.1", 9010);
+  TcpListeningSocket listening_socket("127.0.0.1", LLA_DEFAULT_PORT);
   LlaServer *server = new LlaServer(&factory,
                                     plugin_loader,
                                     &preferences_factory,

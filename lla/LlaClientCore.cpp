@@ -115,7 +115,8 @@ bool LlaClientCore::Stop() {
  * set the observer object
  */
 bool LlaClientCore::SetObserver(LlaClientObserver *observer) {
-  m_client_service->SetObserver(observer);
+  if (m_client_service)
+    m_client_service->SetObserver(observer);
   m_observer = observer;
   return true;
 }

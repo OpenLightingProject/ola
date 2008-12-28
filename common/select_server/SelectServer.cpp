@@ -277,6 +277,7 @@ void SelectServer::CheckSockets(fd_set &set) {
         RemoveSocket(socket);
         if (m_read_sockets[i].manager)
           m_read_sockets[i].manager->SocketClosed(socket);
+        socket->Close();
       } else {
         int ret = socket->SocketReady();
       }

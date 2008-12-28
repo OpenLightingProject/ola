@@ -124,7 +124,6 @@ int ConnectedSocket::UnreadData() const {
     printf("ioctl error for %d\n", m_read_fd);
     return 0;
   }
-
   return unread;
 }
 
@@ -297,8 +296,8 @@ int TcpListeningSocket::SocketReady() {
   socklen_t length = sizeof(cli_address);
 
   int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);
-  if (!sd) {
-    printf("accept failed\n");
+  if (sd < 0) {
+    printf("accept failed %s\n", strerror(errno));
     return 0;
   }
 

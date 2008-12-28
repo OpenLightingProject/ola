@@ -63,7 +63,6 @@ LlaServer::LlaServer(LlaServerServiceImplFactory *factory,
   m_universe_preferences(NULL),
   m_universe_store(NULL),
   m_init_run(false) {
-
 }
 
 /*
