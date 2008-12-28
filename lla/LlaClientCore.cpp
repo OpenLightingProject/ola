@@ -115,6 +115,7 @@ bool LlaClientCore::Stop() {
  * set the observer object
  */
 bool LlaClientCore::SetObserver(LlaClientObserver *observer) {
+  m_client_service->SetObserver(observer);
   m_observer = observer;
   return true;
 }
@@ -154,7 +155,7 @@ bool LlaClientCore::FetchPluginInfo(int plugin_id, bool include_description) {
  * @param length  length of dmx data
  * @return true on sucess, false on failure
  */
-bool LlaClientCore::SendDmx(unsigned int universe, uint8_t *data, unsigned int length) {
+bool LlaClientCore::SendDmx(unsigned int universe, dmx_t *data, unsigned int length) {
   if (!m_connected)
     return false;
 
@@ -429,7 +430,16 @@ void LlaClientCore::HandlePluginInfo(SimpleRpcController *controller,
  */
 void LlaClientCore::HandleSendDmx(SimpleRpcController *controller,
                               lla::proto::Ack *reply) {
+
+  string error_string = "";
   if (controller->Failed())
+    error_string = controller->ErrorText();
+
+  if (m_observer) {
+    release_lock;
+    m_observer->SendDmxComplete(error_string);
+    acquire_lock;
+  } else
     printf("send dmx failed: %s\n", controller->ErrorText().c_str());
 
   delete controller;
@@ -450,7 +460,7 @@ void LlaClientCore::HandleGetDmx(lla::rpc::SimpleRpcController *controller,
     // TODO: keep a map of registrations and filter
     m_observer->NewDmx(reply->universe(),
                        reply->data().length(),
-                       (uint8_t*) reply->data().c_str(),
+                       (dmx_t*) reply->data().c_str(),
                        error_string);
     acquire_lock;
   }

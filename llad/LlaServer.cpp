@@ -200,7 +200,6 @@ int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
  * Called when a socket is closed
  */
 void LlaServer::SocketClosed(lla::select_server::Socket *socket) {
-
   map<int, LlaServerServiceImpl*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
@@ -255,13 +254,13 @@ void LlaServer::CleanupConnection(LlaServerServiceImpl *service) {
   vector<Universe *> *universe_list = m_universe_store->GetList();
   vector<Universe *>::iterator uni_iter;
 
+  // O(universes * clients). Clean this up sometime.
   for (uni_iter = universe_list->begin();
        uni_iter != universe_list->end();
        ++uni_iter) {
     (*uni_iter)->RemoveClient(client);
   }
   delete universe_list;
-
   delete client->Stub()->channel();
   delete client->Stub();
   delete client;

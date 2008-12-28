@@ -26,7 +26,6 @@
 #endif
 
 #include <string>
-#include <stdint.h>
 
 #include <google/protobuf/stubs/common.h>
 #include <lla/select_server/Socket.h>
@@ -66,7 +65,7 @@ class LlaClientCore {
     bool FetchUniverseInfo();
 
     // dmx methods
-    bool SendDmx(unsigned int universe, uint8_t *data, unsigned int length);
+    bool SendDmx(unsigned int universe, dmx_t *data, unsigned int length);
     bool FetchDmx(unsigned int uni);
 
     // rdm methods

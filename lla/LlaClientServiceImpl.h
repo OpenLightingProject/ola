@@ -38,6 +38,7 @@ class LlaClientServiceImpl: public lla::proto::LlaClientService {
                        const DmxData* request,
                        Ack* response,
                        ::google::protobuf::Closure* done);
+    void SetObserver(LlaClientObserver *observer) { m_observer = observer; }
   private:
     class LlaClientObserver *m_observer;
 };

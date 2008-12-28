@@ -36,7 +36,6 @@ void LlaClientServiceImpl::UpdateDmxData(
     Ack* response,
     ::google::protobuf::Closure* done) {
 
-  printf("in update dmx data client call\n");
   if (m_observer) {
     m_observer->NewDmx(request->universe(),
                        request->data().size(),

@@ -73,7 +73,7 @@ void LlaServerServiceImpl::RegisterForDmx(
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  if(request->action() == REGISTER) {
+  if (request->action() == REGISTER) {
     universe->AddClient(m_client);
   } else {
     universe->RemoveClient(m_client);

@@ -87,7 +87,7 @@ bool LlaClient::FetchPluginInfo(int plugin_id, bool include_description) {
  * @param length  length of dmx data
  * @return true on success, false on failure
  */
-bool LlaClient::SendDmx(unsigned int universe, uint8_t *data, unsigned int length) {
+bool LlaClient::SendDmx(unsigned int universe, dmx_t *data, unsigned int length) {
   return m_core->SendDmx(universe, data, length);
 }
 

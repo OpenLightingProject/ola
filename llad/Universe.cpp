@@ -61,10 +61,10 @@ int Universe::AddPort(AbstractPort *port) {
     return 0;
 
   // unpatch if required
-  if (universe!= NULL) {
+  if (universe != NULL) {
     Logger::instance()->log(Logger::DEBUG,
-                            "Port %p is bound to universe %d",
-                            port,
+                            "Port %d is bound to universe %d",
+                            port->PortId(),
                             universe->UniverseId());
     universe->RemovePort(port);
 
@@ -119,11 +119,11 @@ int Universe::AddClient(Client *client) {
                                         m_clients.end(),
                                         client);
 
-  if (iter == m_clients.end())
+  if (iter != m_clients.end())
     return 0;
 
   Logger::instance()->log(Logger::INFO,
-                          "Added clientent %p to universe %d",
+                          "Added client %p to universe %d",
                           client,
                           m_universe_id);
   m_clients.push_back(client);
@@ -148,8 +148,7 @@ int Universe::RemoveClient(Client *client) {
                             "Client %p has been removed from uni %d",
                             client,
                             m_universe_id);
-  } else
-    Logger::instance()->log(Logger::DEBUG, "Could not find client in universe");
+  }
   return 0;
 }
 
@@ -161,7 +160,6 @@ int Universe::RemoveClient(Client *client) {
  * @param  len  the length of the dmx buffer
  */
 int Universe::SetDMX(uint8_t *dmx, unsigned int length) {
-
   if (m_merge_mode == Universe::MERGE_LTP) {
     m_length = length < DMX_UNIVERSE_SIZE ? length : DMX_UNIVERSE_SIZE;
     memcpy(m_data, dmx, m_length);

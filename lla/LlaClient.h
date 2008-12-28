@@ -23,7 +23,6 @@
 
 #include <string>
 #include <vector>
-#include <stdint.h>
 
 #include <lla/BaseTypes.h>
 #include <lla/common.h>
@@ -51,7 +50,7 @@ class LlaClientObserver {
 
     virtual void NewDmx(unsigned int universe,
                         unsigned int length,
-                        uint8_t *data,
+                        dmx_t *data,
                         const string &error) {}
     virtual void Plugins(const vector <class LlaPlugin> &plugins,
                          const string &error) {}
@@ -65,6 +64,7 @@ class LlaClientObserver {
     virtual void PatchComplete(const string &error) {}
     virtual void UniverseNameComplete(const string &error) {}
     virtual void UniverseMergeModeComplete(const string &error) {}
+    virtual void SendDmxComplete(const string &error) {}
 };
 
 
@@ -85,7 +85,7 @@ class LlaClient {
     bool FetchUniverseInfo();
 
     // dmx methods
-    bool SendDmx(unsigned int universe, uint8_t *data, unsigned int length);
+    bool SendDmx(unsigned int universe, dmx_t *data, unsigned int length);
     bool FetchDmx(unsigned int uni);
 
     // rdm methods

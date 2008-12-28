@@ -75,6 +75,7 @@ bool SimpleClient::Cleanup() {
 
   if (m_ss)
     delete m_ss;
+  return true;
 }
 
 
