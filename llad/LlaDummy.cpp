@@ -118,6 +118,7 @@ void SimpleObserver::NewClient() {
 int main(int argc, char *argv[]) {
   // setup the logger object
   Logger::instance(Logger::INFO, Logger::STDERR);
+  lla_server_options lla_options;
 
   LlaServerServiceImplFactory factory;
   PluginLoader *plugin_loader = new DynamicPluginLoader();
@@ -128,6 +129,7 @@ int main(int argc, char *argv[]) {
                                     plugin_loader,
                                     &preferences_factory,
                                     &ss,
+                                    &lla_options,
                                     &listening_socket);
   int ret = server->Init();
 

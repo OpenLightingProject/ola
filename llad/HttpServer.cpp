@@ -1,0 +1,347 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * HttpServer.cpp
+ * Lla HTTP class
+ * Copyright (C) 2005-2008 Simon Newton
+ */
+
+#include <stdio.h>
+
+#include <fstream>
+#include <iostream>
+#include <string>
+#include "HttpServer.h"
+
+namespace lla {
+
+using std::cout;
+using std::endl;
+using std::pair;
+using std::ifstream;
+
+const string HttpServer::CONTENT_TYPE_PLAIN = "text/plain";
+const string HttpServer::CONTENT_TYPE_HTML = "text/html";
+const string HttpServer::CONTENT_TYPE_GIF = "image/gif";
+const string HttpServer::CONTENT_TYPE_CSS = "text/css";
+
+static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key, const char *value) {
+  HttpRequest *request = (HttpRequest*) cls;
+  string key_string = key;
+  string value_string = value;
+  request->AddHeader(key, value);
+  return MHD_YES;
+}
+
+
+static int ahc_echo (void *http_server_ptr,
+                     struct MHD_Connection *connection,
+                     const char *url,
+                     const char *method,
+                     const char *version,
+                     const char *upload_data, unsigned int *upload_data_size, void **ptr) {
+  static int aptr;
+  HttpServer *http_server = (HttpServer*) http_server_ptr;
+
+  if (0 != strcmp (method, "GET"))
+    return MHD_NO;
+
+  if (&aptr != *ptr) {
+      /* do never respond on first call */
+      *ptr = &aptr;
+      return MHD_YES;
+  }
+  *ptr = NULL;
+
+  HttpRequest request(url, method, version, connection);
+  HttpResponse response(connection);
+  return http_server->DispatchRequest(&request, &response);
+}
+
+
+/*
+ * HttpRequest object
+ */
+HttpRequest::HttpRequest(const string &url,
+                         const string &method,
+                         const string &version,
+                         struct MHD_Connection *connection):
+  m_url(url),
+  m_method(method),
+  m_version(version),
+  m_connection(connection) {
+    MHD_get_connection_values(connection, MHD_HEADER_KIND, AddHeaders, this);
+
+}
+
+
+void HttpRequest::AddHeader(const string &key, const string &value) {
+  std::pair<string, string> pair(key, value);
+  m_headers.insert(pair);
+}
+
+
+/*
+ * Return the value of the header sent with this request
+ * @param key the name of the header
+ * @returns the value of the header or empty string if it doesn't exist.
+ */
+const string HttpRequest::GetHeader(const string &key) const {
+  map<string, string>::const_iterator iter = m_headers.find(key);
+
+  if (iter == m_headers.end())
+    return "";
+  else
+    return iter->second;
+}
+
+
+/*
+ * Set the content-type header
+ * @param type, the content type
+ * @return true if the header was set correctly, false otherwise
+ */
+void HttpResponse::SetContentType(const string &type) {
+  SetHeader(MHD_HTTP_HEADER_CONTENT_TYPE, type);
+}
+
+
+/*
+ * Set a header in the response
+ * @param key the header name
+ * @param value the header value
+ * @return true if the header was set correctly, false otherwise
+ */
+void HttpResponse::SetHeader(const string &key, const string &value) {
+  std::pair<string, string> pair(key, value);
+  m_headers.insert(pair);
+}
+
+
+/*
+ * Send the HTTP response
+ *
+ * @returns true on success, false on error
+ */
+int HttpResponse::Send() {
+  map<string, string>::const_iterator iter;
+  struct MHD_Response *response = MHD_create_response_from_data(
+      m_data.length(), (void*) m_data.data(), MHD_NO, MHD_YES);
+  for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
+    MHD_add_response_header(response, iter->first.c_str(), iter->second.c_str());
+  int ret = MHD_queue_response(m_connection, m_status_code, response);
+  MHD_destroy_response(response);
+  return ret;
+}
+
+
+/*
+ * Setup the HTTP server.
+ * @param port the port to listen on
+ * @param data_dir the directory to serve static content from
+ */
+HttpServer::HttpServer(unsigned int port, const string &data_dir):
+  m_data_dir(data_dir),
+  m_httpd(NULL),
+  m_default_handler(NULL),
+  m_port(port) {
+
+  if (m_data_dir.empty())
+    m_data_dir = HTTP_DATA_DIR;
+}
+
+
+/*
+ * Destroy this object
+ */
+HttpServer::~HttpServer() {
+  Stop();
+
+  map<string, BaseHttpClosure*>::const_iterator iter;
+  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter)
+    delete iter->second;
+
+  if (m_default_handler) {
+    delete m_default_handler;
+    m_default_handler = NULL;
+  }
+
+  m_handlers.clear();
+}
+
+
+/*
+ * Start the HTTP server
+ *
+ * @return 0 on success, -1 on failure
+ */
+bool HttpServer::Start() {
+  m_httpd = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION,
+                             m_port,
+                             NULL,
+                             NULL,
+                             &ahc_echo,
+                             this,
+                             MHD_OPTION_END);
+  return m_httpd ? true : false;
+}
+
+
+/*
+ * Stop the HTTP server
+ */
+void HttpServer::Stop() {
+  if (m_httpd) {
+    MHD_stop_daemon(m_httpd);
+    m_httpd = NULL;
+  }
+}
+
+
+/*
+ * Call the appropriate handler.
+ */
+int HttpServer::DispatchRequest(const HttpRequest *request,
+                                HttpResponse *response) {
+  map<string, BaseHttpClosure*>::iterator iter = m_handlers.find(request->Url());
+
+  if (iter != m_handlers.end())
+    return iter->second->Run(request, response);
+
+  map<string, static_file_info>::iterator file_iter =
+    m_static_content.find(request->Url());
+
+  if (file_iter != m_static_content.end())
+    return ServeStaticContent(&(file_iter->second), response);
+
+  if (m_default_handler)
+    return m_default_handler->Run(request, response);
+
+  return MHD_NO;
+}
+
+
+/*
+ * Register a handler
+ * @param path the url to respond on
+ * @param handler the Closure to call for this request. These will be freed
+ * once the HttpServer is destroyed.
+ */
+bool HttpServer::RegisterHandler(const string &path, BaseHttpClosure *handler) {
+  map<string, BaseHttpClosure*>::const_iterator iter = m_handlers.find(path);
+  if (iter != m_handlers.end())
+    return false;
+  pair<string, BaseHttpClosure*> pair(path, handler);
+  m_handlers.insert(pair);
+  return true;
+}
+
+
+/*
+ * Register a static file
+ * @param path the path to serve on
+ * @param file the path to the file to serve
+ */
+bool HttpServer::RegisterFile(const string &path,
+                              const string &file,
+                              const string &content_type) {
+  map<string, static_file_info>::const_iterator file_iter = m_static_content.find(path);
+
+  if (file_iter != m_static_content.end())
+    return false;
+
+  static_file_info file_info;
+  file_info.file_path = file;
+  file_info.content_type = content_type;
+
+  pair<string, static_file_info> pair(path, file_info);
+  m_static_content.insert(pair);
+  return true;
+}
+
+
+/*
+ * Set the default handler.
+ * @param handler the default handler to call. This will be freed when the
+ * HttpServer is destroyed.
+ */
+void HttpServer::RegisterDefaultHandler(BaseHttpClosure *handler) {
+  m_default_handler = handler;
+}
+
+
+/*
+ * Return a list of all handlers registered
+ */
+vector<string> HttpServer::Handlers() const {
+  vector<string> handlers;
+  map<string, BaseHttpClosure*>::const_iterator iter;
+  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter)
+    handlers.push_back(iter->first);
+
+  map<string, static_file_info>::const_iterator file_iter;
+  for (file_iter = m_static_content.begin(); file_iter != m_static_content.end();
+       ++file_iter)
+    handlers.push_back(file_iter->first);
+  return handlers;
+}
+
+
+/*
+ * Serve static content
+ */
+int HttpServer::ServeStaticContent(static_file_info *file_info,
+                                   HttpResponse *response) {
+  char *data;
+  unsigned int length;
+  string file_path = m_data_dir;
+  file_path.append("/");
+  file_path.append(file_info->file_path);
+  ifstream i_stream(file_path.data());
+
+  if (!i_stream.is_open()) {
+    response->SetContentType(CONTENT_TYPE_PLAIN);
+    response->SetStatus(404);
+    response->Append("Not Found");
+    return response->Send();
+  }
+  i_stream.seekg(0, std::ios::end);
+  length = i_stream.tellg();
+  i_stream.seekg(0, std::ios::beg);
+
+  data = (char*) malloc(length * sizeof(char));
+
+  i_stream.read(data, length);
+  i_stream.close();
+
+  struct MHD_Response *mhd_response = MHD_create_response_from_data(
+      length,
+      (void*) data,
+      MHD_YES,
+      MHD_NO);
+
+  if (!file_info->content_type.empty())
+    MHD_add_response_header(mhd_response,
+                            MHD_HTTP_HEADER_CONTENT_TYPE,
+                            file_info->content_type.data());
+
+  int ret = MHD_queue_response(response->Connection(),
+                               MHD_HTTP_OK,
+                               mhd_response);
+  MHD_destroy_response(mhd_response);
+  return ret;
+}
+
+} //lla

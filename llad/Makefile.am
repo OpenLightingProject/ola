@@ -1,5 +1,7 @@
 INCLUDES = -I$(top_builddir)/include @LLAD_DEFINES@
+SUBDIRS = www
 
+# lib llaserver
 lib_LTLIBRARIES = libllaserver.la
 libllaserver_la_SOURCES = LlaServer.cpp LlaServerServiceImpl.cpp \
                           Logger.cpp Preferences.cpp Universe.cpp \
@@ -7,13 +9,31 @@ libllaserver_la_SOURCES = LlaServer.cpp LlaServerServiceImpl.cpp \
                           Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
                           DynamicPluginLoader.cpp Plugin.cpp \
                           DlOpenPluginLoader.cpp
+
+if HAVE_LIBMICROHTTPD
+libllaserver_la_SOURCES += HttpServer.cpp LlaHttpServer.cpp
+endif
+
 libllaserver_la_LDFLAGS = -lprotobuf
 libllaserver_la_LIBADD = @LIBLTDL@ $(top_builddir)/common/libllacommon.la
 libllaserver_la_CXXFLAGS = -Wall -Wformat -W
 
-# LlaDaemon.cpp
-# DlOpenPluginLoader.cpp logger.cpp
+# Header files
+EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
+             DynamicPluginLoader.h LlaDaemon.h LlaServer.h \
+             LlaServerServiceImpl.h PluginLoader.h UniverseStore.h \
+             HttpServer.h LlaHttpServer.h
 
+# Llad Server
+llad_SOURCES = Llad.cpp LlaDaemon.cpp
+#llad_CXXFLAGS = -Wall -Werror  -Wformat -W
+llad_CXXFLAGS = -Wall -Wformat -W
+llad_LDFLAGS = -rdynamic -ldl -lprotobuf
+llad_LDADD = @LIBS@ ${PLUGIN_LIBS} libllaserver.la \
+             $(top_builddir)/common/libllacommon.la \
+             $(top_builddir)/lla/liblla.la
+
+# Test Programs
 TESTS = LlaTester
 check_PROGRAMS = $(TESTS)
 LlaTester_SOURCES = LlaServerTester.cpp UniverseTest.cpp \
@@ -22,11 +42,10 @@ LlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 LlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 LlaTester_LDADD = @LIBS@ libllaserver.la \
                   $(top_builddir)/common/libllacommon.la \
-                  $(top_builddir)/plugins/dummy/liblladummy.la
+                  $(top_builddir)/plugins/dummy/liblladummy.la \
+                  $(top_builddir)/plugins/opendmx/libllaopendmx.la \
+                  $(top_builddir)/plugins/artnet/libllaartnet.la
 
-EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
-             DynamicPluginLoader.h LlaDaemon.h LlaServer.h \
-             LlaServerServiceImpl.h PluginLoader.h UniverseStore.h
 
 bin_PROGRAMS = LlaDummy llad
 LlaDummy_SOURCES = LlaDummy.cpp
@@ -35,16 +54,6 @@ LlaDummy_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 LlaDummy_LDADD = @LIBS@ ${PLUGIN_LIBS} libllaserver.la \
                  $(top_builddir)/common/libllacommon.la \
                  $(top_builddir)/lla/liblla.la
-
-
-llad_SOURCES = Llad.cpp LlaDaemon.cpp
-
-#llad_CXXFLAGS = -Wall -Werror  -Wformat -W
-llad_CXXFLAGS = -Wall -Wformat -W
-llad_LDFLAGS = -rdynamic -ldl -lprotobuf
-llad_LDADD = @LIBS@ ${PLUGIN_LIBS} libllaserver.la \
-             $(top_builddir)/common/libllacommon.la \
-             $(top_builddir)/lla/liblla.la
 
 #-------------------------------------
 

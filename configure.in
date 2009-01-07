@@ -97,17 +97,29 @@ done
 
 AC_SUBST(PLUGIN_LIBS)
 
-# plugin dir
+# plugin & html data directories
 plugindir=$libdir/llad
 AC_SUBST(plugindir)
 
-LLAD_DEFINES="$CFLAGS -DPLUGIN_DIR=\\\"$plugindir\\\" "
+lla_datadir=$datadir/llad
+www_datadir=$lla_datadir/www
+AC_SUBST(www_datadir)
+
+LLAD_DEFINES="$CFLAGS -DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
 AC_SUBST(LLAD_DEFINES)
 
 AC_ARG_ENABLE(debug, [AS_HELP_STRING(--enable-debug,
                      [Enable debugging])],
 AC_DEFINE(DEBUG, 1, [Enable debugging]) )
 
+# microhttpd
+AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
+AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
+
+if test "${have_microhttpd}" = "yes"; then
+ AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
+ LIBS="-lmicrohttpd $LIBS"
+fi
 
 # python wrappers
 AC_ARG_ENABLE(python-libs,
@@ -126,7 +138,6 @@ fi
 
 # check for cppunit
 AM_PATH_CPPUNIT(1.9.6)
-
 
 AC_OUTPUT_COMMANDS([
   if test -n "$CONFIG_FILES" && test -n "$CONFIG_HEADERS"; then
@@ -191,6 +202,7 @@ AC_OUTPUT( Makefile\
     common/protocol/Makefile\
     common/rpc/Makefile\
     common/select_server/Makefile\
+    common/export_map/Makefile\
     include/Makefile\
     include/lla/Makefile\
     include/lla/select_server/Makefile\
@@ -198,6 +210,7 @@ AC_OUTPUT( Makefile\
     lla/Makefile \
     python/Makefile \
     llad/Makefile \
+    llad/www/Makefile \
     plugins/Makefile \
     plugins/artnet/Makefile \
     plugins/e131/Makefile \

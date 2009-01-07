@@ -20,6 +20,7 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
+#include <lla/ExportMap.h>
 #include <llad/logger.h>
 #include <llad/Universe.h>
 #include <llad/Device.h>
@@ -367,11 +368,13 @@ LlaServerServiceImpl *LlaServerServiceImplFactory::New(
     UniverseStore *universe_store,
     DeviceManager *device_manager,
     PluginLoader *plugin_loader,
-    Client *client) {
+    Client *client,
+    ExportMap *export_map) {
   return new LlaServerServiceImpl(universe_store,
                                   device_manager,
                                   plugin_loader,
-                                  client);
+                                  client,
+                                  export_map);
 };
 
 } //lla

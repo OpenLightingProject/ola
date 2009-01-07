@@ -28,23 +28,27 @@
 #include <lla/select_server/FdListener.h>
 #include <lla/select_server/FdManager.h>
 #include <lla/select_server/TimeoutListener.h>
+#include <lla/ExportMap.h>
 
 namespace lla {
 namespace select_server {
 
 using namespace std;
+using lla::ExportMap;
 
 class SelectServer {
   public :
     enum Direction{READ, WRITE};
 
-    SelectServer() : m_terminate(false) {};
+    SelectServer(ExportMap *export_map=NULL);
     ~SelectServer() { UnregisterAll(); }
     int Run();
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
-    int AddSocket(class Socket *socket, class SocketManager *manager=NULL);
+    int AddSocket(class Socket *socket,
+                  class SocketManager *manager=NULL,
+                  bool delete_on_close=false);
     int RemoveSocket(class Socket *socket);
     int RegisterFD(int fd,
                    SelectServer::Direction dir,
@@ -69,6 +73,7 @@ class SelectServer {
     typedef struct {
       class Socket *socket;
       class SocketManager *manager;
+      bool delete_on_close;
     } registered_socket_t;
 
     SelectServer(const SelectServer&);
@@ -81,8 +86,11 @@ class SelectServer {
     void RemoveFDListener(vector<listener_t> &listeners, int fd);
     struct timeval CheckTimeouts();
 
-    static const int MS_IN_SECOND = 1000;
-    static const int US_IN_SECOND = 1000000;
+    static const int K_MS_IN_SECOND = 1000;
+    static const int K_US_IN_SECOND = 1000000;
+    static const string K_FD_VAR;
+    static const string K_LOOP_VAR;
+    static const string K_TIMER_VAR;
 
     // This is a timer event
     typedef struct {
@@ -103,6 +111,7 @@ class SelectServer {
     vector<listener_t> m_whandlers_vect;
     vector<registered_socket_t> m_read_sockets;
     vector<FDListener*> m_loop_listeners;
+    ExportMap *m_export_map;
 
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;
     event_queue_t m_event_cbs;

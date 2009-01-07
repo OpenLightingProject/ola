@@ -30,7 +30,7 @@ class Universe;
 
 class UniverseStore {
   public:
-    UniverseStore(class Preferences *preferences): m_preferences(preferences) {}
+    UniverseStore(class Preferences *preferences, class ExportMap *export_map);
     ~UniverseStore() {};
 
     Universe *GetUniverse(int universe_id);
@@ -38,17 +38,16 @@ class UniverseStore {
 
     int UniverseCount() const { return m_universe_map.size(); }
     vector<Universe*> *GetList() const;
-    //Universe *GetUniverseAtPos(int index) const;
 
     int DeleteAll();
     bool DeleteUniverseIfInactive(Universe *universe);
-    //void CheckForUnused();
 
   private:
     int RestoreUniverseSettings(Universe *universe) const;
     int SaveUniverseSettings(Universe *universe);
 
     Preferences *m_preferences;
+    ExportMap *m_export_map;
     std::map<int, Universe *> m_universe_map;  // map of universe_id to Universe
 };
 

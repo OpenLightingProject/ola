@@ -25,6 +25,7 @@
 #include <vector>
 #include <string>
 #include <lla/BaseTypes.h>
+#include <lla/ExportMap.h>
 
 namespace lla {
 
@@ -38,13 +39,13 @@ class Universe {
       MERGE_LTP
     };
 
-    Universe(int uid, class UniverseStore *store);
-    ~Universe() {};
+    Universe(int uid, class UniverseStore *store, ExportMap *export_map);
+    ~Universe();
 
     string Name() const { return m_universe_name; }
-    void SetName(const string &name) { m_universe_name = name; }
+    void SetName(const string &name);
     merge_mode MergeMode() const { return m_merge_mode; }
-    void SetMergeMode(merge_mode merge_mode) { m_merge_mode = merge_mode; }
+    void SetMergeMode(merge_mode merge_mode);
     int UniverseId() const { return m_universe_id; }
     bool IsActive() const;
 
@@ -60,14 +61,24 @@ class Universe {
     const uint8_t *GetDMX(int &length) const;
     int PortDataChanged(AbstractPort *port);
 
+    static const string K_UNIVERSE_NAME_VAR;
+    static const string K_UNIVERSE_MODE_VAR;
+    static const string K_UNIVERSE_PORT_VAR;
+    static const string K_UNIVERSE_CLIENTS_VAR;
+    static const string K_MERGE_HTP_STR;
+    static const string K_MERGE_LTP_STR;
+
   private:
     Universe(const Universe&);
     Universe& operator=(const Universe&);
     int UpdateDependants();
+    void UpdateName();
+    void UpdateMode();
     void Merge();                      // HTP merge the merge and data buffers
 
     string m_universe_name;
     int m_universe_id;
+    string m_universe_id_str;
     enum merge_mode m_merge_mode;      // merge mode
     vector<class AbstractPort*> m_ports;       // ports patched to this universe
     vector<class Client *> m_clients;  // clients listening to this universe
@@ -78,6 +89,7 @@ class Universe {
 
     unsigned int m_length;   // length of valid data in m_data
     unsigned int m_mlength;  // length of valid data in m_merge
+    ExportMap *m_export_map;
 };
 
 } //lla

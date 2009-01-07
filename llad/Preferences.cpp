@@ -180,7 +180,7 @@ int FileBackedPreferences::Save() const {
 
 
 int FileBackedPreferences::ChangeDir() const {
-  struct passwd  *ptr = getpwuid(getuid());
+  struct passwd *ptr = getpwuid(getuid());
   if (ptr == NULL)
     return -1;
 

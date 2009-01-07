@@ -23,6 +23,9 @@
 
 #include <lla/select_server/SelectServer.h>
 #include <lla/select_server/Socket.h>
+#include <lla/BaseTypes.h>
+#include <lla/ExportMap.h>
+#include "LlaServer.h"
 
 namespace lla {
 
@@ -30,16 +33,19 @@ using lla::select_server::ListeningSocket;
 using lla::select_server::SelectServer;
 
 class LlaDaemon {
-
-  public :
-    LlaDaemon();
+  public:
+    LlaDaemon(lla_server_options *options,
+              ExportMap *export_map=NULL,
+              unsigned int rpc_port=LLA_DEFAULT_PORT);
     ~LlaDaemon();
     bool Init();
     void Run();
     void Terminate();
     void ReloadPlugins();
 
-  private :
+    static const unsigned int DEFAULT_RPC_PORT = LLA_DEFAULT_PORT;
+
+  private:
     LlaDaemon(const LlaDaemon&);
     LlaDaemon& operator=(const LlaDaemon&);
 
@@ -49,6 +55,11 @@ class LlaDaemon {
     class PreferencesFactory *m_preferences_factory;
     class ListeningSocket *m_listening_socket;
     class LlaServerServiceImplFactory *m_service_factory;
+    lla_server_options m_options;
+    class ExportMap *m_export_map;
+    unsigned int m_rpc_port;
+
+    static const string K_RPC_PORT_VAR;
 };
 
 } // lla

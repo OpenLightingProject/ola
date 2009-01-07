@@ -34,11 +34,13 @@ class LlaServerServiceImpl: public lla::proto::LlaServerService {
     LlaServerServiceImpl(class UniverseStore *universe_store,
                          class DeviceManager *device_manager,
                          class PluginLoader *plugin_loader,
-                         class Client *client):
+                         class Client *client,
+                         class ExportMap *export_map):
       m_universe_store(universe_store),
       m_device_manager(device_manager),
       m_plugin_loader(plugin_loader),
-      m_client(client) {}
+      m_client(client),
+      m_export_map(export_map) {}
     ~LlaServerServiceImpl() {}
 
     void GetDmx(RpcController* controller,
@@ -99,6 +101,7 @@ class LlaServerServiceImpl: public lla::proto::LlaServerService {
     DeviceManager *m_device_manager;
     PluginLoader *m_plugin_loader;
     Client *m_client;
+    ExportMap *m_export_map;
 };
 
 
@@ -107,7 +110,8 @@ class LlaServerServiceImplFactory {
     LlaServerServiceImpl *New(UniverseStore *universe_store,
                               DeviceManager *device_manager,
                               class PluginLoader *plugin_loader,
-                              class Client *client);
+                              class Client *client,
+                              class ExportMap *export_map);
 };
 
 } // lla

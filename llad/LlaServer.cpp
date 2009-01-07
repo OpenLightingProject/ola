@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <lla/ExportMap.h>
 #include <llad/logger.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
@@ -40,6 +41,7 @@ namespace lla {
 using lla::rpc::StreamRpcChannel;
 
 const string LlaServer::UNIVERSE_PREFERENCES = "universe";
+const string LlaServer::K_CLIENT_VAR = "clients-connected" ;
 
 /*
  * Create a new LlaServer
@@ -52,7 +54,9 @@ LlaServer::LlaServer(LlaServerServiceImplFactory *factory,
                      PluginLoader *plugin_loader,
                      PreferencesFactory *preferences_factory,
                      lla::select_server::SelectServer *select_server,
-                     lla::select_server::ListeningSocket *socket):
+                     lla_server_options *lla_options,
+                     lla::select_server::ListeningSocket *socket,
+                     ExportMap *export_map):
   m_service_factory(factory),
   m_plugin_loader(plugin_loader),
   m_ss(select_server),
@@ -62,13 +66,36 @@ LlaServer::LlaServer(LlaServerServiceImplFactory *factory,
   m_preferences_factory(preferences_factory),
   m_universe_preferences(NULL),
   m_universe_store(NULL),
-  m_init_run(false) {
+  m_export_map(export_map),
+  m_init_run(false),
+  m_free_export_map(false),
+  m_options(*lla_options) {
+
+  if (!m_export_map) {
+    m_export_map = new ExportMap();
+    m_free_export_map = true;
+  }
+
+  if (!m_options.http_port)
+    m_options.http_port = DEFAULT_HTTP_PORT;
+
+  IntegerVariable *var = m_export_map->GetIntegerVar(K_CLIENT_VAR);
 }
+
 
 /*
  * Shutdown the server
  */
 LlaServer::~LlaServer() {
+
+#ifdef HAVE_LIBMICROHTTPD
+  if (m_httpd) {
+    m_httpd->Stop();
+    delete m_httpd;
+    m_httpd = NULL;
+  }
+#endif
+
   // stops and unloads all our plugins
   if (m_plugin_loader) {
     m_plugin_loader->SetPluginAdaptor(NULL);
@@ -99,6 +126,9 @@ LlaServer::~LlaServer() {
 
   delete m_plugin_adaptor;
   delete m_device_manager;
+
+  if (m_free_export_map)
+    delete m_export_map;
 }
 
 
@@ -107,7 +137,6 @@ LlaServer::~LlaServer() {
  * * @return  0 on success, -1 on failure
  */
 bool LlaServer::Init() {
-
   if (m_init_run)
     return false;
 
@@ -128,7 +157,7 @@ bool LlaServer::Init() {
 
   m_universe_preferences = m_preferences_factory->NewPreference(UNIVERSE_PREFERENCES);
   m_universe_preferences->Load();
-  m_universe_store = new UniverseStore(m_universe_preferences);
+  m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
 
   // setup the objects
   m_device_manager = new DeviceManager();
@@ -136,7 +165,7 @@ bool LlaServer::Init() {
                                        m_ss,
                                        m_preferences_factory);
 
-  if(!m_universe_store || !m_device_manager || !m_plugin_adaptor) {
+  if (!m_universe_store || !m_device_manager || !m_plugin_adaptor) {
     delete m_universe_store;
     delete m_device_manager;
     delete m_plugin_adaptor;
@@ -145,6 +174,18 @@ bool LlaServer::Init() {
 
   m_plugin_loader->SetPluginAdaptor(m_plugin_adaptor);
   StartPlugins();
+
+#ifdef HAVE_LIBMICROHTTPD
+  if (m_options.http_enable) {
+    m_httpd = new LlaHttpServer(m_export_map,
+                                m_ss,
+                                m_options.http_port,
+                                m_options.http_enable_quit,
+                                m_options.http_data_dir);
+    m_httpd->Start();
+  }
+#endif
+
   m_init_run = true;
   return true;
 }
@@ -176,7 +217,8 @@ int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
   LlaServerServiceImpl *service = m_service_factory->New(m_universe_store,
                                                          m_device_manager,
                                                          m_plugin_loader,
-                                                         client);
+                                                         client,
+                                                         m_export_map);
   channel->SetService(service);
   socket->SetListener(channel);
 
@@ -190,7 +232,9 @@ int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
   pair<int, LlaServerServiceImpl*> pair(socket->ReadDescriptor(), service);
   m_sd_to_service.insert(pair);
 
-  m_ss->AddSocket(socket, this);
+  m_ss->AddSocket(socket, this, true);
+  IntegerVariable *var = m_export_map->GetIntegerVar(K_CLIENT_VAR);
+  var->Increment();
   return 0;
 }
 
@@ -206,6 +250,8 @@ void LlaServer::SocketClosed(lla::select_server::Socket *socket) {
     printf("didn't find client in map\n");
   }
 
+  IntegerVariable *var = m_export_map->GetIntegerVar(K_CLIENT_VAR);
+  var->Decrement();
   CleanupConnection(iter->second);
   m_sd_to_service.erase(iter);
 }
@@ -249,9 +295,8 @@ void LlaServer::StopPlugins() {
 void LlaServer::CleanupConnection(LlaServerServiceImpl *service) {
   Client *client = service->GetClient();
 
-  // remove from all universes
-  vector<Universe *> *universe_list = m_universe_store->GetList();
-  vector<Universe *>::iterator uni_iter;
+  vector<Universe*> *universe_list = m_universe_store->GetList();
+  vector<Universe*>::iterator uni_iter;
 
   // O(universes * clients). Clean this up sometime.
   for (uni_iter = universe_list->begin();

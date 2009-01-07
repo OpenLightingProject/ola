@@ -26,6 +26,7 @@
 #include <sys/resource.h>
 #include <fcntl.h>
 
+#include <iostream>
 #include <llad/logger.h>
 #include "LlaDaemon.h"
 
@@ -41,6 +42,11 @@ typedef struct {
   Logger::Output output;
   bool daemon;
   bool help;
+  int httpd;
+  int http_quit;
+  int http_port;
+  int rpc_port;
+  string http_data_dir;
 } lla_options;
 
 
@@ -77,7 +83,7 @@ static void sig_user1(int signo) {
  *
  * @return 0 on success, non 0 on failure
  */
-static int install_signal() {
+static int InstallSignals() {
   struct sigaction act, oact;
 
   act.sa_handler = sig_interupt;
@@ -114,20 +120,24 @@ static int install_signal() {
 /*
  * Display the help message
  */
-static void display_help() {
-
-  printf(
-"Usage: llad [--no-daemon] [--debug <level>] [--no-syslog]\n"
-"\n"
-"Start the lla daemon.\n"
-"\n"
-"  -b, --daemon         Fork into background.\n"
-"  -d, --debug <level>  Set the debug level 0 .. 4 .\n"
-"  -h, --help           Display this help message and exit.\n"
-"  -s, --syslog         Log to syslog rather than stderr.\n"
-"\n"
-  );
-
+static void DisplayHelp() {
+  cout <<
+  "Usage: llad [options] [--debug <level>]\n"
+  "\n"
+  "Start the lla daemon.\n"
+  "\n"
+  "  -d, --http-data-dir      Path to the static content.\n"
+  "  -f, --daemon             Fork into background.\n"
+  "  -h, --help               Display this help message and exit.\n"
+  "  -l, --log-level <level>  Set the loggging level 0 .. 4 .\n"
+  "  -p, --http-port          Port to run the http server on (default " <<
+    lla::LlaServer::DEFAULT_HTTP_PORT << ")\n" <<
+  "  -r, --rpc-port           Port to listen for RPCs on (default " <<
+    lla::LlaDaemon::DEFAULT_RPC_PORT << ")\n" <<
+  "  -s, --syslog             Log to syslog rather than stderr.\n"
+  "  --no-http                Don't run the http server\n"
+  "  --no-http-quit           Disable the /quit handler\n"
+  << endl;
 }
 
 
@@ -138,11 +148,16 @@ static void display_help() {
  * @param argv
  * @param opts  pointer to the options struct
  */
-static void parse_options(int argc, char *argv[], lla_options *opts) {
+static void ParseOptions(int argc, char *argv[], lla_options *opts) {
   static struct option long_options[] = {
-      {"no-daemon", no_argument, 0, 'f'},
-      {"debug", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
+      {"http-data-dir", required_argument, 0, 'd'},
+      {"http-port", required_argument, 0, 'p'},
+      {"log-level", required_argument, 0, 'l'},
+      {"no-daemon", no_argument, 0, 'f'},
+      {"no-http", no_argument, &opts->httpd, 0},
+      {"no-http-quit", no_argument, &opts->http_quit, 0},
+      {"rpc-port", required_argument, 0, 'r'},
       {"syslog", no_argument, 0, 's'},
       {0, 0, 0, 0}
     };
@@ -151,14 +166,16 @@ static void parse_options(int argc, char *argv[], lla_options *opts) {
   int option_index = 0;
 
   while (1) {
-
-    c = getopt_long(argc, argv, "fd:hs", long_options, &option_index);
-
+    c = getopt_long(argc, argv, "l:p:fd:hsr:", long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
       case 0:
+        break;
+
+      case 'd':
+        opts->http_data_dir = optarg;
         break;
 
       case 'f':
@@ -173,7 +190,7 @@ static void parse_options(int argc, char *argv[], lla_options *opts) {
         opts->output = Logger::SYSLOG ;
         break;
 
-      case 'd':
+      case 'l':
         ll = atoi(optarg);
 
         switch(ll) {
@@ -199,6 +216,12 @@ static void parse_options(int argc, char *argv[], lla_options *opts) {
         }
         break;
 
+      case 'p':
+        opts->http_port = atoi(optarg);
+
+      case 'r':
+        opts->rpc_port = atoi(optarg);
+
       case '?':
         break;
 
@@ -210,37 +233,23 @@ static void parse_options(int argc, char *argv[], lla_options *opts) {
 
 
 /*
- * Set the default options
- *
- * @param opts  pointer to the options struct
- */
-static void init_options(lla_options *opts) {
-  opts->level = Logger::CRIT;
-  opts->output = Logger::STDERR;
-  opts->daemon = false;
-  opts->help = false;
-}
-
-/*
  * Run as a daemon
- *
- * Taken from apue
  */
-static int daemonise() {
+static int Daemonise() {
   pid_t pid;
   unsigned int i;
   int fd0, fd1, fd2;
   struct rlimit rl;
   struct sigaction sa;
 
-  if(getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-    printf("Could not determine file limit\n");
+  if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
+    cout << "Could not determine file limit" << endl;
     exit(1);
   }
 
   // fork
   if ((pid = fork()) < 0) {
-    printf("Could not fork\n");
+    cout << "Could not fork\n" << endl;
     exit(1);
   } else if (pid != 0)
     exit(0);
@@ -252,21 +261,21 @@ static int daemonise() {
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = 0;
 
-  if(sigaction(SIGHUP, &sa, NULL) < 0) {
-    printf("Could not install signal\n");
+  if (sigaction(SIGHUP, &sa, NULL) < 0) {
+    cout << "Could not install signal\n" << endl;
     exit(1);
   }
 
-  if((pid= fork()) < 0) {
-    printf("Could not fork\n");
+  if ((pid= fork()) < 0) {
+    cout << "Could not fork\n" << endl;
     exit(1);
   } else if (pid != 0)
     exit(0);
 
   // close all fds
-  if(rl.rlim_max == RLIM_INFINITY)
+  if (rl.rlim_max == RLIM_INFINITY)
     rl.rlim_max = 1024;
-  for(i=0; i < rl.rlim_max; i++)
+  for (i=0; i < rl.rlim_max; i++)
     close(i);
 
   // send stdout, in and err to /dev/null
@@ -279,48 +288,81 @@ static int daemonise() {
 
 
 /*
- * Take actions based upon the options
+ * Parse the options, and take action
+ *
+ * @param argc
+ * @param argv
+ * @param opts a pointer to the lla_options struct
  */
-static void handle_options(lla_options *opts) {
+static void Setup(int argc, char*argv[], lla_options *opts) {
+  opts->level = Logger::CRIT;
+  opts->output = Logger::STDERR;
+  opts->daemon = false;
+  opts->help = false;
+  opts->httpd = 1;
+  opts->http_quit = 1;
+  opts->http_port = lla::LlaServer::DEFAULT_HTTP_PORT;
+  opts->rpc_port = lla::LlaDaemon::DEFAULT_RPC_PORT;
+  opts->http_data_dir = "";
+
+  ParseOptions(argc, argv, opts);
+
   if(opts->help) {
-    display_help();
+    DisplayHelp();
     exit(0);
   }
 
   // setup the logger object
   Logger::instance(opts->level, opts->output);
 
-  if(opts->daemon)
-    daemonise();
+  if (opts->daemon)
+    Daemonise();
 }
 
 
-/*
- * Parse the options, and take action
- *
- * @param argc
- * @param argv
- */
-static void setup(int argc, char*argv[]) {
-  lla_options opts;
+static void InitExportMap(lla::ExportMap &export_map, int argc, char*argv[]) {
+  struct rlimit rl;
+  lla::StringVariable *var = export_map.GetStringVar("binary");
+  var->Set(argv[0]);
 
-  init_options(&opts);
-  parse_options(argc, argv, &opts);
-  handle_options(&opts);
+  var = export_map.GetStringVar("cmd-line");
+
+  stringstream out;
+  for (int i = 1; i < argc; i++) {
+    out << argv[i] << " ";
+  }
+  var->Set(out.str());
+
+  var = export_map.GetStringVar("fd-limit");
+  if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
+    var->Set("undertermined");
+  } else {
+    stringstream out;
+    out << rl.rlim_cur;
+    var->Set(out.str());
+  }
 }
-
 
 /*
  * Main
  *
  */
-int main(int argc, char*argv[]) {
-  setup(argc, argv);
+int main(int argc, char *argv[]) {
+  lla_options opts;
+  lla::ExportMap export_map;
+  Setup(argc, argv, &opts);
+  InitExportMap(export_map, argc, argv);
 
-  if(install_signal())
+  if(InstallSignals())
     Logger::instance()->log(Logger::WARN, "Failed to install signal handlers");
 
-  llad = new LlaDaemon();
+  lla::lla_server_options lla_options;
+  lla_options.http_enable = opts.httpd;
+  lla_options.http_enable_quit = opts.http_quit;
+  lla_options.http_port = opts.http_port;
+  lla_options.http_data_dir = opts.http_data_dir;
+
+  llad = new LlaDaemon(&lla_options, &export_map, opts.rpc_port);
 
   if (llad->Init()) {
     llad->Run();

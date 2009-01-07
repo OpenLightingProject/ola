@@ -21,10 +21,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <lla/BaseTypes.h>
+#include <lla/ExportMap.h>
 #include <llad/logger.h>
 #include "LlaDaemon.h"
-#include "LlaServer.h"
 #include "DlOpenPluginLoader.h"
 
 #include "PluginLoader.h"
@@ -35,20 +34,30 @@ using lla::select_server::TcpListeningSocket;
 using lla::select_server::ListeningSocket;
 using lla::select_server::SelectServer;
 
+const string LlaDaemon::K_RPC_PORT_VAR = "rpc_port";
 
 /*
  * Create a new LlaDaemon
  *
  * @param PluginLoader what to use to access the plugins
  */
-LlaDaemon::LlaDaemon():
+LlaDaemon::LlaDaemon(lla_server_options *options,
+                     ExportMap *export_map,
+                     unsigned int rpc_port):
   m_plugin_loader(NULL),
   m_ss(NULL),
   m_server(NULL),
   m_preferences_factory(NULL),
   m_listening_socket(NULL),
-  m_service_factory(NULL) {
+  m_service_factory(NULL),
+  m_options(*options),
+  m_export_map(export_map),
+  m_rpc_port(rpc_port) {
+
+  IntegerVariable *var = m_export_map->GetIntegerVar(K_RPC_PORT_VAR);
+  var->Set(rpc_port);
 }
+
 
 /*
  * Destroy this object
@@ -56,7 +65,6 @@ LlaDaemon::LlaDaemon():
  */
 LlaDaemon::~LlaDaemon() {
   m_listening_socket->Close();
-
   delete m_preferences_factory;
   delete m_service_factory;
   delete m_server;
@@ -72,18 +80,20 @@ LlaDaemon::~LlaDaemon() {
  * @return 0 on success, -1 on failure
  */
 bool LlaDaemon::Init() {
-  m_ss = new SelectServer();
+  m_ss = new SelectServer(m_export_map);
   m_service_factory = new LlaServerServiceImplFactory();
   m_plugin_loader = new DlOpenPluginLoader(PLUGIN_DIR);
 
   m_preferences_factory = new FileBackedPreferencesFactory();
-  m_listening_socket = new TcpListeningSocket("127.0.0.1", LLA_DEFAULT_PORT);
+  m_listening_socket = new TcpListeningSocket("127.0.0.1", m_rpc_port);
 
   m_server = new LlaServer(m_service_factory,
                            m_plugin_loader,
                            m_preferences_factory,
                            m_ss,
-                           m_listening_socket);
+                           &m_options,
+                           m_listening_socket,
+                           m_export_map);
   return m_server->Init();
 }
 

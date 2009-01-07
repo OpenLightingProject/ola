@@ -33,6 +33,26 @@
 
 using namespace lla::select_server;
 
+const string SelectServer::K_FD_VAR = "ss-fd-registered";
+const string SelectServer::K_LOOP_VAR = "ss-loop-functions";
+const string SelectServer::K_TIMER_VAR = "ss-timer-functions";
+
+using lla::ExportMap;
+
+/*
+ * Constructor
+ */
+SelectServer::SelectServer(ExportMap *export_map):
+  m_terminate(false),
+  m_export_map(export_map) {
+
+  if (m_export_map) {
+    lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
+    var = m_export_map->GetIntegerVar(K_LOOP_VAR);
+    var = m_export_map->GetIntegerVar(K_TIMER_VAR);
+  }
+}
+
 
 /*
  * Run the select server until Termiate() is called.
@@ -49,7 +69,9 @@ int SelectServer::Run() {
 /*
  * Register a socket with the select server
  */
-int SelectServer::AddSocket(Socket *socket, SocketManager *manager) {
+int SelectServer::AddSocket(Socket *socket,
+                            SocketManager *manager,
+                            bool delete_on_close) {
   if (socket->ReadDescriptor() < 0) {
     printf("AddSocket failed, fd: %d\n", socket->ReadDescriptor());
     return -1;
@@ -58,13 +80,19 @@ int SelectServer::AddSocket(Socket *socket, SocketManager *manager) {
   registered_socket_t registered_socket;
   registered_socket.socket = socket;
   registered_socket.manager = manager;
+  registered_socket.delete_on_close = delete_on_close;
 
   vector<registered_socket_t>::const_iterator iter;
   for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
     if (iter->socket->ReadDescriptor() == socket->ReadDescriptor())
       return 0;
   }
+
   m_read_sockets.push_back(registered_socket);
+  if (m_export_map) {
+    lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
+    var->Increment();
+  }
   return 0;
 }
 
@@ -82,6 +110,10 @@ int SelectServer::RemoveSocket(class Socket *socket) {
   for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
     if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
       m_read_sockets.erase(iter);
+      if (m_export_map) {
+        lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
+        var->Decrement();
+      }
       return 0;
     }
   }
@@ -155,10 +187,15 @@ int SelectServer::RegisterTimeout(int ms,
   event.free_after_run = free_after_run;
 
   gettimeofday(&event.next, NULL);
-  event.next.tv_sec += ms / MS_IN_SECOND;
-  event.next.tv_usec += MS_IN_SECOND * (ms % MS_IN_SECOND);
+  event.next.tv_sec += ms / K_MS_IN_SECOND;
+  event.next.tv_usec += K_MS_IN_SECOND * (ms % K_MS_IN_SECOND);
 
   m_event_cbs.push(event);
+
+  if (m_export_map) {
+    lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
+    var->Increment();
+  }
   return 0;
 }
 
@@ -167,8 +204,13 @@ int SelectServer::RegisterTimeout(int ms,
  * register a listener to be called on each iteration through the select loop
  */
 int SelectServer::RegisterLoopCallback(FDListener *listener) {
-  if (listener)
+  if (listener) {
     m_loop_listeners.push_back(listener);
+    if (m_export_map) {
+      lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_LOOP_VAR);
+      var->Increment();
+    }
+  }
   return 0;
 }
 
@@ -197,11 +239,11 @@ int SelectServer::CheckForEvents() {
     tv.tv_usec = 0;
   } else {
     struct timeval next = m_event_cbs.top().next;
-    long long now_l = (long long) now.tv_sec * US_IN_SECOND + now.tv_usec;
-    long long next_l = (long long) next.tv_sec * US_IN_SECOND + next.tv_usec;
+    long long now_l = (long long) now.tv_sec * K_US_IN_SECOND + now.tv_usec;
+    long long next_l = (long long) next.tv_sec * K_US_IN_SECOND + next.tv_usec;
     long rem = next_l - now_l;
-    tv.tv_sec = rem / US_IN_SECOND;
-    tv.tv_usec = rem % US_IN_SECOND;
+    tv.tv_sec = rem / K_US_IN_SECOND;
+    tv.tv_usec = rem % K_US_IN_SECOND;
   }
 
   switch (select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
@@ -278,12 +320,15 @@ void SelectServer::CheckSockets(fd_set &set) {
         if (m_read_sockets[i].manager)
           m_read_sockets[i].manager->SocketClosed(socket);
         socket->Close();
+        if (m_read_sockets[i].delete_on_close)
+          delete socket;
       } else {
         int ret = socket->SocketReady();
       }
     }
   }
 }
+
 
 /*
  * Remove an fd from the list of listeners
@@ -320,13 +365,19 @@ struct timeval SelectServer::CheckTimeouts() {
 
     if (e.interval) {
       e.next = now;
-      e.next.tv_sec += e.interval / MS_IN_SECOND;
-      e.next.tv_usec += e.interval / MS_IN_SECOND;
+      e.next.tv_sec += e.interval / K_MS_IN_SECOND;
+      e.next.tv_usec += e.interval / K_MS_IN_SECOND;
       m_event_cbs.push(e);
     }
 
-    if (!e.interval && e.free_after_run)
+    if (!e.interval && e.free_after_run) {
       delete e.listener;
+
+      if (m_export_map) {
+        lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
+        var->Increment();
+      }
+    }
     gettimeofday(&now, NULL);
   }
   return now;

@@ -83,13 +83,11 @@ class EchoSocketListener: public SocketListener {
  */
 class EchoSocketManager: public SocketManager {
   public:
-    EchoSocketManager(SelectServer *ss, bool delete_on_close=true):
-      m_ss(ss),
-      m_delete_on_close(delete_on_close) {}
+    EchoSocketManager(SelectServer *ss):
+      m_ss(ss) {}
     void SocketClosed(Socket *socket);
   private:
     SelectServer *m_ss;
-    bool m_delete_on_close;
 };
 
 
@@ -139,15 +137,12 @@ int EchoAcceptSocketListener::NewConnection(ConnectedSocket *socket) {
     delete socket;
   }
   else
-    m_ss->AddSocket(socket, m_manager);
+    m_ss->AddSocket(socket, m_manager, true);
 }
 
 
 void EchoSocketManager::SocketClosed(Socket *socket) {
-  socket->Close();
   m_ss->Terminate();
-  if (m_delete_on_close)
-    delete socket;
 }
 
 
@@ -184,7 +179,7 @@ void SocketTest::testLoopbackSocket() {
 
 /*
  * Test a pipe socket works correctly.
- * The client sends some data and expects the same data to be returns. The
+ * The client sends some data and expects the same data to be returned. The
  * client then closes the connection.
  */
 void SocketTest::testPipeSocketClientClose() {
@@ -200,7 +195,7 @@ void SocketTest::testPipeSocketClientClose() {
 
   EchoSocketManager manager(m_ss);
   CPPUNIT_ASSERT(!m_ss->AddSocket(&socket));
-  CPPUNIT_ASSERT(!m_ss->AddSocket(other_end, &manager));
+  CPPUNIT_ASSERT(!m_ss->AddSocket(other_end, &manager, true));
 
   size_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(), test_string.length());
   CPPUNIT_ASSERT_EQUAL(test_string.length(), bytes_sent);
@@ -224,7 +219,7 @@ void SocketTest::testPipeSocketServerClose() {
   EchoSocketListener echo_listener(m_ss, true);
   other_end->SetListener(&echo_listener);
 
-  EchoSocketManager manager(m_ss, false);
+  EchoSocketManager manager(m_ss);
   CPPUNIT_ASSERT(!m_ss->AddSocket(&socket, &manager));
   CPPUNIT_ASSERT(!m_ss->AddSocket(other_end));
 
@@ -274,7 +269,7 @@ void SocketTest::testTcpSocketServerClose() {
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
-  EchoSocketManager manager(m_ss, false);
+  EchoSocketManager manager(m_ss);
   EchoAcceptSocketListener accept_listener(m_ss, &manager, true);
   socket.SetListener(&accept_listener);
 

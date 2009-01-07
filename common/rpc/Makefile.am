@@ -24,7 +24,9 @@ RpcTester_SOURCES = RpcTester.cpp RpcControllerTest.cpp\
 nodist_RpcTester_SOURCES = TestService.pb.cc
 RpcTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 RpcTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
-RpcTester_LDADD = ./libstreamrpcchannel.la ../select_server/libllaselectserver.la
+RpcTester_LDADD = ./libstreamrpcchannel.la \
+                  ../select_server/libllaselectserver.la \
+                  ../export_map/libllaexportmap.la
 
 clean-local:
 	rm *.pb.{h,cc}

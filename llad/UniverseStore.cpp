@@ -22,11 +22,24 @@
 #include <sstream>
 #include <iostream>
 
+#include <lla/ExportMap.h>
 #include <llad/Universe.h>
 #include <llad/Preferences.h>
 #include "UniverseStore.h"
 
 namespace lla {
+
+
+UniverseStore::UniverseStore(class Preferences *preferences,
+                             ExportMap *export_map):
+  m_preferences(preferences),
+  m_export_map(export_map) {
+
+  StringMap *map = export_map->GetStringMapVar(Universe::K_UNIVERSE_NAME_VAR, "name");
+  map = export_map->GetStringMapVar(Universe::K_UNIVERSE_MODE_VAR, "mode");
+  IntMap *int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_PORT_VAR, "count");
+  int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_CLIENTS_VAR, "count");
+}
 
 
 /*
@@ -54,10 +67,10 @@ Universe *UniverseStore::GetUniverseOrCreate(int universe_id) {
   Universe *universe = GetUniverse(universe_id);
 
   if (!universe) {
-    universe = new Universe(universe_id, this);
+    universe = new Universe(universe_id, this, m_export_map);
 
     if (universe) {
-      pair<int , Universe*> pair(universe_id, universe);
+      pair<int, Universe*> pair(universe_id, universe);
       m_universe_map.insert(pair);
 
       if (m_preferences)
