@@ -348,7 +348,7 @@ int ParsePatchOptions(int argc, char *argv[], options *opts) {
         break;
       case 'r':
         opts->patch_action = lla::UNPATCH;
-            break;
+        break;
       case 'u':
         opts->uni = atoi(optarg);
         break;
@@ -524,8 +524,12 @@ int FetchDeviceInfo(LlaClient *client, options *opts) {
 
 
 void Patch(LlaClient *client, options *opts) {
-  if (opts->device_id == INVALID_VALUE || opts->port_id == INVALID_VALUE ||
-      opts->uni == INVALID_VALUE) {
+  if (opts->device_id == INVALID_VALUE || opts->port_id == INVALID_VALUE) {
+    DisplayPatchHelp(opts);
+    exit(1);
+  }
+
+  if (opts->patch_action == lla::PATCH  && opts->uni == INVALID_VALUE) {
     DisplayPatchHelp(opts);
     exit(1);
   }
