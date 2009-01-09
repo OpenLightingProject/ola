@@ -18,8 +18,17 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <errno.h>
 #include <string>
 #include <iostream>
+
+#include <llad/Plugin.h>
+#include <llad/Device.h>
+#include <llad/Port.h>
+#include <llad/Universe.h>
+#include "PluginLoader.h"
+#include "DeviceManager.h"
+#include "UniverseStore.h"
 #include "LlaHttpServer.h"
 
 namespace lla {
@@ -28,33 +37,57 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::stringstream;
+using google::TemplateDictionary;
+using google::TemplateNamelist;
 
 const string LlaHttpServer::K_DATA_DIR_VAR = "http_data_dir";
 
+RegisterTemplateFilename(MAIN_FILENAME, "show_main_page.tpl");
+RegisterTemplateFilename(PLUGINS_FILENAME, "show_loaded_plugins.tpl");
+RegisterTemplateFilename(PLUGIN_INFO_FILENAME, "show_plugin_info.tpl");
+RegisterTemplateFilename(DEVICE_FILENAME, "show_loaded_devices.tpl");
+RegisterTemplateFilename(UNIVERSE_FILENAME, "show_universe_settings.tpl");
 
 LlaHttpServer::LlaHttpServer(ExportMap *export_map,
                              SelectServer *ss,
+                             UniverseStore *universe_store,
+                             PluginLoader *plugin_loader,
+                             DeviceManager *device_manager,
                              unsigned int port,
                              bool enable_quit,
                              const string &data_dir):
-  HttpServer(port, data_dir),
+  m_server(port, data_dir),
   m_export_map(export_map),
   m_ss(ss),
+  m_universe_store(universe_store),
+  m_plugin_loader(plugin_loader),
+  m_device_manager(device_manager),
   m_enable_quit(enable_quit) {
 
-  RegisterHandler("/debug", NewHttpClosure(this, &LlaHttpServer::DisplayDebug));
-  RegisterHandler("/quit", NewHttpClosure(this, &LlaHttpServer::DisplayQuit));
-  RegisterHandler("/help", NewHttpClosure(this, &LlaHttpServer::DisplayHandlers));
-  RegisterFile("/index.html", "index.html", CONTENT_TYPE_HTML);
-  RegisterFile("/menu.html", "menu.html", CONTENT_TYPE_HTML);
-  RegisterFile("/about.html", "about.html", CONTENT_TYPE_HTML);
-  RegisterFile("/simple.css", "simple.css", CONTENT_TYPE_CSS);
-  RegisterFile("/notice.gif", "notice.gif", CONTENT_TYPE_GIF);
-  RegisterFile("/GPL.txt", "GPL.txt", CONTENT_TYPE_PLAIN);
-  RegisterDefaultHandler(NewHttpClosure(this, &LlaHttpServer::DisplayIndex));
+  RegisterHandler("/debug", &LlaHttpServer::DisplayDebug);
+  RegisterHandler("/quit", &LlaHttpServer::DisplayQuit);
+  RegisterHandler("/help", &LlaHttpServer::DisplayHandlers);
+  RegisterHandler("/main", &LlaHttpServer::DisplayMain);
+  RegisterHandler("/plugins", &LlaHttpServer::DisplayPlugins);
+  RegisterHandler("/plugin", &LlaHttpServer::DisplayPluginInfo);
+  RegisterHandler("/devices", &LlaHttpServer::DisplayDevices);
+  RegisterHandler("/universes", &LlaHttpServer::DisplayUniverses);
+  RegisterHandler("/reload_templates", &LlaHttpServer::DisplayTemplateReload);
+  m_server.RegisterFile("/index.html", "index.html", HttpServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/menu.html", "menu.html", HttpServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/about.html", "about.html", HttpServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/simple.css", "simple.css", HttpServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile("/notice.gif", "notice.gif", HttpServer::CONTENT_TYPE_GIF);
+  m_server.RegisterFile("/plus.png", "plus.png", HttpServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/minus.png", "minus.png", HttpServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/GPL.txt", "GPL.txt", HttpServer::CONTENT_TYPE_PLAIN);
+  m_server.RegisterDefaultHandler(NewHttpClosure(this, &LlaHttpServer::DisplayIndex));
 
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
-  data_dir_var->Set(m_data_dir);
+  data_dir_var->Set(m_server.DataDir());
+
+  // warn on any missing templates
+  TemplateNamelist::GetMissingList(false);
 }
 
 
@@ -65,10 +98,166 @@ LlaHttpServer::LlaHttpServer(ExportMap *export_map,
  * @returns MHD_NO or MHD_YES
  */
 int LlaHttpServer::DisplayIndex(const HttpRequest *request, HttpResponse *response) {
-  static_file_info file_info;
+  HttpServer::static_file_info file_info;
   file_info.file_path = "index.html";
-  file_info.content_type = CONTENT_TYPE_HTML;
-  return ServeStaticContent(&file_info, response);
+  file_info.content_type = HttpServer::CONTENT_TYPE_HTML;
+  return m_server.ServeStaticContent(&file_info, response);
+}
+
+
+/*
+ * Display the main page
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int LlaHttpServer::DisplayMain(const HttpRequest *request,
+                               HttpResponse *response) {
+
+  TemplateDictionary dict("main");
+
+  if (m_enable_quit)
+    dict.ShowSection("QUIT_ENABLED");
+  return m_server.DisplayTemplate(MAIN_FILENAME, &dict, response);
+}
+
+
+
+/*
+ * Display the plugins page.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int LlaHttpServer::DisplayPlugins(const HttpRequest *request,
+                                  HttpResponse *response) {
+
+  //dict->SetValueAndShowSection("USERNAME", username, "CHANGE_USER");
+  TemplateDictionary dict("plugins");
+  vector<AbstractPlugin*> plugins = m_plugin_loader->Plugins();
+  sort(plugins.begin(), plugins.end(), PluginLessThan());
+
+  if (plugins.size()) {
+    int i = 1;
+    vector<AbstractPlugin*>::const_iterator iter;
+    for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
+      TemplateDictionary *sub_dict = dict.AddSectionDictionary("PLUGIN");
+      sub_dict->SetValue("ID", IntToString((*iter)->Id()));
+      sub_dict->SetValue("NAME", (*iter)->Name());
+      if (i % 2)
+        sub_dict->ShowSection("ODD");
+      i++;
+    }
+  } else
+    dict.ShowSection("NO_PLUGINS");
+  return m_server.DisplayTemplate(PLUGINS_FILENAME, &dict, response);
+}
+
+
+/*
+ * Display the info for a single plugin.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int LlaHttpServer::DisplayPluginInfo(const HttpRequest *request,
+                                     HttpResponse *response) {
+
+
+  string val = request->GetParameter("id");
+  int plugin_id = atoi(val.data());
+  AbstractPlugin *plugin = NULL;
+  if ( plugin_id > 0 && plugin_id < LLA_PLUGIN_LAST)
+    plugin = m_plugin_loader->GetPlugin((lla_plugin_id) plugin_id);
+
+  if (!plugin)
+    return m_server.ServeNotFound(response);
+
+  TemplateDictionary dict("plugin");
+  dict.SetValue("NAME", plugin->Name());
+  dict.SetValue("DESCRIPTION", plugin->Description());
+  return m_server.DisplayTemplate(PLUGIN_INFO_FILENAME, &dict, response);
+}
+
+
+/*
+ * Display the device page.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int LlaHttpServer::DisplayDevices(const HttpRequest *request,
+                                  HttpResponse *response) {
+
+  TemplateDictionary dict("device");
+  vector<AbstractDevice*> devices = m_device_manager->Devices();
+
+  string action = request->GetParameter("action");
+  bool save_changes = !action.empty();
+
+  if (devices.size()) {
+    vector<AbstractDevice*>::const_iterator iter;
+    for (iter = devices.begin(); iter != devices.end(); ++iter) {
+      TemplateDictionary *sub_dict = dict.AddSectionDictionary("DEVICE");
+      PopulateDeviceDict(request, sub_dict, *iter, save_changes);
+    }
+  } else
+    dict.ShowSection("NO_DEVICES");
+  return m_server.DisplayTemplate(DEVICE_FILENAME, &dict, response);
+}
+
+
+/*
+ * Show the universe settings page.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int LlaHttpServer::DisplayUniverses(const HttpRequest *request,
+                                    HttpResponse *response) {
+
+  TemplateDictionary dict("universes");
+  vector<Universe*> *universes = m_universe_store->GetList();
+
+  string action = request->GetParameter("action");
+  bool save_changes = !action.empty();
+
+  if (universes->size()) {
+    vector<Universe*>::const_iterator iter;
+    int i = 1;
+    for (iter = universes->begin(); iter != universes->end(); ++iter) {
+
+      if (save_changes) {
+
+        string uni_name = request->GetParameter(
+            "name_" + IntToString((*iter)->UniverseId()));
+        string uni_mode = request->GetParameter(
+            "mode_" + IntToString((*iter)->UniverseId()));
+
+        if (uni_name.size() > K_UNIVERSE_NAME_LIMIT)
+          uni_name = uni_name.substr(K_UNIVERSE_NAME_LIMIT);
+        (*iter)->SetName(uni_name);
+
+        if (uni_mode == "ltp")
+          (*iter)->SetMergeMode(Universe::MERGE_LTP);
+        else
+          (*iter)->SetMergeMode(Universe::MERGE_HTP);
+
+      }
+      TemplateDictionary *sub_dict = dict.AddSectionDictionary("UNIVERSE");
+      sub_dict->SetValue("ID", IntToString((*iter)->UniverseId()));
+      sub_dict->SetValue("NAME", (*iter)->Name());
+      if ((*iter)->MergeMode() == Universe::MERGE_HTP)
+        sub_dict->ShowSection("HTP_MODE");
+      if (i % 2)
+        sub_dict->ShowSection("ODD");
+      i++;
+    }
+  } else
+    dict.ShowSection("NO_UNIVERSES");
+
+  delete universes;
+  return m_server.DisplayTemplate(UNIVERSE_FILENAME, &dict, response);
 }
 
 
@@ -80,7 +269,7 @@ int LlaHttpServer::DisplayIndex(const HttpRequest *request, HttpResponse *respon
  */
 int LlaHttpServer::DisplayDebug(const HttpRequest *request, HttpResponse *response) {
   vector<BaseVariable*> variables = m_export_map->AllVariables();
-  response->SetContentType(CONTENT_TYPE_PLAIN);
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
 
   vector<BaseVariable*>::iterator iter;
   for (iter = variables.begin(); iter != variables.end(); ++iter) {
@@ -100,14 +289,25 @@ int LlaHttpServer::DisplayDebug(const HttpRequest *request, HttpResponse *respon
  */
 int LlaHttpServer::DisplayQuit(const HttpRequest *request, HttpResponse *response) {
   if (m_enable_quit) {
-    response->SetContentType(CONTENT_TYPE_PLAIN);
+    response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
     response->Append("ok");
     m_ss->Terminate();
   } else {
     response->SetStatus(403);
-    response->SetContentType(CONTENT_TYPE_HTML);
+    response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
     response->Append("<b>403 Unauthorized</b>");
   }
+  return response->Send();
+}
+
+
+/*
+ * Handle the template reload.
+ */
+int LlaHttpServer::DisplayTemplateReload(const HttpRequest *request, HttpResponse *response) {
+  google::Template::ReloadAllIfChanged();
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append("ok");
   return response->Send();
 }
 
@@ -116,10 +316,10 @@ int LlaHttpServer::DisplayQuit(const HttpRequest *request, HttpResponse *respons
  * Display a list of registered handlers
  */
 int LlaHttpServer::DisplayHandlers(const HttpRequest *request, HttpResponse *response) {
-  vector<string> handlers = Handlers();
+  vector<string> handlers = m_server.Handlers();
   vector<string>::const_iterator iter;
-  response->SetContentType(CONTENT_TYPE_HTML);
-  response->Append("<html><body><b>Registerd Handlers</b><ul>");
+  response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
+  response->Append("<html><body><b>Registered Handlers</b><ul>");
   for (iter = handlers.begin(); iter != handlers.end(); ++iter) {
     response->Append("<li><a href='" + *iter + "'>" + *iter + "</a></li>");
   }
@@ -127,5 +327,95 @@ int LlaHttpServer::DisplayHandlers(const HttpRequest *request, HttpResponse *res
   return response->Send();
 }
 
+
+/*
+ * Register a handler
+ */
+inline void LlaHttpServer::RegisterHandler(
+    const string &path,
+    int (LlaHttpServer::*method)(const HttpRequest*, HttpResponse*)) {
+
+  m_server.RegisterHandler(path, NewHttpClosure(this, method));
+}
+
+
+/*
+ * Populate a dictionary for this device.
+ * @param dict the dictionary to fill
+ * @param device the device to use
+ */
+void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
+                                       TemplateDictionary *dict,
+                                       AbstractDevice *device,
+                                       bool save_changes) {
+
+  dict->SetValue("ID", IntToString(device->DeviceId()));
+  dict->SetValue("NAME", device->Name());
+  string val = request->GetParameter("show_" +
+                                     IntToString(device->DeviceId()));
+  dict->SetValue("SHOW_VALUE", val == "1" ? "1" : "0");
+  dict->SetValue("SHOW", val == "1" ? "block" : "none");
+
+  const vector<AbstractPort*> ports = device->Ports();
+  vector<AbstractPort*>::const_iterator port_iter;
+  int i = 1;
+  for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
+
+    if (save_changes) {
+      string uni_id = request->GetParameter(IntToString(device->DeviceId())
+                                            + "_" +
+                                            IntToString((*port_iter)->PortId()));
+      Universe *universe = (*port_iter)->GetUniverse();
+      int universe_id = atoi(uni_id.data());
+      if (universe_id != 0 || errno == 0) {
+        // valid number, patch this universe
+        Universe *new_universe =
+          m_universe_store->GetUniverseOrCreate(universe_id);
+
+        if (new_universe) {
+          if (universe == NULL || not (*universe == *new_universe))
+            new_universe->AddPort(*port_iter);
+        }
+      } else {
+        // invalid or blank, unpatch if needed
+        if (universe) {
+          universe->RemovePort(*port_iter);
+          m_universe_store->DeleteUniverseIfInactive(universe);
+        }
+      }
+    }
+
+    TemplateDictionary *port_dict = dict->AddSectionDictionary("PORT");
+    port_dict->SetValue("PORT_ID", IntToString((*port_iter)->PortId()));
+    string capability;
+
+    if ((*port_iter)->CanRead()) {
+      capability += "IN";
+      if ((*port_iter)->CanWrite())
+        capability += " / ";
+    }
+    if ((*port_iter)->CanWrite())
+      capability += "OUT";
+    port_dict->SetValue("CAPABILITY", capability);
+
+    Universe *universe = (*port_iter)->GetUniverse();
+    if (universe)
+      port_dict->SetValue("UNIVERSE", IntToString(universe->UniverseId()));
+
+    if (i % 2)
+      port_dict->ShowSection("ODD");
+    i++;
+  }
+}
+
+
+/*
+ * Convert an int to a string.
+ */
+string LlaHttpServer::IntToString(int i) {
+  stringstream str;
+  str << i;
+  return str.str();
+}
 
 } //lla

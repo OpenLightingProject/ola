@@ -1,5 +1,7 @@
 ?/12/2008
   Major rewrite
+   - added export_map
+   - added http server & web interface
    - now works on mac
    - converted to using protocol buffers
    - supports embedding

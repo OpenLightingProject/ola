@@ -207,4 +207,19 @@ int DlOpenPluginLoader::UnloadPlugin(lt_dlhandle handle) {
   return 0;
 }
 
+
+/*
+ * Return the plugin with the specified id.
+ * @param plugin_id the id of the plugin
+ * @return the plugin corresponding to this id or NULL if not found
+ */
+AbstractPlugin* DlOpenPluginLoader::GetPlugin(lla_plugin_id plugin_id) const {
+  vector<AbstractPlugin*>::const_iterator iter;
+
+  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
+    if ((*iter)->Id() == plugin_id)
+      return *iter;
+  return NULL;
+}
+
 } //lla

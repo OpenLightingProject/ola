@@ -179,6 +179,9 @@ bool LlaServer::Init() {
   if (m_options.http_enable) {
     m_httpd = new LlaHttpServer(m_export_map,
                                 m_ss,
+                                m_universe_store,
+                                m_plugin_loader,
+                                m_device_manager,
                                 m_options.http_port,
                                 m_options.http_enable_quit,
                                 m_options.http_data_dir);

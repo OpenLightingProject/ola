@@ -22,6 +22,7 @@
 #define LLA_HTTP_SERVER_H
 
 #include <string>
+#include <google/template.h>
 #include <lla/select_server/SelectServer.h>
 #include <lla/ExportMap.h>
 #include "HttpServer.h"
@@ -29,31 +30,57 @@
 namespace lla {
 
 using std::string;
+using google::TemplateDictionary;
 using lla::select_server::SelectServer;
 
-class LlaHttpServer: public HttpServer {
+class LlaHttpServer {
   public:
     LlaHttpServer(ExportMap *export_map,
                   SelectServer *ss,
+                  class UniverseStore *universe_store,
+                  class PluginLoader *plugin_loader,
+                  class DeviceManager *device_manager,
                   unsigned int port,
                   bool enable_quit,
                   const string &data_dir);
     ~LlaHttpServer() {}
+    bool Start() { return m_server.Start(); }
+    void Stop() { return m_server.Stop(); }
 
     int DisplayIndex(const HttpRequest *request, HttpResponse *response);
+    int DisplayMain(const HttpRequest *request, HttpResponse *response);
+    int DisplayPlugins(const HttpRequest *request, HttpResponse *response);
+    int DisplayPluginInfo(const HttpRequest *request, HttpResponse *response);
+    int DisplayDevices(const HttpRequest *request, HttpResponse *response);
+    int DisplayUniverses(const HttpRequest *request, HttpResponse *response);
     int DisplayDebug(const HttpRequest *request, HttpResponse *response);
     int DisplayQuit(const HttpRequest *request, HttpResponse *response);
+    int DisplayTemplateReload(const HttpRequest *request, HttpResponse *response);
     int DisplayHandlers(const HttpRequest *request, HttpResponse *response);
 
-  private :
+  private:
     LlaHttpServer(const LlaHttpServer&);
     LlaHttpServer& operator=(const LlaHttpServer&);
 
+    void RegisterHandler(const string &path,
+                         int (LlaHttpServer::*method)(const HttpRequest*,
+                           HttpResponse*));
+    void PopulateDeviceDict(const HttpRequest *request,
+                            TemplateDictionary *dict,
+                            AbstractDevice *device,
+                            bool save_changes);
+    string IntToString(int i);
+    class HttpServer m_server;
+
     ExportMap *m_export_map;
     SelectServer *m_ss;
+    UniverseStore *m_universe_store;
+    PluginLoader *m_plugin_loader;
+    DeviceManager *m_device_manager;
     bool m_enable_quit;
 
     static const string K_DATA_DIR_VAR;
+    static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;
 };
 
 } // lla

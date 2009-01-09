@@ -27,14 +27,18 @@
 
 namespace lla {
 
+using google::Template;
+using google::TemplateDictionary;
 using std::cout;
 using std::endl;
-using std::pair;
 using std::ifstream;
+using std::pair;
+using std::string;
 
 const string HttpServer::CONTENT_TYPE_PLAIN = "text/plain";
 const string HttpServer::CONTENT_TYPE_HTML = "text/html";
 const string HttpServer::CONTENT_TYPE_GIF = "image/gif";
+const string HttpServer::CONTENT_TYPE_PNG = "image/png";
 const string HttpServer::CONTENT_TYPE_CSS = "text/css";
 
 static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key, const char *value) {
@@ -109,6 +113,22 @@ const string HttpRequest::GetHeader(const string &key) const {
 
 
 /*
+ * Return the value of a url parameter
+ * @param key the name of the parameter
+ * @return the value of the parameter
+ */
+const string HttpRequest::GetParameter(const string &key) const {
+  const char *value = MHD_lookup_connection_value(m_connection,
+                                                  MHD_GET_ARGUMENT_KIND,
+                                                  key.data());
+  if (value)
+    return string(value);
+  else
+    return string();
+}
+
+
+/*
  * Set the content-type header
  * @param type, the content type
  * @return true if the header was set correctly, false otherwise
@@ -153,13 +173,15 @@ int HttpResponse::Send() {
  * @param data_dir the directory to serve static content from
  */
 HttpServer::HttpServer(unsigned int port, const string &data_dir):
-  m_data_dir(data_dir),
   m_httpd(NULL),
   m_default_handler(NULL),
-  m_port(port) {
+  m_port(port),
+  m_data_dir(data_dir) {
 
   if (m_data_dir.empty())
     m_data_dir = HTTP_DATA_DIR;
+
+  google::Template::SetTemplateRootDirectory(m_data_dir);
 }
 
 
@@ -179,6 +201,7 @@ HttpServer::~HttpServer() {
   }
 
   m_handlers.clear();
+  google::Template::ClearCache();
 }
 
 
@@ -300,7 +323,67 @@ vector<string> HttpServer::Handlers() const {
 
 
 /*
- * Serve static content
+ * Display a template
+ * @param template_name the name of the template
+ * @param dict the dictionary to expand with
+ * @param response the response to use.
+ */
+int HttpServer::DisplayTemplate(const char *template_name,
+                                TemplateDictionary *dict,
+                                HttpResponse *response) {
+
+  Template* tpl = Template::GetTemplate(template_name, google::STRIP_BLANK_LINES);
+
+  if (!tpl)
+    return ServeError(response, "Bad Template");
+
+  string output;
+  bool success = tpl->Expand(&output, dict);
+
+  if (!success)
+    return ServeError(response, "Expantion failed");
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
+  response->Append(output);
+  return response->Send();
+}
+
+
+/*
+ * Serve an error.
+ * @param response the reponse to use.
+ * @param details the error description
+ */
+int HttpServer::ServeError(HttpResponse *response, const string &details) {
+  response->SetStatus(MHD_HTTP_INTERNAL_SERVER_ERROR);
+  response->SetContentType(CONTENT_TYPE_HTML);
+  response->Append("<b>500 Server Error</b>");
+  if (!details.empty()) {
+    response->Append("<p>");
+    response->Append(details);
+    response->Append("</p>");
+  }
+  return response->Send();
+}
+
+
+/*
+ * Serve a 404
+ * @param response the response to use
+ */
+int HttpServer::ServeNotFound(HttpResponse *response) {
+  response->SetStatus(MHD_HTTP_NOT_FOUND);
+  response->SetContentType(CONTENT_TYPE_HTML);
+  response->SetStatus(404);
+  response->Append("<b>404 Not Found</b>");
+  return response->Send();
+}
+
+
+/*
+ * Serve static content.
+ * @param file_info details on the file to server
+ * @param response the response to use
  */
 int HttpServer::ServeStaticContent(static_file_info *file_info,
                                    HttpResponse *response) {
@@ -311,12 +394,9 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
   file_path.append(file_info->file_path);
   ifstream i_stream(file_path.data());
 
-  if (!i_stream.is_open()) {
-    response->SetContentType(CONTENT_TYPE_PLAIN);
-    response->SetStatus(404);
-    response->Append("Not Found");
-    return response->Send();
-  }
+  if (!i_stream.is_open())
+    return ServeNotFound(response);
+
   i_stream.seekg(0, std::ios::end);
   length = i_stream.tellg();
   i_stream.seekg(0, std::ios::beg);

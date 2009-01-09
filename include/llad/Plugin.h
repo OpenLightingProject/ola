@@ -22,6 +22,7 @@
 #define LLA_PLUGIN_H
 
 #include <string>
+#include <functional>
 #include <lla/plugin_id.h>
 
 namespace lla {
@@ -41,6 +42,16 @@ class AbstractPlugin {
     virtual lla_plugin_id Id() const = 0;
     virtual string Name() const = 0;
     virtual string Description() const = 0;
+
+    virtual bool operator<(const AbstractPlugin &other) const = 0;
+};
+
+
+struct PluginLessThan: public std::binary_function<AbstractPlugin*,
+                                                   AbstractPlugin*, bool> {
+  bool operator()(AbstractPlugin *x, AbstractPlugin *y) {
+    return *x < *y;
+  }
 };
 
 
@@ -64,6 +75,10 @@ class Plugin: public AbstractPlugin {
     virtual string Name() const = 0;
     virtual string Description() const = 0;
 
+    bool operator<(const AbstractPlugin &other) const {
+      return Id() < other.Id();
+    }
+
   protected:
     virtual bool StartHook() { return 0; }
     virtual bool StopHook() { return 0; }
@@ -72,8 +87,8 @@ class Plugin: public AbstractPlugin {
 
     const PluginAdaptor *m_plugin_adaptor;
     class Preferences *m_preferences;  // preferences container
-    bool m_enabled;              // are we running
-    bool m_debug;              // debug mode on
+    bool m_enabled; // are we running
+    bool m_debug; // debug mode on
     static const string ENABLED_KEY;
     static const string DEBUG_KEY;
 

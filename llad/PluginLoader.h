@@ -22,6 +22,7 @@
 #define LLA_PLUGINLOADER_H
 
 #include <vector>
+#include <lla/plugin_id.h>
 
 namespace lla {
 
@@ -40,6 +41,7 @@ class PluginLoader {
     virtual int UnloadPlugins() = 0;
     virtual int PluginCount() const = 0;
     virtual vector<AbstractPlugin*> Plugins() const = 0;
+    virtual AbstractPlugin* GetPlugin(lla_plugin_id plugin_id) const = 0;
 
   protected:
     class PluginAdaptor *m_plugin_adaptor;

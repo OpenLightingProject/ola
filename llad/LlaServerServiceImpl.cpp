@@ -224,8 +224,6 @@ void LlaServerServiceImpl::GetPluginInfo(RpcController* controller,
                                          const PluginInfoRequest* request,
                                          PluginInfoReply* response,
                                          Closure* done) {
-  AbstractPlugin *plugin;
-
   vector<AbstractPlugin*> plugin_list = m_plugin_loader->Plugins();
   vector<AbstractPlugin*>::const_iterator iter;
 

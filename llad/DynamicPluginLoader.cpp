@@ -147,4 +147,19 @@ vector<class AbstractPlugin*> DynamicPluginLoader::Plugins() const {
   return m_plugins;
 }
 
+
+/*
+ * Return the plugin with the specified id.
+ * @param plugin_id the id of the plugin
+ * @return the plugin corresponding to this id or NULL if not found
+ */
+AbstractPlugin* DynamicPluginLoader::GetPlugin(lla_plugin_id plugin_id) const {
+  vector<AbstractPlugin*>::const_iterator iter;
+
+  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
+    if ((*iter)->Id() == plugin_id)
+      return *iter;
+  return NULL;
+}
+
 } //lla

@@ -1,10 +1,10 @@
 
 
---NEXT VER--
-embed http server
-
 --URGENT--
 resend DMX on idle (artnet every 4s)
+handle POSTs
+fix thread locks in the web interface
+add the console
 
 
 --REQUIRED--
@@ -17,8 +17,6 @@ resend DMX on idle (artnet every 4s)
 -- NICE--
 * let the ports save what universe they are attached to (do this in the plugin)
 * serialise so that plugins can store state
-* fix potential for NULL pointers in client (eg. devices freed on call to req_dev_info)
-* support fragmented messages in the client and notify when all fragments arrive
 
 --UNIMPORTANT--
 * send debug to remote client - need to watch looping here (maybe lev 1&2)

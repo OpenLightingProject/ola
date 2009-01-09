@@ -10,11 +10,13 @@ libllaserver_la_SOURCES = LlaServer.cpp LlaServerServiceImpl.cpp \
                           DynamicPluginLoader.cpp Plugin.cpp \
                           DlOpenPluginLoader.cpp
 
+libllaserver_la_LDFLAGS = -lprotobuf
+
 if HAVE_LIBMICROHTTPD
 libllaserver_la_SOURCES += HttpServer.cpp LlaHttpServer.cpp
+libllaserver_la_LDFLAGS += -lctemplate
 endif
 
-libllaserver_la_LDFLAGS = -lprotobuf
 libllaserver_la_LIBADD = @LIBLTDL@ $(top_builddir)/common/libllacommon.la
 libllaserver_la_CXXFLAGS = -Wall -Wformat -W
 

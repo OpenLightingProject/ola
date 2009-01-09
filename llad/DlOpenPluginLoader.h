@@ -49,6 +49,7 @@ class DlOpenPluginLoader: public PluginLoader {
     int UnloadPlugins();
     int PluginCount() const;
     vector<AbstractPlugin*> Plugins() const { return m_plugins; }
+    AbstractPlugin* GetPlugin(lla_plugin_id plugin_id) const;
 
   private:
     DlOpenPluginLoader(const DlOpenPluginLoader&);

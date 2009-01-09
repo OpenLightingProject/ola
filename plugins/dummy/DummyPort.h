@@ -30,7 +30,7 @@ namespace plugin {
 class DummyPort: public Port {
   public:
     DummyPort(AbstractDevice *parent, int id);
-    bool CanRead() { return false; }
+    bool CanRead() const { return false; }
 
     int WriteDMX(uint8_t *data, unsigned int length);
     int ReadDMX(uint8_t *data, unsigned int length);

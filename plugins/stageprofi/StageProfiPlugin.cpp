@@ -109,7 +109,7 @@ bool StageProfiPlugin::StopHook() {
  */
 string StageProfiPlugin::Description() const {
     return
-"Stage Profi Plugin\n"
+"StageProfi Plugin\n"
 "----------------------------\n"
 "\n"
 "This plugin creates devices with one output port.\n"

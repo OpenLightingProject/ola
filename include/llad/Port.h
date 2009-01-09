@@ -44,7 +44,7 @@ class AbstractPort {
     virtual int ReadDMX(uint8_t *data, unsigned int length) = 0;
 
     // indicate our port's capability
-    virtual bool CanRead()  const = 0;
+    virtual bool CanRead() const = 0;
     virtual bool CanWrite() const = 0;
 };
 

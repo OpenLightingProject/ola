@@ -39,6 +39,7 @@ class DynamicPluginLoader: public PluginLoader {
     int UnloadPlugins();
     int PluginCount() const;
     vector<AbstractPlugin*> Plugins() const;
+    AbstractPlugin* GetPlugin(lla_plugin_id plugin_id) const;
 
   private:
     DynamicPluginLoader(const DynamicPluginLoader&);

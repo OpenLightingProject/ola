@@ -61,6 +61,10 @@ class Universe {
     const uint8_t *GetDMX(int &length) const;
     int PortDataChanged(AbstractPort *port);
 
+    bool operator==(const Universe &other) {
+      return m_universe_id == other.UniverseId();
+    }
+
     static const string K_UNIVERSE_NAME_VAR;
     static const string K_UNIVERSE_MODE_VAR;
     static const string K_UNIVERSE_PORT_VAR;

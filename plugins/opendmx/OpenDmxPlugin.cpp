@@ -105,12 +105,11 @@ bool OpenDmxPlugin::StopHook() {
  */
 string OpenDmxPlugin::Description() const {
     return
-"OpenDMXUSB Plugin\n"
+"OpenDmx Plugin\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with one output port using "
-"the Enttec Open DMX USB widget.\n"
-"\n"
+"The plugin creates a single device with one output port using the Enttec\n"
+"Open DMX USB widget.\n\n"
 "--- Config file : lla-opendmx.conf ---\n"
 "\n"
 "device = /dev/dmx0\n"

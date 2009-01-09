@@ -25,6 +25,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <google/template.h>
 #include <microhttpd.h>
 
 namespace lla {
@@ -53,6 +54,7 @@ class HttpRequest {
 
     void AddHeader(const string &key, const string &value);
     const string GetHeader(const string &key) const;
+    const string GetParameter(const string &key) const;
 
   private:
     string m_url;
@@ -142,31 +144,36 @@ class HttpServer {
                       const string &content_type="");
     void RegisterDefaultHandler(BaseHttpClosure *handler);
     vector<string> Handlers() const;
+    const string DataDir() const { return m_data_dir; }
+    int DisplayTemplate(const char *template_name,
+                        google::TemplateDictionary *dict,
+                        HttpResponse *response);
+    int ServeError(HttpResponse *response, const string &details="");
+    int ServeNotFound(HttpResponse *response);
 
-    static const string CONTENT_TYPE_PLAIN;
-    static const string CONTENT_TYPE_HTML;
-    static const string CONTENT_TYPE_GIF;
-    static const string CONTENT_TYPE_CSS;
-
-  protected:
     typedef struct {
       string file_path;
       string content_type;
     } static_file_info;
 
     int ServeStaticContent(static_file_info *file_info, HttpResponse *response);
-    string m_data_dir;
+
+    static const string CONTENT_TYPE_PLAIN;
+    static const string CONTENT_TYPE_HTML;
+    static const string CONTENT_TYPE_GIF;
+    static const string CONTENT_TYPE_PNG;
+    static const string CONTENT_TYPE_CSS;
 
   private :
     HttpServer(const HttpServer&);
     HttpServer& operator=(const HttpServer&);
-
 
     struct MHD_Daemon *m_httpd;
     map<string, BaseHttpClosure*> m_handlers;
     map<string, static_file_info> m_static_content;
     BaseHttpClosure *m_default_handler;
     unsigned int m_port;
+    string m_data_dir;
 };
 
 } // lla
