@@ -35,10 +35,12 @@ UniverseStore::UniverseStore(class Preferences *preferences,
   m_preferences(preferences),
   m_export_map(export_map) {
 
-  StringMap *map = export_map->GetStringMapVar(Universe::K_UNIVERSE_NAME_VAR, "name");
-  map = export_map->GetStringMapVar(Universe::K_UNIVERSE_MODE_VAR, "mode");
-  IntMap *int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_PORT_VAR, "count");
-  int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_CLIENTS_VAR, "count");
+  if (export_map) {
+    StringMap *map = export_map->GetStringMapVar(Universe::K_UNIVERSE_NAME_VAR, "name");
+    map = export_map->GetStringMapVar(Universe::K_UNIVERSE_MODE_VAR, "mode");
+    IntMap *int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_PORT_VAR, "count");
+    int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_CLIENTS_VAR, "count");
+  }
 }
 
 

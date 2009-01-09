@@ -61,8 +61,10 @@ Universe::Universe(int universe_id, UniverseStore *store, ExportMap *export_map)
   UpdateName();
   UpdateMode();
 
-  m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR)->Set(m_universe_id_str, 0);
-  m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR)->Set(m_universe_id_str, 0);
+  if (m_export_map) {
+    m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR)->Set(m_universe_id_str, 0);
+    m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR)->Set(m_universe_id_str, 0);
+  }
 }
 
 
@@ -70,10 +72,12 @@ Universe::Universe(int universe_id, UniverseStore *store, ExportMap *export_map)
  * Delete this universe
  */
 Universe::~Universe() {
-  m_export_map->GetStringMapVar(K_UNIVERSE_NAME_VAR)->Remove(m_universe_id_str);
-  m_export_map->GetStringMapVar(K_UNIVERSE_MODE_VAR)->Remove(m_universe_id_str);
-  m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR)->Remove(m_universe_id_str);
-  m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR)->Remove(m_universe_id_str);
+  if (m_export_map) {
+    m_export_map->GetStringMapVar(K_UNIVERSE_NAME_VAR)->Remove(m_universe_id_str);
+    m_export_map->GetStringMapVar(K_UNIVERSE_MODE_VAR)->Remove(m_universe_id_str);
+    m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR)->Remove(m_universe_id_str);
+    m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR)->Remove(m_universe_id_str);
+  }
 }
 
 /*
@@ -124,8 +128,10 @@ int Universe::AddPort(AbstractPort *port) {
                           m_universe_id);
   m_ports.push_back(port);
   port->SetUniverse(this);
-  IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR);
-  map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
+  if (m_export_map) {
+    IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR);
+    map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
+  }
   return 0;
 }
 
@@ -144,8 +150,10 @@ int Universe::RemovePort(AbstractPort *port) {
   if (iter != m_ports.end()) {
     m_ports.erase(iter);
     port->SetUniverse(NULL);
-    IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR);
-    map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
+    if (m_export_map) {
+      IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR);
+      map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
+    }
     Logger::instance()->log(Logger::DEBUG,
                             "Port %p has been removed from uni %d",
                             port,
@@ -177,8 +185,10 @@ int Universe::AddClient(Client *client) {
                           client,
                           m_universe_id);
   m_clients.push_back(client);
-  IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR);
-  map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
+  if (m_export_map) {
+    IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR);
+    map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
+  }
   return 0;
 }
 
@@ -196,8 +206,10 @@ int Universe::RemoveClient(Client *client) {
 
   if (iter != m_clients.end()) {
     m_clients.erase(iter);
-    IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR);
-    map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
+    if (m_export_map) {
+      IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR);
+      map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
+    }
     Logger::instance()->log(Logger::INFO,
                             "Client %p has been removed from uni %d",
                             client,
@@ -333,6 +345,8 @@ int Universe::UpdateDependants() {
  * Update the name in the export map.
  */
 void Universe::UpdateName() {
+  if (!m_export_map)
+    return;
   StringMap *name_map = m_export_map->GetStringMapVar(K_UNIVERSE_NAME_VAR);
   name_map->Set(m_universe_id_str, m_universe_name);
 }
@@ -342,6 +356,8 @@ void Universe::UpdateName() {
  * Update the mode in the export map.
  */
 void Universe::UpdateMode() {
+  if (!m_export_map)
+    return;
   StringMap *mode_map = m_export_map->GetStringMapVar(K_UNIVERSE_MODE_VAR);
   mode_map->Set(m_universe_id_str,
                 m_merge_mode == Universe::MERGE_LTP ?

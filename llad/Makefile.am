@@ -7,8 +7,7 @@ libllaserver_la_SOURCES = LlaServer.cpp LlaServerServiceImpl.cpp \
                           Logger.cpp Preferences.cpp Universe.cpp \
                           UniverseStore.cpp Port.cpp Client.cpp \
                           Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
-                          DynamicPluginLoader.cpp Plugin.cpp \
-                          DlOpenPluginLoader.cpp
+                          Plugin.cpp DlOpenPluginLoader.cpp
 
 libllaserver_la_LDFLAGS = -lprotobuf
 
@@ -27,13 +26,14 @@ EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
              HttpServer.h LlaHttpServer.h
 
 # Llad Server
+bin_PROGRAMS = llad
 llad_SOURCES = Llad.cpp LlaDaemon.cpp
 #llad_CXXFLAGS = -Wall -Werror  -Wformat -W
 llad_CXXFLAGS = -Wall -Wformat -W
 llad_LDFLAGS = -rdynamic -ldl -lprotobuf
-llad_LDADD = @LIBS@ ${PLUGIN_LIBS} libllaserver.la \
-             $(top_builddir)/common/libllacommon.la \
-             $(top_builddir)/lla/liblla.la
+llad_LDADD = @LIBS@ libllaserver.la \
+             $(top_builddir)/common/libllacommon.la
+#             $(top_builddir)/lla/liblla.la
 
 # Test Programs
 TESTS = LlaTester
@@ -43,31 +43,20 @@ LlaTester_SOURCES = LlaServerTester.cpp UniverseTest.cpp \
 LlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 LlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 LlaTester_LDADD = @LIBS@ libllaserver.la \
-                  $(top_builddir)/common/libllacommon.la \
-                  $(top_builddir)/plugins/dummy/liblladummy.la \
-                  $(top_builddir)/plugins/opendmx/libllaopendmx.la \
-                  $(top_builddir)/plugins/artnet/libllaartnet.la
+                  $(top_builddir)/common/libllacommon.la
 
-
-bin_PROGRAMS = LlaDummy llad
-LlaDummy_SOURCES = LlaDummy.cpp
-LlaDummy_CXXFLAGS = $(CPPUNIT_CFLAGS)
-LlaDummy_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
-LlaDummy_LDADD = @LIBS@ ${PLUGIN_LIBS} libllaserver.la \
-                 $(top_builddir)/common/libllacommon.la \
-                 $(top_builddir)/lla/liblla.la
 
 #-------------------------------------
 
 # crap starts here
-llad_test_SOURCES = main_test.cpp devicemanager.cpp pluginadaptor.cpp\
-				llad.cpp network.cpp plugin.cpp device.cpp port.cpp\
-				DynamicPluginLoader.cpp universe.cpp logger.cpp\
-				client.cpp preferences.cpp UniverseStore.cpp
+#llad_test_SOURCES = main_test.cpp devicemanager.cpp pluginadaptor.cpp\
+#				llad.cpp network.cpp plugin.cpp device.cpp port.cpp\
+#				DynamicPluginLoader.cpp universe.cpp logger.cpp\
+#				client.cpp preferences.cpp UniverseStore.cpp
 
 #llad_test_CXXFLAGS = -Wall -Werror  -Wformat -W
-llad_test_LDADD = @LIBS@ ${PLUGIN_LIBS} -lprotobuf ../protocol/lla.pb.o
-llad_test_CXXFLAGS = -g
+#llad_test_LDADD = @LIBS@ ${PLUGIN_LIBS} -lprotobuf ../protocol/lla.pb.o
+#llad_test_CXXFLAGS = -g
 #-llladummy -lllaespnet \
 #					-lllaopendmx -lllapathport -lllasandnet -lllashownet -lllastageprofi \
 #					-lllausbpro
