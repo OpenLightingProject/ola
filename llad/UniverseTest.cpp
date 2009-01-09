@@ -90,7 +90,7 @@ int MockPort::WriteDMX(uint8_t *data, unsigned int length) {
 
 void UniverseTest::setUp() {
   m_preferences = new MemoryPreferences("foo");
-  m_store = new UniverseStore(m_preferences);
+  m_store = new UniverseStore(m_preferences, NULL);
 }
 
 
