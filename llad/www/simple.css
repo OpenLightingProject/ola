@@ -1,0 +1,55 @@
+
+body { font-size: 12px; font-family: Verdana, Arial, Helvetica, sans-serif;  margin: 3px; } 
+table {font-size: 12px} 
+
+
+h2 { font-size: 22px}  
+
+.heading { font-size: 22px; text-align: right; font-weight: bold} 
+.heading2 { font-size: 22px;  font-weight: bold} 
+
+.nav {font-size: 12px; background: #E8EEFA; border: 1px solid  #C3D9FF }
+.nav ul { margin-top: 2px; margin-bottom: 2px; list-style: none outside; margin-left: 2px; padding-left: 0px; }
+.nav ul li { margin-left: 2px; padding-top: 2px; padding-bottom: 0px; margin-right: 2px}
+
+
+a {text-decoration: none; color: #0000ff} 
+a:visited { color: #0000ff} 
+a:hover {text-decoration: underline }
+
+
+.nav a { text-decoration: none } 
+.nav a:visited { color: #0000ff } 
+
+
+
+
+.sys_info { background: #000000}
+.sys_info td { background: #ffffff; padding: 3px}
+.sys_info th { background: #ffffff; padding: 3px}
+.sys_info input { background: #ffffff; border: 1px solid #999999; text-align: center} 
+
+
+input {color: #000000; border: 1px solid #000000; background: #cccccc } 
+select {color: #000000; border: 1px solid #000000;  } 
+
+.error { border:1px solid #F00; background-color: #ffccff; padding: 3px; margin: 3px; margin-top: 17px }
+
+/* general tables */
+.info { border: 1px solid #000000;}
+.info_head { background: #dddddd; border-bottom: 1px solid #ff0000; }
+.info_head th { background: #dddddd; border-bottom: 1px solid #999999; }
+.info td { padding: 3px;}
+.info input {color: #000000; border: 1px solid #000000; background: #ffffff; font-size: 10px } 
+.info select {color: #000000; border: 1px solid #000000; font-size: 10px } 
+
+tr.odd { background: #dddddd} 
+
+/* devices page */
+.devices { border-width: 1px 1px 1px 1px; border-color: #000000; border-style: solid; width: 400px;}
+.dev_header { text-align: left; background: #dddddd; font-weight: bold; color: #000000; padding-left: 5px}
+.dev_list { padding-left: 5px; border-top: 1px solid #999999; border-bottom: 1px solid #999999;} 
+
+.dev_tbl { width: 100%}
+.dev_tbl td {padding: 0px; } 
+.dev_tbl input { background: #ffffff; border: 1px solid #999999; text-align: center; font-size: 10px} 
