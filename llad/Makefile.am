@@ -33,7 +33,6 @@ llad_CXXFLAGS = -Wall -Wformat -W
 llad_LDFLAGS = -rdynamic -ldl -lprotobuf
 llad_LDADD = @LIBS@ libllaserver.la \
              $(top_builddir)/common/libllacommon.la
-#             $(top_builddir)/lla/liblla.la
 
 # Test Programs
 TESTS = LlaTester

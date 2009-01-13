@@ -40,6 +40,7 @@ const string HttpServer::CONTENT_TYPE_HTML = "text/html";
 const string HttpServer::CONTENT_TYPE_GIF = "image/gif";
 const string HttpServer::CONTENT_TYPE_PNG = "image/png";
 const string HttpServer::CONTENT_TYPE_CSS = "text/css";
+const string HttpServer::CONTENT_TYPE_JS = "text/javascript";
 
 static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key, const char *value) {
   HttpRequest *request = (HttpRequest*) cls;
@@ -49,34 +50,81 @@ static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key, const
   return MHD_YES;
 }
 
+int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
+                const char *filename, const char *content_type,
+                const char *transfer_encoding, const char *data, size_t off,
+                size_t size) {
+  HttpRequest *request = (HttpRequest*) request_cls;
 
-static int ahc_echo (void *http_server_ptr,
-                     struct MHD_Connection *connection,
-                     const char *url,
-                     const char *method,
-                     const char *version,
-                     const char *upload_data, unsigned int *upload_data_size, void **ptr) {
-  static int aptr;
+  string value(data, size);
+  cout << key << " : " << value << endl;
+  request->AddPostParameter(key, value);
+  return MHD_YES;
+}
+
+
+static int HandleRequest(void *http_server_ptr,
+                         struct MHD_Connection *connection,
+                         const char *url,
+                         const char *method,
+                         const char *version,
+                         const char *upload_data,
+                         unsigned int *upload_data_size,
+                         void **ptr) {
   HttpServer *http_server = (HttpServer*) http_server_ptr;
 
-  if (0 != strcmp (method, "GET"))
-    return MHD_NO;
+  // first call
+  if (*ptr == NULL) {
+    HttpRequest *request = new HttpRequest(url, method, version,
+                                           connection);
+    if (!request)
+      return MHD_NO;
 
-  if (&aptr != *ptr) {
-      /* do never respond on first call */
-      *ptr = &aptr;
-      return MHD_YES;
+    if (!request->Init()) {
+      delete request;
+      return MHD_NO;
+    }
+    *ptr = (void*) request;
+    return MHD_YES;
   }
-  *ptr = NULL;
 
-  HttpRequest request(url, method, version, connection);
-  HttpResponse response(connection);
-  return http_server->DispatchRequest(&request, &response);
+  HttpRequest *request = (HttpRequest*) *ptr;
+  cout << request->Method() << endl;
+  if (request->Method() == MHD_HTTP_METHOD_GET) {
+    HttpResponse response(connection);
+    return http_server->DispatchRequest(request, &response);
+  } else if (request->Method() == MHD_HTTP_METHOD_POST) {
+    cout << "post" << endl;
+    if (*upload_data_size != 0) {
+      request->ProcessPostData(upload_data, upload_data_size);
+      *upload_data_size = 0;
+      return MHD_YES;
+    }
+    HttpResponse response(connection);
+    cout << "dispatch" << endl;
+    return http_server->DispatchRequest(request, &response);
+  }
+  return MHD_NO;
+}
+
+
+void RequestCompleted(void *cls,
+                      struct MHD_Connection *connection,
+                      void **request_cls,
+                      enum MHD_RequestTerminationCode toe) {
+  HttpRequest *request = (HttpRequest*) *request_cls;
+
+  if (!request)
+    return;
+
+  delete request;
+  *request_cls = NULL;
 }
 
 
 /*
  * HttpRequest object
+ * Setup the header callback and the post processor if needed.
  */
 HttpRequest::HttpRequest(const string &url,
                          const string &method,
@@ -85,15 +133,65 @@ HttpRequest::HttpRequest(const string &url,
   m_url(url),
   m_method(method),
   m_version(version),
-  m_connection(connection) {
-    MHD_get_connection_values(connection, MHD_HEADER_KIND, AddHeaders, this);
-
+  m_connection(connection),
+  m_processor(NULL) {
 }
 
 
+/*
+ * Initialize this request
+ * @return true if succesful, false otherwise.
+ */
+bool HttpRequest::Init() {
+  MHD_get_connection_values(m_connection, MHD_HEADER_KIND, AddHeaders, this);
+
+  if (m_method == MHD_HTTP_METHOD_POST) {
+    m_processor = MHD_create_post_processor (m_connection,
+                                             K_POST_BUFFER_SIZE,
+                                             IteratePost,
+                                             (void*) this);
+    return m_processor;
+  }
+  return true;
+}
+
+
+/*
+ * Cleanup this request object
+ */
+HttpRequest::~HttpRequest() {
+  if (m_processor)
+    MHD_destroy_post_processor(m_processor);
+}
+
+
+/*
+ * Add a header to the request object.
+ * @param key the header name
+ * @param value the value of the header
+ */
 void HttpRequest::AddHeader(const string &key, const string &value) {
   std::pair<string, string> pair(key, value);
   m_headers.insert(pair);
+}
+
+
+/*
+ * Add a post parameter
+ */
+void HttpRequest::AddPostParameter(const string &key, const string &value) {
+  std::pair<string, string> pair(key, value);
+  m_post_params.insert(pair);
+}
+
+
+/*
+ * Process post data
+ */
+void HttpRequest::ProcessPostData(const char *data,
+                                  unsigned int *data_size) {
+
+  MHD_post_process(m_processor, data, *data_size);
 }
 
 
@@ -125,6 +223,21 @@ const string HttpRequest::GetParameter(const string &key) const {
     return string(value);
   else
     return string();
+}
+
+
+/*
+ * Lookup a post parameter in this request
+ * @param key the name of the parameter
+ * @return the value of the parameter or the empty string if it doesn't exist
+ */
+const string HttpRequest::GetPostParameter(const string &key) const {
+  map<string, string>::const_iterator iter = m_post_params.find(key);
+
+  if (iter == m_post_params.end())
+    return "";
+  else
+    return iter->second;
 }
 
 
@@ -215,8 +328,11 @@ bool HttpServer::Start() {
                              m_port,
                              NULL,
                              NULL,
-                             &ahc_echo,
+                             &HandleRequest,
                              this,
+                             MHD_OPTION_NOTIFY_COMPLETED,
+                             RequestCompleted,
+                             NULL,
                              MHD_OPTION_END);
   return m_httpd ? true : false;
 }
@@ -252,7 +368,7 @@ int HttpServer::DispatchRequest(const HttpRequest *request,
   if (m_default_handler)
     return m_default_handler->Run(request, response);
 
-  return MHD_NO;
+  return ServeNotFound(response);
 }
 
 

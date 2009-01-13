@@ -47,6 +47,7 @@ RegisterTemplateFilename(PLUGINS_FILENAME, "show_loaded_plugins.tpl");
 RegisterTemplateFilename(PLUGIN_INFO_FILENAME, "show_plugin_info.tpl");
 RegisterTemplateFilename(DEVICE_FILENAME, "show_loaded_devices.tpl");
 RegisterTemplateFilename(UNIVERSE_FILENAME, "show_universe_settings.tpl");
+RegisterTemplateFilename(CONSOLE_FILENAME, "show_dmx_console.tpl");
 
 LlaHttpServer::LlaHttpServer(ExportMap *export_map,
                              SelectServer *ss,
@@ -72,16 +73,33 @@ LlaHttpServer::LlaHttpServer(ExportMap *export_map,
   RegisterHandler("/plugin", &LlaHttpServer::DisplayPluginInfo);
   RegisterHandler("/devices", &LlaHttpServer::DisplayDevices);
   RegisterHandler("/universes", &LlaHttpServer::DisplayUniverses);
+  RegisterHandler("/console", &LlaHttpServer::DisplayConsole);
   RegisterHandler("/reload_templates", &LlaHttpServer::DisplayTemplateReload);
-  m_server.RegisterFile("/index.html", "index.html", HttpServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/menu.html", "menu.html", HttpServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/about.html", "about.html", HttpServer::CONTENT_TYPE_HTML);
-  m_server.RegisterFile("/simple.css", "simple.css", HttpServer::CONTENT_TYPE_CSS);
-  m_server.RegisterFile("/notice.gif", "notice.gif", HttpServer::CONTENT_TYPE_GIF);
-  m_server.RegisterFile("/plus.png", "plus.png", HttpServer::CONTENT_TYPE_PNG);
-  m_server.RegisterFile("/minus.png", "minus.png", HttpServer::CONTENT_TYPE_PNG);
-  m_server.RegisterFile("/GPL.txt", "GPL.txt", HttpServer::CONTENT_TYPE_PLAIN);
-  m_server.RegisterDefaultHandler(NewHttpClosure(this, &LlaHttpServer::DisplayIndex));
+  RegisterHandler("/set_dmx", &LlaHttpServer::HandleSetDmx);
+  RegisterHandler("/", &LlaHttpServer::DisplayIndex);
+  RegisterFile("index.html", HttpServer::CONTENT_TYPE_HTML);
+  RegisterFile("menu.html", HttpServer::CONTENT_TYPE_HTML);
+  RegisterFile("about.html", HttpServer::CONTENT_TYPE_HTML);
+  RegisterFile("console_values.html", HttpServer::CONTENT_TYPE_HTML);
+  RegisterFile("simple.css", HttpServer::CONTENT_TYPE_CSS);
+  RegisterFile("bluecurve.css", HttpServer::CONTENT_TYPE_CSS);
+  RegisterFile("notice.gif", HttpServer::CONTENT_TYPE_GIF);
+  RegisterFile("plus.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("forward.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("back.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("full.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("dbo.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("save.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("load.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("minus.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("handle.vertical.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("ajax_request.js", HttpServer::CONTENT_TYPE_JS);
+  RegisterFile("console.js", HttpServer::CONTENT_TYPE_JS);
+  RegisterFile("range.js", HttpServer::CONTENT_TYPE_JS);
+  RegisterFile("slider.js", HttpServer::CONTENT_TYPE_JS);
+  RegisterFile("timer.js", HttpServer::CONTENT_TYPE_JS);
+  RegisterFile("GPL.txt", HttpServer::CONTENT_TYPE_PLAIN);
+  m_server.RegisterFile("/boxsizing.htc", "boxsizing.htc", "text/x-component");
 
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
   data_dir_var->Set(m_server.DataDir());
@@ -97,7 +115,8 @@ LlaHttpServer::LlaHttpServer(ExportMap *export_map,
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
  */
-int LlaHttpServer::DisplayIndex(const HttpRequest *request, HttpResponse *response) {
+int LlaHttpServer::DisplayIndex(const HttpRequest *request,
+                                HttpResponse *response) {
   HttpServer::static_file_info file_info;
   file_info.file_path = "index.html";
   file_info.content_type = HttpServer::CONTENT_TYPE_HTML;
@@ -262,12 +281,63 @@ int LlaHttpServer::DisplayUniverses(const HttpRequest *request,
 
 
 /*
+ * Show the Dmx console page.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int LlaHttpServer::DisplayConsole(const HttpRequest *request,
+                                  HttpResponse *response) {
+
+  string uni_id = request->GetParameter("u");
+  int universe_id = atoi(uni_id.data());
+  if (universe_id == 0 && errno != 0)
+    return m_server.ServeNotFound(response);
+
+  Universe *universe = m_universe_store->GetUniverse(universe_id);
+
+  if (!universe)
+    return m_server.ServeNotFound(response);
+
+  TemplateDictionary dict("console");
+  dict.SetValue("ID", IntToString(universe->UniverseId()));
+  dict.SetValue("NAME", universe->Name());
+
+  for (unsigned int i=0; i <= K_CONSOLE_SLIDERS; i++) {
+    TemplateDictionary *sliders_dict = dict.AddSectionDictionary("SLIDERS");
+    sliders_dict->SetValue("INDEX", IntToString(i));
+  }
+
+  return m_server.DisplayTemplate(CONSOLE_FILENAME, &dict, response);
+}
+
+
+/*
+ * Handle the set dmx command
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int LlaHttpServer::HandleSetDmx(const HttpRequest *request,
+                                HttpResponse *response) {
+
+  cout << request->GetPostParameter("d") << endl;
+  response->Append("foo");
+  return response->Send();
+
+
+
+}
+
+
+/*
  * Display the debug page
  * @param request the HttpRequest
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
  */
-int LlaHttpServer::DisplayDebug(const HttpRequest *request, HttpResponse *response) {
+int LlaHttpServer::DisplayDebug(const HttpRequest *request,
+                                HttpResponse *response) {
   vector<BaseVariable*> variables = m_export_map->AllVariables();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
 
@@ -287,7 +357,8 @@ int LlaHttpServer::DisplayDebug(const HttpRequest *request, HttpResponse *respon
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
  */
-int LlaHttpServer::DisplayQuit(const HttpRequest *request, HttpResponse *response) {
+int LlaHttpServer::DisplayQuit(const HttpRequest *request,
+                               HttpResponse *response) {
   if (m_enable_quit) {
     response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
     response->Append("ok");
@@ -304,7 +375,8 @@ int LlaHttpServer::DisplayQuit(const HttpRequest *request, HttpResponse *respons
 /*
  * Handle the template reload.
  */
-int LlaHttpServer::DisplayTemplateReload(const HttpRequest *request, HttpResponse *response) {
+int LlaHttpServer::DisplayTemplateReload(const HttpRequest *request,
+                                         HttpResponse *response) {
   google::Template::ReloadAllIfChanged();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
@@ -315,7 +387,8 @@ int LlaHttpServer::DisplayTemplateReload(const HttpRequest *request, HttpRespons
 /*
  * Display a list of registered handlers
  */
-int LlaHttpServer::DisplayHandlers(const HttpRequest *request, HttpResponse *response) {
+int LlaHttpServer::DisplayHandlers(const HttpRequest *request,
+                                   HttpResponse *response) {
   vector<string> handlers = m_server.Handlers();
   vector<string>::const_iterator iter;
   response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
@@ -334,10 +407,17 @@ int LlaHttpServer::DisplayHandlers(const HttpRequest *request, HttpResponse *res
 inline void LlaHttpServer::RegisterHandler(
     const string &path,
     int (LlaHttpServer::*method)(const HttpRequest*, HttpResponse*)) {
-
   m_server.RegisterHandler(path, NewHttpClosure(this, method));
 }
 
+
+/*
+ * Register a static file
+ */
+inline void LlaHttpServer::RegisterFile(const string &file,
+                                 const string &content_type) {
+  m_server.RegisterFile("/" + file, file, content_type);
+}
 
 /*
  * Populate a dictionary for this device.
@@ -364,7 +444,8 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
     if (save_changes) {
       string uni_id = request->GetParameter(IntToString(device->DeviceId())
                                             + "_" +
-                                            IntToString((*port_iter)->PortId()));
+                                            IntToString((*port_iter)->PortId())
+                                           );
       Universe *universe = (*port_iter)->GetUniverse();
       int universe_id = atoi(uni_id.data());
       if (universe_id != 0 || errno == 0) {

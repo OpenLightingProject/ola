@@ -53,6 +53,8 @@ class LlaHttpServer {
     int DisplayPluginInfo(const HttpRequest *request, HttpResponse *response);
     int DisplayDevices(const HttpRequest *request, HttpResponse *response);
     int DisplayUniverses(const HttpRequest *request, HttpResponse *response);
+    int DisplayConsole(const HttpRequest *request, HttpResponse *response);
+    int HandleSetDmx(const HttpRequest *request, HttpResponse *response);
     int DisplayDebug(const HttpRequest *request, HttpResponse *response);
     int DisplayQuit(const HttpRequest *request, HttpResponse *response);
     int DisplayTemplateReload(const HttpRequest *request, HttpResponse *response);
@@ -64,7 +66,8 @@ class LlaHttpServer {
 
     void RegisterHandler(const string &path,
                          int (LlaHttpServer::*method)(const HttpRequest*,
-                           HttpResponse*));
+                         HttpResponse*));
+    void RegisterFile(const string &file, const string &content_type);
     void PopulateDeviceDict(const HttpRequest *request,
                             TemplateDictionary *dict,
                             AbstractDevice *device,
@@ -81,6 +84,7 @@ class LlaHttpServer {
 
     static const string K_DATA_DIR_VAR;
     static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;
+    static const unsigned int K_CONSOLE_SLIDERS = 15;
 };
 
 } // lla

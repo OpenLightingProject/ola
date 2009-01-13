@@ -6,7 +6,7 @@
  <!--
 
  function openConsole(u) {
-   window.open('/cgi-bin/console.pl?u=' + u, 'console', "width=730,height=320");
+   window.open('/console?u=' + u, 'console', "width=730,height=320");
  }
  -->
  </script>

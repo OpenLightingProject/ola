@@ -45,7 +45,8 @@ class HttpRequest {
                 const string &method,
                 const string &version,
                 struct MHD_Connection *connection);
-    ~HttpRequest() {}
+    ~HttpRequest();
+    bool Init();
 
     // accessors
     const string Url() const { return m_url; }
@@ -53,8 +54,11 @@ class HttpRequest {
     const string Version() const { return m_version; }
 
     void AddHeader(const string &key, const string &value);
+    void AddPostParameter(const string &key, const string &value);
+    void ProcessPostData(const char *data, unsigned int *data_size);
     const string GetHeader(const string &key) const;
     const string GetParameter(const string &key) const;
+    const string GetPostParameter(const string &key) const;
 
   private:
     string m_url;
@@ -62,6 +66,10 @@ class HttpRequest {
     string m_version;
     struct MHD_Connection *m_connection;
     map<string, string> m_headers;
+    map<string, string> m_post_params;
+    struct MHD_PostProcessor *m_processor;
+
+    static const unsigned int K_POST_BUFFER_SIZE = 512;
 };
 
 
@@ -163,6 +171,7 @@ class HttpServer {
     static const string CONTENT_TYPE_GIF;
     static const string CONTENT_TYPE_PNG;
     static const string CONTENT_TYPE_CSS;
+    static const string CONTENT_TYPE_JS;
 
   private :
     HttpServer(const HttpServer&);
