@@ -17,7 +17,7 @@
  * LlaServer is the main LLA Server class
  * Copyright (C) 2005-2008 Simon Newton
  */
-
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 
