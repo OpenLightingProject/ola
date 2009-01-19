@@ -72,7 +72,6 @@ function sv(c,v) {
 
 
 function snd_all() {
-  return;
   if (has_c()) {
     var bs = b.join();
     ls = bs;

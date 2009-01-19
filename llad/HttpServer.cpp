@@ -72,6 +72,7 @@ static int HandleRequest(void *http_server_ptr,
                          unsigned int *upload_data_size,
                          void **ptr) {
   HttpServer *http_server = (HttpServer*) http_server_ptr;
+  printf("%s\n", method);
 
   // first call
   if (*ptr == NULL) {
@@ -81,6 +82,7 @@ static int HandleRequest(void *http_server_ptr,
       return MHD_NO;
 
     if (!request->Init()) {
+      printf("request failed\n");
       delete request;
       return MHD_NO;
     }
@@ -89,7 +91,6 @@ static int HandleRequest(void *http_server_ptr,
   }
 
   HttpRequest *request = (HttpRequest*) *ptr;
-  cout << request->Method() << endl;
   if (request->Method() == MHD_HTTP_METHOD_GET) {
     HttpResponse response(connection);
     return http_server->DispatchRequest(request, &response);
@@ -146,10 +147,11 @@ bool HttpRequest::Init() {
   MHD_get_connection_values(m_connection, MHD_HEADER_KIND, AddHeaders, this);
 
   if (m_method == MHD_HTTP_METHOD_POST) {
-    m_processor = MHD_create_post_processor (m_connection,
-                                             K_POST_BUFFER_SIZE,
-                                             IteratePost,
-                                             (void*) this);
+    m_processor = MHD_create_post_processor(m_connection,
+                                            K_POST_BUFFER_SIZE,
+                                            IteratePost,
+                                            (void*) this);
+    printf("%p\n", m_processor);
     return m_processor;
   }
   return true;
