@@ -52,8 +52,6 @@ int Client::SendDMX(unsigned int universe_id,
 
 
 void Client::SendDMXCallback() {
-  printf("send dmx to client callback complete\n");
-
 
 }
 

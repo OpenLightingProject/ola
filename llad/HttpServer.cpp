@@ -72,7 +72,6 @@ static int HandleRequest(void *http_server_ptr,
                          unsigned int *upload_data_size,
                          void **ptr) {
   HttpServer *http_server = (HttpServer*) http_server_ptr;
-  printf("%s\n", method);
 
   // first call
   if (*ptr == NULL) {
@@ -82,7 +81,6 @@ static int HandleRequest(void *http_server_ptr,
       return MHD_NO;
 
     if (!request->Init()) {
-      printf("request failed\n");
       delete request;
       return MHD_NO;
     }
@@ -151,7 +149,6 @@ bool HttpRequest::Init() {
                                             K_POST_BUFFER_SIZE,
                                             IteratePost,
                                             (void*) this);
-    printf("%p\n", m_processor);
     return m_processor;
   }
   return true;

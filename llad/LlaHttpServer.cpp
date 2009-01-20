@@ -324,9 +324,6 @@ int LlaHttpServer::HandleSetDmx(const HttpRequest *request,
   cout << request->GetPostParameter("d") << endl;
   response->Append("foo");
   return response->Send();
-
-
-
 }
 
 
