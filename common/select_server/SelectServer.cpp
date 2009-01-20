@@ -230,7 +230,7 @@ int SelectServer::CheckForEvents() {
   struct timeval now;
 
   maxsd = AddFDListenersToSet(m_rhandlers_vect, r_fds);
-  maxsd = max(maxsd, AddFDListenersToSet(m_rhandlers_vect, w_fds));
+  maxsd = max(maxsd, AddFDListenersToSet(m_whandlers_vect, w_fds));
   AddSocketsToSet(r_fds, maxsd);
   now = CheckTimeouts();
 
