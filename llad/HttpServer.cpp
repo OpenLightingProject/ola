@@ -93,14 +93,12 @@ static int HandleRequest(void *http_server_ptr,
     HttpResponse response(connection);
     return http_server->DispatchRequest(request, &response);
   } else if (request->Method() == MHD_HTTP_METHOD_POST) {
-    cout << "post" << endl;
     if (*upload_data_size != 0) {
       request->ProcessPostData(upload_data, upload_data_size);
       *upload_data_size = 0;
       return MHD_YES;
     }
     HttpResponse response(connection);
-    cout << "dispatch" << endl;
     return http_server->DispatchRequest(request, &response);
   }
   return MHD_NO;

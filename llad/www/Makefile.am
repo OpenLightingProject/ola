@@ -15,6 +15,8 @@ dist_www_DATA = GPL.txt \
                 dbo.png \
                 load.png \
                 save.png \
+                handle.vertical.png \
+                bluecurve.css \
                 simple.css \
                 show_main_page.tpl \
                 show_loaded_plugins.tpl \
