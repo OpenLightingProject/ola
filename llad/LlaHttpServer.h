@@ -72,7 +72,6 @@ class LlaHttpServer {
                             TemplateDictionary *dict,
                             AbstractDevice *device,
                             bool save_changes);
-    string IntToString(int i);
     class HttpServer m_server;
 
     ExportMap *m_export_map;

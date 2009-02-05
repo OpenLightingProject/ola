@@ -27,7 +27,7 @@ var u = "{{UNIVERSE:j}}";
 
 <link type="text/css" rel="StyleSheet" href="/bluecurve.css" />
 
-<body onLoad="onLoad()">
+<body onLoad="onLoad({{ID:j}})">
 
 <iframe class="vs" src="/console_values.html" name="vs" id="vs"></iframe>
 
@@ -54,7 +54,6 @@ var u = "{{UNIVERSE:j}}";
 <table border="0" cellspacing="0" cellpadding="0">
  <tr class="c">
   {{#SLIDERS}}
-  <TMPL_LOOP NAME="s">
    <td><input type="text" id="c{{INDEX:h}}"></td>
   {{/SLIDERS}}
  </tr>

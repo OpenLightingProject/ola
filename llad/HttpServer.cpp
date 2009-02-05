@@ -29,8 +29,6 @@ namespace lla {
 
 using google::Template;
 using google::TemplateDictionary;
-using std::cout;
-using std::endl;
 using std::ifstream;
 using std::pair;
 using std::string;
@@ -54,10 +52,9 @@ int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
                 const char *filename, const char *content_type,
                 const char *transfer_encoding, const char *data, size_t off,
                 size_t size) {
+  // libmicrohttpd has a bug where the zie isn't set correctly.
   HttpRequest *request = (HttpRequest*) request_cls;
-
-  string value(data, size);
-  cout << key << " : " << value << endl;
+  string value(data);
   request->AddPostParameter(key, value);
   return MHD_YES;
 }
@@ -174,11 +171,20 @@ void HttpRequest::AddHeader(const string &key, const string &value) {
 
 
 /*
- * Add a post parameter
+ * Add a post parameter. This can be called multiple times and the values will
+ * be appended.
+ * @param key the parameter name
+ * @param value the value
  */
-void HttpRequest::AddPostParameter(const string &key, const string &value) {
-  std::pair<string, string> pair(key, value);
-  m_post_params.insert(pair);
+void HttpRequest::AddPostParameter(const string &key, const string &value){
+  map<string, string>::iterator iter = m_post_params.find(key);
+
+  if (iter == m_post_params.end()) {
+    std::pair<string, string> pair(key, value);
+    m_post_params.insert(pair);
+  } else {
+    iter->second.append(value);
+  }
 }
 
 
@@ -187,7 +193,6 @@ void HttpRequest::AddPostParameter(const string &key, const string &value) {
  */
 void HttpRequest::ProcessPostData(const char *data,
                                   unsigned int *data_size) {
-
   MHD_post_process(m_processor, data, *data_size);
 }
 

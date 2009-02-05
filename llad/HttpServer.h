@@ -69,7 +69,7 @@ class HttpRequest {
     map<string, string> m_post_params;
     struct MHD_PostProcessor *m_processor;
 
-    static const unsigned int K_POST_BUFFER_SIZE = 2048;
+    static const unsigned int K_POST_BUFFER_SIZE = 1024;
 };
 
 

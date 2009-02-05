@@ -34,7 +34,7 @@ function toggleL(event,id) {
 
  <span class="heading2">Device Info</span>
 
- <form action="/devices" method="get">
+ <form action="/devices" method="post">
  <div align="center" style="margin-top: 40px">
   <div class="devices">
    {{#DEVICE}}

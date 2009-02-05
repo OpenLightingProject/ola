@@ -26,10 +26,11 @@
 #include <llad/Device.h>
 #include <llad/Port.h>
 #include <llad/Universe.h>
-#include "PluginLoader.h"
 #include "DeviceManager.h"
-#include "UniverseStore.h"
 #include "LlaHttpServer.h"
+#include "PluginLoader.h"
+#include "StringUtils.h"
+#include "UniverseStore.h"
 
 namespace lla {
 
@@ -211,7 +212,7 @@ int LlaHttpServer::DisplayDevices(const HttpRequest *request,
   TemplateDictionary dict("device");
   vector<AbstractDevice*> devices = m_device_manager->Devices();
 
-  string action = request->GetParameter("action");
+  string action = request->GetPostParameter("action");
   bool save_changes = !action.empty();
 
   if (devices.size()) {
@@ -321,8 +322,28 @@ int LlaHttpServer::DisplayConsole(const HttpRequest *request,
 int LlaHttpServer::HandleSetDmx(const HttpRequest *request,
                                 HttpResponse *response) {
 
-  cout << request->GetPostParameter("d") << endl;
-  response->Append("foo");
+  string dmx_data_str = request->GetPostParameter("d");
+  string uni_id = request->GetPostParameter("u");
+  int universe_id = atoi(uni_id.data());
+  if (universe_id == 0 && errno != 0)
+    return m_server.ServeNotFound(response);
+
+  Universe *universe = m_universe_store->GetUniverse(universe_id);
+  if (!universe)
+    return m_server.ServeNotFound(response);
+
+  uint8_t dmx_data[DMX_UNIVERSE_SIZE];
+  vector<string> dmx_values;
+  vector<string>::const_iterator iter;
+  StringSplit(dmx_data_str, dmx_values, ",");
+  unsigned int i = 0;
+  for (iter = dmx_values.begin();
+      iter != dmx_values.end() && i < DMX_UNIVERSE_SIZE;
+      ++iter, ++i) {
+    dmx_data[i] = atoi(iter->data());
+  }
+  universe->SetDMX(dmx_data, i);
+  response->Append("ok");
   return response->Send();
 }
 
@@ -428,8 +449,8 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
 
   dict->SetValue("ID", IntToString(device->DeviceId()));
   dict->SetValue("NAME", device->Name());
-  string val = request->GetParameter("show_" +
-                                     IntToString(device->DeviceId()));
+  string val = request->GetPostParameter("show_" +
+                                         IntToString(device->DeviceId()));
   dict->SetValue("SHOW_VALUE", val == "1" ? "1" : "0");
   dict->SetValue("SHOW", val == "1" ? "block" : "none");
 
@@ -439,10 +460,11 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
   for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
 
     if (save_changes) {
-      string uni_id = request->GetParameter(IntToString(device->DeviceId())
-                                            + "_" +
-                                            IntToString((*port_iter)->PortId())
-                                           );
+      string variable_name = (IntToString(device->DeviceId())
+                              + "_" +
+                              IntToString((*port_iter)->PortId())
+                             );
+      string uni_id = request->GetPostParameter(variable_name);
       Universe *universe = (*port_iter)->GetUniverse();
       int universe_id = atoi(uni_id.data());
       if (universe_id != 0 || errno == 0) {
@@ -486,14 +508,5 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
   }
 }
 
-
-/*
- * Convert an int to a string.
- */
-string LlaHttpServer::IntToString(int i) {
-  stringstream str;
-  str << i;
-  return str.str();
-}
 
 } //lla

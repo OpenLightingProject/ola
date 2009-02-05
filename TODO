@@ -2,9 +2,7 @@
 
 --URGENT--
 resend DMX on idle (artnet every 4s)
-handle POSTs
 fix thread locks in the web interface
-add the console
 
 
 --REQUIRED--

@@ -6,11 +6,13 @@ var offset = 0;     // starting page offset
 var b = Array(MAX_CHAN);  // dmx buffer
 var ss = Array(CHAN);     // list of sliders
 var m = Array(MAX_MEM) ;  // memory
-var ls = ''  ;            // last values sent (as str)
+var ls = '';            // last values sent (as str)
 var t;
 var es = Array(MAX_CHAN) ;
+var universe;
 
-function onLoad() {
+function onLoad(u) {
+ universe = u;
  for (var i=0; i<CHAN; ++i) {
   document.forms['vs'].elements['v'+i].value=0;
   document.forms['vs'].elements['c'+i].value=i+1;
@@ -78,7 +80,7 @@ function snd_all() {
     AjaxRequest.get ( {
       'url':'/set_dmx',
       'method':'POST',
-      'parameters':{ 'd': bs , 'u': u },
+      'parameters':{ 'd': bs , 'u': universe },
       'onSuccess':function(req) { snd_all() },
       'onError':function(req){ alert('Error!\nStatusText='+req.statusText+'\nContents='+req.responseText);},
       'timeout':2000,
