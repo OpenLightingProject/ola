@@ -50,7 +50,7 @@ class DummyPlugin: public Plugin {
     bool StopHook();
     int SetDefaultPreferences() { return 0; }
 
-    DummyDevice *m_device ; // the dummy device
+    DummyDevice *m_device; // the dummy device
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
 };
