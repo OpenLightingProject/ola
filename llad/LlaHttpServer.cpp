@@ -291,6 +291,7 @@ int LlaHttpServer::DisplayConsole(const HttpRequest *request,
                                   HttpResponse *response) {
 
   string uni_id = request->GetParameter("u");
+  errno = 0;
   int universe_id = atoi(uni_id.data());
   if (universe_id == 0 && errno != 0)
     return m_server.ServeNotFound(response);
@@ -325,6 +326,7 @@ int LlaHttpServer::HandleSetDmx(const HttpRequest *request,
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
   int universe_id = atoi(uni_id.data());
+  errno = 0;
   if (universe_id == 0 && errno != 0)
     return m_server.ServeNotFound(response);
 
@@ -466,6 +468,7 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
                              );
       string uni_id = request->GetPostParameter(variable_name);
       Universe *universe = (*port_iter)->GetUniverse();
+      errno = 0;
       int universe_id = atoi(uni_id.data());
       if (universe_id != 0 || errno == 0) {
         // valid number, patch this universe
