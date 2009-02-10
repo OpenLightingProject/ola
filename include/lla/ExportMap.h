@@ -26,7 +26,6 @@
 #include <sstream>
 #include <map>
 #include <vector>
-#include <microhttpd.h>
 
 namespace lla {
 

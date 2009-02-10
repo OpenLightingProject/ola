@@ -50,7 +50,7 @@ static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key, const
 
 int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
                 const char *filename, const char *content_type,
-                const char *transfer_encoding, const char *data, size_t off,
+                const char *transfer_encoding, const char *data, uint64_t off,
                 size_t size) {
   // libmicrohttpd has a bug where the zie isn't set correctly.
   HttpRequest *request = (HttpRequest*) request_cls;
@@ -66,7 +66,7 @@ static int HandleRequest(void *http_server_ptr,
                          const char *method,
                          const char *version,
                          const char *upload_data,
-                         unsigned int *upload_data_size,
+                         size_t *upload_data_size,
                          void **ptr) {
   HttpServer *http_server = (HttpServer*) http_server_ptr;
 
@@ -191,8 +191,7 @@ void HttpRequest::AddPostParameter(const string &key, const string &value){
 /*
  * Process post data
  */
-void HttpRequest::ProcessPostData(const char *data,
-                                  unsigned int *data_size) {
+void HttpRequest::ProcessPostData(const char *data, size_t *data_size) {
   MHD_post_process(m_processor, data, *data_size);
 }
 

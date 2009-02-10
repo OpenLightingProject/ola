@@ -18,10 +18,14 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+
 #ifndef HTTP_SERVER_H
 #define HTTP_SERVER_H
 
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/select.h>
+#include <stdint.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -55,7 +59,7 @@ class HttpRequest {
 
     void AddHeader(const string &key, const string &value);
     void AddPostParameter(const string &key, const string &value);
-    void ProcessPostData(const char *data, unsigned int *data_size);
+    void ProcessPostData(const char *data, size_t *data_size);
     const string GetHeader(const string &key) const;
     const string GetParameter(const string &key) const;
     const string GetPostParameter(const string &key) const;
