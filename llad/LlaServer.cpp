@@ -306,6 +306,7 @@ void LlaServer::CleanupConnection(LlaServerServiceImpl *service) {
        uni_iter != universe_list->end();
        ++uni_iter) {
     (*uni_iter)->RemoveClient(client);
+    m_universe_store->DeleteUniverseIfInactive(*uni_iter);
   }
   delete universe_list;
   delete client->Stub()->channel();

@@ -70,7 +70,8 @@ void LlaServerServiceImpl::RegisterForDmx(
     Ack* response,
     Closure* done) {
 
-  Universe *universe = m_universe_store->GetUniverse(request->universe());
+  Universe *universe = m_universe_store->GetUniverseOrCreate(
+                           request->universe());
   if (!universe)
     return MissingUniverseError(controller, done);
 
