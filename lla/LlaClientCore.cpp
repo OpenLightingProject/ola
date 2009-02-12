@@ -279,7 +279,7 @@ bool LlaClientCore::SetUniverseName(unsigned int universe, const string &name) {
  *
  */
 bool LlaClientCore::SetUniverseMergeMode(unsigned int universe,
-                                    LlaUniverse::merge_mode mode) {
+                                         LlaUniverse::merge_mode mode) {
   if (!m_connected)
     return false;
 
@@ -339,9 +339,9 @@ bool LlaClientCore::RegisterUniverse(unsigned int universe,
  * @param uni    universe id
  */
 bool LlaClientCore::Patch(unsigned int device_id,
-                     unsigned int port_id,
-                     lla::PatchAction patch_action,
-                     unsigned int universe) {
+                          unsigned int port_id,
+                          lla::PatchAction patch_action,
+                          unsigned int universe) {
   if (!m_connected)
     return false;
 
@@ -400,7 +400,7 @@ bool LlaClientCore::ConfigureDevice(unsigned int device_id, const string &msg) {
  * Called once PluginInfo completes
  */
 void LlaClientCore::HandlePluginInfo(SimpleRpcController *controller,
-                                 lla::proto::PluginInfoReply *reply) {
+                                     lla::proto::PluginInfoReply *reply) {
   string error_string = "";
   vector<LlaPlugin> lla_plugins;
 
@@ -430,7 +430,7 @@ void LlaClientCore::HandlePluginInfo(SimpleRpcController *controller,
  * Called once UpdateDmxData completes
  */
 void LlaClientCore::HandleSendDmx(SimpleRpcController *controller,
-                              lla::proto::Ack *reply) {
+                                  lla::proto::Ack *reply) {
 
   string error_string = "";
   if (controller->Failed())
@@ -440,8 +440,7 @@ void LlaClientCore::HandleSendDmx(SimpleRpcController *controller,
     release_lock;
     m_observer->SendDmxComplete(error_string);
     acquire_lock;
-  } else
-    printf("send dmx failed: %s\n", controller->ErrorText().c_str());
+  }
 
   delete controller;
   delete reply;
@@ -452,7 +451,7 @@ void LlaClientCore::HandleSendDmx(SimpleRpcController *controller,
  * Called once GetDmx completes
  */
 void LlaClientCore::HandleGetDmx(lla::rpc::SimpleRpcController *controller,
-                             lla::proto::DmxData *reply) {
+                                 lla::proto::DmxData *reply) {
   string error_string;
   if (m_observer) {
     if (controller->Failed())
@@ -474,7 +473,7 @@ void LlaClientCore::HandleGetDmx(lla::rpc::SimpleRpcController *controller,
  * Called once DeviceInfo completes.
  */
 void LlaClientCore::HandleDeviceInfo(lla::rpc::SimpleRpcController *controller,
-                                 lla::proto::DeviceInfoReply *reply) {
+                                     lla::proto::DeviceInfoReply *reply) {
   string error_string = "";
   vector<LlaDevice> lla_devices;
 
@@ -517,7 +516,7 @@ void LlaClientCore::HandleDeviceInfo(lla::rpc::SimpleRpcController *controller,
  * Called once PluginInfo completes
  */
 void LlaClientCore::HandleUniverseInfo(SimpleRpcController *controller,
-                                   lla::proto::UniverseInfoReply *reply) {
+                                       lla::proto::UniverseInfoReply *reply) {
   string error_string = "";
   vector<LlaUniverse> lla_universes;
 
@@ -551,8 +550,7 @@ void LlaClientCore::HandleUniverseInfo(SimpleRpcController *controller,
  * Called once SetUniverseName completes
  */
 void LlaClientCore::HandleUniverseName(SimpleRpcController *controller,
-                                   lla::proto::Ack *reply) {
-
+                                       lla::proto::Ack *reply) {
   string error_string = "";
   if (controller->Failed())
     error_string = controller->ErrorText();
@@ -573,7 +571,7 @@ void LlaClientCore::HandleUniverseName(SimpleRpcController *controller,
  * Called once SetMergeMode completes
  */
 void LlaClientCore::HandleUniverseMergeMode(SimpleRpcController *controller,
-                                        lla::proto::Ack *reply) {
+                                            lla::proto::Ack *reply) {
   string error_string = "";
   if (controller->Failed())
     error_string = controller->ErrorText();
@@ -593,7 +591,7 @@ void LlaClientCore::HandleUniverseMergeMode(SimpleRpcController *controller,
  * Called once SetMergeMode completes
  */
 void LlaClientCore::HandleRegister(SimpleRpcController *controller,
-                              lla::proto::Ack *reply) {
+                                   lla::proto::Ack *reply) {
   if (controller->Failed())
     printf("register failed: %s\n", controller->ErrorText().c_str());
   delete controller;
@@ -605,7 +603,7 @@ void LlaClientCore::HandleRegister(SimpleRpcController *controller,
  * Called once SetMergeMode completes
  */
 void LlaClientCore::HandlePatch(SimpleRpcController *controller,
-                                        lla::proto::Ack *reply) {
+                                lla::proto::Ack *reply) {
   string error_string = "";
   if (controller->Failed())
     error_string = controller->ErrorText();
@@ -626,7 +624,7 @@ void LlaClientCore::HandlePatch(SimpleRpcController *controller,
  *
  */
 void LlaClientCore::HandleDeviceConfig(lla::rpc::SimpleRpcController *controller,
-                                   lla::proto::DeviceConfigReply *reply) {
+                                       lla::proto::DeviceConfigReply *reply) {
   string error_string;
   if (m_observer) {
     if (controller->Failed())
