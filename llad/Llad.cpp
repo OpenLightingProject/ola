@@ -362,7 +362,7 @@ int main(int argc, char *argv[]) {
   lla_options.http_port = opts.http_port;
   lla_options.http_data_dir = opts.http_data_dir;
 
-  llad = new LlaDaemon(&lla_options, &export_map, opts.rpc_port);
+  llad = new LlaDaemon(lla_options, &export_map, opts.rpc_port);
 
   if (llad->Init()) {
     llad->Run();

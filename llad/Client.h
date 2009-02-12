@@ -50,7 +50,6 @@ class Client {
     Client& operator=(const Client&);
 
     class LlaClientService_Stub *m_client_stub;
-
 };
 
 } //lla

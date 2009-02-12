@@ -28,22 +28,18 @@
 #include <map>
 #include <string>
 
-#include <lla/select_server/Socket.h>
-#include <lla/select_server/SelectServer.h>
-#include <lla/plugin_id.h>
-#include <llad/Preferences.h>
-
-#include "common/protocol/Lla.pb.h"
-#include "llad/LlaServerServiceImpl.h"
 #include <lla/ExportMap.h>
-
-#ifdef HAVE_LIBMICROHTTPD
-#include "llad/LlaHttpServer.h"
-#else
-#define LlaHttpServer int
-#endif
+#include <lla/plugin_id.h>
+#include <lla/select_server/SelectServer.h>
+#include <lla/select_server/Socket.h>
 
 namespace lla {
+
+#ifdef HAVE_LIBMICROHTTPD
+typedef class LlaHttpServer LlaHttpServer_t;
+#else
+typedef int LlaHttpServer_t;
+#endif
 
 typedef struct {
   bool http_enable; // run the http server
@@ -60,7 +56,7 @@ typedef struct {
 class LlaServer: public lla::select_server::AcceptSocketListener,
                  public lla::select_server::SocketManager {
   public:
-    LlaServer(LlaServerServiceImplFactory *factory,
+    LlaServer(class LlaServerServiceImplFactory *factory,
               class PluginLoader *plugin_loader,
               class PreferencesFactory *preferences_factory,
               lla::select_server::SelectServer *select_server,
@@ -80,9 +76,9 @@ class LlaServer: public lla::select_server::AcceptSocketListener,
     LlaServer& operator=(const LlaServer&);
     void StopPlugins();
     void StartPlugins();
-    void CleanupConnection(LlaServerServiceImpl *service);
+    void CleanupConnection(class LlaServerServiceImpl *service);
 
-    LlaServerServiceImplFactory *m_service_factory;
+    class LlaServerServiceImplFactory *m_service_factory;
     class PluginLoader *m_plugin_loader;
     lla::select_server::SelectServer *m_ss;
     lla::select_server::ListeningSocket *m_listening_socket;
@@ -98,7 +94,7 @@ class LlaServer: public lla::select_server::AcceptSocketListener,
     bool m_init_run;
     bool m_free_export_map;
     std::map<int, class LlaServerServiceImpl*> m_sd_to_service;
-    LlaHttpServer *m_httpd;
+    LlaHttpServer_t *m_httpd;
     lla_server_options m_options;
 
     static const string K_CLIENT_VAR;

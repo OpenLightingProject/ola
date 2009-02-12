@@ -34,7 +34,7 @@ using lla::select_server::SelectServer;
 
 class LlaDaemon {
   public:
-    LlaDaemon(lla_server_options *options,
+    LlaDaemon(lla_server_options &options,
               ExportMap *export_map=NULL,
               unsigned int rpc_port=LLA_DEFAULT_PORT);
     ~LlaDaemon();
@@ -42,6 +42,8 @@ class LlaDaemon {
     void Run();
     void Terminate();
     void ReloadPlugins();
+    class SelectServer* GetSelectServer() const { return m_ss; }
+    class LlaServer *GetLlaServer() const { return m_server; }
 
     static const unsigned int DEFAULT_RPC_PORT = LLA_DEFAULT_PORT;
 

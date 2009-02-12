@@ -7,7 +7,8 @@ libllaserver_la_SOURCES = LlaServer.cpp LlaServerServiceImpl.cpp \
                           Logger.cpp Preferences.cpp Universe.cpp \
                           UniverseStore.cpp Port.cpp Client.cpp \
                           Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
-                          Plugin.cpp DlOpenPluginLoader.cpp StringUtils.cpp
+                          Plugin.cpp DlOpenPluginLoader.cpp StringUtils.cpp \
+                          LlaDaemon.cpp
 
 libllaserver_la_LDFLAGS = -lprotobuf
 
@@ -20,14 +21,17 @@ libllaserver_la_LIBADD = @LIBLTDL@ $(top_builddir)/common/libllacommon.la
 libllaserver_la_CXXFLAGS = -Wall -Wformat -W
 
 # Header files
+pkgincludedir = $(includedir)/llad
+pkginclude_HEADERS = LlaDaemon.h LlaServer.h
+
 EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
-             DynamicPluginLoader.h LlaDaemon.h LlaServer.h \
+             DynamicPluginLoader.h \
              LlaServerServiceImpl.h PluginLoader.h UniverseStore.h \
              HttpServer.h LlaHttpServer.h StringUtils.h
 
 # Llad Server
 bin_PROGRAMS = llad
-llad_SOURCES = Llad.cpp LlaDaemon.cpp
+llad_SOURCES = Llad.cpp
 #llad_CXXFLAGS = -Wall -Werror  -Wformat -W
 llad_CXXFLAGS = -Wall -Wformat -W
 llad_LDFLAGS = -rdynamic -ldl -lprotobuf

@@ -22,10 +22,11 @@
 #include <string.h>
 
 #include <lla/ExportMap.h>
+#include <llad/LlaDaemon.h>
+#include <llad/Preferences.h>
 #include <llad/logger.h>
-#include "LlaDaemon.h"
 #include "DlOpenPluginLoader.h"
-
+#include "LlaServerServiceImpl.h"
 #include "PluginLoader.h"
 
 namespace lla {
@@ -41,7 +42,7 @@ const string LlaDaemon::K_RPC_PORT_VAR = "rpc_port";
  *
  * @param PluginLoader what to use to access the plugins
  */
-LlaDaemon::LlaDaemon(lla_server_options *options,
+LlaDaemon::LlaDaemon(lla_server_options &options,
                      ExportMap *export_map,
                      unsigned int rpc_port):
   m_plugin_loader(NULL),
@@ -50,12 +51,14 @@ LlaDaemon::LlaDaemon(lla_server_options *options,
   m_preferences_factory(NULL),
   m_listening_socket(NULL),
   m_service_factory(NULL),
-  m_options(*options),
+  m_options(options),
   m_export_map(export_map),
   m_rpc_port(rpc_port) {
 
-  IntegerVariable *var = m_export_map->GetIntegerVar(K_RPC_PORT_VAR);
-  var->Set(rpc_port);
+  if (m_export_map) {
+    IntegerVariable *var = m_export_map->GetIntegerVar(K_RPC_PORT_VAR);
+    var->Set(rpc_port);
+  }
 }
 
 

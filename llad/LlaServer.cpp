@@ -17,24 +17,36 @@
  * LlaServer is the main LLA Server class
  * Copyright (C) 2005-2008 Simon Newton
  */
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <lla/ExportMap.h>
-#include <llad/logger.h>
+#include <llad/Plugin.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <llad/Plugin.h>
+#include <llad/Preferences.h>
 #include <llad/Universe.h>
+#include <llad/logger.h>
+#include "common/protocol/Lla.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
 
 #include "Client.h"
 #include "DeviceManager.h"
 #include "LlaServer.h"
 #include "LlaServerServiceImpl.h"
+#include "LlaServerServiceImpl.h"
 #include "PluginLoader.h"
 #include "UniverseStore.h"
+
+#ifdef HAVE_LIBMICROHTTPD
+#include "LlaHttpServer.h"
+#endif
 
 namespace lla {
 

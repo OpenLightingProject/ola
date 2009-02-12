@@ -25,6 +25,7 @@
 #include <google/template.h>
 #include <lla/select_server/SelectServer.h>
 #include <lla/ExportMap.h>
+#include <llad/Device.h>
 #include "HttpServer.h"
 
 namespace lla {
