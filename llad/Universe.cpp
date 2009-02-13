@@ -27,6 +27,7 @@
 
 #include <arpa/inet.h>
 #include <iterator>
+#include <algorithm>
 #include <string.h>
 #include <stdio.h>
 
