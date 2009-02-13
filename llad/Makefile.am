@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_builddir)/include @LLAD_DEFINES@
+INCLUDES = -I$(top_builddir)/include -I$(top_builddir)/libltdl @LLAD_DEFINES@
 SUBDIRS = www
 
 # lib llaserver
