@@ -470,7 +470,7 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
       Universe *universe = (*port_iter)->GetUniverse();
       errno = 0;
       int universe_id = atoi(uni_id.data());
-      if (universe_id != 0 || errno == 0) {
+      if (!uni_id.empty() && (universe_id != 0 || errno == 0)) {
         // valid number, patch this universe
         Universe *new_universe =
           m_universe_store->GetUniverseOrCreate(universe_id);
