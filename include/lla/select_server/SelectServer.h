@@ -95,7 +95,8 @@ class SelectServer {
     // This is a timer event
     typedef struct {
       struct timeval next;
-      int interval; // non 0 if this event is recurring
+      struct timeval interval;
+      int repeat; // non 0 if this event is recurring
       bool free_after_run; // true if we delete the listener once we're done
       TimeoutListener *listener;
     } event_t;

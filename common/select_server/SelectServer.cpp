@@ -183,13 +183,13 @@ int SelectServer::RegisterTimeout(int ms,
 
   event_t event;
   event.listener = listener;
-  event.interval = recurring ? ms : 0;
+  event.interval.tv_sec = ms / K_MS_IN_SECOND;
+  event.interval.tv_usec = K_MS_IN_SECOND * (ms % K_MS_IN_SECOND);
+  event.repeat = recurring;
   event.free_after_run = free_after_run;
 
   gettimeofday(&event.next, NULL);
-  event.next.tv_sec += ms / K_MS_IN_SECOND;
-  event.next.tv_usec += K_MS_IN_SECOND * (ms % K_MS_IN_SECOND);
-
+  timeradd(&event.next, &event.interval, &event.next);
   m_event_cbs.push(event);
 
   if (m_export_map) {
@@ -363,14 +363,13 @@ struct timeval SelectServer::CheckTimeouts() {
       e.listener->Timeout();
     m_event_cbs.pop();
 
-    if (e.interval) {
+    if (e.repeat) {
       e.next = now;
-      e.next.tv_sec += e.interval / K_MS_IN_SECOND;
-      e.next.tv_usec += e.interval / K_MS_IN_SECOND;
+      timeradd(&e.next, &e.interval, &e.next);
       m_event_cbs.push(e);
     }
 
-    if (!e.interval && e.free_after_run) {
+    if (!e.repeat && e.free_after_run) {
       delete e.listener;
 
       if (m_export_map) {
