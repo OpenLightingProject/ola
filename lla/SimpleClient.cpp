@@ -49,6 +49,8 @@ bool SimpleClient::Setup() {
     if (!m_socket->Connect("127.0.0.1", LLA_DEFAULT_PORT)) {
       delete m_socket;
       delete m_ss;
+      m_socket = NULL;
+      m_ss = NULL;
       return false;
     }
   }
