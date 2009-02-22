@@ -27,9 +27,6 @@
 #include "ShowNetPlugin.h"
 #include "ShowNetDevice.h"
 
-namespace lla {
-namespace plugin {
-
 const string ShowNetPlugin::SHOWNET_NODE_NAME = "lla-ShowNet";
 const string ShowNetPlugin::SHOWNET_DEVICE_NAME = "ShowNet Device";
 const string ShowNetPlugin::PLUGIN_NAME = "ShowNet Plugin";
@@ -142,6 +139,3 @@ int ShowNetPlugin::set_default_prefs() {
 
   return 0;
 }
-
-} // plugin
-} // lla

@@ -22,8 +22,8 @@
 #ifndef SHOWNETDEVICE_H
 #define SHOWNETDEVICE_H
 
-#include <llad/Device.h>
-#include <lla/select_server/FDListener.h>
+#include <llad/device.h>
+#include <llad/listener.h>
 
 #include <shownet/shownet.h>
 
@@ -35,16 +35,16 @@ class ShowNetDevice : public Device, public Listener {
     ShowNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
     ~ShowNetDevice();
 
-    bool Start();
-    bool Stop();
+    int start();
+    int stop();
     shownet_node get_node() const;
     int get_sd() const;
     int action();
-    int SaveConfig() const;
+    int save_config() const;
     int configure(void *req, int len);
 
   private:
-    class Preferences *m_preferences;
+    class Preferences *m_prefs;
     shownet_node m_node;
     bool m_enabled;
 };

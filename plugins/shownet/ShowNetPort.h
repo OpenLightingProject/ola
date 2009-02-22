@@ -21,7 +21,7 @@
 #ifndef SHOWNETPORT_H
 #define SHOWNETPORT_H
 
-#include <llad/Port.h>
+#include <llad/port.h>
 
 #include <shownet/shownet.h>
 
@@ -31,11 +31,11 @@ class ShowNetPort : public Port {
     ShowNetPort(Device *parent, int id);
     ~ShowNetPort();
 
-    int WriteDMX(uint8_t *data, unsigned int length);
-    int ReadDMX(uint8_t *data, unsigned int length);
+    int write(uint8_t *data, unsigned int length);
+    int read(uint8_t *data, unsigned int length);
 
-    bool CanRead() const;
-    bool CanWrite() const;
+    int can_read() const;
+    int can_write() const;
 
     int update_buffer(uint8_t *data, int length);
 

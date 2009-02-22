@@ -25,15 +25,9 @@
 #include <llad/plugin.h>
 #include <lla/plugin_id.h>
 
-namespace lla {
-namespace plugin {
-
-using lla::Plugin;
-using lla::PluginAdaptor;
-
 class ShowNetDevice;
 
-class ShowNetPlugin: public Plugin {
+class ShowNetPlugin : public Plugin {
 
   public:
     ShowNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
@@ -58,6 +52,4 @@ class ShowNetPlugin: public Plugin {
     static const string PLUGIN_PREFIX;
 };
 
-} // plugin
-} // lla
 #endif

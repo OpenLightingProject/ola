@@ -37,18 +37,18 @@ ShowNetPort::ShowNetPort(Device *parent, int id) :
 }
 
 ShowNetPort::~ShowNetPort() {
-  if (CanRead())
+  if (can_read())
     free(m_buf);
 }
 
-int ShowNetPort::CanRead() const {
+int ShowNetPort::can_read() const {
   // ports 0 to 7 are input
-  return ( PortId()>=0 && PortId() < PORTS_PER_DEVICE);
+  return ( get_id()>=0 && get_id() < PORTS_PER_DEVICE);
 }
 
-bool ShowNetPort::CanWrite() const {
+int ShowNetPort::can_write() const {
   // ports 8 to 13 are output
-  return ( PortId()>= PORTS_PER_DEVICE && PortId() <2*PORTS_PER_DEVICE);
+  return ( get_id()>= PORTS_PER_DEVICE && get_id() <2*PORTS_PER_DEVICE);
 }
 
 /*
@@ -58,13 +58,13 @@ bool ShowNetPort::CanWrite() const {
  * @param  length  the length of the data
  *
  */
-int ShowNetPort::WriteDMX(uint8_t *data, unsigned int length) {
-  ShowNetDevice *dev = (ShowNetDevice*) GetDevice();
+int ShowNetPort::write(uint8_t *data, unsigned int length) {
+  ShowNetDevice *dev = (ShowNetDevice*) get_device();
 
-  if (!CanWrite())
+  if (!can_write())
     return -1;
 
-  if (shownet_send_dmx(dev->get_node() , PortId()%8 , length, data)) {
+  if (shownet_send_dmx(dev->get_node() , get_id()%8 , length, data)) {
     Logger::instance()->log(Logger::WARN, "ShownetPlugin: shownet_send_dmx failed %s",
       shownet_strerror());
     return -1;
@@ -80,10 +80,10 @@ int ShowNetPort::WriteDMX(uint8_t *data, unsigned int length) {
  *
  * @return  the amount of data read
  */
-int ShowNetPort::ReadDMX(uint8_t *data, unsigned int length) {
+int ShowNetPort::read(uint8_t *data, unsigned int length) {
   int len;
 
-  if (!CanRead())
+  if (!can_read())
     return -1;
 
   len = min(m_len, length);
@@ -99,7 +99,7 @@ int ShowNetPort::update_buffer(uint8_t *data, int length) {
   int len = min(DMX_LENGTH, length);
 
   // we can't update if this isn't a input port
-  if (!CanRead())
+  if (!can_read())
     return -1;
 
   // allocate buffer as needed
