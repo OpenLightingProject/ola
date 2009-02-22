@@ -16,8 +16,6 @@
  * OpenDmxDevice.cpp
  * The open dmx device
  * Copyright (C) 2005-2008 Simon Newton
- *
- *
  */
 
 #include <stdlib.h>
@@ -66,11 +64,12 @@ bool OpenDmxDevice::Start() {
   // owner, id, path
   OpenDmxPort *port = new OpenDmxPort(this, 0, m_path);
 
-  if (port)
+  if (port) {
     this->AddPort(port);
-
-  m_enabled = true;
-  return true;
+    m_enabled = true;
+    return true;
+  }
+  return false;
 }
 
 

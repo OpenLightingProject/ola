@@ -99,6 +99,7 @@ bool OpenDmxPlugin::StopHook() {
   return true;
 }
 
+
 /*
  * Return the description for this plugin
  *
@@ -121,17 +122,18 @@ string OpenDmxPlugin::Description() const {
  * Load the plugin prefs and default to sensible values
  */
 int OpenDmxPlugin::SetDefaultPreferences() {
+  const string device_key = "device";
   if (!m_preferences)
     return -1;
 
-  if (m_preferences->GetValue("device").empty()) {
-    m_preferences->SetValue("device", OPENDMX_DEVICE_PATH);
+  if (m_preferences->GetValue(device_key).empty()) {
+    m_preferences->SetValue(device_key, OPENDMX_DEVICE_PATH);
     m_preferences->Save();
   }
 
   // check if this save correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue("device").empty())
+  if (m_preferences->GetValue(device_key).empty())
     return -1;
 
   return 0;
