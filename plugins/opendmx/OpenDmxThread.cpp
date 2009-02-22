@@ -117,7 +117,7 @@ void *OpenDmxThread::Run(const string &path) {
 
     } else {
       pthread_mutex_lock(&m_mutex);
-      memcpy(&buf[1], m_dmx, DMX_UNIVERSE_SIZE + 1);
+      memcpy(&buf[1], m_dmx, DMX_UNIVERSE_SIZE);
       pthread_mutex_unlock(&m_mutex);
 
       do_write(buf, DMX_UNIVERSE_SIZE + 1);

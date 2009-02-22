@@ -26,7 +26,7 @@
 #include "ShowNetPort.h"
 
 #include <llad/logger.h>
-#include <llad/preferences.h>
+#include <llad/Preferences.h>
 #include <llad/plugin.h>
 #include <llad/universe.h>
 
@@ -54,7 +54,7 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
   if (uid > SHOWNET_MAX_UNIVERSES)
     return 0;
 
-  prt = (ShowNetPort*) dev->get_port(uid);
+  prt = (ShowNetPort*) dev->GetPort(uid);
   uni = prt->get_universe();
 
   if ( prt->can_read() && uni != NULL && prt->get_id()%8 == uid) {
@@ -75,7 +75,7 @@ int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
  */
 ShowNetDevice::ShowNetDevice(Plugin *owner, const string &name, Preferences *prefs):
   Device(owner, name),
-  m_prefs(prefs),
+  m_preferences(prefs),
   m_node(NULL),
   m_enabled(false) {}
 
@@ -85,7 +85,7 @@ ShowNetDevice::ShowNetDevice(Plugin *owner, const string &name, Preferences *pre
  */
 ShowNetDevice::~ShowNetDevice() {
   if (m_enabled)
-    stop();
+    Stop();
 }
 
 
@@ -93,7 +93,7 @@ ShowNetDevice::~ShowNetDevice() {
  * Start this device
  *
  */
-int ShowNetDevice::start() {
+bool ShowNetDevice::Start() {
   ShowNetPort *port = NULL;
 
   /* set up ports */
@@ -101,14 +101,14 @@ int ShowNetDevice::start() {
     port = new ShowNetPort(this, i);
 
     if (port != NULL)
-      this->add_port(port);
+      this->AddPort(port);
   }
 
   // create new shownet node, and set config values
-  if (m_prefs->get_val("ip") == "")
+  if (m_preferences->GetValue("ip") == "")
     m_node = shownet_new(NULL, get_owner()->debug_on());
   else {
-    m_node = shownet_new(m_prefs->get_val("ip").c_str(), get_owner()->debug_on());
+    m_node = shownet_new(m_preferences->GetValue("ip").c_str(), get_owner()->debug_on());
   }
 
   if (!m_node) {
@@ -117,7 +117,7 @@ int ShowNetDevice::start() {
   }
 
   // setup node
-  if (shownet_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
+  if (shownet_set_name(m_node, m_preferences->GetValue("name").c_str()) ) {
     Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_name failed: %s", shownet_strerror());
     goto e_shownet_start;
   }
@@ -147,14 +147,14 @@ e_shownet_start:
  * stop this device
  *
  */
-int ShowNetDevice::stop() {
+bool ShowNetDevice::Stop() {
   Port *prt = NULL;
 
   if (!m_enabled)
     return 0;
 
   for (int i=0; i < port_count(); i++) {
-    prt = get_port(i);
+    prt = GetPort(i);
     if (prt != NULL)
       delete prt;
   }
@@ -215,7 +215,7 @@ int ShowNetDevice::action() {
 // call this when something changes
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
-int ShowNetDevice::save_config() const {
+int ShowNetDevice::SaveConfig() const {
 
 
   return 0;
