@@ -18,12 +18,13 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <fcntl.h>
-#include <stdio.h>
 #include <arpa/inet.h>
 #include <errno.h>
-#include <unistd.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 #include <lla/select_server/Socket.h>
 
