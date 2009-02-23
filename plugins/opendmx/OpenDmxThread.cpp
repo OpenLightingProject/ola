@@ -47,7 +47,7 @@ void *thread_run(void *d) {
   t_args *args = (t_args*) d;
 
   args->th->Run(args->path);
-  free(args);
+  delete args;
 }
 
 /*
@@ -133,7 +133,7 @@ void *OpenDmxThread::Run(const string &path) {
  */
 int OpenDmxThread::Start(const string &path) {
   // this is passed to the thread and free'ed there
-  t_args *args = (t_args*) malloc(sizeof(t_args));
+  t_args *args = new t_args;
 
   args->th = this;
   args->path = path;
