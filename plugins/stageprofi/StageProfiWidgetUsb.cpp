@@ -20,13 +20,14 @@
  * The StageProfi Usb Widget.
  */
 
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <errno.h>
 
 #include <llad/logger.h>
 #include <lla/select_server/Socket.h>
