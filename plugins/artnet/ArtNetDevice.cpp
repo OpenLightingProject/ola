@@ -28,13 +28,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "ArtNetDevice.h"
-#include "ArtNetPort.h"
-
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/service.h>
 #include <llad/logger.h>
 #include <llad/Preferences.h>
 #include <artnet/artnet.h>
+#include "ArtNetDevice.h"
+#include "ArtNetPort.h"
 
 
 #if HAVE_CONFIG_H
@@ -84,19 +84,31 @@ int program_handler(artnet_node n, void *d) {
 namespace lla {
 namespace plugin {
 
+using google::protobuf::RpcController;
+using google::protobuf::Closure;
+using lla::plugin::artnet::Request;
+using lla::plugin::artnet::Reply;
+
+const string ArtNetDevice::K_SHORT_NAME_KEY = "short_name";
+const string ArtNetDevice::K_LONG_NAME_KEY = "long_name";
+const string ArtNetDevice::K_SUBNET_KEY = "subnet";
+const string ArtNetDevice::K_IP_KEY = "ip";
+
 /*
- * Create a new device
- *
- * should prob pass the ip to bind to
- *
+ * Create a new Artnet Device
  */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            const string &name,
-                           lla::Preferences *prefs) :
+                           lla::Preferences *prefs,
+                           bool debug):
   Device(owner, name),
   m_preferences(prefs),
   m_node(NULL),
-  m_enabled(false) {
+  m_short_name(""),
+  m_long_name(""),
+  m_subnet(0),
+  m_enabled(false),
+  m_debug(debug) {
 }
 
 
@@ -112,71 +124,89 @@ ArtNetDevice::~ArtNetDevice() {
 /*
  * Start this device
  *
+ * @return true on success, false on failure
  */
 bool ArtNetDevice::Start() {
-  ArtNetPort *port = NULL;
-  int debug = 0;
+  ArtNetPort *port;
+  string value;
+  int subnet;
 
   /* set up ports */
-  for(int i=0; i < 2 * ARTNET_MAX_PORTS; i++) {
+  for (int i = 0; i < 2 * ARTNET_MAX_PORTS; i++) {
     port = new ArtNetPort(this, i);
-
-    if(port != NULL)
+    if(port)
       this->AddPort(port);
   }
 
-#ifdef DEBUG
-  debug = 1;
-#endif
-
   // create new artnet node, and and set config values
-
-  if (m_preferences->GetValue("ip") == "")
-    m_node = artnet_new(NULL, debug);
+  if (m_preferences->GetValue(K_IP_KEY).empty())
+    m_node = artnet_new(NULL, m_debug);
   else {
-    m_node = artnet_new(m_preferences->GetValue("ip").c_str(), debug);
+    m_node = artnet_new(m_preferences->GetValue(K_IP_KEY).data(), m_debug);
   }
 
   if (!m_node) {
-    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_new failed %s", artnet_strerror() );
+    Logger::instance()->log(Logger::WARN,
+                            "ArtNetPlugin: artnet_new failed %s",
+                            artnet_strerror());
     goto e_dev;
   }
 
   // node config
   if (artnet_setoem(m_node, 0x04, 0x31)) {
-    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_setoem failed: %s", artnet_strerror());
+    Logger::instance()->log(Logger::WARN,
+                            "ArtNetPlugin: artnet_setoem failed: %s",
+                            artnet_strerror());
     goto e_artnet_start;
   }
 
-
-  if (artnet_set_short_name(m_node, m_preferences->GetValue("short_name").c_str())) {
-    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_short_name failed: %s", artnet_strerror());
+  value = m_preferences->GetValue(K_SHORT_NAME_KEY);
+  if (artnet_set_short_name(m_node, value.data())) {
+    Logger::instance()->log(Logger::WARN,
+                            "ArtNetPlugin: artnet_set_short_name failed: %s",
+                            artnet_strerror());
     goto e_artnet_start;
   }
+  m_short_name = value;
 
-  if (artnet_set_long_name(m_node, m_preferences->GetValue("long_name").c_str())) {
-    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_long_name failed: %s", artnet_strerror());
+  value = m_preferences->GetValue(K_LONG_NAME_KEY);
+  if (artnet_set_long_name(m_node, value.data())) {
+    Logger::instance()->log(Logger::WARN,
+                            "ArtNetPlugin: artnet_set_long_name failed: %s",
+                            artnet_strerror());
     goto e_artnet_start;
   }
+  m_long_name = value;
 
   if (artnet_set_node_type(m_node, ARTNET_SRV)) {
-    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_node_type failed: %s", artnet_strerror());
+    Logger::instance()->log(Logger::WARN,
+                            "ArtNetPlugin: artnet_set_node_type failed: %s",
+                            artnet_strerror());
     goto e_artnet_start;
   }
 
-  if (artnet_set_subnet_addr(m_node, atoi(m_preferences->GetValue("subnet").c_str()) ) ) {
-    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_subnet_addr failed: %s", artnet_strerror());
+  value = m_preferences->GetValue(K_SUBNET_KEY);
+  subnet = atoi(value.data());
+  if (artnet_set_subnet_addr(m_node, subnet)) {
+    Logger::instance()->log(Logger::WARN,
+                            "ArtNetPlugin: artnet_set_subnet_addr failed: %s",
+                            artnet_strerror());
     goto e_artnet_start;
   }
+  m_subnet = subnet;
 
   // we want to be notified when the node config changes
-  if (artnet_set_program_handler(m_node, ::program_handler, (void*) this) ) {
-    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_program_handler failed: %s", artnet_strerror());
+  if (artnet_set_program_handler(m_node, ::program_handler, (void*) this)) {
+    Logger::instance()->log(Logger::WARN,
+                            "ArtNetPlugin: artnet_set_program_handler failed: %s",
+                            artnet_strerror());
     goto e_artnet_start;
   }
 
-  if (artnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-    Logger::instance()->log(Logger::WARN, "ArtNetPlugin: artnet_set_dmx_handler failed: %s", artnet_strerror());
+  if (artnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this)) {
+    Logger::instance()->log(Logger::WARN,
+                            "ArtNetPlugin: artnet_set_dmx_handler failed: %s",
+                            artnet_strerror());
     goto e_artnet_start;
   }
 
@@ -208,8 +238,7 @@ bool ArtNetDevice::Start() {
     goto e_artnet_start;
   }
   m_enabled = true;
-
-  return 0;
+  return true;
 
 e_artnet_start:
   if(artnet_destroy(m_node))
@@ -218,7 +247,7 @@ e_artnet_start:
 e_dev:
   DeleteAllPorts();
 
-  return -1;
+  return false;
 }
 
 
@@ -292,6 +321,83 @@ int ArtNetDevice::SaveConfig() const {
   return 0;
 }
 
+
+/*
+ * Handle device config messages
+ *
+ * @param controller An RpcController
+ * @param request the request data
+ * @param response the response to return
+ * @param done the closure to call once the request is complete
+ */
+void ArtNetDevice::Configure(RpcController *controller,
+                             const string &request,
+                             string *response,
+                             Closure *done) {
+    Request request_pb;
+    if (!request_pb.ParseFromString(request)) {
+      controller->SetFailed("Invalid Request");
+      done->Run();
+      return;
+    }
+
+    switch (request_pb.type()) {
+      case lla::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST:
+        HandleOptions(&request_pb, response);
+        break;
+      default:
+        controller->SetFailed("Invalid Request");
+    }
+    done->Run();
+}
+
+
+/*
+ * Handle an options request
+ */
+void ArtNetDevice::HandleOptions(Request *request, string *response) {
+  bool status = true;
+  if (request->has_options()) {
+    const lla::plugin::artnet::OptionsRequest options = request->options();
+    if (options.has_short_name()) {
+      if (artnet_set_short_name(m_node, options.short_name().data())) {
+        Logger::instance()->log(Logger::WARN,
+                                "ArtNetPlugin: set short name failed: %s",
+                                artnet_strerror());
+        status = false;
+      }
+      m_short_name = options.short_name();
+    }
+    if (options.has_long_name()) {
+      if (artnet_set_long_name(m_node, options.long_name().data())) {
+        Logger::instance()->log(Logger::WARN,
+                                "ArtNetPlugin: set long name failed: %s",
+                                artnet_strerror());
+        status = false;
+      }
+      m_long_name = options.long_name();
+    }
+    if (options.has_subnet()) {
+      if (artnet_set_subnet_addr(m_node, options.subnet())) {
+        Logger::instance()->log(Logger::WARN,
+                                "ArtNetPlugin: set subnet failed: %s",
+                                artnet_strerror());
+        status = false;
+      }
+      m_subnet = options.subnet();
+    }
+    SaveConfig();
+  }
+
+  lla::plugin::artnet::Reply reply;
+  reply.set_type(lla::plugin::artnet::Reply::ARTNET_OPTIONS_REPLY);
+  lla::plugin::artnet::OptionsReply *options_reply = reply.mutable_options();
+  options_reply->set_status(status);
+  options_reply->set_short_name(m_short_name);
+  options_reply->set_long_name(m_long_name);
+  options_reply->set_subnet(m_subnet);
+  reply.SerializeToString(response);
+}
 
 
 } //plugin

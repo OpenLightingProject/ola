@@ -213,6 +213,7 @@ AC_OUTPUT( Makefile\
     llad/www/Makefile \
     plugins/Makefile \
     plugins/artnet/Makefile \
+    plugins/artnet/messages/Makefile \
     plugins/e131/Makefile \
     plugins/dummy/Makefile \
     plugins/dmx4linux/Makefile \
@@ -221,6 +222,7 @@ AC_OUTPUT( Makefile\
     plugins/shownet/Makefile \
     plugins/sandnet/Makefile \
     plugins/usbpro/Makefile \
+    plugins/usbpro/messages/Makefile \
     plugins/stageprofi/Makefile \
     plugins/opendmx/Makefile \
     liblla.pc \

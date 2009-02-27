@@ -63,12 +63,12 @@ const string ArtNetPlugin::PLUGIN_PREFIX = "artnet";
 bool ArtNetPlugin::StartHook() {
   int sd;
   /* create new lla device */
-  m_device = new ArtNetDevice(this, "Art-Net Device", m_preferences);
+  m_device = new ArtNetDevice(this, "Art-Net Device", m_preferences, m_debug);
 
   if (!m_device)
     return false;
 
-  if (m_device->Start()) {
+  if (!m_device->Start()) {
     delete m_device;
     return false;
   }

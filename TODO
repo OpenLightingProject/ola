@@ -1,9 +1,8 @@
 
+See http://code.google.com/p/linux-lighting/issues/list
 
 --URGENT--
 resend DMX on idle (artnet every 4s)
-fix thread locks in the web interface
-
 
 --REQUIRED--
 
@@ -15,9 +14,6 @@ fix thread locks in the web interface
 -- NICE--
 * let the ports save what universe they are attached to (do this in the plugin)
 * serialise so that plugins can store state
-
---UNIMPORTANT--
-* send debug to remote client - need to watch looping here (maybe lev 1&2)
 
 --WISH LIST--
 
