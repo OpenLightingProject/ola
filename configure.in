@@ -38,7 +38,8 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([gettimeofday ftime inet_ntoa memset select socket strerror])
 
 PKG_CHECK_MODULES(liblla, [liblla >= 0.3.0])
-PKG_CHECK_MODULES(libllausbproconf, [libllausbproconf >= 0.0.1])
+PKG_CHECK_MODULES(libllausbproconf, [libllausbproconf >= 0.3.0])
+PKG_CHECK_MODULES(libllaartnetconf, [libllaartnetconf >= 0.3.0])
 
 AC_SUBST(liblla_CFLAGS)
 AC_SUBST(liblla_LIBS)
