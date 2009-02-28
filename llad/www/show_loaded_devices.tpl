@@ -57,13 +57,13 @@ function toggleL(event,id) {
      </table>
    </div>
   {{/DEVICE}}
+  {{#NO_DEVICES}}
+    <div class="error">No devices!</div>
+  {{/NO_DEVICES}}
  </div>
 
  <br/>
  <input type="submit" name="action" value="Save Changes"/>
- {{#NO_DEVICES}}
-   <span class="error">No devices!</span>
- {{/NO_DEVICES}}
 </div>
 
  </form>
