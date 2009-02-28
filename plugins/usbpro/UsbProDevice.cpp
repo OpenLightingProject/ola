@@ -164,10 +164,7 @@ void UsbProDevice::Configure(RpcController *controller,
 
     switch (request_pb.type()) {
       case lla::plugin::usbpro::Request::USBPRO_PARAMETER_REQUEST:
-        HandleGetParameters(controller, &request_pb, response, done);
-        break;
-      case lla::plugin::usbpro::Request::USBPRO_SET_PARAMETER_REQUEST:
-        HandleSetParameters(controller, &request_pb, response, done);
+        HandleParameters(controller, &request_pb, response, done);
         break;
       case lla::plugin::usbpro::Request::USBPRO_SERIAL_REQUEST:
         HandleGetSerial(controller, &request_pb, response, done);
@@ -179,22 +176,22 @@ void UsbProDevice::Configure(RpcController *controller,
 }
 
 
-
 /*
- * put the device back into recv mode
+ * Put the device back into recv mode
  */
 int UsbProDevice::ChangeToReceiveMode() {
   m_widget->ChangeToReceiveMode();
   return 0;
 }
 
+
 /*
- * Handle a get params request
+ * Handle a parameter request. This may set some parameters in the widget.
  */
-void UsbProDevice::HandleGetParameters(RpcController *controller,
-                                       const Request *request,
-                                       string *response,
-                                       Closure *done) {
+void UsbProDevice::HandleParameters(RpcController *controller,
+                                    const Request *request,
+                                    string *response,
+                                    Closure *done) {
 
   if (!m_widget->GetParameters()) {
     controller->SetFailed("GetParameters failed");
@@ -212,7 +209,6 @@ void UsbProDevice::HandleGetParameters(RpcController *controller,
 
 /*
  * Handle a set params request
- */
 void UsbProDevice::HandleSetParameters(RpcController *controller,
                                        const Request *request,
                                        string *response,
@@ -240,8 +236,8 @@ void UsbProDevice::HandleSetParameters(RpcController *controller,
   reply.set_type(lla::plugin::usbpro::Reply::USBPRO_SET_PARAMETER_REPLY);
   reply.SerializeToString(response);
   done->Run();
-
 }
+*/
 
 
 void UsbProDevice::HandleGetSerial(RpcController *controller,
@@ -297,7 +293,6 @@ void UsbProDevice::Parameters(uint8_t firmware,
 
     reply.SerializeToString(parameter_request.response);
     parameter_request.done->Run();
-
   }
 }
 

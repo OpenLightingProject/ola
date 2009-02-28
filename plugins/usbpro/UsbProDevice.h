@@ -68,12 +68,7 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     void SerialNumber(const uint8_t serial[4]);
 
   private:
-    void HandleGetParameters(RpcController *controller,
-                             const Request *request,
-                             string *response,
-                             Closure *done);
-
-    void HandleSetParameters(RpcController *controller,
+    void HandleParameters(RpcController *controller,
                              const Request *request,
                              string *response,
                              Closure *done);

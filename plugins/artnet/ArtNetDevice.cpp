@@ -366,7 +366,7 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
                                 artnet_strerror());
         status = false;
       }
-      m_short_name = options.short_name();
+      m_short_name = options.short_name().substr(0, ARTNET_SHORT_NAME_LENGTH - 1);
     }
     if (options.has_long_name()) {
       if (artnet_set_long_name(m_node, options.long_name().data())) {
@@ -375,7 +375,7 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
                                 artnet_strerror());
         status = false;
       }
-      m_long_name = options.long_name();
+      m_long_name = options.long_name().substr(0, ARTNET_LONG_NAME_LENGTH - 1);
     }
     if (options.has_subnet()) {
       if (artnet_set_subnet_addr(m_node, options.subnet())) {

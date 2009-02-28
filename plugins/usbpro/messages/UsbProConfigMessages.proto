@@ -15,7 +15,7 @@
  *
  * ConfigMessages.proto
  * Defines the protocol buffers used to configure the Usb Pro device
- * Copyright (C) 2005 - 2008 Simon Newton
+ * Copyright (C) 2005 - 2009 Simon Newton
  */
 
 package lla.plugin.usbpro;
@@ -28,14 +28,14 @@ message ParameterReply {
   required uint32 rate = 5;
 }
 
-message SetParameterRequest {
-  required uint32 break_time = 1;
-  required uint32 mab_time = 2;
-  required uint32 rate = 3;
-}
-
-message SetParameterReply {
-  required uint32 status = 1;
+/*
+ * Setting any one of these will update the widget, otherwise we just do a
+ * read.
+ */
+message ParameterRequest {
+  optional uint32 break_time = 1;
+  optional uint32 mab_time = 2;
+  optional uint32 rate = 3;
 }
 
 message SerialNumberReply {
@@ -45,23 +45,18 @@ message SerialNumberReply {
 message Request {
   enum RequestType {
     USBPRO_PARAMETER_REQUEST = 1;
-    USBPRO_SET_PARAMETER_REQUEST = 2;
-    USBPRO_SERIAL_REQUEST = 3;
+    USBPRO_SERIAL_REQUEST = 2;
   }
-
   required RequestType type = 1;
-  optional SetParameterRequest set_parameters = 2;
+  optional ParameterRequest parameters = 2;
 }
 
 message Reply {
   enum ReplyType {
     USBPRO_PARAMETER_REPLY = 1;
-    USBPRO_SET_PARAMETER_REPLY = 2;
-    USBPRO_SERIAL_REPLY = 3;
+    USBPRO_SERIAL_REPLY = 2;
   }
   required ReplyType type = 1;
-
   optional ParameterReply parameters = 2;
-  optional SetParameterReply set_parameters = 3;
-  optional SerialNumberReply serial_number = 4;
+  optional SerialNumberReply serial_number = 3;
 }
