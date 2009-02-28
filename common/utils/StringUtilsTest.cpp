@@ -20,7 +20,7 @@
 
 #include <iostream>
 #include <cppunit/extensions/HelperMacros.h>
-#include "StringUtils.h"
+#include <lla/StringUtils.h>
 
 using namespace lla;
 using namespace std;

@@ -22,6 +22,7 @@
 #include <string>
 #include <iostream>
 
+#include <lla/StringUtils.h>
 #include <llad/Plugin.h>
 #include <llad/Device.h>
 #include <llad/Port.h>
@@ -29,7 +30,6 @@
 #include "DeviceManager.h"
 #include "LlaHttpServer.h"
 #include "PluginLoader.h"
-#include "StringUtils.h"
 #include "UniverseStore.h"
 
 namespace lla {

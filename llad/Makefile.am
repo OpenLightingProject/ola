@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_builddir)/include -I$(top_builddir)/libltdl @LLAD_DEFINES@
+INCLUDES = -I$(top_builddir)/common -I$(top_builddir)/include -I$(top_builddir)/libltdl @LLAD_DEFINES@
 SUBDIRS = www
 
 # lib llaserver
@@ -7,7 +7,7 @@ libllaserver_la_SOURCES = LlaServer.cpp LlaServerServiceImpl.cpp \
                           Logger.cpp Preferences.cpp Universe.cpp \
                           UniverseStore.cpp Port.cpp Client.cpp \
                           Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
-                          Plugin.cpp DlOpenPluginLoader.cpp StringUtils.cpp \
+                          Plugin.cpp DlOpenPluginLoader.cpp \
                           LlaDaemon.cpp
 
 libllaserver_la_LDFLAGS = -lprotobuf
@@ -27,7 +27,7 @@ pkginclude_HEADERS = LlaDaemon.h LlaServer.h
 EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
              DynamicPluginLoader.h \
              LlaServerServiceImpl.h PluginLoader.h UniverseStore.h \
-             HttpServer.h LlaHttpServer.h StringUtils.h
+             HttpServer.h LlaHttpServer.h
 
 # Llad Server
 bin_PROGRAMS = llad
@@ -42,7 +42,7 @@ llad_LDADD = @LIBS@ libllaserver.la \
 TESTS = LlaTester
 check_PROGRAMS = $(TESTS)
 LlaTester_SOURCES = LlaServerTester.cpp UniverseTest.cpp \
-                    DeviceTest.cpp StringUtilsTest.cpp
+                    DeviceTest.cpp
 LlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 LlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 LlaTester_LDADD = @LIBS@ libllaserver.la \

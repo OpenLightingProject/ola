@@ -199,10 +199,11 @@ _EOF_
 # output
 AC_OUTPUT( Makefile\
     common/Makefile\
+    common/export_map/Makefile\
     common/protocol/Makefile\
     common/rpc/Makefile\
     common/select_server/Makefile\
-    common/export_map/Makefile\
+    common/utils/Makefile\
     include/Makefile\
     include/lla/Makefile\
     include/lla/select_server/Makefile\
