@@ -10,10 +10,17 @@ lla_dmxmonitor_SOURCES = lla-dmxmonitor.cpp
 lla_dmxmonitor_LDADD = @LIBS@ -lcurses
 endif
 
-bin_PROGRAMS = lla_dev_info $(NCURSES_PROGS)
+bin_PROGRAMS = lla_dev_info lla_usbpro lla_artnet $(NCURSES_PROGS)
 lla_dev_info_SOURCES = lla-client.cpp
-#lla_usbpro_SOURCES = lla-usbpro.cpp
-#lla_usbpro_LDADD = @LIBS@ -lllausbproconf
+lla_usbpro_SOURCES = lla-usbpro.cpp
+lla_usbpro_LDADD = @LIBS@ -lllausbproconf libllaconfig.la
+lla_artnet_SOURCES = lla-artnet.cpp
+lla_artnet_LDADD = @LIBS@ -lllaartnetconf libllaconfig.la
+
+noinst_LTLIBRARIES = libllaconfig.la
+libllaconfig_la_SOURCES = LlaConfigurator.cpp
+
+EXTRA_DIST = LlaConfigurator.h
 
 install-exec-hook:
 	$(LN_S) -f $(bindir)/lla_dev_info $(bindir)/lla_plugin_info

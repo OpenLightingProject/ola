@@ -79,7 +79,7 @@ typedef struct {
  */
 class Observer: public lla::LlaClientObserver {
   public:
-    Observer(options *opts, SelectServer *ss) : m_opts(opts), m_ss(ss) {}
+    Observer(options *opts, SelectServer *ss): m_opts(opts), m_ss(ss) {}
 
     void Plugins(const vector <LlaPlugin> &plugins, const string &error);
     void Devices(const vector <LlaDevice> devices, const string &error);
