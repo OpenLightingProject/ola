@@ -2,6 +2,8 @@
 pkgincludedir = $(includedir)/lla/usbpro
 lib_LTLIBRARIES = libllausbproconf.la
 pkginclude_HEADERS = UsbProConfigMessages.pb.h
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libllausbproconf.pc
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 AM_CXXFLAGS = -Wall -Wformat -W

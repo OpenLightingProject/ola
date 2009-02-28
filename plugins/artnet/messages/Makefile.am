@@ -2,6 +2,8 @@
 pkgincludedir = $(includedir)/lla/artnet
 lib_LTLIBRARIES = libllaartnetconf.la
 pkginclude_HEADERS = ArtnetConfigMessages.pb.h
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libllaartnetconf.pc
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 AM_CXXFLAGS = -Wall -Wformat -W
