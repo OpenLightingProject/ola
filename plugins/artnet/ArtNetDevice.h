@@ -26,8 +26,13 @@
 #include <lla/select_server/FdListener.h>
 
 #include <artnet/artnet.h>
+#include "messages/ArtnetConfigMessages.pb.h"
 
 namespace lla {
+
+using google::protobuf::Closure;
+using google::protobuf::RpcController;
+using lla::plugin::artnet::Request;
 
 class Preferences;
 
@@ -41,7 +46,8 @@ class ArtNetDevice : public Device, public FDListener {
   public:
     ArtNetDevice(AbstractPlugin *owner,
                  const string &name,
-                 class Preferences *prefs);
+                 class Preferences *prefs,
+                 bool debug);
     ~ArtNetDevice();
 
     bool Start();
@@ -51,10 +57,25 @@ class ArtNetDevice : public Device, public FDListener {
     int FDReady();
     int SaveConfig() const;
 
+    void Configure(RpcController *controller,
+                   const string &request,
+                   string *response,
+                   Closure *done);
+
   private:
     class Preferences *m_preferences;
     artnet_node m_node;
+    string m_short_name;
+    string m_long_name;
+    uint8_t m_subnet;
     bool m_enabled;
+    bool m_debug;
+
+    void HandleOptions(Request *request, string *response);
+    static const string K_SHORT_NAME_KEY;
+    static const string K_LONG_NAME_KEY;
+    static const string K_SUBNET_KEY;
+    static const string K_IP_KEY;
 
 };
 

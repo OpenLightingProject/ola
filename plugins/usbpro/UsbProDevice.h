@@ -26,7 +26,7 @@
 #include <lla/select_server/Socket.h>
 #include <llad/Device.h>
 
-#include "ConfigMessages.pb.h"
+#include "messages/UsbProConfigMessages.pb.h"
 #include "UsbProWidget.h"
 #include "UsbProWidgetListener.h"
 

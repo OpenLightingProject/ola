@@ -63,7 +63,7 @@ void Device::Configure(RpcController *controller,
                        const string &request,
                        string *response,
                        Closure *done) {
-
+  controller->SetFailed("Not Implemented");
   done->Run();
 }
 

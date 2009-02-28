@@ -20,9 +20,6 @@
 
 package lla.plugin.usbpro;
 
-message ParameterRequest {
-}
-
 message ParameterReply {
   required uint32 firmware_high = 1;
   required uint32 firmware = 2;
@@ -32,16 +29,13 @@ message ParameterReply {
 }
 
 message SetParameterRequest {
-  required uint32 break_time = 2;
-  required uint32 mab_time = 3;
-  required uint32 rate = 4;
+  required uint32 break_time = 1;
+  required uint32 mab_time = 2;
+  required uint32 rate = 3;
 }
 
 message SetParameterReply {
   required uint32 status = 1;
-}
-
-message SerialNumberRequest {
 }
 
 message SerialNumberReply {
@@ -56,10 +50,7 @@ message Request {
   }
 
   required RequestType type = 1;
-
-  optional ParameterRequest get_parameters = 2;
-  optional SetParameterRequest set_parameters = 3;
-  optional SerialNumberRequest get_serial_number = 4;
+  optional SetParameterRequest set_parameters = 2;
 }
 
 message Reply {

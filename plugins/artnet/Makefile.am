@@ -1,5 +1,6 @@
 
 libdir = $(plugindir)
+SUBDIRS = messages
 
 if HAVE_ARTNET
 
@@ -9,7 +10,6 @@ AM_CXXFLAGS = -Wall -Werror -Wformat -W
 lib_LTLIBRARIES = libllaartnet.la
 libllaartnet_la_SOURCES = ArtNetPlugin.cpp ArtNetPlugin.h ArtNetDevice.cpp\
                           ArtNetDevice.h ArtNetPort.cpp ArtNetPort.h
-
-libllaartnet_la_LIBADD = -lartnet
+libllaartnet_la_LIBADD = messages/libllaartnetconf.la -lartnet
 
 endif
