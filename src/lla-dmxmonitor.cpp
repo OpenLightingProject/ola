@@ -43,16 +43,14 @@
 #include <sys/timeb.h>
 
 #include <string>
-
 #include <lla/LlaClient.h>
 #include <lla/SimpleClient.h>
 #include <lla/select_server/SelectServer.h>
 
-using lla::SimpleClient;
 using lla::LlaClient;
-using lla::select_server::SelectServer;
 using lla::LlaClientObserver;
-
+using lla::select_server::SelectServer;
+using lla::SimpleClient;
 using std::string;
 
 class StdinFileDescriptor: public lla::select_server::Socket {
@@ -102,7 +100,7 @@ static int channels_per_line=80/4;
 static int channels_per_screen=80/4*24/2;
 static int palette_number=0;
 static int palette[MAXCOLOR];
-static char *errorstr=NULL;
+string error_str;
 static int channels_offset=1;
 
 WINDOW  *w=NULL;
@@ -327,12 +325,12 @@ void crash(int sig) {
 /* calculate channels_per_line and channels_per_screen from LINES and COLS */
 void calcscreengeometry() {
   int c=LINES;
-  if(c<3) {
-      errorstr="screen to small, we need at least 3 lines";
+  if (c<3) {
+      error_str = "screen to small, we need at least 3 lines";
       exit(1);
   }
   c--;                /* one line for headline */
-  if(c%2==1)
+  if (c % 2 == 1)
     c--;
   channels_per_line=COLS/4;
   channels_per_screen=channels_per_line*c/2;

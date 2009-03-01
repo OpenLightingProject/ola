@@ -1,6 +1,6 @@
 
-AM_CXXFLAGS = -Wall $(liblla_CFLAGS)
-AM_LDFLAGS =  -LLIBDIR $(liblla_LIBS)
+AM_CXXFLAGS = -Wall -Werror $(liblla_CFLAGS)
+AM_LDFLAGS =  $(liblla_LIBS)
 
 if HAVE_NCURSES
 NCURSES_PROGS = lla_dmxconsole lla_dmxmonitor
