@@ -99,7 +99,7 @@ typedef struct pms_snoreq_s pms_snoreq;
 
 // serial number reply
 typedef struct {
-  uint8_t srno[4];
+  uint8_t srno[SERIAL_NUMBER_LENGTH];
 } pms_snorep;
 
 // union of all messages

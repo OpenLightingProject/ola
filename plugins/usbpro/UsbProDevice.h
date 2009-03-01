@@ -65,7 +65,7 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
                     uint8_t break_time,
                     uint8_t mab_time,
                     uint8_t rate);
-    void SerialNumber(const uint8_t serial[4]);
+    void SerialNumber(const uint8_t serial[SERIAL_NUMBER_LENGTH]);
 
   private:
     void HandleParameters(RpcController *controller,

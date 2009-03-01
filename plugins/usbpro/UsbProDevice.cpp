@@ -305,7 +305,8 @@ void UsbProDevice::Parameters(uint8_t firmware,
 /*
  * Called when the GetSerial request returns
  */
-void UsbProDevice::SerialNumber(const uint8_t serial_number[4]) {
+void UsbProDevice::SerialNumber(
+    const uint8_t serial_number[SERIAL_NUMBER_LENGTH]) {
   if (!m_outstanding_serial_requests.empty()) {
     outstanding_request serial_request = m_outstanding_serial_requests.front();
     m_outstanding_serial_requests.pop_front();
@@ -315,8 +316,7 @@ void UsbProDevice::SerialNumber(const uint8_t serial_number[4]) {
     lla::plugin::usbpro::SerialNumberReply *serial_reply =
       reply.mutable_serial_number();
 
-    serial_reply->set_serial((char*) serial_number);
-
+    serial_reply->set_serial((char*) serial_number, SERIAL_NUMBER_LENGTH);
     reply.SerializeToString(serial_request.response);
     serial_request.done->Run();
   }

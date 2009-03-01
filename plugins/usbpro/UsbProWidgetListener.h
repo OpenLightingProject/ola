@@ -21,6 +21,8 @@
 #ifndef USBPRODWIDGETLISTENER_H
 #define USBPRODWIDGETLISTENER_H
 
+enum { SERIAL_NUMBER_LENGTH = 4 };
+
 class UsbProWidgetListener {
   public :
     UsbProWidgetListener() {};
@@ -31,7 +33,7 @@ class UsbProWidgetListener {
                             uint8_t break_time,
                             uint8_t mab_time,
                             uint8_t rate) = 0;
-    virtual void SerialNumber(const uint8_t serial[4]) = 0;
+    virtual void SerialNumber(const uint8_t serial[SERIAL_NUMBER_LENGTH]) = 0;
 
   private:
     UsbProWidgetListener(const UsbProWidgetListener&);
