@@ -19,6 +19,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 

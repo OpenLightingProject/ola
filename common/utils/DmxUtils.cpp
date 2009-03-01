@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <stdlib.h>
 #include <vector>
 #include <lla/DmxUtils.h>
 #include <lla/StringUtils.h>
