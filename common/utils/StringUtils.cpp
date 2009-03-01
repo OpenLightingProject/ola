@@ -20,6 +20,7 @@
 
 #include <sstream>
 #include <vector>
+#include <iostream>
 #include <lla/StringUtils.h>
 
 namespace lla {
@@ -29,7 +30,8 @@ using std::stringstream;
 using std::vector;
 
 /*
- * Split a string on delimtiers
+ * Split a string on delimtiers. If two delimiters appear next to each other an
+ * empty string is added to the output list.
  * @param input the string to split
  * @param tokens the vector to store the result in
  * @param delimiters what to split on
@@ -38,15 +40,21 @@ void StringSplit(const string &input,
                  vector<string> &tokens,
                  const string &delimiters) {
 
-    string::size_type start_offset = input.find_first_not_of(delimiters, 0);
-    string::size_type end_offset = input.find_first_of(delimiters, start_offset);
+  string::size_type start_offset = 0;
+  string::size_type end_offset = 0;
 
-    while (end_offset != string::npos || start_offset != string::npos) {
-        tokens.push_back(input.substr(start_offset, end_offset - start_offset));
-        start_offset = input.find_first_not_of(delimiters, end_offset);
-        end_offset = input.find_first_of(delimiters, start_offset);
+  while (1) {
+    end_offset = input.find_first_of(delimiters, start_offset);
+    if (end_offset == string::npos) {
+      tokens.push_back(input.substr(start_offset, input.size() - start_offset));
+      return;
     }
+    tokens.push_back(input.substr(start_offset, end_offset - start_offset));
+    start_offset = end_offset + 1 > input.size() ? string::npos :
+                   end_offset + 1;
+  }
 }
+
 
 /*
  * Trim leading and trailing whitespace from a string.

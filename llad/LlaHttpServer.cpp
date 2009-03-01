@@ -23,6 +23,7 @@
 #include <iostream>
 
 #include <lla/StringUtils.h>
+#include <lla/DmxUtils.h>
 #include <llad/Plugin.h>
 #include <llad/Device.h>
 #include <llad/Port.h>
@@ -334,17 +335,10 @@ int LlaHttpServer::HandleSetDmx(const HttpRequest *request,
   if (!universe)
     return m_server.ServeNotFound(response);
 
-  uint8_t dmx_data[DMX_UNIVERSE_SIZE];
-  vector<string> dmx_values;
-  vector<string>::const_iterator iter;
-  StringSplit(dmx_data_str, dmx_values, ",");
-  unsigned int i = 0;
-  for (iter = dmx_values.begin();
-      iter != dmx_values.end() && i < DMX_UNIVERSE_SIZE;
-      ++iter, ++i) {
-    dmx_data[i] = atoi(iter->data());
-  }
-  universe->SetDMX(dmx_data, i);
+  dmx_t dmx_data[DMX_UNIVERSE_SIZE];
+  unsigned int length = StringToDmx(dmx_data_str, dmx_data, DMX_UNIVERSE_SIZE);
+  if (length)
+    universe->SetDMX(dmx_data, length);
   response->Append("ok");
   return response->Send();
 }

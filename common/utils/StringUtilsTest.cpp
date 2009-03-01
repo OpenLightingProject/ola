@@ -46,31 +46,59 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StringUtilsTest);
  */
 void StringUtilsTest::testSplit() {
   vector<string> tokens;
-  string input = "1 2 345";
+  string input = "";
+  StringSplit(input, tokens);
+  CPPUNIT_ASSERT_EQUAL((size_t) 1, tokens.size());
+  CPPUNIT_ASSERT_EQUAL(string(""), tokens[0]);
+
+  input = "1 2 345";
+  tokens.clear();
   StringSplit(input, tokens);
 
-  CPPUNIT_ASSERT_EQUAL(tokens.size(), (size_t) 3);
-  CPPUNIT_ASSERT_EQUAL(tokens[0], string("1"));
-  CPPUNIT_ASSERT_EQUAL(tokens[1], string("2"));
-  CPPUNIT_ASSERT_EQUAL(tokens[2], string("345"));
+  CPPUNIT_ASSERT_EQUAL((size_t) 3, tokens.size());
+  CPPUNIT_ASSERT_EQUAL(string("1"), tokens[0]);
+  CPPUNIT_ASSERT_EQUAL(string("2"), tokens[1]);
+  CPPUNIT_ASSERT_EQUAL(string("345"), tokens[2]);
 
   input = "1,2,345";
   tokens.clear();
   StringSplit(input, tokens, ",");
 
-  CPPUNIT_ASSERT_EQUAL(tokens.size(), (size_t) 3);
-  CPPUNIT_ASSERT_EQUAL(tokens[0], string("1"));
-  CPPUNIT_ASSERT_EQUAL(tokens[1], string("2"));
-  CPPUNIT_ASSERT_EQUAL(tokens[2], string("345"));
+  CPPUNIT_ASSERT_EQUAL((size_t) 3, tokens.size());
+  CPPUNIT_ASSERT_EQUAL(string("1"), tokens[0]);
+  CPPUNIT_ASSERT_EQUAL(string("2"), tokens[1]);
+  CPPUNIT_ASSERT_EQUAL(string("345"), tokens[2]);
+
+  input = ",1,2,345,,";
+  tokens.clear();
+  StringSplit(input, tokens, ",");
+
+  CPPUNIT_ASSERT_EQUAL((size_t) 6, tokens.size());
+  CPPUNIT_ASSERT_EQUAL(string(""), tokens[0]);
+  CPPUNIT_ASSERT_EQUAL(string("1"), tokens[1]);
+  CPPUNIT_ASSERT_EQUAL(string("2"), tokens[2]);
+  CPPUNIT_ASSERT_EQUAL(string("345"), tokens[3]);
+  CPPUNIT_ASSERT_EQUAL(string(""), tokens[4]);
+  CPPUNIT_ASSERT_EQUAL(string(""), tokens[5]);
 
   input = "1 2,345";
   tokens.clear();
   StringSplit(input, tokens, " ,");
 
-  CPPUNIT_ASSERT_EQUAL(tokens.size(), (size_t) 3);
-  CPPUNIT_ASSERT_EQUAL(tokens[0], string("1"));
-  CPPUNIT_ASSERT_EQUAL(tokens[1], string("2"));
-  CPPUNIT_ASSERT_EQUAL(tokens[2], string("345"));
+  CPPUNIT_ASSERT_EQUAL((size_t) 3, tokens.size());
+  CPPUNIT_ASSERT_EQUAL(string("1"), tokens[0]);
+  CPPUNIT_ASSERT_EQUAL(string("2"), tokens[1]);
+  CPPUNIT_ASSERT_EQUAL(string("345"), tokens[2]);
+
+  input = "1, 2,345";
+  tokens.clear();
+  StringSplit(input, tokens, " ,");
+
+  CPPUNIT_ASSERT_EQUAL((size_t) 4, tokens.size());
+  CPPUNIT_ASSERT_EQUAL(string("1"), tokens[0]);
+  CPPUNIT_ASSERT_EQUAL(string(""), tokens[1]);
+  CPPUNIT_ASSERT_EQUAL(string("2"), tokens[2]);
+  CPPUNIT_ASSERT_EQUAL(string("345"), tokens[3]);
 }
 
 
