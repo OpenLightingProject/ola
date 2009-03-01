@@ -89,6 +89,7 @@ int UsbProWidget::Connect(const string &path) {
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
   tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ConnectedSocket(fd, fd);
+  m_socket->SetListener(this);
   m_enabled = true;
 
   // put us into receiving mode
