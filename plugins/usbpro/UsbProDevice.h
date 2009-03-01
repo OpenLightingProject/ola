@@ -86,6 +86,7 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
 
     string m_path;
     bool m_enabled;            // are we enabled
+    bool m_in_shutdown;        // set to true if we're shutting down
     UsbProWidget *m_widget;
     deque<outstanding_request> m_outstanding_param_requests;
     deque<outstanding_request> m_outstanding_serial_requests;

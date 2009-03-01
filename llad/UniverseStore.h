@@ -22,6 +22,7 @@
 #define UNIVERSE_STORE_H
 
 #include <map>
+#include <set>
 #include <string>
 
 namespace lla {
@@ -39,8 +40,10 @@ class UniverseStore {
     int UniverseCount() const { return m_universe_map.size(); }
     vector<Universe*> *GetList() const;
 
+
     int DeleteAll();
-    bool DeleteUniverseIfInactive(Universe *universe);
+    void AddUniverseGarbageCollection(Universe *universe);
+    void GarbageCollectUniverses();
 
   private:
     int RestoreUniverseSettings(Universe *universe) const;
@@ -48,7 +51,9 @@ class UniverseStore {
 
     Preferences *m_preferences;
     ExportMap *m_export_map;
-    std::map<int, Universe *> m_universe_map;  // map of universe_id to Universe
+    std::map<int, Universe*> m_universe_map;  // map of universe_id to Universe
+    std::set<Universe*> m_deletion_candiates; // list of universes we may be
+                                              // able to delete
 };
 
 } //lla

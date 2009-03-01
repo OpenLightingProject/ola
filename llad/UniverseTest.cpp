@@ -124,7 +124,8 @@ void UniverseTest::testLifecycle() {
   CPPUNIT_ASSERT_EQUAL(universe->MergeMode(), Universe::MERGE_HTP);
 
   // delete it
-  CPPUNIT_ASSERT(m_store->DeleteUniverseIfInactive(universe));
+  m_store->AddUniverseGarbageCollection(universe);
+  m_store->GarbageCollectUniverses();
   CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), 0);
   universe = m_store->GetUniverse(universe_id);
   CPPUNIT_ASSERT(!universe);
@@ -165,7 +166,8 @@ void UniverseTest::testSendDmx() {
   universe->RemovePort(&port);
   CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 0);
   CPPUNIT_ASSERT(!universe->IsActive());
-  m_store->DeleteUniverseIfInactive(universe);
+  m_store->GarbageCollectUniverses();
+  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), 0);
   free(data);
 }
 
@@ -196,6 +198,7 @@ void UniverseTest::testReceiveDmx() {
   universe->RemovePort(&port);
   CPPUNIT_ASSERT(!universe->IsActive());
   CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 0);
-  m_store->DeleteUniverseIfInactive(universe);
+  m_store->GarbageCollectUniverses();
+  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), 0);
   free(data);
 }

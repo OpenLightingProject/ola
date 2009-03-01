@@ -110,46 +110,40 @@ int UniverseStore::DeleteAll() {
     SaveUniverseSettings(iter->second);
     delete iter->second;
   }
+  m_deletion_candiates.clear();
   m_universe_map.clear();
   return 0;
 }
 
 
-/*
- * Delete this universe if it no longer has any ports or clients.
- *
- * @returns true if this universe was deleted, false otherwise.
- */
-bool UniverseStore::DeleteUniverseIfInactive(Universe *universe) {
-  if (universe->IsActive())
-    return false;
 
-  m_universe_map.erase(universe->UniverseId());
-  SaveUniverseSettings(universe);
-  delete universe;
-  return true;
+/*
+ * Mark a universe as a candiate for garbage collection.
+ * @param universe the universe which has no clients or ports bound
+ */
+void UniverseStore::AddUniverseGarbageCollection(Universe *universe) {
+  m_deletion_candiates.insert(universe);
 }
 
 
 /*
- * Check for unused universes and delete them
-void UniverseStore::CheckForUnused() {
-  map<int ,Universe*>::const_iterator iter;
-  vector<Universe*>::iterator iterv;
-  vector<Universe*> list;
+ * Check all the garbage collection candiates and delete the ones that aren't
+ * needed.
+ */
+void UniverseStore::GarbageCollectUniverses() {
+  set<Universe*>::iterator iter;
+  map<int, Universe *>::iterator map_iter;
 
-  for (iter = m_universe_map.begin(); iter != m_universe_map.end(); ++iter) {
-    if (!iter->second->IsActive()) {
-      list.push_back(iter->second);
+  for (iter = m_deletion_candiates.begin();
+       iter != m_deletion_candiates.end(); iter++) {
+    if (!(*iter)->IsActive()) {
+      SaveUniverseSettings(*iter);
+      m_universe_map.erase((*iter)->UniverseId());
+      delete *iter;
     }
   }
-
-  for (iterv = list.begin(); iterv != list.end(); ++iterv) {
-    m_universe_map.erase((*iterv)->UniverseId());
-    delete *iterv;
-  }
+  m_deletion_candiates.clear();
 }
- */
 
 
 /*

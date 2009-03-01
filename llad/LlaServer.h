@@ -51,6 +51,24 @@ typedef struct {
 
 
 /*
+ * The garbage collector. We run every K_GARBAGE_COLLECTOR_TIMEOUT_MS
+ */
+class GarbageCollector: public lla::select_server::TimeoutListener {
+  public:
+    GarbageCollector(class UniverseStore *universe_store):
+      TimeoutListener(),
+      m_universe_store(universe_store),
+      m_stop(false) {}
+    int Timeout();
+    void Stop() { m_stop = true; }
+
+  private:
+    class UniverseStore *m_universe_store;
+    bool m_stop;
+};
+
+
+/*
  * The main LlaServer class
  */
 class LlaServer: public lla::select_server::AcceptSocketListener,
@@ -89,6 +107,7 @@ class LlaServer: public lla::select_server::AcceptSocketListener,
     class Preferences *m_universe_preferences;
     class UniverseStore *m_universe_store;
     class ExportMap *m_export_map;
+    GarbageCollector *m_garbage_collector;
 
     static const string UNIVERSE_PREFERENCES;
     bool m_init_run;
@@ -98,6 +117,7 @@ class LlaServer: public lla::select_server::AcceptSocketListener,
     lla_server_options m_options;
 
     static const string K_CLIENT_VAR;
+    static const unsigned int K_GARBAGE_COLLECTOR_TIMEOUT_MS;
 };
 
 

@@ -52,6 +52,7 @@ UsbProDevice::UsbProDevice(lla::AbstractPlugin *owner,
   Device(owner, name),
   m_path(dev_path),
   m_enabled(false),
+  m_in_shutdown(false),
   m_widget(NULL) {
     m_widget = new UsbProWidget();
 }
@@ -106,6 +107,7 @@ bool UsbProDevice::Stop() {
   if (!m_enabled)
     return false;
 
+  m_in_shutdown = true; // don't allow any more writes
   m_widget->Disconnect();
   DeleteAllPorts();
   m_enabled = false;
@@ -180,6 +182,8 @@ void UsbProDevice::Configure(RpcController *controller,
  * Put the device back into recv mode
  */
 int UsbProDevice::ChangeToReceiveMode() {
+  if (m_in_shutdown)
+    return 0;
   m_widget->ChangeToReceiveMode();
   return 0;
 }

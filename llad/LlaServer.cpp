@@ -53,7 +53,18 @@ namespace lla {
 using lla::rpc::StreamRpcChannel;
 
 const string LlaServer::UNIVERSE_PREFERENCES = "universe";
-const string LlaServer::K_CLIENT_VAR = "clients-connected" ;
+const string LlaServer::K_CLIENT_VAR = "clients-connected";
+const unsigned int LlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
+
+
+/*
+ * Run the garbage collector
+ */
+int GarbageCollector::Timeout() {
+  m_universe_store->GarbageCollectUniverses();
+  return m_stop;
+}
+
 
 /*
  * Create a new LlaServer
@@ -79,6 +90,7 @@ LlaServer::LlaServer(LlaServerServiceImplFactory *factory,
   m_universe_preferences(NULL),
   m_universe_store(NULL),
   m_export_map(export_map),
+  m_garbage_collector(NULL),
   m_init_run(false),
   m_free_export_map(false),
   m_options(*lla_options) {
@@ -107,6 +119,8 @@ LlaServer::~LlaServer() {
     m_httpd = NULL;
   }
 #endif
+
+  m_garbage_collector->Stop();
 
   // stops and unloads all our plugins
   if (m_plugin_loader) {
@@ -200,6 +214,12 @@ bool LlaServer::Init() {
     m_httpd->Start();
   }
 #endif
+
+  // register the Universe garbarge collector. We pass ownership off to the
+  // select server which will delete it once it returns non-0; 
+  m_garbage_collector = new GarbageCollector(m_universe_store);
+  m_ss->RegisterTimeout(K_GARBAGE_COLLECTOR_TIMEOUT_MS, m_garbage_collector,
+                        true, true);
 
   m_init_run = true;
   return true;
@@ -318,7 +338,6 @@ void LlaServer::CleanupConnection(LlaServerServiceImpl *service) {
        uni_iter != universe_list->end();
        ++uni_iter) {
     (*uni_iter)->RemoveClient(client);
-    m_universe_store->DeleteUniverseIfInactive(*uni_iter);
   }
   delete universe_list;
   delete client->Stub()->channel();

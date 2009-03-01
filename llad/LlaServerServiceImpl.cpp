@@ -79,7 +79,6 @@ void LlaServerServiceImpl::RegisterForDmx(
     universe->AddClient(m_client);
   } else {
     universe->RemoveClient(m_client);
-    m_universe_store->DeleteUniverseIfInactive(universe);
   }
   done->Run();
 }
@@ -169,10 +168,8 @@ void LlaServerServiceImpl::PatchPort(
   } else {
     universe = port->GetUniverse();
 
-    if (universe) {
+    if (universe)
       universe->RemovePort(port);
-      m_universe_store->DeleteUniverseIfInactive(universe);
-    }
   }
   done->Run();
 }

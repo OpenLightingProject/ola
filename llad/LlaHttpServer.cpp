@@ -475,10 +475,8 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
         }
       } else {
         // invalid or blank, unpatch if needed
-        if (universe) {
+        if (universe)
           universe->RemovePort(*port_iter);
-          m_universe_store->DeleteUniverseIfInactive(universe);
-        }
       }
     }
 

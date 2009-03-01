@@ -67,7 +67,12 @@ int SelectServer::Run() {
 
 
 /*
- * Register a socket with the select server
+ * Register a socket with the select server.
+ * @param socket the socket to register
+ * @param manager the manager to call when the socket is closed
+ * @param delete_on_close controlls whether the select server calls Close() and
+ * deleted the socket once it's closed. You should probably set this as false
+ * if you're using a manager.
  */
 int SelectServer::AddSocket(Socket *socket,
                             SocketManager *manager,
@@ -170,7 +175,8 @@ int SelectServer::UnregisterFD(int fd, SelectServer::Direction direction) {
 
 
 /*
- * Register a timeout function
+ * Register a timeout function. Returning 0 means you don't want it to repeat
+ * anymore.
  *
  * @param seconds the delay between function calls
  */
@@ -319,9 +325,10 @@ void SelectServer::CheckSockets(fd_set &set) {
         RemoveSocket(socket);
         if (m_read_sockets[i].manager)
           m_read_sockets[i].manager->SocketClosed(socket);
-        socket->Close();
-        if (m_read_sockets[i].delete_on_close)
+        if (m_read_sockets[i].delete_on_close) {
+          socket->Close();
           delete socket;
+        }
       } else {
         int ret = socket->SocketReady();
       }
@@ -359,17 +366,16 @@ struct timeval SelectServer::CheckTimeouts() {
     return now;
 
   for (e = m_event_cbs.top(); !m_event_cbs.empty() && timercmp(&e.next, &now, <); e = m_event_cbs.top()) {
-    if (e.listener != NULL)
-      e.listener->Timeout();
+    int return_code = 1;
+    if (e.listener)
+      return_code = e.listener->Timeout();
     m_event_cbs.pop();
 
-    if (e.repeat) {
+    if (e.repeat && !return_code) {
       e.next = now;
       timeradd(&e.next, &e.interval, &e.next);
       m_event_cbs.push(e);
-    }
-
-    if (!e.repeat && e.free_after_run) {
+    } else if (e.free_after_run) {
       delete e.listener;
 
       if (m_export_map) {
@@ -383,7 +389,7 @@ struct timeval SelectServer::CheckTimeouts() {
 }
 
 /*
- * Remove all registrations
+ * Remove all registrations.
  */
 void SelectServer::UnregisterAll() {
   m_rhandlers_vect.clear();

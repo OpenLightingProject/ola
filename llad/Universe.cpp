@@ -118,8 +118,6 @@ int Universe::AddPort(AbstractPort *port) {
                             port->PortId(),
                             universe->UniverseId());
     universe->RemovePort(port);
-
-    m_universe_store->DeleteUniverseIfInactive(universe);
   }
 
   // patch to this universe
@@ -141,7 +139,7 @@ int Universe::AddPort(AbstractPort *port) {
  * Remove a port from this universe. After calling this method you need to
  * check if this universe is still in use, and if not delete it
  *
- * @param prt the port to remove
+ * @param port the port to remove
  */
 int Universe::RemovePort(AbstractPort *port) {
   vector<AbstractPort*>::iterator iter;
@@ -159,11 +157,13 @@ int Universe::RemovePort(AbstractPort *port) {
                             "Port %p has been removed from uni %d",
                             port,
                             m_universe_id);
-
   } else {
     Logger::instance()->log(Logger::DEBUG, "Could not find port in universe");
     return -1;
   }
+
+  if (!IsActive())
+    m_universe_store->AddUniverseGarbageCollection(this);
   return 0;
 }
 
@@ -216,6 +216,9 @@ int Universe::RemoveClient(Client *client) {
                             client,
                             m_universe_id);
   }
+
+  if (!IsActive())
+    m_universe_store->AddUniverseGarbageCollection(this);
   return 0;
 }
 
