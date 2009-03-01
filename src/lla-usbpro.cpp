@@ -20,11 +20,12 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
 #include <lla/plugin_id.h>
-#include <lla/usbpro/ConfigMessages.pb.h>
+#include <lla/usbpro/UsbProConfigMessages.pb.h>
 #include "LlaConfigurator.h"
 
 using namespace std;
@@ -64,7 +65,7 @@ class UsbProConfigurator: public LlaConfigurator {
     void SendConfigRequest();
     bool SendGetParameters();
     bool SendGetSerial();
-    bool SendSetParameters();
+//    bool SendSetParameters();
   private:
     void DisplayParameters(const lla::plugin::usbpro::ParameterReply &reply);
     void DisplaySerial(const lla::plugin::usbpro::SerialNumberReply &reply);
@@ -113,7 +114,7 @@ void UsbProConfigurator::SendConfigRequest() {
       SendGetSerial();
       break;
     case MODE_SET_PARAM:
-      SendSetParameters();
+      //SendSetParameters();
       break;
     default:
       cout << "Unknown mode" << endl;
@@ -144,7 +145,6 @@ bool UsbProConfigurator::SendGetSerial() {
 
 /*
  * Send a set param request
- */
 bool UsbProConfigurator::SendSetParameters() {
   lla::plugin::usbpro::Request request;
   lla::plugin::usbpro::SetParameterRequest *set_request =
@@ -158,6 +158,7 @@ bool UsbProConfigurator::SendSetParameters() {
     set_request->set_rate(m_opts.rate);
   return SendMessage(request);
 }
+ */
 
 
 /*
@@ -182,18 +183,18 @@ void UsbProConfigurator::DisplayParameters(
  */
 void UsbProConfigurator::DisplaySerial(
     const lla::plugin::usbpro::SerialNumberReply &reply) {
-  /*
-  uint8_t ser[UsbProConfMsgSerRep::SERIAL_SIZE];
 
-  rep->get_serial(ser, UsbProConfMsgSerRep::SERIAL_SIZE);
-  printf("Device %i\n", dev);
-  printf(" Serial ");
-  for (int i=3; i>=0; i--) {
-    printf("%i%i", (ser[i] & 0xf0) >> 4, ser[i] & 0x0f);
+  string serial_number = reply.serial();
+  cout << "Device: " << m_device_id << endl;
+  cout << "Serial: ";
+  cout << setfill('0');
+
+  for (string::reverse_iterator iter = serial_number.rbegin();
+       iter != serial_number.rend(); iter++) {
+    int digit = (10 * (*iter & 0xf0) >> 4) + (*iter & 0x0f);
+    cout << setw(2) << digit ;
   }
-  printf("\n");
-  */
-  cout << reply.serial() << endl;
+  cout << endl;
 }
 
 

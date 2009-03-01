@@ -39,6 +39,7 @@
 #include <time.h>
 #include <sys/timeb.h>
 
+#include <string>
 #include <lla/LlaClient.h>
 #include <lla/SimpleClient.h>
 #include <lla/select_server/SelectServer.h>
@@ -46,7 +47,7 @@
 using lla::SimpleClient;
 using lla::LlaClient;
 using lla::select_server::SelectServer;
-
+using std::string;
 
 /* color names used */
 enum {
@@ -90,7 +91,7 @@ static float fadetime=1.0f;
 static int fading=0;        /* percentage counter of fade process */
 static int palette_number=0;
 static int palette[MAXCOLOR];
-static char *errorstr=NULL;
+string error_str;
 static int channels_offset=1;
 
 LlaClient *client;
@@ -218,9 +219,9 @@ void values() {
   }
 
   if(COLS>80)
-    if(errorstr) {
+    if(!error_str.empty()) {
       attrset(palette[HEADERROR]);
-      printw("ERROR:%s", errorstr);
+      printw("ERROR:%s", error_str.data());
     }
 
   /* values */
@@ -434,12 +435,12 @@ void CHECK(void *p) {
 /* calculate channels_per_line and channels_per_screen from LINES and COLS */
 void calcscreengeometry() {
   int c=LINES;
-  if(c<3) {
-      errorstr="screen to small, we need at least 3 lines";
+  if (c < 3) {
+      error_str ="screen to small, we need at least 3 lines";
       exit(1);
     }
   c--;                /* one line for headline */
-  if(c%2==1)
+  if (c % 2 == 1)
     c--;
   channels_per_line=COLS/4;
   channels_per_screen=channels_per_line*c/2;
@@ -448,7 +449,7 @@ void calcscreengeometry() {
 /* signal handler for SIGWINCH */
 void terminalresize(int sig) {
   struct winsize size;
-  if(ioctl(0, TIOCGWINSZ, &size) < 0)
+  if (ioctl(0, TIOCGWINSZ, &size) < 0)
     return;
 
   resizeterm(size.ws_row, size.ws_col);
@@ -465,8 +466,8 @@ void cleanup() {
     endwin();
   }
 
-  if(errorstr)
-    puts(errorstr);
+  if (!error_str.empty())
+    puts(error_str.data());
 }
 
 int StdinFileDescriptor::SocketReady() {
@@ -621,7 +622,7 @@ int StdinFileDescriptor::SocketReady() {
     case 'q':
       ss->Terminate();
     default:
-      if(c >= KEY_F(1) && c <= KEY_F(MAXFKEY))
+      if (c >= (int) KEY_F(1) && c <= (int) KEY_F(MAXFKEY))
         crossfade(c - KEY_F(1));
       break;
   }
