@@ -24,7 +24,6 @@
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
 #include <lla/select_server/FdListener.h>
-#include <lla/select_server/TimeoutListener.h>
 #include <lla/select_server/SelectServer.h>
 
 #include "DeviceManager.h"
@@ -33,7 +32,6 @@ namespace lla {
 
 using lla::select_server::SelectServer;
 using lla::select_server::FDListener;
-using lla::select_server::TimeoutListener;
 
 /*
  * Create a new pluginadaptor
@@ -99,12 +97,13 @@ int PluginAdaptor::RemoveSocket(Socket *socket) const {
 /*
  * register a timeout
  *
- * @param second  the time between function calls
- *
- * @return the timeout id on success, 0 on error
+ * @param ms the time between function calls
+ * @param closure the LlaClosure to call when the timeout expires
+ * @param repeat set to true to call this timeout every ms seconds
+ * @return true on success, false on failure
  */
-int PluginAdaptor::RegisterTimeout(int ms, TimeoutListener *listener) const {
-  return m_ss->RegisterTimeout(ms, listener);
+bool PluginAdaptor::RegisterTimeout(int ms, LlaClosure *closure, bool repeat) const {
+  return m_ss->RegisterTimeout(ms, closure, repeat);
 }
 
 

@@ -20,11 +20,11 @@
  * The device creates two ports, one in and one out, but you can only use one at a time.
  */
 
-#include <string.h>
-
+#include <iostream>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
 
+#include <lla/Closure.h>
 #include <llad/logger.h>
 #include <llad/Preferences.h>
 
@@ -38,6 +38,10 @@ using google::protobuf::RpcController;
 using google::protobuf::Closure;
 using lla::plugin::usbpro::Request;
 using lla::plugin::usbpro::Reply;
+using lla::plugin::usbpro::OutstandingRequest;
+using lla::plugin::usbpro::OutstandingParamRequest;
+using std::cout;
+using std::endl;
 
 /*
  * Create a new device
@@ -46,10 +50,12 @@ using lla::plugin::usbpro::Reply;
  * @param name  the device name
  * @param dev_path  path to the pro widget
  */
-UsbProDevice::UsbProDevice(lla::AbstractPlugin *owner,
+UsbProDevice::UsbProDevice(const lla::PluginAdaptor *plugin_adaptor,
+                           lla::AbstractPlugin *owner,
                            const string &name,
                            const string &dev_path):
   Device(owner, name),
+  m_plugin_adaptor(plugin_adaptor),
   m_path(dev_path),
   m_enabled(false),
   m_in_shutdown(false),
@@ -157,24 +163,24 @@ void UsbProDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
                              Closure *done) {
-    Request request_pb;
-    if (!request_pb.ParseFromString(request)) {
+  Request request_pb;
+  if (!request_pb.ParseFromString(request)) {
+    controller->SetFailed("Invalid Request");
+    done->Run();
+    return;
+  }
+
+  switch (request_pb.type()) {
+    case lla::plugin::usbpro::Request::USBPRO_PARAMETER_REQUEST:
+      HandleParameters(controller, &request_pb, response, done);
+      break;
+    case lla::plugin::usbpro::Request::USBPRO_SERIAL_REQUEST:
+      HandleGetSerial(controller, &request_pb, response, done);
+      break;
+    default:
       controller->SetFailed("Invalid Request");
       done->Run();
-      return;
-    }
-
-    switch (request_pb.type()) {
-      case lla::plugin::usbpro::Request::USBPRO_PARAMETER_REQUEST:
-        HandleParameters(controller, &request_pb, response, done);
-        break;
-      case lla::plugin::usbpro::Request::USBPRO_SERIAL_REQUEST:
-        HandleGetSerial(controller, &request_pb, response, done);
-        break;
-      default:
-        controller->SetFailed("Invalid Request");
-        done->Run();
-    }
+  }
 }
 
 
@@ -191,70 +197,60 @@ int UsbProDevice::ChangeToReceiveMode() {
 
 /*
  * Handle a parameter request. This may set some parameters in the widget.
+ *
+ * If no parameters are set we simply fetch the paramters and return them to
+ * the client. If we are setting parameters, we fetch them from the widget,
+ * send a SetParam() request and then another GetParam() request in order to
+ * return the latest values to the client.
  */
 void UsbProDevice::HandleParameters(RpcController *controller,
                                     const Request *request,
                                     string *response,
                                     Closure *done) {
 
+  cout << "in get param" << endl;
   if (!m_widget->GetParameters()) {
     controller->SetFailed("GetParameters failed");
     done->Run();
   } else {
     // TODO: we should time these out if we don't get a response
-    outstanding_request parameters_request;
+    OutstandingParamRequest parameters_request;
     parameters_request.controller = controller;
     parameters_request.response = response;
     parameters_request.done = done;
+    parameters_request.break_time = K_MISSING_PARAM;
+    parameters_request.mab_time = K_MISSING_PARAM;
+    parameters_request.rate = K_MISSING_PARAM;
+
+    if (request->has_parameters()) {
+      // this results in the set param actions
+      if (request->parameters().has_break_time())
+        parameters_request.break_time = request->parameters().break_time();
+      if (request->parameters().has_mab_time())
+        parameters_request.mab_time = request->parameters().mab_time();
+      if (request->parameters().has_rate())
+        parameters_request.rate = request->parameters().rate();
+    }
     m_outstanding_param_requests.push_back(parameters_request);
   }
 }
 
 
 /*
- * Handle a set params request
-void UsbProDevice::HandleSetParameters(RpcController *controller,
-                                       const Request *request,
-                                       string *response,
-                                       Closure *done) {
-
-  if (!request->has_set_parameters()) {
-    controller->SetFailed("Missing set parameters message");
-    done->Run();
-    return;
-  }
-
-  bool ret = m_widget->SetParameters(NULL,
-                                     0,
-                                     request->set_parameters().break_time(),
-                                     request->set_parameters().mab_time(),
-                                     request->set_parameters().rate());
-
-  if (!ret) {
-    controller->SetFailed("GetParameters failed");
-    done->Run();
-    return;
-  }
-
-  Reply reply;
-  reply.set_type(lla::plugin::usbpro::Reply::USBPRO_SET_PARAMETER_REPLY);
-  reply.SerializeToString(response);
-  done->Run();
-}
-*/
-
-
-void UsbProDevice::HandleGetSerial(RpcController *controller,
-                                   const Request *request,
-                                   string *response,
-                                   Closure *done) {
+ * Handle a Serial number Configure RPC.
+ */
+void UsbProDevice::HandleGetSerial(
+    RpcController *controller,
+    const Request *request __attribute__ ((__unused__)) ,
+    string *response,
+    Closure *done) {
 
   if (!m_widget->GetSerial()) {
     controller->SetFailed("GetSerial failed");
     done->Run();
   } else {
     // TODO: we should time these out if we don't get a response
-    outstanding_request serial_request;
+    OutstandingRequest serial_request;
     serial_request.controller = controller;
     serial_request.response = response;
     serial_request.done = done;
@@ -264,51 +260,61 @@ void UsbProDevice::HandleGetSerial(RpcController *controller,
 
 
 /*
- * Called when the dmx changes
+ * Called when the widget recieves new DMX.
  */
-void UsbProDevice::NewDmx() {
+void UsbProDevice::HandleWidgetDmx() {
   AbstractPort *port = GetPort(0);
   port->DmxChanged();
 }
 
 
 /*
- * Called when the GetParameters request returns
+ * Called when we get new parameters from the widget.
  */
-void UsbProDevice::Parameters(uint8_t firmware,
-                              uint8_t firmware_high,
-                              uint8_t break_time,
-                              uint8_t mab_time,
-                              uint8_t rate) {
+void UsbProDevice::HandleWidgetParameters(uint8_t firmware,
+                                          uint8_t firmware_high,
+                                          uint8_t break_time,
+                                          uint8_t mab_time,
+                                          uint8_t rate) {
 
+  cout << "params returned" << endl;
   if (!m_outstanding_param_requests.empty()) {
-    outstanding_request parameter_request = m_outstanding_param_requests.front();
+    OutstandingParamRequest parameter_request =
+      m_outstanding_param_requests.front();
     m_outstanding_param_requests.pop_front();
 
-    Reply reply;
-    reply.set_type(lla::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
-    lla::plugin::usbpro::ParameterReply *parameters_reply = reply.mutable_parameters();
+    if (parameter_request.break_time != K_MISSING_PARAM ||
+        parameter_request.mab_time != K_MISSING_PARAM ||
+        parameter_request.rate != K_MISSING_PARAM) {
+      // we have one or more parameters to set
+      SetWidgetParameters(parameter_request, break_time, mab_time, rate);
 
-    parameters_reply->set_firmware_high(firmware_high);
-    parameters_reply->set_firmware(firmware);
-    parameters_reply->set_break_time(break_time);
-    parameters_reply->set_mab_time(mab_time);
-    parameters_reply->set_rate(rate);
+    } else {
+      // just return the response
+      Reply reply;
+      reply.set_type(lla::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
+      lla::plugin::usbpro::ParameterReply *parameters_reply = reply.mutable_parameters();
 
-    reply.SerializeToString(parameter_request.response);
-    parameter_request.done->Run();
+      parameters_reply->set_firmware_high(firmware_high);
+      parameters_reply->set_firmware(firmware);
+      parameters_reply->set_break_time(break_time);
+      parameters_reply->set_mab_time(mab_time);
+      parameters_reply->set_rate(rate);
+
+      reply.SerializeToString(parameter_request.response);
+      parameter_request.done->Run();
+    }
   }
 }
-
 
 
 /*
  * Called when the GetSerial request returns
  */
-void UsbProDevice::SerialNumber(
+void UsbProDevice::HandleWidgetSerial(
     const uint8_t serial_number[SERIAL_NUMBER_LENGTH]) {
   if (!m_outstanding_serial_requests.empty()) {
-    outstanding_request serial_request = m_outstanding_serial_requests.front();
+    OutstandingRequest serial_request = m_outstanding_serial_requests.front();
     m_outstanding_serial_requests.pop_front();
 
     Reply reply;
@@ -321,6 +327,46 @@ void UsbProDevice::SerialNumber(
     serial_request.done->Run();
   }
 }
+
+
+/*
+ * Send a SetParam() request to the widget using the arguments as defaults.
+ */
+void UsbProDevice::SetWidgetParameters(
+    OutstandingParamRequest &outstanding_request,
+    uint8_t break_time,
+    uint8_t mab_time,
+    uint8_t rate) {
+
+  int new_break_time = outstanding_request.break_time == K_MISSING_PARAM ?
+    break_time : outstanding_request.break_time;
+  int new_mab_time = outstanding_request.mab_time == K_MISSING_PARAM ?
+    mab_time : outstanding_request.mab_time;
+  int new_rate = outstanding_request.rate == K_MISSING_PARAM ? rate :
+    outstanding_request.rate;
+
+  cout << "sending " << new_break_time << " " << new_mab_time << " " << new_rate << endl;
+  bool ret = m_widget->SetParameters(NULL, 0, new_break_time, new_mab_time, new_rate);
+
+  if (!ret) {
+    outstanding_request.controller->SetFailed("SetParams failed");
+    outstanding_request.done->Run();
+    return;
+  }
+
+  // set a get request
+  if (!m_widget->GetParameters()) {
+    outstanding_request.controller->SetFailed("GetParam failed");
+    outstanding_request.done->Run();
+  } else {
+    outstanding_request.break_time = K_MISSING_PARAM;
+    outstanding_request.mab_time = K_MISSING_PARAM;
+    outstanding_request.rate = K_MISSING_PARAM;
+    m_outstanding_param_requests.push_back(outstanding_request);
+  }
+  return;
+}
+
 
 } // plugin
 } // lla

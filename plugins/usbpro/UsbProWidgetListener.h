@@ -27,13 +27,14 @@ class UsbProWidgetListener {
   public :
     UsbProWidgetListener() {};
     virtual ~UsbProWidgetListener() {};
-    virtual void NewDmx() = 0;
-    virtual void Parameters(uint8_t firmware,
-                            uint8_t firmware_high,
-                            uint8_t break_time,
-                            uint8_t mab_time,
-                            uint8_t rate) = 0;
-    virtual void SerialNumber(const uint8_t serial[SERIAL_NUMBER_LENGTH]) = 0;
+    virtual void HandleWidgetDmx() = 0;
+    virtual void HandleWidgetParameters(uint8_t firmware,
+                                        uint8_t firmware_high,
+                                        uint8_t break_time,
+                                        uint8_t mab_time,
+                                        uint8_t rate) = 0;
+    virtual void HandleWidgetSerial(
+        const uint8_t serial[SERIAL_NUMBER_LENGTH]) = 0;
 
   private:
     UsbProWidgetListener(const UsbProWidgetListener&);

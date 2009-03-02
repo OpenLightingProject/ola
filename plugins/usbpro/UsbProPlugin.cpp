@@ -63,7 +63,7 @@ bool UsbProPlugin::StartHook() {
   vector<string>::iterator it;
 
   for (it = device_names.begin(); it != device_names.end(); ++it) {
-    dev = new UsbProDevice(this, USBPRO_DEVICE_NAME, *it);
+    dev = new UsbProDevice(m_plugin_adaptor, this, USBPRO_DEVICE_NAME, *it);
 
     if (!dev)
       continue;

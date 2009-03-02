@@ -25,6 +25,7 @@
 #include <deque>
 #include <lla/select_server/Socket.h>
 #include <llad/Device.h>
+#include <llad/PluginAdaptor.h>
 
 #include "messages/UsbProConfigMessages.pb.h"
 #include "UsbProWidget.h"
@@ -39,9 +40,28 @@ using lla::plugin::usbpro::Request;
 using lla::select_server::ConnectedSocket;
 using std::deque;
 
+namespace usbpro {
+
+class OutstandingRequest {
+  public:
+    RpcController *controller;
+    string *response;
+    Closure *done;
+};
+
+class OutstandingParamRequest: public OutstandingRequest {
+  public:
+    int break_time;
+    int mab_time;
+    int rate;
+};
+
+}
+
 class UsbProDevice: public Device, public UsbProWidgetListener {
   public:
-    UsbProDevice(lla::AbstractPlugin *owner,
+    UsbProDevice(const lla::PluginAdaptor *plugin_adaptor,
+                 lla::AbstractPlugin *owner,
                  const string &name,
                  const string &dev_path);
     ~UsbProDevice();
@@ -59,37 +79,44 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     int ChangeToReceiveMode();
 
     // callbacks from the widget
-    void NewDmx();
-    void Parameters(uint8_t firmware,
-                    uint8_t firmware_high,
-                    uint8_t break_time,
-                    uint8_t mab_time,
-                    uint8_t rate);
-    void SerialNumber(const uint8_t serial[SERIAL_NUMBER_LENGTH]);
+    void HandleWidgetDmx();
+    void HandleWidgetParameters(uint8_t firmware,
+                                uint8_t firmware_high,
+                                uint8_t break_time,
+                                uint8_t mab_time,
+                                uint8_t rate);
+    void HandleWidgetSerial(const uint8_t serial[SERIAL_NUMBER_LENGTH]);
 
   private:
     void HandleParameters(RpcController *controller,
-                             const Request *request,
-                             string *response,
-                             Closure *done);
+                          const Request *request,
+                          string *response,
+                          Closure *done);
 
     void HandleGetSerial(RpcController *controller,
                          const Request *request,
                          string *response,
                          Closure *done);
 
-    typedef struct {
-      RpcController *controller;
-      string *response;
-      Closure *done;
-    } outstanding_request;
+    void SetWidgetParameters(
+        lla::plugin::usbpro::OutstandingParamRequest &outstanding_request,
+        uint8_t break_time,
+        uint8_t mab_time,
+        uint8_t rate);
 
+    const lla::PluginAdaptor *m_plugin_adaptor;
     string m_path;
     bool m_enabled;            // are we enabled
     bool m_in_shutdown;        // set to true if we're shutting down
     UsbProWidget *m_widget;
-    deque<outstanding_request> m_outstanding_param_requests;
-    deque<outstanding_request> m_outstanding_serial_requests;
+    deque<lla::plugin::usbpro::OutstandingParamRequest>
+      m_outstanding_param_requests;
+    deque<lla::plugin::usbpro::OutstandingRequest>
+      m_outstanding_serial_requests;
+
+    static const int K_MISSING_PARAM = -1;
+    // time to wait after sending a SetParam request for the widget to update
+    static const int K_SET_PARAM_TIMEOUT_MS = 30;
 };
 
 } //plugin

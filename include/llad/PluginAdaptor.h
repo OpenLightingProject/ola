@@ -32,8 +32,9 @@ namespace select_server {
   class SelectServer;
   class FDListener;
   class FDManager;
-  class TimeoutListener;
 }
+
+class LlaClosure;
 
 using std::string;
 using lla::select_server::Socket;
@@ -41,7 +42,6 @@ using lla::select_server::SocketManager;
 using lla::select_server::SelectServer;
 using lla::select_server::FDListener;
 using lla::select_server::FDManager;
-using lla::select_server::TimeoutListener;
 
 class PluginAdaptor {
   public :
@@ -59,7 +59,7 @@ class PluginAdaptor {
                   class SocketManager *manager=NULL) const;
     int RemoveSocket(class Socket *socket) const;
 
-    int RegisterTimeout(int ms, TimeoutListener *listener) const;
+    bool RegisterTimeout(int ms, LlaClosure *closure, bool repeat=true) const;
     int RegisterLoopCallback(FDListener *listener) const;
 
     int RegisterDevice(class AbstractDevice *device) const;

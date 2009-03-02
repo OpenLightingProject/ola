@@ -55,16 +55,22 @@ typedef struct {
 // param request
 typedef struct {
   uint8_t len;
-  uint8_t  len_hi;
+  uint8_t len_hi;
 } pms_prmreq;
 
-// param reply
+
+// parameters
 typedef struct {
   uint8_t firmv;
   uint8_t firmv_hi;
   uint8_t brtm;
   uint8_t mabtm;
   uint8_t rate;
+} pms_parameters;
+
+// param reply
+typedef struct {
+  pms_parameters base_parameters;
   uint8_t user[USER_CONFIG_LEN];
 } pms_prmrep;
 
@@ -152,7 +158,11 @@ class UsbProWidget: public lla::select_server::SocketListener {
     int SendRdm(uint8_t *buf, unsigned int len) const;
     bool GetParameters();
     bool GetSerial();
-    int SetParameters(uint8_t *data, unsigned int len, uint8_t brk, uint8_t mab, uint8_t rate);
+    bool SetParameters(uint8_t *data,
+                       unsigned int len,
+                       uint8_t brk,
+                       uint8_t mab,
+                       uint8_t rate);
     int FetchDmx(uint8_t *data, unsigned int len);
 
     int ChangeToReceiveMode();

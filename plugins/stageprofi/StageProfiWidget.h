@@ -35,10 +35,8 @@ using lla::select_server::ConnectedSocket;
 using lla::select_server::SelectServer;
 using lla::select_server::Socket;
 using lla::select_server::SocketListener;
-using lla::select_server::TimeoutListener;
 
-class StageProfiWidget: public SocketListener,
-                        public TimeoutListener {
+class StageProfiWidget: public SocketListener {
   public:
     StageProfiWidget():
       m_enabled(false),

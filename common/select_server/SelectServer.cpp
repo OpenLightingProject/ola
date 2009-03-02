@@ -38,6 +38,7 @@ const string SelectServer::K_LOOP_VAR = "ss-loop-functions";
 const string SelectServer::K_TIMER_VAR = "ss-timer-functions";
 
 using lla::ExportMap;
+using lla::LlaClosure;
 
 /*
  * Constructor
@@ -180,29 +181,35 @@ int SelectServer::UnregisterFD(int fd, SelectServer::Direction direction) {
  *
  * @param seconds the delay between function calls
  */
-int SelectServer::RegisterTimeout(int ms,
-                                  TimeoutListener *listener,
-                                  bool recurring,
-                                  bool free_after_run) {
-  if (!listener)
-    return -1;
+bool SelectServer::RegisterTimeout(int ms,
+                                   LlaClosure *closure,
+                                   bool recurring) {
+  if (!closure)
+    return false;
+
+  if (recurring && closure->SingleUse()) {
+    printf("Warning: Adding a single use closure as a repeating event,"
+           "I'm turning repeat off\n");
+    recurring = false;
+  } else if (!recurring && !closure->SingleUse())
+    printf("Warning: Adding a non-repeating, non single use closure,"
+           "this is probably going to leak memory\n");
 
   event_t event;
-  event.listener = listener;
+  event.closure = closure;
   event.interval.tv_sec = ms / K_MS_IN_SECOND;
   event.interval.tv_usec = K_MS_IN_SECOND * (ms % K_MS_IN_SECOND);
   event.repeat = recurring;
-  event.free_after_run = free_after_run;
 
   gettimeofday(&event.next, NULL);
   timeradd(&event.next, &event.interval, &event.next);
-  m_event_cbs.push(event);
+  m_events.push(event);
 
   if (m_export_map) {
     lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
     var->Increment();
   }
-  return 0;
+  return true;
 }
 
 
@@ -240,11 +247,11 @@ int SelectServer::CheckForEvents() {
   AddSocketsToSet(r_fds, maxsd);
   now = CheckTimeouts();
 
-  if (m_event_cbs.empty()) {
+  if (m_events.empty()) {
     tv.tv_sec = 1;
     tv.tv_usec = 0;
   } else {
-    struct timeval next = m_event_cbs.top().next;
+    struct timeval next = m_events.top().next;
     long long now_l = (long long) now.tv_sec * K_US_IN_SECOND + now.tv_usec;
     long long next_l = (long long) next.tv_sec * K_US_IN_SECOND + next.tv_usec;
     long rem = next_l - now_l;
@@ -362,21 +369,27 @@ struct timeval SelectServer::CheckTimeouts() {
   gettimeofday(&now, NULL);
 
   event_t e;
-  if (m_event_cbs.empty())
+  if (m_events.empty())
     return now;
 
-  for (e = m_event_cbs.top(); !m_event_cbs.empty() && timercmp(&e.next, &now, <); e = m_event_cbs.top()) {
+  for (e = m_events.top(); !m_events.empty() && timercmp(&e.next, &now, <); e = m_events.top()) {
     int return_code = 1;
-    if (e.listener)
-      return_code = e.listener->Timeout();
-    m_event_cbs.pop();
+    bool single_use = false;
+    if (e.closure) {
+      return_code = e.closure->Run();
+      single_use = e.closure->SingleUse();
+    }
+    m_events.pop();
 
     if (e.repeat && !return_code) {
       e.next = now;
       timeradd(&e.next, &e.interval, &e.next);
-      m_event_cbs.push(e);
-    } else if (e.free_after_run) {
-      delete e.listener;
+      m_events.push(e);
+    } else {
+      // if we were repeating, and we're not a single use closure and we
+      // returned an error we need to call delete
+      if (e.repeat && !return_code && !single_use)
+        delete e.closure;
 
       if (m_export_map) {
         lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
@@ -396,10 +409,15 @@ void SelectServer::UnregisterAll() {
   m_whandlers_vect.clear();
   m_read_sockets.clear();
   m_loop_listeners.clear();
-  while (!m_event_cbs.empty()) {
-    event_t event = m_event_cbs.top();
-    if (event.free_after_run)
-      delete event.listener;
-    m_event_cbs.pop();
+  while (!m_events.empty()) {
+    event_t event = m_events.top();
+    // We don't actually have enough info to decide what to do here because
+    // something else may be using this closure. In this case we err on the
+    // side of not deleting.
+    // TODO(simonn): use scoped_ptr which avoids all of this.
+    if (event.closure->SingleUse())
+      // delete single use events because we own them.
+      delete event.closure;
+    m_events.pop();
   }
 }

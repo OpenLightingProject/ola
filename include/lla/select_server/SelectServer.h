@@ -25,9 +25,9 @@
 #include <vector>
 #include <queue>
 
+#include <lla/Closure.h>
 #include <lla/select_server/FdListener.h>
 #include <lla/select_server/FdManager.h>
-#include <lla/select_server/TimeoutListener.h>
 #include <lla/ExportMap.h>
 
 namespace lla {
@@ -55,10 +55,9 @@ class SelectServer {
                    FDListener *listener,
                    FDManager *manager);
     int UnregisterFD(int fd, SelectServer::Direction dir);
-    int RegisterTimeout(int ms,
-                        TimeoutListener *listener,
-                        bool recurring=true,
-                        bool free_after_run=false);
+    bool RegisterTimeout(int ms,
+                         lla::LlaClosure *closure,
+                         bool recurring=true);
     int RegisterLoopCallback(FDListener *l);
     void UnregisterAll();
 
@@ -97,8 +96,7 @@ class SelectServer {
       struct timeval next;
       struct timeval interval;
       int repeat; // non 0 if this event is recurring
-      bool free_after_run; // true if we delete the listener once we're done
-      TimeoutListener *listener;
+      lla::LlaClosure *closure;
     } event_t;
 
     struct ltevent {
@@ -115,7 +113,7 @@ class SelectServer {
     ExportMap *m_export_map;
 
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;
-    event_queue_t m_event_cbs;
+    event_queue_t m_events;
 };
 
 } // select_server

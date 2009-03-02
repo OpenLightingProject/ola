@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
+#include <lla/Closure.h>
 #include <llad/logger.h>
 
 #include "StageProfiWidget.h"
@@ -39,7 +40,6 @@
 
 namespace lla {
 namespace plugin {
-
 
 static const unsigned DMX_MSG_LEN = 255;
 
@@ -119,7 +119,9 @@ bool StageProfiWidget::DetectDevice() {
   m_got_response = false;
   m_ss = new SelectServer();
   m_ss->AddSocket(m_socket, NULL);
-  m_ss->RegisterTimeout(100, this, false);
+  m_ss->RegisterTimeout(100,
+                        lla::NewSingleClosure(this, &StageProfiWidget::Timeout),
+                        false);
 
   // try a command, we should get a response
   SetChannel(0, 0);

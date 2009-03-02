@@ -58,15 +58,6 @@ const unsigned int LlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
 
 
 /*
- * Run the garbage collector
- */
-int GarbageCollector::Timeout() {
-  m_universe_store->GarbageCollectUniverses();
-  return m_stop;
-}
-
-
-/*
  * Create a new LlaServer
  *
  * @param factory the factory to use to create LlaService objects
@@ -90,7 +81,6 @@ LlaServer::LlaServer(LlaServerServiceImplFactory *factory,
   m_universe_preferences(NULL),
   m_universe_store(NULL),
   m_export_map(export_map),
-  m_garbage_collector(NULL),
   m_init_run(false),
   m_free_export_map(false),
   m_options(*lla_options) {
@@ -120,7 +110,8 @@ LlaServer::~LlaServer() {
   }
 #endif
 
-  m_garbage_collector->Stop();
+  //TODO: Remove the GarbageCollector closure from the select server and delete
+  //it here
 
   // stops and unloads all our plugins
   if (m_plugin_loader) {
@@ -215,11 +206,9 @@ bool LlaServer::Init() {
   }
 #endif
 
-  // register the Universe garbarge collector. We pass ownership off to the
-  // select server which will delete it once it returns non-0; 
-  m_garbage_collector = new GarbageCollector(m_universe_store);
-  m_ss->RegisterTimeout(K_GARBAGE_COLLECTOR_TIMEOUT_MS, m_garbage_collector,
-                        true, true);
+  m_ss->RegisterTimeout(K_GARBAGE_COLLECTOR_TIMEOUT_MS,
+                        lla::NewClosure(this, &LlaServer::GarbageCollect),
+                        true);
 
   m_init_run = true;
   return true;
@@ -289,6 +278,16 @@ void LlaServer::SocketClosed(lla::select_server::Socket *socket) {
   var->Decrement();
   CleanupConnection(iter->second);
   m_sd_to_service.erase(iter);
+}
+
+
+/*
+ * Run the garbage collector
+ */
+int LlaServer::GarbageCollect() {
+  Logger::instance()->log(Logger::INFO, "Garbage collecting...");
+  m_universe_store->GarbageCollectUniverses();
+  return 0;
 }
 
 

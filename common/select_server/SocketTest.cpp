@@ -22,6 +22,7 @@
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <lla/Closure.h>
 #include <lla/select_server/SelectServer.h>
 #include <lla/select_server/Socket.h>
 
@@ -34,7 +35,6 @@ static const string test_string = test_cstring;
 static const int ABORT_TIMEOUT_IN_MS = 1000;
 
 class SocketTest: public CppUnit::TestFixture,
-                  public TimeoutListener,
                   public SocketListener {
   CPPUNIT_TEST_SUITE(SocketTest);
   CPPUNIT_TEST(testLoopbackSocket);
@@ -148,8 +148,10 @@ void EchoSocketManager::SocketClosed(Socket *socket) {
 
 void SocketTest::setUp() {
   m_ss = new SelectServer();
-  int ret = m_ss->RegisterTimeout(ABORT_TIMEOUT_IN_MS, this, false);
-  CPPUNIT_ASSERT(!ret);
+  int ret = m_ss->RegisterTimeout(ABORT_TIMEOUT_IN_MS,
+                                  lla::NewSingleClosure(this, &SocketTest::Timeout),
+                                  false);
+  CPPUNIT_ASSERT(ret);
   m_close_on_recv = true;
   m_terminate_on_recv = false;
 }

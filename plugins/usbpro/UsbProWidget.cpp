@@ -153,7 +153,7 @@ int UsbProWidget::SendRdm(uint8_t *buf, unsigned int len) const {
  *
  * @param usrsz  size of user configurable memory to fetch
  */
-int UsbProWidget::SetParameters(uint8_t *data,
+bool UsbProWidget::SetParameters(uint8_t *data,
                                 unsigned int len,
                                 uint8_t brk,
                                 uint8_t mab,
@@ -169,8 +169,7 @@ int UsbProWidget::SetParameters(uint8_t *data,
   msg.pm_prmset.mab = mab;
   msg.pm_prmset.rate = rate;
   memcpy(msg.pm_prmset.user, data, l);
-  send_msg(&msg);
-  return 0;
+  return send_msg(&msg);
 }
 
 
@@ -301,7 +300,7 @@ int UsbProWidget::handle_cos(pms_cos *cos, int len) {
   }
 
   if (m_listener)
-    m_listener->NewDmx();
+    m_listener->HandleWidgetDmx();
 
   return 0;
 }
@@ -313,13 +312,13 @@ int UsbProWidget::handle_cos(pms_cos *cos, int len) {
  * @param rep parameters message
  * @param len length of the message
  */
-int UsbProWidget::handle_prmrep(pms_prmrep *rep, unsigned int len) {
-  if (m_listener && len == sizeof(pms_prmrep)) {
-    m_listener->Parameters(rep->firmv,
-                           rep->firmv_hi,
-                           rep->brtm,
-                           rep->mabtm,
-                           rep->rate);
+int UsbProWidget::handle_prmrep(pms_prmrep *reply, unsigned int len) {
+  if (m_listener && len >= sizeof(pms_parameters)) {
+    m_listener->HandleWidgetParameters(reply->base_parameters.firmv,
+                                       reply->base_parameters.firmv_hi,
+                                       reply->base_parameters.brtm,
+                                       reply->base_parameters.mabtm,
+                                       reply->base_parameters.rate);
   }
   return 0;
 }
@@ -333,7 +332,7 @@ int UsbProWidget::handle_prmrep(pms_prmrep *rep, unsigned int len) {
  */
 int UsbProWidget::handle_snorep(pms_snorep *rep, int len) {
   if (m_listener && len == sizeof(pms_snorep))
-    m_listener->SerialNumber(rep->srno);
+    m_listener->HandleWidgetSerial(rep->srno);
   return 0;
 }
 
