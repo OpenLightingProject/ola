@@ -66,7 +66,6 @@ enum usbpro_packet_type_e {
 
 typedef enum usbpro_packet_type_e usbpro_packet_type;
 
-
 /*
  * Connect to the widget
  */
@@ -80,19 +79,18 @@ int UsbProWidget::Connect(const string &path) {
   }
 
   struct termios newtio;
-  int fd = open(path.c_str(), O_RDWR | O_NONBLOCK);
+  int fd = open(path.c_str(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
   if (fd == -1) {
     return 1;
   }
 
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
-  tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ConnectedSocket(fd, fd);
   m_socket->SetListener(this);
   m_enabled = true;
 
-  // fire off a get request 
+  // fire off a get request
   GetParameters();
 
   // put us into receiving mode
