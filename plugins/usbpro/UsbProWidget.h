@@ -147,6 +147,9 @@ class UsbProWidget: public lla::select_server::SocketListener {
   public:
     UsbProWidget():
       m_enabled(false),
+      m_break_time(K_MISSING_PARAM),
+      m_mab_time(K_MISSING_PARAM),
+      m_rate(K_MISSING_PARAM),
       m_socket(NULL) {}
     ~UsbProWidget() {}
 
@@ -160,9 +163,9 @@ class UsbProWidget: public lla::select_server::SocketListener {
     bool GetSerial();
     bool SetParameters(uint8_t *data,
                        unsigned int len,
-                       uint8_t brk,
-                       uint8_t mab,
-                       uint8_t rate);
+                       int brk,
+                       int mab,
+                       int rate);
     int FetchDmx(uint8_t *data, unsigned int len);
 
     int ChangeToReceiveMode();
@@ -181,8 +184,12 @@ class UsbProWidget: public lla::select_server::SocketListener {
 
     uint8_t m_dmx[DMX_BUF_LEN - 1];  // dmx buffer
     bool m_enabled;
+    uint8_t m_break_time;
+    uint8_t m_mab_time;
+    uint8_t m_rate;
     UsbProWidgetListener *m_listener;
     ConnectedSocket *m_socket;
+    static const int K_MISSING_PARAM = -1;
 };
 
 } // plugin

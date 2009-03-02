@@ -33,7 +33,8 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+extern "C" lla::AbstractPlugin* create(
+    const lla::PluginAdaptor *plugin_adaptor) {
   return new lla::plugin::UsbProPlugin(plugin_adaptor);
 }
 

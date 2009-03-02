@@ -44,16 +44,15 @@ namespace usbpro {
 
 class OutstandingRequest {
   public:
+    OutstandingRequest(RpcController *a_controller,
+                       string *a_response,
+                       Closure *a_closure):
+      controller(a_controller),
+      response(a_response),
+      closure(a_closure) {}
     RpcController *controller;
     string *response;
-    Closure *done;
-};
-
-class OutstandingParamRequest: public OutstandingRequest {
-  public:
-    int break_time;
-    int mab_time;
-    int rate;
+    Closure *closure;
 };
 
 }
@@ -98,25 +97,17 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
                          string *response,
                          Closure *done);
 
-    void SetWidgetParameters(
-        lla::plugin::usbpro::OutstandingParamRequest &outstanding_request,
-        uint8_t break_time,
-        uint8_t mab_time,
-        uint8_t rate);
-
     const lla::PluginAdaptor *m_plugin_adaptor;
     string m_path;
     bool m_enabled;            // are we enabled
     bool m_in_shutdown;        // set to true if we're shutting down
     UsbProWidget *m_widget;
-    deque<lla::plugin::usbpro::OutstandingParamRequest>
+    deque<lla::plugin::usbpro::OutstandingRequest>
       m_outstanding_param_requests;
     deque<lla::plugin::usbpro::OutstandingRequest>
       m_outstanding_serial_requests;
 
     static const int K_MISSING_PARAM = -1;
-    // time to wait after sending a SetParam request for the widget to update
-    static const int K_SET_PARAM_TIMEOUT_MS = 30;
 };
 
 } //plugin

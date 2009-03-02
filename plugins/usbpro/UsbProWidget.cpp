@@ -92,6 +92,9 @@ int UsbProWidget::Connect(const string &path) {
   m_socket->SetListener(this);
   m_enabled = true;
 
+  // fire off a get request 
+  GetParameters();
+
   // put us into receiving mode
   send_rcmode(1);
   return 0;
@@ -149,22 +152,38 @@ int UsbProWidget::SendRdm(uint8_t *buf, unsigned int len) const {
 
 
 /*
- * Send a set param request
- *
- * @param usrsz  size of user configurable memory to fetch
+ * Send a set param request. If we haven't received a response to a GetParam()
+ * request, the default values won't be known.
+ * @param data pointer to the user configurable data
+ * @param len  size of user configurable memory to fetch
+ * @param brk the break_time or K_MISSING_PARAM to leave it the same
+ * @param mab the mab_time or K_MISSING_PARAM to leave it the same
+ * @param rate the rate or K_MISSING_PARAM to leave it the same
+ * @returns true if the set was sent correctly, false if the default values
+ * aren't know.
  */
 bool UsbProWidget::SetParameters(uint8_t *data,
-                                unsigned int len,
-                                uint8_t brk,
-                                uint8_t mab,
-                                uint8_t rate) {
-  int l = min( (unsigned int) USER_CONFIG_LEN, len);
+                                 unsigned int len,
+                                 int brk,
+                                 int mab,
+                                 int rate) {
+  int l = min((unsigned int) USER_CONFIG_LEN, len);
   promsg msg;
   msg.som = som;
   msg.label = ID_PRMSET;
   set_msg_len(&msg, sizeof(pms_prmset) - USER_CONFIG_LEN + l);
   msg.pm_prmset.len = len & 0xFF;
   msg.pm_prmset.len_hi = (len & 0xFF) >> 8;
+  brk = brk != K_MISSING_PARAM ? brk : m_break_time;
+  mab = mab != K_MISSING_PARAM ? mab : m_mab_time;
+  rate = rate != K_MISSING_PARAM ? rate : m_rate;
+
+  if (brk == K_MISSING_PARAM ||
+      mab == K_MISSING_PARAM ||
+      rate == K_MISSING_PARAM) {
+    printf("Missing default values for usb SetParam\n");
+    return false;
+  }
   msg.pm_prmset.brk = brk;
   msg.pm_prmset.mab = mab;
   msg.pm_prmset.rate = rate;
@@ -190,8 +209,8 @@ bool UsbProWidget::GetParameters() {
 
 
 /*
- * Fetch the serial number, causes listener->SerialNumber() to be called sometime
- * later.
+ * Fetch the serial number, causes listener->SerialNumber() to be called
+ * sometime later.
  */
 bool UsbProWidget::GetSerial() {
   promsg msg;
@@ -203,7 +222,9 @@ bool UsbProWidget::GetSerial() {
 
 
 /*
- * get the dmx
+ * Copy the latest DMX data into the specified buffer
+ * @param data a pointer to the dmx data buffer
+ * @param len the length of the dmx data buffer
  */
 int UsbProWidget::FetchDmx(uint8_t *data, unsigned int len) {
   int l = min(len, DMX_BUF_LEN - 1);
@@ -223,7 +244,7 @@ int UsbProWidget::ChangeToReceiveMode() {
 
 
 /*
- * read data from the widget
+ * Read data from the widget
  */
 int UsbProWidget::SocketReady(ConnectedSocket *socket) {
   while (socket->UnreadData() > 0) {
@@ -313,6 +334,11 @@ int UsbProWidget::handle_cos(pms_cos *cos, int len) {
  * @param len length of the message
  */
 int UsbProWidget::handle_prmrep(pms_prmrep *reply, unsigned int len) {
+  // snoop the values to update our cache
+  m_break_time = reply->base_parameters.brtm;
+  m_mab_time = reply->base_parameters.mabtm;
+  m_rate = reply->base_parameters.rate;
+
   if (m_listener && len >= sizeof(pms_parameters)) {
     m_listener->HandleWidgetParameters(reply->base_parameters.firmv,
                                        reply->base_parameters.firmv_hi,
