@@ -30,14 +30,15 @@
 
 using namespace std;
 
+static const int K_INVALID_VALUE = -1;
+
 /*
  * the config_mode is determined by the name in which we were called
  */
 typedef enum {
   NONE,
-  MODE_GET_PARAM,
-  MODE_GET_SERIAL,
-  MODE_SET_PARAM
+  MODE_PARAM,
+  MODE_SERIAL,
 } config_mode;
 
 
@@ -46,7 +47,6 @@ typedef struct {
   string command;   // argv[0]
   int device_id;    // device id
   bool help;        // help
-  bool verbose;     // verbose
   int brk;          // brk
   int mab;          // mab
   int rate;         // rate
@@ -63,9 +63,8 @@ class UsbProConfigurator: public LlaConfigurator {
       m_opts(opts) {}
     void HandleConfigResponse(const string &reply, const string &error);
     void SendConfigRequest();
-    bool SendGetParameters();
-    bool SendGetSerial();
-//    bool SendSetParameters();
+    bool SendParametersRequest();
+    bool SendSerialRequest();
   private:
     void DisplayParameters(const lla::plugin::usbpro::ParameterReply &reply);
     void DisplaySerial(const lla::plugin::usbpro::SerialNumberReply &reply);
@@ -107,14 +106,11 @@ void UsbProConfigurator::HandleConfigResponse(const string &reply,
  */
 void UsbProConfigurator::SendConfigRequest() {
   switch (m_opts.mode) {
-    case MODE_GET_PARAM:
-      SendGetParameters();
+    case MODE_PARAM:
+      SendParametersRequest();
       break;
-    case MODE_GET_SERIAL:
-      SendGetSerial();
-      break;
-    case MODE_SET_PARAM:
-      //SendSetParameters();
+    case MODE_SERIAL:
+      SendSerialRequest();
       break;
     default:
       cout << "Unknown mode" << endl;
@@ -126,9 +122,18 @@ void UsbProConfigurator::SendConfigRequest() {
 /*
  * Send a get parameters request
  */
-bool UsbProConfigurator::SendGetParameters() {
+bool UsbProConfigurator::SendParametersRequest() {
   lla::plugin::usbpro::Request request;
   request.set_type(lla::plugin::usbpro::Request::USBPRO_PARAMETER_REQUEST);
+
+  lla::plugin::usbpro::ParameterRequest *parameter_request =
+    request.mutable_parameters();
+  if (m_opts.brk != K_INVALID_VALUE)
+    parameter_request->set_break_time(m_opts.brk);
+  if (m_opts.mab != K_INVALID_VALUE)
+    parameter_request->set_mab_time(m_opts.mab);
+  if (m_opts.rate != K_INVALID_VALUE)
+    parameter_request->set_rate(m_opts.rate);
   return SendMessage(request);
 }
 
@@ -136,7 +141,7 @@ bool UsbProConfigurator::SendGetParameters() {
 /*
  * Send a get serial request
  */
-bool UsbProConfigurator::SendGetSerial() {
+bool UsbProConfigurator::SendSerialRequest() {
   lla::plugin::usbpro::Request request;
   request.set_type(lla::plugin::usbpro::Request::USBPRO_SERIAL_REQUEST);
   return SendMessage(request);
@@ -144,37 +149,17 @@ bool UsbProConfigurator::SendGetSerial() {
 
 
 /*
- * Send a set param request
-bool UsbProConfigurator::SendSetParameters() {
-  lla::plugin::usbpro::Request request;
-  lla::plugin::usbpro::SetParameterRequest *set_request =
-    request.mutable_set_parameters();
-  request.set_type(lla::plugin::usbpro::Request::USBPRO_SET_PARAMETER_REQUEST);
-  if (m_opts.brk != -1)
-    set_request->set_break_time(m_opts.brk);
-  if (m_opts.mab != -1)
-    set_request->set_mab_time(m_opts.mab);
-  if (m_opts.rate != -1)
-    set_request->set_rate(m_opts.rate);
-  return SendMessage(request);
-}
- */
-
-
-/*
  * Display the widget parameters
  */
 void UsbProConfigurator::DisplayParameters(
     const lla::plugin::usbpro::ParameterReply &reply) {
-  /*
-  uint16_t firm = rep->get_firmware();
-  printf("Device %i\n", dev);
-  printf(" Firmware: %hhi.%hhi\n", (firm & 0xFF00) >> 8 , firm & 0x00FF);
-  printf(" Break Time: %0.2f us\n", rep->get_brk() * 10.67);
-  printf(" MAB Time: %0.2f us\n", rep->get_mab() * 10.67);
-  printf(" Packet Rate: %i packets/sec\n", rep->get_rate());
-  */
-  cout << "in displ param" << endl;
+
+  cout << "Device: " << m_device_id << endl;
+  cout << "Firmware: " << reply.firmware_high() << "." << reply.firmware() <<
+    endl;
+  cout << "Break Time: " << reply.break_time() * 10.67 << "us" << endl;
+  cout << "MAB Time: " <<  reply.mab_time() * 10.67 << "us" << endl;
+  cout << "Packet Rate: " << reply.rate() << " packets/sec" << endl;
 }
 
 
@@ -199,59 +184,15 @@ void UsbProConfigurator::DisplaySerial(
 
 
 /*
- * This is called when we recieve a device config response
- * @param dev the device id
- * @param res the response buffer
- * @param len the length of the response buffer
-int Observer::dev_config(unsigned int dev, uint8_t *rep, unsigned int len) {
-  UsbProConfMsg *m = m_parser->parse(rep, len);
-  struct timespec tv;
-
-  if( m == NULL) {
-    printf("bad response\n");
-    return 0;
-  }
-
-  switch(m->type()) {
-
-    case LLA_USBPRO_CONF_MSG_PRM_REP:
-      handle_params(dev, (UsbProConfMsgPrmRep*) m);
-      m_term = 1;
-      break;
-    case LLA_USBPRO_CONF_MSG_SER_REP:
-      handle_serial(dev, (UsbProConfMsgSerRep*) m);
-      m_term = 1;
-      break;
-    case LLA_USBPRO_CONF_MSG_SPRM_REP:
-      m_opts->m = MODE_GET_PARAM;
-      tv.tv_sec = 0;
-      tv.tv_nsec = 30000000;
-      // wait for the widget to update
-      nanosleep(&tv, NULL);
-      get_params();
-      break;
-    default:
-      delete m;
-      return 0;
-  }
-  delete m;
-
-  return 0;
-}
- */
-
-
-/*
  * Init options
  */
 void InitOptions(options &opts) {
-  opts.mode = NONE;
-  opts.device_id = -1;
+  opts.mode = MODE_PARAM;
+  opts.device_id = K_INVALID_VALUE;
   opts.help = false;
-  opts.verbose = false;
-  opts.brk = -1;
-  opts.mab = -1;
-  opts.rate = -1;
+  opts.brk = K_INVALID_VALUE;
+  opts.mab = K_INVALID_VALUE;
+  opts.rate = K_INVALID_VALUE;
 }
 
 
@@ -264,10 +205,8 @@ int ParseOptions(int argc, char *argv[], options &opts) {
       {"dev",     required_argument,  0, 'd'},
       {"help",    no_argument,        0, 'h'},
       {"mab",     required_argument,  0, 'm'},
-      {"params",  required_argument,  0, 'p'},
       {"rate",    required_argument,  0, 'r'},
       {"serial",  required_argument,  0, 's'},
-      {"verbose", no_argument,        0, 'v'},
       {0, 0, 0, 0}
     };
 
@@ -275,7 +214,7 @@ int ParseOptions(int argc, char *argv[], options &opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "b:d:hm:pr:sv", long_options, &option_index);
+    c = getopt_long(argc, argv, "b:d:hm:r:s", long_options, &option_index);
     if (c == -1)
       break;
 
@@ -294,17 +233,11 @@ int ParseOptions(int argc, char *argv[], options &opts) {
       case 'm':
         opts.mab = atoi(optarg);
         break;
-      case 'p':
-        opts.mode = MODE_GET_PARAM;
-        break;
       case 'r':
         opts.rate = atoi(optarg);
         break;
       case 's':
-        opts.mode = MODE_GET_SERIAL;
-        break;
-      case 'v':
-        opts.verbose = true;
+        opts.mode = MODE_SERIAL;
         break;
       case '?':
         break;
@@ -319,16 +252,14 @@ int ParseOptions(int argc, char *argv[], options &opts) {
  */
 void DisplayHelpAndExit(options &opts) {
   cout << "Usage: " << opts.command <<
-    "-d <dev_id> [--params | --serial | -b <brk> -m <mab> -r <rate> ]\n\n"
+    "-d <dev_id> [ --serial | -b <brk> -m <mab> -r <rate> ]\n\n"
     "Configure Enttec Usb Pro Devices managed by LLA.\n\n"
     "  -b, --brk <brk>     Set the break time (9 - 127)\n"
     "  -d, --dev <dev_id>  The device id to configure\n"
     "  -h, --help          Display this help message and exit.\n"
     "  -m, --mab <mab>     Set the make after-break-time (1 - 127)\n"
-    "  -p, --params        Get the parameters.\n"
     "  -r, --rate <rate>   Set the transmission rate (1 - 40).\n"
-    "  -s, --serial         Get the serial number.\n"
-    "  -v, --verbose       Display this message.\n" <<
+    "  -s, --serial        Get the serial number.\n" <<
     endl;
   exit(0);
 }
@@ -336,16 +267,13 @@ void DisplayHelpAndExit(options &opts) {
 
 void CheckOptions(options &opts) {
   // check for valid parameters
-  if(opts.brk != -1 || opts.mab != -1 || opts.rate != -1)
-    opts.mode = MODE_SET_PARAM;
-
-  if (opts.brk != -1 && (opts.brk < 9 || opts.brk > 127))
+  if (opts.brk != K_INVALID_VALUE && (opts.brk < 9 || opts.brk > 127))
     opts.mode = NONE;
 
-  if (opts.mab != -1 && (opts.mab < 1 || opts.mab > 127))
+  if (opts.mab != K_INVALID_VALUE && (opts.mab < 1 || opts.mab > 127))
     opts.mode = NONE;
 
-  if (opts.rate != -1 && (opts.rate < 1 || opts.rate > 40))
+  if (opts.rate != K_INVALID_VALUE && (opts.rate < 1 || opts.rate > 40))
     opts.mode = NONE;
 }
 
