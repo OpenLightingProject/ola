@@ -72,7 +72,7 @@ int SelectServer::Run() {
  * @param socket the socket to register
  * @param manager the manager to call when the socket is closed
  * @param delete_on_close controlls whether the select server calls Close() and
- * deleted the socket once it's closed. You should probably set this as false
+ * deletes the socket once it's closed. You should probably set this as false
  * if you're using a manager.
  */
 int SelectServer::AddSocket(Socket *socket,
@@ -267,7 +267,7 @@ int SelectServer::CheckForEvents() {
       if (errno == EINTR) {
         return 0;
       }
-      printf("select error: %s", strerror(errno));
+      printf("select error: %s\n", strerror(errno));
       return -1;
     default:
       CheckTimeouts();
@@ -324,22 +324,39 @@ void SelectServer::CheckFDListeners(vector<listener_t> &listeners,
 }
 
 
+
+/*
+ * Check all the registered sockets:
+ *  - Call SocketReady() is there is new data
+ *  - Handle the case when the socket gets closed
+ */
 void SelectServer::CheckSockets(fd_set &set) {
-  for (int i=0; i < m_read_sockets.size(); i++) {
-    Socket *socket = m_read_sockets[i].socket;
-    if (FD_ISSET(socket->ReadDescriptor(), &set)) {
-      if (socket->IsClosed()) {
-        RemoveSocket(socket);
-        if (m_read_sockets[i].manager)
-          m_read_sockets[i].manager->SocketClosed(socket);
-        if (m_read_sockets[i].delete_on_close) {
-          socket->Close();
-          delete socket;
+  vector<Socket*> ready_queue;
+
+  vector<registered_socket_t>::iterator iter;
+  for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
+    if (FD_ISSET(iter->socket->ReadDescriptor(), &set)) {
+      if (iter->socket->IsClosed()) {
+        if (iter->manager)
+          iter->manager->SocketClosed(iter->socket);
+        if (iter->delete_on_close) {
+          iter->socket->Close();
+          delete iter->socket;
         }
+        if (m_export_map)
+          m_export_map->GetIntegerVar(K_FD_VAR)->Decrement();
+        iter = m_read_sockets.erase(iter);
+        iter--;
       } else {
-        int ret = socket->SocketReady();
+        ready_queue.push_back(iter->socket);
       }
     }
+  }
+
+  vector<Socket*>::iterator socket_iter;
+  for (socket_iter = ready_queue.begin(); socket_iter != ready_queue.end();
+      ++socket_iter) {
+    (*socket_iter)->SocketReady();
   }
 }
 
@@ -352,7 +369,6 @@ void SelectServer::RemoveFDListener(vector<listener_t> &listeners, int fd) {
   for (iter = listeners.begin(); iter != listeners.end(); ++iter) {
     if (iter->fd == fd) {
       listeners.erase(iter);
-      printf("Unregistered fd %d\n", fd);
       break;
     }
   }
@@ -372,7 +388,8 @@ struct timeval SelectServer::CheckTimeouts() {
   if (m_events.empty())
     return now;
 
-  for (e = m_events.top(); !m_events.empty() && timercmp(&e.next, &now, <); e = m_events.top()) {
+  for (e = m_events.top(); !m_events.empty() && timercmp(&e.next, &now, <);
+       e = m_events.top()) {
     int return_code = 1;
     bool single_use = false;
     if (e.closure) {

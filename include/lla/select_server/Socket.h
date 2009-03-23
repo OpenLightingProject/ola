@@ -118,6 +118,7 @@ class LoopbackSocket: public ConnectedSocket {
   public:
     LoopbackSocket(): ConnectedSocket() {}
     bool Init();
+    bool Close();
 };
 
 

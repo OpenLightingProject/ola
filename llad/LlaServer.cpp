@@ -83,6 +83,7 @@ LlaServer::LlaServer(LlaServerServiceImplFactory *factory,
   m_export_map(export_map),
   m_init_run(false),
   m_free_export_map(false),
+  m_httpd(NULL),
   m_options(*lla_options) {
 
   if (!m_export_map) {
@@ -166,13 +167,15 @@ bool LlaServer::Init() {
 
   if (m_listening_socket) {
     m_listening_socket->SetListener(this);
-    m_listening_socket->Listen();
+    if (!m_listening_socket->Listen())
+      return false;
     m_ss->AddSocket(m_listening_socket);
   }
 
   signal(SIGPIPE, SIG_IGN);
 
-  m_universe_preferences = m_preferences_factory->NewPreference(UNIVERSE_PREFERENCES);
+  m_universe_preferences = m_preferences_factory->NewPreference(
+      UNIVERSE_PREFERENCES);
   m_universe_preferences->Load();
   m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
 
@@ -311,20 +314,24 @@ void LlaServer::StartPlugins() {
 }
 
 
+/*
+ * Stop and unload all the plugins
+ */
 void LlaServer::StopPlugins() {
   m_plugin_loader->UnloadPlugins();
-  vector<AbstractDevice*> devices = m_device_manager->Devices();
-
-  if (devices.size() != 0) {
-    printf("some devices failed to unload, we're probably leaking memory now\n");
+  if (m_device_manager) {
+    if ( m_device_manager->DeviceCount()) {
+      Logger::instance()->log(
+         Logger::WARN,
+        "Some devices failed to unload, we're probably leaking memory now");
+    }
+    m_device_manager->UnregisterAllDevices();
   }
-
-  m_device_manager->UnregisterAllDevices();
 }
 
 
 /*
- * Cleanup everything related to a connection
+ * Cleanup everything related to a client connection
  */
 void LlaServer::CleanupConnection(LlaServerServiceImpl *service) {
   Client *client = service->GetClient();

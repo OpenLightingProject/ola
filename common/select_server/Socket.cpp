@@ -147,6 +147,12 @@ bool LoopbackSocket::Init() {
   return true;
 }
 
+bool LoopbackSocket::Close() {
+  if (m_read_fd > 0)
+    close(m_write_fd);
+  m_write_fd = -1;
+}
+
 
 // PipeSocket
 // ------------------------------------------------
@@ -234,6 +240,7 @@ TcpListeningSocket::TcpListeningSocket(std::string address, unsigned short port,
 
 /*
  * Start listening
+ * @return true if it succeeded, false otherwise
  */
 bool TcpListeningSocket::Listen() {
   struct sockaddr_in server_address;
