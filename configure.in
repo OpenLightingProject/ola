@@ -30,7 +30,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
 AC_CHECK_HEADER(pthread.h, have_threads=posix)
-AC_CHECK_HEADER(google/protobuf/stubs/common.h, , AC_MSG_ERROR('protobuf library not installed'))
+PROTOBUF_SUPPORT([2.0.1])
 
 AM_CONDITIONAL(HAVE_PTHREAD, test "${have_threads}" = "posix")
 if test "${have_threads}" = "posix"; then

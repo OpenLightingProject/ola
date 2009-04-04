@@ -11,10 +11,10 @@ EXTRA_DIST = Rpc.proto TestService.proto SimpleRpcController.h \
 BUILT_SOURCES = Rpc.pb.cc Rpc.pb.h TestService.pb.cc TestService.pb.h
 
 Rpc.pb.cc Rpc.pb.h: Rpc.proto
-	protoc --cpp_out ./ Rpc.proto
+	$(PROTOC) --cpp_out ./ Rpc.proto
 
 TestService.pb.cc TestService.pb.h: TestService.proto
-	protoc --cpp_out ./ TestService.proto
+	$(PROTOC) --cpp_out ./ TestService.proto
 
 TESTS = RpcTester
 check_PROGRAMS = $(TESTS)
