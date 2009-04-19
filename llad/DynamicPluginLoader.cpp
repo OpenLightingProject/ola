@@ -22,7 +22,6 @@
 #  include <config.h>
 #endif
 
-#include <llad/logger.h>
 #include <llad/Plugin.h>
 #include "DynamicPluginLoader.h"
 

@@ -27,8 +27,8 @@
 
 #include <list>
 
+#include <lla/Logging.h>
 #include <llad/Preferences.h>
-#include <llad/logger.h>
 
 #define LLA_CONFIG_DIR ".lla"
 #define LLA_CONFIG_PREFIX "lla-"
@@ -122,7 +122,7 @@ int FileBackedPreferences::Load() {
 
   filename = LLA_CONFIG_PREFIX + m_preference_name + LLA_CONFIG_SUFFIX;
   if ((fh = fopen(filename.c_str(), "r")) == NULL) {
-    Logger::instance()->log(Logger::INFO, "Failed to open %s:  %s", filename.c_str(), strerror(errno));
+    LLA_INFO << "Failed to open " << filename << ": " << strerror(errno);
     return -1;
   }
 

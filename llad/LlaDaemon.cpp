@@ -24,7 +24,6 @@
 #include <lla/ExportMap.h>
 #include <llad/LlaDaemon.h>
 #include <llad/Preferences.h>
-#include <llad/logger.h>
 #include "DlOpenPluginLoader.h"
 #include "LlaServerServiceImpl.h"
 #include "PluginLoader.h"

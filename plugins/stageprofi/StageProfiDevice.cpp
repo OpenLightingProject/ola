@@ -17,7 +17,8 @@
  * StageProfi device
  * Copyright (C) 2006-2007 Simon Newton
  *
- * The device creates two ports, one in and one out, but you can only use one at a time.
+ * The device creates two ports, one in and one out, but you can only use one
+ * at a time.
  */
 
 #include <stdlib.h>
@@ -25,7 +26,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include <llad/Preferences.h>
 #include <llad/Universe.h>
 
@@ -85,12 +86,12 @@ bool StageProfiDevice::Start() {
     return false;
 
   if (!m_widget->Connect(m_path)) {
-    Logger::instance()->log(Logger::WARN, "StageProfiPlugin: failed to connect to %s", m_path.c_str());
+    LLA_WARN << "StageProfiPlugin: failed to connect to " << m_path;
     return false;
   }
 
   if (!m_widget->DetectDevice()) {
-    Logger::instance()->log(Logger::WARN, "StageProfiPlugin: no device found at %s", m_path.c_str());
+    LLA_WARN << "StageProfiPlugin: no device found at " << m_path;
     return false;
   }
 

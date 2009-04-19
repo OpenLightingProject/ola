@@ -200,6 +200,7 @@ _EOF_
 AC_OUTPUT( Makefile\
     common/Makefile\
     common/export_map/Makefile\
+    common/logging/Makefile\
     common/protocol/Makefile\
     common/rpc/Makefile\
     common/select_server/Makefile\

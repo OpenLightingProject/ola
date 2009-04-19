@@ -21,7 +21,6 @@
  */
 
 #include <lla/ExportMap.h>
-#include <llad/logger.h>
 #include <llad/Universe.h>
 #include <llad/Device.h>
 #include <llad/Port.h>

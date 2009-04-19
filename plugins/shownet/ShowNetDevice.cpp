@@ -25,7 +25,7 @@
 #include "ShowNetDevice.h"
 #include "ShowNetPort.h"
 
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include <llad/preferences.h>
 #include <llad/plugin.h>
 #include <llad/universe.h>
@@ -108,28 +108,29 @@ int ShowNetDevice::start() {
   if (m_prefs->get_val("ip") == "")
     m_node = shownet_new(NULL, get_owner()->debug_on());
   else {
-    m_node = shownet_new(m_prefs->get_val("ip").c_str(), get_owner()->debug_on());
+    m_node = shownet_new(m_prefs->get_val("ip").c_str(),
+                         get_owner()->debug_on());
   }
 
   if (!m_node) {
-    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_new failed: %s", shownet_strerror());
+    LLA_WARN << "shownet_new failed: " << shownet_strerror();
     return -1;
   }
 
   // setup node
   if (shownet_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
-    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_name failed: %s", shownet_strerror());
+    LLA_WARN << "shownet_set_name failed: " << shownet_strerror();
     goto e_shownet_start;
   }
 
   // we want to be notified when the node config changes
   if (shownet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_set_dmx_handler failed: %s", shownet_strerror());
+    LLA_WARN << "shownet_set_dmx_handler failed: " << shownet_strerror();
     goto e_shownet_start;
   }
 
   if (shownet_start(m_node) ) {
-    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_start failed: %s", shownet_strerror());
+    LLA_WARN << "shownet_start failed: " << shownet_strerror();
     goto e_shownet_start;
   }
 
@@ -138,7 +139,7 @@ int ShowNetDevice::start() {
 
 e_shownet_start:
   if (shownet_destroy(m_node))
-    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_destory failed: %s", shownet_strerror());
+    LLA_WARN << "shownet_destroy failed: " << shownet_strerror();
   return -1;
 }
 
@@ -160,12 +161,12 @@ int ShowNetDevice::stop() {
   }
 
   if (shownet_stop(m_node)) {
-    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_stop failed: %s", shownet_strerror());
+    LLA_WARN << "shownet_stop failed: " << shownet_strerror();
     return -1;
   }
 
   if (shownet_destroy(m_node)) {
-    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_destroy failed: %s", shownet_strerror());
+    LLA_WARN << "shownet_destroy failed: " << shownet_strerror();
     return -1;
   }
 
@@ -186,13 +187,12 @@ shownet_node ShowNetDevice::get_node() const {
 
 /*
  * return the sd of this device
- *
  */
 int ShowNetDevice::get_sd() const {
   int ret = shownet_get_sd(m_node);
 
   if (ret < 0) {
-    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_get_sd failed: %s", shownet_strerror());
+    LLA_WARN << "shownet_get_sd failed: " << shownet_strerror();
     return -1;
   }
   return ret;
@@ -205,7 +205,7 @@ int ShowNetDevice::get_sd() const {
  */
 int ShowNetDevice::action() {
   if (shownet_read(m_node, 0) ) {
-    Logger::instance()->log(Logger::WARN, "ShowNetPlugin: shownet_read failed: %s", shownet_strerror());
+    LLA_WARN << "shownet_read failed: " << shownet_strerror();
     return -1;
   }
   return 0;
@@ -216,7 +216,6 @@ int ShowNetDevice::action() {
 // where to store data to ?
 // I'm thinking a config file in /etc/llad/llad.conf
 int ShowNetDevice::save_config() const {
-
 
   return 0;
 }

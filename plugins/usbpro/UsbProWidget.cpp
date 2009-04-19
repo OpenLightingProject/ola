@@ -30,7 +30,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#include <llad/logger.h>
+#include <lla/Logging.h>
 
 #include "UsbProWidget.h"
 
@@ -179,7 +179,7 @@ bool UsbProWidget::SetParameters(uint8_t *data,
   if (brk == K_MISSING_PARAM ||
       mab == K_MISSING_PARAM ||
       rate == K_MISSING_PARAM) {
-    printf("Missing default values for usb SetParam\n");
+    LLA_WARN << "Missing default values for usb SetParam";
     return false;
   }
   msg.pm_prmset.brk = brk;
@@ -397,7 +397,7 @@ int UsbProWidget::do_recv() {
     m_socket->Receive((uint8_t*) &byte, 1, cnt);
 
     if (cnt != 1) {
-      printf("1, read to much %i\n", cnt);
+      LLA_WARN << "read to much, expected 1, got " << cnt;
       return -1;
     }
   }
@@ -406,20 +406,20 @@ int UsbProWidget::do_recv() {
   m_socket->Receive((uint8_t*) &label, 1, cnt);
 
   if (cnt != 1) {
-    printf("2, could not read label %i\n", cnt);
+    LLA_WARN << "could not read label, expected 1, got " << cnt;
     return 1;
   }
 
   m_socket->Receive((uint8_t*) &byte, 1, cnt);
   if (cnt != 1) {
-    printf("3, could not read len hi%i\n", cnt);
+    LLA_WARN << "could not read len hi, expected 1, got " << cnt;
     return 1;
   }
   plen = byte;
 
   m_socket->Receive((uint8_t*) &byte, 1, cnt);
   if (cnt != 1) {
-    printf("4, could not read len lo %i\n", cnt);
+    LLA_WARN << "could not read len lo, expected 1, got " << cnt;
     return 1;
   }
   plen += byte << 8;
@@ -432,7 +432,7 @@ int UsbProWidget::do_recv() {
   // check this is a valid frame with an end byte
   m_socket->Receive((uint8_t*) &byte, 1, cnt);
   if (cnt != 1) {
-    printf("5, read to much %i\n", cnt);
+    LLA_WARN << "read to much, expected 1, got " << cnt;
     return 1;
   }
 
@@ -451,7 +451,7 @@ int UsbProWidget::do_recv() {
         handle_snorep( &buf.pmu_snorep, plen);
         break;
       default:
-        printf("not sure what msg this is\n");
+        LLA_WARN << "Unknown message type " << label;
     }
   }
   return 0;

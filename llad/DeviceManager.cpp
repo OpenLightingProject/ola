@@ -14,12 +14,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * devicemanager.cpp
- * Implementation of the device manager, this object tracks what devices are in use
- * Copyright (C) 2005 Simon Newton
+ * Implementation of the device manager, this object tracks what devices are in
+ * use.
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #include <stdio.h>
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include "DeviceManager.h"
 
 namespace lla {
@@ -34,7 +35,7 @@ int DeviceManager::RegisterDevice(AbstractDevice *device) {
   device->SetDeviceId(m_next_device_id);
   m_devices.push_back(device);
   m_next_device_id++;
-  Logger::instance()->log(Logger::INFO, "Installed device");
+  LLA_INFO << "Installed device: " << device->Name();
   return 0;
 }
 

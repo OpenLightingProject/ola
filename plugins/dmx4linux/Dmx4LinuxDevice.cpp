@@ -23,7 +23,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <llad/logger.h>
 #include <llad/Preferences.h>
 #include <llad/Universe.h>
 

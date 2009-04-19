@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include <llad/Plugin.h>
 
 #include "DlOpenPluginLoader.h"
@@ -45,13 +45,13 @@ int DlOpenPluginLoader::LoadPlugins() {
 
   if (!m_dl_active) {
     if (lt_dlinit()) {
-      Logger::instance()->log(Logger::CRIT, "lt_dlinit failed");
+      LLA_WARN << "lt_dlinit failed";
       return -1;
     }
   }
 
   if (lt_dlsetsearchpath(m_dirname.c_str())) {
-    Logger::instance()->log(Logger::CRIT, "lt_setpath failed");
+    LLA_WARN << "lt_setpath failed";
     lt_dlexit();
     return -1;
   }
@@ -62,20 +62,17 @@ int DlOpenPluginLoader::LoadPlugins() {
     path.append("/");
     path.append(*iter);
 
-    if ((plugin = this->LoadPlugin(path)) == NULL) {
-      Logger::instance()->log(Logger::WARN, "Failed to load plugin: %s", path.c_str());
-    } else {
+    if ((plugin = this->LoadPlugin(path)) == NULL)
+      LLA_WARN << "Failed to load plugin: " << path;
+    else
       m_plugins.push_back(plugin);
-    }
   }
-
   return 0;
 }
 
 
 /*
  * Unload all plugins
- *
  */
 int DlOpenPluginLoader::UnloadPlugins() {
   map<lt_dlhandle, AbstractPlugin*>::iterator map_iter;
@@ -86,16 +83,16 @@ int DlOpenPluginLoader::UnloadPlugins() {
       (*iter)->Stop();
   }
 
-  for (map_iter = m_plugin_map.begin(); map_iter != m_plugin_map.end(); map_iter++)
+  for (map_iter = m_plugin_map.begin(); map_iter != m_plugin_map.end();
+       map_iter++)
     UnloadPlugin((*map_iter).first);
 
   m_plugin_map.clear();
   m_plugins.clear();
 
   if (m_dl_active) {
-    if (lt_dlexit()) {
-      printf("dlexit: %s\n", (char *) lt_dlerror());
-    }
+    if (lt_dlexit())
+      LLA_WARN << "dlexit: " << lt_dlerror();
     m_dl_active = false;
   }
   return 0;
@@ -104,7 +101,6 @@ int DlOpenPluginLoader::UnloadPlugins() {
 
 /*
  * Return the number of plugins loaded
- *
  * @return the number of plugins loaded
  */
 int DlOpenPluginLoader::PluginCount() const {
@@ -127,9 +123,7 @@ set<string> DlOpenPluginLoader::FindPlugins(const string &path) {
   dir = opendir(path.c_str());
 
   if (!dir) {
-    Logger::instance()->log(Logger::WARN,
-                            "Plugin directory %s doesn't exist",
-                            path.c_str());
+    LLA_WARN << "Plugin directory " << path << " doesn't exist";
     return plugin_names;
   }
 
@@ -158,18 +152,19 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
   AbstractPlugin *plugin;
   create_t *create;
 
+  LLA_INFO << "Attempting to load " << path;
   module = lt_dlopenext(path.c_str());
 
   if (!module) {
     printf("failed to dlopen\n");
-    Logger::instance()->log(Logger::WARN, "lt_dlopen: %s", lt_dlerror());
+    LLA_WARN << "lt_dlopen: " << lt_dlerror();
     return NULL;
   }
 
   create = (create_t*) lt_dlsym(module, "create");
 
   if (lt_dlerror()) {
-    Logger::instance()->log(Logger::WARN, "Could not locate symbol");
+    LLA_WARN << "Could not locate create symbol in " << path;
     lt_dlclose(module);
     return NULL;
   }
@@ -183,7 +178,7 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
   pair<lt_dlhandle, AbstractPlugin*> pair (module, plugin);
   m_plugin_map.insert(pair);
 
-  Logger::instance()->log(Logger::INFO, "Loaded plugin %s", plugin->Name().c_str());
+  LLA_INFO << "Loaded plugin " << plugin->Name();
   return plugin;
 }
 
@@ -197,8 +192,8 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
 int DlOpenPluginLoader::UnloadPlugin(lt_dlhandle handle) {
   destroy_t *destroy = (destroy_t*) lt_dlsym(handle, "destroy");
 
-  if (lt_dlerror() != NULL) {
-    Logger::instance()->log(Logger::WARN, "Could not locate destroy symbol");
+  if (lt_dlerror()) {
+    LLA_WARN << "Could not locate destroy symbol";
     return -1;
   }
 

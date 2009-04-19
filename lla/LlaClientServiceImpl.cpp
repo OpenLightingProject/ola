@@ -20,7 +20,6 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
-#include <llad/logger.h>
 #include "common/protocol/Lla.pb.h"
 #include "LlaClientServiceImpl.h"
 #include "LlaClient.h"

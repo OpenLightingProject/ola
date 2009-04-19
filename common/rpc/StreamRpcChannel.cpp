@@ -28,6 +28,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 
+#include <lla/Logging.h>
 #include <lla/select_server/Socket.h>
 #include "StreamRpcChannel.h"
 #include "SimpleRpcController.h"
@@ -57,7 +58,8 @@ StreamRpcChannel::~StreamRpcChannel() {
 
 
 /*
- * Receive a message for this RPCChannel. Called when data is available on the socket.
+ * Receive a message for this RPCChannel. Called when data is available on the
+ * socket.
  */
 int StreamRpcChannel::SocketReady(ConnectedSocket *socket) {
   if (!m_expected_size) {
@@ -70,14 +72,16 @@ int StreamRpcChannel::SocketReady(ConnectedSocket *socket) {
       return 0;
 
     if (version != PROTOCOL_VERSION) {
-      printf("protocol mismatch %d != %d\n", version, PROTOCOL_VERSION);
+      LLA_WARN << "protocol mismatch " << version << " != " <<
+        PROTOCOL_VERSION;
       return -1;
     }
     m_current_size = 0;
     m_buffer_size = AllocateMsgBuffer(m_expected_size);
 
     if (m_buffer_size < m_expected_size) {
-      printf("buffer size to small %d < %d\n", m_buffer_size, m_expected_size);
+      LLA_WARN << "buffer size to small " << m_buffer_size << " < " <<
+        m_expected_size;
       return -1;
     }
   }
@@ -86,7 +90,7 @@ int StreamRpcChannel::SocketReady(ConnectedSocket *socket) {
   if (socket->Receive(m_buffer + m_current_size,
                       m_expected_size - m_current_size,
                       data_read) < 0) {
-    printf("something went wrong in socket recv\n");
+    LLA_WARN << "something went wrong in socket recv\n";
     return -1;
   }
 
@@ -101,17 +105,16 @@ int StreamRpcChannel::SocketReady(ConnectedSocket *socket) {
 }
 
 
-
+/*
+ * Call a method with the given request and reply
+ * TODO(simonn): reduce the number of copies here
+ */
 void StreamRpcChannel::CallMethod(
     const MethodDescriptor *method,
     RpcController *controller,
     const Message *request,
     Message *reply,
     Closure *done) {
-  /*
-   * Call a method with the given request and reply
-   * TODO(simonn): reduce the number of copies here
-   */
   string output;
   RpcMessage message;
 
@@ -126,7 +129,8 @@ void StreamRpcChannel::CallMethod(
   OutstandingResponse *response = GetOutstandingResponse(message.id());
   if (response) {
     // fail any outstanding response with the same id
-    printf("response %d already pending, failing now\n", response->id);
+    LLA_WARN << "response " << response->id << " already pending, failing " <<
+      "now";
     response->controller->SetFailed("Duplicate request found");
     InvokeCallbackAndCleanup(response);
   }
@@ -162,7 +166,7 @@ void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
 
 
 // private
-//-------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 /*
  * Write an RpcMessage to the write socket.
  */
@@ -177,11 +181,10 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
   ret = m_socket->Send((uint8_t*) output.c_str(), length);
 
   if (-1 == ret) {
-    printf("%s\n", strerror(errno));
-    //Logger::instance()->log(Logger::CRIT, "Send failed: %s", strerror(errno) );
+    LLA_WARN << "Send failed " << strerror(errno);
     return -1;
   } else if (length != ret) {
-    //Logger::instance()->log(Logger::CRIT, "Failed to send full datagram");
+    LLA_WARN << "Failed to send full datagram";
     return -1;
   }
   return 0;
@@ -233,7 +236,7 @@ int StreamRpcChannel::ReadHeader(unsigned int &version, unsigned int &size) cons
   version = size = 0;
 
   if (m_socket->Receive((uint8_t*) header, HEADER_SIZE, data_read)) {
-    printf("read header error: %s\n", strerror(errno));
+    LLA_WARN << "read header error: " << strerror(errno);
     return -1;
   }
 
@@ -251,7 +254,7 @@ int StreamRpcChannel::ReadHeader(unsigned int &version, unsigned int &size) cons
 void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
   RpcMessage msg;
   if (!msg.ParseFromArray(data, size)) {
-    printf("parsing failed\n");
+    LLA_WARN << "parsing failed";
     return;
   }
 
@@ -272,7 +275,7 @@ void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
       HandleNotImplemented(&msg);
       break;
     default:
-      printf("not sure of msg type %d\n", msg.type());
+      LLA_WARN << "not sure of msg type " << msg.type();
       break;
   }
 }
@@ -283,18 +286,18 @@ void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
  */
 void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
   if (!m_service) {
-    printf("no service registered\n");
+    LLA_WARN << "no service registered";
     return;
   }
 
   const ServiceDescriptor *service = m_service->GetDescriptor();
   if (!service) {
-    printf("failed to get service descriptor\n");
+    LLA_WARN << "failed to get service descriptor";
     return;
   }
   const MethodDescriptor *method = service->FindMethodByName(msg->name());
   if (!method) {
-    printf("failed to get method descriptor\n");
+    LLA_WARN << "failed to get method descriptor";
     SendNotImplemented(msg->id());
     return;
   }
@@ -303,12 +306,12 @@ void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
   Message* response_pb = m_service->GetResponsePrototype(method).New();
 
   if (!request_pb || !response_pb) {
-    printf("failed to get request or response objects\n");
+    LLA_WARN << "failed to get request or response objects";
     return;
   }
 
   if (!request_pb->ParseFromString(msg->buffer())) {
-    printf("parsing of request pb failed\n");
+    LLA_WARN << "parsing of request pb failed";
     return;
   }
 
@@ -318,7 +321,7 @@ void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
   request->response = response_pb;
 
   if (m_requests.find(msg->id()) != m_requests.end()) {
-    printf("dup sequence number for request %d!!\n", msg->id());
+    LLA_WARN << "dup sequence number for request " << msg->id();
     SendRequestFailed(m_requests[msg->id()]);
   }
 
@@ -394,7 +397,7 @@ void StreamRpcChannel::HandleFailedResponse(RpcMessage *msg) {
  * Handle a RPC response by invoking the callback.
  */
 void StreamRpcChannel::HandleCanceledResponse(RpcMessage *msg) {
-  printf("we've been canceled\n");
+  LLA_INFO << "Received a canceled response";
   OutstandingResponse *response = GetOutstandingResponse(msg->id());
   if (response) {
     response->controller->SetFailed(msg->buffer());
@@ -407,7 +410,7 @@ void StreamRpcChannel::HandleCanceledResponse(RpcMessage *msg) {
  * Handle a NOT_IMPLEMENTED by invoking the callback.
  */
 void StreamRpcChannel::HandleNotImplemented(RpcMessage *msg) {
-  printf("not implemented\n");
+  LLA_INFO << "Received a non-implemented response";
   OutstandingResponse *response = GetOutstandingResponse(msg->id());
   if (response) {
     response->controller->SetFailed("Not Implemented");

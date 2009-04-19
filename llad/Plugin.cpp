@@ -18,10 +18,10 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <lla/Logging.h>
 #include <llad/Plugin.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <llad/logger.h>
 
 namespace lla {
 
@@ -46,14 +46,14 @@ bool Plugin::Start() {
 
   enabled = m_preferences->GetValue(ENABLED_KEY);
   if (enabled == "false") {
-    Logger::instance()->log(Logger::INFO, "Plugin: %s disabled", Name().c_str());
+    LLA_INFO << Name() << " disabled";
     delete m_preferences;
     return 0;
   }
 
   debug = m_preferences->GetValue(DEBUG_KEY);
   if (debug == "true") {
-    Logger::instance()->log(Logger::INFO, "Plugin: %s debug on", Name().c_str());
+    LLA_INFO << Name() << " debug on";
     m_debug = true;
   }
 
@@ -90,7 +90,7 @@ bool Plugin::Stop() {
  */
 int Plugin::LoadPreferences() {
   if (PreferencesSuffix() == "") {
-    Logger::instance()->log(Logger::WARN, "Plugin: no suffix provided");
+    LLA_WARN << Name() << ", no suffix provided";
     return -1;
   }
 
@@ -106,7 +106,7 @@ int Plugin::LoadPreferences() {
 
   if (SetDefaultPreferences()) {
     delete m_preferences;
-    Logger::instance()->log(Logger::INFO, "%s:set_default_prefs failed", Name().c_str());
+    LLA_INFO << Name() << ", set_default_prefs failed";
     return -1;
   }
 

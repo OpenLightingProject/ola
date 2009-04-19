@@ -19,7 +19,6 @@
  */
 
 #include <string.h>
-#include <llad/logger.h>
 #include "StageProfiPort.h"
 #include "StageProfiDevice.h"
 

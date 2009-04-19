@@ -22,7 +22,6 @@
 
 #include <sys/types.h>
 
-#include <llad/logger.h>
 #include <lla/select_server/Socket.h>
 
 #include "StageProfiWidgetLan.h"

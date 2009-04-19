@@ -27,15 +27,16 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#include "E131Device.h"
-#include "E131Port.h"
-
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include <llad/preferences.h>
 
 #include <acn/NetServer.h>
 #include <acn/E131Node.h>
 #include <acn/E131DmpLayer.h>
+
+#include "E131Device.h"
+#include "E131Port.h"
+
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -90,7 +91,7 @@ int E131Device::start() {
   string ip_addr = m_prefs->get_val("address");
   if (ip_addr != "") {
     if (inet_aton(ip_addr.c_str(), &addr) == 0) {
-      Logger::instance()->log(Logger::WARN, "E131Plugin: %s isn't a valid address", ip_addr.c_str());
+      LLA_WARN << ip_addr << " isn't a valid address";
       return -1;
     }
   } else
@@ -147,7 +148,7 @@ int E131Device::stop() {
 int E131Device::fd_action() {
  /*
   if( artnet_read(m_node, 0) ) {
-    Logger::instance()->log(Logger::WARN, "E131Plugin: artnet_read failed: %s", artnet_strerror()) ;
+    LLA_WARN << "read failed: %s" << artnet_strerror();
     return -1 ;
   }
   */

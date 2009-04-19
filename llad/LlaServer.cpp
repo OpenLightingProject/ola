@@ -27,12 +27,12 @@
 #include <string.h>
 
 #include <lla/ExportMap.h>
+#include <lla/Logging.h>
 #include <llad/Plugin.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
 #include <llad/Preferences.h>
 #include <llad/Universe.h>
-#include <llad/logger.h>
 #include "common/protocol/Lla.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
 
@@ -222,7 +222,7 @@ bool LlaServer::Init() {
  * Reload all plugins
  */
 void LlaServer::ReloadPlugins() {
-  Logger::instance()->log(Logger::WARN, "Reloading...");
+  LLA_INFO << "Reloading plugins";
 
   if (!m_plugin_loader)
     return;
@@ -234,7 +234,6 @@ void LlaServer::ReloadPlugins() {
 
 /*
  * Add a new ConnectedSocket to this Server.
- *
  * @param socket the new ConnectedSocket
  */
 int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
@@ -252,9 +251,8 @@ int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
   map<int, LlaServerServiceImpl*>::const_iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
-  if (iter != m_sd_to_service.end()) {
-    printf("client already exists!\n");
-  }
+  if (iter != m_sd_to_service.end())
+    LLA_INFO << "New socket but the client already exists!";
 
   pair<int, LlaServerServiceImpl*> pair(socket->ReadDescriptor(), service);
   m_sd_to_service.insert(pair);
@@ -273,9 +271,8 @@ void LlaServer::SocketClosed(lla::select_server::Socket *socket) {
   map<int, LlaServerServiceImpl*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
-  if (iter == m_sd_to_service.end()) {
-    printf("didn't find client in map\n");
-  }
+  if (iter == m_sd_to_service.end())
+    LLA_INFO << "A socket was closed but we didn't find the client";
 
   IntegerVariable *var = m_export_map->GetIntegerVar(K_CLIENT_VAR);
   var->Decrement();
@@ -288,7 +285,7 @@ void LlaServer::SocketClosed(lla::select_server::Socket *socket) {
  * Run the garbage collector
  */
 int LlaServer::GarbageCollect() {
-  Logger::instance()->log(Logger::INFO, "Garbage collecting...");
+  LLA_INFO << "Garbage collecting";
   m_universe_store->GarbageCollectUniverses();
   return 0;
 }
@@ -304,12 +301,11 @@ void LlaServer::StartPlugins() {
   vector<AbstractPlugin*>::iterator iter;
 
   for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-    Logger::instance()->log(Logger::INFO, "Trying to start %s", (*iter)->Name().c_str());
-    if (!(*iter)->Start()) {
-      Logger::instance()->log(Logger::WARN, "Failed to start %s", (*iter)->Name().c_str());
-    }
+    LLA_INFO << "Trying to start " << (*iter)->Name();
+    if (!(*iter)->Start())
+      LLA_WARN << "Failed to start " << (*iter)->Name();
     else
-      Logger::instance()->log(Logger::INFO, "Started %s", (*iter)->Name().c_str());
+      LLA_INFO << "Started " << (*iter)->Name();
   }
 }
 
@@ -321,9 +317,8 @@ void LlaServer::StopPlugins() {
   m_plugin_loader->UnloadPlugins();
   if (m_device_manager) {
     if ( m_device_manager->DeviceCount()) {
-      Logger::instance()->log(
-         Logger::WARN,
-        "Some devices failed to unload, we're probably leaking memory now");
+      LLA_WARN << "Some devices failed to unload, we're probably leaking "
+        << "memory now";
     }
     m_device_manager->UnregisterAllDevices();
   }

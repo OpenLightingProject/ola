@@ -22,8 +22,8 @@
 #include "ShowNetDevice.h"
 #include "common.h"
 
+#include <lla/Logging.h>
 #include <llad/universe.h>
-#include <llad/logger.h>
 
 #include <string.h>
 
@@ -65,8 +65,7 @@ int ShowNetPort::write(uint8_t *data, unsigned int length) {
     return -1;
 
   if (shownet_send_dmx(dev->get_node() , get_id()%8 , length, data)) {
-    Logger::instance()->log(Logger::WARN, "ShownetPlugin: shownet_send_dmx failed %s",
-      shownet_strerror());
+    LLA_WARN << "shownet_send_dmx failed " << shownet_strerror();
     return -1;
   }
   return 0;
@@ -108,15 +107,13 @@ int ShowNetPort::update_buffer(uint8_t *data, int length) {
 
     // we should handle this better
     if (m_buf == NULL) {
-      Logger::instance()->log(Logger::CRIT, "ShownetPlugin: malloc failed");
+      LLA_WARN << "malloc failed";
       return -1;
     } else
       memset(m_buf, 0x00, m_len);
   }
 
-  Logger::instance()->log(Logger::DEBUG, "ShowNet: Updating dmx buffer for port %d", length);
   memcpy(m_buf, data, len);
-
   dmx_changed();
   return 0;
 }

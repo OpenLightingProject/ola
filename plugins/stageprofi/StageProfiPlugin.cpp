@@ -24,7 +24,7 @@
 
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <llad/logger.h>
+#include <lla/Logging.h>
 
 #include "StageProfiPlugin.h"
 #include "StageProfiDevice.h"
@@ -32,7 +32,8 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+extern "C" lla::AbstractPlugin* create(
+    const lla::PluginAdaptor *plugin_adaptor) {
   return new lla::plugin::StageProfiPlugin(plugin_adaptor);
 }
 
@@ -124,8 +125,7 @@ string StageProfiPlugin::Description() const {
 
 
 /*
- * Called if fd_action returns an error for one of our devices
- *
+ * Called when the file descriptor is closed.
  */
 void StageProfiPlugin::SocketClosed(Socket *socket) {
   vector<StageProfiDevice*>::iterator iter;
@@ -136,7 +136,7 @@ void StageProfiPlugin::SocketClosed(Socket *socket) {
   }
 
   if (iter == m_devices.end()) {
-    Logger::instance()->log(Logger::WARN, "unknown fd closed in stageprofi device");
+    LLA_WARN << "unknown fd";
     return;
   }
 

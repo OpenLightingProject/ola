@@ -13,41 +13,21 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * logger.h
- * Header file for the logger class
- * Copyright (C) 2005  Simon Newton
+ * LoggingTester.h
+ * Runs all the Logging tests
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef LOGGER_H
-#define LOGGER_H
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
 
-#include <stdarg.h>
-
-class Logger {
-
-	public:
-
-		enum Level{EMERG,CRIT,WARN,INFO,DEBUG, LOG_MAX};
-		enum Output{STDERR,SYSLOG};
-		
-		static Logger *instance() ;
-		static Logger *instance(Logger::Level level, Logger::Output output) ;
-		static void clean_up() ;
-		
-		void log(Logger::Level lev, const char *fmt, ...) const ;
-		void increment_log_level() ;
-
-	private :
-		Logger(const Logger&);
-		Logger& operator=(const Logger&);
-
-		Logger(Logger::Level level, Logger::Output output) ;
-		~Logger() ;
-		
-		Logger::Level m_level ;
-		Logger::Output m_output ;
-		static Logger *s_instance ;
-		
-};
-
-#endif
+int main(int argc, char* argv[]) {
+  CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
+  CppUnit::TextUi::TestRunner runner;
+  runner.addTest(suite);
+  runner.setOutputter(new CppUnit::CompilerOutputter(&runner.result(),
+                                                     std::cerr));
+  bool wasSucessful = runner.run();
+  return wasSucessful ? 0 : 1;
+}

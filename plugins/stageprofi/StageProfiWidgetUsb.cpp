@@ -29,7 +29,6 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include <llad/logger.h>
 #include <lla/select_server/Socket.h>
 #include "StageProfiWidgetUsb.h"
 

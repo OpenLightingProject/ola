@@ -1,10 +1,11 @@
-INCLUDES = -I$(top_builddir)/common -I$(top_builddir)/include -I$(top_builddir)/libltdl @LLAD_DEFINES@
+INCLUDES = -I$(top_builddir)/common -I$(top_builddir)/include \
+           -I$(top_builddir)/libltdl @LLAD_DEFINES@
 SUBDIRS = www
 
 # lib llaserver
 lib_LTLIBRARIES = libllaserver.la
 libllaserver_la_SOURCES = LlaServer.cpp LlaServerServiceImpl.cpp \
-                          Logger.cpp Preferences.cpp Universe.cpp \
+                          Preferences.cpp Universe.cpp \
                           UniverseStore.cpp Port.cpp Client.cpp \
                           Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
                           Plugin.cpp DlOpenPluginLoader.cpp \
@@ -54,7 +55,7 @@ LlaTester_LDADD = @LIBS@ libllaserver.la \
 # crap starts here
 #llad_test_SOURCES = main_test.cpp devicemanager.cpp pluginadaptor.cpp\
 #				llad.cpp network.cpp plugin.cpp device.cpp port.cpp\
-#				DynamicPluginLoader.cpp universe.cpp logger.cpp\
+#				DynamicPluginLoader.cpp universe.cpp \
 #				client.cpp preferences.cpp UniverseStore.cpp
 
 #llad_test_CXXFLAGS = -Wall -Werror  -Wformat -W

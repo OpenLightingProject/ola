@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include <lla/Logging.h>
 #include <lla/select_server/SelectServer.h>
 #include <lla/select_server/Socket.h>
 
@@ -79,7 +80,7 @@ int SelectServer::AddSocket(Socket *socket,
                             SocketManager *manager,
                             bool delete_on_close) {
   if (socket->ReadDescriptor() < 0) {
-    printf("AddSocket failed, fd: %d\n", socket->ReadDescriptor());
+    LLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
     return -1;
   }
 
@@ -108,7 +109,7 @@ int SelectServer::AddSocket(Socket *socket,
  */
 int SelectServer::RemoveSocket(class Socket *socket) {
   if (socket->ReadDescriptor() < 0) {
-    printf("RemoveSocket failed, fd: %d\n", socket->ReadDescriptor());
+    LLA_WARN << "RemoveSocket failed, fd: " << socket->ReadDescriptor();
     return 0;
   }
 
@@ -188,12 +189,12 @@ bool SelectServer::RegisterTimeout(int ms,
     return false;
 
   if (recurring && closure->SingleUse()) {
-    printf("Warning: Adding a single use closure as a repeating event,"
-           "I'm turning repeat off\n");
+    LLA_WARN << "Adding a single use closure as a repeating event," <<
+       "I'm turning repeat off";
     recurring = false;
   } else if (!recurring && !closure->SingleUse())
-    printf("Warning: Adding a non-repeating, non single use closure,"
-           "this is probably going to leak memory\n");
+    LLA_WARN << "Adding a non-repeating, non single use closure," <<
+       "this is probably going to leak memory\n";
 
   event_t event;
   event.closure = closure;
@@ -267,7 +268,7 @@ int SelectServer::CheckForEvents() {
       if (errno == EINTR) {
         return 0;
       }
-      printf("select error: %s\n", strerror(errno));
+      LLA_WARN << "select error: " << strerror(errno);
       return -1;
     default:
       CheckTimeouts();

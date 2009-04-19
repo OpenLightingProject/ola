@@ -10,4 +10,5 @@ SelectServerTester_SOURCES = SelectServerTester.cpp SocketTest.cpp
 SelectServerTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 SelectServerTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl
 SelectServerTester_LDADD = ./libllaselectserver.la \
-                           ../export_map/libllaexportmap.la
+                           ../export_map/libllaexportmap.la \
+                           ../logging/liblogging.la

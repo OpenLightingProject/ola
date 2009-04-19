@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include "DummyPort.h"
 
 namespace lla {
@@ -53,9 +53,11 @@ int DummyPort::WriteDMX(uint8_t *data, unsigned int length) {
   memcpy(m_dmx, data, len);
   m_length = len;
 
-  Logger::instance()->log(Logger::INFO,
-    "Dummy port: got %d bytes: 0x%hhx 0x%hhx 0x%hhx 0x%hhx \n",
-    length, data[0], data[1], data[2], data[3]);
+  LLA_INFO << "Dummy port: got " << length << " bytes: " << std::hex <<
+    "0x" << data[0] <<
+    "0x" << data[1] <<
+    "0x" << data[2] <<
+    "0x" << data[3];
 
   return 0;
 }

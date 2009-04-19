@@ -26,7 +26,7 @@
 #include <google/protobuf/service.h>
 
 #include <lla/Closure.h>
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include <llad/Preferences.h>
 
 #include "UsbProDevice.h"
@@ -85,11 +85,10 @@ bool UsbProDevice::Start() {
   ret = m_widget->Connect(m_path);
 
   if (ret) {
-    Logger::instance()->log(Logger::WARN,
-                            "UsbProPlugin: failed to connect to %s",
-                            m_path.data());
+    LLA_WARN << "failed to connect to " << m_path;
     return -1;
   }
+  LLA_INFO << "opened " << m_path;
 
   m_widget->SetListener(this);
 

@@ -13,8 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * main.cpp
- * Main file for llad, parses the options, forks if required and runs the daemon
+ * Llad.cpp
+ * Main file for llad, parses the options, forks if required and runs the
+ * daemon.
  * Copyright (C) 2005-2007 Simon Newton
  *
  */
@@ -27,7 +28,7 @@
 #include <fcntl.h>
 
 #include <iostream>
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include "LlaDaemon.h"
 
 using namespace std;
@@ -38,8 +39,8 @@ LlaDaemon *llad;
 
 // options struct
 typedef struct {
-  Logger::Level level;
-  Logger::Output output;
+  lla::log_level level;
+  lla::log_output output;
   bool daemon;
   bool help;
   int httpd;
@@ -73,7 +74,7 @@ static void sig_hup(int signo) {
  */
 static void sig_user1(int signo) {
   signo = 0;
-  Logger::instance()->increment_log_level();
+  lla::IncrementLogLevel();
 }
 
 
@@ -91,26 +92,26 @@ static int InstallSignals() {
   act.sa_flags = 0;
 
   if (sigaction(SIGINT, &act, &oact) < 0) {
-    Logger::instance()->log(Logger::WARN, "Failed to install signal SIGINT");
+    LLA_WARN << "Failed to install signal SIGINT";
     return -1;
   }
 
   if (sigaction(SIGTERM, &act, &oact) < 0) {
-    Logger::instance()->log(Logger::WARN, "Failed to install signal SIGTERM");
+    LLA_WARN << "Failed to install signal SIGTERM";
     return -1;
   }
 
   act.sa_handler = sig_hup;
 
   if (sigaction(SIGHUP, &act, &oact) < 0) {
-    Logger::instance()->log(Logger::WARN, "Failed to install signal SIGHUP");
+    LLA_WARN << "Failed to install signal SIGHUP";
     return -1;
   }
 
   act.sa_handler = sig_user1;
 
   if (sigaction(SIGUSR1, &act, &oact) < 0) {
-    Logger::instance()->log(Logger::WARN, "Failed to install signal SIGUSR1");
+    LLA_WARN << "Failed to install signal SIGUSR1";
     return -1;
   }
   return 0;
@@ -187,7 +188,7 @@ static void ParseOptions(int argc, char *argv[], lla_options *opts) {
         break;
 
       case 's':
-        opts->output = Logger::SYSLOG ;
+        opts->output = lla::LLA_LOG_SYSLOG;
         break;
 
       case 'l':
@@ -197,19 +198,19 @@ static void ParseOptions(int argc, char *argv[], lla_options *opts) {
           case 0:
             // nothing is written at this level
             // so this turns logging off
-            opts->level = Logger::EMERG;
+            opts->level = lla::LLA_LOG_NONE;
             break;
           case 1:
-            opts->level = Logger::CRIT;
+            opts->level = lla::LLA_LOG_FATAL;
             break;
           case 2:
-            opts->level = Logger::WARN;
+            opts->level = lla::LLA_LOG_WARN;
             break;
           case 3:
-            opts->level = Logger::INFO;
+            opts->level = lla::LLA_LOG_INFO;
             break;
           case 4:
-            opts->level = Logger::DEBUG;
+            opts->level = lla::LLA_LOG_DEBUG;
             break;
           default :
             break;
@@ -295,8 +296,8 @@ static int Daemonise() {
  * @param opts a pointer to the lla_options struct
  */
 static void Setup(int argc, char*argv[], lla_options *opts) {
-  opts->level = Logger::CRIT;
-  opts->output = Logger::STDERR;
+  opts->level = lla::LLA_LOG_WARN;
+  opts->output = lla::LLA_LOG_STDERR;
   opts->daemon = false;
   opts->help = false;
   opts->httpd = 1;
@@ -312,8 +313,8 @@ static void Setup(int argc, char*argv[], lla_options *opts) {
     exit(0);
   }
 
-  // setup the logger object
-  Logger::instance(opts->level, opts->output);
+  // setup the logging
+  lla::InitLogging(opts->level, opts->output);
 
   if (opts->daemon)
     Daemonise();
@@ -354,7 +355,7 @@ int main(int argc, char *argv[]) {
   InitExportMap(export_map, argc, argv);
 
   if(InstallSignals())
-    Logger::instance()->log(Logger::WARN, "Failed to install signal handlers");
+    LLA_WARN << "Failed to install signal handlers";
 
   lla::lla_server_options lla_options;
   lla_options.http_enable = opts.httpd;
@@ -367,7 +368,6 @@ int main(int argc, char *argv[]) {
   if (llad->Init()) {
     llad->Run();
   }
-  Logger::clean_up();
   delete llad;
   return 0;
 }

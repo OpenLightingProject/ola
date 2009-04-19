@@ -24,7 +24,7 @@
 
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <llad/logger.h>
+#include <lla/Logging.h>
 
 #include "UsbProPlugin.h"
 #include "UsbProDevice.h"
@@ -115,8 +115,7 @@ string UsbProPlugin::Description() const {
 
 
 /*
- * Called if fd_action returns an error for one of our devices
- *
+ * Called when the file descriptor is closed.
  */
 void UsbProPlugin::SocketClosed(Socket *socket) {
   vector<UsbProDevice*>::iterator iter;
@@ -128,7 +127,7 @@ void UsbProPlugin::SocketClosed(Socket *socket) {
   }
 
   if (iter == m_devices.end()) {
-    Logger::instance()->log(Logger::WARN, "fd_error : dynamic cast failed");
+    LLA_WARN << "couldn't find the socket";
     return;
   }
 

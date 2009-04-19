@@ -21,7 +21,6 @@
 #include <string.h>
 
 #include <llad/universe.h>
-#include <llad/logger.h>
 
 #include <acn/E131DmpLayer.h>
 #include "E131Port.h"

@@ -21,14 +21,12 @@
 
 #include <string.h>
 
+#include <lla/Logging.h>
 #include <llad/universe.h>
-#include <llad/logger.h>
 
 #include "PathportPort.h"
 #include "PathportDevice.h"
 #include "PathportCommon.h"
-
-#define min(a,b) a<b?a:b
 
 namespace lla {
 namespace plugin {
@@ -75,7 +73,7 @@ int PathportPort::WriteDMX(uint8_t *data, unsigned int length) {
     return 0;
 
   if (pathport_send_dmx(dev->PathportNode(), uni->UniverseId(), length, data)) {
-    Logger::instance()->log(Logger::WARN, "ShownetPlugin: pathport_send_dmx failed %s", pathport_strerror());
+    LLA_WARN << "pathport_send_dmx failed " << pathport_strerror();
     return -1;
   }
   return 0;
@@ -96,7 +94,7 @@ int PathportPort::ReadDMX(uint8_t *data, unsigned int length) {
   if (!CanRead())
     return -1;
 
-  len = min(m_len, length);
+  len = m_len < length ? m_len : length;
   memcpy(data, m_buf, len);
   return len;
 }
@@ -107,7 +105,7 @@ int PathportPort::ReadDMX(uint8_t *data, unsigned int length) {
  *
  */
 int PathportPort::UpdateBuffer(const uint8_t *data, int length) {
-  int len = min(DMX_UNIVERSE_SIZE, length);
+  int len = DMX_UNIVERSE_SIZE < length ? DMX_UNIVERSE_SIZE : length;
 
   // we can't update if this isn't a input port
   if (!CanRead())
@@ -117,13 +115,12 @@ int PathportPort::UpdateBuffer(const uint8_t *data, int length) {
     m_buf = (uint8_t*) malloc(m_len * sizeof(uint8_t));
 
     if (m_buf == NULL) {
-      Logger::instance()->log(Logger::CRIT, "PathportPlugin: malloc failed");
+      LLA_WARN << "malloc failed";
       return -1;
     } else
       memset(m_buf, 0x00, m_len);
   }
 
-  Logger::instance()->log(Logger::DEBUG, "Pathport: Updating dmx buffer for port %d", length);
   memcpy(m_buf, data, len);
 
   DmxChanged();

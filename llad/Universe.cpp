@@ -19,9 +19,9 @@
  *
  */
 
-#include <llad/Universe.h>
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include <llad/Port.h>
+#include <llad/Universe.h>
 #include "UniverseStore.h"
 #include "Client.h"
 
@@ -113,18 +113,13 @@ int Universe::AddPort(AbstractPort *port) {
 
   // unpatch if required
   if (universe != NULL) {
-    Logger::instance()->log(Logger::DEBUG,
-                            "Port %d is bound to universe %d",
-                            port->PortId(),
-                            universe->UniverseId());
+    LLA_DEBUG << "Port " << port->PortId() << " is bound to universe " <<
+      universe->UniverseId();
     universe->RemovePort(port);
   }
 
   // patch to this universe
-  Logger::instance()->log(Logger::INFO,
-                          "Patched %d to universe %d",
-                          port->PortId() ,
-                          m_universe_id);
+  LLA_INFO << "Patched " << port->PortId() << " to universe " << m_universe_id;
   m_ports.push_back(port);
   port->SetUniverse(this);
   if (m_export_map) {
@@ -153,12 +148,10 @@ int Universe::RemovePort(AbstractPort *port) {
       IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR);
       map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
     }
-    Logger::instance()->log(Logger::DEBUG,
-                            "Port %p has been removed from uni %d",
-                            port,
-                            m_universe_id);
+    LLA_DEBUG << "Port " << port << " has been removed from uni " <<
+      m_universe_id;
   } else {
-    Logger::instance()->log(Logger::DEBUG, "Could not find port in universe");
+    LLA_DEBUG << "Could not find port in universe";
     return -1;
   }
 
@@ -181,10 +174,7 @@ int Universe::AddClient(Client *client) {
   if (iter != m_clients.end())
     return 0;
 
-  Logger::instance()->log(Logger::INFO,
-                          "Added client %p to universe %d",
-                          client,
-                          m_universe_id);
+  LLA_INFO << "Added client " << client << " to universe " << m_universe_id;
   m_clients.push_back(client);
   if (m_export_map) {
     IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR);
@@ -211,10 +201,8 @@ int Universe::RemoveClient(Client *client) {
       IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR);
       map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
     }
-    Logger::instance()->log(Logger::INFO,
-                            "Client %p has been removed from uni %d",
-                            client,
-                            m_universe_id);
+    LLA_INFO << "Client " << client << " has been removed from uni " <<
+      m_universe_id;
   }
 
   if (!IsActive())
@@ -338,7 +326,7 @@ int Universe::UpdateDependants() {
 
   // write to all clients
   for (i=0; i < m_clients.size(); i++) {
-    Logger::instance()->log(Logger::DEBUG, "Sending dmx data msg to client");
+    LLA_DEBUG << "Sending dmx data msg to client";
     m_clients[i]->SendDMX(m_universe_id, m_data, m_length);
   }
   return 0;

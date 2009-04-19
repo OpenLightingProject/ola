@@ -28,7 +28,6 @@
 #include <sys/ioctl.h>
 
 #include <lla/Closure.h>
-#include <llad/logger.h>
 
 #include "StageProfiWidget.h"
 

@@ -22,14 +22,14 @@
 #include "SandnetPort.h"
 #include "SandnetDevice.h"
 
+#include <lla/Logging.h>
 #include <llad/universe.h>
-#include <llad/logger.h>
 
 #include <string.h>
 
 #define min(a,b) a<b?a:b
 
-SandNetPort::SandNetPort(Device *parent, int id) :
+SandNetPort::SandNetPort(Device *parent, int id):
   Port(parent, id),
   m_buf(NULL),
   m_len(DMX_LENGTH) {
@@ -67,7 +67,7 @@ int SandNetPort::write(uint8_t *data, unsigned int length) {
     return -1;
 
   if (sandnet_send_dmx(dev->get_node(), get_id(), length, data)) {
-    Logger::instance()->log(Logger::WARN, "SandnetPlugin: sandnet_send_dmx failed %s", sandnet_strerror() );
+    LLA_WARN << "sandnet_send_dmx failed " << sandnet_strerror();
     return -1;
   }
   return 0;
@@ -108,13 +108,12 @@ int SandNetPort::update_buffer(uint8_t *data, int length) {
     m_buf = (uint8_t*) malloc(m_len);
 
     if (m_buf == NULL) {
-      Logger::instance()->log(Logger::CRIT, "SandnetPlugin: malloc failed");
+      LLA_WARN << "malloc failed";
       return -1;
     } else
       memset(m_buf, 0x00, m_len);
   }
 
-  Logger::instance()->log(Logger::DEBUG, "SandNet: Updating dmx buffer for port %d", length);
   memcpy(m_buf, data, len);
   dmx_changed();
   return 0;

@@ -24,12 +24,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "EspNetDevice.h"
-#include "EspNetPort.h"
 
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include <llad/Plugin.h>
 #include <llad/Universe.h>
+
+#include "EspNetDevice.h"
+#include "EspNetPort.h"
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -135,29 +136,29 @@ bool EspNetDevice::Start() {
   }
 
   if (!m_node) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_new failed: %s", espnet_strerror());
+    LLA_WARN << "espnet_new failed: " << espnet_strerror();
     return false;
   }
 
   // setup node
   if (espnet_set_name(m_node, m_preferences->GetValue("name").c_str()) ) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_name failed: %s", espnet_strerror());
+    LLA_WARN << "espnet_set_name failed: " << espnet_strerror();
     goto e_espnet_start;
   }
 
   if (espnet_set_type(m_node, ESPNET_NODE_TYPE_IO)) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_type failed: %s", espnet_strerror());
+    LLA_WARN << "espnet_set_type failed: " << espnet_strerror();
     goto e_espnet_start;
   }
 
   // we want to be notified when the node config changes
   if (espnet_set_dmx_handler(m_node, lla::plugin::dmx_handler, (void*) this) ) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_set_dmx_handler failed: %s", espnet_strerror());
+    LLA_WARN << "espnet_set_dmx_handler failed: " << espnet_strerror();
     goto e_espnet_start;
   }
 
   if (espnet_start(m_node) ) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_start failed: %s", espnet_strerror()) ;
+    LLA_WARN << "espnet_start failed: " << espnet_strerror() ;
     goto e_espnet_start ;
   }
 
@@ -168,7 +169,7 @@ bool EspNetDevice::Start() {
 
 e_espnet_start:
   if (espnet_destroy(m_node))
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_destory failed: %s", espnet_strerror());
+    LLA_WARN << "espnet_destory failed: " << espnet_strerror();
   return false;
 }
 
@@ -184,12 +185,12 @@ bool EspNetDevice::Stop() {
   DeleteAllPorts();
 
   if(espnet_stop(m_node)) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_stop failed: %s", espnet_strerror());
+    LLA_WARN << "espnet_stop failed: " << espnet_strerror();
     return false;
   }
 
   if(espnet_destroy(m_node)) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_destroy failed: %s", espnet_strerror());
+    LLA_WARN << "espnet_destroy failed: " << espnet_strerror();
     return false;
   }
 
@@ -217,7 +218,7 @@ espnet_node EspNetDevice::EspnetNode() const {
  */
 int EspNetDevice::SocketReady(ConnectedSocket *socket) {
   if (espnet_read(m_node, 0)) {
-    Logger::instance()->log(Logger::WARN, "EspNetPlugin: espnet_read failed: %s", espnet_strerror());
+    LLA_WARN << "espnet_read failed: " << espnet_strerror();
     return -1;
   }
   socket = 0;

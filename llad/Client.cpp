@@ -19,7 +19,6 @@
  */
 
 #include <google/protobuf/stubs/common.h>
-#include <llad/logger.h>
 #include "common/rpc/SimpleRpcController.h"
 #include "common/protocol/Lla.pb.h"
 #include "Client.h"

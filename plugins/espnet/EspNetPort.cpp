@@ -23,8 +23,8 @@
 #include "EspNetDevice.h"
 #include "common.h"
 
+#include <lla/Logging.h>
 #include <llad/Universe.h>
-#include <llad/logger.h>
 
 #include <string.h>
 
@@ -64,9 +64,7 @@ int EspNetPort::WriteDMX(uint8_t *data, unsigned int length) {
     return -1;
 
   if (espnet_send_dmx(m_device->EspnetNode(), GetUniverse()->UniverseId(), length, data)) {
-    Logger::instance()->log(Logger::WARN,
-                            "EspNetPlugin: espnet_send_dmx failed %s",
-                            espnet_strerror());
+    LLA_WARN << "espnet_send_dmx failed " << espnet_strerror();
     return -1;
   }
   return 0;
@@ -102,9 +100,7 @@ int EspNetPort::UpdateBuffer(uint8_t *data, int length) {
   if (!CanRead())
     return -1;
 
-  Logger::instance()->log(Logger::DEBUG, "ESP: Updating dmx buffer for port %d", length);
   memcpy(m_buf, data, len);
-
   DmxChanged();
   return 0;
 }

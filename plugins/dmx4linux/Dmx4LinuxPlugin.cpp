@@ -29,10 +29,10 @@
 
 #include <dmx/dmxioctl.h>
 
+#include <lla/BaseTypes.h>
+#include <lla/Logging.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <llad/logger.h>
-#include <lla/BaseTypes.h>
 
 #include "Dmx4LinuxPlugin.h"
 #include "Dmx4LinuxDevice.h"
@@ -155,12 +155,11 @@ int Dmx4LinuxPlugin::SendDmx(int d4l_uni, uint8_t *data, int len) {
 
     int r = m_out_socket->Send(data, len);
     if (r != len) {
-      Logger::instance()->log(Logger::WARN, "%s: only wrote %d/%d bytes: %s",
-        PLUG_NAME, r, len, strerror(errno));
+      LLA_WARN << "only wrote " << r << "/" << len << " bytes: " <<
+        strerror(errno);
     }
   } else {
-    Logger::instance()->log(Logger::WARN, "%s: failed to seek: %s",
-      PLUG_NAME, strerror(errno));
+    LLA_WARN << "failed to seek: " << strerror(errno);
   }
   return 0;
 }
@@ -206,16 +205,14 @@ bool Dmx4LinuxPlugin::SetupSockets() {
     int fd = open(m_out_dev.c_str(), O_WRONLY);
 
     if (fd < 0) {
-      Logger::instance()->log(Logger::WARN, "%s: failed to open %s %s",
-        PLUG_NAME, m_out_dev.c_str(), strerror(errno));
+      LLA_WARN << "failed to open " << m_out_dev << " " << strerror(errno);
       return false;
     }
     m_in_socket = new ConnectedSocket(fd, fd);
 
     fd = open(m_in_dev.c_str(), O_RDONLY | O_NONBLOCK);
     if (fd < 0) {
-      Logger::instance()->log(Logger::WARN, "%s: failed to open %s %s",
-        PLUG_NAME, m_in_dev.c_str(), strerror(errno));
+      LLA_WARN << "failed to open " << m_in_dev << " " << strerror(errno);
       CleanupSockets();
       return false;
     }
@@ -273,8 +270,7 @@ bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
     return false;
 
   if (dev->Start()) {
-    Logger::instance()->log(Logger::WARN, "%s: couldn't start device",
-      PLUG_NAME);
+    LLA_WARN << "couldn't start device";
     delete dev;
     return false;
   }
@@ -282,8 +278,7 @@ bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
   prt = new Dmx4LinuxPort(dev, 0, d4l_uni, dir > 0, dir == 0);
 
   if (!prt) {
-    Logger::instance()->log(Logger::WARN, "%s: couldn't create port",
-      PLUG_NAME);
+    LLA_WARN << "couldn't create port";
     delete dev;
     return false;
   }
@@ -303,8 +298,7 @@ bool Dmx4LinuxPlugin::SetupDevices(int dir) {
   int device_count = GetDmx4LinuxDeviceCount(dir);
 
   if (device_count < 0) {
-    Logger::instance()->log(Logger::WARN, "%s: failed to fetch universe list",
-      PLUG_NAME);
+    LLA_WARN << "failed to fetch universe list";
     return false;
   }
 

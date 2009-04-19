@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include <llad/Preferences.h>
 #include <llad/universe.h>
 
@@ -49,7 +49,8 @@ namespace plugin {
  * @param d    pointer to our PathportDevice
  *
  */
-int dmx_handler(pathport_node n, unsigned int uid, unsigned int len, const uint8_t *data, void *d) {
+int dmx_handler(pathport_node n, unsigned int uid, unsigned int len,
+                const uint8_t *data, void *d) {
 
   PathportDevice *dev = (PathportDevice *) d;
   PathportPort *prt;
@@ -122,30 +123,30 @@ bool PathportDevice::Start() {
   }
 
   if (!m_node) {
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_new failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_new failed: " << pathport_strerror();
     return false;
   }
 
   // setup node
   if (pathport_set_name(m_node, m_preferences->GetValue("name").c_str()) ) {
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_name failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_set_name failed: " << pathport_strerror();
     goto e_pathport_start;
   }
 
   // setup node
   if (pathport_set_type(m_node, PATHPORT_MANUF_ZP_TECH, PATHPORT_CLASS_NODE, PATHPORT_CLASS_NODE_PATHPORT) ) {
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_type failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_set_type failed: " << pathport_strerror();
     goto e_pathport_start;
   }
 
   // we want to be notified when the node config changes
   if (pathport_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_set_dmx_handler failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_set_dmx_handler failed: " << pathport_strerror();
     goto e_pathport_start;
   }
 
   if (pathport_start(m_node) ) {
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_start failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_start failed: " << pathport_strerror();
     goto e_pathport_start;
   }
 
@@ -154,7 +155,7 @@ bool PathportDevice::Start() {
 
 e_pathport_start:
   if (pathport_destroy(m_node))
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_destory failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_destory failed: " << pathport_strerror();
   return -1;
 }
 
@@ -176,12 +177,12 @@ bool PathportDevice::Stop() {
   }
 
   if (pathport_stop(m_node)) {
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_stop failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_stop failed: " << pathport_strerror();
     return -1;
   }
 
   if (pathport_destroy(m_node)) {
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_destroy failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_destroy failed: " << pathport_strerror();
     return -1;
   }
 
@@ -208,7 +209,7 @@ int PathportDevice::get_sd(unsigned int i) const {
   int ret = pathport_get_sd(m_node, i);
 
   if (ret < 0) {
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_get_sd failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_get_sd failed: " << pathport_strerror();
     return -1;
   }
   return ret;
@@ -221,7 +222,7 @@ int PathportDevice::get_sd(unsigned int i) const {
  */
 int PathportDevice::action() {
   if (pathport_read(m_node, 0) ) {
-    Logger::instance()->log(Logger::WARN, "PathportPlugin: pathport_read failed: %s", pathport_strerror());
+    LLA_WARN << "pathport_read failed: " << pathport_strerror();
     return -1;
   }
   return 0;

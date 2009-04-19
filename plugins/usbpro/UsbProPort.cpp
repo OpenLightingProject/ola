@@ -20,7 +20,6 @@
 
 #include "UsbProPort.h"
 #include "UsbProDevice.h"
-#include <llad/logger.h>
 #include <string.h>
 
 namespace lla {

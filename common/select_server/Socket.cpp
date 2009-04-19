@@ -26,6 +26,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include <lla/Logging.h>
 #include <lla/select_server/Socket.h>
 
 namespace lla {
@@ -86,7 +87,7 @@ bool ConnectedSocket::SetNonBlocking(int fd) {
   int val = fcntl(fd, F_GETFL, 0);
   int ret = fcntl(fd, F_SETFL, val | O_NONBLOCK);
   if (ret) {
-    printf("failed to set non-blocking\n");
+    LLA_WARN << "failed to set " << fd << " non-blocking";
     return false;
   }
   return true;
@@ -122,7 +123,7 @@ bool ConnectedSocket::IsClosed() const {
 int ConnectedSocket::UnreadData() const {
   int unread;
   if (ioctl(m_read_fd, FIONREAD, &unread) < 0) {
-    printf("ioctl error for %d\n", m_read_fd);
+    LLA_WARN << "ioctl error for " << m_read_fd;
     return 0;
   }
   return unread;
@@ -137,7 +138,7 @@ bool LoopbackSocket::Init() {
 
   int fd_pair[2];
   if (pipe(fd_pair) < 0) {
-    printf("pipe failed\n");
+    LLA_WARN << "pipe() failed";
     return false;
   }
   m_read_fd = fd_pair[0];
@@ -161,12 +162,12 @@ bool PipeSocket::Init() {
     return false;
 
   if (pipe(m_in_pair) < 0) {
-    printf("pipe failed\n");
+    LLA_WARN << "pipe() failed";
     return false;
   }
 
   if (pipe(m_out_pair) < 0) {
-    printf("pipe failed\n");
+    LLA_WARN << "pipe() failed";
     close(m_in_pair[0]);
     close(m_in_pair[1]);
     return false;
@@ -204,7 +205,7 @@ bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
-    printf("socket call failed: %s\n", strerror(errno));
+    LLA_WARN << "socket call failed: " << strerror(errno);
     return false;
   }
 
@@ -216,7 +217,7 @@ bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
 
   length = sizeof(server_address);
   if(connect(sd, (struct sockaddr*) &server_address, length)) {
-    printf("connect failed: %s\n", strerror(errno));
+    LLA_WARN << "connect failed: " << strerror(errno);
     return false;
   }
   m_read_fd = sd;
@@ -229,7 +230,9 @@ bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
 // TcpListeningSocket
 // ------------------------------------------------
 
-TcpListeningSocket::TcpListeningSocket(std::string address, unsigned short port, int backlog):
+TcpListeningSocket::TcpListeningSocket(std::string address,
+                                       unsigned short port,
+                                       int backlog):
     ListeningSocket(),
     m_address(address),
     m_port(port),
@@ -251,12 +254,13 @@ bool TcpListeningSocket::Listen() {
 
   m_sd = socket(AF_INET, SOCK_STREAM, 0);
   if (m_sd < 0) {
-    printf("socket call failed: %s\n", strerror(errno));
+    LLA_WARN << "socket call failed: " << strerror(errno);
     return false;
   }
 
-  if (setsockopt(m_sd, SOL_SOCKET, SO_REUSEADDR, &reuse_flag, sizeof(reuse_flag))) {
-    printf("can't set reuse\n");
+  if (setsockopt(m_sd, SOL_SOCKET, SO_REUSEADDR, &reuse_flag,
+                 sizeof(reuse_flag))) {
+    LLA_WARN << "can't set reuse for " << m_sd;
     close(m_sd);
     return false;
   }
@@ -267,14 +271,15 @@ bool TcpListeningSocket::Listen() {
   server_address.sin_port = htons(m_port);
   inet_aton(m_address.c_str(), &server_address.sin_addr);
 
-  if (bind(m_sd, (struct sockaddr *) &server_address, sizeof(server_address)) == -1) {
-    printf("bind failed: %s\n", strerror(errno));
+  if (bind(m_sd, (struct sockaddr *) &server_address,
+           sizeof(server_address)) == -1) {
+    LLA_WARN << "bind failed: " << strerror(errno);
     close(m_sd);
     return false;
   }
 
   if (listen(m_sd, m_backlog)) {
-    printf("listen failed: %s\n", strerror(errno));
+    LLA_WARN << "listen failed: " << strerror(errno);
     return false;
   }
   return true;
@@ -305,7 +310,7 @@ int TcpListeningSocket::SocketReady() {
 
   int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);
   if (sd < 0) {
-    printf("accept failed %s\n", strerror(errno));
+    LLA_WARN << "accept failed " << strerror(errno);
     return 0;
   }
 

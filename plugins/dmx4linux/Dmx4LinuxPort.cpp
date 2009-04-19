@@ -19,7 +19,6 @@
  */
 
 #include <string.h>
-#include <llad/logger.h>
 #include "Dmx4LinuxPort.h"
 #include "Dmx4LinuxDevice.h"
 

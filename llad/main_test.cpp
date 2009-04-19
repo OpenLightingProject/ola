@@ -25,7 +25,7 @@
 #include <sys/resource.h>
 #include <fcntl.h>
 
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include "llad.h"
 #include "DynamicPluginLoader.h"
 
@@ -36,8 +36,8 @@ Llad *llad;
 
 // options struct
 typedef struct {
-  Logger::Level level;
-  Logger::Output output;
+  lla::log_level level;
+  lla::log_output output;
   int daemon;
   int help;
 } lla_options;
@@ -66,7 +66,7 @@ static void sig_hup(int signo) {
  */
 static void sig_user1(int signo) {
   signo = 0;
-  Logger::instance()->increment_log_level();
+  lla::IncrementLogLevel();
 }
 
 
@@ -84,26 +84,26 @@ static int install_signal() {
   act.sa_flags = 0;
 
   if (sigaction(SIGINT, &act, &oact) < 0) {
-    Logger::instance()->log(Logger::WARN, "Failed to install signal SIGINT");
+    LLA_WARN << "Failed to install signal SIGINT";
     return -1;
   }
 
   if (sigaction(SIGTERM, &act, &oact) < 0) {
-    Logger::instance()->log(Logger::WARN, "Failed to install signal SIGTERM");
+    LLA_WARN << "Failed to install signal SIGTERM";
     return -1;
   }
 
   act.sa_handler = sig_hup;
 
   if (sigaction(SIGHUP, &act, &oact) < 0) {
-    Logger::instance()->log(Logger::WARN, "Failed to install signal SIGHUP");
+    LLA_WARN << "Failed to install signal SIGHUP";
     return -1;
   }
 
   act.sa_handler = sig_user1;
 
   if (sigaction(SIGUSR1, &act, &oact) < 0) {
-    Logger::instance()->log(Logger::WARN, "Failed to install signal SIGUSR1");
+    LLA_WARN << "Failed to install signal SIGUSR1";
     return -1;
   }
   return 0;
@@ -169,7 +169,7 @@ static void parse_options(int argc, char *argv[], lla_options *opts) {
         break;
 
       case 's':
-        opts->output = Logger::STDERR ;
+        opts->output = lla::LLA_LOG_SYSLOG;
         break;
 
       case 'd':
@@ -177,21 +177,19 @@ static void parse_options(int argc, char *argv[], lla_options *opts) {
 
         switch(ll) {
           case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->level = Logger::EMERG;
+            opts->level = lla::LLA_LOG_NONE;
             break;
           case 1:
-            opts->level = Logger::CRIT;
+            opts->level = lla::LLA_LOG_FATAL;
             break;
           case 2:
-            opts->level = Logger::WARN;
+            opts->level = lla::LLA_LOG_WARN;
             break;
           case 3:
-            opts->level = Logger::INFO;
+            opts->level = lla::LLA_LOG_INFO;
             break;
           case 4:
-            opts->level = Logger::DEBUG;
+            opts->level = lla::LLA_LOG_DEBUG;
             break;
           default :
             break;
@@ -214,8 +212,8 @@ static void parse_options(int argc, char *argv[], lla_options *opts) {
  * @param opts  pointer to the options struct
  */
 static void init_options(lla_options *opts) {
-  opts->level = Logger::CRIT;
-  opts->output = Logger::SYSLOG;
+  opts->level = lla::LLA_LOG_WARN;
+  opts->output = lla::LLA_LOG_STDERR;
   opts->daemon = 1;
   opts->help = 0;
 }
@@ -233,13 +231,13 @@ static int daemonise() {
   struct sigaction sa;
 
   if(getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-    printf("Could not determine file limit\n");
+    LLA_WARN << "Could not determine file limit";
     exit(1);
   }
 
   // fork
   if ((pid = fork()) < 0) {
-    printf("Could not fork\n");
+    LLA_WARN << "Could not fork";
     exit(1);
   } else if (pid != 0)
     exit(0);
@@ -252,12 +250,12 @@ static int daemonise() {
   sa.sa_flags = 0;
 
   if(sigaction(SIGHUP, &sa, NULL) < 0) {
-    printf("Could not install signal\n");
+    LLA_WARN << "Could not install signal";
     exit(1);
   }
 
   if((pid= fork()) < 0) {
-    printf("Could not fork\n");
+    LLA_WARN << "Could not fork";
     exit(1);
   } else if (pid != 0)
     exit(0);
@@ -287,9 +285,7 @@ static void handle_options(lla_options *opts) {
     exit(0);
   }
 
-  // setup the logger object
-  Logger::instance(opts->level, opts->output);
-
+  lla::InitLogging(opts->level, opts->output);
   if(opts->daemon)
     daemonise();
 
@@ -321,7 +317,7 @@ int main(int argc, char*argv[]) {
   setup(argc, argv);
 
   if(install_signal())
-    Logger::instance()->log(Logger::WARN, "Failed to install signal handlers");
+    LLA_WARN << "Failed to install signal handlers";
 
   pl = new DynamicPluginLoader();
   llad = new Llad(pl);
@@ -331,7 +327,5 @@ int main(int argc, char*argv[]) {
   }
   delete llad;
   delete pl;
-  Logger::clean_up();
-
   return 0;
 }

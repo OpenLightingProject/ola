@@ -26,7 +26,8 @@ RpcTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 RpcTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 RpcTester_LDADD = ./libstreamrpcchannel.la \
                   ../select_server/libllaselectserver.la \
-                  ../export_map/libllaexportmap.la
+                  ../export_map/libllaexportmap.la \
+                  ../logging/liblogging.la
 
 clean-local:
 	rm *.pb.{h,cc}

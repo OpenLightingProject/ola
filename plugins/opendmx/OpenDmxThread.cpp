@@ -29,7 +29,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include <llad/logger.h>
+#include <lla/Logging.h>
 #include "OpenDmxThread.h"
 
 namespace lla {
@@ -101,7 +101,7 @@ void *OpenDmxThread::Run(const string &path) {
 
     if (m_fd == -1) {
       if (gettimeofday(&tv, NULL) < 0) {
-        printf("gettimeofday error\n");
+        LLA_WARN << "gettimeofday error";
         break;
       }
       ts.tv_sec = tv.tv_sec + 1;
@@ -113,7 +113,7 @@ void *OpenDmxThread::Run(const string &path) {
       m_fd = open(path.c_str(), O_WRONLY);
 
       if (m_fd == -1)
-        printf("open %d: %s\n", m_fd, strerror(errno));
+        LLA_WARN << "Open " << m_fd << ": " << strerror(errno);
 
     } else {
       pthread_mutex_lock(&m_mutex);
@@ -139,7 +139,7 @@ int OpenDmxThread::Start(const string &path) {
   args->path = path;
 
   if (pthread_create(&m_tid, NULL, lla::plugin::thread_run, (void*) args)) {
-    Logger::instance()->log(Logger::WARN, "pthread create failed");
+    LLA_WARN << "pthread create failed";
     return -1;
   }
   return 0;
