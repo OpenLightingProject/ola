@@ -28,7 +28,9 @@ AC_SUBST(LIBLTDL)
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
+                  sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
+                  unistd.h])
 AC_CHECK_HEADER(pthread.h, have_threads=posix)
 PROTOBUF_SUPPORT([2.0.1])
 
@@ -193,7 +195,6 @@ _EOF_
   srcdir=$srcdir
   have_threads=$have_threads
 ])
-
 
 
 # output
