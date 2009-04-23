@@ -73,7 +73,7 @@ typedef enum {
 class LogDestination {
   public:
     virtual ~LogDestination() {}
-    virtual void Write(log_level level, string &log_line) = 0;
+    virtual void Write(log_level level, const string &log_line) = 0;
 };
 
 /*
@@ -81,7 +81,7 @@ class LogDestination {
  */
 class StdErrorLogDestination: public LogDestination {
   public:
-    void Write(log_level level, string &log_line);
+    void Write(log_level level, const string &log_line);
 };
 
 /*
@@ -89,7 +89,7 @@ class StdErrorLogDestination: public LogDestination {
  */
 class SyslogDestination: public LogDestination {
   public:
-    void Write(log_level level, string &log_line);
+    void Write(log_level level, const string &log_line);
 };
 
 /*

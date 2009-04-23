@@ -106,11 +106,11 @@ void LogLine::Write() {
     log_target->Write(m_level, line);
 }
 
-void StdErrorLogDestination::Write(log_level level, string &log_line) {
+void StdErrorLogDestination::Write(log_level level, const string &log_line) {
   std::cerr << log_line;
 }
 
-void SyslogDestination::Write(log_level level, string &log_line) {
+void SyslogDestination::Write(log_level level, const string &log_line) {
   int pri;
   switch (level) {
     case LLA_LOG_FATAL:
