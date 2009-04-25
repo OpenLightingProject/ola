@@ -130,7 +130,8 @@ int EchoSocketListener::SocketReady(ConnectedSocket *socket) {
 
 
 int EchoAcceptSocketListener::NewConnection(ConnectedSocket *socket) {
-  ssize_t bytes_sent = socket->Send((uint8_t*) test_string.c_str(), test_string.length());
+  ssize_t bytes_sent = socket->Send((uint8_t*) test_string.c_str(),
+      test_string.length());
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
   if (m_close_on_send) {
     socket->Close();
@@ -170,9 +171,10 @@ void SocketTest::testLoopbackSocket() {
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
   socket.SetListener(this);
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
-  ssize_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(), test_string.length());
+  ssize_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(),
+                                   test_string.length());
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
   m_terminate_on_recv = true;
   m_ss->Run();
@@ -196,10 +198,11 @@ void SocketTest::testPipeSocketClientClose() {
   other_end->SetListener(&echo_listener);
 
   EchoSocketManager manager(m_ss);
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&socket));
-  CPPUNIT_ASSERT(!m_ss->AddSocket(other_end, &manager, true));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(other_end, &manager, true));
 
-  size_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(), test_string.length());
+  size_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(),
+                                  test_string.length());
   CPPUNIT_ASSERT_EQUAL(test_string.length(), bytes_sent);
   m_ss->Run();
 }
@@ -222,10 +225,11 @@ void SocketTest::testPipeSocketServerClose() {
   other_end->SetListener(&echo_listener);
 
   EchoSocketManager manager(m_ss);
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&socket, &manager));
-  CPPUNIT_ASSERT(!m_ss->AddSocket(other_end));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket, &manager));
+  CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
-  size_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(), test_string.length());
+  size_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(),
+                                  test_string.length());
   CPPUNIT_ASSERT_EQUAL(test_string.length(), bytes_sent);
   m_close_on_recv = false;
   m_ss->Run();
@@ -253,8 +257,8 @@ void SocketTest::testTcpSocketClientClose() {
   CPPUNIT_ASSERT(client_socket.Connect(ip_address, server_port));
   client_socket.SetListener(this);
 
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&socket));
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&client_socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&client_socket));
   m_ss->Run();
 }
 
@@ -279,8 +283,8 @@ void SocketTest::testTcpSocketServerClose() {
   CPPUNIT_ASSERT(client_socket.Connect(ip_address, server_port));
   client_socket.SetListener(this);
 
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&socket));
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&client_socket, &manager));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&client_socket, &manager));
   m_close_on_recv = false;
   m_ss->Run();
 }

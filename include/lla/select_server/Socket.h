@@ -157,7 +157,9 @@ class ListeningSocket: public Socket {
     virtual bool Listen() { return 0; }
     virtual bool Close() = 0;
     virtual int SocketReady() = 0;
-    virtual void SetListener(AcceptSocketListener *listener) { m_listener = listener; }
+    virtual void SetListener(AcceptSocketListener *listener) {
+      m_listener = listener;
+    }
   protected:
     AcceptSocketListener *m_listener;
 };

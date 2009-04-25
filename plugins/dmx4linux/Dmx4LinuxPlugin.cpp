@@ -152,8 +152,7 @@ int Dmx4LinuxPlugin::SendDmx(int d4l_uni, uint8_t *data, int len) {
   int fd = m_out_socket->WriteDescriptor();
   int offset = DMX_UNIVERSE_SIZE * d4l_uni;
   if (lseek(fd, offset, SEEK_SET) == offset) {
-
-    int r = m_out_socket->Send(data, len);
+    ssize_t r = m_out_socket->Send(data, len);
     if (r != len) {
       LLA_WARN << "only wrote " << r << "/" << len << " bytes: " <<
         strerror(errno);

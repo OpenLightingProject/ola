@@ -20,6 +20,7 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
@@ -39,7 +40,10 @@ namespace select_server {
  * Write data to this socket.
  */
 ssize_t ConnectedSocket::Send(const uint8_t *buffer, unsigned int size) {
-  return write(m_write_fd, buffer, size);
+  ssize_t bytes_sent = write(m_write_fd, buffer, size);
+  if (bytes_sent != size)
+    LLA_WARN << "Failed to send, " << strerror(errno);
+  return bytes_sent;
 }
 
 
@@ -58,8 +62,10 @@ int ConnectedSocket::Receive(uint8_t *buffer,
     if ((ret = read(m_read_fd, data, size - data_read)) < 0) {
       if (errno == EAGAIN)
         return 0;
-      if (errno != EINTR)
+      if (errno != EINTR) {
+        LLA_WARN << "read failed, " << strerror(errno);
         return -1;
+      }
     } else if (ret == 0) {
       return 0;
     }
@@ -123,7 +129,7 @@ bool ConnectedSocket::IsClosed() const {
 int ConnectedSocket::UnreadData() const {
   int unread;
   if (ioctl(m_read_fd, FIONREAD, &unread) < 0) {
-    LLA_WARN << "ioctl error for " << m_read_fd;
+    LLA_WARN << "ioctl error for " << m_read_fd << ", " << strerror(errno);
     return 0;
   }
   return unread;
@@ -138,7 +144,7 @@ bool LoopbackSocket::Init() {
 
   int fd_pair[2];
   if (pipe(fd_pair) < 0) {
-    LLA_WARN << "pipe() failed";
+    LLA_WARN << "pipe() failed, " << strerror(errno);
     return false;
   }
   m_read_fd = fd_pair[0];
@@ -162,12 +168,12 @@ bool PipeSocket::Init() {
     return false;
 
   if (pipe(m_in_pair) < 0) {
-    LLA_WARN << "pipe() failed";
+    LLA_WARN << "pipe() failed, " << strerror(errno);
     return false;
   }
 
   if (pipe(m_out_pair) < 0) {
-    LLA_WARN << "pipe() failed";
+    LLA_WARN << "pipe() failed, " << strerror(errno);
     close(m_in_pair[0]);
     close(m_in_pair[1]);
     return false;
@@ -205,7 +211,7 @@ bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
-    LLA_WARN << "socket call failed: " << strerror(errno);
+    LLA_WARN << "socket() failed, " << strerror(errno);
     return false;
   }
 
@@ -217,7 +223,8 @@ bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
 
   length = sizeof(server_address);
   if(connect(sd, (struct sockaddr*) &server_address, length)) {
-    LLA_WARN << "connect failed: " << strerror(errno);
+    LLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
+      << strerror(errno);
     return false;
   }
   m_read_fd = sd;
@@ -254,13 +261,13 @@ bool TcpListeningSocket::Listen() {
 
   m_sd = socket(AF_INET, SOCK_STREAM, 0);
   if (m_sd < 0) {
-    LLA_WARN << "socket call failed: " << strerror(errno);
+    LLA_WARN << "socket() failed: " << strerror(errno);
     return false;
   }
 
   if (setsockopt(m_sd, SOL_SOCKET, SO_REUSEADDR, &reuse_flag,
                  sizeof(reuse_flag))) {
-    LLA_WARN << "can't set reuse for " << m_sd;
+    LLA_WARN << "can't set reuse for " << m_sd << ", " << strerror(errno);
     close(m_sd);
     return false;
   }
@@ -273,13 +280,15 @@ bool TcpListeningSocket::Listen() {
 
   if (bind(m_sd, (struct sockaddr *) &server_address,
            sizeof(server_address)) == -1) {
-    LLA_WARN << "bind failed: " << strerror(errno);
+    LLA_WARN << "bind to " << m_address << ":" << m_port << " failed, "
+      << strerror(errno);
     close(m_sd);
     return false;
   }
 
   if (listen(m_sd, m_backlog)) {
-    LLA_WARN << "listen failed: " << strerror(errno);
+    LLA_WARN << "listen on " << m_address << ":" << m_port << " failed, "
+      << strerror(errno);
     return false;
   }
   return true;
@@ -310,7 +319,7 @@ int TcpListeningSocket::SocketReady() {
 
   int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);
   if (sd < 0) {
-    LLA_WARN << "accept failed " << strerror(errno);
+    LLA_WARN << "accept() failed, " << strerror(errno);
     return 0;
   }
 

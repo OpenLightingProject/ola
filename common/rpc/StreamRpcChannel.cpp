@@ -177,8 +177,8 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
   uint32_t header;
   StreamRpcHeader::EncodeHeader(header, PROTOCOL_VERSION, length);
 
-  int ret = m_socket->Send((uint8_t*) &header, sizeof(header));
-  ret = m_socket->Send((uint8_t*) output.c_str(), length);
+  ssize_t ret = m_socket->Send((uint8_t*) &header, sizeof(header));
+  ret = m_socket->Send((uint8_t*) output.data(), length);
 
   if (-1 == ret) {
     LLA_WARN << "Send failed " << strerror(errno);

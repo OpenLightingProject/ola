@@ -46,10 +46,10 @@ class SelectServer {
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
-    int AddSocket(class Socket *socket,
-                  class SocketManager *manager=NULL,
-                  bool delete_on_close=false);
-    int RemoveSocket(class Socket *socket);
+    bool AddSocket(class Socket *socket,
+                   class SocketManager *manager=NULL,
+                   bool delete_on_close=false);
+    bool RemoveSocket(class Socket *socket);
     int RegisterFD(int fd,
                    SelectServer::Direction dir,
                    FDListener *listener,
@@ -60,6 +60,10 @@ class SelectServer {
                          bool recurring=true);
     int RegisterLoopCallback(FDListener *l);
     void UnregisterAll();
+
+    static const string K_FD_VAR;
+    static const string K_LOOP_VAR;
+    static const string K_TIMER_VAR;
 
   private :
     // This represents a FD listener
@@ -77,7 +81,7 @@ class SelectServer {
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
-    int CheckForEvents();
+    bool CheckForEvents();
     void CheckSockets(fd_set &set);
     void CheckFDListeners(vector<listener_t> &listeners, fd_set &set) const;
     void AddSocketsToSet(fd_set &set, int &max_sd) const;
@@ -87,9 +91,6 @@ class SelectServer {
 
     static const int K_MS_IN_SECOND = 1000;
     static const int K_US_IN_SECOND = 1000000;
-    static const string K_FD_VAR;
-    static const string K_LOOP_VAR;
-    static const string K_TIMER_VAR;
 
     // This is a timer event
     typedef struct {

@@ -28,6 +28,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include <algorithm>
+
 #include <lla/Logging.h>
 #include <lla/select_server/SelectServer.h>
 #include <lla/select_server/Socket.h>
@@ -61,8 +63,8 @@ SelectServer::SelectServer(ExportMap *export_map):
  */
 int SelectServer::Run() {
   while (!m_terminate) {
-    int ret = CheckForEvents();
-    if (ret)
+    // false indicates an error in CheckForEvents();
+    if (!CheckForEvents())
       break;
   }
 }
@@ -75,13 +77,14 @@ int SelectServer::Run() {
  * @param delete_on_close controlls whether the select server calls Close() and
  * deletes the socket once it's closed. You should probably set this as false
  * if you're using a manager.
+ * @return true on sucess, false on failure.
  */
-int SelectServer::AddSocket(Socket *socket,
-                            SocketManager *manager,
-                            bool delete_on_close) {
+bool SelectServer::AddSocket(Socket *socket,
+                             SocketManager *manager,
+                             bool delete_on_close) {
   if (socket->ReadDescriptor() < 0) {
     LLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
-    return -1;
+    return false;
   }
 
   registered_socket_t registered_socket;
@@ -91,8 +94,11 @@ int SelectServer::AddSocket(Socket *socket,
 
   vector<registered_socket_t>::const_iterator iter;
   for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
-    if (iter->socket->ReadDescriptor() == socket->ReadDescriptor())
-      return 0;
+    if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
+      LLA_WARN << "While trying add to add " << socket->ReadDescriptor() <<
+        ", fd already exists in the list of read fds";
+      return false;
+    }
   }
 
   m_read_sockets.push_back(registered_socket);
@@ -100,17 +106,19 @@ int SelectServer::AddSocket(Socket *socket,
     lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
     var->Increment();
   }
-  return 0;
+  return true;
 }
 
 
 /*
  * Register a socket with the select server
+ * @param socket the Socket to remove
+ * @return true if removed successfully, false otherwise
  */
-int SelectServer::RemoveSocket(class Socket *socket) {
+bool SelectServer::RemoveSocket(class Socket *socket) {
   if (socket->ReadDescriptor() < 0) {
     LLA_WARN << "RemoveSocket failed, fd: " << socket->ReadDescriptor();
-    return 0;
+    return false;
   }
 
   vector<registered_socket_t>::iterator iter;
@@ -121,10 +129,11 @@ int SelectServer::RemoveSocket(class Socket *socket) {
         lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
         var->Decrement();
       }
-      return 0;
+      return true;
     }
   }
-  return 0;
+  LLA_WARN << "Socket " << socket->ReadDescriptor() << " not found in list";
+  return false;
 }
 
 
@@ -215,7 +224,7 @@ bool SelectServer::RegisterTimeout(int ms,
 
 
 /*
- * register a listener to be called on each iteration through the select loop
+ * Register a listener to be called on each iteration through the select loop.
  */
 int SelectServer::RegisterLoopCallback(FDListener *listener) {
   if (listener) {
@@ -229,13 +238,12 @@ int SelectServer::RegisterLoopCallback(FDListener *listener) {
 }
 
 
-#define max(a,b) a>b?a:b
 /*
  * One iteration of the select() loop.
  *
- * @return -1 on error, 0 on timeout or interrupt, else the number of bytes read
+ * @return false on error, true on success.
  */
-int SelectServer::CheckForEvents() {
+bool SelectServer::CheckForEvents() {
   vector<FDListener*>::iterator iter;
   int maxsd, ret;
   unsigned int i;
@@ -263,13 +271,12 @@ int SelectServer::CheckForEvents() {
   switch (select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
-      return 0;
+      return true;
     case -1:
-      if (errno == EINTR) {
-        return 0;
-      }
-      LLA_WARN << "select error: " << strerror(errno);
-      return -1;
+      if (errno == EINTR)
+        return true;
+      LLA_WARN << "select() error, " << strerror(errno);
+      return false;
     default:
       CheckTimeouts();
       CheckSockets(r_fds);
@@ -279,13 +286,12 @@ int SelectServer::CheckForEvents() {
 
   for (iter = m_loop_listeners.begin(); iter != m_loop_listeners.end(); ++iter)
     (*iter)->FDReady();
-  return 0;
+  return true;
 }
 
 
 /*
  * Add all listeners to the fd_set
- *
  * @returns the max fd in the set
  */
 int SelectServer::AddFDListenersToSet(vector<listener_t> &listeners,
@@ -300,6 +306,9 @@ int SelectServer::AddFDListenersToSet(vector<listener_t> &listeners,
 }
 
 
+/*
+ * Add all the read sockets to the FD_SET
+ */
 void  SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
   vector<registered_socket_t>::const_iterator iter;
   for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
