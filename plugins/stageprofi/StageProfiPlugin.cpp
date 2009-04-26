@@ -98,6 +98,7 @@ bool StageProfiPlugin::StartHook() {
 bool StageProfiPlugin::StopHook() {
   vector<StageProfiDevice*>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    m_plugin_adaptor->RemoveSocket((*iter)->GetSocket());
     DeleteDevice(*iter);
   }
   m_devices.clear();
@@ -172,7 +173,6 @@ int StageProfiPlugin::SetDefaultPreferences() {
  * Cleanup a single device
  */
 void StageProfiPlugin::DeleteDevice(StageProfiDevice *device) {
-  m_plugin_adaptor->RemoveSocket(device->GetSocket());
   device->Stop();
   m_plugin_adaptor->UnregisterDevice(device);
   delete device;

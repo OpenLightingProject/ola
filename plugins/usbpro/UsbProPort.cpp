@@ -20,7 +20,6 @@
 
 #include "UsbProPort.h"
 #include "UsbProDevice.h"
-#include <string.h>
 
 namespace lla {
 namespace plugin {
@@ -41,14 +40,14 @@ bool UsbProPort::CanWrite() const {
  *
  * @param  data  pointer to the dmx data
  * @param  length  the length of the data
- *
  * @return   0 on success, non 0 on failure
  */
 int UsbProPort::WriteDMX(uint8_t *data, unsigned int length) {
   if (!CanWrite())
     return -1;
 
-  return m_usb_device->SendDmx(data, length);
+  bool status = m_usb_device->SendDmx(data, length);
+  return status ? 0 : -1;
 }
 
 
@@ -57,7 +56,6 @@ int UsbProPort::WriteDMX(uint8_t *data, unsigned int length) {
  *
  * @param   data  buffer to read data into
  * @param   length  length of data to read
- *
  * @return  the amount of data read
  */
 int UsbProPort::ReadDMX(uint8_t *data, unsigned int length) {

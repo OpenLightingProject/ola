@@ -52,6 +52,7 @@ const string UsbProPlugin::USBPRO_DEVICE_PATH = "/dev/ttyUSB0";
 const string UsbProPlugin::USBPRO_DEVICE_NAME = "Enttec Usb Pro Device";
 const string UsbProPlugin::PLUGIN_NAME = "UsbPro Plugin";
 const string UsbProPlugin::PLUGIN_PREFIX = "usbpro";
+const string UsbProPlugin::DEVICE_PATH_KEY = "device";
 
 /*
  * Start the plugin
@@ -60,7 +61,7 @@ const string UsbProPlugin::PLUGIN_PREFIX = "usbpro";
 bool UsbProPlugin::StartHook() {
   UsbProDevice *dev;
 
-  vector<string> device_names = m_preferences->GetMultipleValue("device");
+  vector<string> device_names = m_preferences->GetMultipleValue(DEVICE_PATH_KEY);
   vector<string>::iterator it;
 
   for (it = device_names.begin(); it != device_names.end(); ++it) {
@@ -69,7 +70,7 @@ bool UsbProPlugin::StartHook() {
     if (!dev)
       continue;
 
-    if (dev->Start()) {
+    if (!dev->Start()) {
       delete dev;
       continue;
     }
@@ -85,11 +86,12 @@ bool UsbProPlugin::StartHook() {
 /*
  * Stop the plugin
  *
- * @return true on sucess, -1 on failure
+ * @return true on sucess, false on failure
  */
 bool UsbProPlugin::StopHook() {
   vector<UsbProDevice*>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    m_plugin_adaptor->RemoveSocket((*iter)->GetSocket());
     DeleteDevice(*iter);
   }
   m_devices.clear();
@@ -127,7 +129,7 @@ void UsbProPlugin::SocketClosed(Socket *socket) {
   }
 
   if (iter == m_devices.end()) {
-    LLA_WARN << "couldn't find the socket";
+    LLA_WARN << "Couldn't find the device corresponding to this socket";
     return;
   }
 
@@ -143,14 +145,14 @@ int UsbProPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return -1;
 
-  if (m_preferences->GetValue("device").empty()) {
-    m_preferences->SetValue("device", USBPRO_DEVICE_PATH);
+  if (m_preferences->GetValue(DEVICE_PATH_KEY).empty()) {
+    m_preferences->SetValue(DEVICE_PATH_KEY, USBPRO_DEVICE_PATH);
     m_preferences->Save();
   }
 
   // check if this saved correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue("device").empty()) {
+  if (m_preferences->GetValue(DEVICE_PATH_KEY).empty()) {
     delete m_preferences;
     return -1;
   }
@@ -158,11 +160,10 @@ int UsbProPlugin::SetDefaultPreferences() {
 }
 
 void UsbProPlugin::DeleteDevice(UsbProDevice *device) {
-  m_plugin_adaptor->RemoveSocket(device->GetSocket());
   device->Stop();
   m_plugin_adaptor->UnregisterDevice(device);
   delete device;
 }
 
 } // plugins
-} //lla
+} // lla

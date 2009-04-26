@@ -73,9 +73,9 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
                    Closure *done);
 
     ConnectedSocket *GetSocket() const;
-    int SendDmx(uint8_t *data, int len);
+    bool SendDmx(const uint8_t *data, int len) const;
     int FetchDmx(uint8_t *data, int len) const;
-    int ChangeToReceiveMode();
+    bool ChangeToReceiveMode();
 
     // callbacks from the widget
     void HandleWidgetDmx();

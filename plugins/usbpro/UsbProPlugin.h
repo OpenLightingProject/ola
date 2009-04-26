@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbproplugin.h
+ * UsbProPlugin.h
  * Interface for the usbpro plugin class
  * Copyright (C) 2006  Simon Newton
  */
@@ -59,6 +59,7 @@ class UsbProPlugin: public lla::Plugin, public SocketManager {
     static const string USBPRO_DEVICE_NAME;
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
+    static const string DEVICE_PATH_KEY;
 };
 
 } //plugins

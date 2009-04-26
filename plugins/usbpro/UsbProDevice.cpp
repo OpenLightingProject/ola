@@ -79,21 +79,16 @@ UsbProDevice::~UsbProDevice() {
  */
 bool UsbProDevice::Start() {
   UsbProPort *port = NULL;
-  int ret;
 
   // connect to the widget
-  ret = m_widget->Connect(m_path);
-
-  if (ret) {
-    LLA_WARN << "failed to connect to " << m_path;
-    return -1;
-  }
-  LLA_INFO << "opened " << m_path;
+  if (!m_widget->Connect(m_path))
+    return false;
+  LLA_INFO << "Opened " << m_path;
 
   m_widget->SetListener(this);
 
   /* set up ports */
-  for (int i=0; i < 2; i++) {
+  for (int i = 0; i < 2; i++) {
     port = new UsbProPort(this, i);
 
     if (port)
@@ -101,7 +96,7 @@ bool UsbProDevice::Start() {
   }
 
   m_enabled = true;
-  return 0;
+  return true;
 }
 
 
@@ -110,7 +105,7 @@ bool UsbProDevice::Start() {
  */
 bool UsbProDevice::Stop() {
   if (!m_enabled)
-    return false;
+    return true;
 
   m_in_shutdown = true; // don't allow any more writes
   m_widget->Disconnect();
@@ -121,7 +116,7 @@ bool UsbProDevice::Stop() {
 
 
 /*
- * return the sd for this device
+ * Return the socket for this device
  */
 lla::select_server::ConnectedSocket *UsbProDevice::GetSocket() const {
   return m_widget->GetSocket();
@@ -131,19 +126,17 @@ lla::select_server::ConnectedSocket *UsbProDevice::GetSocket() const {
 /*
  * Send the dmx out the widget
  * called from the UsbProPort
- *
- * @return   0 on success, non 0 on failure
+ * @return true on success, false on failure
  */
-int UsbProDevice::SendDmx(uint8_t *data, int len) {
-  return m_widget->SendDmx(data,len);
+bool UsbProDevice::SendDmx(const uint8_t *data, int len) const {
+  return m_widget->SendDmx(data, len);
 }
 
 
 /*
  * Copy the dmx buffer into the arguments
  * Called from the UsbProPort
- *
- * @return   the length of the dmx data copied
+ * @return the length of the dmx data copied
  */
 int UsbProDevice::FetchDmx(uint8_t *data, int len) const {
   return m_widget->FetchDmx(data, len);
@@ -185,12 +178,12 @@ void UsbProDevice::Configure(RpcController *controller,
 
 /*
  * Put the device back into recv mode
+ * @return true on success, false on failure
  */
-int UsbProDevice::ChangeToReceiveMode() {
+bool UsbProDevice::ChangeToReceiveMode() {
   if (m_in_shutdown)
-    return 0;
-  m_widget->ChangeToReceiveMode();
-  return 0;
+    return true;
+  return m_widget->ChangeToReceiveMode();
 }
 
 

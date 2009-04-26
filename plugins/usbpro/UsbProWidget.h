@@ -153,34 +153,34 @@ class UsbProWidget: public lla::select_server::SocketListener {
       m_socket(NULL) {}
     ~UsbProWidget() {}
 
-    int Connect(const string &path);
-    int Disconnect();
+    bool Connect(const string &path);
+    bool Disconnect();
     ConnectedSocket *GetSocket() { return m_socket; }
 
-    int SendDmx(uint8_t *buf, unsigned int len) const;
-    int SendRdm(uint8_t *buf, unsigned int len) const;
-    bool GetParameters();
-    bool GetSerial();
+    bool SendDmx(const uint8_t *buf, unsigned int len) const;
+    bool SendRdm(const uint8_t *buf, unsigned int len) const;
+    bool GetParameters() const;
+    bool GetSerial() const;
     bool SetParameters(uint8_t *data,
                        unsigned int len,
                        int brk,
                        int mab,
                        int rate);
-    int FetchDmx(uint8_t *data, unsigned int len);
+    int FetchDmx(uint8_t *data, unsigned int len) const;
 
-    int ChangeToReceiveMode();
+    bool ChangeToReceiveMode();
     void SetListener(UsbProWidgetListener *listener);
     int SocketReady(ConnectedSocket *socket);
 
   private:
-    int send_msg(promsg *msg) const;
+    bool SendMessage(promsg *msg) const;
     int set_msg_len(promsg *msg, int len) const;
-    int send_rcmode(int mode);
+    bool SendChangeMode(int mode);
     int handle_dmx(pms_rdmx *dmx, int len);
     int handle_cos(pms_cos *cos, int len);
     int handle_prmrep(pms_prmrep *rep, unsigned int len);
     int handle_snorep(pms_snorep *rep, int len);
-    int do_recv();
+    int ReceiveMessage();
 
     uint8_t m_dmx[DMX_BUF_LEN - 1];  // dmx buffer
     bool m_enabled;
@@ -190,6 +190,8 @@ class UsbProWidget: public lla::select_server::SocketListener {
     UsbProWidgetListener *m_listener;
     ConnectedSocket *m_socket;
     static const int K_MISSING_PARAM = -1;
+    static const int K_HEADER_SIZE = 4;
+    static const uint8_t K_START_CODE = 0;
 };
 
 } // plugin

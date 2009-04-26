@@ -122,7 +122,7 @@ int FileBackedPreferences::Load() {
 
   filename = LLA_CONFIG_PREFIX + m_preference_name + LLA_CONFIG_SUFFIX;
   if ((fh = fopen(filename.c_str(), "r")) == NULL) {
-    LLA_INFO << "Failed to open " << filename << ": " << strerror(errno);
+    LLA_INFO << "Missing " << filename << ": " << strerror(errno);
     return -1;
   }
 

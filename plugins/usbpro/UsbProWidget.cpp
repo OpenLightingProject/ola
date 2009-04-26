@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
+#include <algorithm>
 #include <lla/Logging.h>
 
 #include "UsbProWidget.h"
@@ -37,8 +38,6 @@
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
-
-#define min(a,b) a<b?a:b
 
 namespace lla {
 namespace plugin {
@@ -68,10 +67,11 @@ typedef enum usbpro_packet_type_e usbpro_packet_type;
 
 /*
  * Connect to the widget
+ * @returns true if the connect succeeded, false otherwise
  */
-int UsbProWidget::Connect(const string &path) {
+bool UsbProWidget::Connect(const string &path) {
   if (m_enabled)
-    return -1;
+    return false;
 
   if (m_socket) {
     m_socket->Close();
@@ -79,32 +79,43 @@ int UsbProWidget::Connect(const string &path) {
   }
 
   struct termios newtio;
-  int fd = open(path.c_str(), O_RDWR | O_NONBLOCK | O_NOCTTY);
+  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
   if (fd == -1) {
-    return 1;
+    LLA_WARN << "Failed to open " << path;
+    return false;
   }
 
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
   m_socket = new ConnectedSocket(fd, fd);
   m_socket->SetListener(this);
-  m_enabled = true;
 
   // fire off a get request
-  GetParameters();
+  if (!GetParameters()) {
+    LLA_WARN << "Failed to set a GetParameters message";
+    delete m_socket;
+    return false;
+  }
 
   // put us into receiving mode
-  send_rcmode(1);
-  return 0;
+  if (!SendChangeMode(RCMODE_CHANGE)) {
+    LLA_WARN << "Failed to set mode";
+    delete m_socket;
+    return false;
+  }
+
+  m_enabled = true;
+  return true;
 }
 
 
 /*
  * Disconnect from the widget
+ * @returns true if we disconnected, false otherwise
  */
-int UsbProWidget::Disconnect() {
+bool UsbProWidget::Disconnect() {
   if (!m_enabled)
-    return 0;
+    return false;
 
   if (m_socket) {
     m_socket->Close();
@@ -112,40 +123,40 @@ int UsbProWidget::Disconnect() {
     m_socket = NULL;
   }
   m_enabled = false;
-  return 0;
+  return true;
 }
 
 
 /*
  * Send a dmx msg
+ * @returns true if we sent ok, false otherwise
  */
-int UsbProWidget::SendDmx(uint8_t *buf, unsigned int len) const {
-  unsigned int l = min((unsigned int) DMX_BUF_LEN, len);
+bool UsbProWidget::SendDmx(const uint8_t *buf, unsigned int len) const {
+  unsigned int data_length = std::min((unsigned int) DMX_BUF_LEN, len);
   promsg msg;
 
   msg.som = som;
   msg.label = ID_SDMX;
-  set_msg_len(&msg, l+1);
+  set_msg_len(&msg, data_length + 1);
 
   //start code to 0
-  msg.pm_dmx.dmx[0] = 0;
-  memcpy(&msg.pm_dmx.dmx[1], buf, l);
-
-  return send_msg(&msg);
+  msg.pm_dmx.dmx[0] = K_START_CODE;
+  memcpy(&msg.pm_dmx.dmx[1], buf, data_length);
+  return SendMessage(&msg);
 }
 
 
 /*
  * Send a rdm msg, rdm support is a bit sucky
+ * @returns true if we sent ok, false otherwise
  */
-int UsbProWidget::SendRdm(uint8_t *buf, unsigned int len) const {
+bool UsbProWidget::SendRdm(const uint8_t *buf, unsigned int len) const {
   promsg msg;
   msg.som = som;
   msg.label = ID_RDM;
   set_msg_len(&msg, len);
   memcpy(&msg.pm_rdm.dmx, buf, len);
-
-  return send_msg(&msg);
+  return SendMessage(&msg);
 }
 
 
@@ -165,7 +176,7 @@ bool UsbProWidget::SetParameters(uint8_t *data,
                                  int brk,
                                  int mab,
                                  int rate) {
-  int l = min((unsigned int) USER_CONFIG_LEN, len);
+  int l = std::min((unsigned int) USER_CONFIG_LEN, len);
   promsg msg;
   msg.som = som;
   msg.label = ID_PRMSET;
@@ -186,15 +197,16 @@ bool UsbProWidget::SetParameters(uint8_t *data,
   msg.pm_prmset.mab = mab;
   msg.pm_prmset.rate = rate;
   memcpy(msg.pm_prmset.user, data, l);
-  return send_msg(&msg);
+  return SendMessage(&msg);
 }
 
 
 /*
  * Fetch the widget parameters, causes listener->Parameters() to be called
  * later.
+ * @returns true if we sent ok, false otherwise
  */
-bool UsbProWidget::GetParameters() {
+bool UsbProWidget::GetParameters() const {
   int user_size = 0;
   promsg msg;
   msg.som = som;
@@ -202,20 +214,21 @@ bool UsbProWidget::GetParameters() {
   set_msg_len(&msg, sizeof(pms_prmreq));
   msg.pm_prmreq.len = user_size & 0xFF;
   msg.pm_prmreq.len_hi = (user_size & 0xFF) >> 8;
-  return send_msg(&msg);
+  return SendMessage(&msg);
 }
 
 
 /*
  * Fetch the serial number, causes listener->SerialNumber() to be called
  * sometime later.
+ * @returns true if we sent ok, false otherwise
  */
-bool UsbProWidget::GetSerial() {
+bool UsbProWidget::GetSerial() const {
   promsg msg;
   msg.som = som;
   msg.label = ID_SNOREQ;
   set_msg_len(&msg, sizeof(pms_snoreq));
-  return send_msg(&msg);
+  return SendMessage(&msg);
 }
 
 
@@ -223,9 +236,10 @@ bool UsbProWidget::GetSerial() {
  * Copy the latest DMX data into the specified buffer
  * @param data a pointer to the dmx data buffer
  * @param len the length of the dmx data buffer
+ * @returns the length of the data copied into the buffer
  */
-int UsbProWidget::FetchDmx(uint8_t *data, unsigned int len) {
-  int l = min(len, DMX_BUF_LEN - 1);
+int UsbProWidget::FetchDmx(uint8_t *data, unsigned int len) const {
+  int l = std::min(len, (unsigned int) DMX_BUF_LEN - 1);
 
   // byte 0 is the start code which we ignore
   memcpy(data, m_dmx + 1, l);
@@ -235,9 +249,10 @@ int UsbProWidget::FetchDmx(uint8_t *data, unsigned int len) {
 
 /*
  * Force the widget back into receiving mode
+ * @returns true if successfull, false otherwise
  */
-int UsbProWidget::ChangeToReceiveMode() {
-  return send_rcmode(1);
+bool UsbProWidget::ChangeToReceiveMode() {
+  return SendChangeMode(RCMODE_CHANGE);
 }
 
 
@@ -246,7 +261,7 @@ int UsbProWidget::ChangeToReceiveMode() {
  */
 int UsbProWidget::SocketReady(ConnectedSocket *socket) {
   while (socket->UnreadData() > 0) {
-    do_recv();
+    ReceiveMessage();
   }
   return 0;
 }
@@ -268,27 +283,25 @@ void UsbProWidget::SetListener(UsbProWidgetListener *listener) {
  * Send a mode msg.
  * @param mode the mode to change to
  */
-int UsbProWidget::send_rcmode(int mode) {
-  int ret;
-  uint8_t m = mode ? RCMODE_CHANGE : RCMODE_ALWAYS;
+bool UsbProWidget::SendChangeMode(int new_mode) {
   promsg msg;
 
   msg.som = som;
   msg.label = ID_RCMODE;
   set_msg_len(&msg, sizeof(pms_rcmode));
-  msg.pm_rcmode.mode = mode;
+  msg.pm_rcmode.mode = new_mode;
 
-  ret = send_msg(&msg);
+  bool status = SendMessage(&msg);
 
-  if (!ret && m)
+  if (status && new_mode == RCMODE_CHANGE)
     memset(m_dmx, 0x00, DMX_BUF_LEN);
-  return ret;
+  return status;
 }
 
 
 /*
  * Handle the dmx frame
- * Don't do anything as we expect cos messages instead
+ * Don't do anything as we expect change of state messages instead
  */
 int UsbProWidget::handle_dmx(pms_rdmx *dmx, int len) {
   dmx = NULL;
@@ -371,22 +384,27 @@ int UsbProWidget::set_msg_len(promsg *msg, int len) const {
 }
 
 
+
 /*
  * Send the msg
+ * @return true if successfull, false otherwise
  */
-int UsbProWidget::send_msg(promsg *msg) const {
-  int len = (msg->len_hi << 8) + msg->len;
-  unsigned int bytes_sent = 0;
-  bytes_sent += m_socket->Send((uint8_t*) msg, len + 4);
-  bytes_sent += m_socket->Send(&eom, sizeof(eom));
-  return (bytes_sent == len + 4 + sizeof(eom));
+bool UsbProWidget::SendMessage(promsg *msg) const {
+  int len = (msg->len_hi << 8) + msg->len + K_HEADER_SIZE;
+  ssize_t bytes_sent = m_socket->Send((uint8_t*) msg, len);
+  if (bytes_sent != len)
+    return false;
+  bytes_sent = m_socket->Send(&eom, sizeof(eom));
+  if (bytes_sent != sizeof(eom))
+    return false;
+  return true;
 }
 
 
 /*
- *
+ * Read the data and handle the messages.
  */
-int UsbProWidget::do_recv() {
+int UsbProWidget::ReceiveMessage() {
   uint8_t byte = 0x00;
   uint8_t label;
   int plen, bytes_read;
@@ -397,7 +415,7 @@ int UsbProWidget::do_recv() {
     m_socket->Receive((uint8_t*) &byte, 1, cnt);
 
     if (cnt != 1) {
-      LLA_WARN << "read to much, expected 1, got " << cnt;
+      LLA_WARN << "Read to much, expected 1, got " << cnt;
       return -1;
     }
   }
@@ -406,20 +424,20 @@ int UsbProWidget::do_recv() {
   m_socket->Receive((uint8_t*) &label, 1, cnt);
 
   if (cnt != 1) {
-    LLA_WARN << "could not read label, expected 1, got " << cnt;
+    LLA_WARN << "Could not read label, expected 1, got " << cnt;
     return 1;
   }
 
   m_socket->Receive((uint8_t*) &byte, 1, cnt);
   if (cnt != 1) {
-    LLA_WARN << "could not read len hi, expected 1, got " << cnt;
+    LLA_WARN << "Could not read len hi, expected 1, got " << cnt;
     return 1;
   }
   plen = byte;
 
   m_socket->Receive((uint8_t*) &byte, 1, cnt);
   if (cnt != 1) {
-    LLA_WARN << "could not read len lo, expected 1, got " << cnt;
+    LLA_WARN << "Could not read len lo, expected 1, got " << cnt;
     return 1;
   }
   plen += byte << 8;
@@ -432,7 +450,7 @@ int UsbProWidget::do_recv() {
   // check this is a valid frame with an end byte
   m_socket->Receive((uint8_t*) &byte, 1, cnt);
   if (cnt != 1) {
-    LLA_WARN << "read to much, expected 1, got " << cnt;
+    LLA_WARN << "Read to much, expected 1, got " << cnt;
     return 1;
   }
 
