@@ -41,14 +41,14 @@ bool Plugin::Start() {
     return false;
 
   // setup prefs
-  if (LoadPreferences())
+  if (!LoadPreferences())
     return false;
 
   enabled = m_preferences->GetValue(ENABLED_KEY);
   if (enabled == "false") {
     LLA_INFO << Name() << " disabled";
     delete m_preferences;
-    return 0;
+    return false;
   }
 
   debug = m_preferences->GetValue(DEBUG_KEY);
@@ -88,29 +88,29 @@ bool Plugin::Stop() {
 /*
  * Load the preferences and set defaults
  */
-int Plugin::LoadPreferences() {
+bool Plugin::LoadPreferences() {
   if (PreferencesSuffix() == "") {
     LLA_WARN << Name() << ", no suffix provided";
-    return -1;
+    return false;
   }
 
-  if (m_preferences != NULL)
+  if (m_preferences)
     delete m_preferences;
 
   m_preferences = m_plugin_adaptor->NewPreference(PreferencesSuffix());
 
-  if (m_preferences == NULL)
-    return -1;
+  if (!m_preferences)
+    return false;
 
   m_preferences->Load();
 
   if (SetDefaultPreferences()) {
     delete m_preferences;
-    LLA_INFO << Name() << ", set_default_prefs failed";
-    return -1;
+    LLA_INFO << Name() << ", SetDefaultPreferences failed";
+    return false;
   }
 
-  return 0;
+  return true;
 }
 
 } // lla

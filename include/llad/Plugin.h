@@ -93,7 +93,7 @@ class Plugin: public AbstractPlugin {
     static const string DEBUG_KEY;
 
   private:
-    int LoadPreferences();
+    bool LoadPreferences();
     Plugin(const Plugin&);
     Plugin& operator=(const Plugin&);
 };

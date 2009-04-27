@@ -38,11 +38,12 @@ class Preferences {
     Preferences(const string name): m_preference_name(name) {}
     virtual ~Preferences() {}
 
-    virtual int Load() = 0;
-    virtual int Save() const = 0;
+    virtual bool Load() = 0;
+    virtual bool Save() const = 0;
+    virtual void Clear() = 0;
 
-    virtual int SetValue(const string &key, const string &value) = 0;
-    virtual int SetMultipleValue(const string &key, const string &value) = 0;
+    virtual void SetValue(const string &key, const string &value) = 0;
+    virtual void SetMultipleValue(const string &key, const string &value) = 0;
 
     virtual string GetValue(const string &key) const = 0;
     virtual vector<string> GetMultipleValue(const string &key) const = 0;
@@ -74,12 +75,17 @@ class MemoryPreferences: public Preferences {
   public:
     MemoryPreferences(const string name): Preferences(name) {}
     virtual ~MemoryPreferences();
-    virtual int Load() { return 0; }
-    virtual int Save() const { return 0; }
-    virtual int SetValue(const string &key, const string &value);
-    virtual int SetMultipleValue(const string &key, const string &value);
+    virtual bool Load() { return true; }
+    virtual bool Save() const { return true; }
+    virtual void Clear();
+    virtual void SetValue(const string &key, const string &value);
+    virtual void SetMultipleValue(const string &key, const string &value);
     virtual string GetValue(const string &key) const;
     virtual vector<string> GetMultipleValue(const string &key) const;
+
+    bool operator==(const MemoryPreferences &other) {
+      return m_pref_map == other.m_pref_map;
+    }
 
   protected:
     multimap<string, string> m_pref_map;
@@ -100,12 +106,14 @@ class MemoryPreferencesFactory: public PreferencesFactory {
 class FileBackedPreferences: public MemoryPreferences {
   public:
     FileBackedPreferences(const string name): MemoryPreferences(name) {}
-    virtual int Load();
-    virtual int Save() const;
+    virtual bool Load();
+    virtual bool Save() const;
+    bool LoadFromFile(const string &filename);
+    bool SaveToFile(const string &filename) const;
 
   private:
-    int ChangeDir() const;
-    char *StrTrim(char *str);
+    bool ChangeDir() const;
+    const string FileName() const;
 };
 
 class FileBackedPreferencesFactory: public PreferencesFactory {

@@ -316,7 +316,7 @@ void LlaServer::StartPlugins() {
 void LlaServer::StopPlugins() {
   m_plugin_loader->UnloadPlugins();
   if (m_device_manager) {
-    if ( m_device_manager->DeviceCount()) {
+    if (m_device_manager->DeviceCount()) {
       LLA_WARN << "Some devices failed to unload, we're probably leaking "
         << "memory now";
     }
