@@ -48,7 +48,7 @@ class DummyPlugin: public Plugin {
   private:
     bool StartHook();
     bool StopHook();
-    int SetDefaultPreferences() { return 0; }
+    bool SetDefaultPreferences() { return true; }
 
     DummyDevice *m_device; // the dummy device
     static const string PLUGIN_NAME;

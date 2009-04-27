@@ -104,7 +104,7 @@ bool Plugin::LoadPreferences() {
 
   m_preferences->Load();
 
-  if (SetDefaultPreferences()) {
+  if (!SetDefaultPreferences()) {
     delete m_preferences;
     LLA_INFO << Name() << ", SetDefaultPreferences failed";
     return false;

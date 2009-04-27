@@ -167,11 +167,11 @@ int Dmx4LinuxPlugin::SendDmx(int d4l_uni, uint8_t *data, int len) {
 /*
  * load the plugin prefs and default to sensible values
  */
-int Dmx4LinuxPlugin::SetDefaultPreferences() {
+bool Dmx4LinuxPlugin::SetDefaultPreferences() {
   bool save = false;
 
   if (!m_preferences)
-    return -1;
+    return false;
 
   if (m_preferences->GetValue(IN_DEV_KEY).empty()) {
     m_preferences->SetValue(IN_DEV_KEY, DMX4LINUX_IN_DEVICE);
@@ -188,11 +188,11 @@ int Dmx4LinuxPlugin::SetDefaultPreferences() {
 
   if (m_preferences->GetValue(IN_DEV_KEY).empty() ||
       m_preferences->GetValue(OUT_DEV_KEY).empty())
-    return -1;
+    return false;
 
   m_in_dev = m_preferences->GetValue(IN_DEV_KEY);
   m_out_dev = m_preferences->GetValue(OUT_DEV_KEY);
-  return 0;
+  return true;
 }
 
 

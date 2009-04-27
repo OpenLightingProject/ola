@@ -121,10 +121,10 @@ string OpenDmxPlugin::Description() const {
 /*
  * Load the plugin prefs and default to sensible values
  */
-int OpenDmxPlugin::SetDefaultPreferences() {
+bool OpenDmxPlugin::SetDefaultPreferences() {
   const string device_key = "device";
   if (!m_preferences)
-    return -1;
+    return false;
 
   if (m_preferences->GetValue(device_key).empty()) {
     m_preferences->SetValue(device_key, OPENDMX_DEVICE_PATH);
@@ -134,9 +134,9 @@ int OpenDmxPlugin::SetDefaultPreferences() {
   // check if this save correctly
   // we don't want to use it if null
   if (m_preferences->GetValue(device_key).empty())
-    return -1;
+    return false;
 
-  return 0;
+  return true;
 }
 
 } //plugins

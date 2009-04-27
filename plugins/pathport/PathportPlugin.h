@@ -47,7 +47,7 @@ class PathportPlugin: public Plugin {
   private:
     bool StartHook();
     bool StopHook();
-    int SetDefaultPreferences();
+    bool SetDefaultPreferences();
 
     PathportDevice *m_device; // only have one device
     static const string PATHPORT_NODE_NAME;

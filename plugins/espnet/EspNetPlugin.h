@@ -46,7 +46,7 @@ class EspNetPlugin: public lla::Plugin {
   private:
     bool StartHook();
     bool StopHook();
-    int SetDefaultPreferences();
+    bool SetDefaultPreferences();
 
     EspNetDevice *m_device;    // only have one device
     static const string ESPNET_NODE_NAME;

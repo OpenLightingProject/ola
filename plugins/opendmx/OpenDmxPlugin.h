@@ -47,7 +47,7 @@ class OpenDmxPlugin: public Plugin {
   private:
     bool StartHook();
     bool StopHook();
-    int SetDefaultPreferences();
+    bool SetDefaultPreferences();
 
     OpenDmxDevice *m_device;    // only have one device
     static const string PLUGIN_NAME;

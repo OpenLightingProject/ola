@@ -82,7 +82,7 @@ class Plugin: public AbstractPlugin {
   protected:
     virtual bool StartHook() { return 0; }
     virtual bool StopHook() { return 0; }
-    virtual int SetDefaultPreferences() { return 0; }
+    virtual bool SetDefaultPreferences() { return true; }
     virtual string PreferencesSuffix() const = 0;
 
     const PluginAdaptor *m_plugin_adaptor;

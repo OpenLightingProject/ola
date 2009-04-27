@@ -52,7 +52,7 @@ class ArtNetPlugin : public Plugin {
   private:
     bool StartHook();
     bool StopHook();
-    int SetDefaultPreferences();
+    bool SetDefaultPreferences();
 
     ArtNetDevice *m_device; // only have one device
 

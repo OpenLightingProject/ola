@@ -141,9 +141,9 @@ void UsbProPlugin::SocketClosed(Socket *socket) {
 /*
  * Default to sensible values
  */
-int UsbProPlugin::SetDefaultPreferences() {
+bool UsbProPlugin::SetDefaultPreferences() {
   if (!m_preferences)
-    return -1;
+    return false;
 
   if (m_preferences->GetValue(DEVICE_PATH_KEY).empty()) {
     m_preferences->SetValue(DEVICE_PATH_KEY, USBPRO_DEVICE_PATH);
@@ -154,9 +154,9 @@ int UsbProPlugin::SetDefaultPreferences() {
   // we don't want to use it if null
   if (m_preferences->GetValue(DEVICE_PATH_KEY).empty()) {
     delete m_preferences;
-    return -1;
+    return false;
   }
-  return 0;
+  return true;
 }
 
 void UsbProPlugin::DeleteDevice(UsbProDevice *device) {

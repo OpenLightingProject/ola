@@ -50,7 +50,7 @@ class UsbProPlugin: public lla::Plugin, public SocketManager {
   private:
     bool StartHook();
     bool StopHook();
-    int SetDefaultPreferences();
+    bool SetDefaultPreferences();
     void DeleteDevice(UsbProDevice *device);
 
     vector<UsbProDevice*> m_devices; // list of our devices

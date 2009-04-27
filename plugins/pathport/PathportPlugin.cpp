@@ -121,10 +121,10 @@ string PathportPlugin::Description() const {
  * load the plugin prefs and default to sensible values
  *
  */
-int PathportPlugin::SetDefaultPreferences() {
+bool PathportPlugin::SetDefaultPreferences() {
 
   if (!m_preferences)
-    return -1;
+    return false;
 
   // we don't worry about ip here
   // if it's non existant it will choose one
@@ -136,10 +136,10 @@ int PathportPlugin::SetDefaultPreferences() {
   // check if this save correctly
   // we don't want to use it if null
   if (m_preferences->GetValue("name").empty()) {
-    return -1;
+    return false;
   }
 
-  return 0;
+  return true;
 }
 
 } //plugin

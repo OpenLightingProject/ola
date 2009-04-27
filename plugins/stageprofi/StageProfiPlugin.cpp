@@ -150,9 +150,9 @@ void StageProfiPlugin::SocketClosed(Socket *socket) {
  * load the plugin prefs and default to sensible values
  *
  */
-int StageProfiPlugin::SetDefaultPreferences() {
+bool StageProfiPlugin::SetDefaultPreferences() {
   if (!m_preferences)
-    return -1;
+    return false;
 
   if (m_preferences->GetValue("device").empty()) {
     m_preferences->SetValue("device", STAGEPROFI_DEVICE_NAME);
@@ -163,9 +163,9 @@ int StageProfiPlugin::SetDefaultPreferences() {
   // we don't want to use it if null
   if (m_preferences->GetValue("device").empty()) {
     delete m_preferences;
-    return -1;
+    return false;
   }
-  return 0;
+  return true;
 }
 
 

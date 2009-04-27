@@ -55,7 +55,7 @@ class Dmx4LinuxPlugin: public lla::Plugin, public SocketListener {
   private:
     bool StartHook();
     bool StopHook();
-    int SetDefaultPreferences();
+    bool SetDefaultPreferences();
 
     bool SetupSockets();
     int CleanupSockets();
