@@ -167,9 +167,9 @@ int Universe::RemovePort(AbstractPort *port) {
  * @param client the client to add
  */
 int Universe::AddClient(Client *client) {
-  vector<Client*>::iterator iter = find(m_clients.begin(),
-                                        m_clients.end(),
-                                        client);
+  vector<Client*>::const_iterator iter = find(m_clients.begin(),
+                                              m_clients.end(),
+                                              client);
 
   if (iter != m_clients.end())
     return 0;
@@ -187,7 +187,6 @@ int Universe::AddClient(Client *client) {
 /*
  * Remove this client from the universe. After calling this method you need to
  * check if this universe is still in use, and if not delete it
- *
  * @param client  the client to remove
  */
 int Universe::RemoveClient(Client *client) {
@@ -212,12 +211,26 @@ int Universe::RemoveClient(Client *client) {
 
 
 /*
+ * Returns true if the client is bound to this universe
+ * @param client the client to check for
+ */
+bool Universe::ContainsClient(class Client *client) const {
+  vector<Client*>::const_iterator iter = find(m_clients.begin(),
+                                              m_clients.end(),
+                                              client);
+
+  return iter != m_clients.end();
+}
+
+
+/*
  * Set the dmx data for this universe
  *
  * @param  dmx  pointer to the dmx data
  * @param  len  the length of the dmx buffer
+ * @return true is we updated all ports/clients, false otherwise
  */
-int Universe::SetDMX(uint8_t *dmx, unsigned int length) {
+bool Universe::SetDMX(const uint8_t *dmx, unsigned int length) {
   if (m_merge_mode == Universe::MERGE_LTP) {
     m_length = length < DMX_UNIVERSE_SIZE ? length : DMX_UNIVERSE_SIZE;
     memcpy(m_data, dmx, m_length);
@@ -251,7 +264,7 @@ int Universe::GetDMX(uint8_t *dmx, unsigned int length) const {
  * @param length  the length of the buffer
  * @returns a pointer to the DMX data
  */
-const uint8_t *Universe::GetDMX(int &length) const {
+const uint8_t *Universe::GetDMX(unsigned int &length) const {
   length = m_length;
   return m_data;
 }
@@ -316,7 +329,7 @@ bool Universe::IsActive() const {
  * updates everyone who needs to know (patched ports and network clients)
  *
  */
-int Universe::UpdateDependants() {
+bool Universe::UpdateDependants() {
   unsigned int i;
 
   // write to all ports assigned to this unviverse
@@ -329,7 +342,7 @@ int Universe::UpdateDependants() {
     LLA_DEBUG << "Sending dmx data msg to client";
     m_clients[i]->SendDMX(m_universe_id, m_data, m_length);
   }
-  return 0;
+  return true;
 }
 
 

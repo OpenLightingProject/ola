@@ -37,6 +37,7 @@ static char TEST_DMX_DATA[] = "this is some test data";
 class UniverseTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UniverseTest);
   CPPUNIT_TEST(testLifecycle);
+  CPPUNIT_TEST(testSetGet);
   CPPUNIT_TEST(testSendDmx);
   CPPUNIT_TEST(testReceiveDmx);
   CPPUNIT_TEST_SUITE_END();
@@ -45,6 +46,7 @@ class UniverseTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown();
     void testLifecycle();
+    void testSetGet();
     void testSendDmx();
     void testReceiveDmx();
 
@@ -143,6 +145,36 @@ void UniverseTest::testLifecycle() {
 }
 
 
+/*
+ * Check that SetDMX/GetDMX works
+ */
+void UniverseTest::testSetGet() {
+  int universe_id = 1;
+  const uint8_t test_data[] = {1, 2, 3, 4, 5, 6};
+  Universe *universe = m_store->GetUniverseOrCreate(universe_id);
+  CPPUNIT_ASSERT(universe);
+
+  // a new universe should be all 0s
+  uint8_t zero_data[DMX_UNIVERSE_SIZE];
+  unsigned int data_length;
+  bzero(zero_data, DMX_UNIVERSE_SIZE);
+  const uint8_t *data = universe->GetDMX(data_length);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, data_length);
+  CPPUNIT_ASSERT(!memcmp(data, zero_data, data_length));
+
+  // check that SetDMX works
+  CPPUNIT_ASSERT(universe->SetDMX(test_data, sizeof(test_data)));
+  data = universe->GetDMX(data_length);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(test_data), data_length);
+  CPPUNIT_ASSERT(!memcmp(data, test_data, data_length));
+
+  m_store->DeleteAll();
+}
+
+
+/*
+ * Check that SendDmx updates all ports
+ */
 void UniverseTest::testSendDmx() {
   int universe_id = 1;
   Universe *universe = m_store->GetUniverseOrCreate(universe_id);

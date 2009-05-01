@@ -55,10 +55,12 @@ class Universe {
 
     int AddClient(class Client *client);
     int RemoveClient(class Client *client);
+    bool ContainsClient(class Client *client) const;
+    unsigned int ClientCount() const { return m_clients.size(); }
 
-    int SetDMX(uint8_t *dmx, unsigned int length);
+    bool SetDMX(const uint8_t *dmx, unsigned int length);
     int GetDMX(uint8_t *dmx, unsigned int length) const;
-    const uint8_t *GetDMX(int &length) const;
+    const uint8_t *GetDMX(unsigned int &length) const;
     int PortDataChanged(AbstractPort *port);
 
     bool operator==(const Universe &other) {
@@ -75,7 +77,7 @@ class Universe {
   private:
     Universe(const Universe&);
     Universe& operator=(const Universe&);
-    int UpdateDependants();
+    bool UpdateDependants();
     void UpdateName();
     void UpdateMode();
     void Merge();                      // HTP merge the merge and data buffers

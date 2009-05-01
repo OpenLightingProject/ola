@@ -48,7 +48,7 @@ UniverseStore::UniverseStore(class Preferences *preferences,
  * Lookup a universe from its universe_id
  * @param uid the uid of the required universe
  */
-Universe *UniverseStore::GetUniverse(int universe_id) {
+Universe *UniverseStore::GetUniverse(unsigned int universe_id) const {
   map<int, Universe*>::const_iterator iter;
 
   iter = m_universe_map.find(universe_id);
@@ -65,7 +65,7 @@ Universe *UniverseStore::GetUniverse(int universe_id) {
  * @param uid  the universe id
  * @return  the universe, or NULL on error
  */
-Universe *UniverseStore::GetUniverseOrCreate(int universe_id) {
+Universe *UniverseStore::GetUniverseOrCreate(unsigned int universe_id) {
   Universe *universe = GetUniverse(universe_id);
 
   if (!universe) {
@@ -190,7 +190,7 @@ int UniverseStore::SaveUniverseSettings(Universe *universe) {
   string key, mode;
   std::ostringstream oss;
 
-  if (!universe)
+  if (!universe || !m_preferences)
     return 0;
 
   oss << std::dec << universe->UniverseId();

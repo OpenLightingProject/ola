@@ -24,6 +24,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace lla {
 
@@ -34,18 +35,19 @@ class UniverseStore {
     UniverseStore(class Preferences *preferences, class ExportMap *export_map);
     ~UniverseStore() {};
 
-    Universe *GetUniverse(int universe_id);
-    Universe *GetUniverseOrCreate(int universe_id);
+    Universe *GetUniverse(unsigned int universe_id) const;
+    Universe *GetUniverseOrCreate(unsigned int universe_id);
 
     int UniverseCount() const { return m_universe_map.size(); }
-    vector<Universe*> *GetList() const;
-
+    std::vector<Universe*> *GetList() const;
 
     int DeleteAll();
     void AddUniverseGarbageCollection(Universe *universe);
     void GarbageCollectUniverses();
 
   private:
+    UniverseStore(const lla::UniverseStore&);
+    UniverseStore& operator=(const UniverseStore&);
     int RestoreUniverseSettings(Universe *universe) const;
     int SaveUniverseSettings(Universe *universe);
 

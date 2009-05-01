@@ -20,6 +20,7 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
+#include <lla/Logging.h>
 #include <lla/ExportMap.h>
 #include <llad/Universe.h>
 #include <llad/Device.h>
@@ -49,7 +50,7 @@ void LlaServerServiceImpl::GetDmx(
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  int dmx_length;
+  unsigned int dmx_length;
   const uint8_t *dmx_data = universe->GetDMX(dmx_length);
   string dmx_string;
   dmx_string.append((char*) dmx_data, dmx_length);
@@ -58,6 +59,7 @@ void LlaServerServiceImpl::GetDmx(
   response->set_universe(request->universe());
   done->Run();
 }
+
 
 
 /*
@@ -70,7 +72,7 @@ void LlaServerServiceImpl::RegisterForDmx(
     Closure* done) {
 
   Universe *universe = m_universe_store->GetUniverseOrCreate(
-                           request->universe());
+      request->universe());
   if (!universe)
     return MissingUniverseError(controller, done);
 

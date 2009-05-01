@@ -40,7 +40,7 @@ Port::Port(AbstractDevice *parent, int port_id):
  * Signal that the data for this port has changed
  */
 int Port::DmxChanged() {
-  if(m_universe)
+  if (m_universe)
     return m_universe->PortDataChanged(this);
   return 0;
 }
