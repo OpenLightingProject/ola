@@ -35,12 +35,13 @@ using namespace std;
 using lla::proto::LlaClientService_Stub;
 
 class Client {
-
   public :
     Client(LlaClientService_Stub *client_stub):
       m_client_stub(client_stub) {}
-    ~Client() {};
-    int SendDMX(unsigned int universe_id, uint8_t *data, unsigned int length);
+    virtual ~Client() {};
+    virtual int SendDMX(unsigned int universe_id,
+                        uint8_t *data,
+                        unsigned int length);
 
     void SendDMXCallback();
     class LlaClientService_Stub *Stub() const { return m_client_stub; }
@@ -48,7 +49,6 @@ class Client {
   private:
     Client(const Client&);
     Client& operator=(const Client&);
-
     class LlaClientService_Stub *m_client_stub;
 };
 

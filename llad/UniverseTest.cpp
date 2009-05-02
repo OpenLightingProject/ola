@@ -26,11 +26,13 @@
 #include <llad/Universe.h>
 #include <llad/Preferences.h>
 #include <llad/Port.h>
+#include "Client.h"
 #include "UniverseStore.h"
 
 using namespace lla;
 using namespace std;
 
+static unsigned int TEST_UNIVERSE = 1;
 static char TEST_DMX_DATA[] = "this is some test data";
 
 
@@ -40,6 +42,7 @@ class UniverseTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSetGet);
   CPPUNIT_TEST(testSendDmx);
   CPPUNIT_TEST(testReceiveDmx);
+  CPPUNIT_TEST(testAddRemoveClients);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -49,6 +52,7 @@ class UniverseTest: public CppUnit::TestFixture {
     void testSetGet();
     void testSendDmx();
     void testReceiveDmx();
+    void testAddRemoveClients();
 
   private:
     MemoryPreferences *m_preferences;
@@ -68,6 +72,17 @@ class MockPort: public Port {
     unsigned int m_length;
     static const int PORT_BUFFER_SIZE = 40;
 };
+
+
+class MockClient: public Client {
+  public:
+    MockClient(): Client(NULL) {}
+    int SendDMX(unsigned int universe_id,
+                uint8_t *data,
+                unsigned int length);
+
+};
+
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UniverseTest);
 
@@ -90,6 +105,16 @@ int MockPort::WriteDMX(uint8_t *data, unsigned int length) {
   memcpy(m_data, data, length);
   m_length = length;
 }
+
+
+int MockClient::SendDMX(unsigned int universe_id,
+                        uint8_t *data,
+                        unsigned int length) {
+  CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, universe_id);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DMX_DATA), length);
+  CPPUNIT_ASSERT(!memcmp(data, TEST_DMX_DATA, length));
+}
+
 
 void UniverseTest::setUp() {
   m_preferences = new MemoryPreferences("foo");
@@ -204,6 +229,9 @@ void UniverseTest::testSendDmx() {
 }
 
 
+/*
+ * Check that we update when ports have new data
+ */
 void UniverseTest::testReceiveDmx() {
   int universe_id = 1;
   Universe *universe = m_store->GetUniverseOrCreate(universe_id);
@@ -214,7 +242,7 @@ void UniverseTest::testReceiveDmx() {
   CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 1);
   CPPUNIT_ASSERT(universe->IsActive());
 
-  // setup the port with some data, and check that signalling the universe
+  // Setup the port with some data, and check that signalling the universe
   // works.
   unsigned int data_size = sizeof(TEST_DMX_DATA);
   port.WriteDMX((uint8_t*) TEST_DMX_DATA, data_size);
@@ -226,11 +254,35 @@ void UniverseTest::testReceiveDmx() {
   CPPUNIT_ASSERT_EQUAL(data_received, (int) data_size);
   CPPUNIT_ASSERT(!memcmp(data, TEST_DMX_DATA, data_received));
 
-  // remove the port from the universe
+  // Remove the port from the universe
   universe->RemovePort(&port);
   CPPUNIT_ASSERT(!universe->IsActive());
   CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 0);
   m_store->GarbageCollectUniverses();
   CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), 0);
   free(data);
+}
+
+
+/*
+ * Check that we can add/remove clients from this universes
+ */
+void UniverseTest::testAddRemoveClients() {
+  Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
+  CPPUNIT_ASSERT(universe);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->ClientCount());
+
+  // test that we can add a client
+  MockClient client;
+  universe->AddClient(&client);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->ClientCount());
+  CPPUNIT_ASSERT(universe->ContainsClient(&client));
+
+  // Now set some data
+  universe->SetDMX((uint8_t*) TEST_DMX_DATA, sizeof(TEST_DMX_DATA));
+
+  // now remove it
+  universe->RemoveClient(&client);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->ClientCount());
+  CPPUNIT_ASSERT(!universe->ContainsClient(&client));
 }

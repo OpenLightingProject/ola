@@ -32,6 +32,7 @@ int Client::SendDMX(unsigned int universe_id,
                     uint8_t *data,
                     unsigned int length) {
 
+  //TODO: this is leaking memory
   SimpleRpcController *controller = new SimpleRpcController();
   lla::proto::DmxData *dmx_data = new lla::proto::DmxData();
   lla::proto::Ack *ack = new lla::proto::Ack();
