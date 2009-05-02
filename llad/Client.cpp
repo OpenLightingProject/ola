@@ -19,7 +19,7 @@
  */
 
 #include <google/protobuf/stubs/common.h>
-#include "common/rpc/SimpleRpcController.h"
+#include <lla/Logging.h>
 #include "common/protocol/Lla.pb.h"
 #include "Client.h"
 
@@ -28,31 +28,38 @@ namespace lla {
 using google::protobuf::NewCallback;
 using lla::rpc::SimpleRpcController;
 
-int Client::SendDMX(unsigned int universe_id,
-                    uint8_t *data,
-                    unsigned int length) {
+bool Client::SendDMX(unsigned int universe_id,
+                     const uint8_t *data,
+                     unsigned int length) {
 
-  //TODO: this is leaking memory
+  if (!m_client_stub) {
+    LLA_FATAL << "client_stub is null";
+    return false;
+  }
+
   SimpleRpcController *controller = new SimpleRpcController();
-  lla::proto::DmxData *dmx_data = new lla::proto::DmxData();
+  lla::proto::DmxData dmx_data;
   lla::proto::Ack *ack = new lla::proto::Ack();
   string dmx_string;
   dmx_string.append((char*) data, length);
 
-  dmx_data->set_universe(universe_id);
-  dmx_data->set_data(dmx_string);
+  dmx_data.set_universe(universe_id);
+  dmx_data.set_data(dmx_string);
 
-  m_client_stub->UpdateDmxData(controller,
-                               dmx_data,
-                               ack,
-                               NewCallback(this, &lla::Client::SendDMXCallback));
 
-  return 0;
+  m_client_stub->UpdateDmxData(
+      controller,
+      &dmx_data,
+      ack,
+      NewCallback(this, &lla::Client::SendDMXCallback, controller, ack));
+  return true;
 }
 
 
-void Client::SendDMXCallback() {
-
+void Client::SendDMXCallback(SimpleRpcController *controller,
+                             lla::proto::Ack *reply) {
+  delete controller;
+  delete reply;
 }
 
 } //lla

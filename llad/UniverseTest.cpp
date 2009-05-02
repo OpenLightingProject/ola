@@ -77,9 +77,9 @@ class MockPort: public Port {
 class MockClient: public Client {
   public:
     MockClient(): Client(NULL) {}
-    int SendDMX(unsigned int universe_id,
-                uint8_t *data,
-                unsigned int length);
+    bool SendDMX(unsigned int universe_id,
+                 const uint8_t *data,
+                 unsigned int length);
 
 };
 
@@ -107,12 +107,13 @@ int MockPort::WriteDMX(uint8_t *data, unsigned int length) {
 }
 
 
-int MockClient::SendDMX(unsigned int universe_id,
-                        uint8_t *data,
-                        unsigned int length) {
+bool MockClient::SendDMX(unsigned int universe_id,
+                         const uint8_t *data,
+                         unsigned int length) {
   CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, universe_id);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DMX_DATA), length);
   CPPUNIT_ASSERT(!memcmp(data, TEST_DMX_DATA, length));
+  return true;
 }
 
 
@@ -285,4 +286,5 @@ void UniverseTest::testAddRemoveClients() {
   universe->RemoveClient(&client);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->ClientCount());
   CPPUNIT_ASSERT(!universe->ContainsClient(&client));
+  m_store->DeleteAll();
 }

@@ -22,10 +22,12 @@
 #define LLA_CLIENT_H
 
 #include <stdint.h>
+#include "common/rpc/SimpleRpcController.h"
 
 namespace lla {
 namespace proto {
-class LlaClientService_Stub;
+  class LlaClientService_Stub;
+  class Ack;
 }
 }
 
@@ -39,11 +41,12 @@ class Client {
     Client(LlaClientService_Stub *client_stub):
       m_client_stub(client_stub) {}
     virtual ~Client() {};
-    virtual int SendDMX(unsigned int universe_id,
-                        uint8_t *data,
-                        unsigned int length);
+    virtual bool SendDMX(unsigned int universe_id,
+                         const uint8_t *data,
+                         unsigned int length);
 
-    void SendDMXCallback();
+    void SendDMXCallback(lla::rpc::SimpleRpcController *controller,
+                         lla::proto::Ack *ack);
     class LlaClientService_Stub *Stub() const { return m_client_stub; }
 
   private:

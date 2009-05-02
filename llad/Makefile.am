@@ -44,7 +44,7 @@ TESTS = LlaTester
 check_PROGRAMS = $(TESTS)
 LlaTester_SOURCES = LlaServerTester.cpp UniverseTest.cpp \
                     DeviceTest.cpp PreferencesTest.cpp \
-                    LlaServerServiceImplTest.cpp
+                    LlaServerServiceImplTest.cpp ClientTest.cpp
 LlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 LlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 LlaTester_LDADD = @LIBS@ libllaserver.la \

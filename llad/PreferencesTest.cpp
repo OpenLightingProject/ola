@@ -21,7 +21,6 @@
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <lla/Logging.h>
 #include "llad/Preferences.h"
 
 using namespace lla;
@@ -80,7 +79,6 @@ void PreferencesTest::testGetSet() {
 
 
 void PreferencesTest::testLoad() {
-  lla::InitLogging(lla::LLA_LOG_DEBUG, lla::LLA_LOG_STDERR);
   FileBackedPreferencesFactory factory;
   FileBackedPreferences *preferences = factory.NewPreference("dummy");
   preferences->Clear();
@@ -99,7 +97,6 @@ void PreferencesTest::testLoad() {
 
 
 void PreferencesTest::testSave() {
-  lla::InitLogging(lla::LLA_LOG_DEBUG, lla::LLA_LOG_STDERR);
   FileBackedPreferencesFactory factory;
   FileBackedPreferences *preferences = factory.NewPreference("dummy");
   preferences->Clear();
