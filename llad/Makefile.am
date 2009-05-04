@@ -2,15 +2,15 @@ INCLUDES = -I$(top_builddir)/common -I$(top_builddir)/include \
            -I$(top_builddir)/libltdl @LLAD_DEFINES@
 SUBDIRS = www
 
+LLASERVER_SOURCES = LlaServerServiceImpl.cpp \
+                    Preferences.cpp Universe.cpp \
+                    UniverseStore.cpp Port.cpp Client.cpp \
+                    Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
+                    Plugin.cpp DlOpenPluginLoader.cpp
+
 # lib llaserver
 lib_LTLIBRARIES = libllaserver.la
-libllaserver_la_SOURCES = LlaServer.cpp LlaServerServiceImpl.cpp \
-                          Preferences.cpp Universe.cpp \
-                          UniverseStore.cpp Port.cpp Client.cpp \
-                          Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
-                          Plugin.cpp DlOpenPluginLoader.cpp \
-                          LlaDaemon.cpp
-
+libllaserver_la_SOURCES = $(LLASERVER_SOURCES) LlaServer.cpp LlaDaemon.cpp
 libllaserver_la_LDFLAGS = -lprotobuf
 
 if HAVE_LIBMICROHTTPD
@@ -42,13 +42,12 @@ llad_LDADD = @LIBS@ libllaserver.la \
 # Test Programs
 TESTS = LlaTester
 check_PROGRAMS = $(TESTS)
-LlaTester_SOURCES = LlaServerTester.cpp UniverseTest.cpp \
-                    DeviceTest.cpp PreferencesTest.cpp \
+LlaTester_SOURCES = $(LLASERVER_SOURCES) LlaServerTester.cpp \
+                    UniverseTest.cpp DeviceTest.cpp PreferencesTest.cpp \
                     LlaServerServiceImplTest.cpp ClientTest.cpp
 LlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 LlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
-LlaTester_LDADD = @LIBS@ libllaserver.la \
-                  $(top_builddir)/common/libllacommon.la
+LlaTester_LDADD = @LIBS@ @LIBLTDL@ $(top_builddir)/common/libllacommon.la
 
 
 #-------------------------------------

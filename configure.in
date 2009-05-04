@@ -110,9 +110,28 @@ AC_SUBST(www_datadir)
 LLAD_DEFINES="$CFLAGS -DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
 AC_SUBST(LLAD_DEFINES)
 
-AC_ARG_ENABLE(debug, [AS_HELP_STRING(--enable-debug,
-                     [Enable debugging])],
-AC_DEFINE(DEBUG, 1, [Enable debugging]) )
+AC_ARG_ENABLE(debug,
+              AS_HELP_STRING([--enable-debug], [Enable debugging]),
+              AC_DEFINE(DEBUG, 1, [Enable debugging])
+             )
+AC_ARG_ENABLE(gcov,
+              AC_HELP_STRING([--enable-gcov],
+                             [turn on code coverage analysis tools]),
+              [use_gcov="yes"],
+              [use_gcov="no"]
+             )
+AC_ARG_ENABLE(python-libs,
+              AC_HELP_STRING([--enable-python-libs],
+                             [Build the python wrappers]),
+              [build_python_libs="yes"]
+             )
+
+# gcov
+if test "${use_gcov}" = "yes"; then
+  CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
+  CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
+  LDFLAGS="$LDFLAGS -fprofile-arcs"
+fi
 
 # microhttpd
 AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
@@ -124,11 +143,6 @@ if test "${have_microhttpd}" = "yes"; then
 fi
 
 # python wrappers
-AC_ARG_ENABLE(python-libs,
- [  --enable-python-libs Build the python wrappers],
- [ build_python_libs="yes"]
-)
-
 AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${build_python_libs}" = "yes")
 
 if test "${build_python_libs}" = "yes"; then
