@@ -63,8 +63,11 @@ class Preferences {
 class PreferencesFactory {
   public:
     PreferencesFactory() {}
-    virtual ~PreferencesFactory() {}
-    virtual Preferences *NewPreference(const string &name) = 0;
+    virtual ~PreferencesFactory();
+    virtual Preferences *NewPreference(const string &name);
+  private:
+    virtual Preferences *Create(const string &name) = 0;
+    map<string, Preferences*> m_preferences_map;
 };
 
 
@@ -93,8 +96,8 @@ class MemoryPreferences: public Preferences {
 
 
 class MemoryPreferencesFactory: public PreferencesFactory {
-  public:
-    MemoryPreferences *NewPreference(const string &name) {
+  private:
+    MemoryPreferences *Create(const string &name) {
       return new MemoryPreferences(name);
     }
 };
@@ -117,8 +120,8 @@ class FileBackedPreferences: public MemoryPreferences {
 };
 
 class FileBackedPreferencesFactory: public PreferencesFactory {
-  public:
-    FileBackedPreferences *NewPreference(const string &name) {
+  private:
+    FileBackedPreferences *Create(const string &name) {
       return new FileBackedPreferences(name);
     }
 };

@@ -38,6 +38,34 @@
 
 namespace lla {
 
+/**
+ * Cleanup
+ */
+PreferencesFactory::~PreferencesFactory() {
+  map<string, Preferences*>::const_iterator iter;
+  for (iter = m_preferences_map.begin(); iter != m_preferences_map.end();
+       ++iter) {
+    delete iter->second;
+  }
+  m_preferences_map.clear();
+}
+
+
+/**
+ * Lookup a preference object
+ */
+Preferences *PreferencesFactory::NewPreference(const string &name) {
+  map<string, Preferences*>::iterator iter = m_preferences_map.find(name);
+  if (iter == m_preferences_map.end()) {
+    Preferences *pref = Create(name);
+    m_preferences_map.insert(pair<string, Preferences*>(name, pref));
+    return pref;
+  } else {
+    return iter->second;
+  }
+}
+
+
 /*
  * Destroy this object
  */
