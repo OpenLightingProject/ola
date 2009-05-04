@@ -87,7 +87,7 @@ class Universe {
     string m_universe_id_str;
     enum merge_mode m_merge_mode;      // merge mode
     vector<class AbstractPort*> m_ports;       // ports patched to this universe
-    vector<class Client *> m_clients;  // clients listening to this universe
+    vector<class Client*> m_clients;  // clients listening to this universe
     class UniverseStore *m_universe_store;
 
     uint8_t m_data[DMX_UNIVERSE_SIZE];        // buffer for this universe

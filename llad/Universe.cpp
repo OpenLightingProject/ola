@@ -276,13 +276,13 @@ const uint8_t *Universe::GetDMX(unsigned int &length) const {
  * @param prt   the port that has changed
  */
 int Universe::PortDataChanged(AbstractPort *port) {
-  unsigned int i, len;
+  vector<AbstractPort*>::const_iterator iter;
 
   if (m_merge_mode == Universe::MERGE_LTP) {
     // LTP merge mode
     // this is simple, find the port and copy the data
-    for (i =0; i < m_ports.size(); i++) {
-      if (m_ports[i] == port && port->CanRead()) {
+    for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
+      if (*iter == port && (*iter)->CanRead()) {
         // read the new data and update our dependants
         m_length = port->ReadDMX(m_data, DMX_UNIVERSE_SIZE);
         UpdateDependants();
@@ -294,13 +294,13 @@ int Universe::PortDataChanged(AbstractPort *port) {
     // iterate over ports which we can read and take the highest value
     // of each channel
     bool first = true;
-    for (i =0; i < m_ports.size(); i++) {
-      if (port->CanRead()) {
+    for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
+      if ((*iter)->CanRead()) {
         if (first) {
           m_length = port->ReadDMX(m_data, DMX_UNIVERSE_SIZE);
           first = false;
         } else {
-          len = port->ReadDMX(m_merge, DMX_UNIVERSE_SIZE);
+          m_mlength = port->ReadDMX(m_merge, DMX_UNIVERSE_SIZE);
           Merge();
         }
       }
@@ -330,17 +330,19 @@ bool Universe::IsActive() const {
  *
  */
 bool Universe::UpdateDependants() {
-  unsigned int i;
+  vector<AbstractPort*>::const_iterator iter;
+  vector<Client*>::const_iterator client_iter;
 
   // write to all ports assigned to this unviverse
-  for (i=0; i < m_ports.size(); i++) {
-    m_ports[i]->WriteDMX(m_data, m_length);
+  for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
+    (*iter)->WriteDMX(m_data, m_length);
   }
 
   // write to all clients
-  for (i=0; i < m_clients.size(); i++) {
+  for (client_iter = m_clients.begin(); client_iter != m_clients.end();
+       ++client_iter) {
     LLA_DEBUG << "Sending dmx data msg to client";
-    m_clients[i]->SendDMX(m_universe_id, m_data, m_length);
+    (*client_iter)->SendDMX(m_universe_id, m_data, m_length);
   }
   return true;
 }
