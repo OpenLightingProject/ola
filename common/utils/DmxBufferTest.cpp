@@ -113,6 +113,7 @@ void DmxBufferTest::testStringGetSet() {
   buffer.Get(result, size);
   CPPUNIT_ASSERT_EQUAL(data2.length(), (size_t) size);
   CPPUNIT_ASSERT(!memcmp(data2.data(), result, size));
+  delete[] result;
 }
 
 
