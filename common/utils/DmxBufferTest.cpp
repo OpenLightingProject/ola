@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <string>
 #include <cppunit/extensions/HelperMacros.h>
 #include <lla/DmxBuffer.h>
 
@@ -27,6 +28,7 @@ using namespace std;
 class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DmxBufferTest);
   CPPUNIT_TEST(testGetSet);
+  CPPUNIT_TEST(testStringGetSet);
   CPPUNIT_TEST(testAssign);
   CPPUNIT_TEST(testCopy);
   CPPUNIT_TEST(testMerge);
@@ -35,6 +37,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
   public:
     void testGetSet();
     void testAssign();
+    void testStringGetSet();
     void testCopy();
     void testMerge();
   private:
@@ -60,20 +63,56 @@ void DmxBufferTest::testGetSet() {
   uint8_t *result = new uint8_t[result_length];
   unsigned int size = result_length;
   DmxBuffer buffer;
+  string str_result;
 
   CPPUNIT_ASSERT(buffer.Set(TEST_DATA, sizeof(TEST_DATA)));
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), buffer.Size());
   buffer.Get(result, size);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), size);
   CPPUNIT_ASSERT(!memcmp(TEST_DATA, result, size));
+  str_result = buffer.Get();
+  CPPUNIT_ASSERT_EQUAL((size_t) sizeof(TEST_DATA), str_result.length());
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA, str_result.data(), str_result.length()));
 
   size = result_length;
   CPPUNIT_ASSERT(buffer.Set(TEST_DATA2, sizeof(TEST_DATA2)));
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), buffer.Size());
   buffer.Get(result, size);
-  CPPUNIT_ASSERT_EQUAL((unsigned int)sizeof(TEST_DATA2), size);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), size);
   CPPUNIT_ASSERT(!memcmp(TEST_DATA2, result, size));
+  str_result = buffer.Get();
+  CPPUNIT_ASSERT_EQUAL((size_t) sizeof(TEST_DATA2), str_result.length());
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA2, str_result.data(), str_result.length()));
   delete[] result;
+}
+
+
+/*
+ * Check that the string set/get methods work
+ */
+void DmxBufferTest::testStringGetSet() {
+  const string data = "abcdefg";
+  DmxBuffer buffer;
+  uint8_t *result = new uint8_t[data.length()];
+  unsigned int size = data.length();
+
+  // Check that setting works
+  CPPUNIT_ASSERT(buffer.Set(data));
+  CPPUNIT_ASSERT_EQUAL(data.length(), (size_t) buffer.Size());
+  CPPUNIT_ASSERT_EQUAL(data, buffer.Get());
+  buffer.Get(result, size);
+  CPPUNIT_ASSERT_EQUAL(data.length(), (size_t) size);
+  CPPUNIT_ASSERT(!memcmp(data.data(), result, size));
+
+  // Set with an empty string
+  string data2;
+  size = data.length();
+  CPPUNIT_ASSERT(buffer.Set(data2));
+  CPPUNIT_ASSERT_EQUAL(data2.length(), (size_t) buffer.Size());
+  CPPUNIT_ASSERT_EQUAL(data2, buffer.Get());
+  buffer.Get(result, size);
+  CPPUNIT_ASSERT_EQUAL(data2.length(), (size_t) size);
+  CPPUNIT_ASSERT(!memcmp(data2.data(), result, size));
 }
 
 

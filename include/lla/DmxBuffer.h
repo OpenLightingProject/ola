@@ -22,8 +22,11 @@
 #define LLA_DMX_BUFFER_H
 
 #include <stdint.h>
+#include <string>
 
 namespace lla {
+
+using std::string;
 
 /*
  * The DmxBuffer class
@@ -40,7 +43,9 @@ class DmxBuffer {
 
     bool HTPMerge(const DmxBuffer &other);
     bool Set(const uint8_t *data, unsigned int length);
-    void Get(uint8_t *data, unsigned int &length);
+    bool Set(const string &data);
+    void Get(uint8_t *data, unsigned int &length) const;
+    string Get() const;
 
   private:
     bool Init();

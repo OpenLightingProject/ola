@@ -123,15 +123,34 @@ bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
 
 
 /*
+ * Set the contents of this DmxBuffer
+ * @param data the string with the dmx data
+ */
+bool DmxBuffer::Set(const string &data) {
+  return Set((uint8_t*) data.data(), data.length());
+}
+
+
+/*
  * Get the contents of this buffer
  */
-void DmxBuffer::Get(uint8_t *data, unsigned int &length) {
+void DmxBuffer::Get(uint8_t *data, unsigned int &length) const {
   if (m_data) {
     length = min(length, m_length);
     memcpy(data, m_data, length);
   } else {
     length = 0;
   }
+}
+
+
+/*
+ * Get the contents of the DmxBuffer as a string
+ */
+string DmxBuffer::Get() const {
+  string data;
+  data.append((char*) m_data, m_length);
+  return data;
 }
 
 
