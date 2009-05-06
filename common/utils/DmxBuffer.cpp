@@ -20,13 +20,16 @@
 
 #include <string.h>
 #include <algorithm>
+#include <vector>
 #include <lla/BaseTypes.h>
 #include <lla/DmxBuffer.h>
+#include <lla/StringUtils.h>
 
 namespace lla {
 
 using std::min;
 using std::max;
+using std::vector;
 
 DmxBuffer::DmxBuffer():
   m_data(NULL),
@@ -37,12 +40,20 @@ DmxBuffer::DmxBuffer():
 /*
  * Copy
  */
-DmxBuffer::DmxBuffer(const DmxBuffer &other) {
-  if (other.m_data) {
-    Init();
-    m_length = min(other.m_length, (unsigned int) DMX_UNIVERSE_SIZE);
-    memcpy(m_data, other.m_data, m_length);
-  }
+DmxBuffer::DmxBuffer(const DmxBuffer &other):
+  m_data(NULL),
+  m_length(0) {
+  Set(other.m_data, other.m_length);
+}
+
+
+/*
+ * Create a new buffer from data
+ */
+DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length):
+  m_data(NULL),
+  m_length(0) {
+  Set(data, length);
 }
 
 
@@ -128,6 +139,34 @@ bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
  */
 bool DmxBuffer::Set(const string &data) {
   return Set((uint8_t*) data.data(), data.length());
+}
+
+
+/*
+ * Convert a ',' separated list into a dmx_t array. Invalid values are set to
+ * 0. 0s can be dropped between the commas.
+ * @param input the string to split
+ */
+bool DmxBuffer::SetFromString(const string &input) {
+  unsigned int i = 0;
+  vector<string> dmx_values;
+  vector<string>::const_iterator iter;
+
+  if (!m_data)
+    if (!Init())
+      return false;
+
+  if (input.empty()) {
+    m_length = 0;
+    return true;
+  }
+  StringSplit(input, dmx_values, ",");
+  for (iter = dmx_values.begin();
+      iter != dmx_values.end() && i < DMX_UNIVERSE_SIZE; ++iter, ++i) {
+    m_data[i] = atoi(iter->data());
+  }
+  m_length = i;
+  return true;
 }
 
 

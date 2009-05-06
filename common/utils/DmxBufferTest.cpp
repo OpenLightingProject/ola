@@ -32,6 +32,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testAssign);
   CPPUNIT_TEST(testCopy);
   CPPUNIT_TEST(testMerge);
+  CPPUNIT_TEST(testStringToDmx);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -40,11 +41,14 @@ class DmxBufferTest: public CppUnit::TestFixture {
     void testStringGetSet();
     void testCopy();
     void testMerge();
+    void testStringToDmx();
   private:
     static const uint8_t TEST_DATA[];
     static const uint8_t TEST_DATA2[];
     static const uint8_t TEST_DATA3[];
     static const uint8_t MERGE_RESULT[];
+
+    void runStringToDmx(const string &input, const DmxBuffer &expected);
 };
 
 const uint8_t DmxBufferTest::TEST_DATA[] = {1, 2, 3, 4, 5};
@@ -124,11 +128,9 @@ void DmxBufferTest::testAssign() {
   unsigned int fudge_factor = 10;
   unsigned int result_length = sizeof(TEST_DATA) + fudge_factor;
   uint8_t *result = new uint8_t[result_length];
-  DmxBuffer buffer;
-  DmxBuffer assignment_buffer, assignment_buffer2;
-
-  CPPUNIT_ASSERT(buffer.Set(TEST_DATA, sizeof(TEST_DATA)));
-  CPPUNIT_ASSERT(assignment_buffer.Set(TEST_DATA3, sizeof(TEST_DATA3)));
+  DmxBuffer buffer(TEST_DATA, sizeof(TEST_DATA));
+  DmxBuffer assignment_buffer(TEST_DATA3, sizeof(TEST_DATA3));
+  DmxBuffer assignment_buffer2;
 
   // assigning to ourself does nothing
   buffer = buffer;
@@ -171,19 +173,18 @@ void DmxBufferTest::testAssign() {
  * Check that the copy constructor works
  */
 void DmxBufferTest::testCopy() {
-  DmxBuffer buffer;
-  CPPUNIT_ASSERT(buffer.Set(TEST_DATA2, sizeof(TEST_DATA2)));
+  DmxBuffer buffer(TEST_DATA2, sizeof(TEST_DATA2));
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), buffer.Size());
 
   DmxBuffer copy_buffer(buffer);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), copy_buffer.Size());
+  CPPUNIT_ASSERT(copy_buffer == buffer);
 
   unsigned int result_length = sizeof(TEST_DATA2);
   uint8_t *result = new uint8_t[result_length];
   copy_buffer.Get(result, result_length);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), result_length);
   CPPUNIT_ASSERT(!memcmp(TEST_DATA2, result, result_length));
-  CPPUNIT_ASSERT(copy_buffer == buffer);
   delete[] result;
 }
 
@@ -192,13 +193,12 @@ void DmxBufferTest::testCopy() {
  * Check that HTP Merging works
  */
 void DmxBufferTest::testMerge() {
-  DmxBuffer buffer1, buffer2, merge_result;
-  DmxBuffer uninitialized_buffer, uninitialized_buffer2;
-  CPPUNIT_ASSERT(buffer1.Set(TEST_DATA, sizeof(TEST_DATA)));
-  CPPUNIT_ASSERT(buffer2.Set(TEST_DATA3, sizeof(TEST_DATA3)));
-  CPPUNIT_ASSERT(merge_result.Set(MERGE_RESULT, sizeof(MERGE_RESULT)));
+  DmxBuffer buffer1(TEST_DATA, sizeof(TEST_DATA));
+  DmxBuffer buffer2(TEST_DATA3, sizeof(TEST_DATA3));
+  DmxBuffer merge_result(MERGE_RESULT, sizeof(MERGE_RESULT));
   const DmxBuffer test_buffer(buffer1);
   const DmxBuffer test_buffer2(buffer2);
+  DmxBuffer uninitialized_buffer, uninitialized_buffer2;
 
   // merge into an empty buffer
   CPPUNIT_ASSERT(uninitialized_buffer.HTPMerge(buffer2));
@@ -218,4 +218,51 @@ void DmxBufferTest::testMerge() {
   buffer2 = test_buffer2;
   CPPUNIT_ASSERT(buffer1.HTPMerge(buffer2));
   CPPUNIT_ASSERT(buffer1 == merge_result);
+}
+
+
+/*
+ * Run the StringToDmxTest
+ * @param input the string to parse
+ * @param expected the expected result
+ */
+void DmxBufferTest::runStringToDmx(const string &input,
+                                   const DmxBuffer &expected) {
+  DmxBuffer buffer;
+  CPPUNIT_ASSERT(buffer.SetFromString(input));
+  CPPUNIT_ASSERT(buffer == expected);
+}
+
+
+/*
+ * Test the StringToDmx function
+ */
+void DmxBufferTest::testStringToDmx() {
+  string input = "1,2,3,4";
+  uint8_t expected1[] = {1, 2, 3, 4};
+  runStringToDmx(input, DmxBuffer(expected1, sizeof(expected1)));
+
+  input = "a,b,c,d";
+  uint8_t expected2[] = {0, 0, 0, 0};
+  runStringToDmx(input, DmxBuffer(expected2, sizeof(expected2)));
+
+  input = "a,b,c,";
+  uint8_t expected3[] = {0, 0, 0, 0};
+  runStringToDmx(input, DmxBuffer(expected3, sizeof(expected3)));
+
+  input = "255,,,";
+  uint8_t expected4[] = {255, 0, 0, 0};
+  runStringToDmx(input, DmxBuffer(expected4, sizeof(expected4)));
+
+  input = "255,,,10";
+  uint8_t expected5[] = {255, 0, 0, 10};
+  runStringToDmx(input, DmxBuffer(expected5, sizeof(expected5)));
+
+  input = " 266,,,10  ";
+  uint8_t expected6[] = {266, 0, 0, 10};
+  runStringToDmx(input, DmxBuffer(expected6, sizeof(expected6)));
+
+  input = "";
+  uint8_t expected7[] = {};
+  runStringToDmx(input, DmxBuffer(expected7, sizeof(expected7)));
 }

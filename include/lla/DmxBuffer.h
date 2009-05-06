@@ -35,6 +35,7 @@ class DmxBuffer {
   public:
     DmxBuffer();
     DmxBuffer(const DmxBuffer &other);
+    DmxBuffer(const uint8_t *data, unsigned int length);
     ~DmxBuffer();
     DmxBuffer& operator=(const DmxBuffer &other);
 
@@ -44,6 +45,7 @@ class DmxBuffer {
     bool HTPMerge(const DmxBuffer &other);
     bool Set(const uint8_t *data, unsigned int length);
     bool Set(const string &data);
+    bool SetFromString(const string &data);
     void Get(uint8_t *data, unsigned int &length) const;
     string Get() const;
 
