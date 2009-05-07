@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <string.h>
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 #include <lla/DmxBuffer.h>
@@ -259,7 +260,7 @@ void DmxBufferTest::testStringToDmx() {
   runStringToDmx(input, DmxBuffer(expected5, sizeof(expected5)));
 
   input = " 266,,,10  ";
-  uint8_t expected6[] = {266, 0, 0, 10};
+  uint8_t expected6[] = {10, 0, 0, 10};
   runStringToDmx(input, DmxBuffer(expected6, sizeof(expected6)));
 
   input = "";
