@@ -87,6 +87,7 @@ bool UsbProWidget::Connect(const string &path) {
   }
 
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
+  tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ConnectedSocket(fd, fd);
   m_socket->SetListener(this);
 
@@ -413,7 +414,6 @@ int UsbProWidget::ReceiveMessage() {
 
   while(byte != 0x7e) {
     m_socket->Receive((uint8_t*) &byte, 1, cnt);
-
     if (cnt != 1) {
       LLA_WARN << "Read to much, expected 1, got " << cnt;
       return -1;
