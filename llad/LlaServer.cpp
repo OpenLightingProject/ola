@@ -151,7 +151,7 @@ LlaServer::~LlaServer() {
 
 /*
  * Initialise the server
- * * @return  0 on success, -1 on failure
+ * * @return true on success, false on failure
  */
 bool LlaServer::Init() {
   if (m_init_run)
