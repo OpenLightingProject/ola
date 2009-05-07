@@ -67,9 +67,9 @@ LlaDaemon::LlaDaemon(lla_server_options &options,
  */
 LlaDaemon::~LlaDaemon() {
   m_listening_socket->Close();
-  delete m_preferences_factory;
-  delete m_service_factory;
   delete m_server;
+  delete m_service_factory;
+  delete m_preferences_factory;
   delete m_plugin_loader;
   delete m_ss;
   delete m_listening_socket;

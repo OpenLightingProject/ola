@@ -139,7 +139,6 @@ LlaServer::~LlaServer() {
 
   if (m_universe_preferences) {
     m_universe_preferences->Save();
-    delete m_universe_preferences;
   }
 
   delete m_plugin_adaptor;

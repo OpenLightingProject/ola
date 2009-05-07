@@ -47,7 +47,6 @@ bool Plugin::Start() {
   enabled = m_preferences->GetValue(ENABLED_KEY);
   if (enabled == "false") {
     LLA_INFO << Name() << " disabled";
-    delete m_preferences;
     return false;
   }
 
@@ -58,7 +57,6 @@ bool Plugin::Start() {
   }
 
   if (!StartHook()) {
-    delete m_preferences;
     return false;
   }
 
@@ -80,7 +78,6 @@ bool Plugin::Stop() {
   bool ret = StopHook();
 
   m_enabled = false;
-  delete m_preferences;
   return ret;
 }
 
@@ -94,9 +91,6 @@ bool Plugin::LoadPreferences() {
     return false;
   }
 
-  if (m_preferences)
-    delete m_preferences;
-
   m_preferences = m_plugin_adaptor->NewPreference(PreferencesSuffix());
 
   if (!m_preferences)
@@ -105,7 +99,6 @@ bool Plugin::LoadPreferences() {
   m_preferences->Load();
 
   if (!SetDefaultPreferences()) {
-    delete m_preferences;
     LLA_INFO << Name() << ", SetDefaultPreferences failed";
     return false;
   }

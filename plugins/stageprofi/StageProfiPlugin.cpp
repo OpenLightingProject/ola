@@ -162,7 +162,6 @@ bool StageProfiPlugin::SetDefaultPreferences() {
   // check if this saved correctly
   // we don't want to use it if null
   if (m_preferences->GetValue("device").empty()) {
-    delete m_preferences;
     return false;
   }
   return true;
