@@ -36,6 +36,7 @@ class DmxBuffer {
     DmxBuffer();
     DmxBuffer(const DmxBuffer &other);
     DmxBuffer(const uint8_t *data, unsigned int length);
+    DmxBuffer(const string &data);
     ~DmxBuffer();
     DmxBuffer& operator=(const DmxBuffer &other);
 

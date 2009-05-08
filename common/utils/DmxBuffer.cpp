@@ -58,6 +58,16 @@ DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length):
 
 
 /*
+ * Create a new buffer from a string
+ */
+DmxBuffer::DmxBuffer(const string &data):
+  m_data(NULL),
+  m_length(0) {
+    Set(data);
+}
+
+
+/*
  * Cleanup
  */
 DmxBuffer::~DmxBuffer() {

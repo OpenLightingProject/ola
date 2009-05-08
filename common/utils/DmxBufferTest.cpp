@@ -131,6 +131,10 @@ void DmxBufferTest::testStringGetSet() {
   CPPUNIT_ASSERT_EQUAL(data.length(), (size_t) size);
   CPPUNIT_ASSERT(!memcmp(data.data(), result, size));
 
+  // Check the string constructor
+  DmxBuffer string_buffer(data);
+  CPPUNIT_ASSERT(buffer == string_buffer);
+
   // Set with an empty string
   string data2;
   size = data.length();
@@ -141,6 +145,7 @@ void DmxBufferTest::testStringGetSet() {
   CPPUNIT_ASSERT_EQUAL(data2.length(), (size_t) size);
   CPPUNIT_ASSERT(!memcmp(data2.data(), result, size));
   delete[] result;
+
 }
 
 
