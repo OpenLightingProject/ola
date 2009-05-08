@@ -194,6 +194,19 @@ string DmxBuffer::Get() const {
 
 
 /*
+ * Set the buffer to all zeros
+ */
+bool DmxBuffer::Blackout() {
+  if (!m_data)
+    if (!Init())
+      return false;
+  bzero(m_data, DMX_UNIVERSE_SIZE);
+  m_length = DMX_UNIVERSE_SIZE;
+  return true;
+}
+
+
+/*
  * Allocate memory
  */
 bool DmxBuffer::Init() {

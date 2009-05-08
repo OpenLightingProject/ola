@@ -48,6 +48,7 @@ class DmxBuffer {
     bool SetFromString(const string &data);
     void Get(uint8_t *data, unsigned int &length) const;
     string Get() const;
+    bool Blackout();
 
   private:
     bool Init();

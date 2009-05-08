@@ -21,6 +21,7 @@
 #include <string.h>
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <lla/BaseTypes.h>
 #include <lla/DmxBuffer.h>
 
 using namespace lla;
@@ -28,6 +29,7 @@ using namespace std;
 
 class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DmxBufferTest);
+  CPPUNIT_TEST(testBlackout);
   CPPUNIT_TEST(testGetSet);
   CPPUNIT_TEST(testStringGetSet);
   CPPUNIT_TEST(testAssign);
@@ -37,6 +39,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
   public:
+    void testBlackout();
     void testGetSet();
     void testAssign();
     void testStringGetSet();
@@ -58,6 +61,25 @@ const uint8_t DmxBufferTest::TEST_DATA3[] = {10, 11, 12};
 const uint8_t DmxBufferTest::MERGE_RESULT[] = {10, 11, 12, 4, 5};
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DmxBufferTest);
+
+
+/*
+ * Test that Blackout() works
+ */
+void DmxBufferTest::testBlackout() {
+  DmxBuffer buffer;
+  CPPUNIT_ASSERT(buffer.Blackout());
+  uint8_t *result = new uint8_t[DMX_UNIVERSE_SIZE];
+  uint8_t *zero = new uint8_t[DMX_UNIVERSE_SIZE];
+  unsigned int result_length = DMX_UNIVERSE_SIZE;
+  bzero(zero, DMX_UNIVERSE_SIZE);
+  buffer.Get(result, result_length);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, result_length);
+  CPPUNIT_ASSERT(!memcmp(zero, result, result_length));
+  delete[] result;
+  delete[] zero;
+}
+
 
 /*
  * Check that Get/Set works correctly
