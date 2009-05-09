@@ -641,6 +641,7 @@ int main(int argc, char *argv[]) {
       break;
     case DEVICE_PATCH:
       Patch(client, opts);
+      break;
     case PLUGIN_INFO:
       FetchPluginInfo(client, opts);
       break;
