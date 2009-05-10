@@ -60,33 +60,27 @@ int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
     Universe *universe = (*iter)->GetUniverse();
 
     if ((*iter)->CanRead() && universe && universe->UniverseId() == uid) {
-      ((EspNetPort*) (*iter))->UpdateBuffer(data,len);
+      ((EspNetPort*) (*iter))->UpdateBuffer(data, len);
     }
   }
-
-  n = NULL;
   return 0;
 }
 
 
 /*
- * get notification of remote programming
- *
+ * Get notification of remote programming
  */
 int program_handler(espnet_node n, void *d) {
   EspNetDevice *dev = (EspNetDevice *) d;
 
   dev->SaveConfig();
-  n = NULL;
   return 0;
 }
 
 
 /*
  * Create a new device
- *
- * should prob pass the ip to bind to
- *
+ * Should prob pass the ip to bind to
  */
 EspNetDevice::EspNetDevice(Plugin *owner,
                            const string &name,
@@ -102,7 +96,7 @@ EspNetDevice::EspNetDevice(Plugin *owner,
 
 
 /*
- *
+ * Cleanup
  */
 EspNetDevice::~EspNetDevice() {
   if (m_enabled)
@@ -115,24 +109,20 @@ EspNetDevice::~EspNetDevice() {
  *
  */
 bool EspNetDevice::Start() {
-  EspNetPort *port = NULL;
-
   /* set up ports */
   for(int i=0; i < 2 * PORTS_PER_DEVICE; i++) {
-    port = new EspNetPort(this, i);
-
-    if(port)
-      this->AddPort(port);
+    EspNetPort *port = new EspNetPort(this, i);
+    this->AddPort(port);
   }
 
   // create new espnet node, and set config values
-  bool debug = Owner()->DebugOn();
   int sd;
 
   if (m_preferences->GetValue("ip").empty())
-    m_node = espnet_new(NULL, debug);
+    m_node = espnet_new(NULL, Owner()->DebugOn());
   else {
-    m_node = espnet_new(m_preferences->GetValue("ip").c_str(), debug);
+    m_node = espnet_new(m_preferences->GetValue("ip").data(),
+                        Owner()->DebugOn());
   }
 
   if (!m_node) {
@@ -141,7 +131,7 @@ bool EspNetDevice::Start() {
   }
 
   // setup node
-  if (espnet_set_name(m_node, m_preferences->GetValue("name").c_str()) ) {
+  if (espnet_set_name(m_node, m_preferences->GetValue("name").data())) {
     LLA_WARN << "espnet_set_name failed: " << espnet_strerror();
     goto e_espnet_start;
   }
@@ -152,7 +142,7 @@ bool EspNetDevice::Start() {
   }
 
   // we want to be notified when the node config changes
-  if (espnet_set_dmx_handler(m_node, lla::plugin::dmx_handler, (void*) this) ) {
+  if (espnet_set_dmx_handler(m_node, lla::plugin::dmx_handler, (void*) this)) {
     LLA_WARN << "espnet_set_dmx_handler failed: " << espnet_strerror();
     goto e_espnet_start;
   }
@@ -169,14 +159,13 @@ bool EspNetDevice::Start() {
 
 e_espnet_start:
   if (espnet_destroy(m_node))
-    LLA_WARN << "espnet_destory failed: " << espnet_strerror();
+    LLA_WARN << "espnet_destroy failed: " << espnet_strerror();
   return false;
 }
 
 
 /*
  * stop this device
- *
  */
 bool EspNetDevice::Stop() {
   if (!m_enabled)

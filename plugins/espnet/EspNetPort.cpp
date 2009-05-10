@@ -13,96 +13,78 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * EspNetPort.cpp
  * The Esp-Net plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
+
+#include <string.h>
+#include <algorithm>
+#include <lla/Logging.h>
+#include <llad/Universe.h>
 
 #include "EspNetPort.h"
 #include "EspNetDevice.h"
 #include "common.h"
 
-#include <lla/Logging.h>
-#include <llad/Universe.h>
-
-#include <string.h>
 
 namespace lla {
 namespace plugin {
 
-#define min(a,b) a<b?a:b
-
-EspNetPort::EspNetPort(EspNetDevice *parent, int id):
+EspNetPort::EspNetPort(EspNetDevice *parent, unsigned int id):
   Port(parent, id),
-  m_len(DMX_UNIVERSE_SIZE),
   m_device(parent) {
-    memset(m_buf, 0, DMX_UNIVERSE_SIZE);
 }
 
 
 bool EspNetPort::CanRead() const {
   // ports 0 to 4 are input
-  return ( PortId()>=0 && PortId() < PORTS_PER_DEVICE);
+  return PortId() < PORTS_PER_DEVICE;
 }
 
 bool EspNetPort::CanWrite() const {
   // ports 5 to 9 are output
-  return ( PortId()>= PORTS_PER_DEVICE && PortId() < 2 * PORTS_PER_DEVICE);
+  return (PortId()>= PORTS_PER_DEVICE && PortId() < 2 * PORTS_PER_DEVICE);
 }
 
 
 /*
  * Write operation
  *
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- *
  */
-int EspNetPort::WriteDMX(uint8_t *data, unsigned int length) {
+bool EspNetPort::WriteDMX(const DmxBuffer &buffer) {
   if (!CanWrite())
-    return -1;
+    return false;
 
-  if (espnet_send_dmx(m_device->EspnetNode(), GetUniverse()->UniverseId(), length, data)) {
+  if (espnet_send_dmx(m_device->EspnetNode(), GetUniverse()->UniverseId(),
+        buffer.Size(), buffer.GetRaw())) {
     LLA_WARN << "espnet_send_dmx failed " << espnet_strerror();
-    return -1;
+    return false;
   }
-  return 0;
+  return true;
 }
+
 
 /*
  * Read operation
- *
- * @param   data  buffer to read data into
- * @param   length  length of data to read
- *
- * @return  the amount of data read
+ * @return The DmxBuffer with the new data
  */
-int EspNetPort::ReadDMX(uint8_t *data, unsigned int length) {
-  unsigned int len;
-
-  if (!CanRead())
-    return -1;
-
-  len = min(m_len, length);
-  memcpy(data, m_buf, len);
-  return len;
+const DmxBuffer &EspNetPort::ReadDMX() const {
+  return m_buffer;
 }
+
 
 /*
  * Update the data buffer for this port
- *
  */
-int EspNetPort::UpdateBuffer(uint8_t *data, int length) {
-  int len = min(DMX_UNIVERSE_SIZE, length);
-
+bool EspNetPort::UpdateBuffer(uint8_t *data, int length) {
   // we can't update if this isn't a input port
   if (!CanRead())
-    return -1;
+    return false;
 
-  memcpy(m_buf, data, len);
+  m_buffer.Set(data, length);
   DmxChanged();
-  return 0;
+  return true;
 }
 
 } //plugin

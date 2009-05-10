@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <termios.h>
-
+#include <string.h>
 
 #include <lla/select_server/Socket.h>
 #include "StageProfiWidgetUsb.h"
@@ -40,7 +40,7 @@ bool StageProfiWidgetUsb::Connect(const std::string &path) {
   if (fd == -1)
     return false;
 
-  bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
+  memset(&newtio, 0, sizeof(newtio)); // clear struct for new port settings
   tcgetattr(fd, &newtio);
   cfsetospeed(&newtio, B38400);
   tcsetattr(fd, TCSANOW, &newtio);

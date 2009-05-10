@@ -13,39 +13,37 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * espnetport.h
- * The Esp-Net plugin for lla
- * Copyright (C) 2005  Simon Newton
+ * EspNetPort.h
+ * The ESPNet plugin for lla
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef ESPNETPORT_H
 #define ESPNETPORT_H
 
+#include <espnet/espnet.h>
+#include <lla/DmxBuffer.h>
 #include <llad/Port.h>
-#include <lla/BaseTypes.h>
 #include "EspNetDevice.h"
 
-#include <espnet/espnet.h>
 
 namespace lla {
 namespace plugin {
 
 class EspNetPort: public lla::Port {
   public:
-    EspNetPort(EspNetDevice *parent, int id);
+    EspNetPort(EspNetDevice *parent, unsigned int id);
     ~EspNetPort() {}
 
-    int WriteDMX(uint8_t *data, unsigned int length);
-    int ReadDMX(uint8_t *data, unsigned int length);
+    bool WriteDMX(const DmxBuffer &buffer);
+    const DmxBuffer &ReadDMX() const;
 
     bool CanRead() const;
     bool CanWrite() const;
-    int UpdateBuffer(uint8_t *data, int length);
+    bool UpdateBuffer(uint8_t *data, int length);
 
   private :
-    uint8_t m_buf[DMX_UNIVERSE_SIZE];
-    unsigned int m_len;
+    DmxBuffer m_buffer;
     EspNetDevice *m_device;
 };
 

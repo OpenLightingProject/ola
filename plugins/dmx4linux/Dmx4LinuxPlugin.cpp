@@ -15,7 +15,7 @@
  *
  * Dmx4LinuxPlugin.cpp
  * The Dmx4Linux plugin for lla
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #include <errno.h>
@@ -42,7 +42,8 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
+extern "C" lla::AbstractPlugin* create(
+    const lla::PluginAdaptor *plugin_adaptor) {
   return new lla::plugin::Dmx4LinuxPlugin(plugin_adaptor);
 }
 
@@ -75,10 +76,10 @@ Dmx4LinuxPlugin::~Dmx4LinuxPlugin() {
  * Start the plugin
  */
 bool Dmx4LinuxPlugin::StartHook() {
-  if(!SetupSockets())
+  if (!SetupSockets())
     return false;
 
-  if(Setup()) {
+  if (Setup()) {
     CleanupSockets();
     return -1;
   }
@@ -113,8 +114,7 @@ bool Dmx4LinuxPlugin::StopHook() {
 }
 
 /*
- * return the description for this plugin
- *
+ * Return the description for this plugin
  */
 string Dmx4LinuxPlugin::Description() const {
     return
@@ -148,19 +148,21 @@ int Dmx4LinuxPlugin::SocketReady(lla::select_server::ConnectedSocket *socket) {
 /*
  * Send dmx
  */
-int Dmx4LinuxPlugin::SendDmx(int d4l_uni, uint8_t *data, int len) {
+bool Dmx4LinuxPlugin::SendDMX(int d4l_uni, const DmxBuffer &buffer) const {
   int fd = m_out_socket->WriteDescriptor();
   int offset = DMX_UNIVERSE_SIZE * d4l_uni;
   if (lseek(fd, offset, SEEK_SET) == offset) {
-    ssize_t r = m_out_socket->Send(data, len);
-    if (r != len) {
-      LLA_WARN << "only wrote " << r << "/" << len << " bytes: " <<
+    ssize_t r = m_out_socket->Send(buffer.GetRaw(), buffer.Size());
+    if (r != buffer.Size()) {
+      LLA_WARN << "only wrote " << r << "/" << buffer.Size() << " bytes: " <<
         strerror(errno);
+      return false;
     }
   } else {
     LLA_WARN << "failed to seek: " << strerror(errno);
+    return false;
   }
-  return 0;
+  return true;
 }
 
 
@@ -200,7 +202,7 @@ bool Dmx4LinuxPlugin::SetDefaultPreferences() {
  * open the input and output fds
  */
 bool Dmx4LinuxPlugin::SetupSockets() {
-  if(!m_in_socket && !m_out_socket) {
+  if (!m_in_socket && !m_out_socket) {
     int fd = open(m_out_dev.c_str(), O_WRONLY);
 
     if (fd < 0) {
@@ -262,11 +264,7 @@ int Dmx4LinuxPlugin::GetDmx4LinuxDeviceCount(int dir) {
  * @param dir   in|out
  */
 bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
-  Dmx4LinuxPort *prt;
   Dmx4LinuxDevice *dev = new Dmx4LinuxDevice(this, family);
-
-  if (!dev)
-    return false;
 
   if (dev->Start()) {
     LLA_WARN << "couldn't start device";
@@ -274,13 +272,7 @@ bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
     return false;
   }
 
-  prt = new Dmx4LinuxPort(dev, 0, d4l_uni, dir > 0, dir == 0);
-
-  if (!prt) {
-    LLA_WARN << "couldn't create port";
-    delete dev;
-    return false;
-  }
+  Dmx4LinuxPort *prt = new Dmx4LinuxPort(dev, d4l_uni, dir > 0, dir == 0);
 
   dev->AddPort(prt);
   m_plugin_adaptor->RegisterDevice(dev);

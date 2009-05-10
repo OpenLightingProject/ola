@@ -13,16 +13,16 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * dmx4linuxdevice.h
+ * Dmx4LinuxDevice.h
  * Interface for the dmx4linux device
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #ifndef DMX4LINUXDEVICE_H
 #define DMX4LINUXDEVICE_H
 
 #include <string>
-#include <stdint.h>
+#include <lla/DmxBuffer.h>
 #include <llad/Device.h>
 
 namespace lla {
@@ -35,13 +35,11 @@ class Dmx4LinuxDevice: public lla::Device {
 
     bool Start();
     bool Stop();
-    int SendDmx(int d4l_uni, uint8_t *data, int len);
+    bool SendDMX(int d4l_uni, const DmxBuffer &buffer) const;
 
   private:
-
-    // instance variables
-    class Dmx4LinuxPlugin *m_plugin; //
-    bool m_enabled;        // are we enabled
+    class Dmx4LinuxPlugin *m_plugin;
+    bool m_enabled;
 };
 
 } //plugin

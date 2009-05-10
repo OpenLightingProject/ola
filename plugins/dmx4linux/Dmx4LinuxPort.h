@@ -21,6 +21,7 @@
 #ifndef DMX4LINUXPORT_H
 #define DMX4LINUXPORT_H
 
+#include <lla/DmxBuffer.h>
 #include <llad/Port.h>
 #include "Dmx4LinuxDevice.h"
 
@@ -29,10 +30,10 @@ namespace plugin {
 
 class Dmx4LinuxPort: public lla::Port {
   public:
-    Dmx4LinuxPort(Dmx4LinuxDevice *parent, int id, int d4l, bool in, bool out);
+    Dmx4LinuxPort(Dmx4LinuxDevice *parent, int d4l, bool in, bool out);
 
-    int WriteDMX(uint8_t *data, unsigned int length);
-    int ReadDMX(uint8_t *data, unsigned int length);
+    bool WriteDMX(const DmxBuffer &buffer);
+    const DmxBuffer &ReadDMX() const;
 
     bool CanRead() const { return m_in; }
     bool CanWrite() const { return m_out; }
@@ -41,6 +42,7 @@ class Dmx4LinuxPort: public lla::Port {
     bool m_out;
     int m_dmx_universe;  // dmx4linux universe that this maps to
     Dmx4LinuxDevice *m_device;
+    DmxBuffer m_read_buffer;
 };
 
 } //plugin

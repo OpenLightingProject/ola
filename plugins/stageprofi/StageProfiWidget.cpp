@@ -18,6 +18,7 @@
  * Copyright (C) 2006-2009 Simon Newton
  */
 
+#include <string.h>
 #include <algorithm>
 #include <lla/Closure.h>
 #include "StageProfiWidget.h"

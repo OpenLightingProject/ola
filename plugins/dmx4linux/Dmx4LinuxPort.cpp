@@ -25,12 +25,16 @@
 namespace lla {
 namespace plugin {
 
+
+/*
+ * Constructor
+ * We only have 1 port per device so the id is always 0
+ */
 Dmx4LinuxPort::Dmx4LinuxPort(Dmx4LinuxDevice *parent,
-                             int id,
                              int dmx_universe,
                              bool in,
                              bool out):
-  Port(parent, id),
+  Port(parent, 0),
   m_in(in),
   m_out(out),
   m_dmx_universe(dmx_universe),
@@ -40,33 +44,23 @@ Dmx4LinuxPort::Dmx4LinuxPort(Dmx4LinuxDevice *parent,
 
 /*
  * Write operation
- *
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- *
- * @return   0 on success, non 0 on failure
+ * @param buffer the DmxBuffer to write
+ * @return true on success, false on failure
  */
-int Dmx4LinuxPort::WriteDMX(uint8_t *data, unsigned int length) {
+bool Dmx4LinuxPort::WriteDMX(const DmxBuffer &buffer) {
   if (!CanWrite())
-    return -1;
+    return false;
 
-  // send to device
-  return m_device->SendDmx(m_dmx_universe, data, length);
-
+  return m_device->SendDMX(m_dmx_universe, buffer);
 }
+
 
 /*
  * Read operation
- *
- * @param   data  buffer to read data into
- * @param   length  length of data to read
- *
- * @return  the amount of data read
+ * @return a DmxBufer with the data
  */
-int Dmx4LinuxPort::ReadDMX(uint8_t *data, unsigned int length) {
-  data = NULL;
-  length = 0;
-  return -1;
+const DmxBuffer &Dmx4LinuxPort::ReadDMX() const {
+  return m_read_buffer;
 }
 
 } //plugin

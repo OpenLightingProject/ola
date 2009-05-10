@@ -15,7 +15,7 @@
  *
  * Dmx4LinuxPlugin.h
  * Interface for the dmx4linux plugin class
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #ifndef DMX4LINUXPLUGIN_H
@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <string>
+#include <lla/DmxBuffer.h>
 #include <llad/Plugin.h>
 #include <lla/select_server/Socket.h>
 #include <lla/plugin_id.h>
@@ -47,7 +48,7 @@ class Dmx4LinuxPlugin: public lla::Plugin, public SocketListener {
     lla_plugin_id Id() const { return LLA_PLUGIN_DMX4LINUX; }
 
     int SocketReady(lla::select_server::ConnectedSocket *socket);
-    int SendDmx(int d4l_uni, uint8_t *data, int length);
+    bool SendDMX(int d4l_uni, const DmxBuffer &buffer) const;
 
   protected:
     string PreferencesSuffix() const { return PLUGIN_PREFIX; }

@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * dmx4linuxdevice.cpp
+ * Dmx4LinuxDevice.cpp
  * Dmx4Linux device
- * Copyright (C) 2006-2008 Simon Newton
+ * Copyright (C) 2006-2009 Simon Newton
  *
  */
 
@@ -67,7 +67,7 @@ Dmx4LinuxDevice::~Dmx4LinuxDevice() {
  */
 bool Dmx4LinuxDevice::Start() {
   m_enabled = true;
-  return 0;
+  return true;
 }
 
 
@@ -80,18 +80,16 @@ bool Dmx4LinuxDevice::Stop() {
 
   DeleteAllPorts();
   m_enabled = false;
-  return 0;
+  return true;
 }
 
 
 /*
  * Send the dmx out the widget
- * called from the Dmx4LinuxPort
- *
- * @return   0 on success, non 0 on failure
+ * @return true on success, false on failure
  */
-int Dmx4LinuxDevice::SendDmx(int d4l_uni, uint8_t *data, int len) {
-  return m_plugin->SendDmx(d4l_uni, data, len);
+bool Dmx4LinuxDevice::SendDMX(int d4l_uni, const DmxBuffer &buffer) const {
+  return m_plugin->SendDMX(d4l_uni, buffer);
 }
 
 } //plugin
