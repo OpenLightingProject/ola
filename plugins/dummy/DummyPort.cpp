@@ -19,9 +19,6 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <stdio.h>
-#include <string.h>
-
 #include <lla/Logging.h>
 #include "DummyPort.h"
 
@@ -29,56 +26,20 @@ namespace lla {
 namespace plugin {
 
 /*
- * @param parent  the parent device of this port
- * @param id    the port id
- *
- */
-DummyPort::DummyPort(AbstractDevice *parent, int id):
-  Port(parent, id),
-  m_length(DMX_UNIVERSE_SIZE) {
-
-  memset(m_dmx, 0x00, m_length);
-}
-
-
-/*
  * Write operation
  * @param  data  pointer to the dmx data
  * @param  length  the length of the data
- *
  */
-int DummyPort::WriteDMX(uint8_t *data, unsigned int length) {
-  int len = length < (int) DMX_UNIVERSE_SIZE ? length : (int) DMX_UNIVERSE_SIZE;
+bool DummyPort::WriteDMX(const DmxBuffer &buffer) {
+  m_buffer = buffer;
+  string data = buffer.Get();
 
-  memcpy(m_dmx, data, len);
-  m_length = len;
-
-  LLA_INFO << "Dummy port: got " << length << " bytes: " << std::hex <<
-    "0x" << data[0] <<
-    "0x" << data[1] <<
-    "0x" << data[2] <<
-    "0x" << data[3];
-
-  return 0;
-}
-
-
-/*
- * Read operation, this isn't used for now else we'd create loops
- *
- * @param   data  buffer to read data into
- * @param   length  length of data to read
- *
- * @return  the amount of data read
- */
-int DummyPort::ReadDMX(uint8_t *data, unsigned int length) {
-  unsigned int len ;
-
-  // copy to mem
-  len = length < m_length ? length : m_length;
-  memcpy(data, m_dmx, len);
-
-  return len;
+  LLA_INFO << "Dummy port: got " << buffer.Size() << " bytes: " << std::hex <<
+    "0x" << data.at(0) <<
+    "0x" << data.at(1) <<
+    "0x" << data.at(2) <<
+    "0x" << data.at(3);
+  return true;
 }
 
 } //plugin

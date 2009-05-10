@@ -13,15 +13,14 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * StageOrofiDeviceUsb.h
+ * StageProfiWidgetUsb.h
  * Interface for the StageProfi USB device
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #ifndef STAGEPROFIWIDGETUSB_H
 #define STAGEPROFIWIDGETUSB_H
 
-#include <string>
 #include "StageProfiWidget.h"
 
 namespace lla {
@@ -29,7 +28,7 @@ namespace plugin {
 
 class StageProfiWidgetUsb: public StageProfiWidget {
   public:
-    StageProfiWidgetUsb() : StageProfiWidget() {}
+    StageProfiWidgetUsb(): StageProfiWidget() {}
     ~StageProfiWidgetUsb() {}
 
     bool Connect(const std::string &ip);

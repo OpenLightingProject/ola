@@ -30,6 +30,7 @@
 #include <time.h>
 
 #include <lla/Logging.h>
+#include <lla/BaseTypes.h>
 #include "OpenDmxThread.h"
 
 namespace lla {
@@ -56,7 +57,6 @@ void *thread_run(void *d) {
  */
 OpenDmxThread::OpenDmxThread() {
   m_fd = -1;
-  memset(m_dmx, 0x00, DMX_UNIVERSE_SIZE);
   pthread_mutex_init(&m_mutex, NULL);
   m_term = false;
   pthread_mutex_init(&m_term_mutex, NULL);
@@ -82,6 +82,7 @@ OpenDmxThread::~OpenDmxThread() {
  */
 void *OpenDmxThread::Run(const string &path) {
   uint8_t buf[DMX_UNIVERSE_SIZE+1];
+  unsigned int length = DMX_UNIVERSE_SIZE;
   struct timeval tv;
   struct timespec ts;
 
@@ -116,8 +117,9 @@ void *OpenDmxThread::Run(const string &path) {
         LLA_WARN << "Open " << m_fd << ": " << strerror(errno);
 
     } else {
+      length = DMX_UNIVERSE_SIZE;
       pthread_mutex_lock(&m_mutex);
-      memcpy(&buf[1], m_dmx, DMX_UNIVERSE_SIZE);
+      m_buffer.Get(buf, length);
       pthread_mutex_unlock(&m_mutex);
 
       do_write(buf, DMX_UNIVERSE_SIZE + 1);
@@ -165,10 +167,11 @@ int OpenDmxThread::Stop() {
  * Store the data in the shared buffer
  *
  */
-int OpenDmxThread::WriteDmx(uint8_t *data, int length) {
+bool OpenDmxThread::WriteDmx(const DmxBuffer &buffer) {
   pthread_mutex_lock(&m_mutex);
-  memcpy(m_dmx, data, length);
+  m_buffer = buffer;
   pthread_mutex_unlock(&m_mutex);
+  return true;
 }
 
 

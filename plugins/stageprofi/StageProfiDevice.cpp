@@ -15,10 +15,7 @@
  *
  * StageProfiDevice.cpp
  * StageProfi device
- * Copyright (C) 2006-2007 Simon Newton
- *
- * The device creates two ports, one in and one out, but you can only use one
- * at a time.
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #include <stdlib.h>
@@ -96,10 +93,6 @@ bool StageProfiDevice::Start() {
   }
 
   StageProfiPort *port = new StageProfiPort(this, 0);
-
-  if (!port)
-    return false;
-
   AddPort(port);
   m_enabled = true;
   return true;
@@ -132,12 +125,10 @@ Socket *StageProfiDevice::GetSocket() const {
 
 /*
  * Send the dmx out the widget
- * called from the StageProfiPort
- *
- * @return   0 on success, non 0 on failure
+ * @return true on success, false on failure
  */
-int StageProfiDevice::SendDmx(uint8_t *data, int len) {
-  return m_widget->SendDmx(data,len);
+bool StageProfiDevice::SendDmx(const DmxBuffer &buffer) const {
+  return m_widget->SendDmx(buffer);
 }
 
 } // plugin

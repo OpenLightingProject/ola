@@ -37,6 +37,7 @@ const string OpenDmxPlugin::OPENDMX_DEVICE_PATH = "/dev/dmx0";
 const string OpenDmxPlugin::OPENDMX_DEVICE_NAME = "OpenDmx USB Device";
 const string OpenDmxPlugin::PLUGIN_NAME = "OpenDmx Plugin";
 const string OpenDmxPlugin::PLUGIN_PREFIX = "opendmx";
+const string OpenDmxPlugin::DEVICE_KEY = "device";
 
 
 /*
@@ -66,19 +67,15 @@ bool OpenDmxPlugin::StartHook() {
 
   /* create new lla device */
   // first check if it's there
-  fd = open(m_preferences->GetValue("device").c_str(), O_WRONLY);
+  fd = open(m_preferences->GetValue(DEVICE_KEY).c_str(), O_WRONLY);
 
   if (fd > 0) {
     close(fd);
-    m_device = new OpenDmxDevice(this, OPENDMX_DEVICE_NAME, m_preferences->GetValue("device"));
-
-    if (!m_device)
-      return false;
+    m_device = new OpenDmxDevice(this, OPENDMX_DEVICE_NAME,
+                                 m_preferences->GetValue(DEVICE_KEY));
 
     m_device->Start();
     m_plugin_adaptor->RegisterDevice(m_device);
-
-    return true;
   }
   return true;
 }
@@ -86,7 +83,6 @@ bool OpenDmxPlugin::StartHook() {
 
 /*
  * Stop the plugin
- *
  * @return true on success, false on failure
  */
 bool OpenDmxPlugin::StopHook() {
@@ -122,18 +118,17 @@ string OpenDmxPlugin::Description() const {
  * Load the plugin prefs and default to sensible values
  */
 bool OpenDmxPlugin::SetDefaultPreferences() {
-  const string device_key = "device";
   if (!m_preferences)
     return false;
 
-  if (m_preferences->GetValue(device_key).empty()) {
-    m_preferences->SetValue(device_key, OPENDMX_DEVICE_PATH);
+  if (m_preferences->GetValue(DEVICE_KEY).empty()) {
+    m_preferences->SetValue(DEVICE_KEY, OPENDMX_DEVICE_PATH);
     m_preferences->Save();
   }
 
   // check if this save correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue(device_key).empty())
+  if (m_preferences->GetValue(DEVICE_KEY).empty())
     return false;
 
   return true;

@@ -15,15 +15,16 @@
  *
  * OpenDmxPort.h
  * The Open DMX plugin for lla
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef OPENDMXPORT_H
 #define OPENDMXPORT_H
 
+#include <string>
+#include <lla/DmxBuffer.h>
 #include <llad/Port.h>
 #include <OpenDmxThread.h>
-#include <string>
 
 namespace lla {
 namespace plugin {
@@ -32,15 +33,17 @@ using std::string;
 
 class OpenDmxPort: public lla::Port {
   public:
-    OpenDmxPort(lla::AbstractDevice *parent, int id, const string &path);
+    OpenDmxPort(lla::AbstractDevice *parent, unsigned int id,
+                const string &path);
     ~OpenDmxPort();
 
-    int WriteDMX(uint8_t *data, unsigned int length);
-    // reading isn't supported in the drive
-    int ReadDMX(uint8_t *data, unsigned int length) { return 0; }
+    bool WriteDMX(const DmxBuffer &buffer);
+    // reading isn't supported in the driver
+    const DmxBuffer &ReadDMX() const { return m_empty_buffer; }
     bool CanRead() const { return false; }
   private:
     OpenDmxThread *m_thread;
+    DmxBuffer m_empty_buffer;
 };
 
 } //plugins

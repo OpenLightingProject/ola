@@ -24,7 +24,8 @@
 namespace lla {
 namespace plugin {
 
-OpenDmxPort::OpenDmxPort(AbstractDevice *parent, int id, const string &path): Port(parent, id) {
+OpenDmxPort::OpenDmxPort(AbstractDevice *parent, unsigned int id,
+                         const string &path): Port(parent, id) {
   m_thread = new OpenDmxThread();
 
   if (m_thread)
@@ -42,17 +43,13 @@ OpenDmxPort::~OpenDmxPort() {
 
 /*
  * Write operation
- *
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- *
+ * @param buffer, the DmxBuffer to write
  */
-int OpenDmxPort::WriteDMX(uint8_t *data, unsigned int length) {
+bool OpenDmxPort::WriteDMX(const DmxBuffer &buffer) {
   if (!CanWrite())
-    return -1;
+    return true;
 
-  m_thread->WriteDmx(data, length);
-  return 0;
+  return m_thread->WriteDmx(buffer);
 }
 
 } //plugins

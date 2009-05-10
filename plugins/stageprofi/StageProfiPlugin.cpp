@@ -53,7 +53,7 @@ const string StageProfiPlugin::STAGEPROFI_DEVICE_PATH = "/dev/ttyUSB0";
 const string StageProfiPlugin::STAGEPROFI_DEVICE_NAME = "StageProfi Device";
 const string StageProfiPlugin::PLUGIN_NAME = "StageProfi Plugin";
 const string StageProfiPlugin::PLUGIN_PREFIX = "stageprofi";
-
+const string StageProfiPlugin::DEVICE_KEY = "device";
 
 /*
  * Start the plugin
@@ -66,16 +66,13 @@ bool StageProfiPlugin::StartHook() {
   StageProfiDevice *device;
 
   // fetch device listing
-  device_names = m_preferences->GetMultipleValue("device");
+  device_names = m_preferences->GetMultipleValue(DEVICE_KEY);
 
   for (it = device_names.begin(); it != device_names.end(); ++it) {
     if (it->empty())
       continue;
 
     device = new StageProfiDevice(this, STAGEPROFI_DEVICE_NAME, *it);
-
-    if (!device)
-      continue;
 
     if (!device->Start()) {
       delete device;
@@ -154,14 +151,14 @@ bool StageProfiPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->GetValue("device").empty()) {
-    m_preferences->SetValue("device", STAGEPROFI_DEVICE_NAME);
+  if (m_preferences->GetValue(DEVICE_KEY).empty()) {
+    m_preferences->SetValue(DEVICE_KEY, STAGEPROFI_DEVICE_NAME);
     m_preferences->Save();
   }
 
   // check if this saved correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue("device").empty()) {
+  if (m_preferences->GetValue(DEVICE_KEY).empty()) {
     return false;
   }
   return true;

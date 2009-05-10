@@ -41,9 +41,6 @@ bool DummyDevice::Start() {
 
   port = new DummyPort(this, 0);
 
-  if (!port)
-    return false;
-
   if (AddPort(port)) {
     delete port;
     return false;

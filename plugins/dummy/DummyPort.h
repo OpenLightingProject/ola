@@ -14,30 +14,30 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DummyPort_h
- * Dummy port
- * Copyright (C) 2005-2007 Simon Newton
+ * The interface to the Dummy port
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef DUMMYPORT_H
 #define DUMMYPORT_H
 
+#include <lla/DmxBuffer.h>
 #include <llad/Port.h>
-#include <lla/BaseTypes.h>
 
 namespace lla {
 namespace plugin {
 
 class DummyPort: public Port {
   public:
-    DummyPort(AbstractDevice *parent, int id);
+    DummyPort(AbstractDevice *parent, unsigned int id):
+      Port(parent, id) {}
     bool CanRead() const { return false; }
 
-    int WriteDMX(uint8_t *data, unsigned int length);
-    int ReadDMX(uint8_t *data, unsigned int length);
+    bool WriteDMX(const DmxBuffer &buffer);
+    const DmxBuffer &ReadDMX() const { return m_buffer; }
 
   private:
-    uint8_t m_dmx[DMX_UNIVERSE_SIZE]; // pointer to our dmx buffer
-    unsigned int m_length;       // length of dmx buffer
+    DmxBuffer m_buffer;
 };
 
 } //plugin

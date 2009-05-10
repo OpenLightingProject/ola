@@ -94,7 +94,7 @@ LlaServer::LlaServer(LlaServerServiceImplFactory *factory,
   if (!m_options.http_port)
     m_options.http_port = DEFAULT_HTTP_PORT;
 
-  IntegerVariable *var = m_export_map->GetIntegerVar(K_CLIENT_VAR);
+  m_export_map->GetIntegerVar(K_CLIENT_VAR);
 }
 
 

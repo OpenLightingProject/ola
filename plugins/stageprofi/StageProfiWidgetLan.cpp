@@ -13,41 +13,29 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * stageprofiwidget.cpp
- * StageProfi Widget
- * Copyright (C) 2006-2007 Simon Newton
+ * StageProfiWidgetLan.cpp
+ * StageProfi Lan Widget
+ * Copyright (C) 2006-2009 Simon Newton
  *
  * The StageProfi LAN Widget.
  */
 
-#include <sys/types.h>
-
 #include <lla/select_server/Socket.h>
-
 #include "StageProfiWidgetLan.h"
-
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
 
 namespace lla {
 namespace plugin {
 
-using std::string;
 using lla::select_server::TcpSocket;
-
-static const unsigned int STAGEPROFI_PORT = 10001;
 
 /*
  * Connect to the widget
- *
  * @returns true on success, false on failure
  */
-bool StageProfiWidgetLan::Connect(const string &ip) {
+bool StageProfiWidgetLan::Connect(const std::string &ip) {
   TcpSocket *socket = new TcpSocket();
-  int ret = socket->Connect(ip, STAGEPROFI_PORT);
   m_socket = socket;
-  return ret;
+  return socket->Connect(ip, STAGEPROFI_PORT);
 }
 
 } // plugin

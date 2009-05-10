@@ -15,17 +15,15 @@
  *
  * OpenDmxThread.h
  * Thread for the open dmx device
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef OPENDMXTHREAD_H
 #define OPENDMXTHREAD_H
 
-#include <stdint.h>
 #include <pthread.h>
 #include <string>
-
-#include <lla/BaseTypes.h>
+#include <lla/DmxBuffer.h>
 
 namespace lla {
 namespace plugin {
@@ -37,14 +35,14 @@ class OpenDmxThread {
 
     int Start(const std::string &path);
     int Stop();
-    int WriteDmx(uint8_t *data, int channels);
+    bool WriteDmx(const DmxBuffer &buffer);
     void *Run(const std::string &path);
 
   private:
     int do_write(uint8_t *buf, int length);
 
     int m_fd;
-    uint8_t m_dmx[DMX_UNIVERSE_SIZE];
+    DmxBuffer m_buffer;
     pthread_mutex_t m_mutex;
     bool m_term;
     pthread_mutex_t m_term_mutex;

@@ -15,13 +15,13 @@
  *
  * Port.h
  * Header file for the Port class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef PORT_H
 #define PORT_H
 
-#include <stdint.h>
+#include <lla/DmxBuffer.h>
 
 namespace lla {
 
@@ -34,14 +34,14 @@ class AbstractPort {
     virtual ~AbstractPort() {};
 
     virtual AbstractDevice *GetDevice() const = 0;
-    virtual int PortId() const = 0;
-    virtual int SetUniverse(Universe *universe) = 0;
+    virtual unsigned int PortId() const = 0;
+    virtual bool SetUniverse(Universe *universe) = 0;
     virtual Universe *GetUniverse() const = 0;
-    virtual int DmxChanged() = 0;
+    virtual bool DmxChanged() = 0;
 
     // read/write dmx data to this port
-    virtual int WriteDMX(uint8_t *data, unsigned int length) = 0;
-    virtual int ReadDMX(uint8_t *data, unsigned int length) = 0;
+    virtual bool WriteDMX(const DmxBuffer &buffer) = 0;
+    virtual const DmxBuffer &ReadDMX() const = 0;
 
     // indicate our port's capability
     virtual bool CanRead() const = 0;
@@ -51,14 +51,14 @@ class AbstractPort {
 
 class Port: public AbstractPort {
   public:
-    Port(AbstractDevice *parent, int id);
+    Port(AbstractDevice *parent, unsigned int id);
     virtual ~Port() {};
 
-    AbstractDevice *GetDevice() const               { return m_parent; }
-    int PortId() const                      { return m_port_id; }
-    int SetUniverse(Universe *uni)  { m_universe = uni; return 0; }
-    Universe *GetUniverse() const   { return m_universe; }
-    int DmxChanged();
+    AbstractDevice *GetDevice() const { return m_parent; }
+    unsigned int PortId() const { return m_port_id; }
+    bool SetUniverse(Universe *uni) { m_universe = uni; return true; }
+    Universe *GetUniverse() const { return m_universe; }
+    bool DmxChanged();
 
     // default is read/write
     virtual bool CanRead()  const { return true; }
@@ -68,9 +68,9 @@ class Port: public AbstractPort {
     Port(const Port&);
     Port& operator=(const Port&);
 
-    int m_port_id;
+    unsigned int m_port_id;
     Universe *m_universe; // universe this port belongs to
-    AbstractDevice *m_parent;     // pointer to the device this port belongs to
+    AbstractDevice *m_parent; // pointer to the device this port belongs to
 };
 
 

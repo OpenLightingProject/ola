@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArtnetPort.h
- * The Art-Net plugin for lla
- * Copyright (C) 2005-2008 Simon Newton
+ * The ArtNet plugin for lla
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef ARTNETPORT_H
@@ -29,13 +29,15 @@ namespace plugin {
 
 class ArtNetPort: public Port {
   public:
-    ArtNetPort(AbstractDevice *parent, int id) : Port(parent, id) {};
+    ArtNetPort(AbstractDevice *parent, unsigned int id): Port(parent, id) {};
 
-    int SetUniverse(Universe *uni) ;
-    int WriteDMX(uint8_t *data, unsigned int length);
-    int ReadDMX(uint8_t *data, unsigned int length);
+    bool SetUniverse(Universe *universe);
+    bool WriteDMX(const DmxBuffer &data);
+    const DmxBuffer &ReadDMX() const;
     bool CanRead() const;
-    bool CanWrite() const ;
+    bool CanWrite() const;
+  private:
+    mutable DmxBuffer m_buffer;
 };
 
 } //plugin

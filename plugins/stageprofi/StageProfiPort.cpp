@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * StageProfiPort.cpp
- * The USB Pro plugin for lla
- * Copyright (C) 2006-2007 Simon Newton
+ * The StageProfi plugin for lla
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #include <string.h>
@@ -27,33 +27,16 @@ namespace plugin {
 
 /*
  * Write operation
- *
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- * @return   0 on success, non 0 on failure
+ * @param the buffer to write
+ * @return true on success, false on failure
  */
-int StageProfiPort::WriteDMX(uint8_t *data, unsigned int length) {
+bool StageProfiPort::WriteDMX(const DmxBuffer &buffer) {
   StageProfiDevice *dev = (StageProfiDevice*) GetDevice();
 
   if (!CanWrite())
-    return -1;
+    return true;
 
-  // send to device
-  return dev->SendDmx(data, length);
-}
-
-
-/*
- * Read operation
- *
- * @param   data  buffer to read data into
- * @param   length  length of data to read
- * @return  the amount of data read
- */
-int StageProfiPort::ReadDMX(uint8_t *data, unsigned int length) {
-  data = NULL;
-  length = 0;
-  return -1;
+  return dev->SendDmx(buffer);
 }
 
 } //plugin

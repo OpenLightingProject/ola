@@ -23,6 +23,7 @@
 
 #include <string>
 #include <deque>
+#include <lla/DmxBuffer.h>
 #include <lla/select_server/Socket.h>
 #include <llad/Device.h>
 #include <llad/PluginAdaptor.h>
@@ -73,8 +74,8 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
                    Closure *done);
 
     ConnectedSocket *GetSocket() const;
-    bool SendDmx(const uint8_t *data, int len) const;
-    int FetchDmx(uint8_t *data, int len) const;
+    bool SendDMX(const DmxBuffer &buffer);
+    const DmxBuffer &FetchDMX() const;
     bool ChangeToReceiveMode();
 
     // callbacks from the widget
@@ -99,8 +100,8 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
 
     const lla::PluginAdaptor *m_plugin_adaptor;
     string m_path;
-    bool m_enabled;            // are we enabled
-    bool m_in_shutdown;        // set to true if we're shutting down
+    bool m_enabled;
+    bool m_in_shutdown; // set to true if we're shutting down
     UsbProWidget *m_widget;
     deque<lla::plugin::usbpro::OutstandingRequest>
       m_outstanding_param_requests;

@@ -13,17 +13,17 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * artnetdevice.h
- * Interface for the artnet device
- * Copyright (C) 2005  Simon Newton
+ * ArtNetDevice.h
+ * Interface for the ArtNet device
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef ARTNETDEVICE_H
 #define ARTNETDEVICE_H
 
+#include <lla/select_server/Socket.h>
 #include <llad/Device.h>
-#include <lla/select_server/FdListener.h>
+#include <llad/PluginAdaptor.h>
 
 #include <artnet/artnet.h>
 #include "messages/ArtnetConfigMessages.pb.h"
@@ -39,23 +39,23 @@ class Preferences;
 namespace plugin {
 
 using lla::Device;
-using lla::select_server::FDListener;
+using lla::select_server::ConnectedSocket;
 using std::string;
 
-class ArtNetDevice : public Device, public FDListener {
+class ArtNetDevice : public Device, public lla::select_server::SocketListener {
   public:
     ArtNetDevice(AbstractPlugin *owner,
                  const string &name,
-                 class Preferences *prefs,
+                 class Preferences *preferences,
                  bool debug);
     ~ArtNetDevice();
 
     bool Start();
     bool Stop();
     artnet_node GetArtnetNode() const;
-    int get_sd() const;
-    int FDReady();
     int SaveConfig() const;
+    int SocketReady(ConnectedSocket *socket);
+    ConnectedSocket *GetSocket() { return m_socket; }
 
     void Configure(RpcController *controller,
                    const string &request,
@@ -64,6 +64,7 @@ class ArtNetDevice : public Device, public FDListener {
 
   private:
     class Preferences *m_preferences;
+    ConnectedSocket *m_socket;
     artnet_node m_node;
     string m_short_name;
     string m_long_name;
@@ -76,7 +77,6 @@ class ArtNetDevice : public Device, public FDListener {
     static const string K_LONG_NAME_KEY;
     static const string K_SUBNET_KEY;
     static const string K_IP_KEY;
-
 };
 
 } //plugin

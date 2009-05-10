@@ -22,6 +22,7 @@
 #define LLA_CLIENT_H
 
 #include <stdint.h>
+#include <lla/DmxBuffer.h>
 #include "common/rpc/SimpleRpcController.h"
 
 namespace lla {
@@ -41,18 +42,19 @@ class Client {
     Client(LlaClientService_Stub *client_stub):
       m_client_stub(client_stub) {}
     virtual ~Client() {};
-    virtual bool SendDMX(unsigned int universe_id,
-                         const uint8_t *data,
-                         unsigned int length);
+    virtual bool SendDMX(unsigned int universe_id, const DmxBuffer &buffer);
 
     void SendDMXCallback(lla::rpc::SimpleRpcController *controller,
                          lla::proto::Ack *ack);
+    void SetDMX(const DmxBuffer &buffer);
+    const DmxBuffer &GetDMX() const { return m_buffer; }
     class LlaClientService_Stub *Stub() const { return m_client_stub; }
 
   private:
     Client(const Client&);
     Client& operator=(const Client&);
     class LlaClientService_Stub *m_client_stub;
+    DmxBuffer m_buffer;
 };
 
 } //lla

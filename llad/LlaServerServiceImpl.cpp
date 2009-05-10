@@ -20,6 +20,7 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
+#include <lla/DmxBuffer.h>
 #include <lla/Logging.h>
 #include <lla/ExportMap.h>
 #include <llad/Universe.h>
@@ -27,10 +28,11 @@
 #include <llad/Port.h>
 #include <llad/Plugin.h>
 #include <llad/PluginLoader.h>
-#include "common/protocol/Lla.pb.h"
+#include "Client.h"
+#include "DeviceManager.h"
 #include "LlaServerServiceImpl.h"
 #include "UniverseStore.h"
-#include "DeviceManager.h"
+#include "common/protocol/Lla.pb.h"
 
 namespace lla {
 
@@ -50,12 +52,8 @@ void LlaServerServiceImpl::GetDmx(
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  unsigned int dmx_length;
-  const uint8_t *dmx_data = universe->GetDMX(dmx_length);
-  string dmx_string;
-  dmx_string.append((char*) dmx_data, dmx_length);
-
-  response->set_data(dmx_string);
+  const DmxBuffer buffer = universe->GetDMX();
+  response->set_data(buffer.Get());
   response->set_universe(request->universe());
   done->Run();
 }
@@ -98,8 +96,11 @@ void LlaServerServiceImpl::UpdateDmxData(
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  string dmx_string = request->data();
-  universe->SetDMX((uint8_t*) dmx_string.c_str(), dmx_string.length());
+  DmxBuffer buffer;
+  buffer.Set(request->data());
+  if (m_client)
+    m_client->SetDMX(buffer);
+  universe->ClientDataChanged(m_client);
   done->Run();
 }
 
@@ -278,8 +279,8 @@ void LlaServerServiceImpl::ConfigureDevice(RpcController* controller,
 }
 
 
-// Private method
-//-------------------------------------------------------------------------------
+// Private methods
+//-----------------------------------------------------------------------------
 void LlaServerServiceImpl::MissingUniverseError(RpcController* controller,
                                                 Closure* done) {
 
@@ -360,7 +361,7 @@ void LlaServerServiceImpl::AddDevice(AbstractDevice *device,
 
 
 //LlaServerServiceImplFactory
-//-------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 LlaServerServiceImpl *LlaServerServiceImplFactory::New(
     UniverseStore *universe_store,
     DeviceManager *device_manager,

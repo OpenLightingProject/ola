@@ -49,6 +49,7 @@ using std::string;
 
 const string DummyPlugin::PLUGIN_NAME = "Dummy Plugin";
 const string DummyPlugin::PLUGIN_PREFIX = "dummy";
+const string DummyPlugin::DEVICE_NAME = "Dummy Device";
 
 /*
  * Start the plugin
@@ -56,13 +57,7 @@ const string DummyPlugin::PLUGIN_PREFIX = "dummy";
  * Lets keep it simple, one device for this plugin
  */
 bool DummyPlugin::StartHook() {
-  /* create new lla device */
-  m_device = new DummyDevice(this, "Dummy Device");
-
-  if (!m_device)
-    return false;
-
-  // start this device and register it
+  m_device = new DummyDevice(this, DEVICE_NAME);
   m_device->Start();
   m_plugin_adaptor->RegisterDevice(m_device);
   return true;
@@ -71,7 +66,6 @@ bool DummyPlugin::StartHook() {
 
 /*
  * Stop the plugin
- *
  * @return true on sucess, false on failure
  */
 bool DummyPlugin::StopHook() {

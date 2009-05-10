@@ -22,10 +22,11 @@
 #include <string>
 #include <iostream>
 
-#include <lla/StringUtils.h>
+#include <lla/DmxBuffer.h>
 #include <lla/DmxUtils.h>
-#include <llad/Plugin.h>
+#include <lla/StringUtils.h>
 #include <llad/Device.h>
+#include <llad/Plugin.h>
 #include <llad/Port.h>
 #include <llad/Universe.h>
 #include "DeviceManager.h"
@@ -335,10 +336,10 @@ int LlaHttpServer::HandleSetDmx(const HttpRequest *request,
   if (!universe)
     return m_server.ServeNotFound(response);
 
-  dmx_t dmx_data[DMX_UNIVERSE_SIZE];
-  unsigned int length = StringToDmx(dmx_data_str, dmx_data, DMX_UNIVERSE_SIZE);
-  if (length)
-    universe->SetDMX(dmx_data, length);
+  DmxBuffer buffer;
+  buffer.SetFromString(dmx_data_str);
+  if (buffer.Size())
+    universe->SetDMX(buffer);
   response->Append("ok");
   return response->Send();
 }

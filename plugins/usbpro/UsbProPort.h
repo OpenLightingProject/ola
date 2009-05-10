@@ -15,12 +15,13 @@
  *
  * UsbProPort.h
  * The UsbPro plugin for lla
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #ifndef USBPROPORT_H
 #define USBPROPORT_H
 
+#include <lla/DmxBuffer.h>
 #include <llad/Port.h>
 #include "UsbProDevice.h"
 
@@ -29,18 +30,19 @@ namespace plugin {
 
 class UsbProPort: public lla::Port {
   public:
-    UsbProPort(UsbProDevice *parent, int id):
+    UsbProPort(UsbProDevice *parent, unsigned int id):
       lla::Port(parent, id),
       m_usb_device(parent) {};
 
-    int WriteDMX(uint8_t *data, unsigned int length);
-    int ReadDMX(uint8_t *data, unsigned int length);
-    int SetUniverse(Universe *uni);
+    bool WriteDMX(const DmxBuffer &buffer);
+    const DmxBuffer &ReadDMX() const;
+    bool SetUniverse(Universe *uni);
     bool CanRead() const;
     bool CanWrite() const;
 
   private:
     UsbProDevice *m_usb_device;
+    DmxBuffer m_empty_buffer;
 };
 
 } // plugin

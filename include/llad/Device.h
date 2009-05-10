@@ -63,6 +63,8 @@ class AbstractDevice {
 };
 
 
+// TODO: convert this into a template so we don't have to use casts on
+// GetPort()
 class Device: public AbstractDevice {
   public:
     Device(AbstractPlugin *owner, const string &name);
@@ -91,10 +93,10 @@ class Device: public AbstractDevice {
   private:
     Device(const Device&);
     Device& operator=(const Device&);
-    AbstractPlugin *m_owner;        // which plugin owns this device
-    string m_name;          // device name
+    AbstractPlugin *m_owner; // which plugin owns this device
+    string m_name; // device name
     unsigned int m_device_id;
-    vector<lla::AbstractPort*> m_ports;  // ports on the device
+    vector<lla::AbstractPort*> m_ports; // ports on the device
 };
 
 } //lla

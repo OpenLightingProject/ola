@@ -14,33 +14,17 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * StageprofiWidget.cpp
- * StageProfi Widget
- * Copyright (C) 2006-2007 Simon Newton
- *
- * The device represents the widget.
+ * This is the base widget class
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-
+#include <algorithm>
 #include <lla/Closure.h>
-
 #include "StageProfiWidget.h"
-
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#define min(a,b) a<b?a:b
 
 namespace lla {
 namespace plugin {
 
-static const unsigned DMX_MSG_LEN = 255;
 
 enum stageprofi_packet_type_e {
   ID_GETDMX =  0xFE,
@@ -53,7 +37,7 @@ typedef enum stageprofi_packet_type_e stageprofi_packet_type;
 
 
 /*
- *
+ * New widget
  */
 StageProfiWidget::~StageProfiWidget() {
   if (m_socket) {
@@ -61,6 +45,7 @@ StageProfiWidget::~StageProfiWidget() {
     delete m_socket;
   }
 }
+
 
 /*
  * Disconnect from the widget
@@ -76,17 +61,15 @@ int StageProfiWidget::Disconnect() {
  * This has the nasty property of blocking if we remove the device
  * TODO: fix this
  */
-int StageProfiWidget::SendDmx(uint8_t *buf, unsigned int len) const {
-  unsigned int start = 0;
-  unsigned int l = 0;
+bool StageProfiWidget::SendDmx(const DmxBuffer &buffer) const {
 
-  while (start < len) {
-    // send the other 256
-    l = min(DMX_MSG_LEN, len - start);
-    Send255(start, buf + start, l);
-    start += l;
+  unsigned int index = 0;
+  while (index < buffer.Size()) {
+    unsigned int size = min((unsigned int) DMX_MSG_LEN, buffer.Size() - index);
+    Send255(index, buffer.GetRaw() + index, size);
+    index += size;
   }
-  return 0;
+  return true;
 }
 
 
@@ -136,8 +119,6 @@ bool StageProfiWidget::DetectDevice() {
 }
 
 
-
-
 //-----------------------------------------------------------------------------
 // Private methods used for communicating with the widget
 
@@ -156,18 +137,21 @@ int StageProfiWidget::SetChannel(unsigned int chan, uint8_t val) const {
 
 /*
  * Send 255 channels worth of data
+ * @param start the start channel for the data
+ * @param buf a pointer to the data
+ * @param len the length of the data
  */
-int StageProfiWidget::Send255(unsigned int start, uint8_t *buf, unsigned int len) const {
-  uint8_t msg[256 + 4];
-  unsigned int l = min(DMX_MSG_LEN, len);
+int StageProfiWidget::Send255(unsigned int start, const uint8_t *buf,
+                              unsigned int length) const {
+  uint8_t msg[DMX_MSG_LEN + DMX_HEADER_SIZE];
+  unsigned int len = min((unsigned int) DMX_MSG_LEN, length);
 
   msg[0] = ID_SETDMX;
   msg[1] = start & 0xFF;
   msg[2] = (start>>8) & 0xFF;
-  msg[3] = l;
-  memcpy(msg+4, buf, l);
-  //printf("send %hhx %hhx %hhx %hhx %hhx %hhx, %hhx %hhx\n", msg[0], msg[1], msg[2], msg[3], msg[4], msg[258], msg[259]);
-  return m_socket->Send(msg, len + 4);
+  msg[3] = len;
+  memcpy(msg + DMX_HEADER_SIZE, buf, len);
+  return m_socket->Send(msg, len + DMX_HEADER_SIZE);
 }
 
 

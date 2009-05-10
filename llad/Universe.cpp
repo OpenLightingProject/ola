@@ -45,15 +45,13 @@ const string Universe::K_MERGE_LTP_STR = "ltp";
  *
  * @param uid  the universe id of this universe
  */
-Universe::Universe(int universe_id, UniverseStore *store, ExportMap *export_map):
+Universe::Universe(unsigned int universe_id, UniverseStore *store,
+                   ExportMap *export_map):
   m_universe_name(""),
   m_universe_id(universe_id),
   m_merge_mode(Universe::MERGE_LTP),
   m_universe_store(store),
-  m_length(DMX_UNIVERSE_SIZE),
   m_export_map(export_map) {
-
-  memset(m_data, 0x00, DMX_UNIVERSE_SIZE);
 
   stringstream universe_id_str;
   universe_id_str << universe_id;
@@ -104,15 +102,15 @@ void Universe::SetMergeMode(merge_mode merge_mode) {
  *
  * @param port the port to add
  */
-int Universe::AddPort(AbstractPort *port) {
+bool Universe::AddPort(AbstractPort *port) {
   vector<AbstractPort*>::iterator iter;
   Universe *universe = port->GetUniverse();
 
   if (universe == this)
-    return 0;
+    return true;
 
   // unpatch if required
-  if (universe != NULL) {
+  if (universe) {
     LLA_DEBUG << "Port " << port->PortId() << " is bound to universe " <<
       universe->UniverseId();
     universe->RemovePort(port);
@@ -126,19 +124,17 @@ int Universe::AddPort(AbstractPort *port) {
     IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR);
     map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
   }
-  return 0;
+  return true;
 }
 
 
 /*
- * Remove a port from this universe. After calling this method you need to
- * check if this universe is still in use, and if not delete it
- *
+ * Remove a port from this universe.
  * @param port the port to remove
+ * @return true if the port was removed, false if it didn't exist
  */
-int Universe::RemovePort(AbstractPort *port) {
+bool Universe::RemovePort(AbstractPort *port) {
   vector<AbstractPort*>::iterator iter;
-
   iter = find(m_ports.begin(), m_ports.end(), port);
 
   if (iter != m_ports.end()) {
@@ -152,27 +148,26 @@ int Universe::RemovePort(AbstractPort *port) {
       m_universe_id;
   } else {
     LLA_DEBUG << "Could not find port in universe";
-    return -1;
+    return false;
   }
 
   if (!IsActive())
     m_universe_store->AddUniverseGarbageCollection(this);
-  return 0;
+  return true;
 }
 
 
 /*
  * Add this client to this universe
- *
  * @param client the client to add
  */
-int Universe::AddClient(Client *client) {
+bool Universe::AddClient(Client *client) {
   vector<Client*>::const_iterator iter = find(m_clients.begin(),
                                               m_clients.end(),
                                               client);
 
   if (iter != m_clients.end())
-    return 0;
+    return true;
 
   LLA_INFO << "Added client " << client << " to universe " << m_universe_id;
   m_clients.push_back(client);
@@ -180,7 +175,7 @@ int Universe::AddClient(Client *client) {
     IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR);
     map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
   }
-  return 0;
+  return true;
 }
 
 
@@ -189,7 +184,7 @@ int Universe::AddClient(Client *client) {
  * check if this universe is still in use, and if not delete it
  * @param client  the client to remove
  */
-int Universe::RemoveClient(Client *client) {
+bool Universe::RemoveClient(Client *client) {
   vector<Client*>::iterator iter = find(m_clients.begin(),
                                         m_clients.end(),
                                         client);
@@ -206,7 +201,7 @@ int Universe::RemoveClient(Client *client) {
 
   if (!IsActive())
     m_universe_store->AddUniverseGarbageCollection(this);
-  return 0;
+  return true;
 }
 
 
@@ -225,90 +220,73 @@ bool Universe::ContainsClient(class Client *client) const {
 
 /*
  * Set the dmx data for this universe
- *
- * @param  dmx  pointer to the dmx data
- * @param  len  the length of the dmx buffer
+ * @param buffer the dmx buffer with the data
  * @return true is we updated all ports/clients, false otherwise
  */
-bool Universe::SetDMX(const uint8_t *dmx, unsigned int length) {
+bool Universe::SetDMX(const DmxBuffer &buffer) {
+  if (!buffer.Size()) {
+    LLA_INFO << "Trying to SetDMX with a 0 length dmx buffer, universe " <<
+      UniverseId();
+    return true;
+  }
+
   if (m_merge_mode == Universe::MERGE_LTP) {
-    m_length = length < DMX_UNIVERSE_SIZE ? length : DMX_UNIVERSE_SIZE;
-    memcpy(m_data, dmx, m_length);
+    m_buffer = buffer;
   } else {
     // HTP, this is more difficult, we'll need a buffer per client
     // for now just set it
     //TODO: implement proper HTP merging from clients
-    m_length = length < DMX_UNIVERSE_SIZE ? length : DMX_UNIVERSE_SIZE;
-    memcpy(m_data, dmx, m_length);
+    m_buffer = buffer;
   }
   return this->UpdateDependants();
 }
 
 
 /*
- * Get the dmx data for this universe
- *
- * @param dmx    the buffer to copy data into
- * @param length  the length of the buffer
- */
-int Universe::GetDMX(uint8_t *dmx, unsigned int length) const {
-  int len = length < m_length ? length : m_length;
-  memcpy(dmx, m_data, len);
-  return len;
-}
-
-
-/*
- * Get the dmx data for this universe
- *
- * @param length  the length of the buffer
- * @returns a pointer to the DMX data
- */
-const uint8_t *Universe::GetDMX(unsigned int &length) const {
-  length = m_length;
-  return m_data;
-}
-
-
-/*
  * Call this when the dmx in a port that is part of this universe changes
- *
- * @param prt   the port that has changed
+ * @param port the port that has changed
  */
-int Universe::PortDataChanged(AbstractPort *port) {
+bool Universe::PortDataChanged(AbstractPort *port) {
   vector<AbstractPort*>::const_iterator iter;
 
   if (m_merge_mode == Universe::MERGE_LTP) {
     // LTP merge mode
-    // this is simple, find the port and copy the data
     for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
       if (*iter == port && (*iter)->CanRead()) {
-        // read the new data and update our dependants
-        m_length = port->ReadDMX(m_data, DMX_UNIVERSE_SIZE);
-        UpdateDependants();
-        break;
+        const DmxBuffer &new_buffer = (*iter)->ReadDMX();
+        if (new_buffer.Size())
+          m_buffer = new_buffer;
+      } else {
+        LLA_INFO << "Trying to update a port which isn't bound to universe: "
+          << UniverseId();
       }
     }
   } else {
     // htp merge mode
-    // iterate over ports which we can read and take the highest value
-    // of each channel
-    bool first = true;
-    for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-      if ((*iter)->CanRead()) {
-        if (first) {
-          m_length = port->ReadDMX(m_data, DMX_UNIVERSE_SIZE);
-          first = false;
-        } else {
-          m_mlength = port->ReadDMX(m_merge, DMX_UNIVERSE_SIZE);
-          Merge();
-        }
-      }
-    }
-    UpdateDependants();
+    HTPMergeAllSources();
   }
+  UpdateDependants();
+  return true;
+}
 
-  return 0;
+
+/*
+ * Called to indicate that data from a client has changed
+ */
+bool Universe::ClientDataChanged(Client *client) {
+  vector<Client*>::const_iterator iter;
+
+  if (m_merge_mode == Universe::MERGE_LTP) {
+    if (client) {
+      const DmxBuffer &new_buffer = client->GetDMX();
+      if (new_buffer.Size())
+        m_buffer = new_buffer;
+    }
+  } else {
+    HTPMergeAllSources();
+  }
+  UpdateDependants();
+  return true;
 }
 
 
@@ -335,14 +313,14 @@ bool Universe::UpdateDependants() {
 
   // write to all ports assigned to this unviverse
   for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-    (*iter)->WriteDMX(m_data, m_length);
+    (*iter)->WriteDMX(m_buffer);
   }
 
   // write to all clients
   for (client_iter = m_clients.begin(); client_iter != m_clients.end();
        ++client_iter) {
     LLA_DEBUG << "Sending dmx data msg to client";
-    (*client_iter)->SendDMX(m_universe_id, m_data, m_length);
+    (*client_iter)->SendDMX(m_universe_id, m_buffer);
   }
   return true;
 }
@@ -373,23 +351,38 @@ void Universe::UpdateMode() {
 
 
 /*
- * HTP merge the merge buffer into the data buffer
+ * HTP Merge all sources (clients/ports)
  */
-void Universe::Merge() {
-  int i, l;
+bool Universe::HTPMergeAllSources() {
+  vector<AbstractPort*>::const_iterator iter;
+  vector<Client*>::const_iterator client_iter;
+  bool first = true;
 
-  // l is the length we merge over
-  l = m_mlength < m_length ? m_mlength : m_length;
-
-  for (i=0; i < l; i++) {
-    m_data[i] = m_data[i] > m_merge[i] ? m_data[i] : m_merge[i];
+  for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
+    if ((*iter)->CanRead()) {
+      if (first) {
+        m_buffer = (*iter)->ReadDMX();
+        first = false;
+      } else {
+        m_buffer.HTPMerge((*iter)->ReadDMX());
+      }
+    }
   }
 
-  if (m_mlength > m_length) {
-    // copy the remaining over
-    memcpy(&m_data[l], &m_merge[l], m_mlength - m_length);
-    m_length = m_mlength;
+  // THIS IS WRONG
+  // WRONG WRONG WRONG
+  // clients are ones we send to - not recv from
+  for (client_iter = m_clients.begin(); client_iter != m_clients.end();
+       ++client_iter) {
+    if (first) {
+      m_buffer = (*client_iter)->GetDMX();
+      first = false;
+    } else {
+      m_buffer.HTPMerge((*client_iter)->GetDMX());
+    }
   }
+  return true;
 }
+
 
 } //lla

@@ -26,6 +26,7 @@
 #include <string>
 #include <lla/BaseTypes.h>
 #include <lla/ExportMap.h>
+#include <lla/DmxBuffer.h>
 
 namespace lla {
 
@@ -39,29 +40,30 @@ class Universe {
       MERGE_LTP
     };
 
-    Universe(int uid, class UniverseStore *store, ExportMap *export_map);
+    Universe(unsigned int uid, class UniverseStore *store,
+             ExportMap *export_map);
     ~Universe();
 
     string Name() const { return m_universe_name; }
     void SetName(const string &name);
     merge_mode MergeMode() const { return m_merge_mode; }
     void SetMergeMode(merge_mode merge_mode);
-    int UniverseId() const { return m_universe_id; }
+    unsigned int UniverseId() const { return m_universe_id; }
     bool IsActive() const;
 
-    int AddPort(class AbstractPort *prt);
-    int RemovePort(class AbstractPort *prt);
+    bool AddPort(class AbstractPort *prt);
+    bool RemovePort(class AbstractPort *prt);
     int PortCount() const { return m_ports.size(); }
 
-    int AddClient(class Client *client);
-    int RemoveClient(class Client *client);
+    bool AddClient(class Client *client);
+    bool RemoveClient(class Client *client);
     bool ContainsClient(class Client *client) const;
     unsigned int ClientCount() const { return m_clients.size(); }
 
-    bool SetDMX(const uint8_t *dmx, unsigned int length);
-    int GetDMX(uint8_t *dmx, unsigned int length) const;
-    const uint8_t *GetDMX(unsigned int &length) const;
-    int PortDataChanged(AbstractPort *port);
+    bool SetDMX(const DmxBuffer &buffer);
+    const DmxBuffer &GetDMX() const { return m_buffer; }
+    bool PortDataChanged(AbstractPort *port);
+    bool ClientDataChanged(class Client *client);
 
     bool operator==(const Universe &other) {
       return m_universe_id == other.UniverseId();
@@ -80,21 +82,17 @@ class Universe {
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();
-    void Merge();                      // HTP merge the merge and data buffers
+    bool HTPMergeAllSources();
 
     string m_universe_name;
-    int m_universe_id;
+    unsigned int m_universe_id;
     string m_universe_id_str;
     enum merge_mode m_merge_mode;      // merge mode
     vector<class AbstractPort*> m_ports;       // ports patched to this universe
     vector<class Client*> m_clients;  // clients listening to this universe
     class UniverseStore *m_universe_store;
 
-    uint8_t m_data[DMX_UNIVERSE_SIZE];        // buffer for this universe
-    uint8_t m_merge[DMX_UNIVERSE_SIZE];       // merge buffer for this universe
-
-    unsigned int m_length;   // length of valid data in m_data
-    unsigned int m_mlength;  // length of valid data in m_merge
+    DmxBuffer m_buffer;
     ExportMap *m_export_map;
 };
 

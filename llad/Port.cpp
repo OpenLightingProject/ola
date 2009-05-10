@@ -29,7 +29,7 @@ namespace lla {
  * @param parent  the device that owns this port
  * @param port_id    the port id of this port
  */
-Port::Port(AbstractDevice *parent, int port_id):
+Port::Port(AbstractDevice *parent, unsigned int port_id):
   AbstractPort(),
   m_port_id(port_id),
   m_universe(NULL),
@@ -39,10 +39,10 @@ Port::Port(AbstractDevice *parent, int port_id):
 /*
  * Signal that the data for this port has changed
  */
-int Port::DmxChanged() {
+bool Port::DmxChanged() {
   if (m_universe)
     return m_universe->PortDataChanged(this);
-  return 0;
+  return true;
 }
 
 } //lla

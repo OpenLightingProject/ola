@@ -18,10 +18,10 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <stdint.h>
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <lla/DmxBuffer.h>
 #include <llad/Device.h>
 #include <llad/Port.h>
 #include "DeviceManager.h"
@@ -47,10 +47,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DeviceTest);
 
 class MockPort: public Port {
   public:
-    MockPort(AbstractDevice *parent, int id): Port(parent, id) {}
+    MockPort(AbstractDevice *parent, unsigned int id): Port(parent, id) {}
     ~MockPort() {}
-    int WriteDMX(uint8_t *data, unsigned int length) { return 0; }
-    int ReadDMX(uint8_t *data, unsigned int length) { return 0; }
+    bool WriteDMX(const DmxBuffer &buffer) {}
+    const DmxBuffer &ReadDMX() const {}
 };
 
 
@@ -81,9 +81,9 @@ void DeviceTest::testDevice() {
 
   // TODO: unify port ids
   AbstractPort *port = device.GetPort(0);
-  CPPUNIT_ASSERT_EQUAL(port->PortId(), 1);
+  CPPUNIT_ASSERT_EQUAL(port->PortId(), (unsigned int) 1);
   port = device.GetPort(1);
-  CPPUNIT_ASSERT_EQUAL(port->PortId(), 2);
+  CPPUNIT_ASSERT_EQUAL(port->PortId(), (unsigned int) 2);
 }
 
 

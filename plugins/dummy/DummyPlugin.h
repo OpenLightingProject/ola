@@ -53,6 +53,7 @@ class DummyPlugin: public Plugin {
     DummyDevice *m_device; // the dummy device
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
+    static const string DEVICE_NAME;
 };
 
 } // plugin

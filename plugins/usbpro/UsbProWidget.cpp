@@ -132,17 +132,16 @@ bool UsbProWidget::Disconnect() {
  * Send a dmx msg
  * @returns true if we sent ok, false otherwise
  */
-bool UsbProWidget::SendDmx(const uint8_t *buf, unsigned int len) const {
-  unsigned int data_length = std::min((unsigned int) DMX_BUF_LEN, len);
+bool UsbProWidget::SendDMX(const DmxBuffer &buffer) const {
+  unsigned int length = std::min((unsigned int) DMX_BUF_LEN, buffer.Size());
   promsg msg;
 
   msg.som = som;
   msg.label = ID_SDMX;
-  set_msg_len(&msg, data_length + 1);
-
   //start code to 0
   msg.pm_dmx.dmx[0] = K_START_CODE;
-  memcpy(&msg.pm_dmx.dmx[1], buf, data_length);
+  buffer.Get(&msg.pm_dmx.dmx[1], length);
+  set_msg_len(&msg, length + 1);
   return SendMessage(&msg);
 }
 
@@ -234,17 +233,11 @@ bool UsbProWidget::GetSerial() const {
 
 
 /*
- * Copy the latest DMX data into the specified buffer
- * @param data a pointer to the dmx data buffer
- * @param len the length of the dmx data buffer
- * @returns the length of the data copied into the buffer
+ * Return the latest DmxData
+ * @returns the DmxBuffer with the data
  */
-int UsbProWidget::FetchDmx(uint8_t *data, unsigned int len) const {
-  int l = std::min(len, (unsigned int) DMX_BUF_LEN - 1);
-
-  // byte 0 is the start code which we ignore
-  memcpy(data, m_dmx + 1, l);
-  return l;
+const DmxBuffer &UsbProWidget::FetchDMX() const {
+  return m_buffer;
 }
 
 
@@ -295,7 +288,7 @@ bool UsbProWidget::SendChangeMode(int new_mode) {
   bool status = SendMessage(&msg);
 
   if (status && new_mode == RCMODE_CHANGE)
-    memset(m_dmx, 0x00, DMX_BUF_LEN);
+    m_buffer.Blackout();
   return status;
 }
 
@@ -316,18 +309,16 @@ int UsbProWidget::handle_dmx(pms_rdmx *dmx, int len) {
  * Handle the dmx change of state frame
  */
 int UsbProWidget::handle_cos(pms_cos *cos, int len) {
-  int chn_st = cos->start *8;
-  int i, offset;
+  int chn_st = cos->start * 8;
 
   // should be checking length here
-  offset = 0;
-  for (i = 0; i< 40; i++) {
-
-    if (chn_st+i > DMX_BUF_LEN-1 || offset + 6 >= len)
+  int offset = 0;
+  for (int i = 0; i < 40; i++) {
+    if (chn_st + i > DMX_BUF_LEN-1 || offset + 6 >= len)
       break;
 
     if (cos->changed[i/8] & (1 << (i % 8)) ) {
-      m_dmx[chn_st + i] = cos->data[offset];
+      m_buffer.SetChannel(chn_st + i, cos->data[offset]);
       offset++;
     }
   }
@@ -341,7 +332,6 @@ int UsbProWidget::handle_cos(pms_cos *cos, int len) {
 
 /*
  * Handle the param reply
- *
  * @param rep parameters message
  * @param len length of the message
  */

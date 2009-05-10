@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArtNetPlugin.h
- * Interface for the artnet plugin class
- * Copyright (C) 2005-2008 Simon Newton
+ * Interface for the ArtNet plugin class
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef ARTNETPLUGIN_H
@@ -30,7 +30,7 @@ namespace plugin {
 
 using lla::Plugin;
 using lla::PluginAdaptor;
-using namespace std;
+using std::string;
 
 class ArtNetDevice;
 
@@ -60,6 +60,7 @@ class ArtNetPlugin : public Plugin {
     static const string ARTNET_LONG_NAME;
     static const string ARTNET_SHORT_NAME;
     static const string PLUGIN_NAME;
+    static const string DEVICE_NAME;
     static const string PLUGIN_PREFIX;
 };
 

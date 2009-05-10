@@ -38,19 +38,12 @@
 #include "ArtNetDevice.h"
 #include "ArtNetPort.h"
 
-
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-
 using lla::plugin::ArtNetDevice;
 using lla::plugin::ArtNetPort;
 using lla::Preferences;
 
 /*
  * Handle dmx from the network, called from libartnet
- *
  */
 int dmx_handler(artnet_node n, int prt, void *d) {
   ArtNetDevice *device = (ArtNetDevice *) d;
@@ -63,22 +56,16 @@ int dmx_handler(artnet_node n, int prt, void *d) {
   // signal to the port that the data has changed
   ArtNetPort *port = (ArtNetPort*) device->GetPort(prt);
   port->DmxChanged();
-
-  n = NULL;
   return 0;
 }
 
 
 /*
- * get notify of remote programming
- *
- *
- *
+ * Notify of remote programming
  */
 int program_handler(artnet_node n, void *d) {
   ArtNetDevice *device = (ArtNetDevice *) d;
   device->SaveConfig();
-  n = NULL;
   return 0;
 }
 
@@ -101,10 +88,11 @@ const string ArtNetDevice::K_IP_KEY = "ip";
  */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            const string &name,
-                           lla::Preferences *prefs,
+                           lla::Preferences *preferences,
                            bool debug):
   Device(owner, name),
-  m_preferences(prefs),
+  m_preferences(preferences),
+  m_socket(NULL),
   m_node(NULL),
   m_short_name(""),
   m_long_name(""),
@@ -115,7 +103,7 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
 
 
 /*
- *
+ * Cleanup
  */
 ArtNetDevice::~ArtNetDevice() {
   if (m_enabled)
@@ -125,7 +113,6 @@ ArtNetDevice::~ArtNetDevice() {
 
 /*
  * Start this device
- *
  * @return true on success, false on failure
  */
 bool ArtNetDevice::Start() {
@@ -134,10 +121,9 @@ bool ArtNetDevice::Start() {
   int subnet;
 
   /* set up ports */
-  for (int i = 0; i < 2 * ARTNET_MAX_PORTS; i++) {
+  for (unsigned int i = 0; i < 2 * ARTNET_MAX_PORTS; i++) {
     port = new ArtNetPort(this, i);
-    if(port)
-      this->AddPort(port);
+    this->AddPort(port);
   }
 
   // create new artnet node, and and set config values
@@ -223,6 +209,8 @@ bool ArtNetDevice::Start() {
     LLA_WARN << "artnet_start failed: " << artnet_strerror();
     goto e_artnet_start;
   }
+  int fd = artnet_get_sd(m_node);
+  m_socket = new ConnectedSocket(fd, fd);
   m_enabled = true;
   return true;
 
@@ -238,71 +226,57 @@ e_dev:
 
 
 /*
- * stop this device
- *
+ * Stop this device
  */
 bool ArtNetDevice::Stop() {
   if (!m_enabled)
-    return 0;
+    return true;
 
   DeleteAllPorts();
 
   if (artnet_stop(m_node)) {
     LLA_WARN << "artnet_stop failed: " << artnet_strerror();
-    return -1;
+    return false;
   }
 
   if (artnet_destroy(m_node)) {
     LLA_WARN << "artnet_destroy failed: " << artnet_strerror();
-    return -1;
+    return false;
   }
-
+  delete m_socket;
+  m_socket = NULL;
+  m_node = NULL;
   m_enabled = false;
-  return 0;
+  return true;
 }
 
 
 /*
  * Return the Art-Net node associated with this device
- *
  */
 artnet_node ArtNetDevice::GetArtnetNode() const {
   return m_node;
 }
 
-/*
- * return the sd of this device
- *
- */
-int ArtNetDevice::get_sd() const {
-  int ret = artnet_get_sd(m_node);
-
-  if (ret < 0) {
-    LLA_WARN << "artnet_get_sd failed: " << artnet_strerror();
-    return -1;
-  }
-  return ret;
-}
 
 /*
- * Called when there is activity on our descriptors
- *
- * @param  data  user data (pointer to artnet_device_priv
+ * Called when there is activity on our socket
+ * @param socket the socket with activity
  */
-int ArtNetDevice::FDReady() {
+int ArtNetDevice::SocketReady(ConnectedSocket *socket) {
   if (artnet_read(m_node, 0)) {
     LLA_WARN << "artnet_read failed: " << artnet_strerror();
-    return -1 ;
+    return -1;
   }
   return 0;
 }
 
 
-// call this when something changes
-// where to store data to ?
-// I'm thinking a config file in /etc/llad/llad.conf
+/*
+ * Called when the node is remotely programmed.
+ */
 int ArtNetDevice::SaveConfig() const {
-
+  //TODO: implement this
 
   return 0;
 }
@@ -310,7 +284,6 @@ int ArtNetDevice::SaveConfig() const {
 
 /*
  * Handle device config messages
- *
  * @param controller An RpcController
  * @param request the request data
  * @param response the response to return

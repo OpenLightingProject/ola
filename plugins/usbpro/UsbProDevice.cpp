@@ -125,21 +125,19 @@ lla::select_server::ConnectedSocket *UsbProDevice::GetSocket() const {
 
 /*
  * Send the dmx out the widget
- * called from the UsbProPort
  * @return true on success, false on failure
  */
-bool UsbProDevice::SendDmx(const uint8_t *data, int len) const {
-  return m_widget->SendDmx(data, len);
+bool UsbProDevice::SendDMX(const DmxBuffer &buffer){
+  return m_widget->SendDMX(buffer);
 }
 
 
 /*
- * Copy the dmx buffer into the arguments
- * Called from the UsbProPort
- * @return the length of the dmx data copied
+ * Fetch the new DMX data
+ * @return the DmxBuffer with the data
  */
-int UsbProDevice::FetchDmx(uint8_t *data, int len) const {
-  return m_widget->FetchDmx(data, len);
+const DmxBuffer &UsbProDevice::FetchDMX() const {
+  return m_widget->FetchDMX();
 }
 
 

@@ -13,41 +13,29 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * stageprofiwidget.cpp
- * StageProfi Widget
- * Copyright (C) 2006-2007 Simon Newton
- *
+ * StageProfiWidgetUsb.cpp
  * The StageProfi Usb Widget.
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <termios.h>
-#include <unistd.h>
+
 
 #include <lla/select_server/Socket.h>
 #include "StageProfiWidgetUsb.h"
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 namespace lla {
 namespace plugin {
-
-using std::string;
 
 /*
  * Connect to the widget
  */
-bool StageProfiWidgetUsb::Connect(const string &path) {
+bool StageProfiWidgetUsb::Connect(const std::string &path) {
   struct termios newtio;
 
-  int fd = open(path.c_str(), O_RDWR | O_NONBLOCK | O_NOCTTY);
+  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
   if (fd == -1)
     return false;

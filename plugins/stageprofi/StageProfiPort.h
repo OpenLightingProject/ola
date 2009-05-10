@@ -15,12 +15,13 @@
  *
  * StageProfiPort.h
  * The StageProfi plugin for lla
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #ifndef STAGEPROFIPORT_H
 #define STAGEPROFIPORT_H
 
+#include <lla/DmxBuffer.h>
 #include <llad/Port.h>
 
 namespace lla {
@@ -31,12 +32,15 @@ namespace plugin {
 
 class StageProfiPort: public Port {
   public:
-    StageProfiPort(AbstractDevice *parent, int id): Port(parent, id) {};
+    StageProfiPort(AbstractDevice *parent, unsigned int id):
+      Port(parent, id) {};
 
-    int WriteDMX(uint8_t *data, unsigned int length);
-    int ReadDMX(uint8_t *data, unsigned int length);
+    bool WriteDMX(const DmxBuffer &buffer);
+    const DmxBuffer &ReadDMX() const { return m_empty_buffer; }
 
     bool CanRead() const { return false; }
+  private:
+    DmxBuffer m_empty_buffer;
 };
 
 } // plugin

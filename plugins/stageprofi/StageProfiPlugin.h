@@ -63,6 +63,7 @@ class StageProfiPlugin: public Plugin, public SocketManager {
     static const string STAGEPROFI_DEVICE_NAME;
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
+    static const string DEVICE_KEY;
 };
 
 } //plugin

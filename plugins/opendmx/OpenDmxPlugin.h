@@ -49,11 +49,12 @@ class OpenDmxPlugin: public Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
 
-    OpenDmxDevice *m_device;    // only have one device
+    OpenDmxDevice *m_device; // only have one device
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
     static const string OPENDMX_DEVICE_PATH;
     static const string OPENDMX_DEVICE_NAME;
+    static const string DEVICE_KEY;
 };
 
 } //plugins

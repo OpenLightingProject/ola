@@ -15,16 +15,16 @@
  *
  * StageProfiDevice.h
  * Interface for the stageprofi device
- * Copyright (C) 2006-2008 Simon Newton
+ * Copyright (C) 2006-2009 Simon Newton
  */
 
 #ifndef STAGEPROFIDEVICE_H
 #define STAGEPROFIDEVICE_H
 
 #include <string>
-#include <stdint.h>
-#include <llad/Device.h>
+#include <lla/DmxBuffer.h>
 #include <lla/select_server/Socket.h>
+#include <llad/Device.h>
 
 namespace lla {
 
@@ -37,17 +37,18 @@ using lla::select_server::Socket;
 
 class StageProfiDevice: public Device {
   public:
-    StageProfiDevice(AbstractPlugin *owner, const string &name, const string &dev_path);
+    StageProfiDevice(AbstractPlugin *owner, const string &name,
+                     const string &dev_path);
     ~StageProfiDevice();
 
     bool Start();
     bool Stop();
     Socket *GetSocket() const;
-    int SendDmx(uint8_t *data, int len);
+    bool SendDmx(const DmxBuffer &buffer) const;
 
   private:
     string m_path;
-    bool m_enabled;  // are we enabled
+    bool m_enabled;
     class StageProfiWidget *m_widget;
 };
 

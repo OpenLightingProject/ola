@@ -11,3 +11,4 @@ UtilsTester_SOURCES = UtilsTester.cpp StringUtilsTest.cpp StringUtils.cpp \
                       DmxBufferTest.cpp
 UtilsTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 UtilsTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl
+UtilsTester_LDADD = ../logging/liblogging.la

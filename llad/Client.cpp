@@ -28,10 +28,7 @@ namespace lla {
 using google::protobuf::NewCallback;
 using lla::rpc::SimpleRpcController;
 
-bool Client::SendDMX(unsigned int universe_id,
-                     const uint8_t *data,
-                     unsigned int length) {
-
+bool Client::SendDMX(unsigned int universe_id, const DmxBuffer &buffer) {
   if (!m_client_stub) {
     LLA_FATAL << "client_stub is null";
     return false;
@@ -40,12 +37,9 @@ bool Client::SendDMX(unsigned int universe_id,
   SimpleRpcController *controller = new SimpleRpcController();
   lla::proto::DmxData dmx_data;
   lla::proto::Ack *ack = new lla::proto::Ack();
-  string dmx_string;
-  dmx_string.append((char*) data, length);
 
   dmx_data.set_universe(universe_id);
-  dmx_data.set_data(dmx_string);
-
+  dmx_data.set_data(buffer.Get());
 
   m_client_stub->UpdateDmxData(
       controller,
@@ -60,6 +54,10 @@ void Client::SendDMXCallback(SimpleRpcController *controller,
                              lla::proto::Ack *reply) {
   delete controller;
   delete reply;
+}
+
+void Client::SetDMX(const DmxBuffer &buffer) {
+  m_buffer = buffer;
 }
 
 } //lla

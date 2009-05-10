@@ -26,6 +26,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <google/protobuf/stubs/common.h>
 
+#include <lla/DmxBuffer.h>
 #include <lla/ExportMap.h>
 #include <llad/Universe.h>
 #include "Client.h"
@@ -41,6 +42,7 @@ using google::protobuf::Closure;
 using google::protobuf::NewCallback;
 using lla::Universe;
 using lla::rpc::SimpleRpcController;
+using lla::DmxBuffer;
 
 
 class LlaServerServiceImplTest: public CppUnit::TestFixture {
@@ -69,7 +71,7 @@ class LlaServerServiceImplTest: public CppUnit::TestFixture {
                             class RegisterForDmxCheck &check);
     void CallUpdateDmxData(LlaServerServiceImpl *impl,
                            int universe_id,
-                           const string &data,
+                           const DmxBuffer &data,
                            class UpdateDmxDataCheck &check);
     void CallSetUniverseName(LlaServerServiceImpl *impl,
                              int universe_id,
@@ -98,17 +100,13 @@ class GetDmxCheck {
 /*
  * Assert that the data is all 0
  */
-class GetDmxZeroDataCheck: public GetDmxCheck {
+class GetDmxNoDataCheck: public GetDmxCheck {
   public:
     void Check(SimpleRpcController *controller,
                lla::proto::DmxData *reply) {
-      uint8_t test_data[DMX_UNIVERSE_SIZE];
-      bzero(test_data, DMX_UNIVERSE_SIZE);
+      DmxBuffer empty_buffer;
       CPPUNIT_ASSERT(!controller->Failed());
-      CPPUNIT_ASSERT_EQUAL((size_t) DMX_UNIVERSE_SIZE, reply->data().length());
-      CPPUNIT_ASSERT(!memcmp(reply->data().data(),
-                             test_data,
-                             DMX_UNIVERSE_SIZE));
+      CPPUNIT_ASSERT(empty_buffer == DmxBuffer(reply->data()));
     }
 };
 
@@ -122,10 +120,8 @@ class GetDmxValidDataCheck: public GetDmxCheck {
                lla::proto::DmxData *reply) {
 
       CPPUNIT_ASSERT(!controller->Failed());
-      CPPUNIT_ASSERT_EQUAL(sizeof(SAMPLE_DMX_DATA), reply->data().length());
-      CPPUNIT_ASSERT(!memcmp(reply->data().data(),
-                             SAMPLE_DMX_DATA,
-                             sizeof(SAMPLE_DMX_DATA)));
+      CPPUNIT_ASSERT(DmxBuffer(SAMPLE_DMX_DATA, sizeof(SAMPLE_DMX_DATA)) ==
+                     DmxBuffer(reply->data()));
     }
 };
 
@@ -211,7 +207,7 @@ void LlaServerServiceImplTest::testGetDmx() {
 
   GenericMissingUniverseCheck<GetDmxCheck, lla::proto::DmxData>
     missing_universe_check;
-  GetDmxZeroDataCheck zero_data_check;
+  GetDmxNoDataCheck empty_data_check;
   GetDmxValidDataCheck valid_data_check;
 
   // test a universe that doesn't exist
@@ -221,10 +217,11 @@ void LlaServerServiceImplTest::testGetDmx() {
   // test a new universe
   Universe *universe = store.GetUniverseOrCreate(universe_id);
   CPPUNIT_ASSERT(universe);
-  CallGetDmx(&impl, universe_id, zero_data_check);
+  CallGetDmx(&impl, universe_id, empty_data_check);
 
   // Set the universe data
-  universe->SetDMX(SAMPLE_DMX_DATA, sizeof(SAMPLE_DMX_DATA));
+  DmxBuffer buffer(SAMPLE_DMX_DATA, sizeof(SAMPLE_DMX_DATA));
+  universe->SetDMX(buffer);
   CallGetDmx(&impl, universe_id, valid_data_check);
 
   // remove the universe and try again
@@ -360,7 +357,7 @@ void LlaServerServiceImplTest::testUpdateDmxData() {
     missing_universe_check;
   GenericAckCheck<UpdateDmxDataCheck> ack_check;
   unsigned int universe_id = 0;
-  string dmx_data = "this is a test";
+  DmxBuffer dmx_data("this is a test");
 
   // Update a universe that doesn't exist
   CallUpdateDmxData(&impl, universe_id, dmx_data, missing_universe_check);
@@ -368,20 +365,16 @@ void LlaServerServiceImplTest::testUpdateDmxData() {
   CPPUNIT_ASSERT(!universe);
 
   // Update a universe that exists
+  // WE need a mock client here!
+  return;
   universe = store.GetUniverseOrCreate(universe_id);
   CallUpdateDmxData(&impl, universe_id, dmx_data, ack_check);
-  unsigned int returned_length;
-  const uint8_t *universe_data = universe->GetDMX(returned_length);
-  CPPUNIT_ASSERT_EQUAL(dmx_data.length(), (size_t) returned_length);
-  CPPUNIT_ASSERT(!memcmp(dmx_data.data(), universe_data, returned_length));
+  CPPUNIT_ASSERT(dmx_data == universe->GetDMX());
 
   // Send a 0 sized update
-  dmx_data = "";
-  CallUpdateDmxData(&impl, universe_id, dmx_data, ack_check);
-  universe_data = universe->GetDMX(returned_length);
-  CPPUNIT_ASSERT_EQUAL(dmx_data.length(), (size_t) returned_length);
-  CPPUNIT_ASSERT(!memcmp(dmx_data.data(), universe_data, returned_length));
-
+  DmxBuffer zero_buffer;
+  CallUpdateDmxData(&impl, universe_id, zero_buffer, ack_check);
+  CPPUNIT_ASSERT(zero_buffer == universe->GetDMX());
   store.DeleteAll();
 }
 
@@ -390,13 +383,13 @@ void LlaServerServiceImplTest::testUpdateDmxData() {
  * Call the UpdateDmxDataCheck method
  * @param impl the LlaServerServiceImpl to use
  * @param universe_id the universe_id in the request
- * @param data the data to use
+ * @param data the DmxBuffer to use as data
  * @param check the SetUniverseNameCheck to use for the callback check
  */
 void LlaServerServiceImplTest::CallUpdateDmxData(
     LlaServerServiceImpl *impl,
     int universe_id,
-    const string &data,
+    const DmxBuffer &data,
     UpdateDmxDataCheck &check) {
   SimpleRpcController *controller = new SimpleRpcController();
   lla::proto::DmxData *request = new
@@ -409,7 +402,7 @@ void LlaServerServiceImplTest::CallUpdateDmxData(
       response);
 
   request->set_universe(universe_id);
-  request->set_data(data);
+  request->set_data(data.Get());
   impl->UpdateDmxData(controller, request, response, closure);
   delete controller;
   delete request;

@@ -26,8 +26,8 @@
 using namespace lla;
 using namespace std;
 
-static const unsigned int universe_id = 1;
-static const uint8_t test_data[] = {1, 2, 3, 4, 5};
+static unsigned int TEST_UNIVERSE = 1;
+static uint8_t TEST_DMX_DATA[] = "this is some test data";
 
 class ClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClientTest);
@@ -62,10 +62,9 @@ void MockClientStub::UpdateDmxData(
 
   CPPUNIT_ASSERT(controller);
   CPPUNIT_ASSERT(!controller->Failed());
-  CPPUNIT_ASSERT_EQUAL(universe_id, (unsigned int) request->universe());
-  const string dmx_data = request->data();
-  CPPUNIT_ASSERT_EQUAL(sizeof(test_data), dmx_data.length());
-  CPPUNIT_ASSERT(!memcmp(test_data, dmx_data.data(), dmx_data.length()));
+  CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, (unsigned int) request->universe());
+  DmxBuffer buffer(TEST_DMX_DATA, sizeof(TEST_DMX_DATA));
+  CPPUNIT_ASSERT(buffer == DmxBuffer(request->data()));
   done->Run();
 }
 
@@ -76,12 +75,13 @@ void MockClientStub::UpdateDmxData(
 void ClientTest::testSendDMX() {
 
   // test we survive a null pointer
+  DmxBuffer buffer(TEST_DMX_DATA, sizeof(TEST_DMX_DATA));
   Client *client = new Client(NULL);
-  client->SendDMX(universe_id, test_data, sizeof(test_data));
+  client->SendDMX(TEST_UNIVERSE, buffer);
   delete client;
 
   MockClientStub client_stub;
   client = new Client(&client_stub);
-  client->SendDMX(universe_id, test_data, sizeof(test_data));
+  client->SendDMX(TEST_UNIVERSE, buffer);
   delete client;
 }

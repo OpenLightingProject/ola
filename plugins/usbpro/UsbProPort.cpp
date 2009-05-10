@@ -42,27 +42,26 @@ bool UsbProPort::CanWrite() const {
  * @param  length  the length of the data
  * @return   0 on success, non 0 on failure
  */
-int UsbProPort::WriteDMX(uint8_t *data, unsigned int length) {
+bool UsbProPort::WriteDMX(const DmxBuffer &buffer) {
   if (!CanWrite())
-    return -1;
+    return true;
 
-  bool status = m_usb_device->SendDmx(data, length);
-  return status ? 0 : -1;
+  return m_usb_device->SendDMX(buffer);
 }
 
 
 /*
  * Read operation
  *
- * @param   data  buffer to read data into
- * @param   length  length of data to read
- * @return  the amount of data read
+ * @param data  buffer to read data into
+ * @param length  length of data to read
+ * @return the amount of data read
  */
-int UsbProPort::ReadDMX(uint8_t *data, unsigned int length) {
+const DmxBuffer &UsbProPort::ReadDMX() const {
   if (!CanRead())
-    return -1;
+    return m_empty_buffer;
 
-  return m_usb_device->FetchDmx(data, length);
+  return m_usb_device->FetchDMX();
 }
 
 
@@ -71,7 +70,7 @@ int UsbProPort::ReadDMX(uint8_t *data, unsigned int length) {
  * Setting the universe to NULL for an output port will put us back into
  * recv mode.
  */
-int UsbProPort::SetUniverse(Universe *uni) {
+bool UsbProPort::SetUniverse(Universe *uni) {
   Port::SetUniverse(uni);
   if (uni == NULL && CanWrite()) {
     m_usb_device->ChangeToReceiveMode();

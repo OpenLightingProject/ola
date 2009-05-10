@@ -61,15 +61,10 @@ OpenDmxDevice::~OpenDmxDevice() {
  *
  */
 bool OpenDmxDevice::Start() {
-  // owner, id, path
   OpenDmxPort *port = new OpenDmxPort(this, 0, m_path);
-
-  if (port) {
-    this->AddPort(port);
-    m_enabled = true;
-    return true;
-  }
-  return false;
+  this->AddPort(port);
+  m_enabled = true;
+  return true;
 }
 
 
@@ -84,14 +79,6 @@ bool OpenDmxDevice::Stop() {
   DeleteAllPorts();
   m_enabled = false;
   return true;
-}
-
-
-// call this when something changes
-// where to store data to ?
-// I'm thinking a config file in /etc/llad/llad.conf
-int OpenDmxDevice::SaveConfig() const {
-  return 0;
 }
 
 } //plugins

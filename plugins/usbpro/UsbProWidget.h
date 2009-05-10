@@ -23,6 +23,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <lla/DmxBuffer.h>
 #include <lla/select_server/Socket.h>
 
 #include "UsbProWidgetListener.h"
@@ -157,7 +158,7 @@ class UsbProWidget: public lla::select_server::SocketListener {
     bool Disconnect();
     ConnectedSocket *GetSocket() { return m_socket; }
 
-    bool SendDmx(const uint8_t *buf, unsigned int len) const;
+    bool SendDMX(const DmxBuffer &buffer) const;
     bool SendRdm(const uint8_t *buf, unsigned int len) const;
     bool GetParameters() const;
     bool GetSerial() const;
@@ -166,7 +167,7 @@ class UsbProWidget: public lla::select_server::SocketListener {
                        int brk,
                        int mab,
                        int rate);
-    int FetchDmx(uint8_t *data, unsigned int len) const;
+    const DmxBuffer &FetchDMX() const;
 
     bool ChangeToReceiveMode();
     void SetListener(UsbProWidgetListener *listener);
@@ -182,7 +183,7 @@ class UsbProWidget: public lla::select_server::SocketListener {
     int handle_snorep(pms_snorep *rep, int len);
     int ReceiveMessage();
 
-    uint8_t m_dmx[DMX_BUF_LEN - 1];  // dmx buffer
+    DmxBuffer m_buffer;
     bool m_enabled;
     uint8_t m_break_time;
     uint8_t m_mab_time;

@@ -32,12 +32,12 @@ using namespace std;
 
 class OpenDmxDevice: public lla::Device {
   public:
-    OpenDmxDevice(lla::AbstractPlugin *owner, const string &name, const string &path);
+    OpenDmxDevice(lla::AbstractPlugin *owner, const string &name,
+                  const string &path);
     ~OpenDmxDevice();
 
     bool Start();
     bool Stop();
-    int SaveConfig() const;
 
   private:
     string m_path;

@@ -24,9 +24,9 @@
 using namespace std;
 
 #include <string>
-#include <stdint.h>
 #include <lla/select_server/Socket.h>
 #include <lla/select_server/SelectServer.h>
+#include <lla/DmxBuffer.h>
 
 namespace lla {
 namespace plugin {
@@ -48,20 +48,23 @@ class StageProfiWidget: public SocketListener {
     virtual bool Connect(const string &path) = 0;
     int Disconnect();
     Socket *GetSocket() { return m_socket; }
-    int SendDmx(uint8_t *buf, unsigned int len) const;
+    bool SendDmx(const DmxBuffer &buffer) const;
     bool DetectDevice();
     int SocketReady(ConnectedSocket *socket);
     int Timeout();
 
   protected:
-    int Send255(unsigned int start, uint8_t *buf, unsigned int len) const;
+    int Send255(unsigned int start, const uint8_t *buf, unsigned int len) const;
     int SetChannel(unsigned int chan, uint8_t val) const;
 
     // instance variables
-    bool m_enabled;      // are we enabled
+    bool m_enabled;
     bool m_got_response;
     ConnectedSocket *m_socket;
     SelectServer *m_ss;
+
+    enum { DMX_MSG_LEN = 255 };
+    enum { DMX_HEADER_SIZE = 4};
 
   private:
     int DoRecv();
