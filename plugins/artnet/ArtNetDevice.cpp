@@ -118,7 +118,7 @@ ArtNetDevice::~ArtNetDevice() {
 bool ArtNetDevice::Start() {
   ArtNetPort *port;
   string value;
-  int subnet;
+  int subnet, fd = 0;
 
   /* set up ports */
   for (unsigned int i = 0; i < 2 * ARTNET_MAX_PORTS; i++) {
@@ -209,7 +209,7 @@ bool ArtNetDevice::Start() {
     LLA_WARN << "artnet_start failed: " << artnet_strerror();
     goto e_artnet_start;
   }
-  int fd = artnet_get_sd(m_node);
+  fd = artnet_get_sd(m_node);
   m_socket = new ConnectedSocket(fd, fd);
   m_enabled = true;
   return true;
