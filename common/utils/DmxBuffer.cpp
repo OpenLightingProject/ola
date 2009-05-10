@@ -217,6 +217,15 @@ bool DmxBuffer::Blackout() {
 
 
 /*
+ * Reset the bufer to hold no data.
+ */
+void DmxBuffer::Reset() {
+  if (m_data)
+    m_length = 0;
+}
+
+
+/*
  * Allocate memory
  */
 bool DmxBuffer::Init() {

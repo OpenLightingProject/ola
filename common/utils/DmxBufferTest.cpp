@@ -78,6 +78,9 @@ void DmxBufferTest::testBlackout() {
   CPPUNIT_ASSERT(!memcmp(zero, result, result_length));
   delete[] result;
   delete[] zero;
+
+  buffer.Reset();
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, buffer.Size());
 }
 
 
