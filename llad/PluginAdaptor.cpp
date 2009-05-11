@@ -23,6 +23,7 @@
 
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
+#include <lla/select_server/FdListener.h>
 #include <lla/select_server/SelectServer.h>
 
 #include "DeviceManager.h"
@@ -30,6 +31,7 @@
 namespace lla {
 
 using lla::select_server::SelectServer;
+using lla::select_server::FDListener;
 
 /*
  * Create a new pluginadaptor
@@ -46,6 +48,41 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
 }
 
 
+/*
+ * register a fd
+ *
+ * @param fd    the file descriptor to register
+ * @param dir    the direction we want
+ * @param listener  the object to be notifies when the descriptor is ready
+ * @param manager  the object to be notified if the listener returns an error
+ *
+ * @return 0 on success, non 0 on error
+ */
+int PluginAdaptor::RegisterFD(int fd, PluginAdaptor::Direction direction,
+                              FDListener *listener,
+                              FDManager *manager) const {
+  SelectServer::Direction dir = (direction == PluginAdaptor::READ ?
+                                 SelectServer::READ : SelectServer::WRITE);
+  return m_ss->RegisterFD(fd, dir, listener, manager);
+}
+
+
+/*
+ * Unregister a fd
+ *
+ * @param fd  the file descriptor to unregister
+ * @param dir  the direction we'll interested in
+ *
+ * @return 0 on success, non 0 on error
+ */
+int PluginAdaptor::UnregisterFD(int fd,
+                                PluginAdaptor::Direction direction) const {
+  SelectServer::Direction dir = (direction == PluginAdaptor::READ ?
+                                 SelectServer::READ : SelectServer::WRITE);
+  return m_ss->UnregisterFD(fd, dir);
+}
+
+
 int PluginAdaptor::AddSocket(Socket *socket,
                              SocketManager *manager) const {
   return m_ss->AddSocket(socket, manager);
@@ -59,6 +96,7 @@ int PluginAdaptor::RemoveSocket(Socket *socket) const {
 
 /*
  * register a timeout
+ *
  * @param ms the time between function calls
  * @param closure the LlaClosure to call when the timeout expires
  * @param repeat set to true to call this timeout every ms seconds
@@ -70,7 +108,16 @@ bool PluginAdaptor::RegisterTimeout(int ms, LlaClosure *closure, bool repeat) co
 
 
 /*
+ * register a loop function
+ */
+int PluginAdaptor::RegisterLoopCallback(FDListener *listener) const {
+  return m_ss->RegisterLoopCallback(listener);
+}
+
+
+/*
  * Register a device
+ *
  * @param dev  the device to register
  * @return 0 on success, non 0 on error
  */

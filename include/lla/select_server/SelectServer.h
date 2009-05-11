@@ -26,6 +26,8 @@
 #include <queue>
 
 #include <lla/Closure.h>
+#include <lla/select_server/FdListener.h>
+#include <lla/select_server/FdManager.h>
 #include <lla/ExportMap.h>
 
 namespace lla {
@@ -48,15 +50,29 @@ class SelectServer {
                    class SocketManager *manager=NULL,
                    bool delete_on_close=false);
     bool RemoveSocket(class Socket *socket);
+    int RegisterFD(int fd,
+                   SelectServer::Direction dir,
+                   FDListener *listener,
+                   FDManager *manager);
+    int UnregisterFD(int fd, SelectServer::Direction dir);
     bool RegisterTimeout(int ms,
                          lla::LlaClosure *closure,
                          bool recurring=true);
+    int RegisterLoopCallback(FDListener *l);
     void UnregisterAll();
 
     static const string K_FD_VAR;
+    static const string K_LOOP_VAR;
     static const string K_TIMER_VAR;
 
   private :
+    // This represents a FD listener
+    typedef struct {
+      int fd;
+      FDListener *listener;
+      FDManager *manager;
+    } listener_t;
+
     typedef struct {
       class Socket *socket;
       class SocketManager *manager;
@@ -67,7 +83,10 @@ class SelectServer {
     SelectServer operator=(const SelectServer&);
     bool CheckForEvents();
     void CheckSockets(fd_set &set);
+    void CheckFDListeners(vector<listener_t> &listeners, fd_set &set) const;
     void AddSocketsToSet(fd_set &set, int &max_sd) const;
+    int AddFDListenersToSet(vector<listener_t> &listeners, fd_set &set) const;
+    void RemoveFDListener(vector<listener_t> &listeners, int fd);
     struct timeval CheckTimeouts();
 
     static const int K_MS_IN_SECOND = 1000;
@@ -88,7 +107,10 @@ class SelectServer {
     };
 
     bool m_terminate;
+    vector<listener_t> m_rhandlers_vect;
+    vector<listener_t> m_whandlers_vect;
     vector<registered_socket_t> m_read_sockets;
+    vector<FDListener*> m_loop_listeners;
     ExportMap *m_export_map;
 
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;

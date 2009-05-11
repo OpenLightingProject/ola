@@ -30,6 +30,8 @@ namespace select_server {
   class Socket;
   class SocketManager;
   class SelectServer;
+  class FDListener;
+  class FDManager;
 }
 
 class LlaClosure;
@@ -38,17 +40,27 @@ using std::string;
 using lla::select_server::Socket;
 using lla::select_server::SocketManager;
 using lla::select_server::SelectServer;
+using lla::select_server::FDListener;
+using lla::select_server::FDManager;
 
 class PluginAdaptor {
   public :
+    enum Direction{READ, WRITE};
+
     PluginAdaptor(class DeviceManager *device_manager,
                   SelectServer *select_server,
                   class PreferencesFactory *preferences_factory);
+    int RegisterFD(int fd,
+                   PluginAdaptor::Direction dir,
+                   FDListener *listener,
+                   FDManager *manager=NULL) const;
+    int UnregisterFD(int fd, PluginAdaptor::Direction dir) const;
     int AddSocket(class Socket *socket,
                   class SocketManager *manager=NULL) const;
     int RemoveSocket(class Socket *socket) const;
 
     bool RegisterTimeout(int ms, LlaClosure *closure, bool repeat=true) const;
+    int RegisterLoopCallback(FDListener *listener) const;
 
     int RegisterDevice(class AbstractDevice *device) const;
     int UnregisterDevice(class AbstractDevice *device) const;
@@ -62,6 +74,7 @@ class PluginAdaptor {
     DeviceManager *m_device_manager;
     class lla::select_server::SelectServer *m_ss;
     class PreferencesFactory *m_preferences_factory;
+
 };
 
 } //lla
