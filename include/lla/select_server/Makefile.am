@@ -1,6 +1,7 @@
 
-EXTRA_DIST = FdListener.h FdManager.h Socket.h SelectServer.h
+SOURCES = Socket.h SelectServer.h
+EXTRA_DIST = $(SOURCES)
 
-pkginclude_HEADERS = FdListener.h FdManager.h Socket.h SelectServer.h
+pkginclude_HEADERS = $(SOURCES)
 
 pkgincludedir = $(includedir)/lla/select_server/
