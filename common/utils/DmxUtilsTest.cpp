@@ -78,7 +78,7 @@ void DmxUtilsTest::testStringToDmx() {
   runStringToDmx(input, expected5, sizeof(expected5));
 
   input = " 266,,,10  ";
-  dmx_t expected6[] = {10, 0, 0, 10};
+  dmx_t expected6[] = {266, 0, 0, 10};
   runStringToDmx(input, expected6, sizeof(expected6));
 
   input = "";

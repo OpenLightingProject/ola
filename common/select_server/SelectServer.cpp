@@ -37,7 +37,6 @@
 using namespace lla::select_server;
 
 const string SelectServer::K_FD_VAR = "ss-fd-registered";
-const string SelectServer::K_LOOP_VAR = "ss-loop-functions";
 const string SelectServer::K_TIMER_VAR = "ss-timer-functions";
 
 using lla::ExportMap;
@@ -52,7 +51,6 @@ SelectServer::SelectServer(ExportMap *export_map):
 
   if (m_export_map) {
     lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
-    var = m_export_map->GetIntegerVar(K_LOOP_VAR);
     var = m_export_map->GetIntegerVar(K_TIMER_VAR);
   }
 }
@@ -138,54 +136,6 @@ bool SelectServer::RemoveSocket(class Socket *socket) {
 
 
 /*
- * Register a file descriptor.
- *
- * @param  fd    the file descriptor to register
- * @param  dir    LLA_FD_RD (read) or LLA_FD_WR (write)
- * @param  fh    the function to invoke
- * @param  data  data passed to the handler
- *
- * @return 0 on sucess, -1 on failure
- */
-int SelectServer::RegisterFD(int fd,
-                             SelectServer::Direction direction,
-                             FDListener *listener,
-                             FDManager *manager) {
-  listener_t listener_struct;
-  vector<listener_t>::iterator iter;
-
-  listener_struct.fd = fd;
-  listener_struct.listener = listener;
-  listener_struct.manager = manager;
-
-  vector<listener_t> &listeners = direction == SelectServer::READ ?
-    m_rhandlers_vect : m_whandlers_vect;
-
-  for (iter = listeners.begin(); iter != listeners.end(); ++iter) {
-    if (iter->fd == fd)
-      return 0;
-  }
-  listeners.push_back(listener_struct);
-  return 0;
-}
-
-
-/*
- * Unregister a file descriptor
- *
- * @param  fh  the file descriptor to unregister
- * @return 0 on sucess, -1 on failure
- */
-int SelectServer::UnregisterFD(int fd, SelectServer::Direction direction) {
-  if (direction == SelectServer::READ)
-    RemoveFDListener(m_rhandlers_vect, fd);
-  else
-    RemoveFDListener(m_whandlers_vect, fd);
-  return 0;
-}
-
-
-/*
  * Register a timeout function. Returning 0 means you don't want it to repeat
  * anymore.
  *
@@ -224,35 +174,17 @@ bool SelectServer::RegisterTimeout(int ms,
 
 
 /*
- * Register a listener to be called on each iteration through the select loop.
- */
-int SelectServer::RegisterLoopCallback(FDListener *listener) {
-  if (listener) {
-    m_loop_listeners.push_back(listener);
-    if (m_export_map) {
-      lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_LOOP_VAR);
-      var->Increment();
-    }
-  }
-  return 0;
-}
-
-
-/*
  * One iteration of the select() loop.
- *
  * @return false on error, true on success.
  */
 bool SelectServer::CheckForEvents() {
-  vector<FDListener*>::iterator iter;
   int maxsd, ret;
   unsigned int i;
   fd_set r_fds, w_fds;
   struct timeval tv;
   struct timeval now;
 
-  maxsd = AddFDListenersToSet(m_rhandlers_vect, r_fds);
-  maxsd = max(maxsd, AddFDListenersToSet(m_whandlers_vect, w_fds));
+  maxsd = 0;
   AddSocketsToSet(r_fds, maxsd);
   now = CheckTimeouts();
 
@@ -280,59 +212,21 @@ bool SelectServer::CheckForEvents() {
     default:
       CheckTimeouts();
       CheckSockets(r_fds);
-      CheckFDListeners(m_rhandlers_vect, r_fds);
-      CheckFDListeners(m_whandlers_vect, r_fds);
   }
-
-  for (iter = m_loop_listeners.begin(); iter != m_loop_listeners.end(); ++iter)
-    (*iter)->FDReady();
   return true;
-}
-
-
-/*
- * Add all listeners to the fd_set
- * @returns the max fd in the set
- */
-int SelectServer::AddFDListenersToSet(vector<listener_t> &listeners,
-                                      fd_set &set) const {
-  int max_sd = -1;
-  FD_ZERO(&set);
-  for (int i=0; i < listeners.size(); i++) {
-    FD_SET(listeners[i].fd, &set);
-    max_sd = max(max_sd, listeners[i].fd);
-  }
-  return max_sd;
 }
 
 
 /*
  * Add all the read sockets to the FD_SET
  */
-void  SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
+void SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
   vector<registered_socket_t>::const_iterator iter;
   for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
     max_sd = max(max_sd, iter->socket->ReadDescriptor());
     FD_SET(iter->socket->ReadDescriptor(), &set);
   }
 }
-
-
-/*
- * Check if any of listeners are have data pending, invoke the callback.
- */
-void SelectServer::CheckFDListeners(vector<listener_t> &listeners,
-                                    fd_set &set) const {
-  for (int i=0; i < listeners.size(); i++) {
-    if (FD_ISSET(listeners[i].fd, &set) && listeners[i].listener) {
-      int ret = listeners[i].listener->FDReady();
-      if (ret < 0 && listeners[i].manager) {
-        listeners[i].manager->fd_error(ret, listeners[i].listener);
-      }
-    }
-  }
-}
-
 
 
 /*
@@ -372,22 +266,7 @@ void SelectServer::CheckSockets(fd_set &set) {
 
 
 /*
- * Remove an fd from the list of listeners
- */
-void SelectServer::RemoveFDListener(vector<listener_t> &listeners, int fd) {
-  vector<listener_t>::iterator iter;
-  for (iter = listeners.begin(); iter != listeners.end(); ++iter) {
-    if (iter->fd == fd) {
-      listeners.erase(iter);
-      break;
-    }
-  }
-}
-
-
-/*
  * Check for expired timeouts and call them.
- *
  * @returns a struct timeval of the time up to where we checked.
  */
 struct timeval SelectServer::CheckTimeouts() {
@@ -428,14 +307,12 @@ struct timeval SelectServer::CheckTimeouts() {
   return now;
 }
 
+
 /*
  * Remove all registrations.
  */
 void SelectServer::UnregisterAll() {
-  m_rhandlers_vect.clear();
-  m_whandlers_vect.clear();
   m_read_sockets.clear();
-  m_loop_listeners.clear();
   while (!m_events.empty()) {
     event_t event = m_events.top();
     // We don't actually have enough info to decide what to do here because
