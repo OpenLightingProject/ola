@@ -211,6 +211,7 @@ bool ArtNetDevice::Start() {
   }
   fd = artnet_get_sd(m_node);
   m_socket = new ConnectedSocket(fd, fd);
+  m_socket->SetListener(this);
   m_enabled = true;
   return true;
 

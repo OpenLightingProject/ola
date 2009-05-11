@@ -154,6 +154,7 @@ bool EspNetDevice::Start() {
 
   sd = espnet_get_sd(m_node);
   m_socket = new ConnectedSocket(sd, sd);
+  m_socket->SetListener(this);
   m_enabled = true;
   return true;
 
