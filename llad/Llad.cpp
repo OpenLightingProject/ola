@@ -352,9 +352,15 @@ int main(int argc, char *argv[]) {
   lla_options opts;
   lla::ExportMap export_map;
   Setup(argc, argv, &opts);
+
+  if (!geteuid()) {
+    LLA_FATAL << "Attempting to run as root, aborting.";
+    return -1;
+  }
+
   InitExportMap(export_map, argc, argv);
 
-  if(InstallSignals())
+  if (InstallSignals())
     LLA_WARN << "Failed to install signal handlers";
 
   lla::lla_server_options lla_options;
