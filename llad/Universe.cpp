@@ -233,10 +233,8 @@ bool Universe::SetDMX(const DmxBuffer &buffer) {
   if (m_merge_mode == Universe::MERGE_LTP) {
     m_buffer = buffer;
   } else {
-    // HTP, this is more difficult, we'll need a buffer per client
-    // for now just set it
-    //TODO: implement proper HTP merging from clients
-    m_buffer = buffer;
+    HTPMergeAllSources();
+    m_buffer.HTPMerge(buffer);
   }
   return this->UpdateDependants();
 }
