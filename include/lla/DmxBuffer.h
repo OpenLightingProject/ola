@@ -56,6 +56,11 @@ class DmxBuffer {
 
   private:
     bool Init();
+    bool DuplicateIfNeeded();
+    void CopyFromOther(const DmxBuffer &other);
+    void CleanupMemory();
+    unsigned int *m_ref_count;
+    mutable bool m_copy_on_write;
     uint8_t *m_data;
     unsigned int m_length;
 };
