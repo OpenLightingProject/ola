@@ -36,6 +36,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCopy);
   CPPUNIT_TEST(testMerge);
   CPPUNIT_TEST(testStringToDmx);
+  CPPUNIT_TEST(testCopyOnWrite);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -46,11 +47,13 @@ class DmxBufferTest: public CppUnit::TestFixture {
     void testCopy();
     void testMerge();
     void testStringToDmx();
+    void testCopyOnWrite();
   private:
     static const uint8_t TEST_DATA[];
     static const uint8_t TEST_DATA2[];
     static const uint8_t TEST_DATA3[];
     static const uint8_t MERGE_RESULT[];
+    static const uint8_t MERGE_RESULT2[];
 
     void runStringToDmx(const string &input, const DmxBuffer &expected);
 };
@@ -59,6 +62,7 @@ const uint8_t DmxBufferTest::TEST_DATA[] = {1, 2, 3, 4, 5};
 const uint8_t DmxBufferTest::TEST_DATA2[] = {9, 8, 7, 6, 5, 4, 3, 2, 1};
 const uint8_t DmxBufferTest::TEST_DATA3[] = {10, 11, 12};
 const uint8_t DmxBufferTest::MERGE_RESULT[] = {10, 11, 12, 4, 5};
+const uint8_t DmxBufferTest::MERGE_RESULT2[] = {10, 11, 12, 6, 5, 4, 3, 2, 1};
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DmxBufferTest);
 
@@ -296,4 +300,72 @@ void DmxBufferTest::testStringToDmx() {
   input = "";
   uint8_t expected7[] = {};
   runStringToDmx(input, DmxBuffer(expected7, sizeof(expected7)));
+}
+
+
+/*
+ * Check that we make a copy of the buffers before writing
+ */
+void DmxBufferTest::testCopyOnWrite() {
+  string initial_data;
+  initial_data.append((const char*) TEST_DATA2, sizeof(TEST_DATA2));
+  // these are used for comparisons and don't change
+  const DmxBuffer buffer3(TEST_DATA3, sizeof(TEST_DATA3));
+  const DmxBuffer merge_result(MERGE_RESULT2, sizeof(MERGE_RESULT2));
+  DmxBuffer src_buffer(initial_data);
+  DmxBuffer dest_buffer(src_buffer);
+
+  // Check HTPMerge
+  dest_buffer.HTPMerge(buffer3);
+  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
+  CPPUNIT_ASSERT(merge_result == dest_buffer);
+  dest_buffer = src_buffer;
+  // Check the other way
+  src_buffer.HTPMerge(buffer3);
+  CPPUNIT_ASSERT(merge_result == src_buffer);
+  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  src_buffer = dest_buffer;
+
+  // Check Set works
+  dest_buffer.Set(TEST_DATA3, sizeof(TEST_DATA3));
+  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
+  CPPUNIT_ASSERT(buffer3 == dest_buffer);
+  dest_buffer = src_buffer;
+  // Check it works the other way
+  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
+  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  src_buffer.Set(TEST_DATA3, sizeof(TEST_DATA3));
+  CPPUNIT_ASSERT(buffer3 == src_buffer);
+  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  src_buffer = dest_buffer;
+
+  // Check that SetFromString works
+  dest_buffer = src_buffer;
+  dest_buffer.SetFromString("10,11,12");
+  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
+  CPPUNIT_ASSERT(buffer3 == dest_buffer);
+  dest_buffer = src_buffer;
+  // Check it works the other way
+  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
+  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  src_buffer.SetFromString("10,11,12");
+  CPPUNIT_ASSERT(buffer3 == src_buffer);
+  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  src_buffer = dest_buffer;
+
+  // Check the SetChannel() method, this should force a copy.
+  dest_buffer.SetChannel(0, 244);
+  string expected_change = initial_data;
+  expected_change[0] = 244;
+  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
+  CPPUNIT_ASSERT_EQUAL(expected_change, dest_buffer.Get());
+  dest_buffer = src_buffer;
+  // Check it works the other way
+  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
+  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  src_buffer.SetChannel(0, 234);
+  expected_change[0] = 234;
+  CPPUNIT_ASSERT_EQUAL(expected_change, src_buffer.Get());
+  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  src_buffer.Set(initial_data);
 }

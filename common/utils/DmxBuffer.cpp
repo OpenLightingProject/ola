@@ -302,8 +302,6 @@ bool DmxBuffer::DuplicateIfNeeded() {
  * @pre other.m_data and other.m_ref_count are not NULL
  */
 void DmxBuffer::CopyFromOther(const DmxBuffer &other) {
-  CleanupMemory();
-
   m_copy_on_write = true;
   other.m_copy_on_write = true;
   m_ref_count = other.m_ref_count;
