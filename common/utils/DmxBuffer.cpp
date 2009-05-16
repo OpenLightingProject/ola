@@ -284,6 +284,9 @@ bool DmxBuffer::Init() {
  * Called before making a change, this duplicates the data if required.
  */
 bool DmxBuffer::DuplicateIfNeeded() {
+  if (m_copy_on_write && *m_ref_count == 1)
+    m_copy_on_write = false;
+
   if (m_copy_on_write && *m_ref_count > 1) {
     unsigned int *old_ref_count = m_ref_count;
     uint8_t *original_data = m_data;
