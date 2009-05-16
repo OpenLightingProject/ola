@@ -378,6 +378,11 @@ bool Universe::HTPMergeAllSources() {
       m_buffer.HTPMerge((*client_iter)->GetDMX(m_universe_id));
     }
   }
+
+  // we have no data yet, just reset the buffer
+  if (first) {
+    m_buffer.Reset();
+  }
   return true;
 }
 
