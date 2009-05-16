@@ -32,11 +32,11 @@
 #include <lla/StringUtils.h>
 #include <llad/Preferences.h>
 
-#define LLA_CONFIG_DIR ".lla"
-#define LLA_CONFIG_PREFIX "lla-"
-#define LLA_CONFIG_SUFFIX ".conf"
-
 namespace lla {
+
+const string FileBackedPreferences::LLA_CONFIG_DIR = ".lla";
+const string FileBackedPreferences::LLA_CONFIG_PREFIX = "lla-";
+const string FileBackedPreferences::LLA_CONFIG_SUFFIX = ".conf";
 
 /**
  * Cleanup
@@ -142,6 +142,8 @@ vector<string> MemoryPreferences::GetMultipleValue(const string &key) const {
  * Load the preferences from storage
  */
 bool FileBackedPreferences::Load() {
+  if (!ChangeDir())
+    return false;
   return LoadFromFile(FileName());
 }
 
@@ -238,12 +240,12 @@ bool FileBackedPreferences::ChangeDir() const {
   if (chdir(ptr->pw_dir))
     return false;
 
-  if (chdir(LLA_CONFIG_DIR)) {
+  if (chdir(LLA_CONFIG_DIR.data())) {
     // try and create it
-    if (mkdir(LLA_CONFIG_DIR, 0755))
+    if (mkdir(LLA_CONFIG_DIR.data(), 0755))
       return false;
 
-    if (chdir(LLA_CONFIG_DIR))
+    if (chdir(LLA_CONFIG_DIR.data()))
       return false;
   }
   return true;
