@@ -32,7 +32,7 @@ using namespace lla;
 using namespace std;
 
 static unsigned int TEST_UNIVERSE = 1;
-static uint8_t TEST_DMX_DATA[] = "this is some test data";
+static const string TEST_DATA = "this is some test data";
 
 class UniverseTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UniverseTest);
@@ -76,8 +76,8 @@ class MockClient: public Client {
   public:
     MockClient(): Client(NULL) {}
     bool SendDMX(unsigned int universe_id, const DmxBuffer &buffer) {
-      DmxBuffer expected(TEST_DMX_DATA, sizeof(TEST_DMX_DATA));
-      CPPUNIT_ASSERT(expected == buffer);
+      CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, universe_id);
+      CPPUNIT_ASSERT_EQUAL(TEST_DATA, buffer.Get());
       return true;
     }
 };
@@ -89,7 +89,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UniverseTest);
 void UniverseTest::setUp() {
   m_preferences = new MemoryPreferences("foo");
   m_store = new UniverseStore(m_preferences, NULL);
-  m_buffer.Set(TEST_DMX_DATA, sizeof(TEST_DMX_DATA));
+  m_buffer.Set(TEST_DATA);
 }
 
 

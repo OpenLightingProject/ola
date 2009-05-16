@@ -99,7 +99,6 @@ void Universe::SetMergeMode(merge_mode merge_mode) {
 
 /*
  * Add a port to this universe
- *
  * @param port the port to add
  */
 bool Universe::AddPort(AbstractPort *port) {
@@ -276,7 +275,7 @@ bool Universe::ClientDataChanged(Client *client) {
 
   if (m_merge_mode == Universe::MERGE_LTP) {
     if (client) {
-      const DmxBuffer &new_buffer = client->GetDMX();
+      const DmxBuffer &new_buffer = client->GetDMX(m_universe_id);
       if (new_buffer.Size())
         m_buffer = new_buffer;
     }
@@ -373,10 +372,10 @@ bool Universe::HTPMergeAllSources() {
   for (client_iter = m_clients.begin(); client_iter != m_clients.end();
        ++client_iter) {
     if (first) {
-      m_buffer = (*client_iter)->GetDMX();
+      m_buffer = (*client_iter)->GetDMX(m_universe_id);
       first = false;
     } else {
-      m_buffer.HTPMerge((*client_iter)->GetDMX());
+      m_buffer.HTPMerge((*client_iter)->GetDMX(m_universe_id));
     }
   }
   return true;

@@ -18,8 +18,10 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <lla/DmxBuffer.h>
 #include "Client.h"
 #include "common/protocol/Lla.pb.h"
 
@@ -27,16 +29,23 @@ using namespace lla;
 using namespace std;
 
 static unsigned int TEST_UNIVERSE = 1;
-static uint8_t TEST_DMX_DATA[] = "this is some test data";
+static unsigned int TEST_UNIVERSE2 = 2;
+static const string TEST_DATA = "this is some test data";
+static const string TEST_DATA2 = "another set of test data";
 
 class ClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClientTest);
   CPPUNIT_TEST(testSendDMX);
+  CPPUNIT_TEST(testGetSetDMX);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testSendDMX();
+    void testGetSetDMX();
 };
+
+
+CPPUNIT_TEST_SUITE_REGISTRATION(ClientTest);
 
 
 /*
@@ -51,7 +60,6 @@ class MockClientStub: public lla::proto::LlaClientService_Stub {
                          ::google::protobuf::Closure* done);
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(ClientTest);
 
 
 void MockClientStub::UpdateDmxData(
@@ -63,8 +71,7 @@ void MockClientStub::UpdateDmxData(
   CPPUNIT_ASSERT(controller);
   CPPUNIT_ASSERT(!controller->Failed());
   CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, (unsigned int) request->universe());
-  DmxBuffer buffer(TEST_DMX_DATA, sizeof(TEST_DMX_DATA));
-  CPPUNIT_ASSERT(buffer == DmxBuffer(request->data()));
+  CPPUNIT_ASSERT(TEST_DATA == request->data());
   done->Run();
 }
 
@@ -73,15 +80,41 @@ void MockClientStub::UpdateDmxData(
  * Check that the SendDMX method works correctly.
  */
 void ClientTest::testSendDMX() {
+  // check we survive a null pointer
+  const DmxBuffer buffer(TEST_DATA);
+  Client client(NULL);
+  CPPUNIT_ASSERT(NULL == client.Stub());
+  client.SendDMX(TEST_UNIVERSE, buffer);
 
-  // test we survive a null pointer
-  DmxBuffer buffer(TEST_DMX_DATA, sizeof(TEST_DMX_DATA));
-  Client *client = new Client(NULL);
-  client->SendDMX(TEST_UNIVERSE, buffer);
-  delete client;
-
+  // check the stub is called correctly
   MockClientStub client_stub;
-  client = new Client(&client_stub);
-  client->SendDMX(TEST_UNIVERSE, buffer);
-  delete client;
+  Client client2(&client_stub);
+  CPPUNIT_ASSERT(&client_stub == client2.Stub());
+  client2.SendDMX(TEST_UNIVERSE, buffer);
+}
+
+
+/*
+ * Check that the DMX get/set works correctly.
+ */
+void ClientTest::testGetSetDMX() {
+  DmxBuffer buffer(TEST_DATA);
+  const DmxBuffer empty;
+  Client client(NULL);
+
+  // check get/set works
+  client.DMXRecieved(TEST_UNIVERSE, buffer);
+  DmxBuffer result = client.GetDMX(TEST_UNIVERSE);
+  CPPUNIT_ASSERT(buffer == result);
+
+  // check update works
+  buffer.Set(TEST_DATA2);
+  client.DMXRecieved(TEST_UNIVERSE, buffer);
+  result = client.GetDMX(TEST_UNIVERSE);
+  CPPUNIT_ASSERT(buffer == result);
+  CPPUNIT_ASSERT_EQUAL(TEST_DATA2, result.Get());
+
+  // check fetching an unknown universe results in an empty buffer
+  result = client.GetDMX(TEST_UNIVERSE2);
+  CPPUNIT_ASSERT(empty == result);
 }

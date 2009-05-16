@@ -99,7 +99,7 @@ void LlaServerServiceImpl::UpdateDmxData(
   DmxBuffer buffer;
   buffer.Set(request->data());
   if (m_client)
-    m_client->SetDMX(buffer);
+    m_client->DMXRecieved(request->universe(), buffer);
   universe->ClientDataChanged(m_client);
   done->Run();
 }
