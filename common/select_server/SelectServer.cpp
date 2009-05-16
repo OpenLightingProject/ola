@@ -185,6 +185,8 @@ bool SelectServer::CheckForEvents() {
   struct timeval now;
 
   maxsd = 0;
+  FD_ZERO(&r_fds);
+  FD_ZERO(&w_fds);
   AddSocketsToSet(r_fds, maxsd);
   now = CheckTimeouts();
 
