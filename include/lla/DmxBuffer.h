@@ -46,6 +46,7 @@ class DmxBuffer {
     bool HTPMerge(const DmxBuffer &other);
     bool Set(const uint8_t *data, unsigned int length);
     bool Set(const string &data);
+    bool Set(const DmxBuffer &other);
     bool SetFromString(const string &data);
     void SetChannel(unsigned int channel, uint8_t data);
     void Get(uint8_t *data, unsigned int &length) const;

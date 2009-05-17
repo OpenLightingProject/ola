@@ -117,6 +117,14 @@ void DmxBufferTest::testGetSet() {
   str_result = buffer.Get();
   CPPUNIT_ASSERT_EQUAL((size_t) sizeof(TEST_DATA2), str_result.length());
   CPPUNIT_ASSERT(!memcmp(TEST_DATA2, str_result.data(), str_result.length()));
+
+  // now check that Set() with another buffer works
+  DmxBuffer buffer2;
+  buffer2.Set(buffer);
+  str_result = buffer2.Get();
+  CPPUNIT_ASSERT_EQUAL((size_t) sizeof(TEST_DATA2), str_result.length());
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA2, str_result.data(), str_result.length()));
+
   delete[] result;
 }
 

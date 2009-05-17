@@ -169,6 +169,15 @@ bool DmxBuffer::Set(const string &data) {
 
 
 /*
+ * Sets the data in this buffer to be the same as the other one.
+ * Used instead of a COW to optimise.
+ */
+bool DmxBuffer::Set(const DmxBuffer &other) {
+  return Set(other.m_data, other.m_length);
+}
+
+
+/*
  * Convert a ',' separated list into a dmx_t array. Invalid values are set to
  * 0. 0s can be dropped between the commas.
  * @param input the string to split
