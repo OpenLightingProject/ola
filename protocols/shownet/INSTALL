@@ -1,0 +1,80 @@
+
+
+NOTE: By default everything will be installed with the prefix /usr/local .
+If you want to build against these libraries you will need to add 
+"/usr/local/lib" to /etc/ld.so.conf and run ldconfig. Otherwise, run configure 
+with --prefix=/usr and the libraries will be installed to /usr/lib
+
+
+Contents
+========
+
+ A. Basic Installation
+ B. For Developers
+ C. Installation Paths
+
+
+A. Basic Installation
+==================
+
+  1.  Extract the archive
+  	
+	tar -zxf libshownet-0.x.y.tar.gz
+	
+  2.  Enter the directory
+  
+  	cd libshownet-0.x.y.tar.gz
+	
+  3.  Run the configure script. If you're using `csh' on an old version of
+      System V, you might need to type `sh ./configure' instead to prevent 
+      `csh' from trying to execute `configure' itself.
+		 
+	./configure
+	
+  4.  Build the source files.
+  
+  	make
+ 
+  5. Become root
+  	
+	su
+	(enter root password)
+
+  6. Install the libraries
+
+  	make install
+
+
+B. For Developers
+=================
+
+   libshownet uses pkgconfig. libshownet.pc is installed in PREFIX/lib/pkgconfig
+This is only important if you intend on writing applications that use libshownet.
+
+   libshownet is documented using doxygen. Run doxygen from the extracted 
+directory to generate the latex and html documentation in the doc subdirectory
+
+
+C. Installation Paths
+=====================
+
+   By default, `make install' will install the package's files in
+`/usr/local/bin', `/usr/local/man', etc.  You can specify an
+installation prefix other than `/usr/local' by giving `configure' the
+option `--prefix=PATH'.
+
+   You can specify separate installation prefixes for
+architecture-specific files and architecture-independent files.  If you
+give `configure' the option `--exec-prefix=PATH', the package will use
+PATH as the prefix for installing programs and libraries.
+Documentation and other data files will still use the regular prefix.
+
+   In addition, if you use an unusual directory layout you can give
+options like `--bindir=PATH' to specify different values for particular
+kinds of files.  Run `configure --help' for a list of the directories
+you can set and what kinds of files go in them.
+
+   If the package supports it, you can cause programs to be installed
+with an extra prefix or suffix on their names by giving `configure' the
+option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
+
