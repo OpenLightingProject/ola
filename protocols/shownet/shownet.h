@@ -13,9 +13,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * shownet.h
+ * ShowNet.h
  * Interface to libshownet
- * Copyright (C) 2005 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 /** @file shownet/shownet.h */
