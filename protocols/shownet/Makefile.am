@@ -1,13 +1,11 @@
 
-auxdir                  = @ac_aux_dir@
-AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
-                        $(auxdir)/mkinstalldirs
+INCLUDES = -I$(top_builddir) -I$(top_srcdir)
+#AM_CFLAGS = -Wall -Werror -Wformat -W -fprofile-arcs 
+AM_CFLAGS = -Wall
 
-SUBDIRS = shownet
+lib_LTLIBRARIES = libshownet.la
+libshownet_la_SOURCES = shownet.c network.c shownet.h private.h packets.h
+libshownet_la_LDFLAGS = -version-info 0:0:0
 
-EXTRA_DIST = reconf libshownet.pc.in Doxyfile
-
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libshownet.pc
-
-ACLOCAL                 = aclocal -I $(auxdir)
+pkginclude_HEADERS = shownet.h packets.h
+pkgincludedir = $(includedir)/shownet
