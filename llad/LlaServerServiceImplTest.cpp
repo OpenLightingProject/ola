@@ -277,36 +277,36 @@ void LlaServerServiceImplTest::testRegisterForDmx() {
   // The universe should exist now and the client should be bound
   Universe *universe = store.GetUniverse(universe_id);
   CPPUNIT_ASSERT(universe);
-  CPPUNIT_ASSERT(universe->ContainsClient(NULL));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->ClientCount());
+  CPPUNIT_ASSERT(universe->ContainsSinkClient(NULL));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->SinkClientCount());
 
   // Try to register again
   CallRegisterForDmx(&impl, universe_id, lla::proto::REGISTER, ack_check);
-  CPPUNIT_ASSERT(universe->ContainsClient(NULL));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->ClientCount());
+  CPPUNIT_ASSERT(universe->ContainsSinkClient(NULL));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->SinkClientCount());
 
   // Register a second universe
   CallRegisterForDmx(&impl, second_universe_id, lla::proto::REGISTER,
                      ack_check);
   Universe *second_universe = store.GetUniverse(universe_id);
-  CPPUNIT_ASSERT(second_universe->ContainsClient(NULL));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, second_universe->ClientCount());
+  CPPUNIT_ASSERT(second_universe->ContainsSinkClient(NULL));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, second_universe->SinkClientCount());
 
   // Unregister the first universe
   CallRegisterForDmx(&impl, universe_id, lla::proto::UNREGISTER, ack_check);
-  CPPUNIT_ASSERT(!universe->ContainsClient(NULL));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->ClientCount());
+  CPPUNIT_ASSERT(!universe->ContainsSinkClient(NULL));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
 
   // Unregister the second universe
   CallRegisterForDmx(&impl, second_universe_id, lla::proto::UNREGISTER,
                      ack_check);
-  CPPUNIT_ASSERT(!second_universe->ContainsClient(NULL));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, second_universe->ClientCount());
+  CPPUNIT_ASSERT(!second_universe->ContainsSinkClient(NULL));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, second_universe->SinkClientCount());
 
   // Unregister again
   CallRegisterForDmx(&impl, universe_id, lla::proto::UNREGISTER, ack_check);
-  CPPUNIT_ASSERT(!universe->ContainsClient(NULL));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->ClientCount());
+  CPPUNIT_ASSERT(!universe->ContainsSinkClient(NULL));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
 
   store.DeleteAll();
 }

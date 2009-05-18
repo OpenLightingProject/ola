@@ -14,7 +14,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- e* LlaServerServiceImpl.cpp
+ * LlaServerServiceImpl.cpp
  * Implemtation of the LlaServerService interface. This is the class that
  * handles all the RPCs on the server side.
  * Copyright (C) 2005 - 2008 Simon Newton
@@ -75,9 +75,9 @@ void LlaServerServiceImpl::RegisterForDmx(
     return MissingUniverseError(controller, done);
 
   if (request->action() == REGISTER) {
-    universe->AddClient(m_client);
+    universe->AddSinkClient(m_client);
   } else {
-    universe->RemoveClient(m_client);
+    universe->RemoveSinkClient(m_client);
   }
   done->Run();
 }
@@ -98,9 +98,10 @@ void LlaServerServiceImpl::UpdateDmxData(
 
   DmxBuffer buffer;
   buffer.Set(request->data());
-  if (m_client)
+  if (m_client) {
     m_client->DMXRecieved(request->universe(), buffer);
-  universe->ClientDataChanged(m_client);
+    universe->SourceClientDataChanged(m_client);
+  }
   done->Run();
 }
 

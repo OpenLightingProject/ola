@@ -15,7 +15,7 @@
  *
  * Client.cpp
  * Represents a connected client.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #include <google/protobuf/stubs/common.h>
@@ -93,7 +93,8 @@ void Client::DMXRecieved(unsigned int universe, const DmxBuffer &buffer) {
  * @param universe the id of the universe we're interested in
  */
 const DmxBuffer Client::GetDMX(unsigned int universe) const {
-  map<unsigned int, DmxBuffer>::const_iterator iter = m_data_map.find(universe);
+  map<unsigned int, DmxBuffer>::const_iterator iter =
+    m_data_map.find(universe);
 
   if (iter != m_data_map.end()) {
     return iter->second;

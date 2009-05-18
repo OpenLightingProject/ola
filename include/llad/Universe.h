@@ -14,17 +14,16 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Universe.h
- * Header file for the Universe class
- * Copyright (C) 2005-2008 Simon Newton
+ * Header file for the Universe class, see Universe.cpp for details.
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef UNIVERSE_H
 #define UNIVERSE_H
 
-#include <stdint.h>
+#include <set>
 #include <vector>
 #include <string>
-#include <lla/BaseTypes.h>
 #include <lla/ExportMap.h>
 #include <lla/DmxBuffer.h>
 
@@ -44,26 +43,41 @@ class Universe {
              ExportMap *export_map);
     ~Universe();
 
+    // Properties for this universe
     string Name() const { return m_universe_name; }
-    void SetName(const string &name);
-    merge_mode MergeMode() const { return m_merge_mode; }
-    void SetMergeMode(merge_mode merge_mode);
     unsigned int UniverseId() const { return m_universe_id; }
+    merge_mode MergeMode() const { return m_merge_mode; }
     bool IsActive() const;
 
-    bool AddPort(class AbstractPort *prt);
-    bool RemovePort(class AbstractPort *prt);
-    int PortCount() const { return m_ports.size(); }
+    // Used to adjust the properties
+    void SetName(const string &name);
+    void SetMergeMode(merge_mode merge_mode);
 
-    bool AddClient(class Client *client);
-    bool RemoveClient(class Client *client);
-    bool ContainsClient(class Client *client) const;
-    unsigned int ClientCount() const { return m_clients.size(); }
-
+    // Each universe has a DMXBuffer
     bool SetDMX(const DmxBuffer &buffer);
     const DmxBuffer &GetDMX() const { return m_buffer; }
+
+    // These are the ports we need to nofity when data changes
+    bool AddPort(class AbstractPort *port);
+    bool RemovePort(class AbstractPort *port);
+    bool ContainsPort(class AbstractPort *port) const;
+    int PortCount() const { return m_ports.size(); }
+
+    // Source clients are those that provide us with data
+    bool AddSourceClient(class Client *client);
+    bool RemoveSourceClient(class Client *client);
+    bool ContainsSourceClient(class Client *client) const;
+    unsigned int SourceClientCount() const { return m_source_clients.size(); }
+
+    // Sink clients are those that we need to send data
+    bool AddSinkClient(class Client *client);
+    bool RemoveSinkClient(class Client *client);
+    bool ContainsSinkClient(class Client *client) const;
+    unsigned int SinkClientCount() const { return m_sink_clients.size(); }
+
+    // These are called when new data arrives on a port/client
     bool PortDataChanged(AbstractPort *port);
-    bool ClientDataChanged(class Client *client);
+    bool SourceClientDataChanged(class Client *client);
 
     bool operator==(const Universe &other) {
       return m_universe_id == other.UniverseId();
@@ -72,7 +86,8 @@ class Universe {
     static const string K_UNIVERSE_NAME_VAR;
     static const string K_UNIVERSE_MODE_VAR;
     static const string K_UNIVERSE_PORT_VAR;
-    static const string K_UNIVERSE_CLIENTS_VAR;
+    static const string K_UNIVERSE_SOURCE_CLIENTS_VAR;
+    static const string K_UNIVERSE_SINK_CLIENTS_VAR;
     static const string K_MERGE_HTP_STR;
     static const string K_MERGE_LTP_STR;
 
@@ -82,14 +97,17 @@ class Universe {
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();
+    bool RemoveClient(class Client *client, bool is_source);
+    bool AddClient(class Client *client, bool is_source);
     bool HTPMergeAllSources();
 
     string m_universe_name;
     unsigned int m_universe_id;
     string m_universe_id_str;
-    enum merge_mode m_merge_mode;      // merge mode
-    vector<class AbstractPort*> m_ports;       // ports patched to this universe
-    vector<class Client*> m_clients;  // clients listening to this universe
+    enum merge_mode m_merge_mode; // merge mode
+    vector<class AbstractPort*> m_ports; // ports patched to this universe
+    set<class Client*> m_sink_clients; // clients that require updates
+    set<class Client*> m_source_clients; // clients that provide data
     class UniverseStore *m_universe_store;
 
     DmxBuffer m_buffer;

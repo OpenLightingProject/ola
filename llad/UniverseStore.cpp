@@ -36,10 +36,15 @@ UniverseStore::UniverseStore(class Preferences *preferences,
   m_export_map(export_map) {
 
   if (export_map) {
-    StringMap *map = export_map->GetStringMapVar(Universe::K_UNIVERSE_NAME_VAR, "name");
+    StringMap *map = export_map->GetStringMapVar(Universe::K_UNIVERSE_NAME_VAR,
+        "name");
     map = export_map->GetStringMapVar(Universe::K_UNIVERSE_MODE_VAR, "mode");
-    IntMap *int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_PORT_VAR, "count");
-    int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_CLIENTS_VAR, "count");
+    IntMap *int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_PORT_VAR,
+        "count");
+    int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR,
+        "count");
+    int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_SINK_CLIENTS_VAR,
+        "count");
   }
 }
 
@@ -61,9 +66,8 @@ Universe *UniverseStore::GetUniverse(unsigned int universe_id) const {
 
 /*
  * Lookup a universe, or create it if it does not exist
- *
- * @param uid  the universe id
- * @return  the universe, or NULL on error
+ * @param uid the universe id
+ * @return the universe, or NULL on error
  */
 Universe *UniverseStore::GetUniverseOrCreate(unsigned int universe_id) {
   Universe *universe = GetUniverse(universe_id);
@@ -86,10 +90,9 @@ Universe *UniverseStore::GetUniverseOrCreate(unsigned int universe_id) {
 /*
  * Returns a list of universes. This must be freed when you're
  * done with it.
- *
  * @return a pointer to a vector of Universe*
  */
-vector<Universe *> *UniverseStore::GetList() const {
+vector<Universe*> *UniverseStore::GetList() const {
   vector<Universe*> *list = new vector<Universe*>;
   list->reserve(UniverseCount());
 
@@ -114,7 +117,6 @@ int UniverseStore::DeleteAll() {
   m_universe_map.clear();
   return 0;
 }
-
 
 
 /*
@@ -148,10 +150,9 @@ void UniverseStore::GarbageCollectUniverses() {
 
 /*
  * Restore a universe's settings
- *
  * @param uni  the universe to update
  */
-int UniverseStore::RestoreUniverseSettings(Universe *universe) const {
+bool UniverseStore::RestoreUniverseSettings(Universe *universe) const {
   string key, value;
   std::ostringstream oss;
 
@@ -186,7 +187,7 @@ int UniverseStore::RestoreUniverseSettings(Universe *universe) const {
  *
  * @param uni  the universe to save
  */
-int UniverseStore::SaveUniverseSettings(Universe *universe) {
+bool UniverseStore::SaveUniverseSettings(Universe *universe) {
   string key, mode;
   std::ostringstream oss;
 

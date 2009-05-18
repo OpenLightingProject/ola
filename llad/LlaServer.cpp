@@ -337,7 +337,8 @@ void LlaServer::CleanupConnection(LlaServerServiceImpl *service) {
   for (uni_iter = universe_list->begin();
        uni_iter != universe_list->end();
        ++uni_iter) {
-    (*uni_iter)->RemoveClient(client);
+    (*uni_iter)->RemoveSourceClient(client);
+    (*uni_iter)->RemoveSinkClient(client);
   }
   delete universe_list;
   delete client->Stub()->channel();

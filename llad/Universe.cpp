@@ -14,9 +14,20 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Universe.cpp
- * Represents a universe of DMX data
- * Copyright (C) 2005-2008 Simon Newton
+ * Represents a universe of DMX data.
+ * Copyright (C) 2005-2009 Simon Newton
  *
+ * Each universe has the following:
+ *   A human readable name
+ *   A DmxBuffer with the current dmx data
+ *   A MergeMode, either LTP (latest takes precedence) or HTP (highest takes
+ *     precedence)
+ *   A list of ports bound to this universe. If a port is an input, we use the
+ *     data to update the DmxBuffer according to the MergeMode. If a port is an
+ *     output, we notify the port whenever the DmxBuffer changes.
+ *   A list of source clients. which provide us with data for updating the
+ *     DmxBuffer per the merge mode.
+ *   A list of sink clients, which we update whenever the DmxBuffer changes.
  */
 
 #include <lla/Logging.h>
@@ -25,25 +36,25 @@
 #include "UniverseStore.h"
 #include "Client.h"
 
-#include <arpa/inet.h>
 #include <iterator>
 #include <algorithm>
-#include <string.h>
-#include <stdio.h>
 
 namespace lla {
 
 const string Universe::K_UNIVERSE_NAME_VAR = "universe_name";
 const string Universe::K_UNIVERSE_MODE_VAR = "universe_mode";
 const string Universe::K_UNIVERSE_PORT_VAR = "universe_ports";
-const string Universe::K_UNIVERSE_CLIENTS_VAR = "universe_clients";
+const string Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR =
+    "universe_source_clients";
+const string Universe::K_UNIVERSE_SINK_CLIENTS_VAR = "universe_sink_clients";
 const string Universe::K_MERGE_HTP_STR = "htp";
 const string Universe::K_MERGE_LTP_STR = "ltp";
 
 /*
  * Create a new universe
- *
  * @param uid  the universe id of this universe
+ * @param store the store this universe came from
+ * @param export_map the ExportMap that we update
  */
 Universe::Universe(unsigned int universe_id, UniverseStore *store,
                    ExportMap *export_map):
@@ -62,7 +73,10 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
 
   if (m_export_map) {
     m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR)->Set(m_universe_id_str, 0);
-    m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR)->Set(m_universe_id_str, 0);
+    m_export_map->GetIntMapVar(K_UNIVERSE_SOURCE_CLIENTS_VAR)->Set(
+        m_universe_id_str, 0);
+    m_export_map->GetIntMapVar(K_UNIVERSE_SINK_CLIENTS_VAR)->Set(
+        m_universe_id_str, 0);
   }
 }
 
@@ -72,15 +86,21 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
  */
 Universe::~Universe() {
   if (m_export_map) {
-    m_export_map->GetStringMapVar(K_UNIVERSE_NAME_VAR)->Remove(m_universe_id_str);
-    m_export_map->GetStringMapVar(K_UNIVERSE_MODE_VAR)->Remove(m_universe_id_str);
+    m_export_map->GetStringMapVar(K_UNIVERSE_NAME_VAR)->Remove(
+        m_universe_id_str);
+    m_export_map->GetStringMapVar(K_UNIVERSE_MODE_VAR)->Remove(
+        m_universe_id_str);
     m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR)->Remove(m_universe_id_str);
-    m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR)->Remove(m_universe_id_str);
+    m_export_map->GetIntMapVar(K_UNIVERSE_SOURCE_CLIENTS_VAR)->Remove(
+        m_universe_id_str);
+    m_export_map->GetIntMapVar(K_UNIVERSE_SINK_CLIENTS_VAR)->Remove(
+        m_universe_id_str);
   }
 }
 
 /*
  * Set the universe name
+ * @param name the new universe name
  */
 void Universe::SetName(const string &name) {
   m_universe_name = name;
@@ -90,15 +110,18 @@ void Universe::SetName(const string &name) {
 
 /*
  * Set the universe merge mode
+ * @param merge_mode the new merge_mode
  */
-void Universe::SetMergeMode(merge_mode merge_mode) {
+void Universe::SetMergeMode(enum merge_mode merge_mode) {
   m_merge_mode = merge_mode;
   UpdateMode();
 }
 
 
 /*
- * Add a port to this universe
+ * Add a port to this universe. If we CanRead() on this port is true, it'll be
+ * used as a source for DMX data. If CanWrite() on this port is true we'll
+ * update this port when we get new DMX data.
  * @param port the port to add
  */
 bool Universe::AddPort(AbstractPort *port) {
@@ -157,63 +180,82 @@ bool Universe::RemovePort(AbstractPort *port) {
 
 
 /*
- * Add this client to this universe
+ * Check if this port is bound to this universe
+ * @param port the port to check for
+ * @return true if the port exists in this universe, false otherwise
+ */
+bool Universe::ContainsPort(AbstractPort *port) const {
+  vector<AbstractPort*>::const_iterator iter =
+      find(m_ports.begin(), m_ports.end(), port);
+
+  return iter != m_ports.end();
+}
+
+
+/*
+ * Add a client as a source for this universe
  * @param client the client to add
  */
-bool Universe::AddClient(Client *client) {
-  vector<Client*>::const_iterator iter = find(m_clients.begin(),
-                                              m_clients.end(),
-                                              client);
-
-  if (iter != m_clients.end())
-    return true;
-
-  LLA_INFO << "Added client " << client << " to universe " << m_universe_id;
-  m_clients.push_back(client);
-  if (m_export_map) {
-    IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR);
-    map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
-  }
-  return true;
+bool Universe::AddSourceClient(Client *client) {
+  if (ContainsSourceClient(client))
+    return false;
+  return AddClient(client, true);
 }
 
 
 /*
- * Remove this client from the universe. After calling this method you need to
- * check if this universe is still in use, and if not delete it
- * @param client  the client to remove
+ * Remove a client as a source for this universe
+ * @param client the client to remove
  */
-bool Universe::RemoveClient(Client *client) {
-  vector<Client*>::iterator iter = find(m_clients.begin(),
-                                        m_clients.end(),
-                                        client);
-
-  if (iter != m_clients.end()) {
-    m_clients.erase(iter);
-    if (m_export_map) {
-      IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_CLIENTS_VAR);
-      map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
-    }
-    LLA_INFO << "Client " << client << " has been removed from uni " <<
-      m_universe_id;
-  }
-
-  if (!IsActive())
-    m_universe_store->AddUniverseGarbageCollection(this);
-  return true;
+bool Universe::RemoveSourceClient(Client *client) {
+  return RemoveClient(client, true);
 }
 
 
 /*
- * Returns true if the client is bound to this universe
+ * Check if this universe contains a client as a source
  * @param client the client to check for
+ * @returns true if this universe contains the client, false otherwise
  */
-bool Universe::ContainsClient(class Client *client) const {
-  vector<Client*>::const_iterator iter = find(m_clients.begin(),
-                                              m_clients.end(),
-                                              client);
+bool Universe::ContainsSourceClient(Client *client) const {
+  set<Client*>::const_iterator iter = find(m_source_clients.begin(),
+                                           m_source_clients.end(),
+                                           client);
 
-  return iter != m_clients.end();
+  return iter != m_source_clients.end();
+}
+
+
+/*
+ * Add a client as a sink for this universe
+ * @param client the client to add
+ */
+bool Universe::AddSinkClient(Client *client) {
+  if (ContainsSinkClient(client))
+    return false;
+  return AddClient(client, false);
+}
+
+
+/*
+ * Remove a client as a sink for this universe
+ * @param client the client to remove
+ */
+bool Universe::RemoveSinkClient(Client *client) {
+  return RemoveClient(client, false);
+}
+
+/*
+ * Check if this universe contains a client as a sink
+ * @param client the client to check for
+ * @returns true if this universe contains the client, false otherwise
+ */
+bool Universe::ContainsSinkClient(Client *client) const {
+  set<Client*>::const_iterator iter = find(m_sink_clients.begin(),
+                                           m_sink_clients.end(),
+                                           client);
+
+  return iter != m_sink_clients.end();
 }
 
 
@@ -244,19 +286,18 @@ bool Universe::SetDMX(const DmxBuffer &buffer) {
  * @param port the port that has changed
  */
 bool Universe::PortDataChanged(AbstractPort *port) {
-  vector<AbstractPort*>::const_iterator iter;
+  if (!ContainsPort(port)) {
+    LLA_INFO << "Trying to update a port which isn't bound to universe: "
+      << UniverseId();
+    return false;
+  }
 
   if (m_merge_mode == Universe::MERGE_LTP) {
     // LTP merge mode
-    for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-      if (*iter == port && (*iter)->CanRead()) {
-        const DmxBuffer &new_buffer = (*iter)->ReadDMX();
-        if (new_buffer.Size())
-          m_buffer = new_buffer;
-      } else {
-        LLA_INFO << "Trying to update a port which isn't bound to universe: "
-          << UniverseId();
-      }
+    if (port->CanRead()) {
+      const DmxBuffer &new_buffer = port->ReadDMX();
+      if (new_buffer.Size())
+        m_buffer = new_buffer;
     }
   } else {
     // htp merge mode
@@ -270,16 +311,19 @@ bool Universe::PortDataChanged(AbstractPort *port) {
 /*
  * Called to indicate that data from a client has changed
  */
-bool Universe::ClientDataChanged(Client *client) {
-  vector<Client*>::const_iterator iter;
+bool Universe::SourceClientDataChanged(Client *client) {
+  if (!client)
+    return false;
 
   if (m_merge_mode == Universe::MERGE_LTP) {
-    if (client) {
-      const DmxBuffer &new_buffer = client->GetDMX(m_universe_id);
-      if (new_buffer.Size())
-        m_buffer = new_buffer;
-    }
+    const DmxBuffer &new_buffer = client->GetDMX(m_universe_id);
+    if (new_buffer.Size())
+      m_buffer = new_buffer;
   } else {
+    // add the client if we're in HTP mode
+    if (!ContainsSourceClient(client)) {
+      AddSourceClient(client);
+    }
     HTPMergeAllSources();
   }
   UpdateDependants();
@@ -288,10 +332,10 @@ bool Universe::ClientDataChanged(Client *client) {
 
 
 /*
- * Return true if this universe is in use
+ * Return true if this universe is in use (has at least one port or client).
  */
 bool Universe::IsActive() const {
-  return m_ports.size() > 0 || m_clients.size() > 0;
+  return m_ports.size() || m_source_clients.size() || m_sink_clients.size();
 }
 
 
@@ -302,11 +346,10 @@ bool Universe::IsActive() const {
 /*
  * Called when the dmx data for this universe changes,
  * updates everyone who needs to know (patched ports and network clients)
- *
  */
 bool Universe::UpdateDependants() {
   vector<AbstractPort*>::const_iterator iter;
-  vector<Client*>::const_iterator client_iter;
+  set<Client*>::const_iterator client_iter;
 
   // write to all ports assigned to this unviverse
   for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
@@ -314,7 +357,8 @@ bool Universe::UpdateDependants() {
   }
 
   // write to all clients
-  for (client_iter = m_clients.begin(); client_iter != m_clients.end();
+  for (client_iter = m_sink_clients.begin();
+       client_iter != m_sink_clients.end();
        ++client_iter) {
     LLA_DEBUG << "Sending dmx data msg to client";
     (*client_iter)->SendDMX(m_universe_id, m_buffer);
@@ -348,17 +392,71 @@ void Universe::UpdateMode() {
 
 
 /*
+ * Add this client to this universe
+ * @param client the client to add
+ * @pre the client doesn't already exist in the set
+ */
+bool Universe::AddClient(Client *client, bool is_source) {
+  set<Client*> &clients = is_source ? m_source_clients : m_sink_clients;
+  clients.insert(client);
+  LLA_INFO << "Added " << (is_source ? "source" : "sink") << " client, " <<
+    client << " to universe " << m_universe_id;
+
+  if (m_export_map) {
+    const string &map_name = is_source ? K_UNIVERSE_SOURCE_CLIENTS_VAR :
+      K_UNIVERSE_SINK_CLIENTS_VAR;
+    IntMap *map = m_export_map->GetIntMapVar(map_name);
+    map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
+  }
+  return true;
+}
+
+
+/*
+ * Remove this client from the universe. After calling this method you need to
+ * check if this universe is still in use, and if not delete it
+ * @param client the client to remove
+ * @return true is this client was removed, false if it didn't exist
+ */
+bool Universe::RemoveClient(Client *client, bool is_source) {
+  set<Client*> &clients = is_source ? m_source_clients : m_sink_clients;
+  set<Client*>::iterator iter = find(clients.begin(),
+                                     clients.end(),
+                                     client);
+
+  if (iter == clients.end())
+    return false;
+
+  clients.erase(iter);
+  if (m_export_map) {
+    const string &map_name = is_source ? K_UNIVERSE_SOURCE_CLIENTS_VAR :
+      K_UNIVERSE_SINK_CLIENTS_VAR;
+    IntMap *map = m_export_map->GetIntMapVar(map_name);
+    map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
+  }
+  LLA_INFO << "Client " << client << " has been removed from uni " <<
+    m_universe_id;
+
+  if (!IsActive())
+    m_universe_store->AddUniverseGarbageCollection(this);
+  return true;
+}
+
+
+
+/*
  * HTP Merge all sources (clients/ports)
  */
 bool Universe::HTPMergeAllSources() {
   vector<AbstractPort*>::const_iterator iter;
-  vector<Client*>::const_iterator client_iter;
+  set<Client*>::const_iterator client_iter;
   bool first = true;
 
   for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
     if ((*iter)->CanRead()) {
       if (first) {
-        m_buffer = (*iter)->ReadDMX();
+        // We do a copy here to avoid a delete/new operation later
+        m_buffer.Set((*iter)->ReadDMX());
         first = false;
       } else {
         m_buffer.HTPMerge((*iter)->ReadDMX());
@@ -366,13 +464,12 @@ bool Universe::HTPMergeAllSources() {
     }
   }
 
-  // THIS IS WRONG
-  // WRONG WRONG WRONG
-  // clients are ones we send to - not recv from
-  for (client_iter = m_clients.begin(); client_iter != m_clients.end();
+  for (client_iter = m_source_clients.begin();
+       client_iter != m_source_clients.end();
        ++client_iter) {
     if (first) {
-      m_buffer = (*client_iter)->GetDMX(m_universe_id);
+      // We do a copy here to avoid a delete/new operation later
+      m_buffer.Set((*client_iter)->GetDMX(m_universe_id));
       first = false;
     } else {
       m_buffer.HTPMerge((*client_iter)->GetDMX(m_universe_id));
