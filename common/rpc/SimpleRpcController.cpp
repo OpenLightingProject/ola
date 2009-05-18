@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <lla/Logging.h>
 #include "SimpleRpcController.h"
 
 using namespace lla::rpc;
@@ -32,7 +33,9 @@ SimpleRpcController::SimpleRpcController() :
 void SimpleRpcController::Reset() {
   m_failed = false;
   m_cancelled = false;
-  //TODO: check if this is leaking memory
+  if (m_callback)
+    LLA_FATAL << "calling reset() while an rpc is in progress, we're " <<
+      "leaking memory!";
   m_callback = NULL;
 }
 

@@ -185,10 +185,7 @@ bool Universe::RemovePort(AbstractPort *port) {
  * @return true if the port exists in this universe, false otherwise
  */
 bool Universe::ContainsPort(AbstractPort *port) const {
-  vector<AbstractPort*>::const_iterator iter =
-      find(m_ports.begin(), m_ports.end(), port);
-
-  return iter != m_ports.end();
+  return find(m_ports.begin(), m_ports.end(), port) != m_ports.end();
 }
 
 
@@ -218,11 +215,8 @@ bool Universe::RemoveSourceClient(Client *client) {
  * @returns true if this universe contains the client, false otherwise
  */
 bool Universe::ContainsSourceClient(Client *client) const {
-  set<Client*>::const_iterator iter = find(m_source_clients.begin(),
-                                           m_source_clients.end(),
-                                           client);
-
-  return iter != m_source_clients.end();
+  return find(m_source_clients.begin(), m_source_clients.end(), client) !=
+    m_source_clients.end();
 }
 
 
@@ -251,11 +245,8 @@ bool Universe::RemoveSinkClient(Client *client) {
  * @returns true if this universe contains the client, false otherwise
  */
 bool Universe::ContainsSinkClient(Client *client) const {
-  set<Client*>::const_iterator iter = find(m_sink_clients.begin(),
-                                           m_sink_clients.end(),
-                                           client);
-
-  return iter != m_sink_clients.end();
+  return find(m_sink_clients.begin(), m_sink_clients.end(), client) !=
+    m_sink_clients.end();
 }
 
 
