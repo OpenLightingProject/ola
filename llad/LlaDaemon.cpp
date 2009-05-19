@@ -30,9 +30,9 @@
 
 namespace lla {
 
-using lla::select_server::TcpListeningSocket;
-using lla::select_server::ListeningSocket;
-using lla::select_server::SelectServer;
+using lla::network::TcpListeningSocket;
+using lla::network::ListeningSocket;
+using lla::network::SelectServer;
 
 const string LlaDaemon::K_RPC_PORT_VAR = "rpc_port";
 

@@ -21,10 +21,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <lla/ExportMap.h>
-#include <lla/select_server/SelectServer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/SelectServer.h>
+#include <lla/network/Socket.h>
 
-using namespace lla::select_server;
+using namespace lla::network;
 using lla::ExportMap;
 using lla::IntegerVariable;
 

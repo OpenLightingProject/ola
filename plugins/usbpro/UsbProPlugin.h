@@ -24,13 +24,13 @@
 #include <vector>
 #include <llad/Plugin.h>
 #include <lla/plugin_id.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 
 namespace lla {
 namespace plugin {
 
-using lla::select_server::SocketManager;
-using lla::select_server::Socket;
+using lla::network::SocketManager;
+using lla::network::Socket;
 
 class UsbProDevice;
 

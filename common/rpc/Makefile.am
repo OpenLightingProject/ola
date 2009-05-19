@@ -25,7 +25,7 @@ nodist_RpcTester_SOURCES = TestService.pb.cc
 RpcTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 RpcTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 RpcTester_LDADD = ./libstreamrpcchannel.la \
-                  ../select_server/libllaselectserver.la \
+                  ../network/libllanetwork.la \
                   ../export_map/libllaexportmap.la \
                   ../logging/liblogging.la
 
@@ -33,5 +33,5 @@ clean-local:
 	rm *.pb.{h,cc}
 
 # this has the problem that it doesn't get rebuilt if a dependency changes.
-../select_server/libselectserver.la:
-	cd ../select_server && $(MAKE) $(AM_MAKEFLAGS) libselectserver.la
+../network/libnetwork.la:
+	cd ../network && $(MAKE) $(AM_MAKEFLAGS) libnetwork.la

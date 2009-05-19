@@ -30,8 +30,8 @@
 
 #include <lla/ExportMap.h>
 #include <lla/plugin_id.h>
-#include <lla/select_server/SelectServer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/SelectServer.h>
+#include <lla/network/Socket.h>
 
 namespace lla {
 
@@ -53,21 +53,21 @@ typedef struct {
 /*
  * The main LlaServer class
  */
-class LlaServer: public lla::select_server::AcceptSocketListener,
-                 public lla::select_server::SocketManager {
+class LlaServer: public lla::network::AcceptSocketListener,
+                 public lla::network::SocketManager {
   public:
     LlaServer(class LlaServerServiceImplFactory *factory,
               class PluginLoader *plugin_loader,
               class PreferencesFactory *preferences_factory,
-              lla::select_server::SelectServer *select_server,
+              lla::network::SelectServer *network,
               lla_server_options *lla_options,
-              lla::select_server::ListeningSocket *socket=NULL,
+              lla::network::ListeningSocket *socket=NULL,
               ExportMap *export_map=NULL);
     ~LlaServer();
     bool Init();
     void ReloadPlugins();
-    int NewConnection(lla::select_server::ConnectedSocket *socket);
-    void SocketClosed(lla::select_server::Socket *socket);
+    int NewConnection(lla::network::ConnectedSocket *socket);
+    void SocketClosed(lla::network::Socket *socket);
     int GarbageCollect();
 
     static const unsigned int DEFAULT_HTTP_PORT = 9090;
@@ -81,8 +81,8 @@ class LlaServer: public lla::select_server::AcceptSocketListener,
 
     class LlaServerServiceImplFactory *m_service_factory;
     class PluginLoader *m_plugin_loader;
-    lla::select_server::SelectServer *m_ss;
-    lla::select_server::ListeningSocket *m_listening_socket;
+    lla::network::SelectServer *m_ss;
+    lla::network::ListeningSocket *m_listening_socket;
 
     class DeviceManager *m_device_manager;
     class PluginAdaptor *m_plugin_adaptor;

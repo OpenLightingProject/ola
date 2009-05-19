@@ -24,7 +24,7 @@
 #include <string>
 #include <stdint.h>
 #include <lla/DmxBuffer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 
 #include "UsbProWidgetListener.h"
 
@@ -32,7 +32,7 @@ namespace lla {
 namespace plugin {
 
 using std::string;
-using lla::select_server::ConnectedSocket;
+using lla::network::ConnectedSocket;
 
 enum { DMX_BUF_LEN = 513 };
 enum { USER_CONFIG_LEN = 508 };
@@ -144,7 +144,7 @@ typedef struct {
 #define pm_snorep  pm_pmu.pmu_snorep
 
 
-class UsbProWidget: public lla::select_server::SocketListener {
+class UsbProWidget: public lla::network::SocketListener {
   public:
     UsbProWidget():
       m_enabled(false),

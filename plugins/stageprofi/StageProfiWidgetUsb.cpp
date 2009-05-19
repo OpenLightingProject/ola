@@ -23,7 +23,7 @@
 #include <termios.h>
 #include <string.h>
 
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include "StageProfiWidgetUsb.h"
 
 namespace lla {

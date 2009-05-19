@@ -135,7 +135,7 @@ string Dmx4LinuxPlugin::Description() const {
  * TODO: get reads working
  * why do we get input on the in_fd when we write ??
  */
-int Dmx4LinuxPlugin::SocketReady(lla::select_server::ConnectedSocket *socket) {
+int Dmx4LinuxPlugin::SocketReady(lla::network::ConnectedSocket *socket) {
   uint8_t buf[DMX_UNIVERSE_SIZE];
   unsigned int data_read;
   socket->Receive((uint8_t*) buf, sizeof(buf), data_read);

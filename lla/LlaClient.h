@@ -31,7 +31,7 @@
 
 namespace lla {
 
-namespace select_server {
+namespace network {
 class ConnectedSocket;
 }
 
@@ -73,7 +73,7 @@ class LlaClientObserver {
  */
 class LlaClient {
   public:
-    LlaClient(lla::select_server::ConnectedSocket *socket);
+    LlaClient(lla::network::ConnectedSocket *socket);
     ~LlaClient();
 
     bool Setup();

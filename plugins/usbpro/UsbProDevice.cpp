@@ -118,7 +118,7 @@ bool UsbProDevice::Stop() {
 /*
  * Return the socket for this device
  */
-lla::select_server::ConnectedSocket *UsbProDevice::GetSocket() const {
+lla::network::ConnectedSocket *UsbProDevice::GetSocket() const {
   return m_widget->GetSocket();
 }
 

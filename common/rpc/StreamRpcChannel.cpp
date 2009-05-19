@@ -29,14 +29,14 @@
 #include <google/protobuf/dynamic_message.h>
 
 #include <lla/Logging.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include "StreamRpcChannel.h"
 #include "SimpleRpcController.h"
 #include "Rpc.pb.h"
 
 using namespace google::protobuf;
 using namespace lla::rpc;
-using namespace lla::select_server;
+using namespace lla::network;
 using namespace std;
 
 

@@ -31,10 +31,10 @@
 #include <algorithm>
 
 #include <lla/Logging.h>
-#include <lla/select_server/SelectServer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/SelectServer.h>
+#include <lla/network/Socket.h>
 
-using namespace lla::select_server;
+using namespace lla::network;
 
 const string SelectServer::K_FD_VAR = "ss-fd-registered";
 const string SelectServer::K_TIMER_VAR = "ss-timer-functions";

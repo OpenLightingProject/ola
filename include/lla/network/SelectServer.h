@@ -29,7 +29,7 @@
 #include <lla/ExportMap.h>
 
 namespace lla {
-namespace select_server {
+namespace network {
 
 using namespace std;
 using lla::ExportMap;
@@ -95,6 +95,6 @@ class SelectServer {
     event_queue_t m_events;
 };
 
-} // select_server
+} // network
 } // lla
 #endif

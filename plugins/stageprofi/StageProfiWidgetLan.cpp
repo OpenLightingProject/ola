@@ -20,13 +20,13 @@
  * The StageProfi LAN Widget.
  */
 
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include "StageProfiWidgetLan.h"
 
 namespace lla {
 namespace plugin {
 
-using lla::select_server::TcpSocket;
+using lla::network::TcpSocket;
 
 /*
  * Connect to the widget

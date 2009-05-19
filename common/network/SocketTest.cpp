@@ -23,10 +23,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <lla/Closure.h>
-#include <lla/select_server/SelectServer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/SelectServer.h>
+#include <lla/network/Socket.h>
 
-using namespace lla::select_server;
+using namespace lla::network;
 using namespace std;
 
 static const char test_cstring[] = "Foo";

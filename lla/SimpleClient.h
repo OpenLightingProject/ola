@@ -22,13 +22,13 @@
 #define LLA_SIMPLE_CLIENT_H
 
 #include <lla/LlaClient.h>
-#include <lla/select_server/SelectServer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/SelectServer.h>
+#include <lla/network/Socket.h>
 
 namespace lla {
 
-using lla::select_server::SelectServer;
-using lla::select_server::TcpSocket;
+using lla::network::SelectServer;
+using lla::network::TcpSocket;
 
 /*
  * SimpleClient takes care of setting up the socket, select server and client

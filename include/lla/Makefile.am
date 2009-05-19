@@ -1,5 +1,5 @@
 
-SUBDIRS = select_server .
+SUBDIRS = network .
 
 SOURCES = plugin_id.h BaseTypes.h ExportMap.h StringUtils.h DmxUtils.h \
           Closure.h Logging.h DmxBuffer.h

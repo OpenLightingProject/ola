@@ -26,7 +26,7 @@
 
 namespace lla {
 
-namespace select_server {
+namespace network {
   class Socket;
   class SocketManager;
   class SelectServer;
@@ -35,9 +35,9 @@ namespace select_server {
 class LlaClosure;
 
 using std::string;
-using lla::select_server::Socket;
-using lla::select_server::SocketManager;
-using lla::select_server::SelectServer;
+using lla::network::Socket;
+using lla::network::SocketManager;
+using lla::network::SelectServer;
 
 class PluginAdaptor {
   public :
@@ -60,7 +60,7 @@ class PluginAdaptor {
     PluginAdaptor& operator=(const PluginAdaptor&);
 
     DeviceManager *m_device_manager;
-    class lla::select_server::SelectServer *m_ss;
+    class lla::network::SelectServer *m_ss;
     class PreferencesFactory *m_preferences_factory;
 };
 

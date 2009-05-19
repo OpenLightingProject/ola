@@ -23,13 +23,13 @@
 
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <lla/select_server/SelectServer.h>
+#include <lla/network/SelectServer.h>
 
 #include "DeviceManager.h"
 
 namespace lla {
 
-using lla::select_server::SelectServer;
+using lla::network::SelectServer;
 
 /*
  * Create a new pluginadaptor

@@ -4,4 +4,4 @@ EXTRA_DIST = $(SOURCES)
 
 pkginclude_HEADERS = $(SOURCES)
 
-pkgincludedir = $(includedir)/lla/select_server/
+pkgincludedir = $(includedir)/lla/network/

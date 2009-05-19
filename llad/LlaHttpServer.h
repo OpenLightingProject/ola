@@ -23,7 +23,7 @@
 
 #include <string>
 #include <google/template.h>
-#include <lla/select_server/SelectServer.h>
+#include <lla/network/SelectServer.h>
 #include <lla/ExportMap.h>
 #include <llad/Device.h>
 #include "HttpServer.h"
@@ -32,7 +32,7 @@ namespace lla {
 
 using std::string;
 using google::TemplateDictionary;
-using lla::select_server::SelectServer;
+using lla::network::SelectServer;
 
 class LlaHttpServer {
   public:

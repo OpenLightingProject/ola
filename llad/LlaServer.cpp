@@ -67,9 +67,9 @@ const unsigned int LlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
 LlaServer::LlaServer(LlaServerServiceImplFactory *factory,
                      PluginLoader *plugin_loader,
                      PreferencesFactory *preferences_factory,
-                     lla::select_server::SelectServer *select_server,
+                     lla::network::SelectServer *select_server,
                      lla_server_options *lla_options,
-                     lla::select_server::ListeningSocket *socket,
+                     lla::network::ListeningSocket *socket,
                      ExportMap *export_map):
   m_service_factory(factory),
   m_plugin_loader(plugin_loader),
@@ -235,7 +235,7 @@ void LlaServer::ReloadPlugins() {
  * Add a new ConnectedSocket to this Server.
  * @param socket the new ConnectedSocket
  */
-int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
+int LlaServer::NewConnection(lla::network::ConnectedSocket *socket) {
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket);
   LlaClientService_Stub *stub = new LlaClientService_Stub(channel);
   Client *client = new Client(stub);
@@ -266,7 +266,7 @@ int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
 /*
  * Called when a socket is closed
  */
-void LlaServer::SocketClosed(lla::select_server::Socket *socket) {
+void LlaServer::SocketClosed(lla::network::Socket *socket) {
   map<int, LlaServerServiceImpl*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 

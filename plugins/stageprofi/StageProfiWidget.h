@@ -24,17 +24,17 @@
 using namespace std;
 
 #include <string>
-#include <lla/select_server/Socket.h>
-#include <lla/select_server/SelectServer.h>
+#include <lla/network/Socket.h>
+#include <lla/network/SelectServer.h>
 #include <lla/DmxBuffer.h>
 
 namespace lla {
 namespace plugin {
 
-using lla::select_server::ConnectedSocket;
-using lla::select_server::SelectServer;
-using lla::select_server::Socket;
-using lla::select_server::SocketListener;
+using lla::network::ConnectedSocket;
+using lla::network::SelectServer;
+using lla::network::Socket;
+using lla::network::SocketListener;
 
 class StageProfiWidget: public SocketListener {
   public:

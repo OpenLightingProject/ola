@@ -24,7 +24,7 @@
 #include <string>
 #include <deque>
 #include <lla/DmxBuffer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include <llad/Device.h>
 #include <llad/PluginAdaptor.h>
 
@@ -38,7 +38,7 @@ namespace plugin {
 using google::protobuf::Closure;
 using google::protobuf::RpcController;
 using lla::plugin::usbpro::Request;
-using lla::select_server::ConnectedSocket;
+using lla::network::ConnectedSocket;
 using std::deque;
 
 namespace usbpro {

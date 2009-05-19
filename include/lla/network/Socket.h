@@ -23,10 +23,9 @@
 
 #include <stdint.h>
 #include <string>
-#include <lla/select_server/FdListener.h>
 
 namespace lla {
-namespace select_server {
+namespace network {
 
 /*
  * A SocketListener, implement this if you want to respond to events when the
@@ -183,7 +182,7 @@ class TcpListeningSocket: public ListeningSocket {
     int m_sd, m_backlog;
 };
 
-} //select_server
+} //network
 } //lla
 #endif
 

@@ -23,7 +23,7 @@
 
 #include <string>
 #include <lla/DmxBuffer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include <llad/Device.h>
 
 namespace lla {
@@ -33,7 +33,7 @@ class AbstractPlugin;
 namespace plugin {
 
 using lla::Device;
-using lla::select_server::Socket;
+using lla::network::Socket;
 
 class StageProfiDevice: public Device {
   public:

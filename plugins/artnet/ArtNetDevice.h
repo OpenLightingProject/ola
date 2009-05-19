@@ -21,7 +21,7 @@
 #ifndef ARTNETDEVICE_H
 #define ARTNETDEVICE_H
 
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include <llad/Device.h>
 #include <llad/PluginAdaptor.h>
 
@@ -39,10 +39,10 @@ class Preferences;
 namespace plugin {
 
 using lla::Device;
-using lla::select_server::ConnectedSocket;
+using lla::network::ConnectedSocket;
 using std::string;
 
-class ArtNetDevice : public Device, public lla::select_server::SocketListener {
+class ArtNetDevice : public Device, public lla::network::SocketListener {
   public:
     ArtNetDevice(AbstractPlugin *owner,
                  const string &name,

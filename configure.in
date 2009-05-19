@@ -218,11 +218,11 @@ AC_OUTPUT( Makefile\
     common/logging/Makefile\
     common/protocol/Makefile\
     common/rpc/Makefile\
-    common/select_server/Makefile\
+    common/network/Makefile\
     common/utils/Makefile\
     include/Makefile\
     include/lla/Makefile\
-    include/lla/select_server/Makefile\
+    include/lla/network/Makefile\
     include/llad/Makefile\
     lla/Makefile \
     python/Makefile \

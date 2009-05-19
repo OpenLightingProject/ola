@@ -28,7 +28,7 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include <lla/common.h>
 #include <lla/plugin_id.h>
 #include <lla/LlaDevice.h>
@@ -47,7 +47,7 @@ class LlaClientCoreServiceImpl;
 
 using std::string;
 using google::protobuf::Closure;
-using lla::select_server::ConnectedSocket;
+using lla::network::ConnectedSocket;
 using lla::rpc::SimpleRpcController;
 using lla::rpc::StreamRpcChannel;
 

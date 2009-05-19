@@ -24,13 +24,13 @@
 #include <stdint.h>
 #include <ext/hash_map>
 #include <google/protobuf/service.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 
 namespace lla {
 namespace rpc {
 
 using namespace google::protobuf;
-using namespace lla::select_server;
+using namespace lla::network;
 using namespace __gnu_cxx;
 
 class RpcMessage;
@@ -119,7 +119,7 @@ class StreamRpcChannel: public RpcChannel, public SocketListener {
     void InvokeCallbackAndCleanup(OutstandingResponse *response);
 
     Service *m_service; // service to dispatch requests to
-    class lla::select_server::ConnectedSocket *m_socket; // the socket to read/write to.
+    class lla::network::ConnectedSocket *m_socket; // the socket to read/write to.
     uint32_t m_seq; // sequence number
     uint8_t *m_buffer; // buffer for incomming msgs
     unsigned int m_buffer_size; // size of the buffer

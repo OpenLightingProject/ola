@@ -28,10 +28,10 @@
 #include <unistd.h>
 
 #include <lla/Logging.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 
 namespace lla {
-namespace select_server {
+namespace network {
 
 // ConnectedSocket
 // ------------------------------------------------
@@ -330,5 +330,5 @@ int TcpListeningSocket::SocketReady() {
     m_listener->NewConnection(socket);
 }
 
-} // select_server
+} // network
 } //lla
