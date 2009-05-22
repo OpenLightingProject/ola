@@ -28,14 +28,10 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
-
 #include <algorithm>
+
 #include <lla/Logging.h>
 #include <lla/network/InterfacePicker.h>
-
-
-#define INITIAL_IFACE_COUNT 10
-#define IFACE_COUNT_INC 5
 
 using namespace lla::network;
 using std::string;
@@ -44,7 +40,6 @@ using std::vector;
 
 /*
  * Select an interface to use
- *
  * @param interface, the interface to populate
  * @param preferred_ip the ip address of the local interface we'd prefer to use
  * @return true if we found an interface, false otherwise

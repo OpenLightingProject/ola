@@ -28,11 +28,13 @@ using std::vector;
 
 class InterfacePickerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(InterfacePickerTest);
-  CPPUNIT_TEST(testPickInterfaces);
+  CPPUNIT_TEST(testGetInterfaces);
+  CPPUNIT_TEST(testChooseInterface);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testPickInterfaces();
+    void testGetInterfaces();
+    void testChooseInterface();
 };
 
 
@@ -42,9 +44,17 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
 /*
  * Check that we find at least one candidate interface.
  */
-void InterfacePickerTest::testPickInterfaces() {
+void InterfacePickerTest::testGetInterfaces() {
   lla::InitLogging(lla::LLA_LOG_INFO, lla::LLA_LOG_STDERR);
   InterfacePicker picker;
   vector<Interface> interfaces = picker.GetInterfaces();
   CPPUNIT_ASSERT(interfaces.size() > 0);
+}
+
+
+void InterfacePickerTest::testChooseInterface() {
+  InterfacePicker picker;
+  Interface interface;
+
+  CPPUNIT_ASSERT(picker.ChooseInterface(interface, ""));
 }
