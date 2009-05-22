@@ -46,6 +46,14 @@ enum { MAC_LENGTH = 6 };
  */
 class Interface {
   public:
+    Interface();
+    Interface(const Interface &other);
+    Interface& operator=(const Interface &other);
+    bool operator==(const Interface &other) {
+      return (name == other.name &&
+              ip_address.s_addr == other.ip_address.s_addr);
+    }
+
     std::string name;
     struct in_addr ip_address;
     struct in_addr bcast_address;
@@ -59,11 +67,11 @@ class Interface {
 class InterfacePicker {
   public:
     InterfacePicker() {}
-    ~InterfacePicker() {}
+    virtual ~InterfacePicker() {}
     bool ChooseInterface(Interface &interface,
                          const std::string &preferred_ip) const;
 
-    std::vector<Interface> GetInterfaces() const;
+    virtual std::vector<Interface> GetInterfaces() const;
   private:
     static const unsigned int INITIAL_IFACE_COUNT = 10;
     static const unsigned int IFACE_COUNT_INC = 5;

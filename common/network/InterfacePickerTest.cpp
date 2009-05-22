@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <arpa/inet.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <lla/network/InterfacePicker.h>
@@ -37,6 +38,15 @@ class InterfacePickerTest: public CppUnit::TestFixture {
     void testChooseInterface();
 };
 
+class MockPicker: public InterfacePicker {
+  public:
+    MockPicker(vector<Interface> &interfaces):
+      InterfacePicker(),
+      m_interfaces(interfaces) {}
+    std::vector<Interface> GetInterfaces() const { return m_interfaces; }
+  private:
+    vector<Interface> &m_interfaces;
+};
 
 CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
 
@@ -45,7 +55,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
  * Check that we find at least one candidate interface.
  */
 void InterfacePickerTest::testGetInterfaces() {
-  lla::InitLogging(lla::LLA_LOG_INFO, lla::LLA_LOG_STDERR);
   InterfacePicker picker;
   vector<Interface> interfaces = picker.GetInterfaces();
   CPPUNIT_ASSERT(interfaces.size() > 0);
@@ -53,8 +62,28 @@ void InterfacePickerTest::testGetInterfaces() {
 
 
 void InterfacePickerTest::testChooseInterface() {
-  InterfacePicker picker;
-  Interface interface;
+  vector<Interface> interfaces;
+  MockPicker picker(interfaces);
 
-  CPPUNIT_ASSERT(picker.ChooseInterface(interface, ""));
+  // no interfaces
+  Interface interface;
+  CPPUNIT_ASSERT(!picker.ChooseInterface(interface, ""));
+
+  // now with one interface that doesn't match
+  Interface iface1;
+  inet_aton("10.0.0.1", &iface1.ip_address);
+  interfaces.push_back(iface1);
+  CPPUNIT_ASSERT(picker.ChooseInterface(interface, "192.168.1.1"));
+  CPPUNIT_ASSERT(iface1 == interface);
+
+  // check that preferred works
+  Interface iface2;
+  inet_aton("192.168.1.1", &iface2.ip_address);
+  interfaces.push_back(iface2);
+  CPPUNIT_ASSERT(picker.ChooseInterface(interface, "192.168.1.1"));
+  CPPUNIT_ASSERT(iface2 == interface);
+
+  // a invalid address should return the first one
+  CPPUNIT_ASSERT(picker.ChooseInterface(interface, "foo"));
+  CPPUNIT_ASSERT(iface1 == interface);
 }

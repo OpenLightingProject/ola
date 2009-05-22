@@ -26,8 +26,9 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
-#include <sys/ioctl.h>
 #include <net/if.h>
+#include <string.h>
+#include <sys/ioctl.h>
 #include <algorithm>
 
 #include <lla/Logging.h>
@@ -36,6 +37,28 @@
 using namespace lla::network;
 using std::string;
 using std::vector;
+
+
+Interface::Interface() {}
+
+
+Interface::Interface(const Interface &other) {
+  name = other.name;
+  ip_address = other.ip_address;
+  bcast_address = other.bcast_address;
+  memcpy(hw_address, other.hw_address, MAC_LENGTH);
+}
+
+
+Interface& Interface::operator=(const Interface &other) {
+  if (this != &other) {
+    name = other.name;
+    ip_address = other.ip_address;
+    bcast_address = other.bcast_address;
+    memcpy(hw_address, other.hw_address, MAC_LENGTH);
+  }
+  return *this;
+}
 
 
 /*
