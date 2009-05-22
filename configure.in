@@ -30,7 +30,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
                   sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
-                  unistd.h])
+                  unistd.h linux/if_packet.h])
 AC_CHECK_HEADER(pthread.h, have_threads=posix)
 PROTOBUF_SUPPORT([2.0.1])
 
@@ -60,7 +60,35 @@ AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_STAT
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr inet_ntoa select socket strerror])
+AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
+                inet_ntoa select socket strerror getifaddrs])
+
+# check for ipv6 support - taken from unp
+AC_MSG_CHECKING(for IPv6 support)
+AC_CACHE_VAL(ac_cv_ipv6,
+        AC_TRY_RUN([
+#       include <stdlib.h>
+#       include <sys/types.h>
+#       include <sys/socket.h>
+#       include <netinet/in.h>
+        /* Make sure the definitions for AF_INET6 and struct sockaddr_in6
+         * are defined, and that we can actually create an IPv6 TCP socket.
+         */
+        main()
+        {
+                int fd;
+                struct sockaddr_in6 foo;
+                fd = socket(AF_INET6, SOCK_STREAM, 0);
+                exit(fd >= 0 ? 0 : 1);
+        }],
+        ac_cv_ipv6=yes,
+        ac_cv_ipv6=no,
+        ac_cv_ipv6=no))
+AC_MSG_RESULT($ac_cv_ipv6)
+if test $ac_cv_ipv6 = yes ; then
+        AC_DEFINE(IPV6, 1, Define to 1 if the system supports IPv6)
+fi
+
 
 # Check if sockaddr{} has sa_len member.
 AC_CHECK_MEMBER([struct sockaddr.sa_len],
