@@ -18,53 +18,57 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef SHOWNET_NODE_H
-#define SHOWNET_NODE_H
+#ifndef LLA_SHOWNET_NODE
+#define LLA_SHOWNET_NODE
 
 #include <string>
 #include <map>
 #include <lla/Closure.h>
 #include <lla/DmxBuffer.h>
+#include <lla/network/InterfacePicker.h>
+#include <lla/network/Socket.h>
 
 namespace lla {
 namespace shownet {
 
-class ShowNetNode {
+class ShowNetNode: public lla::network::SocketListener {
   public :
     ShowNetNode(const std::string &ip_address);
     virtual ~ShowNetNode();
 
     bool Start();
     bool Stop();
-    bool SetName(const std::string &name);
+    void SetName(const std::string &name);
 
     bool SendDMX(unsigned int universe, const lla::DmxBuffer &buffer);
-    bool SetHandler(unsigned int universe, lla:LlaClosure *handler);
+    bool SetHandler(unsigned int universe, lla::LlaClosure *handler);
     bool RemoveHandler(unsigned int universe);
 
+    lla::network::Socket& GetSocket() { return *m_socket; }
+    int SocketReady(class ConnectedSocket *socket);
     /*
     int shownet_read(shownet_node n, int timeout);
-
-    // misc
-    int shownet_get_sd(shownet_node n);
     */
 
   private:
     ShowNetNode(const ShowNetNode&);
     ShowNetNode& operator=(const ShowNetNode&);
+    static const unsigned short SHOWNET_PORT = 2501;
+    static const unsigned short SHOWNET_MAX_UNIVERSES = 8;
 
+    bool InitNetwork();
+    bool SendDMX();
 
     bool m_running;
     uint16_t m_packet_count;
     std::string m_node_name;
+    std::string m_preferred_ip;
     std::map<unsigned int, LlaClosure*> m_handlers;
-    InterfacePicker m_interface_picker;
-    RunLengthEncoder m_encoder;
-
-    SI ip_addr;
-    SI bcast_addr;
-
-    UdpListeningSocket *m_socket;
+    std::map<unsigned int, DmxBuffer> m_handlers;
+    lla::network::InterfacePicker m_interface_picker;
+    lla::network::Interface m_interface;
+    class RunLengthEncoder *m_encoder;
+    lla::network::UdpSocket *m_socket;
 };
 
 } //shownet

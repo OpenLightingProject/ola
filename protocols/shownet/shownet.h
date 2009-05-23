@@ -18,10 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-/** @file shownet/shownet.h */
-
-#ifndef _defined_shownet_h
-#define _defined_shownet_h
+#ifndef LLA_SHOWNET_NODE
+#define LLA_SHOWNET_NODE
 
 #include <stdint.h>
 // order is important here for osx

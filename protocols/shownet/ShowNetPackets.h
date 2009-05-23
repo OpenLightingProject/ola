@@ -13,21 +13,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * packets.h
+ * ShowNetPackets.h
  * Datagram definitions for libshownet
- * Copyright (C) 2005 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef shownet_packets_defined
-#define shownet_packets_defined
+#ifndef LLA_SHOWNET_PACKETS
+#define LLA_SHOWNET_PACKETS
 
-#include <sys/types.h>
-#include <stdint.h>
-#include <netinet/in.h>
+#include <lla/BaseTypes.h>
 
 enum { SHOWNET_MAC_LENGTH = 6 };
 enum { SHOWNET_NAME_LENGTH = 9 };
-enum { SHOWNET_DMX_LENGTH = 512 };
 
 struct shownet_data_s {
   uint8_t  sigHi;            // 0x80
@@ -39,27 +36,10 @@ struct shownet_data_s {
   uint8_t  packetCountHi;    // sequence number
   uint8_t  packetCountLo;    // sequence number
   uint8_t  block[4];         // ??
-  uint8_t  name[SHOWNET_NAME_LENGTH];  // name of console
-  uint8_t  data[SHOWNET_DMX_LENGTH];  // data
+  uint8_t  name[SHOWNET_NAME_LENGTH]; // name of console
+  uint8_t  data[DMX_UNIVERSE_SIZE]; // data
 } __attribute__( ( packed ) );
 
-typedef struct shownet_data_s shownet_data_t;
-
-
-// union of all shownet packets
-typedef union {
-  shownet_data_t dmx;
-} shownet_packet_union_t;
-
-
-// a packet, containing data, length, type and a src/dst address
-typedef struct {
-  int length;
-  struct in_addr from;
-  struct in_addr to;
-  shownet_packet_union_t data;
-} shownet_packet_t;
-
-typedef shownet_packet_t *shownet_packet;
+typedef struct shownet_data_s shownet_data_packet;
 
 #endif

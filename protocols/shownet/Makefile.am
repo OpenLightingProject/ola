@@ -1,11 +1,11 @@
+INCLUDES =  -I$(top_builddir)/include
 
-INCLUDES = -I$(top_builddir) -I$(top_srcdir)
-#AM_CFLAGS = -Wall -Werror -Wformat -W -fprofile-arcs 
+#AM_CFLAGS = -Wall -Werror -Wformat -W -fprofile-arcs
 AM_CFLAGS = -Wall
 
-lib_LTLIBRARIES = libshownet.la
-libshownet_la_SOURCES = shownet.c network.c shownet.h private.h packets.h
-libshownet_la_LDFLAGS = -version-info 0:0:0
+lib_LTLIBRARIES = libllashownet.la
+libllashownet_la_SOURCES = ShowNetNode.cpp RunLengthEncoder.cpp
+libllashownet_la_LDFLAGS = -version-info 0:0:0
 
-pkginclude_HEADERS = shownet.h packets.h
-pkgincludedir = $(includedir)/shownet
+pkginclude_HEADERS = ShowNetNode.h
+pkgincludedir = $(includedir)/lla/shownet

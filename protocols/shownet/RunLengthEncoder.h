@@ -29,7 +29,7 @@ namespace shownet {
 class RunLengthEncoder {
   public :
     RunLengthEncoder() {};
-    ShowNetNode() {};
+    ~RunLengthEncoder() {};
 
     bool Encode(const DmxBuffer &src);
     bool Decode();

@@ -78,6 +78,16 @@ class Socket {
 
 
 /*
+ * A receiving socket is one that we can receive data on.
+ */
+class ReceivingSocket: public Socket {
+
+
+
+};
+
+
+/*
  * A connected socket can be read from / written to.
  */
 class ConnectedSocket: public Socket {
