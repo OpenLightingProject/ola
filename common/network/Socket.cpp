@@ -234,6 +234,54 @@ bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
 }
 
 
+// UdpSocket
+// ------------------------------------------------
+
+
+bool UdpSocket::Init(unsigned short port) {
+  int sd = socket(PF_INET, SOCK_DGRAM, 0);
+
+  if (sd < 0) {
+    LLA_WARN << "Could not create socket " << strerror(errno);
+    return false;
+  }
+
+  struct sockaddr_in servAddr;
+  memset(&servAddr, 0x00, sizeof(servAddr));
+  servAddr.sin_family = AF_INET;
+  servAddr.sin_port = htons(port);
+  servAddr.sin_addr.s_addr =  htonl(INADDR_ANY);
+
+  LLA_DEBUG << "Binding to " << inet_ntoa(servAddr.sin_addr);
+
+  if (bind(sd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == -1) {
+    LLA_INFO << "Failed to bind to socket " << strerror(errno);
+    close(sd);
+    return false;
+  }
+
+  m_read_fd = sd;
+  m_write_fd = sd;
+  return true;
+}
+
+
+/*
+ * Enable broadcasting for this socket.
+ * @return true if it worked, false otherwise
+ */
+bool UdpSocket::EnableBroadcast() {
+  int broadcast_flag = 1;
+  int ret = setsockopt(m_write_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag,
+                       sizeof(int));
+
+  if (ret == -1) {
+    LLA_WARN << "Failed to bind to socket " << strerror(errno);
+    return false;
+  }
+}
+
+
 // TcpListeningSocket
 // ------------------------------------------------
 

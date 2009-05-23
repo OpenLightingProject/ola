@@ -148,6 +148,19 @@ class TcpSocket: public ConnectedSocket {
 
 
 /*
+ * A UdpSocket, inheriting from ConnectedSocket is a misnomer.
+ */
+class UdpSocket: public ConnectedSocket {
+  public:
+    UdpSocket(): ConnectedSocket() {}
+    UdpSocket(int sd): ConnectedSocket(sd, sd) {}
+    bool Init(unsigned short port);
+    bool EnableBroadcast();
+};
+
+
+
+/*
  * A listening socket creates new Sockets when clients connect
  */
 class ListeningSocket: public Socket {
