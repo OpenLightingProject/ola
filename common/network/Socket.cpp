@@ -15,7 +15,7 @@
  *
  * Socket.cpp
  * Implementation of the Socket classes
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #include <arpa/inet.h>
@@ -33,31 +33,26 @@
 namespace lla {
 namespace network {
 
-// ConnectedSocket
+// ReceivingSocket
 // ------------------------------------------------
 
 /*
- * Write data to this socket.
- */
-ssize_t ConnectedSocket::Send(const uint8_t *buffer, unsigned int size) {
-  ssize_t bytes_sent = write(m_write_fd, buffer, size);
-  if (bytes_sent != size)
-    LLA_WARN << "Failed to send, " << strerror(errno);
-  return bytes_sent;
-}
-
-
-/*
  * Read data from this socket.
- *
+ * @param buffer a pointer to the buffer to store new data in
+ * @param size the size of the buffer
+ * @param data_read a value result argument which returns the amount of data
+ * copied into the buffer
  * @returns -1 on error, 0 on success.
  */
-int ConnectedSocket::Receive(uint8_t *buffer,
+int ReceivingSocket::Receive(uint8_t *buffer,
                              unsigned int size,
                              unsigned int &data_read) {
   int ret;
   uint8_t *data = buffer;
   data_read = 0;
+  if (m_read_fd == INVALID_SOCKET)
+    return -1;
+
   while (data_read < size) {
     if ((ret = read(m_read_fd, data, size - data_read)) < 0) {
       if (errno == EAGAIN)
@@ -78,45 +73,38 @@ int ConnectedSocket::Receive(uint8_t *buffer,
 
 /*
  * Called by the select server when there is data to be read.
+ * @returns true if everything works, false if there was an error
  */
-int ConnectedSocket::SocketReady() {
+bool ReceivingSocket::SocketReady() {
   if (m_listener)
     return m_listener->SocketReady(this);
-  return 0;
-}
-
-
-/*
- * Turn on non-blocking reads.
- */
-bool ConnectedSocket::SetNonBlocking(int fd) {
-  int val = fcntl(fd, F_GETFL, 0);
-  int ret = fcntl(fd, F_SETFL, val | O_NONBLOCK);
-  if (ret) {
-    LLA_WARN << "failed to set " << fd << " non-blocking";
-    return false;
-  }
   return true;
 }
 
 
-bool ConnectedSocket::Close() {
-  if (m_read_fd > 0)
-    close(m_read_fd);
-
-  if (m_read_fd != m_write_fd && m_write_fd > 0) {
-    close(m_write_fd);
-    m_write_fd = -1;
+/*
+ * Close this socket
+ * @return true if close succeeded, false otherwise
+ */
+bool ReceivingSocket::Close() {
+  bool ret = true;
+  if (m_read_fd != INVALID_SOCKET) {
+    if (close(m_read_fd)) {
+      LLA_WARN << "close() failed, " << strerror(errno);
+      ret = false;
+    }
+    m_read_fd = INVALID_SOCKET;
   }
-  m_read_fd = -1;
+  return ret;
 }
 
 
 /*
- * This is a bit of a lie
+ * Check if this socket has been closed (this is a bit of a lie)
+ * @return true if the socket is closed, false otherwise
  */
-bool ConnectedSocket::IsClosed() const {
-  if (m_read_fd == -1)
+bool ReceivingSocket::IsClosed() const {
+  if (m_read_fd == INVALID_SOCKET)
     return true;
 
   return UnreadData() == 0;
@@ -125,14 +113,71 @@ bool ConnectedSocket::IsClosed() const {
 
 /*
  * Find out how much data is left to read
+ * @return the amount of unread data for the socket
  */
-int ConnectedSocket::UnreadData() const {
+int ReceivingSocket::UnreadData() const {
   int unread;
+  if (m_read_fd == INVALID_SOCKET)
+    return 0;
+
   if (ioctl(m_read_fd, FIONREAD, &unread) < 0) {
     LLA_WARN << "ioctl error for " << m_read_fd << ", " << strerror(errno);
     return 0;
   }
   return unread;
+}
+
+
+/*
+ * Turn on non-blocking reads.
+ * @param fd the fd to enable non-blocking for
+ */
+bool ReceivingSocket::SetNonBlocking(int fd) {
+  if (fd == INVALID_SOCKET)
+    return false;
+
+  int val = fcntl(fd, F_GETFL, 0);
+  int ret = fcntl(fd, F_SETFL, val | O_NONBLOCK);
+  if (ret) {
+    LLA_WARN << "failed to set " << fd << " non-blocking: " << strerror(errno);
+    return false;
+  }
+  return true;
+}
+
+
+
+// ConnectedSocket
+// ------------------------------------------------
+
+/*
+ * Write data to this socket.
+ */
+ssize_t ConnectedSocket::Send(const uint8_t *buffer, unsigned int size) {
+  if (m_write_fd == INVALID_SOCKET)
+    return false;
+
+  ssize_t bytes_sent = write(m_write_fd, buffer, size);
+  if (bytes_sent != size)
+    LLA_WARN << "Failed to send, " << strerror(errno);
+  return bytes_sent;
+}
+
+
+/*
+ * Close this connected socket.
+ * @return true if close succeeded, false otherwise
+ */
+bool ConnectedSocket::Close() {
+  if (m_read_fd != INVALID_SOCKET)
+    close(m_read_fd);
+
+  if (m_read_fd != m_write_fd && m_write_fd != INVALID_SOCKET) {
+    close(m_write_fd);
+    m_write_fd = INVALID_SOCKET;
+  }
+  m_read_fd = INVALID_SOCKET;
+  return true;
 }
 
 
@@ -163,6 +208,10 @@ bool LoopbackSocket::Close() {
 
 // PipeSocket
 // ------------------------------------------------
+
+/*
+ * Create a new pipe socket
+ */
 bool PipeSocket::Init() {
   if (m_read_fd >= 0 || m_write_fd >= 0)
     return false;
@@ -186,10 +235,16 @@ bool PipeSocket::Init() {
 }
 
 
+/*
+ * Fetch the other end of the pipe socket. The caller now owns the new
+ * PipeSocket.
+ */
 PipeSocket *PipeSocket::OppositeEnd() {
-  PipeSocket *pipe_socket = new PipeSocket(m_out_pair[0], m_in_pair[1]);
-  pipe_socket->SetReadNonBlocking();
-  return pipe_socket;
+  if (!m_other_end) {
+    m_other_end = new PipeSocket(m_out_pair[0], m_in_pair[1]);
+    m_other_end->SetReadNonBlocking();
+  }
+  return m_other_end;
 }
 
 
@@ -198,11 +253,10 @@ PipeSocket *PipeSocket::OppositeEnd() {
 
 /*
  * Connect
- *
  * @param ip_address the IP to connect to
  * @param port the port to connect to
  */
-bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
+bool TcpSocket::Connect() {
   struct sockaddr_in server_address;
   socklen_t length;
 
@@ -218,12 +272,12 @@ bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
   // setup
   memset(&server_address, 0x00, sizeof(server_address));
   server_address.sin_family = AF_INET;
-  server_address.sin_port = htons(port);
-  inet_aton(ip_address.c_str(), &server_address.sin_addr);
+  server_address.sin_port = htons(m_port);
+  inet_aton(m_ip_address.c_str(), &server_address.sin_addr);
 
   length = sizeof(server_address);
-  if(connect(sd, (struct sockaddr*) &server_address, length)) {
-    LLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
+  if (connect(sd, (struct sockaddr*) &server_address, length)) {
+    LLA_WARN << "connect to " << m_ip_address << ":" << m_port << " failed, "
       << strerror(errno);
     return false;
   }
@@ -237,8 +291,51 @@ bool TcpSocket::Connect(std::string ip_address, unsigned short port) {
 // UdpSocket
 // ------------------------------------------------
 
+/*
+ * Connect
+ * @param ip_address the IP to connect to
+ * @param port the port to connect to
+ */
+bool UdpSocket::Connect() {
+  struct sockaddr_in server_address;
+  socklen_t length;
 
-bool UdpSocket::Init(unsigned short port) {
+  if (m_read_fd > 0 || m_write_fd > 0)
+    return false;
+
+  int sd = socket(AF_INET, SOCK_DGRAM, 0);
+  if (sd < 0) {
+    LLA_WARN << "socket() failed, " << strerror(errno);
+    return false;
+  }
+
+  // setup
+  memset(&server_address, 0x00, sizeof(server_address));
+  server_address.sin_family = AF_INET;
+  server_address.sin_port = htons(m_port);
+  inet_aton(m_ip_address.c_str(), &server_address.sin_addr);
+
+  length = sizeof(server_address);
+  if (connect(sd, (struct sockaddr*) &server_address, length)) {
+    LLA_WARN << "connect to " << m_ip_address << ":" << m_port << " failed, "
+      << strerror(errno);
+    return false;
+  }
+  m_read_fd = sd;
+  m_write_fd = sd;
+  SetReadNonBlocking();
+  return true;
+}
+
+
+// UdpServerSocket
+// ------------------------------------------------
+
+/*
+ * Start listening
+ * @return true if it succeeded, false otherwise
+ */
+bool UdpServerSocket::Listen() {
   int sd = socket(PF_INET, SOCK_DGRAM, 0);
 
   if (sd < 0) {
@@ -249,7 +346,7 @@ bool UdpSocket::Init(unsigned short port) {
   struct sockaddr_in servAddr;
   memset(&servAddr, 0x00, sizeof(servAddr));
   servAddr.sin_family = AF_INET;
-  servAddr.sin_port = htons(port);
+  servAddr.sin_port = htons(m_port);
   servAddr.sin_addr.s_addr =  htonl(INADDR_ANY);
 
   LLA_DEBUG << "Binding to " << inet_ntoa(servAddr.sin_addr);
@@ -261,7 +358,6 @@ bool UdpSocket::Init(unsigned short port) {
   }
 
   m_read_fd = sd;
-  m_write_fd = sd;
   return true;
 }
 
@@ -270,9 +366,12 @@ bool UdpSocket::Init(unsigned short port) {
  * Enable broadcasting for this socket.
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::EnableBroadcast() {
+bool UdpServerSocket::EnableBroadcast() {
+  if (m_read_fd == INVALID_SOCKET)
+    return false;
+
   int broadcast_flag = 1;
-  int ret = setsockopt(m_write_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag,
+  int ret = setsockopt(m_read_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag,
                        sizeof(int));
 
   if (ret == -1) {
@@ -282,16 +381,22 @@ bool UdpSocket::EnableBroadcast() {
 }
 
 
-// TcpListeningSocket
+// TcpAcceptingSocket
 // ------------------------------------------------
 
-TcpListeningSocket::TcpListeningSocket(std::string address,
+/*
+ * Create a new TcpListeningSocket
+ * @param address the address to listen on
+ * @param port the port to listen on
+ * @param backlog the backlog
+ */
+TcpAcceptingSocket::TcpAcceptingSocket(std::string address,
                                        unsigned short port,
                                        int backlog):
-    ListeningSocket(),
+    AcceptingSocket(),
     m_address(address),
     m_port(port),
-    m_sd(-1),
+    m_sd(INVALID_SOCKET),
     m_backlog(backlog) {
 }
 
@@ -300,7 +405,7 @@ TcpListeningSocket::TcpListeningSocket(std::string address,
  * Start listening
  * @return true if it succeeded, false otherwise
  */
-bool TcpListeningSocket::Listen() {
+bool TcpAcceptingSocket::Listen() {
   struct sockaddr_in server_address;
   int reuse_flag = 1;
 
@@ -344,26 +449,39 @@ bool TcpListeningSocket::Listen() {
 
 
 /*
- * Stop listening
+ * Stop listening & close this socket
+ * @return true if close succeeded, false otherwise
  */
-bool TcpListeningSocket::Close() {
-  if (m_sd != -1)
-    close(m_sd);
-  m_sd = -1;
-}
-
-
-bool TcpListeningSocket::IsClosed() const {
-  return m_sd == -1;
+bool TcpAcceptingSocket::Close() {
+  bool ret = true;
+  if (m_sd != INVALID_SOCKET)
+    if (close(m_sd)) {
+      LLA_WARN << "close() failed " << strerror(errno);
+      ret = false;
+    }
+  m_sd = INVALID_SOCKET;
+  return ret;
 }
 
 
 /*
- * accept new connections
+ * Check if this socket has been closed (this is a bit of a lie)
+ * @return true if the socket is closed, false otherwise
  */
-int TcpListeningSocket::SocketReady() {
+bool TcpAcceptingSocket::IsClosed() const {
+  return m_sd == INVALID_SOCKET;
+}
+
+
+/*
+ * Accept new connections
+ */
+bool TcpAcceptingSocket::SocketReady() {
   struct sockaddr_in cli_address;
   socklen_t length = sizeof(cli_address);
+
+  if (m_sd == INVALID_SOCKET)
+    return 0;
 
   int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);
   if (sd < 0) {
@@ -371,7 +489,7 @@ int TcpListeningSocket::SocketReady() {
     return 0;
   }
 
-  TcpSocket *socket = new TcpSocket(sd);
+  ConnectedSocket *socket = new ConnectedSocket(sd);
   socket->SetReadNonBlocking();
 
   if (m_listener)

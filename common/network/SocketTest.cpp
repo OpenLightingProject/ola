@@ -52,12 +52,12 @@ class SocketTest: public CppUnit::TestFixture,
     void testPipeSocketServerClose();
     void testTcpSocketClientClose();
     void testTcpSocketServerClose();
-    int SocketReady(ConnectedSocket *socket);
+    bool SocketReady(ReceivingSocket *socket);
     int Timeout();
 
   private:
     SelectServer *m_ss;
-    ListeningSocket *m_listening_socket;
+    AcceptingSocket *m_accepting_socket;
     bool m_terminate_on_recv;
     bool m_close_on_recv;
 };
@@ -71,7 +71,7 @@ class EchoSocketListener: public SocketListener {
     EchoSocketListener(SelectServer *ss=NULL, bool close_on_recv=false):
       m_close_on_recv(close_on_recv),
       m_ss(ss) {}
-    int SocketReady(ConnectedSocket *socket);
+    bool SocketReady(ReceivingSocket *socket);
   private:
     bool m_close_on_recv;
     SelectServer *m_ss;
@@ -115,7 +115,7 @@ class EchoAcceptSocketListener: public AcceptSocketListener {
 CPPUNIT_TEST_SUITE_REGISTRATION(SocketTest);
 
 
-int EchoSocketListener::SocketReady(ConnectedSocket *socket) {
+bool EchoSocketListener::SocketReady(ReceivingSocket *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
   int ret = socket->Receive(buffer, sizeof(buffer), data_read);
@@ -245,7 +245,7 @@ void SocketTest::testPipeSocketServerClose() {
 void SocketTest::testTcpSocketClientClose() {
   string ip_address = "127.0.0.1";
   unsigned short server_port = 9010;
-  TcpListeningSocket socket(ip_address, server_port);
+  TcpAcceptingSocket socket(ip_address, server_port);
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
@@ -253,8 +253,8 @@ void SocketTest::testTcpSocketClientClose() {
   EchoAcceptSocketListener accept_listener(m_ss, &manager);
   socket.SetListener(&accept_listener);
 
-  TcpSocket client_socket;
-  CPPUNIT_ASSERT(client_socket.Connect(ip_address, server_port));
+  TcpSocket client_socket(ip_address, server_port);
+  CPPUNIT_ASSERT(client_socket.Connect());
   client_socket.SetListener(this);
 
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
@@ -271,7 +271,7 @@ void SocketTest::testTcpSocketClientClose() {
 void SocketTest::testTcpSocketServerClose() {
   string ip_address = "127.0.0.1";
   unsigned short server_port = 9010;
-  TcpListeningSocket socket(ip_address, server_port);
+  TcpAcceptingSocket socket(ip_address, server_port);
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
@@ -279,8 +279,8 @@ void SocketTest::testTcpSocketServerClose() {
   EchoAcceptSocketListener accept_listener(m_ss, &manager, true);
   socket.SetListener(&accept_listener);
 
-  TcpSocket client_socket;
-  CPPUNIT_ASSERT(client_socket.Connect(ip_address, server_port));
+  TcpSocket client_socket(ip_address, server_port);
+  CPPUNIT_ASSERT(client_socket.Connect());
   client_socket.SetListener(this);
 
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
@@ -290,7 +290,7 @@ void SocketTest::testTcpSocketServerClose() {
 }
 
 
-int SocketTest::SocketReady(ConnectedSocket *socket) {
+bool SocketTest::SocketReady(ReceivingSocket *socket) {
   // try to read more than what we sent to test non-blocking
   uint8_t buffer[sizeof(test_cstring) + 10];
   string result;
