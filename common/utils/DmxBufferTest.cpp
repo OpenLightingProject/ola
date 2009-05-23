@@ -37,6 +37,8 @@ class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testMerge);
   CPPUNIT_TEST(testStringToDmx);
   CPPUNIT_TEST(testCopyOnWrite);
+  CPPUNIT_TEST(testSetRange);
+  CPPUNIT_TEST(testSetChannel);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -48,6 +50,8 @@ class DmxBufferTest: public CppUnit::TestFixture {
     void testMerge();
     void testStringToDmx();
     void testCopyOnWrite();
+    void testSetRange();
+    void testSetChannel();
   private:
     static const uint8_t TEST_DATA[];
     static const uint8_t TEST_DATA2[];
@@ -98,6 +102,8 @@ void DmxBufferTest::testGetSet() {
   unsigned int size = result_length;
   DmxBuffer buffer;
   string str_result;
+
+  CPPUNIT_ASSERT(!buffer.Set(NULL, sizeof(TEST_DATA)));
 
   CPPUNIT_ASSERT(buffer.Set(TEST_DATA, sizeof(TEST_DATA)));
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), buffer.Size());
@@ -376,4 +382,87 @@ void DmxBufferTest::testCopyOnWrite() {
   CPPUNIT_ASSERT_EQUAL(expected_change, src_buffer.Get());
   CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
   src_buffer.Set(initial_data);
+}
+
+
+/*
+ * Check that SetRange works.
+ */
+void DmxBufferTest::testSetRange() {
+  unsigned int data_size = sizeof(TEST_DATA);
+  DmxBuffer buffer;
+  CPPUNIT_ASSERT(!buffer.SetRange(0, NULL, data_size));
+  CPPUNIT_ASSERT(!buffer.SetRange(600, TEST_DATA, data_size));
+
+  // Setting an uninitialized buffer calls blackout first
+  CPPUNIT_ASSERT(buffer.SetRange(0, TEST_DATA, data_size));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), data_size));
+
+  // try overrunning the buffer
+  CPPUNIT_ASSERT(buffer.SetRange(DMX_UNIVERSE_SIZE - 2, TEST_DATA, data_size));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw() + DMX_UNIVERSE_SIZE - 2,
+                         2));
+
+  // reset the buffer so that the valid data is 0, and try again
+  buffer.Reset();
+  CPPUNIT_ASSERT(buffer.SetRange(0, TEST_DATA, data_size));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) data_size, buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), data_size));
+
+  // setting past the end of the valid data should fail
+  CPPUNIT_ASSERT(!buffer.SetRange(50, TEST_DATA, data_size));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) data_size, buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), buffer.Size()));
+
+  // overwrite part of the valid data
+  unsigned int offset = 2;
+  CPPUNIT_ASSERT(buffer.SetRange(offset, TEST_DATA, data_size));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) data_size + offset,
+                       buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), offset));
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw() + offset,
+                         buffer.Size() - offset));
+
+  // now try writing 1 channel past the valid data
+  buffer.Reset();
+  CPPUNIT_ASSERT(buffer.SetRange(0, TEST_DATA, data_size));
+  CPPUNIT_ASSERT(buffer.SetRange(data_size, TEST_DATA,
+                                 data_size));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) data_size * 2, buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), data_size));
+  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw() + data_size, data_size));
+}
+
+
+/*
+ * Check that SetChannel works
+ */
+void DmxBufferTest::testSetChannel() {
+  DmxBuffer buffer;
+  buffer.SetChannel(1, 10);
+  buffer.SetChannel(10, 50);
+
+  uint8_t expected[DMX_UNIVERSE_SIZE];
+  memset(expected, 0, DMX_UNIVERSE_SIZE);
+  expected[1] = 10;
+  expected[10] = 50;
+  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(expected, buffer.GetRaw(), buffer.Size()));
+
+  // Check we can't set values greater than the buffer size
+  buffer.SetChannel(999, 50);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(expected, buffer.GetRaw(), buffer.Size()));
+
+  // Check we can't set values outside the current valida data range
+  unsigned int slice_size = 20;
+  buffer.Set(expected, slice_size);
+  buffer.SetChannel(30, 90);
+  buffer.SetChannel(200, 10);
+
+  CPPUNIT_ASSERT_EQUAL(slice_size, buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(expected, buffer.GetRaw(), buffer.Size()));
+
 }

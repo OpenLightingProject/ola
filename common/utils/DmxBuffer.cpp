@@ -17,7 +17,10 @@
  * The DmxBuffer class
  * Copyright (C) 2005-2009 Simon Newton
  *
- * This implements a DmxBuffer which uses copy-on-write to make copies cheap.
+ * This implements a DmxBuffer which uses copy-on-write and delayed init.
+ *
+ * A DmxBuffer can hold up to 512 bytes of channel information. The amount of
+ * valid data is returned by calling Size().
  */
 
 #include <string.h>
@@ -145,8 +148,12 @@ bool DmxBuffer::HTPMerge(const DmxBuffer &other) {
 
 /*
  * Set the contents of this DmxBuffer
+ * @post Size() == length
  */
 bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
+  if (!data)
+    return false;
+
   if (m_copy_on_write)
     CleanupMemory();
   if (!m_data) {
@@ -162,6 +169,7 @@ bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
 /*
  * Set the contents of this DmxBuffer
  * @param data the string with the dmx data
+ * @post Size() == data.length()
  */
 bool DmxBuffer::Set(const string &data) {
   return Set((uint8_t*) data.data(), data.length());
@@ -171,6 +179,7 @@ bool DmxBuffer::Set(const string &data) {
 /*
  * Sets the data in this buffer to be the same as the other one.
  * Used instead of a COW to optimise.
+ * @post Size() == other.Size()
  */
 bool DmxBuffer::Set(const DmxBuffer &other) {
   return Set(other.m_data, other.m_length);
@@ -208,14 +217,53 @@ bool DmxBuffer::SetFromString(const string &input) {
 
 
 /*
- * Set a single channel.
+ * Set a range of data. Calling this on an uninitialized buffer will call
+ * Blackout() first. Attempting to set data with an offset > Size() is an
+ * error.
+ * @param offset the starting channel
+ * @param data a pointer to the new data
+ * @param length the length of the data
+ */
+bool DmxBuffer::SetRange(unsigned int offset, const uint8_t *data,
+                         unsigned int length) {
+  if (!data || offset >= DMX_UNIVERSE_SIZE)
+    return false;
+
+  if (!m_data) {
+    Blackout();
+  }
+
+  if (offset > m_length)
+    return false;
+
+  DuplicateIfNeeded();
+
+  unsigned int copy_length = min(length, DMX_UNIVERSE_SIZE - offset);
+  memcpy(m_data + offset, data, copy_length);
+  m_length = max(m_length, offset + copy_length);
+  return true;
+}
+
+
+/*
+ * Set a single channel. Calling this on an uninitialized buffer will call
+ * Blackout() first. Trying to set a channel past the end of the valid data is
+ * an error.
  */
 void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
+  if (channel >= DMX_UNIVERSE_SIZE)
+    return;
+
+  if (!m_data) {
+    Blackout();
+  }
+
   if (channel > m_length) {
     LLA_WARN << "attempting to set channel " << channel << "when length is " <<
       m_length;
     return;
   }
+
   DuplicateIfNeeded();
   m_data[channel] = data;
 }
@@ -245,7 +293,8 @@ string DmxBuffer::Get() const {
 
 
 /*
- * Set the buffer to all zeros
+ * Set the buffer to all zeros.
+ * @post Size() == DMX_UNIVERSE_SIZE
  */
 bool DmxBuffer::Blackout() {
   if (m_copy_on_write)
@@ -261,6 +310,7 @@ bool DmxBuffer::Blackout() {
 
 /*
  * Reset the bufer to hold no data.
+ * @post Size() == 0
  */
 void DmxBuffer::Reset() {
   if (m_data)
