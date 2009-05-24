@@ -71,9 +71,10 @@ int SelectServer::Run() {
 /*
  * Register a socket with the select server.
  * @param socket the socket to register
- * @param closure the closure to call when this socket is ready
+ * @param closure the closure to call when this socket is ready, ownership of
+ *   the closure is transferred to the select server.
  * @param manager the manager to call when the socket is closed
- * @param delete_on_close controlls whether the select server calls Close() and
+ * @param delete_on_close controls whether the select server calls Close() and
  * deletes the socket once it's closed. You should probably set this as false
  * if you're using a manager.
  * @return true on sucess, false on failure.
@@ -262,6 +263,7 @@ void SelectServer::CheckSockets(fd_set &set) {
           iter->socket->Close();
           delete iter->socket;
         }
+        delete iter->event_closure;
         if (m_export_map)
           m_export_map->GetIntegerVar(K_FD_VAR)->Decrement();
         iter = m_read_sockets.erase(iter);
@@ -324,6 +326,14 @@ struct timeval SelectServer::CheckTimeouts() {
  * Remove all registrations.
  */
 void SelectServer::UnregisterAll() {
+  vector<registered_socket_t>::iterator iter;
+  for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
+    if (iter->delete_on_close) {
+      iter->socket->Close();
+      delete iter->socket;
+    }
+    delete iter->event_closure;
+  }
   m_read_sockets.clear();
   while (!m_events.empty()) {
     event_t event = m_events.top();

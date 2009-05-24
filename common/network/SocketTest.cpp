@@ -22,7 +22,6 @@
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <lla/Logging.h>
 #include <lla/Closure.h>
 #include <lla/network/SelectServer.h>
 #include <lla/network/Socket.h>
@@ -37,11 +36,11 @@ static const int ABORT_TIMEOUT_IN_MS = 1000;
 
 class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SocketTest);
-  //CPPUNIT_TEST(testLoopbackSocket);
-  //CPPUNIT_TEST(testPipeSocketClientClose);
-  //CPPUNIT_TEST(testPipeSocketServerClose);
+  CPPUNIT_TEST(testLoopbackSocket);
+  CPPUNIT_TEST(testPipeSocketClientClose);
+  CPPUNIT_TEST(testPipeSocketServerClose);
   CPPUNIT_TEST(testTcpSocketClientClose);
-  //CPPUNIT_TEST(testTcpSocketServerClose);
+  CPPUNIT_TEST(testTcpSocketServerClose);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -90,7 +89,6 @@ class TerminatingSocketManager: public SocketManager {
  * Setup the select server
  */
 void SocketTest::setUp() {
-  lla::InitLogging(lla::LLA_LOG_DEBUG, lla::LLA_LOG_STDERR);
   m_ss = new SelectServer();
   m_timeout_closure = lla::NewSingleClosure(this, &SocketTest::Timeout);
   CPPUNIT_ASSERT(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
@@ -209,10 +207,44 @@ void SocketTest::testPipeSocketServerClose() {
 
 /*
  * Test TCP sockets work correctly.
+ * The client connects and the server sends some data. The client checks the
+ * data matches and then closes the connection.
+ */
+void SocketTest::testTcpSocketClientClose() {
+  string ip_address = "127.0.0.1";
+  unsigned short server_port = 9010;
+  TcpAcceptingSocket socket(ip_address, server_port);
+  CPPUNIT_ASSERT(socket.Listen());
+  CPPUNIT_ASSERT(!socket.Listen());
+
+  TerminatingSocketManager manager(m_ss);
+  CPPUNIT_ASSERT(
+      m_ss->AddSocket(
+          &socket,
+          lla::NewClosure(this, &SocketTest::AcceptAndSend, &socket,
+                          (SocketManager*) &manager)
+      )
+  );
+
+  TcpSocket client_socket(ip_address, server_port);
+  CPPUNIT_ASSERT(client_socket.Connect());
+  CPPUNIT_ASSERT(
+      m_ss->AddSocket(
+          &client_socket,
+          lla::NewClosure(this, &SocketTest::ReceiveAndClose,
+                          (ReceivingSocket*) &client_socket)
+      )
+  );
+  m_ss->Run();
+}
+
+
+/*
+ * Test TCP sockets work correctly.
  * The client connects and the server then sends some data and closes the
  * connection.
  */
-void SocketTest::testTcpSocketClientClose() {
+void SocketTest::testTcpSocketServerClose() {
   string ip_address = "127.0.0.1";
   unsigned short server_port = 9010;
   TcpAcceptingSocket socket(ip_address, server_port);
@@ -236,40 +268,6 @@ void SocketTest::testTcpSocketClientClose() {
           lla::NewClosure(this, &SocketTest::Receive,
                           (ReceivingSocket*) &client_socket),
           &manager
-      )
-  );
-  m_ss->Run();
-}
-
-
-/*
- * Test TCP sockets work correctly.
- * The client connects and the server sends some data. The client checks the
- * data matches and then closes the connection.
- */
-void SocketTest::testTcpSocketServerClose() {
-  string ip_address = "127.0.0.1";
-  unsigned short server_port = 9010;
-  TcpAcceptingSocket socket(ip_address, server_port);
-  CPPUNIT_ASSERT(socket.Listen());
-  CPPUNIT_ASSERT(!socket.Listen());
-
-  TerminatingSocketManager manager(m_ss);
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          &socket,
-          lla::NewClosure(this, &SocketTest::AcceptAndSend, &socket,
-                          (SocketManager*) &manager)
-      )
-  );
-
-  TcpSocket client_socket(ip_address, server_port);
-  CPPUNIT_ASSERT(client_socket.Connect());
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          &client_socket,
-          lla::NewClosure(this, &SocketTest::ReceiveAndClose,
-                          (ReceivingSocket*) &client_socket)
       )
   );
   m_ss->Run();
@@ -348,7 +346,7 @@ int SocketTest::AcceptAndSend(TcpAcceptingSocket *socket,
   ssize_t bytes_sent = new_socket->Send((uint8_t*) test_string.data(),
       test_string.length());
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
-  m_ss->AddSocket(new_socket, NULL, manager);
+  m_ss->AddSocket(new_socket, NULL, manager, true);
 }
 
 
@@ -357,11 +355,10 @@ int SocketTest::AcceptAndSend(TcpAcceptingSocket *socket,
  */
 int SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
   ConnectedSocket *new_socket = socket->Accept();
-  printf("new socket %p\n" , new_socket);
   CPPUNIT_ASSERT(new_socket);
   ssize_t bytes_sent = new_socket->Send((uint8_t*) test_string.data(),
       test_string.length());
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
-  socket->Close();
+  new_socket->Close();
   delete new_socket;
 }
