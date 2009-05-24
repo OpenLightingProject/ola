@@ -40,7 +40,7 @@ const string SelectServer::K_FD_VAR = "ss-fd-registered";
 const string SelectServer::K_TIMER_VAR = "ss-timer-functions";
 
 using lla::ExportMap;
-using lla::LlaClosure;
+using lla::Closure;
 
 /*
  * Constructor
@@ -71,6 +71,7 @@ int SelectServer::Run() {
 /*
  * Register a socket with the select server.
  * @param socket the socket to register
+ * @param closure the closure to call when this socket is ready
  * @param manager the manager to call when the socket is closed
  * @param delete_on_close controlls whether the select server calls Close() and
  * deletes the socket once it's closed. You should probably set this as false
@@ -78,6 +79,7 @@ int SelectServer::Run() {
  * @return true on sucess, false on failure.
  */
 bool SelectServer::AddSocket(Socket *socket,
+                             Closure *closure,
                              SocketManager *manager,
                              bool delete_on_close) {
   if (socket->ReadDescriptor() < 0) {
@@ -87,6 +89,7 @@ bool SelectServer::AddSocket(Socket *socket,
 
   registered_socket_t registered_socket;
   registered_socket.socket = socket;
+  registered_socket.event_closure = closure;
   registered_socket.manager = manager;
   registered_socket.delete_on_close = delete_on_close;
 
@@ -122,6 +125,7 @@ bool SelectServer::RemoveSocket(class Socket *socket) {
   vector<registered_socket_t>::iterator iter;
   for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
     if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
+      delete iter->event_closure;
       m_read_sockets.erase(iter);
       if (m_export_map) {
         lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
@@ -136,30 +140,39 @@ bool SelectServer::RemoveSocket(class Socket *socket) {
 
 
 /*
- * Register a timeout function. Returning 0 means you don't want it to repeat
- * anymore.
- *
+ * Register a repeating timeout function. Returning 0 from the closure will
+ * cancel this timeout.
  * @param seconds the delay between function calls
+ * @param closure the closure to call when the event triggers. Ownership is
+ * given up to the select server - make sure nothing else uses this closure.
  */
+bool SelectServer::RegisterRepeatingTimeout(int ms, lla::Closure *closure) {
+  return RegisterTimeout(ms, closure, true);
+}
+
+
+/*
+ * Register a single use timeout function.
+ * @param seconds the delay between function calls
+ * @param closure the closure to call when the event triggers
+ */
+bool SelectServer::RegisterSingleTimeout(int ms,
+                                         lla::SingleUseClosure *closure) {
+  return RegisterTimeout(ms, closure, false);
+}
+
+
 bool SelectServer::RegisterTimeout(int ms,
-                                   LlaClosure *closure,
-                                   bool recurring) {
+                                   BaseClosure *closure,
+                                   bool repeating) {
   if (!closure)
     return false;
-
-  if (recurring && closure->SingleUse()) {
-    LLA_WARN << "Adding a single use closure as a repeating event," <<
-       "I'm turning repeat off";
-    recurring = false;
-  } else if (!recurring && !closure->SingleUse())
-    LLA_WARN << "Adding a non-repeating, non single use closure," <<
-       "this is probably going to leak memory\n";
 
   event_t event;
   event.closure = closure;
   event.interval.tv_sec = ms / K_MS_IN_SECOND;
   event.interval.tv_usec = K_MS_IN_SECOND * (ms % K_MS_IN_SECOND);
-  event.repeat = recurring;
+  event.repeating = repeating;
 
   gettimeofday(&event.next, NULL);
   timeradd(&event.next, &event.interval, &event.next);
@@ -237,7 +250,7 @@ void SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
  *  - Handle the case when the socket gets closed
  */
 void SelectServer::CheckSockets(fd_set &set) {
-  vector<Socket*> ready_queue;
+  vector<Closure*> ready_queue;
 
   vector<registered_socket_t>::iterator iter;
   for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
@@ -254,15 +267,15 @@ void SelectServer::CheckSockets(fd_set &set) {
         iter = m_read_sockets.erase(iter);
         iter--;
       } else {
-        ready_queue.push_back(iter->socket);
+        ready_queue.push_back(iter->event_closure);
       }
     }
   }
 
-  vector<Socket*>::iterator socket_iter;
+  vector<Closure*>::iterator socket_iter;
   for (socket_iter = ready_queue.begin(); socket_iter != ready_queue.end();
       ++socket_iter) {
-    (*socket_iter)->SocketReady();
+    (*socket_iter)->Run();
   }
 }
 
@@ -282,26 +295,23 @@ struct timeval SelectServer::CheckTimeouts() {
   for (e = m_events.top(); !m_events.empty() && timercmp(&e.next, &now, <);
        e = m_events.top()) {
     int return_code = 1;
-    bool single_use = false;
     if (e.closure) {
       return_code = e.closure->Run();
-      single_use = e.closure->SingleUse();
     }
     m_events.pop();
 
-    if (e.repeat && !return_code) {
+    if (e.repeating && !return_code) {
       e.next = now;
       timeradd(&e.next, &e.interval, &e.next);
       m_events.push(e);
     } else {
-      // if we were repeating, and we're not a single use closure and we
-      // returned an error we need to call delete
-      if (e.repeat && !return_code && !single_use)
+      // if we were repeating and we returned an error we need to call delete
+      if (e.repeating && !return_code)
         delete e.closure;
 
       if (m_export_map) {
         lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
-        var->Increment();
+        var->Decrement();
       }
     }
     gettimeofday(&now, NULL);
@@ -317,12 +327,7 @@ void SelectServer::UnregisterAll() {
   m_read_sockets.clear();
   while (!m_events.empty()) {
     event_t event = m_events.top();
-    // We don't actually have enough info to decide what to do here because
-    // something else may be using this closure. In this case we err on the
-    // side of not deleting.
-    // TODO(simonn): use scoped_ptr which avoids all of this.
-    if (event.closure->SingleUse())
-      // delete single use events because we own them.
+    if (event.repeating)
       delete event.closure;
     m_events.pop();
   }

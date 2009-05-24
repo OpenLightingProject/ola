@@ -72,17 +72,6 @@ int ReceivingSocket::Receive(uint8_t *buffer,
 
 
 /*
- * Called by the select server when there is data to be read.
- * @returns true if everything works, false if there was an error
- */
-bool ReceivingSocket::SocketReady() {
-  if (m_listener)
-    return m_listener->SocketReady(this);
-  return true;
-}
-
-
-/*
  * Close this socket
  * @return true if close succeeded, false otherwise
  */
@@ -155,7 +144,7 @@ bool ReceivingSocket::SetNonBlocking(int fd) {
  */
 ssize_t ConnectedSocket::Send(const uint8_t *buffer, unsigned int size) {
   if (m_write_fd == INVALID_SOCKET)
-    return false;
+    return 0;
 
   ssize_t bytes_sent = write(m_write_fd, buffer, size);
   if (bytes_sent != size)
@@ -475,8 +464,9 @@ bool TcpAcceptingSocket::IsClosed() const {
 
 /*
  * Accept new connections
+ * @return a new connected socket
  */
-bool TcpAcceptingSocket::SocketReady() {
+ConnectedSocket *TcpAcceptingSocket::Accept() {
   struct sockaddr_in cli_address;
   socklen_t length = sizeof(cli_address);
 
@@ -489,11 +479,9 @@ bool TcpAcceptingSocket::SocketReady() {
     return 0;
   }
 
-  ConnectedSocket *socket = new ConnectedSocket(sd);
+  ConnectedSocket *socket = new ConnectedSocket(sd, sd);
   socket->SetReadNonBlocking();
-
-  if (m_listener)
-    m_listener->NewConnection(socket);
+  return socket;
 }
 
 } // network

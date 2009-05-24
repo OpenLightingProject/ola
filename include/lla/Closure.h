@@ -23,42 +23,56 @@
 
 namespace lla {
 
-/*
- * Base Closure
- */
-class LlaClosure {
+
+class BaseClosure {
   public:
-    LlaClosure(bool single_use): m_single_use(single_use) {}
+    virtual ~BaseClosure() {}
     virtual int Run() = 0;
-    virtual ~LlaClosure() {}
-    bool SingleUse() { return m_single_use; }
-  protected:
-    bool m_single_use;
+    virtual int DoRun() = 0;
 };
 
 
 /*
- * A templatized Closure, with no arguments
- * @param object the object to use in the method call
- * @param method the method to call
+ * Base Closure
  */
-template <typename Class>
-class ObjectClosure: public LlaClosure {
+class Closure: public BaseClosure {
+  public:
+    virtual ~Closure() {}
+    int Run() { return DoRun(); }
+};
+
+
+/*
+ * A single use closure
+ */
+class SingleUseClosure: public BaseClosure {
+  public:
+    virtual ~SingleUseClosure() {}
+    int Run() {
+      int ret = DoRun();
+      delete this;
+      return ret;
+    }
+};
+
+/*
+ * A templatized Closure, with no arguments
+ */
+template <typename Class, typename Parent>
+class ObjectClosure: public Parent {
   public:
     typedef int (Class::*RequestHandler)();
 
+    /*
+     * @param object the object to use in the method call
+     * @param handler the method to call
+     */
     ObjectClosure(Class *object,
-                  RequestHandler handler,
-                  bool single_use=false):
-      LlaClosure(single_use),
+                  RequestHandler handler):
+      Parent(),
       m_object(object),
       m_handler(handler) {}
-    int Run() {
-      int ret = (m_object->*m_handler)();
-      if (m_single_use)
-        delete this;
-      return ret;
-    }
+    int DoRun() { return (m_object->*m_handler)(); }
 
   private:
     Class *m_object;
@@ -70,9 +84,9 @@ class ObjectClosure: public LlaClosure {
  * Create a new single use Closure. See above.
  */
 template <typename Class>
-inline LlaClosure* NewSingleClosure(Class* object,
-                                    int (Class::*method)()) {
-  return new ObjectClosure<Class>(object, method, true);
+inline SingleUseClosure* NewSingleClosure(Class* object,
+                                          int (Class::*method)()) {
+  return new ObjectClosure<Class, SingleUseClosure>(object, method);
 }
 
 
@@ -80,37 +94,33 @@ inline LlaClosure* NewSingleClosure(Class* object,
  * Create a new Closure. See above.
  */
 template <typename Class>
-inline LlaClosure* NewClosure(Class* object,
-                              int (Class::*method)()) {
-  return new ObjectClosure<Class>(object, method);
+inline Closure* NewClosure(Class* object,
+                           int (Class::*method)()) {
+  return new ObjectClosure<Class, Closure>(object, method);
 }
 
 
 /*
  * A templatized Closure, that takes one argument
- * @param object the object to use in the method call
- * @param method the method to call
- * @param arg the argument to pass to the method
  */
-template <typename Class, typename Arg>
-class ObjectArgClosure: public LlaClosure {
+template <typename Class, typename Parent, typename Arg>
+class ObjectArgClosure: public Parent {
   public:
     typedef int (Class::*RequestHandler)(Arg arg);
 
+    /*
+     * @param object the object to use in the method call
+     * @param handle the method to call
+     * @param arg the argument to pass to the method
+     */
     ObjectArgClosure(Class *object,
                      RequestHandler handler,
-                     Arg arg,
-                     bool single_use=false):
-      LlaClosure(single_use),
+                     Arg arg):
+      Parent(),
       m_object(object),
       m_handler(handler),
       m_arg(arg) {}
-    int Run() {
-      int ret = (m_object->*m_handler)(m_arg);
-      if (m_single_use)
-        delete this;
-      return ret;
-    }
+    int DoRun() { return (m_object->*m_handler)(m_arg); }
 
   private:
     Class *m_object;
@@ -123,10 +133,11 @@ class ObjectArgClosure: public LlaClosure {
  * Create a new single use Closure
  */
 template <typename Class, typename Arg>
-inline LlaClosure* NewSingleClosure(Class* object,
-                                    int (Class::*method)(Arg arg),
-                                    Arg arg) {
-  return new ObjectArgClosure<Class, Arg>(object, method, arg, true);
+inline SingleUseClosure* NewSingleClosure(Class* object,
+                                          int (Class::*method)(Arg arg),
+                                          Arg arg) {
+  return new ObjectArgClosure<Class, SingleUseClosure, Arg>(object, method,
+                                                            arg);
 }
 
 
@@ -134,13 +145,71 @@ inline LlaClosure* NewSingleClosure(Class* object,
  * Create a new Closure
  */
 template <typename Class, typename Arg>
-inline LlaClosure* NewClosure(Class* object,
-                              int (Class::*method)(Arg arg),
-                              Arg arg) {
-  return new ObjectArgClosure<Class, Arg>(object, method, arg);
+inline Closure* NewClosure(Class* object,
+                           int (Class::*method)(Arg arg),
+                           Arg arg) {
+  return new ObjectArgClosure<Class, Closure, Arg>(object, method, arg);
+}
+
+
+/*
+ * A templatized Closure, that takes two arguments
+ */
+template <typename Class, typename Parent, typename Arg, typename Arg2>
+class ObjectTwoArgClosure: public Parent {
+  public:
+    typedef int (Class::*RequestHandler)(Arg arg, Arg2 arg2);
+
+    /*
+     * @param object the object to use in the method call
+     * @param method the method to call
+     * @param arg the argument to pass to the method
+     * @param arg2 the second argument to pass to the method
+     */
+    ObjectTwoArgClosure(Class *object,
+                        RequestHandler handler,
+                        Arg arg,
+                        Arg2 arg2):
+      Parent(),
+      m_object(object),
+      m_handler(handler),
+      m_arg(arg),
+      m_arg2(arg2) {}
+    int DoRun() { return (m_object->*m_handler)(m_arg, m_arg2); }
+
+  private:
+    Class *m_object;
+    RequestHandler m_handler;
+    Arg m_arg;
+    Arg2 m_arg2;
+};
+
+
+/*
+ * Create a new single use Closure
+ */
+template <typename Class, typename Arg, typename Arg2>
+inline SingleUseClosure* NewSingleClosure(
+    Class* object,
+    int (Class::*method)(Arg arg, Arg2 arg2),
+    Arg arg,
+    Arg2 arg2) {
+  return new ObjectTwoArgClosure<Class, SingleUseClosure, Arg, Arg2>
+                 (object, method, arg, arg2);
+}
+
+
+/*
+ * Create a new Closure
+ */
+template <typename Class, typename Arg, typename Arg2>
+inline Closure* NewClosure(Class* object,
+                           int (Class::*method)(Arg arg, Arg2 arg2),
+                           Arg arg, Arg2 arg2) {
+  return new ObjectTwoArgClosure<Class, Closure, Arg, Arg2>
+                 (object, method, arg, arg2);
 }
 
 
 } //lla
-
 #endif

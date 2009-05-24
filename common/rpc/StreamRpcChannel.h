@@ -25,19 +25,18 @@
 #include <ext/hash_map>
 #include <google/protobuf/service.h>
 #include <lla/network/Socket.h>
+#include <lla/network/SelectServer.h>
 
 namespace lla {
 namespace rpc {
 
 using namespace google::protobuf;
-using namespace lla::network;
-using namespace __gnu_cxx;
 
 class RpcMessage;
 
 class OutstandingRequest {
   /*
-   * These are requests on the server end that haven't compelted yet.
+   * These are requests on the server end that haven't completed yet.
    */
   public:
     OutstandingRequest() {}
@@ -58,7 +57,7 @@ class OutstandingResponse {
 
     int id;
     RpcController *controller;
-    Closure *callback;
+    google::protobuf::Closure *callback;
     Message *reply;
 };
 
@@ -69,30 +68,34 @@ class StreamRpcHeader {
    * (this is separate from the protobuf version) and the size of the protobuf.
    */
   public:
-    static void EncodeHeader(uint32_t &header, unsigned int version, unsigned int size);
-    static void DecodeHeader(uint32_t header, unsigned int &version, unsigned int &size);
+    static void EncodeHeader(uint32_t &header, unsigned int version,
+                             unsigned int size);
+    static void DecodeHeader(uint32_t header, unsigned int &version,
+                             unsigned int &size);
   private:
     static const unsigned int VERSION_MASK = 0xf0000000;
     static const unsigned int SIZE_MASK = 0x0fffffff;
 };
 
 
-class StreamRpcChannel: public RpcChannel, public SocketListener {
+class StreamRpcChannel: public RpcChannel {
   /*
    * Implements a RpcChannel over a pipe or socket.
    */
   public :
-    StreamRpcChannel(Service *service, ConnectedSocket *socket);
+    StreamRpcChannel(Service *service,
+                     lla::network::SelectServer *ss,
+                     lla::network::ConnectedSocket *socket);
     ~StreamRpcChannel();
 
-    int SocketReady(ConnectedSocket *socket);
+    int SocketReady(lla::network::ConnectedSocket *socket);
 
     void CallMethod(
         const MethodDescriptor * method,
         RpcController *controller,
         const Message *request,
         Message *response,
-        Closure *done);
+        google::protobuf::Closure *done);
 
     void RequestComplete(OutstandingRequest *request);
     void SetService(Service *service) { m_service = service; }
@@ -125,8 +128,8 @@ class StreamRpcChannel: public RpcChannel, public SocketListener {
     unsigned int m_buffer_size; // size of the buffer
     unsigned int m_expected_size; // the total size of the current msg
     unsigned int m_current_size; // the amount of data read for the current msg
-    hash_map<int, OutstandingRequest*> m_requests;
-    hash_map<int, OutstandingResponse*> m_responses;
+    __gnu_cxx::hash_map<int, OutstandingRequest*> m_requests;
+    __gnu_cxx::hash_map<int, OutstandingResponse*> m_responses;
 
     static const unsigned int INITIAL_BUFFER_SIZE = 1 << 11; // 2k
     static const unsigned int MAX_BUFFER_SIZE = 1 << 20; // 1M

@@ -27,16 +27,6 @@
 namespace lla {
 namespace network {
 
-/*
- * A SocketListener, implement this if you want to respond to events when the
- * socket has data.
- */
-class SocketListener {
-  public:
-    virtual ~SocketListener() {}
-    virtual bool SocketReady(class ReceivingSocket *socket) = 0;
-};
-
 
 /*
  * Implement this to be notifed when the remote end closes the connection or
@@ -50,21 +40,8 @@ class SocketManager {
 
 
 /*
- * A AcceptSocketListener, implement this if you want to respond to a
- * new connection arriving.
- *
- * NewConnection is passed a new ConnectedSocket which it then owns and is
- * responsible for registering with the select server.
- */
-class AcceptSocketListener {
-  public:
-    virtual ~AcceptSocketListener() {}
-    virtual int NewConnection(class ConnectedSocket *socket) = 0;
-};
-
-
-/*
- * The base Socket class. All other sockets inherit from this one.
+ * The base Socket class with the functionality required by the select server.
+ * All other sockets inherit from this one.
  */
 class Socket {
   public :
@@ -74,11 +51,6 @@ class Socket {
      * Returns the read descriptor for this socket
      */
     virtual int ReadDescriptor() const = 0;
-    /*
-     * Called when the read descriptor has new data
-     * @returns true if everything works, false if there was an error
-     */
-    virtual bool SocketReady() = 0;
     /*
      * Used to check if the socket has been closed
      */
@@ -97,18 +69,13 @@ class Socket {
 class ReceivingSocket: public Socket {
   public:
     ReceivingSocket(int read_fd=INVALID_SOCKET):
-      m_read_fd(read_fd),
-      m_listener(NULL) {}
+      m_read_fd(read_fd) {}
     virtual ~ReceivingSocket() { Close(); }
 
     virtual int ReadDescriptor() const { return m_read_fd; }
-    virtual void SetListener(SocketListener *listener) {
-      m_listener = listener;
-    }
     virtual int Receive(uint8_t *buffer,
                         unsigned int size,
                         unsigned int &data_read);
-    virtual bool SocketReady();
     virtual bool SetReadNonBlocking() { return SetNonBlocking(m_read_fd); }
     virtual bool Close();
     virtual bool IsClosed() const;
@@ -117,8 +84,6 @@ class ReceivingSocket: public Socket {
   protected:
     int m_read_fd;
     bool SetNonBlocking(int sd);
-  private:
-    SocketListener *m_listener;
 };
 
 
@@ -226,15 +191,9 @@ class UdpServerSocket: public ReceivingSocket {
  */
 class AcceptingSocket: public Socket {
   public:
-    AcceptingSocket(): m_listener(NULL) {}
+    AcceptingSocket() {}
     virtual bool Listen() = 0;
     virtual bool Close() = 0;
-    virtual bool SocketReady() = 0;
-    virtual void SetListener(AcceptSocketListener *listener) {
-      m_listener = listener;
-    }
-  protected:
-    AcceptSocketListener *m_listener;
 };
 
 
@@ -246,10 +205,10 @@ class TcpAcceptingSocket: public AcceptingSocket {
     TcpAcceptingSocket(std::string address, unsigned short port, int backlog=10);
     ~TcpAcceptingSocket() { Close(); }
     bool Listen();
-    bool SocketReady();
     int ReadDescriptor() const { return m_sd; }
     bool Close();
     bool IsClosed() const;
+    ConnectedSocket *Accept();
   private:
     std::string m_address;
     unsigned short m_port;

@@ -45,13 +45,12 @@ class SelectServer {
     void Restart() { m_terminate = false; }
 
     bool AddSocket(class Socket *socket,
+                   lla::Closure *event_closure,
                    class SocketManager *manager=NULL,
                    bool delete_on_close=false);
     bool RemoveSocket(class Socket *socket);
-    bool RegisterTimeout(int ms,
-                         lla::LlaClosure *closure,
-                         bool recurring=true);
-    void UnregisterAll();
+    bool RegisterRepeatingTimeout(int ms, lla::Closure *closure);
+    bool RegisterSingleTimeout(int ms, lla::SingleUseClosure *closure);
 
     static const string K_FD_VAR;
     static const string K_TIMER_VAR;
@@ -59,16 +58,19 @@ class SelectServer {
   private :
     typedef struct {
       class Socket *socket;
+      lla::Closure *event_closure;
       class SocketManager *manager;
       bool delete_on_close;
     } registered_socket_t;
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
+    bool RegisterTimeout(int ms, lla::BaseClosure *closure, bool repeating);
     bool CheckForEvents();
     void CheckSockets(fd_set &set);
     void AddSocketsToSet(fd_set &set, int &max_sd) const;
     struct timeval CheckTimeouts();
+    void UnregisterAll();
 
     static const int K_MS_IN_SECOND = 1000;
     static const int K_US_IN_SECOND = 1000000;
@@ -77,8 +79,8 @@ class SelectServer {
     typedef struct {
       struct timeval next;
       struct timeval interval;
-      int repeat; // non 0 if this event is recurring
-      lla::LlaClosure *closure;
+      bool repeating;
+      lla::BaseClosure *closure;
     } event_t;
 
     struct ltevent {

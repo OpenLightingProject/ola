@@ -15,38 +15,39 @@
  *
  * SimpleRpcController.h
  * Interface for a basic RPC Controller
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef SIMPLERPCCONTROLLER_H
-#define SIMPLERPCCONTROLLER_H
+#ifndef LLA_SIMPLE_RPC_CONTROLLER_H
+#define LLA_SIMPLE_RPC_CONTROLLER_H
 
+#include <string>
 #include <google/protobuf/service.h>
 
 namespace lla {
 namespace rpc {
 
-using namespace google::protobuf;
-
-class SimpleRpcController : public RpcController {
-  public :
+class SimpleRpcController: public google::protobuf::RpcController {
+  public:
     SimpleRpcController();
     ~SimpleRpcController() {}
 
     void Reset();
     bool Failed() const { return m_failed; }
-    string ErrorText() const  { return m_error_text; }
+    std::string ErrorText() const { return m_error_text; }
     void StartCancel();
 
-    void SetFailed(const string &reason);
+    void SetFailed(const std::string &reason);
     bool IsCanceled() const { return m_cancelled; }
-    void NotifyOnCancel(Closure *callback) { m_callback = callback; }
+    void NotifyOnCancel(google::protobuf::Closure *callback) {
+      m_callback = callback;
+    }
 
   private:
     bool m_failed;
     bool m_cancelled;
-    string m_error_text;
-    Closure *m_callback;
+    std::string m_error_text;
+    google::protobuf::Closure *m_callback;
 };
 
 } // rpc

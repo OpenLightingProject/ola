@@ -18,8 +18,6 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <arpa/inet.h>
-#include <sys/socket.h>
 #include <errno.h>
 #include <string>
 
@@ -29,18 +27,20 @@
 #include <google/protobuf/dynamic_message.h>
 
 #include <lla/Logging.h>
-#include <lla/network/Socket.h>
+#include <lla/Closure.h>
 #include "StreamRpcChannel.h"
 #include "SimpleRpcController.h"
 #include "Rpc.pb.h"
 
+
+namespace lla {
+namespace rpc {
+
 using namespace google::protobuf;
-using namespace lla::rpc;
-using namespace lla::network;
-using namespace std;
 
-
-StreamRpcChannel::StreamRpcChannel(Service *service, ConnectedSocket *socket) :
+StreamRpcChannel::StreamRpcChannel(Service *service,
+                                   lla::network::SelectServer *ss,
+                                   lla::network::ConnectedSocket *socket):
   m_service(service),
   m_socket(socket),
   m_buffer(NULL),
@@ -48,7 +48,12 @@ StreamRpcChannel::StreamRpcChannel(Service *service, ConnectedSocket *socket) :
   m_seq(0),
   m_expected_size(0),
   m_current_size(0) {
-    m_socket->SetListener(this);
+
+    lla::Closure *closure = NewClosure(this,
+                                       &StreamRpcChannel::SocketReady,
+                                       socket);
+    if(!ss->AddSocket(socket, closure, NULL))
+      LLA_WARN << "Failed to add socket to select server";
 }
 
 
@@ -61,7 +66,7 @@ StreamRpcChannel::~StreamRpcChannel() {
  * Receive a message for this RPCChannel. Called when data is available on the
  * socket.
  */
-int StreamRpcChannel::SocketReady(ConnectedSocket *socket) {
+int StreamRpcChannel::SocketReady(lla::network::ConnectedSocket *socket) {
   if (!m_expected_size) {
     // this is a new msg
     unsigned int version;
@@ -82,7 +87,7 @@ int StreamRpcChannel::SocketReady(ConnectedSocket *socket) {
     if (m_buffer_size < m_expected_size) {
       LLA_WARN << "buffer size to small " << m_buffer_size << " < " <<
         m_expected_size;
-      return -1;
+      return 0;
     }
   }
 
@@ -114,7 +119,7 @@ void StreamRpcChannel::CallMethod(
     RpcController *controller,
     const Message *request,
     Message *reply,
-    Closure *done) {
+    google::protobuf::Closure *done) {
   string output;
   RpcMessage message;
 
@@ -167,6 +172,7 @@ void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
 
 // private
 //-----------------------------------------------------------------------------
+
 /*
  * Write an RpcMessage to the write socket.
  */
@@ -191,14 +197,10 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
 }
 
 
-/**
+/*
  * Allocate an incomming message buffer
- *
- * Params:
- *   size: the size of the new buffer to allocate
- *
- * Returns:
- *   The size of the new buffer
+ * @param size the size of the new buffer to allocate
+ * @returns the size of the new buffer
  */
 int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
   int requested_size = size;
@@ -224,12 +226,10 @@ int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
 
 /*
  * Read 4 bytes and decode the header fields.
- *
- * Returns:
- *  -1 on error
- *  If no data is available, version and size are 0
+ * @returns: -1 if there is no data is available, version and size are 0
  */
-int StreamRpcChannel::ReadHeader(unsigned int &version, unsigned int &size) const {
+int StreamRpcChannel::ReadHeader(unsigned int &version,
+                                 unsigned int &size) const {
   static const int HEADER_SIZE = 4;
   uint8_t header[HEADER_SIZE];
   unsigned int data_read = 0;
@@ -326,8 +326,10 @@ void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
   }
 
   m_requests[msg->id()] = request;
-  Closure *callback = NewCallback(this, &StreamRpcChannel::RequestComplete, request);
-  m_service->CallMethod(method, request->controller, request_pb, response_pb, callback);
+  google::protobuf::Closure *callback = NewCallback(
+      this, &StreamRpcChannel::RequestComplete, request);
+  m_service->CallMethod(method, request->controller, request_pb, response_pb,
+                        callback);
   delete request_pb;
 }
 
@@ -462,3 +464,6 @@ void StreamRpcHeader::DecodeHeader(uint32_t header, unsigned int &version, unsig
   version = (header & VERSION_MASK) >> 28;
   size = header & SIZE_MASK;
 }
+
+} //rpc
+} //lla
