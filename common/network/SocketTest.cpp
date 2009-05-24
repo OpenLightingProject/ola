@@ -127,6 +127,7 @@ void SocketTest::testLoopbackSocket() {
                                    test_string.length());
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
   m_ss->Run();
+  m_ss->RemoveSocket(&socket);
 }
 
 
@@ -164,7 +165,8 @@ void SocketTest::testPipeSocketClientClose() {
                                   test_string.length());
   CPPUNIT_ASSERT_EQUAL(test_string.length(), bytes_sent);
   m_ss->Run();
-
+  m_ss->RemoveSocket(&socket);
+  m_ss->RemoveSocket(other_end);
   delete other_end;
 }
 
@@ -201,6 +203,8 @@ void SocketTest::testPipeSocketServerClose() {
                                   test_string.length());
   CPPUNIT_ASSERT_EQUAL(test_string.length(), bytes_sent);
   m_ss->Run();
+  m_ss->RemoveSocket(&socket);
+  m_ss->RemoveSocket(other_end);
   delete other_end;
 }
 
@@ -238,7 +242,6 @@ void SocketTest::testTcpSocketClientClose() {
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
   m_ss->RemoveSocket(&client_socket);
-  socket->Close();
 }
 
 
@@ -276,7 +279,6 @@ void SocketTest::testTcpSocketServerClose() {
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
   m_ss->RemoveSocket(&client_socket);
-  socket->Close();
 }
 
 
