@@ -163,8 +163,8 @@ bool ConnectedSocket::Close() {
 
   if (m_read_fd != m_write_fd && m_write_fd != INVALID_SOCKET) {
     close(m_write_fd);
-    m_write_fd = INVALID_SOCKET;
   }
+  m_write_fd = INVALID_SOCKET;
   m_read_fd = INVALID_SOCKET;
   return true;
 }
@@ -186,12 +186,6 @@ bool LoopbackSocket::Init() {
 
   SetReadNonBlocking();
   return true;
-}
-
-bool LoopbackSocket::Close() {
-  if (m_read_fd > 0)
-    close(m_write_fd);
-  m_write_fd = -1;
 }
 
 

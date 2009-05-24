@@ -165,7 +165,7 @@ void SocketTest::testPipeSocketClientClose() {
   CPPUNIT_ASSERT_EQUAL(test_string.length(), bytes_sent);
   m_ss->Run();
 
-  // delete other end?
+  delete other_end;
 }
 
 
@@ -236,6 +236,9 @@ void SocketTest::testTcpSocketClientClose() {
       )
   );
   m_ss->Run();
+  m_ss->RemoveSocket(&socket);
+  m_ss->RemoveSocket(&client_socket);
+  socket->Close();
 }
 
 
@@ -271,6 +274,9 @@ void SocketTest::testTcpSocketServerClose() {
       )
   );
   m_ss->Run();
+  m_ss->RemoveSocket(&socket);
+  m_ss->RemoveSocket(&client_socket);
+  socket->Close();
 }
 
 

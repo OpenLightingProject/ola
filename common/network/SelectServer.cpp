@@ -259,10 +259,8 @@ void SelectServer::CheckSockets(fd_set &set) {
       if (iter->socket->IsClosed()) {
         if (iter->manager)
           iter->manager->SocketClosed(iter->socket);
-        if (iter->delete_on_close) {
-          iter->socket->Close();
+        if (iter->delete_on_close)
           delete iter->socket;
-        }
         delete iter->event_closure;
         if (m_export_map)
           m_export_map->GetIntegerVar(K_FD_VAR)->Decrement();

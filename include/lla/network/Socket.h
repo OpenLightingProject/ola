@@ -95,7 +95,7 @@ class ConnectedSocket: public ReceivingSocket {
     ConnectedSocket(int read_fd=INVALID_SOCKET, int write_fd=INVALID_SOCKET):
                     ReceivingSocket(read_fd),
                     m_write_fd(write_fd) {}
-    virtual ~ConnectedSocket() {}
+    virtual ~ConnectedSocket() { Close(); }
 
     virtual int WriteDescriptor() const { return m_write_fd; }
     virtual ssize_t Send(const uint8_t *buffer, unsigned int size);
@@ -114,7 +114,6 @@ class LoopbackSocket: public ConnectedSocket {
   public:
     LoopbackSocket(): ConnectedSocket() {}
     bool Init();
-    bool Close();
 };
 
 
