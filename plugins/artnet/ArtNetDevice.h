@@ -38,7 +38,6 @@ class Preferences;
 namespace plugin {
 
 using lla::Device;
-using lla::network::ConnectedSocket;
 using std::string;
 
 class ArtNetDevice : public Device {
@@ -53,8 +52,8 @@ class ArtNetDevice : public Device {
     bool Stop();
     artnet_node GetArtnetNode() const;
     int SaveConfig() const;
-    int SocketReady(ConnectedSocket *socket);
-    ConnectedSocket *GetSocket() { return m_socket; }
+    int SocketReady();
+    lla::network::UnmanagedSocket *GetSocket() { return m_socket; }
 
     void Configure(RpcController *controller,
                    const string &request,
@@ -63,7 +62,7 @@ class ArtNetDevice : public Device {
 
   private:
     class Preferences *m_preferences;
-    ConnectedSocket *m_socket;
+    lla::network::UnmanagedSocket *m_socket;
     artnet_node m_node;
     string m_short_name;
     string m_long_name;

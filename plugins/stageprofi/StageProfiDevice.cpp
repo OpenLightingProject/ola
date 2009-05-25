@@ -126,8 +126,8 @@ ConnectedSocket *StageProfiDevice::GetSocket() const {
 /*
  * Called when there is socket activity
  */
-int StageProfiDevice::SocketReady(ConnectedSocket *socket) {
-  return m_widget->SocketReady(socket);
+int StageProfiDevice::SocketReady() {
+  return m_widget->SocketReady();
 }
 
 

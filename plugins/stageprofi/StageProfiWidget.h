@@ -48,7 +48,7 @@ class StageProfiWidget {
     ConnectedSocket *GetSocket() { return m_socket; }
     bool SendDmx(const DmxBuffer &buffer) const;
     bool DetectDevice();
-    int SocketReady(ConnectedSocket *socket);
+    int SocketReady();
     int Timeout();
 
   protected:

@@ -196,6 +196,25 @@ class DeviceSocket: public ConnectedSocket {
 
 
 /*
+ * An unmanaged socket is used to glue sockets from other software into the
+ * SelectServer.
+ */
+class UnmanagedSocket: public Socket {
+  public :
+    UnmanagedSocket(int sd): m_sd(sd) {}
+    ~UnmanagedSocket() {}
+    int ReadDescriptor() const { return m_sd; }
+    bool IsClosed() const { return false; }
+    // Closing is left to something else
+    bool Close() { return true; }
+  private:
+    int m_sd;
+    UnmanagedSocket(const UnmanagedSocket &other);
+    UnmanagedSocket& operator=(const UnmanagedSocket &other);
+};
+
+
+/*
  * A UdpSocket (non connected)
  */
 class UdpSocket: public Socket {

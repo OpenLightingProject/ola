@@ -118,7 +118,7 @@ ArtNetDevice::~ArtNetDevice() {
 bool ArtNetDevice::Start() {
   ArtNetPort *port;
   string value;
-  int subnet, fd = 0;
+  int subnet = 0;
 
   /* set up ports */
   for (unsigned int i = 0; i < 2 * ARTNET_MAX_PORTS; i++) {
@@ -210,8 +210,7 @@ bool ArtNetDevice::Start() {
     goto e_artnet_start;
   }
 
-  fd = artnet_get_sd(m_node);
-  m_socket = new ConnectedSocket(fd, fd);
+  m_socket = new lla::network::UnmanagedSocket(artnet_get_sd(m_node));
   m_enabled = true;
   return true;
 
@@ -263,7 +262,7 @@ artnet_node ArtNetDevice::GetArtnetNode() const {
  * Called when there is activity on our socket
  * @param socket the socket with activity
  */
-int ArtNetDevice::SocketReady(ConnectedSocket *socket) {
+int ArtNetDevice::SocketReady() {
   if (artnet_read(m_node, 0)) {
     LLA_WARN << "artnet_read failed: " << artnet_strerror();
     return -1;
