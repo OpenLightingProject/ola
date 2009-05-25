@@ -68,7 +68,8 @@ void StreamRpcChannelTest::setUp() {
   m_socket = new LoopbackSocket();
   m_socket->Init();
 
-  m_channel = new StreamRpcChannel(&m_service, &m_ss, m_socket);
+  m_channel = new StreamRpcChannel(&m_service, m_socket);
+  CPPUNIT_ASSERT(m_channel->AddToSelectServer(&m_ss));
   m_stub = new TestService_Stub(m_channel);
 }
 

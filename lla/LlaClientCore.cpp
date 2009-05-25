@@ -42,20 +42,23 @@ namespace lla {
 
 using google::protobuf::NewCallback;
 
-LlaClientCore::LlaClientCore(ConnectedSocket *socket):
+LlaClientCore::LlaClientCore(lla::network::SelectServer *ss,
+                             ConnectedSocket *socket):
   m_socket(socket),
   m_client_service(NULL),
   m_channel(NULL),
   m_stub(NULL),
   m_connected(false),
-  m_observer(NULL) {
+  m_observer(NULL),
+  m_ss(ss) {
 #ifdef HAVE_PTHREAD
   pthread_mutex_init(&m_mutex, NULL);
 #endif
 }
 
+
 LlaClientCore::~LlaClientCore() {
-  if(m_connected)
+  if (m_connected)
     Stop();
 }
 
@@ -73,7 +76,7 @@ bool LlaClientCore::Setup() {
   if (!m_client_service)
     return false;
 
-  m_channel = new StreamRpcChannel(m_client_service, m_socket);
+  m_channel = new StreamRpcChannel(m_client_service, m_ss, m_socket);
 
   if (!m_channel) {
     delete m_client_service;
@@ -98,7 +101,7 @@ bool LlaClientCore::Setup() {
  */
 bool LlaClientCore::Stop() {
   acquire_lock;
-  if(m_connected) {
+  if (m_connected) {
 
     m_socket->Close();
     delete m_channel;

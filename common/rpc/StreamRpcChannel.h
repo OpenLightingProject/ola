@@ -26,6 +26,7 @@
 #include <google/protobuf/service.h>
 #include <lla/network/Socket.h>
 #include <lla/network/SelectServer.h>
+#include <lla/Closure.h>
 
 namespace lla {
 namespace rpc {
@@ -84,11 +85,12 @@ class StreamRpcChannel: public RpcChannel {
    */
   public :
     StreamRpcChannel(Service *service,
-                     lla::network::SelectServer *ss,
                      lla::network::ConnectedSocket *socket);
     ~StreamRpcChannel();
 
-    int SocketReady(lla::network::ConnectedSocket *socket);
+    bool AddToSelectServer(lla::network::SelectServer *ss,
+                           lla::SingleUseClosure *on_close=NULL);
+    int SocketReady();
 
     void CallMethod(
         const MethodDescriptor * method,

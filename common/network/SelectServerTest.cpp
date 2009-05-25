@@ -64,7 +64,7 @@ void SelectServerTest::tearDown() {
  * updated.
  */
 void SelectServerTest::testAddRemoveSocket() {
-  ConnectedSocket bad_socket;
+  LoopbackSocket bad_socket;
   IntegerVariable *fd_count = m_map->GetIntegerVar(SelectServer::K_FD_VAR);
   CPPUNIT_ASSERT_EQUAL(fd_count->Get(), 0);
   // adding and removin a non-connected socket should fail

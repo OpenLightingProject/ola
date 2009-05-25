@@ -71,17 +71,18 @@ int SelectServer::Run() {
 /*
  * Register a socket with the select server.
  * @param socket the socket to register
- * @param closure the closure to call when this socket is ready, ownership of
+ * @param on_data the closure to call when this socket is ready, ownership of
  *   the closure is transferred to the select server.
- * @param manager the manager to call when the socket is closed
- * @param delete_on_close controls whether the select server calls Close() and
- * deletes the socket once it's closed. You should probably set this as false
- * if you're using a manager.
+ * @param on_close the closure to call when this socket is closed (determined
+ * by calling IsClosed() on the socket). Ownership of the closure is
+ *   transferred to the select server.
+ * @param delete_on_close controls whether the select server deletes the socket
+ *   once it's closed.
  * @return true on sucess, false on failure.
  */
 bool SelectServer::AddSocket(Socket *socket,
-                             Closure *closure,
-                             SocketManager *manager,
+                             Closure *on_data,
+                             SingleUseClosure *on_close,
                              bool delete_on_close) {
   if (socket->ReadDescriptor() < 0) {
     LLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
@@ -90,8 +91,8 @@ bool SelectServer::AddSocket(Socket *socket,
 
   registered_socket_t registered_socket;
   registered_socket.socket = socket;
-  registered_socket.event_closure = closure;
-  registered_socket.manager = manager;
+  registered_socket.on_data = on_data;
+  registered_socket.on_close = on_close;
   registered_socket.delete_on_close = delete_on_close;
 
   vector<registered_socket_t>::const_iterator iter;
@@ -126,7 +127,8 @@ bool SelectServer::RemoveSocket(class Socket *socket) {
   vector<registered_socket_t>::iterator iter;
   for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
     if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
-      delete iter->event_closure;
+      delete iter->on_data;
+      delete iter->on_close;
       m_read_sockets.erase(iter);
       if (m_export_map) {
         lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
@@ -257,17 +259,17 @@ void SelectServer::CheckSockets(fd_set &set) {
   for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
     if (FD_ISSET(iter->socket->ReadDescriptor(), &set)) {
       if (iter->socket->IsClosed()) {
-        if (iter->manager)
-          iter->manager->SocketClosed(iter->socket);
+        if (iter->on_close)
+          iter->on_close->Run();
         if (iter->delete_on_close)
           delete iter->socket;
-        delete iter->event_closure;
+        delete iter->on_data;
         if (m_export_map)
           m_export_map->GetIntegerVar(K_FD_VAR)->Decrement();
         iter = m_read_sockets.erase(iter);
         iter--;
       } else {
-        ready_queue.push_back(iter->event_closure);
+        ready_queue.push_back(iter->on_data);
       }
     }
   }
@@ -330,7 +332,8 @@ void SelectServer::UnregisterAll() {
       iter->socket->Close();
       delete iter->socket;
     }
-    delete iter->event_closure;
+    delete iter->on_data;
+    delete iter->on_close;
   }
   m_read_sockets.clear();
   while (!m_events.empty()) {

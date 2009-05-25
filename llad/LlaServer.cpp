@@ -243,7 +243,11 @@ int LlaServer::AcceptNewConnection(
   if (!socket)
     return 0;
 
-  StreamRpcChannel *channel = new StreamRpcChannel(NULL, m_ss, socket);
+  StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket);
+  channel->AddToSelectServer(m_ss,
+                             NewSingleClosure(this,
+                                              &LlaServer::SocketClosed,
+                                              socket));
   LlaClientService_Stub *stub = new LlaClientService_Stub(channel);
   Client *client = new Client(stub);
   LlaServerServiceImpl *service = m_service_factory->New(m_universe_store,
@@ -271,7 +275,7 @@ int LlaServer::AcceptNewConnection(
 /*
  * Called when a socket is closed
  */
-void LlaServer::SocketClosed(lla::network::Socket *socket) {
+int LlaServer::SocketClosed(lla::network::ConnectedSocket *socket) {
   map<int, LlaServerServiceImpl*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
@@ -282,6 +286,7 @@ void LlaServer::SocketClosed(lla::network::Socket *socket) {
   var->Decrement();
   CleanupConnection(iter->second);
   m_sd_to_service.erase(iter);
+  return 0;
 }
 
 

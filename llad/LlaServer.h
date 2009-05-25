@@ -53,7 +53,7 @@ typedef struct {
 /*
  * The main LlaServer class
  */
-class LlaServer: public lla::network::SocketManager {
+class LlaServer {
   public:
     LlaServer(class LlaServerServiceImplFactory *factory,
               class PluginLoader *plugin_loader,
@@ -66,7 +66,7 @@ class LlaServer: public lla::network::SocketManager {
     bool Init();
     void ReloadPlugins();
     int AcceptNewConnection(lla::network::AcceptingSocket *socket);
-    void SocketClosed(lla::network::Socket *socket);
+    int SocketClosed(lla::network::ConnectedSocket *socket);
     int GarbageCollect();
 
     static const unsigned int DEFAULT_HTTP_PORT = 9090;

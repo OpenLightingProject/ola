@@ -39,7 +39,6 @@ namespace rpc {
 using namespace google::protobuf;
 
 StreamRpcChannel::StreamRpcChannel(Service *service,
-                                   lla::network::SelectServer *ss,
                                    lla::network::ConnectedSocket *socket):
   m_service(service),
   m_socket(socket),
@@ -49,11 +48,6 @@ StreamRpcChannel::StreamRpcChannel(Service *service,
   m_expected_size(0),
   m_current_size(0) {
 
-    lla::Closure *closure = NewClosure(this,
-                                       &StreamRpcChannel::SocketReady,
-                                       socket);
-    if(!ss->AddSocket(socket, closure, NULL))
-      LLA_WARN << "Failed to add socket to select server";
 }
 
 
@@ -63,10 +57,25 @@ StreamRpcChannel::~StreamRpcChannel() {
 
 
 /*
+ * Add this channel to a select server
+ */
+bool StreamRpcChannel::AddToSelectServer(lla::network::SelectServer *ss,
+                                         lla::SingleUseClosure *on_close) {
+  bool ret = ss->AddSocket(m_socket,
+                           NewClosure(this, &StreamRpcChannel::SocketReady),
+                           on_close);
+
+  if (!ret)
+    LLA_WARN << "Failed to add socket to select server";
+  return ret;
+}
+
+
+/*
  * Receive a message for this RPCChannel. Called when data is available on the
  * socket.
  */
-int StreamRpcChannel::SocketReady(lla::network::ConnectedSocket *socket) {
+int StreamRpcChannel::SocketReady() {
   if (!m_expected_size) {
     // this is a new msg
     unsigned int version;
@@ -92,9 +101,9 @@ int StreamRpcChannel::SocketReady(lla::network::ConnectedSocket *socket) {
   }
 
   unsigned int data_read;
-  if (socket->Receive(m_buffer + m_current_size,
-                      m_expected_size - m_current_size,
-                      data_read) < 0) {
+  if (m_socket->Receive(m_buffer + m_current_size,
+                        m_expected_size - m_current_size,
+                        data_read) < 0) {
     LLA_WARN << "something went wrong in socket recv\n";
     return -1;
   }

@@ -33,28 +33,87 @@
 namespace lla {
 namespace network {
 
-// ReceivingSocket
+// ConnectedSocket
 // ------------------------------------------------
+
+
+/*
+ * Turn on non-blocking reads.
+ * @param fd the descriptor to enable non-blocking on
+ * @return true if it worked, false otherwise
+ */
+bool ConnectedSocket::SetNonBlocking(int fd) {
+  if (fd == INVALID_SOCKET)
+    return false;
+
+  int val = fcntl(fd, F_GETFL, 0);
+  int ret = fcntl(fd, F_SETFL, val | O_NONBLOCK);
+  if (ret) {
+    LLA_WARN << "failed to set " << fd << " non-blocking: " << strerror(errno);
+    return false;
+  }
+  return true;
+}
+
+
+/*
+ * Find out how much data is left to read
+ * @return the amount of unread data for the socket
+ */
+int ConnectedSocket::DataRemaining(int fd) const {
+  int unread;
+  if (fd == INVALID_SOCKET)
+    return 0;
+
+  if (ioctl(fd, FIONREAD, &unread) < 0) {
+    LLA_WARN << "ioctl error for " << fd << ", " << strerror(errno);
+    return 0;
+  }
+  return unread;
+}
+
+
+/*
+ * Write data to this socket.
+ * @param fd the descriptor to write to
+ * @param buffer the data to write
+ * @param size the length of the data
+ * @return the number of bytes sent
+ */
+ssize_t ConnectedSocket::FDSend(int fd,
+                                const uint8_t *buffer,
+                                unsigned int size) {
+  if (fd == INVALID_SOCKET)
+    return 0;
+
+  ssize_t bytes_sent = write(fd, buffer, size);
+  if (bytes_sent != size)
+    LLA_WARN << "Failed to send, " << strerror(errno);
+  return bytes_sent;
+}
+
 
 /*
  * Read data from this socket.
+ * @param fd the descriptor to read from
  * @param buffer a pointer to the buffer to store new data in
  * @param size the size of the buffer
  * @param data_read a value result argument which returns the amount of data
  * copied into the buffer
  * @returns -1 on error, 0 on success.
  */
-int ReceivingSocket::Receive(uint8_t *buffer,
-                             unsigned int size,
-                             unsigned int &data_read) {
+int ConnectedSocket::FDReceive(int fd,
+                               uint8_t *buffer,
+                               unsigned int size,
+                               unsigned int &data_read) {
   int ret;
   uint8_t *data = buffer;
   data_read = 0;
-  if (m_read_fd == INVALID_SOCKET)
+  if (fd == INVALID_SOCKET)
     return -1;
 
   while (data_read < size) {
-    if ((ret = read(m_read_fd, data, size - data_read)) < 0) {
+    if ((ret = read(fd, data, size - data_read)) < 0) {
       if (errno == EAGAIN)
         return 0;
       if (errno != EINTR) {
@@ -71,10 +130,10 @@ int ReceivingSocket::Receive(uint8_t *buffer,
 }
 
 
+
 /*
  * Close this socket
  * @return true if close succeeded, false otherwise
- */
 bool ReceivingSocket::Close() {
   bool ret = true;
   if (m_read_fd != INVALID_SOCKET) {
@@ -91,103 +150,49 @@ bool ReceivingSocket::Close() {
 /*
  * Check if this socket has been closed (this is a bit of a lie)
  * @return true if the socket is closed, false otherwise
- */
 bool ReceivingSocket::IsClosed() const {
   if (m_read_fd == INVALID_SOCKET)
     return true;
 
   return UnreadData() == 0;
 }
-
-
-/*
- * Find out how much data is left to read
- * @return the amount of unread data for the socket
  */
-int ReceivingSocket::UnreadData() const {
-  int unread;
-  if (m_read_fd == INVALID_SOCKET)
-    return 0;
-
-  if (ioctl(m_read_fd, FIONREAD, &unread) < 0) {
-    LLA_WARN << "ioctl error for " << m_read_fd << ", " << strerror(errno);
-    return 0;
-  }
-  return unread;
-}
-
-
-/*
- * Turn on non-blocking reads.
- * @param fd the fd to enable non-blocking for
- */
-bool ReceivingSocket::SetNonBlocking(int fd) {
-  if (fd == INVALID_SOCKET)
-    return false;
-
-  int val = fcntl(fd, F_GETFL, 0);
-  int ret = fcntl(fd, F_SETFL, val | O_NONBLOCK);
-  if (ret) {
-    LLA_WARN << "failed to set " << fd << " non-blocking: " << strerror(errno);
-    return false;
-  }
-  return true;
-}
-
-
-
-// ConnectedSocket
-// ------------------------------------------------
-
-/*
- * Write data to this socket.
- */
-ssize_t ConnectedSocket::Send(const uint8_t *buffer, unsigned int size) {
-  if (m_write_fd == INVALID_SOCKET)
-    return 0;
-
-  ssize_t bytes_sent = write(m_write_fd, buffer, size);
-  if (bytes_sent != size)
-    LLA_WARN << "Failed to send, " << strerror(errno);
-  return bytes_sent;
-}
-
-
-/*
- * Close this connected socket.
- * @return true if close succeeded, false otherwise
- */
-bool ConnectedSocket::Close() {
-  if (m_read_fd != INVALID_SOCKET)
-    close(m_read_fd);
-
-  if (m_read_fd != m_write_fd && m_write_fd != INVALID_SOCKET) {
-    close(m_write_fd);
-  }
-  m_write_fd = INVALID_SOCKET;
-  m_read_fd = INVALID_SOCKET;
-  return true;
-}
 
 
 // LoopbackSocket
 // ------------------------------------------------
+
+
+/*
+ * Setup this loopback socket
+ */
 bool LoopbackSocket::Init() {
-  if (m_read_fd != INVALID_SOCKET || m_write_fd != INVALID_SOCKET)
+  if (m_fd_pair[0] != INVALID_SOCKET || m_fd_pair[1] != INVALID_SOCKET)
     return false;
 
-  if (m_read_fd >= 0 || m_write_fd >= 0)
-    return false;
-
-  int fd_pair[2];
-  if (pipe(fd_pair) < 0) {
+  if (pipe(m_fd_pair) < 0) {
     LLA_WARN << "pipe() failed, " << strerror(errno);
     return false;
   }
-  m_read_fd = fd_pair[0];
-  m_write_fd = fd_pair[1];
 
   SetReadNonBlocking();
+  return true;
+}
+
+
+/*
+ * Close the loopback socket
+ * @return true if close succeeded, false otherwise
+ */
+bool LoopbackSocket::Close() {
+  if (m_fd_pair[0] != INVALID_SOCKET)
+    close(m_fd_pair[0]);
+
+  if (m_fd_pair[1] != INVALID_SOCKET)
+    close(m_fd_pair[1]);
+
+  m_fd_pair[0] = INVALID_SOCKET;
+  m_fd_pair[1] = INVALID_SOCKET;
   return true;
 }
 
@@ -199,7 +204,7 @@ bool LoopbackSocket::Init() {
  * Create a new pipe socket
  */
 bool PipeSocket::Init() {
-  if (m_read_fd != INVALID_SOCKET || m_write_fd != INVALID_SOCKET)
+  if (m_in_pair[0] != INVALID_SOCKET || m_out_pair[1] != INVALID_SOCKET)
     return false;
 
   if (pipe(m_in_pair) < 0) {
@@ -211,11 +216,10 @@ bool PipeSocket::Init() {
     LLA_WARN << "pipe() failed, " << strerror(errno);
     close(m_in_pair[0]);
     close(m_in_pair[1]);
+    m_in_pair[0] = m_in_pair[1] = INVALID_SOCKET;
     return false;
   }
 
-  m_read_fd = m_in_pair[0];
-  m_write_fd = m_out_pair[1];
   SetReadNonBlocking();
   return true;
 }
@@ -227,14 +231,30 @@ bool PipeSocket::Init() {
  * @returns NULL if the socket wasn't initialized correctly.
  */
 PipeSocket *PipeSocket::OppositeEnd() {
-  if (m_read_fd == INVALID_SOCKET || m_write_fd == INVALID_SOCKET)
+  if (m_in_pair[0] == INVALID_SOCKET || m_out_pair[1] == INVALID_SOCKET)
     return NULL;
 
   if (!m_other_end) {
-    m_other_end = new PipeSocket(m_out_pair[0], m_in_pair[1]);
+    m_other_end = new PipeSocket(m_out_pair, m_in_pair, this);
     m_other_end->SetReadNonBlocking();
   }
   return m_other_end;
+}
+
+
+/*
+ * Close this PipeSocket
+ */
+bool PipeSocket::Close() {
+  if (m_in_pair[0] != INVALID_SOCKET)
+    close(m_in_pair[0]);
+
+  if (m_out_pair[1] != INVALID_SOCKET)
+    close(m_out_pair[1]);
+
+  m_in_pair[0] = INVALID_SOCKET;
+  m_out_pair[1] = INVALID_SOCKET;
+  return true;
 }
 
 
@@ -246,9 +266,8 @@ PipeSocket *PipeSocket::OppositeEnd() {
  * @param ip_address the IP to connect to
  * @param port the port to connect to
  */
-bool TcpSocket::Connect() {
-  if (m_read_fd != INVALID_SOCKET || m_write_fd != INVALID_SOCKET)
-    return false;
+TcpSocket* TcpSocket::Connect(const std::string &ip_address,
+                              unsigned short port) {
 
   struct sockaddr_in server_address;
   socklen_t length = sizeof(server_address);
@@ -256,29 +275,51 @@ bool TcpSocket::Connect() {
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
     LLA_WARN << "socket() failed, " << strerror(errno);
-    return false;
+    return NULL;
   }
 
   // setup
   memset(&server_address, 0x00, sizeof(server_address));
   server_address.sin_family = AF_INET;
-  server_address.sin_port = htons(m_port);
+  server_address.sin_port = htons(port);
 
-  if (!inet_aton(m_ip_address.data(), &server_address.sin_addr)) {
-    LLA_WARN << "Failed to convert ip " << m_ip_address << " " <<
+  if (!inet_aton(ip_address.data(), &server_address.sin_addr)) {
+    LLA_WARN << "Failed to convert ip " << ip_address << " " <<
       strerror(errno);
     close(sd);
-    return false;
+    return NULL;
   }
 
   if (connect(sd, (struct sockaddr*) &server_address, length)) {
-    LLA_WARN << "connect to " << m_ip_address << ":" << m_port << " failed, "
+    LLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
       << strerror(errno);
     return false;
   }
-  m_read_fd = m_write_fd = sd;
-  SetReadNonBlocking();
+  TcpSocket *socket = new TcpSocket(sd);
+  socket->SetReadNonBlocking();
+  return socket;
+}
+
+
+/*
+ * Close this TcpSocket
+ */
+bool TcpSocket::Close() {
+  if (m_sd != INVALID_SOCKET) {
+    close(m_sd);
+    m_sd = INVALID_SOCKET;
+  }
   return true;
+}
+
+
+// DeviceSocket
+// ------------------------------------------------
+
+bool DeviceSocket::Close() {
+  int ret = close(m_fd);
+  m_fd = INVALID_SOCKET;
+  return ret == 0;
 }
 
 
@@ -549,7 +590,7 @@ ConnectedSocket *TcpAcceptingSocket::Accept() {
     return NULL;
   }
 
-  ConnectedSocket *socket = new ConnectedSocket(sd, sd);
+  TcpSocket *socket = new TcpSocket(sd);
   socket->SetReadNonBlocking();
   return socket;
 }

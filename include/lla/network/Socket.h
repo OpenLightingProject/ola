@@ -15,7 +15,7 @@
  *
  * Socket.h
  * The Socket interface
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef LLA_SOCKET_H
@@ -31,23 +31,11 @@ namespace network {
 
 
 /*
- * Implement this to be notifed when the remote end closes the connection or
- * SocketReady fails.
- */
-class SocketManager {
-  public:
-    virtual ~SocketManager() {}
-    virtual void SocketClosed(class Socket *socket) = 0;
-};
-
-
-/*
  * The base Socket class with the functionality required by the select server.
  * All other sockets inherit from this one.
  */
 class Socket {
   public :
-    Socket() {}
     virtual ~Socket() {};
     /*
      * Returns the read descriptor for this socket
@@ -66,45 +54,45 @@ class Socket {
 
 
 /*
- * A socket on which we can receive data (but not necessarily send).
- */
-class ReceivingSocket: public Socket {
-  public:
-    ReceivingSocket(int read_fd=INVALID_SOCKET):
-      m_read_fd(read_fd) {}
-    virtual ~ReceivingSocket() { Close(); }
-
-    virtual int ReadDescriptor() const { return m_read_fd; }
-    virtual int Receive(uint8_t *buffer,
-                        unsigned int size,
-                        unsigned int &data_read);
-    virtual bool SetReadNonBlocking() { return SetNonBlocking(m_read_fd); }
-    virtual bool Close();
-    virtual bool IsClosed() const;
-    virtual int UnreadData() const;
-
-  protected:
-    int m_read_fd;
-    bool SetNonBlocking(int sd);
-};
-
-
-/*
  * A connected socket can be read from / written to.
  */
-class ConnectedSocket: public ReceivingSocket {
+class ConnectedSocket: public Socket {
   public:
-    ConnectedSocket(int read_fd=INVALID_SOCKET, int write_fd=INVALID_SOCKET):
-                    ReceivingSocket(read_fd),
-                    m_write_fd(write_fd) {}
-    virtual ~ConnectedSocket() { Close(); }
+    ConnectedSocket() {}
+    virtual ~ConnectedSocket() {}
 
-    virtual int WriteDescriptor() const { return m_write_fd; }
-    virtual ssize_t Send(const uint8_t *buffer, unsigned int size);
-    virtual bool Close();
+    virtual int ReadDescriptor() const = 0;
+    virtual int WriteDescriptor() const = 0;
+    virtual bool Close() = 0;
+    virtual bool IsClosed() const {
+      if (ReadDescriptor() == INVALID_SOCKET)
+        return true;
+
+      return UnreadData() == 0;
+    }
+    virtual int UnreadData() const { return DataRemaining(ReadDescriptor()); }
+
+    virtual ssize_t Send(const uint8_t *buffer, unsigned int size) {
+      return FDSend(WriteDescriptor(), buffer, size);
+    }
+    virtual int Receive(uint8_t *buffer,
+                        unsigned int size,
+                        unsigned int &data_read) {
+      return FDReceive(ReadDescriptor(), buffer, size, data_read);
+    }
+    virtual bool SetReadNonBlocking() { return SetNonBlocking(ReadDescriptor()); }
 
   protected:
-    int m_write_fd;
+    bool SetNonBlocking(int fd);
+    int DataRemaining(int fd) const;
+    ssize_t FDSend(int fd, const uint8_t *buffer, unsigned int size);
+    int FDReceive(int fd,
+                  uint8_t *buffer,
+                  unsigned int size,
+                  unsigned int &data_read);
+
+    ConnectedSocket(const ConnectedSocket &other);
+    ConnectedSocket& operator=(const ConnectedSocket &other);
 };
 
 
@@ -114,8 +102,20 @@ class ConnectedSocket: public ReceivingSocket {
  */
 class LoopbackSocket: public ConnectedSocket {
   public:
-    LoopbackSocket(): ConnectedSocket() {}
+    LoopbackSocket() {
+      m_fd_pair[0] = INVALID_SOCKET;
+      m_fd_pair[1] = INVALID_SOCKET;
+    }
+    ~LoopbackSocket() { Close(); }
     bool Init();
+    int ReadDescriptor() const { return m_fd_pair[0]; }
+    int WriteDescriptor() const { return m_fd_pair[1]; }
+    bool Close();
+
+  private:
+    int m_fd_pair[2];
+    LoopbackSocket(const LoopbackSocket &other);
+    LoopbackSocket& operator=(const LoopbackSocket &other);
 };
 
 
@@ -124,19 +124,32 @@ class LoopbackSocket: public ConnectedSocket {
  */
 class PipeSocket: public ConnectedSocket {
   public:
-    PipeSocket(): ConnectedSocket(),
+    PipeSocket():
       m_other_end(NULL) {
       m_in_pair[0] = m_in_pair[1] = INVALID_SOCKET;
       m_out_pair[0] = m_out_pair[1] = INVALID_SOCKET;
     }
+    ~PipeSocket() { Close(); }
+
     bool Init();
     PipeSocket *OppositeEnd();
+    int ReadDescriptor() const { return m_in_pair[0]; }
+    int WriteDescriptor() const { return m_out_pair[1]; }
+    bool Close();
+
   private:
     int m_in_pair[2];
     int m_out_pair[2];
     PipeSocket *m_other_end;
-    PipeSocket(int read_fd, int write_fd):
-      ConnectedSocket(read_fd, write_fd) {}
+    PipeSocket(int in_pair[2], int out_pair[2], PipeSocket *other_end) {
+      m_in_pair[0] = in_pair[0];
+      m_in_pair[1] = in_pair[1];
+      m_out_pair[0] = out_pair[0];
+      m_out_pair[1] = out_pair[1];
+      m_other_end = other_end;
+    }
+    PipeSocket(const PipeSocket &other);
+    PipeSocket& operator=(const PipeSocket &other);
 };
 
 
@@ -145,19 +158,45 @@ class PipeSocket: public ConnectedSocket {
  */
 class TcpSocket: public ConnectedSocket {
   public:
-    TcpSocket(const std::string &ip_address, unsigned short port):
-      ConnectedSocket(),
-      m_ip_address(ip_address),
-      m_port(port) {}
-    bool Connect();
+    TcpSocket(int sd): ConnectedSocket(),
+                       m_sd(sd) {}
+    ~TcpSocket() { Close(); }
+
+    int ReadDescriptor() const { return m_sd; }
+    int WriteDescriptor() const { return m_sd; }
+    bool Close();
+
+    static TcpSocket* Connect(const std::string &ip_address,
+                              unsigned short port);
   private:
-    std::string m_ip_address;
-    unsigned short m_port;
+    int m_sd;
+    TcpSocket(const TcpSocket &other);
+    TcpSocket& operator=(const TcpSocket &other);
 };
 
 
 /*
- * A UdpSocket.
+ * A socket which represents a connection to a device
+ */
+class DeviceSocket: public ConnectedSocket {
+  public:
+    DeviceSocket(int fd):
+      ConnectedSocket(),
+      m_fd(fd) {}
+    ~DeviceSocket() { Close(); }
+
+    int ReadDescriptor() const { return m_fd; }
+    int WriteDescriptor() const { return m_fd; }
+    bool Close();
+  private:
+    int m_fd;
+    DeviceSocket(const DeviceSocket &other);
+    DeviceSocket& operator=(const DeviceSocket &other);
+};
+
+
+/*
+ * A UdpSocket (non connected)
  */
 class UdpSocket: public Socket {
   public:
@@ -187,6 +226,8 @@ class UdpSocket: public Socket {
   private:
     int m_fd;
     bool m_bound_to_port;
+    UdpSocket(const UdpSocket &other);
+    UdpSocket& operator=(const UdpSocket &other);
 };
 
 
@@ -219,6 +260,8 @@ class TcpAcceptingSocket: public AcceptingSocket {
     std::string m_address;
     unsigned short m_port;
     int m_sd, m_backlog;
+    TcpAcceptingSocket(const TcpAcceptingSocket &other);
+    TcpAcceptingSocket& operator=(const TcpAcceptingSocket &other);
 };
 
 } //network

@@ -55,9 +55,9 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
  * @return true on sucess, false on failure.
  */
 bool PluginAdaptor::AddSocket(class Socket *socket,
-                              Closure *event_closure,
-                              class SocketManager *manager) const {
-  return m_ss->AddSocket(socket, event_closure, manager);
+                              Closure *on_data,
+                              SingleUseClosure *on_close) const {
+  return m_ss->AddSocket(socket, on_data, on_close);
 }
 
 
