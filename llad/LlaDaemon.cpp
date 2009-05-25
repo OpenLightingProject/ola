@@ -30,8 +30,8 @@
 
 namespace lla {
 
-using lla::network::TcpListeningSocket;
-using lla::network::ListeningSocket;
+using lla::network::TcpAcceptingSocket;
+using lla::network::AcceptingSocket;
 using lla::network::SelectServer;
 
 const string LlaDaemon::K_RPC_PORT_VAR = "rpc_port";
@@ -48,7 +48,7 @@ LlaDaemon::LlaDaemon(lla_server_options &options,
   m_ss(NULL),
   m_server(NULL),
   m_preferences_factory(NULL),
-  m_listening_socket(NULL),
+  m_accepting_socket(NULL),
   m_service_factory(NULL),
   m_options(options),
   m_export_map(export_map),
@@ -66,13 +66,12 @@ LlaDaemon::LlaDaemon(lla_server_options &options,
  *
  */
 LlaDaemon::~LlaDaemon() {
-  m_listening_socket->Close();
   delete m_server;
   delete m_service_factory;
   delete m_preferences_factory;
   delete m_plugin_loader;
   delete m_ss;
-  delete m_listening_socket;
+  delete m_accepting_socket;
 }
 
 
@@ -87,14 +86,14 @@ bool LlaDaemon::Init() {
   m_plugin_loader = new DlOpenPluginLoader(PLUGIN_DIR);
 
   m_preferences_factory = new FileBackedPreferencesFactory();
-  m_listening_socket = new TcpListeningSocket("127.0.0.1", m_rpc_port);
+  m_accepting_socket = new TcpAcceptingSocket("127.0.0.1", m_rpc_port);
 
   m_server = new LlaServer(m_service_factory,
                            m_plugin_loader,
                            m_preferences_factory,
                            m_ss,
                            &m_options,
-                           m_listening_socket,
+                           m_accepting_socket,
                            m_export_map);
   return m_server->Init();
 }

@@ -541,12 +541,12 @@ ConnectedSocket *TcpAcceptingSocket::Accept() {
   socklen_t length = sizeof(cli_address);
 
   if (m_sd == INVALID_SOCKET)
-    return 0;
+    return NULL;
 
   int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);
   if (sd < 0) {
     LLA_WARN << "accept() failed, " << strerror(errno);
-    return 0;
+    return NULL;
   }
 
   ConnectedSocket *socket = new ConnectedSocket(sd, sd);

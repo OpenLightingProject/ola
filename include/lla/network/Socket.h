@@ -198,6 +198,7 @@ class AcceptingSocket: public Socket {
     AcceptingSocket() {}
     virtual bool Listen() = 0;
     virtual bool Close() = 0;
+    virtual ConnectedSocket* Accept() = 0;
 };
 
 

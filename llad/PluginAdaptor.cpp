@@ -46,26 +46,49 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
 }
 
 
-int PluginAdaptor::AddSocket(Socket *socket,
-                             SocketManager *manager) const {
-  return m_ss->AddSocket(socket, manager);
+/*
+ * Register a socket with the select server.
+ * @param socket the socket to register
+ * @param closure the closure to call when this socket is ready, ownership of
+ *   the closure is transferred to the select server.
+ * @param manager the manager to call when the socket is closed
+ * @return true on sucess, false on failure.
+ */
+bool PluginAdaptor::AddSocket(class Socket *socket,
+                              Closure *event_closure,
+                              class SocketManager *manager) const {
+  return m_ss->AddSocket(socket, event_closure, manager);
 }
 
 
-int PluginAdaptor::RemoveSocket(Socket *socket) const {
+/*
+ * Remove a socket from the select server
+ */
+bool PluginAdaptor::RemoveSocket(class Socket *socket) const {
   return m_ss->RemoveSocket(socket);
 }
 
 
 /*
- * register a timeout
+ * register a repeating timeout
  * @param ms the time between function calls
  * @param closure the LlaClosure to call when the timeout expires
- * @param repeat set to true to call this timeout every ms seconds
  * @return true on success, false on failure
  */
-bool PluginAdaptor::RegisterTimeout(int ms, LlaClosure *closure, bool repeat) const {
-  return m_ss->RegisterTimeout(ms, closure, repeat);
+bool PluginAdaptor::RegisterRepeatingTimeout(int ms, Closure *closure) const {
+  return m_ss->RegisterRepeatingTimeout(ms, closure);
+}
+
+
+/*
+ * register a single timeout
+ * @param ms the time between function calls
+ * @param closure the LlaClosure to call when the timeout expires
+ * @return true on success, false on failure
+ */
+bool PluginAdaptor::RegisterSingleTimeout(int ms,
+                                          SingleUseClosure *closure) const {
+  return m_ss->RegisterSingleTimeout(ms, closure);
 }
 
 

@@ -32,7 +32,8 @@ namespace network {
   class SelectServer;
 }
 
-class LlaClosure;
+class Closure;
+class SingleUseClosure;
 
 using std::string;
 using lla::network::Socket;
@@ -44,11 +45,13 @@ class PluginAdaptor {
     PluginAdaptor(class DeviceManager *device_manager,
                   SelectServer *select_server,
                   class PreferencesFactory *preferences_factory);
-    int AddSocket(class Socket *socket,
-                  class SocketManager *manager=NULL) const;
-    int RemoveSocket(class Socket *socket) const;
 
-    bool RegisterTimeout(int ms, LlaClosure *closure, bool repeat=true) const;
+    bool AddSocket(class Socket *socket,
+                   Closure *event_closure,
+                   class SocketManager *manager=NULL) const;
+    bool RemoveSocket(class Socket *socket) const;
+    bool RegisterRepeatingTimeout(int ms, Closure *closure) const;
+    bool RegisterSingleTimeout(int ms, SingleUseClosure *closure) const;
 
     int RegisterDevice(class AbstractDevice *device) const;
     int UnregisterDevice(class AbstractDevice *device) const;

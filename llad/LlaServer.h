@@ -53,20 +53,19 @@ typedef struct {
 /*
  * The main LlaServer class
  */
-class LlaServer: public lla::network::AcceptSocketListener,
-                 public lla::network::SocketManager {
+class LlaServer: public lla::network::SocketManager {
   public:
     LlaServer(class LlaServerServiceImplFactory *factory,
               class PluginLoader *plugin_loader,
               class PreferencesFactory *preferences_factory,
               lla::network::SelectServer *network,
               lla_server_options *lla_options,
-              lla::network::ListeningSocket *socket=NULL,
+              lla::network::AcceptingSocket *socket=NULL,
               ExportMap *export_map=NULL);
     ~LlaServer();
     bool Init();
     void ReloadPlugins();
-    int NewConnection(lla::network::ConnectedSocket *socket);
+    int AcceptNewConnection(lla::network::AcceptingSocket *socket);
     void SocketClosed(lla::network::Socket *socket);
     int GarbageCollect();
 
@@ -82,7 +81,7 @@ class LlaServer: public lla::network::AcceptSocketListener,
     class LlaServerServiceImplFactory *m_service_factory;
     class PluginLoader *m_plugin_loader;
     lla::network::SelectServer *m_ss;
-    lla::network::ListeningSocket *m_listening_socket;
+    lla::network::AcceptingSocket *m_accepting_socket;
 
     class DeviceManager *m_device_manager;
     class PluginAdaptor *m_plugin_adaptor;
