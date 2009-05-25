@@ -145,7 +145,7 @@ class PipeSocket: public ConnectedSocket {
  */
 class TcpSocket: public ConnectedSocket {
   public:
-    TcpSocket(std::string &ip_address, unsigned short port):
+    TcpSocket(const std::string &ip_address, unsigned short port):
       ConnectedSocket(),
       m_ip_address(ip_address),
       m_port(port) {}
@@ -207,7 +207,7 @@ class AcceptingSocket: public Socket {
  */
 class TcpAcceptingSocket: public AcceptingSocket {
   public:
-    TcpAcceptingSocket(std::string address, unsigned short port,
+    TcpAcceptingSocket(const std::string &address, unsigned short port,
                        int backlog=10);
     ~TcpAcceptingSocket() { Close(); }
     bool Listen();

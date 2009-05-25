@@ -118,8 +118,16 @@ bool StageProfiDevice::Stop() {
 /*
  * return the sd for this device
  */
-Socket *StageProfiDevice::GetSocket() const {
+ConnectedSocket *StageProfiDevice::GetSocket() const {
   return m_widget->GetSocket();
+}
+
+
+/*
+ * Called when there is socket activity
+ */
+int StageProfiDevice::SocketReady(ConnectedSocket *socket) {
+  return m_widget->SocketReady(socket);
 }
 
 

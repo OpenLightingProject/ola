@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <lla/Closure.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
 
@@ -66,7 +67,10 @@ bool ArtNetPlugin::StartHook() {
     return false;
   }
 
-  m_plugin_adaptor->AddSocket(m_device->GetSocket());
+  ConnectedSocket *socket = m_device->GetSocket();
+  m_plugin_adaptor->AddSocket(socket,
+                              NewClosure(m_device, &ArtNetDevice::SocketReady,
+                                         socket));
   m_plugin_adaptor->RegisterDevice(m_device);
   return true;
 }

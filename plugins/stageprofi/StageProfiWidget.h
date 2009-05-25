@@ -33,10 +33,8 @@ namespace plugin {
 
 using lla::network::ConnectedSocket;
 using lla::network::SelectServer;
-using lla::network::Socket;
-using lla::network::SocketListener;
 
-class StageProfiWidget: public SocketListener {
+class StageProfiWidget {
   public:
     StageProfiWidget():
       m_enabled(false),
@@ -47,7 +45,7 @@ class StageProfiWidget: public SocketListener {
     // these methods are for communicating with the device
     virtual bool Connect(const string &path) = 0;
     int Disconnect();
-    Socket *GetSocket() { return m_socket; }
+    ConnectedSocket *GetSocket() { return m_socket; }
     bool SendDmx(const DmxBuffer &buffer) const;
     bool DetectDevice();
     int SocketReady(ConnectedSocket *socket);

@@ -209,9 +209,9 @@ bool ArtNetDevice::Start() {
     LLA_WARN << "artnet_start failed: " << artnet_strerror();
     goto e_artnet_start;
   }
+
   fd = artnet_get_sd(m_node);
   m_socket = new ConnectedSocket(fd, fd);
-  m_socket->SetListener(this);
   m_enabled = true;
   return true;
 
@@ -221,7 +221,6 @@ e_artnet_start:
 
 e_dev:
   DeleteAllPorts();
-
   return false;
 }
 

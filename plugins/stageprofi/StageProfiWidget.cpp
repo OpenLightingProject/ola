@@ -102,9 +102,10 @@ bool StageProfiWidget::DetectDevice() {
   m_got_response = false;
   m_ss = new SelectServer();
   m_ss->AddSocket(m_socket, NULL);
-  m_ss->RegisterTimeout(100,
-                        lla::NewSingleClosure(this, &StageProfiWidget::Timeout),
-                        false);
+  m_ss->RegisterSingleTimeout(
+      100,
+      lla::NewSingleClosure(this, &StageProfiWidget::Timeout)
+  );
 
   // try a command, we should get a response
   SetChannel(0, 0);

@@ -33,7 +33,7 @@ class StageProfiWidgetLan: public StageProfiWidget {
 
     bool Connect(const std::string &ip);
   private:
-    static const unsigned int STAGEPROFI_PORT = 10001;
+    static const unsigned short STAGEPROFI_PORT = 10001;
 };
 
 } // plugin

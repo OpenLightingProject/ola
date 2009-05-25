@@ -33,9 +33,9 @@ using lla::network::TcpSocket;
  * @returns true on success, false on failure
  */
 bool StageProfiWidgetLan::Connect(const std::string &ip) {
-  TcpSocket *socket = new TcpSocket();
+  TcpSocket *socket = new TcpSocket(ip, STAGEPROFI_PORT);
   m_socket = socket;
-  return socket->Connect(ip, STAGEPROFI_PORT);
+  return socket->Connect();
 }
 
 } // plugin

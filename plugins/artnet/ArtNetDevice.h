@@ -30,7 +30,6 @@
 
 namespace lla {
 
-using google::protobuf::Closure;
 using google::protobuf::RpcController;
 using lla::plugin::artnet::Request;
 
@@ -42,7 +41,7 @@ using lla::Device;
 using lla::network::ConnectedSocket;
 using std::string;
 
-class ArtNetDevice : public Device, public lla::network::SocketListener {
+class ArtNetDevice : public Device {
   public:
     ArtNetDevice(AbstractPlugin *owner,
                  const string &name,
@@ -60,7 +59,7 @@ class ArtNetDevice : public Device, public lla::network::SocketListener {
     void Configure(RpcController *controller,
                    const string &request,
                    string *response,
-                   Closure *done);
+                   google::protobuf::Closure *done);
 
   private:
     class Preferences *m_preferences;

@@ -443,7 +443,7 @@ bool UdpSocket::EnableBroadcast() {
  * @param port the port to listen on
  * @param backlog the backlog
  */
-TcpAcceptingSocket::TcpAcceptingSocket(std::string address,
+TcpAcceptingSocket::TcpAcceptingSocket(const std::string &address,
                                        unsigned short port,
                                        int backlog):
     AcceptingSocket(),

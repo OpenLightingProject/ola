@@ -22,9 +22,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <lla/Closure.h>
+#include <lla/Logging.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <lla/Logging.h>
 
 #include "StageProfiPlugin.h"
 #include "StageProfiDevice.h"
@@ -79,7 +80,11 @@ bool StageProfiPlugin::StartHook() {
       continue;
     }
 
-    m_plugin_adaptor->AddSocket(device->GetSocket(), this);
+    lla::network::ConnectedSocket *socket = device->GetSocket();
+    m_plugin_adaptor->AddSocket(socket,
+                                NewClosure(device,
+                                           &StageProfiDevice::SocketReady,
+                                           socket));
     m_plugin_adaptor->RegisterDevice(device);
     m_devices.insert(m_devices.end(), device);
   }
