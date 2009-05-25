@@ -22,6 +22,8 @@
 #define LLA_SOCKET_H
 
 #include <stdint.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 #include <string>
 
 namespace lla {
@@ -124,8 +126,8 @@ class PipeSocket: public ConnectedSocket {
   public:
     PipeSocket(): ConnectedSocket(),
       m_other_end(NULL) {
-      m_in_pair[0] = m_in_pair[1] = 0;
-      m_out_pair[0] = m_out_pair[1] = 0;
+      m_in_pair[0] = m_in_pair[1] = INVALID_SOCKET;
+      m_out_pair[0] = m_out_pair[1] = INVALID_SOCKET;
     }
     bool Init();
     PipeSocket *OppositeEnd();
@@ -155,33 +157,36 @@ class TcpSocket: public ConnectedSocket {
 
 
 /*
- * A UdpSocket
+ * A UdpSocket.
  */
-class UdpSocket: public ConnectedSocket {
+class UdpSocket: public Socket {
   public:
-    UdpSocket(std::string &ip_address, unsigned short port):
-      ConnectedSocket(),
-      m_ip_address(ip_address),
-      m_port(port) {}
-    bool Connect();
-  private:
-    std::string m_ip_address;
-    unsigned short m_port;
-};
-
-
-/*
- * A non-connected, UdpSocket.
- */
-class UdpServerSocket: public ReceivingSocket {
-  public:
-    UdpServerSocket(unsigned short port): ReceivingSocket(),
-                                          m_port(port) {}
-    bool Listen();
+    UdpSocket():
+      Socket(),
+      m_fd(INVALID_SOCKET),
+      m_bound_to_port(false) {}
+    ~UdpSocket() { Close(); }
+    bool Init();
+    bool Bind(unsigned short port=INADDR_ANY);
+    bool Close();
+    bool IsClosed() const { return m_fd == INVALID_SOCKET; }
+    int ReadDescriptor() const { return m_fd; }
+    ssize_t SendTo(const uint8_t *buffer,
+                   unsigned int size,
+                   const struct sockaddr_in &destination) const;
+    ssize_t SendTo(const uint8_t *buffer,
+                   unsigned int size,
+                   const std::string &ip,
+                   unsigned short port) const;
+    bool RecvFrom(uint8_t *buffer,
+                  ssize_t &data_read,
+                  struct sockaddr_in &source,
+                  socklen_t &src_size) const;
     bool EnableBroadcast();
-    // SendTo
+    // JoinMulticast
   private:
-    unsigned short m_port;
+    int m_fd;
+    bool m_bound_to_port;
 };
 
 
@@ -201,7 +206,8 @@ class AcceptingSocket: public Socket {
  */
 class TcpAcceptingSocket: public AcceptingSocket {
   public:
-    TcpAcceptingSocket(std::string address, unsigned short port, int backlog=10);
+    TcpAcceptingSocket(std::string address, unsigned short port,
+                       int backlog=10);
     ~TcpAcceptingSocket() { Close(); }
     bool Listen();
     int ReadDescriptor() const { return m_sd; }

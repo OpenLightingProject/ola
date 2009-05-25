@@ -19,6 +19,7 @@
  */
 
 #include <stdint.h>
+#include <arpa/inet.h>
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -41,6 +42,7 @@ class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testPipeSocketServerClose);
   CPPUNIT_TEST(testTcpSocketClientClose);
   CPPUNIT_TEST(testTcpSocketServerClose);
+  CPPUNIT_TEST(testUdpSocket);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -51,6 +53,7 @@ class SocketTest: public CppUnit::TestFixture {
     void testPipeSocketServerClose();
     void testTcpSocketClientClose();
     void testTcpSocketServerClose();
+    void testUdpSocket();
 
     // timing out indicates something went wrong
     int Timeout() { CPPUNIT_ASSERT(false); m_timeout_closure = NULL; }
@@ -63,6 +66,8 @@ class SocketTest: public CppUnit::TestFixture {
     int ReceiveSendAndClose(ConnectedSocket *socket);
     int AcceptAndSend(TcpAcceptingSocket *socket, SocketManager *manger);
     int AcceptSendAndClose(TcpAcceptingSocket *socket);
+    int UdpReceiveAndTerminate(UdpSocket *socket);
+    int UdpReceiveAndSend(UdpSocket *socket);
 
   private:
     SelectServer *m_ss;
@@ -283,6 +288,53 @@ void SocketTest::testTcpSocketServerClose() {
 
 
 /*
+ * Test UDP sockets work correctly.
+ * The client connects and the server sends some data. The client checks the
+ * data matches and then closes the connection.
+ */
+void SocketTest::testUdpSocket() {
+  string ip_address = "127.0.0.1";
+  unsigned short server_port = 9010;
+  UdpSocket socket;
+  CPPUNIT_ASSERT(socket.Init());
+  CPPUNIT_ASSERT(!socket.Init());
+  CPPUNIT_ASSERT(socket.Bind(server_port));
+  CPPUNIT_ASSERT(!socket.Bind(server_port));
+
+  CPPUNIT_ASSERT(
+      m_ss->AddSocket(
+          &socket,
+          lla::NewClosure(this, &SocketTest::UdpReceiveAndSend, &socket)
+      )
+  );
+
+  UdpSocket client_socket;
+  TerminatingSocketManager manager(m_ss);
+  CPPUNIT_ASSERT(client_socket.Init());
+  CPPUNIT_ASSERT(!client_socket.Init());
+  CPPUNIT_ASSERT(
+      m_ss->AddSocket(
+          &client_socket,
+          lla::NewClosure(this, &SocketTest::UdpReceiveAndTerminate,
+                          &client_socket),
+          &manager
+      )
+  );
+
+  ssize_t bytes_sent = client_socket.SendTo((uint8_t*) test_string.data(),
+                                           test_string.length(),
+                                           ip_address,
+                                           server_port);
+  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
+  m_ss->Run();
+  m_ss->RemoveSocket(&socket);
+  m_ss->RemoveSocket(&client_socket);
+  printf("all done\n");
+}
+
+
+
+/*
  * Receive some data and close the socket
  */
 int SocketTest::ReceiveAndClose(ReceivingSocket *socket) {
@@ -369,4 +421,42 @@ int SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
   new_socket->Close();
   delete new_socket;
+}
+
+
+/*
+ * Receive some data and check it.
+ */
+int SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
+  struct in_addr expected_address;
+  CPPUNIT_ASSERT(inet_aton("127.0.0.1", &expected_address));
+
+  struct sockaddr_in src;
+  socklen_t src_size = sizeof(src);
+  uint8_t buffer[sizeof(test_cstring) + 10];
+  ssize_t data_read = sizeof(buffer);
+  socket->RecvFrom(buffer, data_read, src, src_size);
+  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), data_read);
+  CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
+  m_ss->Terminate();
+}
+
+
+/*
+ * Receive some data and echo it back.
+ */
+int SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
+  struct in_addr expected_address;
+  CPPUNIT_ASSERT(inet_aton("127.0.0.1", &expected_address));
+
+  struct sockaddr_in src;
+  socklen_t src_size = sizeof(src);
+  uint8_t buffer[sizeof(test_cstring) + 10];
+  ssize_t data_read = sizeof(buffer);
+  socket->RecvFrom(buffer, data_read, src, src_size);
+  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), data_read);
+  CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
+
+  ssize_t data_sent = socket->SendTo(buffer, data_read, src);
+  CPPUNIT_ASSERT_EQUAL(data_read, data_sent);
 }
