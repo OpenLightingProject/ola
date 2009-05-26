@@ -20,6 +20,7 @@
  * The StageProfi LAN Widget.
  */
 
+#include <lla/Closure.h>
 #include <lla/network/Socket.h>
 #include "StageProfiWidgetLan.h"
 
@@ -34,7 +35,11 @@ using lla::network::TcpSocket;
  */
 bool StageProfiWidgetLan::Connect(const std::string &ip) {
   m_socket = TcpSocket::Connect(ip, STAGEPROFI_PORT);
-  return socket;
+
+  if (m_socket)
+    m_socket->SetOnData(NewClosure((StageProfiWidget*) this,
+                                   &StageProfiWidget::SocketReady));
+  return m_socket;
 }
 
 } // plugin

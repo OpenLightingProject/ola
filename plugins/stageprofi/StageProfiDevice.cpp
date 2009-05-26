@@ -124,14 +124,6 @@ ConnectedSocket *StageProfiDevice::GetSocket() const {
 
 
 /*
- * Called when there is socket activity
- */
-int StageProfiDevice::SocketReady() {
-  return m_widget->SocketReady();
-}
-
-
-/*
  * Send the dmx out the widget
  * @return true on success, false on failure
  */

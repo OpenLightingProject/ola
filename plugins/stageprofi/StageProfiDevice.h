@@ -44,7 +44,6 @@ class StageProfiDevice: public Device {
     bool Start();
     bool Stop();
     lla::network::ConnectedSocket *GetSocket() const;
-    int SocketReady();
     bool SendDmx(const DmxBuffer &buffer) const;
 
   private:

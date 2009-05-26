@@ -31,6 +31,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
 
+#include <lla/Closure.h>
 #include <lla/Logging.h>
 #include <llad/Preferences.h>
 #include <artnet/artnet.h>
@@ -211,6 +212,7 @@ bool ArtNetDevice::Start() {
   }
 
   m_socket = new lla::network::UnmanagedSocket(artnet_get_sd(m_node));
+  m_socket->SetOnData(NewClosure(this, &ArtNetDevice::SocketReady));
   m_enabled = true;
   return true;
 
