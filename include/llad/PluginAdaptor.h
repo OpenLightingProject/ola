@@ -46,9 +46,7 @@ class PluginAdaptor {
                   SelectServer *select_server,
                   class PreferencesFactory *preferences_factory);
 
-    bool AddSocket(class Socket *socket,
-                   Closure *on_data,
-                   SingleUseClosure *on_close=NULL) const;
+    bool AddSocket(class Socket *socket) const;
     bool RemoveSocket(class Socket *socket) const;
     bool RegisterRepeatingTimeout(int ms, Closure *closure) const;
     bool RegisterSingleTimeout(int ms, SingleUseClosure *closure) const;

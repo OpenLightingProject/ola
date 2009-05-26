@@ -244,10 +244,7 @@ int LlaServer::AcceptNewConnection(
     return 0;
 
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket);
-  channel->AddToSelectServer(m_ss,
-                             NewSingleClosure(this,
-                                              &LlaServer::SocketClosed,
-                                              socket));
+  socket->SetOnClose(NewClosure(this, &LlaServer::SocketClosed, socket));
   LlaClientService_Stub *stub = new LlaClientService_Stub(channel);
   Client *client = new Client(stub);
   LlaServerServiceImpl *service = m_service_factory->New(m_universe_store,
@@ -266,6 +263,7 @@ int LlaServer::AcceptNewConnection(
   pair<int, LlaServerServiceImpl*> pair(socket->ReadDescriptor(), service);
   m_sd_to_service.insert(pair);
 
+  m_ss->AddSocket(socket, true);
   IntegerVariable *var = m_export_map->GetIntegerVar(K_CLIENT_VAR);
   var->Increment();
   return 0;

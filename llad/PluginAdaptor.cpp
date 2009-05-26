@@ -49,15 +49,10 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
 /*
  * Register a socket with the select server.
  * @param socket the socket to register
- * @param closure the closure to call when this socket is ready, ownership of
- *   the closure is transferred to the select server.
- * @param manager the manager to call when the socket is closed
  * @return true on sucess, false on failure.
  */
-bool PluginAdaptor::AddSocket(class Socket *socket,
-                              Closure *on_data,
-                              SingleUseClosure *on_close) const {
-  return m_ss->AddSocket(socket, on_data, on_close);
+bool PluginAdaptor::AddSocket(class Socket *socket) const {
+  return m_ss->AddSocket(socket);
 }
 
 
