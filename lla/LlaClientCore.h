@@ -29,7 +29,6 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <lla/network/Socket.h>
-#include <lla/network/SelectServer.h>
 #include <lla/common.h>
 #include <lla/plugin_id.h>
 #include <lla/LlaDevice.h>
@@ -53,7 +52,7 @@ using lla::rpc::StreamRpcChannel;
 
 class LlaClientCore {
   public:
-    LlaClientCore(lla::network::SelectServer *ss, ConnectedSocket *socket);
+    LlaClientCore(ConnectedSocket *socket);
     ~LlaClientCore();
 
     bool Setup();
@@ -114,7 +113,6 @@ class LlaClientCore {
     lla::proto::LlaServerService_Stub *m_stub;
     int m_connected;
     LlaClientObserver *m_observer;
-    lla::network::SelectServer *m_ss;
 #ifdef LLA_HAVE_PTHREAD
     pthread_mutex_t m_mutex;
 #endif

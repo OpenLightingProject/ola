@@ -48,26 +48,12 @@ StreamRpcChannel::StreamRpcChannel(Service *service,
   m_expected_size(0),
   m_current_size(0) {
 
+    socket->SetOnData(NewClosure(this, &StreamRpcChannel::SocketReady));
 }
 
 
 StreamRpcChannel::~StreamRpcChannel() {
   free(m_buffer);
-}
-
-
-/*
- * Add this channel to a select server
- */
-bool StreamRpcChannel::AddToSelectServer(lla::network::SelectServer *ss,
-                                         lla::SingleUseClosure *on_close) {
-  bool ret = ss->AddSocket(m_socket,
-                           NewClosure(this, &StreamRpcChannel::SocketReady),
-                           on_close);
-
-  if (!ret)
-    LLA_WARN << "Failed to add socket to select server";
-  return ret;
 }
 
 

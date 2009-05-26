@@ -88,8 +88,6 @@ class StreamRpcChannel: public RpcChannel {
                      lla::network::ConnectedSocket *socket);
     ~StreamRpcChannel();
 
-    bool AddToSelectServer(lla::network::SelectServer *ss,
-                           lla::SingleUseClosure *on_close=NULL);
     int SocketReady();
 
     void CallMethod(

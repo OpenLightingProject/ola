@@ -69,12 +69,13 @@ void StreamRpcChannelTest::setUp() {
   m_socket->Init();
 
   m_channel = new StreamRpcChannel(&m_service, m_socket);
-  CPPUNIT_ASSERT(m_channel->AddToSelectServer(&m_ss));
+  m_ss.AddSocket(m_socket);
   m_stub = new TestService_Stub(m_channel);
 }
 
 
 void StreamRpcChannelTest::tearDown() {
+  m_ss.RemoveSocket(m_socket);
   delete m_socket;
   delete m_stub;
   delete m_channel;

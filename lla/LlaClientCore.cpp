@@ -42,15 +42,13 @@ namespace lla {
 
 using google::protobuf::NewCallback;
 
-LlaClientCore::LlaClientCore(lla::network::SelectServer *ss,
-                             ConnectedSocket *socket):
+LlaClientCore::LlaClientCore(ConnectedSocket *socket):
   m_socket(socket),
   m_client_service(NULL),
   m_channel(NULL),
   m_stub(NULL),
   m_connected(false),
-  m_observer(NULL),
-  m_ss(ss) {
+  m_observer(NULL) {
 #ifdef HAVE_PTHREAD
   pthread_mutex_init(&m_mutex, NULL);
 #endif
@@ -76,7 +74,7 @@ bool LlaClientCore::Setup() {
   if (!m_client_service)
     return false;
 
-  m_channel = new StreamRpcChannel(m_client_service, m_ss, m_socket);
+  m_channel = new StreamRpcChannel(m_client_service, m_socket);
 
   if (!m_channel) {
     delete m_client_service;
@@ -142,10 +140,11 @@ bool LlaClientCore::FetchPluginInfo(int plugin_id, bool include_description) {
     request.set_plugin_id(plugin_id);
   request.set_include_description(include_description);
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandlePluginInfo,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandlePluginInfo,
+      controller,
+      reply);
   m_stub->GetPluginInfo(controller, &request, reply, cb);
   return true;
 }
@@ -159,11 +158,13 @@ bool LlaClientCore::FetchPluginInfo(int plugin_id, bool include_description) {
  * @param length  length of dmx data
  * @return true on sucess, false on failure
  */
-bool LlaClientCore::SendDmx(unsigned int universe, dmx_t *data, unsigned int length) {
+bool LlaClientCore::SendDmx(unsigned int universe, dmx_t *data,
+                            unsigned int length) {
   if (!m_connected)
     return false;
 
-  unsigned int dmx_length = length < DMX_UNIVERSE_SIZE? length: DMX_UNIVERSE_SIZE;
+  unsigned int dmx_length = length < DMX_UNIVERSE_SIZE ? length:
+    DMX_UNIVERSE_SIZE;
   lla::proto::DmxData request;
   SimpleRpcController *controller = new SimpleRpcController();
   lla::proto::Ack *reply = new lla::proto::Ack();
@@ -173,10 +174,11 @@ bool LlaClientCore::SendDmx(unsigned int universe, dmx_t *data, unsigned int len
   request.set_universe(universe);
   request.set_data(dmx_data);
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandleSendDmx,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandleSendDmx,
+      controller,
+      reply);
   m_stub->UpdateDmxData(controller, &request, reply, cb);
   return true;
 }
@@ -197,10 +199,11 @@ bool LlaClientCore::FetchDmx(unsigned int universe) {
 
   request.set_universe(universe);
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandleGetDmx,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandleGetDmx,
+      controller,
+      reply);
   m_stub->GetDmx(controller, &request, reply, cb);
   return true;
 }
@@ -222,10 +225,11 @@ bool LlaClientCore::FetchDeviceInfo(lla_plugin_id filter) {
   if (filter != LLA_PLUGIN_ALL)
     request.set_plugin_id(filter);
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandleDeviceInfo,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandleDeviceInfo,
+      controller,
+      reply);
   m_stub->GetDeviceInfo(controller, &request, reply, cb);
   return true;
 }
@@ -244,10 +248,11 @@ bool LlaClientCore::FetchUniverseInfo() {
   lla::proto::UniverseInfoRequest request;
   lla::proto::UniverseInfoReply *reply = new lla::proto::UniverseInfoReply();
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandleUniverseInfo,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandleUniverseInfo,
+      controller,
+      reply);
   m_stub->GetUniverseInfo(controller, &request, reply, cb);
   return true;
 }
@@ -257,7 +262,8 @@ bool LlaClientCore::FetchUniverseInfo() {
  * Set the name of a universe
  *
  */
-bool LlaClientCore::SetUniverseName(unsigned int universe, const string &name) {
+bool LlaClientCore::SetUniverseName(unsigned int universe,
+                                    const string &name) {
   if (!m_connected)
     return false;
 
@@ -268,10 +274,11 @@ bool LlaClientCore::SetUniverseName(unsigned int universe, const string &name) {
   request.set_universe(universe);
   request.set_name(name);
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandleUniverseName,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandleUniverseName,
+      controller,
+      reply);
   m_stub->SetUniverseName(controller, &request, reply, cb);
   return true;
 }
@@ -290,14 +297,16 @@ bool LlaClientCore::SetUniverseMergeMode(unsigned int universe,
   SimpleRpcController *controller = new SimpleRpcController();
   lla::proto::Ack *reply = new lla::proto::Ack();
 
-  lla::proto::MergeMode merge_mode = mode == LlaUniverse::MERGE_HTP ? HTP : LTP;
+  lla::proto::MergeMode merge_mode = mode == LlaUniverse::MERGE_HTP ?
+    HTP : LTP;
   request.set_universe(universe);
   request.set_merge_mode(merge_mode);
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandleUniverseMergeMode,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandleUniverseMergeMode,
+      controller,
+      reply);
   m_stub->SetMergeMode(controller, &request, reply, cb);
   return true;
 }
@@ -320,14 +329,16 @@ bool LlaClientCore::RegisterUniverse(unsigned int universe,
   lla::proto::Ack *reply = new lla::proto::Ack();
 
   lla::proto::RegisterAction action = (
-      register_action == lla::REGISTER ? lla::proto::REGISTER : lla::proto::UNREGISTER);
+      register_action == lla::REGISTER ? lla::proto::REGISTER :
+        lla::proto::UNREGISTER);
   request.set_universe(universe);
   request.set_action(action);
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandleRegister,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandleRegister,
+      controller,
+      reply);
   m_stub->RegisterForDmx(controller, &request, reply, cb);
   return true;
 }
@@ -359,10 +370,11 @@ bool LlaClientCore::Patch(unsigned int device_id,
   request.set_port_id(port_id);
   request.set_action(action);
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandlePatch,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandlePatch,
+      controller,
+      reply);
   m_stub->PatchPort(controller, &request, reply, cb);
   return true;
 }
@@ -375,7 +387,8 @@ bool LlaClientCore::Patch(unsigned int device_id,
  * @param req  the request buffer
  * @param len  the length of the request buffer
  */
-bool LlaClientCore::ConfigureDevice(unsigned int device_id, const string &msg) {
+bool LlaClientCore::ConfigureDevice(unsigned int device_id,
+                                    const string &msg) {
   if (!m_connected)
     return false;
 
@@ -388,10 +401,11 @@ bool LlaClientCore::ConfigureDevice(unsigned int device_id, const string &msg) {
   request.set_device_id(device_id);
   request.set_data(msg);
 
-  Closure *cb = NewCallback(this,
-                            &lla::LlaClientCore::HandleDeviceConfig,
-                            controller,
-                            reply);
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &lla::LlaClientCore::HandleDeviceConfig,
+      controller,
+      reply);
   m_stub->ConfigureDevice(controller, &request, reply, cb);
   return true;
 }
