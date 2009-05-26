@@ -36,7 +36,6 @@ namespace lla {
 namespace plugin {
 
 using google::protobuf::RpcController;
-using google::protobuf::Closure;
 using lla::plugin::usbpro::Request;
 using lla::plugin::usbpro::Reply;
 using lla::plugin::usbpro::OutstandingRequest;
@@ -152,7 +151,7 @@ const DmxBuffer &UsbProDevice::FetchDMX() const {
 void UsbProDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
-                             Closure *done) {
+                             google::protobuf::Closure *done) {
   Request request_pb;
   if (!request_pb.ParseFromString(request)) {
     controller->SetFailed("Invalid Request");
@@ -196,7 +195,7 @@ bool UsbProDevice::ChangeToReceiveMode() {
 void UsbProDevice::HandleParameters(RpcController *controller,
                                     const Request *request,
                                     string *response,
-                                    Closure *done) {
+                                    google::protobuf::Closure *done) {
 
   if (request->has_parameters() &&
       (request->parameters().has_break_time() ||
@@ -242,7 +241,7 @@ void UsbProDevice::HandleGetSerial(
     RpcController *controller,
     const Request *request __attribute__ ((__unused__)),
     string *response,
-    Closure *done) {
+    google::protobuf::Closure *done) {
 
   if (!m_widget->GetSerial()) {
     controller->SetFailed("GetSerial failed");

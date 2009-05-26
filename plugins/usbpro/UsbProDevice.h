@@ -35,7 +35,6 @@
 namespace lla {
 namespace plugin {
 
-using google::protobuf::Closure;
 using google::protobuf::RpcController;
 using lla::plugin::usbpro::Request;
 using lla::network::ConnectedSocket;
@@ -47,13 +46,13 @@ class OutstandingRequest {
   public:
     OutstandingRequest(RpcController *a_controller,
                        string *a_response,
-                       Closure *a_closure):
+                       google::protobuf::Closure *a_closure):
       controller(a_controller),
       response(a_response),
       closure(a_closure) {}
     RpcController *controller;
     string *response;
-    Closure *closure;
+    google::protobuf::Closure *closure;
 };
 
 }
@@ -71,7 +70,7 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     void Configure(RpcController *controller,
                    const string &request,
                    string *response,
-                   Closure *done);
+                   google::protobuf::Closure *done);
 
     ConnectedSocket *GetSocket() const;
     bool SendDMX(const DmxBuffer &buffer);
@@ -91,12 +90,12 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     void HandleParameters(RpcController *controller,
                           const Request *request,
                           string *response,
-                          Closure *done);
+                          google::protobuf::Closure *done);
 
     void HandleGetSerial(RpcController *controller,
                          const Request *request,
                          string *response,
-                         Closure *done);
+                         google::protobuf::Closure *done);
 
     const lla::PluginAdaptor *m_plugin_adaptor;
     string m_path;

@@ -32,7 +32,7 @@ namespace lla {
 namespace plugin {
 
 using std::string;
-using lla::network::ConnectedSocket;
+using lla::network::DeviceSocket;
 
 enum { DMX_BUF_LEN = 513 };
 enum { USER_CONFIG_LEN = 508 };
@@ -144,7 +144,7 @@ typedef struct {
 #define pm_snorep  pm_pmu.pmu_snorep
 
 
-class UsbProWidget: public lla::network::SocketListener {
+class UsbProWidget {
   public:
     UsbProWidget():
       m_enabled(false),
@@ -156,7 +156,7 @@ class UsbProWidget: public lla::network::SocketListener {
 
     bool Connect(const string &path);
     bool Disconnect();
-    ConnectedSocket *GetSocket() { return m_socket; }
+    DeviceSocket *GetSocket() { return m_socket; }
 
     bool SendDMX(const DmxBuffer &buffer) const;
     bool SendRdm(const uint8_t *buf, unsigned int len) const;
@@ -171,7 +171,7 @@ class UsbProWidget: public lla::network::SocketListener {
 
     bool ChangeToReceiveMode();
     void SetListener(UsbProWidgetListener *listener);
-    int SocketReady(ConnectedSocket *socket);
+    int SocketReady();
 
   private:
     bool SendMessage(promsg *msg) const;
@@ -189,7 +189,7 @@ class UsbProWidget: public lla::network::SocketListener {
     uint8_t m_mab_time;
     uint8_t m_rate;
     UsbProWidgetListener *m_listener;
-    ConnectedSocket *m_socket;
+    DeviceSocket *m_socket;
     static const int K_MISSING_PARAM = -1;
     static const int K_HEADER_SIZE = 4;
     static const uint8_t K_START_CODE = 0;

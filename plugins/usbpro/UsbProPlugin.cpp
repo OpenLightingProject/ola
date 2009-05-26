@@ -22,9 +22,10 @@
 #include <stdio.h>
 #include <vector>
 
+#include <lla/Closure.h>
+#include <lla/Logging.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <lla/Logging.h>
 
 #include "UsbProPlugin.h"
 #include "UsbProDevice.h"
@@ -75,7 +76,9 @@ bool UsbProPlugin::StartHook() {
       continue;
     }
 
-    m_plugin_adaptor->AddSocket(dev->GetSocket(), this);
+    ConnectedSocket *socket = dev->GetSocket();
+    socket->SetOnClose(NewClosure(this, &UsbProPlugin::SocketClosed, socket));
+    m_plugin_adaptor->AddSocket(socket);
     m_plugin_adaptor->RegisterDevice(dev);
     m_devices.push_back(dev);
   }
@@ -119,7 +122,7 @@ string UsbProPlugin::Description() const {
 /*
  * Called when the file descriptor is closed.
  */
-void UsbProPlugin::SocketClosed(Socket *socket) {
+int UsbProPlugin::SocketClosed(ConnectedSocket *socket) {
   vector<UsbProDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
@@ -130,11 +133,12 @@ void UsbProPlugin::SocketClosed(Socket *socket) {
 
   if (iter == m_devices.end()) {
     LLA_WARN << "Couldn't find the device corresponding to this socket";
-    return;
+    return -1;
   }
 
   DeleteDevice(*iter);
   m_devices.erase(iter);
+  return 0;
 }
 
 

@@ -88,8 +88,8 @@ bool UsbProWidget::Connect(const string &path) {
 
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
   tcsetattr(fd, TCSANOW, &newtio);
-  m_socket = new ConnectedSocket(fd, fd);
-  m_socket->SetListener(this);
+  m_socket = new DeviceSocket(fd);
+  m_socket->SetOnData(NewClosure(this, &UsbProWidget::SocketReady));
 
   // fire off a get request
   if (!GetParameters()) {
@@ -253,8 +253,8 @@ bool UsbProWidget::ChangeToReceiveMode() {
 /*
  * Read data from the widget
  */
-int UsbProWidget::SocketReady(ConnectedSocket *socket) {
-  while (socket->UnreadData() > 0) {
+int UsbProWidget::SocketReady() {
+  while (m_socket->UnreadData() > 0) {
     ReceiveMessage();
   }
   return 0;
