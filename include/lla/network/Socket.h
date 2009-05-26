@@ -25,6 +25,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string>
+#include <lla/Closure.h>
 
 namespace lla {
 namespace network {
@@ -36,7 +37,14 @@ namespace network {
  */
 class Socket {
   public :
-    virtual ~Socket() {};
+    Socket(): m_on_read(NULL), m_on_close(NULL) {}
+    virtual ~Socket() {
+      if (m_on_read)
+        delete m_on_read;
+      if (m_on_close)
+        delete m_on_close;
+    }
+
     /*
      * Returns the read descriptor for this socket
      */
@@ -50,6 +58,24 @@ class Socket {
      */
     virtual bool Close() = 0;
     static const int INVALID_SOCKET = -1;
+
+    void SetOnData(lla::Closure *on_read) {
+      if (m_on_read)
+        delete m_on_read;
+      m_on_read = on_read;
+    }
+
+    void SetOnClose(lla::Closure *on_close) {
+      if (m_on_close)
+        delete m_on_close;
+      m_on_close = on_close;
+    }
+    lla::Closure *OnData() const { return m_on_read; }
+    lla::Closure *OnClose() const { return m_on_close; }
+
+  private:
+    lla::Closure *m_on_read;
+    lla::Closure *m_on_close;
 };
 
 
@@ -80,7 +106,9 @@ class ConnectedSocket: public Socket {
                         unsigned int &data_read) {
       return FDReceive(ReadDescriptor(), buffer, size, data_read);
     }
-    virtual bool SetReadNonBlocking() { return SetNonBlocking(ReadDescriptor()); }
+    virtual bool SetReadNonBlocking() {
+      return SetNonBlocking(ReadDescriptor());
+    }
 
   protected:
     bool SetNonBlocking(int fd);
@@ -158,8 +186,7 @@ class PipeSocket: public ConnectedSocket {
  */
 class TcpSocket: public ConnectedSocket {
   public:
-    TcpSocket(int sd): ConnectedSocket(),
-                       m_sd(sd) {}
+    TcpSocket(int sd): m_sd(sd) {}
     ~TcpSocket() { Close(); }
 
     int ReadDescriptor() const { return m_sd; }
@@ -180,9 +207,7 @@ class TcpSocket: public ConnectedSocket {
  */
 class DeviceSocket: public ConnectedSocket {
   public:
-    DeviceSocket(int fd):
-      ConnectedSocket(),
-      m_fd(fd) {}
+    DeviceSocket(int fd): m_fd(fd) {}
     ~DeviceSocket() { Close(); }
 
     int ReadDescriptor() const { return m_fd; }
@@ -219,10 +244,8 @@ class UnmanagedSocket: public Socket {
  */
 class UdpSocket: public Socket {
   public:
-    UdpSocket():
-      Socket(),
-      m_fd(INVALID_SOCKET),
-      m_bound_to_port(false) {}
+    UdpSocket(): m_fd(INVALID_SOCKET),
+                 m_bound_to_port(false) {}
     ~UdpSocket() { Close(); }
     bool Init();
     bool Bind(unsigned short port=INADDR_ANY);

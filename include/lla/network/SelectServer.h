@@ -44,10 +44,7 @@ class SelectServer {
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
-    bool AddSocket(class Socket *socket,
-                   lla::Closure *on_data,
-                   lla::SingleUseClosure *on_close=NULL,
-                   bool delete_on_close=false);
+    bool AddSocket(class Socket *socket, bool delete_on_close=false);
     bool RemoveSocket(class Socket *socket);
     bool RegisterRepeatingTimeout(int ms, lla::Closure *closure);
     bool RegisterSingleTimeout(int ms, lla::SingleUseClosure *closure);
@@ -58,8 +55,6 @@ class SelectServer {
   private :
     typedef struct {
       class Socket *socket;
-      lla::Closure *on_data;
-      lla::SingleUseClosure *on_close;
       bool delete_on_close;
     } registered_socket_t;
 

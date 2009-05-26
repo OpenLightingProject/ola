@@ -111,13 +111,9 @@ void SocketTest::testLoopbackSocket() {
   LoopbackSocket socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          &socket,
-          lla::NewClosure(this, &SocketTest::ReceiveAndTerminate,
-                          (ConnectedSocket *) &socket)
-      )
-  );
+  socket.SetOnData(lla::NewClosure(this, &SocketTest::ReceiveAndTerminate,
+                                   (ConnectedSocket*) &socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   ssize_t bytes_sent = socket.Send((uint8_t*) test_string.data(),
                                    test_string.length());
@@ -137,24 +133,18 @@ void SocketTest::testPipeSocketClientClose() {
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
 
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          &socket,
-          lla::NewClosure(this, &SocketTest::ReceiveAndClose,
-                          (ConnectedSocket *) &socket)
-      )
-  );
+  socket.SetOnData(
+      lla::NewClosure(this, &SocketTest::ReceiveAndClose,
+                      (ConnectedSocket*) &socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   PipeSocket *other_end = socket.OppositeEnd();
   CPPUNIT_ASSERT(other_end);
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          other_end,
-          lla::NewClosure(this, &SocketTest::ReceiveAndSend,
-                          (ConnectedSocket *) other_end),
-          lla::NewSingleClosure(this, &SocketTest::TerminateOnClose)
-      )
-  );
+  other_end->SetOnData(
+      lla::NewClosure(this, &SocketTest::ReceiveAndSend,
+                      (ConnectedSocket *) other_end));
+  other_end->SetOnClose(lla::NewClosure(this, &SocketTest::TerminateOnClose));
+  CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
   size_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(),
                                   test_string.length());
@@ -176,23 +166,16 @@ void SocketTest::testPipeSocketServerClose() {
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
 
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          &socket,
-          lla::NewClosure(this, &SocketTest::Receive,
-                          (ConnectedSocket *) &socket),
-          lla::NewSingleClosure(this, &SocketTest::TerminateOnClose)
-      )
-  );
+  socket.SetOnData(lla::NewClosure(this, &SocketTest::Receive,
+                                    (ConnectedSocket *) &socket));
+  socket.SetOnClose(lla::NewClosure(this, &SocketTest::TerminateOnClose));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   PipeSocket *other_end = socket.OppositeEnd();
   CPPUNIT_ASSERT(other_end);
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          other_end,
-          lla::NewClosure(this, &SocketTest::ReceiveSendAndClose,
-                          (ConnectedSocket *) other_end))
-  );
+  other_end->SetOnData(lla::NewClosure(this, &SocketTest::ReceiveSendAndClose,
+                                       (ConnectedSocket *) other_end));
+  CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
   size_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(),
                                   test_string.length());
@@ -216,22 +199,14 @@ void SocketTest::testTcpSocketClientClose() {
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          &socket,
-          lla::NewClosure(this, &SocketTest::AcceptAndSend, &socket)
-      )
-  );
+  socket.SetOnData(lla::NewClosure(this, &SocketTest::AcceptAndSend, &socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          client_socket,
-          lla::NewClosure(this, &SocketTest::ReceiveAndClose,
-                          (ConnectedSocket*) client_socket)
-      )
-  );
+  client_socket->SetOnData( lla::NewClosure(this, &SocketTest::ReceiveAndClose,
+                                            (ConnectedSocket*) client_socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(client_socket));
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
   m_ss->RemoveSocket(client_socket);
@@ -251,24 +226,20 @@ void SocketTest::testTcpSocketServerClose() {
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          &socket,
-          lla::NewClosure(this, &SocketTest::AcceptSendAndClose, &socket)
-      )
-  );
+  socket.SetOnData(
+      lla::NewClosure(this, &SocketTest::AcceptSendAndClose, &socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   // The client socket checks the response and terminates on close
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          client_socket,
-          lla::NewClosure(this, &SocketTest::Receive,
-                          (ConnectedSocket*) client_socket),
-          lla::NewSingleClosure(this, &SocketTest::TerminateOnClose)
-      )
-  );
+
+  client_socket->SetOnData(lla::NewClosure(this, &SocketTest::Receive,
+                                           (ConnectedSocket*) client_socket));
+  client_socket->SetOnClose(
+      lla::NewClosure(this, &SocketTest::TerminateOnClose));
+  CPPUNIT_ASSERT(m_ss->AddSocket(client_socket));
+
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
   m_ss->RemoveSocket(client_socket);
@@ -290,24 +261,20 @@ void SocketTest::testUdpSocket() {
   CPPUNIT_ASSERT(socket.Bind(server_port));
   CPPUNIT_ASSERT(!socket.Bind(server_port));
 
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          &socket,
-          lla::NewClosure(this, &SocketTest::UdpReceiveAndSend, &socket)
-      )
-  );
+  socket.SetOnData(
+      lla::NewClosure(this, &SocketTest::UdpReceiveAndSend, &socket));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   UdpSocket client_socket;
   CPPUNIT_ASSERT(client_socket.Init());
   CPPUNIT_ASSERT(!client_socket.Init());
-  CPPUNIT_ASSERT(
-      m_ss->AddSocket(
-          &client_socket,
-          lla::NewClosure(this, &SocketTest::UdpReceiveAndTerminate,
-                          &client_socket),
-          lla::NewSingleClosure(this, &SocketTest::TerminateOnClose)
-      )
-  );
+
+  client_socket.SetOnData(
+      lla::NewClosure(this, &SocketTest::UdpReceiveAndTerminate,
+                     (UdpSocket*) &client_socket));
+  //client_socket.SetOnClose(lla::NewClosure(this,
+  //                                         &SocketTest::TerminateOnClose));
+  CPPUNIT_ASSERT(m_ss->AddSocket(&client_socket));
 
   ssize_t bytes_sent = client_socket.SendTo((uint8_t*) test_string.data(),
                                            test_string.length(),
@@ -317,7 +284,6 @@ void SocketTest::testUdpSocket() {
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
   m_ss->RemoveSocket(&client_socket);
-  printf("all done\n");
 }
 
 
@@ -393,10 +359,8 @@ int SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
   ssize_t bytes_sent = new_socket->Send((uint8_t*) test_string.data(),
       test_string.length());
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
-  m_ss->AddSocket(new_socket,
-                  NULL,
-                  lla::NewSingleClosure(this, &SocketTest::TerminateOnClose),
-                  true);
+  new_socket->SetOnClose(lla::NewClosure(this, &SocketTest::TerminateOnClose));
+  m_ss->AddSocket(new_socket, true);
 }
 
 
