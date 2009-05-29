@@ -283,6 +283,18 @@ void DmxBuffer::Get(uint8_t *data, unsigned int &length) const {
 
 
 /*
+ * Returns the value of a channel. This returns 0 if the buffer wasn't
+ * initialized or the channel was out-of-bounds.
+ */
+uint8_t DmxBuffer::Get(unsigned int channel) const {
+  if (m_data && channel < m_length)
+    return m_data[channel];
+  else
+    return 0;
+}
+
+
+/*
  * Get the contents of the DmxBuffer as a string
  */
 string DmxBuffer::Get() const {

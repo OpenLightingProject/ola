@@ -52,6 +52,7 @@ class DmxBuffer {
                   unsigned int length);
     void SetChannel(unsigned int channel, uint8_t data);
     void Get(uint8_t *data, unsigned int &length) const;
+    uint8_t Get(unsigned int channel) const;
     const uint8_t *GetRaw() const { return m_data; }
     string Get() const;
     bool Blackout();

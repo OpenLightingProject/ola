@@ -103,9 +103,14 @@ void DmxBufferTest::testGetSet() {
   DmxBuffer buffer;
   string str_result;
 
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, buffer.Get(0));
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, buffer.Get(1));
+
   CPPUNIT_ASSERT(!buffer.Set(NULL, sizeof(TEST_DATA)));
 
   CPPUNIT_ASSERT(buffer.Set(TEST_DATA, sizeof(TEST_DATA)));
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, buffer.Get(0));
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, buffer.Get(1));
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), buffer.Size());
   buffer.Get(result, size);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), size);
