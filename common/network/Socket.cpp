@@ -442,6 +442,19 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
  * read
  * @return true or false
  */
+bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t &data_read) const {
+  data_read = recvfrom(m_fd, buffer, data_read, 0, NULL, 0);
+  return data_read >= 0;
+}
+
+
+/*
+ * Receive data and record the src address & port
+ * @param buffer the buffer to store the data
+ * @param data_read the size of the buffer, updated with the number of bytes
+ * read
+ * @return true or false
+ */
 bool UdpSocket::RecvFrom(uint8_t *buffer,
                          ssize_t &data_read,
                          struct sockaddr_in &source,

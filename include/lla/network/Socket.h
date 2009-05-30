@@ -263,6 +263,7 @@ class UdpSocket: public Socket {
                   ssize_t &data_read,
                   struct sockaddr_in &source,
                   socklen_t &src_size) const;
+    bool RecvFrom(uint8_t *buffer, ssize_t &data_read) const;
     bool EnableBroadcast();
     // JoinMulticast
   private:
