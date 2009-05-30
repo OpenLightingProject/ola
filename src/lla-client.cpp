@@ -34,7 +34,7 @@ using namespace std;
 #include <lla/SimpleClient.h>
 #include <lla/LlaClient.h>
 #include <lla/DmxUtils.h>
-#include <lla/select_server/SelectServer.h>
+#include <lla/network/SelectServer.h>
 
 using lla::LlaPlugin;
 using lla::LlaUniverse;
@@ -42,7 +42,7 @@ using lla::LlaDevice;
 using lla::LlaPort;
 using lla::SimpleClient;
 using lla::LlaClient;
-using lla::select_server::SelectServer;
+using lla::network::SelectServer;
 
 static const int INVALID_VALUE = -1;
 

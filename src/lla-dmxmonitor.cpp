@@ -45,15 +45,15 @@
 #include <string>
 #include <lla/LlaClient.h>
 #include <lla/SimpleClient.h>
-#include <lla/select_server/SelectServer.h>
+#include <lla/network/SelectServer.h>
 
 using lla::LlaClient;
 using lla::LlaClientObserver;
-using lla::select_server::SelectServer;
+using lla::network::SelectServer;
 using lla::SimpleClient;
 using std::string;
 
-class StdinFileDescriptor: public lla::select_server::Socket {
+class StdinFileDescriptor: public lla::network::Socket {
   public:
     StdinFileDescriptor() {}
     ~StdinFileDescriptor() {}

@@ -35,7 +35,7 @@
 #include <lla/LlaClient.h>
 #include <lla/LlaDevice.h>
 #include <lla/SimpleClient.h>
-#include <lla/select_server/SelectServer.h>
+#include <lla/network/SelectServer.h>
 
 using namespace std;
 
@@ -91,6 +91,6 @@ class LlaConfigurator {
   private:
     lla::SimpleClient *m_simple_client;
     lla::LlaClient *m_client;
-    lla::select_server::SelectServer *m_ss;
+    lla::network::SelectServer *m_ss;
     Observer *m_observer;
 };

@@ -26,7 +26,7 @@
 using namespace std;
 using lla::SimpleClient;
 using lla::LlaClient;
-using lla::select_server::SelectServer;
+using lla::network::SelectServer;
 using lla::LlaDevice;
 
 
