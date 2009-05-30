@@ -38,6 +38,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringToDmx);
   CPPUNIT_TEST(testCopyOnWrite);
   CPPUNIT_TEST(testSetRange);
+  CPPUNIT_TEST(testSetRangeToValue);
   CPPUNIT_TEST(testSetChannel);
   CPPUNIT_TEST_SUITE_END();
 
@@ -51,6 +52,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
     void testStringToDmx();
     void testCopyOnWrite();
     void testSetRange();
+    void testSetRangeToValue();
     void testSetChannel();
   private:
     static const uint8_t TEST_DATA[];
@@ -438,6 +440,25 @@ void DmxBufferTest::testSetRange() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) data_size * 2, buffer.Size());
   CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), data_size));
   CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw() + data_size, data_size));
+}
+
+
+/*
+ * Check that SetRangeToValue works
+ */
+void DmxBufferTest::testSetRangeToValue() {
+  const uint8_t RANGE_DATA[] = {50, 50, 50, 50, 50};
+  DmxBuffer buffer;
+  CPPUNIT_ASSERT(!buffer.SetRangeToValue(600, 50, 2));
+
+  unsigned int range_size = 5;
+  CPPUNIT_ASSERT(buffer.SetRangeToValue(0, 50, range_size));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  CPPUNIT_ASSERT(!memcmp(RANGE_DATA, buffer.GetRaw(), range_size));
+
+  // setting outside the value range should fail
+  buffer.Reset();
+  CPPUNIT_ASSERT(!buffer.SetRange(10, TEST_DATA, range_size));
 }
 
 

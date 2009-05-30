@@ -48,6 +48,8 @@ class DmxBuffer {
     bool Set(const string &data);
     bool Set(const DmxBuffer &other);
     bool SetFromString(const string &data);
+    bool SetRangeToValue(unsigned int offset, uint8_t data,
+                         unsigned int length);
     bool SetRange(unsigned int offset, const uint8_t *data,
                   unsigned int length);
     void SetChannel(unsigned int channel, uint8_t data);

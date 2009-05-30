@@ -217,6 +217,34 @@ bool DmxBuffer::SetFromString(const string &input) {
 
 
 /*
+ * Set a Range of data to a single value
+ * @param offset the starting channel
+ * @param value the value to set the range to
+ * @param length the length of the range to set
+ */
+bool DmxBuffer::SetRangeToValue(unsigned int offset,
+                                uint8_t value,
+                                unsigned int length) {
+  if (offset >= DMX_UNIVERSE_SIZE)
+    return false;
+
+  if (!m_data) {
+    Blackout();
+  }
+
+  if (offset > m_length)
+    return false;
+
+  DuplicateIfNeeded();
+
+  unsigned int copy_length = min(length, DMX_UNIVERSE_SIZE - offset);
+  memset(m_data + offset, value, copy_length);
+  m_length = max(m_length, offset + copy_length);
+  return true;
+}
+
+
+/*
  * Set a range of data. Calling this on an uninitialized buffer will call
  * Blackout() first. Attempting to set data with an offset > Size() is an
  * error.
@@ -224,7 +252,8 @@ bool DmxBuffer::SetFromString(const string &input) {
  * @param data a pointer to the new data
  * @param length the length of the data
  */
-bool DmxBuffer::SetRange(unsigned int offset, const uint8_t *data,
+bool DmxBuffer::SetRange(unsigned int offset,
+                         const uint8_t *data,
                          unsigned int length) {
   if (!data || offset >= DMX_UNIVERSE_SIZE)
     return false;
