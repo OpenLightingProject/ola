@@ -167,9 +167,10 @@ bool LlaServer::Init() {
   if (m_accepting_socket) {
     if (!m_accepting_socket->Listen())
       return false;
-    m_ss->AddSocket(m_accepting_socket,
-                    lla::NewClosure(this, &LlaServer::AcceptNewConnection,
-                                    m_accepting_socket));
+    m_accepting_socket->SetOnData(
+      lla::NewClosure(this, &LlaServer::AcceptNewConnection,
+                      m_accepting_socket));
+    m_ss->AddSocket(m_accepting_socket);
   }
 
   signal(SIGPIPE, SIG_IGN);

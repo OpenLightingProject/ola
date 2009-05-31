@@ -263,8 +263,9 @@ void SelectServer::CheckSockets(fd_set &set) {
         if (iter->socket->OnData())
           ready_queue.push_back(iter->socket->OnData());
         else
-          LLA_FATAL << "Socket is ready but no handler attached, this is " <<
-            "bad!";
+          LLA_FATAL << "Socket is ready (" <<
+            iter->socket->ReadDescriptor() <<
+            ") but no handler attached, this is bad!";
       }
     }
   }
