@@ -288,7 +288,8 @@ bool Universe::PortDataChanged(AbstractPort *port) {
     if (port->CanRead()) {
       const DmxBuffer &new_buffer = port->ReadDMX();
       if (new_buffer.Size())
-        m_buffer = new_buffer;
+        // explictity copy else we play the new/delete dance
+        m_buffer.Set(new_buffer);
     }
   } else {
     // htp merge mode
@@ -309,7 +310,8 @@ bool Universe::SourceClientDataChanged(Client *client) {
   if (m_merge_mode == Universe::MERGE_LTP) {
     const DmxBuffer &new_buffer = client->GetDMX(m_universe_id);
     if (new_buffer.Size())
-      m_buffer = new_buffer;
+      // explictity copy else we play the new/delete dance
+      m_buffer.Set(new_buffer);
   } else {
     // add the client if we're in HTP mode
     if (!ContainsSourceClient(client)) {
