@@ -153,7 +153,7 @@ bool StageProfiPlugin::SetDefaultPreferences() {
     return false;
 
   if (m_preferences->GetValue(DEVICE_KEY).empty()) {
-    m_preferences->SetValue(DEVICE_KEY, STAGEPROFI_DEVICE_NAME);
+    m_preferences->SetValue(DEVICE_KEY, STAGEPROFI_DEVICE_PATH);
     m_preferences->Save();
   }
 
