@@ -15,33 +15,40 @@
  *
  * ShowNetPort.h
  * The ShowNet plugin for lla
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef SHOWNETPORT_H
 #define SHOWNETPORT_H
 
-#include <llad/port.h>
+#include <llad/Port.h>
+#include <llad/Device.h>
+#include "ShowNetNode.h"
 
-#include <shownet/shownet.h>
+namespace lla {
+namespace shownet {
 
-class ShowNetPort : public Port {
+using lla::DmxBuffer;
 
+class ShowNetPort: public Port {
   public:
-    ShowNetPort(Device *parent, int id);
-    ~ShowNetPort();
+    ShowNetPort(lla::Device *parent, int id): Port(parent, id) {}
+    ~ShowNetPort() {}
 
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
-
-    int can_read() const;
-    int can_write() const;
-
-    int update_buffer(uint8_t *data, int length);
+    bool CanRead() const;
+    bool CanWrite() const;
+    bool WriteDMX(const DmxBuffer &buffer);
+    const DmxBuffer &ReadDMX() const;
+    bool SetUniverse(Universe *universe);
+    int UpdateBuffer();
 
   private :
-    uint8_t *m_buf;
-    unsigned int m_len;
+    DmxBuffer m_buffer;
+    unsigned int ShowNetUniverseId() const {
+      return PortId() % ShowNetNode::SHOWNET_MAX_UNIVERSES;
+    }
 };
 
+} //plugin
+} //lla
 #endif

@@ -15,223 +15,85 @@
  *
  * ShowNetDevice.cpp
  * ShowNet device
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <lla/Logging.h>
+#include <llad/Plugin.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
 
 #include "ShowNetDevice.h"
 #include "ShowNetPort.h"
+#include "ShowNetNode.h"
+//#include <llad/universe.h>
 
-#include <lla/Logging.h>
-#include <llad/preferences.h>
-#include <llad/plugin.h>
-#include <llad/universe.h>
+namespace lla {
+namespace shownet {
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-
-/*
- * Handle dmx from the network, called from libshownet
- *
- * @param n    the shownet_node
- * @param uni  the universe this data is for
- * @param len  the length of the received data
- * @param data  pointer the the dmx data
- * @param d    pointer to our ShowNetDevice
- *
- */
-int dmx_handler(shownet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
-
-  ShowNetDevice *dev = (ShowNetDevice *) d;
-  ShowNetPort *prt = NULL;
-  Universe *uni = NULL;
-
-  if (uid > SHOWNET_MAX_UNIVERSES)
-    return 0;
-
-  prt = (ShowNetPort*) dev->get_port(uid);
-  uni = prt->get_universe();
-
-  if ( prt->can_read() && uni != NULL && prt->get_id()%8 == uid) {
-    prt->update_buffer(data,len);
-  }
-
-  n = NULL;
-  return 0;
-}
-
+const std::string ShowNetDevice::IP_KEY = "ip";
 
 
 /*
  * Create a new device
- *
- * should prob pass the ip to bind to
- *
  */
-ShowNetDevice::ShowNetDevice(Plugin *owner, const string &name, Preferences *prefs):
+ShowNetDevice::ShowNetDevice(lla::Plugin *owner,
+                             const string &name,
+                             Preferences *preferences,
+                             const PluginAdaptor *plugin_adaptor):
   Device(owner, name),
-  m_prefs(prefs),
+  m_preferences(preferences),
+  m_plugin_adaptor(plugin_adaptor),
   m_node(NULL),
   m_enabled(false) {}
 
 
 /*
- *
- */
-ShowNetDevice::~ShowNetDevice() {
-  if (m_enabled)
-    stop();
-}
-
-
-/*
  * Start this device
- *
  */
-int ShowNetDevice::start() {
+bool ShowNetDevice::Start() {
+  if (m_enabled)
+    return false;
+
   ShowNetPort *port = NULL;
 
-  /* set up ports */
-  for (int i=0; i < 2*PORTS_PER_DEVICE; i++) {
+  for (unsigned int i = 0; i < 2 * ShowNetNode::SHOWNET_MAX_UNIVERSES; i++) {
     port = new ShowNetPort(this, i);
-
-    if (port != NULL)
-      this->add_port(port);
+    this->AddPort(port);
   }
 
-  // create new shownet node, and set config values
-  if (m_prefs->get_val("ip") == "")
-    m_node = shownet_new(NULL, get_owner()->debug_on());
-  else {
-    m_node = shownet_new(m_prefs->get_val("ip").c_str(),
-                         get_owner()->debug_on());
+  m_node = new ShowNetNode(m_preferences->GetValue("ip"));
+  m_node->SetName(m_preferences->GetValue("name"));
+
+  if (!m_node->Start()) {
+    delete m_node;
+    m_node = NULL;
+    DeleteAllPorts();
+    return false;
   }
 
-  if (!m_node) {
-    LLA_WARN << "shownet_new failed: " << shownet_strerror();
-    return -1;
-  }
-
-  // setup node
-  if (shownet_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
-    LLA_WARN << "shownet_set_name failed: " << shownet_strerror();
-    goto e_shownet_start;
-  }
-
-  // we want to be notified when the node config changes
-  if (shownet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-    LLA_WARN << "shownet_set_dmx_handler failed: " << shownet_strerror();
-    goto e_shownet_start;
-  }
-
-  if (shownet_start(m_node) ) {
-    LLA_WARN << "shownet_start failed: " << shownet_strerror();
-    goto e_shownet_start;
-  }
+  m_plugin_adaptor->AddSocket(m_node->GetSocket());
 
   m_enabled = true;
-  return 0;
-
-e_shownet_start:
-  if (shownet_destroy(m_node))
-    LLA_WARN << "shownet_destroy failed: " << shownet_strerror();
-  return -1;
+  return true;
 }
 
 
 /*
- * stop this device
- *
+ * Stop this device
  */
-int ShowNetDevice::stop() {
-  Port *prt = NULL;
-
+bool ShowNetDevice::Stop() {
   if (!m_enabled)
-    return 0;
+    return false;
 
-  for (int i=0; i < port_count(); i++) {
-    prt = get_port(i);
-    if (prt != NULL)
-      delete prt;
-  }
-
-  if (shownet_stop(m_node)) {
-    LLA_WARN << "shownet_stop failed: " << shownet_strerror();
-    return -1;
-  }
-
-  if (shownet_destroy(m_node)) {
-    LLA_WARN << "shownet_destroy failed: " << shownet_strerror();
-    return -1;
-  }
-
+  DeleteAllPorts();
+  m_node->Stop();
+  delete m_node;
+  m_node = NULL;
   m_enabled = false;
-
-  return 0;
+  return true;
 }
 
 
-/*
- * return the Art-Net node associated with this device
- *
- *
- */
-shownet_node ShowNetDevice::get_node() const {
-  return m_node;
-}
-
-/*
- * return the sd of this device
- */
-int ShowNetDevice::get_sd() const {
-  int ret = shownet_get_sd(m_node);
-
-  if (ret < 0) {
-    LLA_WARN << "shownet_get_sd failed: " << shownet_strerror();
-    return -1;
-  }
-  return ret;
-}
-
-/*
- * Called when there is activity on our descriptors
- *
- * @param  data  user data (pointer to shownet_device_priv
- */
-int ShowNetDevice::action() {
-  if (shownet_read(m_node, 0) ) {
-    LLA_WARN << "shownet_read failed: " << shownet_strerror();
-    return -1;
-  }
-  return 0;
-}
-
-
-// call this when something changes
-// where to store data to ?
-// I'm thinking a config file in /etc/llad/llad.conf
-int ShowNetDevice::save_config() const {
-
-  return 0;
-}
-
-
-
-/*
- * we can pass plugin specific messages here
- * make sure the user app knows the format though...
- *
- */
-int ShowNetDevice::configure(void *req, int len) {
-  // handle short/ long name & subnet and port addresses
-
-  req = 0;
-  len = 0;
-
-  return 0;
-}
+} //plugin
+} //lla

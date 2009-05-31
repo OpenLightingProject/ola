@@ -40,7 +40,7 @@ namespace plugin {
 using lla::Device;
 using std::string;
 
-class ArtNetDevice : public Device {
+class ArtNetDevice: public Device {
   public:
     ArtNetDevice(AbstractPlugin *owner,
                  const string &name,

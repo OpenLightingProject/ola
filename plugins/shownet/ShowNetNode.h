@@ -45,8 +45,10 @@ class ShowNetNode {
     bool SetHandler(unsigned int universe, lla::Closure *handler);
     bool RemoveHandler(unsigned int universe);
 
-    const lla::network::UdpSocket* GetSocket() { return m_socket; }
+    lla::network::UdpSocket* GetSocket() { return m_socket; }
     int SocketReady();
+
+    static const unsigned short SHOWNET_MAX_UNIVERSES = 8;
 
   private:
     typedef struct {
@@ -57,7 +59,6 @@ class ShowNetNode {
     ShowNetNode(const ShowNetNode&);
     ShowNetNode& operator=(const ShowNetNode&);
     static const unsigned short SHOWNET_PORT = 2501;
-    static const unsigned short SHOWNET_MAX_UNIVERSES = 8;
     static const uint8_t SHOWNET_ID_HIGH = 0x80;
     static const uint8_t SHOWNET_ID_LOW = 0x8f;
 

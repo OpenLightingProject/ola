@@ -15,105 +15,77 @@
  *
  * ShowNetPort.cpp
  * The ShowNet plugin for lla
- * Copyright (C) 2005-2007  Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #include "ShowNetPort.h"
 #include "ShowNetDevice.h"
-#include "common.h"
 
+#include <lla/Closure.h>
 #include <lla/Logging.h>
-#include <llad/universe.h>
+#include <llad/Universe.h>
 
-#include <string.h>
 
-#define min(a,b) a<b?a:b
+namespace lla {
+namespace shownet {
 
-ShowNetPort::ShowNetPort(Device *parent, int id) :
-  Port(parent, id),
-  m_buf(NULL),
-  m_len(DMX_LENGTH) {
 
-}
-
-ShowNetPort::~ShowNetPort() {
-  if (can_read())
-    free(m_buf);
-}
-
-int ShowNetPort::can_read() const {
+bool ShowNetPort::CanRead() const {
   // ports 0 to 7 are input
-  return ( get_id()>=0 && get_id() < PORTS_PER_DEVICE);
+  return (PortId() < ShowNetNode::SHOWNET_MAX_UNIVERSES);
 }
 
-int ShowNetPort::can_write() const {
+
+bool ShowNetPort::CanWrite() const {
   // ports 8 to 13 are output
-  return ( get_id()>= PORTS_PER_DEVICE && get_id() <2*PORTS_PER_DEVICE);
+  return (PortId() >= ShowNetNode::SHOWNET_MAX_UNIVERSES &&
+          PortId() < 2 * ShowNetNode::SHOWNET_MAX_UNIVERSES);
+}
+
+
+bool ShowNetPort::WriteDMX(const DmxBuffer &buffer) {
+  ShowNetDevice *device = (ShowNetDevice*) GetDevice();
+
+  if (!CanWrite())
+    return false;
+
+  ShowNetNode *node = device->GetNode();
+  if (!node->SendDMX(ShowNetUniverseId(), buffer))
+    return false;
+  return true;
+}
+
+const DmxBuffer &ShowNetPort::ReadDMX() const {
+  return m_buffer;
 }
 
 /*
- * Write operation
- *
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- *
+ * Called when there is new dmx data
  */
-int ShowNetPort::write(uint8_t *data, unsigned int length) {
-  ShowNetDevice *dev = (ShowNetDevice*) get_device();
-
-  if (!can_write())
-    return -1;
-
-  if (shownet_send_dmx(dev->get_node() , get_id()%8 , length, data)) {
-    LLA_WARN << "shownet_send_dmx failed " << shownet_strerror();
-    return -1;
-  }
-  return 0;
+int ShowNetPort::UpdateBuffer() {
+  ShowNetDevice *device = (ShowNetDevice*) GetDevice();
+  ShowNetNode *node = device->GetNode();
+  m_buffer = node->GetDMX(ShowNetUniverseId());
+  return DmxChanged();
 }
 
 /*
- * Read operation
- *
- * @param   data  buffer to read data into
- * @param   length  length of data to read
- *
- * @return  the amount of data read
+ * We intecept this to setup/remove the dmx handler
  */
-int ShowNetPort::read(uint8_t *data, unsigned int length) {
-  int len;
+bool ShowNetPort::SetUniverse(Universe *universe) {
+  ShowNetDevice *device = (ShowNetDevice*) GetDevice();
+  ShowNetNode *node = device->GetNode();
 
-  if (!can_read())
-    return -1;
+  Universe *old_universe = GetUniverse();
+  Port::SetUniverse(universe);
 
-  len = min(m_len, length);
-  memcpy(data, m_buf, len);
-  return len;
+  if (!old_universe && universe)
+    node->SetHandler(ShowNetUniverseId(),
+                     lla::NewClosure(this, &ShowNetPort::UpdateBuffer));
+  else if (old_universe && !universe)
+    node->RemoveHandler(ShowNetUniverseId());
+  return true;
 }
 
-/*
- * Update the data buffer for this port
- *
- */
-int ShowNetPort::update_buffer(uint8_t *data, int length) {
-  int len = min(DMX_LENGTH, length);
-
-  // we can't update if this isn't a input port
-  if (!can_read())
-    return -1;
-
-  // allocate buffer as needed
-  if (m_buf == NULL) {
-    m_buf = (uint8_t*) malloc(m_len);
-
-    // we should handle this better
-    if (m_buf == NULL) {
-      LLA_WARN << "malloc failed";
-      return -1;
-    } else
-      memset(m_buf, 0x00, m_len);
-  }
-
-  memcpy(m_buf, data, len);
-  dmx_changed();
-  return 0;
-}
+} //plugin
+} //lla

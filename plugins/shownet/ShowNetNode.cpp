@@ -63,8 +63,10 @@ bool ShowNetNode::Start() {
   if (m_running)
     return false;
 
-  if (!m_interface_picker.ChooseInterface(m_interface, m_preferred_ip))
+  if (!m_interface_picker.ChooseInterface(m_interface, m_preferred_ip)) {
+    LLA_INFO << "Failed to find an interface";
     return false;
+  }
 
   if (!InitNetwork())
     return false;
@@ -290,6 +292,7 @@ int ShowNetNode::SocketReady() {
                                  enc_len);
   }
   iter->second.closure->Run();
+  return 0;
 }
 
 
@@ -299,12 +302,20 @@ int ShowNetNode::SocketReady() {
 bool ShowNetNode::InitNetwork() {
   m_socket = new UdpSocket();
 
+  if (!m_socket->Init()) {
+    LLA_WARN << "Socket init failed";
+    delete m_socket;
+    return false;
+  }
+
   if (!m_socket->Bind(SHOWNET_PORT)) {
+    LLA_WARN << "Failed to bind to:" << SHOWNET_PORT;
     delete m_socket;
     return false;
   }
 
   if (!m_socket->EnableBroadcast()) {
+    LLA_WARN << "Failed to enable broadcasting";
     delete m_socket;
     return false;
   }

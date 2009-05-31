@@ -4,7 +4,7 @@ libdir = $(plugindir)
 lib_LTLIBRARIES = libllashownet.la
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
-AM_CXXFLAGS = -Wall -Werror -Wformat -W
+AM_CXXFLAGS = -Wall -Wformat -W
 
 libllashownet_la_SOURCES = ShowNetPlugin.cpp ShowNetDevice.cpp ShowNetPort.cpp\
                            ShowNetNode.cpp RunLengthEncoder.cpp
