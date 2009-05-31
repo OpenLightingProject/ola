@@ -31,8 +31,15 @@ class RunLengthEncoder {
     RunLengthEncoder() {};
     ~RunLengthEncoder() {};
 
-    bool Encode(const DmxBuffer &src);
-    bool Decode();
+    bool Encode(const DmxBuffer &src,
+                uint8_t *data,
+                unsigned int &size);
+    bool Decode(DmxBuffer &dst,
+                unsigned int start_channel,
+                uint8_t *data,
+                unsigned int length);
+  private:
+    static const uint8_t REPEAT_FLAG = 0x80;
 };
 
 } //shownet

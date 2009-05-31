@@ -45,7 +45,7 @@ class ShowNetPlugin : public Plugin {
     int stop_hook();
     int set_default_prefs();
 
-    ShowNetDevice *m_dev;    // only have one device
+    ShowNetDevice *m_device; // only have one device
     static const string SHOWNET_NODE_NAME;
     static const string SHOWNET_DEVICE_NAME;
     static const string PLUGIN_NAME;

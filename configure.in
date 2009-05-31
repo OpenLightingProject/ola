@@ -103,7 +103,6 @@ PLUGINS="dummy opendmx stageprofi usbpro"
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
 PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
 PLUGIN_LIBRARY(espnet, espnet_new, ESPNET)
-PLUGIN_LIBRARY(shownet, shownet_new, SHOWNET)
 PLUGIN_LIBRARY(sandnet, sandnet_new, SANDNET)
 PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
 

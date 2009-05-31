@@ -19,8 +19,9 @@
  */
 
 #include <lla/Logging.h>
-#include "ShowNetNode.h"
 #include "RunLengthEncoder.h"
+#include "ShowNetNode.h"
+#include "ShowNetPackets.h"
 
 namespace lla {
 namespace shownet {
@@ -28,7 +29,7 @@ namespace shownet {
 using std::string;
 using std::map;
 using lla::network::UdpSocket;
-using lla::LlaClosure;
+using lla::Closure;
 
 
 /*
@@ -42,6 +43,7 @@ ShowNetNode::ShowNetNode(const string &ip_address):
   m_node_name(),
   m_preferred_ip(ip_address) {
     m_encoder = new RunLengthEncoder();
+    memset(&m_destination, 0, sizeof(m_destination));
 }
 
 
@@ -66,7 +68,10 @@ bool ShowNetNode::Start() {
 
   if (!InitNetwork())
     return false;
-  //if ((ret = shownet_net_start(n)))
+
+  m_destination.sin_family = AF_INET;
+  m_destination.sin_port = htons(SHOWNET_PORT);
+  m_destination.sin_addr = m_interface.bcast_address;
 
   m_running = true;
   return true;
@@ -117,69 +122,93 @@ bool ShowNetNode::SendDMX(unsigned int universe,
     return false;
   }
 
-  shownet_packet_t p;
-  int ret, len, enc_len;
+  shownet_data_packet packet;
+  memset(&packet.data, 0, sizeof(packet.data));
 
-  len = min(length, SHOWNET_DMX_LENGTH);
+  // setup the fields in the shownet packet
+  packet.sigHi = SHOWNET_ID_HIGH;
+  packet.sigLo = SHOWNET_ID_LOW;
+  memcpy(packet.ip, &m_interface, sizeof(packet.ip));
 
-  memset(&p.data, 0x00, sizeof(p.data));
+  packet.netSlot[0] = (universe * DMX_UNIVERSE_SIZE) + 1;
+  packet.netSlot[1] = 0;
+  packet.netSlot[2] = 0;
+  packet.netSlot[3] = 0;
+  packet.slotSize[0] = buffer.Size();
+  packet.slotSize[1] = 0;
+  packet.slotSize[2] = 0;
+  packet.slotSize[3] = 0;
 
-  // set dst addr and length
-  p.to.s_addr = n->state.bcast_addr.s_addr;
-  p.length = sizeof(shownet_data_t);
+  unsigned int enc_len = sizeof(packet.data);
+  if (!m_encoder->Encode(buffer, packet.data, enc_len))
+    LLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
 
-  // setup the fields in the datagram
-  p.data.dmx.sigHi = 0x80;
-  p.data.dmx.sigLo = 0x8f;
+  packet.indexBlock[0] = 0x0b;
+  packet.indexBlock[1] = 0x0b + enc_len;
+  packet.indexBlock[2] = 0;
+  packet.indexBlock[3] = 0;
+  packet.indexBlock[4] = 0;
 
-  // set ip
-  memcpy(p.data.dmx.ip, &n->state.ip_addr.s_addr,4);
+  packet.packetCountHi = ShortGetHigh(m_packet_count);
+  packet.packetCountLo = ShortGetLow(m_packet_count);
 
-  p.data.dmx.netSlot[0] = (universe * 0x0200) + 0x01;
-  p.data.dmx.netSlot[1] = 0;
-  p.data.dmx.netSlot[2] = 0;
-  p.data.dmx.netSlot[3] = 0;
-  p.data.dmx.slotSize[0] = len;
-  p.data.dmx.slotSize[1] = 0;
-  p.data.dmx.slotSize[2] = 0;
-  p.data.dmx.slotSize[3] = 0;
-
-  enc_len = encode_dmx(data,len, p.data.dmx.data, SHOWNET_DMX_LENGTH);
-
-  p.data.dmx.indexBlock[0] = 0x0b;
-  p.data.dmx.indexBlock[1] = 0x0b + enc_len;
-  p.data.dmx.indexBlock[2] = 0;
-  p.data.dmx.indexBlock[3] = 0;
-  p.data.dmx.indexBlock[4] = 0;
-
-  p.data.dmx.packetCountHi = short_gethi(n->state.packet_count);
-  p.data.dmx.packetCountLo = short_getlo(n->state.packet_count);
   // magic numbers - not sure what these do
-  p.data.dmx.block[2] = 0x58;
-  p.data.dmx.block[3] = 0x02;
-  strncpy((char*) p.data.dmx.name, n->state.name, SHOWNET_NAME_LENGTH);
+  packet.block[2] = 0x58;
+  packet.block[3] = 0x02;
+  strncpy((char*) packet.name, m_node_name.data(), SHOWNET_NAME_LENGTH);
 
-  ret = shownet_net_send(n, &p);
+  ssize_t bytes_sent = m_socket->SendTo((uint8_t*) &packet,
+                                        sizeof(packet),
+                                        m_destination);
 
-  if (!ret)
-    n->state.packet_count++;
+  if (bytes_sent != sizeof(packet)) {
+    LLA_WARN << "Only sent " << bytes_sent << " of " << sizeof(packet);
+    return false;
+  }
 
-  return ret;
+  m_packet_count++;
+  return true;
 }
 
 
 /*
- * Set the closure to be called when we receive data for this universe
+ * Get the DMX data for this universe.
  */
-bool ShowNetNode::SetHandler(unsigned int universe, LlaClosure *handler) {
-  map<unsigned int, LlaClosure*>::iterator iter = m_handlers.find(universe);
+DmxBuffer ShowNetNode::GetDMX(unsigned int universe) {
+  map<unsigned int, universe_handler>::const_iterator iter =
+    m_handlers.find(universe);
+
+  if (iter == m_handlers.end())
+    return iter->second.buffer;
+  else {
+    DmxBuffer buffer;
+    return buffer;
+  }
+}
+
+
+/*
+ * Set the closure to be called when we receive data for this universe.
+ * @param universe the universe to register the handler for
+ * @param handler the Closure to call when there is data for this universe.
+ * Ownership of the closure is transferred to the node.
+ */
+bool ShowNetNode::SetHandler(unsigned int universe, Closure *closure) {
+  if (!closure)
+    return false;
+
+  map<unsigned int, universe_handler>::iterator iter =
+    m_handlers.find(universe);
 
   if (iter == m_handlers.end()) {
-    //pair<unsigned int, LlaClosure*> pair(universe, handler);
-    //m_handlers.insert(pair);
+    universe_handler handler;
+    handler.closure = closure;
+    handler.buffer.Blackout();
     m_handlers[universe] = handler;
   } else {
-    m_handlers[universe] = handler;
+    Closure *old_closure = iter->second.closure;
+    iter->second.closure = closure;
+    delete old_closure;
   }
   return true;
 }
@@ -191,10 +220,13 @@ bool ShowNetNode::SetHandler(unsigned int universe, LlaClosure *handler) {
  * @param true if removed, false if it didn't exist
  */
 bool ShowNetNode::RemoveHandler(unsigned int universe) {
-  map<unsigned int, LlaClosure*>::iterator iter = m_handlers.find(universe);
+  map<unsigned int, universe_handler>::iterator iter =
+    m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
+    Closure *old_closure = iter->second.closure;
     m_handlers.erase(iter);
+    delete old_closure;
     return true;
   }
   return false;
@@ -204,10 +236,60 @@ bool ShowNetNode::RemoveHandler(unsigned int universe) {
 /*
  * Called when there is data on this socket
  */
-int ShowNetNode::SocketReady(class ConnectedSocket *socket) {
+int ShowNetNode::SocketReady() {
+  shownet_data_packet packet;
+  memset(&packet, 0, sizeof(packet));
+  unsigned int header_size = sizeof(packet) - sizeof(packet.data);
 
+  //read here
+  ssize_t packet_size = sizeof(packet);
+  m_socket->RecvFrom((uint8_t*) &packet, packet_size);
 
+  if (packet_size < header_size) {
+    LLA_WARN << "Small shownet packet received, discarding";
+    return -1;
+  }
 
+  unsigned int data_size = packet_size - header_size;
+
+  if (packet.sigHi != SHOWNET_ID_HIGH || packet.sigLo == SHOWNET_ID_LOW)
+    return -1; // not a shownet packet
+
+  // We only handle data from the first slot
+  int enc_len = packet.indexBlock[1] - packet.indexBlock[0];
+  if (enc_len < 1 || packet.netSlot[0] == 0) {
+    LLA_WARN << "Invalid shownet packet";
+    return -1;
+  }
+  if (packet.indexBlock[1] >= data_size) {
+    LLA_WARN << "data offset is too large";
+    return -1;
+  }
+
+  unsigned int universe_id = (packet.netSlot[0] - 1) / DMX_UNIVERSE_SIZE;
+  map<unsigned int, universe_handler>::iterator iter =
+    m_handlers.find(universe_id);
+
+  if (iter == m_handlers.end()) {
+    LLA_DEBUG << "Not interested in universe " << universe_id <<
+      ", skipping ";
+    return -1;
+  }
+
+  unsigned int slot_len = packet.slotSize[0];
+  int start_channel = (packet.netSlot[0] - 1) % DMX_UNIVERSE_SIZE;
+
+  if (slot_len != enc_len) {
+    m_encoder->Decode(iter->second.buffer,
+                      start_channel,
+                      packet.data + packet.indexBlock[0],
+                      enc_len);
+  } else {
+    iter->second.buffer.SetRange(start_channel,
+                                 packet.data + packet.indexBlock[0],
+                                 enc_len);
+  }
+  iter->second.closure->Run();
 }
 
 
@@ -217,7 +299,7 @@ int ShowNetNode::SocketReady(class ConnectedSocket *socket) {
 bool ShowNetNode::InitNetwork() {
   m_socket = new UdpSocket();
 
-  if (!m_socket->Init(SHOWNET_PORT)) {
+  if (!m_socket->Bind(SHOWNET_PORT)) {
     delete m_socket;
     return false;
   }
@@ -226,9 +308,6 @@ bool ShowNetNode::InitNetwork() {
     delete m_socket;
     return false;
   }
-
-  // add ourself as a listenr
-  m_socket->SetListener(this);
 
   return true;
 }

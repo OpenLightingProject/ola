@@ -9,3 +9,13 @@ libllashownet_la_LDFLAGS = -version-info 0:0:0
 
 pkginclude_HEADERS = ShowNetNode.h
 pkgincludedir = $(includedir)/lla/shownet
+
+
+# Test Programs
+TESTS = ShowNetTester
+check_PROGRAMS = $(TESTS)
+ShowNetTester_SOURCES = ShowNetTester.cpp RunLengthEncoderTest.cpp \
+                        RunLengthEncoder.cpp
+ShowNetTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
+ShowNetTester_LDFLAGS = $(CPPUNIT_LIBS)
+ShowNetTester_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf ../../common/libllacommon.la
