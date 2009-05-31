@@ -33,7 +33,7 @@ class BaseClosure {
 
 
 /*
- * Base Closure
+ * Closure, this is a closure that can be called multiple times
  */
 class Closure: public BaseClosure {
   public:
@@ -43,7 +43,7 @@ class Closure: public BaseClosure {
 
 
 /*
- * A single use closure
+ * A single use closure, this deletes itself after it's run.
  */
 class SingleUseClosure: public BaseClosure {
   public:
@@ -55,110 +55,148 @@ class SingleUseClosure: public BaseClosure {
     }
 };
 
+
 /*
- * A templatized Closure, with no arguments
+ * A function closure, with no arguments
  */
-template <typename Class, typename Parent>
-class ObjectClosure: public Parent {
+template <typename Parent>
+class FunctionClosure: public Parent {
   public:
-    typedef int (Class::*RequestHandler)();
+    typedef int (*Callback)();
 
     /*
-     * @param object the object to use in the method call
-     * @param handler the method to call
+     * @param callback the function to call
      */
-    ObjectClosure(Class *object,
-                  RequestHandler handler):
+    FunctionClosure(Callback callback):
       Parent(),
-      m_object(object),
-      m_handler(handler) {}
-    int DoRun() { return (m_object->*m_handler)(); }
+      m_callback(callback) {}
+    int DoRun() { return m_callback(); }
 
   private:
-    Class *m_object;
-    RequestHandler m_handler;
+    Callback m_callback;
 };
 
 
 /*
- * Create a new single use Closure. See above.
+ * Create a new single use function closure.
+ */
+inline SingleUseClosure* NewSingleClosure(int (*callback)()) {
+  return new FunctionClosure<SingleUseClosure>(callback);
+}
+
+
+/*
+ * Create a new function closure.
+ */
+inline Closure* NewClosure(int (*callback)()) {
+  return new FunctionClosure<Closure>(callback);
+}
+
+
+/*
+ * An method closure with no arguments
+ */
+template <typename Class, typename Parent>
+class MethodClosure: public Parent {
+  public:
+    typedef int (Class::*Callback)();
+
+    /*
+     * @param object the object to use in the method call
+     * @param callback the method to call
+     */
+    MethodClosure(Class *object,
+                  Callback callback):
+      Parent(),
+      m_object(object),
+      m_callback(callback) {}
+    int DoRun() { return (m_object->*m_callback)(); }
+
+  private:
+    Class *m_object;
+    Callback m_callback;
+};
+
+
+/*
+ * Create a new single use method closure.
  */
 template <typename Class>
 inline SingleUseClosure* NewSingleClosure(Class* object,
                                           int (Class::*method)()) {
-  return new ObjectClosure<Class, SingleUseClosure>(object, method);
+  return new MethodClosure<Class, SingleUseClosure>(object, method);
 }
 
 
 /*
- * Create a new Closure. See above.
+ * Create a new method closure.
  */
 template <typename Class>
 inline Closure* NewClosure(Class* object,
                            int (Class::*method)()) {
-  return new ObjectClosure<Class, Closure>(object, method);
+  return new MethodClosure<Class, Closure>(object, method);
 }
 
 
 /*
- * A templatized Closure, that takes one argument
+ * A method closure that takes one argument
  */
 template <typename Class, typename Parent, typename Arg>
-class ObjectArgClosure: public Parent {
+class MethodArgClosure: public Parent {
   public:
-    typedef int (Class::*RequestHandler)(Arg arg);
+    typedef int (Class::*Callback)(Arg arg);
 
     /*
      * @param object the object to use in the method call
      * @param handle the method to call
      * @param arg the argument to pass to the method
      */
-    ObjectArgClosure(Class *object,
-                     RequestHandler handler,
+    MethodArgClosure(Class *object,
+                     Callback callback,
                      Arg arg):
       Parent(),
       m_object(object),
-      m_handler(handler),
+      m_callback(callback),
       m_arg(arg) {}
-    int DoRun() { return (m_object->*m_handler)(m_arg); }
+    int DoRun() { return (m_object->*m_callback)(m_arg); }
 
   private:
     Class *m_object;
-    RequestHandler m_handler;
+    Callback m_callback;
     Arg m_arg;
 };
 
 
 /*
- * Create a new single use Closure
+ * Create a new single use one-arg method closure
  */
 template <typename Class, typename Arg>
 inline SingleUseClosure* NewSingleClosure(Class* object,
                                           int (Class::*method)(Arg arg),
                                           Arg arg) {
-  return new ObjectArgClosure<Class, SingleUseClosure, Arg>(object, method,
+  return new MethodArgClosure<Class, SingleUseClosure, Arg>(object, method,
                                                             arg);
 }
 
 
 /*
- * Create a new Closure
+ * Create a new one-arg method closure
  */
 template <typename Class, typename Arg>
 inline Closure* NewClosure(Class* object,
                            int (Class::*method)(Arg arg),
                            Arg arg) {
-  return new ObjectArgClosure<Class, Closure, Arg>(object, method, arg);
+  return new MethodArgClosure<Class, Closure, Arg>(object, method, arg);
 }
 
 
 /*
- * A templatized Closure, that takes two arguments
+ * A method closure that takes two arguments
  */
 template <typename Class, typename Parent, typename Arg, typename Arg2>
-class ObjectTwoArgClosure: public Parent {
+class MethodTwoArgClosure: public Parent {
   public:
-    typedef int (Class::*RequestHandler)(Arg arg, Arg2 arg2);
+    typedef int (Class::*Callback)(Arg arg, Arg2 arg2);
 
     /*
      * @param object the object to use in the method call
@@ -166,27 +204,27 @@ class ObjectTwoArgClosure: public Parent {
      * @param arg the argument to pass to the method
      * @param arg2 the second argument to pass to the method
      */
-    ObjectTwoArgClosure(Class *object,
-                        RequestHandler handler,
+    MethodTwoArgClosure(Class *object,
+                        Callback callback,
                         Arg arg,
                         Arg2 arg2):
       Parent(),
       m_object(object),
-      m_handler(handler),
+      m_callback(callback),
       m_arg(arg),
       m_arg2(arg2) {}
-    int DoRun() { return (m_object->*m_handler)(m_arg, m_arg2); }
+    int DoRun() { return (m_object->*m_callback)(m_arg, m_arg2); }
 
   private:
     Class *m_object;
-    RequestHandler m_handler;
+    Callback m_callback;
     Arg m_arg;
     Arg2 m_arg2;
 };
 
 
 /*
- * Create a new single use Closure
+ * Create a new single use two-arg method closure
  */
 template <typename Class, typename Arg, typename Arg2>
 inline SingleUseClosure* NewSingleClosure(
@@ -194,19 +232,19 @@ inline SingleUseClosure* NewSingleClosure(
     int (Class::*method)(Arg arg, Arg2 arg2),
     Arg arg,
     Arg2 arg2) {
-  return new ObjectTwoArgClosure<Class, SingleUseClosure, Arg, Arg2>
+  return new MethodTwoArgClosure<Class, SingleUseClosure, Arg, Arg2>
                  (object, method, arg, arg2);
 }
 
 
 /*
- * Create a new Closure
+ * Create a new two-arg method closure
  */
 template <typename Class, typename Arg, typename Arg2>
 inline Closure* NewClosure(Class* object,
                            int (Class::*method)(Arg arg, Arg2 arg2),
                            Arg arg, Arg2 arg2) {
-  return new ObjectTwoArgClosure<Class, Closure, Arg, Arg2>
+  return new MethodTwoArgClosure<Class, Closure, Arg, Arg2>
                  (object, method, arg, arg2);
 }
 
