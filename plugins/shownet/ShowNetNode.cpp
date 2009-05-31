@@ -18,13 +18,12 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <algorithm>
 #include <lla/Logging.h>
 #include "RunLengthEncoder.h"
 #include "ShowNetNode.h"
 #include "ShowNetPackets.h"
 
-
-#include <arpa/inet.h>
 
 namespace lla {
 namespace shownet {
@@ -148,8 +147,8 @@ bool ShowNetNode::SendDMX(unsigned int universe,
   if (!m_encoder->Encode(buffer, packet.data, enc_len))
     LLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
 
-  packet.indexBlock[0] = 0x0b;
-  packet.indexBlock[1] = 0x0b + enc_len;
+  packet.indexBlock[0] = MAGIC_INDEX_OFFSET;
+  packet.indexBlock[1] = MAGIC_INDEX_OFFSET + enc_len;
   packet.indexBlock[2] = 0;
   packet.indexBlock[3] = 0;
   packet.indexBlock[4] = 0;
@@ -183,7 +182,7 @@ DmxBuffer ShowNetNode::GetDMX(unsigned int universe) {
   map<unsigned int, universe_handler>::const_iterator iter =
     m_handlers.find(universe);
 
-  if (iter == m_handlers.end())
+  if (iter != m_handlers.end())
     return iter->second.buffer;
   else {
     DmxBuffer buffer;
@@ -265,8 +264,10 @@ int ShowNetNode::SocketReady() {
 
   unsigned int data_size = packet_size - header_size;
 
-  if (packet.sigHi != SHOWNET_ID_HIGH || packet.sigLo == SHOWNET_ID_LOW)
-    return -1; // not a shownet packet
+  if (packet.sigHi != SHOWNET_ID_HIGH || packet.sigLo != SHOWNET_ID_LOW) {
+    LLA_INFO << "Skipping a packet that isn't shownet";
+    return -1;
+  }
 
   // We only handle data from the first slot
   int enc_len = packet.indexBlock[1] - packet.indexBlock[0];
@@ -292,14 +293,17 @@ int ShowNetNode::SocketReady() {
   unsigned int slot_len = packet.slotSize[0];
   int start_channel = (packet.netSlot[0] - 1) % DMX_UNIVERSE_SIZE;
 
+  unsigned int data_offset =
+    std::max(0, packet.indexBlock[0] - MAGIC_INDEX_OFFSET);
+
   if (slot_len != enc_len) {
     m_encoder->Decode(iter->second.buffer,
                       start_channel,
-                      packet.data + packet.indexBlock[0],
+                      packet.data + data_offset,
                       enc_len);
   } else {
     iter->second.buffer.SetRange(start_channel,
-                                 packet.data + packet.indexBlock[0],
+                                 packet.data + data_offset,
                                  enc_len);
   }
   iter->second.closure->Run();

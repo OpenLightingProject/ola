@@ -61,6 +61,7 @@ class ShowNetNode {
     static const unsigned short SHOWNET_PORT = 2501;
     static const uint8_t SHOWNET_ID_HIGH = 0x80;
     static const uint8_t SHOWNET_ID_LOW = 0x8f;
+    static const int MAGIC_INDEX_OFFSET = 11;
 
     bool InitNetwork();
     inline uint8_t ShortGetHigh(uint16_t x) const { return (0xff00 & x) >> 8; }
