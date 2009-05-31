@@ -23,6 +23,9 @@
 #include "ShowNetNode.h"
 #include "ShowNetPackets.h"
 
+
+#include <arpa/inet.h>
+
 namespace lla {
 namespace shownet {
 
@@ -242,14 +245,22 @@ int ShowNetNode::SocketReady() {
   shownet_data_packet packet;
   memset(&packet, 0, sizeof(packet));
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
+  struct sockaddr_in source;
+  socklen_t source_length = sizeof(source);
 
-  //read here
   ssize_t packet_size = sizeof(packet);
-  m_socket->RecvFrom((uint8_t*) &packet, packet_size);
+  if(!m_socket->RecvFrom((uint8_t*) &packet, packet_size, source,
+                          source_length))
+    return -1;
 
   if (packet_size < header_size) {
     LLA_WARN << "Small shownet packet received, discarding";
     return -1;
+  }
+
+  // skip packets sent by us
+  if (source.sin_addr.s_addr == m_interface.ip_address.s_addr) {
+    return 0;
   }
 
   unsigned int data_size = packet_size - header_size;
@@ -319,6 +330,8 @@ bool ShowNetNode::InitNetwork() {
     delete m_socket;
     return false;
   }
+
+  m_socket->SetOnData(NewClosure(this, &ShowNetNode::SocketReady));
 
   return true;
 }

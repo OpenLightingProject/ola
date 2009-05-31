@@ -23,7 +23,6 @@
 
 #include <lla/Closure.h>
 #include <lla/Logging.h>
-#include <llad/Universe.h>
 
 
 namespace lla {
@@ -55,9 +54,11 @@ bool ShowNetPort::WriteDMX(const DmxBuffer &buffer) {
   return true;
 }
 
+
 const DmxBuffer &ShowNetPort::ReadDMX() const {
   return m_buffer;
 }
+
 
 /*
  * Called when there is new dmx data
@@ -68,6 +69,7 @@ int ShowNetPort::UpdateBuffer() {
   m_buffer = node->GetDMX(ShowNetUniverseId());
   return DmxChanged();
 }
+
 
 /*
  * We intecept this to setup/remove the dmx handler

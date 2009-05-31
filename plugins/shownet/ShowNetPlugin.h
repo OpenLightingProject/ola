@@ -21,7 +21,7 @@
 #ifndef SHOWNETPLUGIN_H
 #define SHOWNETPLUGIN_H
 
-#include <llad/plugin.h>
+#include <llad/Plugin.h>
 #include <lla/plugin_id.h>
 
 namespace lla {

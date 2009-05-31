@@ -26,7 +26,6 @@
 #include "ShowNetDevice.h"
 #include "ShowNetPort.h"
 #include "ShowNetNode.h"
-//#include <llad/universe.h>
 
 namespace lla {
 namespace shownet {
@@ -73,7 +72,6 @@ bool ShowNetDevice::Start() {
   }
 
   m_plugin_adaptor->AddSocket(m_node->GetSocket());
-
   m_enabled = true;
   return true;
 }

@@ -271,6 +271,10 @@ class UdpSocket: public Socket {
     bool m_bound_to_port;
     UdpSocket(const UdpSocket &other);
     UdpSocket& operator=(const UdpSocket &other);
+    bool _RecvFrom(uint8_t *buffer,
+                   ssize_t &data_read,
+                   struct sockaddr_in *source,
+                   socklen_t *src_size) const;
 };
 
 

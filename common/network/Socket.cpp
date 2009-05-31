@@ -443,8 +443,8 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
  * @return true or false
  */
 bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t &data_read) const {
-  data_read = recvfrom(m_fd, buffer, data_read, 0, NULL, 0);
-  return data_read >= 0;
+  socklen_t length = 0;
+  return _RecvFrom(buffer, data_read, NULL, &length);
 }
 
 
@@ -459,11 +459,7 @@ bool UdpSocket::RecvFrom(uint8_t *buffer,
                          ssize_t &data_read,
                          struct sockaddr_in &source,
                          socklen_t &src_size) const {
-
-  data_read = recvfrom(m_fd, buffer, data_read, 0,
-                       (struct sockaddr*) &source,
-                       &src_size);
-  return data_read >= 0;
+  return _RecvFrom(buffer, data_read, &source, &src_size);
 }
 
 
@@ -486,6 +482,22 @@ bool UdpSocket::EnableBroadcast() {
   }
   return true;
 }
+
+
+bool UdpSocket::_RecvFrom(uint8_t *buffer,
+                          ssize_t &data_read,
+                          struct sockaddr_in *source,
+                          socklen_t *src_size) const {
+  data_read = recvfrom(m_fd, buffer, data_read, 0,
+                       (struct sockaddr*) source,
+                       src_size);
+  if (data_read < 0) {
+    LLA_WARN << "recvfrom failed: " << strerror(errno);
+    return false;
+  }
+  return true;
+}
+
 
 
 // TcpAcceptingSocket
