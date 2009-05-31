@@ -271,7 +271,5 @@ AC_OUTPUT( Makefile\
     plugins/usbpro/messages/libllausbproconf.pc \
     plugins/stageprofi/Makefile \
     plugins/opendmx/Makefile \
-    protocols/Makefile \
-    protocols/shownet/Makefile \
     liblla.pc \
     )
