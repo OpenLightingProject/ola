@@ -40,6 +40,7 @@
 #include <sys/timeb.h>
 
 #include <string>
+#include <lla/Closure.h>
 #include <lla/LlaClient.h>
 #include <lla/SimpleClient.h>
 #include <lla/network/SelectServer.h>
@@ -96,17 +97,6 @@ static int channels_offset=1;
 
 LlaClient *client;
 SelectServer *ss;
-
-
-class StdinFileDescriptor: public lla::network::Socket {
-  public:
-    StdinFileDescriptor() {}
-    ~StdinFileDescriptor() {}
-    int ReadDescriptor() const { return 0; }
-    int SocketReady();
-    bool IsClosed() const { return false; }
-    bool Close() { return true; }
-};
 
 
 void DMXsleep(int usec) {
@@ -470,7 +460,7 @@ void cleanup() {
     puts(error_str.data());
 }
 
-int StdinFileDescriptor::SocketReady() {
+int stdin_ready() {
   int n;
   int c = wgetch(w);
   switch (c) {
@@ -632,7 +622,7 @@ int StdinFileDescriptor::SocketReady() {
 }
 
 int main (int argc, char *argv[]) {
-  int optc ;
+  int optc;
 
   signal(SIGWINCH, terminalresize);
   atexit(cleanup);
@@ -660,7 +650,8 @@ int main (int argc, char *argv[]) {
 
   /* set up lla connection */
   SimpleClient lla_client;
-  StdinFileDescriptor stdin_fd;
+  lla::network::UnmanagedSocket stdin_socket(0);
+  stdin_socket.SetOnData(lla::NewClosure(&stdin_ready));
 
   if (!lla_client.Setup()) {
     printf("error: %s", strerror(errno));
@@ -669,7 +660,7 @@ int main (int argc, char *argv[]) {
 
   client = lla_client.GetClient();
   ss = lla_client.GetSelectServer();
-  ss->AddSocket(&stdin_fd);
+  ss->AddSocket(&stdin_socket);
 
   /* init curses */
   w = initscr();

@@ -43,6 +43,7 @@
 #include <sys/timeb.h>
 
 #include <string>
+#include <lla/Closure.h>
 #include <lla/LlaClient.h>
 #include <lla/SimpleClient.h>
 #include <lla/network/SelectServer.h>
@@ -52,17 +53,6 @@ using lla::LlaClientObserver;
 using lla::network::SelectServer;
 using lla::SimpleClient;
 using std::string;
-
-class StdinFileDescriptor: public lla::network::Socket {
-  public:
-    StdinFileDescriptor() {}
-    ~StdinFileDescriptor() {}
-    int ReadDescriptor() const { return 0; }
-    int SocketReady();
-    bool IsClosed() const { return false; }
-    bool Close() { return true; }
-};
-
 
 /* color names used */
 enum {
@@ -365,7 +355,7 @@ void dmx_handler() {
     refresh();
 }
 
-int StdinFileDescriptor::SocketReady() {
+int stdin_ready() {
   int n;
   int c = wgetch(w);
 
@@ -485,7 +475,8 @@ int main (int argc, char *argv[]) {
 
   /* set up lla connection */
   SimpleClient lla_client;
-  StdinFileDescriptor stdin_fd;
+  lla::network::UnmanagedSocket stdin_socket(0);
+  stdin_socket.SetOnData(lla::NewClosure(&stdin_ready));
 
   if (!lla_client.Setup()) {
     printf("error: %s", strerror(errno));
@@ -494,7 +485,7 @@ int main (int argc, char *argv[]) {
 
   client = lla_client.GetClient();
   ss = lla_client.GetSelectServer();
-  ss->AddSocket(&stdin_fd);
+  ss->AddSocket(&stdin_socket);
 
   client->SetObserver(&observer);
 
