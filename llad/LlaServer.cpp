@@ -235,7 +235,7 @@ void LlaServer::ReloadPlugins() {
 
 /*
  * Add a new ConnectedSocket to this Server.
- * @param socket the new ConnectedSocket
+ * @param accepting_socket the AcceptingSocket with the new connection pending.
  */
 int LlaServer::AcceptNewConnection(
     lla::network::AcceptingSocket *accepting_socket) {
@@ -243,6 +243,18 @@ int LlaServer::AcceptNewConnection(
 
   if (!socket)
     return 0;
+
+  return NewConnection(socket) ? 0 : -1;
+}
+
+
+/*
+ * Add a new ConnectedSocket to this Server.
+ * @param socket the new ConnectedSocket
+ */
+bool LlaServer::NewConnection(lla::network::ConnectedSocket *socket) {
+  if (!socket)
+    return -1;
 
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket);
   socket->SetOnClose(NewClosure(this, &LlaServer::SocketClosed, socket));

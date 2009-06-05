@@ -66,6 +66,7 @@ class LlaServer {
     bool Init();
     void ReloadPlugins();
     int AcceptNewConnection(lla::network::AcceptingSocket *socket);
+    bool NewConnection(lla::network::ConnectedSocket *socket);
     int SocketClosed(lla::network::ConnectedSocket *socket);
     int GarbageCollect();
 
