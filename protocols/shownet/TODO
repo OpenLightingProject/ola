@@ -1,6 +1,0 @@
-add some tests
-
-check strand encoding of worst case data:
-1 2 2 1
-
-Currently this only implements the DMX packets (and it's a hack job at that)
