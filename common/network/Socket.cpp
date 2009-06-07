@@ -324,6 +324,9 @@ bool TcpSocket::Close() {
 // ------------------------------------------------
 
 bool DeviceSocket::Close() {
+  if (m_fd == INVALID_SOCKET)
+    return true;
+
   int ret = close(m_fd);
   m_fd = INVALID_SOCKET;
   return ret == 0;

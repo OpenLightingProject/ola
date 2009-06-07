@@ -157,6 +157,8 @@ bool ShowNetNode::SendDMX(unsigned int universe,
   packet.packetCountLo = ShortGetLow(m_packet_count);
 
   // magic numbers - not sure what these do
+  packet.block[0] = 0;
+  packet.block[1] = 0;
   packet.block[2] = 0x58;
   packet.block[3] = 0x02;
   strncpy((char*) packet.name, m_node_name.data(), SHOWNET_NAME_LENGTH);
