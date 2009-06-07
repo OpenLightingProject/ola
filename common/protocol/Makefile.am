@@ -10,4 +10,4 @@ Lla.pb.cc Lla.pb.h: Lla.proto
 	protoc --cpp_out ./ Lla.proto
 
 clean-local:
-	rm *.pb.{h,cc}
+	rm -f *.pb.{h,cc}

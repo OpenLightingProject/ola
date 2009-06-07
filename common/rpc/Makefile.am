@@ -30,7 +30,7 @@ RpcTester_LDADD = ./libstreamrpcchannel.la \
                   ../logging/liblogging.la
 
 clean-local:
-	rm *.pb.{h,cc}
+	rm -f *.pb.{h,cc}
 
 # this has the problem that it doesn't get rebuilt if a dependency changes.
 ../network/libnetwork.la:
