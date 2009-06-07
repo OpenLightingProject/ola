@@ -84,6 +84,7 @@ bool ShowNetDevice::Stop() {
   if (!m_enabled)
     return false;
 
+  m_plugin_adaptor->RemoveSocket(m_node->GetSocket());
   DeleteAllPorts();
   m_node->Stop();
   delete m_node;
