@@ -78,7 +78,7 @@ bool StageProfiWidget::SendDmx(const DmxBuffer &buffer) const {
  * Called when there is adata to read
  */
 int StageProfiWidget::SocketReady() {
-  while (m_socket->UnreadData() > 0) {
+  while (m_socket->DataRemaining() > 0) {
     DoRecv();
   }
   return 0;

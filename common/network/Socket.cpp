@@ -60,13 +60,14 @@ bool ConnectedSocket::SetNonBlocking(int fd) {
  * Find out how much data is left to read
  * @return the amount of unread data for the socket
  */
-int ConnectedSocket::DataRemaining(int fd) const {
+int ConnectedSocket::DataRemaining() const {
   int unread;
-  if (fd == INVALID_SOCKET)
+  if (ReadDescriptor() == INVALID_SOCKET)
     return 0;
 
-  if (ioctl(fd, FIONREAD, &unread) < 0) {
-    LLA_WARN << "ioctl error for " << fd << ", " << strerror(errno);
+  if (ioctl(ReadDescriptor(), FIONREAD, &unread) < 0) {
+    LLA_WARN << "ioctl error for " << ReadDescriptor() << ", "
+      << strerror(errno);
     return 0;
   }
   return unread;
@@ -130,33 +131,13 @@ int ConnectedSocket::FDReceive(int fd,
 }
 
 
-
 /*
- * Close this socket
- * @return true if close succeeded, false otherwise
-bool ReceivingSocket::Close() {
-  bool ret = true;
-  if (m_read_fd != INVALID_SOCKET) {
-    if (close(m_read_fd)) {
-      LLA_WARN << "close() failed, " << strerror(errno);
-      ret = false;
-    }
-    m_read_fd = INVALID_SOCKET;
-  }
-  return ret;
-}
-
-
-/*
- * Check if this socket has been closed (this is a bit of a lie)
+ * Check if the remote end has closed the connection.
  * @return true if the socket is closed, false otherwise
-bool ReceivingSocket::IsClosed() const {
-  if (m_read_fd == INVALID_SOCKET)
-    return true;
-
-  return UnreadData() == 0;
-}
  */
+bool ConnectedSocket::IsClosed() const {
+  return DataRemaining() == 0;
+}
 
 
 // LoopbackSocket
@@ -195,6 +176,20 @@ bool LoopbackSocket::Close() {
   m_fd_pair[1] = INVALID_SOCKET;
   return true;
 }
+
+
+/*
+ * Close the write portion of the loopback socket
+ * @return true if close succeeded, false otherwise
+ */
+bool LoopbackSocket::CloseClient() {
+  if (m_fd_pair[1] != INVALID_SOCKET)
+    close(m_fd_pair[1]);
+
+  m_fd_pair[1] = INVALID_SOCKET;
+  return true;
+}
+
 
 
 // PipeSocket
@@ -253,6 +248,18 @@ bool PipeSocket::Close() {
     close(m_out_pair[1]);
 
   m_in_pair[0] = INVALID_SOCKET;
+  m_out_pair[1] = INVALID_SOCKET;
+  return true;
+}
+
+
+/*
+ * Close the write portion of this PipeSocket
+ */
+bool PipeSocket::CloseClient() {
+  if (m_out_pair[1] != INVALID_SOCKET)
+    close(m_out_pair[1]);
+
   m_out_pair[1] = INVALID_SOCKET;
   return true;
 }
@@ -586,15 +593,6 @@ bool TcpAcceptingSocket::Close() {
     }
   m_sd = INVALID_SOCKET;
   return ret;
-}
-
-
-/*
- * Check if this socket has been closed (this is a bit of a lie)
- * @return true if the socket is closed, false otherwise
- */
-bool TcpAcceptingSocket::IsClosed() const {
-  return m_sd == INVALID_SOCKET;
 }
 
 

@@ -254,7 +254,7 @@ bool UsbProWidget::ChangeToReceiveMode() {
  * Read data from the widget
  */
 int UsbProWidget::SocketReady() {
-  while (m_socket->UnreadData() > 0) {
+  while (m_socket->DataRemaining() > 0) {
     ReceiveMessage();
   }
   return 0;

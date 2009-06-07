@@ -44,19 +44,22 @@ class SelectServer {
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
-    bool AddSocket(class Socket *socket, bool delete_on_close=false);
+    bool AddSocket(class Socket *socket);
+    bool AddSocket(class ConnectedSocket *socket, bool delete_on_close=false);
     bool RemoveSocket(class Socket *socket);
+    bool RemoveSocket(class ConnectedSocket *socket);
     bool RegisterRepeatingTimeout(int ms, lla::Closure *closure);
     bool RegisterSingleTimeout(int ms, lla::SingleUseClosure *closure);
 
-    static const string K_FD_VAR;
+    static const string K_SOCKET_VAR;
+    static const string K_CONNECTED_SOCKET_VAR;
     static const string K_TIMER_VAR;
 
   private :
     typedef struct {
-      class Socket *socket;
+      class ConnectedSocket *socket;
       bool delete_on_close;
-    } registered_socket_t;
+    } connected_socket_t;
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
@@ -85,7 +88,9 @@ class SelectServer {
     };
 
     bool m_terminate;
-    vector<registered_socket_t> m_read_sockets;
+    vector<class Socket*> m_sockets;
+    vector<connected_socket_t> m_connected_sockets;
+    vector<Closure*> m_ready_queue;
     ExportMap *m_export_map;
 
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;

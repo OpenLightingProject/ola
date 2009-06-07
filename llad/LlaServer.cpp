@@ -257,7 +257,7 @@ bool LlaServer::NewConnection(lla::network::ConnectedSocket *socket) {
     return -1;
 
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket);
-  socket->SetOnClose(NewClosure(this, &LlaServer::SocketClosed, socket));
+  socket->SetOnClose(NewSingleClosure(this, &LlaServer::SocketClosed, socket));
   LlaClientService_Stub *stub = new LlaClientService_Stub(channel);
   Client *client = new Client(stub);
   LlaServerServiceImpl *service = m_service_factory->New(m_universe_store,

@@ -36,7 +36,8 @@
 
 using namespace lla::network;
 
-const string SelectServer::K_FD_VAR = "ss-fd-registered";
+const string SelectServer::K_SOCKET_VAR = "ss-sockets";
+const string SelectServer::K_CONNECTED_SOCKET_VAR = "ss-connected-sockets";
 const string SelectServer::K_TIMER_VAR = "ss-timer-functions";
 
 using lla::ExportMap;
@@ -50,7 +51,7 @@ SelectServer::SelectServer(ExportMap *export_map):
   m_export_map(export_map) {
 
   if (m_export_map) {
-    lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
+    lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_SOCKET_VAR);
     var = m_export_map->GetIntegerVar(K_TIMER_VAR);
   }
 }
@@ -69,30 +70,56 @@ int SelectServer::Run() {
 
 
 /*
- * Register a socket with the select server.
- * @param socket the socket to register
- * @param on_data the closure to call when this socket is ready, ownership of
- *   the closure is transferred to the select server.
- * @param on_close the closure to call when this socket is closed (determined
- * by calling IsClosed() on the socket). Ownership of the closure is
- *   transferred to the select server.
+ * Register a Socket with the select server.
+ * @param Socket the socket to register. The OnData closure of this socket will
+ *   be called when there is data available for reading.
+ * @return true on success, false on failure.
+ */
+bool SelectServer::AddSocket(Socket *socket) {
+  if (socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
+    LLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
+    return false;
+  }
+
+  vector<Socket*>::const_iterator iter;
+  for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
+    if ((*iter)->ReadDescriptor() == socket->ReadDescriptor()) {
+      LLA_WARN << "While trying add to add " << socket->ReadDescriptor() <<
+        ", fd already exists in the list of read fds";
+      return false;
+    }
+  }
+
+  m_sockets.push_back(socket);
+  if (m_export_map)
+    m_export_map->GetIntegerVar(K_SOCKET_VAR)->Increment();
+  return true;
+}
+
+
+/*
+ * Register a ConnectedSocket with the select server.
+ * @param socket the socket to register. The OnData method will be called when
+ * there is data available for reading. Additionally, OnClose will be called
+ *   if the other end closes the connection
  * @param delete_on_close controls whether the select server deletes the socket
  *   once it's closed.
  * @return true on sucess, false on failure.
  */
-bool SelectServer::AddSocket(Socket *socket,
+bool SelectServer::AddSocket(ConnectedSocket *socket,
                              bool delete_on_close) {
   if (socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
     LLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
     return false;
   }
 
-  registered_socket_t registered_socket;
+  connected_socket_t registered_socket;
   registered_socket.socket = socket;
   registered_socket.delete_on_close = delete_on_close;
 
-  vector<registered_socket_t>::const_iterator iter;
-  for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
+  vector<connected_socket_t>::const_iterator iter;
+  for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
+       ++iter) {
     if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
       LLA_WARN << "While trying add to add " << socket->ReadDescriptor() <<
         ", fd already exists in the list of read fds";
@@ -100,32 +127,52 @@ bool SelectServer::AddSocket(Socket *socket,
     }
   }
 
-  m_read_sockets.push_back(registered_socket);
-  if (m_export_map) {
-    lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
-    var->Increment();
-  }
+  m_connected_sockets.push_back(registered_socket);
+  if (m_export_map)
+    m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR)->Increment();
   return true;
 }
 
 
 /*
- * Register a socket with the select server
+ * Unregister a Socket with the select server
  * @param socket the Socket to remove
  * @return true if removed successfully, false otherwise
  */
-bool SelectServer::RemoveSocket(class Socket *socket) {
+bool SelectServer::RemoveSocket(Socket *socket) {
   if (socket->ReadDescriptor() == Socket::INVALID_SOCKET)
     LLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
 
-  vector<registered_socket_t>::iterator iter;
-  for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
-    if (iter->socket == socket) {
-      m_read_sockets.erase(iter);
-      if (m_export_map) {
-        lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_FD_VAR);
-        var->Decrement();
-      }
+  vector<Socket*>::iterator iter;
+  for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
+    if ((*iter)->ReadDescriptor() == socket->ReadDescriptor()) {
+      m_sockets.erase(iter);
+      if (m_export_map)
+        m_export_map->GetIntegerVar(K_SOCKET_VAR)->Decrement();
+      return true;
+    }
+  }
+  LLA_WARN << "Socket " << socket->ReadDescriptor() << " not found in list";
+  return false;
+}
+
+
+/*
+ * Unregister a ConnectedSocket with the select server
+ * @param socket the Socket to remove
+ * @return true if removed successfully, false otherwise
+ */
+bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
+  if (socket->ReadDescriptor() == Socket::INVALID_SOCKET)
+    LLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
+
+  vector<connected_socket_t>::iterator iter;
+  for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
+       ++iter) {
+    if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
+      m_connected_sockets.erase(iter);
+      if (m_export_map)
+        m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR)->Decrement();
       return true;
     }
   }
@@ -231,47 +278,77 @@ bool SelectServer::CheckForEvents() {
  * Add all the read sockets to the FD_SET
  */
 void SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
-  vector<registered_socket_t>::const_iterator iter;
-  for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
-    max_sd = max(max_sd, iter->socket->ReadDescriptor());
-    FD_SET(iter->socket->ReadDescriptor(), &set);
+  vector<Socket*>::const_iterator iter;
+  for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
+    if ((*iter)->ReadDescriptor() == Socket::INVALID_SOCKET) {
+      // The socket was probably closed without removing it from the select
+      // server
+      LLA_WARN << "Not adding an invalid socket";
+      continue;
+    }
+    max_sd = max(max_sd, (*iter)->ReadDescriptor());
+    FD_SET((*iter)->ReadDescriptor(), &set);
+  }
+
+  vector<connected_socket_t>::const_iterator con_iter;
+  for (con_iter = m_connected_sockets.begin();
+       con_iter != m_connected_sockets.end(); ++con_iter) {
+    if (con_iter->socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
+      // The socket was probably closed without removing it from the select
+      // server
+      LLA_WARN << "Not adding an invalid socket";
+      continue;
+    }
+    max_sd = max(max_sd, con_iter->socket->ReadDescriptor());
+    FD_SET(con_iter->socket->ReadDescriptor(), &set);
   }
 }
 
 
 /*
  * Check all the registered sockets:
- *  - Call SocketReady() is there is new data
- *  - Handle the case when the socket gets closed
+ *  - Execute the callback for sockets with data
+ *  - Excute OnClose if a remote end closed the connection
  */
 void SelectServer::CheckSockets(fd_set &set) {
-  vector<Closure*> ready_queue;
+  // Because the callbacks can add or remove sockets from the select server, we
+  // have to call them after we've used the iterators.
+  m_ready_queue.clear();
 
-  vector<registered_socket_t>::iterator iter;
-  for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
-    if (FD_ISSET(iter->socket->ReadDescriptor(), &set)) {
-      if (iter->socket->IsClosed()) {
-        if (iter->socket->OnClose())
-          iter->socket->OnClose()->Run();
-        if (iter->delete_on_close)
-          delete iter->socket;
+  vector<Socket*>::iterator iter;
+  for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
+    if (FD_ISSET((*iter)->ReadDescriptor(), &set)) {
+      if ((*iter)->OnData())
+        m_ready_queue.push_back((*iter)->OnData());
+      else
+        LLA_FATAL << "Socket " << (*iter)->ReadDescriptor() <<
+          "is ready but no handler attached, this is bad!";
+    }
+  }
+
+  vector<connected_socket_t>::iterator con_iter;
+  for (con_iter = m_connected_sockets.begin();
+       con_iter != m_connected_sockets.end(); ++con_iter) {
+    if (FD_ISSET(con_iter->socket->ReadDescriptor(), &set)) {
+      if (con_iter->socket->CheckIfClosed()) {
+        if (con_iter->delete_on_close)
+          delete con_iter->socket;
         if (m_export_map)
-          m_export_map->GetIntegerVar(K_FD_VAR)->Decrement();
-        iter = m_read_sockets.erase(iter);
-        iter--;
+          m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR)->Decrement();
+        con_iter = m_connected_sockets.erase(con_iter);
+        con_iter--;
       } else {
-        if (iter->socket->OnData())
-          ready_queue.push_back(iter->socket->OnData());
+        if (con_iter->socket->OnData())
+          m_ready_queue.push_back(con_iter->socket->OnData());
         else
-          LLA_FATAL << "Socket is ready (" <<
-            iter->socket->ReadDescriptor() <<
-            ") but no handler attached, this is bad!";
+          LLA_FATAL << "Socket " << con_iter->socket->ReadDescriptor() <<
+            "is ready but no handler attached, this is bad!";
       }
     }
   }
 
   vector<Closure*>::iterator socket_iter;
-  for (socket_iter = ready_queue.begin(); socket_iter != ready_queue.end();
+  for (socket_iter = m_ready_queue.begin(); socket_iter != m_ready_queue.end();
       ++socket_iter) {
     (*socket_iter)->Run();
   }
@@ -322,13 +399,16 @@ struct timeval SelectServer::CheckTimeouts() {
  * Remove all registrations.
  */
 void SelectServer::UnregisterAll() {
-  vector<registered_socket_t>::iterator iter;
-  for (iter = m_read_sockets.begin(); iter != m_read_sockets.end(); ++iter) {
+  vector<connected_socket_t>::iterator iter;
+  for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
+       ++iter) {
     if (iter->delete_on_close) {
       delete iter->socket;
     }
   }
-  m_read_sockets.clear();
+  m_sockets.clear();
+  m_connected_sockets.clear();
+
   while (!m_events.empty()) {
     event_t event = m_events.top();
     if (event.repeating)

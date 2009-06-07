@@ -77,7 +77,8 @@ bool UsbProPlugin::StartHook() {
     }
 
     ConnectedSocket *socket = dev->GetSocket();
-    socket->SetOnClose(NewClosure(this, &UsbProPlugin::SocketClosed, socket));
+    socket->SetOnClose(NewSingleClosure(this, &UsbProPlugin::SocketClosed,
+                                        socket));
     m_plugin_adaptor->AddSocket(socket);
     m_plugin_adaptor->RegisterDevice(dev);
     m_devices.push_back(dev);

@@ -65,23 +65,42 @@ void SelectServerTest::tearDown() {
  */
 void SelectServerTest::testAddRemoveSocket() {
   LoopbackSocket bad_socket;
-  IntegerVariable *fd_count = m_map->GetIntegerVar(SelectServer::K_FD_VAR);
-  CPPUNIT_ASSERT_EQUAL(fd_count->Get(), 0);
+  IntegerVariable *connected_socket_count =
+    m_map->GetIntegerVar(SelectServer::K_CONNECTED_SOCKET_VAR);
+  IntegerVariable *socket_count =
+    m_map->GetIntegerVar(SelectServer::K_SOCKET_VAR);
+  CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
+  CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
   // adding and removin a non-connected socket should fail
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&bad_socket, NULL));
+  CPPUNIT_ASSERT(!m_ss->AddSocket(&bad_socket));
   CPPUNIT_ASSERT(!m_ss->RemoveSocket(&bad_socket));
 
   LoopbackSocket loopback_socket;
   loopback_socket.Init();
-  CPPUNIT_ASSERT_EQUAL(fd_count->Get(), 0);
-  CPPUNIT_ASSERT(m_ss->AddSocket(&loopback_socket, NULL));
+  CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
+  CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
+  CPPUNIT_ASSERT(m_ss->AddSocket(&loopback_socket));
   // Adding a second time should fail
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&loopback_socket, NULL));
-  CPPUNIT_ASSERT_EQUAL(fd_count->Get(), 1);
+  CPPUNIT_ASSERT(!m_ss->AddSocket(&loopback_socket));
+  CPPUNIT_ASSERT_EQUAL(1, connected_socket_count->Get());
+  CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
+
+  // Add a udp socket
+  UdpSocket udp_socket;
+  CPPUNIT_ASSERT(udp_socket.Init());
+  CPPUNIT_ASSERT(m_ss->AddSocket(&udp_socket));
+  CPPUNIT_ASSERT(!m_ss->AddSocket(&udp_socket));
+  CPPUNIT_ASSERT_EQUAL(1, connected_socket_count->Get());
+  CPPUNIT_ASSERT_EQUAL(1, socket_count->Get());
 
   // Check remove works
   CPPUNIT_ASSERT(m_ss->RemoveSocket(&loopback_socket));
-  CPPUNIT_ASSERT_EQUAL(fd_count->Get(), 0);
+  CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
+  CPPUNIT_ASSERT_EQUAL(1, socket_count->Get());
+  CPPUNIT_ASSERT(m_ss->RemoveSocket(&udp_socket));
+  CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
+  CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
+
   // Remove again should fail
   CPPUNIT_ASSERT(!m_ss->RemoveSocket(&loopback_socket));
 }

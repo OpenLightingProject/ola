@@ -37,12 +37,10 @@ namespace network {
  */
 class Socket {
   public :
-    Socket(): m_on_read(NULL), m_on_close(NULL) {}
+    Socket(): m_on_read(NULL) {}
     virtual ~Socket() {
       if (m_on_read)
         delete m_on_read;
-      if (m_on_close)
-        delete m_on_close;
     }
 
     /*
@@ -50,32 +48,25 @@ class Socket {
      */
     virtual int ReadDescriptor() const = 0;
     /*
-     * Used to check if the socket has been closed
-     */
-    virtual bool IsClosed() const = 0;
-    /*
      * Close this socket
      */
     virtual bool Close() = 0;
-    static const int INVALID_SOCKET = -1;
 
+    /*
+     * Set the OnData closure
+     */
     void SetOnData(lla::Closure *on_read) {
       if (m_on_read)
         delete m_on_read;
       m_on_read = on_read;
     }
 
-    void SetOnClose(lla::Closure *on_close) {
-      if (m_on_close)
-        delete m_on_close;
-      m_on_close = on_close;
-    }
     lla::Closure *OnData() const { return m_on_read; }
-    lla::Closure *OnClose() const { return m_on_close; }
+
+    static const int INVALID_SOCKET = -1;
 
   private:
     lla::Closure *m_on_read;
-    lla::Closure *m_on_close;
 };
 
 
@@ -84,35 +75,54 @@ class Socket {
  */
 class ConnectedSocket: public Socket {
   public:
-    ConnectedSocket() {}
-    virtual ~ConnectedSocket() {}
+    ConnectedSocket(): m_on_close(NULL) {}
+    virtual ~ConnectedSocket() {
+      if (m_on_close)
+        delete m_on_close;
+    }
 
     virtual int ReadDescriptor() const = 0;
     virtual int WriteDescriptor() const = 0;
-    virtual bool Close() = 0;
-    virtual bool IsClosed() const {
-      if (ReadDescriptor() == INVALID_SOCKET)
-        return true;
-
-      return UnreadData() == 0;
-    }
-    virtual int UnreadData() const { return DataRemaining(ReadDescriptor()); }
 
     virtual ssize_t Send(const uint8_t *buffer, unsigned int size) {
       return FDSend(WriteDescriptor(), buffer, size);
     }
+
     virtual int Receive(uint8_t *buffer,
                         unsigned int size,
                         unsigned int &data_read) {
       return FDReceive(ReadDescriptor(), buffer, size, data_read);
     }
+
     virtual bool SetReadNonBlocking() {
       return SetNonBlocking(ReadDescriptor());
     }
 
+    virtual bool Close() = 0;
+
+    int DataRemaining() const;
+
+    /*
+     * Used to check if the socket has been closed
+     */
+    bool CheckIfClosed() {
+      if (IsClosed()) {
+        m_on_close->Run();
+        m_on_close = NULL;
+        return true;
+      }
+      return false;
+    }
+
+    void SetOnClose(lla::SingleUseClosure *on_close) {
+      if (m_on_close)
+        delete m_on_close;
+      m_on_close = on_close;
+    }
+
   protected:
+    virtual bool IsClosed() const;
     bool SetNonBlocking(int fd);
-    int DataRemaining(int fd) const;
     ssize_t FDSend(int fd, const uint8_t *buffer, unsigned int size);
     int FDReceive(int fd,
                   uint8_t *buffer,
@@ -121,6 +131,8 @@ class ConnectedSocket: public Socket {
 
     ConnectedSocket(const ConnectedSocket &other);
     ConnectedSocket& operator=(const ConnectedSocket &other);
+  private:
+    lla::SingleUseClosure *m_on_close;
 };
 
 
@@ -139,6 +151,7 @@ class LoopbackSocket: public ConnectedSocket {
     int ReadDescriptor() const { return m_fd_pair[0]; }
     int WriteDescriptor() const { return m_fd_pair[1]; }
     bool Close();
+    bool CloseClient();
 
   private:
     int m_fd_pair[2];
@@ -164,6 +177,7 @@ class PipeSocket: public ConnectedSocket {
     int ReadDescriptor() const { return m_in_pair[0]; }
     int WriteDescriptor() const { return m_out_pair[1]; }
     bool Close();
+    bool CloseClient();
 
   private:
     int m_in_pair[2];
@@ -229,7 +243,6 @@ class UnmanagedSocket: public Socket {
     UnmanagedSocket(int sd): m_sd(sd) {}
     ~UnmanagedSocket() {}
     int ReadDescriptor() const { return m_sd; }
-    bool IsClosed() const { return false; }
     // Closing is left to something else
     bool Close() { return true; }
   private:
@@ -250,7 +263,6 @@ class UdpSocket: public Socket {
     bool Init();
     bool Bind(unsigned short port=INADDR_ANY);
     bool Close();
-    bool IsClosed() const { return m_fd == INVALID_SOCKET; }
     int ReadDescriptor() const { return m_fd; }
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
@@ -301,7 +313,6 @@ class TcpAcceptingSocket: public AcceptingSocket {
     bool Listen();
     int ReadDescriptor() const { return m_sd; }
     bool Close();
-    bool IsClosed() const;
     ConnectedSocket *Accept();
   private:
     std::string m_address;
