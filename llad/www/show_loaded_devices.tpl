@@ -46,12 +46,13 @@ function toggleL(event,id) {
 
    <div id="dev_{{ID:h}}" class="dev_list" style="display: {{SHOW:h}}">
 
-    <table class="dev_tbl">
+    <table class="dev_tbl" cellspacing="0">
     {{#PORT}}
      <tr {{#ODD}}class="odd"{{/ODD}}>
-      <td>{{PORT_ID:h}}</td>
-      <td>{{CAPABILITY:h}}</td>
-      <td><input type="text" name="{{ID:h}}_{{PORT_ID:h}}" size="4" value="{{UNIVERSE:h}}"/></td>
+      <td width="40px">{{PORT_ID:h}}</td>
+      <td width="40px">{{CAPABILITY:h}}</td>
+      <td width="60px"><input type="text" name="{{ID:h}}_{{PORT_ID:h}}" size="4" value="{{UNIVERSE:h}}"/></td>
+      <td>{{DESCRIPTION:h}}</td>
      </tr>
     {{/PORT}}
      </table>

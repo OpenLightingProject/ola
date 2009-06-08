@@ -88,7 +88,7 @@ bool UsbProDevice::Start() {
 
   /* set up ports */
   for (int i = 0; i < 2; i++) {
-    port = new UsbProPort(this, i);
+    port = new UsbProPort(this, i, m_path);
 
     if (port)
       AddPort(port);

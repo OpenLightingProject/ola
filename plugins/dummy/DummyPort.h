@@ -36,6 +36,8 @@ class DummyPort: public Port {
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
+    string Description() const { return "Dummy Port"; }
+
   private:
     DmxBuffer m_buffer;
 };

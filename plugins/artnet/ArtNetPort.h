@@ -36,6 +36,7 @@ class ArtNetPort: public Port {
     const DmxBuffer &ReadDMX() const;
     bool CanRead() const;
     bool CanWrite() const;
+    string Description() const;
   private:
     mutable DmxBuffer m_buffer;
 };

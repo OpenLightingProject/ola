@@ -17,30 +17,37 @@
  * The ShowNet plugin for lla
  * Copyright (C) 2005-2009 Simon Newton
  */
+#include <sstream>
 
-#include "ShowNetPort.h"
-#include "ShowNetDevice.h"
-
+#include <lla/BaseTypes.h>
 #include <lla/Closure.h>
 #include <lla/Logging.h>
 
+#include "ShowNetPort.h"
+#include "ShowNetDevice.h"
 
 namespace lla {
 namespace shownet {
 
 
 bool ShowNetPort::CanRead() const {
-  // ports 0 to 7 are input
-  return (PortId() < ShowNetNode::SHOWNET_MAX_UNIVERSES);
+  // even ports are input
+  return !(PortId() % 2);
 }
 
 
 bool ShowNetPort::CanWrite() const {
-  // ports 8 to 13 are output
-  return (PortId() >= ShowNetNode::SHOWNET_MAX_UNIVERSES &&
-          PortId() < 2 * ShowNetNode::SHOWNET_MAX_UNIVERSES);
+  // odd ports are output
+  return (PortId() % 2);
 }
 
+
+string ShowNetPort::Description() const {
+  std::stringstream str;
+  str << "ShowNet " << ShowNetUniverseId() * DMX_UNIVERSE_SIZE + 1 << "-" <<
+    (ShowNetUniverseId() + 1) * DMX_UNIVERSE_SIZE;
+  return str.str();
+}
 
 bool ShowNetPort::WriteDMX(const DmxBuffer &buffer) {
   ShowNetDevice *device = (ShowNetDevice*) GetDevice();

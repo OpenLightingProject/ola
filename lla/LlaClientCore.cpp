@@ -512,7 +512,8 @@ void LlaClientCore::HandleDeviceInfo(lla::rpc::SimpleRpcController *controller,
           LlaPort port(port_info.port_id(),
                        capability,
                        port_info.universe(),
-                       port_info.active());
+                       port_info.active(),
+                       port_info.description());
           device.AddPort(port);
         }
         lla_devices.push_back(device);

@@ -493,6 +493,7 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
     if ((*port_iter)->CanWrite())
       capability += "OUT";
     port_dict->SetValue("CAPABILITY", capability);
+    port_dict->SetValue("DESCRIPTION", (*port_iter)->Description());
 
     Universe *universe = (*port_iter)->GetUniverse();
     if (universe)

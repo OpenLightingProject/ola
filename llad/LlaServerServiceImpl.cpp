@@ -353,6 +353,7 @@ void LlaServerServiceImpl::AddDevice(AbstractDevice *device,
       PortInfo *port_info = device_info->add_port();
       port_info->set_port_id((*iter)->PortId());
       port_info->set_output_port((*iter)->CanWrite());
+      port_info->set_description((*iter)->Description());
 
       if ((*iter)->GetUniverse()) {
         port_info->set_active(true);
