@@ -45,6 +45,8 @@ class SimpleClient {
     bool Setup();
     bool Cleanup();
 
+    int SocketClosed();
+
   private:
     SimpleClient(const SimpleClient&);
     SimpleClient operator=(const SimpleClient&);

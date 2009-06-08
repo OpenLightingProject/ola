@@ -19,6 +19,7 @@
  */
 
 #include <lla/BaseTypes.h>
+#include <lla/Logging.h>
 #include <lla/SimpleClient.h>
 
 namespace lla {
@@ -53,6 +54,8 @@ bool SimpleClient::Setup() {
       m_ss = NULL;
       return false;
     }
+    m_socket->SetOnClose(
+        lla::NewSingleClosure(this, &SimpleClient::SocketClosed));
   }
 
   if (!m_client) {
@@ -80,5 +83,13 @@ bool SimpleClient::Cleanup() {
   return true;
 }
 
+/*
+ * Called if the server closed the connection
+ */
+int SimpleClient::SocketClosed() {
+  LLA_INFO << "Server closed the connection";
+  m_ss->Terminate();
+  return 0;
+}
 
 } // lla
