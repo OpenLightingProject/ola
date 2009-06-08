@@ -26,29 +26,30 @@
 
 namespace lla {
 
-namespace select_server {
+namespace network {
   class Socket;
   class SocketManager;
   class SelectServer;
 }
 
-class LlaClosure;
+class Closure;
+class SingleUseClosure;
 
 using std::string;
-using lla::select_server::Socket;
-using lla::select_server::SocketManager;
-using lla::select_server::SelectServer;
+using lla::network::Socket;
+using lla::network::SocketManager;
+using lla::network::SelectServer;
 
 class PluginAdaptor {
   public :
     PluginAdaptor(class DeviceManager *device_manager,
                   SelectServer *select_server,
                   class PreferencesFactory *preferences_factory);
-    int AddSocket(class Socket *socket,
-                  class SocketManager *manager=NULL) const;
-    int RemoveSocket(class Socket *socket) const;
 
-    bool RegisterTimeout(int ms, LlaClosure *closure, bool repeat=true) const;
+    bool AddSocket(class Socket *socket) const;
+    bool RemoveSocket(class Socket *socket) const;
+    bool RegisterRepeatingTimeout(int ms, Closure *closure) const;
+    bool RegisterSingleTimeout(int ms, SingleUseClosure *closure) const;
 
     int RegisterDevice(class AbstractDevice *device) const;
     int UnregisterDevice(class AbstractDevice *device) const;
@@ -60,7 +61,7 @@ class PluginAdaptor {
     PluginAdaptor& operator=(const PluginAdaptor&);
 
     DeviceManager *m_device_manager;
-    class lla::select_server::SelectServer *m_ss;
+    class lla::network::SelectServer *m_ss;
     class PreferencesFactory *m_preferences_factory;
 };
 

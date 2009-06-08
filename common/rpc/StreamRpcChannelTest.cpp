@@ -21,8 +21,8 @@
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 #include <google/protobuf/stubs/common.h>
-#include <lla/select_server/SelectServer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/SelectServer.h>
+#include <lla/network/Socket.h>
 #include "StreamRpcChannel.h"
 #include "SimpleRpcController.h"
 #include "TestServiceImpl.h"
@@ -30,7 +30,7 @@
 
 using namespace std;
 using namespace lla::rpc;
-using namespace lla::select_server;
+using namespace lla::network;
 using namespace google::protobuf;
 
 
@@ -54,7 +54,7 @@ class StreamRpcChannelTest: public CppUnit::TestFixture {
     EchoRequest m_request;
     EchoReply m_reply;
     TestService_Stub *m_stub;
-    lla::select_server::SelectServer m_ss;
+    lla::network::SelectServer m_ss;
     TestServiceImpl m_service;
     StreamRpcChannel *m_channel;
     LoopbackSocket *m_socket;
@@ -69,12 +69,13 @@ void StreamRpcChannelTest::setUp() {
   m_socket->Init();
 
   m_channel = new StreamRpcChannel(&m_service, m_socket);
-  m_stub = new TestService_Stub(m_channel);
   m_ss.AddSocket(m_socket);
+  m_stub = new TestService_Stub(m_channel);
 }
 
 
 void StreamRpcChannelTest::tearDown() {
+  m_ss.RemoveSocket(m_socket);
   delete m_socket;
   delete m_stub;
   delete m_channel;

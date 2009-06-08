@@ -15,86 +15,79 @@
  *
  * ShowNetPlugin.cpp
  * The ShowNet plugin for lla
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <llad/PluginAdaptor.h>
+#include <llad/Preferences.h>
 
 #include "ShowNetPlugin.h"
 #include "ShowNetDevice.h"
-
-const string ShowNetPlugin::SHOWNET_NODE_NAME = "lla-ShowNet";
-const string ShowNetPlugin::SHOWNET_DEVICE_NAME = "ShowNet Device";
-const string ShowNetPlugin::PLUGIN_NAME = "ShowNet Plugin";
-const string ShowNetPlugin::PLUGIN_PREFIX = "shownet";
 
 
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new ShowNetPlugin(pa, LLA_PLUGIN_SHOWNET);
+extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *adaptor) {
+  return new lla::shownet::ShowNetPlugin(adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(Plugin* plug) {
-  delete plug;
+extern "C" void destroy(lla::Plugin* plugin) {
+  delete plugin;
 }
 
 
+namespace lla {
+namespace shownet {
+
+
+const string ShowNetPlugin::SHOWNET_NODE_NAME = "lla-ShowNet";
+const string ShowNetPlugin::SHOWNET_DEVICE_NAME = "ShowNet Device";
+const string ShowNetPlugin::PLUGIN_NAME = "ShowNet Plugin";
+const string ShowNetPlugin::PLUGIN_PREFIX = "shownet";
+const string ShowNetPlugin::SHOWNET_NAME_KEY = "name";
+
 /*
  * Start the plugin
- *
- * For now we just have one device.
  */
-int ShowNetPlugin::start_hook() {
-  /* create new lla device */
-  m_dev = new ShowNetDevice(this, SHOWNET_DEVICE_NAME, m_prefs);
+bool ShowNetPlugin::StartHook() {
+  m_device = new ShowNetDevice(this, SHOWNET_DEVICE_NAME, m_preferences,
+                               m_plugin_adaptor);
 
-  if (m_dev == NULL)
-    return -1;
-
-  if (m_dev->start()) {
-    delete m_dev;
-    return -1;
+  if (!m_device->Start()) {
+    delete m_device;
+    return false;
   }
 
-  // register our descriptors
-  m_pa->register_fd( m_dev->get_sd(), PluginAdaptor::READ, m_dev);
-  m_pa->register_device(m_dev);
-
-  return 0;
+  m_plugin_adaptor->RegisterDevice(m_device);
+  return true;
 }
 
 
 /*
  * Stop the plugin
- *
- * @return 0 on sucess, -1 on failure
+ * @return true on sucess, false on failure
  */
-int ShowNetPlugin::stop_hook() {
-  m_pa->unregister_fd( m_dev->get_sd(), PluginAdaptor::READ);
+bool ShowNetPlugin::StopHook() {
 
   // stop the device
-  if (m_dev->stop())
-    return -1;
+  if (!m_device->Stop())
+    return false;
 
-  m_pa->unregister_device(m_dev);
-  delete m_dev;
-  return 0;
+  m_plugin_adaptor->UnregisterDevice(m_device);
+  delete m_device;
+  return true;
 }
+
 
 /*
  * return the description for this plugin
  *
  */
-string ShowNetPlugin::get_desc() const {
+string ShowNetPlugin::Description() const {
   return
 "ShowNet Plugin\n"
 "----------------------------\n"
@@ -111,31 +104,25 @@ string ShowNetPlugin::get_desc() const {
 "\n"
 "name = lla-ShowNet\n"
 "The name of the node.\n";
-
 }
 
 
 /*
- * load the plugin prefs and default to sensible values
- *
+ * Load the plugin prefs and default to sensible values
  */
-int ShowNetPlugin::set_default_prefs() {
-  if (m_prefs == NULL)
-    return -1;
+bool ShowNetPlugin::SetDefaultPreferences() {
+  if (!m_preferences)
+    return false;
 
-  // we don't worry about ip here
-  // if it's non existant it will choose one
-  if ( m_prefs->get_val("name") == "") {
-    m_prefs->set_val("name", SHOWNET_NODE_NAME);
-    m_prefs->save();
+  if (m_preferences->GetValue(SHOWNET_NAME_KEY).empty()) {
+    m_preferences->SetValue(SHOWNET_NAME_KEY, SHOWNET_NODE_NAME);
+    m_preferences->Save();
   }
 
-  // check if this save correctly
-  // we don't want to use it if null
-  if ( m_prefs->get_val("name") == "" ) {
-    delete m_prefs;
-    return -1;
-  }
-
-  return 0;
+  if (m_preferences->GetValue(SHOWNET_NAME_KEY).empty())
+    return false;
+  return true;
 }
+
+} //shownet
+} //lla

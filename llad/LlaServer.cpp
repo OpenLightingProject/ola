@@ -67,14 +67,14 @@ const unsigned int LlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
 LlaServer::LlaServer(LlaServerServiceImplFactory *factory,
                      PluginLoader *plugin_loader,
                      PreferencesFactory *preferences_factory,
-                     lla::select_server::SelectServer *select_server,
+                     lla::network::SelectServer *select_server,
                      lla_server_options *lla_options,
-                     lla::select_server::ListeningSocket *socket,
+                     lla::network::AcceptingSocket *socket,
                      ExportMap *export_map):
   m_service_factory(factory),
   m_plugin_loader(plugin_loader),
   m_ss(select_server),
-  m_listening_socket(socket),
+  m_accepting_socket(socket),
   m_device_manager(NULL),
   m_plugin_adaptor(NULL),
   m_preferences_factory(preferences_factory),
@@ -111,9 +111,6 @@ LlaServer::~LlaServer() {
   }
 #endif
 
-  //TODO: Remove the GarbageCollector closure from the select server and delete
-  //it here
-
   // stops and unloads all our plugins
   if (m_plugin_loader) {
     m_plugin_loader->SetPluginAdaptor(NULL);
@@ -131,6 +128,9 @@ LlaServer::~LlaServer() {
     socket->Close();
     */
   }
+
+  if (m_accepting_socket)
+    m_ss->RemoveSocket(m_accepting_socket);
 
   if (m_universe_store) {
     m_universe_store->DeleteAll();
@@ -164,11 +164,13 @@ bool LlaServer::Init() {
   if (!m_plugin_loader || !m_preferences_factory)
     return false;
 
-  if (m_listening_socket) {
-    m_listening_socket->SetListener(this);
-    if (!m_listening_socket->Listen())
+  if (m_accepting_socket) {
+    if (!m_accepting_socket->Listen())
       return false;
-    m_ss->AddSocket(m_listening_socket);
+    m_accepting_socket->SetOnData(
+      lla::NewClosure(this, &LlaServer::AcceptNewConnection,
+                      m_accepting_socket));
+    m_ss->AddSocket(m_accepting_socket);
   }
 
   signal(SIGPIPE, SIG_IGN);
@@ -208,9 +210,9 @@ bool LlaServer::Init() {
   }
 #endif
 
-  m_ss->RegisterTimeout(K_GARBAGE_COLLECTOR_TIMEOUT_MS,
-                        lla::NewClosure(this, &LlaServer::GarbageCollect),
-                        true);
+  m_ss->RegisterRepeatingTimeout(
+      K_GARBAGE_COLLECTOR_TIMEOUT_MS,
+      lla::NewClosure(this, &LlaServer::GarbageCollect));
 
   m_init_run = true;
   return true;
@@ -233,10 +235,29 @@ void LlaServer::ReloadPlugins() {
 
 /*
  * Add a new ConnectedSocket to this Server.
+ * @param accepting_socket the AcceptingSocket with the new connection pending.
+ */
+int LlaServer::AcceptNewConnection(
+    lla::network::AcceptingSocket *accepting_socket) {
+  lla::network::ConnectedSocket *socket = accepting_socket->Accept();
+
+  if (!socket)
+    return 0;
+
+  return NewConnection(socket) ? 0 : -1;
+}
+
+
+/*
+ * Add a new ConnectedSocket to this Server.
  * @param socket the new ConnectedSocket
  */
-int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
+bool LlaServer::NewConnection(lla::network::ConnectedSocket *socket) {
+  if (!socket)
+    return -1;
+
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket);
+  socket->SetOnClose(NewSingleClosure(this, &LlaServer::SocketClosed, socket));
   LlaClientService_Stub *stub = new LlaClientService_Stub(channel);
   Client *client = new Client(stub);
   LlaServerServiceImpl *service = m_service_factory->New(m_universe_store,
@@ -245,7 +266,6 @@ int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
                                                          client,
                                                          m_export_map);
   channel->SetService(service);
-  socket->SetListener(channel);
 
   map<int, LlaServerServiceImpl*>::const_iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
@@ -256,7 +276,7 @@ int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
   pair<int, LlaServerServiceImpl*> pair(socket->ReadDescriptor(), service);
   m_sd_to_service.insert(pair);
 
-  m_ss->AddSocket(socket, this, true);
+  m_ss->AddSocket(socket, true);
   IntegerVariable *var = m_export_map->GetIntegerVar(K_CLIENT_VAR);
   var->Increment();
   return 0;
@@ -266,7 +286,7 @@ int LlaServer::NewConnection(lla::select_server::ConnectedSocket *socket) {
 /*
  * Called when a socket is closed
  */
-void LlaServer::SocketClosed(lla::select_server::Socket *socket) {
+int LlaServer::SocketClosed(lla::network::ConnectedSocket *socket) {
   map<int, LlaServerServiceImpl*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
@@ -277,6 +297,7 @@ void LlaServer::SocketClosed(lla::select_server::Socket *socket) {
   var->Decrement();
   CleanupConnection(iter->second);
   m_sd_to_service.erase(iter);
+  return 0;
 }
 
 
@@ -337,7 +358,8 @@ void LlaServer::CleanupConnection(LlaServerServiceImpl *service) {
   for (uni_iter = universe_list->begin();
        uni_iter != universe_list->end();
        ++uni_iter) {
-    (*uni_iter)->RemoveClient(client);
+    (*uni_iter)->RemoveSourceClient(client);
+    (*uni_iter)->RemoveSinkClient(client);
   }
   delete universe_list;
   delete client->Stub()->channel();

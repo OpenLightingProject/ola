@@ -23,7 +23,8 @@
 #include <termios.h>
 #include <string.h>
 
-#include <lla/select_server/Socket.h>
+#include <lla/Closure.h>
+#include <lla/network/Socket.h>
 #include "StageProfiWidgetUsb.h"
 
 namespace lla {
@@ -44,7 +45,9 @@ bool StageProfiWidgetUsb::Connect(const std::string &path) {
   tcgetattr(fd, &newtio);
   cfsetospeed(&newtio, B38400);
   tcsetattr(fd, TCSANOW, &newtio);
-  m_socket = new ConnectedSocket(fd, fd);
+  m_socket = new lla::network::DeviceSocket(fd);
+  m_socket->SetOnData(NewClosure((StageProfiWidget*) this,
+                                 &StageProfiWidget::SocketReady));
   return true;
 }
 

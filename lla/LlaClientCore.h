@@ -28,7 +28,7 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include <lla/common.h>
 #include <lla/plugin_id.h>
 #include <lla/LlaDevice.h>
@@ -46,8 +46,7 @@ namespace lla {
 class LlaClientCoreServiceImpl;
 
 using std::string;
-using google::protobuf::Closure;
-using lla::select_server::ConnectedSocket;
+using lla::network::ConnectedSocket;
 using lla::rpc::SimpleRpcController;
 using lla::rpc::StreamRpcChannel;
 
@@ -112,14 +111,12 @@ class LlaClientCore {
     LlaClientServiceImpl *m_client_service;
     StreamRpcChannel *m_channel;
     lla::proto::LlaServerService_Stub *m_stub;
-
-    // instance vars
+    int m_connected;
+    LlaClientObserver *m_observer;
 #ifdef LLA_HAVE_PTHREAD
     pthread_mutex_t m_mutex;
 #endif
 
-    int m_connected;
-    LlaClientObserver *m_observer;
 };
 
 } // lla

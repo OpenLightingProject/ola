@@ -15,7 +15,7 @@
  *
  * Client.cpp
  * Represents a connected client.
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #include <google/protobuf/stubs/common.h>
@@ -28,7 +28,18 @@ namespace lla {
 using google::protobuf::NewCallback;
 using lla::rpc::SimpleRpcController;
 
-bool Client::SendDMX(unsigned int universe_id, const DmxBuffer &buffer) {
+Client::~Client() {
+  m_data_map.clear();
+}
+
+
+/*
+ * Send a DMX Update to this client
+ * @param universe the universe_id for this data
+ * @param buffer the DmxBuffer with the data
+ * @return true if the update was sent, false otherwise
+ */
+bool Client::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
   if (!m_client_stub) {
     LLA_FATAL << "client_stub is null";
     return false;
@@ -38,7 +49,7 @@ bool Client::SendDMX(unsigned int universe_id, const DmxBuffer &buffer) {
   lla::proto::DmxData dmx_data;
   lla::proto::Ack *ack = new lla::proto::Ack();
 
-  dmx_data.set_universe(universe_id);
+  dmx_data.set_universe(universe);
   dmx_data.set_data(buffer.Get());
 
   m_client_stub->UpdateDmxData(
@@ -50,14 +61,47 @@ bool Client::SendDMX(unsigned int universe_id, const DmxBuffer &buffer) {
 }
 
 
+/*
+ * Called when UpdateDmxData completes
+ */
 void Client::SendDMXCallback(SimpleRpcController *controller,
                              lla::proto::Ack *reply) {
   delete controller;
   delete reply;
 }
 
-void Client::SetDMX(const DmxBuffer &buffer) {
-  m_buffer = buffer;
+
+/*
+ * Called when this client sends us new data
+ * @param universe the id of the universe for the new data
+ * @param buffer the new data
+ */
+void Client::DMXRecieved(unsigned int universe, const DmxBuffer &buffer) {
+  map<unsigned int, DmxBuffer>::iterator iter = m_data_map.find(universe);
+
+  if (iter != m_data_map.end()) {
+    iter->second = buffer;
+  } else {
+    std::pair<unsigned int, DmxBuffer> pair(universe, buffer);
+    m_data_map.insert(pair);
+  }
+}
+
+
+/*
+ * Return the last dmx data sent by this client
+ * @param universe the id of the universe we're interested in
+ */
+const DmxBuffer Client::GetDMX(unsigned int universe) const {
+  map<unsigned int, DmxBuffer>::const_iterator iter =
+    m_data_map.find(universe);
+
+  if (iter != m_data_map.end()) {
+    return iter->second;
+  } else {
+    DmxBuffer empty_buffer;
+    return empty_buffer;
+  }
 }
 
 } //lla

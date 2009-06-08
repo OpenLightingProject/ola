@@ -23,7 +23,7 @@
 
 #include <string>
 #include <lla/DmxBuffer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include <llad/Device.h>
 
 namespace lla {
@@ -33,7 +33,7 @@ class AbstractPlugin;
 namespace plugin {
 
 using lla::Device;
-using lla::select_server::Socket;
+using lla::network::Socket;
 
 class StageProfiDevice: public Device {
   public:
@@ -43,7 +43,7 @@ class StageProfiDevice: public Device {
 
     bool Start();
     bool Stop();
-    Socket *GetSocket() const;
+    lla::network::ConnectedSocket *GetSocket() const;
     bool SendDmx(const DmxBuffer &buffer) const;
 
   private:

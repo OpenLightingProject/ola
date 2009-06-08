@@ -46,6 +46,8 @@ class AbstractPort {
     // indicate our port's capability
     virtual bool CanRead() const = 0;
     virtual bool CanWrite() const = 0;
+
+    virtual string Description() const = 0;
 };
 
 
@@ -63,6 +65,8 @@ class Port: public AbstractPort {
     // default is read/write
     virtual bool CanRead()  const { return true; }
     virtual bool CanWrite() const { return true; }
+
+    virtual string Description() const { return ""; }
 
   private:
     Port(const Port&);

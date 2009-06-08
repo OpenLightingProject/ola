@@ -25,7 +25,7 @@
 #include <llad/Plugin.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 
 #include <espnet/espnet.h>
 
@@ -35,8 +35,8 @@ namespace lla {
 namespace plugin {
 
 using std::string;
-using lla::select_server::ConnectedSocket;
-using lla::select_server::SocketListener;
+using lla::network::ConnectedSocket;
+using lla::network::SocketListener;
 using lla::Plugin;
 using lla::Preferences;
 using lla::PluginAdaptor;

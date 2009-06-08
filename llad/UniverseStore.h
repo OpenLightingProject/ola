@@ -48,8 +48,8 @@ class UniverseStore {
   private:
     UniverseStore(const lla::UniverseStore&);
     UniverseStore& operator=(const UniverseStore&);
-    int RestoreUniverseSettings(Universe *universe) const;
-    int SaveUniverseSettings(Universe *universe);
+    bool RestoreUniverseSettings(Universe *universe) const;
+    bool SaveUniverseSettings(Universe *universe);
 
     Preferences *m_preferences;
     ExportMap *m_export_map;

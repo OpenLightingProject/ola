@@ -29,13 +29,13 @@ namespace lla {
 namespace plugin {
 
 bool ArtNetPort::CanRead() const {
-  // ports 0 to 3 are input
-  return PortId() < ARTNET_MAX_PORTS;
+  // even ports are input
+  return !(PortId() % 2);
 }
 
 bool ArtNetPort::CanWrite() const {
-  // ports 4 to 7 are output
-  return (PortId() >= ARTNET_MAX_PORTS && PortId() < 2 * ARTNET_MAX_PORTS);
+  // odd ports are output
+  return (PortId() % 2);
 }
 
 
@@ -50,7 +50,7 @@ bool ArtNetPort::WriteDMX(const DmxBuffer &buffer) {
   if (!CanWrite())
     return false;
 
-  if (artnet_send_dmx(dev->GetArtnetNode(), this->PortId() % ARTNET_MAX_PORTS,
+  if (artnet_send_dmx(dev->GetArtnetNode(), this->PortId() / 2,
                       buffer.Size(), buffer.GetRaw())) {
     LLA_WARN << "artnet_send_dmx failed " << artnet_strerror();
     return false;
@@ -69,7 +69,8 @@ const DmxBuffer &ArtNetPort::ReadDMX() const {
 
   int length;
   ArtNetDevice *dev = (ArtNetDevice*) GetDevice();
-  uint8_t *dmx_data = artnet_read_dmx(dev->GetArtnetNode(), PortId(), &length);
+  uint8_t *dmx_data = artnet_read_dmx(dev->GetArtnetNode(), PortId() / 2,
+                                      &length);
 
   if(!dmx_data) {
     LLA_WARN << "artnet_read_dmx failed " << artnet_strerror();
@@ -102,25 +103,25 @@ bool ArtNetPort::SetUniverse(Universe *uni) {
   // an ArtNet output port
   if (CanRead()) {
     // input port
-    if (artnet_set_port_type(node, PortId(), ARTNET_ENABLE_OUTPUT,
+    if (artnet_set_port_type(node, PortId() / 2, ARTNET_ENABLE_OUTPUT,
                              ARTNET_PORT_DMX)) {
       LLA_WARN << "artnet_set_port_type failed " << artnet_strerror();
       return false;
     }
 
-    if (artnet_set_port_addr(node, PortId(), ARTNET_OUTPUT_PORT,
+    if (artnet_set_port_addr(node, PortId() / 2, ARTNET_OUTPUT_PORT,
                              artnet_port_id)) {
       LLA_WARN << "artnet_set_port_addr failed " << artnet_strerror();
       return false;
     }
 
   } else if (CanWrite()) {
-    if (artnet_set_port_type(node, PortId() % ARTNET_MAX_PORTS,
+    if (artnet_set_port_type(node, PortId() / 2,
                              ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX)) {
       LLA_WARN << "artnet_set_port_type failed " << artnet_strerror();
       return false;
     }
-    if (artnet_set_port_addr(node, PortId() % ARTNET_MAX_PORTS,
+    if (artnet_set_port_addr(node, PortId() / 2,
                              ARTNET_INPUT_PORT, artnet_port_id)) {
       LLA_WARN << "artnet_set_port_addr failed " << artnet_strerror();
       return false;
@@ -128,6 +129,22 @@ bool ArtNetPort::SetUniverse(Universe *uni) {
   }
   return true;
 }
+
+/*
+ * Return the port description
+ */
+string ArtNetPort::Description() const {
+  ArtNetDevice *dev = (ArtNetDevice*) GetDevice();
+  artnet_node node = dev->GetArtnetNode();
+  int universe_address = artnet_get_universe_addr(
+      node,
+      PortId() / 2,
+      CanWrite() ? ARTNET_INPUT_PORT : ARTNET_OUTPUT_PORT);
+  std::stringstream str;
+  str << "ArtNet Universe " << universe_address;
+  return str.str();
+}
+
 
 } //plugin
 } //lla

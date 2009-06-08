@@ -24,7 +24,7 @@
 #include <map>
 
 #include <llad/Device.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 
 #include <pathport/pathport.h>
 
@@ -36,8 +36,8 @@ namespace plugin {
 using lla::Plugin;
 using lla::PluginAdaptor;
 using lla::Preferences;
-using lla::select_server::ConnectedSocket;
-using lla::select_server::SocketListener;
+using lla::network::ConnectedSocket;
+using lla::network::SocketListener;
 using std::string;
 
 class PathportDevice: public lla::Device, public SocketListener {

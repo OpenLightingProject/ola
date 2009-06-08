@@ -25,15 +25,15 @@
 #include <string>
 #include <lla/DmxBuffer.h>
 #include <llad/Plugin.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include <lla/plugin_id.h>
 
 namespace lla {
 namespace plugin {
 
 class Dmx4LinuxDevice;
-using lla::select_server::SocketListener;
-using lla::select_server::ConnectedSocket;
+using lla::network::SocketListener;
+using lla::network::ConnectedSocket;
 
 class Dmx4LinuxPlugin: public lla::Plugin, public SocketListener {
   public:
@@ -47,7 +47,7 @@ class Dmx4LinuxPlugin: public lla::Plugin, public SocketListener {
     string Description() const;
     lla_plugin_id Id() const { return LLA_PLUGIN_DMX4LINUX; }
 
-    int SocketReady(lla::select_server::ConnectedSocket *socket);
+    int SocketReady(lla::network::ConnectedSocket *socket);
     bool SendDMX(int d4l_uni, const DmxBuffer &buffer) const;
 
   protected:

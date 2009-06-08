@@ -108,6 +108,7 @@ message DeviceInfoRequest {
 message PortInfo {
   required int32 port_id = 1;
   required bool output_port = 2;
+  required string description = 5;
   optional int32 universe = 3;
   optional bool active = 4;
 }

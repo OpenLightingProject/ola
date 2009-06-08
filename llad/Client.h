@@ -21,7 +21,7 @@
 #ifndef LLA_CLIENT_H
 #define LLA_CLIENT_H
 
-#include <stdint.h>
+#include <map>
 #include <lla/DmxBuffer.h>
 #include "common/rpc/SimpleRpcController.h"
 
@@ -34,27 +34,27 @@ namespace proto {
 
 namespace lla {
 
-using namespace std;
+using std::map;
 using lla::proto::LlaClientService_Stub;
 
 class Client {
   public :
     Client(LlaClientService_Stub *client_stub):
       m_client_stub(client_stub) {}
-    virtual ~Client() {};
+    virtual ~Client();
     virtual bool SendDMX(unsigned int universe_id, const DmxBuffer &buffer);
 
     void SendDMXCallback(lla::rpc::SimpleRpcController *controller,
                          lla::proto::Ack *ack);
-    void SetDMX(const DmxBuffer &buffer);
-    const DmxBuffer &GetDMX() const { return m_buffer; }
+    void DMXRecieved(unsigned int universe, const DmxBuffer &buffer);
+    const DmxBuffer GetDMX(unsigned int universe) const;
     class LlaClientService_Stub *Stub() const { return m_client_stub; }
 
   private:
     Client(const Client&);
     Client& operator=(const Client&);
     class LlaClientService_Stub *m_client_stub;
-    DmxBuffer m_buffer;
+    map<unsigned int, DmxBuffer> m_data_map;
 };
 
 } //lla

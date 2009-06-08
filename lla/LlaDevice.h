@@ -58,23 +58,27 @@ class LlaPort {
   public:
     enum PortCapability { LLA_PORT_CAP_IN, LLA_PORT_CAP_OUT};
 
-    LlaPort(int port_id, PortCapability capability, int universe, int active):
+    LlaPort(int port_id, PortCapability capability, int universe, int active,
+            const string &description):
       m_id(port_id),
       m_capability(capability),
       m_uni(universe),
-      m_active(active) {}
+      m_active(active),
+      m_description(description) {}
     ~LlaPort() {};
 
     int Id() const { return m_id; }
     PortCapability Capability() const { return m_capability; }
     int Universe() const { return m_uni; }
     int IsActive() const { return m_active; }
+    string Description() const { return m_description; }
 
   private:
     int m_id;        // id of this port
     PortCapability m_capability;  // port capability
     int m_uni;      // universe
     int m_active;   // active
+    string m_description;
 };
 
 

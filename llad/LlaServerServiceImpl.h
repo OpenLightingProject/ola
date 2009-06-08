@@ -27,7 +27,6 @@ namespace lla {
 
 using namespace lla::proto;
 using google::protobuf::RpcController;
-using google::protobuf::Closure;
 
 class LlaServerServiceImpl: public lla::proto::LlaServerService {
   public:
@@ -46,51 +45,55 @@ class LlaServerServiceImpl: public lla::proto::LlaServerService {
     void GetDmx(RpcController* controller,
                 const DmxReadRequest* request,
                 DmxData* response,
-                Closure* done);
+                google::protobuf::Closure* done);
     void RegisterForDmx(RpcController* controller,
                         const RegisterDmxRequest* request,
                         Ack* response,
-                        Closure* done);
+                        google::protobuf::Closure* done);
     void UpdateDmxData(RpcController* controller,
                        const DmxData* request,
                        Ack* response,
-                       Closure* done);
+                       google::protobuf::Closure* done);
     void SetUniverseName(RpcController* controller,
                          const UniverseNameRequest* request,
                          Ack* response,
-                         Closure* done);
+                         google::protobuf::Closure* done);
     void SetMergeMode(RpcController* controller,
                       const MergeModeRequest* request,
                       Ack* response,
-                      Closure* done);
+                      google::protobuf::Closure* done);
     void PatchPort(RpcController* controller,
                    const PatchPortRequest* request,
                    Ack* response,
-                   Closure* done);
+                   google::protobuf::Closure* done);
     void GetUniverseInfo(RpcController* controller,
                          const UniverseInfoRequest* request,
                          UniverseInfoReply* response,
-                         Closure* done);
+                         google::protobuf::Closure* done);
     void GetPluginInfo(RpcController* controller,
                        const PluginInfoRequest* request,
                        PluginInfoReply* response,
-                       Closure* done);
+                       google::protobuf::Closure* done);
     void GetDeviceInfo(RpcController* controller,
                        const DeviceInfoRequest* request,
                        DeviceInfoReply* response,
-                       Closure* done);
+                       google::protobuf::Closure* done);
     void ConfigureDevice(RpcController* controller,
                          const DeviceConfigRequest* request,
                          DeviceConfigReply* response,
-                         Closure* done);
+                         google::protobuf::Closure* done);
 
     Client *GetClient() const { return m_client; }
 
   private:
-    void MissingUniverseError(RpcController* controller, Closure* done);
-    void MissingPluginError(RpcController* controller, Closure* done);
-    void MissingDeviceError(RpcController* controller, Closure* done);
-    void MissingPortError(RpcController* controller, Closure* done);
+    void MissingUniverseError(RpcController* controller,
+                              google::protobuf::Closure* done);
+    void MissingPluginError(RpcController* controller,
+                            google::protobuf::Closure* done);
+    void MissingDeviceError(RpcController* controller,
+                            google::protobuf::Closure* done);
+    void MissingPortError(RpcController* controller,
+                          google::protobuf::Closure* done);
     void AddPlugin(class AbstractPlugin *plugin,
                    PluginInfoReply* response,
                    bool include_description) const;

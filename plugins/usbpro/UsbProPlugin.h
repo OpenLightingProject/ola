@@ -24,17 +24,16 @@
 #include <vector>
 #include <llad/Plugin.h>
 #include <lla/plugin_id.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 
 namespace lla {
 namespace plugin {
 
-using lla::select_server::SocketManager;
-using lla::select_server::Socket;
+using lla::network::ConnectedSocket;
 
 class UsbProDevice;
 
-class UsbProPlugin: public lla::Plugin, public SocketManager {
+class UsbProPlugin: public lla::Plugin {
   public:
     UsbProPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
@@ -42,7 +41,7 @@ class UsbProPlugin: public lla::Plugin, public SocketManager {
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
     lla_plugin_id Id() const { return LLA_PLUGIN_USBPRO; }
-    void SocketClosed(Socket *socket);
+    int SocketClosed(ConnectedSocket *socket);
 
   protected:
     string PreferencesSuffix() const { return PLUGIN_PREFIX; }

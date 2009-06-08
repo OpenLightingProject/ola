@@ -15,14 +15,16 @@
  *
  * SimpleRpcController.cpp
  * The Simple RPC Controller
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <lla/Logging.h>
 #include "SimpleRpcController.h"
 
-using namespace lla::rpc;
+namespace lla {
+namespace rpc {
 
-SimpleRpcController::SimpleRpcController() :
+SimpleRpcController::SimpleRpcController():
   m_failed(false),
   m_cancelled(false),
   m_error_text(""),
@@ -32,7 +34,9 @@ SimpleRpcController::SimpleRpcController() :
 void SimpleRpcController::Reset() {
   m_failed = false;
   m_cancelled = false;
-  //TODO: check if this is leaking memory
+  if (m_callback)
+    LLA_FATAL << "calling reset() while an rpc is in progress, we're " <<
+      "leaking memory!";
   m_callback = NULL;
 }
 
@@ -42,7 +46,10 @@ void SimpleRpcController::StartCancel() {
     m_callback->Run();
 }
 
-void SimpleRpcController::SetFailed(const string &reason) {
+void SimpleRpcController::SetFailed(const std::string &reason) {
   m_failed = true;
   m_error_text = reason;
 }
+
+} //rpc
+} //lla

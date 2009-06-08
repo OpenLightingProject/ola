@@ -45,8 +45,8 @@ bool SimpleClient::Setup() {
     m_ss = new SelectServer();
 
   if (!m_socket) {
-    m_socket = new TcpSocket();
-    if (!m_socket->Connect("127.0.0.1", LLA_DEFAULT_PORT)) {
+    m_socket = TcpSocket::Connect("127.0.0.1", LLA_DEFAULT_PORT);
+    if (!m_socket) {
       delete m_socket;
       delete m_ss;
       m_socket = NULL;

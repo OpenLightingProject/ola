@@ -77,8 +77,8 @@ bool StageProfiWidget::SendDmx(const DmxBuffer &buffer) const {
 /*
  * Called when there is adata to read
  */
-int StageProfiWidget::SocketReady(ConnectedSocket *socket) {
-  while (socket->UnreadData() > 0) {
+int StageProfiWidget::SocketReady() {
+  while (m_socket->DataRemaining() > 0) {
     DoRecv();
   }
   return 0;
@@ -102,9 +102,10 @@ bool StageProfiWidget::DetectDevice() {
   m_got_response = false;
   m_ss = new SelectServer();
   m_ss->AddSocket(m_socket, NULL);
-  m_ss->RegisterTimeout(100,
-                        lla::NewSingleClosure(this, &StageProfiWidget::Timeout),
-                        false);
+  m_ss->RegisterSingleTimeout(
+      100,
+      lla::NewSingleClosure(this, &StageProfiWidget::Timeout)
+  );
 
   // try a command, we should get a response
   SetChannel(0, 0);

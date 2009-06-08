@@ -25,19 +25,18 @@
 #include <string>
 
 #include <llad/Plugin.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/Socket.h>
 #include <lla/plugin_id.h>
 
 namespace lla {
 namespace plugin {
 
-using lla::select_server::SocketManager;
-using lla::select_server::Socket;
+using lla::network::ConnectedSocket;
 using std::string;
 
 class StageProfiDevice;
 
-class StageProfiPlugin: public Plugin, public SocketManager {
+class StageProfiPlugin: public Plugin {
   public:
     StageProfiPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
@@ -46,7 +45,7 @@ class StageProfiPlugin: public Plugin, public SocketManager {
     string Name() const { return PLUGIN_NAME; }
     lla_plugin_id Id() const { return LLA_PLUGIN_STAGEPROFI; }
     string Description() const;
-    void SocketClosed(Socket *socket);
+    int SocketClosed(ConnectedSocket *socket);
 
   protected:
     string PreferencesSuffix() const { return PLUGIN_PREFIX; }

@@ -29,7 +29,7 @@
 #include <lla/ExportMap.h>
 
 namespace lla {
-namespace select_server {
+namespace network {
 
 using namespace std;
 using lla::ExportMap;
@@ -44,31 +44,31 @@ class SelectServer {
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
-    bool AddSocket(class Socket *socket,
-                   class SocketManager *manager=NULL,
-                   bool delete_on_close=false);
+    bool AddSocket(class Socket *socket);
+    bool AddSocket(class ConnectedSocket *socket, bool delete_on_close=false);
     bool RemoveSocket(class Socket *socket);
-    bool RegisterTimeout(int ms,
-                         lla::LlaClosure *closure,
-                         bool recurring=true);
-    void UnregisterAll();
+    bool RemoveSocket(class ConnectedSocket *socket);
+    bool RegisterRepeatingTimeout(int ms, lla::Closure *closure);
+    bool RegisterSingleTimeout(int ms, lla::SingleUseClosure *closure);
 
-    static const string K_FD_VAR;
+    static const string K_SOCKET_VAR;
+    static const string K_CONNECTED_SOCKET_VAR;
     static const string K_TIMER_VAR;
 
   private :
     typedef struct {
-      class Socket *socket;
-      class SocketManager *manager;
+      class ConnectedSocket *socket;
       bool delete_on_close;
-    } registered_socket_t;
+    } connected_socket_t;
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
+    bool RegisterTimeout(int ms, lla::BaseClosure *closure, bool repeating);
     bool CheckForEvents();
     void CheckSockets(fd_set &set);
     void AddSocketsToSet(fd_set &set, int &max_sd) const;
     struct timeval CheckTimeouts();
+    void UnregisterAll();
 
     static const int K_MS_IN_SECOND = 1000;
     static const int K_US_IN_SECOND = 1000000;
@@ -77,8 +77,8 @@ class SelectServer {
     typedef struct {
       struct timeval next;
       struct timeval interval;
-      int repeat; // non 0 if this event is recurring
-      lla::LlaClosure *closure;
+      bool repeating;
+      lla::BaseClosure *closure;
     } event_t;
 
     struct ltevent {
@@ -88,13 +88,15 @@ class SelectServer {
     };
 
     bool m_terminate;
-    vector<registered_socket_t> m_read_sockets;
+    vector<class Socket*> m_sockets;
+    vector<connected_socket_t> m_connected_sockets;
+    vector<Closure*> m_ready_queue;
     ExportMap *m_export_map;
 
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;
     event_queue_t m_events;
 };
 
-} // select_server
+} // network
 } // lla
 #endif

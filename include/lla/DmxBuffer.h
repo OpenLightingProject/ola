@@ -46,9 +46,15 @@ class DmxBuffer {
     bool HTPMerge(const DmxBuffer &other);
     bool Set(const uint8_t *data, unsigned int length);
     bool Set(const string &data);
+    bool Set(const DmxBuffer &other);
     bool SetFromString(const string &data);
+    bool SetRangeToValue(unsigned int offset, uint8_t data,
+                         unsigned int length);
+    bool SetRange(unsigned int offset, const uint8_t *data,
+                  unsigned int length);
     void SetChannel(unsigned int channel, uint8_t data);
     void Get(uint8_t *data, unsigned int &length) const;
+    uint8_t Get(unsigned int channel) const;
     const uint8_t *GetRaw() const { return m_data; }
     string Get() const;
     bool Blackout();
@@ -56,6 +62,11 @@ class DmxBuffer {
 
   private:
     bool Init();
+    bool DuplicateIfNeeded();
+    void CopyFromOther(const DmxBuffer &other);
+    void CleanupMemory();
+    unsigned int *m_ref_count;
+    mutable bool m_copy_on_write;
     uint8_t *m_data;
     unsigned int m_length;
 };

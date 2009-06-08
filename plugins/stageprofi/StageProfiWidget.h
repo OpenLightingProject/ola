@@ -24,19 +24,17 @@
 using namespace std;
 
 #include <string>
-#include <lla/select_server/Socket.h>
-#include <lla/select_server/SelectServer.h>
+#include <lla/network/Socket.h>
+#include <lla/network/SelectServer.h>
 #include <lla/DmxBuffer.h>
 
 namespace lla {
 namespace plugin {
 
-using lla::select_server::ConnectedSocket;
-using lla::select_server::SelectServer;
-using lla::select_server::Socket;
-using lla::select_server::SocketListener;
+using lla::network::ConnectedSocket;
+using lla::network::SelectServer;
 
-class StageProfiWidget: public SocketListener {
+class StageProfiWidget {
   public:
     StageProfiWidget():
       m_enabled(false),
@@ -47,10 +45,10 @@ class StageProfiWidget: public SocketListener {
     // these methods are for communicating with the device
     virtual bool Connect(const string &path) = 0;
     int Disconnect();
-    Socket *GetSocket() { return m_socket; }
+    ConnectedSocket *GetSocket() { return m_socket; }
     bool SendDmx(const DmxBuffer &buffer) const;
     bool DetectDevice();
-    int SocketReady(ConnectedSocket *socket);
+    int SocketReady();
     int Timeout();
 
   protected:

@@ -13,40 +13,42 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * shownetdevice.h
- * Interface for the shownet device
- * Copyright (C) 2005  Simon Newton
+ * ShowNetDevice.h
+ * Interface for the ShowNet device
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef SHOWNETDEVICE_H
 #define SHOWNETDEVICE_H
 
-#include <llad/device.h>
-#include <llad/listener.h>
+#include <llad/Device.h>
+#include <llad/Plugin.h>
 
-#include <shownet/shownet.h>
+namespace lla {
+namespace shownet {
 
-#include "common.h"
+using lla::Plugin;
 
-class ShowNetDevice : public Device, public Listener {
-
+class ShowNetDevice: public lla::Device {
   public:
-    ShowNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
-    ~ShowNetDevice();
+    ShowNetDevice(Plugin *owner, const string &name,
+                  class Preferences *preferences,
+                  const class PluginAdaptor *plugin_adaptor);
+    ~ShowNetDevice() {}
 
-    int start();
-    int stop();
-    shownet_node get_node() const;
-    int get_sd() const;
-    int action();
-    int save_config() const;
-    int configure(void *req, int len);
+    bool Start();
+    bool Stop();
+    class ShowNetNode *GetNode() const { return m_node; }
 
   private:
-    class Preferences *m_prefs;
-    shownet_node m_node;
+    class Preferences *m_preferences;
+    const class PluginAdaptor *m_plugin_adaptor;
+    class ShowNetNode *m_node;
     bool m_enabled;
+
+    static const std::string IP_KEY;
 };
 
+} //plugin
+} //lla
 #endif

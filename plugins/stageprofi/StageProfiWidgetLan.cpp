@@ -20,22 +20,26 @@
  * The StageProfi LAN Widget.
  */
 
-#include <lla/select_server/Socket.h>
+#include <lla/Closure.h>
+#include <lla/network/Socket.h>
 #include "StageProfiWidgetLan.h"
 
 namespace lla {
 namespace plugin {
 
-using lla::select_server::TcpSocket;
+using lla::network::TcpSocket;
 
 /*
  * Connect to the widget
  * @returns true on success, false on failure
  */
 bool StageProfiWidgetLan::Connect(const std::string &ip) {
-  TcpSocket *socket = new TcpSocket();
-  m_socket = socket;
-  return socket->Connect(ip, STAGEPROFI_PORT);
+  m_socket = TcpSocket::Connect(ip, STAGEPROFI_PORT);
+
+  if (m_socket)
+    m_socket->SetOnData(NewClosure((StageProfiWidget*) this,
+                                   &StageProfiWidget::SocketReady));
+  return m_socket;
 }
 
 } // plugin

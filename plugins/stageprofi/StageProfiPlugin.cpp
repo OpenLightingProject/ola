@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <lla/Logging.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <lla/Logging.h>
 
 #include "StageProfiPlugin.h"
 #include "StageProfiDevice.h"
@@ -79,7 +79,7 @@ bool StageProfiPlugin::StartHook() {
       continue;
     }
 
-    m_plugin_adaptor->AddSocket(device->GetSocket(), this);
+    m_plugin_adaptor->AddSocket(device->GetSocket());
     m_plugin_adaptor->RegisterDevice(device);
     m_devices.insert(m_devices.end(), device);
   }
@@ -125,7 +125,7 @@ string StageProfiPlugin::Description() const {
 /*
  * Called when the file descriptor is closed.
  */
-void StageProfiPlugin::SocketClosed(Socket *socket) {
+int StageProfiPlugin::SocketClosed(ConnectedSocket *socket) {
   vector<StageProfiDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
@@ -135,11 +135,12 @@ void StageProfiPlugin::SocketClosed(Socket *socket) {
 
   if (iter == m_devices.end()) {
     LLA_WARN << "unknown fd";
-    return;
+    return -1;
   }
 
   DeleteDevice(*iter);
   m_devices.erase(iter);
+  return 0;
 }
 
 
@@ -152,7 +153,7 @@ bool StageProfiPlugin::SetDefaultPreferences() {
     return false;
 
   if (m_preferences->GetValue(DEVICE_KEY).empty()) {
-    m_preferences->SetValue(DEVICE_KEY, STAGEPROFI_DEVICE_NAME);
+    m_preferences->SetValue(DEVICE_KEY, STAGEPROFI_DEVICE_PATH);
     m_preferences->Save();
   }
 

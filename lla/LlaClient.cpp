@@ -23,7 +23,7 @@
 
 namespace lla {
 
-using lla::select_server::ConnectedSocket;
+using lla::network::ConnectedSocket;
 
 LlaClient::LlaClient(ConnectedSocket *socket) {
   m_core = new LlaClientCore(socket);

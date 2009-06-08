@@ -30,19 +30,22 @@ namespace plugin {
 
 class UsbProPort: public lla::Port {
   public:
-    UsbProPort(UsbProDevice *parent, unsigned int id):
+    UsbProPort(UsbProDevice *parent, unsigned int id, const string &path):
       lla::Port(parent, id),
-      m_usb_device(parent) {};
+      m_usb_device(parent),
+      m_path(path) {};
 
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const;
     bool SetUniverse(Universe *uni);
     bool CanRead() const;
     bool CanWrite() const;
+    string Description() const { return m_path; }
 
   private:
     UsbProDevice *m_usb_device;
     DmxBuffer m_empty_buffer;
+    string m_path;
 };
 
 } // plugin

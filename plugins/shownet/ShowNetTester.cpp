@@ -13,16 +13,20 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * common.h
- * Constants for the shownet plugin
- * Copyright (C) 2005  Simon Newton
+ * ShowNetTester.cpp
+ * Runs all the ShowNet tests
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef COMMON_H
-#define COMMON_H
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
 
-// this should be set to SHOWNET_MAX_UNIVERSES
-#define PORTS_PER_DEVICE  8
-
-#endif
+int main(int argc, char* argv[]) {
+  CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
+  CppUnit::TextUi::TestRunner runner;
+  runner.addTest(suite);
+  runner.setOutputter(new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
+  bool wasSucessful = runner.run();
+  return wasSucessful ? 0 : 1;
+}

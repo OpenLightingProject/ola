@@ -14,7 +14,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- e* LlaServerServiceImpl.cpp
+ * LlaServerServiceImpl.cpp
  * Implemtation of the LlaServerService interface. This is the class that
  * handles all the RPCs on the server side.
  * Copyright (C) 2005 - 2008 Simon Newton
@@ -46,7 +46,7 @@ void LlaServerServiceImpl::GetDmx(
     RpcController* controller,
     const DmxReadRequest* request,
     DmxData* response,
-    Closure* done) {
+    google::protobuf::Closure* done) {
 
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
@@ -67,7 +67,7 @@ void LlaServerServiceImpl::RegisterForDmx(
     RpcController* controller,
     const RegisterDmxRequest* request,
     Ack* response,
-    Closure* done) {
+    google::protobuf::Closure* done) {
 
   Universe *universe = m_universe_store->GetUniverseOrCreate(
       request->universe());
@@ -75,9 +75,9 @@ void LlaServerServiceImpl::RegisterForDmx(
     return MissingUniverseError(controller, done);
 
   if (request->action() == REGISTER) {
-    universe->AddClient(m_client);
+    universe->AddSinkClient(m_client);
   } else {
-    universe->RemoveClient(m_client);
+    universe->RemoveSinkClient(m_client);
   }
   done->Run();
 }
@@ -90,7 +90,7 @@ void LlaServerServiceImpl::UpdateDmxData(
     RpcController* controller,
     const DmxData* request,
     Ack* response,
-    Closure* done) {
+    google::protobuf::Closure* done) {
 
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
@@ -98,9 +98,10 @@ void LlaServerServiceImpl::UpdateDmxData(
 
   DmxBuffer buffer;
   buffer.Set(request->data());
-  if (m_client)
-    m_client->SetDMX(buffer);
-  universe->ClientDataChanged(m_client);
+  if (m_client) {
+    m_client->DMXRecieved(request->universe(), buffer);
+    universe->SourceClientDataChanged(m_client);
+  }
   done->Run();
 }
 
@@ -112,7 +113,7 @@ void LlaServerServiceImpl::SetUniverseName(
     RpcController* controller,
     const UniverseNameRequest* request,
     Ack* response,
-    Closure* done) {
+    google::protobuf::Closure* done) {
 
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
@@ -130,14 +131,14 @@ void LlaServerServiceImpl::SetMergeMode(
     RpcController* controller,
     const MergeModeRequest* request,
     Ack* response,
-    Closure* done) {
+    google::protobuf::Closure* done) {
 
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  Universe::merge_mode mode = request->merge_mode() == HTP ? Universe::MERGE_HTP :
-      Universe::MERGE_LTP;
+  Universe::merge_mode mode = request->merge_mode() == HTP ?
+    Universe::MERGE_HTP : Universe::MERGE_LTP;
   universe->SetMergeMode(mode);
   done->Run();
 }
@@ -150,7 +151,7 @@ void LlaServerServiceImpl::PatchPort(
     RpcController* controller,
     const PatchPortRequest* request,
     Ack* response,
-    Closure* done) {
+    google::protobuf::Closure* done) {
 
   Universe *universe;
   AbstractDevice *device = m_device_manager->GetDevice(request->device_id());
@@ -184,7 +185,7 @@ void LlaServerServiceImpl::GetUniverseInfo(
     RpcController* controller,
     const UniverseInfoRequest* request,
     UniverseInfoReply* response,
-    Closure* done) {
+    google::protobuf::Closure* done) {
 
   UniverseInfo *universe_info;
 
@@ -223,7 +224,7 @@ void LlaServerServiceImpl::GetUniverseInfo(
 void LlaServerServiceImpl::GetPluginInfo(RpcController* controller,
                                          const PluginInfoRequest* request,
                                          PluginInfoReply* response,
-                                         Closure* done) {
+                                         google::protobuf::Closure* done) {
   vector<AbstractPlugin*> plugin_list = m_plugin_loader->Plugins();
   vector<AbstractPlugin*>::const_iterator iter;
 
@@ -243,7 +244,7 @@ void LlaServerServiceImpl::GetPluginInfo(RpcController* controller,
 void LlaServerServiceImpl::GetDeviceInfo(RpcController* controller,
                                          const DeviceInfoRequest* request,
                                          DeviceInfoReply* response,
-                                         Closure* done) {
+                                         google::protobuf::Closure* done) {
 
   vector<AbstractDevice *> device_list = m_device_manager->Devices();
   vector<AbstractDevice *>::const_iterator iter;
@@ -267,7 +268,7 @@ void LlaServerServiceImpl::GetDeviceInfo(RpcController* controller,
 void LlaServerServiceImpl::ConfigureDevice(RpcController* controller,
                                            const DeviceConfigRequest* request,
                                            DeviceConfigReply* response,
-                                           Closure* done) {
+                                           google::protobuf::Closure* done) {
 
   AbstractDevice *device = m_device_manager->GetDevice(request->device_id());
   if (!device)
@@ -281,24 +282,27 @@ void LlaServerServiceImpl::ConfigureDevice(RpcController* controller,
 
 // Private methods
 //-----------------------------------------------------------------------------
-void LlaServerServiceImpl::MissingUniverseError(RpcController* controller,
-                                                Closure* done) {
+void LlaServerServiceImpl::MissingUniverseError(
+    RpcController* controller,
+    google::protobuf::Closure* done) {
 
   controller->SetFailed("Universe doesn't exist");
   done->Run();
 }
 
 
-void LlaServerServiceImpl::MissingDeviceError(RpcController* controller,
-                                              Closure* done) {
+void LlaServerServiceImpl::MissingDeviceError(
+    RpcController* controller,
+    google::protobuf::Closure* done) {
 
   controller->SetFailed("Device doesn't exist");
   done->Run();
 }
 
 
-void LlaServerServiceImpl::MissingPluginError(RpcController* controller,
-                                              Closure* done) {
+void LlaServerServiceImpl::MissingPluginError(
+    RpcController* controller,
+    google::protobuf::Closure* done) {
 
   controller->SetFailed("Plugin doesn't exist");
   done->Run();
@@ -306,7 +310,7 @@ void LlaServerServiceImpl::MissingPluginError(RpcController* controller,
 
 
 void LlaServerServiceImpl::MissingPortError(RpcController* controller,
-                                            Closure* done) {
+                                            google::protobuf::Closure* done) {
 
   controller->SetFailed("Port doesn't exist");
   done->Run();
@@ -349,6 +353,7 @@ void LlaServerServiceImpl::AddDevice(AbstractDevice *device,
       PortInfo *port_info = device_info->add_port();
       port_info->set_port_id((*iter)->PortId());
       port_info->set_output_port((*iter)->CanWrite());
+      port_info->set_description((*iter)->Description());
 
       if ((*iter)->GetUniverse()) {
         port_info->set_active(true);

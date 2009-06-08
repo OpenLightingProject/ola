@@ -21,16 +21,16 @@
 #ifndef LLA_DAEMON_H
 #define LLA_DAEMON_H
 
-#include <lla/select_server/SelectServer.h>
-#include <lla/select_server/Socket.h>
+#include <lla/network/SelectServer.h>
+#include <lla/network/Socket.h>
 #include <lla/BaseTypes.h>
 #include <lla/ExportMap.h>
 #include "LlaServer.h"
 
 namespace lla {
 
-using lla::select_server::ListeningSocket;
-using lla::select_server::SelectServer;
+using lla::network::AcceptingSocket;
+using lla::network::SelectServer;
 
 class LlaDaemon {
   public:
@@ -55,7 +55,7 @@ class LlaDaemon {
     class SelectServer *m_ss;
     class LlaServer *m_server;
     class PreferencesFactory *m_preferences_factory;
-    class ListeningSocket *m_listening_socket;
+    class AcceptingSocket *m_accepting_socket;
     class LlaServerServiceImplFactory *m_service_factory;
     lla_server_options m_options;
     class ExportMap *m_export_map;

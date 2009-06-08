@@ -23,13 +23,13 @@
 
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
-#include <lla/select_server/SelectServer.h>
+#include <lla/network/SelectServer.h>
 
 #include "DeviceManager.h"
 
 namespace lla {
 
-using lla::select_server::SelectServer;
+using lla::network::SelectServer;
 
 /*
  * Create a new pluginadaptor
@@ -46,26 +46,44 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
 }
 
 
-int PluginAdaptor::AddSocket(Socket *socket,
-                             SocketManager *manager) const {
-  return m_ss->AddSocket(socket, manager);
+/*
+ * Register a socket with the select server.
+ * @param socket the socket to register
+ * @return true on sucess, false on failure.
+ */
+bool PluginAdaptor::AddSocket(class Socket *socket) const {
+  return m_ss->AddSocket(socket);
 }
 
 
-int PluginAdaptor::RemoveSocket(Socket *socket) const {
+/*
+ * Remove a socket from the select server
+ */
+bool PluginAdaptor::RemoveSocket(class Socket *socket) const {
   return m_ss->RemoveSocket(socket);
 }
 
 
 /*
- * register a timeout
+ * register a repeating timeout
  * @param ms the time between function calls
  * @param closure the LlaClosure to call when the timeout expires
- * @param repeat set to true to call this timeout every ms seconds
  * @return true on success, false on failure
  */
-bool PluginAdaptor::RegisterTimeout(int ms, LlaClosure *closure, bool repeat) const {
-  return m_ss->RegisterTimeout(ms, closure, repeat);
+bool PluginAdaptor::RegisterRepeatingTimeout(int ms, Closure *closure) const {
+  return m_ss->RegisterRepeatingTimeout(ms, closure);
+}
+
+
+/*
+ * register a single timeout
+ * @param ms the time between function calls
+ * @param closure the LlaClosure to call when the timeout expires
+ * @return true on success, false on failure
+ */
+bool PluginAdaptor::RegisterSingleTimeout(int ms,
+                                          SingleUseClosure *closure) const {
+  return m_ss->RegisterSingleTimeout(ms, closure);
 }
 
 
