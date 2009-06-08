@@ -170,15 +170,17 @@ void Observer::Devices(const vector <LlaDevice> devices, const string &error) {
     vector<LlaPort>::const_iterator port_iter;
 
     for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
-      cout << "  port " << port_iter->Id() << ", capability ";
+      cout << "  port " << port_iter->Id() << ", ";
 
       if (port_iter->Capability() == LlaPort::LLA_PORT_CAP_IN)
         cout << "IN";
       else
         cout << "OUT";
 
+      cout << " " << port_iter->Description();
+
       if (port_iter->IsActive())
-        cout << ", universe " << port_iter->Universe();
+        cout << ", LLA universe " << port_iter->Universe();
       cout << endl;
     }
   }
