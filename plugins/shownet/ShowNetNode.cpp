@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <string.h>
 #include <algorithm>
 #include <lla/Logging.h>
 #include "RunLengthEncoder.h"

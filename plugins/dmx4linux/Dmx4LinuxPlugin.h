@@ -32,10 +32,9 @@ namespace lla {
 namespace plugin {
 
 class Dmx4LinuxDevice;
-using lla::network::SocketListener;
-using lla::network::ConnectedSocket;
+using lla::network::DeviceSocket;
 
-class Dmx4LinuxPlugin: public lla::Plugin, public SocketListener {
+class Dmx4LinuxPlugin: public lla::Plugin {
   public:
     Dmx4LinuxPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
@@ -47,7 +46,7 @@ class Dmx4LinuxPlugin: public lla::Plugin, public SocketListener {
     string Description() const;
     lla_plugin_id Id() const { return LLA_PLUGIN_DMX4LINUX; }
 
-    int SocketReady(lla::network::ConnectedSocket *socket);
+    int SocketReady();
     bool SendDMX(int d4l_uni, const DmxBuffer &buffer) const;
 
   protected:
@@ -68,8 +67,8 @@ class Dmx4LinuxPlugin: public lla::Plugin, public SocketListener {
     vector<Dmx4LinuxDevice*>  m_devices;  // list of out devices
     string m_out_dev;  // path the the dmx device
     string m_in_dev;   // path the the dmx device
-    ConnectedSocket *m_in_socket;
-    ConnectedSocket *m_out_socket;
+    DeviceSocket *m_in_socket;
+    DeviceSocket *m_out_socket;
 
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;

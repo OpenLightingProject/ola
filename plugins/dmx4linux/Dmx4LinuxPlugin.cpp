@@ -81,15 +81,17 @@ bool Dmx4LinuxPlugin::StartHook() {
 
   if (Setup()) {
     CleanupSockets();
-    return -1;
+    return false;
   }
 
   if (m_devices.size() > 0) {
-    m_plugin_adaptor->AddSocket(m_in_socket, NULL);
-    return 0;
+    m_in_socket->SetOnData(
+        lla::NewClosure(this, &Dmx4LinuxPlugin::SocketReady));
+    m_plugin_adaptor->AddSocket(m_in_socket);
+    return true;
   } else {
     CleanupSockets();
-    return 0;
+    return false;
   }
 }
 
@@ -135,10 +137,10 @@ string Dmx4LinuxPlugin::Description() const {
  * TODO: get reads working
  * why do we get input on the in_fd when we write ??
  */
-int Dmx4LinuxPlugin::SocketReady(lla::network::ConnectedSocket *socket) {
+int Dmx4LinuxPlugin::SocketReady() {
   uint8_t buf[DMX_UNIVERSE_SIZE];
   unsigned int data_read;
-  socket->Receive((uint8_t*) buf, sizeof(buf), data_read);
+  m_in_socket->Receive((uint8_t*) buf, sizeof(buf), data_read);
   // map d4l_uni to ports
   // prt->new_data(buf, len)
   return 0;
@@ -209,7 +211,7 @@ bool Dmx4LinuxPlugin::SetupSockets() {
       LLA_WARN << "failed to open " << m_out_dev << " " << strerror(errno);
       return false;
     }
-    m_in_socket = new ConnectedSocket(fd, fd);
+    m_in_socket = new DeviceSocket(fd);
 
     fd = open(m_in_dev.c_str(), O_RDONLY | O_NONBLOCK);
     if (fd < 0) {
@@ -217,7 +219,7 @@ bool Dmx4LinuxPlugin::SetupSockets() {
       CleanupSockets();
       return false;
     }
-    m_out_socket = new ConnectedSocket(fd, fd);
+    m_out_socket = new DeviceSocket(fd);
     return true;
   }
   return false;
@@ -229,13 +231,11 @@ bool Dmx4LinuxPlugin::SetupSockets() {
  */
 int Dmx4LinuxPlugin::CleanupSockets() {
   if (m_in_socket) {
-    m_in_socket->Close();
     delete m_in_socket;
     m_in_socket = NULL;
   }
 
   if (m_out_socket) {
-    m_out_socket->Close();
     delete m_out_socket;
     m_out_socket = NULL;
   }

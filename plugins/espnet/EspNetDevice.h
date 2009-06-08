@@ -35,13 +35,12 @@ namespace lla {
 namespace plugin {
 
 using std::string;
-using lla::network::ConnectedSocket;
-using lla::network::SocketListener;
+using lla::network::UnmanagedSocket;
 using lla::Plugin;
 using lla::Preferences;
 using lla::PluginAdaptor;
 
-class EspNetDevice: public lla::Device, public SocketListener {
+class EspNetDevice: public lla::Device {
   public:
     EspNetDevice(Plugin *owner,
                  const string &name,
@@ -52,13 +51,13 @@ class EspNetDevice: public lla::Device, public SocketListener {
     bool Start();
     bool Stop();
     espnet_node EspnetNode() const;
-    int SocketReady(ConnectedSocket *socket);
+    int SocketReady();
 
   private:
     Preferences *m_preferences;
     const PluginAdaptor *m_plugin_adaptor;
     espnet_node m_node;
-    ConnectedSocket *m_socket;
+    UnmanagedSocket *m_socket;
     bool m_enabled;
 };
 

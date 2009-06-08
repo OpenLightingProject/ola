@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <string.h>
 #include <RunLengthEncoder.h>
 
 namespace lla {

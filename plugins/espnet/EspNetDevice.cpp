@@ -153,8 +153,8 @@ bool EspNetDevice::Start() {
   }
 
   sd = espnet_get_sd(m_node);
-  m_socket = new ConnectedSocket(sd, sd);
-  m_socket->SetListener(this);
+  m_socket = new UnmanagedSocket(sd);
+  m_socket->SetOnData(lla::NewClosure(this, &EspNetDevice::SocketReady));
   m_enabled = true;
   return true;
 
@@ -206,12 +206,11 @@ espnet_node EspNetDevice::EspnetNode() const {
  *
  * @param  data  user data (pointer to espnet_device_priv
  */
-int EspNetDevice::SocketReady(ConnectedSocket *socket) {
+int EspNetDevice::SocketReady() {
   if (espnet_read(m_node, 0)) {
     LLA_WARN << "espnet_read failed: " << espnet_strerror();
     return -1;
   }
-  socket = 0;
   return 0;
 }
 
