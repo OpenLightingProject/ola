@@ -18,6 +18,11 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+
 #ifdef LLA_USE_GETIFADDRS
   #include <ifaddrs.h>
   #include <linux/types.h>
