@@ -19,7 +19,7 @@
  */
 
 #include <string.h>
-#include <RunLengthEncoder.h>
+#include "RunLengthEncoder.h"
 
 namespace lla {
 namespace shownet {

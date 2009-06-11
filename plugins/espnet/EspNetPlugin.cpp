@@ -30,8 +30,9 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
-  return new lla::plugin::EspNetPlugin(plugin_adaptor);
+extern "C" lla::AbstractPlugin* create(
+    const lla::PluginAdaptor *plugin_adaptor) {
+  return new lla::espnet::EspNetPlugin(plugin_adaptor);
 }
 
 /*
@@ -43,7 +44,7 @@ extern "C" void destroy(lla::AbstractPlugin* plugin) {
 
 
 namespace lla {
-namespace plugin {
+namespace espnet {
 
 const string EspNetPlugin::ESPNET_NODE_NAME = "lla-EspNet";
 const string EspNetPlugin::ESPNET_DEVICE_NAME = "EspNet Device";
@@ -136,5 +137,5 @@ bool EspNetPlugin::SetDefaultPreferences() {
   return true;
 }
 
-} //plugin
+} //espnet
 } //lla

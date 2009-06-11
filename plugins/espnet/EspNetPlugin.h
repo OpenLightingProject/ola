@@ -26,7 +26,7 @@
 #include <lla/plugin_id.h>
 
 namespace lla {
-namespace plugin {
+namespace espnet {
 
 class EspNetDevice;
 
@@ -48,14 +48,14 @@ class EspNetPlugin: public lla::Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
 
-    EspNetDevice *m_device;    // only have one device
+    EspNetDevice *m_device;
     static const string ESPNET_NODE_NAME;
     static const string ESPNET_DEVICE_NAME;
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
 };
 
-} //plugin
+} //espnet
 } //lla
 
 #endif

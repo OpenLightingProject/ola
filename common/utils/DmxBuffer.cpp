@@ -276,8 +276,8 @@ bool DmxBuffer::SetRange(unsigned int offset,
 
 /*
  * Set a single channel. Calling this on an uninitialized buffer will call
- * Blackout() first. Trying to set a channel past the end of the valid data is
- * an error.
+ * Blackout() first. Trying to set a channel more than 1 channel past the end
+ * of the valid data is an error.
  */
 void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
   if (channel >= DMX_UNIVERSE_SIZE)
@@ -295,6 +295,7 @@ void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
 
   DuplicateIfNeeded();
   m_data[channel] = data;
+  m_length = max(channel+1, m_length);
 }
 
 

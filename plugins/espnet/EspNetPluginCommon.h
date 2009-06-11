@@ -19,10 +19,16 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef LLA_ESPNET_PLUGIN_COMMON
+#define LLA_ESPNET_PLUGIN_COMMON
 
-// stick to 5 ports per direction per device for now
-#define PORTS_PER_DEVICE	5
+namespace lla {
+namespace espnet {
+
+// modify this to increase the number of ports in the plugin
+enum { PORTS_PER_DEVICE = 5 };
+
+} //espnet
+} //lla
 
 #endif

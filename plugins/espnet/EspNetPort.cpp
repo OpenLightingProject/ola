@@ -14,53 +14,55 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * EspNetPort.cpp
- * The Esp-Net plugin for lla
+ * The EspNet plugin for lla
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <string.h>
+#include <sstream>
 #include <algorithm>
 #include <lla/Logging.h>
 #include <llad/Universe.h>
 
 #include "EspNetPort.h"
 #include "EspNetDevice.h"
-#include "common.h"
-
+#include "EspNetNode.h"
 
 namespace lla {
-namespace plugin {
-
-EspNetPort::EspNetPort(EspNetDevice *parent, unsigned int id):
-  Port(parent, id),
-  m_device(parent) {
-}
+namespace espnet {
 
 
 bool EspNetPort::CanRead() const {
-  // ports 0 to 4 are input
-  return PortId() < PORTS_PER_DEVICE;
+  // even ports are input
+  return !(PortId() % 2);
 }
 
+
 bool EspNetPort::CanWrite() const {
-  // ports 5 to 9 are output
-  return (PortId()>= PORTS_PER_DEVICE && PortId() < 2 * PORTS_PER_DEVICE);
+  // odd ports are output
+  return PortId() % 2;
+}
+
+
+string EspNetPort::Description() const {
+  std::stringstream str;
+  if (GetUniverse())
+    str << "EspNet universe " << GetUniverse()->UniverseId();
+  return str.str();
 }
 
 
 /*
  * Write operation
- *
  */
 bool EspNetPort::WriteDMX(const DmxBuffer &buffer) {
-  if (!CanWrite())
+  if (!CanWrite() || !GetUniverse())
     return false;
 
-  if (espnet_send_dmx(m_device->EspnetNode(), GetUniverse()->UniverseId(),
-        buffer.Size(), buffer.GetRaw())) {
-    LLA_WARN << "espnet_send_dmx failed " << espnet_strerror();
+  EspNetDevice *device = (EspNetDevice*) GetDevice();
+  EspNetNode *node = device->GetNode();
+
+  if (!node->SendDMX(EspNetUniverseId(), buffer))
     return false;
-  }
   return true;
 }
 
@@ -77,15 +79,50 @@ const DmxBuffer &EspNetPort::ReadDMX() const {
 /*
  * Update the data buffer for this port
  */
-bool EspNetPort::UpdateBuffer(uint8_t *data, int length) {
+int EspNetPort::UpdateBuffer() {
   // we can't update if this isn't a input port
-  if (!CanRead())
+  if (!CanRead() || !GetUniverse())
     return false;
 
-  m_buffer.Set(data, length);
-  DmxChanged();
+  EspNetDevice *device = (EspNetDevice*) GetDevice();
+  EspNetNode *node = device->GetNode();
+  m_buffer = node->GetDMX(EspNetUniverseId());
+  return DmxChanged();
+}
+
+
+/*
+ * We intecept this to setup/remove the dmx handler
+ */
+bool EspNetPort::SetUniverse(Universe *universe) {
+  Universe *old_universe = GetUniverse();
+  Port::SetUniverse(universe);
+
+  if (!CanRead())
+    return true;
+
+  EspNetDevice *device = (EspNetDevice*) GetDevice();
+  EspNetNode *node = device->GetNode();
+
+  if (old_universe && old_universe != universe)
+    node->RemoveHandler(old_universe->UniverseId() % ESPNET_MAX_UNIVERSES);
+  if (universe && universe != old_universe)
+    node->SetHandler(EspNetUniverseId(),
+                     lla::NewClosure(this, &EspNetPort::UpdateBuffer));
   return true;
 }
 
-} //plugin
+
+/*
+ * return the EspNet universe ID for this port. In case we don't have a
+ * universe, 0 is returned. Note that universe 0 is valid.
+ */
+uint8_t EspNetPort::EspNetUniverseId() const {
+  if (GetUniverse())
+    return GetUniverse()->UniverseId() % ESPNET_MAX_UNIVERSES;
+  else
+    return 0;
+}
+
+} //espnet
 } //lla

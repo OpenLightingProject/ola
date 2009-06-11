@@ -61,7 +61,7 @@ bool ShowNetDevice::Start() {
     this->AddPort(port);
   }
 
-  m_node = new ShowNetNode(m_preferences->GetValue("ip"));
+  m_node = new ShowNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue("name"));
 
   if (!m_node->Start()) {

@@ -49,6 +49,7 @@ string ShowNetPort::Description() const {
   return str.str();
 }
 
+
 bool ShowNetPort::WriteDMX(const DmxBuffer &buffer) {
   ShowNetDevice *device = (ShowNetDevice*) GetDevice();
 
@@ -82,11 +83,14 @@ int ShowNetPort::UpdateBuffer() {
  * We intecept this to setup/remove the dmx handler
  */
 bool ShowNetPort::SetUniverse(Universe *universe) {
-  ShowNetDevice *device = (ShowNetDevice*) GetDevice();
-  ShowNetNode *node = device->GetNode();
-
   Universe *old_universe = GetUniverse();
   Port::SetUniverse(universe);
+
+  if (!CanRead())
+    return true;
+
+  ShowNetDevice *device = (ShowNetDevice*) GetDevice();
+  ShowNetNode *node = device->GetNode();
 
   if (!old_universe && universe)
     node->SetHandler(ShowNetUniverseId(),

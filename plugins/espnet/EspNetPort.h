@@ -21,33 +21,34 @@
 #ifndef ESPNETPORT_H
 #define ESPNETPORT_H
 
-#include <espnet/espnet.h>
 #include <lla/DmxBuffer.h>
 #include <llad/Port.h>
 #include "EspNetDevice.h"
 
-
 namespace lla {
-namespace plugin {
+namespace espnet {
+
+using lla::DmxBuffer;
 
 class EspNetPort: public lla::Port {
   public:
-    EspNetPort(EspNetDevice *parent, unsigned int id);
+    EspNetPort(EspNetDevice *parent, unsigned int id): Port(parent, id) {}
     ~EspNetPort() {}
-
-    bool WriteDMX(const DmxBuffer &buffer);
-    const DmxBuffer &ReadDMX() const;
 
     bool CanRead() const;
     bool CanWrite() const;
-    bool UpdateBuffer(uint8_t *data, int length);
+    string Description() const;
+    bool WriteDMX(const DmxBuffer &buffer);
+    const DmxBuffer &ReadDMX() const;
+    bool SetUniverse(Universe *universe);
+    int UpdateBuffer();
 
   private :
     DmxBuffer m_buffer;
-    EspNetDevice *m_device;
+    uint8_t EspNetUniverseId() const;
 };
 
-} //plugin
+} //espnet
 } //lla
 
 #endif

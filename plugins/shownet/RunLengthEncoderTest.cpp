@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RunLengthEncoderTest.cpp
- * Test fixture for the Universe and UniverseStore classes
+ * Test fixture for the RunLengthEncoder class
  * Copyright (C) 2005-2008 Simon Newton
  */
 

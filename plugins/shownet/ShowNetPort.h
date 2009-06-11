@@ -32,7 +32,7 @@ using lla::DmxBuffer;
 
 class ShowNetPort: public Port {
   public:
-    ShowNetPort(lla::Device *parent, int id): Port(parent, id) {}
+    ShowNetPort(lla::Device *parent, unsigned int id): Port(parent, id) {}
     ~ShowNetPort() {}
 
     bool CanRead() const;

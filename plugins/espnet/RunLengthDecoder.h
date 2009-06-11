@@ -13,44 +13,32 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * EspNetDevice.h
- * Interface for the EspNet device
- * Copyright (C) 2005-2008 Simon Newton
+ * RunLengthDecoder.h
+ * Header file for the RunLengthDecoder class
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef ESPNETDEVICE_H
-#define ESPNETDEVICE_H
+#ifndef ESPNET_RLDECODER_H
+#define ESPNET_RLDECODER_H
 
-#include <llad/Device.h>
-#include <llad/Plugin.h>
+#include <lla/DmxBuffer.h>
 
 namespace lla {
 namespace espnet {
 
-using lla::Plugin;
+class RunLengthDecoder {
+  public :
+    RunLengthDecoder() {};
+    ~RunLengthDecoder() {};
 
-class EspNetDevice: public lla::Device {
-  public:
-    EspNetDevice(Plugin *owner,
-                 const std::string &name,
-                 class Preferences *prefs,
-                 const class PluginAdaptor *plugin_adaptor);
-    ~EspNetDevice() {}
-
-    bool Start();
-    bool Stop();
-    class EspNetNode *GetNode() const { return m_node; }
-
+    bool Decode(DmxBuffer &dst,
+                const uint8_t *data,
+                unsigned int length);
   private:
-    class Preferences *m_preferences;
-    const class PluginAdaptor *m_plugin_adaptor;
-    class EspNetNode *m_node;
-    bool m_enabled;
-
-    static const std::string IP_KEY;
+    static const uint8_t ESCAPE_VALUE = 0xFD;
+    static const uint8_t REPEAT_VALUE = 0xFE;
 };
 
-} //espnet
+} //shownet
 } //lla
-
 #endif
