@@ -27,7 +27,9 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <net/if.h>
+#ifdef HAVE_SOCKADDR_DL_STRUCT
 #include <net/if_dl.h>
+#endif
 #include <string.h>
 #include <sys/ioctl.h>
 #include <algorithm>
