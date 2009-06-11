@@ -36,11 +36,12 @@ bool RunLengthDecoder::Decode(DmxBuffer &dst,
   dst.Reset();
   unsigned int i = 0;
   const uint8_t *value = src_data;
+  uint8_t count;
   while (i < DMX_UNIVERSE_SIZE && value < src_data + length) {
     switch (*value) {
       case REPEAT_VALUE:
         value++;
-        uint8_t count = *(value++);
+        count = *(value++);
         dst.SetRangeToValue(i, *value, count);
         i+= count;
         break;
