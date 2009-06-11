@@ -36,45 +36,6 @@ namespace espnet {
 const std::string EspNetDevice::IP_KEY = "ip";
 
 /*
- * Handle dmx from the network, called from libespnet
- *
- * @param n    the espnet_node
- * @param uni  the universe this data is for
- * @param len  the length of the received data
- * @param data  pointer the the dmx data
- * @param d    pointer to our EspNetDevice
- *
-int dmx_handler(espnet_node n, uint8_t uid, int len, uint8_t *data, void *d) {
-  EspNetDevice *device = (EspNetDevice *) d;
-
-  vector<lla::AbstractPort*> ports;
-  vector<lla::AbstractPort*>::iterator iter;
-
-  ports = device->Ports();
-  for (iter = ports.begin(); iter != ports.end(); ++iter) {
-    Universe *universe = (*iter)->GetUniverse();
-
-    if ((*iter)->CanRead() && universe && universe->UniverseId() == uid) {
-      ((EspNetPort*) (*iter))->UpdateBuffer(data, len);
-    }
-  }
-  return 0;
-}
- */
-
-
-/*
- * Get notification of remote programming
-int program_handler(espnet_node n, void *d) {
-  EspNetDevice *dev = (EspNetDevice *) d;
-
-  dev->SaveConfig();
-  return 0;
-}
- */
-
-
-/*
  * Create a new device
  * Should prob pass the ip to bind to
  */
