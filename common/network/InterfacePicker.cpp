@@ -27,6 +27,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <net/if.h>
+#include <net/if_dl.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <algorithm>
@@ -39,7 +40,11 @@ using std::string;
 using std::vector;
 
 
-Interface::Interface() {}
+Interface::Interface() {
+  ip_address.s_addr = 0;
+  bcast_address.s_addr = 0;
+  memset(hw_address, 0, MAC_LENGTH);
+}
 
 
 Interface::Interface(const Interface &other) {
@@ -103,6 +108,9 @@ bool InterfacePicker::ChooseInterface(Interface &interface,
 
 vector<Interface> InterfacePicker::GetInterfaces() const {
   vector<Interface> interfaces;
+  string last_dl_iface_name;
+  uint8_t hwlen = 0;
+  char *hwaddr = NULL;
 
   // create socket to get iface config
   int sd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -146,8 +154,7 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
     unsigned int iface_len = sizeof(struct sockaddr);
 
 #ifdef HAVE_SOCKADDR_SA_LEN
-    iface_len = std::max(sizeof(struct sockaddr),
-                         (long unsigned int) iface->ifr_addr.sa_len);
+    iface_len = std::max(iface_len, (unsigned int) iface->ifr_addr.sa_len);
 #else
 #ifdef IPV6
     if (iface->ifr_addr.sa_family == AF_INET6)
@@ -156,6 +163,15 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
 #endif
 
     ptr += sizeof(iface->ifr_name) + iface_len;
+
+#ifdef HAVE_SOCKADDR_DL_STRUCT
+    if (iface->ifr_addr.sa_family == AF_LINK) {
+      struct sockaddr_dl *sdl = (struct sockaddr_dl*) &iface->ifr_addr;
+      last_dl_iface_name.assign(sdl->sdl_data, sdl->sdl_nlen);
+      hwaddr = sdl->sdl_data + sdl->sdl_nlen;
+      hwlen = sdl->sdl_alen;
+    }
+#endif
 
     // look for AF_INET interfaces only
     if (iface->ifr_addr.sa_family != AF_INET) {
@@ -177,12 +193,17 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
     }
 
     if (ifrcopy.ifr_flags & IFF_LOOPBACK) {
-      LLA_DEBUG << "skipping " << iface->ifr_name << " because it's a loopback";
+      LLA_DEBUG << "skipping " << iface->ifr_name <<
+        " because it's a loopback";
       continue;
     }
 
     Interface interface;
     interface.name = iface->ifr_name;
+    if (interface.name == last_dl_iface_name && hwaddr) {
+      memcpy(interface.hw_address, hwaddr,
+             std::min(hwlen, (uint8_t) MAC_LENGTH));
+    }
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
     interface.ip_address = sin->sin_addr;
 
