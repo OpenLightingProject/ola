@@ -21,7 +21,6 @@
 #include <string.h>
 #include <algorithm>
 #include <lla/Logging.h>
-#include "RunLengthEncoder.h"
 #include "ShowNetNode.h"
 #include "ShowNetPackets.h"
 
@@ -45,7 +44,6 @@ ShowNetNode::ShowNetNode(const string &ip_address):
   m_packet_count(0),
   m_node_name(),
   m_preferred_ip(ip_address) {
-    m_encoder = new RunLengthEncoder();
     memset(&m_destination, 0, sizeof(m_destination));
 }
 
@@ -55,7 +53,12 @@ ShowNetNode::ShowNetNode(const string &ip_address):
  */
 ShowNetNode::~ShowNetNode() {
   Stop();
-  delete m_encoder;
+
+  std::map<unsigned int, universe_handler>::iterator iter;
+  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
+    delete iter->second.closure;
+  }
+  m_handlers.clear();
 }
 
 
@@ -145,7 +148,7 @@ bool ShowNetNode::SendDMX(unsigned int universe,
   packet.slotSize[3] = 0;
 
   unsigned int enc_len = sizeof(packet.data);
-  if (!m_encoder->Encode(buffer, packet.data, enc_len))
+  if (!m_encoder.Encode(buffer, packet.data, enc_len))
     LLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
 
   packet.indexBlock[0] = MAGIC_INDEX_OFFSET;
@@ -300,7 +303,7 @@ int ShowNetNode::SocketReady() {
     std::max(0, packet.indexBlock[0] - MAGIC_INDEX_OFFSET);
 
   if (slot_len != enc_len) {
-    m_encoder->Decode(iter->second.buffer,
+    m_encoder.Decode(iter->second.buffer,
                       start_channel,
                       packet.data + data_offset,
                       enc_len);

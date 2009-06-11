@@ -57,6 +57,12 @@ EspNetNode::EspNetNode(const string &ip_address):
  */
 EspNetNode::~EspNetNode() {
   Stop();
+
+  std::map<uint8_t, universe_handler>::iterator iter;
+  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
+    delete iter->second.closure;
+  }
+  m_handlers.clear();
 }
 
 

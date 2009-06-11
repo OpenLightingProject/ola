@@ -27,6 +27,7 @@
 #include <lla/DmxBuffer.h>
 #include <lla/network/InterfacePicker.h>
 #include <lla/network/Socket.h>
+#include "RunLengthEncoder.h"
 
 namespace lla {
 namespace shownet {
@@ -63,7 +64,7 @@ class ShowNetNode {
     std::map<unsigned int, universe_handler> m_handlers;
     lla::network::InterfacePicker m_interface_picker;
     lla::network::Interface m_interface;
-    class RunLengthEncoder *m_encoder;
+    RunLengthEncoder m_encoder;
     lla::network::UdpSocket *m_socket;
     struct sockaddr_in m_destination;
 
