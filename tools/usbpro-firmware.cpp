@@ -35,6 +35,8 @@ using lla::usbpro::UsbProWidget;
 
 static const string DEFAULT_DEVICE = "/dev/ttyUSB0";
 static const string DEFAULT_FIRMWARE = "main.bin";
+static const int PAUSE_DELAY = 1000; // ms before starting upload
+static const int ABORT_TIMEOUT = 10 * 1000; // ms seconds before aborting
 
 typedef struct {
   bool help;
@@ -43,8 +45,6 @@ typedef struct {
   string device;
 } options;
 
-// number of seconds to wait for a firmware response before aborting
-const int TIMEOUT = 2;
 
 class FirmwareTransferer: public lla::usbpro::UsbProWidgetListener {
   public:
@@ -59,7 +59,7 @@ class FirmwareTransferer: public lla::usbpro::UsbProWidgetListener {
 
     void HandleFirmwareReply(bool success);
     int SendNextChunk();
-    int DeviceRemoved() { m_ss->Terminate(); return 0; }
+    int AbortTransfer() { m_ss->Terminate(); return 0; }
     bool WasSucessfull() const { return m_sucessful; }
   private:
     bool m_sent_last_page;
@@ -230,10 +230,13 @@ int main(int argc, char *argv[]) {
   }
 
   ss.RegisterSingleTimeout(
-      1000,
+      PAUSE_DELAY,
       lla::NewSingleClosure(&transferer, &FirmwareTransferer::SendNextChunk));
   widget.GetSocket()->SetOnClose(
-      lla::NewSingleClosure(&transferer, &FirmwareTransferer::DeviceRemoved));
+      lla::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
+  ss.RegisterSingleTimeout(
+      ABORT_TIMEOUT,
+      lla::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
   ss.AddSocket(widget.GetSocket());
   ss.Run();
 
