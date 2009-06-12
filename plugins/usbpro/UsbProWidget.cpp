@@ -321,7 +321,7 @@ bool UsbProWidget::SendChangeMode(int new_mode) {
  */
 int UsbProWidget::handle_flash_page(pms_flash_reply *reply, int len) {
   bool status = false;
-  if (len == sizeof(REPLY_SUCCESS) &&
+  if (len == FLASH_STATUS_LENGTH &&
       0 == memcmp(reply->status, REPLY_SUCCESS, len))
     status = true;
 
@@ -442,10 +442,9 @@ int UsbProWidget::ReceiveMessage() {
 
   while(byte != 0x7e) {
     m_socket->Receive((uint8_t*) &byte, 1, cnt);
-    if (cnt != 1) {
-      LLA_WARN << "Read to much, expected 1, got " << cnt;
-      return -1;
-    }
+    if (cnt == 1)
+      continue;
+    return -1;
   }
 
   // try to read the label
