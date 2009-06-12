@@ -33,14 +33,12 @@
 #include "UsbProWidgetListener.h"
 
 namespace lla {
-namespace plugin {
+namespace usbpro {
 
 using google::protobuf::RpcController;
 using lla::plugin::usbpro::Request;
 using lla::network::ConnectedSocket;
 using std::deque;
-
-namespace usbpro {
 
 class OutstandingRequest {
   public:
@@ -55,7 +53,6 @@ class OutstandingRequest {
     google::protobuf::Closure *closure;
 };
 
-}
 
 class UsbProDevice: public Device, public UsbProWidgetListener {
   public:
@@ -102,14 +99,12 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     bool m_enabled;
     bool m_in_shutdown; // set to true if we're shutting down
     UsbProWidget *m_widget;
-    deque<lla::plugin::usbpro::OutstandingRequest>
-      m_outstanding_param_requests;
-    deque<lla::plugin::usbpro::OutstandingRequest>
-      m_outstanding_serial_requests;
+    deque<OutstandingRequest> m_outstanding_param_requests;
+    deque<OutstandingRequest> m_outstanding_serial_requests;
 
     static const int K_MISSING_PARAM = -1;
 };
 
-} //plugin
+} //usbpro
 } //lla
 #endif

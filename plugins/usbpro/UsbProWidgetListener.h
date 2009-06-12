@@ -21,23 +21,30 @@
 #ifndef USBPRODWIDGETLISTENER_H
 #define USBPRODWIDGETLISTENER_H
 
+namespace lla {
+namespace usbpro {
+
 enum { SERIAL_NUMBER_LENGTH = 4 };
 
 class UsbProWidgetListener {
   public :
     UsbProWidgetListener() {};
-    virtual ~UsbProWidgetListener() {};
-    virtual void HandleWidgetDmx() = 0;
+    virtual ~UsbProWidgetListener() {}
+    virtual void HandleWidgetDmx() {}
     virtual void HandleWidgetParameters(uint8_t firmware,
                                         uint8_t firmware_high,
                                         uint8_t break_time,
                                         uint8_t mab_time,
-                                        uint8_t rate) = 0;
+                                        uint8_t rate) {}
     virtual void HandleWidgetSerial(
-        const uint8_t serial[SERIAL_NUMBER_LENGTH]) = 0;
+        const uint8_t serial[SERIAL_NUMBER_LENGTH]) {}
+    virtual void HandleFirmwareReply(bool success) {}
 
   private:
     UsbProWidgetListener(const UsbProWidgetListener&);
     UsbProWidgetListener& operator=(const UsbProWidgetListener&);
 };
+
+} // usbpro
+} //lla
 #endif

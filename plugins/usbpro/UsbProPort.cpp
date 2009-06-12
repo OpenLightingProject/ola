@@ -22,7 +22,7 @@
 #include "UsbProDevice.h"
 
 namespace lla {
-namespace plugin {
+namespace usbpro {
 
 bool UsbProPort::CanRead() const {
   // even ports are input
@@ -78,5 +78,5 @@ bool UsbProPort::SetUniverse(Universe *uni) {
   return 0;
 }
 
-} // plugin
+} // usbpro
 } //lla

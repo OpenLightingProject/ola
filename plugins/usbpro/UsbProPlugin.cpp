@@ -36,7 +36,7 @@
  */
 extern "C" lla::AbstractPlugin* create(
     const lla::PluginAdaptor *plugin_adaptor) {
-  return new lla::plugin::UsbProPlugin(plugin_adaptor);
+  return new lla::usbpro::UsbProPlugin(plugin_adaptor);
 }
 
 /*
@@ -47,7 +47,7 @@ extern "C" void destroy(lla::AbstractPlugin* plugin) {
 }
 
 namespace lla {
-namespace plugin {
+namespace usbpro {
 
 const string UsbProPlugin::USBPRO_DEVICE_PATH = "/dev/ttyUSB0";
 const string UsbProPlugin::USBPRO_DEVICE_NAME = "Enttec Usb Pro Device";
@@ -169,5 +169,5 @@ void UsbProPlugin::DeleteDevice(UsbProDevice *device) {
   delete device;
 }
 
-} // plugins
+} // usbpro
 } // lla

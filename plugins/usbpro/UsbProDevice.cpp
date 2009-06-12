@@ -33,12 +33,11 @@
 #include "UsbProPort.h"
 
 namespace lla {
-namespace plugin {
+namespace usbpro {
 
 using google::protobuf::RpcController;
 using lla::plugin::usbpro::Request;
 using lla::plugin::usbpro::Reply;
-using lla::plugin::usbpro::OutstandingRequest;
 
 /*
  * Create a new device
@@ -314,5 +313,5 @@ void UsbProDevice::HandleWidgetSerial(
 }
 
 
-} // plugin
+} // usbpro
 } // lla

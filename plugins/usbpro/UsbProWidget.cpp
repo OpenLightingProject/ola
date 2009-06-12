@@ -36,30 +36,26 @@
 #include "UsbProWidget.h"
 
 namespace lla {
-namespace plugin {
+namespace usbpro {
 
 using std::string;
 
-static const uint8_t RCMODE_ALWAYS = 0x00;
-static const uint8_t RCMODE_CHANGE = 0x01;
+const char UsbProWidget::REPLY_SUCCESS[] = "TRUE";
 
-static const uint8_t som = 0x7e;
-static const uint8_t eom = 0xe7;
-
-enum usbpro_packet_type_e {
+typedef enum {
+  ID_PROGRAM_FIRMWARE = 0x01,
+  ID_FLASH_PAGE = 0x02,
   ID_PRMREQ = 0x03,
-  ID_PRMREP =  0x03,
+  ID_PRMREP = 0x03,
   ID_PRMSET = 0x04,
-  ID_RDMX  =  0x05,
-  ID_SDMX  =  0x06,
-  ID_RDM =   0x07,
-  ID_RCMODE =  0x08,
-  ID_COS =  0x09,
-  ID_SNOREQ =  0x0A,
-  ID_SNOREP =  0x0A
-};
-
-typedef enum usbpro_packet_type_e usbpro_packet_type;
+  ID_RDMX = 0x05,
+  ID_SDMX = 0x06,
+  ID_RDM =  0x07,
+  ID_RCMODE = 0x08,
+  ID_COS = 0x09,
+  ID_SNOREQ = 0x0A,
+  ID_SNOREP = 0x0A
+} usbpro_packet_type;
 
 /*
  * Connect to the widget
@@ -84,7 +80,7 @@ bool UsbProWidget::Connect(const string &path) {
 
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
   tcsetattr(fd, TCSANOW, &newtio);
-  m_socket = new DeviceSocket(fd);
+  m_socket = new lla::network::DeviceSocket(fd);
   m_socket->SetOnData(NewClosure(this, &UsbProWidget::SocketReady));
 
   // fire off a get request
@@ -129,10 +125,11 @@ bool UsbProWidget::Disconnect() {
  * @returns true if we sent ok, false otherwise
  */
 bool UsbProWidget::SendDMX(const DmxBuffer &buffer) const {
-  unsigned int length = std::min((unsigned int) DMX_BUF_LEN, buffer.Size());
+  unsigned int length = std::min((unsigned int) DMX_BUFFER_LENGTH,
+                                 buffer.Size());
   promsg msg;
 
-  msg.som = som;
+  msg.som = SOM;
   msg.label = ID_SDMX;
   //start code to 0
   msg.pm_dmx.dmx[0] = K_START_CODE;
@@ -148,7 +145,7 @@ bool UsbProWidget::SendDMX(const DmxBuffer &buffer) const {
  */
 bool UsbProWidget::SendRdm(const uint8_t *buf, unsigned int len) const {
   promsg msg;
-  msg.som = som;
+  msg.som = SOM;
   msg.label = ID_RDM;
   set_msg_len(&msg, len);
   memcpy(&msg.pm_rdm.dmx, buf, len);
@@ -172,11 +169,11 @@ bool UsbProWidget::SetParameters(uint8_t *data,
                                  int brk,
                                  int mab,
                                  int rate) {
-  int l = std::min((unsigned int) USER_CONFIG_LEN, len);
+  int l = std::min((unsigned int) USER_CONFIG_LENGTH, len);
   promsg msg;
-  msg.som = som;
+  msg.som = SOM;
   msg.label = ID_PRMSET;
-  set_msg_len(&msg, sizeof(pms_prmset) - USER_CONFIG_LEN + l);
+  set_msg_len(&msg, sizeof(pms_prmset) - USER_CONFIG_LENGTH + l);
   msg.pm_prmset.len = len & 0xFF;
   msg.pm_prmset.len_hi = (len & 0xFF) >> 8;
   brk = brk != K_MISSING_PARAM ? brk : m_break_time;
@@ -198,6 +195,36 @@ bool UsbProWidget::SetParameters(uint8_t *data,
 
 
 /*
+ * Send a start reprogramming message.
+ * @returns true if we sent ok, false otherwise
+ */
+bool UsbProWidget::SendReprogram() const {
+  promsg msg;
+  msg.som = SOM;
+  msg.label = ID_PROGRAM_FIRMWARE;
+  set_msg_len(&msg, 0);
+  return SendMessage(&msg);
+}
+
+
+/*
+ * Send a firmware packet
+ * @returns true if we sent ok, false otherwise
+ */
+bool UsbProWidget::SendFirmwarePage(uint8_t *data,
+                                    unsigned int data_length) const {
+  unsigned int length = std::min(data_length,
+                                 (unsigned int) FLASH_PAGE_LENGTH);
+  promsg msg;
+  msg.som = SOM;
+  msg.label = ID_FLASH_PAGE;
+  set_msg_len(&msg, length);
+  memcpy(msg.pm_flash_request.data, data, length);
+  return SendMessage(&msg);
+}
+
+
+/*
  * Fetch the widget parameters, causes listener->Parameters() to be called
  * later.
  * @returns true if we sent ok, false otherwise
@@ -205,7 +232,7 @@ bool UsbProWidget::SetParameters(uint8_t *data,
 bool UsbProWidget::GetParameters() const {
   int user_size = 0;
   promsg msg;
-  msg.som = som;
+  msg.som = SOM;
   msg.label = ID_PRMREQ;
   set_msg_len(&msg, sizeof(pms_prmreq));
   msg.pm_prmreq.len = user_size & 0xFF;
@@ -221,9 +248,9 @@ bool UsbProWidget::GetParameters() const {
  */
 bool UsbProWidget::GetSerial() const {
   promsg msg;
-  msg.som = som;
+  msg.som = SOM;
   msg.label = ID_SNOREQ;
-  set_msg_len(&msg, sizeof(pms_snoreq));
+  set_msg_len(&msg, 0);
   return SendMessage(&msg);
 }
 
@@ -276,7 +303,7 @@ void UsbProWidget::SetListener(UsbProWidgetListener *listener) {
 bool UsbProWidget::SendChangeMode(int new_mode) {
   promsg msg;
 
-  msg.som = som;
+  msg.som = SOM;
   msg.label = ID_RCMODE;
   set_msg_len(&msg, sizeof(pms_rcmode));
   msg.pm_rcmode.mode = new_mode;
@@ -288,6 +315,20 @@ bool UsbProWidget::SendChangeMode(int new_mode) {
   return status;
 }
 
+
+/*
+ * Handle the flash page reply
+ */
+int UsbProWidget::handle_flash_page(pms_flash_reply *reply, int len) {
+  bool status = false;
+  if (len == sizeof(REPLY_SUCCESS) &&
+      0 == memcmp(reply->status, REPLY_SUCCESS, len))
+    status = true;
+
+  if (m_listener)
+    m_listener->HandleFirmwareReply(status);
+  return 0;
+}
 
 /*
  * Handle the dmx frame
@@ -310,7 +351,7 @@ int UsbProWidget::handle_cos(pms_cos *cos, int len) {
   // should be checking length here
   int offset = 0;
   for (int i = 0; i < 40; i++) {
-    if (chn_st + i > DMX_BUF_LEN-1 || offset + 6 >= len)
+    if (chn_st + i > DMX_BUFFER_LENGTH - 1 || offset + 6 >= len)
       break;
 
     if (cos->changed[i/8] & (1 << (i % 8)) ) {
@@ -381,8 +422,9 @@ bool UsbProWidget::SendMessage(promsg *msg) const {
   ssize_t bytes_sent = m_socket->Send((uint8_t*) msg, len);
   if (bytes_sent != len)
     return false;
-  bytes_sent = m_socket->Send(&eom, sizeof(eom));
-  if (bytes_sent != sizeof(eom))
+  uint8_t eom = EOM;
+  bytes_sent = m_socket->Send(&eom, sizeof(EOM));
+  if (bytes_sent != sizeof(EOM))
     return false;
   return true;
 }
@@ -442,17 +484,20 @@ int UsbProWidget::ReceiveMessage() {
 
   if (byte == 0xe7) {
     switch(label) {
+      case ID_FLASH_PAGE:
+        handle_flash_page(&buf.pmu_flash_reply, plen);
+        break;
       case ID_RDMX:
-        handle_dmx( &buf.pmu_rdmx, plen);
+        handle_dmx(&buf.pmu_rdmx, plen);
         break;
       case ID_PRMREP:
-        handle_prmrep( &buf.pmu_prmrep, plen);
+        handle_prmrep(&buf.pmu_prmrep, plen);
         break;
       case ID_COS:
-        handle_cos( &buf.pmu_cos, plen);
+        handle_cos(&buf.pmu_cos, plen);
         break;
       case ID_SNOREP:
-        handle_snorep( &buf.pmu_snorep, plen);
+        handle_snorep(&buf.pmu_snorep, plen);
         break;
       default:
         LLA_WARN << "Unknown message type " << label;
@@ -461,5 +506,5 @@ int UsbProWidget::ReceiveMessage() {
   return 0;
 }
 
-} // plugin
+} // usbpro
 } //lla

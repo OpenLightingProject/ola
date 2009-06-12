@@ -26,7 +26,7 @@
 #include "UsbProDevice.h"
 
 namespace lla {
-namespace plugin {
+namespace usbpro {
 
 class UsbProPort: public lla::Port {
   public:
@@ -48,7 +48,7 @@ class UsbProPort: public lla::Port {
     string m_path;
 };
 
-} // plugin
+} // usbpro
 } //lla
 
 #endif

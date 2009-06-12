@@ -27,7 +27,7 @@
 #include <lla/network/Socket.h>
 
 namespace lla {
-namespace plugin {
+namespace usbpro {
 
 using lla::network::ConnectedSocket;
 
@@ -61,6 +61,6 @@ class UsbProPlugin: public lla::Plugin {
     static const string DEVICE_PATH_KEY;
 };
 
-} //plugins
+} //usbpro
 } //lla
 #endif
