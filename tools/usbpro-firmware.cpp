@@ -25,6 +25,7 @@
 #include <string>
 
 #include <lla/Logging.h>
+#include <lla/Closure.h>
 #include <lla/network/SelectServer.h>
 #include "usbpro/UsbProWidget.h"
 #include "usbpro/UsbProWidgetListener.h"
@@ -51,14 +52,18 @@ class FirmwareTransferer: public lla::usbpro::UsbProWidgetListener {
                        UsbProWidget *widget,
                        lla::network::SelectServer *ss):
       m_sent_last_page(false),
+      m_sucessful(false),
       m_firmware(file),
       m_widget(widget),
       m_ss(ss) {}
 
     void HandleFirmwareReply(bool success);
-    bool SendNextChunk();
+    int SendNextChunk();
+    int DeviceRemoved() { m_ss->Terminate(); return 0; }
+    bool WasSucessfull() const { return m_sucessful; }
   private:
     bool m_sent_last_page;
+    bool m_sucessful;
     ifstream &m_firmware;
     UsbProWidget *m_widget;
     lla::network::SelectServer *m_ss;
@@ -69,10 +74,8 @@ class FirmwareTransferer: public lla::usbpro::UsbProWidgetListener {
  * Called when we receive a firmware reply
  */
 void FirmwareTransferer::HandleFirmwareReply(bool success) {
-  LLA_INFO << "got reply " << success;
   if (success) {
-    if (!SendNextChunk()) {
-      LLA_FATAL << "Sending failed";
+    if (!SendNextChunk() || m_sucessful) {
       m_ss->Terminate();
     }
   } else {
@@ -85,14 +88,19 @@ void FirmwareTransferer::HandleFirmwareReply(bool success) {
 /*
  * Send the next chunk of the firmware file
  */
-bool FirmwareTransferer::SendNextChunk() {
+int FirmwareTransferer::SendNextChunk() {
   uint8_t page[lla::usbpro::FLASH_PAGE_LENGTH];
   m_firmware.read((char*) page, lla::usbpro::FLASH_PAGE_LENGTH);
   streamsize size = m_firmware.gcount();
-  bool ret = m_widget->SendFirmwarePage(page, size);
-  if (m_firmware.eof())
-    m_sent_last_page = true;
-  return ret;
+
+  if (!size) {
+    m_sucessful = true;
+    cout << endl;
+    return true;
+  }
+  cout << ".";
+  fflush(stdout);
+  return m_widget->SendFirmwarePage(page, size);
 }
 
 
@@ -133,8 +141,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
 
       case 'l':
-        int ll = atoi(optarg);
-        switch(ll) {
+        switch(atoi(optarg)) {
           case 0:
             // nothing is written at this level
             // so this turns logging off
@@ -222,15 +229,15 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  if (!transferer.SendNextChunk()) {
-    LLA_FATAL << "Send firmware failed";
-    exit(1);
-  }
-
+  ss.RegisterSingleTimeout(
+      1000,
+      lla::NewSingleClosure(&transferer, &FirmwareTransferer::SendNextChunk));
+  widget.GetSocket()->SetOnClose(
+      lla::NewSingleClosure(&transferer, &FirmwareTransferer::DeviceRemoved));
   ss.AddSocket(widget.GetSocket());
   ss.Run();
 
   widget.Disconnect();
   firmware_file.close();
-  return 0;
+  return !transferer.WasSucessfull();
 }

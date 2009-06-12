@@ -107,8 +107,10 @@ class ConnectedSocket: public Socket {
      */
     bool CheckIfClosed() {
       if (IsClosed()) {
-        m_on_close->Run();
-        m_on_close = NULL;
+        if (m_on_close) {
+          m_on_close->Run();
+          m_on_close = NULL;
+        }
         return true;
       }
       return false;
