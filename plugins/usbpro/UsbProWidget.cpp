@@ -85,7 +85,7 @@ bool UsbProWidget::Connect(const string &path) {
 
   // fire off a get request
   if (!GetParameters()) {
-    LLA_WARN << "Failed to set a GetParameters message";
+    LLA_WARN << "Failed to send a GetParameters message";
     delete m_socket;
     return false;
   }
