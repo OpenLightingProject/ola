@@ -28,15 +28,26 @@ namespace lla {
 class AbstractDevice;
 class Universe;
 
+/*
+ * The interface for a Port
+ */
 class AbstractPort {
   public:
     AbstractPort() {}
     virtual ~AbstractPort() {};
 
+    // return the device that this port belongs to
     virtual AbstractDevice *GetDevice() const = 0;
+    // return the id of the port within this deivce
     virtual unsigned int PortId() const = 0;
+    // return a globally unique id of this port. This is used to preserve port
+    // universe bindings
+    virtual string UniqueId() const = 0;
+    // bind this port to a universe
     virtual bool SetUniverse(Universe *universe) = 0;
+    // return the universe that this port is bound to or NULL
     virtual Universe *GetUniverse() const = 0;
+    // signal the port that the DMX data has changed
     virtual bool DmxChanged() = 0;
 
     // read/write dmx data to this port
@@ -47,10 +58,14 @@ class AbstractPort {
     virtual bool CanRead() const = 0;
     virtual bool CanWrite() const = 0;
 
+    // return a short description of this port
     virtual string Description() const = 0;
 };
 
 
+/*
+ * A partial implementation of the Port interface
+ */
 class Port: public AbstractPort {
   public:
     Port(AbstractDevice *parent, unsigned int id);
@@ -58,6 +73,9 @@ class Port: public AbstractPort {
 
     AbstractDevice *GetDevice() const { return m_parent; }
     unsigned int PortId() const { return m_port_id; }
+    // An empty string means we don't preserve settings. Subclasses need to
+    // provide this.
+    virtual string UniqueId() const { return ""; }
     bool SetUniverse(Universe *uni) { m_universe = uni; return true; }
     Universe *GetUniverse() const { return m_universe; }
     bool DmxChanged();
