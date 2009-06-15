@@ -48,9 +48,7 @@ class Dmx4LinuxPlugin: public lla::Plugin {
 
     int SocketReady();
     bool SendDMX(int d4l_uni, const DmxBuffer &buffer) const;
-
-  protected:
-    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
+    string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
     bool StartHook();

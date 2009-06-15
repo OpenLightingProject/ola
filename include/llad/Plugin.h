@@ -30,19 +30,30 @@ namespace lla {
 using std::string;
 class PluginAdaptor;
 
+/*
+ * The interface for a plugin
+ */
 class AbstractPlugin {
   public :
     AbstractPlugin() {}
     virtual ~AbstractPlugin() {};
 
+    // start the plugin
     virtual bool Start() = 0;
+    // stop the plugin
     virtual bool Stop() = 0;
+    // check if this plugin is enabled
     virtual bool IsEnabled() const = 0;
+    // TODO: remove this
     virtual bool DebugOn() const = 0;
+    // return the plugin_id of this plugin
     virtual lla_plugin_id Id() const = 0;
+    // return the name of this plugin
     virtual string Name() const = 0;
+    // return the description of this plugin
     virtual string Description() const = 0;
 
+    // used to sort plugins
     virtual bool operator<(const AbstractPlugin &other) const = 0;
 };
 
@@ -72,8 +83,8 @@ class Plugin: public AbstractPlugin {
     virtual bool DebugOn() const { return m_debug; }
     virtual lla_plugin_id Id() const = 0;
 
-    virtual string Name() const = 0;
-    virtual string Description() const = 0;
+    // return the prefix used to identify this plugin
+    virtual string PluginPrefix() const = 0;
 
     bool operator<(const AbstractPlugin &other) const {
       return Id() < other.Id();
@@ -83,7 +94,6 @@ class Plugin: public AbstractPlugin {
     virtual bool StartHook() { return 0; }
     virtual bool StopHook() { return 0; }
     virtual bool SetDefaultPreferences() { return true; }
-    virtual string PreferencesSuffix() const = 0;
 
     const PluginAdaptor *m_plugin_adaptor;
     class Preferences *m_preferences;  // preferences container

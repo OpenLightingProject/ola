@@ -38,8 +38,6 @@ class E131Plugin : public Plugin {
 
     string get_name() const { return PLUGIN_NAME; }
     string get_desc() const;
-
-  protected:
     string pref_suffix() const { return PLUGIN_PREFIX; }
 
   private:

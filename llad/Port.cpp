@@ -19,6 +19,8 @@
  */
 
 #include <llad/Port.h>
+#include <llad/Device.h>
+#include <llad/Plugin.h>
 #include <llad/Universe.h>
 
 namespace lla {
@@ -35,6 +37,28 @@ Port::Port(AbstractDevice *parent, unsigned int port_id):
   m_universe(NULL),
   m_parent(parent) {
 }
+
+
+/*
+ * Constructs a unique id for this port from the plugin prefix, the device id
+ * and the port id.  If the plugin prefix is empty, we return the empty string
+ * which represents an unknown unique id.
+ */
+string Port::UniqueId() const {
+  AbstractDevice *device = GetDevice();
+  if (!device)
+    return "";
+
+  AbstractPlugin *plugin = device->Owner();
+
+  if (!plugin)
+    return "";
+
+  std::stringstream str;
+  str << plugin->Id() << "-" << device->DeviceId() << "-" << PortId();
+  return str.str();
+}
+
 
 /*
  * Signal that the data for this port has changed

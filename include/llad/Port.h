@@ -75,7 +75,7 @@ class Port: public AbstractPort {
     unsigned int PortId() const { return m_port_id; }
     // An empty string means we don't preserve settings. Subclasses need to
     // provide this.
-    virtual string UniqueId() const { return ""; }
+    virtual string UniqueId() const;
     bool SetUniverse(Universe *uni) { m_universe = uni; return true; }
     Universe *GetUniverse() const { return m_universe; }
     bool DmxChanged();

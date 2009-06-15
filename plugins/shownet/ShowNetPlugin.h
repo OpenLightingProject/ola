@@ -43,9 +43,7 @@ class ShowNetPlugin : public Plugin {
     string Name() const { return PLUGIN_NAME; }
     lla_plugin_id Id() const { return LLA_PLUGIN_SHOWNET; }
     string Description() const;
-
-  protected:
-    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
+    string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
     bool StartHook();

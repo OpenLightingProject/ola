@@ -42,9 +42,7 @@ class UsbProPlugin: public lla::Plugin {
     string Description() const;
     lla_plugin_id Id() const { return LLA_PLUGIN_USBPRO; }
     int SocketClosed(ConnectedSocket *socket);
-
-  protected:
-    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
+    string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
     bool StartHook();

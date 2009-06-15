@@ -46,9 +46,7 @@ class StageProfiPlugin: public Plugin {
     lla_plugin_id Id() const { return LLA_PLUGIN_STAGEPROFI; }
     string Description() const;
     int SocketClosed(ConnectedSocket *socket);
-
-  protected:
-    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
+    string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
     bool StartHook();

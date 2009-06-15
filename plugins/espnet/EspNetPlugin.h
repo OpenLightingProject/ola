@@ -39,9 +39,7 @@ class EspNetPlugin: public lla::Plugin {
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
     lla_plugin_id Id() const { return LLA_PLUGIN_ESPNET; }
-
-  protected:
-    string PreferencesSuffix() const { return PLUGIN_PREFIX; }
+    string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
     bool StartHook();

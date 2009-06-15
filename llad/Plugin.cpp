@@ -86,12 +86,12 @@ bool Plugin::Stop() {
  * Load the preferences and set defaults
  */
 bool Plugin::LoadPreferences() {
-  if (PreferencesSuffix() == "") {
-    LLA_WARN << Name() << ", no suffix provided";
+  if (PluginPrefix() == "") {
+    LLA_WARN << Name() << ", no prefix provided";
     return false;
   }
 
-  m_preferences = m_plugin_adaptor->NewPreference(PreferencesSuffix());
+  m_preferences = m_plugin_adaptor->NewPreference(PluginPrefix());
 
   if (!m_preferences)
     return false;
