@@ -91,13 +91,14 @@ class LlaServer {
     class UniverseStore *m_universe_store;
     class ExportMap *m_export_map;
 
-    static const string UNIVERSE_PREFERENCES;
     bool m_init_run;
     bool m_free_export_map;
     std::map<int, class LlaServerServiceImpl*> m_sd_to_service;
     LlaHttpServer_t *m_httpd;
     lla_server_options m_options;
 
+    static const string UNIVERSE_PREFERENCES;
+    static const string PORT_PREFERENCES;
     static const string K_CLIENT_VAR;
     static const unsigned int K_GARBAGE_COLLECTOR_TIMEOUT_MS;
 };

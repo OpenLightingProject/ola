@@ -189,7 +189,7 @@ int LlaHttpServer::DisplayPluginInfo(const HttpRequest *request,
   string val = request->GetParameter("id");
   int plugin_id = atoi(val.data());
   AbstractPlugin *plugin = NULL;
-  if ( plugin_id > 0 && plugin_id < LLA_PLUGIN_LAST)
+  if (plugin_id > 0 && plugin_id < LLA_PLUGIN_LAST)
     plugin = m_plugin_loader->GetPlugin((lla_plugin_id) plugin_id);
 
   if (!plugin)

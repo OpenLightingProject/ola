@@ -27,7 +27,6 @@ namespace lla {
 
 /*
  * Register a device
- *
  * @param device pointer to the device to register
  * @return 0 on sucess, -1 on failure
  */
@@ -42,7 +41,6 @@ int DeviceManager::RegisterDevice(AbstractDevice *device) {
 
 /*
  * Unregister this device
- *
  * @param dev pointer to the AbstractDevice to unregister
  * @return 0 on sucess, non 0 on failure
  */
