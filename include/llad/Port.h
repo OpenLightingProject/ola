@@ -79,8 +79,7 @@ class Port: public AbstractPort {
 
     DeviceClass *GetDevice() const { return m_parent; }
     unsigned int PortId() const { return m_port_id; }
-    // An empty string means we don't preserve settings. Subclasses need to
-    // provide this.
+    // An empty string means we don't preserve settings.
     virtual string UniqueId() const;
     bool SetUniverse(Universe *uni) { m_universe = uni; return true; }
     Universe *GetUniverse() const { return m_universe; }

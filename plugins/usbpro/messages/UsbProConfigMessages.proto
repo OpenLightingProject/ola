@@ -39,7 +39,7 @@ message ParameterRequest {
 }
 
 message SerialNumberReply {
-  required bytes serial = 1;
+  required string serial = 1;
 }
 
 message Request {

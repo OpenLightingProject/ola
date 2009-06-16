@@ -32,7 +32,6 @@ class UsbProPort: public lla::Port<UsbProDevice> {
   public:
     UsbProPort(UsbProDevice *parent, unsigned int id, const string &path):
       lla::Port<UsbProDevice>(parent, id),
-      m_usb_device(parent),
       m_path(path) {};
 
     bool WriteDMX(const DmxBuffer &buffer);
@@ -41,9 +40,9 @@ class UsbProPort: public lla::Port<UsbProDevice> {
     bool CanRead() const;
     bool CanWrite() const;
     string Description() const { return m_path; }
+    string UniqueId() const;
 
   private:
-    UsbProDevice *m_usb_device;
     DmxBuffer m_empty_buffer;
     string m_path;
 };

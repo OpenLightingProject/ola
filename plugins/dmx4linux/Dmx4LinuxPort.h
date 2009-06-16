@@ -41,7 +41,6 @@ class Dmx4LinuxPort: public lla::Port {
     bool m_in;
     bool m_out;
     int m_dmx_universe;  // dmx4linux universe that this maps to
-    Dmx4LinuxDevice *m_device;
     DmxBuffer m_read_buffer;
 };
 

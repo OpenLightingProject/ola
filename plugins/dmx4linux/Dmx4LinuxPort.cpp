@@ -37,8 +37,7 @@ Dmx4LinuxPort::Dmx4LinuxPort(Dmx4LinuxDevice *parent,
   Port(parent, 0),
   m_in(in),
   m_out(out),
-  m_dmx_universe(dmx_universe),
-  m_device(parent) {
+  m_dmx_universe(dmx_universe) {
 }
 
 
@@ -51,7 +50,7 @@ bool Dmx4LinuxPort::WriteDMX(const DmxBuffer &buffer) {
   if (!CanWrite())
     return false;
 
-  return m_device->SendDMX(m_dmx_universe, buffer);
+  return GetDevice()->SendDMX(m_dmx_universe, buffer);
 }
 
 

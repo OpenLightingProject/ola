@@ -57,30 +57,28 @@ const string UsbProPlugin::DEVICE_PATH_KEY = "device";
 
 /*
  * Start the plugin
- *
  */
 bool UsbProPlugin::StartHook() {
-  UsbProDevice *dev;
-
   vector<string> device_names = m_preferences->GetMultipleValue(DEVICE_PATH_KEY);
   vector<string>::iterator it;
 
   for (it = device_names.begin(); it != device_names.end(); ++it) {
-    dev = new UsbProDevice(m_plugin_adaptor, this, USBPRO_DEVICE_NAME, *it);
-
-    if (!dev)
-      continue;
-
+    UsbProDevice *dev = new UsbProDevice(m_plugin_adaptor,
+                                         this,
+                                         USBPRO_DEVICE_NAME,
+                                         *it);
     if (!dev->Start()) {
       delete dev;
       continue;
     }
 
-    ConnectedSocket *socket = dev->GetSocket();
-    socket->SetOnClose(NewSingleClosure(this, &UsbProPlugin::SocketClosed,
-                                        socket));
-    m_plugin_adaptor->AddSocket(socket);
-    m_plugin_adaptor->RegisterDevice(dev);
+    // We don't register the device here, that's done asyncronously when the
+    // startup sequence completes.
+    dev->GetSocket()->SetOnClose(
+        NewSingleClosure(this,
+                         &UsbProPlugin::SocketClosed,
+                         dev->GetSocket())
+    );
     m_devices.push_back(dev);
   }
   return true;
@@ -89,7 +87,6 @@ bool UsbProPlugin::StartHook() {
 
 /*
  * Stop the plugin
- *
  * @return true on sucess, false on failure
  */
 bool UsbProPlugin::StopHook() {

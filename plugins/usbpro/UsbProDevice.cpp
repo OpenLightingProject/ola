@@ -21,6 +21,7 @@
  * at a time.
  */
 
+#include <iomanip>
 #include <iostream>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
@@ -51,10 +52,11 @@ UsbProDevice::UsbProDevice(const lla::PluginAdaptor *plugin_adaptor,
                            const string &name,
                            const string &dev_path):
   Device(owner, name),
-  m_plugin_adaptor(plugin_adaptor),
-  m_path(dev_path),
   m_enabled(false),
   m_in_shutdown(false),
+  m_in_startup(false),
+  m_plugin_adaptor(plugin_adaptor),
+  m_path(dev_path),
   m_widget(NULL) {
     m_widget = new UsbProWidget();
 }
@@ -73,7 +75,7 @@ UsbProDevice::~UsbProDevice() {
 
 
 /*
- * Start this device
+ * Start this device. This sends requests to the widget.
  */
 bool UsbProDevice::Start() {
   UsbProPort *port = NULL;
@@ -84,6 +86,8 @@ bool UsbProDevice::Start() {
   LLA_INFO << "Opened " << m_path;
 
   m_widget->SetListener(this);
+  m_widget->GetSerial();
+  LLA_WARN << "SENT SERIAL" ;
 
   /* set up ports */
   for (int i = 0; i < 2; i++) {
@@ -92,11 +96,22 @@ bool UsbProDevice::Start() {
     if (port)
       AddPort(port);
   }
-
-  m_enabled = true;
+  m_plugin_adaptor->AddSocket(m_widget->GetSocket());
+  m_in_startup = true;
   return true;
 }
 
+
+/*
+ * Called at the end of the startup sequence.
+ */
+bool UsbProDevice::StartCompleted() {
+
+  m_plugin_adaptor->RegisterDevice(this);
+  m_in_startup = false;
+  m_enabled = true;
+  return true;
+}
 
 /*
  * Stop this device
@@ -242,14 +257,13 @@ void UsbProDevice::HandleGetSerial(
     string *response,
     google::protobuf::Closure *done) {
 
-  if (!m_widget->GetSerial()) {
-    controller->SetFailed("GetSerial failed");
-    done->Run();
-  } else {
-    // TODO: we should time these out if we don't get a response
-    OutstandingRequest serial_request(controller, response, done);
-    m_outstanding_serial_requests.push_back(serial_request);
-  }
+  Reply reply;
+  reply.set_type(lla::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
+  lla::plugin::usbpro::SerialNumberReply *serial_reply =
+    reply.mutable_serial_number();
+  serial_reply->set_serial(m_serial);
+  reply.SerializeToString(response);
+  done->Run();
 }
 
 
@@ -297,18 +311,19 @@ void UsbProDevice::HandleWidgetParameters(uint8_t firmware,
  */
 void UsbProDevice::HandleWidgetSerial(
     const uint8_t serial_number[SERIAL_NUMBER_LENGTH]) {
-  if (!m_outstanding_serial_requests.empty()) {
-    OutstandingRequest serial_request = m_outstanding_serial_requests.front();
-    m_outstanding_serial_requests.pop_front();
 
-    Reply reply;
-    reply.set_type(lla::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
-    lla::plugin::usbpro::SerialNumberReply *serial_reply =
-      reply.mutable_serial_number();
-
-    serial_reply->set_serial((char*) serial_number, SERIAL_NUMBER_LENGTH);
-    reply.SerializeToString(serial_request.response);
-    serial_request.closure->Run();
+  // this was the first serial reply,
+  if (m_in_startup) {
+    std::stringstream str;
+    str << std::setfill('0');
+    for (unsigned int i = 0; i < SERIAL_NUMBER_LENGTH; i++) {
+      int digit = (10 * (serial_number[i] & 0xf0) >> 4) +
+        (serial_number[i] & 0x0f);
+      str <<  setw(2)  << digit;
+    }
+    StartCompleted();
+    m_serial = str.str();
+    LLA_WARN << "serial is " << m_serial;
   }
 }
 

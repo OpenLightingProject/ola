@@ -40,6 +40,9 @@ using lla::plugin::usbpro::Request;
 using lla::network::ConnectedSocket;
 using std::deque;
 
+/*
+ * Outstanding requests to the widget
+ */
 class OutstandingRequest {
   public:
     OutstandingRequest(RpcController *a_controller,
@@ -54,6 +57,9 @@ class OutstandingRequest {
 };
 
 
+/*
+ * A UsbPro device
+ */
 class UsbProDevice: public Device, public UsbProWidgetListener {
   public:
     UsbProDevice(const lla::PluginAdaptor *plugin_adaptor,
@@ -63,6 +69,7 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     ~UsbProDevice();
 
     bool Start();
+    bool StartCompleted();
     bool Stop();
     void Configure(RpcController *controller,
                    const string &request,
@@ -73,6 +80,7 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     bool SendDMX(const DmxBuffer &buffer);
     const DmxBuffer &FetchDMX() const;
     bool ChangeToReceiveMode();
+    string SerialNumber() const { return m_serial; }
 
     // callbacks from the widget
     void HandleWidgetDmx();
@@ -94,10 +102,12 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
                          string *response,
                          google::protobuf::Closure *done);
 
-    const lla::PluginAdaptor *m_plugin_adaptor;
-    string m_path;
     bool m_enabled;
     bool m_in_shutdown; // set to true if we're shutting down
+    bool m_in_startup; // set to true if we're starting up
+    const lla::PluginAdaptor *m_plugin_adaptor;
+    string m_path;
+    string m_serial;
     UsbProWidget *m_widget;
     deque<OutstandingRequest> m_outstanding_param_requests;
     deque<OutstandingRequest> m_outstanding_serial_requests;

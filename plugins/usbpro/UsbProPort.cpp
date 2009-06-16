@@ -18,6 +18,7 @@
  * Copyright (C) 2006-2007 Simon Newton
  */
 
+#include <lla/Logging.h>
 #include "UsbProPort.h"
 #include "UsbProDevice.h"
 
@@ -37,31 +38,27 @@ bool UsbProPort::CanWrite() const {
 
 /*
  * Write operation
- *
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- * @return   0 on success, non 0 on failure
+ * @param data  pointer to the dmx data
+ * @param length  the length of the data
+ * @return true on success, false on failure
  */
 bool UsbProPort::WriteDMX(const DmxBuffer &buffer) {
   if (!CanWrite())
     return true;
-
-  return m_usb_device->SendDMX(buffer);
+  return GetDevice()->SendDMX(buffer);
 }
 
 
 /*
  * Read operation
- *
  * @param data  buffer to read data into
- * @param length  length of data to read
+ * @param length length of data to read
  * @return the amount of data read
  */
 const DmxBuffer &UsbProPort::ReadDMX() const {
   if (!CanRead())
     return m_empty_buffer;
-
-  return m_usb_device->FetchDMX();
+  return GetDevice()->FetchDMX();
 }
 
 
@@ -73,9 +70,23 @@ const DmxBuffer &UsbProPort::ReadDMX() const {
 bool UsbProPort::SetUniverse(Universe *uni) {
   Port<UsbProDevice>::SetUniverse(uni);
   if (uni == NULL && CanWrite()) {
-    m_usb_device->ChangeToReceiveMode();
+    GetDevice()->ChangeToReceiveMode();
   }
   return 0;
+}
+
+/*
+ * return the unique port id
+ */
+string UsbProPort::UniqueId() const {
+  AbstractPlugin *plugin = GetDevice()->Owner();
+  if (!plugin)
+    return "";
+
+  std::stringstream str;
+  str << plugin->Id() << "-" << GetDevice()->SerialNumber() << "-" << PortId();
+  LLA_INFO << "uniq is " << GetDevice()->SerialNumber();
+  return str.str();
 }
 
 } // usbpro

@@ -23,15 +23,15 @@
 #define PATHPORTPORT_H
 
 #include <llad/Port.h>
-
 #include <pathport/pathport.h>
+#include "PathportDevice.h"
 
 namespace lla {
 namespace plugin {
 
 class PathportPort: public lla::Port {
   public:
-    PathportPort(Device *parent, int id);
+    PathportPort(PathportDevice *parent, int id);
     ~PathportPort();
 
     int WriteDMX(uint8_t *data, unsigned int length);
@@ -46,8 +46,6 @@ class PathportPort: public lla::Port {
   private :
     uint8_t *m_buf;
     unsigned int m_len;
-    PathportDevice *m_device;
-
 };
 
 } //plugin

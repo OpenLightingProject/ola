@@ -34,8 +34,7 @@ namespace plugin {
 PathportPort::PathportPort(PathportDevice *parent, int id) :
   Port(parent, id),
   m_buf(NULL),
-  m_len(DMX_UNIVERSE_SIZE),
-  m_device(parent) {
+  m_len(DMX_UNIVERSE_SIZE) {
 }
 
 
@@ -133,7 +132,7 @@ int PathportPort::UpdateBuffer(const uint8_t *data, int length) {
  * pathport universes
  */
 int PathportPort::SetUniverse(Universe *uni) {
-  pathport_node node = m_device->PathportNode();
+  pathport_node node = GetDevice()->PathportNode();
 
   Universe *old = GetUniverse();
 
@@ -143,11 +142,11 @@ int PathportPort::SetUniverse(Universe *uni) {
     // Unregister our interest in this universe
     if (old) {
       pathport_unregister_uni(node, old->UniverseId());
-      m_device->port_map(old, NULL);
+      GetDevice()->port_map(old, NULL);
     }
 
     if (uni) {
-      m_device->port_map(uni, this);
+      GetDevice()->port_map(uni, this);
       pathport_register_uni(node, uni->UniverseId());
     }
   }
