@@ -23,13 +23,15 @@
 
 #include <llad/Port.h>
 #include <artnet/artnet.h>
+#include "ArtNetDevice.h"
 
 namespace lla {
 namespace plugin {
 
-class ArtNetPort: public Port {
+class ArtNetPort: public Port<ArtNetDevice> {
   public:
-    ArtNetPort(AbstractDevice *parent, unsigned int id): Port(parent, id) {};
+    ArtNetPort(ArtNetDevice *parent, unsigned int id):
+      Port<ArtNetDevice>(parent, id) {};
 
     bool SetUniverse(Universe *universe);
     bool WriteDMX(const DmxBuffer &data);

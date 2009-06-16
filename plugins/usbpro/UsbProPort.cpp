@@ -71,7 +71,7 @@ const DmxBuffer &UsbProPort::ReadDMX() const {
  * recv mode.
  */
 bool UsbProPort::SetUniverse(Universe *uni) {
-  Port::SetUniverse(uni);
+  Port<UsbProDevice>::SetUniverse(uni);
   if (uni == NULL && CanWrite()) {
     m_usb_device->ChangeToReceiveMode();
   }

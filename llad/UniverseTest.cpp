@@ -65,10 +65,11 @@ class UniverseTest: public CppUnit::TestFixture {
 };
 
 
-class MockPort: public Port {
+class MockPort: public Port<AbstractDevice> {
   public:
     MockPort(AbstractDevice *parent, unsigned int port_id, bool is_output):
-      Port(parent, port_id), m_is_output_port(is_output) {}
+      Port<AbstractDevice>(parent, port_id),
+      m_is_output_port(is_output) {}
     ~MockPort() {}
 
     bool WriteDMX(const DmxBuffer &buffer) { m_buffer = buffer; }

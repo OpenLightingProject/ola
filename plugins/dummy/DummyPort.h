@@ -23,19 +23,19 @@
 
 #include <lla/DmxBuffer.h>
 #include <llad/Port.h>
+#include "DummyDevice.h"
 
 namespace lla {
 namespace plugin {
 
-class DummyPort: public Port {
+class DummyPort: public Port<DummyDevice> {
   public:
-    DummyPort(AbstractDevice *parent, unsigned int id):
-      Port(parent, id) {}
-    bool CanRead() const { return false; }
+    DummyPort(DummyDevice *parent, unsigned int id):
+      Port<DummyDevice>(parent, id) {}
 
+    bool CanRead() const { return false; }
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const { return m_buffer; }
-
     string Description() const { return "Dummy Port"; }
 
   private:

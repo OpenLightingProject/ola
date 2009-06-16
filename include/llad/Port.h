@@ -22,11 +22,11 @@
 #define PORT_H
 
 #include <lla/DmxBuffer.h>
+#include <llad/Device.h>
+#include <llad/Plugin.h>
+#include <llad/Universe.h>
 
 namespace lla {
-
-class AbstractDevice;
-class Universe;
 
 /*
  * The interface for a Port
@@ -34,7 +34,7 @@ class Universe;
 class AbstractPort {
   public:
     AbstractPort() {}
-    virtual ~AbstractPort() {};
+    virtual ~AbstractPort() {}
 
     // return the device that this port belongs to
     virtual AbstractDevice *GetDevice() const = 0;
@@ -64,21 +64,31 @@ class AbstractPort {
 
 
 /*
- * A partial implementation of the Port interface
+ * A partial implementation of the Port interface templatized by the parent
+ * Device.
  */
+template <typename DeviceClass>
 class Port: public AbstractPort {
   public:
-    Port(AbstractDevice *parent, unsigned int id);
+    Port(DeviceClass *parent, unsigned int port_id):
+      AbstractPort(),
+      m_port_id(port_id),
+      m_universe(NULL),
+      m_parent(parent) {}
     virtual ~Port() {};
 
-    AbstractDevice *GetDevice() const { return m_parent; }
+    DeviceClass *GetDevice() const { return m_parent; }
     unsigned int PortId() const { return m_port_id; }
     // An empty string means we don't preserve settings. Subclasses need to
     // provide this.
     virtual string UniqueId() const;
     bool SetUniverse(Universe *uni) { m_universe = uni; return true; }
     Universe *GetUniverse() const { return m_universe; }
-    bool DmxChanged();
+    bool DmxChanged() {
+      if (m_universe)
+        return m_universe->PortDataChanged(this);
+      return true;
+    }
 
     // default is read/write
     virtual bool CanRead()  const { return true; }
@@ -92,9 +102,28 @@ class Port: public AbstractPort {
 
     unsigned int m_port_id;
     Universe *m_universe; // universe this port belongs to
-    AbstractDevice *m_parent; // pointer to the device this port belongs to
+    DeviceClass *m_parent; // pointer to the device this port belongs to
 };
 
+
+/*
+ * Constructs a unique id for this port from the plugin prefix, the device id
+ * and the port id.  If the plugin prefix is empty, we return the empty string
+ * which represents an unknown unique id.
+ */
+template <typename DeviceClass>
+string Port<DeviceClass>::UniqueId() const {
+  if (!GetDevice())
+    return "";
+
+  AbstractPlugin *plugin = GetDevice()->Owner();
+  if (!plugin)
+    return "";
+
+  std::stringstream str;
+  str << plugin->Id() << "-" << GetDevice()->DeviceId() << "-" << PortId();
+  return str.str();
+}
 
 } //lla
 #endif

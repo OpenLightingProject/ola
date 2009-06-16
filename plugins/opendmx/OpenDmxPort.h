@@ -24,16 +24,17 @@
 #include <string>
 #include <lla/DmxBuffer.h>
 #include <llad/Port.h>
-#include <OpenDmxThread.h>
+#include "OpenDmxDevice.h"
+#include "OpenDmxThread.h"
 
 namespace lla {
 namespace plugin {
 
 using std::string;
 
-class OpenDmxPort: public lla::Port {
+class OpenDmxPort: public lla::Port<OpenDmxDevice> {
   public:
-    OpenDmxPort(lla::AbstractDevice *parent, unsigned int id,
+    OpenDmxPort(OpenDmxDevice *parent, unsigned int id,
                 const string &path);
     ~OpenDmxPort();
 

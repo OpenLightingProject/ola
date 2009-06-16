@@ -22,7 +22,7 @@
 #define SHOWNETPORT_H
 
 #include <llad/Port.h>
-#include <llad/Device.h>
+#include "ShowNetDevice.h"
 #include "ShowNetNode.h"
 
 namespace lla {
@@ -30,9 +30,10 @@ namespace shownet {
 
 using lla::DmxBuffer;
 
-class ShowNetPort: public Port {
+class ShowNetPort: public Port<ShowNetDevice> {
   public:
-    ShowNetPort(lla::Device *parent, unsigned int id): Port(parent, id) {}
+    ShowNetPort(ShowNetDevice *parent, unsigned int id):
+      Port<ShowNetDevice>(parent, id) {}
     ~ShowNetPort() {}
 
     bool CanRead() const;

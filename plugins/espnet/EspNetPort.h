@@ -30,9 +30,10 @@ namespace espnet {
 
 using lla::DmxBuffer;
 
-class EspNetPort: public lla::Port {
+class EspNetPort: public lla::Port<EspNetDevice> {
   public:
-    EspNetPort(EspNetDevice *parent, unsigned int id): Port(parent, id) {}
+    EspNetPort(EspNetDevice *parent, unsigned int id):
+      Port<EspNetDevice>(parent, id) {}
     ~EspNetPort() {}
 
     bool CanRead() const;

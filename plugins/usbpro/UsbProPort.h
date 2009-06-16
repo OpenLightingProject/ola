@@ -28,10 +28,10 @@
 namespace lla {
 namespace usbpro {
 
-class UsbProPort: public lla::Port {
+class UsbProPort: public lla::Port<UsbProDevice> {
   public:
     UsbProPort(UsbProDevice *parent, unsigned int id, const string &path):
-      lla::Port(parent, id),
+      lla::Port<UsbProDevice>(parent, id),
       m_usb_device(parent),
       m_path(path) {};
 

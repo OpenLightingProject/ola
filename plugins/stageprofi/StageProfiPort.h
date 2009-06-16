@@ -23,17 +23,15 @@
 
 #include <lla/DmxBuffer.h>
 #include <llad/Port.h>
+#include "StageProfiDevice.h"
 
 namespace lla {
-
-class AbstractDevice;
-
 namespace plugin {
 
-class StageProfiPort: public Port {
+class StageProfiPort: public Port<StageProfiDevice> {
   public:
-    StageProfiPort(AbstractDevice *parent, unsigned int id):
-      Port(parent, id) {};
+    StageProfiPort(StageProfiDevice *parent, unsigned int id):
+      Port<StageProfiDevice>(parent, id) {};
 
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const { return m_empty_buffer; }

@@ -51,7 +51,7 @@ string ShowNetPort::Description() const {
 
 
 bool ShowNetPort::WriteDMX(const DmxBuffer &buffer) {
-  ShowNetDevice *device = (ShowNetDevice*) GetDevice();
+  ShowNetDevice *device = GetDevice();
 
   if (!CanWrite())
     return false;
@@ -72,7 +72,7 @@ const DmxBuffer &ShowNetPort::ReadDMX() const {
  * Called when there is new dmx data
  */
 int ShowNetPort::UpdateBuffer() {
-  ShowNetDevice *device = (ShowNetDevice*) GetDevice();
+  ShowNetDevice *device = GetDevice();
   ShowNetNode *node = device->GetNode();
   m_buffer = node->GetDMX(ShowNetUniverseId());
   return DmxChanged();
@@ -84,12 +84,12 @@ int ShowNetPort::UpdateBuffer() {
  */
 bool ShowNetPort::SetUniverse(Universe *universe) {
   Universe *old_universe = GetUniverse();
-  Port::SetUniverse(universe);
+  Port<ShowNetDevice>::SetUniverse(universe);
 
   if (!CanRead())
     return true;
 
-  ShowNetDevice *device = (ShowNetDevice*) GetDevice();
+  ShowNetDevice *device = GetDevice();
   ShowNetNode *node = device->GetNode();
 
   if (!old_universe && universe)

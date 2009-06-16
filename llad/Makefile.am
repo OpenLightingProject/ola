@@ -4,7 +4,7 @@ SUBDIRS = www
 
 LLASERVER_SOURCES = LlaServerServiceImpl.cpp \
                     Preferences.cpp Universe.cpp \
-                    UniverseStore.cpp Port.cpp Client.cpp \
+                    UniverseStore.cpp Client.cpp \
                     Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
                     Plugin.cpp DlOpenPluginLoader.cpp
 

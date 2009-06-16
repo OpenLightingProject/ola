@@ -46,7 +46,7 @@ bool ArtNetPort::CanWrite() const {
  * @return true if the write succeeded, false otherwise
  */
 bool ArtNetPort::WriteDMX(const DmxBuffer &buffer) {
-  ArtNetDevice *dev = (ArtNetDevice*) GetDevice();
+  ArtNetDevice *dev = GetDevice();
   if (!CanWrite())
     return false;
 
@@ -68,7 +68,7 @@ const DmxBuffer &ArtNetPort::ReadDMX() const {
     return m_buffer;
 
   int length;
-  ArtNetDevice *dev = (ArtNetDevice*) GetDevice();
+  ArtNetDevice *dev = GetDevice();
   uint8_t *dmx_data = artnet_read_dmx(dev->GetArtnetNode(), PortId() / 2,
                                       &length);
 
@@ -86,11 +86,11 @@ const DmxBuffer &ArtNetPort::ReadDMX() const {
  * We override the set universe method to reprogram our port.
  */
 bool ArtNetPort::SetUniverse(Universe *uni) {
-  ArtNetDevice *dev = (ArtNetDevice*) GetDevice();
+  ArtNetDevice *dev = GetDevice();
   artnet_node node = dev->GetArtnetNode();
 
   // base method
-  Port::SetUniverse(uni);
+  Port<ArtNetDevice>::SetUniverse(uni);
 
   // this is a bit of a hack but currently in libartnet there is no
   // way to disable a port once it's been enabled.
@@ -134,7 +134,7 @@ bool ArtNetPort::SetUniverse(Universe *uni) {
  * Return the port description
  */
 string ArtNetPort::Description() const {
-  ArtNetDevice *dev = (ArtNetDevice*) GetDevice();
+  ArtNetDevice *dev = GetDevice();
   artnet_node node = dev->GetArtnetNode();
   int universe_address = artnet_get_universe_addr(
       node,

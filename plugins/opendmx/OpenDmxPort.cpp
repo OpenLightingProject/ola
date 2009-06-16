@@ -24,8 +24,10 @@
 namespace lla {
 namespace plugin {
 
-OpenDmxPort::OpenDmxPort(AbstractDevice *parent, unsigned int id,
-                         const string &path): Port(parent, id) {
+OpenDmxPort::OpenDmxPort(OpenDmxDevice *parent,
+                         unsigned int id,
+                         const string &path):
+    Port<OpenDmxDevice>(parent, id) {
   m_thread = new OpenDmxThread();
 
   if (m_thread)

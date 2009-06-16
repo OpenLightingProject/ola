@@ -63,8 +63,6 @@ class AbstractDevice {
 };
 
 
-// TODO: convert this into a template so we don't have to use casts on
-// GetPort()
 class Device: public AbstractDevice {
   public:
     Device(AbstractPlugin *owner, const string &name);

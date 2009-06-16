@@ -45,9 +45,10 @@ class DeviceTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(DeviceTest);
 
 
-class MockPort: public Port {
+class MockPort: public Port<AbstractDevice> {
   public:
-    MockPort(AbstractDevice *parent, unsigned int id): Port(parent, id) {}
+    MockPort(AbstractDevice *parent, unsigned int id):
+      Port<AbstractDevice>(parent, id) {}
     ~MockPort() {}
     bool WriteDMX(const DmxBuffer &buffer) {}
     const DmxBuffer &ReadDMX() const {}

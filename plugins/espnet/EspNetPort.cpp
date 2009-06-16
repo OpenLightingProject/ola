@@ -58,7 +58,7 @@ bool EspNetPort::WriteDMX(const DmxBuffer &buffer) {
   if (!CanWrite() || !GetUniverse())
     return false;
 
-  EspNetDevice *device = (EspNetDevice*) GetDevice();
+  EspNetDevice *device = GetDevice();
   EspNetNode *node = device->GetNode();
 
   if (!node->SendDMX(EspNetUniverseId(), buffer))
@@ -84,7 +84,7 @@ int EspNetPort::UpdateBuffer() {
   if (!CanRead() || !GetUniverse())
     return false;
 
-  EspNetDevice *device = (EspNetDevice*) GetDevice();
+  EspNetDevice *device = GetDevice();
   EspNetNode *node = device->GetNode();
   m_buffer = node->GetDMX(EspNetUniverseId());
   return DmxChanged();
@@ -96,12 +96,12 @@ int EspNetPort::UpdateBuffer() {
  */
 bool EspNetPort::SetUniverse(Universe *universe) {
   Universe *old_universe = GetUniverse();
-  Port::SetUniverse(universe);
+  Port<EspNetDevice>::SetUniverse(universe);
 
   if (!CanRead())
     return true;
 
-  EspNetDevice *device = (EspNetDevice*) GetDevice();
+  EspNetDevice *device = GetDevice();
   EspNetNode *node = device->GetNode();
 
   if (old_universe && old_universe != universe)
