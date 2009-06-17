@@ -34,7 +34,7 @@ Dmx4LinuxPort::Dmx4LinuxPort(Dmx4LinuxDevice *parent,
                              int dmx_universe,
                              bool in,
                              bool out):
-  Port(parent, 0),
+  Port<Dmx4LinuxDevice>(parent, 0),
   m_in(in),
   m_out(out),
   m_dmx_universe(dmx_universe) {

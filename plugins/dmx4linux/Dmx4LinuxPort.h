@@ -28,7 +28,7 @@
 namespace lla {
 namespace plugin {
 
-class Dmx4LinuxPort: public lla::Port {
+class Dmx4LinuxPort: public lla::Port<Dmx4LinuxDevice> {
   public:
     Dmx4LinuxPort(Dmx4LinuxDevice *parent, int d4l, bool in, bool out);
 
