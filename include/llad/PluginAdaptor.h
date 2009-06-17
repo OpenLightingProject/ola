@@ -28,6 +28,7 @@ namespace lla {
 
 namespace network {
   class Socket;
+  class ConnectedSocket;
   class SocketManager;
   class SelectServer;
 }
@@ -37,6 +38,7 @@ class SingleUseClosure;
 
 using std::string;
 using lla::network::Socket;
+using lla::network::ConnectedSocket;
 using lla::network::SocketManager;
 using lla::network::SelectServer;
 
@@ -47,6 +49,8 @@ class PluginAdaptor {
                   class PreferencesFactory *preferences_factory);
 
     bool AddSocket(class Socket *socket) const;
+    bool AddSocket(class ConnectedSocket *socket,
+                   bool delete_on_close=false) const;
     bool RemoveSocket(class Socket *socket) const;
     bool RegisterRepeatingTimeout(int ms, Closure *closure) const;
     bool RegisterSingleTimeout(int ms, SingleUseClosure *closure) const;
