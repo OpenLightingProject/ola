@@ -32,10 +32,10 @@ namespace lla {
 using lla::network::SelectServer;
 
 /*
- * Create a new pluginadaptor
- *
- * @param  m_device_manager  pointer to a devicemanager object
- * @param  m_ss  pointer to the m_sswork object
+ * Create a new PluginAdaptor
+ * @param device_manager  pointer to a DeviceManager object
+ * @param select_server pointer to the SelectServer object
+ * @param preferences_factory pointer to the PreferencesFactory object
  */
 PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
                              SelectServer *select_server,
@@ -65,7 +65,7 @@ bool PluginAdaptor::RemoveSocket(class Socket *socket) const {
 
 
 /*
- * register a repeating timeout
+ * Register a repeating timeout
  * @param ms the time between function calls
  * @param closure the LlaClosure to call when the timeout expires
  * @return true on success, false on failure
@@ -76,7 +76,7 @@ bool PluginAdaptor::RegisterRepeatingTimeout(int ms, Closure *closure) const {
 
 
 /*
- * register a single timeout
+ * Register a single timeout
  * @param ms the time between function calls
  * @param closure the LlaClosure to call when the timeout expires
  * @return true on success, false on failure
@@ -90,20 +90,19 @@ bool PluginAdaptor::RegisterSingleTimeout(int ms,
 /*
  * Register a device
  * @param dev  the device to register
- * @return 0 on success, non 0 on error
+ * @return true on success, false on error
  */
-int PluginAdaptor::RegisterDevice(AbstractDevice *device) const {
+bool PluginAdaptor::RegisterDevice(AbstractDevice *device) const {
   return m_device_manager->RegisterDevice(device);
 }
 
 
 /*
  * Unregister a device
- *
  * @param dev  the device to unregister
- * @return 0 on success, non 0 on error
+ * @return true on success, false on error
  */
-int PluginAdaptor::UnregisterDevice(AbstractDevice *device) const {
+bool PluginAdaptor::UnregisterDevice(AbstractDevice *device) const {
   return m_device_manager->UnregisterDevice(device);
 }
 

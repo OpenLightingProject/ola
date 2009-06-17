@@ -20,39 +20,92 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
 #include <lla/Logging.h>
+#include <lla/StringUtils.h>
+#include <llad/Port.h>
 #include "DeviceManager.h"
 
 namespace lla {
 
+const string DeviceManager::PORT_PREFERENCES = "port";
+
+/*
+ * Constructor
+ */
+DeviceManager::DeviceManager(PreferencesFactory *prefs_factory,
+                             UniverseStore *universe_store):
+    m_universe_store(universe_store),
+    m_port_preferences(NULL),
+    m_next_device_id(1) {
+
+  if (prefs_factory) {
+    m_port_preferences = prefs_factory->NewPreference(PORT_PREFERENCES);
+    m_port_preferences->Load();
+  }
+}
+
+/*
+ * Cleanup
+ */
+DeviceManager::~DeviceManager() {
+  if (m_port_preferences)
+    m_port_preferences->Save();
+}
+
+
 /*
  * Register a device
  * @param device pointer to the device to register
- * @return 0 on sucess, -1 on failure
+ * @return true on sucess, false on failure
  */
-int DeviceManager::RegisterDevice(AbstractDevice *device) {
+bool DeviceManager::RegisterDevice(AbstractDevice *device) {
   device->SetDeviceId(m_next_device_id);
   m_devices.push_back(device);
   m_next_device_id++;
   LLA_INFO << "Installed device: " << device->Name();
-  return 0;
+
+  if (!m_port_preferences)
+    return true;
+
+  vector<AbstractPort*> ports = device->Ports();
+  for (vector<AbstractPort*>::iterator port_iter = ports.begin();
+       port_iter != ports.end(); ++port_iter) {
+    if ((*port_iter)->UniqueId().empty())
+      continue;
+
+    string uni_id = m_port_preferences->GetValue((*port_iter)->UniqueId());
+    if (uni_id.empty())
+      continue;
+
+    errno = 0;
+    int id = (int) strtol(uni_id.data(), NULL, 10);
+    if (id == 0 && errno)
+      continue;
+    LLA_INFO << "Restored dev " << device->DeviceId() << ", port " <<
+      (*port_iter)->PortId() << " to universe " << id;
+    Universe *uni = m_universe_store->GetUniverseOrCreate(id);
+    (*port_iter)->SetUniverse(uni);
+  }
+  return true;
 }
 
 
 /*
  * Unregister this device
  * @param dev pointer to the AbstractDevice to unregister
- * @return 0 on sucess, non 0 on failure
+ * @return true on sucess, false on failure
  */
-int DeviceManager::UnregisterDevice(AbstractDevice *device) {
+bool DeviceManager::UnregisterDevice(AbstractDevice *device) {
   vector<AbstractDevice*>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     if ((*iter)->DeviceId() == device->DeviceId()) {
+      SaveDevicePortSettings(device);
       m_devices.erase(iter);
       break;
     }
   }
-  return 0;
+  return true;
 }
 
 
@@ -74,8 +127,35 @@ AbstractDevice* DeviceManager::GetDevice(unsigned int device_id) {
  * Remove all devices and reset the device counter
  */
 void DeviceManager::UnregisterAllDevices() {
+  vector<AbstractDevice*>::iterator iter;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter)
+    SaveDevicePortSettings(*iter);
+
   m_devices.clear();
   m_next_device_id = 1;
+}
+
+
+/*
+ * Save the port settings for a device
+ */
+void DeviceManager::SaveDevicePortSettings(AbstractDevice *device) {
+  if (!m_port_preferences)
+    return;
+
+  vector<AbstractPort*> ports = device->Ports();
+  vector<AbstractPort*>::iterator port_iter;
+  for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
+    if ((*port_iter)->UniqueId().empty())
+      continue;
+
+    if (!(*port_iter)->GetUniverse())
+      continue;
+
+    m_port_preferences->SetValue(
+        (*port_iter)->UniqueId(),
+        IntToString((*port_iter)->GetUniverse()->UniverseId()));
+  }
 }
 
 } //lla

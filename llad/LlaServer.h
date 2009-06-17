@@ -98,7 +98,6 @@ class LlaServer {
     lla_server_options m_options;
 
     static const string UNIVERSE_PREFERENCES;
-    static const string PORT_PREFERENCES;
     static const string K_CLIENT_VAR;
     static const unsigned int K_GARBAGE_COLLECTOR_TIMEOUT_MS;
 };

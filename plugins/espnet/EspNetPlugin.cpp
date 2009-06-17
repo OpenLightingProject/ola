@@ -81,8 +81,8 @@ bool EspNetPlugin::StartHook() {
  * @return 0 on sucess, -1 on failure
  */
 bool EspNetPlugin::StopHook() {
-  m_device->Stop();
   m_plugin_adaptor->UnregisterDevice(m_device);
+  m_device->Stop();
   delete m_device;
   return true;
 }

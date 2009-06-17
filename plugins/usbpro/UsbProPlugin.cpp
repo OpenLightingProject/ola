@@ -161,8 +161,8 @@ bool UsbProPlugin::SetDefaultPreferences() {
 }
 
 void UsbProPlugin::DeleteDevice(UsbProDevice *device) {
-  device->Stop();
   m_plugin_adaptor->UnregisterDevice(device);
+  device->Stop();
   delete device;
 }
 

@@ -51,8 +51,8 @@ class PluginAdaptor {
     bool RegisterRepeatingTimeout(int ms, Closure *closure) const;
     bool RegisterSingleTimeout(int ms, SingleUseClosure *closure) const;
 
-    int RegisterDevice(class AbstractDevice *device) const;
-    int UnregisterDevice(class AbstractDevice *device) const;
+    bool RegisterDevice(class AbstractDevice *device) const;
+    bool UnregisterDevice(class AbstractDevice *device) const;
 
     class Preferences *NewPreference(const string &name) const;
 

@@ -170,8 +170,8 @@ bool StageProfiPlugin::SetDefaultPreferences() {
  * Cleanup a single device
  */
 void StageProfiPlugin::DeleteDevice(StageProfiDevice *device) {
-  device->Stop();
   m_plugin_adaptor->UnregisterDevice(device);
+  device->Stop();
   delete device;
 }
 

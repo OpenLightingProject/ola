@@ -33,7 +33,6 @@
 #include <llad/PluginAdaptor.h>
 #include <llad/Port.h>
 #include <llad/Preferences.h>
-#include <lla/StringUtils.h>
 #include <llad/Universe.h>
 #include "common/protocol/Lla.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
@@ -54,7 +53,6 @@ namespace lla {
 
 using lla::rpc::StreamRpcChannel;
 
-const string LlaServer::PORT_PREFERENCES = "port";
 const string LlaServer::UNIVERSE_PREFERENCES = "universe";
 const string LlaServer::K_CLIENT_VAR = "clients-connected";
 const unsigned int LlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
@@ -183,7 +181,7 @@ bool LlaServer::Init() {
   m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
 
   // setup the objects
-  m_device_manager = new DeviceManager();
+  m_device_manager = new DeviceManager(m_preferences_factory, m_universe_store);
   m_plugin_adaptor = new PluginAdaptor(m_device_manager,
                                        m_ss,
                                        m_preferences_factory);
@@ -329,35 +327,6 @@ void LlaServer::StartPlugins() {
     else
       LLA_INFO << "Started " << (*iter)->Name();
   }
-
-  // Restore the port universe settings
-  Preferences *port_prefs =
-    m_preferences_factory->NewPreference(PORT_PREFERENCES);
-  port_prefs->Load();
-  vector<AbstractDevice*> devices = m_device_manager->Devices();
-
-  for (vector<AbstractDevice*>::iterator device_iter = devices.begin();
-       device_iter != devices.end(); ++device_iter) {
-    vector<AbstractPort*> ports = (*device_iter)->Ports();
-    for (vector<AbstractPort*>::iterator port_iter = ports.begin();
-         port_iter != ports.end(); ++port_iter) {
-      if ((*port_iter)->UniqueId().empty())
-        continue;
-
-      string uni_id = port_prefs->GetValue((*port_iter)->UniqueId());
-      if (uni_id.empty())
-        continue;
-
-      errno = 0;
-      int id = (int) strtol(uni_id.data(), NULL, 10);
-      if (id == 0 && errno)
-        continue;
-      LLA_INFO << "Restored dev " << (*device_iter)->DeviceId() << ", port " <<
-        (*port_iter)->PortId() << " to universe " << id;
-      Universe *uni = m_universe_store->GetUniverseOrCreate(id);
-      (*port_iter)->SetUniverse(uni);
-    }
-  }
 }
 
 
@@ -365,30 +334,6 @@ void LlaServer::StartPlugins() {
  * Stop and unload all the plugins
  */
 void LlaServer::StopPlugins() {
-  // save the port universe settings
-  Preferences *port_prefs =
-    m_preferences_factory->NewPreference(PORT_PREFERENCES);
-  port_prefs->Load();
-  vector<AbstractDevice*> devices = m_device_manager->Devices();
-  vector<AbstractDevice*>::iterator device_iter;
-  for (device_iter = devices.begin(); device_iter != devices.end();
-       ++device_iter) {
-    vector<AbstractPort*> ports = (*device_iter)->Ports();
-    vector<AbstractPort*>::iterator port_iter;
-    for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
-      if ((*port_iter)->UniqueId().empty())
-        continue;
-
-      if (!(*port_iter)->GetUniverse())
-        continue;
-
-      port_prefs->SetValue(
-          (*port_iter)->UniqueId(),
-          IntToString((*port_iter)->GetUniverse()->UniverseId()));
-    }
-  }
-  port_prefs->Save();
-
   m_plugin_loader->UnloadPlugins();
   if (m_device_manager) {
     if (m_device_manager->DeviceCount()) {

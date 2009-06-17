@@ -87,7 +87,6 @@ bool UsbProDevice::Start() {
 
   m_widget->SetListener(this);
   m_widget->GetSerial();
-  LLA_WARN << "SENT SERIAL" ;
 
   /* set up ports */
   for (int i = 0; i < 2; i++) {
@@ -316,14 +315,13 @@ void UsbProDevice::HandleWidgetSerial(
   if (m_in_startup) {
     std::stringstream str;
     str << std::setfill('0');
-    for (unsigned int i = 0; i < SERIAL_NUMBER_LENGTH; i++) {
+    for (int i = SERIAL_NUMBER_LENGTH - 1; i >= 0; i--) {
       int digit = (10 * (serial_number[i] & 0xf0) >> 4) +
         (serial_number[i] & 0x0f);
       str <<  setw(2)  << digit;
     }
-    StartCompleted();
     m_serial = str.str();
-    LLA_WARN << "serial is " << m_serial;
+    StartCompleted();
   }
 }
 

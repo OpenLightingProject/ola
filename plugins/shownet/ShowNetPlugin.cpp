@@ -74,10 +74,10 @@ bool ShowNetPlugin::StartHook() {
 bool ShowNetPlugin::StopHook() {
 
   // stop the device
+  m_plugin_adaptor->UnregisterDevice(m_device);
   if (!m_device->Stop())
     return false;
 
-  m_plugin_adaptor->UnregisterDevice(m_device);
   delete m_device;
   return true;
 }

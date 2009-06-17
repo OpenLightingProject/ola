@@ -81,9 +81,9 @@ bool ArtNetPlugin::StopHook() {
     m_plugin_adaptor->RemoveSocket(m_device->GetSocket());
 
     // stop the device
+    m_plugin_adaptor->UnregisterDevice(m_device);
     bool ret = m_device->Stop();
 
-    m_plugin_adaptor->UnregisterDevice(m_device);
     delete m_device;
     return ret;
   }

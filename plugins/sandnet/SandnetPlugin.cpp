@@ -90,10 +90,10 @@ int SandNetPlugin::stop_hook() {
   m_pa->unregister_fd( m_dev->get_sd(1), PluginAdaptor::READ);
 
   // stop the device
+  m_pa->unregister_device(m_dev);
   if (m_dev->stop())
     return -1;
 
-  m_pa->unregister_device(m_dev);
   delete m_dev;
   return 0;
 }

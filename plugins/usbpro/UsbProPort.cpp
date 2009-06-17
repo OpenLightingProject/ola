@@ -85,7 +85,6 @@ string UsbProPort::UniqueId() const {
 
   std::stringstream str;
   str << plugin->Id() << "-" << GetDevice()->SerialNumber() << "-" << PortId();
-  LLA_INFO << "uniq is " << GetDevice()->SerialNumber();
   return str.str();
 }
 

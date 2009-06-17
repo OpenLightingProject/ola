@@ -106,8 +106,8 @@ bool Dmx4LinuxPlugin::StopHook() {
   m_plugin_adaptor->RemoveSocket(m_in_socket);
 
   for (it = m_devices.begin(); it != m_devices.end(); ++it) {
-    (*it)->Stop();
     m_plugin_adaptor->UnregisterDevice(*it);
+    (*it)->Stop();
     delete *it;
   }
   CleanupSockets();

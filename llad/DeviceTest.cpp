@@ -24,7 +24,9 @@
 #include <lla/DmxBuffer.h>
 #include <llad/Device.h>
 #include <llad/Port.h>
+#include <llad/Preferences.h>
 #include "DeviceManager.h"
+#include "UniverseStore.h"
 
 using namespace lla;
 using namespace std;
@@ -34,11 +36,13 @@ class DeviceTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DeviceTest);
   CPPUNIT_TEST(testDevice);
   CPPUNIT_TEST(testDeviceManager);
+  CPPUNIT_TEST(testRestorePatchings);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testDevice();
     void testDeviceManager();
+    void testRestorePatchings();
 };
 
 
@@ -52,7 +56,14 @@ class MockPort: public Port<AbstractDevice> {
     ~MockPort() {}
     bool WriteDMX(const DmxBuffer &buffer) {}
     const DmxBuffer &ReadDMX() const {}
+    string UniqueId() const;
 };
+
+string MockPort::UniqueId() const {
+  std::stringstream str;
+  str << PortId();
+  return str.str();
+}
 
 
 /*
@@ -93,7 +104,7 @@ void DeviceTest::testDevice() {
  */
 void DeviceTest::testDeviceManager() {
 
-  DeviceManager manager;
+  DeviceManager manager(NULL, NULL);
   CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 0);
 
   Device device1(NULL, "test device 1");
@@ -127,4 +138,45 @@ void DeviceTest::testDeviceManager() {
   devices = manager.Devices();
   CPPUNIT_ASSERT_EQUAL(devices[0]->DeviceId(), (unsigned int) 1);
   CPPUNIT_ASSERT_EQUAL(manager.GetDevice(1), (AbstractDevice*) &device1);
+}
+
+
+/*
+ * Check that we restore the port patchings
+ */
+void DeviceTest::testRestorePatchings() {
+  MemoryPreferencesFactory prefs_factory;
+  UniverseStore uni_store(NULL, NULL);
+  DeviceManager manager(&prefs_factory, &uni_store);
+  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 0);
+
+  Preferences *prefs = prefs_factory.NewPreference("port");
+  CPPUNIT_ASSERT(prefs);
+  prefs->SetValue("1", "1");
+  prefs->SetValue("2", "3");
+
+  Device device1(NULL, "test device 1");
+  MockPort port1(&device1, 1);
+  MockPort port2(&device1, 2);
+  device1.AddPort(&port1);
+  device1.AddPort(&port2);
+
+  manager.RegisterDevice(&device1);
+  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 1);
+  CPPUNIT_ASSERT(port1.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, port1.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT(port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 3, port2.GetUniverse()->UniverseId());
+
+  // Now check that patching a universe saves the settings
+  Universe *uni = uni_store.GetUniverseOrCreate(10);
+  CPPUNIT_ASSERT(uni);
+  port1.SetUniverse(uni);
+
+  // unregister all
+  manager.UnregisterAllDevices();
+  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 0);
+
+  CPPUNIT_ASSERT_EQUAL(string("10"), prefs->GetValue("1"));
+  CPPUNIT_ASSERT_EQUAL(string("3"), prefs->GetValue("2"));
 }

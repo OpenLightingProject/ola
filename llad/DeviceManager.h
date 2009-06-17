@@ -23,6 +23,8 @@
 
 #include <vector>
 #include <llad/Device.h>
+#include "UniverseStore.h"
+#include <llad/Preferences.h>
 
 namespace lla {
 
@@ -30,11 +32,12 @@ using std::vector;
 
 class DeviceManager {
   public:
-    DeviceManager(): m_next_device_id(1) {}
-    ~DeviceManager() {}
+    DeviceManager(PreferencesFactory *prefs_factory,
+                  UniverseStore *universe_store);
+    ~DeviceManager();
 
-    int RegisterDevice(AbstractDevice *device);
-    int UnregisterDevice(AbstractDevice *device);
+    bool RegisterDevice(AbstractDevice *device);
+    bool UnregisterDevice(AbstractDevice *device);
     vector<AbstractDevice*> Devices() const { return m_devices; }
     unsigned int DeviceCount() const { return m_devices.size(); }
     AbstractDevice* GetDevice(unsigned int device_id);
@@ -42,11 +45,16 @@ class DeviceManager {
     void UnregisterAllDevices();
 
   private:
-    DeviceManager(const DeviceManager&);
-    DeviceManager& operator=(const DeviceManager&);
-
+    UniverseStore *m_universe_store;
+    Preferences *m_port_preferences;
     vector<AbstractDevice*> m_devices;    // list of devices
     unsigned int m_next_device_id;
+
+    DeviceManager(const DeviceManager&);
+    DeviceManager& operator=(const DeviceManager&);
+    void SaveDevicePortSettings(AbstractDevice *device);
+
+    static const string PORT_PREFERENCES;
 };
 
 

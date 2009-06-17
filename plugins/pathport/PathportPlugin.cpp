@@ -85,9 +85,8 @@ bool PathportPlugin::StopHook() {
   for (int i = 0; i < PATHPORT_MAX_SD; i++)
     m_plugin_adaptor->UnregisterFD(m_device->get_sd(i), PluginAdaptor::READ);
 
-  m_device->Stop();
-
   m_plugin_adaptor->UnregisterDevice(m_device);
+  m_device->Stop();
   delete m_device;
   return true;
 }

@@ -87,8 +87,8 @@ bool OpenDmxPlugin::StartHook() {
  */
 bool OpenDmxPlugin::StopHook() {
   if (m_device) {
-    bool ret = m_device->Stop();
     m_plugin_adaptor->UnregisterDevice(m_device);
+    bool ret = m_device->Stop();
     delete m_device;
     return ret;
   }
