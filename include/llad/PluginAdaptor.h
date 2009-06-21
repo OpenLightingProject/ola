@@ -52,6 +52,7 @@ class PluginAdaptor {
     bool AddSocket(class ConnectedSocket *socket,
                    bool delete_on_close=false) const;
     bool RemoveSocket(class Socket *socket) const;
+    bool RemoveSocket(class ConnectedSocket *socket) const;
     bool RegisterRepeatingTimeout(int ms, Closure *closure) const;
     bool RegisterSingleTimeout(int ms, SingleUseClosure *closure) const;
 

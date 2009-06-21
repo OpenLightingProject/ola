@@ -75,6 +75,14 @@ bool PluginAdaptor::RemoveSocket(class Socket *socket) const {
 
 
 /*
+ * Remove a socket from the select server
+ */
+bool PluginAdaptor::RemoveSocket(class ConnectedSocket *socket) const {
+  return m_ss->RemoveSocket(socket);
+}
+
+
+/*
  * Register a repeating timeout
  * @param ms the time between function calls
  * @param closure the LlaClosure to call when the timeout expires
