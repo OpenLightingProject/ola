@@ -49,17 +49,17 @@ class DeviceTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(DeviceTest);
 
 
-class MockPort: public Port<AbstractDevice> {
+class DeviceTestMockPort: public Port<AbstractDevice> {
   public:
-    MockPort(AbstractDevice *parent, unsigned int id):
+    DeviceTestMockPort(AbstractDevice *parent, unsigned int id):
       Port<AbstractDevice>(parent, id) {}
-    ~MockPort() {}
+    ~DeviceTestMockPort() {}
     bool WriteDMX(const DmxBuffer &buffer) {}
     const DmxBuffer &ReadDMX() const {}
     string UniqueId() const;
 };
 
-string MockPort::UniqueId() const {
+string DeviceTestMockPort::UniqueId() const {
   std::stringstream str;
   str << PortId();
   return str.str();
@@ -83,8 +83,8 @@ void DeviceTest::testDevice() {
   CPPUNIT_ASSERT_EQUAL(device.DeviceId(), (unsigned int) 3);
 
   // ad some ports
-  MockPort port1(&device, 1);
-  MockPort port2(&device, 2);
+  DeviceTestMockPort port1(&device, 1);
+  DeviceTestMockPort port2(&device, 2);
   device.AddPort(&port1);
   device.AddPort(&port2);
 
@@ -156,8 +156,8 @@ void DeviceTest::testRestorePatchings() {
   prefs->SetValue("2", "3");
 
   Device device1(NULL, "test device 1");
-  MockPort port1(&device1, 1);
-  MockPort port2(&device1, 2);
+  DeviceTestMockPort port1(&device1, 1);
+  DeviceTestMockPort port2(&device1, 2);
   device1.AddPort(&port1);
   device1.AddPort(&port2);
 
