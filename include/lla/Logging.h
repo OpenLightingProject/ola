@@ -65,6 +65,7 @@ enum log_level {
 typedef enum {
   LLA_LOG_STDERR,
   LLA_LOG_SYSLOG,
+  LLA_LOG_NULL,
 } log_output;
 
 /*

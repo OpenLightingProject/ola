@@ -59,8 +59,10 @@ void InitLogging(log_level level, log_output output) {
   LogDestination *destination;
   if (output == LLA_LOG_SYSLOG)
     destination = new SyslogDestination();
-  else
+  else if (output == LLA_LOG_STDERR)
    destination = new StdErrorLogDestination();
+  else
+    destination = NULL;
   InitLogging(level, destination);
 }
 
