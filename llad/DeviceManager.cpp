@@ -82,10 +82,8 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
     int id = (int) strtol(uni_id.data(), NULL, 10);
     if (id == 0 && errno)
       continue;
-    LLA_INFO << "Restored dev " << device->DeviceId() << ", port " <<
-      (*port_iter)->PortId() << " to universe " << id;
     Universe *uni = m_universe_store->GetUniverseOrCreate(id);
-    (*port_iter)->SetUniverse(uni);
+    uni->AddPort(*port_iter);
   }
   return true;
 }

@@ -133,13 +133,14 @@ bool Universe::AddPort(AbstractPort *port) {
 
   // unpatch if required
   if (universe) {
-    LLA_DEBUG << "Port " << port->PortId() << " is bound to universe " <<
+    LLA_DEBUG << "Port " << port->UniqueId() << " is bound to universe " <<
       universe->UniverseId();
     universe->RemovePort(port);
   }
 
   // patch to this universe
-  LLA_INFO << "Patched " << port->PortId() << " to universe " << m_universe_id;
+  LLA_INFO << "Patched " << port->UniqueId() << " to universe " <<
+    m_universe_id;
   m_ports.push_back(port);
   port->SetUniverse(this);
   if (m_export_map) {
@@ -166,10 +167,11 @@ bool Universe::RemovePort(AbstractPort *port) {
       IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR);
       map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
     }
-    LLA_DEBUG << "Port " << port << " has been removed from uni " <<
-      m_universe_id;
+    LLA_DEBUG << "Port " << port->UniqueId() << " has been removed from uni "
+      << m_universe_id;
   } else {
-    LLA_DEBUG << "Could not find port in universe";
+    LLA_DEBUG << "Could not find port " << port->UniqueId() << " in universe "
+      << UniverseId();
     return false;
   }
 
