@@ -73,6 +73,7 @@ class Port: public AbstractPort {
     Port(DeviceClass *parent, unsigned int port_id):
       AbstractPort(),
       m_port_id(port_id),
+      m_port_string(""),
       m_universe(NULL),
       m_parent(parent) {}
     virtual ~Port() {};
@@ -100,6 +101,7 @@ class Port: public AbstractPort {
     Port& operator=(const Port&);
 
     unsigned int m_port_id;
+    mutable string m_port_string;
     Universe *m_universe; // universe this port belongs to
     DeviceClass *m_parent; // pointer to the device this port belongs to
 };
@@ -112,16 +114,19 @@ class Port: public AbstractPort {
  */
 template <typename DeviceClass>
 string Port<DeviceClass>::UniqueId() const {
-  if (!GetDevice())
-    return "";
+  if (m_port_string.empty()) {
+    if (!GetDevice())
+      return "";
 
-  AbstractPlugin *plugin = GetDevice()->Owner();
-  if (!plugin)
-    return "";
+    AbstractPlugin *plugin = GetDevice()->Owner();
+    if (!plugin)
+      return "";
 
-  std::stringstream str;
-  str << plugin->Id() << "-" << GetDevice()->DeviceId() << "-" << PortId();
-  return str.str();
+    std::stringstream str;
+    str << plugin->Id() << "-" << GetDevice()->DeviceId() << "-" << PortId();
+    m_port_string = str.str();
+  }
+  return m_port_string;
 }
 
 } //lla
