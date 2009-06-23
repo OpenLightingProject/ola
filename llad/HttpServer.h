@@ -29,7 +29,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <google/template.h>
+#include <ctemplate/template.h>
 #include <microhttpd.h>
 
 namespace lla {
@@ -135,7 +135,9 @@ class HttpClosure: public BaseHttpClosure {
  * Create a new HTTP Closure
  */
 template <typename Class>
-inline BaseHttpClosure* NewHttpClosure(Class* object, int (Class::*method)(const HttpRequest*, HttpResponse*)) {
+inline BaseHttpClosure* NewHttpClosure(
+    Class* object,
+    int (Class::*method)(const HttpRequest*, HttpResponse*)) {
   return new HttpClosure<Class>(object, method);
 }
 
@@ -158,7 +160,7 @@ class HttpServer {
     vector<string> Handlers() const;
     const string DataDir() const { return m_data_dir; }
     int DisplayTemplate(const char *template_name,
-                        google::TemplateDictionary *dict,
+                        ctemplate::TemplateDictionary *dict,
                         HttpResponse *response);
     int ServeError(HttpResponse *response, const string &details="");
     int ServeNotFound(HttpResponse *response);
@@ -168,7 +170,8 @@ class HttpServer {
       string content_type;
     } static_file_info;
 
-    int ServeStaticContent(static_file_info *file_info, HttpResponse *response);
+    int ServeStaticContent(static_file_info *file_info,
+                           HttpResponse *response);
 
     static const string CONTENT_TYPE_PLAIN;
     static const string CONTENT_TYPE_HTML;

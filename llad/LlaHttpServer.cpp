@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 #include <lla/DmxBuffer.h>
 #include <lla/DmxUtils.h>
@@ -40,8 +41,8 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::stringstream;
-using google::TemplateDictionary;
-using google::TemplateNamelist;
+using ctemplate::TemplateDictionary;
+using ctemplate::TemplateNamelist;
 
 const string LlaHttpServer::K_DATA_DIR_VAR = "http_data_dir";
 
@@ -157,7 +158,7 @@ int LlaHttpServer::DisplayPlugins(const HttpRequest *request,
   //dict->SetValueAndShowSection("USERNAME", username, "CHANGE_USER");
   TemplateDictionary dict("plugins");
   vector<AbstractPlugin*> plugins = m_plugin_loader->Plugins();
-  sort(plugins.begin(), plugins.end(), PluginLessThan());
+  std::sort(plugins.begin(), plugins.end(), PluginLessThan());
 
   if (plugins.size()) {
     int i = 1;
@@ -392,7 +393,7 @@ int LlaHttpServer::DisplayQuit(const HttpRequest *request,
  */
 int LlaHttpServer::DisplayTemplateReload(const HttpRequest *request,
                                          HttpResponse *response) {
-  google::Template::ReloadAllIfChanged();
+  ctemplate::Template::ReloadAllIfChanged();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   return response->Send();

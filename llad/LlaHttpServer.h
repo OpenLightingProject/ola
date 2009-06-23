@@ -22,7 +22,7 @@
 #define LLA_HTTP_SERVER_H
 
 #include <string>
-#include <google/template.h>
+#include <ctemplate/template.h>
 #include <lla/network/SelectServer.h>
 #include <lla/ExportMap.h>
 #include <llad/Device.h>
@@ -31,7 +31,7 @@
 namespace lla {
 
 using std::string;
-using google::TemplateDictionary;
+using ctemplate::TemplateDictionary;
 using lla::network::SelectServer;
 
 class LlaHttpServer {
@@ -58,7 +58,8 @@ class LlaHttpServer {
     int HandleSetDmx(const HttpRequest *request, HttpResponse *response);
     int DisplayDebug(const HttpRequest *request, HttpResponse *response);
     int DisplayQuit(const HttpRequest *request, HttpResponse *response);
-    int DisplayTemplateReload(const HttpRequest *request, HttpResponse *response);
+    int DisplayTemplateReload(const HttpRequest *request,
+                              HttpResponse *response);
     int DisplayHandlers(const HttpRequest *request, HttpResponse *response);
 
   private:

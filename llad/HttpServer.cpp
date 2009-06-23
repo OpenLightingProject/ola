@@ -27,8 +27,8 @@
 
 namespace lla {
 
-using google::Template;
-using google::TemplateDictionary;
+using ctemplate::Template;
+using ctemplate::TemplateDictionary;
 using std::ifstream;
 using std::pair;
 using std::string;
@@ -40,7 +40,8 @@ const string HttpServer::CONTENT_TYPE_PNG = "image/png";
 const string HttpServer::CONTENT_TYPE_CSS = "text/css";
 const string HttpServer::CONTENT_TYPE_JS = "text/javascript";
 
-static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key, const char *value) {
+static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
+                      const char *value) {
   HttpRequest *request = (HttpRequest*) cls;
   string key_string = key;
   string value_string = value;
@@ -274,7 +275,8 @@ int HttpResponse::Send() {
   struct MHD_Response *response = MHD_create_response_from_data(
       m_data.length(), (void*) m_data.data(), MHD_NO, MHD_YES);
   for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
-    MHD_add_response_header(response, iter->first.c_str(), iter->second.c_str());
+    MHD_add_response_header(response, iter->first.c_str(),
+                            iter->second.c_str());
   int ret = MHD_queue_response(m_connection, m_status_code, response);
   MHD_destroy_response(response);
   return ret;
@@ -295,7 +297,7 @@ HttpServer::HttpServer(unsigned int port, const string &data_dir):
   if (m_data_dir.empty())
     m_data_dir = HTTP_DATA_DIR;
 
-  google::Template::SetTemplateRootDirectory(m_data_dir);
+  ctemplate::Template::SetTemplateRootDirectory(m_data_dir);
 }
 
 
@@ -315,7 +317,7 @@ HttpServer::~HttpServer() {
   }
 
   m_handlers.clear();
-  google::Template::ClearCache();
+  ctemplate::Template::ClearCache();
 }
 
 
@@ -355,7 +357,8 @@ void HttpServer::Stop() {
  */
 int HttpServer::DispatchRequest(const HttpRequest *request,
                                 HttpResponse *response) {
-  map<string, BaseHttpClosure*>::iterator iter = m_handlers.find(request->Url());
+  map<string, BaseHttpClosure*>::iterator iter =
+    m_handlers.find(request->Url());
 
   if (iter != m_handlers.end())
     return iter->second->Run(request, response);
@@ -432,8 +435,8 @@ vector<string> HttpServer::Handlers() const {
     handlers.push_back(iter->first);
 
   map<string, static_file_info>::const_iterator file_iter;
-  for (file_iter = m_static_content.begin(); file_iter != m_static_content.end();
-       ++file_iter)
+  for (file_iter = m_static_content.begin();
+       file_iter != m_static_content.end(); ++file_iter)
     handlers.push_back(file_iter->first);
   return handlers;
 }
@@ -449,7 +452,8 @@ int HttpServer::DisplayTemplate(const char *template_name,
                                 TemplateDictionary *dict,
                                 HttpResponse *response) {
 
-  Template* tpl = Template::GetTemplate(template_name, google::STRIP_BLANK_LINES);
+  Template* tpl = Template::GetTemplate(template_name,
+                                        ctemplate::STRIP_BLANK_LINES);
 
   if (!tpl)
     return ServeError(response, "Bad Template");
