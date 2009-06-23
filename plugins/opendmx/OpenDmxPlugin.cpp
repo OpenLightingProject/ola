@@ -21,9 +21,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
+#include <lla/Logging.h>
 
 #include "OpenDmxPlugin.h"
 #include "OpenDmxDevice.h"
@@ -67,15 +69,18 @@ bool OpenDmxPlugin::StartHook() {
 
   /* create new lla device */
   // first check if it's there
-  fd = open(m_preferences->GetValue(DEVICE_KEY).c_str(), O_WRONLY);
+  string device_path = m_preferences->GetValue(DEVICE_KEY);
+  fd = open(device_path.data(), O_WRONLY);
 
-  if (fd > 0) {
+  if (fd >= 0) {
     close(fd);
     m_device = new OpenDmxDevice(this, OPENDMX_DEVICE_NAME,
-                                 m_preferences->GetValue(DEVICE_KEY));
+                                 device_path);
 
     m_device->Start();
     m_plugin_adaptor->RegisterDevice(m_device);
+  } else {
+    LLA_WARN << "Could not open " << device_path << " " << strerror(errno);
   }
   return true;
 }
