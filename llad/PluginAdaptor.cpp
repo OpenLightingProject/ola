@@ -55,11 +55,29 @@ bool PluginAdaptor::AddSocket(class Socket *socket) const {
   return m_ss->AddSocket(socket);
 }
 
+/*
+ * Register a connected socket with the select server.
+ * @param socket the socket to register
+ * @return true on sucess, false on failure.
+ */
+bool PluginAdaptor::AddSocket(class ConnectedSocket *socket,
+                              bool delete_on_close) const {
+  return m_ss->AddSocket(socket, delete_on_close);
+}
+
 
 /*
  * Remove a socket from the select server
  */
 bool PluginAdaptor::RemoveSocket(class Socket *socket) const {
+  return m_ss->RemoveSocket(socket);
+}
+
+
+/*
+ * Remove a socket from the select server
+ */
+bool PluginAdaptor::RemoveSocket(class ConnectedSocket *socket) const {
   return m_ss->RemoveSocket(socket);
 }
 

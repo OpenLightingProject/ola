@@ -86,6 +86,8 @@ bool UsbProDevice::Start() {
   LLA_INFO << "Opened " << m_path;
 
   m_widget->SetListener(this);
+  // sleep a bit so that we don't trigger a race condition in the widget
+  usleep(10000);
   m_widget->GetSerial();
 
   /* set up ports */

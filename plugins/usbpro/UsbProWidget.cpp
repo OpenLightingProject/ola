@@ -112,7 +112,8 @@ bool UsbProWidget::Disconnect() {
 
   if (m_socket) {
     m_socket->Close();
-    delete m_socket;
+    // we don't delete the socket here because ownership is transferred to the
+    // SelectServer
     m_socket = NULL;
   }
   m_enabled = false;

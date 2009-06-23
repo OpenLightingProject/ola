@@ -65,12 +65,13 @@ class UniverseTest: public CppUnit::TestFixture {
 };
 
 
-class MockPort: public Port<AbstractDevice> {
+class UniverseTestMockPort: public Port<AbstractDevice> {
   public:
-    MockPort(AbstractDevice *parent, unsigned int port_id, bool is_output):
+    UniverseTestMockPort(AbstractDevice *parent, unsigned int port_id,
+                         bool is_output):
       Port<AbstractDevice>(parent, port_id),
       m_is_output_port(is_output) {}
-    ~MockPort() {}
+    ~UniverseTestMockPort() {}
 
     bool WriteDMX(const DmxBuffer &buffer) { m_buffer = buffer; }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
@@ -178,7 +179,7 @@ void UniverseTest::testSendDmx() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
 
-  MockPort port(NULL, 1, true); // output port
+  UniverseTestMockPort port(NULL, 1, true); // output port
   universe->AddPort(&port);
   CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 1);
   CPPUNIT_ASSERT(universe->IsActive());
@@ -201,7 +202,7 @@ void UniverseTest::testReceiveDmx() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
 
-  MockPort port(NULL, 1, false); // input port
+  UniverseTestMockPort port(NULL, 1, false); // input port
   universe->AddPort(&port);
   CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 1);
   CPPUNIT_ASSERT(universe->IsActive());
@@ -310,12 +311,12 @@ void UniverseTest::testLtpMerging() {
   const string set_dmx_data = "aafbeb";
 
   // Setup an input port and client and a output port to hold the result
-  MockPort input_port(NULL, 1, false); // input port
+  UniverseTestMockPort input_port(NULL, 1, false); // input port
   input_port.WriteDMX(DmxBuffer(input_port_data));
   DmxBuffer input_client_buffer(input_port_data);
   MockClient input_client;
   input_client.DMXRecieved(TEST_UNIVERSE, input_client_buffer);
-  MockPort output_port(NULL, 2, true); // output port
+  UniverseTestMockPort output_port(NULL, 2, true); // output port
 
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
@@ -353,11 +354,11 @@ void UniverseTest::testHtpMerging() {
 
   // Setup an input port and client to HTP merge between, and a output port to
   // hold the result
-  MockPort input_port(NULL, 1, false); // input port
+  UniverseTestMockPort input_port(NULL, 1, false); // input port
   input_port.WriteDMX(DmxBuffer(input_port_data));
   MockClient input_client;
   input_client.DMXRecieved(TEST_UNIVERSE, input_client_data);
-  MockPort output_port(NULL, 2, true); // output port
+  UniverseTestMockPort output_port(NULL, 2, true); // output port
 
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
