@@ -18,10 +18,11 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
