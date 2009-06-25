@@ -20,15 +20,16 @@
  * The device represents the widget.
  */
 
-#include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
 
 #include <algorithm>
 #include <lla/Logging.h>
@@ -74,7 +75,7 @@ bool UsbProWidget::Connect(const string &path) {
   int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
   if (fd == -1) {
-    LLA_WARN << "Failed to open " << path;
+    LLA_WARN << "Failed to open " << path << " " << strerror(errno);
     return false;
   }
 
