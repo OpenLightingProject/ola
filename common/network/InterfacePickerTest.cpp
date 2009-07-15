@@ -20,12 +20,16 @@
 
 #include <arpa/inet.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <iomanip>
+#include <iostream>
 
 #include <lla/network/InterfacePicker.h>
 #include <lla/Logging.h>
 
 using namespace lla::network;
 using std::vector;
+using std::cout;
+using std::endl;
 
 class InterfacePickerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(InterfacePickerTest);
@@ -58,6 +62,23 @@ void InterfacePickerTest::testGetInterfaces() {
   InterfacePicker picker;
   vector<Interface> interfaces = picker.GetInterfaces();
   CPPUNIT_ASSERT(interfaces.size() > 0);
+
+  vector<Interface>::iterator iter;
+  cout << endl;
+  for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
+    cout << iter->name << endl;
+    cout << " ip: " << inet_ntoa(iter->ip_address) << endl;
+    cout << " bcast: " << inet_ntoa(iter->bcast_address) << endl;
+    cout << " hw_addr: ";
+    for (unsigned int i = 0; i < MAC_LENGTH; i++) {
+      if (i)
+        cout << ':';
+      cout << std::setw(2) << std::setfill('0') << std::hex <<
+        0 + (uint8_t) iter->hw_address[i];
+    }
+    cout << endl;
+    cout << "---------------" << endl;
+  }
 }
 
 

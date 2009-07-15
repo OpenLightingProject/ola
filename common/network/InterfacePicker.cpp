@@ -112,7 +112,9 @@ bool InterfacePicker::ChooseInterface(Interface &interface,
 }
 
 
-
+/*
+ * Return a vector of interfaces on the system.
+ */
 vector<Interface> InterfacePicker::GetInterfaces() const {
   vector<Interface> interfaces;
   string last_dl_iface_name;
@@ -158,18 +160,7 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
   // loop through each iface
   for (char *ptr = buffer; ptr < buffer + lastlen;) {
     struct ifreq *iface = (struct ifreq*) ptr;
-    unsigned int iface_len = sizeof(struct sockaddr);
-
-#ifdef HAVE_SOCKADDR_SA_LEN
-    iface_len = std::max(iface_len, (unsigned int) iface->ifr_addr.sa_len);
-#else
-#ifdef IPV6
-    if (iface->ifr_addr.sa_family == AF_INET6)
-      iface_len = sizeof(struct sockaddr_in6);
-#endif
-#endif
-
-    ptr += sizeof(iface->ifr_name) + iface_len;
+    ptr += GetIfReqSize(ptr);
 
 #ifdef HAVE_SOCKADDR_DL_STRUCT
     if (iface->ifr_addr.sa_family == AF_LINK) {
@@ -247,3 +238,42 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
   delete[] buffer;
   return interfaces;
 }
+
+
+/*
+ * Return the size of an ifreq structure in a cross platform manner.
+ * @param data a pointer to an ifreq structure
+ * @return the size of the ifreq structure
+ */
+unsigned int InterfacePicker::GetIfReqSize(const char *data) const {
+  const struct ifreq *iface = (struct ifreq*) data;
+
+#ifdef HAVE_SOCKADDR_SA_LEN
+  unsigned int socket_len = iface->ifr_addr.sa_len;
+#else
+  unsigned int socket_len = sizeof(struct sockaddr);
+  switch (iface->ifr_addr.sa_family) {
+    case AF_INET:
+      socket_len = sizeof(struct sockaddr_in);
+      break;
+#ifdef IPV6
+    case AF_INET6:
+      socket_len = sizeof(struct sockaddr_in6);
+      break;
+#endif
+#ifdef HAVE_SOCKADDR_DL_STRUCT
+    case AF_LINK:
+      socket_len = sizeof(struct sockaddr_dl);
+      break;
+#endif
+  }
+#endif
+
+  // We can't assume sizeof(ifreq) = IFNAMSIZ + sizeof(sockaddr), this isn't
+  // the case on some 64bit linux systems.
+  if (socket_len > sizeof(struct ifreq) - IFNAMSIZ)
+    return IFNAMSIZ + socket_len;
+  else
+    return sizeof(struct ifreq);
+}
+

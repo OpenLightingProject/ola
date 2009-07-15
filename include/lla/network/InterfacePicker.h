@@ -75,6 +75,8 @@ class InterfacePicker {
   private:
     static const unsigned int INITIAL_IFACE_COUNT = 10;
     static const unsigned int IFACE_COUNT_INC = 5;
+
+    unsigned int GetIfReqSize(const char *data) const;
 };
 
 } //network
