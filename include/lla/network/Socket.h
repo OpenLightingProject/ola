@@ -279,7 +279,8 @@ class UdpSocket: public Socket {
                   socklen_t &src_size) const;
     bool RecvFrom(uint8_t *buffer, ssize_t &data_read) const;
     bool EnableBroadcast();
-    // JoinMulticast
+    bool JoinMulticast(const struct in_addr *interface,
+                       const struct in_addr *group);
   private:
     int m_fd;
     bool m_bound_to_port;
