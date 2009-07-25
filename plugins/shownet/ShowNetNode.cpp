@@ -22,7 +22,6 @@
 #include <algorithm>
 #include <lla/Logging.h>
 #include "ShowNetNode.h"
-#include "ShowNetPackets.h"
 
 
 namespace lla {
@@ -80,7 +79,6 @@ bool ShowNetNode::Start() {
   m_destination.sin_family = AF_INET;
   m_destination.sin_port = htons(SHOWNET_PORT);
   m_destination.sin_addr = m_interface.bcast_address;
-
   m_running = true;
   return true;
 }
@@ -131,48 +129,13 @@ bool ShowNetNode::SendDMX(unsigned int universe,
   }
 
   shownet_data_packet packet;
-  memset(&packet.data, 0, sizeof(packet.data));
-
-  // setup the fields in the shownet packet
-  packet.sigHi = SHOWNET_ID_HIGH;
-  packet.sigLo = SHOWNET_ID_LOW;
-  memcpy(packet.ip, &m_interface, sizeof(packet.ip));
-
-  packet.netSlot[0] = (universe * DMX_UNIVERSE_SIZE) + 1;
-  packet.netSlot[1] = 0;
-  packet.netSlot[2] = 0;
-  packet.netSlot[3] = 0;
-  packet.slotSize[0] = buffer.Size();
-  packet.slotSize[1] = 0;
-  packet.slotSize[2] = 0;
-  packet.slotSize[3] = 0;
-
-  unsigned int enc_len = sizeof(packet.data);
-  if (!m_encoder.Encode(buffer, packet.data, enc_len))
-    LLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
-
-  packet.indexBlock[0] = MAGIC_INDEX_OFFSET;
-  packet.indexBlock[1] = MAGIC_INDEX_OFFSET + enc_len;
-  packet.indexBlock[2] = 0;
-  packet.indexBlock[3] = 0;
-  packet.indexBlock[4] = 0;
-
-  packet.packetCountHi = ShortGetHigh(m_packet_count);
-  packet.packetCountLo = ShortGetLow(m_packet_count);
-
-  // magic numbers - not sure what these do
-  packet.block[0] = 0;
-  packet.block[1] = 0;
-  packet.block[2] = 0x58;
-  packet.block[3] = 0x02;
-  strncpy((char*) packet.name, m_node_name.data(), SHOWNET_NAME_LENGTH);
-
+  unsigned int size = PopulatePacket(packet, universe, buffer);
   ssize_t bytes_sent = m_socket->SendTo((uint8_t*) &packet,
-                                        sizeof(packet),
+                                        size,
                                         m_destination);
 
-  if (bytes_sent != sizeof(packet)) {
-    LLA_WARN << "Only sent " << bytes_sent << " of " << sizeof(packet);
+  if (bytes_sent != size) {
+    LLA_WARN << "Only sent " << bytes_sent << " of " << size;
     return false;
   }
 
@@ -225,7 +188,7 @@ bool ShowNetNode::SetHandler(unsigned int universe, Closure *closure) {
 
 
 /*
- * Remove the handled for this universe
+ * Remove the handler for this universe
  * @param universe the universe handler to remove
  * @param true if removed, false if it didn't exist
  */
@@ -248,44 +211,71 @@ bool ShowNetNode::RemoveHandler(unsigned int universe) {
  */
 int ShowNetNode::SocketReady() {
   shownet_data_packet packet;
-  memset(&packet, 0, sizeof(packet));
-  unsigned int header_size = sizeof(packet) - sizeof(packet.data);
+  ssize_t packet_size = sizeof(packet);
   struct sockaddr_in source;
   socklen_t source_length = sizeof(source);
 
-  ssize_t packet_size = sizeof(packet);
   if(!m_socket->RecvFrom((uint8_t*) &packet, packet_size, source,
                           source_length))
     return -1;
 
-  if (packet_size < header_size) {
-    LLA_WARN << "Small shownet packet received, discarding";
-    return -1;
-  }
-
   // skip packets sent by us
-  if (source.sin_addr.s_addr == m_interface.ip_address.s_addr) {
+  if (source.sin_addr.s_addr == m_interface.ip_address.s_addr)
     return 0;
-  }
 
-  unsigned int data_size = packet_size - header_size;
+  return !HandlePacket(packet, packet_size);
+}
+
+
+/*
+ * Handle a shownet packet
+ */
+bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
+                               unsigned int packet_size) {
+
+  unsigned int header_size = sizeof(packet) - sizeof(packet.data);
+
+  if (packet_size <= header_size) {
+    LLA_WARN << "Skipping small shownet packet received, size=" << packet_size;
+    return false;
+  }
 
   if (packet.sigHi != SHOWNET_ID_HIGH || packet.sigLo != SHOWNET_ID_LOW) {
     LLA_INFO << "Skipping a packet that isn't shownet";
-    return -1;
+    return false;
+  }
+
+  if (packet.indexBlock[0] < MAGIC_INDEX_OFFSET) {
+    LLA_WARN << "Strange ShowNet packet, indexBlock[0] is " <<
+      packet.indexBlock[0] << ", please contact the developers!";
+    return false;
   }
 
   // We only handle data from the first slot
+  // enc_length is the size of the received (optionally encoded) DMX data
   int enc_len = packet.indexBlock[1] - packet.indexBlock[0];
   if (enc_len < 1 || packet.netSlot[0] == 0) {
-    LLA_WARN << "Invalid shownet packet";
-    return -1;
-  }
-  if (packet.indexBlock[1] >= data_size) {
-    LLA_WARN << "data offset is too large";
-    return -1;
+    LLA_WARN << "Invalid shownet packet, enc_len=" << enc_len << ", netSlot="
+      << packet.netSlot[0];
+    return false;
   }
 
+  // the offset into packet.data of the actual data
+  unsigned int data_offset = packet.indexBlock[0] - MAGIC_INDEX_OFFSET;
+  unsigned int received_data_size = packet_size - header_size;
+
+  if (data_offset + enc_len > received_data_size) {
+    LLA_WARN << "Not enough shownet data: offset=" << data_offset <<
+      ", enc_len=" << enc_len << ", received_bytes=" << received_data_size;
+    return false;
+  }
+
+  if (!packet.slotSize[0]) {
+    LLA_WARN << "Malformed shownet packet, slotSize=" << packet.slotSize[0];
+    return false;
+  }
+
+  unsigned int start_channel = (packet.netSlot[0] - 1) % DMX_UNIVERSE_SIZE;
   unsigned int universe_id = (packet.netSlot[0] - 1) / DMX_UNIVERSE_SIZE;
   map<unsigned int, universe_handler>::iterator iter =
     m_handlers.find(universe_id);
@@ -293,27 +283,54 @@ int ShowNetNode::SocketReady() {
   if (iter == m_handlers.end()) {
     LLA_DEBUG << "Not interested in universe " << universe_id <<
       ", skipping ";
-    return -1;
+    return false;
   }
 
-  unsigned int slot_len = packet.slotSize[0];
-  int start_channel = (packet.netSlot[0] - 1) % DMX_UNIVERSE_SIZE;
-
-  unsigned int data_offset =
-    std::max(0, packet.indexBlock[0] - MAGIC_INDEX_OFFSET);
-
-  if (slot_len != enc_len) {
+  if (packet.slotSize[0] != enc_len) {
     m_encoder.Decode(iter->second.buffer,
-                      start_channel,
-                      packet.data + data_offset,
-                      enc_len);
+                     start_channel,
+                     packet.data + data_offset,
+                     enc_len);
   } else {
     iter->second.buffer.SetRange(start_channel,
                                  packet.data + data_offset,
                                  enc_len);
   }
   iter->second.closure->Run();
-  return 0;
+  return true;
+
+}
+
+
+/*
+ * Populate a shownet data packet
+ */
+unsigned int ShowNetNode::PopulatePacket(shownet_data_packet &packet,
+                                         unsigned int universe,
+                                         const DmxBuffer &buffer) {
+
+  memset(&packet.data, 0, sizeof(packet.data));
+
+  // setup the fields in the shownet packet
+  packet.sigHi = SHOWNET_ID_HIGH;
+  packet.sigLo = SHOWNET_ID_LOW;
+  memcpy(packet.ip, &m_interface.ip_address, sizeof(packet.ip));
+
+  packet.netSlot[0] = (universe * DMX_UNIVERSE_SIZE) + 1;
+  packet.slotSize[0] = buffer.Size();
+
+  unsigned int enc_len = sizeof(packet.data);
+  if (!m_encoder.Encode(buffer, packet.data, enc_len))
+    LLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
+
+  packet.indexBlock[0] = MAGIC_INDEX_OFFSET;
+  packet.indexBlock[1] = MAGIC_INDEX_OFFSET + enc_len;
+
+  packet.packetCountHi = ShortGetHigh(m_packet_count);
+  packet.packetCountLo = ShortGetLow(m_packet_count);
+
+  strncpy((char*) packet.name, m_node_name.data(), SHOWNET_NAME_LENGTH);
+  return sizeof(packet) - sizeof(packet.data) + enc_len;
 }
 
 
@@ -342,7 +359,6 @@ bool ShowNetNode::InitNetwork() {
   }
 
   m_socket->SetOnData(NewClosure(this, &ShowNetNode::SocketReady));
-
   return true;
 }
 

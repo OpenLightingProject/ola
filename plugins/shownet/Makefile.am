@@ -16,8 +16,9 @@ EXTRA_DIST = ShowNetPlugin.h ShowNetDevice.h ShowNetPort.h ShowNetPackets.h \
 # Test Programs
 TESTS = ShowNetTester
 check_PROGRAMS = $(TESTS)
-ShowNetTester_SOURCES = ShowNetTester.cpp RunLengthEncoderTest.cpp \
-                        RunLengthEncoder.cpp
+ShowNetTester_SOURCES = ShowNetTester.cpp \
+                        RunLengthEncoder.cpp RunLengthEncoderTest.cpp \
+                        ShowNetNode.cpp ShowNetNodeTest.cpp
 ShowNetTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 ShowNetTester_LDFLAGS = $(CPPUNIT_LIBS)
 ShowNetTester_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf ../../common/libllacommon.la

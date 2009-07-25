@@ -28,6 +28,7 @@
 #include <lla/network/InterfacePicker.h>
 #include <lla/network/Socket.h>
 #include "RunLengthEncoder.h"
+#include "ShowNetPackets.h"
 
 namespace lla {
 namespace shownet {
@@ -51,6 +52,8 @@ class ShowNetNode {
 
     static const unsigned short SHOWNET_MAX_UNIVERSES = 8;
 
+    friend class ShowNetNodeTest;
+
   private:
     typedef struct {
       DmxBuffer buffer;
@@ -70,6 +73,10 @@ class ShowNetNode {
 
     ShowNetNode(const ShowNetNode&);
     ShowNetNode& operator=(const ShowNetNode&);
+    bool HandlePacket(const shownet_data_packet &packet, unsigned int size);
+    unsigned int PopulatePacket(shownet_data_packet &packet,
+                                unsigned int universe,
+                                const DmxBuffer &buffer);
     bool InitNetwork();
     inline uint8_t ShortGetHigh(uint16_t x) const { return (0xff00 & x) >> 8; }
     inline uint8_t ShortGetLow(uint16_t x) const { return 0x00ff & x; }

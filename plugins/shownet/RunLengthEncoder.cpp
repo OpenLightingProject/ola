@@ -117,7 +117,7 @@ bool RunLengthEncoder::Encode(const DmxBuffer &src,
  */
 bool RunLengthEncoder::Decode(DmxBuffer &dst,
                               unsigned int start_channel,
-                              uint8_t *src_data,
+                              const uint8_t *src_data,
                               unsigned int length) {
   int destination_index = start_channel;
 
