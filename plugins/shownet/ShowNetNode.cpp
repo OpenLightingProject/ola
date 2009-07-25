@@ -309,7 +309,7 @@ unsigned int ShowNetNode::PopulatePacket(shownet_data_packet &packet,
                                          unsigned int universe,
                                          const DmxBuffer &buffer) {
 
-  memset(&packet.data, 0, sizeof(packet.data));
+  memset(&packet, 0, sizeof(packet));
 
   // setup the fields in the shownet packet
   packet.sigHi = SHOWNET_ID_HIGH;

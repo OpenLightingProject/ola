@@ -93,6 +93,7 @@ void ShowNetNodeTest::testHandlePacket() {
   const uint8_t ENCODED_DATA[] = {4, 1, 2, 4, 3};
   const uint8_t EXPECTED_DATA[] = {1, 2, 4, 3};
   DmxBuffer expected_dmx(EXPECTED_DATA, sizeof(EXPECTED_DATA));
+  memset(&packet, 0, sizeof(packet));
   memcpy(packet.data, ENCODED_DATA, sizeof(ENCODED_DATA));
 
   m_node->SetHandler(universe,
@@ -148,6 +149,7 @@ void ShowNetNodeTest::testHandlePacket() {
   // test invalid slot size
   packet.indexBlock[1] = (ShowNetNode::MAGIC_INDEX_OFFSET +
       sizeof(ENCODED_DATA));
+
   CPPUNIT_ASSERT_EQUAL(
       false,
       m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
@@ -211,14 +213,14 @@ void ShowNetNodeTest::testPopulatePacket() {
      ShowNetNode::MAGIC_INDEX_OFFSET);
 
   CPPUNIT_ASSERT(!memcmp(expected_packet.netSlot,
-                                packet.netSlot,
-                                sizeof(packet.netSlot)));
+                         packet.netSlot,
+                         sizeof(packet.netSlot)));
   CPPUNIT_ASSERT(!memcmp(expected_packet.slotSize,
-                               packet.slotSize,
-                               sizeof(packet.slotSize)));
+                         packet.slotSize,
+                         sizeof(packet.slotSize)));
   CPPUNIT_ASSERT(!memcmp(expected_packet.indexBlock,
-                               packet.indexBlock,
-                               sizeof(packet.indexBlock)));
+                         packet.indexBlock,
+                         sizeof(packet.indexBlock)));
 
   CPPUNIT_ASSERT_EQUAL(expected_packet.packetCountHi, packet.packetCountHi);
   CPPUNIT_ASSERT_EQUAL(expected_packet.packetCountLo, packet.packetCountLo);
