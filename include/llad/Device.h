@@ -56,7 +56,6 @@ class AbstractDevice {
                            const string &request,
                            string *response,
                            google::protobuf::Closure *done) = 0;
-    virtual int SaveConfig() const = 0;
     virtual int AddPort(AbstractPort *port) = 0;
     virtual const vector<AbstractPort*> Ports() const = 0;
     virtual AbstractPort *GetPort(unsigned int port_id) const = 0;
@@ -79,7 +78,6 @@ class Device: public AbstractDevice {
                            const string &request,
                            string *response,
                            google::protobuf::Closure *done);
-    virtual int SaveConfig() const { return 0; }
     virtual int AddPort(AbstractPort *port);
     virtual const vector<AbstractPort*> Ports() const;
     virtual AbstractPort *GetPort(unsigned int port_id) const;

@@ -65,8 +65,6 @@ int dmx_handler(artnet_node n, int prt, void *d) {
  * Notify of remote programming
  */
 int program_handler(artnet_node n, void *d) {
-  ArtNetDevice *device = (ArtNetDevice *) d;
-  device->SaveConfig();
   return 0;
 }
 
@@ -274,16 +272,6 @@ int ArtNetDevice::SocketReady() {
 
 
 /*
- * Called when the node is remotely programmed.
- */
-int ArtNetDevice::SaveConfig() const {
-  //TODO: implement this
-
-  return 0;
-}
-
-
-/*
  * Handle device config messages
  * @param controller An RpcController
  * @param request the request data
@@ -341,7 +329,6 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
       }
       m_subnet = options.subnet();
     }
-    SaveConfig();
   }
 
   lla::plugin::artnet::Reply reply;
