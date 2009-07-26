@@ -1,4 +1,5 @@
-6/2/2009
+26/7/2009
+  Changed the name of the project to Open Lighting Architecture
   Major rewrite
    - added export_map
    - added http server & web interface
@@ -6,6 +7,8 @@
    - now works on mac
    - converted to using protocol buffers
    - supports embedding
+   - port patches persist across restarts
+   - plenty of unittests (more required)
 
 14/10/2007 lla-0.2.3
   Plugins can now be disabled from the config files
