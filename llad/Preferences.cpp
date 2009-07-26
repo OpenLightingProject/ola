@@ -93,6 +93,15 @@ void MemoryPreferences::SetValue(const string &key, const string &value) {
 
 
 /*
+ * Remove a preference value.
+ * @param key
+ */
+void MemoryPreferences::RemoveValue(const string &key) {
+  m_pref_map.erase(key);
+}
+
+
+/*
  * Adds this preference value to the store
  * @param key
  * @param value

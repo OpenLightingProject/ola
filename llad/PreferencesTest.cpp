@@ -29,14 +29,14 @@ using namespace std;
 
 class PreferencesTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PreferencesTest);
-  CPPUNIT_TEST(testGetSet);
+  CPPUNIT_TEST(testGetSetRemove);
   CPPUNIT_TEST(testFactory);
   CPPUNIT_TEST(testLoad);
   CPPUNIT_TEST(testSave);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testGetSet();
+    void testGetSetRemove();
     void testFactory();
     void testLoad();
     void testSave();
@@ -49,7 +49,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PreferencesTest);
 /*
  * Check that we can get/set the preferences
  */
-void PreferencesTest::testGetSet() {
+void PreferencesTest::testGetSetRemove() {
   MemoryPreferencesFactory factory;
   Preferences *preferences = factory.NewPreference("dummy");
 
@@ -63,6 +63,9 @@ void PreferencesTest::testGetSet() {
   CPPUNIT_ASSERT_EQUAL(value1, preferences->GetValue(key1));
   preferences->SetValue(key1, value2);
   CPPUNIT_ASSERT_EQUAL(value2, preferences->GetValue(key1));
+
+  preferences->RemoveValue(key1);
+  CPPUNIT_ASSERT_EQUAL(string(""), preferences->GetValue(key1));
 
   // test get/set multiple value
   string key2 = "bat";
