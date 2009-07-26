@@ -40,28 +40,39 @@ class AbstractPort;
 using std::vector;
 using std::string;
 
+/*
+ * The interface for a Device
+ */
 class AbstractDevice {
   public:
     AbstractDevice() {}
     virtual ~AbstractDevice() {}
 
+    // return the name of this device
     virtual const string Name() const = 0;
+    // return the plugin that owns this device
     virtual AbstractPlugin *Owner() const = 0;
-    virtual unsigned int DeviceId() const = 0;
-    virtual void SetDeviceId(unsigned int device_id) = 0;
+    // return the a unique id of this device, this is guaranteed to be unique
+    // and persist across restarts.
+    virtual string UniqueId() const = 0;
 
-    // for the subclasses
+    // stop the device
     virtual bool Stop() = 0;
+    // configure this device
     virtual void Configure(google::protobuf::RpcController *controller,
                            const string &request,
                            string *response,
                            google::protobuf::Closure *done) = 0;
-    virtual int AddPort(AbstractPort *port) = 0;
+    // Fetch a list of all ports in this device
     virtual const vector<AbstractPort*> Ports() const = 0;
+    // Lookup a particular port in this device
     virtual AbstractPort *GetPort(unsigned int port_id) const = 0;
 };
 
 
+/*
+ * A partial implementation of a Device.
+ */
 class Device: public AbstractDevice {
   public:
     Device(AbstractPlugin *owner, const string &name);
@@ -69,10 +80,11 @@ class Device: public AbstractDevice {
 
     const string Name() const { return m_name; }
     AbstractPlugin *Owner() const { return m_owner; }
-    void SetDeviceId(unsigned int device_id) { m_device_id = device_id; }
-    unsigned int DeviceId() const { return m_device_id; }
+    string UniqueId() const;
 
-    // for the subclasses
+    // Returns an id which is unique within the plugin
+    virtual string DeviceId() const = 0;
+
     virtual bool Stop() { m_enabled = false; return true; }
     virtual void Configure(class google::protobuf::RpcController *controller,
                            const string &request,
@@ -87,12 +99,13 @@ class Device: public AbstractDevice {
     bool m_enabled;
 
   private:
-    Device(const Device&);
-    Device& operator=(const Device&);
     AbstractPlugin *m_owner; // which plugin owns this device
     string m_name; // device name
-    unsigned int m_device_id;
+    mutable string m_unique_id; // device id
     vector<lla::AbstractPort*> m_ports; // ports on the device
+
+    Device(const Device&);
+    Device& operator=(const Device&);
 };
 
 } //lla

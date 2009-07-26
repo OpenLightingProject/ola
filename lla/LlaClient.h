@@ -80,7 +80,8 @@ class LlaClient {
     bool Stop();
     bool SetObserver(LlaClientObserver *observer);
 
-    bool FetchPluginInfo(int plugin_id=-1, bool include_description=false);
+    bool FetchPluginInfo(lla_plugin_id filter=LLA_PLUGIN_ALL,
+                         bool include_description=false);
     bool FetchDeviceInfo(lla_plugin_id filter=LLA_PLUGIN_ALL);
     bool FetchUniverseInfo();
 
@@ -95,12 +96,12 @@ class LlaClient {
 
     bool RegisterUniverse(unsigned int universe, lla::RegisterAction action);
 
-    bool Patch(unsigned int device,
+    bool Patch(unsigned int device_alias,
               unsigned int port,
               lla::PatchAction action,
               unsigned int uni);
 
-    bool ConfigureDevice(unsigned int dev, const string &msg);
+    bool ConfigureDevice(unsigned int device_alias, const string &msg);
 
   private:
     LlaClient(const LlaClient&);

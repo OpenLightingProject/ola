@@ -8,7 +8,7 @@ THREAD_LIBS = -lpthread
 endif
 
 lib_LTLIBRARIES = liblla.la
-liblla_la_SOURCES = LlaClient.cpp LlaDevice.cpp \
+liblla_la_SOURCES = LlaClient.cpp \
                     LlaClientServiceImpl.cpp LlaClientCore.cpp \
                     SimpleClient.cpp
 liblla_la_LDFLAGS = -version-info 1:1:0 $(THREAD_LIBS)

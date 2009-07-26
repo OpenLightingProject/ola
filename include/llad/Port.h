@@ -108,9 +108,7 @@ class Port: public AbstractPort {
 
 
 /*
- * Constructs a unique id for this port from the plugin prefix, the device id
- * and the port id.  If the plugin prefix is empty, we return the empty string
- * which represents an unknown unique id.
+ * Constructs a unique id for this port from the device id and the port id.
  */
 template <typename DeviceClass>
 string Port<DeviceClass>::UniqueId() const {
@@ -118,12 +116,8 @@ string Port<DeviceClass>::UniqueId() const {
     if (!GetDevice())
       return "";
 
-    AbstractPlugin *plugin = GetDevice()->Owner();
-    if (!plugin)
-      return "";
-
     std::stringstream str;
-    str << plugin->Id() << "-" << GetDevice()->DeviceId() << "-" << PortId();
+    str << GetDevice()->UniqueId() << "-" << PortId();
     m_port_string = str.str();
   }
   return m_port_string;

@@ -23,6 +23,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
+#include <lla/Logging.h>
 #include <llad/Device.h>
 #include <llad/Port.h>
 #include <llad/Universe.h>
@@ -42,8 +43,7 @@ Device::Device(AbstractPlugin *owner, const string &name):
   AbstractDevice(),
   m_enabled(false),
   m_owner(owner),
-  m_name(name),
-  m_device_id(-1) {
+  m_name(name) {
 }
 
 
@@ -82,8 +82,7 @@ int Device::AddPort(AbstractPort *port) {
 
 /*
  * Returns a vector of ports in this device
- *
- * @return a vector of Port*
+ * @return a vector of pointers to AbstractPorts
  */
 const vector<AbstractPort*> Device::Ports() const {
   return m_ports;
@@ -115,5 +114,22 @@ void Device::DeleteAllPorts() {
   m_ports.clear();
 }
 
+
+/*
+ * Returns a unique id for this device
+ */
+string Device::UniqueId() const {
+  if (m_unique_id.empty()) {
+    if (!Owner()) {
+      LLA_WARN << "Device: " << Name() << " missing owner";
+      return "";
+    }
+
+    std::stringstream str;
+    str << Owner()->Id() << "-" << DeviceId();
+    m_unique_id = str.str();
+  }
+  return m_unique_id;
+}
 
 } //lla

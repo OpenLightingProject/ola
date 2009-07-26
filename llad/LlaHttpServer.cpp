@@ -213,14 +213,15 @@ int LlaHttpServer::DisplayDevices(const HttpRequest *request,
                                   HttpResponse *response) {
 
   TemplateDictionary dict("device");
-  vector<AbstractDevice*> devices = m_device_manager->Devices();
+  vector<device_alias_pair> device_pairs = m_device_manager->Devices();
 
   string action = request->GetPostParameter("action");
   bool save_changes = !action.empty();
 
-  if (devices.size()) {
-    vector<AbstractDevice*>::const_iterator iter;
-    for (iter = devices.begin(); iter != devices.end(); ++iter) {
+  if (device_pairs.size()) {
+    vector<device_alias_pair>::const_iterator iter;
+    sort(device_pairs.begin(), device_pairs.end());
+    for (iter = device_pairs.begin(); iter != device_pairs.end(); ++iter) {
       TemplateDictionary *sub_dict = dict.AddSectionDictionary("DEVICE");
       PopulateDeviceDict(request, sub_dict, *iter, save_changes);
     }
@@ -442,13 +443,14 @@ inline void LlaHttpServer::RegisterFile(const string &file,
  */
 void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
                                        TemplateDictionary *dict,
-                                       AbstractDevice *device,
+                                       const device_alias_pair &device_pair,
                                        bool save_changes) {
 
-  dict->SetValue("ID", IntToString(device->DeviceId()));
+  AbstractDevice *device = device_pair.device;
+  dict->SetValue("ID", IntToString(device_pair.alias));
   dict->SetValue("NAME", device->Name());
   string val = request->GetPostParameter("show_" +
-                                         IntToString(device->DeviceId()));
+                                         IntToString(device_pair.alias));
   dict->SetValue("SHOW_VALUE", val == "1" ? "1" : "0");
   dict->SetValue("SHOW", val == "1" ? "block" : "none");
 
@@ -458,10 +460,7 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
   for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
 
     if (save_changes) {
-      string variable_name = (IntToString(device->DeviceId())
-                              + "_" +
-                              IntToString((*port_iter)->PortId())
-                             );
+      string variable_name = (*port_iter)->UniqueId();
       string uni_id = request->GetPostParameter(variable_name);
       Universe *universe = (*port_iter)->GetUniverse();
       errno = 0;
@@ -483,7 +482,8 @@ void LlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
     }
 
     TemplateDictionary *port_dict = dict->AddSectionDictionary("PORT");
-    port_dict->SetValue("PORT_ID", IntToString((*port_iter)->PortId()));
+    port_dict->SetValue("PORT_NUMBER", IntToString((*port_iter)->PortId()));
+    port_dict->SetValue("PORT_ID", (*port_iter)->UniqueId());
     string capability;
 
     if ((*port_iter)->CanRead()) {

@@ -30,30 +30,34 @@ using std::string;
 using std::vector;
 
 
+/*
+ * Represents a Plugin
+ */
 class LlaPlugin {
   public:
-    LlaPlugin(int id, const std::string &name): m_id(id), m_name(name) {};
+    LlaPlugin(unsigned int id, const string &name, const string &desc=""):
+      m_id(id),
+      m_name(name),
+      m_description(desc) {};
     ~LlaPlugin() {};
 
-    int Id() const { return m_id; }
+    unsigned int Id() const { return m_id; }
     string Name() const { return m_name; }
     string Description() const { return m_description; }
-
-    void SetDescription(const string &description) {
-      m_description = description;
-    }
 
     bool operator<(const LlaPlugin &other) const {
       return m_id < other.m_id;
     }
   private:
-    int m_id;    // id of this plugin
+    unsigned int m_id; // id of this plugin
     string m_name;  // plugin name
-    string m_description;
-
+    string m_description; // optional description
 };
 
 
+/*
+ * Represents a port
+ */
 class LlaPort {
   public:
     enum PortCapability { LLA_PORT_CAP_IN, LLA_PORT_CAP_OUT};
@@ -62,54 +66,66 @@ class LlaPort {
             const string &description):
       m_id(port_id),
       m_capability(capability),
-      m_uni(universe),
+      m_universe(universe),
       m_active(active),
       m_description(description) {}
     ~LlaPort() {};
 
     int Id() const { return m_id; }
     PortCapability Capability() const { return m_capability; }
-    int Universe() const { return m_uni; }
+    int Universe() const { return m_universe; }
     int IsActive() const { return m_active; }
     string Description() const { return m_description; }
 
   private:
-    int m_id;        // id of this port
+    int m_id; // id of this port
     PortCapability m_capability;  // port capability
-    int m_uni;      // universe
-    int m_active;   // active
+    int m_universe; // universe
+    int m_active; // active
     string m_description;
 };
 
 
+/*
+ * Represents a device
+ */
 class LlaDevice {
   public:
-    LlaDevice(int id, const string &name, int plugin_id):
+    LlaDevice(const string &id,
+              unsigned int alias,
+              const string &name,
+              int plugin_id,
+              const vector<LlaPort> &ports):
       m_id(id),
+      m_alias(alias),
       m_name(name),
-      m_plugin_id(plugin_id) {}
-    ~LlaDevice() { ClearPorts(); }
+      m_plugin_id(plugin_id),
+      m_ports(ports) {}
+    ~LlaDevice() {}
 
-    int Id() const { return m_id; }
+    string Id() const { return m_id; }
+    unsigned int Alias() const { return m_alias; }
     string Name() const { return m_name; }
     int PluginId() const { return m_plugin_id; }
 
-    int AddPort(const LlaPort &port);
-    int ClearPorts();
     const vector<LlaPort> Ports() const { return m_ports; }
 
     bool operator<(const LlaDevice &other) const {
-      return m_id < other.m_id;
+      return m_alias < other.m_alias;
     }
 
   private:
-    int m_id;            // device id
+    string m_id;            // device id
+    unsigned int m_alias;   // device alias
     std::string m_name;  // device name
     int m_plugin_id;     // parent plugin id
     std::vector<LlaPort> m_ports;
 };
 
 
+/*
+ * Represents a universe
+ */
 class LlaUniverse {
   public:
     enum merge_mode {

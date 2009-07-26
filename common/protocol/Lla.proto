@@ -54,7 +54,7 @@ message RegisterDmxRequest {
 
 message PatchPortRequest {
   required int32 universe = 1;
-  required int32 device_id = 2;
+  required int32 device_alias = 2;
   required int32 port_id = 3;
   required PatchAction action = 4;
 }
@@ -114,10 +114,11 @@ message PortInfo {
 }
 
 message DeviceInfo {
-  required int32 device_id = 1;
+  required int32 device_alias = 1;
   required int32 plugin_id = 2;
   required string device_name = 3;
   repeated PortInfo port = 4;
+  required string device_id = 5;
 }
 
 message DeviceInfoReply {
@@ -126,7 +127,7 @@ message DeviceInfoReply {
 
 // a device config request
 message DeviceConfigRequest {
-  required int32 device_id = 1;
+  required int32 device_alias = 1;
   required bytes data = 2;
 }
 

@@ -23,10 +23,13 @@
 
 #include <lla/DmxBuffer.h>
 #include <llad/Device.h>
+#include <llad/Plugin.h>
 #include <llad/Port.h>
 #include <llad/Preferences.h>
 #include "DeviceManager.h"
 #include "UniverseStore.h"
+
+#include <lla/Logging.h>
 
 using namespace lla;
 using namespace std;
@@ -47,6 +50,24 @@ class DeviceTest: public CppUnit::TestFixture {
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DeviceTest);
+
+
+class DeviceTestMockPlugin: public Plugin {
+  public:
+    DeviceTestMockPlugin(const PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor) {}
+    string Name() const { return "foo"; }
+    string Description() const { return "bar"; }
+    lla_plugin_id Id() const { return LLA_PLUGIN_ALL; }
+    string PluginPrefix() const { return "test"; }
+};
+
+class DeviceTestMockDevice: public Device {
+  public:
+    DeviceTestMockDevice(AbstractPlugin *owner, const string &name):
+      Device(owner, name) {}
+    string DeviceId() const { return Name(); }
+};
 
 
 class DeviceTestMockPort: public Port<AbstractDevice> {
@@ -70,32 +91,34 @@ string DeviceTestMockPort::UniqueId() const {
  * Check that the base device class works correctly.
  */
 void DeviceTest::testDevice() {
-  string device_name = "test device";
-  Device device(NULL, device_name);
+  string device_name = "test";
+  DeviceTestMockDevice orphaned_device(NULL, device_name);
 
+  CPPUNIT_ASSERT_EQUAL(device_name, orphaned_device.Name());
+  CPPUNIT_ASSERT_EQUAL((AbstractPlugin*) NULL, orphaned_device.Owner());
+  CPPUNIT_ASSERT_EQUAL(string(""), orphaned_device.UniqueId());
+
+  // Non orphaned device
+  DeviceTestMockPlugin plugin(NULL);
+  DeviceTestMockDevice device(&plugin, device_name);
   CPPUNIT_ASSERT_EQUAL(device.Name(), device_name);
-  CPPUNIT_ASSERT_EQUAL(device.Owner(), (AbstractPlugin*) NULL);
+  CPPUNIT_ASSERT_EQUAL((AbstractPlugin*) &plugin, device.Owner());
+  CPPUNIT_ASSERT_EQUAL(string("0-test"), device.UniqueId());
 
-  // set device id
-  device.SetDeviceId(2);
-  CPPUNIT_ASSERT_EQUAL(device.DeviceId(), (unsigned int) 2);
-  device.SetDeviceId(3);
-  CPPUNIT_ASSERT_EQUAL(device.DeviceId(), (unsigned int) 3);
-
-  // ad some ports
-  DeviceTestMockPort port1(&device, 1);
+  // add some ports
+  vector<AbstractPort*> ports = orphaned_device.Ports();
+  CPPUNIT_ASSERT_EQUAL((size_t) 0, ports.size());
+  DeviceTestMockPort port1(&orphaned_device, 1);
   DeviceTestMockPort port2(&device, 2);
-  device.AddPort(&port1);
-  device.AddPort(&port2);
+  orphaned_device.AddPort(&port1);
+  orphaned_device.AddPort(&port2);
+  ports = orphaned_device.Ports();
+  CPPUNIT_ASSERT_EQUAL((size_t) 2, ports.size());
 
-  vector<AbstractPort*> ports = device.Ports();
-  CPPUNIT_ASSERT_EQUAL(ports.size(), (size_t) 2);
-
-  // TODO: unify port ids
-  AbstractPort *port = device.GetPort(0);
-  CPPUNIT_ASSERT_EQUAL(port->PortId(), (unsigned int) 1);
-  port = device.GetPort(1);
-  CPPUNIT_ASSERT_EQUAL(port->PortId(), (unsigned int) 2);
+  AbstractPort *port = orphaned_device.GetPort(0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, port->PortId());
+  port = orphaned_device.GetPort(1);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, port->PortId());
 }
 
 
@@ -105,39 +128,79 @@ void DeviceTest::testDevice() {
 void DeviceTest::testDeviceManager() {
 
   DeviceManager manager(NULL, NULL);
-  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
-  Device device1(NULL, "test device 1");
-  Device device2(NULL, "test device 2");
+  DeviceTestMockPlugin plugin(NULL);
+  DeviceTestMockDevice orphaned_device(NULL, "orphaned device");
+  DeviceTestMockDevice device1(&plugin, "test device 1");
+  DeviceTestMockDevice device2(&plugin, "test device 2");
 
-  manager.RegisterDevice(&device1);
-  manager.RegisterDevice(&device2);
-  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 2);
+  // can't register NULL
+  CPPUNIT_ASSERT(!manager.RegisterDevice(NULL));
 
-  vector<AbstractDevice*> devices = manager.Devices();
-  CPPUNIT_ASSERT_EQUAL(devices[0]->DeviceId(), (unsigned int) 1);
-  CPPUNIT_ASSERT_EQUAL(devices[1]->DeviceId(), (unsigned int) 2);
-  CPPUNIT_ASSERT_EQUAL(manager.GetDevice(1), (AbstractDevice*) &device1);
-  CPPUNIT_ASSERT_EQUAL(manager.GetDevice(2), (AbstractDevice*) &device2);
-  CPPUNIT_ASSERT_EQUAL(manager.GetDevice(3), (AbstractDevice*) NULL);
+  // Can't register a device with no unique id
+  CPPUNIT_ASSERT(!manager.RegisterDevice(&orphaned_device));
+
+  // register a device
+  CPPUNIT_ASSERT(manager.RegisterDevice(&device1));
+  // the second time must fail
+  CPPUNIT_ASSERT(!manager.RegisterDevice(&device1));
+
+  // register a second device
+  CPPUNIT_ASSERT(manager.RegisterDevice(&device2));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, manager.DeviceCount());
+
+  vector<device_alias_pair> devices = manager.Devices();
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, devices[0].alias);
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, devices[0].device);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, devices[1].alias);
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device2, devices[1].device);
+
+  // test fetching a device by alias
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, manager.GetDevice(1));
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device2, manager.GetDevice(2));
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, manager.GetDevice(3));
+
+  // test fetching a device by id
+  device_alias_pair result = manager.GetDevice(device1.UniqueId());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, result.alias);
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, result.device);
+  result = manager.GetDevice(device2.UniqueId());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, result.alias);
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device2, result.device);
+  result = manager.GetDevice("foo");
+  CPPUNIT_ASSERT_EQUAL(lla::DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, result.device);
+  result = manager.GetDevice("");
+  CPPUNIT_ASSERT_EQUAL(lla::DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, result.device);
+
+  // test unregistering null or non-registered device
+  CPPUNIT_ASSERT(!manager.UnregisterDevice(NULL));
+  CPPUNIT_ASSERT(!manager.UnregisterDevice(&orphaned_device));
 
   // unregistering the first device doesn't change the ID of the second
-  manager.UnregisterDevice(&device1);
-  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 1);
-  CPPUNIT_ASSERT_EQUAL(manager.GetDevice(1), (AbstractDevice*) NULL);
-  CPPUNIT_ASSERT_EQUAL(manager.GetDevice(2), (AbstractDevice*) &device2);
+  CPPUNIT_ASSERT(manager.UnregisterDevice(&device1));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, manager.GetDevice(1));
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device2, manager.GetDevice(2));
 
-  // unregister all
-  manager.UnregisterDevice(&device2);
-  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 0);
+  // unregister by id
+  CPPUNIT_ASSERT(!manager.UnregisterDevice(device1.UniqueId()));
+  CPPUNIT_ASSERT(manager.UnregisterDevice(device2.UniqueId()));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
   manager.UnregisterAllDevices();
 
-  // add one back
-  manager.RegisterDevice(&device1);
-  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 1);
+  // add one back and check that ids reset
+  CPPUNIT_ASSERT(manager.RegisterDevice(&device1));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
   devices = manager.Devices();
-  CPPUNIT_ASSERT_EQUAL(devices[0]->DeviceId(), (unsigned int) 1);
-  CPPUNIT_ASSERT_EQUAL(manager.GetDevice(1), (AbstractDevice*) &device1);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, devices[0].alias);
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, devices[0].device);
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, manager.GetDevice(1));
+  result = manager.GetDevice(device1.UniqueId());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, result.alias);
+  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, result.device);
 }
 
 
@@ -148,25 +211,26 @@ void DeviceTest::testRestorePatchings() {
   MemoryPreferencesFactory prefs_factory;
   UniverseStore uni_store(NULL, NULL);
   DeviceManager manager(&prefs_factory, &uni_store);
-  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
   Preferences *prefs = prefs_factory.NewPreference("port");
   CPPUNIT_ASSERT(prefs);
   prefs->SetValue("1", "1");
   prefs->SetValue("2", "3");
 
-  Device device1(NULL, "test device 1");
+  DeviceTestMockPlugin plugin(NULL);
+  DeviceTestMockDevice device1(&plugin, "test device 1");
   DeviceTestMockPort port1(&device1, 1);
   DeviceTestMockPort port2(&device1, 2);
   device1.AddPort(&port1);
   device1.AddPort(&port2);
 
-  manager.RegisterDevice(&device1);
-  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 1);
+  CPPUNIT_ASSERT(manager.RegisterDevice(&device1));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
   CPPUNIT_ASSERT(port1.GetUniverse());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, port1.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT_EQUAL(port1.GetUniverse()->UniverseId(), (unsigned int) 1);
   CPPUNIT_ASSERT(port2.GetUniverse());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 3, port2.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT_EQUAL(port2.GetUniverse()->UniverseId(), (unsigned int) 3);
 
   // Now check that patching a universe saves the settings
   Universe *uni = uni_store.GetUniverseOrCreate(10);
@@ -175,7 +239,7 @@ void DeviceTest::testRestorePatchings() {
 
   // unregister all
   manager.UnregisterAllDevices();
-  CPPUNIT_ASSERT_EQUAL(manager.DeviceCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
   CPPUNIT_ASSERT_EQUAL(string("10"), prefs->GetValue("1"));
   CPPUNIT_ASSERT_EQUAL(string("3"), prefs->GetValue("2"));

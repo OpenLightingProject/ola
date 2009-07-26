@@ -72,7 +72,7 @@ class LlaHttpServer {
     void RegisterFile(const string &file, const string &content_type);
     void PopulateDeviceDict(const HttpRequest *request,
                             TemplateDictionary *dict,
-                            AbstractDevice *device,
+                            const device_alias_pair &device_pair,
                             bool save_changes);
     class HttpServer m_server;
 

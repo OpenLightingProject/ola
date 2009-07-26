@@ -50,6 +50,8 @@ class ArtNetDevice: public Device {
 
     bool Start();
     bool Stop();
+    // only one ArtNet device
+    string DeviceId() const { return "1"; }
     artnet_node GetArtnetNode() const;
     int SocketReady();
     lla::network::UnmanagedSocket *GetSocket() { return m_socket; }

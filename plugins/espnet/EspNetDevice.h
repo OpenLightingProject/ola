@@ -39,6 +39,7 @@ class EspNetDevice: public lla::Device {
 
     bool Start();
     bool Stop();
+    string DeviceId() const { return "1"; }
     class EspNetNode *GetNode() const { return m_node; }
 
   private:

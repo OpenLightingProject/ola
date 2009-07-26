@@ -71,6 +71,7 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     bool Start();
     bool StartCompleted();
     bool Stop();
+    string DeviceId() const { return m_serial; }
     void Configure(RpcController *controller,
                    const string &request,
                    string *response,
@@ -80,7 +81,6 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     bool SendDMX(const DmxBuffer &buffer);
     const DmxBuffer &FetchDMX() const;
     bool ChangeToReceiveMode();
-    string SerialNumber() const { return m_serial; }
 
     // callbacks from the widget
     void HandleWidgetDmx();

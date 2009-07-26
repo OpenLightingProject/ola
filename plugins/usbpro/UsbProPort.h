@@ -40,7 +40,6 @@ class UsbProPort: public lla::Port<UsbProDevice> {
     bool CanRead() const;
     bool CanWrite() const;
     string Description() const { return m_path; }
-    string UniqueId() const;
 
   private:
     DmxBuffer m_empty_buffer;

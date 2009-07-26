@@ -64,6 +64,7 @@ extern "C" void destroy(lla::AbstractPlugin* plug) {
  * For now we just have one device.
  * TODO: scan /dev for devices?
  *   Need to get multi-device support working first :)
+ * Remember to fix DeviceId() when multiple devices are supported
  */
 bool OpenDmxPlugin::StartHook() {
   int fd;

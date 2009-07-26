@@ -75,18 +75,5 @@ bool UsbProPort::SetUniverse(Universe *uni) {
   return 0;
 }
 
-/*
- * return the unique port id
- */
-string UsbProPort::UniqueId() const {
-  AbstractPlugin *plugin = GetDevice()->Owner();
-  if (!plugin)
-    return "";
-
-  std::stringstream str;
-  str << plugin->Id() << "-" << GetDevice()->SerialNumber() << "-" << PortId();
-  return str.str();
-}
-
 } // usbpro
 } //lla

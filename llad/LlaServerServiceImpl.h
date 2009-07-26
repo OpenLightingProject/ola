@@ -98,6 +98,7 @@ class LlaServerServiceImpl: public lla::proto::LlaServerService {
                    PluginInfoReply* response,
                    bool include_description) const;
     void AddDevice(class AbstractDevice *device,
+                   unsigned int alias,
                    DeviceInfoReply* response) const;
 
     UniverseStore *m_universe_store;

@@ -49,9 +49,9 @@ function toggleL(event,id) {
     <table class="dev_tbl" cellspacing="0">
     {{#PORT}}
      <tr {{#ODD}}class="odd"{{/ODD}}>
-      <td width="40px">{{PORT_ID:h}}</td>
+      <td width="40px">{{PORT_NUMBER:h}}</td>
       <td width="40px">{{CAPABILITY:h}}</td>
-      <td width="60px"><input type="text" name="{{ID:h}}_{{PORT_ID:h}}" size="4" value="{{UNIVERSE:h}}"/></td>
+      <td width="60px"><input type="text" name="{{PORT_ID:h}}" size="4" value="{{UNIVERSE:h}}"/></td>
       <td>{{DESCRIPTION:h}}</td>
      </tr>
     {{/PORT}}

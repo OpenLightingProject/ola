@@ -69,13 +69,14 @@ bool LlaClient::SetObserver(LlaClientObserver *observer) {
  *   observer->Plugins(...)
  *  when the request returns.
  *
- * @params plugin_id use this to filter on plugin id
+ * @params filter use this to filter on plugin id
  * @params include_description set to true to get the plugin descriptions as
  * well.
  * @returns true if the request succeeded, false otherwise.
  */
-bool LlaClient::FetchPluginInfo(int plugin_id, bool include_description) {
-  return m_core->FetchPluginInfo(plugin_id, include_description);
+bool LlaClient::FetchPluginInfo(lla_plugin_id filter,
+                                bool include_description) {
+  return m_core->FetchPluginInfo(filter, include_description);
 }
 
 

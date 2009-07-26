@@ -154,7 +154,8 @@ void LlaServerServiceImpl::PatchPort(
     google::protobuf::Closure* done) {
 
   Universe *universe;
-  AbstractDevice *device = m_device_manager->GetDevice(request->device_id());
+  AbstractDevice *device =
+    m_device_manager->GetDevice(request->device_alias());
   if (!device)
     return MissingDeviceError(controller, done);
 
@@ -198,8 +199,8 @@ void LlaServerServiceImpl::GetUniverseInfo(
     universe_info = response->add_universe();
     universe_info->set_universe(universe->UniverseId());
     universe_info->set_name(universe->Name());
-    universe_info->set_merge_mode(universe->MergeMode() == Universe::MERGE_HTP?
-        HTP: LTP);
+    universe_info->set_merge_mode(universe->MergeMode() == Universe::MERGE_HTP
+        ? HTP: LTP);
   } else {
     // return all
     vector<Universe *> *uni_list = m_universe_store->GetList();
@@ -209,8 +210,8 @@ void LlaServerServiceImpl::GetUniverseInfo(
       universe_info = response->add_universe();
       universe_info->set_universe((*iter)->UniverseId());
       universe_info->set_name((*iter)->Name());
-      universe_info->set_merge_mode((*iter)->MergeMode() == Universe::MERGE_HTP?
-        HTP: LTP);
+      universe_info->set_merge_mode((*iter)->MergeMode() == Universe::MERGE_HTP
+          ? HTP: LTP);
     }
     delete uni_list;
   }
@@ -228,8 +229,11 @@ void LlaServerServiceImpl::GetPluginInfo(RpcController* controller,
   vector<AbstractPlugin*> plugin_list = m_plugin_loader->Plugins();
   vector<AbstractPlugin*>::const_iterator iter;
 
+  bool include_all = (!request->has_plugin_id() ||
+      request->plugin_id() == LLA_PLUGIN_ALL);
+
   for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter) {
-    if (! (request->has_plugin_id() && (*iter)->Id() != request->plugin_id()))
+    if (include_all || (*iter)->Id() == request->plugin_id())
       AddPlugin(*iter, response, request->include_description());
   }
   if (!response->plugin_size() && request->has_plugin_id())
@@ -246,16 +250,16 @@ void LlaServerServiceImpl::GetDeviceInfo(RpcController* controller,
                                          DeviceInfoReply* response,
                                          google::protobuf::Closure* done) {
 
-  vector<AbstractDevice *> device_list = m_device_manager->Devices();
-  vector<AbstractDevice *>::const_iterator iter;
+  vector<device_alias_pair> device_list = m_device_manager->Devices();
+  vector<device_alias_pair>::const_iterator iter;
 
   for (iter = device_list.begin(); iter != device_list.end(); ++iter) {
     if (request->has_plugin_id()) {
-      if ((*iter)->Owner()->Id() == request->plugin_id() ||
+      if (iter->device->Owner()->Id() == request->plugin_id() ||
           request->plugin_id() == LLA_PLUGIN_ALL)
-        AddDevice(*iter, response);
+        AddDevice(iter->device, iter->alias, response);
     } else {
-      AddDevice(*iter, response);
+      AddDevice(iter->device, iter->alias, response);
     }
   }
   done->Run();
@@ -270,7 +274,8 @@ void LlaServerServiceImpl::ConfigureDevice(RpcController* controller,
                                            DeviceConfigReply* response,
                                            google::protobuf::Closure* done) {
 
-  AbstractDevice *device = m_device_manager->GetDevice(request->device_id());
+  AbstractDevice *device =
+    m_device_manager->GetDevice(request->device_alias());
   if (!device)
     return MissingDeviceError(controller, done);
 
@@ -337,11 +342,13 @@ void LlaServerServiceImpl::AddPlugin(AbstractPlugin *plugin,
  * Add this device to the DeviceInfo response
  */
 void LlaServerServiceImpl::AddDevice(AbstractDevice *device,
+                                     unsigned int alias,
                                      DeviceInfoReply* response) const {
 
   DeviceInfo *device_info = response->add_device();
-  device_info->set_device_id(device->DeviceId());
+  device_info->set_device_alias(alias);
   device_info->set_device_name(device->Name());
+  device_info->set_device_id(device->UniqueId());
 
   if (device->Owner())
     device_info->set_plugin_id(device->Owner()->Id());

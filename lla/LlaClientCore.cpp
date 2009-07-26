@@ -28,8 +28,6 @@
 #include "LlaClientCore.h"
 #include "LlaDevice.h"
 
-#define min(a,b)    ((a) < (b) ? (a) : (b))
-
 #ifdef HAVE_PTHREAD
 #define acquire_lock pthread_mutex_lock(&m_mutex)
 #define release_lock pthread_mutex_unlock(&m_mutex)
@@ -63,6 +61,7 @@ LlaClientCore::~LlaClientCore() {
 
 /*
  * Setup this client
+ * @return true on success, false on failure
  */
 bool LlaClientCore::Setup() {
 
@@ -94,8 +93,7 @@ bool LlaClientCore::Setup() {
 
 /*
  * Close the lla connection.
- *
- * @return true on sucess, false on failure
+ * @return true on success, false on failure
  */
 bool LlaClientCore::Stop() {
   acquire_lock;
@@ -113,7 +111,8 @@ bool LlaClientCore::Stop() {
 
 
 /*
- * set the observer object
+ * Set the observer object
+ * @return true
  */
 bool LlaClientCore::SetObserver(LlaClientObserver *observer) {
   if (m_client_service)
@@ -125,10 +124,10 @@ bool LlaClientCore::SetObserver(LlaClientObserver *observer) {
 
 /*
  * Fetch information about available plugins
- *
- * @return true on sucess, false on failure
+ * @return true on success, false on failure
  */
-bool LlaClientCore::FetchPluginInfo(int plugin_id, bool include_description) {
+bool LlaClientCore::FetchPluginInfo(lla_plugin_id filter,
+                                    bool include_description) {
   if (!m_connected)
     return false;
 
@@ -136,8 +135,7 @@ bool LlaClientCore::FetchPluginInfo(int plugin_id, bool include_description) {
   lla::proto::PluginInfoRequest request;
   lla::proto::PluginInfoReply *reply = new lla::proto::PluginInfoReply();
 
-  if (plugin_id > 0)
-    request.set_plugin_id(plugin_id);
+  request.set_plugin_id(filter);
   request.set_include_description(include_description);
 
   google::protobuf::Closure *cb = NewCallback(
@@ -152,11 +150,10 @@ bool LlaClientCore::FetchPluginInfo(int plugin_id, bool include_description) {
 
 /*
  * Write some dmx data
- *
  * @param universe   universe to send to
  * @param data  dmx data
  * @param length  length of dmx data
- * @return true on sucess, false on failure
+ * @return true on success, false on failure
  */
 bool LlaClientCore::SendDmx(unsigned int universe, dmx_t *data,
                             unsigned int length) {
@@ -186,8 +183,8 @@ bool LlaClientCore::SendDmx(unsigned int universe, dmx_t *data,
 
 /*
  * Read dmx data
- *
  * @param universe the universe id to get data for
+ * @return true on success, false on failure
  */
 bool LlaClientCore::FetchDmx(unsigned int universe) {
   if (!m_connected)
@@ -211,8 +208,8 @@ bool LlaClientCore::FetchDmx(unsigned int universe) {
 
 /*
  * Request a listing of what devices are attached
- *
- * @param filter only get
+ * @param filter only fetch devices that belong to this particular plugin
+ * @return true on success, false on failure
  */
 bool LlaClientCore::FetchDeviceInfo(lla_plugin_id filter) {
   if (!m_connected)
@@ -221,9 +218,7 @@ bool LlaClientCore::FetchDeviceInfo(lla_plugin_id filter) {
   lla::proto::DeviceInfoRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
   lla::proto::DeviceInfoReply *reply = new lla::proto::DeviceInfoReply();
-
-  if (filter != LLA_PLUGIN_ALL)
-    request.set_plugin_id(filter);
+  request.set_plugin_id(filter);
 
   google::protobuf::Closure *cb = NewCallback(
       this,
@@ -237,8 +232,7 @@ bool LlaClientCore::FetchDeviceInfo(lla_plugin_id filter) {
 
 /*
  * Request a universe listing
- *
- * @return
+ * @return true on success, false on failure
  */
 bool LlaClientCore::FetchUniverseInfo() {
   if (!m_connected)
@@ -260,7 +254,9 @@ bool LlaClientCore::FetchUniverseInfo() {
 
 /*
  * Set the name of a universe
- *
+ * @param universe the id of the universe
+ * @param name the new name
+ * @return true on success, false on failure
  */
 bool LlaClientCore::SetUniverseName(unsigned int universe,
                                     const string &name) {
@@ -286,7 +282,9 @@ bool LlaClientCore::SetUniverseName(unsigned int universe,
 
 /*
  * Set the merge mode of a universe
- *
+ * @param universe the id of the universe
+ * @param mode the new merge mode
+ * @return true on success, false on failure
  */
 bool LlaClientCore::SetUniverseMergeMode(unsigned int universe,
                                          LlaUniverse::merge_mode mode) {
@@ -315,9 +313,8 @@ bool LlaClientCore::SetUniverseMergeMode(unsigned int universe,
 /*
  * Register our interest in a universe, the observer object will then
  * be notifed when the dmx values in this universe change.
- *
- * @param uni  the universe id
- * @param action
+ * @param universe the id of the universe
+ * @param action the action (register or unregister)
  */
 bool LlaClientCore::RegisterUniverse(unsigned int universe,
                                      lla::RegisterAction register_action) {
@@ -346,13 +343,12 @@ bool LlaClientCore::RegisterUniverse(unsigned int universe,
 
 /*
  * (Un)Patch a port to a universe
- *
- * @param dev     the device id
- * @param port    the port id
- * @param action  LlaClientCore::PATCH or LlaClientCore::UNPATCH
- * @param uni    universe id
+ * @param device_alias the alias of the device
+ * @param port  the port id
+ * @param action LlaClientCore::PATCH or LlaClientCore::UNPATCH
+ * @param universe universe id
  */
-bool LlaClientCore::Patch(unsigned int device_id,
+bool LlaClientCore::Patch(unsigned int device_alias,
                           unsigned int port_id,
                           lla::PatchAction patch_action,
                           unsigned int universe) {
@@ -366,7 +362,7 @@ bool LlaClientCore::Patch(unsigned int device_id,
   lla::proto::PatchAction action = (
       patch_action == lla::PATCH ? lla::proto::PATCH : lla::proto::UNPATCH);
   request.set_universe(universe);
-  request.set_device_id(device_id);
+  request.set_device_alias(device_alias);
   request.set_port_id(port_id);
   request.set_action(action);
 
@@ -382,12 +378,10 @@ bool LlaClientCore::Patch(unsigned int device_id,
 
 /*
  * Sends a device config request
- *
- * @param dev   the device id
- * @param req  the request buffer
- * @param len  the length of the request buffer
+ * @param device_alias the device alias
+ * @param msg the data to send
  */
-bool LlaClientCore::ConfigureDevice(unsigned int device_id,
+bool LlaClientCore::ConfigureDevice(unsigned int device_alias,
                                     const string &msg) {
   if (!m_connected)
     return false;
@@ -397,8 +391,7 @@ bool LlaClientCore::ConfigureDevice(unsigned int device_id,
   lla::proto::DeviceConfigReply *reply = new lla::proto::DeviceConfigReply();
 
   string configure_request;
-  //configure_request.append(
-  request.set_device_id(device_id);
+  request.set_device_alias(device_alias);
   request.set_data(msg);
 
   google::protobuf::Closure *cb = NewCallback(
@@ -427,9 +420,9 @@ void LlaClientCore::HandlePluginInfo(SimpleRpcController *controller,
     else {
       for (int i=0; i < reply->plugin_size(); ++i) {
         PluginInfo plugin_info = reply->plugin(i);
-        LlaPlugin plugin(plugin_info.plugin_id(), plugin_info.name());
-        if (plugin_info.has_description())
-          plugin.SetDescription(plugin_info.description());
+        LlaPlugin plugin(plugin_info.plugin_id(),
+                         plugin_info.name(),
+                         plugin_info.description());
         lla_plugins.push_back(plugin);
       }
     }
@@ -500,10 +493,7 @@ void LlaClientCore::HandleDeviceInfo(lla::rpc::SimpleRpcController *controller,
     else {
       for (int i=0; i < reply->device_size(); ++i) {
         DeviceInfo device_info = reply->device(i);
-
-        LlaDevice device(device_info.device_id(),
-                         device_info.device_name(),
-                         device_info.plugin_id());
+        vector<LlaPort> ports;
 
         for (int j=0; j < device_info.port_size(); ++j) {
           PortInfo port_info = device_info.port(j);
@@ -514,8 +504,14 @@ void LlaClientCore::HandleDeviceInfo(lla::rpc::SimpleRpcController *controller,
                        port_info.universe(),
                        port_info.active(),
                        port_info.description());
-          device.AddPort(port);
+          ports.push_back(port);
         }
+
+        LlaDevice device(device_info.device_id(),
+                         device_info.device_alias(),
+                         device_info.device_name(),
+                         device_info.plugin_id(),
+                         ports);
         lla_devices.push_back(device);
       }
     }

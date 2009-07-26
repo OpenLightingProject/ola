@@ -34,9 +34,11 @@ using std::string;
 
 class DummyDevice: public Device {
   public:
-    DummyDevice(AbstractPlugin *owner, const string &name): Device(owner, name) {}
+    DummyDevice(AbstractPlugin *owner, const string &name):
+      Device(owner, name) {}
     bool Start();
     bool Stop();
+    string DeviceId() const { return "1"; }
 };
 
 } //plugin

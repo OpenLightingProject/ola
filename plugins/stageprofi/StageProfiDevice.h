@@ -43,6 +43,9 @@ class StageProfiDevice: public Device {
 
     bool Start();
     bool Stop();
+    // I don't think this get us full stickiness because USB devices may
+    // appear as different devices.
+    string DeviceId() const { return m_path; }
     lla::network::ConnectedSocket *GetSocket() const;
     bool SendDmx(const DmxBuffer &buffer) const;
 

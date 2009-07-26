@@ -38,6 +38,8 @@ class OpenDmxDevice: public lla::Device {
 
     bool Start();
     bool Stop();
+    // we only support one widget for now
+    string DeviceId() const { return "1"; }
 
   private:
     string m_path;

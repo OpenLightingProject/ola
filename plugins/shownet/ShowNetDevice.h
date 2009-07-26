@@ -38,6 +38,7 @@ class ShowNetDevice: public lla::Device {
 
     bool Start();
     bool Stop();
+    string DeviceId() const { return "1"; }
     class ShowNetNode *GetNode() const { return m_node; }
 
   private:

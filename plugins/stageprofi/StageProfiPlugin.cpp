@@ -89,8 +89,7 @@ bool StageProfiPlugin::StartHook() {
 
 /*
  * Stop the plugin
- *
- * @return 0 on sucess, -1 on failure
+ * @return true on success, false on failure
  */
 bool StageProfiPlugin::StopHook() {
   vector<StageProfiDevice*>::iterator iter;

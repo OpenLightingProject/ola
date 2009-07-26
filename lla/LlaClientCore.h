@@ -59,7 +59,7 @@ class LlaClientCore {
     bool Stop();
     bool SetObserver(LlaClientObserver *observer);
 
-    bool FetchPluginInfo(int plugin_id, bool include_description);
+    bool FetchPluginInfo(lla_plugin_id filter, bool include_description);
     bool FetchDeviceInfo(lla_plugin_id filter);
     bool FetchUniverseInfo();
 
@@ -74,12 +74,12 @@ class LlaClientCore {
 
     bool RegisterUniverse(unsigned int universe, lla::RegisterAction action);
 
-    bool Patch(unsigned int device,
-              unsigned int port,
-              lla::PatchAction action,
-              unsigned int uni);
+    bool Patch(unsigned int device_alias,
+               unsigned int port,
+               lla::PatchAction action,
+               unsigned int uni);
 
-    bool ConfigureDevice(unsigned int device_id, const string &msg);
+    bool ConfigureDevice(unsigned int device_alias, const string &msg);
 
     // request callbacks
     void HandlePluginInfo(SimpleRpcController *controller,
