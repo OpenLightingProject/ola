@@ -31,6 +31,7 @@
 
 #include <lla/BaseTypes.h>
 #include <lla/Logging.h>
+#include <lla/StringUtils.h>
 #include <llad/PluginAdaptor.h>
 #include <llad/Preferences.h>
 
@@ -264,7 +265,8 @@ int Dmx4LinuxPlugin::GetDmx4LinuxDeviceCount(int dir) {
  * @param dir   in|out
  */
 bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
-  Dmx4LinuxDevice *dev = new Dmx4LinuxDevice(this, family);
+  string device_id = IntToString((d4l_uni << 1) + dir);
+  Dmx4LinuxDevice *dev = new Dmx4LinuxDevice(this, family, device_id);
 
   if (dev->Start()) {
     LLA_WARN << "couldn't start device";

@@ -30,15 +30,19 @@ namespace plugin {
 
 class Dmx4LinuxDevice: public lla::Device {
   public:
-    Dmx4LinuxDevice(class Dmx4LinuxPlugin *owner, const string &name);
+    Dmx4LinuxDevice(class Dmx4LinuxPlugin *owner,
+                    const string &name,
+                    const string &device_id);
     ~Dmx4LinuxDevice();
 
     bool Start();
     bool Stop();
+    string DeviceId() const { return m_device_id; }
     bool SendDMX(int d4l_uni, const DmxBuffer &buffer) const;
 
   private:
     class Dmx4LinuxPlugin *m_plugin;
+    string m_device_id;
     bool m_enabled;
 };
 

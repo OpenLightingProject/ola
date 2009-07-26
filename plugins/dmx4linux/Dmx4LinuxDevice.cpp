@@ -46,10 +46,13 @@ using lla::Universe;
  * @param owner  the plugin that owns this device
  * @param name  the device name
  */
-Dmx4LinuxDevice::Dmx4LinuxDevice(Dmx4LinuxPlugin *owner, const string &name) :
+Dmx4LinuxDevice::Dmx4LinuxDevice(Dmx4LinuxPlugin *owner,
+                                 const string &name,
+                                 const string &device_id):
   Device(owner, name),
   m_plugin(owner),
-  m_enabled(false) {
+  m_enabled(false),
+  m_device_id(device_id) {
 }
 
 
