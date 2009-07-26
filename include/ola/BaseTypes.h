@@ -14,13 +14,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * BaseTypes.h
- * Copyright (C) 2005-2006 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef BASE_TYPES_H
-#define BASE_TYPES_H
-
-#include <stdint.h>
+#ifndef OLA_BASE_TYPES_H
+#define OLA_BASE_TYPES_H
 
 #ifdef __cplusplus
 extern "C" {
