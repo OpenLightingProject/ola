@@ -24,7 +24,6 @@
 #include <algorithm>
 
 #include <lla/DmxBuffer.h>
-#include <lla/DmxUtils.h>
 #include <lla/StringUtils.h>
 #include <llad/Device.h>
 #include <llad/Plugin.h>

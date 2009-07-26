@@ -29,8 +29,6 @@ extern "C" {
 enum { DMX_UNIVERSE_SIZE = 512 };
 static const int LLA_DEFAULT_PORT = 9010;
 
-typedef uint8_t dmx_t;
-
 #ifdef __cplusplus
 }
 #endif

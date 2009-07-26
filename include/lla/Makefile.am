@@ -1,7 +1,7 @@
 
 SUBDIRS = network .
 
-SOURCES = plugin_id.h BaseTypes.h ExportMap.h StringUtils.h DmxUtils.h \
+SOURCES = plugin_id.h BaseTypes.h ExportMap.h StringUtils.h \
           Closure.h Logging.h DmxBuffer.h
 
 EXTRA_DIST = $(SOURCES)
