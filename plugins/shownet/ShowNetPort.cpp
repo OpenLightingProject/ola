@@ -14,19 +14,19 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ShowNetPort.cpp
- * The ShowNet plugin for lla
+ * The ShowNet plugin for ola
  * Copyright (C) 2005-2009 Simon Newton
  */
 #include <sstream>
 
-#include <lla/BaseTypes.h>
-#include <lla/Closure.h>
-#include <lla/Logging.h>
+#include <ola/BaseTypes.h>
+#include <ola/Closure.h>
+#include <ola/Logging.h>
 
 #include "ShowNetPort.h"
 #include "ShowNetDevice.h"
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
 
@@ -94,11 +94,11 @@ bool ShowNetPort::SetUniverse(Universe *universe) {
 
   if (!old_universe && universe)
     node->SetHandler(ShowNetUniverseId(),
-                     lla::NewClosure(this, &ShowNetPort::UpdateBuffer));
+                     ola::NewClosure(this, &ShowNetPort::UpdateBuffer));
   else if (old_universe && !universe)
     node->RemoveHandler(ShowNetUniverseId());
   return true;
 }
 
 } //plugin
-} //lla
+} //ola

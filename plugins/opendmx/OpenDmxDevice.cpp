@@ -25,10 +25,10 @@
 #include "OpenDmxDevice.h"
 #include "OpenDmxPort.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::Device;
+using ola::Device;
 
 
 /*
@@ -82,4 +82,4 @@ bool OpenDmxDevice::Stop() {
 }
 
 } //plugins
-} //lla
+} //ola

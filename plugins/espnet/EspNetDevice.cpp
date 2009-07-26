@@ -20,17 +20,17 @@
  *
  */
 
-#include <lla/Logging.h>
-#include <llad/Plugin.h>
-#include <llad/PluginAdaptor.h>
-#include <llad/Preferences.h>
+#include <ola/Logging.h>
+#include <olad/Plugin.h>
+#include <olad/PluginAdaptor.h>
+#include <olad/Preferences.h>
 
 #include "EspNetDevice.h"
 #include "EspNetNode.h"
 #include "EspNetPluginCommon.h"
 #include "EspNetPort.h"
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
 const std::string EspNetDevice::IP_KEY = "ip";
@@ -101,4 +101,4 @@ bool EspNetDevice::Stop() {
 
 
 } //espnet
-} //lla
+} //ola

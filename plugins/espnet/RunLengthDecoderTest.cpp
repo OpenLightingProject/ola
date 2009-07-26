@@ -20,10 +20,10 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <lla/DmxBuffer.h>
+#include <ola/DmxBuffer.h>
 #include "RunLengthDecoder.h"
 
-using namespace lla::espnet;
+using namespace ola::espnet;
 
 class RunLengthDecoderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RunLengthDecoderTest);
@@ -48,8 +48,8 @@ void RunLengthDecoderTest::testDecode() {
                     0x36, 0xFD, 0xFD};
   uint8_t expected_data[] = {0x78, 0x56, 0x74, 0x10, 0x10, 0x10, 0x10, 0x10,
                              0x41, 0x78, 0xFE, 0x36, 0xFD};
-  lla::DmxBuffer buffer;
-  lla::DmxBuffer expected(expected_data, sizeof(expected_data));
+  ola::DmxBuffer buffer;
+  ola::DmxBuffer expected(expected_data, sizeof(expected_data));
 
   buffer.Blackout();
   buffer.Reset();

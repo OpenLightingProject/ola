@@ -21,15 +21,15 @@
 #ifndef SHOWNETDEVICE_H
 #define SHOWNETDEVICE_H
 
-#include <llad/Device.h>
-#include <llad/Plugin.h>
+#include <olad/Device.h>
+#include <olad/Plugin.h>
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
-using lla::Plugin;
+using ola::Plugin;
 
-class ShowNetDevice: public lla::Device {
+class ShowNetDevice: public ola::Device {
   public:
     ShowNetDevice(Plugin *owner, const string &name,
                   class Preferences *preferences,
@@ -51,5 +51,5 @@ class ShowNetDevice: public lla::Device {
 };
 
 } //plugin
-} //lla
+} //ola
 #endif

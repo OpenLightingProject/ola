@@ -24,14 +24,14 @@
 #include <fstream>
 #include <string>
 
-#include <lla/Logging.h>
-#include <lla/Closure.h>
-#include <lla/network/SelectServer.h>
+#include <ola/Logging.h>
+#include <ola/Closure.h>
+#include <ola/network/SelectServer.h>
 #include "usbpro/UsbProWidget.h"
 #include "usbpro/UsbProWidgetListener.h"
 
 using namespace std;
-using lla::usbpro::UsbProWidget;
+using ola::usbpro::UsbProWidget;
 
 static const string DEFAULT_DEVICE = "/dev/ttyUSB0";
 static const string DEFAULT_FIRMWARE = "main.bin";
@@ -40,17 +40,17 @@ static const int ABORT_TIMEOUT = 10 * 1000; // ms seconds before aborting
 
 typedef struct {
   bool help;
-  lla::log_level log_level;
+  ola::log_level log_level;
   string firmware;
   string device;
 } options;
 
 
-class FirmwareTransferer: public lla::usbpro::UsbProWidgetListener {
+class FirmwareTransferer: public ola::usbpro::UsbProWidgetListener {
   public:
     FirmwareTransferer(ifstream &file,
                        UsbProWidget *widget,
-                       lla::network::SelectServer *ss):
+                       ola::network::SelectServer *ss):
       m_sent_last_page(false),
       m_sucessful(false),
       m_firmware(file),
@@ -66,7 +66,7 @@ class FirmwareTransferer: public lla::usbpro::UsbProWidgetListener {
     bool m_sucessful;
     ifstream &m_firmware;
     UsbProWidget *m_widget;
-    lla::network::SelectServer *m_ss;
+    ola::network::SelectServer *m_ss;
 };
 
 
@@ -79,7 +79,7 @@ void FirmwareTransferer::HandleFirmwareReply(bool success) {
       m_ss->Terminate();
     }
   } else {
-    LLA_FATAL << "Bad response from widget";
+    OLA_FATAL << "Bad response from widget";
     m_ss->Terminate();
   }
 }
@@ -89,8 +89,8 @@ void FirmwareTransferer::HandleFirmwareReply(bool success) {
  * Send the next chunk of the firmware file
  */
 int FirmwareTransferer::SendNextChunk() {
-  uint8_t page[lla::usbpro::FLASH_PAGE_LENGTH];
-  m_firmware.read((char*) page, lla::usbpro::FLASH_PAGE_LENGTH);
+  uint8_t page[ola::usbpro::FLASH_PAGE_LENGTH];
+  m_firmware.read((char*) page, ola::usbpro::FLASH_PAGE_LENGTH);
   streamsize size = m_firmware.gcount();
 
   if (!size) {
@@ -145,19 +145,19 @@ void ParseOptions(int argc, char *argv[], options *opts) {
           case 0:
             // nothing is written at this level
             // so this turns logging off
-            opts->log_level = lla::LLA_LOG_NONE;
+            opts->log_level = ola::OLA_LOG_NONE;
             break;
           case 1:
-            opts->log_level = lla::LLA_LOG_FATAL;
+            opts->log_level = ola::OLA_LOG_FATAL;
             break;
           case 2:
-            opts->log_level = lla::LLA_LOG_WARN;
+            opts->log_level = ola::OLA_LOG_WARN;
             break;
           case 3:
-            opts->log_level = lla::LLA_LOG_INFO;
+            opts->log_level = ola::OLA_LOG_INFO;
             break;
           case 4:
-            opts->log_level = lla::LLA_LOG_DEBUG;
+            opts->log_level = ola::OLA_LOG_DEBUG;
             break;
           default :
             break;
@@ -198,7 +198,7 @@ void DisplayHelpAndExit(char *argv[]) {
  */
 int main(int argc, char *argv[]) {
   options opts;
-  opts.log_level = lla::LLA_LOG_WARN;
+  opts.log_level = ola::OLA_LOG_WARN;
   opts.help = false;
   opts.firmware = DEFAULT_FIRMWARE;
   opts.device = DEFAULT_DEVICE;
@@ -206,12 +206,12 @@ int main(int argc, char *argv[]) {
 
   if (opts.help)
     DisplayHelpAndExit(argv);
-  lla::InitLogging(opts.log_level, lla::LLA_LOG_STDERR);
+  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
   ifstream firmware_file(opts.firmware.data());
 
   if (!firmware_file.is_open()) {
-    LLA_FATAL << "Can't open the firmware file " << opts.firmware << ": " <<
+    OLA_FATAL << "Can't open the firmware file " << opts.firmware << ": " <<
       strerror(errno);
     exit(1);
   }
@@ -220,23 +220,23 @@ int main(int argc, char *argv[]) {
   if (!widget.Connect(opts.device))
     exit(1);
 
-  lla::network::SelectServer ss;
+  ola::network::SelectServer ss;
   FirmwareTransferer transferer(firmware_file, &widget, &ss);
   widget.SetListener(&transferer);
 
   if (!widget.SendReprogram()) {
-    LLA_FATAL << "Send message failed";
+    OLA_FATAL << "Send message failed";
     exit(1);
   }
 
   ss.RegisterSingleTimeout(
       PAUSE_DELAY,
-      lla::NewSingleClosure(&transferer, &FirmwareTransferer::SendNextChunk));
+      ola::NewSingleClosure(&transferer, &FirmwareTransferer::SendNextChunk));
   widget.GetSocket()->SetOnClose(
-      lla::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
+      ola::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
   ss.RegisterSingleTimeout(
       ABORT_TIMEOUT,
-      lla::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
+      ola::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
   ss.AddSocket(widget.GetSocket());
   ss.Run();
 

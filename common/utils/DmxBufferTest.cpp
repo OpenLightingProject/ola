@@ -21,10 +21,10 @@
 #include <string.h>
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
-#include <lla/BaseTypes.h>
-#include <lla/DmxBuffer.h>
+#include <ola/BaseTypes.h>
+#include <ola/DmxBuffer.h>
 
-using namespace lla;
+using namespace ola;
 using namespace std;
 
 class DmxBufferTest: public CppUnit::TestFixture {

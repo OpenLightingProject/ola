@@ -1,8 +1,8 @@
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 
-noinst_LTLIBRARIES = libllautils.la
-libllautils_la_SOURCES = StringUtils.cpp DmxBuffer.cpp
+noinst_LTLIBRARIES = libolautils.la
+libolautils_la_SOURCES = StringUtils.cpp DmxBuffer.cpp
 
 TESTS = UtilsTester
 check_PROGRAMS = $(TESTS)

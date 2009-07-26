@@ -18,10 +18,10 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <lla/BaseTypes.h>
+#include <ola/BaseTypes.h>
 #include "RunLengthDecoder.h"
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
 /*
@@ -56,4 +56,4 @@ bool RunLengthDecoder::Decode(DmxBuffer &dst,
 }
 
 } //espnet
-} //lla
+} //ola

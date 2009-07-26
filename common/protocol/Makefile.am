@@ -1,13 +1,13 @@
 
 
-noinst_LTLIBRARIES = libllaproto.la
-nodist_libllaproto_la_SOURCES = Lla.pb.cc
-EXTRA_DIST = Lla.proto
+noinst_LTLIBRARIES = libolaproto.la
+nodist_libolaproto_la_SOURCES = Ola.pb.cc
+EXTRA_DIST = Ola.proto
 
-BUILT_SOURCES = Lla.pb.cc Lla.pb.h
+BUILT_SOURCES = Ola.pb.cc Ola.pb.h
 
-Lla.pb.cc Lla.pb.h: Lla.proto
-	protoc --cpp_out ./ Lla.proto
+Ola.pb.cc Ola.pb.h: Ola.proto
+	protoc --cpp_out ./ Ola.proto
 
 clean-local:
 	rm -f *.pb.{h,cc}

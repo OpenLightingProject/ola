@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Dmx4LinuxPlugin.cpp
- * The Dmx4Linux plugin for lla
+ * The Dmx4Linux plugin for ola
  * Copyright (C) 2006-2009 Simon Newton
  */
 
@@ -29,11 +29,11 @@
 
 #include <dmx/dmxioctl.h>
 
-#include <lla/BaseTypes.h>
-#include <lla/Logging.h>
-#include <lla/StringUtils.h>
-#include <llad/PluginAdaptor.h>
-#include <llad/Preferences.h>
+#include <ola/BaseTypes.h>
+#include <ola/Logging.h>
+#include <ola/StringUtils.h>
+#include <olad/PluginAdaptor.h>
+#include <olad/Preferences.h>
 
 #include "Dmx4LinuxPlugin.h"
 #include "Dmx4LinuxDevice.h"
@@ -43,20 +43,20 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(
-    const lla::PluginAdaptor *plugin_adaptor) {
-  return new lla::plugin::Dmx4LinuxPlugin(plugin_adaptor);
+extern "C" ola::AbstractPlugin* create(
+    const ola::PluginAdaptor *plugin_adaptor) {
+  return new ola::plugin::Dmx4LinuxPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(lla::AbstractPlugin* plugin) {
+extern "C" void destroy(ola::AbstractPlugin* plugin) {
   delete plugin;
 }
 
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 static const string DMX4LINUX_OUT_DEVICE = "/dev/dmx";
@@ -87,7 +87,7 @@ bool Dmx4LinuxPlugin::StartHook() {
 
   if (m_devices.size() > 0) {
     m_in_socket->SetOnData(
-        lla::NewClosure(this, &Dmx4LinuxPlugin::SocketReady));
+        ola::NewClosure(this, &Dmx4LinuxPlugin::SocketReady));
     m_plugin_adaptor->AddSocket(m_in_socket);
     return true;
   } else {
@@ -126,7 +126,7 @@ string Dmx4LinuxPlugin::Description() const {
 "\n"
 "This plugin exposes DMX 4 Linux devices. For now we just support output.\n"
 "\n"
-"--- Config file : lla-dmx4linux.conf ---\n"
+"--- Config file : ola-dmx4linux.conf ---\n"
 "\n"
 "in_device =  /dev/dmxin\n"
 "out_device = /dev/dmx\n";
@@ -157,12 +157,12 @@ bool Dmx4LinuxPlugin::SendDMX(int d4l_uni, const DmxBuffer &buffer) const {
   if (lseek(fd, offset, SEEK_SET) == offset) {
     ssize_t r = m_out_socket->Send(buffer.GetRaw(), buffer.Size());
     if (r != buffer.Size()) {
-      LLA_WARN << "only wrote " << r << "/" << buffer.Size() << " bytes: " <<
+      OLA_WARN << "only wrote " << r << "/" << buffer.Size() << " bytes: " <<
         strerror(errno);
       return false;
     }
   } else {
-    LLA_WARN << "failed to seek: " << strerror(errno);
+    OLA_WARN << "failed to seek: " << strerror(errno);
     return false;
   }
   return true;
@@ -209,14 +209,14 @@ bool Dmx4LinuxPlugin::SetupSockets() {
     int fd = open(m_out_dev.c_str(), O_WRONLY);
 
     if (fd < 0) {
-      LLA_WARN << "failed to open " << m_out_dev << " " << strerror(errno);
+      OLA_WARN << "failed to open " << m_out_dev << " " << strerror(errno);
       return false;
     }
     m_in_socket = new DeviceSocket(fd);
 
     fd = open(m_in_dev.c_str(), O_RDONLY | O_NONBLOCK);
     if (fd < 0) {
-      LLA_WARN << "failed to open " << m_in_dev << " " << strerror(errno);
+      OLA_WARN << "failed to open " << m_in_dev << " " << strerror(errno);
       CleanupSockets();
       return false;
     }
@@ -269,7 +269,7 @@ bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
   Dmx4LinuxDevice *dev = new Dmx4LinuxDevice(this, family, device_id);
 
   if (dev->Start()) {
-    LLA_WARN << "couldn't start device";
+    OLA_WARN << "couldn't start device";
     delete dev;
     return false;
   }
@@ -291,7 +291,7 @@ bool Dmx4LinuxPlugin::SetupDevices(int dir) {
   int device_count = GetDmx4LinuxDeviceCount(dir);
 
   if (device_count < 0) {
-    LLA_WARN << "failed to fetch universe list";
+    OLA_WARN << "failed to fetch universe list";
     return false;
   }
 
@@ -318,4 +318,4 @@ bool Dmx4LinuxPlugin::Setup() {
 }
 
 } //plugin
-} //lla
+} //ola

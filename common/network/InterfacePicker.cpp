@@ -23,7 +23,7 @@
 #endif
 
 
-#ifdef LLA_USE_GETIFADDRS
+#ifdef OLA_USE_GETIFADDRS
   #include <ifaddrs.h>
   #include <linux/types.h>
   #include <linux/if_packet.h>
@@ -39,10 +39,10 @@
 #include <sys/ioctl.h>
 #include <algorithm>
 
-#include <lla/Logging.h>
-#include <lla/network/InterfacePicker.h>
+#include <ola/Logging.h>
+#include <ola/network/InterfacePicker.h>
 
-using namespace lla::network;
+using namespace ola::network;
 using std::string;
 using std::vector;
 
@@ -86,7 +86,7 @@ bool InterfacePicker::ChooseInterface(Interface &interface,
   vector<Interface> interfaces = GetInterfaces();
 
   if (!interfaces.size()) {
-    LLA_INFO << "No interfaces found";
+    OLA_INFO << "No interfaces found";
     return false;
   }
 
@@ -94,7 +94,7 @@ bool InterfacePicker::ChooseInterface(Interface &interface,
     if (inet_aton(preferred_ip.data(), &wanted_ip)) {
       use_preferred = true;
     } else {
-      LLA_WARN << "Could not convert address " << preferred_ip;
+      OLA_WARN << "Could not convert address " << preferred_ip;
     }
   }
 
@@ -125,7 +125,7 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
   int sd = socket(PF_INET, SOCK_DGRAM, 0);
 
   if (sd < 0) {
-    LLA_WARN << "Could not create socket " << strerror(errno);
+    OLA_WARN << "Could not create socket " << strerror(errno);
     return interfaces;
   }
 
@@ -142,7 +142,7 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
 
     if (ioctl(sd, SIOCGIFCONF, &ifc) < 0) {
       if (errno != EINVAL || lastlen != 0) {
-        LLA_WARN << "ioctl error " << strerror(errno);
+        OLA_WARN << "ioctl error " << strerror(errno);
         delete[] buffer;
         return interfaces;
       }
@@ -173,25 +173,25 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
 
     // look for AF_INET interfaces only
     if (iface->ifr_addr.sa_family != AF_INET) {
-      LLA_DEBUG << "skipping " << iface->ifr_name <<
+      OLA_DEBUG << "skipping " << iface->ifr_name <<
         " because it's not af_inet";
       continue;
     }
 
     struct ifreq ifrcopy = *iface;
     if (ioctl(sd, SIOCGIFFLAGS, &ifrcopy) < 0) {
-      LLA_WARN << "ioctl error for " << iface->ifr_name << ":"
+      OLA_WARN << "ioctl error for " << iface->ifr_name << ":"
         << strerror(errno);
       continue;
     }
 
     if (!(ifrcopy.ifr_flags & IFF_UP)) {
-      LLA_DEBUG << "skipping " << iface->ifr_name << " because it's down";
+      OLA_DEBUG << "skipping " << iface->ifr_name << " because it's down";
       continue;
     }
 
     if (ifrcopy.ifr_flags & IFF_LOOPBACK) {
-      LLA_DEBUG << "skipping " << iface->ifr_name <<
+      OLA_DEBUG << "skipping " << iface->ifr_name <<
         " because it's a loopback";
       continue;
     }
@@ -209,7 +209,7 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
 #ifdef SIOCGIFBRDADDR
     if (ifrcopy.ifr_flags & IFF_BROADCAST) {
       if (ioctl(sd, SIOCGIFBRDADDR, &ifrcopy) < 0) {
-        LLA_WARN << "ioctl error " << strerror(errno);
+        OLA_WARN << "ioctl error " << strerror(errno);
       } else {
         sin = (struct sockaddr_in *) &ifrcopy.ifr_broadaddr;
         interface.bcast_address = sin->sin_addr;
@@ -221,7 +221,7 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
 #ifdef SIOCGIFHWADDR
     if (ifrcopy.ifr_flags & SIOCGIFHWADDR) {
       if (ioctl(sd, SIOCGIFHWADDR, &ifrcopy) < 0) {
-        LLA_WARN << "ioctl error" << strerror(errno);
+        OLA_WARN << "ioctl error" << strerror(errno);
       } else {
         memcpy(interface.hw_address, ifrcopy.ifr_hwaddr.sa_data, MAC_LENGTH);
       }

@@ -14,14 +14,14 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OpenDmxPort.cpp
- * The Open DMX plugin for lla
+ * The Open DMX plugin for ola
  * Copyright (C) 2005-2008 Simon Newton
  */
 
 #include "OpenDmxPort.h"
 #include "OpenDmxDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 OpenDmxPort::OpenDmxPort(OpenDmxDevice *parent,
@@ -55,4 +55,4 @@ bool OpenDmxPort::WriteDMX(const DmxBuffer &buffer) {
 }
 
 } //plugins
-} //lla
+} //ola

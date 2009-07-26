@@ -22,13 +22,13 @@
 #define DMX4LINUXDEVICE_H
 
 #include <string>
-#include <lla/DmxBuffer.h>
-#include <llad/Device.h>
+#include <ola/DmxBuffer.h>
+#include <olad/Device.h>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-class Dmx4LinuxDevice: public lla::Device {
+class Dmx4LinuxDevice: public ola::Device {
   public:
     Dmx4LinuxDevice(class Dmx4LinuxPlugin *owner,
                     const string &name,
@@ -47,6 +47,6 @@ class Dmx4LinuxDevice: public lla::Device {
 };
 
 } //plugin
-} //lla
+} //ola
 
 #endif

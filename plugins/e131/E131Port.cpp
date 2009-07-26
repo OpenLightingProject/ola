@@ -14,13 +14,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E131Port.cpp
- * The E1.31 plugin for lla
+ * The E1.31 plugin for ola
  * Copyright (C) 2007 Simon Newton
  */
 
 #include <string.h>
 
-#include <llad/universe.h>
+#include <olad/universe.h>
 
 #include <acn/E131DmpLayer.h>
 #include "E131Port.h"

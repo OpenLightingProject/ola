@@ -32,11 +32,11 @@
 #include <unistd.h>
 
 #include <algorithm>
-#include <lla/Logging.h>
+#include <ola/Logging.h>
 
 #include "UsbProWidget.h"
 
-namespace lla {
+namespace ola {
 namespace usbpro {
 
 using std::string;
@@ -75,25 +75,25 @@ bool UsbProWidget::Connect(const string &path) {
   int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
   if (fd == -1) {
-    LLA_WARN << "Failed to open " << path << " " << strerror(errno);
+    OLA_WARN << "Failed to open " << path << " " << strerror(errno);
     return false;
   }
 
   bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
   tcsetattr(fd, TCSANOW, &newtio);
-  m_socket = new lla::network::DeviceSocket(fd);
+  m_socket = new ola::network::DeviceSocket(fd);
   m_socket->SetOnData(NewClosure(this, &UsbProWidget::SocketReady));
 
   // fire off a get request
   if (!GetParameters()) {
-    LLA_WARN << "Failed to send a GetParameters message";
+    OLA_WARN << "Failed to send a GetParameters message";
     delete m_socket;
     return false;
   }
 
   // put us into receiving mode
   if (!SendChangeMode(RCMODE_CHANGE)) {
-    LLA_WARN << "Failed to set mode";
+    OLA_WARN << "Failed to set mode";
     delete m_socket;
     return false;
   }
@@ -185,7 +185,7 @@ bool UsbProWidget::SetParameters(uint8_t *data,
   if (brk == K_MISSING_PARAM ||
       mab == K_MISSING_PARAM ||
       rate == K_MISSING_PARAM) {
-    LLA_WARN << "Missing default values for usb SetParam";
+    OLA_WARN << "Missing default values for usb SetParam";
     return false;
   }
   msg.pm_prmset.brk = brk;
@@ -453,20 +453,20 @@ int UsbProWidget::ReceiveMessage() {
   m_socket->Receive((uint8_t*) &label, 1, cnt);
 
   if (cnt != 1) {
-    LLA_WARN << "Could not read label, expected 1, got " << cnt;
+    OLA_WARN << "Could not read label, expected 1, got " << cnt;
     return 1;
   }
 
   m_socket->Receive((uint8_t*) &byte, 1, cnt);
   if (cnt != 1) {
-    LLA_WARN << "Could not read len hi, expected 1, got " << cnt;
+    OLA_WARN << "Could not read len hi, expected 1, got " << cnt;
     return 1;
   }
   plen = byte;
 
   m_socket->Receive((uint8_t*) &byte, 1, cnt);
   if (cnt != 1) {
-    LLA_WARN << "Could not read len lo, expected 1, got " << cnt;
+    OLA_WARN << "Could not read len lo, expected 1, got " << cnt;
     return 1;
   }
   plen += byte << 8;
@@ -479,7 +479,7 @@ int UsbProWidget::ReceiveMessage() {
   // check this is a valid frame with an end byte
   m_socket->Receive((uint8_t*) &byte, 1, cnt);
   if (cnt != 1) {
-    LLA_WARN << "Read to much, expected 1, got " << cnt;
+    OLA_WARN << "Read to much, expected 1, got " << cnt;
     return 1;
   }
 
@@ -501,11 +501,11 @@ int UsbProWidget::ReceiveMessage() {
         handle_snorep(&buf.pmu_snorep, plen);
         break;
       default:
-        LLA_WARN << "Unknown message type " << label;
+        OLA_WARN << "Unknown message type " << label;
     }
   }
   return 0;
 }
 
 } // usbpro
-} //lla
+} //ola

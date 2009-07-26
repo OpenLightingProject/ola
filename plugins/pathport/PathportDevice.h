@@ -23,24 +23,24 @@
 
 #include <map>
 
-#include <llad/Device.h>
-#include <lla/network/Socket.h>
+#include <olad/Device.h>
+#include <ola/network/Socket.h>
 
 #include <pathport/pathport.h>
 
 #include "PathportCommon.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::Plugin;
-using lla::PluginAdaptor;
-using lla::Preferences;
-using lla::network::ConnectedSocket;
-using lla::network::SocketListener;
+using ola::Plugin;
+using ola::PluginAdaptor;
+using ola::Preferences;
+using ola::network::ConnectedSocket;
+using ola::network::SocketListener;
 using std::string;
 
-class PathportDevice: public lla::Device, public SocketListener {
+class PathportDevice: public ola::Device, public SocketListener {
   public:
     PathportDevice(Plugin *owner,
                    const string &name,
@@ -65,6 +65,6 @@ class PathportDevice: public lla::Device, public SocketListener {
 };
 
 } //plugin
-} //lla
+} //ola
 
 #endif

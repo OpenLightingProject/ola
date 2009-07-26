@@ -21,23 +21,23 @@
 #ifndef ARTNETDEVICE_H
 #define ARTNETDEVICE_H
 
-#include <lla/network/Socket.h>
-#include <llad/Device.h>
-#include <llad/PluginAdaptor.h>
+#include <ola/network/Socket.h>
+#include <olad/Device.h>
+#include <olad/PluginAdaptor.h>
 
 #include <artnet/artnet.h>
 #include "messages/ArtnetConfigMessages.pb.h"
 
-namespace lla {
+namespace ola {
 
 using google::protobuf::RpcController;
-using lla::plugin::artnet::Request;
+using ola::plugin::artnet::Request;
 
 class Preferences;
 
 namespace plugin {
 
-using lla::Device;
+using ola::Device;
 using std::string;
 
 class ArtNetDevice: public Device {
@@ -54,7 +54,7 @@ class ArtNetDevice: public Device {
     string DeviceId() const { return "1"; }
     artnet_node GetArtnetNode() const;
     int SocketReady();
-    lla::network::UnmanagedSocket *GetSocket() { return m_socket; }
+    ola::network::UnmanagedSocket *GetSocket() { return m_socket; }
 
     void Configure(RpcController *controller,
                    const string &request,
@@ -63,7 +63,7 @@ class ArtNetDevice: public Device {
 
   private:
     class Preferences *m_preferences;
-    lla::network::UnmanagedSocket *m_socket;
+    ola::network::UnmanagedSocket *m_socket;
     artnet_node m_node;
     string m_short_name;
     string m_long_name;
@@ -79,6 +79,6 @@ class ArtNetDevice: public Device {
 };
 
 } //plugin
-} //lla
+} //ola
 
 #endif

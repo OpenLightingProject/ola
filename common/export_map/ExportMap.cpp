@@ -20,9 +20,9 @@
 
 #include <string>
 #include <iostream>
-#include <lla/ExportMap.h>
+#include <ola/ExportMap.h>
 
-namespace lla {
+namespace ola {
 
 using std::string;
 using std::stringstream;
@@ -195,4 +195,4 @@ vector<BaseVariable*> ExportMap::AllVariables() const {
 }
 
 
-} //lla
+} //ola

@@ -14,19 +14,19 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E131Plugin.cpp
- * The E1.31 plugin for lla
+ * The E1.31 plugin for ola
  * Copyright (C) 2007 Simon Newton
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <olad/pluginadaptor.h>
+#include <olad/preferences.h>
 
 #include "E131Plugin.h"
 #include "E131Device.h"
-#include "LlaNetServer.h"
+#include "OlaNetServer.h"
 
 const string E131Plugin::PLUGIN_NAME = "E131 Plugin";
 const string E131Plugin::PLUGIN_PREFIX = "e131";
@@ -35,7 +35,7 @@ const string E131Plugin::PLUGIN_PREFIX = "e131";
  * Entry point to this plugin
  */
 extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new E131Plugin(pa, LLA_PLUGIN_E131);
+  return new E131Plugin(pa, OLA_PLUGIN_E131);
 }
 
 /*
@@ -52,9 +52,9 @@ extern "C" void destroy(Plugin* plug) {
  * For now we just have one device.
  */
 int E131Plugin::start_hook() {
-  m_ns = new LlaNetServer(m_pa);
+  m_ns = new OlaNetServer(m_pa);
 
-  /* create new lla device */
+  /* create new ola device */
   m_dev = new E131Device(this, "E131 Device", m_ns, m_prefs);
 
   if (m_dev == NULL)
@@ -103,7 +103,7 @@ string E131Plugin::get_desc() const {
 "\n"
 "Each port can be assigned to a diffent E1.31 Universe.\n"
 "\n"
-"--- Config file : lla-e131.conf ---\n"
+"--- Config file : ola-e131.conf ---\n"
 "\n"
 "ip = a.b.c.d\n"
 "The local ip address to use for multicasting.\n"

@@ -21,24 +21,24 @@
 #ifndef ESPNETPLUGIN_H
 #define ESPNETPLUGIN_H
 
-#include <llad/Plugin.h>
-#include <llad/PluginAdaptor.h>
-#include <lla/plugin_id.h>
+#include <olad/Plugin.h>
+#include <olad/PluginAdaptor.h>
+#include <ola/plugin_id.h>
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
 class EspNetDevice;
 
-class EspNetPlugin: public lla::Plugin {
+class EspNetPlugin: public ola::Plugin {
   public:
-    EspNetPlugin(const lla::PluginAdaptor *plugin_adaptor):
+    EspNetPlugin(const ola::PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
-    lla_plugin_id Id() const { return LLA_PLUGIN_ESPNET; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_ESPNET; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
@@ -54,7 +54,7 @@ class EspNetPlugin: public lla::Plugin {
 };
 
 } //espnet
-} //lla
+} //ola
 
 #endif
 

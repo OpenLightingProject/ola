@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <lla/BaseTypes.h>
-#include <lla/DmxBuffer.h>
+#include <ola/BaseTypes.h>
+#include <ola/DmxBuffer.h>
 #include "RunLengthEncoder.h"
 
-using namespace lla;
+using namespace ola;
 
 class RunLengthEncoderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RunLengthEncoderTest);
@@ -41,7 +41,7 @@ class RunLengthEncoderTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown();
   private:
-    lla::shownet::RunLengthEncoder m_encoder;
+    ola::shownet::RunLengthEncoder m_encoder;
     uint8_t *m_dst;
 
     void checkEncode(const DmxBuffer &buffer,

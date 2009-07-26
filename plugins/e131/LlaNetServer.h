@@ -13,13 +13,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * LlaNetServer.h
- * Override the libacn NetServer to interface with LLA
+ * OlaNetServer.h
+ * Override the libacn NetServer to interface with OLA
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef LLANETSERVER_H
-#define LLANETSERVER_H
+#ifndef OLANETSERVER_H
+#define OLANETSERVER_H
 
 #include <string>
 #include <map>
@@ -28,12 +28,12 @@
 
 using namespace std;
 
-class LlaNetServer : public NetServer {
+class OlaNetServer : public NetServer {
 
   public:
-    LlaNetServer(const PluginAdaptor *pa):
+    OlaNetServer(const PluginAdaptor *pa):
       NetServer(), m_pa(pa) {}
-    ~LlaNetServer();
+    ~OlaNetServer();
 
     int add_fd(int fd, callback_fn fn, void *data);
     int remove_fd(int fd);

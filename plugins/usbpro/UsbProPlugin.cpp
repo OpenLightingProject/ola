@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProPlugin.cpp
- * The UsbPro plugin for lla
+ * The UsbPro plugin for ola
  * Copyright (C) 2006-2007 Simon Newton
  */
 
@@ -22,10 +22,10 @@
 #include <stdio.h>
 #include <vector>
 
-#include <lla/Closure.h>
-#include <lla/Logging.h>
-#include <llad/PluginAdaptor.h>
-#include <llad/Preferences.h>
+#include <ola/Closure.h>
+#include <ola/Logging.h>
+#include <olad/PluginAdaptor.h>
+#include <olad/Preferences.h>
 
 #include "UsbProPlugin.h"
 #include "UsbProDevice.h"
@@ -34,19 +34,19 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(
-    const lla::PluginAdaptor *plugin_adaptor) {
-  return new lla::usbpro::UsbProPlugin(plugin_adaptor);
+extern "C" ola::AbstractPlugin* create(
+    const ola::PluginAdaptor *plugin_adaptor) {
+  return new ola::usbpro::UsbProPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(lla::AbstractPlugin* plugin) {
+extern "C" void destroy(ola::AbstractPlugin* plugin) {
   delete plugin;
 }
 
-namespace lla {
+namespace ola {
 namespace usbpro {
 
 const string UsbProPlugin::USBPRO_DEVICE_PATH = "/dev/ttyUSB0";
@@ -110,7 +110,7 @@ string UsbProPlugin::Description() const {
 "\n"
 "This plugin creates devices with one input and one output port.\n"
 "\n"
-"--- Config file : lla-usbpro.conf ---\n"
+"--- Config file : ola-usbpro.conf ---\n"
 "\n"
 "device = /dev/ttyUSB0\n"
 "The device to use. Multiple devices are allowed\n";
@@ -130,7 +130,7 @@ int UsbProPlugin::SocketClosed(ConnectedSocket *socket) {
   }
 
   if (iter == m_devices.end()) {
-    LLA_WARN << "Couldn't find the device corresponding to this socket";
+    OLA_WARN << "Couldn't find the device corresponding to this socket";
     return -1;
   }
 
@@ -167,4 +167,4 @@ void UsbProPlugin::DeleteDevice(UsbProDevice *device) {
 }
 
 } // usbpro
-} // lla
+} // ola

@@ -22,9 +22,9 @@
 #define DUMMYDEVICE_H
 
 #include <string>
-#include <llad/Device.h>
+#include <olad/Device.h>
 
-namespace lla {
+namespace ola {
 
 class AbstractPlugin;
 
@@ -42,5 +42,5 @@ class DummyDevice: public Device {
 };
 
 } //plugin
-} // lla
+} // ola
 #endif

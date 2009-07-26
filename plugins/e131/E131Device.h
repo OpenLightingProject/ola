@@ -22,8 +22,8 @@
 #ifndef E131DEVICE_H
 #define E131DEVICE_H
 
-#include <llad/device.h>
-#include <llad/fdlistener.h>
+#include <olad/device.h>
+#include <olad/fdlistener.h>
 
 class E131Device : public Device {
 
@@ -35,7 +35,7 @@ class E131Device : public Device {
     int stop() ;
     int fd_action() ;
     int save_config() const;
-    class LlaDevConfMsg *configure(const uint8_t *req, int len) ;
+    class OlaDevConfMsg *configure(const uint8_t *req, int len) ;
 
   private:
     class Preferences *m_prefs;

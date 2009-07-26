@@ -18,10 +18,10 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef LLA_SHOWNET_PACKETS
-#define LLA_SHOWNET_PACKETS
+#ifndef OLA_SHOWNET_PACKETS
+#define OLA_SHOWNET_PACKETS
 
-#include <lla/BaseTypes.h>
+#include <ola/BaseTypes.h>
 
 enum { SHOWNET_MAC_LENGTH = 6 };
 enum { SHOWNET_NAME_LENGTH = 9 };

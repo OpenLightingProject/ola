@@ -14,18 +14,18 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * StageProfiPort.h
- * The StageProfi plugin for lla
+ * The StageProfi plugin for ola
  * Copyright (C) 2006-2009 Simon Newton
  */
 
 #ifndef STAGEPROFIPORT_H
 #define STAGEPROFIPORT_H
 
-#include <lla/DmxBuffer.h>
-#include <llad/Port.h>
+#include <ola/DmxBuffer.h>
+#include <olad/Port.h>
 #include "StageProfiDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 class StageProfiPort: public Port<StageProfiDevice> {
@@ -42,5 +42,5 @@ class StageProfiPort: public Port<StageProfiDevice> {
 };
 
 } // plugin
-} // lla
+} // ola
 #endif

@@ -21,9 +21,9 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
-#include <lla/StringUtils.h>
+#include <ola/StringUtils.h>
 
-namespace lla {
+namespace ola {
 
 using std::string;
 using std::stringstream;
@@ -83,4 +83,4 @@ string IntToString(int i) {
   return str.str();
 }
 
-} //lla
+} //ola

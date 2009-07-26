@@ -23,21 +23,21 @@
 
 #include <string>
 #include <deque>
-#include <lla/DmxBuffer.h>
-#include <lla/network/Socket.h>
-#include <llad/Device.h>
-#include <llad/PluginAdaptor.h>
+#include <ola/DmxBuffer.h>
+#include <ola/network/Socket.h>
+#include <olad/Device.h>
+#include <olad/PluginAdaptor.h>
 
 #include "messages/UsbProConfigMessages.pb.h"
 #include "UsbProWidget.h"
 #include "UsbProWidgetListener.h"
 
-namespace lla {
+namespace ola {
 namespace usbpro {
 
 using google::protobuf::RpcController;
-using lla::plugin::usbpro::Request;
-using lla::network::ConnectedSocket;
+using ola::plugin::usbpro::Request;
+using ola::network::ConnectedSocket;
 using std::deque;
 
 /*
@@ -62,8 +62,8 @@ class OutstandingRequest {
  */
 class UsbProDevice: public Device, public UsbProWidgetListener {
   public:
-    UsbProDevice(const lla::PluginAdaptor *plugin_adaptor,
-                 lla::AbstractPlugin *owner,
+    UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
+                 ola::AbstractPlugin *owner,
                  const string &name,
                  const string &dev_path);
     ~UsbProDevice();
@@ -105,7 +105,7 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     bool m_enabled;
     bool m_in_shutdown; // set to true if we're shutting down
     bool m_in_startup; // set to true if we're starting up
-    const lla::PluginAdaptor *m_plugin_adaptor;
+    const ola::PluginAdaptor *m_plugin_adaptor;
     string m_path;
     string m_serial;
     UsbProWidget *m_widget;
@@ -116,5 +116,5 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
 };
 
 } //usbpro
-} //lla
+} //ola
 #endif

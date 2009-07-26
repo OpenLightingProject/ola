@@ -23,7 +23,7 @@
  * http://protorpc.likbilen.com/Protorpcdocprotobuf.html
  */
 
-package lla.rpc;
+package ola.rpc;
 
 enum Type {
   REQUEST = 1;

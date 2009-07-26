@@ -25,8 +25,8 @@ nodist_RpcTester_SOURCES = TestService.pb.cc
 RpcTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 RpcTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 RpcTester_LDADD = ./libstreamrpcchannel.la \
-                  ../network/libllanetwork.la \
-                  ../export_map/libllaexportmap.la \
+                  ../network/libolanetwork.la \
+                  ../export_map/libolaexportmap.la \
                   ../logging/liblogging.la
 
 clean-local:

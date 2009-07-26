@@ -23,11 +23,11 @@
 #include <termios.h>
 #include <string.h>
 
-#include <lla/Closure.h>
-#include <lla/network/Socket.h>
+#include <ola/Closure.h>
+#include <ola/network/Socket.h>
 #include "StageProfiWidgetUsb.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 /*
@@ -45,11 +45,11 @@ bool StageProfiWidgetUsb::Connect(const std::string &path) {
   tcgetattr(fd, &newtio);
   cfsetospeed(&newtio, B38400);
   tcsetattr(fd, TCSANOW, &newtio);
-  m_socket = new lla::network::DeviceSocket(fd);
+  m_socket = new ola::network::DeviceSocket(fd);
   m_socket->SetOnData(NewClosure((StageProfiWidget*) this,
                                  &StageProfiWidget::SocketReady));
   return true;
 }
 
 } // plugin
-} // lla
+} // ola

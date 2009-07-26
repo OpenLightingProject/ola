@@ -23,10 +23,10 @@
 #include <iomanip>
 #include <iostream>
 
-#include <lla/network/InterfacePicker.h>
-#include <lla/Logging.h>
+#include <ola/network/InterfacePicker.h>
+#include <ola/Logging.h>
 
-using namespace lla::network;
+using namespace ola::network;
 using std::vector;
 using std::cout;
 using std::endl;

@@ -23,9 +23,9 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <lla/Logging.h>
-#include <llad/Preferences.h>
-#include <llad/Universe.h>
+#include <ola/Logging.h>
+#include <olad/Preferences.h>
+#include <olad/Universe.h>
 
 #include "StageProfiDevice.h"
 #include "StageProfiPort.h"
@@ -36,10 +36,10 @@
 #  include <config.h>
 #endif
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::AbstractPlugin;
+using ola::AbstractPlugin;
 
 /*
  * Create a new device
@@ -83,12 +83,12 @@ bool StageProfiDevice::Start() {
     return false;
 
   if (!m_widget->Connect(m_path)) {
-    LLA_WARN << "StageProfiPlugin: failed to connect to " << m_path;
+    OLA_WARN << "StageProfiPlugin: failed to connect to " << m_path;
     return false;
   }
 
   if (!m_widget->DetectDevice()) {
-    LLA_WARN << "StageProfiPlugin: no device found at " << m_path;
+    OLA_WARN << "StageProfiPlugin: no device found at " << m_path;
     return false;
   }
 
@@ -132,4 +132,4 @@ bool StageProfiDevice::SendDmx(const DmxBuffer &buffer) const {
 }
 
 } // plugin
-} //lla
+} //ola

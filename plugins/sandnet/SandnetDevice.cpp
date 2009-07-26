@@ -26,9 +26,9 @@
 #include "SandnetDevice.h"
 #include "SandnetPort.h"
 
-#include <lla/Logging.h>
-#include <llad/preferences.h>
-#include <llad/universe.h>
+#include <ola/Logging.h>
+#include <olad/preferences.h>
+#include <olad/universe.h>
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -111,32 +111,32 @@ int SandNetDevice::start() {
   }
 
   if (!m_node) {
-    LLA_WARN << "sandnet_new failed: " << sandnet_strerror();
+    OLA_WARN << "sandnet_new failed: " << sandnet_strerror();
     return -1;
   }
 
   // setup node
   if (sandnet_set_name(m_node, m_prefs->get_val("name").c_str()) ) {
-    LLA_WARN << "sandnet_set_name failed: " << sandnet_strerror();
+    OLA_WARN << "sandnet_set_name failed: " << sandnet_strerror();
     goto e_sandnet_start;
   }
 
   // setup the output ports (ie INTO sandnet)
   for (int i =0; i < SANDNET_MAX_PORTS; i++) {
     if ( sandnet_set_port(m_node, i, SANDNET_PORT_MODE_IN, 0, i+1) ) {
-      LLA_WARN << "sandnet_set_port failed: " << sandnet_strerror();
+      OLA_WARN << "sandnet_set_port failed: " << sandnet_strerror();
       goto e_sandnet_start;
     }
   }
 
   // we want to be notified when we recv dmx
   if (sandnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-    LLA_WARN << "sandnet_set_dmx_handler failed: " << sandnet_strerror();
+    OLA_WARN << "sandnet_set_dmx_handler failed: " << sandnet_strerror();
     goto e_sandnet_start;
   }
 
   if (sandnet_start(m_node) ) {
-    LLA_WARN << "sandnet_start failed: " << sandnet_strerror();
+    OLA_WARN << "sandnet_start failed: " << sandnet_strerror();
     goto e_sandnet_start;
   }
 
@@ -145,7 +145,7 @@ int SandNetDevice::start() {
 
 e_sandnet_start:
   if (sandnet_destroy(m_node))
-    LLA_WARN << "sandnet_destory failed: " << sandnet_strerror();
+    OLA_WARN << "sandnet_destory failed: " << sandnet_strerror();
   return -1;
 }
 
@@ -167,12 +167,12 @@ int SandNetDevice::stop() {
   }
 
   if (sandnet_stop(m_node)) {
-    LLA_WARN << "sandnet_stop failed: " << sandnet_strerror();
+    OLA_WARN << "sandnet_stop failed: " << sandnet_strerror();
     return -1;
   }
 
   if (sandnet_destroy(m_node)) {
-    LLA_WARN << "sandnet_destroy failed: " << sandnet_strerror();
+    OLA_WARN << "sandnet_destroy failed: " << sandnet_strerror();
     return -1;
   }
 
@@ -198,7 +198,7 @@ sandnet_node SandNetDevice::get_node() const {
 int SandNetDevice::get_sd(int i) const {
   int ret = sandnet_get_sd(m_node, i);
   if (ret < 0) {
-    LLA_WARN << "sandnet_get_sd failed: " << sandnet_strerror();
+    OLA_WARN << "sandnet_get_sd failed: " << sandnet_strerror();
     return -1;
   }
   return ret;
@@ -213,7 +213,7 @@ int SandNetDevice::get_sd(int i) const {
 int SandNetDevice::action() {
 
   if (sandnet_read(m_node, 0) ) {
-    LLA_WARN << "sandnet_read failed: " << sandnet_strerror();
+    OLA_WARN << "sandnet_read failed: " << sandnet_strerror();
     return -1;
   }
   return 0;
@@ -233,7 +233,7 @@ int SandNetDevice::timeout_action() {
 
 // call this when something changes
 // where to store data to ?
-// I'm thinking a config file in /etc/llad/llad.conf
+// I'm thinking a config file in /etc/olad/olad.conf
 int SandNetDevice::save_config() const {
 
 

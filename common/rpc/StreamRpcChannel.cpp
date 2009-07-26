@@ -26,20 +26,20 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 
-#include <lla/Logging.h>
-#include <lla/Closure.h>
+#include <ola/Logging.h>
+#include <ola/Closure.h>
 #include "StreamRpcChannel.h"
 #include "SimpleRpcController.h"
 #include "Rpc.pb.h"
 
 
-namespace lla {
+namespace ola {
 namespace rpc {
 
 using namespace google::protobuf;
 
 StreamRpcChannel::StreamRpcChannel(Service *service,
-                                   lla::network::ConnectedSocket *socket):
+                                   ola::network::ConnectedSocket *socket):
   m_service(service),
   m_socket(socket),
   m_buffer(NULL),
@@ -72,7 +72,7 @@ int StreamRpcChannel::SocketReady() {
       return 0;
 
     if (version != PROTOCOL_VERSION) {
-      LLA_WARN << "protocol mismatch " << version << " != " <<
+      OLA_WARN << "protocol mismatch " << version << " != " <<
         PROTOCOL_VERSION;
       return -1;
     }
@@ -80,7 +80,7 @@ int StreamRpcChannel::SocketReady() {
     m_buffer_size = AllocateMsgBuffer(m_expected_size);
 
     if (m_buffer_size < m_expected_size) {
-      LLA_WARN << "buffer size to small " << m_buffer_size << " < " <<
+      OLA_WARN << "buffer size to small " << m_buffer_size << " < " <<
         m_expected_size;
       return 0;
     }
@@ -90,7 +90,7 @@ int StreamRpcChannel::SocketReady() {
   if (m_socket->Receive(m_buffer + m_current_size,
                         m_expected_size - m_current_size,
                         data_read) < 0) {
-    LLA_WARN << "something went wrong in socket recv\n";
+    OLA_WARN << "something went wrong in socket recv\n";
     return -1;
   }
 
@@ -129,7 +129,7 @@ void StreamRpcChannel::CallMethod(
   OutstandingResponse *response = GetOutstandingResponse(message.id());
   if (response) {
     // fail any outstanding response with the same id
-    LLA_WARN << "response " << response->id << " already pending, failing " <<
+    OLA_WARN << "response " << response->id << " already pending, failing " <<
       "now";
     response->controller->SetFailed("Duplicate request found");
     InvokeCallbackAndCleanup(response);
@@ -182,10 +182,10 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
   ret = m_socket->Send((uint8_t*) output.data(), length);
 
   if (-1 == ret) {
-    LLA_WARN << "Send failed " << strerror(errno);
+    OLA_WARN << "Send failed " << strerror(errno);
     return -1;
   } else if (length != ret) {
-    LLA_WARN << "Failed to send full datagram";
+    OLA_WARN << "Failed to send full datagram";
     return -1;
   }
   return 0;
@@ -231,7 +231,7 @@ int StreamRpcChannel::ReadHeader(unsigned int &version,
   version = size = 0;
 
   if (m_socket->Receive((uint8_t*) header, HEADER_SIZE, data_read)) {
-    LLA_WARN << "read header error: " << strerror(errno);
+    OLA_WARN << "read header error: " << strerror(errno);
     return -1;
   }
 
@@ -249,7 +249,7 @@ int StreamRpcChannel::ReadHeader(unsigned int &version,
 void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
   RpcMessage msg;
   if (!msg.ParseFromArray(data, size)) {
-    LLA_WARN << "parsing failed";
+    OLA_WARN << "parsing failed";
     return;
   }
 
@@ -270,7 +270,7 @@ void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
       HandleNotImplemented(&msg);
       break;
     default:
-      LLA_WARN << "not sure of msg type " << msg.type();
+      OLA_WARN << "not sure of msg type " << msg.type();
       break;
   }
 }
@@ -281,18 +281,18 @@ void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
  */
 void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
   if (!m_service) {
-    LLA_WARN << "no service registered";
+    OLA_WARN << "no service registered";
     return;
   }
 
   const ServiceDescriptor *service = m_service->GetDescriptor();
   if (!service) {
-    LLA_WARN << "failed to get service descriptor";
+    OLA_WARN << "failed to get service descriptor";
     return;
   }
   const MethodDescriptor *method = service->FindMethodByName(msg->name());
   if (!method) {
-    LLA_WARN << "failed to get method descriptor";
+    OLA_WARN << "failed to get method descriptor";
     SendNotImplemented(msg->id());
     return;
   }
@@ -301,12 +301,12 @@ void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
   Message* response_pb = m_service->GetResponsePrototype(method).New();
 
   if (!request_pb || !response_pb) {
-    LLA_WARN << "failed to get request or response objects";
+    OLA_WARN << "failed to get request or response objects";
     return;
   }
 
   if (!request_pb->ParseFromString(msg->buffer())) {
-    LLA_WARN << "parsing of request pb failed";
+    OLA_WARN << "parsing of request pb failed";
     return;
   }
 
@@ -316,7 +316,7 @@ void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
   request->response = response_pb;
 
   if (m_requests.find(msg->id()) != m_requests.end()) {
-    LLA_WARN << "dup sequence number for request " << msg->id();
+    OLA_WARN << "dup sequence number for request " << msg->id();
     SendRequestFailed(m_requests[msg->id()]);
   }
 
@@ -394,7 +394,7 @@ void StreamRpcChannel::HandleFailedResponse(RpcMessage *msg) {
  * Handle a RPC response by invoking the callback.
  */
 void StreamRpcChannel::HandleCanceledResponse(RpcMessage *msg) {
-  LLA_INFO << "Received a canceled response";
+  OLA_INFO << "Received a canceled response";
   OutstandingResponse *response = GetOutstandingResponse(msg->id());
   if (response) {
     response->controller->SetFailed(msg->buffer());
@@ -407,7 +407,7 @@ void StreamRpcChannel::HandleCanceledResponse(RpcMessage *msg) {
  * Handle a NOT_IMPLEMENTED by invoking the callback.
  */
 void StreamRpcChannel::HandleNotImplemented(RpcMessage *msg) {
-  LLA_INFO << "Received a non-implemented response";
+  OLA_INFO << "Received a non-implemented response";
   OutstandingResponse *response = GetOutstandingResponse(msg->id());
   if (response) {
     response->controller->SetFailed("Not Implemented");
@@ -461,4 +461,4 @@ void StreamRpcHeader::DecodeHeader(uint32_t header, unsigned int &version, unsig
 }
 
 } //rpc
-} //lla
+} //ola

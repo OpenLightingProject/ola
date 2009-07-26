@@ -14,23 +14,23 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * EspNetPort.h
- * The ESPNet plugin for lla
+ * The ESPNet plugin for ola
  * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef ESPNETPORT_H
 #define ESPNETPORT_H
 
-#include <lla/DmxBuffer.h>
-#include <llad/Port.h>
+#include <ola/DmxBuffer.h>
+#include <olad/Port.h>
 #include "EspNetDevice.h"
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
-using lla::DmxBuffer;
+using ola::DmxBuffer;
 
-class EspNetPort: public lla::Port<EspNetDevice> {
+class EspNetPort: public ola::Port<EspNetDevice> {
   public:
     EspNetPort(EspNetDevice *parent, unsigned int id):
       Port<EspNetDevice>(parent, id) {}
@@ -50,6 +50,6 @@ class EspNetPort: public lla::Port<EspNetDevice> {
 };
 
 } //espnet
-} //lla
+} //ola
 
 #endif

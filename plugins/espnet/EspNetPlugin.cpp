@@ -15,14 +15,14 @@
  *
  *
  * EspNetPlugin.cpp
- * The Esp Net plugin for lla
+ * The Esp Net plugin for ola
  * Copyright (C) 2005  Simon Newton
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/Preferences.h>
+#include <olad/Preferences.h>
 
 #include "EspNetPlugin.h"
 #include "EspNetDevice.h"
@@ -30,23 +30,23 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(
-    const lla::PluginAdaptor *plugin_adaptor) {
-  return new lla::espnet::EspNetPlugin(plugin_adaptor);
+extern "C" ola::AbstractPlugin* create(
+    const ola::PluginAdaptor *plugin_adaptor) {
+  return new ola::espnet::EspNetPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(lla::AbstractPlugin* plugin) {
+extern "C" void destroy(ola::AbstractPlugin* plugin) {
   delete plugin;
 }
 
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
-const string EspNetPlugin::ESPNET_NODE_NAME = "lla-EspNet";
+const string EspNetPlugin::ESPNET_NODE_NAME = "ola-EspNet";
 const string EspNetPlugin::ESPNET_DEVICE_NAME = "EspNet Device";
 const string EspNetPlugin::PLUGIN_NAME = "EspNet Plugin";
 const string EspNetPlugin::PLUGIN_PREFIX = "espnet";
@@ -104,12 +104,12 @@ string EspNetPlugin::Description() const {
 "to. For example if port 0 is patched to universe 10, the data will be sent to "
 "ESP universe 10.\n"
 "\n"
-"--- Config file : lla-espnet.conf ---\n"
+"--- Config file : ola-espnet.conf ---\n"
 "\n"
 "ip = a.b.c.d\n"
 "The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
 "\n"
-"name = lla-EspNet\n"
+"name = ola-EspNet\n"
 "The name of the node.\n";
 
 }
@@ -138,4 +138,4 @@ bool EspNetPlugin::SetDefaultPreferences() {
 }
 
 } //espnet
-} //lla
+} //ola

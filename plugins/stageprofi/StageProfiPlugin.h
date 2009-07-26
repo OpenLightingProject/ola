@@ -24,14 +24,14 @@
 #include <vector>
 #include <string>
 
-#include <llad/Plugin.h>
-#include <lla/network/Socket.h>
-#include <lla/plugin_id.h>
+#include <olad/Plugin.h>
+#include <ola/network/Socket.h>
+#include <ola/plugin_id.h>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::network::ConnectedSocket;
+using ola::network::ConnectedSocket;
 using std::string;
 
 class StageProfiDevice;
@@ -43,7 +43,7 @@ class StageProfiPlugin: public Plugin {
     ~StageProfiPlugin() {}
 
     string Name() const { return PLUGIN_NAME; }
-    lla_plugin_id Id() const { return LLA_PLUGIN_STAGEPROFI; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_STAGEPROFI; }
     string Description() const;
     int SocketClosed(ConnectedSocket *socket);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
@@ -64,5 +64,5 @@ class StageProfiPlugin: public Plugin {
 };
 
 } //plugin
-} //lla
+} //ola
 #endif

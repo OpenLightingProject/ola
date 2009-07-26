@@ -21,25 +21,25 @@
 #ifndef PATHPORTPLUGIN_H
 #define PATHPORTPLUGIN_H
 
-#include <llad/Plugin.h>
-#include <llad/PluginAdaptor.h>
-#include <lla/plugin_id.h>
+#include <olad/Plugin.h>
+#include <olad/PluginAdaptor.h>
+#include <ola/plugin_id.h>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 class PathportDevice;
-using lla::Plugin;
+using ola::Plugin;
 
 class PathportPlugin: public Plugin {
   public:
-    PathportPlugin(const lla::PluginAdaptor *plugin_adaptor):
+    PathportPlugin(const ola::PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
-    lla_plugin_id Id() const { return LLA_PLUGIN_PATHPORT; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_PATHPORT; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
@@ -54,6 +54,6 @@ class PathportPlugin: public Plugin {
 };
 
 } //plugin
-} //lla
+} //ola
 
 #endif

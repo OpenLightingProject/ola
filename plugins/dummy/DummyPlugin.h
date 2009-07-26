@@ -21,14 +21,14 @@
 #ifndef DUMMYPLUGIN_H
 #define DUMMYPLUGIN_H
 
-#include <llad/Plugin.h>
-#include <lla/plugin_id.h>
+#include <olad/Plugin.h>
+#include <ola/plugin_id.h>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::Plugin;
-using lla::PluginAdaptor;
+using ola::Plugin;
+using ola::PluginAdaptor;
 
 class DummyDevice;
 
@@ -40,7 +40,7 @@ class DummyPlugin: public Plugin {
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
-    lla_plugin_id Id() const { return LLA_PLUGIN_DUMMY; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_DUMMY; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
@@ -55,6 +55,6 @@ class DummyPlugin: public Plugin {
 };
 
 } // plugin
-} // lla
+} // ola
 
 #endif

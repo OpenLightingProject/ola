@@ -1,2 +1,2 @@
 
-SUBDIRS = lla llad
+SUBDIRS = ola olad

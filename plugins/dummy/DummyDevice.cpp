@@ -25,7 +25,7 @@
 #include "DummyDevice.h"
 #include "DummyPort.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 

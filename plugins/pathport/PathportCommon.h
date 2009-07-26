@@ -21,7 +21,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-namespace lla {
+namespace ola {
 namespace plugin {
 namespace pathport {
 
@@ -31,6 +31,6 @@ static const unsigned int PORTS_PER_DEVICE = 8;
 
 } // pathport
 } // plugin
-} // lla
+} // ola
 
 #endif

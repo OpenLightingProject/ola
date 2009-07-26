@@ -30,18 +30,18 @@
 
 #include <algorithm>
 
-#include <lla/Logging.h>
-#include <lla/network/SelectServer.h>
-#include <lla/network/Socket.h>
+#include <ola/Logging.h>
+#include <ola/network/SelectServer.h>
+#include <ola/network/Socket.h>
 
-using namespace lla::network;
+using namespace ola::network;
 
 const string SelectServer::K_SOCKET_VAR = "ss-sockets";
 const string SelectServer::K_CONNECTED_SOCKET_VAR = "ss-connected-sockets";
 const string SelectServer::K_TIMER_VAR = "ss-timer-functions";
 
-using lla::ExportMap;
-using lla::Closure;
+using ola::ExportMap;
+using ola::Closure;
 
 /*
  * Constructor
@@ -51,7 +51,7 @@ SelectServer::SelectServer(ExportMap *export_map):
   m_export_map(export_map) {
 
   if (m_export_map) {
-    lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_SOCKET_VAR);
+    ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_SOCKET_VAR);
     var = m_export_map->GetIntegerVar(K_TIMER_VAR);
   }
 }
@@ -77,14 +77,14 @@ int SelectServer::Run() {
  */
 bool SelectServer::AddSocket(Socket *socket) {
   if (socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
-    LLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
+    OLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
     return false;
   }
 
   vector<Socket*>::const_iterator iter;
   for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
     if ((*iter)->ReadDescriptor() == socket->ReadDescriptor()) {
-      LLA_WARN << "While trying add to add " << socket->ReadDescriptor() <<
+      OLA_WARN << "While trying add to add " << socket->ReadDescriptor() <<
         ", fd already exists in the list of read fds";
       return false;
     }
@@ -109,7 +109,7 @@ bool SelectServer::AddSocket(Socket *socket) {
 bool SelectServer::AddSocket(ConnectedSocket *socket,
                              bool delete_on_close) {
   if (socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
-    LLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
+    OLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
     return false;
   }
 
@@ -121,7 +121,7 @@ bool SelectServer::AddSocket(ConnectedSocket *socket,
   for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
        ++iter) {
     if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
-      LLA_WARN << "While trying add to add " << socket->ReadDescriptor() <<
+      OLA_WARN << "While trying add to add " << socket->ReadDescriptor() <<
         ", fd already exists in the list of read fds";
       return false;
     }
@@ -141,7 +141,7 @@ bool SelectServer::AddSocket(ConnectedSocket *socket,
  */
 bool SelectServer::RemoveSocket(Socket *socket) {
   if (socket->ReadDescriptor() == Socket::INVALID_SOCKET)
-    LLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
+    OLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
 
   vector<Socket*>::iterator iter;
   for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
@@ -152,7 +152,7 @@ bool SelectServer::RemoveSocket(Socket *socket) {
       return true;
     }
   }
-  LLA_WARN << "Socket " << socket->ReadDescriptor() << " not found in list";
+  OLA_WARN << "Socket " << socket->ReadDescriptor() << " not found in list";
   return false;
 }
 
@@ -164,7 +164,7 @@ bool SelectServer::RemoveSocket(Socket *socket) {
  */
 bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
   if (socket->ReadDescriptor() == Socket::INVALID_SOCKET)
-    LLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
+    OLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
 
   vector<connected_socket_t>::iterator iter;
   for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
@@ -176,7 +176,7 @@ bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
       return true;
     }
   }
-  LLA_WARN << "Socket " << socket->ReadDescriptor() << " not found in list";
+  OLA_WARN << "Socket " << socket->ReadDescriptor() << " not found in list";
   return false;
 }
 
@@ -188,7 +188,7 @@ bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
  * @param closure the closure to call when the event triggers. Ownership is
  * given up to the select server - make sure nothing else uses this closure.
  */
-bool SelectServer::RegisterRepeatingTimeout(int ms, lla::Closure *closure) {
+bool SelectServer::RegisterRepeatingTimeout(int ms, ola::Closure *closure) {
   return RegisterTimeout(ms, closure, true);
 }
 
@@ -199,7 +199,7 @@ bool SelectServer::RegisterRepeatingTimeout(int ms, lla::Closure *closure) {
  * @param closure the closure to call when the event triggers
  */
 bool SelectServer::RegisterSingleTimeout(int ms,
-                                         lla::SingleUseClosure *closure) {
+                                         ola::SingleUseClosure *closure) {
   return RegisterTimeout(ms, closure, false);
 }
 
@@ -221,7 +221,7 @@ bool SelectServer::RegisterTimeout(int ms,
   m_events.push(event);
 
   if (m_export_map) {
-    lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
+    ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
     var->Increment();
   }
   return true;
@@ -264,7 +264,7 @@ bool SelectServer::CheckForEvents() {
     case -1:
       if (errno == EINTR)
         return true;
-      LLA_WARN << "select() error, " << strerror(errno);
+      OLA_WARN << "select() error, " << strerror(errno);
       return false;
     default:
       CheckTimeouts();
@@ -283,7 +283,7 @@ void SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
     if ((*iter)->ReadDescriptor() == Socket::INVALID_SOCKET) {
       // The socket was probably closed without removing it from the select
       // server
-      LLA_WARN << "Not adding an invalid socket";
+      OLA_WARN << "Not adding an invalid socket";
       continue;
     }
     max_sd = max(max_sd, (*iter)->ReadDescriptor());
@@ -296,7 +296,7 @@ void SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
     if (con_iter->socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
       // The socket was probably closed without removing it from the select
       // server
-      LLA_WARN << "Not adding an invalid socket";
+      OLA_WARN << "Not adding an invalid socket";
       continue;
     }
     max_sd = max(max_sd, con_iter->socket->ReadDescriptor());
@@ -321,7 +321,7 @@ void SelectServer::CheckSockets(fd_set &set) {
       if ((*iter)->OnData())
         m_ready_queue.push_back((*iter)->OnData());
       else
-        LLA_FATAL << "Socket " << (*iter)->ReadDescriptor() <<
+        OLA_FATAL << "Socket " << (*iter)->ReadDescriptor() <<
           "is ready but no handler attached, this is bad!";
     }
   }
@@ -341,7 +341,7 @@ void SelectServer::CheckSockets(fd_set &set) {
         if (con_iter->socket->OnData())
           m_ready_queue.push_back(con_iter->socket->OnData());
         else
-          LLA_FATAL << "Socket " << con_iter->socket->ReadDescriptor() <<
+          OLA_FATAL << "Socket " << con_iter->socket->ReadDescriptor() <<
             "is ready but no handler attached, this is bad!";
       }
     }
@@ -385,7 +385,7 @@ struct timeval SelectServer::CheckTimeouts() {
         delete e.closure;
 
       if (m_export_map) {
-        lla::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
+        ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
         var->Decrement();
       }
     }

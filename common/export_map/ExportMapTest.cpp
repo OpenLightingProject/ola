@@ -21,9 +21,9 @@
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <lla/ExportMap.h>
+#include <ola/ExportMap.h>
 
-using namespace lla;
+using namespace ola;
 using namespace std;
 
 class ExportMapTest: public CppUnit::TestFixture {

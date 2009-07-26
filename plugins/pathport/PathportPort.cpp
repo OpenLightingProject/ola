@@ -15,20 +15,20 @@
  *
  *
  * pathportport.cpp
- * The Pathport plugin for lla
+ * The Pathport plugin for ola
  * Copyright (C) 2005-2007 Simon Newton
  */
 
 #include <string.h>
 
-#include <lla/Logging.h>
-#include <llad/universe.h>
+#include <ola/Logging.h>
+#include <olad/universe.h>
 
 #include "PathportPort.h"
 #include "PathportDevice.h"
 #include "PathportCommon.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 PathportPort::PathportPort(PathportDevice *parent, int id) :
@@ -72,7 +72,7 @@ int PathportPort::WriteDMX(uint8_t *data, unsigned int length) {
     return 0;
 
   if (pathport_send_dmx(dev->PathportNode(), uni->UniverseId(), length, data)) {
-    LLA_WARN << "pathport_send_dmx failed " << pathport_strerror();
+    OLA_WARN << "pathport_send_dmx failed " << pathport_strerror();
     return -1;
   }
   return 0;
@@ -114,7 +114,7 @@ int PathportPort::UpdateBuffer(const uint8_t *data, int length) {
     m_buf = (uint8_t*) malloc(m_len * sizeof(uint8_t));
 
     if (m_buf == NULL) {
-      LLA_WARN << "malloc failed";
+      OLA_WARN << "malloc failed";
       return -1;
     } else
       memset(m_buf, 0x00, m_len);
@@ -154,4 +154,4 @@ int PathportPort::SetUniverse(Universe *uni) {
 }
 
 } //plugin
-} //lla
+} //ola

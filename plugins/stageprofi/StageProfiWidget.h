@@ -24,15 +24,15 @@
 using namespace std;
 
 #include <string>
-#include <lla/network/Socket.h>
-#include <lla/network/SelectServer.h>
-#include <lla/DmxBuffer.h>
+#include <ola/network/Socket.h>
+#include <ola/network/SelectServer.h>
+#include <ola/DmxBuffer.h>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::network::ConnectedSocket;
-using lla::network::SelectServer;
+using ola::network::ConnectedSocket;
+using ola::network::SelectServer;
 
 class StageProfiWidget {
   public:
@@ -69,5 +69,5 @@ class StageProfiWidget {
 };
 
 } // plugin
-} // lla
+} // ola
 #endif

@@ -22,25 +22,25 @@
 #define USBPROPLUGIN_H
 
 #include <vector>
-#include <llad/Plugin.h>
-#include <lla/plugin_id.h>
-#include <lla/network/Socket.h>
+#include <olad/Plugin.h>
+#include <ola/plugin_id.h>
+#include <ola/network/Socket.h>
 
-namespace lla {
+namespace ola {
 namespace usbpro {
 
-using lla::network::ConnectedSocket;
+using ola::network::ConnectedSocket;
 
 class UsbProDevice;
 
-class UsbProPlugin: public lla::Plugin {
+class UsbProPlugin: public ola::Plugin {
   public:
     UsbProPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
-    lla_plugin_id Id() const { return LLA_PLUGIN_USBPRO; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_USBPRO; }
     int SocketClosed(ConnectedSocket *socket);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
@@ -60,5 +60,5 @@ class UsbProPlugin: public lla::Plugin {
 };
 
 } //usbpro
-} //lla
+} //ola
 #endif

@@ -14,15 +14,15 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProPort.cpp
- * The USB Pro plugin for lla
+ * The USB Pro plugin for ola
  * Copyright (C) 2006-2007 Simon Newton
  */
 
-#include <lla/Logging.h>
+#include <ola/Logging.h>
 #include "UsbProPort.h"
 #include "UsbProDevice.h"
 
-namespace lla {
+namespace ola {
 namespace usbpro {
 
 bool UsbProPort::CanRead() const {
@@ -76,4 +76,4 @@ bool UsbProPort::SetUniverse(Universe *uni) {
 }
 
 } // usbpro
-} //lla
+} //ola

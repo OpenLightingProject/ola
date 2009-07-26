@@ -22,7 +22,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include "StreamRpcChannel.h"
 
-using namespace lla::rpc;
+using namespace ola::rpc;
 
 class StreamRpcHeaderTest : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StreamRpcHeaderTest);

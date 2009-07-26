@@ -14,18 +14,18 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArtNetPort.cpp
- * The ArtNet plugin for lla
+ * The ArtNet plugin for ola
  * Copyright (C) 2005 - 2009 Simon Newton
  */
 #include <string.h>
 
-#include <lla/Logging.h>
-#include <llad/Universe.h>
+#include <ola/Logging.h>
+#include <olad/Universe.h>
 
 #include "ArtNetPort.h"
 #include "ArtNetDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 bool ArtNetPort::CanRead() const {
@@ -52,7 +52,7 @@ bool ArtNetPort::WriteDMX(const DmxBuffer &buffer) {
 
   if (artnet_send_dmx(dev->GetArtnetNode(), this->PortId() / 2,
                       buffer.Size(), buffer.GetRaw())) {
-    LLA_WARN << "artnet_send_dmx failed " << artnet_strerror();
+    OLA_WARN << "artnet_send_dmx failed " << artnet_strerror();
     return false;
   }
   return true;
@@ -73,7 +73,7 @@ const DmxBuffer &ArtNetPort::ReadDMX() const {
                                       &length);
 
   if(!dmx_data) {
-    LLA_WARN << "artnet_read_dmx failed " << artnet_strerror();
+    OLA_WARN << "artnet_read_dmx failed " << artnet_strerror();
     m_buffer.Reset();
     return m_buffer;
   }
@@ -105,25 +105,25 @@ bool ArtNetPort::SetUniverse(Universe *uni) {
     // input port
     if (artnet_set_port_type(node, PortId() / 2, ARTNET_ENABLE_OUTPUT,
                              ARTNET_PORT_DMX)) {
-      LLA_WARN << "artnet_set_port_type failed " << artnet_strerror();
+      OLA_WARN << "artnet_set_port_type failed " << artnet_strerror();
       return false;
     }
 
     if (artnet_set_port_addr(node, PortId() / 2, ARTNET_OUTPUT_PORT,
                              artnet_port_id)) {
-      LLA_WARN << "artnet_set_port_addr failed " << artnet_strerror();
+      OLA_WARN << "artnet_set_port_addr failed " << artnet_strerror();
       return false;
     }
 
   } else if (CanWrite()) {
     if (artnet_set_port_type(node, PortId() / 2,
                              ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX)) {
-      LLA_WARN << "artnet_set_port_type failed " << artnet_strerror();
+      OLA_WARN << "artnet_set_port_type failed " << artnet_strerror();
       return false;
     }
     if (artnet_set_port_addr(node, PortId() / 2,
                              ARTNET_INPUT_PORT, artnet_port_id)) {
-      LLA_WARN << "artnet_set_port_addr failed " << artnet_strerror();
+      OLA_WARN << "artnet_set_port_addr failed " << artnet_strerror();
       return false;
     }
   }
@@ -147,4 +147,4 @@ string ArtNetPort::Description() const {
 
 
 } //plugin
-} //lla
+} //ola

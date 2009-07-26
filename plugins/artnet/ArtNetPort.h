@@ -14,18 +14,18 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArtnetPort.h
- * The ArtNet plugin for lla
+ * The ArtNet plugin for ola
  * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef ARTNETPORT_H
 #define ARTNETPORT_H
 
-#include <llad/Port.h>
+#include <olad/Port.h>
 #include <artnet/artnet.h>
 #include "ArtNetDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 class ArtNetPort: public Port<ArtNetDevice> {
@@ -44,6 +44,6 @@ class ArtNetPort: public Port<ArtNetDevice> {
 };
 
 } //plugin
-} //lla
+} //ola
 
 #endif

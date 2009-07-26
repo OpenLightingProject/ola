@@ -23,9 +23,9 @@
 
 #include <pthread.h>
 #include <string>
-#include <lla/DmxBuffer.h>
+#include <ola/DmxBuffer.h>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 class OpenDmxThread {
@@ -51,5 +51,5 @@ class OpenDmxThread {
 };
 
 } // plugin
-} // lla
+} // ola
 #endif

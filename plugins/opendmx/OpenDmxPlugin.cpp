@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OpenDmxPlugin.cpp
- * The Open DMX plugin for lla
+ * The Open DMX plugin for ola
  * Copyright (C) 2005-2008 Simon Newton
  */
 
@@ -24,17 +24,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <llad/PluginAdaptor.h>
-#include <llad/Preferences.h>
-#include <lla/Logging.h>
+#include <olad/PluginAdaptor.h>
+#include <olad/Preferences.h>
+#include <ola/Logging.h>
 
 #include "OpenDmxPlugin.h"
 #include "OpenDmxDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::PluginAdaptor;
+using ola::PluginAdaptor;
 
 const string OpenDmxPlugin::OPENDMX_DEVICE_PATH = "/dev/dmx0";
 const string OpenDmxPlugin::OPENDMX_DEVICE_NAME = "OpenDmx USB Device";
@@ -46,14 +46,14 @@ const string OpenDmxPlugin::DEVICE_KEY = "device";
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(const PluginAdaptor *plugin_adaptor) {
+extern "C" ola::AbstractPlugin* create(const PluginAdaptor *plugin_adaptor) {
   return new OpenDmxPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(lla::AbstractPlugin* plug) {
+extern "C" void destroy(ola::AbstractPlugin* plug) {
   delete plug;
 }
 
@@ -69,7 +69,7 @@ extern "C" void destroy(lla::AbstractPlugin* plug) {
 bool OpenDmxPlugin::StartHook() {
   int fd;
 
-  /* create new lla device */
+  /* create new ola device */
   // first check if it's there
   string device_path = m_preferences->GetValue(DEVICE_KEY);
   fd = open(device_path.data(), O_WRONLY);
@@ -82,7 +82,7 @@ bool OpenDmxPlugin::StartHook() {
     m_device->Start();
     m_plugin_adaptor->RegisterDevice(m_device);
   } else {
-    LLA_WARN << "Could not open " << device_path << " " << strerror(errno);
+    OLA_WARN << "Could not open " << device_path << " " << strerror(errno);
   }
   return true;
 }
@@ -114,7 +114,7 @@ string OpenDmxPlugin::Description() const {
 "\n"
 "The plugin creates a single device with one output port using the Enttec\n"
 "Open DMX USB widget.\n\n"
-"--- Config file : lla-opendmx.conf ---\n"
+"--- Config file : ola-opendmx.conf ---\n"
 "\n"
 "device = /dev/dmx0\n"
 "The path to the open dmx usb device.\n";
@@ -142,4 +142,4 @@ bool OpenDmxPlugin::SetDefaultPreferences() {
 }
 
 } //plugins
-} //lla
+} //ola

@@ -21,7 +21,7 @@
 #include <string.h>
 #include "RunLengthEncoder.h"
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
 /*
@@ -137,4 +137,4 @@ bool RunLengthEncoder::Decode(DmxBuffer &dst,
 }
 
 } //shownet
-} //lla
+} //ola

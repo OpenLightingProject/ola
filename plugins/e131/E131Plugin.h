@@ -22,15 +22,15 @@
 #define E131PLUGIN_H
 
 #include <string>
-#include <llad/plugin.h>
-#include <lla/plugin_id.h>
+#include <olad/plugin.h>
+#include <ola/plugin_id.h>
 
 using namespace std;
 
 class E131Plugin : public Plugin {
 
   public:
-    E131Plugin(const PluginAdaptor *pa, lla_plugin_id id):
+    E131Plugin(const PluginAdaptor *pa, ola_plugin_id id):
       Plugin(pa,id),
       m_dev(NULL) {}
 

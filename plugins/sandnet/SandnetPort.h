@@ -15,14 +15,14 @@
  *
  *
  * sandnetport.h
- * The SandNet plugin for lla
+ * The SandNet plugin for ola
  * Copyright (C) 2005-2006  Simon Newton
  */
 
 #ifndef SANDNETPORT_H
 #define SANDNETPORT_H
 
-#include <llad/port.h>
+#include <olad/port.h>
 
 #include <sandnet/sandnet.h>
 

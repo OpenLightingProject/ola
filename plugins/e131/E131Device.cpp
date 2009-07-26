@@ -27,8 +27,8 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#include <lla/Logging.h>
-#include <llad/preferences.h>
+#include <ola/Logging.h>
+#include <olad/preferences.h>
 
 #include <acn/NetServer.h>
 #include <acn/E131Node.h>
@@ -91,7 +91,7 @@ int E131Device::start() {
   string ip_addr = m_prefs->get_val("address");
   if (ip_addr != "") {
     if (inet_aton(ip_addr.c_str(), &addr) == 0) {
-      LLA_WARN << ip_addr << " isn't a valid address";
+      OLA_WARN << ip_addr << " isn't a valid address";
       return -1;
     }
   } else
@@ -148,7 +148,7 @@ int E131Device::stop() {
 int E131Device::fd_action() {
  /*
   if( artnet_read(m_node, 0) ) {
-    LLA_WARN << "read failed: %s" << artnet_strerror();
+    OLA_WARN << "read failed: %s" << artnet_strerror();
     return -1 ;
   }
   */
@@ -158,7 +158,7 @@ int E131Device::fd_action() {
 
 // call this when something changes
 // where to store data to ?
-// I'm thinking a config file in /etc/llad/llad.conf
+// I'm thinking a config file in /etc/olad/olad.conf
 int E131Device::save_config() const {
 
 
@@ -172,7 +172,7 @@ int E131Device::save_config() const {
  * make sure the user app knows the format though...
  *
  */
-class LlaDevConfMsg *E131Device::configure(const uint8_t *req, int len) {
+class OlaDevConfMsg *E131Device::configure(const uint8_t *req, int len) {
   // use this to set source priority, name etc
   req++;
   len = 0;

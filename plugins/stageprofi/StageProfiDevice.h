@@ -22,18 +22,18 @@
 #define STAGEPROFIDEVICE_H
 
 #include <string>
-#include <lla/DmxBuffer.h>
-#include <lla/network/Socket.h>
-#include <llad/Device.h>
+#include <ola/DmxBuffer.h>
+#include <ola/network/Socket.h>
+#include <olad/Device.h>
 
-namespace lla {
+namespace ola {
 
 class AbstractPlugin;
 
 namespace plugin {
 
-using lla::Device;
-using lla::network::Socket;
+using ola::Device;
+using ola::network::Socket;
 
 class StageProfiDevice: public Device {
   public:
@@ -46,7 +46,7 @@ class StageProfiDevice: public Device {
     // I don't think this get us full stickiness because USB devices may
     // appear as different devices.
     string DeviceId() const { return m_path; }
-    lla::network::ConnectedSocket *GetSocket() const;
+    ola::network::ConnectedSocket *GetSocket() const;
     bool SendDmx(const DmxBuffer &buffer) const;
 
   private:
@@ -56,5 +56,5 @@ class StageProfiDevice: public Device {
 };
 
 } // plugin
-} // lla
+} // ola
 #endif

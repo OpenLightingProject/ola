@@ -22,17 +22,17 @@
 #ifndef OPENDMXDEVICE_H
 #define OPENDMXDEVICE_H
 
-#include <llad/Device.h>
+#include <olad/Device.h>
 #include <string>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 using namespace std;
 
-class OpenDmxDevice: public lla::Device {
+class OpenDmxDevice: public ola::Device {
   public:
-    OpenDmxDevice(lla::AbstractPlugin *owner, const string &name,
+    OpenDmxDevice(ola::AbstractPlugin *owner, const string &name,
                   const string &path);
     ~OpenDmxDevice();
 
@@ -47,6 +47,6 @@ class OpenDmxDevice: public lla::Device {
 };
 
 } //plugins
-} //lla
+} //ola
 
 #endif

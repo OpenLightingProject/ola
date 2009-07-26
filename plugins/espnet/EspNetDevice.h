@@ -21,15 +21,15 @@
 #ifndef ESPNETDEVICE_H
 #define ESPNETDEVICE_H
 
-#include <llad/Device.h>
-#include <llad/Plugin.h>
+#include <olad/Device.h>
+#include <olad/Plugin.h>
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
-using lla::Plugin;
+using ola::Plugin;
 
-class EspNetDevice: public lla::Device {
+class EspNetDevice: public ola::Device {
   public:
     EspNetDevice(Plugin *owner,
                  const std::string &name,
@@ -52,6 +52,6 @@ class EspNetDevice: public lla::Device {
 };
 
 } //espnet
-} //lla
+} //ola
 
 #endif

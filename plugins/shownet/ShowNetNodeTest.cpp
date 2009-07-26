@@ -23,15 +23,15 @@
 #include <map>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <lla/BaseTypes.h>
-#include <lla/DmxBuffer.h>
-#include <lla/Closure.h>
+#include <ola/BaseTypes.h>
+#include <ola/DmxBuffer.h>
+#include <ola/Closure.h>
 #include "ShowNetNode.h"
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
-using lla::DmxBuffer;
+using ola::DmxBuffer;
 using std::map;
 
 class ShowNetNodeTest: public CppUnit::TestFixture {
@@ -97,7 +97,7 @@ void ShowNetNodeTest::testHandlePacket() {
   memcpy(packet.data, ENCODED_DATA, sizeof(ENCODED_DATA));
 
   m_node->SetHandler(universe,
-                     lla::NewClosure(this, &ShowNetNodeTest::UpdateData,
+                     ola::NewClosure(this, &ShowNetNodeTest::UpdateData,
                                      universe));
 
 
@@ -272,7 +272,7 @@ void ShowNetNodeTest::SendAndReceiveForUniverse(unsigned int universe) {
 
   m_node->SetHandler(
       universe,
-      lla::NewClosure(this, &ShowNetNodeTest::UpdateData, universe));
+      ola::NewClosure(this, &ShowNetNodeTest::UpdateData, universe));
 
   // zero first
   size = m_node->PopulatePacket(packet, universe, zero_buffer);
@@ -308,4 +308,4 @@ void ShowNetNodeTest::SendAndReceiveForUniverse(unsigned int universe) {
 }
 
 } // shownet
-} // lla
+} // ola

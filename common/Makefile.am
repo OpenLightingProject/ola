@@ -1,12 +1,12 @@
 
 
-lib_LTLIBRARIES = libllacommon.la
-libllacommon_la_SOURCES =
-libllacommon_la_LIBADD = export_map/libllaexportmap.la \
+lib_LTLIBRARIES = libolacommon.la
+libolacommon_la_SOURCES =
+libolacommon_la_LIBADD = export_map/libolaexportmap.la \
                          logging/liblogging.la \
-                         protocol/libllaproto.la \
+                         protocol/libolaproto.la \
                          rpc/libstreamrpcchannel.la \
-                         network/libllanetwork.la \
-                         utils/libllautils.la
+                         network/libolanetwork.la \
+                         utils/libolautils.la
 
 SUBDIRS = export_map logging protocol rpc network utils

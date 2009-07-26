@@ -20,9 +20,9 @@
 
 #include <iostream>
 #include <cppunit/extensions/HelperMacros.h>
-#include <lla/StringUtils.h>
+#include <ola/StringUtils.h>
 
-using namespace lla;
+using namespace ola;
 using namespace std;
 
 class StringUtilsTest: public CppUnit::TestFixture {

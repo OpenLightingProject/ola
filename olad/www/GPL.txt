@@ -1,0 +1,10 @@
+Licensing Information for libola and olad
+-----------------------------------------
+
+The files required for libola are licenced under the LGPL, this means you
+are free to link against libola for commercial projects.
+
+The files required for olad are licenced under the GPL.
+
+Simon Newton
+6/1/2008

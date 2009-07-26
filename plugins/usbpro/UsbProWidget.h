@@ -23,12 +23,12 @@
 
 #include <stdint.h>
 #include <string>
-#include <lla/DmxBuffer.h>
-#include <lla/network/Socket.h>
+#include <ola/DmxBuffer.h>
+#include <ola/network/Socket.h>
 
 #include "UsbProWidgetListener.h"
 
-namespace lla {
+namespace ola {
 namespace usbpro {
 
 enum { DMX_BUFFER_LENGTH = 513 };
@@ -160,7 +160,7 @@ class UsbProWidget {
 
     bool Connect(const std::string &path);
     bool Disconnect();
-    lla::network::DeviceSocket *GetSocket() { return m_socket; }
+    ola::network::DeviceSocket *GetSocket() { return m_socket; }
 
     bool SendDMX(const DmxBuffer &buffer) const;
     bool SendRdm(const uint8_t *buf, unsigned int len) const;
@@ -196,7 +196,7 @@ class UsbProWidget {
     uint8_t m_mab_time;
     uint8_t m_rate;
     UsbProWidgetListener *m_listener;
-    lla::network::DeviceSocket *m_socket;
+    ola::network::DeviceSocket *m_socket;
     static const int K_HEADER_SIZE = 4;
     static const int K_MISSING_PARAM = -1;
     static const uint8_t EOM = 0xe7;
@@ -208,5 +208,5 @@ class UsbProWidget {
 };
 
 } // usbpro
-} //lla
+} //ola
 #endif

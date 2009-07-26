@@ -20,17 +20,17 @@
 
 #include <string.h>
 #include <algorithm>
-#include <lla/Logging.h>
+#include <ola/Logging.h>
 #include "ShowNetNode.h"
 
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
 using std::string;
 using std::map;
-using lla::network::UdpSocket;
-using lla::Closure;
+using ola::network::UdpSocket;
+using ola::Closure;
 
 
 /*
@@ -69,7 +69,7 @@ bool ShowNetNode::Start() {
     return false;
 
   if (!m_interface_picker.ChooseInterface(m_interface, m_preferred_ip)) {
-    LLA_INFO << "Failed to find an interface";
+    OLA_INFO << "Failed to find an interface";
     return false;
   }
 
@@ -117,13 +117,13 @@ void ShowNetNode::SetName(const string &name) {
  * @return true if it was send successfully, false otherwise
  */
 bool ShowNetNode::SendDMX(unsigned int universe,
-                          const lla::DmxBuffer &buffer) {
+                          const ola::DmxBuffer &buffer) {
 
   if (!m_running)
     return false;
 
   if (universe >= SHOWNET_MAX_UNIVERSES) {
-    LLA_WARN << "Universe index out of bounds, should be between 0 and" <<
+    OLA_WARN << "Universe index out of bounds, should be between 0 and" <<
                   SHOWNET_MAX_UNIVERSES << "), was " << universe;
     return false;
   }
@@ -135,7 +135,7 @@ bool ShowNetNode::SendDMX(unsigned int universe,
                                         m_destination);
 
   if (bytes_sent != size) {
-    LLA_WARN << "Only sent " << bytes_sent << " of " << size;
+    OLA_WARN << "Only sent " << bytes_sent << " of " << size;
     return false;
   }
 
@@ -236,17 +236,17 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
 
   if (packet_size <= header_size) {
-    LLA_WARN << "Skipping small shownet packet received, size=" << packet_size;
+    OLA_WARN << "Skipping small shownet packet received, size=" << packet_size;
     return false;
   }
 
   if (packet.sigHi != SHOWNET_ID_HIGH || packet.sigLo != SHOWNET_ID_LOW) {
-    LLA_INFO << "Skipping a packet that isn't shownet";
+    OLA_INFO << "Skipping a packet that isn't shownet";
     return false;
   }
 
   if (packet.indexBlock[0] < MAGIC_INDEX_OFFSET) {
-    LLA_WARN << "Strange ShowNet packet, indexBlock[0] is " <<
+    OLA_WARN << "Strange ShowNet packet, indexBlock[0] is " <<
       packet.indexBlock[0] << ", please contact the developers!";
     return false;
   }
@@ -255,7 +255,7 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
   // enc_length is the size of the received (optionally encoded) DMX data
   int enc_len = packet.indexBlock[1] - packet.indexBlock[0];
   if (enc_len < 1 || packet.netSlot[0] == 0) {
-    LLA_WARN << "Invalid shownet packet, enc_len=" << enc_len << ", netSlot="
+    OLA_WARN << "Invalid shownet packet, enc_len=" << enc_len << ", netSlot="
       << packet.netSlot[0];
     return false;
   }
@@ -265,13 +265,13 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
   unsigned int received_data_size = packet_size - header_size;
 
   if (data_offset + enc_len > received_data_size) {
-    LLA_WARN << "Not enough shownet data: offset=" << data_offset <<
+    OLA_WARN << "Not enough shownet data: offset=" << data_offset <<
       ", enc_len=" << enc_len << ", received_bytes=" << received_data_size;
     return false;
   }
 
   if (!packet.slotSize[0]) {
-    LLA_WARN << "Malformed shownet packet, slotSize=" << packet.slotSize[0];
+    OLA_WARN << "Malformed shownet packet, slotSize=" << packet.slotSize[0];
     return false;
   }
 
@@ -281,7 +281,7 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
     m_handlers.find(universe_id);
 
   if (iter == m_handlers.end()) {
-    LLA_DEBUG << "Not interested in universe " << universe_id <<
+    OLA_DEBUG << "Not interested in universe " << universe_id <<
       ", skipping ";
     return false;
   }
@@ -321,7 +321,7 @@ unsigned int ShowNetNode::PopulatePacket(shownet_data_packet &packet,
 
   unsigned int enc_len = sizeof(packet.data);
   if (!m_encoder.Encode(buffer, packet.data, enc_len))
-    LLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
+    OLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
 
   packet.indexBlock[0] = MAGIC_INDEX_OFFSET;
   packet.indexBlock[1] = MAGIC_INDEX_OFFSET + enc_len;
@@ -341,19 +341,19 @@ bool ShowNetNode::InitNetwork() {
   m_socket = new UdpSocket();
 
   if (!m_socket->Init()) {
-    LLA_WARN << "Socket init failed";
+    OLA_WARN << "Socket init failed";
     delete m_socket;
     return false;
   }
 
   if (!m_socket->Bind(SHOWNET_PORT)) {
-    LLA_WARN << "Failed to bind to:" << SHOWNET_PORT;
+    OLA_WARN << "Failed to bind to:" << SHOWNET_PORT;
     delete m_socket;
     return false;
   }
 
   if (!m_socket->EnableBroadcast()) {
-    LLA_WARN << "Failed to enable broadcasting";
+    OLA_WARN << "Failed to enable broadcasting";
     delete m_socket;
     return false;
   }
@@ -363,4 +363,4 @@ bool ShowNetNode::InitNetwork() {
 }
 
 } //shownet
-} //lla
+} //ola

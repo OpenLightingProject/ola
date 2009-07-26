@@ -1,14 +1,14 @@
 
 libdir = $(plugindir)
 
-lib_LTLIBRARIES = libllaespnet.la
+lib_LTLIBRARIES = libolaespnet.la
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 AM_CXXFLAGS = -Wall -Wformat
 
-libllaespnet_la_SOURCES = EspNetPlugin.cpp EspNetDevice.cpp EspNetPort.cpp \
+libolaespnet_la_SOURCES = EspNetPlugin.cpp EspNetDevice.cpp EspNetPort.cpp \
                           EspNetNode.cpp
-libllaespnet_la_LIBADD = @LIBS@
+libolaespnet_la_LIBADD = @LIBS@
 
 EXTRA_DIST = EspNetPlugin.h EspNetDevice.h EspNetPort.h EspNetPackets.h \
              EspNetNode.h EspNetPluginCommon.h
@@ -20,4 +20,4 @@ EspNetTester_SOURCES = EspNetTester.cpp RunLengthDecoderTest.cpp \
                        RunLengthDecoder.cpp
 EspNetTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 EspNetTester_LDFLAGS = $(CPPUNIT_LIBS)
-EspNetTester_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf ../../common/libllacommon.la
+EspNetTester_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf ../../common/libolacommon.la

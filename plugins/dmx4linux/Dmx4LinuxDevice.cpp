@@ -23,8 +23,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <llad/Preferences.h>
-#include <llad/Universe.h>
+#include <olad/Preferences.h>
+#include <olad/Universe.h>
 
 #include "Dmx4LinuxPlugin.h"
 #include "Dmx4LinuxDevice.h"
@@ -34,11 +34,11 @@
 #  include <config.h>
 #endif
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::Device;
-using lla::Universe;
+using ola::Device;
+using ola::Universe;
 
 /*
  * Create a new device
@@ -96,4 +96,4 @@ bool Dmx4LinuxDevice::SendDMX(int d4l_uni, const DmxBuffer &buffer) const {
 }
 
 } //plugin
-} //lla
+} //ola

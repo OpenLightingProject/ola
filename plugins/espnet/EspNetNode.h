@@ -18,19 +18,19 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef LLA_SHOWNET_NODE
-#define LLA_SHOWNET_NODE
+#ifndef OLA_SHOWNET_NODE
+#define OLA_SHOWNET_NODE
 
 #include <string>
 #include <map>
-#include <lla/Closure.h>
-#include <lla/DmxBuffer.h>
-#include <lla/network/InterfacePicker.h>
-#include <lla/network/Socket.h>
+#include <ola/Closure.h>
+#include <ola/DmxBuffer.h>
+#include <ola/network/InterfacePicker.h>
+#include <ola/network/Socket.h>
 #include "EspNetPackets.h"
 #include "RunLengthDecoder.h"
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
 // the node types
@@ -57,17 +57,17 @@ class EspNetNode {
     void SetUniverse(uint8_t universe) { m_universe = universe; }
 
     // IO methods
-    lla::network::UdpSocket* GetSocket() { return m_socket; }
+    ola::network::UdpSocket* GetSocket() { return m_socket; }
     int SocketReady();
 
     // DMX Receiving methods
-    bool SetHandler(uint8_t universe, lla::Closure *handler);
+    bool SetHandler(uint8_t universe, ola::Closure *handler);
     bool RemoveHandler(uint8_t universe);
     DmxBuffer GetDMX(uint8_t universe);
 
     // Sending methods
     bool SendPoll(bool full_poll=false);
-    bool SendDMX(uint8_t universe, const lla::DmxBuffer &buffer);
+    bool SendDMX(uint8_t universe, const ola::DmxBuffer &buffer);
 
   private:
     typedef struct {
@@ -105,9 +105,9 @@ class EspNetNode {
     std::string m_node_name;
     std::string m_preferred_ip;
     std::map<uint8_t, universe_handler> m_handlers;
-    lla::network::InterfacePicker m_interface_picker;
-    lla::network::Interface m_interface;
-    lla::network::UdpSocket *m_socket;
+    ola::network::InterfacePicker m_interface_picker;
+    ola::network::Interface m_interface;
+    ola::network::UdpSocket *m_socket;
     RunLengthDecoder m_decoder;    
 
     static const string NODE_NAME;
@@ -124,5 +124,5 @@ class EspNetNode {
 };
 
 } //espnet
-} //lla
+} //ola
 #endif

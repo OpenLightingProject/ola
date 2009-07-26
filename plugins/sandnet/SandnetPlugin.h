@@ -22,15 +22,15 @@
 #ifndef SANDNETPLUGIN_H
 #define SANDNETPLUGIN_H
 
-#include <llad/plugin.h>
-#include <lla/plugin_id.h>
+#include <olad/plugin.h>
+#include <ola/plugin_id.h>
 
 class SandNetDevice;
 
 class SandNetPlugin : public Plugin {
 
   public:
-    SandNetPlugin(const PluginAdaptor *pa, lla_plugin_id id) :
+    SandNetPlugin(const PluginAdaptor *pa, ola_plugin_id id) :
       Plugin(pa, id),
       m_dev(NULL) {}
 

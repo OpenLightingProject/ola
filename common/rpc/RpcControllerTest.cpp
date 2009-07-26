@@ -24,7 +24,7 @@
 #include "SimpleRpcController.h"
 
 using namespace std;
-using namespace lla::rpc;
+using namespace ola::rpc;
 using namespace google::protobuf;
 
 class RpcControllerTest : public CppUnit::TestFixture {

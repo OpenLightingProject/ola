@@ -15,20 +15,20 @@
  *
  *
  * sandnetplugin.cpp
- * The SandNet plugin for lla
+ * The SandNet plugin for ola
  * Copyright (C) 2005-2006  Simon Newton
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/pluginadaptor.h>
-#include <llad/preferences.h>
+#include <olad/pluginadaptor.h>
+#include <olad/preferences.h>
 
 #include "SandnetPlugin.h"
 #include "SandnetDevice.h"
 
-const string SandNetPlugin::SANDNET_NODE_NAME = "lla-SandNet";
+const string SandNetPlugin::SANDNET_NODE_NAME = "ola-SandNet";
 const string SandNetPlugin::SANDNET_DEVICE_NAME = "SandNet Device";
 const string SandNetPlugin::PLUGIN_NAME = "SandNet Plugin";
 const string SandNetPlugin::PLUGIN_PREFIX = "dmx4linux";
@@ -37,7 +37,7 @@ const string SandNetPlugin::PLUGIN_PREFIX = "dmx4linux";
  * Entry point to this plugin
  */
 extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new SandNetPlugin(pa, LLA_PLUGIN_SANDNET);
+  return new SandNetPlugin(pa, OLA_PLUGIN_SANDNET);
 }
 
 
@@ -56,7 +56,7 @@ extern "C" void destroy(Plugin* plug) {
  */
 int SandNetPlugin::start_hook() {
 
-  /* create new lla device */
+  /* create new ola device */
   m_dev = new SandNetDevice(this, SANDNET_DEVICE_NAME, m_prefs);
 
   if (m_dev == NULL)
@@ -110,14 +110,14 @@ string SandNetPlugin::get_desc() const {
 "This plugin creates a single device with 2 input and 8 output ports.\n"
 "\n"
 "The universe bindings are offset by one from those displayed in sandnet. For example, "
-"sandnet universe 1 is lla universe 0\n"
+"sandnet universe 1 is ola universe 0\n"
 "\n"
-"--- Config file : lla-sandnet.conf ---\n"
+"--- Config file : ola-sandnet.conf ---\n"
 "\n"
 "ip = a.b.c.d\n"
 "The ip to listen for sandnet traffic on. If not specified it will use the first non-loopback ip.\n"
 "\n"
-"name = lla-SandNet\n"
+"name = ola-SandNet\n"
 "The name of the node.\n";
 
 }

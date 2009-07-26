@@ -21,16 +21,16 @@
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 #include <google/protobuf/stubs/common.h>
-#include <lla/network/SelectServer.h>
-#include <lla/network/Socket.h>
+#include <ola/network/SelectServer.h>
+#include <ola/network/Socket.h>
 #include "StreamRpcChannel.h"
 #include "SimpleRpcController.h"
 #include "TestServiceImpl.h"
 #include "TestService.pb.h"
 
 using namespace std;
-using namespace lla::rpc;
-using namespace lla::network;
+using namespace ola::rpc;
+using namespace ola::network;
 using namespace google::protobuf;
 
 
@@ -54,7 +54,7 @@ class StreamRpcChannelTest: public CppUnit::TestFixture {
     EchoRequest m_request;
     EchoReply m_reply;
     TestService_Stub *m_stub;
-    lla::network::SelectServer m_ss;
+    ola::network::SelectServer m_ss;
     TestServiceImpl m_service;
     StreamRpcChannel *m_channel;
     LoopbackSocket *m_socket;

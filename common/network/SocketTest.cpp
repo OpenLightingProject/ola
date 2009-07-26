@@ -23,11 +23,11 @@
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <lla/Closure.h>
-#include <lla/network/SelectServer.h>
-#include <lla/network/Socket.h>
+#include <ola/Closure.h>
+#include <ola/network/SelectServer.h>
+#include <ola/network/Socket.h>
 
-using namespace lla::network;
+using namespace ola::network;
 using std::string;
 
 static const char test_cstring[] = "Foo";
@@ -75,7 +75,7 @@ class SocketTest: public CppUnit::TestFixture {
   private:
     SelectServer *m_ss;
     AcceptingSocket *m_accepting_socket;
-    lla::SingleUseClosure *m_timeout_closure;
+    ola::SingleUseClosure *m_timeout_closure;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SocketTest);
@@ -86,7 +86,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SocketTest);
  */
 void SocketTest::setUp() {
   m_ss = new SelectServer();
-  m_timeout_closure = lla::NewSingleClosure(this, &SocketTest::Timeout);
+  m_timeout_closure = ola::NewSingleClosure(this, &SocketTest::Timeout);
   CPPUNIT_ASSERT(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                              m_timeout_closure));
 }
@@ -111,7 +111,7 @@ void SocketTest::testLoopbackSocket() {
   LoopbackSocket socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
-  socket.SetOnData(lla::NewClosure(this, &SocketTest::ReceiveAndTerminate,
+  socket.SetOnData(ola::NewClosure(this, &SocketTest::ReceiveAndTerminate,
                                    (ConnectedSocket*) &socket));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
@@ -134,16 +134,16 @@ void SocketTest::testPipeSocketClientClose() {
   CPPUNIT_ASSERT(!socket.Init());
 
   socket.SetOnData(
-      lla::NewClosure(this, &SocketTest::ReceiveAndClose,
+      ola::NewClosure(this, &SocketTest::ReceiveAndClose,
                       (ConnectedSocket*) &socket));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   PipeSocket *other_end = socket.OppositeEnd();
   CPPUNIT_ASSERT(other_end);
   other_end->SetOnData(
-      lla::NewClosure(this, &SocketTest::ReceiveAndSend,
+      ola::NewClosure(this, &SocketTest::ReceiveAndSend,
                       (ConnectedSocket *) other_end));
-  other_end->SetOnClose(lla::NewSingleClosure(this,
+  other_end->SetOnClose(ola::NewSingleClosure(this,
                                               &SocketTest::TerminateOnClose));
   CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
@@ -167,14 +167,14 @@ void SocketTest::testPipeSocketServerClose() {
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
 
-  socket.SetOnData(lla::NewClosure(this, &SocketTest::Receive,
+  socket.SetOnData(ola::NewClosure(this, &SocketTest::Receive,
                                     (ConnectedSocket *) &socket));
-  socket.SetOnClose(lla::NewSingleClosure(this, &SocketTest::TerminateOnClose));
+  socket.SetOnClose(ola::NewSingleClosure(this, &SocketTest::TerminateOnClose));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   PipeSocket *other_end = socket.OppositeEnd();
   CPPUNIT_ASSERT(other_end);
-  other_end->SetOnData(lla::NewClosure(this, &SocketTest::ReceiveSendAndClose,
+  other_end->SetOnData(ola::NewClosure(this, &SocketTest::ReceiveSendAndClose,
                                        (ConnectedSocket *) other_end));
   CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
@@ -200,12 +200,12 @@ void SocketTest::testTcpSocketClientClose() {
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
-  socket.SetOnData(lla::NewClosure(this, &SocketTest::AcceptAndSend, &socket));
+  socket.SetOnData(ola::NewClosure(this, &SocketTest::AcceptAndSend, &socket));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
-  client_socket->SetOnData( lla::NewClosure(this, &SocketTest::ReceiveAndClose,
+  client_socket->SetOnData( ola::NewClosure(this, &SocketTest::ReceiveAndClose,
                                             (ConnectedSocket*) client_socket));
   CPPUNIT_ASSERT(m_ss->AddSocket(client_socket));
   m_ss->Run();
@@ -228,17 +228,17 @@ void SocketTest::testTcpSocketServerClose() {
   CPPUNIT_ASSERT(!socket.Listen());
 
   socket.SetOnData(
-      lla::NewClosure(this, &SocketTest::AcceptSendAndClose, &socket));
+      ola::NewClosure(this, &SocketTest::AcceptSendAndClose, &socket));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   // The client socket checks the response and terminates on close
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
 
-  client_socket->SetOnData(lla::NewClosure(this, &SocketTest::Receive,
+  client_socket->SetOnData(ola::NewClosure(this, &SocketTest::Receive,
                                            (ConnectedSocket*) client_socket));
   client_socket->SetOnClose(
-      lla::NewSingleClosure(this, &SocketTest::TerminateOnClose));
+      ola::NewSingleClosure(this, &SocketTest::TerminateOnClose));
   CPPUNIT_ASSERT(m_ss->AddSocket(client_socket));
 
   m_ss->Run();
@@ -263,7 +263,7 @@ void SocketTest::testUdpSocket() {
   CPPUNIT_ASSERT(!socket.Bind(server_port));
 
   socket.SetOnData(
-      lla::NewClosure(this, &SocketTest::UdpReceiveAndSend, &socket));
+      ola::NewClosure(this, &SocketTest::UdpReceiveAndSend, &socket));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   UdpSocket client_socket;
@@ -271,9 +271,9 @@ void SocketTest::testUdpSocket() {
   CPPUNIT_ASSERT(!client_socket.Init());
 
   client_socket.SetOnData(
-      lla::NewClosure(this, &SocketTest::UdpReceiveAndTerminate,
+      ola::NewClosure(this, &SocketTest::UdpReceiveAndTerminate,
                      (UdpSocket*) &client_socket));
-  //client_socket.SetOnClose(lla::NewClosure(this,
+  //client_socket.SetOnClose(ola::NewClosure(this,
   //                                         &SocketTest::TerminateOnClose));
   CPPUNIT_ASSERT(m_ss->AddSocket(&client_socket));
 
@@ -360,7 +360,7 @@ int SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
   ssize_t bytes_sent = new_socket->Send((uint8_t*) test_string.data(),
       test_string.length());
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
-  new_socket->SetOnClose(lla::NewSingleClosure(this,
+  new_socket->SetOnClose(ola::NewSingleClosure(this,
                                                &SocketTest::TerminateOnClose));
   m_ss->AddSocket(new_socket, true);
 }

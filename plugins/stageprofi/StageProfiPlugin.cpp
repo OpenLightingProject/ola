@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * StageProfiPlugin.cpp
- * The StageProfi plugin for lla
+ * The StageProfi plugin for ola
  * Copyright (C) 2006-2008 Simon Newton
  */
 
@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <lla/Logging.h>
-#include <llad/PluginAdaptor.h>
-#include <llad/Preferences.h>
+#include <ola/Logging.h>
+#include <olad/PluginAdaptor.h>
+#include <olad/Preferences.h>
 
 #include "StageProfiPlugin.h"
 #include "StageProfiDevice.h"
@@ -32,19 +32,19 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(
-    const lla::PluginAdaptor *plugin_adaptor) {
-  return new lla::plugin::StageProfiPlugin(plugin_adaptor);
+extern "C" ola::AbstractPlugin* create(
+    const ola::PluginAdaptor *plugin_adaptor) {
+  return new ola::plugin::StageProfiPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(lla::AbstractPlugin *plugin) {
+extern "C" void destroy(ola::AbstractPlugin *plugin) {
   delete plugin;
 }
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 using std::string;
@@ -112,7 +112,7 @@ string StageProfiPlugin::Description() const {
 "\n"
 "This plugin creates devices with one output port.\n"
 "\n"
-"--- Config file : lla-stageprofi.conf ---\n"
+"--- Config file : ola-stageprofi.conf ---\n"
 "\n"
 "device = /dev/ttyUSB0\n"
 "device = 192.168.1.250\n"
@@ -133,7 +133,7 @@ int StageProfiPlugin::SocketClosed(ConnectedSocket *socket) {
   }
 
   if (iter == m_devices.end()) {
-    LLA_WARN << "unknown fd";
+    OLA_WARN << "unknown fd";
     return -1;
   }
 
@@ -175,4 +175,4 @@ void StageProfiPlugin::DeleteDevice(StageProfiDevice *device) {
 }
 
 } //plugin
-} //lla
+} //ola

@@ -21,7 +21,7 @@
 
 #include "TestService.pb.h"
 
-using namespace lla::rpc;
+using namespace ola::rpc;
 
 class TestServiceImpl : public TestService {
   public:

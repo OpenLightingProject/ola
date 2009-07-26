@@ -20,19 +20,19 @@
 
 #include <string.h>
 #include <algorithm>
-#include <lla/Logging.h>
+#include <ola/Logging.h>
 #include "EspNetNode.h"
 
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
 using std::string;
 using std::map;
-using lla::network::UdpSocket;
-using lla::Closure;
+using ola::network::UdpSocket;
+using ola::Closure;
 
-const string EspNetNode::NODE_NAME = "LLA Node";
+const string EspNetNode::NODE_NAME = "OLA Node";
 
 /*
  * Create a new node
@@ -74,7 +74,7 @@ bool EspNetNode::Start() {
     return false;
 
   if (!m_interface_picker.ChooseInterface(m_interface, m_preferred_ip)) {
-    LLA_INFO << "Failed to find an interface";
+    OLA_INFO << "Failed to find an interface";
     return false;
   }
 
@@ -118,7 +118,7 @@ int EspNetNode::SocketReady() {
     return -1;
 
   if (packet_size < (ssize_t) sizeof(packet.poll.head)) {
-    LLA_WARN << "Small espnet packet received, discarding";
+    OLA_WARN << "Small espnet packet received, discarding";
     return -1;
   }
 
@@ -141,7 +141,7 @@ int EspNetNode::SocketReady() {
       HandleAck(packet.ack, source.sin_addr);
       break;
     default:
-      LLA_INFO << "Skipping a packet with invalid header" << packet.poll.head;
+      OLA_INFO << "Skipping a packet with invalid header" << packet.poll.head;
   }
 
   return 0;
@@ -228,7 +228,7 @@ bool EspNetNode::SendPoll(bool full_poll) {
  * @param buffer the DMX data
  * @return true if it was send successfully, false otherwise
  */
-bool EspNetNode::SendDMX(uint8_t universe, const lla::DmxBuffer &buffer) {
+bool EspNetNode::SendDMX(uint8_t universe, const ola::DmxBuffer &buffer) {
   if (!m_running)
     return false;
 
@@ -243,19 +243,19 @@ bool EspNetNode::InitNetwork() {
   m_socket = new UdpSocket();
 
   if (!m_socket->Init()) {
-    LLA_WARN << "Socket init failed";
+    OLA_WARN << "Socket init failed";
     delete m_socket;
     return false;
   }
 
   if (!m_socket->Bind(ESPNET_PORT)) {
-    LLA_WARN << "Failed to bind to:" << ESPNET_PORT;
+    OLA_WARN << "Failed to bind to:" << ESPNET_PORT;
     delete m_socket;
     return false;
   }
 
   if (!m_socket->EnableBroadcast()) {
-    LLA_WARN << "Failed to enable broadcasting";
+    OLA_WARN << "Failed to enable broadcasting";
     delete m_socket;
     return false;
   }
@@ -270,7 +270,7 @@ bool EspNetNode::InitNetwork() {
  */
 void EspNetNode::HandlePoll(const espnet_poll_t &poll,
                             const struct in_addr &source) {
-  LLA_DEBUG << "Got ESP Poll " << poll.type;
+  OLA_DEBUG << "Got ESP Poll " << poll.type;
   if (poll.type)
     SendEspPollReply(source);
   else
@@ -305,7 +305,7 @@ void EspNetNode::HandleData(const espnet_data_t &data,
     m_handlers.find(data.universe);
 
   if (iter == m_handlers.end()) {
-    LLA_DEBUG << "Not interested in universe " << int(data.universe) <<
+    OLA_DEBUG << "Not interested in universe " << int(data.universe) <<
       ", skipping ";
     return;
   }
@@ -316,13 +316,13 @@ void EspNetNode::HandleData(const espnet_data_t &data,
       iter->second.buffer.Set(data.data, ntohs(data.size));
       break;
     case DATA_PAIRS:
-      LLA_WARN << "espnet data pairs aren't supported";
+      OLA_WARN << "espnet data pairs aren't supported";
       return;
     case DATA_RLE:
       m_decoder.Decode(iter->second.buffer, data.data, ntohs(data.size));
       break;
     default:
-      LLA_WARN << "unknown espnet data type " << data.type;
+      OLA_WARN << "unknown espnet data type " << data.type;
       return;
   }
 
@@ -362,7 +362,7 @@ bool EspNetNode::SendEspPollReply(const struct in_addr &dst) {
   espnet_packet_union_t packet;
   packet.reply.head = htonl(ESPNET_REPLY);
 
-  memcpy(packet.reply.mac, m_interface.hw_address, lla::network::MAC_LENGTH) ;
+  memcpy(packet.reply.mac, m_interface.hw_address, ola::network::MAC_LENGTH) ;
   packet.reply.type = htons(m_type);
   packet.reply.version = FIRMWARE_VERSION;
   packet.reply.sw = SWITCH_SETTINGS;
@@ -418,11 +418,11 @@ bool EspNetNode::SendPacket(const struct in_addr &dst,
                                         size,
                                         m_destination);
   if (bytes_sent != (ssize_t) size) {
-    LLA_WARN << "Only sent " << bytes_sent << " of " << size;
+    OLA_WARN << "Only sent " << bytes_sent << " of " << size;
     return false;
   }
   return true;
 }
 
 } //espnet
-} //lla
+} //ola

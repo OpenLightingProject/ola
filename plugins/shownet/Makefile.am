@@ -1,14 +1,14 @@
 
 libdir = $(plugindir)
 
-lib_LTLIBRARIES = libllashownet.la
+lib_LTLIBRARIES = libolashownet.la
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
 AM_CXXFLAGS = -Wall -Wformat -W
 
-libllashownet_la_SOURCES = ShowNetPlugin.cpp ShowNetDevice.cpp ShowNetPort.cpp\
+libolashownet_la_SOURCES = ShowNetPlugin.cpp ShowNetDevice.cpp ShowNetPort.cpp\
                            ShowNetNode.cpp RunLengthEncoder.cpp
-libllashownet_la_LIBADD = @LIBS@
+libolashownet_la_LIBADD = @LIBS@
 
 EXTRA_DIST = ShowNetPlugin.h ShowNetDevice.h ShowNetPort.h ShowNetPackets.h \
              ShowNetNode.h RunLengthEncoder.h
@@ -21,4 +21,4 @@ ShowNetTester_SOURCES = ShowNetTester.cpp \
                         ShowNetNode.cpp ShowNetNodeTest.cpp
 ShowNetTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 ShowNetTester_LDFLAGS = $(CPPUNIT_LIBS)
-ShowNetTester_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf ../../common/libllacommon.la
+ShowNetTester_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf ../../common/libolacommon.la

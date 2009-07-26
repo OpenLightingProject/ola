@@ -13,16 +13,16 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * LlaNetServer.cpp
- * Override the ACN NetServer class to integrate with LLA
+ * OlaNetServer.cpp
+ * Override the ACN NetServer class to integrate with OLA
  * Copyright (C) 2007 Simon Newton
  */
 
-#include <llad/pluginadaptor.h>
-#include <llad/timeoutlistener.h>
-#include <llad/listener.h>
+#include <olad/pluginadaptor.h>
+#include <olad/timeoutlistener.h>
+#include <olad/listener.h>
 
-#include "LlaNetServer.h"
+#include "OlaNetServer.h"
 
 /*
  * glue the NetServers function callbacks with the PluginAdaptor's object 
@@ -62,7 +62,7 @@ class NetServerTimeoutListener : public TimeoutListener {
 /*
  * remove all the callbacks
  */
-LlaNetServer::~LlaNetServer() {
+OlaNetServer::~OlaNetServer() {
   map<int, NetServerListener*>::iterator iter;
   vector<NetServerListener*>::iterator iter2;
 
@@ -80,7 +80,7 @@ LlaNetServer::~LlaNetServer() {
 /*
  * add a fd callback
  */
-int LlaNetServer::add_fd(int fd, callback_fn fn, void *data) {
+int OlaNetServer::add_fd(int fd, callback_fn fn, void *data) {
   NetServerListener *l = new NetServerListener(fn, data);
   if (m_lmap.find(fd) != m_lmap.end())
     delete m_lmap[fd];
@@ -93,7 +93,7 @@ int LlaNetServer::add_fd(int fd, callback_fn fn, void *data) {
 /*
  * remove a fd callback
  */
-int LlaNetServer::remove_fd(int fd) {
+int OlaNetServer::remove_fd(int fd) {
 
   if (m_lmap.find(fd) != m_lmap.end())
     delete m_lmap[fd];
@@ -107,14 +107,14 @@ int LlaNetServer::remove_fd(int fd) {
 /*
  * register an event
  */
-int LlaNetServer::register_event(int ms, callback_fn fn, void *data) {
+int OlaNetServer::register_event(int ms, callback_fn fn, void *data) {
   NetServerTimeoutListener *l = new NetServerTimeoutListener(fn, data);
 
   return m_pa->register_timeout(ms, l);
 }
 
 
-int LlaNetServer::loop_callback(callback_fn fn, void *data) {
+int OlaNetServer::loop_callback(callback_fn fn, void *data) {
   NetServerListener *l = new NetServerListener(fn, data);
   m_loop_ls.push_back(l);
 

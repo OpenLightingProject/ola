@@ -21,10 +21,10 @@
 #include <deque>
 #include <vector>
 #include <cppunit/extensions/HelperMacros.h>
-#include <lla/Logging.h>
-#include <lla/StringUtils.h>
+#include <ola/Logging.h>
+#include <ola/StringUtils.h>
 
-using namespace lla;
+using namespace ola;
 using std::deque;
 using std::vector;
 
@@ -38,7 +38,7 @@ class LoggingTest: public CppUnit::TestFixture {
 };
 
 
-class MockLogDestination: public lla::LogDestination {
+class MockLogDestination: public ola::LogDestination {
   public:
     void AddExpected(log_level level, string log_line);
     void Write(log_level level, const string &log_line);
@@ -77,43 +77,43 @@ void MockLogDestination::Write(log_level level, const string &log_line) {
  */
 void LoggingTest::testLogging() {
   MockLogDestination *destination = new MockLogDestination();
-  InitLogging(LLA_LOG_DEBUG, destination);
-  destination->AddExpected(LLA_LOG_DEBUG, " debug\n");
-  LLA_DEBUG << "debug";
-  destination->AddExpected(LLA_LOG_INFO, " info\n");
-  LLA_INFO << "info";
-  destination->AddExpected(LLA_LOG_WARN, " warn\n");
-  LLA_WARN << "warn";
-  destination->AddExpected(LLA_LOG_FATAL, " fatal\n");
-  LLA_FATAL << "fatal";
+  InitLogging(OLA_LOG_DEBUG, destination);
+  destination->AddExpected(OLA_LOG_DEBUG, " debug\n");
+  OLA_DEBUG << "debug";
+  destination->AddExpected(OLA_LOG_INFO, " info\n");
+  OLA_INFO << "info";
+  destination->AddExpected(OLA_LOG_WARN, " warn\n");
+  OLA_WARN << "warn";
+  destination->AddExpected(OLA_LOG_FATAL, " fatal\n");
+  OLA_FATAL << "fatal";
 
   // Now make sure nothing below WARN is logged
-  SetLogLevel(LLA_LOG_WARN);
-  LLA_DEBUG << "debug";
-  LLA_INFO << "info";
-  destination->AddExpected(LLA_LOG_WARN, " warn\n");
-  LLA_WARN << "warn";
-  destination->AddExpected(LLA_LOG_FATAL, " fatal\n");
-  LLA_FATAL << "fatal";
+  SetLogLevel(OLA_LOG_WARN);
+  OLA_DEBUG << "debug";
+  OLA_INFO << "info";
+  destination->AddExpected(OLA_LOG_WARN, " warn\n");
+  OLA_WARN << "warn";
+  destination->AddExpected(OLA_LOG_FATAL, " fatal\n");
+  OLA_FATAL << "fatal";
   CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
 
   // set the log level to INFO
   IncrementLogLevel();
-  LLA_DEBUG << "debug";
-  destination->AddExpected(LLA_LOG_INFO, " info\n");
-  LLA_INFO << "info";
-  destination->AddExpected(LLA_LOG_WARN, " warn\n");
-  LLA_WARN << "warn";
-  destination->AddExpected(LLA_LOG_FATAL, " fatal\n");
-  LLA_FATAL << "fatal";
+  OLA_DEBUG << "debug";
+  destination->AddExpected(OLA_LOG_INFO, " info\n");
+  OLA_INFO << "info";
+  destination->AddExpected(OLA_LOG_WARN, " warn\n");
+  OLA_WARN << "warn";
+  destination->AddExpected(OLA_LOG_FATAL, " fatal\n");
+  OLA_FATAL << "fatal";
   CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
 
   IncrementLogLevel();
   // this should wrap to NONE
   IncrementLogLevel();
-  LLA_DEBUG << "debug";
-  LLA_INFO << "info";
-  LLA_WARN << "warn";
-  LLA_FATAL << "fatal";
+  OLA_DEBUG << "debug";
+  OLA_INFO << "info";
+  OLA_WARN << "warn";
+  OLA_FATAL << "fatal";
   CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
 }

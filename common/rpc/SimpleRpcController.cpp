@@ -18,10 +18,10 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <lla/Logging.h>
+#include <ola/Logging.h>
 #include "SimpleRpcController.h"
 
-namespace lla {
+namespace ola {
 namespace rpc {
 
 SimpleRpcController::SimpleRpcController():
@@ -35,7 +35,7 @@ void SimpleRpcController::Reset() {
   m_failed = false;
   m_cancelled = false;
   if (m_callback)
-    LLA_FATAL << "calling reset() while an rpc is in progress, we're " <<
+    OLA_FATAL << "calling reset() while an rpc is in progress, we're " <<
       "leaking memory!";
   m_callback = NULL;
 }
@@ -52,4 +52,4 @@ void SimpleRpcController::SetFailed(const std::string &reason) {
 }
 
 } //rpc
-} //lla
+} //ola

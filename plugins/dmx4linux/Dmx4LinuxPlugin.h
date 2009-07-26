@@ -23,18 +23,18 @@
 
 #include <vector>
 #include <string>
-#include <lla/DmxBuffer.h>
-#include <llad/Plugin.h>
-#include <lla/network/Socket.h>
-#include <lla/plugin_id.h>
+#include <ola/DmxBuffer.h>
+#include <olad/Plugin.h>
+#include <ola/network/Socket.h>
+#include <ola/plugin_id.h>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 class Dmx4LinuxDevice;
-using lla::network::DeviceSocket;
+using ola::network::DeviceSocket;
 
-class Dmx4LinuxPlugin: public lla::Plugin {
+class Dmx4LinuxPlugin: public ola::Plugin {
   public:
     Dmx4LinuxPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
@@ -44,7 +44,7 @@ class Dmx4LinuxPlugin: public lla::Plugin {
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
-    lla_plugin_id Id() const { return LLA_PLUGIN_DMX4LINUX; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_DMX4LINUX; }
 
     int SocketReady();
     bool SendDMX(int d4l_uni, const DmxBuffer &buffer) const;
@@ -73,6 +73,6 @@ class Dmx4LinuxPlugin: public lla::Plugin {
 };
 
 } //plugin
-} //lla
+} //ola
 
 #endif

@@ -21,7 +21,7 @@
 #ifndef USBPRODWIDGETLISTENER_H
 #define USBPRODWIDGETLISTENER_H
 
-namespace lla {
+namespace ola {
 namespace usbpro {
 
 enum { SERIAL_NUMBER_LENGTH = 4 };
@@ -46,5 +46,5 @@ class UsbProWidgetListener {
 };
 
 } // usbpro
-} //lla
+} //ola
 #endif

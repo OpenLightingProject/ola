@@ -14,22 +14,22 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Logging.cpp
- * The logging functions. See include/lla/Logging.h for details on how to use
+ * The logging functions. See include/ola/Logging.h for details on how to use
  * these.
  * Copyright (C) 2005-2009 Simon Newton
  */
 
 #include <syslog.h>
 #include <iostream>
-#include <lla/Logging.h>
+#include <ola/Logging.h>
 
-namespace lla {
+namespace ola {
 
 using std::string;
 using std::ostringstream;
 
 LogDestination *log_target = NULL;
-log_level logging_level = LLA_LOG_WARN;
+log_level logging_level = OLA_LOG_WARN;
 
 /*
  * Set the log level.
@@ -40,12 +40,12 @@ void SetLogLevel(log_level level) {
 }
 
 /*
- * Increment the log level, We reset to LLA_LOG_FATAL when we wrap.
+ * Increment the log level, We reset to OLA_LOG_FATAL when we wrap.
  */
 void IncrementLogLevel() {
   logging_level = (log_level) (logging_level + 1);
-  if (logging_level == LLA_LOG_MAX)
-    logging_level = LLA_LOG_NONE;
+  if (logging_level == OLA_LOG_MAX)
+    logging_level = OLA_LOG_NONE;
 }
 
 
@@ -57,9 +57,9 @@ void IncrementLogLevel() {
  */
 void InitLogging(log_level level, log_output output) {
   LogDestination *destination;
-  if (output == LLA_LOG_SYSLOG)
+  if (output == OLA_LOG_SYSLOG)
     destination = new SyslogDestination();
-  else if (output == LLA_LOG_STDERR)
+  else if (output == OLA_LOG_STDERR)
    destination = new StdErrorLogDestination();
   else
     destination = NULL;
@@ -115,16 +115,16 @@ void StdErrorLogDestination::Write(log_level level, const string &log_line) {
 void SyslogDestination::Write(log_level level, const string &log_line) {
   int pri;
   switch (level) {
-    case LLA_LOG_FATAL:
+    case OLA_LOG_FATAL:
       pri = LOG_CRIT;
       break;
-    case LLA_LOG_WARN:
+    case OLA_LOG_WARN:
       pri = LOG_WARNING;
       break;
-    case LLA_LOG_INFO:
+    case OLA_LOG_INFO:
       pri = LOG_INFO;
       break;
-    case LLA_LOG_DEBUG:
+    case OLA_LOG_DEBUG:
       pri = LOG_DEBUG;
       break;
     default :
@@ -133,4 +133,4 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
   syslog(pri, log_line.data());
 }
 
-} // lla
+} // ola

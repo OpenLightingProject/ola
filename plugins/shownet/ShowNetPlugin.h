@@ -21,14 +21,14 @@
 #ifndef SHOWNETPLUGIN_H
 #define SHOWNETPLUGIN_H
 
-#include <llad/Plugin.h>
-#include <lla/plugin_id.h>
+#include <olad/Plugin.h>
+#include <ola/plugin_id.h>
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
-using lla::Plugin;
-using lla::PluginAdaptor;
+using ola::Plugin;
+using ola::PluginAdaptor;
 using std::string;
 
 class ShowNetDevice;
@@ -41,7 +41,7 @@ class ShowNetPlugin : public Plugin {
     ~ShowNetPlugin() {}
 
     string Name() const { return PLUGIN_NAME; }
-    lla_plugin_id Id() const { return LLA_PLUGIN_SHOWNET; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_SHOWNET; }
     string Description() const;
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
@@ -59,5 +59,5 @@ class ShowNetPlugin : public Plugin {
 };
 
 } //shownet
-} //lla
+} //ola
 #endif

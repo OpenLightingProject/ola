@@ -18,13 +18,13 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef LLA_SIMPLE_RPC_CONTROLLER_H
-#define LLA_SIMPLE_RPC_CONTROLLER_H
+#ifndef OLA_SIMPLE_RPC_CONTROLLER_H
+#define OLA_SIMPLE_RPC_CONTROLLER_H
 
 #include <string>
 #include <google/protobuf/service.h>
 
-namespace lla {
+namespace ola {
 namespace rpc {
 
 class SimpleRpcController: public google::protobuf::RpcController {
@@ -51,6 +51,6 @@ class SimpleRpcController: public google::protobuf::RpcController {
 };
 
 } // rpc
-} // lla
+} // ola
 
 #endif

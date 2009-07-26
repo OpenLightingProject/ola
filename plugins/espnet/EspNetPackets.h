@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef LLA_ESPNET_PACKETS
-#define LLA_ESPNET_PACKETS
+#ifndef OLA_ESPNET_PACKETS
+#define OLA_ESPNET_PACKETS
 
 #include <sys/types.h>
 #include <stdint.h>

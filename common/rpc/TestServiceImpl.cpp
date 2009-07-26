@@ -22,7 +22,7 @@
 #include "TestService.pb.h"
 #include "TestServiceImpl.h"
 
-using namespace lla::rpc;
+using namespace ola::rpc;
 
 void TestServiceImpl::Echo(::google::protobuf::RpcController* controller,
                            const EchoRequest* request,

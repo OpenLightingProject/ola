@@ -14,24 +14,24 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProPort.h
- * The UsbPro plugin for lla
+ * The UsbPro plugin for ola
  * Copyright (C) 2006-2009 Simon Newton
  */
 
 #ifndef USBPROPORT_H
 #define USBPROPORT_H
 
-#include <lla/DmxBuffer.h>
-#include <llad/Port.h>
+#include <ola/DmxBuffer.h>
+#include <olad/Port.h>
 #include "UsbProDevice.h"
 
-namespace lla {
+namespace ola {
 namespace usbpro {
 
-class UsbProPort: public lla::Port<UsbProDevice> {
+class UsbProPort: public ola::Port<UsbProDevice> {
   public:
     UsbProPort(UsbProDevice *parent, unsigned int id, const string &path):
-      lla::Port<UsbProDevice>(parent, id),
+      ola::Port<UsbProDevice>(parent, id),
       m_path(path) {};
 
     bool WriteDMX(const DmxBuffer &buffer);
@@ -47,6 +47,6 @@ class UsbProPort: public lla::Port<UsbProDevice> {
 };
 
 } // usbpro
-} //lla
+} //ola
 
 #endif

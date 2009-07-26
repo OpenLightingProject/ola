@@ -18,19 +18,19 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef LLA_SHOWNET_NODE
-#define LLA_SHOWNET_NODE
+#ifndef OLA_SHOWNET_NODE
+#define OLA_SHOWNET_NODE
 
 #include <string>
 #include <map>
-#include <lla/Closure.h>
-#include <lla/DmxBuffer.h>
-#include <lla/network/InterfacePicker.h>
-#include <lla/network/Socket.h>
+#include <ola/Closure.h>
+#include <ola/DmxBuffer.h>
+#include <ola/network/InterfacePicker.h>
+#include <ola/network/Socket.h>
 #include "RunLengthEncoder.h"
 #include "ShowNetPackets.h"
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
 class ShowNetNode {
@@ -42,12 +42,12 @@ class ShowNetNode {
     bool Stop();
     void SetName(const std::string &name);
 
-    bool SendDMX(unsigned int universe, const lla::DmxBuffer &buffer);
+    bool SendDMX(unsigned int universe, const ola::DmxBuffer &buffer);
     DmxBuffer GetDMX(unsigned int universe);
-    bool SetHandler(unsigned int universe, lla::Closure *handler);
+    bool SetHandler(unsigned int universe, ola::Closure *handler);
     bool RemoveHandler(unsigned int universe);
 
-    lla::network::UdpSocket* GetSocket() { return m_socket; }
+    ola::network::UdpSocket* GetSocket() { return m_socket; }
     int SocketReady();
 
     static const unsigned short SHOWNET_MAX_UNIVERSES = 8;
@@ -65,10 +65,10 @@ class ShowNetNode {
     std::string m_node_name;
     std::string m_preferred_ip;
     std::map<unsigned int, universe_handler> m_handlers;
-    lla::network::InterfacePicker m_interface_picker;
-    lla::network::Interface m_interface;
+    ola::network::InterfacePicker m_interface_picker;
+    ola::network::Interface m_interface;
     RunLengthEncoder m_encoder;
-    lla::network::UdpSocket *m_socket;
+    ola::network::UdpSocket *m_socket;
     struct sockaddr_in m_destination;
 
     ShowNetNode(const ShowNetNode&);
@@ -88,5 +88,5 @@ class ShowNetNode {
 };
 
 } //shownet
-} //lla
+} //ola
 #endif

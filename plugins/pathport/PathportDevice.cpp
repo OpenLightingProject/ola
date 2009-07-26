@@ -24,9 +24,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <lla/Logging.h>
-#include <llad/Preferences.h>
-#include <llad/universe.h>
+#include <ola/Logging.h>
+#include <olad/Preferences.h>
+#include <olad/universe.h>
 
 #include "PathportDevice.h"
 #include "PathportPort.h"
@@ -36,7 +36,7 @@
 #  include <config.h>
 #endif
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 /*
@@ -123,30 +123,30 @@ bool PathportDevice::Start() {
   }
 
   if (!m_node) {
-    LLA_WARN << "pathport_new failed: " << pathport_strerror();
+    OLA_WARN << "pathport_new failed: " << pathport_strerror();
     return false;
   }
 
   // setup node
   if (pathport_set_name(m_node, m_preferences->GetValue("name").c_str()) ) {
-    LLA_WARN << "pathport_set_name failed: " << pathport_strerror();
+    OLA_WARN << "pathport_set_name failed: " << pathport_strerror();
     goto e_pathport_start;
   }
 
   // setup node
   if (pathport_set_type(m_node, PATHPORT_MANUF_ZP_TECH, PATHPORT_CLASS_NODE, PATHPORT_CLASS_NODE_PATHPORT) ) {
-    LLA_WARN << "pathport_set_type failed: " << pathport_strerror();
+    OLA_WARN << "pathport_set_type failed: " << pathport_strerror();
     goto e_pathport_start;
   }
 
   // we want to be notified when the node config changes
   if (pathport_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-    LLA_WARN << "pathport_set_dmx_handler failed: " << pathport_strerror();
+    OLA_WARN << "pathport_set_dmx_handler failed: " << pathport_strerror();
     goto e_pathport_start;
   }
 
   if (pathport_start(m_node) ) {
-    LLA_WARN << "pathport_start failed: " << pathport_strerror();
+    OLA_WARN << "pathport_start failed: " << pathport_strerror();
     goto e_pathport_start;
   }
 
@@ -155,7 +155,7 @@ bool PathportDevice::Start() {
 
 e_pathport_start:
   if (pathport_destroy(m_node))
-    LLA_WARN << "pathport_destory failed: " << pathport_strerror();
+    OLA_WARN << "pathport_destory failed: " << pathport_strerror();
   return -1;
 }
 
@@ -177,12 +177,12 @@ bool PathportDevice::Stop() {
   }
 
   if (pathport_stop(m_node)) {
-    LLA_WARN << "pathport_stop failed: " << pathport_strerror();
+    OLA_WARN << "pathport_stop failed: " << pathport_strerror();
     return -1;
   }
 
   if (pathport_destroy(m_node)) {
-    LLA_WARN << "pathport_destroy failed: " << pathport_strerror();
+    OLA_WARN << "pathport_destroy failed: " << pathport_strerror();
     return -1;
   }
 
@@ -209,7 +209,7 @@ int PathportDevice::get_sd(unsigned int i) const {
   int ret = pathport_get_sd(m_node, i);
 
   if (ret < 0) {
-    LLA_WARN << "pathport_get_sd failed: " << pathport_strerror();
+    OLA_WARN << "pathport_get_sd failed: " << pathport_strerror();
     return -1;
   }
   return ret;
@@ -222,7 +222,7 @@ int PathportDevice::get_sd(unsigned int i) const {
  */
 int PathportDevice::action() {
   if (pathport_read(m_node, 0) ) {
-    LLA_WARN << "pathport_read failed: " << pathport_strerror();
+    OLA_WARN << "pathport_read failed: " << pathport_strerror();
     return -1;
   }
   return 0;
@@ -242,5 +242,5 @@ PathportPort *PathportDevice::GetPort_from_uni(int uni) {
 }
 
 } //plugin
-} //lla
+} //ola
 

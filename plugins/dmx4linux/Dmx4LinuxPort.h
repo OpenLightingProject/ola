@@ -14,21 +14,21 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Dmx4LinuxPort.h
- * The Dmx4Linux plugin for lla
+ * The Dmx4Linux plugin for ola
  * Copyright (C) 2006-2008 Simon Newton
  */
 
 #ifndef DMX4LINUXPORT_H
 #define DMX4LINUXPORT_H
 
-#include <lla/DmxBuffer.h>
-#include <llad/Port.h>
+#include <ola/DmxBuffer.h>
+#include <olad/Port.h>
 #include "Dmx4LinuxDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-class Dmx4LinuxPort: public lla::Port<Dmx4LinuxDevice> {
+class Dmx4LinuxPort: public ola::Port<Dmx4LinuxDevice> {
   public:
     Dmx4LinuxPort(Dmx4LinuxDevice *parent, int d4l, bool in, bool out);
 
@@ -45,6 +45,6 @@ class Dmx4LinuxPort: public lla::Port<Dmx4LinuxDevice> {
 };
 
 } //plugin
-} //lla
+} //ola
 
 #endif

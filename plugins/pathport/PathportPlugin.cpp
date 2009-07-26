@@ -14,15 +14,15 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PathportPlugin.cpp
- * The Pathport plugin for lla
+ * The Pathport plugin for ola
  * Copyright (C) 2005-2008 Simon Newton
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/PluginAdaptor.h>
-#include <llad/Preferences.h>
+#include <olad/PluginAdaptor.h>
+#include <olad/Preferences.h>
 
 #include "PathportPlugin.h"
 #include "PathportDevice.h"
@@ -30,22 +30,22 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
-  return new lla::plugin::PathportPlugin(plugin_adaptor);
+extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *plugin_adaptor) {
+  return new ola::plugin::PathportPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(lla::AbstractPlugin* plugin) {
+extern "C" void destroy(ola::AbstractPlugin* plugin) {
   delete plugin;
 }
 
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-const string PathportPlugin::PATHPORT_NODE_NAME = "lla-Pathport";
+const string PathportPlugin::PATHPORT_NODE_NAME = "ola-Pathport";
 const string PathportPlugin::PLUGIN_NAME = "Pathport Plugin";
 const string PathportPlugin::PLUGIN_PREFIX = "pathport";
 
@@ -56,7 +56,7 @@ const string PathportPlugin::PLUGIN_PREFIX = "pathport";
  * For now we just have one device.
  */
 bool PathportPlugin::StartHook() {
-  /* create new lla device */
+  /* create new ola device */
   m_device = new PathportDevice(this, "Pathport Device", m_preferences);
 
   if (!m_device)
@@ -105,12 +105,12 @@ string PathportPlugin::Description() const {
 "The universe the port is patched to corresponds with the DMX channels used in the pathport protocol. "
 "For example universe 0 is xDMX channels 1 - 512, universe 1 is xDMX channels 513 - 1024.\n"
 "\n"
-"--- Config file : lla-pathport.conf ---\n"
+"--- Config file : ola-pathport.conf ---\n"
 "\n"
 "ip = a.b.c.d\n"
 "The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
 "\n"
-"name = lla-Pathport\n"
+"name = ola-Pathport\n"
 "The name of the node.\n";
 
 }
@@ -142,4 +142,4 @@ bool PathportPlugin::SetDefaultPreferences() {
 }
 
 } //plugin
-} //lla
+} //ola

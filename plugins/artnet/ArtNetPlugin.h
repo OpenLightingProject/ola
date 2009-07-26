@@ -22,14 +22,14 @@
 #define ARTNETPLUGIN_H
 
 #include <string>
-#include <llad/Plugin.h>
-#include <lla/plugin_id.h>
+#include <olad/Plugin.h>
+#include <ola/plugin_id.h>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::Plugin;
-using lla::PluginAdaptor;
+using ola::Plugin;
+using ola::PluginAdaptor;
 using std::string;
 
 class ArtNetDevice;
@@ -43,7 +43,7 @@ class ArtNetPlugin : public Plugin {
     ~ArtNetPlugin() {}
 
     string Name() const { return PLUGIN_NAME; }
-    lla_plugin_id Id() const { return LLA_PLUGIN_ARTNET; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_ARTNET; }
     string Description() const;
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
@@ -63,6 +63,6 @@ class ArtNetPlugin : public Plugin {
 };
 
 } //plugin
-} //lla
+} //ola
 #endif
 

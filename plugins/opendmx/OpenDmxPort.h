@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OpenDmxPort.h
- * The Open DMX plugin for lla
+ * The Open DMX plugin for ola
  * Copyright (C) 2005-2009 Simon Newton
  */
 
@@ -22,17 +22,17 @@
 #define OPENDMXPORT_H
 
 #include <string>
-#include <lla/DmxBuffer.h>
-#include <llad/Port.h>
+#include <ola/DmxBuffer.h>
+#include <olad/Port.h>
 #include "OpenDmxDevice.h"
 #include "OpenDmxThread.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 using std::string;
 
-class OpenDmxPort: public lla::Port<OpenDmxDevice> {
+class OpenDmxPort: public ola::Port<OpenDmxDevice> {
   public:
     OpenDmxPort(OpenDmxDevice *parent, unsigned int id,
                 const string &path);
@@ -48,6 +48,6 @@ class OpenDmxPort: public lla::Port<OpenDmxDevice> {
 };
 
 } //plugins
-} //lla
+} //ola
 
 #endif

@@ -21,11 +21,11 @@
 #ifndef DUMMYPORT_H
 #define DUMMYPORT_H
 
-#include <lla/DmxBuffer.h>
-#include <llad/Port.h>
+#include <ola/DmxBuffer.h>
+#include <olad/Port.h>
 #include "DummyDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 class DummyPort: public Port<DummyDevice> {
@@ -43,5 +43,5 @@ class DummyPort: public Port<DummyDevice> {
 };
 
 } //plugin
-} //lla
+} //ola
 #endif

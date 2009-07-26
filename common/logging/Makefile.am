@@ -10,4 +10,4 @@ check_PROGRAMS = $(TESTS)
 LoggingTester_SOURCES = LoggingTester.cpp LoggingTest.cpp
 LoggingTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 LoggingTester_LDFLAGS = $(CPPUNIT_LIBS)
-LoggingTester_LDADD = ./liblogging.la ../utils/libllautils.la
+LoggingTester_LDADD = ./liblogging.la ../utils/libolautils.la

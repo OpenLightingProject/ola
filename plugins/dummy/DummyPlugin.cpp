@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DummyPlugin.cpp
- * The Dummy plugin for lla, contains a single dummy device
+ * The Dummy plugin for ola, contains a single dummy device
  * Copyright (C) 2005-2007 Simon Newton
  */
 
@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <llad/PluginAdaptor.h>
+#include <olad/PluginAdaptor.h>
 
 #include "DummyPlugin.h"
 #include "DummyDevice.h"
@@ -30,19 +30,19 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *plugin_adaptor) {
-  return new lla::plugin::DummyPlugin(plugin_adaptor);
+extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *plugin_adaptor) {
+  return new ola::plugin::DummyPlugin(plugin_adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(lla::AbstractPlugin *plugin) {
+extern "C" void destroy(ola::AbstractPlugin *plugin) {
   delete plugin;
 }
 
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 using std::string;
@@ -90,4 +90,4 @@ string DummyPlugin::Description() const {
 }
 
 } // plugin
-} // lla
+} // ola

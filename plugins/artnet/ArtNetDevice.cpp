@@ -31,17 +31,17 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
 
-#include <lla/Closure.h>
-#include <lla/Logging.h>
-#include <llad/Preferences.h>
+#include <ola/Closure.h>
+#include <ola/Logging.h>
+#include <olad/Preferences.h>
 #include <artnet/artnet.h>
 
 #include "ArtNetDevice.h"
 #include "ArtNetPort.h"
 
-using lla::plugin::ArtNetDevice;
-using lla::plugin::ArtNetPort;
-using lla::Preferences;
+using ola::plugin::ArtNetDevice;
+using ola::plugin::ArtNetPort;
+using ola::Preferences;
 
 /*
  * Handle dmx from the network, called from libartnet
@@ -69,13 +69,13 @@ int program_handler(artnet_node n, void *d) {
 }
 
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 using google::protobuf::RpcController;
 using google::protobuf::Closure;
-using lla::plugin::artnet::Request;
-using lla::plugin::artnet::Reply;
+using ola::plugin::artnet::Request;
+using ola::plugin::artnet::Reply;
 
 const string ArtNetDevice::K_SHORT_NAME_KEY = "short_name";
 const string ArtNetDevice::K_LONG_NAME_KEY = "long_name";
@@ -87,7 +87,7 @@ const string ArtNetDevice::K_IP_KEY = "ip";
  */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            const string &name,
-                           lla::Preferences *preferences,
+                           ola::Preferences *preferences,
                            bool debug):
   Device(owner, name),
   m_preferences(preferences),
@@ -133,90 +133,90 @@ bool ArtNetDevice::Start() {
   }
 
   if (!m_node) {
-    LLA_WARN << "artnet_new failed " << artnet_strerror();
+    OLA_WARN << "artnet_new failed " << artnet_strerror();
     goto e_dev;
   }
 
   // node config
   if (artnet_setoem(m_node, 0x04, 0x31)) {
-    LLA_WARN << "artnet_setoem failed: " << artnet_strerror();
+    OLA_WARN << "artnet_setoem failed: " << artnet_strerror();
     goto e_artnet_start;
   }
 
   value = m_preferences->GetValue(K_SHORT_NAME_KEY);
   if (artnet_set_short_name(m_node, value.data())) {
-    LLA_WARN << "artnet_set_short_name failed: " << artnet_strerror();
+    OLA_WARN << "artnet_set_short_name failed: " << artnet_strerror();
     goto e_artnet_start;
   }
   m_short_name = value;
 
   value = m_preferences->GetValue(K_LONG_NAME_KEY);
   if (artnet_set_long_name(m_node, value.data())) {
-    LLA_WARN << "artnet_set_long_name failed: " << artnet_strerror();
+    OLA_WARN << "artnet_set_long_name failed: " << artnet_strerror();
     goto e_artnet_start;
   }
   m_long_name = value;
 
   if (artnet_set_node_type(m_node, ARTNET_SRV)) {
-    LLA_WARN << "artnet_set_node_type failed: " << artnet_strerror();
+    OLA_WARN << "artnet_set_node_type failed: " << artnet_strerror();
     goto e_artnet_start;
   }
 
   value = m_preferences->GetValue(K_SUBNET_KEY);
   subnet = atoi(value.data());
   if (artnet_set_subnet_addr(m_node, subnet)) {
-    LLA_WARN << "artnet_set_subnet_addr failed: " << artnet_strerror();
+    OLA_WARN << "artnet_set_subnet_addr failed: " << artnet_strerror();
     goto e_artnet_start;
   }
   m_subnet = subnet;
 
   // we want to be notified when the node config changes
   if (artnet_set_program_handler(m_node, ::program_handler, (void*) this)) {
-    LLA_WARN << "artnet_set_program_handler failed: " << artnet_strerror();
+    OLA_WARN << "artnet_set_program_handler failed: " << artnet_strerror();
     goto e_artnet_start;
   }
 
   if (artnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this)) {
-    LLA_WARN << "artnet_set_dmx_handler failed: " << artnet_strerror();
+    OLA_WARN << "artnet_set_dmx_handler failed: " << artnet_strerror();
     goto e_artnet_start;
   }
 
   for (int i=0; i < ARTNET_MAX_PORTS; i++) {
     // output ports
     if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_OUTPUT, ARTNET_PORT_DMX)) {
-      LLA_WARN << "artnet_set_port_type failed %s", artnet_strerror();
+      OLA_WARN << "artnet_set_port_type failed %s", artnet_strerror();
       goto e_artnet_start;
     }
 
     if (artnet_set_port_addr(m_node, i, ARTNET_OUTPUT_PORT, i)) {
-      LLA_WARN << "artnet_set_port_addr failed %s", artnet_strerror();
+      OLA_WARN << "artnet_set_port_addr failed %s", artnet_strerror();
       goto e_artnet_start;
     }
 
     if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX)) {
-      LLA_WARN << "artnet_set_port_type failed %s", artnet_strerror();
+      OLA_WARN << "artnet_set_port_type failed %s", artnet_strerror();
       goto e_artnet_start;
     }
 
     if (artnet_set_port_addr(m_node, i, ARTNET_INPUT_PORT, i)) {
-      LLA_WARN << "artnet_set_port_addr failed %s", artnet_strerror();
+      OLA_WARN << "artnet_set_port_addr failed %s", artnet_strerror();
       goto e_artnet_start;
     }
   }
 
   if (artnet_start(m_node)) {
-    LLA_WARN << "artnet_start failed: " << artnet_strerror();
+    OLA_WARN << "artnet_start failed: " << artnet_strerror();
     goto e_artnet_start;
   }
 
-  m_socket = new lla::network::UnmanagedSocket(artnet_get_sd(m_node));
+  m_socket = new ola::network::UnmanagedSocket(artnet_get_sd(m_node));
   m_socket->SetOnData(NewClosure(this, &ArtNetDevice::SocketReady));
   m_enabled = true;
   return true;
 
 e_artnet_start:
   if(artnet_destroy(m_node))
-    LLA_WARN << "artnet_destroy failed: " << artnet_strerror();
+    OLA_WARN << "artnet_destroy failed: " << artnet_strerror();
 
 e_dev:
   DeleteAllPorts();
@@ -234,12 +234,12 @@ bool ArtNetDevice::Stop() {
   DeleteAllPorts();
 
   if (artnet_stop(m_node)) {
-    LLA_WARN << "artnet_stop failed: " << artnet_strerror();
+    OLA_WARN << "artnet_stop failed: " << artnet_strerror();
     return false;
   }
 
   if (artnet_destroy(m_node)) {
-    LLA_WARN << "artnet_destroy failed: " << artnet_strerror();
+    OLA_WARN << "artnet_destroy failed: " << artnet_strerror();
     return false;
   }
   delete m_socket;
@@ -264,7 +264,7 @@ artnet_node ArtNetDevice::GetArtnetNode() const {
  */
 int ArtNetDevice::SocketReady() {
   if (artnet_read(m_node, 0)) {
-    LLA_WARN << "artnet_read failed: " << artnet_strerror();
+    OLA_WARN << "artnet_read failed: " << artnet_strerror();
     return -1;
   }
   return 0;
@@ -290,7 +290,7 @@ void ArtNetDevice::Configure(RpcController *controller,
     }
 
     switch (request_pb.type()) {
-      case lla::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST:
+      case ola::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST:
         HandleOptions(&request_pb, response);
         break;
       default:
@@ -306,10 +306,10 @@ void ArtNetDevice::Configure(RpcController *controller,
 void ArtNetDevice::HandleOptions(Request *request, string *response) {
   bool status = true;
   if (request->has_options()) {
-    const lla::plugin::artnet::OptionsRequest options = request->options();
+    const ola::plugin::artnet::OptionsRequest options = request->options();
     if (options.has_short_name()) {
       if (artnet_set_short_name(m_node, options.short_name().data())) {
-        LLA_WARN << "set short name failed: " << artnet_strerror();
+        OLA_WARN << "set short name failed: " << artnet_strerror();
         status = false;
       }
       m_short_name = options.short_name().substr(0,
@@ -317,23 +317,23 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
     }
     if (options.has_long_name()) {
       if (artnet_set_long_name(m_node, options.long_name().data())) {
-        LLA_WARN << "set long name failed: " << artnet_strerror();
+        OLA_WARN << "set long name failed: " << artnet_strerror();
         status = false;
       }
       m_long_name = options.long_name().substr(0, ARTNET_LONG_NAME_LENGTH - 1);
     }
     if (options.has_subnet()) {
       if (artnet_set_subnet_addr(m_node, options.subnet())) {
-        LLA_WARN << "set subnet failed: " << artnet_strerror();
+        OLA_WARN << "set subnet failed: " << artnet_strerror();
         status = false;
       }
       m_subnet = options.subnet();
     }
   }
 
-  lla::plugin::artnet::Reply reply;
-  reply.set_type(lla::plugin::artnet::Reply::ARTNET_OPTIONS_REPLY);
-  lla::plugin::artnet::OptionsReply *options_reply = reply.mutable_options();
+  ola::plugin::artnet::Reply reply;
+  reply.set_type(ola::plugin::artnet::Reply::ARTNET_OPTIONS_REPLY);
+  ola::plugin::artnet::OptionsReply *options_reply = reply.mutable_options();
   options_reply->set_status(status);
   options_reply->set_short_name(m_short_name);
   options_reply->set_long_name(m_long_name);
@@ -343,4 +343,4 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
 
 
 } //plugin
-} //lla
+} //ola

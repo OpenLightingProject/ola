@@ -15,14 +15,14 @@
  *
  *
  * DummyPort.cpp
- * The Dummy Port for lla
+ * The Dummy Port for ola
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <lla/Logging.h>
+#include <ola/Logging.h>
 #include "DummyPort.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 /*
@@ -34,7 +34,7 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer) {
   m_buffer = buffer;
   string data = buffer.Get();
 
-  LLA_INFO << "Dummy port: got " << buffer.Size() << " bytes: " << std::hex <<
+  OLA_INFO << "Dummy port: got " << buffer.Size() << " bytes: " << std::hex <<
     "0x" << data.at(0) <<
     "0x" << data.at(1) <<
     "0x" << data.at(2) <<
@@ -43,4 +43,4 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer) {
 }
 
 } //plugin
-} //lla
+} //ola

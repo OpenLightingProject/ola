@@ -15,21 +15,21 @@
  *
  *
  * pathportport.h
- * The Pathport plugin for lla
+ * The Pathport plugin for ola
  * Copyright (C) 2005-2007 Simon Newton
  */
 
 #ifndef PATHPORTPORT_H
 #define PATHPORTPORT_H
 
-#include <llad/Port.h>
+#include <olad/Port.h>
 #include <pathport/pathport.h>
 #include "PathportDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-class PathportPort: public lla::Port {
+class PathportPort: public ola::Port {
   public:
     PathportPort(PathportDevice *parent, int id);
     ~PathportPort();
@@ -49,6 +49,6 @@ class PathportPort: public lla::Port {
 };
 
 } //plugin
-} //lla
+} //ola
 
 #endif

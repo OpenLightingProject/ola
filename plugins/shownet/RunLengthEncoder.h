@@ -21,9 +21,9 @@
 #ifndef SHOWNET_RLENCODER_H
 #define SHOWNET_RLENCODER_H
 
-#include <lla/DmxBuffer.h>
+#include <ola/DmxBuffer.h>
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
 class RunLengthEncoder {
@@ -43,5 +43,5 @@ class RunLengthEncoder {
 };
 
 } //shownet
-} //lla
+} //ola
 #endif

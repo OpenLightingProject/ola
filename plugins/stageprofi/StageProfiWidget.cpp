@@ -20,10 +20,10 @@
 
 #include <string.h>
 #include <algorithm>
-#include <lla/Closure.h>
+#include <ola/Closure.h>
 #include "StageProfiWidget.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 
@@ -104,7 +104,7 @@ bool StageProfiWidget::DetectDevice() {
   m_ss->AddSocket(m_socket, NULL);
   m_ss->RegisterSingleTimeout(
       100,
-      lla::NewSingleClosure(this, &StageProfiWidget::Timeout)
+      ola::NewSingleClosure(this, &StageProfiWidget::Timeout)
   );
 
   // try a command, we should get a response
@@ -176,4 +176,4 @@ int StageProfiWidget::DoRecv() {
 }
 
 } // plugin
-} //lla
+} //ola

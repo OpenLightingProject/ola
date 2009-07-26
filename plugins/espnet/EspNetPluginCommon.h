@@ -19,16 +19,16 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef LLA_ESPNET_PLUGIN_COMMON
-#define LLA_ESPNET_PLUGIN_COMMON
+#ifndef OLA_ESPNET_PLUGIN_COMMON
+#define OLA_ESPNET_PLUGIN_COMMON
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
 // modify this to increase the number of ports in the plugin
 enum { PORTS_PER_DEVICE = 5 };
 
 } //espnet
-} //lla
+} //ola
 
 #endif

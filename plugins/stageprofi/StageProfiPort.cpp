@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * StageProfiPort.cpp
- * The StageProfi plugin for lla
+ * The StageProfi plugin for ola
  * Copyright (C) 2006-2009 Simon Newton
  */
 
@@ -22,7 +22,7 @@
 #include "StageProfiPort.h"
 #include "StageProfiDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 /*
@@ -40,4 +40,4 @@ bool StageProfiPort::WriteDMX(const DmxBuffer &buffer) {
 }
 
 } //plugin
-} //lla
+} //ola

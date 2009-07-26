@@ -14,20 +14,20 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * EspNetPort.cpp
- * The EspNet plugin for lla
+ * The EspNet plugin for ola
  * Copyright (C) 2005-2009 Simon Newton
  */
 
 #include <sstream>
 #include <algorithm>
-#include <lla/Logging.h>
-#include <llad/Universe.h>
+#include <ola/Logging.h>
+#include <olad/Universe.h>
 
 #include "EspNetPort.h"
 #include "EspNetDevice.h"
 #include "EspNetNode.h"
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
 
@@ -108,7 +108,7 @@ bool EspNetPort::SetUniverse(Universe *universe) {
     node->RemoveHandler(old_universe->UniverseId() % ESPNET_MAX_UNIVERSES);
   if (universe && universe != old_universe)
     node->SetHandler(EspNetUniverseId(),
-                     lla::NewClosure(this, &EspNetPort::UpdateBuffer));
+                     ola::NewClosure(this, &EspNetPort::UpdateBuffer));
   return true;
 }
 
@@ -125,4 +125,4 @@ uint8_t EspNetPort::EspNetUniverseId() const {
 }
 
 } //espnet
-} //lla
+} //ola

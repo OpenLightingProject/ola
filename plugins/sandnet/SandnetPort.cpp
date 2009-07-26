@@ -15,15 +15,15 @@
  *
  *
  * sandnetport.cpp
- * The SandNet plugin for lla
+ * The SandNet plugin for ola
  * Copyright (C) 2005  Simon Newton
  */
 
 #include "SandnetPort.h"
 #include "SandnetDevice.h"
 
-#include <lla/Logging.h>
-#include <llad/universe.h>
+#include <ola/Logging.h>
+#include <olad/universe.h>
 
 #include <string.h>
 
@@ -67,7 +67,7 @@ int SandNetPort::write(uint8_t *data, unsigned int length) {
     return -1;
 
   if (sandnet_send_dmx(dev->get_node(), get_id(), length, data)) {
-    LLA_WARN << "sandnet_send_dmx failed " << sandnet_strerror();
+    OLA_WARN << "sandnet_send_dmx failed " << sandnet_strerror();
     return -1;
   }
   return 0;
@@ -108,7 +108,7 @@ int SandNetPort::update_buffer(uint8_t *data, int length) {
     m_buf = (uint8_t*) malloc(m_len);
 
     if (m_buf == NULL) {
-      LLA_WARN << "malloc failed";
+      OLA_WARN << "malloc failed";
       return -1;
     } else
       memset(m_buf, 0x00, m_len);

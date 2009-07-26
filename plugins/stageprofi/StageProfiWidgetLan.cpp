@@ -20,14 +20,14 @@
  * The StageProfi LAN Widget.
  */
 
-#include <lla/Closure.h>
-#include <lla/network/Socket.h>
+#include <ola/Closure.h>
+#include <ola/network/Socket.h>
 #include "StageProfiWidgetLan.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::network::TcpSocket;
+using ola::network::TcpSocket;
 
 /*
  * Connect to the widget
@@ -43,4 +43,4 @@ bool StageProfiWidgetLan::Connect(const std::string &ip) {
 }
 
 } // plugin
-} // lla
+} // ola

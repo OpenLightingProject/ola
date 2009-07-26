@@ -27,10 +27,10 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <lla/Logging.h>
-#include <lla/network/Socket.h>
+#include <ola/Logging.h>
+#include <ola/network/Socket.h>
 
-namespace lla {
+namespace ola {
 namespace network {
 
 // ConnectedSocket
@@ -49,7 +49,7 @@ bool ConnectedSocket::SetNonBlocking(int fd) {
   int val = fcntl(fd, F_GETFL, 0);
   int ret = fcntl(fd, F_SETFL, val | O_NONBLOCK);
   if (ret) {
-    LLA_WARN << "failed to set " << fd << " non-blocking: " << strerror(errno);
+    OLA_WARN << "failed to set " << fd << " non-blocking: " << strerror(errno);
     return false;
   }
   return true;
@@ -66,7 +66,7 @@ int ConnectedSocket::DataRemaining() const {
     return 0;
 
   if (ioctl(ReadDescriptor(), FIONREAD, &unread) < 0) {
-    LLA_WARN << "ioctl error for " << ReadDescriptor() << ", "
+    OLA_WARN << "ioctl error for " << ReadDescriptor() << ", "
       << strerror(errno);
     return 0;
   }
@@ -89,7 +89,7 @@ ssize_t ConnectedSocket::FDSend(int fd,
 
   ssize_t bytes_sent = write(fd, buffer, size);
   if (bytes_sent != size)
-    LLA_WARN << "Failed to send, " << strerror(errno);
+    OLA_WARN << "Failed to send, " << strerror(errno);
   return bytes_sent;
 }
 
@@ -118,7 +118,7 @@ int ConnectedSocket::FDReceive(int fd,
       if (errno == EAGAIN)
         return 0;
       if (errno != EINTR) {
-        LLA_WARN << "read failed, " << strerror(errno);
+        OLA_WARN << "read failed, " << strerror(errno);
         return -1;
       }
     } else if (ret == 0) {
@@ -152,7 +152,7 @@ bool LoopbackSocket::Init() {
     return false;
 
   if (pipe(m_fd_pair) < 0) {
-    LLA_WARN << "pipe() failed, " << strerror(errno);
+    OLA_WARN << "pipe() failed, " << strerror(errno);
     return false;
   }
 
@@ -203,12 +203,12 @@ bool PipeSocket::Init() {
     return false;
 
   if (pipe(m_in_pair) < 0) {
-    LLA_WARN << "pipe() failed, " << strerror(errno);
+    OLA_WARN << "pipe() failed, " << strerror(errno);
     return false;
   }
 
   if (pipe(m_out_pair) < 0) {
-    LLA_WARN << "pipe() failed, " << strerror(errno);
+    OLA_WARN << "pipe() failed, " << strerror(errno);
     close(m_in_pair[0]);
     close(m_in_pair[1]);
     m_in_pair[0] = m_in_pair[1] = INVALID_SOCKET;
@@ -281,7 +281,7 @@ TcpSocket* TcpSocket::Connect(const std::string &ip_address,
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
-    LLA_WARN << "socket() failed, " << strerror(errno);
+    OLA_WARN << "socket() failed, " << strerror(errno);
     return NULL;
   }
 
@@ -291,14 +291,14 @@ TcpSocket* TcpSocket::Connect(const std::string &ip_address,
   server_address.sin_port = htons(port);
 
   if (!inet_aton(ip_address.data(), &server_address.sin_addr)) {
-    LLA_WARN << "Failed to convert ip " << ip_address << " " <<
+    OLA_WARN << "Failed to convert ip " << ip_address << " " <<
       strerror(errno);
     close(sd);
     return NULL;
   }
 
   if (connect(sd, (struct sockaddr*) &server_address, length)) {
-    LLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
+    OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
       << strerror(errno);
     return false;
   }
@@ -347,7 +347,7 @@ bool UdpSocket::Init() {
   int sd = socket(PF_INET, SOCK_DGRAM, 0);
 
   if (sd < 0) {
-    LLA_WARN << "Could not create socket " << strerror(errno);
+    OLA_WARN << "Could not create socket " << strerror(errno);
     return false;
   }
 
@@ -369,10 +369,10 @@ bool UdpSocket::Bind(unsigned short port) {
   servAddr.sin_port = htons(port);
   servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  LLA_DEBUG << "Binding to " << inet_ntoa(servAddr.sin_addr) << ":" << port;
+  OLA_DEBUG << "Binding to " << inet_ntoa(servAddr.sin_addr) << ":" << port;
 
   if (bind(m_fd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == -1) {
-    LLA_INFO << "Failed to bind socket " << strerror(errno);
+    OLA_INFO << "Failed to bind socket " << strerror(errno);
     return false;
   }
   m_bound_to_port = true;
@@ -390,7 +390,7 @@ bool UdpSocket::Close() {
   m_bound_to_port = false;
   int ret = true;
   if (close(m_fd)) {
-    LLA_WARN << "close() failed, " << strerror(errno);
+    OLA_WARN << "close() failed, " << strerror(errno);
     ret = false;
   }
   m_fd = INVALID_SOCKET;
@@ -413,7 +413,7 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
                               (struct sockaddr*) &destination,
                               sizeof(struct sockaddr));
   if (bytes_sent != size)
-    LLA_WARN << "Failed to send, " << strerror(errno);
+    OLA_WARN << "Failed to send, " << strerror(errno);
   return bytes_sent;
 }
 
@@ -437,7 +437,7 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
   destination.sin_port = htons(port);
 
   if (!inet_aton(ip_address.data(), &destination.sin_addr)) {
-    LLA_WARN << "Failed to convert ip " << ip_address << " " <<
+    OLA_WARN << "Failed to convert ip " << ip_address << " " <<
       strerror(errno);
     return 0;
   }
@@ -487,7 +487,7 @@ bool UdpSocket::EnableBroadcast() {
 
   if (setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag, sizeof(int))
       == -1) {
-    LLA_WARN << "Failed to enabled broadcasting: " << strerror(errno);
+    OLA_WARN << "Failed to enabled broadcasting: " << strerror(errno);
     return false;
   }
   return true;
@@ -507,7 +507,7 @@ bool UdpSocket::JoinMulticast(const struct in_addr *interface,
 
   if (setsockopt(m_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq,
                  sizeof(mreq)) < 0) {
-    LLA_WARN << "Failed to join multicast group " << inet_ntoa(*group) <<
+    OLA_WARN << "Failed to join multicast group " << inet_ntoa(*group) <<
     ": " << strerror(errno);
     return false;
   }
@@ -523,7 +523,7 @@ bool UdpSocket::_RecvFrom(uint8_t *buffer,
                        (struct sockaddr*) source,
                        src_size);
   if (data_read < 0) {
-    LLA_WARN << "recvfrom failed: " << strerror(errno);
+    OLA_WARN << "recvfrom failed: " << strerror(errno);
     return false;
   }
   return true;
@@ -568,34 +568,34 @@ bool TcpAcceptingSocket::Listen() {
   server_address.sin_port = htons(m_port);
 
   if (!inet_aton(m_address.data(), &server_address.sin_addr)) {
-    LLA_WARN << "Failed to convert ip " << m_address << " " <<
+    OLA_WARN << "Failed to convert ip " << m_address << " " <<
       strerror(errno);
     return false;
   }
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
-    LLA_WARN << "socket() failed: " << strerror(errno);
+    OLA_WARN << "socket() failed: " << strerror(errno);
     return false;
   }
 
   if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &reuse_flag,
                  sizeof(reuse_flag))) {
-    LLA_WARN << "can't set reuse for " << sd << ", " << strerror(errno);
+    OLA_WARN << "can't set reuse for " << sd << ", " << strerror(errno);
     close(sd);
     return false;
   }
 
   if (bind(sd, (struct sockaddr *) &server_address,
            sizeof(server_address)) == -1) {
-    LLA_WARN << "bind to " << m_address << ":" << m_port << " failed, "
+    OLA_WARN << "bind to " << m_address << ":" << m_port << " failed, "
       << strerror(errno);
     close(sd);
     return false;
   }
 
   if (listen(sd, m_backlog)) {
-    LLA_WARN << "listen on " << m_address << ":" << m_port << " failed, "
+    OLA_WARN << "listen on " << m_address << ":" << m_port << " failed, "
       << strerror(errno);
     return false;
   }
@@ -612,7 +612,7 @@ bool TcpAcceptingSocket::Close() {
   bool ret = true;
   if (m_sd != INVALID_SOCKET)
     if (close(m_sd)) {
-      LLA_WARN << "close() failed " << strerror(errno);
+      OLA_WARN << "close() failed " << strerror(errno);
       ret = false;
     }
   m_sd = INVALID_SOCKET;
@@ -633,7 +633,7 @@ ConnectedSocket *TcpAcceptingSocket::Accept() {
 
   int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);
   if (sd < 0) {
-    LLA_WARN << "accept() failed, " << strerror(errno);
+    OLA_WARN << "accept() failed, " << strerror(errno);
     return NULL;
   }
 
@@ -643,4 +643,4 @@ ConnectedSocket *TcpAcceptingSocket::Accept() {
 }
 
 } // network
-} //lla
+} //ola

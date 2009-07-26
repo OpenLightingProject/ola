@@ -29,11 +29,11 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include <lla/Logging.h>
-#include <lla/BaseTypes.h>
+#include <ola/Logging.h>
+#include <ola/BaseTypes.h>
 #include "OpenDmxThread.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 using std::string;
@@ -102,7 +102,7 @@ void *OpenDmxThread::Run(const string &path) {
 
     if (m_fd == -1) {
       if (gettimeofday(&tv, NULL) < 0) {
-        LLA_WARN << "gettimeofday error";
+        OLA_WARN << "gettimeofday error";
         break;
       }
       ts.tv_sec = tv.tv_sec + 1;
@@ -114,7 +114,7 @@ void *OpenDmxThread::Run(const string &path) {
       m_fd = open(path.c_str(), O_WRONLY);
 
       if (m_fd == -1)
-        LLA_WARN << "Open " << m_fd << ": " << strerror(errno);
+        OLA_WARN << "Open " << m_fd << ": " << strerror(errno);
 
     } else {
       length = DMX_UNIVERSE_SIZE;
@@ -140,8 +140,8 @@ int OpenDmxThread::Start(const string &path) {
   args->th = this;
   args->path = path;
 
-  if (pthread_create(&m_tid, NULL, lla::plugin::thread_run, (void*) args)) {
-    LLA_WARN << "pthread create failed";
+  if (pthread_create(&m_tid, NULL, ola::plugin::thread_run, (void*) args)) {
+    OLA_WARN << "pthread create failed";
     return -1;
   }
   return 0;
@@ -195,4 +195,4 @@ int OpenDmxThread::do_write(uint8_t *buf, int length) {
 }
 
 } // plugin
-} // lla
+} // ola

@@ -24,11 +24,11 @@
 #include <stdint.h>
 #include <ext/hash_map>
 #include <google/protobuf/service.h>
-#include <lla/network/Socket.h>
-#include <lla/network/SelectServer.h>
-#include <lla/Closure.h>
+#include <ola/network/Socket.h>
+#include <ola/network/SelectServer.h>
+#include <ola/Closure.h>
 
-namespace lla {
+namespace ola {
 namespace rpc {
 
 using namespace google::protobuf;
@@ -85,7 +85,7 @@ class StreamRpcChannel: public RpcChannel {
    */
   public :
     StreamRpcChannel(Service *service,
-                     lla::network::ConnectedSocket *socket);
+                     ola::network::ConnectedSocket *socket);
     ~StreamRpcChannel();
 
     int SocketReady();
@@ -122,7 +122,7 @@ class StreamRpcChannel: public RpcChannel {
     void InvokeCallbackAndCleanup(OutstandingResponse *response);
 
     Service *m_service; // service to dispatch requests to
-    class lla::network::ConnectedSocket *m_socket; // the socket to read/write to.
+    class ola::network::ConnectedSocket *m_socket; // the socket to read/write to.
     uint32_t m_seq; // sequence number
     uint8_t *m_buffer; // buffer for incomming msgs
     unsigned int m_buffer_size; // size of the buffer
@@ -136,6 +136,6 @@ class StreamRpcChannel: public RpcChannel {
 };
 
 } // rpc
-} // lla
+} // ola
 
 #endif

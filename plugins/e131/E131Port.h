@@ -15,14 +15,14 @@
  *
  *
  * E131Port.h
- * The E1.31 plugin for lla
+ * The E1.31 plugin for ola
  * Copyright (C) 2007 Simon Newton
  */
 
 #ifndef E131PORT_H
 #define E131PORT_H
 
-#include <llad/port.h>
+#include <olad/port.h>
 
 class E131Port : public Port  {
 

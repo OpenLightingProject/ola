@@ -21,9 +21,9 @@
 #ifndef ESPNET_RLDECODER_H
 #define ESPNET_RLDECODER_H
 
-#include <lla/DmxBuffer.h>
+#include <ola/DmxBuffer.h>
 
-namespace lla {
+namespace ola {
 namespace espnet {
 
 class RunLengthDecoder {
@@ -40,5 +40,5 @@ class RunLengthDecoder {
 };
 
 } //shownet
-} //lla
+} //ola
 #endif

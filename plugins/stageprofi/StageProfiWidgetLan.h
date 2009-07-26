@@ -23,7 +23,7 @@
 
 #include "StageProfiWidget.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 class StageProfiWidgetLan: public StageProfiWidget {
@@ -37,6 +37,6 @@ class StageProfiWidgetLan: public StageProfiWidget {
 };
 
 } // plugin
-} // lla
+} // ola
 
 #endif

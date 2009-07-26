@@ -14,12 +14,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ShowNetPlugin.cpp
- * The ShowNet plugin for lla
+ * The ShowNet plugin for ola
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <llad/PluginAdaptor.h>
-#include <llad/Preferences.h>
+#include <olad/PluginAdaptor.h>
+#include <olad/Preferences.h>
 
 #include "ShowNetPlugin.h"
 #include "ShowNetDevice.h"
@@ -28,23 +28,23 @@
 /*
  * Entry point to this plugin
  */
-extern "C" lla::AbstractPlugin* create(const lla::PluginAdaptor *adaptor) {
-  return new lla::shownet::ShowNetPlugin(adaptor);
+extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *adaptor) {
+  return new ola::shownet::ShowNetPlugin(adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(lla::Plugin* plugin) {
+extern "C" void destroy(ola::Plugin* plugin) {
   delete plugin;
 }
 
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
 
-const string ShowNetPlugin::SHOWNET_NODE_NAME = "lla-ShowNet";
+const string ShowNetPlugin::SHOWNET_NODE_NAME = "ola-ShowNet";
 const string ShowNetPlugin::SHOWNET_DEVICE_NAME = "ShowNet Device";
 const string ShowNetPlugin::PLUGIN_NAME = "ShowNet Plugin";
 const string ShowNetPlugin::PLUGIN_PREFIX = "shownet";
@@ -97,12 +97,12 @@ string ShowNetPlugin::Description() const {
 "The ports correspond to the DMX channels used in the shownet protocol. "
 "For example port 0 (and 8)  is channels 1 - 512, port 1 (and 9) are channels 513 - 1024.\n"
 "\n"
-"--- Config file : lla-shownet.conf ---\n"
+"--- Config file : ola-shownet.conf ---\n"
 "\n"
 "ip = a.b.c.d\n"
 "The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
 "\n"
-"name = lla-ShowNet\n"
+"name = ola-ShowNet\n"
 "The name of the node.\n";
 }
 
@@ -125,4 +125,4 @@ bool ShowNetPlugin::SetDefaultPreferences() {
 }
 
 } //shownet
-} //lla
+} //ola

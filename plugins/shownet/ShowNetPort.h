@@ -14,21 +14,21 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ShowNetPort.h
- * The ShowNet plugin for lla
+ * The ShowNet plugin for ola
  * Copyright (C) 2005-2009 Simon Newton
  */
 
 #ifndef SHOWNETPORT_H
 #define SHOWNETPORT_H
 
-#include <llad/Port.h>
+#include <olad/Port.h>
 #include "ShowNetDevice.h"
 #include "ShowNetNode.h"
 
-namespace lla {
+namespace ola {
 namespace shownet {
 
-using lla::DmxBuffer;
+using ola::DmxBuffer;
 
 class ShowNetPort: public Port<ShowNetDevice> {
   public:
@@ -50,5 +50,5 @@ class ShowNetPort: public Port<ShowNetDevice> {
 };
 
 } //plugin
-} //lla
+} //ola
 #endif

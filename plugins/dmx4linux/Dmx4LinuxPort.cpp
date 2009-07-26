@@ -22,7 +22,7 @@
 #include "Dmx4LinuxPort.h"
 #include "Dmx4LinuxDevice.h"
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
 
@@ -63,4 +63,4 @@ const DmxBuffer &Dmx4LinuxPort::ReadDMX() const {
 }
 
 } //plugin
-} //lla
+} //ola

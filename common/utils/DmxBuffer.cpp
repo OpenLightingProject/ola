@@ -26,12 +26,12 @@
 #include <string.h>
 #include <algorithm>
 #include <vector>
-#include <lla/BaseTypes.h>
-#include <lla/DmxBuffer.h>
-#include <lla/Logging.h>
-#include <lla/StringUtils.h>
+#include <ola/BaseTypes.h>
+#include <ola/DmxBuffer.h>
+#include <ola/Logging.h>
+#include <ola/StringUtils.h>
 
-namespace lla {
+namespace ola {
 
 using std::min;
 using std::max;
@@ -288,7 +288,7 @@ void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
   }
 
   if (channel > m_length) {
-    LLA_WARN << "attempting to set channel " << channel << "when length is " <<
+    OLA_WARN << "attempting to set channel " << channel << "when length is " <<
       m_length;
     return;
   }
@@ -431,4 +431,4 @@ void DmxBuffer::CleanupMemory() {
   }
 }
 
-} // lla
+} // ola

@@ -26,19 +26,19 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
 
-#include <lla/Closure.h>
-#include <lla/Logging.h>
-#include <llad/Preferences.h>
+#include <ola/Closure.h>
+#include <ola/Logging.h>
+#include <olad/Preferences.h>
 
 #include "UsbProDevice.h"
 #include "UsbProPort.h"
 
-namespace lla {
+namespace ola {
 namespace usbpro {
 
 using google::protobuf::RpcController;
-using lla::plugin::usbpro::Request;
-using lla::plugin::usbpro::Reply;
+using ola::plugin::usbpro::Request;
+using ola::plugin::usbpro::Reply;
 
 /*
  * Create a new device
@@ -47,8 +47,8 @@ using lla::plugin::usbpro::Reply;
  * @param name  the device name
  * @param dev_path  path to the pro widget
  */
-UsbProDevice::UsbProDevice(const lla::PluginAdaptor *plugin_adaptor,
-                           lla::AbstractPlugin *owner,
+UsbProDevice::UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
+                           ola::AbstractPlugin *owner,
                            const string &name,
                            const string &dev_path):
   Device(owner, name),
@@ -83,7 +83,7 @@ bool UsbProDevice::Start() {
   // connect to the widget
   if (!m_widget->Connect(m_path))
     return false;
-  LLA_INFO << "Opened " << m_path;
+  OLA_INFO << "Opened " << m_path;
 
   m_widget->SetListener(this);
   // sleep a bit so that we don't trigger a race condition in the widget
@@ -132,7 +132,7 @@ bool UsbProDevice::Stop() {
 /*
  * Return the socket for this device
  */
-lla::network::ConnectedSocket *UsbProDevice::GetSocket() const {
+ola::network::ConnectedSocket *UsbProDevice::GetSocket() const {
   return m_widget->GetSocket();
 }
 
@@ -175,10 +175,10 @@ void UsbProDevice::Configure(RpcController *controller,
   }
 
   switch (request_pb.type()) {
-    case lla::plugin::usbpro::Request::USBPRO_PARAMETER_REQUEST:
+    case ola::plugin::usbpro::Request::USBPRO_PARAMETER_REQUEST:
       HandleParameters(controller, &request_pb, response, done);
       break;
-    case lla::plugin::usbpro::Request::USBPRO_SERIAL_REQUEST:
+    case ola::plugin::usbpro::Request::USBPRO_SERIAL_REQUEST:
       HandleGetSerial(controller, &request_pb, response, done);
       break;
     default:
@@ -259,8 +259,8 @@ void UsbProDevice::HandleGetSerial(
     google::protobuf::Closure *done) {
 
   Reply reply;
-  reply.set_type(lla::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
-  lla::plugin::usbpro::SerialNumberReply *serial_reply =
+  reply.set_type(ola::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
+  ola::plugin::usbpro::SerialNumberReply *serial_reply =
     reply.mutable_serial_number();
   serial_reply->set_serial(m_serial);
   reply.SerializeToString(response);
@@ -292,8 +292,8 @@ void UsbProDevice::HandleWidgetParameters(uint8_t firmware,
     m_outstanding_param_requests.pop_front();
 
     Reply reply;
-    reply.set_type(lla::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
-    lla::plugin::usbpro::ParameterReply *parameters_reply =
+    reply.set_type(ola::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
+    ola::plugin::usbpro::ParameterReply *parameters_reply =
       reply.mutable_parameters();
 
     parameters_reply->set_firmware_high(firmware_high);
@@ -329,4 +329,4 @@ void UsbProDevice::HandleWidgetSerial(
 
 
 } // usbpro
-} // lla
+} // ola

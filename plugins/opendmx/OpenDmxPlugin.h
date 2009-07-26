@@ -21,13 +21,13 @@
 #ifndef OPENDMXPLUGIN_H
 #define OPENDMXPLUGIN_H
 
-#include <llad/Plugin.h>
-#include <lla/plugin_id.h>
+#include <olad/Plugin.h>
+#include <ola/plugin_id.h>
 
-namespace lla {
+namespace ola {
 namespace plugin {
 
-using lla::PluginAdaptor;
+using ola::PluginAdaptor;
 
 class OpenDmxDevice;
 
@@ -39,7 +39,7 @@ class OpenDmxPlugin: public Plugin {
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
-    lla_plugin_id Id() const { return LLA_PLUGIN_OPENDMX; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_OPENDMX; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
@@ -56,7 +56,7 @@ class OpenDmxPlugin: public Plugin {
 };
 
 } //plugins
-} //lla
+} //ola
 
 #endif
 

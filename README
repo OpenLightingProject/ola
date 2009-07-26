@@ -1,8 +1,8 @@
-Linux Lighting Architecture - LLA
+Open Lighting Architecture - OLA
 ===============================================================================
 
-LLA consists of three parts, the daemon llad, the llad plugins and the client
-library, liblla.
+OLA consists of three parts, the daemon olad, the olad plugins and the client
+library, libola.
 
 
 Plugins
@@ -15,8 +15,8 @@ Plugin, Device and Port classes. See any of the current plugins for an example.
 C++ Library
 -------------------------------------------------------------------------------
 
-Is located in ./lla . You'll want to create a new LlaClient and call start().
-To do anything useful you'll need to subclass LlaClientObserver and implement
+Is located in ./ola . You'll want to create a new OlaClient and call start().
+To do anything useful you'll need to subclass OlaClientObserver and implement
 some of the methods.
 
 If you have pthreads installed this library *should* be thread safe (currently

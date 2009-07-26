@@ -20,13 +20,13 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <lla/ExportMap.h>
-#include <lla/network/SelectServer.h>
-#include <lla/network/Socket.h>
+#include <ola/ExportMap.h>
+#include <ola/network/SelectServer.h>
+#include <ola/network/Socket.h>
 
-using namespace lla::network;
-using lla::ExportMap;
-using lla::IntegerVariable;
+using namespace ola::network;
+using ola::ExportMap;
+using ola::IntegerVariable;
 
 class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SelectServerTest);
