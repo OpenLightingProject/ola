@@ -41,6 +41,7 @@
 
 #include <string>
 #include <lla/Closure.h>
+#include <lla/DmxBuffer.h>
 #include <lla/LlaClient.h>
 #include <lla/SimpleClient.h>
 #include <lla/network/SelectServer.h>
@@ -129,7 +130,8 @@ unsigned long timeGetTime() {
 
 /* set all DMX channels */
 void setall() {
-  client->SendDmx(universe, dmx, MAXCHANNELS);
+  lla::DmxBuffer buffer(dmx, MAXCHANNELS);
+  client->SendDmx(universe, buffer);
 }
 
 /* set current DMX channel */

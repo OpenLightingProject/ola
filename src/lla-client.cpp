@@ -33,7 +33,7 @@ using namespace std;
 
 #include <lla/SimpleClient.h>
 #include <lla/LlaClient.h>
-#include <lla/DmxUtils.h>
+#include <lla/DmxBuffer.h>
 #include <lla/network/SelectServer.h>
 
 using lla::LlaPlugin;
@@ -589,15 +589,15 @@ int SetUniverseMergeMode(LlaClient *client, const options &opts) {
  * @param opts the options
  */
 int SendDmx(LlaClient *client, const options &opts) {
-  dmx_t dmx_data[DMX_UNIVERSE_SIZE];
-  unsigned int length = lla::StringToDmx(opts.dmx, dmx_data, DMX_UNIVERSE_SIZE);
+  lla::DmxBuffer buffer;
+  bool status = buffer.SetFromString(opts.dmx);
 
-  if (opts.uni < 0 || !length) {
+  if (opts.uni < 0 || !status || buffer.Size() == 0) {
     display_set_dmx_help(opts) ;
     exit(1);
   }
 
-  if (!client->SendDmx(opts.uni, dmx_data, length)) {
+  if (!client->SendDmx(opts.uni, buffer)) {
     cout << "Send DMX failed" << endl;
     return 1;
   }

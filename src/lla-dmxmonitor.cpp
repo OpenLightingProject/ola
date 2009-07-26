@@ -46,6 +46,7 @@
 #include <lla/Closure.h>
 #include <lla/LlaClient.h>
 #include <lla/SimpleClient.h>
+#include <lla/DmxBuffer.h>
 #include <lla/network/SelectServer.h>
 
 using lla::LlaClient;
@@ -106,19 +107,21 @@ class Observer: public LlaClientObserver {
   public:
     Observer(void (*fh)()): m_fh(fh) {};
 
-    void NewDmx(unsigned int universe, unsigned int length,
-                uint8_t *data, const string &error);
+    void NewDmx(unsigned int universe,
+                const lla::DmxBuffer &buffer,
+                const string &error);
 
   private:
     void (*m_fh)();
 };
 
 
-void Observer::NewDmx(unsigned int universe, unsigned int length,
-                      uint8_t *data, const string &error) {
-  unsigned int len = length > (unsigned int) MAXCHANNELS ?
-                     (unsigned int) MAXCHANNELS : length;
-  memcpy(dmx, data,len);
+void Observer::NewDmx(unsigned int universe,
+                      const lla::DmxBuffer &buffer,
+                      const string &error) {
+  unsigned int len = buffer.Size() > (unsigned int) MAXCHANNELS ?
+                     (unsigned int) MAXCHANNELS : buffer.Size();
+  memcpy(dmx, buffer.GetRaw(), len);
 
   if(m_fh != NULL)
     m_fh();
