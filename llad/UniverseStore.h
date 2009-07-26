@@ -33,7 +33,7 @@ class Universe;
 class UniverseStore {
   public:
     UniverseStore(class Preferences *preferences, class ExportMap *export_map);
-    ~UniverseStore() {};
+    ~UniverseStore();
 
     Universe *GetUniverse(unsigned int universe_id) const;
     Universe *GetUniverseOrCreate(unsigned int universe_id);

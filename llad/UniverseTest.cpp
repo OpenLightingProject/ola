@@ -108,9 +108,8 @@ void UniverseTest::setUp() {
 
 
 void UniverseTest::tearDown() {
-  m_store->DeleteAll();
-  delete m_preferences;
   delete m_store;
+  delete m_preferences;
 }
 
 

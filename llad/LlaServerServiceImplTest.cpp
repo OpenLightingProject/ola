@@ -307,8 +307,6 @@ void LlaServerServiceImplTest::testRegisterForDmx() {
   CallRegisterForDmx(&impl, universe_id, lla::proto::UNREGISTER, ack_check);
   CPPUNIT_ASSERT(!universe->ContainsSinkClient(NULL));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
-
-  store.DeleteAll();
 }
 
 
@@ -375,7 +373,6 @@ void LlaServerServiceImplTest::testUpdateDmxData() {
   DmxBuffer zero_buffer;
   CallUpdateDmxData(&impl, universe_id, zero_buffer, ack_check);
   CPPUNIT_ASSERT(zero_buffer == universe->GetDMX());
-  store.DeleteAll();
 }
 
 
@@ -442,7 +439,6 @@ void LlaServerServiceImplTest::testSetUniverseName() {
   // Run it again with a new name
   CallSetUniverseName(&impl, universe_id, universe_name2, ack_check);
   CPPUNIT_ASSERT_EQUAL(universe_name2, universe->Name());
-  store.DeleteAll();
 }
 
 
@@ -508,7 +504,6 @@ void LlaServerServiceImplTest::testSetMergeMode() {
   // Run it again
   CallSetMergeMode(&impl, universe_id, lla::proto::LTP, ack_check);
   CPPUNIT_ASSERT(Universe::MERGE_LTP == universe->MergeMode());
-  store.DeleteAll();
 }
 
 

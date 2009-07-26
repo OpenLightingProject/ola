@@ -50,6 +50,14 @@ UniverseStore::UniverseStore(class Preferences *preferences,
 
 
 /*
+ * Cleanup
+ */
+UniverseStore::~UniverseStore() {
+  DeleteAll();
+}
+
+
+/*
  * Lookup a universe from its universe_id
  * @param uid the uid of the required universe
  */
