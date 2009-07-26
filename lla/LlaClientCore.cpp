@@ -151,25 +151,20 @@ bool LlaClientCore::FetchPluginInfo(lla_plugin_id filter,
 /*
  * Write some dmx data
  * @param universe   universe to send to
- * @param data  dmx data
- * @param length  length of dmx data
+ * @param data the DmxBuffer with the data
  * @return true on success, false on failure
  */
-bool LlaClientCore::SendDmx(unsigned int universe, dmx_t *data,
-                            unsigned int length) {
+bool LlaClientCore::SendDmx(unsigned int universe,
+                            const DmxBuffer &data) {
   if (!m_connected)
     return false;
 
-  unsigned int dmx_length = length < DMX_UNIVERSE_SIZE ? length:
-    DMX_UNIVERSE_SIZE;
   lla::proto::DmxData request;
   SimpleRpcController *controller = new SimpleRpcController();
   lla::proto::Ack *reply = new lla::proto::Ack();
 
-  string dmx_data;
-  dmx_data.append((char*) data, dmx_length);
   request.set_universe(universe);
-  request.set_data(dmx_data);
+  request.set_data(data.Get());
 
   google::protobuf::Closure *cb = NewCallback(
       this,
@@ -468,10 +463,9 @@ void LlaClientCore::HandleGetDmx(lla::rpc::SimpleRpcController *controller,
       error_string = controller->ErrorText();
     release_lock;
     // TODO: keep a map of registrations and filter
-    m_observer->NewDmx(reply->universe(),
-                       reply->data().length(),
-                       (dmx_t*) reply->data().c_str(),
-                       error_string);
+    DmxBuffer buffer;
+    buffer.Set(reply->data());
+    m_observer->NewDmx(reply->universe(), buffer, error_string);
     acquire_lock;
   }
   delete controller;

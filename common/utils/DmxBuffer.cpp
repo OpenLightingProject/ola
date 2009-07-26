@@ -187,7 +187,7 @@ bool DmxBuffer::Set(const DmxBuffer &other) {
 
 
 /*
- * Convert a ',' separated list into a dmx_t array. Invalid values are set to
+ * Convert a ',' separated list into a DmxBuffer. Invalid values are set to
  * 0. 0s can be dropped between the commas.
  * @param input the string to split
  */

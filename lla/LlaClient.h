@@ -28,6 +28,7 @@
 #include <lla/common.h>
 #include <lla/plugin_id.h>
 #include <lla/LlaDevice.h>
+#include <lla/DmxBuffer.h>
 
 namespace lla {
 
@@ -49,8 +50,7 @@ class LlaClientObserver {
     virtual ~LlaClientObserver() {}
 
     virtual void NewDmx(unsigned int universe,
-                        unsigned int length,
-                        dmx_t *data,
+                        const DmxBuffer &data,
                         const string &error) {}
     virtual void Plugins(const vector <class LlaPlugin> &plugins,
                          const string &error) {}
@@ -86,7 +86,7 @@ class LlaClient {
     bool FetchUniverseInfo();
 
     // dmx methods
-    bool SendDmx(unsigned int universe, dmx_t *data, unsigned int length);
+    bool SendDmx(unsigned int universe, const DmxBuffer &data);
     bool FetchDmx(unsigned int uni);
 
     // rdm methods

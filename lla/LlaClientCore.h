@@ -29,10 +29,11 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <lla/network/Socket.h>
+#include <lla/DmxBuffer.h>
+#include <lla/LlaClient.h>
+#include <lla/LlaDevice.h>
 #include <lla/common.h>
 #include <lla/plugin_id.h>
-#include <lla/LlaDevice.h>
-#include <lla/LlaClient.h>
 
 #include "common/protocol/Lla.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
@@ -64,7 +65,7 @@ class LlaClientCore {
     bool FetchUniverseInfo();
 
     // dmx methods
-    bool SendDmx(unsigned int universe, dmx_t *data, unsigned int length);
+    bool SendDmx(unsigned int universe, const DmxBuffer &data);
     bool FetchDmx(unsigned int uni);
 
     // rdm methods

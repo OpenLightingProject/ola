@@ -20,9 +20,11 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
+#include <lla/DmxBuffer.h>
 #include "common/protocol/Lla.pb.h"
 #include "LlaClientServiceImpl.h"
 #include "LlaClient.h"
+
 
 namespace lla {
 
@@ -36,10 +38,9 @@ void LlaClientServiceImpl::UpdateDmxData(
     ::google::protobuf::Closure* done) {
 
   if (m_observer) {
-    m_observer->NewDmx(request->universe(),
-                       request->data().size(),
-                       (uint8_t*) request->data().c_str(),
-                       "");
+    DmxBuffer buffer;
+    buffer.Set(request->data());
+    m_observer->NewDmx(request->universe(), buffer, "");
   }
   done->Run();
 }

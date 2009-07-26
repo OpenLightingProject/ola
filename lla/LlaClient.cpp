@@ -84,12 +84,11 @@ bool LlaClient::FetchPluginInfo(lla_plugin_id filter,
  * Write some dmx data.
  *
  * @param universe   universe to send to
- * @param data  dmx data
- * @param length  length of dmx data
+ * @param data  a DmxBuffer with the data
  * @return true on success, false on failure
  */
-bool LlaClient::SendDmx(unsigned int universe, dmx_t *data, unsigned int length) {
-  return m_core->SendDmx(universe, data, length);
+bool LlaClient::SendDmx(unsigned int universe, const DmxBuffer &data) {
+  return m_core->SendDmx(universe, data);
 }
 
 
