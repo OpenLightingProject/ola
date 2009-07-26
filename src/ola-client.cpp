@@ -13,8 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *  lla-client.cpp
- *  The multi purpose lla client.
+ *  ola-client.cpp
+ *  The multi purpose ola client.
  *  Copyright (C) 2005-2008 Simon Newton
  */
 
@@ -31,18 +31,18 @@ using namespace std;
 #include <string>
 #include <vector>
 
-#include <lla/SimpleClient.h>
-#include <lla/LlaClient.h>
-#include <lla/DmxBuffer.h>
-#include <lla/network/SelectServer.h>
+#include <ola/SimpleClient.h>
+#include <ola/OlaClient.h>
+#include <ola/DmxBuffer.h>
+#include <ola/network/SelectServer.h>
 
-using lla::LlaPlugin;
-using lla::LlaUniverse;
-using lla::LlaDevice;
-using lla::LlaPort;
-using lla::SimpleClient;
-using lla::LlaClient;
-using lla::network::SelectServer;
+using ola::OlaPlugin;
+using ola::OlaUniverse;
+using ola::OlaDevice;
+using ola::OlaPort;
+using ola::SimpleClient;
+using ola::OlaClient;
+using ola::network::SelectServer;
 
 static const int INVALID_VALUE = -1;
 
@@ -67,8 +67,8 @@ typedef struct {
   bool help;       // show the help
   int device_id;   // device id
   int port_id;     // port id
-  lla::PatchAction patch_action;      // patch or unpatch
-  LlaUniverse::merge_mode merge_mode; // the merge mode
+  ola::PatchAction patch_action;      // patch or unpatch
+  OlaUniverse::merge_mode merge_mode; // the merge mode
   string cmd;      // argv[0]
   string uni_name; // universe name
   string dmx;      // dmx string
@@ -78,13 +78,13 @@ typedef struct {
 /*
  * The observer class which repsonds to events
  */
-class Observer: public lla::LlaClientObserver {
+class Observer: public ola::OlaClientObserver {
   public:
     Observer(options *opts, SelectServer *ss): m_opts(opts), m_ss(ss) {}
 
-    void Plugins(const vector <LlaPlugin> &plugins, const string &error);
-    void Devices(const vector <LlaDevice> devices, const string &error);
-    void Universes(const vector <LlaUniverse> universes, const string &error);
+    void Plugins(const vector <OlaPlugin> &plugins, const string &error);
+    void Devices(const vector <OlaDevice> devices, const string &error);
+    void Universes(const vector <OlaUniverse> universes, const string &error);
     void PatchComplete(const string &error);
     void UniverseNameComplete(const string &error);
     void UniverseMergeModeComplete(const string &error);
@@ -98,11 +98,11 @@ class Observer: public lla::LlaClientObserver {
 
 /*
  * This is called when we recieve universe results from the client
- * @param universes a vector of LlaUniverses
+ * @param universes a vector of OlaUniverses
  */
-void Observer::Universes(const vector <LlaUniverse> universes,
+void Observer::Universes(const vector <OlaUniverse> universes,
                          const string &error) {
-  vector<LlaUniverse>::const_iterator iter;
+  vector<OlaUniverse>::const_iterator iter;
 
   if (!error.empty()) {
     cout << error << endl;
@@ -116,7 +116,7 @@ void Observer::Universes(const vector <LlaUniverse> universes,
 
   for(iter = universes.begin(); iter != universes.end(); ++iter) {
     cout << setw(5) << iter->Id() << "\t" << setw(30) << iter->Name() << "\t\t"
-      << (iter->MergeMode() == LlaUniverse::MERGE_HTP ? "HTP" : "LTP") << endl;
+      << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP") << endl;
   }
   cout << "----------------------------------------------------------" << endl;
   m_ss->Terminate();
@@ -124,10 +124,10 @@ void Observer::Universes(const vector <LlaUniverse> universes,
 
 
 /*
- * @params plugins a vector of LlaPlugins
+ * @params plugins a vector of OlaPlugins
  */
-void Observer::Plugins(const vector <LlaPlugin> &plugins, const string &error) {
-  vector<LlaPlugin>::const_iterator iter;
+void Observer::Plugins(const vector <OlaPlugin> &plugins, const string &error) {
+  vector<OlaPlugin>::const_iterator iter;
 
   if (!error.empty()) {
     cout << error << endl;
@@ -135,7 +135,7 @@ void Observer::Plugins(const vector <LlaPlugin> &plugins, const string &error) {
     return;
   }
 
-  if (m_opts->plugin_id > 0 && m_opts->plugin_id < LLA_PLUGIN_LAST) {
+  if (m_opts->plugin_id > 0 && m_opts->plugin_id < OLA_PLUGIN_LAST) {
     for(iter = plugins.begin(); iter != plugins.end(); ++iter) {
       if(iter->Id() == m_opts->plugin_id)
         cout << iter->Description() << endl;
@@ -153,10 +153,10 @@ void Observer::Plugins(const vector <LlaPlugin> &plugins, const string &error) {
 
 
 /*
- * @param devices a vector of LlaDevices
+ * @param devices a vector of OlaDevices
  */
-void Observer::Devices(const vector <LlaDevice> devices, const string &error) {
-  vector<LlaDevice>::const_iterator iter;
+void Observer::Devices(const vector <OlaDevice> devices, const string &error) {
+  vector<OlaDevice>::const_iterator iter;
 
   if (!error.empty()) {
     cout << error << endl;
@@ -166,13 +166,13 @@ void Observer::Devices(const vector <LlaDevice> devices, const string &error) {
 
   for (iter = devices.begin(); iter != devices.end(); ++iter) {
     cout << "Device " << iter->Alias() << ": " << iter->Name() << endl;
-    vector<LlaPort> ports = iter->Ports();
-    vector<LlaPort>::const_iterator port_iter;
+    vector<OlaPort> ports = iter->Ports();
+    vector<OlaPort>::const_iterator port_iter;
 
     for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
       cout << "  port " << port_iter->Id() << ", ";
 
-      if (port_iter->Capability() == LlaPort::LLA_PORT_CAP_IN)
+      if (port_iter->Capability() == OlaPort::OLA_PORT_CAP_IN)
         cout << "IN";
       else
         cout << "OUT";
@@ -180,7 +180,7 @@ void Observer::Devices(const vector <LlaDevice> devices, const string &error) {
       cout << " " << port_iter->Description();
 
       if (port_iter->IsActive())
-        cout << ", LLA universe " << port_iter->Universe();
+        cout << ", OLA universe " << port_iter->Universe();
       cout << endl;
     }
   }
@@ -229,10 +229,10 @@ void InitOptions(options &opts) {
   opts.uni = INVALID_VALUE;
   opts.plugin_id = INVALID_VALUE;
   opts.help = false;
-  opts.patch_action = lla::PATCH;
+  opts.patch_action = ola::PATCH;
   opts.port_id = INVALID_VALUE;
   opts.device_id = INVALID_VALUE;
-  opts.merge_mode = LlaUniverse::MERGE_HTP;
+  opts.merge_mode = OlaUniverse::MERGE_HTP;
 }
 
 
@@ -245,17 +245,17 @@ void SetMode(options &opts) {
   if (pos != string::npos)
     opts.cmd = opts.cmd.substr(pos + 1);
 
-  if (opts.cmd == "lla_plugin_info")
+  if (opts.cmd == "ola_plugin_info")
     opts.m = PLUGIN_INFO;
-  else if (opts.cmd == "lla_patch")
+  else if (opts.cmd == "ola_patch")
     opts.m = DEVICE_PATCH;
-  else if (opts.cmd == "lla_uni_info")
+  else if (opts.cmd == "ola_uni_info")
     opts.m = UNIVERSE_INFO;
-  else if (opts.cmd == "lla_uni_name")
+  else if (opts.cmd == "ola_uni_name")
     opts.m = UNIVERSE_NAME;
-  else if (opts.cmd == "lla_uni_merge")
+  else if (opts.cmd == "ola_uni_merge")
     opts.m = UNI_MERGE;
-  else if (opts.cmd == "lla_set_dmx")
+  else if (opts.cmd == "ola_set_dmx")
     opts.m = SET_DMX;
 }
 
@@ -294,7 +294,7 @@ void ParseOptions(int argc, char *argv[], options &opts) {
         opts.help = true;
         break;
       case 'l':
-        opts.merge_mode = LlaUniverse::MERGE_LTP;
+        opts.merge_mode = OlaUniverse::MERGE_LTP;
         break;
       case 'n':
         opts.uni_name = optarg;
@@ -341,7 +341,7 @@ int ParsePatchOptions(int argc, char *argv[], options &opts) {
       case 0:
         break;
       case 'a':
-        opts.patch_action = lla::PATCH;
+        opts.patch_action = ola::PATCH;
         break;
       case 'd':
         opts.device_id = atoi(optarg);
@@ -350,7 +350,7 @@ int ParsePatchOptions(int argc, char *argv[], options &opts) {
         opts.port_id = atoi(optarg);
         break;
       case 'r':
-        opts.patch_action = lla::UNPATCH;
+        opts.patch_action = ola::UNPATCH;
         break;
       case 'u':
         opts.uni = atoi(optarg);
@@ -374,7 +374,7 @@ int ParsePatchOptions(int argc, char *argv[], options &opts) {
 void DisplayDeviceInfoHelp(const options &opts) {
   cout << "Usage: " << opts.cmd << " [--plugin_id <plugin_id>]\n"
   "\n"
-  "Show information on the devices loaded by llad.\n"
+  "Show information on the devices loaded by olad.\n"
   "\n"
   "  -h, --help                  Display this help message and exit.\n"
   "  -p, --plugin_id <plugin_id> Show only devices owned by this plugin.\n"
@@ -389,7 +389,7 @@ void DisplayPatchHelp(const options &opts) {
   cout << "Usage: " << opts.cmd <<
   " [--patch | --unpatch] --device <dev> --port <port> [--universe <uni>]\n"
   "\n"
-  "Control lla port <-> universe mappings.\n"
+  "Control ola port <-> universe mappings.\n"
   "\n"
   "  -a, --patch              Patch this port (default).\n"
   "  -d, --device <device>    Id of device to patch.\n"
@@ -408,8 +408,8 @@ void DisplayPluginInfoHelp(const options &opts) {
   cout << "Usage: " << opts.cmd <<
   " [--plugin_id <plugin_id>]\n"
   "\n"
-  "Get info on the plugins loaded by llad. Called without arguments this will\n"
-  "display the plugins loaded by llad. When used with --plugin_id this wilk display\n"
+  "Get info on the plugins loaded by olad. Called without arguments this will\n"
+  "display the plugins loaded by olad. When used with --plugin_id this wilk display\n"
   "the specified plugin's description\n"
   "\n"
   "  -h, --help                  Display this help message and exit.\n"
@@ -514,25 +514,25 @@ void DisplayHelpAndExit(const options &opts) {
 
 /*
  * Send a fetch device info request
- * @param client  the lla client
+ * @param client  the ola client
  * @param opts  the const options
  */
-int FetchDeviceInfo(LlaClient *client, const options &opts) {
-  if (opts.plugin_id > 0 && opts.plugin_id < LLA_PLUGIN_LAST)
-    client->FetchDeviceInfo((lla_plugin_id) opts.plugin_id);
+int FetchDeviceInfo(OlaClient *client, const options &opts) {
+  if (opts.plugin_id > 0 && opts.plugin_id < OLA_PLUGIN_LAST)
+    client->FetchDeviceInfo((ola_plugin_id) opts.plugin_id);
   else
     client->FetchDeviceInfo();
   return 0;
 }
 
 
-void Patch(LlaClient *client, const options &opts) {
+void Patch(OlaClient *client, const options &opts) {
   if (opts.device_id == INVALID_VALUE || opts.port_id == INVALID_VALUE) {
     DisplayPatchHelp(opts);
     exit(1);
   }
 
-  if (opts.patch_action == lla::PATCH  && opts.uni == INVALID_VALUE) {
+  if (opts.patch_action == ola::PATCH  && opts.uni == INVALID_VALUE) {
     DisplayPatchHelp(opts);
     exit(1);
   }
@@ -543,9 +543,9 @@ void Patch(LlaClient *client, const options &opts) {
 /*
  * Fetch information on plugins.
  */
-int FetchPluginInfo(LlaClient *client, const options &opts) {
-  if (opts.plugin_id > 0 && opts.plugin_id < LLA_PLUGIN_LAST)
-    client->FetchPluginInfo((lla_plugin_id) opts.plugin_id, true);
+int FetchPluginInfo(OlaClient *client, const options &opts) {
+  if (opts.plugin_id > 0 && opts.plugin_id < OLA_PLUGIN_LAST)
+    client->FetchPluginInfo((ola_plugin_id) opts.plugin_id, true);
   else
     client->FetchPluginInfo();
   return 0;
@@ -555,10 +555,10 @@ int FetchPluginInfo(LlaClient *client, const options &opts) {
 
 /*
  * send a set name request
- * @param client the lla client
+ * @param client the ola client
  * @param opts  the const options
  */
-int SetUniverseName(LlaClient *client, const options &opts) {
+int SetUniverseName(OlaClient *client, const options &opts) {
   if (opts.uni == INVALID_VALUE) {
     DisplayUniverseNameHelp(opts);
     exit(1) ;
@@ -570,10 +570,10 @@ int SetUniverseName(LlaClient *client, const options &opts) {
 
 /*
  * send a set name request
- * @param client the lla client
+ * @param client the ola client
  * @param opts  the const options
  */
-int SetUniverseMergeMode(LlaClient *client, const options &opts) {
+int SetUniverseMergeMode(OlaClient *client, const options &opts) {
   if (opts.uni == INVALID_VALUE) {
     DisplayUniverseMergeHelp(opts);
     exit(1) ;
@@ -585,11 +585,11 @@ int SetUniverseMergeMode(LlaClient *client, const options &opts) {
 
 /*
  * Send a dmx message
- * @param client the lla client
+ * @param client the ola client
  * @param opts the options
  */
-int SendDmx(LlaClient *client, const options &opts) {
-  lla::DmxBuffer buffer;
+int SendDmx(OlaClient *client, const options &opts) {
+  ola::DmxBuffer buffer;
   bool status = buffer.SetFromString(opts.dmx);
 
   if (opts.uni < 0 || !status || buffer.Size() == 0) {
@@ -609,7 +609,7 @@ int SendDmx(LlaClient *client, const options &opts) {
  *
  */
 int main(int argc, char *argv[]) {
-  SimpleClient lla_client;
+  SimpleClient ola_client;
   options opts;
 
   InitOptions(opts);
@@ -626,13 +626,13 @@ int main(int argc, char *argv[]) {
   if (opts.help)
     DisplayHelpAndExit(opts);
 
-  if (!lla_client.Setup()) {
+  if (!ola_client.Setup()) {
     cout << "error: " << strerror(errno) << endl;
     exit(1);
   }
 
-  LlaClient *client = lla_client.GetClient();
-  SelectServer *ss = lla_client.GetSelectServer();
+  OlaClient *client = ola_client.GetClient();
+  SelectServer *ss = ola_client.GetSelectServer();
 
   Observer observer(&opts, ss);
   client->SetObserver(&observer);

@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * Modified by Simon Newton (nomis52<AT>gmail.com) to use lla
+ * Modified by Simon Newton (nomis52<AT>gmail.com) to use ola
  *
  */
 
@@ -43,16 +43,16 @@
 #include <sys/timeb.h>
 
 #include <string>
-#include <lla/Closure.h>
-#include <lla/LlaClient.h>
-#include <lla/SimpleClient.h>
-#include <lla/DmxBuffer.h>
-#include <lla/network/SelectServer.h>
+#include <ola/Closure.h>
+#include <ola/OlaClient.h>
+#include <ola/SimpleClient.h>
+#include <ola/DmxBuffer.h>
+#include <ola/network/SelectServer.h>
 
-using lla::LlaClient;
-using lla::LlaClientObserver;
-using lla::network::SelectServer;
-using lla::SimpleClient;
+using ola::OlaClient;
+using ola::OlaClientObserver;
+using ola::network::SelectServer;
+using ola::SimpleClient;
 using std::string;
 
 /* color names used */
@@ -96,19 +96,19 @@ static int channels_offset=1;
 
 WINDOW  *w=NULL;
 
-LlaClient *client;
+OlaClient *client;
 SelectServer *ss;
 
 
 /*
  * The observer class which repsonds to events
  */
-class Observer: public LlaClientObserver {
+class Observer: public OlaClientObserver {
   public:
     Observer(void (*fh)()): m_fh(fh) {};
 
     void NewDmx(unsigned int universe,
-                const lla::DmxBuffer &buffer,
+                const ola::DmxBuffer &buffer,
                 const string &error);
 
   private:
@@ -117,7 +117,7 @@ class Observer: public LlaClientObserver {
 
 
 void Observer::NewDmx(unsigned int universe,
-                      const lla::DmxBuffer &buffer,
+                      const ola::DmxBuffer &buffer,
                       const string &error) {
   unsigned int len = buffer.Size() > (unsigned int) MAXCHANNELS ?
                      (unsigned int) MAXCHANNELS : buffer.Size();
@@ -476,23 +476,23 @@ int main (int argc, char *argv[]) {
       }
   }
 
-  /* set up lla connection */
-  SimpleClient lla_client;
-  lla::network::UnmanagedSocket stdin_socket(0);
-  stdin_socket.SetOnData(lla::NewClosure(&stdin_ready));
+  /* set up ola connection */
+  SimpleClient ola_client;
+  ola::network::UnmanagedSocket stdin_socket(0);
+  stdin_socket.SetOnData(ola::NewClosure(&stdin_ready));
 
-  if (!lla_client.Setup()) {
+  if (!ola_client.Setup()) {
     printf("error: %s", strerror(errno));
     exit(1);
   }
 
-  client = lla_client.GetClient();
-  ss = lla_client.GetSelectServer();
+  client = ola_client.GetClient();
+  ss = ola_client.GetSelectServer();
   ss->AddSocket(&stdin_socket);
 
   client->SetObserver(&observer);
 
-  client->RegisterUniverse(universe, lla::REGISTER);
+  client->RegisterUniverse(universe, ola::REGISTER);
 
   /* init curses */
   w = initscr();

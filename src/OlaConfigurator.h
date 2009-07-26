@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *  LlaConfigurator.h
+ *  OlaConfigurator.h
  *  Makes configuring devices easy
  *  Copyright (C) 2005-2009 Simon Newton
  *
@@ -32,45 +32,45 @@
 #include <string>
 #include <google/protobuf/message.h>
 
-#include <lla/LlaClient.h>
-#include <lla/LlaDevice.h>
-#include <lla/SimpleClient.h>
-#include <lla/network/SelectServer.h>
+#include <ola/OlaClient.h>
+#include <ola/OlaDevice.h>
+#include <ola/SimpleClient.h>
+#include <ola/network/SelectServer.h>
 
 using namespace std;
 
-class LlaConfigurator;
+class OlaConfigurator;
 
 /*
  * The observer class which repsonds to events
  */
-class Observer: public lla::LlaClientObserver {
+class Observer: public ola::OlaClientObserver {
   public:
-    Observer(LlaConfigurator *configurator): m_configurator(configurator) {}
-    void Devices(const vector <lla::LlaDevice> devices, const string &error);
+    Observer(OlaConfigurator *configurator): m_configurator(configurator) {}
+    void Devices(const vector <ola::OlaDevice> devices, const string &error);
     void DeviceConfig(const string &reply, const string &error);
   private:
-    LlaConfigurator *m_configurator;
+    OlaConfigurator *m_configurator;
 };
 
 
 /*
  * Inherit from this and implement HandleResponse()
  */
-class LlaConfigurator {
+class OlaConfigurator {
   public:
     /*
      * @param device_id the device id to configure
      * @param plugin_id the expected plugin id for this device
      */
-    LlaConfigurator(unsigned int device_id, lla_plugin_id plugin_id):
+    OlaConfigurator(unsigned int device_id, ola_plugin_id plugin_id):
       m_alias(device_id),
       m_plugin_id(plugin_id),
       m_simple_client(NULL),
       m_client(NULL),
       m_ss(NULL),
       m_observer(NULL) {}
-    virtual ~LlaConfigurator();
+    virtual ~OlaConfigurator();
 
     /*
      * Setup the configurator
@@ -78,7 +78,7 @@ class LlaConfigurator {
     bool Setup();
     void Run() { m_ss->Run(); }
     void Terminate() { m_ss->Terminate(); }
-    void HandleDevices(const vector <lla::LlaDevice> devices,
+    void HandleDevices(const vector <ola::OlaDevice> devices,
                        const string &error);
     bool SendMessage(google::protobuf::Message &message);
 
@@ -89,10 +89,10 @@ class LlaConfigurator {
 
   protected:
     unsigned int m_alias;
-    lla_plugin_id m_plugin_id;
+    ola_plugin_id m_plugin_id;
   private:
-    lla::SimpleClient *m_simple_client;
-    lla::LlaClient *m_client;
-    lla::network::SelectServer *m_ss;
+    ola::SimpleClient *m_simple_client;
+    ola::OlaClient *m_client;
+    ola::network::SelectServer *m_ss;
     Observer *m_observer;
 };

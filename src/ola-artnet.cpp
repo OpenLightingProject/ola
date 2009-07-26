@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *  lla-artnet.cpp
+ *  ola-artnet.cpp
  *  Configure an ArtNet device
  *  Copyright (C) 2005-2009 Simon Newton
  */
@@ -22,9 +22,9 @@
 #include <getopt.h>
 #include <iostream>
 #include <string>
-#include <lla/artnet/ArtnetConfigMessages.pb.h>
-#include <lla/plugin_id.h>
-#include "LlaConfigurator.h"
+#include <ola/artnet/ArtnetConfigMessages.pb.h>
+#include <ola/plugin_id.h>
+#include "OlaConfigurator.h"
 
 using namespace std;
 
@@ -44,15 +44,15 @@ typedef struct {
 /*
  * A class that configures Artnet devices
  */
-class ArtnetConfigurator: public LlaConfigurator {
+class ArtnetConfigurator: public OlaConfigurator {
   public:
     ArtnetConfigurator(options &opts):
-      LlaConfigurator(opts.device_id, LLA_PLUGIN_ARTNET),
+      OlaConfigurator(opts.device_id, OLA_PLUGIN_ARTNET),
       m_options(opts) {}
     void HandleConfigResponse(const string &reply, const string &error);
     void SendConfigRequest();
   private:
-    void DisplayOptions(const lla::plugin::artnet::OptionsReply &reply);
+    void DisplayOptions(const ola::plugin::artnet::OptionsReply &reply);
     options m_options;
 };
 
@@ -66,12 +66,12 @@ void ArtnetConfigurator::HandleConfigResponse(const string &reply, const string 
     cout << error << endl;
     return;
   }
-  lla::plugin::artnet::Reply reply_pb;
+  ola::plugin::artnet::Reply reply_pb;
   if (!reply_pb.ParseFromString(reply)) {
     cout << "Protobuf parsing failed" << endl;
     return;
   }
-  if (reply_pb.type() == lla::plugin::artnet::Reply::ARTNET_OPTIONS_REPLY &&
+  if (reply_pb.type() == ola::plugin::artnet::Reply::ARTNET_OPTIONS_REPLY &&
       reply_pb.has_options()) {
     DisplayOptions(reply_pb.options());
     return;
@@ -83,12 +83,12 @@ void ArtnetConfigurator::HandleConfigResponse(const string &reply, const string 
 /*
  * Send a get parameters request
  * @param device_id the device to send the request to
- * @param client the LLAClient
+ * @param client the OLAClient
  */
 void ArtnetConfigurator::SendConfigRequest() {
-  lla::plugin::artnet::Request request;
-  request.set_type(lla::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST);
-  lla::plugin::artnet::OptionsRequest *options = request.mutable_options();
+  ola::plugin::artnet::Request request;
+  request.set_type(ola::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST);
+  ola::plugin::artnet::OptionsRequest *options = request.mutable_options();
 
   if (m_options.has_name)
     options->set_short_name(m_options.name);
@@ -104,7 +104,7 @@ void ArtnetConfigurator::SendConfigRequest() {
  * Display the widget parameters
  */
 void ArtnetConfigurator::DisplayOptions(
-    const lla::plugin::artnet::OptionsReply &reply) {
+    const ola::plugin::artnet::OptionsReply &reply) {
   cout << "Name: " << reply.short_name() << endl;
   cout << "Long Name: " << reply.long_name() << endl;
   cout << "Subnet: " << reply.subnet() << endl;
@@ -167,7 +167,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
 void DisplayHelpAndExit(options &opts) {
   cout << "Usage: " << opts.command <<
     "-d <dev_id> -n <name> -l <long_name> -s <subnet>\n\n"
-    "Configure ArtNet Devices managed by LLA.\n\n"
+    "Configure ArtNet Devices managed by OLA.\n\n"
     "  -h, --help      Display this help message and exit.\n"
     "  -l, --long_name Set the long name of the ArtNet device\n"
     "  -n, --name      Set the name of the ArtNet device\n"

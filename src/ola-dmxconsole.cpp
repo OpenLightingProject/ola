@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
  *
- * Modified by Simon Newton (nomis52<AT>gmail.com) to use lla
+ * Modified by Simon Newton (nomis52<AT>gmail.com) to use ola
  */
 
 #ifdef HAVE_CONFIG_H
@@ -40,15 +40,15 @@
 #include <sys/timeb.h>
 
 #include <string>
-#include <lla/Closure.h>
-#include <lla/DmxBuffer.h>
-#include <lla/LlaClient.h>
-#include <lla/SimpleClient.h>
-#include <lla/network/SelectServer.h>
+#include <ola/Closure.h>
+#include <ola/DmxBuffer.h>
+#include <ola/OlaClient.h>
+#include <ola/SimpleClient.h>
+#include <ola/network/SelectServer.h>
 
-using lla::SimpleClient;
-using lla::LlaClient;
-using lla::network::SelectServer;
+using ola::SimpleClient;
+using ola::OlaClient;
+using ola::network::SelectServer;
 using std::string;
 
 /* color names used */
@@ -96,7 +96,7 @@ static int palette[MAXCOLOR];
 string error_str;
 static int channels_offset=1;
 
-LlaClient *client;
+OlaClient *client;
 SelectServer *ss;
 
 
@@ -130,7 +130,7 @@ unsigned long timeGetTime() {
 
 /* set all DMX channels */
 void setall() {
-  lla::DmxBuffer buffer(dmx, MAXCHANNELS);
+  ola::DmxBuffer buffer(dmx, MAXCHANNELS);
   client->SendDmx(universe, buffer);
 }
 
@@ -650,18 +650,18 @@ int main (int argc, char *argv[]) {
     }
   }
 
-  /* set up lla connection */
-  SimpleClient lla_client;
-  lla::network::UnmanagedSocket stdin_socket(0);
-  stdin_socket.SetOnData(lla::NewClosure(&stdin_ready));
+  /* set up ola connection */
+  SimpleClient ola_client;
+  ola::network::UnmanagedSocket stdin_socket(0);
+  stdin_socket.SetOnData(ola::NewClosure(&stdin_ready));
 
-  if (!lla_client.Setup()) {
+  if (!ola_client.Setup()) {
     printf("error: %s", strerror(errno));
     exit(1);
   }
 
-  client = lla_client.GetClient();
-  ss = lla_client.GetSelectServer();
+  client = ola_client.GetClient();
+  ss = ola_client.GetSelectServer();
   ss->AddSocket(&stdin_socket);
 
   /* init curses */

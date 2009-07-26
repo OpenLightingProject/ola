@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
- * lla-latency.cpp
- * Measures the round trip time of llad and provides stats on exit
+ * ola-latency.cpp
+ * Measures the round trip time of olad and provides stats on exit
  * Copyright (C) 2005  Simon Newton
  */
 
@@ -34,7 +34,7 @@
 #include <time.h>
 #include <signal.h>
 
-#include <lla/lla.h>
+#include <ola/ola.h>
 
 
 #define CHANNELS 512
@@ -42,7 +42,7 @@
 int universe = 0;
 
 
-static lla_con con ;
+static ola_con con ;
 uint8_t	dmx[CHANNELS] ;
 
 struct timeval tv1;
@@ -91,7 +91,7 @@ static int install_signal() {
 /*
  * called on recv
  */
-int dmx_handler(lla_con c, int uni, int length, uint8_t *sdmx, void *d ) {
+int dmx_handler(ola_con c, int uni, int length, uint8_t *sdmx, void *d ) {
 	int len = length > CHANNELS ? CHANNELS : length ;
 	struct timeval tv2 ;
 	long delay ;
@@ -116,7 +116,7 @@ int dmx_handler(lla_con c, int uni, int length, uint8_t *sdmx, void *d ) {
 
 int main (int argc, char *argv[]) {
 	int optc ;
-	int lla_sd ;
+	int ola_sd ;
 //	struct timeval tv2 ;
 	
 	install_signal() ;
@@ -134,26 +134,26 @@ int main (int argc, char *argv[]) {
 		}
 	}
 
-	/* set up lla connection */
-	con = lla_connect() ; ;
+	/* set up ola connection */
+	con = ola_connect() ; ;
 	
 	if(con == NULL) {
 		printf("Unable to connect\n") ;
 		return 1 ;
 	}
 
-	if(lla_set_dmx_handler(con, dmx_handler, NULL) ) {
+	if(ola_set_dmx_handler(con, dmx_handler, NULL) ) {
 		printf("Failed to install handler\n") ;
 		return 1 ;
 	}
 
-	if(lla_reg_uni(con, universe, 1) ) {
+	if(ola_reg_uni(con, universe, 1) ) {
 		printf("REgister uni %d failed\n", universe) ;
 		return 1 ;
 	}
 
 	// store the sds
-	lla_sd = lla_get_sd(con) ;
+	ola_sd = ola_get_sd(con) ;
   
 	/* main loop */
 	while (! term) {
@@ -162,30 +162,30 @@ int main (int argc, char *argv[]) {
 		struct timeval tv;
 
 		FD_ZERO(&rd_fds);
-		FD_SET(lla_sd, &rd_fds) ;
+		FD_SET(ola_sd, &rd_fds) ;
 
-		max = lla_sd ;
+		max = ola_sd ;
 
 		tv.tv_sec = 0;
 		tv.tv_usec = 40000;
 
 		n = select(max+1, &rd_fds, NULL, NULL, &tv);
 		if(n>0) {
-			if (FD_ISSET(lla_sd, &rd_fds) ) {
+			if (FD_ISSET(ola_sd, &rd_fds) ) {
 //				gettimeofday(&tv2, NULL) ;
 //				printf(" got read %ld %ld\n", tv2.tv_sec, tv2.tv_usec) ;
 					
-	    		lla_sd_action(con,0);
+	    		ola_sd_action(con,0);
 			}
 		}
 		if(n==0) {
 			gettimeofday(&tv1, NULL) ;
 //			printf("sending %ld %ld\n", tv1.tv_sec, tv1.tv_usec) ;
-			lla_send_dmx(con, universe, dmx, CHANNELS) ;
+			ola_send_dmx(con, universe, dmx, CHANNELS) ;
 		}
 
 	}
-	lla_disconnect(con) ;
+	ola_disconnect(con) ;
 
 	printf("Best %ld , Worst %ld, Avg %ld\n", best, worst , total/count) ;
 
