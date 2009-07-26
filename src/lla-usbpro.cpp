@@ -154,7 +154,7 @@ bool UsbProConfigurator::SendSerialRequest() {
 void UsbProConfigurator::DisplayParameters(
     const lla::plugin::usbpro::ParameterReply &reply) {
 
-  cout << "Device: " << m_device_id << endl;
+  cout << "Device: " << m_alias << endl;
   cout << "Firmware: " << reply.firmware_high() << "." << reply.firmware() <<
     endl;
   cout << "Break Time: " << reply.break_time() * 10.67 << "us" << endl;
@@ -170,16 +170,8 @@ void UsbProConfigurator::DisplaySerial(
     const lla::plugin::usbpro::SerialNumberReply &reply) {
 
   string serial_number = reply.serial();
-  cout << "Device: " << m_device_id << endl;
-  cout << "Serial: ";
-  cout << setfill('0');
-
-  for (string::reverse_iterator iter = serial_number.rbegin();
-       iter != serial_number.rend(); iter++) {
-    int digit = (10 * (*iter & 0xf0) >> 4) + (*iter & 0x0f);
-    cout << setw(2) << digit ;
-  }
-  cout << endl;
+  cout << "Device: " << m_alias << endl;
+  cout << "Serial: " << reply.serial() << endl;
 }
 
 
@@ -255,7 +247,7 @@ void DisplayHelpAndExit(options &opts) {
     "-d <dev_id> [ --serial | -b <brk> -m <mab> -r <rate> ]\n\n"
     "Configure Enttec Usb Pro Devices managed by LLA.\n\n"
     "  -b, --brk <brk>     Set the break time (9 - 127)\n"
-    "  -d, --dev <dev_id>  The device id to configure\n"
+    "  -d, --dev <device>  The device to configure\n"
     "  -h, --help          Display this help message and exit.\n"
     "  -m, --mab <mab>     Set the make after-break-time (1 - 127)\n"
     "  -r, --rate <rate>   Set the transmission rate (1 - 40).\n"

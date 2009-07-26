@@ -79,7 +79,7 @@ bool LlaConfigurator::Setup() {
 bool LlaConfigurator::SendMessage(google::protobuf::Message &message) {
   string request_string;
   message.SerializeToString(&request_string);
-  return m_client->ConfigureDevice(m_device_id, request_string);
+  return m_client->ConfigureDevice(m_alias, request_string);
 }
 
 
@@ -100,11 +100,11 @@ void LlaConfigurator::HandleDevices(const vector <LlaDevice> devices,
 
   vector <LlaDevice>::const_iterator iter;
   for (iter = devices.begin(); iter != devices.end(); ++iter) {
-    if (iter->Id() == m_device_id && iter->PluginId() == m_plugin_id) {
+    if (iter->Alias() == m_alias && iter->PluginId() == m_plugin_id) {
       SendConfigRequest();
       return;
     }
   }
-  cout << "Device " << m_device_id << " is of the wrong type or missing." << endl;
+  cout << "Device " << m_alias << " is of the wrong type or missing." << endl;
   m_ss->Terminate();
 }

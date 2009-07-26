@@ -63,7 +63,7 @@ typedef enum {
 typedef struct {
   mode m;          // mode
   int uni;         // universe id
-  int plugin_id;   // plugin id
+  unsigned int plugin_id;   // plugin id
   bool help;       // show the help
   int device_id;   // device id
   int port_id;     // port id
@@ -165,7 +165,7 @@ void Observer::Devices(const vector <LlaDevice> devices, const string &error) {
   }
 
   for (iter = devices.begin(); iter != devices.end(); ++iter) {
-    cout << "Device " << iter->Id() << ": " << iter->Name() << endl;
+    cout << "Device " << iter->Alias() << ": " << iter->Name() << endl;
     vector<LlaPort> ports = iter->Ports();
     vector<LlaPort>::const_iterator port_iter;
 
