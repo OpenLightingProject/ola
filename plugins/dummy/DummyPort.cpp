@@ -19,6 +19,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <iostream>
+#include <string>
 #include <ola/Logging.h>
 #include "DummyPort.h"
 
@@ -32,13 +34,13 @@ namespace plugin {
  */
 bool DummyPort::WriteDMX(const DmxBuffer &buffer) {
   m_buffer = buffer;
+  stringstream str;
   string data = buffer.Get();
 
-  OLA_INFO << "Dummy port: got " << buffer.Size() << " bytes: " << std::hex <<
-    "0x" << data.at(0) <<
-    "0x" << data.at(1) <<
-    "0x" << data.at(2) <<
-    "0x" << data.at(3);
+  str << "Dummy port: got " << buffer.Size() << " bytes: ";
+  for (unsigned int i=0; i < 10 && i < data.size(); i++)
+    str << "0x" << std::hex << 0 + (uint8_t) data.at(i) << " ";
+  OLA_INFO << str.str();
   return true;
 }
 
