@@ -1,32 +1,33 @@
-
-# python wrappers - experiemental !
-#
-#
-pkgpyexecdir = @pythondir@
-pkgpythondir = @pythondir@
-
-EXTRA_DIST = LlaClient.i
+# ola python client
 
 if BUILD_PYTHON_LIBS
 
-SWIG_SOURCES = LlaClient.i
+SUBDIRS = rpc
 
-nodist_pkgpython_PYTHON = lla.py
-pkgpyexec_LTLIBRARIES = _lla.la
-nodist__lla_la_SOURCES = LlaClient_wrap.cxx $(SWIG_SOURCES)
-_lla_la_CPPFLAGS = $(SWIG_PYTHON_CPPFLAGS)
-_lla_la_LDFLAGS = -module
-_lla_la_LIBADD = ../lla/liblla.la
+artnet_path = ../plugins/artnet/messages
+artnet_proto = $(artnet_path)/ArtnetConfigMessages.proto
+ola_path = ../common/protocol
+ola_proto = $(ola_path)/Ola.proto
+usbpro_path = ../plugins/usbpro/messages
+usbpro_proto = $(usbpro_path)/UsbProConfigMessages.proto
 
+output_files = ArtnetConfigMessages_pb2.py Ola_pb2.py \
+               UsbProConfigMessages_pb2.py
 
-LlaClient_wrap.cxx lla.py: $(SWIG_SOURCES)
-	$(SWIG) -c++ $(SWIG_PYTHON_OPT) -I$(top_srcdir)/src  $(SWIG_SOURCES)
+BUILT_SOURCES = $(output_files)
+nodist_pkgpython_PYTHON = $(output_files)
+pkgpython_PYTHON = OlaClient.py __init__.py
+
+ArtnetConfigMessages_pb2.py: $(artnet_proto)
+	protoc --python_out ./ -I $(artnet_path) $(artnet_proto)
+
+Ola_pb2.py: $(ola_proto)
+	protoc --python_out ./ -I $(ola_path) $(ola_proto)
+
+UsbProConfigMessages_pb2.py: $(usbpro_proto)
+	protoc --python_out ./ -I $(usbpro_path) $(usbpro_proto)
 
 clean-local:
-	rm *.{h,cxx,py}
-
-
-all-local:
-	if [ ! -e _lla.so ]; then ln -s .libs/_lla.so _lla.so; fi
+	rm -f ArtnetConfigMessages_pb2.* Ola_pb2.* UsbProConfigMessages_pb2.*
 
 endif
