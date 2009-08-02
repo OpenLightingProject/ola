@@ -185,12 +185,10 @@ int OlaHttpServer::DisplayPlugins(const HttpRequest *request,
 int OlaHttpServer::DisplayPluginInfo(const HttpRequest *request,
                                      HttpResponse *response) {
 
-
   string val = request->GetParameter("id");
   int plugin_id = atoi(val.data());
   AbstractPlugin *plugin = NULL;
-  if (plugin_id > 0 && plugin_id < OLA_PLUGIN_LAST)
-    plugin = m_plugin_loader->GetPlugin((ola_plugin_id) plugin_id);
+  plugin = m_plugin_loader->GetPlugin((ola_plugin_id) plugin_id);
 
   if (!plugin)
     return m_server.ServeNotFound(response);

@@ -230,7 +230,7 @@ void OlaServerServiceImpl::GetPluginInfo(RpcController* controller,
   vector<AbstractPlugin*>::const_iterator iter;
 
   bool include_all = (!request->has_plugin_id() ||
-      request->plugin_id() == OLA_PLUGIN_ALL);
+      request->plugin_id() == ola::OLA_PLUGIN_ALL);
 
   for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter) {
     if (include_all || (*iter)->Id() == request->plugin_id())
@@ -256,7 +256,7 @@ void OlaServerServiceImpl::GetDeviceInfo(RpcController* controller,
   for (iter = device_list.begin(); iter != device_list.end(); ++iter) {
     if (request->has_plugin_id()) {
       if (iter->device->Owner()->Id() == request->plugin_id() ||
-          request->plugin_id() == OLA_PLUGIN_ALL)
+          request->plugin_id() == ola::OLA_PLUGIN_ALL)
         AddDevice(iter->device, iter->alias, response);
     } else {
       AddDevice(iter->device, iter->alias, response);

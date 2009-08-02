@@ -80,9 +80,9 @@ class OlaClient {
     bool Stop();
     bool SetObserver(OlaClientObserver *observer);
 
-    bool FetchPluginInfo(ola_plugin_id filter=OLA_PLUGIN_ALL,
+    bool FetchPluginInfo(ola_plugin_id filter=ola::OLA_PLUGIN_ALL,
                          bool include_description=false);
-    bool FetchDeviceInfo(ola_plugin_id filter=OLA_PLUGIN_ALL);
+    bool FetchDeviceInfo(ola_plugin_id filter=ola::OLA_PLUGIN_ALL);
     bool FetchUniverseInfo();
 
     // dmx methods
