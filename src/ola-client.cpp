@@ -227,7 +227,7 @@ void Observer::SendDmxComplete(const string &error) {
 void InitOptions(options &opts) {
   opts.m = DEVICE_INFO;
   opts.uni = INVALID_VALUE;
-  opts.plugin_id = INVALID_VALUE;
+  opts.plugin_id = ola::OLA_PLUGIN_ALL;
   opts.help = false;
   opts.patch_action = ola::PATCH;
   opts.port_id = INVALID_VALUE;
@@ -518,10 +518,7 @@ void DisplayHelpAndExit(const options &opts) {
  * @param opts  the const options
  */
 int FetchDeviceInfo(OlaClient *client, const options &opts) {
-  if (opts.plugin_id > 0)
-    client->FetchDeviceInfo((ola::ola_plugin_id) opts.plugin_id);
-  else
-    client->FetchDeviceInfo();
+  client->FetchDeviceInfo((ola::ola_plugin_id) opts.plugin_id);
   return 0;
 }
 
