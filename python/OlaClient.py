@@ -22,7 +22,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import array
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
-import ola.Ola_pb2
+from ola import Ola_pb2
 
 """The port that the OLA server listens on."""
 OLA_PORT = 9010
