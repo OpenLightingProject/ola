@@ -261,17 +261,15 @@ AC_OUTPUT( Makefile\
     python/rpc/Makefile \
     olad/Makefile \
     olad/www/Makefile \
+    olad/testdata/Makefile \
     plugins/Makefile \
     plugins/artnet/Makefile \
     plugins/artnet/messages/Makefile \
     plugins/artnet/messages/libolaartnetconf.pc \
-    plugins/e131/Makefile \
     plugins/dummy/Makefile \
     plugins/dmx4linux/Makefile \
     plugins/espnet/Makefile \
-    plugins/pathport/Makefile \
     plugins/shownet/Makefile \
-    plugins/sandnet/Makefile \
     plugins/usbpro/Makefile \
     plugins/usbpro/messages/Makefile \
     plugins/usbpro/messages/libolausbproconf.pc \

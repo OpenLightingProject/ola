@@ -11,7 +11,7 @@ libolaespnet_la_SOURCES = EspNetPlugin.cpp EspNetDevice.cpp EspNetPort.cpp \
 libolaespnet_la_LIBADD = @LIBS@
 
 EXTRA_DIST = EspNetPlugin.h EspNetDevice.h EspNetPort.h EspNetPackets.h \
-             EspNetNode.h EspNetPluginCommon.h
+             EspNetNode.h EspNetPluginCommon.h RunLengthDecoder.h
 
 # Test Programs
 TESTS = EspNetTester

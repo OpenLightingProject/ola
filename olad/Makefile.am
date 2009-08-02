@@ -1,6 +1,6 @@
 INCLUDES = -I$(top_builddir)/common -I$(top_builddir)/include \
            -I$(top_builddir)/libltdl @OLAD_DEFINES@
-SUBDIRS = www
+SUBDIRS = www testdata
 
 OLASERVER_SOURCES = OlaServerServiceImpl.cpp \
                     Preferences.cpp Universe.cpp \
