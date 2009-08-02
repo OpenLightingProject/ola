@@ -63,7 +63,7 @@ class OlaConfigurator {
      * @param device_id the device id to configure
      * @param plugin_id the expected plugin id for this device
      */
-    OlaConfigurator(unsigned int device_id, ola_plugin_id plugin_id):
+    OlaConfigurator(unsigned int device_id, ola::ola_plugin_id plugin_id):
       m_alias(device_id),
       m_plugin_id(plugin_id),
       m_simple_client(NULL),
@@ -89,7 +89,8 @@ class OlaConfigurator {
 
   protected:
     unsigned int m_alias;
-    ola_plugin_id m_plugin_id;
+    ola::ola_plugin_id m_plugin_id;
+
   private:
     ola::SimpleClient *m_simple_client;
     ola::OlaClient *m_client;

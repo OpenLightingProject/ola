@@ -59,7 +59,7 @@ typedef struct {
 class UsbProConfigurator: public OlaConfigurator {
   public:
     UsbProConfigurator(options &opts):
-      OlaConfigurator(opts.device_id, OLA_PLUGIN_USBPRO),
+      OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_USBPRO),
       m_opts(opts) {}
     void HandleConfigResponse(const string &reply, const string &error);
     void SendConfigRequest();

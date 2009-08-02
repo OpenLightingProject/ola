@@ -47,7 +47,7 @@ typedef struct {
 class ArtnetConfigurator: public OlaConfigurator {
   public:
     ArtnetConfigurator(options &opts):
-      OlaConfigurator(opts.device_id, OLA_PLUGIN_ARTNET),
+      OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_ARTNET),
       m_options(opts) {}
     void HandleConfigResponse(const string &reply, const string &error);
     void SendConfigRequest();

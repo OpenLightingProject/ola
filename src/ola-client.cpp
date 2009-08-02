@@ -135,7 +135,7 @@ void Observer::Plugins(const vector <OlaPlugin> &plugins, const string &error) {
     return;
   }
 
-  if (m_opts->plugin_id > 0 && m_opts->plugin_id < OLA_PLUGIN_LAST) {
+  if (m_opts->plugin_id > 0) {
     for(iter = plugins.begin(); iter != plugins.end(); ++iter) {
       if(iter->Id() == m_opts->plugin_id)
         cout << iter->Description() << endl;
@@ -518,8 +518,8 @@ void DisplayHelpAndExit(const options &opts) {
  * @param opts  the const options
  */
 int FetchDeviceInfo(OlaClient *client, const options &opts) {
-  if (opts.plugin_id > 0 && opts.plugin_id < OLA_PLUGIN_LAST)
-    client->FetchDeviceInfo((ola_plugin_id) opts.plugin_id);
+  if (opts.plugin_id > 0)
+    client->FetchDeviceInfo((ola::ola_plugin_id) opts.plugin_id);
   else
     client->FetchDeviceInfo();
   return 0;
@@ -544,8 +544,8 @@ void Patch(OlaClient *client, const options &opts) {
  * Fetch information on plugins.
  */
 int FetchPluginInfo(OlaClient *client, const options &opts) {
-  if (opts.plugin_id > 0 && opts.plugin_id < OLA_PLUGIN_LAST)
-    client->FetchPluginInfo((ola_plugin_id) opts.plugin_id, true);
+  if (opts.plugin_id > 0)
+    client->FetchPluginInfo((ola::ola_plugin_id) opts.plugin_id, true);
   else
     client->FetchPluginInfo();
   return 0;
