@@ -17,3 +17,5 @@ clean-local:
 TESTS = SimpleRpcControllerTest.py
 
 endif
+
+EXTRA_DIST = SimpleRpcControllerTest.py
