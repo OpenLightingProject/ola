@@ -39,7 +39,8 @@ class StageProfiWidget {
     StageProfiWidget():
       m_enabled(false),
       m_got_response(false),
-      m_socket(NULL) {};
+      m_socket(NULL),
+      m_ss(NULL) {};
     virtual ~StageProfiWidget();
 
     // these methods are for communicating with the device
