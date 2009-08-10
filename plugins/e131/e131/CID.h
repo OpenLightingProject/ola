@@ -13,42 +13,47 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * OlaNetServer.h
- * Override the libacn NetServer to interface with OLA
+ * CID.h
+ * Interface for the CID class
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef OLANETSERVER_H
-#define OLANETSERVER_H
+#ifndef OLA_E131_CID_H
+#define OLA_E131_CID_H
 
+#include <stdint.h>
 #include <string>
-#include <map>
-#include <vector>
-#include <acn/NetServer.h>
+#include <uuid/uuid.h>
 
-using namespace std;
 
-class OlaNetServer : public NetServer {
+#include <iostream>
 
-  public:
-    OlaNetServer(const PluginAdaptor *pa):
-      NetServer(), m_pa(pa) {}
-    ~OlaNetServer();
+namespace ola {
+namespace e131 {
 
-    int add_fd(int fd, callback_fn fn, void *data);
-    int remove_fd(int fd);
+class CID {
+  public :
+    enum { CID_LENGTH = 16 };
 
-    int register_event(int ms, callback_fn fn, void *data);
+    CID() { uuid_clear(m_uuid); }
+    CID(uuid_t uuid) { uuid_copy(m_uuid, uuid); }
+    CID(const CID& other) { uuid_copy(m_uuid, other.m_uuid); }
 
-    int loop_callback(callback_fn fn, void *data);
+    bool IsNil() const { return uuid_is_null(m_uuid); }
+    void Pack(uint8_t *buf) const;
+    std::string ToString() const;
 
-    int run() { return 0; }
+    CID& operator=(const CID& c1);
+    bool operator==(const CID& c1) const;
+    bool operator!=(const CID& c1) const;
+
+    static CID Generate();
+    static CID FromData(const uint8_t *data);
 
   private:
-    const class PluginAdaptor *m_pa;
-    map<int, class NetServerListener*> m_lmap;
-    vector<class NetServerListener*> m_loop_ls;
+    uuid_t m_uuid;
 };
 
+} // e131
+} // ola
 #endif
-
