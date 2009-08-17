@@ -110,6 +110,11 @@ PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
 PLUGIN_LIBRARY(sandnet, sandnet_new, SANDNET)
 PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
 
+# confirm libartnet version
+if test "${have_artnet}" = "yes"; then
+PKG_CHECK_MODULES(libartnet, [libartnet >= 1.1.0])
+fi
+
 # check for libacn
 PKG_CHECK_MODULES(libacn, [libacn >= 0.0.1], [
  have_acn="yes"
