@@ -1,7 +1,7 @@
 
 pkgincludedir = $(includedir)/ola/usbpro
 lib_LTLIBRARIES = libolausbproconf.la
-pkginclude_HEADERS = UsbProConfigMessages.pb.h
+nodist_pkginclude_HEADERS = UsbProConfigMessages.pb.h
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libolausbproconf.pc
 
@@ -10,7 +10,7 @@ AM_CXXFLAGS = -Wall -Wformat -W
 
 BUILT_SOURCES = UsbProConfigMessages.pb.cc UsbProConfigMessages.pb.h
 
-libolausbproconf_la_SOURCES = UsbProConfigMessages.pb.cc
+nodist_libolausbproconf_la_SOURCES = UsbProConfigMessages.pb.cc
 
 EXTRA_DIST = UsbProConfigMessages.proto
 
