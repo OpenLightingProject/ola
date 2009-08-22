@@ -81,7 +81,7 @@ OpenDmxThread::~OpenDmxThread() {
  *
  */
 void *OpenDmxThread::Run(const string &path) {
-  uint8_t buf[DMX_UNIVERSE_SIZE+1];
+  uint8_t buffer[DMX_UNIVERSE_SIZE+1];
   unsigned int length = DMX_UNIVERSE_SIZE;
   struct timeval tv;
   struct timespec ts;
@@ -89,7 +89,7 @@ void *OpenDmxThread::Run(const string &path) {
   // should close other fd here
 
   // start code
-  buf[0] = 0x00;
+  buffer[0] = 0x00;
   m_fd = open(path.c_str(), O_WRONLY);
 
   while (1) {
@@ -119,10 +119,10 @@ void *OpenDmxThread::Run(const string &path) {
     } else {
       length = DMX_UNIVERSE_SIZE;
       pthread_mutex_lock(&m_mutex);
-      m_buffer.Get(buf, length);
+      m_buffer.Get(buffer + 1, length);
       pthread_mutex_unlock(&m_mutex);
 
-      do_write(buf, DMX_UNIVERSE_SIZE + 1);
+      do_write(buffer, length + 1);
     }
   }
   return NULL;
