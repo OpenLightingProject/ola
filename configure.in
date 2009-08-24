@@ -23,7 +23,7 @@ AC_CONFIG_SUBDIRS(libltdl)
 
 AC_SUBST(INCLTDL)
 AC_SUBST(LIBLTDL)
-
+AC_SUBST(ac_aux_dir)
 
 # Checks for header files.
 AC_HEADER_DIRENT
