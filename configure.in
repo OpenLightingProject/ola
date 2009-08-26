@@ -190,7 +190,10 @@ if test "${build_python_libs}" = "yes"; then
 fi
 
 # check for cppunit
-AM_PATH_CPPUNIT(1.9.6)
+AM_PATH_CPPUNIT(
+  1.9.6,
+  [],
+  [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
 
 AC_OUTPUT_COMMANDS([
   if test -n "$CONFIG_FILES" && test -n "$CONFIG_HEADERS"; then
