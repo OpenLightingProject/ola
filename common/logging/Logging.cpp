@@ -130,7 +130,7 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
     default :
       pri = LOG_INFO;
   }
-  syslog(pri, log_line.data());
+  syslog(pri, "%s", log_line.data());
 }
 
 } // ola
