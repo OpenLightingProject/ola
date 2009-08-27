@@ -1,2 +1,2 @@
 
-EXTRA_DIST = preferences.output  test_preferences.conf
+EXTRA_DIST = test_preferences.conf
