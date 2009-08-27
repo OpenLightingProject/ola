@@ -80,7 +80,7 @@ bool Dmx4LinuxPlugin::StartHook() {
   if (!SetupSockets())
     return false;
 
-  if (Setup()) {
+  if (!Setup()) {
     CleanupSockets();
     return false;
   }
@@ -212,7 +212,7 @@ bool Dmx4LinuxPlugin::SetupSockets() {
       OLA_WARN << "failed to open " << m_out_dev << " " << strerror(errno);
       return false;
     }
-    m_in_socket = new DeviceSocket(fd);
+    m_out_socket = new DeviceSocket(fd);
 
     fd = open(m_in_dev.c_str(), O_RDONLY | O_NONBLOCK);
     if (fd < 0) {
@@ -220,7 +220,7 @@ bool Dmx4LinuxPlugin::SetupSockets() {
       CleanupSockets();
       return false;
     }
-    m_out_socket = new DeviceSocket(fd);
+    m_in_socket = new DeviceSocket(fd);
     return true;
   }
   return false;
@@ -268,7 +268,7 @@ bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
   string device_id = IntToString((d4l_uni << 1) + dir);
   Dmx4LinuxDevice *dev = new Dmx4LinuxDevice(this, family, device_id);
 
-  if (dev->Start()) {
+  if (!dev->Start()) {
     OLA_WARN << "couldn't start device";
     delete dev;
     return false;
