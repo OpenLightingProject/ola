@@ -1,4 +1,8 @@
-8/8/2009
+8/26/2009 ola-0.3.1
+  Fixed the open dmx usb off by one bug
+  Minor build tool fixes
+
+8/8/2009 ola-0.3.0
   Changed the name of the project to Open Lighting Architecture
   Major rewrite
    - added export_map
