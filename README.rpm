@@ -1,0 +1,35 @@
+Instructions on how to build a RPM for Mandriva, this may work with other RPM
+based distros.
+
+1. Install RPM build tools:
+   $ urpmi rpm-build libtool spec-helper
+
+2. Create the build environment:
+   $ mkdir -p ~/rpm/{BUILD,RPMS/{i586,noarch,x86_64},SOURCES,SRPMS,SPECS,tmp}
+
+3. Either download the latest tarball, or if you want to build a RPM from the
+   git repo:
+   $ cd /tmp
+   $ urpmi git
+   $ git clone http://www.nomis52.net/git/lla
+   $ cd lla
+   $ autoreconf -i -f && ./configure && make dist
+   $ cp ola-X.Y.Z.tar.gz ~/rpm/SOURCES/
+
+4. Add Kev's repository to get latest ctemplate, libmicrohttpd and protobuf
+   (here for 64bits Mandriva 2009.1):
+   $ urpmi.addmedia --update kev-rpms \
+     http://kev.coolcavemen.com/static/repository/mandriva/2009.1/x86_64
+
+   For more details, see http://kev.coolcavemen.com/mandriva-rpm-repository/
+
+5. Install requires build dependencies of ola:
+   $ urpmi libmicrohttpd-devel libcppunit-devel protobuf-devel \
+     libctemplate-devel
+
+6. Build ola from the spec file:
+   $ cd ~/rpm/SPECS/
+   $ cp /tmp/lla/ola/spec ./
+   $ rpmbuild -ba ./ola.spec
+
+7. Et voila ! Your RPM is in ~/rpm/SPECS/<my_arch>/ !

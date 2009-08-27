@@ -6,6 +6,7 @@ AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
 AM_CXXFLAGS = -Wall -Werror -Wformat -W
 
 SUBDIRS = include common ola plugins libltdl olad python tools
+EXTRA_DIST = README.rpm ola.spec
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libola.pc
