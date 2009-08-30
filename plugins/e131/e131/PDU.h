@@ -43,7 +43,10 @@ class PDU {
      * @return true on success, false on failure
      */
     virtual bool Pack(uint8_t *data, unsigned int &length) const = 0;
-    static const int TWOB_LENGTH_LIMIT = 4095;
+
+    // The max PDU length that can be represented with the 2 byte format for
+    // the length field.
+    static const unsigned int TWOB_LENGTH_LIMIT = 0x0FFF;
 };
 
 

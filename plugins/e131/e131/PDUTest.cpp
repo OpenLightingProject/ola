@@ -21,6 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "PDU.h"
+#include "PDUTestCommon.h"
 
 namespace ola {
 namespace e131 {
@@ -36,28 +37,6 @@ class PDUTest: public CppUnit::TestFixture {
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(PDUTest);
-
-
-/*
- * This PDU just contains a int32.
- */
-class MockPDU: public PDU {
-  public:
-    MockPDU(unsigned int value): m_value(value) {}
-    unsigned int Size() const { return sizeof(m_value); }
-
-    bool Pack(uint8_t *data, unsigned int &length) const {
-      if (length < sizeof(m_value))
-        return false;
-      unsigned int *int_data = (unsigned int*) data;
-      *int_data = m_value;
-      length = sizeof(m_value);
-      return true;
-    }
-
-  private:
-    unsigned int m_value;
-};
 
 
 /*

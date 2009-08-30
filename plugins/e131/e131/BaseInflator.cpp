@@ -230,6 +230,8 @@ bool BaseInflator::InflatePDU(HeaderSet &headers, uint8_t flags, uint8_t *data,
   if (!PostHeader(vector, headers))
     return true;
 
+  //TODO: handle the crazy DFLAG here
+
   data_offset += header_bytes_used;
   BaseInflator *inflator = GetInflator(vector);
   if (inflator) {
