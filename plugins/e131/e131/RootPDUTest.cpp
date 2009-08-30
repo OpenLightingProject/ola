@@ -114,8 +114,7 @@ void RootPDUTest::testNestedRootPDU() {
 
   CID cid;
   cid.Generate();
-  RootPDU pdu(TEST_VECTOR, cid, NULL);
-  pdu.SetBlock(&block);
+  RootPDU pdu(TEST_VECTOR, cid, &block);
 
   CPPUNIT_ASSERT_EQUAL(TEST_VECTOR, pdu.Vector());
   CPPUNIT_ASSERT(cid == pdu.Cid());

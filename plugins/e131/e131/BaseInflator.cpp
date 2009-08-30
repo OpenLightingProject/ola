@@ -72,7 +72,7 @@ BaseInflator *BaseInflator::GetInflator(uint32_t proto) const {
  * @returns the amount of data used
  */
 int BaseInflator::InflatePDUBlock(HeaderSet &headers,
-                                  uint8_t *data,
+                                  const uint8_t *data,
                                   unsigned int length) {
   unsigned int offset = 0;
   ResetPDUFields();
@@ -113,7 +113,8 @@ void BaseInflator::ResetPDUFields() {
  * @param bytes_used set to the number of bytes used for the length field
  * @return true if everything worked, false if invalid data was found
  */
-bool BaseInflator::DecodeLength(uint8_t *data, unsigned int length,
+bool BaseInflator::DecodeLength(const uint8_t *data,
+                                unsigned int length,
                                 unsigned int &pdu_length,
                                 unsigned int &bytes_used) const {
   uint8_t flags = data[0];
@@ -156,7 +157,7 @@ bool BaseInflator::DecodeLength(uint8_t *data, unsigned int length,
  * @param vector the result of the vector
  * @param bytes_used the number of bytes consumed
  */
-bool BaseInflator::DecodeVector(uint8_t flags, uint8_t *data,
+bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
                                 unsigned int length, uint32_t &vector,
                                 unsigned int &bytes_used) {
 
@@ -207,7 +208,8 @@ bool BaseInflator::DecodeVector(uint8_t flags, uint8_t *data,
  * @param pdu_len   length of the PDU
  * @return true if we inflated without errors
  */
-bool BaseInflator::InflatePDU(HeaderSet &headers, uint8_t flags, uint8_t *data,
+bool BaseInflator::InflatePDU(HeaderSet &headers, uint8_t flags,
+                              const uint8_t *data,
                               unsigned int pdu_len) {
   uint32_t vector;
   unsigned int data_offset, header_bytes_used;
@@ -257,8 +259,10 @@ bool BaseInflator::PostHeader(uint32_t vector, HeaderSet &headers) {
 /*
  * The base handle data method - does nothing
  */
-bool BaseInflator::HandlePDUData(uint32_t vector, HeaderSet &headers,
-                                uint8_t *data, unsigned int pdu_len) {
+bool BaseInflator::HandlePDUData(uint32_t vector,
+                                 HeaderSet &headers,
+                                 const uint8_t *data,
+                                 unsigned int pdu_len) {
   OLA_WARN << "In BaseInflator::HandlePDUData, someone forgot to add" <<
     " a handler";
   return false;

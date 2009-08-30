@@ -69,7 +69,7 @@ class BaseInflator {
     /*
      * Parse a block of PDU data
      */
-    virtual int InflatePDUBlock(HeaderSet &headers, uint8_t *data,
+    virtual int InflatePDUBlock(HeaderSet &headers, const uint8_t *data,
                                 unsigned int len);
 
     // masks for the flag fields
@@ -95,20 +95,20 @@ class BaseInflator {
     virtual void ResetHeaderField() = 0;
 
     // determine the length of a pdu
-    bool DecodeLength(uint8_t *data, unsigned int data_length,
+    bool DecodeLength(const uint8_t *data, unsigned int data_length,
                       unsigned int &pdu_length,
                       unsigned int &bytes_used) const;
 
     // determine the vector of a pdu
-    bool DecodeVector(uint8_t flags, uint8_t *data, unsigned int length,
+    bool DecodeVector(uint8_t flags, const uint8_t *data, unsigned int length,
                       uint32_t &vector, unsigned int &bytes_used);
 
     // Decode a header block and adds any PduHeaders to the HeaderSet object
-    virtual bool DecodeHeader(HeaderSet &headers, uint8_t *data,
+    virtual bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
                               unsigned int len, unsigned int &bytes_used) = 0;
 
     // parse the body of a pdu
-    bool InflatePDU(HeaderSet &headers, uint8_t flags, uint8_t *data,
+    bool InflatePDU(HeaderSet &headers, uint8_t flags, const uint8_t *data,
                     unsigned int pdu_len);
 
     // called after the header is parsed
@@ -116,7 +116,7 @@ class BaseInflator {
 
     // called in the absence of a parse to handle the pdu data
     virtual bool HandlePDUData(uint32_t vector, HeaderSet &headers,
-                              uint8_t *data, unsigned int pdu_len);
+                               const uint8_t *data, unsigned int pdu_len);
 };
 
 } // e131

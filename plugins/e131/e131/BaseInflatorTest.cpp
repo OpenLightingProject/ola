@@ -18,14 +18,11 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <string>
-#include <iostream>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "BaseInflator.h"
 #include "HeaderSet.h"
 
-using std::string;
 
 namespace ola {
 namespace e131 {
@@ -62,7 +59,8 @@ class MockInflator: public ola::e131::BaseInflator {
 
   protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet &headers, uint8_t *data,
+    bool DecodeHeader(HeaderSet &headers,
+                     const uint8_t *data,
                      unsigned int len,
                      unsigned int &bytes_used) {
       bytes_used = 0;
@@ -70,7 +68,7 @@ class MockInflator: public ola::e131::BaseInflator {
     }
 
     bool HandlePDUData(uint32_t vector, HeaderSet &headers,
-                       uint8_t *data, unsigned int pdu_length) {
+                       const uint8_t *data, unsigned int pdu_length) {
       CPPUNIT_ASSERT_EQUAL((uint32_t) 289, vector);
       CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(PDU_DATA), pdu_length);
       CPPUNIT_ASSERT(!memcmp(data, PDU_DATA, pdu_length));
