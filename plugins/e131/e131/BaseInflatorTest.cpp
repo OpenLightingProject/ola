@@ -61,6 +61,7 @@ class MockInflator: public ola::e131::BaseInflator {
     unsigned int BlocksHandled() const { return m_blocks_handled; }
 
   protected:
+    void ResetHeaderField() {}
     bool DecodeHeader(HeaderSet &headers, uint8_t *data,
                      unsigned int len,
                      unsigned int &bytes_used) {

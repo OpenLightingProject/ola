@@ -17,7 +17,7 @@
  * Interface for the HeaderSet class
  * HeaderSet is passed down the parsing stack and contains a collection of PDU
  * headers
- * Copyright (C) 2007 Simon Newton
+ * Copyright (C) 2007-2009 Simon Newton
  */
 
 #ifndef OLA_E131_HEADERSET_H
@@ -46,6 +46,12 @@ class HeaderSet {
     const DmpHeader &dmp_header() const { return m_dmp_header; }
     void set_dmp_header(DmpHeader &hdr) { m_dmp_header = hdr; }
     */
+
+    bool operator==(const HeaderSet &other) const {
+      return m_root_header == other.m_root_header; // &&
+      //m_e131_header == other.m_e131_header &&
+      // m_dmp_header == other.m_dmp_header
+    }
 
   private:
     RootHeader m_root_header;

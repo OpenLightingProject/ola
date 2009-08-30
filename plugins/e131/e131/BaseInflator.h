@@ -22,14 +22,13 @@
  * the Id() and DecodeHeader() methods.
  */
 
-#ifndef OLA_E131_BASEPARSER_H
-#define OLA_E131_BASEPARSER_H
+#ifndef OLA_E131_BASEINFLATOR_H
+#define OLA_E131_BASEINFLATOR_H
 
 #include <stdint.h>
 #include <map>
 
 #include "HeaderSet.h"
-
 
 namespace ola {
 namespace e131 {
@@ -91,8 +90,9 @@ class BaseInflator {
     // map protos to inflators
     std::map<uint32_t, class BaseInflator*> m_proto_map;
 
-    // Reset repeated pdu header fields
+    // Reset repeated pdu fields
     virtual void ResetPDUFields();
+    virtual void ResetHeaderField() = 0;
 
     // determine the length of a pdu
     bool DecodeLength(uint8_t *data, unsigned int data_length,

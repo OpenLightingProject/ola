@@ -19,6 +19,7 @@
  */
 
 //#include <iterator>
+#include <algorithm>
 #include <ola/Logging.h>
 #include "BaseInflator.h"
 
@@ -91,7 +92,7 @@ int BaseInflator::InflatePDUBlock(HeaderSet &headers,
     }
     offset += pdu_length;
   } while (offset < length);
-  return min(offset, length);
+  return std::min(offset, length);
 }
 
 
@@ -100,6 +101,7 @@ int BaseInflator::InflatePDUBlock(HeaderSet &headers,
  */
 void BaseInflator::ResetPDUFields() {
   m_vector_set = false;
+  ResetHeaderField();
 }
 
 
