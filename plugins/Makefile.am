@@ -1,5 +1,5 @@
 
-SUBDIRS = artnet dmx4linux dummy espnet opendmx \
-          shownet stageprofi usbpro
+SUBDIRS = artnet dmx4linux dummy e131 espnet opendmx \
+           shownet stageprofi usbpro
 
-# e131 pathport sandnet 
+# pathport sandnet 
