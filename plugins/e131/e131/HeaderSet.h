@@ -24,7 +24,7 @@
 #define OLA_E131_HEADERSET_H
 
 #include "RootHeader.h"
-//#include "e131/E131Header.h"
+#include "E131Header.h"
 //#include "dmxacn/DmpHeader.h"
 
 namespace ola {
@@ -35,14 +35,13 @@ class HeaderSet {
     HeaderSet() {}
     ~HeaderSet() {}
 
-    // We only ever have one root header
     const RootHeader &GetRootHeader() const { return m_root_header; }
     void SetRootHeader(RootHeader &header) { m_root_header = header; }
 
-    /*
-    const E131Header &e131_header() const { return m_e131_header; }
-    void set_e131_header(E131Header &hdr) { m_e131_header = hdr; }
+    const E131Header &GetE131Header() const { return m_e131_header; }
+    void SetE131Header(E131Header &header) { m_e131_header = header; }
 
+    /*
     const DmpHeader &dmp_header() const { return m_dmp_header; }
     void set_dmp_header(DmpHeader &hdr) { m_dmp_header = hdr; }
     */
@@ -55,7 +54,7 @@ class HeaderSet {
 
   private:
     RootHeader m_root_header;
-    //E131Header m_e131_header;
+    E131Header m_e131_header;
     //DmpHeader m_dmp_header;
 };
 
