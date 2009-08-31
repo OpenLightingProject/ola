@@ -46,13 +46,13 @@ class E131Header {
       {}
     ~E131Header() {}
 
-    const string Source() { return m_source; }
+    const string Source() const { return m_source; }
     //const string Source(const string &source) { return m_source = source; }
-    const uint8_t Priority() { return m_priority; }
+    const uint8_t Priority() const { return m_priority; }
     //const uint8_t Priority(uint8_t priority) { return m_priority = priority; }
-    const uint8_t Sequence() { return m_sequence; }
+    const uint8_t Sequence() const { return m_sequence; }
     //const uint8_t Sequence(uint8_t sequence) { return m_sequence = sequence; }
-    const uint16_t Universe() { return m_universe; }
+    const uint16_t Universe() const { return m_universe; }
     /*
     const uint16_t Universe(uint16_t universe) {
       return m_universe = universe;

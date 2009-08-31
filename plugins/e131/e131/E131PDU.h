@@ -13,45 +13,49 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RootPDU.h
- * Interface for the RootPDU class
+ * E131PDU.h
+ * Interface for the E131PDU class
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131_ROOTPDU_H
-#define OLA_E131_ROOTPDU_H
+#ifndef OLA_E131_E131PDU_H
+#define OLA_E131_E131PDU_H
 
 #include <stdint.h>
 
-#include "CID.h"
 #include "PDU.h"
+#include "E131Header.h"
 
 namespace ola {
 namespace e131 {
 
-class RootPDU: public PDU {
+class DmpMsg;
+
+class E131PDU: public PDU {
   public:
-    RootPDU(unsigned int vector):
+    E131PDU(unsigned int vector, const E131Header &header, DmpMsg *msg):
       PDU(vector),
-      m_block(NULL) {}
-    RootPDU(unsigned int vector, const CID &cid, PDUBlock<PDU> *block):
-      PDU(vector),
-      m_cid(cid),
-      m_block(block) {}
-    ~RootPDU() {}
+      m_header(header),
+      m_dmp(msg) {}
+    ~E131PDU() {}
 
     unsigned int HeaderSize() const;
     unsigned int DataSize() const;
     bool PackHeader(uint8_t *data, unsigned int &length) const;
     bool PackData(uint8_t *data, unsigned int &length) const;
 
-    const CID &Cid() const { return m_cid; }
-    const CID &Cid(CID &cid) { return m_cid = cid; }
-    void SetBlock(PDUBlock<PDU> *block) { m_block = block; }
-
   private:
-    CID m_cid;
-    PDUBlock<PDU> *m_block;
+    E131Header m_header;
+    DmpMsg *m_dmp;
+
+    enum { SOURCE_NAME_LEN = 32 };
+
+    typedef struct {
+      char source[SOURCE_NAME_LEN];
+      uint8_t priority;
+      uint8_t sequence;
+      uint16_t universe;
+    } e131_pdu_header;
 };
 
 } // e131
