@@ -29,7 +29,7 @@ namespace e131 {
 /*
  * Setup the base inflator
  */
-BaseInflator::BaseInflator(vector_size v_size):
+BaseInflator::BaseInflator(PDU::vector_size v_size):
   m_last_vector(0),
   m_vector_set(false),
   m_vector_size(v_size) {
@@ -161,7 +161,7 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
                                 unsigned int length, uint32_t &vector,
                                 unsigned int &bytes_used) {
 
-  if (flags & VFLAG_MASK) {
+  if (flags & PDU::VFLAG_MASK) {
     if (m_vector_size > length) {
       vector = 0;
       bytes_used = 0;
@@ -169,13 +169,13 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
     }
 
     switch (m_vector_size) {
-      case ONE_BYTE:
+      case PDU::ONE_BYTE:
         vector = *data;
         break;
-      case TWO_BYTES:
+      case PDU::TWO_BYTES:
         vector = ntohs(*(uint16_t*) data);
         break;
-      case FOUR_BYTES:
+      case PDU::FOUR_BYTES:
         vector = ntohl(*(uint32_t*) data);
         break;
       default:
@@ -218,7 +218,7 @@ bool BaseInflator::InflatePDU(HeaderSet &headers, uint8_t flags,
   if (!DecodeVector(flags, data, pdu_len, vector, data_offset))
     return false;
 
-  if (flags & HFLAG_MASK) {
+  if (flags & PDU::HFLAG_MASK) {
     result = DecodeHeader(headers, data + data_offset,
                           pdu_len - data_offset,
                           header_bytes_used);

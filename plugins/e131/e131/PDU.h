@@ -33,16 +33,41 @@ namespace e131 {
  */
 class PDU {
   public:
-    PDU() {}
+    typedef enum {
+      ONE_BYTE = 1,
+      TWO_BYTES = 2,
+      FOUR_BYTES = 4,
+    } vector_size;
+
+    PDU(unsigned int vector, vector_size size=FOUR_BYTES):
+      m_vector(vector),
+      m_vector_size(size) {}
     virtual ~PDU() {}
 
     // Returns the size of this PDU
-    virtual unsigned int Size() const = 0;
+    virtual unsigned int Size() const;
+    virtual unsigned int VectorSize() const { return m_vector_size; }
+    virtual unsigned int HeaderSize() const = 0;
+    virtual unsigned int DataSize() const = 0;
+
     /*
      * Pack the PDU into the memory pointed to by data
      * @return true on success, false on failure
      */
-    virtual bool Pack(uint8_t *data, unsigned int &length) const = 0;
+    virtual bool Pack(uint8_t *data, unsigned int &length) const;
+    virtual bool PackHeader(uint8_t *data, unsigned int &length) const = 0;
+    virtual bool PackData(uint8_t *data, unsigned int &length) const = 0;
+
+    // This indicates a vector is present
+    static const uint8_t VFLAG_MASK = 0x40;
+    // This indicates a header field is present
+    static const uint8_t HFLAG_MASK = 0x20;
+    // This indicates a data field is present
+    static const uint8_t DFLAG_MASK = 0x10;
+
+  private:
+    unsigned int m_vector;
+    unsigned int m_vector_size;
 
     // The max PDU length that can be represented with the 2 byte format for
     // the length field.

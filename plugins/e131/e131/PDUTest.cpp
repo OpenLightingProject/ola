@@ -43,10 +43,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PDUTest);
  * Test that packing a PDUBlock works.
  */
 void PDUTest::testPDUBlock() {
-  MockPDU pdu1(1);
-  MockPDU pdu2(2);
-  MockPDU pdu42(42);
-  PDUBlock<MockPDU> block;
+  FakePDU pdu1(1);
+  FakePDU pdu2(2);
+  FakePDU pdu42(42);
+  PDUBlock<FakePDU> block;
   block.AddPDU(&pdu1);
   block.AddPDU(&pdu2);
   block.AddPDU(&pdu42);

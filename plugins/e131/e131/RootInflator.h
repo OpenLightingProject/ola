@@ -13,59 +13,36 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RootPDU.cpp
- * The RootPDU class
- * Copyright (C) 2007-2009 Simon Newton
+ * RootInflator.h
+ * Interface for the RootInflator class.
+ * Copyright (C) 2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include "RootPDU.h"
+#ifndef OLA_E131_ROOTINFLATOR_H
+#define OLA_E131_ROOTINFLATOR_H
+
 #include "BaseInflator.h"
 
 namespace ola {
 namespace e131 {
 
-/*
- * Return the size of the header portion.
- */
-unsigned int RootPDU::HeaderSize() const {
-  return CID::CID_LENGTH;
-}
+class RootInflator: public BaseInflator {
+  public:
+    RootInflator(): BaseInflator() {}
+    ~RootInflator() {}
+    uint32_t Id() const { return 0; } // no effect for the root inflator
 
+  protected:
+    // Decode a header block and adds any PduHeaders to the HeaderSet object
+    bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
+                      unsigned int len, unsigned int &bytes_used);
 
-/*
- * Return the size of the data portion.
- */
-unsigned int RootPDU::DataSize() const {
-  return m_block ? m_block->Size() : 0;
-}
-
-
-/*
- * Pack the header into a buffer.
- */
-bool RootPDU::PackHeader(uint8_t *data, unsigned int &length) const {
-  if (length < CID::CID_LENGTH) {
-    length = 0;
-    return false;
-  }
-
-  m_cid.Pack(data);
-  length = CID::CID_LENGTH;
-  return true;
-}
-
-
-/*
- * Pack the data into a buffer
- */
-bool RootPDU::PackData(uint8_t *data, unsigned int &length) const {
-  if (m_block)
-    return m_block->Pack(data, length);
-
-  length = 0;
-  return true;
-}
+    virtual void ResetHeaderField();
+  private :
+    RootHeader m_last_hdr;
+};
 
 } // e131
 } // ola
+
+#endif

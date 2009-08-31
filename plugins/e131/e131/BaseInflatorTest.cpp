@@ -47,10 +47,10 @@ class BaseInflatorTest: public CppUnit::TestFixture {
   private:
 };
 
-class MockInflator: public ola::e131::BaseInflator {
+
+class TestInflator: public ola::e131::BaseInflator {
   public:
-    MockInflator(unsigned int id=0,
-                 BaseInflator::vector_size v_size=BaseInflator::TWO_BYTES):
+    TestInflator(unsigned int id=0, PDU::vector_size v_size=PDU::TWO_BYTES):
       BaseInflator(v_size),
       m_id(id),
       m_blocks_handled(0) {}
@@ -88,9 +88,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(BaseInflatorTest);
  * Test that we can setup the child inflators correctly
  */
 void BaseInflatorTest::testChildInflators() {
-  MockInflator inflator;
-  MockInflator inflator1(1);
-  MockInflator inflator2(2);
+  TestInflator inflator;
+  TestInflator inflator1(1);
+  TestInflator inflator2(2);
 
   CPPUNIT_ASSERT_EQUAL((uint32_t) 1, inflator1.Id());
   CPPUNIT_ASSERT_EQUAL((uint32_t) 2, inflator2.Id());
@@ -111,7 +111,7 @@ void BaseInflatorTest::testChildInflators() {
  * Test that DecodeLength works
  */
 void BaseInflatorTest::testDecodeLength() {
-  MockInflator inflator;
+  TestInflator inflator;
   uint8_t data[] = {0, 0, 0, 0}; // the test data
   unsigned int pdu_length;
   unsigned int bytes_used = 0;
@@ -197,11 +197,11 @@ void BaseInflatorTest::testDecodeLength() {
  * test that DecodeVector works
  */
 void BaseInflatorTest::testDecodeVector() {
-  MockInflator inflator(0, BaseInflator::ONE_BYTE);
+  TestInflator inflator(0, PDU::ONE_BYTE);
   uint8_t data[] = {1, 2, 3, 4, 5, 6}; // the test data
   unsigned int vector = 1;
   unsigned int bytes_used = 0;
-  uint8_t flags = BaseInflator::VFLAG_MASK;
+  uint8_t flags = PDU::VFLAG_MASK;
 
   CPPUNIT_ASSERT(!inflator.DecodeVector(flags, data, 0, vector, bytes_used));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, vector);
@@ -231,8 +231,8 @@ void BaseInflatorTest::testDecodeVector() {
   }
 
   // now try with a vector size of 2
-  flags = BaseInflator::VFLAG_MASK;
-  MockInflator inflator2(0, BaseInflator::TWO_BYTES);
+  flags = PDU::VFLAG_MASK;
+  TestInflator inflator2(0, PDU::TWO_BYTES);
   for (unsigned int i = 0; i < 2; i++) {
     CPPUNIT_ASSERT(!inflator2.DecodeVector(flags, data, i, vector, bytes_used));
     CPPUNIT_ASSERT_EQUAL((unsigned int) 0, vector);
@@ -264,8 +264,8 @@ void BaseInflatorTest::testDecodeVector() {
   }
 
   // now try with a vector size of 4
-  flags = BaseInflator::VFLAG_MASK;
-  MockInflator inflator4(0, BaseInflator::FOUR_BYTES);
+  flags = PDU::VFLAG_MASK;
+  TestInflator inflator4(0, PDU::FOUR_BYTES);
   for (unsigned int i = 0; i < 4; i++) {
     CPPUNIT_ASSERT(!inflator4.DecodeVector(flags, data, i, vector, bytes_used));
     CPPUNIT_ASSERT_EQUAL((unsigned int) 0, vector);
@@ -289,15 +289,15 @@ void BaseInflatorTest::testDecodeVector() {
  * Check that we can inflate a PDU
  */
 void BaseInflatorTest::testInflatePDU() {
-  MockInflator inflator; // test with a vector size of 2
+  TestInflator inflator; // test with a vector size of 2
   HeaderSet header_set;
-  uint8_t flags = BaseInflator::VFLAG_MASK;
-  unsigned int data_size = BaseInflator::TWO_BYTES + sizeof(PDU_DATA);
+  uint8_t flags = PDU::VFLAG_MASK;
+  unsigned int data_size = PDU::TWO_BYTES + sizeof(PDU_DATA);
   uint8_t *data = new uint8_t[data_size];
   // setup the vector
   data[0] = 0x01;
   data[1] = 0x21;
-  memcpy(data + BaseInflator::TWO_BYTES, PDU_DATA, sizeof(PDU_DATA));
+  memcpy(data + PDU::TWO_BYTES, PDU_DATA, sizeof(PDU_DATA));
 
   CPPUNIT_ASSERT(inflator.InflatePDU(header_set, flags, data, data_size));
   delete data;
@@ -308,20 +308,20 @@ void BaseInflatorTest::testInflatePDU() {
  * Check that we can inflate a PDU block correctly.
  */
 void BaseInflatorTest::testInflatePDUBlock() {
-  MockInflator inflator; // test with a vector size of 2
+  TestInflator inflator; // test with a vector size of 2
   HeaderSet header_set;
   const unsigned int length_size = 2;
 
   // inflate a single pdu block
-  unsigned int data_size = (length_size + BaseInflator::TWO_BYTES +
+  unsigned int data_size = (length_size + PDU::TWO_BYTES +
     sizeof(PDU_DATA));
   uint8_t *data = new uint8_t[data_size];
   // setup the vector
-  data[0] = BaseInflator::VFLAG_MASK;
+  data[0] = PDU::VFLAG_MASK;
   data[1] = data_size;
   data[2] = 0x01;
   data[3] = 0x21;
-  memcpy(data + length_size + BaseInflator::TWO_BYTES, PDU_DATA,
+  memcpy(data + length_size + PDU::TWO_BYTES, PDU_DATA,
          sizeof(PDU_DATA));
   CPPUNIT_ASSERT_EQUAL((int) data_size,
                         inflator.InflatePDUBlock(header_set, data, data_size));
@@ -330,18 +330,18 @@ void BaseInflatorTest::testInflatePDUBlock() {
 
   // inflate a multi-pdu block
   data = new uint8_t[2 * data_size];
-  data[0] = BaseInflator::VFLAG_MASK;
+  data[0] = PDU::VFLAG_MASK;
   data[1] = data_size;
   data[2] = 0x01;
   data[3] = 0x21;
-  memcpy(data + length_size + BaseInflator::TWO_BYTES,
+  memcpy(data + length_size + PDU::TWO_BYTES,
          PDU_DATA,
          sizeof(PDU_DATA));
-  data[data_size] = BaseInflator::VFLAG_MASK;
+  data[data_size] = PDU::VFLAG_MASK;
   data[data_size + 1] = data_size;
   data[data_size + 2] = 0x01;
   data[data_size + 3] = 0x21;
-  memcpy(data + data_size + length_size + BaseInflator::TWO_BYTES, PDU_DATA,
+  memcpy(data + data_size + length_size + PDU::TWO_BYTES, PDU_DATA,
          sizeof(PDU_DATA));
   CPPUNIT_ASSERT_EQUAL(
       2 * (int) data_size,
@@ -350,20 +350,20 @@ void BaseInflatorTest::testInflatePDUBlock() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 3, inflator.BlocksHandled());
 
   // inflate with nested inflators
-  MockInflator child_inflator(289);
+  TestInflator child_inflator(289);
   inflator.AddInflator(&child_inflator);
-  unsigned int pdu_size = data_size + length_size + BaseInflator::TWO_BYTES;
+  unsigned int pdu_size = data_size + length_size + PDU::TWO_BYTES;
   data = new uint8_t[pdu_size];
 
-  data[0] = BaseInflator::VFLAG_MASK;
+  data[0] = PDU::VFLAG_MASK;
   data[1] = pdu_size;
   data[2] = 0x01;
   data[3] = 0x21;
-  data[4] = BaseInflator::VFLAG_MASK;
+  data[4] = PDU::VFLAG_MASK;
   data[5] = data_size;
   data[6] = 0x01;
   data[7] = 0x21;
-  memcpy(data + 2 * (length_size + BaseInflator::TWO_BYTES),
+  memcpy(data + 2 * (length_size + PDU::TWO_BYTES),
          PDU_DATA,
          sizeof(PDU_DATA));
   CPPUNIT_ASSERT_EQUAL((int) pdu_size,

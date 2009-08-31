@@ -29,6 +29,7 @@
 #include <map>
 
 #include "HeaderSet.h"
+#include "PDU.h"
 
 namespace ola {
 namespace e131 {
@@ -43,13 +44,8 @@ class BaseInflator {
   friend class BaseInflatorTest;
 
   public:
-    typedef enum {
-      ONE_BYTE = 1,
-      TWO_BYTES = 2,
-      FOUR_BYTES = 4,
-    } vector_size;
 
-    BaseInflator(vector_size v_size=FOUR_BYTES);
+    BaseInflator(PDU::vector_size v_size=PDU::FOUR_BYTES);
     virtual ~BaseInflator() {};
 
     /*
@@ -75,18 +71,13 @@ class BaseInflator {
     // masks for the flag fields
     // This indicates a 20 bit length field (default is 12 bits)
     static const uint8_t LFLAG_MASK = 0x80;
-    // This indicates a vector is present
-    static const uint8_t VFLAG_MASK = 0x40;
-    // This indicates a header field is present
-    static const uint8_t HFLAG_MASK = 0x20;
-    static const uint8_t DFLAG_MASK = 0x10;
     // This masks the first 4 bits of the length field
     static const uint8_t LENGTH_MASK = 0x0F;
 
   protected:
     uint32_t m_last_vector;
     bool m_vector_set;
-    vector_size m_vector_size; // size of the vector field
+    PDU::vector_size m_vector_size; // size of the vector field
     // map protos to inflators
     std::map<uint32_t, class BaseInflator*> m_proto_map;
 

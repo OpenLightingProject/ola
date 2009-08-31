@@ -32,30 +32,25 @@ namespace e131 {
 
 class RootPDU: public PDU {
   public:
-    RootPDU():
-      PDU(),
-      m_vector(0),
+    RootPDU(unsigned int vector):
+      PDU(vector),
       m_block(NULL) {}
     RootPDU(unsigned int vector, const CID &cid, PDUBlock<PDU> *block):
-      PDU(),
-      m_vector(vector),
+      PDU(vector),
       m_cid(cid),
       m_block(block) {}
     ~RootPDU() {}
 
-    unsigned int Size() const;
-    bool Pack(uint8_t *data, unsigned int &length) const;
-
-    unsigned int Vector() const { return m_vector; }
-    unsigned int Vector(unsigned int vector) { return m_vector = vector; }
-
-    void SetBlock(PDUBlock<PDU> *block) { m_block = block; }
+    unsigned int HeaderSize() const;
+    unsigned int DataSize() const;
+    bool PackHeader(uint8_t *data, unsigned int &length) const;
+    bool PackData(uint8_t *data, unsigned int &length) const;
 
     const CID &Cid() const { return m_cid; }
     const CID &Cid(CID &cid) { return m_cid = cid; }
+    void SetBlock(PDUBlock<PDU> *block) { m_block = block; }
 
   private:
-    uint32_t m_vector;
     CID m_cid;
     PDUBlock<PDU> *m_block;
 };

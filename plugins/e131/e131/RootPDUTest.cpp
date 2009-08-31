@@ -53,8 +53,6 @@ void RootPDUTest::testSimpleRootPDU() {
   CID cid;
   cid.Generate();
   RootPDU pdu1(TEST_VECTOR, cid, NULL);
-
-  CPPUNIT_ASSERT_EQUAL(TEST_VECTOR, pdu1.Vector());
   CPPUNIT_ASSERT(cid == pdu1.Cid());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 22, pdu1.Size());
 
@@ -84,11 +82,9 @@ void RootPDUTest::testSimpleRootPDU() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
 
   // use the other constructor
-  RootPDU pdu2;
-  pdu2.Vector(TEST_VECTOR);
+  RootPDU pdu2(TEST_VECTOR);
   pdu2.Cid(cid);
 
-  CPPUNIT_ASSERT_EQUAL(TEST_VECTOR, pdu1.Vector());
   CPPUNIT_ASSERT(cid == pdu1.Cid());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 22, pdu1.Size());
   bytes_used = size;
@@ -106,8 +102,8 @@ void RootPDUTest::testSimpleRootPDU() {
  * Test that packing a RootPDU with nested data works
  */
 void RootPDUTest::testNestedRootPDU() {
-  MockPDU pdu1(1);
-  MockPDU pdu2(42);
+  FakePDU pdu1(1);
+  FakePDU pdu2(42);
   PDUBlock<PDU> block;
   block.AddPDU(&pdu1);
   block.AddPDU(&pdu2);
@@ -116,7 +112,6 @@ void RootPDUTest::testNestedRootPDU() {
   cid.Generate();
   RootPDU pdu(TEST_VECTOR, cid, &block);
 
-  CPPUNIT_ASSERT_EQUAL(TEST_VECTOR, pdu.Vector());
   CPPUNIT_ASSERT(cid == pdu.Cid());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 30, pdu.Size());
 
