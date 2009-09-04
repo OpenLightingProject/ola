@@ -17,6 +17,7 @@ check_PROGRAMS = $(TESTS)
 E131Tester_SOURCES = E131Tester.cpp \
                      BaseInflatorTest.cpp \
                      CIDTest.cpp \
+                     E131PDUTest.cpp \
                      HeaderSetTest.cpp \
                      PDUTest.cpp \
                      RootPDUTest.cpp \

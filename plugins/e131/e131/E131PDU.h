@@ -44,11 +44,11 @@ class E131PDU: public PDU {
     bool PackHeader(uint8_t *data, unsigned int &length) const;
     bool PackData(uint8_t *data, unsigned int &length) const;
 
+    enum { SOURCE_NAME_LEN = 32 };
+
   private:
     E131Header m_header;
     DmpMsg *m_dmp;
-
-    enum { SOURCE_NAME_LEN = 32 };
 
     typedef struct {
       char source[SOURCE_NAME_LEN];
