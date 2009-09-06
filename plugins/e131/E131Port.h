@@ -13,39 +13,41 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * E131Port.h
- * The E1.31 plugin for ola
- * Copyright (C) 2007 Simon Newton
+ * The E1.31 port for OLA
+ * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef E131PORT_H
-#define E131PORT_H
+#ifndef OLA_E131PORT_H
+#define OLA_E131PORT_H
 
-#include <olad/port.h>
+#include <olad/Port.h>
+#include "E131Device.h"
+#include "e131/E131Node.h"
 
-class E131Port : public Port  {
+namespace ola {
+namespace e131 {
 
+using ola::DmxBuffer;
+
+class E131Port: public Port<E131Device> {
   public:
-    E131Port(Device *parent, int id, class E131DmpLayer *l) : Port(parent, id),
-             m_layer(l) {};
+    E131Port(E131Device *parent, int id):
+      Port<E131Device>(parent, id) {}
 
-    int set_universe(Universe *uni) ;
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
+    bool CanRead() const;
+    bool CanWrite() const;
+    string Description() const;
+    bool WriteDMX(const DmxBuffer &buffer);
+    const DmxBuffer &ReadDMX() const;
 
-    int can_read() const;
-    int can_write() const ;
+    //int set_universe(Universe *uni);
 
-    static const int NUMB_PORTS = 5;
-    static void data_callback(const uint8_t *dmx, unsigned int len, void *data);
+    static const int NUMBER_OF_PORTS = 5;
   private:
-    void new_data(const uint8_t *data, unsigned int len);
-
-    static const unsigned int DMX_LENGTH = 512;
-    class E131DmpLayer *m_layer;
-    uint8_t m_data[DMX_LENGTH];
-    unsigned int m_len;
+    DmxBuffer m_buffer;
 };
 
+} //plugin
+} //ola
 #endif

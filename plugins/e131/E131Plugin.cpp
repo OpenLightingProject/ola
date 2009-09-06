@@ -15,86 +15,74 @@
  *
  * E131Plugin.cpp
  * The E1.31 plugin for ola
- * Copyright (C) 2007 Simon Newton
+ * Copyright (C) 2007-2009 Simon Newton
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <olad/pluginadaptor.h>
-#include <olad/preferences.h>
+#include <olad/PluginAdaptor.h>
+#include <olad/Preferences.h>
 
 #include "E131Plugin.h"
 #include "E131Device.h"
-#include "OlaNetServer.h"
 
-const string E131Plugin::PLUGIN_NAME = "E131 Plugin";
-const string E131Plugin::PLUGIN_PREFIX = "e131";
 
 /*
  * Entry point to this plugin
  */
-extern "C" Plugin* create(const PluginAdaptor *pa) {
-  return new E131Plugin(pa, OLA_PLUGIN_E131);
+extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *adaptor) {
+  return new ola::e131::E131Plugin(adaptor);
 }
 
 /*
  * Called when the plugin is unloaded
  */
-extern "C" void destroy(Plugin* plug) {
-  delete plug;
+extern "C" void destroy(ola::Plugin* plugin) {
+  delete plugin;
 }
 
 
+namespace ola {
+namespace e131 {
+
+const string E131Plugin::PLUGIN_NAME = "E131 Plugin";
+const string E131Plugin::PLUGIN_PREFIX = "e131";
+
 /*
  * Start the plugin
- *
- * For now we just have one device.
  */
-int E131Plugin::start_hook() {
-  m_ns = new OlaNetServer(m_pa);
+bool E131Plugin::StartHook() {
+  m_device = new E131Device(this, "E131 Device", m_preferences,
+                            m_plugin_adaptor);
 
-  /* create new ola device */
-  m_dev = new E131Device(this, "E131 Device", m_ns, m_prefs);
-
-  if (m_dev == NULL)
-    return -1;
-
-  if (m_dev->start()) {
-    delete m_dev;
-    return -1;
+  if (!m_device->Start()) {
+    delete m_device;
+    return false;
   }
 
-  m_pa->register_device(m_dev);
-  return 0;
+  m_plugin_adaptor->RegisterDevice(m_device);
+  return true;
 }
 
 
 /*
  * Stop the plugin
- *
- * @return 0 on sucess, -1 on failure
  */
-int E131Plugin::stop_hook() {
-  if (m_dev != NULL) {
+bool E131Plugin::StopHook() {
+  m_plugin_adaptor->UnregisterDevice(m_device);
+  if (!m_device->Stop())
+    return false;
 
-    // stop the device
-    if (m_dev->stop())
-      return -1;
-
-    m_pa->unregister_device(m_dev);
-    delete m_dev;
-  }
-
-  delete m_ns;
-  return 0;
+  delete m_device;
+  return true;
 }
 
+
 /*
- * return the description for this plugin
- *
+ * Return the description for this plugin
  */
-string E131Plugin::get_desc() const {
+string E131Plugin::Description() const {
     return
 "E131 Plugin\n"
 "----------------------------\n"
@@ -109,3 +97,6 @@ string E131Plugin::get_desc() const {
 "The local ip address to use for multicasting.\n"
 "\n";
 }
+
+} // e131
+} // ola

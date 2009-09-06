@@ -21,6 +21,7 @@
 #ifndef OLA_E131_PDUTESTCOMMON_H
 #define OLA_E131_PDUTESTCOMMON_H
 
+#include <ola/Closure.h>
 #include "BaseInflator.h"
 #include "CID.h"
 #include "PDU.h"
@@ -107,7 +108,10 @@ class MockPDU: public PDU {
  */
 class MockInflator: public BaseInflator {
   public:
-    MockInflator(const CID &cid): BaseInflator(), m_cid(cid) {}
+    MockInflator(const CID &cid, Closure *on_recv=NULL):
+      BaseInflator(),
+      m_cid(cid),
+      m_on_recv(on_recv) {}
     uint32_t Id() const { return MockPDU::TEST_VECTOR; }
 
   protected:
@@ -133,11 +137,15 @@ class MockInflator: public BaseInflator {
         RootHeader root_header = headers.GetRootHeader();
         CPPUNIT_ASSERT(m_cid == root_header.GetCid());
       }
+
+      if (m_on_recv)
+        m_on_recv->Run();
       return true;
     }
 
   private:
     CID m_cid;
+    Closure *m_on_recv;
     unsigned int m_last_header;
 };
 

@@ -13,37 +13,43 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * E131Device.h
  * Interface for the E1.31 device
- * Copyright (C) 2007 Simon Newton
+ * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef E131DEVICE_H
-#define E131DEVICE_H
+#ifndef OLA_E131DEVICE_H
+#define OLA_E131DEVICE_H
 
-#include <olad/device.h>
-#include <olad/fdlistener.h>
+#include <olad/Device.h>
+#include <olad/Plugin.h>
 
-class E131Device : public Device {
+namespace ola {
+namespace e131 {
 
+using ola::Plugin;
+
+class E131Device: public ola::Device {
   public:
-    E131Device(Plugin *owner, const string &name, class NetServer *ns, class Preferences *prefs) ;
-    ~E131Device() ;
+    E131Device(Plugin *owner, const string &name,
+               class Preferences *preferences,
+               const class PluginAdaptor *plugin_adaptor);
+    ~E131Device() {}
 
-    int start() ;
-    int stop() ;
-    int fd_action() ;
-    int save_config() const;
-    class OlaDevConfMsg *configure(const uint8_t *req, int len) ;
+    bool Start();
+    bool Stop();
+    string DeviceId() const { return "1"; }
+    class E131Node *GetNode() const { return m_node; }
 
   private:
-    class Preferences *m_prefs;
-    class NetServer *m_ns;
+    class Preferences *m_preferences;
+    const class PluginAdaptor *m_plugin_adaptor;
     class E131Node *m_node;
-    class E131DmpLayer *m_layer;
-    bool m_enabled ;
+    bool m_enabled;
 
+    static const std::string IP_KEY;
 };
 
+} // e131
+} // ola
 #endif

@@ -15,69 +15,56 @@
  *
  * E131Port.cpp
  * The E1.31 plugin for ola
- * Copyright (C) 2007 Simon Newton
+ * Copyright (C) 2007-2009 Simon Newton
  */
 
 #include <string.h>
 
-#include <olad/universe.h>
-
-#include <acn/E131DmpLayer.h>
+#include <olad/Universe.h>
 #include "E131Port.h"
 #include "E131Device.h"
 
-#define min(a,b) a<b?a:b
 
+namespace ola {
+namespace e131 {
 
-int E131Port::can_read() const {
-  // ports 0 to 3 are input
-  return ( get_id() >= 0 && get_id() < NUMB_PORTS);
-}
-
-int E131Port::can_write() const {
-  // ports 4 to 7 are output
-  return ( get_id() >= NUMB_PORTS && get_id() < 2 * NUMB_PORTS);
+bool E131Port::CanRead() const {
+  // even ports are input
+  return !(PortId() % 2);
 }
 
 
-/*
- * Write operation
- *
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- *
- */
-int E131Port::write(uint8_t *data, unsigned int length) {
-
-  if (!can_write())
-    return -1;
-
-  if (get_universe())
-    m_layer->send(get_universe()->get_uid(), data, length);
-
-  return 0;
+bool E131Port::CanWrite() const {
+  // odd ports are output
+  return (PortId() % 2);
 }
 
 
-/*
- * Read operation
- *
- * @param   data  buffer to read data into
- * @param   length  length of data to read
- *
- * @return  the amount of data read
- */
-int E131Port::read(uint8_t *data, unsigned int length) {
-  unsigned int l = length < m_len ? length : m_len;
-
-  memcpy(data, m_data, l);
-  return l;
+string E131Port::Description() const {
+  std::stringstream str;
+  str << "E131 " << PortId();
+  return str.str();
 }
 
+
+bool E131Port::WriteDMX(const DmxBuffer &buffer) {
+  E131Device *device = GetDevice();
+
+  if (!CanWrite())
+    return false;
+
+  E131Node *node = device->GetNode();
+  if (!node->SendDMX(PortId(), buffer))
+    return false;
+  return true;
+}
+
+const DmxBuffer &E131Port::ReadDMX() const {
+  return m_buffer;
+}
 
 /*
  * override this so we can set the callback
- */
 int E131Port::set_universe(Universe *uni) {
 
   if (get_universe())
@@ -89,20 +76,7 @@ int E131Port::set_universe(Universe *uni) {
    m_layer->register_uni(uni->get_uid(), data_callback, (void*) this);
   return 0;
 }
+*/
 
-
-
-void E131Port::new_data(const uint8_t *data, unsigned int len) {
-  int l = DMX_LENGTH < len ? DMX_LENGTH : len;
-  memcpy(m_data, data, l);
-  m_len = l;
-  dmx_changed();
-}
-
-/*
- * Static method for the E131DmpLayer to call
- */
-void E131Port::data_callback(const uint8_t *dmx, unsigned int len, void *data) {
-  E131Port *prt = (E131Port*) data;
-  prt->new_data(dmx, len);
-}
+} //plugin
+} //ola

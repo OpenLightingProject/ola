@@ -15,40 +15,41 @@
  *
  * E131Plugin.h
  * Interface for the E1.131 plugin class
- * Copyright (C) 2007 Simon Newton
+ * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef E131PLUGIN_H
-#define E131PLUGIN_H
+#ifndef OLA_E131PLUGIN_H
+#define OLA_E131PLUGIN_H
 
 #include <string>
 #include <olad/plugin.h>
 #include <ola/plugin_id.h>
 
-using namespace std;
+namespace ola {
+namespace e131 {
 
-class E131Plugin : public Plugin {
-
+class E131Plugin: public ola::Plugin {
   public:
-    E131Plugin(const PluginAdaptor *pa, ola_plugin_id id):
-      Plugin(pa,id),
-      m_dev(NULL) {}
-
+    E131Plugin(const ola::PluginAdaptor *plugin_adaptor):
+      ola::Plugin(plugin_adaptor),
+      m_device(NULL) {}
     ~E131Plugin() {}
 
-    string get_name() const { return PLUGIN_NAME; }
-    string get_desc() const;
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string Name() const { return PLUGIN_NAME; }
+    ola_plugin_id Id() const { return OLA_PLUGIN_E131; }
+    string Description() const;
+    string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    class E131Device *m_dev; // only have one device
-    class NetServer *m_ns;
+    bool StartHook();
+    bool StopHook();
 
+    class E131Device *m_device;
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
 };
 
+} // e131
+} // ola
 #endif
 
