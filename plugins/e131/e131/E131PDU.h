@@ -33,7 +33,7 @@ class DmpMsg;
 
 class E131PDU: public PDU {
   public:
-    E131PDU(unsigned int vector, const E131Header &header, DmpMsg *msg):
+    E131PDU(unsigned int vector, const E131Header &header, const DmpMsg *msg):
       PDU(vector),
       m_header(header),
       m_dmp(msg) {}
@@ -44,18 +44,10 @@ class E131PDU: public PDU {
     bool PackHeader(uint8_t *data, unsigned int &length) const;
     bool PackData(uint8_t *data, unsigned int &length) const;
 
-    enum { SOURCE_NAME_LEN = 32 };
-
   private:
     E131Header m_header;
-    DmpMsg *m_dmp;
+    const DmpMsg *m_dmp;
 
-    typedef struct {
-      char source[SOURCE_NAME_LEN];
-      uint8_t priority;
-      uint8_t sequence;
-      uint16_t universe;
-    } e131_pdu_header;
 };
 
 } // e131

@@ -34,24 +34,27 @@ class RootPDU: public PDU {
     RootPDU(unsigned int vector):
       PDU(vector),
       m_block(NULL) {}
-    RootPDU(unsigned int vector, const CID &cid, PDUBlock<PDU> *block):
+    RootPDU(unsigned int vector, const CID &cid, const PDUBlock<PDU> *block):
       PDU(vector),
       m_cid(cid),
-      m_block(block) {}
+      m_block(block) {
+      m_block_size = block ? block->Size() : 0;
+    }
     ~RootPDU() {}
 
-    unsigned int HeaderSize() const;
-    unsigned int DataSize() const;
+    unsigned int HeaderSize() const { return CID::CID_LENGTH; }
+    unsigned int DataSize() const { return m_block_size; }
     bool PackHeader(uint8_t *data, unsigned int &length) const;
     bool PackData(uint8_t *data, unsigned int &length) const;
 
     const CID &Cid() const { return m_cid; }
     const CID &Cid(CID &cid) { return m_cid = cid; }
-    void SetBlock(PDUBlock<PDU> *block) { m_block = block; }
+    void SetBlock(const PDUBlock<PDU> *block) { m_block = block; }
 
   private:
     CID m_cid;
-    PDUBlock<PDU> *m_block;
+    const PDUBlock<PDU> *m_block;
+    unsigned int m_block_size;
 };
 
 } // e131

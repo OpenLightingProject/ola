@@ -21,9 +21,6 @@
 #include <string>
 #include "CID.h"
 
-
-#include <iostream>
-
 namespace ola {
 namespace e131 {
 

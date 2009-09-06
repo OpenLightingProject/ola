@@ -66,6 +66,15 @@ class E131Header {
         m_universe == other.m_universe;
     }
 
+    enum { SOURCE_NAME_LEN = 32 };
+
+    typedef struct {
+      char source[SOURCE_NAME_LEN];
+      uint8_t priority;
+      uint8_t sequence;
+      uint16_t universe;
+    } e131_pdu_header;
+
   private:
     string m_source;
     uint8_t m_priority;

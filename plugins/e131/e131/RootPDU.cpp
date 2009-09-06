@@ -26,32 +26,16 @@ namespace ola {
 namespace e131 {
 
 /*
- * Return the size of the header portion.
- */
-unsigned int RootPDU::HeaderSize() const {
-  return CID::CID_LENGTH;
-}
-
-
-/*
- * Return the size of the data portion.
- */
-unsigned int RootPDU::DataSize() const {
-  return m_block ? m_block->Size() : 0;
-}
-
-
-/*
  * Pack the header into a buffer.
  */
 bool RootPDU::PackHeader(uint8_t *data, unsigned int &length) const {
-  if (length < CID::CID_LENGTH) {
+  if (length < HeaderSize()) {
     length = 0;
     return false;
   }
 
   m_cid.Pack(data);
-  length = CID::CID_LENGTH;
+  length = HeaderSize();
   return true;
 }
 

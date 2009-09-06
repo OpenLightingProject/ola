@@ -81,15 +81,16 @@ class PDU {
 template <class C>
 class PDUBlock {
   public:
-    PDUBlock() {}
+    PDUBlock(): m_size(0) {}
     ~PDUBlock() {}
 
     // Add a PDU to this block
-    void AddPDU(C *msg) { m_pdus.push_back(msg); }
+    void AddPDU(const C *msg) { m_pdus.push_back(msg); m_size += msg->Size(); }
     // Remove all PDUs from the block
-    void Clear() { m_pdus.clear(); }
-    // The number of bytes this block would consume
-    unsigned int Size() const;
+    void Clear() { m_pdus.clear(); m_size = 0; }
+    // The number of bytes this block would consume, this ignores optimizations
+    // like repeating headers/vectors.
+    unsigned int Size() const { return m_size; }
     /*
      * Pack this PDUBlock into memory pointed to by data
      * @return true on success, false on failure
@@ -97,25 +98,9 @@ class PDUBlock {
     bool Pack(uint8_t *data, unsigned int &length) const;
 
   private:
-    std::vector<C*> m_pdus;
+    std::vector<const C*> m_pdus;
+    unsigned int m_size;
 };
-
-
-/*
- * return the size of this pdu block
- * @return size of the pdu block
- */
-template <class C>
-unsigned int PDUBlock<C>::Size() const {
-  // We trade performance for consistency here, if this becomes a problem we
-  // can calculate the size when the PDU is added
-  unsigned int size = 0;
-  typename std::vector<C*>::const_iterator iter;
-  for (iter = m_pdus.begin(); iter != m_pdus.end(); ++iter) {
-    size += (*iter)->Size();
-  }
-  return size;
-}
 
 
 /*
@@ -128,7 +113,7 @@ template <class C>
 bool PDUBlock<C>::Pack(uint8_t *data, unsigned int &length) const {
   bool status = true;
   unsigned int i = 0;
-  typename std::vector<C*>::const_iterator iter;
+  typename std::vector<const C*>::const_iterator iter;
   for (iter = m_pdus.begin(); iter != m_pdus.end(); ++iter) {
     // TODO: optimize repeated headers & vectors here
     unsigned int remaining = i < length ? length - i : 0;

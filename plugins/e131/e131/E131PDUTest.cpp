@@ -70,10 +70,10 @@ void E131PDUTest::testSimpleE131PDU() {
                        *((unsigned int*) &data[2]));
 
   CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, data[6 + E131PDU::SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[7 + E131PDU::SOURCE_NAME_LEN]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, data[6 + E131Header::SOURCE_NAME_LEN]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[7 + E131Header::SOURCE_NAME_LEN]);
   CPPUNIT_ASSERT_EQUAL((uint16_t) htons(6000),
-                       *((uint16_t*) (data + 8 + E131PDU::SOURCE_NAME_LEN)));
+                       *((uint16_t*) (data + 8 + E131Header::SOURCE_NAME_LEN)));
 
   // test undersized buffer
   bytes_used = size - 1;

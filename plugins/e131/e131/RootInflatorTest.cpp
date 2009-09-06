@@ -19,7 +19,6 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <ola/Logging.h>
 
 #include "HeaderSet.h"
 #include "PDUTestCommon.h"
@@ -45,7 +44,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RootInflatorTest);
  * Check that we can inflate a Root PDU that contains other PDUs
  */
 void RootInflatorTest::testInflatePDU() {
-  ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
   MockPDU pdu1(1, 2);
   MockPDU pdu2(4, 8);
   PDUBlock<PDU> block;

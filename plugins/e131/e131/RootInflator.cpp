@@ -18,6 +18,7 @@
  * Copyright (C) 2007 Simon Newton
  */
 
+#include <ola/Logging.h>
 #include "RootInflator.h"
 
 namespace ola {
@@ -47,8 +48,12 @@ bool RootInflator::DecodeHeader(HeaderSet &headers,
     }
     return false;
   }
-  headers.SetRootHeader(m_last_hdr);
   bytes_used = 0;
+  if (m_last_hdr.GetCid().IsNil()) {
+    OLA_WARN << "Missing CID data";
+    return false;
+  }
+  headers.SetRootHeader(m_last_hdr);
   return true;
 }
 
@@ -57,7 +62,8 @@ bool RootInflator::DecodeHeader(HeaderSet &headers,
  * Reset the header field
  */
 void RootInflator::ResetHeaderField() {
-
+  CID cid;
+  m_last_hdr.SetCid(cid);
 }
 
 } // e131

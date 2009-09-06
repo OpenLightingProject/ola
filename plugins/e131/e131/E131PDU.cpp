@@ -29,7 +29,7 @@ namespace e131 {
  * Size of the header portion.
  */
 unsigned int E131PDU::HeaderSize() const {
-  return sizeof(e131_pdu_header);
+  return sizeof(E131Header::e131_pdu_header);
 }
 
 
@@ -49,19 +49,20 @@ unsigned int E131PDU::DataSize() const {
  * Pack the header portion.
  */
 bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
-  if (length < sizeof(e131_pdu_header)) {
+  if (length < sizeof(E131Header::e131_pdu_header)) {
     OLA_WARN << "E131PDU::PackHeader: buffer too small, got " << length <<
-      " required " << sizeof(e131_pdu_header);
+      " required " << sizeof(E131Header::e131_pdu_header);
     length = 0;
     return false;
   }
 
-  e131_pdu_header *header = (e131_pdu_header*) data;
-  strncpy(header->source, m_header.Source().data(), SOURCE_NAME_LEN);
+  E131Header::e131_pdu_header *header = (E131Header::e131_pdu_header*) data;
+  strncpy(header->source, m_header.Source().data(),
+          E131Header::SOURCE_NAME_LEN);
   header->sequence = m_header.Sequence();
   header->priority = m_header.Priority();
   header->universe = htons(m_header.Universe());
-  length = sizeof(e131_pdu_header);
+  length = sizeof(E131Header::e131_pdu_header);
   return true;
 }
 
