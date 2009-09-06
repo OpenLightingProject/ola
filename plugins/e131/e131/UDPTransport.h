@@ -30,8 +30,6 @@
 namespace ola {
 namespace e131 {
 
-using ola::network::SelectServer;
-
 /*
  * Used to send and recv PDUs over UDP
  */
@@ -39,10 +37,8 @@ class UDPTransport {
   public:
     static const unsigned short ACN_PORT = 5568;
 
-    UDPTransport(SelectServer *ss,
-                 BaseInflator *inflator,
+    UDPTransport(BaseInflator *inflator,
                  unsigned short port=ACN_PORT):
-      m_ss(ss),
       m_inflator(inflator),
       m_port(port),
       m_send_buffer(NULL),
@@ -53,10 +49,10 @@ class UDPTransport {
     bool Init();
     bool Send(const PDUBlock<PDU> &pdu_block,
               const struct sockaddr_in &destination);
+    ola::network::UdpSocket *GetSocket() { return &m_socket; }
     int Receive();
 
   private:
-    ola::network::SelectServer *m_ss;
     ola::network::UdpSocket m_socket;
     BaseInflator *m_inflator;
     unsigned short m_port;

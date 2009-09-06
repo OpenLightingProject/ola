@@ -53,7 +53,6 @@ bool UDPTransport::Init() {
     return false;
 
   m_socket.SetOnData(NewClosure(this, &UDPTransport::Receive));
-  m_ss->AddSocket(&m_socket);
 
   if (!m_send_buffer) {
     m_send_buffer = new uint8_t[MAX_DATAGRAM_SIZE];

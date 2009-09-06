@@ -68,8 +68,9 @@ int UDPTransportTest::Stop() {
 void UDPTransportTest::testUDPTransport() {
   CID cid;
   MockInflator inflator(cid, NewClosure(this, &UDPTransportTest::Stop));
-  UDPTransport transport(m_ss, &inflator);
+  UDPTransport transport(&inflator);
   CPPUNIT_ASSERT(transport.Init());
+  m_ss->AddSocket(transport.GetSocket());
 
   PDUBlock<PDU> pdu_block;
   MockPDU mock_pdu(4, 8);

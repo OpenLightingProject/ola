@@ -46,7 +46,6 @@ unsigned int PDU::Size() const {
  * @return false on error, true otherwise
  */
 bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
-  //TODO: remove the 2nd call to size here.
   unsigned int size = Size();
   int offset = 0;
 
