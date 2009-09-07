@@ -48,6 +48,8 @@ class DMPHeader {
       RES_OCTET = 0x03
     } dmp_addr_size;
 
+    static const unsigned int DMP_HEADER_SIZE = 1;
+
     DMPHeader(uint8_t header=0):
       m_header(header) {}
     DMPHeader(bool is_virtual,
@@ -80,6 +82,8 @@ class DMPHeader {
     bool operator!=(const DMPHeader &other) const {
       return m_header != other.m_header;
     }
+
+    uint8_t Header() const { return m_header; }
 
   private:
     static const uint8_t VIRTUAL_MASK = 0x80;
