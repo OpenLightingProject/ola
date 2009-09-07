@@ -48,6 +48,9 @@ class RootLayer {
 
     //TODO: add methods to queue and send PDUs/blocks with different vectors
 
+    bool JoinMulticast(const struct in_addr &group);
+    bool LeaveMulticast(const struct in_addr &group);
+
   private:
     UDPTransport *m_transport;
     RootInflator m_root_inflator;

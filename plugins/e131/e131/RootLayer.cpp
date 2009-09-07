@@ -34,8 +34,13 @@ RootLayer::RootLayer(UDPTransport *transport, const CID &cid):
   m_transport(transport),
   m_cid(cid),
   m_root_pdu(0) {
-    m_transport->SetInflator(&m_root_inflator);
+
     m_root_pdu.Cid(cid);
+    if (!m_transport) {
+      OLA_WARN << "transport is null, this won't work";
+      return;
+    }
+    m_transport->SetInflator(&m_root_inflator);
 }
 
 
@@ -72,10 +77,8 @@ bool RootLayer::SendPDUBlock(struct in_addr &addr,
                             unsigned int vector,
                             const PDUBlock<PDU> &block) {
 
-  if (!m_transport) {
-    OLA_WARN << "transport is null";
+  if (!m_transport)
     return false;
-  }
 
   m_root_pdu.SetVector(vector);
   m_root_pdu.SetBlock(&block);
@@ -90,6 +93,26 @@ bool RootLayer::SendPDUBlock(struct in_addr &addr,
   destination.sin_port = htons(UDPTransport::ACN_PORT);
   destination.sin_addr = addr;
   return m_transport->Send(m_root_block, destination);
+}
+
+
+/*
+ * Join a multicast group
+ */
+bool RootLayer::JoinMulticast(const struct in_addr &group) {
+  if (m_transport)
+    return m_transport->JoinMulticast(group);
+  return false;
+}
+
+
+/*
+ * Leave a multicast group
+ */
+bool RootLayer::LeaveMulticast(const struct in_addr &group) {
+  if (m_transport)
+    return m_transport->LeaveMulticast(group);
+  return false;
 }
 
 } //e131

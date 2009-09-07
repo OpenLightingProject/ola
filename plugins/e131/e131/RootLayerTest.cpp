@@ -20,6 +20,7 @@
 
 #include <arpa/inet.h>
 #include <ola/network/SelectServer.h>
+#include <ola/network/InterfacePicker.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "PDUTestCommon.h"
@@ -69,7 +70,8 @@ int RootLayerTest::Stop() {
  */
 void RootLayerTest::testRootLayer() {
   CID cid = CID::Generate();
-  UDPTransport transport;
+  ola::network::Interface interface;
+  UDPTransport transport(interface);
   CPPUNIT_ASSERT(transport.Init());
   CPPUNIT_ASSERT(m_ss->AddSocket(transport.GetSocket()));
   RootLayer layer(&transport, cid);

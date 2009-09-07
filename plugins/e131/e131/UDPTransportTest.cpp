@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <ola/Logging.h>
 #include <ola/network/SelectServer.h>
+#include <ola/network/InterfacePicker.h>
 #include <ola/network/Socket.h>
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -70,7 +71,8 @@ int UDPTransportTest::Stop() {
 void UDPTransportTest::testUDPTransport() {
   CID cid;
   MockInflator inflator(cid, NewClosure(this, &UDPTransportTest::Stop));
-  UDPTransport transport(&inflator);
+  ola::network::Interface interface;
+  UDPTransport transport(&inflator, interface);
   CPPUNIT_ASSERT(transport.Init());
   m_ss->AddSocket(transport.GetSocket());
 

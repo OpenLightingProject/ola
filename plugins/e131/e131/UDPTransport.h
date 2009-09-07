@@ -22,6 +22,7 @@
 #define OLA_E131_UDPTRANSPORT_H
 
 #include <string>
+#include <ola/network/InterfacePicker.h>
 #include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
 #include "PDU.h"
@@ -37,7 +38,9 @@ class UDPTransport {
   public:
     static const unsigned short ACN_PORT = 5568;
 
-    UDPTransport(unsigned short port=ACN_PORT):
+    UDPTransport(const ola::network::Interface &interface,
+                 unsigned short port=ACN_PORT):
+      m_interface(interface),
       m_inflator(NULL),
       m_port(port),
       m_send_buffer(NULL),
@@ -45,7 +48,9 @@ class UDPTransport {
     }
 
     UDPTransport(BaseInflator *inflator,
+                 const ola::network::Interface &interface,
                  unsigned short port=ACN_PORT):
+      m_interface(interface),
       m_inflator(inflator),
       m_port(port),
       m_send_buffer(NULL),
@@ -60,8 +65,12 @@ class UDPTransport {
     void SetInflator(BaseInflator *inflator) { m_inflator = inflator; }
     int Receive();
 
+    bool JoinMulticast(const struct in_addr &group);
+    bool LeaveMulticast(const struct in_addr &group);
+
   private:
     ola::network::UdpSocket m_socket;
+    ola::network::Interface m_interface;
     BaseInflator *m_inflator;
     unsigned short m_port;
     uint8_t *m_send_buffer;

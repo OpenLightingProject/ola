@@ -32,13 +32,18 @@ E131Layer::E131Layer(RootLayer *root_layer):
   m_root_layer(root_layer) {
 
   m_root_layer->AddInflator(&m_e131_inflator);
+  if (!m_root_layer)
+    OLA_WARN << "root_layer is null, this won't work";
 }
 
 
 /*
  * Add an inflator to the root level
 bool E131Layer::AddInflator(BaseInflator *inflator) {
-  return m_root_inflator.AddInflator(inflator);
+  if (!m_root_layer)
+    return false;
+
+  return m_root_layer.AddInflator(inflator);
 }
  */
 
@@ -52,16 +57,58 @@ bool E131Layer::SendPDUBlock(struct in_addr &addr,
                             unsigned int vector,
                             const PDUBlock<PDU> &block) {
 
-
-  if (!m_root_layer) {
-    OLA_WARN << "root_layer is null";
+  if (!m_root_layer)
     return false;
-  }
 
   E131PDU pdu(0, header, dmp_pdu);
   return m_root_layer->SendPDU(  , E131Inflator::E131_VECTOR, pdu);
 }
   */
+
+/*
+ * Join a universe.
+ */
+bool E131Layer::JoinUniverse(unsigned int universe) {
+  struct in_addr addr;
+
+  if (!m_root_layer)
+    return false;
+
+  if (UniverseIP(universe, addr))
+    return m_root_layer->JoinMulticast(addr);
+  return false;
+}
+
+/*
+ * Leave a universe
+ */
+bool E131Layer::LeaveUniverse(unsigned int universe) {
+  struct in_addr addr;
+
+  if (!m_root_layer)
+    return false;
+
+  if (UniverseIP(universe, addr))
+    return m_root_layer->LeaveMulticast(addr);
+  return false;
+}
+
+
+/*
+ * Calculate the IP that corresponds to a universe.
+ * @param universe the universe id
+ * @param addr where to store the address
+ * @return true if this is a valid E1.31 universe, false otherwise
+ */
+bool E131Layer::UniverseIP(unsigned int universe, struct in_addr &addr) {
+  addr.s_addr = htonl(239 << 24 | 255 << 16 | (universe & 0xFF00) |
+                      (universe & 0xFF));
+  if (universe && (universe & 0xFFFF) != 0xFFFF)
+    return true;
+
+  OLA_WARN << "universe " << universe << " isn't a valid E1.31 universe";
+  return false;
+}
 
 } //e131
 } //ola
