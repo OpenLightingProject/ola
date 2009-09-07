@@ -42,10 +42,10 @@ class DMPHeader {
     } dmp_addr_type;
 
     typedef enum {
-      ONE_OCTET = 0x00,
-      TWO_OCTET = 0x01,
-      FOUR_OCTET = 0x02,
-      RES_OCTET = 0x03
+      ONE_BYTES = 0x00,
+      TWO_BYTES = 0x01,
+      FOUR_BYTES = 0x02,
+      RES_BYTES = 0x03
     } dmp_addr_size;
 
     static const unsigned int DMP_HEADER_SIZE = 1;

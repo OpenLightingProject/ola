@@ -94,23 +94,23 @@ void HeaderSetTest::testE131Header() {
  * test the DMP Header
  */
 void HeaderSetTest::testDMPHeader() {
-  DMPHeader header(false, false, DMPHeader::NON_RANGE, DMPHeader::ONE_OCTET);
+  DMPHeader header(false, false, DMPHeader::NON_RANGE, DMPHeader::ONE_BYTES);
   CPPUNIT_ASSERT_EQUAL(false, header.IsVirtual());
   CPPUNIT_ASSERT_EQUAL(false, header.IsRelative());
   CPPUNIT_ASSERT_EQUAL(DMPHeader::NON_RANGE, header.Type());
-  CPPUNIT_ASSERT_EQUAL(DMPHeader::ONE_OCTET, header.Size());
+  CPPUNIT_ASSERT_EQUAL(DMPHeader::ONE_BYTES, header.Size());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, header.Header());
   DMPHeader test_header(0);
-  CPPUNIT_ASSERT_EQUAL(test_header, header);
+  CPPUNIT_ASSERT(test_header == header);
 
-  DMPHeader header2(false, true, DMPHeader::RANGE_EQUAL, DMPHeader::FOUR_OCTET);
+  DMPHeader header2(false, true, DMPHeader::RANGE_EQUAL, DMPHeader::FOUR_BYTES);
   CPPUNIT_ASSERT_EQUAL(false, header2.IsVirtual());
   CPPUNIT_ASSERT_EQUAL(true, header2.IsRelative());
   CPPUNIT_ASSERT_EQUAL(DMPHeader::RANGE_EQUAL, header2.Type());
-  CPPUNIT_ASSERT_EQUAL(DMPHeader::FOUR_OCTET, header2.Size());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x62, header.Header());
+  CPPUNIT_ASSERT_EQUAL(DMPHeader::FOUR_BYTES, header2.Size());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x62, header2.Header());
   DMPHeader test_header2(0x62);
-  CPPUNIT_ASSERT_EQUAL(test_header2, header2);
+  CPPUNIT_ASSERT(test_header2 == header2);
 
   // test copy and assign
   DMPHeader header3 = header;
@@ -130,7 +130,7 @@ void HeaderSetTest::testHeaderSet() {
   HeaderSet headers;
   RootHeader root_header;
   E131Header e131_header("e131", 1, 2, 6001);
-  DMPHeader dmp_header(false, false, DMPHeader::NON_RANGE, DMPHeader::ONE_OCTET);
+  DMPHeader dmp_header(false, false, DMPHeader::NON_RANGE, DMPHeader::ONE_BYTES);
 
   // test the root header component
   CID cid;

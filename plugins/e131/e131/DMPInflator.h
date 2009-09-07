@@ -13,41 +13,43 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DMPPDU.h
- * Interface for the DMP PDU
- * Copyright (C) 2007-2009 Simon Newton
+ * DMPInflator.h
+ * Interface for the DMPInflator class.
+ * Copyright (C) 2009 Simon Newton
  */
 
-#ifndef OLA_DMP_DMPPDU_H
-#define OLA_DMP_DMPPDU_H
+#ifndef OLA_DMP_DMPINFLATOR_H
+#define OLA_DMP_DMPINFLATOR_H
 
-#include <stdint.h>
-
-#include "PDU.h"
+#include "BaseInflator.h"
 #include "DMPHeader.h"
 
 namespace ola {
 namespace e131 {
 
-class DmpMsg;
+class DMPInflator: public BaseInflator {
+  friend class DMPInflatorTest;
 
-class DMPPDU: public PDU {
   public:
-    DMPPDU(unsigned int vector, const DMPHeader &header, const DmpMsg *msg):
-      PDU(vector, ONE_BYTE),
-      m_header(header),
-      m_dmp(msg) {}
-    ~DMPPDU() {}
+    DMPInflator(): BaseInflator(PDU::ONE_BYTE),
+                   m_last_header_valid(false) {
+    }
+    ~DMPInflator() {}
 
-    unsigned int HeaderSize() const { return DMPHeader::DMP_HEADER_SIZE; }
-    unsigned int DataSize() const;
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
-    bool PackData(uint8_t *data, unsigned int &length) const;
+    unsigned int static const DMP_VECTOR = 2;
+    uint32_t Id() const { return DMP_VECTOR; }
 
-  private:
-    DMPHeader m_header;
-    const DmpMsg *m_dmp;
+  protected:
+    bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
+                      unsigned int len, unsigned int &bytes_used);
 
+    void ResetHeaderField();
+
+    bool HandlePDUData(uint32_t vector, HeaderSet &headers,
+                       const uint8_t *data, unsigned int pdu_len);
+  private :
+    DMPHeader m_last_header;
+    bool m_last_header_valid;
 };
 
 } // e131

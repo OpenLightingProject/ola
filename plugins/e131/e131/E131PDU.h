@@ -29,14 +29,15 @@
 namespace ola {
 namespace e131 {
 
-class DmpMsg;
+class DMPPDU;
 
 class E131PDU: public PDU {
   public:
-    E131PDU(unsigned int vector, const E131Header &header, const DmpMsg *msg):
+    E131PDU(unsigned int vector, const E131Header &header,
+            const DMPPDU *dmp_pdu):
       PDU(vector),
       m_header(header),
-      m_dmp(msg) {}
+      m_dmp_pdu(dmp_pdu) {}
     ~E131PDU() {}
 
     unsigned int HeaderSize() const;
@@ -46,7 +47,7 @@ class E131PDU: public PDU {
 
   private:
     E131Header m_header;
-    const DmpMsg *m_dmp;
+    const DMPPDU *m_dmp_pdu;
 
 };
 

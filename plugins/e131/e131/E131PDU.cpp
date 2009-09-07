@@ -20,6 +20,7 @@
 
 #include <ola/Logging.h>
 #include "E131PDU.h"
+#include "DMPPDU.h"
 
 namespace ola {
 namespace e131 {
@@ -37,10 +38,8 @@ unsigned int E131PDU::HeaderSize() const {
  * Size of the data portion
  */
 unsigned int E131PDU::DataSize() const {
-  /*
-  if (m_dmp)
-    return m_dmp->Size()l
-  */
+  if (m_dmp_pdu)
+    return m_dmp_pdu->Size();
   return 0;
 }
 
@@ -71,10 +70,8 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
  * Pack the data portion.
  */
 bool E131PDU::PackData(uint8_t *data, unsigned int &length) const {
-  /*
-  if (m_dmp)
-    return m_dmp->Pack(data, length);
-  */
+  if (m_dmp_pdu)
+    return m_dmp_pdu->Pack(data, length);
   length = 0;
   return true;
 }

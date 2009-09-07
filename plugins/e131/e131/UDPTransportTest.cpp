@@ -83,6 +83,7 @@ void UDPTransportTest::testUDPTransport() {
   struct sockaddr_in destination;
   destination.sin_family = AF_INET;
   destination.sin_port = htons(UDPTransport::ACN_PORT);
+  ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
   inet_aton("255.255.255.255", &destination.sin_addr);
   CPPUNIT_ASSERT(transport.Send(pdu_block, destination));
 
