@@ -15,7 +15,8 @@
  *
  * RootLayer.h
  * Interface for the RootLayer class, this abstracts the encapsulation and
- * sending of PDUs contained within RootPDUs.
+ * sending of PDUs contained within RootPDUs as well as the setting of
+ * inflators.
  * Copyright (C) 2007 Simon Newton
  */
 
@@ -25,6 +26,7 @@
 #include "CID.h"
 #include "PDU.h"
 #include "RootPDU.h"
+#include "RootInflator.h"
 #include "UDPTransport.h"
 
 namespace ola {
@@ -34,6 +36,8 @@ class RootLayer {
   public:
     RootLayer(UDPTransport *transport, const CID &cid);
     ~RootLayer() {}
+
+    bool AddInflator(BaseInflator *inflator);
 
     // Convenience method to encapsulate & send a single PDU
     bool SendPDU(struct in_addr &addr, unsigned int vector, const PDU &pdu);
@@ -46,6 +50,7 @@ class RootLayer {
 
   private:
     UDPTransport *m_transport;
+    RootInflator m_root_inflator;
     CID m_cid;
     PDUBlock<PDU> m_working_block;
     PDUBlock<PDU> m_root_block;

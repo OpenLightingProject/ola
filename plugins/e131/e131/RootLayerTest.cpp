@@ -69,13 +69,13 @@ int RootLayerTest::Stop() {
  */
 void RootLayerTest::testRootLayer() {
   CID cid = CID::Generate();
-  RootInflator root_inflator;
-  MockInflator inflator(cid, NewClosure(this, &RootLayerTest::Stop));
-  root_inflator.AddInflator(&inflator);
-  UDPTransport transport(&root_inflator);
+  UDPTransport transport;
   CPPUNIT_ASSERT(transport.Init());
+  CPPUNIT_ASSERT(m_ss->AddSocket(transport.GetSocket()));
   RootLayer layer(&transport, cid);
-  m_ss->AddSocket(transport.GetSocket());
+
+  MockInflator inflator(cid, NewClosure(this, &RootLayerTest::Stop));
+  CPPUNIT_ASSERT(layer.AddInflator(&inflator));
 
   MockPDU mock_pdu(4, 8);
   struct in_addr addr;

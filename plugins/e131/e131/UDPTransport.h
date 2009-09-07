@@ -37,6 +37,13 @@ class UDPTransport {
   public:
     static const unsigned short ACN_PORT = 5568;
 
+    UDPTransport(unsigned short port=ACN_PORT):
+      m_inflator(NULL),
+      m_port(port),
+      m_send_buffer(NULL),
+      m_recv_buffer(NULL) {
+    }
+
     UDPTransport(BaseInflator *inflator,
                  unsigned short port=ACN_PORT):
       m_inflator(inflator),
@@ -50,6 +57,7 @@ class UDPTransport {
     bool Send(const PDUBlock<PDU> &pdu_block,
               const struct sockaddr_in &destination);
     ola::network::UdpSocket *GetSocket() { return &m_socket; }
+    void SetInflator(BaseInflator *inflator) { m_inflator = inflator; }
     int Receive();
 
   private:

@@ -34,7 +34,16 @@ RootLayer::RootLayer(UDPTransport *transport, const CID &cid):
   m_transport(transport),
   m_cid(cid),
   m_root_pdu(0) {
+    m_transport->SetInflator(&m_root_inflator);
     m_root_pdu.Cid(cid);
+}
+
+
+/*
+ * Add an inflator to the root level
+ */
+bool RootLayer::AddInflator(BaseInflator *inflator) {
+  return m_root_inflator.AddInflator(inflator);
 }
 
 
@@ -62,6 +71,11 @@ bool RootLayer::SendPDU(struct in_addr &addr,
 bool RootLayer::SendPDUBlock(struct in_addr &addr,
                             unsigned int vector,
                             const PDUBlock<PDU> &block) {
+
+  if (!m_transport) {
+    OLA_WARN << "transport is null";
+    return false;
+  }
 
   m_root_pdu.SetVector(vector);
   m_root_pdu.SetBlock(&block);
