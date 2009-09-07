@@ -31,12 +31,14 @@ class HeaderSetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(HeaderSetTest);
   CPPUNIT_TEST(testRootHeader);
   CPPUNIT_TEST(testE131Header);
+  CPPUNIT_TEST(testDMPHeader);
   CPPUNIT_TEST(testHeaderSet);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testRootHeader();
     void testE131Header();
+    void testDMPHeader();
     void testHeaderSet();
 };
 
@@ -89,12 +91,40 @@ void HeaderSetTest::testE131Header() {
 
 
 /*
+ * test the DMP Header
+ */
+void HeaderSetTest::testDMPHeader() {
+  DMPHeader header(false, false, DMPHeader::NON_RANGE, DMPHeader::ONE_OCTET);
+  CPPUNIT_ASSERT_EQUAL(false, header.IsVirtual());
+  CPPUNIT_ASSERT_EQUAL(false, header.IsRelative());
+  CPPUNIT_ASSERT_EQUAL(DMPHeader::NON_RANGE, header.Type());
+  CPPUNIT_ASSERT_EQUAL(DMPHeader::ONE_OCTET, header.Size());
+
+  DMPHeader header2(false, true, DMPHeader::RANGE_EQUAL, DMPHeader::FOUR_OCTET);
+  CPPUNIT_ASSERT_EQUAL(false, header2.IsVirtual());
+  CPPUNIT_ASSERT_EQUAL(true, header2.IsRelative());
+  CPPUNIT_ASSERT_EQUAL(DMPHeader::RANGE_EQUAL, header2.Type());
+  CPPUNIT_ASSERT_EQUAL(DMPHeader::FOUR_OCTET, header2.Size());
+
+  // test copy and assign
+  DMPHeader header3 = header;
+  CPPUNIT_ASSERT(header3 == header);
+  CPPUNIT_ASSERT(header3 != header2);
+
+  DMPHeader header4(header);
+  CPPUNIT_ASSERT(header4 == header);
+  CPPUNIT_ASSERT(header4 != header2);
+}
+
+
+/*
  * Check that the header set works
  */
 void HeaderSetTest::testHeaderSet() {
   HeaderSet headers;
   RootHeader root_header;
   E131Header e131_header("e131", 1, 2, 6001);
+  DMPHeader dmp_header(false, false, DMPHeader::NON_RANGE, DMPHeader::ONE_OCTET);
 
   // test the root header component
   CID cid;
@@ -107,15 +137,21 @@ void HeaderSetTest::testHeaderSet() {
   headers.SetE131Header(e131_header);
   CPPUNIT_ASSERT(e131_header == headers.GetE131Header());
 
+  // test the DMP headers component
+  headers.SetDMPHeader(dmp_header);
+  CPPUNIT_ASSERT(dmp_header == headers.GetDMPHeader());
+
   // test assign
   HeaderSet headers2 = headers;
   CPPUNIT_ASSERT(root_header == headers2.GetRootHeader());
   CPPUNIT_ASSERT(e131_header == headers2.GetE131Header());
+  CPPUNIT_ASSERT(dmp_header == headers2.GetDMPHeader());
   CPPUNIT_ASSERT(headers2 == headers);
 
   // test copy
   HeaderSet headers3(headers);
   CPPUNIT_ASSERT(root_header == headers3.GetRootHeader());
   CPPUNIT_ASSERT(e131_header == headers3.GetE131Header());
+  CPPUNIT_ASSERT(dmp_header == headers3.GetDMPHeader());
   CPPUNIT_ASSERT(headers3 == headers);
 }

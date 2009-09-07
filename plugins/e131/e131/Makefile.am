@@ -1,5 +1,6 @@
 libdir = $(plugindir)
 EXTRA_DIST = BaseInflator.h CID.h \
+             DMPHeader.h \
              E131Header.h E131Inflator.h E131Layer.h E131PDU.h HeaderSet.h \
              PDU.h PDUTest.h PDUTestCommon.h \
              RootHeader.h RootInflator.h RootLayer.h RootPDU.h \
