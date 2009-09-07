@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E131Inflator.cpp
- * The Inflator for the root level packets over UDP
- * Copyright (C) 2007 Simon Newton
+ * The Inflator for the E1.31 PDUs
+ * Copyright (C) 2007-2009 Simon Newton
  */
 
 #include <ola/Logging.h>
@@ -26,7 +26,7 @@ namespace e131 {
 
 
 /*
- * Decode the root headers. If data is null we're expected to use the last
+ * Decode the E1.31 headers. If data is null we're expected to use the last
  * header we got.
  * @param headers the HeaderSet to add to
  * @param data a pointer to the data

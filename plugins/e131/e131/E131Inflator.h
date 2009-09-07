@@ -43,7 +43,7 @@ class E131Inflator: public BaseInflator {
     bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
                       unsigned int len, unsigned int &bytes_used);
 
-    virtual void ResetHeaderField();
+    void ResetHeaderField();
   private :
     E131Header m_last_header;
     bool m_last_header_valid;

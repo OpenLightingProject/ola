@@ -48,8 +48,8 @@ class DMPHeader {
       RES_OCTET = 0x03
     } dmp_addr_size;
 
-    DMPHeader():
-      m_header(0) {}
+    DMPHeader(uint8_t header=0):
+      m_header(header) {}
     DMPHeader(bool is_virtual,
               bool is_relative,
               dmp_addr_type type,

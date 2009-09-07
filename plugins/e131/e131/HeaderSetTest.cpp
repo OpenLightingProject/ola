@@ -99,12 +99,16 @@ void HeaderSetTest::testDMPHeader() {
   CPPUNIT_ASSERT_EQUAL(false, header.IsRelative());
   CPPUNIT_ASSERT_EQUAL(DMPHeader::NON_RANGE, header.Type());
   CPPUNIT_ASSERT_EQUAL(DMPHeader::ONE_OCTET, header.Size());
+  DMPHeader test_header(0);
+  CPPUNIT_ASSERT_EQUAL(test_header, header);
 
   DMPHeader header2(false, true, DMPHeader::RANGE_EQUAL, DMPHeader::FOUR_OCTET);
   CPPUNIT_ASSERT_EQUAL(false, header2.IsVirtual());
   CPPUNIT_ASSERT_EQUAL(true, header2.IsRelative());
   CPPUNIT_ASSERT_EQUAL(DMPHeader::RANGE_EQUAL, header2.Type());
   CPPUNIT_ASSERT_EQUAL(DMPHeader::FOUR_OCTET, header2.Size());
+  DMPHeader test_header2(0x62);
+  CPPUNIT_ASSERT_EQUAL(test_header2, header2);
 
   // test copy and assign
   DMPHeader header3 = header;
