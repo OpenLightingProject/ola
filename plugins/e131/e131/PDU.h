@@ -50,6 +50,9 @@ class PDU {
     virtual unsigned int HeaderSize() const = 0;
     virtual unsigned int DataSize() const = 0;
 
+    // Set the vector
+    void SetVector(unsigned int vector) { m_vector = vector; }
+
     /*
      * Pack the PDU into the memory pointed to by data
      * @return true on success, false on failure

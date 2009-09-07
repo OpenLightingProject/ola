@@ -39,6 +39,7 @@ class RootPDUTest: public CppUnit::TestFixture {
     void testNestedRootPDU();
   private:
     static const unsigned int TEST_VECTOR;
+    static const unsigned int TEST_VECTOR2 = 99;
 };
 
 const unsigned int RootPDUTest::TEST_VECTOR = 4;
@@ -67,8 +68,7 @@ void RootPDUTest::testSimpleRootPDU() {
   CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
   CPPUNIT_ASSERT_EQUAL((unsigned int) htonl(TEST_VECTOR),
                        *((unsigned int*) &data[2]));
-  CID cid2;
-  cid.FromData(&data[6]);
+  CID cid2 = CID::FromData(&data[6]);
   CPPUNIT_ASSERT(cid2 == cid);
 
   // test undersized buffer
@@ -80,6 +80,17 @@ void RootPDUTest::testSimpleRootPDU() {
   bytes_used = size + 1;
   CPPUNIT_ASSERT(pdu1.Pack(data, bytes_used));
   CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+
+  // change the vector
+  pdu1.SetVector(TEST_VECTOR2);
+  CPPUNIT_ASSERT(pdu1.Pack(data, bytes_used));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) htonl(TEST_VECTOR2),
+                       *((unsigned int*) &data[2]));
+  cid2 = CID::FromData(&data[6]);
+  CPPUNIT_ASSERT(cid2 == cid);
 
   // use the other constructor
   RootPDU pdu2(TEST_VECTOR);

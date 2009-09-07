@@ -48,7 +48,7 @@ class RootPDU: public PDU {
     bool PackData(uint8_t *data, unsigned int &length) const;
 
     const CID &Cid() const { return m_cid; }
-    const CID &Cid(CID &cid) { return m_cid = cid; }
+    const CID &Cid(const CID &cid) { return m_cid = cid; }
     void SetBlock(const PDUBlock<PDU> *block) { m_block = block; }
 
   private:
