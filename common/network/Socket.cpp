@@ -499,15 +499,15 @@ bool UdpSocket::EnableBroadcast() {
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::JoinMulticast(const struct in_addr *interface,
-                              const struct in_addr *group) {
+bool UdpSocket::JoinMulticast(const struct in_addr &interface,
+                              const struct in_addr &group) {
   struct ip_mreq mreq;
-  mreq.imr_interface = *interface;
-  mreq.imr_multiaddr = *group;
+  mreq.imr_interface = interface;
+  mreq.imr_multiaddr = group;
 
   if (setsockopt(m_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq,
                  sizeof(mreq)) < 0) {
-    OLA_WARN << "Failed to join multicast group " << inet_ntoa(*group) <<
+    OLA_WARN << "Failed to join multicast group " << inet_ntoa(group) <<
     ": " << strerror(errno);
     return false;
   }
@@ -520,15 +520,15 @@ bool UdpSocket::JoinMulticast(const struct in_addr *interface,
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::LeaveMulticast(const struct in_addr *interface,
-                              const struct in_addr *group) {
+bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
+                              const struct in_addr &group) {
   struct ip_mreq mreq;
-  mreq.imr_interface = *interface;
-  mreq.imr_multiaddr = *group;
+  mreq.imr_interface = interface;
+  mreq.imr_multiaddr = group;
 
   if (setsockopt(m_fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, &mreq,
                  sizeof(mreq)) < 0) {
-    OLA_WARN << "Failed to leave multicast group " << inet_ntoa(*group) <<
+    OLA_WARN << "Failed to leave multicast group " << inet_ntoa(group) <<
     ": " << strerror(errno);
     return false;
   }
