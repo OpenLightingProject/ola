@@ -1,0 +1,61 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * RootLayer.h
+ * Interface for the RootLayer class, this abstracts the encapsulation and
+ * sending of PDUs contained within RootPDUs.
+ * Copyright (C) 2007 Simon Newton
+ */
+
+#ifndef OLA_E131_ROOTLAYER_H
+#define OLA_E131_ROOTLAYER_H
+
+#include "CID.h"
+#include "PDU.h"
+#include "RootPDU.h"
+#include "UDPTransport.h"
+
+namespace ola {
+namespace e131 {
+
+class RootLayer {
+  public:
+    RootLayer(UDPTransport *transport, const CID &cid);
+    ~RootLayer() {}
+
+    // Convenience method to encapsulate & send a single PDU
+    bool SendPDU(struct in_addr &addr, unsigned int vector, const PDU &pdu);
+    // Encapsulation & send a block of PDUs
+    bool SendPDUBlock(struct in_addr &addr,
+                      unsigned int vector,
+                      const PDUBlock<PDU> &block);
+
+    //TODO: add methods to queue and send PDUs/blocks with different vectors
+
+  private:
+    UDPTransport *m_transport;
+    CID m_cid;
+    PDUBlock<PDU> m_working_block;
+    PDUBlock<PDU> m_root_block;
+    RootPDU m_root_pdu;
+
+    RootLayer(const RootLayer&);
+    RootLayer& operator=(const RootLayer&);
+};
+
+} //e131
+} //ola
+
+#endif

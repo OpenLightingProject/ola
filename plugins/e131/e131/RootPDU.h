@@ -33,7 +33,8 @@ class RootPDU: public PDU {
   public:
     RootPDU(unsigned int vector):
       PDU(vector),
-      m_block(NULL) {}
+      m_block(NULL),
+      m_block_size(0) {}
     RootPDU(unsigned int vector, const CID &cid, const PDUBlock<PDU> *block):
       PDU(vector),
       m_cid(cid),
@@ -49,7 +50,7 @@ class RootPDU: public PDU {
 
     const CID &Cid() const { return m_cid; }
     const CID &Cid(const CID &cid) { return m_cid = cid; }
-    void SetBlock(const PDUBlock<PDU> *block) { m_block = block; }
+    void SetBlock(const PDUBlock<PDU> *block);
 
   private:
     CID m_cid;

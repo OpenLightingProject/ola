@@ -84,7 +84,9 @@ bool UDPTransport::Send(const PDUBlock<PDU> &pdu_block,
   }
 
   unsigned int size = MAX_DATAGRAM_SIZE - DATA_OFFSET;
-  pdu_block.Pack(m_send_buffer + DATA_OFFSET, size);
+  if (!pdu_block.Pack(m_send_buffer + DATA_OFFSET, size))
+    return false;
+
   return m_socket.SendTo(m_send_buffer, DATA_OFFSET + size, destination);
 }
 

@@ -51,5 +51,11 @@ bool RootPDU::PackData(uint8_t *data, unsigned int &length) const {
   return true;
 }
 
+
+void RootPDU::SetBlock(const PDUBlock<PDU> *block) {
+  m_block = block;
+  m_block_size = m_block ? block->Size() : 0;
+}
+
 } // e131
 } // ola
