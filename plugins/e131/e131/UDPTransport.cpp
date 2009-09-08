@@ -57,8 +57,9 @@ bool UDPTransport::Init() {
 
   if (!m_send_buffer) {
     m_send_buffer = new uint8_t[MAX_DATAGRAM_SIZE];
+    memset(m_send_buffer, 0 , DATA_OFFSET);
     uint16_t *ptr = (uint16_t*) m_send_buffer;
-    *ptr = htons(PREAMBLE_SIZE);
+    *ptr++ = htons(PREAMBLE_SIZE);
     *ptr = htons(POSTABLE_SIZE);
     strncpy((char*) (m_send_buffer + PREAMBLE_OFFSET),
             ACN_PACKET_ID.data(),
