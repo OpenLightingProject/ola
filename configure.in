@@ -116,7 +116,7 @@ PKG_CHECK_MODULES(libartnet, [libartnet >= 1.1.0])
 fi
 
 # check for uuid
-PKG_CHECK_MODULES(UUID, [uuid >= 0.22], [], [])
+PKG_CHECK_MODULES(UUID, [uuid >= 0.22], [], [true])
 
 AM_CONDITIONAL(HAVE_ACN, test "${have_acn}" = "yes")
 
