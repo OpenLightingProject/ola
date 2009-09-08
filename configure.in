@@ -115,12 +115,8 @@ if test "${have_artnet}" = "yes"; then
 PKG_CHECK_MODULES(libartnet, [libartnet >= 1.1.0])
 fi
 
-# check for libacn
-PKG_CHECK_MODULES(libacn, [libacn >= 0.0.1], [
- have_acn="yes"
- PLUGINS="${PLUGINS} e131"
- AC_DEFINE(HAVE_ACN, 1, [define if libacn is installed])
- ], break)
+# check for uuid
+PKG_CHECK_MODULES(UUID, [uuid >= 0.22], [], [])
 
 AM_CONDITIONAL(HAVE_ACN, test "${have_acn}" = "yes")
 

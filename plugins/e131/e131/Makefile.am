@@ -33,7 +33,7 @@ E131Tester_SOURCES = BaseInflatorTest.cpp \
                      RootPDUTest.cpp \
                      UDPTransportTest.cpp
 E131Tester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-E131Tester_LDFLAGS = $(CPPUNIT_LIBS)
+E131Tester_LDFLAGS = $(CPPUNIT_LIBS) $(UUID_LIBS)
 E131Tester_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf \
                    ./libolae131core.la \
                    ../../../common/libolacommon.la
