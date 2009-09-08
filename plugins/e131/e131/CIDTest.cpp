@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <string.h>
 #include <string>
 #include <iostream>
 #include <cppunit/extensions/HelperMacros.h>
