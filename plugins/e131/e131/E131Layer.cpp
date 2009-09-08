@@ -20,6 +20,7 @@
 
 #include <ola/Logging.h>
 #include "E131Layer.h"
+#include "DMPInflator.h"
 
 namespace ola {
 namespace e131 {
@@ -64,6 +65,16 @@ bool E131Layer::SendPDUBlock(struct in_addr &addr,
   return m_root_layer->SendPDU(  , E131Inflator::E131_VECTOR, pdu);
 }
   */
+
+
+
+/*
+ * Set the DMPInflator to use
+ */
+bool E131Layer::SetInflator(DMPInflator *inflator) {
+  return m_e131_inflator.AddInflator(inflator);
+}
+
 
 /*
  * Join a universe.

@@ -264,7 +264,7 @@ bool BaseInflator::HandlePDUData(uint32_t vector,
                                  const uint8_t *data,
                                  unsigned int pdu_len) {
   OLA_WARN << "In BaseInflator::HandlePDUData, someone forgot to add" <<
-    " a handler";
+    " a handler, vector id " << vector;
   return false;
 }
 

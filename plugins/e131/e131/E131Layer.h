@@ -31,6 +31,8 @@
 namespace ola {
 namespace e131 {
 
+class DMPInflator;
+
 class E131Layer {
   public:
     E131Layer(RootLayer *root_layer);
@@ -40,6 +42,7 @@ class E131Layer {
 
     //bool SendDmp(const E131Header &header, const DMPPDU &pdu);
 
+    bool SetInflator(DMPInflator *inflator);
     bool JoinUniverse(unsigned int universe);
     bool LeaveUniverse(unsigned int universe);
 
