@@ -19,8 +19,10 @@
  */
 
 #include <string.h>
-#include <string>
+#include <algorithm>
+#include <cctype>
 #include <iostream>
+#include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "CID.h"
@@ -94,6 +96,7 @@ void CIDTest::testGenerate() {
 void CIDTest::testToString() {
   CID cid = CID::FromData(TEST_DATA);
   string cid_str = cid.ToString();
+  transform(cid_str.begin(), cid_str.end(), cid_str.begin(), toupper);
   CPPUNIT_ASSERT_EQUAL(string("00010203-0405-0607-0809-0A0B0C0D0E0F"),
                        cid_str);
 }
