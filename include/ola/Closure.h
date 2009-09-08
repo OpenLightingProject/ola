@@ -94,6 +94,46 @@ inline Closure* NewClosure(int (*callback)()) {
 
 
 /*
+ * A function closure, with one argument
+ */
+template <typename Parent, typename Arg>
+class FunctionArgClosure: public Parent {
+  public:
+    typedef int (*Callback)(Arg arg);
+
+    /*
+     * @param callback the function to call
+     */
+    FunctionArgClosure(Callback callback, Arg arg):
+      Parent(),
+      m_callback(callback),
+      m_arg(arg) {}
+    int DoRun() { return m_callback(m_arg); }
+
+  private:
+    Callback m_callback;
+    Arg m_arg;
+};
+
+
+/*
+ * Create a new single use function closure.
+ */
+template <typename Arg>
+inline SingleUseClosure* NewSingleClosure(int (*callback)(Arg arg), Arg arg) {
+  return new FunctionArgClosure<SingleUseClosure, Arg>(callback, arg);
+}
+
+
+/*
+ * Create a new function closure.
+ */
+template <typename Arg>
+inline Closure* NewClosure(int (*callback)(Arg arg), Arg arg) {
+  return new FunctionArgClosure<Closure, Arg>(callback, arg);
+}
+
+/*
  * An method closure with no arguments
  */
 template <typename Class, typename Parent>
