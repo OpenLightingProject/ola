@@ -62,7 +62,7 @@ void PDUTest::testPDUBlock() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, *test++);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 2, *test++);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 42, *test);
-  delete data;
+  delete[] data;
 
   block.Clear();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, block.Size());

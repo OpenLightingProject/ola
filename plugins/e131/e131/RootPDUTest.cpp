@@ -106,8 +106,8 @@ void RootPDUTest::testSimpleRootPDU() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
   CPPUNIT_ASSERT(!memcmp(data, data2, bytes_used));
 
-  delete data;
-  delete data2;
+  delete[] data;
+  delete[] data2;
 }
 
 
@@ -138,7 +138,7 @@ void RootPDUTest::testNestedRootPDU() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, *((unsigned int*) &data[22]));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 42, *((unsigned int*) &data[26]));
 
-  delete data;
+  delete[] data;
 }
 
 

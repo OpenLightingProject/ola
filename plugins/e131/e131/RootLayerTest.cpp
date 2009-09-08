@@ -76,7 +76,8 @@ void RootLayerTest::testRootLayer() {
   CPPUNIT_ASSERT(m_ss->AddSocket(transport.GetSocket()));
   RootLayer layer(&transport, cid);
 
-  MockInflator inflator(cid, NewClosure(this, &RootLayerTest::Stop));
+  Closure *stop_closure = NewClosure(this, &RootLayerTest::Stop);
+  MockInflator inflator(cid, stop_closure);
   CPPUNIT_ASSERT(layer.AddInflator(&inflator));
 
   MockPDU mock_pdu(4, 8);
@@ -84,10 +85,12 @@ void RootLayerTest::testRootLayer() {
   inet_aton("255.255.255.255", &addr);
   CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu));
 
-  m_ss->RegisterSingleTimeout(
-      ABORT_TIMEOUT_IN_MS,
-      NewSingleClosure(this, &RootLayerTest::FatalStop));
+  SingleUseClosure *closure =
+    NewSingleClosure(this, &RootLayerTest::FatalStop);
+  m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
+  delete closure;
+  delete stop_closure;
 }
 
 

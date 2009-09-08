@@ -65,7 +65,7 @@ void RootInflatorTest::testInflatePDU() {
   inflator.AddInflator(&mock_inflator);
   HeaderSet header_set;
   CPPUNIT_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
-  delete data;
+  delete[] data;
 }
 
 

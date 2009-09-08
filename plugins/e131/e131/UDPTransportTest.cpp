@@ -70,7 +70,8 @@ int UDPTransportTest::Stop() {
  */
 void UDPTransportTest::testUDPTransport() {
   CID cid;
-  MockInflator inflator(cid, NewClosure(this, &UDPTransportTest::Stop));
+  Closure *stop_closure = NewClosure(this, &UDPTransportTest::Stop);
+  MockInflator inflator(cid, stop_closure);
   ola::network::Interface interface;
   UDPTransport transport(&inflator, interface);
   CPPUNIT_ASSERT(transport.Init());
@@ -87,10 +88,12 @@ void UDPTransportTest::testUDPTransport() {
   inet_aton("255.255.255.255", &destination.sin_addr);
   CPPUNIT_ASSERT(transport.Send(pdu_block, destination));
 
-  m_ss->RegisterSingleTimeout(
-      ABORT_TIMEOUT_IN_MS,
-      NewSingleClosure(this, &UDPTransportTest::FatalStop));
+  SingleUseClosure *closure =
+    NewSingleClosure(this, &UDPTransportTest::FatalStop);
+  m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
+  delete stop_closure;
+  delete closure;
 }
 
 

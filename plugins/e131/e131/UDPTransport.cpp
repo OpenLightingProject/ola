@@ -34,9 +34,9 @@ const string UDPTransport::ACN_PACKET_ID = "ASC-E1.17\0\0\0";
 UDPTransport::~UDPTransport() {
   m_socket.Close();
   if (m_send_buffer)
-    delete m_send_buffer;
+    delete[] m_send_buffer;
   if (m_recv_buffer)
-    delete m_recv_buffer;
+    delete[] m_recv_buffer;
 }
 
 

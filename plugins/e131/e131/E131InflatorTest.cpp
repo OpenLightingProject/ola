@@ -114,7 +114,7 @@ void E131InflatorTest::testInflatePDU() {
   HeaderSet header_set;
   CPPUNIT_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
   CPPUNIT_ASSERT(header == header_set.GetE131Header());
-  delete data;
+  delete[] data;
 }
 
 

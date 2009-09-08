@@ -74,7 +74,7 @@ void DMPPDUTest::testSimpleDMPPDU() {
   CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
   CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
 
-  delete data;
+  delete[] data;
 }
 
 
