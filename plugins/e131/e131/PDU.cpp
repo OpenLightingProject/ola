@@ -18,6 +18,7 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
+#include <arpa/inet.h>
 #include <ola/Logging.h>
 #include "PDU.h"
 

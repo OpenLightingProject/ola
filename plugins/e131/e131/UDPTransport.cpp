@@ -18,6 +18,7 @@
  * Copyright (C) 2007 Simon Newton
  */
 
+#include <string.h>
 #include <ola/Closure.h>
 #include <ola/Logging.h>
 #include "UDPTransport.h"

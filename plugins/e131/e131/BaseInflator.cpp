@@ -18,7 +18,7 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-//#include <iterator>
+#include <arpa/inet.h>
 #include <algorithm>
 #include <ola/Logging.h>
 #include "BaseInflator.h"

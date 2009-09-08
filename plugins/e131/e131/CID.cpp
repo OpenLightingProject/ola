@@ -18,6 +18,7 @@
  * Copyright (C) 2007 Simon Newton
  */
 
+#include <string.h>
 #include <string>
 #include "CID.h"
 

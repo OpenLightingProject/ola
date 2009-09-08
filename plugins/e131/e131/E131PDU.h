@@ -21,8 +21,6 @@
 #ifndef OLA_E131_E131PDU_H
 #define OLA_E131_E131PDU_H
 
-#include <stdint.h>
-
 #include "PDU.h"
 #include "E131Header.h"
 

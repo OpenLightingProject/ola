@@ -18,6 +18,9 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
+
+#include <arpa/inet.h>
+#include <string.h>
 #include <ola/Logging.h>
 #include "E131PDU.h"
 #include "DMPPDU.h"
