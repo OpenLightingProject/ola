@@ -70,17 +70,5 @@ void DMPInflator::ResetHeaderField() {
   m_last_header_valid = false;
 }
 
-/*
- * Handle a DMP PDU.
- */
-bool DMPInflator::HandlePDUData(uint32_t vector,
-                                HeaderSet &headers,
-                                const uint8_t *data,
-                                unsigned int pdu_len) {
-
-  OLA_INFO << "in DMP handler!";
-  return true;
-}
-
 } // e131
 } // ola

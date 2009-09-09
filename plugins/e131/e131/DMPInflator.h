@@ -34,7 +34,7 @@ class DMPInflator: public BaseInflator {
     DMPInflator(): BaseInflator(PDU::ONE_BYTE),
                    m_last_header_valid(false) {
     }
-    ~DMPInflator() {}
+    virtual ~DMPInflator() {}
 
     unsigned int static const DMP_VECTOR = 2;
     uint32_t Id() const { return DMP_VECTOR; }
@@ -44,10 +44,7 @@ class DMPInflator: public BaseInflator {
                       unsigned int len, unsigned int &bytes_used);
 
     void ResetHeaderField();
-
-    bool HandlePDUData(uint32_t vector, HeaderSet &headers,
-                       const uint8_t *data, unsigned int pdu_len);
-  private :
+  private:
     DMPHeader m_last_header;
     bool m_last_header_valid;
 };

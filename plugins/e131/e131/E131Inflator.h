@@ -44,7 +44,7 @@ class E131Inflator: public BaseInflator {
                       unsigned int len, unsigned int &bytes_used);
 
     void ResetHeaderField();
-  private :
+  private:
     E131Header m_last_header;
     bool m_last_header_valid;
 };

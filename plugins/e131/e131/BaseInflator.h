@@ -44,7 +44,6 @@ class BaseInflator {
   friend class BaseInflatorTest;
 
   public:
-
     BaseInflator(PDU::vector_size v_size=PDU::FOUR_BYTES);
     virtual ~BaseInflator() {};
 
