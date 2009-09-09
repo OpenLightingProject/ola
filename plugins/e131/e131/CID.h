@@ -49,6 +49,7 @@ class CID {
 
     static CID Generate();
     static CID FromData(const uint8_t *data);
+    static CID FromString(const std::string &cid);
 
   private:
     uuid_t m_uuid;

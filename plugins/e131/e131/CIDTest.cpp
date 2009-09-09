@@ -36,6 +36,7 @@ class CIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSetPack);
   CPPUNIT_TEST(testGenerate);
   CPPUNIT_TEST(testToString);
+  CPPUNIT_TEST(testFromString);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -43,6 +44,7 @@ class CIDTest: public CppUnit::TestFixture {
     void testSetPack();
     void testGenerate();
     void testToString();
+    void testFromString();
   private:
     static const uint8_t TEST_DATA[];
 };
@@ -99,5 +101,20 @@ void CIDTest::testToString() {
   transform(cid_str.begin(), cid_str.end(), cid_str.begin(), toupper);
   CPPUNIT_ASSERT_EQUAL(string("00010203-0405-0607-0809-0A0B0C0D0E0F"),
                        cid_str);
+}
+
+/*
+ * Check that from string works.
+ */
+void CIDTest::testFromString() {
+  const string uuid = "00010203-0405-0607-0809-0A0B0C0D0E0F";
+  CID cid = CID::FromString(uuid);
+  string cid_str = cid.ToString();
+  transform(cid_str.begin(), cid_str.end(), cid_str.begin(), toupper);
+  CPPUNIT_ASSERT_EQUAL(uuid, cid_str);
+
+  const string bad_uuid = "foo";
+  cid = CID::FromString(bad_uuid);
+  CPPUNIT_ASSERT(cid.IsNil());
 }
 

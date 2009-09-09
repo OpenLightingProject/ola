@@ -29,6 +29,7 @@ void CID::Pack(uint8_t *buf) const {
   memcpy(buf, m_uuid, CID_LENGTH);
 }
 
+
 CID& CID::operator=(const CID& other) {
   if (this != &other) {
     uuid_copy(m_uuid, other.m_uuid);
@@ -36,13 +37,16 @@ CID& CID::operator=(const CID& other) {
   return *this;
 }
 
+
 bool CID::operator==(const CID& c1) const {
   return !uuid_compare(m_uuid, c1.m_uuid);
 }
 
+
 bool CID::operator!=(const CID& c1) const {
   return uuid_compare(m_uuid, c1.m_uuid);
 }
+
 
 std::string CID::ToString() const {
   char str[37];
@@ -50,15 +54,26 @@ std::string CID::ToString() const {
   return std::string(str);
 }
 
+
 CID CID::Generate() {
   uuid_t uuid;
   uuid_generate(uuid);
   return CID(uuid);
 }
 
+
 CID CID::FromData(const uint8_t *data) {
   uuid_t uuid;
   uuid_copy(uuid, data);
+  return CID(uuid);
+}
+
+
+CID CID::FromString(const std::string &cid) {
+  uuid_t uuid;
+  int ret = uuid_parse(cid.data(), uuid);
+  if (ret == -1)
+    uuid_clear(uuid);
   return CID(uuid);
 }
 
