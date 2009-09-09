@@ -73,8 +73,8 @@ void UDPTransportTest::testUDPTransport() {
   Closure *stop_closure = NewClosure(this, &UDPTransportTest::Stop);
   MockInflator inflator(cid, stop_closure);
   ola::network::Interface interface;
-  UDPTransport transport(&inflator, interface);
-  CPPUNIT_ASSERT(transport.Init());
+  UDPTransport transport(&inflator);
+  CPPUNIT_ASSERT(transport.Init(interface));
   m_ss->AddSocket(transport.GetSocket());
 
   PDUBlock<PDU> pdu_block;

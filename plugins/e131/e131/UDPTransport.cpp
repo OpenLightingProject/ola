@@ -43,7 +43,7 @@ UDPTransport::~UDPTransport() {
 /*
  * Setup the UDP Transport
  */
-bool UDPTransport::Init() {
+bool UDPTransport::Init(const ola::network::Interface &interface) {
   if (!m_socket.Init())
     return false;
 
@@ -69,6 +69,7 @@ bool UDPTransport::Init() {
   if (!m_recv_buffer)
     m_recv_buffer = new uint8_t[MAX_DATAGRAM_SIZE];
 
+  m_interface = interface;
   return true;
 }
 

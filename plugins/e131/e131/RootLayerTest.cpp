@@ -71,8 +71,8 @@ int RootLayerTest::Stop() {
 void RootLayerTest::testRootLayer() {
   CID cid = CID::Generate();
   ola::network::Interface interface;
-  UDPTransport transport(interface);
-  CPPUNIT_ASSERT(transport.Init());
+  UDPTransport transport;
+  CPPUNIT_ASSERT(transport.Init(interface));
   CPPUNIT_ASSERT(m_ss->AddSocket(transport.GetSocket()));
   RootLayer layer(&transport, cid);
 
