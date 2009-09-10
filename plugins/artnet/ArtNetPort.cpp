@@ -134,6 +134,9 @@ bool ArtNetPort::SetUniverse(Universe *uni) {
  * Return the port description
  */
 string ArtNetPort::Description() const {
+  if (!GetUniverse())
+    return "";
+
   ArtNetDevice *dev = GetDevice();
   artnet_node node = dev->GetArtnetNode();
   int universe_address = artnet_get_universe_addr(
