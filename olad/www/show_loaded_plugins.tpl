@@ -8,7 +8,7 @@
  <span class="heading2">Plugin Info</span>
 
  <div align="center" style="margin-top: 40px">
-  <table border="0" cellspacing="1" cellpadding="0" class="info" width="200px">
+  <table border="0" cellspacing="1" cellpadding="0" class="info" width="350px">
    <tr class="info_head">
     <th width="30px">ID</th>
     <th>Plugin Name</th>
