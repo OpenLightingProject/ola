@@ -24,17 +24,6 @@
 namespace ola {
 namespace e131 {
 
-/*
- * Size of the data portion
- */
-unsigned int DMPPDU::DataSize() const {
-  /*
-  if (m_dmp)
-    return m_dmp->Size()l
-  */
-  return 0;
-}
-
 
 /*
  * Pack the header portion.
@@ -48,19 +37,6 @@ bool DMPPDU::PackHeader(uint8_t *data, unsigned int &length) const {
   }
   *data = m_header.Header();
   length = DMPHeader::DMP_HEADER_SIZE;
-  return true;
-}
-
-
-/*
- * Pack the data portion.
- */
-bool DMPPDU::PackData(uint8_t *data, unsigned int &length) const {
-  /*
-  if (m_dmp)
-    return m_dmp->Pack(data, length);
-  */
-  length = 0;
   return true;
 }
 

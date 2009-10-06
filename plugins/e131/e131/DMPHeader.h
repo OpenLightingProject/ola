@@ -24,6 +24,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "DMPAddress.h"
+
 namespace ola {
 namespace e131 {
 
@@ -34,28 +36,21 @@ using std::string;
  */
 class DMPHeader {
   public:
+    static const unsigned int DMP_HEADER_SIZE = 1;
+
     typedef enum {
       NON_RANGE = 0x00,
       RANGE_SINGLE = 0x01,
       RANGE_EQUAL = 0x02,
       RANGE_MIXED = 0x03,
-    } dmp_addr_type;
-
-    typedef enum {
-      ONE_BYTES = 0x00,
-      TWO_BYTES = 0x01,
-      FOUR_BYTES = 0x02,
-      RES_BYTES = 0x03
-    } dmp_addr_size;
-
-    static const unsigned int DMP_HEADER_SIZE = 1;
+    } dmp_address_type;
 
     DMPHeader(uint8_t header=0):
       m_header(header) {}
     DMPHeader(bool is_virtual,
               bool is_relative,
-              dmp_addr_type type,
-              dmp_addr_size size) {
+              dmp_address_type type,
+              dmp_address_size size) {
 
       m_header = is_virtual << 7 |
                is_relative << 6 |
@@ -67,12 +62,12 @@ class DMPHeader {
     bool IsVirtual() const { return m_header & VIRTUAL_MASK; }
     bool IsRelative() const { return  m_header & RELATIVE_MASK; }
 
-    dmp_addr_type Type() const {
-      return (dmp_addr_type) ((m_header & TYPE_MASK) >> 4);
+    dmp_address_type Type() const {
+      return (dmp_address_type) ((m_header & TYPE_MASK) >> 4);
     }
 
-    dmp_addr_size Size() const {
-      return (dmp_addr_size) (m_header & SIZE_MASK);
+    dmp_address_size Size() const {
+      return (dmp_address_size) (m_header & SIZE_MASK);
     }
 
     bool operator==(const DMPHeader &other) const {
