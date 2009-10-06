@@ -29,9 +29,9 @@ namespace e131 {
  * Handle a DMP PDU.
  */
 bool DMPE131Inflator::HandlePDUData(uint32_t vector,
-                                HeaderSet &headers,
-                                const uint8_t *data,
-                                unsigned int pdu_len) {
+                                    HeaderSet &headers,
+                                    const uint8_t *data,
+                                    unsigned int pdu_len) {
 
   E131Header e131_header = headers.GetE131Header();
   unsigned int seq = e131_header.Sequence();
@@ -39,6 +39,21 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   OLA_INFO << "in DMP handler, uni " << e131_header.Universe() << ", seq " <<
     seq << ", pri " << pri << ".";
   return true;
+
+  DMPHeader dmp_header = headers.GetDMPHeader();
+
+  /*
+  switch (vector) {
+    case DMPGetMessage::TYPE:
+      DMPGetMessage *m = new DMPGetMessage(dmp_header, data, pdu_len);
+      break;
+    case DMPSetMessage::TYPE:
+      DMPSetMessage *m2 = new DMPSetMessage(dmp_header, data, pdu_len);
+      break;
+    default:
+      OLA_WARN << "Unknown DMP message: " << vector;
+  }
+  */
 }
 
 } // e131

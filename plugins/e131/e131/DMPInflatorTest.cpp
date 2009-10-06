@@ -22,6 +22,7 @@
 
 #include "HeaderSet.h"
 #include "PDUTestCommon.h"
+#include "DMPAddress.h"
 #include "DMPInflator.h"
 #include "DMPPDU.h"
 
@@ -47,7 +48,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DMPInflatorTest);
  * Check that we can decode headers properly
  */
 void DMPInflatorTest::testDecodeHeader() {
-  DMPHeader header(true, true, DMPHeader::NON_RANGE, DMPHeader::TWO_BYTES);
+  DMPHeader header(true, true, DMPHeader::NON_RANGE, TWO_BYTES);
   DMPInflator inflator;
   HeaderSet header_set, header_set2;
   unsigned int bytes_used;
@@ -62,7 +63,7 @@ void DMPInflatorTest::testDecodeHeader() {
   CPPUNIT_ASSERT(decoded_header.IsVirtual());
   CPPUNIT_ASSERT(decoded_header.IsRelative());
   CPPUNIT_ASSERT(DMPHeader::NON_RANGE == decoded_header.Type());
-  CPPUNIT_ASSERT(DMPHeader::TWO_BYTES == decoded_header.Size());
+  CPPUNIT_ASSERT(TWO_BYTES == decoded_header.Size());
 
   // try an undersized header
   CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set,
@@ -78,7 +79,7 @@ void DMPInflatorTest::testDecodeHeader() {
   CPPUNIT_ASSERT(decoded_header.IsVirtual());
   CPPUNIT_ASSERT(decoded_header.IsRelative());
   CPPUNIT_ASSERT(DMPHeader::NON_RANGE == decoded_header.Type());
-  CPPUNIT_ASSERT(DMPHeader::TWO_BYTES == decoded_header.Size());
+  CPPUNIT_ASSERT(TWO_BYTES == decoded_header.Size());
 
   inflator.ResetHeaderField();
   CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
@@ -90,15 +91,14 @@ void DMPInflatorTest::testDecodeHeader() {
  * Check that we can inflate a DMP PDU that contains other PDUs
  */
 void DMPInflatorTest::testInflatePDU() {
-  DMPHeader header(true, true, DMPHeader::NON_RANGE, DMPHeader::TWO_BYTES);
-  // TODO: pass a DMP msg here as well
-  DMPPDU pdu(3, header, NULL);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, pdu.Size());
+  DMPHeader header(true, true, DMPHeader::NON_RANGE, ONE_BYTES);
+  const DMPPDU *pdu = SingleDMPGetProperty(true, true, 1);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 5, pdu->Size());
 
-  unsigned int size = pdu.Size();
+  unsigned int size = pdu->Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
+  CPPUNIT_ASSERT(pdu->Pack(data, bytes_used));
   CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
 
   DMPInflator inflator;

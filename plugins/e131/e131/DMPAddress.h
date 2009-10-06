@@ -99,13 +99,7 @@ typedef SingleDMPAddress<uint32_t> FourByteSingleDMPAddress;
 /*
  * Create a new single address
  */
-DMPAddress *NewSingleAddress(unsigned int value) {
-  if (value > 0xffff)
-    return new FourByteSingleDMPAddress(value);
-  else if (value > 0xff)
-    return new TwoByteSingleDMPAddress(value);
-  return new OneByteSingleDMPAddress(value);
-}
+DMPAddress *NewSingleAddress(unsigned int value);
 
 
 /*
@@ -154,29 +148,25 @@ typedef RepeatedDMPAddress<uint32_t> FourByteRepeatedDMPAddress;
  */
 DMPAddress *NewRepeatedAddress(unsigned int value,
                                unsigned int increment,
-                               unsigned int number) {
-  if (value > 0xffff)
-    return new FourByteRepeatedDMPAddress(value, increment, number);
-  else if (value > 0xff)
-    return new TwoByteRepeatedDMPAddress(value, increment, number);
-  return new OneByteRepeatedDMPAddress(value, increment, number);
-}
+                               unsigned int number);
 
 
 /*
  * Return the dmp_address_size that corresponds to a type
  */
 template <typename type>
-dmp_address_size DMPTypeToSize() { assert(0); return RES_BYTES; }
-
-template <>
-dmp_address_size DMPTypeToSize<uint8_t>() { return ONE_BYTES; }
-
-template <>
-dmp_address_size DMPTypeToSize<uint16_t>() { return TWO_BYTES; }
-
-template <>
-dmp_address_size DMPTypeToSize<uint32_t>() { return FOUR_BYTES; }
+dmp_address_size DMPTypeToSize() {
+  switch (sizeof(type)) {
+    case 1:
+      return ONE_BYTES;
+    case 2:
+      return TWO_BYTES;
+    case 4:
+      return FOUR_BYTES;
+    default:
+      return RES_BYTES;
+  }
+}
 
 
 } // e131

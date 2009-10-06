@@ -75,7 +75,7 @@ class DMPGetProperty: public DMPPDU {
       m_addresses(addresses) {}
 
     unsigned int DataSize() const {
-      return m_addresses.size() * m_header.Size();
+      return m_addresses.size() * m_header.Bytes();
     }
 
     bool PackData(uint8_t *data, unsigned int &length) const {
@@ -119,17 +119,7 @@ const DMPPDU *_CreateSingleDMPGetProperty(bool is_virtual,
  */
 const DMPPDU *SingleDMPGetProperty(bool is_virtual,
                                    bool is_relative,
-                                   unsigned int start) {
-  if (start > MAX_TWO_BYTE)
-    return _CreateSingleDMPGetProperty<uint32_t>(is_virtual,
-                                                 is_relative,
-                                                 start);
-  else if (start > MAX_ONE_BYTE)
-    return _CreateSingleDMPGetProperty<uint16_t>(is_virtual,
-                                                 is_relative,
-                                                 start);
-  return _CreateSingleDMPGetProperty<uint8_t>(is_virtual, is_relative, start);
-}
+                                   unsigned int start);
 
 
 /*
@@ -182,29 +172,7 @@ const DMPPDU *RepeatedDMPGetProperty(
     bool is_relative,
     unsigned int start,
     unsigned int increment,
-    unsigned int number) {
-
-  if (start > MAX_TWO_BYTE || increment > MAX_TWO_BYTE ||
-      number > MAX_TWO_BYTE)
-    return _CreateDMPRepeatedGetProperty<uint32_t>(is_virtual,
-                                                   is_relative,
-                                                   start,
-                                                   increment,
-                                                   number);
-  else if (start > MAX_ONE_BYTE || increment > MAX_ONE_BYTE ||
-             number > MAX_ONE_BYTE)
-    return _CreateDMPRepeatedGetProperty<uint16_t>(is_virtual,
-                                                   is_relative,
-                                                   start,
-                                                   increment,
-                                                   number);
-  return _CreateDMPRepeatedGetProperty<uint8_t>(is_virtual,
-                                                is_relative,
-                                                start,
-                                                increment,
-                                                number);
-}
-
+    unsigned int number);
 
 } // e131
 } // ola

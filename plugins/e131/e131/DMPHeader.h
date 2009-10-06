@@ -70,6 +70,19 @@ class DMPHeader {
       return (dmp_address_size) (m_header & SIZE_MASK);
     }
 
+    unsigned int Bytes() const {
+      switch (Size()) {
+        case ONE_BYTES:
+          return 1;
+        case TWO_BYTES:
+          return 2;
+        case FOUR_BYTES:
+          return 4;
+        default:
+          return 0;
+      }
+    }
+
     bool operator==(const DMPHeader &other) const {
       return m_header == other.m_header;
     }
