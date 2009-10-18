@@ -146,8 +146,10 @@ bool E131Node::SendDMX(uint16_t universe,
 
   E131Header header(settings.source, settings.priority, settings.sequence,
                     universe);
-  settings.sequence++;
-  return m_e131_layer.SendDMP(header, pdu);
+  bool result = m_e131_layer.SendDMP(header, pdu);
+  if (result)
+    settings.sequence++;
+  return result;
 }
 
 
