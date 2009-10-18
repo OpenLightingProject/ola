@@ -44,12 +44,7 @@ PathportPort::~PathportPort() {
 }
 
 
-int PathportPort::CanRead() const {
-  return ( PortId() >=0 && PortId() < PORTS_PER_DEVICE / 2);
-}
-
-
-bool PathportPort::CanWrite() const {
+bool PathportPort::IsOutput() const {
   return ( PortId() >= PORTS_PER_DEVICE / 2 && PortId() < PORTS_PER_DEVICE);
 }
 

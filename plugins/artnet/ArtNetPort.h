@@ -36,8 +36,7 @@ class ArtNetPort: public Port<ArtNetDevice> {
     bool SetUniverse(Universe *universe);
     bool WriteDMX(const DmxBuffer &data);
     const DmxBuffer &ReadDMX() const;
-    bool CanRead() const;
-    bool CanWrite() const;
+    bool IsOutput() const;
     string Description() const;
   private:
     mutable DmxBuffer m_buffer;

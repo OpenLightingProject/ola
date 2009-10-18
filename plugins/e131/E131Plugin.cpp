@@ -26,6 +26,7 @@
 
 #include "E131Plugin.h"
 #include "E131Device.h"
+#include "e131/CID.h"
 
 
 /*
@@ -46,14 +47,19 @@ extern "C" void destroy(ola::Plugin* plugin) {
 namespace ola {
 namespace e131 {
 
-const string E131Plugin::PLUGIN_NAME = "E131 Plugin";
+const string E131Plugin::PLUGIN_NAME = "E1.31 (DMX over ACN) Plugin";
 const string E131Plugin::PLUGIN_PREFIX = "e131";
+const string E131Plugin::DEVICE_NAME = "E1.31 (DMX over ACN) Device";
+const string E131Plugin::CID_KEY = "cid";
+
 
 /*
  * Start the plugin
  */
 bool E131Plugin::StartHook() {
-  m_device = new E131Device(this, "E131 Device", m_preferences,
+  CID cid = CID::FromString(m_preferences->GetValue(CID_KEY));
+
+  m_device = new E131Device(this, DEVICE_NAME, cid, m_preferences,
                             m_plugin_adaptor);
 
   if (!m_device->Start()) {
@@ -84,7 +90,7 @@ bool E131Plugin::StopHook() {
  */
 string E131Plugin::Description() const {
     return
-"E131 Plugin\n"
+"E1.31 (Streaming DMX over ACN) Plugin\n"
 "----------------------------\n"
 "\n"
 "This plugin creates a single device with eight input and eight output ports.\n"
@@ -95,7 +101,36 @@ string E131Plugin::Description() const {
 "\n"
 "ip = a.b.c.d\n"
 "The local ip address to use for multicasting.\n"
+"\n"
+"cid = 00010203-0405-0607-0809-0A0B0C0D0E0F\n"
+"The CID to use for this device\n"
 "\n";
+}
+
+
+/*
+ * Load the plugin prefs and default to sensible values
+ *
+ */
+bool E131Plugin::SetDefaultPreferences() {
+  bool save = false;
+
+  if (!m_preferences)
+    return false;
+
+  CID cid = CID::FromString(m_preferences->GetValue(CID_KEY));
+  if (cid.IsNil()) {
+    cid = CID::Generate();
+    m_preferences->SetValue(CID_KEY, cid.ToString());
+    m_preferences->Save();
+  }
+
+  // check if this saved correctly
+  // we don't want to use it if null
+  if (m_preferences->GetValue(CID_KEY) == "")
+    return false;
+
+  return true;
 }
 
 } // e131

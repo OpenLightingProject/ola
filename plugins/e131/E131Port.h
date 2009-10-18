@@ -35,19 +35,18 @@ class E131Port: public Port<E131Device> {
     E131Port(E131Device *parent, int id):
       Port<E131Device>(parent, id) {}
 
-    bool CanRead() const;
-    bool CanWrite() const;
-    string Description() const;
+    bool IsOutput() const;
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const;
 
-    //int set_universe(Universe *uni);
+    bool SetUniverse(Universe *universe);
+    string Description() const;
 
     static const int NUMBER_OF_PORTS = 5;
   private:
     DmxBuffer m_buffer;
 };
 
-} //plugin
+} //e131
 } //ola
 #endif

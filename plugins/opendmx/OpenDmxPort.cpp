@@ -48,7 +48,7 @@ OpenDmxPort::~OpenDmxPort() {
  * @param buffer, the DmxBuffer to write
  */
 bool OpenDmxPort::WriteDMX(const DmxBuffer &buffer) {
-  if (!CanWrite())
+  if (!IsOutput())
     return true;
 
   return m_thread->WriteDmx(buffer);

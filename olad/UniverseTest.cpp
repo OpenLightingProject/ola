@@ -75,8 +75,7 @@ class UniverseTestMockPort: public Port<AbstractDevice> {
 
     bool WriteDMX(const DmxBuffer &buffer) { m_buffer = buffer; }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool CanRead() const { return !m_is_output_port; }
-    bool CanWrite() const { return m_is_output_port; }
+    bool IsOutput() const { return m_is_output_port; }
 
   private:
     bool m_is_output_port;

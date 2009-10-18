@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include <ola/Logging.h>
 #include <olad/Universe.h>
 #include "E131Port.h"
 #include "E131Device.h"
@@ -28,55 +29,88 @@
 namespace ola {
 namespace e131 {
 
-bool E131Port::CanRead() const {
-  // even ports are input
-  return !(PortId() % 2);
-}
-
-
-bool E131Port::CanWrite() const {
+bool E131Port::IsOutput() const {
   // odd ports are output
   return (PortId() % 2);
-}
-
-
-string E131Port::Description() const {
-  std::stringstream str;
-  str << "E131 " << PortId();
-  return str.str();
 }
 
 
 bool E131Port::WriteDMX(const DmxBuffer &buffer) {
   E131Device *device = GetDevice();
 
-  if (!CanWrite())
+  if (!IsOutput())
+    return false;
+
+  Universe *universe = GetUniverse();
+  if (!universe)
     return false;
 
   E131Node *node = device->GetNode();
-  if (!node->SendDMX(PortId(), buffer))
-    return false;
-  return true;
+  return node->SendDMX(universe->UniverseId(), buffer);
 }
+
 
 const DmxBuffer &E131Port::ReadDMX() const {
   return m_buffer;
 }
 
+
 /*
- * override this so we can set the callback
-int E131Port::set_universe(Universe *uni) {
+ * Override this so we can setup the callback, we also want to make sure only
+ * one port can be patched to a universe at one time.
+ */
+bool E131Port::SetUniverse(Universe *universe) {
 
-  if (get_universe())
-    m_layer->unregister_uni(get_universe()->get_uid());
+  // check for valid ranges here
+  if (universe && universe->UniverseId() == MAX_TWO_BYTE) {
+    OLA_WARN << "Universe id " << universe->UniverseId() << "> " <<
+      MAX_TWO_BYTE;
+    return false;
+  }
 
-  Port::set_universe(uni);
+  E131Device *device = GetDevice();
+  E131Node *node = device->GetNode();
+  Universe *old_universe = GetUniverse();
 
-  if (can_read() && uni)
-   m_layer->register_uni(uni->get_uid(), data_callback, (void*) this);
-  return 0;
+  if (!universe) {
+    // unpatch
+    if (!IsOutput() && old_universe)
+      node->RemoveHandler(old_universe->UniverseId());
+  } else {
+    // patch request, check no other ports are using this universe
+    vector<AbstractPort*> ports = device->Ports();
+    vector<AbstractPort*>::const_iterator iter;
+    for (iter = ports.begin(); iter != ports.end(); ++iter) {
+      if ((*iter)->IsOutput() == IsOutput() &&
+          (*iter)->GetUniverse() &&
+          (*(*iter)->GetUniverse()) == *universe) {
+
+        OLA_WARN << "Port " << (*iter)->PortId() <<
+          " is already patched to universe " << universe->UniverseId();
+        return false;
+      }
+    }
+
+    if (!IsOutput()) {
+      // setup callback
+      node->SetHandler(universe->UniverseId(), &m_buffer,
+                       NewClosure<E131Port>(this, &E131Port::DmxChanged));
+    }
+  }
+
+  Port<E131Device>::SetUniverse(universe);
+  return true;
 }
-*/
+
+
+string E131Port::Description() const {
+  std::stringstream str;
+  if (GetUniverse())
+    str << "E.131 Universe " << GetUniverse()->UniverseId();
+  return str.str();
+}
+
+
 
 } //plugin
 } //ola

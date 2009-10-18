@@ -25,12 +25,7 @@
 namespace ola {
 namespace usbpro {
 
-bool UsbProPort::CanRead() const {
-  // even ports are input
-  return ((PortId()) % 2) == 0;
-}
-
-bool UsbProPort::CanWrite() const {
+bool UsbProPort::IsOutput() const {
   // odd ports are output
   return (PortId() % 2) == 1;
 }
@@ -43,7 +38,7 @@ bool UsbProPort::CanWrite() const {
  * @return true on success, false on failure
  */
 bool UsbProPort::WriteDMX(const DmxBuffer &buffer) {
-  if (!CanWrite())
+  if (!IsOutput())
     return true;
   return GetDevice()->SendDMX(buffer);
 }
@@ -56,7 +51,7 @@ bool UsbProPort::WriteDMX(const DmxBuffer &buffer) {
  * @return the amount of data read
  */
 const DmxBuffer &UsbProPort::ReadDMX() const {
-  if (!CanRead())
+  if (IsOutput())
     return m_empty_buffer;
   return GetDevice()->FetchDMX();
 }
@@ -69,7 +64,7 @@ const DmxBuffer &UsbProPort::ReadDMX() const {
  */
 bool UsbProPort::SetUniverse(Universe *uni) {
   Port<UsbProDevice>::SetUniverse(uni);
-  if (uni == NULL && CanWrite()) {
+  if (uni == NULL && IsOutput()) {
     GetDevice()->ChangeToReceiveMode();
   }
   return 0;

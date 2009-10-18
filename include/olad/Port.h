@@ -48,15 +48,14 @@ class AbstractPort {
     // return the universe that this port is bound to or NULL
     virtual Universe *GetUniverse() const = 0;
     // signal the port that the DMX data has changed
-    virtual bool DmxChanged() = 0;
+    virtual int DmxChanged() = 0;
 
     // read/write dmx data to this port
     virtual bool WriteDMX(const DmxBuffer &buffer) = 0;
     virtual const DmxBuffer &ReadDMX() const = 0;
 
     // indicate our port's capability
-    virtual bool CanRead() const = 0;
-    virtual bool CanWrite() const = 0;
+    virtual bool IsOutput() const = 0;
 
     // return a short description of this port
     virtual string Description() const = 0;
@@ -84,15 +83,14 @@ class Port: public AbstractPort {
     virtual string UniqueId() const;
     bool SetUniverse(Universe *uni) { m_universe = uni; return true; }
     Universe *GetUniverse() const { return m_universe; }
-    bool DmxChanged() {
+    int DmxChanged() {
       if (m_universe)
         return m_universe->PortDataChanged(this);
-      return true;
+      return 0;
     }
 
-    // default is read/write
-    virtual bool CanRead()  const { return true; }
-    virtual bool CanWrite() const { return true; }
+    // default is an output port
+    virtual bool IsOutput()  const { return true; }
 
     virtual string Description() const { return ""; }
 

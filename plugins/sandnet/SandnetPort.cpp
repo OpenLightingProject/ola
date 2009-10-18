@@ -42,13 +42,8 @@ SandNetPort::~SandNetPort() {
     free(m_buf);
 }
 
-int SandNetPort::can_read() const {
-  // ports 2 to 9 are input
-  return ( get_id()>= SANDNET_MAX_PORTS && get_id() < SANDNET_MAX_PORTS + INPUT_PORTS);
-}
 
-
-int SandNetPort::can_write() const {
+int SandNetPort::IsOutput() const {
   // ports 0 & 1 are output (sandnet allows 2 ports per device)
   return ( get_id() >= 0 && get_id() < SANDNET_MAX_PORTS);
 }

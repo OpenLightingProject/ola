@@ -359,7 +359,7 @@ void OlaServerServiceImpl::AddDevice(AbstractDevice *device,
     for (iter = ports.begin(); iter != ports.end(); ++iter) {
       PortInfo *port_info = device_info->add_port();
       port_info->set_port_id((*iter)->PortId());
-      port_info->set_output_port((*iter)->CanWrite());
+      port_info->set_output_port((*iter)->IsOutput());
       port_info->set_description((*iter)->Description());
 
       if ((*iter)->GetUniverse()) {

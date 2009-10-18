@@ -39,17 +39,20 @@ namespace e131 {
 
 const std::string E131Device::IP_KEY = "ip";
 
+
 /*
  * Create a new device
  */
 E131Device::E131Device(Plugin *owner, const string &name,
+                       const ola::e131::CID &cid,
                        Preferences *preferences,
                        const PluginAdaptor *plugin_adaptor):
   Device(owner, name),
   m_preferences(preferences),
   m_plugin_adaptor(plugin_adaptor),
   m_node(NULL),
-  m_enabled(false) {
+  m_enabled(false),
+  m_cid(cid) {
 
 }
 
@@ -68,7 +71,7 @@ bool E131Device::Start() {
     this->AddPort(port);
   }
 
-  m_node = new E131Node(m_preferences->GetValue(IP_KEY));
+  m_node = new E131Node(m_preferences->GetValue(IP_KEY), m_cid);
 
   if (!m_node->Start()) {
     delete m_node;

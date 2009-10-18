@@ -33,7 +33,6 @@ class DummyPort: public Port<DummyDevice> {
     DummyPort(DummyDevice *parent, unsigned int id):
       Port<DummyDevice>(parent, id) {}
 
-    bool CanRead() const { return false; }
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const { return m_buffer; }
     string Description() const { return "Dummy Port"; }

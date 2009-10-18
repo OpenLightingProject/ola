@@ -31,13 +31,7 @@ namespace ola {
 namespace espnet {
 
 
-bool EspNetPort::CanRead() const {
-  // even ports are input
-  return !(PortId() % 2);
-}
-
-
-bool EspNetPort::CanWrite() const {
+bool EspNetPort::IsOutput() const {
   // odd ports are output
   return PortId() % 2;
 }
@@ -55,7 +49,7 @@ string EspNetPort::Description() const {
  * Write operation
  */
 bool EspNetPort::WriteDMX(const DmxBuffer &buffer) {
-  if (!CanWrite() || !GetUniverse())
+  if (!IsOutput() || !GetUniverse())
     return false;
 
   EspNetDevice *device = GetDevice();
@@ -81,7 +75,7 @@ const DmxBuffer &EspNetPort::ReadDMX() const {
  */
 int EspNetPort::UpdateBuffer() {
   // we can't update if this isn't a input port
-  if (!CanRead() || !GetUniverse())
+  if (IsOutput() || !GetUniverse())
     return false;
 
   EspNetDevice *device = GetDevice();
@@ -98,7 +92,7 @@ bool EspNetPort::SetUniverse(Universe *universe) {
   Universe *old_universe = GetUniverse();
   Port<EspNetDevice>::SetUniverse(universe);
 
-  if (!CanRead())
+  if (IsOutput())
     return true;
 
   EspNetDevice *device = GetDevice();

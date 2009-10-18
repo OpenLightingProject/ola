@@ -131,7 +131,7 @@ bool UDPTransport::JoinMulticast(const struct in_addr &group) {
 
 
 bool UDPTransport::LeaveMulticast(const struct in_addr &group) {
-  return m_socket.JoinMulticast(m_interface.ip_address, group);
+  return m_socket.LeaveMulticast(m_interface.ip_address, group);
 }
 
 } // e131

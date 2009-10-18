@@ -36,7 +36,6 @@ class StageProfiPort: public Port<StageProfiDevice> {
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const { return m_empty_buffer; }
 
-    bool CanRead() const { return false; }
   private:
     DmxBuffer m_empty_buffer;
 };

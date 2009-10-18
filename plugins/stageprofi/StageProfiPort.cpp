@@ -33,7 +33,7 @@ namespace plugin {
 bool StageProfiPort::WriteDMX(const DmxBuffer &buffer) {
   StageProfiDevice *dev = (StageProfiDevice*) GetDevice();
 
-  if (!CanWrite())
+  if (!IsOutput())
     return true;
 
   return dev->SendDmx(buffer);

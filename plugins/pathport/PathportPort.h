@@ -37,8 +37,7 @@ class PathportPort: public ola::Port {
     int WriteDMX(uint8_t *data, unsigned int length);
     int ReadDMX(uint8_t *data, unsigned int length);
 
-    bool CanRead() const;
-    bool CanWrite() const;
+    bool IsOutput() const;
 
     int update_buffer(const uint8_t *data, int length);
     int SetUniverse(Universe *uni);

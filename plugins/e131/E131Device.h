@@ -23,6 +23,7 @@
 
 #include <olad/Device.h>
 #include <olad/Plugin.h>
+#include "e131/CID.h"
 
 namespace ola {
 namespace e131 {
@@ -32,6 +33,7 @@ using ola::Plugin;
 class E131Device: public ola::Device {
   public:
     E131Device(Plugin *owner, const string &name,
+               const ola::e131::CID &cid,
                class Preferences *preferences,
                const class PluginAdaptor *plugin_adaptor);
     ~E131Device() {}
@@ -46,6 +48,7 @@ class E131Device: public ola::Device {
     const class PluginAdaptor *m_plugin_adaptor;
     class E131Node *m_node;
     bool m_enabled;
+    ola::e131::CID m_cid;
 
     static const std::string IP_KEY;
 };

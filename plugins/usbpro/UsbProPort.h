@@ -37,8 +37,7 @@ class UsbProPort: public ola::Port<UsbProDevice> {
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const;
     bool SetUniverse(Universe *uni);
-    bool CanRead() const;
-    bool CanWrite() const;
+    bool IsOutput() const;
     string Description() const { return m_path; }
 
   private:

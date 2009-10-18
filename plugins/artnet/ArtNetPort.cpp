@@ -28,16 +28,10 @@
 namespace ola {
 namespace plugin {
 
-bool ArtNetPort::CanRead() const {
+bool ArtNetPort::IsOutput() const {
   // even ports are input
-  return !(PortId() % 2);
-}
-
-bool ArtNetPort::CanWrite() const {
-  // odd ports are output
   return (PortId() % 2);
 }
-
 
 /*
  * Write operation
@@ -47,7 +41,7 @@ bool ArtNetPort::CanWrite() const {
  */
 bool ArtNetPort::WriteDMX(const DmxBuffer &buffer) {
   ArtNetDevice *dev = GetDevice();
-  if (!CanWrite())
+  if (!IsOutput())
     return false;
 
   if (artnet_send_dmx(dev->GetArtnetNode(), this->PortId() / 2,
@@ -64,7 +58,7 @@ bool ArtNetPort::WriteDMX(const DmxBuffer &buffer) {
  * @return A DmxBuffer with the data.
  */
 const DmxBuffer &ArtNetPort::ReadDMX() const {
-  if (!CanRead())
+  if (IsOutput())
     return m_buffer;
 
   int length;
@@ -101,7 +95,7 @@ bool ArtNetPort::SetUniverse(Universe *uni) {
 
   // carefull here, a port that we read from (input) is actually
   // an ArtNet output port
-  if (CanRead()) {
+  if (!IsOutput()) {
     // input port
     if (artnet_set_port_type(node, PortId() / 2, ARTNET_ENABLE_OUTPUT,
                              ARTNET_PORT_DMX)) {
@@ -115,7 +109,7 @@ bool ArtNetPort::SetUniverse(Universe *uni) {
       return false;
     }
 
-  } else if (CanWrite()) {
+  } else if (IsOutput()) {
     if (artnet_set_port_type(node, PortId() / 2,
                              ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX)) {
       OLA_WARN << "artnet_set_port_type failed " << artnet_strerror();
@@ -142,7 +136,7 @@ string ArtNetPort::Description() const {
   int universe_address = artnet_get_universe_addr(
       node,
       PortId() / 2,
-      CanWrite() ? ARTNET_INPUT_PORT : ARTNET_OUTPUT_PORT);
+      IsOutput() ? ARTNET_INPUT_PORT : ARTNET_OUTPUT_PORT);
   std::stringstream str;
   str << "ArtNet Universe " << universe_address;
   return str.str();

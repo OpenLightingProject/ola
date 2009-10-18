@@ -43,10 +43,13 @@ class E131Plugin: public ola::Plugin {
   private:
     bool StartHook();
     bool StopHook();
+    bool SetDefaultPreferences();
 
     class E131Device *m_device;
     static const string PLUGIN_NAME;
     static const string PLUGIN_PREFIX;
+    static const string DEVICE_NAME;
+    static const std::string CID_KEY;
 };
 
 } // e131

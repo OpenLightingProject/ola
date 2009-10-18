@@ -483,13 +483,10 @@ void OlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
     port_dict->SetValue("PORT_ID", (*port_iter)->UniqueId());
     string capability;
 
-    if ((*port_iter)->CanRead()) {
-      capability += "IN";
-      if ((*port_iter)->CanWrite())
-        capability += " / ";
-    }
-    if ((*port_iter)->CanWrite())
-      capability += "OUT";
+    if ((*port_iter)->IsOutput())
+      capability = "OUT";
+    else
+      capability = "IN";
     port_dict->SetValue("CAPABILITY", capability);
     port_dict->SetValue("DESCRIPTION", (*port_iter)->Description());
 

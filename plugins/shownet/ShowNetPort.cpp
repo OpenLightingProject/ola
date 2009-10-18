@@ -29,14 +29,7 @@
 namespace ola {
 namespace shownet {
 
-
-bool ShowNetPort::CanRead() const {
-  // even ports are input
-  return !(PortId() % 2);
-}
-
-
-bool ShowNetPort::CanWrite() const {
+bool ShowNetPort::IsOutput() const {
   // odd ports are output
   return (PortId() % 2);
 }
@@ -53,7 +46,7 @@ string ShowNetPort::Description() const {
 bool ShowNetPort::WriteDMX(const DmxBuffer &buffer) {
   ShowNetDevice *device = GetDevice();
 
-  if (!CanWrite())
+  if (!IsOutput())
     return false;
 
   ShowNetNode *node = device->GetNode();
@@ -86,7 +79,7 @@ bool ShowNetPort::SetUniverse(Universe *universe) {
   Universe *old_universe = GetUniverse();
   Port<ShowNetDevice>::SetUniverse(universe);
 
-  if (!CanRead())
+  if (IsOutput())
     return true;
 
   ShowNetDevice *device = GetDevice();

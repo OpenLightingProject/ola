@@ -119,8 +119,8 @@ void Universe::SetMergeMode(enum merge_mode merge_mode) {
 
 
 /*
- * Add a port to this universe. If we CanRead() on this port is true, it'll be
- * used as a source for DMX data. If CanWrite() on this port is true we'll
+ * Add a port to this universe. If IsOutput() on this port is false, it'll be
+ * used as a source for DMX data. If IsOutput() on this port is true we'll
  * update this port when we get new DMX data.
  * @param port the port to add
  */
@@ -287,7 +287,7 @@ bool Universe::PortDataChanged(AbstractPort *port) {
 
   if (m_merge_mode == Universe::MERGE_LTP) {
     // LTP merge mode
-    if (port->CanRead()) {
+    if (!port->IsOutput()) {
       const DmxBuffer &new_buffer = port->ReadDMX();
       if (new_buffer.Size())
         // explictity copy else we play the new/delete dance
@@ -355,7 +355,6 @@ bool Universe::UpdateDependants() {
   for (client_iter = m_sink_clients.begin();
        client_iter != m_sink_clients.end();
        ++client_iter) {
-    OLA_DEBUG << "Sending dmx data msg to client";
     (*client_iter)->SendDMX(m_universe_id, m_buffer);
   }
   return true;
@@ -448,7 +447,7 @@ bool Universe::HTPMergeAllSources() {
   bool first = true;
 
   for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-    if ((*iter)->CanRead()) {
+    if (!(*iter)->IsOutput()) {
       if (first) {
         // We do a copy here to avoid a delete/new operation later
         m_buffer.Set((*iter)->ReadDMX());

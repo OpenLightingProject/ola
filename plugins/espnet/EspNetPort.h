@@ -36,8 +36,7 @@ class EspNetPort: public ola::Port<EspNetDevice> {
       Port<EspNetDevice>(parent, id) {}
     ~EspNetPort() {}
 
-    bool CanRead() const;
-    bool CanWrite() const;
+    bool IsOutput() const;
     string Description() const;
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const;

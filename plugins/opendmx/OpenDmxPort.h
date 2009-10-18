@@ -41,7 +41,7 @@ class OpenDmxPort: public ola::Port<OpenDmxDevice> {
     bool WriteDMX(const DmxBuffer &buffer);
     // reading isn't supported in the driver
     const DmxBuffer &ReadDMX() const { return m_empty_buffer; }
-    bool CanRead() const { return false; }
+
   private:
     OpenDmxThread *m_thread;
     DmxBuffer m_empty_buffer;
