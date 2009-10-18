@@ -103,7 +103,7 @@ bool E131Node::SetSourceName(unsigned int universe, const string &source) {
 /*
  * Set the priority for a universe
  */
-bool E131Node::SetSourcePriority(unsigned int universe, uint16_t priority) {
+bool E131Node::SetSourcePriority(unsigned int universe, uint8_t priority) {
   map<unsigned int, tx_universe>::iterator iter =
       m_tx_universes.find(universe);
 
@@ -123,14 +123,8 @@ bool E131Node::SetSourcePriority(unsigned int universe, uint16_t priority) {
  * @param buffer the DMX data
  * @return true if it was send successfully, false otherwise
  */
-bool E131Node::SendDMX(unsigned int universe,
+bool E131Node::SendDMX(uint16_t universe,
                        const ola::DmxBuffer &buffer) {
-
-  if (universe >= MAX_TWO_BYTE) {
-    OLA_WARN << "Universe index out of bounds, should be between 0 and" <<
-                  MAX_TWO_BYTE << "), was " << universe;
-    return false;
-  }
 
   map<unsigned int, tx_universe>::iterator iter =
       m_tx_universes.find(universe);
@@ -141,7 +135,7 @@ bool E131Node::SendDMX(unsigned int universe,
   else
     settings = iter->second;
 
-  TwoByteRangeDMPAddress range_addr(0, 1, buffer.Size());
+  TwoByteRangeDMPAddress range_addr(0, 1, (uint16_t) buffer.Size());
   DMPAddressData<TwoByteRangeDMPAddress> range_chunk(&range_addr,
                                                      buffer.GetRaw(),
                                                      buffer.Size());

@@ -25,6 +25,7 @@ e131_test_SOURCES = e131_test.cpp
 e131_test_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf \
                   ./libolae131core.la \
                   ../../../common/libolacommon.la
+e131_test_LDFLAGS = $(UUID_LIBS)
 
 # Test programs
 TESTS = E131Tester

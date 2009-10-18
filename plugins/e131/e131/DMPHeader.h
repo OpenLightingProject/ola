@@ -45,10 +45,10 @@ class DMPHeader {
               dmp_address_type type,
               dmp_address_size size) {
 
-      m_header = is_virtual << 7 |
-               is_relative << 6 |
-               type << 4 |
-               size;
+      m_header = (uint8_t) (is_virtual << 7 |
+                            is_relative << 6 |
+                            type << 4 |
+                            size);
     }
     ~DMPHeader() {}
 

@@ -27,7 +27,7 @@ namespace e131 {
 /*
  * Return the number of bytes that correspond to a DMPType
  */
-uint8_t DMPSizeToByteSize(dmp_address_size size) {
+unsigned int DMPSizeToByteSize(dmp_address_size size) {
   switch (size) {
     case ONE_BYTES:
       return 1;
@@ -47,8 +47,8 @@ const BaseDMPAddress *NewSingleAddress(unsigned int value) {
   if (value > MAX_TWO_BYTE)
     return new FourByteDMPAddress(value);
   else if (value > MAX_ONE_BYTE)
-    return new TwoByteDMPAddress(value);
-  return new OneByteDMPAddress(value);
+    return new TwoByteDMPAddress((uint16_t) value);
+  return new OneByteDMPAddress((uint8_t) value);
 }
 
 
@@ -63,8 +63,12 @@ const BaseDMPAddress *NewRangeAddress(unsigned int value,
     return new FourByteRangeDMPAddress(value, increment, number);
   else if (value > MAX_ONE_BYTE || increment > MAX_ONE_BYTE ||
            number > MAX_ONE_BYTE)
-    return new TwoByteRangeDMPAddress(value, increment, number);
-  return new OneByteRangeDMPAddress(value, increment, number);
+    return new TwoByteRangeDMPAddress((uint16_t) value,
+                                      (uint16_t) increment,
+                                      (uint16_t) number);
+  return new OneByteRangeDMPAddress((uint8_t) value,
+                                    (uint8_t) increment,
+                                    (uint8_t) number);
 }
 
 
@@ -75,8 +79,8 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
                                     dmp_address_type type,
                                     const uint8_t *data,
                                     unsigned int &length) {
-  unsigned int available_length = length;
-  uint8_t byte_count = (type == NON_RANGE ? 1 : 3) * DMPSizeToByteSize(size);
+  unsigned int byte_count = (type == NON_RANGE ? 1 : 3) *
+                            DMPSizeToByteSize(size);
 
   if (size == RES_BYTES || length < byte_count) {
     length = 0;
@@ -85,14 +89,17 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
 
   length = byte_count;
 
+  uint16_t *p = (uint16_t*) data;
+  uint32_t *p2 = (uint32_t*) data;
+
   if (type == NON_RANGE) {
     switch (size) {
       case ONE_BYTES:
         return new OneByteDMPAddress(*data);
       case TWO_BYTES:
-        return new TwoByteDMPAddress(ntohs(*(uint16_t*) data));
+        return new TwoByteDMPAddress(ntohs(*p));
       case FOUR_BYTES:
-        return new FourByteDMPAddress(ntohl(*(uint32_t*) data));
+        return new FourByteDMPAddress(ntohl(*p2));
       default:
         return NULL; // should never make it here because we checked above
     }
@@ -102,10 +109,8 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
     case ONE_BYTES:
       return new OneByteRangeDMPAddress(*data++, *data++, *data);
     case TWO_BYTES:
-      uint16_t *p = (uint16_t*) data;
       return new TwoByteRangeDMPAddress(ntohs(*p++), ntohs(*p++), ntohs(*p));
     case FOUR_BYTES:
-      uint32_t *p2 = (uint32_t*) data;
       return new FourByteRangeDMPAddress(ntohs(*p2++), ntohs(*p2++),
                                          ntohs(*p2));
     default:

@@ -119,7 +119,7 @@ template <typename type>
 const DMPPDU *_CreateDMPGetProperty(bool is_virtual,
                                     bool is_relative,
                                     unsigned int start) {
-  DMPAddress<type> address(start);
+  DMPAddress<type> address((type) start);
   vector<DMPAddress<type> > addresses;
   addresses.push_back(address);
   return NewDMPGetProperty<type>(is_virtual, is_relative, addresses);
@@ -166,7 +166,7 @@ const DMPPDU *_CreateRangeDMPGetProperty(bool is_virtual,
                                          unsigned int increment,
                                          unsigned int number) {
   vector<RangeDMPAddress<type> > addresses;
-  RangeDMPAddress<type> address(start, increment, number);
+  RangeDMPAddress<type> address((type) start, (type) increment, (type) number);
   addresses.push_back(address);
   return NewRangeDMPGetProperty<type>(is_virtual, is_relative, addresses);
 }

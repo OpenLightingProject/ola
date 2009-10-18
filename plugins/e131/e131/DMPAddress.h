@@ -69,22 +69,24 @@ dmp_address_size TypeToDMPSize() {
 /*
  * Return the number of bytes that correspond to a DMPType
  */
-uint8_t DMPSizeToByteSize(dmp_address_size size);
+unsigned int DMPSizeToByteSize(dmp_address_size size);
 
 /*
  * Convert a value to network byte order
  */
 template <typename type>
-type HostToNetwork(type v) {
-  switch (sizeof(type)) {
-    case 1:
-      return v;
-    case 2:
-      return htons(v);
-    default:
-      return htonl(v);
-  }
-}
+inline type HostToNetwork(type v) { return htonl(v); }
+
+template<>
+inline uint8_t HostToNetwork(uint8_t v) { return v; }
+
+template<>
+inline uint16_t HostToNetwork(uint16_t v) { return ntohs(v); }
+
+/*
+template<>
+uint32_t HostToNetwork(uint32_t v) { return ntohl(v); }
+*/
 
 
 /*

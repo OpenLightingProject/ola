@@ -58,12 +58,12 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
   }
 
   if (size <= TWOB_LENGTH_LIMIT) {
-    buffer[0] = (size & 0x0f00) >> 8;
-    buffer[1] = size & 0xff;
+    buffer[0] = (uint8_t) ((size & 0x0f00) >> 8);
+    buffer[1] = (uint8_t) (size & 0xff);
   } else {
-    buffer[0] = (size & 0x0f0000) >> 16;
-    buffer[1] = (size & 0xff00) >> 8;
-    buffer[2] = size & 0xff;
+    buffer[0] = (uint8_t) ((size & 0x0f0000) >> 16);
+    buffer[1] = (uint8_t) ((size & 0xff00) >> 8);
+    buffer[2] = (uint8_t) (size & 0xff);
     offset += 1;
   }
 
@@ -74,7 +74,7 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
 
   switch (m_vector_size) {
     case PDU::ONE_BYTE:
-      buffer[offset] = m_vector;
+      buffer[offset] = (uint8_t) m_vector;
       break;
     case PDU::TWO_BYTES:
       *(uint16_t*) (buffer + offset) = htons(m_vector);
