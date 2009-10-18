@@ -41,7 +41,7 @@ class DMPAddressTest: public CppUnit::TestFixture {
     void testRangeAddress();
     void testAddressData();
   private:
-    void DMPAddressTest::checkAddress(
+    void checkAddress(
         const BaseDMPAddress *address,
         unsigned int start,
         unsigned int increment,
