@@ -59,6 +59,9 @@ class AbstractPort {
 
     // return a short description of this port
     virtual string Description() const = 0;
+
+    // Called if the universe name changes
+    virtual void UniverseNameChanged(const string &new_name) = 0;
 };
 
 
@@ -93,6 +96,8 @@ class Port: public AbstractPort {
     virtual bool IsOutput()  const { return true; }
 
     virtual string Description() const { return ""; }
+
+    virtual void UniverseNameChanged(const string &new_name) { (void) new_name; }
 
   private:
     Port(const Port&);

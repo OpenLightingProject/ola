@@ -105,6 +105,12 @@ Universe::~Universe() {
 void Universe::SetName(const string &name) {
   m_universe_name = name;
   UpdateName();
+
+  // notify ports
+  vector<AbstractPort*>::const_iterator iter;
+  for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
+    (*iter)->UniverseNameChanged(name);
+  }
 }
 
 

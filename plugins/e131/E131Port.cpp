@@ -74,8 +74,11 @@ bool E131Port::SetUniverse(Universe *universe) {
 
   if (!universe) {
     // unpatch
-    if (!IsOutput() && old_universe)
+    if (IsOutput())
+      node->SetSourceName(old_universe->UniverseId(), "");
+    else if (old_universe)
       node->RemoveHandler(old_universe->UniverseId());
+
   } else {
     // patch request, check no other ports are using this universe
     vector<AbstractPort*> ports = device->Ports();
@@ -91,7 +94,9 @@ bool E131Port::SetUniverse(Universe *universe) {
       }
     }
 
-    if (!IsOutput()) {
+    if (IsOutput()) {
+      node->SetSourceName(universe->UniverseId(), universe->Name());
+    } else {
       // setup callback
       node->SetHandler(universe->UniverseId(), &m_buffer,
                        NewClosure<E131Port>(this, &E131Port::DmxChanged));
@@ -110,6 +115,15 @@ string E131Port::Description() const {
   return str.str();
 }
 
+
+/*
+ * Update the universe name
+ */
+void E131Port::UniverseNameChanged(const string &new_name) {
+  E131Device *device = GetDevice();
+  E131Node *node = device->GetNode();
+  node->SetSourceName(GetUniverse()->UniverseId(), new_name);
+}
 
 
 } //plugin

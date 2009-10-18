@@ -42,6 +42,8 @@ class E131Port: public Port<E131Device> {
     bool SetUniverse(Universe *universe);
     string Description() const;
 
+    void UniverseNameChanged(const string &new_name);
+
     static const int NUMBER_OF_PORTS = 5;
   private:
     DmxBuffer m_buffer;
