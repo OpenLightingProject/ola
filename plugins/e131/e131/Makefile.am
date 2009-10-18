@@ -1,8 +1,8 @@
 libdir = $(plugindir)
 EXTRA_DIST = BaseInflator.h CID.h \
-             DMPE131Inflator.h DMPHeader.h DMPInflator.h DMPPDU.h \
+             DMPE131Inflator.h DMPAddress.h DMPHeader.h DMPInflator.h DMPPDU.h \
              E131Header.h E131Inflator.h E131Layer.h E131Node.h E131PDU.h \
-             HeaderSet.h PDU.h PDUTest.h PDUTestCommon.h \
+             HeaderSet.h PDU.h PDUTestCommon.h \
              RootHeader.h RootInflator.h RootLayer.h RootPDU.h \
              UDPTransport.h
 
@@ -20,12 +20,12 @@ libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
 libolae131core_la_LIBADD = @LIBS@
 
 # test program
-bin_PROGRAMS = e131_test
-e131_test_SOURCES = e131_test.cpp
-e131_test_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf \
-                  ./libolae131core.la \
-                  ../../../common/libolacommon.la
-e131_test_LDFLAGS = $(UUID_LIBS)
+#bin_PROGRAMS = e131_test
+#e131_test_SOURCES = e131_test.cpp
+#e131_test_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf \
+#                  ./libolae131core.la \
+#                  ../../../common/libolacommon.la
+#e131_test_LDFLAGS = $(UUID_LIBS)
 
 # Test programs
 TESTS = E131Tester
