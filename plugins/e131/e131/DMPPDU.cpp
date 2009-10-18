@@ -48,23 +48,19 @@ bool DMPPDU::PackHeader(uint8_t *data, unsigned int &length) const {
  * @param start the start offset
  * @return A pointer to a DMPGetProperty.
  */
-const DMPPDU *SingleDMPGetProperty(bool is_virtual,
-                                   bool is_relative,
-                                   unsigned int start) {
+const DMPPDU *NewDMPGetProperty(bool is_virtual,
+                                bool is_relative,
+                                unsigned int start) {
   if (start > MAX_TWO_BYTE)
-    return _CreateSingleDMPGetProperty<uint32_t>(is_virtual,
-                                                 is_relative,
-                                                 start);
+    return _CreateDMPGetProperty<uint32_t>(is_virtual, is_relative, start);
   else if (start > MAX_ONE_BYTE)
-    return _CreateSingleDMPGetProperty<uint16_t>(is_virtual,
-                                                 is_relative,
-                                                 start);
-  return _CreateSingleDMPGetProperty<uint8_t>(is_virtual, is_relative, start);
+    return _CreateDMPGetProperty<uint16_t>(is_virtual, is_relative, start);
+  return _CreateDMPGetProperty<uint8_t>(is_virtual, is_relative, start);
 }
 
 
 /*
- * Create a new repeated address GetProperty PDU.
+ * Create a new range address GetProperty PDU.
  * @param is_virtual set to true if this is a virtual address
  * @param is_relative set to true if this is a relative address
  * @param start the start offset
@@ -72,7 +68,7 @@ const DMPPDU *SingleDMPGetProperty(bool is_virtual,
  * @param number the number of addresses defined
  * @return A pointer to a DMPGetProperty.
  */
-const DMPPDU *RepeatedDMPGetProperty(
+const DMPPDU *NewRangeDMPGetProperty(
     bool is_virtual,
     bool is_relative,
     unsigned int start,
@@ -81,23 +77,23 @@ const DMPPDU *RepeatedDMPGetProperty(
 
   if (start > MAX_TWO_BYTE || increment > MAX_TWO_BYTE ||
       number > MAX_TWO_BYTE)
-    return _CreateDMPRepeatedGetProperty<uint32_t>(is_virtual,
-                                                   is_relative,
-                                                   start,
-                                                   increment,
-                                                   number);
-  else if (start > MAX_ONE_BYTE || increment > MAX_ONE_BYTE ||
-             number > MAX_ONE_BYTE)
-    return _CreateDMPRepeatedGetProperty<uint16_t>(is_virtual,
-                                                   is_relative,
-                                                   start,
-                                                   increment,
-                                                   number);
-  return _CreateDMPRepeatedGetProperty<uint8_t>(is_virtual,
+    return _CreateRangeDMPGetProperty<uint32_t>(is_virtual,
                                                 is_relative,
                                                 start,
                                                 increment,
                                                 number);
+  else if (start > MAX_ONE_BYTE || increment > MAX_ONE_BYTE ||
+             number > MAX_ONE_BYTE)
+    return _CreateRangeDMPGetProperty<uint16_t>(is_virtual,
+                                                is_relative,
+                                                start,
+                                                increment,
+                                                number);
+  return _CreateRangeDMPGetProperty<uint8_t>(is_virtual,
+                                             is_relative,
+                                             start,
+                                             increment,
+                                             number);
 }
 
 

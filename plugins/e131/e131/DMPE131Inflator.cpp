@@ -20,41 +20,127 @@
 
 #include <ola/Logging.h>
 #include "DMPE131Inflator.h"
+#include "DMPHeader.h"
+#include "DMPPDU.h"
 
 namespace ola {
 namespace e131 {
 
+using std::map;
+using ola::Closure;
+
+
+DMPE131Inflator::~DMPE131Inflator() {
+  map<unsigned int, universe_handler>::iterator iter;
+  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
+    delete iter->second.closure;
+    m_e131_layer->LeaveUniverse(iter->first);
+  }
+  m_handlers.clear();
+}
+
 
 /*
- * Handle a DMP PDU.
+ * Handle a DMP PDU for E1.31.
  */
 bool DMPE131Inflator::HandlePDUData(uint32_t vector,
                                     HeaderSet &headers,
                                     const uint8_t *data,
                                     unsigned int pdu_len) {
 
+  if (vector != DMP_SET_PROPERTY_VECTOR) {
+    OLA_INFO << "not a set property msg: " << vector;
+    return true;
+  }
+
   E131Header e131_header = headers.GetE131Header();
-  unsigned int seq = e131_header.Sequence();
-  unsigned int pri = e131_header.Priority();
-  OLA_INFO << "in DMP handler, uni " << e131_header.Universe() << ", seq " <<
-    seq << ", pri " << pri << ".";
-  return true;
+  map<unsigned int, universe_handler>::iterator iter =
+      m_handlers.find(e131_header.Universe());
+
+  if (iter == m_handlers.end())
+    return true;
 
   DMPHeader dmp_header = headers.GetDMPHeader();
 
-  /*
-  switch (vector) {
-    case DMPGetMessage::TYPE:
-      DMPGetMessage *m = new DMPGetMessage(dmp_header, data, pdu_len);
-      break;
-    case DMPSetMessage::TYPE:
-      DMPSetMessage *m2 = new DMPSetMessage(dmp_header, data, pdu_len);
-      break;
-    default:
-      OLA_WARN << "Unknown DMP message: " << vector;
+  if (!dmp_header.IsVirtual() || dmp_header.IsRelative() ||
+      dmp_header.Size() != TWO_BYTES ||
+      dmp_header.Type() != RANGE_EQUAL) {
+    OLA_DEBUG << "malformed E1.31 dmp header " << dmp_header.Header();
+    return true;
   }
-  */
+
+  unsigned int available_length = pdu_len;
+  const BaseDMPAddress *address = DecodeAddress(dmp_header.Size(),
+                                                dmp_header.Type(),
+                                                data,
+                                                available_length);
+  if (address->Increment() != 1) {
+    OLA_INFO << "E1.31 DMP packet with increment " << address->Increment()
+      << ", disarding";
+    return true;
+  }
+
+  unsigned int channels = std::min(pdu_len - available_length,
+                                   address->Number());
+  iter->second.buffer->Set(data + available_length, channels);
+  iter->second.closure->Run();
+  delete address;
+
+  return true;
 }
+
+/*
+ * Set the closure to be called when we receive data for this universe.
+ * @param universe the universe to register the handler for
+ * @param buffer the DmxBuffer to update with the data
+ * @param handler the Closure to call when there is data for this universe.
+ * Ownership of the closure is transferred to the node.
+ */
+bool DMPE131Inflator::SetHandler(unsigned int universe,
+                                 ola::DmxBuffer *buffer,
+                                 ola::Closure *closure) {
+  if (!closure || !buffer)
+    return false;
+
+  map<unsigned int, universe_handler>::iterator iter =
+    m_handlers.find(universe);
+
+  if (iter == m_handlers.end()) {
+    universe_handler handler;
+    handler.buffer = buffer;
+    handler.closure = closure;
+    m_handlers[universe] = handler;
+    m_e131_layer->JoinUniverse(universe);
+  } else {
+    Closure *old_closure = iter->second.closure;
+    iter->second.closure = closure;
+    iter->second.buffer = buffer;
+    delete old_closure;
+  }
+  return true;
+}
+
+
+/*
+ * Remove the handler for this universe
+ * @param universe the universe handler to remove
+ * @param true if removed, false if it didn't exist
+ */
+bool DMPE131Inflator::RemoveHandler(unsigned int universe) {
+  map<unsigned int, universe_handler>::iterator iter =
+    m_handlers.find(universe);
+
+  if (iter != m_handlers.end()) {
+    Closure *old_closure = iter->second.closure;
+    m_handlers.erase(iter);
+    m_e131_layer->LeaveUniverse(universe);
+    delete old_closure;
+    return true;
+  }
+  return false;
+}
+
+
 
 } // e131
 } // ola

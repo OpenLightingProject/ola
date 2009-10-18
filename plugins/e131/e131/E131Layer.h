@@ -27,6 +27,7 @@
 #include "E131PDU.h"
 #include "E131Inflator.h"
 #include "RootLayer.h"
+#include "DMPPDU.h"
 
 namespace ola {
 namespace e131 {
@@ -38,11 +39,9 @@ class E131Layer {
     E131Layer(RootLayer *root_layer);
     ~E131Layer() {}
 
-    //bool SetDmpInflator(BaseInflator *inflator);
+    bool SendDMP(const E131Header &header, const DMPPDU *pdu);
 
-    //bool SendDmp(const E131Header &header, const DMPPDU &pdu);
-
-    bool SetInflator(DMPInflator *inflator);
+    bool SetInflator(class DMPE131Inflator *inflator);
     bool JoinUniverse(unsigned int universe);
     bool LeaveUniverse(unsigned int universe);
 

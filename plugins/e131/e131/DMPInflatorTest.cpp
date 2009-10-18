@@ -48,7 +48,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DMPInflatorTest);
  * Check that we can decode headers properly
  */
 void DMPInflatorTest::testDecodeHeader() {
-  DMPHeader header(true, true, DMPHeader::NON_RANGE, TWO_BYTES);
+  DMPHeader header(true, true, NON_RANGE, TWO_BYTES);
   DMPInflator inflator;
   HeaderSet header_set, header_set2;
   unsigned int bytes_used;
@@ -62,7 +62,7 @@ void DMPInflatorTest::testDecodeHeader() {
   DMPHeader decoded_header = header_set.GetDMPHeader();
   CPPUNIT_ASSERT(decoded_header.IsVirtual());
   CPPUNIT_ASSERT(decoded_header.IsRelative());
-  CPPUNIT_ASSERT(DMPHeader::NON_RANGE == decoded_header.Type());
+  CPPUNIT_ASSERT(NON_RANGE == decoded_header.Type());
   CPPUNIT_ASSERT(TWO_BYTES == decoded_header.Size());
 
   // try an undersized header
@@ -78,7 +78,7 @@ void DMPInflatorTest::testDecodeHeader() {
   decoded_header = header_set2.GetDMPHeader();
   CPPUNIT_ASSERT(decoded_header.IsVirtual());
   CPPUNIT_ASSERT(decoded_header.IsRelative());
-  CPPUNIT_ASSERT(DMPHeader::NON_RANGE == decoded_header.Type());
+  CPPUNIT_ASSERT(NON_RANGE == decoded_header.Type());
   CPPUNIT_ASSERT(TWO_BYTES == decoded_header.Size());
 
   inflator.ResetHeaderField();
@@ -91,8 +91,8 @@ void DMPInflatorTest::testDecodeHeader() {
  * Check that we can inflate a DMP PDU that contains other PDUs
  */
 void DMPInflatorTest::testInflatePDU() {
-  DMPHeader header(true, true, DMPHeader::NON_RANGE, ONE_BYTES);
-  const DMPPDU *pdu = SingleDMPGetProperty(true, true, 1);
+  DMPHeader header(true, true, NON_RANGE, ONE_BYTES);
+  const DMPPDU *pdu = NewDMPGetProperty(true, true, 1);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 5, pdu->Size());
 
   unsigned int size = pdu->Size();

@@ -26,8 +26,8 @@ namespace ola {
 namespace e131 {
 
 using std::string;
-using std::map;
 using ola::Closure;
+using ola::DmxBuffer;
 
 
 /*
@@ -41,7 +41,8 @@ E131Node::E131Node(const string &ip_address, const CID &cid):
   m_cid(cid),
   m_transport(),
   m_root_layer(&m_transport, m_cid),
-  m_e131_layer(&m_root_layer) {
+  m_e131_layer(&m_root_layer),
+  m_dmp_inflator(&m_e131_layer) {
 
 }
 
@@ -78,12 +79,40 @@ bool E131Node::Start() {
  * Stop this node
  */
 bool E131Node::Stop() {
-  std::map<unsigned int, universe_handler>::iterator iter;
-  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
-    delete iter->second.closure;
-    m_e131_layer.LeaveUniverse(iter->first);
+  return true;
+}
+
+
+/*
+ * Set the name for a universe
+ */
+bool E131Node::SetSourceName(unsigned int universe, const string &source) {
+  map<unsigned int, tx_universe>::iterator iter =
+      m_tx_universes.find(universe);
+
+  if (iter == m_tx_universes.end()) {
+    tx_universe &settings = SetupOutgoingSettings(universe);
+    settings.source = source;
+  } else {
+    iter->second.source = source;
   }
-  m_handlers.clear();
+  return true;
+}
+
+
+/*
+ * Set the priority for a universe
+ */
+bool E131Node::SetSourcePriority(unsigned int universe, uint16_t priority) {
+  map<unsigned int, tx_universe>::iterator iter =
+      m_tx_universes.find(universe);
+
+  if (iter == m_tx_universes.end()) {
+    tx_universe &settings = SetupOutgoingSettings(universe);
+    settings.priority = priority;
+  } else {
+    iter->second.priority = priority;
+  }
   return true;
 }
 
@@ -97,44 +126,34 @@ bool E131Node::Stop() {
 bool E131Node::SendDMX(unsigned int universe,
                        const ola::DmxBuffer &buffer) {
 
-  /*
-  if (!m_running)
-    return false;
-
-  if (universe >= E131_MAX_UNIVERSES) {
+  if (universe >= MAX_TWO_BYTE) {
     OLA_WARN << "Universe index out of bounds, should be between 0 and" <<
-                  E131_MAX_UNIVERSES << "), was " << universe;
+                  MAX_TWO_BYTE << "), was " << universe;
     return false;
   }
 
+  map<unsigned int, tx_universe>::iterator iter =
+      m_tx_universes.find(universe);
+  tx_universe &settings = SetupOutgoingSettings(universe);
 
-  if (bytes_sent != size) {
-    OLA_WARN << "Only sent " << bytes_sent << " of " << size;
-    return false;
-  }
+  if (iter == m_tx_universes.end())
+    settings = SetupOutgoingSettings(universe);
+  else
+    settings = iter->second;
 
-  m_packet_count++;
+  TwoByteRangeDMPAddress range_addr(0, 1, buffer.Size());
+  DMPAddressData<TwoByteRangeDMPAddress> range_chunk(&range_addr,
+                                                     buffer.GetRaw(),
+                                                     buffer.Size());
+  vector<DMPAddressData<TwoByteRangeDMPAddress> > ranged_chunks;
+  ranged_chunks.push_back(range_chunk);
+  const DMPPDU *pdu = NewRangeDMPSetProperty<uint16_t>(true, false,
+                                                       ranged_chunks);
 
-  E131Header header;
-  return m_e131_layer->SendDmp(header, e131_pdu);
-  */
-  return true;
-}
-
-
-/*
- * Get the DMX data for this universe.
- */
-DmxBuffer E131Node::GetDMX(unsigned int universe) {
-  map<unsigned int, universe_handler>::const_iterator iter =
-    m_handlers.find(universe);
-
-  if (iter != m_handlers.end())
-    return iter->second.buffer;
-  else {
-    DmxBuffer buffer;
-    return buffer;
-  }
+  E131Header header(settings.source, settings.priority, settings.sequence,
+                    universe);
+  settings.sequence++;
+  return m_e131_layer.SendDMP(header, pdu);
 }
 
 
@@ -144,25 +163,10 @@ DmxBuffer E131Node::GetDMX(unsigned int universe) {
  * @param handler the Closure to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
-bool E131Node::SetHandler(unsigned int universe, Closure *closure) {
-  if (!closure)
-    return false;
-
-  map<unsigned int, universe_handler>::iterator iter =
-    m_handlers.find(universe);
-
-  if (iter == m_handlers.end()) {
-    universe_handler handler;
-    handler.closure = closure;
-    handler.buffer.Blackout();
-    m_handlers[universe] = handler;
-    m_e131_layer.JoinUniverse(universe);
-  } else {
-    Closure *old_closure = iter->second.closure;
-    iter->second.closure = closure;
-    delete old_closure;
-  }
-  return true;
+bool E131Node::SetHandler(unsigned int universe,
+                          DmxBuffer *buffer,
+                          Closure *closure) {
+  return m_dmp_inflator.SetHandler(universe, buffer, closure);
 }
 
 
@@ -172,20 +176,24 @@ bool E131Node::SetHandler(unsigned int universe, Closure *closure) {
  * @param true if removed, false if it didn't exist
  */
 bool E131Node::RemoveHandler(unsigned int universe) {
-  map<unsigned int, universe_handler>::iterator iter =
-    m_handlers.find(universe);
-
-  if (iter != m_handlers.end()) {
-    Closure *old_closure = iter->second.closure;
-    m_handlers.erase(iter);
-    delete old_closure;
-    m_e131_layer.LeaveUniverse(universe);
-    return true;
-  }
-  return false;
+  return m_dmp_inflator.RemoveHandler(universe);
 }
 
 
+/*
+ * Create a settings entry for an outgoing universe
+ */
+E131Node::tx_universe &E131Node::SetupOutgoingSettings(unsigned int universe) {
+  tx_universe settings;
+  settings.source = "";
+  settings.priority = DEFAULT_PRIORITY;
+  settings.sequence = 0;
+  map<unsigned int, tx_universe>::iterator iter =
+      m_tx_universes.insert(std::pair<unsigned int, tx_universe>(universe,
+                                                                 settings)
+                           ).first;
+  return iter->second;
+}
 
 } //e131
 } //ola

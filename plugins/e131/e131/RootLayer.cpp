@@ -84,9 +84,6 @@ bool RootLayer::SendPDUBlock(struct in_addr &addr,
   m_root_pdu.SetBlock(&block);
   m_root_block.Clear();
   m_root_block.AddPDU(&m_root_pdu);
-  OLA_WARN << "size: " << block.Size();
-  OLA_WARN << "size: " << m_root_pdu.Size();
-  OLA_WARN << "size: " << m_root_block.Size();
 
   struct sockaddr_in destination;
   destination.sin_family = AF_INET;

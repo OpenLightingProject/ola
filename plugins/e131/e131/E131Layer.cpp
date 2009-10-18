@@ -20,7 +20,7 @@
 
 #include <ola/Logging.h>
 #include "E131Layer.h"
-#include "DMPInflator.h"
+#include "DMPE131Inflator.h"
 
 namespace ola {
 namespace e131 {
@@ -39,39 +39,28 @@ E131Layer::E131Layer(RootLayer *root_layer):
 
 
 /*
- * Add an inflator to the root level
-bool E131Layer::AddInflator(BaseInflator *inflator) {
-  if (!m_root_layer)
-    return false;
-
-  return m_root_layer.AddInflator(inflator);
-}
+ * Send a DMPPDU
  */
-
-
-/*
- * Encapsulate this PDUBlock in a E131PDU and send it to the destination.
- * @param addr where to send the PDU
- * @param vector the vector to use at the root level
- * @param block the PDUBlock to send.
-bool E131Layer::SendPDUBlock(struct in_addr &addr,
-                            unsigned int vector,
-                            const PDUBlock<PDU> &block) {
+bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
 
   if (!m_root_layer)
     return false;
 
-  E131PDU pdu(0, header, dmp_pdu);
-  return m_root_layer->SendPDU(  , E131Inflator::E131_VECTOR, pdu);
-}
-  */
+  struct in_addr addr;
+  if (!UniverseIP(header.Universe(), addr)) {
+    OLA_INFO << "could not convert universe to ip.";
+    return false;
+  }
 
+  E131PDU pdu(DMPInflator::DMP_VECTOR, header, dmp_pdu);
+  return m_root_layer->SendPDU(addr, E131Inflator::E131_VECTOR, pdu);
+}
 
 
 /*
  * Set the DMPInflator to use
  */
-bool E131Layer::SetInflator(DMPInflator *inflator) {
+bool E131Layer::SetInflator(DMPE131Inflator *inflator) {
   return m_e131_inflator.AddInflator(inflator);
 }
 
@@ -89,6 +78,7 @@ bool E131Layer::JoinUniverse(unsigned int universe) {
     return m_root_layer->JoinMulticast(addr);
   return false;
 }
+
 
 /*
  * Leave a universe

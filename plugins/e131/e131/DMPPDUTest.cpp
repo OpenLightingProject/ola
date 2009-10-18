@@ -18,63 +18,216 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <arpa/inet.h>
+#include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "PDUTestCommon.h"
+#include <ola/Logging.h>
+#include "DMPAddress.h"
+#include "DMPInflator.h"
 #include "DMPPDU.h"
+#include "HeaderSet.h"
+#include "PDUTestCommon.h"
 
 namespace ola {
 namespace e131 {
 
+class MockDMPInflator: public DMPInflator {
+  public:
+    MockDMPInflator(): DMPInflator(),
+                       expected_vector(0),
+                       expected_virtual(false),
+                       expected_relative(false),
+                       expected_type(NON_RANGE),
+                       expected_size(RES_BYTES) ,
+                       expected_start(0),
+                       expected_increment(0),
+                       expected_number(0) {}
+    ~MockDMPInflator() {}
+
+    unsigned int expected_length;
+    unsigned int expected_data_length;
+    unsigned int expected_vector;
+    bool expected_virtual;
+    bool expected_relative;
+    dmp_address_type expected_type;
+    dmp_address_size expected_size;
+
+    unsigned int expected_start;
+    unsigned int expected_increment;
+    unsigned int expected_number;
+
+  protected:
+    bool HandlePDUData(uint32_t vector, HeaderSet &headers,
+                       const uint8_t *data, unsigned int pdu_len);
+};
 
 class DMPPDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DMPPDUTest);
-  CPPUNIT_TEST(testSimpleDMPPDU);
+  CPPUNIT_TEST(testGetProperty);
+  CPPUNIT_TEST(testSetProperty);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testSimpleDMPPDU();
+    void testGetProperty();
+    void testSetProperty();
+
   private:
-    static const unsigned int TEST_VECTOR = 30;
+    void PackPduAndInflate(const DMPPDU *pdu);
+    MockDMPInflator m_inflator;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DMPPDUTest);
 
 
 /*
+ * Verify a PDU is what we expected
+ */
+bool MockDMPInflator::HandlePDUData(uint32_t vector,
+                                    HeaderSet &headers,
+                                    const uint8_t *data,
+                                    unsigned int pdu_len) {
+  DMPHeader header = headers.GetDMPHeader();
+  CPPUNIT_ASSERT_EQUAL(expected_vector, vector);
+  CPPUNIT_ASSERT_EQUAL(expected_virtual, header.IsVirtual());
+  CPPUNIT_ASSERT_EQUAL(expected_relative, header.IsRelative());
+  CPPUNIT_ASSERT(expected_type == header.Type());
+  CPPUNIT_ASSERT(expected_size == header.Size());
+
+  if (vector == DMP_GET_PROPERTY_VECTOR ||
+      vector == DMP_SET_PROPERTY_VECTOR) {
+    unsigned int length = pdu_len;
+    const BaseDMPAddress *addr = DecodeAddress(header.Size(), header.Type(),
+                                               data, length);
+    CPPUNIT_ASSERT(addr);
+    CPPUNIT_ASSERT_EQUAL(expected_start, addr->Start());
+    CPPUNIT_ASSERT_EQUAL(expected_increment, addr->Increment());
+    CPPUNIT_ASSERT_EQUAL(expected_number, addr->Number());
+    delete addr;
+  }
+  return true;
+}
+
+
+/*
+ * Pack a PDU and check it inflates correctly.
+ */
+void DMPPDUTest::PackPduAndInflate(const DMPPDU *pdu) {
+  unsigned int size = pdu->Size();
+  uint8_t *data = new uint8_t[size];
+  CPPUNIT_ASSERT(pdu->Pack(data, size));
+  CPPUNIT_ASSERT_EQUAL(pdu->Size(), size);
+
+  HeaderSet headers;
+  m_inflator.InflatePDUBlock(headers, data, size);
+  delete[] data;
+}
+
+
+/*
+ * Test that GetProperty PDUs can be constructed
+ */
+void DMPPDUTest::testGetProperty() {
+  m_inflator.expected_vector = DMP_GET_PROPERTY_VECTOR;
+  m_inflator.expected_type = NON_RANGE;
+  m_inflator.expected_size = ONE_BYTES;
+  m_inflator.expected_virtual = false;
+  m_inflator.expected_relative = true;
+  m_inflator.expected_start = 10;
+  m_inflator.expected_increment = 0;
+  m_inflator.expected_number = 1;
+
+  // Non-ranged GetProperty PDUs
+  const DMPPDU *pdu = NewDMPGetProperty(false, true, 10);
+  CPPUNIT_ASSERT(pdu);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 5, pdu->Size());
+  PackPduAndInflate(pdu);
+  delete pdu;
+
+  m_inflator.expected_start = 1024;
+  pdu = NewDMPGetProperty(true, true, 1024);
+  CPPUNIT_ASSERT(pdu);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 6, pdu->Size());
+  m_inflator.expected_size = TWO_BYTES;
+  m_inflator.expected_virtual = true;
+  PackPduAndInflate(pdu);
+  delete pdu;
+
+  // Ranged GetProperty PDUs
+  m_inflator.expected_start = 10;
+  m_inflator.expected_increment = 1;
+  m_inflator.expected_number = 20;
+  m_inflator.expected_type = RANGE_SINGLE;
+  pdu = NewRangeDMPGetProperty(true, false, 10, 1, 20);
+  CPPUNIT_ASSERT(pdu);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 7, pdu->Size());
+  m_inflator.expected_size = ONE_BYTES;
+  m_inflator.expected_relative = false;
+  PackPduAndInflate(pdu);
+  delete pdu;
+
+  m_inflator.expected_start = 10;
+  m_inflator.expected_increment = 1;
+  m_inflator.expected_number = 1024;
+  pdu = NewRangeDMPGetProperty(false, false, 10, 1, 1024);
+  CPPUNIT_ASSERT(pdu);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 10, pdu->Size());
+  m_inflator.expected_size = TWO_BYTES;
+  m_inflator.expected_virtual = false;
+  PackPduAndInflate(pdu);
+  delete pdu;
+}
+
+
+/*
  * Test that packing a DMPPDU without data works.
  */
-void DMPPDUTest::testSimpleDMPPDU() {
-  DMPHeader header(true, false, DMPHeader::RANGE_SINGLE, DMPHeader::ONE_BYTES);
-  DMPPDU pdu(TEST_VECTOR, header, NULL);
+void DMPPDUTest::testSetProperty() {
+  m_inflator.expected_vector = DMP_SET_PROPERTY_VECTOR;
+  m_inflator.expected_type = NON_RANGE;
+  m_inflator.expected_size = ONE_BYTES;
+  m_inflator.expected_virtual = false;
+  m_inflator.expected_relative = false;
+  m_inflator.expected_start = 10;
+  m_inflator.expected_increment = 0;
+  m_inflator.expected_number = 1;
 
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, pdu.Size());
+  // non-range first
+  uint8_t data = 0xab;
+  OneByteDMPAddress addr(10);
+  DMPAddressData<OneByteDMPAddress> chunk(&addr, &data, sizeof(data));
+  vector<DMPAddressData<OneByteDMPAddress> > chunks;
+  chunks.push_back(chunk);
+  const DMPPDU *pdu = NewDMPSetProperty<uint8_t>(false, false, chunks);
+  CPPUNIT_ASSERT(pdu);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 6, pdu->Size());
+  PackPduAndInflate(pdu);
+  delete pdu;
 
-  unsigned int size = pdu.Size();
-  uint8_t *data = new uint8_t[size];
-  unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  // ranged address
+  m_inflator.expected_type = RANGE_SINGLE;
+  m_inflator.expected_increment = 1;
+  m_inflator.expected_number = 20;
+  OneByteRangeDMPAddress range_addr(10, 1, 20);
+  DMPAddressData<OneByteRangeDMPAddress> range_chunk(&range_addr, &data,
+                                                     sizeof(data));
+  vector<DMPAddressData<OneByteRangeDMPAddress> > ranged_chunks;
+  ranged_chunks.push_back(range_chunk);
 
-  // spot check the data
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) htonl(TEST_VECTOR), data[2]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) header.Heade(), data[3]);
+  // range single first
+  pdu = NewRangeDMPSetProperty<uint8_t>(false, false, ranged_chunks, false);
+  CPPUNIT_ASSERT(pdu);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 8, pdu->Size());
+  PackPduAndInflate(pdu);
+  delete pdu;
 
-  // test undersized buffer
-  bytes_used = size - 1;
-  CPPUNIT_ASSERT(!pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
-
-  // test oversized buffer
-  bytes_used = size + 1;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
-
-  delete[] data;
+  // range equal
+  m_inflator.expected_type = RANGE_EQUAL;
+  pdu = NewRangeDMPSetProperty<uint8_t>(false, false, ranged_chunks);
+  CPPUNIT_ASSERT(pdu);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 8, pdu->Size());
+  PackPduAndInflate(pdu);
+  delete pdu;
 }
 
 

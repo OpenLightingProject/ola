@@ -23,7 +23,6 @@
 #define OLA_E131_NODE
 
 #include <string>
-#include <map>
 #include <ola/Closure.h>
 #include <ola/DmxBuffer.h>
 
@@ -45,18 +44,21 @@ class E131Node {
     bool Start();
     bool Stop();
 
+    bool SetSourceName(unsigned int universe, const string &source);
+    bool SetSourcePriority(unsigned int universe, uint16_t priority);
     bool SendDMX(unsigned int universe, const ola::DmxBuffer &buffer);
-    DmxBuffer GetDMX(unsigned int universe);
-    bool SetHandler(unsigned int universe, ola::Closure *handler);
+    bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
+                    ola::Closure *handler);
     bool RemoveHandler(unsigned int universe);
 
     ola::network::UdpSocket* GetSocket() { return m_transport.GetSocket(); }
 
   private:
     typedef struct {
-      DmxBuffer buffer;
-      Closure *closure;
-    } universe_handler;
+      string source;
+      uint16_t priority;
+      uint16_t sequence;
+    } tx_universe;
 
     string m_preferred_ip;
     CID m_cid;
@@ -64,10 +66,14 @@ class E131Node {
     RootLayer m_root_layer;
     E131Layer m_e131_layer;
     DMPE131Inflator m_dmp_inflator;
-    std::map<unsigned int, universe_handler> m_handlers;
+    map<unsigned int, tx_universe> m_tx_universes;
+
+    tx_universe &SetupOutgoingSettings(unsigned int universe);
 
     E131Node(const E131Node&);
     E131Node& operator=(const E131Node&);
+
+    static const uint16_t DEFAULT_PRIORITY = 100;
 };
 
 } //e131

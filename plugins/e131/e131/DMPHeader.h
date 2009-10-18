@@ -38,13 +38,6 @@ class DMPHeader {
   public:
     static const unsigned int DMP_HEADER_SIZE = 1;
 
-    typedef enum {
-      NON_RANGE = 0x00,
-      RANGE_SINGLE = 0x01,
-      RANGE_EQUAL = 0x02,
-      RANGE_MIXED = 0x03,
-    } dmp_address_type;
-
     DMPHeader(uint8_t header=0):
       m_header(header) {}
     DMPHeader(bool is_virtual,
@@ -70,18 +63,7 @@ class DMPHeader {
       return (dmp_address_size) (m_header & SIZE_MASK);
     }
 
-    unsigned int Bytes() const {
-      switch (Size()) {
-        case ONE_BYTES:
-          return 1;
-        case TWO_BYTES:
-          return 2;
-        case FOUR_BYTES:
-          return 4;
-        default:
-          return 0;
-      }
-    }
+    unsigned int Bytes() const { return DMPSizeToByteSize(Size()); }
 
     bool operator==(const DMPHeader &other) const {
       return m_header == other.m_header;
