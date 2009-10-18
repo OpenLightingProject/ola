@@ -22,7 +22,7 @@
 #define OLA_E131PLUGIN_H
 
 #include <string>
-#include <olad/plugin.h>
+#include <olad/Plugin.h>
 #include <ola/plugin_id.h>
 
 namespace ola {

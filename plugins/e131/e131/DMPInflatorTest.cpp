@@ -106,6 +106,7 @@ void DMPInflatorTest::testInflatePDU() {
   CPPUNIT_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
   CPPUNIT_ASSERT(header == header_set.GetDMPHeader());
   delete[] data;
+  delete pdu;
 }
 
 

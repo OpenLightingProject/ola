@@ -164,6 +164,7 @@ void DMPAddressTest::testRangeAddress() {
   CPPUNIT_ASSERT_EQUAL((uint8_t) 10, buffer[0]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, buffer[1]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) 10, buffer[2]);
+  delete addr4;
 
   p = (uint16_t*) buffer;
   const BaseDMPAddress *addr5 = NewRangeAddress(10, 1, 1024);
@@ -174,6 +175,7 @@ void DMPAddressTest::testRangeAddress() {
   CPPUNIT_ASSERT_EQUAL((uint16_t) 10, ntohs(*p++));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 1, ntohs(*p++));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 1024, ntohs(*p));
+  delete addr5;
 
   pp = (uint32_t*) buffer;
   const BaseDMPAddress *addr6 = NewRangeAddress(66000, 1, 1024);
@@ -184,6 +186,8 @@ void DMPAddressTest::testRangeAddress() {
   CPPUNIT_ASSERT_EQUAL((uint32_t) 66000, ntohl(*pp++));
   CPPUNIT_ASSERT_EQUAL((uint32_t) 1, ntohl(*pp++));
   CPPUNIT_ASSERT_EQUAL((uint32_t) 1024, ntohl(*pp));
+  delete addr6;
+
 }
 
 

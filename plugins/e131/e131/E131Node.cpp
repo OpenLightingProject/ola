@@ -149,6 +149,7 @@ bool E131Node::SendDMX(uint16_t universe,
   bool result = m_e131_layer.SendDMP(header, pdu);
   if (result)
     settings.sequence++;
+  delete pdu;
   return result;
 }
 

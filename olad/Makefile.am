@@ -35,7 +35,7 @@ bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
 #olad_CXXFLAGS = -Wall -Werror  -Wformat -W
 olad_CXXFLAGS = -Wall -Wformat -W
-olad_LDFLAGS = -rdynamic -ldl -lprotobuf
+olad_LDFLAGS = -rdynamic -ldl -lprotobuf $(UUID_LIBS)
 olad_LDADD = @LIBS@ libolaserver.la \
              $(top_builddir)/common/libolacommon.la
 

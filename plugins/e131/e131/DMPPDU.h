@@ -83,6 +83,7 @@ class DMPGetProperty: public DMPPDU {
           return false;
         offset += remaining;
       }
+      length = offset;
       return true;
     }
 
@@ -221,6 +222,7 @@ class DMPSetProperty: public DMPPDU {
           return false;
         offset += remaining;
       }
+      length = offset;
       return true;
     }
 

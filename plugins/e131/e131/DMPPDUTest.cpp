@@ -113,7 +113,7 @@ bool MockDMPInflator::HandlePDUData(uint32_t vector,
  * Pack a PDU and check it inflates correctly.
  */
 void DMPPDUTest::PackPduAndInflate(const DMPPDU *pdu) {
-  unsigned int size = pdu->Size();
+  unsigned int size = pdu->Size() + 10; // overallocate to catch overflows
   uint8_t *data = new uint8_t[size];
   CPPUNIT_ASSERT(pdu->Pack(data, size));
   CPPUNIT_ASSERT_EQUAL(pdu->Size(), size);
