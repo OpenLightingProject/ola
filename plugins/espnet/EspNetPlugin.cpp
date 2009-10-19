@@ -15,12 +15,9 @@
  *
  *
  * EspNetPlugin.cpp
- * The Esp Net plugin for ola
- * Copyright (C) 2005  Simon Newton
+ * The EspNet plugin for ola
+ * Copyright (C) 2005-2009 Simon Newton
  */
-
-#include <stdlib.h>
-#include <stdio.h>
 
 #include <olad/Preferences.h>
 
