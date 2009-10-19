@@ -126,8 +126,7 @@ string ArtNetPlugin::Description() const {
 
 
 /*
- * Load the plugin prefs and default to sensible values
- *
+ * Set default preferences.
  */
 bool ArtNetPlugin::SetDefaultPreferences() {
   bool save = false;
@@ -135,22 +134,9 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  // we don't worry about ip here
-  // if it doesn't exist we'll choose one
-  if (m_preferences->GetValue("short_name") == "") {
-    m_preferences->SetValue("short_name", ARTNET_SHORT_NAME);
-    save = true;
-  }
-
-  if (m_preferences->GetValue("long_name") == "") {
-    m_preferences->SetValue("long_name", ARTNET_LONG_NAME);
-    save = true;
-  }
-
-  if (m_preferences->GetValue("subnet") == "") {
-    m_preferences->SetValue("subnet", ARTNET_SUBNET);
-    save = true;
-  }
+  save |= m_preferences->SetDefaultValue("short_name", ARTNET_SHORT_NAME);
+  save |= m_preferences->SetDefaultValue("long_nane", ARTNET_LONG_NAME);
+  save |= m_preferences->SetDefaultValue("subnet", ARTNET_SUBNET);
 
   if (save)
     m_preferences->Save();

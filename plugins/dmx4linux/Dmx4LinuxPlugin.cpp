@@ -178,15 +178,8 @@ bool Dmx4LinuxPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->GetValue(IN_DEV_KEY).empty()) {
-    m_preferences->SetValue(IN_DEV_KEY, DMX4LINUX_IN_DEVICE);
-    save = true;
-  }
-
-  if (m_preferences->GetValue(OUT_DEV_KEY).empty()) {
-    m_preferences->SetValue(OUT_DEV_KEY, DMX4LINUX_OUT_DEVICE);
-    save = true;
-  }
+  save |= m_preferences->SetDefaultValue(IN_DEV_KEY, DMX4LINUX_IN_DEVICE);
+  save |= m_preferences->SetDefaultValue(OUT_DEV_KEY, DMX4LINUX_OUT_DEVICE);
 
   if (save)
     m_preferences->Save();

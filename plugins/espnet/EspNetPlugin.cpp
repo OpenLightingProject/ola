@@ -115,22 +115,15 @@ string EspNetPlugin::Description() const {
 }
 
 /*
- * load the plugin prefs and default to sensible values
- *
+ * Set the default preferences.
  */
 bool EspNetPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  // we don't worry about ip here
-  // if it's non existant it will choose one
-  if (m_preferences->GetValue("name").empty()) {
-    m_preferences->SetValue("name", ESPNET_NODE_NAME);
+  if (m_preferences->SetDefaultValue("name", ESPNET_NODE_NAME))
     m_preferences->Save();
-  }
 
-  // check if this save correctly
-  // we don't want to use it if null
   if (m_preferences->GetValue("name").empty())
     return false;
 

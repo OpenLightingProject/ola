@@ -147,16 +147,11 @@ bool UsbProPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->GetValue(DEVICE_PATH_KEY).empty()) {
-    m_preferences->SetValue(DEVICE_PATH_KEY, USBPRO_DEVICE_PATH);
+  if (m_preferences->SetDefaultValue(DEVICE_PATH_KEY, USBPRO_DEVICE_PATH))
     m_preferences->Save();
-  }
 
-  // check if this saved correctly
-  // we don't want to use it if null
-  if (m_preferences->GetValue(DEVICE_PATH_KEY).empty()) {
+  if (m_preferences->GetValue(DEVICE_PATH_KEY).empty())
     return false;
-  }
   return true;
 }
 

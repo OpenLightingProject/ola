@@ -122,16 +122,14 @@ string OpenDmxPlugin::Description() const {
 
 
 /*
- * Load the plugin prefs and default to sensible values
+ * Set default preferences.
  */
 bool OpenDmxPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->GetValue(DEVICE_KEY).empty()) {
-    m_preferences->SetValue(DEVICE_KEY, OPENDMX_DEVICE_PATH);
+  if (m_preferences->SetDefaultValue(DEVICE_KEY, OPENDMX_DEVICE_PATH))
     m_preferences->Save();
-  }
 
   // check if this save correctly
   // we don't want to use it if null
