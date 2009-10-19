@@ -25,10 +25,12 @@
 #include <stdint.h>
 #include <netinet/in.h>
 
-enum { ESPNET_MAC_LENGTH = 6 };
+#include <ola/network/InterfacePicker.h> // MAC_LENGTH
+#include <ola/BaseTypes.h>
+
+
 enum { ESPNET_NAME_LENGTH = 10 };
 enum { ESPNET_DATA_LENGTH = 200 };
-enum { ESPNET_DMX_LENGTH = 512 };
 
 enum espnet_packet_type_e {
   ESPNET_POLL = 'E' << 24 | 'S' << 16 | 'P' << 8 | 'P',
@@ -66,7 +68,7 @@ typedef struct espnet_node_config_s espnet_node_config_t;
  */
 struct espnet_poll_reply_s {
   uint32_t head;
-  uint8_t  mac[ESPNET_MAC_LENGTH];
+  uint8_t  mac[ola::network::MAC_LENGTH];
   uint16_t type;
   uint8_t  version;
   uint8_t  sw;
@@ -99,7 +101,7 @@ struct espnet_data_s {
   uint8_t  start;
   uint8_t  type;
   uint16_t size;
-  uint8_t  data[ESPNET_DMX_LENGTH];
+  uint8_t  data[DMX_UNIVERSE_SIZE];
 } __attribute__((packed));
 
 typedef struct espnet_data_s espnet_data_t;

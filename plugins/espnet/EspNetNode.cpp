@@ -394,7 +394,7 @@ bool EspNetNode::SendEspData(const struct in_addr &dst,
   packet.dmx.universe = universe;
   packet.dmx.start = START_CODE;
   packet.dmx.type = DATA_RAW;
-  unsigned int size = ESPNET_DMX_LENGTH;
+  unsigned int size = DMX_UNIVERSE_SIZE;
   buffer.Get(packet.dmx.data, size);
   packet.dmx.size = htons(size);
 
