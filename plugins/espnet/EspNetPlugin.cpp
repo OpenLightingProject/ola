@@ -32,7 +32,7 @@
  */
 extern "C" ola::AbstractPlugin* create(
     const ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::espnet::EspNetPlugin(plugin_adaptor);
+  return new ola::plugin::espnet::EspNetPlugin(plugin_adaptor);
 }
 
 /*
@@ -44,6 +44,7 @@ extern "C" void destroy(ola::AbstractPlugin* plugin) {
 
 
 namespace ola {
+namespace plugin {
 namespace espnet {
 
 const string EspNetPlugin::ESPNET_NODE_NAME = "ola-EspNet";
@@ -131,4 +132,5 @@ bool EspNetPlugin::SetDefaultPreferences() {
 }
 
 } //espnet
+} //plugin
 } //ola

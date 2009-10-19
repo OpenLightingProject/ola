@@ -26,6 +26,7 @@
 #include "EspNetDevice.h"
 
 namespace ola {
+namespace plugin {
 namespace espnet {
 
 using ola::DmxBuffer;
@@ -49,6 +50,7 @@ class EspNetPort: public ola::Port<EspNetDevice> {
 };
 
 } //espnet
+} //plugin
 } //ola
 
 #endif

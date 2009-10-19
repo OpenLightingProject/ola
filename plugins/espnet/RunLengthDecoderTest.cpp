@@ -23,7 +23,7 @@
 #include <ola/DmxBuffer.h>
 #include "RunLengthDecoder.h"
 
-using namespace ola::espnet;
+using namespace ola::plugin::espnet;
 
 class RunLengthDecoderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RunLengthDecoderTest);

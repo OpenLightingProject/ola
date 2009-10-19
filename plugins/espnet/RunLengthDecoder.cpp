@@ -22,6 +22,7 @@
 #include "RunLengthDecoder.h"
 
 namespace ola {
+namespace plugin {
 namespace espnet {
 
 /*
@@ -56,4 +57,5 @@ bool RunLengthDecoder::Decode(DmxBuffer &dst,
 }
 
 } //espnet
+} //plugin
 } //ola

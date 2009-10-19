@@ -31,6 +31,7 @@
 #include "EspNetPort.h"
 
 namespace ola {
+namespace plugin {
 namespace espnet {
 
 const std::string EspNetDevice::IP_KEY = "ip";
@@ -101,4 +102,5 @@ bool EspNetDevice::Stop() {
 
 
 } //espnet
+} //plugin
 } //ola

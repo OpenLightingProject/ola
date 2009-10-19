@@ -26,6 +26,7 @@
 #include <ola/plugin_id.h>
 
 namespace ola {
+namespace plugin {
 namespace espnet {
 
 class EspNetDevice;
@@ -54,6 +55,7 @@ class EspNetPlugin: public ola::Plugin {
 };
 
 } //espnet
+} //plugin
 } //ola
 
 #endif

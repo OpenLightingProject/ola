@@ -28,6 +28,9 @@
 #include <ola/network/InterfacePicker.h> // MAC_LENGTH
 #include <ola/BaseTypes.h>
 
+namespace ola {
+namespace plugin {
+namespace espnet {
 
 enum { ESPNET_NAME_LENGTH = 10 };
 enum { ESPNET_DATA_LENGTH = 200 };
@@ -120,5 +123,8 @@ typedef union {
   espnet_data_t dmx;
 } espnet_packet_union_t;
 
+} //espnet
+} //plugin
+} //ola
 
 #endif

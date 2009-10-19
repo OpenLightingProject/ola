@@ -31,6 +31,7 @@
 #include "RunLengthDecoder.h"
 
 namespace ola {
+namespace plugin {
 namespace espnet {
 
 // the node types
@@ -57,7 +58,7 @@ class EspNetNode {
     void SetUniverse(uint8_t universe) { m_universe = universe; }
 
     // IO methods
-    ola::network::UdpSocket* GetSocket() { return m_socket; }
+    ola::network::UdpSocket* GetSocket() { return &m_socket; }
     int SocketReady();
 
     // DMX Receiving methods
@@ -78,11 +79,15 @@ class EspNetNode {
     EspNetNode(const EspNetNode&);
     EspNetNode& operator=(const EspNetNode&);
     bool InitNetwork();
-    void HandlePoll(const espnet_poll_t &poll, const struct in_addr &source);
+    void HandlePoll(const espnet_poll_t &poll, ssize_t length,
+                    const struct in_addr &source);
     void HandleReply(const espnet_poll_reply_t &reply,
+                     ssize_t length,
                      const struct in_addr &source);
-    void HandleAck(const espnet_ack_t &ack, const struct in_addr &source);
-    void HandleData(const espnet_data_t &data, const struct in_addr &source);
+    void HandleAck(const espnet_ack_t &ack, ssize_t length,
+                   const struct in_addr &source);
+    void HandleData(const espnet_data_t &data, ssize_t length,
+                    const struct in_addr &source);
 
     bool SendEspPoll(const struct in_addr &dst, bool full);
     bool SendEspAck(const struct in_addr &dst,
@@ -107,7 +112,7 @@ class EspNetNode {
     std::map<uint8_t, universe_handler> m_handlers;
     ola::network::InterfacePicker m_interface_picker;
     ola::network::Interface m_interface;
-    ola::network::UdpSocket *m_socket;
+    ola::network::UdpSocket m_socket;
     RunLengthDecoder m_decoder;    
 
     static const string NODE_NAME;
@@ -124,5 +129,6 @@ class EspNetNode {
 };
 
 } //espnet
+} //plugin
 } //ola
 #endif

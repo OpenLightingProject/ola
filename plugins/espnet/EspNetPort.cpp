@@ -28,6 +28,7 @@
 #include "EspNetNode.h"
 
 namespace ola {
+namespace plugin {
 namespace espnet {
 
 
@@ -119,4 +120,5 @@ uint8_t EspNetPort::EspNetUniverseId() const {
 }
 
 } //espnet
+} //plugin
 } //ola

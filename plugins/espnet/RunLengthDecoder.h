@@ -24,6 +24,7 @@
 #include <ola/DmxBuffer.h>
 
 namespace ola {
+namespace plugin {
 namespace espnet {
 
 class RunLengthDecoder {
@@ -39,6 +40,7 @@ class RunLengthDecoder {
     static const uint8_t REPEAT_VALUE = 0xFE;
 };
 
-} //shownet
+} //espnet
+} //plugin
 } //ola
 #endif

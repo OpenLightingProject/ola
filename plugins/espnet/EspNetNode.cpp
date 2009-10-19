@@ -25,6 +25,7 @@
 
 
 namespace ola {
+namespace plugin {
 namespace espnet {
 
 using std::string;
@@ -47,8 +48,7 @@ EspNetNode::EspNetNode(const string &ip_address):
   m_universe(0),
   m_type(ESPNET_NODE_TYPE_IO),
   m_node_name(NODE_NAME),
-  m_preferred_ip(ip_address),
-  m_socket(NULL) {
+  m_preferred_ip(ip_address) {
 }
 
 
@@ -93,11 +93,6 @@ bool EspNetNode::Stop() {
   if (!m_running)
     return false;
 
-  if (m_socket) {
-    delete m_socket;
-    m_socket = NULL;
-  }
-
   m_running = false;
   return true;
 }
@@ -113,8 +108,8 @@ int EspNetNode::SocketReady() {
   socklen_t source_length = sizeof(source);
 
   ssize_t packet_size = sizeof(packet);
-  if(!m_socket->RecvFrom((uint8_t*) &packet, packet_size, source,
-                          source_length))
+  if(!m_socket.RecvFrom((uint8_t*) &packet, packet_size, source,
+                        source_length))
     return -1;
 
   if (packet_size < (ssize_t) sizeof(packet.poll.head)) {
@@ -129,16 +124,16 @@ int EspNetNode::SocketReady() {
 
   switch (ntohl(packet.poll.head)) {
     case ESPNET_POLL:
-      HandlePoll(packet.poll, source.sin_addr);
+      HandlePoll(packet.poll, packet_size, source.sin_addr);
       break;
     case ESPNET_REPLY:
-      HandleReply(packet.reply, source.sin_addr);
+      HandleReply(packet.reply, packet_size, source.sin_addr);
       break;
     case ESPNET_DMX:
-      HandleData(packet.dmx, source.sin_addr);
+      HandleData(packet.dmx, packet_size, source.sin_addr);
       break;
     case ESPNET_ACK:
-      HandleAck(packet.ack, source.sin_addr);
+      HandleAck(packet.ack, packet_size, source.sin_addr);
       break;
     default:
       OLA_INFO << "Skipping a packet with invalid header" << packet.poll.head;
@@ -240,27 +235,22 @@ bool EspNetNode::SendDMX(uint8_t universe, const ola::DmxBuffer &buffer) {
  * Setup the networking compoents.
  */
 bool EspNetNode::InitNetwork() {
-  m_socket = new UdpSocket();
-
-  if (!m_socket->Init()) {
+  if (!m_socket.Init()) {
     OLA_WARN << "Socket init failed";
-    delete m_socket;
     return false;
   }
 
-  if (!m_socket->Bind(ESPNET_PORT)) {
+  if (!m_socket.Bind(ESPNET_PORT)) {
     OLA_WARN << "Failed to bind to:" << ESPNET_PORT;
-    delete m_socket;
     return false;
   }
 
-  if (!m_socket->EnableBroadcast()) {
+  if (!m_socket.EnableBroadcast()) {
     OLA_WARN << "Failed to enable broadcasting";
-    delete m_socket;
     return false;
   }
 
-  m_socket->SetOnData(NewClosure(this, &EspNetNode::SocketReady));
+  m_socket.SetOnData(NewClosure(this, &EspNetNode::SocketReady));
   return true;
 }
 
@@ -269,19 +259,34 @@ bool EspNetNode::InitNetwork() {
  * Handle an Esp Poll packet
  */
 void EspNetNode::HandlePoll(const espnet_poll_t &poll,
+                            ssize_t length,
                             const struct in_addr &source) {
   OLA_DEBUG << "Got ESP Poll " << poll.type;
+  if (length < (ssize_t) sizeof(espnet_poll_t)) {
+    OLA_DEBUG << "Poll size too small " << length << " < " <<
+      sizeof(espnet_poll_t);
+    return;
+  }
+
   if (poll.type)
     SendEspPollReply(source);
   else
     SendEspAck(source, 0, 0);
 }
 
+
 /*
  * Handle an Esp reply packet
  */
 void EspNetNode::HandleReply(const espnet_poll_reply_t &reply,
+                             ssize_t length,
                              const struct in_addr &source) {
+  if (length < (ssize_t) sizeof(espnet_poll_reply_t)) {
+    OLA_DEBUG << "Poll reply size too small " << length << " < " <<
+      sizeof(espnet_poll_reply_t);
+    return;
+  }
+
   //TODO: Call a handler here
 }
 
@@ -290,8 +295,13 @@ void EspNetNode::HandleReply(const espnet_poll_reply_t &reply,
  * Handle a Esp Ack packet
  */
 void EspNetNode::HandleAck(const espnet_ack_t &ack,
+                           ssize_t length,
                            const struct in_addr &source) {
-
+  if (length < (ssize_t) sizeof(espnet_ack_t)) {
+    OLA_DEBUG << "Ack size too small " << length << " < " <<
+      sizeof(espnet_ack_t);
+    return;
+  }
 }
 
 
@@ -299,7 +309,14 @@ void EspNetNode::HandleAck(const espnet_ack_t &ack,
  * Handle an Esp data packet
  */
 void EspNetNode::HandleData(const espnet_data_t &data,
+                            ssize_t length,
                             const struct in_addr &source) {
+
+  static const ssize_t header_size = sizeof(espnet_data_t) - DMX_UNIVERSE_SIZE;
+  if (length < header_size) {
+    OLA_DEBUG << "Data size too small " << length << " < " << header_size;
+    return;
+  }
 
   map<uint8_t, universe_handler>::iterator iter =
     m_handlers.find(data.universe);
@@ -310,22 +327,24 @@ void EspNetNode::HandleData(const espnet_data_t &data,
     return;
   }
 
+  ssize_t data_size = std::min(length - header_size,
+                               (ssize_t) ntohs(data.size));
+
   // we ignore the start code
   switch (data.type) {
     case DATA_RAW:
-      iter->second.buffer.Set(data.data, ntohs(data.size));
+      iter->second.buffer.Set(data.data, data_size);
       break;
     case DATA_PAIRS:
       OLA_WARN << "espnet data pairs aren't supported";
       return;
     case DATA_RLE:
-      m_decoder.Decode(iter->second.buffer, data.data, ntohs(data.size));
+      m_decoder.Decode(iter->second.buffer, data.data, data_size);
       break;
     default:
       OLA_WARN << "unknown espnet data type " << data.type;
       return;
   }
-
   iter->second.closure->Run();
 }
 
@@ -414,9 +433,9 @@ bool EspNetNode::SendPacket(const struct in_addr &dst,
   m_destination.sin_port = htons(ESPNET_PORT);
   m_destination.sin_addr = dst;
 
-  ssize_t bytes_sent = m_socket->SendTo((uint8_t*) &packet,
-                                        size,
-                                        m_destination);
+  ssize_t bytes_sent = m_socket.SendTo((uint8_t*) &packet,
+                                       size,
+                                       m_destination);
   if (bytes_sent != (ssize_t) size) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;
     return false;
@@ -425,4 +444,5 @@ bool EspNetNode::SendPacket(const struct in_addr &dst,
 }
 
 } //espnet
+} //plugin
 } //ola
