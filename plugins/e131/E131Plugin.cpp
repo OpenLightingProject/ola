@@ -113,8 +113,6 @@ string E131Plugin::Description() const {
  *
  */
 bool E131Plugin::SetDefaultPreferences() {
-  bool save = false;
-
   if (!m_preferences)
     return false;
 
