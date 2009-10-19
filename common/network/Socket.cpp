@@ -516,6 +516,20 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
 
 
 /*
+ * Join a multicase group
+ */
+bool UdpSocket::JoinMulticast(const struct in_addr &interface,
+                              const string &address) {
+  struct in_addr addr;
+  if (inet_aton(address.data(), &addr) == 0 ) {
+    OLA_WARN << "Could not convert multicast address " << address;
+    return false;
+  }
+  JoinMulticast(interface, addr);
+}
+
+
+/*
  * Leave a multicast group
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
@@ -535,6 +549,19 @@ bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
   return true;
 }
 
+
+/*
+ * Leave a multicase group
+ */
+bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
+                               const string &address) {
+  struct in_addr addr;
+  if (inet_aton(address.data(), &addr) == 0 ) {
+    OLA_WARN << "Could not convert multicast address " << address;
+    return false;
+  }
+  LeaveMulticast(interface, addr);
+}
 
 bool UdpSocket::_RecvFrom(uint8_t *buffer,
                           ssize_t &data_read,

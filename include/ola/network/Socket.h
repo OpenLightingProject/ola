@@ -281,8 +281,12 @@ class UdpSocket: public Socket {
     bool EnableBroadcast();
     bool JoinMulticast(const struct in_addr &interface,
                        const struct in_addr &group);
+    bool JoinMulticast(const struct in_addr &interface,
+                       const string &address);
     bool LeaveMulticast(const struct in_addr &interface,
                         const struct in_addr &group);
+    bool LeaveMulticast(const struct in_addr &interface,
+                        const string &address);
   private:
     int m_fd;
     bool m_bound_to_port;
