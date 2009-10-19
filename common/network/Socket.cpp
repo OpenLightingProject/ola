@@ -500,7 +500,9 @@ bool UdpSocket::EnableBroadcast() {
  * @return true if it worked, false otherwise
  */
 bool UdpSocket::JoinMulticast(const struct in_addr &interface,
-                              const struct in_addr &group) {
+                              const struct in_addr &group,
+                              bool multicast_loop) {
+  uint8_t loop = multicast_loop;
   struct ip_mreq mreq;
   mreq.imr_interface = interface;
   mreq.imr_multiaddr = group;
@@ -511,6 +513,14 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
     ": " << strerror(errno);
     return false;
   }
+
+  if (!multicast_loop) {
+    if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop))) {
+      OLA_WARN << "Failed to disable looping for " << m_fd << ":" <<
+        strerror(errno);
+      return false;
+    }
+  }
   return true;
 }
 
@@ -519,13 +529,14 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
  * Join a multicase group
  */
 bool UdpSocket::JoinMulticast(const struct in_addr &interface,
-                              const string &address) {
+                              const string &address,
+                              bool loop) {
   struct in_addr addr;
   if (inet_aton(address.data(), &addr) == 0 ) {
     OLA_WARN << "Could not convert multicast address " << address;
     return false;
   }
-  JoinMulticast(interface, addr);
+  JoinMulticast(interface, addr, loop);
 }
 
 

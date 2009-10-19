@@ -280,13 +280,15 @@ class UdpSocket: public Socket {
     bool RecvFrom(uint8_t *buffer, ssize_t &data_read) const;
     bool EnableBroadcast();
     bool JoinMulticast(const struct in_addr &interface,
-                       const struct in_addr &group);
+                       const struct in_addr &group,
+                       bool loop=false);
     bool JoinMulticast(const struct in_addr &interface,
-                       const string &address);
+                       const std::string &address,
+                       bool loop=false);
     bool LeaveMulticast(const struct in_addr &interface,
                         const struct in_addr &group);
     bool LeaveMulticast(const struct in_addr &interface,
-                        const string &address);
+                        const std::string &address);
   private:
     int m_fd;
     bool m_bound_to_port;
