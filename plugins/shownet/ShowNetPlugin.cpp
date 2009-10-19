@@ -108,16 +108,14 @@ string ShowNetPlugin::Description() const {
 
 
 /*
- * Load the plugin prefs and default to sensible values
+ * Set default preferences
  */
 bool ShowNetPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->GetValue(SHOWNET_NAME_KEY).empty()) {
-    m_preferences->SetValue(SHOWNET_NAME_KEY, SHOWNET_NODE_NAME);
+  if (m_preferences->SetDefaultValue(SHOWNET_NAME_KEY, SHOWNET_NODE_NAME))
     m_preferences->Save();
-  }
 
   if (m_preferences->GetValue(SHOWNET_NAME_KEY).empty())
     return false;

@@ -44,7 +44,7 @@ class EspNetPort: public ola::Port<EspNetDevice> {
     bool SetUniverse(Universe *universe);
     int UpdateBuffer();
 
-  private :
+  private:
     DmxBuffer m_buffer;
     uint8_t EspNetUniverseId() const;
 };
