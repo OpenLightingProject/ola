@@ -81,6 +81,7 @@ void MemoryPreferences::Clear() {
   m_pref_map.clear();
 }
 
+
 /*
  * Set a preference value, overiding the existing value.
  * @param key
@@ -89,6 +90,25 @@ void MemoryPreferences::Clear() {
 void MemoryPreferences::SetValue(const string &key, const string &value) {
   m_pref_map.erase(key);
   m_pref_map.insert(pair<string,string>(key, value));
+}
+
+
+/*
+ * Set a preference value only if it's empty.
+ * @param key
+ * @param value
+ * @return true if we set the value, false if it already existed
+ */
+bool MemoryPreferences::SetDefaultValue(const string &key,
+                                        const string &value) {
+  map<string, string>::const_iterator iter;
+  iter = m_pref_map.find(key);
+
+  if (iter == m_pref_map.end()) {
+    SetValue(key, value);
+    return true;
+  }
+  return false;
 }
 
 

@@ -80,6 +80,12 @@ void PreferencesTest::testGetSetRemove() {
   CPPUNIT_ASSERT_EQUAL((size_t) 2, values.size());
   CPPUNIT_ASSERT_EQUAL(value1, values.at(0));
   CPPUNIT_ASSERT_EQUAL(value2, values.at(1));
+
+  // test SetDefaultValue
+  CPPUNIT_ASSERT(preferences->SetDefaultValue(key1, value1));
+  CPPUNIT_ASSERT_EQUAL(value1, preferences->GetValue(key1));
+  CPPUNIT_ASSERT(!preferences->SetDefaultValue(key1, value2));
+  CPPUNIT_ASSERT_EQUAL(value1, preferences->GetValue(key1));
 }
 
 

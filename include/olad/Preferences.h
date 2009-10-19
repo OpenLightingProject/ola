@@ -43,6 +43,7 @@ class Preferences {
     virtual void Clear() = 0;
 
     virtual void SetValue(const string &key, const string &value) = 0;
+    virtual bool SetDefaultValue(const string &key, const string &value) = 0;
     virtual void RemoveValue(const string &key) = 0;
     virtual void SetMultipleValue(const string &key, const string &value) = 0;
 
@@ -83,6 +84,7 @@ class MemoryPreferences: public Preferences {
     virtual bool Save() const { return true; }
     virtual void Clear();
     virtual void SetValue(const string &key, const string &value);
+    virtual bool SetDefaultValue(const string &key, const string &value);
     virtual void RemoveValue(const string &key);
     virtual void SetMultipleValue(const string &key, const string &value);
     virtual string GetValue(const string &key) const;
