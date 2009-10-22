@@ -48,6 +48,7 @@ using ola::Closure;
  */
 SelectServer::SelectServer(ExportMap *export_map):
   m_terminate(false),
+  m_next_id(INVALID_TIMEOUT + 1),
   m_export_map(export_map) {
 
   if (m_export_map) {
@@ -187,8 +188,11 @@ bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
  * @param seconds the delay between function calls
  * @param closure the closure to call when the event triggers. Ownership is
  * given up to the select server - make sure nothing else uses this closure.
+ * @returns the identifier for this timeout, this can be used to remove it
+ * later.
  */
-bool SelectServer::RegisterRepeatingTimeout(int ms, ola::Closure *closure) {
+timeout_id SelectServer::RegisterRepeatingTimeout(int ms,
+                                                  ola::Closure *closure) {
   return RegisterTimeout(ms, closure, true);
 }
 
@@ -197,20 +201,34 @@ bool SelectServer::RegisterRepeatingTimeout(int ms, ola::Closure *closure) {
  * Register a single use timeout function.
  * @param seconds the delay between function calls
  * @param closure the closure to call when the event triggers
+ * @returns the identifier for this timeout, this can be used to remove it
+ * later.
  */
-bool SelectServer::RegisterSingleTimeout(int ms,
-                                         ola::SingleUseClosure *closure) {
+timeout_id SelectServer::RegisterSingleTimeout(
+    int ms,
+    ola::SingleUseClosure *closure) {
   return RegisterTimeout(ms, closure, false);
 }
 
 
-bool SelectServer::RegisterTimeout(int ms,
-                                   BaseClosure *closure,
-                                   bool repeating) {
+/*
+ * Remove a previously registered timeout
+ * @param timeout_id the id of the timeout
+ */
+void SelectServer::RemoveTimeout(timeout_id id) {
+  if (!m_removed_timeouts.insert(id).second)
+    OLA_WARN << "timeout " << id << " already in remove set";
+}
+
+
+timeout_id SelectServer::RegisterTimeout(int ms,
+                                         BaseClosure *closure,
+                                         bool repeating) {
   if (!closure)
-    return false;
+    return INVALID_TIMEOUT;
 
   event_t event;
+  event.id = m_next_id++;
   event.closure = closure;
   event.interval.tv_sec = ms / K_MS_IN_SECOND;
   event.interval.tv_usec = K_MS_IN_SECOND * (ms % K_MS_IN_SECOND);
@@ -224,7 +242,7 @@ bool SelectServer::RegisterTimeout(int ms,
     ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
     var->Increment();
   }
-  return true;
+  return event.id;
 }
 
 
@@ -244,6 +262,9 @@ bool SelectServer::CheckForEvents() {
   FD_ZERO(&w_fds);
   AddSocketsToSet(r_fds, maxsd);
   now = CheckTimeouts();
+
+  if (m_terminate)
+    return true;
 
   if (m_events.empty()) {
     tv.tv_sec = 1;
@@ -369,11 +390,23 @@ struct timeval SelectServer::CheckTimeouts() {
 
   for (e = m_events.top(); !m_events.empty() && timercmp(&e.next, &now, <);
        e = m_events.top()) {
+
+    m_events.pop();
+
+    // if this was removed, skip it
+    if (m_removed_timeouts.erase(e.id)) {
+      delete e.closure;
+      if (m_export_map) {
+        ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
+        var->Decrement();
+      }
+      continue;
+    }
+
     int return_code = 1;
     if (e.closure) {
       return_code = e.closure->Run();
     }
-    m_events.pop();
 
     if (e.repeating && !return_code) {
       e.next = now;
@@ -411,7 +444,7 @@ void SelectServer::UnregisterAll() {
 
   while (!m_events.empty()) {
     event_t event = m_events.top();
-    if (event.repeating)
+    if (!m_removed_timeouts.erase(event.id) && event.repeating)
       delete event.closure;
     m_events.pop();
   }

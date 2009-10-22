@@ -22,8 +22,9 @@
 #define OLA_SELECTSERVER_H
 
 #include <sys/time.h>
-#include <vector>
 #include <queue>
+#include <set>
+#include <vector>
 
 #include <ola/Closure.h>
 #include <ola/ExportMap.h>
@@ -33,6 +34,9 @@ namespace network {
 
 using namespace std;
 using ola::ExportMap;
+
+typedef unsigned int timeout_id;
+static const timeout_id INVALID_TIMEOUT = 0;
 
 class SelectServer {
   public :
@@ -48,8 +52,9 @@ class SelectServer {
     bool AddSocket(class ConnectedSocket *socket, bool delete_on_close=false);
     bool RemoveSocket(class Socket *socket);
     bool RemoveSocket(class ConnectedSocket *socket);
-    bool RegisterRepeatingTimeout(int ms, ola::Closure *closure);
-    bool RegisterSingleTimeout(int ms, ola::SingleUseClosure *closure);
+    timeout_id RegisterRepeatingTimeout(int ms, ola::Closure *closure);
+    timeout_id RegisterSingleTimeout(int ms, ola::SingleUseClosure *closure);
+    void RemoveTimeout(timeout_id id);
 
     static const string K_SOCKET_VAR;
     static const string K_CONNECTED_SOCKET_VAR;
@@ -63,7 +68,8 @@ class SelectServer {
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
-    bool RegisterTimeout(int ms, ola::BaseClosure *closure, bool repeating);
+    timeout_id RegisterTimeout(int ms, ola::BaseClosure *closure,
+                               bool repeating);
     bool CheckForEvents();
     void CheckSockets(fd_set &set);
     void AddSocketsToSet(fd_set &set, int &max_sd) const;
@@ -75,6 +81,7 @@ class SelectServer {
 
     // This is a timer event
     typedef struct {
+      timeout_id id;
       struct timeval next;
       struct timeval interval;
       bool repeating;
@@ -88,9 +95,11 @@ class SelectServer {
     };
 
     bool m_terminate;
+    unsigned int m_next_id;
     vector<class Socket*> m_sockets;
     vector<connected_socket_t> m_connected_sockets;
     vector<Closure*> m_ready_queue;
+    set<timeout_id> m_removed_timeouts;
     ExportMap *m_export_map;
 
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;

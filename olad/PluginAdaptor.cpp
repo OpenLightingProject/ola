@@ -23,7 +23,6 @@
 
 #include <olad/PluginAdaptor.h>
 #include <olad/Preferences.h>
-#include <ola/network/SelectServer.h>
 
 #include "DeviceManager.h"
 
@@ -86,9 +85,10 @@ bool PluginAdaptor::RemoveSocket(class ConnectedSocket *socket) const {
  * Register a repeating timeout
  * @param ms the time between function calls
  * @param closure the OlaClosure to call when the timeout expires
- * @return true on success, false on failure
+ * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
  */
-bool PluginAdaptor::RegisterRepeatingTimeout(int ms, Closure *closure) const {
+timeout_id PluginAdaptor::RegisterRepeatingTimeout(int ms,
+                                                   Closure *closure) const {
   return m_ss->RegisterRepeatingTimeout(ms, closure);
 }
 
@@ -97,11 +97,20 @@ bool PluginAdaptor::RegisterRepeatingTimeout(int ms, Closure *closure) const {
  * Register a single timeout
  * @param ms the time between function calls
  * @param closure the OlaClosure to call when the timeout expires
- * @return true on success, false on failure
+ * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
  */
-bool PluginAdaptor::RegisterSingleTimeout(int ms,
+timeout_id PluginAdaptor::RegisterSingleTimeout(int ms,
                                           SingleUseClosure *closure) const {
   return m_ss->RegisterSingleTimeout(ms, closure);
+}
+
+
+/*
+ * Remove a timeout
+ * @param id the id of the timeout to remove
+ */
+void PluginAdaptor::RemoveTimeout(timeout_id id) const {
+  m_ss->RemoveTimeout(id);
 }
 
 

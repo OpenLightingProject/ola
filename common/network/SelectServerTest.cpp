@@ -21,6 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <ola/ExportMap.h>
+#include <ola/Closure.h>
 #include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
 
@@ -31,14 +32,21 @@ using ola::IntegerVariable;
 class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SelectServerTest);
   CPPUNIT_TEST(testAddRemoveSocket);
+  CPPUNIT_TEST(testTimeout);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void setUp();
     void tearDown();
     void testAddRemoveSocket();
+    void testTimeout();
+
+    int FatalTimeout() { CPPUNIT_ASSERT(false); }
+    int TerminateTimeout() { if (m_ss) { m_ss->Terminate(); } }
+    int IncrementTimeout() { m_timeout_counter++; return 0; }
 
   private:
+    unsigned int m_timeout_counter;
     ExportMap *m_map;
     SelectServer *m_ss;
 };
@@ -50,6 +58,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SelectServerTest);
 void SelectServerTest::setUp() {
   m_map = new ExportMap();
   m_ss = new SelectServer(m_map);
+  m_timeout_counter = 0;
 }
 
 
@@ -103,4 +112,44 @@ void SelectServerTest::testAddRemoveSocket() {
 
   // Remove again should fail
   CPPUNIT_ASSERT(!m_ss->RemoveSocket(&loopback_socket));
+}
+
+
+/*
+ * Timeout tests
+ */
+void SelectServerTest::testTimeout() {
+  // check a single timeout
+  m_ss->RegisterSingleTimeout(
+      10,
+      ola::NewSingleClosure(this, &SelectServerTest::IncrementTimeout));
+  m_ss->RegisterSingleTimeout(
+      20,
+      ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));
+  m_ss->Run();
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_timeout_counter);
+
+  // check repeating timeouts
+  m_timeout_counter = 0;
+  m_ss->RegisterRepeatingTimeout(
+      10,
+      ola::NewClosure(this, &SelectServerTest::IncrementTimeout));
+  m_ss->RegisterSingleTimeout(
+      95,
+      ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));
+  m_ss->Restart();
+  m_ss->Run();
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 9, m_timeout_counter);
+
+  // check timeouts are removed correctly
+  timeout_id timeout1 = m_ss->RegisterSingleTimeout(
+      10,
+      ola::NewSingleClosure(this, &SelectServerTest::FatalTimeout));
+  m_ss->RegisterSingleTimeout(
+      20,
+      ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));
+  m_ss->RemoveTimeout(timeout1);
+  m_ss->Restart();
+  m_ss->Run();
+
 }

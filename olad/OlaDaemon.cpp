@@ -77,8 +77,7 @@ OlaDaemon::~OlaDaemon() {
 
 /*
  * Initialise this object
- *
- * @return 0 on success, -1 on failure
+ * @return true on success, false on failure
  */
 bool OlaDaemon::Init() {
   m_ss = new SelectServer(m_export_map);

@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <ola/network/SelectServer.h>
 
 namespace ola {
 
@@ -30,7 +31,6 @@ namespace network {
   class Socket;
   class ConnectedSocket;
   class SocketManager;
-  class SelectServer;
 }
 
 class Closure;
@@ -41,6 +41,7 @@ using ola::network::Socket;
 using ola::network::ConnectedSocket;
 using ola::network::SocketManager;
 using ola::network::SelectServer;
+using ola::network::timeout_id;
 
 class PluginAdaptor {
   public :
@@ -53,15 +54,16 @@ class PluginAdaptor {
                    bool delete_on_close=false) const;
     bool RemoveSocket(class Socket *socket) const;
     bool RemoveSocket(class ConnectedSocket *socket) const;
-    bool RegisterRepeatingTimeout(int ms, Closure *closure) const;
-    bool RegisterSingleTimeout(int ms, SingleUseClosure *closure) const;
+    timeout_id RegisterRepeatingTimeout(int ms, Closure *closure) const;
+    timeout_id RegisterSingleTimeout(int ms, SingleUseClosure *closure) const;
+    void RemoveTimeout(timeout_id id) const;
 
     bool RegisterDevice(class AbstractDevice *device) const;
     bool UnregisterDevice(class AbstractDevice *device) const;
 
     class Preferences *NewPreference(const string &name) const;
 
-  private :
+  private:
     PluginAdaptor(const PluginAdaptor&);
     PluginAdaptor& operator=(const PluginAdaptor&);
 

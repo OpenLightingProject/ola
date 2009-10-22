@@ -93,6 +93,7 @@ class OlaServer {
 
     bool m_init_run;
     bool m_free_export_map;
+    ola::network::timeout_id m_garbage_collect_timeout;
     std::map<int, class OlaServerServiceImpl*> m_sd_to_service;
     OlaHttpServer_t *m_httpd;
     ola_server_options m_options;

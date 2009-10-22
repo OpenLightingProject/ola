@@ -83,6 +83,7 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
   m_export_map(export_map),
   m_init_run(false),
   m_free_export_map(false),
+  m_garbage_collect_timeout(ola::network::INVALID_TIMEOUT),
   m_httpd(NULL),
   m_options(*ola_options) {
 
@@ -110,6 +111,9 @@ OlaServer::~OlaServer() {
     m_httpd = NULL;
   }
 #endif
+
+  if (m_garbage_collect_timeout != ola::network::INVALID_TIMEOUT)
+    m_ss->RemoveTimeout(m_garbage_collect_timeout);
 
   // stops and unloads all our plugins
   if (m_plugin_loader) {
@@ -210,7 +214,7 @@ bool OlaServer::Init() {
   }
 #endif
 
-  m_ss->RegisterRepeatingTimeout(
+  m_garbage_collect_timeout = m_ss->RegisterRepeatingTimeout(
       K_GARBAGE_COLLECTOR_TIMEOUT_MS,
       ola::NewClosure(this, &OlaServer::GarbageCollect));
 
