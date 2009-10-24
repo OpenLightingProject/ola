@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <errno.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -29,6 +28,7 @@
 
 #include <ola/Logging.h>
 #include <ola/network/Socket.h>
+#include <ola/network/NetworkUtils.h>
 
 namespace ola {
 namespace network {
@@ -288,11 +288,9 @@ TcpSocket* TcpSocket::Connect(const std::string &ip_address,
   // setup
   memset(&server_address, 0x00, sizeof(server_address));
   server_address.sin_family = AF_INET;
-  server_address.sin_port = htons(port);
+  server_address.sin_port = HostToNetwork(port);
 
-  if (!inet_aton(ip_address.data(), &server_address.sin_addr)) {
-    OLA_WARN << "Failed to convert ip " << ip_address << " " <<
-      strerror(errno);
+  if (!StringToAddress(ip_address, server_address.sin_addr)) {
     close(sd);
     return NULL;
   }
@@ -366,8 +364,8 @@ bool UdpSocket::Bind(unsigned short port) {
   struct sockaddr_in servAddr;
   memset(&servAddr, 0x00, sizeof(servAddr));
   servAddr.sin_family = AF_INET;
-  servAddr.sin_port = htons(port);
-  servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  servAddr.sin_port = HostToNetwork(port);
+  servAddr.sin_addr.s_addr = HostToNetwork(INADDR_ANY);
 
   OLA_DEBUG << "Binding to " << inet_ntoa(servAddr.sin_addr) << ":" << port;
 
@@ -434,13 +432,10 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
   struct sockaddr_in destination;
   memset(&destination, 0x00, sizeof(destination));
   destination.sin_family = AF_INET;
-  destination.sin_port = htons(port);
+  destination.sin_port = HostToNetwork(port);
 
-  if (!inet_aton(ip_address.data(), &destination.sin_addr)) {
-    OLA_WARN << "Failed to convert ip " << ip_address << " " <<
-      strerror(errno);
+  if (!StringToAddress(ip_address, destination.sin_addr))
     return 0;
-  }
   return SendTo(buffer, size, destination);
 }
 
@@ -532,10 +527,8 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
                               const string &address,
                               bool loop) {
   struct in_addr addr;
-  if (inet_aton(address.data(), &addr) == 0 ) {
-    OLA_WARN << "Could not convert multicast address " << address;
+  if (!StringToAddress(address, addr))
     return false;
-  }
   JoinMulticast(interface, addr, loop);
 }
 
@@ -567,10 +560,8 @@ bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
 bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
                                const string &address) {
   struct in_addr addr;
-  if (inet_aton(address.data(), &addr) == 0 ) {
-    OLA_WARN << "Could not convert multicast address " << address;
+  if (!StringToAddress(address, addr))
     return false;
-  }
   LeaveMulticast(interface, addr);
 }
 
@@ -624,13 +615,10 @@ bool TcpAcceptingSocket::Listen() {
   // setup
   memset(&server_address, 0x00, sizeof(server_address));
   server_address.sin_family = AF_INET;
-  server_address.sin_port = htons(m_port);
+  server_address.sin_port = HostToNetwork(m_port);
 
-  if (!inet_aton(m_address.data(), &server_address.sin_addr)) {
-    OLA_WARN << "Failed to convert ip " << m_address << " " <<
-      strerror(errno);
+  if (!StringToAddress(m_address, server_address.sin_addr))
     return false;
-  }
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {

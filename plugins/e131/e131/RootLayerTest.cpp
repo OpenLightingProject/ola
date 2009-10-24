@@ -18,9 +18,9 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
-#include <ola/network/SelectServer.h>
 #include <ola/network/InterfacePicker.h>
+#include <ola/network/NetworkUtils.h>
+#include <ola/network/SelectServer.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "PDUTestCommon.h"
@@ -82,7 +82,7 @@ void RootLayerTest::testRootLayer() {
 
   MockPDU mock_pdu(4, 8);
   struct in_addr addr;
-  inet_aton("255.255.255.255", &addr);
+  StringToAddress("255.255.255.255", addr);
   CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu));
 
   SingleUseClosure *closure =

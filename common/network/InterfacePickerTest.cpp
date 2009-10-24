@@ -24,6 +24,7 @@
 #include <iostream>
 
 #include <ola/network/InterfacePicker.h>
+#include <ola/network/NetworkUtils.h>
 #include <ola/Logging.h>
 
 using namespace ola::network;
@@ -92,14 +93,14 @@ void InterfacePickerTest::testChooseInterface() {
 
   // now with one interface that doesn't match
   Interface iface1;
-  inet_aton("10.0.0.1", &iface1.ip_address);
+  StringToAddress("10.0.0.1", iface1.ip_address);
   interfaces.push_back(iface1);
   CPPUNIT_ASSERT(picker.ChooseInterface(interface, "192.168.1.1"));
   CPPUNIT_ASSERT(iface1 == interface);
 
   // check that preferred works
   Interface iface2;
-  inet_aton("192.168.1.1", &iface2.ip_address);
+  StringToAddress("192.168.1.1", iface2.ip_address);
   interfaces.push_back(iface2);
   CPPUNIT_ASSERT(picker.ChooseInterface(interface, "192.168.1.1"));
   CPPUNIT_ASSERT(iface2 == interface);

@@ -41,6 +41,7 @@
 
 #include <ola/Logging.h>
 #include <ola/network/InterfacePicker.h>
+#include <ola/network/NetworkUtils.h>
 
 using namespace ola::network;
 using std::string;
@@ -91,11 +92,8 @@ bool InterfacePicker::ChooseInterface(Interface &interface,
   }
 
   if (!preferred_ip.empty()) {
-    if (inet_aton(preferred_ip.data(), &wanted_ip)) {
+    if (StringToAddress(preferred_ip, wanted_ip))
       use_preferred = true;
-    } else {
-      OLA_WARN << "Could not convert address " << preferred_ip;
-    }
   }
 
   if (use_preferred) {

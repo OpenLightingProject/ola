@@ -19,11 +19,11 @@
  */
 
 #include <stdint.h>
-#include <arpa/inet.h>
 #include <string>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <ola/Closure.h>
+#include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
 
@@ -385,7 +385,7 @@ int SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
  */
 int SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
   struct in_addr expected_address;
-  CPPUNIT_ASSERT(inet_aton("127.0.0.1", &expected_address));
+  CPPUNIT_ASSERT(StringToAddress("127.0.0.1", expected_address));
 
   struct sockaddr_in src;
   socklen_t src_size = sizeof(src);
@@ -403,7 +403,7 @@ int SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
  */
 int SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
   struct in_addr expected_address;
-  CPPUNIT_ASSERT(inet_aton("127.0.0.1", &expected_address));
+  CPPUNIT_ASSERT(StringToAddress("127.0.0.1", expected_address));
 
   struct sockaddr_in src;
   socklen_t src_size = sizeof(src);

@@ -38,7 +38,6 @@ const std::string EspNetDevice::IP_KEY = "ip";
 
 /*
  * Create a new device
- * Should prob pass the ip to bind to
  */
 EspNetDevice::EspNetDevice(Plugin *owner,
                            const string &name,
@@ -101,6 +100,6 @@ bool EspNetDevice::Stop() {
 }
 
 
-} //espnet
-} //plugin
-} //ola
+} // espnet
+} // plugin
+} // ola
