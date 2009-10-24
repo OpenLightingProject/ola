@@ -82,7 +82,7 @@ void RootLayerTest::testRootLayer() {
 
   MockPDU mock_pdu(4, 8);
   struct in_addr addr;
-  StringToAddress("255.255.255.255", addr);
+  ola::network::StringToAddress("255.255.255.255", addr);
   CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu));
 
   SingleUseClosure *closure =
