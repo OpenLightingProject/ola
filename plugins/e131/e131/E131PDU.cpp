@@ -19,15 +19,16 @@
  */
 
 
-#include <arpa/inet.h>
 #include <string.h>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include "E131PDU.h"
 #include "DMPPDU.h"
 
 namespace ola {
 namespace e131 {
 
+using ola::network::HostToNetwork;
 
 /*
  * Size of the header portion.
@@ -63,7 +64,7 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
           E131Header::SOURCE_NAME_LEN);
   header->sequence = m_header.Sequence();
   header->priority = m_header.Priority();
-  header->universe = htons(m_header.Universe());
+  header->universe = HostToNetwork(m_header.Universe());
   length = sizeof(E131Header::e131_pdu_header);
   return true;
 }

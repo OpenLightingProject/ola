@@ -18,11 +18,13 @@
  * Copyright (C) 2007 Simon Newton
  */
 
+#include <ola/network/NetworkUtils.h>
 #include "DMPAddress.h"
 
 namespace ola {
 namespace e131 {
 
+using ola::network::NetworkToHost;
 
 /*
  * Return the number of bytes that correspond to a DMPType
@@ -97,9 +99,9 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
       case ONE_BYTES:
         return new OneByteDMPAddress(*data);
       case TWO_BYTES:
-        return new TwoByteDMPAddress(ntohs(*p));
+        return new TwoByteDMPAddress(NetworkToHost(*p));
       case FOUR_BYTES:
-        return new FourByteDMPAddress(ntohl(*p2));
+        return new FourByteDMPAddress(NetworkToHost(*p2));
       default:
         return NULL; // should never make it here because we checked above
     }
@@ -109,10 +111,13 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
     case ONE_BYTES:
       return new OneByteRangeDMPAddress(*data++, *data++, *data);
     case TWO_BYTES:
-      return new TwoByteRangeDMPAddress(ntohs(*p++), ntohs(*p++), ntohs(*p));
+      return new TwoByteRangeDMPAddress(NetworkToHost(*p++),
+                                        NetworkToHost(*p++),
+                                        NetworkToHost(*p));
     case FOUR_BYTES:
-      return new FourByteRangeDMPAddress(ntohs(*p2++), ntohs(*p2++),
-                                         ntohs(*p2));
+      return new FourByteRangeDMPAddress(NetworkToHost(*p2++),
+                                         NetworkToHost(*p2++),
+                                         NetworkToHost(*p2));
     default:
       return NULL; // should never make it here because we checked above
   }

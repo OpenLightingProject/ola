@@ -19,10 +19,13 @@
  */
 
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include "RootLayer.h"
 
 namespace ola {
 namespace e131 {
+
+using ola::network::NetworkToHost;
 
 /*
  * Create a new RootLayer
@@ -87,7 +90,7 @@ bool RootLayer::SendPDUBlock(struct in_addr &addr,
 
   struct sockaddr_in destination;
   destination.sin_family = AF_INET;
-  destination.sin_port = htons(UDPTransport::ACN_PORT);
+  destination.sin_port = HostToNetwork(UDPTransport::ACN_PORT);
   destination.sin_addr = addr;
   return m_transport->Send(m_root_block, destination);
 }

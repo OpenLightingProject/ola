@@ -18,10 +18,10 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <ola/network/NetworkUtils.h>
 #include "CID.h"
 #include "PDUTestCommon.h"
 #include "RootPDU.h"
@@ -29,6 +29,7 @@
 namespace ola {
 namespace e131 {
 
+using ola::network::NetworkToHost;
 
 class RootPDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RootPDUTest);
@@ -68,7 +69,7 @@ void RootPDUTest::testSimpleRootPDU() {
   // spot check the data
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) htonl(TEST_VECTOR),
+  CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR),
                        *((unsigned int*) &data[2]));
   CID cid2 = CID::FromData(&data[6]);
   CPPUNIT_ASSERT(cid2 == cid);
@@ -89,7 +90,7 @@ void RootPDUTest::testSimpleRootPDU() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) htonl(TEST_VECTOR2),
+  CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR2),
                        *((unsigned int*) &data[2]));
   cid2 = CID::FromData(&data[6]);
   CPPUNIT_ASSERT(cid2 == cid);

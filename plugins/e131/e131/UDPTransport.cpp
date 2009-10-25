@@ -21,10 +21,13 @@
 #include <string.h>
 #include <ola/Closure.h>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include "UDPTransport.h"
 
 namespace ola {
 namespace e131 {
+
+using ola::network::HostToNetwork;
 
 const string UDPTransport::ACN_PACKET_ID = "ASC-E1.17\0\0\0";
 
@@ -59,8 +62,8 @@ bool UDPTransport::Init(const ola::network::Interface &interface) {
     m_send_buffer = new uint8_t[MAX_DATAGRAM_SIZE];
     memset(m_send_buffer, 0 , DATA_OFFSET);
     uint16_t *ptr = (uint16_t*) m_send_buffer;
-    *ptr++ = htons(PREAMBLE_SIZE);
-    *ptr = htons(POSTABLE_SIZE);
+    *ptr++ = HostToNetwork(PREAMBLE_SIZE);
+    *ptr = HostToNetwork(POSTABLE_SIZE);
     strncpy((char*) (m_send_buffer + PREAMBLE_OFFSET),
             ACN_PACKET_ID.data(),
             ACN_PACKET_ID.size());

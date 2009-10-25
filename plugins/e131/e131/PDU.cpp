@@ -18,13 +18,14 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include "PDU.h"
 
 namespace ola {
 namespace e131 {
 
+using ola::network::HostToNetwork;
 
 /*
  * Return the length of this PDU
@@ -77,10 +78,10 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
       buffer[offset] = (uint8_t) m_vector;
       break;
     case PDU::TWO_BYTES:
-      *(uint16_t*) (buffer + offset) = htons(m_vector);
+      *(uint16_t*) (buffer + offset) = HostToNetwork(m_vector);
       break;
     case PDU::FOUR_BYTES:
-      *(uint32_t*) (buffer + offset) = htonl(m_vector);
+      *(uint32_t*) (buffer + offset) = HostToNetwork(m_vector);
       break;
     default:
       OLA_WARN << "unknown vector size " << m_vector_size;

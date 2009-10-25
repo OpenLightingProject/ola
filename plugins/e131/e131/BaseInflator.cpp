@@ -18,13 +18,15 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <algorithm>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include "BaseInflator.h"
 
 namespace ola {
 namespace e131 {
+
+using ola::network::NetworkToHost;
 
 /*
  * Setup the base inflator
@@ -173,10 +175,10 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
         vector = *data;
         break;
       case PDU::TWO_BYTES:
-        vector = ntohs(*(uint16_t*) data);
+        vector = NetworkToHost(*(uint16_t*) data);
         break;
       case PDU::FOUR_BYTES:
-        vector = ntohl(*(uint32_t*) data);
+        vector = NetworkToHost(*(uint32_t*) data);
         break;
       default:
         OLA_WARN << "unknown vector size " << m_vector_size;

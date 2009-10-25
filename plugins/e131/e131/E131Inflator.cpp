@@ -18,13 +18,14 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include "E131Inflator.h"
 
 namespace ola {
 namespace e131 {
 
+using ola::network::NetworkToHost;
 
 /*
  * Decode the E1.31 headers. If data is null we're expected to use the last
@@ -49,7 +50,7 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
       E131Header header(source_name,
                         raw_header->priority,
                         raw_header->sequence,
-                        ntohs(raw_header->universe));
+                        NetworkToHost(raw_header->universe));
       m_last_header = header;
       m_last_header_valid = true;
       headers.SetE131Header(header);

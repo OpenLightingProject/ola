@@ -21,6 +21,7 @@
 #include <ola/Logging.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/NetworkUtils.h>
+#include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -30,6 +31,8 @@
 
 namespace ola {
 namespace e131 {
+
+using ola::network::HostToNetwork;
 
 class UDPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UDPTransportTest);
@@ -83,7 +86,7 @@ void UDPTransportTest::testUDPTransport() {
 
   struct sockaddr_in destination;
   destination.sin_family = AF_INET;
-  destination.sin_port = htons(UDPTransport::ACN_PORT);
+  destination.sin_port = HostToNetwork(UDPTransport::ACN_PORT);
   ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
   ola::network::StringToAddress("255.255.255.255", destination.sin_addr);
   CPPUNIT_ASSERT(transport.Send(pdu_block, destination));

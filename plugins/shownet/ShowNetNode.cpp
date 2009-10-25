@@ -21,6 +21,7 @@
 #include <string.h>
 #include <algorithm>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include "ShowNetNode.h"
 
 
@@ -30,6 +31,7 @@ namespace shownet {
 using std::string;
 using std::map;
 using ola::network::UdpSocket;
+using ola::network::HostToNetwork;
 using ola::Closure;
 
 
@@ -77,7 +79,7 @@ bool ShowNetNode::Start() {
     return false;
 
   m_destination.sin_family = AF_INET;
-  m_destination.sin_port = htons(SHOWNET_PORT);
+  m_destination.sin_port = HostToNetwork(SHOWNET_PORT);
   m_destination.sin_addr = m_interface.bcast_address;
   m_running = true;
   return true;

@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 

@@ -18,10 +18,10 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 
 #include "HeaderSet.h"
 #include "PDUTestCommon.h"
@@ -31,6 +31,7 @@
 namespace ola {
 namespace e131 {
 
+using ola::network::HostToNetwork;
 
 class E131InflatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(E131InflatorTest);
@@ -59,7 +60,7 @@ void E131InflatorTest::testDecodeHeader() {
   strncpy(header.source, source_name.data(), source_name.size() + 1);
   header.priority = 99;
   header.sequence = 10;
-  header.universe = htons(42);
+  header.universe = HostToNetwork((uint16_t) 42);
 
   CPPUNIT_ASSERT(inflator.DecodeHeader(header_set,
                                        (uint8_t*) &header,

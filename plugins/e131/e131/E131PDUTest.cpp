@@ -18,16 +18,17 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <ola/network/NetworkUtils.h>
 #include "PDUTestCommon.h"
 #include "E131PDU.h"
 
 namespace ola {
 namespace e131 {
 
+using ola::network::HostToNetwork;
 
 class E131PDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(E131PDUTest);
@@ -68,13 +69,13 @@ void E131PDUTest::testSimpleE131PDU() {
   // spot check the data
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) htonl(TEST_VECTOR),
+  CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR),
                        *((unsigned int*) &data[2]));
 
   CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, data[6 + E131Header::SOURCE_NAME_LEN]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[7 + E131Header::SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL((uint16_t) htons(6000),
+  CPPUNIT_ASSERT_EQUAL(HostToNetwork((uint16_t) 6000),
                        *((uint16_t*) (data + 8 + E131Header::SOURCE_NAME_LEN)));
 
   // test undersized buffer

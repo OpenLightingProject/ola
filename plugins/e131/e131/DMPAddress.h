@@ -21,12 +21,14 @@
 #ifndef OLA_E131_DMPADDRESS_H
 #define OLA_E131_DMPADDRESS_H
 
-#include <arpa/inet.h>
 #include <stdint.h>
 #include <string.h>
+#include <ola/network/NetworkUtils.h>
 
 namespace ola {
 namespace e131 {
+
+using ola::network::HostToNetwork;
 
 typedef enum {
   ONE_BYTES = 0x00,
@@ -70,23 +72,6 @@ dmp_address_size TypeToDMPSize() {
  * Return the number of bytes that correspond to a DMPType
  */
 unsigned int DMPSizeToByteSize(dmp_address_size size);
-
-/*
- * Convert a value to network byte order
- */
-template <typename type>
-inline type HostToNetwork(type v) { return htonl(v); }
-
-template<>
-inline uint8_t HostToNetwork(uint8_t v) { return v; }
-
-template<>
-inline uint16_t HostToNetwork(uint16_t v) { return ntohs(v); }
-
-/*
-template<>
-uint32_t HostToNetwork(uint32_t v) { return ntohl(v); }
-*/
 
 
 /*

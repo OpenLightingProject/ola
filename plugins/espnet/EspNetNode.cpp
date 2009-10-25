@@ -21,6 +21,7 @@
 #include <string.h>
 #include <algorithm>
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include "EspNetNode.h"
 
 
@@ -31,6 +32,8 @@ namespace espnet {
 using std::string;
 using std::map;
 using ola::network::UdpSocket;
+using ola::network::HostToNetwork;
+using ola::network::NetworkToHost;
 using ola::Closure;
 
 const string EspNetNode::NODE_NAME = "OLA Node";
@@ -122,7 +125,7 @@ int EspNetNode::SocketReady() {
     return 0;
   }
 
-  switch (ntohl(packet.poll.head)) {
+  switch (NetworkToHost(packet.poll.head)) {
     case ESPNET_POLL:
       HandlePoll(packet.poll, packet_size, source.sin_addr);
       break;
@@ -328,7 +331,7 @@ void EspNetNode::HandleData(const espnet_data_t &data,
   }
 
   ssize_t data_size = std::min(length - header_size,
-                               (ssize_t) ntohs(data.size));
+                               (ssize_t) NetworkToHost(data.size));
 
   // we ignore the start code
   switch (data.type) {
@@ -354,7 +357,7 @@ void EspNetNode::HandleData(const espnet_data_t &data,
  */
 bool EspNetNode::SendEspPoll(const struct in_addr &dst, bool full) {
   espnet_packet_union_t packet;
-  packet.poll.head = htonl(ESPNET_POLL);
+  packet.poll.head = HostToNetwork((uint32_t) ESPNET_POLL);
   packet.poll.type = full;
   return SendPacket(dst, packet, sizeof(packet.poll));
 }
@@ -367,7 +370,7 @@ bool EspNetNode::SendEspAck(const struct in_addr &dst,
                             uint8_t status,
                             uint8_t crc) {
   espnet_packet_union_t packet;
-  packet.ack.head = htonl(ESPNET_ACK);
+  packet.ack.head = HostToNetwork((uint32_t) ESPNET_ACK);
   packet.ack.status = status;
   packet.ack.crc = crc;
   return SendPacket(dst, packet, sizeof(packet.ack));
@@ -379,10 +382,10 @@ bool EspNetNode::SendEspAck(const struct in_addr &dst,
  */
 bool EspNetNode::SendEspPollReply(const struct in_addr &dst) {
   espnet_packet_union_t packet;
-  packet.reply.head = htonl(ESPNET_REPLY);
+  packet.reply.head = HostToNetwork((uint32_t) ESPNET_REPLY);
 
   memcpy(packet.reply.mac, m_interface.hw_address, ola::network::MAC_LENGTH) ;
-  packet.reply.type = htons(m_type);
+  packet.reply.type = HostToNetwork((uint32_t) m_type);
   packet.reply.version = FIRMWARE_VERSION;
   packet.reply.sw = SWITCH_SETTINGS;
   memcpy(packet.reply.name, m_node_name.data(), ESPNET_NAME_LENGTH);
@@ -409,13 +412,13 @@ bool EspNetNode::SendEspData(const struct in_addr &dst,
 
   espnet_packet_union_t packet;
   memset(&packet.dmx, 0, sizeof(packet.dmx));
-  packet.dmx.head = htonl(ESPNET_DMX);
+  packet.dmx.head = HostToNetwork((uint32_t) ESPNET_DMX);
   packet.dmx.universe = universe;
   packet.dmx.start = START_CODE;
   packet.dmx.type = DATA_RAW;
   unsigned int size = DMX_UNIVERSE_SIZE;
   buffer.Get(packet.dmx.data, size);
-  packet.dmx.size = htons(size);
+  packet.dmx.size = HostToNetwork(size);
 
   return SendPacket(dst, packet, sizeof(packet.dmx));
 }
@@ -430,7 +433,7 @@ bool EspNetNode::SendPacket(const struct in_addr &dst,
   struct sockaddr_in m_destination;
   memset(&m_destination, 0, sizeof(m_destination));
   m_destination.sin_family = AF_INET;
-  m_destination.sin_port = htons(ESPNET_PORT);
+  m_destination.sin_port = HostToNetwork((uint32_t) ESPNET_PORT);
   m_destination.sin_addr = dst;
 
   ssize_t bytes_sent = m_socket.SendTo((uint8_t*) &packet,

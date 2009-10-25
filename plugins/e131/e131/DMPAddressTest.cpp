@@ -18,16 +18,17 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <ola/network/NetworkUtils.h>
 #include "PDUTestCommon.h"
 #include "DMPAddress.h"
 
 namespace ola {
 namespace e131 {
 
+using ola::network::NetworkToHost;
 
 class DMPAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DMPAddressTest);
@@ -143,18 +144,18 @@ void DMPAddressTest::testRangeAddress() {
   checkAddress(&addr2, 1024, 2, 99, 6, TWO_BYTES, true);
   CPPUNIT_ASSERT(addr2.Pack(buffer, length));
   CPPUNIT_ASSERT_EQUAL(addr2.Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 1024, ntohs(*p++));
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2, ntohs(*p++));
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 99, ntohs(*p));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 1024, NetworkToHost(*p++));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 2, NetworkToHost(*p++));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 99, NetworkToHost(*p));
 
   length = sizeof(buffer);
   FourByteRangeDMPAddress addr3(66000, 2, 100);
   checkAddress(&addr3, 66000, 2, 100, 12, FOUR_BYTES, true);
   CPPUNIT_ASSERT(addr3.Pack(buffer, length));
   CPPUNIT_ASSERT_EQUAL(addr3.Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 66000, ntohl(*pp++));
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 2, ntohl(*pp++));
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 100, ntohl(*pp));
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 66000, NetworkToHost(*pp++));
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 2, NetworkToHost(*pp++));
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 100, NetworkToHost(*pp));
 
   const BaseDMPAddress *addr4 = NewRangeAddress(10, 1, 10);
   length = sizeof(buffer);
@@ -172,9 +173,9 @@ void DMPAddressTest::testRangeAddress() {
   checkAddress(addr5, 10, 1, 1024, 6, TWO_BYTES, true);
   CPPUNIT_ASSERT(addr5->Pack(buffer, length));
   CPPUNIT_ASSERT_EQUAL(addr5->Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, ntohs(*p++));
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 1, ntohs(*p++));
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 1024, ntohs(*p));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, NetworkToHost(*p++));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 1, NetworkToHost(*p++));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 1024, NetworkToHost(*p));
   delete addr5;
 
   pp = (uint32_t*) buffer;
@@ -183,9 +184,9 @@ void DMPAddressTest::testRangeAddress() {
   checkAddress(addr6, 66000, 1, 1024, 12, FOUR_BYTES, true);
   CPPUNIT_ASSERT(addr6->Pack(buffer, length));
   CPPUNIT_ASSERT_EQUAL(addr6->Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 66000, ntohl(*pp++));
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 1, ntohl(*pp++));
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 1024, ntohl(*pp));
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 66000, NetworkToHost(*pp++));
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 1, NetworkToHost(*pp++));
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 1024, NetworkToHost(*pp));
   delete addr6;
 
 }

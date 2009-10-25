@@ -19,11 +19,14 @@
  */
 
 #include <ola/Logging.h>
+#include <ola/network/NetworkUtils.h>
 #include "E131Layer.h"
 #include "DMPE131Inflator.h"
 
 namespace ola {
 namespace e131 {
+
+using ola::network::HostToNetwork;
 
 /*
  * Create a new E131Layer
@@ -102,7 +105,7 @@ bool E131Layer::LeaveUniverse(unsigned int universe) {
  * @return true if this is a valid E1.31 universe, false otherwise
  */
 bool E131Layer::UniverseIP(unsigned int universe, struct in_addr &addr) {
-  addr.s_addr = htonl(239 << 24 | 255 << 16 | (universe & 0xFF00) |
+  addr.s_addr = HostToNetwork(239 << 24 | 255 << 16 | (universe & 0xFF00) |
                       (universe & 0xFF));
   if (universe && (universe & 0xFFFF) != 0xFFFF)
     return true;
