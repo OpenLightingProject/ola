@@ -113,7 +113,7 @@ class EspNetNode {
     ola::network::InterfacePicker m_interface_picker;
     ola::network::Interface m_interface;
     ola::network::UdpSocket m_socket;
-    RunLengthDecoder m_decoder;    
+    RunLengthDecoder m_decoder;
 
     static const string NODE_NAME;
     static const uint8_t DEFAULT_OPTIONS = 0;

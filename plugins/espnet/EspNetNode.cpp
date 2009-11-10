@@ -433,7 +433,7 @@ bool EspNetNode::SendPacket(const struct in_addr &dst,
   struct sockaddr_in m_destination;
   memset(&m_destination, 0, sizeof(m_destination));
   m_destination.sin_family = AF_INET;
-  m_destination.sin_port = HostToNetwork((uint32_t) ESPNET_PORT);
+  m_destination.sin_port = HostToNetwork((uint16_t) ESPNET_PORT);
   m_destination.sin_addr = dst;
 
   ssize_t bytes_sent = m_socket.SendTo((uint8_t*) &packet,
