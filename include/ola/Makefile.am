@@ -1,8 +1,8 @@
 
 SUBDIRS = network .
 
-SOURCES = BaseTypes.h ExportMap.h StringUtils.h \
-          Closure.h Logging.h DmxBuffer.h
+SOURCES = BaseTypes.h Closure.h DmxBuffer.h ExportMap.h Logging.h \
+          RunLengthEncoder.h StringUtils.h
 
 BUILT_SOURCES = plugin_id.h
 

@@ -24,7 +24,7 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/DmxBuffer.h>
-#include "RunLengthEncoder.h"
+#include <ola/RunLengthEncoder.h>
 
 using namespace ola;
 
@@ -41,7 +41,7 @@ class RunLengthEncoderTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown();
   private:
-    ola::shownet::RunLengthEncoder m_encoder;
+    ola::RunLengthEncoder m_encoder;
     uint8_t *m_dst;
 
     void checkEncode(const DmxBuffer &buffer,

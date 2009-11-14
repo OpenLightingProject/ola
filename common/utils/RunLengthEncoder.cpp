@@ -19,10 +19,9 @@
  */
 
 #include <string.h>
-#include "RunLengthEncoder.h"
+#include <ola/RunLengthEncoder.h>
 
 namespace ola {
-namespace shownet {
 
 /*
  * Take a DMXBuffer and RunLengthEncode the data
@@ -136,5 +135,4 @@ bool RunLengthEncoder::Decode(DmxBuffer &dst,
   return true;
 }
 
-} //shownet
 } //ola

@@ -18,13 +18,12 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef SHOWNET_RLENCODER_H
-#define SHOWNET_RLENCODER_H
+#ifndef OLA_RLENCODER_H
+#define OLA_RLENCODER_H
 
 #include <ola/DmxBuffer.h>
 
 namespace ola {
-namespace shownet {
 
 class RunLengthEncoder {
   public :
@@ -42,6 +41,5 @@ class RunLengthEncoder {
     static const uint8_t REPEAT_FLAG = 0x80;
 };
 
-} //shownet
 } //ola
 #endif

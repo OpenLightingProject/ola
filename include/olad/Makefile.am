@@ -1,7 +1,6 @@
-EXTRA_DIST = Device.h PluginAdaptor.h Plugin.h \
-             Port.h Preferences.h Universe.h
+OLAD_INCLUDES = Device.h PluginAdaptor.h Plugin.h \
+                Port.h Preferences.h Universe.h
 
-pkginclude_HEADERS = Device.h PluginAdaptor.h Plugin.h\
-                     Port.h Preferences.h Universe.h
-
+EXTRA_DIST = $(OLAD_INCLUDES)
+pkginclude_HEADERS = $(OLAD_INCLUDES)
 pkgincludedir = $(includedir)/olad

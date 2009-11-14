@@ -2,11 +2,10 @@ INCLUDES = -I$(top_builddir)/common -I$(top_builddir)/include \
            -I$(top_builddir)/libltdl @OLAD_DEFINES@
 SUBDIRS = www testdata
 
-OLASERVER_SOURCES = OlaServerServiceImpl.cpp \
-                    Preferences.cpp Universe.cpp \
-                    UniverseStore.cpp Client.cpp \
-                    Device.cpp DeviceManager.cpp PluginAdaptor.cpp \
-                    Plugin.cpp DlOpenPluginLoader.cpp
+OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp \
+                    DlOpenPluginLoader.cpp OlaServerServiceImpl.cpp \
+                    Plugin.cpp PluginAdaptor.cpp Preferences.cpp Universe.cpp \
+                    UniverseStore.cpp
 
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
