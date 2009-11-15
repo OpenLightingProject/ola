@@ -52,6 +52,7 @@
 namespace ola {
 
 using ola::rpc::StreamRpcChannel;
+using std::pair;
 
 const string OlaServer::UNIVERSE_PREFERENCES = "universe";
 const string OlaServer::K_CLIENT_VAR = "clients-connected";

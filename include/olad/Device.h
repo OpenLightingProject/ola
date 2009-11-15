@@ -18,8 +18,8 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef OLA_DEVICE_H
-#define OLA_DEVICE_H
+#ifndef INCLUDE_OLAD_DEVICE_H_
+#define INCLUDE_OLAD_DEVICE_H_
 
 #include <stdint.h>
 #include <vector>
@@ -85,7 +85,10 @@ class Device: public AbstractDevice {
     // Returns an id which is unique within the plugin
     virtual string DeviceId() const = 0;
 
-    virtual bool Stop() { m_enabled = false; return true; }
+    virtual bool Stop() {
+      m_enabled = false;
+      return true;
+    }
     virtual void Configure(class google::protobuf::RpcController *controller,
                            const string &request,
                            string *response,
@@ -99,14 +102,14 @@ class Device: public AbstractDevice {
     bool m_enabled;
 
   private:
-    AbstractPlugin *m_owner; // which plugin owns this device
-    string m_name; // device name
-    mutable string m_unique_id; // device id
-    vector<ola::AbstractPort*> m_ports; // ports on the device
+    AbstractPlugin *m_owner;  // which plugin owns this device
+    string m_name;  // device name
+    mutable string m_unique_id;  // device id
+    vector<ola::AbstractPort*> m_ports;  // ports on the device
 
     Device(const Device&);
     Device& operator=(const Device&);
 };
 
-} //ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLAD_DEVICE_H_

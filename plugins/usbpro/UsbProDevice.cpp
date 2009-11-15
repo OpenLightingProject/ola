@@ -320,7 +320,7 @@ void UsbProDevice::HandleWidgetSerial(
     for (int i = SERIAL_NUMBER_LENGTH - 1; i >= 0; i--) {
       int digit = (10 * (serial_number[i] & 0xf0) >> 4) +
         (serial_number[i] & 0x0f);
-      str <<  setw(2)  << digit;
+      str <<  std::setw(2)  << digit;
     }
     m_serial = str.str();
     StartCompleted();

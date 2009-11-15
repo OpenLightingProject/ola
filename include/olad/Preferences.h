@@ -19,23 +19,27 @@
  * Copyright (C) 2005-2006  Simon Newton
  */
 
-#ifndef PREFERENCES_H
-#define PREFERENCES_H
+#ifndef INCLUDE_OLAD_PREFERENCES_H_
+#define INCLUDE_OLAD_PREFERENCES_H_
 
 #include <map>
 #include <vector>
 #include <string>
 
-using namespace std;
 
 namespace ola {
+
+using std::map;
+using std::multimap;
+using std::string;
+using std::vector;
 
 /*
  * The abstract Preferences class
  */
 class Preferences {
   public:
-    Preferences(const string name): m_preference_name(name) {}
+    explicit Preferences(const string name): m_preference_name(name) {}
     virtual ~Preferences() {}
 
     virtual bool Load() = 0;
@@ -55,7 +59,6 @@ class Preferences {
   private:
     Preferences(const Preferences&);
     Preferences& operator=(const Preferences&);
-
 };
 
 
@@ -78,7 +81,7 @@ class PreferencesFactory {
  */
 class MemoryPreferences: public Preferences {
   public:
-    MemoryPreferences(const string name): Preferences(name) {}
+    explicit MemoryPreferences(const string name): Preferences(name) {}
     virtual ~MemoryPreferences();
     virtual bool Load() { return true; }
     virtual bool Save() const { return true; }
@@ -112,7 +115,8 @@ class MemoryPreferencesFactory: public PreferencesFactory {
  */
 class FileBackedPreferences: public MemoryPreferences {
   public:
-    FileBackedPreferences(const string name): MemoryPreferences(name) {}
+    explicit FileBackedPreferences(const string name)
+        : MemoryPreferences(name) {}
     virtual bool Load();
     virtual bool Save() const;
     bool LoadFromFile(const string &filename);
@@ -135,5 +139,5 @@ class FileBackedPreferencesFactory: public PreferencesFactory {
 
 
 
-} //ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLAD_PREFERENCES_H_

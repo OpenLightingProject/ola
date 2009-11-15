@@ -18,13 +18,14 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef PORT_H
-#define PORT_H
+#ifndef INCLUDE_OLAD_PORT_H_
+#define INCLUDE_OLAD_PORT_H_
 
-#include <ola/DmxBuffer.h>
-#include <olad/Device.h>
-#include <olad/Plugin.h>
-#include <olad/Universe.h>
+#include <string>
+#include <ola/DmxBuffer.h>  // NOLINT
+#include <olad/Device.h>  // NOLINT
+#include <olad/Plugin.h>  // NOLINT
+#include <olad/Universe.h>  // NOLINT
 
 namespace ola {
 
@@ -78,13 +79,16 @@ class Port: public AbstractPort {
       m_port_string(""),
       m_universe(NULL),
       m_parent(parent) {}
-    virtual ~Port() {};
+    virtual ~Port() {}
 
     DeviceClass *GetDevice() const { return m_parent; }
     unsigned int PortId() const { return m_port_id; }
     // An empty string means we don't preserve settings.
     virtual string UniqueId() const;
-    bool SetUniverse(Universe *uni) { m_universe = uni; return true; }
+    bool SetUniverse(Universe *uni) {
+      m_universe = uni;
+      return true;
+    }
     Universe *GetUniverse() const { return m_universe; }
     int DmxChanged() {
       if (m_universe)
@@ -97,7 +101,9 @@ class Port: public AbstractPort {
 
     virtual string Description() const { return ""; }
 
-    virtual void UniverseNameChanged(const string &new_name) { (void) new_name; }
+    virtual void UniverseNameChanged(const string &new_name) {
+      (void) new_name;
+    }
 
   private:
     Port(const Port&);
@@ -105,8 +111,8 @@ class Port: public AbstractPort {
 
     unsigned int m_port_id;
     mutable string m_port_string;
-    Universe *m_universe; // universe this port belongs to
-    DeviceClass *m_parent; // pointer to the device this port belongs to
+    Universe *m_universe;  // universe this port belongs to
+    DeviceClass *m_parent;  // pointer to the device this port belongs to
 };
 
 
@@ -126,5 +132,5 @@ string Port<DeviceClass>::UniqueId() const {
   return m_port_string;
 }
 
-} //ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLAD_PORT_H_

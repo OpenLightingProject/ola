@@ -34,6 +34,10 @@
 
 namespace ola {
 
+using std::ifstream;
+using std::ofstream;
+using std::pair;
+
 const string FileBackedPreferences::OLA_CONFIG_DIR = ".ola";
 const string FileBackedPreferences::OLA_CONFIG_PREFIX = "ola-";
 const string FileBackedPreferences::OLA_CONFIG_SUFFIX = ".conf";
@@ -249,7 +253,7 @@ bool FileBackedPreferences::SaveToFile(const string &filename) const {
   }
 
   for (iter=m_pref_map.begin(); iter != m_pref_map.end(); ++iter) {
-    pref_file << iter->first << " = " << iter->second << endl;
+    pref_file << iter->first << " = " << iter->second << std::endl;
   }
 
   pref_file.close();

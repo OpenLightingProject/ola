@@ -29,6 +29,7 @@
 
 namespace ola {
 
+using std::pair;
 
 UniverseStore::UniverseStore(class Preferences *preferences,
                              ExportMap *export_map):

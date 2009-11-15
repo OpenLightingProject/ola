@@ -18,12 +18,12 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_PLUGIN_H
-#define OLA_PLUGIN_H
+#ifndef INCLUDE_OLAD_PLUGIN_H_
+#define INCLUDE_OLAD_PLUGIN_H_
 
 #include <string>
 #include <functional>
-#include <ola/plugin_id.h>
+#include <ola/plugin_id.h>  // NOLINT
 
 namespace ola {
 
@@ -36,7 +36,7 @@ class PluginAdaptor;
 class AbstractPlugin {
   public :
     AbstractPlugin() {}
-    virtual ~AbstractPlugin() {};
+    virtual ~AbstractPlugin() {}
 
     // start the plugin
     virtual bool Start() = 0;
@@ -44,7 +44,7 @@ class AbstractPlugin {
     virtual bool Stop() = 0;
     // check if this plugin is enabled
     virtual bool IsEnabled() const = 0;
-    // TODO: remove this
+    // TODO(simon): remove this
     virtual bool DebugOn() const = 0;
     // return the plugin_id of this plugin
     virtual ola_plugin_id Id() const = 0;
@@ -68,14 +68,14 @@ struct PluginLessThan: public std::binary_function<AbstractPlugin*,
 
 class Plugin: public AbstractPlugin {
   public :
-    Plugin(const PluginAdaptor *plugin_adaptor):
+    explicit Plugin(const PluginAdaptor *plugin_adaptor):
       AbstractPlugin(),
       m_plugin_adaptor(plugin_adaptor),
       m_preferences(NULL),
       m_enabled(false),
       m_debug(false) {}
 
-    virtual ~Plugin() {};
+    virtual ~Plugin() {}
 
     virtual bool Start();
     virtual bool Stop();
@@ -97,8 +97,8 @@ class Plugin: public AbstractPlugin {
 
     const PluginAdaptor *m_plugin_adaptor;
     class Preferences *m_preferences;  // preferences container
-    bool m_enabled; // are we running
-    bool m_debug; // debug mode on
+    bool m_enabled;  // are we running
+    bool m_debug;  // debug mode on
     static const string ENABLED_KEY;
     static const string DEBUG_KEY;
 
@@ -109,10 +109,10 @@ class Plugin: public AbstractPlugin {
 };
 
 
-} // ola
+}  // ola
 
 // interface functions
 typedef ola::AbstractPlugin* create_t(const ola::PluginAdaptor *plugin_adaptor);
 typedef void destroy_t(ola::AbstractPlugin*);
 
-#endif
+#endif  // INCLUDE_OLAD_PLUGIN_H_

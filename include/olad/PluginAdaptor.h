@@ -18,12 +18,12 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_PLUGINADAPTOR_H
-#define OLA_PLUGINADAPTOR_H
+#ifndef INCLUDE_OLAD_PLUGINADAPTOR_H_
+#define INCLUDE_OLAD_PLUGINADAPTOR_H_
 
 #include <stdio.h>
 #include <string>
-#include <ola/network/SelectServer.h>
+#include <ola/network/SelectServer.h>  // NOLINT
 
 namespace ola {
 
@@ -51,7 +51,7 @@ class PluginAdaptor {
 
     bool AddSocket(class Socket *socket) const;
     bool AddSocket(class ConnectedSocket *socket,
-                   bool delete_on_close=false) const;
+                   bool delete_on_close = false) const;
     bool RemoveSocket(class Socket *socket) const;
     bool RemoveSocket(class ConnectedSocket *socket) const;
     timeout_id RegisterRepeatingTimeout(int ms, Closure *closure) const;
@@ -72,5 +72,5 @@ class PluginAdaptor {
     class PreferencesFactory *m_preferences_factory;
 };
 
-} //ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLAD_PLUGINADAPTOR_H_

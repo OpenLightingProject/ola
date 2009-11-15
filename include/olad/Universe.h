@@ -18,18 +18,19 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef UNIVERSE_H
-#define UNIVERSE_H
+#ifndef INCLUDE_OLAD_UNIVERSE_H_
+#define INCLUDE_OLAD_UNIVERSE_H_
 
 #include <set>
 #include <vector>
 #include <string>
-#include <ola/ExportMap.h>
-#include <ola/DmxBuffer.h>
+#include <ola/ExportMap.h>  // NOLINT
+#include <ola/DmxBuffer.h>  // NOLINT
 
 namespace ola {
 
-using namespace std;
+using std::set;
+
 class AbstractPort;
 
 class Universe {
@@ -104,15 +105,15 @@ class Universe {
     string m_universe_name;
     unsigned int m_universe_id;
     string m_universe_id_str;
-    enum merge_mode m_merge_mode; // merge mode
-    vector<class AbstractPort*> m_ports; // ports patched to this universe
-    set<class Client*> m_sink_clients; // clients that require updates
-    set<class Client*> m_source_clients; // clients that provide data
+    enum merge_mode m_merge_mode;  // merge mode
+    vector<class AbstractPort*> m_ports;  // ports patched to this universe
+    set<class Client*> m_sink_clients;  // clients that require updates
+    set<class Client*> m_source_clients;  // clients that provide data
     class UniverseStore *m_universe_store;
 
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
 };
 
-} //ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLAD_UNIVERSE_H_
