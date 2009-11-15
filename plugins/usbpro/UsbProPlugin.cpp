@@ -18,17 +18,20 @@
  * Copyright (C) 2006-2007 Simon Newton
  */
 
+#include <dirent.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
 #include <vector>
 
-#include <ola/Closure.h>
-#include <ola/Logging.h>
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
+#include "ola/Closure.h"
+#include "ola/Logging.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
 
-#include "UsbProPlugin.h"
-#include "UsbProDevice.h"
+#include "plugins/usbpro/UsbProPlugin.h"
+#include "plugins/usbpro/UsbProDevice.h"
 
 
 /*
@@ -49,20 +52,24 @@ extern "C" void destroy(ola::AbstractPlugin* plugin) {
 namespace ola {
 namespace usbpro {
 
-const string UsbProPlugin::USBPRO_DEVICE_PATH = "/dev/ttyUSB0";
-const string UsbProPlugin::USBPRO_DEVICE_NAME = "Enttec Usb Pro Device";
-const string UsbProPlugin::PLUGIN_NAME = "UsbPro Plugin";
-const string UsbProPlugin::PLUGIN_PREFIX = "usbpro";
-const string UsbProPlugin::DEVICE_PATH_KEY = "device";
+const char UsbProPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
+const char UsbProPlugin::PLUGIN_NAME[] = "UsbPro Plugin";
+const char UsbProPlugin::PLUGIN_PREFIX[] = "usbpro";
+const char UsbProPlugin::DEVICE_DIR_KEY[] = "device_dir";
+const char UsbProPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
+const char UsbProPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
+const char UsbProPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
+const char UsbProPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
 
 /*
  * Start the plugin
  */
 bool UsbProPlugin::StartHook() {
-  vector<string> device_names = m_preferences->GetMultipleValue(DEVICE_PATH_KEY);
   vector<string>::iterator it;
 
-  for (it = device_names.begin(); it != device_names.end(); ++it) {
+  vector<string> device_paths = FindCandiateDevices();
+
+  for (it = device_paths.begin(); it != device_paths.end(); ++it) {
     UsbProDevice *dev = new UsbProDevice(m_plugin_adaptor,
                                          this,
                                          USBPRO_DEVICE_NAME,
@@ -77,8 +84,7 @@ bool UsbProPlugin::StartHook() {
     dev->GetSocket()->SetOnClose(
         NewSingleClosure(this,
                          &UsbProPlugin::SocketClosed,
-                         dev->GetSocket())
-    );
+                         dev->GetSocket()));
     m_devices.push_back(dev);
   }
   return true;
@@ -147,13 +153,30 @@ bool UsbProPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->SetDefaultValue(DEVICE_PATH_KEY, USBPRO_DEVICE_PATH))
+  bool save = false;
+
+  vector<string> device_prefixes =
+    m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY);
+  if (!device_prefixes.size()) {
+    m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, LINUX_DEVICE_PREFIX);
+    m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, MAC_DEVICE_PREFIX);
+    save = true;
+  }
+
+  if (m_preferences->GetValue(DEVICE_DIR_KEY).empty()) {
+    m_preferences->SetValue(DEVICE_DIR_KEY, DEFAULT_DEVICE_DIR);
+    save = true;
+  }
+
+  if (save)
     m_preferences->Save();
 
-  if (m_preferences->GetValue(DEVICE_PATH_KEY).empty())
+  device_prefixes = m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY);
+  if (!device_prefixes.size())
     return false;
   return true;
 }
+
 
 void UsbProPlugin::DeleteDevice(UsbProDevice *device) {
   m_plugin_adaptor->UnregisterDevice(device);
@@ -161,5 +184,45 @@ void UsbProPlugin::DeleteDevice(UsbProDevice *device) {
   delete device;
 }
 
-} // usbpro
-} // ola
+
+/*
+ * Look for candidate devices in /dev
+ * @returns a list of paths that may be usb pro devices
+ */
+vector<string> UsbProPlugin::FindCandiateDevices() {
+  vector<string> device_paths;
+
+  vector<string> device_prefixes =
+    m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY);
+  string device_dir = m_preferences->GetValue(DEVICE_DIR_KEY);
+
+  if (device_prefixes.size()) {
+    DIR *dp;
+    struct dirent dir_ent;
+    struct dirent *dir_ent_p;
+    if ((dp  = opendir(device_dir.data())) == NULL) {
+        OLA_WARN << "Could not open " << device_dir << ":" << strerror(errno);
+        return device_paths;
+    }
+
+    readdir_r(dp, &dir_ent, &dir_ent_p);
+    while (dir_ent_p != NULL) {
+      vector<string>::const_iterator iter;
+      for (iter = device_prefixes.begin(); iter != device_prefixes.end();
+           ++iter) {
+        if (!strncmp(dir_ent_p->d_name, iter->data(), iter->size())) {
+          stringstream str;
+          str << device_dir << "/" << dir_ent_p->d_name;
+          device_paths.push_back(str.str());
+          OLA_INFO << "Found potential USB Pro device " << str.str();
+        }
+      }
+      readdir_r(dp, &dir_ent, &dir_ent_p);
+    }
+    closedir(dp);
+  }
+  return device_paths;
+}
+
+}  // usbpro
+}  // ola

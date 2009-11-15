@@ -18,13 +18,14 @@
  * Copyright (C) 2006  Simon Newton
  */
 
-#ifndef USBPROPLUGIN_H
-#define USBPROPLUGIN_H
+#ifndef PLUGINS_USBPRO_USBPROPLUGIN_H_
+#define PLUGINS_USBPRO_USBPROPLUGIN_H_
 
+#include <string>
 #include <vector>
-#include <olad/Plugin.h>
-#include <ola/plugin_id.h>
-#include <ola/network/Socket.h>
+#include "olad/Plugin.h"
+#include "ola/plugin_id.h"
+#include "ola/network/Socket.h"
 
 namespace ola {
 namespace usbpro {
@@ -35,7 +36,7 @@ class UsbProDevice;
 
 class UsbProPlugin: public ola::Plugin {
   public:
-    UsbProPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit UsbProPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
 
     string Name() const { return PLUGIN_NAME; }
@@ -49,16 +50,20 @@ class UsbProPlugin: public ola::Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
     void DeleteDevice(UsbProDevice *device);
+    vector<string> FindCandiateDevices();
 
-    vector<UsbProDevice*> m_devices; // list of our devices
+    vector<UsbProDevice*> m_devices;  // list of our devices
 
-    static const string USBPRO_DEVICE_PATH;
-    static const string USBPRO_DEVICE_NAME;
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
-    static const string DEVICE_PATH_KEY;
+    static const char USBPRO_DEVICE_NAME[];
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
+    static const char DEVICE_DIR_KEY[];
+    static const char DEVICE_PREFIX_KEY[];
+    static const char DEFAULT_DEVICE_DIR[];
+    static const char LINUX_DEVICE_PREFIX[];
+    static const char MAC_DEVICE_PREFIX[];
 };
 
-} //usbpro
-} //ola
-#endif
+}  // usbpro
+}  // ola
+#endif  // PLUGINS_USBPRO_USBPROPLUGIN_H_

@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef USBPRODWIDGETLISTENER_H
-#define USBPRODWIDGETLISTENER_H
+#ifndef PLUGINS_USBPRO_USBPROWIDGETLISTENER_H_
+#define PLUGINS_USBPRO_USBPROWIDGETLISTENER_H_
 
 namespace ola {
 namespace usbpro {
@@ -28,7 +28,7 @@ enum { SERIAL_NUMBER_LENGTH = 4 };
 
 class UsbProWidgetListener {
   public :
-    UsbProWidgetListener() {};
+    UsbProWidgetListener() {}
     virtual ~UsbProWidgetListener() {}
     virtual void HandleWidgetDmx() {}
     virtual void HandleWidgetParameters(uint8_t firmware,
@@ -45,6 +45,6 @@ class UsbProWidgetListener {
     UsbProWidgetListener& operator=(const UsbProWidgetListener&);
 };
 
-} // usbpro
-} //ola
-#endif
+}  // usbpro
+}  // ola
+#endif  // PLUGINS_USBPRO_USBPROWIDGETLISTENER_H_

@@ -18,19 +18,19 @@
  * Copyright (C) 2006-2007 Simon Newton
  */
 
-#ifndef USBPRODEVICE_H
-#define USBPRODEVICE_H
+#ifndef PLUGINS_USBPRO_USBPRODEVICE_H_
+#define PLUGINS_USBPRO_USBPRODEVICE_H_
 
 #include <string>
 #include <deque>
-#include <ola/DmxBuffer.h>
-#include <ola/network/Socket.h>
-#include <olad/Device.h>
-#include <olad/PluginAdaptor.h>
+#include "ola/DmxBuffer.h"
+#include "ola/network/Socket.h"
+#include "olad/Device.h"
+#include "olad/PluginAdaptor.h"
 
-#include "messages/UsbProConfigMessages.pb.h"
-#include "UsbProWidget.h"
-#include "UsbProWidgetListener.h"
+#include "plugins/usbpro/messages/UsbProConfigMessages.pb.h"
+#include "plugins/usbpro/UsbProWidget.h"
+#include "plugins/usbpro/UsbProWidgetListener.h"
 
 namespace ola {
 namespace usbpro {
@@ -103,8 +103,8 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
                          google::protobuf::Closure *done);
 
     bool m_enabled;
-    bool m_in_shutdown; // set to true if we're shutting down
-    bool m_in_startup; // set to true if we're starting up
+    bool m_in_shutdown;  // set to true if we're shutting down
+    bool m_in_startup;  // set to true if we're starting up
     const ola::PluginAdaptor *m_plugin_adaptor;
     string m_path;
     string m_serial;
@@ -115,6 +115,6 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     static const int K_MISSING_PARAM = -1;
 };
 
-} //usbpro
-} //ola
-#endif
+}  // usbpro
+}  // ola
+#endif  // PLUGINS_USBPRO_USBPRODEVICE_H_

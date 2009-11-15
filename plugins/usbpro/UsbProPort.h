@@ -18,21 +18,22 @@
  * Copyright (C) 2006-2009 Simon Newton
  */
 
-#ifndef USBPROPORT_H
-#define USBPROPORT_H
+#ifndef PLUGINS_USBPRO_USBPROPORT_H_
+#define PLUGINS_USBPRO_USBPROPORT_H_
 
-#include <ola/DmxBuffer.h>
-#include <olad/Port.h>
-#include "UsbProDevice.h"
+#include <string>
+#include "ola/DmxBuffer.h"
+#include "olad/Port.h"
+#include "plugins/usbpro/UsbProDevice.h"
 
 namespace ola {
 namespace usbpro {
 
 class UsbProPort: public ola::Port<UsbProDevice> {
   public:
-    UsbProPort(UsbProDevice *parent, unsigned int id, const string &path):
-      ola::Port<UsbProDevice>(parent, id),
-      m_path(path) {};
+    UsbProPort(UsbProDevice *parent, unsigned int id, const string &path)
+        : ola::Port<UsbProDevice>(parent, id),
+          m_path(path) {}
 
     bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const;
@@ -45,7 +46,7 @@ class UsbProPort: public ola::Port<UsbProDevice> {
     string m_path;
 };
 
-} // usbpro
-} //ola
+}  // usbpro
+}  // ola
 
-#endif
+#endif  // PLUGINS_USBPRO_USBPROPORT_H_

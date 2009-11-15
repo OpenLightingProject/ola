@@ -19,8 +19,8 @@
  */
 
 #include <ola/Logging.h>
-#include "UsbProPort.h"
-#include "UsbProDevice.h"
+#include "plugins/usbpro/UsbProPort.h"
+#include "plugins/usbpro/UsbProDevice.h"
 
 namespace ola {
 namespace usbpro {
@@ -70,5 +70,5 @@ bool UsbProPort::SetUniverse(Universe *uni) {
   return 0;
 }
 
-} // usbpro
-} //ola
+}  // usbpro
+}  // ola

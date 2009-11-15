@@ -21,17 +21,17 @@
  * at a time.
  */
 
-#include <iomanip>
-#include <iostream>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
+#include <iomanip>
+#include <iostream>
+#include <string>
 
-#include <ola/Closure.h>
-#include <ola/Logging.h>
-#include <olad/Preferences.h>
-
-#include "UsbProDevice.h"
-#include "UsbProPort.h"
+#include "ola/Closure.h"
+#include "ola/Logging.h"
+#include "olad/Preferences.h"
+#include "plugins/usbpro/UsbProDevice.h"
+#include "plugins/usbpro/UsbProPort.h"
 
 namespace ola {
 namespace usbpro {
@@ -107,7 +107,6 @@ bool UsbProDevice::Start() {
  * Called at the end of the startup sequence.
  */
 bool UsbProDevice::StartCompleted() {
-
   m_plugin_adaptor->RegisterDevice(this);
   m_in_startup = false;
   m_enabled = true;
@@ -121,7 +120,7 @@ bool UsbProDevice::Stop() {
   if (!m_enabled)
     return true;
 
-  m_in_shutdown = true; // don't allow any more writes
+  m_in_shutdown = true;  // don't allow any more writes
   m_widget->Disconnect();
   DeleteAllPorts();
   m_enabled = false;
@@ -141,7 +140,7 @@ ola::network::ConnectedSocket *UsbProDevice::GetSocket() const {
  * Send the dmx out the widget
  * @return true on success, false on failure
  */
-bool UsbProDevice::SendDMX(const DmxBuffer &buffer){
+bool UsbProDevice::SendDMX(const DmxBuffer &buffer) {
   return m_widget->SendDMX(buffer);
 }
 
@@ -211,7 +210,6 @@ void UsbProDevice::HandleParameters(RpcController *controller,
                                     const Request *request,
                                     string *response,
                                     google::protobuf::Closure *done) {
-
   if (request->has_parameters() &&
       (request->parameters().has_break_time() ||
        request->parameters().has_mab_time() ||
@@ -242,7 +240,7 @@ void UsbProDevice::HandleParameters(RpcController *controller,
     controller->SetFailed("GetParameters failed");
     done->Run();
   } else {
-    // TODO: we should time these out if we don't get a response
+    // TODO(simonn): we should time these out if we don't get a response
     OutstandingRequest parameters_request(controller, response, done);
     m_outstanding_param_requests.push_back(parameters_request);
   }
@@ -254,7 +252,7 @@ void UsbProDevice::HandleParameters(RpcController *controller,
  */
 void UsbProDevice::HandleGetSerial(
     RpcController *controller,
-    const Request *request __attribute__ ((__unused__)),
+    const Request *request,
     string *response,
     google::protobuf::Closure *done) {
 
@@ -265,6 +263,7 @@ void UsbProDevice::HandleGetSerial(
   serial_reply->set_serial(m_serial);
   reply.SerializeToString(response);
   done->Run();
+  (void) request;
 }
 
 
@@ -285,7 +284,6 @@ void UsbProDevice::HandleWidgetParameters(uint8_t firmware,
                                           uint8_t break_time,
                                           uint8_t mab_time,
                                           uint8_t rate) {
-
   if (!m_outstanding_param_requests.empty()) {
     OutstandingRequest parameter_request =
       m_outstanding_param_requests.front();
@@ -327,6 +325,5 @@ void UsbProDevice::HandleWidgetSerial(
   }
 }
 
-
-} // usbpro
-} // ola
+}  // usbpro
+}  // ola

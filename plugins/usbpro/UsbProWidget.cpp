@@ -30,11 +30,11 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
+#include <string>
 
 #include <algorithm>
-#include <ola/Logging.h>
-
-#include "UsbProWidget.h"
+#include "ola/Logging.h"
+#include "plugins/usbpro/UsbProWidget.h"
 
 namespace ola {
 namespace usbpro {
@@ -79,7 +79,7 @@ bool UsbProWidget::Connect(const string &path) {
     return false;
   }
 
-  bzero(&newtio, sizeof(newtio)); // clear struct for new port settings
+  bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
   tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ola::network::DeviceSocket(fd);
   m_socket->SetOnData(NewClosure(this, &UsbProWidget::SocketReady));
@@ -133,7 +133,7 @@ bool UsbProWidget::SendDMX(const DmxBuffer &buffer) const {
 
   msg.som = SOM;
   msg.label = ID_SDMX;
-  //start code to 0
+  // start code to 0
   msg.pm_dmx.dmx[0] = K_START_CODE;
   buffer.Get(&msg.pm_dmx.dmx[1], &length);
   set_msg_len(&msg, length + 1);
@@ -356,7 +356,7 @@ int UsbProWidget::handle_cos(pms_cos *cos, int len) {
     if (chn_st + i > DMX_BUFFER_LENGTH - 1 || offset + 6 >= len)
       break;
 
-    if (cos->changed[i/8] & (1 << (i % 8)) ) {
+    if (cos->changed[i/8] & (1 << (i % 8))) {
       m_buffer.SetChannel(chn_st + i, cos->data[offset]);
       offset++;
     }
@@ -421,7 +421,7 @@ int UsbProWidget::set_msg_len(promsg *msg, int len) const {
  */
 bool UsbProWidget::SendMessage(promsg *msg) const {
   int len = (msg->len_hi << 8) + msg->len + K_HEADER_SIZE;
-  ssize_t bytes_sent = m_socket->Send((uint8_t*) msg, len);
+  ssize_t bytes_sent = m_socket->Send(reinterpret_cast<uint8_t*>(msg), len);
   if (bytes_sent != len)
     return false;
   uint8_t eom = EOM;
@@ -442,29 +442,29 @@ int UsbProWidget::ReceiveMessage() {
   unsigned int cnt;
   pmu buf;
 
-  while(byte != 0x7e) {
-    m_socket->Receive((uint8_t*) &byte, 1, cnt);
+  while (byte != 0x7e) {
+    m_socket->Receive(reinterpret_cast<uint8_t*>(&byte), 1, cnt);
     if (cnt == 1)
       continue;
     return -1;
   }
 
   // try to read the label
-  m_socket->Receive((uint8_t*) &label, 1, cnt);
+  m_socket->Receive(reinterpret_cast<uint8_t*>(&label), 1, cnt);
 
   if (cnt != 1) {
     OLA_WARN << "Could not read label, expected 1, got " << cnt;
     return 1;
   }
 
-  m_socket->Receive((uint8_t*) &byte, 1, cnt);
+  m_socket->Receive(reinterpret_cast<uint8_t*>(&byte), 1, cnt);
   if (cnt != 1) {
     OLA_WARN << "Could not read len hi, expected 1, got " << cnt;
     return 1;
   }
   plen = byte;
 
-  m_socket->Receive((uint8_t*) &byte, 1, cnt);
+  m_socket->Receive(reinterpret_cast<uint8_t*>(&byte), 1, cnt);
   if (cnt != 1) {
     OLA_WARN << "Could not read len lo, expected 1, got " << cnt;
     return 1;
@@ -472,19 +472,20 @@ int UsbProWidget::ReceiveMessage() {
   plen += byte << 8;
 
   for (bytes_read = 0; bytes_read < plen;) {
-    m_socket->Receive((uint8_t*) &buf + bytes_read, plen-bytes_read, cnt);
+    m_socket->Receive(reinterpret_cast<uint8_t*>(&buf + bytes_read),
+                      plen-bytes_read, cnt);
     bytes_read += cnt;
   }
 
   // check this is a valid frame with an end byte
-  m_socket->Receive((uint8_t*) &byte, 1, cnt);
+  m_socket->Receive(reinterpret_cast<uint8_t*>(&byte), 1, cnt);
   if (cnt != 1) {
     OLA_WARN << "Read to much, expected 1, got " << cnt;
     return 1;
   }
 
   if (byte == 0xe7) {
-    switch(label) {
+    switch (label) {
       case ID_FLASH_PAGE:
         handle_flash_page(&buf.pmu_flash_reply, plen);
         break;
@@ -507,5 +508,5 @@ int UsbProWidget::ReceiveMessage() {
   return 0;
 }
 
-} // usbpro
-} //ola
+}  // usbpro
+}  // ola

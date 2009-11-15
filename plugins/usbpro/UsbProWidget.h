@@ -18,15 +18,14 @@
  * Copyright (C) 2006  Simon Newton
  */
 
-#ifndef USBPROWIDGET_H
-#define USBPROWIDGET_H
+#ifndef PLUGINS_USBPRO_USBPROWIDGET_H_
+#define PLUGINS_USBPRO_USBPROWIDGET_H_
 
 #include <stdint.h>
 #include <string>
-#include <ola/DmxBuffer.h>
-#include <ola/network/Socket.h>
-
-#include "UsbProWidgetListener.h"
+#include "ola/DmxBuffer.h"
+#include "ola/network/Socket.h"
+#include "plugins/usbpro/UsbProWidgetListener.h"
 
 namespace ola {
 namespace usbpro {
@@ -207,6 +206,6 @@ class UsbProWidget {
     static const char REPLY_SUCCESS[];
 };
 
-} // usbpro
-} //ola
-#endif
+}  // usbpro
+}  // ola
+#endif  // PLUGINS_USBPRO_USBPROWIDGET_H_
