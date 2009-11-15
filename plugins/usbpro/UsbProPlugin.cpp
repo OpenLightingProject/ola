@@ -118,8 +118,11 @@ string UsbProPlugin::Description() const {
 "\n"
 "--- Config file : ola-usbpro.conf ---\n"
 "\n"
-"device = /dev/ttyUSB0\n"
-"The device to use. Multiple devices are allowed\n";
+"device_dir = /dev\n"
+"The directory to look for devices in]\n"
+"\n"
+"device_prefix = ttyUSB\n"
+"The prefix of filenames to consider as devices, multiple keys are allowed\n";
 }
 
 
