@@ -44,8 +44,6 @@ class AbstractPlugin {
     virtual bool Stop() = 0;
     // check if this plugin is enabled
     virtual bool IsEnabled() const = 0;
-    // TODO(simon): remove this
-    virtual bool DebugOn() const = 0;
     // return the plugin_id of this plugin
     virtual ola_plugin_id Id() const = 0;
     // return the name of this plugin
@@ -80,7 +78,6 @@ class Plugin: public AbstractPlugin {
     virtual bool Start();
     virtual bool Stop();
     virtual bool IsEnabled() const { return m_enabled; }
-    virtual bool DebugOn() const { return m_debug; }
     virtual ola_plugin_id Id() const = 0;
 
     // return the prefix used to identify this plugin
