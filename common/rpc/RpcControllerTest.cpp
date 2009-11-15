@@ -18,14 +18,15 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
 #include <google/protobuf/stubs/common.h>
-#include "SimpleRpcController.h"
+#include <string>
+#include "common/rpc/SimpleRpcController.h"
 
-using namespace std;
-using namespace ola::rpc;
-using namespace google::protobuf;
+using std::string;
+using ola::rpc::SimpleRpcController;
+using google::protobuf::Closure;
+using google::protobuf::NewCallback;
 
 class RpcControllerTest : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RpcControllerTest);

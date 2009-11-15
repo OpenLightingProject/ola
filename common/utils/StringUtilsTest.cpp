@@ -18,12 +18,17 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <iostream>
 #include <cppunit/extensions/HelperMacros.h>
-#include <ola/StringUtils.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include "ola/StringUtils.h"
 
-using namespace ola;
-using namespace std;
+using std::string;
+using std::vector;
+using ola::IntToString;
+using ola::StringSplit;
+using ola::StringTrim;
 
 class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringUtilsTest);

@@ -18,11 +18,11 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_SIMPLE_RPC_CONTROLLER_H
-#define OLA_SIMPLE_RPC_CONTROLLER_H
+#ifndef COMMON_RPC_SIMPLERPCCONTROLLER_H_
+#define COMMON_RPC_SIMPLERPCCONTROLLER_H_
 
-#include <string>
 #include <google/protobuf/service.h>
+#include <string>
 
 namespace ola {
 namespace rpc {
@@ -50,7 +50,7 @@ class SimpleRpcController: public google::protobuf::RpcController {
     google::protobuf::Closure *m_callback;
 };
 
-} // rpc
-} // ola
+}  // rpc
+}  // ola
 
-#endif
+#endif  // COMMON_RPC_SIMPLERPCCONTROLLER_H_

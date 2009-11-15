@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef STREAMRPCCHANNEL_H
-#define STREAMRPCCHANNEL_H
+#ifndef COMMON_RPC_STREAMRPCCHANNEL_H_
+#define COMMON_RPC_STREAMRPCCHANNEL_H_
 
 #include <stdint.h>
 #include <ext/hash_map>
@@ -31,7 +31,11 @@
 namespace ola {
 namespace rpc {
 
-using namespace google::protobuf;
+using google::protobuf::Message;
+using google::protobuf::MethodDescriptor;
+using google::protobuf::RpcChannel;
+using google::protobuf::RpcController;
+using google::protobuf::Service;
 
 class RpcMessage;
 
@@ -69,10 +73,10 @@ class StreamRpcHeader {
    * (this is separate from the protobuf version) and the size of the protobuf.
    */
   public:
-    static void EncodeHeader(uint32_t &header, unsigned int version,
+    static void EncodeHeader(uint32_t *header, unsigned int version,
                              unsigned int size);
-    static void DecodeHeader(uint32_t header, unsigned int &version,
-                             unsigned int &size);
+    static void DecodeHeader(uint32_t header, unsigned int *version,
+                             unsigned int *size);
   private:
     static const unsigned int VERSION_MASK = 0xf0000000;
     static const unsigned int SIZE_MASK = 0x0fffffff;
@@ -104,7 +108,7 @@ class StreamRpcChannel: public RpcChannel {
   private:
     int SendMsg(RpcMessage *msg);
     int AllocateMsgBuffer(unsigned int size);
-    int ReadHeader(unsigned int &version, unsigned int &size) const;
+    int ReadHeader(unsigned int *version, unsigned int *size) const;
     void HandleNewMsg(uint8_t *buffer, unsigned int size);
     void HandleRequest(RpcMessage *msg);
 
@@ -121,21 +125,22 @@ class StreamRpcChannel: public RpcChannel {
     OutstandingResponse *GetOutstandingResponse(int msg_id);
     void InvokeCallbackAndCleanup(OutstandingResponse *response);
 
-    Service *m_service; // service to dispatch requests to
-    class ola::network::ConnectedSocket *m_socket; // the socket to read/write to.
-    uint32_t m_seq; // sequence number
-    uint8_t *m_buffer; // buffer for incomming msgs
-    unsigned int m_buffer_size; // size of the buffer
-    unsigned int m_expected_size; // the total size of the current msg
-    unsigned int m_current_size; // the amount of data read for the current msg
+    Service *m_service;  // service to dispatch requests to
+    // the socket to read/write to.
+    class ola::network::ConnectedSocket *m_socket;
+    uint32_t m_seq;  // sequence number
+    uint8_t *m_buffer;  // buffer for incomming msgs
+    unsigned int m_buffer_size;  // size of the buffer
+    unsigned int m_expected_size;  // the total size of the current msg
+    unsigned int m_current_size;  // the amount of data read for the current msg
     __gnu_cxx::hash_map<int, OutstandingRequest*> m_requests;
     __gnu_cxx::hash_map<int, OutstandingResponse*> m_responses;
 
-    static const unsigned int INITIAL_BUFFER_SIZE = 1 << 11; // 2k
-    static const unsigned int MAX_BUFFER_SIZE = 1 << 20; // 1M
+    static const unsigned int INITIAL_BUFFER_SIZE = 1 << 11;  // 2k
+    static const unsigned int MAX_BUFFER_SIZE = 1 << 20;  // 1M
 };
 
-} // rpc
-} // ola
+}  // rpc
+}  // ola
 
-#endif
+#endif  // COMMON_RPC_STREAMRPCCHANNEL_H_

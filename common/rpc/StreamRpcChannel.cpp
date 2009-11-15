@@ -19,35 +19,33 @@
  */
 
 #include <errno.h>
-#include <string>
-
 #include <google/protobuf/service.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
+#include <string>
 
-#include <ola/Logging.h>
-#include <ola/Closure.h>
-#include "StreamRpcChannel.h"
-#include "SimpleRpcController.h"
-#include "Rpc.pb.h"
+#include "common/rpc/Rpc.pb.h"
+#include "common/rpc/SimpleRpcController.h"
+#include "common/rpc/StreamRpcChannel.h"
+#include "ola/Closure.h"
+#include "ola/Logging.h"
 
 
 namespace ola {
 namespace rpc {
 
-using namespace google::protobuf;
+using google::protobuf::ServiceDescriptor;
 
 StreamRpcChannel::StreamRpcChannel(Service *service,
-                                   ola::network::ConnectedSocket *socket):
-  m_service(service),
-  m_socket(socket),
-  m_buffer(NULL),
-  m_buffer_size(0),
-  m_seq(0),
-  m_expected_size(0),
-  m_current_size(0) {
-
+                                   ola::network::ConnectedSocket *socket)
+    : m_service(service),
+      m_socket(socket),
+      m_buffer(NULL),
+      m_buffer_size(0),
+      m_seq(0),
+      m_expected_size(0),
+      m_current_size(0) {
     socket->SetOnData(NewClosure(this, &StreamRpcChannel::SocketReady));
 }
 
@@ -65,7 +63,7 @@ int StreamRpcChannel::SocketReady() {
   if (!m_expected_size) {
     // this is a new msg
     unsigned int version;
-    if (ReadHeader(version, m_expected_size) < 0)
+    if (ReadHeader(&version, &m_expected_size) < 0)
       return -1;
 
     if (!m_expected_size)
@@ -176,10 +174,12 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
   msg->SerializeToString(&output);
   int length = output.length();
   uint32_t header;
-  StreamRpcHeader::EncodeHeader(header, PROTOCOL_VERSION, length);
+  StreamRpcHeader::EncodeHeader(&header, PROTOCOL_VERSION, length);
 
-  ssize_t ret = m_socket->Send((uint8_t*) &header, sizeof(header));
-  ret = m_socket->Send((uint8_t*) output.data(), length);
+  ssize_t ret = m_socket->Send(reinterpret_cast<const uint8_t*>(&header),
+                               sizeof(header));
+  ret = m_socket->Send(reinterpret_cast<const uint8_t*>(output.data()),
+                       length);
 
   if (-1 == ret) {
     OLA_WARN << "Send failed " << strerror(errno);
@@ -210,7 +210,8 @@ int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
   if (requested_size > MAX_BUFFER_SIZE)
     return m_buffer_size;
 
-  if ((new_buffer = (uint8_t*) realloc(m_buffer, requested_size)) < 0)
+  new_buffer = static_cast<uint8_t*>(realloc(m_buffer, requested_size));
+  if (new_buffer < 0)
     return m_buffer_size;
 
   m_buffer = new_buffer;
@@ -223,14 +224,15 @@ int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
  * Read 4 bytes and decode the header fields.
  * @returns: -1 if there is no data is available, version and size are 0
  */
-int StreamRpcChannel::ReadHeader(unsigned int &version,
-                                 unsigned int &size) const {
+int StreamRpcChannel::ReadHeader(unsigned int *version,
+                                 unsigned int *size) const {
   static const int HEADER_SIZE = 4;
   uint8_t header[HEADER_SIZE];
   unsigned int data_read = 0;
-  version = size = 0;
+  *version = *size = 0;
 
-  if (m_socket->Receive((uint8_t*) header, HEADER_SIZE, data_read)) {
+  if (m_socket->Receive(reinterpret_cast<uint8_t*>(header),
+                        HEADER_SIZE, data_read)) {
     OLA_WARN << "read header error: " << strerror(errno);
     return -1;
   }
@@ -238,7 +240,8 @@ int StreamRpcChannel::ReadHeader(unsigned int &version,
   if (!data_read)
     return 0;
 
-  StreamRpcHeader::DecodeHeader(*((uint32_t*) header), version, size);
+  StreamRpcHeader::DecodeHeader(*(reinterpret_cast<uint32_t*>(header)),
+                                version, size);
   return 0;
 }
 
@@ -446,19 +449,21 @@ void StreamRpcChannel::InvokeCallbackAndCleanup(OutstandingResponse *response) {
 /**
  * Encode a header
  */
-void StreamRpcHeader::EncodeHeader(uint32_t &header, unsigned int version, unsigned int size) {
-  header = (version << 28) & VERSION_MASK;
-  header |= size & SIZE_MASK;
+void StreamRpcHeader::EncodeHeader(uint32_t *header, unsigned int version,
+                                   unsigned int size) {
+  *header = (version << 28) & VERSION_MASK;
+  *header |= size & SIZE_MASK;
 }
 
 
 /**
  * Decode a header
  */
-void StreamRpcHeader::DecodeHeader(uint32_t header, unsigned int &version, unsigned int &size) {
-  version = (header & VERSION_MASK) >> 28;
-  size = header & SIZE_MASK;
+void StreamRpcHeader::DecodeHeader(uint32_t header, unsigned int *version,
+                                   unsigned int *size) {
+  *version = (header & VERSION_MASK) >> 28;
+  *size = header & SIZE_MASK;
 }
 
-} //rpc
-} //ola
+}  // rpc
+}  // ola

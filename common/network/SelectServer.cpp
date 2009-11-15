@@ -29,16 +29,20 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
-#include <ola/Logging.h>
-#include <ola/network/SelectServer.h>
-#include <ola/network/Socket.h>
+#include "ola/Logging.h"
+#include "ola/network/SelectServer.h"
+#include "ola/network/Socket.h"
 
-using namespace ola::network;
 
-const string SelectServer::K_SOCKET_VAR = "ss-sockets";
-const string SelectServer::K_CONNECTED_SOCKET_VAR = "ss-connected-sockets";
-const string SelectServer::K_TIMER_VAR = "ss-timer-functions";
+namespace ola {
+namespace network {
+
+const char SelectServer::K_SOCKET_VAR[] = "ss-sockets";
+const char SelectServer::K_CONNECTED_SOCKET_VAR[] = "ss-connected-sockets";
+const char SelectServer::K_TIMER_VAR[] = "ss-timer-functions";
 
 using std::max;
 using ola::ExportMap;
@@ -47,10 +51,10 @@ using ola::Closure;
 /*
  * Constructor
  */
-SelectServer::SelectServer(ExportMap *export_map):
-  m_terminate(false),
-  m_next_id(INVALID_TIMEOUT + 1),
-  m_export_map(export_map) {
+SelectServer::SelectServer(ExportMap *export_map)
+    : m_terminate(false),
+      m_next_id(INVALID_TIMEOUT + 1),
+      m_export_map(export_map) {
 
   if (m_export_map) {
     ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_SOCKET_VAR);
@@ -272,9 +276,11 @@ bool SelectServer::CheckForEvents() {
     tv.tv_usec = 0;
   } else {
     struct timeval next = m_events.top().next;
-    long long now_l = (long long) now.tv_sec * K_US_IN_SECOND + now.tv_usec;
-    long long next_l = (long long) next.tv_sec * K_US_IN_SECOND + next.tv_usec;
-    long rem = next_l - now_l;
+    uint64_t now_l = (static_cast<uint64_t>(now.tv_sec) * K_US_IN_SECOND +
+        now.tv_usec);
+    uint64_t next_l = (static_cast<uint64_t>(next.tv_sec) * K_US_IN_SECOND +
+      next.tv_usec);
+    uint64_t rem = next_l - now_l;
     tv.tv_sec = rem / K_US_IN_SECOND;
     tv.tv_usec = rem % K_US_IN_SECOND;
   }
@@ -391,7 +397,6 @@ struct timeval SelectServer::CheckTimeouts() {
 
   for (e = m_events.top(); !m_events.empty() && timercmp(&e.next, &now, <);
        e = m_events.top()) {
-
     m_events.pop();
 
     // if this was removed, skip it
@@ -450,3 +455,6 @@ void SelectServer::UnregisterAll() {
     m_events.pop();
   }
 }
+
+}  // network
+}  // ola

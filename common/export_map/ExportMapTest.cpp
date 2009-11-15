@@ -18,13 +18,21 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
+#include <vector>
 
-#include <ola/ExportMap.h>
+#include "ola/ExportMap.h"
 
-using namespace ola;
-using namespace std;
+using ola::BaseVariable;
+using ola::ExportMap;
+using ola::IntMap;
+using ola::IntegerVariable;
+using ola::StringMap;
+using ola::StringVariable;
+using std::string;
+using std::vector;
+
 
 class ExportMapTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ExportMapTest);
@@ -107,7 +115,8 @@ void ExportMapTest::testStringMapVariable() {
   string value2 = "value2";
   var.Set(key2, value2);
   CPPUNIT_ASSERT_EQUAL(var.Get(key2), value2);
-  CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key1:value1 key2:value2"));
+  CPPUNIT_ASSERT_EQUAL(var.Value(),
+                       string("map:count key1:value1 key2:value2"));
 
   var.Remove(key1);
   CPPUNIT_ASSERT_EQUAL(var.Get(key1), string(""));

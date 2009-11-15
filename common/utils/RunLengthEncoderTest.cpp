@@ -18,15 +18,16 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <stdlib.h>
-#include <cppunit/extensions/HelperMacros.h>
 
-#include <ola/BaseTypes.h>
-#include <ola/DmxBuffer.h>
-#include <ola/RunLengthEncoder.h>
+#include "ola/BaseTypes.h"
+#include "ola/DmxBuffer.h"
+#include "ola/RunLengthEncoder.h"
 
-using namespace ola;
+using ola::RunLengthEncoder;
+using ola::DmxBuffer;
 
 class RunLengthEncoderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RunLengthEncoderTest);
@@ -60,7 +61,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RunLengthEncoderTest);
  * allocate a scratch pad
  */
 void RunLengthEncoderTest::setUp() {
-  m_dst = (uint8_t*) malloc(DMX_UNIVERSE_SIZE);
+  m_dst = new uint8_t[DMX_UNIVERSE_SIZE];
 }
 
 
@@ -68,7 +69,7 @@ void RunLengthEncoderTest::setUp() {
  * clean up
  */
 void RunLengthEncoderTest::tearDown() {
-  free(m_dst);
+  delete[] m_dst;
 }
 
 

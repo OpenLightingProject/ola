@@ -18,20 +18,27 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <stdint.h>
 #include <string>
-#include <cppunit/extensions/HelperMacros.h>
 
-#include <ola/Closure.h>
-#include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
-#include <ola/network/Socket.h>
+#include "ola/Closure.h"
+#include "ola/network/NetworkUtils.h"
+#include "ola/network/SelectServer.h"
+#include "ola/network/Socket.h"
 
-using namespace ola::network;
 using std::string;
+using ola::network::AcceptingSocket;
+using ola::network::ConnectedSocket;
+using ola::network::LoopbackSocket;
+using ola::network::PipeSocket;
+using ola::network::SelectServer;
+using ola::network::TcpAcceptingSocket;
+using ola::network::TcpSocket;
+using ola::network::StringToAddress;
+using ola::network::UdpSocket;
 
 static const char test_cstring[] = "Foo";
-static const string test_string = test_cstring;
 // used to set a timeout which aborts the tests
 static const int ABORT_TIMEOUT_IN_MS = 1000;
 
@@ -56,7 +63,10 @@ class SocketTest: public CppUnit::TestFixture {
     void testUdpSocket();
 
     // timing out indicates something went wrong
-    int Timeout() { CPPUNIT_ASSERT(false); m_timeout_closure = NULL; }
+    int Timeout() {
+      CPPUNIT_ASSERT(false);
+      m_timeout_closure = NULL;
+    }
 
     // Socket data actions
     int ReceiveAndClose(ConnectedSocket *socket);
@@ -112,12 +122,13 @@ void SocketTest::testLoopbackSocket() {
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
   socket.SetOnData(ola::NewClosure(this, &SocketTest::ReceiveAndTerminate,
-                                   (ConnectedSocket*) &socket));
+                                   static_cast<ConnectedSocket*>(&socket)));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
-  ssize_t bytes_sent = socket.Send((uint8_t*) test_string.data(),
-                                   test_string.length());
-  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
+  ssize_t bytes_sent = socket.Send(
+      reinterpret_cast<const uint8_t*>(test_cstring),
+      sizeof(test_cstring));
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
 }
@@ -135,21 +146,22 @@ void SocketTest::testPipeSocketClientClose() {
 
   socket.SetOnData(
       ola::NewClosure(this, &SocketTest::ReceiveAndClose,
-                      (ConnectedSocket*) &socket));
+                      static_cast<ConnectedSocket*>(&socket)));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   PipeSocket *other_end = socket.OppositeEnd();
   CPPUNIT_ASSERT(other_end);
   other_end->SetOnData(
       ola::NewClosure(this, &SocketTest::ReceiveAndSend,
-                      (ConnectedSocket *) other_end));
+                      static_cast<ConnectedSocket*>(other_end)));
   other_end->SetOnClose(ola::NewSingleClosure(this,
                                               &SocketTest::TerminateOnClose));
   CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
-  size_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(),
-                                  test_string.length());
-  CPPUNIT_ASSERT_EQUAL(test_string.length(), bytes_sent);
+  ssize_t bytes_sent = socket.Send(
+      reinterpret_cast<const uint8_t*>(test_cstring),
+      sizeof(test_cstring));
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
   m_ss->RemoveSocket(other_end);
@@ -167,20 +179,23 @@ void SocketTest::testPipeSocketServerClose() {
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
 
-  socket.SetOnData(ola::NewClosure(this, &SocketTest::Receive,
-                                    (ConnectedSocket *) &socket));
+  socket.SetOnData(ola::NewClosure(
+        this, &SocketTest::Receive,
+        static_cast<ConnectedSocket*>(&socket)));
   socket.SetOnClose(ola::NewSingleClosure(this, &SocketTest::TerminateOnClose));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   PipeSocket *other_end = socket.OppositeEnd();
   CPPUNIT_ASSERT(other_end);
-  other_end->SetOnData(ola::NewClosure(this, &SocketTest::ReceiveSendAndClose,
-                                       (ConnectedSocket *) other_end));
+  other_end->SetOnData(ola::NewClosure(
+        this, &SocketTest::ReceiveSendAndClose,
+        static_cast<ConnectedSocket*>(other_end)));
   CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
-  size_t bytes_sent = socket.Send((uint8_t*) test_string.c_str(),
-                                  test_string.length());
-  CPPUNIT_ASSERT_EQUAL(test_string.length(), bytes_sent);
+  ssize_t bytes_sent = socket.Send(
+      reinterpret_cast<const uint8_t*>(test_cstring),
+      sizeof(test_cstring));
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
   m_ss->RemoveSocket(other_end);
@@ -195,7 +210,7 @@ void SocketTest::testPipeSocketServerClose() {
  */
 void SocketTest::testTcpSocketClientClose() {
   string ip_address = "127.0.0.1";
-  unsigned short server_port = 9010;
+  uint16_t server_port = 9010;
   TcpAcceptingSocket socket(ip_address, server_port);
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
@@ -205,8 +220,9 @@ void SocketTest::testTcpSocketClientClose() {
 
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
-  client_socket->SetOnData( ola::NewClosure(this, &SocketTest::ReceiveAndClose,
-                                            (ConnectedSocket*) client_socket));
+  client_socket->SetOnData(ola::NewClosure(
+        this, &SocketTest::ReceiveAndClose,
+        static_cast<ConnectedSocket*>(client_socket)));
   CPPUNIT_ASSERT(m_ss->AddSocket(client_socket));
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
@@ -222,7 +238,7 @@ void SocketTest::testTcpSocketClientClose() {
  */
 void SocketTest::testTcpSocketServerClose() {
   string ip_address = "127.0.0.1";
-  unsigned short server_port = 9010;
+  uint16_t server_port = 9010;
   TcpAcceptingSocket socket(ip_address, server_port);
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
@@ -235,8 +251,9 @@ void SocketTest::testTcpSocketServerClose() {
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
 
-  client_socket->SetOnData(ola::NewClosure(this, &SocketTest::Receive,
-                                           (ConnectedSocket*) client_socket));
+  client_socket->SetOnData(ola::NewClosure(
+        this, &SocketTest::Receive,
+        static_cast<ConnectedSocket*>(client_socket)));
   client_socket->SetOnClose(
       ola::NewSingleClosure(this, &SocketTest::TerminateOnClose));
   CPPUNIT_ASSERT(m_ss->AddSocket(client_socket));
@@ -255,7 +272,7 @@ void SocketTest::testTcpSocketServerClose() {
  */
 void SocketTest::testUdpSocket() {
   string ip_address = "127.0.0.1";
-  unsigned short server_port = 9010;
+  uint16_t server_port = 9010;
   UdpSocket socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
@@ -271,17 +288,17 @@ void SocketTest::testUdpSocket() {
   CPPUNIT_ASSERT(!client_socket.Init());
 
   client_socket.SetOnData(
-      ola::NewClosure(this, &SocketTest::UdpReceiveAndTerminate,
-                     (UdpSocket*) &client_socket));
-  //client_socket.SetOnClose(ola::NewClosure(this,
-  //                                         &SocketTest::TerminateOnClose));
+      ola::NewClosure(
+        this, &SocketTest::UdpReceiveAndTerminate,
+        static_cast<UdpSocket*>(&client_socket)));
   CPPUNIT_ASSERT(m_ss->AddSocket(&client_socket));
 
-  ssize_t bytes_sent = client_socket.SendTo((uint8_t*) test_string.data(),
-                                           test_string.length(),
-                                           ip_address,
-                                           server_port);
-  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
+  ssize_t bytes_sent = client_socket.SendTo(
+      reinterpret_cast<const uint8_t*>(test_cstring),
+      sizeof(test_cstring),
+      ip_address,
+      server_port);
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveSocket(&socket);
   m_ss->RemoveSocket(&client_socket);
@@ -316,14 +333,12 @@ int SocketTest::ReceiveAndTerminate(ConnectedSocket *socket) {
 int SocketTest::Receive(ConnectedSocket *socket) {
   // try to read more than what we sent to test non-blocking
   uint8_t buffer[sizeof(test_cstring) + 10];
-  string result;
   unsigned int data_read;
 
   CPPUNIT_ASSERT(!socket->Receive(buffer, sizeof(buffer), data_read));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) test_string.length(), data_read);
-  buffer[data_read] = 0x00;
-  result.assign((char*) buffer);
-  CPPUNIT_ASSERT_EQUAL(test_string, result);
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
+                       data_read);
+  CPPUNIT_ASSERT(!memcmp(test_cstring, buffer, data_read));
 }
 
 
@@ -334,9 +349,10 @@ int SocketTest::ReceiveAndSend(ConnectedSocket *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
   int ret = socket->Receive(buffer, sizeof(buffer), data_read);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) test_string.length(), data_read);
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
+                       data_read);
   ssize_t bytes_sent = socket->Send(buffer, data_read);
-  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
 }
 
 
@@ -357,9 +373,10 @@ int SocketTest::ReceiveSendAndClose(ConnectedSocket *socket) {
 int SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
   ConnectedSocket *new_socket = socket->Accept();
   CPPUNIT_ASSERT(new_socket);
-  ssize_t bytes_sent = new_socket->Send((uint8_t*) test_string.data(),
-      test_string.length());
-  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
+  ssize_t bytes_sent = new_socket->Send(
+      reinterpret_cast<const uint8_t*>(test_cstring),
+      sizeof(test_cstring));
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   new_socket->SetOnClose(ola::NewSingleClosure(this,
                                                &SocketTest::TerminateOnClose));
   m_ss->AddSocket(new_socket, true);
@@ -372,9 +389,10 @@ int SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
 int SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
   ConnectedSocket *new_socket = socket->Accept();
   CPPUNIT_ASSERT(new_socket);
-  ssize_t bytes_sent = new_socket->Send((uint8_t*) test_string.data(),
-      test_string.length());
-  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), bytes_sent);
+  ssize_t bytes_sent = new_socket->Send(
+      reinterpret_cast<const uint8_t*>(test_cstring),
+      sizeof(test_cstring));
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   new_socket->Close();
   delete new_socket;
 }
@@ -392,7 +410,7 @@ int SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
   socket->RecvFrom(buffer, &data_read, src, src_size);
-  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), data_read);
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
   CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
   m_ss->Terminate();
 }
@@ -410,7 +428,7 @@ int SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
   socket->RecvFrom(buffer, &data_read, src, src_size);
-  CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), data_read);
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
   CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
 
   ssize_t data_sent = socket->SendTo(buffer, data_read, src);

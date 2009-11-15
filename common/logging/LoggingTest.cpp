@@ -18,15 +18,20 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <deque>
-#include <vector>
 #include <cppunit/extensions/HelperMacros.h>
-#include <ola/Logging.h>
-#include <ola/StringUtils.h>
+#include <deque>
+#include <string>
+#include <utility>
+#include <vector>
+#include "ola/Logging.h"
+#include "ola/StringUtils.h"
 
-using namespace ola;
 using std::deque;
 using std::vector;
+using std::string;
+using ola::IncrementLogLevel;
+using ola::log_level;
+
 
 class LoggingTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(LoggingTest);
@@ -62,7 +67,7 @@ void MockLogDestination::AddExpected(log_level level, string log_line) {
  */
 void MockLogDestination::Write(log_level level, const string &log_line) {
   vector<string> tokens;
-  StringSplit(log_line, tokens, ":");
+  ola::StringSplit(log_line, tokens, ":");
   vector<string>::iterator iter;
   CPPUNIT_ASSERT_EQUAL(tokens.size() , (size_t) 3);
   CPPUNIT_ASSERT(m_log_lines.size() > 0);
@@ -77,34 +82,34 @@ void MockLogDestination::Write(log_level level, const string &log_line) {
  */
 void LoggingTest::testLogging() {
   MockLogDestination *destination = new MockLogDestination();
-  InitLogging(OLA_LOG_DEBUG, destination);
-  destination->AddExpected(OLA_LOG_DEBUG, " debug\n");
+  InitLogging(ola::OLA_LOG_DEBUG, destination);
+  destination->AddExpected(ola::OLA_LOG_DEBUG, " debug\n");
   OLA_DEBUG << "debug";
-  destination->AddExpected(OLA_LOG_INFO, " info\n");
+  destination->AddExpected(ola::OLA_LOG_INFO, " info\n");
   OLA_INFO << "info";
-  destination->AddExpected(OLA_LOG_WARN, " warn\n");
+  destination->AddExpected(ola::OLA_LOG_WARN, " warn\n");
   OLA_WARN << "warn";
-  destination->AddExpected(OLA_LOG_FATAL, " fatal\n");
+  destination->AddExpected(ola::OLA_LOG_FATAL, " fatal\n");
   OLA_FATAL << "fatal";
 
   // Now make sure nothing below WARN is logged
-  SetLogLevel(OLA_LOG_WARN);
+  ola::SetLogLevel(ola::OLA_LOG_WARN);
   OLA_DEBUG << "debug";
   OLA_INFO << "info";
-  destination->AddExpected(OLA_LOG_WARN, " warn\n");
+  destination->AddExpected(ola::OLA_LOG_WARN, " warn\n");
   OLA_WARN << "warn";
-  destination->AddExpected(OLA_LOG_FATAL, " fatal\n");
+  destination->AddExpected(ola::OLA_LOG_FATAL, " fatal\n");
   OLA_FATAL << "fatal";
   CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
 
   // set the log level to INFO
   IncrementLogLevel();
   OLA_DEBUG << "debug";
-  destination->AddExpected(OLA_LOG_INFO, " info\n");
+  destination->AddExpected(ola::OLA_LOG_INFO, " info\n");
   OLA_INFO << "info";
-  destination->AddExpected(OLA_LOG_WARN, " warn\n");
+  destination->AddExpected(ola::OLA_LOG_WARN, " warn\n");
   OLA_WARN << "warn";
-  destination->AddExpected(OLA_LOG_FATAL, " fatal\n");
+  destination->AddExpected(ola::OLA_LOG_FATAL, " fatal\n");
   OLA_FATAL << "fatal";
   CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
 

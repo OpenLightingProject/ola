@@ -18,10 +18,11 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <sstream>
-#include <vector>
 #include <iostream>
-#include <ola/StringUtils.h>
+#include <sstream>
+#include <string>
+#include <vector>
+#include "ola/StringUtils.h"
 
 namespace ola {
 
@@ -39,7 +40,6 @@ using std::vector;
 void StringSplit(const string &input,
                  vector<string> &tokens,
                  const string &delimiters) {
-
   string::size_type start_offset = 0;
   string::size_type end_offset = 0;
 
@@ -83,4 +83,4 @@ string IntToString(int i) {
   return str.str();
 }
 
-} //ola
+}  // ola

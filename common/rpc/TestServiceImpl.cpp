@@ -19,10 +19,8 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
-#include "TestService.pb.h"
-#include "TestServiceImpl.h"
-
-using namespace ola::rpc;
+#include "common/rpc/TestService.pb.h"
+#include "common/rpc/TestServiceImpl.h"
 
 void TestServiceImpl::Echo(::google::protobuf::RpcController* controller,
                            const EchoRequest* request,

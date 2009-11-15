@@ -58,9 +58,9 @@ class SelectServer {
     timeout_id RegisterSingleTimeout(int ms, ola::SingleUseClosure *closure);
     void RemoveTimeout(timeout_id id);
 
-    static const string K_SOCKET_VAR;
-    static const string K_CONNECTED_SOCKET_VAR;
-    static const string K_TIMER_VAR;
+    static const char K_SOCKET_VAR[];
+    static const char K_CONNECTED_SOCKET_VAR[];
+    static const char K_TIMER_VAR[];
 
   private :
     typedef struct {

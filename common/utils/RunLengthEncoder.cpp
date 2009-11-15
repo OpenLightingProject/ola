@@ -33,7 +33,6 @@ namespace ola {
 bool RunLengthEncoder::Encode(const DmxBuffer &src,
                               uint8_t *data,
                               unsigned int &data_size) {
-
   unsigned int src_size = src.Size();
   unsigned int dst_size = data_size;
   unsigned int &dst_index = data_size;
@@ -41,7 +40,6 @@ bool RunLengthEncoder::Encode(const DmxBuffer &src,
 
   unsigned int i;
   for (i = 0; i < src_size && dst_index < dst_size;) {
-
     // j points to the first non-repeating value
     unsigned int j = i + 1;
     while (j < src_size && src.Get(i) == src.Get(j) && j - i < 0x7f) {

@@ -18,14 +18,14 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <string>
-#include <cppunit/extensions/HelperMacros.h>
-#include <ola/BaseTypes.h>
-#include <ola/DmxBuffer.h>
+#include "ola/BaseTypes.h"
+#include "ola/DmxBuffer.h"
 
-using namespace ola;
-using namespace std;
+using std::string;
+using ola::DmxBuffer;
 
 class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DmxBufferTest);
@@ -173,7 +173,6 @@ void DmxBufferTest::testStringGetSet() {
   CPPUNIT_ASSERT_EQUAL(data2.length(), (size_t) size);
   CPPUNIT_ASSERT(!memcmp(data2.data(), result, size));
   delete[] result;
-
 }
 
 

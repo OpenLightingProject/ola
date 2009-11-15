@@ -19,16 +19,17 @@
  */
 
 #include <errno.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include <ola/Logging.h>
-#include <ola/network/Socket.h>
-#include <ola/network/NetworkUtils.h>
+#include <string>
+
+#include "ola/Logging.h"
+#include "ola/network/Socket.h"
+#include "ola/network/NetworkUtils.h"
 
 namespace ola {
 namespace network {
@@ -275,7 +276,6 @@ bool PipeSocket::CloseClient() {
  */
 TcpSocket* TcpSocket::Connect(const std::string &ip_address,
                               unsigned short port) {
-
   struct sockaddr_in server_address;
   socklen_t length = sizeof(server_address);
 
@@ -406,7 +406,6 @@ bool UdpSocket::Close() {
 ssize_t UdpSocket::SendTo(const uint8_t *buffer,
                           unsigned int size,
                           const struct sockaddr_in &destination) const {
-
   ssize_t bytes_sent = sendto(m_fd, buffer, size, 0,
                               (struct sockaddr*) &destination,
                               sizeof(struct sockaddr));
@@ -428,7 +427,6 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
                           unsigned int size,
                           const std::string &ip_address,
                           unsigned short port) const {
-
   struct sockaddr_in destination;
   memset(&destination, 0x00, sizeof(destination));
   destination.sin_family = AF_INET;
@@ -478,9 +476,10 @@ bool UdpSocket::EnableBroadcast() {
 
   int broadcast_flag = 1;
   int ret = setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag,
-                       sizeof(int));
+                       sizeof(broadcast_flag));
 
-  if (setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag, sizeof(int))
+  if (setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag,
+        sizeof(broadcast_flag))
       == -1) {
     OLA_WARN << "Failed to enabled broadcasting: " << strerror(errno);
     return false;
@@ -689,5 +688,5 @@ ConnectedSocket *TcpAcceptingSocket::Accept() {
   return socket;
 }
 
-} // network
-} //ola
+}  // network
+}  // ola

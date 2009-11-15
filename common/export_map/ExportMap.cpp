@@ -19,8 +19,10 @@
  */
 
 #include <string>
+#include <map>
+#include <vector>
 #include <iostream>
-#include <ola/ExportMap.h>
+#include "ola/ExportMap.h"
 
 namespace ola {
 
@@ -195,4 +197,4 @@ vector<BaseVariable*> ExportMap::AllVariables() const {
 }
 
 
-} //ola
+}  // ola

@@ -18,17 +18,18 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include "SimpleRpcController.h"
+#include <string>
+#include "ola/Logging.h"
+#include "common/rpc/SimpleRpcController.h"
 
 namespace ola {
 namespace rpc {
 
-SimpleRpcController::SimpleRpcController():
-  m_failed(false),
-  m_cancelled(false),
-  m_error_text(""),
-  m_callback(NULL) {
+SimpleRpcController::SimpleRpcController()
+    : m_failed(false),
+      m_cancelled(false),
+      m_error_text(""),
+      m_callback(NULL) {
 }
 
 void SimpleRpcController::Reset() {
@@ -51,5 +52,5 @@ void SimpleRpcController::SetFailed(const std::string &reason) {
   m_error_text = reason;
 }
 
-} //rpc
-} //ola
+}  // rpc
+}  // ola

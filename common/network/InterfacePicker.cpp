@@ -38,12 +38,16 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <algorithm>
+#include <string>
+#include <vector>
 
-#include <ola/Logging.h>
-#include <ola/network/InterfacePicker.h>
-#include <ola/network/NetworkUtils.h>
+#include "ola/Logging.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/NetworkUtils.h"
 
-using namespace ola::network;
+namespace ola {
+namespace network {
+
 using std::string;
 using std::vector;
 
@@ -128,8 +132,8 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
   }
 
   // use ioctl to get a listing of interfaces
-  char *buffer; // holds the iface data
-  unsigned int lastlen = 0; // the amount of data returned by the last ioctl
+  char *buffer;  // holds the iface data
+  unsigned int lastlen = 0;  // the amount of data returned by the last ioctl
   unsigned int len = INITIAL_IFACE_COUNT;
 
   while (true) {
@@ -145,7 +149,7 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
         return interfaces;
       }
     } else {
-      if(ifc.ifc_len == lastlen) {
+      if (ifc.ifc_len == lastlen) {
         lastlen = ifc.ifc_len;
         break;
       }
@@ -275,3 +279,5 @@ unsigned int InterfacePicker::GetIfReqSize(const char *data) const {
     return sizeof(struct ifreq);
 }
 
+}  // network
+}  // ola

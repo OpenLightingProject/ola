@@ -18,20 +18,19 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
 #include <google/protobuf/stubs/common.h>
-#include <ola/network/SelectServer.h>
-#include <ola/network/Socket.h>
-#include "StreamRpcChannel.h"
-#include "SimpleRpcController.h"
-#include "TestServiceImpl.h"
-#include "TestService.pb.h"
+#include <string>
+#include "ola/network/SelectServer.h"
+#include "ola/network/Socket.h"
+#include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/SimpleRpcController.h"
+#include "common/rpc/TestServiceImpl.h"
+#include "common/rpc/TestService.pb.h"
 
-using namespace std;
-using namespace ola::rpc;
-using namespace ola::network;
-using namespace google::protobuf;
+using google::protobuf::NewCallback;
+using ola::network::LoopbackSocket;
+using std::string;
 
 
 class StreamRpcChannelTest: public CppUnit::TestFixture {
@@ -114,9 +113,10 @@ void StreamRpcChannelTest::testFailedEcho() {
    * Check that method that fail return correctly
    */
   m_request.set_data("foo");
-  m_stub->FailedEcho(&m_controller,
-                     &m_request,
-                     &m_reply,
-                     NewCallback(this, &StreamRpcChannelTest::FailedEchoComplete));
+  m_stub->FailedEcho(
+      &m_controller,
+      &m_request,
+      &m_reply,
+      NewCallback(this, &StreamRpcChannelTest::FailedEchoComplete));
   m_ss.Run();
 }

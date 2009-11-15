@@ -22,12 +22,15 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <iomanip>
 #include <iostream>
+#include <vector>
 
-#include <ola/network/InterfacePicker.h>
-#include <ola/network/NetworkUtils.h>
-#include <ola/Logging.h>
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/NetworkUtils.h"
+#include "ola/Logging.h"
 
-using namespace ola::network;
+using ola::network::InterfacePicker;
+using ola::network::Interface;
+using ola::network::StringToAddress;
 using std::vector;
 using std::cout;
 using std::endl;
@@ -45,12 +48,12 @@ class InterfacePickerTest: public CppUnit::TestFixture {
 
 class MockPicker: public InterfacePicker {
   public:
-    MockPicker(vector<Interface> &interfaces):
-      InterfacePicker(),
-      m_interfaces(interfaces) {}
+    explicit MockPicker(const vector<Interface> &interfaces)
+        : InterfacePicker(),
+          m_interfaces(interfaces) {}
     std::vector<Interface> GetInterfaces() const { return m_interfaces; }
   private:
-    vector<Interface> &m_interfaces;
+    const vector<Interface> &m_interfaces;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
@@ -71,7 +74,7 @@ void InterfacePickerTest::testGetInterfaces() {
     cout << " ip: " << inet_ntoa(iter->ip_address) << endl;
     cout << " bcast: " << inet_ntoa(iter->bcast_address) << endl;
     cout << " hw_addr: ";
-    for (unsigned int i = 0; i < MAC_LENGTH; i++) {
+    for (unsigned int i = 0; i < ola::network::MAC_LENGTH; i++) {
       if (i)
         cout << ':';
       cout << std::setw(2) << std::setfill('0') << std::hex <<

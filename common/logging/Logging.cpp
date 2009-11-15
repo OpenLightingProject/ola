@@ -21,7 +21,8 @@
 
 #include <syslog.h>
 #include <iostream>
-#include <ola/Logging.h>
+#include <string>
+#include "ola/Logging.h"
 
 namespace ola {
 
@@ -60,7 +61,7 @@ void InitLogging(log_level level, log_output output) {
   if (output == OLA_LOG_SYSLOG)
     destination = new SyslogDestination();
   else if (output == OLA_LOG_STDERR)
-   destination = new StdErrorLogDestination();
+    destination = new StdErrorLogDestination();
   else
     destination = NULL;
   InitLogging(level, destination);
@@ -85,7 +86,6 @@ LogLine::LogLine(const char *file,
   m_stream(ostringstream::out) {
     m_stream << file << ":" << line << ": ";
     m_prefix_length = m_stream.str().length();
-
 }
 
 LogLine::~LogLine() {
@@ -133,4 +133,4 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
   syslog(pri, "%s", log_line.data());
 }
 
-} // ola
+}  //  ola

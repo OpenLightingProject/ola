@@ -18,16 +18,13 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_NETWORK_UTILS_H
-#define OLA_NETWORK_UTILS_H
-
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
 
 #include <arpa/inet.h>
 #include <string>
-#include <ola/Logging.h>
+#include "ola/Logging.h"
 
 
 namespace ola {
@@ -88,7 +85,5 @@ uint32_t HostToNetwork(uint32_t value) {
 }
 
 
-} // network
-} // ola
-#endif
-
+}  // network
+}  // ola

@@ -25,11 +25,12 @@
 
 #include <string.h>
 #include <algorithm>
+#include <string>
 #include <vector>
-#include <ola/BaseTypes.h>
-#include <ola/DmxBuffer.h>
-#include <ola/Logging.h>
-#include <ola/StringUtils.h>
+#include "ola/BaseTypes.h"
+#include "ola/DmxBuffer.h"
+#include "ola/Logging.h"
+#include "ola/StringUtils.h"
 
 namespace ola {
 
@@ -37,11 +38,11 @@ using std::min;
 using std::max;
 using std::vector;
 
-DmxBuffer::DmxBuffer():
-  m_ref_count(NULL),
-  m_copy_on_write(false),
-  m_data(NULL),
-  m_length(0) {
+DmxBuffer::DmxBuffer()
+    : m_ref_count(NULL),
+      m_copy_on_write(false),
+      m_data(NULL),
+      m_length(0) {
 }
 
 
@@ -49,11 +50,11 @@ DmxBuffer::DmxBuffer():
  * Copy constructor. We just copy the underlying pointers and mark COW as
  * true if the other buffer has data.
  */
-DmxBuffer::DmxBuffer(const DmxBuffer &other):
-  m_ref_count(NULL),
-  m_copy_on_write(false),
-  m_data(NULL),
-  m_length(0) {
+DmxBuffer::DmxBuffer(const DmxBuffer &other)
+    : m_ref_count(NULL),
+      m_copy_on_write(false),
+      m_data(NULL),
+      m_length(0) {
 
   if (other.m_data && other.m_ref_count) {
     CopyFromOther(other);
@@ -64,11 +65,11 @@ DmxBuffer::DmxBuffer(const DmxBuffer &other):
 /*
  * Create a new buffer from data
  */
-DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length):
-  m_ref_count(0),
-  m_copy_on_write(false),
-  m_data(NULL),
-  m_length(0) {
+DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length)
+    : m_ref_count(0),
+      m_copy_on_write(false),
+      m_data(NULL),
+      m_length(0) {
   Set(data, length);
 }
 
@@ -76,11 +77,11 @@ DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length):
 /*
  * Create a new buffer from a string
  */
-DmxBuffer::DmxBuffer(const string &data):
-  m_ref_count(0),
-  m_copy_on_write(false),
-  m_data(NULL),
-  m_length(0) {
+DmxBuffer::DmxBuffer(const string &data)
+    : m_ref_count(0),
+      m_copy_on_write(false),
+      m_data(NULL),
+      m_length(0) {
     Set(data);
 }
 
@@ -124,7 +125,7 @@ bool DmxBuffer::operator==(const DmxBuffer &other) const {
  */
 bool DmxBuffer::HTPMerge(const DmxBuffer &other) {
   if (!m_data) {
-    if(!Init())
+    if (!Init())
       return false;
   }
   DuplicateIfNeeded();
@@ -157,7 +158,7 @@ bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
   if (m_copy_on_write)
     CleanupMemory();
   if (!m_data) {
-    if(!Init())
+    if (!Init())
       return false;
   }
   m_length = min(length, (unsigned int) DMX_UNIVERSE_SIZE);
@@ -172,7 +173,7 @@ bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
  * @post Size() == data.length()
  */
 bool DmxBuffer::Set(const string &data) {
-  return Set((uint8_t*) data.data(), data.length());
+  return Set(reinterpret_cast<const uint8_t*>(data.data()), data.length());
 }
 
 
@@ -329,7 +330,7 @@ uint8_t DmxBuffer::Get(unsigned int channel) const {
  */
 string DmxBuffer::Get() const {
   string data;
-  data.append((char*) m_data, m_length);
+  data.append(reinterpret_cast<char*>(m_data), m_length);
   return data;
 }
 
@@ -431,4 +432,4 @@ void DmxBuffer::CleanupMemory() {
   }
 }
 
-} // ola
+}  //  ola
