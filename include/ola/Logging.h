@@ -30,8 +30,8 @@
  * OLA_DEBUG << "foo";
  */
 
-#ifndef OLA_LOGGING_H
-#define OLA_LOGGING_H
+#ifndef INCLUDE_OLA_LOGGING_H_
+#define INCLUDE_OLA_LOGGING_H_
 
 #include <ostream>
 #include <string>
@@ -114,5 +114,5 @@ void IncrementLogLevel();
 void InitLogging(log_level level, log_output output);
 void InitLogging(log_level level, LogDestination *destination);
 
-} // ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLA_LOGGING_H_

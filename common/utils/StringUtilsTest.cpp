@@ -107,13 +107,13 @@ void StringUtilsTest::testSplit() {
  */
 void StringUtilsTest::testTrim() {
   string input = "foo bar baz";
-  StringTrim(input);
+  StringTrim(&input);
   CPPUNIT_ASSERT_EQUAL(input, input);
   input = "  \rfoo bar\t\n";
-  StringTrim(input);
+  StringTrim(&input);
   CPPUNIT_ASSERT_EQUAL(string("foo bar"), input);
   input = "  \r\t\n";
-  StringTrim(input);
+  StringTrim(&input);
   CPPUNIT_ASSERT_EQUAL(string(""), input);
 
 }

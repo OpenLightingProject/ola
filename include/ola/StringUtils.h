@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_STRING_UTILS_H
-#define OLA_STRING_UTILS_H
+#ifndef INCLUDE_OLA_STRINGUTILS_H_
+#define INCLUDE_OLA_STRINGUTILS_H_
 
 #include <string>
 #include <vector>
@@ -29,9 +29,9 @@ namespace ola {
 void StringSplit(const std::string &input,
                  std::vector<std::string> &tokens,
                  const std::string &delimiters=" ");
-void StringTrim(std::string &input);
+void StringTrim(std::string *input);
 std::string IntToString(int i);
 
-} //ola
+}  // ola
 
-#endif
+#endif  // INCLUDE_OLA_STRINGUTILS_H_

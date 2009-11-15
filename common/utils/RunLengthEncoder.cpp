@@ -114,7 +114,7 @@ bool RunLengthEncoder::Encode(const DmxBuffer &src,
  * @param src_data the data to decode
  * @param length the length of the data to decode
  */
-bool RunLengthEncoder::Decode(DmxBuffer &dst,
+bool RunLengthEncoder::Decode(DmxBuffer *dst,
                               unsigned int start_channel,
                               const uint8_t *src_data,
                               unsigned int length) {
@@ -124,10 +124,10 @@ bool RunLengthEncoder::Decode(DmxBuffer &dst,
     unsigned int segment_length = src_data[i] & (~REPEAT_FLAG);
     if (src_data[i] & REPEAT_FLAG) {
       i++;
-      dst.SetRangeToValue(destination_index, src_data[i++], segment_length);
+      dst->SetRangeToValue(destination_index, src_data[i++], segment_length);
     } else {
       i++;
-      dst.SetRange(destination_index, src_data + i, segment_length);
+      dst->SetRange(destination_index, src_data + i, segment_length);
       i += segment_length;
     }
     destination_index += segment_length;
@@ -135,4 +135,4 @@ bool RunLengthEncoder::Decode(DmxBuffer &dst,
   return true;
 }
 
-} //ola
+}  // ola

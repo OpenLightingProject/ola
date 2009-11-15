@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_NETWORK_UTILS_H
-#define OLA_NETWORK_UTILS_H
+#ifndef INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
+#define INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -42,7 +42,7 @@ uint8_t HostToNetwork(uint8_t value);
 uint16_t HostToNetwork(uint16_t value);
 uint32_t HostToNetwork(uint32_t value);
 
-} // network
-} // ola
-#endif
+}  // network
+}  // ola
+#endif  // INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
 

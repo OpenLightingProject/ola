@@ -119,7 +119,7 @@ void *OpenDmxThread::Run(const string &path) {
     } else {
       length = DMX_UNIVERSE_SIZE;
       pthread_mutex_lock(&m_mutex);
-      m_buffer.Get(buffer + 1, length);
+      m_buffer.Get(buffer + 1, &length);
       pthread_mutex_unlock(&m_mutex);
 
       do_write(buffer, length + 1);

@@ -76,7 +76,7 @@ bool EspNetNode::Start() {
   if (m_running)
     return false;
 
-  if (!m_interface_picker.ChooseInterface(m_interface, m_preferred_ip)) {
+  if (!m_interface_picker.ChooseInterface(&m_interface, m_preferred_ip)) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }
@@ -111,7 +111,7 @@ int EspNetNode::SocketReady() {
   socklen_t source_length = sizeof(source);
 
   ssize_t packet_size = sizeof(packet);
-  if(!m_socket.RecvFrom((uint8_t*) &packet, packet_size, source,
+  if(!m_socket.RecvFrom((uint8_t*) &packet, &packet_size, source,
                         source_length))
     return -1;
 
@@ -417,7 +417,7 @@ bool EspNetNode::SendEspData(const struct in_addr &dst,
   packet.dmx.start = START_CODE;
   packet.dmx.type = DATA_RAW;
   unsigned int size = DMX_UNIVERSE_SIZE;
-  buffer.Get(packet.dmx.data, size);
+  buffer.Get(packet.dmx.data, &size);
   packet.dmx.size = HostToNetwork(size);
 
   return SendPacket(dst, packet, sizeof(packet.dmx));

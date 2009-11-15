@@ -80,7 +80,7 @@ Interface& Interface::operator=(const Interface &other) {
  * @param preferred_ip the ip address of the local interface we'd prefer to use
  * @return true if we found an interface, false otherwise
  */
-bool InterfacePicker::ChooseInterface(Interface &interface,
+bool InterfacePicker::ChooseInterface(Interface *interface,
                                       const string &preferred_ip) const {
   struct in_addr wanted_ip;
   bool use_preferred = false;
@@ -100,12 +100,12 @@ bool InterfacePicker::ChooseInterface(Interface &interface,
     vector<Interface>::const_iterator iter;
     for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
       if ((*iter).ip_address.s_addr == wanted_ip.s_addr) {
-        interface = *iter;
+        *interface = *iter;
         return true;
       }
     }
   }
-  interface = interfaces[0];
+  *interface = interfaces[0];
   return true;
 }
 

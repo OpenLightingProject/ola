@@ -83,7 +83,7 @@ void DmxBufferTest::testBlackout() {
   uint8_t *zero = new uint8_t[DMX_UNIVERSE_SIZE];
   unsigned int result_length = DMX_UNIVERSE_SIZE;
   bzero(zero, DMX_UNIVERSE_SIZE);
-  buffer.Get(result, result_length);
+  buffer.Get(result, &result_length);
   CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, result_length);
   CPPUNIT_ASSERT(!memcmp(zero, result, result_length));
   delete[] result;
@@ -114,7 +114,7 @@ void DmxBufferTest::testGetSet() {
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, buffer.Get(0));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, buffer.Get(1));
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), buffer.Size());
-  buffer.Get(result, size);
+  buffer.Get(result, &size);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), size);
   CPPUNIT_ASSERT(!memcmp(TEST_DATA, result, size));
   str_result = buffer.Get();
@@ -124,7 +124,7 @@ void DmxBufferTest::testGetSet() {
   size = result_length;
   CPPUNIT_ASSERT(buffer.Set(TEST_DATA2, sizeof(TEST_DATA2)));
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), buffer.Size());
-  buffer.Get(result, size);
+  buffer.Get(result, &size);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), size);
   CPPUNIT_ASSERT(!memcmp(TEST_DATA2, result, size));
   str_result = buffer.Get();
@@ -155,7 +155,7 @@ void DmxBufferTest::testStringGetSet() {
   CPPUNIT_ASSERT(buffer.Set(data));
   CPPUNIT_ASSERT_EQUAL(data.length(), (size_t) buffer.Size());
   CPPUNIT_ASSERT_EQUAL(data, buffer.Get());
-  buffer.Get(result, size);
+  buffer.Get(result, &size);
   CPPUNIT_ASSERT_EQUAL(data.length(), (size_t) size);
   CPPUNIT_ASSERT(!memcmp(data.data(), result, size));
 
@@ -169,7 +169,7 @@ void DmxBufferTest::testStringGetSet() {
   CPPUNIT_ASSERT(buffer.Set(data2));
   CPPUNIT_ASSERT_EQUAL(data2.length(), (size_t) buffer.Size());
   CPPUNIT_ASSERT_EQUAL(data2, buffer.Get());
-  buffer.Get(result, size);
+  buffer.Get(result, &size);
   CPPUNIT_ASSERT_EQUAL(data2.length(), (size_t) size);
   CPPUNIT_ASSERT(!memcmp(data2.data(), result, size));
   delete[] result;
@@ -194,7 +194,7 @@ void DmxBufferTest::testAssign() {
   // assinging to a previously init'ed buffer
   unsigned int size = result_length;
   assignment_buffer = buffer;
-  assignment_buffer.Get(result, size);
+  assignment_buffer.Get(result, &size);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA),
                        assignment_buffer.Size());
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), size);
@@ -204,7 +204,7 @@ void DmxBufferTest::testAssign() {
   // assigning to a non-init'ed buffer
   assignment_buffer2 = buffer;
   size = result_length;
-  assignment_buffer2.Get(result, result_length);
+  assignment_buffer2.Get(result, &result_length);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA),
                        assignment_buffer2.Size());
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), result_length);
@@ -218,7 +218,7 @@ void DmxBufferTest::testAssign() {
   assignment_buffer3 = uninitialized_buffer;
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, assignment_buffer3.Size());
   size = result_length;
-  assignment_buffer3.Get(result, result_length);
+  assignment_buffer3.Get(result, &result_length);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, result_length);
   CPPUNIT_ASSERT(assignment_buffer3 == uninitialized_buffer);
   delete[] result;
@@ -238,7 +238,7 @@ void DmxBufferTest::testCopy() {
 
   unsigned int result_length = sizeof(TEST_DATA2);
   uint8_t *result = new uint8_t[result_length];
-  copy_buffer.Get(result, result_length);
+  copy_buffer.Get(result, &result_length);
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), result_length);
   CPPUNIT_ASSERT(!memcmp(TEST_DATA2, result, result_length));
   delete[] result;

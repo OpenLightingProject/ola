@@ -391,7 +391,7 @@ int SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
   socklen_t src_size = sizeof(src);
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, data_read, src, src_size);
+  socket->RecvFrom(buffer, &data_read, src, src_size);
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), data_read);
   CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
   m_ss->Terminate();
@@ -409,7 +409,7 @@ int SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
   socklen_t src_size = sizeof(src);
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, data_read, src, src_size);
+  socket->RecvFrom(buffer, &data_read, src, src_size);
   CPPUNIT_ASSERT_EQUAL((ssize_t) test_string.length(), data_read);
   CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
 

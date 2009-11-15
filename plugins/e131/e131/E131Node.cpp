@@ -61,7 +61,7 @@ E131Node::~E131Node() {
 bool E131Node::Start() {
   ola::network::InterfacePicker picker;
   ola::network::Interface interface;
-  if (!picker.ChooseInterface(interface, m_preferred_ip)) {
+  if (!picker.ChooseInterface(&interface, m_preferred_ip)) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }

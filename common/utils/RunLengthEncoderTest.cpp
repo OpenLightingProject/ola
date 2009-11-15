@@ -145,7 +145,7 @@ void RunLengthEncoderTest::checkEncodeDecode(const uint8_t *data,
   memset(m_dst, 0, dst_size);
   CPPUNIT_ASSERT(m_encoder.Encode(src, m_dst, dst_size));
 
-  CPPUNIT_ASSERT(m_encoder.Decode(dst, 0, m_dst, dst_size));
+  CPPUNIT_ASSERT(m_encoder.Decode(&dst, 0, m_dst, dst_size));
   CPPUNIT_ASSERT(src == dst);
   CPPUNIT_ASSERT_EQUAL(dst.Size(), data_size);
   CPPUNIT_ASSERT(!memcmp(data, dst.GetRaw(), dst.Size()));

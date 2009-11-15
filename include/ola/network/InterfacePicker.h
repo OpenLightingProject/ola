@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_INTERFACE_PICKER_H
-#define OLA_INTERFACE_PICKER_H
+#ifndef INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
+#define INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -30,9 +30,9 @@
 #include <vector>
 
 #ifdef HAVE_GETIFADDRS
- #ifdef HAVE_LINUX_IF_PACKET_H
-   #define OLA_USE_GETIFADDRS
- #endif
+  #ifdef HAVE_LINUX_IF_PACKET_H
+    #define OLA_USE_GETIFADDRS
+  #endif
 #endif
 
 
@@ -68,7 +68,7 @@ class InterfacePicker {
   public:
     InterfacePicker() {}
     virtual ~InterfacePicker() {}
-    bool ChooseInterface(Interface &interface,
+    bool ChooseInterface(Interface *interface,
                          const std::string &preferred_ip) const;
 
     virtual std::vector<Interface> GetInterfaces() const;
@@ -79,7 +79,7 @@ class InterfacePicker {
     unsigned int GetIfReqSize(const char *data) const;
 };
 
-} //network
-} //ola
-#endif
+}  // network
+}  // ola
+#endif  // INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 

@@ -40,6 +40,7 @@ const string SelectServer::K_SOCKET_VAR = "ss-sockets";
 const string SelectServer::K_CONNECTED_SOCKET_VAR = "ss-connected-sockets";
 const string SelectServer::K_TIMER_VAR = "ss-timer-functions";
 
+using std::max;
 using ola::ExportMap;
 using ola::Closure;
 
@@ -260,7 +261,7 @@ bool SelectServer::CheckForEvents() {
   maxsd = 0;
   FD_ZERO(&r_fds);
   FD_ZERO(&w_fds);
-  AddSocketsToSet(r_fds, maxsd);
+  AddSocketsToSet(&r_fds, &maxsd);
   now = CheckTimeouts();
 
   if (m_terminate)
@@ -289,7 +290,7 @@ bool SelectServer::CheckForEvents() {
       return false;
     default:
       CheckTimeouts();
-      CheckSockets(r_fds);
+      CheckSockets(&r_fds);
   }
   return true;
 }
@@ -298,7 +299,7 @@ bool SelectServer::CheckForEvents() {
 /*
  * Add all the read sockets to the FD_SET
  */
-void SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
+void SelectServer::AddSocketsToSet(fd_set *set, int *max_sd) const {
   vector<Socket*>::const_iterator iter;
   for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
     if ((*iter)->ReadDescriptor() == Socket::INVALID_SOCKET) {
@@ -307,8 +308,8 @@ void SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
       OLA_WARN << "Not adding an invalid socket";
       continue;
     }
-    max_sd = max(max_sd, (*iter)->ReadDescriptor());
-    FD_SET((*iter)->ReadDescriptor(), &set);
+    *max_sd = max(*max_sd, (*iter)->ReadDescriptor());
+    FD_SET((*iter)->ReadDescriptor(), set);
   }
 
   vector<connected_socket_t>::const_iterator con_iter;
@@ -320,8 +321,8 @@ void SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
       OLA_WARN << "Not adding an invalid socket";
       continue;
     }
-    max_sd = max(max_sd, con_iter->socket->ReadDescriptor());
-    FD_SET(con_iter->socket->ReadDescriptor(), &set);
+    *max_sd = max(*max_sd, con_iter->socket->ReadDescriptor());
+    FD_SET(con_iter->socket->ReadDescriptor(), set);
   }
 }
 
@@ -331,14 +332,14 @@ void SelectServer::AddSocketsToSet(fd_set &set, int &max_sd) const {
  *  - Execute the callback for sockets with data
  *  - Excute OnClose if a remote end closed the connection
  */
-void SelectServer::CheckSockets(fd_set &set) {
+void SelectServer::CheckSockets(fd_set *set) {
   // Because the callbacks can add or remove sockets from the select server, we
   // have to call them after we've used the iterators.
   m_ready_queue.clear();
 
   vector<Socket*>::iterator iter;
   for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
-    if (FD_ISSET((*iter)->ReadDescriptor(), &set)) {
+    if (FD_ISSET((*iter)->ReadDescriptor(), set)) {
       if ((*iter)->OnData())
         m_ready_queue.push_back((*iter)->OnData());
       else
@@ -350,7 +351,7 @@ void SelectServer::CheckSockets(fd_set &set) {
   vector<connected_socket_t>::iterator con_iter;
   for (con_iter = m_connected_sockets.begin();
        con_iter != m_connected_sockets.end(); ++con_iter) {
-    if (FD_ISSET(con_iter->socket->ReadDescriptor(), &set)) {
+    if (FD_ISSET(con_iter->socket->ReadDescriptor(), set)) {
       if (con_iter->socket->CheckIfClosed()) {
         if (con_iter->delete_on_close)
           delete con_iter->socket;

@@ -302,12 +302,12 @@ void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
 /*
  * Get the contents of this buffer
  */
-void DmxBuffer::Get(uint8_t *data, unsigned int &length) const {
+void DmxBuffer::Get(uint8_t *data, unsigned int *length) const {
   if (m_data) {
-    length = min(length, m_length);
-    memcpy(data, m_data, length);
+    *length = min(*length, m_length);
+    memcpy(data, m_data, *length);
   } else {
-    length = 0;
+    *length = 0;
   }
 }
 

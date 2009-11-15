@@ -18,14 +18,14 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_SOCKET_H
-#define OLA_SOCKET_H
+#ifndef INCLUDE_OLA_NETWORK_SOCKET_H_
+#define INCLUDE_OLA_NETWORK_SOCKET_H_
 
 #include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string>
-#include <ola/Closure.h>
+#include <ola/Closure.h>  // NOLINT
 
 namespace ola {
 namespace network {
@@ -202,7 +202,7 @@ class PipeSocket: public ConnectedSocket {
  */
 class TcpSocket: public ConnectedSocket {
   public:
-    TcpSocket(int sd): m_sd(sd) {}
+    explicit TcpSocket(int sd): m_sd(sd) {}
     ~TcpSocket() { Close(); }
 
     int ReadDescriptor() const { return m_sd; }
@@ -223,7 +223,7 @@ class TcpSocket: public ConnectedSocket {
  */
 class DeviceSocket: public ConnectedSocket {
   public:
-    DeviceSocket(int fd): m_fd(fd) {}
+    explicit DeviceSocket(int fd): m_fd(fd) {}
     ~DeviceSocket() { Close(); }
 
     int ReadDescriptor() const { return m_fd; }
@@ -242,7 +242,7 @@ class DeviceSocket: public ConnectedSocket {
  */
 class UnmanagedSocket: public Socket {
   public :
-    UnmanagedSocket(int sd): m_sd(sd) {}
+    explicit UnmanagedSocket(int sd): m_sd(sd) {}
     ~UnmanagedSocket() {}
     int ReadDescriptor() const { return m_sd; }
     // Closing is left to something else
@@ -263,7 +263,7 @@ class UdpSocket: public Socket {
                  m_bound_to_port(false) {}
     ~UdpSocket() { Close(); }
     bool Init();
-    bool Bind(unsigned short port=INADDR_ANY);
+    bool Bind(unsigned short port = INADDR_ANY);
     bool Close();
     int ReadDescriptor() const { return m_fd; }
     ssize_t SendTo(const uint8_t *buffer,
@@ -274,17 +274,17 @@ class UdpSocket: public Socket {
                    const std::string &ip,
                    unsigned short port) const;
     bool RecvFrom(uint8_t *buffer,
-                  ssize_t &data_read,
+                  ssize_t *data_read,
                   struct sockaddr_in &source,
                   socklen_t &src_size) const;
-    bool RecvFrom(uint8_t *buffer, ssize_t &data_read) const;
+    bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool EnableBroadcast();
     bool JoinMulticast(const struct in_addr &interface,
                        const struct in_addr &group,
-                       bool loop=false);
+                       bool loop = false);
     bool JoinMulticast(const struct in_addr &interface,
                        const std::string &address,
-                       bool loop=false);
+                       bool loop = false);
     bool LeaveMulticast(const struct in_addr &interface,
                         const struct in_addr &group);
     bool LeaveMulticast(const struct in_addr &interface,
@@ -295,7 +295,7 @@ class UdpSocket: public Socket {
     UdpSocket(const UdpSocket &other);
     UdpSocket& operator=(const UdpSocket &other);
     bool _RecvFrom(uint8_t *buffer,
-                   ssize_t &data_read,
+                   ssize_t *data_read,
                    struct sockaddr_in *source,
                    socklen_t *src_size) const;
 };
@@ -319,7 +319,7 @@ class AcceptingSocket: public Socket {
 class TcpAcceptingSocket: public AcceptingSocket {
   public:
     TcpAcceptingSocket(const std::string &address, unsigned short port,
-                       int backlog=10);
+                       int backlog = 10);
     ~TcpAcceptingSocket() { Close(); }
     bool Listen();
     int ReadDescriptor() const { return m_sd; }
@@ -327,13 +327,13 @@ class TcpAcceptingSocket: public AcceptingSocket {
     ConnectedSocket *Accept();
   private:
     std::string m_address;
-    unsigned short m_port;
+    uint16_t m_port;
     int m_sd, m_backlog;
     TcpAcceptingSocket(const TcpAcceptingSocket &other);
     TcpAcceptingSocket& operator=(const TcpAcceptingSocket &other);
 };
 
-} //network
-} //ola
-#endif
+}  // network
+}  // ola
+#endif  // INCLUDE_OLA_NETWORK_SOCKET_H_
 

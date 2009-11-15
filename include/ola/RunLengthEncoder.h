@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_RLENCODER_H
-#define OLA_RLENCODER_H
+#ifndef INCLUDE_OLA_RUNLENGTHENCODER_H_
+#define INCLUDE_OLA_RUNLENGTHENCODER_H_
 
 #include <ola/DmxBuffer.h>
 
@@ -27,13 +27,13 @@ namespace ola {
 
 class RunLengthEncoder {
   public :
-    RunLengthEncoder() {};
-    ~RunLengthEncoder() {};
+    RunLengthEncoder() {}
+    ~RunLengthEncoder() {}
 
     bool Encode(const DmxBuffer &src,
                 uint8_t *data,
                 unsigned int &size);
-    bool Decode(DmxBuffer &dst,
+    bool Decode(DmxBuffer *dst,
                 unsigned int start_channel,
                 const uint8_t *data,
                 unsigned int length);
@@ -41,5 +41,5 @@ class RunLengthEncoder {
     static const uint8_t REPEAT_FLAG = 0x80;
 };
 
-} //ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLA_RUNLENGTHENCODER_H_

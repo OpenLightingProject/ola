@@ -60,15 +60,15 @@ void StringSplit(const string &input,
  * Trim leading and trailing whitespace from a string.
  * @param the string to trim
  */
-void StringTrim(std::string &input) {
+void StringTrim(std::string *input) {
   string characters_to_trim = " \n\r\t";
-  string::size_type start = input.find_first_not_of(characters_to_trim);
-  string::size_type end = input.find_last_not_of(characters_to_trim);
+  string::size_type start = input->find_first_not_of(characters_to_trim);
+  string::size_type end = input->find_last_not_of(characters_to_trim);
 
   if (start == string::npos)
-    input.clear();
+    input->clear();
   else
-    input = input.substr(start, end - start + 1);
+    *input = input->substr(start, end - start + 1);
 }
 
 

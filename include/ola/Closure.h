@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_CLOSURE_H
-#define OLA_CLOSURE_H
+#ifndef INCLUDE_OLA_CLOSURE_H_
+#define INCLUDE_OLA_CLOSURE_H_
 
 namespace ola {
 
@@ -67,7 +67,7 @@ class FunctionClosure: public Parent {
     /*
      * @param callback the function to call
      */
-    FunctionClosure(Callback callback):
+    explicit FunctionClosure(Callback callback):
       Parent(),
       m_callback(callback) {}
     int DoRun() { return m_callback(); }
@@ -288,6 +288,5 @@ inline Closure* NewClosure(Class* object,
                  (object, method, arg, arg2);
 }
 
-
-} //ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLA_CLOSURE_H_

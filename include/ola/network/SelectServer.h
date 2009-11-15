@@ -18,21 +18,23 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_SELECTSERVER_H
-#define OLA_SELECTSERVER_H
+#ifndef INCLUDE_OLA_NETWORK_SELECTSERVER_H_
+#define INCLUDE_OLA_NETWORK_SELECTSERVER_H_
 
 #include <sys/time.h>
 #include <queue>
 #include <set>
+#include <string>
 #include <vector>
 
-#include <ola/Closure.h>
-#include <ola/ExportMap.h>
+#include <ola/Closure.h>  // NOLINT
+#include <ola/ExportMap.h>  // NOLINT
 
 namespace ola {
 namespace network {
 
-using namespace std;
+using std::string;
+using std::priority_queue;
 using ola::ExportMap;
 
 typedef unsigned int timeout_id;
@@ -40,16 +42,16 @@ static const timeout_id INVALID_TIMEOUT = 0;
 
 class SelectServer {
   public :
-    enum Direction{READ, WRITE};
+    enum Direction {READ, WRITE};
 
-    SelectServer(ExportMap *export_map=NULL);
+    explicit SelectServer(ExportMap *export_map = NULL);
     ~SelectServer() { UnregisterAll(); }
     int Run();
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
     bool AddSocket(class Socket *socket);
-    bool AddSocket(class ConnectedSocket *socket, bool delete_on_close=false);
+    bool AddSocket(class ConnectedSocket *socket, bool delete_on_close = false);
     bool RemoveSocket(class Socket *socket);
     bool RemoveSocket(class ConnectedSocket *socket);
     timeout_id RegisterRepeatingTimeout(int ms, ola::Closure *closure);
@@ -71,8 +73,8 @@ class SelectServer {
     timeout_id RegisterTimeout(int ms, ola::BaseClosure *closure,
                                bool repeating);
     bool CheckForEvents();
-    void CheckSockets(fd_set &set);
-    void AddSocketsToSet(fd_set &set, int &max_sd) const;
+    void CheckSockets(fd_set *set);
+    void AddSocketsToSet(fd_set *set, int *max_sd) const;
     struct timeval CheckTimeouts();
     void UnregisterAll();
 
@@ -99,13 +101,13 @@ class SelectServer {
     vector<class Socket*> m_sockets;
     vector<connected_socket_t> m_connected_sockets;
     vector<Closure*> m_ready_queue;
-    set<timeout_id> m_removed_timeouts;
+    std::set<timeout_id> m_removed_timeouts;
     ExportMap *m_export_map;
 
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;
     event_queue_t m_events;
 };
 
-} // network
-} // ola
-#endif
+}  // network
+}  // ola
+#endif  // INCLUDE_OLA_NETWORK_SELECTSERVER_H_

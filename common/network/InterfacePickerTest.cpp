@@ -89,23 +89,23 @@ void InterfacePickerTest::testChooseInterface() {
 
   // no interfaces
   Interface interface;
-  CPPUNIT_ASSERT(!picker.ChooseInterface(interface, ""));
+  CPPUNIT_ASSERT(!picker.ChooseInterface(&interface, ""));
 
   // now with one interface that doesn't match
   Interface iface1;
   StringToAddress("10.0.0.1", iface1.ip_address);
   interfaces.push_back(iface1);
-  CPPUNIT_ASSERT(picker.ChooseInterface(interface, "192.168.1.1"));
+  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "192.168.1.1"));
   CPPUNIT_ASSERT(iface1 == interface);
 
   // check that preferred works
   Interface iface2;
   StringToAddress("192.168.1.1", iface2.ip_address);
   interfaces.push_back(iface2);
-  CPPUNIT_ASSERT(picker.ChooseInterface(interface, "192.168.1.1"));
+  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "192.168.1.1"));
   CPPUNIT_ASSERT(iface2 == interface);
 
   // a invalid address should return the first one
-  CPPUNIT_ASSERT(picker.ChooseInterface(interface, "foo"));
+  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "foo"));
   CPPUNIT_ASSERT(iface1 == interface);
 }

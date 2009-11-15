@@ -17,8 +17,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_BASE_TYPES_H
-#define OLA_BASE_TYPES_H
+#ifndef INCLUDE_OLA_BASETYPES_H_
+#define INCLUDE_OLA_BASETYPES_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,4 +31,4 @@ static const int OLA_DEFAULT_PORT = 9010;
 }
 #endif
 
-#endif
+#endif  // INCLUDE_OLA_BASETYPES_H_

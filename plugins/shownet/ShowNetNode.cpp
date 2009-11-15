@@ -70,7 +70,7 @@ bool ShowNetNode::Start() {
   if (m_running)
     return false;
 
-  if (!m_interface_picker.ChooseInterface(m_interface, m_preferred_ip)) {
+  if (!m_interface_picker.ChooseInterface(&m_interface, m_preferred_ip)) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }
@@ -217,7 +217,7 @@ int ShowNetNode::SocketReady() {
   struct sockaddr_in source;
   socklen_t source_length = sizeof(source);
 
-  if(!m_socket->RecvFrom((uint8_t*) &packet, packet_size, source,
+  if(!m_socket->RecvFrom((uint8_t*) &packet, &packet_size, source,
                           source_length))
     return -1;
 
@@ -289,7 +289,7 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
   }
 
   if (packet.slotSize[0] != enc_len) {
-    m_encoder.Decode(iter->second.buffer,
+    m_encoder.Decode(&iter->second.buffer,
                      start_channel,
                      packet.data + data_offset,
                      enc_len);

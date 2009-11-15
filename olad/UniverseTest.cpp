@@ -355,7 +355,7 @@ void UniverseTest::testHtpMerging() {
   UniverseTestMockPort input_port(NULL, 1, false); // input port
   input_port.WriteDMX(DmxBuffer(input_port_data));
   MockClient input_client;
-  input_client.DMXRecieved(TEST_UNIVERSE, input_client_data);
+  input_client.DMXRecieved(TEST_UNIVERSE, DmxBuffer(input_client_data));
   UniverseTestMockPort output_port(NULL, 2, true); // output port
 
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);

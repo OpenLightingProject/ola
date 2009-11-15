@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_EXPORT_MAP_H
-#define OLA_EXPORT_MAP_H
+#ifndef INCLUDE_OLA_EXPORTMAP_H_
+#define INCLUDE_OLA_EXPORTMAP_H_
 
 #include <stdlib.h>
 #include <string>
@@ -40,7 +40,7 @@ using std::vector;
  */
 class BaseVariable {
   public:
-    BaseVariable(const string &name): m_name(name) {}
+    explicit BaseVariable(const string &name): m_name(name) {}
     virtual ~BaseVariable() {}
 
     const string Name() const { return m_name; }
@@ -56,7 +56,9 @@ class BaseVariable {
  */
 class StringVariable: public BaseVariable {
   public:
-    StringVariable(const string &name): BaseVariable(name), m_value("") {}
+    explicit StringVariable(const string &name)
+        : BaseVariable(name),
+          m_value("") {}
     ~StringVariable() {}
 
     void Set(const string &value) { m_value = value; }
@@ -73,7 +75,9 @@ class StringVariable: public BaseVariable {
  */
 class IntegerVariable: public BaseVariable {
   public:
-    IntegerVariable(const string &name): BaseVariable(name), m_value(0) {}
+    explicit IntegerVariable(const string &name)
+        : BaseVariable(name),
+          m_value(0) {}
     ~IntegerVariable() {}
 
     void Set(int value) { m_value = value; }
@@ -185,5 +189,5 @@ class ExportMap {
     map<string, IntMap*> m_int_map_variables;
 };
 
-} // ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLA_EXPORTMAP_H_

@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_DMX_BUFFER_H
-#define OLA_DMX_BUFFER_H
+#ifndef INCLUDE_OLA_DMXBUFFER_H_
+#define INCLUDE_OLA_DMXBUFFER_H_
 
 #include <stdint.h>
 #include <string>
@@ -36,7 +36,7 @@ class DmxBuffer {
     DmxBuffer();
     DmxBuffer(const DmxBuffer &other);
     DmxBuffer(const uint8_t *data, unsigned int length);
-    DmxBuffer(const string &data);
+    explicit DmxBuffer(const string &data);
     ~DmxBuffer();
     DmxBuffer& operator=(const DmxBuffer &other);
 
@@ -53,7 +53,7 @@ class DmxBuffer {
     bool SetRange(unsigned int offset, const uint8_t *data,
                   unsigned int length);
     void SetChannel(unsigned int channel, uint8_t data);
-    void Get(uint8_t *data, unsigned int &length) const;
+    void Get(uint8_t *data, unsigned int *length) const;
     uint8_t Get(unsigned int channel) const;
     const uint8_t *GetRaw() const { return m_data; }
     string Get() const;
@@ -71,5 +71,5 @@ class DmxBuffer {
     unsigned int m_length;
 };
 
-} // ola
-#endif
+}  // ola
+#endif  // INCLUDE_OLA_DMXBUFFER_H_

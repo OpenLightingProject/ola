@@ -107,7 +107,7 @@ int UDPTransport::Receive() {
   }
 
   ssize_t size = MAX_DATAGRAM_SIZE;
-  if (!m_socket.RecvFrom(m_recv_buffer, size))
+  if (!m_socket.RecvFrom(m_recv_buffer, &size))
     return 0;
 
   if (size < (ssize_t) DATA_OFFSET) {

@@ -211,7 +211,7 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
   m_pref_map.clear();
   string line;
   while (getline(pref_file, line)) {
-    StringTrim(line);
+    StringTrim(&line);
 
     if (line.empty() || line.at(0) == '#')
       continue;
@@ -226,8 +226,8 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
 
     string key = tokens[0];
     string value = tokens[1];
-    StringTrim(key);
-    StringTrim(value);
+    StringTrim(&key);
+    StringTrim(&value);
     m_pref_map.insert(pair<string,string>(key, value));
   }
   pref_file.close();

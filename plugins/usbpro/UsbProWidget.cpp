@@ -135,7 +135,7 @@ bool UsbProWidget::SendDMX(const DmxBuffer &buffer) const {
   msg.label = ID_SDMX;
   //start code to 0
   msg.pm_dmx.dmx[0] = K_START_CODE;
-  buffer.Get(&msg.pm_dmx.dmx[1], length);
+  buffer.Get(&msg.pm_dmx.dmx[1], &length);
   set_msg_len(&msg, length + 1);
   return SendMessage(&msg);
 }

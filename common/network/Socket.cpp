@@ -447,7 +447,7 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
  * read
  * @return true or false
  */
-bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t &data_read) const {
+bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
   socklen_t length = 0;
   return _RecvFrom(buffer, data_read, NULL, &length);
 }
@@ -461,7 +461,7 @@ bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t &data_read) const {
  * @return true or false
  */
 bool UdpSocket::RecvFrom(uint8_t *buffer,
-                         ssize_t &data_read,
+                         ssize_t *data_read,
                          struct sockaddr_in &source,
                          socklen_t &src_size) const {
   return _RecvFrom(buffer, data_read, &source, &src_size);
@@ -566,13 +566,13 @@ bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
 }
 
 bool UdpSocket::_RecvFrom(uint8_t *buffer,
-                          ssize_t &data_read,
+                          ssize_t *data_read,
                           struct sockaddr_in *source,
                           socklen_t *src_size) const {
-  data_read = recvfrom(m_fd, buffer, data_read, 0,
-                       (struct sockaddr*) source,
-                       src_size);
-  if (data_read < 0) {
+  *data_read = recvfrom(m_fd, buffer, *data_read, 0,
+                        (struct sockaddr*) source,
+                        src_size);
+  if (*data_read < 0) {
     OLA_WARN << "recvfrom failed: " << strerror(errno);
     return false;
   }
