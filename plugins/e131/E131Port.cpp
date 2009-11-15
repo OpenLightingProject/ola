@@ -111,7 +111,7 @@ bool E131Port::SetUniverse(Universe *universe) {
 string E131Port::Description() const {
   std::stringstream str;
   if (GetUniverse())
-    str << "E.131 Universe " << GetUniverse()->UniverseId();
+    str << "E1.31 Universe " << GetUniverse()->UniverseId();
   return str.str();
 }
 
