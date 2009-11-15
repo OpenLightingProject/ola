@@ -13,47 +13,58 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * sandnetdevice.h
+ * SandNetDevice.h
  * Interface for the sandnet device
- * Copyright (C) 2005-2006  Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef SANDNETDEVICE_H
-#define SANDNETDEVICE_H
+#ifndef PLUGINS_SANDNET_SANDNETDEVICE_H_
+#define PLUGINS_SANDNET_SANDNETDEVICE_H_
 
-#include <map>
+#include <string>
+#include "olad/Device.h"
+#include "olad/Plugin.h"
+#include "olad/PluginAdaptor.h"
+#include "plugins/sandnet/SandNetCommon.h"
+#include "plugins/sandnet/SandNetNode.h"
 
-#include <olad/device.h>
-#include <olad/listener.h>
-#include <olad/timeoutlistener.h>
+namespace ola {
+namespace plugin {
+namespace sandnet {
 
-#include <sandnet/sandnet.h>
-
-#include "SandnetCommon.h"
-
-class SandNetDevice : public Device, public Listener, public TimeoutListener {
-
+class SandNetDevice: public ola::Device {
   public:
-    SandNetDevice(Plugin *owner, const string &name, class Preferences *prefs);
-    ~SandNetDevice();
+    SandNetDevice(class SandNetPlugin *owner,
+                  const std::string &name,
+                  class Preferences *prefs,
+                  const class PluginAdaptor *plugin_adaptor);
+    ~SandNetDevice() {}
 
-    int start();
-    int stop();
-    sandnet_node get_node() const;
-    int get_sd(int i) const;
-    int action();
-    int timeout_action();
-    int save_config() const;
-    int configure(void *req, int len);
+    bool Start();
+    bool Stop();
+    string DeviceId() const { return "1"; }
+    SandNetNode *GetNode() { return m_node; }
 
-    int port_map(class Universe *uni, class SandNetPort *prt);
-    class SandNetPort *get_port_from_uni(int uni);
+    int SendAdvertisement();
+
+    static const std::string NAME_KEY;
+
   private:
-    class Preferences *m_prefs;
-    sandnet_node m_node;
+    class Preferences *m_preferences;
+    const class PluginAdaptor *m_plugin_adaptor;
+    SandNetNode *m_node;
     bool m_enabled;
-    map<int, class SandNetPort *> m_portmap;
+    ola::network::timeout_id m_timeout_id;
+
+    static const std::string IP_KEY;
+    static const int INPUT_PORTS = 8;  // the number of input ports to create
+    // send an advertistment every 2s.
+    static const int ADVERTISTMENT_PERIOD_MS = 2000;
 };
 
-#endif
+
+}  // sandnet
+}  // plugin
+}  // ola
+
+#endif  // PLUGINS_SANDNET_SANDNETDEVICE_H_

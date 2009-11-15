@@ -14,121 +14,147 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * sandnetport.cpp
+ * SandNetPort.cpp
  * The SandNet plugin for ola
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include "SandnetPort.h"
-#include "SandnetDevice.h"
+#include <algorithm>
+#include <sstream>
+#include <string>
+#include <vector>
+#include "ola/Closure.h"
+#include "ola/Logging.h"
+#include "olad/Universe.h"
 
-#include <ola/Logging.h>
-#include <olad/universe.h>
+#include "plugins/sandnet/SandNetPort.h"
+#include "plugins/sandnet/SandNetDevice.h"
+#include "plugins/sandnet/SandNetCommon.h"
 
-#include <string.h>
+namespace ola {
+namespace plugin {
+namespace sandnet {
 
-#define min(a,b) a<b?a:b
 
-SandNetPort::SandNetPort(Device *parent, int id):
-  Port(parent, id),
-  m_buf(NULL),
-  m_len(DMX_LENGTH) {
-
+bool SandNetPort::IsOutput() const {
+  // ports 0 & 1 are output (sandnet only allows 2 output ports per device)
+  return PortId() < SANDNET_MAX_PORTS;
 }
 
-SandNetPort::~SandNetPort() {
 
-  if (can_read())
-    free(m_buf);
+string SandNetPort::Description() const {
+  std::stringstream str;
+  if (GetUniverse()) {
+    str << "Sandnet group " << static_cast<int>(SandnetGroup(GetUniverse())) <<
+      ", universe " << 1 + SandnetUniverse(GetUniverse());
+  }
+  return str.str();
 }
 
-
-int SandNetPort::IsOutput() const {
-  // ports 0 & 1 are output (sandnet allows 2 ports per device)
-  return ( get_id() >= 0 && get_id() < SANDNET_MAX_PORTS);
-}
 
 /*
  * Write operation
- *
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- *
  */
-int SandNetPort::write(uint8_t *data, unsigned int length) {
-  SandNetDevice *dev = (SandNetDevice*) get_device();
+bool SandNetPort::WriteDMX(const DmxBuffer &buffer) {
+  if (!IsOutput() || !GetUniverse())
+    return false;
 
-  if (!can_write())
-    return -1;
+  SandNetNode *node = GetDevice()->GetNode();
 
-  if (sandnet_send_dmx(dev->get_node(), get_id(), length, data)) {
-    OLA_WARN << "sandnet_send_dmx failed " << sandnet_strerror();
-    return -1;
-  }
-  return 0;
+  if (!node->SendDMX(PortId(), buffer))
+    return false;
+  return true;
 }
 
-
-/*
- * Read operation
- *
- * @param   data  buffer to read data into
- * @param   length  length of data to read
- *
- * @return  the amount of data read
- */
-int SandNetPort::read(uint8_t *data, unsigned int length) {
-  unsigned int len;
-
-  if (!can_read())
-    return -1;
-
-  len = min(m_len, length);
-  memcpy(data, m_buf, len);
-  return len;
-}
 
 /*
  * Update the data buffer for this port
- *
  */
-int SandNetPort::update_buffer(uint8_t *data, int length) {
-  int len = min(DMX_LENGTH, length);
-
+int SandNetPort::UpdateBuffer() {
   // we can't update if this isn't a input port
-  if (!can_read())
-    return -1;
+  if (IsOutput() || !GetUniverse())
+    return false;
 
-  if (m_buf == NULL) {
-    m_buf = (uint8_t*) malloc(m_len);
-
-    if (m_buf == NULL) {
-      OLA_WARN << "malloc failed";
-      return -1;
-    } else
-      memset(m_buf, 0x00, m_len);
-  }
-
-  memcpy(m_buf, data, len);
-  dmx_changed();
-  return 0;
+  SandNetNode *node = GetDevice()->GetNode();
+  m_buffer = node->GetDMX(SandnetGroup(GetUniverse()),
+                          SandnetUniverse(GetUniverse()));
+  return DmxChanged();
 }
 
 
 /*
  * We override the set universe method to update the universe -> port hash
  */
-int SandNetPort::set_universe(Universe *uni) {
-  SandNetDevice *dev = (SandNetDevice*) get_device();
+bool SandNetPort::SetUniverse(Universe *universe) {
+  SandNetDevice *device = GetDevice();
+  SandNetNode *node = device->GetNode();
 
-  // if we're unpatching remove the old universe mapping
-  if ( uni == NULL && get_universe() != NULL) {
-    dev->port_map(get_universe(), NULL);
-  } else {
-    // new patch
-    dev->port_map(uni, this);
+  // TODO(simon): move this into the base class
+  if (universe) {
+    vector<AbstractPort*> ports = device->Ports();
+    vector<AbstractPort*>::const_iterator iter;
+    for (iter = ports.begin(); iter != ports.end(); ++iter) {
+      if ((*iter)->IsOutput() == IsOutput() &&
+          (*iter)->GetUniverse() &&
+          (*(*iter)->GetUniverse()) == *universe) {
+        OLA_WARN << "Port " << (*iter)->PortId() <<
+          " is already patched to universe " << universe->UniverseId();
+        return false;
+      }
+    }
   }
 
-  // call the super method
-  return Port::set_universe(uni);
+  if (IsOutput()) {
+    if (universe) {
+      if (!universe->UniverseId()) {
+        OLA_WARN << "Can't use universe 0 with Sandnet!";
+        return false;
+      }
+      node->SetPortParameters(PortId(),
+                              SandNetNode::SANDNET_PORT_MODE_IN,
+                              SandnetGroup(universe),
+                              SandnetUniverse(universe));
+    }
+  } else {
+    Universe *old_universe = GetUniverse();
+    if (old_universe)
+      node->RemoveHandler(SandnetGroup(old_universe),
+                          SandnetUniverse(old_universe));
+
+    if (universe) {
+      node->SetHandler(SandnetGroup(universe),
+                       SandnetUniverse(universe),
+                       NewClosure(this, &SandNetPort::UpdateBuffer));
+    }
+  }
+  return Port<SandNetDevice>::SetUniverse(universe);
 }
+
+
+/*
+ * Return the sandnet group that corresponds to a OLA Universe.
+ * @param universe the OLA universe
+ * @returns the sandnet group number
+ */
+uint8_t SandNetPort::SandnetGroup(const Universe *universe) const {
+  if (universe)
+    return (uint8_t) ((universe->UniverseId() - 1) >> 8);
+  return 0;
+}
+
+
+/*
+ * Return the sandnet group that corresponds to a OLA Universe. Sandnet
+ * Universes range from 0 to 255 (represented as 1 to 256 in the packets).
+ * @param universe the OLA universe
+ * @returns the sandnet universe number
+ */
+uint8_t SandNetPort::SandnetUniverse(const Universe *universe) const {
+  if (universe)
+    return universe->UniverseId() - 1;
+  return 0;
+}
+
+}  // sandnet
+}  // plugin
+}  // ola

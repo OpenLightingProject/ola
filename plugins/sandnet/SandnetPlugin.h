@@ -13,44 +13,49 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * sandnetplugin.h
+ * SandNetPlugin.h
  * Interface for the sandnet plugin class
- * Copyright (C) 2005-2006  Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef SANDNETPLUGIN_H
-#define SANDNETPLUGIN_H
+#ifndef PLUGINS_SANDNET_SANDNETPLUGIN_H_
+#define PLUGINS_SANDNET_SANDNETPLUGIN_H_
 
-#include <olad/plugin.h>
-#include <ola/plugin_id.h>
+#include <string>
+#include "ola/plugin_id.h"
+#include "olad/Plugin.h"
+#include "olad/PluginAdaptor.h"
 
-class SandNetDevice;
+namespace ola {
+namespace plugin {
+namespace sandnet {
 
-class SandNetPlugin : public Plugin {
-
+class SandNetPlugin: public ola::Plugin {
   public:
-    SandNetPlugin(const PluginAdaptor *pa, ola_plugin_id id) :
-      Plugin(pa, id),
-      m_dev(NULL) {}
+    explicit SandNetPlugin(const ola::PluginAdaptor *plugin_adaptor)
+        : Plugin(plugin_adaptor),
+          m_device(NULL) {}
 
-    int test(void *data);
-    string get_name() const   { return PLUGIN_NAME; }
-    string get_desc() const;
-    string pref_suffix() const { return PLUGIN_PREFIX; }
+    string Name() const { return PLUGIN_NAME; }
+    string Description() const;
+    ola_plugin_id Id() const { return OLA_PLUGIN_SANDNET; }
+    string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
-    int start_hook();
-    int stop_hook();
-    int set_default_prefs();
-    SandNetDevice *m_dev;    // only have one device
+    class SandNetDevice *m_device;  // only have one device
 
-    static const string SANDNET_NODE_NAME;
-    static const string SANDNET_DEVICE_NAME;
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
+    bool StartHook();
+    bool StopHook();
+    bool SetDefaultPreferences();
 
+    static const char SANDNET_NODE_NAME[];
+    static const char SANDNET_DEVICE_NAME[];
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
 };
 
-#endif
+}  // sandnet
+}  // plugin
+}  // ola
 
+#endif  // PLUGINS_SANDNET_SANDNETPLUGIN_H_

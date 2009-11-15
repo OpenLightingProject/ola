@@ -14,14 +14,14 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * common.h
- * Constants for the shownet plugin
+ * SandNetCommon.h
+ * Constants for the sandnet plugin
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef PLUGINS_SANDNET_SANDNETCOMMON_H_
+#define PLUGINS_SANDNET_SANDNETCOMMON_H_
 
-#define INPUT_PORTS    8
+enum {SANDNET_MAX_PORTS = 2};
 
-#endif
+#endif  // PLUGINS_SANDNET_SANDNETCOMMON_H_

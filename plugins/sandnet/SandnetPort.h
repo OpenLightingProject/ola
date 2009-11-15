@@ -14,35 +14,46 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * sandnetport.h
+ * SandNetPort.h
  * The SandNet plugin for ola
  * Copyright (C) 2005-2006  Simon Newton
  */
 
-#ifndef SANDNETPORT_H
-#define SANDNETPORT_H
+#ifndef PLUGINS_SANDNET_SANDNETPORT_H_
+#define PLUGINS_SANDNET_SANDNETPORT_H_
 
-#include <olad/port.h>
+#include <string>
+#include "ola/DmxBuffer.h"
+#include "olad/Port.h"
+#include "plugins/sandnet/SandNetDevice.h"
 
-#include <sandnet/sandnet.h>
+namespace ola {
+namespace plugin {
+namespace sandnet {
 
-class SandNetPort : public Port  {
+using ola::DmxBuffer;
 
+class SandNetPort: public ola::Port<SandNetDevice> {
   public:
-    SandNetPort(Device *parent, int id);
-    ~SandNetPort();
+    SandNetPort(SandNetDevice *parent, unsigned int id):
+      Port<SandNetDevice>(parent, id) {}
+    ~SandNetPort() {}
 
-    int write(uint8_t *data, unsigned int length);
-    int read(uint8_t *data, unsigned int length);
-    int set_universe(Universe *uni);
+    bool IsOutput() const;
+    string Description() const;
+    bool WriteDMX(const DmxBuffer &buffer);
+    const DmxBuffer &ReadDMX() const { return m_buffer; }
+    bool SetUniverse(Universe *universe);
+    int UpdateBuffer();
 
-    int IsOutput() const;
-
-    int update_buffer(uint8_t *data, int length);
-
-  private :
-    uint8_t *m_buf;
-    unsigned int m_len;
+  private:
+    DmxBuffer m_buffer;
+    uint8_t SandnetGroup(const Universe* universe) const;
+    uint8_t SandnetUniverse(const Universe *universe) const;
 };
 
-#endif
+}  // sandnet
+}  // plugin
+}  // ola
+
+#endif  // PLUGINS_SANDNET_SANDNETPORT_H_

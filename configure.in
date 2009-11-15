@@ -30,7 +30,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
                   sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
-                  unistd.h linux/if_packet.h uuid/uuid.h])
+                  unistd.h linux/if_packet.h])
 AC_CHECK_HEADER(pthread.h, have_threads=posix)
 PROTOBUF_SUPPORT([2.1.0])
 
@@ -107,7 +107,6 @@ PLUGINS="dummy opendmx stageprofi usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
 PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
-PLUGIN_LIBRARY(sandnet, sandnet_new, SANDNET)
 PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
 
 # confirm libartnet version
@@ -117,6 +116,11 @@ fi
 
 # check for uuid
 PKG_CHECK_MODULES(UUID, [uuid >= 0.22], [], [true])
+AC_CHECK_HEADERS(
+   [uuid/uuid.h],
+   [],
+   [AC_MSG_ERROR([Missing uuid/uuid.h])]
+)
 
 AM_CONDITIONAL(HAVE_ACN, test "${have_acn}" = "yes")
 
@@ -275,6 +279,7 @@ AC_OUTPUT( Makefile\
     plugins/e131/Makefile \
     plugins/e131/e131/Makefile \
     plugins/espnet/Makefile \
+    plugins/sandnet/Makefile \
     plugins/shownet/Makefile \
     plugins/usbpro/Makefile \
     plugins/usbpro/messages/Makefile \
