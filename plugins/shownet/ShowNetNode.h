@@ -27,7 +27,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/Socket.h>
-#include "RunLengthEncoder.h"
+#include <ola/RunLengthEncoder.h>
 #include "ShowNetPackets.h"
 
 namespace ola {
@@ -67,7 +67,7 @@ class ShowNetNode {
     std::map<unsigned int, universe_handler> m_handlers;
     ola::network::InterfacePicker m_interface_picker;
     ola::network::Interface m_interface;
-    RunLengthEncoder m_encoder;
+    ola::RunLengthEncoder m_encoder;
     ola::network::UdpSocket *m_socket;
     struct sockaddr_in m_destination;
 

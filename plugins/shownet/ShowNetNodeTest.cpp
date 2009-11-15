@@ -192,7 +192,7 @@ void ShowNetNodeTest::testPopulatePacket() {
   unsigned int universe = 0;
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
   unsigned int encoded_data_size = sizeof(expected_packet.data);
-  RunLengthEncoder encoder;
+  ola::RunLengthEncoder encoder;
   encoder.Encode(buffer, expected_packet.data, encoded_data_size);
 
   m_node->SetName(NAME);
