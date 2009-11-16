@@ -20,6 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <stdint.h>
+#include <string.h>
 #include <string>
 
 #include "ola/Closure.h"
