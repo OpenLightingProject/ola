@@ -140,11 +140,12 @@ void SelectServerTest::testTimeout() {
       10,
       ola::NewClosure(this, &SelectServerTest::IncrementTimeout));
   m_ss->RegisterSingleTimeout(
-      95,
+      98,
       ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));
   m_ss->Restart();
   m_ss->Run();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 9, m_timeout_counter);
+  // Some systems have bad timing and only do 8 ticks here
+  CPPUNIT_ASSERT(m_timeout_counter == 8 || m_timeout_counter == 9);
 
   // check timeouts are removed correctly
   ola::network::timeout_id timeout1 = m_ss->RegisterSingleTimeout(
