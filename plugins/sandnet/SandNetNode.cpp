@@ -23,9 +23,9 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "SandNetNode.h"
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/sandnet/SandNetNode.h"
 
 
 namespace ola {
@@ -35,9 +35,10 @@ namespace sandnet {
 using std::string;
 using std::map;
 using std::vector;
-using ola::network::UdpSocket;
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
+using ola::network::StringToAddress;
+using ola::network::UdpSocket;
 using ola::Closure;
 
 const char SandNetNode::CONTROL_ADDRESS[] = "237.1.1.1";
@@ -53,7 +54,7 @@ SandNetNode::SandNetNode(const string &ip_address)
     : m_running(false),
       m_node_name(DEFAULT_NODE_NAME),
       m_preferred_ip(ip_address) {
-  for(unsigned int i=0; i < SANDNET_MAX_PORTS; i++) {
+  for (unsigned int i = 0; i < SANDNET_MAX_PORTS; i++) {
     m_ports[i].group = 0;
     m_ports[i].universe = i;
   }
@@ -83,6 +84,13 @@ bool SandNetNode::Start() {
 
   if (!m_interface_picker.ChooseInterface(&m_interface, m_preferred_ip)) {
     OLA_INFO << "Failed to find an interface";
+    return false;
+  }
+
+  if (!StringToAddress(CONTROL_ADDRESS, m_control_addr) ||
+      !StringToAddress(DATA_ADDRESS, m_data_addr)) {
+    OLA_WARN << "Could not convert " << CONTROL_ADDRESS << " or " <<
+      DATA_ADDRESS;
     return false;
   }
 
@@ -129,8 +137,10 @@ int SandNetNode::SocketReady(UdpSocket *socket) {
   struct sockaddr_in source;
   socklen_t source_length = sizeof(source);
 
-  if(!socket->RecvFrom((uint8_t*) &packet, &packet_size, source,
-                       source_length))
+  if (!socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
+                        &packet_size,
+                        source,
+                        source_length))
     return -1;
 
   // skip packets sent by us
@@ -212,9 +222,9 @@ DmxBuffer SandNetNode::GetDMX(uint8_t group, uint8_t universe) const {
   group_universe_pair key(group, universe);
   universe_handlers::const_iterator iter = m_handlers.find(key);
 
-  if (iter != m_handlers.end())
+  if (iter != m_handlers.end()) {
     return iter->second.buffer;
-  else {
+  } else {
     DmxBuffer buffer;
     return buffer;
   }
@@ -226,7 +236,6 @@ DmxBuffer SandNetNode::GetDMX(uint8_t group, uint8_t universe) const {
  */
 bool SandNetNode::SetPortParameters(uint8_t port_id, sandnet_port_type type,
                                     uint8_t group, uint8_t universe) {
-
   if (port_id >= SANDNET_MAX_PORTS)
     return false;
 
@@ -245,13 +254,38 @@ int SandNetNode::SendAdvertisement() {
     return -1;
 
   sandnet_packet packet;
+  sandnet_advertisement *advertisement = &packet.contents.advertisement;
   memset(&packet, 0, sizeof(packet));
   packet.opcode = HostToNetwork(static_cast<uint16_t>(SANDNET_ADVERTISMENT));
 
+  memcpy(advertisement->mac, m_interface.hw_address, ola::network::MAC_LENGTH);
+  advertisement->firmware = HostToNetwork(FIRMWARE_VERSION);
 
+  for (unsigned int i = 0; i < SANDNET_MAX_PORTS; i++) {
+    advertisement->ports[i].mode = m_ports[i].type;
+    advertisement->ports[i].protocol = SANDNET_SANDNET;
+    advertisement->ports[i].group = m_ports[i].group;
+    advertisement->ports[i].universe = m_ports[i].universe;
+  }
 
+  advertisement->nlen = std::min(m_node_name.size(),
+                                 static_cast<size_t>(SANDNET_NAME_LENGTH));
+  strncpy(advertisement->name, m_node_name.data(), advertisement->nlen);
 
-  return 0;
+  advertisement->magic3[0] = 0xc0;
+  advertisement->magic3[1] = 0xa8;
+  advertisement->magic3[2] = 0x01;
+  advertisement->magic3[3] = 0xa0;
+  advertisement->magic3[4] = 0x00;
+  advertisement->magic3[5] = 0xff;
+  advertisement->magic3[6] = 0xff;
+  advertisement->magic3[7] = 0xff;
+  advertisement->magic3[8] = 0x00;
+  advertisement->magic4 = 0x01;
+
+  return SendPacket(packet,
+                    sizeof(packet.opcode) + sizeof(sandnet_advertisement),
+                    true);
 }
 
 
@@ -298,7 +332,21 @@ bool SandNetNode::InitNetwork() {
     return false;
   }
 
-  //JoinMulticast()
+  if (!m_control_socket.JoinMulticast(m_interface.ip_address,
+                                      m_control_addr)) {
+      OLA_WARN << "Failed to join multicast to: " << CONTROL_ADDRESS;
+    m_data_socket.Close();
+    m_control_socket.Close();
+    return false;
+  }
+
+  if (!m_data_socket.JoinMulticast(m_interface.ip_address,
+                                   m_data_addr)) {
+      OLA_WARN << "Failed to join multicast to: " << DATA_ADDRESS;
+    m_data_socket.Close();
+    m_control_socket.Close();
+    return false;
+  }
 
   m_control_socket.SetOnData(
     NewClosure(this, &SandNetNode::SocketReady, &m_control_socket));
@@ -308,22 +356,68 @@ bool SandNetNode::InitNetwork() {
 }
 
 
+/*
+ * Handle a compressed DMX packet
+ */
 bool SandNetNode::HandleCompressedDMX(const sandnet_compressed_dmx &dmx_packet,
                                       unsigned int size) {
+  unsigned int header_size = sizeof(dmx_packet) - sizeof(dmx_packet.dmx);
 
+  if (size <= header_size) {
+    OLA_WARN << "Sandnet data size too small, expected at least " <<
+      header_size << ", got " << size;
+    return false;
+  }
 
+  group_universe_pair key(dmx_packet.group, dmx_packet.universe);
+  universe_handlers::iterator iter = m_handlers.find(key);
+
+  if (iter == m_handlers.end())
+    return false;
+
+  unsigned int data_size = size - header_size;
+  bool r = m_encoder.Decode(&iter->second.buffer, 0, dmx_packet.dmx,
+                            data_size);
+  if (!r) {
+    OLA_WARN << "Failed to decode Sandnet Data";
+    return false;
+  }
+
+  iter->second.closure->Run();
+  return true;
 }
 
 
+/*
+ * Handle a uncompressed DMX packet
+ */
 bool SandNetNode::HandleDMX(const sandnet_dmx &dmx_packet,
                             unsigned int size) {
+  unsigned int header_size = sizeof(dmx_packet) - sizeof(dmx_packet.dmx);
+  if (size <= header_size) {
+    OLA_WARN << "Sandnet data size too small, expected at least " <<
+      header_size << ", got " << size;
+    return false;
+  }
 
+  group_universe_pair key(dmx_packet.group, dmx_packet.universe);
+  universe_handlers::iterator iter = m_handlers.find(key);
+
+  if (iter == m_handlers.end())
+    return false;
+
+  unsigned int data_size = size - header_size;
+  iter->second.buffer.Set(dmx_packet.dmx, data_size);
+  iter->second.closure->Run();
+  return true;
 }
 
 
+/*
+ * Send an uncompressed DMX packet
+ */
 bool SandNetNode::SendUncompressedDMX(uint8_t port_id,
                                       const DmxBuffer &buffer) {
-
   sandnet_packet packet;
   sandnet_dmx *dmx_packet = &packet.contents.dmx;
 
@@ -335,7 +429,7 @@ bool SandNetNode::SendUncompressedDMX(uint8_t port_id,
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(dmx_packet->dmx, &length);
 
-  unsigned int header_size = sizeof(sandnet_dmx) - sizeof(sandnet_dmx.dmx);
+  unsigned int header_size = sizeof(sandnet_dmx) - sizeof(dmx_packet->dmx);
   return SendPacket(packet, sizeof(packet.opcode) + header_size + length);
 }
 
@@ -359,14 +453,15 @@ bool SandNetNode::SendPacket(const sandnet_packet &packet,
   } else {
     destination.sin_port = HostToNetwork(DATA_PORT);
     destination.sin_addr = m_data_addr;
-    socket = m_data_socket;
+    socket = &m_data_socket;
   }
 
-  ssize_t bytes_sent = socket->SendTo((uint8_t*) &packet,
-                                        size,
-                                        destination);
+  ssize_t bytes_sent = socket->SendTo(
+      reinterpret_cast<const uint8_t*>(&packet),
+      size,
+      destination);
 
-  if (bytes_sent != size) {
+  if (bytes_sent != static_cast<ssize_t>(size)) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;
     return false;
   }
