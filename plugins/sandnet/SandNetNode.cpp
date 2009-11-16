@@ -160,6 +160,8 @@ int SandNetNode::SocketReady(UdpSocket *socket) {
       HandleCompressedDMX(packet.contents.compressed_dmx,
                           packet_size - sizeof(packet.opcode));
       break;
+    case SANDNET_ADVERTISMENT:
+      break;
     default:
       OLA_INFO << "Skipping sandnet packet with unknown code: 0x" <<
         std::hex << NetworkToHost(packet.opcode);
