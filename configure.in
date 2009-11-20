@@ -37,6 +37,7 @@ PROTOBUF_SUPPORT([2.1.0])
 AM_CONDITIONAL(HAVE_PTHREAD, test "${have_threads}" = "posix")
 if test "${have_threads}" = "posix"; then
   AC_DEFINE(HAVE_PTHREAD, 1, [define if pthread is installed])
+  LIBS="-lpthread $LIBS"
 fi
 
 # Checks for typedefs, structures, and compiler characteristics.
