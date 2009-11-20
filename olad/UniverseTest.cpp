@@ -34,6 +34,25 @@ using namespace std;
 static unsigned int TEST_UNIVERSE = 1;
 static const string TEST_DATA = "this is some test data";
 
+
+class UniverseTestMockPort: public Port<AbstractDevice> {
+  public:
+    UniverseTestMockPort(AbstractDevice *parent, unsigned int port_id,
+                         bool is_output):
+      Port<AbstractDevice>(parent, port_id),
+      m_is_output_port(is_output) {}
+    ~UniverseTestMockPort() {}
+
+    bool WriteDMX(const DmxBuffer &buffer) { m_buffer = buffer; }
+    const DmxBuffer &ReadDMX() const { return m_buffer; }
+    bool IsOutput() const { return m_is_output_port; }
+
+  private:
+    bool m_is_output_port;
+    DmxBuffer m_buffer;
+};
+
+
 class UniverseTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UniverseTest);
   CPPUNIT_TEST(testLifecycle);
@@ -62,24 +81,13 @@ class UniverseTest: public CppUnit::TestFixture {
     MemoryPreferences *m_preferences;
     UniverseStore *m_store;
     DmxBuffer m_buffer;
-};
 
-
-class UniverseTestMockPort: public Port<AbstractDevice> {
-  public:
-    UniverseTestMockPort(AbstractDevice *parent, unsigned int port_id,
-                         bool is_output):
-      Port<AbstractDevice>(parent, port_id),
-      m_is_output_port(is_output) {}
-    ~UniverseTestMockPort() {}
-
-    bool WriteDMX(const DmxBuffer &buffer) { m_buffer = buffer; }
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool IsOutput() const { return m_is_output_port; }
-
-  private:
-    bool m_is_output_port;
-    DmxBuffer m_buffer;
+    void SetupUniverseWithPorts(Universe **universe,
+                                UniverseTestMockPort **input,
+                                UniverseTestMockPort **output);
+    void CleanUpUniverseWithPorts(Universe *universe,
+                                  UniverseTestMockPort *input,
+                                  UniverseTestMockPort *output);
 };
 
 
@@ -111,6 +119,28 @@ void UniverseTest::tearDown() {
   delete m_preferences;
 }
 
+void UniverseTest::SetupUniverseWithPorts(Universe **universe,
+                                          UniverseTestMockPort **input,
+                                          UniverseTestMockPort **output) {
+
+  // Setup an input port and client to HTP merge between, and a output port to
+  // hold the result
+  *input = new UniverseTestMockPort(NULL, 1, false);
+  *output = new UniverseTestMockPort(NULL, 2, true); // output port
+  *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
+  CPPUNIT_ASSERT(universe);
+  (*universe)->AddPort(*input);
+  (*universe)->AddPort(*output);
+}
+
+void UniverseTest::CleanUpUniverseWithPorts(Universe *universe,
+                                            UniverseTestMockPort *input,
+                                            UniverseTestMockPort *output) {
+  universe->RemovePort(input);
+  universe->RemovePort(output);
+  delete input;
+  delete output;
+}
 
 /*
  * Test that we can create universes and save their settings
@@ -350,32 +380,45 @@ void UniverseTest::testHtpMerging() {
   const string set_dmx_data = "aafbeb";
   const string merge_result_data2 = "bafbecccdabc";
 
-  // Setup an input port and client to HTP merge between, and a output port to
-  // hold the result
-  UniverseTestMockPort input_port(NULL, 1, false); // input port
-  input_port.WriteDMX(DmxBuffer(input_port_data));
-  MockClient input_client;
-  input_client.DMXRecieved(TEST_UNIVERSE, DmxBuffer(input_client_data));
-  UniverseTestMockPort output_port(NULL, 2, true); // output port
-
-  Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
+  Universe *universe;
+  UniverseTestMockPort *input_port, *output_port;
+  SetupUniverseWithPorts(&universe, &input_port, &output_port);
+  input_port->WriteDMX(DmxBuffer(input_port_data));
   universe->SetMergeMode(Universe::MERGE_HTP);
-
-  universe->AddPort(&input_port);
-  universe->AddPort(&output_port);
-  universe->PortDataChanged(&input_port);
-  CPPUNIT_ASSERT(input_port.ReadDMX() == output_port.ReadDMX());
+  universe->PortDataChanged(input_port);
+  CPPUNIT_ASSERT(input_port->ReadDMX() == output_port->ReadDMX());
 
   // Now the client gets some data:
+  MockClient input_client;
+  input_client.DMXRecieved(TEST_UNIVERSE, DmxBuffer(input_client_data));
   universe->SourceClientDataChanged(&input_client);
-  CPPUNIT_ASSERT(DmxBuffer(merge_result_data) == output_port.ReadDMX());
+  CPPUNIT_ASSERT(DmxBuffer(merge_result_data) == output_port->ReadDMX());
 
   // Now check SetDMX merges as well
   CPPUNIT_ASSERT(universe->SetDMX(DmxBuffer(set_dmx_data)));
-  CPPUNIT_ASSERT(DmxBuffer(merge_result_data2) == output_port.ReadDMX());
+  CPPUNIT_ASSERT(DmxBuffer(merge_result_data2) == output_port->ReadDMX());
 
   universe->RemoveSourceClient(&input_client);
-  universe->RemovePort(&output_port);
-  universe->RemovePort(&input_port);
+  CleanUpUniverseWithPorts(universe, input_port, output_port);
+  CPPUNIT_ASSERT(!universe->IsActive());
+  m_store->GarbageCollectUniverses();
+
+  // Check the case where the input port isn't initialized
+  SetupUniverseWithPorts(&universe, &input_port, &output_port);
+  universe->SetMergeMode(Universe::MERGE_HTP);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, output_port->ReadDMX().Size());
+
+  // Now the client gets some data
+  universe->SourceClientDataChanged(&input_client);
+  CPPUNIT_ASSERT(DmxBuffer(input_client_data) == output_port->ReadDMX());
+
+  // And now some different data
+  input_client.DMXRecieved(TEST_UNIVERSE,  DmxBuffer(input_port_data));
+  universe->SourceClientDataChanged(&input_client);
+  CPPUNIT_ASSERT(DmxBuffer(input_port_data) == output_port->ReadDMX());
+
+  universe->RemoveSourceClient(&input_client);
+  CleanUpUniverseWithPorts(universe, input_port, output_port);
+  CPPUNIT_ASSERT(!universe->IsActive());
+  m_store->GarbageCollectUniverses();
 }

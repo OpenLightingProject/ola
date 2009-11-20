@@ -354,7 +354,8 @@ bool Universe::UpdateDependants() {
 
   // write to all ports assigned to this unviverse
   for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-    (*iter)->WriteDMX(m_buffer);
+    if ((*iter)->IsOutput())
+      (*iter)->WriteDMX(m_buffer);
   }
 
   // write to all clients
@@ -454,12 +455,16 @@ bool Universe::HTPMergeAllSources() {
 
   for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
     if (!(*iter)->IsOutput()) {
-      if (first) {
-        // We do a copy here to avoid a delete/new operation later
-        m_buffer.Set((*iter)->ReadDMX());
-        first = false;
-      } else {
+      if (!first) {
         m_buffer.HTPMerge((*iter)->ReadDMX());
+        continue;
+      }
+
+      // We do a copy here to avoid a delete/new operation later
+      if (m_buffer.Set((*iter)->ReadDMX())) {
+        // Sometimes the buffer hasn't been initialized, so it doesn't count
+        // as a reset.
+        first = false;
       }
     }
   }
@@ -467,12 +472,16 @@ bool Universe::HTPMergeAllSources() {
   for (client_iter = m_source_clients.begin();
        client_iter != m_source_clients.end();
        ++client_iter) {
-    if (first) {
-      // We do a copy here to avoid a delete/new operation later
-      m_buffer.Set((*client_iter)->GetDMX(m_universe_id));
-      first = false;
-    } else {
+    if (!first) {
       m_buffer.HTPMerge((*client_iter)->GetDMX(m_universe_id));
+      continue;
+    }
+
+    // We do a copy here to avoid a delete/new operation later
+    if (m_buffer.Set((*client_iter)->GetDMX(m_universe_id))) {
+      // Sometimes the buffer hasn't been initialized, so it doesn't count
+      // as a reset.
+      first = false;
     }
   }
 
