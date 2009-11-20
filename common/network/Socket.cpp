@@ -687,6 +687,5 @@ ConnectedSocket *TcpAcceptingSocket::Accept() {
   socket->SetReadNonBlocking();
   return socket;
 }
-
 }  // network
 }  // ola

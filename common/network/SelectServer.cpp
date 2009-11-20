@@ -455,6 +455,5 @@ void SelectServer::UnregisterAll() {
     m_events.pop();
   }
 }
-
 }  // network
 }  // ola

@@ -49,7 +49,6 @@ class SimpleRpcController: public google::protobuf::RpcController {
     std::string m_error_text;
     google::protobuf::Closure *m_callback;
 };
-
 }  // rpc
 }  // ola
 

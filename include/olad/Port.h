@@ -131,6 +131,5 @@ string Port<DeviceClass>::UniqueId() const {
   }
   return m_port_string;
 }
-
 }  // ola
 #endif  // INCLUDE_OLAD_PORT_H_

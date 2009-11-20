@@ -31,7 +31,6 @@ void StringSplit(const std::string &input,
                  const std::string &delimiters=" ");
 void StringTrim(std::string *input);
 std::string IntToString(int i);
-
 }  // ola
 
 #endif  // INCLUDE_OLA_STRINGUTILS_H_

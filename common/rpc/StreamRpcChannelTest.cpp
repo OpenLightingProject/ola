@@ -30,6 +30,9 @@
 
 using google::protobuf::NewCallback;
 using ola::network::LoopbackSocket;
+using ola::rpc::SimpleRpcController;
+using ola::rpc::StreamRpcChannel;
+using ola::rpc::TestService_Stub;
 using std::string;
 
 

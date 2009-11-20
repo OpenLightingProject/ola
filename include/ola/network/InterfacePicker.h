@@ -78,7 +78,6 @@ class InterfacePicker {
 
     unsigned int GetIfReqSize(const char *data) const;
 };
-
 }  // network
 }  // ola
 #endif  // INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_

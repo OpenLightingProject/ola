@@ -287,6 +287,5 @@ inline Closure* NewClosure(Class* object,
   return new MethodTwoArgClosure<Class, Closure, Arg, Arg2>
                  (object, method, arg, arg2);
 }
-
 }  // ola
 #endif  // INCLUDE_OLA_CLOSURE_H_

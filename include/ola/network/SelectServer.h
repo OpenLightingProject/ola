@@ -107,7 +107,6 @@ class SelectServer {
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;
     event_queue_t m_events;
 };
-
 }  // network
 }  // ola
 #endif  // INCLUDE_OLA_NETWORK_SELECTSERVER_H_

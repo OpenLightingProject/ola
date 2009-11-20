@@ -83,7 +83,5 @@ uint16_t HostToNetwork(uint16_t value) {
 uint32_t HostToNetwork(uint32_t value) {
   return  htonl(value);
 }
-
-
 }  // network
 }  // ola

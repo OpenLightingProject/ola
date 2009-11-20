@@ -464,6 +464,5 @@ void StreamRpcHeader::DecodeHeader(uint32_t header, unsigned int *version,
   *version = (header & VERSION_MASK) >> 28;
   *size = header & SIZE_MASK;
 }
-
 }  // rpc
 }  // ola

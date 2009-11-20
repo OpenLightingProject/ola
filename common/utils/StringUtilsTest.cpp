@@ -120,7 +120,6 @@ void StringUtilsTest::testTrim() {
   input = "  \r\t\n";
   StringTrim(&input);
   CPPUNIT_ASSERT_EQUAL(string(""), input);
-
 }
 
 /*

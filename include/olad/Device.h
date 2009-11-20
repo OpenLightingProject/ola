@@ -110,6 +110,5 @@ class Device: public AbstractDevice {
     Device(const Device&);
     Device& operator=(const Device&);
 };
-
 }  // ola
 #endif  // INCLUDE_OLAD_DEVICE_H_

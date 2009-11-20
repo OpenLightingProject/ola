@@ -165,4 +165,3 @@ void RunLengthEncoderTest::testEncodeDecode() {
   checkEncodeDecode(TEST_DATA2, sizeof(TEST_DATA2));
   checkEncodeDecode(TEST_DATA3, sizeof(TEST_DATA3));
 }
-

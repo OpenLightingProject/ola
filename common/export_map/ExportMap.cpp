@@ -195,6 +195,4 @@ vector<BaseVariable*> ExportMap::AllVariables() const {
 
   return variables;
 }
-
-
 }  // ola

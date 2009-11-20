@@ -70,6 +70,5 @@ class DmxBuffer {
     uint8_t *m_data;
     unsigned int m_length;
 };
-
 }  // ola
 #endif  // INCLUDE_OLA_DMXBUFFER_H_

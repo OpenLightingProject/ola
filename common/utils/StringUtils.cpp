@@ -82,5 +82,4 @@ string IntToString(int i) {
   str << i;
   return str.str();
 }
-
 }  // ola

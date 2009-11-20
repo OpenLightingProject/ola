@@ -139,7 +139,6 @@ class StreamRpcChannel: public RpcChannel {
     static const unsigned int INITIAL_BUFFER_SIZE = 1 << 11;  // 2k
     static const unsigned int MAX_BUFFER_SIZE = 1 << 20;  // 1M
 };
-
 }  // rpc
 }  // ola
 

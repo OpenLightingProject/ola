@@ -71,6 +71,5 @@ class PluginAdaptor {
     class ola::network::SelectServer *m_ss;
     class PreferencesFactory *m_preferences_factory;
 };
-
 }  // ola
 #endif  // INCLUDE_OLAD_PLUGINADAPTOR_H_

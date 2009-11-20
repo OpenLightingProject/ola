@@ -40,6 +40,5 @@ class RunLengthEncoder {
   private:
     static const uint8_t REPEAT_FLAG = 0x80;
 };
-
 }  // ola
 #endif  // INCLUDE_OLA_RUNLENGTHENCODER_H_

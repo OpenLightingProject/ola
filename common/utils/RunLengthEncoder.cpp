@@ -132,5 +132,4 @@ bool RunLengthEncoder::Decode(DmxBuffer *dst,
   }
   return true;
 }
-
 }  // ola

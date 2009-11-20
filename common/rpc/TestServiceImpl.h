@@ -19,11 +19,16 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
-#include "TestService.pb.h"
+#ifndef COMMON_RPC_TESTSERVICEIMPL_H_
+#define COMMON_RPC_TESTSERVICEIMPL_H_
 
-using namespace ola::rpc;
+#include "common/rpc/TestService.pb.h"
 
-class TestServiceImpl : public TestService {
+using ola::rpc::EchoReply;
+using ola::rpc::EchoRequest;
+using ola::rpc::TestService;
+
+class TestServiceImpl: public TestService {
   public:
     TestServiceImpl() {}
     ~TestServiceImpl() {}
@@ -38,3 +43,5 @@ class TestServiceImpl : public TestService {
                     EchoReply* response,
                     ::google::protobuf::Closure* done);
 };
+
+#endif  // COMMON_RPC_TESTSERVICEIMPL_H_

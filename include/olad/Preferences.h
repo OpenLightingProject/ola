@@ -136,8 +136,5 @@ class FileBackedPreferencesFactory: public PreferencesFactory {
       return new FileBackedPreferences(name);
     }
 };
-
-
-
 }  // ola
 #endif  // INCLUDE_OLAD_PREFERENCES_H_

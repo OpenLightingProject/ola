@@ -113,6 +113,5 @@ void SetLogLevel(log_level level);
 void IncrementLogLevel();
 void InitLogging(log_level level, log_output output);
 void InitLogging(log_level level, LogDestination *destination);
-
 }  // ola
 #endif  // INCLUDE_OLA_LOGGING_H_

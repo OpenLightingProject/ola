@@ -489,5 +489,4 @@ void DmxBufferTest::testSetChannel() {
 
   CPPUNIT_ASSERT_EQUAL(slice_size, buffer.Size());
   CPPUNIT_ASSERT(!memcmp(expected, buffer.GetRaw(), buffer.Size()));
-
 }

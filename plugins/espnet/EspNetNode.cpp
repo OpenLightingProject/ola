@@ -384,7 +384,7 @@ bool EspNetNode::SendEspPollReply(const struct in_addr &dst) {
   espnet_packet_union_t packet;
   packet.reply.head = HostToNetwork((uint32_t) ESPNET_REPLY);
 
-  memcpy(packet.reply.mac, m_interface.hw_address, ola::network::MAC_LENGTH) ;
+  memcpy(packet.reply.mac, m_interface.hw_address, ola::network::MAC_LENGTH);
   packet.reply.type = HostToNetwork((uint32_t) m_type);
   packet.reply.version = FIRMWARE_VERSION;
   packet.reply.sw = SWITCH_SETTINGS;

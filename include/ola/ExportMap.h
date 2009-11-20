@@ -188,6 +188,5 @@ class ExportMap {
     map<string, StringMap*> m_str_map_variables;
     map<string, IntMap*> m_int_map_variables;
 };
-
 }  // ola
 #endif  // INCLUDE_OLA_EXPORTMAP_H_

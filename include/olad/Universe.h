@@ -114,6 +114,5 @@ class Universe {
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
 };
-
 }  // ola
 #endif  // INCLUDE_OLAD_UNIVERSE_H_

@@ -104,8 +104,6 @@ class Plugin: public AbstractPlugin {
     Plugin(const Plugin&);
     Plugin& operator=(const Plugin&);
 };
-
-
 }  // ola
 
 // interface functions

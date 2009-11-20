@@ -332,7 +332,6 @@ class TcpAcceptingSocket: public AcceptingSocket {
     TcpAcceptingSocket(const TcpAcceptingSocket &other);
     TcpAcceptingSocket& operator=(const TcpAcceptingSocket &other);
 };
-
 }  // network
 }  // ola
 #endif  // INCLUDE_OLA_NETWORK_SOCKET_H_

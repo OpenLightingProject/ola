@@ -278,6 +278,5 @@ unsigned int InterfacePicker::GetIfReqSize(const char *data) const {
   else
     return sizeof(struct ifreq);
 }
-
 }  // network
 }  // ola

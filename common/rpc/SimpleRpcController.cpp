@@ -51,6 +51,5 @@ void SimpleRpcController::SetFailed(const std::string &reason) {
   m_failed = true;
   m_error_text = reason;
 }
-
 }  // rpc
 }  // ola
