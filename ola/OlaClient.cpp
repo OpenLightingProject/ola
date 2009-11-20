@@ -18,8 +18,9 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <ola/OlaClient.h>
-#include "OlaClientCore.h"
+#include <string>
+#include "ola/OlaClient.h"
+#include "ola/OlaClientCore.h"
 
 namespace ola {
 
@@ -193,5 +194,4 @@ bool OlaClient::Patch(unsigned int device_id,
 bool OlaClient::ConfigureDevice(unsigned int device_id, const string &msg) {
   return m_core->ConfigureDevice(device_id, msg);
 }
-
-} // ola
+}  // ola

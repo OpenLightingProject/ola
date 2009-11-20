@@ -18,17 +18,16 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_CLIENT_H
-#define OLA_CLIENT_H
-
-#include <string>
-#include <vector>
+#ifndef OLA_OLACLIENT_H_
+#define OLA_OLACLIENT_H_
 
 #include <ola/BaseTypes.h>
 #include <ola/common.h>
 #include <ola/plugin_id.h>
 #include <ola/OlaDevice.h>
 #include <ola/DmxBuffer.h>
+#include <string>
+#include <vector>
 
 namespace ola {
 
@@ -73,16 +72,16 @@ class OlaClientObserver {
  */
 class OlaClient {
   public:
-    OlaClient(ola::network::ConnectedSocket *socket);
+    explicit OlaClient(ola::network::ConnectedSocket *socket);
     ~OlaClient();
 
     bool Setup();
     bool Stop();
     bool SetObserver(OlaClientObserver *observer);
 
-    bool FetchPluginInfo(ola_plugin_id filter=ola::OLA_PLUGIN_ALL,
-                         bool include_description=false);
-    bool FetchDeviceInfo(ola_plugin_id filter=ola::OLA_PLUGIN_ALL);
+    bool FetchPluginInfo(ola_plugin_id filter = ola::OLA_PLUGIN_ALL,
+                         bool include_description = false);
+    bool FetchDeviceInfo(ola_plugin_id filter = ola::OLA_PLUGIN_ALL);
     bool FetchUniverseInfo();
 
     // dmx methods
@@ -108,6 +107,5 @@ class OlaClient {
     OlaClient operator=(const OlaClient&);
     OlaClientCore *m_core;
 };
-
-} // ola
-#endif
+}  // ola
+#endif  // OLA_OLACLIENT_H_

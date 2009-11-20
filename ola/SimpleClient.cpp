@@ -25,10 +25,10 @@
 namespace ola {
 
 
-SimpleClient::SimpleClient():
-  m_client(NULL),
-  m_ss(NULL),
-  m_socket(NULL) {
+SimpleClient::SimpleClient()
+    : m_client(NULL),
+      m_ss(NULL),
+      m_socket(NULL) {
 }
 
 SimpleClient::~SimpleClient() {
@@ -91,5 +91,4 @@ int SimpleClient::SocketClosed() {
   m_ss->Terminate();
   return 0;
 }
-
-} // ola
+}  // ola

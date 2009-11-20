@@ -21,29 +21,24 @@
 
 #include "common/protocol/Ola.pb.h"
 
-#ifndef OLA_CLIENT_SERVICE_IMPL_H
-#define OLA_CLIENT_SERVICE_IMPL_H
+#ifndef OLA_OLACLIENTSERVICEIMPL_H_
+#define OLA_OLACLIENTSERVICEIMPL_H_
 
 namespace ola {
 
-using namespace ola::proto;
-
 class OlaClientServiceImpl: public ola::proto::OlaClientService {
   public:
-    OlaClientServiceImpl(class OlaClientObserver *observer):
+    explicit OlaClientServiceImpl(class OlaClientObserver *observer):
       m_observer(observer) {}
     ~OlaClientServiceImpl() {}
 
     void UpdateDmxData(::google::protobuf::RpcController* controller,
-                       const DmxData* request,
-                       Ack* response,
+                       const ola::proto::DmxData* request,
+                       ola::proto::Ack* response,
                        ::google::protobuf::Closure* done);
     void SetObserver(OlaClientObserver *observer) { m_observer = observer; }
   private:
     class OlaClientObserver *m_observer;
 };
-
-
-} // ola
-
-#endif
+}  // ola
+#endif  // OLA_OLACLIENTSERVICEIMPL_H_

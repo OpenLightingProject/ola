@@ -22,19 +22,15 @@
 
 #include <ola/DmxBuffer.h>
 #include "common/protocol/Ola.pb.h"
-#include "OlaClientServiceImpl.h"
-#include "OlaClient.h"
-
+#include "ola/OlaClientServiceImpl.h"
+#include "ola/OlaClient.h"
 
 namespace ola {
 
-using namespace ola::proto;
-
-
 void OlaClientServiceImpl::UpdateDmxData(
     ::google::protobuf::RpcController* controller,
-    const DmxData* request,
-    Ack* response,
+    const ola::proto::DmxData* request,
+    ola::proto::Ack* response,
     ::google::protobuf::Closure* done) {
 
   if (m_observer) {
@@ -44,5 +40,4 @@ void OlaClientServiceImpl::UpdateDmxData(
   }
   done->Run();
 }
-
-} //ola
+}  // ola

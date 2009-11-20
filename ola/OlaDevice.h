@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2006 Simon Newton
  */
 
-#ifndef OLA_CLIENT_DEVICE_H
-#define OLA_CLIENT_DEVICE_H
+#ifndef OLA_OLADEVICE_H_
+#define OLA_OLADEVICE_H_
 
 #include <string>
 #include <vector>
@@ -35,11 +35,11 @@ using std::vector;
  */
 class OlaPlugin {
   public:
-    OlaPlugin(unsigned int id, const string &name, const string &desc=""):
+    OlaPlugin(unsigned int id, const string &name, const string &desc = ""):
       m_id(id),
       m_name(name),
-      m_description(desc) {};
-    ~OlaPlugin() {};
+      m_description(desc) {}
+    ~OlaPlugin() {}
 
     unsigned int Id() const { return m_id; }
     string Name() const { return m_name; }
@@ -49,9 +49,9 @@ class OlaPlugin {
       return m_id < other.m_id;
     }
   private:
-    unsigned int m_id; // id of this plugin
+    unsigned int m_id;  // id of this plugin
     string m_name;  // plugin name
-    string m_description; // optional description
+    string m_description;  // optional description
 };
 
 
@@ -69,7 +69,7 @@ class OlaPort {
       m_universe(universe),
       m_active(active),
       m_description(description) {}
-    ~OlaPort() {};
+    ~OlaPort() {}
 
     int Id() const { return m_id; }
     PortCapability Capability() const { return m_capability; }
@@ -78,10 +78,10 @@ class OlaPort {
     string Description() const { return m_description; }
 
   private:
-    int m_id; // id of this port
+    int m_id;  // id of this port
     PortCapability m_capability;  // port capability
-    int m_universe; // universe
-    int m_active; // active
+    int m_universe;  // universe
+    int m_active;  // active
     string m_description;
 };
 
@@ -136,8 +136,8 @@ class OlaUniverse {
     OlaUniverse(int id, merge_mode m, const string &name):
       m_id(id),
       m_merge_mode(m),
-      m_name(name) {};
-    ~OlaUniverse() {};
+      m_name(name) {}
+    ~OlaUniverse() {}
 
     int Id() const { return m_id;}
     merge_mode MergeMode() const { return m_merge_mode; }
@@ -147,8 +147,6 @@ class OlaUniverse {
     int m_id;      // id of this universe
     merge_mode m_merge_mode;  // merge mode
     string m_name;    // universe name
-
 };
-
-} //ola
-#endif
+}  // ola
+#endif  // OLA_OLADEVICE_H_

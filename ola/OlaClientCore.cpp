@@ -23,10 +23,13 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include <ola/BaseTypes.h>
+#include <algorithm>
+#include <string>
+#include <vector>
 
-#include "OlaClientCore.h"
-#include "OlaDevice.h"
+#include "ola/BaseTypes.h"
+#include "ola/OlaClientCore.h"
+#include "ola/OlaDevice.h"
 
 #ifdef HAVE_PTHREAD
 #define acquire_lock pthread_mutex_lock(&m_mutex)
@@ -39,14 +42,15 @@
 namespace ola {
 
 using google::protobuf::NewCallback;
+using ola::proto::OlaServerService_Stub;
 
-OlaClientCore::OlaClientCore(ConnectedSocket *socket):
-  m_socket(socket),
-  m_client_service(NULL),
-  m_channel(NULL),
-  m_stub(NULL),
-  m_connected(false),
-  m_observer(NULL) {
+OlaClientCore::OlaClientCore(ConnectedSocket *socket)
+    : m_socket(socket),
+      m_client_service(NULL),
+      m_channel(NULL),
+      m_stub(NULL),
+      m_connected(false),
+      m_observer(NULL) {
 #ifdef HAVE_PTHREAD
   pthread_mutex_init(&m_mutex, NULL);
 #endif
@@ -64,7 +68,6 @@ OlaClientCore::~OlaClientCore() {
  * @return true on success, false on failure
  */
 bool OlaClientCore::Setup() {
-
   if (m_connected)
     return false;
 
@@ -98,7 +101,6 @@ bool OlaClientCore::Setup() {
 bool OlaClientCore::Stop() {
   acquire_lock;
   if (m_connected) {
-
     m_socket->Close();
     delete m_channel;
     delete m_client_service;
@@ -291,7 +293,7 @@ bool OlaClientCore::SetUniverseMergeMode(unsigned int universe,
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   ola::proto::MergeMode merge_mode = mode == OlaUniverse::MERGE_HTP ?
-    HTP : LTP;
+    ola::proto::HTP : ola::proto::LTP;
   request.set_universe(universe);
   request.set_merge_mode(merge_mode);
 
@@ -410,11 +412,11 @@ void OlaClientCore::HandlePluginInfo(SimpleRpcController *controller,
   vector<OlaPlugin> ola_plugins;
 
   if (m_observer) {
-    if (controller->Failed())
+    if (controller->Failed()) {
       error_string = controller->ErrorText();
-    else {
-      for (int i=0; i < reply->plugin_size(); ++i) {
-        PluginInfo plugin_info = reply->plugin(i);
+    } else {
+      for (int i = 0; i < reply->plugin_size(); ++i) {
+        ola::proto::PluginInfo plugin_info = reply->plugin(i);
         OlaPlugin plugin(plugin_info.plugin_id(),
                          plugin_info.name(),
                          plugin_info.description());
@@ -436,7 +438,6 @@ void OlaClientCore::HandlePluginInfo(SimpleRpcController *controller,
  */
 void OlaClientCore::HandleSendDmx(SimpleRpcController *controller,
                                   ola::proto::Ack *reply) {
-
   string error_string = "";
   if (controller->Failed())
     error_string = controller->ErrorText();
@@ -462,7 +463,7 @@ void OlaClientCore::HandleGetDmx(ola::rpc::SimpleRpcController *controller,
     if (controller->Failed())
       error_string = controller->ErrorText();
     release_lock;
-    // TODO: keep a map of registrations and filter
+    // TODO(simon): keep a map of registrations and filter
     DmxBuffer buffer;
     buffer.Set(reply->data());
     m_observer->NewDmx(reply->universe(), buffer, error_string);
@@ -482,15 +483,15 @@ void OlaClientCore::HandleDeviceInfo(ola::rpc::SimpleRpcController *controller,
   vector<OlaDevice> ola_devices;
 
   if (m_observer) {
-    if (controller->Failed())
+    if (controller->Failed()) {
       error_string = controller->ErrorText();
-    else {
-      for (int i=0; i < reply->device_size(); ++i) {
-        DeviceInfo device_info = reply->device(i);
+    } else {
+      for (int i = 0; i < reply->device_size(); ++i) {
+        ola::proto::DeviceInfo device_info = reply->device(i);
         vector<OlaPort> ports;
 
-        for (int j=0; j < device_info.port_size(); ++j) {
-          PortInfo port_info = device_info.port(j);
+        for (int j = 0; j < device_info.port_size(); ++j) {
+          ola::proto::PortInfo port_info = device_info.port(j);
           OlaPort::PortCapability capability = port_info.output_port() ?
             OlaPort::OLA_PORT_CAP_OUT : OlaPort::OLA_PORT_CAP_IN;
           OlaPort port(port_info.port_id(),
@@ -529,11 +530,11 @@ void OlaClientCore::HandleUniverseInfo(SimpleRpcController *controller,
   vector<OlaUniverse> ola_universes;
 
   if (m_observer) {
-    if (controller->Failed())
+    if (controller->Failed()) {
       error_string = controller->ErrorText();
-    else {
-      for (int i=0; i < reply->universe_size(); ++i) {
-        UniverseInfo universe_info = reply->universe(i);
+    } else {
+      for (int i = 0; i < reply->universe_size(); ++i) {
+        ola::proto::UniverseInfo universe_info = reply->universe(i);
         OlaUniverse::merge_mode merge_mode = (
           universe_info.merge_mode() == ola::proto::HTP ?
           OlaUniverse::MERGE_HTP: OlaUniverse::MERGE_LTP);
@@ -567,8 +568,9 @@ void OlaClientCore::HandleUniverseName(SimpleRpcController *controller,
     release_lock;
     m_observer->UniverseNameComplete(error_string);
     acquire_lock;
-  } else if (!error_string.empty())
+  } else if (!error_string.empty()) {
     printf("set name failed: %s\n", error_string.c_str());
+  }
 
   delete controller;
   delete reply;
@@ -588,8 +590,9 @@ void OlaClientCore::HandleUniverseMergeMode(SimpleRpcController *controller,
     release_lock;
     m_observer->UniverseMergeModeComplete(error_string);
     acquire_lock;
-  } else if (!error_string.empty())
+  } else if (!error_string.empty()) {
     printf("set merge mode failed: %s\n", controller->ErrorText().c_str());
+  }
   delete controller;
   delete reply;
 }
@@ -620,8 +623,9 @@ void OlaClientCore::HandlePatch(SimpleRpcController *controller,
     release_lock;
     m_observer->PatchComplete(error_string);
     acquire_lock;
-  } else if (!error_string.empty())
+  } else if (!error_string.empty()) {
     printf("patch failed: %s\n", controller->ErrorText().c_str());
+  }
   delete controller;
   delete reply;
 }
@@ -631,21 +635,20 @@ void OlaClientCore::HandlePatch(SimpleRpcController *controller,
  * Handle a device config response
  *
  */
-void OlaClientCore::HandleDeviceConfig(ola::rpc::SimpleRpcController *controller,
-                                       ola::proto::DeviceConfigReply *reply) {
+void OlaClientCore::HandleDeviceConfig(
+    ola::rpc::SimpleRpcController *controller,
+    ola::proto::DeviceConfigReply *reply) {
   string error_string;
   if (m_observer) {
     if (controller->Failed())
       error_string = controller->ErrorText();
 
     release_lock;
-    //TODO: add the device id here
+    // TODO(simon): add the device id here
     m_observer->DeviceConfig(reply->data(), error_string)
     acquire_lock;
   }
   delete controller;
   delete reply;
 }
-
-
-} // ola
+}  // ola

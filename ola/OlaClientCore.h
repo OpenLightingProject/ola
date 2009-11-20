@@ -18,29 +18,26 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_CLIENT_CORE_H
-#define OLA_CLIENT_CORE_H
+#ifndef OLA_OLACLIENTCORE_H_
+#define OLA_OLACLIENTCORE_H_
 
 #ifdef OLA_HAVE_PTHREAD
 #include <pthread.h>
 #endif
 
+#include <google/protobuf/stubs/common.h>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
-#include <ola/network/Socket.h>
-#include <ola/DmxBuffer.h>
-#include <ola/OlaClient.h>
-#include <ola/OlaDevice.h>
-#include <ola/common.h>
-#include <ola/plugin_id.h>
-
 #include "common/protocol/Ola.pb.h"
-#include "common/rpc/StreamRpcChannel.h"
 #include "common/rpc/SimpleRpcController.h"
-
-#include "common/protocol/Ola.pb.h"
-#include "OlaClientServiceImpl.h"
+#include "common/rpc/StreamRpcChannel.h"
+#include "ola/DmxBuffer.h"
+#include "ola/OlaClient.h"
+#include "ola/OlaClientServiceImpl.h"
+#include "ola/OlaDevice.h"
+#include "ola/common.h"
+#include "ola/network/Socket.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
 
@@ -53,7 +50,7 @@ using ola::rpc::StreamRpcChannel;
 
 class OlaClientCore {
   public:
-    OlaClientCore(ConnectedSocket *socket);
+    explicit OlaClientCore(ConnectedSocket *socket);
     ~OlaClientCore();
 
     bool Setup();
@@ -117,8 +114,6 @@ class OlaClientCore {
 #ifdef OLA_HAVE_PTHREAD
     pthread_mutex_t m_mutex;
 #endif
-
 };
-
-} // ola
-#endif
+}  // ola
+#endif  // OLA_OLACLIENTCORE_H_

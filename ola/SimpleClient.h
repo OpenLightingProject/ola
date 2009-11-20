@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_SIMPLE_CLIENT_H
-#define OLA_SIMPLE_CLIENT_H
+#ifndef OLA_SIMPLECLIENT_H_
+#define OLA_SIMPLECLIENT_H_
 
 #include <ola/OlaClient.h>
 #include <ola/network/SelectServer.h>
@@ -55,7 +55,5 @@ class SimpleClient {
     SelectServer *m_ss;
     TcpSocket *m_socket;
 };
-
-} // ola
-
-#endif
+}  // ola
+#endif  // OLA_SIMPLECLIENT_H_
