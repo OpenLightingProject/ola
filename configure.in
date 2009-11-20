@@ -101,6 +101,14 @@ AC_CHECK_MEMBER(struct sockaddr_dl.sdl_family,
 #include <sys/types.h>
 #include <net/if_dl.h>])
 
+# check for uuid - the first call to PKG_CHECK_MODULES can't be conditional
+PKG_CHECK_MODULES(UUID, [uuid >= 0.22], [], [true])
+AC_CHECK_HEADERS(
+   [uuid/uuid.h],
+   [],
+   [AC_MSG_ERROR([Missing uuid/uuid.h])]
+)
+
 # check for plugin dependencies. We also build a list of plugins that we're
 # going to compile here so the test binary knows what to link against
 PLUGINS="dummy opendmx stageprofi usbpro"
@@ -111,21 +119,8 @@ PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
 
 # confirm libartnet version
 if test "${have_artnet}" = "yes"; then
-PKG_CHECK_MODULES(libartnet, [libartnet >= 1.1.0])
+  PKG_CHECK_MODULES(libartnet, [libartnet >= 1.1.0])
 fi
-
-# check for uuid
-PKG_CHECK_MODULES(UUID, [uuid >= 0.22], [], [true])
-AC_CHECK_HEADERS(
-   [uuid/uuid.h],
-   [],
-   [AC_MSG_ERROR([Missing uuid/uuid.h])]
-)
-
-AM_CONDITIONAL(HAVE_ACN, test "${have_acn}" = "yes")
-
-AC_SUBST(libacn_CFLAGS)
-AC_SUBST(libacn_LIBS)
 
 # create a list of plugin libs that will be used for testing
 PLUGIN_LIBS=''
