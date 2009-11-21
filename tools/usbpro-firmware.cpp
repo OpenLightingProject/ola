@@ -20,23 +20,27 @@
 #include <getopt.h>
 #include <errno.h>
 #include <string.h>
+#include <ola/Logging.h>
+#include <ola/Closure.h>
+#include <ola/network/SelectServer.h>
+
 #include <iostream>
 #include <fstream>
 #include <string>
 
-#include <ola/Logging.h>
-#include <ola/Closure.h>
-#include <ola/network/SelectServer.h>
 #include "usbpro/UsbProWidget.h"
 #include "usbpro/UsbProWidgetListener.h"
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::ifstream;
+using std::string;
 using ola::usbpro::UsbProWidget;
 
-static const string DEFAULT_DEVICE = "/dev/ttyUSB0";
-static const string DEFAULT_FIRMWARE = "main.bin";
-static const int PAUSE_DELAY = 1000; // ms before starting upload
-static const int ABORT_TIMEOUT = 10 * 1000; // ms seconds before aborting
+static const char DEFAULT_DEVICE[] = "/dev/ttyUSB0";
+static const char DEFAULT_FIRMWARE[] = "main.bin";
+static const int PAUSE_DELAY = 1000;  // ms before starting upload
+static const int ABORT_TIMEOUT = 10 * 1000;  // ms seconds before aborting
 
 typedef struct {
   bool help;
@@ -48,7 +52,7 @@ typedef struct {
 
 class FirmwareTransferer: public ola::usbpro::UsbProWidgetListener {
   public:
-    FirmwareTransferer(ifstream &file,
+    FirmwareTransferer(ifstream *file,
                        UsbProWidget *widget,
                        ola::network::SelectServer *ss):
       m_sent_last_page(false),
@@ -59,12 +63,15 @@ class FirmwareTransferer: public ola::usbpro::UsbProWidgetListener {
 
     void HandleFirmwareReply(bool success);
     int SendNextChunk();
-    int AbortTransfer() { m_ss->Terminate(); return 0; }
+    int AbortTransfer() {
+      m_ss->Terminate();
+      return 0;
+    }
     bool WasSucessfull() const { return m_sucessful; }
   private:
     bool m_sent_last_page;
     bool m_sucessful;
-    ifstream &m_firmware;
+    ifstream *m_firmware;
     UsbProWidget *m_widget;
     ola::network::SelectServer *m_ss;
 };
@@ -90,8 +97,9 @@ void FirmwareTransferer::HandleFirmwareReply(bool success) {
  */
 int FirmwareTransferer::SendNextChunk() {
   uint8_t page[ola::usbpro::FLASH_PAGE_LENGTH];
-  m_firmware.read((char*) page, ola::usbpro::FLASH_PAGE_LENGTH);
-  streamsize size = m_firmware.gcount();
+  m_firmware->read(reinterpret_cast<char*>(page),
+                   ola::usbpro::FLASH_PAGE_LENGTH);
+  std::streamsize size = m_firmware->gcount();
 
   if (!size) {
     m_sucessful = true;
@@ -141,7 +149,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
 
       case 'l':
-        switch(atoi(optarg)) {
+        switch (atoi(optarg)) {
           case 0:
             // nothing is written at this level
             // so this turns logging off
@@ -165,9 +173,8 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case '?':
         break;
-
       default:
-       ;
+       break;
     }
   }
   return;
@@ -178,7 +185,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
  * Display the help message
  */
 void DisplayHelpAndExit(char *argv[]) {
-   cout << "Usage: " << argv[0] <<
+  cout << "Usage: " << argv[0] <<
   " -d <device> -f <firmware_file>\n"
   "\n"
   "Flash the firmware on an Enttec USB Pro device.\n"
@@ -221,7 +228,7 @@ int main(int argc, char *argv[]) {
     exit(1);
 
   ola::network::SelectServer ss;
-  FirmwareTransferer transferer(firmware_file, &widget, &ss);
+  FirmwareTransferer transferer(&firmware_file, &widget, &ss);
   widget.SetListener(&transferer);
 
   if (!widget.SendReprogram()) {
