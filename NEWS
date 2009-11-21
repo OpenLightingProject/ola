@@ -1,3 +1,8 @@
+11/21/2009 ola-0.5.0
+  Added Sandnet Support
+  Added automatic USB Pro device detection
+  Fixed a HTP merging bug
+
 10/18/2009 ola-0.4.0
   Added E1.13 Support
 
