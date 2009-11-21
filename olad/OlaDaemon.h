@@ -18,14 +18,15 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_DAEMON_H
-#define OLA_DAEMON_H
+#ifndef OLAD_OLADAEMON_H_
+#define OLAD_OLADAEMON_H_
 
-#include <ola/network/SelectServer.h>
-#include <ola/network/Socket.h>
-#include <ola/BaseTypes.h>
-#include <ola/ExportMap.h>
-#include "OlaServer.h"
+#include <string>
+#include "ola/BaseTypes.h"
+#include "ola/ExportMap.h"
+#include "ola/network/SelectServer.h"
+#include "ola/network/Socket.h"
+#include "olad/OlaServer.h"
 
 namespace ola {
 
@@ -34,9 +35,9 @@ using ola::network::SelectServer;
 
 class OlaDaemon {
   public:
-    OlaDaemon(ola_server_options &options,
-              ExportMap *export_map=NULL,
-              unsigned int rpc_port=OLA_DEFAULT_PORT);
+    OlaDaemon(const ola_server_options &options,
+              ExportMap *export_map = NULL,
+              unsigned int rpc_port = OLA_DEFAULT_PORT);
     ~OlaDaemon();
     bool Init();
     void Run();
@@ -61,8 +62,7 @@ class OlaDaemon {
     class ExportMap *m_export_map;
     unsigned int m_rpc_port;
 
-    static const string K_RPC_PORT_VAR;
+    static const char K_RPC_PORT_VAR[];
 };
-
-} // ola
-#endif
+}  // ola
+#endif  // OLAD_OLADAEMON_H_

@@ -22,32 +22,25 @@
 #  include <config.h>
 #endif
 
-#include <olad/Plugin.h>
-#include "DynamicPluginLoader.h"
+#include <vector>
+#include "olad/Plugin.h"
+#include "olad/DynamicPluginLoader.h"
 
 #include "plugins/dummy/DummyPlugin.h"
+#include "plugins/espnet/EspNetPlugin.h"
 #include "plugins/opendmx/OpenDmxPlugin.h"
+#include "plugins/sandnet/SandnetPlugin.h"
+#include "plugins/shownet/ShowNetPlugin.h"
 #include "plugins/stageprofi/StageProfiPlugin.h"
 #include "plugins/usbpro/UsbProPlugin.h"
 
 #ifdef HAVE_ARTNET
 #include "plugins/artnet/ArtNetPlugin.h"
 #endif
-#ifdef HAVE_ESPNET
-#include "plugins/espnet/EspNetPlugin.h"
-#endif
 
 /*
 #ifdef HAVE_PATHPORT
 #include "plugins/pathport/PathportPlugin.h"
-#endif
-
-#ifdef HAVE_SANDNET
-#include "plugins/sandnet/SandnetPlugin.h"
-#endif
-
-#ifdef HAVE_SHOWNET
-#include "plugins/shownet/ShowNetPlugin.h"
 #endif
 */
 
@@ -76,30 +69,21 @@ int DynamicPluginLoader::LoadPlugins() {
   m_plugins.push_back(plugin);
   plugin = new ola::plugin::UsbProPlugin(m_plugin_adaptor);
   m_plugins.push_back(plugin);
+  plugin = new ola::plugin::EspNetPlugin(m_plugin_adaptor);
+  m_plugins.push_back(plugin);
+  plug = new SandNetPlugin(m_pa, OLA_PLUGIN_SANDNET);
+  m_plugins.push_back(plug);
+  plug = new ShowNetPlugin(m_pa, OLA_PLUGIN_SHOWNET);
+  m_plugins.push_back(plug);
 
 #ifdef HAVE_ARTNET
   plugin = new ola::plugin::ArtNetPlugin(m_plugin_adaptor);
   m_plugins.push_back(plugin);
 #endif
 
-#ifdef HAVE_ESPNET
-  plugin = new ola::plugin::EspNetPlugin(m_plugin_adaptor);
-  m_plugins.push_back(plugin);
-#endif
-
   /*
 #ifdef HAVE_PATHPORT
   plug = new PathportPlugin(m_pa, OLA_PLUGIN_PATHPORT);
-  m_plugins.push_back(plug);
-#endif
-
-#ifdef HAVE_SANDNET
-  plug = new SandNetPlugin(m_pa, OLA_PLUGIN_SANDNET);
-  m_plugins.push_back(plug);
-#endif
-
-#ifdef HAVE_SHOWNET
-  plug = new ShowNetPlugin(m_pa, OLA_PLUGIN_SHOWNET);
   m_plugins.push_back(plug);
 #endif
 */
@@ -160,5 +144,4 @@ AbstractPlugin* DynamicPluginLoader::GetPlugin(ola_plugin_id plugin_id) const {
       return *iter;
   return NULL;
 }
-
-} //ola
+}  // ola

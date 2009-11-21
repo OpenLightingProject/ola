@@ -18,12 +18,11 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_DYNAMICPLUGINLOADER_H
-#define OLA_DYNAMICPLUGINLOADER_H
+#ifndef OLAD_DYNAMICPLUGINLOADER_H_
+#define OLAD_DYNAMICPLUGINLOADER_H_
 
 #include <vector>
-
-#include "PluginLoader.h"
+#include "olad/PluginLoader.h"
 
 namespace ola {
 
@@ -32,7 +31,7 @@ class AbstractPlugin;
 
 class DynamicPluginLoader: public PluginLoader {
   public:
-    DynamicPluginLoader() {};
+    DynamicPluginLoader() {}
     ~DynamicPluginLoader() { UnloadPlugins(); }
 
     int LoadPlugins();
@@ -47,6 +46,5 @@ class DynamicPluginLoader: public PluginLoader {
 
     vector<AbstractPlugin*> m_plugins;
 };
-
-} //ola
-#endif
+}  // ola
+#endif  // OLAD_DYNAMICPLUGINLOADER_H_

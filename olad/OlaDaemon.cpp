@@ -21,12 +21,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <ola/ExportMap.h>
-#include <olad/OlaDaemon.h>
-#include <olad/Preferences.h>
-#include "DlOpenPluginLoader.h"
-#include "OlaServerServiceImpl.h"
-#include "PluginLoader.h"
+#include "ola/ExportMap.h"
+#include "olad/DlOpenPluginLoader.h"
+#include "olad/OlaDaemon.h"
+#include "olad/OlaServerServiceImpl.h"
+#include "olad/PluginLoader.h"
+#include "olad/Preferences.h"
 
 namespace ola {
 
@@ -34,26 +34,24 @@ using ola::network::TcpAcceptingSocket;
 using ola::network::AcceptingSocket;
 using ola::network::SelectServer;
 
-const string OlaDaemon::K_RPC_PORT_VAR = "rpc_port";
+const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc_port";
 
 /*
  * Create a new OlaDaemon
- *
  * @param PluginLoader what to use to access the plugins
  */
-OlaDaemon::OlaDaemon(ola_server_options &options,
+OlaDaemon::OlaDaemon(const ola_server_options &options,
                      ExportMap *export_map,
-                     unsigned int rpc_port):
-  m_plugin_loader(NULL),
-  m_ss(NULL),
-  m_server(NULL),
-  m_preferences_factory(NULL),
-  m_accepting_socket(NULL),
-  m_service_factory(NULL),
-  m_options(options),
-  m_export_map(export_map),
-  m_rpc_port(rpc_port) {
-
+                     unsigned int rpc_port)
+    : m_plugin_loader(NULL),
+      m_ss(NULL),
+      m_server(NULL),
+      m_preferences_factory(NULL),
+      m_accepting_socket(NULL),
+      m_service_factory(NULL),
+      m_options(options),
+      m_export_map(export_map),
+      m_rpc_port(rpc_port) {
   if (m_export_map) {
     IntegerVariable *var = m_export_map->GetIntegerVar(K_RPC_PORT_VAR);
     var->Set(rpc_port);
@@ -119,5 +117,4 @@ void OlaDaemon::Terminate() {
 void OlaDaemon::ReloadPlugins() {
   m_server->ReloadPlugins();
 }
-
-} //ola
+}  // ola

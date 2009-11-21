@@ -18,15 +18,15 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_HTTP_SERVER_H
-#define OLA_HTTP_SERVER_H
+#ifndef OLAD_OLAHTTPSERVER_H_
+#define OLAD_OLAHTTPSERVER_H_
 
 #include <string>
 #include <ctemplate/template.h>
-#include <ola/network/SelectServer.h>
-#include <ola/ExportMap.h>
-#include <olad/Device.h>
-#include "HttpServer.h"
+#include "ola/ExportMap.h"
+#include "ola/network/SelectServer.h"
+#include "olad/Device.h"
+#include "olad/HttpServer.h"
 
 namespace ola {
 
@@ -83,10 +83,9 @@ class OlaHttpServer {
     DeviceManager *m_device_manager;
     bool m_enable_quit;
 
-    static const string K_DATA_DIR_VAR;
+    static const char K_DATA_DIR_VAR[];
     static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;
     static const unsigned int K_CONSOLE_SLIDERS = 15;
 };
-
-} // ola
-#endif
+}  // ola
+#endif  // OLAD_OLAHTTPSERVER_H_

@@ -19,9 +19,10 @@
  */
 
 #include <google/protobuf/stubs/common.h>
-#include <ola/Logging.h>
+#include <map>
 #include "common/protocol/Ola.pb.h"
-#include "Client.h"
+#include "ola/Logging.h"
+#include "olad/Client.h"
 
 namespace ola {
 
@@ -103,5 +104,4 @@ const DmxBuffer Client::GetDMX(unsigned int universe) const {
     return empty_buffer;
   }
 }
-
-} //ola
+}  // ola

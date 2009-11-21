@@ -20,13 +20,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
-#include <ola/Logging.h>
-#include <olad/Device.h>
-#include <olad/Port.h>
-#include <olad/Universe.h>
+#include <string>
+#include <vector>
+
+#include "ola/Logging.h"
+#include "olad/Device.h"
+#include "olad/Port.h"
+#include "olad/Universe.h"
 
 namespace ola {
 
@@ -39,11 +41,11 @@ using google::protobuf::Closure;
  * @param  owner  the plugin that owns this device
  * @param  name  a nice name for this device
  */
-Device::Device(AbstractPlugin *owner, const string &name):
-  AbstractDevice(),
-  m_enabled(false),
-  m_owner(owner),
-  m_name(name) {
+Device::Device(AbstractPlugin *owner, const string &name)
+    : AbstractDevice(),
+      m_enabled(false),
+      m_owner(owner),
+      m_name(name) {
 }
 
 
@@ -93,7 +95,7 @@ const vector<AbstractPort*> Device::Ports() const {
  * Returns the Port with the id port_id
  */
 AbstractPort *Device::GetPort(unsigned int port_id) const {
-  if(port_id >= m_ports.size())
+  if (port_id >= m_ports.size())
     return NULL;
 
   return m_ports[port_id];
@@ -131,5 +133,4 @@ string Device::UniqueId() const {
   }
   return m_unique_id;
 }
-
-} //ola
+}  // ola

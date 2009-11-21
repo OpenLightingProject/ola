@@ -18,20 +18,23 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
 
-#include <ola/DmxBuffer.h>
-#include "Client.h"
+#include "ola/DmxBuffer.h"
+#include "olad//Client.h"
 #include "common/protocol/Ola.pb.h"
 
-using namespace ola;
-using namespace std;
 
 static unsigned int TEST_UNIVERSE = 1;
 static unsigned int TEST_UNIVERSE2 = 2;
-static const string TEST_DATA = "this is some test data";
-static const string TEST_DATA2 = "another set of test data";
+static const char TEST_DATA[] = "this is some test data";
+static const char TEST_DATA2[] = "another set of test data";
+
+using ola::Client;
+using ola::DmxBuffer;
+using std::string;
+
 
 class ClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClientTest);
@@ -112,7 +115,7 @@ void ClientTest::testGetSetDMX() {
   client.DMXRecieved(TEST_UNIVERSE, buffer);
   result = client.GetDMX(TEST_UNIVERSE);
   CPPUNIT_ASSERT(buffer == result);
-  CPPUNIT_ASSERT_EQUAL(TEST_DATA2, result.Get());
+  CPPUNIT_ASSERT_EQUAL(string(TEST_DATA2), result.Get());
 
   // check fetching an unknown universe results in an empty buffer
   result = client.GetDMX(TEST_UNIVERSE2);

@@ -26,27 +26,27 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <map>
+#include <vector>
 
-#include <ola/ExportMap.h>
-#include <ola/Logging.h>
-#include <olad/Plugin.h>
-#include <olad/PluginAdaptor.h>
-#include <olad/Port.h>
-#include <olad/Preferences.h>
-#include <olad/Universe.h>
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
-
-#include "Client.h"
-#include "DeviceManager.h"
-#include "OlaServer.h"
-#include "OlaServerServiceImpl.h"
-#include "OlaServerServiceImpl.h"
-#include "PluginLoader.h"
-#include "UniverseStore.h"
+#include "ola/ExportMap.h"
+#include "ola/Logging.h"
+#include "olad/Client.h"
+#include "olad/DeviceManager.h"
+#include "olad/OlaServer.h"
+#include "olad/OlaServerServiceImpl.h"
+#include "olad/Plugin.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/PluginLoader.h"
+#include "olad/Port.h"
+#include "olad/Preferences.h"
+#include "olad/Universe.h"
+#include "olad/UniverseStore.h"
 
 #ifdef HAVE_LIBMICROHTTPD
-#include "OlaHttpServer.h"
+#include "olad/OlaHttpServer.h"
 #endif
 
 namespace ola {
@@ -54,8 +54,8 @@ namespace ola {
 using ola::rpc::StreamRpcChannel;
 using std::pair;
 
-const string OlaServer::UNIVERSE_PREFERENCES = "universe";
-const string OlaServer::K_CLIENT_VAR = "clients-connected";
+const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
+const char OlaServer::K_CLIENT_VAR[] = "clients-connected";
 const unsigned int OlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
 
 
@@ -71,23 +71,22 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
                      ola::network::SelectServer *select_server,
                      ola_server_options *ola_options,
                      ola::network::AcceptingSocket *socket,
-                     ExportMap *export_map):
-  m_service_factory(factory),
-  m_plugin_loader(plugin_loader),
-  m_ss(select_server),
-  m_accepting_socket(socket),
-  m_device_manager(NULL),
-  m_plugin_adaptor(NULL),
-  m_preferences_factory(preferences_factory),
-  m_universe_preferences(NULL),
-  m_universe_store(NULL),
-  m_export_map(export_map),
-  m_init_run(false),
-  m_free_export_map(false),
-  m_garbage_collect_timeout(ola::network::INVALID_TIMEOUT),
-  m_httpd(NULL),
-  m_options(*ola_options) {
-
+                     ExportMap *export_map)
+    : m_service_factory(factory),
+      m_plugin_loader(plugin_loader),
+      m_ss(select_server),
+      m_accepting_socket(socket),
+      m_device_manager(NULL),
+      m_plugin_adaptor(NULL),
+      m_preferences_factory(preferences_factory),
+      m_universe_preferences(NULL),
+      m_universe_store(NULL),
+      m_export_map(export_map),
+      m_init_run(false),
+      m_free_export_map(false),
+      m_garbage_collect_timeout(ola::network::INVALID_TIMEOUT),
+      m_httpd(NULL),
+      m_options(*ola_options) {
   if (!m_export_map) {
     m_export_map = new ExportMap();
     m_free_export_map = true;
@@ -104,7 +103,6 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
  * Shutdown the server
  */
 OlaServer::~OlaServer() {
-
 #ifdef HAVE_LIBMICROHTTPD
   if (m_httpd) {
     m_httpd->Stop();
@@ -124,9 +122,8 @@ OlaServer::~OlaServer() {
 
   map<int, OlaServerServiceImpl*>::iterator iter;
   for (iter = m_sd_to_service.begin(); iter != m_sd_to_service.end(); ++iter) {
-
     CleanupConnection(iter->second);
-    //TODO: close the socket here
+    // TODO(simon): close the socket here
 
     /*Socket *socket = ;
     m_ss->RemoveSocket(socket);
@@ -165,7 +162,7 @@ bool OlaServer::Init() {
   if (!m_service_factory || !m_ss)
     return false;
 
-  //TODO: run without preferences & PluginLoader
+  // TODO(simon): run without preferences & PluginLoader
   if (!m_plugin_loader || !m_preferences_factory)
     return false;
 
@@ -372,5 +369,4 @@ void OlaServer::CleanupConnection(OlaServerServiceImpl *service) {
   delete client;
   delete service;
 }
-
-} // ola
+}  // ola

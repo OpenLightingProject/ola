@@ -18,21 +18,28 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
+#include <vector>
 
-#include <ola/DmxBuffer.h>
-#include <olad/Device.h>
-#include <olad/Plugin.h>
-#include <olad/Port.h>
-#include <olad/Preferences.h>
-#include "DeviceManager.h"
-#include "UniverseStore.h"
+#include "ola/DmxBuffer.h"
+#include "ola/Logging.h"
+#include "olad/Device.h"
+#include "olad/DeviceManager.h"
+#include "olad/Plugin.h"
+#include "olad/Port.h"
+#include "olad/Preferences.h"
+#include "olad/UniverseStore.h"
 
-#include <ola/Logging.h>
-
-using namespace ola;
-using namespace std;
+using std::string;
+using std::vector;
+using ola::DmxBuffer;
+using ola::AbstractPlugin;
+using ola::AbstractPort;
+using ola::AbstractDevice;
+using ola::DeviceManager;
+using ola::Universe;
+using ola::UniverseStore;
 
 
 class DeviceTest: public CppUnit::TestFixture {
@@ -52,28 +59,28 @@ class DeviceTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(DeviceTest);
 
 
-class DeviceTestMockPlugin: public Plugin {
+class DeviceTestMockPlugin: public ola::Plugin {
   public:
-    DeviceTestMockPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit DeviceTestMockPlugin(const ola::PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
     string Name() const { return "foo"; }
     string Description() const { return "bar"; }
-    ola_plugin_id Id() const { return OLA_PLUGIN_ALL; }
+    ola::ola_plugin_id Id() const { return ola::OLA_PLUGIN_ALL; }
     string PluginPrefix() const { return "test"; }
 };
 
-class DeviceTestMockDevice: public Device {
+class DeviceTestMockDevice: public ola::Device {
   public:
-    DeviceTestMockDevice(AbstractPlugin *owner, const string &name):
+    DeviceTestMockDevice(ola::AbstractPlugin *owner, const string &name):
       Device(owner, name) {}
     string DeviceId() const { return Name(); }
 };
 
 
-class DeviceTestMockPort: public Port<AbstractDevice> {
+class DeviceTestMockPort: public ola::Port<AbstractDevice> {
   public:
     DeviceTestMockPort(AbstractDevice *parent, unsigned int id):
-      Port<AbstractDevice>(parent, id) {}
+      ola::Port<AbstractDevice>(parent, id) {}
     ~DeviceTestMockPort() {}
     bool WriteDMX(const DmxBuffer &buffer) {}
     const DmxBuffer &ReadDMX() const {}
@@ -126,7 +133,6 @@ void DeviceTest::testDevice() {
  * Test that we can create universes and save their settings
  */
 void DeviceTest::testDeviceManager() {
-
   DeviceManager manager(NULL, NULL);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
@@ -150,7 +156,7 @@ void DeviceTest::testDeviceManager() {
   CPPUNIT_ASSERT(manager.RegisterDevice(&device2));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 2, manager.DeviceCount());
 
-  vector<device_alias_pair> devices = manager.Devices();
+  vector<ola::device_alias_pair> devices = manager.Devices();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, devices[0].alias);
   CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, devices[0].device);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 2, devices[1].alias);
@@ -162,17 +168,17 @@ void DeviceTest::testDeviceManager() {
   CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, manager.GetDevice(3));
 
   // test fetching a device by id
-  device_alias_pair result = manager.GetDevice(device1.UniqueId());
+  ola::device_alias_pair result = manager.GetDevice(device1.UniqueId());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, result.alias);
   CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, result.device);
   result = manager.GetDevice(device2.UniqueId());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 2, result.alias);
   CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device2, result.device);
   result = manager.GetDevice("foo");
-  CPPUNIT_ASSERT_EQUAL(ola::DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
+  CPPUNIT_ASSERT_EQUAL(DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
   CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, result.device);
   result = manager.GetDevice("");
-  CPPUNIT_ASSERT_EQUAL(ola::DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
+  CPPUNIT_ASSERT_EQUAL(DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
   CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, result.device);
 
   // test unregistering null or non-registered device
@@ -208,12 +214,12 @@ void DeviceTest::testDeviceManager() {
  * Check that we restore the port patchings
  */
 void DeviceTest::testRestorePatchings() {
-  MemoryPreferencesFactory prefs_factory;
+  ola::MemoryPreferencesFactory prefs_factory;
   UniverseStore uni_store(NULL, NULL);
   DeviceManager manager(&prefs_factory, &uni_store);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
-  Preferences *prefs = prefs_factory.NewPreference("port");
+  ola::Preferences *prefs = prefs_factory.NewPreference("port");
   CPPUNIT_ASSERT(prefs);
   prefs->SetValue("1", "1");
   prefs->SetValue("2", "3");

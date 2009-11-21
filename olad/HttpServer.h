@@ -19,18 +19,18 @@
  */
 
 
-#ifndef HTTP_SERVER_H
-#define HTTP_SERVER_H
+#ifndef OLAD_HTTPSERVER_H_
+#define OLAD_HTTPSERVER_H_
 
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <sys/select.h>
+#include <ctemplate/template.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <microhttpd.h>
 #include <map>
 #include <string>
 #include <vector>
-#include <ctemplate/template.h>
-#include <microhttpd.h>
 
 namespace ola {
 
@@ -38,7 +38,6 @@ using std::map;
 using std::multimap;
 using std::string;
 using std::vector;
-
 
 /*
  * Represents the HTTP request
@@ -82,7 +81,7 @@ class HttpRequest {
  */
 class HttpResponse {
   public:
-    HttpResponse(struct MHD_Connection *connection):
+    explicit HttpResponse(struct MHD_Connection *connection):
       m_connection(connection),
       m_status_code(MHD_HTTP_OK) {}
 
@@ -173,12 +172,12 @@ class HttpServer {
     int ServeStaticContent(static_file_info *file_info,
                            HttpResponse *response);
 
-    static const string CONTENT_TYPE_PLAIN;
-    static const string CONTENT_TYPE_HTML;
-    static const string CONTENT_TYPE_GIF;
-    static const string CONTENT_TYPE_PNG;
-    static const string CONTENT_TYPE_CSS;
-    static const string CONTENT_TYPE_JS;
+    static const char CONTENT_TYPE_PLAIN[];
+    static const char CONTENT_TYPE_HTML[];
+    static const char CONTENT_TYPE_GIF[];
+    static const char CONTENT_TYPE_PNG[];
+    static const char CONTENT_TYPE_CSS[];
+    static const char CONTENT_TYPE_JS[];
 
   private :
     HttpServer(const HttpServer&);
@@ -191,6 +190,5 @@ class HttpServer {
     unsigned int m_port;
     string m_data_dir;
 };
-
-} // ola
-#endif
+}  // ola
+#endif  // OLAD_HTTPSERVER_H_

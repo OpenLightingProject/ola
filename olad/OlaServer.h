@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_SERVER_H
-#define OLA_SERVER_H
+#ifndef OLAD_OLASERVER_H_
+#define OLAD_OLASERVER_H_
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -28,10 +28,10 @@
 #include <map>
 #include <string>
 
-#include <ola/ExportMap.h>
-#include <ola/plugin_id.h>
-#include <ola/network/SelectServer.h>
-#include <ola/network/Socket.h>
+#include "ola/ExportMap.h"
+#include "ola/plugin_id.h"
+#include "ola/network/SelectServer.h"
+#include "ola/network/Socket.h"
 
 namespace ola {
 
@@ -42,11 +42,11 @@ typedef int OlaHttpServer_t;
 #endif
 
 typedef struct {
-  bool http_enable; // run the http server
-  bool http_localhost_only; // restrict access to localhost only
-  bool http_enable_quit; // enable /quit
-  unsigned int http_port; // port to run the http server on
-  std::string http_data_dir; // directory that contains the static content
+  bool http_enable;  // run the http server
+  bool http_localhost_only;  // restrict access to localhost only
+  bool http_enable_quit;  // enable /quit
+  unsigned int http_port;  // port to run the http server on
+  std::string http_data_dir;  // directory that contains the static content
 } ola_server_options;
 
 
@@ -60,8 +60,8 @@ class OlaServer {
               class PreferencesFactory *preferences_factory,
               ola::network::SelectServer *network,
               ola_server_options *ola_options,
-              ola::network::AcceptingSocket *socket=NULL,
-              ExportMap *export_map=NULL);
+              ola::network::AcceptingSocket *socket = NULL,
+              ExportMap *export_map = NULL);
     ~OlaServer();
     bool Init();
     void ReloadPlugins();
@@ -98,11 +98,9 @@ class OlaServer {
     OlaHttpServer_t *m_httpd;
     ola_server_options m_options;
 
-    static const string UNIVERSE_PREFERENCES;
-    static const string K_CLIENT_VAR;
+    static const char UNIVERSE_PREFERENCES[];
+    static const char K_CLIENT_VAR[];
     static const unsigned int K_GARBAGE_COLLECTOR_TIMEOUT_MS;
 };
-
-
-} // ola
-#endif
+}  // ola
+#endif  // OLAD_OLASERVER_H_

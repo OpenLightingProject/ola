@@ -22,17 +22,18 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <vector>
 
-#include <ola/DmxBuffer.h>
-#include <ola/StringUtils.h>
-#include <olad/Device.h>
-#include <olad/Plugin.h>
-#include <olad/Port.h>
-#include <olad/Universe.h>
-#include "DeviceManager.h"
-#include "OlaHttpServer.h"
-#include "PluginLoader.h"
-#include "UniverseStore.h"
+#include "ola/DmxBuffer.h"
+#include "ola/StringUtils.h"
+#include "olad/Device.h"
+#include "olad/DeviceManager.h"
+#include "olad/OlaHttpServer.h"
+#include "olad/Plugin.h"
+#include "olad/PluginLoader.h"
+#include "olad/Port.h"
+#include "olad/Universe.h"
+#include "olad/UniverseStore.h"
 
 namespace ola {
 
@@ -43,7 +44,7 @@ using std::stringstream;
 using ctemplate::TemplateDictionary;
 using ctemplate::TemplateNamelist;
 
-const string OlaHttpServer::K_DATA_DIR_VAR = "http_data_dir";
+const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
 
 RegisterTemplateFilename(MAIN_FILENAME, "show_main_page.tpl");
 RegisterTemplateFilename(PLUGINS_FILENAME, "show_loaded_plugins.tpl");
@@ -59,15 +60,14 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              DeviceManager *device_manager,
                              unsigned int port,
                              bool enable_quit,
-                             const string &data_dir):
-  m_server(port, data_dir),
-  m_export_map(export_map),
-  m_ss(ss),
-  m_universe_store(universe_store),
-  m_plugin_loader(plugin_loader),
-  m_device_manager(device_manager),
-  m_enable_quit(enable_quit) {
-
+                             const string &data_dir)
+    : m_server(port, data_dir),
+      m_export_map(export_map),
+      m_ss(ss),
+      m_universe_store(universe_store),
+      m_plugin_loader(plugin_loader),
+      m_device_manager(device_manager),
+      m_enable_quit(enable_quit) {
   RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
   RegisterHandler("/quit", &OlaHttpServer::DisplayQuit);
   RegisterHandler("/help", &OlaHttpServer::DisplayHandlers);
@@ -135,7 +135,6 @@ int OlaHttpServer::DisplayIndex(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayMain(const HttpRequest *request,
                                HttpResponse *response) {
-
   TemplateDictionary dict("main");
 
   if (m_enable_quit)
@@ -153,8 +152,6 @@ int OlaHttpServer::DisplayMain(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayPlugins(const HttpRequest *request,
                                   HttpResponse *response) {
-
-  //dict->SetValueAndShowSection("USERNAME", username, "CHANGE_USER");
   TemplateDictionary dict("plugins");
   vector<AbstractPlugin*> plugins = m_plugin_loader->Plugins();
   std::sort(plugins.begin(), plugins.end(), PluginLessThan());
@@ -170,8 +167,9 @@ int OlaHttpServer::DisplayPlugins(const HttpRequest *request,
         sub_dict->ShowSection("ODD");
       i++;
     }
-  } else
+  } else {
     dict.ShowSection("NO_PLUGINS");
+  }
   return m_server.DisplayTemplate(PLUGINS_FILENAME, &dict, response);
 }
 
@@ -184,7 +182,6 @@ int OlaHttpServer::DisplayPlugins(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayPluginInfo(const HttpRequest *request,
                                      HttpResponse *response) {
-
   string val = request->GetParameter("id");
   int plugin_id = atoi(val.data());
   AbstractPlugin *plugin = NULL;
@@ -208,7 +205,6 @@ int OlaHttpServer::DisplayPluginInfo(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayDevices(const HttpRequest *request,
                                   HttpResponse *response) {
-
   TemplateDictionary dict("device");
   vector<device_alias_pair> device_pairs = m_device_manager->Devices();
 
@@ -222,8 +218,9 @@ int OlaHttpServer::DisplayDevices(const HttpRequest *request,
       TemplateDictionary *sub_dict = dict.AddSectionDictionary("DEVICE");
       PopulateDeviceDict(request, sub_dict, *iter, save_changes);
     }
-  } else
+  } else {
     dict.ShowSection("NO_DEVICES");
+  }
   return m_server.DisplayTemplate(DEVICE_FILENAME, &dict, response);
 }
 
@@ -236,7 +233,6 @@ int OlaHttpServer::DisplayDevices(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
                                     HttpResponse *response) {
-
   TemplateDictionary dict("universes");
   vector<Universe*> *universes = m_universe_store->GetList();
 
@@ -247,9 +243,7 @@ int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
     vector<Universe*>::const_iterator iter;
     int i = 1;
     for (iter = universes->begin(); iter != universes->end(); ++iter) {
-
       if (save_changes) {
-
         string uni_name = request->GetParameter(
             "name_" + IntToString((*iter)->UniverseId()));
         string uni_mode = request->GetParameter(
@@ -263,7 +257,6 @@ int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
           (*iter)->SetMergeMode(Universe::MERGE_LTP);
         else
           (*iter)->SetMergeMode(Universe::MERGE_HTP);
-
       }
       TemplateDictionary *sub_dict = dict.AddSectionDictionary("UNIVERSE");
       sub_dict->SetValue("ID", IntToString((*iter)->UniverseId()));
@@ -274,8 +267,9 @@ int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
         sub_dict->ShowSection("ODD");
       i++;
     }
-  } else
+  } else {
     dict.ShowSection("NO_UNIVERSES");
+  }
 
   delete universes;
   return m_server.DisplayTemplate(UNIVERSE_FILENAME, &dict, response);
@@ -290,7 +284,6 @@ int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayConsole(const HttpRequest *request,
                                   HttpResponse *response) {
-
   string uni_id = request->GetParameter("u");
   errno = 0;
   int universe_id = atoi(uni_id.data());
@@ -306,7 +299,7 @@ int OlaHttpServer::DisplayConsole(const HttpRequest *request,
   dict.SetValue("ID", IntToString(universe->UniverseId()));
   dict.SetValue("NAME", universe->Name());
 
-  for (unsigned int i=0; i <= K_CONSOLE_SLIDERS; i++) {
+  for (unsigned int i = 0; i <= K_CONSOLE_SLIDERS; i++) {
     TemplateDictionary *sliders_dict = dict.AddSectionDictionary("SLIDERS");
     sliders_dict->SetValue("INDEX", IntToString(i));
   }
@@ -323,7 +316,6 @@ int OlaHttpServer::DisplayConsole(const HttpRequest *request,
  */
 int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
                                 HttpResponse *response) {
-
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
   int universe_id = atoi(uni_id.data());
@@ -442,7 +434,6 @@ void OlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
                                        TemplateDictionary *dict,
                                        const device_alias_pair &device_pair,
                                        bool save_changes) {
-
   AbstractDevice *device = device_pair.device;
   dict->SetValue("ID", IntToString(device_pair.alias));
   dict->SetValue("NAME", device->Name());
@@ -455,7 +446,6 @@ void OlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
   vector<AbstractPort*>::const_iterator port_iter;
   int i = 1;
   for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
-
     if (save_changes) {
       string variable_name = (*port_iter)->UniqueId();
       string uni_id = request->GetPostParameter(variable_name);
@@ -499,6 +489,4 @@ void OlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
     i++;
   }
 }
-
-
-} //ola
+}  // ola

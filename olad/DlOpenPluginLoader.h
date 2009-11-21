@@ -18,16 +18,16 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef DLOPENPLUGINLOADER_H
-#define DLOPENPLUGINLOADER_H
+#ifndef OLAD_DLOPENPLUGINLOADER_H_
+#define OLAD_DLOPENPLUGINLOADER_H_
 
+#include <ltdl.h>
 #include <map>
 #include <string>
 #include <vector>
 #include <set>
-#include <ltdl.h>
 
-#include "PluginLoader.h"
+#include "olad/PluginLoader.h"
 
 namespace ola {
 
@@ -40,9 +40,9 @@ class AbstractPlugin;
 
 class DlOpenPluginLoader: public PluginLoader {
   public:
-    DlOpenPluginLoader(const string &dirname):
+    explicit DlOpenPluginLoader(const string &dirname):
       m_dirname(dirname),
-      m_dl_active(false) {};
+      m_dl_active(false) {}
     ~DlOpenPluginLoader() { UnloadPlugins(); }
 
     int LoadPlugins();
@@ -64,6 +64,5 @@ class DlOpenPluginLoader: public PluginLoader {
     std::vector<AbstractPlugin*> m_plugins;
     std::map<lt_dlhandle, AbstractPlugin*> m_plugin_map;
 };
-
-} //ola
-#endif
+}  // ola
+#endif  // OLAD_DLOPENPLUGINLOADER_H_

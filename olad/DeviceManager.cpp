@@ -21,15 +21,19 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <ola/Logging.h>
-#include <ola/StringUtils.h>
-#include <olad/Port.h>
-#include "DeviceManager.h"
+#include <map>
+#include <string>
+#include <vector>
+
+#include "ola/Logging.h"
+#include "ola/StringUtils.h"
+#include "olad/Port.h"
+#include "olad/DeviceManager.h"
 
 namespace ola {
 
 const unsigned int DeviceManager::MISSING_DEVICE_ALIAS = 0;
-const string DeviceManager::PORT_PREFERENCES = "port";
+const char DeviceManager::PORT_PREFERENCES[] = "port";
 
 bool operator <(const device_alias_pair& left,
                 const device_alias_pair &right) {
@@ -43,16 +47,16 @@ bool operator <(const device_alias_pair& left,
  * Constructor
  */
 DeviceManager::DeviceManager(PreferencesFactory *prefs_factory,
-                             UniverseStore *universe_store):
-    m_universe_store(universe_store),
-    m_port_preferences(NULL),
-    m_next_device_alias(FIRST_DEVICE_ALIAS) {
-
+                             UniverseStore *universe_store)
+    : m_universe_store(universe_store),
+      m_port_preferences(NULL),
+      m_next_device_alias(FIRST_DEVICE_ALIAS) {
   if (prefs_factory) {
     m_port_preferences = prefs_factory->NewPreference(PORT_PREFERENCES);
     m_port_preferences->Load();
   }
 }
+
 
 /*
  * Cleanup
@@ -269,12 +273,11 @@ void DeviceManager::RestoreDevicePortPatchings(AbstractDevice *device) {
       continue;
 
     errno = 0;
-    int id = (int) strtol(uni_id.data(), NULL, 10);
+    int id = static_cast<int>(strtol(uni_id.data(), NULL, 10));
     if (id == 0 && errno)
       continue;
     Universe *uni = m_universe_store->GetUniverseOrCreate(id);
     uni->AddPort(*port_iter);
   }
 }
-
-} //ola
+}  // ola

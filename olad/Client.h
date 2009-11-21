@@ -18,12 +18,12 @@
  * Copyright (C) 2005 Simon Newton
  */
 
-#ifndef OLA_CLIENT_H
-#define OLA_CLIENT_H
+#ifndef OLAD_CLIENT_H_
+#define OLAD_CLIENT_H_
 
 #include <map>
-#include <ola/DmxBuffer.h>
 #include "common/rpc/SimpleRpcController.h"
+#include "ola/DmxBuffer.h"
 
 namespace ola {
 namespace proto {
@@ -39,7 +39,7 @@ using ola::proto::OlaClientService_Stub;
 
 class Client {
   public :
-    Client(OlaClientService_Stub *client_stub):
+    explicit Client(OlaClientService_Stub *client_stub):
       m_client_stub(client_stub) {}
     virtual ~Client();
     virtual bool SendDMX(unsigned int universe_id, const DmxBuffer &buffer);
@@ -56,6 +56,5 @@ class Client {
     class OlaClientService_Stub *m_client_stub;
     map<unsigned int, DmxBuffer> m_data_map;
 };
-
-} //ola
-#endif
+}  // ola
+#endif  // OLAD_CLIENT_H_

@@ -22,15 +22,16 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
 
-#include <ola/Logging.h>
-#include <olad/Plugin.h>
-
-#include "DlOpenPluginLoader.h"
+#include "ola/Logging.h"
+#include "olad/Plugin.h"
+#include "olad/DlOpenPluginLoader.h"
 
 namespace ola {
-
-using namespace std;
 
 
 /*
@@ -79,7 +80,7 @@ int DlOpenPluginLoader::UnloadPlugins() {
   vector<AbstractPlugin*>::iterator iter;
 
   for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
-    if((*iter)->IsEnabled())
+    if ((*iter)->IsEnabled())
       (*iter)->Stop();
   }
 
@@ -161,7 +162,7 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
     return NULL;
   }
 
-  create = (create_t*) lt_dlsym(module, "create");
+  create = reinterpret_cast<create_t*>(lt_dlsym(module, "create"));
 
   if (lt_dlerror()) {
     OLA_WARN << "Could not locate create symbol in " << path;
@@ -175,7 +176,7 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
     return NULL;
   }
 
-  pair<lt_dlhandle, AbstractPlugin*> pair (module, plugin);
+  std::pair<lt_dlhandle, AbstractPlugin*> pair(module, plugin);
   m_plugin_map.insert(pair);
 
   OLA_INFO << "Loaded plugin " << plugin->Name();
@@ -190,7 +191,8 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
  * @return  0 on success, non 0 on failure
  */
 int DlOpenPluginLoader::UnloadPlugin(lt_dlhandle handle) {
-  destroy_t *destroy = (destroy_t*) lt_dlsym(handle, "destroy");
+  destroy_t *destroy = reinterpret_cast<destroy_t*>(
+      lt_dlsym(handle, "destroy"));
 
   if (lt_dlerror()) {
     OLA_WARN << "Could not locate destroy symbol";
@@ -216,5 +218,4 @@ AbstractPlugin* DlOpenPluginLoader::GetPlugin(ola_plugin_id plugin_id) const {
       return *iter;
   return NULL;
 }
-
-} //ola
+}  // ola

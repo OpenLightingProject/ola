@@ -22,8 +22,10 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
-#include "HttpServer.h"
+#include <vector>
+#include "olad/HttpServer.h"
 
 namespace ola {
 
@@ -33,16 +35,16 @@ using std::ifstream;
 using std::pair;
 using std::string;
 
-const string HttpServer::CONTENT_TYPE_PLAIN = "text/plain";
-const string HttpServer::CONTENT_TYPE_HTML = "text/html";
-const string HttpServer::CONTENT_TYPE_GIF = "image/gif";
-const string HttpServer::CONTENT_TYPE_PNG = "image/png";
-const string HttpServer::CONTENT_TYPE_CSS = "text/css";
-const string HttpServer::CONTENT_TYPE_JS = "text/javascript";
+const char HttpServer::CONTENT_TYPE_PLAIN[] = "text/plain";
+const char HttpServer::CONTENT_TYPE_HTML[] = "text/html";
+const char HttpServer::CONTENT_TYPE_GIF[] = "image/gif";
+const char HttpServer::CONTENT_TYPE_PNG[] = "image/png";
+const char HttpServer::CONTENT_TYPE_CSS[] = "text/css";
+const char HttpServer::CONTENT_TYPE_JS[] = "text/javascript";
 
 static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
                       const char *value) {
-  HttpRequest *request = (HttpRequest*) cls;
+  HttpRequest *request = reinterpret_cast<HttpRequest*>(cls);
   string key_string = key;
   string value_string = value;
   request->AddHeader(key, value);
@@ -54,7 +56,7 @@ int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
                 const char *transfer_encoding, const char *data, uint64_t off,
                 size_t size) {
   // libmicrohttpd has a bug where the zie isn't set correctly.
-  HttpRequest *request = (HttpRequest*) request_cls;
+  HttpRequest *request = reinterpret_cast<HttpRequest*>(request_cls);
   string value(data);
   request->AddPostParameter(key, value);
   return MHD_YES;
@@ -69,12 +71,12 @@ static int HandleRequest(void *http_server_ptr,
                          const char *upload_data,
                          size_t *upload_data_size,
                          void **ptr) {
-  HttpServer *http_server = (HttpServer*) http_server_ptr;
+  HttpServer *http_server = reinterpret_cast<HttpServer*>(http_server_ptr);
+  HttpRequest *request;
 
   // first call
   if (*ptr == NULL) {
-    HttpRequest *request = new HttpRequest(url, method, version,
-                                           connection);
+    request = new HttpRequest(url, method, version, connection);
     if (!request)
       return MHD_NO;
 
@@ -82,11 +84,11 @@ static int HandleRequest(void *http_server_ptr,
       delete request;
       return MHD_NO;
     }
-    *ptr = (void*) request;
+    *ptr = reinterpret_cast<void*>(request);
     return MHD_YES;
   }
+  request = reinterpret_cast<HttpRequest*>(ptr);
 
-  HttpRequest *request = (HttpRequest*) *ptr;
   if (request->Method() == MHD_HTTP_METHOD_GET) {
     HttpResponse response(connection);
     return http_server->DispatchRequest(request, &response);
@@ -107,7 +109,7 @@ void RequestCompleted(void *cls,
                       struct MHD_Connection *connection,
                       void **request_cls,
                       enum MHD_RequestTerminationCode toe) {
-  HttpRequest *request = (HttpRequest*) *request_cls;
+  HttpRequest *request = reinterpret_cast<HttpRequest*>(*request_cls);
 
   if (!request)
     return;
@@ -144,7 +146,7 @@ bool HttpRequest::Init() {
     m_processor = MHD_create_post_processor(m_connection,
                                             K_POST_BUFFER_SIZE,
                                             IteratePost,
-                                            (void*) this);
+                                            reinterpret_cast<void*>(this));
     return m_processor;
   }
   return true;
@@ -177,7 +179,7 @@ void HttpRequest::AddHeader(const string &key, const string &value) {
  * @param key the parameter name
  * @param value the value
  */
-void HttpRequest::AddPostParameter(const string &key, const string &value){
+void HttpRequest::AddPostParameter(const string &key, const string &value) {
   map<string, string>::iterator iter = m_post_params.find(key);
 
   if (iter == m_post_params.end()) {
@@ -273,9 +275,13 @@ void HttpResponse::SetHeader(const string &key, const string &value) {
 int HttpResponse::Send() {
   map<string, string>::const_iterator iter;
   struct MHD_Response *response = MHD_create_response_from_data(
-      m_data.length(), (void*) m_data.data(), MHD_NO, MHD_YES);
+      m_data.length(),
+      reinterpret_cast<void*>(const_cast<char*>(m_data.data())),
+      MHD_NO,
+      MHD_YES);
   for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
-    MHD_add_response_header(response, iter->first.c_str(),
+    MHD_add_response_header(response,
+                            iter->first.c_str(),
                             iter->second.c_str());
   int ret = MHD_queue_response(m_connection, m_status_code, response);
   MHD_destroy_response(response);
@@ -288,12 +294,11 @@ int HttpResponse::Send() {
  * @param port the port to listen on
  * @param data_dir the directory to serve static content from
  */
-HttpServer::HttpServer(unsigned int port, const string &data_dir):
-  m_httpd(NULL),
-  m_default_handler(NULL),
-  m_port(port),
-  m_data_dir(data_dir) {
-
+HttpServer::HttpServer(unsigned int port, const string &data_dir)
+    : m_httpd(NULL),
+      m_default_handler(NULL),
+      m_port(port),
+      m_data_dir(data_dir) {
   if (m_data_dir.empty())
     m_data_dir = HTTP_DATA_DIR;
 
@@ -400,7 +405,8 @@ bool HttpServer::RegisterHandler(const string &path, BaseHttpClosure *handler) {
 bool HttpServer::RegisterFile(const string &path,
                               const string &file,
                               const string &content_type) {
-  map<string, static_file_info>::const_iterator file_iter = m_static_content.find(path);
+  map<string, static_file_info>::const_iterator file_iter = (
+      m_static_content.find(path));
 
   if (file_iter != m_static_content.end())
     return false;
@@ -451,7 +457,6 @@ vector<string> HttpServer::Handlers() const {
 int HttpServer::DisplayTemplate(const char *template_name,
                                 TemplateDictionary *dict,
                                 HttpResponse *response) {
-
   Template* tpl = Template::GetTemplate(template_name,
                                         ctemplate::STRIP_BLANK_LINES);
 
@@ -522,14 +527,14 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
   length = i_stream.tellg();
   i_stream.seekg(0, std::ios::beg);
 
-  data = (char*) malloc(length * sizeof(char));
+  data = reinterpret_cast<char*>(malloc(length * sizeof(char)));
 
   i_stream.read(data, length);
   i_stream.close();
 
   struct MHD_Response *mhd_response = MHD_create_response_from_data(
       length,
-      (void*) data,
+      reinterpret_cast<void*>(data),
       MHD_YES,
       MHD_NO);
 
@@ -544,5 +549,4 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
   MHD_destroy_response(mhd_response);
   return ret;
 }
-
-} //ola
+}  // ola

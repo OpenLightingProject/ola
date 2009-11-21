@@ -27,14 +27,15 @@
  * devices are registered.
  */
 
-#ifndef OLA_DEVICEMANAGER_H
-#define OLA_DEVICEMANAGER_H
+#ifndef OLAD_DEVICEMANAGER_H_
+#define OLAD_DEVICEMANAGER_H_
 
 #include <map>
 #include <string>
-#include <olad/Device.h>
-#include "UniverseStore.h"
-#include <olad/Preferences.h>
+#include <vector>
+#include "olad/Device.h"
+#include "olad/Preferences.h"
+#include "olad/UniverseStore.h"
 
 namespace ola {
 
@@ -70,8 +71,8 @@ class DeviceManager {
   private:
     UniverseStore *m_universe_store;
     Preferences *m_port_preferences;
-    map<string, device_alias_pair> m_devices; // map device_ids to devices
-    map<unsigned int, AbstractDevice*> m_alias_map; // map alias to devices
+    map<string, device_alias_pair> m_devices;  // map device_ids to devices
+    map<unsigned int, AbstractDevice*> m_alias_map;  // map alias to devices
     unsigned int m_next_device_alias;
 
     DeviceManager(const DeviceManager&);
@@ -79,10 +80,8 @@ class DeviceManager {
     void SaveDevicePortPatchings(AbstractDevice *device);
     void RestoreDevicePortPatchings(AbstractDevice *device);
 
-    static const string PORT_PREFERENCES;
+    static const char PORT_PREFERENCES[];
     static const unsigned int FIRST_DEVICE_ALIAS = 1;
 };
-
-
-} //ola
-#endif
+}  // ola
+#endif  // OLAD_DEVICEMANAGER_H_
