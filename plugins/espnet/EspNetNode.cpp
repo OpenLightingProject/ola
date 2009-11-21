@@ -418,8 +418,7 @@ bool EspNetNode::SendEspData(const struct in_addr &dst,
   packet.dmx.type = DATA_RAW;
   unsigned int size = DMX_UNIVERSE_SIZE;
   buffer.Get(packet.dmx.data, &size);
-  packet.dmx.size = HostToNetwork(size);
-
+  packet.dmx.size = HostToNetwork((uint16_t) size);
   return SendPacket(dst, packet, sizeof(packet.dmx));
 }
 
