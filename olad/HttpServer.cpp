@@ -19,7 +19,6 @@
  */
 
 #include <stdio.h>
-
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -87,8 +86,8 @@ static int HandleRequest(void *http_server_ptr,
     *ptr = reinterpret_cast<void*>(request);
     return MHD_YES;
   }
-  request = reinterpret_cast<HttpRequest*>(ptr);
 
+  request = reinterpret_cast<HttpRequest*>(*ptr);
   if (request->Method() == MHD_HTTP_METHOD_GET) {
     HttpResponse response(connection);
     return http_server->DispatchRequest(request, &response);
@@ -534,7 +533,7 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
 
   struct MHD_Response *mhd_response = MHD_create_response_from_data(
       length,
-      reinterpret_cast<void*>(data),
+      reinterpret_cast<void*>(const_cast<char*>(data)),
       MHD_YES,
       MHD_NO);
 
