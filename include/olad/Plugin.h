@@ -96,8 +96,8 @@ class Plugin: public AbstractPlugin {
     class Preferences *m_preferences;  // preferences container
     bool m_enabled;  // are we running
     bool m_debug;  // debug mode on
-    static const string ENABLED_KEY;
-    static const string DEBUG_KEY;
+    static const char ENABLED_KEY[];
+    static const char DEBUG_KEY[];
 
   private:
     bool LoadPreferences();

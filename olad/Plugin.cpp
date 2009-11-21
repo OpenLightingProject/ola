@@ -18,15 +18,16 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include <olad/Plugin.h>
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
+#include <string>
+#include "ola/Logging.h"
+#include "olad/Plugin.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
 
 namespace ola {
 
-const string Plugin::ENABLED_KEY = "enabled";
-const string Plugin::DEBUG_KEY = "debug";
+const char Plugin::ENABLED_KEY[] = "enabled";
+const char Plugin::DEBUG_KEY[] = "debug";
 
 /*
  * Start the plugin. Calls start_hook() which can be over-ridden by the
@@ -105,5 +106,4 @@ bool Plugin::LoadPreferences() {
 
   return true;
 }
-
-} // ola
+}  // ola

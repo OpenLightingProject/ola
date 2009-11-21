@@ -25,12 +25,15 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#include <list>
 #include <fstream>
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
 
-#include <ola/Logging.h>
-#include <ola/StringUtils.h>
-#include <olad/Preferences.h>
+#include "ola/Logging.h"
+#include "ola/StringUtils.h"
+#include "olad/Preferences.h"
 
 namespace ola {
 
@@ -38,9 +41,9 @@ using std::ifstream;
 using std::ofstream;
 using std::pair;
 
-const string FileBackedPreferences::OLA_CONFIG_DIR = ".ola";
-const string FileBackedPreferences::OLA_CONFIG_PREFIX = "ola-";
-const string FileBackedPreferences::OLA_CONFIG_SUFFIX = ".conf";
+const char FileBackedPreferences::OLA_CONFIG_DIR[] = ".ola";
+const char FileBackedPreferences::OLA_CONFIG_PREFIX[] = "ola-";
+const char FileBackedPreferences::OLA_CONFIG_SUFFIX[] = ".conf";
 
 /**
  * Cleanup
@@ -93,7 +96,7 @@ void MemoryPreferences::Clear() {
  */
 void MemoryPreferences::SetValue(const string &key, const string &value) {
   m_pref_map.erase(key);
-  m_pref_map.insert(pair<string,string>(key, value));
+  m_pref_map.insert(pair<string, string>(key, value));
 }
 
 
@@ -132,7 +135,7 @@ void MemoryPreferences::RemoveValue(const string &key) {
  */
 void MemoryPreferences::SetMultipleValue(const string &key,
                                          const string &value) {
-  m_pref_map.insert(pair<string,string>(key, value));
+  m_pref_map.insert(pair<string, string>(key, value));
 }
 
 
@@ -232,7 +235,7 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
     string value = tokens[1];
     StringTrim(&key);
     StringTrim(&value);
-    m_pref_map.insert(pair<string,string>(key, value));
+    m_pref_map.insert(pair<string, string>(key, value));
   }
   pref_file.close();
   return true;
@@ -252,7 +255,7 @@ bool FileBackedPreferences::SaveToFile(const string &filename) const {
     return false;
   }
 
-  for (iter=m_pref_map.begin(); iter != m_pref_map.end(); ++iter) {
+  for (iter = m_pref_map.begin(); iter != m_pref_map.end(); ++iter) {
     pref_file << iter->first << " = " << iter->second << std::endl;
   }
 
@@ -272,16 +275,14 @@ bool FileBackedPreferences::ChangeDir() const {
   if (chdir(ptr->pw_dir))
     return false;
 
-  if (chdir(OLA_CONFIG_DIR.data())) {
+  if (chdir(OLA_CONFIG_DIR)) {
     // try and create it
-    if (mkdir(OLA_CONFIG_DIR.data(), 0755))
+    if (mkdir(OLA_CONFIG_DIR, 0755))
       return false;
 
-    if (chdir(OLA_CONFIG_DIR.data()))
+    if (chdir(OLA_CONFIG_DIR))
       return false;
   }
   return true;
 }
-
-
-} //ola
+}  // ola

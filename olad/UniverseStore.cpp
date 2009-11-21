@@ -18,24 +18,27 @@
  * saves the settings.
  * Copyright (C) 2005-2008 Simon Newton
  */
-#include <string>
-#include <sstream>
+
 #include <iostream>
+#include <map>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 
-#include <ola/ExportMap.h>
-#include <olad/Universe.h>
-#include <olad/Preferences.h>
-#include "UniverseStore.h"
 
+#include "ola/ExportMap.h"
+#include "olad/Preferences.h"
+#include "olad/Universe.h"
+#include "olad/UniverseStore.h"
 namespace ola {
 
 using std::pair;
 
 UniverseStore::UniverseStore(class Preferences *preferences,
-                             ExportMap *export_map):
-  m_preferences(preferences),
-  m_export_map(export_map) {
-
+                             ExportMap *export_map)
+    : m_preferences(preferences),
+      m_export_map(export_map) {
   if (export_map) {
     StringMap *map = export_map->GetStringMapVar(Universe::K_UNIVERSE_NAME_VAR,
         "name");
@@ -105,7 +108,7 @@ vector<Universe*> *UniverseStore::GetList() const {
   vector<Universe*> *list = new vector<Universe*>;
   list->reserve(UniverseCount());
 
-  map<int ,Universe*>::const_iterator iter;
+  map<int, Universe*>::const_iterator iter;
   for (iter = m_universe_map.begin(); iter != m_universe_map.end(); ++iter)
     list->push_back(iter->second);
   return list;
@@ -216,5 +219,4 @@ bool UniverseStore::SaveUniverseSettings(Universe *universe) {
 
   return 0;
 }
-
-} //ola
+}  // ola

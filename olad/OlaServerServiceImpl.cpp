@@ -20,23 +20,43 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
-#include <ola/DmxBuffer.h>
-#include <ola/Logging.h>
-#include <ola/ExportMap.h>
-#include <olad/Universe.h>
-#include <olad/Device.h>
-#include <olad/Port.h>
-#include <olad/Plugin.h>
-#include <olad/PluginLoader.h>
-#include "Client.h"
-#include "DeviceManager.h"
-#include "OlaServerServiceImpl.h"
-#include "UniverseStore.h"
+#include <vector>
+#include "ola/DmxBuffer.h"
+#include "ola/Logging.h"
+#include "ola/ExportMap.h"
+#include "olad/Universe.h"
+#include "olad/Device.h"
+#include "olad/Port.h"
+#include "olad/Plugin.h"
+#include "olad/PluginLoader.h"
+#include "olad/Client.h"
+#include "olad/DeviceManager.h"
+#include "olad/OlaServerServiceImpl.h"
+#include "olad/UniverseStore.h"
 #include "common/protocol/Ola.pb.h"
 
 namespace ola {
 
-using namespace ola::proto;
+using ola::proto::Ack;
+using ola::proto::DeviceConfigReply;
+using ola::proto::DeviceConfigRequest;
+using ola::proto::DeviceInfo;
+using ola::proto::DeviceInfoReply;
+using ola::proto::DeviceInfoRequest;
+using ola::proto::DmxData;
+using ola::proto::DmxReadRequest;
+using ola::proto::MergeModeRequest;
+using ola::proto::PatchPortRequest;
+using ola::proto::PluginInfo;
+using ola::proto::PluginInfoReply;
+using ola::proto::PluginInfoRequest;
+using ola::proto::PortInfo;
+using ola::proto::RegisterDmxRequest;
+using ola::proto::UniverseInfo;
+using ola::proto::UniverseInfoReply;
+using ola::proto::UniverseInfoRequest;
+using ola::proto::UniverseNameRequest;
+using google::protobuf::RpcController;
 
 
 /*
@@ -74,7 +94,7 @@ void OlaServerServiceImpl::RegisterForDmx(
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  if (request->action() == REGISTER) {
+  if (request->action() == ola::proto::REGISTER) {
     universe->AddSinkClient(m_client);
   } else {
     universe->RemoveSinkClient(m_client);
@@ -137,7 +157,7 @@ void OlaServerServiceImpl::SetMergeMode(
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  Universe::merge_mode mode = request->merge_mode() == HTP ?
+  Universe::merge_mode mode = request->merge_mode() == ola::proto::HTP ?
     Universe::MERGE_HTP : Universe::MERGE_LTP;
   universe->SetMergeMode(mode);
   done->Run();
@@ -163,7 +183,7 @@ void OlaServerServiceImpl::PatchPort(
   if (!port)
     return MissingPortError(controller, done);
 
-  if (request->action() == PATCH) {
+  if (request->action() == ola::proto::PATCH) {
     universe = m_universe_store->GetUniverseOrCreate(request->universe());
     if (!universe)
       return MissingUniverseError(controller, done);
@@ -200,7 +220,7 @@ void OlaServerServiceImpl::GetUniverseInfo(
     universe_info->set_universe(universe->UniverseId());
     universe_info->set_name(universe->Name());
     universe_info->set_merge_mode(universe->MergeMode() == Universe::MERGE_HTP
-        ? HTP: LTP);
+        ? ola::proto::HTP: ola::proto::LTP);
   } else {
     // return all
     vector<Universe *> *uni_list = m_universe_store->GetList();
@@ -211,7 +231,7 @@ void OlaServerServiceImpl::GetUniverseInfo(
       universe_info->set_universe((*iter)->UniverseId());
       universe_info->set_name((*iter)->Name());
       universe_info->set_merge_mode((*iter)->MergeMode() == Universe::MERGE_HTP
-          ? HTP: LTP);
+          ? ola::proto::HTP: ola::proto::LTP);
     }
     delete uni_list;
   }
@@ -249,7 +269,6 @@ void OlaServerServiceImpl::GetDeviceInfo(RpcController* controller,
                                          const DeviceInfoRequest* request,
                                          DeviceInfoReply* response,
                                          google::protobuf::Closure* done) {
-
   vector<device_alias_pair> device_list = m_device_manager->Devices();
   vector<device_alias_pair>::const_iterator iter;
 
@@ -273,7 +292,6 @@ void OlaServerServiceImpl::ConfigureDevice(RpcController* controller,
                                            const DeviceConfigRequest* request,
                                            DeviceConfigReply* response,
                                            google::protobuf::Closure* done) {
-
   AbstractDevice *device =
     m_device_manager->GetDevice(request->device_alias());
   if (!device)
@@ -299,7 +317,6 @@ void OlaServerServiceImpl::MissingUniverseError(
 void OlaServerServiceImpl::MissingDeviceError(
     RpcController* controller,
     google::protobuf::Closure* done) {
-
   controller->SetFailed("Device doesn't exist");
   done->Run();
 }
@@ -308,7 +325,6 @@ void OlaServerServiceImpl::MissingDeviceError(
 void OlaServerServiceImpl::MissingPluginError(
     RpcController* controller,
     google::protobuf::Closure* done) {
-
   controller->SetFailed("Plugin doesn't exist");
   done->Run();
 }
@@ -316,7 +332,6 @@ void OlaServerServiceImpl::MissingPluginError(
 
 void OlaServerServiceImpl::MissingPortError(RpcController* controller,
                                             google::protobuf::Closure* done) {
-
   controller->SetFailed("Port doesn't exist");
   done->Run();
 }
@@ -328,7 +343,6 @@ void OlaServerServiceImpl::MissingPortError(RpcController* controller,
 void OlaServerServiceImpl::AddPlugin(AbstractPlugin *plugin,
                                      PluginInfoReply* response,
                                      bool include_description) const {
-
   PluginInfo *plugin_info = response->add_plugin();
   plugin_info->set_plugin_id(plugin->Id());
   plugin_info->set_name(plugin->Name());
@@ -344,7 +358,6 @@ void OlaServerServiceImpl::AddPlugin(AbstractPlugin *plugin,
 void OlaServerServiceImpl::AddDevice(AbstractDevice *device,
                                      unsigned int alias,
                                      DeviceInfoReply* response) const {
-
   DeviceInfo *device_info = response->add_device();
   device_info->set_device_alias(alias);
   device_info->set_device_name(device->Name());
@@ -372,8 +385,8 @@ void OlaServerServiceImpl::AddDevice(AbstractDevice *device,
 }
 
 
-//OlaServerServiceImplFactory
-//-----------------------------------------------------------------------------
+// OlaServerServiceImplFactory
+// -----------------------------------------------------------------------------
 OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     UniverseStore *universe_store,
     DeviceManager *device_manager,
@@ -386,5 +399,4 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
                                   client,
                                   export_map);
 };
-
-} //ola
+}  // ola

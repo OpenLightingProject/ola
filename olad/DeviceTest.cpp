@@ -102,14 +102,16 @@ void DeviceTest::testDevice() {
   DeviceTestMockDevice orphaned_device(NULL, device_name);
 
   CPPUNIT_ASSERT_EQUAL(device_name, orphaned_device.Name());
-  CPPUNIT_ASSERT_EQUAL((AbstractPlugin*) NULL, orphaned_device.Owner());
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractPlugin*>(NULL),
+                       orphaned_device.Owner());
   CPPUNIT_ASSERT_EQUAL(string(""), orphaned_device.UniqueId());
 
   // Non orphaned device
   DeviceTestMockPlugin plugin(NULL);
   DeviceTestMockDevice device(&plugin, device_name);
   CPPUNIT_ASSERT_EQUAL(device.Name(), device_name);
-  CPPUNIT_ASSERT_EQUAL((AbstractPlugin*) &plugin, device.Owner());
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractPlugin*>(&plugin),
+                       device.Owner());
   CPPUNIT_ASSERT_EQUAL(string("0-test"), device.UniqueId());
 
   // add some ports
@@ -158,28 +160,35 @@ void DeviceTest::testDeviceManager() {
 
   vector<ola::device_alias_pair> devices = manager.Devices();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, devices[0].alias);
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, devices[0].device);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device1),
+                       devices[0].device);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 2, devices[1].alias);
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device2, devices[1].device);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device2),
+                       devices[1].device);
 
   // test fetching a device by alias
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, manager.GetDevice(1));
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device2, manager.GetDevice(2));
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, manager.GetDevice(3));
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device1),
+                      manager.GetDevice(1));
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device2),
+                       manager.GetDevice(2));
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(NULL),
+                       manager.GetDevice(3));
 
   // test fetching a device by id
   ola::device_alias_pair result = manager.GetDevice(device1.UniqueId());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, result.alias);
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, result.device);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device1),
+                       result.device);
   result = manager.GetDevice(device2.UniqueId());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 2, result.alias);
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device2, result.device);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device2),
+                       result.device);
   result = manager.GetDevice("foo");
   CPPUNIT_ASSERT_EQUAL(DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, result.device);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(NULL), result.device);
   result = manager.GetDevice("");
   CPPUNIT_ASSERT_EQUAL(DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, result.device);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(NULL), result.device);
 
   // test unregistering null or non-registered device
   CPPUNIT_ASSERT(!manager.UnregisterDevice(NULL));
@@ -188,8 +197,10 @@ void DeviceTest::testDeviceManager() {
   // unregistering the first device doesn't change the ID of the second
   CPPUNIT_ASSERT(manager.UnregisterDevice(&device1));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) NULL, manager.GetDevice(1));
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device2, manager.GetDevice(2));
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(NULL),
+                       manager.GetDevice(1));
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device2),
+                       manager.GetDevice(2));
 
   // unregister by id
   CPPUNIT_ASSERT(!manager.UnregisterDevice(device1.UniqueId()));
@@ -202,11 +213,14 @@ void DeviceTest::testDeviceManager() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
   devices = manager.Devices();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, devices[0].alias);
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, devices[0].device);
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, manager.GetDevice(1));
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device1),
+                       devices[0].device);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device1),
+                       manager.GetDevice(1));
   result = manager.GetDevice(device1.UniqueId());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, result.alias);
-  CPPUNIT_ASSERT_EQUAL((AbstractDevice*) &device1, result.device);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractDevice*>(&device1),
+                       result.device);
 }
 
 

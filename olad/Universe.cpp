@@ -30,25 +30,28 @@
  *   A list of sink clients, which we update whenever the DmxBuffer changes.
  */
 
-#include <ola/Logging.h>
-#include <olad/Port.h>
-#include <olad/Universe.h>
-#include "UniverseStore.h"
-#include "Client.h"
-
+#include <set>
+#include <string>
+#include <vector>
 #include <iterator>
 #include <algorithm>
 
+#include "ola/Logging.h"
+#include "olad/Client.h"
+#include "olad/UniverseStore.h"
+#include "olad/Port.h"
+#include "olad/Universe.h"
+
 namespace ola {
 
-const string Universe::K_UNIVERSE_NAME_VAR = "universe_name";
-const string Universe::K_UNIVERSE_MODE_VAR = "universe_mode";
-const string Universe::K_UNIVERSE_PORT_VAR = "universe_ports";
-const string Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR =
+const char Universe::K_UNIVERSE_NAME_VAR[] = "universe_name";
+const char Universe::K_UNIVERSE_MODE_VAR[] = "universe_mode";
+const char Universe::K_UNIVERSE_PORT_VAR[] = "universe_ports";
+const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
     "universe_source_clients";
-const string Universe::K_UNIVERSE_SINK_CLIENTS_VAR = "universe_sink_clients";
-const string Universe::K_MERGE_HTP_STR = "htp";
-const string Universe::K_MERGE_LTP_STR = "ltp";
+const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe_sink_clients";
+const char Universe::K_MERGE_HTP_STR[] = "htp";
+const char Universe::K_MERGE_LTP_STR[] = "ltp";
 
 /*
  * Create a new universe
@@ -57,13 +60,12 @@ const string Universe::K_MERGE_LTP_STR = "ltp";
  * @param export_map the ExportMap that we update
  */
 Universe::Universe(unsigned int universe_id, UniverseStore *store,
-                   ExportMap *export_map):
-  m_universe_name(""),
-  m_universe_id(universe_id),
-  m_merge_mode(Universe::MERGE_LTP),
-  m_universe_store(store),
-  m_export_map(export_map) {
-
+                   ExportMap *export_map)
+    : m_universe_name(""),
+      m_universe_id(universe_id),
+      m_merge_mode(Universe::MERGE_LTP),
+      m_universe_store(store),
+      m_export_map(export_map) {
   stringstream universe_id_str;
   universe_id_str << universe_id;
   m_universe_id_str = universe_id_str.str();
@@ -491,6 +493,4 @@ bool Universe::HTPMergeAllSources() {
   }
   return true;
 }
-
-
-} //ola
+}  //  ola

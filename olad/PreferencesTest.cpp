@@ -18,13 +18,18 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
+#include <vector>
 
 #include "olad/Preferences.h"
 
-using namespace ola;
-using namespace std;
+using ola::FileBackedPreferences;
+using ola::FileBackedPreferencesFactory;
+using ola::MemoryPreferencesFactory;
+using ola::Preferences;
+using std::string;
+using std::vector;
 
 
 class PreferencesTest: public CppUnit::TestFixture {

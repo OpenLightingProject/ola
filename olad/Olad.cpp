@@ -26,13 +26,16 @@
 #include <getopt.h>
 #include <sys/resource.h>
 #include <fcntl.h>
-
 #include <iostream>
-#include <ola/Logging.h>
-#include "OlaDaemon.h"
+#include <string>
 
-using namespace std;
+#include "ola/Logging.h"
+#include "olad/OlaDaemon.h"
+
 using ola::OlaDaemon;
+using std::string;
+using std::cout;
+using std::endl;
 
 // the daemon
 OlaDaemon *olad;
@@ -174,27 +177,21 @@ static void ParseOptions(int argc, char *argv[], ola_options *opts) {
     switch (c) {
       case 0:
         break;
-
       case 'd':
         opts->http_data_dir = optarg;
         break;
-
       case 'f':
         opts->daemon = true;
         break;
-
       case 'h':
         opts->help = true;
         break;
-
       case 's':
         opts->output = ola::OLA_LOG_SYSLOG;
         break;
-
       case 'l':
         ll = atoi(optarg);
-
-        switch(ll) {
+        switch (ll) {
           case 0:
             // nothing is written at this level
             // so this turns logging off
@@ -216,18 +213,16 @@ static void ParseOptions(int argc, char *argv[], ola_options *opts) {
             break;
         }
         break;
-
       case 'p':
         opts->http_port = atoi(optarg);
-
+        break;
       case 'r':
         opts->rpc_port = atoi(optarg);
-
+        break;
       case '?':
         break;
-
       default:
-       ;
+       break;
     }
   }
 }
@@ -252,8 +247,9 @@ static int Daemonise() {
   if ((pid = fork()) < 0) {
     cout << "Could not fork\n" << endl;
     exit(1);
-  } else if (pid != 0)
+  } else if (pid != 0) {
     exit(0);
+  }
 
   // start a new session
   setsid();
@@ -270,13 +266,14 @@ static int Daemonise() {
   if ((pid= fork()) < 0) {
     cout << "Could not fork\n" << endl;
     exit(1);
-  } else if (pid != 0)
+  } else if (pid != 0) {
     exit(0);
+  }
 
   // close all fds
   if (rl.rlim_max == RLIM_INFINITY)
     rl.rlim_max = 1024;
-  for (i=0; i < rl.rlim_max; i++)
+  for (i = 0; i < rl.rlim_max; i++)
     close(i);
 
   // send stdout, in and err to /dev/null
@@ -308,7 +305,7 @@ static void Setup(int argc, char*argv[], ola_options *opts) {
 
   ParseOptions(argc, argv, opts);
 
-  if(opts->help) {
+  if (opts->help) {
     DisplayHelp();
     exit(0);
   }
@@ -321,24 +318,24 @@ static void Setup(int argc, char*argv[], ola_options *opts) {
 }
 
 
-static void InitExportMap(ola::ExportMap &export_map, int argc, char*argv[]) {
+static void InitExportMap(ola::ExportMap *export_map, int argc, char*argv[]) {
   struct rlimit rl;
-  ola::StringVariable *var = export_map.GetStringVar("binary");
+  ola::StringVariable *var = export_map->GetStringVar("binary");
   var->Set(argv[0]);
 
-  var = export_map.GetStringVar("cmd-line");
+  var = export_map->GetStringVar("cmd-line");
 
-  stringstream out;
+  std::stringstream out;
   for (int i = 1; i < argc; i++) {
     out << argv[i] << " ";
   }
   var->Set(out.str());
 
-  var = export_map.GetStringVar("fd-limit");
+  var = export_map->GetStringVar("fd-limit");
   if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
     var->Set("undertermined");
   } else {
-    stringstream out;
+    std::stringstream out;
     out << rl.rlim_cur;
     var->Set(out.str());
   }
@@ -358,7 +355,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  InitExportMap(export_map, argc, argv);
+  InitExportMap(&export_map, argc, argv);
 
   if (InstallSignals())
     OLA_WARN << "Failed to install signal handlers";

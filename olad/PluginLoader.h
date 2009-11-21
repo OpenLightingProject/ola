@@ -18,11 +18,11 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OLA_PLUGINLOADER_H
-#define OLA_PLUGINLOADER_H
+#ifndef OLAD_PLUGINLOADER_H_
+#define OLAD_PLUGINLOADER_H_
 
-#include <vector>
 #include <ola/plugin_id.h>
+#include <vector>
 
 namespace ola {
 
@@ -32,7 +32,7 @@ class AbstractPlugin;
 class PluginLoader {
   public:
     PluginLoader() {}
-    virtual ~PluginLoader() {};
+    virtual ~PluginLoader() {}
 
     void SetPluginAdaptor(class PluginAdaptor *adaptor) {
       m_plugin_adaptor = adaptor;
@@ -46,6 +46,5 @@ class PluginLoader {
   protected:
     class PluginAdaptor *m_plugin_adaptor;
 };
-
-} //ola
-#endif
+}  // ola
+#endif  // OLAD_PLUGINLOADER_H_

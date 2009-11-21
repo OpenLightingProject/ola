@@ -84,13 +84,13 @@ class Universe {
       return m_universe_id == other.UniverseId();
     }
 
-    static const string K_UNIVERSE_NAME_VAR;
-    static const string K_UNIVERSE_MODE_VAR;
-    static const string K_UNIVERSE_PORT_VAR;
-    static const string K_UNIVERSE_SOURCE_CLIENTS_VAR;
-    static const string K_UNIVERSE_SINK_CLIENTS_VAR;
-    static const string K_MERGE_HTP_STR;
-    static const string K_MERGE_LTP_STR;
+    static const char K_UNIVERSE_NAME_VAR[];
+    static const char K_UNIVERSE_MODE_VAR[];
+    static const char K_UNIVERSE_PORT_VAR[];
+    static const char K_UNIVERSE_SOURCE_CLIENTS_VAR[];
+    static const char K_UNIVERSE_SINK_CLIENTS_VAR[];
+    static const char K_MERGE_HTP_STR[];
+    static const char K_MERGE_LTP_STR[];
 
   private:
     Universe(const Universe&);

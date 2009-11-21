@@ -125,9 +125,9 @@ class FileBackedPreferences: public MemoryPreferences {
   private:
     bool ChangeDir() const;
     const string FileName() const;
-    static const string OLA_CONFIG_DIR;
-    static const string OLA_CONFIG_PREFIX;
-    static const string OLA_CONFIG_SUFFIX;
+    static const char OLA_CONFIG_DIR[];
+    static const char OLA_CONFIG_PREFIX[];
+    static const char OLA_CONFIG_SUFFIX[];
 };
 
 class FileBackedPreferencesFactory: public PreferencesFactory {

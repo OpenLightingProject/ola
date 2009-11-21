@@ -20,13 +20,17 @@
 
 #include "common/protocol/Ola.pb.h"
 
-#ifndef OLA_SERVER_SERVICE_IMPL_H
-#define OLA_SERVER_SERVICE_IMPL_H
+#ifndef OLAD_OLASERVERSERVICEIMPL_H_
+#define OLAD_OLASERVERSERVICEIMPL_H_
 
 namespace ola {
 
-using namespace ola::proto;
 using google::protobuf::RpcController;
+using ola::proto::Ack;
+
+class PluginLoader;
+class Client;
+class ExportMap;
 
 class OlaServerServiceImpl: public ola::proto::OlaServerService {
   public:
@@ -43,44 +47,44 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     ~OlaServerServiceImpl() {}
 
     void GetDmx(RpcController* controller,
-                const DmxReadRequest* request,
-                DmxData* response,
+                const ola::proto::DmxReadRequest* request,
+                ola::proto::DmxData* response,
                 google::protobuf::Closure* done);
     void RegisterForDmx(RpcController* controller,
-                        const RegisterDmxRequest* request,
+                        const ola::proto::RegisterDmxRequest* request,
                         Ack* response,
                         google::protobuf::Closure* done);
     void UpdateDmxData(RpcController* controller,
-                       const DmxData* request,
+                       const ola::proto::DmxData* request,
                        Ack* response,
                        google::protobuf::Closure* done);
     void SetUniverseName(RpcController* controller,
-                         const UniverseNameRequest* request,
+                         const ola::proto::UniverseNameRequest* request,
                          Ack* response,
                          google::protobuf::Closure* done);
     void SetMergeMode(RpcController* controller,
-                      const MergeModeRequest* request,
+                      const ola::proto::MergeModeRequest* request,
                       Ack* response,
                       google::protobuf::Closure* done);
     void PatchPort(RpcController* controller,
-                   const PatchPortRequest* request,
+                   const ola::proto::PatchPortRequest* request,
                    Ack* response,
                    google::protobuf::Closure* done);
     void GetUniverseInfo(RpcController* controller,
-                         const UniverseInfoRequest* request,
-                         UniverseInfoReply* response,
+                         const ola::proto::UniverseInfoRequest* request,
+                         ola::proto::UniverseInfoReply* response,
                          google::protobuf::Closure* done);
     void GetPluginInfo(RpcController* controller,
-                       const PluginInfoRequest* request,
-                       PluginInfoReply* response,
+                       const ola::proto::PluginInfoRequest* request,
+                       ola::proto::PluginInfoReply* response,
                        google::protobuf::Closure* done);
     void GetDeviceInfo(RpcController* controller,
-                       const DeviceInfoRequest* request,
-                       DeviceInfoReply* response,
+                       const ola::proto::DeviceInfoRequest* request,
+                       ola::proto::DeviceInfoReply* response,
                        google::protobuf::Closure* done);
     void ConfigureDevice(RpcController* controller,
-                         const DeviceConfigRequest* request,
-                         DeviceConfigReply* response,
+                         const ola::proto::DeviceConfigRequest* request,
+                         ola::proto::DeviceConfigReply* response,
                          google::protobuf::Closure* done);
 
     Client *GetClient() const { return m_client; }
@@ -95,11 +99,11 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     void MissingPortError(RpcController* controller,
                           google::protobuf::Closure* done);
     void AddPlugin(class AbstractPlugin *plugin,
-                   PluginInfoReply* response,
+                   ola::proto::PluginInfoReply* response,
                    bool include_description) const;
     void AddDevice(class AbstractDevice *device,
                    unsigned int alias,
-                   DeviceInfoReply* response) const;
+                   ola::proto::DeviceInfoReply* response) const;
 
     UniverseStore *m_universe_store;
     DeviceManager *m_device_manager;
@@ -113,11 +117,9 @@ class OlaServerServiceImplFactory {
   public:
     OlaServerServiceImpl *New(UniverseStore *universe_store,
                               DeviceManager *device_manager,
-                              class PluginLoader *plugin_loader,
-                              class Client *client,
-                              class ExportMap *export_map);
+                              PluginLoader *plugin_loader,
+                              Client *client,
+                              ExportMap *export_map);
 };
-
-} // ola
-
-#endif
+}  // ola
+#endif  // OLAD_OLASERVERSERVICEIMPL_H_

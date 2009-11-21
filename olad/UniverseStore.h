@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef UNIVERSE_STORE_H
-#define UNIVERSE_STORE_H
+#ifndef OLAD_UNIVERSESTORE_H_
+#define OLAD_UNIVERSESTORE_H_
 
 #include <map>
 #include <set>
@@ -46,7 +46,7 @@ class UniverseStore {
     void GarbageCollectUniverses();
 
   private:
-    UniverseStore(const ola::UniverseStore&);
+    explicit UniverseStore(const ola::UniverseStore&);
     UniverseStore& operator=(const UniverseStore&);
     bool RestoreUniverseSettings(Universe *universe) const;
     bool SaveUniverseSettings(Universe *universe);
@@ -54,9 +54,8 @@ class UniverseStore {
     Preferences *m_preferences;
     ExportMap *m_export_map;
     std::map<int, Universe*> m_universe_map;  // map of universe_id to Universe
-    std::set<Universe*> m_deletion_candiates; // list of universes we may be
-                                              // able to delete
+    std::set<Universe*> m_deletion_candiates;  // list of universes we may be
+                                               // able to delete
 };
-
-} //ola
-#endif
+}  // ola
+#endif  // OLAD_UNIVERSESTORE_H_

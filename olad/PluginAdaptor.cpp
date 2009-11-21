@@ -17,14 +17,12 @@
  * Provides a wrapper for the DeviceManager and SelectServer objects so that
  * the plugins can register devices and file handles for events
  * Copyright (C) 2005-2008 Simon Newton
- *
- *
  */
 
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
-
-#include "DeviceManager.h"
+#include <string>
+#include "olad/DeviceManager.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
 
 namespace ola {
 
@@ -142,6 +140,4 @@ bool PluginAdaptor::UnregisterDevice(AbstractDevice *device) const {
 Preferences *PluginAdaptor::NewPreference(const string &name) const {
   return m_preferences_factory->NewPreference(name);
 }
-
-
-} //ola
+}  // ola

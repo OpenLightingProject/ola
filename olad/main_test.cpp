@@ -24,12 +24,13 @@
 #include <getopt.h>
 #include <sys/resource.h>
 #include <fcntl.h>
+#include <string>
 
-#include <ola/Logging.h>
-#include "olad.h"
-#include "DynamicPluginLoader.h"
+#include "ola/Logging.h"
+#include "olad/DynamicPluginLoader.h"
+#include "olad/olad.h"
 
-using namespace std;
+using std::string;
 
 // the daemon
 Olad *olad;
@@ -47,7 +48,7 @@ typedef struct {
  * Terminate cleanly on interrupt
  */
 static void sig_interupt(int signo) {
-  signo =0;
+  signo = 0;
   olad->terminate();
 }
 
@@ -56,7 +57,6 @@ static void sig_interupt(int signo) {
  */
 static void sig_hup(int signo) {
   signo = 0;
-//olad->reload_plugins();
 }
 
 /*
@@ -114,7 +114,6 @@ static int install_signal() {
  * Display the help message
  */
 static void display_help() {
-
   printf(
 "Usage: olad [--no-daemon] [--debug <level>] [--no-syslog]\n"
 "\n"
@@ -124,15 +123,12 @@ static void display_help() {
 "  -d, --debug <level>  Set the debug level 0 .. 4 .\n"
 "  -h, --help           Display this help message and exit.\n"
 "  -s, --no-syslog      Log to stderr rather than syslog.\n"
-"\n"
-  );
-
+"\n");
 }
 
 
 /*
  * Parse the command line options
- *
  * @param argc
  * @param argv
  * @param opts  pointer to the options struct
@@ -150,9 +146,7 @@ static void parse_options(int argc, char *argv[], ola_options *opts) {
   int option_index = 0;
 
   while (1) {
-
     c = getopt_long(argc, argv, "fd:hs", long_options, &option_index);
-
     if (c == -1)
       break;
 
@@ -175,7 +169,7 @@ static void parse_options(int argc, char *argv[], ola_options *opts) {
       case 'd':
         ll = atoi(optarg);
 
-        switch(ll) {
+        switch (ll) {
           case 0:
             opts->level = ola::OLA_LOG_NONE;
             break;
@@ -200,7 +194,7 @@ static void parse_options(int argc, char *argv[], ola_options *opts) {
         break;
 
       default:
-       ;
+       break;
     }
   }
 }
@@ -230,7 +224,7 @@ static int daemonise() {
   struct rlimit rl;
   struct sigaction sa;
 
-  if(getrlimit(RLIMIT_NOFILE, &rl) < 0) {
+  if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
     OLA_WARN << "Could not determine file limit";
     exit(1);
   }
@@ -239,8 +233,9 @@ static int daemonise() {
   if ((pid = fork()) < 0) {
     OLA_WARN << "Could not fork";
     exit(1);
-  } else if (pid != 0)
+  } else if (pid != 0) {
     exit(0);
+  }
 
   // start a new session
   setsid();
@@ -249,21 +244,22 @@ static int daemonise() {
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = 0;
 
-  if(sigaction(SIGHUP, &sa, NULL) < 0) {
+  if (sigaction(SIGHUP, &sa, NULL) < 0) {
     OLA_WARN << "Could not install signal";
     exit(1);
   }
 
-  if((pid= fork()) < 0) {
+  if ((pid= fork()) < 0) {
     OLA_WARN << "Could not fork";
     exit(1);
-  } else if (pid != 0)
+  } else if (pid != 0) {
     exit(0);
+  }
 
   // close all fds
-  if(rl.rlim_max == RLIM_INFINITY)
+  if (rl.rlim_max == RLIM_INFINITY)
     rl.rlim_max = 1024;
-  for(i=0; i < rl.rlim_max; i++)
+  for (i = 0; i < rl.rlim_max; i++)
     close(i);
 
   // send stdout, in and err to /dev/null
@@ -279,16 +275,14 @@ static int daemonise() {
  * Take actions based upon the options
  */
 static void handle_options(ola_options *opts) {
-
-  if(opts->help) {
+  if (opts->help) {
     display_help();
     exit(0);
   }
 
   ola::InitLogging(opts->level, opts->output);
-  if(opts->daemon)
+  if (opts->daemon)
     daemonise();
-
 }
 
 
@@ -316,13 +310,13 @@ int main(int argc, char*argv[]) {
 
   setup(argc, argv);
 
-  if(install_signal())
+  if (install_signal())
     OLA_WARN << "Failed to install signal handlers";
 
   pl = new DynamicPluginLoader();
   olad = new Olad(pl);
 
-  if(olad && olad->init() == 0 ) {
+  if (olad && olad->init() == 0) {
     olad->run();
   }
   delete olad;

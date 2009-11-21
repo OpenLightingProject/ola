@@ -21,8 +21,8 @@
 #ifndef OLAD_OLAHTTPSERVER_H_
 #define OLAD_OLAHTTPSERVER_H_
 
-#include <string>
 #include <ctemplate/template.h>
+#include <string>
 #include "ola/ExportMap.h"
 #include "ola/network/SelectServer.h"
 #include "olad/Device.h"
