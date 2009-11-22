@@ -18,20 +18,22 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef ARTNETPORT_H
-#define ARTNETPORT_H
+#ifndef PLUGINS_ARTNET_ARTNETPORT_H_
+#define PLUGINS_ARTNET_ARTNETPORT_H_
 
-#include <olad/Port.h>
 #include <artnet/artnet.h>
-#include "ArtNetDevice.h"
+#include <string>
+#include "olad/Port.h"
+#include "plugins/artnet/ArtNetDevice.h"
 
 namespace ola {
 namespace plugin {
+namespace artnet {
 
 class ArtNetPort: public Port<ArtNetDevice> {
   public:
     ArtNetPort(ArtNetDevice *parent, unsigned int id):
-      Port<ArtNetDevice>(parent, id) {};
+      Port<ArtNetDevice>(parent, id) {}
 
     bool SetUniverse(Universe *universe);
     bool WriteDMX(const DmxBuffer &data);
@@ -41,8 +43,7 @@ class ArtNetPort: public Port<ArtNetDevice> {
   private:
     mutable DmxBuffer m_buffer;
 };
-
-} //plugin
-} //ola
-
-#endif
+}  // artnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ARTNET_ARTNETPORT_H_

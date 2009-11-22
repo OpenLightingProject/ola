@@ -18,15 +18,16 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef ARTNETPLUGIN_H
-#define ARTNETPLUGIN_H
+#ifndef PLUGINS_ARTNET_ARTNETPLUGIN_H_
+#define PLUGINS_ARTNET_ARTNETPLUGIN_H_
 
 #include <string>
-#include <olad/Plugin.h>
-#include <ola/plugin_id.h>
+#include "olad/Plugin.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
 namespace plugin {
+namespace artnet {
 
 using ola::Plugin;
 using ola::PluginAdaptor;
@@ -36,7 +37,7 @@ class ArtNetDevice;
 
 class ArtNetPlugin : public Plugin {
   public:
-    ArtNetPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit ArtNetPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 
@@ -52,17 +53,16 @@ class ArtNetPlugin : public Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
 
-    ArtNetDevice *m_device; // only have one device
+    ArtNetDevice *m_device;  // only have one device
 
-    static const string ARTNET_SUBNET;
-    static const string ARTNET_LONG_NAME;
-    static const string ARTNET_SHORT_NAME;
-    static const string PLUGIN_NAME;
-    static const string DEVICE_NAME;
-    static const string PLUGIN_PREFIX;
+    static const char ARTNET_SUBNET[];
+    static const char ARTNET_LONG_NAME[];
+    static const char ARTNET_SHORT_NAME[];
+    static const char PLUGIN_NAME[];
+    static const char DEVICE_NAME[];
+    static const char PLUGIN_PREFIX[];
 };
-
-} //plugin
-} //ola
-#endif
-
+}  // artnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ARTNET_ARTNETPLUGIN_H_

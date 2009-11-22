@@ -20,19 +20,19 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
 
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
-
-#include "ArtNetPlugin.h"
-#include "ArtNetDevice.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
+#include "plugins/artnet/ArtNetPlugin.h"
+#include "plugins/artnet/ArtNetDevice.h"
 
 
 /*
  * Entry point to this plugin
  */
 extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *adaptor) {
-  return new ola::plugin::ArtNetPlugin(adaptor);
+  return new ola::plugin::artnet::ArtNetPlugin(adaptor);
 }
 
 /*
@@ -45,13 +45,14 @@ extern "C" void destroy(ola::Plugin* plugin) {
 
 namespace ola {
 namespace plugin {
+namespace artnet {
 
-const string ArtNetPlugin::ARTNET_LONG_NAME = "ola - ArtNet node";
-const string ArtNetPlugin::ARTNET_SHORT_NAME = "ola - ArtNet node";
-const string ArtNetPlugin::ARTNET_SUBNET = "0";
-const string ArtNetPlugin::PLUGIN_NAME = "ArtNet Plugin";
-const string ArtNetPlugin::DEVICE_NAME = "ArtNet Device";
-const string ArtNetPlugin::PLUGIN_PREFIX = "artnet";
+const char ArtNetPlugin::ARTNET_LONG_NAME[] = "ola - ArtNet node";
+const char ArtNetPlugin::ARTNET_SHORT_NAME[] = "ola - ArtNet node";
+const char ArtNetPlugin::ARTNET_SUBNET[] = "0";
+const char ArtNetPlugin::PLUGIN_NAME[] = "ArtNet Plugin";
+const char ArtNetPlugin::DEVICE_NAME[] = "ArtNet Device";
+const char ArtNetPlugin::PLUGIN_PREFIX[] = "artnet";
 
 /*
  * Start the plugin, for now we just have one device.
@@ -87,7 +88,7 @@ bool ArtNetPlugin::StopHook() {
     delete m_device;
     return ret;
   }
-  return true ;
+  return true;
 }
 
 
@@ -150,6 +151,6 @@ bool ArtNetPlugin::SetDefaultPreferences() {
 
   return true;
 }
-
-} //plugin
-} // ola
+}  // artnet
+}  // plugin
+}  // ola

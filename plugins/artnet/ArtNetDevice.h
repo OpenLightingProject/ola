@@ -18,15 +18,16 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef ARTNETDEVICE_H
-#define ARTNETDEVICE_H
-
-#include <ola/network/Socket.h>
-#include <olad/Device.h>
-#include <olad/PluginAdaptor.h>
+#ifndef PLUGINS_ARTNET_ARTNETDEVICE_H_
+#define PLUGINS_ARTNET_ARTNETDEVICE_H_
 
 #include <artnet/artnet.h>
-#include "messages/ArtnetConfigMessages.pb.h"
+#include <string>
+
+#include "ola/network/Socket.h"
+#include "olad/Device.h"
+#include "olad/PluginAdaptor.h"
+#include "plugins/artnet/messages/ArtnetConfigMessages.pb.h"
 
 namespace ola {
 
@@ -36,6 +37,7 @@ using ola::plugin::artnet::Request;
 class Preferences;
 
 namespace plugin {
+namespace artnet {
 
 using ola::Device;
 using std::string;
@@ -72,13 +74,12 @@ class ArtNetDevice: public Device {
     bool m_debug;
 
     void HandleOptions(Request *request, string *response);
-    static const string K_SHORT_NAME_KEY;
-    static const string K_LONG_NAME_KEY;
-    static const string K_SUBNET_KEY;
-    static const string K_IP_KEY;
+    static const char K_SHORT_NAME_KEY[];
+    static const char K_LONG_NAME_KEY[];
+    static const char K_SUBNET_KEY[];
+    static const char K_IP_KEY[];
 };
-
-} //plugin
-} //ola
-
-#endif
+}  // arntnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ARTNET_ARTNETDEVICE_H_

@@ -18,15 +18,16 @@
  * Copyright (C) 2005 - 2009 Simon Newton
  */
 #include <string.h>
+#include <string>
 
-#include <ola/Logging.h>
-#include <olad/Universe.h>
-
-#include "ArtNetPort.h"
-#include "ArtNetDevice.h"
+#include "ola/Logging.h"
+#include "olad/Universe.h"
+#include "plugins/artnet/ArtNetDevice.h"
+#include "plugins/artnet/ArtNetPort.h"
 
 namespace ola {
 namespace plugin {
+namespace artnet {
 
 bool ArtNetPort::IsOutput() const {
   // even ports are input
@@ -66,7 +67,7 @@ const DmxBuffer &ArtNetPort::ReadDMX() const {
   uint8_t *dmx_data = artnet_read_dmx(dev->GetArtnetNode(), PortId() / 2,
                                       &length);
 
-  if(!dmx_data) {
+  if (!dmx_data) {
     OLA_WARN << "artnet_read_dmx failed " << artnet_strerror();
     m_buffer.Reset();
     return m_buffer;
@@ -141,7 +142,6 @@ string ArtNetPort::Description() const {
   str << "ArtNet Universe " << universe_address;
   return str.str();
 }
-
-
-} //plugin
-} //ola
+}  // artnet
+}  // plugin
+}  // ola

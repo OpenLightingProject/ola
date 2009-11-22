@@ -25,29 +25,27 @@
  * Ids 4-7 : Output ports (send dmx)
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
+#include <google/protobuf/stubs/common.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string>
 
-#include <ola/Closure.h>
-#include <ola/Logging.h>
-#include <olad/Preferences.h>
-#include <artnet/artnet.h>
+#include "ola/Closure.h"
+#include "ola/Logging.h"
+#include "olad/Preferences.h"
+#include "artnet/artnet.h"
+#include "plugins/artnet/ArtNetDevice.h"
+#include "plugins/artnet/ArtNetPort.h"
 
-#include "ArtNetDevice.h"
-#include "ArtNetPort.h"
-
-using ola::plugin::ArtNetDevice;
-using ola::plugin::ArtNetPort;
-using ola::Preferences;
 
 /*
  * Handle dmx from the network, called from libartnet
  */
 int dmx_handler(artnet_node n, int prt, void *d) {
-  ArtNetDevice *device = (ArtNetDevice *) d;
+  ola::plugin::artnet::ArtNetDevice *device =
+    reinterpret_cast<ola::plugin::artnet::ArtNetDevice*>(d);
 
   // don't return non zero here else libartnet will stop processing
   // this should never happen anyway
@@ -55,7 +53,8 @@ int dmx_handler(artnet_node n, int prt, void *d) {
     return 0;
 
   // signal to the port that the data has changed
-  ArtNetPort *port = (ArtNetPort*) device->GetPort(prt);
+  ola::plugin::artnet::ArtNetPort *port =
+    reinterpret_cast<ola::plugin::artnet::ArtNetPort*>(device->GetPort(prt));
   port->DmxChanged();
   return 0;
 }
@@ -71,16 +70,17 @@ int program_handler(artnet_node n, void *d) {
 
 namespace ola {
 namespace plugin {
+namespace artnet {
 
 using google::protobuf::RpcController;
 using google::protobuf::Closure;
 using ola::plugin::artnet::Request;
 using ola::plugin::artnet::Reply;
 
-const string ArtNetDevice::K_SHORT_NAME_KEY = "short_name";
-const string ArtNetDevice::K_LONG_NAME_KEY = "long_name";
-const string ArtNetDevice::K_SUBNET_KEY = "subnet";
-const string ArtNetDevice::K_IP_KEY = "ip";
+const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
+const char ArtNetDevice::K_LONG_NAME_KEY[] = "long_name";
+const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
+const char ArtNetDevice::K_IP_KEY[] = "ip";
 
 /*
  * Create a new Artnet Device
@@ -126,9 +126,9 @@ bool ArtNetDevice::Start() {
   }
 
   // create new artnet node, and and set config values
-  if (m_preferences->GetValue(K_IP_KEY).empty())
+  if (m_preferences->GetValue(K_IP_KEY).empty()) {
     m_node = artnet_new(NULL, m_debug);
-  else {
+  } else {
     m_node = artnet_new(m_preferences->GetValue(K_IP_KEY).data(), m_debug);
   }
 
@@ -171,19 +171,22 @@ bool ArtNetDevice::Start() {
   m_subnet = subnet;
 
   // we want to be notified when the node config changes
-  if (artnet_set_program_handler(m_node, ::program_handler, (void*) this)) {
+  if (artnet_set_program_handler(m_node, ::program_handler,
+                                 reinterpret_cast<void*>(this))) {
     OLA_WARN << "artnet_set_program_handler failed: " << artnet_strerror();
     goto e_artnet_start;
   }
 
-  if (artnet_set_dmx_handler(m_node, ::dmx_handler, (void*) this)) {
+  if (artnet_set_dmx_handler(m_node, ::dmx_handler,
+                             reinterpret_cast<void*>(this))) {
     OLA_WARN << "artnet_set_dmx_handler failed: " << artnet_strerror();
     goto e_artnet_start;
   }
 
-  for (int i=0; i < ARTNET_MAX_PORTS; i++) {
+  for (int i = 0; i < ARTNET_MAX_PORTS; i++) {
     // output ports
-    if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_OUTPUT, ARTNET_PORT_DMX)) {
+    if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_OUTPUT,
+                             ARTNET_PORT_DMX)) {
       OLA_WARN << "artnet_set_port_type failed %s", artnet_strerror();
       goto e_artnet_start;
     }
@@ -193,7 +196,8 @@ bool ArtNetDevice::Start() {
       goto e_artnet_start;
     }
 
-    if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_INPUT, ARTNET_PORT_DMX)) {
+    if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_INPUT,
+                             ARTNET_PORT_DMX)) {
       OLA_WARN << "artnet_set_port_type failed %s", artnet_strerror();
       goto e_artnet_start;
     }
@@ -214,11 +218,11 @@ bool ArtNetDevice::Start() {
   m_enabled = true;
   return true;
 
-e_artnet_start:
-  if(artnet_destroy(m_node))
+ e_artnet_start:
+  if (artnet_destroy(m_node))
     OLA_WARN << "artnet_destroy failed: " << artnet_strerror();
 
-e_dev:
+ e_dev:
   DeleteAllPorts();
   return false;
 }
@@ -340,7 +344,6 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
   options_reply->set_subnet(m_subnet);
   reply.SerializeToString(response);
 }
-
-
-} //plugin
-} //ola
+}  // artnet
+}  // plugin
+}  // ola
