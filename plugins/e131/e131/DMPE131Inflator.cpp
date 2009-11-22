@@ -74,6 +74,12 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
                                                 dmp_header.Type(),
                                                 data,
                                                 available_length);
+
+  if (address->Start()) {
+    delete address;
+    return true;
+  }
+
   if (address->Increment() != 1) {
     OLA_INFO << "E1.31 DMP packet with increment " << address->Increment()
       << ", disarding";
