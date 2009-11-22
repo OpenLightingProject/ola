@@ -18,13 +18,15 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef SHOWNETDEVICE_H
-#define SHOWNETDEVICE_H
+#ifndef PLUGINS_SHOWNET_SHOWNETDEVICE_H_
+#define PLUGINS_SHOWNET_SHOWNETDEVICE_H_
 
-#include <olad/Device.h>
-#include <olad/Plugin.h>
+#include <string>
+#include "olad/Device.h"
+#include "olad/Plugin.h"
 
 namespace ola {
+namespace plugin {
 namespace shownet {
 
 using ola::Plugin;
@@ -47,9 +49,9 @@ class ShowNetDevice: public ola::Device {
     class ShowNetNode *m_node;
     bool m_enabled;
 
-    static const std::string IP_KEY;
+    static const char IP_KEY[];
 };
-
-} //plugin
-} //ola
-#endif
+}  // shownet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_SHOWNET_SHOWNETDEVICE_H_

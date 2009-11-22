@@ -18,17 +18,19 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <string.h>
-#include <stdlib.h>
-#include <map>
 #include <cppunit/extensions/HelperMacros.h>
+#include <stdlib.h>
+#include <string.h>
+#include <map>
+#include <string>
 
-#include <ola/BaseTypes.h>
-#include <ola/DmxBuffer.h>
-#include <ola/Closure.h>
-#include "ShowNetNode.h"
+#include "ola/BaseTypes.h"
+#include "ola/Closure.h"
+#include "ola/DmxBuffer.h"
+#include "plugins/shownet/ShowNetNode.h"
 
 namespace ola {
+namespace plugin {
 namespace shownet {
 
 using ola::DmxBuffer;
@@ -128,7 +130,7 @@ void ShowNetNodeTest::testHandlePacket() {
   CPPUNIT_ASSERT(!m_hander_called);
 
   // add a valid netslot
-  packet.netSlot[0] = 1; // universe 0
+  packet.netSlot[0] = 1;  // universe 0
   CPPUNIT_ASSERT_EQUAL(false, m_node->HandlePacket(packet, sizeof(packet)));
   CPPUNIT_ASSERT(!m_hander_called);
 
@@ -156,7 +158,7 @@ void ShowNetNodeTest::testHandlePacket() {
   CPPUNIT_ASSERT(!m_hander_called);
 
   // check a valid packet, but different universe
-  packet.netSlot[0] = 513; // universe 1
+  packet.netSlot[0] = 513;  // universe 1
   packet.slotSize[0] = sizeof(EXPECTED_DATA);
   CPPUNIT_ASSERT_EQUAL(
       false,
@@ -164,7 +166,7 @@ void ShowNetNodeTest::testHandlePacket() {
   CPPUNIT_ASSERT(!m_hander_called);
 
   // now check with the correct universe
-  packet.netSlot[0] = 1; // universe 0
+  packet.netSlot[0] = 1;  // universe 0
   CPPUNIT_ASSERT_EQUAL(
       true,
       m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
@@ -172,8 +174,7 @@ void ShowNetNodeTest::testHandlePacket() {
   CPPUNIT_ASSERT_EQUAL(
       0,
       memcmp(expected_dmx.GetRaw(), m_received_data[0].GetRaw(),
-             expected_dmx.Size())
-  );
+             expected_dmx.Size()));
 }
 
 
@@ -196,7 +197,7 @@ void ShowNetNodeTest::testPopulatePacket() {
   encoder.Encode(buffer, expected_packet.data, encoded_data_size);
 
   m_node->SetName(NAME);
-  unsigned int size = m_node->PopulatePacket(packet, universe, buffer);
+  unsigned int size = m_node->PopulatePacket(&packet, universe, buffer);
   CPPUNIT_ASSERT_EQUAL(header_size + encoded_data_size, size);
 
   expected_packet.sigHi = ShowNetNode::SHOWNET_ID_HIGH;
@@ -240,7 +241,7 @@ void ShowNetNodeTest::testPopulatePacket() {
 
   // now send for a different universe
   universe = 1;
-  size = m_node->PopulatePacket(packet, universe, buffer);
+  size = m_node->PopulatePacket(&packet, universe, buffer);
   expected_packet.netSlot[0] = 513;
   CPPUNIT_ASSERT(!memcmp(&expected_packet, &packet, size));
 }
@@ -275,37 +276,34 @@ void ShowNetNodeTest::SendAndReceiveForUniverse(unsigned int universe) {
       ola::NewClosure(this, &ShowNetNodeTest::UpdateData, universe));
 
   // zero first
-  size = m_node->PopulatePacket(packet, universe, zero_buffer);
+  size = m_node->PopulatePacket(&packet, universe, zero_buffer);
   m_node->HandlePacket(packet, size);
   CPPUNIT_ASSERT(m_received_data[universe] == zero_buffer);
 
   // send a test packet
-  size = m_node->PopulatePacket(packet, universe, buffer1);
+  size = m_node->PopulatePacket(&packet, universe, buffer1);
   m_node->HandlePacket(packet, size);
   CPPUNIT_ASSERT_EQUAL(
       0,
       memcmp(buffer1.GetRaw(), m_received_data[universe].GetRaw(),
-             buffer1.Size())
-  );
+             buffer1.Size()));
 
   // send another test packet
-  size = m_node->PopulatePacket(packet, universe, buffer2);
+  size = m_node->PopulatePacket(&packet, universe, buffer2);
   m_node->HandlePacket(packet, size);
   CPPUNIT_ASSERT_EQUAL(
       0,
       memcmp(buffer2.GetRaw(), m_received_data[universe].GetRaw(),
-             buffer2.Size())
-  );
+             buffer2.Size()));
 
   // check that we don't mix up universes
-  size = m_node->PopulatePacket(packet, universe + 1, buffer1);
+  size = m_node->PopulatePacket(&packet, universe + 1, buffer1);
   m_node->HandlePacket(packet, size);
   CPPUNIT_ASSERT_EQUAL(
       0,
       memcmp(buffer2.GetRaw(), m_received_data[universe].GetRaw(),
-             buffer2.Size())
-  );
+             buffer2.Size()));
 }
-
-} // shownet
-} // ola
+}  // shownet
+}  // plugin
+}  // ola

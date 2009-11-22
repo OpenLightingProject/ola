@@ -20,12 +20,16 @@
 
 #include <string.h>
 #include <algorithm>
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "ShowNetNode.h"
+#include <map>
+#include <string>
+
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/shownet/ShowNetNode.h"
 
 
 namespace ola {
+namespace plugin {
 namespace shownet {
 
 using std::string;
@@ -40,12 +44,12 @@ using ola::Closure;
  * @param ip_address the IP address to prefer to listen on, if NULL we choose
  * one.
  */
-ShowNetNode::ShowNetNode(const string &ip_address):
-  m_running(false),
-  m_packet_count(0),
-  m_node_name(),
-  m_preferred_ip(ip_address) {
-    memset(&m_destination, 0, sizeof(m_destination));
+ShowNetNode::ShowNetNode(const string &ip_address)
+    : m_running(false),
+      m_packet_count(0),
+      m_node_name(),
+      m_preferred_ip(ip_address) {
+  memset(&m_destination, 0, sizeof(m_destination));
 }
 
 
@@ -120,7 +124,6 @@ void ShowNetNode::SetName(const string &name) {
  */
 bool ShowNetNode::SendDMX(unsigned int universe,
                           const ola::DmxBuffer &buffer) {
-
   if (!m_running)
     return false;
 
@@ -131,8 +134,8 @@ bool ShowNetNode::SendDMX(unsigned int universe,
   }
 
   shownet_data_packet packet;
-  unsigned int size = PopulatePacket(packet, universe, buffer);
-  ssize_t bytes_sent = m_socket->SendTo((uint8_t*) &packet,
+  unsigned int size = PopulatePacket(&packet, universe, buffer);
+  ssize_t bytes_sent = m_socket->SendTo(reinterpret_cast<uint8_t*>(&packet),
                                         size,
                                         m_destination);
 
@@ -153,9 +156,9 @@ DmxBuffer ShowNetNode::GetDMX(unsigned int universe) {
   map<unsigned int, universe_handler>::const_iterator iter =
     m_handlers.find(universe);
 
-  if (iter != m_handlers.end())
+  if (iter != m_handlers.end()) {
     return iter->second.buffer;
-  else {
+  } else {
     DmxBuffer buffer;
     return buffer;
   }
@@ -217,7 +220,9 @@ int ShowNetNode::SocketReady() {
   struct sockaddr_in source;
   socklen_t source_length = sizeof(source);
 
-  if(!m_socket->RecvFrom((uint8_t*) &packet, &packet_size, source,
+  if (!m_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
+                          &packet_size,
+                          source,
                           source_length))
     return -1;
 
@@ -234,7 +239,6 @@ int ShowNetNode::SocketReady() {
  */
 bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
                                unsigned int packet_size) {
-
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
 
   if (packet_size <= header_size) {
@@ -300,39 +304,38 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
   }
   iter->second.closure->Run();
   return true;
-
 }
 
 
 /*
  * Populate a shownet data packet
  */
-unsigned int ShowNetNode::PopulatePacket(shownet_data_packet &packet,
+unsigned int ShowNetNode::PopulatePacket(shownet_data_packet *packet,
                                          unsigned int universe,
                                          const DmxBuffer &buffer) {
-
-  memset(&packet, 0, sizeof(packet));
+  memset(packet, 0, sizeof(*packet));
 
   // setup the fields in the shownet packet
-  packet.sigHi = SHOWNET_ID_HIGH;
-  packet.sigLo = SHOWNET_ID_LOW;
-  memcpy(packet.ip, &m_interface.ip_address, sizeof(packet.ip));
+  packet->sigHi = SHOWNET_ID_HIGH;
+  packet->sigLo = SHOWNET_ID_LOW;
+  memcpy(packet->ip, &m_interface.ip_address, sizeof(packet->ip));
 
-  packet.netSlot[0] = (universe * DMX_UNIVERSE_SIZE) + 1;
-  packet.slotSize[0] = buffer.Size();
+  packet->netSlot[0] = (universe * DMX_UNIVERSE_SIZE) + 1;
+  packet->slotSize[0] = buffer.Size();
 
-  unsigned int enc_len = sizeof(packet.data);
-  if (!m_encoder.Encode(buffer, packet.data, enc_len))
+  unsigned int enc_len = sizeof(packet->data);
+  if (!m_encoder.Encode(buffer, packet->data, enc_len))
     OLA_WARN << "Failed to encode all data (used " << enc_len << " bytes";
 
-  packet.indexBlock[0] = MAGIC_INDEX_OFFSET;
-  packet.indexBlock[1] = MAGIC_INDEX_OFFSET + enc_len;
+  packet->indexBlock[0] = MAGIC_INDEX_OFFSET;
+  packet->indexBlock[1] = MAGIC_INDEX_OFFSET + enc_len;
 
-  packet.packetCountHi = ShortGetHigh(m_packet_count);
-  packet.packetCountLo = ShortGetLow(m_packet_count);
+  packet->packetCountHi = ShortGetHigh(m_packet_count);
+  packet->packetCountLo = ShortGetLow(m_packet_count);
 
-  strncpy((char*) packet.name, m_node_name.data(), SHOWNET_NAME_LENGTH);
-  return sizeof(packet) - sizeof(packet.data) + enc_len;
+  strncpy(reinterpret_cast<char*>(packet->name), m_node_name.data(),
+          SHOWNET_NAME_LENGTH);
+  return sizeof(*packet) - sizeof(packet->data) + enc_len;
 }
 
 
@@ -363,6 +366,6 @@ bool ShowNetNode::InitNetwork() {
   m_socket->SetOnData(NewClosure(this, &ShowNetNode::SocketReady));
   return true;
 }
-
-} //shownet
-} //ola
+}  // shownet
+}  // plugin
+}  // ola

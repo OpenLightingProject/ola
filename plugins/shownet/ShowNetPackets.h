@@ -18,10 +18,10 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_SHOWNET_PACKETS
-#define OLA_SHOWNET_PACKETS
+#ifndef PLUGINS_SHOWNET_SHOWNETPACKETS_H_
+#define PLUGINS_SHOWNET_SHOWNETPACKETS_H_
 
-#include <ola/BaseTypes.h>
+#include "ola/BaseTypes.h"
 
 enum { SHOWNET_MAC_LENGTH = 6 };
 enum { SHOWNET_NAME_LENGTH = 9 };
@@ -37,10 +37,10 @@ struct shownet_data_s {
   uint8_t  packetCountLo;    // sequence number
   uint8_t  block[4];         // the last 2 items here have something to do with
                              // the channels that have passwords are.
-  uint8_t  name[SHOWNET_NAME_LENGTH]; // name of console
-  uint8_t  data[DMX_UNIVERSE_SIZE]; // data
+  uint8_t  name[SHOWNET_NAME_LENGTH];  // name of console
+  uint8_t  data[DMX_UNIVERSE_SIZE];  // data
 } __attribute__((packed));
 
 typedef struct shownet_data_s shownet_data_packet;
 
-#endif
+#endif  // PLUGINS_SHOWNET_SHOWNETPACKETS_H_

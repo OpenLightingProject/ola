@@ -18,13 +18,15 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef SHOWNETPLUGIN_H
-#define SHOWNETPLUGIN_H
+#ifndef PLUGINS_SHOWNET_SHOWNETPLUGIN_H_
+#define PLUGINS_SHOWNET_SHOWNETPLUGIN_H_
 
-#include <olad/Plugin.h>
-#include <ola/plugin_id.h>
+#include <string>
+#include "olad/Plugin.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
+namespace plugin {
 namespace shownet {
 
 using ola::Plugin;
@@ -33,9 +35,9 @@ using std::string;
 
 class ShowNetDevice;
 
-class ShowNetPlugin : public Plugin {
+class ShowNetPlugin: public Plugin {
   public:
-    ShowNetPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit ShowNetPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
     ~ShowNetPlugin() {}
@@ -51,13 +53,13 @@ class ShowNetPlugin : public Plugin {
     bool SetDefaultPreferences();
 
     ShowNetDevice *m_device;
-    static const string SHOWNET_NODE_NAME;
-    static const string SHOWNET_DEVICE_NAME;
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
-    static const string SHOWNET_NAME_KEY;
+    static const char SHOWNET_NODE_NAME[];
+    static const char SHOWNET_DEVICE_NAME[];
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
+    static const char SHOWNET_NAME_KEY[];
 };
-
-} //shownet
-} //ola
-#endif
+}  // shownet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_SHOWNET_SHOWNETPLUGIN_H_

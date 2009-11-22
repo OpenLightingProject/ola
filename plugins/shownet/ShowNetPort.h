@@ -18,14 +18,16 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef SHOWNETPORT_H
-#define SHOWNETPORT_H
+#ifndef PLUGINS_SHOWNET_SHOWNETPORT_H_
+#define PLUGINS_SHOWNET_SHOWNETPORT_H_
 
-#include <olad/Port.h>
-#include "ShowNetDevice.h"
-#include "ShowNetNode.h"
+#include <string>
+#include "olad/Port.h"
+#include "plugins/shownet/ShowNetDevice.h"
+#include "plugins/shownet/ShowNetNode.h"
 
 namespace ola {
+namespace plugin {
 namespace shownet {
 
 using ola::DmxBuffer;
@@ -47,7 +49,7 @@ class ShowNetPort: public Port<ShowNetDevice> {
     DmxBuffer m_buffer;
     unsigned int ShowNetUniverseId() const { return PortId() / 2; }
 };
-
-} //plugin
-} //ola
-#endif
+}  // shownet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_SHOWNET_SHOWNETPORT_H_

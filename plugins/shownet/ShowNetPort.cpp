@@ -18,15 +18,16 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 #include <sstream>
+#include <string>
 
-#include <ola/BaseTypes.h>
-#include <ola/Closure.h>
-#include <ola/Logging.h>
-
-#include "ShowNetPort.h"
-#include "ShowNetDevice.h"
+#include "ola/BaseTypes.h"
+#include "ola/Closure.h"
+#include "ola/Logging.h"
+#include "plugins/shownet/ShowNetDevice.h"
+#include "plugins/shownet/ShowNetPort.h"
 
 namespace ola {
+namespace plugin {
 namespace shownet {
 
 bool ShowNetPort::IsOutput() const {
@@ -92,6 +93,6 @@ bool ShowNetPort::SetUniverse(Universe *universe) {
     node->RemoveHandler(ShowNetUniverseId());
   return true;
 }
-
-} //plugin
-} //ola
+}  // shownet
+}  // plugin
+}  // ola

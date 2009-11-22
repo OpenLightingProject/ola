@@ -18,24 +18,25 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_SHOWNET_NODE
-#define OLA_SHOWNET_NODE
+#ifndef PLUGINS_SHOWNET_SHOWNETNODE_H_
+#define PLUGINS_SHOWNET_SHOWNETNODE_H_
 
 #include <string>
 #include <map>
-#include <ola/Closure.h>
-#include <ola/DmxBuffer.h>
-#include <ola/network/InterfacePicker.h>
-#include <ola/network/Socket.h>
-#include <ola/RunLengthEncoder.h>
-#include "ShowNetPackets.h"
+#include "ola/Closure.h"
+#include "ola/DmxBuffer.h"
+#include "ola/RunLengthEncoder.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/Socket.h"
+#include "plugins/shownet/ShowNetPackets.h"
 
 namespace ola {
+namespace plugin {
 namespace shownet {
 
 class ShowNetNode {
-  public :
-    ShowNetNode(const std::string &ip_address);
+  public:
+    explicit ShowNetNode(const std::string &ip_address);
     virtual ~ShowNetNode();
 
     bool Start();
@@ -50,7 +51,7 @@ class ShowNetNode {
     ola::network::UdpSocket* GetSocket() { return m_socket; }
     int SocketReady();
 
-    static const unsigned short SHOWNET_MAX_UNIVERSES = 8;
+    static const uint16_t SHOWNET_MAX_UNIVERSES = 8;
 
     friend class ShowNetNodeTest;
 
@@ -74,19 +75,19 @@ class ShowNetNode {
     ShowNetNode(const ShowNetNode&);
     ShowNetNode& operator=(const ShowNetNode&);
     bool HandlePacket(const shownet_data_packet &packet, unsigned int size);
-    unsigned int PopulatePacket(shownet_data_packet &packet,
+    unsigned int PopulatePacket(shownet_data_packet *packet,
                                 unsigned int universe,
                                 const DmxBuffer &buffer);
     bool InitNetwork();
     inline uint8_t ShortGetHigh(uint16_t x) const { return (0xff00 & x) >> 8; }
     inline uint8_t ShortGetLow(uint16_t x) const { return 0x00ff & x; }
 
-    static const unsigned short SHOWNET_PORT = 2501;
+    static const uint16_t SHOWNET_PORT = 2501;
     static const uint8_t SHOWNET_ID_HIGH = 0x80;
     static const uint8_t SHOWNET_ID_LOW = 0x8f;
     static const int MAGIC_INDEX_OFFSET = 11;
 };
-
-} //shownet
-} //ola
-#endif
+}  // shownet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_SHOWNET_SHOWNETNODE_H_

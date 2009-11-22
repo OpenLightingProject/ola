@@ -18,19 +18,21 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include <olad/Plugin.h>
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
+#include <string>
 
-#include "ShowNetDevice.h"
-#include "ShowNetPort.h"
-#include "ShowNetNode.h"
+#include "ola/Logging.h"
+#include "olad/Plugin.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
+#include "plugins/shownet/ShowNetDevice.h"
+#include "plugins/shownet/ShowNetNode.h"
+#include "plugins/shownet/ShowNetPort.h"
 
 namespace ola {
+namespace plugin {
 namespace shownet {
 
-const std::string ShowNetDevice::IP_KEY = "ip";
+const char ShowNetDevice::IP_KEY[] = "ip";
 
 
 /*
@@ -92,7 +94,6 @@ bool ShowNetDevice::Stop() {
   m_enabled = false;
   return true;
 }
-
-
-} //plugin
-} //ola
+}  // shownet
+}  // plugin
+}  // ola
