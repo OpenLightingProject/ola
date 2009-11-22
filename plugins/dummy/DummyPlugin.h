@@ -18,14 +18,16 @@
  * Copyright (C) 2005-2007 Simon Newton
  */
 
-#ifndef DUMMYPLUGIN_H
-#define DUMMYPLUGIN_H
+#ifndef PLUGINS_DUMMY_DUMMYPLUGIN_H_
+#define PLUGINS_DUMMY_DUMMYPLUGIN_H_
 
-#include <olad/Plugin.h>
-#include <ola/plugin_id.h>
+#include <string>
+#include "olad/Plugin.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
 namespace plugin {
+namespace dummy {
 
 using ola::Plugin;
 using ola::PluginAdaptor;
@@ -34,7 +36,7 @@ class DummyDevice;
 
 class DummyPlugin: public Plugin {
   public:
-    DummyPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit DummyPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 
@@ -48,13 +50,12 @@ class DummyPlugin: public Plugin {
     bool StopHook();
     bool SetDefaultPreferences() { return true; }
 
-    DummyDevice *m_device; // the dummy device
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
-    static const string DEVICE_NAME;
+    DummyDevice *m_device;  // the dummy device
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
+    static const char DEVICE_NAME[];
 };
-
-} // plugin
-} // ola
-
-#endif
+}  // dummy
+}  // plugin
+}  // ola
+#endif  // PLUGINS_DUMMY_DUMMYPLUGIN_H_

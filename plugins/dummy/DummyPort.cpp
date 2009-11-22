@@ -21,11 +21,12 @@
 
 #include <iostream>
 #include <string>
-#include <ola/Logging.h>
-#include "DummyPort.h"
+#include "ola/Logging.h"
+#include "plugins/dummy/DummyPort.h"
 
 namespace ola {
 namespace plugin {
+namespace dummy {
 
 /*
  * Write operation
@@ -38,11 +39,11 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer) {
   string data = buffer.Get();
 
   str << "Dummy port: got " << buffer.Size() << " bytes: ";
-  for (unsigned int i=0; i < 10 && i < data.size(); i++)
+  for (unsigned int i = 0; i < 10 && i < data.size(); i++)
     str << "0x" << std::hex << 0 + (uint8_t) data.at(i) << " ";
   OLA_INFO << str.str();
   return true;
 }
-
-} //plugin
-} //ola
+}  // dummy
+}  // plugin
+}  // ola

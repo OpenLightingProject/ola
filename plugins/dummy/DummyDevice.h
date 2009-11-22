@@ -18,17 +18,18 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef DUMMYDEVICE_H
-#define DUMMYDEVICE_H
+#ifndef PLUGINS_DUMMY_DUMMYDEVICE_H_
+#define PLUGINS_DUMMY_DUMMYDEVICE_H_
 
 #include <string>
-#include <olad/Device.h>
+#include "olad/Device.h"
 
 namespace ola {
 
 class AbstractPlugin;
 
 namespace plugin {
+namespace dummy {
 
 using std::string;
 
@@ -40,7 +41,7 @@ class DummyDevice: public Device {
     bool Stop();
     string DeviceId() const { return "1"; }
 };
-
-} //plugin
-} // ola
-#endif
+}  // dummy
+}  // plugin
+}  // ola
+#endif  // PLUGINS_DUMMY_DUMMYDEVICE_H_

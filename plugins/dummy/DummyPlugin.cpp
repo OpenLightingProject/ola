@@ -18,20 +18,20 @@
  * Copyright (C) 2005-2007 Simon Newton
  */
 
-#include <string>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
 
-#include <olad/PluginAdaptor.h>
-
-#include "DummyPlugin.h"
-#include "DummyDevice.h"
+#include "olad/PluginAdaptor.h"
+#include "plugins/dummy/DummyDevice.h"
+#include "plugins/dummy/DummyPlugin.h"
 
 /*
  * Entry point to this plugin
  */
-extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::plugin::DummyPlugin(plugin_adaptor);
+extern "C" ola::AbstractPlugin* create(
+    const ola::PluginAdaptor *plugin_adaptor) {
+  return new ola::plugin::dummy::DummyPlugin(plugin_adaptor);
 }
 
 /*
@@ -44,12 +44,13 @@ extern "C" void destroy(ola::AbstractPlugin *plugin) {
 
 namespace ola {
 namespace plugin {
+namespace dummy {
 
 using std::string;
 
-const string DummyPlugin::PLUGIN_NAME = "Dummy Plugin";
-const string DummyPlugin::PLUGIN_PREFIX = "dummy";
-const string DummyPlugin::DEVICE_NAME = "Dummy Device";
+const char DummyPlugin::PLUGIN_NAME[] = "Dummy Plugin";
+const char DummyPlugin::PLUGIN_PREFIX[] = "dummy";
+const char DummyPlugin::DEVICE_NAME[] = "Dummy Device";
 
 /*
  * Start the plugin
@@ -88,6 +89,6 @@ string DummyPlugin::Description() const {
 "When used as an output port it prints the first two bytes of dmx data to "
 "stdout.\n";
 }
-
-} // plugin
-} // ola
+}  // dummy
+}  // plugin
+}  // ola

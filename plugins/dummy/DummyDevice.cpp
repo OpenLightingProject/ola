@@ -21,17 +21,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <vector>
 
-#include "DummyDevice.h"
-#include "DummyPort.h"
+#include "plugins/dummy/DummyDevice.h"
+#include "plugins/dummy/DummyPort.h"
 
 namespace ola {
 namespace plugin {
+namespace dummy {
 
 
 /*
  * Start this device
- *
  */
 bool DummyDevice::Start() {
   DummyPort *port = NULL;
@@ -71,6 +72,6 @@ bool DummyDevice::Stop() {
   m_enabled = false;
   return true;
 }
-
-} //plugin
-} //laa
+}  // dummy
+}  // plugin
+}  // ola

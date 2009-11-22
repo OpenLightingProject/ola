@@ -18,15 +18,17 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef DUMMYPORT_H
-#define DUMMYPORT_H
+#ifndef PLUGINS_DUMMY_DUMMYPORT_H_
+#define PLUGINS_DUMMY_DUMMYPORT_H_
 
-#include <ola/DmxBuffer.h>
-#include <olad/Port.h>
-#include "DummyDevice.h"
+#include <string>
+#include "ola/DmxBuffer.h"
+#include "olad/Port.h"
+#include "plugins/dummy/DummyDevice.h"
 
 namespace ola {
 namespace plugin {
+namespace dummy {
 
 class DummyPort: public Port<DummyDevice> {
   public:
@@ -40,7 +42,7 @@ class DummyPort: public Port<DummyDevice> {
   private:
     DmxBuffer m_buffer;
 };
-
-} //plugin
-} //ola
-#endif
+}  // dummy
+}  // plugin
+}  // ola
+#endif  // PLUGINS_DUMMY_DUMMYPORT_H_
