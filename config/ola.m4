@@ -62,7 +62,7 @@ elif test -n "$1" ; then
   if test "$protoc_version_proper" = "1" ; then
     AC_MSG_RESULT([$protoc_version])
   else
-    AC_MSG_ERROR([protoc version to old $protoc_version < $required]);
+    AC_MSG_ERROR([protoc version too old $protoc_version < $required]);
   fi
 fi
 ])
