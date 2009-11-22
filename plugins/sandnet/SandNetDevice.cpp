@@ -33,8 +33,8 @@ namespace ola {
 namespace plugin {
 namespace sandnet {
 
-const std::string SandNetDevice::NAME_KEY = "name";
-const std::string SandNetDevice::IP_KEY = "ip";
+const char SandNetDevice::NAME_KEY[] = "name";
+const char SandNetDevice::IP_KEY[] = "ip";
 
 /*
  * Create a new device
@@ -138,8 +138,6 @@ int SandNetDevice::SendAdvertisement() {
   m_node->SendAdvertisement();
   return 0;
 }
-
-
 }  // sandnet
 }  // plugin
 }  // ola

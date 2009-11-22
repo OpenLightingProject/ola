@@ -47,7 +47,7 @@ class SandNetDevice: public ola::Device {
 
     int SendAdvertisement();
 
-    static const std::string NAME_KEY;
+    static const char NAME_KEY[];
 
   private:
     class Preferences *m_preferences;
@@ -56,15 +56,12 @@ class SandNetDevice: public ola::Device {
     bool m_enabled;
     ola::network::timeout_id m_timeout_id;
 
-    static const std::string IP_KEY;
+    static const char IP_KEY[];
     static const int INPUT_PORTS = 8;  // the number of input ports to create
     // send an advertistment every 2s.
     static const int ADVERTISTMENT_PERIOD_MS = 2000;
 };
-
-
 }  // sandnet
 }  // plugin
 }  // ola
-
 #endif  // PLUGINS_SANDNET_SANDNETDEVICE_H_

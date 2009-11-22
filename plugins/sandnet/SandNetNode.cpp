@@ -469,7 +469,6 @@ bool SandNetNode::SendPacket(const sandnet_packet &packet,
   }
   return true;
 }
-
 }  // sandnet
 }  // plugin
 }  // ola

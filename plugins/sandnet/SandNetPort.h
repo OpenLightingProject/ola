@@ -51,9 +51,7 @@ class SandNetPort: public ola::Port<SandNetDevice> {
     uint8_t SandnetGroup(const Universe* universe) const;
     uint8_t SandnetUniverse(const Universe *universe) const;
 };
-
 }  // sandnet
 }  // plugin
 }  // ola
-
 #endif  // PLUGINS_SANDNET_SANDNETPORT_H_

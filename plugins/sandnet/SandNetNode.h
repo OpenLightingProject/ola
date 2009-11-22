@@ -115,7 +115,6 @@ class SandNetNode {
     static const char DEFAULT_NODE_NAME[];
     static const uint32_t FIRMWARE_VERSION = 0x00050501;
 };
-
 }  // sandnet
 }  // plugin
 }  // ola

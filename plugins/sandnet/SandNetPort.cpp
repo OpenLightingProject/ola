@@ -154,7 +154,6 @@ uint8_t SandNetPort::SandnetUniverse(const Universe *universe) const {
     return universe->UniverseId() - 1;
   return 0;
 }
-
 }  // sandnet
 }  // plugin
 }  // ola

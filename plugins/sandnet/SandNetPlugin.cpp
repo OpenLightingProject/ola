@@ -122,8 +122,6 @@ bool SandNetPlugin::SetDefaultPreferences() {
     return false;
   return true;
 }
-
-
 }  // sandnet
 }  // plugin
 }  // ola
