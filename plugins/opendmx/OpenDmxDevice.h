@@ -19,16 +19,17 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef OPENDMXDEVICE_H
-#define OPENDMXDEVICE_H
+#ifndef PLUGINS_OPENDMX_OPENDMXDEVICE_H_
+#define PLUGINS_OPENDMX_OPENDMXDEVICE_H_
 
-#include <olad/Device.h>
 #include <string>
+#include "olad/Device.h"
 
 namespace ola {
 namespace plugin {
+namespace opendmx {
 
-using namespace std;
+using std::string;
 
 class OpenDmxDevice: public ola::Device {
   public:
@@ -45,8 +46,7 @@ class OpenDmxDevice: public ola::Device {
     string m_path;
     bool m_enabled;
 };
-
-} //plugins
-} //ola
-
-#endif
+}  // opendmx
+}  // plugins
+}  // ola
+#endif  // PLUGINS_OPENDMX_OPENDMXDEVICE_H_

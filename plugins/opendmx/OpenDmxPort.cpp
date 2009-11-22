@@ -18,11 +18,13 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include "OpenDmxPort.h"
-#include "OpenDmxDevice.h"
+#include <string>
+#include "plugins/opendmx/OpenDmxPort.h"
+#include "plugins/opendmx/OpenDmxDevice.h"
 
 namespace ola {
 namespace plugin {
+namespace opendmx {
 
 OpenDmxPort::OpenDmxPort(OpenDmxDevice *parent,
                          unsigned int id,
@@ -53,6 +55,6 @@ bool OpenDmxPort::WriteDMX(const DmxBuffer &buffer) {
 
   return m_thread->WriteDmx(buffer);
 }
-
-} //plugins
-} //ola
+}  // opendmx
+}  // plugins
+}  // ola

@@ -23,24 +23,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
-#include <ola/Logging.h>
-
-#include "OpenDmxPlugin.h"
-#include "OpenDmxDevice.h"
+#include "ola/Logging.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
+#include "plugins/opendmx/OpenDmxDevice.h"
+#include "plugins/opendmx/OpenDmxPlugin.h"
 
 namespace ola {
 namespace plugin {
+namespace opendmx {
 
 using ola::PluginAdaptor;
 
-const string OpenDmxPlugin::OPENDMX_DEVICE_PATH = "/dev/dmx0";
-const string OpenDmxPlugin::OPENDMX_DEVICE_NAME = "OpenDmx USB Device";
-const string OpenDmxPlugin::PLUGIN_NAME = "OpenDmx Plugin";
-const string OpenDmxPlugin::PLUGIN_PREFIX = "opendmx";
-const string OpenDmxPlugin::DEVICE_KEY = "device";
+const char OpenDmxPlugin::OPENDMX_DEVICE_PATH[] = "/dev/dmx0";
+const char OpenDmxPlugin::OPENDMX_DEVICE_NAME[] = "OpenDmx USB Device";
+const char OpenDmxPlugin::PLUGIN_NAME[] = "OpenDmx Plugin";
+const char OpenDmxPlugin::PLUGIN_PREFIX[] = "opendmx";
+const char OpenDmxPlugin::DEVICE_KEY[] = "device";
 
 
 /*
@@ -138,6 +139,6 @@ bool OpenDmxPlugin::SetDefaultPreferences() {
 
   return true;
 }
-
-} //plugins
-} //ola
+}  // opendmx
+}  // plugins
+}  // ola

@@ -28,13 +28,15 @@
 #include <fcntl.h>
 #include <sys/time.h>
 #include <time.h>
+#include <string>
 
-#include <ola/Logging.h>
-#include <ola/BaseTypes.h>
-#include "OpenDmxThread.h"
+#include "ola/BaseTypes.h"
+#include "ola/Logging.h"
+#include "plugins/opendmx/OpenDmxThread.h"
 
 namespace ola {
 namespace plugin {
+namespace opendmx {
 
 using std::string;
 
@@ -45,8 +47,7 @@ typedef struct {
 
 
 void *thread_run(void *d) {
-  t_args *args = (t_args*) d;
-
+  t_args *args = reinterpret_cast<t_args*>(d);
   args->th->Run(args->path);
   delete args;
 }
@@ -77,8 +78,7 @@ OpenDmxThread::~OpenDmxThread() {
 
 
 /*
- * run this thread
- *
+ * Run this thread
  */
 void *OpenDmxThread::Run(const string &path) {
   uint8_t buffer[DMX_UNIVERSE_SIZE+1];
@@ -122,7 +122,7 @@ void *OpenDmxThread::Run(const string &path) {
       m_buffer.Get(buffer + 1, &length);
       pthread_mutex_unlock(&m_mutex);
 
-      do_write(buffer, length + 1);
+      DoWrite(buffer, length + 1);
     }
   }
   return NULL;
@@ -140,7 +140,8 @@ int OpenDmxThread::Start(const string &path) {
   args->th = this;
   args->path = path;
 
-  if (pthread_create(&m_tid, NULL, ola::plugin::thread_run, (void*) args)) {
+  if (pthread_create(&m_tid, NULL, ola::plugin::opendmx::thread_run,
+                     reinterpret_cast<void*>(args))) {
     OLA_WARN << "pthread create failed";
     return -1;
   }
@@ -175,8 +176,7 @@ bool OpenDmxThread::WriteDmx(const DmxBuffer &buffer) {
 }
 
 
-
-int OpenDmxThread::do_write(uint8_t *buf, int length) {
+int OpenDmxThread::DoWrite(uint8_t *buf, int length) {
   int res = write(m_fd, buf, length);
 
   if (res < 0) {
@@ -193,6 +193,6 @@ int OpenDmxThread::do_write(uint8_t *buf, int length) {
   }
   return 0;
 }
-
-} // plugin
-} // ola
+}  // opendmx
+}  // plugin
+}  // ola

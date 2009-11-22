@@ -18,14 +18,16 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef OPENDMXPLUGIN_H
-#define OPENDMXPLUGIN_H
+#ifndef PLUGINS_OPENDMX_OPENDMXPLUGIN_H_
+#define PLUGINS_OPENDMX_OPENDMXPLUGIN_H_
 
-#include <olad/Plugin.h>
-#include <ola/plugin_id.h>
+#include <string>
+#include "olad/Plugin.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
 namespace plugin {
+namespace opendmx {
 
 using ola::PluginAdaptor;
 
@@ -33,7 +35,7 @@ class OpenDmxDevice;
 
 class OpenDmxPlugin: public Plugin {
   public:
-    OpenDmxPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit OpenDmxPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 
@@ -47,16 +49,15 @@ class OpenDmxPlugin: public Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
 
-    OpenDmxDevice *m_device; // only have one device
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
-    static const string OPENDMX_DEVICE_PATH;
-    static const string OPENDMX_DEVICE_NAME;
-    static const string DEVICE_KEY;
+    OpenDmxDevice *m_device;  // only have one device
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
+    static const char OPENDMX_DEVICE_PATH[];
+    static const char OPENDMX_DEVICE_NAME[];
+    static const char DEVICE_KEY[];
 };
+}  // opendmx
+}  // plugins
+}  // ola
 
-} //plugins
-} //ola
-
-#endif
-
+#endif  // PLUGINS_OPENDMX_OPENDMXPLUGIN_H_

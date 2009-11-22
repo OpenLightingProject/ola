@@ -21,12 +21,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <string>
 
-#include "OpenDmxDevice.h"
-#include "OpenDmxPort.h"
+#include "plugins/opendmx/OpenDmxDevice.h"
+#include "plugins/opendmx/OpenDmxPort.h"
 
 namespace ola {
 namespace plugin {
+namespace opendmx {
 
 using ola::Device;
 
@@ -80,6 +82,6 @@ bool OpenDmxDevice::Stop() {
   m_enabled = false;
   return true;
 }
-
-} //plugins
-} //ola
+}  // opendmx
+}  // plugins
+}  // ola

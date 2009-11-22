@@ -18,17 +18,18 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OPENDMXPORT_H
-#define OPENDMXPORT_H
+#ifndef PLUGINS_OPENDMX_OPENDMXPORT_H_
+#define PLUGINS_OPENDMX_OPENDMXPORT_H_
 
 #include <string>
-#include <ola/DmxBuffer.h>
-#include <olad/Port.h>
-#include "OpenDmxDevice.h"
-#include "OpenDmxThread.h"
+#include "ola/DmxBuffer.h"
+#include "olad/Port.h"
+#include "plugins/opendmx/OpenDmxDevice.h"
+#include "plugins/opendmx/OpenDmxThread.h"
 
 namespace ola {
 namespace plugin {
+namespace opendmx {
 
 using std::string;
 
@@ -46,8 +47,7 @@ class OpenDmxPort: public ola::Port<OpenDmxDevice> {
     OpenDmxThread *m_thread;
     DmxBuffer m_empty_buffer;
 };
-
-} //plugins
-} //ola
-
-#endif
+}  // opendmx
+}  // plugins
+}  // ola
+#endif  // PLUGINS_OPENDMX_OPENDMXPORT_H_

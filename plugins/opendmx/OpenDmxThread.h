@@ -18,15 +18,16 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OPENDMXTHREAD_H
-#define OPENDMXTHREAD_H
+#ifndef PLUGINS_OPENDMX_OPENDMXTHREAD_H_
+#define PLUGINS_OPENDMX_OPENDMXTHREAD_H_
 
 #include <pthread.h>
 #include <string>
-#include <ola/DmxBuffer.h>
+#include "ola/DmxBuffer.h"
 
 namespace ola {
 namespace plugin {
+namespace opendmx {
 
 class OpenDmxThread {
   public:
@@ -39,7 +40,7 @@ class OpenDmxThread {
     void *Run(const std::string &path);
 
   private:
-    int do_write(uint8_t *buf, int length);
+    int DoWrite(uint8_t *buf, int length);
 
     int m_fd;
     DmxBuffer m_buffer;
@@ -49,7 +50,7 @@ class OpenDmxThread {
     pthread_cond_t m_term_cond;
     pthread_t m_tid;
 };
-
-} // plugin
-} // ola
-#endif
+}  // opendmx
+}  // plugin
+}  // ola
+#endif  // PLUGINS_OPENDMX_OPENDMXTHREAD_H_
