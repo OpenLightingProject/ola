@@ -66,9 +66,11 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
       m_merge_mode(Universe::MERGE_LTP),
       m_universe_store(store),
       m_export_map(export_map) {
-  stringstream universe_id_str;
+  stringstream universe_id_str, universe_name_str;
   universe_id_str << universe_id;
   m_universe_id_str = universe_id_str.str();
+  universe_name_str << "Universe " << universe_id;
+  m_universe_name = universe_name_str.str();
 
   UpdateName();
   UpdateMode();

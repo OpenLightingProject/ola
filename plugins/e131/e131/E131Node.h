@@ -68,7 +68,7 @@ class E131Node {
     DMPE131Inflator m_dmp_inflator;
     map<unsigned int, tx_universe> m_tx_universes;
 
-    tx_universe &SetupOutgoingSettings(unsigned int universe);
+    tx_universe *SetupOutgoingSettings(unsigned int universe);
 
     E131Node(const E131Node&);
     E131Node& operator=(const E131Node&);

@@ -19,8 +19,11 @@
  */
 
 #include <string.h>
-#include <ola/Logging.h>
-#include "E131Node.h"
+#include <map>
+#include <string>
+#include <vector>
+#include "ola/Logging.h"
+#include "plugins/e131/e131/E131Node.h"
 
 namespace ola {
 namespace e131 {
@@ -36,14 +39,13 @@ using ola::DmxBuffer;
  * @param cid, the CID to use, if not provided we generate one
  * one.
  */
-E131Node::E131Node(const string &ip_address, const CID &cid):
-  m_preferred_ip(ip_address),
-  m_cid(cid),
-  m_transport(),
-  m_root_layer(&m_transport, m_cid),
-  m_e131_layer(&m_root_layer),
-  m_dmp_inflator(&m_e131_layer) {
-
+E131Node::E131Node(const string &ip_address, const CID &cid)
+    : m_preferred_ip(ip_address),
+      m_cid(cid),
+      m_transport(),
+      m_root_layer(&m_transport, m_cid),
+      m_e131_layer(&m_root_layer),
+      m_dmp_inflator(&m_e131_layer) {
 }
 
 
@@ -91,8 +93,8 @@ bool E131Node::SetSourceName(unsigned int universe, const string &source) {
       m_tx_universes.find(universe);
 
   if (iter == m_tx_universes.end()) {
-    tx_universe &settings = SetupOutgoingSettings(universe);
-    settings.source = source;
+    tx_universe *settings = SetupOutgoingSettings(universe);
+    settings->source = source;
   } else {
     iter->second.source = source;
   }
@@ -108,8 +110,8 @@ bool E131Node::SetSourcePriority(unsigned int universe, uint8_t priority) {
       m_tx_universes.find(universe);
 
   if (iter == m_tx_universes.end()) {
-    tx_universe &settings = SetupOutgoingSettings(universe);
-    settings.priority = priority;
+    tx_universe *settings = SetupOutgoingSettings(universe);
+    settings->priority = priority;
   } else {
     iter->second.priority = priority;
   }
@@ -125,15 +127,14 @@ bool E131Node::SetSourcePriority(unsigned int universe, uint8_t priority) {
  */
 bool E131Node::SendDMX(uint16_t universe,
                        const ola::DmxBuffer &buffer) {
-
   map<unsigned int, tx_universe>::iterator iter =
       m_tx_universes.find(universe);
-  tx_universe &settings = SetupOutgoingSettings(universe);
+  tx_universe *settings;
 
   if (iter == m_tx_universes.end())
     settings = SetupOutgoingSettings(universe);
   else
-    settings = iter->second;
+    settings = &iter->second;
 
   TwoByteRangeDMPAddress range_addr(0, 1, (uint16_t) buffer.Size());
   DMPAddressData<TwoByteRangeDMPAddress> range_chunk(&range_addr,
@@ -144,11 +145,11 @@ bool E131Node::SendDMX(uint16_t universe,
   const DMPPDU *pdu = NewRangeDMPSetProperty<uint16_t>(true, false,
                                                        ranged_chunks);
 
-  E131Header header(settings.source, settings.priority, settings.sequence,
+  E131Header header(settings->source, settings->priority, settings->sequence,
                     universe);
   bool result = m_e131_layer.SendDMP(header, pdu);
   if (result)
-    settings.sequence++;
+    settings->sequence++;
   delete pdu;
   return result;
 }
@@ -180,17 +181,17 @@ bool E131Node::RemoveHandler(unsigned int universe) {
 /*
  * Create a settings entry for an outgoing universe
  */
-E131Node::tx_universe &E131Node::SetupOutgoingSettings(unsigned int universe) {
+E131Node::tx_universe *E131Node::SetupOutgoingSettings(unsigned int universe) {
   tx_universe settings;
-  settings.source = "";
+  std::stringstream str;
+  str << "Universe " << universe;
+  settings.source = str.str();
   settings.priority = DEFAULT_PRIORITY;
   settings.sequence = 0;
   map<unsigned int, tx_universe>::iterator iter =
-      m_tx_universes.insert(std::pair<unsigned int, tx_universe>(universe,
-                                                                 settings)
-                           ).first;
-  return iter->second;
+      m_tx_universes.insert(
+          std::pair<unsigned int, tx_universe>(universe, settings)).first;
+  return &iter->second;
 }
-
-} //e131
-} //ola
+}  // e131
+}  // ola
