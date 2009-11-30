@@ -20,12 +20,14 @@
  * The StageProfi LAN Widget.
  */
 
-#include <ola/Closure.h>
-#include <ola/network/Socket.h>
-#include "StageProfiWidgetLan.h"
+#include <string>
+#include "ola/Closure.h"
+#include "ola/network/Socket.h"
+#include "plugins/stageprofi/StageProfiWidgetLan.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 using ola::network::TcpSocket;
 
@@ -37,10 +39,11 @@ bool StageProfiWidgetLan::Connect(const std::string &ip) {
   m_socket = TcpSocket::Connect(ip, STAGEPROFI_PORT);
 
   if (m_socket)
-    m_socket->SetOnData(NewClosure((StageProfiWidget*) this,
-                                   &StageProfiWidget::SocketReady));
+    m_socket->SetOnData(
+        NewClosure<StageProfiWidget>(this,
+                                     &StageProfiWidget::SocketReady));
   return m_socket;
 }
-
-} // plugin
-} // ola
+}  // stageprofi
+}  // plugin
+}  // ola

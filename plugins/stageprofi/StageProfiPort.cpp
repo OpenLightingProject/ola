@@ -19,11 +19,12 @@
  */
 
 #include <string.h>
-#include "StageProfiPort.h"
-#include "StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiPort.h"
+#include "plugins/stageprofi/StageProfiDevice.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 /*
  * Write operation
@@ -33,6 +34,6 @@ namespace plugin {
 bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer) {
   return m_widget->SendDmx(buffer);
 }
-
-} //plugin
-} //ola
+}  // stageprofi
+}  // plugin
+}  // ola

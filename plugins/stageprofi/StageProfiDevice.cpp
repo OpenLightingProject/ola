@@ -22,22 +22,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
+#include <string>
 
-#include <ola/Logging.h>
-#include <olad/Preferences.h>
-#include <olad/Universe.h>
-
-#include "StageProfiDevice.h"
-#include "StageProfiPort.h"
-#include "StageProfiWidgetLan.h"
-#include "StageProfiWidgetUsb.h"
-
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#include "ola/Logging.h"
+#include "olad/Preferences.h"
+#include "olad/Universe.h"
+#include "plugins/stageprofi/StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiPort.h"
+#include "plugins/stageprofi/StageProfiWidgetLan.h"
+#include "plugins/stageprofi/StageProfiWidgetUsb.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 using ola::AbstractPlugin;
 
@@ -121,5 +118,6 @@ bool StageProfiDevice::Stop() {
 ConnectedSocket *StageProfiDevice::GetSocket() const {
   return m_widget->GetSocket();
 }
-} // plugin
-} //ola
+}  // stageprofi
+}  // plugin
+}  // ola

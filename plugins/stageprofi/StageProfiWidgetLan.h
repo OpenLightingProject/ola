@@ -18,13 +18,15 @@
  * Copyright (C) 2006-2009 Simon Newton
  */
 
-#ifndef STAGEPROFIWIDGETLAN_H
-#define STAGEPROFIWIDGETLAN_H
+#ifndef PLUGINS_STAGEPROFI_STAGEPROFIWIDGETLAN_H_
+#define PLUGINS_STAGEPROFI_STAGEPROFIWIDGETLAN_H_
 
-#include "StageProfiWidget.h"
+#include <string>
+#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 class StageProfiWidgetLan: public StageProfiWidget {
   public:
@@ -33,10 +35,9 @@ class StageProfiWidgetLan: public StageProfiWidget {
 
     bool Connect(const std::string &ip);
   private:
-    static const unsigned short STAGEPROFI_PORT = 10001;
+    static const uint16_t STAGEPROFI_PORT = 10001;
 };
-
-} // plugin
-} // ola
-
-#endif
+}  // stageprofi
+}  // plugin
+}  // ola
+#endif  // PLUGINS_STAGEPROFI_STAGEPROFIWIDGETLAN_H_

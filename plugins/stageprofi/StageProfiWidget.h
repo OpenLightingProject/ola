@@ -18,18 +18,17 @@
  * Copyright (C) 2006-2007 Simon Newton
  */
 
-#ifndef STAGEPROFIWIDGET_H
-#define STAGEPROFIWIDGET_H
-
-using namespace std;
+#ifndef PLUGINS_STAGEPROFI_STAGEPROFIWIDGET_H_
+#define PLUGINS_STAGEPROFI_STAGEPROFIWIDGET_H_
 
 #include <string>
-#include <ola/network/Socket.h>
-#include <ola/network/SelectServer.h>
-#include <ola/DmxBuffer.h>
+#include "ola/network/Socket.h"
+#include "ola/network/SelectServer.h"
+#include "ola/DmxBuffer.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 using ola::network::ConnectedSocket;
 using ola::network::SelectServer;
@@ -40,7 +39,7 @@ class StageProfiWidget {
       m_enabled(false),
       m_got_response(false),
       m_socket(NULL),
-      m_ss(NULL) {};
+      m_ss(NULL) {}
     virtual ~StageProfiWidget();
 
     // these methods are for communicating with the device
@@ -68,7 +67,7 @@ class StageProfiWidget {
   private:
     int DoRecv();
 };
-
-} // plugin
-} // ola
-#endif
+}  // stageprofi
+}  // plugin
+}  // ola
+#endif  // PLUGINS_STAGEPROFI_STAGEPROFIWIDGET_H_

@@ -22,13 +22,15 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <string.h>
+#include <string>
 
-#include <ola/Closure.h>
-#include <ola/network/Socket.h>
-#include "StageProfiWidgetUsb.h"
+#include "ola/Closure.h"
+#include "ola/network/Socket.h"
+#include "plugins/stageprofi/StageProfiWidgetUsb.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 /*
  * Connect to the widget
@@ -41,15 +43,15 @@ bool StageProfiWidgetUsb::Connect(const std::string &path) {
   if (fd == -1)
     return false;
 
-  memset(&newtio, 0, sizeof(newtio)); // clear struct for new port settings
+  memset(&newtio, 0, sizeof(newtio));  // clear struct for new port settings
   tcgetattr(fd, &newtio);
   cfsetospeed(&newtio, B38400);
   tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ola::network::DeviceSocket(fd);
-  m_socket->SetOnData(NewClosure((StageProfiWidget*) this,
-                                 &StageProfiWidget::SocketReady));
+  m_socket->SetOnData(
+      NewClosure<StageProfiWidget>(this, &StageProfiWidget::SocketReady));
   return true;
 }
-
-} // plugin
-} // ola
+}  // stageprofi
+}  // plugin
+}  // ola

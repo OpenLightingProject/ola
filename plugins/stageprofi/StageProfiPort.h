@@ -18,16 +18,18 @@
  * Copyright (C) 2006-2009 Simon Newton
  */
 
-#ifndef STAGEPROFIPORT_H
-#define STAGEPROFIPORT_H
+#ifndef PLUGINS_STAGEPROFI_STAGEPROFIPORT_H_
+#define PLUGINS_STAGEPROFI_STAGEPROFIPORT_H_
 
-#include <ola/DmxBuffer.h>
-#include <olad/Port.h>
+#include <string>
+#include "ola/DmxBuffer.h"
+#include "olad/Port.h"
 #include "plugins/stageprofi/StageProfiDevice.h"
 #include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 class StageProfiOutputPort: public OutputPort {
   public:
@@ -35,7 +37,7 @@ class StageProfiOutputPort: public OutputPort {
                          unsigned int id,
                          StageProfiWidget *widget)
         : OutputPort(parent, id),
-          m_widget(widget) {};
+          m_widget(widget) {}
 
     bool WriteDMX(const DmxBuffer &buffer);
     string Description() const { return ""; }
@@ -43,7 +45,7 @@ class StageProfiOutputPort: public OutputPort {
   private:
     StageProfiWidget *m_widget;
 };
-
-} // plugin
-} // ola
-#endif
+}  // stageprofi
+}  // plugin
+}  // ola
+#endif  // PLUGINS_STAGEPROFI_STAGEPROFIPORT_H_

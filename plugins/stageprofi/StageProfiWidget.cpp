@@ -20,11 +20,12 @@
 
 #include <string.h>
 #include <algorithm>
-#include <ola/Closure.h>
-#include "StageProfiWidget.h"
+#include "ola/Closure.h"
+#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 
 enum stageprofi_packet_type_e {
@@ -63,10 +64,10 @@ int StageProfiWidget::Disconnect() {
  * TODO: fix this
  */
 bool StageProfiWidget::SendDmx(const DmxBuffer &buffer) const {
-
   unsigned int index = 0;
   while (index < buffer.Size()) {
-    unsigned int size = min((unsigned int) DMX_MSG_LEN, buffer.Size() - index);
+    unsigned int size = std::min((unsigned int) DMX_MSG_LEN,
+                                 buffer.Size() - index);
     Send255(index, buffer.GetRaw() + index, size);
     index += size;
   }
@@ -104,8 +105,7 @@ bool StageProfiWidget::DetectDevice() {
   m_ss->AddSocket(m_socket, NULL);
   m_ss->RegisterSingleTimeout(
       100,
-      ola::NewSingleClosure(this, &StageProfiWidget::Timeout)
-  );
+      ola::NewSingleClosure(this, &StageProfiWidget::Timeout));
 
   // try a command, we should get a response
   SetChannel(0, 0);
@@ -146,7 +146,7 @@ int StageProfiWidget::SetChannel(unsigned int chan, uint8_t val) const {
 int StageProfiWidget::Send255(unsigned int start, const uint8_t *buf,
                               unsigned int length) const {
   uint8_t msg[DMX_MSG_LEN + DMX_HEADER_SIZE];
-  unsigned int len = min((unsigned int) DMX_MSG_LEN, length);
+  unsigned int len = std::min((unsigned int) DMX_MSG_LEN, length);
 
   msg[0] = ID_SETDMX;
   msg[1] = start & 0xFF;
@@ -174,6 +174,6 @@ int StageProfiWidget::DoRecv() {
   m_got_response = true;
   return 0;
 }
-
-} // plugin
-} //ola
+}  // stageprofi
+}  // plugin
+}  // ola

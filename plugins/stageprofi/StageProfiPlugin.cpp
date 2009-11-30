@@ -18,23 +18,23 @@
  * Copyright (C) 2006-2008 Simon Newton
  */
 
-#include <vector>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
+#include <vector>
 
-#include <ola/Logging.h>
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
-
-#include "StageProfiPlugin.h"
-#include "StageProfiDevice.h"
+#include "ola/Logging.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
+#include "plugins/stageprofi/StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiPlugin.h"
 
 /*
  * Entry point to this plugin
  */
 extern "C" ola::AbstractPlugin* create(
     const ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::plugin::StageProfiPlugin(plugin_adaptor);
+  return new ola::plugin::stageprofi::StageProfiPlugin(plugin_adaptor);
 }
 
 /*
@@ -46,14 +46,15 @@ extern "C" void destroy(ola::AbstractPlugin *plugin) {
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 using std::string;
 
-const string StageProfiPlugin::STAGEPROFI_DEVICE_PATH = "/dev/ttyUSB0";
-const string StageProfiPlugin::STAGEPROFI_DEVICE_NAME = "StageProfi Device";
-const string StageProfiPlugin::PLUGIN_NAME = "StageProfi Plugin";
-const string StageProfiPlugin::PLUGIN_PREFIX = "stageprofi";
-const string StageProfiPlugin::DEVICE_KEY = "device";
+const char StageProfiPlugin::STAGEPROFI_DEVICE_PATH[] = "/dev/ttyUSB0";
+const char StageProfiPlugin::STAGEPROFI_DEVICE_NAME[] = "StageProfi Device";
+const char StageProfiPlugin::PLUGIN_NAME[] = "StageProfi Plugin";
+const char StageProfiPlugin::PLUGIN_PREFIX[] = "stageprofi";
+const char StageProfiPlugin::DEVICE_KEY[] = "device";
 
 /*
  * Start the plugin
@@ -168,6 +169,6 @@ void StageProfiPlugin::DeleteDevice(StageProfiDevice *device) {
   device->Stop();
   delete device;
 }
-
-} //plugin
-} //ola
+}  // stageprofi
+}  // plugin
+}  // ola

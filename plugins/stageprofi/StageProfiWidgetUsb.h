@@ -18,13 +18,15 @@
  * Copyright (C) 2006-2009 Simon Newton
  */
 
-#ifndef STAGEPROFIWIDGETUSB_H
-#define STAGEPROFIWIDGETUSB_H
+#ifndef PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_
+#define PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_
 
-#include "StageProfiWidget.h"
+#include <string>
+#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 class StageProfiWidgetUsb: public StageProfiWidget {
   public:
@@ -33,7 +35,7 @@ class StageProfiWidgetUsb: public StageProfiWidget {
 
     bool Connect(const std::string &ip);
 };
-
-} // plugin
-} // ola
-#endif
+}  // stageprofi
+}  // plugin
+}  // ola
+#endif  // PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_

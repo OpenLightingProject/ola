@@ -18,26 +18,28 @@
  * Copyright (C) 2006-2009 Simon Newton
  */
 
-#ifndef STAGEPROFIDEVICE_H
-#define STAGEPROFIDEVICE_H
+#ifndef PLUGINS_STAGEPROFI_STAGEPROFIDEVICE_H_
+#define PLUGINS_STAGEPROFI_STAGEPROFIDEVICE_H_
 
 #include <string>
-#include <ola/DmxBuffer.h>
-#include <ola/network/Socket.h>
-#include <olad/Device.h>
+#include "ola/DmxBuffer.h"
+#include "ola/network/Socket.h"
+#include "olad/Device.h"
 
 namespace ola {
 
 class AbstractPlugin;
 
 namespace plugin {
+namespace stageprofi {
 
 using ola::Device;
 using ola::network::Socket;
 
 class StageProfiDevice: public Device {
   public:
-    StageProfiDevice(AbstractPlugin *owner, const string &name,
+    StageProfiDevice(AbstractPlugin *owner,
+                     const string &name,
                      const string &dev_path);
     ~StageProfiDevice();
 
@@ -55,7 +57,7 @@ class StageProfiDevice: public Device {
     bool m_enabled;
     class StageProfiWidget *m_widget;
 };
-
-} // plugin
-} // ola
-#endif
+}  // stageprofi
+}  // plugin
+}  // ola
+#endif  // PLUGINS_STAGEPROFI_STAGEPROFIDEVICE_H_

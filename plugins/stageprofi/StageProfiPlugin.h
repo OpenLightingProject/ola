@@ -18,18 +18,18 @@
  * Copyright (C) 2006-2008 Simon Newton
  */
 
-#ifndef STAGEPROFIPLUGIN_H
-#define STAGEPROFIPLUGIN_H
+#ifndef PLUGINS_STAGEPROFI_STAGEPROFIPLUGIN_H_
+#define PLUGINS_STAGEPROFI_STAGEPROFIPLUGIN_H_
 
 #include <vector>
 #include <string>
-
-#include <olad/Plugin.h>
-#include <ola/network/Socket.h>
-#include <ola/plugin_id.h>
+#include "olad/Plugin.h"
+#include "ola/network/Socket.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
 namespace plugin {
+namespace stageprofi {
 
 using ola::network::ConnectedSocket;
 using std::string;
@@ -38,7 +38,7 @@ class StageProfiDevice;
 
 class StageProfiPlugin: public Plugin {
   public:
-    StageProfiPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit StageProfiPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
     ~StageProfiPlugin() {}
 
@@ -56,13 +56,13 @@ class StageProfiPlugin: public Plugin {
 
     vector<StageProfiDevice*> m_devices;  // list of our devices
 
-    static const string STAGEPROFI_DEVICE_PATH;
-    static const string STAGEPROFI_DEVICE_NAME;
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
-    static const string DEVICE_KEY;
+    static const char STAGEPROFI_DEVICE_PATH[];
+    static const char STAGEPROFI_DEVICE_NAME[];
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
+    static const char DEVICE_KEY[];
 };
-
-} //plugin
-} //ola
-#endif
+}  // stageprofi
+}  // plugin
+}  // ola
+#endif  // PLUGINS_STAGEPROFI_STAGEPROFIPLUGIN_H_
