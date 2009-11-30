@@ -19,11 +19,8 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
-
 #include <ola/DmxBuffer.h>
-#include "RunLengthDecoder.h"
-
-using namespace ola::plugin::espnet;
+#include "plugins/espnet/RunLengthDecoder.h"
 
 class RunLengthDecoderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RunLengthDecoderTest);
@@ -43,7 +40,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RunLengthDecoderTest);
  * Check that we can decode DMX data
  */
 void RunLengthDecoderTest::testDecode() {
-  RunLengthDecoder decoder;
+  ola::plugin::espnet::RunLengthDecoder decoder;
   uint8_t data[] = {0x78, 0x56, 0x74, 0xFE, 0x5, 0x10, 0x41, 0x78, 0xFD, 0xFE,
                     0x36, 0xFD, 0xFD};
   uint8_t expected_data[] = {0x78, 0x56, 0x74, 0x10, 0x10, 0x10, 0x10, 0x10,

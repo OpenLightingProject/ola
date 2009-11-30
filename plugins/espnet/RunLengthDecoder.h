@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef ESPNET_RLDECODER_H
-#define ESPNET_RLDECODER_H
+#ifndef PLUGINS_ESPNET_RUNLENGTHDECODER_H_
+#define PLUGINS_ESPNET_RUNLENGTHDECODER_H_
 
 #include <ola/DmxBuffer.h>
 
@@ -29,8 +29,8 @@ namespace espnet {
 
 class RunLengthDecoder {
   public :
-    RunLengthDecoder() {};
-    ~RunLengthDecoder() {};
+    RunLengthDecoder() {}
+    ~RunLengthDecoder() {}
 
     bool Decode(DmxBuffer *dst,
                 const uint8_t *data,
@@ -39,8 +39,7 @@ class RunLengthDecoder {
     static const uint8_t ESCAPE_VALUE = 0xFD;
     static const uint8_t REPEAT_VALUE = 0xFE;
 };
-
-} //espnet
-} //plugin
-} //ola
-#endif
+}  // espnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ESPNET_RUNLENGTHDECODER_H_

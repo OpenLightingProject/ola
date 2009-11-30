@@ -18,11 +18,12 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef ESPNETDEVICE_H
-#define ESPNETDEVICE_H
+#ifndef PLUGINS_ESPNET_ESPNETDEVICE_H_
+#define PLUGINS_ESPNET_ESPNETDEVICE_H_
 
-#include <olad/Device.h>
-#include <olad/Plugin.h>
+#include <string>
+#include "olad/Device.h"
+#include "olad/Plugin.h"
 
 namespace ola {
 namespace plugin {
@@ -50,9 +51,7 @@ class EspNetDevice: public Device {
 
     static const std::string IP_KEY;
 };
-
-} //espnet
-} //plugin
-} //ola
-
-#endif
+}  // espnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ESPNET_ESPNETDEVICE_H_

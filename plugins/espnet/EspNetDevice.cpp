@@ -20,15 +20,16 @@
  *
  */
 
-#include <ola/Logging.h>
-#include <olad/Plugin.h>
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
+#include <string>
+#include "ola/Logging.h"
+#include "olad/Plugin.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
 
-#include "EspNetDevice.h"
-#include "EspNetNode.h"
-#include "EspNetPluginCommon.h"
-#include "EspNetPort.h"
+#include "plugins/espnet/EspNetDevice.h"
+#include "plugins/espnet/EspNetNode.h"
+#include "plugins/espnet/EspNetPluginCommon.h"
+#include "plugins/espnet/EspNetPort.h"
 
 namespace ola {
 namespace plugin {
@@ -95,10 +96,7 @@ bool EspNetDevice::Stop() {
   m_node = NULL;
   m_enabled = false;
   return true;
-
 }
-
-
-} // espnet
-} // plugin
-} // ola
+}  // espnet
+}  // plugin
+}  // ola

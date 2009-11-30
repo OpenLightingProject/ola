@@ -19,10 +19,10 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <olad/Preferences.h>
-
-#include "EspNetPlugin.h"
-#include "EspNetDevice.h"
+#include <string>
+#include "olad/Preferences.h"
+#include "plugins/espnet/EspNetPlugin.h"
+#include "plugins/espnet/EspNetDevice.h"
 
 /*
  * Entry point to this plugin
@@ -44,15 +44,14 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
-const string EspNetPlugin::ESPNET_NODE_NAME = "ola-EspNet";
-const string EspNetPlugin::ESPNET_DEVICE_NAME = "EspNet Device";
-const string EspNetPlugin::PLUGIN_NAME = "EspNet Plugin";
-const string EspNetPlugin::PLUGIN_PREFIX = "espnet";
+const char EspNetPlugin::ESPNET_NODE_NAME[] = "ola-EspNet";
+const char EspNetPlugin::ESPNET_DEVICE_NAME[] = "EspNet Device";
+const char EspNetPlugin::PLUGIN_NAME[] = "EspNet Plugin";
+const char EspNetPlugin::PLUGIN_PREFIX[] = "espnet";
 
 
 /*
  * Start the plugin
- *
  * For now we just have one device.
  */
 bool EspNetPlugin::StartHook() {
@@ -64,7 +63,7 @@ bool EspNetPlugin::StartHook() {
   if (!m_device)
     return false;
 
-  if(!m_device->Start()) {
+  if (!m_device->Start()) {
     delete m_device;
     return false;
   }
@@ -105,11 +104,11 @@ string EspNetPlugin::Description() const {
 "--- Config file : ola-espnet.conf ---\n"
 "\n"
 "ip = a.b.c.d\n"
-"The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
+"The ip address to bind to. If not specified it will use the first "
+"non-loopback ip.\n"
 "\n"
 "name = ola-EspNet\n"
 "The name of the node.\n";
-
 }
 
 /*
@@ -127,7 +126,6 @@ bool EspNetPlugin::SetDefaultPreferences() {
 
   return true;
 }
-
-} //espnet
-} //plugin
-} //ola
+}  // espnet
+}  // plugin
+}  // ola

@@ -18,12 +18,13 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef ESPNETPORT_H
-#define ESPNETPORT_H
+#ifndef PLUGINS_ESPNET_ESPNETPORT_H_
+#define PLUGINS_ESPNET_ESPNETPORT_H_
 
-#include <ola/DmxBuffer.h>
-#include <olad/Port.h>
-#include "EspNetDevice.h"
+#include <string>
+#include "ola/DmxBuffer.h"
+#include "olad/Port.h"
+#include "plugins/espnet/EspNetDevice.h"
 
 namespace ola {
 namespace plugin {
@@ -70,9 +71,7 @@ class EspNetOutputPort: public OutputPort {
     EspNetPortHelper m_helper;
     EspNetNode *m_node;
 };
-
-} //espnet
-} //plugin
-} //ola
-
-#endif
+}  // espnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ESPNET_ESPNETPORT_H_

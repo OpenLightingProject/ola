@@ -20,9 +20,11 @@
 
 #include <string.h>
 #include <algorithm>
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "EspNetNode.h"
+#include <map>
+#include <string>
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/espnet/EspNetNode.h"
 
 
 namespace ola {
@@ -36,22 +38,22 @@ using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
 using ola::Closure;
 
-const string EspNetNode::NODE_NAME = "OLA Node";
+const char EspNetNode::NODE_NAME[] = "OLA Node";
 
 /*
  * Create a new node
  * @param ip_address the IP address to prefer to listen on, if NULL we choose
  * one.
  */
-EspNetNode::EspNetNode(const string &ip_address):
-  m_running(false),
-  m_options(DEFAULT_OPTIONS),
-  m_tos(DEFAULT_TOS),
-  m_ttl(DEFAULT_TTL),
-  m_universe(0),
-  m_type(ESPNET_NODE_TYPE_IO),
-  m_node_name(NODE_NAME),
-  m_preferred_ip(ip_address) {
+EspNetNode::EspNetNode(const string &ip_address)
+    : m_running(false),
+      m_options(DEFAULT_OPTIONS),
+      m_tos(DEFAULT_TOS),
+      m_ttl(DEFAULT_TTL),
+      m_universe(0),
+      m_type(ESPNET_NODE_TYPE_IO),
+      m_node_name(NODE_NAME),
+      m_preferred_ip(ip_address) {
 }
 
 
@@ -111,8 +113,10 @@ int EspNetNode::SocketReady() {
   socklen_t source_length = sizeof(source);
 
   ssize_t packet_size = sizeof(packet);
-  if(!m_socket.RecvFrom((uint8_t*) &packet, &packet_size, source,
-                        source_length))
+  if (!m_socket.RecvFrom(reinterpret_cast<uint8_t*>(&packet),
+                         &packet_size,
+                         source,
+                         source_length))
     return -1;
 
   if (packet_size < (ssize_t) sizeof(packet.poll.head)) {
@@ -276,7 +280,7 @@ void EspNetNode::HandleReply(const espnet_poll_reply_t &reply,
     return;
   }
 
-  //TODO: Call a handler here
+  // TODO(simon): Call a handler here
 }
 
 
@@ -300,7 +304,6 @@ void EspNetNode::HandleAck(const espnet_ack_t &ack,
 void EspNetNode::HandleData(const espnet_data_t &data,
                             ssize_t length,
                             const struct in_addr &source) {
-
   static const ssize_t header_size = sizeof(espnet_data_t) - DMX_UNIVERSE_SIZE;
   if (length < header_size) {
     OLA_DEBUG << "Data size too small " << length << " < " << header_size;
@@ -311,8 +314,8 @@ void EspNetNode::HandleData(const espnet_data_t &data,
     m_handlers.find(data.universe);
 
   if (iter == m_handlers.end()) {
-    OLA_DEBUG << "Not interested in universe " << int(data.universe) <<
-      ", skipping ";
+    OLA_DEBUG << "Not interested in universe " <<
+      static_cast<int>(data.universe) << ", skipping ";
     return;
   }
 
@@ -375,7 +378,7 @@ bool EspNetNode::SendEspPollReply(const struct in_addr &dst) {
   packet.reply.version = FIRMWARE_VERSION;
   packet.reply.sw = SWITCH_SETTINGS;
   memcpy(packet.reply.name, m_node_name.data(), ESPNET_NAME_LENGTH);
-  packet.reply.name[ESPNET_NAME_LENGTH-1] = 0;
+  packet.reply.name[ESPNET_NAME_LENGTH - 1] = 0;
 
   packet.reply.option = m_options;
   packet.reply.option = 0x01;
@@ -395,7 +398,6 @@ bool EspNetNode::SendEspPollReply(const struct in_addr &dst) {
 bool EspNetNode::SendEspData(const struct in_addr &dst,
                              uint8_t universe,
                              const DmxBuffer &buffer) {
-
   espnet_packet_union_t packet;
   memset(&packet.dmx, 0, sizeof(packet.dmx));
   packet.dmx.head = HostToNetwork((uint32_t) ESPNET_DMX);
@@ -421,16 +423,16 @@ bool EspNetNode::SendPacket(const struct in_addr &dst,
   m_destination.sin_port = HostToNetwork((uint16_t) ESPNET_PORT);
   m_destination.sin_addr = dst;
 
-  ssize_t bytes_sent = m_socket.SendTo((uint8_t*) &packet,
-                                       size,
-                                       m_destination);
+  ssize_t bytes_sent = m_socket.SendTo(
+      reinterpret_cast<const uint8_t*>(&packet),
+      size,
+      m_destination);
   if (bytes_sent != (ssize_t) size) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;
     return false;
   }
   return true;
 }
-
-} //espnet
-} //plugin
-} //ola
+}  // espnet
+}  // plugin
+}  // ola

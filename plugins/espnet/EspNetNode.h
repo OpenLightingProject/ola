@@ -18,17 +18,17 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_SHOWNET_NODE
-#define OLA_SHOWNET_NODE
+#ifndef PLUGINS_ESPNET_ESPNETNODE_H_
+#define PLUGINS_ESPNET_ESPNETNODE_H_
 
 #include <string>
 #include <map>
-#include <ola/Closure.h>
-#include <ola/DmxBuffer.h>
-#include <ola/network/InterfacePicker.h>
-#include <ola/network/Socket.h>
-#include "EspNetPackets.h"
-#include "RunLengthDecoder.h"
+#include "ola/Closure.h"
+#include "ola/DmxBuffer.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/Socket.h"
+#include "plugins/espnet/EspNetPackets.h"
+#include "plugins/espnet/RunLengthDecoder.h"
 
 namespace ola {
 namespace plugin {
@@ -36,10 +36,10 @@ namespace espnet {
 
 // the node types
 typedef enum {
-    ESPNET_NODE_TYPE_SINGLE_OUT = 0x0001, // ip to dmx
-    ESPNET_NODE_TYPE_SINGLE_IN = 0x0002, // dmx to ip
+    ESPNET_NODE_TYPE_SINGLE_OUT = 0x0001,  // ip to dmx
+    ESPNET_NODE_TYPE_SINGLE_IN = 0x0002,  // dmx to ip
     ESPNET_NODE_TYPE_RS232 = 0x0060,
-    ESPNET_NODE_TYPE_IO = 0x0061, // multi universe
+    ESPNET_NODE_TYPE_IO = 0x0061,  // multi universe
     ESPNET_NODE_TYPE_LONWORKS = 0x0100,
 } espnet_node_type;
 
@@ -48,7 +48,7 @@ enum { ESPNET_MAX_UNIVERSES = 512 };
 
 class EspNetNode {
   public:
-    EspNetNode(const std::string &ip_address);
+    explicit EspNetNode(const std::string &ip_address);
     virtual ~EspNetNode();
 
     bool Start();
@@ -66,7 +66,7 @@ class EspNetNode {
     bool RemoveHandler(uint8_t universe);
 
     // Sending methods
-    bool SendPoll(bool full_poll=false);
+    bool SendPoll(bool full_poll = false);
     bool SendDMX(uint8_t universe, const ola::DmxBuffer &buffer);
 
   private:
@@ -114,20 +114,19 @@ class EspNetNode {
     ola::network::UdpSocket m_socket;
     RunLengthDecoder m_decoder;
 
-    static const string NODE_NAME;
+    static const char NODE_NAME[];
     static const uint8_t DEFAULT_OPTIONS = 0;
     static const uint8_t DEFAULT_TOS = 0;
     static const uint8_t DEFAULT_TTL = 4;
     static const uint8_t FIRMWARE_VERSION = 1;
     static const uint8_t SWITCH_SETTINGS = 0;
-    static const unsigned short ESPNET_PORT = 3333;
+    static const uint16_t ESPNET_PORT = 3333;
     static const uint8_t DATA_RAW = 1;
     static const uint8_t DATA_PAIRS = 2;
     static const uint8_t DATA_RLE = 4;
     static const uint8_t START_CODE = 0;
 };
-
-} //espnet
-} //plugin
-} //ola
-#endif
+}  // espnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ESPNET_ESPNETNODE_H_

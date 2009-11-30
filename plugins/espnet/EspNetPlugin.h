@@ -18,12 +18,13 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef ESPNETPLUGIN_H
-#define ESPNETPLUGIN_H
+#ifndef PLUGINS_ESPNET_ESPNETPLUGIN_H_
+#define PLUGINS_ESPNET_ESPNETPLUGIN_H_
 
-#include <olad/Plugin.h>
-#include <olad/PluginAdaptor.h>
-#include <ola/plugin_id.h>
+#include <string>
+#include "olad/Plugin.h"
+#include "olad/PluginAdaptor.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
 namespace plugin {
@@ -33,7 +34,7 @@ class EspNetDevice;
 
 class EspNetPlugin: public ola::Plugin {
   public:
-    EspNetPlugin(const ola::PluginAdaptor *plugin_adaptor):
+    explicit EspNetPlugin(const ola::PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 
@@ -48,15 +49,13 @@ class EspNetPlugin: public ola::Plugin {
     bool SetDefaultPreferences();
 
     EspNetDevice *m_device;
-    static const string ESPNET_NODE_NAME;
-    static const string ESPNET_DEVICE_NAME;
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
+    static const char ESPNET_NODE_NAME[];
+    static const char ESPNET_DEVICE_NAME[];
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
 };
-
-} //espnet
-} //plugin
-} //ola
-
-#endif
+}  // espnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ESPNET_ESPNETPLUGIN_H_
 

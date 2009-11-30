@@ -19,8 +19,8 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef OLA_ESPNET_PLUGIN_COMMON
-#define OLA_ESPNET_PLUGIN_COMMON
+#ifndef PLUGINS_ESPNET_ESPNETPLUGINCOMMON_H_
+#define PLUGINS_ESPNET_ESPNETPLUGINCOMMON_H_
 
 namespace ola {
 namespace plugin {
@@ -28,9 +28,7 @@ namespace espnet {
 
 // modify this to increase the number of ports in the plugin
 enum { PORTS_PER_DEVICE = 5 };
-
-} //espnet
-} //plugin
-} //ola
-
-#endif
+}  // espnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ESPNET_ESPNETPLUGINCOMMON_H_

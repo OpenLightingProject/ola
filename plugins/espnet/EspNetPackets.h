@@ -18,15 +18,15 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_ESPNET_PACKETS
-#define OLA_ESPNET_PACKETS
+#ifndef PLUGINS_ESPNET_ESPNETPACKETS_H_
+#define PLUGINS_ESPNET_ESPNETPACKETS_H_
 
 #include <sys/types.h>
 #include <stdint.h>
 #include <netinet/in.h>
 
-#include <ola/network/InterfacePicker.h> // MAC_LENGTH
-#include <ola/BaseTypes.h>
+#include "ola/network/InterfacePicker.h"  // MAC_LENGTH
+#include "ola/BaseTypes.h"
 
 namespace ola {
 namespace plugin {
@@ -61,7 +61,7 @@ typedef struct espnet_poll_s espnet_poll_t;
 struct espnet_node_config_s {
   uint8_t listen;
   uint8_t ip[4];
-  uint8_t universe; // bit bizzare that nodes only listen to one universe??
+  uint8_t universe;  // bit bizzare that nodes only listen to one universe??
 };
 
 typedef struct espnet_node_config_s espnet_node_config_t;
@@ -110,7 +110,7 @@ struct espnet_data_s {
 typedef struct espnet_data_s espnet_data_t;
 
 
-//we need to add the TCP config crap here
+// we need to add the TCP config crap here
 
 
 /*
@@ -122,9 +122,7 @@ typedef union {
   espnet_ack_t ack;
   espnet_data_t dmx;
 } espnet_packet_union_t;
-
-} //espnet
-} //plugin
-} //ola
-
-#endif
+}  // espnet
+}  // plugin
+}  // ola
+#endif  // PLUGINS_ESPNET_ESPNETPACKETS_H_

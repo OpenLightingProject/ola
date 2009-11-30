@@ -18,14 +18,14 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <sstream>
 #include <algorithm>
-#include <ola/Logging.h>
-#include <olad/Universe.h>
-
-#include "EspNetPort.h"
-#include "EspNetDevice.h"
-#include "EspNetNode.h"
+#include <sstream>
+#include <string>
+#include "ola/Logging.h"
+#include "olad/Universe.h"
+#include "plugins/espnet/EspNetPort.h"
+#include "plugins/espnet/EspNetDevice.h"
+#include "plugins/espnet/EspNetNode.h"
 
 namespace ola {
 namespace plugin {
@@ -79,6 +79,6 @@ bool EspNetOutputPort::WriteDMX(const DmxBuffer &buffer) {
     return false;
   return true;
 }
-} //espnet
-} //plugin
-} //ola
+}  // espnet
+}  // plugin
+}  // ola
