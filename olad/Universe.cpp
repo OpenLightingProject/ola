@@ -46,7 +46,8 @@ namespace ola {
 
 const char Universe::K_UNIVERSE_NAME_VAR[] = "universe_name";
 const char Universe::K_UNIVERSE_MODE_VAR[] = "universe_mode";
-const char Universe::K_UNIVERSE_PORT_VAR[] = "universe_ports";
+const char Universe::K_UNIVERSE_INPUT_PORT_VAR[] = "universe_input_ports";
+const char Universe::K_UNIVERSE_OUTPUT_PORT_VAR[] = "universe_output_ports";
 const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
     "universe_source_clients";
 const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe_sink_clients";
@@ -75,12 +76,18 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
   UpdateName();
   UpdateMode();
 
+  const char *vars[] = {
+    K_UNIVERSE_INPUT_PORT_VAR,
+    K_UNIVERSE_OUTPUT_PORT_VAR,
+    K_UNIVERSE_SOURCE_CLIENTS_VAR,
+    K_UNIVERSE_SINK_CLIENTS_VAR,
+  };
+
   if (m_export_map) {
-    m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR)->Set(m_universe_id_str, 0);
-    m_export_map->GetIntMapVar(K_UNIVERSE_SOURCE_CLIENTS_VAR)->Set(
-        m_universe_id_str, 0);
-    m_export_map->GetIntMapVar(K_UNIVERSE_SINK_CLIENTS_VAR)->Set(
-        m_universe_id_str, 0);
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
+      m_export_map->GetIntMapVar(vars[i])->Set(
+          m_universe_id_str,
+          0);
   }
 }
 
@@ -89,16 +96,19 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
  * Delete this universe
  */
 Universe::~Universe() {
+  const char *vars[] = {
+    K_UNIVERSE_NAME_VAR,
+    K_UNIVERSE_MODE_VAR,
+    K_UNIVERSE_INPUT_PORT_VAR,
+    K_UNIVERSE_OUTPUT_PORT_VAR,
+    K_UNIVERSE_SOURCE_CLIENTS_VAR,
+    K_UNIVERSE_SINK_CLIENTS_VAR,
+  };
+
   if (m_export_map) {
-    m_export_map->GetStringMapVar(K_UNIVERSE_NAME_VAR)->Remove(
-        m_universe_id_str);
-    m_export_map->GetStringMapVar(K_UNIVERSE_MODE_VAR)->Remove(
-        m_universe_id_str);
-    m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR)->Remove(m_universe_id_str);
-    m_export_map->GetIntMapVar(K_UNIVERSE_SOURCE_CLIENTS_VAR)->Remove(
-        m_universe_id_str);
-    m_export_map->GetIntMapVar(K_UNIVERSE_SINK_CLIENTS_VAR)->Remove(
-        m_universe_id_str);
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
+      m_export_map->GetStringMapVar(vars[i])->Remove(
+          m_universe_id_str);
   }
 }
 
@@ -111,8 +121,8 @@ void Universe::SetName(const string &name) {
   UpdateName();
 
   // notify ports
-  vector<AbstractPort*>::const_iterator iter;
-  for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
+  vector<OutputPort*>::const_iterator iter;
+  for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter) {
     (*iter)->UniverseNameChanged(name);
   }
 }
@@ -129,35 +139,20 @@ void Universe::SetMergeMode(enum merge_mode merge_mode) {
 
 
 /*
- * Add a port to this universe. If IsOutput() on this port is false, it'll be
- * used as a source for DMX data. If IsOutput() on this port is true we'll
- * update this port when we get new DMX data.
+ * Add an InputPort to this universe.
  * @param port the port to add
  */
-bool Universe::AddPort(AbstractPort *port) {
-  vector<AbstractPort*>::iterator iter;
-  Universe *universe = port->GetUniverse();
+bool Universe::AddPort(InputPort *port) {
+  return GenericAddPort(port, &m_input_ports);
+}
 
-  if (universe == this)
-    return true;
 
-  // unpatch if required
-  if (universe) {
-    OLA_DEBUG << "Port " << port->UniqueId() << " is bound to universe " <<
-      universe->UniverseId();
-    universe->RemovePort(port);
-  }
-
-  // patch to this universe
-  OLA_INFO << "Patched " << port->UniqueId() << " to universe " <<
-    m_universe_id;
-  m_ports.push_back(port);
-  port->SetUniverse(this);
-  if (m_export_map) {
-    IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR);
-    map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
-  }
-  return true;
+/*
+ * Add an OutputPort to this universe.
+ * @param port the port to add
+ */
+bool Universe::AddPort(OutputPort *port) {
+  return GenericAddPort(port, &m_output_ports);
 }
 
 
@@ -166,28 +161,18 @@ bool Universe::AddPort(AbstractPort *port) {
  * @param port the port to remove
  * @return true if the port was removed, false if it didn't exist
  */
-bool Universe::RemovePort(AbstractPort *port) {
-  vector<AbstractPort*>::iterator iter;
-  iter = find(m_ports.begin(), m_ports.end(), port);
+bool Universe::RemovePort(InputPort *port) {
+  return GenericRemovePort(port, &m_input_ports);
+}
 
-  if (iter != m_ports.end()) {
-    m_ports.erase(iter);
-    port->SetUniverse(NULL);
-    if (m_export_map) {
-      IntMap *map = m_export_map->GetIntMapVar(K_UNIVERSE_PORT_VAR);
-      map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
-    }
-    OLA_DEBUG << "Port " << port->UniqueId() << " has been removed from uni "
-      << m_universe_id;
-  } else {
-    OLA_DEBUG << "Could not find port " << port->UniqueId() << " in universe "
-      << UniverseId();
-    return false;
-  }
 
-  if (!IsActive())
-    m_universe_store->AddUniverseGarbageCollection(this);
-  return true;
+/*
+ * Remove a port from this universe.
+ * @param port the port to remove
+ * @return true if the port was removed, false if it didn't exist
+ */
+bool Universe::RemovePort(OutputPort *port) {
+  return GenericRemovePort(port, &m_output_ports);
 }
 
 
@@ -196,8 +181,18 @@ bool Universe::RemovePort(AbstractPort *port) {
  * @param port the port to check for
  * @return true if the port exists in this universe, false otherwise
  */
-bool Universe::ContainsPort(AbstractPort *port) const {
-  return find(m_ports.begin(), m_ports.end(), port) != m_ports.end();
+bool Universe::ContainsPort(InputPort *port) const {
+  return GenericContainsPort(port, m_input_ports);
+}
+
+
+/*
+ * Check if this port is bound to this universe
+ * @param port the port to check for
+ * @return true if the port exists in this universe, false otherwise
+ */
+bool Universe::ContainsPort(OutputPort *port) const {
+  return GenericContainsPort(port, m_output_ports);
 }
 
 
@@ -288,7 +283,7 @@ bool Universe::SetDMX(const DmxBuffer &buffer) {
  * Call this when the dmx in a port that is part of this universe changes
  * @param port the port that has changed
  */
-bool Universe::PortDataChanged(AbstractPort *port) {
+bool Universe::PortDataChanged(InputPort *port) {
   if (!ContainsPort(port)) {
     OLA_INFO << "Trying to update a port which isn't bound to universe: "
       << UniverseId();
@@ -297,12 +292,10 @@ bool Universe::PortDataChanged(AbstractPort *port) {
 
   if (m_merge_mode == Universe::MERGE_LTP) {
     // LTP merge mode
-    if (!port->IsOutput()) {
-      const DmxBuffer &new_buffer = port->ReadDMX();
-      if (new_buffer.Size())
-        // explictity copy else we play the new/delete dance
-        m_buffer.Set(new_buffer);
-    }
+    const DmxBuffer &new_buffer = port->ReadDMX();
+    if (new_buffer.Size())
+      // explictity copy else we play the new/delete dance
+      m_buffer.Set(new_buffer);
   } else {
     // htp merge mode
     HTPMergeAllSources();
@@ -340,7 +333,8 @@ bool Universe::SourceClientDataChanged(Client *client) {
  * Return true if this universe is in use (has at least one port or client).
  */
 bool Universe::IsActive() const {
-  return m_ports.size() || m_source_clients.size() || m_sink_clients.size();
+  return (m_input_ports.size() || m_output_ports.size() ||
+          m_source_clients.size() || m_sink_clients.size());
 }
 
 
@@ -353,13 +347,12 @@ bool Universe::IsActive() const {
  * updates everyone who needs to know (patched ports and network clients)
  */
 bool Universe::UpdateDependants() {
-  vector<AbstractPort*>::const_iterator iter;
+  vector<OutputPort*>::const_iterator iter;
   set<Client*>::const_iterator client_iter;
 
   // write to all ports assigned to this unviverse
-  for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-    if ((*iter)->IsOutput())
-      (*iter)->WriteDMX(m_buffer);
+  for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter) {
+    (*iter)->WriteDMX(m_buffer);
   }
 
   // write to all clients
@@ -425,9 +418,7 @@ bool Universe::AddClient(Client *client, bool is_source) {
  */
 bool Universe::RemoveClient(Client *client, bool is_source) {
   set<Client*> &clients = is_source ? m_source_clients : m_sink_clients;
-  set<Client*>::iterator iter = find(clients.begin(),
-                                     clients.end(),
-                                     client);
+  set<Client*>::iterator iter = find(clients.begin(), clients.end(), client);
 
   if (iter == clients.end())
     return false;
@@ -453,23 +444,21 @@ bool Universe::RemoveClient(Client *client, bool is_source) {
  * HTP Merge all sources (clients/ports)
  */
 bool Universe::HTPMergeAllSources() {
-  vector<AbstractPort*>::const_iterator iter;
+  vector<InputPort*>::const_iterator iter;
   set<Client*>::const_iterator client_iter;
   bool first = true;
 
-  for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-    if (!(*iter)->IsOutput()) {
-      if (!first) {
-        m_buffer.HTPMerge((*iter)->ReadDMX());
-        continue;
-      }
+  for (iter = m_input_ports.begin(); iter != m_input_ports.end(); ++iter) {
+    if (!first) {
+      m_buffer.HTPMerge((*iter)->ReadDMX());
+      continue;
+    }
 
-      // We do a copy here to avoid a delete/new operation later
-      if (m_buffer.Set((*iter)->ReadDMX())) {
-        // Sometimes the buffer hasn't been initialized, so it doesn't count
-        // as a reset.
-        first = false;
-      }
+    // We do a copy here to avoid a delete/new operation later
+    if (m_buffer.Set((*iter)->ReadDMX())) {
+      // Sometimes the buffer hasn't been initialized, so it doesn't count
+      // as a reset.
+      first = false;
     }
   }
 
@@ -494,5 +483,67 @@ bool Universe::HTPMergeAllSources() {
     m_buffer.Reset();
   }
   return true;
+}
+
+
+/*
+ * Add an Input or Output port to this universe.
+ * @param port, the port to add
+ * @param ports, the vector of ports to add to
+ */
+template<class PortClass>
+bool Universe::GenericAddPort(PortClass *port, vector<PortClass*> *ports) {
+  if (find(ports->begin(), ports->end(), port) != ports->end())
+    return true;
+
+  ports->push_back(port);
+  if (m_export_map) {
+    IntMap *map = m_export_map->GetIntMapVar(
+        IsInputPort<PortClass>() ? K_UNIVERSE_INPUT_PORT_VAR :
+        K_UNIVERSE_OUTPUT_PORT_VAR);
+    map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
+  }
+  return true;
+}
+
+
+/*
+ * Remove an Input or Output port from this universe.
+ * @param port, the port to add
+ * @param ports, the vector of ports to remove from
+ */
+template<class PortClass>
+bool Universe::GenericRemovePort(PortClass *port, vector<PortClass*> *ports) {
+  typename vector<PortClass*>::iterator iter =
+    find(ports->begin(), ports->end(), port);
+
+  if (iter == ports->end()) {
+    OLA_DEBUG << "Could not find port " << port->UniqueId() << " in universe "
+      << UniverseId();
+    return true;
+  }
+
+  ports->erase(iter);
+  if (m_export_map) {
+    IntMap *map = m_export_map->GetIntMapVar(
+        IsInputPort<PortClass>() ? K_UNIVERSE_INPUT_PORT_VAR :
+        K_UNIVERSE_OUTPUT_PORT_VAR);
+    map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
+  }
+  if (!IsActive())
+    m_universe_store->AddUniverseGarbageCollection(this);
+  return true;
+}
+
+
+/*
+ * Check if this universe contains a particular port.
+ * @param port, the port to add
+ * @param ports, the vector of ports to remove from
+ */
+template<class PortClass>
+bool Universe::GenericContainsPort(PortClass *port,
+                                   const vector<PortClass*> &ports) const {
+  return find(ports.begin(), ports.end(), port) != ports.end();
 }
 }  //  ola

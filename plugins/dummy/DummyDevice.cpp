@@ -35,14 +35,12 @@ namespace dummy {
  * Start this device
  */
 bool DummyDevice::Start() {
-  DummyPort *port = NULL;
-
   if (m_enabled)
     return true;
 
-  port = new DummyPort(this, 0);
+  DummyPort *port = new DummyPort(this, 0);
 
-  if (AddPort(port)) {
+  if (!AddPort(port)) {
     delete port;
     return false;
   }
@@ -57,17 +55,8 @@ bool DummyDevice::Start() {
  *
  */
 bool DummyDevice::Stop() {
-  vector<AbstractPort*> ports;
-  vector<AbstractPort*>::iterator iter;
-
   if (!m_enabled)
     return true;
-
-  ports = Ports();
-  for (iter = ports.begin(); iter != ports.end(); ++iter) {
-    if (*iter)
-      delete *iter;
-  }
 
   m_enabled = false;
   return true;

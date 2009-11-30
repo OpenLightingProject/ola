@@ -78,8 +78,6 @@ UsbProDevice::~UsbProDevice() {
  * Start this device. This sends requests to the widget.
  */
 bool UsbProDevice::Start() {
-  UsbProPort *port = NULL;
-
   // connect to the widget
   if (!m_widget->Connect(m_path))
     return false;
@@ -90,13 +88,11 @@ bool UsbProDevice::Start() {
   usleep(10000);
   m_widget->GetSerial();
 
-  /* set up ports */
-  for (int i = 0; i < 2; i++) {
-    port = new UsbProPort(this, i, m_path);
+  UsbProInputPort *input_port = new UsbProInputPort(this, 0, m_path);
+  AddPort(input_port);
+  UsbProOutputPort *output_port = new UsbProOutputPort(this, 0, m_path);
+  AddPort(output_port);
 
-    if (port)
-      AddPort(port);
-  }
   m_plugin_adaptor->AddSocket(m_widget->GetSocket());
   m_in_startup = true;
   return true;
@@ -271,7 +267,7 @@ void UsbProDevice::HandleGetSerial(
  * Called when the widget recieves new DMX.
  */
 void UsbProDevice::HandleWidgetDmx() {
-  AbstractPort *port = GetPort(0);
+  InputPort *port = GetInputPort(0);
   port->DmxChanged();
 }
 

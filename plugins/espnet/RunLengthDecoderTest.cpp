@@ -54,6 +54,6 @@ void RunLengthDecoderTest::testDecode() {
   buffer.Blackout();
   buffer.Reset();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, buffer.Size());
-  decoder.Decode(buffer, data, sizeof(data));
+  decoder.Decode(&buffer, data, sizeof(data));
   CPPUNIT_ASSERT(buffer == expected);
 }

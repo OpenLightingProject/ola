@@ -90,6 +90,7 @@ class OlaServer {
     class Preferences *m_universe_preferences;
     class UniverseStore *m_universe_store;
     class ExportMap *m_export_map;
+    class PortPatcher *m_port_patcher;
 
     bool m_init_run;
     bool m_free_export_map;

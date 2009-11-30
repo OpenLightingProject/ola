@@ -23,21 +23,25 @@
 
 #include <ola/DmxBuffer.h>
 #include <olad/Port.h>
-#include "StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiDevice.h"
+#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 namespace plugin {
 
-class StageProfiPort: public Port<StageProfiDevice> {
+class StageProfiOutputPort: public OutputPort {
   public:
-    StageProfiPort(StageProfiDevice *parent, unsigned int id):
-      Port<StageProfiDevice>(parent, id) {};
+    StageProfiOutputPort(StageProfiDevice *parent,
+                         unsigned int id,
+                         StageProfiWidget *widget)
+        : OutputPort(parent, id),
+          m_widget(widget) {};
 
     bool WriteDMX(const DmxBuffer &buffer);
-    const DmxBuffer &ReadDMX() const { return m_empty_buffer; }
+    string Description() const { return ""; }
 
   private:
-    DmxBuffer m_empty_buffer;
+    StageProfiWidget *m_widget;
 };
 
 } // plugin

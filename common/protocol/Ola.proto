@@ -73,6 +73,7 @@ message PatchPortRequest {
   required int32 device_alias = 2;
   required int32 port_id = 3;
   required PatchAction action = 4;
+  required bool is_output = 5;
 }
 
 message UniverseNameRequest {
@@ -123,7 +124,6 @@ message DeviceInfoRequest {
 
 message PortInfo {
   required int32 port_id = 1;
-  required bool output_port = 2;
   required string description = 5;
   optional int32 universe = 3;
   optional bool active = 4;
@@ -133,8 +133,9 @@ message DeviceInfo {
   required int32 device_alias = 1;
   required int32 plugin_id = 2;
   required string device_name = 3;
-  repeated PortInfo port = 4;
-  required string device_id = 5;
+  repeated PortInfo input_port = 4;
+  repeated PortInfo output_port = 5;
+  required string device_id = 6;
 }
 
 message DeviceInfoReply {

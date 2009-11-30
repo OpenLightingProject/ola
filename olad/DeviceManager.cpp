@@ -28,6 +28,7 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "olad/Port.h"
+#include "olad/PortPatcher.h"
 #include "olad/DeviceManager.h"
 
 namespace ola {
@@ -47,9 +48,9 @@ bool operator <(const device_alias_pair& left,
  * Constructor
  */
 DeviceManager::DeviceManager(PreferencesFactory *prefs_factory,
-                             UniverseStore *universe_store)
-    : m_universe_store(universe_store),
-      m_port_preferences(NULL),
+                             PortPatcher *port_patcher)
+    : m_port_preferences(NULL),
+      m_port_patcher(port_patcher),
       m_next_device_alias(FIRST_DEVICE_ALIAS) {
   if (prefs_factory) {
     m_port_preferences = prefs_factory->NewPreference(PORT_PREFERENCES);
@@ -234,50 +235,83 @@ void DeviceManager::UnregisterAllDevices() {
  * Save the port universe patchings for a device
  * @param device the device to save the settings for
  */
-void DeviceManager::SaveDevicePortPatchings(AbstractDevice *device) {
+void DeviceManager::SaveDevicePortPatchings(const AbstractDevice *device) {
   if (!m_port_preferences || !device)
     return;
 
-  vector<AbstractPort*> ports = device->Ports();
-  vector<AbstractPort*>::iterator port_iter;
-  for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
-    if ((*port_iter)->UniqueId().empty())
-      continue;
-
-    if (!(*port_iter)->GetUniverse()) {
-      m_port_preferences->RemoveValue((*port_iter)->UniqueId());
-      continue;
-    }
-
-    m_port_preferences->SetValue(
-        (*port_iter)->UniqueId(),
-        IntToString((*port_iter)->GetUniverse()->UniverseId()));
-  }
+  vector<InputPort*> input_ports;
+  vector<OutputPort*> output_ports;
+  device->InputPorts(&input_ports);
+  device->OutputPorts(&output_ports);
+  SavePortPatchings(input_ports);
+  SavePortPatchings(output_ports);
 }
 
+
 /*
- * Restore the port universe patchings for a device
+ * Restore the port universe patchings for a list of ports.
  */
 void DeviceManager::RestoreDevicePortPatchings(AbstractDevice *device) {
   if (!m_port_preferences || !device)
     return;
 
-  vector<AbstractPort*> ports = device->Ports();
-  for (vector<AbstractPort*>::iterator port_iter = ports.begin();
-       port_iter != ports.end(); ++port_iter) {
-    if ((*port_iter)->UniqueId().empty())
+  vector<InputPort*> input_ports;
+  vector<OutputPort*> output_ports;
+  device->InputPorts(&input_ports);
+  device->OutputPorts(&output_ports);
+  RestorePortPatchings(input_ports);
+  RestorePortPatchings(output_ports);
+}
+
+
+/*
+ * Save the patching information for a list of ports.
+ */
+template <class PortClass>
+void DeviceManager::SavePortPatchings(const vector<PortClass*> &ports) const {
+  typename vector<PortClass*>::const_iterator iter = ports.begin();
+  while (iter != ports.end()) {
+    string port_id = (*iter)->UniqueId();
+    if (port_id.empty())
+      return;
+
+    if ((*iter)->GetUniverse()) {
+      m_port_preferences->SetValue(
+          port_id,
+          IntToString((*iter)->GetUniverse()->UniverseId()));
+    } else {
+      m_port_preferences->RemoveValue(port_id);
+    }
+    iter++;
+  }
+}
+
+
+/*
+ * Restore the patching information for a port.
+ */
+template <class PortClass>
+void DeviceManager::RestorePortPatchings(
+    const vector<PortClass*> &ports) const {
+  typename vector<PortClass*>::const_iterator iter = ports.begin();
+  while (iter != ports.end()) {
+    PortClass *port = *iter;
+    iter++;
+
+    string port_id = port->UniqueId();
+    if (port_id.empty())
       continue;
 
-    string uni_id = m_port_preferences->GetValue((*port_iter)->UniqueId());
+    string uni_id = m_port_preferences->GetValue(port_id);
     if (uni_id.empty())
       continue;
 
     errno = 0;
     int id = static_cast<int>(strtol(uni_id.data(), NULL, 10));
-    if (id == 0 && errno)
+    if ((id == 0 && errno) || id < 0)
       continue;
-    Universe *uni = m_universe_store->GetUniverseOrCreate(id);
-    uni->AddPort(*port_iter);
+
+    m_port_patcher->PatchPort(port, id);
   }
 }
 }  // ola

@@ -31,10 +31,10 @@ namespace espnet {
  * @param src_data the data to decode
  * @param length the length of the data to decode
  */
-bool RunLengthDecoder::Decode(DmxBuffer &dst,
+bool RunLengthDecoder::Decode(DmxBuffer *dst,
                               const uint8_t *src_data,
                               unsigned int length) {
-  dst.Reset();
+  dst->Reset();
   unsigned int i = 0;
   const uint8_t *value = src_data;
   uint8_t count;
@@ -43,13 +43,13 @@ bool RunLengthDecoder::Decode(DmxBuffer &dst,
       case REPEAT_VALUE:
         value++;
         count = *(value++);
-        dst.SetRangeToValue(i, *value, count);
+        dst->SetRangeToValue(i, *value, count);
         i+= count;
         break;
       case ESCAPE_VALUE:
         value++;
       default:
-        dst.SetChannel(i, *value);
+        dst->SetChannel(i, *value);
         i++;
     }
     value++;

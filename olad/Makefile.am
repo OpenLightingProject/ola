@@ -4,7 +4,8 @@ SUBDIRS = www testdata
 
 OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp \
                     DlOpenPluginLoader.cpp OlaServerServiceImpl.cpp \
-                    Plugin.cpp PluginAdaptor.cpp Preferences.cpp Universe.cpp \
+                    Plugin.cpp PluginAdaptor.cpp Preferences.cpp Port.cpp \
+                    PortPatcher.cpp Universe.cpp \
                     UniverseStore.cpp
 
 # lib olaserver
@@ -26,8 +27,9 @@ pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 
 EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
              DynamicPluginLoader.h \
-             OlaServerServiceImpl.h PluginLoader.h UniverseStore.h \
-             HttpServer.h OlaHttpServer.h
+             HttpServer.h OlaHttpServer.h \
+             OlaServerServiceImpl.h PluginLoader.h PortPatcher.h \
+             TestCommon.h UniverseStore.h
 
 # Olad Server
 bin_PROGRAMS = olad

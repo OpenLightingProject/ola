@@ -74,6 +74,7 @@ class OlaClientCore {
 
     bool Patch(unsigned int device_alias,
                unsigned int port,
+               bool is_output,
                ola::PatchAction action,
                unsigned int uni);
 

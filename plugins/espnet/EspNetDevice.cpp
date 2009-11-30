@@ -58,13 +58,6 @@ bool EspNetDevice::Start() {
   if (m_enabled)
     return false;
 
-  EspNetPort *port = NULL;
-
-  for (unsigned int i = 0; i < 2 * PORTS_PER_DEVICE; i++) {
-    port = new EspNetPort(this, i);
-    this->AddPort(port);
-  }
-
   m_node = new EspNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue("name"));
   m_node->SetType(ESPNET_NODE_TYPE_IO);
@@ -72,8 +65,14 @@ bool EspNetDevice::Start() {
   if (!m_node->Start()) {
     delete m_node;
     m_node = NULL;
-    DeleteAllPorts();
     return false;
+  }
+
+  for (unsigned int i = 0; i < PORTS_PER_DEVICE; i++) {
+    EspNetInputPort *input_port = new EspNetInputPort(this, i, m_node);
+    AddPort(input_port);
+    EspNetOutputPort *output_port = new EspNetOutputPort(this, i, m_node);
+    AddPort(output_port);
   }
 
   m_plugin_adaptor->AddSocket(m_node->GetSocket());

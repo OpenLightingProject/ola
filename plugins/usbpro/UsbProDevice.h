@@ -71,6 +71,8 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     bool Start();
     bool StartCompleted();
     bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return m_serial; }
     void Configure(RpcController *controller,
                    const string &request,
@@ -114,7 +116,6 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
 
     static const int K_MISSING_PARAM = -1;
 };
-
 }  // usbpro
 }  // ola
 #endif  // PLUGINS_USBPRO_USBPRODEVICE_H_

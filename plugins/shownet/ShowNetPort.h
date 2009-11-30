@@ -32,22 +32,41 @@ namespace shownet {
 
 using ola::DmxBuffer;
 
-class ShowNetPort: public Port<ShowNetDevice> {
+class ShowNetInputPort: public InputPort {
   public:
-    ShowNetPort(ShowNetDevice *parent, unsigned int id):
-      Port<ShowNetDevice>(parent, id) {}
-    ~ShowNetPort() {}
+    ShowNetInputPort(ShowNetDevice *parent,
+                     unsigned int id,
+                     ShowNetNode *node):
+      InputPort(parent, id),
+      m_node(node) {}
+    ~ShowNetInputPort() {}
 
-    bool IsOutput() const;
     string Description() const;
-    bool WriteDMX(const DmxBuffer &buffer);
-    const DmxBuffer &ReadDMX() const;
-    bool SetUniverse(Universe *universe);
-    int UpdateBuffer();
+    const DmxBuffer &ReadDMX() const { return m_buffer; }
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe);
+    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
 
   private :
     DmxBuffer m_buffer;
-    unsigned int ShowNetUniverseId() const { return PortId() / 2; }
+    ShowNetNode *m_node;
+};
+
+
+class ShowNetOutputPort: public OutputPort {
+  public:
+    ShowNetOutputPort(ShowNetDevice *parent,
+                      unsigned int id,
+                      ShowNetNode *node):
+      OutputPort(parent, id),
+      m_node(node) {}
+    ~ShowNetOutputPort() {}
+
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe);
+    string Description() const;
+    bool WriteDMX(const DmxBuffer &buffer);
+
+  private:
+    ShowNetNode *m_node;
 };
 }  // shownet
 }  // plugin

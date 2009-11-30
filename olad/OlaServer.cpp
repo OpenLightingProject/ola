@@ -41,6 +41,7 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/PluginLoader.h"
 #include "olad/Port.h"
+#include "olad/PortPatcher.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
@@ -82,6 +83,7 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_universe_preferences(NULL),
       m_universe_store(NULL),
       m_export_map(export_map),
+      m_port_patcher(NULL),
       m_init_run(false),
       m_free_export_map(false),
       m_garbage_collect_timeout(ola::network::INVALID_TIMEOUT),
@@ -143,6 +145,7 @@ OlaServer::~OlaServer() {
     m_universe_preferences->Save();
   }
 
+  delete m_port_patcher;
   delete m_plugin_adaptor;
   delete m_device_manager;
 
@@ -182,16 +185,20 @@ bool OlaServer::Init() {
   m_universe_preferences->Load();
   m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
 
+  m_port_patcher = new PortPatcher(m_universe_store);
+
   // setup the objects
-  m_device_manager = new DeviceManager(m_preferences_factory, m_universe_store);
+  m_device_manager = new DeviceManager(m_preferences_factory, m_port_patcher);
   m_plugin_adaptor = new PluginAdaptor(m_device_manager,
                                        m_ss,
                                        m_preferences_factory);
 
-  if (!m_universe_store || !m_device_manager || !m_plugin_adaptor) {
-    delete m_universe_store;
-    delete m_device_manager;
+  if (!m_universe_store || !m_device_manager || !m_plugin_adaptor ||
+      !m_port_patcher) {
     delete m_plugin_adaptor;
+    delete m_device_manager;
+    delete m_port_patcher;
+    delete m_universe_store;
     return false;
   }
 
@@ -205,6 +212,7 @@ bool OlaServer::Init() {
                                 m_universe_store,
                                 m_plugin_loader,
                                 m_device_manager,
+                                m_port_patcher,
                                 m_options.http_port,
                                 m_options.http_enable_quit,
                                 m_options.http_data_dir);
@@ -266,7 +274,8 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
                                                          m_device_manager,
                                                          m_plugin_loader,
                                                          client,
-                                                         m_export_map);
+                                                         m_export_map,
+                                                         m_port_patcher);
   channel->SetService(service);
 
   map<int, OlaServerServiceImpl*>::const_iterator iter;
@@ -353,17 +362,17 @@ void OlaServer::StopPlugins() {
 void OlaServer::CleanupConnection(OlaServerServiceImpl *service) {
   Client *client = service->GetClient();
 
-  vector<Universe*> *universe_list = m_universe_store->GetList();
+  vector<Universe*> universe_list;
+  m_universe_store->GetList(&universe_list);
   vector<Universe*>::iterator uni_iter;
 
   // O(universes * clients). Clean this up sometime.
-  for (uni_iter = universe_list->begin();
-       uni_iter != universe_list->end();
+  for (uni_iter = universe_list.begin();
+       uni_iter != universe_list.end();
        ++uni_iter) {
     (*uni_iter)->RemoveSourceClient(client);
     (*uni_iter)->RemoveSinkClient(client);
   }
-  delete universe_list;
   delete client->Stub()->channel();
   delete client->Stub();
   delete client;

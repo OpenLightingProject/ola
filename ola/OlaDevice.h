@@ -60,29 +60,48 @@ class OlaPlugin {
  */
 class OlaPort {
   public:
-    enum PortCapability { OLA_PORT_CAP_IN, OLA_PORT_CAP_OUT};
-
-    OlaPort(int port_id, PortCapability capability, int universe, int active,
+    OlaPort(unsigned int port_id,
+            unsigned int universe,
+            bool active,
             const string &description):
       m_id(port_id),
-      m_capability(capability),
       m_universe(universe),
       m_active(active),
       m_description(description) {}
-    ~OlaPort() {}
+    virtual ~OlaPort() {}
 
-    int Id() const { return m_id; }
-    PortCapability Capability() const { return m_capability; }
-    int Universe() const { return m_universe; }
-    int IsActive() const { return m_active; }
+    unsigned int Id() const { return m_id; }
+    unsigned int Universe() const { return m_universe; }
+    bool IsActive() const { return m_active; }
     string Description() const { return m_description; }
 
   private:
-    int m_id;  // id of this port
-    PortCapability m_capability;  // port capability
-    int m_universe;  // universe
-    int m_active;  // active
+    unsigned int m_id;  // id of this port
+    unsigned int m_universe;  // universe
+    bool m_active;  // active
     string m_description;
+};
+
+
+class OlaInputPort: public OlaPort {
+  public:
+    OlaInputPort(unsigned int port_id,
+                 unsigned int universe,
+                 bool active,
+                 const string &description)
+        : OlaPort(port_id, universe, active, description) {
+    }
+};
+
+
+class OlaOutputPort: public OlaPort {
+  public:
+    OlaOutputPort(unsigned int port_id,
+                  unsigned int universe,
+                  bool active,
+                  const string &description)
+        : OlaPort(port_id, universe, active, description) {
+    }
 };
 
 
@@ -95,12 +114,14 @@ class OlaDevice {
               unsigned int alias,
               const string &name,
               int plugin_id,
-              const vector<OlaPort> &ports):
+              const vector<OlaInputPort> &input_ports,
+              const vector<OlaOutputPort> &output_ports):
       m_id(id),
       m_alias(alias),
       m_name(name),
       m_plugin_id(plugin_id),
-      m_ports(ports) {}
+      m_input_ports(input_ports),
+      m_output_ports(output_ports) {}
     ~OlaDevice() {}
 
     string Id() const { return m_id; }
@@ -108,7 +129,8 @@ class OlaDevice {
     string Name() const { return m_name; }
     int PluginId() const { return m_plugin_id; }
 
-    const vector<OlaPort> Ports() const { return m_ports; }
+    const vector<OlaInputPort> InputPorts() const { return m_input_ports; }
+    const vector<OlaOutputPort> OutputPorts() const { return m_output_ports; }
 
     bool operator<(const OlaDevice &other) const {
       return m_alias < other.m_alias;
@@ -119,7 +141,8 @@ class OlaDevice {
     unsigned int m_alias;   // device alias
     std::string m_name;  // device name
     int m_plugin_id;     // parent plugin id
-    std::vector<OlaPort> m_ports;
+    std::vector<OlaInputPort> m_input_ports;
+    std::vector<OlaOutputPort> m_output_ports;
 };
 
 

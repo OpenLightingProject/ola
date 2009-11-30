@@ -177,6 +177,7 @@ int SandNetNode::SocketReady(UdpSocket *socket) {
  * Ownership of the closure is transferred to the node.
  */
 bool SandNetNode::SetHandler(uint8_t group, uint8_t universe,
+                             DmxBuffer *buffer,
                              Closure *closure) {
   if (!closure)
     return false;
@@ -186,8 +187,8 @@ bool SandNetNode::SetHandler(uint8_t group, uint8_t universe,
 
   if (iter == m_handlers.end()) {
     universe_handler handler;
+    handler.buffer = buffer;
     handler.closure = closure;
-    handler.buffer.Blackout();
     m_handlers[key] = handler;
   } else {
     Closure *old_closure = iter->second.closure;
@@ -214,22 +215,6 @@ bool SandNetNode::RemoveHandler(uint8_t group, uint8_t universe) {
     return true;
   }
   return false;
-}
-
-
-/*
- * Get the DMX data for this universe.
- */
-DmxBuffer SandNetNode::GetDMX(uint8_t group, uint8_t universe) const {
-  group_universe_pair key(group, universe);
-  universe_handlers::const_iterator iter = m_handlers.find(key);
-
-  if (iter != m_handlers.end()) {
-    return iter->second.buffer;
-  } else {
-    DmxBuffer buffer;
-    return buffer;
-  }
 }
 
 
@@ -378,7 +363,7 @@ bool SandNetNode::HandleCompressedDMX(const sandnet_compressed_dmx &dmx_packet,
     return false;
 
   unsigned int data_size = size - header_size;
-  bool r = m_encoder.Decode(&iter->second.buffer, 0, dmx_packet.dmx,
+  bool r = m_encoder.Decode(iter->second.buffer, 0, dmx_packet.dmx,
                             data_size);
   if (!r) {
     OLA_WARN << "Failed to decode Sandnet Data";
@@ -409,7 +394,7 @@ bool SandNetNode::HandleDMX(const sandnet_dmx &dmx_packet,
     return false;
 
   unsigned int data_size = size - header_size;
-  iter->second.buffer.Set(dmx_packet.dmx, data_size);
+  iter->second.buffer->Set(dmx_packet.dmx, data_size);
   iter->second.closure->Run();
   return true;
 }

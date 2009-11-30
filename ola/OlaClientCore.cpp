@@ -347,6 +347,7 @@ bool OlaClientCore::RegisterUniverse(unsigned int universe,
  */
 bool OlaClientCore::Patch(unsigned int device_alias,
                           unsigned int port_id,
+                          bool is_output,
                           ola::PatchAction patch_action,
                           unsigned int universe) {
   if (!m_connected)
@@ -361,6 +362,7 @@ bool OlaClientCore::Patch(unsigned int device_alias,
   request.set_universe(universe);
   request.set_device_alias(device_alias);
   request.set_port_id(port_id);
+  request.set_is_output(is_output);
   request.set_action(action);
 
   google::protobuf::Closure *cb = NewCallback(
@@ -488,25 +490,34 @@ void OlaClientCore::HandleDeviceInfo(ola::rpc::SimpleRpcController *controller,
     } else {
       for (int i = 0; i < reply->device_size(); ++i) {
         ola::proto::DeviceInfo device_info = reply->device(i);
-        vector<OlaPort> ports;
+        vector<OlaInputPort> input_ports;
 
-        for (int j = 0; j < device_info.port_size(); ++j) {
-          ola::proto::PortInfo port_info = device_info.port(j);
-          OlaPort::PortCapability capability = port_info.output_port() ?
-            OlaPort::OLA_PORT_CAP_OUT : OlaPort::OLA_PORT_CAP_IN;
-          OlaPort port(port_info.port_id(),
-                       capability,
-                       port_info.universe(),
-                       port_info.active(),
-                       port_info.description());
-          ports.push_back(port);
+        for (int j = 0; j < device_info.input_port_size(); ++j) {
+          ola::proto::PortInfo port_info = device_info.input_port(j);
+          OlaInputPort port(port_info.port_id(),
+                            port_info.universe(),
+                            port_info.active(),
+                            port_info.description());
+          input_ports.push_back(port);
+        }
+
+        vector<OlaOutputPort> output_ports;
+
+        for (int j = 0; j < device_info.output_port_size(); ++j) {
+          ola::proto::PortInfo port_info = device_info.output_port(j);
+          OlaOutputPort port(port_info.port_id(),
+                             port_info.universe(),
+                             port_info.active(),
+                             port_info.description());
+          output_ports.push_back(port);
         }
 
         OlaDevice device(device_info.device_id(),
                          device_info.device_alias(),
                          device_info.device_name(),
                          device_info.plugin_id(),
-                         ports);
+                         input_ports,
+                         output_ports);
         ola_devices.push_back(device);
       }
     }

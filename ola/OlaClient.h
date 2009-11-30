@@ -96,9 +96,10 @@ class OlaClient {
     bool RegisterUniverse(unsigned int universe, ola::RegisterAction action);
 
     bool Patch(unsigned int device_alias,
-              unsigned int port,
-              ola::PatchAction action,
-              unsigned int uni);
+               unsigned int port,
+               bool is_output,
+               ola::PatchAction action,
+               unsigned int uni);
 
     bool ConfigureDevice(unsigned int device_alias, const string &msg);
 

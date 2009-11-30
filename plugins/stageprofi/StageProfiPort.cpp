@@ -30,13 +30,8 @@ namespace plugin {
  * @param the buffer to write
  * @return true on success, false on failure
  */
-bool StageProfiPort::WriteDMX(const DmxBuffer &buffer) {
-  StageProfiDevice *dev = (StageProfiDevice*) GetDevice();
-
-  if (!IsOutput())
-    return true;
-
-  return dev->SendDmx(buffer);
+bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer) {
+  return m_widget->SendDmx(buffer);
 }
 
 } //plugin

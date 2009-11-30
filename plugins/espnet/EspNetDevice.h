@@ -28,9 +28,7 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
-using ola::Plugin;
-
-class EspNetDevice: public ola::Device {
+class EspNetDevice: public Device {
   public:
     EspNetDevice(Plugin *owner,
                  const std::string &name,
@@ -40,8 +38,9 @@ class EspNetDevice: public ola::Device {
 
     bool Start();
     bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
-    class EspNetNode *GetNode() const { return m_node; }
 
   private:
     class Preferences *m_preferences;

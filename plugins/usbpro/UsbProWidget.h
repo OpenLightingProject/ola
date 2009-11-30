@@ -205,7 +205,6 @@ class UsbProWidget {
     static const uint8_t SOM = 0x7e;
     static const char REPLY_SUCCESS[];
 };
-
 }  // usbpro
 }  // ola
 #endif  // PLUGINS_USBPRO_USBPROWIDGET_H_

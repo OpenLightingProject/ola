@@ -63,7 +63,6 @@ class UsbProPlugin: public ola::Plugin {
     static const char LINUX_DEVICE_PREFIX[];
     static const char MAC_DEVICE_PREFIX[];
 };
-
 }  // usbpro
 }  // ola
 #endif  // PLUGINS_USBPRO_USBPROPLUGIN_H_

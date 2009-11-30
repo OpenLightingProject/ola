@@ -22,8 +22,10 @@
 #define INCLUDE_OLAD_DEVICE_H_
 
 #include <stdint.h>
-#include <vector>
+#include <olad/Port.h>
+#include <map>
 #include <string>
+#include <vector>
 
 namespace google {
 namespace protobuf {
@@ -35,10 +37,11 @@ namespace protobuf {
 namespace ola {
 
 class AbstractPlugin;
-class AbstractPort;
 
-using std::vector;
+using std::map;
+using std::pair;
 using std::string;
+using std::vector;
 
 /*
  * The interface for a Device
@@ -52,21 +55,34 @@ class AbstractDevice {
     virtual const string Name() const = 0;
     // return the plugin that owns this device
     virtual AbstractPlugin *Owner() const = 0;
+
     // return the a unique id of this device, this is guaranteed to be unique
     // and persist across restarts.
     virtual string UniqueId() const = 0;
 
     // stop the device
     virtual bool Stop() = 0;
+
+    // allow input and output ports to be patched to the same univese
+    virtual bool AllowLooping() const = 0;
+
+    // allow multiple ports of the same type to be patched to the same
+    // universe.
+    virtual bool AllowMultiPortPatching() const = 0;
+
+    // Fetch a list of all ports in this device
+    virtual void InputPorts(vector<InputPort*> *ports) const = 0;
+    virtual void OutputPorts(vector<OutputPort*> *ports) const = 0;
+
+    // Lookup a particular port in this device
+    virtual InputPort *GetInputPort(unsigned int port_id) const = 0;
+    virtual OutputPort *GetOutputPort(unsigned int port_id) const = 0;
+
     // configure this device
     virtual void Configure(google::protobuf::RpcController *controller,
                            const string &request,
                            string *response,
                            google::protobuf::Closure *done) = 0;
-    // Fetch a list of all ports in this device
-    virtual const vector<AbstractPort*> Ports() const = 0;
-    // Lookup a particular port in this device
-    virtual AbstractPort *GetPort(unsigned int port_id) const = 0;
 };
 
 
@@ -89,26 +105,51 @@ class Device: public AbstractDevice {
       m_enabled = false;
       return true;
     }
+
+    bool AddPort(InputPort *port);
+    bool AddPort(OutputPort *port);
+    void InputPorts(vector<InputPort*> *ports) const;
+    void OutputPorts(vector<OutputPort*> *ports) const;
+
+    InputPort *GetInputPort(unsigned int port_id) const;
+    OutputPort *GetOutputPort(unsigned int port_id) const;
+
+    // Free all ports
+    void DeleteAllPorts();
+
+    // Handle a Configure request
     virtual void Configure(class google::protobuf::RpcController *controller,
                            const string &request,
                            string *response,
                            google::protobuf::Closure *done);
-    virtual int AddPort(AbstractPort *port);
-    virtual const vector<AbstractPort*> Ports() const;
-    virtual AbstractPort *GetPort(unsigned int port_id) const;
-    virtual void DeleteAllPorts();
 
   protected:
     bool m_enabled;
 
   private:
+    typedef map<unsigned int, InputPort*> input_port_map;
+    typedef map<unsigned int, OutputPort*> output_port_map;
+
     AbstractPlugin *m_owner;  // which plugin owns this device
     string m_name;  // device name
     mutable string m_unique_id;  // device id
-    vector<ola::AbstractPort*> m_ports;  // ports on the device
+    input_port_map m_input_ports;
+    output_port_map m_output_ports;
 
     Device(const Device&);
     Device& operator=(const Device&);
+
+    template<class PortClass>
+    bool GenericAddPort(PortClass *port,
+                        map<unsigned int, PortClass*> *ports);
+
+    template<class PortClass>
+    void GenericFetchPortsVector(
+        vector<PortClass*> *ports,
+        const map<unsigned int, PortClass*> &ports) const;
+
+    template <class PortClass>
+    void GenericDeletePort(PortClass *p);
 };
 }  // ola
 #endif  // INCLUDE_OLAD_DEVICE_H_

@@ -63,8 +63,8 @@ OpenDmxDevice::~OpenDmxDevice() {
  *
  */
 bool OpenDmxDevice::Start() {
-  OpenDmxPort *port = new OpenDmxPort(this, 0, m_path);
-  this->AddPort(port);
+  OpenDmxOutputPort *port = new OpenDmxOutputPort(this, 0, m_path);
+  AddPort(port);
   m_enabled = true;
   return true;
 }

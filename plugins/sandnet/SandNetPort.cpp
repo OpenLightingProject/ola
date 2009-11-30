@@ -36,98 +36,27 @@ namespace plugin {
 namespace sandnet {
 
 
-bool SandNetPort::IsOutput() const {
-  // ports 0 & 1 are output (sandnet only allows 2 output ports per device)
-  return PortId() < SANDNET_MAX_PORTS;
-}
-
-
-string SandNetPort::Description() const {
-  std::stringstream str;
-  if (GetUniverse()) {
-    str << "Sandnet group " << static_cast<int>(SandnetGroup(GetUniverse())) <<
-      ", universe " << 1 + SandnetUniverse(GetUniverse());
-  }
-  return str.str();
-}
-
-
-/*
- * Write operation
- */
-bool SandNetPort::WriteDMX(const DmxBuffer &buffer) {
-  if (!IsOutput() || !GetUniverse())
-    return false;
-
-  SandNetNode *node = GetDevice()->GetNode();
-
-  if (!node->SendDMX(PortId(), buffer))
-    return false;
-  return true;
-}
-
-
-/*
- * Update the data buffer for this port
- */
-int SandNetPort::UpdateBuffer() {
-  // we can't update if this isn't a input port
-  if (IsOutput() || !GetUniverse())
-    return false;
-
-  SandNetNode *node = GetDevice()->GetNode();
-  m_buffer = node->GetDMX(SandnetGroup(GetUniverse()),
-                          SandnetUniverse(GetUniverse()));
-  return DmxChanged();
-}
-
-
 /*
  * We override the set universe method to update the universe -> port hash
  */
-bool SandNetPort::SetUniverse(Universe *universe) {
-  SandNetDevice *device = GetDevice();
-  SandNetNode *node = device->GetNode();
+bool SandNetPortHelper::PreSetUniverse(Universe *new_universe,
+                                       Universe *old_universe) {
+  if (new_universe && !new_universe->UniverseId()) {
+      OLA_WARN << "Can't use universe 0 with Sandnet!";
+      return false;
+  }
+  (void) old_universe;
+  return false;
+}
 
-  // TODO(simon): move this into the base class
+
+string SandNetPortHelper::Description(const Universe *universe) const {
+  std::stringstream str;
   if (universe) {
-    vector<AbstractPort*> ports = device->Ports();
-    vector<AbstractPort*>::const_iterator iter;
-    for (iter = ports.begin(); iter != ports.end(); ++iter) {
-      if ((*iter)->IsOutput() == IsOutput() &&
-          (*iter)->GetUniverse() &&
-          (*(*iter)->GetUniverse()) == *universe) {
-        OLA_WARN << "Port " << (*iter)->PortId() <<
-          " is already patched to universe " << universe->UniverseId();
-        return false;
-      }
-    }
+    str << "Sandnet group " << static_cast<int>(SandnetGroup(universe)) <<
+      ", universe " << 1 + SandnetUniverse(universe);
   }
-
-  if (IsOutput()) {
-    if (universe) {
-      if (!universe->UniverseId()) {
-        OLA_WARN << "Can't use universe 0 with Sandnet!";
-        return false;
-      }
-      node->SetPortParameters(PortId(),
-                              SandNetNode::SANDNET_PORT_MODE_IN,
-                              SandnetGroup(universe),
-                              SandnetUniverse(universe));
-    }
-  } else {
-    Universe *old_universe = GetUniverse();
-    if (old_universe)
-      node->RemoveHandler(SandnetGroup(old_universe),
-                          SandnetUniverse(old_universe));
-
-    if (universe) {
-      node->SetHandler(SandnetGroup(universe),
-                       SandnetUniverse(universe),
-                       NewClosure(this, &SandNetPort::UpdateBuffer));
-    }
-  }
-  return Port<SandNetDevice>::SetUniverse(universe);
+  return str.str();
 }
 
 
@@ -136,7 +65,7 @@ bool SandNetPort::SetUniverse(Universe *universe) {
  * @param universe the OLA universe
  * @returns the sandnet group number
  */
-uint8_t SandNetPort::SandnetGroup(const Universe *universe) const {
+uint8_t SandNetPortHelper::SandnetGroup(const Universe *universe) const {
   if (universe)
     return (uint8_t) ((universe->UniverseId() - 1) >> 8);
   return 0;
@@ -149,10 +78,51 @@ uint8_t SandNetPort::SandnetGroup(const Universe *universe) const {
  * @param universe the OLA universe
  * @returns the sandnet universe number
  */
-uint8_t SandNetPort::SandnetUniverse(const Universe *universe) const {
+uint8_t SandNetPortHelper::SandnetUniverse(const Universe *universe) const {
   if (universe)
     return universe->UniverseId() - 1;
   return 0;
+}
+
+
+
+void SandNetInputPort::PostSetUniverse(Universe *new_universe,
+                                       Universe *old_universe) {
+  if (old_universe)
+    m_node->RemoveHandler(m_helper.SandnetGroup(old_universe),
+                          m_helper.SandnetUniverse(old_universe));
+
+  if (new_universe) {
+    m_node->SetHandler(
+        m_helper.SandnetGroup(new_universe),
+        m_helper.SandnetUniverse(new_universe),
+        &m_buffer,
+        NewClosure<SandNetInputPort>(this, &SandNetInputPort::DmxChanged));
+  }
+}
+
+
+/*
+ * Write operation
+ */
+bool SandNetOutputPort::WriteDMX(const DmxBuffer &buffer) {
+  if (!GetUniverse())
+    return false;
+
+  if (!m_node->SendDMX(PortId(), buffer))
+    return false;
+  return true;
+}
+
+
+void SandNetOutputPort::PostSetUniverse(Universe *new_universe,
+                                        Universe *old_universe) {
+  if (new_universe)
+    m_node->SetPortParameters(PortId(),
+                              SandNetNode::SANDNET_PORT_MODE_IN,
+                              m_helper.SandnetGroup(new_universe),
+                              m_helper.SandnetUniverse(new_universe));
+  (void) old_universe;
 }
 }  // sandnet
 }  // plugin

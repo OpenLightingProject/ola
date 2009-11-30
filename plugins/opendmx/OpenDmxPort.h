@@ -33,19 +33,30 @@ namespace opendmx {
 
 using std::string;
 
-class OpenDmxPort: public ola::Port<OpenDmxDevice> {
+class OpenDmxOutputPort: public OutputPort {
   public:
-    OpenDmxPort(OpenDmxDevice *parent, unsigned int id,
-                const string &path);
-    ~OpenDmxPort();
+    OpenDmxOutputPort(OpenDmxDevice *parent,
+                      unsigned int id,
+                      const string &path)
+        : OutputPort(parent, id),
+          m_thread(),
+          m_path(path) {
+      m_thread.Start(path);
+    }
 
-    bool WriteDMX(const DmxBuffer &buffer);
-    // reading isn't supported in the driver
-    const DmxBuffer &ReadDMX() const { return m_empty_buffer; }
+    ~OpenDmxOutputPort() {
+      m_thread.Stop();
+    }
+
+    string Description() const { return "Open Dmx at " + m_path; }
+
+    bool WriteDMX(const DmxBuffer &buffer) {
+      return m_thread.WriteDmx(buffer);
+    }
 
   private:
-    OpenDmxThread *m_thread;
-    DmxBuffer m_empty_buffer;
+    OpenDmxThread m_thread;
+    string m_path;
 };
 }  // opendmx
 }  // plugins

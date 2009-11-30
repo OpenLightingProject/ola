@@ -23,10 +23,12 @@
 
 #include <ctemplate/template.h>
 #include <string>
+#include <vector>
 #include "ola/ExportMap.h"
 #include "ola/network/SelectServer.h"
 #include "olad/Device.h"
 #include "olad/HttpServer.h"
+#include "olad/PortPatcher.h"
 
 namespace ola {
 
@@ -41,6 +43,7 @@ class OlaHttpServer {
                   class UniverseStore *universe_store,
                   class PluginLoader *plugin_loader,
                   class DeviceManager *device_manager,
+                  PortPatcher *port_patcher,
                   unsigned int port,
                   bool enable_quit,
                   const string &data_dir);
@@ -70,17 +73,28 @@ class OlaHttpServer {
                          int (OlaHttpServer::*method)(const HttpRequest*,
                          HttpResponse*));
     void RegisterFile(const string &file, const string &content_type);
+
     void PopulateDeviceDict(const HttpRequest *request,
                             TemplateDictionary *dict,
                             const device_alias_pair &device_pair,
                             bool save_changes);
-    class HttpServer m_server;
 
+    template <class PortClass>
+    void UpdatePortPatchings(const HttpRequest *request,
+                             vector<PortClass*> *ports);
+
+    template <class PortClass>
+    void AddPortsToDict(TemplateDictionary *dict,
+                        const vector<PortClass*> &ports,
+                        unsigned int *offset);
+
+    class HttpServer m_server;
     ExportMap *m_export_map;
     SelectServer *m_ss;
     UniverseStore *m_universe_store;
     PluginLoader *m_plugin_loader;
     DeviceManager *m_device_manager;
+    PortPatcher *m_port_patcher;
     bool m_enable_quit;
 
     static const char K_DATA_DIR_VAR[];

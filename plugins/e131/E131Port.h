@@ -30,23 +30,54 @@ namespace e131 {
 
 using ola::DmxBuffer;
 
-class E131Port: public Port<E131Device> {
+static const unsigned int NUMBER_OF_E131_PORTS = 5;
+
+class E131PortHelper {
   public:
-    E131Port(E131Device *parent, int id):
-      Port<E131Device>(parent, id) {}
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe);
+    string Description(Universe *universe) const;
+};
 
-    bool IsOutput() const;
-    bool WriteDMX(const DmxBuffer &buffer);
-    const DmxBuffer &ReadDMX() const;
 
-    bool SetUniverse(Universe *universe);
-    string Description() const;
+class E131InputPort: public InputPort {
+  public:
+    E131InputPort(E131Device *parent, int id, E131Node *node)
+        : InputPort(parent, id),
+          m_node(node) {}
 
-    void UniverseNameChanged(const string &new_name);
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
+      return m_helper.PreSetUniverse(new_universe, old_universe);
+    }
+    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    string Description() const { return m_helper.Description(GetUniverse()); }
+    const DmxBuffer &ReadDMX() const { return m_buffer; }
 
-    static const int NUMBER_OF_PORTS = 5;
   private:
     DmxBuffer m_buffer;
+    E131Node *m_node;
+    E131PortHelper m_helper;
+};
+
+
+class E131OutputPort: public OutputPort {
+  public:
+    E131OutputPort(E131Device *parent, int id, E131Node *node)
+        : OutputPort(parent, id),
+          m_node(node) {}
+
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
+      return m_helper.PreSetUniverse(new_universe, old_universe);
+    }
+    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    string Description() const { return m_helper.Description(GetUniverse()); }
+
+    bool WriteDMX(const DmxBuffer &buffer);
+    void UniverseNameChanged(const string &new_name);
+
+  private:
+    DmxBuffer m_buffer;
+    E131Node *m_node;
+    E131PortHelper m_helper;
 };
 
 } //e131

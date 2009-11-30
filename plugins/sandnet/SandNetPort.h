@@ -31,25 +31,58 @@ namespace ola {
 namespace plugin {
 namespace sandnet {
 
-using ola::DmxBuffer;
-
-class SandNetPort: public ola::Port<SandNetDevice> {
+class SandNetPortHelper {
   public:
-    SandNetPort(SandNetDevice *parent, unsigned int id):
-      Port<SandNetDevice>(parent, id) {}
-    ~SandNetPort() {}
-
-    bool IsOutput() const;
-    string Description() const;
-    bool WriteDMX(const DmxBuffer &buffer);
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool SetUniverse(Universe *universe);
-    int UpdateBuffer();
-
-  private:
-    DmxBuffer m_buffer;
+    SandNetPortHelper() {}
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe);
+    string Description(const Universe *universe) const;
     uint8_t SandnetGroup(const Universe* universe) const;
     uint8_t SandnetUniverse(const Universe *universe) const;
+};
+
+
+class SandNetInputPort: public InputPort {
+  public:
+    SandNetInputPort(SandNetDevice *parent,
+                     unsigned int id,
+                     SandNetNode *node):
+      InputPort(parent, id),
+      m_node(node) {}
+    ~SandNetInputPort() {}
+
+    string Description() const { return m_helper.Description(GetUniverse()); }
+    const DmxBuffer &ReadDMX() const { return m_buffer; }
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
+      return m_helper.PreSetUniverse(new_universe, old_universe);
+    }
+    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+
+  private:
+    SandNetPortHelper m_helper;
+    SandNetNode *m_node;
+    DmxBuffer m_buffer;
+};
+
+
+class SandNetOutputPort: public OutputPort {
+  public:
+    SandNetOutputPort(SandNetDevice *parent,
+                      unsigned int id,
+                      SandNetNode *node):
+      OutputPort(parent, id),
+      m_node(node) {}
+    ~SandNetOutputPort() {}
+
+    string Description() const { return m_helper.Description(GetUniverse()); }
+    bool WriteDMX(const DmxBuffer &buffer);
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
+      return m_helper.PreSetUniverse(new_universe, old_universe);
+    }
+    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+
+  private:
+    SandNetPortHelper m_helper;
+    SandNetNode *m_node;
 };
 }  // sandnet
 }  // plugin

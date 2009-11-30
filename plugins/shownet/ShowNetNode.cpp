@@ -150,28 +150,14 @@ bool ShowNetNode::SendDMX(unsigned int universe,
 
 
 /*
- * Get the DMX data for this universe.
- */
-DmxBuffer ShowNetNode::GetDMX(unsigned int universe) {
-  map<unsigned int, universe_handler>::const_iterator iter =
-    m_handlers.find(universe);
-
-  if (iter != m_handlers.end()) {
-    return iter->second.buffer;
-  } else {
-    DmxBuffer buffer;
-    return buffer;
-  }
-}
-
-
-/*
  * Set the closure to be called when we receive data for this universe.
  * @param universe the universe to register the handler for
  * @param handler the Closure to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
-bool ShowNetNode::SetHandler(unsigned int universe, Closure *closure) {
+bool ShowNetNode::SetHandler(unsigned int universe,
+                             DmxBuffer *buffer,
+                             Closure *closure) {
   if (!closure)
     return false;
 
@@ -180,8 +166,8 @@ bool ShowNetNode::SetHandler(unsigned int universe, Closure *closure) {
 
   if (iter == m_handlers.end()) {
     universe_handler handler;
+    handler.buffer = buffer;
     handler.closure = closure;
-    handler.buffer.Blackout();
     m_handlers[universe] = handler;
   } else {
     Closure *old_closure = iter->second.closure;
@@ -293,14 +279,14 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
   }
 
   if (packet.slotSize[0] != enc_len) {
-    m_encoder.Decode(&iter->second.buffer,
+    m_encoder.Decode(iter->second.buffer,
                      start_channel,
                      packet.data + data_offset,
                      enc_len);
   } else {
-    iter->second.buffer.SetRange(start_channel,
-                                 packet.data + data_offset,
-                                 enc_len);
+    iter->second.buffer->SetRange(start_channel,
+                                  packet.data + data_offset,
+                                  enc_len);
   }
   iter->second.closure->Run();
   return true;

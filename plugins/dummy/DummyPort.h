@@ -30,13 +30,12 @@ namespace ola {
 namespace plugin {
 namespace dummy {
 
-class DummyPort: public Port<DummyDevice> {
+class DummyPort: public OutputPort {
   public:
     DummyPort(DummyDevice *parent, unsigned int id):
-      Port<DummyDevice>(parent, id) {}
+      OutputPort(parent, id) {}
 
     bool WriteDMX(const DmxBuffer &buffer);
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
     string Description() const { return "Dummy Port"; }
 
   private:

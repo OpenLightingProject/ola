@@ -40,8 +40,9 @@ class E131Device: public ola::Device {
 
     bool Start();
     bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
-    class E131Node *GetNode() const { return m_node; }
 
   private:
     class Preferences *m_preferences;

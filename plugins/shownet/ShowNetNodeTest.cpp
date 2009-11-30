@@ -54,7 +54,6 @@ class ShowNetNodeTest: public CppUnit::TestFixture {
   private:
     bool m_hander_called;
     ShowNetNode *m_node;
-    map<unsigned int, DmxBuffer> m_received_data;
 };
 
 
@@ -80,7 +79,6 @@ void ShowNetNodeTest::tearDown() {
  */
 int ShowNetNodeTest::UpdateData(unsigned int universe) {
   m_hander_called = true;
-  m_received_data[universe] = m_node->GetDMX(universe);
 }
 
 
@@ -97,11 +95,12 @@ void ShowNetNodeTest::testHandlePacket() {
   DmxBuffer expected_dmx(EXPECTED_DATA, sizeof(EXPECTED_DATA));
   memset(&packet, 0, sizeof(packet));
   memcpy(packet.data, ENCODED_DATA, sizeof(ENCODED_DATA));
+  DmxBuffer received_data;
 
   m_node->SetHandler(universe,
+                     &received_data,
                      ola::NewClosure(this, &ShowNetNodeTest::UpdateData,
                                      universe));
-
 
   // short packets
   CPPUNIT_ASSERT_EQUAL(false, m_node->HandlePacket(packet, 0));
@@ -173,7 +172,7 @@ void ShowNetNodeTest::testHandlePacket() {
   CPPUNIT_ASSERT(m_hander_called);
   CPPUNIT_ASSERT_EQUAL(
       0,
-      memcmp(expected_dmx.GetRaw(), m_received_data[0].GetRaw(),
+      memcmp(expected_dmx.GetRaw(), received_data.GetRaw(),
              expected_dmx.Size()));
 }
 
@@ -270,39 +269,38 @@ void ShowNetNodeTest::SendAndReceiveForUniverse(unsigned int universe) {
   DmxBuffer buffer2(TEST_DATA2, sizeof(TEST_DATA2));
   unsigned int size;
   shownet_data_packet packet;
+  DmxBuffer received_data;
 
   m_node->SetHandler(
       universe,
+      &received_data,
       ola::NewClosure(this, &ShowNetNodeTest::UpdateData, universe));
 
   // zero first
   size = m_node->PopulatePacket(&packet, universe, zero_buffer);
   m_node->HandlePacket(packet, size);
-  CPPUNIT_ASSERT(m_received_data[universe] == zero_buffer);
+  CPPUNIT_ASSERT(received_data == zero_buffer);
 
   // send a test packet
   size = m_node->PopulatePacket(&packet, universe, buffer1);
   m_node->HandlePacket(packet, size);
   CPPUNIT_ASSERT_EQUAL(
       0,
-      memcmp(buffer1.GetRaw(), m_received_data[universe].GetRaw(),
-             buffer1.Size()));
+      memcmp(buffer1.GetRaw(), received_data.GetRaw(), buffer1.Size()));
 
   // send another test packet
   size = m_node->PopulatePacket(&packet, universe, buffer2);
   m_node->HandlePacket(packet, size);
   CPPUNIT_ASSERT_EQUAL(
       0,
-      memcmp(buffer2.GetRaw(), m_received_data[universe].GetRaw(),
-             buffer2.Size()));
+      memcmp(buffer2.GetRaw(), received_data.GetRaw(), buffer2.Size()));
 
   // check that we don't mix up universes
   size = m_node->PopulatePacket(&packet, universe + 1, buffer1);
   m_node->HandlePacket(packet, size);
   CPPUNIT_ASSERT_EQUAL(
       0,
-      memcmp(buffer2.GetRaw(), m_received_data[universe].GetRaw(),
-             buffer2.Size()));
+      memcmp(buffer2.GetRaw(), received_data.GetRaw(), buffer2.Size()));
 }
 }  // shownet
 }  // plugin

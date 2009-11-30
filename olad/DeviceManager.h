@@ -35,7 +35,6 @@
 #include <vector>
 #include "olad/Device.h"
 #include "olad/Preferences.h"
-#include "olad/UniverseStore.h"
 
 namespace ola {
 
@@ -54,7 +53,7 @@ bool operator <(const device_alias_pair& left, const device_alias_pair &right);
 class DeviceManager {
   public:
     DeviceManager(PreferencesFactory *prefs_factory,
-                  UniverseStore *universe_store);
+                  class PortPatcher *port_patcher);
     ~DeviceManager();
 
     bool RegisterDevice(AbstractDevice *device);
@@ -69,16 +68,22 @@ class DeviceManager {
     static const unsigned int MISSING_DEVICE_ALIAS;
 
   private:
-    UniverseStore *m_universe_store;
     Preferences *m_port_preferences;
+    class PortPatcher *m_port_patcher;
     map<string, device_alias_pair> m_devices;  // map device_ids to devices
     map<unsigned int, AbstractDevice*> m_alias_map;  // map alias to devices
     unsigned int m_next_device_alias;
 
     DeviceManager(const DeviceManager&);
     DeviceManager& operator=(const DeviceManager&);
-    void SaveDevicePortPatchings(AbstractDevice *device);
+    void SaveDevicePortPatchings(const AbstractDevice *device);
     void RestoreDevicePortPatchings(AbstractDevice *device);
+
+    template <class PortClass>
+    void SavePortPatchings(const vector<PortClass*> &ports) const;
+
+    template <class PortClass>
+    void RestorePortPatchings(const vector<PortClass*> &ports) const;
 
     static const char PORT_PREFERENCES[];
     static const unsigned int FIRST_DEVICE_ALIAS = 1;

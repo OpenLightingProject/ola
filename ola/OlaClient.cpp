@@ -178,9 +178,10 @@ bool OlaClient::RegisterUniverse(unsigned int universe,
  */
 bool OlaClient::Patch(unsigned int device_id,
                       unsigned int port_id,
+                      bool is_output,
                       ola::PatchAction patch_action,
                       unsigned int universe) {
-  return m_core->Patch(device_id, port_id, patch_action, universe);
+  return m_core->Patch(device_id, port_id, is_output, patch_action, universe);
 }
 
 

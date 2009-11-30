@@ -22,11 +22,13 @@
 #include <string.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/service.h>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "ola/Logging.h"
 #include "olad/Device.h"
+#include "olad/Plugin.h"
 #include "olad/Port.h"
 #include "olad/Universe.h"
 
@@ -34,10 +36,10 @@ namespace ola {
 
 using google::protobuf::RpcController;
 using google::protobuf::Closure;
+using std::pair;
 
 /*
  * Create a new device
- *
  * @param  owner  the plugin that owns this device
  * @param  name  a nice name for this device
  */
@@ -59,46 +61,56 @@ Device::~Device() {
 
 
 /*
- * Device Config request
+ * Add a port to this device
+ * @param port  the port to add
+ * @return true on success, false if the port already exists
  */
-void Device::Configure(RpcController *controller,
-                       const string &request,
-                       string *response,
-                       Closure *done) {
-  controller->SetFailed("Not Implemented");
-  done->Run();
+bool Device::AddPort(InputPort *port) {
+  return GenericAddPort(port, &m_input_ports);
 }
 
 
 /*
  * Add a port to this device
- *
  * @param port  the port to add
  * @return 0 on success, non 0 on failure
  */
-int Device::AddPort(AbstractPort *port) {
-  m_ports.push_back(port);
-  return 0;
+bool Device::AddPort(OutputPort *port) {
+  return GenericAddPort(port, &m_output_ports);
+}
+
+void Device::InputPorts(vector<InputPort*> *ports) const {
+  GenericFetchPortsVector(ports, m_input_ports);
 }
 
 
-/*
- * Returns a vector of ports in this device
- * @return a vector of pointers to AbstractPorts
- */
-const vector<AbstractPort*> Device::Ports() const {
-  return m_ports;
+void Device::OutputPorts(vector<OutputPort*> *ports) const {
+  GenericFetchPortsVector(ports, m_output_ports);
 }
 
-
 /*
- * Returns the Port with the id port_id
+ * Returns the InputPort with the id port_id
  */
-AbstractPort *Device::GetPort(unsigned int port_id) const {
-  if (port_id >= m_ports.size())
+InputPort *Device::GetInputPort(unsigned int port_id) const {
+  map<unsigned int, InputPort*>::const_iterator iter =
+    m_input_ports.find(port_id);
+
+  if (iter == m_input_ports.end())
     return NULL;
+  return iter->second;
+}
 
-  return m_ports[port_id];
+
+/*
+ * Returns the OutputPort with the id port_id
+ */
+OutputPort *Device::GetOutputPort(unsigned int port_id) const {
+  map<unsigned int, OutputPort *>::const_iterator iter =
+    m_output_ports.find(port_id);
+
+  if (iter == m_output_ports.end())
+    return NULL;
+  return iter->second;
 }
 
 
@@ -106,14 +118,18 @@ AbstractPort *Device::GetPort(unsigned int port_id) const {
  * Delete all ports and clear the port list
  */
 void Device::DeleteAllPorts() {
-  vector<AbstractPort*>::iterator iter;
-  for (iter = m_ports.begin(); iter != m_ports.end(); ++iter) {
-    Universe *universe = (*iter)->GetUniverse();
-    if (universe)
-      universe->RemovePort(*iter);
-    delete *iter;
+  map<unsigned int, InputPort*>::iterator input_iter;
+  map<unsigned int, OutputPort*>::iterator output_iter;
+  for (input_iter = m_input_ports.begin(); input_iter != m_input_ports.end();
+       ++input_iter) {
+    GenericDeletePort(input_iter->second);
   }
-  m_ports.clear();
+  for (output_iter = m_output_ports.begin();
+       output_iter != m_output_ports.end(); ++output_iter) {
+    GenericDeletePort(output_iter->second);
+  }
+  m_input_ports.clear();
+  m_output_ports.clear();
 }
 
 
@@ -132,5 +148,59 @@ string Device::UniqueId() const {
     m_unique_id = str.str();
   }
   return m_unique_id;
+}
+
+/*
+ * Device Config request
+ */
+void Device::Configure(RpcController *controller,
+                       const string &request,
+                       string *response,
+                       Closure *done) {
+  controller->SetFailed("Not Implemented");
+  done->Run();
+  (void) request;
+  (void) response;
+}
+
+
+template<class PortClass>
+bool Device::GenericAddPort(PortClass *port,
+                            map<unsigned int, PortClass*> *port_map) {
+  if (!port)
+    return false;
+
+  typename map<unsigned int, PortClass*>::iterator iter =
+    port_map->find(port->PortId());
+  if (iter == port_map->end()) {
+    pair<unsigned int, PortClass*> p(port->PortId(), port);
+    port_map->insert(p);
+    return true;
+  } else if (iter->second != port) {
+    OLA_WARN << "Attempt to insert a port but this port id is already " <<
+      "associated with a diferent port.";
+    return true;
+  }
+  return true;
+}
+
+
+template<class PortClass>
+void Device::GenericFetchPortsVector(
+    vector<PortClass*> *ports,
+    const map<unsigned int, PortClass*> &port_map) const {
+  typename map<unsigned int, PortClass*>::const_iterator iter;
+  for (iter = port_map.begin(); iter != port_map.end(); ++iter) {
+    ports->push_back(iter->second);
+  }
+}
+
+
+template <class PortClass>
+void Device::GenericDeletePort(PortClass *port) {
+  Universe *universe = port->GetUniverse();
+  if (universe)
+    universe->RemovePort(port);
+  delete port;
 }
 }  // ola

@@ -44,7 +44,6 @@ class UsbProWidgetListener {
     UsbProWidgetListener(const UsbProWidgetListener&);
     UsbProWidgetListener& operator=(const UsbProWidgetListener&);
 };
-
 }  // usbpro
 }  // ola
 #endif  // PLUGINS_USBPRO_USBPROWIDGETLISTENER_H_

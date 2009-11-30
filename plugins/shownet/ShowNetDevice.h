@@ -40,8 +40,9 @@ class ShowNetDevice: public ola::Device {
 
     bool Start();
     bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return true; }
     string DeviceId() const { return "1"; }
-    class ShowNetNode *GetNode() const { return m_node; }
 
   private:
     class Preferences *m_preferences;

@@ -32,93 +32,53 @@ namespace plugin {
 namespace espnet {
 
 
-bool EspNetPort::IsOutput() const {
-  // odd ports are output
-  return PortId() % 2;
-}
-
-
-string EspNetPort::Description() const {
+string EspNetPortHelper::Description(Universe *universe) const {
   std::stringstream str;
-  if (GetUniverse())
-    str << "EspNet universe " << GetUniverse()->UniverseId();
+  if (universe)
+    str << "EspNet universe " << (unsigned int) EspNetUniverseId(universe);
   return str.str();
 }
 
 
 /*
- * Write operation
- */
-bool EspNetPort::WriteDMX(const DmxBuffer &buffer) {
-  if (!IsOutput() || !GetUniverse())
-    return false;
-
-  EspNetDevice *device = GetDevice();
-  EspNetNode *node = device->GetNode();
-
-  if (!node->SendDMX(EspNetUniverseId(), buffer))
-    return false;
-  return true;
-}
-
-
-/*
- * Read operation
- * @return The DmxBuffer with the new data
- */
-const DmxBuffer &EspNetPort::ReadDMX() const {
-  return m_buffer;
-}
-
-
-/*
- * Update the data buffer for this port
- */
-int EspNetPort::UpdateBuffer() {
-  // we can't update if this isn't a input port
-  if (IsOutput() || !GetUniverse())
-    return false;
-
-  EspNetDevice *device = GetDevice();
-  EspNetNode *node = device->GetNode();
-  m_buffer = node->GetDMX(EspNetUniverseId());
-  return DmxChanged();
-}
-
-
-/*
- * We intecept this to setup/remove the dmx handler
- */
-bool EspNetPort::SetUniverse(Universe *universe) {
-  Universe *old_universe = GetUniverse();
-  Port<EspNetDevice>::SetUniverse(universe);
-
-  if (IsOutput())
-    return true;
-
-  EspNetDevice *device = GetDevice();
-  EspNetNode *node = device->GetNode();
-
-  if (old_universe && old_universe != universe)
-    node->RemoveHandler(old_universe->UniverseId() % ESPNET_MAX_UNIVERSES);
-  if (universe && universe != old_universe)
-    node->SetHandler(EspNetUniverseId(),
-                     ola::NewClosure(this, &EspNetPort::UpdateBuffer));
-  return true;
-}
-
-
-/*
- * return the EspNet universe ID for this port. In case we don't have a
+ * Return the EspNet universe ID for this port. In case we don't have a
  * universe, 0 is returned. Note that universe 0 is valid.
  */
-uint8_t EspNetPort::EspNetUniverseId() const {
-  if (GetUniverse())
-    return GetUniverse()->UniverseId() % ESPNET_MAX_UNIVERSES;
+uint8_t EspNetPortHelper::EspNetUniverseId(Universe *universe) const {
+  if (universe)
+    return universe->UniverseId() % ESPNET_MAX_UNIVERSES;
   else
     return 0;
 }
 
+
+/*
+ * Set the universe for an InputPort.
+ */
+void EspNetInputPort::PostSetUniverse(Universe *new_universe,
+                                      Universe *old_universe) {
+  if (old_universe)
+    m_node->RemoveHandler(m_helper.EspNetUniverseId(old_universe));
+
+  if (new_universe)
+    m_node->SetHandler(
+        m_helper.EspNetUniverseId(new_universe),
+        &m_buffer,
+        ola::NewClosure<EspNetInputPort>(this, &EspNetInputPort::DmxChanged));
+}
+
+
+/*
+ * Write data to this port.
+ */
+bool EspNetOutputPort::WriteDMX(const DmxBuffer &buffer) {
+  if (!GetUniverse())
+    return false;
+
+  if (!m_node->SendDMX(m_helper.EspNetUniverseId(GetUniverse()), buffer))
+    return false;
+  return true;
+}
 } //espnet
 } //plugin
 } //ola

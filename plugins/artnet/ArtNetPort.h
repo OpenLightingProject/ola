@@ -30,18 +30,69 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
-class ArtNetPort: public Port<ArtNetDevice> {
+class ArtNetPortHelper {
   public:
-    ArtNetPort(ArtNetDevice *parent, unsigned int id):
-      Port<ArtNetDevice>(parent, id) {}
+    ArtNetPortHelper(artnet_node node, bool is_output)
+        : m_is_output(is_output),
+          m_node(node) {}
 
-    bool SetUniverse(Universe *universe);
-    bool WriteDMX(const DmxBuffer &data);
+    artnet_node GetNode() const { return m_node; }
+    void PostSetUniverse(Universe *universe, unsigned int port_id);
+    string Description(const Universe *universe,
+                       unsigned int port_id) const;
+
+  private:
+    bool m_is_output;
+    artnet_node m_node;
+};
+
+
+class ArtNetInputPort: public InputPort {
+  public:
+    ArtNetInputPort(ArtNetDevice *parent,
+                    unsigned int port_id,
+                    artnet_node node)
+        : InputPort(parent, port_id),
+          m_helper(node, false) {}
+
     const DmxBuffer &ReadDMX() const;
-    bool IsOutput() const;
-    string Description() const;
+
+    void PostSetUniverse(Universe *universe, Universe *old_universe) {
+      (void) old_universe;
+      m_helper.PostSetUniverse(universe, PortId());
+    }
+
+    string Description() const {
+      return m_helper.Description(GetUniverse(), PortId());
+    }
+
   private:
     mutable DmxBuffer m_buffer;
+    ArtNetPortHelper m_helper;
+};
+
+
+class ArtNetOutputPort: public OutputPort {
+  public:
+    ArtNetOutputPort(ArtNetDevice *device,
+                     unsigned int port_id,
+                     artnet_node node)
+        : OutputPort(device, port_id),
+          m_helper(node, true) {}
+
+    bool WriteDMX(const DmxBuffer &buffer);
+
+    void PostSetUniverse(Universe *universe, Universe *old_universe) {
+      (void) old_universe;
+      m_helper.PostSetUniverse(universe, PortId());
+    }
+
+    string Description() const {
+      return m_helper.Description(GetUniverse(), PortId());
+    }
+
+  private:
+    ArtNetPortHelper m_helper;
 };
 }  // artnet
 }  // plugin

@@ -29,100 +29,75 @@
 namespace ola {
 namespace e131 {
 
-bool E131Port::IsOutput() const {
-  // odd ports are output
-  return (PortId() % 2);
-}
 
-
-bool E131Port::WriteDMX(const DmxBuffer &buffer) {
-  E131Device *device = GetDevice();
-
-  if (!IsOutput())
-    return false;
-
-  Universe *universe = GetUniverse();
-  if (!universe)
-    return false;
-
-  E131Node *node = device->GetNode();
-  return node->SendDMX(universe->UniverseId(), buffer);
-}
-
-
-const DmxBuffer &E131Port::ReadDMX() const {
-  return m_buffer;
-}
-
-
-/*
- * Override this so we can setup the callback, we also want to make sure only
- * one port can be patched to a universe at one time.
- */
-bool E131Port::SetUniverse(Universe *universe) {
-
-  // check for valid ranges here
-  if (universe && universe->UniverseId() == MAX_TWO_BYTE) {
-    OLA_WARN << "Universe id " << universe->UniverseId() << "> " <<
+bool E131PortHelper::PreSetUniverse(Universe *new_universe,
+                                    Universe *old_universe) {
+  if (new_universe && new_universe->UniverseId() >= MAX_TWO_BYTE) {
+    OLA_WARN << "Universe id " << new_universe->UniverseId() << "> " <<
       MAX_TWO_BYTE;
     return false;
   }
-
-  E131Device *device = GetDevice();
-  E131Node *node = device->GetNode();
-  Universe *old_universe = GetUniverse();
-
-  if (!universe) {
-    // unpatch
-    if (IsOutput())
-      node->SetSourceName(old_universe->UniverseId(), "");
-    else if (old_universe)
-      node->RemoveHandler(old_universe->UniverseId());
-
-  } else {
-    // patch request, check no other ports are using this universe
-    vector<AbstractPort*> ports = device->Ports();
-    vector<AbstractPort*>::const_iterator iter;
-    for (iter = ports.begin(); iter != ports.end(); ++iter) {
-      if ((*iter)->IsOutput() == IsOutput() &&
-          (*iter)->GetUniverse() &&
-          (*(*iter)->GetUniverse()) == *universe) {
-
-        OLA_WARN << "Port " << (*iter)->PortId() <<
-          " is already patched to universe " << universe->UniverseId();
-        return false;
-      }
-    }
-
-    if (IsOutput()) {
-      node->SetSourceName(universe->UniverseId(), universe->Name());
-    } else {
-      // setup callback
-      node->SetHandler(universe->UniverseId(), &m_buffer,
-                       NewClosure<E131Port>(this, &E131Port::DmxChanged));
-    }
-  }
-
-  Port<E131Device>::SetUniverse(universe);
+  (void) old_universe;
   return true;
 }
 
 
-string E131Port::Description() const {
+string E131PortHelper::Description(Universe *universe) const {
   std::stringstream str;
-  if (GetUniverse())
-    str << "E1.31 Universe " << GetUniverse()->UniverseId();
+  if (universe)
+    str << "E1.31 Universe " << universe->UniverseId();
   return str.str();
+}
+
+
+
+/*
+ * Set the universe for an input port.
+ */
+void E131InputPort::PostSetUniverse(Universe *new_universe,
+                                    Universe *old_universe) {
+  if (old_universe)
+    m_node->RemoveHandler(old_universe->UniverseId());
+
+  if (new_universe)
+    m_node->SetHandler(
+        new_universe->UniverseId(),
+        &m_buffer,
+        NewClosure<E131InputPort>(this, &E131InputPort::DmxChanged));
+}
+
+
+/*
+ * Set the universe for an output port.
+ */
+void E131OutputPort::PostSetUniverse(Universe *new_universe,
+                                     Universe *old_universe) {
+
+  if (old_universe)
+    m_node->SetSourceName(old_universe->UniverseId(), "");
+
+  if (new_universe)
+    m_node->SetSourceName(new_universe->UniverseId(), new_universe->Name());
+}
+
+
+/*
+ * Write data to this port.
+ */
+bool E131OutputPort::WriteDMX(const DmxBuffer &buffer) {
+  Universe *universe = GetUniverse();
+  if (!universe)
+    return false;
+
+  return m_node->SendDMX(universe->UniverseId(), buffer);
 }
 
 
 /*
  * Update the universe name
  */
-void E131Port::UniverseNameChanged(const string &new_name) {
-  E131Device *device = GetDevice();
-  E131Node *node = device->GetNode();
-  node->SetSourceName(GetUniverse()->UniverseId(), new_name);
+void E131OutputPort::UniverseNameChanged(const string &new_name) {
+  m_node->SetSourceName(GetUniverse()->UniverseId(), new_name);
 }
 
 

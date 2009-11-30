@@ -28,6 +28,7 @@
 
 
 #include "ola/ExportMap.h"
+#include "ola/Logging.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
@@ -35,7 +36,7 @@ namespace ola {
 
 using std::pair;
 
-UniverseStore::UniverseStore(class Preferences *preferences,
+UniverseStore::UniverseStore(Preferences *preferences,
                              ExportMap *export_map)
     : m_preferences(preferences),
       m_export_map(export_map) {
@@ -43,12 +44,17 @@ UniverseStore::UniverseStore(class Preferences *preferences,
     StringMap *map = export_map->GetStringMapVar(Universe::K_UNIVERSE_NAME_VAR,
         "name");
     map = export_map->GetStringMapVar(Universe::K_UNIVERSE_MODE_VAR, "mode");
-    IntMap *int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_PORT_VAR,
-        "count");
-    int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR,
-        "count");
-    int_map = export_map->GetIntMapVar(Universe::K_UNIVERSE_SINK_CLIENTS_VAR,
-        "count");
+
+    const char *vars[] = {
+      Universe::K_UNIVERSE_INPUT_PORT_VAR,
+      Universe::K_UNIVERSE_OUTPUT_PORT_VAR,
+      Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR,
+      Universe::K_UNIVERSE_SINK_CLIENTS_VAR,
+    };
+
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i) {
+      export_map->GetIntMapVar(string(vars[i]), "count");
+    }
   }
 }
 
@@ -66,12 +72,9 @@ UniverseStore::~UniverseStore() {
  * @param uid the uid of the required universe
  */
 Universe *UniverseStore::GetUniverse(unsigned int universe_id) const {
-  map<int, Universe*>::const_iterator iter;
-
-  iter = m_universe_map.find(universe_id);
-  if (iter != m_universe_map.end()) {
+  universe_map::const_iterator iter = m_universe_map.find(universe_id);
+  if (iter != m_universe_map.end())
      return iter->second;
-  }
   return NULL;
 }
 
@@ -88,11 +91,13 @@ Universe *UniverseStore::GetUniverseOrCreate(unsigned int universe_id) {
     universe = new Universe(universe_id, this, m_export_map);
 
     if (universe) {
-      pair<int, Universe*> pair(universe_id, universe);
+      pair<unsigned int, Universe*> pair(universe_id, universe);
       m_universe_map.insert(pair);
 
       if (m_preferences)
         RestoreUniverseSettings(universe);
+    } else {
+      OLA_WARN << "Failed to create universe " << universe_id;
     }
   }
   return universe;
@@ -104,22 +109,20 @@ Universe *UniverseStore::GetUniverseOrCreate(unsigned int universe_id) {
  * done with it.
  * @return a pointer to a vector of Universe*
  */
-vector<Universe*> *UniverseStore::GetList() const {
-  vector<Universe*> *list = new vector<Universe*>;
-  list->reserve(UniverseCount());
+void UniverseStore::GetList(std::vector<Universe*> *universes) const {
+  universes->reserve(UniverseCount());
 
-  map<int, Universe*>::const_iterator iter;
+  universe_map::const_iterator iter;
   for (iter = m_universe_map.begin(); iter != m_universe_map.end(); ++iter)
-    list->push_back(iter->second);
-  return list;
+    universes->push_back(iter->second);
 }
 
 
 /*
  * Delete all universes
  */
-int UniverseStore::DeleteAll() {
-  map<int, Universe*>::iterator iter;
+void UniverseStore::DeleteAll() {
+  universe_map::iterator iter;
 
   for (iter = m_universe_map.begin(); iter != m_universe_map.end(); iter++) {
     SaveUniverseSettings(iter->second);
@@ -127,7 +130,6 @@ int UniverseStore::DeleteAll() {
   }
   m_deletion_candiates.clear();
   m_universe_map.clear();
-  return 0;
 }
 
 
@@ -146,7 +148,7 @@ void UniverseStore::AddUniverseGarbageCollection(Universe *universe) {
  */
 void UniverseStore::GarbageCollectUniverses() {
   set<Universe*>::iterator iter;
-  map<int, Universe *>::iterator map_iter;
+  universe_map::iterator map_iter;
 
   for (iter = m_deletion_candiates.begin();
        iter != m_deletion_candiates.end(); iter++) {
@@ -196,10 +198,9 @@ bool UniverseStore::RestoreUniverseSettings(Universe *universe) const {
 
 /*
  * Save this universe's settings.
- *
- * @param uni  the universe to save
+ * @param universe, the universe to save
  */
-bool UniverseStore::SaveUniverseSettings(Universe *universe) {
+bool UniverseStore::SaveUniverseSettings(Universe *universe) const {
   string key, mode;
   std::ostringstream oss;
 

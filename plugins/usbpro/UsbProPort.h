@@ -29,24 +29,37 @@
 namespace ola {
 namespace usbpro {
 
-class UsbProPort: public ola::Port<UsbProDevice> {
+class UsbProInputPort: public InputPort {
   public:
-    UsbProPort(UsbProDevice *parent, unsigned int id, const string &path)
-        : ola::Port<UsbProDevice>(parent, id),
-          m_path(path) {}
+    UsbProInputPort(UsbProDevice *parent, unsigned int id, const string &path)
+        : InputPort(parent, id),
+          m_path(path),
+          m_device(parent) {}
 
-    bool WriteDMX(const DmxBuffer &buffer);
     const DmxBuffer &ReadDMX() const;
-    bool SetUniverse(Universe *uni);
-    bool IsOutput() const;
     string Description() const { return m_path; }
 
   private:
-    DmxBuffer m_empty_buffer;
     string m_path;
+    UsbProDevice *m_device;
 };
 
+
+class UsbProOutputPort: public OutputPort {
+  public:
+    UsbProOutputPort(UsbProDevice *parent, unsigned int id, const string &path)
+        : OutputPort(parent, id),
+          m_path(path),
+          m_device(parent) {}
+
+    bool WriteDMX(const DmxBuffer &buffer);
+    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    string Description() const { return m_path; }
+
+  private:
+    string m_path;
+    UsbProDevice *m_device;
+};
 }  // usbpro
 }  // ola
-
 #endif  // PLUGINS_USBPRO_USBPROPORT_H_

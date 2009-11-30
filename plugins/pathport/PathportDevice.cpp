@@ -111,7 +111,7 @@ bool PathportDevice::Start() {
     port = new PathportPort(this, i);
 
     if (port)
-      this->AddPort(port);
+      AddPort(port);
   }
 
   bool debug = Owner()->DebugOn();

@@ -63,20 +63,15 @@ bool SandNetDevice::Start() {
   if (m_enabled)
     return false;
 
-  SandNetPort *port = NULL;
-
-  for (unsigned int i = 0; i < SANDNET_MAX_PORTS + INPUT_PORTS; i++) {
-    port = new SandNetPort(this, i);
-    this->AddPort(port);
-  }
-
   m_node = new SandNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue(NAME_KEY));
 
   // setup the output ports (ie INTO sandnet)
   for (int i = 0; i < SANDNET_MAX_PORTS; i++) {
-    bool ret = m_node->SetPortParameters(i, SandNetNode::SANDNET_PORT_MODE_IN,
-                                         0, i);
+    bool ret = m_node->SetPortParameters(i,
+                                         SandNetNode::SANDNET_PORT_MODE_IN,
+                                         0,
+                                         i);
     if (!ret) {
       OLA_WARN << "SetPortParameters failed";
       goto e_sandnet_failed;
@@ -85,6 +80,15 @@ bool SandNetDevice::Start() {
 
   if (!m_node->Start())
     goto e_sandnet_failed;
+
+  for (unsigned int i = 0; i < INPUT_PORTS; i++) {
+    SandNetInputPort *port = new SandNetInputPort(this, i, m_node);
+    AddPort(port);
+  }
+  for (unsigned int i = 0; i < SANDNET_MAX_PORTS ; i++) {
+    SandNetOutputPort *port = new SandNetOutputPort(this, i, m_node);
+    AddPort(port);
+  }
 
   sockets = m_node->GetSockets();
   for (iter = sockets.begin(); iter != sockets.end(); ++iter)

@@ -35,12 +35,15 @@
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
 
+#include "ola/Logging.h"
+
 namespace ola {
 
 using std::cout;
 using std::endl;
 using std::string;
 using std::stringstream;
+using std::vector;
 using ctemplate::TemplateDictionary;
 using ctemplate::TemplateNamelist;
 
@@ -58,6 +61,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              UniverseStore *universe_store,
                              PluginLoader *plugin_loader,
                              DeviceManager *device_manager,
+                             PortPatcher *port_patcher,
                              unsigned int port,
                              bool enable_quit,
                              const string &data_dir)
@@ -67,6 +71,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_universe_store(universe_store),
       m_plugin_loader(plugin_loader),
       m_device_manager(device_manager),
+      m_port_patcher(port_patcher),
       m_enable_quit(enable_quit) {
   RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
   RegisterHandler("/quit", &OlaHttpServer::DisplayQuit);
@@ -234,15 +239,16 @@ int OlaHttpServer::DisplayDevices(const HttpRequest *request,
 int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
                                     HttpResponse *response) {
   TemplateDictionary dict("universes");
-  vector<Universe*> *universes = m_universe_store->GetList();
+  vector<Universe*> universes;
+  m_universe_store->GetList(&universes);
 
   string action = request->GetParameter("action");
   bool save_changes = !action.empty();
 
-  if (universes->size()) {
+  if (universes.size()) {
     vector<Universe*>::const_iterator iter;
     int i = 1;
-    for (iter = universes->begin(); iter != universes->end(); ++iter) {
+    for (iter = universes.begin(); iter != universes.end(); ++iter) {
       if (save_changes) {
         string uni_name = request->GetParameter(
             "name_" + IntToString((*iter)->UniverseId()));
@@ -270,8 +276,6 @@ int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
   } else {
     dict.ShowSection("NO_UNIVERSES");
   }
-
-  delete universes;
   return m_server.DisplayTemplate(UNIVERSE_FILENAME, &dict, response);
 }
 
@@ -442,51 +446,72 @@ void OlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
   dict->SetValue("SHOW_VALUE", val == "1" ? "1" : "0");
   dict->SetValue("SHOW", val == "1" ? "block" : "none");
 
-  const vector<AbstractPort*> ports = device->Ports();
-  vector<AbstractPort*>::const_iterator port_iter;
-  int i = 1;
-  for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
-    if (save_changes) {
-      string variable_name = (*port_iter)->UniqueId();
-      string uni_id = request->GetPostParameter(variable_name);
-      Universe *universe = (*port_iter)->GetUniverse();
-      errno = 0;
-      int universe_id = atoi(uni_id.data());
-      if (!uni_id.empty() && (universe_id != 0 || errno == 0)) {
-        // valid number, patch this universe
-        Universe *new_universe =
-          m_universe_store->GetUniverseOrCreate(universe_id);
+  vector<InputPort*> input_ports;
+  device->InputPorts(&input_ports);
+  vector<OutputPort*> output_ports;
+  device->OutputPorts(&output_ports);
 
-        if (new_universe) {
-          if (universe == NULL || not (*universe == *new_universe))
-            new_universe->AddPort(*port_iter);
-        }
-      } else {
-        // invalid or blank, unpatch if needed
-        if (universe)
-          universe->RemovePort(*port_iter);
-      }
+  if (save_changes) {
+    UpdatePortPatchings(request, &input_ports);
+    UpdatePortPatchings(request, &output_ports);
+  }
+
+  unsigned int offset = 0;
+  AddPortsToDict(dict, input_ports, &offset);
+  AddPortsToDict(dict, output_ports, &offset);
+}
+
+
+/*
+ * Update the port patchings from the data in a HTTP request.
+ */
+template <class PortClass>
+void OlaHttpServer::UpdatePortPatchings(const HttpRequest *request,
+                                        vector<PortClass*> *ports) {
+  typename vector<PortClass*>::iterator iter = ports->begin();
+
+  while (iter != ports->end()) {
+    string port_id = (*iter)->UniqueId();
+    string uni_id = request->GetPostParameter(port_id);
+    errno = 0;
+    int universe_id = atoi(uni_id.data());
+    if (!uni_id.empty() && (universe_id != 0 || errno == 0)) {
+      // valid universe number, patch this universe
+      m_port_patcher->PatchPort(*iter, universe_id);
+    } else {
+      m_port_patcher->UnPatchPort(*iter);
     }
+    iter++;
+  }
+}
 
+
+/*
+ * Fill in a template dictionary with a list of ports.
+ * @param dict the dictionary to fill
+ * @param ports the vector of ports
+ */
+template <class PortClass>
+void OlaHttpServer::AddPortsToDict(TemplateDictionary *dict,
+                                   const vector<PortClass*> &ports,
+                                   unsigned int *offset) {
+  typename vector<PortClass*>::const_iterator iter = ports.begin();
+
+  while (iter != ports.end()) {
     TemplateDictionary *port_dict = dict->AddSectionDictionary("PORT");
-    port_dict->SetValue("PORT_NUMBER", IntToString((*port_iter)->PortId()));
-    port_dict->SetValue("PORT_ID", (*port_iter)->UniqueId());
-    string capability;
+    port_dict->SetValue("PORT_NUMBER", IntToString((*iter)->PortId()));
+    port_dict->SetValue("PORT_ID", (*iter)->UniqueId());
+    port_dict->SetValue("CAPABILITY", IsInputPort<PortClass>() ? "IN" : "OUT");
+    port_dict->SetValue("DESCRIPTION", (*iter)->Description());
 
-    if ((*port_iter)->IsOutput())
-      capability = "OUT";
-    else
-      capability = "IN";
-    port_dict->SetValue("CAPABILITY", capability);
-    port_dict->SetValue("DESCRIPTION", (*port_iter)->Description());
-
-    Universe *universe = (*port_iter)->GetUniverse();
+    Universe *universe = (*iter)->GetUniverse();
     if (universe)
       port_dict->SetValue("UNIVERSE", IntToString(universe->UniverseId()));
 
-    if (i % 2)
+    if (*offset % 2)
       port_dict->ShowSection("ODD");
-    i++;
+    (*offset)++;
+    iter++;
   }
 }
 }  // ola

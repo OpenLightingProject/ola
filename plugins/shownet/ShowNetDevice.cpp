@@ -56,13 +56,6 @@ bool ShowNetDevice::Start() {
   if (m_enabled)
     return false;
 
-  ShowNetPort *port = NULL;
-
-  for (unsigned int i = 0; i < 2 * ShowNetNode::SHOWNET_MAX_UNIVERSES; i++) {
-    port = new ShowNetPort(this, i);
-    this->AddPort(port);
-  }
-
   m_node = new ShowNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue("name"));
 
@@ -71,6 +64,13 @@ bool ShowNetDevice::Start() {
     m_node = NULL;
     DeleteAllPorts();
     return false;
+  }
+
+  for (unsigned int i = 0; i < ShowNetNode::SHOWNET_MAX_UNIVERSES; i++) {
+    ShowNetInputPort *input_port = new ShowNetInputPort(this, i, m_node);
+    AddPort(input_port);
+    ShowNetOutputPort *output_port = new ShowNetOutputPort(this, i, m_node);
+    AddPort(output_port);
   }
 
   m_plugin_adaptor->AddSocket(m_node->GetSocket());

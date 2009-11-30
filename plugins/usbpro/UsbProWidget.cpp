@@ -507,6 +507,5 @@ int UsbProWidget::ReceiveMessage() {
   }
   return 0;
 }
-
 }  // usbpro
 }  // ola

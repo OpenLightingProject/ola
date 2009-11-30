@@ -23,23 +23,24 @@
 #include <vector>
 
 #include "ola/DmxBuffer.h"
-#include "ola/Logging.h"
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
+#include "olad/PortPatcher.h"
 #include "olad/Preferences.h"
+#include "olad/TestCommon.h"
 #include "olad/UniverseStore.h"
 
-using std::string;
-using std::vector;
-using ola::DmxBuffer;
-using ola::AbstractPlugin;
-using ola::AbstractPort;
 using ola::AbstractDevice;
+using ola::AbstractPlugin;
 using ola::DeviceManager;
+using ola::DmxBuffer;
+using ola::PortPatcher;
 using ola::Universe;
 using ola::UniverseStore;
+using std::string;
+using std::vector;
 
 
 class DeviceTest: public CppUnit::TestFixture {
@@ -53,6 +54,9 @@ class DeviceTest: public CppUnit::TestFixture {
     void testDevice();
     void testDeviceManager();
     void testRestorePatchings();
+
+  private:
+    void AddPortsToDeviceAndCheck(ola::Device *device);
 };
 
 
@@ -74,24 +78,9 @@ class DeviceTestMockDevice: public ola::Device {
     DeviceTestMockDevice(ola::AbstractPlugin *owner, const string &name):
       Device(owner, name) {}
     string DeviceId() const { return Name(); }
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
 };
-
-
-class DeviceTestMockPort: public ola::Port<AbstractDevice> {
-  public:
-    DeviceTestMockPort(AbstractDevice *parent, unsigned int id):
-      ola::Port<AbstractDevice>(parent, id) {}
-    ~DeviceTestMockPort() {}
-    bool WriteDMX(const DmxBuffer &buffer) {}
-    const DmxBuffer &ReadDMX() const {}
-    string UniqueId() const;
-};
-
-string DeviceTestMockPort::UniqueId() const {
-  std::stringstream str;
-  str << PortId();
-  return str.str();
-}
 
 
 /*
@@ -105,6 +94,7 @@ void DeviceTest::testDevice() {
   CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractPlugin*>(NULL),
                        orphaned_device.Owner());
   CPPUNIT_ASSERT_EQUAL(string(""), orphaned_device.UniqueId());
+  AddPortsToDeviceAndCheck(&orphaned_device);
 
   // Non orphaned device
   DeviceTestMockPlugin plugin(NULL);
@@ -113,21 +103,7 @@ void DeviceTest::testDevice() {
   CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractPlugin*>(&plugin),
                        device.Owner());
   CPPUNIT_ASSERT_EQUAL(string("0-test"), device.UniqueId());
-
-  // add some ports
-  vector<AbstractPort*> ports = orphaned_device.Ports();
-  CPPUNIT_ASSERT_EQUAL((size_t) 0, ports.size());
-  DeviceTestMockPort port1(&orphaned_device, 1);
-  DeviceTestMockPort port2(&device, 2);
-  orphaned_device.AddPort(&port1);
-  orphaned_device.AddPort(&port2);
-  ports = orphaned_device.Ports();
-  CPPUNIT_ASSERT_EQUAL((size_t) 2, ports.size());
-
-  AbstractPort *port = orphaned_device.GetPort(0);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, port->PortId());
-  port = orphaned_device.GetPort(1);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, port->PortId());
+  AddPortsToDeviceAndCheck(&device);
 }
 
 
@@ -230,37 +206,74 @@ void DeviceTest::testDeviceManager() {
 void DeviceTest::testRestorePatchings() {
   ola::MemoryPreferencesFactory prefs_factory;
   UniverseStore uni_store(NULL, NULL);
-  DeviceManager manager(&prefs_factory, &uni_store);
+  PortPatcher port_patcher(&uni_store);
+  DeviceManager manager(&prefs_factory, &port_patcher);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
   CPPUNIT_ASSERT(prefs);
-  prefs->SetValue("1", "1");
-  prefs->SetValue("2", "3");
+  prefs->SetValue("0-test_device_1-I-1", "1");
+  prefs->SetValue("0-test_device_1-O-1", "3");
 
   DeviceTestMockPlugin plugin(NULL);
-  DeviceTestMockDevice device1(&plugin, "test device 1");
-  DeviceTestMockPort port1(&device1, 1);
-  DeviceTestMockPort port2(&device1, 2);
-  device1.AddPort(&port1);
-  device1.AddPort(&port2);
+  DeviceTestMockDevice device1(&plugin, "test_device_1");
+  TestMockInputPort input_port(&device1, 1);
+  TestMockOutputPort output_port(&device1, 1);
+  device1.AddPort(&input_port);
+  device1.AddPort(&output_port);
 
   CPPUNIT_ASSERT(manager.RegisterDevice(&device1));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
-  CPPUNIT_ASSERT(port1.GetUniverse());
-  CPPUNIT_ASSERT_EQUAL(port1.GetUniverse()->UniverseId(), (unsigned int) 1);
-  CPPUNIT_ASSERT(port2.GetUniverse());
-  CPPUNIT_ASSERT_EQUAL(port2.GetUniverse()->UniverseId(), (unsigned int) 3);
+  CPPUNIT_ASSERT(input_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(input_port.GetUniverse()->UniverseId(),
+                       (unsigned int) 1);
+  CPPUNIT_ASSERT(output_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(output_port.GetUniverse()->UniverseId(),
+                       (unsigned int) 3);
 
   // Now check that patching a universe saves the settings
   Universe *uni = uni_store.GetUniverseOrCreate(10);
   CPPUNIT_ASSERT(uni);
-  port1.SetUniverse(uni);
+  input_port.SetUniverse(uni);
 
   // unregister all
   manager.UnregisterAllDevices();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
-  CPPUNIT_ASSERT_EQUAL(string("10"), prefs->GetValue("1"));
-  CPPUNIT_ASSERT_EQUAL(string("3"), prefs->GetValue("2"));
+  CPPUNIT_ASSERT_EQUAL(string("10"), prefs->GetValue("0-test_device_1-I-1"));
+  CPPUNIT_ASSERT_EQUAL(string("3"), prefs->GetValue("0-test_device_1-O-1"));
+}
+
+
+void DeviceTest::AddPortsToDeviceAndCheck(ola::Device *device) {
+  // check we don't have any ports yet.
+  vector<InputPort*> input_ports;
+  device->InputPorts(&input_ports);
+  CPPUNIT_ASSERT_EQUAL((size_t) 0, input_ports.size());
+  vector<OutputPort*> output_ports;
+  device->OutputPorts(&output_ports);
+  CPPUNIT_ASSERT_EQUAL((size_t) 0, output_ports.size());
+
+  // add two input ports and an output port
+  TestMockInputPort input_port1(device, 1);
+  TestMockInputPort input_port2(device, 2);
+  TestMockOutputPort output_port1(device, 1);
+  device->AddPort(&input_port1);
+  device->AddPort(&input_port2);
+  device->AddPort(&output_port1);
+
+  device->InputPorts(&input_ports);
+  CPPUNIT_ASSERT_EQUAL((size_t) 2, input_ports.size());
+  device->OutputPorts(&output_ports);
+  CPPUNIT_ASSERT_EQUAL((size_t) 1, output_ports.size());
+
+  InputPort *input_port = device->GetInputPort(1);
+  CPPUNIT_ASSERT(input_port);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, input_port->PortId());
+  input_port = device->GetInputPort(2);
+  CPPUNIT_ASSERT(input_port);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, input_port->PortId());
+  OutputPort *output_port = device->GetOutputPort(1);
+  CPPUNIT_ASSERT(output_port);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, output_port->PortId());
 }

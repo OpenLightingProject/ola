@@ -38,22 +38,25 @@ class UniverseStore {
     Universe *GetUniverse(unsigned int universe_id) const;
     Universe *GetUniverseOrCreate(unsigned int universe_id);
 
-    int UniverseCount() const { return m_universe_map.size(); }
-    std::vector<Universe*> *GetList() const;
+    unsigned int UniverseCount() const { return m_universe_map.size(); }
+    void GetList(std::vector<Universe*> *universes) const;
 
-    int DeleteAll();
+    void DeleteAll();
     void AddUniverseGarbageCollection(Universe *universe);
     void GarbageCollectUniverses();
 
   private:
+    typedef std::map<unsigned int, Universe*> universe_map;
+
     explicit UniverseStore(const ola::UniverseStore&);
     UniverseStore& operator=(const UniverseStore&);
     bool RestoreUniverseSettings(Universe *universe) const;
-    bool SaveUniverseSettings(Universe *universe);
+    bool SaveUniverseSettings(Universe *universe) const;
 
     Preferences *m_preferences;
     ExportMap *m_export_map;
-    std::map<int, Universe*> m_universe_map;  // map of universe_id to Universe
+    // map of universe_id to Universe
+    universe_map m_universe_map;
     std::set<Universe*> m_deletion_candiates;  // list of universes we may be
                                                // able to delete
 };

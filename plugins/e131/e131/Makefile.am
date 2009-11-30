@@ -1,4 +1,3 @@
-libdir = $(plugindir)
 EXTRA_DIST = BaseInflator.h CID.h \
              DMPE131Inflator.h DMPAddress.h DMPHeader.h DMPInflator.h DMPPDU.h \
              E131Header.h E131Inflator.h E131Layer.h E131Node.h E131PDU.h \

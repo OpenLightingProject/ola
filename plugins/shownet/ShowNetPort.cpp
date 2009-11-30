@@ -30,68 +30,72 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
-bool ShowNetPort::IsOutput() const {
-  // odd ports are output
-  return (PortId() % 2);
-}
-
-
-string ShowNetPort::Description() const {
+string ShowNetInputPort::Description() const {
   std::stringstream str;
-  str << "ShowNet " << ShowNetUniverseId() * DMX_UNIVERSE_SIZE + 1 << "-" <<
-    (ShowNetUniverseId() + 1) * DMX_UNIVERSE_SIZE;
+  str << "ShowNet " << PortId() * DMX_UNIVERSE_SIZE + 1 << "-" <<
+    (PortId() + 1) * DMX_UNIVERSE_SIZE;
   return str.str();
 }
 
 
-bool ShowNetPort::WriteDMX(const DmxBuffer &buffer) {
-  ShowNetDevice *device = GetDevice();
-
-  if (!IsOutput())
-    return false;
-
-  ShowNetNode *node = device->GetNode();
-  if (!node->SendDMX(ShowNetUniverseId(), buffer))
-    return false;
-  return true;
-}
-
-
-const DmxBuffer &ShowNetPort::ReadDMX() const {
-  return m_buffer;
-}
-
-
 /*
- * Called when there is new dmx data
+ * Check for loops.
  */
-int ShowNetPort::UpdateBuffer() {
-  ShowNetDevice *device = GetDevice();
-  ShowNetNode *node = device->GetNode();
-  m_buffer = node->GetDMX(ShowNetUniverseId());
-  return DmxChanged();
+bool ShowNetInputPort::PreSetUniverse(Universe *new_universe,
+                                      Universe *old_universe) {
+  (void) old_universe;
+  AbstractDevice *device = GetDevice();
+  OutputPort *output_port = device->GetOutputPort(PortId());
+  if (output_port && output_port->GetUniverse()) {
+    OLA_WARN << "Avoiding possible shownet loop on " << Description();
+    return false;
+  }
+  return true;
 }
 
 
 /*
  * We intecept this to setup/remove the dmx handler
  */
-bool ShowNetPort::SetUniverse(Universe *universe) {
-  Universe *old_universe = GetUniverse();
-  Port<ShowNetDevice>::SetUniverse(universe);
+void ShowNetInputPort::PostSetUniverse(Universe *new_universe,
+                                       Universe *old_universe) {
+  if (old_universe)
+    m_node->RemoveHandler(PortId());
 
-  if (IsOutput())
-    return true;
+  if (new_universe)
+    m_node->SetHandler(
+        PortId(),
+        &m_buffer,
+        ola::NewClosure<ShowNetInputPort>(this, &ShowNetInputPort::DmxChanged));
+}
 
-  ShowNetDevice *device = GetDevice();
-  ShowNetNode *node = device->GetNode();
 
-  if (!old_universe && universe)
-    node->SetHandler(ShowNetUniverseId(),
-                     ola::NewClosure(this, &ShowNetPort::UpdateBuffer));
-  else if (old_universe && !universe)
-    node->RemoveHandler(ShowNetUniverseId());
+string ShowNetOutputPort::Description() const {
+  std::stringstream str;
+  str << "ShowNet " << PortId() * DMX_UNIVERSE_SIZE + 1 << "-" <<
+    (PortId() + 1) * DMX_UNIVERSE_SIZE;
+  return str.str();
+}
+
+
+/*
+ * Check for loops.
+ */
+bool ShowNetOutputPort::PreSetUniverse(Universe *new_universe,
+                                       Universe *old_universe) {
+  (void) old_universe;
+  AbstractDevice *device = GetDevice();
+  InputPort *input_port = device->GetInputPort(PortId());
+  if (input_port && input_port->GetUniverse()) {
+    OLA_WARN << "Avoiding possible shownet loop on " << Description();
+    return false;
+  }
   return true;
+}
+
+
+bool ShowNetOutputPort::WriteDMX(const DmxBuffer &buffer) {
+  return !m_node->SendDMX(PortId(), buffer);
 }
 }  // shownet
 }  // plugin

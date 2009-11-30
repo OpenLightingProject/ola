@@ -52,9 +52,11 @@ class ArtNetDevice: public Device {
 
     bool Start();
     bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
+
     // only one ArtNet device
     string DeviceId() const { return "1"; }
-    artnet_node GetArtnetNode() const;
     int SocketReady();
     ola::network::UnmanagedSocket *GetSocket() { return m_socket; }
 

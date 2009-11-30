@@ -43,11 +43,12 @@ class StageProfiDevice: public Device {
 
     bool Start();
     bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
     // I don't think this get us full stickiness because USB devices may
     // appear as different devices.
     string DeviceId() const { return m_path; }
     ola::network::ConnectedSocket *GetSocket() const;
-    bool SendDmx(const DmxBuffer &buffer) const;
 
   private:
     string m_path;

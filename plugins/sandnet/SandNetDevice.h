@@ -42,6 +42,8 @@ class SandNetDevice: public ola::Device {
 
     bool Start();
     bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
     SandNetNode *GetNode() { return m_node; }
 
@@ -57,7 +59,8 @@ class SandNetDevice: public ola::Device {
     ola::network::timeout_id m_timeout_id;
 
     static const char IP_KEY[];
-    static const int INPUT_PORTS = 8;  // the number of input ports to create
+    // the number of input ports to create
+    static const unsigned int INPUT_PORTS = 8;
     // send an advertistment every 2s.
     static const int ADVERTISTMENT_PERIOD_MS = 2000;
 };

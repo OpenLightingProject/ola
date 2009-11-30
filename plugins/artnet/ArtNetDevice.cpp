@@ -34,6 +34,7 @@
 
 #include "ola/Closure.h"
 #include "ola/Logging.h"
+#include "olad/Port.h"
 #include "olad/Preferences.h"
 #include "artnet/artnet.h"
 #include "plugins/artnet/ArtNetDevice.h"
@@ -43,19 +44,19 @@
 /*
  * Handle dmx from the network, called from libartnet
  */
-int dmx_handler(artnet_node n, int prt, void *d) {
+int dmx_handler(artnet_node n, int artnet_port, void *d) {
   ola::plugin::artnet::ArtNetDevice *device =
     reinterpret_cast<ola::plugin::artnet::ArtNetDevice*>(d);
 
   // don't return non zero here else libartnet will stop processing
   // this should never happen anyway
-  if (prt < 0 || prt > ARTNET_MAX_PORTS)
+  if (artnet_port < 0 || artnet_port > ARTNET_MAX_PORTS)
     return 0;
 
   // signal to the port that the data has changed
-  ola::plugin::artnet::ArtNetPort *port =
-    reinterpret_cast<ola::plugin::artnet::ArtNetPort*>(device->GetPort(prt));
-  port->DmxChanged();
+  ola::InputPort *port = device->GetInputPort(artnet_port);
+  if (port)
+    port->DmxChanged();
   return 0;
 }
 
@@ -115,15 +116,8 @@ ArtNetDevice::~ArtNetDevice() {
  * @return true on success, false on failure
  */
 bool ArtNetDevice::Start() {
-  ArtNetPort *port;
   string value;
   int subnet = 0;
-
-  /* set up ports */
-  for (unsigned int i = 0; i < 2 * ARTNET_MAX_PORTS; i++) {
-    port = new ArtNetPort(this, i);
-    this->AddPort(port);
-  }
 
   // create new artnet node, and and set config values
   if (m_preferences->GetValue(K_IP_KEY).empty()) {
@@ -196,6 +190,9 @@ bool ArtNetDevice::Start() {
       goto e_artnet_start;
     }
 
+    ArtNetOutputPort *output_port = new ArtNetOutputPort(this, i, m_node);
+    AddPort(output_port);
+
     if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_INPUT,
                              ARTNET_PORT_DMX)) {
       OLA_WARN << "artnet_set_port_type failed %s", artnet_strerror();
@@ -206,6 +203,9 @@ bool ArtNetDevice::Start() {
       OLA_WARN << "artnet_set_port_addr failed %s", artnet_strerror();
       goto e_artnet_start;
     }
+
+    ArtNetInputPort *input_port = new ArtNetInputPort(this, i, m_node);
+    AddPort(input_port);
   }
 
   if (artnet_start(m_node)) {
@@ -251,14 +251,6 @@ bool ArtNetDevice::Stop() {
   m_node = NULL;
   m_enabled = false;
   return true;
-}
-
-
-/*
- * Return the Art-Net node associated with this device
- */
-artnet_node ArtNetDevice::GetArtnetNode() const {
-  return m_node;
 }
 
 

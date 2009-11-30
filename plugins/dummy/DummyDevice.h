@@ -39,6 +39,8 @@ class DummyDevice: public Device {
       Device(owner, name) {}
     bool Start();
     bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
 };
 }  // dummy

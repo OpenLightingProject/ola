@@ -92,7 +92,7 @@ bool StageProfiDevice::Start() {
     return false;
   }
 
-  StageProfiPort *port = new StageProfiPort(this, 0);
+  StageProfiOutputPort *port = new StageProfiOutputPort(this, 0, m_widget);
   AddPort(port);
   m_enabled = true;
   return true;
@@ -121,15 +121,5 @@ bool StageProfiDevice::Stop() {
 ConnectedSocket *StageProfiDevice::GetSocket() const {
   return m_widget->GetSocket();
 }
-
-
-/*
- * Send the dmx out the widget
- * @return true on success, false on failure
- */
-bool StageProfiDevice::SendDmx(const DmxBuffer &buffer) const {
-  return m_widget->SendDmx(buffer);
-}
-
 } // plugin
 } //ola

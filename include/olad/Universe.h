@@ -31,7 +31,9 @@ namespace ola {
 
 using std::set;
 
-class AbstractPort;
+class Client;
+class InputPort;
+class OutputPort;
 
 class Universe {
   public:
@@ -59,26 +61,30 @@ class Universe {
     const DmxBuffer &GetDMX() const { return m_buffer; }
 
     // These are the ports we need to nofity when data changes
-    bool AddPort(class AbstractPort *port);
-    bool RemovePort(class AbstractPort *port);
-    bool ContainsPort(class AbstractPort *port) const;
-    int PortCount() const { return m_ports.size(); }
+    bool AddPort(InputPort *port);
+    bool AddPort(OutputPort *port);
+    bool RemovePort(InputPort *port);
+    bool RemovePort(OutputPort *port);
+    bool ContainsPort(InputPort *port) const;
+    bool ContainsPort(OutputPort *port) const;
+    unsigned int InputPortCount() const { return m_input_ports.size(); }
+    unsigned int OutputPortCount() const { return m_output_ports.size(); }
 
     // Source clients are those that provide us with data
-    bool AddSourceClient(class Client *client);
-    bool RemoveSourceClient(class Client *client);
-    bool ContainsSourceClient(class Client *client) const;
+    bool AddSourceClient(Client *client);
+    bool RemoveSourceClient(Client *client);
+    bool ContainsSourceClient(Client *client) const;
     unsigned int SourceClientCount() const { return m_source_clients.size(); }
 
     // Sink clients are those that we need to send data
-    bool AddSinkClient(class Client *client);
-    bool RemoveSinkClient(class Client *client);
-    bool ContainsSinkClient(class Client *client) const;
+    bool AddSinkClient(Client *client);
+    bool RemoveSinkClient(Client *client);
+    bool ContainsSinkClient(Client *client) const;
     unsigned int SinkClientCount() const { return m_sink_clients.size(); }
 
     // These are called when new data arrives on a port/client
-    bool PortDataChanged(AbstractPort *port);
-    bool SourceClientDataChanged(class Client *client);
+    bool PortDataChanged(InputPort *port);
+    bool SourceClientDataChanged(Client *client);
 
     bool operator==(const Universe &other) {
       return m_universe_id == other.UniverseId();
@@ -86,7 +92,8 @@ class Universe {
 
     static const char K_UNIVERSE_NAME_VAR[];
     static const char K_UNIVERSE_MODE_VAR[];
-    static const char K_UNIVERSE_PORT_VAR[];
+    static const char K_UNIVERSE_INPUT_PORT_VAR[];
+    static const char K_UNIVERSE_OUTPUT_PORT_VAR[];
     static const char K_UNIVERSE_SOURCE_CLIENTS_VAR[];
     static const char K_UNIVERSE_SINK_CLIENTS_VAR[];
     static const char K_MERGE_HTP_STR[];
@@ -98,18 +105,31 @@ class Universe {
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();
-    bool RemoveClient(class Client *client, bool is_source);
-    bool AddClient(class Client *client, bool is_source);
+    bool RemoveClient(Client *client, bool is_source);
+    bool AddClient(Client *client, bool is_source);
     bool HTPMergeAllSources();
 
     string m_universe_name;
     unsigned int m_universe_id;
     string m_universe_id_str;
     enum merge_mode m_merge_mode;  // merge mode
-    vector<class AbstractPort*> m_ports;  // ports patched to this universe
-    set<class Client*> m_sink_clients;  // clients that require updates
-    set<class Client*> m_source_clients;  // clients that provide data
+    vector<InputPort*> m_input_ports;
+    vector<OutputPort*> m_output_ports;
+    set<Client*> m_sink_clients;  // clients that require updates
+    set<Client*> m_source_clients;  // clients that provide data
     class UniverseStore *m_universe_store;
+
+    template<class PortClass>
+    bool GenericAddPort(PortClass *port,
+                        vector<PortClass*> *ports);
+
+    template<class PortClass>
+    bool GenericRemovePort(PortClass *port,
+                          vector<PortClass*> *ports);
+
+    template<class PortClass>
+    bool GenericContainsPort(PortClass *port,
+                             const vector<PortClass*> &ports) const;
 
     DmxBuffer m_buffer;
     ExportMap *m_export_map;

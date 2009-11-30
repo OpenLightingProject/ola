@@ -39,6 +39,8 @@ class OpenDmxDevice: public ola::Device {
 
     bool Start();
     bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
     // we only support one widget for now
     string DeviceId() const { return "1"; }
 

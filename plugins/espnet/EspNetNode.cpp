@@ -152,7 +152,9 @@ int EspNetNode::SocketReady() {
  * @param handler the Closure to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
-bool EspNetNode::SetHandler(uint8_t universe, Closure *closure) {
+bool EspNetNode::SetHandler(uint8_t universe,
+                            DmxBuffer *buffer,
+                            Closure *closure) {
   if (!closure)
     return false;
 
@@ -161,8 +163,8 @@ bool EspNetNode::SetHandler(uint8_t universe, Closure *closure) {
 
   if (iter == m_handlers.end()) {
     universe_handler handler;
+    handler.buffer = buffer;
     handler.closure = closure;
-    handler.buffer.Blackout();
     m_handlers[universe] = handler;
   } else {
     Closure *old_closure = iter->second.closure;
@@ -189,22 +191,6 @@ bool EspNetNode::RemoveHandler(uint8_t universe) {
     return true;
   }
   return false;
-}
-
-
-/*
- * Get the DMX data for this universe.
- */
-DmxBuffer EspNetNode::GetDMX(uint8_t universe) {
-  map<uint8_t, universe_handler>::const_iterator iter =
-    m_handlers.find(universe);
-
-  if (iter != m_handlers.end())
-    return iter->second.buffer;
-  else {
-    DmxBuffer buffer;
-    return buffer;
-  }
 }
 
 
@@ -336,7 +322,7 @@ void EspNetNode::HandleData(const espnet_data_t &data,
   // we ignore the start code
   switch (data.type) {
     case DATA_RAW:
-      iter->second.buffer.Set(data.data, data_size);
+      iter->second.buffer->Set(data.data, data_size);
       break;
     case DATA_PAIRS:
       OLA_WARN << "espnet data pairs aren't supported";

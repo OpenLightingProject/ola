@@ -1,4 +1,3 @@
-
 /*
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,6 +19,7 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
+#include <string>
 #include <vector>
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
@@ -29,6 +29,7 @@
 #include "olad/Port.h"
 #include "olad/Plugin.h"
 #include "olad/PluginLoader.h"
+#include "olad/PortPatcher.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
 #include "olad/OlaServerServiceImpl.h"
@@ -100,6 +101,8 @@ void OlaServerServiceImpl::RegisterForDmx(
     universe->RemoveSinkClient(m_client);
   }
   done->Run();
+
+  (void) response;
 }
 
 
@@ -123,6 +126,7 @@ void OlaServerServiceImpl::UpdateDmxData(
     universe->SourceClientDataChanged(m_client);
   }
   done->Run();
+  (void) response;
 }
 
 
@@ -141,6 +145,7 @@ void OlaServerServiceImpl::SetUniverseName(
 
   universe->SetName(request->name());
   done->Run();
+  (void) response;
 }
 
 
@@ -161,6 +166,7 @@ void OlaServerServiceImpl::SetMergeMode(
     Universe::MERGE_HTP : Universe::MERGE_LTP;
   universe->SetMergeMode(mode);
   done->Run();
+  (void) response;
 }
 
 
@@ -173,28 +179,36 @@ void OlaServerServiceImpl::PatchPort(
     Ack* response,
     google::protobuf::Closure* done) {
 
-  Universe *universe;
   AbstractDevice *device =
     m_device_manager->GetDevice(request->device_alias());
+
   if (!device)
     return MissingDeviceError(controller, done);
 
-  AbstractPort *port = device->GetPort(request->port_id());
-  if (!port)
-    return MissingPortError(controller, done);
+  bool result;
+  if (request->is_output()) {
+    OutputPort *port = device->GetOutputPort(request->port_id());
+    if (!port)
+      return MissingPortError(controller, done);
 
-  if (request->action() == ola::proto::PATCH) {
-    universe = m_universe_store->GetUniverseOrCreate(request->universe());
-    if (!universe)
-      return MissingUniverseError(controller, done);
-
-    universe->AddPort(port);
+    if (request->action() == ola::proto::PATCH)
+      result = m_port_patcher->PatchPort(port, request->universe());
+    else
+      result = m_port_patcher->UnPatchPort(port);
   } else {
-    universe = port->GetUniverse();
+    InputPort *port = device->GetInputPort(request->port_id());
+    if (!port)
+      return MissingPortError(controller, done);
 
-    if (universe)
-      universe->RemovePort(port);
+    if (request->action() == ola::proto::PATCH)
+      result = m_port_patcher->PatchPort(port, request->universe());
+    else
+      result = m_port_patcher->UnPatchPort(port);
   }
+
+  if (!result)
+    controller->SetFailed("Patch port request failed");
+  (void) response;
   done->Run();
 }
 
@@ -223,17 +237,17 @@ void OlaServerServiceImpl::GetUniverseInfo(
         ? ola::proto::HTP: ola::proto::LTP);
   } else {
     // return all
-    vector<Universe *> *uni_list = m_universe_store->GetList();
-    vector<Universe *>::const_iterator iter;
+    vector<Universe*> uni_list;
+    m_universe_store->GetList(&uni_list);
+    vector<Universe*>::const_iterator iter;
 
-    for (iter = uni_list->begin(); iter != uni_list->end(); ++iter) {
+    for (iter = uni_list.begin(); iter != uni_list.end(); ++iter) {
       universe_info = response->add_universe();
       universe_info->set_universe((*iter)->UniverseId());
       universe_info->set_name((*iter)->Name());
       universe_info->set_merge_mode((*iter)->MergeMode() == Universe::MERGE_HTP
           ? ola::proto::HTP: ola::proto::LTP);
     }
-    delete uni_list;
   }
   done->Run();
 }
@@ -281,6 +295,7 @@ void OlaServerServiceImpl::GetDeviceInfo(RpcController* controller,
       AddDevice(iter->device, iter->alias, response);
     }
   }
+  (void) controller;
   done->Run();
 }
 
@@ -308,11 +323,9 @@ void OlaServerServiceImpl::ConfigureDevice(RpcController* controller,
 void OlaServerServiceImpl::MissingUniverseError(
     RpcController* controller,
     google::protobuf::Closure* done) {
-
   controller->SetFailed("Universe doesn't exist");
   done->Run();
 }
-
 
 void OlaServerServiceImpl::MissingDeviceError(
     RpcController* controller,
@@ -366,22 +379,40 @@ void OlaServerServiceImpl::AddDevice(AbstractDevice *device,
   if (device->Owner())
     device_info->set_plugin_id(device->Owner()->Id());
 
-  vector<AbstractPort*> ports = device->Ports();
-  vector<AbstractPort*>::const_iterator iter;
+  vector<InputPort*> input_ports;
+  device->InputPorts(&input_ports);
+  vector<InputPort*>::const_iterator input_iter;
 
-    for (iter = ports.begin(); iter != ports.end(); ++iter) {
-      PortInfo *port_info = device_info->add_port();
-      port_info->set_port_id((*iter)->PortId());
-      port_info->set_output_port((*iter)->IsOutput());
-      port_info->set_description((*iter)->Description());
+  for (input_iter = input_ports.begin(); input_iter != input_ports.end();
+       ++input_iter) {
+    PortInfo *port_info = device_info->add_input_port();
+    PopulatePort(**input_iter, port_info);
+  }
 
-      if ((*iter)->GetUniverse()) {
-        port_info->set_active(true);
-        port_info->set_universe((*iter)->GetUniverse()->UniverseId());
-      } else {
-        port_info->set_active(false);
-      }
-    }
+  vector<OutputPort*> output_ports;
+  device->OutputPorts(&output_ports);
+  vector<OutputPort*>::const_iterator output_iter;
+
+  for (output_iter = output_ports.begin(); output_iter != output_ports.end();
+      ++output_iter) {
+    PortInfo *port_info = device_info->add_output_port();
+    PopulatePort(**output_iter, port_info);
+  }
+}
+
+
+template <class PortClass>
+void OlaServerServiceImpl::PopulatePort(const PortClass &port,
+                                        PortInfo *port_info) const {
+  port_info->set_port_id(port.PortId());
+  port_info->set_description(port.Description());
+
+  if (port.GetUniverse()) {
+    port_info->set_active(true);
+    port_info->set_universe(port.GetUniverse()->UniverseId());
+  } else {
+    port_info->set_active(false);
+  }
 }
 
 
@@ -392,11 +423,13 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     DeviceManager *device_manager,
     PluginLoader *plugin_loader,
     Client *client,
-    ExportMap *export_map) {
+    ExportMap *export_map,
+    PortPatcher *port_patcher) {
   return new OlaServerServiceImpl(universe_store,
                                   device_manager,
                                   plugin_loader,
                                   client,
-                                  export_map);
+                                  export_map,
+                                  port_patcher);
 };
 }  // ola

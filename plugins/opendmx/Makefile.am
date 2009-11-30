@@ -7,5 +7,5 @@ AM_CFLAGS = -Wall -Werror -Wformat -W
 
 lib_LTLIBRARIES = libolaopendmx.la
 libolaopendmx_la_SOURCES =  OpenDmxPlugin.cpp OpenDmxDevice.cpp \
-                            OpenDmxPort.cpp OpenDmxThread.cpp
+                            OpenDmxThread.cpp
 libolaopendmx_la_LIBADD = @LIBS@  -lpthread

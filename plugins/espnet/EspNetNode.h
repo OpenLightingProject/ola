@@ -62,9 +62,8 @@ class EspNetNode {
     int SocketReady();
 
     // DMX Receiving methods
-    bool SetHandler(uint8_t universe, ola::Closure *handler);
+    bool SetHandler(uint8_t universe, DmxBuffer *buffer, ola::Closure *handler);
     bool RemoveHandler(uint8_t universe);
-    DmxBuffer GetDMX(uint8_t universe);
 
     // Sending methods
     bool SendPoll(bool full_poll=false);
@@ -72,7 +71,7 @@ class EspNetNode {
 
   private:
     typedef struct {
-      DmxBuffer buffer;
+      DmxBuffer *buffer;
       Closure *closure;
     } universe_handler;
 

@@ -58,10 +58,12 @@ class SandNetNode {
     std::vector<UdpSocket*> GetSockets();
     int SocketReady(UdpSocket *socket);
 
-    bool SetHandler(uint8_t group, uint8_t universe, Closure *closure);
+    bool SetHandler(uint8_t group,
+                    uint8_t universe,
+                    DmxBuffer *buffer,
+                    Closure *closure);
     bool RemoveHandler(uint8_t group, uint8_t universe);
 
-    DmxBuffer GetDMX(uint8_t group, uint8_t universe) const;
     bool SetPortParameters(uint8_t port_id, sandnet_port_type type,
                            uint8_t group, uint8_t universe);
     int SendAdvertisement();
@@ -75,7 +77,7 @@ class SandNetNode {
     } sandnet_port;
 
     typedef struct {
-      DmxBuffer buffer;
+      DmxBuffer *buffer;
       Closure *closure;
     } universe_handler;
 

@@ -25,9 +25,26 @@
 namespace ola {
 namespace usbpro {
 
-bool UsbProPort::IsOutput() const {
-  // odd ports are output
-  return (PortId() % 2) == 1;
+/*
+ * Read operation
+ * @param data  buffer to read data into
+ * @param length length of data to read
+ * @return the amount of data read
+ */
+const DmxBuffer &UsbProInputPort::ReadDMX() const {
+  return m_device->FetchDMX();
+}
+
+
+/*
+ * Override SetUniverse.
+ * Setting the universe to NULL for an output port will put us back into
+ * recv mode.
+ */
+void UsbProOutputPort::PostSetUniverse(Universe *new_universe,
+                                       Universe *old_universe) {
+  if (!new_universe)
+    m_device->ChangeToReceiveMode();
 }
 
 
@@ -37,38 +54,8 @@ bool UsbProPort::IsOutput() const {
  * @param length  the length of the data
  * @return true on success, false on failure
  */
-bool UsbProPort::WriteDMX(const DmxBuffer &buffer) {
-  if (!IsOutput())
-    return true;
-  return GetDevice()->SendDMX(buffer);
+bool UsbProOutputPort::WriteDMX(const DmxBuffer &buffer) {
+  return m_device->SendDMX(buffer);
 }
-
-
-/*
- * Read operation
- * @param data  buffer to read data into
- * @param length length of data to read
- * @return the amount of data read
- */
-const DmxBuffer &UsbProPort::ReadDMX() const {
-  if (IsOutput())
-    return m_empty_buffer;
-  return GetDevice()->FetchDMX();
-}
-
-
-/*
- * Override SetUniverse.
- * Setting the universe to NULL for an output port will put us back into
- * recv mode.
- */
-bool UsbProPort::SetUniverse(Universe *uni) {
-  Port<UsbProDevice>::SetUniverse(uni);
-  if (uni == NULL && IsOutput()) {
-    GetDevice()->ChangeToReceiveMode();
-  }
-  return 0;
-}
-
 }  // usbpro
 }  // ola

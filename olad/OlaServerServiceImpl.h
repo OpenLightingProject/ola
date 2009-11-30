@@ -28,22 +28,20 @@ namespace ola {
 using google::protobuf::RpcController;
 using ola::proto::Ack;
 
-class PluginLoader;
-class Client;
-class ExportMap;
-
 class OlaServerServiceImpl: public ola::proto::OlaServerService {
   public:
     OlaServerServiceImpl(class UniverseStore *universe_store,
                          class DeviceManager *device_manager,
                          class PluginLoader *plugin_loader,
                          class Client *client,
-                         class ExportMap *export_map):
+                         class ExportMap *export_map,
+                         class PortPatcher *port_patcher):
       m_universe_store(universe_store),
       m_device_manager(device_manager),
       m_plugin_loader(plugin_loader),
       m_client(client),
-      m_export_map(export_map) {}
+      m_export_map(export_map),
+      m_port_patcher(port_patcher) {}
     ~OlaServerServiceImpl() {}
 
     void GetDmx(RpcController* controller,
@@ -98,6 +96,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                             google::protobuf::Closure* done);
     void MissingPortError(RpcController* controller,
                           google::protobuf::Closure* done);
+
     void AddPlugin(class AbstractPlugin *plugin,
                    ola::proto::PluginInfoReply* response,
                    bool include_description) const;
@@ -105,11 +104,16 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                    unsigned int alias,
                    ola::proto::DeviceInfoReply* response) const;
 
+    template <class PortClass>
+    void PopulatePort(const PortClass &port,
+                      ola::proto::PortInfo *port_info) const;
+
     UniverseStore *m_universe_store;
     DeviceManager *m_device_manager;
-    PluginLoader *m_plugin_loader;
-    Client *m_client;
-    ExportMap *m_export_map;
+    class PluginLoader *m_plugin_loader;
+    class Client *m_client;
+    class ExportMap *m_export_map;
+    class PortPatcher *m_port_patcher;
 };
 
 
@@ -119,7 +123,8 @@ class OlaServerServiceImplFactory {
                               DeviceManager *device_manager,
                               PluginLoader *plugin_loader,
                               Client *client,
-                              ExportMap *export_map);
+                              ExportMap *export_map,
+                              PortPatcher *port_patcher);
 };
 }  // ola
 #endif  // OLAD_OLASERVERSERVICEIMPL_H_

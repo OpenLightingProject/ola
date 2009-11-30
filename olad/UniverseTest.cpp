@@ -27,33 +27,15 @@
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
+#include "olad/TestCommon.h"
 
-using std::string;
 using ola::AbstractDevice;
 using ola::DmxBuffer;
-using ola::Port;
 using ola::Universe;
+using std::string;
 
 static unsigned int TEST_UNIVERSE = 1;
 static const char TEST_DATA[] = "this is some test data";
-
-
-class UniverseTestMockPort: public Port<AbstractDevice> {
-  public:
-    UniverseTestMockPort(AbstractDevice *parent, unsigned int port_id,
-                         bool is_output):
-      Port<AbstractDevice>(parent, port_id),
-      m_is_output_port(is_output) {}
-    ~UniverseTestMockPort() {}
-
-    bool WriteDMX(const DmxBuffer &buffer) { m_buffer = buffer; }
-    const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool IsOutput() const { return m_is_output_port; }
-
-  private:
-    bool m_is_output_port;
-    DmxBuffer m_buffer;
-};
 
 
 class UniverseTest: public CppUnit::TestFixture {
@@ -86,11 +68,11 @@ class UniverseTest: public CppUnit::TestFixture {
     DmxBuffer m_buffer;
 
     void SetupUniverseWithPorts(Universe **universe,
-                                UniverseTestMockPort **input,
-                                UniverseTestMockPort **output);
+                                TestMockInputPort **input,
+                                TestMockOutputPort **output);
     void CleanUpUniverseWithPorts(Universe *universe,
-                                  UniverseTestMockPort *input,
-                                  UniverseTestMockPort *output);
+                                  TestMockInputPort *input,
+                                  TestMockOutputPort *output);
 };
 
 
@@ -122,22 +104,24 @@ void UniverseTest::tearDown() {
   delete m_preferences;
 }
 
-void UniverseTest::SetupUniverseWithPorts(Universe **universe,
-                                          UniverseTestMockPort **input,
-                                          UniverseTestMockPort **output) {
+void UniverseTest::SetupUniverseWithPorts(
+    Universe **universe,
+    TestMockInputPort **input,
+    TestMockOutputPort **output) {
   // Setup an input port and client to HTP merge between, and a output port to
   // hold the result
-  *input = new UniverseTestMockPort(NULL, 1, false);
-  *output = new UniverseTestMockPort(NULL, 2, true);  // output port
+  *input = new TestMockInputPort(NULL, 1);
+  *output = new TestMockOutputPort(NULL, 2);  // output port
   *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
   (*universe)->AddPort(*input);
   (*universe)->AddPort(*output);
 }
 
-void UniverseTest::CleanUpUniverseWithPorts(Universe *universe,
-                                            UniverseTestMockPort *input,
-                                            UniverseTestMockPort *output) {
+void UniverseTest::CleanUpUniverseWithPorts(
+    Universe *universe,
+    TestMockInputPort *input,
+    TestMockOutputPort *output) {
   universe->RemovePort(input);
   universe->RemovePort(output);
   delete input;
@@ -154,7 +138,7 @@ void UniverseTest::testLifecycle() {
   universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
   CPPUNIT_ASSERT_EQUAL(universe->UniverseId(), TEST_UNIVERSE);
-  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), 1);
+  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), (unsigned int) 1);
   CPPUNIT_ASSERT_EQUAL(universe->MergeMode(), Universe::MERGE_LTP);
   CPPUNIT_ASSERT(!universe->IsActive());
 
@@ -168,20 +152,20 @@ void UniverseTest::testLifecycle() {
   // delete it
   m_store->AddUniverseGarbageCollection(universe);
   m_store->GarbageCollectUniverses();
-  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), 0);
+  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), (unsigned int) 0);
   universe = m_store->GetUniverse(TEST_UNIVERSE);
   CPPUNIT_ASSERT(!universe);
 
   // now re-create it
   universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
-  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), 1);
+  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), (unsigned int) 1);
   CPPUNIT_ASSERT_EQUAL(universe->UniverseId(), TEST_UNIVERSE);
   CPPUNIT_ASSERT_EQUAL(universe->Name(), universe_name);
   CPPUNIT_ASSERT_EQUAL(universe->MergeMode(), Universe::MERGE_HTP);
 
   m_store->DeleteAll();
-  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), 0);
+  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), (unsigned int) 0);
 }
 
 
@@ -209,9 +193,10 @@ void UniverseTest::testSendDmx() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
 
-  UniverseTestMockPort port(NULL, 1, true);  // output port
+  TestMockOutputPort port(NULL, 1);  // output port
   universe->AddPort(&port);
-  CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 1);
+  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 1);
   CPPUNIT_ASSERT(universe->IsActive());
 
   // send some data to the universe and check the port gets it
@@ -220,7 +205,8 @@ void UniverseTest::testSendDmx() {
 
   // remove the port from the universe
   universe->RemovePort(&port);
-  CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 0);
+  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
   CPPUNIT_ASSERT(!universe->IsActive());
 }
 
@@ -232,9 +218,10 @@ void UniverseTest::testReceiveDmx() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
 
-  UniverseTestMockPort port(NULL, 1, false);  // input port
+  TestMockInputPort port(NULL, 1);  // input port
   universe->AddPort(&port);
-  CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 1);
+  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 1);
+  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
   CPPUNIT_ASSERT(universe->IsActive());
 
   // Setup the port with some data, and check that signalling the universe
@@ -246,7 +233,8 @@ void UniverseTest::testReceiveDmx() {
   // Remove the port from the universe
   universe->RemovePort(&port);
   CPPUNIT_ASSERT(!universe->IsActive());
-  CPPUNIT_ASSERT_EQUAL(universe->PortCount(), 0);
+  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
 }
 
 
@@ -341,12 +329,12 @@ void UniverseTest::testLtpMerging() {
   const string set_dmx_data = "aafbeb";
 
   // Setup an input port and client and a output port to hold the result
-  UniverseTestMockPort input_port(NULL, 1, false);  // input port
+  TestMockInputPort input_port(NULL, 1);  // input port
   input_port.WriteDMX(DmxBuffer(input_port_data));
   DmxBuffer input_client_buffer(input_port_data);
   MockClient input_client;
   input_client.DMXRecieved(TEST_UNIVERSE, input_client_buffer);
-  UniverseTestMockPort output_port(NULL, 2, true);  // output port
+  TestMockOutputPort output_port(NULL, 2);  // output port
 
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
@@ -382,7 +370,8 @@ void UniverseTest::testHtpMerging() {
   const string merge_result_data2 = "bafbecccdabc";
 
   Universe *universe;
-  UniverseTestMockPort *input_port, *output_port;
+  TestMockInputPort *input_port;
+  TestMockOutputPort *output_port;
   SetupUniverseWithPorts(&universe, &input_port, &output_port);
   input_port->WriteDMX(DmxBuffer(input_port_data));
   universe->SetMergeMode(Universe::MERGE_HTP);

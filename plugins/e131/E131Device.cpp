@@ -64,13 +64,6 @@ bool E131Device::Start() {
   if (m_enabled)
     return false;
 
-  E131Port *port = NULL;
-
-  for (unsigned int i = 0; i < 2 * E131Port::NUMBER_OF_PORTS; i++) {
-    port = new E131Port(this, i);
-    this->AddPort(port);
-  }
-
   m_node = new E131Node(m_preferences->GetValue(IP_KEY), m_cid);
 
   if (!m_node->Start()) {
@@ -78,6 +71,13 @@ bool E131Device::Start() {
     m_node = NULL;
     DeleteAllPorts();
     return false;
+  }
+
+  for (unsigned int i = 0; i < NUMBER_OF_E131_PORTS; i++) {
+    E131InputPort *input_port = new E131InputPort(this, i, m_node);
+    AddPort(input_port);
+    E131OutputPort *output_port = new E131OutputPort(this, i, m_node);
+    AddPort(output_port);
   }
 
   m_plugin_adaptor->AddSocket(m_node->GetSocket());

@@ -29,24 +29,46 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
-using ola::DmxBuffer;
-
-class EspNetPort: public ola::Port<EspNetDevice> {
+class EspNetPortHelper {
   public:
-    EspNetPort(EspNetDevice *parent, unsigned int id):
-      Port<EspNetDevice>(parent, id) {}
-    ~EspNetPort() {}
+    string Description(Universe *universe) const;
+    uint8_t EspNetUniverseId(Universe *universe) const;
+};
 
-    bool IsOutput() const;
-    string Description() const;
-    bool WriteDMX(const DmxBuffer &buffer);
-    const DmxBuffer &ReadDMX() const;
-    bool SetUniverse(Universe *universe);
-    int UpdateBuffer();
+
+class EspNetInputPort: public InputPort {
+  public:
+    EspNetInputPort(EspNetDevice *parent, unsigned int id, EspNetNode *node)
+        : InputPort(parent, id),
+          m_helper(),
+          m_node(node) {}
+    ~EspNetInputPort() {}
+
+    string Description() const { return m_helper.Description(GetUniverse()); }
+    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    const DmxBuffer &ReadDMX() const { return m_buffer; }
 
   private:
+    EspNetPortHelper m_helper;
+    EspNetNode *m_node;
     DmxBuffer m_buffer;
-    uint8_t EspNetUniverseId() const;
+};
+
+
+class EspNetOutputPort: public OutputPort {
+  public:
+    EspNetOutputPort(EspNetDevice *parent, unsigned int id, EspNetNode *node)
+        : OutputPort(parent, id),
+          m_helper(),
+          m_node(node) {}
+    ~EspNetOutputPort() {}
+
+    string Description() const { return m_helper.Description(GetUniverse()); }
+    bool WriteDMX(const DmxBuffer &buffer);
+
+  private:
+    EspNetPortHelper m_helper;
+    EspNetNode *m_node;
 };
 
 } //espnet
