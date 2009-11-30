@@ -39,7 +39,8 @@ using namespace std;
 using ola::OlaPlugin;
 using ola::OlaUniverse;
 using ola::OlaDevice;
-using ola::OlaPort;
+using ola::OlaInputPort;
+using ola::OlaOutputPort;
 using ola::SimpleClient;
 using ola::OlaClient;
 using ola::network::SelectServer;
@@ -67,6 +68,7 @@ typedef struct {
   bool help;       // show the help
   int device_id;   // device id
   int port_id;     // port id
+  bool is_output;  // true if this is an output port
   ola::PatchAction patch_action;      // patch or unpatch
   OlaUniverse::merge_mode merge_mode; // the merge mode
   string cmd;      // argv[0]
@@ -93,6 +95,9 @@ class Observer: public ola::OlaClientObserver {
   private:
     options *m_opts;
     SelectServer *m_ss;
+
+    template<class PortClass>
+    void Observer::ListPorts(const vector<PortClass> &ports, bool input);
 };
 
 
@@ -166,23 +171,10 @@ void Observer::Devices(const vector <OlaDevice> devices, const string &error) {
 
   for (iter = devices.begin(); iter != devices.end(); ++iter) {
     cout << "Device " << iter->Alias() << ": " << iter->Name() << endl;
-    vector<OlaPort> ports = iter->Ports();
-    vector<OlaPort>::const_iterator port_iter;
-
-    for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
-      cout << "  port " << port_iter->Id() << ", ";
-
-      if (port_iter->Capability() == OlaPort::OLA_PORT_CAP_IN)
-        cout << "IN";
-      else
-        cout << "OUT";
-
-      cout << " " << port_iter->Description();
-
-      if (port_iter->IsActive())
-        cout << ", OLA universe " << port_iter->Universe();
-      cout << endl;
-    }
+    vector<OlaInputPort> input_ports = iter->InputPorts();
+    ListPorts(input_ports, true);
+    vector<OlaOutputPort> output_ports = iter->OutputPorts();
+    ListPorts(output_ports, false);
   }
   m_ss->Terminate();
 }
@@ -221,6 +213,26 @@ void Observer::SendDmxComplete(const string &error) {
 }
 
 
+template<class PortClass>
+void Observer::ListPorts(const vector<PortClass> &ports, bool input) {
+  typename vector<PortClass>::const_iterator port_iter;
+  for (port_iter = ports.begin(); port_iter != ports.end(); ++port_iter) {
+    cout << "  port " << port_iter->Id() << ", ";
+
+    if (input)
+      cout << "IN";
+    else
+      cout << "OUT";
+
+    cout << " " << port_iter->Description();
+
+    if (port_iter->IsActive())
+      cout << ", OLA universe " << port_iter->Universe();
+    cout << endl;
+  }
+}
+
+
 /*
  * Init options
  */
@@ -231,6 +243,7 @@ void InitOptions(options &opts) {
   opts.help = false;
   opts.patch_action = ola::PATCH;
   opts.port_id = INVALID_VALUE;
+  opts.is_output = true;
   opts.device_id = INVALID_VALUE;
   opts.merge_mode = OlaUniverse::MERGE_HTP;
 }
@@ -319,12 +332,13 @@ void ParseOptions(int argc, char *argv[], options &opts) {
  */
 int ParsePatchOptions(int argc, char *argv[], options &opts) {
   static struct option long_options[] = {
-      {"patch", no_argument, 0, 'a'},
-      {"unpatch", no_argument, 0, 'r'},
       {"device", required_argument, 0, 'd'},
+      {"help", no_argument, 0, 'h'},
+      {"input", no_argument, 0, 'i'},
+      {"patch", no_argument, 0, 'a'},
       {"port", required_argument, 0, 'p'},
       {"universe", required_argument, 0, 'u'},
-      {"help", no_argument, 0, 'h'},
+      {"unpatch", no_argument, 0, 'r'},
       {0, 0, 0, 0}
     };
 
@@ -332,7 +346,7 @@ int ParsePatchOptions(int argc, char *argv[], options &opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "ard:p:u:h", long_options, &option_index);
+    c = getopt_long(argc, argv, "ard:p:u:hi", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -357,6 +371,9 @@ int ParsePatchOptions(int argc, char *argv[], options &opts) {
         break;
       case 'h':
         opts.help = true;
+        break;
+      case 'i':
+        opts.is_output = false;
         break;
       case '?':
         break;
@@ -396,6 +413,7 @@ void DisplayPatchHelp(const options &opts) {
   "  -h, --help               Display this help message and exit.\n"
   "  -p, --port <port>        Id of the port to patch.\n"
   "  -r, --unpatch            Unpatch this port.\n"
+  "  -i, --input              Patch the input port (default is output).\n"
   "  -u, --universe <uni>     Id of the universe to patch to (default 0).\n"
   << endl;
 }
@@ -533,7 +551,8 @@ void Patch(OlaClient *client, const options &opts) {
     DisplayPatchHelp(opts);
     exit(1);
   }
-  client->Patch(opts.device_id, opts.port_id, opts.patch_action, opts.uni);
+  client->Patch(opts.device_id, opts.port_id, opts.is_output,
+                opts.patch_action, opts.uni);
 }
 
 
