@@ -20,12 +20,13 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "HeaderSet.h"
-#include "PDUTestCommon.h"
-#include "RootInflator.h"
-#include "RootPDU.h"
+#include "plugins/e131/e131/HeaderSet.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
+#include "plugins/e131/e131/RootInflator.h"
+#include "plugins/e131/e131/RootPDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class RootInflatorTest: public CppUnit::TestFixture {
@@ -67,7 +68,6 @@ void RootInflatorTest::testInflatePDU() {
   CPPUNIT_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
   delete[] data;
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

@@ -18,19 +18,20 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131PLUGIN_H
-#define OLA_E131PLUGIN_H
+#ifndef PLUGINS_E131_E131PLUGIN_H_
+#define PLUGINS_E131_E131PLUGIN_H_
 
 #include <string>
-#include <olad/Plugin.h>
-#include <ola/plugin_id.h>
+#include "olad/Plugin.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class E131Plugin: public ola::Plugin {
   public:
-    E131Plugin(const ola::PluginAdaptor *plugin_adaptor):
+    explicit E131Plugin(const ola::PluginAdaptor *plugin_adaptor):
       ola::Plugin(plugin_adaptor),
       m_device(NULL) {}
     ~E131Plugin() {}
@@ -46,13 +47,12 @@ class E131Plugin: public ola::Plugin {
     bool SetDefaultPreferences();
 
     class E131Device *m_device;
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
-    static const string DEVICE_NAME;
-    static const std::string CID_KEY;
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
+    static const char DEVICE_NAME[];
+    static const char CID_KEY[];
 };
-
-} // e131
-} // ola
-#endif
-
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131PLUGIN_H_

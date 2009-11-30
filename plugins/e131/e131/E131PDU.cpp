@@ -22,10 +22,11 @@
 #include <string.h>
 #include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
-#include "E131PDU.h"
-#include "DMPPDU.h"
+#include "plugins/e131/e131/E131PDU.h"
+#include "plugins/e131/e131/DMPPDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
@@ -79,7 +80,6 @@ bool E131PDU::PackData(uint8_t *data, unsigned int &length) const {
   length = 0;
   return true;
 }
-
-
-} // e131
-} // ola
+}  // ola
+}  // e131
+}  // plugin

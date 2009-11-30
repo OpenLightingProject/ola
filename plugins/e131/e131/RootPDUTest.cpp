@@ -21,12 +21,13 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <ola/network/NetworkUtils.h>
-#include "CID.h"
-#include "PDUTestCommon.h"
-#include "RootPDU.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
+#include "plugins/e131/e131/RootPDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::NetworkToHost;
@@ -141,7 +142,6 @@ void RootPDUTest::testNestedRootPDU() {
 
   delete[] data;
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

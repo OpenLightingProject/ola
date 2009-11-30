@@ -18,25 +18,27 @@
  * Copyright (C) 2009 Simon Newton
  */
 
-#ifndef OLA_E131_E131INFLATOR_H
-#define OLA_E131_E131INFLATOR_H
+#ifndef PLUGINS_E131_E131_E131INFLATOR_H_
+#define PLUGINS_E131_E131_E131INFLATOR_H_
 
-#include "BaseInflator.h"
-#include "E131Header.h"
+#include "plugins/e131/e131/BaseInflator.h"
+#include "plugins/e131/e131/E131Header.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class E131Inflator: public BaseInflator {
   friend class E131InflatorTest;
 
   public:
+    static const unsigned int E131_VECTOR = 3;
+
     E131Inflator(): BaseInflator(),
                     m_last_header_valid(false) {
     }
     ~E131Inflator() {}
 
-    unsigned int static const E131_VECTOR = 3;
     uint32_t Id() const { return E131_VECTOR; }
 
   protected:
@@ -48,8 +50,7 @@ class E131Inflator: public BaseInflator {
     E131Header m_last_header;
     bool m_last_header_valid;
 };
-
-} // e131
-} // ola
-
-#endif
+}  // e131j
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_E131INFLATOR_H_

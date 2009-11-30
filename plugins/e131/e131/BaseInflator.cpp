@@ -19,11 +19,13 @@
  */
 
 #include <algorithm>
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "BaseInflator.h"
+#include <map>
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/BaseInflator.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::NetworkToHost;
@@ -31,10 +33,10 @@ using ola::network::NetworkToHost;
 /*
  * Setup the base inflator
  */
-BaseInflator::BaseInflator(PDU::vector_size v_size):
-  m_last_vector(0),
-  m_vector_set(false),
-  m_vector_size(v_size) {
+BaseInflator::BaseInflator(PDU::vector_size v_size)
+    : m_last_vector(0),
+      m_vector_set(false),
+      m_vector_size(v_size) {
 }
 
 
@@ -162,7 +164,6 @@ bool BaseInflator::DecodeLength(const uint8_t *data,
 bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
                                 unsigned int length, uint32_t &vector,
                                 unsigned int &bytes_used) {
-
   if (flags & PDU::VFLAG_MASK) {
     if ((unsigned int) m_vector_size > length) {
       vector = 0;
@@ -175,10 +176,10 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
         vector = *data;
         break;
       case PDU::TWO_BYTES:
-        vector = NetworkToHost(*(uint16_t*) data);
+        vector = NetworkToHost(*reinterpret_cast<const uint16_t*>(data));
         break;
       case PDU::FOUR_BYTES:
-        vector = NetworkToHost(*(uint32_t*) data);
+        vector = NetworkToHost(*reinterpret_cast<const uint32_t*>(data));
         break;
       default:
         OLA_WARN << "unknown vector size " << m_vector_size;
@@ -189,9 +190,9 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
     m_last_vector = vector;
   } else {
     bytes_used = 0;
-    if (m_vector_set)
+    if (m_vector_set) {
       vector = m_last_vector;
-    else {
+    } else {
       vector = 0;
       bytes_used = 0;
       OLA_WARN << "Vector not set and no field to inherit from";
@@ -234,7 +235,7 @@ bool BaseInflator::InflatePDU(HeaderSet &headers, uint8_t flags,
   if (!PostHeader(vector, headers))
     return true;
 
-  //TODO: handle the crazy DFLAG here
+  // TODO(simon): handle the crazy DFLAG here
 
   data_offset += header_bytes_used;
   BaseInflator *inflator = GetInflator(vector);
@@ -274,6 +275,6 @@ bool BaseInflator::HandlePDUData(uint32_t vector,
   (void) pdu_length;
   return false;
 }
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

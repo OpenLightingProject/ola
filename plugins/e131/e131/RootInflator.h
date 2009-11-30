@@ -18,19 +18,20 @@
  * Copyright (C) 2009 Simon Newton
  */
 
-#ifndef OLA_E131_ROOTINFLATOR_H
-#define OLA_E131_ROOTINFLATOR_H
+#ifndef PLUGINS_E131_E131_ROOTINFLATOR_H_
+#define PLUGINS_E131_E131_ROOTINFLATOR_H_
 
-#include "BaseInflator.h"
+#include "plugins/e131/e131/BaseInflator.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class RootInflator: public BaseInflator {
   public:
     RootInflator(): BaseInflator() {}
     ~RootInflator() {}
-    uint32_t Id() const { return 0; } // no effect for the root inflator
+    uint32_t Id() const { return 0; }  // no effect for the root inflator
 
   protected:
     // Decode a header block and adds any PduHeaders to the HeaderSet object
@@ -41,8 +42,7 @@ class RootInflator: public BaseInflator {
   private :
     RootHeader m_last_hdr;
 };
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_ROOTINFLATOR_H_

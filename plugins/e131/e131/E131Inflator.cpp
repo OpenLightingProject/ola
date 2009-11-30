@@ -18,11 +18,13 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "E131Inflator.h"
+#include <string>
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/E131Inflator.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::NetworkToHost;
@@ -39,7 +41,6 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
                                 const uint8_t *data,
                                 unsigned int length,
                                 unsigned int &bytes_used) {
-
   if (data) {
     // the header bit was set, decode it
     if (length >= sizeof(E131Header::e131_pdu_header)) {
@@ -78,6 +79,6 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
 void E131Inflator::ResetHeaderField() {
   m_last_header_valid = false;
 }
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

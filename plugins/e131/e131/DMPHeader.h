@@ -18,15 +18,15 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_DMP_DMPHEADER_H
-#define OLA_DMP_DMPHEADER_H
+#ifndef PLUGINS_E131_E131_DMPHEADER_H_
+#define PLUGINS_E131_E131_DMPHEADER_H_
 
 #include <stdint.h>
 #include <string>
-
-#include "DMPAddress.h"
+#include "plugins/e131/e131/DMPAddress.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using std::string;
@@ -38,13 +38,12 @@ class DMPHeader {
   public:
     static const unsigned int DMP_HEADER_SIZE = 1;
 
-    DMPHeader(uint8_t header=0):
-      m_header(header) {}
+    explicit DMPHeader(uint8_t header = 0): m_header(header) {}
+
     DMPHeader(bool is_virtual,
               bool is_relative,
               dmp_address_type type,
               dmp_address_size size) {
-
       m_header = (uint8_t) (is_virtual << 7 |
                             is_relative << 6 |
                             type << 4 |
@@ -82,7 +81,7 @@ class DMPHeader {
     static const uint8_t SIZE_MASK = 0x03;
     uint8_t m_header;
 };
-
-} // e131
-} // ola
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_DMPHEADER_H_

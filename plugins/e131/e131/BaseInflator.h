@@ -22,16 +22,16 @@
  * the Id() and DecodeHeader() methods.
  */
 
-#ifndef OLA_E131_BASEINFLATOR_H
-#define OLA_E131_BASEINFLATOR_H
+#ifndef PLUGINS_E131_E131_BASEINFLATOR_H_
+#define PLUGINS_E131_E131_BASEINFLATOR_H_
 
 #include <stdint.h>
 #include <map>
-
-#include "HeaderSet.h"
-#include "PDU.h"
+#include "plugins/e131/e131/HeaderSet.h"
+#include "plugins/e131/e131/PDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class BaseInflatorTest;
@@ -44,8 +44,8 @@ class BaseInflator {
   friend class BaseInflatorTest;
 
   public:
-    BaseInflator(PDU::vector_size v_size=PDU::FOUR_BYTES);
-    virtual ~BaseInflator() {};
+    explicit BaseInflator(PDU::vector_size v_size = PDU::FOUR_BYTES);
+    virtual ~BaseInflator() {}
 
     /*
      * Add another inflator as a handler
@@ -76,7 +76,7 @@ class BaseInflator {
   protected:
     uint32_t m_last_vector;
     bool m_vector_set;
-    PDU::vector_size m_vector_size; // size of the vector field
+    PDU::vector_size m_vector_size;  // size of the vector field
     // map protos to inflators
     std::map<uint32_t, class BaseInflator*> m_proto_map;
 
@@ -108,7 +108,7 @@ class BaseInflator {
     virtual bool HandlePDUData(uint32_t vector, HeaderSet &headers,
                                const uint8_t *data, unsigned int pdu_len);
 };
-
-} // e131
-} // ola
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_BASEINFLATOR_H_

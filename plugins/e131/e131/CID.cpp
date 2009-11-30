@@ -20,9 +20,10 @@
 
 #include <string.h>
 #include <string>
-#include "CID.h"
+#include "plugins/e131/e131/CID.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 void CID::Pack(uint8_t *buf) const {
@@ -76,6 +77,6 @@ CID CID::FromString(const std::string &cid) {
     uuid_clear(uuid);
   return CID(uuid);
 }
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

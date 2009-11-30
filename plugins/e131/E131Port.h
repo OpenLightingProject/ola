@@ -18,14 +18,16 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131PORT_H
-#define OLA_E131PORT_H
+#ifndef PLUGINS_E131_E131PORT_H_
+#define PLUGINS_E131_E131PORT_H_
 
-#include <olad/Port.h>
-#include "E131Device.h"
-#include "e131/E131Node.h"
+#include <string>
+#include "olad/Port.h"
+#include "plugins/e131/E131Device.h"
+#include "plugins/e131/e131/E131Node.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::DmxBuffer;
@@ -79,7 +81,7 @@ class E131OutputPort: public OutputPort {
     E131Node *m_node;
     E131PortHelper m_helper;
 };
-
-} //e131
-} //ola
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131PORT_H_

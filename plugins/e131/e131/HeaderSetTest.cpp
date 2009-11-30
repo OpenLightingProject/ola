@@ -18,14 +18,22 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <string>
 #include <iostream>
-#include <cppunit/extensions/HelperMacros.h>
 
-#include "HeaderSet.h"
-#include "CID.h"
+#include "plugins/e131/e131/HeaderSet.h"
+#include "plugins/e131/e131/CID.h"
 
-using namespace ola::e131;
+using ola::plugin::e131::CID;
+using ola::plugin::e131::DMPHeader;
+using ola::plugin::e131::E131Header;
+using ola::plugin::e131::FOUR_BYTES;
+using ola::plugin::e131::HeaderSet;
+using ola::plugin::e131::NON_RANGE;
+using ola::plugin::e131::ONE_BYTES;
+using ola::plugin::e131::RANGE_EQUAL;
+using ola::plugin::e131::RootHeader;
 
 class HeaderSetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(HeaderSetTest);

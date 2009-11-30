@@ -18,20 +18,20 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131_ROOTPDU_H
-#define OLA_E131_ROOTPDU_H
+#ifndef PLUGINS_E131_E131_ROOTPDU_H_
+#define PLUGINS_E131_E131_ROOTPDU_H_
 
 #include <stdint.h>
-
-#include "CID.h"
-#include "PDU.h"
+#include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/PDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class RootPDU: public PDU {
   public:
-    RootPDU(unsigned int vector):
+    explicit RootPDU(unsigned int vector):
       PDU(vector),
       m_block(NULL),
       m_block_size(0) {}
@@ -57,8 +57,7 @@ class RootPDU: public PDU {
     const PDUBlock<PDU> *m_block;
     unsigned int m_block_size;
 };
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_ROOTPDU_H_

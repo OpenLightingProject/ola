@@ -18,15 +18,16 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLA_E131_PDUTESTCOMMON_H
-#define OLA_E131_PDUTESTCOMMON_H
+#ifndef PLUGINS_E131_E131_PDUTESTCOMMON_H_
+#define PLUGINS_E131_E131_PDUTESTCOMMON_H_
 
-#include <ola/Closure.h>
-#include "BaseInflator.h"
-#include "CID.h"
-#include "PDU.h"
+#include "ola/Closure.h"
+#include "plugins/e131/e131/BaseInflator.h"
+#include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/PDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 
@@ -35,7 +36,7 @@ namespace e131 {
  */
 class FakePDU: public PDU {
   public:
-    FakePDU(unsigned int value): PDU(0), m_value(value) {}
+    explicit FakePDU(unsigned int value): PDU(0), m_value(value) {}
     unsigned int Size() const { return sizeof(m_value); }
     unsigned int HeaderSize() const { return 0; }
     unsigned int DataSize() const { return 0; }
@@ -75,7 +76,7 @@ class MockPDU: public PDU {
         length = 0;
         return false;
       }
-      uint32_t *header = (uint32_t*) data;
+      uint32_t *header = reinterpret_cast<uint32_t*>(data);
       *header = m_header;
       length = HeaderSize();
       return true;
@@ -86,7 +87,7 @@ class MockPDU: public PDU {
         length = 0;
         return false;
       }
-      uint32_t *value = (uint32_t*) data;
+      uint32_t *value = reinterpret_cast<uint32_t*>(data);
       *value = m_value;
       length = DataSize();
       return true;
@@ -108,7 +109,7 @@ class MockPDU: public PDU {
  */
 class MockInflator: public BaseInflator {
   public:
-    MockInflator(const CID &cid, Closure *on_recv=NULL):
+    MockInflator(const CID &cid, Closure *on_recv = NULL):
       BaseInflator(),
       m_cid(cid),
       m_on_recv(on_recv) {}
@@ -148,9 +149,7 @@ class MockInflator: public BaseInflator {
     Closure *m_on_recv;
     unsigned int m_last_header;
 };
-
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_PDUTESTCOMMON_H_

@@ -18,25 +18,27 @@
  * Copyright (C) 2009 Simon Newton
  */
 
-#ifndef OLA_DMP_DMPINFLATOR_H
-#define OLA_DMP_DMPINFLATOR_H
+#ifndef PLUGINS_E131_E131_DMPINFLATOR_H_
+#define PLUGINS_E131_E131_DMPINFLATOR_H_
 
-#include "BaseInflator.h"
-#include "DMPHeader.h"
+#include "plugins/e131/e131/BaseInflator.h"
+#include "plugins/e131/e131/DMPHeader.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class DMPInflator: public BaseInflator {
   friend class DMPInflatorTest;
 
   public:
+    static const unsigned int DMP_VECTOR = 2;
+
     DMPInflator(): BaseInflator(PDU::ONE_BYTE),
                    m_last_header_valid(false) {
     }
     virtual ~DMPInflator() {}
 
-    unsigned int static const DMP_VECTOR = 2;
     uint32_t Id() const { return DMP_VECTOR; }
 
   protected:
@@ -48,8 +50,7 @@ class DMPInflator: public BaseInflator {
     DMPHeader m_last_header;
     bool m_last_header_valid;
 };
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_DMPINFLATOR_H_

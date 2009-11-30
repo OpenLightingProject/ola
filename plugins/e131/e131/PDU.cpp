@@ -18,11 +18,12 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "PDU.h"
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/PDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
@@ -78,10 +79,10 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
       buffer[offset] = (uint8_t) m_vector;
       break;
     case PDU::TWO_BYTES:
-      *(uint16_t*) (buffer + offset) = HostToNetwork(m_vector);
+      *reinterpret_cast<uint16_t*>(buffer + offset) = HostToNetwork(m_vector);
       break;
     case PDU::FOUR_BYTES:
-      *(uint32_t*) (buffer + offset) = HostToNetwork(m_vector);
+      *reinterpret_cast<uint32_t*>(buffer + offset) = HostToNetwork(m_vector);
       break;
     default:
       OLA_WARN << "unknown vector size " << m_vector_size;
@@ -105,7 +106,6 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
   length = offset;
   return true;
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

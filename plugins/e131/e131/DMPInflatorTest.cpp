@@ -20,13 +20,14 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "HeaderSet.h"
-#include "PDUTestCommon.h"
-#include "DMPAddress.h"
-#include "DMPInflator.h"
-#include "DMPPDU.h"
+#include "plugins/e131/e131/DMPAddress.h"
+#include "plugins/e131/e131/DMPInflator.h"
+#include "plugins/e131/e131/DMPPDU.h"
+#include "plugins/e131/e131/HeaderSet.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 
@@ -108,7 +109,6 @@ void DMPInflatorTest::testInflatePDU() {
   delete[] data;
   delete pdu;
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

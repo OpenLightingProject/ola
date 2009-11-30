@@ -20,15 +20,17 @@
 
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <vector>
 
-#include <ola/Logging.h>
-#include "DMPAddress.h"
-#include "DMPInflator.h"
-#include "DMPPDU.h"
-#include "HeaderSet.h"
-#include "PDUTestCommon.h"
+#include "ola/Logging.h"
+#include "plugins/e131/e131/DMPAddress.h"
+#include "plugins/e131/e131/DMPInflator.h"
+#include "plugins/e131/e131/DMPPDU.h"
+#include "plugins/e131/e131/HeaderSet.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class MockDMPInflator: public DMPInflator {
@@ -112,7 +114,7 @@ bool MockDMPInflator::HandlePDUData(uint32_t vector,
  * Pack a PDU and check it inflates correctly.
  */
 void DMPPDUTest::PackPduAndInflate(const DMPPDU *pdu) {
-  unsigned int size = pdu->Size() + 10; // overallocate to catch overflows
+  unsigned int size = pdu->Size() + 10;  // overallocate to catch overflows
   uint8_t *data = new uint8_t[size];
   CPPUNIT_ASSERT(pdu->Pack(data, size));
   CPPUNIT_ASSERT_EQUAL(pdu->Size(), size);
@@ -228,7 +230,6 @@ void DMPPDUTest::testSetProperty() {
   PackPduAndInflate(pdu);
   delete pdu;
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

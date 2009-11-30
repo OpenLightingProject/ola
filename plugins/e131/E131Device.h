@@ -18,14 +18,16 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131DEVICE_H
-#define OLA_E131DEVICE_H
+#ifndef PLUGINS_E131_E131DEVICE_H_
+#define PLUGINS_E131_E131DEVICE_H_
 
-#include <olad/Device.h>
-#include <olad/Plugin.h>
-#include "e131/CID.h"
+#include <string>
+#include "olad/Device.h"
+#include "olad/Plugin.h"
+#include "plugins/e131/e131/CID.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::Plugin;
@@ -33,7 +35,7 @@ using ola::Plugin;
 class E131Device: public ola::Device {
   public:
     E131Device(Plugin *owner, const string &name,
-               const ola::e131::CID &cid,
+               const ola::plugin::e131::CID &cid,
                class Preferences *preferences,
                const class PluginAdaptor *plugin_adaptor);
     ~E131Device() {}
@@ -49,11 +51,11 @@ class E131Device: public ola::Device {
     const class PluginAdaptor *m_plugin_adaptor;
     class E131Node *m_node;
     bool m_enabled;
-    ola::e131::CID m_cid;
+    ola::plugin::e131::CID m_cid;
 
     static const std::string IP_KEY;
 };
-
-} // e131
-} // ola
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131DEVICE_H_

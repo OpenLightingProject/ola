@@ -20,10 +20,11 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "PDU.h"
-#include "PDUTestCommon.h"
+#include "plugins/e131/e131/PDU.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 
@@ -67,7 +68,6 @@ void PDUTest::testPDUBlock() {
   block.Clear();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, block.Size());
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

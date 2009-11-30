@@ -18,17 +18,17 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <ola/network/InterfacePicker.h>
-#include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
 #include <cppunit/extensions/HelperMacros.h>
-
-#include "PDUTestCommon.h"
-#include "RootInflator.h"
-#include "RootLayer.h"
-#include "UDPTransport.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/NetworkUtils.h"
+#include "ola/network/SelectServer.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
+#include "plugins/e131/e131/RootInflator.h"
+#include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class RootLayerTest: public CppUnit::TestFixture {
@@ -92,7 +92,6 @@ void RootLayerTest::testRootLayer() {
   delete closure;
   delete stop_closure;
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

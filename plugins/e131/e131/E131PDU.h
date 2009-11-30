@@ -18,13 +18,14 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131_E131PDU_H
-#define OLA_E131_E131PDU_H
+#ifndef PLUGINS_E131_E131_E131PDU_H_
+#define PLUGINS_E131_E131_E131PDU_H_
 
-#include "PDU.h"
-#include "E131Header.h"
+#include "plugins/e131/e131/PDU.h"
+#include "plugins/e131/e131/E131Header.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class DMPPDU;
@@ -46,10 +47,8 @@ class E131PDU: public PDU {
   private:
     E131Header m_header;
     const DMPPDU *m_dmp_pdu;
-
 };
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_E131PDU_H_

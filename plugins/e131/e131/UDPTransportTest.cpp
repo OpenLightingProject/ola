@@ -18,18 +18,18 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include <ola/network/InterfacePicker.h>
-#include <ola/network/NetworkUtils.h>
-#include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
-#include <ola/network/Socket.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "UDPTransport.h"
-#include "PDUTestCommon.h"
+#include "ola/Logging.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/NetworkUtils.h"
+#include "ola/network/SelectServer.h"
+#include "ola/network/Socket.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
+#include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
@@ -98,7 +98,6 @@ void UDPTransportTest::testUDPTransport() {
   delete stop_closure;
   delete closure;
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

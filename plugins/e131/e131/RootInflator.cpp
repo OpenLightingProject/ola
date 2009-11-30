@@ -18,10 +18,11 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include "RootInflator.h"
+#include "ola/Logging.h"
+#include "plugins/e131/e131/RootInflator.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 
@@ -37,7 +38,6 @@ bool RootInflator::DecodeHeader(HeaderSet &headers,
                                 const uint8_t *data,
                                 unsigned int length,
                                 unsigned int &bytes_used) {
-
   if (data) {
     if (length >= CID::CID_LENGTH) {
       CID cid = CID::FromData(data);
@@ -65,6 +65,6 @@ void RootInflator::ResetHeaderField() {
   CID cid;
   m_last_hdr.SetCid(cid);
 }
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

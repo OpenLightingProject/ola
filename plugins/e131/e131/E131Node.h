@@ -19,26 +19,27 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131_NODE
-#define OLA_E131_NODE
+#ifndef PLUGINS_E131_E131_E131NODE_H_
+#define PLUGINS_E131_E131_E131NODE_H_
 
+#include <map>
 #include <string>
-#include <ola/Closure.h>
-#include <ola/DmxBuffer.h>
-
-#include "CID.h"
-#include "E131Layer.h"
-#include "RootLayer.h"
-#include "UDPTransport.h"
-#include "DMPE131Inflator.h"
+#include "ola/Closure.h"
+#include "ola/DmxBuffer.h"
+#include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/E131Layer.h"
+#include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/UDPTransport.h"
+#include "plugins/e131/e131/DMPE131Inflator.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class E131Node {
   public:
     E131Node(const std::string &ip_address,
-             const CID &cid=CID::Generate());
+             const CID &cid = CID::Generate());
     ~E131Node();
 
     bool Start();
@@ -75,8 +76,7 @@ class E131Node {
 
     static const uint16_t DEFAULT_PRIORITY = 100;
 };
-
-} //e131
-} //ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_E131NODE_H_

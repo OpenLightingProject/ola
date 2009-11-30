@@ -20,15 +20,17 @@
 
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
+#include <string>
 
-#include "HeaderSet.h"
-#include "PDUTestCommon.h"
-#include "E131Inflator.h"
-#include "E131PDU.h"
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/HeaderSet.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
+#include "plugins/e131/e131/E131Inflator.h"
+#include "plugins/e131/e131/E131PDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
@@ -60,10 +62,10 @@ void E131InflatorTest::testDecodeHeader() {
   strncpy(header.source, source_name.data(), source_name.size() + 1);
   header.priority = 99;
   header.sequence = 10;
-  header.universe = HostToNetwork((uint16_t) 42);
+  header.universe = HostToNetwork(static_cast<uint16_t>(42));
 
   CPPUNIT_ASSERT(inflator.DecodeHeader(header_set,
-                                       (uint8_t*) &header,
+                                       reinterpret_cast<uint8_t*>(&header),
                                        sizeof(header),
                                        bytes_used));
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(header), bytes_used);
@@ -75,7 +77,7 @@ void E131InflatorTest::testDecodeHeader() {
 
   // try an undersized header
   CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set,
-                                        (uint8_t*) &header,
+                                        reinterpret_cast<uint8_t*>(&header),
                                         sizeof(header) - 1,
                                         bytes_used));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
@@ -101,7 +103,7 @@ void E131InflatorTest::testDecodeHeader() {
 void E131InflatorTest::testInflatePDU() {
   const string source = "foo source";
   E131Header header(source, 1, 2, 6000);
-  // TODO: pass a DMP msg here as well
+  // TODO(simon): pass a DMP msg here as well
   E131PDU pdu(3, header, NULL);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 42, pdu.Size());
 
@@ -117,7 +119,6 @@ void E131InflatorTest::testInflatePDU() {
   CPPUNIT_ASSERT(header == header_set.GetE131Header());
   delete[] data;
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

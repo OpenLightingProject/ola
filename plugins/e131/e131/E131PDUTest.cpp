@@ -18,14 +18,16 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string.h>
+#include <string>
 
-#include <ola/network/NetworkUtils.h>
-#include "PDUTestCommon.h"
-#include "E131PDU.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
+#include "plugins/e131/e131/E131PDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
@@ -75,8 +77,9 @@ void E131PDUTest::testSimpleE131PDU() {
   CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, data[6 + E131Header::SOURCE_NAME_LEN]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[7 + E131Header::SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL(HostToNetwork((uint16_t) 6000),
-                       *((uint16_t*) (data + 8 + E131Header::SOURCE_NAME_LEN)));
+  CPPUNIT_ASSERT_EQUAL(
+      HostToNetwork((uint16_t) 6000),
+      *(reinterpret_cast<uint16_t*>(data + 8 + E131Header::SOURCE_NAME_LEN)));
 
   // test undersized buffer
   bytes_used = size - 1;
@@ -96,9 +99,8 @@ void E131PDUTest::testSimpleE131PDU() {
  * Test that packing a E131PDU with nested data works
  */
 void E131PDUTest::testNestedE131PDU() {
-  //TODO: add this test
+  // TODO(simon): add this test
 }
-
-
-} // e131
-} // ola
+}  // ola
+}  // e131
+}  // plugin

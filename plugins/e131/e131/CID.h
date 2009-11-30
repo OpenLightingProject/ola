@@ -18,17 +18,16 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef OLA_E131_CID_H
-#define OLA_E131_CID_H
+#ifndef PLUGINS_E131_E131_CID_H_
+#define PLUGINS_E131_E131_CID_H_
 
 #include <stdint.h>
-#include <string>
 #include <uuid/uuid.h>
-
-
 #include <iostream>
+#include <string>
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class CID {
@@ -36,7 +35,7 @@ class CID {
     enum { CID_LENGTH = 16 };
 
     CID() { uuid_clear(m_uuid); }
-    CID(uuid_t uuid) { uuid_copy(m_uuid, uuid); }
+    explicit CID(uuid_t uuid) { uuid_copy(m_uuid, uuid); }
     CID(const CID& other) { uuid_copy(m_uuid, other.m_uuid); }
 
     bool IsNil() const { return uuid_is_null(m_uuid); }
@@ -54,7 +53,7 @@ class CID {
   private:
     uuid_t m_uuid;
 };
-
-} // e131
-} // ola
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_CID_H_

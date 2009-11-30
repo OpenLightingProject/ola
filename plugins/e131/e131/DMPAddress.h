@@ -18,14 +18,15 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef OLA_E131_DMPADDRESS_H
-#define OLA_E131_DMPADDRESS_H
+#ifndef PLUGINS_E131_E131_DMPADDRESS_H_
+#define PLUGINS_E131_E131_DMPADDRESS_H_
 
 #include <stdint.h>
 #include <string.h>
-#include <ola/network/NetworkUtils.h>
+#include "ola/network/NetworkUtils.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
@@ -115,7 +116,7 @@ class BaseDMPAddress {
 template<typename type>
 class DMPAddress: public BaseDMPAddress {
   public:
-    DMPAddress(type start):
+    explicit DMPAddress(type start):
       BaseDMPAddress(),
       m_start(start) {}
 
@@ -129,7 +130,7 @@ class DMPAddress: public BaseDMPAddress {
         length = 0;
         return false;
       }
-      type *field = (type*) data;
+      type *field = reinterpret_cast<type*>(data);
       *field = HostToNetwork(m_start);
       length = Size();
       return true;
@@ -177,7 +178,7 @@ class RangeDMPAddress: public BaseDMPAddress {
         length = 0;
         return false;
       }
-      type *field = (type*) data;
+      type *field = reinterpret_cast<type*>(data);
       *field++ = HostToNetwork(m_start);
       *field++ = HostToNetwork(m_increment);
       *field = HostToNetwork(m_number);
@@ -257,8 +258,7 @@ class DMPAddressData {
     const uint8_t *m_data;
     unsigned int m_length;
 };
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_DMPADDRESS_H_

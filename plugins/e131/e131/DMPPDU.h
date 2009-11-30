@@ -18,17 +18,18 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_DMP_DMPPDU_H
-#define OLA_DMP_DMPPDU_H
+#ifndef PLUGINS_E131_E131_DMPPDU_H_
+#define PLUGINS_E131_E131_DMPPDU_H_
 
 #include <stdint.h>
 #include <vector>
 
-#include "DMPAddress.h"
-#include "DMPHeader.h"
-#include "PDU.h"
+#include "plugins/e131/e131/DMPAddress.h"
+#include "plugins/e131/e131/DMPHeader.h"
+#include "plugins/e131/e131/PDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using std::vector;
@@ -260,8 +261,8 @@ const DMPPDU *NewRangeDMPSetProperty(
     bool is_virtual,
     bool is_relative,
     const vector<DMPAddressData<RangeDMPAddress<type> > > &chunks,
-    bool multiple_elements=true,
-    bool equal_size_elements=true) {
+    bool multiple_elements = true,
+    bool equal_size_elements = true) {
 
   dmp_address_type address_type;
   if (multiple_elements) {
@@ -269,8 +270,9 @@ const DMPPDU *NewRangeDMPSetProperty(
       address_type = RANGE_EQUAL;
     else
       address_type = RANGE_MIXED;
-  } else
+  } else {
     address_type = RANGE_SINGLE;
+  }
 
   DMPHeader header(is_virtual,
                    is_relative,
@@ -278,9 +280,7 @@ const DMPPDU *NewRangeDMPSetProperty(
                    TypeToDMPSize<type>());
   return new DMPSetProperty<RangeDMPAddress<type> >(header, chunks);
 }
-
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_DMPPDU_H_

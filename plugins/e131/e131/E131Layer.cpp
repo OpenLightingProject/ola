@@ -18,12 +18,13 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "E131Layer.h"
-#include "DMPE131Inflator.h"
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/DMPE131Inflator.h"
+#include "plugins/e131/e131/E131Layer.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
@@ -32,9 +33,8 @@ using ola::network::HostToNetwork;
  * Create a new E131Layer
  * @param root_layer the root layer to use
  */
-E131Layer::E131Layer(RootLayer *root_layer):
-  m_root_layer(root_layer) {
-
+E131Layer::E131Layer(RootLayer *root_layer)
+    : m_root_layer(root_layer) {
   m_root_layer->AddInflator(&m_e131_inflator);
   if (!m_root_layer)
     OLA_WARN << "root_layer is null, this won't work";
@@ -45,7 +45,6 @@ E131Layer::E131Layer(RootLayer *root_layer):
  * Send a DMPPDU
  */
 bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
-
   if (!m_root_layer)
     return false;
 
@@ -113,6 +112,6 @@ bool E131Layer::UniverseIP(unsigned int universe, struct in_addr &addr) {
   OLA_WARN << "universe " << universe << " isn't a valid E1.31 universe";
   return false;
 }
-
-} //e131
-} //ola
+}  // e131
+}  // plugin
+}  // ola

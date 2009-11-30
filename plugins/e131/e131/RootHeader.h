@@ -18,12 +18,13 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131_ROOTHEADER_H
-#define OLA_E131_ROOTHEADER_H
+#ifndef PLUGINS_E131_E131_ROOTHEADER_H_
+#define PLUGINS_E131_E131_ROOTHEADER_H_
 
-#include "CID.h"
+#include "plugins/e131/e131/CID.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 /*
@@ -32,7 +33,7 @@ namespace e131 {
 class RootHeader {
   public:
     RootHeader() {}
-    ~RootHeader() {};
+    ~RootHeader() {}
     void SetCid(CID cid) { m_cid = cid; }
     CID GetCid() const { return m_cid; }
 
@@ -42,8 +43,7 @@ class RootHeader {
   private:
     CID m_cid;
 };
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_ROOTHEADER_H_

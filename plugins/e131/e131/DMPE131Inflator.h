@@ -19,36 +19,37 @@
  * Copyright (C) 2009 Simon Newton
  */
 
-#ifndef OLA_DMP_DMPE131INFLATOR_H
-#define OLA_DMP_DMPE131INFLATOR_H
+#ifndef PLUGINS_E131_E131_DMPE131INFLATOR_H_
+#define PLUGINS_E131_E131_DMPE131INFLATOR_H_
 
 #include <map>
-#include <ola/Closure.h>
-#include <ola/DmxBuffer.h>
-
-#include "DMPInflator.h"
-#include "E131Layer.h"
+#include "ola/Closure.h"
+#include "ola/DmxBuffer.h"
+#include "plugins/e131/e131/DMPInflator.h"
+#include "plugins/e131/e131/E131Layer.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class DMPE131Inflator: public DMPInflator {
   friend class DMPE131InflatorTest;
 
   public:
-    DMPE131Inflator(E131Layer *e131_layer):
+    explicit DMPE131Inflator(E131Layer *e131_layer):
       DMPInflator(),
       m_e131_layer(e131_layer) {}
     ~DMPE131Inflator();
-
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
                     ola::Closure *handler);
     bool RemoveHandler(unsigned int universe);
 
   protected:
-    virtual bool HandlePDUData(uint32_t vector, HeaderSet &headers,
-                               const uint8_t *data, unsigned int pdu_len);
+    virtual bool HandlePDUData(uint32_t vector,
+                               HeaderSet &headers,
+                               const uint8_t *data,
+                               unsigned int pdu_len);
 
   private:
     typedef struct {
@@ -59,8 +60,7 @@ class DMPE131Inflator: public DMPInflator {
     std::map<unsigned int, universe_handler> m_handlers;
     E131Layer *m_e131_layer;
 };
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_DMPE131INFLATOR_H_

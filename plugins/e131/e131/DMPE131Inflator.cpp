@@ -18,12 +18,15 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include "DMPE131Inflator.h"
-#include "DMPHeader.h"
-#include "DMPPDU.h"
+#include <algorithm>
+#include <map>
+#include "ola/Logging.h"
+#include "plugins/e131/e131/DMPE131Inflator.h"
+#include "plugins/e131/e131/DMPHeader.h"
+#include "plugins/e131/e131/DMPPDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using std::map;
@@ -47,7 +50,6 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
                                     HeaderSet &headers,
                                     const uint8_t *data,
                                     unsigned int pdu_len) {
-
   if (vector != DMP_SET_PROPERTY_VECTOR) {
     OLA_INFO << "not a set property msg: " << vector;
     return true;
@@ -145,8 +147,6 @@ bool DMPE131Inflator::RemoveHandler(unsigned int universe) {
   }
   return false;
 }
-
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

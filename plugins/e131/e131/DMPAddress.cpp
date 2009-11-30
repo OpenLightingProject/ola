@@ -18,10 +18,11 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#include <ola/network/NetworkUtils.h>
-#include "DMPAddress.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/DMPAddress.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::NetworkToHost;
@@ -91,8 +92,8 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
 
   length = byte_count;
 
-  uint16_t *p = (uint16_t*) data;
-  uint32_t *p2 = (uint32_t*) data;
+  const uint16_t *p = reinterpret_cast<const uint16_t*>(data);
+  const uint32_t *p2 = reinterpret_cast<const uint32_t*>(data);
 
   if (type == NON_RANGE) {
     switch (size) {
@@ -103,7 +104,7 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
       case FOUR_BYTES:
         return new FourByteDMPAddress(NetworkToHost(*p2));
       default:
-        return NULL; // should never make it here because we checked above
+        return NULL;  // should never make it here because we checked above
     }
   }
 
@@ -119,10 +120,9 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
                                          NetworkToHost(*p2++),
                                          NetworkToHost(*p2));
     default:
-      return NULL; // should never make it here because we checked above
+      return NULL;  // should never make it here because we checked above
   }
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

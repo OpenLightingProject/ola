@@ -18,11 +18,12 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "RootLayer.h"
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/RootLayer.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::NetworkToHost;
@@ -33,17 +34,16 @@ using ola::network::NetworkToHost;
  * @param ip_address the desired IP address to use
  * @param loop set to true to loop multicast packets
  */
-RootLayer::RootLayer(UDPTransport *transport, const CID &cid):
-  m_transport(transport),
-  m_cid(cid),
-  m_root_pdu(0) {
-
-    m_root_pdu.Cid(cid);
-    if (!m_transport) {
-      OLA_WARN << "transport is null, this won't work";
-      return;
-    }
-    m_transport->SetInflator(&m_root_inflator);
+RootLayer::RootLayer(UDPTransport *transport, const CID &cid)
+    : m_transport(transport),
+      m_cid(cid),
+      m_root_pdu(0) {
+  m_root_pdu.Cid(cid);
+  if (!m_transport) {
+    OLA_WARN << "transport is null, this won't work";
+    return;
+  }
+  m_transport->SetInflator(&m_root_inflator);
 }
 
 
@@ -79,7 +79,6 @@ bool RootLayer::SendPDU(struct in_addr &addr,
 bool RootLayer::SendPDUBlock(struct in_addr &addr,
                             unsigned int vector,
                             const PDUBlock<PDU> &block) {
-
   if (!m_transport)
     return false;
 
@@ -114,6 +113,6 @@ bool RootLayer::LeaveMulticast(const struct in_addr &group) {
     return m_transport->LeaveMulticast(group);
   return false;
 }
-
-} //e131
-} //ola
+}  // e131
+}  // plugin
+}  // ola

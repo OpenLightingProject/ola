@@ -18,10 +18,11 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include "DMPPDU.h"
+#include "ola/Logging.h"
+#include "plugins/e131/e131/DMPPDU.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 
@@ -95,7 +96,6 @@ const DMPPDU *NewRangeDMPGetProperty(
                                              increment,
                                              number);
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

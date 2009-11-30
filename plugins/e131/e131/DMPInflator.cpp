@@ -18,10 +18,11 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include "DMPInflator.h"
+#include "ola/Logging.h"
+#include "plugins/e131/e131/DMPInflator.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 
@@ -37,7 +38,6 @@ bool DMPInflator::DecodeHeader(HeaderSet &headers,
                                 const uint8_t *data,
                                 unsigned int length,
                                 unsigned int &bytes_used) {
-
   if (data) {
     // the header bit was set, decode it
     if (length >= DMPHeader::DMP_HEADER_SIZE) {
@@ -69,6 +69,6 @@ bool DMPInflator::DecodeHeader(HeaderSet &headers,
 void DMPInflator::ResetHeaderField() {
   m_last_header_valid = false;
 }
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

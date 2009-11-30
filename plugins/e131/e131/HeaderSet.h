@@ -20,14 +20,15 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131_HEADERSET_H
-#define OLA_E131_HEADERSET_H
+#ifndef PLUGINS_E131_E131_HEADERSET_H_
+#define PLUGINS_E131_E131_HEADERSET_H_
 
-#include "RootHeader.h"
-#include "E131Header.h"
-#include "DMPHeader.h"
+#include "plugins/e131/e131/RootHeader.h"
+#include "plugins/e131/e131/E131Header.h"
+#include "plugins/e131/e131/DMPHeader.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class HeaderSet {
@@ -55,7 +56,7 @@ class HeaderSet {
     E131Header m_e131_header;
     DMPHeader m_dmp_header;
 };
-
-} // e131
-} // ola
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_HEADERSET_H_

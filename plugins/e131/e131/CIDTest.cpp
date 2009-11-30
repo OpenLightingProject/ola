@@ -18,17 +18,17 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <algorithm>
 #include <cctype>
 #include <iostream>
 #include <string>
-#include <cppunit/extensions/HelperMacros.h>
 
-#include "CID.h"
+#include "plugins/e131/e131/CID.h"
 
-using namespace ola::e131;
 using std::string;
+using ola::plugin::e131::CID;
 
 class CIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(CIDTest);
@@ -50,7 +50,8 @@ class CIDTest: public CppUnit::TestFixture {
 };
 
 
-const uint8_t CIDTest::TEST_DATA[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+const uint8_t CIDTest::TEST_DATA[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                                      12, 13, 14, 15};
 CPPUNIT_TEST_SUITE_REGISTRATION(CIDTest);
 
 /*
@@ -117,4 +118,3 @@ void CIDTest::testFromString() {
   cid = CID::FromString(bad_uuid);
   CPPUNIT_ASSERT(cid.IsNil());
 }
-

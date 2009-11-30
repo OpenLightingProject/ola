@@ -20,20 +20,20 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
 
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
-
-#include "E131Plugin.h"
-#include "E131Device.h"
-#include "e131/CID.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
+#include "plugins/e131/E131Plugin.h"
+#include "plugins/e131/E131Device.h"
+#include "plugins/e131/e131/CID.h"
 
 
 /*
  * Entry point to this plugin
  */
 extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *adaptor) {
-  return new ola::e131::E131Plugin(adaptor);
+  return new ola::plugin::e131::E131Plugin(adaptor);
 }
 
 /*
@@ -45,12 +45,13 @@ extern "C" void destroy(ola::Plugin* plugin) {
 
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
-const string E131Plugin::PLUGIN_NAME = "E1.31 (DMX over ACN) Plugin";
-const string E131Plugin::PLUGIN_PREFIX = "e131";
-const string E131Plugin::DEVICE_NAME = "E1.31 (DMX over ACN) Device";
-const string E131Plugin::CID_KEY = "cid";
+const char E131Plugin::PLUGIN_NAME[] = "E1.31 (DMX over ACN) Plugin";
+const char E131Plugin::PLUGIN_PREFIX[] = "e131";
+const char E131Plugin::DEVICE_NAME[] = "E1.31 (DMX over ACN) Device";
+const char E131Plugin::CID_KEY[] = "cid";
 
 
 /*
@@ -130,6 +131,6 @@ bool E131Plugin::SetDefaultPreferences() {
 
   return true;
 }
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

@@ -20,16 +20,17 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef OLA_E131_ROOTLAYER_H
-#define OLA_E131_ROOTLAYER_H
+#ifndef PLUGINS_E131_E131_ROOTLAYER_H_
+#define PLUGINS_E131_E131_ROOTLAYER_H_
 
-#include "CID.h"
-#include "PDU.h"
-#include "RootPDU.h"
-#include "RootInflator.h"
-#include "UDPTransport.h"
+#include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/PDU.h"
+#include "plugins/e131/e131/RootPDU.h"
+#include "plugins/e131/e131/RootInflator.h"
+#include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class RootLayer {
@@ -46,7 +47,8 @@ class RootLayer {
                       unsigned int vector,
                       const PDUBlock<PDU> &block);
 
-    //TODO: add methods to queue and send PDUs/blocks with different vectors
+    // TODO(simon): add methods to queue and send PDUs/blocks with different
+    // vectors
 
     bool JoinMulticast(const struct in_addr &group);
     bool LeaveMulticast(const struct in_addr &group);
@@ -62,8 +64,7 @@ class RootLayer {
     RootLayer(const RootLayer&);
     RootLayer& operator=(const RootLayer&);
 };
-
-} //e131
-} //ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_ROOTLAYER_H_

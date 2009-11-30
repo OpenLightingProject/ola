@@ -21,11 +21,11 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "BaseInflator.h"
-#include "HeaderSet.h"
-
+#include "plugins/e131/e131/BaseInflator.h"
+#include "plugins/e131/e131/HeaderSet.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 uint8_t PDU_DATA[] = "this is some test data";
@@ -49,12 +49,12 @@ class BaseInflatorTest: public CppUnit::TestFixture {
 };
 
 
-class TestInflator: public ola::e131::BaseInflator {
+class TestInflator: public ola::plugin::e131::BaseInflator {
   public:
-    TestInflator(unsigned int id=0, PDU::vector_size v_size=PDU::TWO_BYTES):
-      BaseInflator(v_size),
-      m_id(id),
-      m_blocks_handled(0) {}
+    TestInflator(unsigned int id = 0, PDU::vector_size v_size = PDU::TWO_BYTES)
+        : BaseInflator(v_size),
+          m_id(id),
+          m_blocks_handled(0) {}
     uint32_t Id() const { return m_id; }
     unsigned int BlocksHandled() const { return m_blocks_handled; }
 
@@ -113,7 +113,7 @@ void BaseInflatorTest::testChildInflators() {
  */
 void BaseInflatorTest::testDecodeLength() {
   TestInflator inflator;
-  uint8_t data[] = {0, 0, 0, 0}; // the test data
+  uint8_t data[] = {0, 0, 0, 0};  // the test data
   unsigned int pdu_length;
   unsigned int bytes_used = 0;
 
@@ -146,7 +146,7 @@ void BaseInflatorTest::testDecodeLength() {
   }
 
   // now check that both bytes are used
-  data[0] = 1; // total length of 258
+  data[0] = 1;  // total length of 258
   CPPUNIT_ASSERT(inflator.DecodeLength(data, sizeof(data), pdu_length,
                                        bytes_used));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 258, pdu_length);
@@ -199,7 +199,7 @@ void BaseInflatorTest::testDecodeLength() {
  */
 void BaseInflatorTest::testDecodeVector() {
   TestInflator inflator(0, PDU::ONE_BYTE);
-  uint8_t data[] = {1, 2, 3, 4, 5, 6}; // the test data
+  uint8_t data[] = {1, 2, 3, 4, 5, 6};  // the test data
   unsigned int vector = 1;
   unsigned int bytes_used = 0;
   uint8_t flags = PDU::VFLAG_MASK;
@@ -282,7 +282,6 @@ void BaseInflatorTest::testDecodeVector() {
     CPPUNIT_ASSERT_EQUAL((uint32_t) 18952773, vector);
     CPPUNIT_ASSERT_EQUAL((unsigned int) 4, bytes_used);
   }
-
 }
 
 
@@ -290,7 +289,7 @@ void BaseInflatorTest::testDecodeVector() {
  * Check that we can inflate a PDU
  */
 void BaseInflatorTest::testInflatePDU() {
-  TestInflator inflator; // test with a vector size of 2
+  TestInflator inflator;  // test with a vector size of 2
   HeaderSet header_set;
   uint8_t flags = PDU::VFLAG_MASK;
   unsigned int data_size = PDU::TWO_BYTES + sizeof(PDU_DATA);
@@ -309,7 +308,7 @@ void BaseInflatorTest::testInflatePDU() {
  * Check that we can inflate a PDU block correctly.
  */
 void BaseInflatorTest::testInflatePDUBlock() {
-  TestInflator inflator; // test with a vector size of 2
+  TestInflator inflator;  // test with a vector size of 2
   HeaderSet header_set;
   const unsigned int length_size = 2;
 
@@ -324,9 +323,9 @@ void BaseInflatorTest::testInflatePDUBlock() {
   data[3] = 0x21;
   memcpy(data + length_size + PDU::TWO_BYTES, PDU_DATA,
          sizeof(PDU_DATA));
-  CPPUNIT_ASSERT_EQUAL((int) data_size,
+  CPPUNIT_ASSERT_EQUAL(static_cast<int>(data_size),
                         inflator.InflatePDUBlock(header_set, data, data_size));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, inflator.BlocksHandled());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), inflator.BlocksHandled());
   delete[] data;
 
   // inflate a multi-pdu block
@@ -345,10 +344,10 @@ void BaseInflatorTest::testInflatePDUBlock() {
   memcpy(data + data_size + length_size + PDU::TWO_BYTES, PDU_DATA,
          sizeof(PDU_DATA));
   CPPUNIT_ASSERT_EQUAL(
-      2 * (int) data_size,
+      2 * static_cast<int>(data_size),
       inflator.InflatePDUBlock(header_set, data, 2 * data_size));
   delete[] data;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 3, inflator.BlocksHandled());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3), inflator.BlocksHandled());
 
   // inflate with nested inflators
   TestInflator child_inflator(289);
@@ -367,13 +366,12 @@ void BaseInflatorTest::testInflatePDUBlock() {
   memcpy(data + 2 * (length_size + PDU::TWO_BYTES),
          PDU_DATA,
          sizeof(PDU_DATA));
-  CPPUNIT_ASSERT_EQUAL((int) pdu_size,
+  CPPUNIT_ASSERT_EQUAL(static_cast<int>(pdu_size),
                         inflator.InflatePDUBlock(header_set, data, pdu_size));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 3, inflator.BlocksHandled());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, child_inflator.BlocksHandled());
   delete[] data;
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

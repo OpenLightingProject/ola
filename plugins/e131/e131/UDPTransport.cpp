@@ -19,17 +19,20 @@
  */
 
 #include <string.h>
-#include <ola/Closure.h>
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
-#include "UDPTransport.h"
+#include <string>
+
+#include "ola/Closure.h"
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
 
-const string UDPTransport::ACN_PACKET_ID = "ASC-E1.17\0\0\0";
+const char UDPTransport::ACN_PACKET_ID[] = "ASC-E1.17\0\0\0";
 
 /*
  * Clean up
@@ -61,12 +64,12 @@ bool UDPTransport::Init(const ola::network::Interface &interface) {
   if (!m_send_buffer) {
     m_send_buffer = new uint8_t[MAX_DATAGRAM_SIZE];
     memset(m_send_buffer, 0 , DATA_OFFSET);
-    uint16_t *ptr = (uint16_t*) m_send_buffer;
+    uint16_t *ptr = reinterpret_cast<uint16_t*>(m_send_buffer);
     *ptr++ = HostToNetwork(PREAMBLE_SIZE);
     *ptr = HostToNetwork(POSTABLE_SIZE);
-    strncpy((char*) (m_send_buffer + PREAMBLE_OFFSET),
-            ACN_PACKET_ID.data(),
-            ACN_PACKET_ID.size());
+    strncpy(reinterpret_cast<char*>(m_send_buffer + PREAMBLE_OFFSET),
+            ACN_PACKET_ID,
+            strlen(ACN_PACKET_ID));
   }
 
   if (!m_recv_buffer)
@@ -136,6 +139,6 @@ bool UDPTransport::JoinMulticast(const struct in_addr &group) {
 bool UDPTransport::LeaveMulticast(const struct in_addr &group) {
   return m_socket.LeaveMulticast(m_interface.ip_address, group);
 }
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

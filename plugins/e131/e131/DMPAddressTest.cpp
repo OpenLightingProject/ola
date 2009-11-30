@@ -21,11 +21,12 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <ola/network/NetworkUtils.h>
-#include "PDUTestCommon.h"
-#include "DMPAddress.h"
+#include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/PDUTestCommon.h"
+#include "plugins/e131/e131/DMPAddress.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using ola::network::NetworkToHost;
@@ -127,8 +128,8 @@ void DMPAddressTest::testAddress() {
  */
 void DMPAddressTest::testRangeAddress() {
   uint8_t buffer[12];
-  uint16_t *p = (uint16_t*) buffer;
-  uint32_t *pp = (uint32_t*) buffer;
+  uint16_t *p = reinterpret_cast<uint16_t*>(buffer);
+  uint32_t *pp = reinterpret_cast<uint32_t*>(buffer);
   unsigned int length = sizeof(buffer);
 
   OneByteRangeDMPAddress addr1(10, 2, 4);
@@ -167,7 +168,7 @@ void DMPAddressTest::testRangeAddress() {
   CPPUNIT_ASSERT_EQUAL((uint8_t) 10, buffer[2]);
   delete addr4;
 
-  p = (uint16_t*) buffer;
+  p = reinterpret_cast<uint16_t*>(buffer);
   const BaseDMPAddress *addr5 = NewRangeAddress(10, 1, 1024);
   length = sizeof(buffer);
   checkAddress(addr5, 10, 1, 1024, 6, TWO_BYTES, true);
@@ -178,7 +179,7 @@ void DMPAddressTest::testRangeAddress() {
   CPPUNIT_ASSERT_EQUAL((uint16_t) 1024, NetworkToHost(*p));
   delete addr5;
 
-  pp = (uint32_t*) buffer;
+  pp = reinterpret_cast<uint32_t*>(buffer);
   const BaseDMPAddress *addr6 = NewRangeAddress(66000, 1, 1024);
   length = sizeof(buffer);
   checkAddress(addr6, 66000, 1, 1024, 12, FOUR_BYTES, true);
@@ -188,7 +189,6 @@ void DMPAddressTest::testRangeAddress() {
   CPPUNIT_ASSERT_EQUAL((uint32_t) 1, NetworkToHost(*pp++));
   CPPUNIT_ASSERT_EQUAL((uint32_t) 1024, NetworkToHost(*pp));
   delete addr6;
-
 }
 
 
@@ -216,7 +216,6 @@ void DMPAddressTest::testAddressData() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 6, chunk2.Size());
   CPPUNIT_ASSERT(!chunk2.Pack(buffer, length));
 }
-
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

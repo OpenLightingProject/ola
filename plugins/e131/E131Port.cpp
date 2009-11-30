@@ -18,15 +18,16 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <string.h>
-
-#include <ola/Logging.h>
-#include <olad/Universe.h>
-#include "E131Port.h"
-#include "E131Device.h"
+//#include <string.h>
+#include <string>
+#include "ola/Logging.h"
+#include "olad/Universe.h"
+#include "plugins/e131/E131Port.h"
+#include "plugins/e131/E131Device.h"
 
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 
@@ -72,7 +73,6 @@ void E131InputPort::PostSetUniverse(Universe *new_universe,
  */
 void E131OutputPort::PostSetUniverse(Universe *new_universe,
                                      Universe *old_universe) {
-
   if (old_universe)
     m_node->SetSourceName(old_universe->UniverseId(), "");
 
@@ -99,7 +99,6 @@ bool E131OutputPort::WriteDMX(const DmxBuffer &buffer) {
 void E131OutputPort::UniverseNameChanged(const string &new_name) {
   m_node->SetSourceName(GetUniverse()->UniverseId(), new_name);
 }
-
-
-} //plugin
-} //ola
+}  // e131
+}  // plugin
+}  // ola

@@ -18,13 +18,14 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131_PDU_H
-#define OLA_E131_PDU_H
+#ifndef PLUGINS_E131_E131_PDU_H_
+#define PLUGINS_E131_E131_PDU_H_
 
 #include <stdint.h>
 #include <vector>
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 
@@ -39,7 +40,7 @@ class PDU {
       FOUR_BYTES = 4,
     } vector_size;
 
-    PDU(unsigned int vector, vector_size size=FOUR_BYTES):
+    PDU(unsigned int vector, vector_size size = FOUR_BYTES):
       m_vector(vector),
       m_vector_size(size) {}
     virtual ~PDU() {}
@@ -88,9 +89,15 @@ class PDUBlock {
     ~PDUBlock() {}
 
     // Add a PDU to this block
-    void AddPDU(const C *msg) { m_pdus.push_back(msg); m_size += msg->Size(); }
+    void AddPDU(const C *msg) {
+      m_pdus.push_back(msg);
+      m_size += msg->Size();
+    }
     // Remove all PDUs from the block
-    void Clear() { m_pdus.clear(); m_size = 0; }
+    void Clear() {
+      m_pdus.clear();
+      m_size = 0;
+    }
     // The number of bytes this block would consume, this ignores optimizations
     // like repeating headers/vectors.
     unsigned int Size() const { return m_size; }
@@ -118,7 +125,7 @@ bool PDUBlock<C>::Pack(uint8_t *data, unsigned int &length) const {
   unsigned int i = 0;
   typename std::vector<const C*>::const_iterator iter;
   for (iter = m_pdus.begin(); iter != m_pdus.end(); ++iter) {
-    // TODO: optimize repeated headers & vectors here
+    // TODO(simon): optimize repeated headers & vectors here
     unsigned int remaining = i < length ? length - i : 0;
     status &= (*iter)->Pack(data + i, remaining);
     i+= remaining;
@@ -126,8 +133,7 @@ bool PDUBlock<C>::Pack(uint8_t *data, unsigned int &length) const {
   length = i;
   return status;
 }
-
-} // e131
-} // ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_PDU_H_

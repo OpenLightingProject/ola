@@ -18,13 +18,14 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#ifndef OLA_E131_E131HEADER_H
-#define OLA_E131_E131HEADER_H
+#ifndef PLUGINS_E131_E131_E131HEADER_H_
+#define PLUGINS_E131_E131_E131HEADER_H_
 
 #include <stdint.h>
 #include <string>
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using std::string;
@@ -73,7 +74,7 @@ class E131Header {
     uint8_t m_sequence;
     uint16_t m_universe;
 };
-
-} // e131
-} // ola
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_E131HEADER_H_

@@ -18,11 +18,12 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include <ola/Logging.h>
-#include "RootPDU.h"
-#include "BaseInflator.h"
+#include "ola/Logging.h"
+#include "plugins/e131/e131/RootPDU.h"
+#include "plugins/e131/e131/BaseInflator.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 /*
@@ -56,6 +57,6 @@ void RootPDU::SetBlock(const PDUBlock<PDU> *block) {
   m_block = block;
   m_block_size = m_block ? block->Size() : 0;
 }
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola

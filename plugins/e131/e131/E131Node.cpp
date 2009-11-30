@@ -26,6 +26,7 @@
 #include "plugins/e131/e131/E131Node.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 using std::string;
@@ -194,4 +195,5 @@ E131Node::tx_universe *E131Node::SetupOutgoingSettings(unsigned int universe) {
   return &iter->second;
 }
 }  // e131
+}  // plugin
 }  // ola

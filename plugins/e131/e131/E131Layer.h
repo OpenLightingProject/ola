@@ -20,23 +20,24 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef OLA_E131_E131LAYER_H
-#define OLA_E131_E131LAYER_H
+#ifndef PLUGINS_E131_E131_E131LAYER_H_
+#define PLUGINS_E131_E131_E131LAYER_H_
 
-#include "E131Header.h"
-#include "E131PDU.h"
-#include "E131Inflator.h"
-#include "RootLayer.h"
-#include "DMPPDU.h"
+#include "plugins/e131/e131/DMPPDU.h"
+#include "plugins/e131/e131/E131Header.h"
+#include "plugins/e131/e131/E131Inflator.h"
+#include "plugins/e131/e131/E131PDU.h"
+#include "plugins/e131/e131/RootLayer.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 class DMPInflator;
 
 class E131Layer {
   public:
-    E131Layer(RootLayer *root_layer);
+    explicit E131Layer(RootLayer *root_layer);
     ~E131Layer() {}
 
     bool SendDMP(const E131Header &header, const DMPPDU *pdu);
@@ -53,8 +54,7 @@ class E131Layer {
     E131Layer& operator=(const E131Layer&);
     bool UniverseIP(unsigned int universe, struct in_addr &addr);
 };
-
-} //e131
-} //ola
-
-#endif
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_E131LAYER_H_

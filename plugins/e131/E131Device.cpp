@@ -21,20 +21,18 @@
  * Ids 4-7 : Output ports (send dmx)
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <string>
 
-#include <ola/Logging.h>
-#include <olad/Plugin.h>
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
-
-#include "E131Device.h"
-#include "E131Port.h"
-#include "e131/E131Node.h"
+#include "ola/Logging.h"
+#include "olad/Plugin.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
+#include "plugins/e131/E131Device.h"
+#include "plugins/e131/E131Port.h"
+#include "plugins/e131/e131/E131Node.h"
 
 namespace ola {
+namespace plugin {
 namespace e131 {
 
 const std::string E131Device::IP_KEY = "ip";
@@ -44,16 +42,15 @@ const std::string E131Device::IP_KEY = "ip";
  * Create a new device
  */
 E131Device::E131Device(Plugin *owner, const string &name,
-                       const ola::e131::CID &cid,
+                       const ola::plugin::e131::CID &cid,
                        Preferences *preferences,
-                       const PluginAdaptor *plugin_adaptor):
-  Device(owner, name),
-  m_preferences(preferences),
-  m_plugin_adaptor(plugin_adaptor),
-  m_node(NULL),
-  m_enabled(false),
-  m_cid(cid) {
-
+                       const PluginAdaptor *plugin_adaptor)
+    : Device(owner, name),
+      m_preferences(preferences),
+      m_plugin_adaptor(plugin_adaptor),
+      m_node(NULL),
+      m_enabled(false),
+      m_cid(cid) {
 }
 
 
@@ -101,6 +98,6 @@ bool E131Device::Stop() {
   m_enabled = false;
   return true;
 }
-
-} // e131
-} // ola
+}  // e131
+}  // plugin
+}  // ola
