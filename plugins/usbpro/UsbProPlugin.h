@@ -28,6 +28,7 @@
 #include "ola/network/Socket.h"
 
 namespace ola {
+namespace plugin {
 namespace usbpro {
 
 using ola::network::ConnectedSocket;
@@ -64,5 +65,6 @@ class UsbProPlugin: public ola::Plugin {
     static const char MAC_DEVICE_PREFIX[];
 };
 }  // usbpro
+}  // plugin
 }  // ola
 #endif  // PLUGINS_USBPRO_USBPROPLUGIN_H_

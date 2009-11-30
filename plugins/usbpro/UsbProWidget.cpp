@@ -37,6 +37,7 @@
 #include "plugins/usbpro/UsbProWidget.h"
 
 namespace ola {
+namespace plugin {
 namespace usbpro {
 
 using std::string;
@@ -508,4 +509,5 @@ int UsbProWidget::ReceiveMessage() {
   return 0;
 }
 }  // usbpro
+}  // plugin
 }  // ola

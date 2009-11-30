@@ -28,6 +28,7 @@
 #include "plugins/usbpro/UsbProWidgetListener.h"
 
 namespace ola {
+namespace plugin {
 namespace usbpro {
 
 enum { DMX_BUFFER_LENGTH = 513 };
@@ -206,5 +207,6 @@ class UsbProWidget {
     static const char REPLY_SUCCESS[];
 };
 }  // usbpro
+}  // plugin
 }  // ola
 #endif  // PLUGINS_USBPRO_USBPROWIDGET_H_

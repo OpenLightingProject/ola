@@ -39,7 +39,7 @@
  */
 extern "C" ola::AbstractPlugin* create(
     const ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::usbpro::UsbProPlugin(plugin_adaptor);
+  return new ola::plugin::usbpro::UsbProPlugin(plugin_adaptor);
 }
 
 /*
@@ -50,6 +50,7 @@ extern "C" void destroy(ola::AbstractPlugin* plugin) {
 }
 
 namespace ola {
+namespace plugin {
 namespace usbpro {
 
 const char UsbProPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
@@ -226,6 +227,6 @@ vector<string> UsbProPlugin::FindCandiateDevices() {
   }
   return device_paths;
 }
-
 }  // usbpro
+}  // plugin
 }  // ola

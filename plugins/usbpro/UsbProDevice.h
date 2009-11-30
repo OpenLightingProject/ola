@@ -33,6 +33,7 @@
 #include "plugins/usbpro/UsbProWidgetListener.h"
 
 namespace ola {
+namespace plugin {
 namespace usbpro {
 
 using google::protobuf::RpcController;
@@ -117,5 +118,6 @@ class UsbProDevice: public Device, public UsbProWidgetListener {
     static const int K_MISSING_PARAM = -1;
 };
 }  // usbpro
+}  // plugin
 }  // ola
 #endif  // PLUGINS_USBPRO_USBPRODEVICE_H_

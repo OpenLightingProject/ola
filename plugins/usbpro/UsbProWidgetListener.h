@@ -22,6 +22,7 @@
 #define PLUGINS_USBPRO_USBPROWIDGETLISTENER_H_
 
 namespace ola {
+namespace plugin {
 namespace usbpro {
 
 enum { SERIAL_NUMBER_LENGTH = 4 };
@@ -45,5 +46,6 @@ class UsbProWidgetListener {
     UsbProWidgetListener& operator=(const UsbProWidgetListener&);
 };
 }  // usbpro
+}  // plugin
 }  // ola
 #endif  // PLUGINS_USBPRO_USBPROWIDGETLISTENER_H_

@@ -34,6 +34,7 @@
 #include "plugins/usbpro/UsbProPort.h"
 
 namespace ola {
+namespace plugin {
 namespace usbpro {
 
 using google::protobuf::RpcController;
@@ -320,6 +321,6 @@ void UsbProDevice::HandleWidgetSerial(
     StartCompleted();
   }
 }
-
 }  // usbpro
+}  // plugin
 }  // ola

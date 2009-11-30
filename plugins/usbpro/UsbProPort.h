@@ -27,6 +27,7 @@
 #include "plugins/usbpro/UsbProDevice.h"
 
 namespace ola {
+namespace plugin {
 namespace usbpro {
 
 class UsbProInputPort: public InputPort {
@@ -61,5 +62,6 @@ class UsbProOutputPort: public OutputPort {
     UsbProDevice *m_device;
 };
 }  // usbpro
+}  // plugin
 }  // ola
 #endif  // PLUGINS_USBPRO_USBPROPORT_H_

@@ -23,6 +23,7 @@
 #include "plugins/usbpro/UsbProDevice.h"
 
 namespace ola {
+namespace plugin {
 namespace usbpro {
 
 /*
@@ -58,4 +59,5 @@ bool UsbProOutputPort::WriteDMX(const DmxBuffer &buffer) {
   return m_device->SendDMX(buffer);
 }
 }  // usbpro
+}  // plugin
 }  // ola
