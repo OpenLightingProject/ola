@@ -18,7 +18,6 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-//#include <string.h>
 #include <string>
 #include "ola/Logging.h"
 #include "olad/Universe.h"
