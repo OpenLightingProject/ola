@@ -35,7 +35,7 @@ using std::cout;
 using std::endl;
 using std::ifstream;
 using std::string;
-using ola::usbpro::UsbProWidget;
+using ola::plugin::usbpro::UsbProWidget;
 
 static const char DEFAULT_DEVICE[] = "/dev/ttyUSB0";
 static const char DEFAULT_FIRMWARE[] = "main.bin";
@@ -50,7 +50,7 @@ typedef struct {
 } options;
 
 
-class FirmwareTransferer: public ola::usbpro::UsbProWidgetListener {
+class FirmwareTransferer: public ola::plugin::usbpro::UsbProWidgetListener {
   public:
     FirmwareTransferer(ifstream *file,
                        UsbProWidget *widget,
@@ -96,9 +96,9 @@ void FirmwareTransferer::HandleFirmwareReply(bool success) {
  * Send the next chunk of the firmware file
  */
 int FirmwareTransferer::SendNextChunk() {
-  uint8_t page[ola::usbpro::FLASH_PAGE_LENGTH];
+  uint8_t page[ola::plugin::usbpro::FLASH_PAGE_LENGTH];
   m_firmware->read(reinterpret_cast<char*>(page),
-                   ola::usbpro::FLASH_PAGE_LENGTH);
+                   ola::plugin::usbpro::FLASH_PAGE_LENGTH);
   std::streamsize size = m_firmware->gcount();
 
   if (!size) {
