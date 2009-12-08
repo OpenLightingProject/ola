@@ -146,7 +146,7 @@ class Device: public AbstractDevice {
     template<class PortClass>
     void GenericFetchPortsVector(
         vector<PortClass*> *ports,
-        const map<unsigned int, PortClass*> &ports) const;
+        const map<unsigned int, PortClass*> &port_map) const;
 
     template <class PortClass>
     void GenericDeletePort(PortClass *p);
