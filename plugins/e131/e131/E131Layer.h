@@ -49,6 +49,7 @@ class E131Layer {
   private:
     RootLayer *m_root_layer;
     E131Inflator m_e131_inflator;
+    E131InflatorRev2 m_e131_rev2_inflator;
 
     E131Layer(const E131Layer&);
     E131Layer& operator=(const E131Layer&);

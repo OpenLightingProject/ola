@@ -44,14 +44,20 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
   if (data) {
     // the header bit was set, decode it
     if (length >= sizeof(E131Header::e131_pdu_header)) {
-      E131Header::e131_pdu_header *raw_header =
-        (E131Header::e131_pdu_header *) data;
-      raw_header->source[E131Header::SOURCE_NAME_LEN - 1] = 0x00;
-      string source_name(raw_header->source);
-      E131Header header(source_name,
-                        raw_header->priority,
-                        raw_header->sequence,
-                        NetworkToHost(raw_header->universe));
+      const E131Header::e131_pdu_header *raw_header =
+        reinterpret_cast<const E131Header::e131_pdu_header*>(data);
+      char raw_source_name[E131Header::SOURCE_NAME_LEN];
+      strncpy(raw_source_name,
+              raw_header->source,
+              E131Header::SOURCE_NAME_LEN);
+      raw_source_name[E131Header::SOURCE_NAME_LEN - 1] = 0x00;
+      E131Header header(
+          raw_source_name,
+          raw_header->priority,
+          raw_header->sequence,
+          NetworkToHost(raw_header->universe),
+          raw_header->options && E131Header::PREVIEW_DATA_MASK,
+          raw_header->options && E131Header::STREAM_TERMINATED_MASK);
       m_last_header = header;
       m_last_header_valid = true;
       headers.SetE131Header(header);
@@ -74,10 +80,49 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
 
 
 /*
- * Reset the header field
+ * Decode the E1.31 headers. If data is null we're expected to use the last
+ * header we got.
+ * @param headers the HeaderSet to add to
+ * @param data a pointer to the data
+ * @param length length of the data
+ * @returns true if successful, false otherwise
  */
-void E131Inflator::ResetHeaderField() {
-  m_last_header_valid = false;
+bool E131InflatorRev2::DecodeHeader(HeaderSet &headers,
+                                    const uint8_t *data,
+                                    unsigned int length,
+                                    unsigned int &bytes_used) {
+  if (data) {
+    // the header bit was set, decode it
+    if (length >= sizeof(E131Rev2Header::e131_rev2_pdu_header)) {
+      const E131Rev2Header::e131_rev2_pdu_header *raw_header =
+        reinterpret_cast<const E131Rev2Header::e131_rev2_pdu_header*>(data);
+      char raw_source_name[E131Rev2Header::REV2_SOURCE_NAME_LEN];
+      strncpy(raw_source_name,
+              raw_header->source,
+              E131Rev2Header::REV2_SOURCE_NAME_LEN);
+      raw_source_name[E131Rev2Header::REV2_SOURCE_NAME_LEN - 1] = 0x00;
+      E131Rev2Header header(raw_source_name,
+                            raw_header->priority,
+                            raw_header->sequence,
+                            NetworkToHost(raw_header->universe));
+      m_last_header = header;
+      m_last_header_valid = true;
+      headers.SetE131Header(header);
+      bytes_used = sizeof(E131Rev2Header::e131_rev2_pdu_header);
+      return true;
+    }
+    bytes_used = 0;
+    return false;
+  }
+
+  // use the last header if it exists
+  bytes_used = 0;
+  if (!m_last_header_valid) {
+    OLA_WARN << "Missing E131 Header data";
+    return false;
+  }
+  headers.SetE131Header(m_last_header);
+  return true;
 }
 }  // e131
 }  // plugin

@@ -16,6 +16,9 @@
  * E131Inflator.h
  * Interface for the E131Inflator class.
  * Copyright (C) 2009 Simon Newton
+ *
+ * This contains two inflators a E131Inflator as per the standard and an
+ * E131InflatorRev2 which implements the revision 2 draft specification.
  */
 
 #ifndef PLUGINS_E131_E131_E131INFLATOR_H_
@@ -32,7 +35,7 @@ class E131Inflator: public BaseInflator {
   friend class E131InflatorTest;
 
   public:
-    static const unsigned int E131_VECTOR = 3;
+    static const unsigned int E131_VECTOR = 4;
 
     E131Inflator(): BaseInflator(),
                     m_last_header_valid(false) {
@@ -45,12 +48,43 @@ class E131Inflator: public BaseInflator {
     bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
                       unsigned int len, unsigned int &bytes_used);
 
-    void ResetHeaderField();
+    void ResetHeaderField() {
+      m_last_header_valid = false;
+    }
   private:
     E131Header m_last_header;
     bool m_last_header_valid;
 };
-}  // e131j
+
+
+/*
+ * A Revision 2 version of the inflator.
+ */
+class E131InflatorRev2: public BaseInflator {
+  friend class E131InflatorTest;
+
+  public:
+    static const unsigned int E131_REV2_VECTOR = 3;
+
+    E131InflatorRev2(): BaseInflator(),
+                    m_last_header_valid(false) {
+    }
+    ~E131InflatorRev2() {}
+
+    uint32_t Id() const { return E131_REV2_VECTOR; }
+
+  protected:
+    bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
+                      unsigned int len, unsigned int &bytes_used);
+
+    void ResetHeaderField() {
+      m_last_header_valid = false;
+    }
+  private:
+    E131Header m_last_header;
+    bool m_last_header_valid;
+};
+}  // e131
 }  // plugin
 }  // ola
 #endif  // PLUGINS_E131_E131_E131INFLATOR_H_

@@ -34,11 +34,13 @@ using ola::network::HostToNetwork;
 
 class E131PDUTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(E131PDUTest);
+  CPPUNIT_TEST(testSimpleRev2E131PDU);
   CPPUNIT_TEST(testSimpleE131PDU);
   CPPUNIT_TEST(testNestedE131PDU);
   CPPUNIT_TEST_SUITE_END();
 
   public:
+    void testSimpleRev2E131PDU();
     void testSimpleE131PDU();
     void testNestedE131PDU();
   private:
@@ -53,9 +55,9 @@ const unsigned int E131PDUTest::TEST_VECTOR = 39;
 /*
  * Test that packing a E131PDU without data works.
  */
-void E131PDUTest::testSimpleE131PDU() {
+void E131PDUTest::testSimpleRev2E131PDU() {
   const string source = "foo source";
-  E131Header header(source, 1, 2, 6000);
+  E131Rev2Header header(source, 1, 2, 6000);
   E131PDU pdu(TEST_VECTOR, header, NULL);
 
   CPPUNIT_ASSERT_EQUAL((unsigned int) 36, pdu.HeaderSize());
@@ -75,11 +77,14 @@ void E131PDUTest::testSimpleE131PDU() {
                        *((unsigned int*) &data[2]));
 
   CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, data[6 + E131Header::SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[7 + E131Header::SOURCE_NAME_LEN]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1,
+                       data[6 + E131Rev2Header::REV2_SOURCE_NAME_LEN]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2,
+                       data[7 + E131Rev2Header::REV2_SOURCE_NAME_LEN]);
   CPPUNIT_ASSERT_EQUAL(
       HostToNetwork((uint16_t) 6000),
-      *(reinterpret_cast<uint16_t*>(data + 8 + E131Header::SOURCE_NAME_LEN)));
+      *(reinterpret_cast<uint16_t*>(
+          data + 8 + E131Rev2Header::REV2_SOURCE_NAME_LEN)));
 
   // test undersized buffer
   bytes_used = size - 1;
@@ -91,6 +96,50 @@ void E131PDUTest::testSimpleE131PDU() {
   CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
   CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
 
+  delete[] data;
+}
+
+
+/*
+ * Test that packing a E131PDU without data works.
+ */
+void E131PDUTest::testSimpleE131PDU() {
+  const string source = "foo source";
+  E131Header header(source, 1, 2, 6000, true, true);
+  E131PDU pdu(TEST_VECTOR, header, NULL);
+
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 71, pdu.HeaderSize());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, pdu.DataSize());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 77, pdu.Size());
+
+  unsigned int size = pdu.Size();
+  uint8_t *data = new uint8_t[size];
+  unsigned int bytes_used = size;
+  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+
+  // spot check the data
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR),
+                       *((unsigned int*) &data[2]));
+
+  CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, data[6 + E131Header::SOURCE_NAME_LEN]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[9 + E131Header::SOURCE_NAME_LEN]);
+  CPPUNIT_ASSERT_EQUAL(
+      HostToNetwork((uint16_t) 6000),
+      *(reinterpret_cast<uint16_t*>(data + 11 + E131Header::SOURCE_NAME_LEN)));
+
+  // test undersized buffer
+  bytes_used = size - 1;
+  CPPUNIT_ASSERT(!pdu.Pack(data, bytes_used));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+
+  // test oversized buffer
+  bytes_used = size + 1;
+  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
   delete[] data;
 }
 

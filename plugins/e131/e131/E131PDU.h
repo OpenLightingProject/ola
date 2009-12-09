@@ -32,7 +32,8 @@ class DMPPDU;
 
 class E131PDU: public PDU {
   public:
-    E131PDU(unsigned int vector, const E131Header &header,
+    E131PDU(unsigned int vector,
+            const E131Header &header,
             const DMPPDU *dmp_pdu):
       PDU(vector),
       m_header(header),

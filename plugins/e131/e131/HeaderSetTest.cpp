@@ -28,6 +28,7 @@
 using ola::plugin::e131::CID;
 using ola::plugin::e131::DMPHeader;
 using ola::plugin::e131::E131Header;
+using ola::plugin::e131::E131Rev2Header;
 using ola::plugin::e131::FOUR_BYTES;
 using ola::plugin::e131::HeaderSet;
 using ola::plugin::e131::NON_RANGE;
@@ -82,6 +83,7 @@ void HeaderSetTest::testE131Header() {
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header.Priority());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header.Sequence());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header.Universe());
+  CPPUNIT_ASSERT(!header.UsingRev2());
 
   // test copy and assign
   E131Header header2 = header;
@@ -89,12 +91,26 @@ void HeaderSetTest::testE131Header() {
   CPPUNIT_ASSERT_EQUAL(header.Priority(), header2.Priority());
   CPPUNIT_ASSERT_EQUAL(header.Sequence(), header2.Sequence());
   CPPUNIT_ASSERT_EQUAL(header.Universe(), header2.Universe());
+  CPPUNIT_ASSERT(!header2.UsingRev2());
 
   E131Header header3(header);
   CPPUNIT_ASSERT(header.Source() == header3.Source());
   CPPUNIT_ASSERT_EQUAL(header.Priority(), header3.Priority());
   CPPUNIT_ASSERT_EQUAL(header.Sequence(), header3.Sequence());
   CPPUNIT_ASSERT_EQUAL(header.Universe(), header3.Universe());
+  CPPUNIT_ASSERT(header == header3);
+
+  // test a rev 2 header
+  E131Rev2Header header_rev2("foo", 1, 2, 2050);
+  CPPUNIT_ASSERT("foo" == header_rev2.Source());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header_rev2.Priority());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header_rev2.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header_rev2.Universe());
+  CPPUNIT_ASSERT(header_rev2.UsingRev2());
+  CPPUNIT_ASSERT(!(header == header_rev2));
+
+  E131Rev2Header header2_rev2 = header_rev2;
+  CPPUNIT_ASSERT(header2_rev2 == header_rev2);
 }
 
 

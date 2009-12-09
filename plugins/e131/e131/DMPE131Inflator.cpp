@@ -76,12 +76,6 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
                                                 dmp_header.Type(),
                                                 data,
                                                 available_length);
-
-  if (address->Start()) {
-    delete address;
-    return true;
-  }
-
   if (address->Increment() != 1) {
     OLA_INFO << "E1.31 DMP packet with increment " << address->Increment()
       << ", disarding";
@@ -90,10 +84,20 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
 
   unsigned int channels = std::min(pdu_len - available_length,
                                    address->Number());
-  iter->second.buffer->Set(data + available_length, channels);
-  iter->second.closure->Run();
+  if (e131_header.UsingRev2()) {
+    // drop non-0 start codes
+    if (address->Start() == 0) {
+      iter->second.buffer->Set(data + available_length, channels);
+      iter->second.closure->Run();
+    }
+  } else {
+    // skip non-0 start codes
+    if (*(data + available_length) == 0 && channels > 0) {
+      iter->second.buffer->Set(data + available_length + 1, channels - 1);
+      iter->second.closure->Run();
+    }
+  }
   delete address;
-
   return true;
 }
 

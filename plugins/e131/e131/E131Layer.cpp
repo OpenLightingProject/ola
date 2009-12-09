@@ -22,6 +22,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/DMPE131Inflator.h"
 #include "plugins/e131/e131/E131Layer.h"
+#include "plugins/e131/e131/E131Inflator.h"
 
 namespace ola {
 namespace plugin {
@@ -36,6 +37,7 @@ using ola::network::HostToNetwork;
 E131Layer::E131Layer(RootLayer *root_layer)
     : m_root_layer(root_layer) {
   m_root_layer->AddInflator(&m_e131_inflator);
+  m_root_layer->AddInflator(&m_e131_rev2_inflator);
   if (!m_root_layer)
     OLA_WARN << "root_layer is null, this won't work";
 }
@@ -43,6 +45,8 @@ E131Layer::E131Layer(RootLayer *root_layer)
 
 /*
  * Send a DMPPDU
+ * @param header the E131Header
+ * @param dmp_pdu the DMPPDU to send
  */
 bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
   if (!m_root_layer)
@@ -55,7 +59,11 @@ bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
   }
 
   E131PDU pdu(DMPInflator::DMP_VECTOR, header, dmp_pdu);
-  return m_root_layer->SendPDU(addr, E131Inflator::E131_VECTOR, pdu);
+  unsigned int vector = E131Inflator::E131_VECTOR;
+  if (header.UsingRev2())
+    vector = E131InflatorRev2::E131_REV2_VECTOR;
+
+  return m_root_layer->SendPDU(addr, vector, pdu);
 }
 
 
@@ -63,7 +71,9 @@ bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
  * Set the DMPInflator to use
  */
 bool E131Layer::SetInflator(DMPE131Inflator *inflator) {
-  return m_e131_inflator.AddInflator(inflator);
+  bool ret = !m_e131_inflator.AddInflator(inflator);
+  ret &= m_e131_rev2_inflator.AddInflator(inflator);
+  return ret;
 }
 
 

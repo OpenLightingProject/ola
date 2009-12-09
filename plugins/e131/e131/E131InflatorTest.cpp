@@ -37,17 +37,68 @@ using ola::network::HostToNetwork;
 
 class E131InflatorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(E131InflatorTest);
+  CPPUNIT_TEST(testDecodeRev2Header);
   CPPUNIT_TEST(testDecodeHeader);
+  CPPUNIT_TEST(testInflateRev2PDU);
   CPPUNIT_TEST(testInflatePDU);
   CPPUNIT_TEST_SUITE_END();
 
   public:
+    void testDecodeRev2Header();
     void testDecodeHeader();
     void testInflatePDU();
+    void testInflateRev2PDU();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(E131InflatorTest);
 
+
+/*
+ * Check that we can decode headers properly
+ */
+void E131InflatorTest::testDecodeRev2Header() {
+  E131Rev2Header::e131_rev2_pdu_header header;
+  E131InflatorRev2 inflator;
+  HeaderSet header_set, header_set2;
+  unsigned int bytes_used;
+  const string source_name = "foobar";
+
+  strncpy(header.source, source_name.data(), source_name.size() + 1);
+  header.priority = 99;
+  header.sequence = 10;
+  header.universe = HostToNetwork(static_cast<uint16_t>(42));
+
+  CPPUNIT_ASSERT(inflator.DecodeHeader(header_set,
+                                       reinterpret_cast<uint8_t*>(&header),
+                                       sizeof(header),
+                                       bytes_used));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(header), bytes_used);
+  E131Header decoded_header = header_set.GetE131Header();
+  CPPUNIT_ASSERT(source_name == decoded_header.Source());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 99, decoded_header.Priority());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 10, decoded_header.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, decoded_header.Universe());
+
+  // try an undersized header
+  CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set,
+                                        reinterpret_cast<uint8_t*>(&header),
+                                        sizeof(header) - 1,
+                                        bytes_used));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+
+  // test inherting the header from the prev call
+  CPPUNIT_ASSERT(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+  decoded_header = header_set2.GetE131Header();
+  CPPUNIT_ASSERT(source_name == decoded_header.Source());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 99, decoded_header.Priority());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 10, decoded_header.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, decoded_header.Universe());
+
+  inflator.ResetHeaderField();
+  CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+}
 
 /*
  * Check that we can decode headers properly
@@ -100,12 +151,37 @@ void E131InflatorTest::testDecodeHeader() {
 /*
  * Check that we can inflate a E131 PDU that contains other PDUs
  */
-void E131InflatorTest::testInflatePDU() {
+void E131InflatorTest::testInflateRev2PDU() {
   const string source = "foo source";
-  E131Header header(source, 1, 2, 6000);
+  E131Rev2Header header(source, 1, 2, 6000);
   // TODO(simon): pass a DMP msg here as well
   E131PDU pdu(3, header, NULL);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 42, pdu.Size());
+
+  unsigned int size = pdu.Size();
+  uint8_t *data = new uint8_t[size];
+  unsigned int bytes_used = size;
+  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+
+  E131InflatorRev2 inflator;
+  HeaderSet header_set;
+  CPPUNIT_ASSERT_EQUAL(
+      size,
+      (unsigned int) inflator.InflatePDUBlock(header_set, data, size));
+  CPPUNIT_ASSERT(header == header_set.GetE131Header());
+  delete[] data;
+}
+
+/*
+ * Check that we can inflate a E131 PDU that contains other PDUs
+ */
+void E131InflatorTest::testInflatePDU() {
+  const string source = "foobar source";
+  E131Header header(source, 1, 2, 6000);
+  // TODO(simon): pass a DMP msg here as well
+  E131PDU pdu(3, header, NULL);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 77, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
