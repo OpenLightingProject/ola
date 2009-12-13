@@ -22,6 +22,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "plugins/e131/e131/E131Node.h"
 
@@ -40,13 +41,23 @@ using ola::DmxBuffer;
  * @param cid, the CID to use, if not provided we generate one
  * one.
  */
-E131Node::E131Node(const string &ip_address, const CID &cid)
+E131Node::E131Node(const string &ip_address,
+                   bool use_rev2,
+                   const CID &cid)
     : m_preferred_ip(ip_address),
+      m_use_rev2(use_rev2),
       m_cid(cid),
       m_transport(),
       m_root_layer(&m_transport, m_cid),
       m_e131_layer(&m_root_layer),
-      m_dmp_inflator(&m_e131_layer) {
+      m_dmp_inflator(&m_e131_layer),
+      m_send_buffer(NULL) {
+
+  if (!m_use_rev2) {
+    // Allocate a buffer for the dmx data + start code
+    m_send_buffer = new uint8_t[DMX_UNIVERSE_SIZE + 1];
+    m_send_buffer[0] = 0;  // start code is 0
+  }
 }
 
 
@@ -55,6 +66,8 @@ E131Node::E131Node(const string &ip_address, const CID &cid)
  */
 E131Node::~E131Node() {
   Stop();
+  if (m_send_buffer)
+    delete[] m_send_buffer;
 }
 
 
@@ -137,17 +150,37 @@ bool E131Node::SendDMX(uint16_t universe,
   else
     settings = &iter->second;
 
-  TwoByteRangeDMPAddress range_addr(0, 1, (uint16_t) buffer.Size());
+  const uint8_t *dmp_data;
+  unsigned int dmp_data_length;
+
+  if (m_use_rev2) {
+    dmp_data = buffer.GetRaw();
+    dmp_data_length = buffer.Size();
+  } else {
+    unsigned int data_size = DMX_UNIVERSE_SIZE;
+    buffer.Get(m_send_buffer + 1, &data_size);
+    dmp_data = m_send_buffer;
+    dmp_data_length = data_size + 1;
+  }
+
+  TwoByteRangeDMPAddress range_addr(0, 1, (uint16_t) dmp_data_length);
   DMPAddressData<TwoByteRangeDMPAddress> range_chunk(&range_addr,
-                                                     buffer.GetRaw(),
-                                                     buffer.Size());
+                                                     dmp_data,
+                                                     dmp_data_length);
   vector<DMPAddressData<TwoByteRangeDMPAddress> > ranged_chunks;
   ranged_chunks.push_back(range_chunk);
-  const DMPPDU *pdu = NewRangeDMPSetProperty<uint16_t>(true, false,
+  const DMPPDU *pdu = NewRangeDMPSetProperty<uint16_t>(true,
+                                                       false,
                                                        ranged_chunks);
 
-  E131Header header(settings->source, settings->priority, settings->sequence,
-                    universe);
+  E131Header header(settings->source,
+                    settings->priority,
+                    settings->sequence,
+                    universe,
+                    false,  // preview
+                    false,  // terminated
+                    m_use_rev2);
+
   bool result = m_e131_layer.SendDMP(header, pdu);
   if (result)
     settings->sequence++;

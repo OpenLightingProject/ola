@@ -51,6 +51,9 @@ class E131Plugin: public ola::Plugin {
     static const char PLUGIN_PREFIX[];
     static const char DEVICE_NAME[];
     static const char CID_KEY[];
+    static const char REVISION_KEY[];
+    static const char REVISION_0_2[];
+    static const char REVISION_0_46[];
 };
 }  // e131
 }  // plugin

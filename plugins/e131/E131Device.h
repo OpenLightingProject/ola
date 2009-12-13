@@ -37,7 +37,8 @@ class E131Device: public ola::Device {
     E131Device(Plugin *owner, const string &name,
                const ola::plugin::e131::CID &cid,
                class Preferences *preferences,
-               const class PluginAdaptor *plugin_adaptor);
+               const class PluginAdaptor *plugin_adaptor,
+               bool use_rev2);
     ~E131Device() {}
 
     bool Start();
@@ -51,6 +52,7 @@ class E131Device: public ola::Device {
     const class PluginAdaptor *m_plugin_adaptor;
     class E131Node *m_node;
     bool m_enabled;
+    bool m_use_rev2;
     ola::plugin::e131::CID m_cid;
 
     static const std::string IP_KEY;

@@ -52,6 +52,9 @@ const char E131Plugin::PLUGIN_NAME[] = "E1.31 (DMX over ACN) Plugin";
 const char E131Plugin::PLUGIN_PREFIX[] = "e131";
 const char E131Plugin::DEVICE_NAME[] = "E1.31 (DMX over ACN) Device";
 const char E131Plugin::CID_KEY[] = "cid";
+const char E131Plugin::REVISION_KEY[] = "revision";
+const char E131Plugin::REVISION_0_2[] = "0.2";
+const char E131Plugin::REVISION_0_46[] = "0.46";
 
 
 /*
@@ -59,9 +62,16 @@ const char E131Plugin::CID_KEY[] = "cid";
  */
 bool E131Plugin::StartHook() {
   CID cid = CID::FromString(m_preferences->GetValue(CID_KEY));
+  string revision = m_preferences->GetValue(REVISION_KEY);
 
-  m_device = new E131Device(this, DEVICE_NAME, cid, m_preferences,
-                            m_plugin_adaptor);
+  bool use_rev2 = revision == REVISION_0_2 ? true : false;
+
+  m_device = new E131Device(this,
+                            DEVICE_NAME,
+                            cid,
+                            m_preferences,
+                            m_plugin_adaptor,
+                            use_rev2);
 
   if (!m_device->Start()) {
     delete m_device;
@@ -103,6 +113,10 @@ string E131Plugin::Description() const {
 "ip = a.b.c.d\n"
 "The local ip address to use for multicasting.\n"
 "\n"
+"revision = [0.2|0.46]\n"
+"Select which revision of the standard to use when sending data. 0.2 is the\n"
+" standardized revision, 0.46 (default) is the ANSI standard version.\n"
+"\n"
 "cid = 00010203-0405-0607-0809-0A0B0C0D0E0F\n"
 "The CID to use for this device\n"
 "\n";
@@ -117,16 +131,29 @@ bool E131Plugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
+  bool save = false;
+
   CID cid = CID::FromString(m_preferences->GetValue(CID_KEY));
   if (cid.IsNil()) {
     cid = CID::Generate();
     m_preferences->SetValue(CID_KEY, cid.ToString());
-    m_preferences->Save();
+    save = true;
   }
+
+  string revision = m_preferences->GetValue(REVISION_KEY);
+  if (revision != REVISION_0_2 && revision != REVISION_0_46) {
+    m_preferences->SetValue(REVISION_KEY, REVISION_0_46);
+    save = true;
+  }
+
+  if (save)
+    m_preferences->Save();
 
   // check if this saved correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue(CID_KEY) == "")
+  revision = m_preferences->GetValue(REVISION_KEY);
+  if (m_preferences->GetValue(CID_KEY) == "" ||
+      (revision != REVISION_0_2 && revision != REVISION_0_46))
     return false;
 
   return true;

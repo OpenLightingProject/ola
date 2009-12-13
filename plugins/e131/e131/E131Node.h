@@ -39,6 +39,7 @@ namespace e131 {
 class E131Node {
   public:
     E131Node(const std::string &ip_address,
+             bool use_rev2,
              const CID &cid = CID::Generate());
     ~E131Node();
 
@@ -62,12 +63,14 @@ class E131Node {
     } tx_universe;
 
     string m_preferred_ip;
+    bool m_use_rev2;
     CID m_cid;
     UDPTransport m_transport;
     RootLayer m_root_layer;
     E131Layer m_e131_layer;
     DMPE131Inflator m_dmp_inflator;
     map<unsigned int, tx_universe> m_tx_universes;
+    uint8_t *m_send_buffer;
 
     tx_universe *SetupOutgoingSettings(unsigned int universe);
 
