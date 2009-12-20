@@ -115,7 +115,7 @@ AC_CHECK_HEADERS(
 PLUGINS="dummy opendmx stageprofi usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
-PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
+PLUGIN_LIBRARY(dmx4l, DMXdev, DMX4LINUX)
 PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
 
 # confirm libartnet version

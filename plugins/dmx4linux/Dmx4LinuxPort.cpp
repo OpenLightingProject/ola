@@ -19,6 +19,7 @@
  */
 
 #include <string.h>
+#include <errno.h>
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
 
@@ -36,7 +37,7 @@ namespace dmx4linux {
  * @return true on success, false on failure
  */
 bool Dmx4LinuxOutputPort::WriteDMX(const DmxBuffer &buffer) {
-  int offset = DMX_UNIVERSE_SIZE * m_dmx_universe;
+  int offset = DMX_UNIVERSE_SIZE * m_d4l_universe;
   if (lseek(m_socket->WriteDescriptor(), offset, SEEK_SET) == offset) {
     ssize_t r = m_socket->Send(buffer.GetRaw(), buffer.Size());
     if ((uint) r != buffer.Size()) {

@@ -38,9 +38,10 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 
-#include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #include "plugins/dmx4linux/Dmx4LinuxDevice.h"
+#include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #include "plugins/dmx4linux/Dmx4LinuxPort.h"
+#include "plugins/dmx4linux/Dmx4LinuxSocket.h"
 
 
 /*
@@ -142,7 +143,7 @@ string Dmx4LinuxPlugin::Description() const {
  * Called when there is input for us
  */
 int Dmx4LinuxPlugin::SocketReady() {
-  vector<Dmx4LinuxPort*>::iterator it;
+  vector<Dmx4LinuxInputPort*>::iterator iter;
   unsigned int data_read, offset;
   int ret;
 
@@ -158,6 +159,7 @@ int Dmx4LinuxPlugin::SocketReady() {
   while (offset < data_read && iter != m_in_ports.end()) {
     (*iter)->UpdateData(m_in_buffer + offset, data_read - offset);
     iter++;
+  }
   return 0;
 }
 

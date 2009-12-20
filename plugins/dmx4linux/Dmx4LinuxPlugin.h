@@ -35,7 +35,6 @@ namespace plugin {
 namespace dmx4linux {
 
 class Dmx4LinuxDevice;
-using ola::network::Dmx4LinuxSocket;
 
 class Dmx4LinuxPlugin: public ola::Plugin {
   public:
@@ -62,7 +61,7 @@ class Dmx4LinuxPlugin: public ola::Plugin {
     bool SetupSockets();
     int CleanupSockets();
     bool SetupDevice(string family, int d4l_uni, int dir);
-    bool SetupDevices(int dir);
+    bool SetupDevices();
 
     vector<Dmx4LinuxDevice*>  m_devices;  // list of out devices
     vector<Dmx4LinuxInputPort*>  m_in_ports;  // list of in ports

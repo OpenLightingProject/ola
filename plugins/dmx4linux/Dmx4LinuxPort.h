@@ -21,6 +21,7 @@
 #ifndef PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_
 #define PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_
 
+#include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/dmx4linux/Dmx4LinuxDevice.h"
 #include "plugins/dmx4linux/Dmx4LinuxSocket.h"
@@ -45,10 +46,11 @@ class Dmx4LinuxOutputPort: public ola::OutputPort {
     }
 
     bool WriteDMX(const DmxBuffer &buffer);
+    string Description() const { return ""; }
 
   private:
     Dmx4LinuxSocket *m_socket;
-    int m_dmx_universe;  // dmx4linux universe that this maps to
+    int m_d4l_universe;  // dmx4linux universe that this maps to
 };
 
 
@@ -65,6 +67,7 @@ class Dmx4LinuxInputPort: public ola::InputPort {
 
     const DmxBuffer &ReadDMX() const;
     bool UpdateData(const uint8_t *in_buffer, unsigned int length);
+    string Description() const { return ""; }
 
   private:
     DmxBuffer m_read_buffer;

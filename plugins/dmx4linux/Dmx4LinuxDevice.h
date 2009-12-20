@@ -33,7 +33,7 @@ class Dmx4LinuxDevice: public ola::Device {
     Dmx4LinuxDevice(class Dmx4LinuxPlugin *owner,
                     const string &name,
                     const string &device_id);
-    ~Dmx4LinuxDevice();
+    ~Dmx4LinuxDevice() {}
     string DeviceId() const { return m_device_id; }
 
     bool Stop();
