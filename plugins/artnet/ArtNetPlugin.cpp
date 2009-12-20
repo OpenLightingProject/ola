@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string>
 
+#include "ola/Logging.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/artnet/ArtNetPlugin.h"
@@ -136,7 +137,7 @@ bool ArtNetPlugin::SetDefaultPreferences() {
     return false;
 
   save |= m_preferences->SetDefaultValue("short_name", ARTNET_SHORT_NAME);
-  save |= m_preferences->SetDefaultValue("long_nane", ARTNET_LONG_NAME);
+  save |= m_preferences->SetDefaultValue("long_name", ARTNET_LONG_NAME);
   save |= m_preferences->SetDefaultValue("subnet", ARTNET_SUBNET);
 
   if (save)
@@ -144,9 +145,9 @@ bool ArtNetPlugin::SetDefaultPreferences() {
 
   // check if this save correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue("short_name") == "" ||
-      m_preferences->GetValue("long_name") == "" ||
-      m_preferences->GetValue("subnet") == "" )
+  if (m_preferences->GetValue("short_name").empty() ||
+      m_preferences->GetValue("long_name").empty() ||
+      m_preferences->GetValue("subnet").empty())
     return false;
 
   return true;
