@@ -19,26 +19,15 @@
  */
 
 #include <string.h>
-#include "Dmx4LinuxPort.h"
-#include "Dmx4LinuxDevice.h"
+#include <ola/BaseTypes.h>
+#include <ola/Logging.h>
+
+#include "plugins/dmx4linux/Dmx4LinuxPort.h"
+#include "plugins/dmx4linux/Dmx4LinuxDevice.h"
 
 namespace ola {
 namespace plugin {
-
-
-/*
- * Constructor
- * We only have 1 port per device so the id is always 0
- */
-Dmx4LinuxPort::Dmx4LinuxPort(Dmx4LinuxDevice *parent,
-                             int dmx_universe,
-                             bool in,
-                             bool out):
-  Port<Dmx4LinuxDevice>(parent, 0),
-  m_in(in),
-  m_out(out),
-  m_dmx_universe(dmx_universe) {
-}
+namespace dmx4linux {
 
 
 /*
@@ -46,11 +35,20 @@ Dmx4LinuxPort::Dmx4LinuxPort(Dmx4LinuxDevice *parent,
  * @param buffer the DmxBuffer to write
  * @return true on success, false on failure
  */
-bool Dmx4LinuxPort::WriteDMX(const DmxBuffer &buffer) {
-  if (!CanWrite())
+bool Dmx4LinuxOutputPort::WriteDMX(const DmxBuffer &buffer) {
+  int offset = DMX_UNIVERSE_SIZE * m_dmx_universe;
+  if (lseek(m_socket->WriteDescriptor(), offset, SEEK_SET) == offset) {
+    ssize_t r = m_socket->Send(buffer.GetRaw(), buffer.Size());
+    if ((uint) r != buffer.Size()) {
+      OLA_WARN << "only wrote " << r << "/" << buffer.Size() << " bytes: " <<
+        strerror(errno);
+      return false;
+    }
+  } else {
+    OLA_WARN << "failed to seek: " << strerror(errno);
     return false;
-
-  return GetDevice()->SendDMX(m_dmx_universe, buffer);
+  }
+  return true;
 }
 
 
@@ -58,9 +56,23 @@ bool Dmx4LinuxPort::WriteDMX(const DmxBuffer &buffer) {
  * Read operation
  * @return a DmxBufer with the data
  */
-const DmxBuffer &Dmx4LinuxPort::ReadDMX() const {
+const DmxBuffer &Dmx4LinuxInputPort::ReadDMX() const {
   return m_read_buffer;
 }
 
-} //plugin
-} //ola
+
+/*
+ * Process new Data
+ */
+bool Dmx4LinuxInputPort::UpdateData(const uint8_t *in_buffer,
+                                    unsigned int length) {
+  DmxBuffer tmp_buffer = DmxBuffer(in_buffer, length);
+  if (!(tmp_buffer == m_read_buffer)) {
+    m_read_buffer.Set(tmp_buffer);
+    DmxChanged();
+  }
+  return true;
+}
+}  // dmx4linux
+}  // plugin
+}  // ola

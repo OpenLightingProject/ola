@@ -18,28 +18,33 @@
  * Copyright (C) 2006-2009 Simon Newton
  */
 
-#ifndef DMX4LINUXPLUGIN_H
-#define DMX4LINUXPLUGIN_H
+#ifndef PLUGINS_DMX4LINUX_DMX4LINUXPLUGIN_H_
+#define PLUGINS_DMX4LINUX_DMX4LINUXPLUGIN_H_
 
 #include <vector>
 #include <string>
-#include <ola/DmxBuffer.h>
-#include <olad/Plugin.h>
-#include <ola/network/Socket.h>
-#include <ola/plugin_id.h>
+#include "ola/DmxBuffer.h"
+#include "olad/Plugin.h"
+#include "ola/network/Socket.h"
+#include "ola/plugin_id.h"
+#include "plugins/dmx4linux/Dmx4LinuxPort.h"
+#include "plugins/dmx4linux/Dmx4LinuxSocket.h"
 
 namespace ola {
 namespace plugin {
+namespace dmx4linux {
 
 class Dmx4LinuxDevice;
-using ola::network::DeviceSocket;
+using ola::network::Dmx4LinuxSocket;
 
 class Dmx4LinuxPlugin: public ola::Plugin {
   public:
-    Dmx4LinuxPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit Dmx4LinuxPlugin(const PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_in_socket(NULL),
-      m_out_socket(NULL) {}
+      m_out_socket(NULL),
+      m_in_devices_count(0),
+      m_in_buffer(NULL) {}
     ~Dmx4LinuxPlugin();
 
     string Name() const { return PLUGIN_NAME; }
@@ -47,7 +52,6 @@ class Dmx4LinuxPlugin: public ola::Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_DMX4LINUX; }
 
     int SocketReady();
-    bool SendDMX(int d4l_uni, const DmxBuffer &buffer) const;
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:
@@ -57,22 +61,27 @@ class Dmx4LinuxPlugin: public ola::Plugin {
 
     bool SetupSockets();
     int CleanupSockets();
-    int GetDmx4LinuxDeviceCount(int dir);
     bool SetupDevice(string family, int d4l_uni, int dir);
     bool SetupDevices(int dir);
-    bool Setup();
 
     vector<Dmx4LinuxDevice*>  m_devices;  // list of out devices
-    string m_out_dev;  // path the the dmx device
-    string m_in_dev;   // path the the dmx device
-    DeviceSocket *m_in_socket;
-    DeviceSocket *m_out_socket;
+    vector<Dmx4LinuxInputPort*>  m_in_ports;  // list of in ports
+    string m_out_dev;  // path to the dmx output device
+    string m_in_dev;   // path to the dmx input device
+    Dmx4LinuxSocket *m_in_socket;
+    Dmx4LinuxSocket *m_out_socket;
+    int m_in_devices_count;  // number of input devices
+    uint8_t *m_in_buffer;  // input buffer
 
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
+    static const char DMX4LINUX_OUT_DEVICE[];
+    static const char DMX4LINUX_IN_DEVICE[];
+    static const char OUT_DEV_KEY[];
+    static const char IN_DEV_KEY[];
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
 };
+}  // dmx4linux
+}  // plugin
+}  // ola
 
-} //plugin
-} //ola
-
-#endif
+#endif  // PLUGINS_DMX4LINUX_DMX4LINUXPLUGIN_H_

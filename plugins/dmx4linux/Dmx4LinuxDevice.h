@@ -18,15 +18,15 @@
  * Copyright (C) 2006-2009 Simon Newton
  */
 
-#ifndef DMX4LINUXDEVICE_H
-#define DMX4LINUXDEVICE_H
+#ifndef PLUGINS_DMX4LINUX_DMX4LINUXDEVICE_H_
+#define PLUGINS_DMX4LINUX_DMX4LINUXDEVICE_H_
 
 #include <string>
-#include <ola/DmxBuffer.h>
-#include <olad/Device.h>
+#include "olad/Device.h"
 
 namespace ola {
 namespace plugin {
+namespace dmx4linux {
 
 class Dmx4LinuxDevice: public ola::Device {
   public:
@@ -34,19 +34,16 @@ class Dmx4LinuxDevice: public ola::Device {
                     const string &name,
                     const string &device_id);
     ~Dmx4LinuxDevice();
-
-    bool Start();
-    bool Stop();
     string DeviceId() const { return m_device_id; }
-    bool SendDMX(int d4l_uni, const DmxBuffer &buffer) const;
+
+    bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
 
   private:
-    class Dmx4LinuxPlugin *m_plugin;
     string m_device_id;
-    bool m_enabled;
 };
-
-} //plugin
-} //ola
-
-#endif
+}  // dmx4linux
+}  // plugin
+}  // ola
+#endif  // PLUGINS_DMX4LINUX_DMX4LINUXDEVICE_H_

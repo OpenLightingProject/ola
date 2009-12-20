@@ -18,33 +18,58 @@
  * Copyright (C) 2006-2008 Simon Newton
  */
 
-#ifndef DMX4LINUXPORT_H
-#define DMX4LINUXPORT_H
+#ifndef PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_
+#define PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_
 
-#include <ola/DmxBuffer.h>
-#include <olad/Port.h>
-#include "Dmx4LinuxDevice.h"
+#include "ola/DmxBuffer.h"
+#include "plugins/dmx4linux/Dmx4LinuxDevice.h"
+#include "plugins/dmx4linux/Dmx4LinuxSocket.h"
 
 namespace ola {
 namespace plugin {
+namespace dmx4linux {
 
-class Dmx4LinuxPort: public ola::Port<Dmx4LinuxDevice> {
+
+/*
+ * A Dmx4Linux output port, we only have 1 port per device so the port id is
+ * always 0.
+ */
+class Dmx4LinuxOutputPort: public ola::OutputPort {
   public:
-    Dmx4LinuxPort(Dmx4LinuxDevice *parent, int d4l, bool in, bool out);
+    Dmx4LinuxOutputPort(Dmx4LinuxDevice *parent,
+                        Dmx4LinuxSocket *socket,
+                        int d4l_universe) :
+        ola::OutputPort(parent, 0),
+        m_socket(socket),
+        m_d4l_universe(d4l_universe) {
+    }
 
     bool WriteDMX(const DmxBuffer &buffer);
-    const DmxBuffer &ReadDMX() const;
 
-    bool CanRead() const { return m_in; }
-    bool CanWrite() const { return m_out; }
   private:
-    bool m_in;
-    bool m_out;
+    Dmx4LinuxSocket *m_socket;
     int m_dmx_universe;  // dmx4linux universe that this maps to
-    DmxBuffer m_read_buffer;
 };
 
-} //plugin
-} //ola
 
-#endif
+/*
+ * A Dmx4Linux input port, we only have 1 port per device so the port id is
+ * always 0.
+ */
+class Dmx4LinuxInputPort: public ola::InputPort {
+  public:
+    explicit Dmx4LinuxInputPort(Dmx4LinuxDevice *parent):
+        ola::InputPort(parent, 0) {
+      m_read_buffer.SetRangeToValue(0, 0, DMX_UNIVERSE_SIZE);
+    }
+
+    const DmxBuffer &ReadDMX() const;
+    bool UpdateData(const uint8_t *in_buffer, unsigned int length);
+
+  private:
+    DmxBuffer m_read_buffer;
+};
+}  // dmx4linux
+}  // plugin
+}  // ola
+#endif  // PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_

@@ -13,46 +13,28 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * Dmx4LinuxDevice.cpp
- * Dmx4Linux device
+ * Dmx4LinuxSocket.h
+ * Interface for the dmx4linux socket class
  * Copyright (C) 2006-2009 Simon Newton
- *
  */
-#include <string>
-#include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
-#include "plugins/dmx4linux/Dmx4LinuxDevice.h"
+
+#ifndef PLUGINS_DMX4LINUX_DMX4LINUXSOCKET_H_
+#define PLUGINS_DMX4LINUX_DMX4LINUXSOCKET_H_
+
+#include "ola/network/Socket.h"
 
 namespace ola {
 namespace plugin {
 namespace dmx4linux {
 
-using ola::Device;
-
-/*
- * Create a new device
- * @param owner the plugin that owns this device
- * @param name  the device name
- * @param device_id the device id
- */
-Dmx4LinuxDevice::Dmx4LinuxDevice(Dmx4LinuxPlugin *owner,
-                                 const string &name,
-                                 const string &device_id):
-  Device(owner, name),
-  m_device_id(device_id) {
-}
-
-
-/*
- * Stop this device
- */
-bool Dmx4LinuxDevice::Stop() {
-  if (!m_enabled)
-    return true;
-
-  DeleteAllPorts();
-  m_enabled = false;
-  return true;
-}
+class Dmx4LinuxSocket: public DeviceSocket {
+  public:
+    explicit Dmx4LinuxSocket(int fd): DeviceSocket(fd) {}
+  protected:
+    virtual bool IsClosed() const {return false;}
+};
 }  // dmx4linux
 }  // plugin
 }  // ola
+
+#endif  // PLUGINS_DMX4LINUX_DMX4LINUXSOCKET_H_
