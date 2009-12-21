@@ -93,7 +93,7 @@ class IntegerVariable: public BaseVariable {
 
 
 /*
- * A Map variable holds string -> string mappings
+ * A Map variable holds string -> type mappings
  */
 template<typename Type>
 class MapVariable: public BaseVariable {
@@ -103,9 +103,8 @@ class MapVariable: public BaseVariable {
       m_label(label) {}
     ~MapVariable() {}
 
-    void Set(const string &key, const Type &value);
     void Remove(const string &key);
-    const Type Get(const string &key) const;
+    Type &operator[](const string &key);
     const string Value() const;
     const string Label() const { return m_label; }
   private:
@@ -115,39 +114,16 @@ class MapVariable: public BaseVariable {
 
 typedef MapVariable<string> StringMap;
 typedef MapVariable<int> IntMap;
+typedef MapVariable<unsigned int> UIntMap;
 
 
 /*
- * Set a map variable
- * @param key the key
- * @param value the value
+ * Return a value from the Map Variable, this will create an entry in the map
+ * if the variable doesn't exist.
  */
 template<typename Type>
-void MapVariable<Type>::Set(const string &key, const Type &value) {
-  typename map<string, Type>::iterator iter;
-  iter = m_variables.find(key);
-
-  if (iter != m_variables.end())
-    iter->second = value;
-
-  std::pair<string, Type> pair(key, value);
-  m_variables.insert(pair);
-}
-
-
-/*
- * Return a value from the Map Variable
- */
-template<typename Type>
-const Type MapVariable<Type>::Get(const string &key) const {
-  static Type default_value;
-  typename map<string, Type>::const_iterator iter;
-  iter = m_variables.find(key);
-
-  if (iter == m_variables.end()) {
-    return default_value;
-  }
-  return iter->second;
+Type &MapVariable<Type>::operator[](const string &key) {
+  return m_variables[key];
 }
 
 
@@ -157,8 +133,7 @@ const Type MapVariable<Type>::Get(const string &key) const {
  */
 template<typename Type>
 void MapVariable<Type>::Remove(const string &key) {
-  typename map<string, Type>::iterator iter;
-  iter = m_variables.find(key);
+  typename map<string, Type>::iterator iter = m_variables.find(key);
 
   if (iter != m_variables.end())
     m_variables.erase(iter);
@@ -172,21 +147,29 @@ class ExportMap {
   public:
     ExportMap() {}
     ~ExportMap();
+    vector<BaseVariable*> AllVariables() const;
 
     IntegerVariable *GetIntegerVar(const string &name);
     StringVariable *GetStringVar(const string &name);
+
     StringMap *GetStringMapVar(const string &name, const string &label="");
     IntMap *GetIntMapVar(const string &name, const string &label="");
-    vector<BaseVariable*> AllVariables() const;
+    UIntMap *GetUIntMapVar(const string &name, const string &label="");
 
   private :
     ExportMap(const ExportMap&);
     ExportMap& operator=(const ExportMap&);
 
+    template<typename Type>
+    void AddVariablesToVector(vector<BaseVariable*> *variables,
+                              const Type &var_map) const;
+
     map<string, StringVariable*> m_string_variables;
     map<string, IntegerVariable*> m_int_variables;
+
     map<string, StringMap*> m_str_map_variables;
     map<string, IntMap*> m_int_map_variables;
+    map<string, UIntMap*> m_uint_map_variables;
 };
 }  // ola
 #endif  // INCLUDE_OLA_EXPORTMAP_H_

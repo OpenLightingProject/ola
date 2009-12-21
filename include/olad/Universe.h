@@ -98,6 +98,7 @@ class Universe {
     static const char K_UNIVERSE_SINK_CLIENTS_VAR[];
     static const char K_MERGE_HTP_STR[];
     static const char K_MERGE_LTP_STR[];
+    static const char K_FPS_VAR[];
 
   private:
     Universe(const Universe&);

@@ -53,6 +53,7 @@ const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
 const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe_sink_clients";
 const char Universe::K_MERGE_HTP_STR[] = "htp";
 const char Universe::K_MERGE_LTP_STR[] = "ltp";
+const char Universe::K_FPS_VAR[] = "frames-per-second";
 
 /*
  * Create a new universe
@@ -81,13 +82,12 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
     K_UNIVERSE_OUTPUT_PORT_VAR,
     K_UNIVERSE_SOURCE_CLIENTS_VAR,
     K_UNIVERSE_SINK_CLIENTS_VAR,
+    K_FPS_VAR,
   };
 
   if (m_export_map) {
     for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
-      m_export_map->GetIntMapVar(vars[i])->Set(
-          m_universe_id_str,
-          0);
+      (*m_export_map->GetUIntMapVar(vars[i]))[m_universe_id_str] = 0;
   }
 }
 
@@ -96,19 +96,24 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
  * Delete this universe
  */
 Universe::~Universe() {
-  const char *vars[] = {
+  const char *string_vars[] = {
     K_UNIVERSE_NAME_VAR,
     K_UNIVERSE_MODE_VAR,
+  };
+
+  const char *uint_vars[] = {
     K_UNIVERSE_INPUT_PORT_VAR,
     K_UNIVERSE_OUTPUT_PORT_VAR,
     K_UNIVERSE_SOURCE_CLIENTS_VAR,
     K_UNIVERSE_SINK_CLIENTS_VAR,
+    K_FPS_VAR,
   };
 
   if (m_export_map) {
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
-      m_export_map->GetStringMapVar(vars[i])->Remove(
-          m_universe_id_str);
+    for (unsigned int i = 0; i < sizeof(string_vars) / sizeof(char*); ++i)
+      m_export_map->GetStringMapVar(string_vars[i])->Remove(m_universe_id_str);
+    for (unsigned int i = 0; i < sizeof(uint_vars) / sizeof(char*); ++i)
+      m_export_map->GetUIntMapVar(uint_vars[i])->Remove(m_universe_id_str);
   }
 }
 
@@ -361,6 +366,9 @@ bool Universe::UpdateDependants() {
        ++client_iter) {
     (*client_iter)->SendDMX(m_universe_id, m_buffer);
   }
+
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_FPS_VAR))[m_universe_id_str]++;
   return true;
 }
 
@@ -372,7 +380,7 @@ void Universe::UpdateName() {
   if (!m_export_map)
     return;
   StringMap *name_map = m_export_map->GetStringMapVar(K_UNIVERSE_NAME_VAR);
-  name_map->Set(m_universe_id_str, m_universe_name);
+  (*name_map)[m_universe_id_str] = m_universe_name;
 }
 
 
@@ -383,9 +391,8 @@ void Universe::UpdateMode() {
   if (!m_export_map)
     return;
   StringMap *mode_map = m_export_map->GetStringMapVar(K_UNIVERSE_MODE_VAR);
-  mode_map->Set(m_universe_id_str,
-                m_merge_mode == Universe::MERGE_LTP ?
-                K_MERGE_LTP_STR : K_MERGE_HTP_STR);
+  (*mode_map)[m_universe_id_str] = (m_merge_mode == Universe::MERGE_LTP ?
+                                    K_MERGE_LTP_STR : K_MERGE_HTP_STR);
 }
 
 
@@ -403,8 +410,7 @@ bool Universe::AddClient(Client *client, bool is_source) {
   if (m_export_map) {
     const string &map_name = is_source ? K_UNIVERSE_SOURCE_CLIENTS_VAR :
       K_UNIVERSE_SINK_CLIENTS_VAR;
-    IntMap *map = m_export_map->GetIntMapVar(map_name);
-    map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
+    (*m_export_map->GetUIntMapVar(map_name))[m_universe_id_str]++;
   }
   return true;
 }
@@ -427,8 +433,7 @@ bool Universe::RemoveClient(Client *client, bool is_source) {
   if (m_export_map) {
     const string &map_name = is_source ? K_UNIVERSE_SOURCE_CLIENTS_VAR :
       K_UNIVERSE_SINK_CLIENTS_VAR;
-    IntMap *map = m_export_map->GetIntMapVar(map_name);
-    map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
+    (*m_export_map->GetUIntMapVar(map_name))[m_universe_id_str]--;
   }
   OLA_INFO << "Client " << client << " has been removed from uni " <<
     m_universe_id;
@@ -498,10 +503,10 @@ bool Universe::GenericAddPort(PortClass *port, vector<PortClass*> *ports) {
 
   ports->push_back(port);
   if (m_export_map) {
-    IntMap *map = m_export_map->GetIntMapVar(
+    UIntMap *map = m_export_map->GetUIntMapVar(
         IsInputPort<PortClass>() ? K_UNIVERSE_INPUT_PORT_VAR :
         K_UNIVERSE_OUTPUT_PORT_VAR);
-    map->Set(m_universe_id_str, map->Get(m_universe_id_str) + 1);
+    (*map)[m_universe_id_str]++;
   }
   return true;
 }
@@ -525,10 +530,10 @@ bool Universe::GenericRemovePort(PortClass *port, vector<PortClass*> *ports) {
 
   ports->erase(iter);
   if (m_export_map) {
-    IntMap *map = m_export_map->GetIntMapVar(
+    UIntMap *map = m_export_map->GetUIntMapVar(
         IsInputPort<PortClass>() ? K_UNIVERSE_INPUT_PORT_VAR :
         K_UNIVERSE_OUTPUT_PORT_VAR);
-    map->Set(m_universe_id_str, map->Get(m_universe_id_str) - 1);
+    (*map)[m_universe_id_str]--;
   }
   if (!IsActive())
     m_universe_store->AddUniverseGarbageCollection(this);

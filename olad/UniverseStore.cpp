@@ -41,20 +41,19 @@ UniverseStore::UniverseStore(Preferences *preferences,
     : m_preferences(preferences),
       m_export_map(export_map) {
   if (export_map) {
-    StringMap *map = export_map->GetStringMapVar(Universe::K_UNIVERSE_NAME_VAR,
-        "name");
-    map = export_map->GetStringMapVar(Universe::K_UNIVERSE_MODE_VAR, "mode");
+    export_map->GetStringMapVar(Universe::K_UNIVERSE_NAME_VAR, "name");
+    export_map->GetStringMapVar(Universe::K_UNIVERSE_MODE_VAR, "mode");
 
     const char *vars[] = {
+      Universe::K_FPS_VAR,
       Universe::K_UNIVERSE_INPUT_PORT_VAR,
       Universe::K_UNIVERSE_OUTPUT_PORT_VAR,
-      Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR,
       Universe::K_UNIVERSE_SINK_CLIENTS_VAR,
+      Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR,
     };
 
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i) {
-      export_map->GetIntMapVar(string(vars[i]), "count");
-    }
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
+      export_map->GetUIntMapVar(string(vars[i]), "count");
   }
 }
 

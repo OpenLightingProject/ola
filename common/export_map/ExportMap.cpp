@@ -60,6 +60,7 @@ ExportMap::~ExportMap() {
   map<string, StringVariable*>::const_iterator string_iter;
   map<string, StringMap*>::const_iterator str_map_iter;
   map<string, IntMap*>::const_iterator int_map_iter;
+  map<string, UIntMap*>::const_iterator uint_map_iter;
 
   for (int_iter = m_int_variables.begin();
        int_iter != m_int_variables.end(); int_iter++)
@@ -77,16 +78,20 @@ ExportMap::~ExportMap() {
        int_map_iter != m_int_map_variables.end(); int_map_iter++)
     delete int_map_iter->second;
 
+  for (uint_map_iter = m_uint_map_variables.begin();
+       uint_map_iter != m_uint_map_variables.end(); uint_map_iter++)
+    delete uint_map_iter->second;
+
   m_int_variables.clear();
   m_string_variables.clear();
   m_str_map_variables.clear();
-  m_int_variables.clear();
+  m_int_map_variables.clear();
+  m_uint_map_variables.clear();
 }
 
 
 /*
  * Lookup or create an integer variable.
- *
  * @param name the name of this variable.
  * @return an IntergerVariable
  */
@@ -106,7 +111,6 @@ IntegerVariable *ExportMap::GetIntegerVar(const string &name) {
 
 /*
  * Lookup or create a string variable.
- *
  * @param name the name of the variable.
  * @return a StringVariable.
  */
@@ -126,7 +130,6 @@ StringVariable *ExportMap::GetStringVar(const string &name) {
 
 /*
  * Lookup or create a string map variable
- *
  * @param name the name of the variable
  * @param label the label to use for the map (optional)
  * @return a MapVariable
@@ -147,7 +150,6 @@ StringMap *ExportMap::GetStringMapVar(const string &name, const string &label) {
 
 /*
  * Lookup or create an int map variable
- *
  * @param name the name of the variable
  * @param label the label to use for the map (optional)
  * @return a MapVariable
@@ -167,32 +169,44 @@ IntMap *ExportMap::GetIntMapVar(const string &name, const string &label) {
 
 
 /*
+ * Lookup or create an unsigned int map variable
+ * @param name the name of the variable
+ * @param label the label to use for the map (optional)
+ * @return a MapVariable
+ */
+UIntMap *ExportMap::GetUIntMapVar(const string &name, const string &label) {
+  map<string, UIntMap*>::iterator iter;
+  iter = m_uint_map_variables.find(name);
+
+  if (iter == m_uint_map_variables.end()) {
+    UIntMap *var = new UIntMap(name, label);
+    std::pair<string, UIntMap*> pair(name, var);
+    m_uint_map_variables.insert(pair);
+    return var;
+  }
+  return iter->second;
+}
+
+
+/*
  * Return a list of all variables.
  * @return a vector of all variables.
  */
 vector<BaseVariable*> ExportMap::AllVariables() const {
   vector<BaseVariable*> variables;
-  map<string, IntegerVariable*>::const_iterator int_iter;
-  map<string, StringVariable*>::const_iterator string_iter;
-  map<string, StringMap*>::const_iterator str_map_iter;
-  map<string, IntMap*>::const_iterator int_map_iter;
-
-  for (int_iter = m_int_variables.begin();
-       int_iter != m_int_variables.end(); int_iter++)
-    variables.push_back(int_iter->second);
-
-  for (string_iter = m_string_variables.begin();
-       string_iter != m_string_variables.end(); string_iter++)
-    variables.push_back(string_iter->second);
-
-  for (str_map_iter = m_str_map_variables.begin();
-       str_map_iter != m_str_map_variables.end(); str_map_iter++)
-    variables.push_back(str_map_iter->second);
-
-  for (int_map_iter = m_int_map_variables.begin();
-       int_map_iter != m_int_map_variables.end(); int_map_iter++)
-    variables.push_back(int_map_iter->second);
-
+  AddVariablesToVector(&variables, m_int_variables);
+  AddVariablesToVector(&variables, m_string_variables);
+  AddVariablesToVector(&variables, m_str_map_variables);
+  AddVariablesToVector(&variables, m_int_map_variables);
+  AddVariablesToVector(&variables, m_uint_map_variables);
   return variables;
+}
+
+template<typename Type>
+void ExportMap::AddVariablesToVector(vector<BaseVariable*> *variables,
+                                     const Type &var_map) const {
+  typename Type::const_iterator iter;
+  for (iter = var_map.begin(); iter != var_map.end(); ++iter)
+    variables->push_back(iter->second);
 }
 }  // ola

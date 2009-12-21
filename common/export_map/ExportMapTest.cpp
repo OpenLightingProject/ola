@@ -107,19 +107,20 @@ void ExportMapTest::testStringMapVariable() {
 
   string key1 = "key1";
   string value1 = "value1";
-  var.Set(key1, value1);
-  CPPUNIT_ASSERT_EQUAL(var.Get(key1), value1);
+  var[key1] = value1;
+  CPPUNIT_ASSERT_EQUAL(value1, var[key1]);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key1:value1"));
 
   string key2 = "key2";
   string value2 = "value2";
-  var.Set(key2, value2);
-  CPPUNIT_ASSERT_EQUAL(var.Get(key2), value2);
+  var[key2] = value2;
+  CPPUNIT_ASSERT_EQUAL(value2, var[key2]);
   CPPUNIT_ASSERT_EQUAL(var.Value(),
                        string("map:count key1:value1 key2:value2"));
 
   var.Remove(key1);
-  CPPUNIT_ASSERT_EQUAL(var.Get(key1), string(""));
+  CPPUNIT_ASSERT_EQUAL(string(""), var[key1]);
+  var.Remove(key1);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key2:value2"));
 }
 
@@ -137,18 +138,28 @@ void ExportMapTest::testIntMapVariable() {
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count"));
 
   string key1 = "key1";
-  var.Set(key1, 100);
-  CPPUNIT_ASSERT_EQUAL(var.Get(key1), 100);
+  var[key1] = 100;
+  CPPUNIT_ASSERT_EQUAL(100, var[key1]);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key1:100"));
 
   string key2 = "key2";
-  var.Set(key2, 99);
-  CPPUNIT_ASSERT_EQUAL(var.Get(key2), 99);
+  var[key2] = 99;
+  CPPUNIT_ASSERT_EQUAL(99, var[key2]);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key1:100 key2:99"));
 
   var.Remove(key1);
-  CPPUNIT_ASSERT_EQUAL(var.Get(key1), 0);
+  CPPUNIT_ASSERT_EQUAL(0, var[key1]);
+  var.Remove(key1);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key2:99"));
+  var.Remove(key2);
+
+  // check references work
+  string key3 = "key3";
+  int &var1 = var[key3];
+  CPPUNIT_ASSERT_EQUAL(0, var1);
+  var1++;
+  CPPUNIT_ASSERT_EQUAL(1, var[key3]);
+  CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key3:1"));
 }
 
 /*
