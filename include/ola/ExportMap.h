@@ -85,10 +85,39 @@ class IntegerVariable: public BaseVariable {
     void Decrement() { m_value--; }
     void Reset() { m_value = 0; }
     int Get() const { return m_value; }
-    const string Value() const;
+    const string Value() const {
+      stringstream out;
+      out << m_value;
+      return out.str();
+    }
 
   private:
     int m_value;
+};
+
+
+/*
+ * Represents a counter which can only be added to.
+ */
+class CounterVariable: public BaseVariable {
+  public:
+    explicit CounterVariable(const string &name)
+        : BaseVariable(name),
+          m_value(0) {}
+    ~CounterVariable() {}
+
+    void Increment() { m_value++; }
+    void Add(unsigned int value) { m_value += value; }
+    void Reset() { m_value = 0; }
+    unsigned int Get() const { return m_value; }
+    const string Value() const {
+      stringstream out;
+      out << m_value;
+      return out.str();
+    }
+
+  private:
+    unsigned int m_value;
 };
 
 
@@ -150,6 +179,7 @@ class ExportMap {
     vector<BaseVariable*> AllVariables() const;
 
     IntegerVariable *GetIntegerVar(const string &name);
+    CounterVariable *GetCounterVar(const string &name);
     StringVariable *GetStringVar(const string &name);
 
     StringMap *GetStringMapVar(const string &name, const string &label="");
@@ -161,11 +191,23 @@ class ExportMap {
     ExportMap& operator=(const ExportMap&);
 
     template<typename Type>
+    Type *GetVar(map<string, Type*> *var_map, const string &name);
+
+    template<typename Type>
+    Type *GetMapVar(map<string, Type*> *var_map,
+                    const string &name,
+                    const string &label);
+
+    template<typename Type>
     void AddVariablesToVector(vector<BaseVariable*> *variables,
                               const Type &var_map) const;
 
+    template<typename Type>
+    void DeleteVariables(Type *var_map) const;
+
     map<string, StringVariable*> m_string_variables;
     map<string, IntegerVariable*> m_int_variables;
+    map<string, CounterVariable*> m_counter_variables;
 
     map<string, StringMap*> m_str_map_variables;
     map<string, IntMap*> m_int_map_variables;

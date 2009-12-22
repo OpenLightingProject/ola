@@ -29,16 +29,9 @@ namespace ola {
 using std::string;
 using std::stringstream;
 
-const string IntegerVariable::Value() const {
-  stringstream out;
-  out << m_value;
-  return out.str();
-}
-
 
 /*
  * Return the string representation of this map variable.
- *
  * The form is:
  *   var_name  map:label_name key1:value1 key2:value2
  * @return the string representation of the variable.
@@ -55,38 +48,28 @@ const string MapVariable<Type>::Value() const {
 }
 
 
+/*
+ * Strings need to be quoted
+ */
+template<>
+const string MapVariable<string>::Value() const {
+  stringstream value;
+  value << "map:" << m_label;
+  map<string, string>::const_iterator iter;
+  for (iter = m_variables.begin(); iter != m_variables.end(); ++iter) {
+    value << " " << iter->first << ":\"" << iter->second << "\"";
+  }
+  return value.str();
+}
+
+
 ExportMap::~ExportMap() {
-  map<string, IntegerVariable*>::const_iterator int_iter;
-  map<string, StringVariable*>::const_iterator string_iter;
-  map<string, StringMap*>::const_iterator str_map_iter;
-  map<string, IntMap*>::const_iterator int_map_iter;
-  map<string, UIntMap*>::const_iterator uint_map_iter;
-
-  for (int_iter = m_int_variables.begin();
-       int_iter != m_int_variables.end(); int_iter++)
-    delete int_iter->second;
-
-  for (string_iter = m_string_variables.begin();
-       string_iter != m_string_variables.end(); string_iter++)
-    delete string_iter->second;
-
-  for (str_map_iter = m_str_map_variables.begin();
-       str_map_iter != m_str_map_variables.end(); str_map_iter++)
-    delete str_map_iter->second;
-
-  for (int_map_iter = m_int_map_variables.begin();
-       int_map_iter != m_int_map_variables.end(); int_map_iter++)
-    delete int_map_iter->second;
-
-  for (uint_map_iter = m_uint_map_variables.begin();
-       uint_map_iter != m_uint_map_variables.end(); uint_map_iter++)
-    delete uint_map_iter->second;
-
-  m_int_variables.clear();
-  m_string_variables.clear();
-  m_str_map_variables.clear();
-  m_int_map_variables.clear();
-  m_uint_map_variables.clear();
+  DeleteVariables(&m_int_variables);
+  DeleteVariables(&m_counter_variables);
+  DeleteVariables(&m_string_variables);
+  DeleteVariables(&m_str_map_variables);
+  DeleteVariables(&m_uint_map_variables);
+  DeleteVariables(&m_int_map_variables);
 }
 
 
@@ -96,16 +79,17 @@ ExportMap::~ExportMap() {
  * @return an IntergerVariable
  */
 IntegerVariable *ExportMap::GetIntegerVar(const string &name) {
-  map<string, IntegerVariable*>::iterator iter;
-  iter = m_int_variables.find(name);
+  return GetVar(&m_int_variables, name);
+}
 
-  if (iter == m_int_variables.end()) {
-    IntegerVariable *var = new IntegerVariable(name);
-    std::pair<string, IntegerVariable*> pair(name, var);
-    m_int_variables.insert(pair);
-    return var;
-  }
-  return iter->second;
+
+/*
+ * Lookup or create a counter variable.
+ * @param name the name of the variable.
+ * @return a CounterVariable.
+ */
+CounterVariable *ExportMap::GetCounterVar(const string &name) {
+  return GetVar(&m_counter_variables, name);
 }
 
 
@@ -115,16 +99,7 @@ IntegerVariable *ExportMap::GetIntegerVar(const string &name) {
  * @return a StringVariable.
  */
 StringVariable *ExportMap::GetStringVar(const string &name) {
-  map<string, StringVariable*>::iterator iter;
-  iter = m_string_variables.find(name);
-
-  if (iter == m_string_variables.end()) {
-    StringVariable *var = new StringVariable(name);
-    std::pair<string, StringVariable*> pair(name, var);
-    m_string_variables.insert(pair);
-    return var;
-  }
-  return iter->second;
+  return GetVar(&m_string_variables, name);
 }
 
 
@@ -135,16 +110,7 @@ StringVariable *ExportMap::GetStringVar(const string &name) {
  * @return a MapVariable
  */
 StringMap *ExportMap::GetStringMapVar(const string &name, const string &label) {
-  map<string, StringMap*>::iterator iter;
-  iter = m_str_map_variables.find(name);
-
-  if (iter == m_str_map_variables.end()) {
-    StringMap *var = new StringMap(name, label);
-    std::pair<string, StringMap*> pair(name, var);
-    m_str_map_variables.insert(pair);
-    return var;
-  }
-  return iter->second;
+  return GetMapVar(&m_str_map_variables, name, label);
 }
 
 
@@ -155,16 +121,7 @@ StringMap *ExportMap::GetStringMapVar(const string &name, const string &label) {
  * @return a MapVariable
  */
 IntMap *ExportMap::GetIntMapVar(const string &name, const string &label) {
-  map<string, IntMap*>::iterator iter;
-  iter = m_int_map_variables.find(name);
-
-  if (iter == m_int_map_variables.end()) {
-    IntMap *var = new IntMap(name, label);
-    std::pair<string, IntMap*> pair(name, var);
-    m_int_map_variables.insert(pair);
-    return var;
-  }
-  return iter->second;
+  return GetMapVar(&m_int_map_variables, name, label);
 }
 
 
@@ -175,16 +132,7 @@ IntMap *ExportMap::GetIntMapVar(const string &name, const string &label) {
  * @return a MapVariable
  */
 UIntMap *ExportMap::GetUIntMapVar(const string &name, const string &label) {
-  map<string, UIntMap*>::iterator iter;
-  iter = m_uint_map_variables.find(name);
-
-  if (iter == m_uint_map_variables.end()) {
-    UIntMap *var = new UIntMap(name, label);
-    std::pair<string, UIntMap*> pair(name, var);
-    m_uint_map_variables.insert(pair);
-    return var;
-  }
-  return iter->second;
+  return GetMapVar(&m_uint_map_variables, name, label);
 }
 
 
@@ -195,11 +143,42 @@ UIntMap *ExportMap::GetUIntMapVar(const string &name, const string &label) {
 vector<BaseVariable*> ExportMap::AllVariables() const {
   vector<BaseVariable*> variables;
   AddVariablesToVector(&variables, m_int_variables);
+  AddVariablesToVector(&variables, m_counter_variables);
   AddVariablesToVector(&variables, m_string_variables);
   AddVariablesToVector(&variables, m_str_map_variables);
   AddVariablesToVector(&variables, m_int_map_variables);
   AddVariablesToVector(&variables, m_uint_map_variables);
   return variables;
+}
+
+
+template<typename Type>
+Type *ExportMap::GetVar(map<string, Type*> *var_map, const string &name) {
+  typename map<string, Type*>::iterator iter;
+  iter = var_map->find(name);
+
+  if (iter == var_map->end()) {
+    Type *var = new Type(name);
+    (*var_map)[name] = var;
+    return var;
+  }
+  return iter->second;
+}
+
+
+template<typename Type>
+Type *ExportMap::GetMapVar(map<string, Type*> *var_map,
+                           const string &name,
+                           const string &label) {
+  typename map<string, Type*>::iterator iter;
+  iter = var_map->find(name);
+
+  if (iter == var_map->end()) {
+    Type *var = new Type(name, label);
+    (*var_map)[name] = var;
+    return var;
+  }
+  return iter->second;
 }
 
 template<typename Type>
@@ -208,5 +187,14 @@ void ExportMap::AddVariablesToVector(vector<BaseVariable*> *variables,
   typename Type::const_iterator iter;
   for (iter = var_map.begin(); iter != var_map.end(); ++iter)
     variables->push_back(iter->second);
+}
+
+
+template<typename Type>
+void ExportMap::DeleteVariables(Type *var_map) const {
+  typename Type::const_iterator iter;
+  for (iter = var_map->begin(); iter != var_map->end(); iter++)
+    delete iter->second;
+  var_map->clear();
 }
 }  // ola

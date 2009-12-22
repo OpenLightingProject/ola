@@ -25,6 +25,7 @@
 #include "ola/ExportMap.h"
 
 using ola::BaseVariable;
+using ola::CounterVariable;
 using ola::ExportMap;
 using ola::IntMap;
 using ola::IntegerVariable;
@@ -37,6 +38,7 @@ using std::vector;
 class ExportMapTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ExportMapTest);
   CPPUNIT_TEST(testIntegerVariable);
+  CPPUNIT_TEST(testCounterVariable);
   CPPUNIT_TEST(testStringVariable);
   CPPUNIT_TEST(testStringMapVariable);
   CPPUNIT_TEST(testIntMapVariable);
@@ -45,6 +47,7 @@ class ExportMapTest: public CppUnit::TestFixture {
 
   public:
     void testIntegerVariable();
+    void testCounterVariable();
     void testStringVariable();
     void testStringMapVariable();
     void testIntMapVariable();
@@ -74,6 +77,28 @@ void ExportMapTest::testIntegerVariable() {
   var.Set(100);
   CPPUNIT_ASSERT_EQUAL(var.Get(), 100);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("100"));
+}
+
+
+/*
+ * Check that the CounterVariable works correctly.
+ */
+void ExportMapTest::testCounterVariable() {
+  string name = "foo";
+  CounterVariable var(name);
+
+  CPPUNIT_ASSERT_EQUAL(var.Name(), name);
+  CPPUNIT_ASSERT_EQUAL(var.Value(), string("0"));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, var.Get());
+  var.Increment();
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, var.Get());
+  CPPUNIT_ASSERT_EQUAL(var.Value(), string("1"));
+  var.Add(10);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 11, var.Get());
+  CPPUNIT_ASSERT_EQUAL(var.Value(), string("11"));
+  var.Add(100);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 111, var.Get());
+  CPPUNIT_ASSERT_EQUAL(var.Value(), string("111"));
 }
 
 
@@ -109,19 +134,19 @@ void ExportMapTest::testStringMapVariable() {
   string value1 = "value1";
   var[key1] = value1;
   CPPUNIT_ASSERT_EQUAL(value1, var[key1]);
-  CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key1:value1"));
+  CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key1:\"value1\""));
 
   string key2 = "key2";
-  string value2 = "value2";
+  string value2 = "value 2";
   var[key2] = value2;
   CPPUNIT_ASSERT_EQUAL(value2, var[key2]);
   CPPUNIT_ASSERT_EQUAL(var.Value(),
-                       string("map:count key1:value1 key2:value2"));
+                       string("map:count key1:\"value1\" key2:\"value 2\""));
 
   var.Remove(key1);
   CPPUNIT_ASSERT_EQUAL(string(""), var[key1]);
   var.Remove(key1);
-  CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key2:value2"));
+  CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key2:\"value 2\""));
 }
 
 
