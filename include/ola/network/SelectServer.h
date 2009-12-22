@@ -61,6 +61,8 @@ class SelectServer {
     static const char K_SOCKET_VAR[];
     static const char K_CONNECTED_SOCKET_VAR[];
     static const char K_TIMER_VAR[];
+    static const char K_LOOP_TIME[];
+    static const char K_LOOP_COUNT[];
 
   private :
     typedef struct {
@@ -75,7 +77,7 @@ class SelectServer {
     bool CheckForEvents();
     void CheckSockets(fd_set *set);
     void AddSocketsToSet(fd_set *set, int *max_sd) const;
-    struct timeval CheckTimeouts();
+    struct timeval CheckTimeouts(const struct timeval &now);
     void UnregisterAll();
 
     static const int K_MS_IN_SECOND = 1000;
@@ -106,6 +108,9 @@ class SelectServer {
 
     typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;
     event_queue_t m_events;
+    CounterVariable *m_loop_iterations;
+    CounterVariable *m_loop_time;
+    struct timeval m_wake_up_time;
 };
 }  // network
 }  // ola

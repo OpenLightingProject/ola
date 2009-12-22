@@ -29,6 +29,7 @@
 #include <stdlib.h>
 
 #include <algorithm>
+#include <iomanip>
 #include <string>
 #include <vector>
 
@@ -40,9 +41,16 @@
 namespace ola {
 namespace network {
 
+// # of sockets registered
 const char SelectServer::K_SOCKET_VAR[] = "ss-sockets";
+// # of connected sockets registered
 const char SelectServer::K_CONNECTED_SOCKET_VAR[] = "ss-connected-sockets";
+// # of timer functions registered
 const char SelectServer::K_TIMER_VAR[] = "ss-timer-functions";
+// time spent processing events/timeouts in microseconds
+const char SelectServer::K_LOOP_TIME[] = "ss-loop-time";
+// iterations through the select server
+const char SelectServer::K_LOOP_COUNT[] = "ss-loop-count";
 
 using std::max;
 using ola::ExportMap;
@@ -54,17 +62,21 @@ using ola::Closure;
 SelectServer::SelectServer(ExportMap *export_map)
     : m_terminate(false),
       m_next_id(INVALID_TIMEOUT + 1),
-      m_export_map(export_map) {
+      m_export_map(export_map),
+      m_loop_time(NULL),
+      m_loop_iterations(NULL) {
 
   if (m_export_map) {
-    ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_SOCKET_VAR);
-    var = m_export_map->GetIntegerVar(K_TIMER_VAR);
+    m_export_map->GetIntegerVar(K_SOCKET_VAR);
+    m_export_map->GetIntegerVar(K_TIMER_VAR);
+    m_loop_time = m_export_map->GetCounterVar(K_LOOP_TIME);
+    m_loop_iterations = m_export_map->GetCounterVar(K_LOOP_COUNT);
   }
 }
 
 
 /*
- * Run the select server until Termiate() is called.
+ * Run the select server until Terminate() is called.
  */
 int SelectServer::Run() {
   while (!m_terminate) {
@@ -259,14 +271,24 @@ bool SelectServer::CheckForEvents() {
   int maxsd, ret;
   unsigned int i;
   fd_set r_fds, w_fds;
-  struct timeval tv;
-  struct timeval now;
+  struct timeval tv, now;
 
   maxsd = 0;
   FD_ZERO(&r_fds);
   FD_ZERO(&w_fds);
   AddSocketsToSet(&r_fds, &maxsd);
-  now = CheckTimeouts();
+  gettimeofday(&now, NULL);
+  now = CheckTimeouts(now);
+
+  if (m_wake_up_time.tv_sec && m_wake_up_time.tv_usec) {
+    timersub(&now, &m_wake_up_time, &tv);
+    OLA_DEBUG << "ss process time was " << tv.tv_sec << "." <<
+      std::setfill('0') << std::setw(6) << tv.tv_usec;
+    if (m_loop_time)
+      m_loop_time->Add(tv.tv_sec * K_US_IN_SECOND + tv.tv_usec);
+    if (m_loop_iterations)
+      m_loop_iterations->Increment();
+  }
 
   if (m_terminate)
     return true;
@@ -276,18 +298,13 @@ bool SelectServer::CheckForEvents() {
     tv.tv_usec = 0;
   } else {
     struct timeval next = m_events.top().next;
-    uint64_t now_l = (static_cast<uint64_t>(now.tv_sec) * K_US_IN_SECOND +
-        now.tv_usec);
-    uint64_t next_l = (static_cast<uint64_t>(next.tv_sec) * K_US_IN_SECOND +
-      next.tv_usec);
-    uint64_t rem = next_l - now_l;
-    tv.tv_sec = rem / K_US_IN_SECOND;
-    tv.tv_usec = rem % K_US_IN_SECOND;
+    timersub(&next, &now, &tv);
   }
 
   switch (select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
+      gettimeofday(&m_wake_up_time, NULL);
       return true;
     case -1:
       if (errno == EINTR)
@@ -295,7 +312,8 @@ bool SelectServer::CheckForEvents() {
       OLA_WARN << "select() error, " << strerror(errno);
       return false;
     default:
-      CheckTimeouts();
+      gettimeofday(&m_wake_up_time, NULL);
+      CheckTimeouts(m_wake_up_time);
       CheckSockets(&r_fds);
   }
   return true;
@@ -387,9 +405,8 @@ void SelectServer::CheckSockets(fd_set *set) {
  * Check for expired timeouts and call them.
  * @returns a struct timeval of the time up to where we checked.
  */
-struct timeval SelectServer::CheckTimeouts() {
-  struct timeval now;
-  gettimeofday(&now, NULL);
+struct timeval SelectServer::CheckTimeouts(const struct timeval &current_time) {
+  struct timeval now = current_time;
 
   event_t e;
   if (m_events.empty())

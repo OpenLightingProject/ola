@@ -13,4 +13,5 @@ NetworkTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 NetworkTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl
 NetworkTester_LDADD = ./libolanetwork.la \
                       ../export_map/libolaexportmap.la \
-                      ../logging/liblogging.la
+                      ../logging/liblogging.la \
+                      ../utils/libolautils.la
