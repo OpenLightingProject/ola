@@ -9,4 +9,4 @@ check_PROGRAMS = $(TESTS)
 ExportMapTester_SOURCES = ExportMapTester.cpp ExportMapTest.cpp
 ExportMapTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 ExportMapTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl
-ExportMapTester_LDADD = ./libolaexportmap.la
+ExportMapTester_LDADD = ./libolaexportmap.la ../utils/libolautils.la

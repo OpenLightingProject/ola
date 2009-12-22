@@ -26,6 +26,7 @@
 
 using std::string;
 using std::vector;
+using ola::Escape;
 using ola::IntToString;
 using ola::StringSplit;
 using ola::StringTrim;
@@ -35,12 +36,14 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSplit);
   CPPUNIT_TEST(testTrim);
   CPPUNIT_TEST(testIntToString);
+  CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testSplit();
     void testTrim();
     void testIntToString();
+    void testEscape();
 };
 
 
@@ -129,4 +132,14 @@ void StringUtilsTest::testIntToString() {
   CPPUNIT_ASSERT_EQUAL(string("0"), IntToString(0));
   CPPUNIT_ASSERT_EQUAL(string("1234"), IntToString(1234));
   CPPUNIT_ASSERT_EQUAL(string("-1234"), IntToString(-1234));
+}
+
+void StringUtilsTest::testEscape() {
+  string s1 = "foo\"";
+  Escape(&s1);
+  CPPUNIT_ASSERT_EQUAL(string("foo\\\""), s1);
+
+  string s2 = "he said \"foo\"";
+  Escape(&s2);
+  CPPUNIT_ASSERT_EQUAL(string("he said \\\"foo\\\""), s2);
 }

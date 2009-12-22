@@ -23,6 +23,7 @@
 #include <vector>
 #include <iostream>
 #include "ola/ExportMap.h"
+#include "ola/StringUtils.h"
 
 namespace ola {
 
@@ -41,9 +42,8 @@ const string MapVariable<Type>::Value() const {
   stringstream value;
   value << "map:" << m_label;
   typename map<string, Type>::const_iterator iter;
-  for (iter = m_variables.begin(); iter != m_variables.end(); ++iter) {
+  for (iter = m_variables.begin(); iter != m_variables.end(); ++iter)
     value << " " << iter->first << ":" << iter->second;
-  }
   return value.str();
 }
 
@@ -57,7 +57,9 @@ const string MapVariable<string>::Value() const {
   value << "map:" << m_label;
   map<string, string>::const_iterator iter;
   for (iter = m_variables.begin(); iter != m_variables.end(); ++iter) {
-    value << " " << iter->first << ":\"" << iter->second << "\"";
+    std::string var = iter->second;
+    Escape(&var);
+    value << " " << iter->first << ":\"" << var << "\"";
   }
   return value.str();
 }

@@ -26,11 +26,14 @@
 
 namespace ola {
 
-void StringSplit(const std::string &input,
-                 std::vector<std::string> &tokens,
-                 const std::string &delimiters=" ");
-void StringTrim(std::string *input);
-std::string IntToString(int i);
+using std::string;
+
+void StringSplit(const string &input,
+                 std::vector<string> &tokens,
+                 const string &delimiters=" ");
+void StringTrim(string *input);
+string IntToString(int i);
+void Escape(string *original);
 }  // ola
 
 #endif  // INCLUDE_OLA_STRINGUTILS_H_

@@ -82,4 +82,14 @@ string IntToString(int i) {
   str << i;
   return str.str();
 }
+
+void Escape(string *original) {
+  for (string::iterator iter = original->begin(); iter != original->end();
+      ++iter) {
+    if (*iter == '"') {
+      iter = original->insert(iter, '\\');
+      iter++;
+    }
+  }
+}
 }  // ola

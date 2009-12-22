@@ -147,6 +147,8 @@ void ExportMapTest::testStringMapVariable() {
   CPPUNIT_ASSERT_EQUAL(string(""), var[key1]);
   var.Remove(key1);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key2:\"value 2\""));
+  var[key2] = "foo\"";
+  CPPUNIT_ASSERT_EQUAL(var.Value(), string("map:count key2:\"foo\\\"\""));
 }
 
 
