@@ -469,8 +469,8 @@ void SelectServer::UnregisterAll() {
 
   while (!m_events.empty()) {
     event_t event = m_events.top();
-    if (!m_removed_timeouts.erase(event.id) && event.repeating)
-      delete event.closure;
+    m_removed_timeouts.erase(event.id);
+    delete event.closure;
     m_events.pop();
   }
 }
