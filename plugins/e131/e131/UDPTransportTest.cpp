@@ -96,7 +96,6 @@ void UDPTransportTest::testUDPTransport() {
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
   delete stop_closure;
-  delete closure;
 }
 }  // e131
 }  // plugin

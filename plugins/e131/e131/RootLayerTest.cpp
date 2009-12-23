@@ -89,7 +89,6 @@ void RootLayerTest::testRootLayer() {
     NewSingleClosure(this, &RootLayerTest::FatalStop);
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
-  delete closure;
   delete stop_closure;
 }
 }  // e131
