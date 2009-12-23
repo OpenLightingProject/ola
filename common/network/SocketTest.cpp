@@ -108,10 +108,6 @@ void SocketTest::setUp() {
  */
 void SocketTest::tearDown() {
   delete m_ss;
-  if (m_timeout_closure) {
-    delete m_timeout_closure;
-    m_timeout_closure = NULL;
-  }
 }
 
 
