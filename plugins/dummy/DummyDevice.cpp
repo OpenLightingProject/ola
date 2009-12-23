@@ -58,6 +58,7 @@ bool DummyDevice::Stop() {
   if (!m_enabled)
     return true;
 
+  DeleteAllPorts();
   m_enabled = false;
   return true;
 }
