@@ -66,6 +66,8 @@ SelectServer::SelectServer(ExportMap *export_map)
       m_loop_time(NULL),
       m_loop_iterations(NULL) {
 
+  m_wake_up_time.tv_sec = m_wake_up_time.tv_usec = 0;
+
   if (m_export_map) {
     m_export_map->GetIntegerVar(K_SOCKET_VAR);
     m_export_map->GetIntegerVar(K_TIMER_VAR);
