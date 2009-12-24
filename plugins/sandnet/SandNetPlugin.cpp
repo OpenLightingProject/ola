@@ -33,14 +33,6 @@ extern "C" ola::AbstractPlugin* create(
 }
 
 
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(ola::AbstractPlugin* plugin) {
-  delete plugin;
-}
-
-
 namespace ola {
 namespace plugin {
 namespace sandnet {

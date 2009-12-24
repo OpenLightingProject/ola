@@ -108,6 +108,5 @@ class Plugin: public AbstractPlugin {
 
 // interface functions
 typedef ola::AbstractPlugin* create_t(const ola::PluginAdaptor *plugin_adaptor);
-typedef void destroy_t(ola::AbstractPlugin*);
 
 #endif  // INCLUDE_OLAD_PLUGIN_H_

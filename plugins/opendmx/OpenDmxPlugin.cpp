@@ -51,17 +51,9 @@ extern "C" ola::AbstractPlugin* create(const PluginAdaptor *plugin_adaptor) {
   return new OpenDmxPlugin(plugin_adaptor);
 }
 
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(ola::AbstractPlugin* plug) {
-  delete plug;
-}
-
 
 /*
  * Start the plugin
- *
  * For now we just have one device.
  * TODO: scan /dev for devices?
  *   Need to get multi-device support working first :)

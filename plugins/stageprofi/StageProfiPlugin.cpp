@@ -37,12 +37,6 @@ extern "C" ola::AbstractPlugin* create(
   return new ola::plugin::stageprofi::StageProfiPlugin(plugin_adaptor);
 }
 
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(ola::AbstractPlugin *plugin) {
-  delete plugin;
-}
 
 namespace ola {
 namespace plugin {

@@ -32,13 +32,11 @@ class DynamicPluginLoader: public PluginLoader {
     ~DynamicPluginLoader() { UnloadPlugins(); }
 
     std::vector<class AbstractPlugin*> LoadPlugins();
-    void UnloadPlugins();
+    void UnloadPlugins() {}
 
   private:
     DynamicPluginLoader(const DynamicPluginLoader&);
     DynamicPluginLoader operator=(const DynamicPluginLoader&);
-
-    std::vector<class AbstractPlugin*> m_plugins;
 };
 }  // ola
 #endif  // OLAD_DYNAMICPLUGINLOADER_H_

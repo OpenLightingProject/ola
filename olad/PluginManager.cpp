@@ -85,6 +85,7 @@ void PluginManager::UnloadAll() {
        ++plugin_iter) {
     if ((*plugin_iter)->IsEnabled())
       (*plugin_iter)->Stop();
+    delete *plugin_iter;
   }
   m_plugins.clear();
 

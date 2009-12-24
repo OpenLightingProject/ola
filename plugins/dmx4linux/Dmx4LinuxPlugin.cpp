@@ -52,14 +52,6 @@ extern "C" ola::AbstractPlugin* create(
   return new ola::plugin::dmx4linux::Dmx4LinuxPlugin(plugin_adaptor);
 }
 
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(ola::AbstractPlugin* plugin) {
-  delete plugin;
-}
-
-
 namespace ola {
 namespace plugin {
 namespace dmx4linux {

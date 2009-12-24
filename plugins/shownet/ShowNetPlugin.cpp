@@ -32,13 +32,6 @@ extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *adaptor) {
   return new ola::plugin::shownet::ShowNetPlugin(adaptor);
 }
 
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(ola::Plugin* plugin) {
-  delete plugin;
-}
-
 
 namespace ola {
 namespace plugin {

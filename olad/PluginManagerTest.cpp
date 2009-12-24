@@ -56,17 +56,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PluginManagerTest);
 class MockLoader: public ola::PluginLoader {
   public:
     vector<AbstractPlugin*> LoadPlugins() {
-      m_plugins.push_back(new TestMockPlugin(m_plugin_adaptor));
-      return m_plugins;
+      vector<AbstractPlugin*> plugins;
+      plugins.push_back(new TestMockPlugin(m_plugin_adaptor));
+      return plugins;
     }
-    void UnloadPlugins() {
-      vector<AbstractPlugin*>::iterator iter;
-      for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
-        delete *iter;
-      m_plugins.clear();
-    }
-  private:
-    vector<AbstractPlugin*> m_plugins;
+    void UnloadPlugins() {}
 };
 
 

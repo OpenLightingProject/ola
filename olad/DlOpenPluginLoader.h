@@ -22,7 +22,6 @@
 #define OLAD_DLOPENPLUGINLOADER_H_
 
 #include <ltdl.h>
-#include <map>
 #include <string>
 #include <vector>
 #include <set>
@@ -31,7 +30,6 @@
 
 namespace ola {
 
-using std::map;
 using std::set;
 using std::string;
 using std::vector;
@@ -54,11 +52,10 @@ class DlOpenPluginLoader: public PluginLoader {
 
     set<string> FindPlugins(const string &path);
     AbstractPlugin *LoadPlugin(const string &path);
-    int UnloadPlugin(lt_dlhandle handle);
 
     string m_dirname;
     bool m_dl_active;
-    std::map<lt_dlhandle, AbstractPlugin*> m_plugin_map;
+    std::vector<lt_dlhandle> m_plugin_handles;
 };
 }  // ola
 #endif  // OLAD_DLOPENPLUGINLOADER_H_

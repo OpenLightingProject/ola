@@ -22,7 +22,6 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -75,13 +74,11 @@ vector<AbstractPlugin*> DlOpenPluginLoader::LoadPlugins() {
  * Unload all plugins
  */
 void DlOpenPluginLoader::UnloadPlugins() {
-  map<lt_dlhandle, AbstractPlugin*>::iterator map_iter;
+  vector<lt_dlhandle>::iterator iter;
 
-  for (map_iter = m_plugin_map.begin(); map_iter != m_plugin_map.end();
-       map_iter++)
-    UnloadPlugin((*map_iter).first);
-
-  m_plugin_map.clear();
+  for (iter = m_plugin_handles.begin(); iter != m_plugin_handles.end(); iter++)
+    lt_dlclose(*iter);
+  m_plugin_handles.clear();
 
   if (m_dl_active) {
     if (lt_dlexit())
@@ -138,8 +135,7 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
   module = lt_dlopenext(path.c_str());
 
   if (!module) {
-    printf("failed to dlopen\n");
-    OLA_WARN << "lt_dlopen: " << lt_dlerror();
+    OLA_WARN << "failed to lt_dlopen: " << lt_dlerror();
     return NULL;
   }
 
@@ -157,30 +153,8 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
     return NULL;
   }
 
-  std::pair<lt_dlhandle, AbstractPlugin*> pair(module, plugin);
-  m_plugin_map.insert(pair);
-
+  m_plugin_handles.push_back(module);
   OLA_INFO << "Loaded plugin " << plugin->Name();
   return plugin;
-}
-
-
-/*
- * Unload the plugin
- * @param handle  the handle of the plugin to unload
- * @return  0 on success, non 0 on failure
- */
-int DlOpenPluginLoader::UnloadPlugin(lt_dlhandle handle) {
-  destroy_t *destroy = reinterpret_cast<destroy_t*>(
-      lt_dlsym(handle, "destroy"));
-
-  if (lt_dlerror()) {
-    OLA_WARN << "Could not locate destroy symbol";
-    return -1;
-  }
-
-  destroy(m_plugin_map[handle]);
-  lt_dlclose(handle);
-  return 0;
 }
 }  // ola

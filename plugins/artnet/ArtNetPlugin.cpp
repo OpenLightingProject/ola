@@ -36,14 +36,6 @@ extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *adaptor) {
   return new ola::plugin::artnet::ArtNetPlugin(adaptor);
 }
 
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(ola::Plugin* plugin) {
-  delete plugin;
-}
-
-
 namespace ola {
 namespace plugin {
 namespace artnet {

@@ -32,14 +32,6 @@ extern "C" ola::AbstractPlugin* create(
   return new ola::plugin::espnet::EspNetPlugin(plugin_adaptor);
 }
 
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(ola::AbstractPlugin* plugin) {
-  delete plugin;
-}
-
-
 namespace ola {
 namespace plugin {
 namespace espnet {

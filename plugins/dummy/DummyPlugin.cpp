@@ -34,14 +34,6 @@ extern "C" ola::AbstractPlugin* create(
   return new ola::plugin::dummy::DummyPlugin(plugin_adaptor);
 }
 
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(ola::AbstractPlugin *plugin) {
-  delete plugin;
-}
-
-
 namespace ola {
 namespace plugin {
 namespace dummy {

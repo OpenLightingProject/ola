@@ -57,41 +57,31 @@ using std::vector;
  * @returns a vector of plugins
  */
 vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
+  vector<AbstractPlugin*> plugins;
+
 #ifdef HAVE_ARTNET
-  m_plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
+  plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
 #endif
 
 #ifdef HAVE_DMX4LINUX
-  m_plugins.push_back(
+  plugins.push_back(
       new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
 #endif
 
-  //m_plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
-  m_plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
-  m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
-  m_plugins.push_back(
+  // plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
+  plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
+  plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
+  plugins.push_back(
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
-  m_plugins.push_back(
+  plugins.push_back(
       new ola::plugin::sandnet::SandNetPlugin(m_plugin_adaptor));
-  m_plugins.push_back(
+  plugins.push_back(
       new ola::plugin::shownet::ShowNetPlugin(m_plugin_adaptor));
-  m_plugins.push_back(
+  plugins.push_back(
       new ola::plugin::stageprofi::StageProfiPlugin(m_plugin_adaptor));
-  m_plugins.push_back(new ola::plugin::usbpro::UsbProPlugin(m_plugin_adaptor));
-  // m_plugins.push_back(
+  plugins.push_back(new ola::plugin::usbpro::UsbProPlugin(m_plugin_adaptor));
+  // plugins.push_back(
   //    new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor);
-  return m_plugins;
-}
-
-
-/*
- * Unload all plugins.
- */
-void DynamicPluginLoader::UnloadPlugins() {
-  vector<AbstractPlugin*>::iterator iter;
-  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
-    delete *iter;
-  }
-  m_plugins.clear();
+  return plugins;
 }
 }  // ola
