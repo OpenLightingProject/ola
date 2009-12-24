@@ -53,7 +53,7 @@ const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
 const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe_sink_clients";
 const char Universe::K_MERGE_HTP_STR[] = "htp";
 const char Universe::K_MERGE_LTP_STR[] = "ltp";
-const char Universe::K_FPS_VAR[] = "frames-per-second";
+const char Universe::K_FPS_VAR[] = "universe_frames";
 
 /*
  * Create a new universe
