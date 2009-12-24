@@ -42,15 +42,16 @@ using ola::DmxBuffer;
  * one.
  */
 E131Node::E131Node(const string &ip_address,
+                   const CID &cid,
                    bool use_rev2,
-                   const CID &cid)
+                   bool ignore_preview)
     : m_preferred_ip(ip_address),
-      m_use_rev2(use_rev2),
       m_cid(cid),
+      m_use_rev2(use_rev2),
       m_transport(),
       m_root_layer(&m_transport, m_cid),
       m_e131_layer(&m_root_layer),
-      m_dmp_inflator(&m_e131_layer),
+      m_dmp_inflator(&m_e131_layer, ignore_preview),
       m_send_buffer(NULL) {
 
   if (!m_use_rev2) {

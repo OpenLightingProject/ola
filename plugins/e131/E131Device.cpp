@@ -43,13 +43,15 @@ E131Device::E131Device(Plugin *owner, const string &name,
                        std::string ip_addr,
                        const PluginAdaptor *plugin_adaptor,
                        bool use_rev2,
-                       bool prepend_hostname)
+                       bool prepend_hostname,
+                       bool ignore_preview)
     : Device(owner, name),
       m_plugin_adaptor(plugin_adaptor),
       m_node(NULL),
       m_enabled(false),
       m_use_rev2(use_rev2),
       m_prepend_hostname(prepend_hostname),
+      m_ignore_preview(ignore_preview),
       m_ip_addr(ip_addr),
       m_cid(cid) {
 }
@@ -62,7 +64,7 @@ bool E131Device::Start() {
   if (m_enabled)
     return false;
 
-  m_node = new E131Node(m_ip_addr, m_use_rev2, m_cid);
+  m_node = new E131Node(m_ip_addr, m_cid, m_use_rev2, m_ignore_preview);
 
   if (!m_node->Start()) {
     delete m_node;

@@ -36,9 +36,10 @@ class DMPE131Inflator: public DMPInflator {
   friend class DMPE131InflatorTest;
 
   public:
-    explicit DMPE131Inflator(E131Layer *e131_layer):
+    DMPE131Inflator(E131Layer *e131_layer, bool ignore_preview):
       DMPInflator(),
-      m_e131_layer(e131_layer) {}
+      m_e131_layer(e131_layer),
+      m_ignore_preview(ignore_preview) {}
     ~DMPE131Inflator();
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
@@ -59,6 +60,7 @@ class DMPE131Inflator: public DMPInflator {
 
     std::map<unsigned int, universe_handler> m_handlers;
     E131Layer *m_e131_layer;
+    bool m_ignore_preview;
 };
 }  // e131
 }  // plugin

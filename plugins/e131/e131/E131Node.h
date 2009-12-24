@@ -39,8 +39,9 @@ namespace e131 {
 class E131Node {
   public:
     E131Node(const std::string &ip_address,
-             bool use_rev2,
-             const CID &cid = CID::Generate());
+             const CID &cid = CID::Generate(),
+             bool use_rev2=false,
+             bool ignore_preview=true);
     ~E131Node();
 
     bool Start();
@@ -63,8 +64,8 @@ class E131Node {
     } tx_universe;
 
     string m_preferred_ip;
-    bool m_use_rev2;
     CID m_cid;
+    bool m_use_rev2;
     UDPTransport m_transport;
     RootLayer m_root_layer;
     E131Layer m_e131_layer;

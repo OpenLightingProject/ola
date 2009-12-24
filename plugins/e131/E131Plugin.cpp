@@ -49,6 +49,7 @@ const char E131Plugin::REVISION_0_2[] = "0.2";
 const char E131Plugin::REVISION_0_46[] = "0.46";
 const char E131Plugin::IP_KEY[] = "ip";
 const char E131Plugin::PREPEND_HOSTNAME_KEY[] = "prepend_hostname";
+const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
 
 
 /*
@@ -56,11 +57,11 @@ const char E131Plugin::PREPEND_HOSTNAME_KEY[] = "prepend_hostname";
  */
 bool E131Plugin::StartHook() {
   CID cid = CID::FromString(m_preferences->GetValue(CID_KEY));
+  string ip_addr = m_preferences->GetValue(IP_KEY);
   string revision = m_preferences->GetValue(REVISION_KEY);
   bool use_rev2 = revision == REVISION_0_2 ? true : false;
-  string prepend_hostname_val = m_preferences->GetValue(PREPEND_HOSTNAME_KEY);
-  bool prepend_hostname = prepend_hostname_val == "true" ? true : false;
-  string ip_addr = m_preferences->GetValue(IP_KEY);
+  bool prepend_hostname = m_preferences->GetValueAsBool(PREPEND_HOSTNAME_KEY);
+  bool ignore_preview = m_preferences->GetValueAsBool(IGNORE_PREVIEW_DATA_KEY);
 
   m_device = new E131Device(this,
                             DEVICE_NAME,
@@ -68,7 +69,8 @@ bool E131Plugin::StartHook() {
                             ip_addr,
                             m_plugin_adaptor,
                             use_rev2,
-                            prepend_hostname);
+                            prepend_hostname,
+                            ignore_preview);
 
   if (!m_device->Start()) {
     delete m_device;
@@ -110,10 +112,13 @@ string E131Plugin::Description() const {
 "cid = 00010203-0405-0607-0809-0A0B0C0D0E0F\n"
 "The CID to use for this device\n"
 "\n"
+"ignore_preview = [true|false]\n"
+"Ignore preview data.\n"
+"\n"
 "ip = a.b.c.d\n"
 "The local ip address to use for multicasting.\n"
 "\n"
-"prepend_hostname = true\n"
+"prepend_hostname = [true|false]\n"
 "Prepend the hostname to the source name when sending packets.\n"
 "\n"
 "revision = [0.2|0.46]\n"
@@ -141,7 +146,12 @@ bool E131Plugin::SetDefaultPreferences() {
   }
 
   if (m_preferences->GetValue(PREPEND_HOSTNAME_KEY).empty()) {
-    m_preferences->SetValue(PREPEND_HOSTNAME_KEY, "true");
+    m_preferences->SetValueAsBool(PREPEND_HOSTNAME_KEY, true);
+    save = true;
+  }
+
+  if (m_preferences->GetValue(IGNORE_PREVIEW_DATA_KEY).empty()) {
+    m_preferences->SetValueAsBool(IGNORE_PREVIEW_DATA_KEY, true);
     save = true;
   }
 

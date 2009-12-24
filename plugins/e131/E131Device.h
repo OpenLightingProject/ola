@@ -39,7 +39,8 @@ class E131Device: public ola::Device {
                std::string ip_addr,
                const class PluginAdaptor *plugin_adaptor,
                bool use_rev2,
-               bool prepend_hostname);
+               bool prepend_hostname,
+               bool ignore_preview);
     ~E131Device() {}
 
     bool Start();
@@ -54,6 +55,7 @@ class E131Device: public ola::Device {
     bool m_enabled;
     bool m_use_rev2;
     bool m_prepend_hostname;
+    bool m_ignore_preview;
     std::string m_ip_addr;
     ola::plugin::e131::CID m_cid;
 };

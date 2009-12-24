@@ -59,6 +59,9 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   map<unsigned int, universe_handler>::iterator iter =
       m_handlers.find(e131_header.Universe());
 
+  if (e131_header.PreviewData() && m_ignore_preview)
+    return true;
+
   if (iter == m_handlers.end())
     return true;
 
