@@ -27,6 +27,7 @@
 #include <ola/network/Socket.h>
 #include <ola/network/SelectServer.h>
 #include <ola/Closure.h>
+#include "ola/ExportMap.h"
 
 namespace ola {
 namespace rpc {
@@ -89,7 +90,8 @@ class StreamRpcChannel: public RpcChannel {
    */
   public :
     StreamRpcChannel(Service *service,
-                     ola::network::ConnectedSocket *socket);
+                     ola::network::ConnectedSocket *socket,
+                     ExportMap *export_map=NULL);
     ~StreamRpcChannel();
 
     int SocketReady();
@@ -135,9 +137,15 @@ class StreamRpcChannel: public RpcChannel {
     unsigned int m_current_size;  // the amount of data read for the current msg
     __gnu_cxx::hash_map<int, OutstandingRequest*> m_requests;
     __gnu_cxx::hash_map<int, OutstandingResponse*> m_responses;
+    ExportMap *m_export_map;
+    UIntMap *m_recv_type_map;
 
     static const unsigned int INITIAL_BUFFER_SIZE = 1 << 11;  // 2k
     static const unsigned int MAX_BUFFER_SIZE = 1 << 20;  // 1M
+    static const char K_RPC_RECEIVED_VAR[];
+    static const char K_RPC_RECEIVED_TYPE_VAR[];
+    static const char K_RPC_SENT_VAR[];
+    static const char K_RPC_SENT_ERROR_VAR[];
 };
 }  // rpc
 }  // ola

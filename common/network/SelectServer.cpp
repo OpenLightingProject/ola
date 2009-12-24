@@ -112,7 +112,7 @@ bool SelectServer::AddSocket(Socket *socket) {
 
   m_sockets.push_back(socket);
   if (m_export_map)
-    m_export_map->GetIntegerVar(K_SOCKET_VAR)->Increment();
+    (*m_export_map->GetIntegerVar(K_SOCKET_VAR))++;
   return true;
 }
 
@@ -149,7 +149,7 @@ bool SelectServer::AddSocket(ConnectedSocket *socket,
 
   m_connected_sockets.push_back(registered_socket);
   if (m_export_map)
-    m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR)->Increment();
+    (*m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR))++;
   return true;
 }
 
@@ -168,7 +168,7 @@ bool SelectServer::RemoveSocket(Socket *socket) {
     if ((*iter)->ReadDescriptor() == socket->ReadDescriptor()) {
       m_sockets.erase(iter);
       if (m_export_map)
-        m_export_map->GetIntegerVar(K_SOCKET_VAR)->Decrement();
+        (*m_export_map->GetIntegerVar(K_SOCKET_VAR))--;
       return true;
     }
   }
@@ -192,7 +192,7 @@ bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
     if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
       m_connected_sockets.erase(iter);
       if (m_export_map)
-        m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR)->Decrement();
+        (*m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR))--;
       return true;
     }
   }
@@ -257,10 +257,8 @@ timeout_id SelectServer::RegisterTimeout(int ms,
   timeradd(&event.next, &event.interval, &event.next);
   m_events.push(event);
 
-  if (m_export_map) {
-    ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
-    var->Increment();
-  }
+  if (m_export_map)
+    (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
   return event.id;
 }
 
@@ -287,9 +285,9 @@ bool SelectServer::CheckForEvents() {
     OLA_DEBUG << "ss process time was " << tv.tv_sec << "." <<
       std::setfill('0') << std::setw(6) << tv.tv_usec;
     if (m_loop_time)
-      m_loop_time->Add(tv.tv_sec * K_US_IN_SECOND + tv.tv_usec);
+      (*m_loop_time) += (tv.tv_sec * K_US_IN_SECOND + tv.tv_usec);
     if (m_loop_iterations)
-      m_loop_iterations->Increment();
+      (*m_loop_iterations)++;
   }
 
   if (m_terminate)
@@ -382,7 +380,7 @@ void SelectServer::CheckSockets(fd_set *set) {
         if (con_iter->delete_on_close)
           delete con_iter->socket;
         if (m_export_map)
-          m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR)->Decrement();
+          (*m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR))--;
         con_iter = m_connected_sockets.erase(con_iter);
         con_iter--;
       } else {
@@ -421,10 +419,8 @@ struct timeval SelectServer::CheckTimeouts(const struct timeval &current_time) {
     // if this was removed, skip it
     if (m_removed_timeouts.erase(e.id)) {
       delete e.closure;
-      if (m_export_map) {
-        ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
-        var->Decrement();
-      }
+      if (m_export_map)
+        (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
       continue;
     }
 
@@ -442,10 +438,8 @@ struct timeval SelectServer::CheckTimeouts(const struct timeval &current_time) {
       if (e.repeating && !return_code)
         delete e.closure;
 
-      if (m_export_map) {
-        ola::IntegerVariable *var = m_export_map->GetIntegerVar(K_TIMER_VAR);
-        var->Decrement();
-      }
+      if (m_export_map)
+        (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
     }
     gettimeofday(&now, NULL);
   }

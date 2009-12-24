@@ -37,16 +37,38 @@ namespace rpc {
 
 using google::protobuf::ServiceDescriptor;
 
+const char StreamRpcChannel::K_RPC_RECEIVED_VAR[] = "rpc-received";
+const char StreamRpcChannel::K_RPC_RECEIVED_TYPE_VAR[] = "rpc-received-type";
+const char StreamRpcChannel::K_RPC_SENT_VAR[] = "rpc-sent";
+const char StreamRpcChannel::K_RPC_SENT_ERROR_VAR[] = "rpc-send-errors";
+
 StreamRpcChannel::StreamRpcChannel(Service *service,
-                                   ola::network::ConnectedSocket *socket)
+                                   ola::network::ConnectedSocket *socket,
+                                   ExportMap *export_map)
     : m_service(service),
       m_socket(socket),
       m_buffer(NULL),
       m_buffer_size(0),
       m_seq(0),
       m_expected_size(0),
-      m_current_size(0) {
-    socket->SetOnData(NewClosure(this, &StreamRpcChannel::SocketReady));
+      m_current_size(0),
+      m_export_map(export_map),
+      m_recv_type_map(NULL) {
+  socket->SetOnData(NewClosure(this, &StreamRpcChannel::SocketReady));
+
+  // init the counters
+  const char *vars[] = {
+    K_RPC_RECEIVED_VAR,
+    K_RPC_SENT_ERROR_VAR,
+    K_RPC_SENT_VAR,
+  };
+
+  if (m_export_map) {
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
+      m_export_map->GetCounterVar(string(vars[i]));
+    m_recv_type_map = m_export_map->GetUIntMapVar(K_RPC_RECEIVED_TYPE_VAR,
+                                                  "type");
+  }
 }
 
 
@@ -181,13 +203,19 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
   ret = m_socket->Send(reinterpret_cast<const uint8_t*>(output.data()),
                        length);
 
-  if (-1 == ret) {
-    OLA_WARN << "Send failed " << strerror(errno);
-    return -1;
-  } else if (length != ret) {
-    OLA_WARN << "Failed to send full datagram";
+  if (ret != length) {
+    if (ret == -1)
+      OLA_WARN << "Send failed " << strerror(errno);
+    else
+      OLA_WARN << "Failed to send full datagram";
+
+    if (m_export_map)
+      (*m_export_map->GetCounterVar(K_RPC_SENT_ERROR_VAR))++;
     return -1;
   }
+
+  if (m_export_map)
+    (*m_export_map->GetCounterVar(K_RPC_SENT_VAR))++;
   return 0;
 }
 
@@ -256,20 +284,33 @@ void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
     return;
   }
 
+  if (m_export_map)
+    (*m_export_map->GetCounterVar(K_RPC_RECEIVED_VAR))++;
+
   switch (msg.type()) {
     case REQUEST:
+      if (m_recv_type_map)
+        (*m_recv_type_map)["request"]++;
       HandleRequest(&msg);
       break;
     case RESPONSE:
+      if (m_recv_type_map)
+        (*m_recv_type_map)["response"]++;
       HandleResponse(&msg);
       break;
     case RESPONSE_CANCEL:
+      if (m_recv_type_map)
+        (*m_recv_type_map)["cancelled"]++;
       HandleCanceledResponse(&msg);
       break;
     case RESPONSE_FAILED:
+      if (m_recv_type_map)
+        (*m_recv_type_map)["failed"]++;
       HandleFailedResponse(&msg);
       break;
     case RESPONSE_NOT_IMPLEMENTED:
+      if (m_recv_type_map)
+        (*m_recv_type_map)["not-implemented"]++;
       HandleNotImplemented(&msg);
       break;
     default:

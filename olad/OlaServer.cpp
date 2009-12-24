@@ -261,7 +261,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
   if (!socket)
     return -1;
 
-  StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket);
+  StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
   socket->SetOnClose(NewSingleClosure(this, &OlaServer::SocketClosed, socket));
   OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
   Client *client = new Client(stub);
@@ -283,8 +283,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
   m_sd_to_service.insert(pair);
 
   m_ss->AddSocket(socket, true);
-  IntegerVariable *var = m_export_map->GetIntegerVar(K_CLIENT_VAR);
-  var->Increment();
+  (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
   return 0;
 }
 
@@ -299,8 +298,7 @@ int OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
   if (iter == m_sd_to_service.end())
     OLA_INFO << "A socket was closed but we didn't find the client";
 
-  IntegerVariable *var = m_export_map->GetIntegerVar(K_CLIENT_VAR);
-  var->Decrement();
+  (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
   CleanupConnection(iter->second);
   m_sd_to_service.erase(iter);
   return 0;

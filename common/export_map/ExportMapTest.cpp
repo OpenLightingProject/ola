@@ -68,10 +68,10 @@ void ExportMapTest::testIntegerVariable() {
   CPPUNIT_ASSERT_EQUAL(var.Name(), name);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("0"));
   CPPUNIT_ASSERT_EQUAL(var.Get(), 0);
-  var.Increment();
+  var++;
   CPPUNIT_ASSERT_EQUAL(var.Get(), 1);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("1"));
-  var.Decrement();
+  var--;
   CPPUNIT_ASSERT_EQUAL(var.Get(), 0);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("0"));
   var.Set(100);
@@ -90,13 +90,13 @@ void ExportMapTest::testCounterVariable() {
   CPPUNIT_ASSERT_EQUAL(var.Name(), name);
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("0"));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, var.Get());
-  var.Increment();
+  var++;
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, var.Get());
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("1"));
-  var.Add(10);
+  var += 10;
   CPPUNIT_ASSERT_EQUAL((unsigned int) 11, var.Get());
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("11"));
-  var.Add(100);
+  var += 100;
   CPPUNIT_ASSERT_EQUAL((unsigned int) 111, var.Get());
   CPPUNIT_ASSERT_EQUAL(var.Value(), string("111"));
 }

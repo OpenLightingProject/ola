@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <algorithm>
 #include <string>
 #include <map>
 #include <vector>
@@ -150,6 +151,8 @@ vector<BaseVariable*> ExportMap::AllVariables() const {
   AddVariablesToVector(&variables, m_str_map_variables);
   AddVariablesToVector(&variables, m_int_map_variables);
   AddVariablesToVector(&variables, m_uint_map_variables);
+
+  sort(variables.begin(), variables.end(), VariableLessThan());
   return variables;
 }
 

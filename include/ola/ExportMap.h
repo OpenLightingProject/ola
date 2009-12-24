@@ -50,6 +50,14 @@ class BaseVariable {
     string m_name;
 };
 
+struct VariableLessThan: public std::binary_function<BaseVariable*,
+                                                     BaseVariable*, bool> {
+  bool operator()(BaseVariable *x, BaseVariable *y) {
+    return x->Name() < y->Name();
+  }
+};
+
+
 
 /*
  * Represents a string variable
@@ -81,8 +89,8 @@ class IntegerVariable: public BaseVariable {
     ~IntegerVariable() {}
 
     void Set(int value) { m_value = value; }
-    void Increment() { m_value++; }
-    void Decrement() { m_value--; }
+    void operator++(int) { m_value++; }
+    void operator--(int) { m_value--; }
     void Reset() { m_value = 0; }
     int Get() const { return m_value; }
     const string Value() const {
@@ -106,8 +114,8 @@ class CounterVariable: public BaseVariable {
           m_value(0) {}
     ~CounterVariable() {}
 
-    void Increment() { m_value++; }
-    void Add(unsigned int value) { m_value += value; }
+    void operator++(int) { m_value++; }
+    void operator+=(unsigned int value) { m_value += value; }
     void Reset() { m_value = 0; }
     unsigned int Get() const { return m_value; }
     const string Value() const {

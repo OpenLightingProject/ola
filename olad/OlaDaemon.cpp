@@ -36,7 +36,7 @@ using ola::network::TcpAcceptingSocket;
 using ola::network::AcceptingSocket;
 using ola::network::SelectServer;
 
-const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc_port";
+const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";
 
 /*
  * Create a new OlaDaemon
