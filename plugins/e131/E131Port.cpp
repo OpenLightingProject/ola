@@ -20,6 +20,7 @@
 
 #include <string>
 #include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "olad/Universe.h"
 #include "plugins/e131/E131Port.h"
 #include "plugins/e131/E131Device.h"
@@ -72,11 +73,18 @@ void E131InputPort::PostSetUniverse(Universe *new_universe,
  */
 void E131OutputPort::PostSetUniverse(Universe *new_universe,
                                      Universe *old_universe) {
-  if (old_universe)
-    m_node->SetSourceName(old_universe->UniverseId(), "");
 
-  if (new_universe)
-    m_node->SetSourceName(new_universe->UniverseId(), new_universe->Name());
+  if (new_universe) {
+    if (m_prepend_hostname) {
+      std::stringstream str;
+      str << ola::network::Hostname() << "-" << new_universe->Name();
+      m_node->SetSourceName(new_universe->UniverseId(), str.str());
+    } else {
+      m_node->SetSourceName(new_universe->UniverseId(), new_universe->Name());
+    }
+  } else {
+    m_node->SetSourceName(old_universe->UniverseId(), "");
+  }
 }
 
 

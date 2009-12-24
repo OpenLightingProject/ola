@@ -107,6 +107,13 @@ void StringUtilsTest::testSplit() {
   CPPUNIT_ASSERT_EQUAL(string(""), tokens[1]);
   CPPUNIT_ASSERT_EQUAL(string("2"), tokens[2]);
   CPPUNIT_ASSERT_EQUAL(string("345"), tokens[3]);
+
+  input = "1";
+  tokens.clear();
+  StringSplit(input, tokens, ".");
+
+  CPPUNIT_ASSERT_EQUAL((size_t) 1, tokens.size());
+  CPPUNIT_ASSERT_EQUAL(string("1"), tokens[0]);
 }
 
 

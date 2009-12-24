@@ -23,8 +23,13 @@
 #endif
 
 #include <arpa/inet.h>
+#include <errno.h>
+#include <limits.h>
+#include <unistd.h>
 #include <string>
+#include <vector>
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 
 
 namespace ola {
@@ -73,7 +78,7 @@ uint8_t HostToNetwork(uint8_t value) {
  * Convert a uint16_t from network to host byte order
  */
 uint16_t HostToNetwork(uint16_t value) {
-  return  htons(value);
+  return htons(value);
 }
 
 
@@ -81,7 +86,28 @@ uint16_t HostToNetwork(uint16_t value) {
  * Convert a uint32_t from host to network byte order
  */
 uint32_t HostToNetwork(uint32_t value) {
-  return  htonl(value);
+  return htonl(value);
+}
+
+
+/*
+ * Return the hostname as a string.
+ */
+string Hostname() {
+#ifdef _POSIX_HOST_NAME_MAX
+  char hostname[_POSIX_HOST_NAME_MAX];
+#else
+  char hostname[256];
+#endif
+  int ret = gethostname(hostname, sizeof(hostname));
+
+  if (ret) {
+    OLA_WARN << "gethostname failed: " << strerror(errno);
+    return "";
+  }
+  std::vector<string> tokens;
+  StringSplit(hostname, tokens, ".");
+  return string(tokens[0]);
 }
 }  // network
 }  // ola

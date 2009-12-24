@@ -35,23 +35,22 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-const std::string E131Device::IP_KEY = "ip";
-
-
 /*
  * Create a new device
  */
 E131Device::E131Device(Plugin *owner, const string &name,
                        const ola::plugin::e131::CID &cid,
-                       Preferences *preferences,
+                       std::string ip_addr,
                        const PluginAdaptor *plugin_adaptor,
-                       bool use_rev2)
+                       bool use_rev2,
+                       bool prepend_hostname)
     : Device(owner, name),
-      m_preferences(preferences),
       m_plugin_adaptor(plugin_adaptor),
       m_node(NULL),
       m_enabled(false),
       m_use_rev2(use_rev2),
+      m_prepend_hostname(prepend_hostname),
+      m_ip_addr(ip_addr),
       m_cid(cid) {
 }
 
@@ -63,7 +62,7 @@ bool E131Device::Start() {
   if (m_enabled)
     return false;
 
-  m_node = new E131Node(m_preferences->GetValue(IP_KEY), m_use_rev2, m_cid);
+  m_node = new E131Node(m_ip_addr, m_use_rev2, m_cid);
 
   if (!m_node->Start()) {
     delete m_node;
@@ -75,7 +74,10 @@ bool E131Device::Start() {
   for (unsigned int i = 0; i < NUMBER_OF_E131_PORTS; i++) {
     E131InputPort *input_port = new E131InputPort(this, i, m_node);
     AddPort(input_port);
-    E131OutputPort *output_port = new E131OutputPort(this, i, m_node);
+    E131OutputPort *output_port = new E131OutputPort(this,
+                                                     i,
+                                                     m_node,
+                                                     m_prepend_hostname);
     AddPort(output_port);
   }
 

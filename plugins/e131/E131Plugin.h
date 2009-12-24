@@ -54,6 +54,8 @@ class E131Plugin: public ola::Plugin {
     static const char REVISION_KEY[];
     static const char REVISION_0_2[];
     static const char REVISION_0_46[];
+    static const char IP_KEY[];
+    static const char PREPEND_HOSTNAME_KEY[];
 };
 }  // e131
 }  // plugin

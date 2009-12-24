@@ -47,6 +47,8 @@ const char E131Plugin::CID_KEY[] = "cid";
 const char E131Plugin::REVISION_KEY[] = "revision";
 const char E131Plugin::REVISION_0_2[] = "0.2";
 const char E131Plugin::REVISION_0_46[] = "0.46";
+const char E131Plugin::IP_KEY[] = "ip";
+const char E131Plugin::PREPEND_HOSTNAME_KEY[] = "prepend_hostname";
 
 
 /*
@@ -55,15 +57,18 @@ const char E131Plugin::REVISION_0_46[] = "0.46";
 bool E131Plugin::StartHook() {
   CID cid = CID::FromString(m_preferences->GetValue(CID_KEY));
   string revision = m_preferences->GetValue(REVISION_KEY);
-
   bool use_rev2 = revision == REVISION_0_2 ? true : false;
+  string prepend_hostname_val = m_preferences->GetValue(PREPEND_HOSTNAME_KEY);
+  bool prepend_hostname = prepend_hostname_val == "true" ? true : false;
+  string ip_addr = m_preferences->GetValue(IP_KEY);
 
   m_device = new E131Device(this,
                             DEVICE_NAME,
                             cid,
-                            m_preferences,
+                            ip_addr,
                             m_plugin_adaptor,
-                            use_rev2);
+                            use_rev2,
+                            prepend_hostname);
 
   if (!m_device->Start()) {
     delete m_device;
@@ -102,15 +107,18 @@ string E131Plugin::Description() const {
 "\n"
 "--- Config file : ola-e131.conf ---\n"
 "\n"
+"cid = 00010203-0405-0607-0809-0A0B0C0D0E0F\n"
+"The CID to use for this device\n"
+"\n"
 "ip = a.b.c.d\n"
 "The local ip address to use for multicasting.\n"
+"\n"
+"prepend_hostname = true\n"
+"Prepend the hostname to the source name when sending packets.\n"
 "\n"
 "revision = [0.2|0.46]\n"
 "Select which revision of the standard to use when sending data. 0.2 is the\n"
 " standardized revision, 0.46 (default) is the ANSI standard version.\n"
-"\n"
-"cid = 00010203-0405-0607-0809-0A0B0C0D0E0F\n"
-"The CID to use for this device\n"
 "\n";
 }
 
@@ -129,6 +137,11 @@ bool E131Plugin::SetDefaultPreferences() {
   if (cid.IsNil()) {
     cid = CID::Generate();
     m_preferences->SetValue(CID_KEY, cid.ToString());
+    save = true;
+  }
+
+  if (m_preferences->GetValue(PREPEND_HOSTNAME_KEY).empty()) {
+    m_preferences->SetValue(PREPEND_HOSTNAME_KEY, "true");
     save = true;
   }
 
