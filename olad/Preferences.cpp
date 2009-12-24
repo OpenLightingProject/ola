@@ -41,6 +41,9 @@ using std::ifstream;
 using std::ofstream;
 using std::pair;
 
+const char MemoryPreferences::TRUE_VALUE[] = "true";
+const char MemoryPreferences::FALSE_VALUE[] = "false";
+
 const char FileBackedPreferences::OLA_CONFIG_DIR[] = ".ola";
 const char FileBackedPreferences::OLA_CONFIG_PREFIX[] = "ola-";
 const char FileBackedPreferences::OLA_CONFIG_SUFFIX[] = ".conf";
@@ -101,6 +104,20 @@ void MemoryPreferences::SetValue(const string &key, const string &value) {
 
 
 /*
+ * Set a value as a bool.
+ * @param key
+ * @param value
+ */
+void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
+  m_pref_map.erase(key);
+  if (value)
+    m_pref_map.insert(pair<string, string>(key, TRUE_VALUE));
+  else
+    m_pref_map.insert(pair<string, string>(key, FALSE_VALUE));
+}
+
+
+/*
  * Set a preference value only if it's empty.
  * @param key
  * @param value
@@ -152,6 +169,21 @@ string MemoryPreferences::GetValue(const string &key) const {
   if (iter != m_pref_map.end())
     return iter->second.c_str();
   return "";
+}
+
+
+/*
+ * Get a preference value as a bool
+ * @param key the key to fetch
+ * @return true if the value is 'true' or false otherwise
+ */
+bool MemoryPreferences::GetValueAsBool(const string &key) const {
+  map<string, string>::const_iterator iter;
+  iter = m_pref_map.find(key);
+
+  if (iter != m_pref_map.end())
+    return iter->second == TRUE_VALUE;
+  return false;
 }
 
 

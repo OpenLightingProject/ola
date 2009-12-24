@@ -47,11 +47,13 @@ class Preferences {
     virtual void Clear() = 0;
 
     virtual void SetValue(const string &key, const string &value) = 0;
+    virtual void SetValueAsBool(const string &key, bool value) = 0;
     virtual bool SetDefaultValue(const string &key, const string &value) = 0;
     virtual void RemoveValue(const string &key) = 0;
     virtual void SetMultipleValue(const string &key, const string &value) = 0;
 
     virtual string GetValue(const string &key) const = 0;
+    virtual bool GetValueAsBool(const string &key) const = 0;
     virtual vector<string> GetMultipleValue(const string &key) const = 0;
 
   protected:
@@ -87,10 +89,12 @@ class MemoryPreferences: public Preferences {
     virtual bool Save() const { return true; }
     virtual void Clear();
     virtual void SetValue(const string &key, const string &value);
+    virtual void SetValueAsBool(const string &key, bool value);
     virtual bool SetDefaultValue(const string &key, const string &value);
     virtual void RemoveValue(const string &key);
     virtual void SetMultipleValue(const string &key, const string &value);
     virtual string GetValue(const string &key) const;
+    virtual bool GetValueAsBool(const string &key) const;
     virtual vector<string> GetMultipleValue(const string &key) const;
 
     bool operator==(const MemoryPreferences &other) {
@@ -99,6 +103,10 @@ class MemoryPreferences: public Preferences {
 
   protected:
     multimap<string, string> m_pref_map;
+
+  private:
+    static const char TRUE_VALUE[];
+    static const char FALSE_VALUE[];
 };
 
 

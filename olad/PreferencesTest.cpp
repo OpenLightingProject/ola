@@ -35,6 +35,7 @@ using std::vector;
 class PreferencesTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PreferencesTest);
   CPPUNIT_TEST(testGetSetRemove);
+  CPPUNIT_TEST(testBool);
   CPPUNIT_TEST(testFactory);
   CPPUNIT_TEST(testLoad);
   CPPUNIT_TEST(testSave);
@@ -42,6 +43,7 @@ class PreferencesTest: public CppUnit::TestFixture {
 
   public:
     void testGetSetRemove();
+    void testBool();
     void testFactory();
     void testLoad();
     void testSave();
@@ -91,6 +93,27 @@ void PreferencesTest::testGetSetRemove() {
   CPPUNIT_ASSERT_EQUAL(value1, preferences->GetValue(key1));
   CPPUNIT_ASSERT(!preferences->SetDefaultValue(key1, value2));
   CPPUNIT_ASSERT_EQUAL(value1, preferences->GetValue(key1));
+}
+
+
+/*
+ * Check that we can get/set the preferences
+ */
+void PreferencesTest::testBool() {
+  MemoryPreferencesFactory factory;
+  Preferences *preferences = factory.NewPreference("dummy");
+
+  string key1 = "foo";
+  string value1 = "bar";
+
+  // test get/set single values
+  CPPUNIT_ASSERT_EQUAL(false, preferences->GetValueAsBool(key1));
+  preferences->SetValueAsBool(key1, true);
+  CPPUNIT_ASSERT_EQUAL(true, preferences->GetValueAsBool(key1));
+  preferences->SetValueAsBool(key1, false);
+  CPPUNIT_ASSERT_EQUAL(false, preferences->GetValueAsBool(key1));
+  preferences->SetValue(key1, value1);
+  CPPUNIT_ASSERT_EQUAL(false, preferences->GetValueAsBool(key1));
 }
 
 
