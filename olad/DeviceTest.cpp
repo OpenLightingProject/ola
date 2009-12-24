@@ -63,16 +63,6 @@ class DeviceTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(DeviceTest);
 
 
-class DeviceTestMockPlugin: public ola::Plugin {
-  public:
-    explicit DeviceTestMockPlugin(const ola::PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
-    string Name() const { return "foo"; }
-    string Description() const { return "bar"; }
-    ola::ola_plugin_id Id() const { return ola::OLA_PLUGIN_ALL; }
-    string PluginPrefix() const { return "test"; }
-};
-
 class DeviceTestMockDevice: public ola::Device {
   public:
     DeviceTestMockDevice(ola::AbstractPlugin *owner, const string &name):
@@ -97,7 +87,7 @@ void DeviceTest::testDevice() {
   AddPortsToDeviceAndCheck(&orphaned_device);
 
   // Non orphaned device
-  DeviceTestMockPlugin plugin(NULL);
+  TestMockPlugin plugin(NULL);
   DeviceTestMockDevice device(&plugin, device_name);
   CPPUNIT_ASSERT_EQUAL(device.Name(), device_name);
   CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractPlugin*>(&plugin),
@@ -114,7 +104,7 @@ void DeviceTest::testDeviceManager() {
   DeviceManager manager(NULL, NULL);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
-  DeviceTestMockPlugin plugin(NULL);
+  TestMockPlugin plugin(NULL);
   DeviceTestMockDevice orphaned_device(NULL, "orphaned device");
   DeviceTestMockDevice device1(&plugin, "test device 1");
   DeviceTestMockDevice device2(&plugin, "test device 2");
@@ -215,7 +205,7 @@ void DeviceTest::testRestorePatchings() {
   prefs->SetValue("0-test_device_1-I-1", "1");
   prefs->SetValue("0-test_device_1-O-1", "3");
 
-  DeviceTestMockPlugin plugin(NULL);
+  TestMockPlugin plugin(NULL);
   DeviceTestMockDevice device1(&plugin, "test_device_1");
   TestMockInputPort input_port(&device1, 1);
   TestMockOutputPort output_port(&device1, 1);

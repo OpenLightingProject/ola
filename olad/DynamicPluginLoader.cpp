@@ -15,7 +15,7 @@
  *
  * DynamicPluginLoader.cpp
  * This class is responsible for loading and unloading the plugins
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
 #if HAVE_CONFIG_H
@@ -28,6 +28,7 @@
 
 #include "plugins/dummy/DummyPlugin.h"
 #include "plugins/espnet/EspNetPlugin.h"
+#include "plugins/e131/E131Plugin.h"
 #include "plugins/opendmx/OpenDmxPlugin.h"
 #include "plugins/sandnet/SandnetPlugin.h"
 #include "plugins/shownet/ShowNetPlugin.h"
@@ -39,9 +40,7 @@
 #endif
 
 /*
-#ifdef HAVE_PATHPORT
 #include "plugins/pathport/PathportPlugin.h"
-#endif
 */
 
 #ifdef HAVE_DMX4LINUX
@@ -55,93 +54,44 @@ using std::vector;
 
 /*
  * Load the plugins that we were linked against
- *
- * @return   0 on sucess, -1 on failure
+ * @returns a vector of plugins
  */
-int DynamicPluginLoader::LoadPlugins() {
-  AbstractPlugin *plugin;
-
-  plugin = new ola::plugin::DummyPlugin(m_plugin_adaptor);
-  m_plugins.push_back(plugin);
-  plugin = new ola::plugin::OpenDmxPlugin(m_plugin_adaptor);
-  m_plugins.push_back(plugin);
-  plugin = new ola::plugin::StageProfiPlugin(m_plugin_adaptor);
-  m_plugins.push_back(plugin);
-  plugin = new ola::plugin::UsbProPlugin(m_plugin_adaptor);
-  m_plugins.push_back(plugin);
-  plugin = new ola::plugin::EspNetPlugin(m_plugin_adaptor);
-  m_plugins.push_back(plugin);
-  plug = new SandNetPlugin(m_pa, OLA_PLUGIN_SANDNET);
-  m_plugins.push_back(plug);
-  plug = new ShowNetPlugin(m_pa, OLA_PLUGIN_SHOWNET);
-  m_plugins.push_back(plug);
-
+vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
 #ifdef HAVE_ARTNET
-  plugin = new ola::plugin::ArtNetPlugin(m_plugin_adaptor);
-  m_plugins.push_back(plugin);
+  m_plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
 #endif
-
-  /*
-#ifdef HAVE_PATHPORT
-  plug = new PathportPlugin(m_pa, OLA_PLUGIN_PATHPORT);
-  m_plugins.push_back(plug);
-#endif
-*/
 
 #ifdef HAVE_DMX4LINUX
-  plugin = new ola::plugin::Dmx4LinuxPlugin(m_plugin_adaptor);
-  m_plugins.push_back(plugin);
+  m_plugins.push_back(
+      new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
 #endif
 
-  return 0;
-}
-
-
-/*
- * Unload all plugins, this also stops them if they aren't already.
- */
-int DynamicPluginLoader::UnloadPlugins() {
-  vector<AbstractPlugin*>::iterator iter;
-
-  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
-    if ((*iter)->IsEnabled())
-      (*iter)->Stop();
-    delete *iter;
-  }
-  m_plugins.clear();
-  return 0;
-}
-
-
-/*
- * Return the number of plugins loaded
- *
- * @return the number of plugins loaded
- */
-int DynamicPluginLoader::PluginCount() const {
-  return m_plugins.size();
-}
-
-
-/*
- * Returns a list of plugins
- */
-vector<class AbstractPlugin*> DynamicPluginLoader::Plugins() const {
+  //m_plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
+  m_plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
+  m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
+  m_plugins.push_back(
+      new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
+  m_plugins.push_back(
+      new ola::plugin::sandnet::SandNetPlugin(m_plugin_adaptor));
+  m_plugins.push_back(
+      new ola::plugin::shownet::ShowNetPlugin(m_plugin_adaptor));
+  m_plugins.push_back(
+      new ola::plugin::stageprofi::StageProfiPlugin(m_plugin_adaptor));
+  m_plugins.push_back(new ola::plugin::usbpro::UsbProPlugin(m_plugin_adaptor));
+  // m_plugins.push_back(
+  //    new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor);
   return m_plugins;
 }
 
 
 /*
- * Return the plugin with the specified id.
- * @param plugin_id the id of the plugin
- * @return the plugin corresponding to this id or NULL if not found
+ * Unload all plugins.
  */
-AbstractPlugin* DynamicPluginLoader::GetPlugin(ola_plugin_id plugin_id) const {
-  vector<AbstractPlugin*>::const_iterator iter;
-
-  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
-    if ((*iter)->Id() == plugin_id)
-      return *iter;
-  return NULL;
+void DynamicPluginLoader::UnloadPlugins() {
+  vector<AbstractPlugin*>::iterator iter;
+  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
+    delete *iter;
+  }
+  m_plugins.clear();
 }
 }  // ola

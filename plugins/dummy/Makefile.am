@@ -1,4 +1,4 @@
-libdir = $(plugindir)
+libdir = $(third_party_plugindir)
 
 EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h
 

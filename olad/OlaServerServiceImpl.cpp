@@ -28,7 +28,7 @@
 #include "olad/Device.h"
 #include "olad/Port.h"
 #include "olad/Plugin.h"
-#include "olad/PluginLoader.h"
+#include "olad/PluginManager.h"
 #include "olad/PortPatcher.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
@@ -260,8 +260,9 @@ void OlaServerServiceImpl::GetPluginInfo(RpcController* controller,
                                          const PluginInfoRequest* request,
                                          PluginInfoReply* response,
                                          google::protobuf::Closure* done) {
-  vector<AbstractPlugin*> plugin_list = m_plugin_loader->Plugins();
+  vector<AbstractPlugin*> plugin_list;
   vector<AbstractPlugin*>::const_iterator iter;
+  m_plugin_manager->Plugins(&plugin_list);
 
   bool include_all = (!request->has_plugin_id() ||
       request->plugin_id() == ola::OLA_PLUGIN_ALL);
@@ -421,13 +422,13 @@ void OlaServerServiceImpl::PopulatePort(const PortClass &port,
 OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     UniverseStore *universe_store,
     DeviceManager *device_manager,
-    PluginLoader *plugin_loader,
+    PluginManager *plugin_manager,
     Client *client,
     ExportMap *export_map,
     PortPatcher *port_patcher) {
   return new OlaServerServiceImpl(universe_store,
                                   device_manager,
-                                  plugin_loader,
+                                  plugin_manager,
                                   client,
                                   export_map,
                                   port_patcher);

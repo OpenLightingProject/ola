@@ -41,7 +41,7 @@ class OlaHttpServer {
     OlaHttpServer(ExportMap *export_map,
                   SelectServer *ss,
                   class UniverseStore *universe_store,
-                  class PluginLoader *plugin_loader,
+                  class PluginManager *plugin_manager,
                   class DeviceManager *device_manager,
                   PortPatcher *port_patcher,
                   unsigned int port,
@@ -92,7 +92,7 @@ class OlaHttpServer {
     ExportMap *m_export_map;
     SelectServer *m_ss;
     UniverseStore *m_universe_store;
-    PluginLoader *m_plugin_loader;
+    PluginManager *m_plugin_manager;
     DeviceManager *m_device_manager;
     PortPatcher *m_port_patcher;
     bool m_enable_quit;

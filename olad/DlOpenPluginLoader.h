@@ -45,11 +45,8 @@ class DlOpenPluginLoader: public PluginLoader {
       m_dl_active(false) {}
     ~DlOpenPluginLoader() { UnloadPlugins(); }
 
-    int LoadPlugins();
-    int UnloadPlugins();
-    int PluginCount() const;
-    vector<AbstractPlugin*> Plugins() const { return m_plugins; }
-    AbstractPlugin* GetPlugin(ola_plugin_id plugin_id) const;
+    std::vector<AbstractPlugin*> LoadPlugins();
+    void UnloadPlugins();
 
   private:
     DlOpenPluginLoader(const DlOpenPluginLoader&);
@@ -61,7 +58,6 @@ class DlOpenPluginLoader: public PluginLoader {
 
     string m_dirname;
     bool m_dl_active;
-    std::vector<AbstractPlugin*> m_plugins;
     std::map<lt_dlhandle, AbstractPlugin*> m_plugin_map;
 };
 }  // ola

@@ -111,35 +111,37 @@ AC_CHECK_HEADERS(
 )
 
 # check for plugin dependencies. We also build a list of plugins that we're
-# going to compile here so the test binary knows what to link against
-PLUGINS="dummy opendmx stageprofi usbpro"
+# going to compile here so the binary knows what to link against
+PLUGINS="espnet e131 opendmx sandnet shownet stageprofi usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
 PLUGIN_LIBRARY(dmx4l, DMXdev, DMX4LINUX)
-PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
+#PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
 
 # confirm libartnet version
 if test "${have_artnet}" = "yes"; then
   PKG_CHECK_MODULES(libartnet, [libartnet >= 1.1.0])
 fi
 
-# create a list of plugin libs that will be used for testing
+# create a list of plugin libs
 PLUGIN_LIBS=''
-for p in $PLUGINS
+for p in $PLUGINS;
 do PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/$p/libola$p.la"
 done
 
 AC_SUBST(PLUGIN_LIBS)
 
 # plugin & html data directories
-plugindir=$libdir/olad
-AC_SUBST(plugindir)
-
+plugindir=$libdir/olad/
+third_party_plugindir=$libdir/olad_plugins/
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
+AC_SUBST(plugindir)
+AC_SUBST(third_party_plugindir)
 AC_SUBST(www_datadir)
 
-OLAD_DEFINES="$CFLAGS -DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
+OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DTHIRD_PARTY_PLUGIN_DIR=\\\"$third_party_plugindir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
+
 AC_SUBST(OLAD_DEFINES)
 
 AC_ARG_ENABLE(debug,

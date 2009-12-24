@@ -3,9 +3,10 @@ INCLUDES = -I$(top_builddir)/common -I$(top_builddir)/include \
 SUBDIRS = www testdata
 
 OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp \
-                    DlOpenPluginLoader.cpp OlaServerServiceImpl.cpp \
-                    Plugin.cpp PluginAdaptor.cpp Preferences.cpp Port.cpp \
-                    PortPatcher.cpp Universe.cpp \
+                    DlOpenPluginLoader.cpp DynamicPluginLoader.cpp \
+                    OlaServerServiceImpl.cpp \
+                    Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
+                    Preferences.cpp Port.cpp PortPatcher.cpp Universe.cpp \
                     UniverseStore.cpp
 
 # lib olaserver
@@ -38,32 +39,17 @@ olad_SOURCES = Olad.cpp
 olad_CXXFLAGS = -Wall -Wformat -W
 olad_LDFLAGS = -rdynamic -ldl -lprotobuf $(UUID_LIBS)
 olad_LDADD = @LIBS@ libolaserver.la \
+             ${PLUGIN_LIBS} \
              $(top_builddir)/common/libolacommon.la
 
 # Test Programs
 TESTS = OlaTester
 check_PROGRAMS = $(TESTS)
 OlaTester_SOURCES = $(OLASERVER_SOURCES) OlaServerTester.cpp \
-                    UniverseTest.cpp DeviceTest.cpp PreferencesTest.cpp \
-                    OlaServerServiceImplTest.cpp ClientTest.cpp
+                    UniverseTest.cpp DeviceTest.cpp PluginManagerTest.cpp \
+                    PreferencesTest.cpp OlaServerServiceImplTest.cpp \
+                    ClientTest.cpp
 OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 OlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
-OlaTester_LDADD = @LIBS@ @LIBLTDL@ $(top_builddir)/common/libolacommon.la
-
-
-#-------------------------------------
-
-# crap starts here
-#olad_test_SOURCES = main_test.cpp devicemanager.cpp pluginadaptor.cpp\
-#				olad.cpp network.cpp plugin.cpp device.cpp port.cpp\
-#				DynamicPluginLoader.cpp universe.cpp \
-#				client.cpp preferences.cpp UniverseStore.cpp
-
-#olad_test_CXXFLAGS = -Wall -Werror  -Wformat -W
-#olad_test_LDADD = @LIBS@ ${PLUGIN_LIBS} -lprotobuf ../protocol/ola.pb.o
-#olad_test_CXXFLAGS = -g
-#-loladummy -lolaespnet \
-#					-lolaopendmx -lolapathport -lolasandnet -lolashownet -lolastageprofi \
-#					-lolausbpro
-#olad_test_LDADD = @LIBS@
-#olad_test_LDFLAGS = -rdynamic
+OlaTester_LDADD = @LIBS@ @LIBLTDL@ ${PLUGIN_LIBS} \
+                  $(top_builddir)/common/libolacommon.la

@@ -21,13 +21,9 @@
 #ifndef OLAD_PLUGINLOADER_H_
 #define OLAD_PLUGINLOADER_H_
 
-#include <ola/plugin_id.h>
 #include <vector>
 
 namespace ola {
-
-using std::vector;
-class AbstractPlugin;
 
 class PluginLoader {
   public:
@@ -37,11 +33,8 @@ class PluginLoader {
     void SetPluginAdaptor(class PluginAdaptor *adaptor) {
       m_plugin_adaptor = adaptor;
     }
-    virtual int LoadPlugins() = 0;
-    virtual int UnloadPlugins() = 0;
-    virtual int PluginCount() const = 0;
-    virtual vector<AbstractPlugin*> Plugins() const = 0;
-    virtual AbstractPlugin* GetPlugin(ola_plugin_id plugin_id) const = 0;
+    virtual std::vector<class AbstractPlugin*> LoadPlugins() = 0;
+    virtual void UnloadPlugins() = 0;
 
   protected:
     class PluginAdaptor *m_plugin_adaptor;

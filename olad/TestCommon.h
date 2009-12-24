@@ -24,6 +24,7 @@
 #include <string>
 
 #include "ola/DmxBuffer.h"
+#include "olad/Plugin.h"
 #include "olad/Port.h"
 
 using ola::AbstractDevice;
@@ -60,5 +61,16 @@ class TestMockOutputPort: public OutputPort {
 
   private:
     DmxBuffer m_buffer;
+};
+
+
+class TestMockPlugin: public ola::Plugin {
+  public:
+    explicit TestMockPlugin(const ola::PluginAdaptor *plugin_adaptor):
+      Plugin(plugin_adaptor) {}
+    string Name() const { return "foo"; }
+    string Description() const { return "bar"; }
+    ola::ola_plugin_id Id() const { return ola::OLA_PLUGIN_ALL; }
+    string PluginPrefix() const { return "test"; }
 };
 #endif  // OLAD_TESTCOMMON_H_

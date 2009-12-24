@@ -30,7 +30,7 @@
 #include "olad/DeviceManager.h"
 #include "olad/OlaHttpServer.h"
 #include "olad/Plugin.h"
-#include "olad/PluginLoader.h"
+#include "olad/PluginManager.h"
 #include "olad/Port.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
@@ -59,7 +59,7 @@ RegisterTemplateFilename(CONSOLE_FILENAME, "show_dmx_console.tpl");
 OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              SelectServer *ss,
                              UniverseStore *universe_store,
-                             PluginLoader *plugin_loader,
+                             PluginManager *plugin_manager,
                              DeviceManager *device_manager,
                              PortPatcher *port_patcher,
                              unsigned int port,
@@ -69,7 +69,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_export_map(export_map),
       m_ss(ss),
       m_universe_store(universe_store),
-      m_plugin_loader(plugin_loader),
+      m_plugin_manager(plugin_manager),
       m_device_manager(device_manager),
       m_port_patcher(port_patcher),
       m_enable_quit(enable_quit) {
@@ -158,7 +158,8 @@ int OlaHttpServer::DisplayMain(const HttpRequest *request,
 int OlaHttpServer::DisplayPlugins(const HttpRequest *request,
                                   HttpResponse *response) {
   TemplateDictionary dict("plugins");
-  vector<AbstractPlugin*> plugins = m_plugin_loader->Plugins();
+  vector<AbstractPlugin*> plugins;
+  m_plugin_manager->Plugins(&plugins);
   std::sort(plugins.begin(), plugins.end(), PluginLessThan());
 
   if (plugins.size()) {
@@ -190,7 +191,7 @@ int OlaHttpServer::DisplayPluginInfo(const HttpRequest *request,
   string val = request->GetParameter("id");
   int plugin_id = atoi(val.data());
   AbstractPlugin *plugin = NULL;
-  plugin = m_plugin_loader->GetPlugin((ola_plugin_id) plugin_id);
+  plugin = m_plugin_manager->GetPlugin((ola_plugin_id) plugin_id);
 
   if (!plugin)
     return m_server.ServeNotFound(response);

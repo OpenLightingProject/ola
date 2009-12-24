@@ -39,7 +39,7 @@
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
-#include "olad/PluginLoader.h"
+#include "olad/PluginManager.h"
 #include "olad/Port.h"
 #include "olad/PortPatcher.h"
 #include "olad/Preferences.h"
@@ -67,14 +67,14 @@ const unsigned int OlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
  * @param socket the socket to listen on for new connections
  */
 OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
-                     PluginLoader *plugin_loader,
+                     const vector<PluginLoader*> &plugin_loaders,
                      PreferencesFactory *preferences_factory,
                      ola::network::SelectServer *select_server,
                      ola_server_options *ola_options,
                      ola::network::AcceptingSocket *socket,
                      ExportMap *export_map)
     : m_service_factory(factory),
-      m_plugin_loader(plugin_loader),
+      m_plugin_loaders(plugin_loaders),
       m_ss(select_server),
       m_accepting_socket(socket),
       m_device_manager(NULL),
@@ -116,11 +116,7 @@ OlaServer::~OlaServer() {
   if (m_garbage_collect_timeout != ola::network::INVALID_TIMEOUT)
     m_ss->RemoveTimeout(m_garbage_collect_timeout);
 
-  // stops and unloads all our plugins
-  if (m_plugin_loader) {
-    m_plugin_loader->SetPluginAdaptor(NULL);
-    StopPlugins();
-  }
+  StopPlugins();
 
   map<int, OlaServerServiceImpl*>::iterator iter;
   for (iter = m_sd_to_service.begin(); iter != m_sd_to_service.end(); ++iter) {
@@ -148,6 +144,7 @@ OlaServer::~OlaServer() {
   delete m_port_patcher;
   delete m_plugin_adaptor;
   delete m_device_manager;
+  delete m_plugin_manager;
 
   if (m_free_export_map)
     delete m_export_map;
@@ -166,7 +163,7 @@ bool OlaServer::Init() {
     return false;
 
   // TODO(simon): run without preferences & PluginLoader
-  if (!m_plugin_loader || !m_preferences_factory)
+  if (!m_plugin_loaders.size() || !m_preferences_factory)
     return false;
 
   if (m_accepting_socket) {
@@ -193,24 +190,26 @@ bool OlaServer::Init() {
                                        m_ss,
                                        m_preferences_factory);
 
+  m_plugin_manager = new PluginManager(m_plugin_loaders, m_plugin_adaptor);
+
   if (!m_universe_store || !m_device_manager || !m_plugin_adaptor ||
-      !m_port_patcher) {
+      !m_port_patcher || !m_plugin_manager) {
     delete m_plugin_adaptor;
     delete m_device_manager;
     delete m_port_patcher;
     delete m_universe_store;
+    delete m_plugin_manager;
     return false;
   }
 
-  m_plugin_loader->SetPluginAdaptor(m_plugin_adaptor);
-  StartPlugins();
+  m_plugin_manager->LoadAll();
 
 #ifdef HAVE_LIBMICROHTTPD
   if (m_options.http_enable) {
     m_httpd = new OlaHttpServer(m_export_map,
                                 m_ss,
                                 m_universe_store,
-                                m_plugin_loader,
+                                m_plugin_manager,
                                 m_device_manager,
                                 m_port_patcher,
                                 m_options.http_port,
@@ -234,12 +233,8 @@ bool OlaServer::Init() {
  */
 void OlaServer::ReloadPlugins() {
   OLA_INFO << "Reloading plugins";
-
-  if (!m_plugin_loader)
-    return;
-
   StopPlugins();
-  StartPlugins();
+  m_plugin_manager->LoadAll();
 }
 
 
@@ -272,7 +267,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
   Client *client = new Client(stub);
   OlaServerServiceImpl *service = m_service_factory->New(m_universe_store,
                                                          m_device_manager,
-                                                         m_plugin_loader,
+                                                         m_plugin_manager,
                                                          client,
                                                          m_export_map,
                                                          m_port_patcher);
@@ -323,29 +318,10 @@ int OlaServer::GarbageCollect() {
 
 
 /*
- * Load and start the plugins
- */
-void OlaServer::StartPlugins() {
-  m_plugin_loader->LoadPlugins();
-
-  vector<AbstractPlugin*> plugins = m_plugin_loader->Plugins();
-  vector<AbstractPlugin*>::iterator iter;
-
-  for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-    OLA_INFO << "Trying to start " << (*iter)->Name();
-    if (!(*iter)->Start())
-      OLA_WARN << "Failed to start " << (*iter)->Name();
-    else
-      OLA_INFO << "Started " << (*iter)->Name();
-  }
-}
-
-
-/*
  * Stop and unload all the plugins
  */
 void OlaServer::StopPlugins() {
-  m_plugin_loader->UnloadPlugins();
+  m_plugin_manager->UnloadAll();
   if (m_device_manager) {
     if (m_device_manager->DeviceCount()) {
       OLA_WARN << "Some devices failed to unload, we're probably leaking "

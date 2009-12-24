@@ -22,6 +22,7 @@
 #define OLAD_OLADAEMON_H_
 
 #include <string>
+#include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/ExportMap.h"
 #include "ola/network/SelectServer.h"
@@ -52,7 +53,7 @@ class OlaDaemon {
     OlaDaemon(const OlaDaemon&);
     OlaDaemon& operator=(const OlaDaemon&);
 
-    class PluginLoader *m_plugin_loader;
+    vector<class PluginLoader *> m_plugin_loaders;
     class SelectServer *m_ss;
     class OlaServer *m_server;
     class PreferencesFactory *m_preferences_factory;

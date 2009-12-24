@@ -13,32 +13,42 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DynamicPluginLoader.h
- * Interface for the DynamicPluginLoader class
- * Copyright (C) 2005-2008 Simon Newton
+ * PluginManager.h
+ * Interface to the PluginManager class
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef OLAD_DYNAMICPLUGINLOADER_H_
-#define OLAD_DYNAMICPLUGINLOADER_H_
+#ifndef OLAD_PLUGINMANAGER_H_
+#define OLAD_PLUGINMANAGER_H_
 
 #include <vector>
-#include "olad/PluginLoader.h"
 
 namespace ola {
 
-class DynamicPluginLoader: public PluginLoader {
-  public:
-    DynamicPluginLoader() {}
-    ~DynamicPluginLoader() { UnloadPlugins(); }
+using std::vector;
 
-    std::vector<class AbstractPlugin*> LoadPlugins();
-    void UnloadPlugins();
+class PluginLoader;
+class PluginAdaptor;
+class AbstractPlugin;
+
+class PluginManager {
+  public:
+    PluginManager(const vector<PluginLoader*> &plugin_loaders,
+                  PluginAdaptor *plugin_adaptor);
+    ~PluginManager();
+
+    void LoadAll();
+    void UnloadAll();
+    void Plugins(vector<AbstractPlugin*> *plugins) const;
+    AbstractPlugin* GetPlugin(ola_plugin_id plugin_id) const;
 
   private:
-    DynamicPluginLoader(const DynamicPluginLoader&);
-    DynamicPluginLoader operator=(const DynamicPluginLoader&);
+    PluginManager(const PluginManager&);
+    PluginManager operator=(const PluginManager&);
 
-    std::vector<class AbstractPlugin*> m_plugins;
+    vector<PluginLoader*> m_plugin_loaders;
+    PluginAdaptor *m_plugin_adaptor;
+    vector<AbstractPlugin*> m_plugins;
 };
 }  // ola
-#endif  // OLAD_DYNAMICPLUGINLOADER_H_
+#endif  // OLAD_PLUGINMANAGER_H_

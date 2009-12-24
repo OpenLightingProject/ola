@@ -36,25 +36,24 @@ namespace ola {
 
 /*
  * Read the directory and load all .so files
- *
- * @return   0 on sucess, -1 on failure
  */
-int DlOpenPluginLoader::LoadPlugins() {
+vector<AbstractPlugin*> DlOpenPluginLoader::LoadPlugins() {
   AbstractPlugin *plugin = NULL;
   set<string>::iterator iter;
   set<string> plugin_names = FindPlugins(m_dirname);
+  vector<AbstractPlugin*> plugins;
 
   if (!m_dl_active) {
     if (lt_dlinit()) {
       OLA_WARN << "lt_dlinit failed";
-      return -1;
+      return plugins;
     }
   }
 
   if (lt_dlsetsearchpath(m_dirname.c_str())) {
     OLA_WARN << "lt_setpath failed";
     lt_dlexit();
-    return -1;
+    return plugins;
   }
   m_dl_active = true;
 
@@ -63,49 +62,32 @@ int DlOpenPluginLoader::LoadPlugins() {
     path.append("/");
     path.append(*iter);
 
-    if ((plugin = this->LoadPlugin(path)) == NULL)
-      OLA_WARN << "Failed to load plugin: " << path;
+    if ((plugin = this->LoadPlugin(path)))
+      plugins.push_back(plugin);
     else
-      m_plugins.push_back(plugin);
+      OLA_WARN << "Failed to load plugin: " << path;
   }
-  return 0;
+  return plugins;
 }
 
 
 /*
  * Unload all plugins
  */
-int DlOpenPluginLoader::UnloadPlugins() {
+void DlOpenPluginLoader::UnloadPlugins() {
   map<lt_dlhandle, AbstractPlugin*>::iterator map_iter;
-  vector<AbstractPlugin*>::iterator iter;
-
-  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter) {
-    if ((*iter)->IsEnabled())
-      (*iter)->Stop();
-  }
 
   for (map_iter = m_plugin_map.begin(); map_iter != m_plugin_map.end();
        map_iter++)
     UnloadPlugin((*map_iter).first);
 
   m_plugin_map.clear();
-  m_plugins.clear();
 
   if (m_dl_active) {
     if (lt_dlexit())
       OLA_WARN << "dlexit: " << lt_dlerror();
     m_dl_active = false;
   }
-  return 0;
-}
-
-
-/*
- * Return the number of plugins loaded
- * @return the number of plugins loaded
- */
-int DlOpenPluginLoader::PluginCount() const {
-  return m_plugins.size();
 }
 
 
@@ -144,9 +126,8 @@ set<string> DlOpenPluginLoader::FindPlugins(const string &path) {
 
 /*
  * Load a plugin from a file
- *
  * @param  path  the path to the plugin
- * @return 0 on sucess, -1 on failure
+ * @returns the plugin or NULL
  */
 AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
   lt_dlhandle module = NULL;
@@ -186,7 +167,6 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
 
 /*
  * Unload the plugin
- *
  * @param handle  the handle of the plugin to unload
  * @return  0 on success, non 0 on failure
  */
@@ -202,20 +182,5 @@ int DlOpenPluginLoader::UnloadPlugin(lt_dlhandle handle) {
   destroy(m_plugin_map[handle]);
   lt_dlclose(handle);
   return 0;
-}
-
-
-/*
- * Return the plugin with the specified id.
- * @param plugin_id the id of the plugin
- * @return the plugin corresponding to this id or NULL if not found
- */
-AbstractPlugin* DlOpenPluginLoader::GetPlugin(ola_plugin_id plugin_id) const {
-  vector<AbstractPlugin*>::const_iterator iter;
-
-  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
-    if ((*iter)->Id() == plugin_id)
-      return *iter;
-  return NULL;
 }
 }  // ola

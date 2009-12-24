@@ -27,6 +27,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "ola/ExportMap.h"
 #include "ola/plugin_id.h"
@@ -56,7 +57,7 @@ typedef struct {
 class OlaServer {
   public:
     OlaServer(class OlaServerServiceImplFactory *factory,
-              class PluginLoader *plugin_loader,
+              const vector<class PluginLoader*> &plugin_loaders,
               class PreferencesFactory *preferences_factory,
               ola::network::SelectServer *network,
               ola_server_options *ola_options,
@@ -76,15 +77,15 @@ class OlaServer {
     OlaServer(const OlaServer&);
     OlaServer& operator=(const OlaServer&);
     void StopPlugins();
-    void StartPlugins();
     void CleanupConnection(class OlaServerServiceImpl *service);
 
     class OlaServerServiceImplFactory *m_service_factory;
-    class PluginLoader *m_plugin_loader;
+    vector<class PluginLoader*> m_plugin_loaders;
     ola::network::SelectServer *m_ss;
     ola::network::AcceptingSocket *m_accepting_socket;
 
     class DeviceManager *m_device_manager;
+    class PluginManager *m_plugin_manager;
     class PluginAdaptor *m_plugin_adaptor;
     class PreferencesFactory *m_preferences_factory;
     class Preferences *m_universe_preferences;

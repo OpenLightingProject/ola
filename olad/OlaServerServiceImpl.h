@@ -32,13 +32,13 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
   public:
     OlaServerServiceImpl(class UniverseStore *universe_store,
                          class DeviceManager *device_manager,
-                         class PluginLoader *plugin_loader,
+                         class PluginManager *plugin_manager,
                          class Client *client,
                          class ExportMap *export_map,
                          class PortPatcher *port_patcher):
       m_universe_store(universe_store),
       m_device_manager(device_manager),
-      m_plugin_loader(plugin_loader),
+      m_plugin_manager(plugin_manager),
       m_client(client),
       m_export_map(export_map),
       m_port_patcher(port_patcher) {}
@@ -110,7 +110,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
 
     UniverseStore *m_universe_store;
     DeviceManager *m_device_manager;
-    class PluginLoader *m_plugin_loader;
+    class PluginManager *m_plugin_manager;
     class Client *m_client;
     class ExportMap *m_export_map;
     class PortPatcher *m_port_patcher;
@@ -121,7 +121,7 @@ class OlaServerServiceImplFactory {
   public:
     OlaServerServiceImpl *New(UniverseStore *universe_store,
                               DeviceManager *device_manager,
-                              PluginLoader *plugin_loader,
+                              PluginManager *plugin_manager,
                               Client *client,
                               ExportMap *export_map,
                               PortPatcher *port_patcher);
