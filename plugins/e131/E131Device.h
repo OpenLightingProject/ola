@@ -25,12 +25,15 @@
 #include "olad/Device.h"
 #include "olad/Plugin.h"
 #include "plugins/e131/e131/CID.h"
+#include "plugins/e131/messages/E131ConfigMessages.pb.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
+using google::protobuf::RpcController;
 using ola::Plugin;
+using ola::plugin::e131::Request;
 
 class E131Device: public ola::Device {
   public:
@@ -49,6 +52,11 @@ class E131Device: public ola::Device {
     bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
 
+    void Configure(RpcController *controller,
+                   const string &request,
+                   string *response,
+                   google::protobuf::Closure *done);
+
   private:
     const class PluginAdaptor *m_plugin_adaptor;
     class E131Node *m_node;
@@ -58,6 +66,9 @@ class E131Device: public ola::Device {
     bool m_ignore_preview;
     std::string m_ip_addr;
     ola::plugin::e131::CID m_cid;
+
+    void HandlePreviewMode(Request *request, string *response);
+    void HandlePortStatusRequest(string *response);
 };
 }  // e131
 }  // plugin

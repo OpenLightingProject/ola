@@ -49,7 +49,9 @@ class E131Node {
 
     bool SetSourceName(unsigned int universe, const string &source);
     bool SetSourcePriority(unsigned int universe, uint8_t priority);
-    bool SendDMX(uint16_t universe, const ola::DmxBuffer &buffer);
+    bool SendDMX(uint16_t universe,
+                 const ola::DmxBuffer &buffer,
+                 bool preview=false);
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
                     ola::Closure *handler);
     bool RemoveHandler(unsigned int universe);

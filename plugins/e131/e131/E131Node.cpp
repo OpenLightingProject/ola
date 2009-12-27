@@ -138,10 +138,12 @@ bool E131Node::SetSourcePriority(unsigned int universe, uint8_t priority) {
  * Send some DMX data
  * @param universe the id of the universe to send
  * @param buffer the DMX data
+ * @param preview set to true to turn on the preview bit
  * @return true if it was send successfully, false otherwise
  */
 bool E131Node::SendDMX(uint16_t universe,
-                       const ola::DmxBuffer &buffer) {
+                       const ola::DmxBuffer &buffer,
+                       bool preview) {
   map<unsigned int, tx_universe>::iterator iter =
       m_tx_universes.find(universe);
   tx_universe *settings;
@@ -178,7 +180,7 @@ bool E131Node::SendDMX(uint16_t universe,
                     settings->priority,
                     settings->sequence,
                     universe,
-                    false,  // preview
+                    preview,  // preview
                     false,  // terminated
                     m_use_rev2);
 

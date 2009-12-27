@@ -7,4 +7,4 @@ AM_CXXFLAGS = -Wall -Wformat -W
 
 lib_LTLIBRARIES = libolae131.la
 libolae131_la_SOURCES = E131Plugin.cpp E131Device.cpp E131Port.cpp
-libolae131_la_LIBADD = @LIBS@ e131/libolae131core.la
+libolae131_la_LIBADD = @LIBS@ messages/libolae131conf.la e131/libolae131core.la

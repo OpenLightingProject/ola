@@ -73,7 +73,6 @@ void E131InputPort::PostSetUniverse(Universe *new_universe,
  */
 void E131OutputPort::PostSetUniverse(Universe *new_universe,
                                      Universe *old_universe) {
-
   if (new_universe) {
     if (m_prepend_hostname) {
       std::stringstream str;
@@ -96,7 +95,7 @@ bool E131OutputPort::WriteDMX(const DmxBuffer &buffer) {
   if (!universe)
     return false;
 
-  return m_node->SendDMX(universe->UniverseId(), buffer);
+  return m_node->SendDMX(universe->UniverseId(), buffer, m_preview_on);
 }
 
 

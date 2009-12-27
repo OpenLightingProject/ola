@@ -31,15 +31,15 @@
 
 namespace ola {
 
-using google::protobuf::RpcController;
-using ola::plugin::artnet::Request;
 
 class Preferences;
 
 namespace plugin {
 namespace artnet {
 
+using google::protobuf::RpcController;
 using ola::Device;
+using ola::plugin::artnet::Request;
 using std::string;
 
 class ArtNetDevice: public Device {

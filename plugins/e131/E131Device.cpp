@@ -21,7 +21,10 @@
  * Ids 4-7 : Output ports (send dmx)
  */
 
+#include <google/protobuf/service.h>
+#include <google/protobuf/stubs/common.h>
 #include <string>
+#include <vector>
 
 #include "ola/Logging.h"
 #include "olad/Plugin.h"
@@ -103,6 +106,99 @@ bool E131Device::Stop() {
   m_node = NULL;
   m_enabled = false;
   return true;
+}
+
+
+/*
+ * Handle device config messages
+ * @param controller An RpcController
+ * @param request the request data
+ * @param response the response to return
+ * @param done the closure to call once the request is complete
+ */
+void E131Device::Configure(RpcController *controller,
+                           const string &request,
+                           string *response,
+                           google::protobuf::Closure *done) {
+    Request request_pb;
+    if (!request_pb.ParseFromString(request)) {
+      controller->SetFailed("Invalid Request");
+      done->Run();
+      return;
+    }
+
+    switch (request_pb.type()) {
+      case ola::plugin::e131::Request::E131_PORT_INFO:
+        HandlePortStatusRequest(response);
+        break;
+      case ola::plugin::e131::Request::E131_PREVIEW_MODE:
+        HandlePreviewMode(&request_pb, response);
+        break;
+      default:
+        controller->SetFailed("Invalid Request");
+    }
+    done->Run();
+}
+
+
+/*
+ * Handle an preview mode request.
+ */
+void E131Device::HandlePreviewMode(Request *request, string *response) {
+  if (request->has_preview_mode()) {
+    const ola::plugin::e131::PreviewModeRequest preview_request =
+      request->preview_mode();
+
+    unsigned int port_id = preview_request.port_id();
+    bool preview_mode = preview_request.preview_mode();
+
+    if (preview_request.input_port()) {
+      InputPort *port = GetInputPort(port_id);
+      if (port) {
+        E131InputPort *e131_port = reinterpret_cast<E131InputPort*>(port);
+        // e131_port->SetPreviewMode(preview_mode);
+      }
+    } else {
+      OutputPort *port = GetOutputPort(port_id);
+      if (port) {
+        E131OutputPort *e131_port = reinterpret_cast<E131OutputPort*>(port);
+        e131_port->SetPreviewMode(preview_mode);
+      }
+    }
+  }
+  HandlePortStatusRequest(response);
+}
+
+
+/*
+ * Handle an options request
+ */
+void E131Device::HandlePortStatusRequest(string *response) {
+  ola::plugin::e131::Reply reply;
+  reply.set_type(ola::plugin::e131::Reply::E131_PORT_INFO);
+  ola::plugin::e131::PortInfoReply *port_reply = reply.mutable_port_info();
+
+  vector<InputPort*> input_ports;
+  vector<OutputPort*> output_ports;
+  InputPorts(&input_ports);
+  OutputPorts(&output_ports);
+
+  for (unsigned int i = 0; i < input_ports.size(); i++) {
+    ola::plugin::e131::InputPortInfo *input_port =
+      port_reply->add_input_port();
+    input_port->set_port_id(i);
+    input_port->set_preview_mode(m_ignore_preview);
+  }
+
+  for (unsigned int i = 0; i < output_ports.size(); i++) {
+    ola::plugin::e131::OutputPortInfo *output_port =
+      port_reply->add_output_port();
+    output_port->set_port_id(i);
+    E131OutputPort *e131_port =
+      reinterpret_cast<E131OutputPort*>(output_ports[i]);
+    output_port->set_preview_mode(e131_port->PreviewMode());
+  }
+  reply.SerializeToString(response);
 }
 }  // e131
 }  // plugin

@@ -85,8 +85,8 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
     header->reserved = 0;
     header->sequence = m_header.Sequence();
     header->options = (
-        (m_header.PreviewData() ? E131Header::PREVIEW_DATA_MASK : 0) ||
-        (m_header.PreviewData() ? E131Header::STREAM_TERMINATED_MASK : 0));
+        (m_header.PreviewData() ? E131Header::PREVIEW_DATA_MASK : 0) |
+        (m_header.StreamTerminated() ? E131Header::STREAM_TERMINATED_MASK : 0));
     header->universe = HostToNetwork(m_header.Universe());
     length = sizeof(E131Header::e131_pdu_header);
   }

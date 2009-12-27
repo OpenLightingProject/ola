@@ -67,6 +67,7 @@ class E131OutputPort: public OutputPort {
                    bool prepend_hostname)
         : OutputPort(parent, id),
           m_prepend_hostname(prepend_hostname),
+          m_preview_on(false),
           m_node(node) {}
 
     bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
@@ -78,8 +79,12 @@ class E131OutputPort: public OutputPort {
     bool WriteDMX(const DmxBuffer &buffer);
     void UniverseNameChanged(const string &new_name);
 
+    void SetPreviewMode(bool preview_mode) { m_preview_on = preview_mode; }
+    bool PreviewMode() const { return m_preview_on; }
+
   private:
     bool m_prepend_hostname;
+    bool m_preview_on;
     DmxBuffer m_buffer;
     E131Node *m_node;
     E131PortHelper m_helper;
