@@ -1,5 +1,5 @@
 libdir = $(plugindir)
-SUBDIRS = e131
+SUBDIRS = e131 messages
 EXTRA_DIST = E131Plugin.h E131Device.h E131Port.h
 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
