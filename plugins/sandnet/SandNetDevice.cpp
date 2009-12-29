@@ -54,7 +54,6 @@ SandNetDevice::SandNetDevice(SandNetPlugin *owner,
 
 /*
  * Start this device
- *
  */
 bool SandNetDevice::Start() {
   vector<ola::network::UdpSocket*> sockets;
