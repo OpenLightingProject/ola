@@ -32,12 +32,13 @@ namespace e131 {
 
 using ola::DmxBuffer;
 
-static const unsigned int NUMBER_OF_E131_PORTS = 5;
 
 class E131PortHelper {
   public:
     bool PreSetUniverse(Universe *new_universe, Universe *old_universe);
     string Description(Universe *universe) const;
+  private:
+    static const unsigned int MAX_E131_UNIVERSE = 63999;
 };
 
 
