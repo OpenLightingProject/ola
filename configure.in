@@ -112,11 +112,10 @@ AC_CHECK_HEADERS(
 
 # check for plugin dependencies. We also build a list of plugins that we're
 # going to compile here so the binary knows what to link against
-PLUGINS="espnet e131 opendmx sandnet shownet stageprofi usbpro"
+PLUGINS="espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
 PLUGIN_LIBRARY(dmx4l, DMXdev, DMX4LINUX)
-#PLUGIN_LIBRARY(pathport, pathport_new, PATHPORT)
 
 # confirm libartnet version
 if test "${have_artnet}" = "yes"; then
@@ -279,6 +278,7 @@ AC_OUTPUT( Makefile\
     plugins/e131/messages/Makefile \
     plugins/e131/messages/libolae131conf.pc \
     plugins/espnet/Makefile \
+    plugins/pathport/Makefile \
     plugins/sandnet/Makefile \
     plugins/shownet/Makefile \
     plugins/usbpro/Makefile \

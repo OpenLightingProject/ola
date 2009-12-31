@@ -13,29 +13,27 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * PathPortPlugin.h
+ * PathportPlugin.h
  * Interface for the pathport plugin class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef PATHPORTPLUGIN_H
-#define PATHPORTPLUGIN_H
+#ifndef PLUGINS_PATHPORT_PATHPORTPLUGIN_H_
+#define PLUGINS_PATHPORT_PATHPORTPLUGIN_H_
 
-#include <olad/Plugin.h>
-#include <olad/PluginAdaptor.h>
-#include <ola/plugin_id.h>
+#include <string>
+#include "olad/Plugin.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
 namespace plugin {
+namespace pathport {
 
-class PathportDevice;
-using ola::Plugin;
-
-class PathportPlugin: public Plugin {
+class PathportPlugin: public ola::Plugin {
   public:
-    PathportPlugin(const ola::PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor),
-      m_device(NULL) {}
+    explicit PathportPlugin(const class ola::PluginAdaptor *plugin_adaptor)
+        : Plugin(plugin_adaptor),
+          m_device(NULL) {}
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
@@ -47,13 +45,15 @@ class PathportPlugin: public Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
 
-    PathportDevice *m_device; // only have one device
-    static const string PATHPORT_NODE_NAME;
-    static const string PLUGIN_NAME;
-    static const string PLUGIN_PREFIX;
+    class PathportDevice *m_device;
+
+    static const char PATHPORT_DEVICE_NAME[];
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
+    // 0x28 is assigned to the OLA project
+    static const uint8_t OLA_MANUFACTURER_CODE = 0x28;
 };
-
-} //plugin
-} //ola
-
-#endif
+}  // pathport
+}  // plugin
+}  // ola
+#endif  // PLUGINS_PATHPORT_PATHPORTPLUGIN_H_

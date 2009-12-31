@@ -27,9 +27,10 @@
 #include "olad/DynamicPluginLoader.h"
 
 #include "plugins/dummy/DummyPlugin.h"
-#include "plugins/espnet/EspNetPlugin.h"
 #include "plugins/e131/E131Plugin.h"
+#include "plugins/espnet/EspNetPlugin.h"
 #include "plugins/opendmx/OpenDmxPlugin.h"
+#include "plugins/pathport/PathportPlugin.h"
 #include "plugins/sandnet/SandnetPlugin.h"
 #include "plugins/shownet/ShowNetPlugin.h"
 #include "plugins/stageprofi/StageProfiPlugin.h"
@@ -39,9 +40,6 @@
 #include "plugins/artnet/ArtNetPlugin.h"
 #endif
 
-/*
-#include "plugins/pathport/PathportPlugin.h"
-*/
 
 #ifdef HAVE_DMX4LINUX
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
@@ -80,8 +78,8 @@ vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
   plugins.push_back(
       new ola::plugin::stageprofi::StageProfiPlugin(m_plugin_adaptor));
   plugins.push_back(new ola::plugin::usbpro::UsbProPlugin(m_plugin_adaptor));
-  // plugins.push_back(
-  //    new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor);
+  plugins.push_back(
+      new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor));
   return plugins;
 }
 }  // ola

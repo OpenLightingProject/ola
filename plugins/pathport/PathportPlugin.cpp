@@ -15,49 +15,36 @@
  *
  * PathportPlugin.cpp
  * The Pathport plugin for ola
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <olad/PluginAdaptor.h>
-#include <olad/Preferences.h>
-
-#include "PathportPlugin.h"
-#include "PathportDevice.h"
-
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::plugin::PathportPlugin(plugin_adaptor);
-}
-
-/*
- * Called when the plugin is unloaded
- */
-extern "C" void destroy(ola::AbstractPlugin* plugin) {
-  delete plugin;
-}
+#include <string>
+#include "ola/StringUtils.h"
+#include "ola/Logging.h"
+#include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
+#include "plugins/pathport/PathportDevice.h"
+#include "plugins/pathport/PathportPlugin.h"
 
 
 namespace ola {
 namespace plugin {
+namespace pathport {
 
-const string PathportPlugin::PATHPORT_NODE_NAME = "ola-Pathport";
-const string PathportPlugin::PLUGIN_NAME = "Pathport Plugin";
-const string PathportPlugin::PLUGIN_PREFIX = "pathport";
+const char PathportPlugin::PATHPORT_DEVICE_NAME[] = "Pathport Device";
+const char PathportPlugin::PLUGIN_NAME[] = "Pathport Plugin";
+const char PathportPlugin::PLUGIN_PREFIX[] = "pathport";
 
 
 /*
  * Start the plugin
- *
  * For now we just have one device.
  */
 bool PathportPlugin::StartHook() {
-  /* create new ola device */
-  m_device = new PathportDevice(this, "Pathport Device", m_preferences);
+  m_device = new PathportDevice(this,
+                                PATHPORT_DEVICE_NAME,
+                                m_preferences,
+                                m_plugin_adaptor);
 
   if (!m_device)
     return false;
@@ -66,11 +53,6 @@ bool PathportPlugin::StartHook() {
     delete m_device;
     return false;
   }
-
-  // register our descriptors
-  for (int i = 0; i < PATHPORT_MAX_SD; i++)
-    m_plugin_adaptor->RegisterFD(m_device->get_sd(i), PluginAdaptor::READ, m_device);
-
   m_plugin_adaptor->RegisterDevice(m_device);
   return true;
 }
@@ -78,13 +60,9 @@ bool PathportPlugin::StartHook() {
 
 /*
  * Stop the plugin
- *
- * @return 0 on sucess, -1 on failure
+ * @return true on sucess, false on failure
  */
 bool PathportPlugin::StopHook() {
-  for (int i = 0; i < PATHPORT_MAX_SD; i++)
-    m_plugin_adaptor->UnregisterFD(m_device->get_sd(i), PluginAdaptor::READ);
-
   m_plugin_adaptor->UnregisterDevice(m_device);
   m_device->Stop();
   delete m_device;
@@ -102,44 +80,61 @@ string PathportPlugin::Description() const {
 "\n"
 "This plugin creates a single device with 5 input and 5 output ports.\n"
 "\n"
-"The universe the port is patched to corresponds with the DMX channels used in the pathport protocol. "
-"For example universe 0 is xDMX channels 1 - 512, universe 1 is xDMX channels 513 - 1024.\n"
+"The universe the port is patched to corresponds with the DMX channels used \n"
+"in the pathport protocol. For example universe 0 is xDMX channels 1 - 512, \n"
+"universe 1 is xDMX channels 513 - 1024.\n"
 "\n"
 "--- Config file : ola-pathport.conf ---\n"
 "\n"
 "ip = a.b.c.d\n"
-"The ip address to bind to. If not specified it will use the first non-loopback ip.\n"
+"The ip address to bind to. If not specified it will use the first \n"
+"non-loopback ip.\n"
 "\n"
 "name = ola-Pathport\n"
-"The name of the node.\n";
-
+"The name of the node.\n"
+"\n"
+"node-id = <int>\n"
+"The pathport id of the node\n"
+"\n";
 }
 
 
 /*
- * load the plugin prefs and default to sensible values
- *
+ * Load the plugin prefs and default to sensible values
  */
 bool PathportPlugin::SetDefaultPreferences() {
+  bool save = false;
 
   if (!m_preferences)
     return false;
 
   // we don't worry about ip here
   // if it's non existant it will choose one
-  if (m_preferences->GetValue("name").empty()) {
-    m_preferences->SetValue("name", PATHPORT_NODE_NAME);
-    m_preferences->Save();
+  if (m_preferences->SetDefaultValue(PathportDevice::K_NODE_NAME_KEY,
+                                     PathportDevice::K_DEFAULT_NODE_NAME))
+    save = true;
+
+  if (m_preferences->GetValue(PathportDevice::K_NODE_ID_KEY).empty()) {
+    // randomize the product id
+    srand((unsigned)time(0) * getpid());
+    uint32_t product_id = OLA_MANUFACTURER_CODE << 24;
+    product_id |= (rand() / (RAND_MAX / 0x100) << 16);
+    product_id |= (rand() / (RAND_MAX / 0x100) << 8);
+    product_id |= rand() / (RAND_MAX / 0x100);
+    m_preferences->SetValue(PathportDevice::K_NODE_ID_KEY,
+                            IntToString(product_id));
+    save = true;
   }
 
-  // check if this save correctly
-  // we don't want to use it if null
-  if (m_preferences->GetValue("name").empty()) {
+  if (save)
+    m_preferences->Save();
+
+  if (m_preferences->GetValue(PathportDevice::K_NODE_NAME_KEY).empty() ||
+      m_preferences->GetValue(PathportDevice::K_NODE_ID_KEY).empty())
     return false;
-  }
 
   return true;
 }
-
-} //plugin
-} //ola
+}  // pathport
+}  // plugin
+}  // ola

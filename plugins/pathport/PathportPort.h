@@ -13,41 +13,73 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * pathportport.h
+ * PathportPort.h
  * The Pathport plugin for ola
- * Copyright (C) 2005-2007 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef PATHPORTPORT_H
-#define PATHPORTPORT_H
+#ifndef PLUGINS_PATHPORT_PATHPORTPORT_H_
+#define PLUGINS_PATHPORT_PATHPORTPORT_H_
 
-#include <olad/Port.h>
-#include <pathport/pathport.h>
-#include "PathportDevice.h"
+#include <string>
+#include "ola/DmxBuffer.h"
+#include "olad/Port.h"
+#include "plugins/pathport/PathportDevice.h"
 
 namespace ola {
 namespace plugin {
+namespace pathport {
 
-class PathportPort: public ola::Port {
+class PathportPortHelper {
   public:
-    PathportPort(PathportDevice *parent, int id);
-    ~PathportPort();
-
-    int WriteDMX(uint8_t *data, unsigned int length);
-    int ReadDMX(uint8_t *data, unsigned int length);
-
-    bool IsOutput() const;
-
-    int update_buffer(const uint8_t *data, int length);
-    int SetUniverse(Universe *uni);
-
-  private :
-    uint8_t *m_buf;
-    unsigned int m_len;
+    PathportPortHelper() {}
+    string Description(const Universe *universe) const;
+    bool PreSetUniverse(Universe *new_universe);
 };
 
-} //plugin
-} //ola
 
-#endif
+class PathportInputPort: public InputPort {
+  public:
+    PathportInputPort(PathportDevice *parent,
+                     unsigned int id,
+                     PathportNode *node):
+      InputPort(parent, id),
+      m_node(node) {}
+    ~PathportInputPort() {}
+
+    string Description() const { return m_helper.Description(GetUniverse()); }
+    const DmxBuffer &ReadDMX() const { return m_buffer; }
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
+      return m_helper.PreSetUniverse(new_universe);
+    }
+
+  private:
+    PathportPortHelper m_helper;
+    PathportNode *m_node;
+    DmxBuffer m_buffer;
+};
+
+
+class PathportOutputPort: public OutputPort {
+  public:
+    PathportOutputPort(PathportDevice *parent,
+                      unsigned int id,
+                      PathportNode *node):
+      OutputPort(parent, id),
+      m_node(node) {}
+    ~PathportOutputPort() {}
+
+    string Description() const { return m_helper.Description(GetUniverse()); }
+    bool WriteDMX(const DmxBuffer &buffer);
+    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
+      return m_helper.PreSetUniverse(new_universe);
+    }
+
+  private:
+    PathportPortHelper m_helper;
+    PathportNode *m_node;
+};
+}  // pathport
+}  // plugin
+}  // ola
+#endif  // PLUGINS_PATHPORT_PATHPORTPORT_H_

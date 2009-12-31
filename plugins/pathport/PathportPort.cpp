@@ -14,139 +14,55 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *
- * pathportport.cpp
- * The Pathport plugin for ola
- * Copyright (C) 2005-2007 Simon Newton
+ * SandNetPort.cpp
+ * The SandNet plugin for ola
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <string.h>
+#include <sstream>
+#include <string>
+#include "ola/Logging.h"
+#include "ola/BaseTypes.h"
 
-#include <ola/Logging.h>
-#include <olad/universe.h>
-
-#include "PathportPort.h"
-#include "PathportDevice.h"
-#include "PathportCommon.h"
+#include "plugins/pathport/PathportPort.h"
 
 namespace ola {
 namespace plugin {
+namespace pathport {
 
-PathportPort::PathportPort(PathportDevice *parent, int id) :
-  Port(parent, id),
-  m_buf(NULL),
-  m_len(DMX_UNIVERSE_SIZE) {
+
+string PathportPortHelper::Description(const Universe *universe) const {
+  if (!universe)
+    return "";
+
+  std::stringstream str;
+  str << "Pathport xDMX " << DMX_UNIVERSE_SIZE * universe->UniverseId() <<
+    " - " << DMX_UNIVERSE_SIZE * (1 + universe->UniverseId());
+  return str.str();
 }
 
 
-PathportPort::~PathportPort() {
-  if (CanRead())
-    free(m_buf);
-}
-
-
-bool PathportPort::IsOutput() const {
-  return ( PortId() >= PORTS_PER_DEVICE / 2 && PortId() < PORTS_PER_DEVICE);
+/*
+ * Don't allow us to patch ports out of range
+ */
+bool PathportPortHelper::PreSetUniverse(Universe *new_universe) {
+  if (new_universe &&
+      new_universe->UniverseId() > PathportNode::MAX_UNIVERSES) {
+      OLA_WARN << "Pathport universes need to be between 0 and " <<
+          PathportNode::MAX_UNIVERSES;
+      return false;
+  }
+  return true;
 }
 
 
 /*
  * Write operation
- *
- * @param  data  pointer to the dmx data
- * @param  length  the length of the data
- *
  */
-int PathportPort::WriteDMX(uint8_t *data, unsigned int length) {
-  PathportDevice *dev = (PathportDevice*) GetDevice();
-  Universe *uni = GetUniverse();
-
-  if (!CanWrite())
-    return -1;
-
-  if (!uni)
-    return 0;
-
-  if (pathport_send_dmx(dev->PathportNode(), uni->UniverseId(), length, data)) {
-    OLA_WARN << "pathport_send_dmx failed " << pathport_strerror();
-    return -1;
-  }
-  return 0;
+bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer) {
+  if (GetUniverse())
+    return m_node->SendDMX(GetUniverse()->UniverseId(), buffer);
 }
-
-
-/*
- * Read operation
- *
- * @param   data  buffer to read data into
- * @param   length  length of data to read
- *
- * @return  the amount of data read
- */
-int PathportPort::ReadDMX(uint8_t *data, unsigned int length) {
-  unsigned int len;
-
-  if (!CanRead())
-    return -1;
-
-  len = m_len < length ? m_len : length;
-  memcpy(data, m_buf, len);
-  return len;
-}
-
-
-/*
- * Update the data buffer for this port
- *
- */
-int PathportPort::UpdateBuffer(const uint8_t *data, int length) {
-  int len = DMX_UNIVERSE_SIZE < length ? DMX_UNIVERSE_SIZE : length;
-
-  // we can't update if this isn't a input port
-  if (!CanRead())
-    return -1;
-
-  if (m_buf == NULL) {
-    m_buf = (uint8_t*) malloc(m_len * sizeof(uint8_t));
-
-    if (m_buf == NULL) {
-      OLA_WARN << "malloc failed";
-      return -1;
-    } else
-      memset(m_buf, 0x00, m_len);
-  }
-
-  memcpy(m_buf, data, len);
-
-  DmxChanged();
-  return 0;
-}
-
-
-/*
- * We override the set universe method to register our interest in
- * pathport universes
- */
-int PathportPort::SetUniverse(Universe *uni) {
-  pathport_node node = GetDevice()->PathportNode();
-
-  Universe *old = GetUniverse();
-
-  Port::SetUniverse(uni);
-
-  if (CanRead()) {
-    // Unregister our interest in this universe
-    if (old) {
-      pathport_unregister_uni(node, old->UniverseId());
-      GetDevice()->port_map(old, NULL);
-    }
-
-    if (uni) {
-      GetDevice()->port_map(uni, this);
-      pathport_register_uni(node, uni->UniverseId());
-    }
-  }
-  return 0;
-}
-
-} //plugin
-} //ola
+}  // pathport
+}  // plugin
+}  // ola
