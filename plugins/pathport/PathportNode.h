@@ -63,7 +63,8 @@ class PathportNode {
     bool SendArpReply();
     bool SendDMX(unsigned int universe, const DmxBuffer &buffer);
 
-    static const uint8_t MAX_UNIVERSES = 63;
+    // apparently pathport supports up to 128 universes, the spec only says 64
+    static const uint8_t MAX_UNIVERSES = 127;
 
   private:
 
