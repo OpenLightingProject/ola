@@ -33,9 +33,10 @@ namespace e131 {
 
 bool E131PortHelper::PreSetUniverse(Universe *new_universe,
                                     Universe *old_universe) {
-  if (new_universe && new_universe->UniverseId() >= MAX_TWO_BYTE) {
-    OLA_WARN << "Universe id " << new_universe->UniverseId() << "> " <<
-      MAX_TWO_BYTE;
+  if (new_universe && (new_universe->UniverseId() == 0 ||
+                       new_universe->UniverseId() > MAX_E131_UNIVERSE)) {
+    OLA_WARN << "Universe id " << new_universe->UniverseId() << " is 0 or > "
+      << MAX_E131_UNIVERSE;
     return false;
   }
   (void) old_universe;

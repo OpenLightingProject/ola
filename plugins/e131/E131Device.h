@@ -69,6 +69,8 @@ class E131Device: public ola::Device {
 
     void HandlePreviewMode(Request *request, string *response);
     void HandlePortStatusRequest(string *response);
+
+    static const unsigned int NUMBER_OF_E131_PORTS = 5;
 };
 }  // e131
 }  // plugin
