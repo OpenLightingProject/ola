@@ -26,6 +26,7 @@
 #include <vector>
 #include "ola/ExportMap.h"
 #include "ola/network/SelectServer.h"
+#include "ola/network/InterfacePicker.h"
 #include "olad/Device.h"
 #include "olad/HttpServer.h"
 #include "olad/PortPatcher.h"
@@ -96,8 +97,11 @@ class OlaHttpServer {
     DeviceManager *m_device_manager;
     PortPatcher *m_port_patcher;
     bool m_enable_quit;
+    struct timeval m_start_time;
+    ola::network::Interface m_interface;
 
     static const char K_DATA_DIR_VAR[];
+    static const char K_UPTIME_VAR[];
     static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;
     static const unsigned int K_CONSOLE_SLIDERS = 15;
 };

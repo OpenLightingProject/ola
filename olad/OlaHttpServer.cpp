@@ -19,6 +19,7 @@
  */
 
 #include <errno.h>
+#include <sys/time.h>
 #include <string>
 #include <iostream>
 #include <algorithm>
@@ -26,6 +27,7 @@
 
 #include "ola/DmxBuffer.h"
 #include "ola/StringUtils.h"
+#include "ola/network/NetworkUtils.h"
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
 #include "olad/OlaHttpServer.h"
@@ -48,6 +50,7 @@ using ctemplate::TemplateDictionary;
 using ctemplate::TemplateNamelist;
 
 const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
+const char OlaHttpServer::K_UPTIME_VAR[] = "uptime-in-ms";
 
 RegisterTemplateFilename(MAIN_FILENAME, "show_main_page.tpl");
 RegisterTemplateFilename(PLUGINS_FILENAME, "show_loaded_plugins.tpl");
@@ -111,6 +114,12 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
 
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
   data_dir_var->Set(m_server.DataDir());
+  gettimeofday(&m_start_time, NULL);
+  export_map->GetStringVar(K_UPTIME_VAR);
+
+  // fetch the interface info
+  ola::network::InterfacePicker picker;
+  picker.ChooseInterface(&m_interface, "");
 
   // warn on any missing templates
   TemplateNamelist::GetMissingList(false);
@@ -141,6 +150,18 @@ int OlaHttpServer::DisplayIndex(const HttpRequest *request,
 int OlaHttpServer::DisplayMain(const HttpRequest *request,
                                HttpResponse *response) {
   TemplateDictionary dict("main");
+  struct timeval now, diff;
+  gettimeofday(&now, NULL);
+  timersub(&now, &m_start_time, &diff);
+
+  stringstream str;
+  unsigned int minutes = diff.tv_sec / 60;
+  unsigned int hours = minutes / 60;
+  str << hours << " hours, " << minutes % 60 << " minutes, " <<
+    diff.tv_sec % 60 << " seconds";
+  dict.SetValue("UPTIME", str.str());
+  dict.SetValue("HOSTNAME", ola::network::FullHostname());
+  dict.SetValue("IP", ola::network::AddressToString(m_interface.ip_address));
 
   if (m_enable_quit)
     dict.ShowSection("QUIT_ENABLED");
@@ -349,6 +370,14 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayDebug(const HttpRequest *request,
                                 HttpResponse *response) {
+
+  struct timeval now, diff;
+  gettimeofday(&now, NULL);
+  timersub(&now, &m_start_time, &diff);
+  stringstream str;
+  str << (diff.tv_sec * 1000 + diff.tv_usec / 1000);
+  m_export_map->GetStringVar(K_UPTIME_VAR)->Set(str.str());
+
   vector<BaseVariable*> variables = m_export_map->AllVariables();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
 

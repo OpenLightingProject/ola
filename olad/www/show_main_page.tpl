@@ -12,15 +12,15 @@
  <div align="center" style="margin-top: 40px">
    <table border="0" cellspacing="1" cellpadding="0" class="sys_info">
     <tr>
-     <td>IP Address:</td>
-     <td><TMPL_VAR NAME="ip"></td>
+     <td>Host</td>
+     <td>{{HOSTNAME}} - {{IP}}</td>
     </tr>
     <tr>
-     <td>Uptime:</td>
-     <td><TMPL_VAR NAME="uptime"></td>
+     <td>OLA Uptime</td>
+     <td>{{UPTIME}}</td>
     </tr>
     <tr>
-     <td>Load Average:</td>
+     <td>Load Average</td>
      <td><TMPL_VAR NAME="load"></td>
     </tr>
   </table>
