@@ -91,9 +91,9 @@ uint32_t HostToNetwork(uint32_t value) {
 
 
 /*
- * Return the hostname as a string.
+ * Return the full hostname
  */
-string Hostname() {
+string FullHostname() {
 #ifdef _POSIX_HOST_NAME_MAX
   char hostname[_POSIX_HOST_NAME_MAX];
 #else
@@ -105,9 +105,20 @@ string Hostname() {
     OLA_WARN << "gethostname failed: " << strerror(errno);
     return "";
   }
+  return hostname;
+}
+
+
+/*
+ * Return the hostname as a string.
+ */
+string Hostname() {
+  string hostname = FullHostname();
   std::vector<string> tokens;
   StringSplit(hostname, tokens, ".");
   return string(tokens[0]);
 }
+
+
 }  // network
 }  // ola

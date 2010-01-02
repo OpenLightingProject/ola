@@ -42,6 +42,7 @@ uint8_t HostToNetwork(uint8_t value);
 uint16_t HostToNetwork(uint16_t value);
 uint32_t HostToNetwork(uint32_t value);
 
+std::string FullHostname();
 std::string Hostname();
 }  // network
 }  // ola
