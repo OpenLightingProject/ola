@@ -33,6 +33,7 @@ namespace ola {
 namespace network {
 
 bool StringToAddress(const std::string &address, struct in_addr &addr);
+std::string AddressToString(struct in_addr &addr);
 
 // we define uint8_t versions of these so we can call them with any type.
 uint8_t NetworkToHost(uint8_t value);

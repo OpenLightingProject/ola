@@ -48,6 +48,11 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
 }
 
 
+string AddressToString(struct in_addr &addr) {
+  return inet_ntoa(addr);
+}
+
+
 uint8_t NetworkToHost(uint8_t value) {
   return value;
 }
