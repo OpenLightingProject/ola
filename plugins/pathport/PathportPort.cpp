@@ -59,7 +59,8 @@ bool PathportPortHelper::PreSetUniverse(Universe *new_universe) {
 /*
  * Write operation
  */
-bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer) {
+bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                  uint8_t priority) {
   if (GetUniverse())
     return m_node->SendDMX(GetUniverse()->UniverseId(), buffer);
 }
