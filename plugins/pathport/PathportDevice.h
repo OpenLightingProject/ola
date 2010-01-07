@@ -15,56 +15,53 @@
  *
  * PathportDevice.h
  * Interface for the pathport device
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef PATHPORTDEVICE_H
-#define PATHPORTDEVICE_H
+#ifndef PLUGINS_PATHPORT_PATHPORTDEVICE_H_
+#define PLUGINS_PATHPORT_PATHPORTDEVICE_H_
 
-#include <map>
-
-#include <olad/Device.h>
-#include <ola/network/Socket.h>
-
-#include <pathport/pathport.h>
-
-#include "PathportCommon.h"
+#include <string>
+#include "olad/Device.h"
+#include "ola/network/SelectServer.h"
+#include "plugins/pathport/PathportNode.h"
 
 namespace ola {
 namespace plugin {
+namespace pathport {
 
-using ola::Plugin;
-using ola::PluginAdaptor;
-using ola::Preferences;
-using ola::network::ConnectedSocket;
-using ola::network::SocketListener;
-using std::string;
-
-class PathportDevice: public ola::Device, public SocketListener {
+class PathportDevice: public ola::Device {
   public:
-    PathportDevice(Plugin *owner,
-                   const string &name,
-                   class Preferences *prefs,
-                   const PluginAdaptor *plugin_adaptor);
-    ~PathportDevice();
+    PathportDevice(class PathportPlugin *owner,
+                   const std::string &name,
+                   class Preferences *preferences,
+                   const class PluginAdaptor *plugin_adaptor);
+    ~PathportDevice() {}
 
     bool Start();
     bool Stop();
-    pathport_node PathportNode() const;
-    int SocketReady(ConnectedSocket *socket);
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
+    string DeviceId() const { return "1"; }
+    PathportNode *GetNode() const { return m_node; }
+    int SendArpReply();
 
-    int port_map(class Universe *uni, class PathportPort *prt);
-    class PathportPort *GetPort_from_uni(int uni);
+    static const char K_NODE_ID_KEY[];
+    static const char K_NODE_IP_KEY[];
+    static const char K_NODE_NAME_KEY[];
+    static const char K_DEFAULT_NODE_NAME[];
 
   private:
     class Preferences *m_preferences;
-    const PluginAdaptor *m_plugin_adaptor;
-    pathport_node m_node;
+    const class PluginAdaptor *m_plugin_adaptor;
+    PathportNode *m_node;
     bool m_enabled;
-    map<int, class PathportPort*> m_portmap;
+    ola::network::timeout_id m_timeout_id;
+
+    static const uint32_t PORTS_PER_DEVICE = 8;
+    static const int ADVERTISTMENT_PERIOD_MS = 6000;
 };
-
-} //plugin
-} //ola
-
-#endif
+}  // pathport
+}  // plugin
+}  // ola
+#endif  // PLUGINS_PATHPORT_PATHPORTDEVICE_H_
