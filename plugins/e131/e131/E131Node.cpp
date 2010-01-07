@@ -118,23 +118,6 @@ bool E131Node::SetSourceName(unsigned int universe, const string &source) {
 
 
 /*
- * Set the priority for a universe
- */
-bool E131Node::SetSourcePriority(unsigned int universe, uint8_t priority) {
-  map<unsigned int, tx_universe>::iterator iter =
-      m_tx_universes.find(universe);
-
-  if (iter == m_tx_universes.end()) {
-    tx_universe *settings = SetupOutgoingSettings(universe);
-    settings->priority = priority;
-  } else {
-    iter->second.priority = priority;
-  }
-  return true;
-}
-
-
-/*
  * Send some DMX data
  * @param universe the id of the universe to send
  * @param buffer the DMX data
@@ -143,6 +126,7 @@ bool E131Node::SetSourcePriority(unsigned int universe, uint8_t priority) {
  */
 bool E131Node::SendDMX(uint16_t universe,
                        const ola::DmxBuffer &buffer,
+                       uint8_t priority,
                        bool preview) {
   map<unsigned int, tx_universe>::iterator iter =
       m_tx_universes.find(universe);
@@ -177,7 +161,7 @@ bool E131Node::SendDMX(uint16_t universe,
                                                        ranged_chunks);
 
   E131Header header(settings->source,
-                    settings->priority,
+                    priority,
                     settings->sequence,
                     universe,
                     preview,  // preview
@@ -223,7 +207,6 @@ E131Node::tx_universe *E131Node::SetupOutgoingSettings(unsigned int universe) {
   std::stringstream str;
   str << "Universe " << universe;
   settings.source = str.str();
-  settings.priority = DEFAULT_PRIORITY;
   settings.sequence = 0;
   map<unsigned int, tx_universe>::iterator iter =
       m_tx_universes.insert(

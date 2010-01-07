@@ -48,9 +48,9 @@ class E131Node {
     bool Stop();
 
     bool SetSourceName(unsigned int universe, const string &source);
-    bool SetSourcePriority(unsigned int universe, uint8_t priority);
     bool SendDMX(uint16_t universe,
                  const ola::DmxBuffer &buffer,
+                 uint8_t priority=DEFAULT_PRIORITY,
                  bool preview=false);
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
                     ola::Closure *handler);
@@ -61,7 +61,6 @@ class E131Node {
   private:
     typedef struct {
       string source;
-      uint8_t priority;
       uint8_t sequence;
     } tx_universe;
 

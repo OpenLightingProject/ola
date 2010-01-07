@@ -77,11 +77,12 @@ class E131OutputPort: public OutputPort {
     void PostSetUniverse(Universe *new_universe, Universe *old_universe);
     string Description() const { return m_helper.Description(GetUniverse()); }
 
-    bool WriteDMX(const DmxBuffer &buffer);
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     void UniverseNameChanged(const string &new_name);
 
     void SetPreviewMode(bool preview_mode) { m_preview_on = preview_mode; }
     bool PreviewMode() const { return m_preview_on; }
+    bool SupportsPriorities() const { return true; }
 
   private:
     bool m_prepend_hostname;

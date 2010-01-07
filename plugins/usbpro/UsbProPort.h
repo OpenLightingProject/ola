@@ -53,7 +53,7 @@ class UsbProOutputPort: public OutputPort {
           m_path(path),
           m_device(parent) {}
 
-    bool WriteDMX(const DmxBuffer &buffer);
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     void PostSetUniverse(Universe *new_universe, Universe *old_universe);
     string Description() const { return m_path; }
 

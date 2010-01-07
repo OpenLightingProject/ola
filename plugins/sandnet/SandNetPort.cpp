@@ -105,7 +105,9 @@ void SandNetInputPort::PostSetUniverse(Universe *new_universe,
 /*
  * Write operation
  */
-bool SandNetOutputPort::WriteDMX(const DmxBuffer &buffer) {
+bool SandNetOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                 uint8_t priority) {
+  (void) priority;
   if (!GetUniverse())
     return false;
 

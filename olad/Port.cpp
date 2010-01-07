@@ -24,6 +24,10 @@
 
 namespace ola {
 
+const uint8_t Port::PORT_PRIORITY_MIN = 0;
+const uint8_t Port::PORT_PRIORITY_MAX = 200;
+const uint8_t Port::PORT_PRIORITY_DEFAULT = 100;
+
 string Port::UniqueId() const {
   if (m_port_string.empty()) {
     std::stringstream str;
@@ -48,6 +52,14 @@ bool Port::SetUniverse(Universe *new_universe) {
   return false;
 }
 
+
+bool Port::SetPriority(uint8_t priority) {
+  if (priority > PORT_PRIORITY_MAX)
+    return false;
+
+  m_priority = priority;
+  return true;
+}
 
 /*
  * This allows switching based on Port type.

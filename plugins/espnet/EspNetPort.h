@@ -65,7 +65,7 @@ class EspNetOutputPort: public OutputPort {
     ~EspNetOutputPort() {}
 
     string Description() const { return m_helper.Description(GetUniverse()); }
-    bool WriteDMX(const DmxBuffer &buffer);
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
   private:
     EspNetPortHelper m_helper;

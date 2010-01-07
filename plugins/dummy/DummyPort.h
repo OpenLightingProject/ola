@@ -35,7 +35,7 @@ class DummyPort: public OutputPort {
     DummyPort(DummyDevice *parent, unsigned int id):
       OutputPort(parent, id) {}
 
-    bool WriteDMX(const DmxBuffer &buffer);
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
 
   private:

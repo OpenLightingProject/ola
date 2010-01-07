@@ -33,7 +33,9 @@ namespace dummy {
  * @param  data  pointer to the dmx data
  * @param  length  the length of the data
  */
-bool DummyPort::WriteDMX(const DmxBuffer &buffer) {
+bool DummyPort::WriteDMX(const DmxBuffer &buffer,
+                         uint8_t priority) {
+  (void) priority;
   m_buffer = buffer;
   stringstream str;
   string data = buffer.Get();

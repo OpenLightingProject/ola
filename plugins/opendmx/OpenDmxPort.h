@@ -50,7 +50,7 @@ class OpenDmxOutputPort: public OutputPort {
 
     string Description() const { return "Open Dmx at " + m_path; }
 
-    bool WriteDMX(const DmxBuffer &buffer) {
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       return m_thread.WriteDmx(buffer);
     }
 

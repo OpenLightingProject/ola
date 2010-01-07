@@ -80,7 +80,7 @@ class ArtNetOutputPort: public OutputPort {
         : OutputPort(device, port_id),
           m_helper(node, true) {}
 
-    bool WriteDMX(const DmxBuffer &buffer);
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
     void PostSetUniverse(Universe *universe, Universe *old_universe) {
       (void) old_universe;

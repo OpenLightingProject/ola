@@ -34,8 +34,18 @@ class AbstractDevice;
  */
 class Port {
   public:
+    typedef enum {
+      PRIORITY_MODE_INHERIT,
+      PRIORITY_MODE_OVERRIDE,
+    } port_priority_mode;
+
+    static const uint8_t PORT_PRIORITY_MIN;
+    static const uint8_t PORT_PRIORITY_MAX;
+    static const uint8_t PORT_PRIORITY_DEFAULT;
+
     Port(AbstractDevice *parent, unsigned int port_id)
         : m_port_id(port_id),
+          m_priority(PORT_PRIORITY_DEFAULT),
           m_port_string(""),
           m_universe(NULL),
           m_device(parent) {
@@ -75,11 +85,15 @@ class Port {
       (void) new_universe;
     }
 
+    bool SetPriority(uint8_t priority);
+    uint8_t GetPriority() const { return m_priority; }
+
   protected:
     virtual string PortPrefix() const = 0;
 
   private:
     const unsigned int m_port_id;
+    uint8_t m_priority;
     mutable string m_port_string;
     Universe *m_universe;  // universe this port belongs to
     AbstractDevice *m_device;
@@ -117,19 +131,30 @@ class InputPort: public Port {
  */
 class OutputPort: public Port {
   public:
+
     OutputPort(AbstractDevice *parent, unsigned int port_id)
-        : Port(parent, port_id) {}
+        : Port(parent, port_id),
+          m_priority_mode(PRIORITY_MODE_INHERIT) {
+    }
 
     // Write dmx data to this port
-    virtual bool WriteDMX(const DmxBuffer &buffer) = 0;
+    virtual bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) = 0;
 
     // Called if the universe name changes
     virtual void UniverseNameChanged(const string &new_name) {
       (void) new_name;
     }
 
+
+    virtual bool SupportsPriorities() const { return false; }
+    void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
+    port_priority_mode GetPriorityMode() const { return m_priority_mode; }
+
   protected:
     virtual string PortPrefix() const { return "O"; }
+
+  private:
+    port_priority_mode m_priority_mode;
 };
 
 

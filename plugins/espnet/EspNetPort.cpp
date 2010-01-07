@@ -71,7 +71,8 @@ void EspNetInputPort::PostSetUniverse(Universe *new_universe,
 /*
  * Write data to this port.
  */
-bool EspNetOutputPort::WriteDMX(const DmxBuffer &buffer) {
+bool EspNetOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                uint8_t priority) {
   if (!GetUniverse())
     return false;
 

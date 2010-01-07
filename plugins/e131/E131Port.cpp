@@ -91,12 +91,18 @@ void E131OutputPort::PostSetUniverse(Universe *new_universe,
 /*
  * Write data to this port.
  */
-bool E131OutputPort::WriteDMX(const DmxBuffer &buffer) {
+bool E131OutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
   Universe *universe = GetUniverse();
   if (!universe)
     return false;
 
-  return m_node->SendDMX(universe->UniverseId(), buffer, m_preview_on);
+  if (GetPriorityMode() == PRIORITY_MODE_OVERRIDE)
+    priority = GetPriority();
+
+  return m_node->SendDMX(universe->UniverseId(),
+                         buffer,
+                         priority,
+                         m_preview_on);
 }
 
 

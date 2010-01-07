@@ -357,7 +357,7 @@ bool Universe::UpdateDependants() {
 
   // write to all ports assigned to this unviverse
   for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter) {
-    (*iter)->WriteDMX(m_buffer);
+    (*iter)->WriteDMX(m_buffer, Port::PORT_PRIORITY_DEFAULT);
   }
 
   // write to all clients

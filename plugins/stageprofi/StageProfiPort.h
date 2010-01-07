@@ -39,7 +39,7 @@ class StageProfiOutputPort: public OutputPort {
         : OutputPort(parent, id),
           m_widget(widget) {}
 
-    bool WriteDMX(const DmxBuffer &buffer);
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return ""; }
 
   private:

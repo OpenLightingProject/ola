@@ -55,7 +55,8 @@ void UsbProOutputPort::PostSetUniverse(Universe *new_universe,
  * @param length  the length of the data
  * @return true on success, false on failure
  */
-bool UsbProOutputPort::WriteDMX(const DmxBuffer &buffer) {
+bool UsbProOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                uint8_t priority) {
   return m_device->SendDMX(buffer);
 }
 }  // usbpro

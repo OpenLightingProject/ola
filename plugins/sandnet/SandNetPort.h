@@ -74,7 +74,7 @@ class SandNetOutputPort: public OutputPort {
     ~SandNetOutputPort() {}
 
     string Description() const { return m_helper.Description(GetUniverse()); }
-    bool WriteDMX(const DmxBuffer &buffer);
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
       return m_helper.PreSetUniverse(new_universe, old_universe);
     }

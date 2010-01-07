@@ -36,7 +36,8 @@ namespace dmx4linux {
  * @param buffer the DmxBuffer to write
  * @return true on success, false on failure
  */
-bool Dmx4LinuxOutputPort::WriteDMX(const DmxBuffer &buffer) {
+bool Dmx4LinuxOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                   uint8_t priority) {
   int offset = DMX_UNIVERSE_SIZE * m_d4l_universe;
   if (lseek(m_socket->WriteDescriptor(), offset, SEEK_SET) == offset) {
     ssize_t r = m_socket->Send(buffer.GetRaw(), buffer.Size());

@@ -47,8 +47,8 @@ TESTS = OlaTester
 check_PROGRAMS = $(TESTS)
 OlaTester_SOURCES = $(OLASERVER_SOURCES) OlaServerTester.cpp \
                     UniverseTest.cpp DeviceTest.cpp PluginManagerTest.cpp \
-                    PreferencesTest.cpp OlaServerServiceImplTest.cpp \
-                    ClientTest.cpp
+                    PreferencesTest.cpp PortTest.cpp \
+                    OlaServerServiceImplTest.cpp ClientTest.cpp
 OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 OlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 OlaTester_LDADD = @LIBS@ @LIBLTDL@ ${PLUGIN_LIBS} \

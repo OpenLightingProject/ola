@@ -45,7 +45,7 @@ class Dmx4LinuxOutputPort: public ola::OutputPort {
         m_d4l_universe(d4l_universe) {
     }
 
-    bool WriteDMX(const DmxBuffer &buffer);
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return ""; }
 
   private:

@@ -94,7 +94,8 @@ bool ShowNetOutputPort::PreSetUniverse(Universe *new_universe,
 }
 
 
-bool ShowNetOutputPort::WriteDMX(const DmxBuffer &buffer) {
+bool ShowNetOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                 uint8_t priority) {
   return !m_node->SendDMX(PortId(), buffer);
 }
 }  // shownet

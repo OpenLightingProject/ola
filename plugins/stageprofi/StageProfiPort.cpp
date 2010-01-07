@@ -31,7 +31,8 @@ namespace stageprofi {
  * @param the buffer to write
  * @return true on success, false on failure
  */
-bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer) {
+bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                    uint8_t priority) {
   return m_widget->SendDmx(buffer);
 }
 }  // stageprofi

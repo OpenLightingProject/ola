@@ -111,7 +111,8 @@ const DmxBuffer &ArtNetInputPort::ReadDMX() const {
  * @param length the length of the data
  * @return true if the write succeeded, false otherwise
  */
-bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer) {
+bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                uint8_t priority) {
   if (PortId() >= ARTNET_MAX_PORTS) {
     OLA_WARN << "Invalid artnet port id " << PortId();
     return false;

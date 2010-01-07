@@ -56,7 +56,9 @@ class TestMockOutputPort: public OutputPort {
     ~TestMockOutputPort() {}
 
     string Description() const { return ""; }
-    bool WriteDMX(const DmxBuffer &buffer) { m_buffer = buffer; }
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+      m_buffer = buffer;
+    }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
   private:
