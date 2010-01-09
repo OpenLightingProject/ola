@@ -49,9 +49,11 @@ class PathportInputPort: public InputPort {
 
     string Description() const { return m_helper.Description(GetUniverse()); }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
       return m_helper.PreSetUniverse(new_universe);
     }
+
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
   private:
     PathportPortHelper m_helper;
@@ -71,7 +73,7 @@ class PathportOutputPort: public OutputPort {
 
     string Description() const { return m_helper.Description(GetUniverse()); }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
       return m_helper.PreSetUniverse(new_universe);
     }
 

@@ -56,6 +56,21 @@ bool PathportPortHelper::PreSetUniverse(Universe *new_universe) {
 }
 
 
+void PathportInputPort::PostSetUniverse(Universe *old_universe,
+                                        Universe *new_universe) {
+  if (old_universe) {
+    m_node->RemoveHandler(old_universe->UniverseId());
+  }
+
+  if (new_universe) {
+    m_node->SetHandler(
+        new_universe->UniverseId(),
+        &m_buffer,
+        NewClosure<PathportInputPort>(this, &PathportInputPort::DmxChanged));
+  }
+}
+
+
 /*
  * Write operation
  */
@@ -63,6 +78,7 @@ bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer,
                                   uint8_t priority) {
   if (GetUniverse())
     return m_node->SendDMX(GetUniverse()->UniverseId(), buffer);
+  return true;
 }
 }  // pathport
 }  // plugin
