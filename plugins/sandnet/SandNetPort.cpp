@@ -39,8 +39,8 @@ namespace sandnet {
 /*
  * We override the set universe method to update the universe -> port hash
  */
-bool SandNetPortHelper::PreSetUniverse(Universe *new_universe,
-                                       Universe *old_universe) {
+bool SandNetPortHelper::PreSetUniverse(Universe *old_universe,
+                                       Universe *new_universe) {
   if (new_universe && !new_universe->UniverseId()) {
       OLA_WARN << "Can't use universe 0 with Sandnet!";
       return false;
@@ -86,8 +86,8 @@ uint8_t SandNetPortHelper::SandnetUniverse(const Universe *universe) const {
 
 
 
-void SandNetInputPort::PostSetUniverse(Universe *new_universe,
-                                       Universe *old_universe) {
+void SandNetInputPort::PostSetUniverse(Universe *old_universe,
+                                       Universe *new_universe) {
   if (old_universe)
     m_node->RemoveHandler(m_helper.SandnetGroup(old_universe),
                           m_helper.SandnetUniverse(old_universe));
@@ -117,8 +117,8 @@ bool SandNetOutputPort::WriteDMX(const DmxBuffer &buffer,
 }
 
 
-void SandNetOutputPort::PostSetUniverse(Universe *new_universe,
-                                        Universe *old_universe) {
+void SandNetOutputPort::PostSetUniverse(Universe *old_universe,
+                                        Universe *new_universe) {
   if (new_universe)
     m_node->SetPortParameters(PortId(),
                               SandNetNode::SANDNET_PORT_MODE_IN,

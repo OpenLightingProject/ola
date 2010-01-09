@@ -44,9 +44,9 @@ bool Port::SetUniverse(Universe *new_universe) {
   if (old_universe == new_universe)
     return true;
 
-  if (PreSetUniverse(new_universe, old_universe)) {
+  if (PreSetUniverse(old_universe, new_universe)) {
     m_universe = new_universe;
-    PostSetUniverse(new_universe, old_universe);
+    PostSetUniverse(old_universe, new_universe);
     return true;
   }
   return false;

@@ -37,7 +37,7 @@ class ArtNetPortHelper {
           m_node(node) {}
 
     artnet_node GetNode() const { return m_node; }
-    void PostSetUniverse(Universe *universe, unsigned int port_id);
+    void PostSetUniverse(Universe *new_universe, unsigned int port_id);
     string Description(const Universe *universe,
                        unsigned int port_id) const;
 
@@ -57,9 +57,9 @@ class ArtNetInputPort: public InputPort {
 
     const DmxBuffer &ReadDMX() const;
 
-    void PostSetUniverse(Universe *universe, Universe *old_universe) {
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
       (void) old_universe;
-      m_helper.PostSetUniverse(universe, PortId());
+      m_helper.PostSetUniverse(new_universe, PortId());
     }
 
     string Description() const {
@@ -82,9 +82,9 @@ class ArtNetOutputPort: public OutputPort {
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-    void PostSetUniverse(Universe *universe, Universe *old_universe) {
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
       (void) old_universe;
-      m_helper.PostSetUniverse(universe, PortId());
+      m_helper.PostSetUniverse(new_universe, PortId());
     }
 
     string Description() const {

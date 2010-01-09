@@ -31,8 +31,8 @@ namespace plugin {
 namespace e131 {
 
 
-bool E131PortHelper::PreSetUniverse(Universe *new_universe,
-                                    Universe *old_universe) {
+bool E131PortHelper::PreSetUniverse(Universe *old_universe,
+                                    Universe *new_universe) {
   if (new_universe && (new_universe->UniverseId() == 0 ||
                        new_universe->UniverseId() > MAX_E131_UNIVERSE)) {
     OLA_WARN << "Universe id " << new_universe->UniverseId() << " is 0 or > "
@@ -56,8 +56,8 @@ string E131PortHelper::Description(Universe *universe) const {
 /*
  * Set the universe for an input port.
  */
-void E131InputPort::PostSetUniverse(Universe *new_universe,
-                                    Universe *old_universe) {
+void E131InputPort::PostSetUniverse(Universe *old_universe,
+                                    Universe *new_universe) {
   if (old_universe)
     m_node->RemoveHandler(old_universe->UniverseId());
 
@@ -72,8 +72,8 @@ void E131InputPort::PostSetUniverse(Universe *new_universe,
 /*
  * Set the universe for an output port.
  */
-void E131OutputPort::PostSetUniverse(Universe *new_universe,
-                                     Universe *old_universe) {
+void E131OutputPort::PostSetUniverse(Universe *old_universe,
+                                     Universe *new_universe) {
   if (new_universe) {
     if (m_prepend_hostname) {
       std::stringstream str;

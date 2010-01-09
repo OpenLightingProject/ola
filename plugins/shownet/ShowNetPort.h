@@ -43,8 +43,8 @@ class ShowNetInputPort: public InputPort {
 
     string Description() const;
     const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe);
-    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
   private :
     DmxBuffer m_buffer;
@@ -61,7 +61,7 @@ class ShowNetOutputPort: public OutputPort {
       m_node(node) {}
     ~ShowNetOutputPort() {}
 
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe);
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
     string Description() const;
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 

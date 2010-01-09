@@ -55,8 +55,8 @@ uint8_t EspNetPortHelper::EspNetUniverseId(Universe *universe) const {
 /*
  * Set the universe for an InputPort.
  */
-void EspNetInputPort::PostSetUniverse(Universe *new_universe,
-                                      Universe *old_universe) {
+void EspNetInputPort::PostSetUniverse(Universe *old_universe,
+                                      Universe *new_universe) {
   if (old_universe)
     m_node->RemoveHandler(m_helper.EspNetUniverseId(old_universe));
 

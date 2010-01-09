@@ -34,7 +34,7 @@ namespace sandnet {
 class SandNetPortHelper {
   public:
     SandNetPortHelper() {}
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe);
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
     string Description(const Universe *universe) const;
     uint8_t SandnetGroup(const Universe* universe) const;
     uint8_t SandnetUniverse(const Universe *universe) const;
@@ -52,10 +52,10 @@ class SandNetInputPort: public InputPort {
 
     string Description() const { return m_helper.Description(GetUniverse()); }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
-      return m_helper.PreSetUniverse(new_universe, old_universe);
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+      return m_helper.PreSetUniverse(old_universe, new_universe);
     }
-    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
   private:
     SandNetPortHelper m_helper;
@@ -75,10 +75,10 @@ class SandNetOutputPort: public OutputPort {
 
     string Description() const { return m_helper.Description(GetUniverse()); }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
-      return m_helper.PreSetUniverse(new_universe, old_universe);
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+      return m_helper.PreSetUniverse(old_universe, new_universe);
     }
-    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
   private:
     SandNetPortHelper m_helper;

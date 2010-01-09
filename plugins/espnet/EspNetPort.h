@@ -46,7 +46,7 @@ class EspNetInputPort: public InputPort {
     ~EspNetInputPort() {}
 
     string Description() const { return m_helper.Description(GetUniverse()); }
-    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
   private:

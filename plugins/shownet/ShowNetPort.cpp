@@ -41,8 +41,8 @@ string ShowNetInputPort::Description() const {
 /*
  * Check for loops.
  */
-bool ShowNetInputPort::PreSetUniverse(Universe *new_universe,
-                                      Universe *old_universe) {
+bool ShowNetInputPort::PreSetUniverse(Universe *old_universe,
+                                      Universe *new_universe) {
   (void) old_universe;
   AbstractDevice *device = GetDevice();
   OutputPort *output_port = device->GetOutputPort(PortId());
@@ -57,8 +57,8 @@ bool ShowNetInputPort::PreSetUniverse(Universe *new_universe,
 /*
  * We intecept this to setup/remove the dmx handler
  */
-void ShowNetInputPort::PostSetUniverse(Universe *new_universe,
-                                       Universe *old_universe) {
+void ShowNetInputPort::PostSetUniverse(Universe *old_universe,
+                                       Universe *new_universe) {
   if (old_universe)
     m_node->RemoveHandler(PortId());
 
@@ -81,8 +81,8 @@ string ShowNetOutputPort::Description() const {
 /*
  * Check for loops.
  */
-bool ShowNetOutputPort::PreSetUniverse(Universe *new_universe,
-                                       Universe *old_universe) {
+bool ShowNetOutputPort::PreSetUniverse(Universe *old_universe,
+                                       Universe *new_universe) {
   (void) old_universe;
   AbstractDevice *device = GetDevice();
   InputPort *input_port = device->GetInputPort(PortId());

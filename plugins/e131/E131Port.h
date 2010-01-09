@@ -35,7 +35,7 @@ using ola::DmxBuffer;
 
 class E131PortHelper {
   public:
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe);
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe);
     string Description(Universe *universe) const;
   private:
     static const unsigned int MAX_E131_UNIVERSE = 63999;
@@ -48,10 +48,10 @@ class E131InputPort: public InputPort {
         : InputPort(parent, id),
           m_node(node) {}
 
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
-      return m_helper.PreSetUniverse(new_universe, old_universe);
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+      return m_helper.PreSetUniverse(old_universe, new_universe);
     }
-    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
     string Description() const { return m_helper.Description(GetUniverse()); }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
@@ -71,10 +71,10 @@ class E131OutputPort: public OutputPort {
           m_preview_on(false),
           m_node(node) {}
 
-    bool PreSetUniverse(Universe *new_universe, Universe *old_universe) {
-      return m_helper.PreSetUniverse(new_universe, old_universe);
+    bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
+      return m_helper.PreSetUniverse(old_universe, new_universe);
     }
-    void PostSetUniverse(Universe *new_universe, Universe *old_universe);
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
     string Description() const { return m_helper.Description(GetUniverse()); }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
