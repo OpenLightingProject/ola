@@ -132,6 +132,7 @@ int PathportNode::SocketReady(UdpSocket *socket) {
     OLA_WARN << "Small pathport packet received, discarding";
     return -1;
   }
+  packet_size -= static_cast<ssize_t>(sizeof(packet.header));
 
   // Validate header
   if (!ValidateHeader(packet.header)) {
@@ -149,12 +150,30 @@ int PathportNode::SocketReady(UdpSocket *socket) {
     return 0;
   }
 
+  // TODO(simon): Handle multiple pdus here
   pathport_packet_pdu *pdu =
     reinterpret_cast<pathport_packet_pdu*>(packet.data);
 
-  OLA_WARN << "got some data size " << packet_size << ", code " << pdu->head.type;
+  if (packet_size < sizeof(pathport_pdu_header)) {
+    OLA_WARN << "Pathport packet too small to fit a pdu header";
+    return 0;
+  }
+  packet_size -= sizeof(pathport_pdu_header);
 
-  // Unpack PDUs
+  switch (NetworkToHost(pdu->head.type)) {
+    case PATHPORT_DATA:
+      HandleDmxData(pdu->d.data, packet_size);
+      break;
+    case PATHPORT_ARP_REQUEST:
+      SendArpReply();
+      break;
+    case PATHPORT_ARP_REPLY:
+      OLA_DEBUG << "Got pathport arp reply";
+      break;
+    default:
+      OLA_INFO << "Unhandled pathport packet with id: " <<
+        NetworkToHost(pdu->head.type);
+  }
   return 0;
 }
 
@@ -174,6 +193,7 @@ bool PathportNode::SetHandler(uint8_t universe,
   universe_handlers::iterator iter = m_handlers.find(universe);
 
   if (iter == m_handlers.end()) {
+    OLA_FATAL << "Set handler for " << universe;
     universe_handler handler;
     handler.buffer = buffer;
     handler.closure = closure;
@@ -204,6 +224,35 @@ bool PathportNode::RemoveHandler(uint8_t universe) {
   return false;
 }
 
+
+/*
+ * Send an arp reply
+ */
+bool PathportNode::SendArpReply() {
+  if (!m_running)
+    return false;
+
+  pathport_packet_s packet;
+  pathport_packet_pdu *pdu =
+    reinterpret_cast<pathport_packet_pdu*>(packet.data);
+
+  // Should this go to status or config?
+  PopulateHeader(&packet.header, PATHPORT_STATUS_GROUP);
+  pdu->head.type = HostToNetwork((uint16_t) PATHPORT_ARP_REPLY);
+  pdu->head.len = HostToNetwork((uint16_t) sizeof(pathport_pdu_arp_reply));
+
+  pdu->d.arp_reply.id = HostToNetwork(m_device_id);
+  pdu->d.arp_reply.ip = m_interface.ip_address.s_addr;
+  pdu->d.arp_reply.manufacturer_code = NODE_MANUF_ZP_TECH;
+  pdu->d.arp_reply.device_class = NODE_CLASS_DMX_NODE;
+  pdu->d.arp_reply.device_type = NODE_DEVICE_PATHPORT;
+  pdu->d.arp_reply.component_count = 1;
+
+  unsigned int length = sizeof(pathport_packet_header) +
+                        sizeof(pathport_pdu_header) +
+                        sizeof(pathport_pdu_arp_reply);
+  return SendPacket(packet, length, m_config_addr);
+}
 
 
 /*
@@ -316,6 +365,54 @@ bool PathportNode::ValidateHeader(const pathport_packet_header &header) {
 
 
 /*
+ * Handle new DMX data
+ */
+void PathportNode::HandleDmxData(const pathport_pdu_data &packet,
+                                 unsigned int size) {
+
+  if (size < sizeof(pathport_pdu_data)) {
+    OLA_WARN << "Small pathport data packet received, ignoring";
+    return;
+  }
+
+  // Don't handle release messages yet
+  if (NetworkToHost(packet.type) != XDMX_DATA_FLAT)
+    return;
+
+  if (packet.start_code) {
+    OLA_INFO << "Non-0 start code packet received, ignoring";
+    return;
+  }
+
+  unsigned int offset = NetworkToHost(packet.offset) % DMX_UNIVERSE_SIZE;
+  unsigned int universe = NetworkToHost(packet.offset) / DMX_UNIVERSE_SIZE;
+  const uint8_t *dmx_data = packet.data;
+  unsigned int data_size = std::min(
+      NetworkToHost(packet.channel_count),
+      (uint16_t) (size - sizeof(pathport_pdu_data)));
+
+  OLA_WARN << "Got new DMX data, " << offset << ", count " << data_size;
+
+  while (data_size > 0 && universe <= MAX_UNIVERSES) {
+    unsigned int channels_for_this_universe =
+      std::min(data_size, DMX_UNIVERSE_SIZE - offset);
+
+    universe_handlers::iterator iter = m_handlers.find(universe);
+    if (iter != m_handlers.end()) {
+      iter->second.buffer->SetRange(offset,
+                                    dmx_data,
+                                    channels_for_this_universe);
+      iter->second.closure->Run();
+    }
+    data_size -= channels_for_this_universe;
+    dmx_data += channels_for_this_universe;
+    offset = 0;
+    universe++;
+  }
+}
+
+
+/*
  * @param destination the destination to target
  */
 bool PathportNode::SendArpRequest(uint32_t destination) {
@@ -333,36 +430,6 @@ bool PathportNode::SendArpRequest(uint32_t destination) {
   unsigned int length = sizeof(pathport_packet_header) +
                         sizeof(pathport_pdu_header);
   return SendPacket(packet, length, m_status_addr);
-}
-
-
-/*
- * Send an arp reply
- */
-bool PathportNode::SendArpReply() {
-  if (!m_running)
-    return false;
-
-  pathport_packet_s packet;
-  pathport_packet_pdu *pdu =
-    reinterpret_cast<pathport_packet_pdu*>(packet.data);
-
-  // Should this go to status or config?
-  PopulateHeader(&packet.header, PATHPORT_STATUS_GROUP);
-  pdu->head.type = HostToNetwork((uint16_t) PATHPORT_ARP_REPLY);
-  pdu->head.len = HostToNetwork((uint16_t) sizeof(pathport_pdu_arp_reply));
-
-  pdu->d.arp_reply.id = HostToNetwork(m_device_id);
-  pdu->d.arp_reply.ip = m_interface.ip_address.s_addr;
-  pdu->d.arp_reply.manufacturer_code = NODE_MANUF_ZP_TECH;
-  pdu->d.arp_reply.device_class = NODE_CLASS_DMX_NODE;
-  pdu->d.arp_reply.device_type = NODE_DEVICE_PATHPORT;
-  pdu->d.arp_reply.component_count = 1;
-
-  unsigned int length = sizeof(pathport_packet_header) +
-                        sizeof(pathport_pdu_header) +
-                        sizeof(pathport_pdu_arp_reply);
-  return SendPacket(packet, length, m_config_addr);
 }
 
 
@@ -386,7 +453,6 @@ bool PathportNode::SendPacket(const pathport_packet_s &packet,
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;
     return false;
   }
-  OLA_WARN << "sent " << bytes_sent;
   return true;
 }
 }  // pothport

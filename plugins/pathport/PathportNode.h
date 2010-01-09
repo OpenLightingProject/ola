@@ -37,16 +37,6 @@ using ola::network::UdpSocket;
 
 class PathportNode {
   public:
-    /*
-    typedef enum {
-      PATHPORT_PORT_MODE_DISABLED,
-      PATHPORT_PORT_MODE_OUT,
-      PATHPORT_PORT_MODE_IN,
-      PATHPORT_PORT_MODE_MOUT,
-      PATHPORT_PORT_MODE_MIN
-    } pathport_port_type;
-    */
-
     explicit PathportNode(const string &preferred_ip, uint32_t device_id);
     ~PathportNode();
 
@@ -109,12 +99,14 @@ class PathportNode {
     typedef std::map<uint8_t, universe_handler> universe_handlers;
 
     bool InitNetwork();
+    void PopulateHeader(pathport_packet_header *header, uint32_t destination);
+    bool ValidateHeader(const pathport_packet_header &header);
+    void HandleDmxData(const pathport_pdu_data &packet,
+                       unsigned int size);
     bool SendArpRequest(uint32_t destination = PATHPORT_ID_BROADCAST);
     bool SendPacket(const pathport_packet_s &packet,
                     unsigned int size,
                     struct in_addr dest);
-    void PopulateHeader(pathport_packet_header *header, uint32_t destination);
-    bool ValidateHeader(const pathport_packet_header &header);
 
     bool m_running;
     string m_preferred_ip;
