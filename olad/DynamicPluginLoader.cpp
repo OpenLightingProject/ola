@@ -31,7 +31,7 @@
 #include "plugins/espnet/EspNetPlugin.h"
 #include "plugins/opendmx/OpenDmxPlugin.h"
 #include "plugins/pathport/PathportPlugin.h"
-#include "plugins/sandnet/SandnetPlugin.h"
+#include "plugins/sandnet/SandNetPlugin.h"
 #include "plugins/shownet/ShowNetPlugin.h"
 #include "plugins/stageprofi/StageProfiPlugin.h"
 #include "plugins/usbpro/UsbProPlugin.h"
