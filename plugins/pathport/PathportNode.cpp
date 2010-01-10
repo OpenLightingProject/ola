@@ -193,7 +193,6 @@ bool PathportNode::SetHandler(uint8_t universe,
   universe_handlers::iterator iter = m_handlers.find(universe);
 
   if (iter == m_handlers.end()) {
-    OLA_FATAL << "Set handler for " << universe;
     universe_handler handler;
     handler.buffer = buffer;
     handler.closure = closure;
