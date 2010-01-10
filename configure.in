@@ -266,6 +266,7 @@ AC_OUTPUT( Makefile\
     python/rpc/Makefile \
     olad/Makefile \
     olad/www/Makefile \
+    olad/www/about.html \
     olad/testdata/Makefile \
     plugins/Makefile \
     plugins/artnet/Makefile \

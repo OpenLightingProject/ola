@@ -13,7 +13,7 @@
  <span class="heading2">About</span>
    <div align="center"  style="margin-top: 40px">
    <iframe src="/GPL.txt" width="600" height="400" border="0" class="lic"></iframe>
-   <p>OLA 0.5.0 &copy; 2005-2009 <a href="http://www.nomis52.net">Simon Newton</a></p>
+   <p>OLA @VERSION@ &copy; 2005-2010 <a href="http://www.nomis52.net">Simon Newton</a></p>
    </div>
  </body>
 </html>
