@@ -8,7 +8,7 @@ AM_CXXFLAGS = -Wall -Wformat
 
 lib_LTLIBRARIES = libolaespnet.la
 libolaespnet_la_SOURCES = EspNetPlugin.cpp EspNetDevice.cpp EspNetPort.cpp \
-                          EspNetNode.cpp
+                          EspNetNode.cpp RunLengthDecoder.cpp
 libolaespnet_la_LIBADD = @LIBS@
 
 # Test Programs
