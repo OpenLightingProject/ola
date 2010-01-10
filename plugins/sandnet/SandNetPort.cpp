@@ -46,7 +46,7 @@ bool SandNetPortHelper::PreSetUniverse(Universe *old_universe,
       return false;
   }
   (void) old_universe;
-  return false;
+  return true;
 }
 
 
