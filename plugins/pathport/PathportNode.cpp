@@ -391,8 +391,6 @@ void PathportNode::HandleDmxData(const pathport_pdu_data &packet,
       NetworkToHost(packet.channel_count),
       (uint16_t) (size - sizeof(pathport_pdu_data)));
 
-  OLA_WARN << "Got new DMX data, " << offset << ", count " << data_size;
-
   while (data_size > 0 && universe <= MAX_UNIVERSES) {
     unsigned int channels_for_this_universe =
       std::min(data_size, DMX_UNIVERSE_SIZE - offset);
