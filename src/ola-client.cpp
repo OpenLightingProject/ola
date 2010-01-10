@@ -97,7 +97,7 @@ class Observer: public ola::OlaClientObserver {
     SelectServer *m_ss;
 
     template<class PortClass>
-    void Observer::ListPorts(const vector<PortClass> &ports, bool input);
+    void ListPorts(const vector<PortClass> &ports, bool input);
 };
 
 
