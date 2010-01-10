@@ -8,7 +8,7 @@ EXTRA_DIST = BaseInflator.h CID.h \
 INCLUDES = -I$(top_builddir)/include
 AM_CXXFLAGS = -Wall -Wconversion -Wformat -W
 
-lib_LTLIBRARIES = libolae131core.la
+noinst_LTLIBRARIES = libolae131core.la
 libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             DMPAddress.cpp DMPE131Inflator.cpp DMPInflator.cpp \
                             DMPPDU.cpp \
