@@ -29,8 +29,8 @@ pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
              DynamicPluginLoader.h \
              HttpServer.h OlaHttpServer.h \
-             OlaServerServiceImpl.h PluginLoader.h PortPatcher.h \
-             TestCommon.h UniverseStore.h
+             OlaServerServiceImpl.h PluginLoader.h PluginManagerTest.h \
+             PortPatcher.h TestCommon.h UniverseStore.h
 
 # Olad Server
 bin_PROGRAMS = olad
