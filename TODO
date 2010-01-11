@@ -6,14 +6,8 @@ resend DMX on idle (artnet every 4s)
 
 --REQUIRED--
 
-* fix recv dmx with the python libs
 * allow for finer grained channel control (set_block, set_channel)
-* tx pathport support
 * regression tests for plugins
-
--- NICE--
-* let the ports save what universe they are attached to (do this in the plugin)
-* serialise so that plugins can store state
 
 --WISH LIST--
 
