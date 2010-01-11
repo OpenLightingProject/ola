@@ -1,12 +1,21 @@
-11/21/2009 ola-0.5.0
+10/1/2010 ola-0.6.0
+  Added Pathport support
+  Added support for the final version of the E1.31 Standard
+  Changed to link time plugins rather than run time (required for win32 port)
+  Cleanup of the dmx4linux plugin (thanks to Bastien)
+  Linted almost everything
+  Many more export map variables
+  Restructure of the Port class internals
+
+21/11/2009 ola-0.5.0
   Added Sandnet Support
   Added automatic USB Pro device detection
   Fixed a HTP merging bug
 
-10/18/2009 ola-0.4.0
+18/10/2009 ola-0.4.0
   Added E1.13 Support
 
-8/26/2009 ola-0.3.1
+26/8/2009 ola-0.3.1
   Fixed the open dmx usb off by one bug
   Minor build tool fixes
 
