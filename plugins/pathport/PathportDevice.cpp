@@ -71,10 +71,8 @@ bool PathportDevice::Start() {
   m_node = new PathportNode(m_preferences->GetValue(K_NODE_ID_KEY),
                             product_id);
 
-  if (!m_node->Start()) {
-    OLA_WARN << "pathport_start failed";
+  if (!m_node->Start())
     goto e_pathport_start;
-  }
 
   for (unsigned int i = 0; i < PORTS_PER_DEVICE; i++) {
     PathportInputPort *port = new PathportInputPort(this, i, m_node);
@@ -87,25 +85,6 @@ bool PathportDevice::Start() {
   }
 
   m_plugin_adaptor->AddSocket(m_node->GetSocket());
-  // setup node
-  /*
-  if (pathport_set_name(m_node, m_preferences->GetValue("name").c_str()) ) {
-    OLA_WARN << "pathport_set_name failed: " << pathport_strerror();
-    goto e_pathport_start;
-  }
-
-  // setup node
-  if (pathport_set_type(m_node, PATHPORT_MANUF_ZP_TECH, PATHPORT_CLASS_NODE, PATHPORT_CLASS_NODE_PATHPORT) ) {
-    OLA_WARN << "pathport_set_type failed: " << pathport_strerror();
-    goto e_pathport_start;
-  }
-
-  // we want to be notified when the node config changes
-  if (pathport_set_dmx_handler(m_node, ::dmx_handler, (void*) this) ) {
-    OLA_WARN << "pathport_set_dmx_handler failed: " << pathport_strerror();
-    goto e_pathport_start;
-  }
-  */
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
       ADVERTISTMENT_PERIOD_MS,
       NewClosure(this, &PathportDevice::SendArpReply));
