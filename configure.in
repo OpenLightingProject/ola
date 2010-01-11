@@ -115,7 +115,7 @@ AC_CHECK_HEADERS(
 PLUGINS="espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
-PLUGIN_LIBRARY(dmx4l, DMXdev, DMX4LINUX)
+PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
 
 # confirm libartnet version
 if test "${have_artnet}" = "yes"; then
