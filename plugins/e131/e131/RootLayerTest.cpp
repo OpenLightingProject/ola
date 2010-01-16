@@ -34,17 +34,20 @@ namespace e131 {
 class RootLayerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RootLayerTest);
   CPPUNIT_TEST(testRootLayer);
+  CPPUNIT_TEST(testRootLayerWithCustomCID);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     RootLayerTest(): TestFixture(), m_ss(NULL) {}
     void testRootLayer();
+    void testRootLayerWithCustomCID();
     void setUp();
     void tearDown();
     int Stop();
     int FatalStop() { CPPUNIT_ASSERT(false); }
 
   private:
+    void testRootLayerWithCIDs(const CID &root_cid, const CID &send_cid);
     ola::network::SelectServer *m_ss;
     static const int ABORT_TIMEOUT_IN_MS = 1000;
 };
@@ -70,20 +73,41 @@ int RootLayerTest::Stop() {
  */
 void RootLayerTest::testRootLayer() {
   CID cid = CID::Generate();
+  testRootLayerWithCIDs(cid, cid);
+}
+
+
+/*
+ * Test the method to send using a custom cid works
+ */
+void RootLayerTest::testRootLayerWithCustomCID() {
+  CID cid = CID::Generate();
+  CID send_cid = CID::Generate();
+  testRootLayerWithCIDs(cid, send_cid);
+}
+
+
+void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
+                                          const CID &send_cid) {
   ola::network::Interface interface;
   UDPTransport transport;
   CPPUNIT_ASSERT(transport.Init(interface));
   CPPUNIT_ASSERT(m_ss->AddSocket(transport.GetSocket()));
-  RootLayer layer(&transport, cid);
+  RootLayer layer(&transport, root_cid);
 
   Closure *stop_closure = NewClosure(this, &RootLayerTest::Stop);
-  MockInflator inflator(cid, stop_closure);
+  MockInflator inflator(send_cid, stop_closure);
   CPPUNIT_ASSERT(layer.AddInflator(&inflator));
 
   MockPDU mock_pdu(4, 8);
   struct in_addr addr;
   ola::network::StringToAddress("255.255.255.255", addr);
-  CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu));
+
+  if (root_cid == send_cid)
+    CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu));
+  else
+    CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu,
+                                 send_cid));
 
   SingleUseClosure *closure =
     NewSingleClosure(this, &RootLayerTest::FatalStop);

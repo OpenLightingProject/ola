@@ -42,6 +42,9 @@ class RootLayer {
 
     // Convenience method to encapsulate & send a single PDU
     bool SendPDU(struct in_addr &addr, unsigned int vector, const PDU &pdu);
+    // Use for testing to force a message from a particular cid
+    bool SendPDU(struct in_addr &addr, unsigned int vector, const PDU &pdu,
+                 const CID &cid);
     // Encapsulation & send a block of PDUs
     bool SendPDUBlock(struct in_addr &addr,
                       unsigned int vector,
@@ -56,13 +59,13 @@ class RootLayer {
   private:
     UDPTransport *m_transport;
     RootInflator m_root_inflator;
-    CID m_cid;
     PDUBlock<PDU> m_working_block;
     PDUBlock<PDU> m_root_block;
     RootPDU m_root_pdu;
 
     RootLayer(const RootLayer&);
     RootLayer& operator=(const RootLayer&);
+    bool SendBlock(struct in_addr &addr, const PDUBlock<PDU> &root_block);
 };
 }  // e131
 }  // plugin

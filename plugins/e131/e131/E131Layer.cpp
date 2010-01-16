@@ -48,7 +48,8 @@ E131Layer::E131Layer(RootLayer *root_layer)
  * @param header the E131Header
  * @param dmp_pdu the DMPPDU to send
  */
-bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
+bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu,
+                        const CID *cid) {
   if (!m_root_layer)
     return false;
 
@@ -63,7 +64,10 @@ bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
   if (header.UsingRev2())
     vector = E131InflatorRev2::E131_REV2_VECTOR;
 
-  return m_root_layer->SendPDU(addr, vector, pdu);
+  if (cid)
+    return m_root_layer->SendPDU(addr, vector, pdu, *cid);
+  else
+    return m_root_layer->SendPDU(addr, vector, pdu);
 }
 
 

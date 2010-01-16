@@ -121,11 +121,33 @@ bool E131Node::SetSourceName(unsigned int universe, const string &source) {
  * Send some DMX data
  * @param universe the id of the universe to send
  * @param buffer the DMX data
+ * @param priority the priority to use
  * @param preview set to true to turn on the preview bit
- * @return true if it was send successfully, false otherwise
+ * @return true if it was sent successfully, false otherwise
  */
 bool E131Node::SendDMX(uint16_t universe,
                        const ola::DmxBuffer &buffer,
+                       uint8_t priority,
+                       bool preview) {
+  return SendDMX(universe, buffer, m_cid, 0, priority, preview);
+}
+
+
+/*
+ * Send some DMX data, allowing finer grained control of parameters.
+ * @param universe the id of the universe to send
+ * @param buffer the DMX data
+ * @param cid the cid to send from
+ * @param sequence_offset used to twiddle the sequence numbers, this doesn't
+ * increment the sequence counter.
+ * @param priority the priority to use
+ * @param preview set to true to turn on the preview bit
+ * @return true if it was sent successfully, false otherwise
+ */
+bool E131Node::SendDMX(uint16_t universe,
+                       const ola::DmxBuffer &buffer,
+                       const CID &cid,
+                       int8_t sequence_offset,
                        uint8_t priority,
                        bool preview) {
   map<unsigned int, tx_universe>::iterator iter =
@@ -162,14 +184,19 @@ bool E131Node::SendDMX(uint16_t universe,
 
   E131Header header(settings->source,
                     priority,
-                    settings->sequence,
+                    settings->sequence + sequence_offset,
                     universe,
                     preview,  // preview
                     false,  // terminated
                     m_use_rev2);
 
-  bool result = m_e131_layer.SendDMP(header, pdu);
-  if (result)
+  bool result;
+  if (cid == m_cid)
+    result = m_e131_layer.SendDMP(header, pdu);
+  else
+    result = m_e131_layer.SendDMP(header, pdu, &cid);
+    result = true;
+  if (result && sequence_offset)
     settings->sequence++;
   delete pdu;
   return result;

@@ -40,8 +40,8 @@ class E131Node {
   public:
     E131Node(const std::string &ip_address,
              const CID &cid = CID::Generate(),
-             bool use_rev2=false,
-             bool ignore_preview=true);
+             bool use_rev2 = false,
+             bool ignore_preview = true);
     ~E131Node();
 
     bool Start();
@@ -50,8 +50,18 @@ class E131Node {
     bool SetSourceName(unsigned int universe, const string &source);
     bool SendDMX(uint16_t universe,
                  const ola::DmxBuffer &buffer,
-                 uint8_t priority=DEFAULT_PRIORITY,
-                 bool preview=false);
+                 uint8_t priority = DEFAULT_PRIORITY,
+                 bool preview = false);
+
+    // The following method is provided for the testing framework. Don't use
+    // it in production code!
+    bool SendDMX(uint16_t universe,
+                 const ola::DmxBuffer &buffer,
+                 const CID &cid,
+                 int8_t sequence_offset,
+                 uint8_t priority = DEFAULT_PRIORITY,
+                 bool preview = false);
+
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
                     ola::Closure *handler);
     bool RemoveHandler(unsigned int universe);

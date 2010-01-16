@@ -36,7 +36,6 @@ using ola::network::NetworkToHost;
  */
 RootLayer::RootLayer(UDPTransport *transport, const CID &cid)
     : m_transport(transport),
-      m_cid(cid),
       m_root_pdu(0) {
   m_root_pdu.Cid(cid);
   if (!m_transport) {
@@ -71,6 +70,29 @@ bool RootLayer::SendPDU(struct in_addr &addr,
 
 
 /*
+ * This is used to inject a packet from a different CID.
+ * @param addr where to send the PDU
+ * @param vector the vector to use at the root level
+ * @param pdu the pdu to send.
+ * @param cid the cid to send from
+ */
+bool RootLayer::SendPDU(struct in_addr &addr, unsigned int vector,
+                        const PDU &pdu, const CID &cid) {
+  if (!m_transport)
+    return false;
+
+  PDUBlock<PDU> root_block, working_block;
+  working_block.AddPDU(&pdu);
+  RootPDU root_pdu(vector);
+  root_pdu.Cid(cid);
+  root_pdu.SetBlock(&working_block);
+  root_block.AddPDU(&root_pdu);
+  printf("%d\n", root_block.Size());
+  return SendBlock(addr, root_block);
+}
+
+
+/*
  * Encapsulate this PDUBlock in a RootPDU and send it to the destination.
  * @param addr where to send the PDU
  * @param vector the vector to use at the root level
@@ -86,12 +108,7 @@ bool RootLayer::SendPDUBlock(struct in_addr &addr,
   m_root_pdu.SetBlock(&block);
   m_root_block.Clear();
   m_root_block.AddPDU(&m_root_pdu);
-
-  struct sockaddr_in destination;
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(UDPTransport::ACN_PORT);
-  destination.sin_addr = addr;
-  return m_transport->Send(m_root_block, destination);
+  return SendBlock(addr, m_root_block);
 }
 
 
@@ -112,6 +129,19 @@ bool RootLayer::LeaveMulticast(const struct in_addr &group) {
   if (m_transport)
     return m_transport->LeaveMulticast(group);
   return false;
+}
+
+
+/*
+ * Send a block of pdus to an address
+ */
+bool RootLayer::SendBlock(struct in_addr &addr,
+                          const PDUBlock<PDU> &root_block) {
+  struct sockaddr_in destination;
+  destination.sin_family = AF_INET;
+  destination.sin_port = HostToNetwork(UDPTransport::ACN_PORT);
+  destination.sin_addr = addr;
+  return m_transport->Send(root_block, destination);
 }
 }  // e131
 }  // plugin
