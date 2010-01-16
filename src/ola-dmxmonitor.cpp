@@ -42,13 +42,17 @@
 #include <unistd.h>
 #include <sys/timeb.h>
 
-#include <string>
+#include <ola/BaseTypes.h>
 #include <ola/Closure.h>
 #include <ola/OlaClient.h>
 #include <ola/SimpleClient.h>
 #include <ola/DmxBuffer.h>
 #include <ola/network/SelectServer.h>
 
+#include <string>
+#include <iostream>
+
+using ola::DmxBuffer;
 using ola::OlaClient;
 using ola::OlaClientObserver;
 using ola::network::SelectServer;
@@ -64,7 +68,6 @@ enum {
   HEADLINE,
   HEADEMPH,
   HEADERROR,
-
   MAXCOLOR
 };
 
@@ -76,160 +79,369 @@ enum {
   DISP_MODE_MAX,
 };
 
-int MAXCHANNELS=512;
-
-int universe = 0;
-
-typedef unsigned char dmx_t ;
-
-static dmx_t *dmx;
+class DmxMonitor *dmx_monitor;
 
 static int display_mode = DISP_MODE_DMX;
 static int current_channel = 0;    /* channel cursor is positioned on */
 static int first_channel = 0;    /* channel in upper left corner */
-static int channels_per_line=80/4;
-static int channels_per_screen=80/4*24/2;
-static int palette_number=0;
+static int channels_per_line = 80/4;
+static int channels_per_screen = 80/4*24/2;
 static int palette[MAXCOLOR];
-string error_str;
-static int channels_offset=1;
-
-WINDOW  *w=NULL;
-
-OlaClient *client;
-SelectServer *ss;
-
 
 /*
  * The observer class which repsonds to events
  */
-class Observer: public OlaClientObserver {
+class DmxMonitor: public OlaClientObserver {
   public:
-    Observer(void (*fh)()): m_fh(fh) {};
+    explicit DmxMonitor(unsigned int universe):
+        m_universe(universe),
+        m_counter(0),
+        m_palette_number(0),
+        m_stdin_socket(STDIN_FILENO),
+        m_window(NULL),
+        m_data_loss_window(NULL),
+        m_channels_offset(false) {
+    };
 
+    ~DmxMonitor() {
+      if (m_window) {
+        resetty();
+        endwin();
+      }
+    }
+
+    bool Init();
+    void Run() { m_client.GetSelectServer()->Run(); }
     void NewDmx(unsigned int universe,
-                const ola::DmxBuffer &buffer,
+                const DmxBuffer &buffer,
                 const string &error);
+    int StdinReady();
+    int CheckDataLoss();
+    void TerminalResized();
 
   private:
-    void (*m_fh)();
+    unsigned int m_universe;
+    unsigned int m_counter;
+    int m_palette_number;
+    ola::network::UnmanagedSocket m_stdin_socket;
+    struct timeval m_last_data;
+    WINDOW *m_window;
+    WINDOW *m_data_loss_window;
+    bool m_channels_offset;  // start from channel 1 rather than 0;
+    SimpleClient m_client;
+
+    void Mask();
+    void Values(const DmxBuffer &buffer);
+    void ChangePalette(int p);
+    void CalcScreenGeometry();
 };
 
 
-void Observer::NewDmx(unsigned int universe,
-                      const ola::DmxBuffer &buffer,
-                      const string &error) {
-  unsigned int len = buffer.Size() > (unsigned int) MAXCHANNELS ?
-                     (unsigned int) MAXCHANNELS : buffer.Size();
-  memcpy(dmx, buffer.GetRaw(), len);
+/*
+ * Setup the monitoring console
+ */
+bool DmxMonitor::Init() {
+  /* set up ola connection */
+  if (!m_client.Setup()) {
+    printf("error: %s", strerror(errno));
+    return false;
+  }
 
-  if(m_fh != NULL)
-    m_fh();
+  OlaClient *client = m_client.GetClient();
+  client->SetObserver(this);
+  client->RegisterUniverse(m_universe, ola::REGISTER);
+
+  /* init curses */
+  m_window = initscr();
+  if (!m_window) {
+    printf("unable to open main-screen\n");
+    return false;
+  }
+
+  savetty();
+  start_color();
+  noecho();
+  raw();
+  keypad(m_window, TRUE);
+
+  m_client.GetSelectServer()->AddSocket(&m_stdin_socket);
+  m_stdin_socket.SetOnData(ola::NewClosure(this, &DmxMonitor::StdinReady));
+  m_client.GetSelectServer()->RegisterRepeatingTimeout(
+      500,
+      ola::NewClosure(this, &DmxMonitor::CheckDataLoss));
+  CalcScreenGeometry();
+  ChangePalette(m_palette_number);
+
+  DmxBuffer empty_buffer;
+  empty_buffer.Blackout();
+  NewDmx(m_universe, empty_buffer, "");
+
+  timerclear(&m_last_data);
+  return true;
 }
 
 
+/*
+ * Called when there is new DMX data
+ */
+void DmxMonitor::NewDmx(unsigned int universe,
+                      const DmxBuffer &buffer,
+                      const string &error) {
+  if (m_data_loss_window) {
+    // delete the window
+    wborder(m_data_loss_window, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+    wrefresh(m_data_loss_window);
+    delwin(m_data_loss_window);
+    m_data_loss_window = NULL;
+    Mask();
+  }
+  move(0, COLS - 1);
+  switch (m_counter % 4) {
+    case 0:
+      printw("/");
+      break;
+    case 1:
+      printw("-");
+      break;
+    case 2:
+      printw("\\");
+      break;
+    default:
+      printw("|");
+      break;
+  }
+  m_counter++;
+  gettimeofday(&m_last_data, NULL);
+  Values(buffer);
+  refresh();
+}
+
+
+/*
+ * Called when there is input from the keyboard
+ */
+int DmxMonitor::StdinReady() {
+  int c = wgetch(m_window);
+
+  switch (c) {
+    case KEY_HOME:
+      current_channel = 0;
+      first_channel = 0;
+      Mask();
+      break;
+
+    case KEY_RIGHT:
+      if (current_channel < DMX_UNIVERSE_SIZE-1) {
+        current_channel++;
+        if (current_channel >= first_channel + channels_per_screen) {
+            first_channel += channels_per_line;
+            Mask();
+        }
+      }
+      break;
+
+    case KEY_LEFT:
+      if (current_channel > 0) {
+        current_channel--;
+        if (current_channel < first_channel) {
+          first_channel -= channels_per_line;
+          if (first_channel < 0)
+            first_channel = 0;
+          Mask();
+        }
+      }
+      break;
+
+    case KEY_DOWN:
+      current_channel += channels_per_line;
+      if (current_channel >= DMX_UNIVERSE_SIZE)
+        current_channel = DMX_UNIVERSE_SIZE - 1;
+      if (current_channel >= first_channel+channels_per_screen) {
+        first_channel += channels_per_line;
+        Mask();
+      }
+      break;
+
+    case KEY_UP:
+      current_channel -= channels_per_line;
+      if (current_channel < 0)
+        current_channel = 0;
+      if (current_channel < first_channel) {
+        first_channel -= channels_per_line;
+        if (first_channel < 0)
+          first_channel = 0;
+        Mask();
+      }
+      break;
+
+    case 'M':
+    case 'm':
+      if (++display_mode >= DISP_MODE_MAX)
+        display_mode = 0;
+      Mask();
+      break;
+
+    case 'N':
+    case 'n':
+      m_channels_offset = !m_channels_offset;
+      Mask();
+      break;
+
+    case 'P':
+    case 'p':
+      ChangePalette(++m_palette_number);
+      break;
+
+    case 'Q':
+    case 'q':
+      m_client.GetSelectServer()->Terminate();
+      break;
+    default:
+        break;
+  }
+  return 0;
+}
+
+
+/*
+ * Check for data loss.
+ * TODO(simon): move to the ola server
+ */
+int DmxMonitor::CheckDataLoss() {
+  struct timeval now, diff;
+
+  if (timerisset(&m_last_data)) {
+    gettimeofday(&now, NULL);
+    timersub(&now, &m_last_data, &diff);
+    if (!m_data_loss_window &&
+        (diff.tv_sec > 2 || (diff.tv_sec == 2 && diff.tv_usec > 500000))) {
+      // loss of data
+      m_data_loss_window = newwin(3, 14, (LINES - 14) / 2, (COLS - 3) / 2);
+      mvwprintw(m_data_loss_window, 1, 2, "Data Loss!");
+      wborder(m_data_loss_window, '|', '|', '-', '-', '+', '+', '+', '+');
+      wrefresh(m_data_loss_window);
+    }
+  }
+  return 0;
+}
+
+
+/*
+ * Called when the terminal is resized
+ */
+void DmxMonitor::TerminalResized() {
+  struct winsize size;
+  if (ioctl(0, TIOCGWINSZ, &size) < 0)
+      return;
+
+  resizeterm(size.ws_row, size.ws_col);
+  CalcScreenGeometry();
+  Mask();
+}
+
 
 /* display the channels numbers */
-void mask() {
-  int i=0,x,y,z=first_channel;
+void DmxMonitor::Mask() {
+  int i = 0, x, y;
+  int channel = first_channel;
 
   erase();
 
   /* clear headline */
   attrset(palette[HEADLINE]);
-  move(0,0);
-  for(x=0; x<COLS; x++)
+  move(0, 0);
+  for (x = 0; x < COLS; x++)
     addch(' ');
 
   /* write channel numbers */
   attrset(palette[CHANNEL]);
-  for(y=1; y<LINES && z<MAXCHANNELS && i<channels_per_screen; y+=2) {
-      move(y,0);
-      for(x=0; x<channels_per_line && z<MAXCHANNELS && i<channels_per_screen; x++, i++, z++)
-    switch(display_mode) {
-      case DISP_MODE_DMX:
-      case DISP_MODE_DEC:
-      default:
-        printw("%03d ",z+channels_offset); break;
-
-      case DISP_MODE_HEX:
-        printw("%03X ",z+channels_offset); break;
+  for (y = 1; y < LINES && channel < DMX_UNIVERSE_SIZE &&
+       i < channels_per_screen; y+=2) {
+    move(y, 0);
+    for (x = 0; x < channels_per_line && channel < DMX_UNIVERSE_SIZE &&
+         i < channels_per_screen; x++, i++, channel++) {
+      switch (display_mode) {
+        case DISP_MODE_HEX:
+          printw("%03X ", channel + (m_channels_offset ? 1 : 0));
+          break;
+        case DISP_MODE_DMX:
+        case DISP_MODE_DEC:
+        default:
+          printw("%03d ", channel + (m_channels_offset ? 1 : 0));
+          break;
       }
     }
-
+  }
 }
 
-/* update the screen */
-void values() {
-  int i=0,x,y,z=first_channel;
+
+/*
+ * Update the screen with new values
+ */
+void DmxMonitor::Values(const DmxBuffer &buffer) {
+  int i = 0, x, y, z = first_channel;
 
   /* headline */
-  if(COLS>24)
-    {
-      time_t t=time(NULL);
-      struct tm *tt=localtime(&t);
-      char *s=asctime(tt);
-      s[strlen(s)-1]=0; /* strip newline at end of string */
+  if (COLS>24) {
+      time_t t = time(NULL);
+      struct tm *tt = localtime(&t);
+      char *s = asctime(tt);
+      s[strlen(s) - 1] = 0; /* strip newline at end of string */
 
       attrset(palette[HEADLINE]);
-      mvprintw(0,1,"%s", s);
+      mvprintw(0, 1, "%s", s);
     }
-  if(COLS>31)
-    {
+  if (COLS > 31) {
       attrset(palette[HEADLINE]);
       printw(" Universe:");
       attrset(palette[HEADEMPH]);
-      printw("%02i", universe);
+      printw("%02i", m_universe);
     }
 
   /* values */
-  for(y=2; y<LINES && z<MAXCHANNELS && i<channels_per_screen; y+=2)
-    {
-      move(y,0);
-      for(x=0; x<channels_per_line && z<MAXCHANNELS && i<channels_per_screen; x++, z++, i++)
-    {
-      const int d=dmx[z];
-      switch(d)
-        {
+  for (y = 2; y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
+       y+=2) {
+    move(y, 0);
+    for (x = 0; x < channels_per_line && z < DMX_UNIVERSE_SIZE &&
+        i < channels_per_screen; x++, z++, i++) {
+      const int d = buffer.Get(z);
+      switch (d) {
         case 0: attrset(palette[ZERO]); break;
         case 255: attrset(palette[FULL]); break;
         default: attrset(palette[NORM]);
-        }
-      if(z==current_channel)
+      }
+      if (z == current_channel)
         attron(A_REVERSE);
-      switch(display_mode)
-        {
+      switch (display_mode) {
         case DISP_MODE_HEX:
-          if(d==0)
-        addstr("    ");
+          if (d == 0)
+            addstr("    ");
           else
-        printw(" %02x ", d);
+            printw(" %02x ", d);
           break;
         case DISP_MODE_DEC:
-          if(d==0)
-        addstr("    ");
-          else if(d<100)
-        printw(" %02d ", d);
+          if (d == 0)
+            addstr("    ");
+          else if (d < 100)
+            printw(" %02d ", d);
           else
-        printw("%03d ", d);
+            printw("%03d ", d);
           break;
         case DISP_MODE_DMX:
         default:
-          switch(d)
-        {
-        case 0: addstr("    "); break;
-        case 255: addstr(" FL "); break;
-        default: printw(" %02d ", (d*100)/255);
-        }
-        }
+          switch (d) {
+            case 0: addstr("    "); break;
+            case 255: addstr(" FL "); break;
+            default: printw(" %02d ", (d * 100) / 255);
+          }
+      }
     }
-    }
+  }
 }
 
 
 /* change palette to "p". If p is invalid new palette is number "0". */
-void changepalette(int p)
-{
+void DmxMonitor::ChangePalette(int p) {
   /* COLOR_BLACK
      COLOR_RED
      COLOR_GREEN
@@ -252,10 +464,9 @@ void changepalette(int p)
      A_ALTCHARSET
      A_INVIS
   */
-  switch(p)
-    {
+  switch (p) {
     default:
-      palette_number=0;
+      m_palette_number = 0;
     case 0:
       init_pair(CHANNEL, COLOR_BLACK, COLOR_CYAN);
       init_pair(ZERO, COLOR_BLACK, COLOR_WHITE);
@@ -297,221 +508,60 @@ void changepalette(int p)
       break;
     }
 
-  mask();
-}
-
-void CHECK(void *p)
-{
-  if(p==NULL)
-    {
-      fprintf(stderr, "could not alloc\n");
-      exit(1);
-    }
-}
-
-/* signal handler for crashes. Program is aborted  */
-void crash(int sig) {
-  exit(1);
+  Mask();
 }
 
 
 /* calculate channels_per_line and channels_per_screen from LINES and COLS */
-void calcscreengeometry() {
-  int c=LINES;
-  if (c<3) {
-      error_str = "screen to small, we need at least 3 lines";
-      exit(1);
+void DmxMonitor::CalcScreenGeometry() {
+  int c = LINES;
+  if (c < 3) {
+    std::cerr << "Terminal must be more than 3 lines" << std::endl;
+    exit(1);
   }
-  c--;                /* one line for headline */
+  c--;   // one line for headline
   if (c % 2 == 1)
     c--;
-  channels_per_line=COLS/4;
-  channels_per_screen=channels_per_line*c/2;
+  channels_per_line = COLS / 4;
+  channels_per_screen = channels_per_line * c / 2;
 }
 
 
 /* signal handler for SIGWINCH */
 void terminalresize(int sig) {
-    struct winsize size;
-    if(ioctl(0, TIOCGWINSZ, &size) < 0)
-        return;
-
-    resizeterm(size.ws_row, size.ws_col);
-    calcscreengeometry();
-    mask();
+  dmx_monitor->TerminalResized();
 }
-
-
 
 
 /* cleanup handler for program exit. */
 void cleanup() {
-    if(w) {
-        resetty();
-        endwin();
-    }
+  if (dmx_monitor)
+    delete dmx_monitor;
 }
 
 
-void dmx_handler() {
-    values();
-    refresh();
-}
-
-int stdin_ready() {
-  int n;
-  int c = wgetch(w);
-
-  switch (c) {
-    case KEY_HOME:
-      current_channel=0;
-      first_channel=0;
-      mask();
-      break;
-    case KEY_RIGHT:
-      if(current_channel < MAXCHANNELS-1) {
-        current_channel++;
-        if(current_channel >= first_channel+channels_per_screen) {
-            first_channel+=channels_per_line;
-            mask();
-        }
-      }
-      break;
-    case KEY_LEFT:
-      if(current_channel > 0) {
-        current_channel--;
-        if(current_channel < first_channel) {
-          first_channel-=channels_per_line;
-          if(first_channel<0)
-            first_channel=0;
-          mask();
-        }
-      }
-      break;
-
-    case KEY_DOWN:
-      current_channel+=channels_per_line;
-      if(current_channel>=MAXCHANNELS)
-        current_channel=MAXCHANNELS-1;
-      if(current_channel >= first_channel+channels_per_screen) {
-        first_channel+=channels_per_line;
-        mask();
-      }
-      break;
-
-    case KEY_UP:
-      current_channel-=channels_per_line;
-      if(current_channel<0)
-        current_channel=0;
-      if(current_channel < first_channel) {
-        first_channel-=channels_per_line;
-        if(first_channel<0)
-          first_channel=0;
-        mask();
-      }
-      break;
-
-    case KEY_IC:
-      for(n=MAXCHANNELS-1; n>current_channel && n>0; n--)
-        dmx[n]=dmx[n-1];
-      break;
-
-    case KEY_DC:
-      for(n=current_channel; n<MAXCHANNELS-1; n++)
-        dmx[n]=dmx[n+1];
-      break;
-
-
-    case 'M':
-            case 'm':
-      if(++display_mode>=DISP_MODE_MAX)
-        display_mode=0;
-      mask();
-      break;
-
-    case 'N':
-    case 'n':
-      if(++channels_offset>1)
-        channels_offset=0;
-      mask();
-      break;
-
-    case 'P':
-    case 'p':
-      changepalette(++palette_number);
-      break;
-    case 'Q':
-    case 'q':
-      ss->Terminate();
-      break;
-    default:
-        break;
-  }
-  return 0;
-}
-
-
-int main (int argc, char *argv[]) {
-  int optc ;
-  Observer observer(dmx_handler);
-
+int main(int argc, char *argv[]) {
+  int optc;
+  int universe = 0;
   atexit(cleanup);
-  dmx = (uint8_t *) malloc(MAXCHANNELS) ;
-
-  if (!dmx) {
-    printf("malloc failed\n") ;
-    return 1 ;
-  }
-
-  memset(dmx, 0x00, MAXCHANNELS) ;
 
   // parse options
-  while ((optc = getopt (argc, argv, "u:")) != EOF) {
+  while ((optc = getopt(argc, argv, "u:")) != EOF) {
       switch (optc) {
           case 'u':
-          universe= atoi(optarg) ;
-          break ;
+          universe = atoi(optarg);
+          break;
       default:
           break;
       }
   }
 
-  /* set up ola connection */
-  SimpleClient ola_client;
-  ola::network::UnmanagedSocket stdin_socket(0);
-  stdin_socket.SetOnData(ola::NewClosure(&stdin_ready));
+  dmx_monitor = new DmxMonitor(universe);
+  if (!dmx_monitor->Init())
+    return 1;
 
-  if (!ola_client.Setup()) {
-    printf("error: %s", strerror(errno));
-    exit(1);
-  }
-
-  client = ola_client.GetClient();
-  ss = ola_client.GetSelectServer();
-  ss->AddSocket(&stdin_socket);
-
-  client->SetObserver(&observer);
-
-  client->RegisterUniverse(universe, ola::REGISTER);
-
-  /* init curses */
-  w = initscr();
-  if (!w) {
-      printf ("unable to open main-screen\n");
-      return 1;
-  }
-
-  savetty();
-  start_color();
-  noecho();
-  raw();
-  keypad(w, TRUE);
-
-  calcscreengeometry();
-  changepalette(palette_number);
-
-  values();
-  refresh();
-  ss->Run();
+  dmx_monitor->Run();
+  delete dmx_monitor;
+  dmx_monitor = NULL;
   return 0;
 }
