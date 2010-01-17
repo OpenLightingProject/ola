@@ -57,8 +57,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DMPAddressTest);
 
 
 /*
- * Check the property match, pack the address, decode it, and check the decoded
- * address matches the first one.
+ * Check the properties match, pack the address, decode it, and check the
+ * decoded address matches the first one.
  */
 void DMPAddressTest::checkAddress(
     const BaseDMPAddress *address,
@@ -90,6 +90,14 @@ void DMPAddressTest::checkAddress(
   CPPUNIT_ASSERT_EQUAL(increment, address->Increment());
   CPPUNIT_ASSERT_EQUAL(number, address->Number());
 
+  length--;
+  CPPUNIT_ASSERT(!DecodeAddress(address_size,
+                                is_range ? RANGE_SINGLE: NON_RANGE,
+                                buffer, length));
+  length = 0;
+  CPPUNIT_ASSERT(!DecodeAddress(address_size,
+                                is_range ? RANGE_SINGLE: NON_RANGE,
+                                buffer, length));
   delete[] buffer;
   delete addr;
 }
