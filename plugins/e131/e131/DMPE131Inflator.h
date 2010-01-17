@@ -23,7 +23,6 @@
 #define PLUGINS_E131_E131_DMPE131INFLATOR_H_
 
 #include <map>
-#include <vector>
 #include "ola/Closure.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/e131/e131/DMPInflator.h"
@@ -54,32 +53,14 @@ class DMPE131Inflator: public DMPInflator {
                                unsigned int pdu_len);
 
   private:
-
-    typedef struct {
-      CID cid;
-      uint8_t sequence;
-      // last_heard_from
-    } dmx_source;
-
     typedef struct {
       ola::DmxBuffer *buffer;
       Closure *closure;
-      uint8_t active_priority;
-      std::vector<dmx_source> sources;
     } universe_handler;
 
     std::map<unsigned int, universe_handler> m_handlers;
     E131Layer *m_e131_layer;
     bool m_ignore_preview;
-
-    bool TrackSourceIfRequired(universe_handler &universe_data,
-                               const HeaderSet &headers);
-
-    // The max number of sources we'll track per universe.
-    static const uint8_t MAX_MERGE_SOURCES = 6;
-    static const uint8_t MAX_PRIORITY = 200;
-    // ignore packets that differ by less than this amount from the last one
-    static const int8_t SEQUENCE_DIFF_THRESHOLD = -20;
 };
 }  // e131
 }  // plugin

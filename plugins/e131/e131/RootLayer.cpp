@@ -87,6 +87,7 @@ bool RootLayer::SendPDU(struct in_addr &addr, unsigned int vector,
   root_pdu.Cid(cid);
   root_pdu.SetBlock(&working_block);
   root_block.AddPDU(&root_pdu);
+  printf("%d\n", root_block.Size());
   return SendBlock(addr, root_block);
 }
 

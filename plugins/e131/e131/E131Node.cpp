@@ -44,12 +44,11 @@ using ola::DmxBuffer;
 E131Node::E131Node(const string &ip_address,
                    const CID &cid,
                    bool use_rev2,
-                   bool ignore_preview,
-                   uint16_t port)
+                   bool ignore_preview)
     : m_preferred_ip(ip_address),
       m_cid(cid),
       m_use_rev2(use_rev2),
-      m_transport(port),
+      m_transport(),
       m_root_layer(&m_transport, m_cid),
       m_e131_layer(&m_root_layer),
       m_dmp_inflator(&m_e131_layer, ignore_preview),
@@ -130,7 +129,7 @@ bool E131Node::SendDMX(uint16_t universe,
                        const ola::DmxBuffer &buffer,
                        uint8_t priority,
                        bool preview) {
-  return SendDMXWithSequenceOffset(universe, buffer, 0, priority, preview);
+  return SendDMX(universe, buffer, m_cid, 0, priority, preview);
 }
 
 
@@ -145,11 +144,12 @@ bool E131Node::SendDMX(uint16_t universe,
  * @param preview set to true to turn on the preview bit
  * @return true if it was sent successfully, false otherwise
  */
-bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
-                                         const ola::DmxBuffer &buffer,
-                                         int8_t sequence_offset,
-                                         uint8_t priority,
-                                         bool preview) {
+bool E131Node::SendDMX(uint16_t universe,
+                       const ola::DmxBuffer &buffer,
+                       const CID &cid,
+                       int8_t sequence_offset,
+                       uint8_t priority,
+                       bool preview) {
   map<unsigned int, tx_universe>::iterator iter =
       m_tx_universes.find(universe);
   tx_universe *settings;
@@ -190,62 +190,14 @@ bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
                     false,  // terminated
                     m_use_rev2);
 
-  bool result = m_e131_layer.SendDMP(header, pdu);
-  if (result && !sequence_offset)
+  bool result;
+  if (cid == m_cid)
+    result = m_e131_layer.SendDMP(header, pdu);
+  else
+    result = m_e131_layer.SendDMP(header, pdu, &cid);
+    result = true;
+  if (result && sequence_offset)
     settings->sequence++;
-  delete pdu;
-  return result;
-}
-
-
-/*
- * Signal termination of this stream for a universe.
- * @param universe the id of the universe to send
- * @param priority the priority to use, this doesn't actually make a
- * difference.
- */
-bool E131Node::StreamTerminated(uint16_t universe,
-                                const ola::DmxBuffer &buffer,
-                                uint8_t priority) {
-  map<unsigned int, tx_universe>::iterator iter =
-      m_tx_universes.find(universe);
-
-  string source_name;
-  uint8_t sequence_number;
-
-  if (iter == m_tx_universes.end()) {
-    source_name = "";
-    sequence_number = 0;
-  } else {
-    source_name = iter->second.source;
-    sequence_number = iter->second.sequence;
-  }
-
-  unsigned int data_size = DMX_UNIVERSE_SIZE;
-  buffer.Get(m_send_buffer + 1, &data_size);
-
-  TwoByteRangeDMPAddress range_addr(0, 1, (uint16_t) data_size);
-  DMPAddressData<TwoByteRangeDMPAddress> range_chunk(&range_addr,
-                                                     m_send_buffer,
-                                                     data_size + 1);
-  vector<DMPAddressData<TwoByteRangeDMPAddress> > ranged_chunks;
-  ranged_chunks.push_back(range_chunk);
-  const DMPPDU *pdu = NewRangeDMPSetProperty<uint16_t>(true,
-                                                       false,
-                                                       ranged_chunks);
-
-  E131Header header(source_name,
-                    priority,
-                    sequence_number,
-                    universe,
-                    false,  // preview
-                    true,  // terminated
-                    false);
-
-  bool result = m_e131_layer.SendDMP(header, pdu);
-  // only update if we were previously tracking this universe
-  if (result && iter != m_tx_universes.end())
-    iter->second.sequence++;
   delete pdu;
   return result;
 }
