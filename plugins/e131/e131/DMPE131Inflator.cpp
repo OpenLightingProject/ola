@@ -136,18 +136,14 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
      target_buffer->Set(data + available_length + 1, channels - 1);
   }
 
-  OLA_INFO << "sources: " << universe_iter->second.sources.size() <<
-    " act pri is " << static_cast<int>(universe_iter->second.active_priority);
   // merge the sources
   switch (universe_iter->second.sources.size()) {
     case 0:
       universe_iter->second.buffer->Reset();
-      OLA_INFO << "no souces, resetting buffer";
       break;
     case 1:
       universe_iter->second.buffer->Set(
           universe_iter->second.sources[0].buffer);
-      OLA_INFO << "single uni, running handler";
       universe_iter->second.closure->Run();
       break;
     default:
@@ -155,7 +151,7 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
       universe_iter->second.buffer->Reset();
       std::vector<dmx_source>::const_iterator source_iter =
         universe_iter->second.sources.begin();
-      for ( ; source_iter != universe_iter->second.sources.end(); ++source_iter)
+      for (; source_iter != universe_iter->second.sources.end(); ++source_iter)
         universe_iter->second.buffer->HTPMerge(source_iter->buffer);
       universe_iter->second.closure->Run();
   }
