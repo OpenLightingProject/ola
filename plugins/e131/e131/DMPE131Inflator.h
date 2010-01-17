@@ -23,6 +23,7 @@
 #define PLUGINS_E131_E131_DMPE131INFLATOR_H_
 
 #include <map>
+#include <vector>
 #include "ola/Closure.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/e131/e131/DMPInflator.h"
@@ -39,7 +40,10 @@ class DMPE131Inflator: public DMPInflator {
     DMPE131Inflator(E131Layer *e131_layer, bool ignore_preview):
       DMPInflator(),
       m_e131_layer(e131_layer),
-      m_ignore_preview(ignore_preview) {}
+      m_ignore_preview(ignore_preview) {
+      m_expiry_interval.tv_sec = EXPIRY_INTERVAL_SEC;
+      m_expiry_interval.tv_usec = EXPIRY_INTERVAL_USEC;
+    }
     ~DMPE131Inflator();
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
@@ -53,14 +57,38 @@ class DMPE131Inflator: public DMPInflator {
                                unsigned int pdu_len);
 
   private:
+
     typedef struct {
-      ola::DmxBuffer *buffer;
+      CID cid;
+      uint8_t sequence;
+      struct timeval last_heard_from;
+      DmxBuffer buffer;
+    } dmx_source;
+
+    typedef struct {
+      DmxBuffer *buffer;
       Closure *closure;
+      uint8_t active_priority;
+      std::vector<dmx_source> sources;
     } universe_handler;
 
     std::map<unsigned int, universe_handler> m_handlers;
     E131Layer *m_e131_layer;
     bool m_ignore_preview;
+    struct timeval m_expiry_interval;
+
+    bool TrackSourceIfRequired(universe_handler *universe_data,
+                               const HeaderSet &headers,
+                               DmxBuffer **buffer);
+
+    // The max number of sources we'll track per universe.
+    static const uint8_t MAX_MERGE_SOURCES = 6;
+    static const uint8_t MAX_PRIORITY = 200;
+    // ignore packets that differ by less than this amount from the last one
+    static const int8_t SEQUENCE_DIFF_THRESHOLD = -20;
+    // expire sources after 2.5s
+    static const unsigned int EXPIRY_INTERVAL_SEC = 2;
+    static const unsigned int EXPIRY_INTERVAL_USEC = 500000;
 };
 }  // e131
 }  // plugin

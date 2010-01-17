@@ -18,8 +18,10 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
+#include <sys/time.h>
 #include <algorithm>
 #include <map>
+#include <vector>
 #include "ola/Logging.h"
 #include "plugins/e131/e131/DMPE131Inflator.h"
 #include "plugins/e131/e131/DMPHeader.h"
@@ -30,6 +32,8 @@ namespace plugin {
 namespace e131 {
 
 using std::map;
+using std::pair;
+using std::vector;
 using ola::Closure;
 
 
@@ -56,13 +60,15 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   }
 
   E131Header e131_header = headers.GetE131Header();
-  map<unsigned int, universe_handler>::iterator iter =
+  map<unsigned int, universe_handler>::iterator universe_iter =
       m_handlers.find(e131_header.Universe());
 
-  if (e131_header.PreviewData() && m_ignore_preview)
+  if (e131_header.PreviewData() && m_ignore_preview) {
+    OLA_DEBUG << "Ignoring preview data";
     return true;
+  }
 
-  if (iter == m_handlers.end())
+  if (universe_iter == m_handlers.end())
     return true;
 
   DMPHeader dmp_header = headers.GetDMPHeader();
@@ -70,7 +76,14 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   if (!dmp_header.IsVirtual() || dmp_header.IsRelative() ||
       dmp_header.Size() != TWO_BYTES ||
       dmp_header.Type() != RANGE_EQUAL) {
-    OLA_DEBUG << "malformed E1.31 dmp header " << dmp_header.Header();
+    OLA_INFO << "malformed E1.31 dmp header " << dmp_header.Header();
+    return true;
+  }
+
+  if (e131_header.Priority() >= MAX_PRIORITY) {
+    OLA_INFO << "Priority " << static_cast<int>(e131_header.Priority()) <<
+      " is greater than the max priority (" << static_cast<int>(MAX_PRIORITY) <<
+      "), ignoring data";
     return true;
   }
 
@@ -79,30 +92,77 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
                                                 dmp_header.Type(),
                                                 data,
                                                 available_length);
-  if (address->Increment() != 1) {
-    OLA_INFO << "E1.31 DMP packet with increment " << address->Increment()
-      << ", disarding";
+
+  if (!address) {
+    OLA_INFO << "DMP address parsing failed, the length is probably too small";
     return true;
   }
 
-  unsigned int channels = std::min(pdu_len - available_length,
-                                   address->Number());
-  if (e131_header.UsingRev2()) {
-    // drop non-0 start codes
-    if (address->Start() == 0) {
-      iter->second.buffer->Set(data + available_length, channels);
-      iter->second.closure->Run();
-    }
-  } else {
-    // skip non-0 start codes
-    if (*(data + available_length) == 0 && channels > 0) {
-      iter->second.buffer->Set(data + available_length + 1, channels - 1);
-      iter->second.closure->Run();
-    }
+  if (address->Increment() != 1) {
+    OLA_INFO << "E1.31 DMP packet with increment " << address->Increment()
+      << ", disarding";
+    delete address;
+    return true;
+  }
+
+  unsigned int length_remaining = pdu_len - available_length;
+  int start_code = -1;
+  if (e131_header.UsingRev2())
+    start_code = address->Start();
+  else if (length_remaining && address->Number())
+    start_code = *(data + available_length);
+
+  // The only time we want to continue processing a non-0 start code is if it
+  // contains a Terminate message.
+  if (start_code && !e131_header.StreamTerminated()) {
+    OLA_INFO << "Skipping packet with non-0 start code: " << start_code;
+    delete address;
+    return true;
+  }
+
+  DmxBuffer *target_buffer;
+  if (!TrackSourceIfRequired(&universe_iter->second, headers, &target_buffer)) {
+    // no need to continue processing
+    delete address;
+    return true;
+  }
+
+  // Reaching here means that we actually have new data and we should merge.
+  if (target_buffer && start_code == 0) {
+    unsigned int channels = std::min(length_remaining, address->Number());
+    if (e131_header.UsingRev2())
+      target_buffer->Set(data + available_length, channels);
+    else
+     target_buffer->Set(data + available_length + 1, channels - 1);
+  }
+
+  OLA_INFO << "sources: " << universe_iter->second.sources.size() <<
+    " act pri is " << static_cast<int>(universe_iter->second.active_priority);
+  // merge the sources
+  switch (universe_iter->second.sources.size()) {
+    case 0:
+      universe_iter->second.buffer->Reset();
+      OLA_INFO << "no souces, resetting buffer";
+      break;
+    case 1:
+      universe_iter->second.buffer->Set(
+          universe_iter->second.sources[0].buffer);
+      OLA_INFO << "single uni, running handler";
+      universe_iter->second.closure->Run();
+      break;
+    default:
+      // HTP Merge
+      universe_iter->second.buffer->Reset();
+      std::vector<dmx_source>::const_iterator source_iter =
+        universe_iter->second.sources.begin();
+      for ( ; source_iter != universe_iter->second.sources.end(); ++source_iter)
+        universe_iter->second.buffer->HTPMerge(source_iter->buffer);
+      universe_iter->second.closure->Run();
   }
   delete address;
   return true;
 }
+
 
 /*
  * Set the closure to be called when we receive data for this universe.
@@ -124,6 +184,7 @@ bool DMPE131Inflator::SetHandler(unsigned int universe,
     universe_handler handler;
     handler.buffer = buffer;
     handler.closure = closure;
+    handler.active_priority = 0;
     m_handlers[universe] = handler;
     m_e131_layer->JoinUniverse(universe);
   } else {
@@ -153,6 +214,126 @@ bool DMPE131Inflator::RemoveHandler(unsigned int universe) {
     return true;
   }
   return false;
+}
+
+
+/*
+ * Check if this source is operating at the highest priority for this universe.
+ * This takes care of tracking all sources for a universe at the active
+ * priority.
+ * @param universe_data the universe_handler struct for this universe,
+ * @param HeaderSet the set of headers in this packet
+ * @param buffer, if set to a non-NULL pointer, the caller should copy the data
+ * in the buffer.
+ * @returns true if we should remerge the data, false otherwise.
+ */
+bool DMPE131Inflator::TrackSourceIfRequired(
+    universe_handler *universe_data,
+    const HeaderSet &headers,
+    DmxBuffer **buffer) {
+
+  *buffer = NULL;  // default the buffer to NULL
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  const E131Header &e131_header = headers.GetE131Header();
+  uint8_t priority = e131_header.Priority();
+  vector<dmx_source> &sources = universe_data->sources;
+  vector<dmx_source>::iterator source = sources.end();
+  vector<dmx_source>::iterator iter = sources.begin();
+
+  while (iter != sources.end()) {
+    if (iter->cid == headers.GetRootHeader().GetCid()) {
+      source = iter++;
+      continue;
+    }
+
+    struct timeval expiry_time;
+    timeradd(&(iter->last_heard_from), &m_expiry_interval, &expiry_time);
+    if (timercmp(&now, &expiry_time, >)) {
+      OLA_INFO << "source " << iter->cid.ToString() << " has expired";
+      iter = sources.erase(iter);
+      continue;
+    }
+    iter++;
+  }
+
+  if (!sources.size())
+    universe_data->active_priority = 0;
+
+  if (source == sources.end()) {
+    // This is an untracked source
+    if (e131_header.StreamTerminated() ||
+        priority < universe_data->active_priority)
+      return false;
+
+    if (priority > universe_data->active_priority) {
+      OLA_INFO << "Raising priority for universe " <<
+        e131_header.Universe() << " from " <<
+        static_cast<int>(universe_data->active_priority) << " to " <<
+        static_cast<int>(priority);
+      sources.clear();
+      universe_data->active_priority = priority;
+    }
+
+    if (sources.size() == MAX_MERGE_SOURCES) {
+      // TODO(simon): flag this in the export map
+      OLA_WARN << "Max merge sources reached for universe " <<
+        e131_header.Universe() << ", " <<
+        headers.GetRootHeader().GetCid().ToString() << " won't be tracked";
+        return false;
+    } else {
+      OLA_INFO << "Added new E1.31 source: " <<
+        headers.GetRootHeader().GetCid().ToString();
+      dmx_source new_source;
+      new_source.cid = headers.GetRootHeader().GetCid();
+      new_source.sequence = e131_header.Sequence();
+      new_source.last_heard_from = now;
+      source = sources.insert(sources.end(), new_source);
+      *buffer = &source->buffer;
+      return true;
+    }
+
+  } else {
+    // We already know about this one, check the seq #
+    int8_t seq_diff = e131_header.Sequence() - source->sequence;
+    if (seq_diff <= 0 && seq_diff > SEQUENCE_DIFF_THRESHOLD) {
+      OLA_INFO << "Old packet received, ignoring, this # " <<
+        static_cast<int>(e131_header.Sequence()) << ", last " <<
+        static_cast<int>(source->sequence);
+      return false;
+    }
+    source->sequence = e131_header.Sequence();
+
+    if (e131_header.StreamTerminated()) {
+      OLA_INFO << "CID " << headers.GetRootHeader().GetCid().ToString() <<
+        " sent a termination for universe " << e131_header.Universe();
+      sources.erase(source);
+      if (!sources.size())
+        universe_data->active_priority = 0;
+      // We need to trigger a merge here else the buffer will be stale, we keep
+      // the buffer as NULL though so we don't use the data.
+      return true;
+    }
+
+    source->last_heard_from = now;
+    if (priority < universe_data->active_priority) {
+      if (sources.size() == 1)
+        universe_data->active_priority = priority;
+      else
+        sources.erase(source);
+    } else if (priority > universe_data->active_priority) {
+      // new active priority
+      universe_data->active_priority = priority;
+      if (sources.size() != 1) {
+        // clear all sources other than this one
+        dmx_source this_source = *source;
+        sources.clear();
+        sources.push_back(this_source);
+      }
+    }
+    *buffer = &source->buffer;
+    return true;
+  }
 }
 }  // e131
 }  // plugin
