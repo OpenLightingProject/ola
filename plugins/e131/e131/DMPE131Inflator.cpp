@@ -234,21 +234,17 @@ bool DMPE131Inflator::TrackSourceIfRequired(
   const E131Header &e131_header = headers.GetE131Header();
   uint8_t priority = e131_header.Priority();
   vector<dmx_source> &sources = universe_data->sources;
-  vector<dmx_source>::iterator source = sources.end();
   vector<dmx_source>::iterator iter = sources.begin();
 
   while (iter != sources.end()) {
-    if (iter->cid == headers.GetRootHeader().GetCid()) {
-      source = iter++;
-      continue;
-    }
-
-    struct timeval expiry_time;
-    timeradd(&(iter->last_heard_from), &m_expiry_interval, &expiry_time);
-    if (timercmp(&now, &expiry_time, >)) {
-      OLA_INFO << "source " << iter->cid.ToString() << " has expired";
-      iter = sources.erase(iter);
-      continue;
+    if (iter->cid != headers.GetRootHeader().GetCid()) {
+      struct timeval expiry_time;
+      timeradd(&(iter->last_heard_from), &m_expiry_interval, &expiry_time);
+      if (timercmp(&now, &expiry_time, >)) {
+        OLA_INFO << "source " << iter->cid.ToString() << " has expired";
+        iter = sources.erase(iter);
+        continue;
+      }
     }
     iter++;
   }
@@ -256,7 +252,12 @@ bool DMPE131Inflator::TrackSourceIfRequired(
   if (!sources.size())
     universe_data->active_priority = 0;
 
-  if (source == sources.end()) {
+  for (iter = sources.begin(); iter != sources.end(); ++iter) {
+    if (iter->cid == headers.GetRootHeader().GetCid())
+      break;
+  }
+
+  if (iter == sources.end()) {
     // This is an untracked source
     if (e131_header.StreamTerminated() ||
         priority < universe_data->active_priority)
@@ -284,26 +285,26 @@ bool DMPE131Inflator::TrackSourceIfRequired(
       new_source.cid = headers.GetRootHeader().GetCid();
       new_source.sequence = e131_header.Sequence();
       new_source.last_heard_from = now;
-      source = sources.insert(sources.end(), new_source);
-      *buffer = &source->buffer;
+      iter = sources.insert(sources.end(), new_source);
+      *buffer = &iter->buffer;
       return true;
     }
 
   } else {
     // We already know about this one, check the seq #
-    int8_t seq_diff = e131_header.Sequence() - source->sequence;
+    int8_t seq_diff = e131_header.Sequence() - iter->sequence;
     if (seq_diff <= 0 && seq_diff > SEQUENCE_DIFF_THRESHOLD) {
       OLA_INFO << "Old packet received, ignoring, this # " <<
         static_cast<int>(e131_header.Sequence()) << ", last " <<
-        static_cast<int>(source->sequence);
+        static_cast<int>(iter->sequence);
       return false;
     }
-    source->sequence = e131_header.Sequence();
+    iter->sequence = e131_header.Sequence();
 
     if (e131_header.StreamTerminated()) {
       OLA_INFO << "CID " << headers.GetRootHeader().GetCid().ToString() <<
         " sent a termination for universe " << e131_header.Universe();
-      sources.erase(source);
+      sources.erase(iter);
       if (!sources.size())
         universe_data->active_priority = 0;
       // We need to trigger a merge here else the buffer will be stale, we keep
@@ -311,23 +312,25 @@ bool DMPE131Inflator::TrackSourceIfRequired(
       return true;
     }
 
-    source->last_heard_from = now;
+    iter->last_heard_from = now;
     if (priority < universe_data->active_priority) {
-      if (sources.size() == 1)
+      if (sources.size() == 1) {
         universe_data->active_priority = priority;
-      else
-        sources.erase(source);
+      } else {
+        sources.erase(iter);
+        return true;
+      }
     } else if (priority > universe_data->active_priority) {
       // new active priority
       universe_data->active_priority = priority;
       if (sources.size() != 1) {
         // clear all sources other than this one
-        dmx_source this_source = *source;
+        dmx_source this_source = *iter;
         sources.clear();
-        sources.push_back(this_source);
+        iter = sources.insert(sources.end(), this_source);
       }
     }
-    *buffer = &source->buffer;
+    *buffer = &iter->buffer;
     return true;
   }
 }
