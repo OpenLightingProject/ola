@@ -40,9 +40,7 @@ class E131Layer {
     explicit E131Layer(RootLayer *root_layer);
     ~E131Layer() {}
 
-    bool SendDMP(const E131Header &header, const DMPPDU *pdu,
-                 const CID *cid = NULL);
-
+    bool SendDMP(const E131Header &header, const DMPPDU *pdu);
     bool SetInflator(class DMPE131Inflator *inflator);
     bool JoinUniverse(unsigned int universe);
     bool LeaveUniverse(unsigned int universe);
