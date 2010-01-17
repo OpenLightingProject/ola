@@ -41,7 +41,8 @@ class E131Node {
     E131Node(const std::string &ip_address,
              const CID &cid = CID::Generate(),
              bool use_rev2 = false,
-             bool ignore_preview = true);
+             bool ignore_preview = true,
+             uint16_t port = UDPTransport::ACN_PORT);
     ~E131Node();
 
     bool Start();
@@ -55,12 +56,15 @@ class E131Node {
 
     // The following method is provided for the testing framework. Don't use
     // it in production code!
-    bool SendDMX(uint16_t universe,
-                 const ola::DmxBuffer &buffer,
-                 const CID &cid,
-                 int8_t sequence_offset,
-                 uint8_t priority = DEFAULT_PRIORITY,
-                 bool preview = false);
+    bool SendDMXWithSequenceOffset(uint16_t universe,
+                                   const ola::DmxBuffer &buffer,
+                                   int8_t sequence_offset,
+                                   uint8_t priority = DEFAULT_PRIORITY,
+                                   bool preview = false);
+
+    bool StreamTerminated(uint16_t universe,
+                          const ola::DmxBuffer &buffer = DmxBuffer(),
+                          uint8_t priority = DEFAULT_PRIORITY);
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
                     ola::Closure *handler);
