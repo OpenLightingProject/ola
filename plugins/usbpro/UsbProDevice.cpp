@@ -96,7 +96,9 @@ bool UsbProDevice::Start() {
 
   // TODO(simon): set a timeout here to delete the objects if we don't get a
   // response
-  m_plugin_adaptor->AddSocket(m_widget->GetSocket());
+
+  // Set delete_on_close here so that device removal works
+  m_plugin_adaptor->AddSocket(m_widget->GetSocket(), true);
   m_in_startup = true;
   return true;
 }

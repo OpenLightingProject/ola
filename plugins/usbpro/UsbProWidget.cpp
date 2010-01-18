@@ -114,7 +114,8 @@ bool UsbProWidget::Disconnect() {
 
   if (m_socket) {
     m_socket->Close();
-    delete m_socket;
+    // don't delete because ownership is transferred to the ss so that device
+    // removal works correctly
     m_socket = NULL;
   }
   m_enabled = false;
