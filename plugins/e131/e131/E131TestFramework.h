@@ -33,6 +33,7 @@
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Node.h"
+#include "plugins/usbpro/UsbProWidget.h"
 
 using ola::DmxBuffer;
 using ola::network::SelectServer;
@@ -307,7 +308,7 @@ class NodeVarySequenceNumber: public NodeAction {
  *  - usb, non interactive. This uses a USB DMX Pro to verify a remote
  *  implementation.
  */
-class StateManager {
+class StateManager: public ola::plugin::usbpro::UsbProWidgetListener {
   public:
     StateManager(const std::vector<TestState*> &states,
                  bool interactive_mode = false,
@@ -330,6 +331,7 @@ class StateManager {
     int Input();
     int NewDMX();
     bool Passed() const { return m_failed_tests.size() == 0; }
+    void HandleWidgetDmx();
 
   private:
     bool m_interactive;
@@ -343,6 +345,7 @@ class StateManager {
     ola::network::UnmanagedSocket m_stdin_socket;
     DmxBuffer m_recv_buffer;
     std::vector<TestState*> m_failed_tests;
+    ola::plugin::usbpro::UsbProWidget *m_widget;
 
     void EnterState(TestState *state);
     void NextState();

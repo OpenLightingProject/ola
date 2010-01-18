@@ -25,7 +25,8 @@ e131_transmit_test_SOURCES = e131_transmit_test.cpp
 e131_transmit_test_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf \
                   ./libolae131core.la \
                   ./libolae131tester.la \
-                  ../../../common/libolacommon.la
+                  ../../../common/libolacommon.la \
+                  ../../usbpro/libolausbprowidget.la
 e131_transmit_test_LDFLAGS = $(UUID_LIBS)
 
 # Test programs

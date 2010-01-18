@@ -53,6 +53,11 @@ bool StateManager::Init() {
   if (!m_interactive) {
     if (!m_usb_path.empty()) {
       // setup usb widget here
+      m_widget = new ola::plugin::usbpro::UsbProWidget();
+      assert(m_widget->Connect(m_usb_path));
+      assert(m_ss->AddSocket(m_widget->GetSocket()));
+      assert(m_widget->ChangeToReceiveMode());
+      m_widget->SetListener(this);
     } else {
       // local node test
       CID local_cid = CID::Generate();
@@ -109,6 +114,12 @@ StateManager::~StateManager() {
   if (m_local_node) {
     assert(m_ss->RemoveSocket(m_local_node->GetSocket()));
     delete m_local_node;
+  }
+
+  if (m_widget) {
+    m_widget->Disconnect();
+    delete m_widget;
+    m_widget = NULL;
   }
   delete m_ss;
   delete m_node1;
@@ -173,6 +184,22 @@ int StateManager::NewDMX() {
 }
 
 
+/*
+ * Called when the widget gets new DMX
+ */
+void StateManager::HandleWidgetDmx() {
+  if (!m_widget)
+    return;
+
+  const DmxBuffer &buffer = m_widget->FetchDMX();
+  if (!m_states[m_count]->Verify(buffer))
+    cout << "FAILED TEST" << endl;
+}
+
+
+/*
+ * Switch states
+ */
 void StateManager::EnterState(TestState *state) {
   cout << "------------------------------------" << endl;
   cout << "Test Case: " << static_cast<int>(m_count + 1) << "/" <<
