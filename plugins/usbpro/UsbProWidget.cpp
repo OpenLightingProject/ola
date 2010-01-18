@@ -93,7 +93,7 @@ bool UsbProWidget::Connect(const string &path) {
   }
 
   // put us into receiving mode
-  if (!SendChangeMode(RCMODE_ALWAYS)) {
+  if (!SendChangeMode(RCMODE_CHANGE)) {
     OLA_WARN << "Failed to set mode";
     delete m_socket;
     return false;
@@ -271,7 +271,7 @@ const DmxBuffer &UsbProWidget::FetchDMX() const {
  * @returns true if successfull, false otherwise
  */
 bool UsbProWidget::ChangeToReceiveMode() {
-  return SendChangeMode(RCMODE_ALWAYS);
+  return SendChangeMode(RCMODE_CHANGE);
 }
 
 
@@ -357,16 +357,19 @@ int UsbProWidget::handle_dmx(pms_rdmx *dmx, int len) {
  * Handle the dmx change of state frame
  */
 int UsbProWidget::handle_cos(pms_cos *cos, int len) {
-  int chn_st = cos->start * 8;
-
-  // should be checking length here
+  unsigned int chn_st = cos->start * 8;
   int offset = 0;
+
+  // skip non-0 start codes
+  if (cos->start == 0 && (cos->changed[0] & 0x01) && cos->data[offset])
+    return 0;
+
   for (int i = 0; i < 40; i++) {
-    if (chn_st + i > DMX_BUFFER_LENGTH - 1 || offset + 6 >= len)
+    if (chn_st + i > DMX_BUFFER_LENGTH + 1 || offset + 6 >= len)
       break;
 
-    if (cos->changed[i/8] & (1 << (i % 8))) {
-      m_buffer.SetChannel(chn_st + i, cos->data[offset]);
+    if (cos->changed[i/8] & (1 << (i % 8)) && chn_st + i != 0) {
+      m_buffer.SetChannel(chn_st + i - 1, cos->data[offset]);
       offset++;
     }
   }
