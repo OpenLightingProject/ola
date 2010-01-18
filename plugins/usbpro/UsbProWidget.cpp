@@ -93,7 +93,7 @@ bool UsbProWidget::Connect(const string &path) {
   }
 
   // put us into receiving mode
-  if (!SendChangeMode(RCMODE_CHANGE)) {
+  if (!SendChangeMode(RCMODE_ALWAYS)) {
     OLA_WARN << "Failed to set mode";
     delete m_socket;
     return false;
@@ -114,8 +114,7 @@ bool UsbProWidget::Disconnect() {
 
   if (m_socket) {
     m_socket->Close();
-    // we don't delete the socket here because ownership is transferred to the
-    // SelectServer
+    delete m_socket;
     m_socket = NULL;
   }
   m_enabled = false;
@@ -272,7 +271,7 @@ const DmxBuffer &UsbProWidget::FetchDMX() const {
  * @returns true if successfull, false otherwise
  */
 bool UsbProWidget::ChangeToReceiveMode() {
-  return SendChangeMode(RCMODE_CHANGE);
+  return SendChangeMode(RCMODE_ALWAYS);
 }
 
 
@@ -333,14 +332,23 @@ int UsbProWidget::handle_flash_page(pms_flash_reply *reply, int len) {
   return 0;
 }
 
+
 /*
  * Handle the dmx frame
- * Don't do anything as we expect change of state messages instead
  */
 int UsbProWidget::handle_dmx(pms_rdmx *dmx, int len) {
-  dmx = NULL;
-  len = 0;
-//  printf(" stc %hhx  %hhx %hhx\n", dmx->dmx[0], dmx->dmx[1], dmx->dmx[2]);
+  if (dmx->status) {
+    OLA_WARN << "UsbPro got corrupted packet, status: " << (int) dmx->status;
+    return 0;
+  }
+
+  // only handle start code = 0
+  if (len > 2 && dmx->dmx[0] == 0) {
+    m_buffer.Set(dmx->dmx + 1, len - 2);
+
+    if (m_listener)
+      m_listener->HandleWidgetDmx();
+  }
   return 0;
 }
 
@@ -436,77 +444,90 @@ bool UsbProWidget::SendMessage(promsg *msg) const {
 /*
  * Read the data and handle the messages.
  */
-int UsbProWidget::ReceiveMessage() {
-  uint8_t byte = 0x00;
-  uint8_t label;
-  int plen, bytes_read;
-  unsigned int cnt;
-  pmu buf;
+void UsbProWidget::ReceiveMessage() {
+  unsigned int cnt, packet_length;
 
-  while (byte != 0x7e) {
-    m_socket->Receive(reinterpret_cast<uint8_t*>(&byte), 1, cnt);
-    if (cnt == 1)
-      continue;
-    return -1;
+  switch (m_state) {
+    case PRE_SOM:
+      do {
+        m_socket->Receive(reinterpret_cast<uint8_t*>(&m_recv_buffer.som), 1, cnt);
+        if (cnt != 1)
+          return;
+      } while (m_recv_buffer.som != 0x7e);
+      m_state = RECV_LABEL;
+    case RECV_LABEL:
+      m_socket->Receive(reinterpret_cast<uint8_t*>(&m_recv_buffer.label), 1, cnt);
+      if (cnt != 1)
+        return;
+      if (m_recv_buffer.label > MAX_RECV_LABEL) {
+        // this wasn't a msg, back to looking for a header
+        m_state = PRE_SOM;
+        return;
+      }
+      m_state = RECV_SIZE_LO;
+    case RECV_SIZE_LO:
+      m_socket->Receive(reinterpret_cast<uint8_t*>(&m_recv_buffer.len), 1, cnt);
+      if (cnt != 1)
+        return;
+      m_state = RECV_SIZE_HI;
+    case RECV_SIZE_HI:
+      m_socket->Receive(reinterpret_cast<uint8_t*>(&m_recv_buffer.len_hi), 1, cnt);
+      if (cnt != 1)
+        return;
+
+      if ((m_recv_buffer.len_hi << 8) + m_recv_buffer.len > MAX_DATA_SIZE) {
+        m_state = PRE_SOM;
+        return;
+      }
+      m_bytes_received = 0;
+      m_state = RECV_BODY;
+    case RECV_BODY:
+      packet_length = (m_recv_buffer.len_hi << 8) + m_recv_buffer.len;
+      m_socket->Receive(
+          reinterpret_cast<uint8_t*>(&m_recv_buffer.pm_pmu) + m_bytes_received,
+          packet_length - m_bytes_received,
+          cnt);
+
+      if (!cnt)
+        return;
+
+      m_bytes_received += cnt;
+      if (m_bytes_received != packet_length)
+        return;
+
+      m_state = RECV_EOM;
+    case RECV_EOM:
+      // check this is a valid frame with an end byte
+
+      m_socket->Receive(reinterpret_cast<uint8_t*>(&m_recv_buffer.eom), 1, cnt);
+      if (cnt != 1)
+        return;
+
+      packet_length = (m_recv_buffer.len_hi << 8) + m_recv_buffer.len;
+      if (m_recv_buffer.eom == 0xe7) {
+        switch (m_recv_buffer.label) {
+          case ID_FLASH_PAGE:
+            handle_flash_page(&m_recv_buffer.pm_flash_reply, packet_length);
+            break;
+          case ID_RDMX:
+            handle_dmx(&m_recv_buffer.pm_rdmx, packet_length);
+            break;
+          case ID_PRMREP:
+            handle_prmrep(&m_recv_buffer.pm_prmrep, packet_length);
+            break;
+          case ID_COS:
+            handle_cos(&m_recv_buffer.pm_cos, packet_length);
+            break;
+          case ID_SNOREP:
+            handle_snorep(&m_recv_buffer.pm_snorep, packet_length);
+            break;
+          default:
+            OLA_WARN << "Unknown message type " << m_recv_buffer.label;
+        }
+      }
+      m_state = PRE_SOM;
   }
-
-  // try to read the label
-  m_socket->Receive(reinterpret_cast<uint8_t*>(&label), 1, cnt);
-
-  if (cnt != 1) {
-    OLA_WARN << "Could not read label, expected 1, got " << cnt;
-    return 1;
-  }
-
-  m_socket->Receive(reinterpret_cast<uint8_t*>(&byte), 1, cnt);
-  if (cnt != 1) {
-    OLA_WARN << "Could not read len hi, expected 1, got " << cnt;
-    return 1;
-  }
-  plen = byte;
-
-  m_socket->Receive(reinterpret_cast<uint8_t*>(&byte), 1, cnt);
-  if (cnt != 1) {
-    OLA_WARN << "Could not read len lo, expected 1, got " << cnt;
-    return 1;
-  }
-  plen += byte << 8;
-
-  for (bytes_read = 0; bytes_read < plen;) {
-    m_socket->Receive(reinterpret_cast<uint8_t*>(&buf + bytes_read),
-                      plen-bytes_read, cnt);
-    bytes_read += cnt;
-  }
-
-  // check this is a valid frame with an end byte
-  m_socket->Receive(reinterpret_cast<uint8_t*>(&byte), 1, cnt);
-  if (cnt != 1) {
-    OLA_WARN << "Read to much, expected 1, got " << cnt;
-    return 1;
-  }
-
-  if (byte == 0xe7) {
-    switch (label) {
-      case ID_FLASH_PAGE:
-        handle_flash_page(&buf.pmu_flash_reply, plen);
-        break;
-      case ID_RDMX:
-        handle_dmx(&buf.pmu_rdmx, plen);
-        break;
-      case ID_PRMREP:
-        handle_prmrep(&buf.pmu_prmrep, plen);
-        break;
-      case ID_COS:
-        handle_cos(&buf.pmu_cos, plen);
-        break;
-      case ID_SNOREP:
-        handle_snorep(&buf.pmu_snorep, plen);
-        break;
-      default:
-        OLA_WARN << "Unknown message type " << label;
-    }
-  }
-  return 0;
+  return;
 }
 }  // usbpro
 }  // plugin

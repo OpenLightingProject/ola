@@ -35,6 +35,7 @@ enum { DMX_BUFFER_LENGTH = 513 };
 enum { USER_CONFIG_LENGTH = 508 };
 enum { FLASH_PAGE_LENGTH = 64 };
 enum { FLASH_STATUS_LENGTH = 4 };
+enum { MAX_DATA_SIZE = 600 };  // max size of the data portion of a packet
 
 // flash page request
 typedef struct {
@@ -111,6 +112,11 @@ typedef struct {
   uint8_t srno[SERIAL_NUMBER_LENGTH];
 } pms_snorep;
 
+// a struct of the max size to ensure we alloc enough space
+typedef struct {
+  uint8_t data[MAX_DATA_SIZE];
+} pms_maxsize;
+
 // union of all messages
 typedef union {
     pms_flash_request pmu_flash_request;
@@ -124,6 +130,7 @@ typedef union {
     pms_rcmode  pmu_rcmode;
     pms_cos     pmu_cos;
     pms_snorep  pmu_snorep;
+    pms_maxsize pmu_maxsize;
 } pmu;
 
 // the entire message
@@ -133,6 +140,7 @@ typedef struct {
   uint8_t len;
   uint8_t len_hi;
   pmu pm_pmu;
+  uint8_t eom;
 } promsg;
 
 #define pm_flash_request pm_pmu.pmu_flash_request
@@ -155,8 +163,10 @@ class UsbProWidget {
       m_break_time(K_MISSING_PARAM),
       m_mab_time(K_MISSING_PARAM),
       m_rate(K_MISSING_PARAM),
-      m_socket(NULL) {}
-    ~UsbProWidget() {}
+      m_socket(NULL),
+      m_state(PRE_SOM) {
+    }
+    ~UsbProWidget() { Disconnect(); }
 
     bool Connect(const std::string &path);
     bool Disconnect();
@@ -188,7 +198,17 @@ class UsbProWidget {
     int handle_cos(pms_cos *cos, int len);
     int handle_prmrep(pms_prmrep *rep, unsigned int len);
     int handle_snorep(pms_snorep *rep, int len);
-    int ReceiveMessage();
+    void ReceiveMessage();
+
+    typedef enum {
+      PRE_SOM,
+      RECV_LABEL,
+      RECV_SIZE_LO,
+      RECV_SIZE_HI,
+      RECV_BODY,
+      RECV_EOM,
+    } receive_state;
+
 
     DmxBuffer m_buffer;
     bool m_enabled;
@@ -197,6 +217,9 @@ class UsbProWidget {
     uint8_t m_rate;
     UsbProWidgetListener *m_listener;
     ola::network::DeviceSocket *m_socket;
+    promsg m_recv_buffer;
+    receive_state m_state;
+    unsigned int m_bytes_received;
     static const int K_HEADER_SIZE = 4;
     static const int K_MISSING_PARAM = -1;
     static const uint8_t EOM = 0xe7;
@@ -205,6 +228,8 @@ class UsbProWidget {
     static const uint8_t RCMODE_CHANGE = 0x01;
     static const uint8_t SOM = 0x7e;
     static const char REPLY_SUCCESS[];
+    // we don't expect any msgs with a label > 11
+    static const uint8_t MAX_RECV_LABEL = 11;
 };
 }  // usbpro
 }  // plugin

@@ -94,6 +94,8 @@ bool UsbProDevice::Start() {
   UsbProOutputPort *output_port = new UsbProOutputPort(this, 0, m_path);
   AddPort(output_port);
 
+  // TODO(simon): set a timeout here to delete the objects if we don't get a
+  // response
   m_plugin_adaptor->AddSocket(m_widget->GetSocket());
   m_in_startup = true;
   return true;
