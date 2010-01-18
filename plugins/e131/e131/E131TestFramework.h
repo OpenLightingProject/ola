@@ -67,13 +67,16 @@ class TestState {
     TestState(const string &name,
               NodeAction *action1,
               NodeAction *action2,
-              const string &expected):
+              const string &expected,
+              const DmxBuffer &expected_result):
+        m_passed(true),
+        m_expected_result(expected_result),
         m_name(name),
         m_expected(expected),
         m_action1(action1),
         m_action2(action2) {
     }
-    ~TestState() {
+    virtual ~TestState() {
       delete m_action1;
       delete m_action2;
     }
@@ -88,12 +91,100 @@ class TestState {
       m_action2->Tick();
     }
 
+    virtual bool Verify(const DmxBuffer &data) {
+      if (!(data == m_expected_result))
+        return m_passed = false;
+      return true;
+    }
+
     string StateName() const { return m_name; }
     string ExpectedResults() const { return m_expected; }
 
+    bool Passed() const {
+      return m_passed;
+    }
+
   protected:
+    bool m_passed;
+    DmxBuffer m_expected_result;
+  private:
     string m_name, m_expected;
     NodeAction *m_action1, *m_action2;
+};
+
+
+/*
+ * This is similar to a TestStart but it checks for a particular first packet.
+ * It's useful for state transitions.
+ */
+class RelaxedTestState: public TestState {
+  public:
+    RelaxedTestState(const string &name,
+                     NodeAction *action1,
+                     NodeAction *action2,
+                     const string &expected,
+                     const DmxBuffer &expected_first_result,
+                     const DmxBuffer &expected_result):
+      TestState(name, action1, action2, expected, expected_result),
+      m_first(true),
+      m_expected_first_result(expected_first_result) {
+    }
+
+    bool Verify(const DmxBuffer &buffer) {
+      if (m_first) {
+        m_first = false;
+        if (!(m_expected_first_result == buffer))
+          return m_passed = false;
+        return true;
+      } else {
+        if (!(m_expected_result == buffer))
+          return m_passed = false;
+        return true;
+      }
+    }
+
+  private:
+    bool m_first;
+    DmxBuffer m_expected_first_result;
+};
+
+
+/*
+ * This is similar to a TestStart but it checks for one style of packet,
+ * followed by another. It's useful for state transitions.
+ */
+class OrderedTestState: public TestState {
+  public:
+    OrderedTestState(const string &name,
+                     NodeAction *action1,
+                     NodeAction *action2,
+                     const string &expected,
+                     const DmxBuffer &expected_first_result,
+                     const DmxBuffer &expected_result):
+      TestState(name, action1, action2, expected, expected_result),
+      m_found_second(false),
+      m_expected_first_result(expected_first_result) {
+    }
+
+    bool Verify(const DmxBuffer &buffer) {
+      if (m_found_second) {
+        if (!(m_expected_result == buffer))
+          return m_passed = false;
+        return true;
+      } else {
+        if (m_expected_result == buffer) {
+          m_found_second = true;
+          return true;
+        }
+        if (!(m_expected_first_result == buffer))
+          return m_passed = false;
+        return true;
+      }
+    }
+
+  private:
+    bool m_found_second;
+    DmxBuffer m_expected_first_result;
 };
 
 
@@ -196,7 +287,7 @@ class NodeVarySequenceNumber: public NodeAction {
         // fake an old packet
         DmxBuffer output;
         output.SetRangeToValue(0, m_bad, DMX_UNIVERSE_SIZE);
-        int offset = (rand() / (RAND_MAX / 19));
+        int offset = 1 + (rand() / (RAND_MAX / 18));
         m_node->SendDMXWithSequenceOffset(UNIVERSE_ID, output, -offset);
       }
       m_counter++;
@@ -207,34 +298,57 @@ class NodeVarySequenceNumber: public NodeAction {
 };
 
 
+/*
+ * The state manager can run in one of three modes:
+ *  - local, non-interactive. This starts a local E131Node and sends it data,
+ *  verifying against the expected output.
+ *  - interactive mode. This sends data to the multicast addresses and a human
+ *  gets to verify it.
+ *  - usb, non interactive. This uses a USB DMX Pro to verify a remote
+ *  implementation.
+ */
 class StateManager {
   public:
-    explicit StateManager(const std::vector<TestState*> &states):
+    StateManager(const std::vector<TestState*> &states,
+                 bool interactive_mode = false,
+                 const string &usb_path = ""):
+        m_interactive(interactive_mode),
+        m_count(0),
+        m_ticker(0),
+        m_usb_path(usb_path),
+        m_local_node(NULL),
         m_node1(NULL),
         m_node2(NULL),
         m_ss(NULL),
         m_states(states),
-        m_stdin_socket(STDIN_FILENO),
-        m_count(0),
-        m_ticker(0) {
+        m_stdin_socket(STDIN_FILENO) {
     }
     ~StateManager();
     bool Init();
     void Run() { m_ss->Run(); }
-
     int Tick();
     int Input();
+    int NewDMX();
+    bool Passed() const { return m_failed_tests.size() == 0; }
 
   private:
+    bool m_interactive;
+    unsigned int m_count, m_ticker;
+    string m_usb_path;
     termios m_old_tc;
     CID m_cid1, m_cid2;
-    E131Node *m_node1, *m_node2;
+    E131Node *m_local_node, *m_node1, *m_node2;
     SelectServer *m_ss;
     std::vector<TestState*> m_states;
     ola::network::UnmanagedSocket m_stdin_socket;
-    unsigned int m_count, m_ticker;
+    DmxBuffer m_recv_buffer;
+    std::vector<TestState*> m_failed_tests;
 
     void EnterState(TestState *state);
     void NextState();
+    void ShowStatus();
+
+    static const unsigned int TICK_INTERVAL_MS = 100;
+    static const unsigned int TIME_PER_STATE_MS = 3000;
 };
 #endif  // PLUGINS_E131_E131_E131TESTFRAMEWORK_H_
