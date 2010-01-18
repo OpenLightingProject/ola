@@ -163,6 +163,7 @@ class UsbProWidget {
       m_break_time(K_MISSING_PARAM),
       m_mab_time(K_MISSING_PARAM),
       m_rate(K_MISSING_PARAM),
+      m_listener(NULL),
       m_socket(NULL),
       m_state(PRE_SOM) {
     }
