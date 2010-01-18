@@ -20,7 +20,7 @@ libolae131core_la_LIBADD = @LIBS@
 libolae131tester_la_SOURCES = E131TestFramework.cpp
 
 # test program
-bin_PROGRAMS = e131_transmit_test
+noinst_PROGRAMS = e131_transmit_test
 e131_transmit_test_SOURCES = e131_transmit_test.cpp
 e131_transmit_test_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf \
                   ./libolae131core.la \
