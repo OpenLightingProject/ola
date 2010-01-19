@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <errno.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -83,6 +84,24 @@ string IntToString(int i) {
   return str.str();
 }
 
+
+/*
+ * Convert a string to a unsigned int.
+ * @returns true if sucessfull, false otherwise
+ */
+bool StringToUInt(const string &value, unsigned int *output) {
+  errno = 0;
+  long l = strtol(value.data(), NULL, 10);
+  if (l < 0 || (l == 0 && errno != 0))
+    return false;
+  *output = (int) l;
+  return true;
+}
+
+
+/*
+ * Escape \
+ */
 void Escape(string *original) {
   for (string::iterator iter = original->begin(); iter != original->end();
       ++iter) {

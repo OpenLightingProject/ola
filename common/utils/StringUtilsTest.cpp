@@ -30,6 +30,7 @@ using ola::Escape;
 using ola::IntToString;
 using ola::StringSplit;
 using ola::StringTrim;
+using ola::StringToUInt;
 
 class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringUtilsTest);
@@ -37,6 +38,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testTrim);
   CPPUNIT_TEST(testIntToString);
   CPPUNIT_TEST(testEscape);
+  CPPUNIT_TEST(testStringToUInt);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -44,6 +46,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testTrim();
     void testIntToString();
     void testEscape();
+    void testStringToUInt();
 };
 
 
@@ -149,4 +152,18 @@ void StringUtilsTest::testEscape() {
   string s2 = "he said \"foo\"";
   Escape(&s2);
   CPPUNIT_ASSERT_EQUAL(string("he said \\\"foo\\\""), s2);
+}
+
+
+void StringUtilsTest::testStringToUInt() {
+  unsigned int value;
+  CPPUNIT_ASSERT(!StringToUInt("", &value));
+  CPPUNIT_ASSERT(!StringToUInt("-1", &value));
+  CPPUNIT_ASSERT(StringToUInt("0", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, value);
+  CPPUNIT_ASSERT(StringToUInt("1", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, value);
+  CPPUNIT_ASSERT(StringToUInt("65537", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 65537, value);
+  CPPUNIT_ASSERT(!StringToUInt("foo", &value));
 }
