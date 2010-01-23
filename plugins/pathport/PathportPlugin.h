@@ -21,6 +21,7 @@
 #ifndef PLUGINS_PATHPORT_PATHPORTPLUGIN_H_
 #define PLUGINS_PATHPORT_PATHPORTPLUGIN_H_
 
+#include <stdint.h>
 #include <string>
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
