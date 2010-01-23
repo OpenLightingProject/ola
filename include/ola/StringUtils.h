@@ -34,7 +34,7 @@ void StringSplit(const string &input,
 void StringTrim(string *input);
 string IntToString(int i);
 void Escape(string *original);
-bool StringToUInt(const string &value, unsigned int *value);
+bool StringToUInt(const string &value, unsigned int *output);
 }  // ola
 
 #endif  // INCLUDE_OLA_STRINGUTILS_H_
