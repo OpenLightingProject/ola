@@ -273,7 +273,7 @@ bool PathportNode::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
     reinterpret_cast<pathport_packet_pdu*>(packet.data);
 
   // pad to a multiple of 4 bytes
-  unsigned int padded_size = buffer.Size() + 3 & ~3;
+  unsigned int padded_size = (buffer.Size() + 3) & ~3;
   PopulateHeader(&packet.header, PATHPORT_DATA_GROUP);
   pdu->head.type = HostToNetwork((uint16_t) PATHPORT_DATA);
   pdu->head.len = HostToNetwork(
