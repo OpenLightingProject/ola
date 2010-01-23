@@ -93,9 +93,12 @@ string IntToString(int i) {
 bool StringToUInt(const string &value, unsigned int *output) {
   if (value.empty())
     return false;
+  char *end_ptr;
   errno = 0;
-  long l = strtol(value.data(), NULL, 10);
+  long l = strtol(value.data(), &end_ptr, 10);
   if (l < 0 || (l == 0 && errno != 0))
+    return false;
+  if (value == end_ptr)
     return false;
   *output = (int) l;
   return true;
