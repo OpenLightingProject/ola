@@ -80,7 +80,7 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
     return true;
   }
 
-  if (e131_header.Priority() >= MAX_PRIORITY) {
+  if (e131_header.Priority() > MAX_PRIORITY) {
     OLA_INFO << "Priority " << static_cast<int>(e131_header.Priority()) <<
       " is greater than the max priority (" << static_cast<int>(MAX_PRIORITY) <<
       "), ignoring data";
