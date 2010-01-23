@@ -91,6 +91,8 @@ string IntToString(int i) {
  * @returns true if sucessfull, false otherwise
  */
 bool StringToUInt(const string &value, unsigned int *output) {
+  if (value.empty())
+    return false;
   errno = 0;
   long l = strtol(value.data(), NULL, 10);
   if (l < 0 || (l == 0 && errno != 0))
