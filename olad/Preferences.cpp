@@ -243,7 +243,8 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
   ifstream pref_file(filename.data());
 
   if (!pref_file.is_open()) {
-    OLA_INFO << "Missing " << filename << ": " << strerror(errno);
+    OLA_INFO << "Missing " << filename << ": " << strerror(errno) <<
+      " - this isn't an error, we'll just use the defaults";
     return false;
   }
 
