@@ -131,8 +131,8 @@ done
 AC_SUBST(PLUGIN_LIBS)
 
 # plugin & html data directories
-plugindir=$libdir/olad/
-third_party_plugindir=$libdir/olad_plugins/
+plugindir=$libdir/olad
+third_party_plugindir=$libdir/olad_plugins
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 AC_SUBST(plugindir)
