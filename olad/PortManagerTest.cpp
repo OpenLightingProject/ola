@@ -27,22 +27,172 @@
 
 using ola::PortManager;
 using ola::Port;
+using ola::Universe;
 using std::string;
 
 
 class PortManagerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PortManagerTest);
+  CPPUNIT_TEST(testPortPatching);
+  CPPUNIT_TEST(testPortPatchingLoopMulti);
   CPPUNIT_TEST(testInputPortSetPriority);
   CPPUNIT_TEST(testOutputPortSetPriority);
   CPPUNIT_TEST_SUITE_END();
 
   public:
+    void testPortPatching();
+    void testPortPatchingLoopMulti();
     void testInputPortSetPriority();
     void testOutputPortSetPriority();
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(PortManagerTest);
+
+
+
+/*
+ * Check that we can patch ports correctly.
+ */
+void PortManagerTest::testPortPatching() {
+  ola::UniverseStore uni_store(NULL, NULL);
+  PortManager port_manager(&uni_store);
+
+  // mock device, this doesn't allow looping or multiport patching
+  MockDevice device1(NULL, "test_device_1");
+  TestMockInputPort input_port(&device1, 1);
+  TestMockInputPort input_port2(&device1, 2);
+  TestMockOutputPort output_port(&device1, 1);
+  TestMockOutputPort output_port2(&device1, 2);
+  device1.AddPort(&input_port);
+  device1.AddPort(&input_port2);
+  device1.AddPort(&output_port);
+  device1.AddPort(&output_port2);
+
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL), input_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       input_port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port2.GetUniverse());
+
+  // simple patching
+  CPPUNIT_ASSERT(port_manager.PatchPort(&input_port, 1));
+  CPPUNIT_ASSERT(port_manager.PatchPort(&output_port, 2));
+  CPPUNIT_ASSERT(input_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1,
+                       input_port.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       input_port2.GetUniverse());
+  CPPUNIT_ASSERT(output_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2,
+                       output_port.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port2.GetUniverse());
+
+  // test looping
+  CPPUNIT_ASSERT(!port_manager.PatchPort(&input_port2, 2));
+  CPPUNIT_ASSERT(!port_manager.PatchPort(&output_port2, 1));
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       input_port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port2.GetUniverse());
+
+  // test multiport
+  CPPUNIT_ASSERT(!port_manager.PatchPort(&input_port2, 1));
+  CPPUNIT_ASSERT(!port_manager.PatchPort(&output_port2, 2));
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       input_port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port2.GetUniverse());
+
+  // test repatching
+  CPPUNIT_ASSERT(port_manager.PatchPort(&input_port, 3));
+  CPPUNIT_ASSERT(port_manager.PatchPort(&output_port, 4));
+  CPPUNIT_ASSERT(input_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 3,
+                       input_port.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT(output_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4,
+                       output_port.GetUniverse()->UniverseId());
+
+  // test unpatching
+  CPPUNIT_ASSERT(port_manager.UnPatchPort(&input_port));
+  CPPUNIT_ASSERT(port_manager.UnPatchPort(&input_port2));
+  CPPUNIT_ASSERT(port_manager.UnPatchPort(&output_port));
+  CPPUNIT_ASSERT(port_manager.UnPatchPort(&output_port2));
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL), input_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       input_port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port2.GetUniverse());
+}
+
+
+/*
+ * test that patching works correctly for devices with looping and multiport
+ * patching enabled.
+ */
+void PortManagerTest::testPortPatchingLoopMulti() {
+  ola::UniverseStore uni_store(NULL, NULL);
+  PortManager port_manager(&uni_store);
+
+  // mock device that allows looping and multi port patching
+  MockDeviceLoopAndMulti device1(NULL, "test_device_1");
+  TestMockInputPort input_port(&device1, 1);
+  TestMockInputPort input_port2(&device1, 2);
+  TestMockOutputPort output_port(&device1, 1);
+  TestMockOutputPort output_port2(&device1, 2);
+  device1.AddPort(&input_port);
+  device1.AddPort(&input_port2);
+  device1.AddPort(&output_port);
+  device1.AddPort(&output_port2);
+
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL), input_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       input_port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port2.GetUniverse());
+
+  // simple patching
+  CPPUNIT_ASSERT(port_manager.PatchPort(&input_port, 1));
+  CPPUNIT_ASSERT(port_manager.PatchPort(&output_port, 2));
+  CPPUNIT_ASSERT(input_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1,
+                       input_port.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       input_port2.GetUniverse());
+  CPPUNIT_ASSERT(output_port.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2,
+                       output_port.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT_EQUAL(static_cast<Universe*>(NULL),
+                       output_port2.GetUniverse());
+
+  // test looping
+  CPPUNIT_ASSERT(port_manager.PatchPort(&input_port2, 2));
+  CPPUNIT_ASSERT(port_manager.PatchPort(&output_port2, 1));
+  CPPUNIT_ASSERT(input_port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2,
+                       input_port2.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT(output_port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1,
+                       output_port2.GetUniverse()->UniverseId());
+
+  // test multiport
+  CPPUNIT_ASSERT(port_manager.PatchPort(&input_port2, 1));
+  CPPUNIT_ASSERT(port_manager.PatchPort(&output_port2, 2));
+  CPPUNIT_ASSERT(input_port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1,
+                       input_port2.GetUniverse()->UniverseId());
+  CPPUNIT_ASSERT(output_port2.GetUniverse());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2,
+                       output_port2.GetUniverse()->UniverseId());
+}
 
 
 /*

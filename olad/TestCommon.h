@@ -111,6 +111,17 @@ class MockDevice: public ola::Device {
 
 
 /*
+ * A mock device with looping and multiport patching enabled
+ */
+class MockDeviceLoopAndMulti: public ola::Device {
+  public:
+    MockDeviceLoopAndMulti(ola::AbstractPlugin *owner, const string &name):
+      Device(owner, name) {}
+    string DeviceId() const { return Name(); }
+    bool AllowLooping() const { return true; }
+    bool AllowMultiPortPatching() const { return true; }
+};
+/*
  * A mock plugin.
  */
 class TestMockPlugin: public ola::Plugin {
