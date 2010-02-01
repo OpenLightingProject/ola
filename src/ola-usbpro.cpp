@@ -20,15 +20,17 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <ola/plugin_id.h>
+#include <ola/usbpro/UsbProConfigMessages.pb.h>
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include "src/OlaConfigurator.h"
 
-#include <ola/plugin_id.h>
-#include <ola/usbpro/UsbProConfigMessages.pb.h>
-#include "OlaConfigurator.h"
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::string;
 
 static const int K_INVALID_VALUE = -1;
 
@@ -43,7 +45,7 @@ typedef enum {
 
 
 typedef struct {
-  config_mode mode; // config_mode
+  config_mode mode;  // config_mode
   string command;   // argv[0]
   int device_id;    // device id
   bool help;        // help
@@ -58,7 +60,7 @@ typedef struct {
  */
 class UsbProConfigurator: public OlaConfigurator {
   public:
-    UsbProConfigurator(options &opts):
+    explicit UsbProConfigurator(const options &opts):
       OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_USBPRO),
       m_opts(opts) {}
     void HandleConfigResponse(const string &reply, const string &error);
@@ -178,20 +180,20 @@ void UsbProConfigurator::DisplaySerial(
 /*
  * Init options
  */
-void InitOptions(options &opts) {
-  opts.mode = MODE_PARAM;
-  opts.device_id = K_INVALID_VALUE;
-  opts.help = false;
-  opts.brk = K_INVALID_VALUE;
-  opts.mab = K_INVALID_VALUE;
-  opts.rate = K_INVALID_VALUE;
+void InitOptions(options *opts) {
+  opts->mode = MODE_PARAM;
+  opts->device_id = K_INVALID_VALUE;
+  opts->help = false;
+  opts->brk = K_INVALID_VALUE;
+  opts->mab = K_INVALID_VALUE;
+  opts->rate = K_INVALID_VALUE;
 }
 
 
 /*
  * Parse our cmd line options
  */
-int ParseOptions(int argc, char *argv[], options &opts) {
+int ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"brk",     required_argument,  0, 'k'},
       {"dev",     required_argument,  0, 'd'},
@@ -214,22 +216,22 @@ int ParseOptions(int argc, char *argv[], options &opts) {
       case 0:
         break;
       case 'b':
-        opts.brk = atoi(optarg);
+        opts->brk = atoi(optarg);
         break;
       case 'd':
-        opts.device_id = atoi(optarg);
+        opts->device_id = atoi(optarg);
         break;
       case 'h':
-        opts.help = true;
+        opts->help = true;
         break;
       case 'm':
-        opts.mab = atoi(optarg);
+        opts->mab = atoi(optarg);
         break;
       case 'r':
-        opts.rate = atoi(optarg);
+        opts->rate = atoi(optarg);
         break;
       case 's':
-        opts.mode = MODE_SERIAL;
+        opts->mode = MODE_SERIAL;
         break;
       case '?':
         break;
@@ -242,7 +244,7 @@ int ParseOptions(int argc, char *argv[], options &opts) {
 /*
  * Display the help message
  */
-void DisplayHelpAndExit(options &opts) {
+void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     "-d <dev_id> [ --serial | -b <brk> -m <mab> -r <rate> ]\n\n"
     "Configure Enttec Usb Pro Devices managed by OLA.\n\n"
@@ -257,16 +259,16 @@ void DisplayHelpAndExit(options &opts) {
 }
 
 
-void CheckOptions(options &opts) {
+void CheckOptions(options *opts) {
   // check for valid parameters
-  if (opts.brk != K_INVALID_VALUE && (opts.brk < 9 || opts.brk > 127))
-    opts.mode = NONE;
+  if (opts->brk != K_INVALID_VALUE && (opts->brk < 9 || opts->brk > 127))
+    opts->mode = NONE;
 
-  if (opts.mab != K_INVALID_VALUE && (opts.mab < 1 || opts.mab > 127))
-    opts.mode = NONE;
+  if (opts->mab != K_INVALID_VALUE && (opts->mab < 1 || opts->mab > 127))
+    opts->mode = NONE;
 
-  if (opts.rate != K_INVALID_VALUE && (opts.rate < 1 || opts.rate > 40))
-    opts.mode = NONE;
+  if (opts->rate != K_INVALID_VALUE && (opts->rate < 1 || opts->rate > 40))
+    opts->mode = NONE;
 }
 
 
@@ -276,9 +278,9 @@ void CheckOptions(options &opts) {
 int main(int argc, char *argv[]) {
   options opts;
   opts.command = argv[0];
-  InitOptions(opts);
-  ParseOptions(argc, argv, opts);
-  CheckOptions(opts);
+  InitOptions(&opts);
+  ParseOptions(argc, argv, &opts);
+  CheckOptions(&opts);
 
   if (opts.help || opts.device_id < 0 || opts.mode == NONE)
     DisplayHelpAndExit(opts);
