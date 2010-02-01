@@ -53,7 +53,7 @@ bool operator <(const device_alias_pair& left, const device_alias_pair &right);
 class DeviceManager {
   public:
     DeviceManager(PreferencesFactory *prefs_factory,
-                  class PortPatcher *port_patcher);
+                  class PortManager *port_manager);
     ~DeviceManager();
 
     bool RegisterDevice(AbstractDevice *device);
@@ -71,7 +71,7 @@ class DeviceManager {
 
   private:
     Preferences *m_port_preferences;
-    class PortPatcher *m_port_patcher;
+    class PortManager *m_port_manager;
     map<string, device_alias_pair> m_devices;  // map device_ids to devices
     map<unsigned int, AbstractDevice*> m_alias_map;  // map alias to devices
     unsigned int m_next_device_alias;

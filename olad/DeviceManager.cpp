@@ -28,7 +28,7 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "olad/Port.h"
-#include "olad/PortPatcher.h"
+#include "olad/PortManager.h"
 #include "olad/DeviceManager.h"
 
 namespace ola {
@@ -50,9 +50,9 @@ bool operator <(const device_alias_pair& left,
  * Constructor
  */
 DeviceManager::DeviceManager(PreferencesFactory *prefs_factory,
-                             PortPatcher *port_patcher)
+                             PortManager *port_manager)
     : m_port_preferences(NULL),
-      m_port_patcher(port_patcher),
+      m_port_manager(port_manager),
       m_next_device_alias(FIRST_DEVICE_ALIAS) {
   if (prefs_factory) {
     m_port_preferences = prefs_factory->NewPreference(PORT_PREFERENCES);
@@ -340,7 +340,7 @@ void DeviceManager::RestorePortPriority(Port *port) const {
       port_id + PRIORITY_MODE_SUFFIX);
 
   // pedantic mode off
-  m_port_patcher->SetPriority(port, priority_mode, priority, false);
+  m_port_manager->SetPriority(port, priority_mode, priority, false);
 }
 
 
@@ -368,7 +368,7 @@ void DeviceManager::RestorePortPatchings(
     if ((id == 0 && errno) || id < 0)
       continue;
 
-    m_port_patcher->PatchPort(port, id);
+    m_port_manager->PatchPort(port, id);
   }
 }
 }  // ola

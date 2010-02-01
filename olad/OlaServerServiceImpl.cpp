@@ -29,7 +29,7 @@
 #include "olad/Port.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
-#include "olad/PortPatcher.h"
+#include "olad/PortManager.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
 #include "olad/OlaServerServiceImpl.h"
@@ -192,18 +192,18 @@ void OlaServerServiceImpl::PatchPort(
       return MissingPortError(controller, done);
 
     if (request->action() == ola::proto::PATCH)
-      result = m_port_patcher->PatchPort(port, request->universe());
+      result = m_port_manager->PatchPort(port, request->universe());
     else
-      result = m_port_patcher->UnPatchPort(port);
+      result = m_port_manager->UnPatchPort(port);
   } else {
     InputPort *port = device->GetInputPort(request->port_id());
     if (!port)
       return MissingPortError(controller, done);
 
     if (request->action() == ola::proto::PATCH)
-      result = m_port_patcher->PatchPort(port, request->universe());
+      result = m_port_manager->PatchPort(port, request->universe());
     else
-      result = m_port_patcher->UnPatchPort(port);
+      result = m_port_manager->UnPatchPort(port);
   }
 
   if (!result)
@@ -235,7 +235,7 @@ void OlaServerServiceImpl::SetPortPriority(
     if (!port)
       return MissingPortError(controller, done);
 
-    status = m_port_patcher->SetPriority(port,
+    status = m_port_manager->SetPriority(port,
                                          request->priority_mode(),
                                          request->priority());
   } else {
@@ -243,7 +243,7 @@ void OlaServerServiceImpl::SetPortPriority(
     if (!port)
       return MissingPortError(controller, done);
 
-    status = m_port_patcher->SetPriority(port,
+    status = m_port_manager->SetPriority(port,
                                          request->priority_mode(),
                                          request->priority());
   }
@@ -473,12 +473,12 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     PluginManager *plugin_manager,
     Client *client,
     ExportMap *export_map,
-    PortPatcher *port_patcher) {
+    PortManager *port_manager) {
   return new OlaServerServiceImpl(universe_store,
                                   device_manager,
                                   plugin_manager,
                                   client,
                                   export_map,
-                                  port_patcher);
+                                  port_manager);
 };
 }  // ola

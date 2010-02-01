@@ -35,13 +35,13 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                          class PluginManager *plugin_manager,
                          class Client *client,
                          class ExportMap *export_map,
-                         class PortPatcher *port_patcher):
+                         class PortManager *port_manager):
       m_universe_store(universe_store),
       m_device_manager(device_manager),
       m_plugin_manager(plugin_manager),
       m_client(client),
       m_export_map(export_map),
-      m_port_patcher(port_patcher) {}
+      m_port_manager(port_manager) {}
     ~OlaServerServiceImpl() {}
 
     void GetDmx(RpcController* controller,
@@ -117,7 +117,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     class PluginManager *m_plugin_manager;
     class Client *m_client;
     class ExportMap *m_export_map;
-    class PortPatcher *m_port_patcher;
+    class PortManager *m_port_manager;
 };
 
 
@@ -128,7 +128,7 @@ class OlaServerServiceImplFactory {
                               PluginManager *plugin_manager,
                               Client *client,
                               ExportMap *export_map,
-                              PortPatcher *port_patcher);
+                              PortManager *port_manager);
 };
 }  // ola
 #endif  // OLAD_OLASERVERSERVICEIMPL_H_

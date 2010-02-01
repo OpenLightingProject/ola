@@ -6,7 +6,7 @@ OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp \
                     DlOpenPluginLoader.cpp DynamicPluginLoader.cpp \
                     OlaServerServiceImpl.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
-                    Preferences.cpp Port.cpp PortPatcher.cpp Universe.cpp \
+                    Preferences.cpp Port.cpp PortManager.cpp Universe.cpp \
                     UniverseStore.cpp
 
 # lib olaserver
@@ -30,7 +30,7 @@ EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
              DynamicPluginLoader.h \
              HttpServer.h OlaHttpServer.h \
              OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
-             PortPatcher.h TestCommon.h UniverseStore.h
+             PortManager.h TestCommon.h UniverseStore.h
 
 # Olad Server
 bin_PROGRAMS = olad

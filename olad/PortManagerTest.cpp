@@ -21,11 +21,11 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "olad/PortPatcher.h"
+#include "olad/PortManager.h"
 #include "olad/UniverseStore.h"
 #include "olad/TestCommon.h"
 
-using ola::PortPatcher;
+using ola::PortManager;
 using ola::Port;
 using std::string;
 
@@ -49,7 +49,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PortManagerTest);
  * Check that we can set priorities on an input port
  */
 void PortManagerTest::testInputPortSetPriority() {
-  PortPatcher patcher(NULL);  // we're not testing patching so pass NULL here
+  PortManager patcher(NULL);  // we're not testing patching so pass NULL here
 
   // Input port that doesn't support priorities
   TestMockInputPort input_port(NULL, 0);
@@ -172,7 +172,7 @@ void PortManagerTest::testInputPortSetPriority() {
  * Check that we can set priorities on an Output port
  */
 void PortManagerTest::testOutputPortSetPriority() {
-  PortPatcher patcher(NULL);  // we're not testing patching so pass NULL here
+  PortManager patcher(NULL);  // we're not testing patching so pass NULL here
 
   // Input port that doesn't support priorities
   TestMockOutputPort output_port(NULL, 0);

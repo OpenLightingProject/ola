@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * PortPatcher.cpp
+ * PortManager.cpp
  * Enables the Patching of Ports
  * Copyright (C) 2005-2009 Simon Newton
  */
@@ -22,7 +22,7 @@
 #include <vector>
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
-#include "olad/PortPatcher.h"
+#include "olad/PortManager.h"
 #include "olad/Port.h"
 
 namespace ola {
@@ -33,7 +33,7 @@ namespace ola {
  * @param universe the universe to patch to
  * @returns true is successful, false otherwise
  */
-bool PortPatcher::PatchPort(InputPort *port,
+bool PortManager::PatchPort(InputPort *port,
                             unsigned int universe) {
   return GenericPatchPort(port, universe);
 }
@@ -45,7 +45,7 @@ bool PortPatcher::PatchPort(InputPort *port,
  * @param universe the universe to patch to
  * @returns true is successful, false otherwise
  */
-bool PortPatcher::PatchPort(OutputPort *port,
+bool PortManager::PatchPort(OutputPort *port,
                             unsigned int universe) {
   return GenericPatchPort(port, universe);
 }
@@ -56,7 +56,7 @@ bool PortPatcher::PatchPort(OutputPort *port,
  * @param port the port to unpatch
  * @returns true is successful, false otherwise
  */
-bool PortPatcher::UnPatchPort(InputPort *port) {
+bool PortManager::UnPatchPort(InputPort *port) {
   return GenericUnPatchPort(port);
 }
 
@@ -66,7 +66,7 @@ bool PortPatcher::UnPatchPort(InputPort *port) {
  * @param port the port to unpatch
  * @returns true is successful, false otherwise
  */
-bool PortPatcher::UnPatchPort(OutputPort *port) {
+bool PortManager::UnPatchPort(OutputPort *port) {
   return GenericUnPatchPort(port);
 }
 
@@ -80,7 +80,7 @@ bool PortPatcher::UnPatchPort(OutputPort *port) {
  * @param pedantic don't take any action if there are errors, if this is false
  * we do the best we can and try to set a priority.
  */
-bool PortPatcher::SetPriority(Port *port,
+bool PortManager::SetPriority(Port *port,
                               const string &mode_str,
                               const string &priority_str,
                               bool pedantic) {
@@ -114,7 +114,7 @@ bool PortPatcher::SetPriority(Port *port,
  * @param pedantic don't take any action if there are errors, if this is false
  * we do the best we can and try to set a priority.
  */
-bool PortPatcher::SetPriority(Port *port,
+bool PortManager::SetPriority(Port *port,
                               unsigned int mode,
                               unsigned int priority,
                               bool pedantic) {
@@ -147,7 +147,7 @@ bool PortPatcher::SetPriority(Port *port,
 
 
 template<class PortClass>
-bool PortPatcher::GenericPatchPort(PortClass *port,
+bool PortManager::GenericPatchPort(PortClass *port,
                                    unsigned int new_universe_id) {
   if (!port)
     return false;
@@ -188,7 +188,7 @@ bool PortPatcher::GenericPatchPort(PortClass *port,
 
 
 template<class PortClass>
-bool PortPatcher::GenericUnPatchPort(PortClass *port) {
+bool PortManager::GenericUnPatchPort(PortClass *port) {
   if (!port)
     return false;
 
@@ -204,13 +204,13 @@ bool PortPatcher::GenericUnPatchPort(PortClass *port) {
 
 
 template <class PortClass>
-bool PortPatcher::CheckLooping(const AbstractDevice *device,
+bool PortManager::CheckLooping(const AbstractDevice *device,
                                unsigned int new_universe_id) const {
   return CheckOutputPortsForUniverse(device, new_universe_id);
 }
 
 template <>
-bool PortPatcher::CheckLooping<OutputPort>(
+bool PortManager::CheckLooping<OutputPort>(
     const AbstractDevice *device,
     unsigned int new_universe_id) const {
   return CheckInputPortsForUniverse(device, new_universe_id);
@@ -218,14 +218,14 @@ bool PortPatcher::CheckLooping<OutputPort>(
 
 
 template <class PortClass>
-bool PortPatcher::CheckMultiPort(const AbstractDevice *device,
+bool PortManager::CheckMultiPort(const AbstractDevice *device,
                                  unsigned int new_universe_id) const {
   return CheckInputPortsForUniverse(device, new_universe_id);
 }
 
 
 template <>
-bool PortPatcher::CheckMultiPort<OutputPort>(
+bool PortManager::CheckMultiPort<OutputPort>(
     const AbstractDevice *device,
     unsigned int new_universe_id) const {
   return CheckOutputPortsForUniverse(device, new_universe_id);
@@ -236,7 +236,7 @@ bool PortPatcher::CheckMultiPort<OutputPort>(
  * Check if any input ports in this device are bound to the universe.
  * @returns true if there is a match, false otherwise.
  */
-bool PortPatcher::CheckInputPortsForUniverse(const AbstractDevice *device,
+bool PortManager::CheckInputPortsForUniverse(const AbstractDevice *device,
                                              unsigned int universe_id) const {
   vector<InputPort*> ports;
   device->InputPorts(&ports);
@@ -248,7 +248,7 @@ bool PortPatcher::CheckInputPortsForUniverse(const AbstractDevice *device,
  * Check if any output ports in this device are bound to the universe.
  * @returns true if there is a match, false otherwise.
  */
-bool PortPatcher::CheckOutputPortsForUniverse(const AbstractDevice *device,
+bool PortManager::CheckOutputPortsForUniverse(const AbstractDevice *device,
                                               unsigned int universe_id) const {
   vector<OutputPort*> ports;
   device->OutputPorts(&ports);
@@ -261,7 +261,7 @@ bool PortPatcher::CheckOutputPortsForUniverse(const AbstractDevice *device,
  * @returns true if there is a match, false otherwise.
  */
 template<class PortClass>
-bool PortPatcher::CheckForPortMatchingUniverse(
+bool PortManager::CheckForPortMatchingUniverse(
     const vector<PortClass*> &ports,
     unsigned int universe_id) const {
   typename vector<PortClass*>::const_iterator iter;

@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * PortPatcher.h
+ * PortManager.h
  * Provides a unified interface for controlling port patchings & priorities.
  * Copyright (C) 2005-2010 Simon Newton
  */
@@ -30,12 +30,12 @@
 
 namespace ola {
 
-class PortPatcher {
+class PortManager {
   public:
-    explicit PortPatcher(UniverseStore *universe_store)
+    explicit PortManager(UniverseStore *universe_store)
         : m_universe_store(universe_store) {
     }
-    ~PortPatcher() {}
+    ~PortManager() {}
 
     bool PatchPort(InputPort *port, unsigned int universe);
     bool PatchPort(OutputPort *port, unsigned int universe);
@@ -52,8 +52,8 @@ class PortPatcher {
                      bool pedantic = true);
 
   private:
-    PortPatcher(const PortPatcher&);
-    PortPatcher& operator=(const PortPatcher&);
+    PortManager(const PortManager&);
+    PortManager& operator=(const PortManager&);
 
     template<class PortClass>
     bool GenericPatchPort(PortClass *port,

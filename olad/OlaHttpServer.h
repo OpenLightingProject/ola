@@ -29,7 +29,7 @@
 #include "ola/network/InterfacePicker.h"
 #include "olad/Device.h"
 #include "olad/HttpServer.h"
-#include "olad/PortPatcher.h"
+#include "olad/PortManager.h"
 
 namespace ola {
 
@@ -44,7 +44,7 @@ class OlaHttpServer {
                   class UniverseStore *universe_store,
                   class PluginManager *plugin_manager,
                   class DeviceManager *device_manager,
-                  PortPatcher *port_patcher,
+                  PortManager *port_manager,
                   unsigned int port,
                   bool enable_quit,
                   const string &data_dir);
@@ -99,7 +99,7 @@ class OlaHttpServer {
     UniverseStore *m_universe_store;
     PluginManager *m_plugin_manager;
     DeviceManager *m_device_manager;
-    PortPatcher *m_port_patcher;
+    PortManager *m_port_manager;
     bool m_enable_quit;
     struct timeval m_start_time;
     ola::network::Interface m_interface;

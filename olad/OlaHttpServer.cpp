@@ -63,7 +63,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              UniverseStore *universe_store,
                              PluginManager *plugin_manager,
                              DeviceManager *device_manager,
-                             PortPatcher *port_patcher,
+                             PortManager *port_manager,
                              unsigned int port,
                              bool enable_quit,
                              const string &data_dir)
@@ -73,7 +73,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_universe_store(universe_store),
       m_plugin_manager(plugin_manager),
       m_device_manager(device_manager),
-      m_port_patcher(port_patcher),
+      m_port_manager(port_manager),
       m_enable_quit(enable_quit) {
   RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
   RegisterHandler("/quit", &OlaHttpServer::DisplayQuit);
@@ -505,9 +505,9 @@ void OlaHttpServer::UpdatePortPatchings(const HttpRequest *request,
 
     if (StringToUInt(uni_id, &universe_id))
       // valid universe number, patch this universe
-      m_port_patcher->PatchPort(*iter, universe_id);
+      m_port_manager->PatchPort(*iter, universe_id);
     else
-      m_port_patcher->UnPatchPort(*iter);
+      m_port_manager->UnPatchPort(*iter);
     iter++;
   }
 }
@@ -530,7 +530,7 @@ void OlaHttpServer::UpdatePortPriorites(const HttpRequest *request,
     string priority_id = (*iter)->UniqueId() +
       DeviceManager::PRIORITY_VALUE_SUFFIX;
 
-    m_port_patcher->SetPriority(
+    m_port_manager->SetPriority(
         *iter,
         request->GetPostParameter(priority_mode_id),
         request->GetPostParameter(priority_id));

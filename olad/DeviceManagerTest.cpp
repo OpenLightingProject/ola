@@ -27,7 +27,7 @@
 #include "olad/DeviceManager.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
-#include "olad/PortPatcher.h"
+#include "olad/PortManager.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
 #include "olad/UniverseStore.h"
@@ -37,7 +37,7 @@ using ola::AbstractPlugin;
 using ola::DeviceManager;
 using ola::DmxBuffer;
 using ola::Port;
-using ola::PortPatcher;
+using ola::PortManager;
 using ola::Universe;
 using ola::UniverseStore;
 using std::string;
@@ -160,8 +160,8 @@ void DeviceManagerTest::testDeviceManager() {
 void DeviceManagerTest::testRestorePatchings() {
   ola::MemoryPreferencesFactory prefs_factory;
   UniverseStore uni_store(NULL, NULL);
-  PortPatcher port_patcher(&uni_store);
-  DeviceManager manager(&prefs_factory, &port_patcher);
+  PortManager port_manager(&uni_store);
+  DeviceManager manager(&prefs_factory, &port_manager);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
@@ -206,8 +206,8 @@ void DeviceManagerTest::testRestorePatchings() {
 void DeviceManagerTest::testRestorePriorities() {
   ola::MemoryPreferencesFactory prefs_factory;
   UniverseStore uni_store(NULL, NULL);
-  PortPatcher port_patcher(&uni_store);
-  DeviceManager manager(&prefs_factory, &port_patcher);
+  PortManager port_manager(&uni_store);
+  DeviceManager manager(&prefs_factory, &port_manager);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
