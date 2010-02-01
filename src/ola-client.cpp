@@ -35,6 +35,7 @@ using namespace std;
 #include <ola/OlaClient.h>
 #include <ola/DmxBuffer.h>
 #include <ola/network/SelectServer.h>
+#include <olad/PortConstants.h>
 
 using ola::OlaPlugin;
 using ola::OlaUniverse;
@@ -58,6 +59,7 @@ typedef enum {
   UNIVERSE_NAME,
   UNI_MERGE,
   SET_DMX,
+  SET_PORT_PRIORITY,
 } mode;
 
 
@@ -74,6 +76,8 @@ typedef struct {
   string cmd;      // argv[0]
   string uni_name; // universe name
   string dmx;      // dmx string
+  ola::port_priority_mode priority_mode;  // port priority mode
+  uint8_t priority_value;  // port priority value
 } options;
 
 
@@ -91,6 +95,7 @@ class Observer: public ola::OlaClientObserver {
     void UniverseNameComplete(const string &error);
     void UniverseMergeModeComplete(const string &error);
     void SendDmxComplete(const string &error);
+    void SetPortPriorityComplete(const string &error);
 
   private:
     options *m_opts;
@@ -212,6 +217,12 @@ void Observer::SendDmxComplete(const string &error) {
   m_ss->Terminate();
 }
 
+void Observer::SetPortPriorityComplete(const string &error) {
+  if (!error.empty())
+    cout << error << endl;
+  m_ss->Terminate();
+}
+
 
 template<class PortClass>
 void Observer::ListPorts(const vector<PortClass> &ports, bool input) {
@@ -226,8 +237,23 @@ void Observer::ListPorts(const vector<PortClass> &ports, bool input) {
 
     cout << " " << port_iter->Description();
 
+    switch (port_iter->PriorityCapability()) {
+      case (ola::CAPABILITY_STATIC):
+        cout << ", priority " << (int) port_iter->Priority();
+        break;
+      case (ola::CAPABILITY_FULL):
+        cout << ", priority ";
+        if (port_iter->PriorityMode() == ola::PRIORITY_MODE_INHERIT)
+          cout << "inherited";
+        else
+          cout << "overide " << (int) port_iter->Priority();
+        break;
+      default:
+        ;
+    }
+
     if (port_iter->IsActive())
-      cout << ", OLA universe " << port_iter->Universe();
+      cout << ", patched to universe " << port_iter->Universe();
     cout << endl;
   }
 }
@@ -246,6 +272,8 @@ void InitOptions(options &opts) {
   opts.is_output = true;
   opts.device_id = INVALID_VALUE;
   opts.merge_mode = OlaUniverse::MERGE_HTP;
+  opts.priority_mode = ola::PRIORITY_MODE_INHERIT;
+  opts.priority_value = 0;
 }
 
 
@@ -270,21 +298,22 @@ void SetMode(options &opts) {
     opts.m = UNI_MERGE;
   else if (opts.cmd == "ola_set_dmx")
     opts.m = SET_DMX;
+  else if (opts.cmd == "ola_set_priority")
+    opts.m = SET_PORT_PRIORITY;
 }
 
 
 /*
  * parse our cmd line options
- *
  */
 void ParseOptions(int argc, char *argv[], options &opts) {
   static struct option long_options[] = {
-      {"plugin_id", required_argument, 0, 'p'},
+      {"dmx", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
       {"ltp", no_argument, 0, 'l'},
       {"name", required_argument, 0, 'n'},
+      {"plugin_id", required_argument, 0, 'p'},
       {"universe", required_argument, 0, 'u'},
-      {"dmx", required_argument, 0, 'd'},
       {0, 0, 0, 0}
     };
 
@@ -300,8 +329,8 @@ void ParseOptions(int argc, char *argv[], options &opts) {
     switch (c) {
       case 0:
         break;
-      case 'p':
-        opts.plugin_id = atoi(optarg);
+      case 'd':
+        opts.dmx = optarg;
         break;
       case 'h':
         opts.help = true;
@@ -312,11 +341,11 @@ void ParseOptions(int argc, char *argv[], options &opts) {
       case 'n':
         opts.uni_name = optarg;
         break;
+      case 'p':
+        opts.plugin_id = atoi(optarg);
+        break;
       case 'u':
         opts.uni = atoi(optarg);
-        break;
-      case 'd':
-        opts.dmx = optarg;
         break;
       case '?':
         break;
@@ -374,6 +403,57 @@ int ParsePatchOptions(int argc, char *argv[], options &opts) {
         break;
       case 'i':
         opts.is_output = false;
+        break;
+      case '?':
+        break;
+      default:
+        break;
+    }
+  }
+  return 0;
+}
+
+
+/*
+ * parse our cmd line options for the set priority command
+ */
+int ParseSetPriorityOptions(int argc, char *argv[], options &opts) {
+  static struct option long_options[] = {
+      {"device", required_argument, 0, 'd'},
+      {"help", no_argument, 0, 'h'},
+      {"input", no_argument, 0, 'i'},
+      {"port", required_argument, 0, 'p'},
+      {"override", required_argument, 0, 'o'},
+      {0, 0, 0, 0}
+    };
+
+  int c;
+  int option_index = 0;
+
+  while (1) {
+    c = getopt_long(argc, argv, "d:p:o:hi", long_options, &option_index);
+
+    if (c == -1)
+      break;
+
+    switch (c) {
+      case 0:
+        break;
+      case 'd':
+        opts.device_id = atoi(optarg);
+        break;
+      case 'h':
+        opts.help = true;
+        break;
+      case 'i':
+        opts.is_output = false;
+        break;
+      case 'o':
+        opts.priority_mode = ola::PRIORITY_MODE_OVERRIDE;
+        opts.priority_value = atoi(optarg);
+        break;
+      case 'p':
+        opts.port_id = atoi(optarg);
         break;
       case '?':
         break;
@@ -486,7 +566,7 @@ void DisplayUniverseMergeHelp(const options &opts) {
 /*
  * Help message for set dmx
  */
-void display_set_dmx_help(const options &opts) {
+void DisplaySetDmxHelp(const options &opts) {
   cout << "Usage: " << opts.cmd <<
   " --universe <universe> --dmx 0,255,0,255\n"
   "\n"
@@ -497,6 +577,24 @@ void display_set_dmx_help(const options &opts) {
   "  -d, --dmx <values>        Comma separated DMX values.\n"
   << endl;
 }
+
+/*
+ * Display the Patch help
+ */
+void DisplaySetPriorityHelp(const options &opts) {
+  cout << "Usage: " << opts.cmd <<
+  " --device <dev> --port <port> [--override <value>]\n"
+  "\n"
+  "Set a port's priority, without the --override flag this will set the port\n"
+  "to inherit mode.\n"
+  "\n"
+  "  -d, --device <device>    Id of device to patch.\n"
+  "  -h, --help               Display this help message and exit.\n"
+  "  -o, --override <value>   Set the port priority to a static value.\n"
+  "  -p, --port <port>        Id of the port to patch.\n"
+  << endl;
+}
+
 
 
 /*
@@ -523,8 +621,10 @@ void DisplayHelpAndExit(const options &opts) {
       DisplayUniverseMergeHelp(opts);
       break;
     case SET_DMX:
-      display_set_dmx_help(opts);
+      DisplaySetDmxHelp(opts);
       break;
+    case SET_PORT_PRIORITY:
+      DisplaySetPriorityHelp(opts);
   }
   exit(0);
 }
@@ -609,7 +709,7 @@ int SendDmx(OlaClient *client, const options &opts) {
   bool status = buffer.SetFromString(opts.dmx);
 
   if (opts.uni < 0 || !status || buffer.Size() == 0) {
-    display_set_dmx_help(opts) ;
+    DisplaySetDmxHelp(opts) ;
     exit(1);
   }
 
@@ -622,7 +722,32 @@ int SendDmx(OlaClient *client, const options &opts) {
 
 
 /*
- *
+ * Set the priority of a port
+ */
+void SetPortPriority(OlaClient *client, const options &opts) {
+  if (opts.device_id == INVALID_VALUE || opts.port_id == INVALID_VALUE) {
+    printf("here\n");
+    DisplaySetPriorityHelp(opts);
+    exit(1);
+  }
+
+  if (opts.priority_mode == ola::PRIORITY_MODE_INHERIT) {
+    client->SetPortPriorityInherit(opts.device_id,
+                                   opts.port_id,
+                                   opts.is_output);
+  } else if (opts.priority_mode == ola::PRIORITY_MODE_OVERRIDE) {
+    client->SetPortPriorityOverride(opts.device_id,
+                                    opts.port_id,
+                                    opts.is_output,
+                                    opts.priority_value);
+  } else {
+    DisplaySetPriorityHelp(opts);
+  }
+}
+
+
+/*
+ * Main
  */
 int main(int argc, char *argv[]) {
   SimpleClient ola_client;
@@ -636,6 +761,8 @@ int main(int argc, char *argv[]) {
 
   if (opts.m == DEVICE_PATCH)
     ParsePatchOptions(argc, argv, opts);
+  else if (opts.m == SET_PORT_PRIORITY)
+    ParseSetPriorityOptions(argc, argv, opts);
   else
     ParseOptions(argc, argv, opts);
 
@@ -675,6 +802,8 @@ int main(int argc, char *argv[]) {
     case SET_DMX:
       SendDmx(client, opts);
       break;
+    case SET_PORT_PRIORITY:
+      SetPortPriority(client, opts);
   }
 
   ss->Run();

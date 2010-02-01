@@ -20,13 +20,13 @@
 
 #include <errno.h>
 #include <getopt.h>
-#include <iostream>
-#include <string>
 #include <ola/artnet/ArtnetConfigMessages.pb.h>
 #include <ola/plugin_id.h>
-#include "OlaConfigurator.h"
+#include <iostream>
+#include <string>
+#include "src/OlaConfigurator.h"
 
-using namespace std;
+using std::string;
 
 typedef struct {
   string command;   // argv[0]
@@ -35,7 +35,7 @@ typedef struct {
   bool has_name;
   string name;      // short name
   bool has_long_name;
-  string long_name; // long name
+  string long_name;  // long name
   bool has_subnet;
   int subnet;       // the subnet
 } options;
@@ -46,7 +46,7 @@ typedef struct {
  */
 class ArtnetConfigurator: public OlaConfigurator {
   public:
-    ArtnetConfigurator(options &opts):
+    explicit ArtnetConfigurator(const options &opts):
       OlaConfigurator(opts.device_id, ola::OLA_PLUGIN_ARTNET),
       m_options(opts) {}
     void HandleConfigResponse(const string &reply, const string &error);
@@ -60,7 +60,8 @@ class ArtnetConfigurator: public OlaConfigurator {
 /*
  * Handle the device config reply
  */
-void ArtnetConfigurator::HandleConfigResponse(const string &reply, const string &error) {
+void ArtnetConfigurator::HandleConfigResponse(const string &reply,
+                                              const string &error) {
   Terminate();
   if (!error.empty()) {
     cout << error << endl;
@@ -164,7 +165,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
 /*
  * Display the help message
  */
-void DisplayHelpAndExit(options &opts) {
+void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     "-d <dev_id> -n <name> -l <long_name> -s <subnet>\n\n"
     "Configure ArtNet Devices managed by OLA.\n\n"
