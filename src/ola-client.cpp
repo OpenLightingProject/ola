@@ -726,7 +726,6 @@ int SendDmx(OlaClient *client, const options &opts) {
  */
 void SetPortPriority(OlaClient *client, const options &opts) {
   if (opts.device_id == INVALID_VALUE || opts.port_id == INVALID_VALUE) {
-    printf("here\n");
     DisplaySetPriorityHelp(opts);
     exit(1);
   }
