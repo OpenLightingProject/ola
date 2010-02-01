@@ -23,6 +23,7 @@
 
 #include <string>
 #include <vector>
+#include <olad/PortConstants.h>
 
 namespace ola {
 
@@ -63,11 +64,17 @@ class OlaPort {
     OlaPort(unsigned int port_id,
             unsigned int universe,
             bool active,
-            const string &description):
+            const string &description,
+            port_priority_capability capability,
+            port_priority_mode mode,
+            uint8_t priority):
       m_id(port_id),
       m_universe(universe),
       m_active(active),
-      m_description(description) {}
+      m_description(description),
+      m_priority_capability(capability),
+      m_priority_mode(mode),
+      m_priority(priority) {}
     virtual ~OlaPort() {}
 
     unsigned int Id() const { return m_id; }
@@ -75,11 +82,22 @@ class OlaPort {
     bool IsActive() const { return m_active; }
     string Description() const { return m_description; }
 
+    port_priority_capability PriorityCapability() const {
+      return m_priority_capability;
+    }
+    port_priority_mode PriorityMode() const {
+      return m_priority_mode;
+    }
+    uint8_t Priority() const { return m_priority; }
+
   private:
     unsigned int m_id;  // id of this port
     unsigned int m_universe;  // universe
     bool m_active;  // active
     string m_description;
+    port_priority_capability m_priority_capability;
+    port_priority_mode m_priority_mode;
+    uint8_t m_priority;
 };
 
 
@@ -88,8 +106,12 @@ class OlaInputPort: public OlaPort {
     OlaInputPort(unsigned int port_id,
                  unsigned int universe,
                  bool active,
-                 const string &description)
-        : OlaPort(port_id, universe, active, description) {
+                 const string &description,
+                 port_priority_capability capability,
+                 port_priority_mode mode,
+                 uint8_t priority):
+        OlaPort(port_id, universe, active, description,
+                capability, mode, priority) {
     }
 };
 
@@ -99,8 +121,12 @@ class OlaOutputPort: public OlaPort {
     OlaOutputPort(unsigned int port_id,
                   unsigned int universe,
                   bool active,
-                  const string &description)
-        : OlaPort(port_id, universe, active, description) {
+                  const string &description,
+                  port_priority_capability capability,
+                  port_priority_mode mode,
+                  uint8_t priority):
+        OlaPort(port_id, universe, active, description,
+                capability, mode, priority) {
     }
 };
 

@@ -66,6 +66,8 @@ class DeviceManager {
     void UnregisterAllDevices();
 
     static const unsigned int MISSING_DEVICE_ALIAS;
+    static const char PRIORITY_VALUE_SUFFIX[];
+    static const char PRIORITY_MODE_SUFFIX[];
 
   private:
     Preferences *m_port_preferences;
@@ -76,11 +78,14 @@ class DeviceManager {
 
     DeviceManager(const DeviceManager&);
     DeviceManager& operator=(const DeviceManager&);
-    void SaveDevicePortPatchings(const AbstractDevice *device);
-    void RestoreDevicePortPatchings(AbstractDevice *device);
+    void SaveDevicePortSettings(const AbstractDevice *device);
+    void RestoreDevicePortSettings(AbstractDevice *device);
 
     template <class PortClass>
     void SavePortPatchings(const vector<PortClass*> &ports) const;
+
+    void SavePortPriority(const Port &port) const;
+    void RestorePortPriority(Port *port) const;
 
     template <class PortClass>
     void RestorePortPatchings(const vector<PortClass*> &ports) const;

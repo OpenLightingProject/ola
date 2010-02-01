@@ -24,6 +24,7 @@
 #include <string>
 #include <ola/DmxBuffer.h>  // NOLINT
 #include <olad/Universe.h>  // NOLINT
+#include <olad/PortConstants.h>
 
 namespace ola {
 
@@ -34,11 +35,6 @@ class AbstractDevice;
  */
 class Port {
   public:
-    typedef enum {
-      PRIORITY_MODE_INHERIT,
-      PRIORITY_MODE_OVERRIDE,
-    } port_priority_mode;
-
     static const uint8_t PORT_PRIORITY_MIN;
     static const uint8_t PORT_PRIORITY_MAX;
     static const uint8_t PORT_PRIORITY_DEFAULT;
@@ -46,6 +42,7 @@ class Port {
     Port(AbstractDevice *parent, unsigned int port_id)
         : m_port_id(port_id),
           m_priority(PORT_PRIORITY_DEFAULT),
+          m_priority_mode(PRIORITY_MODE_INHERIT),
           m_port_string(""),
           m_universe(NULL),
           m_device(parent) {
@@ -85,8 +82,14 @@ class Port {
       (void) new_universe;
     }
 
+    // this tells us what sort of priority capabilities this port has
+    virtual port_priority_capability PriorityCapability() const = 0;
+
     bool SetPriority(uint8_t priority);
     uint8_t GetPriority() const { return m_priority; }
+
+    void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
+    port_priority_mode GetPriorityMode() const { return m_priority_mode; }
 
   protected:
     virtual string PortPrefix() const = 0;
@@ -94,6 +97,7 @@ class Port {
   private:
     const unsigned int m_port_id;
     uint8_t m_priority;
+    port_priority_mode m_priority_mode;
     mutable string m_port_string;
     Universe *m_universe;  // universe this port belongs to
     AbstractDevice *m_device;
@@ -121,8 +125,15 @@ class InputPort: public Port {
     // read/write dmx data to this port
     virtual const DmxBuffer &ReadDMX() const = 0;
 
+    port_priority_capability PriorityCapability() const {
+      return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_STATIC;
+    }
+
   protected:
     virtual string PortPrefix() const { return "I"; }
+
+    // indicates whether this port supports priorities, default to no
+    virtual bool SupportsPriorities() const { return false; }
 };
 
 
@@ -133,8 +144,7 @@ class OutputPort: public Port {
   public:
 
     OutputPort(AbstractDevice *parent, unsigned int port_id)
-        : Port(parent, port_id),
-          m_priority_mode(PRIORITY_MODE_INHERIT) {
+        : Port(parent, port_id) {
     }
 
     // Write dmx data to this port
@@ -145,16 +155,15 @@ class OutputPort: public Port {
       (void) new_name;
     }
 
-
-    virtual bool SupportsPriorities() const { return false; }
-    void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
-    port_priority_mode GetPriorityMode() const { return m_priority_mode; }
+    port_priority_capability PriorityCapability() const {
+      return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_NONE;
+    }
 
   protected:
     virtual string PortPrefix() const { return "O"; }
 
-  private:
-    port_priority_mode m_priority_mode;
+    // indicates whether this port supports priorities, default to no
+    virtual bool SupportsPriorities() const { return false; }
 };
 
 

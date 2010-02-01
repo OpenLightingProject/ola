@@ -85,6 +85,10 @@ class OlaHttpServer {
                              vector<PortClass*> *ports);
 
     template <class PortClass>
+    void UpdatePortPriorites(const HttpRequest *request,
+                             vector<PortClass*> *ports);
+
+    template <class PortClass>
     void AddPortsToDict(TemplateDictionary *dict,
                         const vector<PortClass*> &ports,
                         unsigned int *offset);

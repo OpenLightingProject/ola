@@ -12,7 +12,7 @@ function toggleL(event,id) {
     var img = document.getElementById('img_' + id);
     var f = document.getElementById('show_' + id);
     var display = menu.style.display ;
-    if( display == "block") {
+    if (display == "block") {
         menu.style.display = "none";
         img.src = "/plus.png";
         f.value = 0;
@@ -25,6 +25,24 @@ function toggleL(event,id) {
     event.returnValue=false;
 }
 
+function setupPriorityBox(port_id, value) {
+  var select = document.getElementById(port_id + '_priority_mode');
+  for (var i = 0; i < select.length; ++i) {
+    if (select.options[i].value == value) {
+      select.options[i].selected = true;
+    }
+  }
+}
+
+function priorityBoxChanged(port_id) {
+  var select = document.getElementById(port_id + '_priority_mode');
+  var input = document.getElementById(port_id + '_priority_value');
+  if (select.selectedIndex) {
+    input.style.display = 'inline';
+  } else {
+    input.style.display = 'none';
+  }
+}
 // -->
 </script>
 
@@ -52,6 +70,28 @@ function toggleL(event,id) {
       <td width="40px" align="center">{{CAPABILITY:h}}</td>
       <td width="60px"><input type="text" name="{{PORT_ID:h}}" size="4" value="{{UNIVERSE:h}}"/></td>
       <td>{{DESCRIPTION:h}}</td>
+      <td>
+        {{#SUPPORTS_PRIORITY}}
+         Priority:
+          {{#SUPPORTS_PRIORITY_MODE}}
+            <select name="{{PORT_ID:h}}_priority_mode"
+                    id="{{PORT_ID:h}}_priority_mode"
+                    onChange="priorityBoxChanged('{{PORT_ID:j}}')">
+              <option value="0">Inherit</option>
+              <option value="1">Override</option>
+            </select>
+            <script type="text/javascript">
+              setupPriorityBox('{{PORT_ID:j}}', {{PRIORITY_MODE:j}});
+            </script>
+          {{/SUPPORTS_PRIORITY_MODE}}
+         <input type="text" id="{{PORT_ID:h}}_priority_value"
+                name="{{PORT_ID:h}}_priority_value" size="4"
+                value="{{PRIORITY:h}}">
+          {{#SUPPORTS_PRIORITY_MODE}}
+            <script type="text/javascript">priorityBoxChanged('{{PORT_ID:j}}');</script>
+          {{/SUPPORTS_PRIORITY_MODE}}
+        {{/SUPPORTS_PRIORITY}}
+      </td>
      </tr>
     {{/PORT}}
      </table>

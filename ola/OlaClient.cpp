@@ -172,6 +172,7 @@ bool OlaClient::RegisterUniverse(unsigned int universe,
  *
  * @param dev     the device id
  * @param port    the port id
+ * @param is_output true for an output port, false of an input port
  * @param action  OlaClient::PATCH or OlaClient::UNPATCH
  * @param uni    universe id
  * @return true on success, false on failure
@@ -184,6 +185,33 @@ bool OlaClient::Patch(unsigned int device_id,
   return m_core->Patch(device_id, port_id, is_output, patch_action, universe);
 }
 
+
+/*
+ * Set the priority for a port to inherit mode
+ * @param dev the device id
+ * @param port the port id
+ * @param is_output true for an output port, false of an input port
+ */
+bool OlaClient::SetPortPriorityInherit(unsigned int device_alias,
+                                       unsigned int port,
+                                       bool is_output) {
+  return m_core->SetPortPriorityInherit(device_alias, port, is_output);
+}
+
+
+/*
+ * Set the priority for a port to override mode
+ * @param dev the device id
+ * @param port the port id
+ * @param is_output true for an output port, false of an input port
+ * @param value the port priority value
+ */
+bool OlaClient::SetPortPriorityOverride(unsigned int device_alias,
+                                        unsigned int port,
+                                        bool is_output,
+                                        uint8_t value) {
+  return m_core->SetPortPriorityOverride(device_alias, port, is_output, value);
+}
 
 /*
  * Sends a device config request

@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <errno.h>
 #include <sys/time.h>
 #include <string>
 #include <iostream>
@@ -311,9 +310,8 @@ int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
 int OlaHttpServer::DisplayConsole(const HttpRequest *request,
                                   HttpResponse *response) {
   string uni_id = request->GetParameter("u");
-  errno = 0;
-  int universe_id = atoi(uni_id.data());
-  if (universe_id == 0 && errno != 0)
+  unsigned int universe_id;
+  if (!StringToUInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
   Universe *universe = m_universe_store->GetUniverse(universe_id);
@@ -344,9 +342,8 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
                                 HttpResponse *response) {
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
-  int universe_id = atoi(uni_id.data());
-  errno = 0;
-  if (universe_id == 0 && errno != 0)
+  unsigned int universe_id;
+  if (!StringToUInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
   Universe *universe = m_universe_store->GetUniverse(universe_id);
@@ -370,7 +367,6 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayDebug(const HttpRequest *request,
                                 HttpResponse *response) {
-
   struct timeval now, diff;
   gettimeofday(&now, NULL);
   timersub(&now, &m_start_time, &diff);
@@ -484,6 +480,8 @@ void OlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
   if (save_changes) {
     UpdatePortPatchings(request, &input_ports);
     UpdatePortPatchings(request, &output_ports);
+    UpdatePortPriorites(request, &input_ports);
+    UpdatePortPriorites(request, &output_ports);
   }
 
   unsigned int offset = 0;
@@ -503,15 +501,39 @@ void OlaHttpServer::UpdatePortPatchings(const HttpRequest *request,
   while (iter != ports->end()) {
     string port_id = (*iter)->UniqueId();
     string uni_id = request->GetPostParameter(port_id);
-    errno = 0;
-    int universe_id = atoi(uni_id.data());
-    if (!uni_id.empty() && (universe_id != 0 || errno == 0)) {
+    unsigned int universe_id;
+
+    if (StringToUInt(uni_id, &universe_id))
       // valid universe number, patch this universe
       m_port_patcher->PatchPort(*iter, universe_id);
-    } else {
+    else
       m_port_patcher->UnPatchPort(*iter);
-    }
     iter++;
+  }
+}
+
+
+/*
+ * Update the port priorities from the data in a HTTP request.
+ */
+template <class PortClass>
+void OlaHttpServer::UpdatePortPriorites(const HttpRequest *request,
+                                        vector<PortClass*> *ports) {
+  typename vector<PortClass*>::iterator iter = ports->begin();
+
+  for (;iter != ports->end(); ++iter) {
+    if ((*iter)->PriorityCapability() == CAPABILITY_NONE)
+      continue;
+
+    string priority_mode_id = (*iter)->UniqueId() +
+      DeviceManager::PRIORITY_MODE_SUFFIX;
+    string priority_id = (*iter)->UniqueId() +
+      DeviceManager::PRIORITY_VALUE_SUFFIX;
+
+    m_port_patcher->SetPriority(
+        *iter,
+        request->GetPostParameter(priority_mode_id),
+        request->GetPostParameter(priority_id));
   }
 }
 
@@ -533,6 +555,18 @@ void OlaHttpServer::AddPortsToDict(TemplateDictionary *dict,
     port_dict->SetValue("PORT_ID", (*iter)->UniqueId());
     port_dict->SetValue("CAPABILITY", IsInputPort<PortClass>() ? "IN" : "OUT");
     port_dict->SetValue("DESCRIPTION", (*iter)->Description());
+
+    if ((*iter)->PriorityCapability() != CAPABILITY_NONE) {
+      TemplateDictionary *priority_dict =
+        port_dict->AddSectionDictionary("SUPPORTS_PRIORITY");
+      priority_dict->SetValue("PRIORITY", IntToString((*iter)->GetPriority()));
+      if ((*iter)->PriorityCapability() == CAPABILITY_FULL) {
+        TemplateDictionary *priority_mode_dict =
+          priority_dict->AddSectionDictionary("SUPPORTS_PRIORITY_MODE");
+        priority_mode_dict->SetValue("PRIORITY_MODE",
+                                     IntToString((*iter)->GetPriorityMode()));
+      }
+    }
 
     Universe *universe = (*iter)->GetUniverse();
     if (universe)

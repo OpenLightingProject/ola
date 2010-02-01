@@ -376,6 +376,71 @@ bool OlaClientCore::Patch(unsigned int device_alias,
 
 
 /*
+ * Set the priority for a port to inherit mode
+ * @param dev the device id
+ * @param port the port id
+ * @param is_output true for an output port, false of an input port
+ */
+bool OlaClientCore::SetPortPriorityInherit(unsigned int device_alias,
+                                           unsigned int port,
+                                           bool is_output) {
+  if (!m_connected)
+    return false;
+
+  ola::proto::PortPriorityRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::Ack *reply = new ola::proto::Ack();
+
+  request.set_device_alias(device_alias);
+  request.set_port_id(port);
+  request.set_is_output(is_output);
+  request.set_priority_mode(ola::PRIORITY_MODE_INHERIT);
+
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &ola::OlaClientCore::HandleSetPriority,
+      controller,
+      reply);
+  m_stub->SetPortPriority(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
+ * Set the priority for a port to override mode
+ * @param dev the device id
+ * @param port the port id
+ * @param is_output true for an output port, false of an input port
+ * @param value the port priority value
+ */
+bool OlaClientCore::SetPortPriorityOverride(unsigned int device_alias,
+                                            unsigned int port,
+                                            bool is_output,
+                                            uint8_t value) {
+  if (!m_connected)
+    return false;
+
+  ola::proto::PortPriorityRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::Ack *reply = new ola::proto::Ack();
+
+  request.set_device_alias(device_alias);
+  request.set_port_id(port);
+  request.set_is_output(is_output);
+  request.set_priority_mode(ola::PRIORITY_MODE_OVERRIDE);
+  request.set_priority(value);
+
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &ola::OlaClientCore::HandleSetPriority,
+      controller,
+      reply);
+  m_stub->SetPortPriority(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
  * Sends a device config request
  * @param device_alias the device alias
  * @param msg the data to send
@@ -494,10 +559,16 @@ void OlaClientCore::HandleDeviceInfo(ola::rpc::SimpleRpcController *controller,
 
         for (int j = 0; j < device_info.input_port_size(); ++j) {
           ola::proto::PortInfo port_info = device_info.input_port(j);
-          OlaInputPort port(port_info.port_id(),
-                            port_info.universe(),
-                            port_info.active(),
-                            port_info.description());
+          OlaInputPort port(
+              port_info.port_id(),
+              port_info.universe(),
+              port_info.active(),
+              port_info.description(),
+              static_cast<port_priority_capability>(
+                port_info.priority_capability()),
+              static_cast<port_priority_mode>(
+                port_info.priority_mode()),
+              port_info.priority());
           input_ports.push_back(port);
         }
 
@@ -505,10 +576,16 @@ void OlaClientCore::HandleDeviceInfo(ola::rpc::SimpleRpcController *controller,
 
         for (int j = 0; j < device_info.output_port_size(); ++j) {
           ola::proto::PortInfo port_info = device_info.output_port(j);
-          OlaOutputPort port(port_info.port_id(),
-                             port_info.universe(),
-                             port_info.active(),
-                             port_info.description());
+          OlaOutputPort port(
+              port_info.port_id(),
+              port_info.universe(),
+              port_info.active(),
+              port_info.description(),
+              static_cast<port_priority_capability>(
+                port_info.priority_capability()),
+              static_cast<port_priority_mode>(
+                port_info.priority_mode()),
+              port_info.priority());
           output_ports.push_back(port);
         }
 
@@ -622,7 +699,7 @@ void OlaClientCore::HandleRegister(SimpleRpcController *controller,
 
 
 /*
- * Called once SetMergeMode completes
+ * Called once Patch completes
  */
 void OlaClientCore::HandlePatch(SimpleRpcController *controller,
                                 ola::proto::Ack *reply) {
@@ -641,6 +718,26 @@ void OlaClientCore::HandlePatch(SimpleRpcController *controller,
   delete reply;
 }
 
+
+/*
+ * Called once SetPriority completes
+ */
+void OlaClientCore::HandleSetPriority(SimpleRpcController *controller,
+                                      ola::proto::Ack *reply) {
+  string error_string = "";
+  if (controller->Failed())
+    error_string = controller->ErrorText();
+
+  if (m_observer) {
+    release_lock;
+    m_observer->SetPortPriorityComplete(error_string);
+    acquire_lock;
+  } else if (!error_string.empty()) {
+    printf("set priority failed: %s\n", controller->ErrorText().c_str());
+  }
+  delete controller;
+  delete reply;
+}
 
 /*
  * Handle a device config response

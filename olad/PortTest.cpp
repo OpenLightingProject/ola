@@ -46,7 +46,7 @@ void PortTest::testPortPriorities() {
 
   CPPUNIT_ASSERT_EQUAL(ola::Port::PORT_PRIORITY_DEFAULT,
                        output_port.GetPriority());
-  CPPUNIT_ASSERT_EQUAL(ola::Port::PRIORITY_MODE_INHERIT,
+  CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_INHERIT,
                        output_port.GetPriorityMode());
 
   // test the setting of priorities
@@ -58,11 +58,11 @@ void PortTest::testPortPriorities() {
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, output_port.GetPriority());
 
   // test the setting of modes
-  output_port.SetPriorityMode(ola::Port::PRIORITY_MODE_OVERRIDE);
-  CPPUNIT_ASSERT_EQUAL(ola::Port::PRIORITY_MODE_OVERRIDE,
+  output_port.SetPriorityMode(ola::PRIORITY_MODE_OVERRIDE);
+  CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_OVERRIDE,
                        output_port.GetPriorityMode());
 
-  output_port.SetPriorityMode(ola::Port::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(ola::Port::PRIORITY_MODE_INHERIT,
+  output_port.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);
+  CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_INHERIT,
                        output_port.GetPriorityMode());
 }

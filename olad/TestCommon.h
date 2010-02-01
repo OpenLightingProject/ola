@@ -24,6 +24,7 @@
 #include <string>
 
 #include "ola/DmxBuffer.h"
+#include "olad/Device.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
 
@@ -34,6 +35,9 @@ using ola::OutputPort;
 using std::string;
 
 
+/*
+ * Mock out an Input Port
+ */
 class TestMockInputPort: public InputPort {
   public:
     TestMockInputPort(AbstractDevice *parent, unsigned int port_id):
@@ -49,6 +53,21 @@ class TestMockInputPort: public InputPort {
 };
 
 
+/*
+ * Same as above but this supports priorities
+ */
+class TestMockPriorityInputPort: public TestMockInputPort {
+  public:
+    TestMockPriorityInputPort(AbstractDevice *parent, unsigned int port_id):
+      TestMockInputPort(parent, port_id) {}
+  protected:
+    bool SupportsPriorities() const { return true; }
+};
+
+
+/*
+ * Mock out an OutputPort
+ */
 class TestMockOutputPort: public OutputPort {
   public:
     TestMockOutputPort(AbstractDevice *parent, unsigned int port_id):
@@ -66,6 +85,34 @@ class TestMockOutputPort: public OutputPort {
 };
 
 
+/*
+ * Same as above but this supports priorities
+ */
+class TestMockPriorityOutputPort: public TestMockOutputPort {
+  public:
+    TestMockPriorityOutputPort(AbstractDevice *parent, unsigned int port_id):
+      TestMockOutputPort(parent, port_id) {}
+  protected:
+    bool SupportsPriorities() const { return true; }
+};
+
+
+/*
+ * A mock device
+ */
+class MockDevice: public ola::Device {
+  public:
+    MockDevice(ola::AbstractPlugin *owner, const string &name):
+      Device(owner, name) {}
+    string DeviceId() const { return Name(); }
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
+};
+
+
+/*
+ * A mock plugin.
+ */
 class TestMockPlugin: public ola::Plugin {
   public:
     explicit TestMockPlugin(const ola::PluginAdaptor *plugin_adaptor):

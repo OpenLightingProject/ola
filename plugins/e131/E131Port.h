@@ -54,6 +54,7 @@ class E131InputPort: public InputPort {
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
     string Description() const { return m_helper.Description(GetUniverse()); }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
+    bool SupportsPriorities() const { return true; }
 
   private:
     DmxBuffer m_buffer;

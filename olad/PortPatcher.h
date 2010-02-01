@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PortPatcher.h
- * Enables the Patching of Ports
- * Copyright (C) 2005-2009 Simon Newton
+ * Provides a unified interface for controlling port patchings & priorities.
+ * Copyright (C) 2005-2010 Simon Newton
  */
 
 #ifndef OLAD_PORTPATCHER_H_
@@ -41,6 +41,15 @@ class PortPatcher {
     bool PatchPort(OutputPort *port, unsigned int universe);
     bool UnPatchPort(InputPort *port);
     bool UnPatchPort(OutputPort *port);
+
+    bool SetPriority(Port *port,
+                     const string &mode,
+                     const string &priority,
+                     bool pedantic = true);
+    bool SetPriority(Port *port,
+                     unsigned int mode,
+                     unsigned int priority,
+                     bool pedantic = true);
 
   private:
     PortPatcher(const PortPatcher&);

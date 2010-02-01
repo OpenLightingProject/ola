@@ -46,8 +46,9 @@ olad_LDADD = @LIBS@ libolaserver.la \
 TESTS = OlaTester
 check_PROGRAMS = $(TESTS)
 OlaTester_SOURCES = $(OLASERVER_SOURCES) OlaServerTester.cpp \
-                    UniverseTest.cpp DeviceTest.cpp PluginManagerTest.cpp \
-                    PreferencesTest.cpp PortTest.cpp \
+                    UniverseTest.cpp DeviceTest.cpp DeviceManagerTest.cpp \
+                    PluginManagerTest.cpp PreferencesTest.cpp \
+                    PortManagerTest.cpp PortTest.cpp \
                     OlaServerServiceImplTest.cpp ClientTest.cpp
 OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 OlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf

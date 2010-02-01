@@ -22,10 +22,11 @@
 #define OLA_OLACLIENT_H_
 
 #include <ola/BaseTypes.h>
+#include <ola/DmxBuffer.h>
+#include <ola/OlaDevice.h>
 #include <ola/common.h>
 #include <ola/plugin_id.h>
-#include <ola/OlaDevice.h>
-#include <ola/DmxBuffer.h>
+#include <olad/PortConstants.h>
 #include <string>
 #include <vector>
 
@@ -64,6 +65,7 @@ class OlaClientObserver {
     virtual void UniverseNameComplete(const string &error) {}
     virtual void UniverseMergeModeComplete(const string &error) {}
     virtual void SendDmxComplete(const string &error) {}
+    virtual void SetPortPriorityComplete(const string &error) {}
 };
 
 
@@ -100,6 +102,14 @@ class OlaClient {
                bool is_output,
                ola::PatchAction action,
                unsigned int uni);
+
+    bool SetPortPriorityInherit(unsigned int device_alias,
+                                unsigned int port,
+                                bool is_output);
+    bool SetPortPriorityOverride(unsigned int device_alias,
+                                 unsigned int port,
+                                 bool is_output,
+                                 uint8_t value);
 
     bool ConfigureDevice(unsigned int device_alias, const string &msg);
 

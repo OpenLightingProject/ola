@@ -50,7 +50,6 @@ enum PluginIds {
   OLA_PLUGIN_E131 = 11;
 }
 
-
 message Ack {
 }
 
@@ -101,6 +100,14 @@ message UniverseInfoReply {
   repeated UniverseInfo universe = 1;
 }
 
+message PortPriorityRequest {
+  required int32 device_alias = 1;
+  required bool is_output = 2;
+  required int32 port_id = 3;
+  required int32 priority_mode = 4;
+  optional int32 priority = 5;
+}
+
 // request info on available plugins
 message PluginInfoRequest {
   optional int32 plugin_id = 1;
@@ -124,9 +131,12 @@ message DeviceInfoRequest {
 
 message PortInfo {
   required int32 port_id = 1;
+  required int32 priority_capability = 2;
   required string description = 5;
   optional int32 universe = 3;
   optional bool active = 4;
+  optional int32 priority_mode = 6;
+  optional int32 priority = 7;
 }
 
 message DeviceInfo {
@@ -162,6 +172,7 @@ service OlaServerService {
   rpc SetUniverseName (UniverseNameRequest) returns (Ack);
   rpc SetMergeMode (MergeModeRequest) returns (Ack);
   rpc PatchPort (PatchPortRequest) returns (Ack);
+  rpc SetPortPriority (PortPriorityRequest) returns (Ack);
   rpc GetUniverseInfo (UniverseInfoRequest) returns (UniverseInfoReply);
   rpc GetPluginInfo (PluginInfoRequest) returns (PluginInfoReply);
   rpc GetDeviceInfo (DeviceInfoRequest) returns (DeviceInfoReply);

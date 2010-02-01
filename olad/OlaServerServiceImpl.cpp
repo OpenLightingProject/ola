@@ -214,6 +214,48 @@ void OlaServerServiceImpl::PatchPort(
 
 
 /*
+ * Set the priority of a set of ports
+ */
+void OlaServerServiceImpl::SetPortPriority(
+    RpcController* controller,
+    const ola::proto::PortPriorityRequest* request,
+    Ack* response,
+    google::protobuf::Closure* done) {
+
+  AbstractDevice *device =
+    m_device_manager->GetDevice(request->device_alias());
+
+  if (!device)
+    return MissingDeviceError(controller, done);
+
+  bool status;
+
+  if (request->is_output()) {
+    OutputPort *port = device->GetOutputPort(request->port_id());
+    if (!port)
+      return MissingPortError(controller, done);
+
+    status = m_port_patcher->SetPriority(port,
+                                         request->priority_mode(),
+                                         request->priority());
+  } else {
+    InputPort *port = device->GetInputPort(request->port_id());
+    if (!port)
+      return MissingPortError(controller, done);
+
+    status = m_port_patcher->SetPriority(port,
+                                         request->priority_mode(),
+                                         request->priority());
+  }
+
+  if (!status)
+    controller->SetFailed(
+        "Invalid SetPortPriority request, see logs for more info");
+  done->Run();
+}
+
+
+/*
  * Returns information on the active universes.
  */
 void OlaServerServiceImpl::GetUniverseInfo(
@@ -406,6 +448,7 @@ template <class PortClass>
 void OlaServerServiceImpl::PopulatePort(const PortClass &port,
                                         PortInfo *port_info) const {
   port_info->set_port_id(port.PortId());
+  port_info->set_priority_capability(port.PriorityCapability());
   port_info->set_description(port.Description());
 
   if (port.GetUniverse()) {
@@ -414,11 +457,16 @@ void OlaServerServiceImpl::PopulatePort(const PortClass &port,
   } else {
     port_info->set_active(false);
   }
+
+  if (port.PriorityCapability() != CAPABILITY_NONE)
+    port_info->set_priority(port.GetPriority());
+  if (port.PriorityCapability() == CAPABILITY_FULL)
+    port_info->set_priority_mode(port.GetPriorityMode());
 }
 
 
 // OlaServerServiceImplFactory
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     UniverseStore *universe_store,
     DeviceManager *device_manager,

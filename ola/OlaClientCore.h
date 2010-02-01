@@ -78,6 +78,14 @@ class OlaClientCore {
                ola::PatchAction action,
                unsigned int uni);
 
+    bool SetPortPriorityInherit(unsigned int device_alias,
+                                unsigned int port,
+                                bool is_output);
+    bool SetPortPriorityOverride(unsigned int device_alias,
+                                 unsigned int port,
+                                 bool is_output,
+                                 uint8_t value);
+
     bool ConfigureDevice(unsigned int device_alias, const string &msg);
 
     // request callbacks
@@ -99,6 +107,8 @@ class OlaClientCore {
                         ola::proto::Ack *reply);
     void HandlePatch(SimpleRpcController *controller,
                      ola::proto::Ack *reply);
+    void HandleSetPriority(SimpleRpcController *controller,
+                           ola::proto::Ack *reply);
     void HandleDeviceConfig(SimpleRpcController *controller,
                             ola::proto::DeviceConfigReply *reply);
 

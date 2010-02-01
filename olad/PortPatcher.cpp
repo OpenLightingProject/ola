@@ -18,9 +18,12 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <string>
 #include <vector>
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "olad/PortPatcher.h"
+#include "olad/Port.h"
 
 namespace ola {
 
@@ -65,6 +68,81 @@ bool PortPatcher::UnPatchPort(InputPort *port) {
  */
 bool PortPatcher::UnPatchPort(OutputPort *port) {
   return GenericUnPatchPort(port);
+}
+
+
+/*
+ * Set the priority settings for a port. This only applies the settings if all
+ * parameters are valid.
+ * @param port the port to configure
+ * @param mode the new mode
+ * @param priority the new priority
+ * @param pedantic don't take any action if there are errors, if this is false
+ * we do the best we can and try to set a priority.
+ */
+bool PortPatcher::SetPriority(Port *port,
+                              const string &mode_str,
+                              const string &priority_str,
+                              bool pedantic) {
+  unsigned int mode = PRIORITY_MODE_INHERIT;
+  unsigned int priority = Port::PORT_PRIORITY_DEFAULT;
+
+  if (port->PriorityCapability() == CAPABILITY_FULL) {
+    if (!StringToUInt(mode_str, &mode)) {
+      OLA_WARN << "Invalid priority mode: " << mode_str;
+      if (pedantic)
+        return false;
+    }
+  }
+
+  if (!StringToUInt(priority_str, &priority)) {
+    OLA_WARN << "Invalid priority value: " << priority_str;
+    if (pedantic)
+      return false;
+  }
+
+  return SetPriority(port, mode, priority, pedantic);
+}
+
+
+/*
+ * Set the priority settings for a port. This only applies the settings if all
+ * parameters are valid.
+ * @param port the port to configure
+ * @param mode the new mode
+ * @param priority the new priority
+ * @param pedantic don't take any action if there are errors, if this is false
+ * we do the best we can and try to set a priority.
+ */
+bool PortPatcher::SetPriority(Port *port,
+                              unsigned int mode,
+                              unsigned int priority,
+                              bool pedantic) {
+  if (port->PriorityCapability() == CAPABILITY_NONE)
+    return true;
+
+  if (priority > Port::PORT_PRIORITY_MAX) {
+    OLA_WARN << "Priority " << priority <<
+      " is greater than the max priority (" << Port::PORT_PRIORITY_MAX << ")";
+    if (pedantic)
+      return false;
+    priority = Port::PORT_PRIORITY_MAX;
+  }
+
+  if (port->PriorityCapability() == CAPABILITY_FULL &&
+      port->GetPriorityMode() != mode) {
+    if (mode >= PRIORITY_MODE_END) {
+      OLA_WARN << "Priority mode " << mode << " is out of range";
+      if (pedantic)
+        return false;
+    } else {
+      port->SetPriorityMode((port_priority_mode) mode);
+    }
+  }
+
+  if (priority != port->GetPriority())
+    port->SetPriority(priority);
+  return true;
 }
 
 

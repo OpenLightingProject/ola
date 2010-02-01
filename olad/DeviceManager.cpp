@@ -35,6 +35,8 @@ namespace ola {
 
 const unsigned int DeviceManager::MISSING_DEVICE_ALIAS = 0;
 const char DeviceManager::PORT_PREFERENCES[] = "port";
+const char DeviceManager::PRIORITY_VALUE_SUFFIX[] = "_priority_value";
+const char DeviceManager::PRIORITY_MODE_SUFFIX[] = "_priority_mode";
 
 bool operator <(const device_alias_pair& left,
                 const device_alias_pair &right) {
@@ -108,7 +110,7 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
   OLA_INFO << "Installed device: " << device->Name() << ":" <<
     device->UniqueId();
 
-  RestoreDevicePortPatchings(device);
+  RestoreDevicePortSettings(device);
   return true;
 }
 
@@ -127,7 +129,7 @@ bool DeviceManager::UnregisterDevice(const string &device_id) {
     return false;
   }
 
-  SaveDevicePortPatchings(iter->second.device);
+  SaveDevicePortSettings(iter->second.device);
   map<unsigned int, AbstractDevice*>::iterator alias_iter =
     m_alias_map.find(iter->second.alias);
 
@@ -224,7 +226,7 @@ device_alias_pair DeviceManager::GetDevice(const string &unique_id) const {
 void DeviceManager::UnregisterAllDevices() {
   map<string, device_alias_pair>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    SaveDevicePortPatchings(iter->second.device);
+    SaveDevicePortSettings(iter->second.device);
     iter->second.device = NULL;
   }
   m_alias_map.clear();
@@ -235,7 +237,7 @@ void DeviceManager::UnregisterAllDevices() {
  * Save the port universe patchings for a device
  * @param device the device to save the settings for
  */
-void DeviceManager::SaveDevicePortPatchings(const AbstractDevice *device) {
+void DeviceManager::SaveDevicePortSettings(const AbstractDevice *device) {
   if (!m_port_preferences || !device)
     return;
 
@@ -245,13 +247,20 @@ void DeviceManager::SaveDevicePortPatchings(const AbstractDevice *device) {
   device->OutputPorts(&output_ports);
   SavePortPatchings(input_ports);
   SavePortPatchings(output_ports);
+
+  vector<InputPort*>::const_iterator input_iter = input_ports.begin();
+  for (; input_iter != input_ports.end(); ++input_iter)
+    SavePortPriority(**input_iter);
+  vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
+  for (; output_iter != output_ports.end(); ++output_iter)
+    SavePortPriority(**output_iter);
 }
 
 
 /*
  * Restore the port universe patchings for a list of ports.
  */
-void DeviceManager::RestoreDevicePortPatchings(AbstractDevice *device) {
+void DeviceManager::RestoreDevicePortSettings(AbstractDevice *device) {
   if (!m_port_preferences || !device)
     return;
 
@@ -261,6 +270,13 @@ void DeviceManager::RestoreDevicePortPatchings(AbstractDevice *device) {
   device->OutputPorts(&output_ports);
   RestorePortPatchings(input_ports);
   RestorePortPatchings(output_ports);
+
+  vector<InputPort*>::const_iterator input_iter = input_ports.begin();
+  for (; input_iter != input_ports.end(); ++input_iter)
+    RestorePortPriority(*input_iter);
+  vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
+  for (; output_iter != output_ports.end(); ++output_iter)
+    RestorePortPriority(*output_iter);
 }
 
 
@@ -284,6 +300,47 @@ void DeviceManager::SavePortPatchings(const vector<PortClass*> &ports) const {
     }
     iter++;
   }
+}
+
+
+/*
+ * Save the priorities for all ports on this device
+ */
+void DeviceManager::SavePortPriority(const Port &port) const {
+  if (port.PriorityCapability() == CAPABILITY_NONE)
+    return;
+
+  string port_id = port.UniqueId();
+  if (port_id.empty())
+    return;
+
+  m_port_preferences->SetValue(port_id + PRIORITY_VALUE_SUFFIX,
+                               IntToString(port.GetPriority()));
+
+  if (port.PriorityCapability() == CAPABILITY_FULL)
+    m_port_preferences->SetValue(port_id + PRIORITY_MODE_SUFFIX,
+                                 IntToString(port.GetPriorityMode()));
+}
+
+
+/*
+ * Restore the priority settings for a port
+ */
+void DeviceManager::RestorePortPriority(Port *port) const {
+  if (port->PriorityCapability() == CAPABILITY_NONE)
+    return;
+
+  string port_id = port->UniqueId();
+  if (port_id.empty())
+    return;
+
+  string priority = m_port_preferences->GetValue(
+      port_id + PRIORITY_VALUE_SUFFIX);
+  string priority_mode = m_port_preferences->GetValue(
+      port_id + PRIORITY_MODE_SUFFIX);
+
+  // pedantic mode off
+  m_port_patcher->SetPriority(port, priority_mode, priority, false);
 }
 
 

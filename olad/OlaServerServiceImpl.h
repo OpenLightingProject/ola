@@ -68,6 +68,10 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                    const ola::proto::PatchPortRequest* request,
                    Ack* response,
                    google::protobuf::Closure* done);
+    void SetPortPriority(RpcController* controller,
+                         const ola::proto::PortPriorityRequest* request,
+                         Ack* response,
+                         google::protobuf::Closure* done);
     void GetUniverseInfo(RpcController* controller,
                          const ola::proto::UniverseInfoRequest* request,
                          ola::proto::UniverseInfoReply* response,
