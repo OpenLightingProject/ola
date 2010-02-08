@@ -40,6 +40,7 @@ class DmxBufferTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSetRange);
   CPPUNIT_TEST(testSetRangeToValue);
   CPPUNIT_TEST(testSetChannel);
+  CPPUNIT_TEST(testToString);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -54,6 +55,8 @@ class DmxBufferTest: public CppUnit::TestFixture {
     void testSetRange();
     void testSetRangeToValue();
     void testSetChannel();
+    void testToString();
+
   private:
     static const uint8_t TEST_DATA[];
     static const uint8_t TEST_DATA2[];
@@ -489,4 +492,22 @@ void DmxBufferTest::testSetChannel() {
 
   CPPUNIT_ASSERT_EQUAL(slice_size, buffer.Size());
   CPPUNIT_ASSERT(!memcmp(expected, buffer.GetRaw(), buffer.Size()));
+}
+
+
+/*
+ * Test ToString()
+ */
+void DmxBufferTest::testToString() {
+  DmxBuffer buffer;
+  CPPUNIT_ASSERT_EQUAL(string(""), buffer.ToString());
+
+  buffer.SetFromString("1,2,3,4");
+  CPPUNIT_ASSERT_EQUAL(string("4: 1,2,3,4"), buffer.ToString());
+
+  buffer.SetRangeToValue(0, 255, 5);
+  CPPUNIT_ASSERT_EQUAL(string("5: 255,255,255,255,255"), buffer.ToString());
+
+
+
 }

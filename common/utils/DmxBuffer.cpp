@@ -25,6 +25,7 @@
 
 #include <string.h>
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <vector>
 #include "ola/BaseTypes.h"
@@ -358,6 +359,24 @@ bool DmxBuffer::Blackout() {
 void DmxBuffer::Reset() {
   if (m_data)
     m_length = 0;
+}
+
+
+/*
+ * Convert to a human readable representation
+ */
+string DmxBuffer::ToString() const {
+  if (!m_data)
+    return "";
+
+  std::stringstream str;
+  str << (int) Size() << ": ";
+  for (unsigned int i = 0; i < Size(); i++) {
+    if (i)
+      str << ",";
+    str << (int) m_data[i];
+  }
+  return str.str();
 }
 
 
