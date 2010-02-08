@@ -81,6 +81,9 @@ bool UsbProWidget::Connect(const string &path) {
   }
 
   bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
+  cfsetispeed(&newtio, B115200);
+  cfsetospeed(&newtio, B115200);
+
   tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ola::network::DeviceSocket(fd);
   m_socket->SetOnData(NewClosure(this, &UsbProWidget::SocketReady));
