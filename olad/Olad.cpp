@@ -126,7 +126,7 @@ static int InstallSignals() {
  */
 static void DisplayHelp() {
   cout <<
-  "Usage: olad [options] [--debug <level>]\n"
+  "Usage: olad [options]\n"
   "\n"
   "Start the ola daemon.\n"
   "\n"
