@@ -144,8 +144,11 @@ bool SyslogDestination::Init() {
  */
 void SyslogDestination::Write(log_level level, const string &log_line) {
 #ifdef WIN32
-  WORD pri:
-  switch (level):
+  WORD pri;
+  const char* strings[1];
+  strings[0] = log_line.data();
+
+  switch (level) {
     case OLA_LOG_FATAL:
       pri = EVENTLOG_ERROR_TYPE;
       break;
@@ -158,7 +161,7 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
     case OLA_LOG_DEBUG:
       pri = EVENTLOG_INFORMATION_TYPE;
       break;
-    default :
+    default:
       pri = EVENTLOG_INFORMATION_TYPE;
   }
   ReportEventA(m_eventlog,
@@ -168,7 +171,7 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
                NULL,
                1,
                0,
-               (const char **) &log_line.data();
+               strings,
                NULL);
 #else
   int pri;

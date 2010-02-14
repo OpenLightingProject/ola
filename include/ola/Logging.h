@@ -33,6 +33,10 @@
 #ifndef INCLUDE_OLA_LOGGING_H_
 #define INCLUDE_OLA_LOGGING_H_
 
+#ifdef WIN32
+#include <windows.h>  // for HANDLE
+#endif
+
 #include <ostream>
 #include <string>
 #include <sstream>
