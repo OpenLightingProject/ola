@@ -1,5 +1,4 @@
-
-INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
+include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = libstreamrpcchannel.la
 libstreamrpcchannel_la_SOURCES = StreamRpcChannel.cpp SimpleRpcController.cpp

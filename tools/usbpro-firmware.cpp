@@ -28,8 +28,8 @@
 #include <fstream>
 #include <string>
 
-#include "usbpro/UsbProWidget.h"
-#include "usbpro/UsbProWidgetListener.h"
+#include "plugins/usbpro/UsbProWidget.h"
+#include "plugins/usbpro/UsbProWidgetListener.h"
 
 using std::cout;
 using std::endl;

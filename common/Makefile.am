@@ -1,5 +1,3 @@
-
-
 lib_LTLIBRARIES = libolacommon.la
 libolacommon_la_SOURCES =
 libolacommon_la_LIBADD = export_map/libolaexportmap.la \

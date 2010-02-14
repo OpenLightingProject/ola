@@ -1,5 +1,4 @@
-
-SUBDIRS = network .
+SUBDIRS = network
 
 SOURCES = BaseTypes.h Closure.h DmxBuffer.h ExportMap.h Logging.h \
           RunLengthEncoder.h StringUtils.h

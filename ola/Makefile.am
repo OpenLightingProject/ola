@@ -1,19 +1,13 @@
-
-INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
+include $(top_srcdir)/common.mk
 
 HEADER_FILES = OlaClient.h OlaDevice.h SimpleClient.h common.h
-
-if HAVE_PTHREAD
-THREAD_LIBS = -lpthread
-endif
 
 lib_LTLIBRARIES = libola.la
 libola_la_SOURCES = OlaClient.cpp \
                     OlaClientServiceImpl.cpp OlaClientCore.cpp \
                     SimpleClient.cpp
-libola_la_LDFLAGS = -version-info 1:1:0 $(THREAD_LIBS)
+libola_la_LDFLAGS = -version-info 1:1:0
 libola_la_LIBADD = $(top_builddir)/common/libolacommon.la
-libola_la_CXXFLAGS = -Wall -Wformat
 
 pkgincludedir = $(includedir)/ola
 pkginclude_HEADERS = $(HEADER_FILES)

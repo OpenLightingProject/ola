@@ -1,3 +1,5 @@
+include $(top_srcdir)/common.mk
+
 EXTRA_DIST = BaseInflator.h CID.h \
              DMPE131Inflator.h DMPAddress.h DMPHeader.h DMPInflator.h DMPPDU.h \
              E131Header.h E131Inflator.h E131Layer.h E131Node.h E131PDU.h \
@@ -5,8 +7,7 @@ EXTRA_DIST = BaseInflator.h CID.h \
              RootHeader.h RootInflator.h RootLayer.h RootPDU.h \
              UDPTransport.h
 
-INCLUDES = -I$(top_builddir)/include
-AM_CXXFLAGS = -Wall -Wconversion -Wformat -W
+AM_CPPFLAGS += -Wconversion -W
 
 noinst_LTLIBRARIES = libolae131core.la libolae131tester.la
 libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \

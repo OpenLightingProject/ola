@@ -1,10 +1,8 @@
+include $(top_srcdir)/common.mk
 libdir = $(plugindir)
 
 EXTRA_DIST = EspNetPlugin.h EspNetDevice.h EspNetPort.h EspNetPackets.h \
              EspNetNode.h EspNetPluginCommon.h RunLengthDecoder.h
-
-INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
-AM_CXXFLAGS = -Wall -Wformat
 
 lib_LTLIBRARIES = libolaespnet.la
 libolaespnet_la_SOURCES = EspNetPlugin.cpp EspNetDevice.cpp EspNetPort.cpp \

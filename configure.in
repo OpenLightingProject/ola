@@ -4,6 +4,7 @@
 AC_PREREQ(2.57)
 AC_INIT(configure.in)
 AC_CONFIG_AUX_DIR(config)
+AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE(ola, 0.6.0)
 
@@ -15,30 +16,6 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_LIBTOOL_DLOPEN
-AC_LIBLTDL_CONVENIENCE
-AC_PROG_LIBTOOL
-
-AC_CONFIG_SUBDIRS(libltdl)
-
-AC_SUBST(INCLTDL)
-AC_SUBST(LIBLTDL)
-AC_SUBST(ac_aux_dir)
-
-# Checks for header files.
-AC_HEADER_DIRENT
-AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
-                  sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
-                  unistd.h linux/if_packet.h])
-AC_CHECK_HEADER(pthread.h, have_threads=posix)
-PROTOBUF_SUPPORT([2.1.0])
-
-AM_CONDITIONAL(HAVE_PTHREAD, test "${have_threads}" = "posix")
-if test "${have_threads}" = "posix"; then
-  AC_DEFINE(HAVE_PTHREAD, 1, [define if pthread is installed])
-  LIBS="-lpthread $LIBS"
-fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
@@ -63,6 +40,46 @@ AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
                 inet_ntoa select socket strerror getifaddrs])
+
+# Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
+                  sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
+                  unistd.h linux/if_packet.h])
+
+# --disable-ltdl removes support for runtime-loadable plugins
+# This is needed for windows
+AC_ARG_ENABLE(ltdl,
+              AS_HELP_STRING([--disable-ltdl],
+                             [Disable runtime loadable plugins]),
+              [],
+              [use_ltdl=yes]
+             )
+
+AM_CONDITIONAL(USE_LTDL, test "${use_ltdl}" = "yes")
+if test "${use_ltdl}" = "yes"; then
+  AC_CONFIG_SUBDIRS(libltdl)
+  AC_LIBTOOL_DLOPEN
+  AC_LIBLTDL_CONVENIENCE
+  AC_SUBST(INCLTDL)
+  AC_SUBST(LIBLTDL)
+  AC_DEFINE(USE_LTDL, 1, [define if ltdl is enabled])
+fi
+
+# we need this outside the conditional, but after AC_LIBLTDL_CONVENIENCE
+AC_PROG_LIBTOOL
+
+# check for protobuf support
+PROTOBUF_SUPPORT([2.1.0])
+
+# check for threading support
+AC_CHECK_HEADER(pthread.h, have_threads=posix)
+AM_CONDITIONAL(HAVE_PTHREAD, test "${have_threads}" = "posix")
+if test "${have_threads}" = "posix"; then
+  AC_DEFINE(HAVE_PTHREAD, 1, [define if pthread is installed])
+  LIBS="-lpthread $LIBS"
+fi
 
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
@@ -89,7 +106,6 @@ AC_MSG_RESULT($ac_cv_ipv6)
 if test $ac_cv_ipv6 = yes ; then
         AC_DEFINE(IPV6, 1, Define to 1 if the system supports IPv6)
 fi
-
 
 # Check if sockaddr{} has sa_len member.
 AC_CHECK_MEMBER([struct sockaddr.sa_len],
@@ -140,33 +156,28 @@ AC_SUBST(third_party_plugindir)
 AC_SUBST(www_datadir)
 
 OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DTHIRD_PARTY_PLUGIN_DIR=\\\"$third_party_plugindir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
-
 AC_SUBST(OLAD_DEFINES)
 
-AC_ARG_ENABLE(debug,
-              AS_HELP_STRING([--enable-debug], [Enable debugging]),
-              AC_DEFINE(DEBUG, 1, [Enable debugging])
-             )
+# check for cppunit
+AM_PATH_CPPUNIT(
+  1.9.6,
+  [],
+  [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
+
+# gcov
 AC_ARG_ENABLE(gcov,
               AC_HELP_STRING([--enable-gcov],
                              [turn on code coverage analysis tools]),
               [use_gcov="yes"],
-              [use_gcov="no"]
-             )
-AC_ARG_ENABLE(python-libs,
-              AC_HELP_STRING([--enable-python-libs],
-                             [Build the python interface]),
-              [build_python_libs="yes"]
              )
 
-# gcov
 if test "${use_gcov}" = "yes"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   LDFLAGS="$LDFLAGS -fprofile-arcs"
 fi
 
-# microhttpd
+# look for microhttpd
 AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
 AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
 
@@ -180,17 +191,16 @@ if test "${have_microhttpd}" = "yes"; then
 fi
 
 # python wrappers
+AC_ARG_ENABLE(python-libs,
+              AC_HELP_STRING([--enable-python-libs],
+                             [Build the python interface]),
+              [build_python_libs="yes"]
+             )
 AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${build_python_libs}" = "yes")
 
 if test "${build_python_libs}" = "yes"; then
  AM_PATH_PYTHON(2.4)
 fi
-
-# check for cppunit
-AM_PATH_CPPUNIT(
-  1.9.6,
-  [],
-  [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
 
 AC_OUTPUT_COMMANDS([
   if test -n "$CONFIG_FILES" && test -n "$CONFIG_HEADERS"; then

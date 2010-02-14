@@ -1,13 +1,17 @@
-INCLUDES = -I$(top_builddir)/common -I$(top_builddir)/include \
-           -I$(top_builddir)/libltdl @OLAD_DEFINES@
+include $(top_srcdir)/common.mk
 SUBDIRS = www testdata
 
+
 OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp \
-                    DlOpenPluginLoader.cpp DynamicPluginLoader.cpp \
-                    OlaServerServiceImpl.cpp \
+                    DynamicPluginLoader.cpp OlaServerServiceImpl.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
                     Preferences.cpp Port.cpp PortManager.cpp Universe.cpp \
                     UniverseStore.cpp
+if USE_LTDL
+  AM_CPPFLAGS += -I$(top_builddir)/libltdl
+  OLASERVER_SOURCES += DlOpenPluginLoader.cpp
+endif
+
 
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
@@ -20,7 +24,7 @@ libolaserver_la_LDFLAGS += -lctemplate
 endif
 
 libolaserver_la_LIBADD = @LIBLTDL@ $(top_builddir)/common/libolacommon.la
-libolaserver_la_CXXFLAGS = -Wall -Wformat -W
+libolaserver_la_CXXFLAGS = -Wall -Wformat -W @OLAD_DEFINES@
 
 # Header files
 pkgincludedir = $(includedir)/olad

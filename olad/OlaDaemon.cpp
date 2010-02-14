@@ -22,8 +22,13 @@
 #include <string.h>
 #include <vector>
 
+#include "config.h"
 #include "ola/ExportMap.h"
+
+#ifdef USE_LTDL
 #include "olad/DlOpenPluginLoader.h"
+#endif
+
 #include "olad/DynamicPluginLoader.h"
 #include "olad/OlaDaemon.h"
 #include "olad/OlaServerServiceImpl.h"
@@ -88,7 +93,11 @@ bool OlaDaemon::Init() {
 
   // Order is important here as we won't load the same plugin twice.
   m_plugin_loaders.push_back(new DynamicPluginLoader());
+
+#ifdef USE_LTDL
+  // The DlOpenPluginLoader is conditioned on having ltdl
   m_plugin_loaders.push_back(new DlOpenPluginLoader(THIRD_PARTY_PLUGIN_DIR));
+#endif
 
   m_preferences_factory = new FileBackedPreferencesFactory();
   m_accepting_socket = new TcpAcceptingSocket("127.0.0.1", m_rpc_port);

@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2010 Simon Newton
  */
 
-#ifndef OLAD_PORTPATCHER_H_
-#define OLAD_PORTPATCHER_H_
+#ifndef OLAD_PORTMANAGER_H_
+#define OLAD_PORTMANAGER_H_
 
 #include <string>
 #include <vector>
@@ -82,4 +82,4 @@ class PortManager {
     UniverseStore * const m_universe_store;
 };
 }  // ola
-#endif  // OLAD_PORTPATCHER_H_
+#endif  // OLAD_PORTMANAGER_H_
