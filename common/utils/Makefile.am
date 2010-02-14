@@ -9,5 +9,5 @@ UtilsTester_SOURCES = DmxBuffer.cpp DmxBufferTest.cpp RunLengthEncoder.cpp \
                       RunLengthEncoderTest.cpp StringUtils.cpp \
                       StringUtilsTest.cpp UtilsTester.cpp
 UtilsTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-UtilsTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl
+UtilsTester_LDFLAGS = $(CPPUNIT_LIBS)
 UtilsTester_LDADD = ../logging/liblogging.la
