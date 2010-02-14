@@ -85,7 +85,7 @@ void DmxBufferTest::testBlackout() {
   uint8_t *result = new uint8_t[DMX_UNIVERSE_SIZE];
   uint8_t *zero = new uint8_t[DMX_UNIVERSE_SIZE];
   unsigned int result_length = DMX_UNIVERSE_SIZE;
-  bzero(zero, DMX_UNIVERSE_SIZE);
+  memset(zero, 0, DMX_UNIVERSE_SIZE);
   buffer.Get(result, &result_length);
   CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, result_length);
   CPPUNIT_ASSERT(!memcmp(zero, result, result_length));
