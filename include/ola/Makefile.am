@@ -11,7 +11,7 @@ pkgincludedir = $(includedir)/ola
 pkginclude_HEADERS = $(SOURCES) $(BUILT_SOURCES)
 
 plugin_id.h:
-	./make_plugin_id.sh
+	sh ./make_plugin_id.sh
 
 clean-local:
 	rm -f plugin_id.h
