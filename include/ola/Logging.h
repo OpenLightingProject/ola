@@ -90,7 +90,12 @@ class StdErrorLogDestination: public LogDestination {
  */
 class SyslogDestination: public LogDestination {
   public:
+    bool Init();
     void Write(log_level level, const string &log_line);
+  private:
+#ifdef WIN32
+    HANDLE m_eventlog;
+#endif
 };
 
 /*
@@ -111,7 +116,7 @@ class LogLine {
 
 void SetLogLevel(log_level level);
 void IncrementLogLevel();
-void InitLogging(log_level level, log_output output);
+bool InitLogging(log_level level, log_output output);
 void InitLogging(log_level level, LogDestination *destination);
 }  // ola
 #endif  // INCLUDE_OLA_LOGGING_H_
