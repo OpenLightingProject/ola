@@ -47,9 +47,9 @@ StreamRpcChannel::StreamRpcChannel(Service *service,
                                    ExportMap *export_map)
     : m_service(service),
       m_socket(socket),
+      m_seq(0),
       m_buffer(NULL),
       m_buffer_size(0),
-      m_seq(0),
       m_expected_size(0),
       m_current_size(0),
       m_export_map(export_map),
@@ -226,7 +226,7 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
  * @returns the size of the new buffer
  */
 int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
-  int requested_size = size;
+  unsigned int requested_size = size;
   uint8_t *new_buffer;
 
   if (size < m_buffer_size)

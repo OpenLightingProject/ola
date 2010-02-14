@@ -46,12 +46,13 @@ class SelectServer {
 
     explicit SelectServer(ExportMap *export_map = NULL);
     ~SelectServer() { UnregisterAll(); }
-    int Run();
+    void Run();
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
     bool AddSocket(class Socket *socket);
-    bool AddSocket(class ConnectedSocket *socket, bool delete_on_close = false);
+    bool AddSocket(class ConnectedSocket *socket,
+                   bool delete_on_close = false);
     bool RemoveSocket(class Socket *socket);
     bool RemoveSocket(class ConnectedSocket *socket);
     timeout_id RegisterRepeatingTimeout(int ms, ola::Closure *closure);

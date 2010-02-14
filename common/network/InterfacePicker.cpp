@@ -149,7 +149,7 @@ vector<Interface> InterfacePicker::GetInterfaces() const {
         return interfaces;
       }
     } else {
-      if (ifc.ifc_len == lastlen) {
+      if (static_cast<unsigned int>(ifc.ifc_len) == lastlen) {
         lastlen = ifc.ifc_len;
         break;
       }

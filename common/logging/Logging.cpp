@@ -110,6 +110,7 @@ void LogLine::Write() {
 
 void StdErrorLogDestination::Write(log_level level, const string &log_line) {
   std::cerr << log_line;
+  (void) level;
 }
 
 void SyslogDestination::Write(log_level level, const string &log_line) {

@@ -63,8 +63,8 @@ SelectServer::SelectServer(ExportMap *export_map)
     : m_terminate(false),
       m_next_id(INVALID_TIMEOUT + 1),
       m_export_map(export_map),
-      m_loop_time(NULL),
-      m_loop_iterations(NULL) {
+      m_loop_iterations(NULL),
+      m_loop_time(NULL) {
 
   m_wake_up_time.tv_sec = m_wake_up_time.tv_usec = 0;
 
@@ -80,7 +80,7 @@ SelectServer::SelectServer(ExportMap *export_map)
 /*
  * Run the select server until Terminate() is called.
  */
-int SelectServer::Run() {
+void SelectServer::Run() {
   while (!m_terminate) {
     // false indicates an error in CheckForEvents();
     if (!CheckForEvents())
@@ -268,8 +268,7 @@ timeout_id SelectServer::RegisterTimeout(int ms,
  * @return false on error, true on success.
  */
 bool SelectServer::CheckForEvents() {
-  int maxsd, ret;
-  unsigned int i;
+  int maxsd;
   fd_set r_fds, w_fds;
   struct timeval tv, now;
 

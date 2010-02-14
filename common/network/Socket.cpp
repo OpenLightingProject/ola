@@ -89,7 +89,7 @@ ssize_t ConnectedSocket::FDSend(int fd,
     return 0;
 
   ssize_t bytes_sent = write(fd, buffer, size);
-  if (bytes_sent != size)
+  if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
     OLA_WARN << "Failed to send, " << strerror(errno);
   return bytes_sent;
 }
@@ -409,7 +409,7 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
   ssize_t bytes_sent = sendto(m_fd, buffer, size, 0,
                               (struct sockaddr*) &destination,
                               sizeof(struct sockaddr));
-  if (bytes_sent != size)
+  if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
     OLA_WARN << "Failed to send, " << strerror(errno);
   return bytes_sent;
 }
@@ -475,9 +475,6 @@ bool UdpSocket::EnableBroadcast() {
     return false;
 
   int broadcast_flag = 1;
-  int ret = setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag,
-                       sizeof(broadcast_flag));
-
   if (setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag,
         sizeof(broadcast_flag))
       == -1) {
@@ -528,7 +525,7 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
   struct in_addr addr;
   if (!StringToAddress(address, addr))
     return false;
-  JoinMulticast(interface, addr, loop);
+  return JoinMulticast(interface, addr, loop);
 }
 
 
@@ -561,7 +558,7 @@ bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
   struct in_addr addr;
   if (!StringToAddress(address, addr))
     return false;
-  LeaveMulticast(interface, addr);
+  return LeaveMulticast(interface, addr);
 }
 
 bool UdpSocket::_RecvFrom(uint8_t *buffer,

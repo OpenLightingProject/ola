@@ -100,7 +100,7 @@ bool StringToUInt(const string &value, unsigned int *output) {
     return false;
   if (value == end_ptr)
     return false;
-  *output = (int) l;
+  *output = static_cast<int>(l);
   return true;
 }
 

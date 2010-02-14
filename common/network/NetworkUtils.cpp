@@ -49,7 +49,7 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
 }
 
 
-string AddressToString(struct in_addr &addr) {
+string AddressToString(const struct in_addr &addr) {
   return inet_ntoa(addr);
 }
 
@@ -124,7 +124,5 @@ string Hostname() {
   StringSplit(hostname, tokens, ".");
   return string(tokens[0]);
 }
-
-
 }  // network
 }  // ola

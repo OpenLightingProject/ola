@@ -370,11 +370,11 @@ string DmxBuffer::ToString() const {
     return "";
 
   std::stringstream str;
-  str << (int) Size() << ": ";
+  str << static_cast<int>(Size()) << ": ";
   for (unsigned int i = 0; i < Size(); i++) {
     if (i)
       str << ",";
-    str << (int) m_data[i];
+    str << static_cast<int>(m_data[i]);
   }
   return str.str();
 }
@@ -413,10 +413,14 @@ bool DmxBuffer::DuplicateIfNeeded() {
     uint8_t *original_data = m_data;
     unsigned int length = m_length;
     m_copy_on_write = false;
-    Init();
-    Set(original_data, length);
-    (*old_ref_count)--;
+    if (Init()) {
+      Set(original_data, length);
+      (*old_ref_count)--;
+      return true;
+    }
+    return false;
   }
+  return true;
 }
 
 
