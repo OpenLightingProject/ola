@@ -18,19 +18,11 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <stdio.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <sys/select.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
 
 #include <algorithm>
-#include <iomanip>
-#include <string>
 #include <vector>
 
 #include "ola/Logging.h"
@@ -65,8 +57,6 @@ SelectServer::SelectServer(ExportMap *export_map)
       m_export_map(export_map),
       m_loop_iterations(NULL),
       m_loop_time(NULL) {
-
-  m_wake_up_time.tv_sec = m_wake_up_time.tv_usec = 0;
 
   if (m_export_map) {
     m_export_map->GetIntegerVar(K_SOCKET_VAR);
@@ -249,12 +239,11 @@ timeout_id SelectServer::RegisterTimeout(int ms,
   event_t event;
   event.id = m_next_id++;
   event.closure = closure;
-  event.interval.tv_sec = ms / K_MS_IN_SECOND;
-  event.interval.tv_usec = K_MS_IN_SECOND * (ms % K_MS_IN_SECOND);
+  event.interval = ms;
   event.repeating = repeating;
 
-  gettimeofday(&event.next, NULL);
-  timeradd(&event.next, &event.interval, &event.next);
+  event.next.SetToCurrentTime();
+  event.next += event.interval;
   m_events.push(event);
 
   if (m_export_map)
@@ -270,21 +259,21 @@ timeout_id SelectServer::RegisterTimeout(int ms,
 bool SelectServer::CheckForEvents() {
   int maxsd;
   fd_set r_fds, w_fds;
-  struct timeval tv, now;
+  TimeStamp now;
+  struct timeval tv;
 
   maxsd = 0;
   FD_ZERO(&r_fds);
   FD_ZERO(&w_fds);
   AddSocketsToSet(&r_fds, &maxsd);
-  gettimeofday(&now, NULL);
+  now.SetToCurrentTime();
   now = CheckTimeouts(now);
 
-  if (m_wake_up_time.tv_sec && m_wake_up_time.tv_usec) {
-    timersub(&now, &m_wake_up_time, &tv);
-    OLA_DEBUG << "ss process time was " << tv.tv_sec << "." <<
-      std::setfill('0') << std::setw(6) << tv.tv_usec;
+  if (m_wake_up_time.IsSet()) {
+    TimeInterval loop_time = now - m_wake_up_time;
+    OLA_DEBUG << "ss process time was " << loop_time.ToString();
     if (m_loop_time)
-      (*m_loop_time) += (tv.tv_sec * K_US_IN_SECOND + tv.tv_usec);
+      (*m_loop_time) += loop_time.AsInt();
     if (m_loop_iterations)
       (*m_loop_iterations)++;
   }
@@ -296,14 +285,14 @@ bool SelectServer::CheckForEvents() {
     tv.tv_sec = 1;
     tv.tv_usec = 0;
   } else {
-    struct timeval next = m_events.top().next;
-    timersub(&next, &now, &tv);
+    TimeInterval interval = m_events.top().next - now;
+    interval.AsTimeval(&tv);
   }
 
-  switch (select(maxsd+1, &r_fds, &w_fds, NULL, &tv)) {
+  switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
-      gettimeofday(&m_wake_up_time, NULL);
+      m_wake_up_time.SetToCurrentTime();
       return true;
     case -1:
       if (errno == EINTR)
@@ -311,7 +300,7 @@ bool SelectServer::CheckForEvents() {
       OLA_WARN << "select() error, " << strerror(errno);
       return false;
     default:
-      gettimeofday(&m_wake_up_time, NULL);
+      m_wake_up_time.SetToCurrentTime();
       CheckTimeouts(m_wake_up_time);
       CheckSockets(&r_fds);
   }
@@ -404,14 +393,14 @@ void SelectServer::CheckSockets(fd_set *set) {
  * Check for expired timeouts and call them.
  * @returns a struct timeval of the time up to where we checked.
  */
-struct timeval SelectServer::CheckTimeouts(const struct timeval &current_time) {
-  struct timeval now = current_time;
+TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
+  TimeStamp now = current_time;
 
   event_t e;
   if (m_events.empty())
     return now;
 
-  for (e = m_events.top(); !m_events.empty() && timercmp(&e.next, &now, <);
+  for (e = m_events.top(); !m_events.empty() && (e.next < now);
        e = m_events.top()) {
     m_events.pop();
 
@@ -424,13 +413,12 @@ struct timeval SelectServer::CheckTimeouts(const struct timeval &current_time) {
     }
 
     int return_code = 1;
-    if (e.closure) {
+    if (e.closure)
       return_code = e.closure->Run();
-    }
 
     if (e.repeating && !return_code) {
       e.next = now;
-      timeradd(&e.next, &e.interval, &e.next);
+      e.next += e.interval;
       m_events.push(e);
     } else {
       // if we were repeating and we returned an error we need to call delete
@@ -440,7 +428,7 @@ struct timeval SelectServer::CheckTimeouts(const struct timeval &current_time) {
       if (m_export_map)
         (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
     }
-    gettimeofday(&now, NULL);
+    now.SetToCurrentTime();
   }
   return now;
 }

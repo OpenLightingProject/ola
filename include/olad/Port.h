@@ -23,6 +23,7 @@
 
 #include <string>
 #include <ola/DmxBuffer.h>  // NOLINT
+#include <ola/Clock.h>
 #include <olad/Universe.h>  // NOLINT
 #include <olad/PortConstants.h>
 
@@ -117,8 +118,10 @@ class InputPort: public Port {
 
     // signal the port that the DMX data has changed
     virtual int DmxChanged() {
-      if (GetUniverse())
+      if (GetUniverse()) {
+        m_update_time.SetToCurrentTime();
         GetUniverse()->PortDataChanged(this);
+      }
       return 0;
     }
 
@@ -129,11 +132,18 @@ class InputPort: public Port {
       return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_STATIC;
     }
 
+    TimeStamp LastUpdateTime() const {
+      return m_update_time;
+    }
+
   protected:
     virtual string PortPrefix() const { return "I"; }
 
     // indicates whether this port supports priorities, default to no
     virtual bool SupportsPriorities() const { return false; }
+
+  private:
+    TimeStamp m_update_time;
 };
 
 

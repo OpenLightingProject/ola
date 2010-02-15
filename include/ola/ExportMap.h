@@ -22,9 +22,10 @@
 #define INCLUDE_OLA_EXPORTMAP_H_
 
 #include <stdlib.h>
-#include <string>
-#include <sstream>
+#include <functional>
 #include <map>
+#include <sstream>
+#include <string>
 #include <vector>
 
 namespace ola {
