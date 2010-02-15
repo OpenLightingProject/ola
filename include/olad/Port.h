@@ -119,7 +119,7 @@ class InputPort: public Port {
     // signal the port that the DMX data has changed
     virtual int DmxChanged() {
       if (GetUniverse()) {
-        m_update_time.SetToCurrentTime();
+        Clock::CurrentTime(m_update_time);
         GetUniverse()->PortDataChanged(this);
       }
       return 0;
