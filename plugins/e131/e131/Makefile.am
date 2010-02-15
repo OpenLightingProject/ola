@@ -23,7 +23,7 @@ libolae131tester_la_SOURCES = E131TestFramework.cpp
 # test program
 noinst_PROGRAMS = e131_transmit_test
 e131_transmit_test_SOURCES = e131_transmit_test.cpp
-e131_transmit_test_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf \
+e131_transmit_test_LDADD = @LIBS@ -lprotobuf \
                   ./libolae131core.la \
                   ./libolae131tester.la \
                   ../../../common/libolacommon.la \
@@ -49,6 +49,6 @@ E131Tester_SOURCES = BaseInflatorTest.cpp \
                      UDPTransportTest.cpp
 E131Tester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 E131Tester_LDFLAGS = $(CPPUNIT_LIBS) $(UUID_LIBS)
-E131Tester_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf \
+E131Tester_LDADD = @LIBS@ -lprotobuf \
                    ./libolae131core.la \
                    ../../../common/libolacommon.la
