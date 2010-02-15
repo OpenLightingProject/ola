@@ -242,7 +242,7 @@ timeout_id SelectServer::RegisterTimeout(int ms,
   event.interval = ms;
   event.repeating = repeating;
 
-  event.next.SetToCurrentTime();
+  Clock::CurrentTime(event.next);
   event.next += event.interval;
   m_events.push(event);
 
@@ -266,7 +266,7 @@ bool SelectServer::CheckForEvents() {
   FD_ZERO(&r_fds);
   FD_ZERO(&w_fds);
   AddSocketsToSet(&r_fds, &maxsd);
-  now.SetToCurrentTime();
+  Clock::CurrentTime(now);
   now = CheckTimeouts(now);
 
   if (m_wake_up_time.IsSet()) {
@@ -292,7 +292,7 @@ bool SelectServer::CheckForEvents() {
   switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
-      m_wake_up_time.SetToCurrentTime();
+      Clock::CurrentTime(m_wake_up_time);
       return true;
     case -1:
       if (errno == EINTR)
@@ -300,7 +300,7 @@ bool SelectServer::CheckForEvents() {
       OLA_WARN << "select() error, " << strerror(errno);
       return false;
     default:
-      m_wake_up_time.SetToCurrentTime();
+      Clock::CurrentTime(m_wake_up_time);
       CheckTimeouts(m_wake_up_time);
       CheckSockets(&r_fds);
   }
@@ -428,7 +428,7 @@ TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
       if (m_export_map)
         (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
     }
-    now.SetToCurrentTime();
+    Clock::CurrentTime(now);
   }
   return now;
 }

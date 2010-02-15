@@ -35,6 +35,7 @@ class ClockTest: public CppUnit::TestFixture {
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ClockTest);
 
+using ola::Clock;
 using ola::TimeStamp;
 using ola::TimeInterval;
 using std::string;
@@ -49,7 +50,7 @@ void ClockTest::testTimeStamp() {
   CPPUNIT_ASSERT(!timestamp2.IsSet());
 
   // test assignment & copy constructor
-  timestamp.SetToCurrentTime();
+  Clock::CurrentTime(timestamp);
   CPPUNIT_ASSERT(timestamp.IsSet());
   timestamp2 = timestamp;
   CPPUNIT_ASSERT(timestamp2.IsSet());
@@ -59,7 +60,7 @@ void ClockTest::testTimeStamp() {
   CPPUNIT_ASSERT_EQUAL(timestamp, timestamp3);
 
   // test equalities
-  timestamp3.SetToCurrentTime();
+  Clock::CurrentTime(timestamp3);
   CPPUNIT_ASSERT(timestamp3 != timestamp);
   CPPUNIT_ASSERT(timestamp3 > timestamp);
   CPPUNIT_ASSERT(timestamp < timestamp3);

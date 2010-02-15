@@ -122,6 +122,11 @@ class TimeStamp {
       return *this;
     }
 
+    TimeStamp& operator=(const struct timeval &tv) {
+      m_tv = tv;
+      return *this;
+    }
+
     bool operator==(const TimeStamp &other) const {
       return timercmp(&m_tv, &other.m_tv, ==);
     }
@@ -164,10 +169,6 @@ class TimeStamp {
       return timerisset(&m_tv);
     }
 
-    void SetToCurrentTime() {
-      gettimeofday(&m_tv, NULL);
-    }
-
     std::string ToString() const {
       std::stringstream str;
       str << m_tv.tv_sec << "." << std::setfill('0') << std::setw(6) <<
@@ -189,11 +190,12 @@ class TimeStamp {
  */
 class Clock {
   public:
-    static TimeStamp CurrentTime() {
-      TimeStamp now;
-      now.SetToCurrentTime();
-      return now;
+    static void CurrentTime(TimeStamp &timestamp) {
+      struct timeval tv;
+      gettimeofday(&tv, NULL);
+      timestamp = tv;
     }
+
 };
 }  // ola
 #endif  // INCLUDE_OLA_CLOCK_H_
