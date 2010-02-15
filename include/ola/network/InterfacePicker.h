@@ -21,20 +21,9 @@
 #ifndef INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 #define INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include <netinet/in.h>
 #include <string>
 #include <vector>
-
-#ifdef HAVE_GETIFADDRS
-  #ifdef HAVE_LINUX_IF_PACKET_H
-    #define OLA_USE_GETIFADDRS
-  #endif
-#endif
-
 
 namespace ola {
 namespace network {
@@ -49,10 +38,7 @@ class Interface {
     Interface();
     Interface(const Interface &other);
     Interface& operator=(const Interface &other);
-    bool operator==(const Interface &other) {
-      return (name == other.name &&
-              ip_address.s_addr == other.ip_address.s_addr);
-    }
+    bool operator==(const Interface &other);
 
     std::string name;
     struct in_addr ip_address;

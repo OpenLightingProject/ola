@@ -22,6 +22,12 @@
 #  include <config.h>
 #endif
 
+#ifdef HAVE_GETIFADDRS
+  #ifdef HAVE_LINUX_IF_PACKET_H
+    #define OLA_USE_GETIFADDRS
+  #endif
+#endif
+
 
 #ifdef OLA_USE_GETIFADDRS
   #include <ifaddrs.h>
@@ -75,6 +81,12 @@ Interface& Interface::operator=(const Interface &other) {
     memcpy(hw_address, other.hw_address, MAC_LENGTH);
   }
   return *this;
+}
+
+
+bool Interface::operator==(const Interface &other) {
+  return (name == other.name &&
+          ip_address.s_addr == other.ip_address.s_addr);
 }
 
 
