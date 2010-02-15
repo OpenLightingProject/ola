@@ -36,6 +36,8 @@ using std::pair;
 using std::vector;
 using ola::Closure;
 
+const TimeInterval DMPE131Inflator::EXPIRY_INTERVAL(2500);
+
 
 DMPE131Inflator::~DMPE131Inflator() {
   map<unsigned int, universe_handler>::iterator iter;
@@ -229,8 +231,8 @@ bool DMPE131Inflator::TrackSourceIfRequired(
     DmxBuffer **buffer) {
 
   *buffer = NULL;  // default the buffer to NULL
-  struct timeval now;
-  gettimeofday(&now, NULL);
+  ola::TimeStamp now;
+  Clock::CurrentTime(now);
   const E131Header &e131_header = headers.GetE131Header();
   uint8_t priority = e131_header.Priority();
   vector<dmx_source> &sources = universe_data->sources;
@@ -238,9 +240,8 @@ bool DMPE131Inflator::TrackSourceIfRequired(
 
   while (iter != sources.end()) {
     if (iter->cid != headers.GetRootHeader().GetCid()) {
-      struct timeval expiry_time;
-      timeradd(&(iter->last_heard_from), &m_expiry_interval, &expiry_time);
-      if (timercmp(&now, &expiry_time, >)) {
+      TimeStamp expiry_time = iter->last_heard_from + EXPIRY_INTERVAL;
+      if (now > expiry_time) {
         OLA_INFO << "source " << iter->cid.ToString() << " has expired";
         iter = sources.erase(iter);
         continue;

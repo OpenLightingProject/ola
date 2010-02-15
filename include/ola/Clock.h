@@ -76,6 +76,10 @@ class TimeInterval {
       return (m_interval.tv_sec * K_US_IN_SECOND + m_interval.tv_usec);
     }
 
+    time_t Seconds() const {
+      return m_interval.tv_sec;
+    }
+
     void AsTimeval(struct timeval *tv) const {
       *tv = m_interval;
     }
