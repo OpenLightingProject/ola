@@ -113,7 +113,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
 
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
   data_dir_var->Set(m_server.DataDir());
-  gettimeofday(&m_start_time, NULL);
+  Clock::CurrentTime(m_start_time);
   export_map->GetStringVar(K_UPTIME_VAR);
 
   // fetch the interface info
@@ -149,15 +149,15 @@ int OlaHttpServer::DisplayIndex(const HttpRequest *request,
 int OlaHttpServer::DisplayMain(const HttpRequest *request,
                                HttpResponse *response) {
   TemplateDictionary dict("main");
-  struct timeval now, diff;
-  gettimeofday(&now, NULL);
-  timersub(&now, &m_start_time, &diff);
+  TimeStamp now;
+  Clock::CurrentTime(now);
+  TimeInterval diff = now - m_start_time;
 
   stringstream str;
-  unsigned int minutes = diff.tv_sec / 60;
+  unsigned int minutes = diff.Seconds() / 60;
   unsigned int hours = minutes / 60;
   str << hours << " hours, " << minutes % 60 << " minutes, " <<
-    diff.tv_sec % 60 << " seconds";
+    diff.Seconds() % 60 << " seconds";
   dict.SetValue("UPTIME", str.str());
   dict.SetValue("HOSTNAME", ola::network::FullHostname());
   dict.SetValue("IP", ola::network::AddressToString(m_interface.ip_address));
@@ -367,11 +367,11 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayDebug(const HttpRequest *request,
                                 HttpResponse *response) {
-  struct timeval now, diff;
-  gettimeofday(&now, NULL);
-  timersub(&now, &m_start_time, &diff);
+  TimeStamp now;
+  Clock::CurrentTime(now);
+  TimeInterval diff = now - m_start_time;
   stringstream str;
-  str << (diff.tv_sec * 1000 + diff.tv_usec / 1000);
+  str << (diff.AsInt() / 1000);
   m_export_map->GetStringVar(K_UPTIME_VAR)->Set(str.str());
 
   vector<BaseVariable*> variables = m_export_map->AllVariables();
