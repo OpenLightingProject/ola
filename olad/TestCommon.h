@@ -45,7 +45,10 @@ class TestMockInputPort: public InputPort {
     ~TestMockInputPort() {}
 
     string Description() const { return ""; }
-    bool WriteDMX(const DmxBuffer &buffer) { m_buffer = buffer; }
+    bool WriteDMX(const DmxBuffer &buffer) {
+      m_buffer = buffer;
+      return true;
+    }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
   private:
@@ -77,6 +80,8 @@ class TestMockOutputPort: public OutputPort {
     string Description() const { return ""; }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       m_buffer = buffer;
+      (void) priority;
+      return true;
     }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
