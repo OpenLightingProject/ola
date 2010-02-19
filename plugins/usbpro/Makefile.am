@@ -14,7 +14,7 @@ libolausbprowidget_la_SOURCES = UsbProWidget.cpp UsbProWidget.h \
 
 noinst_PROGRAMS = usbpro_test
 usbpro_test_SOURCES = usbpro_test.cpp
-usbpro_test_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf \
+usbpro_test_LDADD = @LIBS@ -lprotobuf \
                     libolausbprowidget.la \
                     ./../../common/libolacommon.la
 usbpro_test_LDFLAGS = $(UUID_LIBS)

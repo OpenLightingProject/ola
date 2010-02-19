@@ -17,4 +17,4 @@ ShowNetTester_SOURCES = ShowNetTester.cpp \
                         ShowNetNode.cpp ShowNetNodeTest.cpp
 ShowNetTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 ShowNetTester_LDFLAGS = $(CPPUNIT_LIBS)
-ShowNetTester_LDADD = @LIBS@ @LIBLTDL@  -lprotobuf ../../common/libolacommon.la
+ShowNetTester_LDADD = @LIBS@ -lprotobuf ../../common/libolacommon.la
