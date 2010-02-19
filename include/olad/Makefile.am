@@ -1,4 +1,4 @@
-OLAD_INCLUDES = Device.h PluginAdaptor.h Plugin.h \
+OLAD_INCLUDES = Device.h DmxSource.h PluginAdaptor.h Plugin.h \
                 Port.h PortConstants.h Preferences.h Universe.h
 
 EXTRA_DIST = $(OLAD_INCLUDES)

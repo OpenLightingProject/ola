@@ -138,6 +138,9 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
      target_buffer->Set(data + available_length + 1, channels - 1);
   }
 
+  if (universe_iter->second.priority)
+    *universe_iter->second.priority = universe_iter->second.active_priority;
+
   // merge the sources
   switch (universe_iter->second.sources.size()) {
     case 0:
@@ -171,6 +174,7 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
  */
 bool DMPE131Inflator::SetHandler(unsigned int universe,
                                  ola::DmxBuffer *buffer,
+                                 uint8_t *priority,
                                  ola::Closure *closure) {
   if (!closure || !buffer)
     return false;
@@ -183,12 +187,14 @@ bool DMPE131Inflator::SetHandler(unsigned int universe,
     handler.buffer = buffer;
     handler.closure = closure;
     handler.active_priority = 0;
+    handler.priority = priority;
     m_handlers[universe] = handler;
     m_e131_layer->JoinUniverse(universe);
   } else {
     Closure *old_closure = iter->second.closure;
     iter->second.closure = closure;
     iter->second.buffer = buffer;
+    iter->second.priority = priority;
     delete old_closure;
   }
   return true;

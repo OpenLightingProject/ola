@@ -199,7 +199,6 @@ class Clock {
       gettimeofday(&tv, NULL);
       timestamp = tv;
     }
-
 };
 }  // ola
 #endif  // INCLUDE_OLA_CLOCK_H_

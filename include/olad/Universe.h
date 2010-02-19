@@ -26,6 +26,7 @@
 #include <string>
 #include <ola/ExportMap.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
+#include <olad/DmxSource.h>  // NOLINT
 
 namespace ola {
 
@@ -51,6 +52,7 @@ class Universe {
     unsigned int UniverseId() const { return m_universe_id; }
     merge_mode MergeMode() const { return m_merge_mode; }
     bool IsActive() const;
+    uint8_t ActivePriority() const { return m_active_priority; }
 
     // Used to adjust the properties
     void SetName(const string &name);
@@ -108,17 +110,21 @@ class Universe {
     void UpdateMode();
     bool RemoveClient(Client *client, bool is_source);
     bool AddClient(Client *client, bool is_source);
-    bool HTPMergeAllSources();
+    void HTPMergeSources(const vector<DmxSource> &sources);
+    void MergeAll(const InputPort *port, const Client *client);
 
     string m_universe_name;
     unsigned int m_universe_id;
     string m_universe_id_str;
+    uint8_t m_active_priority;
     enum merge_mode m_merge_mode;  // merge mode
     vector<InputPort*> m_input_ports;
     vector<OutputPort*> m_output_ports;
     set<Client*> m_sink_clients;  // clients that require updates
     set<Client*> m_source_clients;  // clients that provide data
     class UniverseStore *m_universe_store;
+    DmxBuffer m_buffer;
+    ExportMap *m_export_map;
 
     template<class PortClass>
     bool GenericAddPort(PortClass *port,
@@ -131,9 +137,6 @@ class Universe {
     template<class PortClass>
     bool GenericContainsPort(PortClass *port,
                              const vector<PortClass*> &ports) const;
-
-    DmxBuffer m_buffer;
-    ExportMap *m_export_map;
 };
 }  // ola
 #endif  // INCLUDE_OLAD_UNIVERSE_H_

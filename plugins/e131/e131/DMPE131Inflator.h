@@ -46,7 +46,7 @@ class DMPE131Inflator: public DMPInflator {
     ~DMPE131Inflator();
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
-                    ola::Closure *handler);
+                    uint8_t *priority, ola::Closure *handler);
     bool RemoveHandler(unsigned int universe);
 
   protected:
@@ -68,6 +68,7 @@ class DMPE131Inflator: public DMPInflator {
       DmxBuffer *buffer;
       Closure *closure;
       uint8_t active_priority;
+      uint8_t *priority;
       std::vector<dmx_source> sources;
     } universe_handler;
 

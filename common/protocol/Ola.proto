@@ -60,6 +60,7 @@ message DmxReadRequest {
 message DmxData {
   required int32 universe = 1;
   required bytes data = 2;
+  optional int32 priority = 3;
 }
 
 message RegisterDmxRequest {

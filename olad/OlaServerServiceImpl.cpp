@@ -19,20 +19,22 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/ExportMap.h"
-#include "olad/Universe.h"
+#include "olad/Client.h"
 #include "olad/Device.h"
-#include "olad/Port.h"
+#include "olad/DeviceManager.h"
+#include "olad/DmxSource.h"
+#include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
+#include "olad/Port.h"
 #include "olad/PortManager.h"
-#include "olad/Client.h"
-#include "olad/DeviceManager.h"
-#include "olad/OlaServerServiceImpl.h"
+#include "olad/Universe.h"
 #include "olad/UniverseStore.h"
 #include "common/protocol/Ola.pb.h"
 
@@ -119,10 +121,21 @@ void OlaServerServiceImpl::UpdateDmxData(
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  DmxBuffer buffer;
-  buffer.Set(request->data());
   if (m_client) {
-    m_client->DMXRecieved(request->universe(), buffer);
+    DmxBuffer buffer;
+    buffer.Set(request->data());
+    TimeStamp now;
+    // TODO(simon): FIX this
+    Clock::CurrentTime(now);
+
+    uint8_t priority = DmxSource::PRIORITY_DEFAULT;
+    if (request->has_priority()) {
+      priority = request->priority();
+      priority = std::max(DmxSource::PRIORITY_MIN, priority);
+      priority = std::min(DmxSource::PRIORITY_MAX, priority);
+    }
+    DmxSource source(buffer, now, priority);
+    m_client->DMXRecieved(request->universe(), source);
     universe->SourceClientDataChanged(m_client);
   }
   done->Run();

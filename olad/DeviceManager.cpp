@@ -339,6 +339,9 @@ void DeviceManager::RestorePortPriority(Port *port) const {
   string priority_mode = m_port_preferences->GetValue(
       port_id + PRIORITY_MODE_SUFFIX);
 
+  if (priority.empty() && priority_mode.empty())
+    return;
+
   // pedantic mode off
   m_port_manager->SetPriority(port, priority_mode, priority, false);
 }

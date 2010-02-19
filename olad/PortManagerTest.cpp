@@ -21,10 +21,12 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
+#include "olad/DmxSource.h"
 #include "olad/PortManager.h"
 #include "olad/UniverseStore.h"
 #include "olad/TestCommon.h"
 
+using ola::DmxSource;
 using ola::PortManager;
 using ola::Port;
 using ola::Universe;
@@ -209,7 +211,7 @@ void PortManagerTest::testInputPortSetPriority() {
   CPPUNIT_ASSERT_EQUAL(input_port.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
   CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(),
-                       Port::PORT_PRIORITY_DEFAULT);
+                       DmxSource::PRIORITY_DEFAULT);
 
   // this port doesn't support priorities so the mode is a noop
   CPPUNIT_ASSERT(patcher.SetPriority(&input_port, "1", "2"));
@@ -260,7 +262,7 @@ void PortManagerTest::testInputPortSetPriority() {
   CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
   CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(),
-                       Port::PORT_PRIORITY_DEFAULT);
+                       DmxSource::PRIORITY_DEFAULT);
 
   // try changing to static mode
   CPPUNIT_ASSERT(patcher.SetPriority(&input_port2, "1", "2"));
@@ -332,7 +334,7 @@ void PortManagerTest::testOutputPortSetPriority() {
   CPPUNIT_ASSERT_EQUAL(output_port.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
   CPPUNIT_ASSERT_EQUAL(output_port.GetPriority(),
-                       Port::PORT_PRIORITY_DEFAULT);
+                       DmxSource::PRIORITY_DEFAULT);
 
   // this port doesn't support priorities so these are all noops
   CPPUNIT_ASSERT(patcher.SetPriority(&output_port, "1", "2"));
@@ -343,19 +345,19 @@ void PortManagerTest::testOutputPortSetPriority() {
   CPPUNIT_ASSERT_EQUAL(output_port.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
   CPPUNIT_ASSERT_EQUAL(output_port.GetPriority(),
-                       Port::PORT_PRIORITY_DEFAULT);
+                       DmxSource::PRIORITY_DEFAULT);
 
   // try with pedantic mode off
   CPPUNIT_ASSERT(patcher.SetPriority(&output_port, "f00", "40", false));
   CPPUNIT_ASSERT_EQUAL(output_port.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(output_port.GetPriority(), Port::PORT_PRIORITY_DEFAULT);
+  CPPUNIT_ASSERT_EQUAL(output_port.GetPriority(), DmxSource::PRIORITY_DEFAULT);
 
   // try with pedantic mode off
   CPPUNIT_ASSERT(patcher.SetPriority(&output_port, "1", "201", false));
   CPPUNIT_ASSERT_EQUAL(output_port.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(output_port.GetPriority(), Port::PORT_PRIORITY_DEFAULT);
+  CPPUNIT_ASSERT_EQUAL(output_port.GetPriority(), DmxSource::PRIORITY_DEFAULT);
 
   // now test an output port that supports priorities
   TestMockPriorityOutputPort output_port2(NULL, 1);
@@ -365,7 +367,7 @@ void PortManagerTest::testOutputPortSetPriority() {
   CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
   CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(),
-                       Port::PORT_PRIORITY_DEFAULT);
+                       DmxSource::PRIORITY_DEFAULT);
 
   // try changing to static mode
   CPPUNIT_ASSERT(patcher.SetPriority(&output_port2, "1", "2"));

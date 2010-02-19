@@ -55,11 +55,13 @@ class E131InputPort: public InputPort {
     string Description() const { return m_helper.Description(GetUniverse()); }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
     bool SupportsPriorities() const { return true; }
+    uint8_t InheritedPriority() const { return m_priority; }
 
   private:
     DmxBuffer m_buffer;
     E131Node *m_node;
     E131PortHelper m_helper;
+    uint8_t m_priority;
 };
 
 

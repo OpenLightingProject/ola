@@ -69,6 +69,7 @@ bool StateManager::Init() {
       assert(m_local_node->SetHandler(
             UNIVERSE_ID,
             &m_recv_buffer,
+            NULL,  // don't track the priority
             ola::NewClosure(this, &StateManager::NewDMX)));
     }
   }

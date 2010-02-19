@@ -23,15 +23,19 @@
 #include <vector>
 
 #include "olad/TestCommon.h"
+#include "olad/Preferences.h"
+#include "olad/UniverseStore.h"
 
 
 class PortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PortTest);
-  CPPUNIT_TEST(testPortPriorities);
+  CPPUNIT_TEST(testOutputPortPriorities);
+  CPPUNIT_TEST(testInputPortPriorities);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testPortPriorities();
+    void testOutputPortPriorities();
+    void testInputPortPriorities();
 };
 
 
@@ -39,12 +43,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PortTest);
 
 
 /*
- * Check that the base device class works correctly.
+ * Check that we can set the priority & mode of output ports
  */
-void PortTest::testPortPriorities() {
+void PortTest::testOutputPortPriorities() {
   TestMockOutputPort output_port(NULL, 1);
 
-  CPPUNIT_ASSERT_EQUAL(ola::Port::PORT_PRIORITY_DEFAULT,
+  CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
                        output_port.GetPriority());
   CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_INHERIT,
                        output_port.GetPriorityMode());
@@ -65,4 +69,71 @@ void PortTest::testPortPriorities() {
   output_port.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);
   CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_INHERIT,
                        output_port.GetPriorityMode());
+}
+
+
+/*
+ * Test that we can set the priorities & modes of input ports
+ */
+void PortTest::testInputPortPriorities() {
+  unsigned int universe_id = 1;
+  ola::MemoryPreferences preferences("foo");
+  ola::UniverseStore store(&preferences, NULL);
+  ola::PortManager port_manager(&store);
+
+  MockDevice device(NULL, "foo");
+  // This port operates in static priority mode
+  TestMockInputPort input_port(&device, 1);
+  port_manager.PatchPort(&input_port, universe_id);
+
+  ola::DmxBuffer buffer("foo bar baz");
+  input_port.WriteDMX(buffer);
+  input_port.DmxChanged();
+
+  ola::Universe *universe = store.GetUniverseOrCreate(universe_id);
+  CPPUNIT_ASSERT(universe);
+
+  CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
+                       universe->ActivePriority());
+
+  // change the priority
+  uint8_t new_priority = 120;
+  port_manager.SetPriority(&input_port, ola::PRIORITY_MODE_OVERRIDE,
+                           new_priority);
+
+  input_port.WriteDMX(buffer);
+  input_port.DmxChanged();
+  CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
+
+  new_priority = 0;
+  port_manager.SetPriority(&input_port, ola::PRIORITY_MODE_OVERRIDE,
+                           new_priority);
+
+  input_port.WriteDMX(buffer);
+  input_port.DmxChanged();
+  CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
+  port_manager.UnPatchPort(&input_port);
+
+  // now try a port that supported priorities
+  TestMockPriorityInputPort input_port2(&device, 2);
+  port_manager.PatchPort(&input_port2, universe_id);
+
+  // the default mode is inherit
+  input_port2.SetInheritedPriority(99);
+  input_port2.WriteDMX(buffer);
+  input_port2.DmxChanged();
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 99, universe->ActivePriority());
+
+  input_port2.SetInheritedPriority(123);
+  input_port2.WriteDMX(buffer);
+  input_port2.DmxChanged();
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 123, universe->ActivePriority());
+
+  // now try override mode
+  new_priority = 108;
+  port_manager.SetPriority(&input_port2, ola::PRIORITY_MODE_OVERRIDE,
+                           new_priority);
+  input_port2.WriteDMX(buffer);
+  input_port2.DmxChanged();
+  CPPUNIT_ASSERT_EQUAL(new_priority,  universe->ActivePriority());
 }

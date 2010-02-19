@@ -67,7 +67,7 @@ class E131Node {
                           uint8_t priority = DEFAULT_PRIORITY);
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
-                    ola::Closure *handler);
+                    uint8_t *priority, ola::Closure *handler);
     bool RemoveHandler(unsigned int universe);
 
     ola::network::UdpSocket* GetSocket() { return m_transport.GetSocket(); }

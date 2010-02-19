@@ -65,6 +65,7 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
                    ExportMap *export_map)
     : m_universe_name(""),
       m_universe_id(universe_id),
+      m_active_priority(DmxSource::PRIORITY_MIN),
       m_merge_mode(Universe::MERGE_LTP),
       m_universe_store(store),
       m_export_map(export_map) {
@@ -263,7 +264,8 @@ bool Universe::ContainsSinkClient(Client *client) const {
 
 
 /*
- * Set the dmx data for this universe
+ * Set the dmx data for this universe, this overrides anything from the clients
+ * or ports but will be overridden in the next update.
  * @param buffer the dmx buffer with the data
  * @return true is we updated all ports/clients, false otherwise
  */
@@ -273,14 +275,8 @@ bool Universe::SetDMX(const DmxBuffer &buffer) {
       UniverseId();
     return true;
   }
-
-  if (m_merge_mode == Universe::MERGE_LTP) {
-    m_buffer = buffer;
-  } else {
-    HTPMergeAllSources();
-    m_buffer.HTPMerge(buffer);
-  }
-  return this->UpdateDependants();
+  m_buffer.Set(buffer);
+  return UpdateDependants();
 }
 
 
@@ -294,17 +290,7 @@ bool Universe::PortDataChanged(InputPort *port) {
       << UniverseId();
     return false;
   }
-
-  if (m_merge_mode == Universe::MERGE_LTP) {
-    // LTP merge mode
-    const DmxBuffer &new_buffer = port->ReadDMX();
-    if (new_buffer.Size())
-      // explictity copy else we play the new/delete dance
-      m_buffer.Set(new_buffer);
-  } else {
-    // htp merge mode
-    HTPMergeAllSources();
-  }
+  MergeAll(port, NULL);
   UpdateDependants();
   return true;
 }
@@ -317,18 +303,8 @@ bool Universe::SourceClientDataChanged(Client *client) {
   if (!client)
     return false;
 
-  if (m_merge_mode == Universe::MERGE_LTP) {
-    const DmxBuffer &new_buffer = client->GetDMX(m_universe_id);
-    if (new_buffer.Size())
-      // explictity copy else we play the new/delete dance
-      m_buffer.Set(new_buffer);
-  } else {
-    // add the client if we're in HTP mode
-    if (!ContainsSourceClient(client)) {
-      AddSourceClient(client);
-    }
-    HTPMergeAllSources();
-  }
+  AddSourceClient(client);   // always add since this may be the first call
+  MergeAll(NULL, client);
   UpdateDependants();
   return true;
 }
@@ -357,7 +333,7 @@ bool Universe::UpdateDependants() {
 
   // write to all ports assigned to this unviverse
   for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter) {
-    (*iter)->WriteDMX(m_buffer, Port::PORT_PRIORITY_DEFAULT);
+    (*iter)->WriteDMX(m_buffer, m_active_priority);
   }
 
   // write to all clients
@@ -447,47 +423,104 @@ bool Universe::RemoveClient(Client *client, bool is_source) {
 
 /*
  * HTP Merge all sources (clients/ports)
+ * @pre sources.sizez >= 2
+ * @param sources the list of DmxSources to merge
  */
-bool Universe::HTPMergeAllSources() {
+void Universe::HTPMergeSources(const vector<DmxSource> &sources) {
+  vector<DmxSource>::const_iterator iter;
+  m_buffer.Reset();
+
+  for (iter = sources.begin(); iter != sources.end(); ++iter) {
+    m_buffer.HTPMerge(iter->Data());
+  }
+}
+
+
+/*
+ * Merge all port/client sources.
+ * This does a priority based merge as documented at:
+ * http://opendmx.net/index.php/OLA_Merging_Algorithms
+ * @param port the input port that changed or NULL
+ * @param client the client that changed or NULL
+ */
+void Universe::MergeAll(const InputPort *port, const Client *client) {
+  vector<DmxSource> active_sources;
+
   vector<InputPort*>::const_iterator iter;
   set<Client*>::const_iterator client_iter;
-  bool first = true;
 
+  m_active_priority = DmxSource::PRIORITY_MIN;
+  TimeStamp now;
+  Clock::CurrentTime(now);
+  bool changed_source_is_active = false;
+
+  // Find the highest active ports
   for (iter = m_input_ports.begin(); iter != m_input_ports.end(); ++iter) {
-    if (!first) {
-      m_buffer.HTPMerge((*iter)->ReadDMX());
+    DmxSource source = (*iter)->SourceData();
+    if (!source.IsSet() || !source.IsActive(now) || !source.Data().Size())
       continue;
+
+    if (source.Priority() > m_active_priority) {
+      changed_source_is_active = false;
+      active_sources.clear();
+      m_active_priority = source.Priority();
     }
 
-    // We do a copy here to avoid a delete/new operation later
-    if (m_buffer.Set((*iter)->ReadDMX())) {
-      // Sometimes the buffer hasn't been initialized, so it doesn't count
-      // as a reset.
-      first = false;
+    if (source.Priority() == m_active_priority) {
+      active_sources.push_back(source);
+      if (*iter == port)
+        changed_source_is_active = true;
     }
   }
 
+  // find the highest active clients
   for (client_iter = m_source_clients.begin();
        client_iter != m_source_clients.end();
        ++client_iter) {
-    if (!first) {
-      m_buffer.HTPMerge((*client_iter)->GetDMX(m_universe_id));
+    const DmxSource &source = (*client_iter)->SourceData(UniverseId());
+
+    if (!source.IsSet() || !source.IsActive(now) || !source.Data().Size())
       continue;
+
+    if (source.Priority() > m_active_priority) {
+      changed_source_is_active = false;
+      active_sources.clear();
+      m_active_priority = source.Priority();
     }
 
-    // We do a copy here to avoid a delete/new operation later
-    if (m_buffer.Set((*client_iter)->GetDMX(m_universe_id))) {
-      // Sometimes the buffer hasn't been initialized, so it doesn't count
-      // as a reset.
-      first = false;
+    if (source.Priority() == m_active_priority) {
+      active_sources.push_back(source);
+      if (*client_iter == client)
+        changed_source_is_active = true;
     }
   }
 
-  // we have no data yet, just reset the buffer
-  if (first) {
-    m_buffer.Reset();
+  if (!active_sources.size()) {
+    OLA_WARN << "Something changed but we didn't find any active sources " <<
+      " for universe " << UniverseId();
+    return;
   }
-  return true;
+
+  if (!changed_source_is_active)
+    // this source didn't have any effect, skip
+    return;
+
+  // only one source at the active priority
+  if (active_sources.size() == 1) {
+      m_buffer.Set(active_sources[0].Data());
+  } else {
+    // multi source merge
+    if (m_merge_mode == Universe::MERGE_LTP) {
+      // at this point we know the port/client that changed is the active
+      // one, so use that rather than sorting on timestamps.
+      if (port)
+        m_buffer.Set(port->SourceData().Data());
+      else
+        m_buffer.Set(client->SourceData(UniverseId()).Data());
+    } else {
+      HTPMergeSources(active_sources);
+    }
+  }
 }
 
 

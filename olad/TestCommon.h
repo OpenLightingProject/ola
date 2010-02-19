@@ -27,6 +27,7 @@
 #include "olad/Device.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
+#include "olad/PortManager.h"
 
 using ola::AbstractDevice;
 using ola::DmxBuffer;
@@ -62,9 +63,23 @@ class TestMockInputPort: public InputPort {
 class TestMockPriorityInputPort: public TestMockInputPort {
   public:
     TestMockPriorityInputPort(AbstractDevice *parent, unsigned int port_id):
-      TestMockInputPort(parent, port_id) {}
+        TestMockInputPort(parent, port_id),
+        m_inherited_priority(ola::DmxSource::PRIORITY_DEFAULT) {
+    }
+
+    uint8_t InheritedPriority() const {
+      return m_inherited_priority;
+    }
+
+    void SetInheritedPriority(uint8_t priority) {
+      m_inherited_priority = priority;
+    }
+
   protected:
     bool SupportsPriorities() const { return true; }
+
+  private:
+    uint8_t m_inherited_priority;
 };
 
 

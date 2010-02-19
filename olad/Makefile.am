@@ -2,7 +2,7 @@ include $(top_srcdir)/common.mk
 SUBDIRS = www testdata
 
 
-OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp \
+OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp DmxSource.cpp \
                     DynamicPluginLoader.cpp OlaServerServiceImpl.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
                     Preferences.cpp Port.cpp PortManager.cpp Universe.cpp \
@@ -51,8 +51,8 @@ TESTS = OlaTester
 check_PROGRAMS = $(TESTS)
 OlaTester_SOURCES = $(OLASERVER_SOURCES) OlaServerTester.cpp \
                     UniverseTest.cpp DeviceTest.cpp DeviceManagerTest.cpp \
-                    PluginManagerTest.cpp PreferencesTest.cpp \
-                    PortManagerTest.cpp PortTest.cpp \
+                    DmxSourceTest.cpp PluginManagerTest.cpp \
+                    PreferencesTest.cpp PortManagerTest.cpp PortTest.cpp \
                     OlaServerServiceImplTest.cpp ClientTest.cpp
 OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 OlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf

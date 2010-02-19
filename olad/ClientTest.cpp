@@ -21,7 +21,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
+#include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
+#include "olad/DmxSource.h"
 #include "olad//Client.h"
 #include "common/protocol/Ola.pb.h"
 
@@ -76,6 +78,7 @@ void MockClientStub::UpdateDmxData(
   CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, (unsigned int) request->universe());
   CPPUNIT_ASSERT(TEST_DATA == request->data());
   done->Run();
+  (void) response;
 }
 
 
@@ -105,19 +108,35 @@ void ClientTest::testGetSetDMX() {
   const DmxBuffer empty;
   Client client(NULL);
 
+  ola::TimeStamp timestamp;
+  ola::Clock::CurrentTime(timestamp);
+  ola::DmxSource source(buffer, timestamp, 100);
+
   // check get/set works
-  client.DMXRecieved(TEST_UNIVERSE, buffer);
-  DmxBuffer result = client.GetDMX(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(buffer == result);
+  client.DMXRecieved(TEST_UNIVERSE, source);
+  const ola::DmxSource &source2 = client.SourceData(TEST_UNIVERSE);
+  CPPUNIT_ASSERT(source2.IsSet());
+  CPPUNIT_ASSERT(source2.Data() == buffer);
+  CPPUNIT_ASSERT_EQUAL(timestamp, source2.Timestamp());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 100, source2.Priority());
 
   // check update works
+  ola::DmxBuffer old_data(buffer);
   buffer.Set(TEST_DATA2);
-  client.DMXRecieved(TEST_UNIVERSE, buffer);
-  result = client.GetDMX(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(buffer == result);
-  CPPUNIT_ASSERT_EQUAL(string(TEST_DATA2), result.Get());
+  CPPUNIT_ASSERT(source2.Data() == old_data);
+  CPPUNIT_ASSERT_EQUAL(timestamp, source2.Timestamp());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 100, source2.Priority());
+
+  source.UpdateData(buffer, timestamp, 120);
+  client.DMXRecieved(TEST_UNIVERSE, source);
+  const ola::DmxSource source3 = client.SourceData(TEST_UNIVERSE);
+  CPPUNIT_ASSERT(source3.IsSet());
+  CPPUNIT_ASSERT(buffer == source3.Data());
+  CPPUNIT_ASSERT_EQUAL(timestamp, source3.Timestamp());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 120, source3.Priority());
 
   // check fetching an unknown universe results in an empty buffer
-  result = client.GetDMX(TEST_UNIVERSE2);
-  CPPUNIT_ASSERT(empty == result);
+  const ola::DmxSource source4 = client.SourceData(TEST_UNIVERSE2);
+  CPPUNIT_ASSERT(!source4.IsSet());
+  CPPUNIT_ASSERT(empty == source4.Data());
 }

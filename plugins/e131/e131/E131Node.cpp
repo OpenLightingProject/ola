@@ -259,8 +259,9 @@ bool E131Node::StreamTerminated(uint16_t universe,
  */
 bool E131Node::SetHandler(unsigned int universe,
                           DmxBuffer *buffer,
+                          uint8_t *priority,
                           Closure *closure) {
-  return m_dmp_inflator.SetHandler(universe, buffer, closure);
+  return m_dmp_inflator.SetHandler(universe, buffer, priority, closure);
 }
 
 
