@@ -18,7 +18,12 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#ifdef WIN32
+#include <winsock2.h>
+#else
 #include <sys/select.h>
+#endif
+
 #include <string.h>
 #include <errno.h>
 

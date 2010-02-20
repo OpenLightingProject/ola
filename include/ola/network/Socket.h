@@ -22,8 +22,14 @@
 #define INCLUDE_OLA_NETWORK_SOCKET_H_
 
 #include <stdint.h>
+
+#ifdef WIN32
+#include <winsock2.h>
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
+#endif
+
 #include <string>
 #include <ola/Closure.h>  // NOLINT
 
