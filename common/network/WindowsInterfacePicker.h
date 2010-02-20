@@ -24,6 +24,9 @@
 #include <vector>
 #include "ola/network/InterfacePicker.h"
 
+namespace ola {
+namespace network {
+
 /*
  * The InterfacePicker for windows
  */
