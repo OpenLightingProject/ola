@@ -102,7 +102,6 @@ class SandNetNode {
 
     sandnet_port m_ports[SANDNET_MAX_PORTS];
     universe_handlers m_handlers;
-    ola::network::InterfacePicker m_interface_picker;
     ola::network::Interface m_interface;
     UdpSocket m_control_socket;
     UdpSocket m_data_socket;

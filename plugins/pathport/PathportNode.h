@@ -114,7 +114,6 @@ class PathportNode {
     uint16_t m_sequence_number;
 
     universe_handlers m_handlers;
-    ola::network::InterfacePicker m_interface_picker;
     ola::network::Interface m_interface;
     UdpSocket m_socket;
     struct in_addr m_config_addr;

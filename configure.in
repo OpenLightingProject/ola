@@ -70,6 +70,9 @@ fi
 # we need this outside the conditional, but after AC_LIBLTDL_CONVENIENCE
 AC_PROG_LIBTOOL
 
+# windows platform support
+AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
+
 # check for protobuf support
 PROTOBUF_SUPPORT([2.1.0])
 

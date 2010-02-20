@@ -4,6 +4,12 @@ noinst_LTLIBRARIES = libolanetwork.la
 libolanetwork_la_SOURCES = InterfacePicker.cpp NetworkUtils.cpp \
                            SelectServer.cpp Socket.cpp
 
+if USING_WIN32
+libolanetwork_la_SOURCES += WindowsInterfacePicker.cpp
+else
+libolanetwork_la_SOURCES += PosixInterfacePicker.cpp
+endif
+
 TESTS = NetworkTester
 check_PROGRAMS = $(TESTS)
 NetworkTester_SOURCES = SelectServerTester.cpp SocketTest.cpp \

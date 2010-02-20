@@ -24,6 +24,7 @@
 #include <string>
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/InterfacePicker.h"
 #include "plugins/espnet/EspNetNode.h"
 
 
@@ -78,10 +79,15 @@ bool EspNetNode::Start() {
   if (m_running)
     return false;
 
-  if (!m_interface_picker.ChooseInterface(&m_interface, m_preferred_ip)) {
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
     OLA_INFO << "Failed to find an interface";
+    delete picker;
     return false;
   }
+  delete picker;
 
   if (!InitNetwork())
     return false;
