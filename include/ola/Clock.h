@@ -148,12 +148,17 @@ class TimeStamp {
     }
 
     TimeStamp &operator+=(const TimeInterval &interval) {
-      timeradd(&m_tv, &interval.m_interval, &m_tv);
+      m_tv.tv_sec = m_tv.tv_sec + interval.m_interval.tv_sec;
+      m_tv.tv_usec = m_tv.tv_usec + interval.m_interval.tv_usec;
+      if (m_tv.tv_usec >= 1000000) {
+        m_tv.tv_sec++;
+        m_tv.tv_usec -= 1000000;
+      }
       return *this;
     }
 
     TimeStamp &operator-=(const TimeInterval &interval) {
-      timersub(&m_tv, &interval.m_interval, &m_tv);
+      TimerSub(m_tv, interval.m_interval, &m_tv);
       return *this;
     }
 
@@ -165,7 +170,7 @@ class TimeStamp {
 
     const TimeInterval operator-(const TimeStamp &other) const {
       TimeInterval result;
-      timersub(&m_tv, &other.m_tv, &result.m_interval);
+      TimerSub(m_tv, other.m_tv, &result.m_interval);
       return result;
     }
 
@@ -186,6 +191,16 @@ class TimeStamp {
 
   private:
     struct timeval m_tv;
+
+    void TimerSub(const struct timeval &tv1, const struct timeval &tv2,
+                  struct timeval *result) const {
+      result->tv_sec = tv1.tv_sec - tv2.tv_sec;
+      result->tv_usec = tv1.tv_usec - tv2.tv_usec;
+      if (result->tv_usec < 0) {
+          result->tv_sec--;
+          result->tv_usec += 1000000;
+      }
+    }
 };
 
 
