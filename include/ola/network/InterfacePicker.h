@@ -21,7 +21,12 @@
 #ifndef INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 #define INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 
+#ifdef WIN32
+#include <winsock2.h>
+#else
 #include <netinet/in.h>
+#endif
+
 #include <string>
 #include <vector>
 
@@ -54,37 +59,15 @@ class InterfacePicker {
   public:
     InterfacePicker() {}
     virtual ~InterfacePicker() {}
-    bool ChooseInterface(Interface *interface,
+
+    // stupid windows, 'interface' seems to be a struct so we use iface here.
+    bool ChooseInterface(Interface *iface,
                          const std::string &preferred_ip) const;
 
     virtual std::vector<Interface> GetInterfaces() const = 0;
 
     static InterfacePicker *NewPicker();
 };
-
-
-/*
- * The InterfacePicker for posix systems
- */
-class PosixInterfacePicker: public InterfacePicker {
-  public:
-    std::vector<Interface> GetInterfaces() const;
-
-  private:
-    static const unsigned int INITIAL_IFACE_COUNT = 10;
-    static const unsigned int IFACE_COUNT_INC = 5;
-    unsigned int GetIfReqSize(const char *data) const;
-};
-
-
-/*
- * The InterfacePicker for windows
- */
-class WindowsInterfacePicker: public InterfacePicker {
-  public:
-    std::vector<Interface> GetInterfaces() const;
-};
-
 }  // network
 }  // ola
 #endif  // INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_

@@ -25,8 +25,8 @@ typedef int socklen_t;
 #include <unistd.h>
 #include <vector>
 
+#include "common/network/WindowsInterfacePicker.h"
 #include "ola/Logging.h"
-#include "ola/network/InterfacePicker.h"
 
 namespace ola {
 namespace network {

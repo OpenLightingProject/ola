@@ -26,6 +26,12 @@
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 
+#ifdef WIN32
+#include "common/network/WindowsInterfacePicker.h"
+#else
+#include "common/network/PosixInterfacePicker.h"
+#endif
+
 namespace ola {
 namespace network {
 
@@ -71,7 +77,7 @@ bool Interface::operator==(const Interface &other) {
  * @param preferred_ip the ip address of the local interface we'd prefer to use
  * @return true if we found an interface, false otherwise
  */
-bool InterfacePicker::ChooseInterface(Interface *interface,
+bool InterfacePicker::ChooseInterface(Interface *iface,
                                       const string &preferred_ip) const {
   struct in_addr wanted_ip;
   bool use_preferred = false;
@@ -91,12 +97,12 @@ bool InterfacePicker::ChooseInterface(Interface *interface,
     vector<Interface>::const_iterator iter;
     for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
       if ((*iter).ip_address.s_addr == wanted_ip.s_addr) {
-        *interface = *iter;
+        *iface = *iter;
         return true;
       }
     }
   }
-  *interface = interfaces[0];
+  *iface = interfaces[0];
   return true;
 }
 

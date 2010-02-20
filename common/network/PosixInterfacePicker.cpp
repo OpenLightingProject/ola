@@ -47,8 +47,8 @@
 #include <string>
 #include <vector>
 
+#include "common/network/PosixInterfacePicker.h"
 #include "ola/Logging.h"
-#include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 
 namespace ola {

@@ -41,8 +41,13 @@ namespace network {
  * Convert a string to a struct in_addr
  */
 bool StringToAddress(const string &address, struct in_addr &addr) {
-  if (inet_aton(address.data(), &addr) == 0) {
-    OLA_WARN << "Could not convert multicast address " << address;
+#ifdef HAVE_INET_ATON
+  if (!inet_aton(address.data(), &addr)) {
+#else
+  in_addr_t *addr = (in_addr_t*) *addr;
+  if ((*addr = inet_addr(address.data())) == INADDR_NONE) {
+#endif
+    OLA_WARN << "Could not convert address " << address;
     return false;
   }
   return true;

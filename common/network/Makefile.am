@@ -10,6 +10,8 @@ else
 libolanetwork_la_SOURCES += PosixInterfacePicker.cpp
 endif
 
+EXTRA_DIST = PosixInterfacePicker.h WindowsInterfacePicker.h
+
 TESTS = NetworkTester
 check_PROGRAMS = $(TESTS)
 NetworkTester_SOURCES = SelectServerTester.cpp SocketTest.cpp \
