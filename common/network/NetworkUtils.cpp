@@ -22,7 +22,13 @@
 #  include <config.h>
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+typedef unsigned long in_addr_t;
+#else
 #include <arpa/inet.h>
+#endif
+
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
@@ -44,8 +50,8 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
 #ifdef HAVE_INET_ATON
   if (!inet_aton(address.data(), &addr)) {
 #else
-  in_addr_t *addr = (in_addr_t*) *addr;
-  if ((*addr = inet_addr(address.data())) == INADDR_NONE) {
+  in_addr_t *ip_addr4 = (in_addr_t*) &addr;
+  if ((*ip_addr4 = inet_addr(address.data())) == INADDR_NONE) {
 #endif
     OLA_WARN << "Could not convert address " << address;
     return false;

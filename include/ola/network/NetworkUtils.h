@@ -21,11 +21,12 @@
 #ifndef INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
 #define INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
 
-#if HAVE_CONFIG_H
-#  include <config.h>
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
 #endif
 
-#include <arpa/inet.h>
 #include <string>
 
 
