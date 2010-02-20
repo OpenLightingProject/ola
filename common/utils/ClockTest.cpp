@@ -19,6 +19,7 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <unistd.h>
 #include <string>
 #include "ola/Clock.h"
 
@@ -60,6 +61,9 @@ void ClockTest::testTimeStamp() {
   CPPUNIT_ASSERT_EQUAL(timestamp, timestamp3);
 
   // test equalities
+  // Windows only seems to have ms resolution, to make the tests pass we need
+  // to sleep here
+  usleep(1000);
   Clock::CurrentTime(timestamp3);
   CPPUNIT_ASSERT(timestamp3 != timestamp);
   CPPUNIT_ASSERT(timestamp3 > timestamp);
