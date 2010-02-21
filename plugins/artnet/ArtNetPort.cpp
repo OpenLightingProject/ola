@@ -124,6 +124,7 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
     return false;
   }
   return true;
+  (void) priority;
 }
 }  // artnet
 }  // plugin

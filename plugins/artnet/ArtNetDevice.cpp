@@ -58,14 +58,7 @@ int dmx_handler(artnet_node n, int artnet_port, void *d) {
   if (port)
     port->DmxChanged();
   return 0;
-}
-
-
-/*
- * Notify of remote programming
- */
-int program_handler(artnet_node n, void *d) {
-  return 0;
+  (void) n;
 }
 
 
@@ -163,13 +156,6 @@ bool ArtNetDevice::Start() {
     goto e_artnet_start;
   }
   m_subnet = subnet;
-
-  // we want to be notified when the node config changes
-  if (artnet_set_program_handler(m_node, ::program_handler,
-                                 reinterpret_cast<void*>(this))) {
-    OLA_WARN << "artnet_set_program_handler failed: " << artnet_strerror();
-    goto e_artnet_start;
-  }
 
   if (artnet_set_dmx_handler(m_node, ::dmx_handler,
                              reinterpret_cast<void*>(this))) {
