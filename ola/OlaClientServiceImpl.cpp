@@ -39,5 +39,7 @@ void OlaClientServiceImpl::UpdateDmxData(
     m_observer->NewDmx(request->universe(), buffer, "");
   }
   done->Run();
+  (void) response;
+  (void) controller;
 }
 }  // ola

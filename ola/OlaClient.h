@@ -51,21 +51,47 @@ class OlaClientObserver {
 
     virtual void NewDmx(unsigned int universe,
                         const DmxBuffer &data,
-                        const string &error) {}
+                        const string &error) {
+      (void) universe;
+      (void) data;
+      (void) error;
+    }
     virtual void Plugins(const vector <class OlaPlugin> &plugins,
-                         const string &error) {}
+                         const string &error) {
+      (void) plugins;
+      (void) error;
+    }
     virtual void Devices(const vector <class OlaDevice> devices,
-                         const string &error) {}
+                         const string &error) {
+      (void) devices;
+      (void) error;
+    }
     virtual void Universes(const vector <class OlaUniverse> universes,
-                           const string &error) {}
+                           const string &error) {
+      (void) universes;
+      (void) error;
+    }
     virtual void DeviceConfig(const string &reply,
-                              const string &error) {}
+                              const string &error) {
+      (void) reply;
+      (void) error;
+    }
 
-    virtual void PatchComplete(const string &error) {}
-    virtual void UniverseNameComplete(const string &error) {}
-    virtual void UniverseMergeModeComplete(const string &error) {}
-    virtual void SendDmxComplete(const string &error) {}
-    virtual void SetPortPriorityComplete(const string &error) {}
+    virtual void PatchComplete(const string &error) {
+      (void) error;
+    }
+    virtual void UniverseNameComplete(const string &error) {
+      (void) error;
+    }
+    virtual void UniverseMergeModeComplete(const string &error) {
+      (void) error;
+    }
+    virtual void SendDmxComplete(const string &error) {
+      (void) error;
+    }
+    virtual void SetPortPriorityComplete(const string &error) {
+      (void) error;
+    }
 };
 
 
