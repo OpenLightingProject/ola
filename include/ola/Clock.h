@@ -174,6 +174,12 @@ class TimeStamp {
       return result;
     }
 
+    const TimeStamp operator-(const TimeInterval &interval) const {
+      TimeStamp result;
+      TimerSub(m_tv, interval.m_interval, &result.m_tv);
+      return result;
+    }
+
     bool IsSet() const {
       return timerisset(&m_tv);
     }

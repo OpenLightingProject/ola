@@ -75,6 +75,7 @@ void ClockTest::testTimeStamp() {
   TimeInterval interval3(interval);
   CPPUNIT_ASSERT_EQUAL(interval, interval2);
   CPPUNIT_ASSERT_EQUAL(interval, interval3);
+  CPPUNIT_ASSERT_EQUAL(timestamp, timestamp3 - interval);
 
   // test subtraction / addition
   timestamp2 = timestamp + interval;
