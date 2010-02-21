@@ -43,8 +43,14 @@ class SelectServerTest: public CppUnit::TestFixture {
     void testAddRemoveSocket();
     void testTimeout();
 
-    int FatalTimeout() { CPPUNIT_ASSERT(false); }
-    int TerminateTimeout() { if (m_ss) { m_ss->Terminate(); } }
+    int FatalTimeout() {
+      CPPUNIT_ASSERT(false);
+      return 1;
+    }
+    int TerminateTimeout() {
+      if (m_ss) { m_ss->Terminate(); }
+      return 0;
+    }
     int IncrementTimeout() {
       m_timeout_counter++;
       return 0;

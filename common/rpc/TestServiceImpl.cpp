@@ -28,6 +28,8 @@ void TestServiceImpl::Echo(::google::protobuf::RpcController* controller,
                            ::google::protobuf::Closure* done) {
   response->set_data(request->data());
   done->Run();
+  (void) controller;
+  (void) request;
 }
 
 
@@ -37,4 +39,6 @@ void TestServiceImpl::FailedEcho(::google::protobuf::RpcController* controller,
                                  ::google::protobuf::Closure* done) {
     controller->SetFailed("Error");
     done->Run();
+    (void) request;
+    (void) response;
 }
