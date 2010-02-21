@@ -27,6 +27,7 @@
 #include <string>
 
 #include "common/rpc/SimpleRpcController.h"
+#include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
@@ -183,6 +184,7 @@ class GenericMissingUniverseCheck: public parent {
       CPPUNIT_ASSERT(controller->Failed());
       CPPUNIT_ASSERT_EQUAL(string("Universe doesn't exist"),
                            controller->ErrorText());
+      (void) r;
     }
 };
 
@@ -196,6 +198,7 @@ class GenericAckCheck: public parent {
     void Check(SimpleRpcController *controller,
                ola::proto::Ack *r) {
       CPPUNIT_ASSERT(!controller->Failed());
+      (void) r;
     }
 };
 
@@ -206,6 +209,7 @@ class GenericAckCheck: public parent {
 void OlaServerServiceImplTest::testGetDmx() {
   UniverseStore store(NULL, NULL);
   OlaServerServiceImpl impl(&store,
+                            NULL,
                             NULL,
                             NULL,
                             NULL,
@@ -270,6 +274,7 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
 void OlaServerServiceImplTest::testRegisterForDmx() {
   UniverseStore store(NULL, NULL);
   OlaServerServiceImpl impl(&store,
+                            NULL,
                             NULL,
                             NULL,
                             NULL,
@@ -354,35 +359,56 @@ void OlaServerServiceImplTest::CallRegisterForDmx(
  */
 void OlaServerServiceImplTest::testUpdateDmxData() {
   UniverseStore store(NULL, NULL);
+  ola::TimeStamp time1, time2;
+  ola::Client client(NULL);
+  ola::Client client2(NULL);
   OlaServerServiceImpl impl(&store,
                             NULL,
                             NULL,
+                            &client,
                             NULL,
                             NULL,
-                            NULL);
+                            &time1);
+  OlaServerServiceImpl impl2(&store,
+                             NULL,
+                             NULL,
+                             &client2,
+                             NULL,
+                             NULL,
+                             &time2);
 
   GenericMissingUniverseCheck<UpdateDmxDataCheck, ola::proto::Ack>
     missing_universe_check;
   GenericAckCheck<UpdateDmxDataCheck> ack_check;
   unsigned int universe_id = 0;
   DmxBuffer dmx_data("this is a test");
+  DmxBuffer dmx_data2("different data hmm");
 
   // Update a universe that doesn't exist
+  ola::Clock::CurrentTime(time1);
   CallUpdateDmxData(&impl, universe_id, dmx_data, missing_universe_check);
   Universe *universe = store.GetUniverse(universe_id);
   CPPUNIT_ASSERT(!universe);
 
   // Update a universe that exists
-  // WE need a mock client here!
-  return;
+  ola::Clock::CurrentTime(time1);
   universe = store.GetUniverseOrCreate(universe_id);
   CallUpdateDmxData(&impl, universe_id, dmx_data, ack_check);
   CPPUNIT_ASSERT(dmx_data == universe->GetDMX());
 
-  // Send a 0 sized update
-  DmxBuffer zero_buffer;
-  CallUpdateDmxData(&impl, universe_id, zero_buffer, ack_check);
-  CPPUNIT_ASSERT(zero_buffer == universe->GetDMX());
+  // Update a second client with an older timestamp
+  // make sure we're in ltp mode
+  CPPUNIT_ASSERT_EQUAL(universe->MergeMode(), Universe::MERGE_LTP);
+  time2 = time1 - ola::TimeInterval(1000);
+  CallUpdateDmxData(&impl2, universe_id, dmx_data2, ack_check);
+  CPPUNIT_ASSERT_EQUAL(dmx_data.Size(), universe->GetDMX().Size());
+  // Should continue to hold the old data
+  CPPUNIT_ASSERT(dmx_data == universe->GetDMX());
+
+  // Now send a new update
+  ola::Clock::CurrentTime(time2);
+  CallUpdateDmxData(&impl2, universe_id, dmx_data2, ack_check);
+  CPPUNIT_ASSERT(dmx_data2 == universe->GetDMX());
 }
 
 
@@ -423,6 +449,7 @@ void OlaServerServiceImplTest::CallUpdateDmxData(
 void OlaServerServiceImplTest::testSetUniverseName() {
   UniverseStore store(NULL, NULL);
   OlaServerServiceImpl impl(&store,
+                            NULL,
                             NULL,
                             NULL,
                             NULL,
@@ -492,6 +519,7 @@ void OlaServerServiceImplTest::CallSetUniverseName(
 void OlaServerServiceImplTest::testSetMergeMode() {
   UniverseStore store(NULL, NULL);
   OlaServerServiceImpl impl(&store,
+                            NULL,
                             NULL,
                             NULL,
                             NULL,

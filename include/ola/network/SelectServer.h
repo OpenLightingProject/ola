@@ -44,8 +44,10 @@ class SelectServer {
   public :
     enum Direction {READ, WRITE};
 
-    explicit SelectServer(ExportMap *export_map = NULL);
-    ~SelectServer() { UnregisterAll(); }
+    SelectServer(ExportMap *export_map = NULL,
+                 TimeStamp *wake_up_time = NULL);
+    ~SelectServer();
+
     void Run();
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
@@ -58,6 +60,7 @@ class SelectServer {
     timeout_id RegisterRepeatingTimeout(int ms, ola::Closure *closure);
     timeout_id RegisterSingleTimeout(int ms, ola::SingleUseClosure *closure);
     void RemoveTimeout(timeout_id id);
+    const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
 
     static const char K_SOCKET_VAR[];
     static const char K_CONNECTED_SOCKET_VAR[];
@@ -100,6 +103,7 @@ class SelectServer {
     };
 
     bool m_terminate;
+    bool m_free_wake_up_time;
     unsigned int m_next_id;
     vector<class Socket*> m_sockets;
     vector<connected_socket_t> m_connected_sockets;
@@ -111,7 +115,7 @@ class SelectServer {
     event_queue_t m_events;
     CounterVariable *m_loop_iterations;
     CounterVariable *m_loop_time;
-    TimeStamp m_wake_up_time;
+    TimeStamp *m_wake_up_time;
 };
 }  // network
 }  // ola

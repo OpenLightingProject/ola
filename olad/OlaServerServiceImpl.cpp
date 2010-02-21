@@ -124,9 +124,6 @@ void OlaServerServiceImpl::UpdateDmxData(
   if (m_client) {
     DmxBuffer buffer;
     buffer.Set(request->data());
-    TimeStamp now;
-    // TODO(simon): FIX this
-    Clock::CurrentTime(now);
 
     uint8_t priority = DmxSource::PRIORITY_DEFAULT;
     if (request->has_priority()) {
@@ -134,7 +131,7 @@ void OlaServerServiceImpl::UpdateDmxData(
       priority = std::max(DmxSource::PRIORITY_MIN, priority);
       priority = std::min(DmxSource::PRIORITY_MAX, priority);
     }
-    DmxSource source(buffer, now, priority);
+    DmxSource source(buffer, *m_wake_up_time, priority);
     m_client->DMXRecieved(request->universe(), source);
     universe->SourceClientDataChanged(m_client);
   }
@@ -486,12 +483,14 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     PluginManager *plugin_manager,
     Client *client,
     ExportMap *export_map,
-    PortManager *port_manager) {
+    PortManager *port_manager,
+    const TimeStamp *wake_up_time) {
   return new OlaServerServiceImpl(universe_store,
                                   device_manager,
                                   plugin_manager,
                                   client,
                                   export_map,
-                                  port_manager);
+                                  port_manager,
+                                  wake_up_time);
 };
 }  // ola

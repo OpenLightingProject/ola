@@ -35,13 +35,15 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                          class PluginManager *plugin_manager,
                          class Client *client,
                          class ExportMap *export_map,
-                         class PortManager *port_manager):
+                         class PortManager *port_manager,
+                         const class TimeStamp *wake_up_time):
       m_universe_store(universe_store),
       m_device_manager(device_manager),
       m_plugin_manager(plugin_manager),
       m_client(client),
       m_export_map(export_map),
-      m_port_manager(port_manager) {}
+      m_port_manager(port_manager),
+      m_wake_up_time(wake_up_time) {}
     ~OlaServerServiceImpl() {}
 
     void GetDmx(RpcController* controller,
@@ -118,6 +120,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     class Client *m_client;
     class ExportMap *m_export_map;
     class PortManager *m_port_manager;
+    const class TimeStamp *m_wake_up_time;
 };
 
 
@@ -128,7 +131,8 @@ class OlaServerServiceImplFactory {
                               PluginManager *plugin_manager,
                               Client *client,
                               ExportMap *export_map,
-                              PortManager *port_manager);
+                              PortManager *port_manager,
+                              const TimeStamp *wake_up_time);
 };
 }  // ola
 #endif  // OLAD_OLASERVERSERVICEIMPL_H_

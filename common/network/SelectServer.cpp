@@ -55,13 +55,19 @@ using ola::Closure;
 
 /*
  * Constructor
+ * @param export_map an ExportMap to update
+ * @param wake_up_time a TimeStamp which is updated with the current wake up
+ * time.
  */
-SelectServer::SelectServer(ExportMap *export_map)
+SelectServer::SelectServer(ExportMap *export_map,
+                           TimeStamp *wake_up_time)
     : m_terminate(false),
+      m_free_wake_up_time(false),
       m_next_id(INVALID_TIMEOUT + 1),
       m_export_map(export_map),
       m_loop_iterations(NULL),
-      m_loop_time(NULL) {
+      m_loop_time(NULL),
+      m_wake_up_time(wake_up_time) {
 
   if (m_export_map) {
     m_export_map->GetIntegerVar(K_SOCKET_VAR);
@@ -69,6 +75,21 @@ SelectServer::SelectServer(ExportMap *export_map)
     m_loop_time = m_export_map->GetCounterVar(K_LOOP_TIME);
     m_loop_iterations = m_export_map->GetCounterVar(K_LOOP_COUNT);
   }
+
+  if (!m_wake_up_time) {
+    m_wake_up_time = new TimeStamp();
+    m_free_wake_up_time = true;
+  }
+}
+
+
+/*
+ * Clean up
+ */
+SelectServer::~SelectServer() {
+  UnregisterAll();
+  if (m_free_wake_up_time)
+    delete m_wake_up_time;
 }
 
 
@@ -274,8 +295,8 @@ bool SelectServer::CheckForEvents() {
   Clock::CurrentTime(now);
   now = CheckTimeouts(now);
 
-  if (m_wake_up_time.IsSet()) {
-    TimeInterval loop_time = now - m_wake_up_time;
+  if (m_wake_up_time->IsSet()) {
+    TimeInterval loop_time = now - *m_wake_up_time;
     OLA_DEBUG << "ss process time was " << loop_time.ToString();
     if (m_loop_time)
       (*m_loop_time) += loop_time.AsInt();
@@ -297,7 +318,7 @@ bool SelectServer::CheckForEvents() {
   switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
-      Clock::CurrentTime(m_wake_up_time);
+      Clock::CurrentTime(*m_wake_up_time);
       return true;
     case -1:
       if (errno == EINTR)
@@ -305,8 +326,8 @@ bool SelectServer::CheckForEvents() {
       OLA_WARN << "select() error, " << strerror(errno);
       return false;
     default:
-      Clock::CurrentTime(m_wake_up_time);
-      CheckTimeouts(m_wake_up_time);
+      Clock::CurrentTime(*m_wake_up_time);
+      CheckTimeouts(*m_wake_up_time);
       CheckSockets(&r_fds);
   }
   return true;
