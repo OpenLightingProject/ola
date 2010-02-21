@@ -45,10 +45,12 @@ E131Node::E131Node(const string &ip_address,
                    const CID &cid,
                    bool use_rev2,
                    bool ignore_preview,
+                   uint8_t dscp_value,
                    uint16_t port)
     : m_preferred_ip(ip_address),
       m_cid(cid),
       m_use_rev2(use_rev2),
+      m_dscp(dscp_value),
       m_transport(port),
       m_root_layer(&m_transport, m_cid),
       m_e131_layer(&m_root_layer),
@@ -90,6 +92,9 @@ bool E131Node::Start() {
   if (!m_transport.Init(interface)) {
     return false;
   }
+
+  ola::network::UdpSocket *socket = m_transport.GetSocket();
+  socket->SetTos(m_dscp);
 
   m_e131_layer.SetInflator(&m_dmp_inflator);
   return true;
