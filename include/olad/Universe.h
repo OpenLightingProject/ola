@@ -111,7 +111,7 @@ class Universe {
     bool RemoveClient(Client *client, bool is_source);
     bool AddClient(Client *client, bool is_source);
     void HTPMergeSources(const vector<DmxSource> &sources);
-    void MergeAll(const InputPort *port, const Client *client);
+    bool MergeAll(const InputPort *port, const Client *client);
 
     string m_universe_name;
     unsigned int m_universe_id;

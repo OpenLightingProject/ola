@@ -84,7 +84,7 @@ bool IPv4Validator::IsValid(const string &value) const {
   if (tokens.size() != 4)
     return false;
 
-  for (unsigned int i=0 ; i < 4; i++) {
+  for (unsigned int i = 0 ; i < 4; i++) {
     unsigned int octet;
     if (!StringToUInt(tokens[i], &octet))
       return false;

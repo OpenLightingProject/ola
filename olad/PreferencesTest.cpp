@@ -141,7 +141,8 @@ void PreferencesTest::testGetSetRemove() {
   // test SetDefaultValue
   CPPUNIT_ASSERT(preferences->SetDefaultValue(key1, StringValidator(), value1));
   CPPUNIT_ASSERT_EQUAL(value1, preferences->GetValue(key1));
-  CPPUNIT_ASSERT(!preferences->SetDefaultValue(key1, StringValidator(), value2));
+  CPPUNIT_ASSERT(!preferences->SetDefaultValue(key1, StringValidator(),
+                                               value2));
   CPPUNIT_ASSERT_EQUAL(value1, preferences->GetValue(key1));
 }
 

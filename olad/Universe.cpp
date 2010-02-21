@@ -290,8 +290,8 @@ bool Universe::PortDataChanged(InputPort *port) {
       << UniverseId();
     return false;
   }
-  MergeAll(port, NULL);
-  UpdateDependants();
+  if (MergeAll(port, NULL))
+    UpdateDependants();
   return true;
 }
 
@@ -304,8 +304,8 @@ bool Universe::SourceClientDataChanged(Client *client) {
     return false;
 
   AddSourceClient(client);   // always add since this may be the first call
-  MergeAll(NULL, client);
-  UpdateDependants();
+  if (MergeAll(NULL, client))
+    UpdateDependants();
   return true;
 }
 
@@ -442,8 +442,9 @@ void Universe::HTPMergeSources(const vector<DmxSource> &sources) {
  * http://opendmx.net/index.php/OLA_Merging_Algorithms
  * @param port the input port that changed or NULL
  * @param client the client that changed or NULL
+ * @returns true if the data for this universe changed, false otherwise
  */
-void Universe::MergeAll(const InputPort *port, const Client *client) {
+bool Universe::MergeAll(const InputPort *port, const Client *client) {
   vector<DmxSource> active_sources;
 
   vector<InputPort*>::const_iterator iter;
@@ -498,12 +499,12 @@ void Universe::MergeAll(const InputPort *port, const Client *client) {
   if (!active_sources.size()) {
     OLA_WARN << "Something changed but we didn't find any active sources " <<
       " for universe " << UniverseId();
-    return;
+    return false;
   }
 
   if (!changed_source_is_active)
     // this source didn't have any effect, skip
-    return;
+    return false;
 
   // only one source at the active priority
   if (active_sources.size() == 1) {
@@ -511,16 +512,26 @@ void Universe::MergeAll(const InputPort *port, const Client *client) {
   } else {
     // multi source merge
     if (m_merge_mode == Universe::MERGE_LTP) {
-      // at this point we know the port/client that changed is the active
-      // one, so use that rather than sorting on timestamps.
+      vector<DmxSource>::const_iterator source_iter = active_sources.begin();
+      DmxSource changed_source;
       if (port)
-        m_buffer.Set(port->SourceData().Data());
+        changed_source = port->SourceData();
       else
-        m_buffer.Set(client->SourceData(UniverseId()).Data());
+        changed_source = client->SourceData(UniverseId());
+
+      // check that the current port/client is newer than all other active
+      // sources
+      for (; source_iter != active_sources.end(); source_iter++) {
+        if (changed_source.Timestamp() < source_iter->Timestamp())
+          return false;
+      }
+      // if we made it to here this is the newest source
+      m_buffer.Set(changed_source.Data());
     } else {
       HTPMergeSources(active_sources);
     }
   }
+  return true;
 }
 
 
