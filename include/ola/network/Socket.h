@@ -295,6 +295,9 @@ class UdpSocket: public Socket {
                         const struct in_addr &group);
     bool LeaveMulticast(const struct in_addr &interface,
                         const std::string &address);
+
+    bool SetTos(uint8_t tos);
+
   private:
     int m_fd;
     bool m_bound_to_port;
