@@ -37,7 +37,8 @@ using ola::network::UdpSocket;
 
 class PathportNode {
   public:
-    explicit PathportNode(const string &preferred_ip, uint32_t device_id);
+    explicit PathportNode(const string &preferred_ip, uint32_t device_id,
+                          uint8_t dscp);
     ~PathportNode();
 
     bool Start();
@@ -109,6 +110,7 @@ class PathportNode {
                     struct in_addr dest);
 
     bool m_running;
+    uint8_t m_dscp;
     string m_preferred_ip;
     uint32_t m_device_id;  // the pathport device id
     uint16_t m_sequence_number;

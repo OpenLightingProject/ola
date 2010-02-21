@@ -46,10 +46,11 @@ class PathportDevice: public ola::Device {
     PathportNode *GetNode() const { return m_node; }
     int SendArpReply();
 
+    static const char K_DEFAULT_NODE_NAME[];
+    static const char K_DSCP_KEY[];
     static const char K_NODE_ID_KEY[];
     static const char K_NODE_IP_KEY[];
     static const char K_NODE_NAME_KEY[];
-    static const char K_DEFAULT_NODE_NAME[];
 
   private:
     class Preferences *m_preferences;

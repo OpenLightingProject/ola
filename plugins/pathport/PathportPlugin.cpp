@@ -35,6 +35,7 @@ namespace pathport {
 const char PathportPlugin::PATHPORT_DEVICE_NAME[] = "Pathport Device";
 const char PathportPlugin::PLUGIN_NAME[] = "Pathport Plugin";
 const char PathportPlugin::PLUGIN_PREFIX[] = "pathport";
+const char PathportPlugin::DEFAULT_DSCP_VALUE[] = "0";
 
 
 /*
@@ -87,6 +88,8 @@ string PathportPlugin::Description() const {
 "\n"
 "--- Config file : ola-pathport.conf ---\n"
 "\n"
+"dscp = <int>\n"
+"Set the DSCP value for the packets. Range is 0-63"
 "ip = a.b.c.d\n"
 "The ip address to bind to. If not specified it will use the first \n"
 "non-loopback ip.\n"
@@ -109,6 +112,9 @@ bool PathportPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
+  save |= m_preferences->SetDefaultValue(PathportDevice::K_DSCP_KEY,
+                                         IntValidator(0, 63),
+                                         DEFAULT_DSCP_VALUE);
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_IP_KEY,
                                          IPv4Validator(), "");
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_NAME_KEY,

@@ -48,8 +48,10 @@ using ola::Closure;
  * one.
  */
 PathportNode::PathportNode(const string &ip_address,
-                         uint32_t device_id)
+                           uint32_t device_id,
+                           uint8_t dscp)
     : m_running(false),
+      m_dscp(dscp),
       m_preferred_ip(ip_address),
       m_device_id(device_id),
       m_sequence_number(1) {
@@ -93,6 +95,7 @@ bool PathportNode::Start() {
   if (!InitNetwork())
     return false;
 
+  m_socket.SetTos(m_dscp);
   m_running = true;
   SendArpReply();
 

@@ -22,8 +22,9 @@
 #include <vector>
 
 #include "ola/Logging.h"
-#include "olad/Preferences.h"
+#include "ola/StringUtils.h"
 #include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
 #include "olad/Universe.h"
 #include "plugins/pathport/PathportDevice.h"
 #include "plugins/pathport/PathportPort.h"
@@ -35,6 +36,7 @@ namespace pathport {
 
 
 const char PathportDevice::K_DEFAULT_NODE_NAME[] = "ola-Pathport";
+const char PathportDevice::K_DSCP_KEY[] = "dscp";
 const char PathportDevice::K_NODE_ID_KEY[] = "node-id";
 const char PathportDevice::K_NODE_IP_KEY[] = "ip";
 const char PathportDevice::K_NODE_NAME_KEY[] = "name";
@@ -65,11 +67,23 @@ bool PathportDevice::Start() {
   if (m_enabled)
     return false;
 
-  string product_id_str = m_preferences->GetValue(K_NODE_ID_KEY);
-  uint32_t product_id = atoi(product_id_str.data());
+  uint32_t product_id;
+  if (!StringToUInt(m_preferences->GetValue(K_NODE_ID_KEY), &product_id)) {
+    OLA_WARN << "Invalid node Id " << m_preferences->GetValue(K_NODE_ID_KEY);
+  }
+
+  unsigned int dscp;
+  if (!StringToUInt(m_preferences->GetValue(K_DSCP_KEY), &dscp)) {
+    OLA_WARN << "Can't convert dscp value " <<
+      m_preferences->GetValue(K_DSCP_KEY) << " to int";
+    dscp = 0;
+  } else {
+    // shift 2 bits left
+    dscp = dscp << 2;
+  }
 
   m_node = new PathportNode(m_preferences->GetValue(K_NODE_ID_KEY),
-                            product_id);
+                            product_id, dscp);
 
   if (!m_node->Start())
     goto e_pathport_start;

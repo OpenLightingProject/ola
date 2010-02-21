@@ -127,7 +127,7 @@ string E131Plugin::Description() const {
 "The CID to use for this device\n"
 "\n"
 "dscp = [int]\n"
-"The DSCP value to tag the packets with, range is 0 to 64.\n"
+"The DSCP value to tag the packets with, range is 0 to 63.\n"
 "\n"
 "ignore_preview = [true|false]\n"
 "Ignore preview data.\n"
@@ -164,7 +164,7 @@ bool E131Plugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(
       DSCP_KEY,
-      IntValidator(0, 64),
+      IntValidator(0, 63),
       DEFAULT_DSCP_VALUE);
 
   save |= m_preferences->SetDefaultValue(

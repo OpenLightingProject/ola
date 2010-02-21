@@ -582,7 +582,6 @@ bool UdpSocket::_RecvFrom(uint8_t *buffer,
  */
 bool UdpSocket::SetTos(uint8_t tos) {
   unsigned int value = tos & 0xFC;  // zero the ECN fields
-  OLA_WARN << "Setting " << m_fd << " to " << value;
   if (setsockopt(m_fd, IPPROTO_IP, IP_TOS, &value, sizeof(value))) {
     OLA_WARN << "Failed to set tos for " << m_fd << ", " << strerror(errno);
     return false;
