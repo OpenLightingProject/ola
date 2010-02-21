@@ -130,7 +130,7 @@ bool PortManager::SetPriority(Port *port,
   }
 
   if (port->PriorityCapability() == CAPABILITY_FULL &&
-      port->GetPriorityMode() != mode) {
+      port->GetPriorityMode() != static_cast<port_priority_mode>(mode)) {
     if (mode >= PRIORITY_MODE_END) {
       OLA_WARN << "Priority mode " << mode << " is out of range";
       if (pedantic)

@@ -139,6 +139,7 @@ int OlaHttpServer::DisplayIndex(const HttpRequest *request,
   file_info.file_path = "index.html";
   file_info.content_type = HttpServer::CONTENT_TYPE_HTML;
   return m_server.ServeStaticContent(&file_info, response);
+  (void) request;
 }
 
 
@@ -167,6 +168,7 @@ int OlaHttpServer::DisplayMain(const HttpRequest *request,
   if (m_enable_quit)
     dict.ShowSection("QUIT_ENABLED");
   return m_server.DisplayTemplate(MAIN_FILENAME, &dict, response);
+  (void) request;
 }
 
 
@@ -199,6 +201,7 @@ int OlaHttpServer::DisplayPlugins(const HttpRequest *request,
     dict.ShowSection("NO_PLUGINS");
   }
   return m_server.DisplayTemplate(PLUGINS_FILENAME, &dict, response);
+  (void) request;
 }
 
 
@@ -386,6 +389,7 @@ int OlaHttpServer::DisplayDebug(const HttpRequest *request,
     response->Append(out.str());
   }
   return response->Send();
+  (void) request;
 }
 
 
@@ -407,6 +411,7 @@ int OlaHttpServer::DisplayQuit(const HttpRequest *request,
     response->Append("<b>403 Unauthorized</b>");
   }
   return response->Send();
+  (void) request;
 }
 
 
@@ -419,6 +424,7 @@ int OlaHttpServer::DisplayTemplateReload(const HttpRequest *request,
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   return response->Send();
+  (void) request;
 }
 
 
@@ -436,6 +442,7 @@ int OlaHttpServer::DisplayHandlers(const HttpRequest *request,
   }
   response->Append("</ul></body></html>");
   return response->Send();
+  (void) request;
 }
 
 

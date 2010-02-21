@@ -48,6 +48,7 @@ static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
   string value_string = value;
   request->AddHeader(key, value);
   return MHD_YES;
+  (void) kind;
 }
 
 int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
@@ -59,6 +60,12 @@ int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
   string value(data);
   request->AddPostParameter(key, value);
   return MHD_YES;
+  (void) content_type;
+  (void) filename;
+  (void) kind;
+  (void) transfer_encoding;
+  (void) off;
+  (void) size;
 }
 
 
@@ -115,6 +122,9 @@ void RequestCompleted(void *cls,
 
   delete request;
   *request_cls = NULL;
+  (void) cls;
+  (void) connection;
+  (void) toe;
 }
 
 

@@ -262,6 +262,7 @@ void OlaServerServiceImpl::SetPortPriority(
     controller->SetFailed(
         "Invalid SetPortPriority request, see logs for more info");
   done->Run();
+  (void) response;
 }
 
 
