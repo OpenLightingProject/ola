@@ -161,10 +161,8 @@ bool UsbProPlugin::SetDefaultPreferences() {
     save = true;
   }
 
-  if (m_preferences->GetValue(DEVICE_DIR_KEY).empty()) {
-    m_preferences->SetValue(DEVICE_DIR_KEY, DEFAULT_DEVICE_DIR);
-    save = true;
-  }
+  save |= m_preferences->SetDefaultValue(DEVICE_DIR_KEY, StringValidator(),
+                                         DEFAULT_DEVICE_DIR);
 
   if (save)
     m_preferences->Save();

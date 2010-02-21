@@ -109,7 +109,14 @@ bool ShowNetPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->SetDefaultValue(SHOWNET_NAME_KEY, SHOWNET_NODE_NAME))
+  bool save = false;
+
+  save |= m_preferences->SetDefaultValue(ShowNetDevice::IP_KEY,
+                                         IPv4Validator(), "");
+  save |= m_preferences->SetDefaultValue(SHOWNET_NAME_KEY, StringValidator(),
+                                         SHOWNET_NODE_NAME);
+
+  if (save)
     m_preferences->Save();
 
   if (m_preferences->GetValue(SHOWNET_NAME_KEY).empty())

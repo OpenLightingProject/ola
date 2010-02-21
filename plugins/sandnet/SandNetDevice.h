@@ -49,6 +49,7 @@ class SandNetDevice: public ola::Device {
 
     int SendAdvertisement();
 
+    static const char IP_KEY[];
     static const char NAME_KEY[];
 
   private:
@@ -58,7 +59,6 @@ class SandNetDevice: public ola::Device {
     bool m_enabled;
     ola::network::timeout_id m_timeout_id;
 
-    static const char IP_KEY[];
     // the number of input ports to create
     static const unsigned int INPUT_PORTS = 8;
     // send an advertistment every 2s.

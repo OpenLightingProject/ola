@@ -43,13 +43,14 @@ class EspNetDevice: public Device {
     bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
 
+    static const std::string IP_KEY;
+    static const std::string NODE_NAME_KEY;
+
   private:
     class Preferences *m_preferences;
     const class PluginAdaptor *m_plugin_adaptor;
     class EspNetNode *m_node;
     bool m_enabled;
-
-    static const std::string IP_KEY;
 };
 }  // espnet
 }  // plugin

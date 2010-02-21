@@ -128,18 +128,26 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  save |= m_preferences->SetDefaultValue("short_name", ARTNET_SHORT_NAME);
-  save |= m_preferences->SetDefaultValue("long_name", ARTNET_LONG_NAME);
-  save |= m_preferences->SetDefaultValue("subnet", ARTNET_SUBNET);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_IP_KEY,
+                                         IPv4Validator(), "");
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SHORT_NAME_KEY,
+                                         StringValidator(),
+                                         ARTNET_SHORT_NAME);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_LONG_NAME_KEY,
+                                         StringValidator(),
+                                         ARTNET_LONG_NAME);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SUBNET_KEY,
+                                         IntValidator(0, 15),
+                                         ARTNET_SUBNET);
 
   if (save)
     m_preferences->Save();
 
   // check if this save correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue("short_name").empty() ||
-      m_preferences->GetValue("long_name").empty() ||
-      m_preferences->GetValue("subnet").empty())
+  if (m_preferences->GetValue(ArtNetDevice::K_SHORT_NAME_KEY).empty() ||
+      m_preferences->GetValue(ArtNetDevice::K_LONG_NAME_KEY).empty() ||
+      m_preferences->GetValue(ArtNetDevice::K_SUBNET_KEY).empty())
     return false;
 
   return true;

@@ -47,16 +47,16 @@ class E131Plugin: public ola::Plugin {
     bool SetDefaultPreferences();
 
     class E131Device *m_device;
+    static const char CID_KEY[];
+    static const char DEVICE_NAME[];
+    static const char IGNORE_PREVIEW_DATA_KEY[];
+    static const char IP_KEY[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
-    static const char DEVICE_NAME[];
-    static const char CID_KEY[];
-    static const char REVISION_KEY[];
+    static const char PREPEND_HOSTNAME_KEY[];
     static const char REVISION_0_2[];
     static const char REVISION_0_46[];
-    static const char IP_KEY[];
-    static const char PREPEND_HOSTNAME_KEY[];
-    static const char IGNORE_PREVIEW_DATA_KEY[];
+    static const char REVISION_KEY[];
 };
 }  // e131
 }  // plugin

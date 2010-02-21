@@ -121,7 +121,8 @@ bool OpenDmxPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->SetDefaultValue(DEVICE_KEY, OPENDMX_DEVICE_PATH))
+  if (m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
+                                     OPENDMX_DEVICE_PATH))
     m_preferences->Save();
 
   // check if this save correctly

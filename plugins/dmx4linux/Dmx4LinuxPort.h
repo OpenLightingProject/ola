@@ -21,6 +21,7 @@
 #ifndef PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_
 #define PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_
 
+#include <string>
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/dmx4linux/Dmx4LinuxDevice.h"
