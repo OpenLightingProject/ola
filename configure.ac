@@ -111,7 +111,7 @@ AC_CHECK_HEADERS(
 
 # check for plugin dependencies. We also build a list of plugins that we're
 # going to compile here so the binary knows what to link against
-PLUGINS="espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
 PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
@@ -131,14 +131,12 @@ AC_SUBST(PLUGIN_LIBS)
 
 # plugin & html data directories
 plugindir=$libdir/olad
-third_party_plugindir=$libdir/olad_plugins
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 AC_SUBST(plugindir)
-AC_SUBST(third_party_plugindir)
 AC_SUBST(www_datadir)
 
-OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DTHIRD_PARTY_PLUGIN_DIR=\\\"$third_party_plugindir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
+OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
 AC_SUBST(OLAD_DEFINES)
 
 # check for cppunit
