@@ -1,5 +1,4 @@
 include $(top_srcdir)/common.mk
-
 libdir = $(plugindir)
 SUBDIRS = messages
 EXTRA_DIST = ArtNetPlugin.h ArtNetDevice.h ArtNetPort.h

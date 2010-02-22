@@ -48,24 +48,7 @@ AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
                   sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
                   unistd.h linux/if_packet.h])
 
-# --disable-ltdl removes support for runtime-loadable plugins
-# This is needed for windows
-AC_ARG_ENABLE(ltdl,
-              AS_HELP_STRING([--disable-loadable-plugins],
-                             [Disable runtime loadable plugins]),
-              [],
-              [use_ltdl=yes]
-             )
-
-
-AM_CONDITIONAL(USE_LTDL, test "${use_ltdl}" = "yes")
-AC_CONFIG_SUBDIRS(libltdl)
-AC_LIBLTDL_CONVENIENCE
-AC_PROG_LIBTOOL([dlopen])
-
-if test "${use_ltdl}" = "yes"; then
-  AC_DEFINE(USE_LTDL, 1, [define if ltdl is enabled])
-fi
+AC_PROG_LIBTOOL
 
 # windows platform support
 AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')

@@ -21,13 +21,6 @@ endif
 libolaserver_la_LIBADD = $(top_builddir)/common/libolacommon.la
 libolaserver_la_CXXFLAGS = -Wall -Wformat -W @OLAD_DEFINES@
 
-if USE_LTDL
-  AM_CPPFLAGS += -I$(top_builddir)/libltdl
-  OLASERVER_SOURCES += DlOpenPluginLoader.cpp
-  libolaserver_la_LIBADD += @LIBLTDL@
-endif
-
-
 # Header files
 pkgincludedir = $(includedir)/olad
 pkginclude_HEADERS = OlaDaemon.h OlaServer.h

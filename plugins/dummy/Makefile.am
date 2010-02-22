@@ -1,5 +1,5 @@
 include $(top_srcdir)/common.mk
-libdir = $(third_party_plugindir)
+libdir = $(plugindir)
 
 EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h
 
