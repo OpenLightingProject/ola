@@ -7,11 +7,6 @@ OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp DmxSource.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
                     Preferences.cpp Port.cpp PortManager.cpp Universe.cpp \
                     UniverseStore.cpp
-if USE_LTDL
-  AM_CPPFLAGS += -I$(top_builddir)/libltdl
-  OLASERVER_SOURCES += DlOpenPluginLoader.cpp
-endif
-
 
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
@@ -23,8 +18,15 @@ libolaserver_la_SOURCES += HttpServer.cpp OlaHttpServer.cpp
 libolaserver_la_LDFLAGS += -lctemplate
 endif
 
-libolaserver_la_LIBADD = @LIBLTDL@ $(top_builddir)/common/libolacommon.la
+libolaserver_la_LIBADD = $(top_builddir)/common/libolacommon.la
 libolaserver_la_CXXFLAGS = -Wall -Wformat -W @OLAD_DEFINES@
+
+if USE_LTDL
+  AM_CPPFLAGS += -I$(top_builddir)/libltdl
+  OLASERVER_SOURCES += DlOpenPluginLoader.cpp
+  libolaserver_la_LIBADD += @LIBLTDL@
+endif
+
 
 # Header files
 pkgincludedir = $(includedir)/olad
@@ -56,5 +58,5 @@ OlaTester_SOURCES = $(OLASERVER_SOURCES) OlaServerTester.cpp \
                     OlaServerServiceImplTest.cpp ClientTest.cpp
 OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 OlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
-OlaTester_LDADD = @LIBS@ @LIBLTDL@ ${PLUGIN_LIBS} \
+OlaTester_LDADD = @LIBS@ ${PLUGIN_LIBS} \
                   $(top_builddir)/common/libolacommon.la

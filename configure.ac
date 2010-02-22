@@ -51,22 +51,18 @@ AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
 # --disable-ltdl removes support for runtime-loadable plugins
 # This is needed for windows
 AC_ARG_ENABLE(ltdl,
-              AS_HELP_STRING([--disable-ltdl],
+              AS_HELP_STRING([--disable-loadable-plugins],
                              [Disable runtime loadable plugins]),
               [],
               [use_ltdl=yes]
              )
 
-# we need this outside the conditional, but after AC_LIBLTDL_CONVENIENCE
-AC_PROG_LIBTOOL
 
 AM_CONDITIONAL(USE_LTDL, test "${use_ltdl}" = "yes")
+LT_CONFIG_LTDL_DIR(libltdl)
+LT_INIT([dlopen])
+LTDL_INIT
 if test "${use_ltdl}" = "yes"; then
-  LT_CONFIG_LTDL_DIR(libltdl)
-  AC_LIBTOOL_DLOPEN
-  LTDL_INIT
-  AC_SUBST(INCLTDL)
-  AC_SUBST(LIBLTDL)
   AC_DEFINE(USE_LTDL, 1, [define if ltdl is enabled])
 fi
 
