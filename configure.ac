@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(configure.in)
+AC_INIT(configure.ac)
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
@@ -57,18 +57,18 @@ AC_ARG_ENABLE(ltdl,
               [use_ltdl=yes]
              )
 
+# we need this outside the conditional, but after AC_LIBLTDL_CONVENIENCE
+AC_PROG_LIBTOOL
+
 AM_CONDITIONAL(USE_LTDL, test "${use_ltdl}" = "yes")
 if test "${use_ltdl}" = "yes"; then
-  AC_CONFIG_SUBDIRS(libltdl)
+  LT_CONFIG_LTDL_DIR(libltdl)
   AC_LIBTOOL_DLOPEN
-  AC_LIBLTDL_CONVENIENCE
+  LTDL_INIT
   AC_SUBST(INCLTDL)
   AC_SUBST(LIBLTDL)
   AC_DEFINE(USE_LTDL, 1, [define if ltdl is enabled])
 fi
-
-# we need this outside the conditional, but after AC_LIBLTDL_CONVENIENCE
-AC_PROG_LIBTOOL
 
 # windows platform support
 AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
