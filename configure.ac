@@ -59,9 +59,10 @@ AC_ARG_ENABLE(ltdl,
 
 
 AM_CONDITIONAL(USE_LTDL, test "${use_ltdl}" = "yes")
-LT_CONFIG_LTDL_DIR(libltdl)
-LT_INIT([dlopen])
-LTDL_INIT
+AC_CONFIG_SUBDIRS(libltdl)
+AC_LIBLTDL_CONVENIENCE
+AC_PROG_LIBTOOL([dlopen])
+
 if test "${use_ltdl}" = "yes"; then
   AC_DEFINE(USE_LTDL, 1, [define if ltdl is enabled])
 fi
