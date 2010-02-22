@@ -66,7 +66,7 @@ vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
       new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
 #endif
 
-  // plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
+  plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
   plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
   plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
   plugins.push_back(
