@@ -100,7 +100,7 @@ std::string CID::ToString() const {
   char cid[UUID_LEN_STR + 1];
   char *str = cid;
   size_t length = UUID_LEN_STR + 1;
-  int r = uuid_export(m_uuid, UUID_FMT_STR, &str, &length);
+  uuid_export(m_uuid, UUID_FMT_STR, &str, &length);
   return std::string(str);
 }
 
