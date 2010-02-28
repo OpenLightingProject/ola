@@ -48,7 +48,9 @@ E131Tester_SOURCES = BaseInflatorTest.cpp \
                      RootPDUTest.cpp \
                      UDPTransportTest.cpp
 E131Tester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-E131Tester_LDFLAGS = $(CPPUNIT_LIBS) $(UUID_LIBS)
+# For some completely messed up reason on mac CPPUNIT_LIBS has to come after
+# UUID_LIBS. CPPUNIT_LIBS contains -ldl which causes the unittests to fail
+E131Tester_LDFLAGS = $(UUID_LIBS) $(CPPUNIT_LIBS)
 E131Tester_LDADD = @LIBS@ -lprotobuf \
                    ./libolae131core.la \
                    ../../../common/libolacommon.la

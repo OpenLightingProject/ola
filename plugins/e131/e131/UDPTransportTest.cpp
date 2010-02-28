@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "ola/Logging.h"

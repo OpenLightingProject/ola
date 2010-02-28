@@ -21,8 +21,22 @@
 #ifndef PLUGINS_E131_E131_CID_H_
 #define PLUGINS_E131_E131_CID_H_
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <stdint.h>
+
+#ifdef HAVE_OSSP_UUID_H
+#include <ossp/uuid.h>
+#else
+#ifdef HAVE_UUID_UUID_H
 #include <uuid/uuid.h>
+#else
+#include <uuid.h>
+#endif
+#endif
+
 #include <iostream>
 #include <string>
 
@@ -34,11 +48,11 @@ class CID {
   public :
     enum { CID_LENGTH = 16 };
 
-    CID() { uuid_clear(m_uuid); }
-    explicit CID(uuid_t uuid) { uuid_copy(m_uuid, uuid); }
-    CID(const CID& other) { uuid_copy(m_uuid, other.m_uuid); }
+    CID();
+    CID(const CID& other);
+    ~CID();
 
-    bool IsNil() const { return uuid_is_null(m_uuid); }
+    bool IsNil() const;
     void Pack(uint8_t *buf) const;
     std::string ToString() const;
 
@@ -51,7 +65,14 @@ class CID {
     static CID FromString(const std::string &cid);
 
   private:
+#ifdef USE_OSSP_UUID
+    uuid_t *m_uuid;
+    explicit CID(uuid_t *uuid);
+#else
     uuid_t m_uuid;
+    explicit CID(uuid_t uuid);
+#endif
+
 };
 }  // e131
 }  // plugin

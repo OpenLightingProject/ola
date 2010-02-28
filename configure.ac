@@ -101,13 +101,42 @@ AC_CHECK_MEMBER(struct sockaddr_dl.sdl_family,
 #include <sys/types.h>
 #include <net/if_dl.h>])
 
-# check for uuid - the first call to PKG_CHECK_MODULES can't be conditional
-PKG_CHECK_MODULES(UUID, [uuid >= 0.22], [], [true])
-AC_CHECK_HEADERS(
-   [uuid/uuid.h],
-   [],
-   [AC_MSG_ERROR([Missing uuid/uuid.h])]
+# check for uuid
+# uuid handling is quite complex as we can use either the OSSP uuid or the one
+# with e2fsprogs. On top of that the header file is different on different
+#platforms
+use_ossp_uuid="no"
+PKG_CHECK_MODULES(
+  UUID,
+  [uuid],
+  [AC_CHECK_HEADERS(
+    [ossp/uuid.h],
+    [use_ossp_uuid="yes"],
+    [AC_CHECK_LIB([uuid],
+                  [uuid_generate],
+                  [],
+                  [use_ossp_uuid="yes"])],
+    []
+  )],
+  # the uuid pkg wasn't found, let's try ossp-uuid instead
+  [PKG_CHECK_MODULES(
+    OSSP_UUID,
+    [ossp-uuid],
+    [use_ossp_uuid="yes"],
+    # if this fails, then our last chance is to check for uuid/uuid.h (present
+    # on OS X by default).
+    [AC_CHECK_HEADERS(
+      [uuid/uuid.h],
+      [],
+      [AC_MSG_ERROR([Missing the uuid library])]
+    )]
+  )]
 )
+
+if test "${use_ossp_uuid}" = "yes"; then
+  AC_DEFINE(USE_OSSP_UUID, 1, [defined if we should use the ossp uuid lib])
+fi
+
 
 # check for plugin dependencies. We also build a list of plugins that we're
 # going to compile here so the binary knows what to link against

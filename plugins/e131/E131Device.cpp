@@ -21,6 +21,7 @@
  * Ids 4-7 : Output ports (send dmx)
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <google/protobuf/service.h>
 #include <google/protobuf/stubs/common.h>
 #include <string>
