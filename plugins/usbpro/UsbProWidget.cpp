@@ -96,7 +96,7 @@ bool UsbProWidget::Connect(const string &path) {
   }
 
   // put us into receiving mode
-  if (!SendChangeMode(RCMODE_CHANGE)) {
+  if (!SendChangeMode(RCMODE_ALWAYS)) {
     OLA_WARN << "Failed to set mode";
     delete m_socket;
     return false;
@@ -275,7 +275,7 @@ const DmxBuffer &UsbProWidget::FetchDMX() const {
  * @returns true if successfull, false otherwise
  */
 bool UsbProWidget::ChangeToReceiveMode() {
-  return SendChangeMode(RCMODE_CHANGE);
+  return SendChangeMode(RCMODE_ALWAYS);
 }
 
 
