@@ -58,8 +58,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(HeaderSetTest);
  * Check that the root header works.
  */
 void HeaderSetTest::testRootHeader() {
-  CID cid;
-  cid.Generate();
+  CID cid = CID::Generate();
   RootHeader header;
   header.SetCid(cid);
   CPPUNIT_ASSERT(cid == header.GetCid());
@@ -157,8 +156,7 @@ void HeaderSetTest::testHeaderSet() {
   DMPHeader dmp_header(false, false, NON_RANGE, ONE_BYTES);
 
   // test the root header component
-  CID cid;
-  cid.Generate();
+  CID cid = CID::Generate();
   root_header.SetCid(cid);
   headers.SetRootHeader(root_header);
   CPPUNIT_ASSERT(root_header == headers.GetRootHeader());

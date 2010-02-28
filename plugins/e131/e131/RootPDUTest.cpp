@@ -55,8 +55,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RootPDUTest);
  * Test that packing a RootPDU without data works.
  */
 void RootPDUTest::testSimpleRootPDU() {
-  CID cid;
-  cid.Generate();
+  CID cid = CID::Generate();
   RootPDU pdu1(TEST_VECTOR, cid, NULL);
   CPPUNIT_ASSERT(cid == pdu1.Cid());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 22, pdu1.Size());
@@ -123,8 +122,7 @@ void RootPDUTest::testNestedRootPDU() {
   block.AddPDU(&pdu1);
   block.AddPDU(&pdu2);
 
-  CID cid;
-  cid.Generate();
+  CID cid = CID::Generate();
   RootPDU pdu(TEST_VECTOR, cid, &block);
 
   CPPUNIT_ASSERT(cid == pdu.Cid());
