@@ -61,8 +61,9 @@ class Dmx4LinuxOutputPort: public ola::OutputPort {
  */
 class Dmx4LinuxInputPort: public ola::InputPort {
   public:
-    explicit Dmx4LinuxInputPort(Dmx4LinuxDevice *parent):
-        ola::InputPort(parent, 0) {
+    explicit Dmx4LinuxInputPort(Dmx4LinuxDevice *parent,
+                                const TimeStamp *wake_time):
+        ola::InputPort(parent, 0, wake_time) {
       m_read_buffer.SetRangeToValue(0, 0, DMX_UNIVERSE_SIZE);
     }
 

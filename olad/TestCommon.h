@@ -23,6 +23,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
+#include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "olad/Device.h"
 #include "olad/Plugin.h"
@@ -33,6 +34,7 @@ using ola::AbstractDevice;
 using ola::DmxBuffer;
 using ola::InputPort;
 using ola::OutputPort;
+using ola::TimeStamp;
 using std::string;
 
 
@@ -41,8 +43,9 @@ using std::string;
  */
 class TestMockInputPort: public InputPort {
   public:
-    TestMockInputPort(AbstractDevice *parent, unsigned int port_id):
-      InputPort(parent, port_id) {}
+    TestMockInputPort(AbstractDevice *parent, unsigned int port_id,
+                      const TimeStamp *wake_time):
+      InputPort(parent, port_id, wake_time) {}
     ~TestMockInputPort() {}
 
     string Description() const { return ""; }
@@ -62,8 +65,9 @@ class TestMockInputPort: public InputPort {
  */
 class TestMockPriorityInputPort: public TestMockInputPort {
   public:
-    TestMockPriorityInputPort(AbstractDevice *parent, unsigned int port_id):
-        TestMockInputPort(parent, port_id),
+    TestMockPriorityInputPort(AbstractDevice *parent, unsigned int port_id,
+                              const TimeStamp *wake_time):
+        TestMockInputPort(parent, port_id, wake_time),
         m_inherited_priority(ola::DmxSource::PRIORITY_DEFAULT) {
     }
 

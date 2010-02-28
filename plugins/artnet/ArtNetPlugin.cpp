@@ -53,7 +53,11 @@ const char ArtNetPlugin::PLUGIN_PREFIX[] = "artnet";
  * @returns true if we started ok, false otherwise
  */
 bool ArtNetPlugin::StartHook() {
-  m_device = new ArtNetDevice(this, DEVICE_NAME, m_preferences, m_debug);
+  m_device = new ArtNetDevice(this,
+                              DEVICE_NAME,
+                              m_preferences,
+                              m_debug,
+                              m_plugin_adaptor->WakeUpTime());
 
   if (!m_device->Start()) {
     delete m_device;

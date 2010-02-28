@@ -42,8 +42,9 @@ class PathportInputPort: public InputPort {
   public:
     PathportInputPort(PathportDevice *parent,
                      unsigned int id,
+                     const TimeStamp *wake_time,
                      PathportNode *node):
-      InputPort(parent, id),
+      InputPort(parent, id, wake_time),
       m_node(node) {}
     ~PathportInputPort() {}
 

@@ -81,7 +81,11 @@ bool SandNetDevice::Start() {
     goto e_sandnet_failed;
 
   for (unsigned int i = 0; i < INPUT_PORTS; i++) {
-    SandNetInputPort *port = new SandNetInputPort(this, i, m_node);
+    SandNetInputPort *port = new SandNetInputPort(
+        this,
+        i,
+        m_plugin_adaptor->WakeUpTime(),
+        m_node);
     AddPort(port);
   }
   for (unsigned int i = 0; i < SANDNET_MAX_PORTS ; i++) {

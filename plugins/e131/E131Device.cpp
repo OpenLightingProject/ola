@@ -81,7 +81,11 @@ bool E131Device::Start() {
   }
 
   for (unsigned int i = 0; i < NUMBER_OF_E131_PORTS; i++) {
-    E131InputPort *input_port = new E131InputPort(this, i, m_node);
+    E131InputPort *input_port = new E131InputPort(
+        this,
+        i,
+        m_node,
+        m_plugin_adaptor->WakeUpTime());
     AddPort(input_port);
     E131OutputPort *output_port = new E131OutputPort(this,
                                                      i,

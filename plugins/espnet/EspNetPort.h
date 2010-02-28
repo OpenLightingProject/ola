@@ -39,8 +39,9 @@ class EspNetPortHelper {
 
 class EspNetInputPort: public InputPort {
   public:
-    EspNetInputPort(EspNetDevice *parent, unsigned int id, EspNetNode *node)
-        : InputPort(parent, id),
+    EspNetInputPort(EspNetDevice *parent, unsigned int id,
+                    const TimeStamp *wake_time, EspNetNode *node)
+        : InputPort(parent, id, wake_time),
           m_helper(),
           m_node(node) {}
     ~EspNetInputPort() {}

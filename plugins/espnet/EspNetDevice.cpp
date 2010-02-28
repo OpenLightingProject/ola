@@ -71,7 +71,11 @@ bool EspNetDevice::Start() {
   }
 
   for (unsigned int i = 0; i < PORTS_PER_DEVICE; i++) {
-    EspNetInputPort *input_port = new EspNetInputPort(this, i, m_node);
+    EspNetInputPort *input_port = new EspNetInputPort(
+        this,
+        i,
+        m_plugin_adaptor->WakeUpTime(),
+        m_node);
     AddPort(input_port);
     EspNetOutputPort *output_port = new EspNetOutputPort(this, i, m_node);
     AddPort(output_port);

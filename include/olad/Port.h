@@ -110,8 +110,10 @@ class Port {
  */
 class InputPort: public Port {
   public:
-    InputPort(AbstractDevice *parent, unsigned int port_id)
-        : Port(parent, port_id) {}
+    InputPort(AbstractDevice *parent, unsigned int port_id,
+              const TimeStamp *wake_time)
+        : Port(parent, port_id),
+          m_wakeup_time(wake_time) {}
 
     // signal the port that the DMX data has changed
     int DmxChanged();
@@ -139,6 +141,7 @@ class InputPort: public Port {
 
   private:
     DmxSource m_dmx_source;
+    const TimeStamp *m_wakeup_time;
 };
 
 

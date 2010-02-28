@@ -33,6 +33,8 @@
 
 using ola::AbstractDevice;
 using ola::DmxBuffer;
+using ola::Clock;
+using ola::TimeStamp;
 using ola::Universe;
 using std::string;
 
@@ -68,13 +70,6 @@ class UniverseTest: public CppUnit::TestFixture {
     ola::MemoryPreferences *m_preferences;
     ola::UniverseStore *m_store;
     DmxBuffer m_buffer;
-
-    void SetupUniverseWithPorts(Universe **universe,
-                                TestMockInputPort **input,
-                                TestMockOutputPort **output);
-    void CleanUpUniverseWithPorts(Universe *universe,
-                                  TestMockInputPort *input,
-                                  TestMockOutputPort *output);
 };
 
 
@@ -106,29 +101,6 @@ void UniverseTest::tearDown() {
   delete m_preferences;
 }
 
-void UniverseTest::SetupUniverseWithPorts(
-    Universe **universe,
-    TestMockInputPort **input,
-    TestMockOutputPort **output) {
-  // Setup an input port and client to HTP merge between, and a output port to
-  // hold the result
-  *input = new TestMockInputPort(NULL, 1);
-  *output = new TestMockOutputPort(NULL, 2);  // output port
-  *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
-  (*universe)->AddPort(*input);
-  (*universe)->AddPort(*output);
-}
-
-void UniverseTest::CleanUpUniverseWithPorts(
-    Universe *universe,
-    TestMockInputPort *input,
-    TestMockOutputPort *output) {
-  universe->RemovePort(input);
-  universe->RemovePort(output);
-  delete input;
-  delete output;
-}
 
 /*
  * Test that we can create universes and save their settings
@@ -220,7 +192,8 @@ void UniverseTest::testReceiveDmx() {
   ola::PortManager port_manager(m_store);
 
   MockDevice device(NULL, "foo");
-  TestMockInputPort port(&device, 1);  // input port
+  TimeStamp time_stamp;
+  TestMockInputPort port(&device, 1, &time_stamp);  // input port
   port_manager.PatchPort(&port, TEST_UNIVERSE);
 
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
@@ -232,6 +205,7 @@ void UniverseTest::testReceiveDmx() {
 
   // Setup the port with some data, and check that signalling the universe
   // works.
+  Clock::CurrentTime(time_stamp);
   port.WriteDMX(m_buffer);
   port.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
@@ -339,10 +313,11 @@ void UniverseTest::testLtpMerging() {
 
   ola::PortManager port_manager(m_store);
 
+  TimeStamp time_stamp;
   MockDevice device(NULL, "foo");
   MockDevice device2(NULL, "bar");
-  TestMockInputPort port(&device, 1);  // input port
-  TestMockInputPort port2(&device2, 1);  // input port
+  TestMockInputPort port(&device, 1, &time_stamp);  // input port
+  TestMockInputPort port2(&device2, 1, &time_stamp);  // input port
   port_manager.PatchPort(&port, TEST_UNIVERSE);
   port_manager.PatchPort(&port2, TEST_UNIVERSE);
 
@@ -357,6 +332,7 @@ void UniverseTest::testLtpMerging() {
 
   // Setup the ports with some data, and check that signalling the universe
   // works.
+  Clock::CurrentTime(time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
@@ -365,6 +341,7 @@ void UniverseTest::testLtpMerging() {
   CPPUNIT_ASSERT(buffer1 == universe->GetDMX());
 
   // Now the second port gets data
+  Clock::CurrentTime(time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
@@ -373,6 +350,7 @@ void UniverseTest::testLtpMerging() {
   CPPUNIT_ASSERT(buffer2 == universe->GetDMX());
 
   // now resend the first port
+  Clock::CurrentTime(time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
@@ -383,9 +361,9 @@ void UniverseTest::testLtpMerging() {
   // now check a client
   DmxBuffer client_buffer;
   client_buffer.SetFromString("255,0,0,255,10");
-  ola::TimeStamp now;
-  ola::Clock::CurrentTime(now);
-  ola::DmxSource source(client_buffer, now, ola::DmxSource::PRIORITY_DEFAULT);
+  Clock::CurrentTime(time_stamp);
+  ola::DmxSource source(client_buffer, time_stamp,
+                        ola::DmxSource::PRIORITY_DEFAULT);
   MockClient input_client;
   input_client.DMXRecieved(TEST_UNIVERSE, source);
   universe->SourceClientDataChanged(&input_client);
@@ -416,10 +394,11 @@ void UniverseTest::testHtpMerging() {
 
   ola::PortManager port_manager(m_store);
 
+  TimeStamp time_stamp;
   MockDevice device(NULL, "foo");
   MockDevice device2(NULL, "bar");
-  TestMockInputPort port(&device, 1);  // input port
-  TestMockInputPort port2(&device2, 1);  // input port
+  TestMockInputPort port(&device, 1, &time_stamp);  // input port
+  TestMockInputPort port2(&device2, 1, &time_stamp);  // input port
   port_manager.PatchPort(&port, TEST_UNIVERSE);
   port_manager.PatchPort(&port2, TEST_UNIVERSE);
 
@@ -434,6 +413,7 @@ void UniverseTest::testHtpMerging() {
 
   // Setup the ports with some data, and check that signalling the universe
   // works.
+  Clock::CurrentTime(time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
@@ -442,6 +422,7 @@ void UniverseTest::testHtpMerging() {
   CPPUNIT_ASSERT(buffer1 == universe->GetDMX());
 
   // Now the second port gets data
+  Clock::CurrentTime(time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
@@ -452,6 +433,7 @@ void UniverseTest::testHtpMerging() {
   // now raise the priority of the second port
   uint8_t new_priority = 120;
   port2.SetPriority(new_priority);
+  Clock::CurrentTime(time_stamp);
   port2.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
   CPPUNIT_ASSERT_EQUAL(buffer2.Size(), universe->GetDMX().Size());
@@ -459,6 +441,7 @@ void UniverseTest::testHtpMerging() {
 
   // raise the priority of the first port
   port.SetPriority(new_priority);
+  Clock::CurrentTime(time_stamp);
   port.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
   CPPUNIT_ASSERT_EQUAL(htp_buffer.Size(), universe->GetDMX().Size());
@@ -467,9 +450,8 @@ void UniverseTest::testHtpMerging() {
   // now check a client
   DmxBuffer client_buffer;
   client_buffer.SetFromString("255,0,0,255,10");
-  ola::TimeStamp now;
-  ola::Clock::CurrentTime(now);
-  ola::DmxSource source(client_buffer, now, new_priority);
+  Clock::CurrentTime(time_stamp);
+  ola::DmxSource source(client_buffer, time_stamp, new_priority);
   MockClient input_client;
   input_client.DMXRecieved(TEST_UNIVERSE, source);
   universe->SourceClientDataChanged(&input_client);

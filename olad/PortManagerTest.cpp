@@ -62,8 +62,8 @@ void PortManagerTest::testPortPatching() {
 
   // mock device, this doesn't allow looping or multiport patching
   MockDevice device1(NULL, "test_device_1");
-  TestMockInputPort input_port(&device1, 1);
-  TestMockInputPort input_port2(&device1, 2);
+  TestMockInputPort input_port(&device1, 1, NULL);
+  TestMockInputPort input_port2(&device1, 2, NULL);
   TestMockOutputPort output_port(&device1, 1);
   TestMockOutputPort output_port2(&device1, 2);
   device1.AddPort(&input_port);
@@ -144,8 +144,8 @@ void PortManagerTest::testPortPatchingLoopMulti() {
 
   // mock device that allows looping and multi port patching
   MockDeviceLoopAndMulti device1(NULL, "test_device_1");
-  TestMockInputPort input_port(&device1, 1);
-  TestMockInputPort input_port2(&device1, 2);
+  TestMockInputPort input_port(&device1, 1, NULL);
+  TestMockInputPort input_port2(&device1, 2, NULL);
   TestMockOutputPort output_port(&device1, 1);
   TestMockOutputPort output_port2(&device1, 2);
   device1.AddPort(&input_port);
@@ -204,7 +204,7 @@ void PortManagerTest::testInputPortSetPriority() {
   PortManager patcher(NULL);  // we're not testing patching so pass NULL here
 
   // Input port that doesn't support priorities
-  TestMockInputPort input_port(NULL, 0);
+  TestMockInputPort input_port(NULL, 0, NULL);
 
   CPPUNIT_ASSERT_EQUAL(input_port.PriorityCapability(),
                        ola::CAPABILITY_STATIC);
@@ -256,7 +256,7 @@ void PortManagerTest::testInputPortSetPriority() {
   CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(), (uint8_t) 200);
 
   // Now test an input port that does support priorities
-  TestMockPriorityInputPort input_port2(NULL, 1);
+  TestMockPriorityInputPort input_port2(NULL, 1, NULL);
   CPPUNIT_ASSERT_EQUAL(input_port2.PriorityCapability(),
                        ola::CAPABILITY_FULL);
   CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),

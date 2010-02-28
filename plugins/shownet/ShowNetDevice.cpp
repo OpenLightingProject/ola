@@ -67,7 +67,11 @@ bool ShowNetDevice::Start() {
   }
 
   for (unsigned int i = 0; i < ShowNetNode::SHOWNET_MAX_UNIVERSES; i++) {
-    ShowNetInputPort *input_port = new ShowNetInputPort(this, i, m_node);
+    ShowNetInputPort *input_port = new ShowNetInputPort(
+        this,
+        i,
+        m_plugin_adaptor->WakeUpTime(),
+        m_node);
     AddPort(input_port);
     ShowNetOutputPort *output_port = new ShowNetOutputPort(this, i, m_node);
     AddPort(output_port);

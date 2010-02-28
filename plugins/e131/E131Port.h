@@ -44,8 +44,9 @@ class E131PortHelper {
 
 class E131InputPort: public InputPort {
   public:
-    E131InputPort(E131Device *parent, int id, E131Node *node)
-        : InputPort(parent, id),
+    E131InputPort(E131Device *parent, int id, E131Node *node,
+                  const TimeStamp *wake_time)
+        : InputPort(parent, id, wake_time),
           m_node(node) {}
 
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {

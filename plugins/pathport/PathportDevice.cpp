@@ -89,7 +89,11 @@ bool PathportDevice::Start() {
     goto e_pathport_start;
 
   for (unsigned int i = 0; i < PORTS_PER_DEVICE; i++) {
-    PathportInputPort *port = new PathportInputPort(this, i, m_node);
+    PathportInputPort *port = new PathportInputPort(
+        this,
+        i,
+        m_plugin_adaptor->WakeUpTime(),
+        m_node);
     AddPort(port);
   }
 

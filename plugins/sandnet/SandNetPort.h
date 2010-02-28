@@ -45,8 +45,9 @@ class SandNetInputPort: public InputPort {
   public:
     SandNetInputPort(SandNetDevice *parent,
                      unsigned int id,
+                     const TimeStamp *wake_time,
                      SandNetNode *node):
-      InputPort(parent, id),
+      InputPort(parent, id, wake_time),
       m_node(node) {}
     ~SandNetInputPort() {}
 

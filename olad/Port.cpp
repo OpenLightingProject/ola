@@ -64,14 +64,11 @@ bool Port::SetPriority(uint8_t priority) {
 int InputPort::DmxChanged() {
   if (GetUniverse()) {
     const DmxBuffer &buffer = ReadDMX();
-    // TODO(simon): use the wake up time here
-    TimeStamp now;
-    Clock::CurrentTime(now);
     uint8_t priority = (PriorityCapability() == CAPABILITY_FULL &&
                         GetPriorityMode() == PRIORITY_MODE_INHERIT ?
                         InheritedPriority() :
                         GetPriority());
-    m_dmx_source.UpdateData(buffer, now, priority);
+    m_dmx_source.UpdateData(buffer, *m_wakeup_time, priority);
     GetUniverse()->PortDataChanged(this);
   }
   return 0;

@@ -47,7 +47,8 @@ class ArtNetDevice: public Device {
     ArtNetDevice(AbstractPlugin *owner,
                  const string &name,
                  class Preferences *preferences,
-                 bool debug);
+                 bool debug,
+                 const TimeStamp *wake_time);
     ~ArtNetDevice();
 
     bool Start();
@@ -79,6 +80,7 @@ class ArtNetDevice: public Device {
     uint8_t m_subnet;
     bool m_enabled;
     bool m_debug;
+    const TimeStamp *m_wake_time;
 
     void HandleOptions(Request *request, string *response);
 };

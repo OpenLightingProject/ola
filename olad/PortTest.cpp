@@ -26,6 +26,8 @@
 #include "olad/Preferences.h"
 #include "olad/UniverseStore.h"
 
+using ola::Clock;
+using ola::TimeStamp;
 
 class PortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PortTest);
@@ -82,11 +84,13 @@ void PortTest::testInputPortPriorities() {
   ola::PortManager port_manager(&store);
 
   MockDevice device(NULL, "foo");
+  TimeStamp time_stamp;
   // This port operates in static priority mode
-  TestMockInputPort input_port(&device, 1);
+  TestMockInputPort input_port(&device, 1, &time_stamp);
   port_manager.PatchPort(&input_port, universe_id);
 
   ola::DmxBuffer buffer("foo bar baz");
+  Clock::CurrentTime(time_stamp);
   input_port.WriteDMX(buffer);
   input_port.DmxChanged();
 
@@ -101,6 +105,7 @@ void PortTest::testInputPortPriorities() {
   port_manager.SetPriority(&input_port, ola::PRIORITY_MODE_OVERRIDE,
                            new_priority);
 
+  Clock::CurrentTime(time_stamp);
   input_port.WriteDMX(buffer);
   input_port.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
@@ -109,22 +114,25 @@ void PortTest::testInputPortPriorities() {
   port_manager.SetPriority(&input_port, ola::PRIORITY_MODE_OVERRIDE,
                            new_priority);
 
+  Clock::CurrentTime(time_stamp);
   input_port.WriteDMX(buffer);
   input_port.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
   port_manager.UnPatchPort(&input_port);
 
   // now try a port that supported priorities
-  TestMockPriorityInputPort input_port2(&device, 2);
+  TestMockPriorityInputPort input_port2(&device, 2, &time_stamp);
   port_manager.PatchPort(&input_port2, universe_id);
 
   // the default mode is inherit
   input_port2.SetInheritedPriority(99);
+  Clock::CurrentTime(time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
   CPPUNIT_ASSERT_EQUAL((uint8_t) 99, universe->ActivePriority());
 
   input_port2.SetInheritedPriority(123);
+  Clock::CurrentTime(time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
   CPPUNIT_ASSERT_EQUAL((uint8_t) 123, universe->ActivePriority());
@@ -133,6 +141,7 @@ void PortTest::testInputPortPriorities() {
   new_priority = 108;
   port_manager.SetPriority(&input_port2, ola::PRIORITY_MODE_OVERRIDE,
                            new_priority);
+  Clock::CurrentTime(time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(new_priority,  universe->ActivePriority());

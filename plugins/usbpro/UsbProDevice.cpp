@@ -89,7 +89,11 @@ bool UsbProDevice::Start() {
   usleep(10000);
   m_widget->GetSerial();
 
-  UsbProInputPort *input_port = new UsbProInputPort(this, 0, m_path);
+  UsbProInputPort *input_port = new UsbProInputPort(
+      this,
+      0,
+      m_plugin_adaptor->WakeUpTime(),
+      m_path);
   AddPort(input_port);
   UsbProOutputPort *output_port = new UsbProOutputPort(this, 0, m_path);
   AddPort(output_port);

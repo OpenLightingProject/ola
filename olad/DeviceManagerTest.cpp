@@ -171,7 +171,7 @@ void DeviceManagerTest::testRestorePatchings() {
 
   TestMockPlugin plugin(NULL);
   MockDevice device1(&plugin, "test_device_1");
-  TestMockInputPort input_port(&device1, 1);
+  TestMockInputPort input_port(&device1, 1, NULL);
   TestMockOutputPort output_port(&device1, 1);
   device1.AddPort(&input_port);
   device1.AddPort(&output_port);
@@ -229,12 +229,12 @@ void DeviceManagerTest::testRestorePriorities() {
   TestMockPlugin plugin(NULL);
   MockDevice device1(&plugin, "test_device_1");
   // these ports don't support priorities.
-  TestMockInputPort input_port(&device1, 1);
+  TestMockInputPort input_port(&device1, 1, NULL);
   TestMockOutputPort output_port(&device1, 1);
   // these devices support priorities
-  TestMockPriorityInputPort input_port2(&device1, 2);
+  TestMockPriorityInputPort input_port2(&device1, 2, NULL);
   TestMockPriorityOutputPort output_port2(&device1, 2);
-  TestMockPriorityInputPort input_port3(&device1, 3);
+  TestMockPriorityInputPort input_port3(&device1, 3, NULL);
   TestMockPriorityOutputPort output_port3(&device1, 3);
   device1.AddPort(&input_port);
   device1.AddPort(&output_port);

@@ -82,7 +82,8 @@ const char ArtNetDevice::K_IP_KEY[] = "ip";
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            const string &name,
                            ola::Preferences *preferences,
-                           bool debug):
+                           bool debug,
+                           const TimeStamp *wake_time):
   Device(owner, name),
   m_preferences(preferences),
   m_socket(NULL),
@@ -91,7 +92,8 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
   m_long_name(""),
   m_subnet(0),
   m_enabled(false),
-  m_debug(debug) {
+  m_debug(debug),
+  m_wake_time(wake_time) {
 }
 
 
@@ -190,7 +192,10 @@ bool ArtNetDevice::Start() {
       goto e_artnet_start;
     }
 
-    ArtNetInputPort *input_port = new ArtNetInputPort(this, i, m_node);
+    ArtNetInputPort *input_port = new ArtNetInputPort(this,
+                                                      i,
+                                                      m_wake_time,
+                                                      m_node);
     AddPort(input_port);
   }
 

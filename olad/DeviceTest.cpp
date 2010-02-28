@@ -84,8 +84,8 @@ void DeviceTest::AddPortsToDeviceAndCheck(ola::Device *device) {
   CPPUNIT_ASSERT_EQUAL((size_t) 0, output_ports.size());
 
   // add two input ports and an output port
-  TestMockInputPort input_port1(device, 1);
-  TestMockInputPort input_port2(device, 2);
+  TestMockInputPort input_port1(device, 1, NULL);
+  TestMockInputPort input_port2(device, 2, NULL);
   TestMockOutputPort output_port1(device, 1);
   device->AddPort(&input_port1);
   device->AddPort(&input_port2);
