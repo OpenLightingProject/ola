@@ -1,3 +1,13 @@
+28/2/2010 ola-0.7.0
+  Added E1.31 merging & sequencing support
+  Improved USB Pro handling
+  Added port priorities & multi source merging
+  TX support for the DMX-TRI
+  Support for the Ardiuno RGB Mixer
+  DSCP for E1.31
+  Support for using the OSSP uuid library
+  Removal of run-time loadable plugins.
+
 10/1/2010 ola-0.6.0
   Added Pathport support
   Added support for the final version of the E1.31 Standard
