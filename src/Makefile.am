@@ -25,10 +25,10 @@ libolaconfig_la_SOURCES = OlaConfigurator.cpp
 EXTRA_DIST = OlaConfigurator.h
 
 install-exec-hook:
-	$(LN_S) -f $(bindir)/ola_dev_info $(bindir)/ola_plugin_info
-	$(LN_S) -f $(bindir)/ola_dev_info $(bindir)/ola_uni_info
-	$(LN_S) -f $(bindir)/ola_dev_info $(bindir)/ola_patch
-	$(LN_S) -f $(bindir)/ola_dev_info $(bindir)/ola_uni_name
-	$(LN_S) -f $(bindir)/ola_dev_info $(bindir)/ola_uni_merge
-	$(LN_S) -f $(bindir)/ola_dev_info $(bindir)/ola_set_dmx
-	$(LN_S) -f $(bindir)/ola_dev_info $(bindir)/ola_set_priority
+	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_plugin_info
+	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_uni_info
+	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_patch
+	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_uni_name
+	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_uni_merge
+	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_dmx
+	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_priority
