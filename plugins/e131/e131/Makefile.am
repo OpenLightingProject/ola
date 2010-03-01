@@ -2,8 +2,8 @@ include $(top_srcdir)/common.mk
 
 EXTRA_DIST = BaseInflator.h CID.h \
              DMPE131Inflator.h DMPAddress.h DMPHeader.h DMPInflator.h DMPPDU.h \
-             E131Header.h E131Inflator.h E131Layer.h E131Node.h E131PDU.h \
-             HeaderSet.h PDU.h PDUTestCommon.h \
+             E131Header.h E131Includes.h E131Inflator.h E131Layer.h E131Node.h \
+             E131PDU.h E131TestFramework.h HeaderSet.h PDU.h PDUTestCommon.h \
              RootHeader.h RootInflator.h RootLayer.h RootPDU.h \
              UDPTransport.h
 
