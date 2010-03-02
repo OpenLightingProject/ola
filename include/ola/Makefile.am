@@ -1,4 +1,4 @@
-SUBDIRS = network
+SUBDIRS = network rdm
 
 SOURCES = BaseTypes.h Clock.h Closure.h DmxBuffer.h ExportMap.h Logging.h \
           RunLengthEncoder.h StringUtils.h

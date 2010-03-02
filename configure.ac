@@ -274,12 +274,14 @@ AC_OUTPUT( Makefile\
     common/export_map/Makefile\
     common/logging/Makefile\
     common/protocol/Makefile\
+    common/rdm/Makefile\
     common/rpc/Makefile\
     common/network/Makefile\
     common/utils/Makefile\
     include/Makefile\
     include/ola/Makefile\
     include/ola/network/Makefile\
+    include/ola/rdm/Makefile\
     include/olad/Makefile\
     ola/Makefile \
     python/Makefile \
