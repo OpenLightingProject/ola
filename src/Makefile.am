@@ -10,12 +10,15 @@ ola_dmxmonitor_SOURCES = ola-dmxmonitor.cpp
 ola_dmxmonitor_LDADD = @LIBS@ -lcurses
 endif
 
-bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 $(NCURSES_PROGS)
-ola_dev_info_SOURCES = ola-client.cpp
+bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
+               ola_streaming_client $(NCURSES_PROGS)
+
 ola_artnet_SOURCES = ola-artnet.cpp
 ola_artnet_LDADD = @LIBS@ -lolaartnetconf libolaconfig.la
+ola_dev_info_SOURCES = ola-client.cpp
 ola_e131_SOURCES = ola-e131.cpp
 ola_e131_LDADD = @LIBS@ -lolae131conf libolaconfig.la
+ola_streaming_client_SOURCES = ola-streaming-client.cpp
 ola_usbpro_SOURCES = ola-usbpro.cpp
 ola_usbpro_LDADD = @LIBS@ -lolausbproconf libolaconfig.la
 
