@@ -590,6 +590,7 @@ void DisplaySetPriorityHelp(const options &opts) {
   "\n"
   "  -d, --device <device>    Id of device to patch.\n"
   "  -h, --help               Display this help message and exit.\n"
+  "  -i, --input              Set an input port\n"
   "  -o, --override <value>   Set the port priority to a static value.\n"
   "  -p, --port <port>        Id of the port to patch.\n"
   << endl;
