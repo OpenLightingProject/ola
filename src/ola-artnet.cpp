@@ -167,7 +167,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
  */
 void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
-    "-d <dev_id> -n <name> -l <long_name> -s <subnet>\n\n"
+    " -d <dev_id> -n <name> -l <long_name> -s <subnet>\n\n"
     "Configure ArtNet Devices managed by OLA.\n\n"
     "  -h, --help      Display this help message and exit.\n"
     "  -l, --long_name Set the long name of the ArtNet device\n"
