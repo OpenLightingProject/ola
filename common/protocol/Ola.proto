@@ -53,6 +53,11 @@ enum PluginIds {
 message Ack {
 }
 
+// This is a special string which indicates that no response will be received
+// for an RPC.
+message STREAMING_NO_RESPONSE {
+}
+
 message DmxReadRequest {
   required int32 universe = 1;
 }
@@ -170,6 +175,7 @@ service OlaServerService {
   rpc GetDmx (DmxReadRequest) returns (DmxData);
   rpc RegisterForDmx (RegisterDmxRequest) returns (Ack);
   rpc UpdateDmxData (DmxData) returns (Ack);
+  rpc StreamDmxData (DmxData) returns (STREAMING_NO_RESPONSE);
   rpc SetUniverseName (UniverseNameRequest) returns (Ack);
   rpc SetMergeMode (MergeModeRequest) returns (Ack);
   rpc PatchPort (PatchPortRequest) returns (Ack);

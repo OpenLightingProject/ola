@@ -5,7 +5,7 @@ libstreamrpcchannel_la_SOURCES = StreamRpcChannel.cpp SimpleRpcController.cpp
 nodist_libstreamrpcchannel_la_SOURCES = Rpc.pb.cc
 
 EXTRA_DIST = Rpc.proto TestService.proto SimpleRpcController.h \
-             StreamRpcChannel.h TestServiceImpl.h
+             StreamRpcChannel.h
 
 BUILT_SOURCES = Rpc.pb.cc Rpc.pb.h TestService.pb.cc TestService.pb.h
 
@@ -18,8 +18,7 @@ TestService.pb.cc TestService.pb.h: TestService.proto
 TESTS = RpcTester
 check_PROGRAMS = $(TESTS)
 RpcTester_SOURCES = RpcTester.cpp RpcControllerTest.cpp\
-                    StreamRpcChannelTest.cpp StreamRpcHeaderTest.cpp\
-                    TestServiceImpl.cpp
+                    StreamRpcChannelTest.cpp StreamRpcHeaderTest.cpp
 nodist_RpcTester_SOURCES = TestService.pb.cc
 RpcTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 RpcTester_LDFLAGS = $(CPPUNIT_LIBS) -lprotobuf

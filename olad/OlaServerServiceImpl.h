@@ -58,6 +58,10 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                        const ola::proto::DmxData* request,
                        Ack* response,
                        google::protobuf::Closure* done);
+    void StreamDmxData(RpcController* controller,
+                       const ::ola::proto::DmxData* request,
+                       ::ola::proto::STREAMING_NO_RESPONSE* response,
+                       ::google::protobuf::Closure* done);
     void SetUniverseName(RpcController* controller,
                          const ola::proto::UniverseNameRequest* request,
                          Ack* response,

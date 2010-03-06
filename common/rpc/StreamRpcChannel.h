@@ -97,7 +97,7 @@ class StreamRpcChannel: public RpcChannel {
     int SocketReady();
 
     void CallMethod(
-        const MethodDescriptor * method,
+        const MethodDescriptor *method,
         RpcController *controller,
         const Message *request,
         Message *response,
@@ -113,6 +113,7 @@ class StreamRpcChannel: public RpcChannel {
     int ReadHeader(unsigned int *version, unsigned int *size) const;
     void HandleNewMsg(uint8_t *buffer, unsigned int size);
     void HandleRequest(RpcMessage *msg);
+    void HandleStreamRequest(RpcMessage *msg);
 
     // server end
     void SendRequestFailed(OutstandingRequest *request);
@@ -140,12 +141,13 @@ class StreamRpcChannel: public RpcChannel {
     ExportMap *m_export_map;
     UIntMap *m_recv_type_map;
 
+    static const char K_RPC_RECEIVED_TYPE_VAR[];
+    static const char K_RPC_RECEIVED_VAR[];
+    static const char K_RPC_SENT_ERROR_VAR[];
+    static const char K_RPC_SENT_VAR[];
+    static const char STREAMING_NO_RESPONSE[];
     static const unsigned int INITIAL_BUFFER_SIZE = 1 << 11;  // 2k
     static const unsigned int MAX_BUFFER_SIZE = 1 << 20;  // 1M
-    static const char K_RPC_RECEIVED_VAR[];
-    static const char K_RPC_RECEIVED_TYPE_VAR[];
-    static const char K_RPC_SENT_VAR[];
-    static const char K_RPC_SENT_ERROR_VAR[];
 };
 }  // rpc
 }  // ola

@@ -141,6 +141,37 @@ void OlaServerServiceImpl::UpdateDmxData(
 
 
 /*
+ * Handle a streaming DMX update, we don't send responses for this
+ */
+void OlaServerServiceImpl::StreamDmxData(
+    RpcController* controller,
+    const ::ola::proto::DmxData* request,
+    ::ola::proto::STREAMING_NO_RESPONSE* response,
+    ::google::protobuf::Closure* done) {
+
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+
+  if (!universe)
+    return;
+
+  if (m_client) {
+    DmxBuffer buffer;
+    buffer.Set(request->data());
+
+    uint8_t priority = DmxSource::PRIORITY_DEFAULT;
+    if (request->has_priority()) {
+      priority = request->priority();
+      priority = std::max(DmxSource::PRIORITY_MIN, priority);
+      priority = std::min(DmxSource::PRIORITY_MAX, priority);
+    }
+    DmxSource source(buffer, *m_wake_up_time, priority);
+    m_client->DMXRecieved(request->universe(), source);
+    universe->SourceClientDataChanged(m_client);
+  }
+}
+
+
+/*
  * Sets the name of a universe
  */
 void OlaServerServiceImpl::SetUniverseName(

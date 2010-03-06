@@ -37,10 +37,11 @@ namespace rpc {
 
 using google::protobuf::ServiceDescriptor;
 
-const char StreamRpcChannel::K_RPC_RECEIVED_VAR[] = "rpc-received";
 const char StreamRpcChannel::K_RPC_RECEIVED_TYPE_VAR[] = "rpc-received-type";
-const char StreamRpcChannel::K_RPC_SENT_VAR[] = "rpc-sent";
+const char StreamRpcChannel::K_RPC_RECEIVED_VAR[] = "rpc-received";
 const char StreamRpcChannel::K_RPC_SENT_ERROR_VAR[] = "rpc-send-errors";
+const char StreamRpcChannel::K_RPC_SENT_VAR[] = "rpc-sent";
+const char StreamRpcChannel::STREAMING_NO_RESPONSE[] = "STREAMING_NO_RESPONSE";
 
 StreamRpcChannel::StreamRpcChannel(Service *service,
                                    ola::network::ConnectedSocket *socket,
@@ -137,14 +138,29 @@ void StreamRpcChannel::CallMethod(
     google::protobuf::Closure *done) {
   string output;
   RpcMessage message;
+  bool is_streaming = false;
 
-  message.set_type(REQUEST);
+  // Streaming methods are those with a reply set to STREAMING_NO_RESPONSE and
+  // no controller, request or closure provided
+  if (method->output_type()->name() == STREAMING_NO_RESPONSE) {
+    if (controller || reply || done) {
+      OLA_FATAL << "Calling streaming method " << method->name() <<
+        " but a controller, reply or closure in non-NULL";
+      return;
+    }
+    is_streaming = true;
+  }
+
+  message.set_type(is_streaming ? STREAM_REQUEST : REQUEST);
   message.set_id(m_seq++);
   message.set_name(method->name());
 
   request->SerializeToString(&output);
   message.set_buffer(output);
   SendMsg(&message);
+
+  if (is_streaming)
+    return;
 
   OutstandingResponse *response = GetOutstandingResponse(message.id());
   if (response) {
@@ -313,6 +329,11 @@ void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
         (*m_recv_type_map)["not-implemented"]++;
       HandleNotImplemented(&msg);
       break;
+    case STREAM_REQUEST:
+      if (m_recv_type_map)
+        (*m_recv_type_map)["stream_request"]++;
+      HandleStreamRequest(&msg);
+      break;
     default:
       OLA_WARN << "not sure of msg type " << msg.type();
       break;
@@ -369,6 +390,50 @@ void StreamRpcChannel::HandleRequest(RpcMessage *msg) {
       this, &StreamRpcChannel::RequestComplete, request);
   m_service->CallMethod(method, request->controller, request_pb, response_pb,
                         callback);
+  delete request_pb;
+}
+
+
+/*
+ * Handle a streaming RPC call. This doesn't return any response to the client.
+ */
+void StreamRpcChannel::HandleStreamRequest(RpcMessage *msg) {
+  if (!m_service) {
+    OLA_WARN << "no service registered";
+    return;
+  }
+
+  const ServiceDescriptor *service = m_service->GetDescriptor();
+  if (!service) {
+    OLA_WARN << "failed to get service descriptor";
+    return;
+  }
+  const MethodDescriptor *method = service->FindMethodByName(msg->name());
+  if (!method) {
+    OLA_WARN << "failed to get method descriptor";
+    SendNotImplemented(msg->id());
+    return;
+  }
+
+  if (method->output_type()->name() != STREAMING_NO_RESPONSE) {
+    OLA_WARN << "Streaming request recieved for " << method->name() <<
+      ", but the output type isn't STREAMING_NO_RESPONSE";
+    return;
+  }
+
+  Message* request_pb = m_service->GetRequestPrototype(method).New();
+
+  if (!request_pb) {
+    OLA_WARN << "failed to get request or response objects";
+    return;
+  }
+
+  if (!request_pb->ParseFromString(msg->buffer())) {
+    OLA_WARN << "parsing of request pb failed";
+    return;
+  }
+
+  m_service->CallMethod(method, NULL, request_pb, NULL, NULL);
   delete request_pb;
 }
 
