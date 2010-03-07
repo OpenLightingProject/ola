@@ -84,7 +84,7 @@ int ConnectedSocket::DataRemaining() const {
  */
 ssize_t ConnectedSocket::FDSend(int fd,
                                 const uint8_t *buffer,
-                                unsigned int size) {
+                                unsigned int size) const {
   if (fd == INVALID_SOCKET)
     return 0;
 

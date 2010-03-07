@@ -90,7 +90,7 @@ class ConnectedSocket: public Socket {
     virtual int ReadDescriptor() const = 0;
     virtual int WriteDescriptor() const = 0;
 
-    virtual ssize_t Send(const uint8_t *buffer, unsigned int size) {
+    virtual ssize_t Send(const uint8_t *buffer, unsigned int size) const {
       return FDSend(WriteDescriptor(), buffer, size);
     }
 
@@ -131,7 +131,7 @@ class ConnectedSocket: public Socket {
   protected:
     virtual bool IsClosed() const;
     bool SetNonBlocking(int fd);
-    ssize_t FDSend(int fd, const uint8_t *buffer, unsigned int size);
+    ssize_t FDSend(int fd, const uint8_t *buffer, unsigned int size) const;
     int FDReceive(int fd,
                   uint8_t *buffer,
                   unsigned int size,
