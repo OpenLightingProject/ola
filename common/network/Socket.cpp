@@ -90,7 +90,7 @@ ssize_t ConnectedSocket::FDSend(int fd,
 
   ssize_t bytes_sent = write(fd, buffer, size);
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
-    OLA_WARN << "Failed to send, " << strerror(errno);
+    OLA_WARN << "Failed to send on " << fd << ":" << strerror(errno);
   return bytes_sent;
 }
 
