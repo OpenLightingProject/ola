@@ -25,6 +25,7 @@
 #ifndef OLA_STREAMINGCLIENT_H_
 #define OLA_STREAMINGCLIENT_H_
 
+#include <ola/DmxBuffer.h>
 #include <ola/network/Socket.h>
 
 namespace ola {
