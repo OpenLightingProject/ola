@@ -291,9 +291,12 @@ bool SelectServer::CheckForEvents() {
   maxsd = 0;
   FD_ZERO(&r_fds);
   FD_ZERO(&w_fds);
-  AddSocketsToSet(&r_fds, &maxsd);
   Clock::CurrentTime(now);
   now = CheckTimeouts(now);
+
+  // adding sockets should be the last thing we do, they may have changed due
+  // to timeouts above.
+  AddSocketsToSet(&r_fds, &maxsd);
 
   if (m_wake_up_time->IsSet()) {
     TimeInterval loop_time = now - *m_wake_up_time;
