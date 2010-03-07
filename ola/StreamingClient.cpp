@@ -30,7 +30,9 @@ using ola::rpc::StreamRpcChannel;
 using ola::proto::OlaServerService_Stub;
 
 StreamingClient::StreamingClient()
-    : m_socket(NULL) {
+    : m_socket(NULL),
+      m_channel(NULL),
+      m_stub(NULL) {
 }
 
 StreamingClient::~StreamingClient() {
