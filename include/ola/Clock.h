@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_CLOCK_H_
 #define INCLUDE_OLA_CLOCK_H_
 
+#include <stdint.h>
 #include <sys/time.h>
 #include <iomanip>
 #include <ostream>
