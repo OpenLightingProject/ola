@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_RDM_UID_H_
 #define INCLUDE_OLA_RDM_UID_H_
 
+#include <stdint.h>
 #include <iomanip>
 #include <string>
 
