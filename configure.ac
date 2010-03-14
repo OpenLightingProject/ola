@@ -112,10 +112,13 @@ PKG_CHECK_MODULES(
   [AC_CHECK_HEADERS(
     [ossp/uuid.h],
     [use_ossp_uuid="yes"],
-    [AC_CHECK_LIB([uuid],
-                  [uuid_generate],
-                  [],
-                  [use_ossp_uuid="yes"])],
+    [AC_CHECK_HEADERS(
+      [uuid/uuid.h]
+      [],
+      [AC_CHECK_LIB([uuid],
+                    [uuid_generate],
+                    [],
+                    [use_ossp_uuid="yes"])])],
     []
   )],
   # the uuid pkg wasn't found, let's try ossp-uuid instead
