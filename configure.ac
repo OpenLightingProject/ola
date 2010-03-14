@@ -101,6 +101,13 @@ AC_CHECK_MEMBER(struct sockaddr_dl.sdl_family,
 #include <sys/types.h>
 #include <net/if_dl.h>])
 
+# Check for pkg-config
+PKG_PROG_PKG_CONFIG
+
+if test -z "$PKG_CONFIG"; then
+  AC_MSG_ERROR([Missing pkg-config, please install it])
+fi
+
 # check for uuid
 # uuid handling is quite complex as we can use either the OSSP uuid or the one
 # with e2fsprogs. On top of that the header file is different on different
