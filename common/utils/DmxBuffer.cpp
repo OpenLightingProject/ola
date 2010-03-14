@@ -25,6 +25,7 @@
 
 #include <string.h>
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <vector>
 #include "ola/BaseTypes.h"
@@ -345,7 +346,7 @@ bool DmxBuffer::Blackout() {
   if (!m_data)
     if (!Init())
       return false;
-  bzero(m_data, DMX_UNIVERSE_SIZE);
+  memset(m_data, 0, DMX_UNIVERSE_SIZE);
   m_length = DMX_UNIVERSE_SIZE;
   return true;
 }
@@ -358,6 +359,24 @@ bool DmxBuffer::Blackout() {
 void DmxBuffer::Reset() {
   if (m_data)
     m_length = 0;
+}
+
+
+/*
+ * Convert to a human readable representation
+ */
+string DmxBuffer::ToString() const {
+  if (!m_data)
+    return "";
+
+  std::stringstream str;
+  str << static_cast<int>(Size()) << ": ";
+  for (unsigned int i = 0; i < Size(); i++) {
+    if (i)
+      str << ",";
+    str << static_cast<int>(m_data[i]);
+  }
+  return str.str();
 }
 
 
@@ -394,10 +413,14 @@ bool DmxBuffer::DuplicateIfNeeded() {
     uint8_t *original_data = m_data;
     unsigned int length = m_length;
     m_copy_on_write = false;
-    Init();
-    Set(original_data, length);
-    (*old_ref_count)--;
+    if (Init()) {
+      Set(original_data, length);
+      (*old_ref_count)--;
+      return true;
+    }
+    return false;
   }
+  return true;
 }
 
 

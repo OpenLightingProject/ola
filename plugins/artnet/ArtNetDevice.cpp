@@ -58,14 +58,7 @@ int dmx_handler(artnet_node n, int artnet_port, void *d) {
   if (port)
     port->DmxChanged();
   return 0;
-}
-
-
-/*
- * Notify of remote programming
- */
-int program_handler(artnet_node n, void *d) {
-  return 0;
+  (void) n;
 }
 
 
@@ -89,7 +82,8 @@ const char ArtNetDevice::K_IP_KEY[] = "ip";
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            const string &name,
                            ola::Preferences *preferences,
-                           bool debug):
+                           bool debug,
+                           const TimeStamp *wake_time):
   Device(owner, name),
   m_preferences(preferences),
   m_socket(NULL),
@@ -98,7 +92,8 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
   m_long_name(""),
   m_subnet(0),
   m_enabled(false),
-  m_debug(debug) {
+  m_debug(debug),
+  m_wake_time(wake_time) {
 }
 
 
@@ -164,13 +159,6 @@ bool ArtNetDevice::Start() {
   }
   m_subnet = subnet;
 
-  // we want to be notified when the node config changes
-  if (artnet_set_program_handler(m_node, ::program_handler,
-                                 reinterpret_cast<void*>(this))) {
-    OLA_WARN << "artnet_set_program_handler failed: " << artnet_strerror();
-    goto e_artnet_start;
-  }
-
   if (artnet_set_dmx_handler(m_node, ::dmx_handler,
                              reinterpret_cast<void*>(this))) {
     OLA_WARN << "artnet_set_dmx_handler failed: " << artnet_strerror();
@@ -204,7 +192,10 @@ bool ArtNetDevice::Start() {
       goto e_artnet_start;
     }
 
-    ArtNetInputPort *input_port = new ArtNetInputPort(this, i, m_node);
+    ArtNetInputPort *input_port = new ArtNetInputPort(this,
+                                                      i,
+                                                      m_wake_time,
+                                                      m_node);
     AddPort(input_port);
   }
 

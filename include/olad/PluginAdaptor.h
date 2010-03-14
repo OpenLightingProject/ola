@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <ola/Clock.h>  // NOLINT
 #include <ola/network/SelectServer.h>  // NOLINT
 
 namespace ola {
@@ -62,6 +63,8 @@ class PluginAdaptor {
     bool UnregisterDevice(class AbstractDevice *device) const;
 
     class Preferences *NewPreference(const string &name) const;
+
+    const TimeStamp *WakeUpTime() const;
 
   private:
     PluginAdaptor(const PluginAdaptor&);

@@ -21,20 +21,14 @@
 #ifndef INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 #define INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 
-#if HAVE_CONFIG_H
-#  include <config.h>
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <netinet/in.h>
 #endif
 
-#include <netinet/in.h>
 #include <string>
 #include <vector>
-
-#ifdef HAVE_GETIFADDRS
-  #ifdef HAVE_LINUX_IF_PACKET_H
-    #define OLA_USE_GETIFADDRS
-  #endif
-#endif
-
 
 namespace ola {
 namespace network {
@@ -49,10 +43,7 @@ class Interface {
     Interface();
     Interface(const Interface &other);
     Interface& operator=(const Interface &other);
-    bool operator==(const Interface &other) {
-      return (name == other.name &&
-              ip_address.s_addr == other.ip_address.s_addr);
-    }
+    bool operator==(const Interface &other);
 
     std::string name;
     struct in_addr ip_address;
@@ -68,15 +59,14 @@ class InterfacePicker {
   public:
     InterfacePicker() {}
     virtual ~InterfacePicker() {}
-    bool ChooseInterface(Interface *interface,
+
+    // stupid windows, 'interface' seems to be a struct so we use iface here.
+    bool ChooseInterface(Interface *iface,
                          const std::string &preferred_ip) const;
 
-    virtual std::vector<Interface> GetInterfaces() const;
-  private:
-    static const unsigned int INITIAL_IFACE_COUNT = 10;
-    static const unsigned int IFACE_COUNT_INC = 5;
+    virtual std::vector<Interface> GetInterfaces() const = 0;
 
-    unsigned int GetIfReqSize(const char *data) const;
+    static InterfacePicker *NewPicker();
 };
 }  // network
 }  // ola

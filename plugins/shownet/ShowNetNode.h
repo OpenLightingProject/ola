@@ -67,7 +67,6 @@ class ShowNetNode {
     std::string m_node_name;
     std::string m_preferred_ip;
     std::map<unsigned int, universe_handler> m_handlers;
-    ola::network::InterfacePicker m_interface_picker;
     ola::network::Interface m_interface;
     ola::RunLengthEncoder m_encoder;
     ola::network::UdpSocket *m_socket;

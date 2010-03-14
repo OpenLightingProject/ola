@@ -47,7 +47,8 @@ class ArtNetDevice: public Device {
     ArtNetDevice(AbstractPlugin *owner,
                  const string &name,
                  class Preferences *preferences,
-                 bool debug);
+                 bool debug,
+                 const TimeStamp *wake_time);
     ~ArtNetDevice();
 
     bool Start();
@@ -65,6 +66,11 @@ class ArtNetDevice: public Device {
                    string *response,
                    google::protobuf::Closure *done);
 
+    static const char K_SHORT_NAME_KEY[];
+    static const char K_LONG_NAME_KEY[];
+    static const char K_SUBNET_KEY[];
+    static const char K_IP_KEY[];
+
   private:
     class Preferences *m_preferences;
     ola::network::UnmanagedSocket *m_socket;
@@ -74,12 +80,9 @@ class ArtNetDevice: public Device {
     uint8_t m_subnet;
     bool m_enabled;
     bool m_debug;
+    const TimeStamp *m_wake_time;
 
     void HandleOptions(Request *request, string *response);
-    static const char K_SHORT_NAME_KEY[];
-    static const char K_LONG_NAME_KEY[];
-    static const char K_SUBNET_KEY[];
-    static const char K_IP_KEY[];
 };
 }  // arntnet
 }  // plugin

@@ -39,8 +39,7 @@ class Listener: public ola::plugin::usbpro::UsbProWidgetListener {
     Listener(UsbProWidget *widget): m_widget(widget) {}
     void HandleWidgetDmx() {
       const DmxBuffer &buffer = m_widget->FetchDMX();
-      OLA_INFO << (int) buffer.Get(0) << "," << (int) buffer.Get(1);
-
+      OLA_INFO << buffer.ToString();
     }
 
   private:

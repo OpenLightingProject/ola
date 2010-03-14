@@ -36,6 +36,7 @@ namespace plugin {
 namespace espnet {
 
 const std::string EspNetDevice::IP_KEY = "ip";
+const std::string EspNetDevice::NODE_NAME_KEY = "name";
 
 /*
  * Create a new device
@@ -60,7 +61,7 @@ bool EspNetDevice::Start() {
     return false;
 
   m_node = new EspNetNode(m_preferences->GetValue(IP_KEY));
-  m_node->SetName(m_preferences->GetValue("name"));
+  m_node->SetName(m_preferences->GetValue(NODE_NAME_KEY));
   m_node->SetType(ESPNET_NODE_TYPE_IO);
 
   if (!m_node->Start()) {
@@ -70,7 +71,11 @@ bool EspNetDevice::Start() {
   }
 
   for (unsigned int i = 0; i < PORTS_PER_DEVICE; i++) {
-    EspNetInputPort *input_port = new EspNetInputPort(this, i, m_node);
+    EspNetInputPort *input_port = new EspNetInputPort(
+        this,
+        i,
+        m_plugin_adaptor->WakeUpTime(),
+        m_node);
     AddPort(input_port);
     EspNetOutputPort *output_port = new EspNetOutputPort(this, i, m_node);
     AddPort(output_port);

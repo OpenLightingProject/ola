@@ -85,7 +85,7 @@ bool PortManager::SetPriority(Port *port,
                               const string &priority_str,
                               bool pedantic) {
   unsigned int mode = PRIORITY_MODE_INHERIT;
-  unsigned int priority = Port::PORT_PRIORITY_DEFAULT;
+  unsigned int priority = DmxSource::PRIORITY_DEFAULT;
 
   if (port->PriorityCapability() == CAPABILITY_FULL) {
     if (!StringToUInt(mode_str, &mode)) {
@@ -121,16 +121,16 @@ bool PortManager::SetPriority(Port *port,
   if (port->PriorityCapability() == CAPABILITY_NONE)
     return true;
 
-  if (priority > Port::PORT_PRIORITY_MAX) {
+  if (priority > DmxSource::PRIORITY_MAX) {
     OLA_WARN << "Priority " << priority <<
-      " is greater than the max priority (" << Port::PORT_PRIORITY_MAX << ")";
+      " is greater than the max priority (" << DmxSource::PRIORITY_MAX << ")";
     if (pedantic)
       return false;
-    priority = Port::PORT_PRIORITY_MAX;
+    priority = DmxSource::PRIORITY_MAX;
   }
 
   if (port->PriorityCapability() == CAPABILITY_FULL &&
-      port->GetPriorityMode() != mode) {
+      port->GetPriorityMode() != static_cast<port_priority_mode>(mode)) {
     if (mode >= PRIORITY_MODE_END) {
       OLA_WARN << "Priority mode " << mode << " is out of range";
       if (pedantic)

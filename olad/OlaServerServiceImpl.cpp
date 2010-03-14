@@ -19,20 +19,22 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/ExportMap.h"
-#include "olad/Universe.h"
+#include "olad/Client.h"
 #include "olad/Device.h"
-#include "olad/Port.h"
+#include "olad/DeviceManager.h"
+#include "olad/DmxSource.h"
+#include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
+#include "olad/Port.h"
 #include "olad/PortManager.h"
-#include "olad/Client.h"
-#include "olad/DeviceManager.h"
-#include "olad/OlaServerServiceImpl.h"
+#include "olad/Universe.h"
 #include "olad/UniverseStore.h"
 #include "common/protocol/Ola.pb.h"
 
@@ -119,14 +121,53 @@ void OlaServerServiceImpl::UpdateDmxData(
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  DmxBuffer buffer;
-  buffer.Set(request->data());
   if (m_client) {
-    m_client->DMXRecieved(request->universe(), buffer);
+    DmxBuffer buffer;
+    buffer.Set(request->data());
+
+    uint8_t priority = DmxSource::PRIORITY_DEFAULT;
+    if (request->has_priority()) {
+      priority = request->priority();
+      priority = std::max(DmxSource::PRIORITY_MIN, priority);
+      priority = std::min(DmxSource::PRIORITY_MAX, priority);
+    }
+    DmxSource source(buffer, *m_wake_up_time, priority);
+    m_client->DMXRecieved(request->universe(), source);
     universe->SourceClientDataChanged(m_client);
   }
   done->Run();
   (void) response;
+}
+
+
+/*
+ * Handle a streaming DMX update, we don't send responses for this
+ */
+void OlaServerServiceImpl::StreamDmxData(
+    RpcController* controller,
+    const ::ola::proto::DmxData* request,
+    ::ola::proto::STREAMING_NO_RESPONSE* response,
+    ::google::protobuf::Closure* done) {
+
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+
+  if (!universe)
+    return;
+
+  if (m_client) {
+    DmxBuffer buffer;
+    buffer.Set(request->data());
+
+    uint8_t priority = DmxSource::PRIORITY_DEFAULT;
+    if (request->has_priority()) {
+      priority = request->priority();
+      priority = std::max(DmxSource::PRIORITY_MIN, priority);
+      priority = std::min(DmxSource::PRIORITY_MAX, priority);
+    }
+    DmxSource source(buffer, *m_wake_up_time, priority);
+    m_client->DMXRecieved(request->universe(), source);
+    universe->SourceClientDataChanged(m_client);
+  }
 }
 
 
@@ -252,6 +293,7 @@ void OlaServerServiceImpl::SetPortPriority(
     controller->SetFailed(
         "Invalid SetPortPriority request, see logs for more info");
   done->Run();
+  (void) response;
 }
 
 
@@ -473,12 +515,14 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     PluginManager *plugin_manager,
     Client *client,
     ExportMap *export_map,
-    PortManager *port_manager) {
+    PortManager *port_manager,
+    const TimeStamp *wake_up_time) {
   return new OlaServerServiceImpl(universe_store,
                                   device_manager,
                                   plugin_manager,
                                   client,
                                   export_map,
-                                  port_manager);
+                                  port_manager,
+                                  wake_up_time);
 };
 }  // ola

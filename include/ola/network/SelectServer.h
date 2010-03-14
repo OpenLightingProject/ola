@@ -21,13 +21,13 @@
 #ifndef INCLUDE_OLA_NETWORK_SELECTSERVER_H_
 #define INCLUDE_OLA_NETWORK_SELECTSERVER_H_
 
-#include <sys/time.h>
 #include <queue>
 #include <set>
 #include <string>
 #include <vector>
 
 #include <ola/Closure.h>  // NOLINT
+#include <ola/Clock.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
 
 namespace ola {
@@ -44,19 +44,23 @@ class SelectServer {
   public :
     enum Direction {READ, WRITE};
 
-    explicit SelectServer(ExportMap *export_map = NULL);
-    ~SelectServer() { UnregisterAll(); }
-    int Run();
+    SelectServer(ExportMap *export_map = NULL,
+                 TimeStamp *wake_up_time = NULL);
+    ~SelectServer();
+
+    void Run();
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
     bool AddSocket(class Socket *socket);
-    bool AddSocket(class ConnectedSocket *socket, bool delete_on_close = false);
+    bool AddSocket(class ConnectedSocket *socket,
+                   bool delete_on_close = false);
     bool RemoveSocket(class Socket *socket);
     bool RemoveSocket(class ConnectedSocket *socket);
     timeout_id RegisterRepeatingTimeout(int ms, ola::Closure *closure);
     timeout_id RegisterSingleTimeout(int ms, ola::SingleUseClosure *closure);
     void RemoveTimeout(timeout_id id);
+    const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
 
     static const char K_SOCKET_VAR[];
     static const char K_CONNECTED_SOCKET_VAR[];
@@ -77,7 +81,7 @@ class SelectServer {
     bool CheckForEvents();
     void CheckSockets(fd_set *set);
     void AddSocketsToSet(fd_set *set, int *max_sd) const;
-    struct timeval CheckTimeouts(const struct timeval &now);
+    TimeStamp CheckTimeouts(const TimeStamp &now);
     void UnregisterAll();
 
     static const int K_MS_IN_SECOND = 1000;
@@ -86,19 +90,20 @@ class SelectServer {
     // This is a timer event
     typedef struct {
       timeout_id id;
-      struct timeval next;
-      struct timeval interval;
+      TimeStamp next;
+      TimeInterval interval;
       bool repeating;
       ola::BaseClosure *closure;
     } event_t;
 
     struct ltevent {
       bool operator()(const event_t &e1, const event_t &e2) const {
-        return timercmp(&e1.next, &e2.next, >);
+        return e1.next > e2.next;
       }
     };
 
     bool m_terminate;
+    bool m_free_wake_up_time;
     unsigned int m_next_id;
     vector<class Socket*> m_sockets;
     vector<connected_socket_t> m_connected_sockets;
@@ -110,7 +115,7 @@ class SelectServer {
     event_queue_t m_events;
     CounterVariable *m_loop_iterations;
     CounterVariable *m_loop_time;
-    struct timeval m_wake_up_time;
+    TimeStamp *m_wake_up_time;
 };
 }  // network
 }  // ola

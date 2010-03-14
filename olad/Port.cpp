@@ -24,10 +24,6 @@
 
 namespace ola {
 
-const uint8_t Port::PORT_PRIORITY_MIN = 0;
-const uint8_t Port::PORT_PRIORITY_MAX = 200;
-const uint8_t Port::PORT_PRIORITY_DEFAULT = 100;
-
 string Port::UniqueId() const {
   if (m_port_string.empty()) {
     std::stringstream str;
@@ -54,12 +50,30 @@ bool Port::SetUniverse(Universe *new_universe) {
 
 
 bool Port::SetPriority(uint8_t priority) {
-  if (priority > PORT_PRIORITY_MAX)
+  if (priority > DmxSource::PRIORITY_MAX)
     return false;
 
   m_priority = priority;
   return true;
 }
+
+
+/*
+ * Called when there is new data for this port
+ */
+int InputPort::DmxChanged() {
+  if (GetUniverse()) {
+    const DmxBuffer &buffer = ReadDMX();
+    uint8_t priority = (PriorityCapability() == CAPABILITY_FULL &&
+                        GetPriorityMode() == PRIORITY_MODE_INHERIT ?
+                        InheritedPriority() :
+                        GetPriority());
+    m_dmx_source.UpdateData(buffer, *m_wakeup_time, priority);
+    GetUniverse()->PortDataChanged(this);
+  }
+  return 0;
+}
+
 
 /*
  * This allows switching based on Port type.

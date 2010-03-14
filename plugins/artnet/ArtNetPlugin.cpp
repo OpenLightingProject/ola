@@ -53,7 +53,11 @@ const char ArtNetPlugin::PLUGIN_PREFIX[] = "artnet";
  * @returns true if we started ok, false otherwise
  */
 bool ArtNetPlugin::StartHook() {
-  m_device = new ArtNetDevice(this, DEVICE_NAME, m_preferences, m_debug);
+  m_device = new ArtNetDevice(this,
+                              DEVICE_NAME,
+                              m_preferences,
+                              m_debug,
+                              m_plugin_adaptor->WakeUpTime());
 
   if (!m_device->Start()) {
     delete m_device;
@@ -128,18 +132,26 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  save |= m_preferences->SetDefaultValue("short_name", ARTNET_SHORT_NAME);
-  save |= m_preferences->SetDefaultValue("long_name", ARTNET_LONG_NAME);
-  save |= m_preferences->SetDefaultValue("subnet", ARTNET_SUBNET);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_IP_KEY,
+                                         IPv4Validator(), "");
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SHORT_NAME_KEY,
+                                         StringValidator(),
+                                         ARTNET_SHORT_NAME);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_LONG_NAME_KEY,
+                                         StringValidator(),
+                                         ARTNET_LONG_NAME);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SUBNET_KEY,
+                                         IntValidator(0, 15),
+                                         ARTNET_SUBNET);
 
   if (save)
     m_preferences->Save();
 
   // check if this save correctly
   // we don't want to use it if null
-  if (m_preferences->GetValue("short_name").empty() ||
-      m_preferences->GetValue("long_name").empty() ||
-      m_preferences->GetValue("subnet").empty())
+  if (m_preferences->GetValue(ArtNetDevice::K_SHORT_NAME_KEY).empty() ||
+      m_preferences->GetValue(ArtNetDevice::K_LONG_NAME_KEY).empty() ||
+      m_preferences->GetValue(ArtNetDevice::K_SUBNET_KEY).empty())
     return false;
 
   return true;

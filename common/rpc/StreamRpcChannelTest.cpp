@@ -25,21 +25,53 @@
 #include "ola/network/Socket.h"
 #include "common/rpc/StreamRpcChannel.h"
 #include "common/rpc/SimpleRpcController.h"
-#include "common/rpc/TestServiceImpl.h"
 #include "common/rpc/TestService.pb.h"
 
 using google::protobuf::NewCallback;
 using ola::network::LoopbackSocket;
+using ola::network::SelectServer;
+using ola::rpc::EchoReply;
+using ola::rpc::EchoRequest;
+using ola::rpc::STREAMING_NO_RESPONSE;
 using ola::rpc::SimpleRpcController;
 using ola::rpc::StreamRpcChannel;
+using ola::rpc::TestService;
 using ola::rpc::TestService_Stub;
 using std::string;
+
+/*
+ * Our test implementation
+ */
+class TestServiceImpl: public TestService {
+  public:
+    TestServiceImpl(SelectServer *ss): m_ss(ss) {}
+    ~TestServiceImpl() {}
+
+    void Echo(::google::protobuf::RpcController* controller,
+              const EchoRequest* request,
+              EchoReply* response,
+              ::google::protobuf::Closure* done);
+
+    void FailedEcho(::google::protobuf::RpcController* controller,
+                    const EchoRequest* request,
+                    EchoReply* response,
+                    ::google::protobuf::Closure* done);
+
+    void Stream(::google::protobuf::RpcController* controller,
+                const ::ola::rpc::EchoRequest* request,
+                STREAMING_NO_RESPONSE* response,
+                ::google::protobuf::Closure* done);
+
+  private:
+    SelectServer *m_ss;
+};
 
 
 class StreamRpcChannelTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StreamRpcChannelTest);
   CPPUNIT_TEST(testEcho);
   CPPUNIT_TEST(testFailedEcho);
+  CPPUNIT_TEST(testStreamRequest);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -47,6 +79,7 @@ class StreamRpcChannelTest: public CppUnit::TestFixture {
     void tearDown();
     void testEcho();
     void testFailedEcho();
+    void testStreamRequest();
     void EchoComplete();
     void FailedEchoComplete();
 
@@ -56,8 +89,8 @@ class StreamRpcChannelTest: public CppUnit::TestFixture {
     EchoRequest m_request;
     EchoReply m_reply;
     TestService_Stub *m_stub;
-    ola::network::SelectServer m_ss;
-    TestServiceImpl m_service;
+    SelectServer m_ss;
+    TestServiceImpl *m_service;
     StreamRpcChannel *m_channel;
     LoopbackSocket *m_socket;
 };
@@ -66,11 +99,44 @@ class StreamRpcChannelTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(StreamRpcChannelTest);
 
 
+void TestServiceImpl::Echo(::google::protobuf::RpcController* controller,
+                           const EchoRequest* request,
+                           EchoReply* response,
+                           ::google::protobuf::Closure* done) {
+  response->set_data(request->data());
+  done->Run();
+  (void) controller;
+  (void) request;
+}
+
+
+void TestServiceImpl::FailedEcho(::google::protobuf::RpcController* controller,
+                                 const EchoRequest* request,
+                                 EchoReply* response,
+                                 ::google::protobuf::Closure* done) {
+  controller->SetFailed("Error");
+  done->Run();
+  (void) request;
+  (void) response;
+}
+
+void TestServiceImpl::Stream(::google::protobuf::RpcController* controller,
+                             const ::ola::rpc::EchoRequest* request,
+                             STREAMING_NO_RESPONSE* response,
+                             ::google::protobuf::Closure* done) {
+  CPPUNIT_ASSERT(!controller);
+  CPPUNIT_ASSERT(!response);
+  CPPUNIT_ASSERT(!done);
+  m_ss->Terminate();
+}
+
+
 void StreamRpcChannelTest::setUp() {
   m_socket = new LoopbackSocket();
   m_socket->Init();
 
-  m_channel = new StreamRpcChannel(&m_service, m_socket);
+  m_service = new TestServiceImpl(&m_ss);
+  m_channel = new StreamRpcChannel(m_service, m_socket);
   m_ss.AddSocket(m_socket);
   m_stub = new TestService_Stub(m_channel);
 }
@@ -81,6 +147,7 @@ void StreamRpcChannelTest::tearDown() {
   delete m_socket;
   delete m_stub;
   delete m_channel;
+  delete m_service;
 }
 
 
@@ -97,10 +164,10 @@ void StreamRpcChannelTest::FailedEchoComplete() {
 }
 
 
+/*
+ * Check that we can call the echo method in the TestServiceImpl.
+ */
 void StreamRpcChannelTest::testEcho() {
-  /*
-   * Check that we can call the echo method in the TestServiceImpl.
-   */
   m_request.set_data("foo");
   m_stub->Echo(&m_controller,
                &m_request,
@@ -111,15 +178,24 @@ void StreamRpcChannelTest::testEcho() {
 }
 
 
+/*
+ * Check that method that fail return correctly
+ */
 void StreamRpcChannelTest::testFailedEcho() {
-  /*
-   * Check that method that fail return correctly
-   */
   m_request.set_data("foo");
   m_stub->FailedEcho(
       &m_controller,
       &m_request,
       &m_reply,
       NewCallback(this, &StreamRpcChannelTest::FailedEchoComplete));
+  m_ss.Run();
+}
+
+/*
+ * Check stream requests work
+ */
+void StreamRpcChannelTest::testStreamRequest() {
+  m_request.set_data("foo");
+  m_stub->Stream(NULL, &m_request, NULL, NULL);
   m_ss.Run();
 }

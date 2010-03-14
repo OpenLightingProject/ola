@@ -24,6 +24,7 @@
 
 #include <map>
 #include <vector>
+#include "ola/Clock.h"
 #include "ola/Closure.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/e131/e131/DMPInflator.h"
@@ -41,13 +42,11 @@ class DMPE131Inflator: public DMPInflator {
       DMPInflator(),
       m_e131_layer(e131_layer),
       m_ignore_preview(ignore_preview) {
-      m_expiry_interval.tv_sec = EXPIRY_INTERVAL_SEC;
-      m_expiry_interval.tv_usec = EXPIRY_INTERVAL_USEC;
     }
     ~DMPE131Inflator();
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
-                    ola::Closure *handler);
+                    uint8_t *priority, ola::Closure *handler);
     bool RemoveHandler(unsigned int universe);
 
   protected:
@@ -61,7 +60,7 @@ class DMPE131Inflator: public DMPInflator {
     typedef struct {
       CID cid;
       uint8_t sequence;
-      struct timeval last_heard_from;
+      TimeStamp last_heard_from;
       DmxBuffer buffer;
     } dmx_source;
 
@@ -69,13 +68,13 @@ class DMPE131Inflator: public DMPInflator {
       DmxBuffer *buffer;
       Closure *closure;
       uint8_t active_priority;
+      uint8_t *priority;
       std::vector<dmx_source> sources;
     } universe_handler;
 
     std::map<unsigned int, universe_handler> m_handlers;
     E131Layer *m_e131_layer;
     bool m_ignore_preview;
-    struct timeval m_expiry_interval;
 
     bool TrackSourceIfRequired(universe_handler *universe_data,
                                const HeaderSet &headers,
@@ -87,8 +86,7 @@ class DMPE131Inflator: public DMPInflator {
     // ignore packets that differ by less than this amount from the last one
     static const int8_t SEQUENCE_DIFF_THRESHOLD = -20;
     // expire sources after 2.5s
-    static const unsigned int EXPIRY_INTERVAL_SEC = 2;
-    static const unsigned int EXPIRY_INTERVAL_USEC = 500000;
+    static const TimeInterval EXPIRY_INTERVAL;
 };
 }  // e131
 }  // plugin

@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string.h>
 #include <map>
 #include <string>
@@ -45,10 +46,12 @@ E131Node::E131Node(const string &ip_address,
                    const CID &cid,
                    bool use_rev2,
                    bool ignore_preview,
+                   uint8_t dscp_value,
                    uint16_t port)
     : m_preferred_ip(ip_address),
       m_cid(cid),
       m_use_rev2(use_rev2),
+      m_dscp(dscp_value),
       m_transport(port),
       m_root_layer(&m_transport, m_cid),
       m_e131_layer(&m_root_layer),
@@ -77,16 +80,22 @@ E131Node::~E131Node() {
  * Start this node
  */
 bool E131Node::Start() {
-  ola::network::InterfacePicker picker;
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
   ola::network::Interface interface;
-  if (!picker.ChooseInterface(&interface, m_preferred_ip)) {
+  if (!picker->ChooseInterface(&interface, m_preferred_ip)) {
     OLA_INFO << "Failed to find an interface";
+    delete picker;
     return false;
   }
+  delete picker;
 
   if (!m_transport.Init(interface)) {
     return false;
   }
+
+  ola::network::UdpSocket *socket = m_transport.GetSocket();
+  socket->SetTos(m_dscp);
 
   m_e131_layer.SetInflator(&m_dmp_inflator);
   return true;
@@ -259,8 +268,9 @@ bool E131Node::StreamTerminated(uint16_t universe,
  */
 bool E131Node::SetHandler(unsigned int universe,
                           DmxBuffer *buffer,
+                          uint8_t *priority,
                           Closure *closure) {
-  return m_dmp_inflator.SetHandler(universe, buffer, closure);
+  return m_dmp_inflator.SetHandler(universe, buffer, priority, closure);
 }
 
 

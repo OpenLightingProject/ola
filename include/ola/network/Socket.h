@@ -22,8 +22,14 @@
 #define INCLUDE_OLA_NETWORK_SOCKET_H_
 
 #include <stdint.h>
+
+#ifdef WIN32
+#include <winsock2.h>
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
+#endif
+
 #include <string>
 #include <ola/Closure.h>  // NOLINT
 
@@ -84,7 +90,7 @@ class ConnectedSocket: public Socket {
     virtual int ReadDescriptor() const = 0;
     virtual int WriteDescriptor() const = 0;
 
-    virtual ssize_t Send(const uint8_t *buffer, unsigned int size) {
+    virtual ssize_t Send(const uint8_t *buffer, unsigned int size) const {
       return FDSend(WriteDescriptor(), buffer, size);
     }
 
@@ -125,7 +131,7 @@ class ConnectedSocket: public Socket {
   protected:
     virtual bool IsClosed() const;
     bool SetNonBlocking(int fd);
-    ssize_t FDSend(int fd, const uint8_t *buffer, unsigned int size);
+    ssize_t FDSend(int fd, const uint8_t *buffer, unsigned int size) const;
     int FDReceive(int fd,
                   uint8_t *buffer,
                   unsigned int size,
@@ -289,6 +295,9 @@ class UdpSocket: public Socket {
                         const struct in_addr &group);
     bool LeaveMulticast(const struct in_addr &interface,
                         const std::string &address);
+
+    bool SetTos(uint8_t tos);
+
   private:
     int m_fd;
     bool m_bound_to_port;

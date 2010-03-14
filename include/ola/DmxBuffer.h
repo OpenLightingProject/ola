@@ -59,6 +59,7 @@ class DmxBuffer {
     string Get() const;
     bool Blackout();
     void Reset();
+    string ToString() const;
 
   private:
     bool Init();

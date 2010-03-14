@@ -1,5 +1,4 @@
-
-INCLUDES =  -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
+include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = liblogging.la
 liblogging_la_SOURCES = Logging.cpp

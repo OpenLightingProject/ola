@@ -81,6 +81,9 @@ bool UsbProWidget::Connect(const string &path) {
   }
 
   bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
+  cfsetispeed(&newtio, B115200);
+  cfsetospeed(&newtio, B115200);
+
   tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ola::network::DeviceSocket(fd);
   m_socket->SetOnData(NewClosure(this, &UsbProWidget::SocketReady));
@@ -93,7 +96,7 @@ bool UsbProWidget::Connect(const string &path) {
   }
 
   // put us into receiving mode
-  if (!SendChangeMode(RCMODE_CHANGE)) {
+  if (!SendChangeMode(RCMODE_ALWAYS)) {
     OLA_WARN << "Failed to set mode";
     delete m_socket;
     return false;
@@ -272,7 +275,7 @@ const DmxBuffer &UsbProWidget::FetchDMX() const {
  * @returns true if successfull, false otherwise
  */
 bool UsbProWidget::ChangeToReceiveMode() {
-  return SendChangeMode(RCMODE_CHANGE);
+  return SendChangeMode(RCMODE_ALWAYS);
 }
 
 

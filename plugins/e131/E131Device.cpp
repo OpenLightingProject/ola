@@ -21,6 +21,7 @@
  * Ids 4-7 : Output ports (send dmx)
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <google/protobuf/service.h>
 #include <google/protobuf/stubs/common.h>
 #include <string>
@@ -47,7 +48,8 @@ E131Device::E131Device(Plugin *owner, const string &name,
                        const PluginAdaptor *plugin_adaptor,
                        bool use_rev2,
                        bool prepend_hostname,
-                       bool ignore_preview)
+                       bool ignore_preview,
+                       uint8_t dscp)
     : Device(owner, name),
       m_plugin_adaptor(plugin_adaptor),
       m_node(NULL),
@@ -55,6 +57,7 @@ E131Device::E131Device(Plugin *owner, const string &name,
       m_use_rev2(use_rev2),
       m_prepend_hostname(prepend_hostname),
       m_ignore_preview(ignore_preview),
+      m_dscp(dscp),
       m_ip_addr(ip_addr),
       m_cid(cid) {
 }
@@ -67,7 +70,8 @@ bool E131Device::Start() {
   if (m_enabled)
     return false;
 
-  m_node = new E131Node(m_ip_addr, m_cid, m_use_rev2, m_ignore_preview);
+  m_node = new E131Node(m_ip_addr, m_cid, m_use_rev2, m_ignore_preview,
+                        m_dscp);
 
   if (!m_node->Start()) {
     delete m_node;
@@ -77,7 +81,11 @@ bool E131Device::Start() {
   }
 
   for (unsigned int i = 0; i < NUMBER_OF_E131_PORTS; i++) {
-    E131InputPort *input_port = new E131InputPort(this, i, m_node);
+    E131InputPort *input_port = new E131InputPort(
+        this,
+        i,
+        m_node,
+        m_plugin_adaptor->WakeUpTime());
     AddPort(input_port);
     E131OutputPort *output_port = new E131OutputPort(this,
                                                      i,

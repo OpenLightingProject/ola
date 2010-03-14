@@ -135,7 +135,7 @@ AbstractPlugin *DlOpenPluginLoader::LoadPlugin(const string &path) {
   module = lt_dlopenext(path.c_str());
 
   if (!module) {
-    OLA_WARN << "failed to lt_dlopen: " << lt_dlerror();
+    OLA_WARN << "failed to lt_dlopen " << path << ": " << lt_dlerror();
     return NULL;
   }
 

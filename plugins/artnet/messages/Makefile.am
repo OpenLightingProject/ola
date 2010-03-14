@@ -1,12 +1,10 @@
+include $(top_srcdir)/common.mk
 
 pkgincludedir = $(includedir)/ola/artnet
 lib_LTLIBRARIES = libolaartnetconf.la
 nodist_pkginclude_HEADERS = ArtnetConfigMessages.pb.h
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libolaartnetconf.pc
-
-INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
-AM_CXXFLAGS = -Wall -Wformat -W
 
 BUILT_SOURCES = ArtnetConfigMessages.pb.cc ArtnetConfigMessages.pb.h
 

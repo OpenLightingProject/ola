@@ -67,6 +67,7 @@ class SocketTest: public CppUnit::TestFixture {
     int Timeout() {
       CPPUNIT_ASSERT(false);
       m_timeout_closure = NULL;
+      return 0;
     }
 
     // Socket data actions
@@ -81,7 +82,10 @@ class SocketTest: public CppUnit::TestFixture {
     int UdpReceiveAndSend(UdpSocket *socket);
 
     // Socket close actions
-    int TerminateOnClose() { m_ss->Terminate(); }
+    int TerminateOnClose() {
+      m_ss->Terminate();
+      return 0;
+    }
 
   private:
     SelectServer *m_ss;
@@ -336,6 +340,7 @@ int SocketTest::Receive(ConnectedSocket *socket) {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
   CPPUNIT_ASSERT(!memcmp(test_cstring, buffer, data_read));
+  return 0;
 }
 
 
@@ -345,11 +350,12 @@ int SocketTest::Receive(ConnectedSocket *socket) {
 int SocketTest::ReceiveAndSend(ConnectedSocket *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
-  int ret = socket->Receive(buffer, sizeof(buffer), data_read);
+  socket->Receive(buffer, sizeof(buffer), data_read);
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
   ssize_t bytes_sent = socket->Send(buffer, data_read);
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  return 0;
 }
 
 
@@ -377,6 +383,7 @@ int SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
   new_socket->SetOnClose(ola::NewSingleClosure(this,
                                                &SocketTest::TerminateOnClose));
   m_ss->AddSocket(new_socket, true);
+  return 0;
 }
 
 
@@ -392,6 +399,7 @@ int SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   new_socket->Close();
   delete new_socket;
+  return 0;
 }
 
 
@@ -410,6 +418,7 @@ int SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
   CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
   m_ss->Terminate();
+  return 0;
 }
 
 
@@ -430,4 +439,5 @@ int SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
 
   ssize_t data_sent = socket->SendTo(buffer, data_read, src);
   CPPUNIT_ASSERT_EQUAL(data_read, data_sent);
+  return 0;
 }

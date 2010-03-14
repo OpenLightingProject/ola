@@ -23,15 +23,18 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
+#include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "olad/Device.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
+#include "olad/PortManager.h"
 
 using ola::AbstractDevice;
 using ola::DmxBuffer;
 using ola::InputPort;
 using ola::OutputPort;
+using ola::TimeStamp;
 using std::string;
 
 
@@ -40,12 +43,16 @@ using std::string;
  */
 class TestMockInputPort: public InputPort {
   public:
-    TestMockInputPort(AbstractDevice *parent, unsigned int port_id):
-      InputPort(parent, port_id) {}
+    TestMockInputPort(AbstractDevice *parent, unsigned int port_id,
+                      const TimeStamp *wake_time):
+      InputPort(parent, port_id, wake_time) {}
     ~TestMockInputPort() {}
 
     string Description() const { return ""; }
-    bool WriteDMX(const DmxBuffer &buffer) { m_buffer = buffer; }
+    bool WriteDMX(const DmxBuffer &buffer) {
+      m_buffer = buffer;
+      return true;
+    }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
   private:
@@ -58,10 +65,25 @@ class TestMockInputPort: public InputPort {
  */
 class TestMockPriorityInputPort: public TestMockInputPort {
   public:
-    TestMockPriorityInputPort(AbstractDevice *parent, unsigned int port_id):
-      TestMockInputPort(parent, port_id) {}
+    TestMockPriorityInputPort(AbstractDevice *parent, unsigned int port_id,
+                              const TimeStamp *wake_time):
+        TestMockInputPort(parent, port_id, wake_time),
+        m_inherited_priority(ola::DmxSource::PRIORITY_DEFAULT) {
+    }
+
+    uint8_t InheritedPriority() const {
+      return m_inherited_priority;
+    }
+
+    void SetInheritedPriority(uint8_t priority) {
+      m_inherited_priority = priority;
+    }
+
   protected:
     bool SupportsPriorities() const { return true; }
+
+  private:
+    uint8_t m_inherited_priority;
 };
 
 
@@ -77,6 +99,8 @@ class TestMockOutputPort: public OutputPort {
     string Description() const { return ""; }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       m_buffer = buffer;
+      (void) priority;
+      return true;
     }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 

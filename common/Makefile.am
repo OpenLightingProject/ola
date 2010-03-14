@@ -1,5 +1,3 @@
-
-
 lib_LTLIBRARIES = libolacommon.la
 libolacommon_la_SOURCES =
 libolacommon_la_LIBADD = export_map/libolaexportmap.la \
@@ -9,4 +7,4 @@ libolacommon_la_LIBADD = export_map/libolaexportmap.la \
                          network/libolanetwork.la \
                          utils/libolautils.la
 
-SUBDIRS = export_map logging protocol rpc network utils
+SUBDIRS = export_map logging protocol rdm rpc network utils

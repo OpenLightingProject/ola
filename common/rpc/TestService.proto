@@ -28,7 +28,12 @@ message EchoReply {
   required string data = 1;
 }
 
+message STREAMING_NO_RESPONSE {
+
+}
+
 service TestService {
   rpc Echo (EchoRequest) returns (EchoReply);
   rpc FailedEcho (EchoRequest) returns (EchoReply);
+  rpc Stream (EchoRequest) returns (STREAMING_NO_RESPONSE);
 }

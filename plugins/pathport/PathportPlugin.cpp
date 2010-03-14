@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <limits.h>
 #include <string>
 #include "ola/StringUtils.h"
 #include "ola/Logging.h"
@@ -34,6 +35,7 @@ namespace pathport {
 const char PathportPlugin::PATHPORT_DEVICE_NAME[] = "Pathport Device";
 const char PathportPlugin::PLUGIN_NAME[] = "Pathport Plugin";
 const char PathportPlugin::PLUGIN_PREFIX[] = "pathport";
+const char PathportPlugin::DEFAULT_DSCP_VALUE[] = "0";
 
 
 /*
@@ -86,6 +88,8 @@ string PathportPlugin::Description() const {
 "\n"
 "--- Config file : ola-pathport.conf ---\n"
 "\n"
+"dscp = <int>\n"
+"Set the DSCP value for the packets. Range is 0-63"
 "ip = a.b.c.d\n"
 "The ip address to bind to. If not specified it will use the first \n"
 "non-loopback ip.\n"
@@ -108,23 +112,25 @@ bool PathportPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  // we don't worry about ip here
-  // if it's non existant it will choose one
-  if (m_preferences->SetDefaultValue(PathportDevice::K_NODE_NAME_KEY,
-                                     PathportDevice::K_DEFAULT_NODE_NAME))
-    save = true;
+  save |= m_preferences->SetDefaultValue(PathportDevice::K_DSCP_KEY,
+                                         IntValidator(0, 63),
+                                         DEFAULT_DSCP_VALUE);
+  save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_IP_KEY,
+                                         IPv4Validator(), "");
+  save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_NAME_KEY,
+                                         StringValidator(),
+                                         PathportDevice::K_DEFAULT_NODE_NAME);
 
-  if (m_preferences->GetValue(PathportDevice::K_NODE_ID_KEY).empty()) {
-    // randomize the product id
-    srand((unsigned)time(0) * getpid());
-    uint32_t product_id = OLA_MANUFACTURER_CODE << 24;
-    product_id |= (rand() / (RAND_MAX / 0x100) << 16);
-    product_id |= (rand() / (RAND_MAX / 0x100) << 8);
-    product_id |= rand() / (RAND_MAX / 0x100);
-    m_preferences->SetValue(PathportDevice::K_NODE_ID_KEY,
-                            IntToString(product_id));
-    save = true;
-  }
+  // generate a new node id in case we need it
+  srand((unsigned)time(0) * getpid());
+  uint32_t product_id = OLA_MANUFACTURER_CODE << 24;
+  product_id |= (rand() / (RAND_MAX / 0x100) << 16);
+  product_id |= (rand() / (RAND_MAX / 0x100) << 8);
+  product_id |= rand() / (RAND_MAX / 0x100);
+
+  save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_ID_KEY,
+                                         IntValidator(0, UINT_MAX),
+                                         IntToString(product_id));
 
   if (save)
     m_preferences->Save();

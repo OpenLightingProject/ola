@@ -22,9 +22,11 @@
 #define INCLUDE_OLAD_PORT_H_
 
 #include <string>
+#include <ola/Clock.h>
 #include <ola/DmxBuffer.h>  // NOLINT
-#include <olad/Universe.h>  // NOLINT
+#include <olad/DmxSource.h>  // NOLINT
 #include <olad/PortConstants.h>
+#include <olad/Universe.h>  // NOLINT
 
 namespace ola {
 
@@ -35,13 +37,9 @@ class AbstractDevice;
  */
 class Port {
   public:
-    static const uint8_t PORT_PRIORITY_MIN;
-    static const uint8_t PORT_PRIORITY_MAX;
-    static const uint8_t PORT_PRIORITY_DEFAULT;
-
     Port(AbstractDevice *parent, unsigned int port_id)
         : m_port_id(port_id),
-          m_priority(PORT_PRIORITY_DEFAULT),
+          m_priority(DmxSource::PRIORITY_DEFAULT),
           m_priority_mode(PRIORITY_MODE_INHERIT),
           m_port_string(""),
           m_universe(NULL),
@@ -112,21 +110,27 @@ class Port {
  */
 class InputPort: public Port {
   public:
-    InputPort(AbstractDevice *parent, unsigned int port_id)
-        : Port(parent, port_id) {}
+    InputPort(AbstractDevice *parent, unsigned int port_id,
+              const TimeStamp *wake_time)
+        : Port(parent, port_id),
+          m_wakeup_time(wake_time) {}
 
     // signal the port that the DMX data has changed
-    virtual int DmxChanged() {
-      if (GetUniverse())
-        GetUniverse()->PortDataChanged(this);
-      return 0;
-    }
+    int DmxChanged();
 
     // read/write dmx data to this port
     virtual const DmxBuffer &ReadDMX() const = 0;
 
+    const DmxSource &SourceData() const {
+      return m_dmx_source;
+    }
+
     port_priority_capability PriorityCapability() const {
       return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_STATIC;
+    }
+
+    virtual uint8_t InheritedPriority() const {
+      return DmxSource::PRIORITY_MIN;
     }
 
   protected:
@@ -134,6 +138,10 @@ class InputPort: public Port {
 
     // indicates whether this port supports priorities, default to no
     virtual bool SupportsPriorities() const { return false; }
+
+  private:
+    DmxSource m_dmx_source;
+    const TimeStamp *m_wakeup_time;
 };
 
 

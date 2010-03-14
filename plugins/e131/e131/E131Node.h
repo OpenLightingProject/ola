@@ -42,6 +42,7 @@ class E131Node {
              const CID &cid = CID::Generate(),
              bool use_rev2 = false,
              bool ignore_preview = true,
+             uint8_t dscp_value = 0,  // default off
              uint16_t port = UDPTransport::ACN_PORT);
     ~E131Node();
 
@@ -67,7 +68,7 @@ class E131Node {
                           uint8_t priority = DEFAULT_PRIORITY);
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
-                    ola::Closure *handler);
+                    uint8_t *priority, ola::Closure *handler);
     bool RemoveHandler(unsigned int universe);
 
     ola::network::UdpSocket* GetSocket() { return m_transport.GetSocket(); }
@@ -81,6 +82,7 @@ class E131Node {
     string m_preferred_ip;
     CID m_cid;
     bool m_use_rev2;
+    uint8_t m_dscp;
     UDPTransport m_transport;
     RootLayer m_root_layer;
     E131Layer m_e131_layer;

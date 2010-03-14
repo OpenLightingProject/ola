@@ -134,10 +134,18 @@ bool PluginAdaptor::UnregisterDevice(AbstractDevice *device) const {
 
 /*
  * Create a new preferences container
- *
  * @return a Preferences object
  */
 Preferences *PluginAdaptor::NewPreference(const string &name) const {
   return m_preferences_factory->NewPreference(name);
+}
+
+
+/*
+ * Return the wake up time for the select server
+ * @return a TimeStamp object
+ */
+const TimeStamp *PluginAdaptor::WakeUpTime() const {
+  return m_ss->WakeUpTime();
 }
 }  // ola

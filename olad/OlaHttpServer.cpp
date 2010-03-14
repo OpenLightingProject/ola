@@ -113,12 +113,14 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
 
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
   data_dir_var->Set(m_server.DataDir());
-  gettimeofday(&m_start_time, NULL);
+  Clock::CurrentTime(m_start_time);
   export_map->GetStringVar(K_UPTIME_VAR);
 
   // fetch the interface info
-  ola::network::InterfacePicker picker;
-  picker.ChooseInterface(&m_interface, "");
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+  picker->ChooseInterface(&m_interface, "");
+  delete picker;
 
   // warn on any missing templates
   TemplateNamelist::GetMissingList(false);
@@ -137,6 +139,7 @@ int OlaHttpServer::DisplayIndex(const HttpRequest *request,
   file_info.file_path = "index.html";
   file_info.content_type = HttpServer::CONTENT_TYPE_HTML;
   return m_server.ServeStaticContent(&file_info, response);
+  (void) request;
 }
 
 
@@ -149,15 +152,15 @@ int OlaHttpServer::DisplayIndex(const HttpRequest *request,
 int OlaHttpServer::DisplayMain(const HttpRequest *request,
                                HttpResponse *response) {
   TemplateDictionary dict("main");
-  struct timeval now, diff;
-  gettimeofday(&now, NULL);
-  timersub(&now, &m_start_time, &diff);
+  TimeStamp now;
+  Clock::CurrentTime(now);
+  TimeInterval diff = now - m_start_time;
 
   stringstream str;
-  unsigned int minutes = diff.tv_sec / 60;
+  unsigned int minutes = diff.Seconds() / 60;
   unsigned int hours = minutes / 60;
   str << hours << " hours, " << minutes % 60 << " minutes, " <<
-    diff.tv_sec % 60 << " seconds";
+    diff.Seconds() % 60 << " seconds";
   dict.SetValue("UPTIME", str.str());
   dict.SetValue("HOSTNAME", ola::network::FullHostname());
   dict.SetValue("IP", ola::network::AddressToString(m_interface.ip_address));
@@ -165,6 +168,7 @@ int OlaHttpServer::DisplayMain(const HttpRequest *request,
   if (m_enable_quit)
     dict.ShowSection("QUIT_ENABLED");
   return m_server.DisplayTemplate(MAIN_FILENAME, &dict, response);
+  (void) request;
 }
 
 
@@ -197,6 +201,7 @@ int OlaHttpServer::DisplayPlugins(const HttpRequest *request,
     dict.ShowSection("NO_PLUGINS");
   }
   return m_server.DisplayTemplate(PLUGINS_FILENAME, &dict, response);
+  (void) request;
 }
 
 
@@ -367,11 +372,11 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
  */
 int OlaHttpServer::DisplayDebug(const HttpRequest *request,
                                 HttpResponse *response) {
-  struct timeval now, diff;
-  gettimeofday(&now, NULL);
-  timersub(&now, &m_start_time, &diff);
+  TimeStamp now;
+  Clock::CurrentTime(now);
+  TimeInterval diff = now - m_start_time;
   stringstream str;
-  str << (diff.tv_sec * 1000 + diff.tv_usec / 1000);
+  str << (diff.AsInt() / 1000);
   m_export_map->GetStringVar(K_UPTIME_VAR)->Set(str.str());
 
   vector<BaseVariable*> variables = m_export_map->AllVariables();
@@ -384,6 +389,7 @@ int OlaHttpServer::DisplayDebug(const HttpRequest *request,
     response->Append(out.str());
   }
   return response->Send();
+  (void) request;
 }
 
 
@@ -405,6 +411,7 @@ int OlaHttpServer::DisplayQuit(const HttpRequest *request,
     response->Append("<b>403 Unauthorized</b>");
   }
   return response->Send();
+  (void) request;
 }
 
 
@@ -417,6 +424,7 @@ int OlaHttpServer::DisplayTemplateReload(const HttpRequest *request,
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   return response->Send();
+  (void) request;
 }
 
 
@@ -434,6 +442,7 @@ int OlaHttpServer::DisplayHandlers(const HttpRequest *request,
   }
   response->Append("</ul></body></html>");
   return response->Send();
+  (void) request;
 }
 
 

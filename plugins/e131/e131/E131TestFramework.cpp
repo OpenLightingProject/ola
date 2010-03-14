@@ -20,6 +20,7 @@
  * The remote node needs to be listening for Universe 1.
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <assert.h>
 #include <stdio.h>
 #include <termios.h>
@@ -69,6 +70,7 @@ bool StateManager::Init() {
       assert(m_local_node->SetHandler(
             UNIVERSE_ID,
             &m_recv_buffer,
+            NULL,  // don't track the priority
             ola::NewClosure(this, &StateManager::NewDMX)));
     }
   }

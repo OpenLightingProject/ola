@@ -18,6 +18,7 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string>
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -65,6 +66,7 @@ void E131InputPort::PostSetUniverse(Universe *old_universe,
     m_node->SetHandler(
         new_universe->UniverseId(),
         &m_buffer,
+        &m_priority,
         NewClosure<E131InputPort>(this, &E131InputPort::DmxChanged));
 }
 

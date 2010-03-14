@@ -146,7 +146,12 @@ bool StageProfiPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->SetDefaultValue(DEVICE_KEY, STAGEPROFI_DEVICE_PATH))
+  bool save = false;
+
+  save |= m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
+                                         STAGEPROFI_DEVICE_PATH);
+
+  if (save)
     m_preferences->Save();
 
   if (m_preferences->GetValue(DEVICE_KEY).empty())

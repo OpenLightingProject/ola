@@ -24,6 +24,7 @@
 #include <ctemplate/template.h>
 #include <string>
 #include <vector>
+#include "ola/Clock.h"
 #include "ola/ExportMap.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
@@ -101,7 +102,7 @@ class OlaHttpServer {
     DeviceManager *m_device_manager;
     PortManager *m_port_manager;
     bool m_enable_quit;
-    struct timeval m_start_time;
+    TimeStamp m_start_time;
     ola::network::Interface m_interface;
 
     static const char K_DATA_DIR_VAR[];

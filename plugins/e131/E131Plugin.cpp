@@ -18,16 +18,19 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <stdlib.h>
 #include <stdio.h>
+#include <set>
 #include <string>
 
+#include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
-#include "plugins/e131/E131Plugin.h"
 #include "plugins/e131/E131Device.h"
+#include "plugins/e131/E131Plugin.h"
 #include "plugins/e131/e131/CID.h"
-
 
 /*
  * Entry point to this plugin
@@ -40,16 +43,18 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+const char E131Plugin::CID_KEY[] = "cid";
+const char E131Plugin::DSCP_KEY[] = "dscp";
+const char E131Plugin::DEVICE_NAME[] = "E1.31 (DMX over ACN) Device";
+const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
+const char E131Plugin::IP_KEY[] = "ip";
 const char E131Plugin::PLUGIN_NAME[] = "E1.31 (DMX over ACN) Plugin";
 const char E131Plugin::PLUGIN_PREFIX[] = "e131";
-const char E131Plugin::DEVICE_NAME[] = "E1.31 (DMX over ACN) Device";
-const char E131Plugin::CID_KEY[] = "cid";
-const char E131Plugin::REVISION_KEY[] = "revision";
+const char E131Plugin::PREPEND_HOSTNAME_KEY[] = "prepend_hostname";
 const char E131Plugin::REVISION_0_2[] = "0.2";
 const char E131Plugin::REVISION_0_46[] = "0.46";
-const char E131Plugin::IP_KEY[] = "ip";
-const char E131Plugin::PREPEND_HOSTNAME_KEY[] = "prepend_hostname";
-const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
+const char E131Plugin::REVISION_KEY[] = "revision";
+const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
 
 
 /*
@@ -62,6 +67,15 @@ bool E131Plugin::StartHook() {
   bool use_rev2 = revision == REVISION_0_2 ? true : false;
   bool prepend_hostname = m_preferences->GetValueAsBool(PREPEND_HOSTNAME_KEY);
   bool ignore_preview = m_preferences->GetValueAsBool(IGNORE_PREVIEW_DATA_KEY);
+  unsigned int dscp;
+  if (!StringToUInt(m_preferences->GetValue(DSCP_KEY), &dscp)) {
+    OLA_WARN << "Can't convert dscp value " <<
+      m_preferences->GetValue(DSCP_KEY) << " to int";
+    dscp = 0;
+  } else {
+    // shift 2 bits left
+    dscp = dscp << 2;
+  }
 
   m_device = new E131Device(this,
                             DEVICE_NAME,
@@ -70,7 +84,8 @@ bool E131Plugin::StartHook() {
                             m_plugin_adaptor,
                             use_rev2,
                             prepend_hostname,
-                            ignore_preview);
+                            ignore_preview,
+                            dscp);
 
   if (!m_device->Start()) {
     delete m_device;
@@ -112,6 +127,9 @@ string E131Plugin::Description() const {
 "cid = 00010203-0405-0607-0809-0A0B0C0D0E0F\n"
 "The CID to use for this device\n"
 "\n"
+"dscp = [int]\n"
+"The DSCP value to tag the packets with, range is 0 to 63.\n"
+"\n"
 "ignore_preview = [true|false]\n"
 "Ignore preview data.\n"
 "\n"
@@ -145,29 +163,39 @@ bool E131Plugin::SetDefaultPreferences() {
     save = true;
   }
 
-  if (m_preferences->GetValue(PREPEND_HOSTNAME_KEY).empty()) {
-    m_preferences->SetValueAsBool(PREPEND_HOSTNAME_KEY, true);
-    save = true;
-  }
+  save |= m_preferences->SetDefaultValue(
+      DSCP_KEY,
+      IntValidator(0, 63),
+      DEFAULT_DSCP_VALUE);
 
-  if (m_preferences->GetValue(IGNORE_PREVIEW_DATA_KEY).empty()) {
-    m_preferences->SetValueAsBool(IGNORE_PREVIEW_DATA_KEY, true);
-    save = true;
-  }
+  save |= m_preferences->SetDefaultValue(
+      IGNORE_PREVIEW_DATA_KEY,
+      BoolValidator(),
+      BoolValidator::TRUE);
 
-  string revision = m_preferences->GetValue(REVISION_KEY);
-  if (revision != REVISION_0_2 && revision != REVISION_0_46) {
-    m_preferences->SetValue(REVISION_KEY, REVISION_0_46);
-    save = true;
-  }
+  save |= m_preferences->SetDefaultValue(IP_KEY, IPv4Validator(), "");
+
+  save |= m_preferences->SetDefaultValue(
+      PREPEND_HOSTNAME_KEY,
+      BoolValidator(),
+      BoolValidator::TRUE);
+
+  set<string> revision_values;
+  revision_values.insert(REVISION_0_2);
+  revision_values.insert(REVISION_0_46);
+
+  save |= m_preferences->SetDefaultValue(
+      REVISION_KEY,
+      SetValidator(revision_values),
+      REVISION_0_46);
 
   if (save)
     m_preferences->Save();
 
   // check if this saved correctly
   // we don't want to use it if null
-  revision = m_preferences->GetValue(REVISION_KEY);
-  if (m_preferences->GetValue(CID_KEY) == "" ||
+  string revision = m_preferences->GetValue(REVISION_KEY);
+  if (m_preferences->GetValue(CID_KEY).empty() ||
       (revision != REVISION_0_2 && revision != REVISION_0_46))
     return false;
 

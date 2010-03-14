@@ -41,12 +41,62 @@ using std::ifstream;
 using std::ofstream;
 using std::pair;
 
-const char MemoryPreferences::TRUE_VALUE[] = "true";
-const char MemoryPreferences::FALSE_VALUE[] = "false";
+const char BoolValidator::TRUE[] = "true";
+const char BoolValidator::FALSE[] = "false";
 
 const char FileBackedPreferences::OLA_CONFIG_DIR[] = ".ola";
 const char FileBackedPreferences::OLA_CONFIG_PREFIX[] = "ola-";
 const char FileBackedPreferences::OLA_CONFIG_SUFFIX[] = ".conf";
+
+// Validators
+//-----------------------------------------------------------------------------
+
+bool StringValidator::IsValid(const string &value) const {
+  return !value.empty();
+}
+
+
+bool BoolValidator::IsValid(const string &value) const {
+  return (value == TRUE || value == FALSE);
+}
+
+
+bool IntValidator::IsValid(const string &value) const {
+  unsigned int output;
+  if (!StringToUInt(value, &output))
+    return false;
+
+  return (output >= m_gt && output <= m_lt);
+}
+
+
+bool SetValidator::IsValid(const string &value) const {
+  return m_values.end() != m_values.find(value);
+}
+
+
+bool IPv4Validator::IsValid(const string &value) const {
+  if (value.empty())
+    return m_empty_ok;
+
+  vector<string> tokens;
+  StringSplit(value, tokens, ".");
+  if (tokens.size() != 4)
+    return false;
+
+  for (unsigned int i = 0 ; i < 4; i++) {
+    unsigned int octet;
+    if (!StringToUInt(tokens[i], &octet))
+      return false;
+    if (octet > 255)
+      return false;
+  }
+  return true;
+}
+
+
+// Prefs Factory
+//-----------------------------------------------------------------------------
 
 /**
  * Cleanup
@@ -76,6 +126,9 @@ Preferences *PreferencesFactory::NewPreference(const string &name) {
 }
 
 
+// Memory Preferences
+//-----------------------------------------------------------------------------
+
 /*
  * Destroy this object
  */
@@ -104,48 +157,6 @@ void MemoryPreferences::SetValue(const string &key, const string &value) {
 
 
 /*
- * Set a value as a bool.
- * @param key
- * @param value
- */
-void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
-  m_pref_map.erase(key);
-  if (value)
-    m_pref_map.insert(pair<string, string>(key, TRUE_VALUE));
-  else
-    m_pref_map.insert(pair<string, string>(key, FALSE_VALUE));
-}
-
-
-/*
- * Set a preference value only if it's empty.
- * @param key
- * @param value
- * @return true if we set the value, false if it already existed
- */
-bool MemoryPreferences::SetDefaultValue(const string &key,
-                                        const string &value) {
-  map<string, string>::const_iterator iter;
-  iter = m_pref_map.find(key);
-
-  if (iter == m_pref_map.end()) {
-    SetValue(key, value);
-    return true;
-  }
-  return false;
-}
-
-
-/*
- * Remove a preference value.
- * @param key
- */
-void MemoryPreferences::RemoveValue(const string &key) {
-  m_pref_map.erase(key);
-}
-
-
-/*
  * Adds this preference value to the store
  * @param key
  * @param value
@@ -153,6 +164,28 @@ void MemoryPreferences::RemoveValue(const string &key) {
 void MemoryPreferences::SetMultipleValue(const string &key,
                                          const string &value) {
   m_pref_map.insert(pair<string, string>(key, value));
+}
+
+
+/*
+ * Set a preference value only if it doesn't pass the validator.
+ * Note this only checks the first value.
+ * @param key
+ * @param validator A Validator object
+ * @param value the new value
+ * @return true if we set the value, false if it already existed
+ */
+bool MemoryPreferences::SetDefaultValue(const string &key,
+                                        const Validator &validator,
+                                        const string &value) {
+  map<string, string>::const_iterator iter;
+  iter = m_pref_map.find(key);
+
+  if (iter == m_pref_map.end() || !validator.IsValid(iter->second)) {
+    SetValue(key, value);
+    return true;
+  }
+  return false;
 }
 
 
@@ -173,21 +206,6 @@ string MemoryPreferences::GetValue(const string &key) const {
 
 
 /*
- * Get a preference value as a bool
- * @param key the key to fetch
- * @return true if the value is 'true' or false otherwise
- */
-bool MemoryPreferences::GetValueAsBool(const string &key) const {
-  map<string, string>::const_iterator iter;
-  iter = m_pref_map.find(key);
-
-  if (iter != m_pref_map.end())
-    return iter->second == TRUE_VALUE;
-  return false;
-}
-
-
-/*
  * Returns all preference values corrosponding to this key
  * @returns a vector of strings.
  */
@@ -200,6 +218,44 @@ vector<string> MemoryPreferences::GetMultipleValue(const string &key) const {
     values.push_back(iter->second);
   }
   return values;
+}
+
+
+/*
+ * Remove a preference value.
+ * @param key
+ */
+void MemoryPreferences::RemoveValue(const string &key) {
+  m_pref_map.erase(key);
+}
+
+
+/*
+ * Set a value as a bool.
+ * @param key
+ * @param value
+ */
+void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
+  m_pref_map.erase(key);
+  if (value)
+    m_pref_map.insert(pair<string, string>(key, BoolValidator::TRUE));
+  else
+    m_pref_map.insert(pair<string, string>(key, BoolValidator::FALSE));
+}
+
+
+/*
+ * Get a preference value as a bool
+ * @param key the key to fetch
+ * @return true if the value is 'true' or false otherwise
+ */
+bool MemoryPreferences::GetValueAsBool(const string &key) const {
+  map<string, string>::const_iterator iter;
+  iter = m_pref_map.find(key);
+
+  if (iter != m_pref_map.end())
+    return iter->second == BoolValidator::TRUE;
+  return false;
 }
 
 

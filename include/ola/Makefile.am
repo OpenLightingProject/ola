@@ -1,7 +1,6 @@
+SUBDIRS = network rdm
 
-SUBDIRS = network .
-
-SOURCES = BaseTypes.h Closure.h DmxBuffer.h ExportMap.h Logging.h \
+SOURCES = BaseTypes.h Clock.h Closure.h DmxBuffer.h ExportMap.h Logging.h \
           RunLengthEncoder.h StringUtils.h
 
 BUILT_SOURCES = plugin_id.h
@@ -11,7 +10,7 @@ pkgincludedir = $(includedir)/ola
 pkginclude_HEADERS = $(SOURCES) $(BUILT_SOURCES)
 
 plugin_id.h:
-	./make_plugin_id.sh
+	sh ./make_plugin_id.sh
 
 clean-local:
 	rm -f plugin_id.h

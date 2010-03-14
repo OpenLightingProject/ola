@@ -165,8 +165,10 @@ bool Dmx4LinuxPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  save |= m_preferences->SetDefaultValue(IN_DEV_KEY, DMX4LINUX_IN_DEVICE);
-  save |= m_preferences->SetDefaultValue(OUT_DEV_KEY, DMX4LINUX_OUT_DEVICE);
+  save |= m_preferences->SetDefaultValue(IN_DEV_KEY, StringValidator(),
+                                         DMX4LINUX_IN_DEVICE);
+  save |= m_preferences->SetDefaultValue(OUT_DEV_KEY, StringValidator(),
+                                         DMX4LINUX_OUT_DEVICE);
 
   if (save)
     m_preferences->Save();
@@ -247,7 +249,9 @@ bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
   Dmx4LinuxDevice *dev = new Dmx4LinuxDevice(this, name, device_id);
 
   if (dir == DMX_DIRECTION_INPUT) {
-    Dmx4LinuxInputPort *port = new Dmx4LinuxInputPort(dev);
+    Dmx4LinuxInputPort *port = new Dmx4LinuxInputPort(
+        dev,
+        m_plugin_adaptor->WakeUpTime());
     m_in_ports.push_back(port);
     dev->AddPort(port);
   } else {

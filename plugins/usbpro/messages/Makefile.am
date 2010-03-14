@@ -1,12 +1,10 @@
+include $(top_srcdir)/common.mk
 
 pkgincludedir = $(includedir)/ola/usbpro
 lib_LTLIBRARIES = libolausbproconf.la
 nodist_pkginclude_HEADERS = UsbProConfigMessages.pb.h
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libolausbproconf.pc
-
-INCLUDES = -I$(top_builddir) -I$(top_srcdir) -I$(top_builddir)/include
-AM_CXXFLAGS = -Wall -Wformat -W
 
 BUILT_SOURCES = UsbProConfigMessages.pb.cc UsbProConfigMessages.pb.h
 

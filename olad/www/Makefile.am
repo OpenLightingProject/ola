@@ -1,4 +1,3 @@
-
 wwwdir = $(www_datadir)
 
 dist_www_DATA = GPL.txt \
@@ -29,4 +28,3 @@ dist_www_DATA = GPL.txt \
                 range.js \
                 slider.js \
                 timer.js
-

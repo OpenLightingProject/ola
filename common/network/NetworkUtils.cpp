@@ -22,7 +22,13 @@
 #  include <config.h>
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+typedef unsigned long in_addr_t;
+#else
 #include <arpa/inet.h>
+#endif
+
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
@@ -41,15 +47,20 @@ namespace network {
  * Convert a string to a struct in_addr
  */
 bool StringToAddress(const string &address, struct in_addr &addr) {
-  if (inet_aton(address.data(), &addr) == 0) {
-    OLA_WARN << "Could not convert multicast address " << address;
+#ifdef HAVE_INET_ATON
+  if (!inet_aton(address.data(), &addr)) {
+#else
+  in_addr_t *ip_addr4 = (in_addr_t*) &addr;
+  if ((*ip_addr4 = inet_addr(address.data())) == INADDR_NONE) {
+#endif
+    OLA_WARN << "Could not convert address " << address;
     return false;
   }
   return true;
 }
 
 
-string AddressToString(struct in_addr &addr) {
+string AddressToString(const struct in_addr &addr) {
   return inet_ntoa(addr);
 }
 
@@ -124,7 +135,5 @@ string Hostname() {
   StringSplit(hostname, tokens, ".");
   return string(tokens[0]);
 }
-
-
 }  // network
 }  // ola

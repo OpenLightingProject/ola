@@ -44,8 +44,9 @@ class E131PortHelper {
 
 class E131InputPort: public InputPort {
   public:
-    E131InputPort(E131Device *parent, int id, E131Node *node)
-        : InputPort(parent, id),
+    E131InputPort(E131Device *parent, int id, E131Node *node,
+                  const TimeStamp *wake_time)
+        : InputPort(parent, id, wake_time),
           m_node(node) {}
 
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
@@ -55,11 +56,13 @@ class E131InputPort: public InputPort {
     string Description() const { return m_helper.Description(GetUniverse()); }
     const DmxBuffer &ReadDMX() const { return m_buffer; }
     bool SupportsPriorities() const { return true; }
+    uint8_t InheritedPriority() const { return m_priority; }
 
   private:
     DmxBuffer m_buffer;
     E131Node *m_node;
     E131PortHelper m_helper;
+    uint8_t m_priority;
 };
 
 

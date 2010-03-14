@@ -25,7 +25,6 @@
 #include <map>
 #include "ola/Closure.h"
 #include "ola/DmxBuffer.h"
-#include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
 #include "plugins/espnet/EspNetPackets.h"
 #include "plugins/espnet/RunLengthDecoder.h"
@@ -109,7 +108,6 @@ class EspNetNode {
     std::string m_node_name;
     std::string m_preferred_ip;
     std::map<uint8_t, universe_handler> m_handlers;
-    ola::network::InterfacePicker m_interface_picker;
     ola::network::Interface m_interface;
     ola::network::UdpSocket m_socket;
     RunLengthDecoder m_decoder;

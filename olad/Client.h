@@ -23,7 +23,7 @@
 
 #include <map>
 #include "common/rpc/SimpleRpcController.h"
-#include "ola/DmxBuffer.h"
+#include "olad/DmxSource.h"
 
 namespace ola {
 namespace proto {
@@ -46,15 +46,16 @@ class Client {
 
     void SendDMXCallback(ola::rpc::SimpleRpcController *controller,
                          ola::proto::Ack *ack);
-    void DMXRecieved(unsigned int universe, const DmxBuffer &buffer);
-    const DmxBuffer GetDMX(unsigned int universe) const;
+    void DMXRecieved(unsigned int universe, const DmxSource &source);
+    const DmxSource SourceData(unsigned int universe) const;
     class OlaClientService_Stub *Stub() const { return m_client_stub; }
 
   private:
     Client(const Client&);
     Client& operator=(const Client&);
+
     class OlaClientService_Stub *m_client_stub;
-    map<unsigned int, DmxBuffer> m_data_map;
+    map<unsigned int, DmxSource> m_data_map;
 };
 }  // ola
 #endif  // OLAD_CLIENT_H_

@@ -63,8 +63,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
  * Check that we find at least one candidate interface.
  */
 void InterfacePickerTest::testGetInterfaces() {
-  InterfacePicker picker;
-  vector<Interface> interfaces = picker.GetInterfaces();
+  InterfacePicker *picker = InterfacePicker::NewPicker();
+  vector<Interface> interfaces = picker->GetInterfaces();
   CPPUNIT_ASSERT(interfaces.size() > 0);
 
   vector<Interface>::iterator iter;
@@ -83,6 +83,7 @@ void InterfacePickerTest::testGetInterfaces() {
     cout << endl;
     cout << "---------------" << endl;
   }
+  delete picker;
 }
 
 

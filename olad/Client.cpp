@@ -77,13 +77,13 @@ void Client::SendDMXCallback(SimpleRpcController *controller,
  * @param universe the id of the universe for the new data
  * @param buffer the new data
  */
-void Client::DMXRecieved(unsigned int universe, const DmxBuffer &buffer) {
-  map<unsigned int, DmxBuffer>::iterator iter = m_data_map.find(universe);
+void Client::DMXRecieved(unsigned int universe, const DmxSource &source) {
+  map<unsigned int, DmxSource>::iterator iter = m_data_map.find(universe);
 
   if (iter != m_data_map.end()) {
-    iter->second = buffer;
+    iter->second = source;
   } else {
-    std::pair<unsigned int, DmxBuffer> pair(universe, buffer);
+    std::pair<unsigned int, DmxSource> pair(universe, source);
     m_data_map.insert(pair);
   }
 }
@@ -93,15 +93,15 @@ void Client::DMXRecieved(unsigned int universe, const DmxBuffer &buffer) {
  * Return the last dmx data sent by this client
  * @param universe the id of the universe we're interested in
  */
-const DmxBuffer Client::GetDMX(unsigned int universe) const {
-  map<unsigned int, DmxBuffer>::const_iterator iter =
+const DmxSource Client::SourceData(unsigned int universe) const {
+  map<unsigned int, DmxSource>::const_iterator iter =
     m_data_map.find(universe);
 
   if (iter != m_data_map.end()) {
     return iter->second;
   } else {
-    DmxBuffer empty_buffer;
-    return empty_buffer;
+    DmxSource source;
+    return source;
   }
 }
 }  // ola

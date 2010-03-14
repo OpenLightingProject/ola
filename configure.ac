@@ -2,10 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(configure.in)
+AC_INIT(configure.ac)
 AC_CONFIG_AUX_DIR(config)
+AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(ola, 0.6.0)
+AM_INIT_AUTOMAKE(ola, 0.7.0)
 
 # Checks for programs.
 AC_LANG(C++)
@@ -15,30 +16,6 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_LIBTOOL_DLOPEN
-AC_LIBLTDL_CONVENIENCE
-AC_PROG_LIBTOOL
-
-AC_CONFIG_SUBDIRS(libltdl)
-
-AC_SUBST(INCLTDL)
-AC_SUBST(LIBLTDL)
-AC_SUBST(ac_aux_dir)
-
-# Checks for header files.
-AC_HEADER_DIRENT
-AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
-                  sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
-                  unistd.h linux/if_packet.h])
-AC_CHECK_HEADER(pthread.h, have_threads=posix)
-PROTOBUF_SUPPORT([2.1.0])
-
-AM_CONDITIONAL(HAVE_PTHREAD, test "${have_threads}" = "posix")
-if test "${have_threads}" = "posix"; then
-  AC_DEFINE(HAVE_PTHREAD, 1, [define if pthread is installed])
-  LIBS="-lpthread $LIBS"
-fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
@@ -62,7 +39,30 @@ AC_FUNC_STAT
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
-                inet_ntoa select socket strerror getifaddrs])
+                inet_ntoa inet_aton select socket strerror getifaddrs])
+
+# Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
+                  sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
+                  unistd.h linux/if_packet.h])
+
+AC_PROG_LIBTOOL
+
+# windows platform support
+AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
+
+# check for protobuf support
+PROTOBUF_SUPPORT([2.1.0])
+
+# check for threading support
+AC_CHECK_HEADER(pthread.h, have_threads=posix)
+AM_CONDITIONAL(HAVE_PTHREAD, test "${have_threads}" = "posix")
+if test "${have_threads}" = "posix"; then
+  AC_DEFINE(HAVE_PTHREAD, 1, [define if pthread is installed])
+  LIBS="-lpthread $LIBS"
+fi
 
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
@@ -90,7 +90,6 @@ if test $ac_cv_ipv6 = yes ; then
         AC_DEFINE(IPV6, 1, Define to 1 if the system supports IPv6)
 fi
 
-
 # Check if sockaddr{} has sa_len member.
 AC_CHECK_MEMBER([struct sockaddr.sa_len],
  AC_DEFINE(HAVE_SOCKADDR_SA_LEN, 1, define if socket address structures have length fields),,[
@@ -102,17 +101,49 @@ AC_CHECK_MEMBER(struct sockaddr_dl.sdl_family,
 #include <sys/types.h>
 #include <net/if_dl.h>])
 
-# check for uuid - the first call to PKG_CHECK_MODULES can't be conditional
-PKG_CHECK_MODULES(UUID, [uuid >= 0.22], [], [true])
-AC_CHECK_HEADERS(
-   [uuid/uuid.h],
-   [],
-   [AC_MSG_ERROR([Missing uuid/uuid.h])]
+# check for uuid
+# uuid handling is quite complex as we can use either the OSSP uuid or the one
+# with e2fsprogs. On top of that the header file is different on different
+#platforms
+use_ossp_uuid="no"
+PKG_CHECK_MODULES(
+  UUID,
+  [uuid],
+  [AC_CHECK_HEADERS(
+    [ossp/uuid.h],
+    [use_ossp_uuid="yes"],
+    [AC_CHECK_HEADERS(
+      [uuid/uuid.h]
+      [],
+      [AC_CHECK_LIB([uuid],
+                    [uuid_generate],
+                    [],
+                    [use_ossp_uuid="yes"])])],
+    []
+  )],
+  # the uuid pkg wasn't found, let's try ossp-uuid instead
+  [PKG_CHECK_MODULES(
+    OSSP_UUID,
+    [ossp-uuid],
+    [use_ossp_uuid="yes"],
+    # if this fails, then our last chance is to check for uuid/uuid.h (present
+    # on OS X by default).
+    [AC_CHECK_HEADERS(
+      [uuid/uuid.h],
+      [],
+      [AC_MSG_ERROR([Missing the uuid library])]
+    )]
+  )]
 )
+
+if test "${use_ossp_uuid}" = "yes"; then
+  AC_DEFINE(USE_OSSP_UUID, 1, [defined if we should use the ossp uuid lib])
+fi
+
 
 # check for plugin dependencies. We also build a list of plugins that we're
 # going to compile here so the binary knows what to link against
-PLUGINS="espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
 PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
@@ -132,41 +163,34 @@ AC_SUBST(PLUGIN_LIBS)
 
 # plugin & html data directories
 plugindir=$libdir/olad
-third_party_plugindir=$libdir/olad_plugins
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 AC_SUBST(plugindir)
-AC_SUBST(third_party_plugindir)
 AC_SUBST(www_datadir)
 
-OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DTHIRD_PARTY_PLUGIN_DIR=\\\"$third_party_plugindir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
-
+OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
 AC_SUBST(OLAD_DEFINES)
 
-AC_ARG_ENABLE(debug,
-              AS_HELP_STRING([--enable-debug], [Enable debugging]),
-              AC_DEFINE(DEBUG, 1, [Enable debugging])
-             )
+# check for cppunit
+AM_PATH_CPPUNIT(
+  1.9.6,
+  [],
+  [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
+
+# gcov
 AC_ARG_ENABLE(gcov,
               AC_HELP_STRING([--enable-gcov],
                              [turn on code coverage analysis tools]),
               [use_gcov="yes"],
-              [use_gcov="no"]
-             )
-AC_ARG_ENABLE(python-libs,
-              AC_HELP_STRING([--enable-python-libs],
-                             [Build the python interface]),
-              [build_python_libs="yes"]
              )
 
-# gcov
 if test "${use_gcov}" = "yes"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   LDFLAGS="$LDFLAGS -fprofile-arcs"
 fi
 
-# microhttpd
+# look for microhttpd
 AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
 AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
 
@@ -180,17 +204,16 @@ if test "${have_microhttpd}" = "yes"; then
 fi
 
 # python wrappers
+AC_ARG_ENABLE(python-libs,
+              AC_HELP_STRING([--enable-python-libs],
+                             [Build the python interface]),
+              [build_python_libs="yes"]
+             )
 AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${build_python_libs}" = "yes")
 
 if test "${build_python_libs}" = "yes"; then
  AM_PATH_PYTHON(2.4)
 fi
-
-# check for cppunit
-AM_PATH_CPPUNIT(
-  1.9.6,
-  [],
-  [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
 
 AC_OUTPUT_COMMANDS([
   if test -n "$CONFIG_FILES" && test -n "$CONFIG_HEADERS"; then
@@ -254,12 +277,14 @@ AC_OUTPUT( Makefile\
     common/export_map/Makefile\
     common/logging/Makefile\
     common/protocol/Makefile\
+    common/rdm/Makefile\
     common/rpc/Makefile\
     common/network/Makefile\
     common/utils/Makefile\
     include/Makefile\
     include/ola/Makefile\
     include/ola/network/Makefile\
+    include/ola/rdm/Makefile\
     include/olad/Makefile\
     ola/Makefile \
     python/Makefile \

@@ -48,8 +48,10 @@ using ola::Closure;
  * one.
  */
 PathportNode::PathportNode(const string &ip_address,
-                         uint32_t device_id)
+                           uint32_t device_id,
+                           uint8_t dscp)
     : m_running(false),
+      m_dscp(dscp),
       m_preferred_ip(ip_address),
       m_device_id(device_id),
       m_sequence_number(1) {
@@ -77,10 +79,14 @@ bool PathportNode::Start() {
   if (m_running)
     return false;
 
-  if (!m_interface_picker.ChooseInterface(&m_interface, m_preferred_ip)) {
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
+    delete picker;
     OLA_INFO << "Failed to find an interface";
     return false;
   }
+  delete picker;
 
   m_config_addr.s_addr = HostToNetwork(PATHPORT_CONFIG_GROUP);
   m_status_addr.s_addr = HostToNetwork(PATHPORT_STATUS_GROUP);
@@ -89,6 +95,7 @@ bool PathportNode::Start() {
   if (!InitNetwork())
     return false;
 
+  m_socket.SetTos(m_dscp);
   m_running = true;
   SendArpReply();
 

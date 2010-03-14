@@ -74,10 +74,14 @@ bool ShowNetNode::Start() {
   if (m_running)
     return false;
 
-  if (!m_interface_picker.ChooseInterface(&m_interface, m_preferred_ip)) {
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
+    delete picker;
     OLA_INFO << "Failed to find an interface";
     return false;
   }
+  delete picker;
 
   if (!InitNetwork())
     return false;

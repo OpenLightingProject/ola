@@ -32,8 +32,9 @@ namespace usbpro {
 
 class UsbProInputPort: public InputPort {
   public:
-    UsbProInputPort(UsbProDevice *parent, unsigned int id, const string &path)
-        : InputPort(parent, id),
+    UsbProInputPort(UsbProDevice *parent, unsigned int id,
+                    const TimeStamp *wake_time, const string &path)
+        : InputPort(parent, id, wake_time),
           m_path(path),
           m_device(parent) {}
 

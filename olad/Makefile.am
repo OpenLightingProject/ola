@@ -1,10 +1,9 @@
-INCLUDES = -I$(top_builddir)/common -I$(top_builddir)/include \
-           -I$(top_builddir)/libltdl @OLAD_DEFINES@
+include $(top_srcdir)/common.mk
 SUBDIRS = www testdata
 
-OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp \
-                    DlOpenPluginLoader.cpp DynamicPluginLoader.cpp \
-                    OlaServerServiceImpl.cpp \
+
+OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp DmxSource.cpp \
+                    DynamicPluginLoader.cpp OlaServerServiceImpl.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
                     Preferences.cpp Port.cpp PortManager.cpp Universe.cpp \
                     UniverseStore.cpp
@@ -19,8 +18,8 @@ libolaserver_la_SOURCES += HttpServer.cpp OlaHttpServer.cpp
 libolaserver_la_LDFLAGS += -lctemplate
 endif
 
-libolaserver_la_LIBADD = @LIBLTDL@ $(top_builddir)/common/libolacommon.la
-libolaserver_la_CXXFLAGS = -Wall -Wformat -W
+libolaserver_la_LIBADD = $(top_builddir)/common/libolacommon.la
+libolaserver_la_CXXFLAGS = -Wall -Wformat -W @OLAD_DEFINES@
 
 # Header files
 pkgincludedir = $(includedir)/olad
@@ -47,10 +46,10 @@ TESTS = OlaTester
 check_PROGRAMS = $(TESTS)
 OlaTester_SOURCES = $(OLASERVER_SOURCES) OlaServerTester.cpp \
                     UniverseTest.cpp DeviceTest.cpp DeviceManagerTest.cpp \
-                    PluginManagerTest.cpp PreferencesTest.cpp \
-                    PortManagerTest.cpp PortTest.cpp \
+                    DmxSourceTest.cpp PluginManagerTest.cpp \
+                    PreferencesTest.cpp PortManagerTest.cpp PortTest.cpp \
                     OlaServerServiceImplTest.cpp ClientTest.cpp
 OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 OlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
-OlaTester_LDADD = @LIBS@ @LIBLTDL@ ${PLUGIN_LIBS} \
+OlaTester_LDADD = @LIBS@ ${PLUGIN_LIBS} \
                   $(top_builddir)/common/libolacommon.la

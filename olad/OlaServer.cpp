@@ -270,7 +270,8 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
                                                          m_plugin_manager,
                                                          client,
                                                          m_export_map,
-                                                         m_port_manager);
+                                                         m_port_manager,
+                                                         m_ss->WakeUpTime());
   channel->SetService(service);
 
   map<int, OlaServerServiceImpl*>::const_iterator iter;

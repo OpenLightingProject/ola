@@ -106,8 +106,13 @@ bool SandNetPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  if (m_preferences->SetDefaultValue(SandNetDevice::NAME_KEY,
-                                     SANDNET_NODE_NAME))
+  bool save = false;
+  save |= m_preferences->SetDefaultValue(SandNetDevice::IP_KEY,
+                                         IPv4Validator(), "");
+  save |= m_preferences->SetDefaultValue(SandNetDevice::NAME_KEY,
+                                         StringValidator(), SANDNET_NODE_NAME);
+
+  if (save)
     m_preferences->Save();
 
   if (m_preferences->GetValue(SandNetDevice::NAME_KEY).empty())

@@ -44,13 +44,13 @@ class ShowNetDevice: public ola::Device {
     bool AllowMultiPortPatching() const { return true; }
     string DeviceId() const { return "1"; }
 
+    static const char IP_KEY[];
+
   private:
     class Preferences *m_preferences;
     const class PluginAdaptor *m_plugin_adaptor;
     class ShowNetNode *m_node;
     bool m_enabled;
-
-    static const char IP_KEY[];
 };
 }  // shownet
 }  // plugin

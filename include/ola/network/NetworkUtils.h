@@ -21,11 +21,12 @@
 #ifndef INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
 #define INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
 
-#if HAVE_CONFIG_H
-#  include <config.h>
+#ifdef WIN32
+#include <winsock2.h>
+#else
+#include <arpa/inet.h>
 #endif
 
-#include <arpa/inet.h>
 #include <string>
 
 
@@ -33,7 +34,7 @@ namespace ola {
 namespace network {
 
 bool StringToAddress(const std::string &address, struct in_addr &addr);
-std::string AddressToString(struct in_addr &addr);
+std::string AddressToString(const struct in_addr &addr);
 
 // we define uint8_t versions of these so we can call them with any type.
 uint8_t NetworkToHost(uint8_t value);
