@@ -30,8 +30,7 @@ e131_transmit_test_CPPFLAGS = $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) $(AM_CPPFLAGS)
 e131_transmit_test_LDADD = @LIBS@ -lprotobuf \
                   ./libolae131core.la \
                   ./libolae131tester.la \
-                  ../../../common/libolacommon.la \
-                  ../../usbpro/libolausbprowidget.la
+                  ../../../common/libolacommon.la
 e131_transmit_test_LDFLAGS = $(UUID_LIBS) $(OSSP_UUID_LIBS)
 
 # Test programs

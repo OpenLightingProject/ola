@@ -26,6 +26,8 @@
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
 #include "ola/network/Socket.h"
+#include "plugins/usbpro/WidgetDetector.h"
+#include "plugins/usbpro/UsbDevice.h"
 
 namespace ola {
 namespace plugin {
@@ -33,27 +35,31 @@ namespace usbpro {
 
 using ola::network::ConnectedSocket;
 
-class UsbProDevice;
-
-class UsbProPlugin: public ola::Plugin {
+class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
   public:
     explicit UsbProPlugin(const PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
+      Plugin(plugin_adaptor),
+      m_detector(plugin_adaptor) {}
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_USBPRO; }
-    int SocketClosed(ConnectedSocket *socket);
+    int DeviceRemoved(UsbDevice *device);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
+
+    void NewWidget(class UsbWidget *widget,
+                   const DeviceInformation &information);
+    void AddDevice(UsbDevice *device);
 
   private:
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();
-    void DeleteDevice(UsbProDevice *device);
+    void DeleteDevice(UsbDevice *device);
     vector<string> FindCandiateDevices();
 
-    vector<UsbProDevice*> m_devices;  // list of our devices
+    vector<UsbDevice*> m_devices;  // list of our devices
+    WidgetDetector m_detector;
 
     static const char USBPRO_DEVICE_NAME[];
     static const char PLUGIN_NAME[];
@@ -63,6 +69,12 @@ class UsbProPlugin: public ola::Plugin {
     static const char DEFAULT_DEVICE_DIR[];
     static const char LINUX_DEVICE_PREFIX[];
     static const char MAC_DEVICE_PREFIX[];
+
+    static const uint16_t OPEN_LIGHTING_ESTA_ID = 0x7a70;
+    static const uint16_t JESE_ESTA_ID = 0x6864;
+    static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
+    static const uint16_t JESE_DMX_TRI_ID = 1;
+    static const uint16_t ENTTEC_ESTA_ID = 0x454E;
 };
 }  // usbpro
 }  // plugin

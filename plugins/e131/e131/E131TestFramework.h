@@ -33,7 +33,6 @@
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Node.h"
-#include "plugins/usbpro/UsbProWidget.h"
 
 using ola::DmxBuffer;
 using ola::network::SelectServer;
@@ -305,18 +304,14 @@ class NodeVarySequenceNumber: public NodeAction {
  *  verifying against the expected output.
  *  - interactive mode. This sends data to the multicast addresses and a human
  *  gets to verify it.
- *  - usb, non interactive. This uses a USB DMX Pro to verify a remote
- *  implementation.
  */
-class StateManager: public ola::plugin::usbpro::UsbProWidgetListener {
+class StateManager {
   public:
     StateManager(const std::vector<TestState*> &states,
-                 bool interactive_mode = false,
-                 const string &usb_path = ""):
+                 bool interactive_mode = false):
         m_interactive(interactive_mode),
         m_count(0),
         m_ticker(0),
-        m_usb_path(usb_path),
         m_local_node(NULL),
         m_node1(NULL),
         m_node2(NULL),
@@ -331,12 +326,10 @@ class StateManager: public ola::plugin::usbpro::UsbProWidgetListener {
     int Input();
     int NewDMX();
     bool Passed() const { return m_failed_tests.size() == 0; }
-    void HandleWidgetDmx();
 
   private:
     bool m_interactive;
     unsigned int m_count, m_ticker;
-    string m_usb_path;
     termios m_old_tc;
     CID m_cid1, m_cid2;
     E131Node *m_local_node, *m_node1, *m_node2;
@@ -345,7 +338,6 @@ class StateManager: public ola::plugin::usbpro::UsbProWidgetListener {
     ola::network::UnmanagedSocket m_stdin_socket;
     DmxBuffer m_recv_buffer;
     std::vector<TestState*> m_failed_tests;
-    ola::plugin::usbpro::UsbProWidget *m_widget;
 
     void EnterState(TestState *state);
     void NextState();
