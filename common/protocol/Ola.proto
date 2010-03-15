@@ -48,6 +48,7 @@ enum PluginIds {
   OLA_PLUGIN_PATHPORT = 9;
   OLA_PLUGIN_DMX4LINUX = 10;
   OLA_PLUGIN_E131 = 11;
+  OLA_PLUGIN_USBDMX = 12;
 }
 
 message Ack {

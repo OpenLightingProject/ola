@@ -108,6 +108,9 @@ if test -z "$PKG_CONFIG"; then
   AC_MSG_ERROR([Missing pkg-config, please install it])
 fi
 
+# check for libusb
+PKG_CHECK_MODULES(LIBUSB, [libusb-1.0 >= 1.0.2], [], [true])
+
 # check for uuid
 # uuid handling is quite complex as we can use either the OSSP uuid or the one
 # with e2fsprogs. On top of that the header file is different on different
@@ -150,7 +153,7 @@ fi
 
 # check for plugin dependencies. We also build a list of plugins that we're
 # going to compile here so the binary knows what to link against
-PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbdmx usbpro"
 
 PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
 PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
@@ -311,14 +314,15 @@ AC_OUTPUT( Makefile\
     plugins/e131/messages/Makefile \
     plugins/e131/messages/libolae131conf.pc \
     plugins/espnet/Makefile \
+    plugins/opendmx/Makefile \
     plugins/pathport/Makefile \
     plugins/sandnet/Makefile \
     plugins/shownet/Makefile \
+    plugins/stageprofi/Makefile \
+    plugins/usbdmx/Makefile \
     plugins/usbpro/Makefile \
     plugins/usbpro/messages/Makefile \
     plugins/usbpro/messages/libolausbproconf.pc \
-    plugins/stageprofi/Makefile \
-    plugins/opendmx/Makefile \
     tools/Makefile \
     libola.pc \
     )
