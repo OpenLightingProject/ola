@@ -17,9 +17,12 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <getopt.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <getopt.h>
 #include <string.h>
+#include <sysexits.h>
+#include <termios.h>
 #include <ola/Logging.h>
 #include <ola/Closure.h>
 #include <ola/network/SelectServer.h>
@@ -28,14 +31,14 @@
 #include <fstream>
 #include <string>
 
-#include "plugins/usbpro/UsbProWidget.h"
-#include "plugins/usbpro/UsbProWidgetListener.h"
+#include "plugins/usbpro/UsbWidget.h"
 
 using std::cout;
 using std::endl;
 using std::ifstream;
 using std::string;
-using ola::plugin::usbpro::UsbProWidget;
+using ola::plugin::usbpro::UsbWidget;
+using ola::network::SelectServer;
 
 static const char DEFAULT_DEVICE[] = "/dev/ttyUSB0";
 static const char DEFAULT_FIRMWARE[] = "main.bin";
@@ -49,44 +52,95 @@ typedef struct {
   string device;
 } options;
 
+/*
+ * Abstract away the interface to the select server
+ */
+class MySelectServerAdaptor: public ola::plugin::usbpro::SelectServerAdaptor {
+  public:
+    explicit MySelectServerAdaptor(SelectServer *ss):
+        m_ss(ss) {
+    }
 
-class FirmwareTransferer: public ola::plugin::usbpro::UsbProWidgetListener {
+    bool AddSocket(ola::network::ConnectedSocket *socket,
+                           bool delete_on_close = false) const {
+      return m_ss->AddSocket(socket, delete_on_close);
+    }
+  private:
+    SelectServer *m_ss;
+};
+
+
+class FirmwareTransferer: public ola::plugin::usbpro::WidgetListener {
   public:
     FirmwareTransferer(ifstream *file,
-                       UsbProWidget *widget,
+                       UsbWidget *widget,
                        ola::network::SelectServer *ss):
-      m_sent_last_page(false),
-      m_sucessful(false),
-      m_firmware(file),
-      m_widget(widget),
-      m_ss(ss) {}
+        m_sucessful(false),
+        m_firmware(file),
+        m_widget(widget),
+        m_ss(ss) {
+      widget->SetMessageHandler(this);
+    }
 
-    void HandleFirmwareReply(bool success);
+    bool SendReprogram();
+
+    void HandleMessage(UsbWidget *widget,
+                       uint8_t label,
+                       unsigned int length,
+                       const uint8_t *data);
     int SendNextChunk();
     int AbortTransfer() {
       m_ss->Terminate();
       return 0;
     }
     bool WasSucessfull() const { return m_sucessful; }
+
   private:
-    bool m_sent_last_page;
+    enum { FLASH_STATUS_LENGTH = 4 };
+    enum { FLASH_PAGE_LENGTH = 64 };
+
     bool m_sucessful;
     ifstream *m_firmware;
-    UsbProWidget *m_widget;
-    ola::network::SelectServer *m_ss;
+    UsbWidget *m_widget;
+    SelectServer *m_ss;
+
+    static const uint8_t REPROGRAM_LABEL = 1;
+    static const uint8_t FLASH_PAGE_LABEL = 2;
+    static const char REPLY_SUCCESS[];
 };
 
 
+const char FirmwareTransferer::REPLY_SUCCESS[] = "TRUE";
+
+
 /*
- * Called when we receive a firmware reply
+ * Send the re-program request
  */
-void FirmwareTransferer::HandleFirmwareReply(bool success) {
-  if (success) {
-    if (!SendNextChunk() || m_sucessful) {
+bool FirmwareTransferer::SendReprogram() {
+  return m_widget->SendMessage(REPROGRAM_LABEL, 0, NULL);
+}
+
+
+/*
+ * Handle the flash page replies
+ */
+void FirmwareTransferer::HandleMessage(UsbWidget *widget,
+                                       uint8_t label,
+                                       unsigned int length,
+                                       const uint8_t *data) {
+  if (widget != m_widget) {
+    OLA_WARN << "Something went really wrong...";
+    return;
+  }
+
+  if (label != FLASH_PAGE_LABEL || length != FLASH_STATUS_LENGTH)
+    return;
+
+  if (0 == memcmp(data, REPLY_SUCCESS, sizeof(FLASH_STATUS_LENGTH))) {
+    if (!SendNextChunk() || m_sucessful)
       m_ss->Terminate();
-    }
   } else {
-    OLA_FATAL << "Bad response from widget";
+    OLA_FATAL << "Bad response from widget:" << string((const char*) data, 4);
     m_ss->Terminate();
   }
 }
@@ -96,9 +150,9 @@ void FirmwareTransferer::HandleFirmwareReply(bool success) {
  * Send the next chunk of the firmware file
  */
 int FirmwareTransferer::SendNextChunk() {
-  uint8_t page[ola::plugin::usbpro::FLASH_PAGE_LENGTH];
+  uint8_t page[FLASH_PAGE_LENGTH];
   m_firmware->read(reinterpret_cast<char*>(page),
-                   ola::plugin::usbpro::FLASH_PAGE_LENGTH);
+                   FLASH_PAGE_LENGTH);
   std::streamsize size = m_firmware->gcount();
 
   if (!size) {
@@ -108,7 +162,7 @@ int FirmwareTransferer::SendNextChunk() {
   }
   cout << ".";
   fflush(stdout);
-  return m_widget->SendFirmwarePage(page, size);
+  return m_widget->SendMessage(FLASH_PAGE_LABEL, size, page);
 }
 
 
@@ -199,6 +253,25 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
+/*
+ * Open the widget device
+ */
+int ConnectToWidget(const string &path) {
+  struct termios newtio;
+  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
+
+  if (fd == -1) {
+    OLA_WARN << "Failed to open " << path << " " << strerror(errno);
+    return -1;
+  }
+
+  bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
+  cfsetispeed(&newtio, B115200);
+  cfsetospeed(&newtio, B115200);
+  tcsetattr(fd, TCSANOW, &newtio);
+  return fd;
+}
+
 
 /*
  * Flashes the device
@@ -223,15 +296,17 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  UsbProWidget widget;
-  if (!widget.Connect(opts.device))
-    exit(1);
-
   ola::network::SelectServer ss;
-  FirmwareTransferer transferer(&firmware_file, &widget, &ss);
-  widget.SetListener(&transferer);
 
-  if (!widget.SendReprogram()) {
+  int fd = ConnectToWidget(opts.device);
+  if (fd < 0)
+    exit(EX_UNAVAILABLE);
+
+  UsbWidget widget(MySelectServerAdaptor(&ss), fd);
+
+  FirmwareTransferer transferer(&firmware_file, &widget, &ss);
+
+  if (!transferer.SendReprogram()) {
     OLA_FATAL << "Send message failed";
     exit(1);
   }
@@ -239,15 +314,13 @@ int main(int argc, char *argv[]) {
   ss.RegisterSingleTimeout(
       PAUSE_DELAY,
       ola::NewSingleClosure(&transferer, &FirmwareTransferer::SendNextChunk));
-  widget.GetSocket()->SetOnClose(
+  widget.SetOnRemove(
       ola::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
   ss.RegisterSingleTimeout(
       ABORT_TIMEOUT,
       ola::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
-  ss.AddSocket(widget.GetSocket());
   ss.Run();
 
-  widget.Disconnect();
   firmware_file.close();
   return !transferer.WasSucessfull();
 }

@@ -214,25 +214,22 @@ TestState *states[] = {&s1, &s2, &s3, &s4, &s5, &s6, &s7, &s8, &s9, &s10,
  * Display the help message
  */
 void DisplayHelp(const char *binary_name) {
-  cout << "Usage: " << binary_name << " [--interactive] [--usb <path>]\n"
+  cout << "Usage: " << binary_name << " [--interactive]\n"
   "\n"
-  "Run the E1.31 Transmit test. This test can run in one of three modes:\n"
+  "Run the E1.31 Transmit test. This test can run in one of two modes:\n"
   "  * interactive mode. This sends data to the multicast addresses\n"
   "    and a human gets to verify it.\n"
   "  * local mode (default). This starts a local E131Node and sends it data,\n"
   "    verifying against the expected output.\n"
-  "  * usb mode. This uses a USB DMX Pro to verify a remote implementation.\n"
   "\n"
   "  -h, --help                  Display this help message and exit.\n"
   "  -i, --interactive           Run in interactive mode.\n"
-  "  -u, --usb <device_path>     Test a remote node.\n"
   << endl;
 }
 
 
 int main(int argc, char* argv[]) {
   bool interactive_mode = false;
-  string usb_path;
 
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   std::vector<TestState*> test_states;
@@ -243,14 +240,13 @@ int main(int argc, char* argv[]) {
   static struct option long_options[] = {
       {"interactive", no_argument, 0, 'i'},
       {"help", no_argument, 0, 'h'},
-      {"usb", required_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
 
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "ihu:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "ih", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -264,16 +260,13 @@ int main(int argc, char* argv[]) {
       case 'i':
         interactive_mode = true;
         break;
-      case 'u':
-        usb_path = optarg;
-        break;
       case '?':
         break;
       default:
         break;
     }
   }
-  StateManager manager(test_states, interactive_mode, usb_path);
+  StateManager manager(test_states, interactive_mode);
   manager.Init();
   manager.Run();
   return manager.Passed() ? 0 : 1;
