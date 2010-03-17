@@ -53,26 +53,17 @@ bool StateManager::Init() {
   m_ss = new SelectServer();
 
   if (!m_interactive) {
-    if (!m_usb_path.empty()) {
-      // setup usb widget here
-      m_widget = new ola::plugin::usbpro::UsbProWidget();
-      assert(m_widget->Connect(m_usb_path));
-      assert(m_ss->AddSocket(m_widget->GetSocket()));
-      assert(m_widget->ChangeToReceiveMode());
-      m_widget->SetListener(this);
-    } else {
-      // local node test
-      CID local_cid = CID::Generate();
-      m_local_node = new E131Node("", local_cid);
-      assert(m_local_node->Start());
-      assert(m_ss->AddSocket(m_local_node->GetSocket()));
+    // local node test
+    CID local_cid = CID::Generate();
+    m_local_node = new E131Node("", local_cid);
+    assert(m_local_node->Start());
+    assert(m_ss->AddSocket(m_local_node->GetSocket()));
 
-      assert(m_local_node->SetHandler(
-            UNIVERSE_ID,
-            &m_recv_buffer,
-            NULL,  // don't track the priority
-            ola::NewClosure(this, &StateManager::NewDMX)));
-    }
+    assert(m_local_node->SetHandler(
+          UNIVERSE_ID,
+          &m_recv_buffer,
+          NULL,  // don't track the priority
+          ola::NewClosure(this, &StateManager::NewDMX)));
   }
 
   m_node1 = new E131Node("", m_cid1, false, true, 5567);
@@ -119,11 +110,6 @@ StateManager::~StateManager() {
     delete m_local_node;
   }
 
-  if (m_widget) {
-    m_widget->Disconnect();
-    delete m_widget;
-    m_widget = NULL;
-  }
   delete m_ss;
   delete m_node1;
   delete m_node2;
@@ -184,19 +170,6 @@ int StateManager::NewDMX() {
   if (!m_states[m_count]->Verify(m_recv_buffer))
     cout << "FAILED TEST" << endl;
   return 0;
-}
-
-
-/*
- * Called when the widget gets new DMX
- */
-void StateManager::HandleWidgetDmx() {
-  if (!m_widget)
-    return;
-
-  const DmxBuffer &buffer = m_widget->FetchDMX();
-  if (!m_states[m_count]->Verify(buffer))
-    cout << "FAILED TEST" << endl;
 }
 
 

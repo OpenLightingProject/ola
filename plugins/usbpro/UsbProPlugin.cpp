@@ -15,7 +15,7 @@
  *
  * UsbProPlugin.cpp
  * The UsbPro plugin for ola
- * Copyright (C) 2006-2007 Simon Newton
+ * Copyright (C) 2006-2010 Simon Newton
  */
 
 #include <dirent.h>
@@ -31,16 +31,9 @@
 #include "olad/Preferences.h"
 
 #include "plugins/usbpro/UsbProPlugin.h"
+#include "plugins/usbpro/ArduinoRGBDevice.h"
+#include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/UsbProDevice.h"
-
-
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(
-    const ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::plugin::usbpro::UsbProPlugin(plugin_adaptor);
-}
 
 
 namespace ola {
@@ -56,50 +49,6 @@ const char UsbProPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
 const char UsbProPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
 const char UsbProPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
 
-/*
- * Start the plugin
- */
-bool UsbProPlugin::StartHook() {
-  vector<string>::iterator it;
-
-  vector<string> device_paths = FindCandiateDevices();
-
-  for (it = device_paths.begin(); it != device_paths.end(); ++it) {
-    UsbProDevice *dev = new UsbProDevice(m_plugin_adaptor,
-                                         this,
-                                         USBPRO_DEVICE_NAME,
-                                         *it);
-    if (!dev->Start()) {
-      delete dev;
-      continue;
-    }
-
-    // We don't register the device here, that's done asyncronously when the
-    // startup sequence completes.
-    dev->GetSocket()->SetOnClose(
-        NewSingleClosure(this,
-                         &UsbProPlugin::SocketClosed,
-                         dev->GetSocket()));
-    m_devices.push_back(dev);
-  }
-  return true;
-}
-
-
-/*
- * Stop the plugin
- * @return true on sucess, false on failure
- */
-bool UsbProPlugin::StopHook() {
-  vector<UsbProDevice*>::iterator iter;
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    m_plugin_adaptor->RemoveSocket((*iter)->GetSocket());
-    DeleteDevice(*iter);
-  }
-  m_devices.clear();
-  return true;
-}
-
 
 /*
  * Return the description for this plugin
@@ -109,12 +58,13 @@ string UsbProPlugin::Description() const {
 "Enttec Usb Pro Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin creates devices with one input and one output port.\n"
+"This plugin supports devices that implement the Usb Pro spec. See\n"
+"http://opendmx.net/index.php/USB_Protocol_Extensions for more info.\n"
 "\n"
 "--- Config file : ola-usbpro.conf ---\n"
 "\n"
 "device_dir = /dev\n"
-"The directory to look for devices in]\n"
+"The directory to look for devices in\n"
 "\n"
 "device_prefix = ttyUSB\n"
 "The prefix of filenames to consider as devices, multiple keys are allowed\n";
@@ -122,25 +72,118 @@ string UsbProPlugin::Description() const {
 
 
 /*
- * Called when the file descriptor is closed.
+ * Called when a device is removed
  */
-int UsbProPlugin::SocketClosed(ConnectedSocket *socket) {
-  vector<UsbProDevice*>::iterator iter;
+int UsbProPlugin::DeviceRemoved(UsbDevice *device) {
+  vector<UsbDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    if ((*iter)->GetSocket() == socket) {
+    if (*iter == device) {
       break;
     }
   }
 
   if (iter == m_devices.end()) {
-    OLA_WARN << "Couldn't find the device corresponding to this socket";
+    OLA_WARN << "Couldn't find the device that was removed";
     return -1;
   }
 
-  DeleteDevice(*iter);
+  DeleteDevice(device);
   m_devices.erase(iter);
   return 0;
+}
+
+
+/*
+ * Called when a new widget is detected
+ * @param widget a pointer to a UsbWidget whose ownership is transferred to us.
+ * @param information A DeviceInformation struct for this widget
+ */
+void UsbProPlugin::NewWidget(class UsbWidget *widget,
+                             const DeviceInformation &information) {
+  string device_name = information.manufactuer;
+  if (!(information.manufactuer.empty() ||
+        information.device.empty()))
+    device_name += " - ";
+  device_name += information.device;
+  uint32_t serial = *(reinterpret_cast<const uint32_t*>(information.serial));
+
+  switch (information.esta_id) {
+    case OPEN_LIGHTING_ESTA_ID:
+      if (information.device_id == OPEN_LIGHTING_RGB_MIXER_ID) {
+        AddDevice(new ArduinoRGBDevice(
+            this,
+            device_name,
+            widget,
+            information.esta_id,
+            information.device_id,
+            serial));
+        return;
+      }
+      break;
+    case JESE_ESTA_ID:
+      if (information.device_id == JESE_DMX_TRI_ID) {
+        AddDevice(new DmxTriDevice(
+            this,
+            device_name,
+            widget,
+            information.esta_id,
+            information.device_id,
+            serial));
+      }
+      break;
+  }
+  OLA_WARN << "Defaulting to a Usb Pro device";
+  device_name = USBPRO_DEVICE_NAME;
+  AddDevice(new UsbProDevice(
+        m_plugin_adaptor,
+        this,
+        device_name,
+        widget,
+        ENTTEC_ESTA_ID,
+        0,  // assume device id is 0
+        serial));
+}
+
+
+/*
+ * Add a new device to the list
+ * @param device the new UsbDevice
+ */
+void UsbProPlugin::AddDevice(UsbDevice *device) {
+  device->SetOnRemove(NewSingleClosure(this,
+                                       &UsbProPlugin::DeviceRemoved,
+                                       device));
+  m_devices.push_back(device);
+  m_plugin_adaptor->RegisterDevice(device);
+}
+
+
+/*
+ * Start the plugin
+ */
+bool UsbProPlugin::StartHook() {
+  m_detector.SetListener(this);
+  vector<string>::iterator it;
+  vector<string> device_paths = FindCandiateDevices();
+
+  for (it = device_paths.begin(); it != device_paths.end(); ++it)
+    // NewWidget (above) will be called when discovery completes.
+    m_detector.Discover(*it);
+  return true;
+}
+
+
+/*
+ * Stop the plugin
+ * @return true on sucess, false on failure
+ */
+bool UsbProPlugin::StopHook() {
+  vector<UsbDevice*>::iterator iter;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter)
+    DeleteDevice(*iter);
+  m_devices.clear();
+  return true;
 }
 
 
@@ -174,9 +217,8 @@ bool UsbProPlugin::SetDefaultPreferences() {
 }
 
 
-void UsbProPlugin::DeleteDevice(UsbProDevice *device) {
+void UsbProPlugin::DeleteDevice(UsbDevice *device) {
   m_plugin_adaptor->UnregisterDevice(device);
-  device->Stop();
   delete device;
 }
 
@@ -210,7 +252,7 @@ vector<string> UsbProPlugin::FindCandiateDevices() {
           stringstream str;
           str << device_dir << "/" << dir_ent_p->d_name;
           device_paths.push_back(str.str());
-          OLA_INFO << "Found potential USB Pro device " << str.str();
+          OLA_INFO << "Found potential USB Pro like device at " << str.str();
         }
       }
       readdir_r(dp, &dir_ent, &dir_ent_p);

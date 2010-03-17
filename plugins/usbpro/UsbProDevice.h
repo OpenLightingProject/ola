@@ -27,10 +27,11 @@
 #include "ola/network/Socket.h"
 #include "olad/Device.h"
 #include "olad/PluginAdaptor.h"
+#include "olad/Port.h"
 
+#include "plugins/usbpro/UsbDevice.h"
+#include "plugins/usbpro/UsbWidget.h"
 #include "plugins/usbpro/messages/UsbProConfigMessages.pb.h"
-#include "plugins/usbpro/UsbProWidget.h"
-#include "plugins/usbpro/UsbProWidgetListener.h"
 
 namespace ola {
 namespace plugin {
@@ -44,78 +45,132 @@ using std::deque;
 /*
  * Outstanding requests to the widget
  */
-class OutstandingRequest {
-  public:
-    OutstandingRequest(RpcController *a_controller,
-                       string *a_response,
-                       google::protobuf::Closure *a_closure):
-      controller(a_controller),
-      response(a_response),
-      closure(a_closure) {}
-    RpcController *controller;
-    string *response;
-    google::protobuf::Closure *closure;
-};
+typedef struct {
+  RpcController *controller;
+  string *response;
+  google::protobuf::Closure *closure;
+} OutstandingParamRequest;
 
 
 /*
- * A UsbPro device
+ * An Enttec Usb Pro device
  */
-class UsbProDevice: public Device, public UsbProWidgetListener {
+class UsbProDevice: public UsbDevice, public WidgetListener {
   public:
     UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
                  ola::AbstractPlugin *owner,
                  const string &name,
-                 const string &dev_path);
+                 UsbWidget *widget,
+                 uint16_t esta_id,
+                 uint16_t device_id,
+                 uint32_t serial);
     ~UsbProDevice();
+    void HandleMessage(UsbWidget* widget,
+                       uint8_t label,
+                       unsigned int length,
+                       const uint8_t *data);
 
-    bool Start();
-    bool StartCompleted();
     bool Stop();
     bool AllowLooping() const { return false; }
     bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return m_serial; }
+
     void Configure(RpcController *controller,
                    const string &request,
                    string *response,
                    google::protobuf::Closure *done);
 
-    ConnectedSocket *GetSocket() const;
     bool SendDMX(const DmxBuffer &buffer);
-    const DmxBuffer &FetchDMX() const;
-    bool ChangeToReceiveMode();
-
-    // callbacks from the widget
-    void HandleWidgetDmx();
-    void HandleWidgetParameters(uint8_t firmware,
-                                uint8_t firmware_high,
-                                uint8_t break_time,
-                                uint8_t mab_time,
-                                uint8_t rate);
-    void HandleWidgetSerial(const uint8_t serial[SERIAL_NUMBER_LENGTH]);
+    const DmxBuffer &FetchDMX() const { return m_input_buffer; }
+    bool ChangeToReceiveMode(bool change_only);
 
   private:
-    void HandleParameters(RpcController *controller,
-                          const Request *request,
-                          string *response,
-                          google::protobuf::Closure *done);
+    void HandleParameters(const uint8_t *data, unsigned int length);
+    void HandleDMX(const uint8_t *data, unsigned int length);
+    void HandleDMXDiff(const uint8_t *data, unsigned int length);
+    bool GetParameters() const;
 
-    void HandleGetSerial(RpcController *controller,
-                         const Request *request,
-                         string *response,
-                         google::protobuf::Closure *done);
+    void HandleParametersRequest(RpcController *controller,
+                                 const Request *request,
+                                 string *response,
+                                 google::protobuf::Closure *done);
 
-    bool m_enabled;
+    void HandleSerialRequest(RpcController *controller,
+                             const Request *request,
+                             string *response,
+                             google::protobuf::Closure *done);
+
+    bool m_got_parameters;
     bool m_in_shutdown;  // set to true if we're shutting down
-    bool m_in_startup;  // set to true if we're starting up
     const ola::PluginAdaptor *m_plugin_adaptor;
-    string m_path;
     string m_serial;
-    UsbProWidget *m_widget;
-    deque<OutstandingRequest> m_outstanding_param_requests;
-    deque<OutstandingRequest> m_outstanding_serial_requests;
+    DmxBuffer m_input_buffer;
+    deque<OutstandingParamRequest> m_outstanding_param_requests;
 
-    static const int K_MISSING_PARAM = -1;
+    uint8_t m_break_time;
+    uint8_t m_mab_time;
+    uint8_t m_rate;
+
+    static const uint8_t REPROGRAM_FIRMWARE_LABEL = 2;
+    static const uint8_t PARAMETERS_LABEL = 3;
+    static const uint8_t SET_PARAMETERS_LABEL = 4;
+    static const uint8_t RECEIVED_DMX_LABEL = 5;
+    static const uint8_t DMX_RX_MODE_LABEL = 8;
+    static const uint8_t DMX_CHANGED_LABEL = 9;
+};
+
+
+/*
+ * The Input port
+ */
+class UsbProInputPort: public InputPort {
+  public:
+    UsbProInputPort(UsbProDevice *parent, unsigned int id,
+                    const TimeStamp *wake_time, const string &path)
+        : InputPort(parent, id, wake_time),
+          m_path(path),
+          m_device(parent) {}
+
+    const DmxBuffer &ReadDMX() const {
+      return m_device->FetchDMX();
+    }
+
+    string Description() const {
+      return m_path;
+    }
+
+  private:
+    string m_path;
+    UsbProDevice *m_device;
+};
+
+
+/*
+ * The output port
+ */
+class UsbProOutputPort: public OutputPort {
+  public:
+    UsbProOutputPort(UsbProDevice *parent, unsigned int id, const string &path)
+        : OutputPort(parent, id),
+          m_path(path),
+          m_device(parent) {}
+
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+      return m_device->SendDMX(buffer);
+      (void) priority;
+    }
+
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
+      if (!new_universe)
+        m_device->ChangeToReceiveMode(false);
+      (void) old_universe;
+    }
+
+    string Description() const { return m_path; }
+
+  private:
+    string m_path;
+    UsbProDevice *m_device;
 };
 }  // usbpro
 }  // plugin

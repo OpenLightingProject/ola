@@ -101,6 +101,13 @@ AC_CHECK_MEMBER(struct sockaddr_dl.sdl_family,
 #include <sys/types.h>
 #include <net/if_dl.h>])
 
+# Check for pkg-config
+PKG_PROG_PKG_CONFIG
+
+if test -z "$PKG_CONFIG"; then
+  AC_MSG_ERROR([Missing pkg-config, please install it])
+fi
+
 # check for uuid
 # uuid handling is quite complex as we can use either the OSSP uuid or the one
 # with e2fsprogs. On top of that the header file is different on different
@@ -140,23 +147,40 @@ if test "${use_ossp_uuid}" = "yes"; then
   AC_DEFINE(USE_OSSP_UUID, 1, [defined if we should use the ossp uuid lib])
 fi
 
-
 # check for plugin dependencies. We also build a list of plugins that we're
 # going to compile here so the binary knows what to link against
 PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
 
-PLUGIN_LIBRARY(artnet, artnet_new, ARTNET)
-PLUGIN_LIBRARY(dmx4linux, DMXdev, DMX4LINUX)
-
-# confirm libartnet version
+# check for libartnet
+have_artnet=""
+PKG_CHECK_MODULES(libartnet,
+                  [libartnet >= 1.1.0],
+                  [have_artnet="yes"])
+AM_CONDITIONAL(HAVE_ARTNET, test "${have_artnet}" = "yes")
 if test "${have_artnet}" = "yes"; then
-  PKG_CHECK_MODULES(libartnet, [libartnet >= 1.1.0])
+ PLUGINS="${PLUGINS} artnet"
+ AC_DEFINE(HAVE_ARTNET, 1, [define if libartnet is installed])
+fi
+
+# check for dmx4linux
+have_dmx4linux=""
+AC_CHECK_LIB(dmx4linux, DMXdev, [have_dmx4linux="yes"])
+AC_CHECK_HEADER(
+   [dmx/dmxioctl.h],
+   [],
+   [have_dmx4linux=""])
+
+AM_CONDITIONAL(HAVE_DMX4LINUX, test "${have_dmx4linux}" = "yes")
+
+if test "${have_dmx4linux}" = "yes"; then
+ PLUGINS="${PLUGINS} dmx4linux"
+ AC_DEFINE(HAVE_DMX4LINUX, 1, [define if dmx4linux is installed])
 fi
 
 # create a list of plugin libs
 PLUGIN_LIBS=''
 for p in $PLUGINS;
-do PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/$p/libola$p.la"
+  do PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/$p/libola$p.la"
 done
 
 AC_SUBST(PLUGIN_LIBS)
