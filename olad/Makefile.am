@@ -5,8 +5,8 @@ SUBDIRS = www testdata
 OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp DmxSource.cpp \
                     DynamicPluginLoader.cpp OlaServerServiceImpl.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
-                    Preferences.cpp Port.cpp PortManager.cpp Universe.cpp \
-                    UniverseStore.cpp
+                    Preferences.cpp Port.cpp PortManager.cpp TokenBucket.cpp \
+                    Universe.cpp UniverseStore.cpp
 
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
@@ -29,7 +29,7 @@ EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
              DynamicPluginLoader.h \
              HttpServer.h OlaHttpServer.h \
              OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
-             PortManager.h TestCommon.h UniverseStore.h
+             PortManager.h TestCommon.h TokenBucket.h UniverseStore.h
 
 # Olad Server
 bin_PROGRAMS = olad
@@ -48,7 +48,8 @@ OlaTester_SOURCES = $(OLASERVER_SOURCES) OlaServerTester.cpp \
                     UniverseTest.cpp DeviceTest.cpp DeviceManagerTest.cpp \
                     DmxSourceTest.cpp PluginManagerTest.cpp \
                     PreferencesTest.cpp PortManagerTest.cpp PortTest.cpp \
-                    OlaServerServiceImplTest.cpp ClientTest.cpp
+                    OlaServerServiceImplTest.cpp ClientTest.cpp \
+                    TokenBucketTest.cpp
 OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 OlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 OlaTester_LDADD = @LIBS@ ${PLUGIN_LIBS} \
