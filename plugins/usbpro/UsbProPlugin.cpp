@@ -132,6 +132,19 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
             serial));
       }
       break;
+    case DMX_KING_ESTA_ID:
+      if (information.device_id == DMX_KING_DEVICE_ID) {
+        // DMxKing devices are drop in replacements for a Usb Pro
+        AddDevice(new UsbProDevice(
+            m_plugin_adaptor,
+            this,
+            device_name,
+            widget,
+            information.esta_id,
+            information.device_id,
+            serial));
+        return;
+      }
   }
   OLA_WARN << "Defaulting to a Usb Pro device";
   device_name = USBPRO_DEVICE_NAME;
