@@ -399,7 +399,7 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   // Update a second client with an older timestamp
   // make sure we're in ltp mode
   CPPUNIT_ASSERT_EQUAL(universe->MergeMode(), Universe::MERGE_LTP);
-  time2 = time1 - ola::TimeInterval(1000);
+  time2 = time1 - ola::TimeInterval(1000000);
   CallUpdateDmxData(&impl2, universe_id, dmx_data2, ack_check);
   CPPUNIT_ASSERT_EQUAL(dmx_data.Size(), universe->GetDMX().Size());
   // Should continue to hold the old data

@@ -265,7 +265,7 @@ timeout_id SelectServer::RegisterTimeout(int ms,
   event_t event;
   event.id = m_next_id++;
   event.closure = closure;
-  event.interval = ms;
+  event.interval = ms * 1000;
   event.repeating = repeating;
 
   Clock::CurrentTime(event.next);

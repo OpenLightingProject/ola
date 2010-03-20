@@ -84,7 +84,7 @@ void ClockTest::testTimeStamp() {
   CPPUNIT_ASSERT_EQUAL(timestamp, timestamp2);
 
   // test toString and AsInt
-  TimeInterval one_point_five_seconds(1500);
+  TimeInterval one_point_five_seconds(1500000);
   CPPUNIT_ASSERT_EQUAL(string("1.500000"), one_point_five_seconds.ToString());
   CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1500000),
                        one_point_five_seconds.AsInt());

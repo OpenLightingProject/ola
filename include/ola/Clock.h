@@ -33,8 +33,11 @@ namespace ola {
 
 using std::ostream;
 
+static const int USEC_IN_SECONDS = 1000000;
+
+
 /*
- * A time interval
+ * A time interval, with usecond accuracy
  */
 class TimeInterval {
   public:
@@ -42,16 +45,16 @@ class TimeInterval {
       Set(0);
     }
 
-    explicit TimeInterval(int interval_ms) {
-      Set(interval_ms);
+    explicit TimeInterval(int64_t interval_useconds) {
+      Set(interval_useconds);
     }
 
     TimeInterval(const TimeInterval &other) {
       m_interval = other.m_interval;
     }
 
-    TimeInterval& operator=(int interval_ms) {
-      Set(interval_ms);
+    TimeInterval& operator=(int64_t interval_useconds) {
+      Set(interval_useconds);
       return *this;
     }
 
@@ -74,7 +77,7 @@ class TimeInterval {
     }
 
     int64_t AsInt() const {
-      return (m_interval.tv_sec * K_US_IN_SECOND + m_interval.tv_usec);
+      return (m_interval.tv_sec * USEC_IN_SECONDS + m_interval.tv_usec);
     }
 
     time_t Seconds() const {
@@ -90,14 +93,11 @@ class TimeInterval {
     }
 
   private:
-    void Set(int interval) {
-      m_interval.tv_sec = interval / K_MS_IN_SECOND;
-      m_interval.tv_usec = K_MS_IN_SECOND * (interval % K_MS_IN_SECOND);
+    void Set(uint64_t interval_useconds) {
+      m_interval.tv_sec = interval_useconds / USEC_IN_SECONDS;
+      m_interval.tv_usec = interval_useconds % USEC_IN_SECONDS;
     }
     struct timeval m_interval;
-
-    static const int K_MS_IN_SECOND = 1000;
-    static const int K_US_IN_SECOND = 1000000;
 
   friend class TimeStamp;
 };
@@ -151,9 +151,9 @@ class TimeStamp {
     TimeStamp &operator+=(const TimeInterval &interval) {
       m_tv.tv_sec = m_tv.tv_sec + interval.m_interval.tv_sec;
       m_tv.tv_usec = m_tv.tv_usec + interval.m_interval.tv_usec;
-      if (m_tv.tv_usec >= 1000000) {
+      if (m_tv.tv_usec >= USEC_IN_SECONDS) {
         m_tv.tv_sec++;
-        m_tv.tv_usec -= 1000000;
+        m_tv.tv_usec -= USEC_IN_SECONDS;
       }
       return *this;
     }
@@ -205,7 +205,7 @@ class TimeStamp {
       result->tv_usec = tv1.tv_usec - tv2.tv_usec;
       if (result->tv_usec < 0) {
           result->tv_sec--;
-          result->tv_usec += 1000000;
+          result->tv_usec += USEC_IN_SECONDS;
       }
     }
 };
