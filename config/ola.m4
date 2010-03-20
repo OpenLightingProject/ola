@@ -15,19 +15,6 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-# PLUGIN_LIBRARY(library, function, plugin_name)
-# Check for function in library and set HAVE_${plugin_name}
-# -----------------------------------------------------------------------------
-AC_DEFUN([PLUGIN_LIBRARY],
-[AC_CHECK_LIB($1, $2,[have_$1="yes"])
-AM_CONDITIONAL(HAVE_$3, test "${have_$1}" = "yes")
-
-if test "${have_$1}" = "yes"; then
- PLUGINS="${PLUGINS} $1"
- AC_DEFINE(HAVE_$3,1, [define if lib$1 is installed])
-fi
-])
-
 # PROTOBUF_SUPPORT(version)
 # Check that the protobuf headers are installed and that protoc is the correct
 # version

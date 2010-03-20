@@ -159,10 +159,7 @@ bool WidgetDetector::SendDiscoveryMessages(UsbWidget *widget) {
   if (!widget->SendMessage(UsbWidget::DEVICE_LABEL, 0, NULL))
     return false;
 
-  uint16_t params_request = 0;
-  return widget->SendMessage(UsbWidget::SERIAL_LABEL,
-                             sizeof(params_request),
-                             reinterpret_cast<uint8_t*>(&params_request));
+  return widget->SendMessage(UsbWidget::SERIAL_LABEL, 0, NULL);
 }
 
 
@@ -175,7 +172,7 @@ bool WidgetDetector::SendDiscoveryMessages(UsbWidget *widget) {
  *   manufactuer response.
  */
 void WidgetDetector::HandleIdResponse(UsbWidget *widget, unsigned int length,
-                                     const uint8_t *data, bool is_device) {
+                                      const uint8_t *data, bool is_device) {
   const id_response *response = reinterpret_cast<const id_response*>(data);
   map<UsbWidget*, DeviceInformation>::iterator iter = m_widgets.find(widget);
 
