@@ -123,11 +123,11 @@ class UsbProDevice: public UsbDevice, public WidgetListener {
 /*
  * The Input port
  */
-class UsbProInputPort: public InputPort {
+class UsbProInputPort: public BasicInputPort {
   public:
     UsbProInputPort(UsbProDevice *parent, unsigned int id,
                     const TimeStamp *wake_time, const string &path)
-        : InputPort(parent, id, wake_time),
+        : BasicInputPort(parent, id, wake_time),
           m_path(path),
           m_device(parent) {}
 
@@ -148,10 +148,10 @@ class UsbProInputPort: public InputPort {
 /*
  * The output port
  */
-class UsbProOutputPort: public OutputPort {
+class UsbProOutputPort: public BasicOutputPort {
   public:
     UsbProOutputPort(UsbProDevice *parent, unsigned int id, const string &path)
-        : OutputPort(parent, id),
+        : BasicOutputPort(parent, id),
           m_path(path),
           m_device(parent) {}
 

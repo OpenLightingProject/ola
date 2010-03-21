@@ -33,12 +33,12 @@ namespace opendmx {
 
 using std::string;
 
-class OpenDmxOutputPort: public OutputPort {
+class OpenDmxOutputPort: public BasicOutputPort {
   public:
     OpenDmxOutputPort(OpenDmxDevice *parent,
                       unsigned int id,
                       const string &path)
-        : OutputPort(parent, id),
+        : BasicOutputPort(parent, id),
           m_thread(),
           m_path(path) {
       m_thread.Start(path);

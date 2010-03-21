@@ -30,10 +30,10 @@ namespace ola {
 namespace plugin {
 namespace dummy {
 
-class DummyPort: public OutputPort {
+class DummyPort: public BasicOutputPort {
   public:
     DummyPort(DummyDevice *parent, unsigned int id):
-      OutputPort(parent, id) {}
+      BasicOutputPort(parent, id) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }

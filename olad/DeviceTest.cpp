@@ -30,6 +30,8 @@
 
 using ola::AbstractDevice;
 using ola::AbstractPlugin;
+using ola::InputPort;
+using ola::OutputPort;
 using std::string;
 using std::vector;
 

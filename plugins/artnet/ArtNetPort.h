@@ -47,13 +47,13 @@ class ArtNetPortHelper {
 };
 
 
-class ArtNetInputPort: public InputPort {
+class ArtNetInputPort: public BasicInputPort {
   public:
     ArtNetInputPort(ArtNetDevice *parent,
                     unsigned int port_id,
                     const TimeStamp *wake_time,
                     artnet_node node)
-        : InputPort(parent, port_id, wake_time),
+        : BasicInputPort(parent, port_id, wake_time),
           m_helper(node, false) {}
 
     const DmxBuffer &ReadDMX() const;
@@ -73,12 +73,12 @@ class ArtNetInputPort: public InputPort {
 };
 
 
-class ArtNetOutputPort: public OutputPort {
+class ArtNetOutputPort: public BasicOutputPort {
   public:
     ArtNetOutputPort(ArtNetDevice *device,
                      unsigned int port_id,
                      artnet_node node)
-        : OutputPort(device, port_id),
+        : BasicOutputPort(device, port_id),
           m_helper(node, true) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);

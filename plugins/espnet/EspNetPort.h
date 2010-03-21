@@ -37,11 +37,11 @@ class EspNetPortHelper {
 };
 
 
-class EspNetInputPort: public InputPort {
+class EspNetInputPort: public BasicInputPort {
   public:
     EspNetInputPort(EspNetDevice *parent, unsigned int id,
                     const TimeStamp *wake_time, EspNetNode *node)
-        : InputPort(parent, id, wake_time),
+        : BasicInputPort(parent, id, wake_time),
           m_helper(),
           m_node(node) {}
     ~EspNetInputPort() {}
@@ -57,10 +57,10 @@ class EspNetInputPort: public InputPort {
 };
 
 
-class EspNetOutputPort: public OutputPort {
+class EspNetOutputPort: public BasicOutputPort {
   public:
     EspNetOutputPort(EspNetDevice *parent, unsigned int id, EspNetNode *node)
-        : OutputPort(parent, id),
+        : BasicOutputPort(parent, id),
           m_helper(),
           m_node(node) {}
     ~EspNetOutputPort() {}

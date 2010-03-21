@@ -36,12 +36,12 @@ namespace dmx4linux {
  * A Dmx4Linux output port, we only have 1 port per device so the port id is
  * always 0.
  */
-class Dmx4LinuxOutputPort: public ola::OutputPort {
+class Dmx4LinuxOutputPort: public BasicOutputPort {
   public:
     Dmx4LinuxOutputPort(Dmx4LinuxDevice *parent,
                         Dmx4LinuxSocket *socket,
                         int d4l_universe) :
-        ola::OutputPort(parent, 0),
+        BasicOutputPort(parent, 0),
         m_socket(socket),
         m_d4l_universe(d4l_universe) {
     }
@@ -59,11 +59,11 @@ class Dmx4LinuxOutputPort: public ola::OutputPort {
  * A Dmx4Linux input port, we only have 1 port per device so the port id is
  * always 0.
  */
-class Dmx4LinuxInputPort: public ola::InputPort {
+class Dmx4LinuxInputPort: public BasicInputPort {
   public:
     explicit Dmx4LinuxInputPort(Dmx4LinuxDevice *parent,
                                 const TimeStamp *wake_time):
-        ola::InputPort(parent, 0, wake_time) {
+        BasicInputPort(parent, 0, wake_time) {
       m_read_buffer.SetRangeToValue(0, 0, DMX_UNIVERSE_SIZE);
     }
 

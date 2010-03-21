@@ -42,11 +42,11 @@ class E131PortHelper {
 };
 
 
-class E131InputPort: public InputPort {
+class E131InputPort: public BasicInputPort {
   public:
     E131InputPort(E131Device *parent, int id, E131Node *node,
                   const TimeStamp *wake_time)
-        : InputPort(parent, id, wake_time),
+        : BasicInputPort(parent, id, wake_time),
           m_node(node) {}
 
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
@@ -66,11 +66,11 @@ class E131InputPort: public InputPort {
 };
 
 
-class E131OutputPort: public OutputPort {
+class E131OutputPort: public BasicOutputPort {
   public:
     E131OutputPort(E131Device *parent, int id, E131Node *node,
                    bool prepend_hostname)
-        : OutputPort(parent, id),
+        : BasicOutputPort(parent, id),
           m_prepend_hostname(prepend_hostname),
           m_preview_on(false),
           m_node(node) {}

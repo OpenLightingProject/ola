@@ -58,10 +58,10 @@ class DmxTriDevice: public UsbDevice {
 /*
  * A single output port per device
  */
-class DmxTriOutputPort: public OutputPort {
+class DmxTriOutputPort: public BasicOutputPort {
   public:
     explicit DmxTriOutputPort(DmxTriDevice *parent)
-        : OutputPort(parent, 0),
+        : BasicOutputPort(parent, 0),
           m_device(parent) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {

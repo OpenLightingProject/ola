@@ -32,8 +32,8 @@
 
 using ola::AbstractDevice;
 using ola::DmxBuffer;
-using ola::InputPort;
-using ola::OutputPort;
+using ola::BasicInputPort;
+using ola::BasicOutputPort;
 using ola::TimeStamp;
 using std::string;
 
@@ -41,11 +41,12 @@ using std::string;
 /*
  * Mock out an Input Port
  */
-class TestMockInputPort: public InputPort {
+class TestMockInputPort: public BasicInputPort {
   public:
-    TestMockInputPort(AbstractDevice *parent, unsigned int port_id,
+    TestMockInputPort(AbstractDevice *parent,
+                      unsigned int port_id,
                       const TimeStamp *wake_time):
-      InputPort(parent, port_id, wake_time) {}
+      BasicInputPort(parent, port_id, wake_time) {}
     ~TestMockInputPort() {}
 
     string Description() const { return ""; }
@@ -90,10 +91,10 @@ class TestMockPriorityInputPort: public TestMockInputPort {
 /*
  * Mock out an OutputPort
  */
-class TestMockOutputPort: public OutputPort {
+class TestMockOutputPort: public BasicOutputPort {
   public:
     TestMockOutputPort(AbstractDevice *parent, unsigned int port_id):
-      OutputPort(parent, port_id) {}
+      BasicOutputPort(parent, port_id) {}
     ~TestMockOutputPort() {}
 
     string Description() const { return ""; }
