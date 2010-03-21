@@ -52,12 +52,15 @@ class StreamingClient {
     void Stop();
 
     bool SendDmx(unsigned int universe, const DmxBuffer &data) const;
+    void SetErrorClosure(BaseClosure *closure) { m_closure = closure; }
+    int SocketClosed();
 
   private:
     StreamingClient(const StreamingClient&);
     StreamingClient operator=(const StreamingClient&);
 
     TcpSocket *m_socket;
+    BaseClosure *m_closure;
     class ola::rpc::StreamRpcChannel *m_channel;
     class ola::proto::OlaServerService_Stub *m_stub;
 };
