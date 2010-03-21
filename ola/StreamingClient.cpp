@@ -121,7 +121,7 @@ bool StreamingClient::SendDmx(unsigned int universe,
  */
 int StreamingClient::SocketClosed() {
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"
-    << "to a framing error, perhaps you're sending too fast?";
+    << " to a framing error, perhaps you're sending too fast?";
   if (m_closure)
     m_closure->Run();
   return 0;
