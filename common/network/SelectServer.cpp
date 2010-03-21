@@ -340,26 +340,35 @@ bool SelectServer::CheckForEvents() {
 /*
  * Add all the read sockets to the FD_SET
  */
-void SelectServer::AddSocketsToSet(fd_set *set, int *max_sd) const {
-  vector<Socket*>::const_iterator iter;
+void SelectServer::AddSocketsToSet(fd_set *set, int *max_sd) {
+  vector<Socket*>::iterator iter;
   for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
     if ((*iter)->ReadDescriptor() == Socket::INVALID_SOCKET) {
       // The socket was probably closed without removing it from the select
       // server
-      OLA_WARN << "Not adding an invalid socket";
+      if (m_export_map)
+        (*m_export_map->GetIntegerVar(K_SOCKET_VAR))--;
+      iter = m_sockets.erase(iter);
+      iter--;
+      OLA_WARN << "Removed a disconnected socket from the select server";
       continue;
     }
     *max_sd = max(*max_sd, (*iter)->ReadDescriptor());
     FD_SET((*iter)->ReadDescriptor(), set);
   }
 
-  vector<connected_socket_t>::const_iterator con_iter;
+  vector<connected_socket_t>::iterator con_iter;
   for (con_iter = m_connected_sockets.begin();
        con_iter != m_connected_sockets.end(); ++con_iter) {
     if (con_iter->socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
-      // The socket was probably closed without removing it from the select
-      // server
-      OLA_WARN << "Not adding an invalid socket";
+      // The socket was closed without removing it from the select server
+      if (con_iter->delete_on_close)
+        delete con_iter->socket;
+      if (m_export_map)
+        (*m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR))--;
+      con_iter = m_connected_sockets.erase(con_iter);
+      con_iter--;
+      OLA_WARN << "Removed a disconnected socket from the select server";
       continue;
     }
     *max_sd = max(*max_sd, con_iter->socket->ReadDescriptor());
