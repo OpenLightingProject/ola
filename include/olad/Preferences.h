@@ -63,7 +63,7 @@ class StringValidator: public Validator {
  */
 class SetValidator: public Validator {
   public:
-    SetValidator(const set<string> &values):
+    explicit SetValidator(const set<string> &values):
       m_values(values) {}
     bool IsValid(const string &value) const;
 
@@ -105,7 +105,7 @@ class IntValidator: public Validator {
  */
 class IPv4Validator: public Validator {
   public:
-    IPv4Validator(bool empty_ok=true):
+    explicit IPv4Validator(bool empty_ok = true):
       m_empty_ok(empty_ok) {}
 
     bool IsValid(const string &value) const;
@@ -195,7 +195,6 @@ class MemoryPreferences: public Preferences {
 
   protected:
     multimap<string, string> m_pref_map;
-
 };
 
 

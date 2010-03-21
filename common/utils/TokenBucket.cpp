@@ -19,7 +19,6 @@
  */
 
 #include <algorithm>
-#include "ola/Logging.h"
 #include "olad/TokenBucket.h"
 
 namespace ola {

@@ -19,8 +19,8 @@
  * Copyright (C) 2005-2010 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_DMXSOURCE_H_
-#define INCLUDE_OLA_DMXSOURCE_H_
+#ifndef INCLUDE_OLAD_DMXSOURCE_H_
+#define INCLUDE_OLAD_DMXSOURCE_H_
 
 #include <stdint.h>
 #include <ola/Clock.h>
@@ -135,4 +135,4 @@ class DmxSource {
     static const TimeInterval TIMEOUT_INTERVAL;
 };
 }  // ola
-#endif  // INCLUDE_OLA_DMXSOURCE_H_
+#endif  // INCLUDE_OLAD_DMXSOURCE_H_

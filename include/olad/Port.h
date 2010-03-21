@@ -295,20 +295,6 @@ class OutputPortDecorator: public OutputPort {
 
 
 /*
- * A Decorator for an Output Port that throttles the writes
- */
-class ThrottledOutputPortDecorator: public OutputPortDecorator {
-  public:
-    explicit ThrottledOutputPortDecorator(OutputPort *port):
-        OutputPortDecorator(port) {}
-
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_port->WriteDMX(buffer, priority);
-    }
-};
-
-
-/*
  * This allows switching based on Port type.
  */
 template<class PortClass>

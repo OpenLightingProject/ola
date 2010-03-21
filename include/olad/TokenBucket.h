@@ -18,8 +18,8 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef OLAD_TOKENBUCKET_H_
-#define OLAD_TOKENBUCKET_H_
+#ifndef INCLUDE_OLAD_TOKENBUCKET_H_
+#define INCLUDE_OLAD_TOKENBUCKET_H_
 
 #include "ola/Clock.h"
 
@@ -50,4 +50,4 @@ class TokenBucket {
     TokenBucket& operator=(const TokenBucket&);
 };
 }  // ola
-#endif  // OLAD_TOKENBUCKET_H_
+#endif  // INCLUDE_OLAD_TOKENBUCKET_H_
