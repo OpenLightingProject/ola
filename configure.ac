@@ -337,5 +337,6 @@ AC_OUTPUT( Makefile\
     plugins/stageprofi/Makefile \
     plugins/opendmx/Makefile \
     tools/Makefile \
+    tools/usbpro/Makefile \
     libola.pc \
     )
