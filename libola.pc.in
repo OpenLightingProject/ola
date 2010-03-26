@@ -3,10 +3,16 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-
 Name: libola
 Version: @VERSION@
-Description: Open Lighting Architecture
+Description: Open Lighting Architecture Client
 Requires:
 Libs: -L${libdir} -lola -lolacommon -lprotobuf
+Cflags: -I${includedir}/libola
+
+Name: libolaserver
+Version: @VERSION@
+Description: Open Lighting Architecture Server
+Requires:
+Libs: -L${libdir} -L${libdir}/olad -lola -lolacommon -lprotobuf @OLA_SERVER_LIBS@
 Cflags: -I${includedir}/libola
