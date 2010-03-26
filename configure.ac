@@ -155,7 +155,8 @@ PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
 have_artnet=""
 PKG_CHECK_MODULES(libartnet,
                   [libartnet >= 1.1.0],
-                  [have_artnet="yes"])
+                  [have_artnet="yes"],
+                  [true])
 AM_CONDITIONAL(HAVE_ARTNET, test "${have_artnet}" = "yes")
 if test "${have_artnet}" = "yes"; then
  PLUGINS="${PLUGINS} artnet"
