@@ -41,9 +41,9 @@ namespace network {
 // # of sockets registered
 const char SelectServer::K_SOCKET_VAR[] = "ss-sockets";
 // # of connected sockets registered
-const char SelectServer::K_CONNECTED_SOCKET_VAR[] = "ss-connected-sockets";
+const char SelectServer::K_CONNECTED_SOCKET_VAR[] = "ss-connections";
 // # of timer functions registered
-const char SelectServer::K_TIMER_VAR[] = "ss-timer-functions";
+const char SelectServer::K_TIMER_VAR[] = "ss-timers";
 // time spent processing events/timeouts in microseconds
 const char SelectServer::K_LOOP_TIME[] = "ss-loop-time";
 // iterations through the select server
