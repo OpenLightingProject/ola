@@ -109,7 +109,8 @@ class WidgetDetector: public WidgetListener {
 
   private:
     typedef struct {
-      uint16_t id;
+      uint8_t id_low;
+      uint8_t id_high;
       uint8_t text[32];
     } id_response;
 

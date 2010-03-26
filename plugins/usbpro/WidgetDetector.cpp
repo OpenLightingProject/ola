@@ -171,28 +171,31 @@ bool WidgetDetector::SendDiscoveryMessages(UsbWidget *widget) {
  * @param is_device true if this is a device response, false if it's a
  *   manufactuer response.
  */
-void WidgetDetector::HandleIdResponse(UsbWidget *widget, unsigned int length,
-                                      const uint8_t *data, bool is_device) {
+void WidgetDetector::HandleIdResponse(UsbWidget *widget,
+                                      unsigned int length,
+                                      const uint8_t *data,
+                                      bool is_device) {
   const id_response *response = reinterpret_cast<const id_response*>(data);
   map<UsbWidget*, DeviceInformation>::iterator iter = m_widgets.find(widget);
 
   if (iter == m_widgets.end())
     return;
 
-  if (length < sizeof(response->id)) {
+  uint16_t id = (response->id_high << 8) + response->id_low;
+  if (length < sizeof(id)) {
     OLA_WARN << "Received small response packet";
     return;
   }
 
   if (is_device) {
-    iter->second.device_id = NetworkToHost(response->id);
+    iter->second.device_id = id;
     iter->second.device = string(reinterpret_cast<const char*>(response->text),
-                                 length - sizeof(response->id));
+                                 length - sizeof(id));
   } else {
-    iter->second.esta_id = NetworkToHost(response->id);
+    iter->second.esta_id = id;
     iter->second.manufactuer = string(
         reinterpret_cast<const char*>(response->text),
-        length - sizeof(response->id));
+        length - sizeof(id));
   }
 }
 
