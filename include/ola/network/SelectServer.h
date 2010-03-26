@@ -80,7 +80,7 @@ class SelectServer {
                                bool repeating);
     bool CheckForEvents();
     void CheckSockets(fd_set *set);
-    void AddSocketsToSet(fd_set *set, int *max_sd) const;
+    void AddSocketsToSet(fd_set *set, int *max_sd);
     TimeStamp CheckTimeouts(const TimeStamp &now);
     void UnregisterAll();
 
