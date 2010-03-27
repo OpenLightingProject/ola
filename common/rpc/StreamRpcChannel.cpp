@@ -119,7 +119,11 @@ int StreamRpcChannel::SocketReady() {
 
   if (m_current_size == m_expected_size) {
     // we've got all of this message so parse it.
-    HandleNewMsg(m_buffer, m_expected_size);
+    if (!HandleNewMsg(m_buffer, m_expected_size)) {
+      // this probably means we've messed the framing up, close the channel
+      OLA_WARN << "Errors detected on RPC channel, closing";
+      m_socket->Close();
+    }
     m_expected_size = 0;
   }
   return 0;
@@ -208,6 +212,11 @@ void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
  * Write an RpcMessage to the write socket.
  */
 int StreamRpcChannel::SendMsg(RpcMessage *msg) {
+  if (m_socket->ReadDescriptor() == ola::network::Socket::INVALID_SOCKET) {
+    OLA_WARN << "RPC Socket closed, not sending messages";
+    return -1;
+  }
+
   string output;
   msg->SerializeToString(&output);
   int length = output.length();
@@ -220,10 +229,13 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
                        length);
 
   if (ret != length) {
-    if (ret == -1)
+    if (ret == -1) {
       OLA_WARN << "Send failed " << strerror(errno);
-    else
-      OLA_WARN << "Failed to send full datagram";
+    } else {
+      OLA_WARN << "Failed to send full datagram, closing channel";
+      // At the point framing is screwed and we should shut the channel down
+      m_socket->Close();
+    }
 
     if (m_export_map)
       (*m_export_map->GetCounterVar(K_RPC_SENT_ERROR_VAR))++;
@@ -293,11 +305,11 @@ int StreamRpcChannel::ReadHeader(unsigned int *version,
 /*
  * Parse a new message and handle it.
  */
-void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
+bool StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
   RpcMessage msg;
   if (!msg.ParseFromArray(data, size)) {
-    OLA_WARN << "parsing failed";
-    return;
+    OLA_WARN << "Failed to parse RPC";
+    return false;
   }
 
   if (m_export_map)
@@ -338,6 +350,7 @@ void StreamRpcChannel::HandleNewMsg(uint8_t *data, unsigned int size) {
       OLA_WARN << "not sure of msg type " << msg.type();
       break;
   }
+  return true;
 }
 
 

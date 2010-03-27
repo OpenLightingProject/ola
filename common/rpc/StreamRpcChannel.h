@@ -111,7 +111,7 @@ class StreamRpcChannel: public RpcChannel {
     int SendMsg(RpcMessage *msg);
     int AllocateMsgBuffer(unsigned int size);
     int ReadHeader(unsigned int *version, unsigned int *size) const;
-    void HandleNewMsg(uint8_t *buffer, unsigned int size);
+    bool HandleNewMsg(uint8_t *buffer, unsigned int size);
     void HandleRequest(RpcMessage *msg);
     void HandleStreamRequest(RpcMessage *msg);
 
