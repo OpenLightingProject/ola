@@ -22,6 +22,10 @@ ola_streaming_client_SOURCES = ola-streaming-client.cpp
 ola_usbpro_SOURCES = ola-usbpro.cpp
 ola_usbpro_LDADD = @LIBS@ -lolausbproconf libolaconfig.la
 
+noinst_PROGRAMS = ola_throughput
+ola_throughput_SOURCES = ola-throughput.cpp
+ola_throughput_LDADD = @LIBS@
+
 noinst_LTLIBRARIES = libolaconfig.la
 libolaconfig_la_SOURCES = OlaConfigurator.cpp
 
