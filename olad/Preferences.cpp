@@ -357,11 +357,32 @@ bool FileBackedPreferences::SaveToFile(const string &filename) const {
  * Change to the ola preferences directory
  */
 bool FileBackedPreferences::ChangeDir() const {
-  struct passwd *ptr = getpwuid(getuid());
-  if (ptr == NULL)
-    return false;
+  struct passwd pwd, *pwd_ptr;
+  unsigned int size = 1024;
+  bool ok = false;
+  char *buffer;
 
-  if (chdir(ptr->pw_dir))
+  while (!ok) {
+    buffer = new char[size];
+    int ret = getpwuid_r(getuid(), &pwd, buffer, size, &pwd_ptr);
+    switch (ret) {
+      case 0:
+        ok = true;
+        break;
+      case ERANGE:
+        delete[] buffer;
+        size += 1024;
+        break;
+      default:
+        delete[] buffer;
+        return false;
+    }
+  }
+
+  string home_dir = pwd_ptr->pw_dir;
+  delete[] buffer;
+
+  if (chdir(home_dir.data()))
     return false;
 
   if (chdir(OLA_CONFIG_DIR)) {
