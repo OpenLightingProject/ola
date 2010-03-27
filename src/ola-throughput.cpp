@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <stdlib.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>
