@@ -1,0 +1,9 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+
+Name: libolaserver
+Version: @VERSION@
+Description: Open Lighting Architecture Server
+Requires:
+Libs: -L${libdir} -L${libdir}/olad -lola -lolacommon -lprotobuf @OLA_SERVER_LIBS@

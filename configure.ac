@@ -344,4 +344,5 @@ AC_OUTPUT( Makefile\
     tools/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
+    libolaserver.pc \
     )
