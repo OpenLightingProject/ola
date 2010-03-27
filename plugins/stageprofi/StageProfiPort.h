@@ -31,12 +31,12 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
-class StageProfiOutputPort: public OutputPort {
+class StageProfiOutputPort: public BasicOutputPort {
   public:
     StageProfiOutputPort(StageProfiDevice *parent,
                          unsigned int id,
                          StageProfiWidget *widget)
-        : OutputPort(parent, id),
+        : BasicOutputPort(parent, id),
           m_widget(widget) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);

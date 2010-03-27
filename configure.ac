@@ -158,7 +158,8 @@ PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbdmx us
 have_artnet=""
 PKG_CHECK_MODULES(libartnet,
                   [libartnet >= 1.1.0],
-                  [have_artnet="yes"])
+                  [have_artnet="yes"],
+                  [true])
 AM_CONDITIONAL(HAVE_ARTNET, test "${have_artnet}" = "yes")
 if test "${have_artnet}" = "yes"; then
  PLUGINS="${PLUGINS} artnet"
@@ -182,11 +183,15 @@ fi
 
 # create a list of plugin libs
 PLUGIN_LIBS=''
-for p in $PLUGINS;
-  do PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/$p/libola$p.la"
+OLA_SERVER_LIBS=''
+for p in $PLUGINS; do
+  LIB_NAME="libola$p"
+  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/$p/$LIB_NAME.la"
+  OLA_SERVER_LIBS="$OLA_SERVER_LIBS -l$LIB_NAME"
 done
 
 AC_SUBST(PLUGIN_LIBS)
+AC_SUBST(OLA_SERVER_LIBS)
 
 # plugin & html data directories
 plugindir=$libdir/olad
@@ -341,5 +346,7 @@ AC_OUTPUT( Makefile\
     plugins/usbpro/messages/Makefile \
     plugins/usbpro/messages/libolausbproconf.pc \
     tools/Makefile \
+    tools/usbpro/Makefile \
     libola.pc \
+    libolaserver.pc \
     )

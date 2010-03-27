@@ -89,10 +89,10 @@ void DmxSourceTest::testIsActive() {
   CPPUNIT_ASSERT(source.IsSet());
 
   CPPUNIT_ASSERT(source.IsActive(timestamp));
-  TimeInterval interval(1000);
+  TimeInterval interval(1000000);
   TimeStamp later = timestamp + interval;
   CPPUNIT_ASSERT(source.IsActive(later));
 
-  later = timestamp + TimeInterval(2500);
+  later = timestamp + TimeInterval(2500000);
   CPPUNIT_ASSERT(!source.IsActive(later));
 }

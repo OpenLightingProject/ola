@@ -38,13 +38,13 @@ class PathportPortHelper {
 };
 
 
-class PathportInputPort: public InputPort {
+class PathportInputPort: public BasicInputPort {
   public:
     PathportInputPort(PathportDevice *parent,
                      unsigned int id,
                      const TimeStamp *wake_time,
                      PathportNode *node):
-      InputPort(parent, id, wake_time),
+      BasicInputPort(parent, id, wake_time),
       m_node(node) {}
     ~PathportInputPort() {}
 
@@ -63,12 +63,12 @@ class PathportInputPort: public InputPort {
 };
 
 
-class PathportOutputPort: public OutputPort {
+class PathportOutputPort: public BasicOutputPort {
   public:
     PathportOutputPort(PathportDevice *parent,
                       unsigned int id,
                       PathportNode *node):
-      OutputPort(parent, id),
+      BasicOutputPort(parent, id),
       m_node(node) {}
     ~PathportOutputPort() {}
 

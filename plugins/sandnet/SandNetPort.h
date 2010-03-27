@@ -41,13 +41,13 @@ class SandNetPortHelper {
 };
 
 
-class SandNetInputPort: public InputPort {
+class SandNetInputPort: public BasicInputPort {
   public:
     SandNetInputPort(SandNetDevice *parent,
                      unsigned int id,
                      const TimeStamp *wake_time,
                      SandNetNode *node):
-      InputPort(parent, id, wake_time),
+      BasicInputPort(parent, id, wake_time),
       m_node(node) {}
     ~SandNetInputPort() {}
 
@@ -65,12 +65,12 @@ class SandNetInputPort: public InputPort {
 };
 
 
-class SandNetOutputPort: public OutputPort {
+class SandNetOutputPort: public BasicOutputPort {
   public:
     SandNetOutputPort(SandNetDevice *parent,
                       unsigned int id,
                       SandNetNode *node):
-      OutputPort(parent, id),
+      BasicOutputPort(parent, id),
       m_node(node) {}
     ~SandNetOutputPort() {}
 

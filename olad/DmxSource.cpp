@@ -26,5 +26,5 @@ const uint8_t DmxSource::PRIORITY_MIN = 0;
 const uint8_t DmxSource::PRIORITY_MAX = 200;
 const uint8_t DmxSource::PRIORITY_DEFAULT = 100;
 
-const TimeInterval DmxSource::TIMEOUT_INTERVAL(2500);  // 2.5s
+const TimeInterval DmxSource::TIMEOUT_INTERVAL(2500000);  // 2.5s
 }  // ola

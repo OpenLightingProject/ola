@@ -58,10 +58,10 @@ class ArduinoRGBDevice: public UsbDevice {
 /*
  * A single Output port per device
  */
-class ArduinoRGBOutputPort: public OutputPort {
+class ArduinoRGBOutputPort: public BasicOutputPort {
   public:
     explicit ArduinoRGBOutputPort(ArduinoRGBDevice *parent)
-        : OutputPort(parent, 0),
+        : BasicOutputPort(parent, 0),
           m_device(parent) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {

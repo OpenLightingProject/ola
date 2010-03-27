@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2010 Simon Newton
  */
 
-#ifndef INCLUDE_OLAD_PORT_CONSTANTS_H_
-#define INCLUDE_OLAD_PORT_CONSTANTS_H_
+#ifndef INCLUDE_OLAD_PORTCONSTANTS_H_
+#define INCLUDE_OLAD_PORTCONSTANTS_H_
 
 namespace ola {
   typedef enum {
@@ -34,4 +34,4 @@ namespace ola {
     CAPABILITY_FULL,  // port can either inherit or use a static assignment
   } port_priority_capability;
 }  // ola
-#endif  // INCLUDE_OLAD_PORT_H_
+#endif  // INCLUDE_OLAD_PORTCONSTANTS_H_

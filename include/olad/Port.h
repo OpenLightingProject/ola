@@ -14,18 +14,18 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Port.h
- * Header file for the Port class
- * Copyright (C) 2005-2009 Simon Newton
+ * Header file for the Port classes
+ * Copyright (C) 2005-2010 Simon Newton
  */
 
 #ifndef INCLUDE_OLAD_PORT_H_
 #define INCLUDE_OLAD_PORT_H_
 
 #include <string>
-#include <ola/Clock.h>
+#include <ola/Clock.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
 #include <olad/DmxSource.h>  // NOLINT
-#include <olad/PortConstants.h>
+#include <olad/PortConstants.h>  // NOLINT
 #include <olad/Universe.h>  // NOLINT
 
 namespace ola {
@@ -33,38 +33,165 @@ namespace ola {
 class AbstractDevice;
 
 /*
- * The base port class.
+ * The base port class, all ports inherit from this.
  */
 class Port {
   public:
-    Port(AbstractDevice *parent, unsigned int port_id)
-        : m_port_id(port_id),
-          m_priority(DmxSource::PRIORITY_DEFAULT),
-          m_priority_mode(PRIORITY_MODE_INHERIT),
-          m_port_string(""),
-          m_universe(NULL),
-          m_device(parent) {
-    }
     virtual ~Port() {}
 
     // return the id of the port within this deivce
-    virtual unsigned int PortId() const { return m_port_id; }
+    virtual unsigned int PortId() const = 0;
 
     // Return the device which owns this port
-    AbstractDevice *GetDevice() const { return m_device; }
+    virtual AbstractDevice *GetDevice() const = 0;
 
     // return a short description of this port
     virtual string Description() const = 0;
 
     // bind this port to a universe
-    virtual bool SetUniverse(Universe *universe);
+    virtual bool SetUniverse(Universe *universe) = 0;
 
     // return the universe that this port is bound to or NULL
-    virtual Universe *GetUniverse() const { return m_universe; }
+    virtual Universe *GetUniverse() const = 0;
 
     // Return a globally unique id of this port. This is used to preserve port
     // universe bindings. An empty string means we don't preserve settings.
-    virtual string UniqueId() const;
+    virtual string UniqueId() const = 0;
+
+    // this tells us what sort of priority capabilities this port has
+    virtual port_priority_capability PriorityCapability() const = 0;
+
+    virtual bool SetPriority(uint8_t priority) = 0;
+    virtual uint8_t GetPriority() const = 0;
+
+    virtual void SetPriorityMode(port_priority_mode mode) = 0;
+    virtual port_priority_mode GetPriorityMode() const = 0;
+};
+
+
+/*
+ * The Input Port interface, for ports that provide push data into the OLA
+ * system.
+ */
+class InputPort: public Port {
+  public:
+    virtual ~InputPort() {}
+
+    // signal the port that the DMX data has changed
+    virtual int DmxChanged() = 0;
+
+    // Get the current data
+    virtual const DmxSource &SourceData() const = 0;
+};
+
+
+/*
+ * The Output Port interface, for ports that send data from the OLA system.
+ */
+class OutputPort: public Port {
+  public:
+    virtual ~OutputPort() {}
+
+    // Write dmx data to this port
+    virtual bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) = 0;
+
+    // Called if the universe name changes
+    virtual void UniverseNameChanged(const string &new_name) = 0;
+};
+
+
+/*
+ * A Implementation of InputPort, provides the basic functionality which saves
+ * the plugin implementations from having to do it.
+ */
+class BasicInputPort: public InputPort {
+  public:
+    BasicInputPort(AbstractDevice *parent,
+                   unsigned int port_id,
+                   const TimeStamp *wake_time);
+
+    unsigned int PortId() const { return m_port_id; }
+    AbstractDevice *GetDevice() const { return m_device; }
+    bool SetUniverse(Universe *universe);
+    Universe *GetUniverse() const { return m_universe; }
+    string UniqueId() const;
+    bool SetPriority(uint8_t priority);
+    uint8_t GetPriority() const { return m_priority; }
+    void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
+    port_priority_mode GetPriorityMode() const { return m_priority_mode; }
+    int DmxChanged();
+    const DmxSource &SourceData() const { return m_dmx_source; }
+
+    port_priority_capability PriorityCapability() const {
+      return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_STATIC;
+    }
+
+    // subclasses override these
+    // Read the dmx data.
+    virtual const DmxBuffer &ReadDMX() const = 0;
+
+    // Get the inherited priority
+    virtual uint8_t InheritedPriority() const {
+      return DmxSource::PRIORITY_MIN;
+    }
+
+    // override this to cancel the SetUniverse operation.
+    virtual bool PreSetUniverse(Universe *old_universe,
+                                Universe *new_universe) {
+      (void) old_universe;
+      (void) new_universe;
+      return true;
+    }
+
+    virtual void PostSetUniverse(Universe *old_universe,
+                                 Universe *new_universe) {
+      (void) old_universe;
+      (void) new_universe;
+    }
+
+  protected:
+    // indicates whether this port supports priorities, default to no
+    virtual bool SupportsPriorities() const { return false; }
+
+  private:
+    const unsigned int m_port_id;
+    uint8_t m_priority;
+    port_priority_mode m_priority_mode;
+    mutable string m_port_string;
+    Universe *m_universe;  // the universe this port belongs to
+    AbstractDevice *m_device;
+    DmxSource m_dmx_source;
+    const TimeStamp *m_wakeup_time;
+
+    BasicInputPort(const BasicInputPort&);
+    BasicInputPort& operator=(const BasicInputPort&);
+};
+
+
+/*
+ * An implementation of an OutputPort.
+ */
+class BasicOutputPort: public OutputPort {
+  public:
+    BasicOutputPort(AbstractDevice *parent, unsigned int port_id);
+
+    unsigned int PortId() const { return m_port_id; }
+    AbstractDevice *GetDevice() const { return m_device; }
+    bool SetUniverse(Universe *universe);
+    Universe *GetUniverse() const { return m_universe; }
+    string UniqueId() const;
+    bool SetPriority(uint8_t priority);
+    uint8_t GetPriority() const { return m_priority; }
+    void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
+    port_priority_mode GetPriorityMode() const { return m_priority_mode; }
+
+    virtual void UniverseNameChanged(const string &new_name) {
+      (void) new_name;
+    }
+
+    port_priority_capability PriorityCapability() const {
+      return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_NONE;
+    }
 
     // Subclasses can override this to cancel the SetUniverse operation.
     virtual bool PreSetUniverse(Universe *old_universe,
@@ -80,98 +207,90 @@ class Port {
       (void) new_universe;
     }
 
-    // this tells us what sort of priority capabilities this port has
-    virtual port_priority_capability PriorityCapability() const = 0;
-
-    bool SetPriority(uint8_t priority);
-    uint8_t GetPriority() const { return m_priority; }
-
-    void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
-    port_priority_mode GetPriorityMode() const { return m_priority_mode; }
-
   protected:
-    virtual string PortPrefix() const = 0;
+    // indicates whether this port supports priorities, default to no
+    virtual bool SupportsPriorities() const { return false; }
 
   private:
     const unsigned int m_port_id;
     uint8_t m_priority;
     port_priority_mode m_priority_mode;
     mutable string m_port_string;
-    Universe *m_universe;  // universe this port belongs to
+    Universe *m_universe;  // the universe this port belongs to
     AbstractDevice *m_device;
 
-    Port(const Port&);
-    Port& operator=(const Port&);
+    BasicOutputPort(const BasicOutputPort&);
+    BasicOutputPort& operator=(const BasicOutputPort&);
 };
 
 
 /*
- * A InputPort, these are Ports which receive data.
+ * A Decorator for an Output Port.
  */
-class InputPort: public Port {
+class OutputPortDecorator: public OutputPort {
   public:
-    InputPort(AbstractDevice *parent, unsigned int port_id,
-              const TimeStamp *wake_time)
-        : Port(parent, port_id),
-          m_wakeup_time(wake_time) {}
-
-    // signal the port that the DMX data has changed
-    int DmxChanged();
-
-    // read/write dmx data to this port
-    virtual const DmxBuffer &ReadDMX() const = 0;
-
-    const DmxSource &SourceData() const {
-      return m_dmx_source;
+    explicit OutputPortDecorator(OutputPort *port):
+        m_port(port) {
     }
 
-    port_priority_capability PriorityCapability() const {
-      return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_STATIC;
+    ~OutputPortDecorator() {
+      delete m_port;
     }
 
-    virtual uint8_t InheritedPriority() const {
-      return DmxSource::PRIORITY_MIN;
+    virtual unsigned int PortId() const {
+      return m_port->PortId();
     }
 
-  protected:
-    virtual string PortPrefix() const { return "I"; }
-
-    // indicates whether this port supports priorities, default to no
-    virtual bool SupportsPriorities() const { return false; }
-
-  private:
-    DmxSource m_dmx_source;
-    const TimeStamp *m_wakeup_time;
-};
-
-
-/*
- * An OutputPort, these are ports that send data.
- */
-class OutputPort: public Port {
-  public:
-
-    OutputPort(AbstractDevice *parent, unsigned int port_id)
-        : Port(parent, port_id) {
+    virtual AbstractDevice *GetDevice() const {
+      return m_port->GetDevice();
     }
 
-    // Write dmx data to this port
-    virtual bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) = 0;
+    virtual string Description() const {
+      return m_port->Description();
+    }
 
-    // Called if the universe name changes
+    virtual bool SetUniverse(Universe *universe) {
+      return m_port->SetUniverse(universe);
+    }
+
+    virtual Universe *GetUniverse() const {
+      return m_port->GetUniverse();
+    }
+
+    virtual string UniqueId() const {
+      return m_port->UniqueId();
+    }
+
+    virtual port_priority_capability PriorityCapability() const {
+      return m_port->PriorityCapability();
+    }
+
+    virtual bool SetPriority(uint8_t priority) {
+      return m_port->SetPriority(priority);
+    }
+
+    virtual uint8_t GetPriority() const {
+      return m_port->GetPriority();
+    }
+
+    virtual void SetPriorityMode(port_priority_mode mode) {
+      return m_port->SetPriorityMode(mode);
+    }
+
+    virtual port_priority_mode GetPriorityMode() const {
+      return m_port->GetPriorityMode();
+    }
+
+    virtual bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+      return m_port->WriteDMX(buffer, priority);
+    }
+
     virtual void UniverseNameChanged(const string &new_name) {
-      (void) new_name;
-    }
-
-    port_priority_capability PriorityCapability() const {
-      return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_NONE;
+      return m_port->UniverseNameChanged(new_name);
     }
 
   protected:
-    virtual string PortPrefix() const { return "O"; }
-
-    // indicates whether this port supports priorities, default to no
-    virtual bool SupportsPriorities() const { return false; }
+    OutputPort *m_port;
 };
 
 

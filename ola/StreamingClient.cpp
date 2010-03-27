@@ -19,7 +19,9 @@
  */
 
 #include <ola/BaseTypes.h>
+#include <ola/Closure.h>
 #include <ola/DmxBuffer.h>
+#include <ola/Logging.h>
 #include <ola/StreamingClient.h>
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
@@ -31,6 +33,7 @@ using ola::proto::OlaServerService_Stub;
 
 StreamingClient::StreamingClient()
     : m_socket(NULL),
+      m_closure(NULL),
       m_channel(NULL),
       m_stub(NULL) {
 }
@@ -52,6 +55,9 @@ bool StreamingClient::Setup() {
       return false;
     }
   }
+
+  m_socket->SetOnClose(
+      NewSingleClosure(this, &StreamingClient::SocketClosed));
 
   m_channel = new StreamRpcChannel(NULL, m_socket);
 
@@ -99,7 +105,7 @@ void StreamingClient::Stop() {
  */
 bool StreamingClient::SendDmx(unsigned int universe,
                               const DmxBuffer &data) const {
-  if (!m_stub)
+  if (!m_stub || m_socket->CheckIfClosed())
     return false;
 
   ola::proto::DmxData request;
@@ -107,5 +113,17 @@ bool StreamingClient::SendDmx(unsigned int universe,
   request.set_data(data.Get());
   m_stub->StreamDmxData(NULL, &request, NULL, NULL);
   return true;
+}
+
+
+/*
+ * Called when the socket is closed
+ */
+int StreamingClient::SocketClosed() {
+  OLA_WARN << "The RPC socket has been closed, this is more than likely due"
+    << " to a framing error, perhaps you're sending too fast?";
+  if (m_closure)
+    m_closure->Run();
+  return 0;
 }
 }  // ola

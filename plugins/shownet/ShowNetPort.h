@@ -32,13 +32,13 @@ namespace shownet {
 
 using ola::DmxBuffer;
 
-class ShowNetInputPort: public InputPort {
+class ShowNetInputPort: public BasicInputPort {
   public:
     ShowNetInputPort(ShowNetDevice *parent,
                      unsigned int id,
                      const TimeStamp *wake_time,
                      ShowNetNode *node):
-      InputPort(parent, id, wake_time),
+      BasicInputPort(parent, id, wake_time),
       m_node(node) {}
     ~ShowNetInputPort() {}
 
@@ -53,12 +53,12 @@ class ShowNetInputPort: public InputPort {
 };
 
 
-class ShowNetOutputPort: public OutputPort {
+class ShowNetOutputPort: public BasicOutputPort {
   public:
     ShowNetOutputPort(ShowNetDevice *parent,
                       unsigned int id,
                       ShowNetNode *node):
-      OutputPort(parent, id),
+      BasicOutputPort(parent, id),
       m_node(node) {}
     ~ShowNetOutputPort() {}
 

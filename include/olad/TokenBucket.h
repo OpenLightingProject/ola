@@ -13,35 +13,41 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DummyPort_h
- * The interface to the Dummy port
- * Copyright (C) 2005-2009 Simon Newton
+ * TokenBucket.h
+ * Header file for the token bucket class
+ * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_DUMMY_DUMMYPORT_H_
-#define PLUGINS_DUMMY_DUMMYPORT_H_
+#ifndef INCLUDE_OLAD_TOKENBUCKET_H_
+#define INCLUDE_OLAD_TOKENBUCKET_H_
 
-#include <string>
-#include "ola/DmxBuffer.h"
-#include "olad/Port.h"
-#include "plugins/dummy/DummyDevice.h"
+#include "ola/Clock.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
 
-class DummyPort: public BasicOutputPort {
+class TokenBucket {
   public:
-    DummyPort(DummyDevice *parent, unsigned int id):
-      BasicOutputPort(parent, id) {}
+    TokenBucket(unsigned int initial,
+                unsigned int rate_per_second,
+                unsigned int max,
+                const TimeStamp &now):
+        m_count(initial),
+        m_rate(rate_per_second),
+        m_max(max),
+        m_last(now) {
+    }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return "Dummy Port"; }
+    bool GetToken(const TimeStamp &now);
+    unsigned int Count(const TimeStamp &now);
 
   private:
-    DmxBuffer m_buffer;
+    unsigned int m_count;
+    unsigned int m_rate;
+    unsigned int m_max;
+    TimeStamp m_last;
+
+    TokenBucket(const TokenBucket&);
+    TokenBucket& operator=(const TokenBucket&);
 };
-}  // dummy
-}  // plugin
 }  // ola
-#endif  // PLUGINS_DUMMY_DUMMYPORT_H_
+#endif  // INCLUDE_OLAD_TOKENBUCKET_H_
