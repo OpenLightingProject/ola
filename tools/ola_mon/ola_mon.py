@@ -38,9 +38,12 @@ class OlaFetcher(object):
     except socket.error:
       return None
 
-    response = connection.getresponse()
-    if response.status == 200:
-      return response.read()
+    try:
+      response = connection.getresponse()
+      if response.status == 200:
+        return response.read()
+    except httplib.BadStatusLine:
+      return None
     return None
 
   def _ProcessDebug(self, contents):

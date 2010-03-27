@@ -23,6 +23,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
+#include "olad/PortDecorators.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 
 namespace ola {
@@ -36,7 +37,8 @@ using ola::network::NetworkToHost;
 /*
  * New Arduino RGB Device
  */
-ArduinoRGBDevice::ArduinoRGBDevice(ola::AbstractPlugin *owner,
+ArduinoRGBDevice::ArduinoRGBDevice(const ola::PluginAdaptor *plugin_adaptor,
+                                   ola::AbstractPlugin *owner,
                                    const string &name,
                                    UsbWidget *widget,
                                    uint16_t esta_id,
@@ -47,7 +49,12 @@ ArduinoRGBDevice::ArduinoRGBDevice(ola::AbstractPlugin *owner,
   str << std::hex << esta_id << "-" << device_id << "-" <<
     NetworkToHost(serial);
   m_device_id = str.str();
-  ArduinoRGBOutputPort *output_port = new ArduinoRGBOutputPort(this);
+
+  OutputPort *output_port = new ThrottledOutputPortDecorator(
+      new ArduinoRGBOutputPort(this),
+      plugin_adaptor->WakeUpTime(),
+      5,  // start with 5 tokens in the bucket
+      20);  // 22 frames per second seems to be the limit
   AddPort(output_port);
   m_enabled = true;
 }
