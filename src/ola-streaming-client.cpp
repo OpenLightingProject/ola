@@ -20,6 +20,8 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <stdlib.h>
+#include <ola/Closure.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>
@@ -39,6 +41,14 @@ typedef struct {
   unsigned int universe;
   bool help;
 } options;
+
+bool terminate = false;
+
+
+int SocketClosed() {
+  terminate = true;
+  return 0;
+}
 
 
 /*
@@ -126,6 +136,7 @@ bool SendDataFromString(const StreamingClient &client,
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
   StreamingClient ola_client;
+  ola_client.SetErrorClosure(ola::NewSingleClosure(&SocketClosed));
   options opts;
 
   ParseOptions(argc, argv, &opts);
@@ -140,12 +151,13 @@ int main(int argc, char *argv[]) {
 
   if (opts.dmx_data.empty()) {
     string input;
-    while (std::cin >> input) {
+    while (!terminate && std::cin >> input) {
       ola::StringTrim(&input);
       SendDataFromString(ola_client, opts.universe, input);
     }
   } else {
     SendDataFromString(ola_client, opts.universe, opts.dmx_data);
   }
+  ola_client.Stop();
   return 0;
 }
