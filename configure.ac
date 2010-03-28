@@ -108,9 +108,6 @@ if test -z "$PKG_CONFIG"; then
   AC_MSG_ERROR([Missing pkg-config, please install it])
 fi
 
-# check for libusb
-PKG_CHECK_MODULES(LIBUSB, [libusb-1.0 >= 1.0.2], [], [true])
-
 # check for uuid
 # uuid handling is quite complex as we can use either the OSSP uuid or the one
 # with e2fsprogs. On top of that the header file is different on different
@@ -152,7 +149,7 @@ fi
 
 # check for plugin dependencies. We also build a list of plugins that we're
 # going to compile here so the binary knows what to link against
-PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbdmx usbpro"
+PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
 
 # check for libartnet
 have_artnet=""
@@ -179,6 +176,15 @@ AM_CONDITIONAL(HAVE_DMX4LINUX, test "${have_dmx4linux}" = "yes")
 if test "${have_dmx4linux}" = "yes"; then
  PLUGINS="${PLUGINS} dmx4linux"
  AC_DEFINE(HAVE_DMX4LINUX, 1, [define if dmx4linux is installed])
+fi
+
+# check for libusb
+have_libusb="no"
+PKG_CHECK_MODULES(LIBUSB, [libusb-1.0 >= 1.0.2], [have_libusb="yes"], [true])
+AM_CONDITIONAL(HAVE_LIBUSB, test "${have_libusb}" = "yes")
+
+if test "${have_libusb}" = "yes"; then
+ PLUGINS="${PLUGINS} usbdmx"
 fi
 
 # create a list of plugin libs
