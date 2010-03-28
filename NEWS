@@ -1,3 +1,11 @@
+27/3/2010 ola-0.7.1
+  Implemented the Usb Protocol Extensions
+  Added output rate throttling for the Usb Pro devices
+  Added the streaming DMX client
+  Fixed some uuid detection issues
+  Made the server more resistant to bad clients
+  ./configure script fixes
+
 28/2/2010 ola-0.7.0
   Added E1.31 merging & sequencing support
   Improved USB Pro handling

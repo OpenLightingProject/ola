@@ -105,7 +105,8 @@ void StreamingClient::Stop() {
  */
 bool StreamingClient::SendDmx(unsigned int universe,
                               const DmxBuffer &data) const {
-  if (!m_stub || m_socket->CheckIfClosed())
+  if (!m_stub ||
+      m_socket->ReadDescriptor() == ola::network::Socket::INVALID_SOCKET)
     return false;
 
   ola::proto::DmxData request;
