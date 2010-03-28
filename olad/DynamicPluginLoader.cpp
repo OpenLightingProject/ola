@@ -35,6 +35,7 @@
 #include "plugins/shownet/ShowNetPlugin.h"
 #include "plugins/stageprofi/StageProfiPlugin.h"
 #include "plugins/usbpro/UsbProPlugin.h"
+#include "plugins/usbdmx/UsbDmxPlugin.h"
 
 #ifdef HAVE_ARTNET
 #include "plugins/artnet/ArtNetPlugin.h"
@@ -78,6 +79,7 @@ vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
   plugins.push_back(
       new ola::plugin::stageprofi::StageProfiPlugin(m_plugin_adaptor));
   plugins.push_back(new ola::plugin::usbpro::UsbProPlugin(m_plugin_adaptor));
+  plugins.push_back(new ola::plugin::usbdmx::UsbDmxPlugin(m_plugin_adaptor));
   plugins.push_back(
       new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor));
   return plugins;

@@ -19,7 +19,7 @@ libolaserver_la_LDFLAGS += -lctemplate
 endif
 
 libolaserver_la_LIBADD = $(top_builddir)/common/libolacommon.la
-libolaserver_la_CXXFLAGS = -Wall -Wformat -W @OLAD_DEFINES@
+libolaserver_la_CXXFLAGS = -Wall -Wformat -W @OLAD_DEFINES@ $(LIBUSB_CFLAGS)
 
 # Header files
 pkgincludedir = $(includedir)/olad
