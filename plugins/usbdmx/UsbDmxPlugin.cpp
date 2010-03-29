@@ -33,7 +33,8 @@
 #include "ola/network/Socket.h"
 
 #include "plugins/usbdmx/UsbDmxPlugin.h"
-#include "plugins/usbdmx/UsbDmxDevice.h"
+#include "plugins/usbdmx/UsbDevice.h"
+#include "plugins/usbdmx/VellemanDevice.h"
 
 
 namespace ola {
@@ -53,7 +54,7 @@ const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";
 void libusb_fd_added(int fd, short events, void *data) {
   UsbDmxPlugin *plugin = reinterpret_cast<UsbDmxPlugin*>(data);
 
-  OLA_WARN << "USB new FD: " << fd;
+  OLA_INFO << "USB new FD: " << fd;
   plugin->AddDeviceSocket(fd);
 }
 
@@ -63,7 +64,7 @@ void libusb_fd_added(int fd, short events, void *data) {
  */
 void libusb_fd_removed(int fd, void *data) {
   UsbDmxPlugin *plugin = reinterpret_cast<UsbDmxPlugin*>(data);
-  OLA_WARN << "USB rm FD: " << fd;
+  OLA_INFO << "USB rm FD: " << fd;
   plugin->RemoveDeviceSocket(fd);
 }
 
@@ -76,6 +77,8 @@ bool UsbDmxPlugin::StartHook() {
     OLA_WARN << "Failed to init libusb";
     return false;
   }
+
+  // libusb_set_debug(NULL, 3);
 
   /*
   if (!libusb_pollfds_handle_timeouts(m_usb_context)) {
@@ -109,8 +112,7 @@ bool UsbDmxPlugin::StartHook() {
         device_descriptor.idProduct == 0x8062) {
       OLA_INFO << "Found a Velleman USB device";
 
-      libusb_ref_device(usb_device);
-      UsbDmxDevice *device = new UsbDmxDevice(this, usb_device);
+      UsbDevice *device = new VellemanDevice(this, usb_device);
 
       if (!device->Start()) {
         delete device;
@@ -130,7 +132,7 @@ bool UsbDmxPlugin::StartHook() {
  * @return true on success, false on failure
  */
 bool UsbDmxPlugin::StopHook() {
-  vector<UsbDmxDevice*>::iterator iter;
+  vector<UsbDevice*>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     m_plugin_adaptor->UnregisterDevice(*iter);
     (*iter)->Stop();
@@ -138,7 +140,6 @@ bool UsbDmxPlugin::StopHook() {
   }
   m_devices.clear();
 
-  //if (m_usb_context)
   libusb_exit(NULL);
 
   if (m_sockets.size()) {
@@ -207,7 +208,7 @@ int UsbDmxPlugin::SocketReady() {
   struct timeval tv;
   tv.tv_sec = 0;
   tv.tv_usec = 0;
-  libusb_handle_events_timeout(m_usb_context, &tv);
+  libusb_handle_events_timeout(NULL, &tv);
 }
 }  // usbdmx
 }  // plugin

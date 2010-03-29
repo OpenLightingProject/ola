@@ -27,14 +27,14 @@
 #include "ola/plugin_id.h"
 #include "olad/Plugin.h"
 #include "ola/network/Socket.h"
+#include "plugins/usbdmx/UsbDevice.h"
 
 namespace ola {
 namespace plugin {
+
 namespace usbdmx {
 
 using ola::network::ConnectedSocket;
-
-class UsbDmxDevice;
 
 class UsbDmxPlugin: public ola::Plugin {
   public:
@@ -55,8 +55,8 @@ class UsbDmxPlugin: public ola::Plugin {
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();
-    vector<UsbDmxDevice*> m_devices;  // list of our devices
-    libusb_context *m_usb_context;
+    vector<UsbDevice*> m_devices;  // list of our devices
+    struct libusb_context *m_usb_context;
     vector<ola::network::DeviceSocket*> m_sockets;
 
     static const char USBDMX_DEVICE_NAME[];

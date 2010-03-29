@@ -1,5 +1,5 @@
 /*
- *  This dmxgram is free software; you can redistribute it and/or modify
+ *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -13,39 +13,42 @@
  *  along with this dmxgram; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbDmxPort.h
- * The UsbDmx plugin for ola
+ * VellemanDevice.h
+ * Interface for the Velleman device
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_USBDMXPORT_H_
-#define PLUGINS_USBDMX_USBDMXPORT_H_
+#ifndef PLUGINS_USBDMX_VELLEMANUSBDEVICE_H_
+#define PLUGINS_USBDMX_VELLEMANUSBDEVICE_H_
 
+#include <libusb.h>
 #include <string>
-#include "ola/DmxBuffer.h"
-#include "olad/Port.h"
-#include "plugins/usbdmx/UsbDmxDevice.h"
+#include "plugins/usbdmx/UsbDevice.h"
 
 namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-class UsbDmxOutputPort: public BasicOutputPort {
+/*
+ * A Velleman device
+ */
+class VellemanDevice: public UsbDevice {
   public:
-    UsbDmxOutputPort(UsbDmxDevice *parent, unsigned int id)
-        : BasicOutputPort(parent, id),
-          m_device(parent) {}
+    VellemanDevice(ola::AbstractPlugin *owner,
+                   libusb_device *dev);
+    ~VellemanDevice();
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_device->SendDMX(buffer);
-    }
-
-    string Description() const { return ""; }
+    bool Start();
+    bool Stop();
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
+    string DeviceId() const { return "1"; }
 
   private:
-    UsbDmxDevice *m_device;
+    bool m_enabled;
+    libusb_device *m_usb_device;
 };
 }  // usbdmx
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBDMX_USBDMXPORT_H_
+#endif  // PLUGINS_USBDMX_VELLEMANUSBDEVICE_H_

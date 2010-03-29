@@ -49,7 +49,7 @@ OlaTester_SOURCES = $(OLASERVER_SOURCES) OlaServerTester.cpp \
                     DmxSourceTest.cpp PluginManagerTest.cpp \
                     PreferencesTest.cpp PortManagerTest.cpp PortTest.cpp \
                     OlaServerServiceImplTest.cpp ClientTest.cpp
-OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
+OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS) $(LIBUSB_CFLAGS)
 OlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 OlaTester_LDADD = @LIBS@ ${PLUGIN_LIBS} \
                   $(top_builddir)/common/libolacommon.la
