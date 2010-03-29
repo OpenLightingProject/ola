@@ -18,9 +18,10 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_USBUSBDEVICE_H_
-#define PLUGINS_USBDMX_USBUSBDEVICE_H_
+#ifndef PLUGINS_USBDMX_USBDEVICE_H_
+#define PLUGINS_USBDMX_USBDEVICE_H_
 
+#include <string>
 #include "olad/Device.h"
 
 namespace ola {
@@ -43,4 +44,4 @@ class UsbDevice: public ola::Device {
 }  // usbdmx
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBDMX_USBUSBDEVICE_H_
+#endif  // PLUGINS_USBDMX_USBDEVICE_H_

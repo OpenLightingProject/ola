@@ -25,8 +25,8 @@
  * performance.
  */
 
-#ifndef PLUGINS_USBDMX_VELLEMANPORT_H_
-#define PLUGINS_USBDMX_VELLEMANPORT_H_
+#ifndef PLUGINS_USBDMX_VELLEMANOUTPUTPORT_H_
+#define PLUGINS_USBDMX_VELLEMANOUTPUTPORT_H_
 
 #include <libusb.h>
 #include <pthread.h>
@@ -58,7 +58,7 @@ class VellemanOutputPort: public BasicOutputPort {
     enum {COMPRESSED_CHANNEL_COUNT = 6};
     enum {CHANNEL_COUNT = 7};
 
-    // this could be up to 254 but then the shutdown process gets wacky. 
+    // this could be up to 254 but then the shutdown process gets wacky.
     static const uint8_t MAX_COMPRESSED_CHANNELS = 100;
     static const unsigned char ENDPOINT = 0x01;
     // 25ms seems to be about the shortest we can go
@@ -79,4 +79,4 @@ class VellemanOutputPort: public BasicOutputPort {
 }  // usbdmx
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBDMX_VELLEMANPORT_H_
+#endif  // PLUGINS_USBDMX_VELLEMANOUTPUTPORT_H_

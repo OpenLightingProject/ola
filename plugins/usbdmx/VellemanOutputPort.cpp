@@ -183,7 +183,10 @@ bool VellemanOutputPort::SendDMX(const DmxBuffer &buffer) {
 
   memset(usb_data, 0, sizeof(usb_data));
 
-  for (n = 0; n < MAX_COMPRESSED_CHANNELS && n < size - COMPRESSED_CHANNEL_COUNT && !data[n]; n++);
+  for (n = 0;
+       n < MAX_COMPRESSED_CHANNELS && n < size - COMPRESSED_CHANNEL_COUNT
+         && !data[n];
+       n++);
   usb_data[0] = 4;
   usb_data[1] = n + 1;  // include start code
   memcpy(usb_data + 2, data + n, COMPRESSED_CHANNEL_COUNT);
@@ -193,7 +196,8 @@ bool VellemanOutputPort::SendDMX(const DmxBuffer &buffer) {
 
   while (i < size - CHANNEL_COUNT) {
     for (n = 0;
-         n < MAX_COMPRESSED_CHANNELS && n + i < size - COMPRESSED_CHANNEL_COUNT && !data[i + n];
+         n < MAX_COMPRESSED_CHANNELS && n + i < size - COMPRESSED_CHANNEL_COUNT
+           && !data[i + n];
          n++);
     if (n) {
       // we have leading zeros
@@ -226,22 +230,14 @@ bool VellemanOutputPort::SendDMX(const DmxBuffer &buffer) {
  * @returns false if there was an error, true otherwise
  */
 bool VellemanOutputPort::SendDataChunk(uint8_t *usb_data) {
-  OLA_DEBUG << "Sending " <<
-    (int) usb_data[0] << "," <<
-    (int) usb_data[1] << "," <<
-    (int) usb_data[2] << "," <<
-    (int) usb_data[3] << "," <<
-    (int) usb_data[4] << "," <<
-    (int) usb_data[5] << "," <<
-    (int) usb_data[6] << "," <<
-    (int) usb_data[7] << ",";
   int transferred;
-  int ret = libusb_interrupt_transfer(m_usb_handle,
-                                      ENDPOINT,
-                                      reinterpret_cast<unsigned char*>(usb_data),
-                                      VELLEMAN_USB_CHUNK_SIZE,
-                                      &transferred,
-                                      URB_TIMEOUT_MS);
+  int ret = libusb_interrupt_transfer(
+      m_usb_handle,
+      ENDPOINT,
+      reinterpret_cast<unsigned char*>(usb_data),
+      VELLEMAN_USB_CHUNK_SIZE,
+      &transferred,
+      URB_TIMEOUT_MS);
   if (ret)
     OLA_INFO << "USB return code was " << ret << ", transferred " <<
       transferred;

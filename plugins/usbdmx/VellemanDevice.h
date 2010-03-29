@@ -18,8 +18,8 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_VELLEMANUSBDEVICE_H_
-#define PLUGINS_USBDMX_VELLEMANUSBDEVICE_H_
+#ifndef PLUGINS_USBDMX_VELLEMANDEVICE_H_
+#define PLUGINS_USBDMX_VELLEMANDEVICE_H_
 
 #include <libusb.h>
 #include <string>
@@ -51,4 +51,4 @@ class VellemanDevice: public UsbDevice {
 }  // usbdmx
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBDMX_VELLEMANUSBDEVICE_H_
+#endif  // PLUGINS_USBDMX_VELLEMANDEVICE_H_
