@@ -743,7 +743,7 @@ void OlaClientCore::HandleDeviceConfig(
 
     pthread_mutex_unlock(&m_mutex);
     // TODO(simon): add the device id here
-    m_observer->DeviceConfig(reply->data(), error_string)
+    m_observer->DeviceConfig(reply->data(), error_string);
     pthread_mutex_lock(&m_mutex);
   }
   delete controller;
