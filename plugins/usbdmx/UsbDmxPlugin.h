@@ -53,13 +53,14 @@ class UsbDmxPlugin: public ola::Plugin {
 
   private:
     bool StartHook();
+    void LoadFirmware();
+    void FindDevices();
     bool StopHook();
     bool SetDefaultPreferences();
     vector<UsbDevice*> m_devices;  // list of our devices
     struct libusb_context *m_usb_context;
     vector<ola::network::DeviceSocket*> m_sockets;
 
-    static const char USBDMX_DEVICE_NAME[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
 };

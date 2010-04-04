@@ -32,8 +32,11 @@
 #include "olad/Preferences.h"
 #include "ola/network/Socket.h"
 
-#include "plugins/usbdmx/UsbDmxPlugin.h"
+#include "plugins/usbdmx/FirmwareLoader.h"
+#include "plugins/usbdmx/SunliteDevice.h"
+#include "plugins/usbdmx/SunliteFirmwareLoader.h"
 #include "plugins/usbdmx/UsbDevice.h"
+#include "plugins/usbdmx/UsbDmxPlugin.h"
 #include "plugins/usbdmx/VellemanDevice.h"
 
 
@@ -43,7 +46,6 @@ namespace usbdmx {
 
 using ola::network::DeviceSocket;
 
-const char UsbDmxPlugin::USBDMX_DEVICE_NAME[] = "Velleman Usb Dmx Device";
 const char UsbDmxPlugin::PLUGIN_NAME[] = "OLA USB Plugin";
 const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";
 
@@ -79,6 +81,8 @@ bool UsbDmxPlugin::StartHook() {
   }
 
   // libusb_set_debug(NULL, 3);
+  LoadFirmware();
+  FindDevices();
 
   /*
   if (!libusb_pollfds_handle_timeouts(m_usb_context)) {
@@ -99,6 +103,42 @@ bool UsbDmxPlugin::StartHook() {
   }
   */
 
+  return true;
+}
+
+
+/*
+ * Load firmware onto devices if required.
+ */
+void UsbDmxPlugin::LoadFirmware() {
+  libusb_device **device_list;
+  size_t device_count = libusb_get_device_list(NULL, &device_list);
+  FirmwareLoader *loader;
+
+  for (unsigned int i = 0; i < device_count; i++) {
+    libusb_device *usb_device = device_list[i];
+    loader = NULL;
+    struct libusb_device_descriptor device_descriptor;
+    libusb_get_device_descriptor(usb_device, &device_descriptor);
+
+    if (device_descriptor.idVendor == 0x0962 &&
+        device_descriptor.idProduct == 0x2000) {
+      loader = new SunliteFirmwareLoader(usb_device);
+    }
+
+    if (loader) {
+      loader->LoadFirmware();
+      delete loader;
+    }
+  }
+  libusb_free_device_list(device_list, 1);  // unref devices
+}
+
+
+/*
+ * Find known devices & register them
+ */
+void UsbDmxPlugin::FindDevices() {
   libusb_device **device_list;
   libusb_device *found = NULL;
   size_t device_count = libusb_get_device_list(NULL, &device_list);
@@ -107,13 +147,19 @@ bool UsbDmxPlugin::StartHook() {
     libusb_device *usb_device = device_list[i];
     struct libusb_device_descriptor device_descriptor;
     libusb_get_device_descriptor(usb_device, &device_descriptor);
+    UsbDevice *device = NULL;
 
     if (device_descriptor.idVendor == 0x10cf &&
         device_descriptor.idProduct == 0x8062) {
       OLA_INFO << "Found a Velleman USB device";
+      device = new VellemanDevice(this, usb_device);
+    } else if (device_descriptor.idVendor == 0x0962 &&
+        device_descriptor.idProduct == 0x2001) {
+      OLA_INFO << "found a sunlite device";
+      device = new SunliteDevice(this, usb_device);
+    }
 
-      UsbDevice *device = new VellemanDevice(this, usb_device);
-
+    if (device) {
       if (!device->Start()) {
         delete device;
         continue;
@@ -123,7 +169,6 @@ bool UsbDmxPlugin::StartHook() {
     }
   }
   libusb_free_device_list(device_list, 1);  // unref devices
-  return true;
 }
 
 

@@ -13,13 +13,13 @@
  *  along with this dmxgram; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * VellemanDevice.h
- * Interface for the Velleman device
+ * SunliteDevice.h
+ * Interface for the Sunlite device
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_USBDMX_VELLEMANDEVICE_H_
-#define PLUGINS_USBDMX_VELLEMANDEVICE_H_
+#ifndef PLUGINS_USBDMX_SUNLITEDEVICE_H_
+#define PLUGINS_USBDMX_SUNLITEDEVICE_H_
 
 #include <libusb.h>
 #include <string>
@@ -30,19 +30,19 @@ namespace plugin {
 namespace usbdmx {
 
 /*
- * A Velleman device
+ * A Sunlite device
  */
-class VellemanDevice: public UsbDevice {
+class SunliteDevice: public UsbDevice {
   public:
-    VellemanDevice(ola::AbstractPlugin *owner,
-                   libusb_device *dev);
-    ~VellemanDevice();
+    SunliteDevice(ola::AbstractPlugin *owner,
+                  libusb_device *dev);
+    ~SunliteDevice();
 
     bool Start();
     bool Stop();
     bool AllowLooping() const { return false; }
     bool AllowMultiPortPatching() const { return false; }
-    string DeviceId() const { return "velleman"; }
+    string DeviceId() const { return "usbdmx2"; }
 
   private:
     bool m_enabled;
@@ -50,4 +50,4 @@ class VellemanDevice: public UsbDevice {
 }  // usbdmx
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBDMX_VELLEMANDEVICE_H_
+#endif  // PLUGINS_USBDMX_SUNLITEDEVICE_H_
