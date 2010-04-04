@@ -35,11 +35,16 @@ namespace usbdmx {
 class UsbDevice: public ola::Device {
   public:
     UsbDevice(ola::AbstractPlugin *owner,
-              const string &name):
-      Device(owner, name) {}
+              const string &name,
+              libusb_device *device):
+      Device(owner, name),
+      m_usb_device(device) {}
     virtual ~UsbDevice() {}
 
     virtual bool Start() = 0;
+
+  protected:
+    libusb_device *m_usb_device;
 };
 }  // usbdmx
 }  // plugin

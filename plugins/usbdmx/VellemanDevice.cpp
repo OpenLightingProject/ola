@@ -14,11 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * VellemanDevice.cpp
- * UsbDmx device
- * Copyright (C) 2006-2007 Simon Newton
- *
- * The device creates two ports, one in and one out, but you can only use one
- * at a time.
+ * The Velleman usb driver
+ * Copyright (C) 2010 Simon Newton
  */
 
 #include <string.h>
@@ -40,9 +37,8 @@ namespace usbdmx {
  */
 VellemanDevice::VellemanDevice(ola::AbstractPlugin *owner,
                                libusb_device *usb_device):
-  UsbDevice(owner, "Velleman USB Device"),
-  m_enabled(false),
-  m_usb_device(usb_device) {
+  UsbDevice(owner, "Velleman USB Device", usb_device),
+  m_enabled(false) {
     libusb_ref_device(usb_device);
 }
 

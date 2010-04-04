@@ -46,7 +46,6 @@ class VellemanDevice: public UsbDevice {
 
   private:
     bool m_enabled;
-    libusb_device *m_usb_device;
 };
 }  // usbdmx
 }  // plugin
