@@ -37,15 +37,6 @@ using std::string;
 
 
 /*
- * Called by the new thread
- */
-void *thread_run(void *d) {
-  VellemanOutputPort *port = reinterpret_cast<VellemanOutputPort*>(d);
-  port->Run();
-}
-
-
-/*
  * Create a new VellemanOutputPort object
  */
 VellemanOutputPort::VellemanOutputPort(VellemanDevice *parent,
@@ -54,8 +45,7 @@ VellemanOutputPort::VellemanOutputPort(VellemanDevice *parent,
     : BasicOutputPort(parent, id),
       m_term(false),
       m_usb_device(usb_device),
-      m_usb_handle(NULL),
-      m_thread_id(0) {
+      m_usb_handle(NULL) {
   pthread_mutex_init(&m_data_mutex, NULL);
   pthread_mutex_init(&m_term_mutex, NULL);
 }
@@ -68,8 +58,7 @@ VellemanOutputPort::~VellemanOutputPort() {
   pthread_mutex_lock(&m_term_mutex);
   m_term = true;
   pthread_mutex_unlock(&m_term_mutex);
-  if (m_thread_id)
-    pthread_join(m_thread_id, NULL);
+  Join();
 
   pthread_mutex_destroy(&m_term_mutex);
   pthread_mutex_destroy(&m_data_mutex);
@@ -109,11 +98,8 @@ bool VellemanOutputPort::Start() {
   }
 
   m_usb_handle = usb_handle;
-  int ret = pthread_create(&m_thread_id,
-                           NULL,
-                           ola::plugin::usbdmx::thread_run,
-                           reinterpret_cast<void*>(this));
-  if (ret) {
+  bool ret = OlaThread::Start();
+  if (!ret) {
     OLA_WARN << "pthread create failed";
     libusb_release_interface(m_usb_handle, 0);
     libusb_close(usb_handle);

@@ -32,6 +32,7 @@
 #include <pthread.h>
 #include <string>
 #include "ola/DmxBuffer.h"
+#include "ola/OlaThread.h"
 #include "olad/Port.h"
 
 namespace ola {
@@ -40,7 +41,7 @@ namespace usbdmx {
 
 class VellemanDevice;
 
-class VellemanOutputPort: public BasicOutputPort {
+class VellemanOutputPort: public BasicOutputPort, OlaThread {
   public:
     VellemanOutputPort(VellemanDevice *parent,
                        unsigned int id,
@@ -71,7 +72,6 @@ class VellemanOutputPort: public BasicOutputPort {
     DmxBuffer m_buffer;
     pthread_mutex_t m_data_mutex;
     pthread_mutex_t m_term_mutex;
-    pthread_t m_thread_id;
 
     bool SendDMX(const DmxBuffer &buffer_old);
     bool SendDataChunk(uint8_t *usb_data);
