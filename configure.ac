@@ -56,13 +56,11 @@ AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 # check for protobuf support
 PROTOBUF_SUPPORT([2.1.0])
 
-# check for threading support
-AC_CHECK_HEADER(pthread.h, have_threads=posix)
-AM_CONDITIONAL(HAVE_PTHREAD, test "${have_threads}" = "posix")
-if test "${have_threads}" = "posix"; then
-  AC_DEFINE(HAVE_PTHREAD, 1, [define if pthread is installed])
-  LIBS="-lpthread $LIBS"
-fi
+# check for pthread support
+AC_CHECK_HEADER([pthread.h],
+                [],
+                [AC_MSG_ERROR([Missing pthread, please install it])])
+LIBS="-lpthread $LIBS"
 
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
@@ -281,10 +279,6 @@ AC_OUTPUT_COMMANDS([
 #define OLA_COMMON_H 1
 
 _EOF_
-
-    if test x$have_threads = xposix; then
-      echo '#define OLA_HAVE_PTHREAD 1' >> $tmpfile
-    fi
 
     # The ugly but portable cpp stuff comes from here
     infile=$srcdir/ola/`echo $outfile | sed 's,.*/,,g;s,\..*$,,g'`-h.in

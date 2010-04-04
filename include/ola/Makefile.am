@@ -1,7 +1,7 @@
 SUBDIRS = network rdm
 
 SOURCES = BaseTypes.h Clock.h Closure.h DmxBuffer.h ExportMap.h Logging.h \
-          RunLengthEncoder.h StringUtils.h
+          OlaThread.h RunLengthEncoder.h StringUtils.h
 
 BUILT_SOURCES = plugin_id.h
 

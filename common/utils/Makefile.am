@@ -1,15 +1,15 @@
 include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = libolautils.la
-libolautils_la_SOURCES = DmxBuffer.cpp RunLengthEncoder.cpp StringUtils.cpp \
-                         TokenBucket.cpp
+libolautils_la_SOURCES = DmxBuffer.cpp OlaThread.cpp RunLengthEncoder.cpp \
+                         StringUtils.cpp TokenBucket.cpp
 
 TESTS = UtilsTester
 check_PROGRAMS = $(TESTS)
-UtilsTester_SOURCES = ClockTest.cpp DmxBuffer.cpp DmxBufferTest.cpp \
-                      RunLengthEncoder.cpp RunLengthEncoderTest.cpp \
-                      StringUtils.cpp StringUtilsTest.cpp TokenBucket.cpp \
-                      UtilsTester.cpp
+UtilsTester_SOURCES = ClockTest.cpp DmxBufferTest.cpp \
+                      OlaThreadTest.cpp \
+                      RunLengthEncoderTest.cpp  \
+                      StringUtilsTest.cpp UtilsTester.cpp
 UtilsTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 UtilsTester_LDFLAGS = $(CPPUNIT_LIBS)
-UtilsTester_LDADD = ../logging/liblogging.la
+UtilsTester_LDADD = libolautils.la ../logging/liblogging.la
