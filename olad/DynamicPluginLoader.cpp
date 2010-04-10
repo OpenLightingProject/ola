@@ -82,7 +82,9 @@ vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
   plugins.push_back(
       new ola::plugin::stageprofi::StageProfiPlugin(m_plugin_adaptor));
   plugins.push_back(new ola::plugin::usbpro::UsbProPlugin(m_plugin_adaptor));
+#ifdef HAVE_LIBUSB
   plugins.push_back(new ola::plugin::usbdmx::UsbDmxPlugin(m_plugin_adaptor));
+#endif
   plugins.push_back(
       new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor));
   return plugins;
