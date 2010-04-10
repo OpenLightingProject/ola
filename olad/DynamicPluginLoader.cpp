@@ -35,7 +35,10 @@
 #include "plugins/shownet/ShowNetPlugin.h"
 #include "plugins/stageprofi/StageProfiPlugin.h"
 #include "plugins/usbpro/UsbProPlugin.h"
+
+#ifdef HAVE_LIBUSB
 #include "plugins/usbdmx/UsbDmxPlugin.h"
+#endif
 
 #ifdef HAVE_ARTNET
 #include "plugins/artnet/ArtNetPlugin.h"

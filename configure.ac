@@ -183,6 +183,7 @@ AM_CONDITIONAL(HAVE_LIBUSB, test "${have_libusb}" = "yes")
 
 if test "${have_libusb}" = "yes"; then
  PLUGINS="${PLUGINS} usbdmx"
+ AC_DEFINE(HAVE_LIBUSB, 1, [define if libusb is installed])
 fi
 
 # create a list of plugin libs
