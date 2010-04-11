@@ -35,7 +35,6 @@ using ola::Device;
 
 /*
  * Create a new device
- *
  * @param owner
  * @param name
  * @param path to device
@@ -44,42 +43,15 @@ OpenDmxDevice::OpenDmxDevice(AbstractPlugin *owner,
                              const string &name,
                              const string &path):
   Device(owner, name),
-  m_path(path),
-  m_enabled(false) {
-}
-
-
-/*
- * destroy this device
- */
-OpenDmxDevice::~OpenDmxDevice() {
-  if (m_enabled)
-    Stop();
+  m_path(path) {
 }
 
 
 /*
  * Start this device
- *
  */
-bool OpenDmxDevice::Start() {
-  OpenDmxOutputPort *port = new OpenDmxOutputPort(this, 0, m_path);
-  AddPort(port);
-  m_enabled = true;
-  return true;
-}
-
-
-/*
- * stop this device
- *
- */
-bool OpenDmxDevice::Stop() {
-  if (!m_enabled)
-    return true;
-
-  DeleteAllPorts();
-  m_enabled = false;
+bool OpenDmxDevice::StartHook() {
+  AddPort(new OpenDmxOutputPort(this, 0, m_path));
   return true;
 }
 }  // opendmx

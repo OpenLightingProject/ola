@@ -45,17 +45,13 @@ ShowNetDevice::ShowNetDevice(ola::Plugin *owner,
   Device(owner, name),
   m_preferences(preferences),
   m_plugin_adaptor(plugin_adaptor),
-  m_node(NULL),
-  m_enabled(false) {}
+  m_node(NULL) {}
 
 
 /*
  * Start this device
  */
-bool ShowNetDevice::Start() {
-  if (m_enabled)
-    return false;
-
+bool ShowNetDevice::StartHook() {
   m_node = new ShowNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue("name"));
 
@@ -78,7 +74,6 @@ bool ShowNetDevice::Start() {
   }
 
   m_plugin_adaptor->AddSocket(m_node->GetSocket());
-  m_enabled = true;
   return true;
 }
 
@@ -86,17 +81,18 @@ bool ShowNetDevice::Start() {
 /*
  * Stop this device
  */
-bool ShowNetDevice::Stop() {
-  if (!m_enabled)
-    return false;
-
+void ShowNetDevice::PrePortStop() {
   m_plugin_adaptor->RemoveSocket(m_node->GetSocket());
-  DeleteAllPorts();
+}
+
+
+/*
+ * Stop this device
+ */
+void ShowNetDevice::PostPortStop() {
   m_node->Stop();
   delete m_node;
   m_node = NULL;
-  m_enabled = false;
-  return true;
 }
 }  // shownet
 }  // plugin

@@ -33,20 +33,18 @@ using std::string;
 
 class OpenDmxDevice: public ola::Device {
   public:
-    OpenDmxDevice(ola::AbstractPlugin *owner, const string &name,
+    OpenDmxDevice(ola::AbstractPlugin *owner,
+                  const string &name,
                   const string &path);
-    ~OpenDmxDevice();
 
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     // we only support one widget for now
     string DeviceId() const { return "1"; }
 
+  protected:
+    bool StartHook();
+
   private:
     string m_path;
-    bool m_enabled;
 };
 }  // opendmx
 }  // plugins

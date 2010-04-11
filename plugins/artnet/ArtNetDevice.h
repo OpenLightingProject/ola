@@ -49,12 +49,6 @@ class ArtNetDevice: public Device {
                  class Preferences *preferences,
                  bool debug,
                  const TimeStamp *wake_time);
-    ~ArtNetDevice();
-
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
 
     // only one ArtNet device
     string DeviceId() const { return "1"; }
@@ -71,6 +65,10 @@ class ArtNetDevice: public Device {
     static const char K_SUBNET_KEY[];
     static const char K_IP_KEY[];
 
+  protected:
+    bool StartHook();
+    void PostPortStop();
+
   private:
     class Preferences *m_preferences;
     ola::network::UnmanagedSocket *m_socket;
@@ -78,7 +76,6 @@ class ArtNetDevice: public Device {
     string m_short_name;
     string m_long_name;
     uint8_t m_subnet;
-    bool m_enabled;
     bool m_debug;
     const TimeStamp *m_wake_time;
 

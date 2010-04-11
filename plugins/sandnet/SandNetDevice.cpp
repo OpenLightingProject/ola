@@ -47,7 +47,6 @@ SandNetDevice::SandNetDevice(SandNetPlugin *owner,
   m_preferences(prefs),
   m_plugin_adaptor(plugin_adaptor),
   m_node(NULL),
-  m_enabled(false),
   m_timeout_id(ola::network::INVALID_TIMEOUT) {
 }
 
@@ -55,12 +54,9 @@ SandNetDevice::SandNetDevice(SandNetPlugin *owner,
 /*
  * Start this device
  */
-bool SandNetDevice::Start() {
+bool SandNetDevice::StartHook() {
   vector<ola::network::UdpSocket*> sockets;
   vector<ola::network::UdpSocket*>::iterator iter;
-
-  if (m_enabled)
-    return false;
 
   m_node = new SandNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue(NAME_KEY));
@@ -101,7 +97,6 @@ bool SandNetDevice::Start() {
       ADVERTISTMENT_PERIOD_MS,
       NewClosure(this, &SandNetDevice::SendAdvertisement));
 
-  m_enabled = true;
   return true;
 
   e_sandnet_failed:
@@ -114,10 +109,7 @@ bool SandNetDevice::Start() {
 /*
  * Stop this device
  */
-bool SandNetDevice::Stop() {
-  if (!m_enabled)
-    return false;
-
+void SandNetDevice::PrePortStop() {
   vector<ola::network::UdpSocket*> sockets = m_node->GetSockets();
   vector<ola::network::UdpSocket*>::iterator iter;
   for (iter = sockets.begin(); iter != sockets.end(); ++iter)
@@ -127,13 +119,16 @@ bool SandNetDevice::Stop() {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);
     m_timeout_id = ola::network::INVALID_TIMEOUT;
   }
+}
 
-  DeleteAllPorts();
+
+/*
+ * Stop this device
+ */
+void SandNetDevice::PostPortStop() {
   m_node->Stop();
   delete m_node;
   m_node = NULL;
-  m_enabled = false;
-  return true;
 }
 
 

@@ -41,11 +41,6 @@ class DmxTriDevice: public UsbDevice {
                      uint16_t esta_id,
                      uint16_t device_id,
                      uint32_t serial);
-    ~DmxTriDevice() {}
-
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
 
     string DeviceId() const { return m_device_id; }
     bool SendDMX(const DmxBuffer &buffer) const;

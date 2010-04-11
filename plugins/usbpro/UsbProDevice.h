@@ -64,15 +64,11 @@ class UsbProDevice: public UsbDevice, public WidgetListener {
                  uint16_t esta_id,
                  uint16_t device_id,
                  uint32_t serial);
-    ~UsbProDevice();
     void HandleMessage(UsbWidget* widget,
                        uint8_t label,
                        unsigned int length,
                        const uint8_t *data);
 
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return m_serial; }
 
     void Configure(RpcController *controller,
@@ -83,6 +79,9 @@ class UsbProDevice: public UsbDevice, public WidgetListener {
     bool SendDMX(const DmxBuffer &buffer);
     const DmxBuffer &FetchDMX() const { return m_input_buffer; }
     bool ChangeToReceiveMode(bool change_only);
+
+  protected:
+    void PrePortStop();
 
   private:
     void HandleParameters(const uint8_t *data, unsigned int length);

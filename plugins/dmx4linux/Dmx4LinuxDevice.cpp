@@ -40,19 +40,6 @@ Dmx4LinuxDevice::Dmx4LinuxDevice(Dmx4LinuxPlugin *owner,
   Device(owner, name),
   m_device_id(device_id) {
 }
-
-
-/*
- * Stop this device
- */
-bool Dmx4LinuxDevice::Stop() {
-  if (!m_enabled)
-    return true;
-
-  DeleteAllPorts();
-  m_enabled = false;
-  return true;
-}
 }  // dmx4linux
 }  // plugin
 }  // ola

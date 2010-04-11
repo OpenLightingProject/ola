@@ -88,18 +88,9 @@ UsbProDevice::UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
       190);  // 200 frames per second seems to be the limit
 
   AddPort(output_port);
-  m_enabled = true;
+  Start();  // this does nothing but set IsEnabled() to true
   (void) esta_id;
   (void) device_id;
-}
-
-
-/*
- * Destroy this device
- */
-UsbProDevice::~UsbProDevice() {
-  if (m_enabled)
-    Stop();
 }
 
 
@@ -138,14 +129,8 @@ void UsbProDevice::HandleMessage(UsbWidget* widget,
 /*
  * Stop this device
  */
-bool UsbProDevice::Stop() {
-  if (!m_enabled)
-    return true;
-
+void UsbProDevice::PrePortStop() {
   m_in_shutdown = true;  // don't allow any more writes
-  DeleteAllPorts();
-  m_enabled = false;
-  return true;
 }
 
 
@@ -159,7 +144,7 @@ bool UsbProDevice::SendDMX(const DmxBuffer &buffer) {
     uint8_t dmx[DMX_UNIVERSE_SIZE];
   } widget_dmx;
 
-  if (!m_enabled)
+  if (!IsEnabled())
     return true;
 
   widget_dmx.start_code = 0;

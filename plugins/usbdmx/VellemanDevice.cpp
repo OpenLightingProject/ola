@@ -30,33 +30,11 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-/*
- * Create a new device
- * @param owner the plugin that owns this device
- * @param usb_device the libusb device
- */
-VellemanDevice::VellemanDevice(ola::AbstractPlugin *owner,
-                               libusb_device *usb_device):
-  UsbDevice(owner, "Velleman USB Device", usb_device),
-  m_enabled(false) {
-    libusb_ref_device(usb_device);
-}
-
-
-/*
- * Destroy this device
- */
-VellemanDevice::~VellemanDevice() {
-  if (m_enabled)
-    Stop();
-  libusb_unref_device(m_usb_device);
-}
-
 
 /*
  * Start this device.
  */
-bool VellemanDevice::Start() {
+bool VellemanDevice::StartHook() {
   VellemanOutputPort *output_port = new VellemanOutputPort(this,
                                                            0,
                                                            m_usb_device);
@@ -65,21 +43,6 @@ bool VellemanDevice::Start() {
     return false;
   }
   AddPort(output_port);
-  m_enabled = true;
-  return true;
-}
-
-
-/*
- * Stop this device
- */
-bool VellemanDevice::Stop() {
-  if (!m_enabled)
-    return true;
-
-  DeleteAllPorts();
-
-  m_enabled = false;
   return true;
 }
 }  // usbdmx

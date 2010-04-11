@@ -43,18 +43,17 @@ class StageProfiDevice: public Device {
                      const string &dev_path);
     ~StageProfiDevice();
 
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     // I don't think this get us full stickiness because USB devices may
     // appear as different devices.
     string DeviceId() const { return m_path; }
     ola::network::ConnectedSocket *GetSocket() const;
 
+  protected:
+    bool StartHook();
+    void PrePortStop();
+
   private:
     string m_path;
-    bool m_enabled;
     class StageProfiWidget *m_widget;
 };
 }  // stageprofi

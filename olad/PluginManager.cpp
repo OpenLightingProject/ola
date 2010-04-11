@@ -83,8 +83,7 @@ void PluginManager::UnloadAll() {
 
   for (plugin_iter = m_plugins.begin(); plugin_iter != m_plugins.end();
        ++plugin_iter) {
-    if ((*plugin_iter)->IsEnabled())
-      (*plugin_iter)->Stop();
+    (*plugin_iter)->Stop();
     delete *plugin_iter;
   }
   m_plugins.clear();

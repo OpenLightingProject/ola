@@ -91,18 +91,8 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
   m_short_name(""),
   m_long_name(""),
   m_subnet(0),
-  m_enabled(false),
   m_debug(debug),
   m_wake_time(wake_time) {
-}
-
-
-/*
- * Cleanup
- */
-ArtNetDevice::~ArtNetDevice() {
-  if (m_enabled)
-    Stop();
 }
 
 
@@ -110,7 +100,7 @@ ArtNetDevice::~ArtNetDevice() {
  * Start this device
  * @return true on success, false on failure
  */
-bool ArtNetDevice::Start() {
+bool ArtNetDevice::StartHook() {
   string value;
   int subnet = 0;
 
@@ -206,7 +196,6 @@ bool ArtNetDevice::Start() {
 
   m_socket = new ola::network::UnmanagedSocket(artnet_get_sd(m_node));
   m_socket->SetOnData(NewClosure(this, &ArtNetDevice::SocketReady));
-  m_enabled = true;
   return true;
 
  e_artnet_start:
@@ -222,26 +211,19 @@ bool ArtNetDevice::Start() {
 /*
  * Stop this device
  */
-bool ArtNetDevice::Stop() {
-  if (!m_enabled)
-    return true;
-
-  DeleteAllPorts();
-
+void ArtNetDevice::PostPortStop() {
   if (artnet_stop(m_node)) {
     OLA_WARN << "artnet_stop failed: " << artnet_strerror();
-    return false;
+    return;
   }
 
   if (artnet_destroy(m_node)) {
     OLA_WARN << "artnet_destroy failed: " << artnet_strerror();
-    return false;
+    return;
   }
   delete m_socket;
   m_socket = NULL;
   m_node = NULL;
-  m_enabled = false;
-  return true;
 }
 
 

@@ -34,32 +34,13 @@ namespace dummy {
 /*
  * Start this device
  */
-bool DummyDevice::Start() {
-  if (m_enabled)
-    return true;
-
+bool DummyDevice::StartHook() {
   DummyPort *port = new DummyPort(this, 0);
 
   if (!AddPort(port)) {
     delete port;
     return false;
   }
-
-  m_enabled = true;
-  return true;
-}
-
-
-/*
- * Stop this device
- *
- */
-bool DummyDevice::Stop() {
-  if (!m_enabled)
-    return true;
-
-  DeleteAllPorts();
-  m_enabled = false;
   return true;
 }
 }  // dummy

@@ -37,11 +37,13 @@ class UsbDevice: public ola::Device {
     UsbDevice(ola::AbstractPlugin *owner,
               const string &name,
               libusb_device *device):
-      Device(owner, name),
-      m_usb_device(device) {}
-    virtual ~UsbDevice() {}
-
-    virtual bool Start() = 0;
+        Device(owner, name),
+        m_usb_device(device) {
+      libusb_ref_device(device);
+    }
+    virtual ~UsbDevice() {
+      libusb_unref_device(m_usb_device);
+    }
 
   protected:
     libusb_device *m_usb_device;

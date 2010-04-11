@@ -35,17 +35,14 @@ namespace usbdmx {
 class SunliteDevice: public UsbDevice {
   public:
     SunliteDevice(ola::AbstractPlugin *owner,
-                  libusb_device *dev);
-    ~SunliteDevice();
+                  libusb_device *usb_device):
+        UsbDevice(owner, "Sunlite USB Device", usb_device) {
+    }
 
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "usbdmx2"; }
 
-  private:
-    bool m_enabled;
+  protected:
+    bool StartHook();
 };
 }  // usbdmx
 }  // plugin
