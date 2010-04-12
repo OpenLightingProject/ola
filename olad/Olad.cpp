@@ -367,10 +367,11 @@ int main(int argc, char *argv[]) {
   ola_options.http_data_dir = opts.http_data_dir;
 
   olad = new OlaDaemon(ola_options, &export_map, opts.rpc_port);
+  bool ret = olad->Init();
 
-  if (olad->Init()) {
+  if (ret) {
     olad->Run();
   }
   delete olad;
-  return 0;
+  return ret ? EXIT_SUCCESS : EXIT_FAILURE;
 }

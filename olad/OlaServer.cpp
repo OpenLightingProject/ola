@@ -78,6 +78,7 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_ss(select_server),
       m_accepting_socket(socket),
       m_device_manager(NULL),
+      m_plugin_manager(NULL),
       m_plugin_adaptor(NULL),
       m_preferences_factory(preferences_factory),
       m_universe_preferences(NULL),
@@ -129,7 +130,8 @@ OlaServer::~OlaServer() {
     */
   }
 
-  if (m_accepting_socket)
+  if (m_accepting_socket
+      && m_accepting_socket->ReadDescriptor() != Socket::INVALID_SOCKET)
     m_ss->RemoveSocket(m_accepting_socket);
 
   if (m_universe_store) {
@@ -320,7 +322,8 @@ int OlaServer::GarbageCollect() {
  * Stop and unload all the plugins
  */
 void OlaServer::StopPlugins() {
-  m_plugin_manager->UnloadAll();
+  if (m_plugin_manager)
+    m_plugin_manager->UnloadAll();
   if (m_device_manager) {
     if (m_device_manager->DeviceCount()) {
       OLA_WARN << "Some devices failed to unload, we're probably leaking "
