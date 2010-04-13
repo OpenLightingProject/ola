@@ -131,6 +131,7 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
             information.esta_id,
             information.device_id,
             serial));
+        return;
       }
       break;
     case DMX_KING_ESTA_ID:
