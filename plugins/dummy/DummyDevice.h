@@ -37,11 +37,10 @@ class DummyDevice: public Device {
   public:
     DummyDevice(AbstractPlugin *owner, const string &name):
       Device(owner, name) {}
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
+
+  protected:
+    bool StartHook();
 };
 }  // dummy
 }  // plugin

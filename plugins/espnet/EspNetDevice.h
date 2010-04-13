@@ -35,22 +35,21 @@ class EspNetDevice: public Device {
                  const std::string &name,
                  class Preferences *prefs,
                  const class PluginAdaptor *plugin_adaptor);
-    ~EspNetDevice() {}
 
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
 
     static const std::string IP_KEY;
     static const std::string NODE_NAME_KEY;
 
+  protected:
+    bool StartHook();
+    void PrePortStop();
+    void PostPortStop();
+
   private:
     class Preferences *m_preferences;
     const class PluginAdaptor *m_plugin_adaptor;
     class EspNetNode *m_node;
-    bool m_enabled;
 };
 }  // espnet
 }  // plugin

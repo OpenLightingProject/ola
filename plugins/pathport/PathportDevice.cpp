@@ -52,7 +52,6 @@ PathportDevice::PathportDevice(PathportPlugin *owner,
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor),
       m_node(NULL),
-      m_enabled(false),
       m_timeout_id(ola::network::INVALID_TIMEOUT) {
 }
 
@@ -60,12 +59,9 @@ PathportDevice::PathportDevice(PathportPlugin *owner,
 /*
  * Start this device
  */
-bool PathportDevice::Start() {
+bool PathportDevice::StartHook() {
   vector<ola::network::UdpSocket*> sockets;
   vector<ola::network::UdpSocket*>::iterator iter;
-
-  if (m_enabled)
-    return false;
 
   uint32_t product_id;
   if (!StringToUInt(m_preferences->GetValue(K_NODE_ID_KEY), &product_id)) {
@@ -107,7 +103,6 @@ bool PathportDevice::Start() {
       ADVERTISTMENT_PERIOD_MS,
       NewClosure(this, &PathportDevice::SendArpReply));
 
-  m_enabled = true;
   return true;
 
 e_pathport_start:
@@ -120,23 +115,22 @@ e_pathport_start:
 /*
  * Stop this device
  */
-bool PathportDevice::Stop() {
-  if (!m_enabled)
-    return false;
-
+void PathportDevice::PrePortStop() {
   m_plugin_adaptor->RemoveSocket(m_node->GetSocket());
 
   if (m_timeout_id != ola::network::INVALID_TIMEOUT) {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);
     m_timeout_id = ola::network::INVALID_TIMEOUT;
   }
+}
 
-  DeleteAllPorts();
+
+/*
+ * Stop this device
+ */
+void PathportDevice::PostPortStop() {
   m_node->Stop();
   delete m_node;
-  m_enabled = false;
-  m_node = NULL;
-  return true;
 }
 
 

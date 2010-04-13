@@ -38,19 +38,20 @@ class ShowNetDevice: public ola::Device {
                   const class PluginAdaptor *plugin_adaptor);
     ~ShowNetDevice() {}
 
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
     bool AllowMultiPortPatching() const { return true; }
     string DeviceId() const { return "1"; }
 
     static const char IP_KEY[];
 
+  protected:
+    bool StartHook();
+    void PrePortStop();
+    void PostPortStop();
+
   private:
     class Preferences *m_preferences;
     const class PluginAdaptor *m_plugin_adaptor;
     class ShowNetNode *m_node;
-    bool m_enabled;
 };
 }  // shownet
 }  // plugin

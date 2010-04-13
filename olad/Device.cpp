@@ -55,8 +55,37 @@ Device::Device(AbstractPlugin *owner, const string &name)
  * Stop this device
  */
 Device::~Device() {
+  Stop();
+}
+
+
+/*
+ * Start the Device
+ */
+bool Device::Start() {
   if (m_enabled)
-    Stop();
+    return true;
+
+  bool ret = StartHook();
+  if (ret)
+    m_enabled = true;
+  return ret;
+}
+
+
+/*
+ * Stop this device
+ */
+bool Device::Stop() {
+  if (!m_enabled)
+    return true;
+
+  PrePortStop();
+  DeleteAllPorts();
+  PostPortStop();
+
+  m_enabled = false;
+  return true;
 }
 
 

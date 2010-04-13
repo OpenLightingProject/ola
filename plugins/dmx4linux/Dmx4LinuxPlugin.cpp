@@ -247,6 +247,7 @@ bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
   OLA_INFO << "Dmx4LinuxPlugin creates a device : name = " << name <<
       " / uni = " << d4l_uni << " / dir = " << dir;
   Dmx4LinuxDevice *dev = new Dmx4LinuxDevice(this, name, device_id);
+  dev->Start();
 
   if (dir == DMX_DIRECTION_INPUT) {
     Dmx4LinuxInputPort *port = new Dmx4LinuxInputPort(

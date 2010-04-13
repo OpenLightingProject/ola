@@ -45,23 +45,21 @@ class E131Device: public ola::Device {
                bool prepend_hostname,
                bool ignore_preview,
                uint8_t dscp);
-    ~E131Device() {}
 
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
 
     void Configure(RpcController *controller,
                    const string &request,
                    string *response,
                    google::protobuf::Closure *done);
+  protected:
+    bool StartHook();
+    void PrePortStop();
+    void PostPortStop();
 
   private:
     const class PluginAdaptor *m_plugin_adaptor;
     class E131Node *m_node;
-    bool m_enabled;
     bool m_use_rev2;
     bool m_prepend_hostname;
     bool m_ignore_preview;

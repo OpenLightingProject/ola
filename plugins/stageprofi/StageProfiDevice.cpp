@@ -50,7 +50,6 @@ StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
                                    const string &dev_path):
   Device(owner, name),
   m_path(dev_path),
-  m_enabled(false),
   m_widget(NULL) {
     if (dev_path.at(0) == '/') {
       m_widget = new StageProfiWidgetUsb();
@@ -64,9 +63,6 @@ StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
  * Destroy this device
  */
 StageProfiDevice::~StageProfiDevice() {
-  if (m_enabled)
-    Stop();
-
   if (m_widget)
     delete m_widget;
 }
@@ -75,8 +71,8 @@ StageProfiDevice::~StageProfiDevice() {
 /*
  * Start this device
  */
-bool StageProfiDevice::Start() {
-  if (m_enabled || !m_widget)
+bool StageProfiDevice::StartHook() {
+  if (!m_widget)
     return false;
 
   if (!m_widget->Connect(m_path)) {
@@ -91,7 +87,6 @@ bool StageProfiDevice::Start() {
 
   StageProfiOutputPort *port = new StageProfiOutputPort(this, 0, m_widget);
   AddPort(port);
-  m_enabled = true;
   return true;
 }
 
@@ -99,16 +94,9 @@ bool StageProfiDevice::Start() {
 /*
  * Stop this device
  */
-bool StageProfiDevice::Stop() {
-  if (!m_enabled)
-    return true;
-
+void StageProfiDevice::PrePortStop() {
   // disconnect from widget
   m_widget->Disconnect();
-  DeleteAllPorts();
-
-  m_enabled = false;
-  return true;
 }
 
 

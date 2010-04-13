@@ -35,17 +35,14 @@ namespace usbdmx {
 class VellemanDevice: public UsbDevice {
   public:
     VellemanDevice(ola::AbstractPlugin *owner,
-                   libusb_device *dev);
-    ~VellemanDevice();
+                   libusb_device *usb_device):
+        UsbDevice(owner, "Velleman USB Device", usb_device) {
+    }
 
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "velleman"; }
 
-  private:
-    bool m_enabled;
+  protected:
+    bool StartHook();
 };
 }  // usbdmx
 }  // plugin

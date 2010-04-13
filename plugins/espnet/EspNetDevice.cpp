@@ -48,18 +48,14 @@ EspNetDevice::EspNetDevice(Plugin *owner,
   Device(owner, name),
   m_preferences(prefs),
   m_plugin_adaptor(plugin_adaptor),
-  m_node(NULL),
-  m_enabled(false) {
+  m_node(NULL) {
 }
 
 
 /*
  * Start this device
  */
-bool EspNetDevice::Start() {
-  if (m_enabled)
-    return false;
-
+bool EspNetDevice::StartHook() {
   m_node = new EspNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue(NODE_NAME_KEY));
   m_node->SetType(ESPNET_NODE_TYPE_IO);
@@ -82,7 +78,6 @@ bool EspNetDevice::Start() {
   }
 
   m_plugin_adaptor->AddSocket(m_node->GetSocket());
-  m_enabled = true;
   return true;
 }
 
@@ -90,17 +85,17 @@ bool EspNetDevice::Start() {
 /*
  * Stop this device
  */
-bool EspNetDevice::Stop() {
-  if (!m_enabled)
-    return false;
-
+void EspNetDevice::PrePortStop() {
   m_plugin_adaptor->RemoveSocket(m_node->GetSocket());
-  DeleteAllPorts();
+}
+
+/*
+ * Stop this device
+ */
+void EspNetDevice::PostPortStop() {
   m_node->Stop();
   delete m_node;
   m_node = NULL;
-  m_enabled = false;
-  return true;
 }
 }  // espnet
 }  // plugin

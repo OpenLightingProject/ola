@@ -36,12 +36,7 @@ class PathportDevice: public ola::Device {
                    const std::string &name,
                    class Preferences *preferences,
                    const class PluginAdaptor *plugin_adaptor);
-    ~PathportDevice() {}
 
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
     PathportNode *GetNode() const { return m_node; }
     int SendArpReply();
@@ -52,11 +47,15 @@ class PathportDevice: public ola::Device {
     static const char K_NODE_IP_KEY[];
     static const char K_NODE_NAME_KEY[];
 
+  protected:
+    bool StartHook();
+    void PrePortStop();
+    void PostPortStop();
+
   private:
     class Preferences *m_preferences;
     const class PluginAdaptor *m_plugin_adaptor;
     PathportNode *m_node;
-    bool m_enabled;
     ola::network::timeout_id m_timeout_id;
 
     static const uint32_t PORTS_PER_DEVICE = 8;

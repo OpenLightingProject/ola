@@ -42,8 +42,6 @@ class AbstractPlugin {
     virtual bool Start() = 0;
     // stop the plugin
     virtual bool Stop() = 0;
-    // check if this plugin is enabled
-    virtual bool IsEnabled() const = 0;
     // return the plugin_id of this plugin
     virtual ola_plugin_id Id() const = 0;
     // return the name of this plugin
@@ -70,14 +68,13 @@ class Plugin: public AbstractPlugin {
       AbstractPlugin(),
       m_plugin_adaptor(plugin_adaptor),
       m_preferences(NULL),
-      m_enabled(false),
-      m_debug(false) {}
-
+      m_debug(false),
+      m_enabled(false) {
+    }
     virtual ~Plugin() {}
 
     virtual bool Start();
     virtual bool Stop();
-    virtual bool IsEnabled() const { return m_enabled; }
     virtual ola_plugin_id Id() const = 0;
 
     // return the prefix used to identify this plugin
@@ -94,12 +91,12 @@ class Plugin: public AbstractPlugin {
 
     const PluginAdaptor *m_plugin_adaptor;
     class Preferences *m_preferences;  // preferences container
-    bool m_enabled;  // are we running
     bool m_debug;  // debug mode on
     static const char ENABLED_KEY[];
     static const char DEBUG_KEY[];
 
   private:
+    bool m_enabled;  // are we running
     bool LoadPreferences();
     Plugin(const Plugin&);
     Plugin& operator=(const Plugin&);

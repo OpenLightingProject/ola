@@ -38,12 +38,7 @@ class SandNetDevice: public ola::Device {
                   const std::string &name,
                   class Preferences *prefs,
                   const class PluginAdaptor *plugin_adaptor);
-    ~SandNetDevice() {}
 
-    bool Start();
-    bool Stop();
-    bool AllowLooping() const { return false; }
-    bool AllowMultiPortPatching() const { return false; }
     string DeviceId() const { return "1"; }
     SandNetNode *GetNode() { return m_node; }
 
@@ -52,11 +47,15 @@ class SandNetDevice: public ola::Device {
     static const char IP_KEY[];
     static const char NAME_KEY[];
 
+  protected:
+    bool StartHook();
+    void PrePortStop();
+    void PostPortStop();
+
   private:
     class Preferences *m_preferences;
     const class PluginAdaptor *m_plugin_adaptor;
     SandNetNode *m_node;
-    bool m_enabled;
     ola::network::timeout_id m_timeout_id;
 
     // the number of input ports to create

@@ -49,20 +49,7 @@ DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
   m_device_id = str.str();
   DmxTriOutputPort *output_port = new DmxTriOutputPort(this);
   AddPort(output_port);
-  m_enabled = true;
-}
-
-
-/*
- * Stop this device
- */
-bool DmxTriDevice::Stop() {
-  if (!m_enabled)
-    return true;
-
-  DeleteAllPorts();
-  m_enabled = false;
-  return true;
+  Start();
 }
 
 
@@ -76,7 +63,7 @@ bool DmxTriDevice::SendDMX(const DmxBuffer &buffer) const {
     uint8_t dmx[DMX_UNIVERSE_SIZE];
   } widget_dmx;
 
-  if (!m_enabled)
+  if (!IsEnabled())
     return true;
 
   widget_dmx.start_code = 0;

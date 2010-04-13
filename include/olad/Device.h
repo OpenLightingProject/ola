@@ -101,10 +101,14 @@ class Device: public AbstractDevice {
     // Returns an id which is unique within the plugin
     virtual string DeviceId() const = 0;
 
-    virtual bool Stop() {
-      m_enabled = false;
-      return true;
-    }
+    bool IsEnabled() const { return m_enabled; }
+
+    bool Start();
+    bool Stop();
+
+    // sane defaults
+    bool AllowLooping() const { return false; }
+    bool AllowMultiPortPatching() const { return false; }
 
     bool AddPort(InputPort *port);
     bool AddPort(OutputPort *port);
@@ -122,14 +126,16 @@ class Device: public AbstractDevice {
                            const string &request,
                            string *response,
                            google::protobuf::Closure *done);
-
   protected:
-    bool m_enabled;
+    virtual bool StartHook() { return true; }
+    virtual void PrePortStop() {}
+    virtual void PostPortStop() {}
 
   private:
     typedef map<unsigned int, InputPort*> input_port_map;
     typedef map<unsigned int, OutputPort*> output_port_map;
 
+    bool m_enabled;
     AbstractPlugin *m_owner;  // which plugin owns this device
     string m_name;  // device name
     mutable string m_unique_id;  // device id

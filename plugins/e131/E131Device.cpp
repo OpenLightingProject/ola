@@ -53,7 +53,6 @@ E131Device::E131Device(Plugin *owner, const string &name,
     : Device(owner, name),
       m_plugin_adaptor(plugin_adaptor),
       m_node(NULL),
-      m_enabled(false),
       m_use_rev2(use_rev2),
       m_prepend_hostname(prepend_hostname),
       m_ignore_preview(ignore_preview),
@@ -66,10 +65,7 @@ E131Device::E131Device(Plugin *owner, const string &name,
 /*
  * Start this device
  */
-bool E131Device::Start() {
-  if (m_enabled)
-    return false;
-
+bool E131Device::StartHook() {
   m_node = new E131Node(m_ip_addr, m_cid, m_use_rev2, m_ignore_preview,
                         m_dscp);
 
@@ -95,7 +91,6 @@ bool E131Device::Start() {
   }
 
   m_plugin_adaptor->AddSocket(m_node->GetSocket());
-  m_enabled = true;
   return true;
 }
 
@@ -103,17 +98,18 @@ bool E131Device::Start() {
 /*
  * Stop this device
  */
-bool E131Device::Stop() {
-  if (!m_enabled)
-    return false;
-
+void E131Device::PrePortStop() {
   m_plugin_adaptor->RemoveSocket(m_node->GetSocket());
-  DeleteAllPorts();
+}
+
+
+/*
+ * Stop this device
+ */
+void E131Device::PostPortStop() {
   m_node->Stop();
   delete m_node;
   m_node = NULL;
-  m_enabled = false;
-  return true;
 }
 
 
