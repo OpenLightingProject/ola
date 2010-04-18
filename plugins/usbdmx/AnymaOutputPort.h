@@ -16,6 +16,9 @@
  * AnymaOutputPort.h
  * The output port for a Anyma device.
  * Copyright (C) 2010 Simon Newton
+ *
+ * It takes around 21ms to send one universe of data. so we do this in a
+ * separate thread.
  */
 
 #ifndef PLUGINS_USBDMX_ANYMAOUTPUTPORT_H_
@@ -50,6 +53,8 @@ class AnymaOutputPort: public BasicOutputPort, OlaThread {
   private:
     static const unsigned int URB_TIMEOUT_MS = 500;
     static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
+    static const char EXPECTED_MANUFACTURER[];
+    static const char EXPECTED_PRODUCT[];
 
     bool m_term;
     libusb_device *m_usb_device;

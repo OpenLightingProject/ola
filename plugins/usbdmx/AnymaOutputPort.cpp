@@ -34,6 +34,9 @@ namespace usbdmx {
 using std::string;
 
 
+const char AnymaOutputPort::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
+const char AnymaOutputPort::EXPECTED_PRODUCT[] = "uDMX";
+
 /*
  * Create a new AnymaOutputPort object
  */
@@ -67,7 +70,10 @@ AnymaOutputPort::~AnymaOutputPort() {
  * Start this thread
  */
 bool AnymaOutputPort::Start() {
+  enum { buffer_size = 32 };
   libusb_device_handle *usb_handle;
+  struct libusb_device_descriptor device_descriptor;
+  libusb_get_device_descriptor(m_usb_device, &device_descriptor);
 
   if (libusb_open(m_usb_device, &usb_handle)) {
     OLA_WARN << "Failed to open Anyma usb device";
@@ -82,6 +88,43 @@ bool AnymaOutputPort::Start() {
     return false;
   }
 */
+  unsigned char buffer[buffer_size];
+  int r = libusb_get_string_descriptor_ascii(
+      usb_handle,
+      device_descriptor.iManufacturer,
+      reinterpret_cast<unsigned char*>(buffer),
+      buffer_size);
+
+  if (r <= 0) {
+    OLA_INFO << "Failed to get manufactuer name";
+    libusb_close(usb_handle);
+    return false;
+  }
+
+  if (strncmp(EXPECTED_MANUFACTURER, reinterpret_cast<char*>(buffer), r)) {
+    OLA_INFO << "Manufacturer mismatch: " << EXPECTED_MANUFACTURER << " != " <<
+      buffer;
+    libusb_close(usb_handle);
+    return false;
+  }
+
+  r = libusb_get_string_descriptor_ascii(
+      usb_handle,
+      device_descriptor.iProduct,
+      reinterpret_cast<unsigned char*>(buffer),
+      buffer_size);
+
+  if (r <= 0) {
+    OLA_INFO << "Failed to get product name";
+    libusb_close(usb_handle);
+    return false;
+  }
+
+  if (strncmp(EXPECTED_PRODUCT, reinterpret_cast<char*>(buffer), r)) {
+    OLA_INFO << "Product mismatch: " << EXPECTED_PRODUCT << " != " << buffer;
+    libusb_close(usb_handle);
+    return false;
+  }
 
   if (libusb_claim_interface(usb_handle, 0)) {
     OLA_WARN << "Failed to claim Anyma usb device";
@@ -163,8 +206,8 @@ bool AnymaOutputPort::SendDMX(const DmxBuffer &buffer) {
           const_cast<unsigned char*>(buffer.GetRaw()),
           buffer.Size(),
           URB_TIMEOUT_MS);
-  OLA_INFO << "send returned " << r;
-  return r > 0;
+  // Sometimes we get PIPE errors here, those are non-fatal
+  return r > 0 || r == LIBUSB_ERROR_PIPE;
 }
 }  // usbdmx
 }  // plugin
