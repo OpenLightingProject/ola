@@ -32,6 +32,7 @@
 #include "olad/Preferences.h"
 #include "ola/network/Socket.h"
 
+#include "plugins/usbdmx/AnymaDevice.h"
 #include "plugins/usbdmx/FirmwareLoader.h"
 #include "plugins/usbdmx/SunliteDevice.h"
 #include "plugins/usbdmx/SunliteFirmwareLoader.h"
@@ -157,6 +158,10 @@ void UsbDmxPlugin::FindDevices() {
         device_descriptor.idProduct == 0x2001) {
       OLA_INFO << "found a sunlite device";
       device = new SunliteDevice(this, usb_device);
+    } else if (device_descriptor.idVendor == 0x16C0 &&
+        device_descriptor.idProduct == 0x05DC) {
+      OLA_INFO << "found a anyma device";
+      device = new AnymaDevice(this, usb_device);
     }
 
     if (device) {
