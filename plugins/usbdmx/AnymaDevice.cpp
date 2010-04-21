@@ -24,7 +24,6 @@
 
 #include "ola/Logging.h"
 #include "plugins/usbdmx/AnymaDevice.h"
-#include "plugins/usbdmx/AnymaOutputPort.h"
 
 namespace ola {
 namespace plugin {
@@ -35,15 +34,26 @@ namespace usbdmx {
  * Start this device.
  */
 bool AnymaDevice::StartHook() {
-  AnymaOutputPort *output_port = new AnymaOutputPort(this,
-                                                     0,
-                                                     m_usb_device);
-  if (!output_port->Start()) {
-    delete output_port;
+  m_output_port = new AnymaOutputPort(this, 0, m_usb_device);
+  if (!m_output_port->Start()) {
+    delete m_output_port;
+    m_output_port = NULL;
     return false;
   }
-  AddPort(output_port);
+  AddPort(m_output_port);
   return true;
+}
+
+
+/*
+ * Get the device id
+ */
+string AnymaDevice::DeviceId() const {
+  if (m_output_port) {
+    return "anyma-" + m_output_port->SerialNumber();
+  } else {
+    return "";
+  }
 }
 }  // usbdmx
 }  // plugin

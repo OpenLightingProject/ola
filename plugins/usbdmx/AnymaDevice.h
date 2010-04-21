@@ -24,6 +24,7 @@
 #include <libusb.h>
 #include <string>
 #include "plugins/usbdmx/UsbDevice.h"
+#include "plugins/usbdmx/AnymaOutputPort.h"
 
 namespace ola {
 namespace plugin {
@@ -36,13 +37,17 @@ class AnymaDevice: public UsbDevice {
   public:
     AnymaDevice(ola::AbstractPlugin *owner,
                 libusb_device *usb_device):
-        UsbDevice(owner, "Anyma USB Device", usb_device) {
+        UsbDevice(owner, "Anyma USB Device", usb_device),
+        m_output_port(NULL) {
     }
 
-    string DeviceId() const { return "anyma"; }
+    string DeviceId() const;
 
   protected:
     bool StartHook();
+
+  private:
+    AnymaOutputPort *m_output_port;
 };
 }  // usbdmx
 }  // plugin

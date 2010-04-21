@@ -45,6 +45,7 @@ AnymaOutputPort::AnymaOutputPort(AnymaDevice *parent,
                                  libusb_device *usb_device)
     : BasicOutputPort(parent, id),
       m_term(false),
+      m_serial(""),
       m_usb_device(usb_device),
       m_usb_handle(NULL) {
   pthread_mutex_init(&m_data_mutex, NULL);
@@ -70,7 +71,6 @@ AnymaOutputPort::~AnymaOutputPort() {
  * Start this thread
  */
 bool AnymaOutputPort::Start() {
-  enum { buffer_size = 32 };
   libusb_device_handle *usb_handle;
   struct libusb_device_descriptor device_descriptor;
   libusb_get_device_descriptor(m_usb_device, &device_descriptor);
@@ -88,43 +88,41 @@ bool AnymaOutputPort::Start() {
     return false;
   }
 */
-  unsigned char buffer[buffer_size];
-  int r = libusb_get_string_descriptor_ascii(
-      usb_handle,
-      device_descriptor.iManufacturer,
-      reinterpret_cast<unsigned char*>(buffer),
-      buffer_size);
-
-  if (r <= 0) {
+  string data;
+  if (!GetDescriptorString(usb_handle, device_descriptor.iManufacturer,
+                           &data)) {
     OLA_INFO << "Failed to get manufactuer name";
     libusb_close(usb_handle);
     return false;
   }
 
-  if (strncmp(EXPECTED_MANUFACTURER, reinterpret_cast<char*>(buffer), r)) {
+  if (data != EXPECTED_MANUFACTURER) {
     OLA_INFO << "Manufacturer mismatch: " << EXPECTED_MANUFACTURER << " != " <<
-      buffer;
+      data;
     libusb_close(usb_handle);
     return false;
   }
 
-  r = libusb_get_string_descriptor_ascii(
-      usb_handle,
-      device_descriptor.iProduct,
-      reinterpret_cast<unsigned char*>(buffer),
-      buffer_size);
-
-  if (r <= 0) {
+  if (!GetDescriptorString(usb_handle, device_descriptor.iProduct, &data)) {
     OLA_INFO << "Failed to get product name";
     libusb_close(usb_handle);
     return false;
   }
 
-  if (strncmp(EXPECTED_PRODUCT, reinterpret_cast<char*>(buffer), r)) {
-    OLA_INFO << "Product mismatch: " << EXPECTED_PRODUCT << " != " << buffer;
+  if (data != EXPECTED_PRODUCT) {
+    OLA_INFO << "Product mismatch: " << EXPECTED_PRODUCT << " != " << data;
     libusb_close(usb_handle);
     return false;
   }
+
+  if (!GetDescriptorString(usb_handle, device_descriptor.iSerialNumber,
+                           &data)) {
+    OLA_INFO << "Failed to get serial number";
+    libusb_close(usb_handle);
+    return false;
+  }
+
+  m_serial = data;
 
   if (libusb_claim_interface(usb_handle, 0)) {
     OLA_WARN << "Failed to claim Anyma usb device";
@@ -208,6 +206,32 @@ bool AnymaOutputPort::SendDMX(const DmxBuffer &buffer) {
           URB_TIMEOUT_MS);
   // Sometimes we get PIPE errors here, those are non-fatal
   return r > 0 || r == LIBUSB_ERROR_PIPE;
+}
+
+
+/*
+ * Return a string descriptor
+ * @param usb_handle the usb handle to the device
+ * @param desc_index the index of the descriptor
+ * @param data where to store the output string
+ * @returns true if we got the value, false otherwise
+ */
+bool AnymaOutputPort::GetDescriptorString(libusb_device_handle *usb_handle,
+                                          uint8_t desc_index,
+                                          string *data) {
+  enum { buffer_size = 32 };  // static arrays FTW!
+  unsigned char buffer[buffer_size];
+  int r = libusb_get_string_descriptor_ascii(
+      usb_handle,
+      desc_index,
+      buffer,
+      buffer_size);
+
+  if (r <= 0) {
+    return false;
+  }
+  data->assign(reinterpret_cast<char*>(buffer));
+  return true;
 }
 }  // usbdmx
 }  // plugin

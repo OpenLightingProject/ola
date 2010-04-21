@@ -43,6 +43,7 @@ class AnymaOutputPort: public BasicOutputPort, OlaThread {
                     unsigned int id,
                     libusb_device *usb_device);
     ~AnymaOutputPort();
+    string SerialNumber() const { return m_serial; }
 
     bool Start();
     void *Run();
@@ -57,6 +58,7 @@ class AnymaOutputPort: public BasicOutputPort, OlaThread {
     static const char EXPECTED_PRODUCT[];
 
     bool m_term;
+    string m_serial;
     libusb_device *m_usb_device;
     libusb_device_handle *m_usb_handle;
     DmxBuffer m_buffer;
@@ -64,6 +66,9 @@ class AnymaOutputPort: public BasicOutputPort, OlaThread {
     pthread_mutex_t m_term_mutex;
 
     bool SendDMX(const DmxBuffer &buffer_old);
+    bool GetDescriptorString(libusb_device_handle *usb_handle,
+                             uint8_t desc_index,
+                             string *data);
 };
 }  // usbdmx
 }  // plugin
