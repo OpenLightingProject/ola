@@ -229,13 +229,12 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
                        length);
 
   if (ret != length) {
-    if (ret == -1) {
+    if (ret == -1)
       OLA_WARN << "Send failed " << strerror(errno);
-    } else {
+    else
       OLA_WARN << "Failed to send full datagram, closing channel";
-      // At the point framing is screwed and we should shut the channel down
-      m_socket->Close();
-    }
+    // At the point framing is screwed and we should shut the channel down
+    m_socket->Close();
 
     if (m_export_map)
       (*m_export_map->GetCounterVar(K_RPC_SENT_ERROR_VAR))++;
