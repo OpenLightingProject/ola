@@ -89,15 +89,36 @@ if test $ac_cv_ipv6 = yes ; then
 fi
 
 # Check if sockaddr{} has sa_len member.
-AC_CHECK_MEMBER([struct sockaddr.sa_len],
- AC_DEFINE(HAVE_SOCKADDR_SA_LEN, 1, define if socket address structures have length fields),,[
-#include <sys/types.h>
-#include <sys/socket.h>])
+AC_CHECK_MEMBER(
+  [struct sockaddr.sa_len],
+  AC_DEFINE(HAVE_SOCKADDR_SA_LEN, 1, define if socket address structures have length fields),
+  ,
+  [#include <sys/types.h>
+   #include <sys/socket.h>])
 
-AC_CHECK_MEMBER(struct sockaddr_dl.sdl_family,
-  AC_DEFINE(HAVE_SOCKADDR_DL_STRUCT, 1, define if we have sockaddr_dl),, [
-#include <sys/types.h>
-#include <net/if_dl.h>])
+AC_CHECK_MEMBER(
+  struct sockaddr_dl.sdl_family,
+  AC_DEFINE(HAVE_SOCKADDR_DL_STRUCT, 1, define if we have sockaddr_dl),
+  ,
+  [#include <sys/types.h>
+   #include <net/if_dl.h>])
+
+# check for SO_NOSIGPIPE or MSG_NOSIGNAL
+AC_CHECK_DECLS(MSG_NOSIGNAL,
+               ,
+               have_msg_no_pipe=no,
+               [#include <sys/types.h>
+                #include <sys/socket.h>])
+
+AC_CHECK_DECLS(SO_NOSIGPIPE,
+               ,
+               have_so_no_pipe=no,
+               [#include <sys/types.h>
+                #include <sys/socket.h>])
+
+if test "${have_msg_no_pipe}" = "no" && test "${have_so_no_pipe}" = "no"; then
+ AC_MSG_ERROR([Your system needs either MSG_NOSIGNAL or SO_NOSIGPIPE])
+fi
 
 # Check for pkg-config
 PKG_PROG_PKG_CONFIG
@@ -178,7 +199,7 @@ fi
 
 # check for libusb
 have_libusb="no"
-PKG_CHECK_MODULES(LIBUSB, [libusb-1.0 >= 1.0.2], [have_libusb="yes"], [true])
+PKG_CHECK_MODULES(libusb, [libusb-1.0 >= 1.0.2], [have_libusb="yes"], [true])
 AM_CONDITIONAL(HAVE_LIBUSB, test "${have_libusb}" = "yes")
 
 if test "${have_libusb}" = "yes"; then
