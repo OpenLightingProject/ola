@@ -13,6 +13,6 @@ if HAVE_LIBUSB
                             SunliteOutputPort.cpp \
                             UsbDmxPlugin.cpp VellemanDevice.cpp \
                             VellemanOutputPort.cpp
-  libolausbdmx_la_CXXFLAGS = $(LIBUSB_CFLAGS)
-  libolausbdmx_la_LIBADD = $(LIBUSB_LIBS)
+  libolausbdmx_la_CXXFLAGS = $(libusb_CFLAGS)
+  libolausbdmx_la_LIBADD = $(libusb_LIBS)
 endif
