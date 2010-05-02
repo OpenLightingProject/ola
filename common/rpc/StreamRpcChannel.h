@@ -95,6 +95,7 @@ class StreamRpcChannel: public RpcChannel {
     ~StreamRpcChannel();
 
     int SocketReady();
+    void SetOnClose(SingleUseClosure *closure);
 
     void CallMethod(
         const MethodDescriptor *method,
@@ -129,6 +130,7 @@ class StreamRpcChannel: public RpcChannel {
     void InvokeCallbackAndCleanup(OutstandingResponse *response);
 
     Service *m_service;  // service to dispatch requests to
+    SingleUseClosure *m_on_close;
     // the socket to read/write to.
     class ola::network::ConnectedSocket *m_socket;
     uint32_t m_seq;  // sequence number

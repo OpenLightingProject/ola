@@ -41,6 +41,7 @@ class OlaDaemon {
               unsigned int rpc_port = OLA_DEFAULT_PORT);
     ~OlaDaemon();
     bool Init();
+    void Shutdown();
     void Run();
     void Terminate();
     void ReloadPlugins();

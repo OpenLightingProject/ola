@@ -47,6 +47,7 @@ StreamRpcChannel::StreamRpcChannel(Service *service,
                                    ola::network::ConnectedSocket *socket,
                                    ExportMap *export_map)
     : m_service(service),
+      m_on_close(NULL),
       m_socket(socket),
       m_seq(0),
       m_buffer(NULL),
@@ -127,6 +128,19 @@ int StreamRpcChannel::SocketReady() {
     m_expected_size = 0;
   }
   return 0;
+}
+
+
+/*
+ * Set the Closure to be called if a write on this channel fails. This is
+ * different from the Socket on close handler which is called when reads hit
+ * EOF/
+ */
+void StreamRpcChannel::SetOnClose(SingleUseClosure *closure) {
+  if (closure != m_on_close) {
+    delete m_on_close;
+    m_on_close = closure;
+  }
 }
 
 
@@ -235,6 +249,8 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
       OLA_WARN << "Failed to send full datagram, closing channel";
     // At the point framing is screwed and we should shut the channel down
     m_socket->Close();
+    if (m_on_close)
+      m_on_close->Run();
 
     if (m_export_map)
       (*m_export_map->GetCounterVar(K_RPC_SENT_ERROR_VAR))++;

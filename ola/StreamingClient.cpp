@@ -58,9 +58,6 @@ bool StreamingClient::Setup() {
   if (!m_socket)
     return false;
 
-  m_socket->SetOnClose(
-      NewSingleClosure(this, &StreamingClient::SocketClosed));
-
   m_channel = new StreamRpcChannel(NULL, m_socket);
 
   if (!m_channel) {
@@ -78,6 +75,10 @@ bool StreamingClient::Setup() {
     m_socket = NULL;
     return false;
   }
+
+  m_channel->SetOnClose(
+      NewSingleClosure(this, &StreamingClient::SocketClosed));
+
   return true;
 }
 
@@ -117,8 +118,10 @@ bool StreamingClient::SendDmx(unsigned int universe,
   request.set_data(data.Get());
   m_stub->StreamDmxData(NULL, &request, NULL, NULL);
 
-  if (m_socket_closed)
+  if (m_socket_closed) {
     Stop();
+    return false;
+  }
   return true;
 }
 
@@ -130,7 +133,6 @@ bool StreamingClient::SendDmx(unsigned int universe,
 void StreamingClient::SetErrorClosure(Closure *closure) {
   if (closure != m_closure) {
     delete m_closure;
-    m_closure = NULL;
     m_closure = closure;
   }
 }

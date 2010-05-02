@@ -131,6 +131,7 @@ class ConnectedSocket: public Socket {
   protected:
     virtual bool IsClosed() const;
     bool SetNonBlocking(int fd);
+    bool SetNoSigPipe(int fd);
     ssize_t FDSend(int fd, const uint8_t *buffer, unsigned int size) const;
     int FDReceive(int fd,
                   uint8_t *buffer,
@@ -208,7 +209,9 @@ class PipeSocket: public ConnectedSocket {
  */
 class TcpSocket: public ConnectedSocket {
   public:
-    explicit TcpSocket(int sd): m_sd(sd) {}
+    explicit TcpSocket(int sd): m_sd(sd) {
+      SetNoSigPipe(sd);
+    }
     ~TcpSocket() { Close(); }
 
     int ReadDescriptor() const { return m_sd; }

@@ -58,6 +58,23 @@ bool ConnectedSocket::SetNonBlocking(int fd) {
 
 
 /*
+ * Turn off the SIGPIPE for this socket
+ */
+bool ConnectedSocket::SetNoSigPipe(int fd) {
+  #ifdef SO_NOSIGPIPE
+  int sig_pipe_flag = 1;
+  if (setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &sig_pipe_flag,
+                 sizeof(sig_pipe_flag)) == -1) {
+    OLA_WARN << "Failed to disable SIGPIPE on " << fd << ": " <<
+      strerror(errno);
+    return false;
+  }
+  #endif
+  return true;
+}
+
+
+/*
  * Find out how much data is left to read
  * @return the amount of unread data for the socket
  */
@@ -88,7 +105,12 @@ ssize_t ConnectedSocket::FDSend(int fd,
   if (fd == INVALID_SOCKET)
     return 0;
 
+#ifdef HAVE_DECL_MSG_NOSIGNAL
+  ssize_t bytes_sent = send(fd, buffer, size, MSG_NOSIGNAL);
+#else
   ssize_t bytes_sent = write(fd, buffer, size);
+#endif
+
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
     OLA_WARN << "Failed to send on " << fd << ":" << strerror(errno);
   return bytes_sent;
@@ -158,6 +180,7 @@ bool LoopbackSocket::Init() {
   }
 
   SetReadNonBlocking();
+  SetNoSigPipe(WriteDescriptor());
   return true;
 }
 
@@ -217,6 +240,7 @@ bool PipeSocket::Init() {
   }
 
   SetReadNonBlocking();
+  SetNoSigPipe(WriteDescriptor());
   return true;
 }
 

@@ -66,16 +66,7 @@ OlaDaemon::OlaDaemon(const ola_server_options &options,
  *
  */
 OlaDaemon::~OlaDaemon() {
-  delete m_server;
-  delete m_service_factory;
-  delete m_preferences_factory;
-  delete m_ss;
-  delete m_accepting_socket;
-
-  vector<PluginLoader*>::iterator iter;
-  for (iter = m_plugin_loaders.begin(); iter != m_plugin_loaders.end(); ++iter)
-    delete *iter;
-  m_plugin_loaders.clear();
+  Shutdown();
 }
 
 
@@ -84,6 +75,10 @@ OlaDaemon::~OlaDaemon() {
  * @return true on success, false on failure
  */
 bool OlaDaemon::Init() {
+  if (m_server || m_service_factory || m_preferences_factory ||
+      m_accepting_socket || m_server)
+    return false;
+
   m_ss = new SelectServer(m_export_map);
   m_service_factory = new OlaServerServiceImplFactory();
 
@@ -105,10 +100,33 @@ bool OlaDaemon::Init() {
 
 
 /*
+ * Shutdown the daemon
+ */
+void OlaDaemon::Shutdown() {
+  delete m_server;
+  delete m_service_factory;
+  delete m_preferences_factory;
+  delete m_ss;
+  delete m_accepting_socket;
+  m_accepting_socket = NULL;
+  m_preferences_factory = NULL;
+  m_server = NULL;
+  m_service_factory = NULL;
+  m_ss = NULL;
+
+  vector<PluginLoader*>::iterator iter;
+  for (iter = m_plugin_loaders.begin(); iter != m_plugin_loaders.end(); ++iter)
+    delete *iter;
+  m_plugin_loaders.clear();
+}
+
+
+/*
  * Run the daemon
  */
 void OlaDaemon::Run() {
-  m_ss->Run();
+  if (m_ss)
+    m_ss->Run();
 }
 
 
@@ -116,13 +134,15 @@ void OlaDaemon::Run() {
  * Stop the daemon
  */
 void OlaDaemon::Terminate() {
-  m_ss->Terminate();
+  if (m_ss)
+    m_ss->Terminate();
 }
 
 /*
  * Reload plugins
  */
 void OlaDaemon::ReloadPlugins() {
-  m_server->ReloadPlugins();
+  if (m_server)
+    m_server->ReloadPlugins();
 }
 }  // ola
