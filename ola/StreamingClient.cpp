@@ -35,26 +35,28 @@ StreamingClient::StreamingClient()
     : m_socket(NULL),
       m_closure(NULL),
       m_channel(NULL),
-      m_stub(NULL) {
+      m_stub(NULL),
+      m_socket_closed(false) {
 }
+
 
 StreamingClient::~StreamingClient() {
   Stop();
+  SetErrorClosure(NULL);
 }
 
 
 /*
  * Setup the Streaming Client
- *
  * @returns true on success, false on failure
  */
 bool StreamingClient::Setup() {
-  if (!m_socket) {
-    m_socket = TcpSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT);
-    if (!m_socket) {
-      return false;
-    }
-  }
+  if (m_socket || m_channel || m_stub)
+    return false;
+
+  m_socket = TcpSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT);
+  if (!m_socket)
+    return false;
 
   m_socket->SetOnClose(
       NewSingleClosure(this, &StreamingClient::SocketClosed));
@@ -104,16 +106,33 @@ void StreamingClient::Stop() {
  * Send DMX to the remote OLA server
  */
 bool StreamingClient::SendDmx(unsigned int universe,
-                              const DmxBuffer &data) const {
+                              const DmxBuffer &data) {
   if (!m_stub ||
       m_socket->ReadDescriptor() == ola::network::Socket::INVALID_SOCKET)
     return false;
 
+  m_socket_closed = false;
   ola::proto::DmxData request;
   request.set_universe(universe);
   request.set_data(data.Get());
   m_stub->StreamDmxData(NULL, &request, NULL, NULL);
+
+  if (m_socket_closed)
+    Stop();
   return true;
+}
+
+
+/*
+ * Set the Closure to be called when the socket is disconnected.
+ * Ownership is transferred to the Streaming Client
+ */
+void StreamingClient::SetErrorClosure(Closure *closure) {
+  if (closure != m_closure) {
+    delete m_closure;
+    m_closure = NULL;
+    m_closure = closure;
+  }
 }
 
 
@@ -121,6 +140,7 @@ bool StreamingClient::SendDmx(unsigned int universe,
  * Called when the socket is closed
  */
 int StreamingClient::SocketClosed() {
+  m_socket_closed = true;
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"
     << " to a framing error, perhaps you're sending too fast?";
   if (m_closure)

@@ -17,6 +17,18 @@ EXTRA_DIST = $(HEADER_FILES) OlaClientServiceImpl.h OlaClientCore.h \
              common-h.in
 
 
+# Test Programs
+TESTS = OlaClientTester
+check_PROGRAMS = $(TESTS)
+OlaClientTester_SOURCES = $(OLASERVER_SOURCES) OlaClientTester.cpp \
+                          StreamingClientTest.cpp
+OlaClientTester_CXXFLAGS = $(CPPUNIT_CFLAGS) $(LIBUSB_CFLAGS)
+OlaClientTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
+OlaClientTester_LDADD = @LIBS@ ${PLUGIN_LIBS} \
+                        $(top_builddir)/common/libolacommon.la \
+                        $(top_builddir)/olad/libolaserver.la \
+                        ./libola.la
+
 ## @end 1
 ## @start 2
 # Regenerate common.h with config.status whenever common-h.in changes.

@@ -51,8 +51,8 @@ class StreamingClient {
     bool Setup();
     void Stop();
 
-    bool SendDmx(unsigned int universe, const DmxBuffer &data) const;
-    void SetErrorClosure(BaseClosure *closure) { m_closure = closure; }
+    bool SendDmx(unsigned int universe, const DmxBuffer &data);
+    void SetErrorClosure(Closure *closure);
     int SocketClosed();
 
   private:
@@ -63,6 +63,7 @@ class StreamingClient {
     BaseClosure *m_closure;
     class ola::rpc::StreamRpcChannel *m_channel;
     class ola::proto::OlaServerService_Stub *m_stub;
+    bool m_socket_closed;
 };
 }  // ola
 #endif  // OLA_STREAMINGCLIENT_H_
