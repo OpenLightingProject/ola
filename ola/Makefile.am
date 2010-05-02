@@ -22,7 +22,7 @@ TESTS = OlaClientTester
 check_PROGRAMS = $(TESTS)
 OlaClientTester_SOURCES = $(OLASERVER_SOURCES) OlaClientTester.cpp \
                           StreamingClientTest.cpp
-OlaClientTester_CXXFLAGS = $(CPPUNIT_CFLAGS) $(LIBUSB_CFLAGS)
+OlaClientTester_CXXFLAGS = $(CPPUNIT_CFLAGS) $(libusb_CFLAGS)
 OlaClientTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 OlaClientTester_LDADD = @LIBS@ ${PLUGIN_LIBS} \
                         $(top_builddir)/common/libolacommon.la \
