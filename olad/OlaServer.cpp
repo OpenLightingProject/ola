@@ -261,7 +261,7 @@ int OlaServer::AcceptNewConnection(
  */
 bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
   if (!socket)
-    return -1;
+    return false;
 
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
   socket->SetOnClose(NewSingleClosure(this, &OlaServer::SocketClosed, socket));
@@ -285,6 +285,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
   pair<int, OlaServerServiceImpl*> pair(socket->ReadDescriptor(), service);
   m_sd_to_service.insert(pair);
 
+  // This hands off ownership to the select server
   m_ss->AddSocket(socket, true);
   (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
   return 0;
