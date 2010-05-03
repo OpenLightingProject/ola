@@ -42,9 +42,14 @@ class StreamingClientTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown();
     void testSendDMX();
+    int OnError() {
+      m_error_called = true;
+      return 0;
+    }
 
   private:
     class OlaServerThread *m_server_thread;
+    bool m_error_called;
 };
 
 
@@ -56,6 +61,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StreamingClientTest);
  */
 class OlaServerThread: public ola::OlaThread {
   public:
+    OlaServerThread() :
+        OlaThread(),
+        m_olad(NULL) {
+    }
     ~OlaServerThread();
     bool Setup();
     void *Run();
@@ -96,8 +105,10 @@ bool OlaServerThread::Setup() {
  * Run the ola Server
  */
 void *OlaServerThread::Run() {
-  if (m_olad)
+  if (m_olad) {
     m_olad->Run();
+    m_olad->Shutdown();
+  }
   return NULL;
 }
 
@@ -106,9 +117,8 @@ void *OlaServerThread::Run() {
  * Stop the OLA server
  */
 void OlaServerThread::Terminate() {
-  if (m_olad) {
+  if (m_olad)
     m_olad->Terminate();
-  }
 }
 
 
@@ -117,6 +127,7 @@ void OlaServerThread::Terminate() {
  * Startup the Ola server
  */
 void StreamingClientTest::setUp() {
+  m_error_called = false;
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
   m_server_thread = new OlaServerThread();
   if (m_server_thread->Setup())
@@ -139,6 +150,9 @@ void StreamingClientTest::tearDown() {
  */
 void StreamingClientTest::testSendDMX() {
   ola::StreamingClient ola_client;
+  ola_client.SetErrorClosure(ola::NewClosure(
+        this, &StreamingClientTest::OnError));
+
   ola::DmxBuffer buffer;
   buffer.Blackout();
 
@@ -154,4 +168,17 @@ void StreamingClientTest::testSendDMX() {
   CPPUNIT_ASSERT(ola_client.Setup());
   CPPUNIT_ASSERT(ola_client.SendDmx(TEST_UNIVERSE, buffer));
   ola_client.Stop();
+
+  // Now Terminate the server mid flight
+  CPPUNIT_ASSERT(ola_client.Setup());
+  CPPUNIT_ASSERT(ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  m_server_thread->Terminate();
+  m_server_thread->Join();
+
+  CPPUNIT_ASSERT(!ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  CPPUNIT_ASSERT(m_error_called);
+  ola_client.Stop();
+
+  CPPUNIT_ASSERT(!ola_client.Setup());
+
 }
