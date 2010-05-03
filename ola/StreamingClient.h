@@ -54,7 +54,6 @@ class StreamingClient {
     void Stop();
 
     bool SendDmx(unsigned int universe, const DmxBuffer &data);
-    void SetErrorClosure(Closure *closure);
     int SocketClosed();
 
   private:
@@ -63,7 +62,6 @@ class StreamingClient {
 
     TcpSocket *m_socket;
     SelectServer *m_ss;
-    BaseClosure *m_closure;
     class ola::rpc::StreamRpcChannel *m_channel;
     class ola::proto::OlaServerService_Stub *m_stub;
     bool m_socket_closed;
