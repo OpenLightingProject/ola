@@ -49,6 +49,8 @@ class SelectServer {
     ~SelectServer();
 
     void Run();
+    void RunOnce(unsigned int delay_sec = 1,
+                 unsigned int delay_usec = 0);
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
@@ -78,7 +80,8 @@ class SelectServer {
     SelectServer operator=(const SelectServer&);
     timeout_id RegisterTimeout(int ms, ola::BaseClosure *closure,
                                bool repeating);
-    bool CheckForEvents();
+    bool CheckForEvents(unsigned int delay_sec,
+                        unsigned int delay_usec);
     void CheckSockets(fd_set *set);
     void AddSocketsToSet(fd_set *set, int *max_sd);
     TimeStamp CheckTimeouts(const TimeStamp &now);

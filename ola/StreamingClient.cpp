@@ -33,6 +33,7 @@ using ola::proto::OlaServerService_Stub;
 
 StreamingClient::StreamingClient()
     : m_socket(NULL),
+      m_ss(NULL),
       m_closure(NULL),
       m_channel(NULL),
       m_stub(NULL),
@@ -58,6 +59,9 @@ bool StreamingClient::Setup() {
   if (!m_socket)
     return false;
 
+  m_ss = new SelectServer();
+  m_ss->AddSocket(m_socket);
+
   m_channel = new StreamRpcChannel(NULL, m_socket);
 
   if (!m_channel) {
@@ -76,6 +80,8 @@ bool StreamingClient::Setup() {
     return false;
   }
 
+  m_socket->SetOnClose(
+      NewSingleClosure(this, &StreamingClient::SocketClosed));
   m_channel->SetOnClose(
       NewSingleClosure(this, &StreamingClient::SocketClosed));
 
@@ -94,12 +100,16 @@ void StreamingClient::Stop() {
   if (m_channel)
     delete m_channel;
 
+  if (m_ss)
+    delete m_ss;
+
   if (m_socket)
     delete m_socket;
 
-  m_stub = NULL;
   m_channel = NULL;
   m_socket = NULL;
+  m_ss = NULL;
+  m_stub = NULL;
 }
 
 
@@ -112,7 +122,17 @@ bool StreamingClient::SendDmx(unsigned int universe,
       m_socket->ReadDescriptor() == ola::network::Socket::INVALID_SOCKET)
     return false;
 
+  // We select() on the fd here to see if the remove end has closed the
+  // connection. We could skip this and rely on the EPIPE delivered by the
+  // write() below, but that introduces a race condition in the unittests.
   m_socket_closed = false;
+  m_ss->RunOnce(0, 0);
+
+  if (m_socket_closed) {
+    Stop();
+    return false;
+  }
+
   ola::proto::DmxData request;
   request.set_universe(universe);
   request.set_data(data.Get());

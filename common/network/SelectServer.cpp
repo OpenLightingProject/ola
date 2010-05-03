@@ -99,9 +99,18 @@ SelectServer::~SelectServer() {
 void SelectServer::Run() {
   while (!m_terminate) {
     // false indicates an error in CheckForEvents();
-    if (!CheckForEvents())
+    if (!CheckForEvents(1, 0))
       break;
   }
+}
+
+
+/*
+ * Run one iteration of the select server
+ */
+void SelectServer::RunOnce(unsigned int delay_sec,
+                           unsigned int delay_usec) {
+  CheckForEvents(delay_sec, delay_usec);
 }
 
 
@@ -282,7 +291,8 @@ timeout_id SelectServer::RegisterTimeout(int ms,
  * One iteration of the select() loop.
  * @return false on error, true on success.
  */
-bool SelectServer::CheckForEvents() {
+bool SelectServer::CheckForEvents(unsigned int delay_sec,
+                                  unsigned int delay_usec) {
   int maxsd;
   fd_set r_fds, w_fds;
   TimeStamp now;
@@ -311,8 +321,8 @@ bool SelectServer::CheckForEvents() {
     return true;
 
   if (m_events.empty()) {
-    tv.tv_sec = 1;
-    tv.tv_usec = 0;
+    tv.tv_sec = delay_sec;
+    tv.tv_usec = delay_usec;
   } else {
     TimeInterval interval = m_events.top().next - now;
     interval.AsTimeval(&tv);

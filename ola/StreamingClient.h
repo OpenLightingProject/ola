@@ -27,6 +27,7 @@
 
 #include <ola/DmxBuffer.h>
 #include <ola/network/Socket.h>
+#include <ola/network/SelectServer.h>
 
 namespace ola {
 
@@ -39,6 +40,7 @@ namespace proto {
 }
 
 using ola::network::TcpSocket;
+using ola::network::SelectServer;
 
 /*
  * StreamingClient opens a connection and then sends data over the socket.
@@ -60,6 +62,7 @@ class StreamingClient {
     StreamingClient operator=(const StreamingClient&);
 
     TcpSocket *m_socket;
+    SelectServer *m_ss;
     BaseClosure *m_closure;
     class ola::rpc::StreamRpcChannel *m_channel;
     class ola::proto::OlaServerService_Stub *m_stub;
