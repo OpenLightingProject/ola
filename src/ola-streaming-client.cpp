@@ -21,7 +21,6 @@
 #include <errno.h>
 #include <getopt.h>
 #include <stdlib.h>
-#include <ola/Closure.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>
@@ -43,12 +42,6 @@ typedef struct {
 } options;
 
 bool terminate = false;
-
-
-int SocketClosed() {
-  terminate = true;
-  return 0;
-}
 
 
 /*
@@ -124,6 +117,7 @@ bool SendDataFromString(const StreamingClient &client,
 
   if (!client.SendDmx(universe, buffer)) {
     cout << "Send DMX failed" << endl;
+    terminate = true;
     return false;
   }
   return true;
@@ -136,7 +130,6 @@ bool SendDataFromString(const StreamingClient &client,
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
   StreamingClient ola_client;
-  ola_client.SetErrorClosure(ola::NewSingleClosure(&SocketClosed));
   options opts;
 
   ParseOptions(argc, argv, &opts);
