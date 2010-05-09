@@ -76,11 +76,6 @@ class UID {
       return out << uid.ToString();
     }
 
-    struct rdm_uid {
-      uint16_t esta_id;
-      uint32_t device_id;
-    };
-
     static UID AllDevices() {
       UID uid(0xffff, 0xffffffff);
       return uid;
@@ -92,6 +87,11 @@ class UID {
     }
 
   private:
+    struct rdm_uid {
+      uint16_t esta_id;
+      uint32_t device_id;
+    };
+
     struct rdm_uid m_uid;
 
     int cmp(const UID &a, const UID &b) const {
