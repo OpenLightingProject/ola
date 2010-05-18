@@ -44,7 +44,7 @@ BaseInflator::BaseInflator(PDU::vector_size v_size)
 /*
  * Set the inflator for a particular protocol
  * @param inflator a inflator
- * @return true if added, false if an inflator with this id already existed.
+ * @return true if added, false if an inflator with this id already exists.
  */
 bool BaseInflator::AddInflator(BaseInflator *inflator) {
   if (m_proto_map.find(inflator->Id()) == m_proto_map.end()) {
@@ -177,10 +177,11 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
         vector = *data;
         break;
       case PDU::TWO_BYTES:
-        vector = NetworkToHost(*reinterpret_cast<const uint16_t*>(data));
+        vector = data[1] + (data[0] << 8);
         break;
       case PDU::FOUR_BYTES:
-        vector = NetworkToHost(*reinterpret_cast<const uint32_t*>(data));
+        // careful: we can't cast to a uint32 because this isn't word aligned
+        vector = data[3] + (data[2] << 8) + (data[1] << 16) + (data[0] << 24);
         break;
       default:
         OLA_WARN << "unknown vector size " << m_vector_size;
@@ -212,7 +213,8 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
  * @param pdu_len   length of the PDU
  * @return true if we inflated without errors
  */
-bool BaseInflator::InflatePDU(HeaderSet &headers, uint8_t flags,
+bool BaseInflator::InflatePDU(HeaderSet &headers,
+                              uint8_t flags,
                               const uint8_t *data,
                               unsigned int pdu_len) {
   uint32_t vector;

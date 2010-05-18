@@ -72,7 +72,6 @@ class CID {
     uuid_t m_uuid;
     explicit CID(uuid_t uuid);
 #endif
-
 };
 }  // e131
 }  // plugin

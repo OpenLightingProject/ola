@@ -130,8 +130,8 @@ class DMPAddress: public BaseDMPAddress {
         length = 0;
         return false;
       }
-      type *field = reinterpret_cast<type*>(data);
-      *field = HostToNetwork(m_start);
+      type field = HostToNetwork(m_start);
+      memcpy(data, &field, BaseSize());
       length = Size();
       return true;
     }
@@ -178,10 +178,11 @@ class RangeDMPAddress: public BaseDMPAddress {
         length = 0;
         return false;
       }
-      type *field = reinterpret_cast<type*>(data);
-      *field++ = HostToNetwork(m_start);
-      *field++ = HostToNetwork(m_increment);
-      *field = HostToNetwork(m_number);
+      type field[3];
+      field[0] = HostToNetwork(m_start);
+      field[1] = HostToNetwork(m_increment);
+      field[2] = HostToNetwork(m_number);
+      memcpy(data, &field, Size());
       length = Size();
       return true;
     }

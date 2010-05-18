@@ -45,20 +45,16 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
   if (data) {
     // the header bit was set, decode it
     if (length >= sizeof(E131Header::e131_pdu_header)) {
-      const E131Header::e131_pdu_header *raw_header =
-        reinterpret_cast<const E131Header::e131_pdu_header*>(data);
-      char raw_source_name[E131Header::SOURCE_NAME_LEN];
-      strncpy(raw_source_name,
-              raw_header->source,
-              E131Header::SOURCE_NAME_LEN);
-      raw_source_name[E131Header::SOURCE_NAME_LEN - 1] = 0x00;
+      E131Header::e131_pdu_header raw_header;
+      memcpy(&raw_header, data, sizeof(E131Header::e131_pdu_header));
+      raw_header.source[E131Header::SOURCE_NAME_LEN - 1] = 0x00;
       E131Header header(
-          raw_source_name,
-          raw_header->priority,
-          raw_header->sequence,
-          NetworkToHost(raw_header->universe),
-          raw_header->options & E131Header::PREVIEW_DATA_MASK,
-          raw_header->options & E131Header::STREAM_TERMINATED_MASK);
+          raw_header.source,
+          raw_header.priority,
+          raw_header.sequence,
+          NetworkToHost(raw_header.universe),
+          raw_header.options & E131Header::PREVIEW_DATA_MASK,
+          raw_header.options & E131Header::STREAM_TERMINATED_MASK);
       m_last_header = header;
       m_last_header_valid = true;
       headers.SetE131Header(header);
@@ -95,17 +91,13 @@ bool E131InflatorRev2::DecodeHeader(HeaderSet &headers,
   if (data) {
     // the header bit was set, decode it
     if (length >= sizeof(E131Rev2Header::e131_rev2_pdu_header)) {
-      const E131Rev2Header::e131_rev2_pdu_header *raw_header =
-        reinterpret_cast<const E131Rev2Header::e131_rev2_pdu_header*>(data);
-      char raw_source_name[E131Rev2Header::REV2_SOURCE_NAME_LEN];
-      strncpy(raw_source_name,
-              raw_header->source,
-              E131Rev2Header::REV2_SOURCE_NAME_LEN);
-      raw_source_name[E131Rev2Header::REV2_SOURCE_NAME_LEN - 1] = 0x00;
-      E131Rev2Header header(raw_source_name,
-                            raw_header->priority,
-                            raw_header->sequence,
-                            NetworkToHost(raw_header->universe));
+      E131Rev2Header::e131_rev2_pdu_header raw_header;
+      memcpy(&raw_header, data, sizeof(E131Rev2Header::e131_rev2_pdu_header));
+      raw_header.source[E131Rev2Header::REV2_SOURCE_NAME_LEN - 1] = 0x00;
+      E131Rev2Header header(raw_header.source,
+                            raw_header.priority,
+                            raw_header.sequence,
+                            NetworkToHost(raw_header.universe));
       m_last_header = header;
       m_last_header_valid = true;
       headers.SetE131Header(header);
