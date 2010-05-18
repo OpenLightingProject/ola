@@ -106,7 +106,7 @@ void DisplayHelpAndExit(char arg[], const options &opts) {
 }
 
 
-bool SendDataFromString(const StreamingClient &client,
+bool SendDataFromString(StreamingClient &client,
                         unsigned int universe,
                         const string &data) {
   ola::DmxBuffer buffer;
