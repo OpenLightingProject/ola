@@ -43,7 +43,6 @@ OlaClientCore::OlaClientCore(ConnectedSocket *socket)
       m_stub(NULL),
       m_connected(false),
       m_observer(NULL) {
-  pthread_mutex_init(&m_mutex, NULL);
 }
 
 
@@ -89,7 +88,6 @@ bool OlaClientCore::Setup() {
  * @return true on success, false on failure
  */
 bool OlaClientCore::Stop() {
-  pthread_mutex_lock(&m_mutex);
   if (m_connected) {
     m_socket->Close();
     delete m_channel;
@@ -97,7 +95,6 @@ bool OlaClientCore::Stop() {
     delete m_stub;
   }
   m_connected = false;
-  pthread_mutex_unlock(&m_mutex);
   return 0;
 }
 
@@ -481,9 +478,7 @@ void OlaClientCore::HandlePluginInfo(SimpleRpcController *controller,
       }
     }
     std::sort(ola_plugins.begin(), ola_plugins.end());
-    pthread_mutex_unlock(&m_mutex);
     m_observer->Plugins(ola_plugins, error_string);
-    pthread_mutex_lock(&m_mutex);
   }
   delete controller;
   delete reply;
@@ -500,9 +495,7 @@ void OlaClientCore::HandleSendDmx(SimpleRpcController *controller,
     error_string = controller->ErrorText();
 
   if (m_observer) {
-    pthread_mutex_unlock(&m_mutex);
     m_observer->SendDmxComplete(error_string);
-    pthread_mutex_lock(&m_mutex);
   }
 
   delete controller;
@@ -519,12 +512,10 @@ void OlaClientCore::HandleGetDmx(ola::rpc::SimpleRpcController *controller,
   if (m_observer) {
     if (controller->Failed())
       error_string = controller->ErrorText();
-    pthread_mutex_unlock(&m_mutex);
     // TODO(simon): keep a map of registrations and filter
     DmxBuffer buffer;
     buffer.Set(reply->data());
     m_observer->NewDmx(reply->universe(), buffer, error_string);
-    pthread_mutex_lock(&m_mutex);
   }
   delete controller;
   delete reply;
@@ -589,9 +580,7 @@ void OlaClientCore::HandleDeviceInfo(ola::rpc::SimpleRpcController *controller,
       }
     }
     std::sort(ola_devices.begin(), ola_devices.end());
-    pthread_mutex_unlock(&m_mutex);
     m_observer->Devices(ola_devices, error_string);
-    pthread_mutex_lock(&m_mutex);
   }
   delete controller;
   delete reply;
@@ -623,9 +612,7 @@ void OlaClientCore::HandleUniverseInfo(SimpleRpcController *controller,
         ola_universes.push_back(universe);
       }
     }
-    pthread_mutex_unlock(&m_mutex);
     m_observer->Universes(ola_universes, error_string);
-    pthread_mutex_lock(&m_mutex);
   }
 
   delete controller;
@@ -643,9 +630,7 @@ void OlaClientCore::HandleUniverseName(SimpleRpcController *controller,
     error_string = controller->ErrorText();
 
   if (m_observer) {
-    pthread_mutex_unlock(&m_mutex);
     m_observer->UniverseNameComplete(error_string);
-    pthread_mutex_lock(&m_mutex);
   } else if (!error_string.empty()) {
     printf("set name failed: %s\n", error_string.c_str());
   }
@@ -665,9 +650,7 @@ void OlaClientCore::HandleUniverseMergeMode(SimpleRpcController *controller,
     error_string = controller->ErrorText();
 
   if (m_observer) {
-    pthread_mutex_unlock(&m_mutex);
     m_observer->UniverseMergeModeComplete(error_string);
-    pthread_mutex_lock(&m_mutex);
   } else if (!error_string.empty()) {
     printf("set merge mode failed: %s\n", controller->ErrorText().c_str());
   }
@@ -698,9 +681,7 @@ void OlaClientCore::HandlePatch(SimpleRpcController *controller,
     error_string = controller->ErrorText();
 
   if (m_observer) {
-    pthread_mutex_unlock(&m_mutex);
     m_observer->PatchComplete(error_string);
-    pthread_mutex_lock(&m_mutex);
   } else if (!error_string.empty()) {
     printf("patch failed: %s\n", controller->ErrorText().c_str());
   }
@@ -719,9 +700,7 @@ void OlaClientCore::HandleSetPriority(SimpleRpcController *controller,
     error_string = controller->ErrorText();
 
   if (m_observer) {
-    pthread_mutex_unlock(&m_mutex);
     m_observer->SetPortPriorityComplete(error_string);
-    pthread_mutex_lock(&m_mutex);
   } else if (!error_string.empty()) {
     printf("set priority failed: %s\n", controller->ErrorText().c_str());
   }
@@ -741,10 +720,8 @@ void OlaClientCore::HandleDeviceConfig(
     if (controller->Failed())
       error_string = controller->ErrorText();
 
-    pthread_mutex_unlock(&m_mutex);
     // TODO(simon): add the device id here
     m_observer->DeviceConfig(reply->data(), error_string);
-    pthread_mutex_lock(&m_mutex);
   }
   delete controller;
   delete reply;

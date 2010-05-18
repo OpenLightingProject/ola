@@ -21,7 +21,6 @@
 #ifndef OLA_OLACLIENTCORE_H_
 #define OLA_OLACLIENTCORE_H_
 
-#include <pthread.h>
 #include <google/protobuf/stubs/common.h>
 #include <string>
 
@@ -119,7 +118,6 @@ class OlaClientCore {
     ola::proto::OlaServerService_Stub *m_stub;
     int m_connected;
     OlaClientObserver *m_observer;
-    pthread_mutex_t m_mutex;
 };
 }  // ola
 #endif  // OLA_OLACLIENTCORE_H_
