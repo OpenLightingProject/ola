@@ -343,6 +343,7 @@ AC_OUTPUT( Makefile\
     ola/Makefile \
     python/Makefile \
     python/rpc/Makefile \
+    python/examples/Makefile \
     olad/Makefile \
     olad/www/Makefile \
     olad/www/about.html \
