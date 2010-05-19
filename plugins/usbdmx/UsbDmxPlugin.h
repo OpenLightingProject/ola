@@ -22,6 +22,7 @@
 #define PLUGINS_USBDMX_USBDMXPLUGIN_H_
 
 #include <libusb.h>
+#include <set>
 #include <string>
 #include <vector>
 #include "ola/plugin_id.h"
@@ -53,13 +54,14 @@ class UsbDmxPlugin: public ola::Plugin {
 
   private:
     bool StartHook();
-    void LoadFirmware();
-    void FindDevices();
+    bool LoadFirmware();
+    int FindDevices();
     bool StopHook();
     bool SetDefaultPreferences();
     vector<UsbDevice*> m_devices;  // list of our devices
     struct libusb_context *m_usb_context;
     vector<ola::network::DeviceSocket*> m_sockets;
+    set<pair<uint8_t, uint8_t> > m_registered_devices;
 
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
