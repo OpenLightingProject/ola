@@ -56,14 +56,17 @@ class Device(object):
     alias: the integer alias for this device
     name: the name of this device
     plugin_id: the plugin that this device belongs to
-    ports: a list of Port objects
+    input_ports: a list of Input Port objects
+    output_ports: a list of Output Port objects
   """
-  def __init__(self, device_id, alias, name, plugin_id, ports):
+  def __init__(self, device_id, alias, name, plugin_id, input_ports,
+               output_ports):
     self.id = device_id
     self.alias = alias
     self.name = name
     self.plugin_id = plugin_id
-    self.ports = sorted(ports)
+    self.input_ports = sorted(input_ports)
+    self.output_ports = sorted(output_ports)
 
   def __cmp__(self, other):
     return cmp(self.alias, other.alias)
@@ -74,14 +77,12 @@ class Port(object):
 
   Attributes:
     id: the unique id of this port
-    is_output: True if this is an output port
     universe: the universe that this port belongs to
     active: True if this port is active
     description: the description of the port
   """
-  def __init__(self, port_id, is_output, universe, active, description):
+  def __init__(self, port_id, universe, active, description):
     self.id = port_id
-    self.is_output = is_output
     self.universe = universe
     self.active = active
     self.description = description
@@ -375,19 +376,26 @@ class OlaClient(Ola_pb2.OlaClientService):
 
     devices = []
     for device in response.device:
-      ports = []
-      for port in device.port:
-        ports.append(Port(port.port_id,
-                          port.output_port,
-                          port.universe,
-                          port.active,
-                          port.description))
+      input_ports = []
+      output_ports = []
+      for port in device.input_port:
+        input_ports.append(Port(port.port_id,
+                                port.universe,
+                                port.active,
+                                port.description))
+
+      for port in device.output_port:
+        output_ports.append(Port(port.port_id,
+                                 port.universe,
+                                 port.active,
+                                 port.description))
 
       devices.append(Device(device.device_id,
                             device.device_alias,
                             device.device_name,
                             device.plugin_id,
-                            ports))
+                            input_ports,
+                            output_ports))
     callback(status, devices)
 
   def _UniverseInfoComplete(self, callback, controller, response):
