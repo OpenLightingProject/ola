@@ -33,6 +33,7 @@
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
 #include "olad/Port.h"
+#include "olad/OlaServer.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
 
@@ -60,6 +61,7 @@ RegisterTemplateFilename(CONSOLE_FILENAME, "show_dmx_console.tpl");
 
 OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              SelectServer *ss,
+                             OlaServer *ola_server,
                              UniverseStore *universe_store,
                              PluginManager *plugin_manager,
                              DeviceManager *device_manager,
@@ -70,6 +72,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
     : m_server(port, data_dir),
       m_export_map(export_map),
       m_ss(ss),
+      m_ola_server(ola_server),
       m_universe_store(universe_store),
       m_plugin_manager(plugin_manager),
       m_device_manager(device_manager),
@@ -77,6 +80,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_enable_quit(enable_quit) {
   RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
   RegisterHandler("/quit", &OlaHttpServer::DisplayQuit);
+  RegisterHandler("/reload", &OlaHttpServer::ReloadPlugins);
   RegisterHandler("/help", &OlaHttpServer::DisplayHandlers);
   RegisterHandler("/main", &OlaHttpServer::DisplayMain);
   RegisterHandler("/plugins", &OlaHttpServer::DisplayPlugins);
@@ -394,7 +398,7 @@ int OlaHttpServer::DisplayDebug(const HttpRequest *request,
 
 
 /*
- * Display the index page
+ * Cause the server to shutdown
  * @param request the HttpRequest
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
@@ -410,6 +414,22 @@ int OlaHttpServer::DisplayQuit(const HttpRequest *request,
     response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
     response->Append("<b>403 Unauthorized</b>");
   }
+  return response->Send();
+  (void) request;
+}
+
+
+/*
+ * Reload all plugins
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::ReloadPlugins(const HttpRequest *request,
+                                 HttpResponse *response) {
+  m_ola_server->ReloadPlugins();
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append("ok");
   return response->Send();
   (void) request;
 }

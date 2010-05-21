@@ -70,6 +70,7 @@ class OlaServer {
     bool NewConnection(ola::network::ConnectedSocket *socket);
     int SocketClosed(ola::network::ConnectedSocket *socket);
     int GarbageCollect();
+    int CheckForReload();
 
     static const unsigned int DEFAULT_HTTP_PORT = 9090;
 
@@ -93,6 +94,7 @@ class OlaServer {
     class ExportMap *m_export_map;
     class PortManager *m_port_manager;
 
+    bool m_reload_plugins;
     bool m_init_run;
     bool m_free_export_map;
     ola::network::timeout_id m_garbage_collect_timeout;

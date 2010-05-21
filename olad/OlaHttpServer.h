@@ -42,6 +42,7 @@ class OlaHttpServer {
   public:
     OlaHttpServer(ExportMap *export_map,
                   SelectServer *ss,
+                  class OlaServer *ola_server,
                   class UniverseStore *universe_store,
                   class PluginManager *plugin_manager,
                   class DeviceManager *device_manager,
@@ -63,6 +64,7 @@ class OlaHttpServer {
     int HandleSetDmx(const HttpRequest *request, HttpResponse *response);
     int DisplayDebug(const HttpRequest *request, HttpResponse *response);
     int DisplayQuit(const HttpRequest *request, HttpResponse *response);
+    int ReloadPlugins(const HttpRequest *request, HttpResponse *response);
     int DisplayTemplateReload(const HttpRequest *request,
                               HttpResponse *response);
     int DisplayHandlers(const HttpRequest *request, HttpResponse *response);
@@ -97,6 +99,7 @@ class OlaHttpServer {
     class HttpServer m_server;
     ExportMap *m_export_map;
     SelectServer *m_ss;
+    class OlaServer *m_ola_server;
     UniverseStore *m_universe_store;
     PluginManager *m_plugin_manager;
     DeviceManager *m_device_manager;
