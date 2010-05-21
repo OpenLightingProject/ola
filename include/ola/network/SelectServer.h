@@ -48,9 +48,10 @@ class SelectServer {
                  TimeStamp *wake_up_time = NULL);
     ~SelectServer();
 
+    void SetDefaultInterval(const TimeInterval &poll_interval);
     void Run();
-    void RunOnce(unsigned int delay_sec = 1,
-                 unsigned int delay_usec = 0);
+    void RunOnce(unsigned int delay_sec = POLL_INTERVAL_SECOND,
+                 unsigned int delay_usec = POLL_INTERVAL_USECOND);
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
@@ -63,6 +64,8 @@ class SelectServer {
     timeout_id RegisterSingleTimeout(int ms, ola::SingleUseClosure *closure);
     void RemoveTimeout(timeout_id id);
     const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
+
+    void RunInLoop(ola::Closure *closure);
 
     static const char K_SOCKET_VAR[];
     static const char K_CONNECTED_SOCKET_VAR[];
@@ -80,8 +83,7 @@ class SelectServer {
     SelectServer operator=(const SelectServer&);
     timeout_id RegisterTimeout(int ms, ola::BaseClosure *closure,
                                bool repeating);
-    bool CheckForEvents(unsigned int delay_sec,
-                        unsigned int delay_usec);
+    bool CheckForEvents(const TimeInterval &poll_interval);
     void CheckSockets(fd_set *set);
     void AddSocketsToSet(fd_set *set, int *max_sd);
     TimeStamp CheckTimeouts(const TimeStamp &now);
@@ -89,6 +91,8 @@ class SelectServer {
 
     static const int K_MS_IN_SECOND = 1000;
     static const int K_US_IN_SECOND = 1000000;
+    static const unsigned int POLL_INTERVAL_SECOND = 1;
+    static const unsigned int POLL_INTERVAL_USECOND = 0;
 
     // This is a timer event
     typedef struct {
@@ -107,6 +111,7 @@ class SelectServer {
 
     bool m_terminate;
     bool m_free_wake_up_time;
+    TimeInterval m_poll_interval;
     unsigned int m_next_id;
     vector<class Socket*> m_sockets;
     vector<connected_socket_t> m_connected_sockets;
@@ -119,6 +124,7 @@ class SelectServer {
     CounterVariable *m_loop_iterations;
     CounterVariable *m_loop_time;
     TimeStamp *m_wake_up_time;
+    std::set<ola::Closure*> m_loop_closures;
 };
 }  // network
 }  // ola
