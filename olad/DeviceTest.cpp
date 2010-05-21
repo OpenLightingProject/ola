@@ -66,12 +66,12 @@ void DeviceTest::testDevice() {
   AddPortsToDeviceAndCheck(&orphaned_device);
 
   // Non orphaned device
-  TestMockPlugin plugin(NULL);
+  TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
   MockDevice device(&plugin, device_name);
   CPPUNIT_ASSERT_EQUAL(device.Name(), device_name);
   CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractPlugin*>(&plugin),
                        device.Owner());
-  CPPUNIT_ASSERT_EQUAL(string("0-test"), device.UniqueId());
+  CPPUNIT_ASSERT_EQUAL(string("2-test"), device.UniqueId());
   AddPortsToDeviceAndCheck(&device);
 }
 

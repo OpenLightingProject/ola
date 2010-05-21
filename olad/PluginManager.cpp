@@ -65,6 +65,12 @@ void PluginManager::LoadAll() {
 
   for (plugin_iter = m_plugins.begin(); plugin_iter != m_plugins.end();
        ++plugin_iter) {
+    if (!(*plugin_iter)->ShouldStart()) {
+      OLA_INFO << "Skipping " << (*plugin_iter)->Name() <<
+        " because it was disabled";
+      continue;
+    }
+
     OLA_INFO << "Trying to start " << (*plugin_iter)->Name();
     if (!(*plugin_iter)->Start())
       OLA_WARN << "Failed to start " << (*plugin_iter)->Name();

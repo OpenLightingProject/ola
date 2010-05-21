@@ -38,6 +38,8 @@ class AbstractPlugin {
     AbstractPlugin() {}
     virtual ~AbstractPlugin() {}
 
+    // true if we should try to start this plugin
+    virtual bool ShouldStart() = 0;
     // start the plugin
     virtual bool Start() = 0;
     // stop the plugin
@@ -73,6 +75,7 @@ class Plugin: public AbstractPlugin {
     }
     virtual ~Plugin() {}
 
+    virtual bool ShouldStart();
     virtual bool Start();
     virtual bool Stop();
     virtual ola_plugin_id Id() const = 0;

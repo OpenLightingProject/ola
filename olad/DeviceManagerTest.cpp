@@ -68,7 +68,7 @@ void DeviceManagerTest::testDeviceManager() {
   DeviceManager manager(NULL, NULL);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
-  TestMockPlugin plugin(NULL);
+  TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
   MockDevice orphaned_device(NULL, "orphaned device");
   MockDevice device1(&plugin, "test device 1");
   MockDevice device2(&plugin, "test device 2");
@@ -166,10 +166,10 @@ void DeviceManagerTest::testRestorePatchings() {
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
   CPPUNIT_ASSERT(prefs);
-  prefs->SetValue("0-test_device_1-I-1", "1");
-  prefs->SetValue("0-test_device_1-O-1", "3");
+  prefs->SetValue("2-test_device_1-I-1", "1");
+  prefs->SetValue("2-test_device_1-O-1", "3");
 
-  TestMockPlugin plugin(NULL);
+  TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
   MockDevice device1(&plugin, "test_device_1");
   TestMockInputPort input_port(&device1, 1, NULL);
   TestMockOutputPort output_port(&device1, 1);
@@ -194,8 +194,8 @@ void DeviceManagerTest::testRestorePatchings() {
   manager.UnregisterAllDevices();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
-  CPPUNIT_ASSERT_EQUAL(string("10"), prefs->GetValue("0-test_device_1-I-1"));
-  CPPUNIT_ASSERT_EQUAL(string("3"), prefs->GetValue("0-test_device_1-O-1"));
+  CPPUNIT_ASSERT_EQUAL(string("10"), prefs->GetValue("2-test_device_1-I-1"));
+  CPPUNIT_ASSERT_EQUAL(string("3"), prefs->GetValue("2-test_device_1-O-1"));
 }
 
 
@@ -212,21 +212,21 @@ void DeviceManagerTest::testRestorePriorities() {
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
   CPPUNIT_ASSERT(prefs);
-  prefs->SetValue("0-test_device_1-I-1_priority_mode", "0");
-  prefs->SetValue("0-test_device_1-I-1_priority_value", "120");
-  prefs->SetValue("0-test_device_1-O-1_priority_mode", "0");
-  prefs->SetValue("0-test_device_1-O-1_priority_value", "140");
-  prefs->SetValue("0-test_device_1-I-2_priority_mode", "1");  // override mode
-  prefs->SetValue("0-test_device_1-I-2_priority_value", "160");
-  prefs->SetValue("0-test_device_1-O-2_priority_mode", "1");  // override mode
-  prefs->SetValue("0-test_device_1-O-2_priority_value", "180");
-  prefs->SetValue("0-test_device_1-I-3_priority_mode", "0");  // inherit mode
+  prefs->SetValue("2-test_device_1-I-1_priority_mode", "0");
+  prefs->SetValue("2-test_device_1-I-1_priority_value", "120");
+  prefs->SetValue("2-test_device_1-O-1_priority_mode", "0");
+  prefs->SetValue("2-test_device_1-O-1_priority_value", "140");
+  prefs->SetValue("2-test_device_1-I-2_priority_mode", "1");  // override mode
+  prefs->SetValue("2-test_device_1-I-2_priority_value", "160");
+  prefs->SetValue("2-test_device_1-O-2_priority_mode", "1");  // override mode
+  prefs->SetValue("2-test_device_1-O-2_priority_value", "180");
+  prefs->SetValue("2-test_device_1-I-3_priority_mode", "0");  // inherit mode
   // invalid priority
-  prefs->SetValue("0-test_device_1-I-3_priority_value", "210");
-  prefs->SetValue("0-test_device_1-O-3_priority_mode", "0");  // inherit mode
-  prefs->SetValue("0-test_device_1-O-3_priority_value", "180");
+  prefs->SetValue("2-test_device_1-I-3_priority_value", "210");
+  prefs->SetValue("2-test_device_1-O-3_priority_mode", "0");  // inherit mode
+  prefs->SetValue("2-test_device_1-O-3_priority_value", "180");
 
-  TestMockPlugin plugin(NULL);
+  TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
   MockDevice device1(&plugin, "test_device_1");
   // these ports don't support priorities.
   TestMockInputPort input_port(&device1, 1, NULL);
@@ -291,15 +291,15 @@ void DeviceManagerTest::testRestorePriorities() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
   CPPUNIT_ASSERT_EQUAL(string("0"),
-                       prefs->GetValue("0-test_device_1-I-2_priority_mode"));
+                       prefs->GetValue("2-test_device_1-I-2_priority_mode"));
   CPPUNIT_ASSERT_EQUAL(string("0"),
-                       prefs->GetValue("0-test_device_1-O-2_priority_mode"));
+                       prefs->GetValue("2-test_device_1-O-2_priority_mode"));
   CPPUNIT_ASSERT_EQUAL(string("1"),
-                       prefs->GetValue("0-test_device_1-I-3_priority_mode"));
+                       prefs->GetValue("2-test_device_1-I-3_priority_mode"));
   CPPUNIT_ASSERT_EQUAL(string("40"),
-                       prefs->GetValue("0-test_device_1-I-3_priority_value"));
+                       prefs->GetValue("2-test_device_1-I-3_priority_value"));
   CPPUNIT_ASSERT_EQUAL(string("1"),
-                       prefs->GetValue("0-test_device_1-O-3_priority_mode"));
+                       prefs->GetValue("2-test_device_1-O-3_priority_mode"));
   CPPUNIT_ASSERT_EQUAL(string("60"),
-                       prefs->GetValue("0-test_device_1-O-3_priority_value"));
+                       prefs->GetValue("2-test_device_1-O-3_priority_value"));
 }
