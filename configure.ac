@@ -335,6 +335,7 @@ AC_OUTPUT( Makefile\
     common/rpc/Makefile\
     common/network/Makefile\
     common/utils/Makefile\
+    debian/Makefile\
     include/Makefile\
     include/ola/Makefile\
     include/ola/network/Makefile\

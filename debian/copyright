@@ -1,0 +1,30 @@
+This package was debianized by Simon Newton <nomis52@gmail.com> on
+Sun, 16 May 2010 04:03:33 +0000.
+
+It was downloaded from http://code.google.com/p/linux-lighting/
+
+Upstream Author:
+
+    Simon Newton <nomis52@gmail.com>
+
+Copyright:
+
+    Copyright (C) 2005 Simon Newton
+
+License:
+
+    You are free to distribute this software under the terms of
+    the GNU General Public License  either version  of the License,
+    or (at your option) any later version.
+
+    This package is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this package; if not, write to the Free Software
+    Foundation, Inc.,  Franklin St, Fifth Floor, Boston, MA  - USA
+
+The Debian packaging is (C) 2010, Simon Newton <nomis52@gmail.com> and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
