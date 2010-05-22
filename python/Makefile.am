@@ -2,7 +2,7 @@
 
 if BUILD_PYTHON_LIBS
 
-SUBDIRS = rpc
+SUBDIRS = examples rpc
 
 artnet_path = ../plugins/artnet/messages
 artnet_proto = $(artnet_path)/ArtnetConfigMessages.proto

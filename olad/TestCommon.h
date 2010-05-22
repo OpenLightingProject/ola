@@ -151,11 +151,28 @@ class MockDeviceLoopAndMulti: public ola::Device {
  */
 class TestMockPlugin: public ola::Plugin {
   public:
-    explicit TestMockPlugin(const ola::PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {}
+    explicit TestMockPlugin(const ola::PluginAdaptor *plugin_adaptor,
+                            ola::ola_plugin_id plugin_id,
+                            bool should_start = true):
+      Plugin(plugin_adaptor),
+      m_start_run(false),
+      m_should_start(should_start),
+      m_id(plugin_id) {}
+    bool ShouldStart() { return m_should_start; }
+    bool StartHook() {
+      m_start_run = true;
+      return true;
+    }
     string Name() const { return "foo"; }
     string Description() const { return "bar"; }
-    ola::ola_plugin_id Id() const { return ola::OLA_PLUGIN_ALL; }
+    ola::ola_plugin_id Id() const { return m_id; }
     string PluginPrefix() const { return "test"; }
+
+    bool WasStarted() { return m_start_run; }
+
+  private:
+    bool m_start_run;
+    bool m_should_start;
+    ola::ola_plugin_id m_id;
 };
 #endif  // OLAD_TESTCOMMON_H_

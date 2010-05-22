@@ -34,7 +34,6 @@ using ola::proto::OlaServerService_Stub;
 StreamingClient::StreamingClient()
     : m_socket(NULL),
       m_ss(NULL),
-      m_closure(NULL),
       m_channel(NULL),
       m_stub(NULL),
       m_socket_closed(false) {
@@ -43,7 +42,6 @@ StreamingClient::StreamingClient()
 
 StreamingClient::~StreamingClient() {
   Stop();
-  SetErrorClosure(NULL);
 }
 
 
@@ -91,7 +89,6 @@ bool StreamingClient::Setup() {
 
 /*
  * Close the ola connection.
- * @return true on sucess, false on failure
  */
 void StreamingClient::Stop() {
   if (m_stub)
@@ -115,6 +112,8 @@ void StreamingClient::Stop() {
 
 /*
  * Send DMX to the remote OLA server
+ * @returns True is sent sucessfully, false if the connection to the server has
+ * been closed and Setup() needs to be run again.
  */
 bool StreamingClient::SendDmx(unsigned int universe,
                               const DmxBuffer &data) {
@@ -147,26 +146,12 @@ bool StreamingClient::SendDmx(unsigned int universe,
 
 
 /*
- * Set the Closure to be called when the socket is disconnected.
- * Ownership is transferred to the Streaming Client
- */
-void StreamingClient::SetErrorClosure(Closure *closure) {
-  if (closure != m_closure) {
-    delete m_closure;
-    m_closure = closure;
-  }
-}
-
-
-/*
  * Called when the socket is closed
  */
 int StreamingClient::SocketClosed() {
   m_socket_closed = true;
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"
     << " to a framing error, perhaps you're sending too fast?";
-  if (m_closure)
-    m_closure->Run();
   return 0;
 }
 }  // ola

@@ -55,12 +55,32 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PluginManagerTest);
  */
 class MockLoader: public ola::PluginLoader {
   public:
+    MockLoader():
+      PluginLoader() {
+    }
+
     vector<AbstractPlugin*> LoadPlugins() {
+      m_plugins.push_back(new TestMockPlugin(m_plugin_adaptor,
+                                             ola::OLA_PLUGIN_ARTNET));
+      m_plugins.push_back(new TestMockPlugin(m_plugin_adaptor,
+                                             ola::OLA_PLUGIN_ESPNET,
+                                             false));
       vector<AbstractPlugin*> plugins;
-      plugins.push_back(new TestMockPlugin(m_plugin_adaptor));
+      vector<TestMockPlugin*>::iterator iter;
+      for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
+        plugins.push_back(*iter);
       return plugins;
     }
     void UnloadPlugins() {}
+
+    void VerifyStartStates() {
+      CPPUNIT_ASSERT_EQUAL((size_t) 2, m_plugins.size());
+      CPPUNIT_ASSERT(m_plugins[0]->WasStarted());
+      CPPUNIT_ASSERT(!m_plugins[1]->WasStarted());
+    }
+
+  private:
+    vector<TestMockPlugin*> m_plugins;
 };
 
 
@@ -79,8 +99,11 @@ void PluginManagerTest::testPluginManager() {
   manager.LoadAll();
   vector<AbstractPlugin*> plugins;
   manager.Plugins(&plugins);
-  CPPUNIT_ASSERT_EQUAL((size_t) 1, plugins.size());
+  CPPUNIT_ASSERT_EQUAL((size_t) 2, plugins.size());
   CPPUNIT_ASSERT_EQUAL(string("foo"), plugins[0]->Name());
+  CPPUNIT_ASSERT_EQUAL(string("foo"), plugins[1]->Name());
+
+  loader.VerifyStartStates();
 
   manager.UnloadAll();
   manager.Plugins(&plugins);

@@ -76,19 +76,22 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
 
   switch (m_vector_size) {
     case PDU::ONE_BYTE:
-      buffer[offset] = (uint8_t) m_vector;
+      buffer[offset++] = (uint8_t) m_vector;
       break;
     case PDU::TWO_BYTES:
-      *reinterpret_cast<uint16_t*>(buffer + offset) = HostToNetwork(m_vector);
+      buffer[offset++] = 0xff & (m_vector >> 8);
+      buffer[offset++] = 0xff & m_vector;
       break;
     case PDU::FOUR_BYTES:
-      *reinterpret_cast<uint32_t*>(buffer + offset) = HostToNetwork(m_vector);
+      buffer[offset++] = 0xff & (m_vector >> 24);
+      buffer[offset++] = 0xff & (m_vector >> 16);
+      buffer[offset++] = 0xff & (m_vector >> 8);
+      buffer[offset++] = 0xff & m_vector;
       break;
     default:
       OLA_WARN << "unknown vector size " << m_vector_size;
       return false;
   }
-  offset += m_vector_size;
 
   unsigned int bytes_used = length - offset;
   if (!PackHeader(buffer + offset, bytes_used)) {

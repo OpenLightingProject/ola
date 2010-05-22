@@ -27,8 +27,9 @@
 
   <br/>
 
+  <a href="/reload">Reload Plugins</a>
   {{#QUIT_ENABLED}}
-  <a href="/quit">Stop Olad</a>
+  | <a href="/quit">Stop Olad</a>
   {{/QUIT_ENABLED}}
 
   </div>

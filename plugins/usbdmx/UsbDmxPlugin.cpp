@@ -82,7 +82,13 @@ bool UsbDmxPlugin::StartHook() {
   }
 
   // libusb_set_debug(NULL, 3);
-  LoadFirmware();
+  if (LoadFirmware()) {
+    // we loaded firmware for at least one device, set up a callback to run in
+    // a couple of seconds to re-scan for devices
+    m_plugin_adaptor->RegisterSingleTimeout(
+        3500,
+        NewSingleClosure(this, &UsbDmxPlugin::FindDevices));
+  }
   FindDevices();
 
   /*
@@ -110,11 +116,13 @@ bool UsbDmxPlugin::StartHook() {
 
 /*
  * Load firmware onto devices if required.
+ * @returns true if we loaded firmware for one or more devices
  */
-void UsbDmxPlugin::LoadFirmware() {
+bool UsbDmxPlugin::LoadFirmware() {
   libusb_device **device_list;
   size_t device_count = libusb_get_device_list(NULL, &device_list);
   FirmwareLoader *loader;
+  bool loaded = false;
 
   for (unsigned int i = 0; i < device_count; i++) {
     libusb_device *usb_device = device_list[i];
@@ -129,17 +137,19 @@ void UsbDmxPlugin::LoadFirmware() {
 
     if (loader) {
       loader->LoadFirmware();
+      loaded = true;
       delete loader;
     }
   }
   libusb_free_device_list(device_list, 1);  // unref devices
+  return loaded;
 }
 
 
 /*
  * Find known devices & register them
  */
-void UsbDmxPlugin::FindDevices() {
+int UsbDmxPlugin::FindDevices() {
   libusb_device **device_list;
   libusb_device *found = NULL;
   size_t device_count = libusb_get_device_list(NULL, &device_list);
@@ -149,6 +159,12 @@ void UsbDmxPlugin::FindDevices() {
     struct libusb_device_descriptor device_descriptor;
     libusb_get_device_descriptor(usb_device, &device_descriptor);
     UsbDevice *device = NULL;
+
+    pair<uint8_t, uint8_t> bus_dev_id(libusb_get_bus_number(usb_device),
+                                      libusb_get_device_address(usb_device));
+
+    if ((m_registered_devices.find(bus_dev_id) != m_registered_devices.end()))
+      continue;
 
     if (device_descriptor.idVendor == 0x10cf &&
         device_descriptor.idProduct == 0x8062) {
@@ -169,11 +185,13 @@ void UsbDmxPlugin::FindDevices() {
         delete device;
         continue;
       }
+      m_registered_devices.insert(bus_dev_id);
       m_devices.push_back(device);
       m_plugin_adaptor->RegisterDevice(device);
     }
   }
   libusb_free_device_list(device_list, 1);  // unref devices
+  return 0;
 }
 
 
@@ -189,6 +207,7 @@ bool UsbDmxPlugin::StopHook() {
     delete *iter;
   }
   m_devices.clear();
+  m_registered_devices.clear();
 
   libusb_exit(NULL);
 

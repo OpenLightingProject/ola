@@ -27,10 +27,12 @@
 class ClockTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClockTest);
   CPPUNIT_TEST(testTimeStamp);
+  CPPUNIT_TEST(testTimeInterval);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testTimeStamp();
+    void testTimeInterval();
 };
 
 
@@ -71,11 +73,6 @@ void ClockTest::testTimeStamp() {
 
   // test intervals
   TimeInterval interval = timestamp3 - timestamp;
-  TimeInterval interval2 = interval;
-  TimeInterval interval3(interval);
-  CPPUNIT_ASSERT_EQUAL(interval, interval2);
-  CPPUNIT_ASSERT_EQUAL(interval, interval3);
-  CPPUNIT_ASSERT_EQUAL(timestamp, timestamp3 - interval);
 
   // test subtraction / addition
   timestamp2 = timestamp + interval;
@@ -88,4 +85,24 @@ void ClockTest::testTimeStamp() {
   CPPUNIT_ASSERT_EQUAL(string("1.500000"), one_point_five_seconds.ToString());
   CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1500000),
                        one_point_five_seconds.AsInt());
+}
+
+
+/*
+ * test time intervals
+ */
+void ClockTest::testTimeInterval() {
+  // test intervals
+  TimeInterval interval(500000);  // 0.5s
+  TimeInterval interval2 = interval;
+  TimeInterval interval3(interval);
+  CPPUNIT_ASSERT_EQUAL(interval, interval2);
+  CPPUNIT_ASSERT_EQUAL(interval, interval3);
+
+  TimeInterval interval4(1, 500000);  // 1.5s
+  CPPUNIT_ASSERT(interval != interval4);
+  CPPUNIT_ASSERT(interval < interval4);
+  TimeInterval interval5(1, 600000);  // 1.6s
+  CPPUNIT_ASSERT(interval4 != interval5);
+  CPPUNIT_ASSERT(interval4 < interval5);
 }

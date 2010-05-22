@@ -335,6 +335,7 @@ AC_OUTPUT( Makefile\
     common/rpc/Makefile\
     common/network/Makefile\
     common/utils/Makefile\
+    debian/Makefile\
     include/Makefile\
     include/ola/Makefile\
     include/ola/network/Makefile\
@@ -343,6 +344,7 @@ AC_OUTPUT( Makefile\
     ola/Makefile \
     python/Makefile \
     python/rpc/Makefile \
+    python/examples/Makefile \
     olad/Makefile \
     olad/www/Makefile \
     olad/www/about.html \

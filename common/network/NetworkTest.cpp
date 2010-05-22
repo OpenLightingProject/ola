@@ -20,6 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "ola/Clock.h"
 #include "ola/ExportMap.h"
 #include "ola/Closure.h"
 #include "ola/network/SelectServer.h"
@@ -35,6 +36,7 @@ class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SelectServerTest);
   CPPUNIT_TEST(testAddRemoveSocket);
   CPPUNIT_TEST(testTimeout);
+  CPPUNIT_TEST(testLoopClosures);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -42,6 +44,7 @@ class SelectServerTest: public CppUnit::TestFixture {
     void tearDown();
     void testAddRemoveSocket();
     void testTimeout();
+    void testLoopClosures();
 
     int FatalTimeout() {
       CPPUNIT_ASSERT(false);
@@ -56,8 +59,14 @@ class SelectServerTest: public CppUnit::TestFixture {
       return 0;
     }
 
+    int IncrementLoopCounter() {
+      m_loop_counter++;
+      return 0;
+    }
+
   private:
     unsigned int m_timeout_counter;
+    unsigned int m_loop_counter;
     ExportMap *m_map;
     SelectServer *m_ss;
 };
@@ -70,6 +79,7 @@ void SelectServerTest::setUp() {
   m_map = new ExportMap();
   m_ss = new SelectServer(m_map);
   m_timeout_counter = 0;
+  m_loop_counter = 0;
 }
 
 
@@ -163,4 +173,20 @@ void SelectServerTest::testTimeout() {
   m_ss->RemoveTimeout(timeout1);
   m_ss->Restart();
   m_ss->Run();
+}
+
+
+/*
+ * Check that the loop closures are called
+ */
+void SelectServerTest::testLoopClosures() {
+  m_ss->SetDefaultInterval(ola::TimeInterval(0, 100000));  // poll every 100ms
+  m_ss->RunInLoop(ola::NewClosure(this,
+                                  &SelectServerTest::IncrementLoopCounter));
+  m_ss->RegisterSingleTimeout(
+      500,
+      ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));
+  m_ss->Run();
+  // we should have at least 5 calls to IncrementLoopCounter
+  CPPUNIT_ASSERT(m_loop_counter >= 5);
 }

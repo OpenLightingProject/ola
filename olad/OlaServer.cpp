@@ -85,6 +85,7 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_universe_store(NULL),
       m_export_map(export_map),
       m_port_manager(NULL),
+      m_reload_plugins(false),
       m_init_run(false),
       m_free_export_map(false),
       m_garbage_collect_timeout(ola::network::INVALID_TIMEOUT),
@@ -210,6 +211,7 @@ bool OlaServer::Init() {
   if (m_options.http_enable) {
     m_httpd = new OlaHttpServer(m_export_map,
                                 m_ss,
+                                this,
                                 m_universe_store,
                                 m_plugin_manager,
                                 m_device_manager,
@@ -224,6 +226,7 @@ bool OlaServer::Init() {
   m_garbage_collect_timeout = m_ss->RegisterRepeatingTimeout(
       K_GARBAGE_COLLECTOR_TIMEOUT_MS,
       ola::NewClosure(this, &OlaServer::GarbageCollect));
+  m_ss->RunInLoop(ola::NewClosure(this, &OlaServer::CheckForReload));
 
   m_init_run = true;
   return true;
@@ -231,12 +234,11 @@ bool OlaServer::Init() {
 
 
 /*
- * Reload all plugins
+ * Reload all plugins, this can be called from a separate thread or in an
+ * interrupt handler.
  */
 void OlaServer::ReloadPlugins() {
-  OLA_INFO << "Reloading plugins";
-  StopPlugins();
-  m_plugin_manager->LoadAll();
+  m_reload_plugins = true;
 }
 
 
@@ -315,6 +317,20 @@ int OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
 int OlaServer::GarbageCollect() {
   OLA_INFO << "Garbage collecting";
   m_universe_store->GarbageCollectUniverses();
+  return 0;
+}
+
+
+/*
+ * Called once per loop iteration
+ */
+int OlaServer::CheckForReload() {
+  if (m_reload_plugins) {
+    m_reload_plugins = false;
+    OLA_INFO << "Reloading plugins";
+    StopPlugins();
+    m_plugin_manager->LoadAll();
+  }
   return 0;
 }
 

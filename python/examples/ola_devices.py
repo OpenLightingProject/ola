@@ -23,16 +23,15 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import client_wrapper
 from ola.OlaClient import Plugin
 
-IN_OR_OUT = {
-  True: 'OUT',
-  False: 'IN'
-}
-
 def Devices(state, devices):
   for device in sorted(devices):
     print 'Device %d: %s' % (device.alias, device.name)
-    for port in device.ports:
-      print '  port %d, %s %s' % (port.id, IN_OR_OUT[port.is_output], port.description)
+    print 'Input ports:'
+    for port in device.input_ports:
+      print '  port %d, %s' % (port.id, port.description)
+    print 'Output ports:'
+    for port in device.output_ports:
+      print '  port %d, %s' % (port.id, port.description)
   wrapper.Stop()
 
 

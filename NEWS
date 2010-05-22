@@ -1,4 +1,15 @@
-18/4/2010 ola-0.7.2 / 0.7,3
+18/4/2010 ola-0.7.4
+  Fixed the python API
+  Fixed the client deadlock issue
+  Fixed the USBDMX2 firmware loading
+  Fixed ARM alignment bug in E1.31
+  Fixed ambiguous errors when plugins were disabled
+  Added the /reload handler the reload plugins
+  Turn off SIGPIPEs
+  Clean up the streaming client API
+  Use the serial number to identify uDMX devices
+
+18/4/2010 ola-0.7.2 / 0.7.3
   Added support for the Velleman 8062
   Added support for the uDMX
   Added support for the USBDMX2

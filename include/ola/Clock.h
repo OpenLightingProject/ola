@@ -53,6 +53,11 @@ class TimeInterval {
       m_interval = other.m_interval;
     }
 
+    TimeInterval(unsigned int sec, unsigned int usec) {
+      m_interval.tv_sec = sec;
+      m_interval.tv_usec = usec;
+    }
+
     TimeInterval& operator=(int64_t interval_useconds) {
       Set(interval_useconds);
       return *this;
@@ -67,6 +72,14 @@ class TimeInterval {
 
     bool operator==(const TimeInterval &other) const {
       return timercmp(&m_interval, &other.m_interval, ==);
+    }
+
+    bool operator!=(const TimeInterval &other) const {
+      return !(*this == other);
+    }
+
+    bool operator<(const TimeInterval &other) const {
+      return timercmp(&m_interval, &other.m_interval, <);
     }
 
     std::string ToString() const {

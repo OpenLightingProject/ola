@@ -45,8 +45,10 @@ class E131Inflator: public BaseInflator {
     uint32_t Id() const { return E131_VECTOR; }
 
   protected:
-    bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
-                      unsigned int len, unsigned int &bytes_used);
+    bool DecodeHeader(HeaderSet &headers,
+                      const uint8_t *data,
+                      unsigned int len,
+                      unsigned int &bytes_used);
 
     void ResetHeaderField() {
       m_last_header_valid = false;

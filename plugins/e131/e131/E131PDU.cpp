@@ -68,27 +68,27 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
   }
 
   if (m_header.UsingRev2()) {
-    E131Rev2Header::e131_rev2_pdu_header *header =
-      reinterpret_cast<E131Rev2Header::e131_rev2_pdu_header*>(data);
-    strncpy(header->source, m_header.Source().data(),
+    E131Rev2Header::e131_rev2_pdu_header header;
+    strncpy(header.source, m_header.Source().data(),
             E131Rev2Header::REV2_SOURCE_NAME_LEN);
-    header->priority = m_header.Priority();
-    header->sequence = m_header.Sequence();
-    header->universe = HostToNetwork(m_header.Universe());
+    header.priority = m_header.Priority();
+    header.sequence = m_header.Sequence();
+    header.universe = HostToNetwork(m_header.Universe());
     length = sizeof(E131Rev2Header::e131_rev2_pdu_header);
+    memcpy(data, &header, length);
   } else {
-    E131Header::e131_pdu_header *header =
-      reinterpret_cast<E131Header::e131_pdu_header*>(data);
-    strncpy(header->source, m_header.Source().data(),
+    E131Header::e131_pdu_header header;
+    strncpy(header.source, m_header.Source().data(),
             E131Header::SOURCE_NAME_LEN);
-    header->priority = m_header.Priority();
-    header->reserved = 0;
-    header->sequence = m_header.Sequence();
-    header->options = (
+    header.priority = m_header.Priority();
+    header.reserved = 0;
+    header.sequence = m_header.Sequence();
+    header.options = (
         (m_header.PreviewData() ? E131Header::PREVIEW_DATA_MASK : 0) |
         (m_header.StreamTerminated() ? E131Header::STREAM_TERMINATED_MASK : 0));
-    header->universe = HostToNetwork(m_header.Universe());
+    header.universe = HostToNetwork(m_header.Universe());
     length = sizeof(E131Header::e131_pdu_header);
+    memcpy(data, &header, length);
   }
   return true;
 }

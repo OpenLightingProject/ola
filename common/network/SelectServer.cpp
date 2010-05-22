@@ -50,6 +50,7 @@ const char SelectServer::K_LOOP_TIME[] = "ss-loop-time";
 const char SelectServer::K_LOOP_COUNT[] = "ss-loop-count";
 
 using std::max;
+using std::set;
 using ola::ExportMap;
 using ola::Closure;
 
@@ -63,6 +64,7 @@ SelectServer::SelectServer(ExportMap *export_map,
                            TimeStamp *wake_up_time)
     : m_terminate(false),
       m_free_wake_up_time(false),
+      m_poll_interval(POLL_INTERVAL_SECOND, POLL_INTERVAL_USECOND),
       m_next_id(INVALID_TIMEOUT + 1),
       m_export_map(export_map),
       m_loop_iterations(NULL),
@@ -94,12 +96,20 @@ SelectServer::~SelectServer() {
 
 
 /*
+ * Set the default poll delay time
+ */
+void SelectServer::SetDefaultInterval(const TimeInterval &poll_interval) {
+  m_poll_interval = poll_interval;
+}
+
+
+/*
  * Run the select server until Terminate() is called.
  */
 void SelectServer::Run() {
   while (!m_terminate) {
     // false indicates an error in CheckForEvents();
-    if (!CheckForEvents(1, 0))
+    if (!CheckForEvents(m_poll_interval))
       break;
   }
 }
@@ -110,7 +120,7 @@ void SelectServer::Run() {
  */
 void SelectServer::RunOnce(unsigned int delay_sec,
                            unsigned int delay_usec) {
-  CheckForEvents(delay_sec, delay_usec);
+  CheckForEvents(TimeInterval(delay_sec, delay_usec));
 }
 
 
@@ -265,6 +275,16 @@ void SelectServer::RemoveTimeout(timeout_id id) {
 }
 
 
+/*
+ * Add a closure to be run every loop iteration. The closure is run after any
+ * i/o and timeouts have been handled.
+ * Ownership is transferred to the select server.
+ */
+void SelectServer::RunInLoop(Closure *closure) {
+  m_loop_closures.insert(closure);
+}
+
+
 timeout_id SelectServer::RegisterTimeout(int ms,
                                          BaseClosure *closure,
                                          bool repeating) {
@@ -291,12 +311,16 @@ timeout_id SelectServer::RegisterTimeout(int ms,
  * One iteration of the select() loop.
  * @return false on error, true on success.
  */
-bool SelectServer::CheckForEvents(unsigned int delay_sec,
-                                  unsigned int delay_usec) {
+bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   int maxsd;
   fd_set r_fds, w_fds;
   TimeStamp now;
   struct timeval tv;
+
+  set<Closure*>::iterator loop_iter;
+  for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
+       ++loop_iter)
+    (*loop_iter)->Run();
 
   maxsd = 0;
   FD_ZERO(&r_fds);
@@ -320,12 +344,11 @@ bool SelectServer::CheckForEvents(unsigned int delay_sec,
   if (m_terminate)
     return true;
 
-  if (m_events.empty()) {
-    tv.tv_sec = delay_sec;
-    tv.tv_usec = delay_usec;
-  } else {
+  poll_interval.AsTimeval(&tv);
+  if (!m_events.empty()) {
     TimeInterval interval = m_events.top().next - now;
-    interval.AsTimeval(&tv);
+    if (interval < poll_interval)
+      interval.AsTimeval(&tv);
   }
 
   switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
@@ -502,6 +525,12 @@ void SelectServer::UnregisterAll() {
     delete event.closure;
     m_events.pop();
   }
+
+  set<Closure*>::iterator loop_iter;
+  for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
+       ++loop_iter)
+    delete *loop_iter;
+  m_loop_closures.clear();
 }
 }  // network
 }  // ola
