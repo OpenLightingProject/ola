@@ -1,4 +1,4 @@
-SOURCES = UID.h UIDSet.h
+SOURCES = RDMCommand.h UID.h UIDSet.h
 
 EXTRA_DIST = $(SOURCES)
 pkginclude_HEADERS = $(SOURCES)

@@ -41,8 +41,8 @@ class UIDSet {
     UIDSet() {
     }
 
-    UIDSet(const UIDSet &other) {
-      m_uids = other.m_uids;
+    UIDSet(const UIDSet &other):
+      m_uids(other.m_uids) {
     }
 
     UIDSet& operator=(const UIDSet &other) {

@@ -50,10 +50,14 @@ void UIDTest::testUID() {
   UID uid2 = uid;
   CPPUNIT_ASSERT_EQUAL(uid, uid2);
   CPPUNIT_ASSERT(!(uid != uid2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 1, uid.ManufacturerId());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 2, uid.DeviceId());
 
   UID uid3(2, 10);
   CPPUNIT_ASSERT(uid != uid3);
   CPPUNIT_ASSERT(uid < uid3);
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 2, uid3.ManufacturerId());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, uid3.DeviceId());
 
   // ToString
   CPPUNIT_ASSERT_EQUAL(string("0001:00000002"), uid.ToString());
@@ -64,6 +68,24 @@ void UIDTest::testUID() {
   CPPUNIT_ASSERT_EQUAL(string("ffff:ffffffff"), all_devices.ToString());
   CPPUNIT_ASSERT_EQUAL(string("0052:ffffffff"),
                        manufacturer_devices.ToString());
+
+  // now test the packing & unpacking
+  unsigned int buffer_size = UID::UID_SIZE;
+  uint8_t *buffer = new uint8_t[buffer_size];
+  CPPUNIT_ASSERT(uid.Pack(buffer, buffer_size));
+
+  uint8_t expected[] = {0, 1, 0, 0, 0, 2};
+  CPPUNIT_ASSERT(0 == memcmp(expected, buffer, buffer_size));
+  UID unpacked_uid1(buffer);
+  CPPUNIT_ASSERT_EQUAL(uid, unpacked_uid1);
+
+  CPPUNIT_ASSERT(uid3.Pack(buffer, buffer_size));
+  uint8_t expected2[] = {0, 2, 0, 0, 0, 0x0a};
+  CPPUNIT_ASSERT(0 == memcmp(expected2, buffer, buffer_size));
+  UID unpacked_uid2(buffer);
+  CPPUNIT_ASSERT_EQUAL(uid3, unpacked_uid2);
+
+  delete[] buffer;
 }
 
 /*
