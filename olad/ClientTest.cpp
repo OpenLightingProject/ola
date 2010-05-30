@@ -109,7 +109,7 @@ void ClientTest::testGetSetDMX() {
   Client client(NULL);
 
   ola::TimeStamp timestamp;
-  ola::Clock::CurrentTime(timestamp);
+  ola::Clock::CurrentTime(&timestamp);
   ola::DmxSource source(buffer, timestamp, 100);
 
   // check get/set works

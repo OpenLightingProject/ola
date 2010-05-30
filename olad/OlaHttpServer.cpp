@@ -117,7 +117,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
 
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
   data_dir_var->Set(m_server.DataDir());
-  Clock::CurrentTime(m_start_time);
+  Clock::CurrentTime(&m_start_time);
   export_map->GetStringVar(K_UPTIME_VAR);
 
   // fetch the interface info
@@ -157,7 +157,7 @@ int OlaHttpServer::DisplayMain(const HttpRequest *request,
                                HttpResponse *response) {
   TemplateDictionary dict("main");
   TimeStamp now;
-  Clock::CurrentTime(now);
+  Clock::CurrentTime(&now);
   TimeInterval diff = now - m_start_time;
 
   stringstream str;
@@ -377,7 +377,7 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
 int OlaHttpServer::DisplayDebug(const HttpRequest *request,
                                 HttpResponse *response) {
   TimeStamp now;
-  Clock::CurrentTime(now);
+  Clock::CurrentTime(&now);
   TimeInterval diff = now - m_start_time;
   stringstream str;
   str << (diff.AsInt() / 1000);

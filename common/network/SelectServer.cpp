@@ -320,7 +320,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   maxsd = 0;
   FD_ZERO(&r_fds);
   FD_ZERO(&w_fds);
-  Clock::CurrentTime(now);
+  Clock::CurrentTime(&now);
   now = CheckTimeouts(now);
 
   // adding sockets should be the last thing we do, they may have changed due
@@ -349,7 +349,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
-      Clock::CurrentTime(*m_wake_up_time);
+      Clock::CurrentTime(m_wake_up_time);
       return true;
     case -1:
       if (errno == EINTR)
@@ -357,7 +357,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
       OLA_WARN << "select() error, " << strerror(errno);
       return false;
     default:
-      Clock::CurrentTime(*m_wake_up_time);
+      Clock::CurrentTime(m_wake_up_time);
       CheckTimeouts(*m_wake_up_time);
       CheckSockets(&r_fds);
   }
@@ -487,7 +487,7 @@ TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
       if (m_export_map)
         (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
     }
-    Clock::CurrentTime(now);
+    Clock::CurrentTime(&now);
   }
   return now;
 }

@@ -46,7 +46,7 @@ class Event {
     explicit Event(unsigned int ms):
       m_interval(ms * 1000) {
       TimeStamp now;
-      Clock::CurrentTime(now);
+      Clock::CurrentTime(&now);
       m_next = now + m_interval;
     }
     virtual ~Event() {}

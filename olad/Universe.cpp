@@ -452,7 +452,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
 
   m_active_priority = DmxSource::PRIORITY_MIN;
   TimeStamp now;
-  Clock::CurrentTime(now);
+  Clock::CurrentTime(&now);
   bool changed_source_is_active = false;
 
   // Find the highest active ports

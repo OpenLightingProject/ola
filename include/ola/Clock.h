@@ -229,10 +229,10 @@ class TimeStamp {
  */
 class Clock {
   public:
-    static void CurrentTime(TimeStamp &timestamp) {
+    static void CurrentTime(TimeStamp *timestamp) {
       struct timeval tv;
       gettimeofday(&tv, NULL);
-      timestamp = tv;
+      *timestamp = tv;
     }
 };
 }  // ola
