@@ -21,6 +21,8 @@
 #ifndef INCLUDE_OLA_CLOSURE_H_
 #define INCLUDE_OLA_CLOSURE_H_
 
+#include <ola/Callback.h>
+
 namespace ola {
 
 
@@ -80,15 +82,15 @@ class SingleUseClosure<void>: public BaseClosure<void> {
 template <typename Parent, typename ReturnType>
 class FunctionClosure: public Parent {
   public:
-    typedef ReturnType (*Callback)();
+    typedef ReturnType (*Function)();
 
-    explicit FunctionClosure(Callback callback):
+    explicit FunctionClosure(Function callback):
       Parent(),
       m_callback(callback) {}
     ReturnType DoRun() { return m_callback(); }
 
   private:
-    Callback m_callback;
+    Function m_callback;
 };
 
 
@@ -118,19 +120,19 @@ inline Closure<ReturnType>* NewClosure(ReturnType (*callback)()) {
 template <typename Parent, typename ReturnType, typename Arg>
 class FunctionArgClosure: public Parent {
   public:
-    typedef ReturnType (*Callback)(Arg arg);
+    typedef ReturnType (*Function)(Arg arg);
 
     /*
      * @param callback the function to call
      */
-    FunctionArgClosure(Callback callback, Arg arg):
+    FunctionArgClosure(Function callback, Arg arg):
       Parent(),
       m_callback(callback),
       m_arg(arg) {}
     ReturnType DoRun() { return m_callback(m_arg); }
 
   private:
-    Callback m_callback;
+    Function m_callback;
     Arg m_arg;
 };
 
@@ -166,14 +168,14 @@ inline Closure<ReturnType>* NewClosure(
 template <typename Class, typename Parent, typename ReturnType>
 class MethodClosure: public Parent {
   public:
-    typedef ReturnType (Class::*Callback)();
+    typedef ReturnType (Class::*Method)();
 
     /*
      * @param object the object to use in the method call
      * @param callback the method to call
      */
     MethodClosure(Class *object,
-                  Callback callback):
+                  Method callback):
       Parent(),
       m_object(object),
       m_callback(callback) {}
@@ -181,7 +183,7 @@ class MethodClosure: public Parent {
 
   private:
     Class *m_object;
-    Callback m_callback;
+    Method m_callback;
 };
 
 
@@ -215,7 +217,7 @@ inline Closure<ReturnType>* NewClosure(Class* object,
 template <typename Class, typename Parent, typename ReturnType, typename Arg>
 class MethodArgClosure: public Parent {
   public:
-    typedef ReturnType (Class::*Callback)(Arg arg);
+    typedef ReturnType (Class::*Method)(Arg arg);
 
     /*
      * @param object the object to use in the method call
@@ -223,7 +225,7 @@ class MethodArgClosure: public Parent {
      * @param arg the argument to pass to the method
      */
     MethodArgClosure(Class *object,
-                     Callback callback,
+                     Method callback,
                      Arg arg):
       Parent(),
       m_object(object),
@@ -233,7 +235,7 @@ class MethodArgClosure: public Parent {
 
   private:
     Class *m_object;
-    Callback m_callback;
+    Method m_callback;
     Arg m_arg;
 };
 
@@ -280,7 +282,7 @@ template <typename Class,
           typename Arg2>
 class MethodTwoArgClosure: public Parent {
   public:
-    typedef ReturnType (Class::*Callback)(Arg arg, Arg2 arg2);
+    typedef ReturnType (Class::*Method)(Arg arg, Arg2 arg2);
 
     /*
      * @param object the object to use in the method call
@@ -289,7 +291,7 @@ class MethodTwoArgClosure: public Parent {
      * @param arg2 the second argument to pass to the method
      */
     MethodTwoArgClosure(Class *object,
-                        Callback callback,
+                        Method callback,
                         Arg arg,
                         Arg2 arg2):
       Parent(),
@@ -301,7 +303,7 @@ class MethodTwoArgClosure: public Parent {
 
   private:
     Class *m_object;
-    Callback m_callback;
+    Method m_callback;
     Arg m_arg;
     Arg2 m_arg2;
 };

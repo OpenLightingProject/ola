@@ -6,9 +6,8 @@ libolautils_la_SOURCES = DmxBuffer.cpp OlaThread.cpp RunLengthEncoder.cpp \
 
 TESTS = UtilsTester
 check_PROGRAMS = $(TESTS)
-UtilsTester_SOURCES = ClockTest.cpp DmxBufferTest.cpp \
-                      OlaThreadTest.cpp \
-                      RunLengthEncoderTest.cpp  \
+UtilsTester_SOURCES = ClockTest.cpp ClosureTest.cpp DmxBufferTest.cpp \
+                      OlaThreadTest.cpp RunLengthEncoderTest.cpp  \
                       StringUtilsTest.cpp UtilsTester.cpp
 UtilsTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 UtilsTester_LDFLAGS = $(CPPUNIT_LIBS)
