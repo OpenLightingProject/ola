@@ -108,7 +108,7 @@ class UID {
       return uid;
     }
 
-    static const unsigned int UID_SIZE = 6;
+    enum { UID_SIZE = 6 };
 
   private:
     struct rdm_uid {
