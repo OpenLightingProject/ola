@@ -52,7 +52,7 @@ UniverseStore::UniverseStore(Preferences *preferences,
       Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR,
     };
 
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i)
       export_map->GetUIntMapVar(string(vars[i]), "universe");
   }
 }

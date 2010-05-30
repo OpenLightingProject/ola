@@ -171,5 +171,4 @@ void StreamingClientTest::testSendDMX() {
   ola_client.Stop();
 
   CPPUNIT_ASSERT(!ola_client.Setup());
-
 }

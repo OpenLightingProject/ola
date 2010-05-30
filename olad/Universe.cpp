@@ -87,7 +87,7 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
   };
 
   if (m_export_map) {
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i)
       (*m_export_map->GetUIntMapVar(vars[i]))[m_universe_id_str] = 0;
   }
 }

@@ -44,7 +44,7 @@ class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_USBPRO; }
-    int DeviceRemoved(UsbDevice *device);
+    void DeviceRemoved(UsbDevice *device);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
     void NewWidget(class UsbWidget *widget,

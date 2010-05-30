@@ -49,7 +49,7 @@ class ShowNetNodeTest: public CppUnit::TestFixture {
     void testHandlePacket();
     void testPopulatePacket();
     void testSendAndReceive();
-    int UpdateData(unsigned int universe);
+    void UpdateData(unsigned int universe);
     void SendAndReceiveForUniverse(unsigned int universe);
   private:
     bool m_hander_called;
@@ -77,7 +77,7 @@ void ShowNetNodeTest::tearDown() {
 /*
  * Called when there is new data
  */
-int ShowNetNodeTest::UpdateData(unsigned int universe) {
+void ShowNetNodeTest::UpdateData(unsigned int universe) {
   m_hander_called = true;
 }
 

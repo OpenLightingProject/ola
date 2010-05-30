@@ -109,7 +109,7 @@ class MockPDU: public PDU {
  */
 class MockInflator: public BaseInflator {
   public:
-    MockInflator(const CID &cid, Closure *on_recv = NULL):
+    MockInflator(const CID &cid, Closure<void> *on_recv = NULL):
       BaseInflator(),
       m_cid(cid),
       m_on_recv(on_recv) {}
@@ -146,7 +146,7 @@ class MockInflator: public BaseInflator {
 
   private:
     CID m_cid;
-    Closure *m_on_recv;
+    Closure<void> *m_on_recv;
     unsigned int m_last_header;
 };
 }  // e131

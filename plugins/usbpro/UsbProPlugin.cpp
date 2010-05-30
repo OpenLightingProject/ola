@@ -74,7 +74,7 @@ string UsbProPlugin::Description() const {
 /*
  * Called when a device is removed
  */
-int UsbProPlugin::DeviceRemoved(UsbDevice *device) {
+void UsbProPlugin::DeviceRemoved(UsbDevice *device) {
   vector<UsbDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
@@ -85,12 +85,11 @@ int UsbProPlugin::DeviceRemoved(UsbDevice *device) {
 
   if (iter == m_devices.end()) {
     OLA_WARN << "Couldn't find the device that was removed";
-    return -1;
+    return;
   }
 
   DeleteDevice(device);
   m_devices.erase(iter);
-  return 0;
 }
 
 

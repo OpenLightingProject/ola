@@ -45,8 +45,8 @@ class UDPTransportTest: public CppUnit::TestFixture {
     void testUDPTransport();
     void setUp();
     void tearDown();
-    int Stop();
-    int FatalStop() { CPPUNIT_ASSERT(false); }
+    void Stop();
+    void FatalStop() { CPPUNIT_ASSERT(false); }
 
   private:
     ola::network::SelectServer *m_ss;
@@ -63,7 +63,7 @@ void UDPTransportTest::tearDown() {
   delete m_ss;
 }
 
-int UDPTransportTest::Stop() {
+void UDPTransportTest::Stop() {
   if (m_ss)
     m_ss->Terminate();
 }
@@ -74,7 +74,7 @@ int UDPTransportTest::Stop() {
  */
 void UDPTransportTest::testUDPTransport() {
   CID cid;
-  Closure *stop_closure = NewClosure(this, &UDPTransportTest::Stop);
+  Closure<void> *stop_closure = NewClosure(this, &UDPTransportTest::Stop);
   MockInflator inflator(cid, stop_closure);
   ola::network::Interface interface;
   UDPTransport transport(&inflator);
@@ -92,7 +92,7 @@ void UDPTransportTest::testUDPTransport() {
   ola::network::StringToAddress("255.255.255.255", destination.sin_addr);
   CPPUNIT_ASSERT(transport.Send(pdu_block, destination));
 
-  SingleUseClosure *closure =
+  SingleUseClosure<void> *closure =
     NewSingleClosure(this, &UDPTransportTest::FatalStop);
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();

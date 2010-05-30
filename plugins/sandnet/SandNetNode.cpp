@@ -135,7 +135,7 @@ vector<UdpSocket*> SandNetNode::GetSockets() {
 /*
  * Called when there is data on this socket
  */
-int SandNetNode::SocketReady(UdpSocket *socket) {
+void SandNetNode::SocketReady(UdpSocket *socket) {
   sandnet_packet packet;
   ssize_t packet_size = sizeof(packet);
   struct sockaddr_in source;
@@ -145,15 +145,15 @@ int SandNetNode::SocketReady(UdpSocket *socket) {
                         &packet_size,
                         source,
                         source_length))
-    return -1;
+    return;
 
   // skip packets sent by us
   if (source.sin_addr.s_addr == m_interface.ip_address.s_addr)
-    return 0;
+    return;
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.opcode))) {
     OLA_WARN << "Small sandnet packet received, discarding";
-    return -1;
+    return;
   }
 
   switch (NetworkToHost(packet.opcode)) {
@@ -170,7 +170,6 @@ int SandNetNode::SocketReady(UdpSocket *socket) {
       OLA_INFO << "Skipping sandnet packet with unknown code: 0x" <<
         std::hex << NetworkToHost(packet.opcode);
   }
-  return 0;
 }
 
 
@@ -182,7 +181,7 @@ int SandNetNode::SocketReady(UdpSocket *socket) {
  */
 bool SandNetNode::SetHandler(uint8_t group, uint8_t universe,
                              DmxBuffer *buffer,
-                             Closure *closure) {
+                             Closure<void> *closure) {
   if (!closure)
     return false;
 
@@ -195,7 +194,7 @@ bool SandNetNode::SetHandler(uint8_t group, uint8_t universe,
     handler.closure = closure;
     m_handlers[key] = handler;
   } else {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     iter->second.closure = closure;
     delete old_closure;
   }
@@ -213,7 +212,7 @@ bool SandNetNode::RemoveHandler(uint8_t group, uint8_t universe) {
   universe_handlers::iterator iter = m_handlers.find(key);
 
   if (iter != m_handlers.end()) {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     m_handlers.erase(iter);
     delete old_closure;
     return true;
@@ -240,9 +239,9 @@ bool SandNetNode::SetPortParameters(uint8_t port_id, sandnet_port_type type,
 /*
  * Send a Sandnet Advertisment.
  */
-int SandNetNode::SendAdvertisement() {
+bool SandNetNode::SendAdvertisement() {
   if (!m_running)
-    return -1;
+    return false;
 
   sandnet_packet packet;
   sandnet_advertisement *advertisement = &packet.contents.advertisement;

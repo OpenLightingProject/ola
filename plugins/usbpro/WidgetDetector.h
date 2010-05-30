@@ -104,7 +104,7 @@ class WidgetDetector: public WidgetListener {
     // called by the widgets
     void HandleMessage(UsbWidget *widget, uint8_t label, unsigned int length,
                        const uint8_t *data);
-    int DiscoveryTimeout(UsbWidget *widget);
+    void DiscoveryTimeout(UsbWidget *widget);
     int DeviceClosed(UsbWidget *widget);
 
   private:

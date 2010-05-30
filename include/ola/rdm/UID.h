@@ -49,7 +49,7 @@ class UID {
       return *this;
     }
 
-    UID(const uint8_t *data) {
+    explicit UID(const uint8_t *data) {
       m_uid.esta_id = (data[0] << 8) + data[1];
       m_uid.device_id = ((data[2] << 24) + (data[3] << 16) + (data[4] << 8) +
           data[5]);

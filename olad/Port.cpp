@@ -80,7 +80,7 @@ bool BasicInputPort::SetPriority(uint8_t priority) {
 /*
  * Called when there is new data for this port
  */
-int BasicInputPort::DmxChanged() {
+void BasicInputPort::DmxChanged() {
   if (GetUniverse()) {
     const DmxBuffer &buffer = ReadDMX();
     uint8_t priority = (PriorityCapability() == CAPABILITY_FULL &&
@@ -90,7 +90,6 @@ int BasicInputPort::DmxChanged() {
     m_dmx_source.UpdateData(buffer, *m_wakeup_time, priority);
     GetUniverse()->PortDataChanged(this);
   }
-  return 0;
 }
 
 

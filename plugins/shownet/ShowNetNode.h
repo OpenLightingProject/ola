@@ -46,11 +46,11 @@ class ShowNetNode {
     bool SendDMX(unsigned int universe, const ola::DmxBuffer &buffer);
     bool SetHandler(unsigned int universe,
                     DmxBuffer *buffer,
-                    ola::Closure *handler);
+                    ola::Closure<void> *handler);
     bool RemoveHandler(unsigned int universe);
 
     ola::network::UdpSocket* GetSocket() { return m_socket; }
-    int SocketReady();
+    void SocketReady();
 
     static const uint16_t SHOWNET_MAX_UNIVERSES = 8;
 
@@ -59,7 +59,7 @@ class ShowNetNode {
   private:
     typedef struct {
       DmxBuffer *buffer;
-      Closure *closure;
+      Closure<void> *closure;
     } universe_handler;
 
     bool m_running;

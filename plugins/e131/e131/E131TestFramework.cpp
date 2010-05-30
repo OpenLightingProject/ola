@@ -116,11 +116,11 @@ StateManager::~StateManager() {
 }
 
 
-int StateManager::Tick() {
+bool StateManager::Tick() {
   if (m_ticker > (TIME_PER_STATE_MS / TICK_INTERVAL_MS)) {
     NextState();
     if (m_count == m_states.size())
-      return 1;
+      return false;
   } else {
     m_ticker++;
   }
@@ -140,11 +140,11 @@ int StateManager::Tick() {
       break;
   }
   cout << static_cast<char>(0x8) << std::flush;
-  return 0;
+  return true;
 }
 
 
-int StateManager::Input() {
+void StateManager::Input() {
   switch (getchar()) {
     case 'e':
       cout << m_states[m_count]->ExpectedResults() << endl;
@@ -159,17 +159,15 @@ int StateManager::Input() {
     default:
       break;
   }
-  return 0;
 }
 
 
 /*
  * Called when new DMX is recieved by the local node
  */
-int StateManager::NewDMX() {
+void StateManager::NewDMX() {
   if (!m_states[m_count]->Verify(m_recv_buffer))
     cout << "FAILED TEST" << endl;
-  return 0;
 }
 
 

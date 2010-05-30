@@ -50,7 +50,7 @@ UsbWidget::~UsbWidget() {
 /*
  * Set the onRemove handler
  */
-void UsbWidget::SetOnRemove(ola::SingleUseClosure *on_close) {
+void UsbWidget::SetOnRemove(ola::SingleUseClosure<void> *on_close) {
   m_socket->SetOnClose(on_close);
 }
 
@@ -58,11 +58,10 @@ void UsbWidget::SetOnRemove(ola::SingleUseClosure *on_close) {
 /*
  * Read data from the widget
  */
-int UsbWidget::SocketReady() {
+void UsbWidget::SocketReady() {
   while (m_socket->DataRemaining() > 0) {
     ReceiveMessage();
   }
-  return 0;
 }
 
 

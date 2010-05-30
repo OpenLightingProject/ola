@@ -21,8 +21,8 @@
 #ifndef PLUGINS_USBDMX_USBDEVICE_H_
 #define PLUGINS_USBDMX_USBDEVICE_H_
 
-#include <string>
 #include <libusb.h>
+#include <string>
 #include "olad/Device.h"
 
 namespace ola {

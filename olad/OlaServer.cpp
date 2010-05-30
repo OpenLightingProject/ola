@@ -246,14 +246,12 @@ void OlaServer::ReloadPlugins() {
  * Add a new ConnectedSocket to this Server.
  * @param accepting_socket the AcceptingSocket with the new connection pending.
  */
-int OlaServer::AcceptNewConnection(
+void OlaServer::AcceptNewConnection(
     ola::network::AcceptingSocket *accepting_socket) {
   ola::network::ConnectedSocket *socket = accepting_socket->Accept();
 
-  if (!socket)
-    return 0;
-
-  return NewConnection(socket) ? 0 : -1;
+  if (socket)
+    NewConnection(socket);
 }
 
 
@@ -297,7 +295,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
 /*
  * Called when a socket is closed
  */
-int OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
+void OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
   map<int, OlaServerServiceImpl*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
@@ -307,31 +305,29 @@ int OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
   (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
   CleanupConnection(iter->second);
   m_sd_to_service.erase(iter);
-  return 0;
 }
 
 
 /*
  * Run the garbage collector
  */
-int OlaServer::GarbageCollect() {
+bool OlaServer::GarbageCollect() {
   OLA_INFO << "Garbage collecting";
   m_universe_store->GarbageCollectUniverses();
-  return 0;
+  return true;
 }
 
 
 /*
  * Called once per loop iteration
  */
-int OlaServer::CheckForReload() {
+void OlaServer::CheckForReload() {
   if (m_reload_plugins) {
     m_reload_plugins = false;
     OLA_INFO << "Reloading plugins";
     StopPlugins();
     m_plugin_manager->LoadAll();
   }
-  return 0;
 }
 
 

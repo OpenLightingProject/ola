@@ -45,7 +45,7 @@ class UsbDevice: public ola::Device {
       delete m_widget;
     }
 
-    void SetOnRemove(ola::SingleUseClosure *on_close) {
+    void SetOnRemove(ola::SingleUseClosure<void> *on_close) {
       m_widget->SetOnRemove(on_close);
     }
 

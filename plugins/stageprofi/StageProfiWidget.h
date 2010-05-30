@@ -48,8 +48,8 @@ class StageProfiWidget {
     ConnectedSocket *GetSocket() { return m_socket; }
     bool SendDmx(const DmxBuffer &buffer) const;
     bool DetectDevice();
-    int SocketReady();
-    int Timeout();
+    void SocketReady();
+    void Timeout();
 
   protected:
     int Send255(unsigned int start, const uint8_t *buf, unsigned int len) const;

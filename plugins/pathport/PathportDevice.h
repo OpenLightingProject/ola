@@ -39,7 +39,7 @@ class PathportDevice: public ola::Device {
 
     string DeviceId() const { return "1"; }
     PathportNode *GetNode() const { return m_node; }
-    int SendArpReply();
+    bool SendArpReply();
 
     static const char K_DEFAULT_NODE_NAME[];
     static const char K_DSCP_KEY[];

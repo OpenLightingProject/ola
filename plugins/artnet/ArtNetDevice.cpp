@@ -231,12 +231,9 @@ void ArtNetDevice::PostPortStop() {
  * Called when there is activity on our socket
  * @param socket the socket with activity
  */
-int ArtNetDevice::SocketReady() {
-  if (artnet_read(m_node, 0)) {
+void ArtNetDevice::SocketReady() {
+  if (artnet_read(m_node, 0))
     OLA_WARN << "artnet_read failed: " << artnet_strerror();
-    return -1;
-  }
-  return 0;
 }
 
 

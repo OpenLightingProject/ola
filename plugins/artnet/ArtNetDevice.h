@@ -52,7 +52,7 @@ class ArtNetDevice: public Device {
 
     // only one ArtNet device
     string DeviceId() const { return "1"; }
-    int SocketReady();
+    void SocketReady();
     ola::network::UnmanagedSocket *GetSocket() { return m_socket; }
 
     void Configure(RpcController *controller,

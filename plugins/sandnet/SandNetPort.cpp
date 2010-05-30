@@ -97,7 +97,8 @@ void SandNetInputPort::PostSetUniverse(Universe *old_universe,
         m_helper.SandnetGroup(new_universe),
         m_helper.SandnetUniverse(new_universe),
         &m_buffer,
-        NewClosure<SandNetInputPort>(this, &SandNetInputPort::DmxChanged));
+        NewClosure<SandNetInputPort, void>(this,
+                                           &SandNetInputPort::DmxChanged));
   }
 }
 

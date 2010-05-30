@@ -66,11 +66,11 @@ class OlaServer {
     ~OlaServer();
     bool Init();
     void ReloadPlugins();
-    int AcceptNewConnection(ola::network::AcceptingSocket *socket);
+    void AcceptNewConnection(ola::network::AcceptingSocket *socket);
     bool NewConnection(ola::network::ConnectedSocket *socket);
-    int SocketClosed(ola::network::ConnectedSocket *socket);
-    int GarbageCollect();
-    int CheckForReload();
+    void SocketClosed(ola::network::ConnectedSocket *socket);
+    bool GarbageCollect();
+    void CheckForReload();
 
     static const unsigned int DEFAULT_HTTP_PORT = 9090;
 

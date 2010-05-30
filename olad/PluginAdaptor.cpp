@@ -85,8 +85,9 @@ bool PluginAdaptor::RemoveSocket(class ConnectedSocket *socket) const {
  * @param closure the OlaClosure to call when the timeout expires
  * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
  */
-timeout_id PluginAdaptor::RegisterRepeatingTimeout(int ms,
-                                                   Closure *closure) const {
+timeout_id PluginAdaptor::RegisterRepeatingTimeout(
+    int ms,
+    Closure<bool> *closure) const {
   return m_ss->RegisterRepeatingTimeout(ms, closure);
 }
 
@@ -97,8 +98,9 @@ timeout_id PluginAdaptor::RegisterRepeatingTimeout(int ms,
  * @param closure the OlaClosure to call when the timeout expires
  * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
  */
-timeout_id PluginAdaptor::RegisterSingleTimeout(int ms,
-                                          SingleUseClosure *closure) const {
+timeout_id PluginAdaptor::RegisterSingleTimeout(
+    int ms,
+    SingleUseClosure<void> *closure) const {
   return m_ss->RegisterSingleTimeout(ms, closure);
 }
 

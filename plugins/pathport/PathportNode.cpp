@@ -119,7 +119,7 @@ bool PathportNode::Stop() {
 /*
  * Called when there is data on this socket
  */
-int PathportNode::SocketReady(UdpSocket *socket) {
+void PathportNode::SocketReady(UdpSocket *socket) {
   pathport_packet_s packet;
   ssize_t packet_size = sizeof(packet);
   struct sockaddr_in source;
@@ -129,22 +129,22 @@ int PathportNode::SocketReady(UdpSocket *socket) {
                         &packet_size,
                         source,
                         source_length))
-    return -1;
+    return;
 
   // skip packets sent by us
   if (source.sin_addr.s_addr == m_interface.ip_address.s_addr)
-    return 0;
+    return;
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.header))) {
     OLA_WARN << "Small pathport packet received, discarding";
-    return -1;
+    return;
   }
   packet_size -= static_cast<ssize_t>(sizeof(packet.header));
 
   // Validate header
   if (!ValidateHeader(packet.header)) {
     OLA_WARN << "Invalid pathport packet";
-    return 0;
+    return;
   }
 
   uint32_t destination = NetworkToHost(packet.header.destination);
@@ -154,7 +154,7 @@ int PathportNode::SocketReady(UdpSocket *socket) {
       destination != PATHPORT_CONFIG_GROUP &&
       destination != PATHPORT_DATA_GROUP) {
     OLA_WARN << "pathport destination not set to us: " << destination;
-    return 0;
+    return;
   }
 
   // TODO(simon): Handle multiple pdus here
@@ -163,7 +163,7 @@ int PathportNode::SocketReady(UdpSocket *socket) {
 
   if (packet_size < sizeof(pathport_pdu_header)) {
     OLA_WARN << "Pathport packet too small to fit a pdu header";
-    return 0;
+    return;
   }
   packet_size -= sizeof(pathport_pdu_header);
 
@@ -181,7 +181,6 @@ int PathportNode::SocketReady(UdpSocket *socket) {
       OLA_INFO << "Unhandled pathport packet with id: " <<
         NetworkToHost(pdu->head.type);
   }
-  return 0;
 }
 
 
@@ -193,7 +192,7 @@ int PathportNode::SocketReady(UdpSocket *socket) {
  */
 bool PathportNode::SetHandler(uint8_t universe,
                              DmxBuffer *buffer,
-                             Closure *closure) {
+                             Closure<void> *closure) {
   if (!closure)
     return false;
 
@@ -205,7 +204,7 @@ bool PathportNode::SetHandler(uint8_t universe,
     handler.closure = closure;
     m_handlers[universe] = handler;
   } else {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     iter->second.closure = closure;
     delete old_closure;
   }
@@ -222,7 +221,7 @@ bool PathportNode::RemoveHandler(uint8_t universe) {
   universe_handlers::iterator iter = m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     m_handlers.erase(iter);
     delete old_closure;
     return true;
@@ -375,7 +374,6 @@ bool PathportNode::ValidateHeader(const pathport_packet_header &header) {
  */
 void PathportNode::HandleDmxData(const pathport_pdu_data &packet,
                                  unsigned int size) {
-
   if (size < sizeof(pathport_pdu_data)) {
     OLA_WARN << "Small pathport data packet received, ignoring";
     return;

@@ -50,7 +50,7 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
 #ifdef HAVE_INET_ATON
   if (!inet_aton(address.data(), &addr)) {
 #else
-  in_addr_t *ip_addr4 = (in_addr_t*) &addr;
+  in_addr_t *ip_addr4 = reinterpret_cast<in_addr_t*>(&addr);
   if ((*ip_addr4 = inet_addr(address.data())) == INADDR_NONE) {
 #endif
     OLA_WARN << "Could not convert address " << address;

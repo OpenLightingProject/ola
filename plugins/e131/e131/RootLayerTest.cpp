@@ -44,8 +44,8 @@ class RootLayerTest: public CppUnit::TestFixture {
     void testRootLayerWithCustomCID();
     void setUp();
     void tearDown();
-    int Stop();
-    int FatalStop() { CPPUNIT_ASSERT(false); }
+    void Stop();
+    void FatalStop() { CPPUNIT_ASSERT(false); }
 
   private:
     void testRootLayerWithCIDs(const CID &root_cid, const CID &send_cid);
@@ -63,7 +63,7 @@ void RootLayerTest::tearDown() {
   delete m_ss;
 }
 
-int RootLayerTest::Stop() {
+void RootLayerTest::Stop() {
   if (m_ss)
     m_ss->Terminate();
 }
@@ -96,7 +96,7 @@ void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
   CPPUNIT_ASSERT(m_ss->AddSocket(transport.GetSocket()));
   RootLayer layer(&transport, root_cid);
 
-  Closure *stop_closure = NewClosure(this, &RootLayerTest::Stop);
+  Closure<void> *stop_closure = NewClosure(this, &RootLayerTest::Stop);
   MockInflator inflator(send_cid, stop_closure);
   CPPUNIT_ASSERT(layer.AddInflator(&inflator));
 
@@ -110,7 +110,7 @@ void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
     CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu,
                                  send_cid));
 
-  SingleUseClosure *closure =
+  SingleUseClosure<void> *closure =
     NewSingleClosure(this, &RootLayerTest::FatalStop);
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();

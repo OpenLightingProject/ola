@@ -61,18 +61,18 @@ class Socket {
     /*
      * Set the OnData closure
      */
-    void SetOnData(ola::Closure *on_read) {
+    void SetOnData(ola::Closure<void> *on_read) {
       if (m_on_read)
         delete m_on_read;
       m_on_read = on_read;
     }
 
-    ola::Closure *OnData() const { return m_on_read; }
+    ola::Closure<void> *OnData() const { return m_on_read; }
 
     static const int INVALID_SOCKET = -1;
 
   private:
-    ola::Closure *m_on_read;
+    ola::Closure<void> *m_on_read;
 };
 
 
@@ -122,7 +122,7 @@ class ConnectedSocket: public Socket {
       return false;
     }
 
-    void SetOnClose(ola::SingleUseClosure *on_close) {
+    void SetOnClose(ola::SingleUseClosure<void> *on_close) {
       if (m_on_close)
         delete m_on_close;
       m_on_close = on_close;
@@ -141,7 +141,7 @@ class ConnectedSocket: public Socket {
     ConnectedSocket(const ConnectedSocket &other);
     ConnectedSocket& operator=(const ConnectedSocket &other);
   private:
-    ola::SingleUseClosure *m_on_close;
+    ola::SingleUseClosure<void> *m_on_close;
 };
 
 

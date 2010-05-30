@@ -135,10 +135,10 @@ void SandNetDevice::PostPortStop() {
 /*
  * Called periodically to send advertisements.
  */
-int SandNetDevice::SendAdvertisement() {
+bool SandNetDevice::SendAdvertisement() {
   OLA_DEBUG << "Sending Sandnet advertisement";
   m_node->SendAdvertisement();
-  return 0;
+  return true;
 }
 }  // sandnet
 }  // plugin

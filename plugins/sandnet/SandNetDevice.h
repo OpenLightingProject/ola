@@ -42,7 +42,7 @@ class SandNetDevice: public ola::Device {
     string DeviceId() const { return "1"; }
     SandNetNode *GetNode() { return m_node; }
 
-    int SendAdvertisement();
+    bool SendAdvertisement();
 
     static const char IP_KEY[];
     static const char NAME_KEY[];

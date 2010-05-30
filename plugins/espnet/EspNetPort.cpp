@@ -64,7 +64,8 @@ void EspNetInputPort::PostSetUniverse(Universe *old_universe,
     m_node->SetHandler(
         m_helper.EspNetUniverseId(new_universe),
         &m_buffer,
-        ola::NewClosure<EspNetInputPort>(this, &EspNetInputPort::DmxChanged));
+        ola::NewClosure<EspNetInputPort, void>(this,
+                                               &EspNetInputPort::DmxChanged));
 }
 
 

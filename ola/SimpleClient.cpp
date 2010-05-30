@@ -86,9 +86,8 @@ bool SimpleClient::Cleanup() {
 /*
  * Called if the server closed the connection
  */
-int SimpleClient::SocketClosed() {
+void SimpleClient::SocketClosed() {
   OLA_INFO << "Server closed the connection";
   m_ss->Terminate();
-  return 0;
 }
 }  // ola

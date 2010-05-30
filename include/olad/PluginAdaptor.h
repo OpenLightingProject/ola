@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string>
 #include <ola/Clock.h>  // NOLINT
+#include <ola/Closure.h>  // NOLINT
 #include <ola/network/SelectServer.h>  // NOLINT
 
 namespace ola {
@@ -34,8 +35,6 @@ namespace network {
   class SocketManager;
 }
 
-class Closure;
-class SingleUseClosure;
 
 using std::string;
 using ola::network::Socket;
@@ -55,8 +54,10 @@ class PluginAdaptor {
                    bool delete_on_close = false) const;
     bool RemoveSocket(class Socket *socket) const;
     bool RemoveSocket(class ConnectedSocket *socket) const;
-    timeout_id RegisterRepeatingTimeout(int ms, Closure *closure) const;
-    timeout_id RegisterSingleTimeout(int ms, SingleUseClosure *closure) const;
+    timeout_id RegisterRepeatingTimeout(int ms,
+                                        Closure<bool> *closure) const;
+    timeout_id RegisterSingleTimeout(int ms,
+                                     SingleUseClosure<void> *closure) const;
     void RemoveTimeout(timeout_id id) const;
 
     bool RegisterDevice(class AbstractDevice *device) const;

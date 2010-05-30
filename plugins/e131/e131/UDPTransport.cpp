@@ -104,31 +104,31 @@ bool UDPTransport::Send(const PDUBlock<PDU> &pdu_block,
 /*
  * Called when new data arrives.
  */
-int UDPTransport::Receive() {
+void UDPTransport::Receive() {
   if (!m_recv_buffer) {
     OLA_WARN << "Receive called the transport hasn't been initialized";
-    return 0;
+    return;
   }
 
   ssize_t size = MAX_DATAGRAM_SIZE;
   if (!m_socket.RecvFrom(m_recv_buffer, &size))
-    return 0;
+    return;
 
   if (size < (ssize_t) DATA_OFFSET) {
     OLA_WARN << "short ACN frame, discarding";
-    return 0;
+    return;
   }
 
   if (memcmp(m_recv_buffer, m_send_buffer, DATA_OFFSET)) {
     OLA_WARN << "ACN header is bad, discarding";
-    return 0;
+    return;
   }
 
   HeaderSet header_set;
   m_inflator->InflatePDUBlock(header_set,
                               m_recv_buffer + DATA_OFFSET,
                               size - DATA_OFFSET);
-  return 0;
+  return;
 }
 
 

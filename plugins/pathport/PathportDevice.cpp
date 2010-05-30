@@ -81,8 +81,11 @@ bool PathportDevice::StartHook() {
   m_node = new PathportNode(m_preferences->GetValue(K_NODE_ID_KEY),
                             product_id, dscp);
 
-  if (!m_node->Start())
-    goto e_pathport_start;
+  if (!m_node->Start()) {
+    delete m_node;
+    m_node = NULL;
+    return false;
+  }
 
   for (unsigned int i = 0; i < PORTS_PER_DEVICE; i++) {
     PathportInputPort *port = new PathportInputPort(
@@ -104,11 +107,6 @@ bool PathportDevice::StartHook() {
       NewClosure(this, &PathportDevice::SendArpReply));
 
   return true;
-
-e_pathport_start:
-  delete m_node;
-  m_node = NULL;
-  return false;
 }
 
 
@@ -134,11 +132,11 @@ void PathportDevice::PostPortStop() {
 }
 
 
-int PathportDevice::SendArpReply() {
+bool PathportDevice::SendArpReply() {
   OLA_DEBUG << "Sending pathport arp reply";
   if (m_node)
     m_node->SendArpReply();
-  return 0;
+  return true;
 }
 }  // pathport
 }  // plugin

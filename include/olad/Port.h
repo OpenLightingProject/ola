@@ -78,7 +78,7 @@ class InputPort: public Port {
     virtual ~InputPort() {}
 
     // signal the port that the DMX data has changed
-    virtual int DmxChanged() = 0;
+    virtual void DmxChanged() = 0;
 
     // Get the current data
     virtual const DmxSource &SourceData() const = 0;
@@ -119,7 +119,7 @@ class BasicInputPort: public InputPort {
     uint8_t GetPriority() const { return m_priority; }
     void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
     port_priority_mode GetPriorityMode() const { return m_priority_mode; }
-    int DmxChanged();
+    void DmxChanged();
     const DmxSource &SourceData() const { return m_dmx_source; }
 
     port_priority_capability PriorityCapability() const {

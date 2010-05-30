@@ -64,33 +64,31 @@ class SocketTest: public CppUnit::TestFixture {
     void testUdpSocket();
 
     // timing out indicates something went wrong
-    int Timeout() {
+    void Timeout() {
       CPPUNIT_ASSERT(false);
       m_timeout_closure = NULL;
-      return 0;
     }
 
     // Socket data actions
-    int ReceiveAndClose(ConnectedSocket *socket);
-    int ReceiveAndTerminate(ConnectedSocket *socket);
-    int Receive(ConnectedSocket *socket);
-    int ReceiveAndSend(ConnectedSocket *socket);
-    int ReceiveSendAndClose(ConnectedSocket *socket);
-    int AcceptAndSend(TcpAcceptingSocket *socket);
-    int AcceptSendAndClose(TcpAcceptingSocket *socket);
-    int UdpReceiveAndTerminate(UdpSocket *socket);
-    int UdpReceiveAndSend(UdpSocket *socket);
+    void ReceiveAndClose(ConnectedSocket *socket);
+    void ReceiveAndTerminate(ConnectedSocket *socket);
+    void Receive(ConnectedSocket *socket);
+    void ReceiveAndSend(ConnectedSocket *socket);
+    void ReceiveSendAndClose(ConnectedSocket *socket);
+    void AcceptAndSend(TcpAcceptingSocket *socket);
+    void AcceptSendAndClose(TcpAcceptingSocket *socket);
+    void UdpReceiveAndTerminate(UdpSocket *socket);
+    void UdpReceiveAndSend(UdpSocket *socket);
 
     // Socket close actions
-    int TerminateOnClose() {
+    void TerminateOnClose() {
       m_ss->Terminate();
-      return 0;
     }
 
   private:
     SelectServer *m_ss;
     AcceptingSocket *m_accepting_socket;
-    ola::SingleUseClosure *m_timeout_closure;
+    ola::SingleUseClosure<void> *m_timeout_closure;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SocketTest);
@@ -310,28 +308,26 @@ void SocketTest::testUdpSocket() {
 /*
  * Receive some data and close the socket
  */
-int SocketTest::ReceiveAndClose(ConnectedSocket *socket) {
-  int ret = Receive(socket);
+void SocketTest::ReceiveAndClose(ConnectedSocket *socket) {
+  Receive(socket);
   m_ss->RemoveSocket(socket);
   socket->Close();
-  return ret;
 }
 
 
 /*
  * Receive some data and terminate
  */
-int SocketTest::ReceiveAndTerminate(ConnectedSocket *socket) {
-  int ret = Receive(socket);
+void SocketTest::ReceiveAndTerminate(ConnectedSocket *socket) {
+  Receive(socket);
   m_ss->Terminate();
-  return ret;
 }
 
 
 /*
  * Receive some data and check it's what we expected.
  */
-int SocketTest::Receive(ConnectedSocket *socket) {
+void SocketTest::Receive(ConnectedSocket *socket) {
   // try to read more than what we sent to test non-blocking
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
@@ -340,14 +336,13 @@ int SocketTest::Receive(ConnectedSocket *socket) {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
   CPPUNIT_ASSERT(!memcmp(test_cstring, buffer, data_read));
-  return 0;
 }
 
 
 /*
  * Receive some data and send it back
  */
-int SocketTest::ReceiveAndSend(ConnectedSocket *socket) {
+void SocketTest::ReceiveAndSend(ConnectedSocket *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
   socket->Receive(buffer, sizeof(buffer), data_read);
@@ -355,25 +350,23 @@ int SocketTest::ReceiveAndSend(ConnectedSocket *socket) {
                        data_read);
   ssize_t bytes_sent = socket->Send(buffer, data_read);
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
-  return 0;
 }
 
 
 /*
  * Receive some data, send the same data and close
  */
-int SocketTest::ReceiveSendAndClose(ConnectedSocket *socket) {
-  int ret = ReceiveAndSend(socket);
+void SocketTest::ReceiveSendAndClose(ConnectedSocket *socket) {
+  ReceiveAndSend(socket);
   m_ss->RemoveSocket(socket);
   socket->Close();
-  return ret;
 }
 
 
 /*
  * Accept a new connection and send some test data
  */
-int SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
+void SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
   ConnectedSocket *new_socket = socket->Accept();
   CPPUNIT_ASSERT(new_socket);
   ssize_t bytes_sent = new_socket->Send(
@@ -383,14 +376,13 @@ int SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
   new_socket->SetOnClose(ola::NewSingleClosure(this,
                                                &SocketTest::TerminateOnClose));
   m_ss->AddSocket(new_socket, true);
-  return 0;
 }
 
 
 /*
  * Accept a new connect, send some data and close
  */
-int SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
+void SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
   ConnectedSocket *new_socket = socket->Accept();
   CPPUNIT_ASSERT(new_socket);
   ssize_t bytes_sent = new_socket->Send(
@@ -399,14 +391,13 @@ int SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   new_socket->Close();
   delete new_socket;
-  return 0;
 }
 
 
 /*
  * Receive some data and check it.
  */
-int SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
+void SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
   struct in_addr expected_address;
   CPPUNIT_ASSERT(StringToAddress("127.0.0.1", expected_address));
 
@@ -418,14 +409,13 @@ int SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
   CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
   m_ss->Terminate();
-  return 0;
 }
 
 
 /*
  * Receive some data and echo it back.
  */
-int SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
+void SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
   struct in_addr expected_address;
   CPPUNIT_ASSERT(StringToAddress("127.0.0.1", expected_address));
 
@@ -439,5 +429,4 @@ int SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
 
   ssize_t data_sent = socket->SendTo(buffer, data_read, src);
   CPPUNIT_ASSERT_EQUAL(data_read, data_sent);
-  return 0;
 }
