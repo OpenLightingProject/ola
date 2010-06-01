@@ -70,7 +70,6 @@ class Plugin: public AbstractPlugin {
       AbstractPlugin(),
       m_plugin_adaptor(plugin_adaptor),
       m_preferences(NULL),
-      m_debug(false),
       m_enabled(false) {
     }
     virtual ~Plugin() {}
@@ -94,9 +93,7 @@ class Plugin: public AbstractPlugin {
 
     const PluginAdaptor *m_plugin_adaptor;
     class Preferences *m_preferences;  // preferences container
-    bool m_debug;  // debug mode on
     static const char ENABLED_KEY[];
-    static const char DEBUG_KEY[];
 
   private:
     bool m_enabled;  // are we running

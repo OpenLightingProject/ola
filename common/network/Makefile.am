@@ -15,7 +15,8 @@ EXTRA_DIST = PosixInterfacePicker.h WindowsInterfacePicker.h
 TESTS = NetworkTester
 check_PROGRAMS = $(TESTS)
 NetworkTester_SOURCES = SelectServerTester.cpp SocketTest.cpp \
-                        NetworkTest.cpp InterfacePickerTest.cpp
+                        NetworkTest.cpp NetworkUtilsTest.cpp \
+                        InterfacePickerTest.cpp
 NetworkTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 NetworkTester_LDFLAGS = $(CPPUNIT_LIBS)
 NetworkTester_LDADD = ./libolanetwork.la \

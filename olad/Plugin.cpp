@@ -27,7 +27,6 @@
 namespace ola {
 
 const char Plugin::ENABLED_KEY[] = "enabled";
-const char Plugin::DEBUG_KEY[] = "debug";
 
 /*
  * Returns true if we should try to start this plugin
@@ -45,7 +44,7 @@ bool Plugin::ShouldStart() {
  * @returns true if started sucessfully, false otherwise.
  */
 bool Plugin::Start() {
-  string enabled, debug;
+  string enabled;
 
   if (m_enabled)
     return false;
@@ -53,12 +52,6 @@ bool Plugin::Start() {
   // setup prefs
   if (!LoadPreferences())
     return false;
-
-  debug = m_preferences->GetValue(DEBUG_KEY);
-  if (debug == "true") {
-    OLA_INFO << Name() << " debug on";
-    m_debug = true;
-  }
 
   if (!StartHook()) {
     return false;

@@ -44,6 +44,11 @@ uint8_t HostToNetwork(uint8_t value);
 uint16_t HostToNetwork(uint16_t value);
 uint32_t HostToNetwork(uint32_t value);
 
+uint8_t HostToLittleEndian(uint8_t value);
+uint16_t HostToLittleEndian(uint16_t value);
+uint8_t LittleEndianToHost(uint8_t value);
+uint16_t LittleEndianToHost(uint16_t value);
+
 std::string FullHostname();
 std::string Hostname();
 }  // network

@@ -21,13 +21,12 @@
 #ifndef PLUGINS_ARTNET_ARTNETDEVICE_H_
 #define PLUGINS_ARTNET_ARTNETDEVICE_H_
 
-#include <artnet/artnet.h>
 #include <string>
 
 #include "ola/network/Socket.h"
 #include "olad/Device.h"
-#include "olad/PluginAdaptor.h"
 #include "plugins/artnet/messages/ArtnetConfigMessages.pb.h"
+#include "plugins/artnet/ArtNetNode.h"
 
 namespace ola {
 
@@ -47,13 +46,16 @@ class ArtNetDevice: public Device {
     ArtNetDevice(AbstractPlugin *owner,
                  const string &name,
                  class Preferences *preferences,
-                 bool debug,
-                 const TimeStamp *wake_time);
+                 const class PluginAdaptor *plugin_adaptor);
 
     // only one ArtNet device
     string DeviceId() const { return "1"; }
-    void SocketReady();
-    ola::network::UnmanagedSocket *GetSocket() { return m_socket; }
+
+    ola::network::UdpSocket *GetSocket() {
+      if (m_node)
+        return m_node->GetSocket();
+      return NULL;
+    }
 
     void Configure(RpcController *controller,
                    const string &request,
@@ -64,6 +66,8 @@ class ArtNetDevice: public Device {
     static const char K_LONG_NAME_KEY[];
     static const char K_SUBNET_KEY[];
     static const char K_IP_KEY[];
+    // 10s between polls when we're sending data, DMX-workshop uses 8s;
+    static const unsigned int POLL_INTERVAL = 10000;
 
   protected:
     bool StartHook();
@@ -71,13 +75,8 @@ class ArtNetDevice: public Device {
 
   private:
     class Preferences *m_preferences;
-    ola::network::UnmanagedSocket *m_socket;
-    artnet_node m_node;
-    string m_short_name;
-    string m_long_name;
-    uint8_t m_subnet;
-    bool m_debug;
-    const TimeStamp *m_wake_time;
+    ArtNetNode *m_node;
+    const class PluginAdaptor *m_plugin_adaptor;
 
     void HandleOptions(Request *request, string *response);
 };

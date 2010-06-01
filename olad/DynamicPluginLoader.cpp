@@ -26,6 +26,7 @@
 #include "olad/Plugin.h"
 #include "olad/DynamicPluginLoader.h"
 
+#include "plugins/artnet/ArtNetPlugin.h"
 #include "plugins/dummy/DummyPlugin.h"
 #include "plugins/e131/E131Plugin.h"
 #include "plugins/espnet/EspNetPlugin.h"
@@ -40,9 +41,6 @@
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 #endif
 
-#ifdef HAVE_ARTNET
-#include "plugins/artnet/ArtNetPlugin.h"
-#endif
 
 
 #ifdef HAVE_DMX4LINUX
@@ -61,15 +59,12 @@ using std::vector;
 vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
   vector<AbstractPlugin*> plugins;
 
-#ifdef HAVE_ARTNET
-  plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
-#endif
-
 #ifdef HAVE_DMX4LINUX
   plugins.push_back(
       new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
 #endif
 
+  plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
   plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
   plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
   plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));

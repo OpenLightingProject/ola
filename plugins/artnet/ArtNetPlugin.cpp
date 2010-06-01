@@ -56,8 +56,7 @@ bool ArtNetPlugin::StartHook() {
   m_device = new ArtNetDevice(this,
                               DEVICE_NAME,
                               m_preferences,
-                              m_debug,
-                              m_plugin_adaptor->WakeUpTime());
+                              m_plugin_adaptor);
 
   if (!m_device->Start()) {
     delete m_device;

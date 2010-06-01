@@ -34,33 +34,12 @@
 
 #include "ola/Closure.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
+#include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
 #include "olad/Preferences.h"
-#include "artnet/artnet.h"
 #include "plugins/artnet/ArtNetDevice.h"
 #include "plugins/artnet/ArtNetPort.h"
-
-
-/*
- * Handle dmx from the network, called from libartnet
- */
-int dmx_handler(artnet_node n, int artnet_port, void *d) {
-  ola::plugin::artnet::ArtNetDevice *device =
-    reinterpret_cast<ola::plugin::artnet::ArtNetDevice*>(d);
-
-  // don't return non zero here else libartnet will stop processing
-  // this should never happen anyway
-  if (artnet_port < 0 || artnet_port > ARTNET_MAX_PORTS)
-    return 0;
-
-  // signal to the port that the data has changed
-  ola::InputPort *port = device->GetInputPort(artnet_port);
-  if (port)
-    port->DmxChanged();
-  return 0;
-  (void) n;
-}
-
 
 namespace ola {
 namespace plugin {
@@ -82,17 +61,11 @@ const char ArtNetDevice::K_IP_KEY[] = "ip";
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            const string &name,
                            ola::Preferences *preferences,
-                           bool debug,
-                           const TimeStamp *wake_time):
+                           const PluginAdaptor *plugin_adaptor):
   Device(owner, name),
   m_preferences(preferences),
-  m_socket(NULL),
   m_node(NULL),
-  m_short_name(""),
-  m_long_name(""),
-  m_subnet(0),
-  m_debug(debug),
-  m_wake_time(wake_time) {
+  m_plugin_adaptor(plugin_adaptor) {
 }
 
 
@@ -101,110 +74,36 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
  * @return true on success, false on failure
  */
 bool ArtNetDevice::StartHook() {
-  string value;
-  int subnet = 0;
+  string value = m_preferences->GetValue(K_SUBNET_KEY);
+  unsigned int subnet;
+  if (!ola::StringToUInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet))
+      subnet = 0;
 
-  // create new artnet node, and and set config values
-  if (m_preferences->GetValue(K_IP_KEY).empty()) {
-    m_node = artnet_new(NULL, m_debug);
-  } else {
-    m_node = artnet_new(m_preferences->GetValue(K_IP_KEY).data(), m_debug);
+  m_node = new ArtNetNode(m_preferences->GetValue(K_IP_KEY),
+                          m_preferences->GetValue(K_SHORT_NAME_KEY),
+                          m_preferences->GetValue(K_LONG_NAME_KEY),
+                          m_plugin_adaptor->WakeUpTime(),
+                          subnet);
+
+  for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
+    AddPort(new ArtNetOutputPort(this, i, m_node));
+    AddPort(new ArtNetInputPort(this,
+                                i,
+                                m_plugin_adaptor->WakeUpTime(),
+                                m_node));
   }
 
-  if (!m_node) {
-    OLA_WARN << "artnet_new failed " << artnet_strerror();
-    goto e_dev;
+  if (!m_node->Start()) {
+    DeleteAllPorts();
+    delete m_node;
+    m_node = NULL;
+    return false;
   }
 
-  // node config
-  if (artnet_setoem(m_node, 0x04, 0x31)) {
-    OLA_WARN << "artnet_setoem failed: " << artnet_strerror();
-    goto e_artnet_start;
-  }
-
-  value = m_preferences->GetValue(K_SHORT_NAME_KEY);
-  if (artnet_set_short_name(m_node, value.data())) {
-    OLA_WARN << "artnet_set_short_name failed: " << artnet_strerror();
-    goto e_artnet_start;
-  }
-  m_short_name = value;
-
-  value = m_preferences->GetValue(K_LONG_NAME_KEY);
-  if (artnet_set_long_name(m_node, value.data())) {
-    OLA_WARN << "artnet_set_long_name failed: " << artnet_strerror();
-    goto e_artnet_start;
-  }
-  m_long_name = value;
-
-  if (artnet_set_node_type(m_node, ARTNET_SRV)) {
-    OLA_WARN << "artnet_set_node_type failed: " << artnet_strerror();
-    goto e_artnet_start;
-  }
-
-  value = m_preferences->GetValue(K_SUBNET_KEY);
-  subnet = atoi(value.data());
-  if (artnet_set_subnet_addr(m_node, subnet)) {
-    OLA_WARN << "artnet_set_subnet_addr failed: " << artnet_strerror();
-    goto e_artnet_start;
-  }
-  m_subnet = subnet;
-
-  if (artnet_set_dmx_handler(m_node, ::dmx_handler,
-                             reinterpret_cast<void*>(this))) {
-    OLA_WARN << "artnet_set_dmx_handler failed: " << artnet_strerror();
-    goto e_artnet_start;
-  }
-
-  for (int i = 0; i < ARTNET_MAX_PORTS; i++) {
-    // output ports
-    if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_OUTPUT,
-                             ARTNET_PORT_DMX)) {
-      OLA_WARN << "artnet_set_port_type failed %s", artnet_strerror();
-      goto e_artnet_start;
-    }
-
-    if (artnet_set_port_addr(m_node, i, ARTNET_OUTPUT_PORT, i)) {
-      OLA_WARN << "artnet_set_port_addr failed %s", artnet_strerror();
-      goto e_artnet_start;
-    }
-
-    ArtNetOutputPort *output_port = new ArtNetOutputPort(this, i, m_node);
-    AddPort(output_port);
-
-    if (artnet_set_port_type(m_node, i, ARTNET_ENABLE_INPUT,
-                             ARTNET_PORT_DMX)) {
-      OLA_WARN << "artnet_set_port_type failed %s", artnet_strerror();
-      goto e_artnet_start;
-    }
-
-    if (artnet_set_port_addr(m_node, i, ARTNET_INPUT_PORT, i)) {
-      OLA_WARN << "artnet_set_port_addr failed %s", artnet_strerror();
-      goto e_artnet_start;
-    }
-
-    ArtNetInputPort *input_port = new ArtNetInputPort(this,
-                                                      i,
-                                                      m_wake_time,
-                                                      m_node);
-    AddPort(input_port);
-  }
-
-  if (artnet_start(m_node)) {
-    OLA_WARN << "artnet_start failed: " << artnet_strerror();
-    goto e_artnet_start;
-  }
-
-  m_socket = new ola::network::UnmanagedSocket(artnet_get_sd(m_node));
-  m_socket->SetOnData(NewClosure(this, &ArtNetDevice::SocketReady));
+  m_plugin_adaptor->RegisterRepeatingTimeout(
+      POLL_INTERVAL,
+      NewClosure(m_node, &ArtNetNode::MaybeSendPoll));
   return true;
-
- e_artnet_start:
-  if (artnet_destroy(m_node))
-    OLA_WARN << "artnet_destroy failed: " << artnet_strerror();
-
- e_dev:
-  DeleteAllPorts();
-  return false;
 }
 
 
@@ -212,28 +111,9 @@ bool ArtNetDevice::StartHook() {
  * Stop this device
  */
 void ArtNetDevice::PostPortStop() {
-  if (artnet_stop(m_node)) {
-    OLA_WARN << "artnet_stop failed: " << artnet_strerror();
-    return;
-  }
-
-  if (artnet_destroy(m_node)) {
-    OLA_WARN << "artnet_destroy failed: " << artnet_strerror();
-    return;
-  }
-  delete m_socket;
-  m_socket = NULL;
+  m_node->Stop();
+  delete m_node;
   m_node = NULL;
-}
-
-
-/*
- * Called when there is activity on our socket
- * @param socket the socket with activity
- */
-void ArtNetDevice::SocketReady() {
-  if (artnet_read(m_node, 0))
-    OLA_WARN << "artnet_read failed: " << artnet_strerror();
 }
 
 
@@ -274,26 +154,13 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
   if (request->has_options()) {
     const ola::plugin::artnet::OptionsRequest options = request->options();
     if (options.has_short_name()) {
-      if (artnet_set_short_name(m_node, options.short_name().data())) {
-        OLA_WARN << "set short name failed: " << artnet_strerror();
-        status = false;
-      }
-      m_short_name = options.short_name().substr(0,
-                                                 ARTNET_SHORT_NAME_LENGTH - 1);
+      status &= m_node->SetShortName(options.short_name());
     }
     if (options.has_long_name()) {
-      if (artnet_set_long_name(m_node, options.long_name().data())) {
-        OLA_WARN << "set long name failed: " << artnet_strerror();
-        status = false;
-      }
-      m_long_name = options.long_name().substr(0, ARTNET_LONG_NAME_LENGTH - 1);
+      status &= m_node->SetLongName(options.long_name());
     }
     if (options.has_subnet()) {
-      if (artnet_set_subnet_addr(m_node, options.subnet())) {
-        OLA_WARN << "set subnet failed: " << artnet_strerror();
-        status = false;
-      }
-      m_subnet = options.subnet();
+      status &= m_node->SetSubnetAddress(options.subnet());
     }
   }
 
@@ -301,9 +168,9 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
   reply.set_type(ola::plugin::artnet::Reply::ARTNET_OPTIONS_REPLY);
   ola::plugin::artnet::OptionsReply *options_reply = reply.mutable_options();
   options_reply->set_status(status);
-  options_reply->set_short_name(m_short_name);
-  options_reply->set_long_name(m_long_name);
-  options_reply->set_subnet(m_subnet);
+  options_reply->set_short_name(m_node->ShortName());
+  options_reply->set_long_name(m_node->LongName());
+  options_reply->set_subnet(m_node->SubnetAddress());
   reply.SerializeToString(response);
 }
 }  // artnet

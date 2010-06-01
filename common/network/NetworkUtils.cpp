@@ -107,6 +107,49 @@ uint32_t HostToNetwork(uint32_t value) {
 }
 
 
+uint8_t HostToLittleEndian(uint8_t value) {
+  return value;
+}
+
+
+uint16_t HostToLittleEndian(uint16_t value) {
+#ifdef HAVE_ENDIAN_H
+#  if BYTE_ORDER == __BIG_ENDIAN
+  return ((value & 0xff) << 8) | (value >> 8);
+#  else
+  return value;
+#  endif
+#else
+#  if BYTE_ORDER == BIG_ENDIAN
+  return ((value & 0xff) << 8) | (value >> 8);
+#  else
+  return value;
+#  endif
+#endif
+}
+
+
+uint8_t LittleEndianToHost(uint8_t value) {
+  return value;
+}
+
+
+uint16_t LittleEndianToHost(uint16_t value) {
+#ifdef HAVE_ENDIAN_H
+#  if BYTE_ORDER == __BIG_ENDIAN
+  return (value >> 8) | ((value & 0xff) << 8);
+#  else
+  return value;
+#  endif
+#else
+#  if BYTE_ORDER == BIG_ENDIAN
+  return (value >> 8) | ((value & 0xff) << 8);
+#  else
+  return value;
+#  endif
+#endif
+}
+
 /*
  * Return the full hostname
  */
