@@ -33,9 +33,8 @@ RDMCommand::RDMCommand(const UID &source,
                        uint8_t port_id,
                        uint8_t message_count,
                        uint16_t sub_device,
-                       RDMCommandClass command,
                        uint16_t param_id,
-                       uint8_t *data,
+                       const uint8_t *data,
                        unsigned int length):
     m_source(source),
     m_destination(destination),
@@ -43,7 +42,6 @@ RDMCommand::RDMCommand(const UID &source,
     m_port_id(port_id),
     m_message_count(message_count),
     m_sub_device(sub_device),
-    m_command(command),
     m_param_id(param_id),
     m_data(NULL),
     m_data_length(length) {
@@ -61,27 +59,6 @@ RDMCommand::RDMCommand(const UID &source,
 
 
 /*
- * Copy constructor
- */
-RDMCommand::RDMCommand(const RDMCommand &other)
-    : m_source(other.m_source),
-      m_destination(other.m_destination),
-      m_transaction_number(other.m_transaction_number),
-      m_port_id(other.m_port_id),
-      m_message_count(other.m_message_count),
-      m_sub_device(other.m_sub_device),
-      m_command(other.m_command),
-      m_param_id(other.m_param_id),
-      m_data(NULL),
-      m_data_length(other.m_data_length) {
-  if (m_data_length && other.m_data) {
-    m_data = new uint8_t[other.m_data_length];
-    memcpy(m_data, other.m_data, m_data_length);
-  }
-}
-
-
-/*
  * Destructor
  */
 RDMCommand::~RDMCommand() {
@@ -91,54 +68,10 @@ RDMCommand::~RDMCommand() {
 
 
 /*
- * Assignment operator
- */
-RDMCommand& RDMCommand::operator=(const RDMCommand &other) {
-  if (this != &other) {
-    m_source = other.m_source;
-    m_destination = other.m_destination;
-    m_transaction_number = other.m_transaction_number;
-    m_port_id = other.m_port_id;
-    m_message_count = other.m_message_count;
-    m_sub_device = other.m_sub_device;
-    m_command = other.m_command;
-    m_param_id = other.m_param_id;
-    m_data_length = other.m_data_length;
-    if (m_data_length && other.m_data) {
-      m_data = new uint8_t[other.m_data_length];
-      memcpy(m_data, other.m_data, m_data_length);
-    } else {
-      m_data = NULL;
-    }
-  }
-
-  return *this;
-}
-
-
-/*
- * Comparison
- */
-bool RDMCommand::operator==(const RDMCommand &other) const {
-  return (
-    m_source == other.m_source &&
-    m_destination == other.m_destination &&
-    m_transaction_number == other.m_transaction_number &&
-    m_port_id == other.m_port_id &&
-    m_message_count == other.m_message_count &&
-    m_sub_device == other.m_sub_device &&
-    m_command == other.m_command &&
-    m_param_id == other.m_param_id &&
-    m_data_length == other.m_data_length &&
-    memcmp(m_data, other.m_data, m_data_length) == 0);
-}
-
-
-/*
  * Get the size of the raw data required to pack this RDM command
  */
 unsigned int RDMCommand::Size() const {
-  return sizeof(struct rdm_command_message) + m_data_length + CHECKSUM_LENGTH;
+  return sizeof(rdm_command_message) + m_data_length + CHECKSUM_LENGTH;
 }
 
 
@@ -151,9 +84,9 @@ bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size) const {
   if (*size < Size())
     return false;
 
-  unsigned int packet_length = (sizeof(struct rdm_command_message) +
+  unsigned int packet_length = (sizeof(rdm_command_message) +
     m_data_length);  // size of packet excluding start code + checksum
-  struct rdm_command_message message;
+  rdm_command_message message;
   message.sub_start_code = SUB_START_CODE;
   message.message_length = packet_length + 1;  // add in start code as well
   m_destination.Pack(message.destination_uid, UID::UID_SIZE);
@@ -163,12 +96,12 @@ bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size) const {
   message.message_count = m_message_count;
   message.sub_device[0] = m_sub_device >> 8;
   message.sub_device[1] = m_sub_device & 0xff;
-  message.command_class = m_command;
+  message.command_class = CommandClass();
   message.param_id[0] = m_param_id >> 8;
   message.param_id[1] = m_param_id & 0xff;
   message.param_data_length = m_data_length;
   memcpy(buffer, &message, sizeof(message));
-  memcpy(buffer + sizeof(struct rdm_command_message), m_data, m_data_length);
+  memcpy(buffer + sizeof(rdm_command_message), m_data, m_data_length);
 
   uint16_t checksum = CalculateChecksum(buffer, packet_length);
   buffer[packet_length] = checksum >> 8;
@@ -185,21 +118,22 @@ bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size) const {
  * @param data the raw RDM data, starting from the sub-start-code
  * @param length the length of the data
  */
-RDMCommand *RDMCommand::InflateFromData(const uint8_t *data,
-                                        unsigned int length) {
+const RDMCommand::rdm_command_message* RDMCommand::VerifyData(
+    const uint8_t *data,
+    unsigned int length) {
   if (!data) {
     OLA_WARN << "RDM data was null";
     return NULL;
   }
 
-  if (length < sizeof(struct rdm_command_message)) {
+  if (length < sizeof(rdm_command_message)) {
     OLA_WARN << "RDM message is too small, needs to be at least " <<
-      sizeof(struct rdm_command_message) << ", was " << length;
+      sizeof(rdm_command_message) << ", was " << length;
     return NULL;
   }
 
-  const struct rdm_command_message *command_message = (
-      reinterpret_cast<const struct rdm_command_message*>(data));
+  const rdm_command_message *command_message = (
+      reinterpret_cast<const rdm_command_message*>(data));
 
   uint8_t message_length = command_message->message_length;
 
@@ -219,39 +153,15 @@ RDMCommand *RDMCommand::InflateFromData(const uint8_t *data,
     return NULL;
   }
 
-  RDMCommandClass command_class = ConvertCommandClass(
-    command_message->command_class);
-  if (command_class == INVALID_COMMAND) {
-    OLA_WARN << "Got unknown RDM command class: " <<
-        command_message->command_class;
-    return NULL;
-  }
-
-  uint16_t sub_device = ((command_message->sub_device[0] << 8) +
-    command_message->sub_device[1]);
-  uint16_t param_id = ((command_message->param_id[0] << 8) +
-    command_message->param_id[1]);
-
   // check param length is valid here
-  unsigned int block_size = length - sizeof(struct rdm_command_message) - 2;
+  unsigned int block_size = length - sizeof(rdm_command_message) - 2;
   if (command_message->param_data_length > block_size) {
     OLA_WARN << "Param length " <<
       static_cast<int>(command_message->param_data_length) <<
       " exceeds remaining RDM message size of " << block_size;
     return NULL;
   }
-
-  return new RDMCommand(
-      UID(command_message->source_uid),
-      UID(command_message->destination_uid),
-      command_message->transaction_number,  // transaction #
-      command_message->port_id,  // port id
-      command_message->message_count,  // message count
-      sub_device,
-      command_class,
-      param_id,
-      NULL,  // data
-      command_message->param_data_length);  // data length
+  return command_message;
 }
 
 
@@ -287,6 +197,100 @@ RDMCommand::RDMCommandClass RDMCommand::ConvertCommandClass(
       return SET_COMMAND_RESPONSE;
     default:
       return INVALID_COMMAND;
+  }
+}
+
+
+/*
+ * Inflate a request from some data
+ */
+RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
+                                        unsigned int length) {
+  const rdm_command_message *command_message = VerifyData(data, length);
+  if (!command_message)
+    return NULL;
+
+  uint16_t sub_device = ((command_message->sub_device[0] << 8) +
+    command_message->sub_device[1]);
+  uint16_t param_id = ((command_message->param_id[0] << 8) +
+    command_message->param_id[1]);
+
+  RDMCommandClass command_class = ConvertCommandClass(
+    command_message->command_class);
+
+  switch (command_class) {
+    case GET_COMMAND:
+      return new RDMGetRequest(
+          UID(command_message->source_uid),
+          UID(command_message->destination_uid),
+          command_message->transaction_number,  // transaction #
+          command_message->port_id,  // port id
+          command_message->message_count,  // message count
+          sub_device,
+          param_id,
+          data + sizeof(rdm_command_message),
+          command_message->param_data_length);  // data length
+    case SET_COMMAND:
+      return new RDMSetRequest(
+          UID(command_message->source_uid),
+          UID(command_message->destination_uid),
+          command_message->transaction_number,  // transaction #
+          command_message->port_id,  // port id
+          command_message->message_count,  // message count
+          sub_device,
+          param_id,
+          data + sizeof(rdm_command_message),
+          command_message->param_data_length);  // data length
+    default:
+      OLA_WARN << "Expected a RDM request command but got " << command_class;
+      return NULL;
+  }
+}
+
+
+/*
+ * Inflate a request from some data
+ */
+RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
+                                          unsigned int length) {
+  const rdm_command_message *command_message = VerifyData(data, length);
+  if (!command_message)
+    return NULL;
+
+  uint16_t sub_device = ((command_message->sub_device[0] << 8) +
+    command_message->sub_device[1]);
+  uint16_t param_id = ((command_message->param_id[0] << 8) +
+    command_message->param_id[1]);
+
+  RDMCommandClass command_class = ConvertCommandClass(
+    command_message->command_class);
+
+  switch (command_class) {
+    case GET_COMMAND_RESPONSE:
+      return new RDMGetResponse(
+          UID(command_message->source_uid),
+          UID(command_message->destination_uid),
+          command_message->transaction_number,  // transaction #
+          command_message->port_id,  // port id
+          command_message->message_count,  // message count
+          sub_device,
+          param_id,
+          data + sizeof(rdm_command_message),
+          command_message->param_data_length);  // data length
+    case SET_COMMAND_RESPONSE:
+      return new RDMSetResponse(
+          UID(command_message->source_uid),
+          UID(command_message->destination_uid),
+          command_message->transaction_number,  // transaction #
+          command_message->port_id,  // port id
+          command_message->message_count,  // message count
+          sub_device,
+          param_id,
+          data + sizeof(rdm_command_message),
+          command_message->param_data_length);  // data length
+    default:
+      OLA_WARN << "Expected a RDM response command but got " << command_class;
+      return NULL;
   }
 }
 }  // rdm

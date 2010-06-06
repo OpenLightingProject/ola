@@ -43,21 +43,10 @@ class RDMCommand {
       INVALID_COMMAND = 0xff,
     } RDMCommandClass;
 
-    RDMCommand(const UID &source,
-               const UID &destination,
-               uint8_t transaction_number,
-               uint8_t port_id,
-               uint8_t message_count,
-               uint16_t sub_device,
-               RDMCommandClass command,
-               uint16_t param_id,
-               uint8_t *data,
-               unsigned int length);
+    virtual ~RDMCommand();
 
-    RDMCommand(const RDMCommand &other);
-    ~RDMCommand();
-
-    bool operator==(const RDMCommand &other) const;
+    // subclasses provide this
+    virtual RDMCommandClass CommandClass() const = 0;
 
     // Accessors
     UID SourceUID() const { return m_source; }
@@ -66,7 +55,6 @@ class RDMCommand {
     uint8_t PortId() const { return m_port_id; }
     uint8_t MessageCount() const { return m_message_count; }
     uint16_t SubDevice() const { return m_sub_device; }
-    RDMCommandClass CommandClass() const { return m_command; }
     uint16_t ParamId() const { return m_param_id; }
     uint8_t *ParamData() const { return m_data; }
     unsigned int ParamDataSize() const { return m_data_length; }
@@ -75,11 +63,38 @@ class RDMCommand {
     unsigned int Size() const;
     bool Pack(uint8_t *buffer, unsigned int *size) const;
 
-    // Convert a block of data to an RDMCommand object
-    static RDMCommand *InflateFromData(const uint8_t *data,
-                                       unsigned int length);
-
     static const uint8_t START_CODE = 0xcc;
+
+  protected:
+    RDMCommand(const UID &source,
+               const UID &destination,
+               uint8_t transaction_number,
+               uint8_t port_id,
+               uint8_t message_count,
+               uint16_t sub_device,
+               uint16_t param_id,
+               const uint8_t *data,
+               unsigned int length);
+
+    // don't use anything other than uint8_t here otherwise we can get
+    // alignment issues.
+    typedef struct {
+      uint8_t sub_start_code;
+      uint8_t message_length;
+      uint8_t destination_uid[UID::UID_SIZE];
+      uint8_t source_uid[UID::UID_SIZE];
+      uint8_t transaction_number;
+      uint8_t port_id;
+      uint8_t message_count;
+      uint8_t sub_device[2];
+      uint8_t command_class;
+      uint8_t param_id[2];
+      uint8_t param_data_length;
+    } rdm_command_message;
+
+    static const rdm_command_message* VerifyData(const uint8_t *data,
+                                                 unsigned int length);
+    static RDMCommandClass ConvertCommandClass(uint8_t command_type);
 
   private:
     UID m_source;
@@ -97,27 +112,132 @@ class RDMCommand {
     static const unsigned int CHECKSUM_LENGTH = 2;
     static const unsigned int MAX_PARAM_DATA_LENGTH = 231;
 
-    // don't use anything other than uint8_t here otherwise we can get
-    // alignment issues.
-    struct rdm_command_message {
-      uint8_t sub_start_code;
-      uint8_t message_length;
-      uint8_t destination_uid[UID::UID_SIZE];
-      uint8_t source_uid[UID::UID_SIZE];
-      uint8_t transaction_number;
-      uint8_t port_id;
-      uint8_t message_count;
-      uint8_t sub_device[2];
-      uint8_t command_class;
-      uint8_t param_id[2];
-      uint8_t param_data_length;
-    };
-
+    RDMCommand(const RDMCommand &other);
+    bool operator==(const RDMCommand &other) const;
     RDMCommand& operator=(const RDMCommand &other);
     static uint16_t CalculateChecksum(const uint8_t *data,
                                       unsigned int packet_length);
-    static RDMCommandClass ConvertCommandClass(uint8_t command_type);
 };
+
+
+/*
+ * The subset of RDM Commands that represent requests
+ */
+class RDMRequest: public RDMCommand {
+  public:
+    RDMRequest(const UID &source,
+               const UID &destination,
+               uint8_t transaction_number,
+               uint8_t port_id,
+               uint8_t message_count,
+               uint16_t sub_device,
+               uint16_t param_id,
+               const uint8_t *data,
+               unsigned int length):
+      RDMCommand(source,
+                 destination,
+                 transaction_number,
+                 port_id,
+                 message_count,
+                 sub_device,
+                 param_id,
+                 data,
+                 length) {
+    }
+
+    // Convert a block of data to an RDMCommand object
+    static RDMRequest* InflateFromData(const uint8_t *data,
+                                       unsigned int length);
+};
+
+
+template <RDMCommand::RDMCommandClass command_class>
+class BaseRDMRequest: public RDMRequest {
+  public:
+    BaseRDMRequest(const UID &source,
+                   const UID &destination,
+                   uint8_t transaction_number,
+                   uint8_t port_id,
+                   uint8_t message_count,
+                   uint16_t sub_device,
+                   uint16_t param_id,
+                   const uint8_t *data,
+                   unsigned int length):
+      RDMRequest(source,
+                 destination,
+                 transaction_number,
+                 port_id,
+                 message_count,
+                 sub_device,
+                 param_id,
+                 data,
+                 length) {
+    }
+    RDMCommandClass CommandClass() const { return command_class; }
+};
+
+typedef BaseRDMRequest<RDMCommand::GET_COMMAND> RDMGetRequest;
+typedef BaseRDMRequest<RDMCommand::SET_COMMAND> RDMSetRequest;
+
+
+/*
+ * The subset of RDM Commands that represent requests
+ */
+class RDMResponse: public RDMCommand {
+  public:
+    RDMResponse(const UID &source,
+               const UID &destination,
+               uint8_t transaction_number,
+               uint8_t port_id,
+               uint8_t message_count,
+               uint16_t sub_device,
+               uint16_t param_id,
+               const uint8_t *data,
+               unsigned int length):
+      RDMCommand(source,
+                 destination,
+                 transaction_number,
+                 port_id,
+                 message_count,
+                 sub_device,
+                 param_id,
+                 data,
+                 length) {
+    }
+
+    // Convert a block of data to an RDMCommand object
+    static RDMResponse* InflateFromData(const uint8_t *data,
+                                       unsigned int length);
+};
+
+
+template <RDMCommand::RDMCommandClass command_class>
+class BaseRDMResponse: public RDMResponse {
+  public:
+    BaseRDMResponse(const UID &source,
+                    const UID &destination,
+                    uint8_t transaction_number,
+                    uint8_t port_id,
+                    uint8_t message_count,
+                    uint16_t sub_device,
+                    uint16_t param_id,
+                    const uint8_t *data,
+                    unsigned int length):
+      RDMResponse(source,
+                  destination,
+                  transaction_number,
+                  port_id,
+                  message_count,
+                  sub_device,
+                  param_id,
+                  data,
+                  length) {
+    }
+    RDMCommandClass CommandClass() const { return SET_COMMAND; }
+};
+
+typedef BaseRDMResponse<RDMCommand::GET_COMMAND_RESPONSE> RDMGetResponse;
+typedef BaseRDMResponse<RDMCommand::SET_COMMAND_RESPONSE> RDMSetResponse;
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_

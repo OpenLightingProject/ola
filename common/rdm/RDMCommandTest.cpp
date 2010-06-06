@@ -28,19 +28,25 @@
 
 using std::string;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMGetRequest;
+using ola::rdm::RDMSetRequest;
+using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 
 class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RDMCommandTest);
   CPPUNIT_TEST(testRDMCommand);
-  CPPUNIT_TEST(testInflation);
+  CPPUNIT_TEST(testRequestInflation);
+  CPPUNIT_TEST(testResponseInflation);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void setUp();
 
     void testRDMCommand();
-    void testInflation();
+    void testRequestInflation();
+    void testResponseInflation();
 
   private:
     void PackAndVerify(const RDMCommand &command,
@@ -49,14 +55,15 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void UpdateChecksum(uint8_t *expected,
                         unsigned int expected_length);
 
-    static uint8_t EXPECTED_BUFFER[];
-    static uint8_t EXPECTED_BUFFER2[];
+    static uint8_t EXPECTED_GET_BUFFER[];
+    static uint8_t EXPECTED_SET_BUFFER[];
+    static uint8_t EXPECTED_GET_RESPONSE_BUFFER[];
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RDMCommandTest);
 
 
-uint8_t RDMCommandTest::EXPECTED_BUFFER[] = {
+uint8_t RDMCommandTest::EXPECTED_GET_BUFFER[] = {
   1, 24,  // sub code & length
   0, 3, 0, 0, 0, 4,   // dst uid
   0, 1, 0, 0, 0, 2,   // src uid
@@ -65,7 +72,7 @@ uint8_t RDMCommandTest::EXPECTED_BUFFER[] = {
   0, 0  // checksum, filled in below
 };
 
-uint8_t RDMCommandTest::EXPECTED_BUFFER2[] = {
+uint8_t RDMCommandTest::EXPECTED_SET_BUFFER[] = {
     1, 28,  // sub code & length
     0, 3, 0, 0, 0, 4,   // dst uid
     0, 1, 0, 0, 0, 2,   // src uid
@@ -76,13 +83,26 @@ uint8_t RDMCommandTest::EXPECTED_BUFFER2[] = {
 };
 
 
+uint8_t RDMCommandTest::EXPECTED_GET_RESPONSE_BUFFER[] = {
+    1, 28,  // sub code & length
+    0, 3, 0, 0, 0, 4,   // dst uid
+    0, 1, 0, 0, 0, 2,   // src uid
+    0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
+    33, 1, 40, 4,  // command, param id, param data length
+    0x5a, 0x5a, 0x5a, 0x5a,  // param data
+    0, 0  // checksum, filled in below
+};
+
+
 /*
- *
+ * Fill in the checksums
  */
 void RDMCommandTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  UpdateChecksum(EXPECTED_BUFFER, sizeof(EXPECTED_BUFFER));
-  UpdateChecksum(EXPECTED_BUFFER2, sizeof(EXPECTED_BUFFER2));
+  UpdateChecksum(EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
+  UpdateChecksum(EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
+  UpdateChecksum(EXPECTED_GET_RESPONSE_BUFFER,
+                 sizeof(EXPECTED_GET_RESPONSE_BUFFER));
 }
 
 
@@ -93,16 +113,15 @@ void RDMCommandTest::testRDMCommand() {
   UID source(1, 2);
   UID destination(3, 4);
 
-  RDMCommand command(source,
-                     destination,
-                     0,  // transaction #
-                     1,  // port id
-                     0,  // message count
-                     10,  // sub device
-                     RDMCommand::GET_COMMAND,
-                     296,  // param id
-                     NULL,  // data
-                     0);  // data length
+  RDMGetRequest command(source,
+                        destination,
+                        0,  // transaction #
+                        1,  // port id
+                        0,  // message count
+                        10,  // sub device
+                        296,  // param id
+                        NULL,  // data
+                        0);  // data length
 
   CPPUNIT_ASSERT_EQUAL(source, command.SourceUID());
   CPPUNIT_ASSERT_EQUAL(destination, command.DestinationUID());
@@ -116,101 +135,100 @@ void RDMCommandTest::testRDMCommand() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, command.ParamDataSize());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 25, command.Size());
 
-  // copy and assignment
-  RDMCommand command2(command);
-  CPPUNIT_ASSERT(command == command2);
-
   // try one with extra long data
   uint8_t *data = new uint8_t[232];
-  RDMCommand long_command(source,
-                          destination,
-                          0,  // transaction #
-                          1,  // port id
-                          0,  // message count
-                          10,  // sub device
-                          RDMCommand::GET_COMMAND,
-                          123,  // param id
-                          data,  // data
-                          232);  // data length
+  RDMGetRequest long_command(source,
+                             destination,
+                             0,  // transaction #
+                             1,  // port id
+                             0,  // message count
+                             10,  // sub device
+                             123,  // param id
+                             data,  // data
+                             232);  // data length
 
   CPPUNIT_ASSERT_EQUAL((unsigned int) 231, long_command.ParamDataSize());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 256, long_command.Size());
-  PackAndVerify(command, EXPECTED_BUFFER, sizeof(EXPECTED_BUFFER));
+  PackAndVerify(command, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
 
   uint32_t data_value = 0xa5a5a5a5;
-  RDMCommand command3(source,
-                     destination,
-                     0,  // transaction #
-                     1,  // port id
-                     0,  // message count
-                     10,  // sub device
-                     RDMCommand::SET_COMMAND,
-                     296,  // param id
-                     reinterpret_cast<uint8_t*>(&data_value),  // data
-                     sizeof(data_value));  // data length
+  RDMSetRequest command3(source,
+                         destination,
+                         0,  // transaction #
+                         1,  // port id
+                         0,  // message count
+                         10,  // sub device
+                         296,  // param id
+                         reinterpret_cast<uint8_t*>(&data_value),  // data
+                         sizeof(data_value));  // data length
 
   CPPUNIT_ASSERT_EQUAL((unsigned int) 29, command3.Size());
-  PackAndVerify(command3, EXPECTED_BUFFER2, sizeof(EXPECTED_BUFFER2));
+  PackAndVerify(command3, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
 
   delete[] data;
 }
 
 
 /*
- * Test that we can inflate RDM messages correctly
+ * Test that we can inflate RDM request messages correctly
  */
-void RDMCommandTest::testInflation() {
-  RDMCommand *command = RDMCommand::InflateFromData(NULL, 10);
-  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMCommand*>(NULL), command);
+void RDMCommandTest::testRequestInflation() {
+  RDMRequest *command = RDMRequest::InflateFromData(NULL, 10);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMRequest*>(NULL), command);
 
-  command = RDMCommand::InflateFromData(EXPECTED_BUFFER, 0);
-  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMCommand*>(NULL), command);
+  command = RDMRequest::InflateFromData(EXPECTED_GET_BUFFER, 0);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMRequest*>(NULL), command);
 
-  command = RDMCommand::InflateFromData(
-      EXPECTED_BUFFER,
-      sizeof(EXPECTED_BUFFER));
+  command = RDMRequest::InflateFromData(
+      EXPECTED_GET_BUFFER,
+      sizeof(EXPECTED_GET_BUFFER));
   CPPUNIT_ASSERT(NULL != command);
   delete command;
 
-  command = RDMCommand::InflateFromData(
-      EXPECTED_BUFFER2,
-      sizeof(EXPECTED_BUFFER2));
+  command = RDMRequest::InflateFromData(
+      EXPECTED_SET_BUFFER,
+      sizeof(EXPECTED_SET_BUFFER));
   CPPUNIT_ASSERT(NULL != command);
+  uint8_t expected_data[] = {0xa5, 0xa5, 0xa5, 0xa5};
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, command->ParamDataSize());
+  CPPUNIT_ASSERT(0 == memcmp(expected_data, command->ParamData(),
+                             command->ParamDataSize()));
   delete command;
 
   // change the param length and make sure the checksum fails
-  uint8_t *bad_packet = new uint8_t[sizeof(EXPECTED_BUFFER)];
-  memcpy(bad_packet, EXPECTED_BUFFER, sizeof(EXPECTED_BUFFER));
+  uint8_t *bad_packet = new uint8_t[sizeof(EXPECTED_GET_BUFFER)];
+  memcpy(bad_packet, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
   bad_packet[22] = 255;
 
-  command = RDMCommand::InflateFromData(
+  command = RDMRequest::InflateFromData(
       bad_packet,
-      sizeof(EXPECTED_BUFFER));
+      sizeof(EXPECTED_GET_BUFFER));
   CPPUNIT_ASSERT(NULL == command);
-  delete command;
 
   // now make sure we can't pass a bad param length larger than the buffer
-  UpdateChecksum(bad_packet, sizeof(EXPECTED_BUFFER));
-  command = RDMCommand::InflateFromData(
+  UpdateChecksum(bad_packet, sizeof(EXPECTED_GET_BUFFER));
+  command = RDMRequest::InflateFromData(
       bad_packet,
-      sizeof(EXPECTED_BUFFER));
+      sizeof(EXPECTED_GET_BUFFER));
   CPPUNIT_ASSERT(NULL == command);
-  delete command;
-
   delete[] bad_packet;
 
   // change the param length of another packet and make sure the checksum fails
-  bad_packet = new uint8_t[sizeof(EXPECTED_BUFFER2)];
-  memcpy(bad_packet, EXPECTED_BUFFER2, sizeof(EXPECTED_BUFFER2));
+  bad_packet = new uint8_t[sizeof(EXPECTED_SET_BUFFER)];
+  memcpy(bad_packet, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
   bad_packet[22] = 5;
-  UpdateChecksum(bad_packet, sizeof(EXPECTED_BUFFER2));
-  command = RDMCommand::InflateFromData(
+  UpdateChecksum(bad_packet, sizeof(EXPECTED_SET_BUFFER));
+  command = RDMRequest::InflateFromData(
       bad_packet,
-      sizeof(EXPECTED_BUFFER2));
+      sizeof(EXPECTED_SET_BUFFER));
   CPPUNIT_ASSERT(NULL == command);
-  delete command;
-
   delete[] bad_packet;
+
+  // now try to inflate a response
+  command = RDMRequest::InflateFromData(
+      EXPECTED_GET_RESPONSE_BUFFER,
+      sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMRequest*>(NULL), command);
 }
 
 
@@ -234,6 +252,63 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
   delete[] buffer;
 }
 
+
+/*
+ * Test that we can inflate RDM response correctly
+ */
+void RDMCommandTest::testResponseInflation() {
+  RDMResponse *command = RDMResponse::InflateFromData(NULL, 10);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMResponse*>(NULL), command);
+
+  command = RDMResponse::InflateFromData(EXPECTED_GET_RESPONSE_BUFFER, 0);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMResponse*>(NULL), command);
+
+  command = RDMResponse::InflateFromData(
+      EXPECTED_GET_RESPONSE_BUFFER,
+      sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+  CPPUNIT_ASSERT(NULL != command);
+  uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, command->ParamDataSize());
+  CPPUNIT_ASSERT(0 == memcmp(expected_data, command->ParamData(),
+                             command->ParamDataSize()));
+  delete command;
+
+  // change the param length and make sure the checksum fails
+  uint8_t *bad_packet = new uint8_t[sizeof(EXPECTED_GET_RESPONSE_BUFFER)];
+  memcpy(bad_packet, EXPECTED_GET_RESPONSE_BUFFER,
+         sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+  bad_packet[22] = 255;
+
+  command = RDMResponse::InflateFromData(
+      bad_packet,
+      sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+  CPPUNIT_ASSERT(NULL == command);
+
+  // now make sure we can't pass a bad param length larger than the buffer
+  UpdateChecksum(bad_packet, sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+  command = RDMResponse::InflateFromData(
+      bad_packet,
+      sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+  CPPUNIT_ASSERT(NULL == command);
+  delete[] bad_packet;
+
+  // change the param length of another packet and make sure the checksum fails
+  bad_packet = new uint8_t[sizeof(EXPECTED_SET_BUFFER)];
+  memcpy(bad_packet, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
+  bad_packet[22] = 5;
+  UpdateChecksum(bad_packet, sizeof(EXPECTED_SET_BUFFER));
+  command = RDMResponse::InflateFromData(
+      bad_packet,
+      sizeof(EXPECTED_SET_BUFFER));
+  CPPUNIT_ASSERT(NULL == command);
+  delete[] bad_packet;
+
+  // now try to inflate a response
+  command = RDMResponse::InflateFromData(
+      EXPECTED_GET_BUFFER,
+      sizeof(EXPECTED_GET_BUFFER));
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMResponse*>(NULL), command);
+}
 
 /*
  * Calculate a checksum for a packet and update it
