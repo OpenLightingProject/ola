@@ -34,6 +34,7 @@ namespace ola {
 namespace network {
 
 enum { MAC_LENGTH = 6 };
+enum { IPV4_LENGTH = 4 };
 
 /*
  * Represents an interface.
