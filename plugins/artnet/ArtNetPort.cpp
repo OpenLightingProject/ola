@@ -29,6 +29,8 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
+using ola::NewClosure;
+
 /*
  * Reprogram our port.
  */
@@ -69,14 +71,58 @@ void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
   (void) old_universe;
   m_helper.PostSetUniverse(new_universe, PortId());
 
-  if (new_universe && !old_universe)
+  if (new_universe && !old_universe) {
     m_helper.GetNode()->SetDMXHandler(
         PortId(),
         &m_buffer,
-        ola::NewClosure<ArtNetInputPort, void>(this,
-                                               &ArtNetInputPort::DmxChanged));
-  else if (!new_universe)
+        NewClosure<ArtNetInputPort, void>(this, &ArtNetInputPort::DmxChanged));
+    m_helper.GetNode()->SetOutputPortRDMHandlers(
+        PortId(),
+        NewClosure<ArtNetInputPort, void>(
+          this,
+          &ArtNetInputPort::RespondWithTod),
+        NewClosure<ArtNetInputPort, void>(
+          this,
+          &ArtNetInputPort::TriggerRDMDiscovery),
+        ola::NewCallback<ArtNetInputPort, void, const RDMRequest*>(
+          this,
+          &ArtNetInputPort::PolitelyHandleRDMRequest));
+
+  } else if (!new_universe) {
     m_helper.GetNode()->SetDMXHandler(PortId(), NULL, NULL);
+    m_helper.GetNode()->SetOutputPortRDMHandlers(
+        PortId(),
+        NULL,
+        NULL,
+        NULL);
+  }
+
+  if (new_universe)
+    RespondWithTod();
+}
+
+
+/*
+ * Handle an RDM request, and send a TodData if this uid wasn't found
+ */
+void ArtNetInputPort::PolitelyHandleRDMRequest(
+    const ola::rdm::RDMRequest *request) {
+
+  if (!HandleRDMRequest(request)) {
+    OLA_INFO << "Request for an unknown UID, sending updated TOD";
+    RespondWithTod();
+  }
+}
+
+
+/*
+ * Respond With Tod
+ */
+void ArtNetInputPort::RespondWithTod() {
+  ola::rdm::UIDSet uids;
+  if (GetUniverse())
+    GetUniverse()->GetUIDs(&uids);
+  m_helper.GetNode()->SendTod(PortId(), uids);
 }
 
 
@@ -95,6 +141,25 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
 
   return m_helper.GetNode()->SendDMX(PortId(), buffer);
   (void) priority;
+}
+
+
+/*
+ * Handle an RDMRequest
+ */
+void ArtNetOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+  // Discovery requests aren't proxied
+  if (request->CommandClass() != RDMCommand::DISCOVER_COMMAND)
+    m_helper.GetNode()->SendRDMRequest(PortId(), *request);
+  delete request;
+}
+
+
+/*
+ * Run the RDM discovery process
+ */
+void ArtNetOutputPort::RunRDMDiscovery() {
+  m_helper.GetNode()->ForceDiscovery(PortId());
 }
 }  // artnet
 }  // plugin

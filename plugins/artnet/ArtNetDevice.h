@@ -23,7 +23,6 @@
 
 #include <string>
 
-#include "ola/network/Socket.h"
 #include "olad/Device.h"
 #include "plugins/artnet/messages/ArtnetConfigMessages.pb.h"
 #include "plugins/artnet/ArtNetNode.h"
@@ -50,12 +49,6 @@ class ArtNetDevice: public Device {
 
     // only one ArtNet device
     string DeviceId() const { return "1"; }
-
-    ola::network::UdpSocket *GetSocket() {
-      if (m_node)
-        return m_node->GetSocket();
-      return NULL;
-    }
 
     void Configure(RpcController *controller,
                    const string &request,

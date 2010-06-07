@@ -24,6 +24,7 @@
 #include <string>
 #include <ola/Clock.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
+#include <ola/rdm/RDMCommand.h>  // NOLINT
 #include <olad/DmxSource.h>  // NOLINT
 #include <olad/PortConstants.h>  // NOLINT
 #include <olad/Universe.h>  // NOLINT
@@ -82,6 +83,9 @@ class InputPort: public Port {
 
     // Get the current data
     virtual const DmxSource &SourceData() const = 0;
+
+    // Handle RDMRequests, ownership of the request object is transferred
+    virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request) = 0;
 };
 
 
@@ -97,6 +101,10 @@ class OutputPort: public Port {
 
     // Called if the universe name changes
     virtual void UniverseNameChanged(const string &new_name) = 0;
+
+    // Handle RDMRequests, ownership of the request object is transferred
+    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request) = 0;
+    virtual void RunRDMDiscovery() = 0;
 };
 
 
@@ -121,6 +129,8 @@ class BasicInputPort: public InputPort {
     port_priority_mode GetPriorityMode() const { return m_priority_mode; }
     void DmxChanged();
     const DmxSource &SourceData() const { return m_dmx_source; }
+    bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    void TriggerRDMDiscovery();
 
     port_priority_capability PriorityCapability() const {
       return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_STATIC;
@@ -184,6 +194,9 @@ class BasicOutputPort: public OutputPort {
     uint8_t GetPriority() const { return m_priority; }
     void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
     port_priority_mode GetPriorityMode() const { return m_priority_mode; }
+
+    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    virtual void RunRDMDiscovery();
 
     virtual void UniverseNameChanged(const string &new_name) {
       (void) new_name;
@@ -279,6 +292,14 @@ class OutputPortDecorator: public OutputPort {
 
     virtual port_priority_mode GetPriorityMode() const {
       return m_port->GetPriorityMode();
+    }
+
+    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+      return m_port->HandleRDMRequest(request);
+    }
+
+    virtual void RunRDMDiscovery() {
+      return m_port->RunRDMDiscovery();
     }
 
     virtual bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {

@@ -22,15 +22,20 @@
 #define INCLUDE_OLAD_UNIVERSE_H_
 
 #include <set>
+#include <map>
 #include <vector>
 #include <string>
-#include <ola/ExportMap.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
+#include <ola/ExportMap.h>  // NOLINT
+#include <ola/rdm/RDMCommand.h>  // NOLINT
+#include <ola/rdm/UID.h>  // NOLINT
+#include <ola/rdm/UIDSet.h>  // NOLINT
 #include <olad/DmxSource.h>  // NOLINT
 
 namespace ola {
 
 using std::set;
+using ola::rdm::UID;
 
 class Client;
 class InputPort;
@@ -88,6 +93,14 @@ class Universe {
     bool PortDataChanged(InputPort *port);
     bool SourceClientDataChanged(Client *client);
 
+    // RDM methods
+    bool HandleRDMRequest(InputPort *port,
+                          const ola::rdm::RDMRequest *request);
+    void HandleRDMResponse(OutputPort *port,
+                           const ola::rdm::RDMResponse *response);
+    void RunRDMDiscovery();
+    void GetUIDs(ola::rdm::UIDSet *uids);
+
     bool operator==(const Universe &other) {
       return m_universe_id == other.UniverseId();
     }
@@ -125,6 +138,8 @@ class Universe {
     class UniverseStore *m_universe_store;
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
+    map<UID, InputPort*> m_input_uids;
+    map<UID, OutputPort*> m_output_uids;
 
     template<class PortClass>
     bool GenericAddPort(PortClass *port,

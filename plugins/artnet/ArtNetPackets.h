@@ -39,7 +39,6 @@ enum { ARTNET_MAX_RDM_DATA = 512 };
 enum { ARTNET_MAX_UID_COUNT = 200 };
 enum { ARTNET_REPORT_LENGTH = 64 };
 enum { ARTNET_SHORT_NAME_LENGTH = 18 };
-enum { ARTNET_IP_LENGTH = 4 };
 
 
 /*
@@ -53,11 +52,13 @@ typedef enum artnet_packet_type_e {
   ARTNET_TODDATA = 0x8100,
   ARTNET_TODCONTROL = 0x8200,
   ARTNET_RDM = 0x8300,
+  ARTNET_IP_PROGRAM = 0xf800,
+  ARTNET_IP_PROGRAM_REPLY = 0xf900,
 } artnet_packet_type;
 
 
 struct artnet_poll_s {
-  uint8_t version[2];
+  uint16_t version;
   uint8_t talk_to_me;
   uint8_t priority;
 } __attribute__((packed));
@@ -65,9 +66,9 @@ struct artnet_poll_s {
 typedef struct artnet_poll_s artnet_poll_t;
 
 struct artnet_reply_s {
-  uint8_t  ip[ARTNET_IP_LENGTH];
+  uint8_t  ip[ola::network::IPV4_LENGTH];
   uint16_t port;
-  uint8_t  version[2];
+  uint16_t version;
   uint8_t  subnet_address[2];
   uint16_t oem;
   uint8_t  ubea;
@@ -90,7 +91,7 @@ struct artnet_reply_s {
   uint8_t  spare3;
   uint8_t  style;
   uint8_t  mac[ola::network::MAC_LENGTH];
-  uint8_t  bind_ip[ARTNET_IP_LENGTH];
+  uint8_t  bind_ip[ola::network::IPV4_LENGTH];
   uint8_t  bind_index;
   uint8_t  status2;
   uint8_t  filler[26];
@@ -100,7 +101,7 @@ typedef struct artnet_reply_s artnet_reply_t;
 
 
 struct artnet_dmx_s {
-  uint8_t  version[2];
+  uint16_t version;
   uint8_t  sequence;
   uint8_t  physical;
   uint16_t universe;
@@ -112,7 +113,7 @@ typedef struct artnet_dmx_s artnet_dmx_t;
 
 
 struct artnet_todrequest_s {
-  uint8_t  version[2];
+  uint16_t version;
   uint8_t  filler1;
   uint8_t  filler2;
   uint8_t  spare1;
@@ -125,14 +126,14 @@ struct artnet_todrequest_s {
   uint8_t  spare8;
   uint8_t  command;
   uint8_t  address_count;
-  uint8_t  address[ARTNET_MAX_RDM_ADDRESS_COUNT];
+  uint8_t  addresses[ARTNET_MAX_RDM_ADDRESS_COUNT];
 } __attribute__((packed));
 
 typedef struct artnet_todrequest_s artnet_todrequest_t;
 
 
 struct artnet_toddata_s {
-  uint8_t  version[2];
+  uint16_t version;
   uint8_t  rdm_version;
   uint8_t  port;
   uint8_t  spare1;
@@ -145,7 +146,7 @@ struct artnet_toddata_s {
   uint8_t  spare8;
   uint8_t  command_response;
   uint8_t  address;
-  uint8_t  uid_total[2];
+  uint16_t  uid_total;
   uint8_t  block_count;
   uint8_t  uid_count;
   uint8_t  tod[ARTNET_MAX_UID_COUNT][ola::rdm::UID::UID_SIZE];
@@ -154,7 +155,7 @@ struct artnet_toddata_s {
 typedef struct artnet_toddata_s artnet_toddata_t;
 
 struct artnet_todcontrol_s {
-  uint8_t  version[2];
+  uint16_t version;
   uint8_t  filler1;
   uint8_t  filler2;
   uint8_t  spare1;
@@ -172,8 +173,8 @@ struct artnet_todcontrol_s {
 typedef struct artnet_todcontrol_s artnet_todcontrol_t;
 
 struct artnet_rdm_s {
-  uint8_t version[2];
-  uint8_t rdmVer;
+  uint16_t version;
+  uint8_t rdm_version;
   uint8_t filler2;
   uint8_t spare1;
   uint8_t spare2;
@@ -190,6 +191,32 @@ struct artnet_rdm_s {
 
 typedef struct artnet_rdm_s artnet_rdm_t;
 
+struct artnet_ip_prog_s {
+  uint16_t version;
+  uint16_t filler;
+  uint8_t command;
+  uint8_t filler1;
+  uint8_t ip[ola::network::IPV4_LENGTH];
+  uint8_t subnet[ola::network::IPV4_LENGTH];
+  uint16_t port;
+  uint8_t spare[8];
+} __attribute__((packed));
+
+typedef struct artnet_ip_prog_s artnet_ip_prog_t;
+
+struct artnet_ip_reply_s {
+  uint16_t version;
+  uint16_t filler;
+  uint8_t command;
+  uint8_t filler1;
+  uint8_t ip[ola::network::IPV4_LENGTH];
+  uint8_t subnet[ola::network::IPV4_LENGTH];
+  uint16_t port;
+  uint8_t spare[8];
+} __attribute__((packed));
+
+typedef struct artnet_ip_reply_s artnet_ip_reply_t;
+
 // union of all artnet packets
 typedef struct {
   uint8_t id[8];
@@ -202,6 +229,8 @@ typedef struct {
     artnet_toddata_t tod_data;
     artnet_todcontrol_t tod_control;
     artnet_rdm_t rdm;
+    artnet_ip_prog_t ip_program;
+    artnet_ip_reply_t ip_reply;
   } data;
 } artnet_packet;
 }  // artnet

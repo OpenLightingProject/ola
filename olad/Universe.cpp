@@ -30,6 +30,7 @@
  *   A list of sink clients, which we update whenever the DmxBuffer changes.
  */
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -307,6 +308,65 @@ bool Universe::SourceClientDataChanged(Client *client) {
   if (MergeAll(NULL, client))
     UpdateDependants();
   return true;
+}
+
+
+/*
+ * Handle a RDM request for this universe
+ * @returns true if this request was sent to an Output port, false otherwise
+ */
+bool Universe::HandleRDMRequest(InputPort *port,
+                                const ola::rdm::RDMRequest *request) {
+  OLA_INFO << "Got a RDM request for " << request->DestinationUID() <<
+    " with command " << std::hex << request->CommandClass() << " and param " <<
+    request->ParamId();
+
+  // populate the input UID map so we know how to route this request later
+  m_input_uids[request->SourceUID()] = port;
+
+  map<UID, OutputPort*>::iterator iter =
+    m_output_uids.find(request->DestinationUID());
+
+  if (iter == m_output_uids.end()) {
+    OLA_WARN << "Can't find UID " << request->DestinationUID() <<
+      " in the universe map, dropping request";
+    delete request;
+    return false;
+  } else {
+    iter->second->HandleRDMRequest(request);
+  }
+  return true;
+}
+
+
+/*
+ * Handle a RDM response
+ */
+void Universe::HandleRDMResponse(OutputPort *port,
+                                 const ola::rdm::RDMResponse *response) {
+}
+
+
+/*
+ * Trigger RDM discovery for this universe
+ */
+void Universe::RunRDMDiscovery() {
+  OLA_INFO << "RDM discovery triggered for universe " << m_universe_id;
+
+  vector<OutputPort*>::iterator iter;
+  for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter)
+    (*iter)->RunRDMDiscovery();
+
+  // somehow detect when this is done and then send new UIDSets
+}
+
+
+/*
+ * Returns the complete UIDSet for this universe
+ */
+void Universe::GetUIDs(ola::rdm::UIDSet *uids) {
+  ola::rdm::UID uid(1, 10);
+  uids->AddUID(uid);
 }
 
 

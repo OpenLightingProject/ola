@@ -82,7 +82,7 @@ bool ArtNetDevice::StartHook() {
   m_node = new ArtNetNode(m_preferences->GetValue(K_IP_KEY),
                           m_preferences->GetValue(K_SHORT_NAME_KEY),
                           m_preferences->GetValue(K_LONG_NAME_KEY),
-                          m_plugin_adaptor->WakeUpTime(),
+                          m_plugin_adaptor,
                           subnet);
 
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {

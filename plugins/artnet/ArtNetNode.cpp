@@ -35,9 +35,11 @@ namespace artnet {
 
 using ola::Callback1;
 using ola::Closure;
+using ola::network::AddressToString;
 using ola::network::HostToLittleEndian;
-using ola::network::LittleEndianToHost;
 using ola::network::HostToNetwork;
+using ola::network::LittleEndianToHost;
+using ola::network::NetworkToHost;
 using ola::network::UdpSocket;
 using std::pair;
 using std::string;
@@ -56,7 +58,7 @@ const char ArtNetNode::ARTNET_ID[] = "Art-Net";
 ArtNetNode::ArtNetNode(const string &ip_address,
                        const string &short_name,
                        const string &long_name,
-                       const TimeStamp *wake_up_time,
+                       const PluginAdaptor *plugin_adaptor,
                        uint8_t subnet_address)
     : m_running(false),
       m_send_reply_on_change(true),
@@ -65,15 +67,16 @@ ArtNetNode::ArtNetNode(const string &ip_address,
       m_broadcast_threshold(BROADCAST_THRESHOLD),
       m_unsolicited_replies(0),
       m_preferred_ip(ip_address),
-      m_wake_time(wake_up_time),
+      m_plugin_adaptor(plugin_adaptor),
       m_socket(NULL) {
-  memset(&m_destination, 0, sizeof(m_destination));
 
   // reset all the port structures
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     m_input_ports[i].universe_address = 0;
     m_input_ports[i].sequence_number = 0;
     m_input_ports[i].enabled = false;
+    m_input_ports[i].on_tod = NULL;
+    m_input_ports[i].on_rdm_response = NULL;
 
     m_output_ports[i].universe_address = 0;
     m_output_ports[i].sequence_number = 0;
@@ -82,6 +85,9 @@ ArtNetNode::ArtNetNode(const string &ip_address,
     m_output_ports[i].merge_mode = ARTNET_MERGE_HTP;
     m_output_ports[i].buffer = NULL;
     m_output_ports[i].on_data = NULL;
+    m_output_ports[i].on_discover = NULL;
+    m_output_ports[i].on_flush = NULL;
+    m_output_ports[i].on_rdm_request = NULL;
     for (unsigned int j = 0; j < MAX_MERGE_SOURCES; j++)
       m_output_ports[i].sources[j].address.s_addr = 0;
   }
@@ -97,18 +103,20 @@ ArtNetNode::~ArtNetNode() {
   Stop();
 
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
+    if (m_input_ports[i].on_tod)
+      delete m_input_ports[i].on_tod;
+    if (m_input_ports[i].on_rdm_response)
+      delete m_input_ports[i].on_rdm_response;
+
     if (m_output_ports[i].on_data)
       delete m_output_ports[i].on_data;
+    if (m_output_ports[i].on_discover)
+      delete m_output_ports[i].on_discover;
+    if (m_output_ports[i].on_flush)
+      delete m_output_ports[i].on_flush;
+    if (m_output_ports[i].on_rdm_request)
+      delete m_output_ports[i].on_rdm_request;
   }
-
-  /*
-  std::map<unsigned int, Callback1<void, RDMCommand*>* >::iterator rdm_iter;
-  for (rdm_iter = m_rdm_handlers.begin(); rdm_iter != m_rdm_handlers.end();
-       ++rdm_iter) {
-    delete rdm_iter->second;
-  }
-  m_rdm_handlers.clear();
-  */
 }
 
 
@@ -131,13 +139,10 @@ bool ArtNetNode::Start() {
   if (!InitNetwork())
     return false;
 
-  m_destination.sin_family = AF_INET;
-  m_destination.sin_port = HostToNetwork(ARTNET_PORT);
-  m_destination.sin_addr = m_interface.bcast_address;
   m_running = true;
 
   MaybeSendPoll();  // send a poll, this will result in us repling as well
-  SendPollReply(m_destination);
+  SendPollReply(m_interface.bcast_address);
   return true;
 }
 
@@ -148,6 +153,8 @@ bool ArtNetNode::Start() {
 bool ArtNetNode::Stop() {
   if (!m_running)
     return false;
+
+  m_plugin_adaptor->RemoveSocket(m_socket);
 
   if (m_socket) {
     delete m_socket;
@@ -166,7 +173,7 @@ bool ArtNetNode::SetShortName(const string &name) {
   m_short_name = name;
   if (m_running && m_send_reply_on_change) {
     m_unsolicited_replies++;
-    return SendPollReply(m_destination);
+    return SendPollReply(m_interface.bcast_address);
   }
   return true;
 }
@@ -179,7 +186,7 @@ bool ArtNetNode::SetLongName(const string &name) {
   m_long_name = name;
   if (m_running && m_send_reply_on_change) {
     m_unsolicited_replies++;
-    return SendPollReply(m_destination);
+    return SendPollReply(m_interface.bcast_address);
   }
   return true;
 }
@@ -199,7 +206,7 @@ bool ArtNetNode::SetSubnetAddress(uint8_t subnet_address) {
 
   if (m_running && m_send_reply_on_change) {
     m_unsolicited_replies++;
-    return SendPollReply(m_destination);
+    return SendPollReply(m_interface.bcast_address);
   }
   return true;
 }
@@ -239,7 +246,7 @@ bool ArtNetNode::SetPortUniverse(artnet_port_type type,
 
   if (m_running && m_send_reply_on_change) {
     m_unsolicited_replies++;
-    return SendPollReply(m_destination);
+    return SendPollReply(m_interface.bcast_address);
   }
   return true;
 }
@@ -275,7 +282,7 @@ bool ArtNetNode::SetMergeMode(uint8_t port_id, artnet_merge_mode merge_mode) {
   m_output_ports[port_id].merge_mode = merge_mode;
   if (m_running && m_send_reply_on_change) {
     m_unsolicited_replies++;
-    return SendPollReply(m_destination);
+    return SendPollReply(m_interface.bcast_address);
   }
   return true;
 }
@@ -299,12 +306,12 @@ bool ArtNetNode::MaybeSendPoll() {
   artnet_packet packet;
   PopulatePacketHeader(&packet, ARTNET_POLL);
   memset(&packet.data.poll, 0, sizeof(packet.data.poll));
-  packet.data.poll.version[1] = ARTNET_VERSION;
+  packet.data.poll.version = HostToNetwork(ARTNET_VERSION);
   // send PollReplies when something changes
   packet.data.poll.talk_to_me = 0x02;
   unsigned int size = sizeof(packet.data.poll);
 
-  return SendPacket(packet, size, m_destination);
+  return SendPacket(packet, size, m_interface.bcast_address);
 }
 
 
@@ -315,14 +322,8 @@ bool ArtNetNode::MaybeSendPoll() {
  * @return true if it was send successfully, false otherwise
  */
 bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
-  if (!m_running)
+  if (!CheckInputPortState(port_id, "ArtDMX"))
     return false;
-
-  if (port_id > ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
-    return false;
-  }
 
   if (!buffer.Size()) {
     OLA_DEBUG << "Not sending 0 length packet";
@@ -333,9 +334,9 @@ bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
   PopulatePacketHeader(&packet, ARTNET_DMX);
   memset(&packet.data.dmx, 0, sizeof(packet.data.dmx));
 
-  packet.data.dmx.version[1] = ARTNET_VERSION;
+  packet.data.poll.version = HostToNetwork(ARTNET_VERSION);
   packet.data.dmx.sequence = m_input_ports[port_id].sequence_number;
-  packet.data.dmx.physical = port_id;
+  packet.data.dmx.physical = 1 + port_id;
   packet.data.dmx.universe = m_input_ports[port_id].universe_address;
   unsigned int buffer_size = sizeof(packet.data.dmx.data);
   packet.data.dmx.length[0] = buffer_size >> 8;
@@ -349,25 +350,21 @@ bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
 
   bool sent_ok = false;
   if (m_input_ports[port_id].subscribed_nodes.size() >= BROADCAST_THRESHOLD) {
-    sent_ok = SendPacket(packet, size, m_destination);
+    sent_ok = SendPacket(packet, size, m_interface.bcast_address);
     m_input_ports[port_id].sequence_number++;
   } else {
-    struct sockaddr_in destination;
-    destination.sin_family = AF_INET;
-    destination.sin_port = HostToNetwork(ARTNET_PORT);
     map<IPAddress, TimeStamp>::iterator iter =
       m_input_ports[port_id].subscribed_nodes.begin();
 
     TimeStamp last_heard_threshold = (
-        *m_wake_time - TimeInterval(NODE_TIMEOUT, 0));
+        *m_plugin_adaptor->WakeUpTime() - TimeInterval(NODE_TIMEOUT, 0));
     while (iter != m_input_ports[port_id].subscribed_nodes.end()) {
       // if this node has timed out, remove it from the set
       if (iter->second < last_heard_threshold) {
         m_input_ports[port_id].subscribed_nodes.erase(iter++);
         continue;
       }
-      destination.sin_addr = iter->first;
-      sent_ok |= SendPacket(packet, size, destination);
+      sent_ok |= SendPacket(packet, size, iter->first);
       ++iter;
     }
 
@@ -385,6 +382,106 @@ bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
   if (!sent_ok)
     OLA_WARN << "Failed to send ArtNet DMX packet";
   return sent_ok;
+}
+
+
+/*
+ * Send a TODRequest
+ * @param port_id port to send on
+ */
+bool ArtNetNode::SendTodRequest(uint8_t port_id) {
+  if (!CheckInputPortState(port_id, "ArtTodRequest"))
+    return false;
+
+  OLA_DEBUG << "Sending ArtTodRequest";
+  artnet_packet packet;
+  PopulatePacketHeader(&packet, ARTNET_TODREQUEST);
+  memset(&packet.data.tod_request, 0, sizeof(packet.data.tod_request));
+  packet.data.tod_request.version = HostToNetwork(ARTNET_VERSION);
+  packet.data.tod_request.address_count = 1;  // only one universe address
+  packet.data.tod_request.addresses[0] =
+    m_input_ports[port_id].universe_address;
+  unsigned int size = sizeof(packet.data.tod_request);
+  return SendPacket(packet, size, m_interface.bcast_address);
+}
+
+
+/*
+ * Flush the TOD and force discovery
+ * @param port_id port to send on
+ */
+bool ArtNetNode::ForceDiscovery(uint8_t port_id) {
+  if (!CheckInputPortState(port_id, "ArtTodControl"))
+    return false;
+
+  OLA_DEBUG << "Sending ArtTodControl";
+  artnet_packet packet;
+  PopulatePacketHeader(&packet, ARTNET_TODREQUEST);
+  memset(&packet.data.tod_control, 0, sizeof(packet.data.tod_control));
+  packet.data.tod_control.version = HostToNetwork(ARTNET_VERSION);
+  packet.data.tod_control.command = TOD_FLUSH_COMMAND;
+  packet.data.tod_control.address = m_input_ports[port_id].universe_address;
+  unsigned int size = sizeof(packet.data.tod_control);
+  return SendPacket(packet, size, m_interface.bcast_address);
+}
+
+
+/*
+ * Send an RDMRequest on this port
+ * @param port_id the if of the port to send the request on
+ * @param request the RDMRequest object
+ */
+bool ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest &request) {
+  if (!CheckInputPortState(port_id, "ArtRDM"))
+    return false;
+
+  const UID &uid_destination = request.DestinationUID();
+  uid_map::const_iterator iter =
+    m_input_ports[port_id].uids.find(uid_destination);
+
+  IPAddress destination = m_interface.bcast_address;
+
+  if (iter == m_input_ports[port_id].uids.end()) {
+    OLA_WARN << "Couldn't find " << uid_destination <<
+      " in the uid map, broadcasting packet";
+  } else {
+    destination = iter->second.first;
+  }
+
+  return SendRDMCommand(request,
+                        destination,
+                        m_input_ports[port_id].universe_address);
+}
+
+
+/*
+ * Set the RDM handlers for an Input port
+ * @param port_id the id of the port to set the handlers for
+ * @param on_tod the callback to be invoked when a ArtTod message is recieved,
+ *   this callback is passed two UIDSets, one for the UIDs added and one for
+ *   the UIDs that were removed
+ * @param on_rdm_response the callback to be invoked when a RDMResponse message
+ *   is received. The callback is responsible for deleting the RDMResponse
+ *   object.
+ */
+bool ArtNetNode::SetInputPortRDMHandlers(
+    uint8_t port_id,
+    rdm_tod_callback *on_tod,
+    rdm_response_callback *on_rdm_response) {
+  if (port_id > ARTNET_MAX_PORTS) {
+    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
+      ARTNET_MAX_PORTS;
+    return false;
+  }
+
+  if (m_input_ports[port_id].on_tod)
+    delete m_input_ports[port_id].on_tod;
+  if (m_input_ports[port_id].on_rdm_response)
+    delete m_input_ports[port_id].on_rdm_response;
+
+  m_input_ports[port_id].on_tod = on_tod;
+  m_input_ports[port_id].on_rdm_response = on_rdm_response;
+  return true;
 }
 
 
@@ -412,59 +509,107 @@ bool ArtNetNode::SetDMXHandler(uint8_t port_id,
 
 
 /*
- * Send an RDMCommand
- * @param universe the id of the universe to send
- * @param command the command to send
- * @return true if it was send successfully, false otherwise
-bool ArtNetNode::SendRDM(unsigned int universe, const RDMCommand &command) {
-  if (!m_running)
+ * Send an set of UIDs in one of more ArtTod packets
+ */
+bool ArtNetNode::SendTod(uint8_t port_id, const UIDSet &uid_set) {
+  if (!CheckOutputPortState(port_id, "ArtTodData"))
     return false;
 
-  if (universe >= ARTNET_MAX_UNIVERSES) {
-    OLA_WARN << "Universe index out of bounds, should be between 0 and" <<
-                  ARTNET_MAX_UNIVERSES << "), was " << universe;
-    return false;
+  OLA_DEBUG << "Sending ArtTodRequest";
+  artnet_packet packet;
+  PopulatePacketHeader(&packet, ARTNET_TODDATA);
+  memset(&packet.data.tod_data, 0, sizeof(packet.data.tod_data));
+  packet.data.tod_data.version = HostToNetwork(ARTNET_VERSION);
+  packet.data.tod_data.rdm_version = RDM_VERSION;
+  packet.data.tod_data.port = 1 + port_id;
+  packet.data.tod_data.address = m_output_ports[port_id].universe_address;
+  uint16_t uids = std::min(uid_set.Size(),
+                           (unsigned int) MAX_UIDS_PER_UNIVERSE);
+  packet.data.tod_data.uid_total = HostToNetwork(uids);
+  packet.data.tod_data.uid_count = ARTNET_MAX_UID_COUNT;
+
+  uint8_t (*ptr)[ola::rdm::UID::UID_SIZE] = packet.data.tod_data.tod;
+  unsigned int i = 0;
+  UIDSet::Iterator iter = uid_set.Begin();
+
+  while (iter != uid_set.End()) {
+    iter->Pack(*ptr, ola::rdm::UID::UID_SIZE);
+
+    i++;
+    iter++;
+    if (i % ARTNET_MAX_UID_COUNT == 0) {
+      packet.data.tod_data.block_count = i / ARTNET_MAX_UID_COUNT - 1;
+      SendPacket(packet,
+                 sizeof(packet.data.tod_data),
+                 m_interface.bcast_address);
+      ptr = packet.data.tod_data.tod;
+    } else {
+      ptr++;
+    }
   }
 
-  artnet_data_packet packet;
-  unsigned int size = PopulatePacket(&packet, universe, buffer);
-  ssize_t bytes_sent = m_socket->SendTo(reinterpret_cast<uint8_t*>(&packet),
-                                        size,
-                                        m_destination);
-
-  if (bytes_sent != size) {
-    OLA_WARN << "Only sent " << bytes_sent << " of " << size;
-    return false;
+  if (i == 0 || i % ARTNET_MAX_UID_COUNT) {
+    packet.data.tod_data.uid_count = i % ARTNET_MAX_UID_COUNT;
+    packet.data.tod_data.block_count = i / ARTNET_MAX_UID_COUNT;
+    unsigned int size = sizeof(packet.data.tod_data) -
+      sizeof(packet.data.tod_data.tod) + i * ola::rdm::UID::UID_SIZE;
+    SendPacket(packet, size, m_interface.bcast_address);
   }
-
-  m_packet_count++;
   return true;
 }
 
 
 /*
- * Set the closure to be called when we receive rdm data for this universe.
- * @param universe the universe to register the handler for
- * @param callback the Callback to invoke when there is data for this universe.
- * Ownership of the closure is transferred to the node.
-bool ArtNetNode::SetRDMHandler(unsigned int universe,
-                               Callback1<void, RDMCommand*> > *callback) {
-  map<unsigned int, Callback1<void, RDMCommand*> > *>::iterator iter =
-    m_rdm_handlers.find(universe);
+ * Send a RDMResponse
+ * @param port_id the port id to send the response on
+ * @param response the RDMResponse to send
+ */
+bool ArtNetNode::SendRDMResponse(uint8_t port_id, const RDMResponse &response) {
+  if (!CheckOutputPortState(port_id, "ArtRDM"))
+    return false;
 
-  if (callback) {
-    // adding
-    if (iter == m_rdm_handlers.end()) {
-      m_rdm_handlers[universe] = callback;
-    } else {
-      delete iter->second;
-      iter->second = callback;
-    }
-  } else if (iter != m_rdm_handlers.end()) {
-    // removing
-    delete iter->second;
-    m_rdm_handlers.erase(iter);
+  const UID &uid_destination = response.DestinationUID();
+  map<UID, IPAddress>::const_iterator iter =
+    m_output_ports[port_id].uid_map.find(uid_destination);
+
+  IPAddress destination = m_interface.bcast_address;
+
+  if (iter == m_output_ports[port_id].uid_map.end()) {
+    OLA_WARN << "Couldn't find " << uid_destination <<
+      " in the uid map, broadcasting packet";
+  } else {
+    destination = iter->second;
   }
+  return SendRDMCommand(response,
+                        destination,
+                        m_output_ports[port_id].universe_address);
+}
+
+
+/*
+ * Set the RDM handlers for an Output port
+ */
+bool ArtNetNode::SetOutputPortRDMHandlers(
+    uint8_t port_id,
+    ola::Closure<void> *on_discover,
+    ola::Closure<void> *on_flush,
+    rdm_request_callback *on_rdm_request) {
+
+  if (port_id > ARTNET_MAX_PORTS) {
+    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
+      ARTNET_MAX_PORTS;
+    return false;
+  }
+
+  if (m_output_ports[port_id].on_discover)
+    delete m_output_ports[port_id].on_discover;
+  if (m_output_ports[port_id].on_flush)
+    delete m_output_ports[port_id].on_flush;
+  if (m_output_ports[port_id].on_rdm_request)
+    delete m_output_ports[port_id].on_rdm_request;
+  m_output_ports[port_id].on_discover = on_discover;
+  m_output_ports[port_id].on_flush = on_flush;
+  m_output_ports[port_id].on_rdm_request = on_rdm_request;
   return true;
 }
 
@@ -493,7 +638,7 @@ void ArtNetNode::SocketReady() {
 /*
  * Send an ArtPollReply message
  */
-bool ArtNetNode::SendPollReply(struct sockaddr_in destination) {
+bool ArtNetNode::SendPollReply(const IPAddress &destination) {
   artnet_packet packet;
   PopulatePacketHeader(&packet, ARTNET_REPLY);
   memset(&packet.data.reply, 0, sizeof(packet.data.reply));
@@ -502,7 +647,6 @@ bool ArtNetNode::SendPollReply(struct sockaddr_in destination) {
          &m_interface.ip_address.s_addr,
          sizeof(packet.data.reply.ip));
   packet.data.reply.port = HostToLittleEndian(ARTNET_PORT);
-  packet.data.reply.version[1] = ARTNET_VERSION;
   packet.data.reply.subnet_address[1] = m_input_ports[0].universe_address >> 4;
   packet.data.reply.oem = HostToNetwork(OEM_CODE);
   packet.data.reply.status1 = 0xd2;  // normal indicators, rdm enabled
@@ -547,9 +691,34 @@ bool ArtNetNode::SendPollReply(struct sockaddr_in destination) {
 
 
 /*
+ * Send an IPProgReply
+ */
+bool ArtNetNode::SendIPReply(const IPAddress &destination) {
+  artnet_packet packet;
+  PopulatePacketHeader(&packet, ARTNET_REPLY);
+  memset(&packet.data.ip_reply, 0, sizeof(packet.data.ip_reply));
+  packet.data.ip_reply.version = HostToNetwork(ARTNET_VERSION);
+
+  memcpy(packet.data.ip_reply.ip,
+         &m_interface.ip_address.s_addr,
+         sizeof(packet.data.ip_reply.ip));
+  memcpy(packet.data.ip_reply.subnet,
+         &m_interface.ip_address.s_addr,
+         sizeof(packet.data.ip_reply.subnet));
+  packet.data.ip_reply.port = HostToLittleEndian(ARTNET_PORT);
+
+  if (!SendPacket(packet, sizeof(packet.data.ip_reply), destination)) {
+    OLA_INFO << "Failed to send ArtIpProgReply";
+    return false;
+  }
+  return true;
+}
+
+
+/*
  * Handle a artnet packet
  */
-void ArtNetNode::HandlePacket(IPAddress source_address,
+void ArtNetNode::HandlePacket(const IPAddress &source_address,
                               const artnet_packet &packet,
                               unsigned int packet_size) {
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
@@ -575,6 +744,31 @@ void ArtNetNode::HandlePacket(IPAddress source_address,
                        packet.data.dmx,
                        packet_size - header_size);
       break;
+    case ARTNET_TODREQUEST:
+      HandleTodRequest(source_address,
+                       packet.data.tod_request,
+                       packet_size - header_size);
+      break;
+    case ARTNET_TODDATA:
+      HandleTodData(source_address,
+                    packet.data.tod_data,
+                    packet_size - header_size);
+      break;
+    case ARTNET_TODCONTROL:
+      HandleTodControl(source_address,
+                       packet.data.tod_control,
+                       packet_size - header_size);
+      break;
+    case ARTNET_RDM:
+      HandleRdm(source_address,
+                packet.data.rdm,
+                packet_size - header_size);
+      break;
+    case ARTNET_IP_PROGRAM:
+      HandleIPProgram(source_address,
+                      packet.data.ip_program,
+                      packet_size - header_size);
+      break;
     default:
       OLA_INFO << "ArtNet got unknown packet " << std::hex <<
         LittleEndianToHost(packet.op_code);
@@ -585,25 +779,18 @@ void ArtNetNode::HandlePacket(IPAddress source_address,
 /*
  * Handle an ArtPoll packet
  */
-void ArtNetNode::HandlePollPacket(IPAddress source_address,
+void ArtNetNode::HandlePollPacket(const IPAddress &source_address,
                                   const artnet_poll_t &packet,
                                   unsigned int packet_size) {
-  if (packet_size < sizeof(artnet_poll_t)) {
-    OLA_INFO << "ArtPoll too small, was " << packet_size << " required " <<
-      sizeof(artnet_poll_t);
+  if (!CheckPacketSize(source_address, "ArtPoll", packet_size, sizeof(packet)))
     return;
-  }
 
-  if (packet.version[0] || packet.version[1] != ARTNET_VERSION) {
-    OLA_INFO << "ArtPoll version mismatch, was " <<
-      static_cast<int>(packet.version[0]) <<
-      static_cast<int>(packet.version[1]);
+  if (!CheckPacketVersion(source_address, "ArtPoll", packet.version))
     return;
-  }
 
   m_send_reply_on_change = packet.talk_to_me & 0x02;
   // It's unclear if this should be broadcast or unicast, stick with broadcast
-  SendPollReply(m_destination);
+  SendPollReply(m_interface.bcast_address);
   (void) source_address;
 }
 
@@ -611,7 +798,7 @@ void ArtNetNode::HandlePollPacket(IPAddress source_address,
 /*
  * Handle an ArtPollReply packet
  */
-void ArtNetNode::HandleReplyPacket(IPAddress source_address,
+void ArtNetNode::HandleReplyPacket(const IPAddress &source_address,
                                    const artnet_reply_t &packet,
                                    unsigned int packet_size) {
   // older versions don't have the bind_ip and the extra filler, make sure we
@@ -622,21 +809,9 @@ void ArtNetNode::HandleReplyPacket(IPAddress source_address,
       sizeof(packet.status2) -
       sizeof(packet.bind_index) -
       sizeof(packet.bind_ip));
-  if (packet_size < minimum_reply_size) {
-    OLA_INFO << "ArtPollReply too small, was " << packet_size << " required "
-      << minimum_reply_size;
+  if (!CheckPacketSize(source_address, "ArtPollReply", packet_size,
+        minimum_reply_size))
     return;
-  }
-
-  if (packet.version[0] || packet.version[1] != ARTNET_VERSION) {
-    OLA_INFO << "ArtPollReply version mismatch, was " <<
-      static_cast<int>(packet.version[0]) <<
-      static_cast<int>(packet.version[1]) << " from " <<
-      inet_ntoa(source_address);
-    // TODO(simon): this is commented out because libartnet has a bug where it
-    // sets the version to 0
-    // return;
-  }
 
   // Update the subscribed nodes list
   unsigned int port_limit = std::min((uint8_t) ARTNET_MAX_PORTS,
@@ -649,7 +824,7 @@ void ArtNetNode::HandleReplyPacket(IPAddress source_address,
         if (m_input_ports[port_id].enabled &&
             m_input_ports[port_id].universe_address == universe_id) {
           m_input_ports[port_id].subscribed_nodes[source_address] =
-            *m_wake_time;
+            *m_plugin_adaptor->WakeUpTime();
         }
       }
     }
@@ -660,24 +835,16 @@ void ArtNetNode::HandleReplyPacket(IPAddress source_address,
 /*
  * Handle a DMX Data packet, this takes care of the merging
  */
-void ArtNetNode::HandleDataPacket(IPAddress source_address,
+void ArtNetNode::HandleDataPacket(const IPAddress &source_address,
                                   const artnet_dmx_t &packet,
                                   unsigned int packet_size) {
   // The data section needs to be at least 2 bytes according to the spec
   unsigned int header_size = sizeof(artnet_dmx_t) - DMX_UNIVERSE_SIZE;
-  if (packet_size < header_size + 2) {
-    OLA_INFO << "ArtDmx too small, was " << packet_size <<
-      " required at least " << header_size + 2;
+  if (!CheckPacketSize(source_address, "ArtDmx", packet_size, header_size + 2))
     return;
-  }
 
-  if (packet.version[0] || packet.version[1] != ARTNET_VERSION) {
-    OLA_INFO << "ArtDmx version mismatch, was " <<
-      static_cast<int>(packet.version[0]) <<
-      static_cast<int>(packet.version[1]) << " from " <<
-      inet_ntoa(source_address);
+  if (!CheckPacketVersion(source_address, "ArtDmx", packet.version))
     return;
-  }
 
   uint16_t universe_id = LittleEndianToHost(packet.universe);
   uint16_t data_size = std::min(
@@ -692,13 +859,183 @@ void ArtNetNode::HandleDataPacket(IPAddress source_address,
       // update this port, doing a merge if necessary
       DMXSource source;
       source.address = source_address;
-      source.timestamp = *m_wake_time;
+      source.timestamp = *m_plugin_adaptor->WakeUpTime();
       source.buffer.Set(packet.data, data_size);
       UpdatePortFromSource(&m_output_ports[port_id], source);
     }
   }
 }
 
+
+/*
+ * Handle a TOD Request packet
+ */
+void ArtNetNode::HandleTodRequest(const IPAddress &source_address,
+                                  const artnet_todrequest_t &packet,
+                                  unsigned int packet_size) {
+  unsigned int header_size = sizeof(packet) - sizeof(packet.addresses);
+  if (!CheckPacketSize(source_address, "ArtTodRequest", packet_size,
+                       header_size))
+    return;
+
+  if (!CheckPacketVersion(source_address, "ArtTodRequest", packet.version))
+    return;
+
+  if (packet.command) {
+    OLA_INFO << "ArtTodRequest received but command field was " <<
+      static_cast<int>(packet.command);
+    return;
+  }
+
+  unsigned int addresses = std::min(
+      packet_size - header_size,
+      static_cast<unsigned int>(packet.address_count));
+
+  addresses = std::min(
+      static_cast<unsigned int>(ARTNET_MAX_RDM_ADDRESS_COUNT),
+      addresses);
+
+  bool handler_called[ARTNET_MAX_PORTS];
+  memset(handler_called, 0, sizeof(handler_called));
+
+  for (unsigned int i = 0; i < addresses; i++) {
+    for (unsigned int port_id = 0; port_id < ARTNET_MAX_PORTS; port_id++) {
+      if (m_output_ports[port_id].enabled &&
+          m_output_ports[port_id].universe_address == packet.addresses[i] &&
+          m_output_ports[port_id].on_discover &&
+          !handler_called[port_id]) {
+        m_output_ports[port_id].on_discover->Run();
+        handler_called[port_id] = true;
+      }
+    }
+  }
+}
+
+
+/*
+ * Handle a TOD data packet
+ */
+void ArtNetNode::HandleTodData(const IPAddress &source_address,
+                               const artnet_toddata_t &packet,
+                               unsigned int packet_size) {
+  unsigned int expected_size = sizeof(packet) - sizeof(packet.tod);
+  if (!CheckPacketSize(source_address, "ArtTodData", packet_size,
+                       expected_size))
+    return;
+
+  if (!CheckPacketVersion(source_address, "ArtTodData", packet.version))
+    return;
+
+  if (packet.rdm_version != RDM_VERSION) {
+    OLA_WARN << "Dropping non standard RDM version: " <<
+      static_cast<int>(packet.rdm_version);
+    return;
+  }
+
+  if (packet.command_response) {
+    OLA_WARN << "Command response 0x" << std::hex << packet.command_response <<
+      " != 0x0";
+    return;
+  }
+
+  // TODO(simon): finish me
+  // we only care about this for input ports
+}
+
+
+/*
+ * Handle a TOD Control packet
+ */
+void ArtNetNode::HandleTodControl(const IPAddress &source_address,
+                                  const artnet_todcontrol_t &packet,
+                                  unsigned int packet_size) {
+  if (!CheckPacketSize(source_address, "ArtTodControl", packet_size,
+                       sizeof(packet)))
+    return;
+
+  if (!CheckPacketVersion(source_address, "ArtTodControl", packet.version))
+    return;
+
+  if (packet.command != TOD_FLUSH_COMMAND)
+    return;
+
+  for (unsigned int port_id = 0; port_id < ARTNET_MAX_PORTS; port_id++) {
+    if (m_output_ports[port_id].enabled &&
+        m_output_ports[port_id].universe_address == packet.address &&
+        m_output_ports[port_id].on_flush) {
+      m_output_ports[port_id].on_flush->Run();
+    }
+  }
+}
+
+
+/*
+ * Handle an RDM packet
+ */
+void ArtNetNode::HandleRdm(const IPAddress &source_address,
+                           const artnet_rdm_t &packet,
+                           unsigned int packet_size) {
+  unsigned int header_size = sizeof(packet) - ARTNET_MAX_RDM_DATA;
+  if (!CheckPacketSize(source_address, "ArtRDM", packet_size, header_size))
+    return;
+
+  if (!CheckPacketVersion(source_address, "ArtRDM", packet.version))
+    return;
+
+  if (packet.rdm_version != RDM_VERSION) {
+    OLA_INFO << "Dropping non standard RDM version: " <<
+      static_cast<int>(packet.rdm_version);
+    return;
+  }
+
+  if (packet.command) {
+    OLA_WARN << "Unknown RDM command " << static_cast<int>(packet.command);
+    return;
+  }
+
+  unsigned int rdm_length = packet_size - header_size;
+  if (!rdm_length)
+    return;
+
+  // look for the port that this was sent to, once we know the port we can try
+  // to parse the message
+  for (unsigned int port_id = 0; port_id < ARTNET_MAX_PORTS; port_id++) {
+    if (m_output_ports[port_id].enabled &&
+        m_output_ports[port_id].universe_address == packet.address &&
+        m_output_ports[port_id].on_rdm_request) {
+      RDMRequest *request = RDMRequest::InflateFromData(packet.data,
+                                                        rdm_length);
+
+      if (request)
+        m_output_ports[port_id].on_rdm_request->Run(request);
+    }
+
+    if (m_input_ports[port_id].enabled &&
+        m_input_ports[port_id].universe_address == packet.address &&
+        m_input_ports[port_id].on_rdm_response) {
+      RDMResponse *response = RDMResponse::InflateFromData(packet.data,
+                                                           rdm_length);
+
+      if (response)
+        m_input_ports[port_id].on_rdm_response->Run(response);
+    }
+  }
+}
+
+
+void ArtNetNode::HandleIPProgram(const IPAddress &source_address,
+                                 const artnet_ip_prog_t &packet,
+                                 unsigned int packet_size) {
+  if (!CheckPacketSize(source_address, "ArtIpProg", packet_size,
+                       sizeof(packet)))
+    return;
+
+  if (!CheckPacketVersion(source_address, "ArtIpProg", packet.version))
+    return;
+
+  OLA_INFO <<
+    "Got ArtIpProgram, ignoring because we don't support remote configuration";
+}
 
 /*
  * Fill in the header for a packet
@@ -710,6 +1047,19 @@ void ArtNetNode::PopulatePacketHeader(artnet_packet *packet,
 }
 
 
+
+/*
+ * Increment the counts for all the uids
+ */
+void ArtNetNode::IncrementUIDCounts(uint8_t port_id) {
+  uid_map::iterator iter = m_input_ports[port_id].uids.begin();
+
+  for (; iter != m_input_ports[port_id].uids.end(); ++iter) {
+    iter->second.second++;
+  }
+}
+
+
 /*
  * Send an ArtNet packet
  * @param packet
@@ -718,7 +1068,12 @@ void ArtNetNode::PopulatePacketHeader(artnet_packet *packet,
  */
 bool ArtNetNode::SendPacket(const artnet_packet &packet,
                             unsigned int size,
-                            struct sockaddr_in destination) {
+                            const IPAddress &ip_destination) {
+  struct sockaddr_in destination;
+  destination.sin_family = AF_INET;
+  destination.sin_port = HostToNetwork(ARTNET_PORT);
+  destination.sin_addr = ip_destination;
+
   size += sizeof(packet.id) + sizeof(packet.op_code);
   ssize_t bytes_sent = m_socket->SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
@@ -734,12 +1089,32 @@ bool ArtNetNode::SendPacket(const artnet_packet &packet,
 
 
 /*
+ * Send a generic ArtRdm message
+ */
+bool ArtNetNode::SendRDMCommand(const RDMCommand &command,
+                                const IPAddress &destination,
+                                uint8_t universe) {
+  artnet_packet packet;
+  PopulatePacketHeader(&packet, ARTNET_RDM);
+  memset(&packet.data.rdm, 0, sizeof(packet.data.rdm));
+  packet.data.rdm.version = HostToNetwork(ARTNET_VERSION);
+  packet.data.rdm.rdm_version = RDM_VERSION;
+  packet.data.rdm.address = universe;
+  unsigned int rdm_size = ARTNET_MAX_RDM_DATA;
+  command.Pack(packet.data.rdm.data, &rdm_size);
+  unsigned int packet_size = sizeof(packet.data.rdm) - ARTNET_MAX_RDM_DATA +
+    rdm_size;
+  return SendPacket(packet, packet_size, destination);
+}
+
+
+/*
  * Update a port from a source, merging if necessary
  */
 void ArtNetNode::UpdatePortFromSource(OutputPort *port,
                                       const DMXSource &source) {
   TimeStamp merge_time_threshold = (
-      *m_wake_time - TimeInterval(MERGE_TIMEOUT, 0));
+      *m_plugin_adaptor->WakeUpTime() - TimeInterval(MERGE_TIMEOUT, 0));
   unsigned int first_empty_slot = MAX_MERGE_SOURCES;
   unsigned int source_slot = MAX_MERGE_SOURCES;
   unsigned int active_sources = 0;
@@ -771,7 +1146,7 @@ void ArtNetNode::UpdatePortFromSource(OutputPort *port,
       port->is_merging = true;
       if (m_send_reply_on_change) {
         m_unsolicited_replies++;
-        SendPollReply(m_destination);
+        SendPollReply(m_interface.bcast_address);
       }
     }
     source_slot = first_empty_slot;
@@ -799,9 +1174,80 @@ void ArtNetNode::UpdatePortFromSource(OutputPort *port,
       }
     }
   }
-
-
   port->on_data->Run();
+}
+
+
+/*
+ * Check the version number of a incomming packet
+ */
+bool ArtNetNode::CheckPacketVersion(const IPAddress &source_address,
+                                    const string &packet_type,
+                                    uint16_t version) {
+  if (NetworkToHost(version) != ARTNET_VERSION) {
+    OLA_INFO << packet_type << " version mismatch, was " <<
+      NetworkToHost(version) << " from " <<
+      AddressToString(source_address);
+    return false;
+  }
+  return true;
+}
+
+
+/*
+ * Check the size of an incoming packet
+ */
+bool ArtNetNode::CheckPacketSize(const IPAddress &source_address,
+                                 const string &packet_type,
+                                 unsigned int actual_size,
+                                 unsigned int expected_size) {
+  if (actual_size < expected_size) {
+    OLA_INFO << packet_type << " from " << AddressToString(source_address) <<
+      " was too small, got " << actual_size <<
+      " required at least " << expected_size;
+    return false;
+  }
+  return true;
+}
+
+
+/*
+ * Check if the input port is available for sending
+ */
+bool ArtNetNode::CheckInputPortState(uint8_t port_id, const string &action) {
+  return CheckPortState(port_id, action, false);
+}
+
+
+/*
+ * Check if the output port is available for sending
+ */
+bool ArtNetNode::CheckOutputPortState(uint8_t port_id, const string &action) {
+  return CheckPortState(port_id, action, true);
+}
+
+
+/*
+ * Check if a port is available for sending
+ */
+bool ArtNetNode::CheckPortState(uint8_t port_id,
+                                const string &action,
+                                bool is_output) {
+  if (!m_running)
+    return false;
+
+  if (port_id > ARTNET_MAX_PORTS) {
+    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
+      ARTNET_MAX_PORTS;
+    return false;
+  }
+
+  if ((is_output && !m_output_ports[port_id].enabled) ||
+      (!is_output && !m_input_ports[port_id].enabled)) {
+    OLA_INFO << "Attempt to send " << action << " on an inactive port";
+    return false;
+  }
+  return true;
 }
 
 
@@ -830,6 +1276,7 @@ bool ArtNetNode::InitNetwork() {
   }
 
   m_socket->SetOnData(NewClosure(this, &ArtNetNode::SocketReady));
+  m_plugin_adaptor->AddSocket(m_socket);
   return true;
 }
 }  // artnet

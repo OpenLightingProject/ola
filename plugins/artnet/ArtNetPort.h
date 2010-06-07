@@ -58,6 +58,8 @@ class ArtNetInputPort: public BasicInputPort {
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
+    void PolitelyHandleRDMRequest(const ola::rdm::RDMRequest *request);
+    void RespondWithTod();
 
     string Description() const {
       return m_helper.Description(GetUniverse(), PortId());
@@ -78,6 +80,8 @@ class ArtNetOutputPort: public BasicOutputPort {
           m_helper(node, true) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    void RunRDMDiscovery();
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
       (void) old_universe;

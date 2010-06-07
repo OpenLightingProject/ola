@@ -21,6 +21,7 @@
  */
 
 #include <string>
+#include "ola/Logging.h"
 #include "olad/Device.h"
 #include "olad/Port.h"
 
@@ -94,6 +95,28 @@ void BasicInputPort::DmxChanged() {
 
 
 /*
+ * Handle an RDM Request on this port.
+ * @param request the RDMRequest object, ownership is transferred to us
+ */
+bool BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+  if (m_universe)
+    return m_universe->HandleRDMRequest(this, request);
+  else
+    delete request;
+    return false;
+}
+
+
+/*
+ * Trigger the RDM Discovery procedure for this universe
+ */
+void BasicInputPort::TriggerRDMDiscovery() {
+  if (m_universe)
+    m_universe->RunRDMDiscovery();
+}
+
+
+/*
  * Create a new BasicOutputPort
  */
 BasicOutputPort::BasicOutputPort(AbstractDevice *parent,
@@ -138,6 +161,23 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
 
   m_priority = priority;
   return true;
+}
+
+
+/*
+ * Handle an RDMRequest, subclasses can implement this to support RDM
+ */
+void BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+  OLA_WARN << "In base HandleRDMRequest, something has gone wrong with RDM" <<
+    " request routing";
+  delete request;
+}
+
+
+/*
+ * This is a noop for ports that don't support RDM
+ */
+void BasicOutputPort::RunRDMDiscovery() {
 }
 
 
