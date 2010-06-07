@@ -49,8 +49,8 @@ class RDMCommand {
     virtual RDMCommandClass CommandClass() const = 0;
 
     // Accessors
-    UID SourceUID() const { return m_source; }
-    UID DestinationUID() const { return m_destination; }
+    const UID& SourceUID() const { return m_source; }
+    const UID& DestinationUID() const { return m_destination; }
     uint8_t TransactionNumber() const { return m_transaction_number; }
     uint8_t PortId() const { return m_port_id; }
     uint8_t MessageCount() const { return m_message_count; }

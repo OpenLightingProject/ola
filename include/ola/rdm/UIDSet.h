@@ -38,6 +38,9 @@ using std::set;
  */
 class UIDSet {
   public:
+
+    typedef set<UID>::const_iterator Iterator;
+
     UIDSet() {
     }
 
@@ -70,6 +73,14 @@ class UIDSet {
     // Return true if the set contains this UID
     bool Contains(const UID &uid) {
       return m_uids.find(uid) != m_uids.end();
+    }
+
+    Iterator Begin() const {
+      return m_uids.begin();
+    }
+
+    Iterator End() const {
+      return m_uids.end();
     }
 
     // Return the UIDs in this set that don't exist in other
