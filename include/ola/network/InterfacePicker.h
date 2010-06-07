@@ -49,6 +49,7 @@ class Interface {
     std::string name;
     struct in_addr ip_address;
     struct in_addr bcast_address;
+    struct in_addr subnet_address;
     int8_t hw_address[MAC_LENGTH];
 };
 

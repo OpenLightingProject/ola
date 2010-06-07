@@ -162,6 +162,16 @@ vector<Interface> PosixInterfacePicker::GetInterfaces() const {
     }
 #endif
 
+    // fetch subnet address
+#ifdef  SIOCGIFNETMASK
+    if (ioctl(sd, SIOCGIFNETMASK, &ifrcopy) < 0) {
+      OLA_WARN << "ioctl error " << strerror(errno);
+    } else {
+      sin = (struct sockaddr_in *) &ifrcopy.ifr_broadaddr;
+      interface.subnet_address = sin->sin_addr;
+    }
+#endif
+
     // fetch hardware address
 #ifdef SIOCGIFHWADDR
     if (ifrcopy.ifr_flags & SIOCGIFHWADDR) {

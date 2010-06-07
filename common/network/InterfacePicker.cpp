@@ -42,6 +42,7 @@ using std::vector;
 Interface::Interface() {
   ip_address.s_addr = 0;
   bcast_address.s_addr = 0;
+  subnet_address.s_addr = 0;
   memset(hw_address, 0, MAC_LENGTH);
 }
 
@@ -50,6 +51,7 @@ Interface::Interface(const Interface &other) {
   name = other.name;
   ip_address = other.ip_address;
   bcast_address = other.bcast_address;
+  subnet_address = other.subnet_address;
   memcpy(hw_address, other.hw_address, MAC_LENGTH);
 }
 
@@ -59,6 +61,7 @@ Interface& Interface::operator=(const Interface &other) {
     name = other.name;
     ip_address = other.ip_address;
     bcast_address = other.bcast_address;
+    subnet_address = other.subnet_address;
     memcpy(hw_address, other.hw_address, MAC_LENGTH);
   }
   return *this;
@@ -67,7 +70,8 @@ Interface& Interface::operator=(const Interface &other) {
 
 bool Interface::operator==(const Interface &other) {
   return (name == other.name &&
-          ip_address.s_addr == other.ip_address.s_addr);
+          ip_address.s_addr == other.ip_address.s_addr &&
+          subnet_address.s_addr == other.subnet_address.s_addr);
 }
 
 

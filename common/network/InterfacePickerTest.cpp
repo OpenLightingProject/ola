@@ -73,6 +73,7 @@ void InterfacePickerTest::testGetInterfaces() {
     cout << iter->name << endl;
     cout << " ip: " << inet_ntoa(iter->ip_address) << endl;
     cout << " bcast: " << inet_ntoa(iter->bcast_address) << endl;
+    cout << " subnet: " << inet_ntoa(iter->subnet_address) << endl;
     cout << " hw_addr: ";
     for (unsigned int i = 0; i < ola::network::MAC_LENGTH; i++) {
       if (i)
