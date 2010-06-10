@@ -109,7 +109,8 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
 
   switch (information.esta_id) {
     case OPEN_LIGHTING_ESTA_ID:
-      if (information.device_id == OPEN_LIGHTING_RGB_MIXER_ID) {
+      if (information.device_id == OPEN_LIGHTING_RGB_MIXER_ID ||
+          information.device_id == OPEN_LIGHTING_PACKETHEADS_ID) {
         AddDevice(new ArduinoRGBDevice(
             m_plugin_adaptor,
             this,
