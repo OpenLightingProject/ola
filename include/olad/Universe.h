@@ -96,7 +96,7 @@ class Universe {
     // RDM methods
     bool HandleRDMRequest(InputPort *port,
                           const ola::rdm::RDMRequest *request);
-    void HandleRDMResponse(OutputPort *port,
+    bool HandleRDMResponse(OutputPort *port,
                            const ola::rdm::RDMResponse *response);
     void RunRDMDiscovery();
     void GetUIDs(ola::rdm::UIDSet *uids);

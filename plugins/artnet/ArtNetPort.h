@@ -76,17 +76,17 @@ class ArtNetOutputPort: public BasicOutputPort {
     ArtNetOutputPort(ArtNetDevice *device,
                      unsigned int port_id,
                      ArtNetNode *node)
-        : BasicOutputPort(device, port_id),
+        : BasicOutputPort(device, port_id, true),
           m_helper(node, true) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    void HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
     void RunRDMDiscovery();
 
-    void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
-      (void) old_universe;
-      m_helper.PostSetUniverse(new_universe, PortId());
-    }
+    void HandleNewTOD(const UIDSet &added, const UIDSet &removed);
+    void PolitelyHandleRDMResponse(const RDMResponse *response);
+
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 
     string Description() const {
       return m_helper.Description(GetUniverse(), PortId());

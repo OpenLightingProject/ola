@@ -329,7 +329,7 @@ bool Universe::HandleRDMRequest(InputPort *port,
 
   if (iter == m_output_uids.end()) {
     OLA_WARN << "Can't find UID " << request->DestinationUID() <<
-      " in the universe map, dropping request";
+      " in the output universe map, dropping request";
     delete request;
     return false;
   } else {
@@ -342,8 +342,25 @@ bool Universe::HandleRDMRequest(InputPort *port,
 /*
  * Handle a RDM response
  */
-void Universe::HandleRDMResponse(OutputPort *port,
+bool Universe::HandleRDMResponse(OutputPort *port,
                                  const ola::rdm::RDMResponse *response) {
+  OLA_INFO << "Got a RDM response for " << response->DestinationUID() <<
+    " with command " << std::hex << response->CommandClass() << " and param "
+    << response->ParamId();
+
+  map<UID, InputPort*>::iterator iter =
+    m_input_uids.find(response->DestinationUID());
+
+  if (iter == m_input_uids.end()) {
+    OLA_WARN << "Can't find UID " << response->DestinationUID() <<
+      " in the input universe map, dropping response";
+    delete response;
+    return false;
+  } else {
+    iter->second->HandleRDMResponse(response);
+  }
+  return true;
+  (void) port;
 }
 
 

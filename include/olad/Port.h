@@ -86,6 +86,7 @@ class InputPort: public Port {
 
     // Handle RDMRequests, ownership of the request object is transferred
     virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request) = 0;
+    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response) = 0;
 };
 
 
@@ -103,7 +104,8 @@ class OutputPort: public Port {
     virtual void UniverseNameChanged(const string &new_name) = 0;
 
     // Handle RDMRequests, ownership of the request object is transferred
-    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request) = 0;
+    virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request) = 0;
+    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response) = 0;
     virtual void RunRDMDiscovery() = 0;
 };
 
@@ -129,7 +131,10 @@ class BasicInputPort: public InputPort {
     port_priority_mode GetPriorityMode() const { return m_priority_mode; }
     void DmxChanged();
     const DmxSource &SourceData() const { return m_dmx_source; }
+
+    // rdm methods, the child class provides HandleRDMResponse
     bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response);
     void TriggerRDMDiscovery();
 
     port_priority_capability PriorityCapability() const {
@@ -183,7 +188,9 @@ class BasicInputPort: public InputPort {
  */
 class BasicOutputPort: public OutputPort {
   public:
-    BasicOutputPort(AbstractDevice *parent, unsigned int port_id);
+    BasicOutputPort(AbstractDevice *parent,
+                    unsigned int port_id,
+                    bool start_rdm_discovery_on_patch = false);
 
     unsigned int PortId() const { return m_port_id; }
     AbstractDevice *GetDevice() const { return m_device; }
@@ -195,7 +202,10 @@ class BasicOutputPort: public OutputPort {
     void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
     port_priority_mode GetPriorityMode() const { return m_priority_mode; }
 
-    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    // rdm methods, the child class provides HandleRDMRequest and
+    // RunRDMDiscovery
+    virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    bool HandleRDMResponse(const ola::rdm::RDMResponse *response);
     virtual void RunRDMDiscovery();
 
     virtual void UniverseNameChanged(const string &new_name) {
@@ -226,6 +236,7 @@ class BasicOutputPort: public OutputPort {
 
   private:
     const unsigned int m_port_id;
+    const bool m_discover_on_patch;
     uint8_t m_priority;
     port_priority_mode m_priority_mode;
     mutable string m_port_string;
@@ -294,8 +305,12 @@ class OutputPortDecorator: public OutputPort {
       return m_port->GetPriorityMode();
     }
 
-    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+    virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request) {
       return m_port->HandleRDMRequest(request);
+    }
+
+    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response) {
+      return m_port->HandleRDMResponse(response);
     }
 
     virtual void RunRDMDiscovery() {

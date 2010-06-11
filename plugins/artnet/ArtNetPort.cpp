@@ -147,11 +147,13 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
 /*
  * Handle an RDMRequest
  */
-void ArtNetOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+bool ArtNetOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
   // Discovery requests aren't proxied
+  bool ret = true;
   if (request->CommandClass() != RDMCommand::DISCOVER_COMMAND)
-    m_helper.GetNode()->SendRDMRequest(PortId(), *request);
+    ret = m_helper.GetNode()->SendRDMRequest(PortId(), *request);
   delete request;
+  return ret;
 }
 
 
@@ -160,6 +162,45 @@ void ArtNetOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
  */
 void ArtNetOutputPort::RunRDMDiscovery() {
   m_helper.GetNode()->ForceDiscovery(PortId());
+}
+
+
+/*
+ * Set the RDM handlers as appropriate
+ */
+void ArtNetOutputPort::PostSetUniverse(Universe *old_universe,
+                                       Universe *new_universe) {
+  (void) old_universe;
+  m_helper.PostSetUniverse(new_universe, PortId());
+
+  if (new_universe && !old_universe) {
+    m_helper.GetNode()->SetInputPortRDMHandlers(
+        PortId(),
+        ola::NewCallback<ArtNetOutputPort, void, const UIDSet&, const UIDSet&>(
+          this,
+          &ArtNetOutputPort::HandleNewTOD),
+        ola::NewCallback<ArtNetOutputPort, void, const RDMResponse*>(
+          this,
+          &ArtNetOutputPort::PolitelyHandleRDMResponse));
+  } else if (!new_universe) {
+    m_helper.GetNode()->SetInputPortRDMHandlers(PortId(), NULL, NULL);
+  }
+}
+
+
+/*
+ * Handle a TOD update from the node
+ */
+void ArtNetOutputPort::HandleNewTOD(const UIDSet &added,
+                                    const UIDSet &removed) {
+}
+
+
+/*
+ * Handle a RDMResponse from the node
+ */
+void ArtNetOutputPort::PolitelyHandleRDMResponse(const RDMResponse *response) {
+  HandleRDMResponse(response);
 }
 }  // artnet
 }  // plugin

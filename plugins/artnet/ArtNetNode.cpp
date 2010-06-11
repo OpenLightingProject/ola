@@ -416,7 +416,7 @@ bool ArtNetNode::ForceDiscovery(uint8_t port_id) {
 
   OLA_DEBUG << "Sending ArtTodControl";
   artnet_packet packet;
-  PopulatePacketHeader(&packet, ARTNET_TODREQUEST);
+  PopulatePacketHeader(&packet, ARTNET_TODCONTROL);
   memset(&packet.data.tod_control, 0, sizeof(packet.data.tod_control));
   packet.data.tod_control.version = HostToNetwork(ARTNET_VERSION);
   packet.data.tod_control.command = TOD_FLUSH_COMMAND;

@@ -108,6 +108,19 @@ bool BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
 
 
 /*
+ * Handle a response message
+ * @param response, the RDMResponse object, ownership is transferred to us
+ */
+bool BasicInputPort::HandleRDMResponse(
+    const ola::rdm::RDMResponse *response) {
+  OLA_WARN << "In base HandleRDMResponse, something has gone wrong with RDM" <<
+    " request routing";
+  delete response;
+  return true;
+}
+
+
+/*
  * Trigger the RDM Discovery procedure for this universe
  */
 void BasicInputPort::TriggerRDMDiscovery() {
@@ -120,8 +133,10 @@ void BasicInputPort::TriggerRDMDiscovery() {
  * Create a new BasicOutputPort
  */
 BasicOutputPort::BasicOutputPort(AbstractDevice *parent,
-                                 unsigned int port_id):
+                                 unsigned int port_id,
+                                 bool start_rdm_discovery_on_patch):
     m_port_id(port_id),
+    m_discover_on_patch(start_rdm_discovery_on_patch),
     m_priority(DmxSource::PRIORITY_DEFAULT),
     m_priority_mode(PRIORITY_MODE_INHERIT),
     m_port_string(""),
@@ -138,6 +153,8 @@ bool BasicOutputPort::SetUniverse(Universe *new_universe) {
   if (PreSetUniverse(old_universe, new_universe)) {
     m_universe = new_universe;
     PostSetUniverse(old_universe, new_universe);
+    if (m_discover_on_patch)
+      RunRDMDiscovery();
     return true;
   }
   return false;
@@ -167,10 +184,24 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
 /*
  * Handle an RDMRequest, subclasses can implement this to support RDM
  */
-void BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+bool BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
   OLA_WARN << "In base HandleRDMRequest, something has gone wrong with RDM" <<
     " request routing";
   delete request;
+  return true;
+}
+
+
+/*
+ * Handle a response message
+ */
+bool BasicOutputPort::HandleRDMResponse(
+    const ola::rdm::RDMResponse *response) {
+  if (m_universe)
+    return m_universe->HandleRDMResponse(this, response);
+  else
+    delete response;
+    return false;
 }
 
 
