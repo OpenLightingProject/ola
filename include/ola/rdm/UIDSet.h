@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_RDM_UIDSET_H_
 
 #include <ola/rdm/UID.h>
+#include <algorithm>
 #include <iomanip>
 #include <set>
 #include <string>
@@ -86,11 +87,11 @@ class UIDSet {
     // Return the UIDs in this set that don't exist in other
     UIDSet SetDifference(const UIDSet &other) {
       set<UID> difference;
-      set_difference(m_uids.begin(),
-                     m_uids.end(),
-                     other.m_uids.begin(),
-                     other.m_uids.end(),
-                     inserter(difference, difference.begin()));
+      std::set_difference(m_uids.begin(),
+                          m_uids.end(),
+                          other.m_uids.begin(),
+                          other.m_uids.end(),
+                          std::inserter(difference, difference.begin()));
       return UIDSet(difference);
     }
 
