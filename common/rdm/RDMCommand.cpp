@@ -18,6 +18,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+#include <string.h>
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
 
