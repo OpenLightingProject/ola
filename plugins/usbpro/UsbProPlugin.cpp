@@ -27,6 +27,7 @@
 
 #include "ola/Closure.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 
@@ -40,14 +41,16 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-const char UsbProPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
-const char UsbProPlugin::PLUGIN_NAME[] = "UsbPro Plugin";
-const char UsbProPlugin::PLUGIN_PREFIX[] = "usbpro";
+const char UsbProPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
+const char UsbProPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";
 const char UsbProPlugin::DEVICE_DIR_KEY[] = "device_dir";
 const char UsbProPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
-const char UsbProPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
 const char UsbProPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
 const char UsbProPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
+const char UsbProPlugin::PLUGIN_NAME[] = "UsbPro Plugin";
+const char UsbProPlugin::PLUGIN_PREFIX[] = "usbpro";
+const char UsbProPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
+const char UsbProPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
 
 
 /*
@@ -67,7 +70,10 @@ string UsbProPlugin::Description() const {
 "The directory to look for devices in\n"
 "\n"
 "device_prefix = ttyUSB\n"
-"The prefix of filenames to consider as devices, multiple keys are allowed\n";
+"The prefix of filenames to consider as devices, multiple keys are allowed\n"
+"\n"
+"pro_fps_limit = 190\n"
+"The max frames per second to send to a Usb Pro or DMXKing device\n";
 }
 
 
@@ -144,7 +150,8 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
             widget,
             information.esta_id,
             information.device_id,
-            serial));
+            serial,
+            GetProFrameLimit()));
         return;
       }
   }
@@ -157,7 +164,8 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
         widget,
         ENTTEC_ESTA_ID,
         0,  // assume device id is 0
-        serial));
+        serial,
+        GetProFrameLimit()));
 }
 
 
@@ -222,6 +230,10 @@ bool UsbProPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(DEVICE_DIR_KEY, StringValidator(),
                                          DEFAULT_DEVICE_DIR);
 
+  save |= m_preferences->SetDefaultValue(USB_PRO_FPS_LIMIT_KEY,
+                                         IntValidator(0, MAX_PRO_FPS_LIMIT),
+                                         DEFAULT_PRO_FPS_LIMIT);
+
   if (save)
     m_preferences->Save();
 
@@ -275,6 +287,18 @@ vector<string> UsbProPlugin::FindCandiateDevices() {
     closedir(dp);
   }
   return device_paths;
+}
+
+
+/*
+ * Get the Frames per second limit for a pro device
+ */
+unsigned int UsbProPlugin::GetProFrameLimit() {
+  unsigned int fps_limit;
+  if (!StringToUInt(m_preferences->GetValue(USB_PRO_FPS_LIMIT_KEY) ,
+                    &fps_limit))
+    StringToUInt(DEFAULT_PRO_FPS_LIMIT, &fps_limit);
+  return fps_limit;
 }
 }  // usbpro
 }  // plugin

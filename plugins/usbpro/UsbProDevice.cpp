@@ -56,7 +56,8 @@ UsbProDevice::UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
                            UsbWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
-                           uint32_t serial):
+                           uint32_t serial,
+                           unsigned int fps_limit):
     UsbDevice(owner, name, widget),
     m_got_parameters(false),
     m_in_shutdown(false),
@@ -85,7 +86,7 @@ UsbProDevice::UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
       new UsbProOutputPort(this, 0, ""),
       plugin_adaptor->WakeUpTime(),
       10,  // start with 10 tokens in the bucket
-      190);  // 200 frames per second seems to be the limit
+      fps_limit);  // 200 frames per second seems to be the limit
 
   AddPort(output_port);
   Start();  // this does nothing but set IsEnabled() to true

@@ -57,18 +57,22 @@ class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
     bool SetDefaultPreferences();
     void DeleteDevice(UsbDevice *device);
     vector<string> FindCandiateDevices();
+    unsigned int GetProFrameLimit();
 
     vector<UsbDevice*> m_devices;  // list of our devices
     WidgetDetector m_detector;
 
-    static const char USBPRO_DEVICE_NAME[];
-    static const char PLUGIN_NAME[];
-    static const char PLUGIN_PREFIX[];
+    static const char DEFAULT_DEVICE_DIR[];
+    static const char DEFAULT_PRO_FPS_LIMIT[];
     static const char DEVICE_DIR_KEY[];
     static const char DEVICE_PREFIX_KEY[];
-    static const char DEFAULT_DEVICE_DIR[];
     static const char LINUX_DEVICE_PREFIX[];
     static const char MAC_DEVICE_PREFIX[];
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
+    static const char USBPRO_DEVICE_NAME[];
+    static const char USB_PRO_FPS_LIMIT_KEY[];
+    static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
 
     static const uint16_t OPEN_LIGHTING_ESTA_ID = 0x7a70;
     static const uint16_t JESE_ESTA_ID = 0x6864;
