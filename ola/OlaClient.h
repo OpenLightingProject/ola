@@ -102,6 +102,11 @@ class OlaClientObserver {
       (void) uids;
       (void) error;
     }
+    virtual void ForceRDMDiscoveryComplete(unsigned int universe,
+                                           const string &error) {
+      (void) universe;
+      (void) error;
+    }
 };
 
 
@@ -128,6 +133,7 @@ class OlaClient {
 
     // rdm methods
     bool FetchUIDList(unsigned int universe);
+    bool ForceDiscovery(unsigned int universe);
 
     // int send_rdm(int universe, uint8_t *data, int length);
     bool SetUniverseName(unsigned int uni, const string &name);

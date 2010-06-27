@@ -409,7 +409,7 @@ void OlaServerServiceImpl::ConfigureDevice(RpcController* controller,
  * Fetch the UID list for a universe
  */
 void OlaServerServiceImpl::GetUIDs(RpcController* controller,
-                                   const ola::proto::UIDListRequest* request,
+                                   const ola::proto::UniverseRequest* request,
                                    ola::proto::UIDListReply* response,
                                    google::protobuf::Closure* done) {
   Universe *universe = m_universe_store->GetUniverse(request->universe());
@@ -426,6 +426,25 @@ void OlaServerServiceImpl::GetUIDs(RpcController* controller,
     uid->set_esta_id(iter->ManufacturerId());
     uid->set_device_id(iter->DeviceId());
   }
+  done->Run();
+}
+
+
+/*
+ * Force RDM discovery for a universe
+ */
+void OlaServerServiceImpl::ForceDiscovery(
+    RpcController* controller,
+    const ola::proto::UniverseRequest* request,
+    ola::proto::UniverseAck* response,
+    google::protobuf::Closure* done) {
+
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+  if (!universe)
+    return MissingUniverseError(controller, done);
+
+  universe->RunRDMDiscovery();
+  response->set_universe(request->universe());
   done->Run();
 }
 

@@ -177,8 +177,12 @@ message UID {
 }
 
 // Request the UID list for a universe
-message UIDListRequest {
-  optional int32 universe = 1;
+message UniverseRequest {
+  required int32 universe = 1;
+}
+
+message UniverseAck {
+  required int32 universe = 1;
 }
 
 message UIDListReply {
@@ -203,7 +207,8 @@ service OlaServerService {
   rpc GetPluginInfo (PluginInfoRequest) returns (PluginInfoReply);
   rpc GetDeviceInfo (DeviceInfoRequest) returns (DeviceInfoReply);
   rpc ConfigureDevice (DeviceConfigRequest) returns (DeviceConfigReply);
-  rpc GetUIDs (UIDListRequest) returns (UIDListReply);
+  rpc GetUIDs (UniverseRequest) returns (UIDListReply);
+  rpc ForceDiscovery (UniverseRequest) returns (UniverseAck);
 }
 
 // RPCs handled by the OLA Client

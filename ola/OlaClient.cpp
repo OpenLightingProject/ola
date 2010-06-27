@@ -117,6 +117,16 @@ bool OlaClient::FetchUIDList(unsigned int universe) {
 
 
 /*
+ * Force RDM discovery for a universe
+ * @param universe the universe id to run discovery on
+ * @return true on success, false on failure
+ */
+bool OlaClient::ForceDiscovery(unsigned int universe) {
+  return m_core->ForceDiscovery(universe);
+}
+
+
+/*
  * Request a listing of what devices are attached. This results in a call to
  *   observer->Devices()
  * when the request returns.

@@ -63,6 +63,7 @@ class OlaClientCore {
 
     // rdm methods
     bool FetchUIDList(unsigned int universe);
+    bool ForceDiscovery(unsigned int universe);
 
     // int send_rdm(int universe, uint8_t *data, int length);
     bool SetUniverseName(unsigned int uni, const string &name);
@@ -111,6 +112,8 @@ class OlaClientCore {
                            ola::proto::Ack *reply);
     void HandleDeviceConfig(SimpleRpcController *controller,
                             ola::proto::DeviceConfigReply *reply);
+    void HandleDiscovery(SimpleRpcController *controller,
+                         ola::proto::UniverseAck *reply);
 
   private:
     OlaClientCore(const OlaClientCore&);

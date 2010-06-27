@@ -197,7 +197,7 @@ bool OlaClientCore::FetchUIDList(unsigned int universe) {
   if (!m_connected)
     return false;
 
-  ola::proto::UIDListRequest request;
+  ola::proto::UniverseRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
   ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
 
@@ -209,6 +209,31 @@ bool OlaClientCore::FetchUIDList(unsigned int universe) {
       controller,
       reply);
   m_stub->GetUIDs(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
+ * Force RDM discovery for a universe
+ * @param universe the universe id to run discovery on
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::ForceDiscovery(unsigned int universe) {
+  if (!m_connected)
+    return false;
+
+  ola::proto::UniverseRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::UniverseAck *reply = new ola::proto::UniverseAck();
+
+  request.set_universe(universe);
+
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &ola::OlaClientCore::HandleDiscovery,
+      controller,
+      reply);
+  m_stub->ForceDiscovery(controller, &request, reply, cb);
   return true;
 }
 
@@ -757,9 +782,9 @@ void OlaClientCore::HandleSetPriority(SimpleRpcController *controller,
   delete reply;
 }
 
+
 /*
  * Handle a device config response
- *
  */
 void OlaClientCore::HandleDeviceConfig(
     ola::rpc::SimpleRpcController *controller,
@@ -771,6 +796,25 @@ void OlaClientCore::HandleDeviceConfig(
 
     // TODO(simon): add the device id here
     m_observer->DeviceConfig(reply->data(), error_string);
+  }
+  delete controller;
+  delete reply;
+}
+
+
+/*
+ * Handle a discoery complete message
+ */
+void OlaClientCore::HandleDiscovery(SimpleRpcController *controller,
+                                    ola::proto::UniverseAck *reply) {
+  string error_string = "";
+  if (controller->Failed())
+    error_string = controller->ErrorText();
+
+  if (m_observer) {
+    m_observer->ForceRDMDiscoveryComplete(reply->universe(), error_string);
+  } else if (!error_string.empty()) {
+    printf("Force discovery failed: %s\n", controller->ErrorText().c_str());
   }
   delete controller;
   delete reply;
