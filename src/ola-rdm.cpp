@@ -57,6 +57,7 @@ typedef struct {
   mode m;          // mode
   int uni;         // universe id
   bool help;       // show the help
+  bool force_discovery;  // force RDM discovery
   string cmd;      // argv[0]
 } options;
 
@@ -71,6 +72,8 @@ class Observer: public ola::OlaClientObserver {
     void UIDList(unsigned int universe,
                  const ola::rdm::UIDSet &uids,
                  const string &error);
+    void ForceRDMDiscoveryComplete(unsigned int universe,
+                                   const string &error);
 
   private:
     options *m_opts;
@@ -98,12 +101,24 @@ void Observer::UIDList(unsigned int universe,
 
 
 /*
+ * Called once we get an ack for the discovery request
+ */
+void Observer::ForceRDMDiscoveryComplete(unsigned int universe,
+                                         const string &error) {
+  if (!error.empty())
+    cout << error << endl;
+  m_ss->Terminate();
+}
+
+
+/*
  * Init options
  */
 void InitOptions(options *opts) {
   opts->m = GET_UIDS;
   opts->uni = INVALID_VALUE;
   opts->help = false;
+  opts->force_discovery = false;
 }
 
 
@@ -129,6 +144,7 @@ void SetMode(options *opts) {
 void ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
+      {"force_discovery", no_argument, 0, 'f'},
       {"universe", required_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
@@ -137,13 +153,16 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "u:h", long_options, &option_index);
+    c = getopt_long(argc, argv, "u:hf", long_options, &option_index);
 
     if (c == -1)
       break;
 
     switch (c) {
       case 0:
+        break;
+      case 'f':
+        opts->force_discovery = true;
         break;
       case 'h':
         opts->help = true;
@@ -165,11 +184,12 @@ void ParseOptions(int argc, char *argv[], options *opts) {
  */
 void DisplayGetUIDsHelp(const options &opts) {
   cout << "Usage: " << opts.cmd <<
-  " --universe <universe>\n"
+  " --universe <universe> [--force_discovery]\n"
   "\n"
   "Fetch the UID list for a universe.\n"
   "\n"
   "  -h, --help                Display this help message and exit.\n"
+  "  -f, --force_discovery     Force RDM Discovery for this universe\n"
   "  -u, --universe <universe> Universe number.\n"
   << endl;
 }
@@ -235,8 +255,12 @@ bool FetchUIDs(OlaClient *client, const options &opts) {
     return false;
   }
 
-  return client->FetchUIDList(opts.uni);
+  if (opts.force_discovery)
+    return client->ForceDiscovery(opts.uni);
+  else
+    return client->FetchUIDList(opts.uni);
 }
+
 
 /*
  * Send a fetch uid list request
