@@ -129,6 +129,12 @@ void BasicInputPort::TriggerRDMDiscovery() {
 }
 
 
+void BasicOutputPort::NewUIDList(const ola::rdm::UIDSet &uids) {
+  if (m_universe)
+    m_universe->NewUIDList(uids, this);
+}
+
+
 /*
  * Create a new BasicOutputPort
  */

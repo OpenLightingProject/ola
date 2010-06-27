@@ -100,20 +100,22 @@ class Universe {
                            const ola::rdm::RDMResponse *response);
     void RunRDMDiscovery();
     void GetUIDs(ola::rdm::UIDSet *uids);
+    void NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port);
 
     bool operator==(const Universe &other) {
       return m_universe_id == other.UniverseId();
     }
 
-    static const char K_UNIVERSE_NAME_VAR[];
-    static const char K_UNIVERSE_MODE_VAR[];
-    static const char K_UNIVERSE_INPUT_PORT_VAR[];
-    static const char K_UNIVERSE_OUTPUT_PORT_VAR[];
-    static const char K_UNIVERSE_SOURCE_CLIENTS_VAR[];
-    static const char K_UNIVERSE_SINK_CLIENTS_VAR[];
+    static const char K_FPS_VAR[];
     static const char K_MERGE_HTP_STR[];
     static const char K_MERGE_LTP_STR[];
-    static const char K_FPS_VAR[];
+    static const char K_UNIVERSE_INPUT_PORT_VAR[];
+    static const char K_UNIVERSE_MODE_VAR[];
+    static const char K_UNIVERSE_NAME_VAR[];
+    static const char K_UNIVERSE_OUTPUT_PORT_VAR[];
+    static const char K_UNIVERSE_SINK_CLIENTS_VAR[];
+    static const char K_UNIVERSE_SOURCE_CLIENTS_VAR[];
+    static const char K_UNIVERSE_UID_COUNT_VAR[];
 
   private:
     Universe(const Universe&);
@@ -147,7 +149,8 @@ class Universe {
 
     template<class PortClass>
     bool GenericRemovePort(PortClass *port,
-                          vector<PortClass*> *ports);
+                          vector<PortClass*> *ports,
+                          map<UID, PortClass*> *uid_map);
 
     template<class PortClass>
     bool GenericContainsPort(PortClass *port,

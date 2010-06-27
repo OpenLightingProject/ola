@@ -45,16 +45,17 @@
 
 namespace ola {
 
-const char Universe::K_UNIVERSE_NAME_VAR[] = "universe_name";
-const char Universe::K_UNIVERSE_MODE_VAR[] = "universe_mode";
-const char Universe::K_UNIVERSE_INPUT_PORT_VAR[] = "universe_input_ports";
-const char Universe::K_UNIVERSE_OUTPUT_PORT_VAR[] = "universe_output_ports";
-const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
-    "universe_source_clients";
-const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe_sink_clients";
+const char Universe::K_UNIVERSE_UID_COUNT_VAR[] = "universe_uids";
+const char Universe::K_FPS_VAR[] = "universe_frames";
 const char Universe::K_MERGE_HTP_STR[] = "htp";
 const char Universe::K_MERGE_LTP_STR[] = "ltp";
-const char Universe::K_FPS_VAR[] = "universe_frames";
+const char Universe::K_UNIVERSE_INPUT_PORT_VAR[] = "universe_input_ports";
+const char Universe::K_UNIVERSE_MODE_VAR[] = "universe_mode";
+const char Universe::K_UNIVERSE_NAME_VAR[] = "universe_name";
+const char Universe::K_UNIVERSE_OUTPUT_PORT_VAR[] = "universe_output_ports";
+const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe_sink_clients";
+const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
+    "universe_source_clients";
 
 /*
  * Create a new universe
@@ -80,11 +81,12 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
   UpdateMode();
 
   const char *vars[] = {
+    K_FPS_VAR,
     K_UNIVERSE_INPUT_PORT_VAR,
     K_UNIVERSE_OUTPUT_PORT_VAR,
-    K_UNIVERSE_SOURCE_CLIENTS_VAR,
     K_UNIVERSE_SINK_CLIENTS_VAR,
-    K_FPS_VAR,
+    K_UNIVERSE_SOURCE_CLIENTS_VAR,
+    K_UNIVERSE_UID_COUNT_VAR,
   };
 
   if (m_export_map) {
@@ -104,11 +106,12 @@ Universe::~Universe() {
   };
 
   const char *uint_vars[] = {
+    K_FPS_VAR,
     K_UNIVERSE_INPUT_PORT_VAR,
     K_UNIVERSE_OUTPUT_PORT_VAR,
-    K_UNIVERSE_SOURCE_CLIENTS_VAR,
     K_UNIVERSE_SINK_CLIENTS_VAR,
-    K_FPS_VAR,
+    K_UNIVERSE_SOURCE_CLIENTS_VAR,
+    K_UNIVERSE_UID_COUNT_VAR,
   };
 
   if (m_export_map) {
@@ -118,6 +121,7 @@ Universe::~Universe() {
       m_export_map->GetUIntMapVar(uint_vars[i])->Remove(m_universe_id_str);
   }
 }
+
 
 /*
  * Set the universe name
@@ -169,7 +173,7 @@ bool Universe::AddPort(OutputPort *port) {
  * @return true if the port was removed, false if it didn't exist
  */
 bool Universe::RemovePort(InputPort *port) {
-  return GenericRemovePort(port, &m_input_ports);
+  return GenericRemovePort(port, &m_input_ports, &m_input_uids);
 }
 
 
@@ -179,7 +183,12 @@ bool Universe::RemovePort(InputPort *port) {
  * @return true if the port was removed, false if it didn't exist
  */
 bool Universe::RemovePort(OutputPort *port) {
-  return GenericRemovePort(port, &m_output_ports);
+  bool ret = GenericRemovePort(port, &m_output_ports, &m_output_uids);
+
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_UNIVERSE_UID_COUNT_VAR))[m_universe_id_str]
+      = m_output_uids.size();
+  return ret;
 }
 
 
@@ -382,8 +391,39 @@ void Universe::RunRDMDiscovery() {
  * Returns the complete UIDSet for this universe
  */
 void Universe::GetUIDs(ola::rdm::UIDSet *uids) {
-  ola::rdm::UID uid(1, 10);
-  uids->AddUID(uid);
+  map<UID, OutputPort*>::iterator iter = m_output_uids.begin();
+  for (; iter != m_output_uids.end(); ++iter)
+    uids->AddUID(iter->first);
+}
+
+
+/*
+ * Update the UID : port mapping with this new data
+ */
+void Universe::NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port) {
+  OLA_INFO << "new uid list ";
+
+  map<UID, OutputPort*>::iterator iter = m_output_uids.begin();
+  while (iter != m_output_uids.end()) {
+    if (iter->second == port && !uids.Contains(iter->first))
+      m_output_uids.erase(iter++);
+    else
+      ++iter;
+  }
+
+  ola::rdm::UIDSet::Iterator set_iter = uids.Begin();
+  for (; set_iter != uids.End(); ++set_iter) {
+    iter = m_output_uids.find(*set_iter);
+    if (iter == m_output_uids.end()) {
+      m_output_uids[*set_iter] = port;
+    } else if (iter->second != port) {
+      OLA_WARN << "UID " << *set_iter << " seen on more than one port";
+    }
+  }
+
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_UNIVERSE_UID_COUNT_VAR))[m_universe_id_str]
+      = m_output_uids.size();
 }
 
 
@@ -639,7 +679,9 @@ bool Universe::GenericAddPort(PortClass *port, vector<PortClass*> *ports) {
  * @param ports, the vector of ports to remove from
  */
 template<class PortClass>
-bool Universe::GenericRemovePort(PortClass *port, vector<PortClass*> *ports) {
+bool Universe::GenericRemovePort(PortClass *port,
+                                 vector<PortClass*> *ports,
+                                 map<UID, PortClass*> *uid_map) {
   typename vector<PortClass*>::iterator iter =
     find(ports->begin(), ports->end(), port);
 
@@ -658,6 +700,15 @@ bool Universe::GenericRemovePort(PortClass *port, vector<PortClass*> *ports) {
   }
   if (!IsActive())
     m_universe_store->AddUniverseGarbageCollection(this);
+
+  // Remove any uids that mapped to this port
+  typename map<UID, PortClass*>::iterator uid_iter = uid_map->begin();
+  while (uid_iter != uid_map->end()) {
+    if (uid_iter->second == port)
+      uid_map->erase(uid_iter++);
+    else
+      ++uid_iter;
+  }
   return true;
 }
 

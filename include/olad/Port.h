@@ -107,6 +107,7 @@ class OutputPort: public Port {
     virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request) = 0;
     virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response) = 0;
     virtual void RunRDMDiscovery() = 0;
+    virtual void NewUIDList(const ola::rdm::UIDSet &uids) = 0;
 };
 
 
@@ -207,6 +208,7 @@ class BasicOutputPort: public OutputPort {
     virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
     bool HandleRDMResponse(const ola::rdm::RDMResponse *response);
     virtual void RunRDMDiscovery();
+    virtual void NewUIDList(const ola::rdm::UIDSet &uids);
 
     virtual void UniverseNameChanged(const string &new_name) {
       (void) new_name;
@@ -315,6 +317,10 @@ class OutputPortDecorator: public OutputPort {
 
     virtual void RunRDMDiscovery() {
       return m_port->RunRDMDiscovery();
+    }
+
+    virtual void NewUIDList(const ola::rdm::UIDSet &uids) {
+      return m_port->NewUIDList(uids);
     }
 
     virtual bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
