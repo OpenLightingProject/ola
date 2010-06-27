@@ -115,8 +115,8 @@ class DmxMonitor: public OlaClientObserver {
     void NewDmx(unsigned int universe,
                 const DmxBuffer &buffer,
                 const string &error);
-    int StdinReady();
-    int CheckDataLoss();
+    void StdinReady();
+    bool CheckDataLoss();
     void TerminalResized();
 
   private:
@@ -220,7 +220,7 @@ void DmxMonitor::NewDmx(unsigned int universe,
 /*
  * Called when there is input from the keyboard
  */
-int DmxMonitor::StdinReady() {
+void DmxMonitor::StdinReady() {
   int c = wgetch(m_window);
 
   switch (c) {
@@ -299,7 +299,6 @@ int DmxMonitor::StdinReady() {
     default:
         break;
   }
-  return 0;
 }
 
 
@@ -307,7 +306,7 @@ int DmxMonitor::StdinReady() {
  * Check for data loss.
  * TODO(simon): move to the ola server
  */
-int DmxMonitor::CheckDataLoss() {
+bool DmxMonitor::CheckDataLoss() {
   struct timeval now, diff;
 
   if (timerisset(&m_last_data)) {
@@ -322,7 +321,7 @@ int DmxMonitor::CheckDataLoss() {
       wrefresh(m_data_loss_window);
     }
   }
-  return 0;
+  return true;
 }
 
 

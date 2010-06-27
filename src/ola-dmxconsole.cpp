@@ -462,7 +462,7 @@ void cleanup() {
     puts(error_str.data());
 }
 
-int stdin_ready() {
+void stdin_ready() {
   int n;
   int c = wgetch(w);
   switch (c) {
@@ -620,7 +620,6 @@ int stdin_ready() {
   }
   values();
   refresh();
-  return 0;
 }
 
 int main (int argc, char *argv[]) {
