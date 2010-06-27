@@ -55,10 +55,11 @@ string ArtNetPortHelper::Description(const Universe *universe,
     return "";
 
   ArtNetNode::artnet_port_type direction = m_is_output ?
-    ArtNetNode::ARTNET_OUTPUT_PORT : ArtNetNode::ARTNET_INPUT_PORT;
+    ArtNetNode::ARTNET_INPUT_PORT : ArtNetNode::ARTNET_OUTPUT_PORT;
 
   std::stringstream str;
-  str << "ArtNet Universe " << m_node->GetPortUniverse(direction, port_id);
+  str << "ArtNet Universe " <<
+    static_cast<int>(m_node->GetPortUniverse(direction, port_id));
   return str.str();
 }
 
@@ -176,23 +177,18 @@ void ArtNetOutputPort::PostSetUniverse(Universe *old_universe,
   if (new_universe && !old_universe) {
     m_helper.GetNode()->SetInputPortRDMHandlers(
         PortId(),
-        ola::NewCallback<ArtNetOutputPort, void, const UIDSet&, const UIDSet&>(
+        ola::NewCallback<ArtNetOutputPort, void, const UIDSet&>(
           this,
-          &ArtNetOutputPort::HandleNewTOD),
+          &ArtNetOutputPort::NewUIDList),
         ola::NewCallback<ArtNetOutputPort, void, const RDMResponse*>(
           this,
           &ArtNetOutputPort::PolitelyHandleRDMResponse));
   } else if (!new_universe) {
     m_helper.GetNode()->SetInputPortRDMHandlers(PortId(), NULL, NULL);
   }
-}
 
-
-/*
- * Handle a TOD update from the node
- */
-void ArtNetOutputPort::HandleNewTOD(const UIDSet &added,
-                                    const UIDSet &removed) {
+  if (new_universe)
+    m_helper.GetNode()->SendTodRequest(PortId());
 }
 
 

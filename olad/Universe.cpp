@@ -401,8 +401,6 @@ void Universe::GetUIDs(ola::rdm::UIDSet *uids) {
  * Update the UID : port mapping with this new data
  */
 void Universe::NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port) {
-  OLA_INFO << "new uid list ";
-
   map<UID, OutputPort*>::iterator iter = m_output_uids.begin();
   while (iter != m_output_uids.end()) {
     if (iter->second == port && !uids.Contains(iter->first))

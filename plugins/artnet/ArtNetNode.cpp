@@ -77,6 +77,7 @@ ArtNetNode::ArtNetNode(const string &ip_address,
     m_input_ports[i].enabled = false;
     m_input_ports[i].on_tod = NULL;
     m_input_ports[i].on_rdm_response = NULL;
+    m_input_ports[i].discovery_running = false;
 
     m_output_ports[i].universe_address = 0;
     m_output_ports[i].sequence_number = 0;
@@ -196,12 +197,17 @@ bool ArtNetNode::SetLongName(const string &name) {
  * The the subnet address for this node
  */
 bool ArtNetNode::SetSubnetAddress(uint8_t subnet_address) {
+  uint8_t old_address = m_input_ports[0].universe_address >> 4;
+  if (old_address == subnet_address)
+    return true;
+
   subnet_address = subnet_address << 4;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     m_input_ports[i].universe_address = subnet_address |
       (m_input_ports[i].universe_address & 0x0f);
     m_output_ports[i].universe_address = subnet_address |
       (m_output_ports[i].universe_address & 0x0f);
+    m_input_ports[i].uids.clear();
   }
 
   if (m_running && m_send_reply_on_change) {
@@ -225,9 +231,14 @@ bool ArtNetNode::SetPortUniverse(artnet_port_type type,
   }
 
   if (type == ARTNET_INPUT_PORT) {
+    uint8_t old_universe = m_input_ports[port_id].universe_address;
     m_input_ports[port_id].universe_address = (
         (universe_id & 0x0f) |
         (m_input_ports[port_id].universe_address & 0xf0));
+
+    if (old_universe != m_input_ports[port_id].universe_address)
+      // clear the uid map
+      m_input_ports[port_id].uids.clear();
 
     bool ports_previously_enabled = false;
     for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++)
@@ -236,7 +247,6 @@ bool ArtNetNode::SetPortUniverse(artnet_port_type type,
     m_input_ports[port_id].enabled = universe_id != ARTNET_DISABLE_PORT;
     if (!ports_previously_enabled && m_input_ports[port_id].enabled)
       MaybeSendPoll();
-
   } else {
     m_output_ports[port_id].universe_address = (
         (universe_id & 0x0f) |
@@ -393,7 +403,11 @@ bool ArtNetNode::SendTodRequest(uint8_t port_id) {
   if (!CheckInputPortState(port_id, "ArtTodRequest"))
     return false;
 
-  OLA_DEBUG << "Sending ArtTodRequest";
+  if (!GrabDiscoveryLock(port_id))
+    return true;
+
+  OLA_DEBUG << "Sending ArtTodRequest for address " <<
+    static_cast<int>(m_input_ports[port_id].universe_address);
   artnet_packet packet;
   PopulatePacketHeader(&packet, ARTNET_TODREQUEST);
   memset(&packet.data.tod_request, 0, sizeof(packet.data.tod_request));
@@ -413,6 +427,9 @@ bool ArtNetNode::SendTodRequest(uint8_t port_id) {
 bool ArtNetNode::ForceDiscovery(uint8_t port_id) {
   if (!CheckInputPortState(port_id, "ArtTodControl"))
     return false;
+
+  if (!GrabDiscoveryLock(port_id))
+    return true;
 
   OLA_DEBUG << "Sending ArtTodControl";
   artnet_packet packet;
@@ -938,8 +955,12 @@ void ArtNetNode::HandleTodData(const IPAddress &source_address,
     return;
   }
 
-  // TODO(simon): finish me
-  // we only care about this for input ports
+  for (unsigned int port_id = 0; port_id < ARTNET_MAX_PORTS; port_id++) {
+    if (m_input_ports[port_id].enabled &&
+        m_input_ports[port_id].universe_address == packet.address) {
+      UpdatePortFromTodPacket(port_id, source_address, packet, packet_size);
+    }
+  }
 }
 
 
@@ -1278,6 +1299,131 @@ bool ArtNetNode::InitNetwork() {
   m_socket->SetOnData(NewClosure(this, &ArtNetNode::SocketReady));
   m_plugin_adaptor->AddSocket(m_socket);
   return true;
+}
+
+
+/*
+ * Update a port with a new TOD list
+ */
+void ArtNetNode::UpdatePortFromTodPacket(uint8_t port_id,
+                                         const IPAddress &source_address,
+                                         const artnet_toddata_t &packet,
+                                         unsigned int packet_size) {
+  unsigned int tod_size = packet_size - (sizeof(packet) - sizeof(packet.tod));
+  unsigned int uid_count = std::min(tod_size / ola::rdm::UID::UID_SIZE,
+                                    (unsigned int) packet.uid_count);
+
+  OLA_DEBUG << "Got TOD data packet with " << uid_count << " uids";
+  bool changed = false;
+  uid_map &port_uids = m_input_ports[port_id].uids;
+  UIDSet uid_set;
+
+  for (unsigned int i = 0; i < uid_count; i++) {
+    UID uid(packet.tod[i]);
+    uid_set.AddUID(uid);
+    uid_map::iterator iter = port_uids.find(uid);
+    if (iter == port_uids.end()) {
+      port_uids[uid] = std::pair<IPAddress, uint8_t>(source_address, 0);
+      changed = true;
+    } else {
+      if (iter->second.first.s_addr != source_address.s_addr) {
+        OLA_WARN << "UID " << uid << " changed from " <<
+          AddressToString(iter->second.first) << " to " <<
+          AddressToString(source_address);
+        iter->second.first = source_address;
+      }
+      iter->second.second = 0;
+    }
+  }
+
+  // If this is the one and only block from this node, we can remove all uids
+  // that don't appear in it
+  if (uid_count == NetworkToHost(packet.uid_total)) {
+    uid_map::iterator iter = port_uids.begin();
+    while (iter != port_uids.end()) {
+      if (iter->second.first.s_addr == source_address.s_addr &&
+          !uid_set.Contains(iter->first)) {
+        port_uids.erase(iter++);
+        changed = true;
+      } else {
+        ++iter;
+      }
+    }
+  }
+
+  // Removing uids from multi-block messages is much harder as you need to
+  // consider dropped packets. For the moment we rely on the
+  // RDM_MISSED_TODDATA_LIMIT to clean these up.
+  // TODO(simon): figure this out sometime
+
+  if (changed)
+    NotifyClientOfNewTod(port_id);
+}
+
+
+/*
+ * Start the discovery process, this puts the port into discovery mode and
+ * sets up the completion callback
+ */
+bool ArtNetNode::GrabDiscoveryLock(uint8_t port_id) {
+  if (m_input_ports[port_id].discovery_running) {
+    OLA_INFO <<
+      "ArtNet UID discovery already running, ignoring additional requests";
+    return false;
+  }
+  m_input_ports[port_id].discovery_running = true;
+
+  // increment the count of all current uids
+  uid_map::iterator iter = m_input_ports[port_id].uids.begin();
+  for (; iter != m_input_ports[port_id].uids.end(); ++iter) {
+    iter->second.second++;
+  }
+
+  m_plugin_adaptor->RegisterSingleTimeout(
+      RDM_TOD_TIMEOUT_MS,
+      ola::NewSingleClosure(this, &ArtNetNode::ReleaseDiscoveryLock, port_id));
+  return true;
+}
+
+
+/*
+ * Called when the discovery process times out.
+ */
+void ArtNetNode::ReleaseDiscoveryLock(uint8_t port_id) {
+  OLA_INFO << "Discovery process timeout";
+
+  // delete all uids that have reached the max count
+  bool changed = false;
+  uid_map::iterator iter = m_input_ports[port_id].uids.begin();
+  while (iter != m_input_ports[port_id].uids.end()) {
+    if (iter->second.second == RDM_MISSED_TODDATA_LIMIT) {
+      changed = true;
+      m_input_ports[port_id].uids.erase(iter++);
+    } else {
+      ++iter;
+    }
+  }
+
+  if (changed) {
+    OLA_INFO << "Some uids have timed out, updating.";
+    NotifyClientOfNewTod(port_id);
+  }
+  m_input_ports[port_id].discovery_running = false;
+}
+
+
+/*
+ * Notify the client of a new TOD
+ */
+void ArtNetNode::NotifyClientOfNewTod(uint8_t port_id) {
+  if (m_input_ports[port_id].on_tod) {
+    uid_map &port_uids = m_input_ports[port_id].uids;
+    UIDSet uids;
+    uid_map::iterator uid_iter = port_uids.begin();
+    for (; uid_iter != port_uids.end(); ++uid_iter)
+      uids.AddUID(uid_iter->first);
+    m_input_ports[port_id].on_tod->Run(uids);
+  }
 }
 }  // artnet
 }  // plugin

@@ -72,8 +72,7 @@ class ArtNetNode {
     static const uint8_t ARTNET_DISABLE_PORT = 0xf0;
 
     // Typedef our callbacks
-    typedef ola::Callback2<void, const UIDSet&, const UIDSet&>
-      rdm_tod_callback;
+    typedef ola::Callback1<void, const UIDSet&> rdm_tod_callback;
     typedef ola::Callback1<void, const RDMResponse*> rdm_response_callback;
     typedef ola::Callback1<void, const RDMRequest*> rdm_request_callback;
 
@@ -93,6 +92,7 @@ class ArtNetNode {
       uid_map uids;
       rdm_tod_callback *on_tod;
       rdm_response_callback *on_rdm_response;
+      bool discovery_running;
     };
 
     enum { MAX_MERGE_SOURCES = 2 };
@@ -242,6 +242,14 @@ class ArtNetNode {
     bool CheckInputPortState(uint8_t port_id, const string &action);
     bool CheckOutputPortState(uint8_t port_id, const string &action);
     bool CheckPortState(uint8_t port_id, const string &action, bool is_output);
+    void UpdatePortFromTodPacket(uint8_t port_id,
+                                 const IPAddress &source_address,
+                                 const artnet_toddata_t &packet,
+                                 unsigned int packet_size);
+    bool GrabDiscoveryLock(uint8_t port_id);
+    void ReleaseDiscoveryLock(uint8_t port_id);
+    void NotifyClientOfNewTod(uint8_t port_id);
+
     bool InitNetwork();
 
     static const char ARTNET_ID[];
@@ -257,7 +265,10 @@ class ArtNetNode {
     static const uint8_t RDM_VERSION = 0x01;  // v1.0 standard baby!
     static const uint8_t TOD_FLUSH_COMMAND = 0x01;
     static const unsigned int MERGE_TIMEOUT = 10;  // As per the spec
-    static const unsigned int NODE_TIMEOUT = 31;  // in s
+    // seconds after which a node is marked as inactive for the dmx merging
+    static const unsigned int NODE_TIMEOUT = 31;
+    // mseconds we wait for a TodData packet before declaring a node missing
+    static const unsigned int RDM_TOD_TIMEOUT_MS = 3000;
     // Number of missed TODs before we decide a UID has gone
     static const unsigned int RDM_MISSED_TODDATA_LIMIT = 3;
 };
