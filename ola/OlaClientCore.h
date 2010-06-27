@@ -62,6 +62,8 @@ class OlaClientCore {
     bool FetchDmx(unsigned int uni);
 
     // rdm methods
+    bool FetchUIDList(unsigned int universe);
+
     // int send_rdm(int universe, uint8_t *data, int length);
     bool SetUniverseName(unsigned int uni, const string &name);
     bool SetUniverseMergeMode(unsigned int uni, OlaUniverse::merge_mode mode);
@@ -91,6 +93,8 @@ class OlaClientCore {
                        ola::proto::Ack *reply);
     void HandleGetDmx(SimpleRpcController *controller,
                       ola::proto::DmxData *reply);
+    void HandleUIDList(SimpleRpcController *controller,
+                       ola::proto::UIDListReply *reply);
     void HandleDeviceInfo(SimpleRpcController *controller,
                           ola::proto::DeviceInfoReply *reply);
     void HandleUniverseInfo(SimpleRpcController *controller,

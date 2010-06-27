@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <iomanip>
+#include <sstream>
 #include <string>
 
 namespace ola {

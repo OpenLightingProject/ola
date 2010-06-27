@@ -169,6 +169,24 @@ message DeviceConfigReply {
   required bytes data = 1;
 }
 
+// RDM Messages
+// This represents a UID
+message UID {
+  required int32 esta_id = 1;  // only lower 2 bytes are used
+  required int32 device_id = 2;
+}
+
+// Request the UID list for a universe
+message UIDListRequest {
+  optional int32 universe = 1;
+}
+
+message UIDListReply {
+  required int32 universe = 1;
+  repeated UID uid = 2;
+}
+
+
 // Services
 
 // RPCs handled by the OLA Server
@@ -185,6 +203,7 @@ service OlaServerService {
   rpc GetPluginInfo (PluginInfoRequest) returns (PluginInfoReply);
   rpc GetDeviceInfo (DeviceInfoRequest) returns (DeviceInfoReply);
   rpc ConfigureDevice (DeviceConfigRequest) returns (DeviceConfigReply);
+  rpc GetUIDs (UIDListRequest) returns (UIDListReply);
 }
 
 // RPCs handled by the OLA Client

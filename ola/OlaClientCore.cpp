@@ -191,6 +191,29 @@ bool OlaClientCore::FetchDmx(unsigned int universe) {
 
 
 /*
+ * Fetch the UID list for a universe
+ */
+bool OlaClientCore::FetchUIDList(unsigned int universe) {
+  if (!m_connected)
+    return false;
+
+  ola::proto::UIDListRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
+
+  request.set_universe(universe);
+
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &ola::OlaClientCore::HandleUIDList,
+      controller,
+      reply);
+  m_stub->GetUIDs(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
  * Request a listing of what devices are attached
  * @param filter only fetch devices that belong to this particular plugin
  * @return true on success, false on failure
@@ -516,6 +539,32 @@ void OlaClientCore::HandleGetDmx(ola::rpc::SimpleRpcController *controller,
     DmxBuffer buffer;
     buffer.Set(reply->data());
     m_observer->NewDmx(reply->universe(), buffer, error_string);
+  }
+  delete controller;
+  delete reply;
+}
+
+
+/*
+ * Handle the UID list response
+ */
+void OlaClientCore::HandleUIDList(SimpleRpcController *controller,
+                                  ola::proto::UIDListReply *reply) {
+  string error_string = "";
+  ola::rdm::UIDSet uid_set;
+
+  if (m_observer) {
+    if (controller->Failed()) {
+      error_string = controller->ErrorText();
+    } else {
+      for (int i = 0; i < reply->uid_size(); ++i) {
+        ola::proto::UID proto_uid = reply->uid(i);
+        ola::rdm::UID uid(proto_uid.esta_id(),
+                          proto_uid.device_id());
+        uid_set.AddUID(uid);
+      }
+    }
+    m_observer->UIDList(reply->universe(), uid_set, error_string);
   }
   delete controller;
   delete reply;

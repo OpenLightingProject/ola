@@ -26,6 +26,7 @@
 #include <ola/OlaDevice.h>
 #include <ola/common.h>
 #include <ola/plugin_id.h>
+#include <ola/rdm/UIDSet.h>
 #include <olad/PortConstants.h>
 #include <string>
 #include <vector>
@@ -92,6 +93,15 @@ class OlaClientObserver {
     virtual void SetPortPriorityComplete(const string &error) {
       (void) error;
     }
+
+    // RDM methods
+    virtual void UIDList(unsigned int universe,
+                         const ola::rdm::UIDSet &uids,
+                         const string &error) {
+      (void) universe;
+      (void) uids;
+      (void) error;
+    }
 };
 
 
@@ -117,6 +127,8 @@ class OlaClient {
     bool FetchDmx(unsigned int uni);
 
     // rdm methods
+    bool FetchUIDList(unsigned int universe);
+
     // int send_rdm(int universe, uint8_t *data, int length);
     bool SetUniverseName(unsigned int uni, const string &name);
     bool SetUniverseMergeMode(unsigned int uni, OlaUniverse::merge_mode mode);

@@ -94,6 +94,10 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                          const ola::proto::DeviceConfigRequest* request,
                          ola::proto::DeviceConfigReply* response,
                          google::protobuf::Closure* done);
+    void GetUIDs(RpcController* controller,
+                 const ola::proto::UIDListRequest* request,
+                 ola::proto::UIDListReply* response,
+                 google::protobuf::Closure* done);
 
     Client *GetClient() const { return m_client; }
 

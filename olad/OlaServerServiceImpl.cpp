@@ -22,9 +22,11 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include "common/protocol/Ola.pb.h"
 #include "ola/DmxBuffer.h"
-#include "ola/Logging.h"
 #include "ola/ExportMap.h"
+#include "ola/Logging.h"
+#include "ola/rdm/UIDSet.h"
 #include "olad/Client.h"
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
@@ -36,10 +38,10 @@
 #include "olad/PortManager.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
-#include "common/protocol/Ola.pb.h"
 
 namespace ola {
 
+using google::protobuf::RpcController;
 using ola::proto::Ack;
 using ola::proto::DeviceConfigReply;
 using ola::proto::DeviceConfigRequest;
@@ -59,7 +61,7 @@ using ola::proto::UniverseInfo;
 using ola::proto::UniverseInfoReply;
 using ola::proto::UniverseInfoRequest;
 using ola::proto::UniverseNameRequest;
-using google::protobuf::RpcController;
+using ola::rdm::UIDSet;
 
 
 /*
@@ -400,6 +402,31 @@ void OlaServerServiceImpl::ConfigureDevice(RpcController* controller,
   device->Configure(controller,
                     request->data(),
                     response->mutable_data(), done);
+}
+
+
+/*
+ * Fetch the UID list for a universe
+ */
+void OlaServerServiceImpl::GetUIDs(RpcController* controller,
+                                   const ola::proto::UIDListRequest* request,
+                                   ola::proto::UIDListReply* response,
+                                   google::protobuf::Closure* done) {
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+  if (!universe)
+    return MissingUniverseError(controller, done);
+
+  response->set_universe(request->universe());
+  UIDSet uid_set;
+  universe->GetUIDs(&uid_set);
+
+  UIDSet::Iterator iter = uid_set.Begin();
+  for (; iter != uid_set.End(); ++iter) {
+    ola::proto::UID *uid = response->add_uid();
+    uid->set_esta_id(iter->ManufacturerId());
+    uid->set_device_id(iter->DeviceId());
+  }
+  done->Run();
 }
 
 

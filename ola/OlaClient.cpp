@@ -107,6 +107,16 @@ bool OlaClient::FetchDmx(unsigned int universe) {
 
 
 /*
+ * Fetch the UID list for a universe
+ * @param universe the universe id to get data for
+ * @return true on success, false on failure
+ */
+bool OlaClient::FetchUIDList(unsigned int universe) {
+  return m_core->FetchUIDList(universe);
+}
+
+
+/*
  * Request a listing of what devices are attached. This results in a call to
  *   observer->Devices()
  * when the request returns.
