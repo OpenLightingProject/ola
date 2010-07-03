@@ -23,6 +23,7 @@
 #include <string>
 #include "ola/Closure.h"
 
+using std::string;
 
 class ClosureTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClosureTest);
@@ -37,6 +38,7 @@ class ClosureTest: public CppUnit::TestFixture {
     void testMethodClosures();
     void testMethodCallbacks1();
     void testMethodCallbacks2();
+    void testMethodCallbacks4();
 
     void Method0() {}
     bool BoolMethod0() { return true; }
@@ -61,17 +63,37 @@ class ClosureTest: public CppUnit::TestFixture {
       return true;
     }
 
+    void Method4(unsigned int i, int j, char c, const string &s) {
+      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
+      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
+      CPPUNIT_ASSERT_EQUAL(TEST_CHAR_VALUE, c);
+      CPPUNIT_ASSERT_EQUAL(string(TEST_STRING_VALUE), s);
+    }
+
+    bool BoolMethod4(unsigned int i, int j, char c, const string &s) {
+      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
+      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
+      CPPUNIT_ASSERT_EQUAL(TEST_CHAR_VALUE, c);
+      CPPUNIT_ASSERT_EQUAL(string(TEST_STRING_VALUE), s);
+      return true;
+    }
+
     static const unsigned int TEST_INT_VALUE;
     static const int TEST_INT_VALUE2;
+    static const char TEST_CHAR_VALUE;
+    static const char TEST_STRING_VALUE[];
 };
 
 
 const unsigned int ClosureTest::TEST_INT_VALUE = 42;
 const int ClosureTest::TEST_INT_VALUE2 = 53;
+const char ClosureTest::TEST_CHAR_VALUE = 'c';
+const char ClosureTest::TEST_STRING_VALUE[] = "foo";
 CPPUNIT_TEST_SUITE_REGISTRATION(ClosureTest);
 
 using ola::BaseCallback1;
 using ola::BaseCallback2;
+using ola::BaseCallback4;
 using ola::Closure;
 using ola::NewCallback;
 using ola::NewClosure;
@@ -296,5 +318,41 @@ void ClosureTest::testMethodCallbacks2() {
       &ClosureTest::BoolMethod2);
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
+  delete c4;
+}
+
+
+/*
+ * Test the Method Callbacks
+ */
+void ClosureTest::testMethodCallbacks4() {
+  // test 2 arg callbacks that return unsigned ints
+  BaseCallback4<void, unsigned int, int, char, const string&> *c1 =
+    NewSingleCallback(
+      this,
+      &ClosureTest::Method4);
+  c1->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE, TEST_STRING_VALUE);
+  BaseCallback4<void, unsigned int, int, char, const string&> *c2 = NewCallback(
+      this,
+      &ClosureTest::Method4);
+  c2->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE, TEST_STRING_VALUE);
+  c2->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE, TEST_STRING_VALUE);
+  delete c2;
+
+  // test 2 arg callbacks that return bools
+  BaseCallback4<bool, unsigned int, int, char, const string&> *c3 =
+    NewSingleCallback(
+      this,
+      &ClosureTest::BoolMethod4);
+  CPPUNIT_ASSERT(c3->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
+                         TEST_STRING_VALUE));
+  BaseCallback4<bool, unsigned int, int, char, const string&> *c4 =
+    NewCallback(
+      this,
+      &ClosureTest::BoolMethod4);
+  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
+                         TEST_STRING_VALUE));
+  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
+                         TEST_STRING_VALUE));
   delete c4;
 }

@@ -307,5 +307,133 @@ inline Callback2<ReturnType, Arg1, Arg2>* NewCallback(
       object,
       method);
 }
+
+
+// Four argument callbacks
+template <typename ReturnType, typename Arg1, typename Arg2, typename Arg3,
+          typename Arg4>
+class BaseCallback4 {
+  public:
+    virtual ~BaseCallback4() {}
+    virtual ReturnType Run(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) = 0;
+    virtual ReturnType DoRun(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) = 0;
+};
+
+
+/*
+ * Callback, this is a closure that can be called multiple times
+ */
+template <typename ReturnType, typename Arg1, typename Arg2, typename Arg3,
+          typename Arg4>
+class Callback4: public BaseCallback4<ReturnType, Arg1, Arg2, Arg3, Arg4> {
+  public:
+    virtual ~Callback4() {}
+    ReturnType Run(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) {
+      return this->DoRun(arg1, arg2, arg3, arg4);
+    }
+};
+
+
+/*
+ * A single use closure, this deletes itself after it's run.
+ */
+template <typename ReturnType, typename Arg1, typename Arg2, typename Arg3,
+          typename Arg4>
+class SingleUseCallback4: public
+                          BaseCallback4<ReturnType, Arg1, Arg2, Arg3, Arg4> {
+  public:
+    virtual ~SingleUseCallback4() {}
+    ReturnType Run(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) {
+      ReturnType ret = this->DoRun(arg1, arg2, arg3, arg4);
+      delete this;
+      return ret;
+    }
+};
+
+
+/*
+ * A single use closure returning void, this deletes itself after it's run.
+ */
+template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+class SingleUseCallback4<void, Arg1, Arg2, Arg3, Arg4>
+    : public BaseCallback4<void, Arg1, Arg2, Arg3, Arg4> {
+  public:
+    virtual ~SingleUseCallback4() {}
+    void Run(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) {
+      DoRun(arg1, arg2, arg3, arg4);
+      delete this;
+      return;
+    }
+};
+
+
+/*
+ * An method closure with no create-time arguments, and four exec time arg
+ */
+template <typename Class, typename Parent, typename ReturnType,
+          typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+class MethodCallback4: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(Arg1 arg, Arg2 arg2, Arg3 arg3,
+                                        Arg4 arg4);
+
+    /*
+     * @param object the object to use in the method call
+     * @param callback the method to call
+     */
+    MethodCallback4(Class *object, Method callback):
+      Parent(),
+      m_object(object),
+      m_callback(callback) {}
+    ReturnType DoRun(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) {
+      return (m_object->*m_callback)(arg1, arg2, arg3, arg4);
+    }
+
+  private:
+    Class *m_object;
+    Method m_callback;
+};
+
+
+/*
+ * Create a new single use method closure.
+ */
+template <typename Class, typename ReturnType, typename Arg1, typename Arg2,
+          typename Arg3, typename Arg4>
+inline SingleUseCallback4<ReturnType, Arg1, Arg2, Arg3, Arg4>*
+  NewSingleCallback(
+    Class* object,
+    ReturnType (Class::*method)(Arg1 arg, Arg2 arg2, Arg3 arg3, Arg4 arg4)) {
+  return new MethodCallback4<Class,
+                             SingleUseCallback4<ReturnType, Arg1, Arg2, Arg3,
+                                                Arg4>,
+                             ReturnType,
+                             Arg1,
+                             Arg2,
+                             Arg3,
+                             Arg4>(
+      object,
+      method);
+}
+
+
+/*
+ * Create a new method closure.
+ */
+template <typename Class, typename ReturnType, typename Arg1, typename Arg2,
+          typename Arg3, typename Arg4>
+inline Callback4<ReturnType, Arg1, Arg2, Arg3, Arg4>* NewCallback(
+    Class* object,
+    ReturnType (Class::*method)(Arg1 arg, Arg2 arg2, Arg3 arg3, Arg4 arg4)) {
+  return new MethodCallback4<Class,
+                             Callback4<ReturnType, Arg1, Arg2, Arg3, Arg4>,
+                             ReturnType,
+                             Arg1,
+                             Arg2,
+                             Arg3,
+                             Arg4>(
+      object,
+      method);
+}
 }  // ola
 #endif  // INCLUDE_OLA_CALLBACK_H_
