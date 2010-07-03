@@ -347,5 +347,96 @@ inline Closure<ReturnType>* NewClosure(Class* object,
       arg,
       arg2);
 }
+
+
+/*
+ * A method closure that takes three arguments
+ */
+template <typename Class,
+          typename Parent,
+          typename ReturnType,
+          typename Arg,
+          typename Arg2,
+          typename Arg3>
+class MethodThreeArgClosure: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(Arg arg, Arg2 arg2, Arg3 arg3);
+
+    /*
+     * @param object the object to use in the method call
+     * @param method the method to call
+     * @param arg the argument to pass to the method
+     * @param arg2 the second argument to pass to the method
+     */
+    MethodThreeArgClosure(Class *object,
+                          Method callback,
+                          Arg arg,
+                          Arg2 arg2,
+                          Arg3 arg3):
+      Parent(),
+      m_object(object),
+      m_callback(callback),
+      m_arg(arg),
+      m_arg2(arg2),
+      m_arg3(arg3) {}
+    ReturnType DoRun() {
+      return (m_object->*m_callback)(m_arg, m_arg2, m_arg3);
+    }
+
+  private:
+    Class *m_object;
+    Method m_callback;
+    Arg m_arg;
+    Arg2 m_arg2;
+    Arg3 m_arg3;
+};
+
+
+/*
+ * Create a new single use three-arg method closure
+ */
+template <typename Class, typename ReturnType, typename Arg, typename Arg2,
+          typename Arg3>
+inline SingleUseClosure<ReturnType>* NewSingleClosure(
+    Class* object,
+    ReturnType (Class::*method)(Arg arg, Arg2 arg2, Arg3 arg3),
+    Arg arg,
+    Arg2 arg2,
+    Arg3 arg3) {
+  return new MethodThreeArgClosure<Class,
+                                   SingleUseClosure<ReturnType>,
+                                   ReturnType,
+                                   Arg,
+                                   Arg2,
+                                   Arg3>(
+      object,
+      method,
+      arg,
+      arg2,
+      arg3);
+}
+
+
+/*
+ * Create a new three-arg method closure
+ */
+template <typename Class, typename ReturnType, typename Arg, typename Arg2,
+          typename Arg3>
+inline Closure<ReturnType>* NewClosure(
+    Class* object,
+    ReturnType (Class::*method)(Arg arg, Arg2 arg2, Arg3 arg3),
+    Arg arg, Arg2 arg2, Arg3 arg3) {
+  return new MethodThreeArgClosure<Class,
+                                   Closure<ReturnType>,
+                                   ReturnType,
+                                   Arg,
+                                   Arg2,
+                                   Arg3>(
+      object,
+      method,
+      arg,
+      arg2,
+      arg3);
+}
 }  // ola
 #endif  // INCLUDE_OLA_CLOSURE_H_

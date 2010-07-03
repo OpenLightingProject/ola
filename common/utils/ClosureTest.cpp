@@ -63,6 +63,19 @@ class ClosureTest: public CppUnit::TestFixture {
       return true;
     }
 
+    void Method3(unsigned int i, int j, char c) {
+      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
+      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
+      CPPUNIT_ASSERT_EQUAL(TEST_CHAR_VALUE, c);
+    }
+
+    bool BoolMethod3(unsigned int i, int j, char c) {
+      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
+      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
+      CPPUNIT_ASSERT_EQUAL(TEST_CHAR_VALUE, c);
+      return true;
+    }
+
     void Method4(unsigned int i, int j, char c, const string &s) {
       CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
       CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
@@ -232,6 +245,40 @@ void ClosureTest::testMethodClosures() {
   CPPUNIT_ASSERT(c12->Run());
   CPPUNIT_ASSERT(c12->Run());
   delete c12;
+
+  // three arg, void return
+  SingleUseClosure<void> *c13 = NewSingleClosure(
+      this,
+      &ClosureTest::Method3,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2,
+      TEST_CHAR_VALUE);
+  c13->Run();
+  Closure<void> *c14 = NewClosure(this,
+                                  &ClosureTest::Method3,
+                                  TEST_INT_VALUE,
+                                  TEST_INT_VALUE2,
+                                  TEST_CHAR_VALUE);
+  c14->Run();
+  c14->Run();
+  delete c14;
+
+  // three arg, bool closures
+  SingleUseClosure<bool> *c15 = NewSingleClosure(
+      this,
+      &ClosureTest::BoolMethod3,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2,
+      TEST_CHAR_VALUE);
+  CPPUNIT_ASSERT(c15->Run());
+  Closure<bool> *c16 = NewClosure(this,
+                                  &ClosureTest::BoolMethod3,
+                                  TEST_INT_VALUE,
+                                  TEST_INT_VALUE2,
+                                  TEST_CHAR_VALUE);
+  CPPUNIT_ASSERT(c16->Run());
+  CPPUNIT_ASSERT(c16->Run());
+  delete c16;
 }
 
 
