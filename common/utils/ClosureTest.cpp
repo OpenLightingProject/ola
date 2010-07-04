@@ -343,7 +343,7 @@ void ClosureTest::testMethodCallbacks1() {
  * Test the Method Callbacks
  */
 void ClosureTest::testMethodCallbacks2() {
-  // test 2 arg callbacks that return unsigned ints
+  // test 2 arg callbacks that return void
   BaseCallback2<void, unsigned int, int> *c1 = NewSingleCallback(
       this,
       &ClosureTest::Method2);
@@ -366,6 +366,34 @@ void ClosureTest::testMethodCallbacks2() {
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
   delete c4;
+
+  // test 1 create time, 2 run time arg callbacks that return void
+  BaseCallback2<void, int, char> *c5 = NewSingleCallback(
+      this,
+      &ClosureTest::Method3,
+      TEST_INT_VALUE);
+  c5->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE);
+  BaseCallback2<void, int, char> *c6 = NewCallback(
+      this,
+      &ClosureTest::Method3,
+      TEST_INT_VALUE);
+  c6->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE);
+  c6->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE);
+  delete c6;
+
+  // test 1 create time, 2 run time arg callbacks that return bools
+  BaseCallback2<bool, int, char> *c7 = NewSingleCallback(
+      this,
+      &ClosureTest::BoolMethod3,
+      TEST_INT_VALUE);
+  CPPUNIT_ASSERT(c7->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
+  BaseCallback2<bool, int, char> *c8 = NewCallback(
+      this,
+      &ClosureTest::BoolMethod3,
+      TEST_INT_VALUE);
+  CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
+  CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
+  delete c8;
 }
 
 

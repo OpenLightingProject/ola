@@ -309,6 +309,77 @@ inline Callback2<ReturnType, Arg1, Arg2>* NewCallback(
 }
 
 
+/*
+ * An method closure with one create-time argument, and two exec time arg
+ */
+template <typename Class, typename Parent, typename ReturnType,
+          typename A1, typename Arg1, typename Arg2>
+class MethodCallback2_1: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(A1 a1, Arg1 arg, Arg2 arg2);
+
+    /*
+     * @param object the object to use in the method call
+     * @param callback the method to call
+     */
+    MethodCallback2_1(Class *object, Method callback, A1 a1):
+      Parent(),
+      m_object(object),
+      m_callback(callback),
+      m_a1(a1) {}
+    ReturnType DoRun(Arg1 arg1, Arg2 arg2) {
+      return (m_object->*m_callback)(m_a1, arg1, arg2);
+    }
+
+  private:
+    Class *m_object;
+    Method m_callback;
+    A1 m_a1;
+};
+
+
+/*
+ * Create a new single use method closure.
+ */
+template <typename Class, typename ReturnType, typename A1, typename Arg1,
+          typename Arg2>
+inline SingleUseCallback2<ReturnType, Arg1, Arg2>* NewSingleCallback(
+    Class* object,
+    ReturnType (Class::*method)(A1 a1, Arg1 arg, Arg2 arg2),
+    A1 a1) {
+  return new MethodCallback2_1<Class,
+                               SingleUseCallback2<ReturnType, Arg1, Arg2>,
+                               ReturnType,
+                               A1,
+                               Arg1,
+                               Arg2>(
+      object,
+      method,
+      a1);
+}
+
+
+/*
+ * Create a new method closure.
+ */
+template <typename Class, typename ReturnType, typename A1, typename Arg1,
+          typename Arg2>
+inline Callback2<ReturnType, Arg1, Arg2>* NewCallback(
+    Class* object,
+    ReturnType (Class::*method)(A1 a1, Arg1 arg, Arg2 arg2),
+    A1 a1) {
+  return new MethodCallback2_1<Class,
+                               Callback2<ReturnType, Arg1, Arg2>,
+                               ReturnType,
+                               A1,
+                               Arg1,
+                               Arg2>(
+      object,
+      method,
+      a1);
+}
+
+
 // Four argument callbacks
 template <typename ReturnType, typename Arg1, typename Arg2, typename Arg3,
           typename Arg4>
