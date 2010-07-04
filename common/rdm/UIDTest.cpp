@@ -33,11 +33,13 @@ class UIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UIDTest);
   CPPUNIT_TEST(testUID);
   CPPUNIT_TEST(testUIDSet);
+  CPPUNIT_TEST(testUIDParse);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testUID();
     void testUIDSet();
+    void testUIDParse();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UIDTest);
@@ -130,4 +132,38 @@ void UIDTest::testUIDSet() {
 
   difference = set3.SetDifference(set1);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, difference.Size());
+}
+
+
+/*
+ * Test UID parsing
+ */
+void UIDTest::testUIDParse() {
+  UID *uid = UID::FromString("ffff:00000000");
+  CPPUNIT_ASSERT(uid);
+  CPPUNIT_ASSERT_EQUAL(uid->ManufacturerId(), static_cast<uint16_t>(0xffff));
+  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint16_t>(0x00));
+  CPPUNIT_ASSERT_EQUAL(uid->ToString(), string("ffff:00000000"));
+  delete uid;
+
+  uid = UID::FromString("1234:567890ab");
+  CPPUNIT_ASSERT(uid);
+  CPPUNIT_ASSERT_EQUAL(uid->ManufacturerId(), static_cast<uint16_t>(0x1234));
+  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint16_t>(0x567890ab));
+  CPPUNIT_ASSERT_EQUAL(uid->ToString(), string("1234:567890ab"));
+  delete uid;
+
+  uid = UID::FromString("abcd:ef123456");
+  CPPUNIT_ASSERT(uid);
+  CPPUNIT_ASSERT_EQUAL(uid->ManufacturerId(), static_cast<uint16_t>(0xabcd));
+  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint16_t>(0xef123456));
+  CPPUNIT_ASSERT_EQUAL(uid->ToString(), string("abcd:ef123456"));
+  delete uid;
+
+  CPPUNIT_ASSERT(!UID::FromString(""));
+  CPPUNIT_ASSERT(!UID::FromString(":"));
+  CPPUNIT_ASSERT(!UID::FromString("0:0"));
+  CPPUNIT_ASSERT(!UID::FromString(":123456"));
+  CPPUNIT_ASSERT(!UID::FromString(":123456"));
+  CPPUNIT_ASSERT(!UID::FromString("abcd:123456"));
 }

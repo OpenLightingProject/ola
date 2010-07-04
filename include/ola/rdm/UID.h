@@ -25,6 +25,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <ola/StringUtils.h>
 
 namespace ola {
 namespace rdm {
@@ -107,6 +108,22 @@ class UID {
     static UID AllManufactureDevices(uint16_t esta_id) {
       UID uid(esta_id, 0xffffffff);
       return uid;
+    }
+
+    static UID* FromString(const string &uid) {
+      std::vector<string> tokens;
+      ola::StringSplit(uid, tokens, ":");
+
+      if (tokens.size() != 2 || tokens[0].size() != 4 || tokens[1].size() != 8)
+        return NULL;
+
+      unsigned int esta_id, device_id;
+      if (!ola::HexStringToUInt(tokens[0], &esta_id))
+        return NULL;
+      if (!ola::HexStringToUInt(tokens[1], &device_id))
+        return NULL;
+
+      return new UID(esta_id, device_id);
     }
 
     enum { UID_SIZE = 6 };

@@ -9,4 +9,4 @@ check_PROGRAMS = $(TESTS)
 RDMTester_SOURCES = RDMCommandTest.cpp RDMTester.cpp UIDTest.cpp
 RDMTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
 RDMTester_LDFLAGS = $(CPPUNIT_LIBS)
-RDMTester_LDADD = libolardm.la ../logging/liblogging.la
+RDMTester_LDADD = libolardm.la ../logging/liblogging.la ../utils/libolautils.la
