@@ -26,6 +26,7 @@
 #include <ola/OlaDevice.h>
 #include <ola/common.h>
 #include <ola/plugin_id.h>
+#include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/UIDSet.h>
 #include <olad/PortConstants.h>
 #include <string>
@@ -39,6 +40,7 @@ class ConnectedSocket;
 
 using std::string;
 using std::vector;
+using ola::rdm::UID;
 
 class OlaClientCore;
 
@@ -113,7 +115,7 @@ class OlaClientObserver {
 /*
  * OlaClient is just a wrapper around OlaClientCore
  */
-class OlaClient {
+class OlaClient: public ola::rdm::RDMAPIImplInterface {
   public:
     explicit OlaClient(ola::network::ConnectedSocket *socket);
     ~OlaClient();
@@ -135,7 +137,21 @@ class OlaClient {
     bool FetchUIDList(unsigned int universe);
     bool ForceDiscovery(unsigned int universe);
 
-    // int send_rdm(int universe, uint8_t *data, int length);
+    bool RDMGet(rdm_callback *callback,
+                unsigned int universe,
+                const UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data = NULL,
+                unsigned int data_length = 0);
+    bool RDMSet(rdm_callback *callback,
+                unsigned int universe,
+                const UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data,
+                unsigned int data_length);
+
     bool SetUniverseName(unsigned int uni, const string &name);
     bool SetUniverseMergeMode(unsigned int uni, OlaUniverse::merge_mode mode);
 

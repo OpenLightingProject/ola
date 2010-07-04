@@ -190,6 +190,19 @@ message UIDListReply {
   repeated UID uid = 2;
 }
 
+message RDMRequest {
+  required int32 universe = 1;
+  required UID uid = 2;
+  required int32 sub_device = 3;
+  required int32 param_id = 4;
+  required bytes data = 5; // 0 - 231 bytes
+  required bool is_set = 6;
+}
+
+message RDMResponse {
+  required uint32 response_code = 1;
+  required bytes data = 2; // 0 - 231 bytes
+}
 
 // Services
 
@@ -209,6 +222,7 @@ service OlaServerService {
   rpc ConfigureDevice (DeviceConfigRequest) returns (DeviceConfigReply);
   rpc GetUIDs (UniverseRequest) returns (UIDListReply);
   rpc ForceDiscovery (UniverseRequest) returns (UniverseAck);
+  rpc RDMCommand (RDMRequest) returns (RDMResponse);
 }
 
 // RPCs handled by the OLA Client

@@ -34,6 +34,7 @@
 #include "ola/common.h"
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
+#include "ola/rdm/RDMAPIImplInterface.h"
 
 namespace ola {
 
@@ -65,7 +66,21 @@ class OlaClientCore {
     bool FetchUIDList(unsigned int universe);
     bool ForceDiscovery(unsigned int universe);
 
-    // int send_rdm(int universe, uint8_t *data, int length);
+    bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+                unsigned int universe,
+                const UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data,
+                unsigned int data_length);
+    bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+                unsigned int universe,
+                const UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data,
+                unsigned int data_length);
+
     bool SetUniverseName(unsigned int uni, const string &name);
     bool SetUniverseMergeMode(unsigned int uni, OlaUniverse::merge_mode mode);
 
@@ -115,9 +130,28 @@ class OlaClientCore {
     void HandleDiscovery(SimpleRpcController *controller,
                          ola::proto::UniverseAck *reply);
 
+    // we need this because a google::protobuf::Closure can't take more than 2
+    // args
+    struct rdm_response_args {
+      ola::rdm::RDMAPIImplInterface::rdm_callback *callback;
+      SimpleRpcController *controller;
+      ola::proto::RDMResponse *reply;
+    };
+
+    void HandleRDM(struct rdm_response_args *args);
+
   private:
     OlaClientCore(const OlaClientCore&);
     OlaClientCore operator=(const OlaClientCore&);
+
+    bool RDMCommand(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+                    bool is_set,
+                    unsigned int universe,
+                    const UID &uid,
+                    uint16_t sub_device,
+                    uint16_t pid,
+                    const uint8_t *data,
+                    unsigned int data_length);
 
     ConnectedSocket *m_socket;
     OlaClientServiceImpl *m_client_service;
