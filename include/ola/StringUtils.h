@@ -35,6 +35,7 @@ void StringTrim(string *input);
 string IntToString(int i);
 void Escape(string *original);
 bool StringToUInt(const string &value, unsigned int *output);
+bool HexStringToUInt(const string &value, unsigned int *output);
 }  // ola
 
 #endif  // INCLUDE_OLA_STRINGUTILS_H_
