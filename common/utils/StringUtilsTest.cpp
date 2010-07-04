@@ -195,6 +195,13 @@ void StringUtilsTest::testHexStringToUInt() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 255, value);
   CPPUNIT_ASSERT(HexStringToUInt("ffff", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 65535, value);
+
+  CPPUNIT_ASSERT(HexStringToUInt("ffffff", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 16777215, value);
+  CPPUNIT_ASSERT(HexStringToUInt("ffffffff", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4294967295UL, value);
+  CPPUNIT_ASSERT(HexStringToUInt("ef123456", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4010947670UL, value);
   CPPUNIT_ASSERT(!HexStringToUInt("fz", &value));
   CPPUNIT_ASSERT(!HexStringToUInt("zfff", &value));
   CPPUNIT_ASSERT(!HexStringToUInt("0xf", &value));

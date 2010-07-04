@@ -129,7 +129,7 @@ bool HexStringToUInt(const string &value, unsigned int *output) {
   size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
   if (found != string::npos)
     return false;
-  *output = strtol(value.data(), NULL, 16);
+  *output = strtoul(value.data(), NULL, 16);
   return true;
 }
 }  // ola
