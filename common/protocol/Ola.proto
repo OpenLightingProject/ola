@@ -201,7 +201,8 @@ message RDMRequest {
 
 message RDMResponse {
   required uint32 response_code = 1;
-  required bytes data = 2; // 0 - 231 bytes
+  required uint32 message_count = 2;
+  required bytes data = 3; // 0 - 231 bytes
 }
 
 // Services

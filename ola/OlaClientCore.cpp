@@ -33,6 +33,7 @@
 #include "ola/OlaDevice.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/RDMAPI.h"
+#include "ola/rdm/RDMAPIImplInterface.h"
 
 namespace ola {
 
@@ -878,13 +879,17 @@ void OlaClientCore::HandleDiscovery(SimpleRpcController *controller,
 void OlaClientCore::HandleRDM(struct rdm_response_args *args) {
   printf("got rdm response in client!\n");
 
-  ola::rdm::InternalResponseStatus response_status;
+  ola::rdm::RDMAPIImplResponseStatus response_status;
   response_status.response_type = args->reply->response_code();
+  response_status.message_count = args->reply->message_count();
 
   if (args->controller->Failed()) {
     response_status.rpc_error = args->controller->ErrorText();
-  } else {
+  } else if (args->reply->response_code() == ola::rdm::ACK_OVERFLOW ||
+             args->reply->response_code() == ola::rdm::ACK_TIMER) {
     // TODO(simon): handle to ACK_OVERFLOW and ACK_TIMER cases here
+    OLA_WARN << "We don't handle ACK_OVERFLOW or ACK_TIMER yet!";
+    response_status.rpc_error = "Not implemented in OLA Client";
   }
 
   args->callback->Run(response_status,

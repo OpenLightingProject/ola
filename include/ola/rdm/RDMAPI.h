@@ -23,7 +23,9 @@
 
 #include <stdint.h>
 #include <ola/Callback.h>
+#include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/UID.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -33,21 +35,32 @@ namespace rdm {
 
 using std::string;
 using std::vector;
+using ola::SingleUseCallback1;
+using ola::SingleUseCallback2;
+using ola::SingleUseCallback4;
 
 
 /*
  * Represents the state of a response (ack, nack etc.) and the reason if there
  * is one.
+ *
+ * RDM Handles should first check for Error() being non-empty as this
+ * represents an underlying transport error. Then the value of response_type
+ * should be checked against the rdm_response_type codes.
  */
 class ResponseStatus {
   public:
-    ResponseStatus(rdm_response_type type, rdm_nack_reason reason):
-      response_type(type),
-      nack_reason(reason) {
-    }
+    ResponseStatus(const RDMAPIImplResponseStatus &status,
+                   const string &data);
 
-    rdm_response_type response_type;
-    rdm_nack_reason nack_reason;
+    bool WasNacked() const { return m_was_nacked; }
+    uint16_t NackReason() const { return m_nack_reason; }
+    const string& Error() const { return m_rpc_error; }
+
+  private:
+    bool m_was_nacked;
+    uint16_t m_nack_reason;  // The NACK reason if the type was NACK_REASON
+    string m_rpc_error;  // Non empty if the RPC failed
 };
 
 
@@ -61,20 +74,18 @@ class StatusMessage {
                   uint16_t status_message_id,
                   int16_t value1,
                   int16_t value2):
-      m_sub_device(sub_device),
-      m_status_type(status_type),
-      m_status_message_id(status_message_id),
-      m_value1(value1),
-      m_value2(value2) {
-  }
+      sub_device(sub_device),
+      status_type(status_type),
+      status_message_id(status_message_id),
+      value1(value1),
+      value2(value2) {
+    }
 
-
-  private:
-    uint16_t m_sub_device,
-    rdm_status_type m_status_type,
-    uint16_t m_status_message_id,
-    int16_t m_value1,
-    int16_t m_value2
+    uint16_t sub_device;
+    rdm_status_type status_type;
+    uint16_t status_message_id;
+    int16_t value1;
+    int16_t value2;
 };
 
 
@@ -86,8 +97,7 @@ class ParameterDescription {
     ParameterDescription() {}
 
 
-  private:
-    uint16_t m_pid,
+    uint16_t m_pid;
     uint8_t m_pdl_size;
     rdm_data_type m_data_type;
     rdm_command_class m_command_class;
@@ -99,32 +109,15 @@ class ParameterDescription {
     string m_description;
 };
 
-
 /*
- * This is the interface for an RDMAPI implementation
+ * Represents a DeviceInfo reply
  */
-class RDMAPIImplInterface {
+class DeviceInfo {
   public:
-    virtual ~RDMAPIImplInterface() {}
 
-    typedef ola::Callback2<void,
-                           rdm_response_type,
-                           const string&> rdm_callback;
-
-    virtual bool RDMGet(rdm_callback *callback,
-                        unsigned int universe,
-                        const UID &uid,
-                        uint16_t sub_device,
-                        uint16_t pid,
-                        const uint8_t *data = NULL,
-                        unsigned int data_length = 0) = 0;
-    virtual bool RDMSet(rdm_callback *callback,
-                        unsigned int universe,
-                        const UID &uid,
-                        uint16_t sub_device,
-                        uint16_t pid,
-                        const uint8_t *data,
-                        unsigned int data_length) = 0;
+    uint16_t protocol_version;
+    uint16_t device_model;
+    rdm_product_category product_category;
 };
 
 
@@ -142,7 +135,9 @@ class QueuedMessageHandler {
  */
 class RDMAPI {
   public:
-    explicit RDMAPI(RDMAPIImplInterface *impl):
+    explicit RDMAPI(unsigned int universe,
+                    class RDMAPIImplInterface *impl):
+      m_universe(universe),
       m_impl(impl) {
     }
     ~RDMAPI() {}
@@ -153,15 +148,15 @@ class RDMAPI {
     // Network Managment Methods
     bool GetCommStatus(
         const UID &uid,
-        ola::Callback<void,
-                      ResponseStatus response_type,
-                      uint16_t short_message,
-                      uint16_t length_mismatch,
-                      uint16_t checksum_fail> *callback);
+        SingleUseCallback4<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           uint16_t,
+                           uint16_t> *callback);
 
     bool ClearCommStatus(
         const UID &uid,
-        ola::Callback<void, ResponseStatus> *callback);
+        SingleUseCallback1<void, const ResponseStatus&> *callback);
 
     bool GetQueuedMessage(
       const UID &uid,
@@ -171,59 +166,76 @@ class RDMAPI {
     bool GetStatusMessage(
       const UID &uid,
       rdm_status_type status_type,
-      ola::Callback<void,
-                    ResponseStatus response_status,
-                    const vector<StatusMessage> *callback);
+      SingleUseCallback2<void,
+                         const ResponseStatus&,
+                         const vector<StatusMessage> > *callback);
 
     bool GetStatusIdDescription(
       const UID &uid,
       uint16_t status_id,
-      ola::Callback<void,
-                    ResponseStatus response_status,
-                    const string &description> *callback);
+      SingleUseCallback2<void, const ResponseStatus&, const string&> *callback);
 
     bool ClearStatusId(
       const UID &uid,
-      ola::Callback<void, ResponseStatus response_status> *callback);
+      SingleUseCallback1<void, const ResponseStatus&> *callback);
 
     bool GetSubDeviceReporting(
       const UID &uid,
       uint16_t sub_device,
-      ola::Callback<void,
-                    ResponseStatus response_status,
-                    rdm_status_type> *callback);
+      SingleUseCallback2<void,
+                         const ResponseStatus&,
+                         rdm_status_type> *callback);
 
     bool SetSubDeviceReporting(
       const UID &uid,
       uint16_t sub_device,
       rdm_status_type status_type,
-      ola::Callback<void, ResponseStatus response_status> *callback);
+      SingleUseCallback1<void, const ResponseStatus&> *callback);
 
     // Information Methods
     bool GetSupportedParameters(
       const UID &uid,
       uint16_t sub_device,
-      ola::Callback<void,
-                    ResponseStatus response_status,
-                    vector<uint16_t> > *callback);
+      SingleUseCallback2<void,
+                         const ResponseStatus&,
+                         vector<uint16_t> > *callback);
 
     bool GetParameterDescription(
       const UID &uid,
       uint16_t pid,
-      ola::Callback<void,
-                    ResponseStatus response_status,
-                    ParameterDescription> *callback);
+      SingleUseCallback2<void,
+                         const ResponseStatus&,
+                         ParameterDescription> *callback);
 
     bool GetDeviceInfo(
       const UID &uid,
       uint16_t sub_device,
-      ola::Callback<void,
-                    ResponseStatus response_status,
-                    DeviceInfo> *callback);
+      SingleUseCallback2<void,
+                         const ResponseStatus&,
+                         const DeviceInfo&> *callback);
 
+
+
+
+    // Handlers, these are called by the RDMAPIImpl.
+    void HandleGetSupportedParameters(
+      SingleUseCallback2<void,
+                         const ResponseStatus&,
+                         vector<uint16_t> > *callback,
+      const RDMAPIImplResponseStatus &status,
+      const string &data);
+
+
+    void HandleGetDeviceInfo(
+      SingleUseCallback2<void,
+                         const ResponseStatus&,
+                         const DeviceInfo&> *callback,
+      const RDMAPIImplResponseStatus &status,
+      const string &data);
 
   private:
-    RDMAPIImplInterface *m_impl;
+    unsigned int m_universe;
+    class RDMAPIImplInterface *m_impl;
     std::map<UID, uint8_t> m_outstanding_messages;
 };
 }  // rdm

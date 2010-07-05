@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RDMAPIImplInterface.h
- * The interface for an RDMAPI Implementation
+ * The interface for an RDM API Implementation
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -30,7 +30,21 @@ namespace ola {
 namespace rdm {
 
 using std::string;
-using ola::SingleUseCallback2;
+
+
+/*
+ * Represents the state of a response (ack, nack etc.) and the reason if there
+ * is one.
+ *
+ * RDM Handles should first check for rpc_error being non-empty as this
+ * represents an underlying transport error. Then the value of response_type
+ * should be checked against the rdm_response_type codes.
+ */
+struct RDMAPIImplResponseStatus {
+  uint8_t response_type;  // The RDM response type
+  uint8_t message_count;  // Number of queued messages
+  string rpc_error;  // Non empty if the RPC failed
+};
 
 
 /*
@@ -42,7 +56,7 @@ class RDMAPIImplInterface {
 
     // args are the response type the param data
     typedef ola::SingleUseCallback2<void,
-                                    uint8_t,
+                                    const RDMAPIImplResponseStatus&,
                                     const string&> rdm_callback;
 
     virtual bool RDMGet(rdm_callback *callback,
