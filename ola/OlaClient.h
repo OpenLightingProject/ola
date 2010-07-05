@@ -136,6 +136,8 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
     // rdm methods
     bool FetchUIDList(unsigned int universe);
     bool ForceDiscovery(unsigned int universe);
+    bool SetSourceUID(const UID &uid,
+                      ola::SingleUseCallback1<void, const string &> *callback);
 
     bool RDMGet(rdm_callback *callback,
                 unsigned int universe,

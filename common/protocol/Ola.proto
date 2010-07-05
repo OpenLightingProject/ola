@@ -224,6 +224,7 @@ service OlaServerService {
   rpc GetUIDs (UniverseRequest) returns (UIDListReply);
   rpc ForceDiscovery (UniverseRequest) returns (UniverseAck);
   rpc RDMCommand (RDMRequest) returns (RDMResponse);
+  rpc SetSourceUID (UID) returns (Ack);
 }
 
 // RPCs handled by the OLA Client

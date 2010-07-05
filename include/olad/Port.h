@@ -125,7 +125,7 @@ class BasicInputPort: public InputPort {
     AbstractDevice *GetDevice() const { return m_device; }
     bool SetUniverse(Universe *universe);
     Universe *GetUniverse() const { return m_universe; }
-    string UniqueId() const;
+    virtual string UniqueId() const;
     bool SetPriority(uint8_t priority);
     uint8_t GetPriority() const { return m_priority; }
     void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }

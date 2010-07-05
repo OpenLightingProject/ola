@@ -21,7 +21,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
+#include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/UID.h"
 #include "olad/Client.h"
 #include "olad/DmxSource.h"
 #include "olad/Port.h"
@@ -90,8 +92,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UniverseTest);
 
 
 void UniverseTest::setUp() {
+  UID source_uid(OPEN_LIGHTING_ESTA_CODE, 0);
   m_preferences = new ola::MemoryPreferences("foo");
-  m_store = new ola::UniverseStore(m_preferences, NULL);
+  m_store = new ola::UniverseStore(m_preferences, NULL, source_uid);
   m_buffer.Set(TEST_DATA);
 }
 

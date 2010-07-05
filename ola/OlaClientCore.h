@@ -65,6 +65,8 @@ class OlaClientCore {
     // rdm methods
     bool FetchUIDList(unsigned int universe);
     bool ForceDiscovery(unsigned int universe);
+    bool SetSourceUID(const UID &uid,
+                      ola::SingleUseCallback1<void, const string &> *callback);
 
     bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
                 unsigned int universe,
@@ -130,7 +132,7 @@ class OlaClientCore {
     void HandleDiscovery(SimpleRpcController *controller,
                          ola::proto::UniverseAck *reply);
 
-    // we need this because a google::protobuf::Closure can't take more than 2
+    // we need these because a google::protobuf::Closure can't take more than 2
     // args
     struct rdm_response_args {
       ola::rdm::RDMAPIImplInterface::rdm_callback *callback;
@@ -138,7 +140,14 @@ class OlaClientCore {
       ola::proto::RDMResponse *reply;
     };
 
+    struct set_source_uid_args {
+      ola::SingleUseCallback1<void, const string &> *callback;
+      SimpleRpcController *controller;
+      ola::proto::Ack *reply;
+    };
+
     void HandleRDM(struct rdm_response_args *args);
+    void HandleSetSourceUID(struct set_source_uid_args *args);
 
   private:
     OlaClientCore(const OlaClientCore&);

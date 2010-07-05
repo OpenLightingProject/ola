@@ -243,6 +243,36 @@ bool OlaClientCore::ForceDiscovery(unsigned int universe) {
 
 
 /*
+ * Set this clients Source UID
+ */
+bool OlaClientCore::SetSourceUID(
+    const UID &uid,
+    ola::SingleUseCallback1<void, const string &> *callback) {
+  if (!m_connected)
+    return false;
+
+  ola::proto::UID request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::Ack *reply = new ola::proto::Ack();
+
+  request.set_esta_id(uid.ManufacturerId());
+  request.set_device_id(uid.DeviceId());
+
+  struct set_source_uid_args *args = new struct set_source_uid_args;
+  args->callback = callback;
+  args->controller = controller;
+  args->reply = reply;
+
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &ola::OlaClientCore::HandleSetSourceUID,
+      args);
+  m_stub->SetSourceUID(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
  * Send an RDM Get Command
  * @param callback the Callback to invoke when this completes
  * @param universe the universe to send the command on
@@ -870,6 +900,24 @@ void OlaClientCore::HandleDiscovery(SimpleRpcController *controller,
   }
   delete controller;
   delete reply;
+}
+
+
+/*
+ * Handle the set source UID response
+ */
+void OlaClientCore::HandleSetSourceUID(
+    struct set_source_uid_args *args) {
+  string error_string = "";
+  if (args->controller->Failed())
+    error_string = args->controller->ErrorText();
+
+  if (args->callback) {
+    args->callback->Run(error_string);
+  }
+  delete args->controller;
+  delete args->reply;
+  delete args;
 }
 
 

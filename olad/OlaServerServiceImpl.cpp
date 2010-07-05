@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include "common/protocol/Ola.pb.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
@@ -31,6 +32,7 @@
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
 #include "olad/DmxSource.h"
+#include "olad/InternalRDMController.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
@@ -62,6 +64,12 @@ using ola::proto::UniverseInfoReply;
 using ola::proto::UniverseInfoRequest;
 using ola::proto::UniverseNameRequest;
 using ola::rdm::UIDSet;
+
+
+OlaServerServiceImpl::~OlaServerServiceImpl() {
+  if (m_uid)
+    delete m_uid;
+}
 
 
 /*
@@ -170,6 +178,9 @@ void OlaServerServiceImpl::StreamDmxData(
     m_client->DMXRecieved(request->universe(), source);
     universe->SourceClientDataChanged(m_client);
   }
+  (void) controller;
+  (void) response;
+  (void) done;
 }
 
 
@@ -449,6 +460,94 @@ void OlaServerServiceImpl::ForceDiscovery(
 }
 
 
+/*
+ * Handle an RDM Command
+ */
+void OlaServerServiceImpl::RDMCommand(
+    RpcController* controller,
+    const ::ola::proto::RDMRequest* request,
+    ola::proto::RDMResponse* response,
+    google::protobuf::Closure* done) {
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+  if (!universe)
+    return MissingUniverseError(controller, done);
+
+  UID destination(request->uid().esta_id(),
+                  request->uid().device_id());
+
+  SingleUseCallback1<void, const ola::rdm::RDMResponse*> *callback =
+    NewSingleCallback(
+        this,
+        &OlaServerServiceImpl::HandleRDMResponse,
+        controller,
+        response,
+        done);
+  bool r = m_rdm_controller->SendRDMRequest(
+    universe,
+    destination,
+    request->sub_device(),
+    request->param_id(),
+    request->data(),
+    request->is_set(),
+    callback,
+    m_uid);
+  if (!r) {
+    controller->SetFailed("Failed to Send RDM command");
+    delete callback;
+  }
+  done->Run();
+}
+
+
+/*
+ * Set this client's source UID
+ */
+void OlaServerServiceImpl::SetSourceUID(
+    RpcController* controller,
+    const ::ola::proto::UID* request,
+    ola::proto::Ack* response,
+    google::protobuf::Closure* done) {
+
+  UID source_uid(request->esta_id(), request->device_id());
+  if (!m_uid)
+    m_uid = new UID(source_uid);
+  else
+    *m_uid = source_uid;
+  done->Run();
+  (void) controller;
+  (void) response;
+}
+
+
+/*
+ * Handle an RDM Response
+ */
+void OlaServerServiceImpl::HandleRDMResponse(
+    RpcController* controller,
+    ola::proto::RDMResponse* response,
+    google::protobuf::Closure* done,
+    const ola::rdm::RDMResponse *rdm_response) {
+  OLA_WARN << "in handle RDM response";
+
+  if (rdm_response) {
+    response->set_response_code(rdm_response->ResponseType());
+    response->set_message_count(rdm_response->MessageCount());
+
+    if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
+      const string data(
+          reinterpret_cast<const char*>(rdm_response->ParamData()),
+          rdm_response->ParamDataSize());
+      response->set_data(data);
+    } else {
+      response->set_data("");
+    }
+  } else {
+    controller->SetFailed("RDM command timed out");
+  }
+  done->Run();
+}
+
+
 // Private methods
 //-----------------------------------------------------------------------------
 void OlaServerServiceImpl::MissingUniverseError(
@@ -562,6 +661,7 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     Client *client,
     ExportMap *export_map,
     PortManager *port_manager,
+    InternalRDMController *rdm_controller,
     const TimeStamp *wake_up_time) {
   return new OlaServerServiceImpl(universe_store,
                                   device_manager,
@@ -569,6 +669,7 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
                                   client,
                                   export_map,
                                   port_manager,
+                                  rdm_controller,
                                   wake_up_time);
 };
 }  // ola

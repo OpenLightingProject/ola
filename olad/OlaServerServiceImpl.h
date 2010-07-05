@@ -36,6 +36,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                          class Client *client,
                          class ExportMap *export_map,
                          class PortManager *port_manager,
+                         class InternalRDMController *rdm_controller,
                          const class TimeStamp *wake_up_time):
       m_universe_store(universe_store),
       m_device_manager(device_manager),
@@ -43,8 +44,10 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
       m_client(client),
       m_export_map(export_map),
       m_port_manager(port_manager),
-      m_wake_up_time(wake_up_time) {}
-    ~OlaServerServiceImpl() {}
+      m_rdm_controller(rdm_controller),
+      m_wake_up_time(wake_up_time),
+      m_uid(NULL) {}
+    ~OlaServerServiceImpl();
 
     void GetDmx(RpcController* controller,
                 const ola::proto::DmxReadRequest* request,
@@ -106,9 +109,17 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                     const ::ola::proto::RDMRequest* request,
                     ola::proto::RDMResponse* response,
                     google::protobuf::Closure* done);
-
+    void SetSourceUID(RpcController* controller,
+                      const ::ola::proto::UID* request,
+                      ola::proto::Ack* response,
+                      google::protobuf::Closure* done);
 
     Client *GetClient() const { return m_client; }
+
+    void HandleRDMResponse(RpcController* controller,
+                           ola::proto::RDMResponse* response,
+                           google::protobuf::Closure* done,
+                           const ola::rdm::RDMResponse *rdm_response);
 
   private:
     void MissingUniverseError(RpcController* controller,
@@ -137,7 +148,9 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     class Client *m_client;
     class ExportMap *m_export_map;
     class PortManager *m_port_manager;
+    class InternalRDMController *m_rdm_controller;
     const class TimeStamp *m_wake_up_time;
+    UID *m_uid;
 };
 
 
@@ -149,6 +162,7 @@ class OlaServerServiceImplFactory {
                               Client *client,
                               ExportMap *export_map,
                               PortManager *port_manager,
+                              InternalRDMController *rdm_controller,
                               const TimeStamp *wake_up_time);
 };
 }  // ola

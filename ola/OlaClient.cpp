@@ -127,6 +127,16 @@ bool OlaClient::ForceDiscovery(unsigned int universe) {
 
 
 /*
+ * Set this clients Source UID
+ */
+bool OlaClient::SetSourceUID(
+    const UID &uid,
+    ola::SingleUseCallback1<void, const string &> *callback) {
+  return m_core->SetSourceUID(uid, callback);
+}
+
+
+/*
  * Send an RDM Get Command
  * @param callback the Callback to invoke when this completes
  * @param universe the universe to send the command on

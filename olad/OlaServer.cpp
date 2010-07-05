@@ -33,6 +33,8 @@
 #include "common/rpc/StreamRpcChannel.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/rdm/UID.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
 #include "olad/OlaServer.h"
@@ -90,7 +92,8 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_free_export_map(false),
       m_garbage_collect_timeout(ola::network::INVALID_TIMEOUT),
       m_httpd(NULL),
-      m_options(*ola_options) {
+      m_options(*ola_options),
+      m_uid(OPEN_LIGHTING_ESTA_ID, 0) {
   if (!m_export_map) {
     m_export_map = new ExportMap();
     m_free_export_map = true;
@@ -144,6 +147,7 @@ OlaServer::~OlaServer() {
     m_universe_preferences->Save();
   }
 
+  delete m_rdm_controller;
   delete m_port_manager;
   delete m_plugin_adaptor;
   delete m_device_manager;
@@ -180,12 +184,26 @@ bool OlaServer::Init() {
 
   signal(SIGPIPE, SIG_IGN);
 
+  // fetch the interface info
+  ola::rdm::UID default_uid(OPEN_LIGHTING_ESTA_ID, 0);
+  ola::network::Interface interface;
+  ola::network::InterfacePicker picker;
+  if (!picker.ChooseInterface(&interface, "")) {
+    OLA_WARN << "No network interface found";
+  } else {
+    // default to using the ip as a id
+    default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_ID,
+                                interface.ip_address.s_addr);
+  }
+  OLA_INFO << "Server UID is " << default_uid;
+
   m_universe_preferences = m_preferences_factory->NewPreference(
       UNIVERSE_PREFERENCES);
   m_universe_preferences->Load();
   m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
 
   m_port_manager = new PortManager(m_universe_store);
+  m_rdm_controller = new InternalRDMController(default_uid, m_port_manager);
 
   // setup the objects
   m_device_manager = new DeviceManager(m_preferences_factory, m_port_manager);
@@ -218,7 +236,8 @@ bool OlaServer::Init() {
                                 m_port_manager,
                                 m_options.http_port,
                                 m_options.http_enable_quit,
-                                m_options.http_data_dir);
+                                m_options.http_data_dir,
+                                interface);
     m_httpd->Start();
   }
 #endif
@@ -273,6 +292,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
                                                          client,
                                                          m_export_map,
                                                          m_port_manager,
+                                                         m_rdm_controller,
                                                          m_ss->WakeUpTime());
   channel->SetService(service);
 

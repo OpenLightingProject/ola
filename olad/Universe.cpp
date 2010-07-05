@@ -366,9 +366,8 @@ bool Universe::HandleRDMResponse(OutputPort *port,
     delete response;
     return false;
   } else {
-    iter->second->HandleRDMResponse(response);
+    return iter->second->HandleRDMResponse(response);
   }
-  return true;
   (void) port;
 }
 

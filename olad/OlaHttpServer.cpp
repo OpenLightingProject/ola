@@ -120,12 +120,6 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   Clock::CurrentTime(&m_start_time);
   export_map->GetStringVar(K_UPTIME_VAR);
 
-  // fetch the interface info
-  ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
-  picker->ChooseInterface(&m_interface, "");
-  delete picker;
-
   // warn on any missing templates
   TemplateNamelist::GetMissingList(false);
 }

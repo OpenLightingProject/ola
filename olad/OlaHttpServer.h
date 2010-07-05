@@ -49,7 +49,8 @@ class OlaHttpServer {
                   PortManager *port_manager,
                   unsigned int port,
                   bool enable_quit,
-                  const string &data_dir);
+                  const string &data_dir,
+                  const ola::network::Interface &interface);
     ~OlaHttpServer() {}
     bool Start() { return m_server.Start(); }
     void Stop() { return m_server.Stop(); }

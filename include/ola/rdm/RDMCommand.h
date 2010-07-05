@@ -52,7 +52,6 @@ class RDMCommand {
     const UID& SourceUID() const { return m_source; }
     const UID& DestinationUID() const { return m_destination; }
     uint8_t TransactionNumber() const { return m_transaction_number; }
-    uint8_t PortId() const { return m_port_id; }
     uint8_t MessageCount() const { return m_message_count; }
     uint16_t SubDevice() const { return m_sub_device; }
     uint16_t ParamId() const { return m_param_id; }
@@ -96,11 +95,12 @@ class RDMCommand {
                                                  unsigned int length);
     static RDMCommandClass ConvertCommandClass(uint8_t command_type);
 
+    uint8_t m_port_id;
+
   private:
     UID m_source;
     UID m_destination;
     uint8_t m_transaction_number;
-    uint8_t m_port_id;
     uint8_t m_message_count;
     uint16_t m_sub_device;
     RDMCommandClass m_command;
@@ -144,6 +144,8 @@ class RDMRequest: public RDMCommand {
                  data,
                  length) {
     }
+
+    uint8_t PortId() const { return m_port_id; }
 
     // Convert a block of data to an RDMCommand object
     static RDMRequest* InflateFromData(const uint8_t *data,
@@ -204,6 +206,8 @@ class RDMResponse: public RDMCommand {
                  data,
                  length) {
     }
+
+    uint8_t ResponseType() const { return m_port_id; }
 
     // Convert a block of data to an RDMCommand object
     static RDMResponse* InflateFromData(const uint8_t *data,

@@ -25,6 +25,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "ola/rdm/UID.h"
 
 namespace ola {
 
@@ -32,7 +33,9 @@ class Universe;
 
 class UniverseStore {
   public:
-    UniverseStore(class Preferences *preferences, class ExportMap *export_map);
+    UniverseStore(class Preferences *preferences,
+                  class ExportMap *export_map,
+                  const ola::rdm::UID &default_uid);
     ~UniverseStore();
 
     Universe *GetUniverse(unsigned int universe_id) const;
@@ -44,6 +47,8 @@ class UniverseStore {
     void DeleteAll();
     void AddUniverseGarbageCollection(Universe *universe);
     void GarbageCollectUniverses();
+
+    const ola::rdm::UID& DefaultUID() const { return m_default_uid; }
 
   private:
     typedef std::map<unsigned int, Universe*> universe_map;
@@ -59,6 +64,7 @@ class UniverseStore {
     universe_map m_universe_map;
     std::set<Universe*> m_deletion_candiates;  // list of universes we may be
                                                // able to delete
+    ola::rdm::UID m_default_uid;
 };
 }  // ola
 #endif  // OLAD_UNIVERSESTORE_H_
