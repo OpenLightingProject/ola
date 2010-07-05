@@ -31,12 +31,14 @@
 
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
+#include "ola/BaseTypes.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/rdm/UID.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
+#include "olad/InternalRDMController.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
@@ -92,8 +94,7 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_free_export_map(false),
       m_garbage_collect_timeout(ola::network::INVALID_TIMEOUT),
       m_httpd(NULL),
-      m_options(*ola_options),
-      m_uid(OPEN_LIGHTING_ESTA_ID, 0) {
+      m_options(*ola_options) {
   if (!m_export_map) {
     m_export_map = new ExportMap();
     m_free_export_map = true;
@@ -185,16 +186,18 @@ bool OlaServer::Init() {
   signal(SIGPIPE, SIG_IGN);
 
   // fetch the interface info
-  ola::rdm::UID default_uid(OPEN_LIGHTING_ESTA_ID, 0);
+  ola::rdm::UID default_uid(OPEN_LIGHTING_ESTA_CODE, 0);
   ola::network::Interface interface;
-  ola::network::InterfacePicker picker;
-  if (!picker.ChooseInterface(&interface, "")) {
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+  if (!picker->ChooseInterface(&interface, "")) {
     OLA_WARN << "No network interface found";
   } else {
     // default to using the ip as a id
-    default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_ID,
+    default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
                                 interface.ip_address.s_addr);
   }
+  delete picker;
   OLA_INFO << "Server UID is " << default_uid;
 
   m_universe_preferences = m_preferences_factory->NewPreference(

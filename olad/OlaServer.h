@@ -30,7 +30,6 @@
 #include <vector>
 
 #include "ola/ExportMap.h"
-#include "ola/InternalRDMController.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
@@ -102,7 +101,7 @@ class OlaServer {
     std::map<int, class OlaServerServiceImpl*> m_sd_to_service;
     OlaHttpServer_t *m_httpd;
     ola_server_options m_options;
-    InternalRDMController *m_rdm_controller;
+    class InternalRDMController *m_rdm_controller;
 
     static const char UNIVERSE_PREFERENCES[];
     static const char K_CLIENT_VAR[];

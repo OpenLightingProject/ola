@@ -68,7 +68,8 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              PortManager *port_manager,
                              unsigned int port,
                              bool enable_quit,
-                             const string &data_dir)
+                             const string &data_dir,
+                             const ola::network::Interface &interface)
     : m_server(port, data_dir),
       m_export_map(export_map),
       m_ss(ss),
@@ -77,7 +78,8 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_plugin_manager(plugin_manager),
       m_device_manager(device_manager),
       m_port_manager(port_manager),
-      m_enable_quit(enable_quit) {
+      m_enable_quit(enable_quit),
+      m_interface(interface) {
   RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
   RegisterHandler("/quit", &OlaHttpServer::DisplayQuit);
   RegisterHandler("/reload", &OlaHttpServer::ReloadPlugins);

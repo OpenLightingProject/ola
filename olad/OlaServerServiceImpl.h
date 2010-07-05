@@ -19,6 +19,8 @@
  */
 
 #include "common/protocol/Ola.pb.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/RDMCommand.h"
 
 #ifndef OLAD_OLASERVERSERVICEIMPL_H_
 #define OLAD_OLASERVERSERVICEIMPL_H_
@@ -150,7 +152,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     class PortManager *m_port_manager;
     class InternalRDMController *m_rdm_controller;
     const class TimeStamp *m_wake_up_time;
-    UID *m_uid;
+    ola::rdm::UID *m_uid;
 };
 
 
