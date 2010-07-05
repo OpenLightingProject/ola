@@ -336,6 +336,74 @@ void ClosureTest::testMethodCallbacks1() {
   CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2));
   CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2));
   delete c8;
+
+  // test 2 arg initial, 1 arg deferred callbacks that return ints
+  BaseCallback1<void, char> *c9 = NewSingleCallback(
+      this,
+      &ClosureTest::Method3,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2);
+  c9->Run(TEST_CHAR_VALUE);
+  BaseCallback1<void, char> *c10 = NewCallback(
+      this,
+      &ClosureTest::Method3,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2);
+  c10->Run(TEST_CHAR_VALUE);
+  c10->Run(TEST_CHAR_VALUE);
+  delete c10;
+
+  // test 2 arg initial, 1 arg deferred callbacks that return bools
+  BaseCallback1<bool, char> *c11 = NewSingleCallback(
+      this,
+      &ClosureTest::BoolMethod3,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2);
+  CPPUNIT_ASSERT(c11->Run(TEST_CHAR_VALUE));
+  BaseCallback1<bool, char> *c12 = NewCallback(
+      this,
+      &ClosureTest::BoolMethod3,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2);
+  CPPUNIT_ASSERT(c12->Run(TEST_CHAR_VALUE));
+  CPPUNIT_ASSERT(c12->Run(TEST_CHAR_VALUE));
+  delete c12;
+
+  // test 3 arg initial, 1 arg deferred callbacks that return ints
+  BaseCallback1<void, const string&> *c13 = NewSingleCallback(
+      this,
+      &ClosureTest::Method4,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2,
+      TEST_CHAR_VALUE);
+  c13->Run(TEST_STRING_VALUE);
+  BaseCallback1<void, const string&> *c14 = NewCallback(
+      this,
+      &ClosureTest::Method4,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2,
+      TEST_CHAR_VALUE);
+  c14->Run(TEST_STRING_VALUE);
+  c14->Run(TEST_STRING_VALUE);
+  delete c14;
+
+  // test 3 arg initial, 1 arg deferred callbacks that return bools
+  BaseCallback1<bool, const string&> *c15 = NewSingleCallback(
+      this,
+      &ClosureTest::BoolMethod4,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2,
+      TEST_CHAR_VALUE);
+  CPPUNIT_ASSERT(c15->Run(TEST_STRING_VALUE));
+  BaseCallback1<bool, const string&> *c16 = NewCallback(
+      this,
+      &ClosureTest::BoolMethod4,
+      TEST_INT_VALUE,
+      TEST_INT_VALUE2,
+      TEST_CHAR_VALUE);
+  CPPUNIT_ASSERT(c16->Run(TEST_STRING_VALUE));
+  CPPUNIT_ASSERT(c16->Run(TEST_STRING_VALUE));
+  delete c16;
 }
 
 
