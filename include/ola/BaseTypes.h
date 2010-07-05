@@ -20,12 +20,15 @@
 #ifndef INCLUDE_OLA_BASETYPES_H_
 #define INCLUDE_OLA_BASETYPES_H_
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 enum { DMX_UNIVERSE_SIZE = 512 };
 static const int OLA_DEFAULT_PORT = 9010;
+static const uint16_t OPEN_LIGHTING_ESTA_CODE = 0x7a70;
 
 #ifdef __cplusplus
 }

@@ -23,11 +23,11 @@
 
 #include <string>
 #include <vector>
-#include "olad/Plugin.h"
-#include "ola/plugin_id.h"
 #include "ola/network/Socket.h"
-#include "plugins/usbpro/WidgetDetector.h"
+#include "ola/plugin_id.h"
+#include "olad/Plugin.h"
 #include "plugins/usbpro/UsbDevice.h"
+#include "plugins/usbpro/WidgetDetector.h"
 
 namespace ola {
 namespace plugin {
@@ -74,7 +74,7 @@ class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
     static const char USB_PRO_FPS_LIMIT_KEY[];
     static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
 
-    static const uint16_t OPEN_LIGHTING_ESTA_ID = 0x7a70;
+    // Open Lighting id is in BaseTypes.h
     static const uint16_t JESE_ESTA_ID = 0x6864;
     static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
     static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;

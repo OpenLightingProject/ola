@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+#include "ola/BaseTypes.h"
 #include "ola/Closure.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -114,7 +115,7 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
   uint32_t serial = *(reinterpret_cast<const uint32_t*>(information.serial));
 
   switch (information.esta_id) {
-    case OPEN_LIGHTING_ESTA_ID:
+    case OPEN_LIGHTING_ESTA_CODE:
       if (information.device_id == OPEN_LIGHTING_RGB_MIXER_ID ||
           information.device_id == OPEN_LIGHTING_PACKETHEADS_ID) {
         AddDevice(new ArduinoRGBDevice(

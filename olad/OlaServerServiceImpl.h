@@ -102,6 +102,11 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                         const ola::proto::UniverseRequest* request,
                         ola::proto::UniverseAck* response,
                         google::protobuf::Closure* done);
+    void RDMCommand(RpcController* controller,
+                    const ::ola::proto::RDMRequest* request,
+                    ola::proto::RDMResponse* response,
+                    google::protobuf::Closure* done);
+
 
     Client *GetClient() const { return m_client; }
 

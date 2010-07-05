@@ -24,6 +24,7 @@
 #include <set>
 #include <string>
 
+#include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/artnet/ArtNetNode.h"
@@ -667,7 +668,7 @@ bool ArtNetNode::SendPollReply(const IPAddress &destination) {
   packet.data.reply.subnet_address[1] = m_input_ports[0].universe_address >> 4;
   packet.data.reply.oem = HostToNetwork(OEM_CODE);
   packet.data.reply.status1 = 0xd2;  // normal indicators, rdm enabled
-  packet.data.reply.esta_id = HostToLittleEndian(ESTA_CODE);
+  packet.data.reply.esta_id = HostToLittleEndian(OPEN_LIGHTING_ESTA_CODE);
   strncpy(reinterpret_cast<char*>(packet.data.reply.short_name),
           m_short_name.data(),
           ARTNET_SHORT_NAME_LENGTH);

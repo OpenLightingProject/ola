@@ -254,7 +254,6 @@ class ArtNetNode {
 
     static const char ARTNET_ID[];
     static const uint16_t ARTNET_PORT = 6454;
-    static const uint16_t ESTA_CODE = 0x7a70;
     static const uint16_t OEM_CODE = 0x0431;
     static const uint8_t ARTNET_VERSION = 14;
     static const unsigned int BROADCAST_THRESHOLD = 30;  // picked randomly...
