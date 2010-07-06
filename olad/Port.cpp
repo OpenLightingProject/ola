@@ -191,8 +191,10 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
  * Handle an RDMRequest, subclasses can implement this to support RDM
  */
 bool BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
-  OLA_WARN << "In base HandleRDMRequest, something has gone wrong with RDM" <<
-    " request routing";
+  // broadcasts go to every port
+  if (!request->DestinationUID().IsBroadcast())
+    OLA_WARN << "In base HandleRDMRequest, something has gone wrong with RDM"
+      << " request routing";
   delete request;
   return true;
 }
