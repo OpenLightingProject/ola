@@ -125,6 +125,9 @@ OlaServer::~OlaServer() {
 
   StopPlugins();
 
+  // this will remove any input ports and fail any outstanding rdm requests
+  delete m_rdm_controller;
+
   map<int, OlaServerServiceImpl*>::iterator iter;
   for (iter = m_sd_to_service.begin(); iter != m_sd_to_service.end(); ++iter) {
     CleanupConnection(iter->second);
@@ -149,7 +152,6 @@ OlaServer::~OlaServer() {
     m_universe_preferences->Save();
   }
 
-  delete m_rdm_controller;
   delete m_port_manager;
   delete m_plugin_adaptor;
   delete m_device_manager;
