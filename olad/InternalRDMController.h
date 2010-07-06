@@ -61,6 +61,8 @@ class OutstandingRDMRequest {
     ola::rdm::RDMCommand::RDMCommandClass m_command_class;
     TimeStamp m_expires;
     rdm_controller_callback *m_callback;
+
+    static const unsigned int EXPIRY_TIMEOUT_S = 3;
 };
 
 

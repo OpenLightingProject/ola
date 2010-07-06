@@ -45,6 +45,7 @@ OutstandingRDMRequest::OutstandingRDMRequest(
       m_expires(),
       m_callback(callback) {
   Clock::CurrentTime(&m_expires);
+  m_expires += ola::TimeInterval(EXPIRY_TIMEOUT_S, 0);
 }
 
 
