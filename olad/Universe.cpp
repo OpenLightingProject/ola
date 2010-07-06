@@ -45,17 +45,19 @@
 
 namespace ola {
 
-const char Universe::K_UNIVERSE_UID_COUNT_VAR[] = "universe_uids";
-const char Universe::K_FPS_VAR[] = "universe_frames";
+const char Universe::K_UNIVERSE_UID_COUNT_VAR[] = "universe-uids";
+const char Universe::K_FPS_VAR[] = "universe-dmx-frames";
 const char Universe::K_MERGE_HTP_STR[] = "htp";
 const char Universe::K_MERGE_LTP_STR[] = "ltp";
-const char Universe::K_UNIVERSE_INPUT_PORT_VAR[] = "universe_input_ports";
-const char Universe::K_UNIVERSE_MODE_VAR[] = "universe_mode";
-const char Universe::K_UNIVERSE_NAME_VAR[] = "universe_name";
-const char Universe::K_UNIVERSE_OUTPUT_PORT_VAR[] = "universe_output_ports";
-const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe_sink_clients";
+const char Universe::K_UNIVERSE_INPUT_PORT_VAR[] = "universe-input-ports";
+const char Universe::K_UNIVERSE_MODE_VAR[] = "universe-mode";
+const char Universe::K_UNIVERSE_NAME_VAR[] = "universe-name";
+const char Universe::K_UNIVERSE_OUTPUT_PORT_VAR[] = "universe-output-ports";
+const char Universe::K_UNIVERSE_RDM_REQUESTS[] = "universe-rdm-requests";
+const char Universe::K_UNIVERSE_RDM_RESPONSES[] = "universe-rdm-responses";
+const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe-sink-clients";
 const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
-    "universe_source_clients";
+    "universe-source-clients";
 
 /*
  * Create a new universe
@@ -84,6 +86,8 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
     K_FPS_VAR,
     K_UNIVERSE_INPUT_PORT_VAR,
     K_UNIVERSE_OUTPUT_PORT_VAR,
+    K_UNIVERSE_RDM_REQUESTS,
+    K_UNIVERSE_RDM_RESPONSES,
     K_UNIVERSE_SINK_CLIENTS_VAR,
     K_UNIVERSE_SOURCE_CLIENTS_VAR,
     K_UNIVERSE_UID_COUNT_VAR,
@@ -109,6 +113,8 @@ Universe::~Universe() {
     K_FPS_VAR,
     K_UNIVERSE_INPUT_PORT_VAR,
     K_UNIVERSE_OUTPUT_PORT_VAR,
+    K_UNIVERSE_RDM_REQUESTS,
+    K_UNIVERSE_RDM_RESPONSES,
     K_UNIVERSE_SINK_CLIENTS_VAR,
     K_UNIVERSE_SOURCE_CLIENTS_VAR,
     K_UNIVERSE_UID_COUNT_VAR,
@@ -336,6 +342,10 @@ bool Universe::HandleRDMRequest(InputPort *port,
   map<UID, OutputPort*>::iterator iter =
     m_output_uids.find(request->DestinationUID());
 
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_REQUESTS))[
+      m_universe_id_str]++;
+
   if (iter == m_output_uids.end()) {
     OLA_WARN << "Can't find UID " << request->DestinationUID() <<
       " in the output universe map, dropping request";
@@ -359,6 +369,10 @@ bool Universe::HandleRDMResponse(OutputPort *port,
 
   map<UID, InputPort*>::iterator iter =
     m_input_uids.find(response->DestinationUID());
+
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_RESPONSES))[
+      m_universe_id_str]++;
 
   if (iter == m_input_uids.end()) {
     OLA_WARN << "Can't find UID " << response->DestinationUID() <<

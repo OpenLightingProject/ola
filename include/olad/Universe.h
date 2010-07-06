@@ -113,6 +113,8 @@ class Universe {
     static const char K_UNIVERSE_MODE_VAR[];
     static const char K_UNIVERSE_NAME_VAR[];
     static const char K_UNIVERSE_OUTPUT_PORT_VAR[];
+    static const char K_UNIVERSE_RDM_REQUESTS[];
+    static const char K_UNIVERSE_RDM_RESPONSES[];
     static const char K_UNIVERSE_SINK_CLIENTS_VAR[];
     static const char K_UNIVERSE_SOURCE_CLIENTS_VAR[];
     static const char K_UNIVERSE_UID_COUNT_VAR[];

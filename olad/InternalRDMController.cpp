@@ -27,6 +27,11 @@ namespace ola {
 
 using ola::rdm::RDMCommand;
 
+const char InternalRDMController::MISMATCHED_RDM_RESPONSE_VAR[] =
+  "rdm-mismatched-responses";
+const char InternalRDMController::EXPIRED_RDM_REQUESTS_VAR[] =
+  "rdm-expired-requests";
+
 /*
  * Create a new OutstandingRDMRequest
  */
@@ -79,6 +84,18 @@ void OutstandingRDMRequest::RunCallback(const RDMResponse *response) {
   if (m_callback)
     m_callback->Run(response);
   m_callback = NULL;
+}
+
+
+InternalRDMController::InternalRDMController(const UID &default_uid,
+                                             PortManager *port_manager,
+                                             class ExportMap *export_map):
+    m_default_uid(default_uid),
+    m_port_manager(port_manager),
+    m_export_map(export_map) {
+
+  m_export_map->GetIntegerVar(MISMATCHED_RDM_RESPONSE_VAR);
+  m_export_map->GetIntegerVar(EXPIRED_RDM_REQUESTS_VAR);
 }
 
 
@@ -224,6 +241,7 @@ bool InternalRDMController::HandleRDMResponse(
 
   if (!request) {
     OLA_WARN << "Unable to locate a matching request for RDM response";
+    (*m_export_map->GetIntegerVar(MISMATCHED_RDM_RESPONSE_VAR))++;
     delete response;
     return false;
   }
@@ -257,6 +275,7 @@ void InternalRDMController::CheckTimeouts(const TimeStamp &now) {
 
   for (request_iter = expired_requests.begin();
        request_iter != expired_requests.end(); ++request_iter) {
+    (*m_export_map->GetIntegerVar(EXPIRED_RDM_REQUESTS_VAR))++;
     (*request_iter)->RunCallback(NULL);
     delete *request_iter;
   }

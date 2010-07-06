@@ -105,6 +105,7 @@ class OlaServer {
 
     static const char UNIVERSE_PREFERENCES[];
     static const char K_CLIENT_VAR[];
+    static const char K_UID_VAR[];
     static const unsigned int K_GARBAGE_COLLECTOR_TIMEOUT_MS;
 };
 }  // ola

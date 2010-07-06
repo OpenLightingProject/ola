@@ -61,6 +61,7 @@ using std::pair;
 
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
 const char OlaServer::K_CLIENT_VAR[] = "clients-connected";
+const char OlaServer::K_UID_VAR[] = "server-uid";
 const unsigned int OlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
 
 
@@ -198,6 +199,7 @@ bool OlaServer::Init() {
                                 interface.ip_address.s_addr);
   }
   delete picker;
+  m_export_map->GetStringVar(K_UID_VAR)->Set(default_uid.ToString());
   OLA_INFO << "Server UID is " << default_uid;
 
   m_universe_preferences = m_preferences_factory->NewPreference(
@@ -206,7 +208,9 @@ bool OlaServer::Init() {
   m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
 
   m_port_manager = new PortManager(m_universe_store);
-  m_rdm_controller = new InternalRDMController(default_uid, m_port_manager);
+  m_rdm_controller = new InternalRDMController(default_uid,
+                                               m_port_manager,
+                                               m_export_map);
 
   // setup the objects
   m_device_manager = new DeviceManager(m_preferences_factory, m_port_manager);

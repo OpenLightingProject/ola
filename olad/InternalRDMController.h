@@ -70,9 +70,8 @@ class OutstandingRDMRequest {
 class InternalRDMController: public InternalInputPortResponseHandler {
   public:
     InternalRDMController(const UID &default_uid,
-                          PortManager *port_manager):
-      m_default_uid(default_uid),
-      m_port_manager(port_manager) {}
+                          PortManager *port_manager,
+                          class ExportMap *export_map);
     ~InternalRDMController();
 
     bool SendRDMRequest(
@@ -84,7 +83,6 @@ class InternalRDMController: public InternalInputPortResponseHandler {
         bool is_set,
         rdm_controller_callback *callback,
         const UID *source = NULL);
-
 
     bool HandleRDMResponse(unsigned int universe,
                            const ola::rdm::RDMResponse *response);
@@ -99,6 +97,10 @@ class InternalRDMController: public InternalInputPortResponseHandler {
     map<unsigned int, InternalInputPort*> m_input_ports;
     map<pair<unsigned int, const UID>, uint8_t> m_transaction_numbers;
     map<unsigned int, vector<OutstandingRDMRequest*> > m_outstanding_requests;
+    class ExportMap *m_export_map;
+
+    static const char MISMATCHED_RDM_RESPONSE_VAR[];
+    static const char EXPIRED_RDM_REQUESTS_VAR[];
 };
 }  // ola
 #endif  // OLAD_INTERNALRDMCONTROLLER_H_
