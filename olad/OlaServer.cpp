@@ -62,7 +62,7 @@ using std::pair;
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
 const char OlaServer::K_CLIENT_VAR[] = "clients-connected";
 const char OlaServer::K_UID_VAR[] = "server-uid";
-const unsigned int OlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
+const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 1000;
 
 
 /*
@@ -93,7 +93,7 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_reload_plugins(false),
       m_init_run(false),
       m_free_export_map(false),
-      m_garbage_collect_timeout(ola::network::INVALID_TIMEOUT),
+      m_housekeeping_timeout(ola::network::INVALID_TIMEOUT),
       m_httpd(NULL),
       m_options(*ola_options) {
   if (!m_export_map) {
@@ -120,8 +120,8 @@ OlaServer::~OlaServer() {
   }
 #endif
 
-  if (m_garbage_collect_timeout != ola::network::INVALID_TIMEOUT)
-    m_ss->RemoveTimeout(m_garbage_collect_timeout);
+  if (m_housekeeping_timeout != ola::network::INVALID_TIMEOUT)
+    m_ss->RemoveTimeout(m_housekeeping_timeout);
 
   StopPlugins();
 
@@ -251,9 +251,9 @@ bool OlaServer::Init() {
   }
 #endif
 
-  m_garbage_collect_timeout = m_ss->RegisterRepeatingTimeout(
-      K_GARBAGE_COLLECTOR_TIMEOUT_MS,
-      ola::NewClosure(this, &OlaServer::GarbageCollect));
+  m_housekeeping_timeout = m_ss->RegisterRepeatingTimeout(
+      K_HOUSEKEEPING_TIMEOUT_MS,
+      ola::NewClosure(this, &OlaServer::RunHousekeeping));
   m_ss->RunInLoop(ola::NewClosure(this, &OlaServer::CheckForReload));
 
   m_init_run = true;
@@ -340,9 +340,10 @@ void OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
 /*
  * Run the garbage collector
  */
-bool OlaServer::GarbageCollect() {
+bool OlaServer::RunHousekeeping() {
   OLA_INFO << "Garbage collecting";
   m_universe_store->GarbageCollectUniverses();
+  m_rdm_controller->CheckTimeouts(*m_ss->WakeUpTime());
   return true;
 }
 
