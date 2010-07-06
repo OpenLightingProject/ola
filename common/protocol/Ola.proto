@@ -173,7 +173,7 @@ message DeviceConfigReply {
 // This represents a UID
 message UID {
   required int32 esta_id = 1;  // only lower 2 bytes are used
-  required int32 device_id = 2;
+  required fixed32 device_id = 2;
 }
 
 // Request the UID list for a universe
