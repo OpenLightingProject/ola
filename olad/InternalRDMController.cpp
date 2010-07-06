@@ -36,12 +36,12 @@ const char InternalRDMController::EXPIRED_RDM_REQUESTS_VAR[] =
  * Create a new OutstandingRDMRequest
  */
 OutstandingRDMRequest::OutstandingRDMRequest(
-    const RDMRequest &request,
+    const RDMRequest *request,
     rdm_controller_callback *callback):
-      m_source_uid(request.SourceUID()),
-      m_sub_device(request.SubDevice()),
-      m_transaction_number(request.TransactionNumber()),
-      m_command_class(request.CommandClass()),
+      m_source_uid(request->SourceUID()),
+      m_sub_device(request->SubDevice()),
+      m_transaction_number(request->TransactionNumber()),
+      m_command_class(request->CommandClass()),
       m_expires(),
       m_callback(callback) {
   Clock::CurrentTime(&m_expires);
@@ -117,9 +117,9 @@ InternalRDMController::~InternalRDMController() {
   vector<OutstandingRDMRequest*>::iterator request_iter;
 
   for (iter = m_outstanding_requests.begin();
-       iter != m_outstanding_requests.end();) {
+       iter != m_outstanding_requests.end(); ++iter) {
     for (request_iter = iter->second.begin();
-         request_iter != iter->second.end();) {
+         request_iter != iter->second.end(); ++request_iter) {
       (*request_iter)->RunCallback(NULL);
       delete *request_iter;
     }
@@ -198,16 +198,17 @@ bool InternalRDMController::SendRDMRequest(
       reinterpret_cast<const uint8_t*>(data.data()),
       data.size());
   }
+
+  // this has to be done before the request is deleted below
+  OutstandingRDMRequest *outstanding_request =
+    new OutstandingRDMRequest(request, callback);
   if (port_iter->second->HandleRDMRequest(request)) {
-    // add to queue here
-    OutstandingRDMRequest *outstanding_request =
-      new OutstandingRDMRequest(*request, callback);
     m_outstanding_requests[universe->UniverseId()].push_back(
       outstanding_request);
-  } else {
-    callback->Run(NULL);
+    return true;
   }
-  return true;
+  delete outstanding_request;
+  return false;
 }
 
 

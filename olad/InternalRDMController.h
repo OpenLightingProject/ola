@@ -45,7 +45,7 @@ typedef ola::SingleUseCallback1<void, const RDMResponse*>
  */
 class OutstandingRDMRequest {
   public:
-    OutstandingRDMRequest(const RDMRequest &request,
+    OutstandingRDMRequest(const RDMRequest *request,
                           rdm_controller_callback *callback);
     bool Matches(const RDMResponse *response);
     bool HasExpired(const TimeStamp &now);
