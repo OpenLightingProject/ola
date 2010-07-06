@@ -21,6 +21,7 @@
 #include "common/protocol/Ola.pb.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/RDMCommand.h"
+#include "olad/InternalRDMController.h"
 
 #ifndef OLAD_OLASERVERSERVICEIMPL_H_
 #define OLAD_OLASERVERSERVICEIMPL_H_
@@ -121,7 +122,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     void HandleRDMResponse(RpcController* controller,
                            ola::proto::RDMResponse* response,
                            google::protobuf::Closure* done,
-                           const ola::rdm::RDMResponse *rdm_response);
+                           const rdm_response_data &status);
 
   private:
     void MissingUniverseError(RpcController* controller,

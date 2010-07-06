@@ -81,9 +81,9 @@ bool OutstandingRDMRequest::HasExpired(const TimeStamp &now) {
 /*
  * Run the callback for this request
  */
-void OutstandingRDMRequest::RunCallback(const RDMResponse *response) {
+void OutstandingRDMRequest::RunCallback(const rdm_response_data &data) {
   if (m_callback)
-    m_callback->Run(response);
+    m_callback->Run(data);
   m_callback = NULL;
 }
 
@@ -94,7 +94,6 @@ InternalRDMController::InternalRDMController(const UID &default_uid,
     m_default_uid(default_uid),
     m_port_manager(port_manager),
     m_export_map(export_map) {
-
   m_export_map->GetIntegerVar(MISMATCHED_RDM_RESPONSE_VAR);
   m_export_map->GetIntegerVar(EXPIRED_RDM_REQUESTS_VAR);
 }
@@ -117,11 +116,12 @@ InternalRDMController::~InternalRDMController() {
   map<unsigned int, vector<OutstandingRDMRequest*> >::iterator iter;
   vector<OutstandingRDMRequest*>::iterator request_iter;
 
+  rdm_response_data data = {RDM_RESPONSE_TIMED_OUT, NULL};
   for (iter = m_outstanding_requests.begin();
        iter != m_outstanding_requests.end(); ++iter) {
     for (request_iter = iter->second.begin();
          request_iter != iter->second.end(); ++request_iter) {
-      (*request_iter)->RunCallback(NULL);
+      (*request_iter)->RunCallback(data);
       delete *request_iter;
     }
   }
@@ -204,9 +204,16 @@ bool InternalRDMController::SendRDMRequest(
   OutstandingRDMRequest *outstanding_request =
     new OutstandingRDMRequest(request, callback);
   if (port_iter->second->HandleRDMRequest(request)) {
-    m_outstanding_requests[universe->UniverseId()].push_back(
-      outstanding_request);
-    return true;
+    if (destination.IsBroadcast()) {
+      rdm_response_data data = {RDM_RESPONSE_BROADCAST, NULL};
+      callback->Run(data);
+      delete outstanding_request;
+      return true;
+    } else {
+      m_outstanding_requests[universe->UniverseId()].push_back(
+        outstanding_request);
+      return true;
+    }
   }
   delete outstanding_request;
   return false;
@@ -248,7 +255,8 @@ bool InternalRDMController::HandleRDMResponse(
     return false;
   }
 
-  (*request_iter)->RunCallback(response);
+  rdm_response_data data = {RDM_RESPONSE_OK, response};
+  (*request_iter)->RunCallback(data);
   return true;
 }
 
@@ -275,10 +283,11 @@ void InternalRDMController::CheckTimeouts(const TimeStamp &now) {
     }
   }
 
+  rdm_response_data data = {RDM_RESPONSE_TIMED_OUT, NULL};
   for (request_iter = expired_requests.begin();
        request_iter != expired_requests.end(); ++request_iter) {
     (*m_export_map->GetIntegerVar(EXPIRED_RDM_REQUESTS_VAR))++;
-    (*request_iter)->RunCallback(NULL);
+    (*request_iter)->RunCallback(data);
     delete *request_iter;
   }
   expired_requests.clear();

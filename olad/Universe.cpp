@@ -327,7 +327,8 @@ bool Universe::SourceClientDataChanged(Client *client) {
 
 
 /*
- * Handle a RDM request for this universe
+ * Handle a RDM request for this universe, ownership of the request object is
+ * transferred to this method.
  * @returns true if this request was sent to an Output port, false otherwise
  */
 bool Universe::HandleRDMRequest(InputPort *port,
@@ -339,20 +340,33 @@ bool Universe::HandleRDMRequest(InputPort *port,
   // populate the input UID map so we know how to route this request later
   m_input_uids[request->SourceUID()] = port;
 
-  map<UID, OutputPort*>::iterator iter =
-    m_output_uids.find(request->DestinationUID());
-
   if (m_export_map)
     (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_REQUESTS))[
       m_universe_id_str]++;
 
-  if (iter == m_output_uids.end()) {
-    OLA_WARN << "Can't find UID " << request->DestinationUID() <<
-      " in the output universe map, dropping request";
+  if (request->DestinationUID().IsBroadcast()) {
+    // send this request to all ports
+    vector<OutputPort*>::iterator port_iter;
+    for (port_iter = m_output_ports.begin(); port_iter != m_output_ports.end();
+         ++port_iter) {
+      // because each port deletes the request, we need to copy it here
+      (*port_iter)->HandleRDMRequest(request->Duplicate());
+    }
     delete request;
-    return false;
+    return true;
+
   } else {
-    iter->second->HandleRDMRequest(request);
+    map<UID, OutputPort*>::iterator iter =
+      m_output_uids.find(request->DestinationUID());
+
+    if (iter == m_output_uids.end()) {
+      OLA_WARN << "Can't find UID " << request->DestinationUID() <<
+        " in the output universe map, dropping request";
+      delete request;
+      return false;
+    } else {
+      iter->second->HandleRDMRequest(request);
+    }
   }
   return true;
 }

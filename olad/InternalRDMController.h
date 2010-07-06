@@ -37,7 +37,18 @@ namespace ola {
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 
-typedef ola::SingleUseCallback1<void, const RDMResponse*>
+typedef enum {
+  RDM_RESPONSE_OK,
+  RDM_RESPONSE_BROADCAST,
+  RDM_RESPONSE_TIMED_OUT,
+} rdm_response_status;
+
+typedef struct {
+  rdm_response_status status;
+  const RDMResponse *response;
+} rdm_response_data;
+
+typedef ola::SingleUseCallback1<void, const rdm_response_data&>
   rdm_controller_callback;
 
 /*
@@ -49,7 +60,7 @@ class OutstandingRDMRequest {
                           rdm_controller_callback *callback);
     bool Matches(const RDMResponse *response);
     bool HasExpired(const TimeStamp &now);
-    void RunCallback(const RDMResponse *response);
+    void RunCallback(const rdm_response_data &data);
 
   private:
     OutstandingRDMRequest(const OutstandingRDMRequest&);

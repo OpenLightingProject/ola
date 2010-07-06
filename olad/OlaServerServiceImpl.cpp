@@ -475,7 +475,7 @@ void OlaServerServiceImpl::RDMCommand(
   UID destination(request->uid().esta_id(),
                   request->uid().device_id());
 
-  SingleUseCallback1<void, const ola::rdm::RDMResponse*> *callback =
+  SingleUseCallback1<void, const rdm_response_data&> *callback =
     NewSingleCallback(
         this,
         &OlaServerServiceImpl::HandleRDMResponse,
@@ -492,10 +492,10 @@ void OlaServerServiceImpl::RDMCommand(
     callback,
     m_uid);
   if (!r) {
-    controller->SetFailed("Failed to Send RDM command");
+    controller->SetFailed("Failed to send RDM command");
     delete callback;
+    done->Run();
   }
-  done->Run();
 }
 
 
@@ -520,30 +520,52 @@ void OlaServerServiceImpl::SetSourceUID(
 
 
 /*
- * Handle an RDM Response
+ * Handle an RDM Response, this includes broadcast messages, messages that
+ * timed out and normal response messages.
  */
 void OlaServerServiceImpl::HandleRDMResponse(
     RpcController* controller,
     ola::proto::RDMResponse* response,
     google::protobuf::Closure* done,
-    const ola::rdm::RDMResponse *rdm_response) {
+    const rdm_response_data &status) {
   OLA_WARN << "in handle RDM response";
 
-  if (rdm_response) {
-    response->set_response_code(rdm_response->ResponseType());
-    response->set_message_count(rdm_response->MessageCount());
-
-    if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
-      const string data(
-          reinterpret_cast<const char*>(rdm_response->ParamData()),
-          rdm_response->ParamDataSize());
-      response->set_data(data);
-    } else {
-      response->set_data("");
-    }
-  } else {
+  // check for time out errors
+  if (status.status == RDM_RESPONSE_TIMED_OUT) {
     controller->SetFailed("RDM command timed out");
+    done->Run();
+    return;
   }
+
+  if (status.status == RDM_RESPONSE_OK) {
+    if (status.response) {
+      response->set_response_code(status.response->ResponseType());
+      response->set_message_count(status.response->MessageCount());
+      response->set_was_broadcast(false);
+
+      if (status.response->ParamData() && status.response->ParamDataSize()) {
+        const string data(
+            reinterpret_cast<const char*>(status.response->ParamData()),
+            status.response->ParamDataSize());
+        response->set_data(data);
+      } else {
+        response->set_data("");
+      }
+    } else {
+      OLA_WARN << "RDM state was ok but response was NULL";
+      controller->SetFailed("Missing Response");
+    }
+  } else if (status.status == RDM_RESPONSE_BROADCAST) {
+    response->set_was_broadcast(true);
+    // fill these in with dummy values
+    response->set_response_code(0);
+    response->set_message_count(0);
+    response->set_data("");
+  } else {
+    OLA_WARN << "unknown response status " << status.status;
+    controller->SetFailed("Unknown status, see the logs");
+  }
+
   done->Run();
 }
 
