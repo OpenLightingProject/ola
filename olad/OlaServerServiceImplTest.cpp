@@ -214,6 +214,7 @@ void OlaServerServiceImplTest::testGetDmx() {
                             NULL,
                             NULL,
                             NULL,
+                            NULL,
                             NULL);
 
   GenericMissingUniverseCheck<GetDmxCheck, ola::proto::DmxData>
@@ -274,6 +275,7 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
 void OlaServerServiceImplTest::testRegisterForDmx() {
   UniverseStore store(NULL, NULL);
   OlaServerServiceImpl impl(&store,
+                            NULL,
                             NULL,
                             NULL,
                             NULL,
@@ -368,11 +370,13 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
                             &client,
                             NULL,
                             NULL,
+                            NULL,
                             &time1);
   OlaServerServiceImpl impl2(&store,
                              NULL,
                              NULL,
                              &client2,
+                             NULL,
                              NULL,
                              NULL,
                              &time2);
@@ -454,6 +458,7 @@ void OlaServerServiceImplTest::testSetUniverseName() {
                             NULL,
                             NULL,
                             NULL,
+                            NULL,
                             NULL);
 
   unsigned int universe_id = 0;
@@ -519,6 +524,7 @@ void OlaServerServiceImplTest::CallSetUniverseName(
 void OlaServerServiceImplTest::testSetMergeMode() {
   UniverseStore store(NULL, NULL);
   OlaServerServiceImpl impl(&store,
+                            NULL,
                             NULL,
                             NULL,
                             NULL,
