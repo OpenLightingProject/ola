@@ -54,13 +54,13 @@ void UIDTest::testUID() {
   CPPUNIT_ASSERT_EQUAL(uid, uid2);
   CPPUNIT_ASSERT(!(uid != uid2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 1, uid.ManufacturerId());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2, uid.DeviceId());
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 2, uid.DeviceId());
 
   UID uid3(2, 10);
   CPPUNIT_ASSERT(uid != uid3);
   CPPUNIT_ASSERT(uid < uid3);
   CPPUNIT_ASSERT_EQUAL((uint16_t) 2, uid3.ManufacturerId());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, uid3.DeviceId());
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 10, uid3.DeviceId());
 
   // ToString
   CPPUNIT_ASSERT_EQUAL(string("0001:00000002"), uid.ToString());
@@ -71,6 +71,16 @@ void UIDTest::testUID() {
   CPPUNIT_ASSERT_EQUAL(string("ffff:ffffffff"), all_devices.ToString());
   CPPUNIT_ASSERT_EQUAL(string("0052:ffffffff"),
                        manufacturer_devices.ToString());
+  CPPUNIT_ASSERT_EQUAL(all_devices.ManufacturerId(),
+                       static_cast<uint16_t>(0xffff));
+  CPPUNIT_ASSERT_EQUAL(all_devices.DeviceId(),
+                       static_cast<uint32_t>(0xffffffff));
+  CPPUNIT_ASSERT_EQUAL(manufacturer_devices.ManufacturerId(),
+                       static_cast<uint16_t>(0x0052));
+  CPPUNIT_ASSERT_EQUAL(manufacturer_devices.DeviceId(),
+                       static_cast<uint32_t>(0xffffffff));
+  CPPUNIT_ASSERT(all_devices.IsBroadcast());
+  CPPUNIT_ASSERT(manufacturer_devices.IsBroadcast());
 
   // now test the packing & unpacking
   unsigned int buffer_size = UID::UID_SIZE;
@@ -142,21 +152,21 @@ void UIDTest::testUIDParse() {
   UID *uid = UID::FromString("ffff:00000000");
   CPPUNIT_ASSERT(uid);
   CPPUNIT_ASSERT_EQUAL(uid->ManufacturerId(), static_cast<uint16_t>(0xffff));
-  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint16_t>(0x00));
+  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint32_t>(0x00));
   CPPUNIT_ASSERT_EQUAL(uid->ToString(), string("ffff:00000000"));
   delete uid;
 
   uid = UID::FromString("1234:567890ab");
   CPPUNIT_ASSERT(uid);
   CPPUNIT_ASSERT_EQUAL(uid->ManufacturerId(), static_cast<uint16_t>(0x1234));
-  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint16_t>(0x567890ab));
+  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint32_t>(0x567890ab));
   CPPUNIT_ASSERT_EQUAL(uid->ToString(), string("1234:567890ab"));
   delete uid;
 
   uid = UID::FromString("abcd:ef123456");
   CPPUNIT_ASSERT(uid);
   CPPUNIT_ASSERT_EQUAL(uid->ManufacturerId(), static_cast<uint16_t>(0xabcd));
-  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint16_t>(0xef123456));
+  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint32_t>(0xef123456));
   CPPUNIT_ASSERT_EQUAL(uid->ToString(), string("abcd:ef123456"));
   delete uid;
 

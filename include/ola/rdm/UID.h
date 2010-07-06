@@ -76,7 +76,9 @@ class UID {
 
     uint16_t ManufacturerId() const { return m_uid.esta_id; }
 
-    uint16_t DeviceId() const { return m_uid.device_id; }
+    uint32_t DeviceId() const { return m_uid.device_id; }
+
+    bool IsBroadcast() const { return m_uid.device_id == 0xffffffff; }
 
     std::string ToString() const {
       std::stringstream str;
