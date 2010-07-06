@@ -11,7 +11,8 @@ ola_dmxmonitor_LDADD = @LIBS@ -lcurses
 endif
 
 bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
-               ola_streaming_client ola_rdm $(NCURSES_PROGS)
+               ola_streaming_client ola_rdm_discover ola_rdm_get \
+               $(NCURSES_PROGS)
 
 ola_artnet_SOURCES = ola-artnet.cpp
 ola_artnet_LDADD = @LIBS@ -lolaartnetconf libolaconfig.la
@@ -21,7 +22,8 @@ ola_e131_LDADD = @LIBS@ -lolae131conf libolaconfig.la
 ola_streaming_client_SOURCES = ola-streaming-client.cpp
 ola_usbpro_SOURCES = ola-usbpro.cpp
 ola_usbpro_LDADD = @LIBS@ -lolausbproconf libolaconfig.la
-ola_rdm_SOURCES = ola-rdm.cpp
+ola_rdm_get_SOURCES = ola-rdm.cpp
+ola_rdm_discover_SOURCES = ola-rdm-discover.cpp
 
 noinst_PROGRAMS = ola_throughput
 ola_throughput_SOURCES = ola-throughput.cpp
@@ -40,3 +42,4 @@ install-exec-hook:
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_uni_merge
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_dmx
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_set_priority
+	$(LN_S) -f $(bindir)/ola_rdm_get $(DESTDIR)$(bindir)/ola_rdm_set

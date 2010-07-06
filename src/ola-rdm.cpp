@@ -20,10 +20,13 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/OlaClient.h>
 #include <ola/SimpleClient.h>
 #include <ola/network/SelectServer.h>
+#include <ola/rdm/RDMAPI.h>
+#include <ola/rdm/UID.h>
 
 
 #include <iostream>
@@ -33,165 +36,183 @@
 
 using std::cout;
 using std::endl;
-using std::setw;
 using std::string;
 using std::vector;
-using ola::rdm::UIDSet;
+using ola::rdm::UID;
 using ola::SimpleClient;
 using ola::OlaClient;
 using ola::network::SelectServer;
-
-static const int INVALID_VALUE = -1;
-
-/*
- * The mode is determined by the name in which we were called
- */
-typedef enum {
-  GET_UIDS,
-  GET_PID,
-  SET_PID,
-} mode;
-
+using ola::rdm::RDMAPI;
+using ola::rdm::ResponseStatus;
 
 typedef struct {
-  mode m;          // mode
-  int uni;         // universe id
+  bool set_mode;
   bool help;       // show the help
-  bool force_discovery;  // force RDM discovery
-  string cmd;      // argv[0]
+  bool list_pids;  // show the pid list
+  int uni;         // universe id
+  UID *uid;         // uid
+  uint16_t sub_device; // the sub device
+  string pid;      // pid to get/set
+  vector<string> args;  // extra args
+  string cmd;  // argv[0]
 } options;
 
 
-/*
- * The observer class which repsonds to events
- */
-class Observer: public ola::OlaClientObserver {
+class RDMController {
   public:
-    Observer(options *opts, SelectServer *ss): m_opts(opts), m_ss(ss) {}
+    RDMController(const UID *uid,
+                  uint16_t sub_device,
+                  RDMAPI *api,
+                  SelectServer *ss):
+      m_uid(*uid),
+      m_sub_device(sub_device),
+      m_api(api),
+      m_ss(ss) {
+    }
 
-    void UIDList(unsigned int universe,
-                 const ola::rdm::UIDSet &uids,
-                 const string &error);
-    void ForceRDMDiscoveryComplete(unsigned int universe,
-                                   const string &error);
+    bool GetPID(const vector<string> &tokens);
+    bool SetPID(const vector<string> &tokens);
+
+    void PrintDeviceInfo(const ResponseStatus &status,
+                         const ola::rdm::DeviceInfo &device_info);
 
   private:
-    options *m_opts;
+    UID m_uid;
+    uint16_t m_sub_device;
+    RDMAPI *m_api;
     SelectServer *m_ss;
+
+    bool CheckForSuccess(const ResponseStatus &status);
+    bool CheckForQueuedMessages();
 };
 
 
 /*
- * This is called when we recieve uids for a universe
- * @param universes a vector of OlaUniverses
+ * Get a pid
  */
-void Observer::UIDList(unsigned int universe,
-                       const ola::rdm::UIDSet &uids,
-                       const string &error) {
-  if (error.empty()) {
-    UIDSet::Iterator iter = uids.Begin();
-    for (; iter != uids.End(); ++iter) {
-      cout << *iter << endl;
-    }
-  } else {
-    cout << error << endl;
+bool RDMController::GetPID(const vector<string> &tokens) {
+  return m_api->GetDeviceInfo(
+      m_uid,
+      m_sub_device,
+      ola::NewSingleCallback(this,
+                             &RDMController::PrintDeviceInfo));
+}
+
+
+/*
+ * Set a pid
+ */
+bool RDMController::SetPID(const vector<string> &tokens) {
+  // client->FetchUIDList(opts.uni);
+  return false;
+}
+
+
+void RDMController::PrintDeviceInfo(
+    const ResponseStatus &status,
+    const ola::rdm::DeviceInfo &device_info) {
+  if (!CheckForSuccess(status))
+    return;
+
+  // print device info
+  OLA_INFO << "Got a response, we should really print it here";
+
+  // check for queued messages
+  if (!CheckForQueuedMessages())
+    m_ss->Terminate();
+}
+
+
+/*
+ * Check if a request completed sucessfully, if not display the errors.
+ */
+bool RDMController::CheckForSuccess(const ResponseStatus &status) {
+  if (!status.Error().empty()) {
+    cout << status.Error() << endl;
+    m_ss->Terminate();
+    return false;
   }
-  m_ss->Terminate();
+
+  if (status.WasNacked()) {
+    // TODO(simon): print reason here
+    m_ss->Terminate();
+    return false;
+  }
+  return true;
 }
 
 
-/*
- * Called once we get an ack for the discovery request
- */
-void Observer::ForceRDMDiscoveryComplete(unsigned int universe,
-                                         const string &error) {
-  if (!error.empty())
-    cout << error << endl;
-  m_ss->Terminate();
+bool RDMController::CheckForQueuedMessages() {
+  if (!m_api->OutstandingMessagesCount(m_uid)) {
+    return false;
+  }
+
+  OLA_INFO << "queued messages remain";
+  // TODO(simon): query user here and then possibly print?
+  return true;
 }
 
 
-/*
- * Init options
- */
-void InitOptions(options *opts) {
-  opts->m = GET_UIDS;
-  opts->uni = INVALID_VALUE;
-  opts->help = false;
-  opts->force_discovery = false;
-}
-
-
-/*
- * Decide what mode we're running in
- */
-void SetMode(options *opts) {
-  string::size_type pos = opts->cmd.find_last_of("/");
-
-  if (pos != string::npos)
-    opts->cmd = opts->cmd.substr(pos + 1);
-
-  if (opts->cmd == "ola_get_pid")
-    opts->m = GET_PID;
-  else if (opts->cmd == "ola_set_pid")
-    opts->m = SET_PID;
-}
-
+// End RDMController implementation
 
 /*
  * parse our cmd line options
  */
 void ParseOptions(int argc, char *argv[], options *opts) {
+  opts->cmd = argv[0];
+  opts->set_mode = false;
+  opts->list_pids = false;
+  opts->help = false;
+  opts->uni = 1;
+  opts->uid = NULL;
+  opts->sub_device = 0;
+
+  if (string(argv[0]) == "ola_rdm_set")
+    opts->set_mode = true;
+
+  int uid_set = 0;
   static struct option long_options[] = {
+      {"sub_device", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
-      {"force_discovery", no_argument, 0, 'f'},
+      {"list_pids", no_argument, 0, 'l'},
       {"universe", required_argument, 0, 'u'},
+      {"uid", required_argument, &uid_set, 1},
       {0, 0, 0, 0}
     };
 
-  int c;
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "u:hf", long_options, &option_index);
+    int c = getopt_long(argc, argv, "d:lu:hf", long_options, &option_index);
 
     if (c == -1)
       break;
 
     switch (c) {
       case 0:
+        if (uid_set)
+          opts->uid = UID::FromString(optarg);
         break;
-      case 'f':
-        opts->force_discovery = true;
+      case 'd':
+        opts->sub_device = atoi(optarg);
         break;
       case 'h':
         opts->help = true;
         break;
+      case 'l':
+        opts->list_pids = true;
+        break;
       case 'u':
         opts->uni = atoi(optarg);
-        break;
-      case '?':
         break;
       default:
         break;
     }
   }
-}
 
-
-/*
- * Help message for set dmx
- */
-void DisplayGetUIDsHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd <<
-  " --universe <universe> [--force_discovery]\n"
-  "\n"
-  "Fetch the UID list for a universe.\n"
-  "\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -f, --force_discovery     Force RDM Discovery for this universe\n"
-  "  -u, --universe <universe> Universe number.\n"
-  << endl;
+  int index = optind;
+  for (; index < argc; index++)
+    opts->args.push_back(argv[index]);
 }
 
 
@@ -200,12 +221,16 @@ void DisplayGetUIDsHelp(const options &opts) {
  */
 void DisplayGetPidHelp(const options &opts) {
   cout << "usage: " << opts.cmd <<
-  " --universe <universe> --uid <uid> -p <pid>\n"
+  " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
   "Get the value of a pid for a device.\n"
+  "Use '" << opts.cmd << " --list_pids' to get a list of pids.\n"
   "\n"
-  "  -h, --help               display this help message and exit.\n"
+  "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
+  "  -h, --help                display this help message and exit.\n"
+  "  -l, --list_pids           display a list of pids\n"
   "  -u, --universe <universe> universe number.\n"
+  "  --uid <uid>               the UID of the device to control.\n"
   << endl;
 }
 
@@ -215,12 +240,16 @@ void DisplayGetPidHelp(const options &opts) {
  */
 void DisplaySetPidHelp(const options &opts) {
   cout << "usage: " << opts.cmd <<
-  " --universe <universe> --uid <uid> -p <pid>\n"
+  " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
   "Set the value of a pid for a device.\n"
+  "Use '" << opts.cmd << " --list_pids' to get a list of pids.\n"
   "\n"
-  "  -h, --help               display this help message and exit.\n"
+  "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
+  "  -h, --help                display this help message and exit.\n"
+  "  -l, --list_pids           display a list of pids\n"
   "  -u, --universe <universe> universe number.\n"
+  "  --uid <uid>               the UID of the device to control.\n"
   << endl;
 }
 
@@ -229,58 +258,23 @@ void DisplaySetPidHelp(const options &opts) {
  * Display the help message
  */
 void DisplayHelpAndExit(const options &opts) {
-  switch (opts.m) {
-    case GET_UIDS:
-      DisplayGetUIDsHelp(opts);
-      break;
-    case GET_PID:
-      DisplayGetPidHelp(opts);
-      break;
-    case SET_PID:
-      DisplaySetPidHelp(opts);
-      break;
+  if (opts.set_mode) {
+    DisplaySetPidHelp(opts);
+  } else {
+    DisplayGetPidHelp(opts);
   }
   exit(0);
 }
 
 
 /*
- * Send a fetch uid list request
- * @param client  the ola client
- * @param opts  the const options
+ * Dump the list of known pids
  */
-bool FetchUIDs(OlaClient *client, const options &opts) {
-  if (opts.uni == INVALID_VALUE) {
-    DisplayHelpAndExit(opts);
-    return false;
-  }
-
-  if (opts.force_discovery)
-    return client->ForceDiscovery(opts.uni);
-  else
-    return client->FetchUIDList(opts.uni);
+void DisplayPIDsAndExit() {
+  cout << "pids" << endl;
+  exit(0);
 }
 
-
-/*
- * Send a fetch uid list request
- * @param client  the ola client
- * @param opts  the const options
- */
-bool GetPID(OlaClient *client, const options &opts) {
-  // client->FetchUIDList(opts.uni);
-  return false;
-}
-
-/*
- * Send a fetch uid list request
- * @param client  the ola client
- * @param opts  the const options
- */
-bool SetPID(OlaClient *client, const options &opts) {
-  // client->FetchUIDList(opts.uni);
-  return false;
-}
 
 /*
  * Main
@@ -289,16 +283,12 @@ int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
   SimpleClient ola_client;
   options opts;
-
-  InitOptions(&opts);
-  opts.cmd = argv[0];
-
-  // decide how we should behave
-  SetMode(&opts);
-
   ParseOptions(argc, argv, &opts);
 
-  if (opts.help)
+  if (opts.list_pids)
+    DisplayPIDsAndExit();
+
+  if (opts.help || opts.args.size() == 0)
     DisplayHelpAndExit(opts);
 
   if (!ola_client.Setup()) {
@@ -306,26 +296,29 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  OlaClient *client = ola_client.GetClient();
-  SelectServer *ss = ola_client.GetSelectServer();
+  if (!opts.uid) {
+    OLA_FATAL << "Invalid UID";
+    exit(1);
+  }
 
-  Observer observer(&opts, ss);
-  client->SetObserver(&observer);
+  SelectServer *ss = ola_client.GetSelectServer();
+  RDMAPI rdm_api(opts.uni, ola_client.GetClient());
+
+  RDMController controller(opts.uid,
+                           opts.sub_device,
+                           &rdm_api,
+                           ss);
 
   bool ret = false;
-  switch (opts.m) {
-    case GET_UIDS:
-      ret = FetchUIDs(client, opts);
-      break;
-    case GET_PID:
-      ret = GetPID(client, opts);
-      break;
-    case SET_PID:
-      ret = SetPID(client, opts);
-      break;
-  }
+  if (opts.set_mode)
+    ret = controller.SetPID(opts.args);
+  else
+    ret = controller.GetPID(opts.args);
 
   if (ret)
     ss->Run();
+
+  if (opts.uid)
+    delete opts.uid;
   return 0;
 }
