@@ -114,6 +114,7 @@ class InternalRDMController: public InternalInputPortResponseHandler {
 
     static const char MISMATCHED_RDM_RESPONSE_VAR[];
     static const char EXPIRED_RDM_REQUESTS_VAR[];
+    static const char BROADCAST_RDM_REQUESTS_VAR[];
 };
 }  // ola
 #endif  // OLAD_INTERNALRDMCONTROLLER_H_

@@ -31,6 +31,8 @@ const char InternalRDMController::MISMATCHED_RDM_RESPONSE_VAR[] =
   "rdm-mismatched-responses";
 const char InternalRDMController::EXPIRED_RDM_REQUESTS_VAR[] =
   "rdm-expired-requests";
+const char InternalRDMController::BROADCAST_RDM_REQUESTS_VAR[] =
+  "rdm-broadcast-requests";
 
 /*
  * Create a new OutstandingRDMRequest
@@ -96,6 +98,7 @@ InternalRDMController::InternalRDMController(const UID &default_uid,
     m_export_map(export_map) {
   m_export_map->GetIntegerVar(MISMATCHED_RDM_RESPONSE_VAR);
   m_export_map->GetIntegerVar(EXPIRED_RDM_REQUESTS_VAR);
+  m_export_map->GetIntegerVar(BROADCAST_RDM_REQUESTS_VAR);
 }
 
 
@@ -205,6 +208,7 @@ bool InternalRDMController::SendRDMRequest(
     new OutstandingRDMRequest(request, callback);
   if (port_iter->second->HandleRDMRequest(request)) {
     if (destination.IsBroadcast()) {
+      (*m_export_map->GetIntegerVar(BROADCAST_RDM_REQUESTS_VAR))++;
       rdm_response_data data = {RDM_RESPONSE_BROADCAST, NULL};
       callback->Run(data);
       delete outstanding_request;
