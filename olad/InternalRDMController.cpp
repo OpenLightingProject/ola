@@ -21,6 +21,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "ola/StringUtils.h"
 #include "olad/InternalRDMController.h"
 
 namespace ola {
@@ -33,6 +34,8 @@ const char InternalRDMController::EXPIRED_RDM_REQUESTS_VAR[] =
   "rdm-expired-requests";
 const char InternalRDMController::BROADCAST_RDM_REQUESTS_VAR[] =
   "rdm-broadcast-requests";
+const char InternalRDMController::FAILED_RDM_REQUESTS_VAR[] =
+  "rdm-failed-requests";
 
 /*
  * Create a new OutstandingRDMRequest
@@ -96,9 +99,10 @@ InternalRDMController::InternalRDMController(const UID &default_uid,
     m_default_uid(default_uid),
     m_port_manager(port_manager),
     m_export_map(export_map) {
-  m_export_map->GetIntegerVar(MISMATCHED_RDM_RESPONSE_VAR);
-  m_export_map->GetIntegerVar(EXPIRED_RDM_REQUESTS_VAR);
-  m_export_map->GetIntegerVar(BROADCAST_RDM_REQUESTS_VAR);
+  m_export_map->GetUIntMapVar(MISMATCHED_RDM_RESPONSE_VAR);
+  m_export_map->GetUIntMapVar(EXPIRED_RDM_REQUESTS_VAR);
+  m_export_map->GetUIntMapVar(BROADCAST_RDM_REQUESTS_VAR);
+  m_export_map->GetUIntMapVar(FAILED_RDM_REQUESTS_VAR);
 }
 
 
@@ -208,7 +212,8 @@ bool InternalRDMController::SendRDMRequest(
     new OutstandingRDMRequest(request, callback);
   if (port_iter->second->HandleRDMRequest(request)) {
     if (destination.IsBroadcast()) {
-      (*m_export_map->GetIntegerVar(BROADCAST_RDM_REQUESTS_VAR))++;
+      (*m_export_map->GetUIntMapVar(BROADCAST_RDM_REQUESTS_VAR))[
+        IntToString(universe->UniverseId())]++;
       rdm_response_data data = {RDM_RESPONSE_BROADCAST, NULL};
       callback->Run(data);
       delete outstanding_request;
@@ -219,6 +224,8 @@ bool InternalRDMController::SendRDMRequest(
       return true;
     }
   }
+  (*m_export_map->GetUIntMapVar(FAILED_RDM_REQUESTS_VAR))[
+    IntToString(universe->UniverseId())]++;
   delete outstanding_request;
   return false;
 }
@@ -254,7 +261,8 @@ bool InternalRDMController::HandleRDMResponse(
 
   if (!request) {
     OLA_WARN << "Unable to locate a matching request for RDM response";
-    (*m_export_map->GetIntegerVar(MISMATCHED_RDM_RESPONSE_VAR))++;
+    (*m_export_map->GetUIntMapVar(MISMATCHED_RDM_RESPONSE_VAR))[
+      IntToString(universe)]++;
     delete response;
     return false;
   }
@@ -270,16 +278,19 @@ bool InternalRDMController::HandleRDMResponse(
  * @param now the current time
  */
 void InternalRDMController::CheckTimeouts(const TimeStamp &now) {
-  vector<OutstandingRDMRequest*> expired_requests;
+  vector<pair<unsigned int, OutstandingRDMRequest*> > expired_requests;
   map<unsigned int, vector<OutstandingRDMRequest*> >::iterator iter;
   vector<OutstandingRDMRequest*>::iterator request_iter;
+  vector<pair<unsigned int, OutstandingRDMRequest*> >::iterator expired_iter;
 
   for (iter = m_outstanding_requests.begin();
        iter != m_outstanding_requests.end(); ++iter) {
     for (request_iter = iter->second.begin();
          request_iter != iter->second.end();) {
       if ((*request_iter)->HasExpired(now)) {
-        expired_requests.push_back(*request_iter);
+        expired_requests.push_back(
+            pair<unsigned int, OutstandingRDMRequest*>(iter->first,
+                                                       *request_iter));
         request_iter = iter->second.erase(request_iter);
       } else {
         request_iter++;
@@ -288,11 +299,12 @@ void InternalRDMController::CheckTimeouts(const TimeStamp &now) {
   }
 
   rdm_response_data data = {RDM_RESPONSE_TIMED_OUT, NULL};
-  for (request_iter = expired_requests.begin();
-       request_iter != expired_requests.end(); ++request_iter) {
-    (*m_export_map->GetIntegerVar(EXPIRED_RDM_REQUESTS_VAR))++;
-    (*request_iter)->RunCallback(data);
-    delete *request_iter;
+  for (expired_iter = expired_requests.begin();
+       expired_iter != expired_requests.end(); ++expired_iter) {
+    (*m_export_map->GetUIntMapVar(EXPIRED_RDM_REQUESTS_VAR))[
+      IntToString(expired_iter->first)]++;
+    expired_iter->second->RunCallback(data);
+    delete expired_iter->second;
   }
   expired_requests.clear();
 }
