@@ -87,6 +87,18 @@ string IntToString(int i) {
 
 
 /*
+ * Convert an int to a string.
+ * @param i the int to convert
+ * @return the string representation of the int
+ */
+string IntToString(unsigned int i) {
+  stringstream str;
+  str << i;
+  return str.str();
+}
+
+
+/*
  * Convert a string to a unsigned int.
  * @returns true if sucessfull, false otherwise
  */

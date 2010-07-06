@@ -145,6 +145,8 @@ void StringUtilsTest::testIntToString() {
   CPPUNIT_ASSERT_EQUAL(string("0"), IntToString(0));
   CPPUNIT_ASSERT_EQUAL(string("1234"), IntToString(1234));
   CPPUNIT_ASSERT_EQUAL(string("-1234"), IntToString(-1234));
+  unsigned int i = 42;
+  CPPUNIT_ASSERT_EQUAL(string("42"), IntToString(i));
 }
 
 void StringUtilsTest::testEscape() {
