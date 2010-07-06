@@ -147,6 +147,8 @@ class RDMRequest: public RDMCommand {
 
     uint8_t PortId() const { return m_port_id; }
 
+    virtual RDMRequest *Duplicate() const = 0;
+
     // Convert a block of data to an RDMCommand object
     static RDMRequest* InflateFromData(const uint8_t *data,
                                        unsigned int length);
@@ -176,6 +178,19 @@ class BaseRDMRequest: public RDMRequest {
                  length) {
     }
     RDMCommandClass CommandClass() const { return command_class; }
+    BaseRDMRequest<command_class> *Duplicate()
+      const {
+      return new BaseRDMRequest<command_class>(
+        SourceUID(),
+        DestinationUID(),
+        TransactionNumber(),
+        PortId(),
+        MessageCount(),
+        SubDevice(),
+        ParamId(),
+        ParamData(),
+        ParamDataSize());
+    }
 };
 
 typedef BaseRDMRequest<RDMCommand::GET_COMMAND> RDMGetRequest;
