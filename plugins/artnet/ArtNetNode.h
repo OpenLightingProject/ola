@@ -255,7 +255,7 @@ class ArtNetNode {
     static const char ARTNET_ID[];
     static const uint16_t ARTNET_PORT = 6454;
     static const uint16_t OEM_CODE = 0x0431;
-    static const uint8_t ARTNET_VERSION = 14;
+    static const uint16_t ARTNET_VERSION = 14;
     static const unsigned int BROADCAST_THRESHOLD = 30;  // picked randomly...
     // after not receiving a PollReply after this many seconds we declare the
     // node as dead. This is set to 3x the POLL_INTERVAL in ArtNetDevice.
