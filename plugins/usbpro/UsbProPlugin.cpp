@@ -107,6 +107,7 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
     device_name += " - ";
   device_name += information.device;
   uint32_t serial = *(reinterpret_cast<const uint32_t*>(information.serial));
+  widget->SetMessageHandler(NULL);
 
   switch (information.esta_id) {
     case OPEN_LIGHTING_ESTA_ID:
@@ -166,6 +167,11 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
  * @param device the new UsbDevice
  */
 void UsbProPlugin::AddDevice(UsbDevice *device) {
+  if (!device->Start()) {
+    delete device;
+    return;
+  }
+
   device->SetOnRemove(NewSingleClosure(this,
                                        &UsbProPlugin::DeviceRemoved,
                                        device));
