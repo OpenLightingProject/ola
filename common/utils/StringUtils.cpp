@@ -87,6 +87,18 @@ string IntToString(int i) {
 
 
 /*
+ * Convert an int to a string.
+ * @param i the int to convert
+ * @return the string representation of the int
+ */
+string IntToString(unsigned int i) {
+  stringstream str;
+  str << i;
+  return str.str();
+}
+
+
+/*
  * Convert a string to a unsigned int.
  * @returns true if sucessfull, false otherwise
  */
@@ -116,5 +128,20 @@ void Escape(string *original) {
       iter++;
     }
   }
+}
+
+
+/*
+ * Convert a hex string to a unsigned int
+ */
+bool HexStringToUInt(const string &value, unsigned int *output) {
+  if (value.empty())
+    return false;
+
+  size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
+  if (found != string::npos)
+    return false;
+  *output = strtoul(value.data(), NULL, 16);
+  return true;
 }
 }  // ola

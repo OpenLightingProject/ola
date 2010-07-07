@@ -68,7 +68,8 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              PortManager *port_manager,
                              unsigned int port,
                              bool enable_quit,
-                             const string &data_dir)
+                             const string &data_dir,
+                             const ola::network::Interface &interface)
     : m_server(port, data_dir),
       m_export_map(export_map),
       m_ss(ss),
@@ -77,7 +78,8 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_plugin_manager(plugin_manager),
       m_device_manager(device_manager),
       m_port_manager(port_manager),
-      m_enable_quit(enable_quit) {
+      m_enable_quit(enable_quit),
+      m_interface(interface) {
   RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
   RegisterHandler("/quit", &OlaHttpServer::DisplayQuit);
   RegisterHandler("/reload", &OlaHttpServer::ReloadPlugins);
@@ -117,14 +119,8 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
 
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
   data_dir_var->Set(m_server.DataDir());
-  Clock::CurrentTime(m_start_time);
+  Clock::CurrentTime(&m_start_time);
   export_map->GetStringVar(K_UPTIME_VAR);
-
-  // fetch the interface info
-  ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
-  picker->ChooseInterface(&m_interface, "");
-  delete picker;
 
   // warn on any missing templates
   TemplateNamelist::GetMissingList(false);
@@ -157,7 +153,7 @@ int OlaHttpServer::DisplayMain(const HttpRequest *request,
                                HttpResponse *response) {
   TemplateDictionary dict("main");
   TimeStamp now;
-  Clock::CurrentTime(now);
+  Clock::CurrentTime(&now);
   TimeInterval diff = now - m_start_time;
 
   stringstream str;
@@ -377,7 +373,7 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
 int OlaHttpServer::DisplayDebug(const HttpRequest *request,
                                 HttpResponse *response) {
   TimeStamp now;
-  Clock::CurrentTime(now);
+  Clock::CurrentTime(&now);
   TimeInterval diff = now - m_start_time;
   stringstream str;
   str << (diff.AsInt() / 1000);

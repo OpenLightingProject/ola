@@ -161,7 +161,7 @@ bool ShowNetNode::SendDMX(unsigned int universe,
  */
 bool ShowNetNode::SetHandler(unsigned int universe,
                              DmxBuffer *buffer,
-                             Closure *closure) {
+                             Closure<void> *closure) {
   if (!closure)
     return false;
 
@@ -174,7 +174,7 @@ bool ShowNetNode::SetHandler(unsigned int universe,
     handler.closure = closure;
     m_handlers[universe] = handler;
   } else {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     iter->second.closure = closure;
     delete old_closure;
   }
@@ -192,7 +192,7 @@ bool ShowNetNode::RemoveHandler(unsigned int universe) {
     m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     m_handlers.erase(iter);
     delete old_closure;
     return true;
@@ -204,7 +204,7 @@ bool ShowNetNode::RemoveHandler(unsigned int universe) {
 /*
  * Called when there is data on this socket
  */
-int ShowNetNode::SocketReady() {
+void ShowNetNode::SocketReady() {
   shownet_data_packet packet;
   ssize_t packet_size = sizeof(packet);
   struct sockaddr_in source;
@@ -214,13 +214,11 @@ int ShowNetNode::SocketReady() {
                           &packet_size,
                           source,
                           source_length))
-    return -1;
+    return;
 
   // skip packets sent by us
-  if (source.sin_addr.s_addr == m_interface.ip_address.s_addr)
-    return 0;
-
-  return !HandlePacket(packet, packet_size);
+  if (source.sin_addr.s_addr != m_interface.ip_address.s_addr)
+    HandlePacket(packet, packet_size);
 }
 
 

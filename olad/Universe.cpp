@@ -30,6 +30,7 @@
  *   A list of sink clients, which we update whenever the DmxBuffer changes.
  */
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -44,16 +45,19 @@
 
 namespace ola {
 
-const char Universe::K_UNIVERSE_NAME_VAR[] = "universe_name";
-const char Universe::K_UNIVERSE_MODE_VAR[] = "universe_mode";
-const char Universe::K_UNIVERSE_INPUT_PORT_VAR[] = "universe_input_ports";
-const char Universe::K_UNIVERSE_OUTPUT_PORT_VAR[] = "universe_output_ports";
-const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
-    "universe_source_clients";
-const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe_sink_clients";
+const char Universe::K_UNIVERSE_UID_COUNT_VAR[] = "universe-uids";
+const char Universe::K_FPS_VAR[] = "universe-dmx-frames";
 const char Universe::K_MERGE_HTP_STR[] = "htp";
 const char Universe::K_MERGE_LTP_STR[] = "ltp";
-const char Universe::K_FPS_VAR[] = "universe_frames";
+const char Universe::K_UNIVERSE_INPUT_PORT_VAR[] = "universe-input-ports";
+const char Universe::K_UNIVERSE_MODE_VAR[] = "universe-mode";
+const char Universe::K_UNIVERSE_NAME_VAR[] = "universe-name";
+const char Universe::K_UNIVERSE_OUTPUT_PORT_VAR[] = "universe-output-ports";
+const char Universe::K_UNIVERSE_RDM_REQUESTS[] = "universe-rdm-requests";
+const char Universe::K_UNIVERSE_RDM_RESPONSES[] = "universe-rdm-responses";
+const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe-sink-clients";
+const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
+    "universe-source-clients";
 
 /*
  * Create a new universe
@@ -79,15 +83,18 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
   UpdateMode();
 
   const char *vars[] = {
+    K_FPS_VAR,
     K_UNIVERSE_INPUT_PORT_VAR,
     K_UNIVERSE_OUTPUT_PORT_VAR,
-    K_UNIVERSE_SOURCE_CLIENTS_VAR,
+    K_UNIVERSE_RDM_REQUESTS,
+    K_UNIVERSE_RDM_RESPONSES,
     K_UNIVERSE_SINK_CLIENTS_VAR,
-    K_FPS_VAR,
+    K_UNIVERSE_SOURCE_CLIENTS_VAR,
+    K_UNIVERSE_UID_COUNT_VAR,
   };
 
   if (m_export_map) {
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i)
       (*m_export_map->GetUIntMapVar(vars[i]))[m_universe_id_str] = 0;
   }
 }
@@ -103,11 +110,14 @@ Universe::~Universe() {
   };
 
   const char *uint_vars[] = {
+    K_FPS_VAR,
     K_UNIVERSE_INPUT_PORT_VAR,
     K_UNIVERSE_OUTPUT_PORT_VAR,
-    K_UNIVERSE_SOURCE_CLIENTS_VAR,
+    K_UNIVERSE_RDM_REQUESTS,
+    K_UNIVERSE_RDM_RESPONSES,
     K_UNIVERSE_SINK_CLIENTS_VAR,
-    K_FPS_VAR,
+    K_UNIVERSE_SOURCE_CLIENTS_VAR,
+    K_UNIVERSE_UID_COUNT_VAR,
   };
 
   if (m_export_map) {
@@ -117,6 +127,7 @@ Universe::~Universe() {
       m_export_map->GetUIntMapVar(uint_vars[i])->Remove(m_universe_id_str);
   }
 }
+
 
 /*
  * Set the universe name
@@ -168,7 +179,7 @@ bool Universe::AddPort(OutputPort *port) {
  * @return true if the port was removed, false if it didn't exist
  */
 bool Universe::RemovePort(InputPort *port) {
-  return GenericRemovePort(port, &m_input_ports);
+  return GenericRemovePort(port, &m_input_ports, &m_input_uids);
 }
 
 
@@ -178,7 +189,12 @@ bool Universe::RemovePort(InputPort *port) {
  * @return true if the port was removed, false if it didn't exist
  */
 bool Universe::RemovePort(OutputPort *port) {
-  return GenericRemovePort(port, &m_output_ports);
+  bool ret = GenericRemovePort(port, &m_output_ports, &m_output_uids);
+
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_UNIVERSE_UID_COUNT_VAR))[m_universe_id_str]
+      = m_output_uids.size();
+  return ret;
 }
 
 
@@ -307,6 +323,132 @@ bool Universe::SourceClientDataChanged(Client *client) {
   if (MergeAll(NULL, client))
     UpdateDependants();
   return true;
+}
+
+
+/*
+ * Handle a RDM request for this universe, ownership of the request object is
+ * transferred to this method.
+ * @returns true if this request was sent to an Output port, false otherwise
+ */
+bool Universe::HandleRDMRequest(InputPort *port,
+                                const ola::rdm::RDMRequest *request) {
+  OLA_INFO << "Got a RDM request for " << request->DestinationUID() <<
+    " with command " << std::hex << request->CommandClass() << " and param " <<
+    request->ParamId();
+
+  // populate the input UID map so we know how to route this request later
+  m_input_uids[request->SourceUID()] = port;
+
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_REQUESTS))[
+      m_universe_id_str]++;
+
+  if (request->DestinationUID().IsBroadcast()) {
+    // send this request to all ports
+    vector<OutputPort*>::iterator port_iter;
+    for (port_iter = m_output_ports.begin(); port_iter != m_output_ports.end();
+         ++port_iter) {
+      // because each port deletes the request, we need to copy it here
+      (*port_iter)->HandleRDMRequest(request->Duplicate());
+    }
+    delete request;
+    return true;
+
+  } else {
+    map<UID, OutputPort*>::iterator iter =
+      m_output_uids.find(request->DestinationUID());
+
+    if (iter == m_output_uids.end()) {
+      OLA_WARN << "Can't find UID " << request->DestinationUID() <<
+        " in the output universe map, dropping request";
+      delete request;
+      return false;
+    } else {
+      iter->second->HandleRDMRequest(request);
+    }
+  }
+  return true;
+}
+
+
+/*
+ * Handle a RDM response
+ */
+bool Universe::HandleRDMResponse(OutputPort *port,
+                                 const ola::rdm::RDMResponse *response) {
+  OLA_INFO << "Got a RDM response for " << response->DestinationUID() <<
+    " with command " << std::hex << response->CommandClass() << " and param "
+    << response->ParamId();
+
+  map<UID, InputPort*>::iterator iter =
+    m_input_uids.find(response->DestinationUID());
+
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_RESPONSES))[
+      m_universe_id_str]++;
+
+  if (iter == m_input_uids.end()) {
+    OLA_WARN << "Can't find UID " << response->DestinationUID() <<
+      " in the input universe map, dropping response";
+    delete response;
+    return false;
+  } else {
+    return iter->second->HandleRDMResponse(response);
+  }
+  (void) port;
+}
+
+
+/*
+ * Trigger RDM discovery for this universe
+ */
+void Universe::RunRDMDiscovery() {
+  OLA_INFO << "RDM discovery triggered for universe " << m_universe_id;
+
+  vector<OutputPort*>::iterator iter;
+  for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter)
+    (*iter)->RunRDMDiscovery();
+
+  // somehow detect when this is done and then send new UIDSets
+}
+
+
+/*
+ * Returns the complete UIDSet for this universe
+ */
+void Universe::GetUIDs(ola::rdm::UIDSet *uids) {
+  map<UID, OutputPort*>::iterator iter = m_output_uids.begin();
+  for (; iter != m_output_uids.end(); ++iter)
+    uids->AddUID(iter->first);
+}
+
+
+/*
+ * Update the UID : port mapping with this new data
+ */
+void Universe::NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port) {
+  map<UID, OutputPort*>::iterator iter = m_output_uids.begin();
+  while (iter != m_output_uids.end()) {
+    if (iter->second == port && !uids.Contains(iter->first))
+      m_output_uids.erase(iter++);
+    else
+      ++iter;
+  }
+
+  ola::rdm::UIDSet::Iterator set_iter = uids.Begin();
+  for (; set_iter != uids.End(); ++set_iter) {
+    iter = m_output_uids.find(*set_iter);
+    if (iter == m_output_uids.end()) {
+      m_output_uids[*set_iter] = port;
+    } else if (iter->second != port) {
+      OLA_WARN << "UID " << *set_iter << " seen on more than one port";
+    }
+  }
+
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_UNIVERSE_UID_COUNT_VAR))[m_universe_id_str]
+      = m_output_uids.size();
 }
 
 
@@ -452,7 +594,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
 
   m_active_priority = DmxSource::PRIORITY_MIN;
   TimeStamp now;
-  Clock::CurrentTime(now);
+  Clock::CurrentTime(&now);
   bool changed_source_is_active = false;
 
   // Find the highest active ports
@@ -562,7 +704,9 @@ bool Universe::GenericAddPort(PortClass *port, vector<PortClass*> *ports) {
  * @param ports, the vector of ports to remove from
  */
 template<class PortClass>
-bool Universe::GenericRemovePort(PortClass *port, vector<PortClass*> *ports) {
+bool Universe::GenericRemovePort(PortClass *port,
+                                 vector<PortClass*> *ports,
+                                 map<UID, PortClass*> *uid_map) {
   typename vector<PortClass*>::iterator iter =
     find(ports->begin(), ports->end(), port);
 
@@ -581,6 +725,15 @@ bool Universe::GenericRemovePort(PortClass *port, vector<PortClass*> *ports) {
   }
   if (!IsActive())
     m_universe_store->AddUniverseGarbageCollection(this);
+
+  // Remove any uids that mapped to this port
+  typename map<UID, PortClass*>::iterator uid_iter = uid_map->begin();
+  while (uid_iter != uid_map->end()) {
+    if (uid_iter->second == port)
+      uid_map->erase(uid_iter++);
+    else
+      ++uid_iter;
+  }
   return true;
 }
 

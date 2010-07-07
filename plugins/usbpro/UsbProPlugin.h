@@ -23,11 +23,11 @@
 
 #include <string>
 #include <vector>
-#include "olad/Plugin.h"
-#include "ola/plugin_id.h"
 #include "ola/network/Socket.h"
-#include "plugins/usbpro/WidgetDetector.h"
+#include "ola/plugin_id.h"
+#include "olad/Plugin.h"
 #include "plugins/usbpro/UsbDevice.h"
+#include "plugins/usbpro/WidgetDetector.h"
 
 namespace ola {
 namespace plugin {
@@ -44,7 +44,7 @@ class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_USBPRO; }
-    int DeviceRemoved(UsbDevice *device);
+    void DeviceRemoved(UsbDevice *device);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
     void NewWidget(class UsbWidget *widget,
@@ -57,23 +57,28 @@ class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
     bool SetDefaultPreferences();
     void DeleteDevice(UsbDevice *device);
     vector<string> FindCandiateDevices();
+    unsigned int GetProFrameLimit();
 
     vector<UsbDevice*> m_devices;  // list of our devices
     WidgetDetector m_detector;
 
-    static const char USBPRO_DEVICE_NAME[];
-    static const char PLUGIN_NAME[];
-    static const char PLUGIN_PREFIX[];
+    static const char DEFAULT_DEVICE_DIR[];
+    static const char DEFAULT_PRO_FPS_LIMIT[];
     static const char DEVICE_DIR_KEY[];
     static const char DEVICE_PREFIX_KEY[];
-    static const char DEFAULT_DEVICE_DIR[];
     static const char LINUX_DEVICE_PREFIX[];
     static const char MAC_DEVICE_PREFIX[];
+    static const char PLUGIN_NAME[];
+    static const char PLUGIN_PREFIX[];
+    static const char USBPRO_DEVICE_NAME[];
+    static const char USB_PRO_FPS_LIMIT_KEY[];
+    static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
 
-    static const uint16_t OPEN_LIGHTING_ESTA_ID = 0x7a70;
+    // Open Lighting id is in BaseTypes.h
     static const uint16_t JESE_ESTA_ID = 0x6864;
     static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
     static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
+    static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
     static const uint16_t JESE_DMX_TRI_ID = 1;
     static const uint16_t DMX_KING_DEVICE_ID = 0;
     static const uint16_t ENTTEC_ESTA_ID = 0x454E;

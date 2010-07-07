@@ -214,6 +214,7 @@ void OlaServerServiceImplTest::testGetDmx() {
                             NULL,
                             NULL,
                             NULL,
+                            NULL,
                             NULL);
 
   GenericMissingUniverseCheck<GetDmxCheck, ola::proto::DmxData>
@@ -274,6 +275,7 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
 void OlaServerServiceImplTest::testRegisterForDmx() {
   UniverseStore store(NULL, NULL);
   OlaServerServiceImpl impl(&store,
+                            NULL,
                             NULL,
                             NULL,
                             NULL,
@@ -368,11 +370,13 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
                             &client,
                             NULL,
                             NULL,
+                            NULL,
                             &time1);
   OlaServerServiceImpl impl2(&store,
                              NULL,
                              NULL,
                              &client2,
+                             NULL,
                              NULL,
                              NULL,
                              &time2);
@@ -385,13 +389,13 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   DmxBuffer dmx_data2("different data hmm");
 
   // Update a universe that doesn't exist
-  ola::Clock::CurrentTime(time1);
+  ola::Clock::CurrentTime(&time1);
   CallUpdateDmxData(&impl, universe_id, dmx_data, missing_universe_check);
   Universe *universe = store.GetUniverse(universe_id);
   CPPUNIT_ASSERT(!universe);
 
   // Update a universe that exists
-  ola::Clock::CurrentTime(time1);
+  ola::Clock::CurrentTime(&time1);
   universe = store.GetUniverseOrCreate(universe_id);
   CallUpdateDmxData(&impl, universe_id, dmx_data, ack_check);
   CPPUNIT_ASSERT(dmx_data == universe->GetDMX());
@@ -406,7 +410,7 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   CPPUNIT_ASSERT(dmx_data == universe->GetDMX());
 
   // Now send a new update
-  ola::Clock::CurrentTime(time2);
+  ola::Clock::CurrentTime(&time2);
   CallUpdateDmxData(&impl2, universe_id, dmx_data2, ack_check);
   CPPUNIT_ASSERT(dmx_data2 == universe->GetDMX());
 }
@@ -449,6 +453,7 @@ void OlaServerServiceImplTest::CallUpdateDmxData(
 void OlaServerServiceImplTest::testSetUniverseName() {
   UniverseStore store(NULL, NULL);
   OlaServerServiceImpl impl(&store,
+                            NULL,
                             NULL,
                             NULL,
                             NULL,
@@ -519,6 +524,7 @@ void OlaServerServiceImplTest::CallSetUniverseName(
 void OlaServerServiceImplTest::testSetMergeMode() {
   UniverseStore store(NULL, NULL);
   OlaServerServiceImpl impl(&store,
+                            NULL,
                             NULL,
                             NULL,
                             NULL,

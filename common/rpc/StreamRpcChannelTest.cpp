@@ -44,7 +44,7 @@ using std::string;
  */
 class TestServiceImpl: public TestService {
   public:
-    TestServiceImpl(SelectServer *ss): m_ss(ss) {}
+    explicit TestServiceImpl(SelectServer *ss): m_ss(ss) {}
     ~TestServiceImpl() {}
 
     void Echo(::google::protobuf::RpcController* controller,

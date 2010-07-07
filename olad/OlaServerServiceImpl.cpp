@@ -22,13 +22,17 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include "common/protocol/Ola.pb.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/Logging.h"
 #include "ola/ExportMap.h"
+#include "ola/Logging.h"
+#include "ola/rdm/UIDSet.h"
 #include "olad/Client.h"
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
 #include "olad/DmxSource.h"
+#include "olad/InternalRDMController.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
@@ -36,10 +40,10 @@
 #include "olad/PortManager.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
-#include "common/protocol/Ola.pb.h"
 
 namespace ola {
 
+using google::protobuf::RpcController;
 using ola::proto::Ack;
 using ola::proto::DeviceConfigReply;
 using ola::proto::DeviceConfigRequest;
@@ -59,7 +63,13 @@ using ola::proto::UniverseInfo;
 using ola::proto::UniverseInfoReply;
 using ola::proto::UniverseInfoRequest;
 using ola::proto::UniverseNameRequest;
-using google::protobuf::RpcController;
+using ola::rdm::UIDSet;
+
+
+OlaServerServiceImpl::~OlaServerServiceImpl() {
+  if (m_uid)
+    delete m_uid;
+}
 
 
 /*
@@ -168,6 +178,9 @@ void OlaServerServiceImpl::StreamDmxData(
     m_client->DMXRecieved(request->universe(), source);
     universe->SourceClientDataChanged(m_client);
   }
+  (void) controller;
+  (void) response;
+  (void) done;
 }
 
 
@@ -403,6 +416,160 @@ void OlaServerServiceImpl::ConfigureDevice(RpcController* controller,
 }
 
 
+/*
+ * Fetch the UID list for a universe
+ */
+void OlaServerServiceImpl::GetUIDs(RpcController* controller,
+                                   const ola::proto::UniverseRequest* request,
+                                   ola::proto::UIDListReply* response,
+                                   google::protobuf::Closure* done) {
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+  if (!universe)
+    return MissingUniverseError(controller, done);
+
+  response->set_universe(request->universe());
+  UIDSet uid_set;
+  universe->GetUIDs(&uid_set);
+
+  UIDSet::Iterator iter = uid_set.Begin();
+  for (; iter != uid_set.End(); ++iter) {
+    ola::proto::UID *uid = response->add_uid();
+    uid->set_esta_id(iter->ManufacturerId());
+    uid->set_device_id(iter->DeviceId());
+  }
+  done->Run();
+}
+
+
+/*
+ * Force RDM discovery for a universe
+ */
+void OlaServerServiceImpl::ForceDiscovery(
+    RpcController* controller,
+    const ola::proto::UniverseRequest* request,
+    ola::proto::UniverseAck* response,
+    google::protobuf::Closure* done) {
+
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+  if (!universe)
+    return MissingUniverseError(controller, done);
+
+  universe->RunRDMDiscovery();
+  response->set_universe(request->universe());
+  done->Run();
+}
+
+
+/*
+ * Handle an RDM Command
+ */
+void OlaServerServiceImpl::RDMCommand(
+    RpcController* controller,
+    const ::ola::proto::RDMRequest* request,
+    ola::proto::RDMResponse* response,
+    google::protobuf::Closure* done) {
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+  if (!universe)
+    return MissingUniverseError(controller, done);
+
+  UID destination(request->uid().esta_id(),
+                  request->uid().device_id());
+
+  SingleUseCallback1<void, const rdm_response_data&> *callback =
+    NewSingleCallback(
+        this,
+        &OlaServerServiceImpl::HandleRDMResponse,
+        controller,
+        response,
+        done);
+  bool r = m_rdm_controller->SendRDMRequest(
+    universe,
+    destination,
+    request->sub_device(),
+    request->param_id(),
+    request->data(),
+    request->is_set(),
+    callback,
+    m_uid);
+  if (!r) {
+    controller->SetFailed("Failed to send RDM command");
+    delete callback;
+    done->Run();
+  }
+}
+
+
+/*
+ * Set this client's source UID
+ */
+void OlaServerServiceImpl::SetSourceUID(
+    RpcController* controller,
+    const ::ola::proto::UID* request,
+    ola::proto::Ack* response,
+    google::protobuf::Closure* done) {
+
+  UID source_uid(request->esta_id(), request->device_id());
+  if (!m_uid)
+    m_uid = new UID(source_uid);
+  else
+    *m_uid = source_uid;
+  done->Run();
+  (void) controller;
+  (void) response;
+}
+
+
+/*
+ * Handle an RDM Response, this includes broadcast messages, messages that
+ * timed out and normal response messages.
+ */
+void OlaServerServiceImpl::HandleRDMResponse(
+    RpcController* controller,
+    ola::proto::RDMResponse* response,
+    google::protobuf::Closure* done,
+    const rdm_response_data &status) {
+  OLA_WARN << "in handle RDM response";
+
+  // check for time out errors
+  if (status.status == RDM_RESPONSE_TIMED_OUT) {
+    controller->SetFailed("RDM command timed out");
+    done->Run();
+    return;
+  }
+
+  if (status.status == RDM_RESPONSE_OK) {
+    if (status.response) {
+      response->set_response_code(status.response->ResponseType());
+      response->set_message_count(status.response->MessageCount());
+      response->set_was_broadcast(false);
+
+      if (status.response->ParamData() && status.response->ParamDataSize()) {
+        const string data(
+            reinterpret_cast<const char*>(status.response->ParamData()),
+            status.response->ParamDataSize());
+        response->set_data(data);
+      } else {
+        response->set_data("");
+      }
+    } else {
+      OLA_WARN << "RDM state was ok but response was NULL";
+      controller->SetFailed("Missing Response");
+    }
+  } else if (status.status == RDM_RESPONSE_BROADCAST) {
+    response->set_was_broadcast(true);
+    // fill these in with dummy values
+    response->set_response_code(0);
+    response->set_message_count(0);
+    response->set_data("");
+  } else {
+    OLA_WARN << "unknown response status " << status.status;
+    controller->SetFailed("Unknown status, see the logs");
+  }
+
+  done->Run();
+}
+
+
 // Private methods
 //-----------------------------------------------------------------------------
 void OlaServerServiceImpl::MissingUniverseError(
@@ -516,6 +683,7 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     Client *client,
     ExportMap *export_map,
     PortManager *port_manager,
+    InternalRDMController *rdm_controller,
     const TimeStamp *wake_up_time) {
   return new OlaServerServiceImpl(universe_store,
                                   device_manager,
@@ -523,6 +691,7 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
                                   client,
                                   export_map,
                                   port_manager,
+                                  rdm_controller,
                                   wake_up_time);
 };
 }  // ola

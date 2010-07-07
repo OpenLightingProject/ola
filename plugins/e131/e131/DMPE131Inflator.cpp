@@ -176,7 +176,7 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
 bool DMPE131Inflator::SetHandler(unsigned int universe,
                                  ola::DmxBuffer *buffer,
                                  uint8_t *priority,
-                                 ola::Closure *closure) {
+                                 ola::Closure<void> *closure) {
   if (!closure || !buffer)
     return false;
 
@@ -192,7 +192,7 @@ bool DMPE131Inflator::SetHandler(unsigned int universe,
     m_handlers[universe] = handler;
     m_e131_layer->JoinUniverse(universe);
   } else {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     iter->second.closure = closure;
     iter->second.buffer = buffer;
     iter->second.priority = priority;
@@ -212,7 +212,7 @@ bool DMPE131Inflator::RemoveHandler(unsigned int universe) {
     m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     m_handlers.erase(iter);
     m_e131_layer->LeaveUniverse(universe);
     delete old_closure;
@@ -239,7 +239,7 @@ bool DMPE131Inflator::TrackSourceIfRequired(
 
   *buffer = NULL;  // default the buffer to NULL
   ola::TimeStamp now;
-  Clock::CurrentTime(now);
+  Clock::CurrentTime(&now);
   const E131Header &e131_header = headers.GetE131Header();
   uint8_t priority = e131_header.Priority();
   vector<dmx_source> &sources = universe_data->sources;

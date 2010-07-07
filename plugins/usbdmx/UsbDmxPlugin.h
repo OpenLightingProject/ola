@@ -24,6 +24,7 @@
 #include <libusb.h>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/plugin_id.h"
 #include "olad/Plugin.h"
@@ -50,12 +51,12 @@ class UsbDmxPlugin: public ola::Plugin {
 
     bool AddDeviceSocket(int fd);
     bool RemoveDeviceSocket(int fd);
-    int SocketReady();
+    void SocketReady();
 
   private:
     bool StartHook();
     bool LoadFirmware();
-    int FindDevices();
+    void FindDevices();
     bool StopHook();
     bool SetDefaultPreferences();
     vector<UsbDevice*> m_devices;  // list of our devices

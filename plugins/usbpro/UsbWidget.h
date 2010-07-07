@@ -65,9 +65,9 @@ class UsbWidget {
     UsbWidget(const SelectServerAdaptor &ss_adaptor, int fd);
     ~UsbWidget();
     void SetMessageHandler(WidgetListener *listener) { m_listener = listener; }
-    void SetOnRemove(ola::SingleUseClosure *on_close);
+    void SetOnRemove(ola::SingleUseClosure<void> *on_close);
 
-    int SocketReady();
+    void SocketReady();
 
     bool SendMessage(uint8_t label, unsigned int length,
                      const uint8_t *data) const;

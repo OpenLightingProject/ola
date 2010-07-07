@@ -6,7 +6,7 @@ AC_INIT(configure.ac)
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(ola, 0.7.3)
+AM_INIT_AUTOMAKE(ola, 0.7.4)
 
 # Checks for programs.
 AC_LANG(C++)
@@ -46,7 +46,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
                   sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
-                  unistd.h linux/if_packet.h])
+                  endian.h unistd.h linux/if_packet.h])
 
 AC_PROG_LIBTOOL
 
@@ -168,19 +168,7 @@ fi
 
 # check for plugin dependencies. We also build a list of plugins that we're
 # going to compile here so the binary knows what to link against
-PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
-
-# check for libartnet
-have_artnet=""
-PKG_CHECK_MODULES(libartnet,
-                  [libartnet >= 1.1.0],
-                  [have_artnet="yes"],
-                  [true])
-AM_CONDITIONAL(HAVE_ARTNET, test "${have_artnet}" = "yes")
-if test "${have_artnet}" = "yes"; then
- PLUGINS="${PLUGINS} artnet"
- AC_DEFINE(HAVE_ARTNET, 1, [define if libartnet is installed])
-fi
+PLUGINS="artnet dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
 
 # check for dmx4linux
 have_dmx4linux=""

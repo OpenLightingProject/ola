@@ -21,35 +21,40 @@
 #ifndef INCLUDE_OLA_CLOSURE_H_
 #define INCLUDE_OLA_CLOSURE_H_
 
+#include <ola/Callback.h>
+
 namespace ola {
 
 
+template <typename ReturnType>
 class BaseClosure {
   public:
     virtual ~BaseClosure() {}
-    virtual int Run() = 0;
-    virtual int DoRun() = 0;
+    virtual ReturnType Run() = 0;
+    virtual ReturnType DoRun() = 0;
 };
 
 
 /*
  * Closure, this is a closure that can be called multiple times
  */
-class Closure: public BaseClosure {
+template <typename ReturnType>
+class Closure: public BaseClosure<ReturnType> {
   public:
     virtual ~Closure() {}
-    int Run() { return DoRun(); }
+    ReturnType Run() { return this->DoRun(); }
 };
 
 
 /*
  * A single use closure, this deletes itself after it's run.
  */
-class SingleUseClosure: public BaseClosure {
+template <typename ReturnType>
+class SingleUseClosure: public BaseClosure<ReturnType> {
   public:
     virtual ~SingleUseClosure() {}
-    int Run() {
-      int ret = DoRun();
+    ReturnType Run() {
+      ReturnType ret = this->DoRun();
       delete this;
       return ret;
     }
@@ -57,61 +62,77 @@ class SingleUseClosure: public BaseClosure {
 
 
 /*
+ * A single use closure returning void, this deletes itself after it's run.
+ */
+template <>
+class SingleUseClosure<void>: public BaseClosure<void> {
+  public:
+    virtual ~SingleUseClosure() {}
+    void Run() {
+      DoRun();
+      delete this;
+      return;
+    }
+};
+
+
+/*
  * A function closure, with no arguments
  */
-template <typename Parent>
+template <typename Parent, typename ReturnType>
 class FunctionClosure: public Parent {
   public:
-    typedef int (*Callback)();
+    typedef ReturnType (*Function)();
 
-    /*
-     * @param callback the function to call
-     */
-    explicit FunctionClosure(Callback callback):
+    explicit FunctionClosure(Function callback):
       Parent(),
       m_callback(callback) {}
-    int DoRun() { return m_callback(); }
+    ReturnType DoRun() { return m_callback(); }
 
   private:
-    Callback m_callback;
+    Function m_callback;
 };
 
 
 /*
  * Create a new single use function closure.
  */
-inline SingleUseClosure* NewSingleClosure(int (*callback)()) {
-  return new FunctionClosure<SingleUseClosure>(callback);
+template <typename ReturnType>
+inline SingleUseClosure<ReturnType>* NewSingleClosure(
+    ReturnType (*callback)()) {
+  return new FunctionClosure<SingleUseClosure<ReturnType>, ReturnType>(
+      callback);
 }
 
 
 /*
  * Create a new function closure.
  */
-inline Closure* NewClosure(int (*callback)()) {
-  return new FunctionClosure<Closure>(callback);
+template <typename ReturnType>
+inline Closure<ReturnType>* NewClosure(ReturnType (*callback)()) {
+  return new FunctionClosure<Closure<ReturnType>, ReturnType>(callback);
 }
 
 
 /*
  * A function closure, with one argument
  */
-template <typename Parent, typename Arg>
+template <typename Parent, typename ReturnType, typename Arg>
 class FunctionArgClosure: public Parent {
   public:
-    typedef int (*Callback)(Arg arg);
+    typedef ReturnType (*Function)(Arg arg);
 
     /*
      * @param callback the function to call
      */
-    FunctionArgClosure(Callback callback, Arg arg):
+    FunctionArgClosure(Function callback, Arg arg):
       Parent(),
       m_callback(callback),
       m_arg(arg) {}
-    int DoRun() { return m_callback(m_arg); }
+    ReturnType DoRun() { return m_callback(m_arg); }
 
   private:
-    Callback m_callback;
+    Function m_callback;
     Arg m_arg;
 };
 
@@ -119,72 +140,84 @@ class FunctionArgClosure: public Parent {
 /*
  * Create a new single use function closure.
  */
-template <typename Arg>
-inline SingleUseClosure* NewSingleClosure(int (*callback)(Arg arg), Arg arg) {
-  return new FunctionArgClosure<SingleUseClosure, Arg>(callback, arg);
+template <typename ReturnType, typename Arg>
+inline SingleUseClosure<ReturnType>* NewSingleClosure(
+    ReturnType (*callback)(Arg arg),
+    Arg arg) {
+  return new FunctionArgClosure<SingleUseClosure<ReturnType>, ReturnType, Arg>(
+      callback,
+      arg);
 }
 
 
 /*
  * Create a new function closure.
  */
-template <typename Arg>
-inline Closure* NewClosure(int (*callback)(Arg arg), Arg arg) {
-  return new FunctionArgClosure<Closure, Arg>(callback, arg);
+template <typename ReturnType, typename Arg>
+inline Closure<ReturnType>* NewClosure(
+    ReturnType (*callback)(Arg arg),
+    Arg arg) {
+  return new FunctionArgClosure<Closure<ReturnType>, ReturnType, Arg>(
+      callback,
+      arg);
 }
 
 /*
  * An method closure with no arguments
  */
-template <typename Class, typename Parent>
+template <typename Class, typename Parent, typename ReturnType>
 class MethodClosure: public Parent {
   public:
-    typedef int (Class::*Callback)();
+    typedef ReturnType (Class::*Method)();
 
     /*
      * @param object the object to use in the method call
      * @param callback the method to call
      */
     MethodClosure(Class *object,
-                  Callback callback):
+                  Method callback):
       Parent(),
       m_object(object),
       m_callback(callback) {}
-    int DoRun() { return (m_object->*m_callback)(); }
+    ReturnType DoRun() { return (m_object->*m_callback)(); }
 
   private:
     Class *m_object;
-    Callback m_callback;
+    Method m_callback;
 };
 
 
 /*
  * Create a new single use method closure.
  */
-template <typename Class>
-inline SingleUseClosure* NewSingleClosure(Class* object,
-                                          int (Class::*method)()) {
-  return new MethodClosure<Class, SingleUseClosure>(object, method);
+template <typename Class, typename ReturnType>
+inline SingleUseClosure<ReturnType>* NewSingleClosure(
+    Class* object,
+    ReturnType (Class::*method)()) {
+  return new MethodClosure<Class, SingleUseClosure<ReturnType>, ReturnType>(
+      object,
+      method);
 }
 
 
 /*
  * Create a new method closure.
  */
-template <typename Class>
-inline Closure* NewClosure(Class* object,
-                           int (Class::*method)()) {
-  return new MethodClosure<Class, Closure>(object, method);
+template <typename Class, typename ReturnType>
+inline Closure<ReturnType>* NewClosure(Class* object,
+                                       ReturnType (Class::*method)()) {
+  return new MethodClosure<Class, Closure<ReturnType>, ReturnType>(object,
+                                                                   method);
 }
 
 
 /*
  * A method closure that takes one argument
  */
-template <typename Class, typename Parent, typename Arg>
+template <typename Class, typename Parent, typename ReturnType, typename Arg>
 class MethodArgClosure: public Parent {
   public:
-    typedef int (Class::*Callback)(Arg arg);
+    typedef ReturnType (Class::*Method)(Arg arg);
 
     /*
      * @param object the object to use in the method call
@@ -192,17 +225,17 @@ class MethodArgClosure: public Parent {
      * @param arg the argument to pass to the method
      */
     MethodArgClosure(Class *object,
-                     Callback callback,
+                     Method callback,
                      Arg arg):
       Parent(),
       m_object(object),
       m_callback(callback),
       m_arg(arg) {}
-    int DoRun() { return (m_object->*m_callback)(m_arg); }
+    ReturnType DoRun() { return (m_object->*m_callback)(m_arg); }
 
   private:
     Class *m_object;
-    Callback m_callback;
+    Method m_callback;
     Arg m_arg;
 };
 
@@ -210,33 +243,46 @@ class MethodArgClosure: public Parent {
 /*
  * Create a new single use one-arg method closure
  */
-template <typename Class, typename Arg>
-inline SingleUseClosure* NewSingleClosure(Class* object,
-                                          int (Class::*method)(Arg arg),
-                                          Arg arg) {
-  return new MethodArgClosure<Class, SingleUseClosure, Arg>(object, method,
-                                                            arg);
+template <typename Class, typename ReturnType, typename Arg>
+inline SingleUseClosure<ReturnType>* NewSingleClosure(
+    Class* object,
+    ReturnType (Class::*method)(Arg arg),
+    Arg arg) {
+  return new MethodArgClosure<Class,
+                              SingleUseClosure<ReturnType>,
+                              ReturnType,
+                              Arg>(
+      object,
+      method,
+      arg);
 }
 
 
 /*
  * Create a new one-arg method closure
  */
-template <typename Class, typename Arg>
-inline Closure* NewClosure(Class* object,
-                           int (Class::*method)(Arg arg),
+template <typename Class, typename ReturnType, typename Arg>
+inline Closure<ReturnType>* NewClosure(Class* object,
+                           ReturnType (Class::*method)(Arg arg),
                            Arg arg) {
-  return new MethodArgClosure<Class, Closure, Arg>(object, method, arg);
+  return new MethodArgClosure<Class, Closure<ReturnType>, ReturnType, Arg>(
+      object,
+      method,
+      arg);
 }
 
 
 /*
  * A method closure that takes two arguments
  */
-template <typename Class, typename Parent, typename Arg, typename Arg2>
+template <typename Class,
+          typename Parent,
+          typename ReturnType,
+          typename Arg,
+          typename Arg2>
 class MethodTwoArgClosure: public Parent {
   public:
-    typedef int (Class::*Callback)(Arg arg, Arg2 arg2);
+    typedef ReturnType (Class::*Method)(Arg arg, Arg2 arg2);
 
     /*
      * @param object the object to use in the method call
@@ -245,7 +291,7 @@ class MethodTwoArgClosure: public Parent {
      * @param arg2 the second argument to pass to the method
      */
     MethodTwoArgClosure(Class *object,
-                        Callback callback,
+                        Method callback,
                         Arg arg,
                         Arg2 arg2):
       Parent(),
@@ -253,11 +299,11 @@ class MethodTwoArgClosure: public Parent {
       m_callback(callback),
       m_arg(arg),
       m_arg2(arg2) {}
-    int DoRun() { return (m_object->*m_callback)(m_arg, m_arg2); }
+    ReturnType DoRun() { return (m_object->*m_callback)(m_arg, m_arg2); }
 
   private:
     Class *m_object;
-    Callback m_callback;
+    Method m_callback;
     Arg m_arg;
     Arg2 m_arg2;
 };
@@ -266,26 +312,131 @@ class MethodTwoArgClosure: public Parent {
 /*
  * Create a new single use two-arg method closure
  */
-template <typename Class, typename Arg, typename Arg2>
-inline SingleUseClosure* NewSingleClosure(
+template <typename Class, typename Arg, typename ReturnType, typename Arg2>
+inline SingleUseClosure<ReturnType>* NewSingleClosure(
     Class* object,
-    int (Class::*method)(Arg arg, Arg2 arg2),
+    ReturnType (Class::*method)(Arg arg, Arg2 arg2),
     Arg arg,
     Arg2 arg2) {
-  return new MethodTwoArgClosure<Class, SingleUseClosure, Arg, Arg2>
-                 (object, method, arg, arg2);
+  return new MethodTwoArgClosure<Class,
+                                 SingleUseClosure<ReturnType>,
+                                 ReturnType,
+                                 Arg,
+                                 Arg2>(
+      object,
+      method,
+      arg,
+      arg2);
 }
 
 
 /*
  * Create a new two-arg method closure
  */
-template <typename Class, typename Arg, typename Arg2>
-inline Closure* NewClosure(Class* object,
-                           int (Class::*method)(Arg arg, Arg2 arg2),
+template <typename Class, typename ReturnType, typename Arg, typename Arg2>
+inline Closure<ReturnType>* NewClosure(Class* object,
+                           ReturnType (Class::*method)(Arg arg, Arg2 arg2),
                            Arg arg, Arg2 arg2) {
-  return new MethodTwoArgClosure<Class, Closure, Arg, Arg2>
-                 (object, method, arg, arg2);
+  return new MethodTwoArgClosure<Class,
+                                 Closure<ReturnType>,
+                                 ReturnType,
+                                 Arg,
+                                 Arg2>(
+      object,
+      method,
+      arg,
+      arg2);
+}
+
+
+/*
+ * A method closure that takes three arguments
+ */
+template <typename Class,
+          typename Parent,
+          typename ReturnType,
+          typename Arg,
+          typename Arg2,
+          typename Arg3>
+class MethodThreeArgClosure: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(Arg arg, Arg2 arg2, Arg3 arg3);
+
+    /*
+     * @param object the object to use in the method call
+     * @param method the method to call
+     * @param arg the argument to pass to the method
+     * @param arg2 the second argument to pass to the method
+     */
+    MethodThreeArgClosure(Class *object,
+                          Method callback,
+                          Arg arg,
+                          Arg2 arg2,
+                          Arg3 arg3):
+      Parent(),
+      m_object(object),
+      m_callback(callback),
+      m_arg(arg),
+      m_arg2(arg2),
+      m_arg3(arg3) {}
+    ReturnType DoRun() {
+      return (m_object->*m_callback)(m_arg, m_arg2, m_arg3);
+    }
+
+  private:
+    Class *m_object;
+    Method m_callback;
+    Arg m_arg;
+    Arg2 m_arg2;
+    Arg3 m_arg3;
+};
+
+
+/*
+ * Create a new single use three-arg method closure
+ */
+template <typename Class, typename ReturnType, typename Arg, typename Arg2,
+          typename Arg3>
+inline SingleUseClosure<ReturnType>* NewSingleClosure(
+    Class* object,
+    ReturnType (Class::*method)(Arg arg, Arg2 arg2, Arg3 arg3),
+    Arg arg,
+    Arg2 arg2,
+    Arg3 arg3) {
+  return new MethodThreeArgClosure<Class,
+                                   SingleUseClosure<ReturnType>,
+                                   ReturnType,
+                                   Arg,
+                                   Arg2,
+                                   Arg3>(
+      object,
+      method,
+      arg,
+      arg2,
+      arg3);
+}
+
+
+/*
+ * Create a new three-arg method closure
+ */
+template <typename Class, typename ReturnType, typename Arg, typename Arg2,
+          typename Arg3>
+inline Closure<ReturnType>* NewClosure(
+    Class* object,
+    ReturnType (Class::*method)(Arg arg, Arg2 arg2, Arg3 arg3),
+    Arg arg, Arg2 arg2, Arg3 arg3) {
+  return new MethodThreeArgClosure<Class,
+                                   Closure<ReturnType>,
+                                   ReturnType,
+                                   Arg,
+                                   Arg2,
+                                   Arg3>(
+      object,
+      method,
+      arg,
+      arg2,
+      arg3);
 }
 }  // ola
 #endif  // INCLUDE_OLA_CLOSURE_H_

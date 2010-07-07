@@ -88,10 +88,12 @@ class FirmwareTransferer: public ola::plugin::usbpro::WidgetListener {
                        uint8_t label,
                        unsigned int length,
                        const uint8_t *data);
-    int SendNextChunk();
-    int AbortTransfer() {
+    bool SendNextChunk();
+    void AbortTransfer() {
       m_ss->Terminate();
-      return 0;
+    }
+    void StartTransfer() {
+      SendNextChunk();
     }
     bool WasSucessfull() const { return m_sucessful; }
 
@@ -149,7 +151,7 @@ void FirmwareTransferer::HandleMessage(UsbWidget *widget,
 /*
  * Send the next chunk of the firmware file
  */
-int FirmwareTransferer::SendNextChunk() {
+bool FirmwareTransferer::SendNextChunk() {
   uint8_t page[FLASH_PAGE_LENGTH];
   m_firmware->read(reinterpret_cast<char*>(page),
                    FLASH_PAGE_LENGTH);
@@ -313,7 +315,7 @@ int main(int argc, char *argv[]) {
 
   ss.RegisterSingleTimeout(
       PAUSE_DELAY,
-      ola::NewSingleClosure(&transferer, &FirmwareTransferer::SendNextChunk));
+      ola::NewSingleClosure(&transferer, &FirmwareTransferer::StartTransfer));
   widget.SetOnRemove(
       ola::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
   ss.RegisterSingleTimeout(

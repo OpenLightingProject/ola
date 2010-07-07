@@ -60,7 +60,7 @@ class UDPTransport {
               const struct sockaddr_in &destination);
     ola::network::UdpSocket *GetSocket() { return &m_socket; }
     void SetInflator(BaseInflator *inflator) { m_inflator = inflator; }
-    int Receive();
+    void Receive();
 
     bool JoinMulticast(const struct in_addr &group);
     bool LeaveMulticast(const struct in_addr &group);

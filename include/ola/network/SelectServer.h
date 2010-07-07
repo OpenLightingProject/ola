@@ -37,8 +37,94 @@ using std::string;
 using std::priority_queue;
 using ola::ExportMap;
 
-typedef unsigned int timeout_id;
+
+/*
+ * These are timer events, they are used inside the SelectServer class
+ */
+class Event {
+  public:
+    explicit Event(unsigned int ms):
+      m_interval(ms * 1000) {
+      TimeStamp now;
+      Clock::CurrentTime(&now);
+      m_next = now + m_interval;
+    }
+    virtual ~Event() {}
+    virtual bool Trigger() = 0;
+
+    void UpdateTime(const TimeStamp &now) {
+      m_next = now + m_interval;
+    }
+
+    TimeStamp NextTime() const { return m_next; }
+
+  private:
+    TimeInterval m_interval;
+    TimeStamp m_next;
+};
+
+
+// An event that only happens once
+class SingleEvent: public Event {
+  public:
+    SingleEvent(unsigned int ms, ola::BaseClosure<void> *closure):
+      Event(ms),
+      m_closure(closure) {
+    }
+
+    virtual ~SingleEvent() {
+      if (m_closure)
+        delete m_closure;
+    }
+
+    bool Trigger() {
+      if (m_closure) {
+        m_closure->Run();
+        // it's deleted itself at this point
+        m_closure = NULL;
+      }
+      return false;
+    }
+
+  private:
+    ola::BaseClosure<void> *m_closure;
+};
+
+
+/*
+ * An event that occurs more than once. The closure can return false to
+ * indicate that it should not be called again.
+ */
+class RepeatingEvent: public Event {
+  public:
+    RepeatingEvent(unsigned int ms, ola::BaseClosure<bool> *closure):
+      Event(ms),
+      m_closure(closure) {
+    }
+    ~RepeatingEvent() {
+      delete m_closure;
+    }
+    bool Trigger() {
+      if (!m_closure)
+        return false;
+      return m_closure->Run();
+    }
+
+  private:
+    ola::BaseClosure<bool> *m_closure;
+};
+
+
+typedef Event* timeout_id;
 static const timeout_id INVALID_TIMEOUT = 0;
+
+
+struct ltevent {
+  bool operator()(Event *e1, Event *e2) const {
+    return e1->NextTime() > e2->NextTime();
+  }
+};
+
 
 class SelectServer {
   public :
@@ -60,12 +146,13 @@ class SelectServer {
                    bool delete_on_close = false);
     bool RemoveSocket(class Socket *socket);
     bool RemoveSocket(class ConnectedSocket *socket);
-    timeout_id RegisterRepeatingTimeout(int ms, ola::Closure *closure);
-    timeout_id RegisterSingleTimeout(int ms, ola::SingleUseClosure *closure);
+    timeout_id RegisterRepeatingTimeout(int ms, ola::Closure<bool> *closure);
+    timeout_id RegisterSingleTimeout(int ms,
+                                     ola::SingleUseClosure<void> *closure);
     void RemoveTimeout(timeout_id id);
     const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
 
-    void RunInLoop(ola::Closure *closure);
+    void RunInLoop(ola::Closure<void> *closure);
 
     static const char K_SOCKET_VAR[];
     static const char K_CONNECTED_SOCKET_VAR[];
@@ -81,8 +168,6 @@ class SelectServer {
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
-    timeout_id RegisterTimeout(int ms, ola::BaseClosure *closure,
-                               bool repeating);
     bool CheckForEvents(const TimeInterval &poll_interval);
     void CheckSockets(fd_set *set);
     void AddSocketsToSet(fd_set *set, int *max_sd);
@@ -94,37 +179,22 @@ class SelectServer {
     static const unsigned int POLL_INTERVAL_SECOND = 1;
     static const unsigned int POLL_INTERVAL_USECOND = 0;
 
-    // This is a timer event
-    typedef struct {
-      timeout_id id;
-      TimeStamp next;
-      TimeInterval interval;
-      bool repeating;
-      ola::BaseClosure *closure;
-    } event_t;
-
-    struct ltevent {
-      bool operator()(const event_t &e1, const event_t &e2) const {
-        return e1.next > e2.next;
-      }
-    };
-
     bool m_terminate;
     bool m_free_wake_up_time;
     TimeInterval m_poll_interval;
     unsigned int m_next_id;
     vector<class Socket*> m_sockets;
     vector<connected_socket_t> m_connected_sockets;
-    vector<Closure*> m_ready_queue;
+    vector<Closure<void>*> m_ready_queue;
     std::set<timeout_id> m_removed_timeouts;
     ExportMap *m_export_map;
 
-    typedef priority_queue<event_t, vector<event_t>, ltevent> event_queue_t;
+    typedef priority_queue<Event*, vector<Event*>, ltevent> event_queue_t;
     event_queue_t m_events;
     CounterVariable *m_loop_iterations;
     CounterVariable *m_loop_time;
     TimeStamp *m_wake_up_time;
-    std::set<ola::Closure*> m_loop_closures;
+    std::set<ola::Closure<void>*> m_loop_closures;
 };
 }  // network
 }  // ola

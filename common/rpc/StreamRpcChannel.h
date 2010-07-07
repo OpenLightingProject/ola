@@ -91,11 +91,11 @@ class StreamRpcChannel: public RpcChannel {
   public :
     StreamRpcChannel(Service *service,
                      ola::network::ConnectedSocket *socket,
-                     ExportMap *export_map=NULL);
+                     ExportMap *export_map = NULL);
     ~StreamRpcChannel();
 
-    int SocketReady();
-    void SetOnClose(SingleUseClosure *closure);
+    void SocketReady();
+    void SetOnClose(SingleUseClosure<void> *closure);
 
     void CallMethod(
         const MethodDescriptor *method,
@@ -130,7 +130,7 @@ class StreamRpcChannel: public RpcChannel {
     void InvokeCallbackAndCleanup(OutstandingResponse *response);
 
     Service *m_service;  // service to dispatch requests to
-    SingleUseClosure *m_on_close;
+    SingleUseClosure<void> *m_on_close;
     // the socket to read/write to.
     class ola::network::ConnectedSocket *m_socket;
     uint32_t m_seq;  // sequence number

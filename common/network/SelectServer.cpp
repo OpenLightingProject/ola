@@ -28,6 +28,7 @@
 #include <errno.h>
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "ola/Logging.h"
@@ -65,7 +66,6 @@ SelectServer::SelectServer(ExportMap *export_map,
     : m_terminate(false),
       m_free_wake_up_time(false),
       m_poll_interval(POLL_INTERVAL_SECOND, POLL_INTERVAL_USECOND),
-      m_next_id(INVALID_TIMEOUT + 1),
       m_export_map(export_map),
       m_loop_iterations(NULL),
       m_loop_time(NULL),
@@ -245,9 +245,18 @@ bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
  * @returns the identifier for this timeout, this can be used to remove it
  * later.
  */
-timeout_id SelectServer::RegisterRepeatingTimeout(int ms,
-                                                  ola::Closure *closure) {
-  return RegisterTimeout(ms, closure, true);
+timeout_id SelectServer::RegisterRepeatingTimeout(
+    int ms,
+    ola::Closure<bool> *closure) {
+  if (!closure)
+    return INVALID_TIMEOUT;
+
+  if (m_export_map)
+    (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
+
+  Event *event = new RepeatingEvent(ms, closure);
+  m_events.push(event);
+  return event;
 }
 
 
@@ -260,8 +269,16 @@ timeout_id SelectServer::RegisterRepeatingTimeout(int ms,
  */
 timeout_id SelectServer::RegisterSingleTimeout(
     int ms,
-    ola::SingleUseClosure *closure) {
-  return RegisterTimeout(ms, closure, false);
+    ola::SingleUseClosure<void> *closure) {
+  if (!closure)
+    return INVALID_TIMEOUT;
+
+  if (m_export_map)
+    (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
+
+  Event *event = new SingleEvent(ms, closure);
+  m_events.push(event);
+  return event;
 }
 
 
@@ -280,30 +297,8 @@ void SelectServer::RemoveTimeout(timeout_id id) {
  * i/o and timeouts have been handled.
  * Ownership is transferred to the select server.
  */
-void SelectServer::RunInLoop(Closure *closure) {
+void SelectServer::RunInLoop(Closure<void> *closure) {
   m_loop_closures.insert(closure);
-}
-
-
-timeout_id SelectServer::RegisterTimeout(int ms,
-                                         BaseClosure *closure,
-                                         bool repeating) {
-  if (!closure)
-    return INVALID_TIMEOUT;
-
-  event_t event;
-  event.id = m_next_id++;
-  event.closure = closure;
-  event.interval = ms * 1000;
-  event.repeating = repeating;
-
-  Clock::CurrentTime(event.next);
-  event.next += event.interval;
-  m_events.push(event);
-
-  if (m_export_map)
-    (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
-  return event.id;
 }
 
 
@@ -317,7 +312,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   TimeStamp now;
   struct timeval tv;
 
-  set<Closure*>::iterator loop_iter;
+  set<Closure<void>*>::iterator loop_iter;
   for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
        ++loop_iter)
     (*loop_iter)->Run();
@@ -325,7 +320,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   maxsd = 0;
   FD_ZERO(&r_fds);
   FD_ZERO(&w_fds);
-  Clock::CurrentTime(now);
+  Clock::CurrentTime(&now);
   now = CheckTimeouts(now);
 
   // adding sockets should be the last thing we do, they may have changed due
@@ -346,7 +341,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
 
   poll_interval.AsTimeval(&tv);
   if (!m_events.empty()) {
-    TimeInterval interval = m_events.top().next - now;
+    TimeInterval interval = m_events.top()->NextTime() - now;
     if (interval < poll_interval)
       interval.AsTimeval(&tv);
   }
@@ -354,7 +349,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
-      Clock::CurrentTime(*m_wake_up_time);
+      Clock::CurrentTime(m_wake_up_time);
       return true;
     case -1:
       if (errno == EINTR)
@@ -362,7 +357,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
       OLA_WARN << "select() error, " << strerror(errno);
       return false;
     default:
-      Clock::CurrentTime(*m_wake_up_time);
+      Clock::CurrentTime(m_wake_up_time);
       CheckTimeouts(*m_wake_up_time);
       CheckSockets(&r_fds);
   }
@@ -452,7 +447,7 @@ void SelectServer::CheckSockets(fd_set *set) {
     }
   }
 
-  vector<Closure*>::iterator socket_iter;
+  vector<Closure<void>*>::iterator socket_iter;
   for (socket_iter = m_ready_queue.begin(); socket_iter != m_ready_queue.end();
       ++socket_iter) {
     (*socket_iter)->Run();
@@ -467,39 +462,32 @@ void SelectServer::CheckSockets(fd_set *set) {
 TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
   TimeStamp now = current_time;
 
-  event_t e;
+  Event *e;
   if (m_events.empty())
     return now;
 
-  for (e = m_events.top(); !m_events.empty() && (e.next < now);
+  for (e = m_events.top(); !m_events.empty() && (e->NextTime() < now);
        e = m_events.top()) {
     m_events.pop();
 
     // if this was removed, skip it
-    if (m_removed_timeouts.erase(e.id)) {
-      delete e.closure;
+    if (m_removed_timeouts.erase(e)) {
+      delete e;
       if (m_export_map)
         (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
       continue;
     }
 
-    int return_code = 1;
-    if (e.closure)
-      return_code = e.closure->Run();
-
-    if (e.repeating && !return_code) {
-      e.next = now;
-      e.next += e.interval;
+    if (e->Trigger()) {
+      // true implies we need to run this again
+      e->UpdateTime(now);
       m_events.push(e);
     } else {
-      // if we were repeating and we returned an error we need to call delete
-      if (e.repeating && !return_code)
-        delete e.closure;
-
+      delete e;
       if (m_export_map)
         (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
     }
-    Clock::CurrentTime(now);
+    Clock::CurrentTime(&now);
   }
   return now;
 }
@@ -518,15 +506,14 @@ void SelectServer::UnregisterAll() {
   }
   m_sockets.clear();
   m_connected_sockets.clear();
+  m_removed_timeouts.clear();
 
   while (!m_events.empty()) {
-    event_t event = m_events.top();
-    m_removed_timeouts.erase(event.id);
-    delete event.closure;
+    delete m_events.top();
     m_events.pop();
   }
 
-  set<Closure*>::iterator loop_iter;
+  set<Closure<void>*>::iterator loop_iter;
   for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
        ++loop_iter)
     delete *loop_iter;

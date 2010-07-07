@@ -112,7 +112,7 @@ bool EspNetNode::Stop() {
 /*
  * Called when there is data on this socket
  */
-int EspNetNode::SocketReady() {
+void EspNetNode::SocketReady() {
   espnet_packet_union_t packet;
   memset(&packet, 0, sizeof(packet));
   struct sockaddr_in source;
@@ -123,16 +123,16 @@ int EspNetNode::SocketReady() {
                          &packet_size,
                          source,
                          source_length))
-    return -1;
+    return;
 
   if (packet_size < (ssize_t) sizeof(packet.poll.head)) {
     OLA_WARN << "Small espnet packet received, discarding";
-    return -1;
+    return;
   }
 
   // skip packets sent by us
   if (source.sin_addr.s_addr == m_interface.ip_address.s_addr) {
-    return 0;
+    return;
   }
 
   switch (NetworkToHost(packet.poll.head)) {
@@ -151,8 +151,6 @@ int EspNetNode::SocketReady() {
     default:
       OLA_INFO << "Skipping a packet with invalid header" << packet.poll.head;
   }
-
-  return 0;
 }
 
 
@@ -164,7 +162,7 @@ int EspNetNode::SocketReady() {
  */
 bool EspNetNode::SetHandler(uint8_t universe,
                             DmxBuffer *buffer,
-                            Closure *closure) {
+                            Closure<void> *closure) {
   if (!closure)
     return false;
 
@@ -177,7 +175,7 @@ bool EspNetNode::SetHandler(uint8_t universe,
     handler.closure = closure;
     m_handlers[universe] = handler;
   } else {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     iter->second.closure = closure;
     delete old_closure;
   }
@@ -195,7 +193,7 @@ bool EspNetNode::RemoveHandler(uint8_t universe) {
     m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
-    Closure *old_closure = iter->second.closure;
+    Closure<void> *old_closure = iter->second.closure;
     m_handlers.erase(iter);
     delete old_closure;
     return true;

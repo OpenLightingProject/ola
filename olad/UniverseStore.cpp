@@ -50,9 +50,10 @@ UniverseStore::UniverseStore(Preferences *preferences,
       Universe::K_UNIVERSE_OUTPUT_PORT_VAR,
       Universe::K_UNIVERSE_SINK_CLIENTS_VAR,
       Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR,
+      Universe::K_UNIVERSE_UID_COUNT_VAR,
     };
 
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i)
       export_map->GetUIntMapVar(string(vars[i]), "universe");
   }
 }

@@ -53,7 +53,7 @@ void ClockTest::testTimeStamp() {
   CPPUNIT_ASSERT(!timestamp2.IsSet());
 
   // test assignment & copy constructor
-  Clock::CurrentTime(timestamp);
+  Clock::CurrentTime(&timestamp);
   CPPUNIT_ASSERT(timestamp.IsSet());
   timestamp2 = timestamp;
   CPPUNIT_ASSERT(timestamp2.IsSet());
@@ -66,7 +66,7 @@ void ClockTest::testTimeStamp() {
   // Windows only seems to have ms resolution, to make the tests pass we need
   // to sleep here
   usleep(1000);
-  Clock::CurrentTime(timestamp3);
+  Clock::CurrentTime(&timestamp3);
   CPPUNIT_ASSERT(timestamp3 != timestamp);
   CPPUNIT_ASSERT(timestamp3 > timestamp);
   CPPUNIT_ASSERT(timestamp < timestamp3);

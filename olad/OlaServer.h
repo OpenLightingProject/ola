@@ -30,9 +30,9 @@
 #include <vector>
 
 #include "ola/ExportMap.h"
-#include "ola/plugin_id.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
+#include "ola/plugin_id.h"
 
 namespace ola {
 
@@ -66,11 +66,11 @@ class OlaServer {
     ~OlaServer();
     bool Init();
     void ReloadPlugins();
-    int AcceptNewConnection(ola::network::AcceptingSocket *socket);
+    void AcceptNewConnection(ola::network::AcceptingSocket *socket);
     bool NewConnection(ola::network::ConnectedSocket *socket);
-    int SocketClosed(ola::network::ConnectedSocket *socket);
-    int GarbageCollect();
-    int CheckForReload();
+    void SocketClosed(ola::network::ConnectedSocket *socket);
+    bool RunHousekeeping();
+    void CheckForReload();
 
     static const unsigned int DEFAULT_HTTP_PORT = 9090;
 
@@ -97,14 +97,16 @@ class OlaServer {
     bool m_reload_plugins;
     bool m_init_run;
     bool m_free_export_map;
-    ola::network::timeout_id m_garbage_collect_timeout;
+    ola::network::timeout_id m_housekeeping_timeout;
     std::map<int, class OlaServerServiceImpl*> m_sd_to_service;
     OlaHttpServer_t *m_httpd;
     ola_server_options m_options;
+    class InternalRDMController *m_rdm_controller;
 
     static const char UNIVERSE_PREFERENCES[];
     static const char K_CLIENT_VAR[];
-    static const unsigned int K_GARBAGE_COLLECTOR_TIMEOUT_MS;
+    static const char K_UID_VAR[];
+    static const unsigned int K_HOUSEKEEPING_TIMEOUT_MS;
 };
 }  // ola
 #endif  // OLAD_OLASERVER_H_

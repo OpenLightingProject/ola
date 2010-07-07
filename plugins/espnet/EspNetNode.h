@@ -58,10 +58,11 @@ class EspNetNode {
 
     // IO methods
     ola::network::UdpSocket* GetSocket() { return &m_socket; }
-    int SocketReady();
+    void SocketReady();
 
     // DMX Receiving methods
-    bool SetHandler(uint8_t universe, DmxBuffer *buffer, ola::Closure *handler);
+    bool SetHandler(uint8_t universe, DmxBuffer *buffer,
+                    ola::Closure<void> *handler);
     bool RemoveHandler(uint8_t universe);
 
     // Sending methods
@@ -71,7 +72,7 @@ class EspNetNode {
   private:
     typedef struct {
       DmxBuffer *buffer;
-      Closure *closure;
+      Closure<void> *closure;
     } universe_handler;
 
     EspNetNode(const EspNetNode&);

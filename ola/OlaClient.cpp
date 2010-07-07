@@ -107,6 +107,93 @@ bool OlaClient::FetchDmx(unsigned int universe) {
 
 
 /*
+ * Fetch the UID list for a universe
+ * @param universe the universe id to get data for
+ * @return true on success, false on failure
+ */
+bool OlaClient::FetchUIDList(unsigned int universe) {
+  return m_core->FetchUIDList(universe);
+}
+
+
+/*
+ * Force RDM discovery for a universe
+ * @param universe the universe id to run discovery on
+ * @return true on success, false on failure
+ */
+bool OlaClient::ForceDiscovery(unsigned int universe) {
+  return m_core->ForceDiscovery(universe);
+}
+
+
+/*
+ * Set this clients Source UID
+ */
+bool OlaClient::SetSourceUID(
+    const UID &uid,
+    ola::SingleUseCallback1<void, const string &> *callback) {
+  return m_core->SetSourceUID(uid, callback);
+}
+
+
+/*
+ * Send an RDM Get Command
+ * @param callback the Callback to invoke when this completes
+ * @param universe the universe to send the command on
+ * @param uid the UID to send the command to
+ * @param sub_device the sub device index
+ * @param pid the PID to address
+ * @param data the optional data to send
+ * @param data_length the length of the data
+ * @return true on success, false on failure
+ */
+
+bool OlaClient::RDMGet(rdm_callback *callback,
+            unsigned int universe,
+            const UID &uid,
+            uint16_t sub_device,
+            uint16_t pid,
+            const uint8_t *data,
+            unsigned int data_length) {
+  return m_core->RDMGet(callback,
+                        universe,
+                        uid,
+                        sub_device,
+                        pid,
+                        data,
+                        data_length);
+}
+
+
+/*
+ * Send an RDM Set Command
+ * @param callback the Callback to invoke when this completes
+ * @param universe the universe to send the command on
+ * @param uid the UID to send the command to
+ * @param sub_device the sub device index
+ * @param pid the PID to address
+ * @param data the optional data to send
+ * @param data_length the length of the data
+ * @return true on success, false on failure
+ */
+bool OlaClient::RDMSet(rdm_callback *callback,
+                       unsigned int universe,
+                       const UID &uid,
+                       uint16_t sub_device,
+                       uint16_t pid,
+                       const uint8_t *data,
+                       unsigned int data_length) {
+  return m_core->RDMGet(callback,
+                        universe,
+                        uid,
+                        sub_device,
+                        pid,
+                        data,
+                        data_length);
+}
+
+
+/*
  * Request a listing of what devices are attached. This results in a call to
  *   observer->Devices()
  * when the request returns.

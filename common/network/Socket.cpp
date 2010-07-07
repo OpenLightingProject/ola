@@ -500,9 +500,9 @@ bool UdpSocket::EnableBroadcast() {
 
   int broadcast_flag = 1;
   if (setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag,
-        sizeof(broadcast_flag))
+                 sizeof(broadcast_flag))
       == -1) {
-    OLA_WARN << "Failed to enabled broadcasting: " << strerror(errno);
+    OLA_WARN << "Failed to enable broadcasting: " << strerror(errno);
     return false;
   }
   return true;

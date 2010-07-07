@@ -24,6 +24,7 @@
 #include <libusb.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ola/Closure.h"
@@ -149,7 +150,7 @@ bool UsbDmxPlugin::LoadFirmware() {
 /*
  * Find known devices & register them
  */
-int UsbDmxPlugin::FindDevices() {
+void UsbDmxPlugin::FindDevices() {
   libusb_device **device_list;
   libusb_device *found = NULL;
   size_t device_count = libusb_get_device_list(NULL, &device_list);
@@ -191,7 +192,6 @@ int UsbDmxPlugin::FindDevices() {
     }
   }
   libusb_free_device_list(device_list, 1);  // unref devices
-  return 0;
 }
 
 
@@ -273,7 +273,7 @@ bool UsbDmxPlugin::RemoveDeviceSocket(int fd) {
 /*
  * Called when there is activity on one of our sockets.
  */
-int UsbDmxPlugin::SocketReady() {
+void UsbDmxPlugin::SocketReady() {
   struct timeval tv;
   tv.tv_sec = 0;
   tv.tv_usec = 0;

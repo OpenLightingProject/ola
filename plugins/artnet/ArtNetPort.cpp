@@ -17,7 +17,6 @@
  * The ArtNet plugin for ola
  * Copyright (C) 2005 - 2009 Simon Newton
  */
-#include <artnet/artnet.h>
 #include <string.h>
 #include <string>
 
@@ -30,37 +29,20 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
+using ola::NewClosure;
+
 /*
  * Reprogram our port.
  */
 void ArtNetPortHelper::PostSetUniverse(Universe *new_universe,
                                        unsigned int port_id) {
-  // this is a bit of a hack but currently in libartnet there is no
-  // way to disable a port once it's been enabled.
-  if (!new_universe)
-    return;
+  ArtNetNode::artnet_port_type direction = m_is_output ?
+    ArtNetNode::ARTNET_INPUT_PORT : ArtNetNode::ARTNET_OUTPUT_PORT;
 
-  // carefull here, a port that we read from (input) is actually
-  // an ArtNet output port
-  int r = artnet_set_port_type(
-      m_node,
-      port_id,
-      m_is_output ? ARTNET_ENABLE_INPUT : ARTNET_ENABLE_OUTPUT,
-      ARTNET_PORT_DMX);
-  if (r) {
-    OLA_WARN << "artnet_set_port_type failed " << artnet_strerror();
-    return;
-  }
+  uint8_t universe_id = new_universe ? new_universe->UniverseId() % 0x10 :
+    ArtNetNode::ARTNET_DISABLE_PORT;
 
-  r = artnet_set_port_addr(
-      m_node,
-      port_id,
-      m_is_output ? ARTNET_INPUT_PORT : ARTNET_OUTPUT_PORT,
-      new_universe->UniverseId() % 0x10);  // Artnet universes are from 0-15
-  if (r) {
-    OLA_WARN << "artnet_set_port_addr failed " << artnet_strerror();
-    return;
-  }
+  m_node->SetPortUniverse(direction, port_id, universe_id);
 }
 
 
@@ -72,36 +54,76 @@ string ArtNetPortHelper::Description(const Universe *universe,
   if (!universe)
     return "";
 
-  int universe_address = artnet_get_universe_addr(
-      m_node,
-      port_id,
-      m_is_output ? ARTNET_INPUT_PORT : ARTNET_OUTPUT_PORT);
+  ArtNetNode::artnet_port_type direction = m_is_output ?
+    ArtNetNode::ARTNET_INPUT_PORT : ArtNetNode::ARTNET_OUTPUT_PORT;
+
   std::stringstream str;
-  str << "ArtNet Universe " << universe_address;
+  str << "ArtNet Universe " <<
+    static_cast<int>(m_node->GetPortUniverse(direction, port_id));
   return str.str();
 }
 
 
 /*
- * Read operation.
- * @return A DmxBuffer with the data.
+ * Set the DMX Handlers as needed
  */
-const DmxBuffer &ArtNetInputPort::ReadDMX() const {
-  if (PortId() >= ARTNET_MAX_PORTS) {
-    OLA_WARN << "Invalid artnet port id " << PortId();
-    return m_buffer;
+void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
+                                      Universe *new_universe) {
+  (void) old_universe;
+  m_helper.PostSetUniverse(new_universe, PortId());
+
+  if (new_universe && !old_universe) {
+    m_helper.GetNode()->SetDMXHandler(
+        PortId(),
+        &m_buffer,
+        NewClosure<ArtNetInputPort, void>(this, &ArtNetInputPort::DmxChanged));
+    m_helper.GetNode()->SetOutputPortRDMHandlers(
+        PortId(),
+        NewClosure<ArtNetInputPort, void>(
+          this,
+          &ArtNetInputPort::RespondWithTod),
+        NewClosure<ArtNetInputPort, void>(
+          this,
+          &ArtNetInputPort::TriggerRDMDiscovery),
+        ola::NewCallback<ArtNetInputPort, void, const RDMRequest*>(
+          this,
+          &ArtNetInputPort::PolitelyHandleRDMRequest));
+
+  } else if (!new_universe) {
+    m_helper.GetNode()->SetDMXHandler(PortId(), NULL, NULL);
+    m_helper.GetNode()->SetOutputPortRDMHandlers(
+        PortId(),
+        NULL,
+        NULL,
+        NULL);
   }
 
-  int length;
-  uint8_t *dmx_data = artnet_read_dmx(m_helper.GetNode(), PortId(), &length);
+  if (new_universe)
+    RespondWithTod();
+}
 
-  if (!dmx_data) {
-    OLA_WARN << "artnet_read_dmx failed " << artnet_strerror();
-    m_buffer.Reset();
-    return m_buffer;
+
+/*
+ * Handle an RDM request, and send a TodData if this uid wasn't found
+ */
+void ArtNetInputPort::PolitelyHandleRDMRequest(
+    const ola::rdm::RDMRequest *request) {
+
+  if (!HandleRDMRequest(request)) {
+    OLA_INFO << "Request for an unknown UID, sending updated TOD";
+    RespondWithTod();
   }
-  m_buffer.Set(dmx_data, length);
-  return m_buffer;
+}
+
+
+/*
+ * Respond With Tod
+ */
+void ArtNetInputPort::RespondWithTod() {
+  ola::rdm::UIDSet uids;
+  if (GetUniverse())
+    GetUniverse()->GetUIDs(&uids);
+  m_helper.GetNode()->SendTod(PortId(), uids);
 }
 
 
@@ -118,13 +140,63 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
     return false;
   }
 
-  if (artnet_send_dmx(m_helper.GetNode(), PortId(), buffer.Size(),
-                      buffer.GetRaw())) {
-    OLA_WARN << "artnet_send_dmx failed " << artnet_strerror();
-    return false;
-  }
-  return true;
+  return m_helper.GetNode()->SendDMX(PortId(), buffer);
   (void) priority;
+}
+
+
+/*
+ * Handle an RDMRequest
+ */
+bool ArtNetOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+  // Discovery requests aren't proxied
+  bool ret = true;
+  if (request->CommandClass() != RDMCommand::DISCOVER_COMMAND)
+    ret = m_helper.GetNode()->SendRDMRequest(PortId(), *request);
+  delete request;
+  return ret;
+}
+
+
+/*
+ * Run the RDM discovery process
+ */
+void ArtNetOutputPort::RunRDMDiscovery() {
+  m_helper.GetNode()->ForceDiscovery(PortId());
+}
+
+
+/*
+ * Set the RDM handlers as appropriate
+ */
+void ArtNetOutputPort::PostSetUniverse(Universe *old_universe,
+                                       Universe *new_universe) {
+  (void) old_universe;
+  m_helper.PostSetUniverse(new_universe, PortId());
+
+  if (new_universe && !old_universe) {
+    m_helper.GetNode()->SetInputPortRDMHandlers(
+        PortId(),
+        ola::NewCallback<ArtNetOutputPort, void, const UIDSet&>(
+          this,
+          &ArtNetOutputPort::NewUIDList),
+        ola::NewCallback<ArtNetOutputPort, void, const RDMResponse*>(
+          this,
+          &ArtNetOutputPort::PolitelyHandleRDMResponse));
+  } else if (!new_universe) {
+    m_helper.GetNode()->SetInputPortRDMHandlers(PortId(), NULL, NULL);
+  }
+
+  if (new_universe)
+    m_helper.GetNode()->SendTodRequest(PortId());
+}
+
+
+/*
+ * Handle a RDMResponse from the node
+ */
+void ArtNetOutputPort::PolitelyHandleRDMResponse(const RDMResponse *response) {
+  HandleRDMResponse(response);
 }
 }  // artnet
 }  // plugin

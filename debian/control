@@ -9,7 +9,7 @@ Homepage: http://code.google.com/p/linux-lighting/
 Package: libola-dev
 Section: libdevel
 Architecture: any
-Depends: ola1 (= ${binary:Version})
+Depends: libola1 (= ${binary:Version})
 Description: Open Lighting Architecture
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.

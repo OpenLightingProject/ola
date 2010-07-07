@@ -56,15 +56,12 @@ bool ArtNetPlugin::StartHook() {
   m_device = new ArtNetDevice(this,
                               DEVICE_NAME,
                               m_preferences,
-                              m_debug,
-                              m_plugin_adaptor->WakeUpTime());
+                              m_plugin_adaptor);
 
   if (!m_device->Start()) {
     delete m_device;
     return false;
   }
-
-  m_plugin_adaptor->AddSocket(m_device->GetSocket());
   m_plugin_adaptor->RegisterDevice(m_device);
   return true;
 }
@@ -76,8 +73,6 @@ bool ArtNetPlugin::StartHook() {
  */
 bool ArtNetPlugin::StopHook() {
   if (m_device) {
-    m_plugin_adaptor->RemoveSocket(m_device->GetSocket());
-
     // stop the device
     m_plugin_adaptor->UnregisterDevice(m_device);
     bool ret = m_device->Stop();

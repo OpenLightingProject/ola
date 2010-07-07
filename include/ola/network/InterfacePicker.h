@@ -34,6 +34,7 @@ namespace ola {
 namespace network {
 
 enum { MAC_LENGTH = 6 };
+enum { IPV4_LENGTH = 4 };
 
 /*
  * Represents an interface.
@@ -48,6 +49,7 @@ class Interface {
     std::string name;
     struct in_addr ip_address;
     struct in_addr bcast_address;
+    struct in_addr subnet_address;
     int8_t hw_address[MAC_LENGTH];
 };
 

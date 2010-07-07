@@ -66,7 +66,8 @@ void ShowNetInputPort::PostSetUniverse(Universe *old_universe,
     m_node->SetHandler(
         PortId(),
         &m_buffer,
-        ola::NewClosure<ShowNetInputPort>(this, &ShowNetInputPort::DmxChanged));
+        ola::NewClosure<ShowNetInputPort, void>(this,
+                                                &ShowNetInputPort::DmxChanged));
 }
 
 

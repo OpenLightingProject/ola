@@ -52,7 +52,7 @@ void TokenBucketTest::testTokenBucket() {
   TimeInterval ten_ms(10000);
   TimeInterval one_hundred_ms(100000);
   TimeInterval one_second(1000000);
-  ola::Clock::CurrentTime(now);
+  ola::Clock::CurrentTime(&now);
   TokenBucket bucket(0, 10, 10, now);  // one every 100ms
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bucket.Count(now));
 
@@ -79,7 +79,7 @@ void TokenBucketTest::testTokenBucketTwo() {
   TimeInterval ten_ms(10000);
   TimeInterval one_hundred_ms(100000);
   TimeInterval one_second(1000000);
-  ola::Clock::CurrentTime(now);
+  ola::Clock::CurrentTime(&now);
   TokenBucket bucket(0, 40, 40, now);  // one every 25ms
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bucket.Count(now));
 

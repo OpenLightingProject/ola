@@ -27,10 +27,11 @@
 using std::string;
 using std::vector;
 using ola::Escape;
+using ola::HexStringToUInt;
 using ola::IntToString;
 using ola::StringSplit;
-using ola::StringTrim;
 using ola::StringToUInt;
+using ola::StringTrim;
 
 class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringUtilsTest);
@@ -39,6 +40,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIntToString);
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testStringToUInt);
+  CPPUNIT_TEST(testHexStringToUInt);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -47,6 +49,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testIntToString();
     void testEscape();
     void testStringToUInt();
+    void testHexStringToUInt();
 };
 
 
@@ -142,6 +145,8 @@ void StringUtilsTest::testIntToString() {
   CPPUNIT_ASSERT_EQUAL(string("0"), IntToString(0));
   CPPUNIT_ASSERT_EQUAL(string("1234"), IntToString(1234));
   CPPUNIT_ASSERT_EQUAL(string("-1234"), IntToString(-1234));
+  unsigned int i = 42;
+  CPPUNIT_ASSERT_EQUAL(string("42"), IntToString(i));
 }
 
 void StringUtilsTest::testEscape() {
@@ -166,4 +171,40 @@ void StringUtilsTest::testStringToUInt() {
   CPPUNIT_ASSERT(StringToUInt("65537", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 65537, value);
   CPPUNIT_ASSERT(!StringToUInt("foo", &value));
+}
+
+
+void StringUtilsTest::testHexStringToUInt() {
+  unsigned int value;
+  CPPUNIT_ASSERT(!HexStringToUInt("", &value));
+  CPPUNIT_ASSERT(!HexStringToUInt("-1", &value));
+
+  CPPUNIT_ASSERT(HexStringToUInt("0", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, value);
+  CPPUNIT_ASSERT(HexStringToUInt("1", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, value);
+  CPPUNIT_ASSERT(HexStringToUInt("a", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 10, value);
+  CPPUNIT_ASSERT(HexStringToUInt("f", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 15, value);
+  CPPUNIT_ASSERT(HexStringToUInt("a1", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 161, value);
+  CPPUNIT_ASSERT(HexStringToUInt("ff", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 255, value);
+  CPPUNIT_ASSERT(HexStringToUInt("a1", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 161, value);
+  CPPUNIT_ASSERT(HexStringToUInt("ff", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 255, value);
+  CPPUNIT_ASSERT(HexStringToUInt("ffff", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 65535, value);
+
+  CPPUNIT_ASSERT(HexStringToUInt("ffffff", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 16777215, value);
+  CPPUNIT_ASSERT(HexStringToUInt("ffffffff", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4294967295UL, value);
+  CPPUNIT_ASSERT(HexStringToUInt("ef123456", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4010947670UL, value);
+  CPPUNIT_ASSERT(!HexStringToUInt("fz", &value));
+  CPPUNIT_ASSERT(!HexStringToUInt("zfff", &value));
+  CPPUNIT_ASSERT(!HexStringToUInt("0xf", &value));
 }

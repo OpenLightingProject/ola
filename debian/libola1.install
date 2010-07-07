@@ -1,2 +1,4 @@
-usr/lib/lib*.so.*
-usr/lib/olad/*
+usr/lib/libola*.so.?
+usr/lib/libola*.so.?.?.*
+usr/lib/olad/libola*.so.?
+usr/lib/olad/libola*.so.?.?.*

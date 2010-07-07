@@ -28,8 +28,12 @@
 #include <vector>
 
 #include "ola/BaseTypes.h"
+#include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
 #include "ola/OlaDevice.h"
+#include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/RDMAPI.h"
+#include "ola/rdm/RDMAPIImplInterface.h"
 
 namespace ola {
 
@@ -187,6 +191,132 @@ bool OlaClientCore::FetchDmx(unsigned int universe) {
       reply);
   m_stub->GetDmx(controller, &request, reply, cb);
   return true;
+}
+
+
+/*
+ * Fetch the UID list for a universe
+ */
+bool OlaClientCore::FetchUIDList(unsigned int universe) {
+  if (!m_connected)
+    return false;
+
+  ola::proto::UniverseRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
+
+  request.set_universe(universe);
+
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &ola::OlaClientCore::HandleUIDList,
+      controller,
+      reply);
+  m_stub->GetUIDs(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
+ * Force RDM discovery for a universe
+ * @param universe the universe id to run discovery on
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::ForceDiscovery(unsigned int universe) {
+  if (!m_connected)
+    return false;
+
+  ola::proto::UniverseRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::UniverseAck *reply = new ola::proto::UniverseAck();
+
+  request.set_universe(universe);
+
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &ola::OlaClientCore::HandleDiscovery,
+      controller,
+      reply);
+  m_stub->ForceDiscovery(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
+ * Set this clients Source UID
+ */
+bool OlaClientCore::SetSourceUID(
+    const UID &uid,
+    ola::SingleUseCallback1<void, const string &> *callback) {
+  if (!m_connected)
+    return false;
+
+  ola::proto::UID request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::Ack *reply = new ola::proto::Ack();
+
+  request.set_esta_id(uid.ManufacturerId());
+  request.set_device_id(uid.DeviceId());
+
+  struct set_source_uid_args *args = new struct set_source_uid_args;
+  args->callback = callback;
+  args->controller = controller;
+  args->reply = reply;
+
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &ola::OlaClientCore::HandleSetSourceUID,
+      args);
+  m_stub->SetSourceUID(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
+ * Send an RDM Get Command
+ * @param callback the Callback to invoke when this completes
+ * @param universe the universe to send the command on
+ * @param uid the UID to send the command to
+ * @param sub_device the sub device index
+ * @param pid the PID to address
+ * @param data the optional data to send
+ * @param data_length the length of the data
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::RDMGet(
+    ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t pid,
+    const uint8_t *data,
+    unsigned int data_length) {
+  return RDMCommand(callback, false, universe, uid, sub_device, pid, data,
+                    data_length);
+}
+
+
+/*
+ * Send an RDM Set Command
+ * @param callback the Callback to invoke when this completes
+ * @param universe the universe to send the command on
+ * @param uid the UID to send the command to
+ * @param sub_device the sub device index
+ * @param pid the PID to address
+ * @param data the optional data to send
+ * @param data_length the length of the data
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::RDMSet(
+    ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t pid,
+    const uint8_t *data,
+    unsigned int data_length) {
+  return RDMCommand(callback, true, universe, uid, sub_device, pid, data,
+                    data_length);
 }
 
 
@@ -523,6 +653,32 @@ void OlaClientCore::HandleGetDmx(ola::rpc::SimpleRpcController *controller,
 
 
 /*
+ * Handle the UID list response
+ */
+void OlaClientCore::HandleUIDList(SimpleRpcController *controller,
+                                  ola::proto::UIDListReply *reply) {
+  string error_string = "";
+  ola::rdm::UIDSet uid_set;
+
+  if (m_observer) {
+    if (controller->Failed()) {
+      error_string = controller->ErrorText();
+    } else {
+      for (int i = 0; i < reply->uid_size(); ++i) {
+        ola::proto::UID proto_uid = reply->uid(i);
+        ola::rdm::UID uid(proto_uid.esta_id(),
+                          proto_uid.device_id());
+        uid_set.AddUID(uid);
+      }
+    }
+    m_observer->UIDList(reply->universe(), uid_set, error_string);
+  }
+  delete controller;
+  delete reply;
+}
+
+
+/*
  * Called once DeviceInfo completes.
  */
 void OlaClientCore::HandleDeviceInfo(ola::rpc::SimpleRpcController *controller,
@@ -708,9 +864,9 @@ void OlaClientCore::HandleSetPriority(SimpleRpcController *controller,
   delete reply;
 }
 
+
 /*
  * Handle a device config response
- *
  */
 void OlaClientCore::HandleDeviceConfig(
     ola::rpc::SimpleRpcController *controller,
@@ -725,5 +881,117 @@ void OlaClientCore::HandleDeviceConfig(
   }
   delete controller;
   delete reply;
+}
+
+
+/*
+ * Handle a discoery complete message
+ */
+void OlaClientCore::HandleDiscovery(SimpleRpcController *controller,
+                                    ola::proto::UniverseAck *reply) {
+  string error_string = "";
+  if (controller->Failed())
+    error_string = controller->ErrorText();
+
+  if (m_observer) {
+    m_observer->ForceRDMDiscoveryComplete(reply->universe(), error_string);
+  } else if (!error_string.empty()) {
+    printf("Force discovery failed: %s\n", controller->ErrorText().c_str());
+  }
+  delete controller;
+  delete reply;
+}
+
+
+/*
+ * Handle the set source UID response
+ */
+void OlaClientCore::HandleSetSourceUID(
+    struct set_source_uid_args *args) {
+  string error_string = "";
+  if (args->controller->Failed())
+    error_string = args->controller->ErrorText();
+
+  if (args->callback) {
+    args->callback->Run(error_string);
+  }
+  delete args->controller;
+  delete args->reply;
+  delete args;
+}
+
+
+/*
+ * Handle an RDM message
+ */
+void OlaClientCore::HandleRDM(struct rdm_response_args *args) {
+  ola::rdm::RDMAPIImplResponseStatus response_status;
+  response_status.was_broadcast = args->reply->was_broadcast();
+  response_status.response_type = args->reply->response_code();
+  response_status.message_count = args->reply->message_count();
+
+  if (args->controller->Failed()) {
+    response_status.error = args->controller->ErrorText();
+  } else if (args->reply->response_code() == ola::rdm::ACK_OVERFLOW ||
+             args->reply->response_code() == ola::rdm::ACK_TIMER) {
+    // TODO(simon): handle to ACK_OVERFLOW and ACK_TIMER cases here or
+    // preferably in the ola server.
+    OLA_WARN << "We don't handle ACK_OVERFLOW or ACK_TIMER yet!";
+    response_status.error = "OVERFLOW or ACK not implemented in OLA Client";
+  }
+
+  args->callback->Run(response_status,
+                      args->reply->data());
+  delete args->controller;
+  delete args->reply;
+  delete args;
+}
+
+
+/*
+ * Send a generic rdm command
+ */
+bool OlaClientCore::RDMCommand(
+    ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+    bool is_set,
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t pid,
+    const uint8_t *data,
+    unsigned int data_length) {
+  if (!m_connected)
+    return false;
+
+  if (!callback) {
+    OLA_WARN << "RDM callback was null, command to " << uid << " won't be sent";
+    return false;
+  }
+
+  ola::proto::RDMRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::RDMResponse *reply = new ola::proto::RDMResponse();
+
+  request.set_universe(universe);
+  ola::proto::UID *pb_uid = request.mutable_uid();
+  pb_uid->set_esta_id(uid.ManufacturerId());
+  pb_uid->set_device_id(uid.DeviceId());
+  request.set_sub_device(sub_device);
+  request.set_param_id(pid);
+  request.set_is_set(is_set);
+  request.set_data(string(reinterpret_cast<const char*>(data), data_length));
+
+  struct rdm_response_args *args = new struct rdm_response_args;
+  args->callback = callback;
+  args->controller = controller;
+  args->reply = reply;
+
+  google::protobuf::Closure *cb = NewCallback(
+      this,
+      &ola::OlaClientCore::HandleRDM,
+      args);
+
+  m_stub->RDMCommand(controller, &request, reply, cb);
+  return true;
 }
 }  // ola

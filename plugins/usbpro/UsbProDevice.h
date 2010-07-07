@@ -63,7 +63,8 @@ class UsbProDevice: public UsbDevice, public WidgetListener {
                  UsbWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
-                 uint32_t serial);
+                 uint32_t serial,
+                 unsigned int fps_limit);
     void HandleMessage(UsbWidget* widget,
                        uint8_t label,
                        unsigned int length,

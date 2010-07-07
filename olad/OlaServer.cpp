@@ -31,10 +31,14 @@
 
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
+#include "ola/BaseTypes.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/rdm/UID.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
+#include "olad/InternalRDMController.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
@@ -57,7 +61,8 @@ using std::pair;
 
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
 const char OlaServer::K_CLIENT_VAR[] = "clients-connected";
-const unsigned int OlaServer::K_GARBAGE_COLLECTOR_TIMEOUT_MS = 5000;
+const char OlaServer::K_UID_VAR[] = "server-uid";
+const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 1000;
 
 
 /*
@@ -88,7 +93,7 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_reload_plugins(false),
       m_init_run(false),
       m_free_export_map(false),
-      m_garbage_collect_timeout(ola::network::INVALID_TIMEOUT),
+      m_housekeeping_timeout(ola::network::INVALID_TIMEOUT),
       m_httpd(NULL),
       m_options(*ola_options) {
   if (!m_export_map) {
@@ -115,10 +120,13 @@ OlaServer::~OlaServer() {
   }
 #endif
 
-  if (m_garbage_collect_timeout != ola::network::INVALID_TIMEOUT)
-    m_ss->RemoveTimeout(m_garbage_collect_timeout);
+  if (m_housekeeping_timeout != ola::network::INVALID_TIMEOUT)
+    m_ss->RemoveTimeout(m_housekeeping_timeout);
 
   StopPlugins();
+
+  // this will remove any input ports and fail any outstanding rdm requests
+  delete m_rdm_controller;
 
   map<int, OlaServerServiceImpl*>::iterator iter;
   for (iter = m_sd_to_service.begin(); iter != m_sd_to_service.end(); ++iter) {
@@ -180,12 +188,31 @@ bool OlaServer::Init() {
 
   signal(SIGPIPE, SIG_IGN);
 
+  // fetch the interface info
+  ola::rdm::UID default_uid(OPEN_LIGHTING_ESTA_CODE, 0);
+  ola::network::Interface interface;
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+  if (!picker->ChooseInterface(&interface, "")) {
+    OLA_WARN << "No network interface found";
+  } else {
+    // default to using the ip as a id
+    default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
+                                interface.ip_address.s_addr);
+  }
+  delete picker;
+  m_export_map->GetStringVar(K_UID_VAR)->Set(default_uid.ToString());
+  OLA_INFO << "Server UID is " << default_uid;
+
   m_universe_preferences = m_preferences_factory->NewPreference(
       UNIVERSE_PREFERENCES);
   m_universe_preferences->Load();
   m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
 
   m_port_manager = new PortManager(m_universe_store);
+  m_rdm_controller = new InternalRDMController(default_uid,
+                                               m_port_manager,
+                                               m_export_map);
 
   // setup the objects
   m_device_manager = new DeviceManager(m_preferences_factory, m_port_manager);
@@ -218,14 +245,15 @@ bool OlaServer::Init() {
                                 m_port_manager,
                                 m_options.http_port,
                                 m_options.http_enable_quit,
-                                m_options.http_data_dir);
+                                m_options.http_data_dir,
+                                interface);
     m_httpd->Start();
   }
 #endif
 
-  m_garbage_collect_timeout = m_ss->RegisterRepeatingTimeout(
-      K_GARBAGE_COLLECTOR_TIMEOUT_MS,
-      ola::NewClosure(this, &OlaServer::GarbageCollect));
+  m_housekeeping_timeout = m_ss->RegisterRepeatingTimeout(
+      K_HOUSEKEEPING_TIMEOUT_MS,
+      ola::NewClosure(this, &OlaServer::RunHousekeeping));
   m_ss->RunInLoop(ola::NewClosure(this, &OlaServer::CheckForReload));
 
   m_init_run = true;
@@ -246,14 +274,12 @@ void OlaServer::ReloadPlugins() {
  * Add a new ConnectedSocket to this Server.
  * @param accepting_socket the AcceptingSocket with the new connection pending.
  */
-int OlaServer::AcceptNewConnection(
+void OlaServer::AcceptNewConnection(
     ola::network::AcceptingSocket *accepting_socket) {
   ola::network::ConnectedSocket *socket = accepting_socket->Accept();
 
-  if (!socket)
-    return 0;
-
-  return NewConnection(socket) ? 0 : -1;
+  if (socket)
+    NewConnection(socket);
 }
 
 
@@ -275,6 +301,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
                                                          client,
                                                          m_export_map,
                                                          m_port_manager,
+                                                         m_rdm_controller,
                                                          m_ss->WakeUpTime());
   channel->SetService(service);
 
@@ -297,7 +324,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
 /*
  * Called when a socket is closed
  */
-int OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
+void OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
   map<int, OlaServerServiceImpl*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
@@ -307,31 +334,30 @@ int OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
   (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
   CleanupConnection(iter->second);
   m_sd_to_service.erase(iter);
-  return 0;
 }
 
 
 /*
  * Run the garbage collector
  */
-int OlaServer::GarbageCollect() {
+bool OlaServer::RunHousekeeping() {
   OLA_INFO << "Garbage collecting";
   m_universe_store->GarbageCollectUniverses();
-  return 0;
+  m_rdm_controller->CheckTimeouts(*m_ss->WakeUpTime());
+  return true;
 }
 
 
 /*
  * Called once per loop iteration
  */
-int OlaServer::CheckForReload() {
+void OlaServer::CheckForReload() {
   if (m_reload_plugins) {
     m_reload_plugins = false;
     OLA_INFO << "Reloading plugins";
     StopPlugins();
     m_plugin_manager->LoadAll();
   }
-  return 0;
 }
 
 

@@ -50,7 +50,7 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
 #ifdef HAVE_INET_ATON
   if (!inet_aton(address.data(), &addr)) {
 #else
-  in_addr_t *ip_addr4 = (in_addr_t*) &addr;
+  in_addr_t *ip_addr4 = reinterpret_cast<in_addr_t*>(&addr);
   if ((*ip_addr4 = inet_addr(address.data())) == INADDR_NONE) {
 #endif
     OLA_WARN << "Could not convert address " << address;
@@ -106,6 +106,49 @@ uint32_t HostToNetwork(uint32_t value) {
   return htonl(value);
 }
 
+
+uint8_t HostToLittleEndian(uint8_t value) {
+  return value;
+}
+
+
+uint16_t HostToLittleEndian(uint16_t value) {
+#ifdef HAVE_ENDIAN_H
+#  if BYTE_ORDER == __BIG_ENDIAN
+  return ((value & 0xff) << 8) | (value >> 8);
+#  else
+  return value;
+#  endif
+#else
+#  if BYTE_ORDER == BIG_ENDIAN
+  return ((value & 0xff) << 8) | (value >> 8);
+#  else
+  return value;
+#  endif
+#endif
+}
+
+
+uint8_t LittleEndianToHost(uint8_t value) {
+  return value;
+}
+
+
+uint16_t LittleEndianToHost(uint16_t value) {
+#ifdef HAVE_ENDIAN_H
+#  if BYTE_ORDER == __BIG_ENDIAN
+  return (value >> 8) | ((value & 0xff) << 8);
+#  else
+  return value;
+#  endif
+#else
+#  if BYTE_ORDER == BIG_ENDIAN
+  return (value >> 8) | ((value & 0xff) << 8);
+#  else
+  return value;
+#  endif
+#endif
+}
 
 /*
  * Return the full hostname

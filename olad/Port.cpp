@@ -21,6 +21,7 @@
  */
 
 #include <string>
+#include "ola/Logging.h"
 #include "olad/Device.h"
 #include "olad/Port.h"
 
@@ -80,7 +81,7 @@ bool BasicInputPort::SetPriority(uint8_t priority) {
 /*
  * Called when there is new data for this port
  */
-int BasicInputPort::DmxChanged() {
+void BasicInputPort::DmxChanged() {
   if (GetUniverse()) {
     const DmxBuffer &buffer = ReadDMX();
     uint8_t priority = (PriorityCapability() == CAPABILITY_FULL &&
@@ -90,7 +91,47 @@ int BasicInputPort::DmxChanged() {
     m_dmx_source.UpdateData(buffer, *m_wakeup_time, priority);
     GetUniverse()->PortDataChanged(this);
   }
-  return 0;
+}
+
+
+/*
+ * Handle an RDM Request on this port.
+ * @param request the RDMRequest object, ownership is transferred to us
+ */
+bool BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+  if (m_universe)
+    return m_universe->HandleRDMRequest(this, request);
+  else
+    delete request;
+    return false;
+}
+
+
+/*
+ * Handle a response message
+ * @param response, the RDMResponse object, ownership is transferred to us
+ */
+bool BasicInputPort::HandleRDMResponse(
+    const ola::rdm::RDMResponse *response) {
+  OLA_WARN << "In base HandleRDMResponse, something has gone wrong with RDM" <<
+    " request routing";
+  delete response;
+  return true;
+}
+
+
+/*
+ * Trigger the RDM Discovery procedure for this universe
+ */
+void BasicInputPort::TriggerRDMDiscovery() {
+  if (m_universe)
+    m_universe->RunRDMDiscovery();
+}
+
+
+void BasicOutputPort::NewUIDList(const ola::rdm::UIDSet &uids) {
+  if (m_universe)
+    m_universe->NewUIDList(uids, this);
 }
 
 
@@ -98,8 +139,10 @@ int BasicInputPort::DmxChanged() {
  * Create a new BasicOutputPort
  */
 BasicOutputPort::BasicOutputPort(AbstractDevice *parent,
-                                 unsigned int port_id):
+                                 unsigned int port_id,
+                                 bool start_rdm_discovery_on_patch):
     m_port_id(port_id),
+    m_discover_on_patch(start_rdm_discovery_on_patch),
     m_priority(DmxSource::PRIORITY_DEFAULT),
     m_priority_mode(PRIORITY_MODE_INHERIT),
     m_port_string(""),
@@ -116,6 +159,8 @@ bool BasicOutputPort::SetUniverse(Universe *new_universe) {
   if (PreSetUniverse(old_universe, new_universe)) {
     m_universe = new_universe;
     PostSetUniverse(old_universe, new_universe);
+    if (m_discover_on_patch)
+      RunRDMDiscovery();
     return true;
   }
   return false;
@@ -139,6 +184,39 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
 
   m_priority = priority;
   return true;
+}
+
+
+/*
+ * Handle an RDMRequest, subclasses can implement this to support RDM
+ */
+bool BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+  // broadcasts go to every port
+  if (!request->DestinationUID().IsBroadcast())
+    OLA_WARN << "In base HandleRDMRequest, something has gone wrong with RDM"
+      << " request routing";
+  delete request;
+  return true;
+}
+
+
+/*
+ * Handle a response message
+ */
+bool BasicOutputPort::HandleRDMResponse(
+    const ola::rdm::RDMResponse *response) {
+  if (m_universe)
+    return m_universe->HandleRDMResponse(this, response);
+  else
+    delete response;
+    return false;
+}
+
+
+/*
+ * This is a noop for ports that don't support RDM
+ */
+void BasicOutputPort::RunRDMDiscovery() {
 }
 
 

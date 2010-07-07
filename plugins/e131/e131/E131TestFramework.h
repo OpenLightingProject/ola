@@ -322,9 +322,9 @@ class StateManager {
     ~StateManager();
     bool Init();
     void Run() { m_ss->Run(); }
-    int Tick();
-    int Input();
-    int NewDMX();
+    bool Tick();
+    void Input();
+    void NewDMX();
     bool Passed() const { return m_failed_tests.size() == 0; }
 
   private:

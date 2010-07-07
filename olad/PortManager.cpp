@@ -157,15 +157,17 @@ bool PortManager::GenericPatchPort(PortClass *port,
     return true;
 
   AbstractDevice *device = port->GetDevice();
-  if (!device->AllowLooping()) {
-    // check ports of the opposite type
-    if (CheckLooping<PortClass>(device, new_universe_id))
-      return false;
-  }
+  if (device) {
+    if (!device->AllowLooping()) {
+      // check ports of the opposite type
+      if (CheckLooping<PortClass>(device, new_universe_id))
+        return false;
+    }
 
-  if (!device->AllowMultiPortPatching()) {
-    if (CheckMultiPort<PortClass>(device, new_universe_id))
-      return false;
+    if (!device->AllowMultiPortPatching()) {
+      if (CheckMultiPort<PortClass>(device, new_universe_id))
+        return false;
+    }
   }
 
   // unpatch if required

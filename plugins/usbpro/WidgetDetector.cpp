@@ -135,7 +135,7 @@ void WidgetDetector::HandleMessage(UsbWidget *widget,
 /*
  * Called if a widget fails to respond in a given interval
  */
-int WidgetDetector::DiscoveryTimeout(UsbWidget *widget) {
+void WidgetDetector::DiscoveryTimeout(UsbWidget *widget) {
   map<UsbWidget*, DeviceInformation>::iterator iter = m_widgets.find(widget);
 
   if (iter != m_widgets.end()) {
@@ -144,7 +144,6 @@ int WidgetDetector::DiscoveryTimeout(UsbWidget *widget) {
     delete widget;
     m_widgets.erase(widget);
   }
-  return 0;
 }
 
 

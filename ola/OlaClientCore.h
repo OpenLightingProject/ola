@@ -34,6 +34,7 @@
 #include "ola/common.h"
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
+#include "ola/rdm/RDMAPIImplInterface.h"
 
 namespace ola {
 
@@ -62,7 +63,26 @@ class OlaClientCore {
     bool FetchDmx(unsigned int uni);
 
     // rdm methods
-    // int send_rdm(int universe, uint8_t *data, int length);
+    bool FetchUIDList(unsigned int universe);
+    bool ForceDiscovery(unsigned int universe);
+    bool SetSourceUID(const UID &uid,
+                      ola::SingleUseCallback1<void, const string &> *callback);
+
+    bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+                unsigned int universe,
+                const UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data,
+                unsigned int data_length);
+    bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+                unsigned int universe,
+                const UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data,
+                unsigned int data_length);
+
     bool SetUniverseName(unsigned int uni, const string &name);
     bool SetUniverseMergeMode(unsigned int uni, OlaUniverse::merge_mode mode);
 
@@ -91,6 +111,8 @@ class OlaClientCore {
                        ola::proto::Ack *reply);
     void HandleGetDmx(SimpleRpcController *controller,
                       ola::proto::DmxData *reply);
+    void HandleUIDList(SimpleRpcController *controller,
+                       ola::proto::UIDListReply *reply);
     void HandleDeviceInfo(SimpleRpcController *controller,
                           ola::proto::DeviceInfoReply *reply);
     void HandleUniverseInfo(SimpleRpcController *controller,
@@ -107,10 +129,38 @@ class OlaClientCore {
                            ola::proto::Ack *reply);
     void HandleDeviceConfig(SimpleRpcController *controller,
                             ola::proto::DeviceConfigReply *reply);
+    void HandleDiscovery(SimpleRpcController *controller,
+                         ola::proto::UniverseAck *reply);
+
+    // we need these because a google::protobuf::Closure can't take more than 2
+    // args
+    struct rdm_response_args {
+      ola::rdm::RDMAPIImplInterface::rdm_callback *callback;
+      SimpleRpcController *controller;
+      ola::proto::RDMResponse *reply;
+    };
+
+    struct set_source_uid_args {
+      ola::SingleUseCallback1<void, const string &> *callback;
+      SimpleRpcController *controller;
+      ola::proto::Ack *reply;
+    };
+
+    void HandleRDM(struct rdm_response_args *args);
+    void HandleSetSourceUID(struct set_source_uid_args *args);
 
   private:
     OlaClientCore(const OlaClientCore&);
     OlaClientCore operator=(const OlaClientCore&);
+
+    bool RDMCommand(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
+                    bool is_set,
+                    unsigned int universe,
+                    const UID &uid,
+                    uint16_t sub_device,
+                    uint16_t pid,
+                    const uint8_t *data,
+                    unsigned int data_length);
 
     ConnectedSocket *m_socket;
     OlaClientServiceImpl *m_client_service;

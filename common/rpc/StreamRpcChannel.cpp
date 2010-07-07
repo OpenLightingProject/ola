@@ -66,7 +66,7 @@ StreamRpcChannel::StreamRpcChannel(Service *service,
   };
 
   if (m_export_map) {
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(char*); ++i)
+    for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i)
       m_export_map->GetCounterVar(string(vars[i]));
     m_recv_type_map = m_export_map->GetUIntMapVar(K_RPC_RECEIVED_TYPE_VAR,
                                                   "type");
@@ -83,20 +83,20 @@ StreamRpcChannel::~StreamRpcChannel() {
  * Receive a message for this RPCChannel. Called when data is available on the
  * socket.
  */
-int StreamRpcChannel::SocketReady() {
+void StreamRpcChannel::SocketReady() {
   if (!m_expected_size) {
     // this is a new msg
     unsigned int version;
     if (ReadHeader(&version, &m_expected_size) < 0)
-      return -1;
+      return;
 
     if (!m_expected_size)
-      return 0;
+      return;
 
     if (version != PROTOCOL_VERSION) {
       OLA_WARN << "protocol mismatch " << version << " != " <<
         PROTOCOL_VERSION;
-      return -1;
+      return;
     }
     m_current_size = 0;
     m_buffer_size = AllocateMsgBuffer(m_expected_size);
@@ -104,7 +104,7 @@ int StreamRpcChannel::SocketReady() {
     if (m_buffer_size < m_expected_size) {
       OLA_WARN << "buffer size to small " << m_buffer_size << " < " <<
         m_expected_size;
-      return 0;
+      return;
     }
   }
 
@@ -113,7 +113,7 @@ int StreamRpcChannel::SocketReady() {
                         m_expected_size - m_current_size,
                         data_read) < 0) {
     OLA_WARN << "something went wrong in socket recv\n";
-    return -1;
+    return;
   }
 
   m_current_size += data_read;
@@ -127,7 +127,7 @@ int StreamRpcChannel::SocketReady() {
     }
     m_expected_size = 0;
   }
-  return 0;
+  return;
 }
 
 
@@ -136,7 +136,7 @@ int StreamRpcChannel::SocketReady() {
  * different from the Socket on close handler which is called when reads hit
  * EOF/
  */
-void StreamRpcChannel::SetOnClose(SingleUseClosure *closure) {
+void StreamRpcChannel::SetOnClose(SingleUseClosure<void> *closure) {
   if (closure != m_on_close) {
     delete m_on_close;
     m_on_close = closure;

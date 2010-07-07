@@ -45,7 +45,7 @@ class SimpleClient {
     bool Setup();
     bool Cleanup();
 
-    int SocketClosed();
+    void SocketClosed();
 
   private:
     SimpleClient(const SimpleClient&);

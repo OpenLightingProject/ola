@@ -54,7 +54,7 @@ using ola::TimeStamp;
 void DmxSourceTest::testDmxSource() {
   DmxBuffer buffer("123456789");
   TimeStamp timestamp;
-  Clock::CurrentTime(timestamp);
+  Clock::CurrentTime(&timestamp);
 
   DmxSource source(buffer, timestamp, 100);
   CPPUNIT_ASSERT(source.IsSet());
@@ -64,7 +64,7 @@ void DmxSourceTest::testDmxSource() {
 
   DmxBuffer buffer2("987654321");
   TimeStamp timestamp2;
-  Clock::CurrentTime(timestamp2);
+  Clock::CurrentTime(&timestamp2);
   CPPUNIT_ASSERT(timestamp != timestamp2);
 
   source.UpdateData(buffer2, timestamp2, 120);
@@ -83,7 +83,7 @@ void DmxSourceTest::testDmxSource() {
 void DmxSourceTest::testIsActive() {
   DmxBuffer buffer("123456789");
   TimeStamp timestamp;
-  Clock::CurrentTime(timestamp);
+  Clock::CurrentTime(&timestamp);
 
   DmxSource source(buffer, timestamp, 100);
   CPPUNIT_ASSERT(source.IsSet());

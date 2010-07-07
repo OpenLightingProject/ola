@@ -22,15 +22,20 @@
 #define INCLUDE_OLAD_UNIVERSE_H_
 
 #include <set>
+#include <map>
 #include <vector>
 #include <string>
-#include <ola/ExportMap.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
+#include <ola/ExportMap.h>  // NOLINT
+#include <ola/rdm/RDMCommand.h>  // NOLINT
+#include <ola/rdm/UID.h>  // NOLINT
+#include <ola/rdm/UIDSet.h>  // NOLINT
 #include <olad/DmxSource.h>  // NOLINT
 
 namespace ola {
 
 using std::set;
+using ola::rdm::UID;
 
 class Client;
 class InputPort;
@@ -88,19 +93,31 @@ class Universe {
     bool PortDataChanged(InputPort *port);
     bool SourceClientDataChanged(Client *client);
 
+    // RDM methods
+    bool HandleRDMRequest(InputPort *port,
+                          const ola::rdm::RDMRequest *request);
+    bool HandleRDMResponse(OutputPort *port,
+                           const ola::rdm::RDMResponse *response);
+    void RunRDMDiscovery();
+    void GetUIDs(ola::rdm::UIDSet *uids);
+    void NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port);
+
     bool operator==(const Universe &other) {
       return m_universe_id == other.UniverseId();
     }
 
-    static const char K_UNIVERSE_NAME_VAR[];
-    static const char K_UNIVERSE_MODE_VAR[];
-    static const char K_UNIVERSE_INPUT_PORT_VAR[];
-    static const char K_UNIVERSE_OUTPUT_PORT_VAR[];
-    static const char K_UNIVERSE_SOURCE_CLIENTS_VAR[];
-    static const char K_UNIVERSE_SINK_CLIENTS_VAR[];
+    static const char K_FPS_VAR[];
     static const char K_MERGE_HTP_STR[];
     static const char K_MERGE_LTP_STR[];
-    static const char K_FPS_VAR[];
+    static const char K_UNIVERSE_INPUT_PORT_VAR[];
+    static const char K_UNIVERSE_MODE_VAR[];
+    static const char K_UNIVERSE_NAME_VAR[];
+    static const char K_UNIVERSE_OUTPUT_PORT_VAR[];
+    static const char K_UNIVERSE_RDM_REQUESTS[];
+    static const char K_UNIVERSE_RDM_RESPONSES[];
+    static const char K_UNIVERSE_SINK_CLIENTS_VAR[];
+    static const char K_UNIVERSE_SOURCE_CLIENTS_VAR[];
+    static const char K_UNIVERSE_UID_COUNT_VAR[];
 
   private:
     Universe(const Universe&);
@@ -125,6 +142,8 @@ class Universe {
     class UniverseStore *m_universe_store;
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
+    map<UID, InputPort*> m_input_uids;
+    map<UID, OutputPort*> m_output_uids;
 
     template<class PortClass>
     bool GenericAddPort(PortClass *port,
@@ -132,7 +151,8 @@ class Universe {
 
     template<class PortClass>
     bool GenericRemovePort(PortClass *port,
-                          vector<PortClass*> *ports);
+                          vector<PortClass*> *ports,
+                          map<UID, PortClass*> *uid_map);
 
     template<class PortClass>
     bool GenericContainsPort(PortClass *port,

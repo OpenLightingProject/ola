@@ -46,23 +46,22 @@ class SelectServerTest: public CppUnit::TestFixture {
     void testTimeout();
     void testLoopClosures();
 
-    int FatalTimeout() {
+    void FatalTimeout() {
       CPPUNIT_ASSERT(false);
-      return 1;
-    }
-    int TerminateTimeout() {
-      if (m_ss) { m_ss->Terminate(); }
-      return 0;
-    }
-    int IncrementTimeout() {
-      m_timeout_counter++;
-      return 0;
     }
 
-    int IncrementLoopCounter() {
-      m_loop_counter++;
-      return 0;
+    void TerminateTimeout() {
+      if (m_ss) { m_ss->Terminate(); }
     }
+
+    void SingleIncrementTimeout() { m_timeout_counter++; }
+
+    bool IncrementTimeout() {
+      m_timeout_counter++;
+      return true;
+    }
+
+    void IncrementLoopCounter() { m_loop_counter++; }
 
   private:
     unsigned int m_timeout_counter;
@@ -143,7 +142,7 @@ void SelectServerTest::testTimeout() {
   // check a single timeout
   m_ss->RegisterSingleTimeout(
       10,
-      ola::NewSingleClosure(this, &SelectServerTest::IncrementTimeout));
+      ola::NewSingleClosure(this, &SelectServerTest::SingleIncrementTimeout));
   m_ss->RegisterSingleTimeout(
       20,
       ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));

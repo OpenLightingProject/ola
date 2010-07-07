@@ -21,9 +21,12 @@
 #ifndef INCLUDE_OLA_RDM_UID_H_
 #define INCLUDE_OLA_RDM_UID_H_
 
+#include <ola/StringUtils.h>
 #include <stdint.h>
 #include <iomanip>
+#include <sstream>
 #include <string>
+#include <vector>
 
 namespace ola {
 namespace rdm {
@@ -49,6 +52,12 @@ class UID {
       return *this;
     }
 
+    explicit UID(const uint8_t *data) {
+      m_uid.esta_id = (data[0] << 8) + data[1];
+      m_uid.device_id = ((data[2] << 24) + (data[3] << 16) + (data[4] << 8) +
+          data[5]);
+    }
+
     bool operator==(const UID &other) const {
       return 0 == cmp(*this, other);
     }
@@ -65,6 +74,12 @@ class UID {
       return cmp(*this, other) < 0;
     }
 
+    uint16_t ManufacturerId() const { return m_uid.esta_id; }
+
+    uint32_t DeviceId() const { return m_uid.device_id; }
+
+    bool IsBroadcast() const { return m_uid.device_id == 0xffffffff; }
+
     std::string ToString() const {
       std::stringstream str;
       str << std::setfill('0') << std::setw(4) << std::hex << m_uid.esta_id
@@ -76,6 +91,18 @@ class UID {
       return out << uid.ToString();
     }
 
+    bool Pack(uint8_t *buffer, unsigned int length) const {
+      if (length < UID_SIZE)
+        return false;
+      buffer[0] = m_uid.esta_id >> 8;
+      buffer[1] = m_uid.esta_id & 0xff;
+      buffer[2] = m_uid.device_id >> 24;
+      buffer[3] = m_uid.device_id >> 16;
+      buffer[4] = m_uid.device_id >> 8;
+      buffer[5] = m_uid.device_id & 0xff;
+      return true;
+    }
+
     static UID AllDevices() {
       UID uid(0xffff, 0xffffffff);
       return uid;
@@ -85,6 +112,24 @@ class UID {
       UID uid(esta_id, 0xffffffff);
       return uid;
     }
+
+    static UID* FromString(const string &uid) {
+      std::vector<string> tokens;
+      ola::StringSplit(uid, tokens, ":");
+
+      if (tokens.size() != 2 || tokens[0].size() != 4 || tokens[1].size() != 8)
+        return NULL;
+
+      unsigned int esta_id, device_id;
+      if (!ola::HexStringToUInt(tokens[0], &esta_id))
+        return NULL;
+      if (!ola::HexStringToUInt(tokens[1], &device_id))
+        return NULL;
+
+      return new UID(esta_id, device_id);
+    }
+
+    enum { UID_SIZE = 6 };
 
   private:
     struct rdm_uid {

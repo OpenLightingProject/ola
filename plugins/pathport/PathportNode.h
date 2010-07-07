@@ -44,11 +44,11 @@ class PathportNode {
     bool Start();
     bool Stop();
     UdpSocket *GetSocket() { return &m_socket; }
-    int SocketReady(UdpSocket *socket);
+    void SocketReady(UdpSocket *socket);
 
     bool SetHandler(uint8_t universe,
                     DmxBuffer *buffer,
-                    Closure *closure);
+                    Closure<void> *closure);
     bool RemoveHandler(uint8_t universe);
 
     bool SendArpReply();
@@ -61,7 +61,7 @@ class PathportNode {
 
     typedef struct {
       DmxBuffer *buffer;
-      Closure *closure;
+      Closure<void> *closure;
     } universe_handler;
 
     enum {
