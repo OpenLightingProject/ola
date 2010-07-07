@@ -146,8 +146,9 @@ class SelectServer {
                    bool delete_on_close = false);
     bool RemoveSocket(class Socket *socket);
     bool RemoveSocket(class ConnectedSocket *socket);
-    timeout_id RegisterRepeatingTimeout(int ms, ola::Closure<bool> *closure);
-    timeout_id RegisterSingleTimeout(int ms,
+    timeout_id RegisterRepeatingTimeout(unsigned int ms,
+                                        ola::Closure<bool> *closure);
+    timeout_id RegisterSingleTimeout(unsigned int ms,
                                      ola::SingleUseClosure<void> *closure);
     void RemoveTimeout(timeout_id id);
     const TimeStamp *WakeUpTime() const { return m_wake_up_time; }

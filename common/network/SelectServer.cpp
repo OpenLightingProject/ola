@@ -246,7 +246,7 @@ bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
  * later.
  */
 timeout_id SelectServer::RegisterRepeatingTimeout(
-    int ms,
+    unsigned int ms,
     ola::Closure<bool> *closure) {
   if (!closure)
     return INVALID_TIMEOUT;
@@ -268,7 +268,7 @@ timeout_id SelectServer::RegisterRepeatingTimeout(
  * later.
  */
 timeout_id SelectServer::RegisterSingleTimeout(
-    int ms,
+    unsigned int ms,
     ola::SingleUseClosure<void> *closure) {
   if (!closure)
     return INVALID_TIMEOUT;
