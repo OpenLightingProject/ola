@@ -42,18 +42,23 @@ using ola::SingleUseCallback4;
 
 ResponseStatus::ResponseStatus(const RDMAPIImplResponseStatus &status,
                                const string &data):
+    m_was_broadcast(false),
     m_was_nacked(false),
     m_nack_reason(0),
-    m_rpc_error(status.rpc_error) {
-  if (m_rpc_error.empty() && status.response_type == ola::rdm::NACK_REASON) {
-    if (data.size() < sizeof(m_nack_reason)) {
-      m_rpc_error = "NACK_REASON data too small";
-      OLA_WARN << m_rpc_error;
-    } else {
-      m_was_nacked = true;
-      const uint8_t *ptr = reinterpret_cast<const uint8_t*>(
-        data.c_str());
-      m_nack_reason = (ptr[0] << 8) + ptr[1];
+    m_error(status.error) {
+  if (m_error.empty()) {
+    if (status.was_broadcast) {
+      m_was_broadcast = true;
+    } else if (status.response_type == ola::rdm::NACK_REASON) {
+      if (data.size() < sizeof(m_nack_reason)) {
+        m_error = "NACK_REASON data too small";
+        OLA_WARN << m_error;
+      } else {
+        m_was_nacked = true;
+        const uint8_t *ptr = reinterpret_cast<const uint8_t*>(
+          data.c_str());
+        m_nack_reason = (ptr[0] << 8) + ptr[1];
+      }
     }
   }
 }

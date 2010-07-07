@@ -37,13 +37,16 @@ using std::string;
  * is one.
  *
  * RDM Handles should first check for rpc_error being non-empty as this
- * represents an underlying transport error. Then the value of response_type
- * should be checked against the rdm_response_type codes.
+ * represents an underlying transport error. Then was_broadcast should be
+ * checked, as we don't get any response for broadcast messages. Finally, the
+ * value of response_type should be checked against the rdm_response_type
+ * codes.
  */
 struct RDMAPIImplResponseStatus {
+  bool was_broadcast;  // true if this was a broadcast request
   uint8_t response_type;  // The RDM response type
   uint8_t message_count;  // Number of queued messages
-  string rpc_error;  // Non empty if the RPC failed
+  string error;  // Non empty if the RPC failed
 };
 
 

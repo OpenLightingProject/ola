@@ -53,14 +53,16 @@ class ResponseStatus {
     ResponseStatus(const RDMAPIImplResponseStatus &status,
                    const string &data);
 
+    bool WasBroadcast() const { return m_was_broadcast; }
     bool WasNacked() const { return m_was_nacked; }
     uint16_t NackReason() const { return m_nack_reason; }
-    const string& Error() const { return m_rpc_error; }
+    const string& Error() const { return m_error; }
 
   private:
+    bool m_was_broadcast;
     bool m_was_nacked;
     uint16_t m_nack_reason;  // The NACK reason if the type was NACK_REASON
-    string m_rpc_error;  // Non empty if the RPC failed
+    string m_error;  // Non empty if the RPC failed
 };
 
 

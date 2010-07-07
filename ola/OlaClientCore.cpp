@@ -925,19 +925,19 @@ void OlaClientCore::HandleSetSourceUID(
  * Handle an RDM message
  */
 void OlaClientCore::HandleRDM(struct rdm_response_args *args) {
-  printf("got rdm response in client!\n");
-
   ola::rdm::RDMAPIImplResponseStatus response_status;
+  response_status.was_broadcast = args->reply->was_broadcast();
   response_status.response_type = args->reply->response_code();
   response_status.message_count = args->reply->message_count();
 
   if (args->controller->Failed()) {
-    response_status.rpc_error = args->controller->ErrorText();
+    response_status.error = args->controller->ErrorText();
   } else if (args->reply->response_code() == ola::rdm::ACK_OVERFLOW ||
              args->reply->response_code() == ola::rdm::ACK_TIMER) {
-    // TODO(simon): handle to ACK_OVERFLOW and ACK_TIMER cases here
+    // TODO(simon): handle to ACK_OVERFLOW and ACK_TIMER cases here or
+    // preferably in the ola server.
     OLA_WARN << "We don't handle ACK_OVERFLOW or ACK_TIMER yet!";
-    response_status.rpc_error = "Not implemented in OLA Client";
+    response_status.error = "OVERFLOW or ACK not implemented in OLA Client";
   }
 
   args->callback->Run(response_status,
