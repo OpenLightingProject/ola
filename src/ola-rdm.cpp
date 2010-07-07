@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <sysexits.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/OlaClient.h>
@@ -67,7 +68,8 @@ class RDMController {
       m_uid(*uid),
       m_sub_device(sub_device),
       m_api(api),
-      m_ss(ss) {
+      m_ss(ss),
+      m_exit_code(EX_OK) {
     }
 
     bool GetPID(const vector<string> &tokens);
@@ -76,11 +78,14 @@ class RDMController {
     void PrintDeviceInfo(const ResponseStatus &status,
                          const ola::rdm::DeviceInfo &device_info);
 
+    uint8_t ExitCode() const { return m_exit_code; }
+
   private:
     UID m_uid;
     uint16_t m_sub_device;
     RDMAPI *m_api;
     SelectServer *m_ss;
+    uint8_t m_exit_code;
 
     bool CheckForSuccess(const ResponseStatus &status);
     bool CheckForQueuedMessages();
@@ -128,13 +133,19 @@ void RDMController::PrintDeviceInfo(
  */
 bool RDMController::CheckForSuccess(const ResponseStatus &status) {
   if (!status.Error().empty()) {
-    cout << status.Error() << endl;
+    std::cerr << status.Error() << endl;
+    m_ss->Terminate();
+    m_exit_code = EX_SOFTWARE;
+    return false;
+  }
+
+  if (status.WasBroadcast()) {
     m_ss->Terminate();
     return false;
   }
 
   if (status.WasNacked()) {
-    // TODO(simon): print reason here
+    cout << "Request was NACKED with code " << status.NackReason();
     m_ss->Terminate();
     return false;
   }
@@ -263,7 +274,7 @@ void DisplayHelpAndExit(const options &opts) {
   } else {
     DisplayGetPidHelp(opts);
   }
-  exit(0);
+  exit(EX_USAGE);
 }
 
 
@@ -272,7 +283,7 @@ void DisplayHelpAndExit(const options &opts) {
  */
 void DisplayPIDsAndExit() {
   cout << "pids" << endl;
-  exit(0);
+  exit(EX_OK);
 }
 
 
@@ -291,14 +302,14 @@ int main(int argc, char *argv[]) {
   if (opts.help || opts.args.size() == 0)
     DisplayHelpAndExit(opts);
 
-  if (!ola_client.Setup()) {
-    OLA_FATAL << "Setup failed";
-    exit(1);
-  }
-
   if (!opts.uid) {
     OLA_FATAL << "Invalid UID";
-    exit(1);
+    exit(EX_USAGE);
+  }
+
+  if (!ola_client.Setup()) {
+    OLA_FATAL << "Setup failed";
+    exit(EX_UNAVAILABLE);
   }
 
   SelectServer *ss = ola_client.GetSelectServer();
@@ -320,5 +331,5 @@ int main(int argc, char *argv[]) {
 
   if (opts.uid)
     delete opts.uid;
-  return 0;
+  return controller.ExitCode();
 }
