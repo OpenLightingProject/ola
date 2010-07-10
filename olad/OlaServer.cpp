@@ -341,7 +341,7 @@ void OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
  * Run the garbage collector
  */
 bool OlaServer::RunHousekeeping() {
-  OLA_INFO << "Garbage collecting";
+  OLA_DEBUG << "Garbage collecting";
   m_universe_store->GarbageCollectUniverses();
   m_rdm_controller->CheckTimeouts(*m_ss->WakeUpTime());
   return true;
