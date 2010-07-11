@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include "olad/HttpServer.h"
+#include "ola/Logging.h"
 
 namespace ola {
 
@@ -469,14 +470,18 @@ int HttpServer::DisplayTemplate(const char *template_name,
   Template* tpl = Template::GetTemplate(template_name,
                                         ctemplate::STRIP_BLANK_LINES);
 
-  if (!tpl)
+  if (!tpl) {
+    OLA_WARN << "Failed to load template: " << template_name;
     return ServeError(response, "Bad Template");
+  }
 
   string output;
   bool success = tpl->Expand(&output, dict);
 
-  if (!success)
-    return ServeError(response, "Expantion failed");
+  if (!success) {
+    OLA_WARN << "Template expansion failed for: " << template_name;
+    return ServeError(response, "Expansion failed");
+  }
 
   response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
   response->Append(output);
@@ -529,8 +534,10 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
   file_path.append(file_info->file_path);
   ifstream i_stream(file_path.data());
 
-  if (!i_stream.is_open())
+  if (!i_stream.is_open()) {
+    OLA_WARN << "Missing file: " << file_path;
     return ServeNotFound(response);
+  }
 
   i_stream.seekg(0, std::ios::end);
   length = i_stream.tellg();
