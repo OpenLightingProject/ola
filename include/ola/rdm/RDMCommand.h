@@ -63,6 +63,7 @@ class RDMCommand {
     bool Pack(uint8_t *buffer, unsigned int *size) const;
 
     static const uint8_t START_CODE = 0xcc;
+    enum { MAX_PARAM_DATA_LENGTH = 231 };
 
   protected:
     RDMCommand(const UID &source,
@@ -110,7 +111,6 @@ class RDMCommand {
 
     static const uint8_t SUB_START_CODE = 0x01;
     static const unsigned int CHECKSUM_LENGTH = 2;
-    static const unsigned int MAX_PARAM_DATA_LENGTH = 231;
 
     RDMCommand(const RDMCommand &other);
     bool operator==(const RDMCommand &other) const;

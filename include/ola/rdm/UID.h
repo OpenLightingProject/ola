@@ -78,7 +78,7 @@ class UID {
 
     uint32_t DeviceId() const { return m_uid.device_id; }
 
-    bool IsBroadcast() const { return m_uid.device_id == 0xffffffff; }
+    bool IsBroadcast() const { return m_uid.device_id == ALL_DEVICES; }
 
     std::string ToString() const {
       std::stringstream str;
@@ -104,12 +104,12 @@ class UID {
     }
 
     static UID AllDevices() {
-      UID uid(0xffff, 0xffffffff);
+      UID uid(ALL_MANUFACTURERS, ALL_DEVICES);
       return uid;
     }
 
     static UID AllManufactureDevices(uint16_t esta_id) {
-      UID uid(esta_id, 0xffffffff);
+      UID uid(esta_id, ALL_DEVICES);
       return uid;
     }
 
@@ -130,6 +130,9 @@ class UID {
     }
 
     enum { UID_SIZE = 6 };
+
+    static const uint16_t ALL_MANUFACTURERS = 0xffff;
+    static const uint32_t ALL_DEVICES = 0xffffffff;
 
   private:
     struct rdm_uid {
