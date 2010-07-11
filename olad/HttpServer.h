@@ -23,6 +23,7 @@
 #define OLAD_HTTPSERVER_H_
 
 #include <ctemplate/template.h>
+#include <ola/Callback.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/select.h>
@@ -100,52 +101,13 @@ class HttpResponse {
 
 
 /*
- * Base HTTP Closure
- */
-class BaseHttpClosure {
-  public:
-    virtual int Run(const HttpRequest *request, HttpResponse *response) = 0;
-    virtual ~BaseHttpClosure() {}
-};
-
-/*
- * A templatized HttpClosure
- */
-template <typename Class>
-class HttpClosure: public BaseHttpClosure {
-  public:
-    typedef int (Class::*RequestHandler)(const HttpRequest*, HttpResponse*);
-
-    HttpClosure(Class *object, RequestHandler handler):
-      BaseHttpClosure(),
-      m_object(object),
-      m_handler(handler) {}
-    int Run(const HttpRequest *request, HttpResponse *response) {
-      return (m_object->*m_handler)(request, response);
-    }
-
-  private:
-    Class *m_object;
-    RequestHandler m_handler;
-};
-
-
-/*
- * Create a new HTTP Closure
- */
-template <typename Class>
-inline BaseHttpClosure* NewHttpClosure(
-    Class* object,
-    int (Class::*method)(const HttpRequest*, HttpResponse*)) {
-  return new HttpClosure<Class>(object, method);
-}
-
-
-/*
  * The base HTTP Server
  */
 class HttpServer {
   public:
+    typedef ola::Callback2<int, const HttpRequest*, HttpResponse*>
+      BaseHttpClosure;
+
     HttpServer(unsigned int port, const string &data_dir);
     virtual ~HttpServer();
     bool Start();

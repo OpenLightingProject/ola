@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/StringUtils.h"
 #include "ola/network/NetworkUtils.h"
@@ -468,7 +469,11 @@ int OlaHttpServer::DisplayHandlers(const HttpRequest *request,
 inline void OlaHttpServer::RegisterHandler(
     const string &path,
     int (OlaHttpServer::*method)(const HttpRequest*, HttpResponse*)) {
-  m_server.RegisterHandler(path, NewHttpClosure(this, method));
+  m_server.RegisterHandler(
+      path,
+      NewCallback<OlaHttpServer, int, const HttpRequest*, HttpResponse*>(
+        this,
+        method));
 }
 
 
