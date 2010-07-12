@@ -428,10 +428,23 @@ void DmxTriDevice::HandleDiscoveryAutoResponse(uint8_t return_code,
 void DmxTriDevice::HandleDiscoverStatResponse(uint8_t return_code,
                                               const uint8_t *data,
                                               unsigned int length) {
-  if (return_code != EC_NO_ERROR) {
-    OLA_WARN << "DMX_TRI discovery returned error " <<
-      static_cast<int>(return_code);
-    StopDiscovery();
+  switch (return_code) {
+    case EC_RESPONSE_MUTE:
+      OLA_WARN << "Failed to mute device, aborting discovery";
+      StopDiscovery();
+      return;
+    case EC_RESPONSE_DISCOVERY:
+      OLA_WARN <<
+        "Duplicated or erroneous device detected, aborting discovery";
+      StopDiscovery();
+      return;
+    case EC_NO_ERROR:
+      break;
+    default:
+      OLA_WARN << "DMX_TRI discovery returned error " <<
+        static_cast<int>(return_code);
+      StopDiscovery();
+      return;
   }
 
   if (length < 1) {
