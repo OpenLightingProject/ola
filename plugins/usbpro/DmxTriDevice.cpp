@@ -429,6 +429,8 @@ void DmxTriDevice::HandleDiscoverStatResponse(uint8_t return_code,
                                               const uint8_t *data,
                                               unsigned int length) {
   switch (return_code) {
+    case EC_NO_ERROR:
+      break;
     case EC_RESPONSE_MUTE:
       OLA_WARN << "Failed to mute device, aborting discovery";
       StopDiscovery();
@@ -438,7 +440,8 @@ void DmxTriDevice::HandleDiscoverStatResponse(uint8_t return_code,
         "Duplicated or erroneous device detected, aborting discovery";
       StopDiscovery();
       return;
-    case EC_NO_ERROR:
+    case EC_RESPONSE_UNEXPECTED:
+      OLA_INFO << "Got an unexpected RDM response during discovery";
       break;
     default:
       OLA_WARN << "DMX_TRI discovery returned error " <<
