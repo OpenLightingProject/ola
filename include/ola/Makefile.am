@@ -5,7 +5,7 @@ SOURCES = BaseTypes.h Callback.h Clock.h Closure.h DmxBuffer.h ExportMap.h \
 
 BUILT_SOURCES = plugin_id.h
 
-EXTRA_DIST = $(SOURCES) make_plugin_id.sh
+EXTRA_DIST = $(SOURCES) gen_callbacks.py make_plugin_id.sh
 pkgincludedir = $(includedir)/ola
 pkginclude_HEADERS = $(SOURCES) $(BUILT_SOURCES)
 
