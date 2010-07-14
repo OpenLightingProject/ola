@@ -24,36 +24,36 @@
 
 namespace ola {
 
-// A single argument callback
-template <typename ReturnType, typename Arg1>
+// 1 argument callbacks
+template <typename ReturnType, typename Arg0>
 class BaseCallback1 {
   public:
     virtual ~BaseCallback1() {}
-    virtual ReturnType Run(Arg1 arg1) = 0;
-    virtual ReturnType DoRun(Arg1 arg1) = 0;
+    virtual ReturnType Run(Arg0 arg0) = 0;
+    virtual ReturnType DoRun(Arg0 arg0) = 0;
 };
 
 
 /*
- * Callback, this is a closure that can be called multiple times
+ * A callback, this can be called multiple times
  */
-template <typename ReturnType, typename Arg1>
-class Callback1: public BaseCallback1<ReturnType, Arg1> {
+template <typename ReturnType, typename Arg0>
+class Callback1: public BaseCallback1<ReturnType, Arg0> {
   public:
     virtual ~Callback1() {}
-    ReturnType Run(Arg1 arg1) { return this->DoRun(arg1); }
+    ReturnType Run(Arg0 arg0) { return DoRun(arg0); }
 };
 
 
 /*
- * A single use closure, this deletes itself after it's run.
+ * A single use callback, this deletes itself after it's run.
  */
-template <typename ReturnType, typename Arg1>
-class SingleUseCallback1: public BaseCallback1<ReturnType, Arg1> {
+template <typename ReturnType, typename Arg0>
+class SingleUseCallback1: public BaseCallback1<ReturnType, Arg0> {
   public:
     virtual ~SingleUseCallback1() {}
-    ReturnType Run(Arg1 arg1) {
-      ReturnType ret = this->DoRun(arg1);
+    ReturnType Run(Arg0 arg0) {
+      ReturnType ret = DoRun(arg0);
       delete this;
       return ret;
     }
@@ -61,333 +61,293 @@ class SingleUseCallback1: public BaseCallback1<ReturnType, Arg1> {
 
 
 /*
- * A single use closure returning void, this deletes itself after it's run.
+ * A single use callback returning void.
  */
-template <typename Arg1>
-class SingleUseCallback1<void, Arg1>: public BaseCallback1<void, Arg1> {
+template <typename Arg0>
+class SingleUseCallback1<void, Arg0>: public BaseCallback1<void, Arg0> {
   public:
     virtual ~SingleUseCallback1() {}
-    void Run(Arg1 arg1) {
-      DoRun(arg1);
+    void Run(Arg0 arg0) {
+      DoRun(arg0);
       delete this;
-      return;
     }
 };
 
 
 /*
- * An method closure with no create-time arguments, and one exec time arg
+ * An method callback with 0 create-time args, and 1 exec time arg
  */
-template <typename Class, typename Parent, typename ReturnType, typename Arg1>
+template <typename Class, typename Parent, typename ReturnType, typename Arg0>
 class MethodCallback0_1: public Parent {
   public:
-    typedef ReturnType (Class::*Method)(Arg1 arg);
-
-    /*
-     * @param object the object to use in the method call
-     * @param callback the method to call
-     */
+    typedef ReturnType (Class::*Method)(Arg0);
     MethodCallback0_1(Class *object, Method callback):
       Parent(),
       m_object(object),
       m_callback(callback) {}
-    ReturnType DoRun(Arg1 arg1) { return (m_object->*m_callback)(arg1); }
-
+    ReturnType DoRun(Arg0 arg0) {
+      return (m_object->*m_callback)(arg0);
+    }
   private:
     Class *m_object;
     Method m_callback;
 };
 
-
 /*
- * Create a new single use method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename Arg1>
-inline SingleUseCallback1<ReturnType, Arg1>* NewSingleCallback(
+template <typename Class, typename ReturnType, typename Arg0>
+inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
     Class* object,
-    ReturnType (Class::*method)(Arg1 arg)) {
+    ReturnType (Class::*method)(Arg0)) {
   return new MethodCallback0_1<Class,
-                               SingleUseCallback1<ReturnType, Arg1>,
+                               SingleUseCallback1<ReturnType, Arg0>,
                                ReturnType,
-                               Arg1>(
+                               Arg0>(
       object,
       method);
 }
 
-
 /*
- * Create a new method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename Arg1>
-inline Callback1<ReturnType, Arg1>* NewCallback(
+template <typename Class, typename ReturnType, typename Arg0>
+inline Callback1<ReturnType, Arg0>* NewCallback(
     Class* object,
-    ReturnType (Class::*method)(Arg1 arg)) {
+    ReturnType (Class::*method)(Arg0)) {
   return new MethodCallback0_1<Class,
-                               Callback1<ReturnType, Arg1>,
+                               Callback1<ReturnType, Arg0>,
                                ReturnType,
-                               Arg1>(
+                               Arg0>(
       object,
       method);
 }
 
-
 /*
- * An method closure with one create-time arguments, and one exec time arg
+ * An method callback with 1 create-time args, and 1 exec time arg
  */
-template <typename Class, typename Parent, typename ReturnType, typename A1,
-          typename Arg1>
+template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0>
 class MethodCallback1_1: public Parent {
   public:
-    typedef ReturnType (Class::*Method)(A1, Arg1 arg);
-
-    /*
-     * @param object the object to use in the method call
-     * @param callback the method to call
-     */
-    MethodCallback1_1(Class *object, Method callback, A1 a1):
+    typedef ReturnType (Class::*Method)(A0, Arg0);
+    MethodCallback1_1(Class *object, Method callback, A0 a0):
       Parent(),
       m_object(object),
       m_callback(callback),
-      m_a1(a1) {}
-    ReturnType DoRun(Arg1 arg1) { return (m_object->*m_callback)(m_a1, arg1); }
-
+      m_a0(a0) {}
+    ReturnType DoRun(Arg0 arg0) {
+      return (m_object->*m_callback)(m_a0, arg0);
+    }
   private:
     Class *m_object;
     Method m_callback;
-    A1 m_a1;
+  A0 m_a0;
 };
 
-
 /*
- * Create a new single use method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename A1, typename Arg1>
-inline SingleUseCallback1<ReturnType, Arg1>* NewSingleCallback(
+template <typename Class, typename ReturnType, typename A0, typename Arg0>
+inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
     Class* object,
-    ReturnType (Class::*method)(A1 a1, Arg1 arg),
-    A1 a1) {
+    ReturnType (Class::*method)(A0, Arg0),
+    A0 a0) {
   return new MethodCallback1_1<Class,
-                               SingleUseCallback1<ReturnType, Arg1>,
+                               SingleUseCallback1<ReturnType, Arg0>,
                                ReturnType,
-                               A1,
-                               Arg1>(
+                               A0,
+                               Arg0>(
       object,
       method,
-      a1);
+      a0);
 }
 
-
 /*
- * Create a new method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename A1, typename Arg1>
-inline Callback1<ReturnType, Arg1>* NewCallback(
+template <typename Class, typename ReturnType, typename A0, typename Arg0>
+inline Callback1<ReturnType, Arg0>* NewCallback(
     Class* object,
-    ReturnType (Class::*method)(A1 a1, Arg1 arg),
-    A1 a1) {
+    ReturnType (Class::*method)(A0, Arg0),
+    A0 a0) {
   return new MethodCallback1_1<Class,
-                              Callback1<ReturnType, Arg1>,
-                              ReturnType,
-                              A1,
-                              Arg1>(
+                               Callback1<ReturnType, Arg0>,
+                               ReturnType,
+                               A0,
+                               Arg0>(
       object,
       method,
-      a1);
+      a0);
 }
 
-
 /*
- * An method closure with two create-time arguments, and one exec time arg
+ * An method callback with 2 create-time args, and 1 exec time arg
  */
-template <typename Class, typename Parent, typename ReturnType, typename A1,
-          typename A2, typename Arg1>
+template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0>
 class MethodCallback2_1: public Parent {
   public:
-    typedef ReturnType (Class::*Method)(A1, A2, Arg1 arg);
-
-    /*
-     * @param object the object to use in the method call
-     * @param callback the method to call
-     */
-    MethodCallback2_1(Class *object, Method callback, A1 a1, A2 a2):
+    typedef ReturnType (Class::*Method)(A0, A1, Arg0);
+    MethodCallback2_1(Class *object, Method callback, A0 a0, A1 a1):
       Parent(),
       m_object(object),
       m_callback(callback),
-      m_a1(a1),
-      m_a2(a2) {}
-    ReturnType DoRun(Arg1 arg1) {
-      return (m_object->*m_callback)(m_a1, m_a2, arg1);
+      m_a0(a0),
+      m_a1(a1) {}
+    ReturnType DoRun(Arg0 arg0) {
+      return (m_object->*m_callback)(m_a0, m_a1, arg0);
     }
-
   private:
     Class *m_object;
     Method m_callback;
-    A1 m_a1;
-    A2 m_a2;
+  A0 m_a0;
+  A1 m_a1;
 };
 
-
 /*
- * Create a new single use method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename A1, typename A2,
-          typename Arg1>
-inline SingleUseCallback1<ReturnType, Arg1>* NewSingleCallback(
+template <typename Class, typename ReturnType, typename A0, typename A1, typename Arg0>
+inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
     Class* object,
-    ReturnType (Class::*method)(A1 a1, A2 a2, Arg1 arg),
-    A1 a1,
-    A2 a2) {
+    ReturnType (Class::*method)(A0, A1, Arg0),
+    A0 a0,
+    A1 a1) {
   return new MethodCallback2_1<Class,
-                               SingleUseCallback1<ReturnType, Arg1>,
+                               SingleUseCallback1<ReturnType, Arg0>,
                                ReturnType,
+                               A0,
                                A1,
-                               A2,
-                               Arg1>(
+                               Arg0>(
       object,
       method,
-      a1,
-      a2);
+      a0,
+      a1);
 }
 
-
 /*
- * Create a new method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename A1, typename A2,
-          typename Arg1>
-inline Callback1<ReturnType, Arg1>* NewCallback(
+template <typename Class, typename ReturnType, typename A0, typename A1, typename Arg0>
+inline Callback1<ReturnType, Arg0>* NewCallback(
     Class* object,
-    ReturnType (Class::*method)(A1 a1, A2 a2, Arg1 arg),
-    A1 a1,
-    A2 a2) {
+    ReturnType (Class::*method)(A0, A1, Arg0),
+    A0 a0,
+    A1 a1) {
   return new MethodCallback2_1<Class,
-                              Callback1<ReturnType, Arg1>,
-                              ReturnType,
-                              A1,
-                              A2,
-                              Arg1>(
+                               Callback1<ReturnType, Arg0>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               Arg0>(
       object,
       method,
-      a1,
-      a2);
+      a0,
+      a1);
 }
 
-
 /*
- * An method closure with three create-time arguments, and one exec time arg
+ * An method callback with 3 create-time args, and 1 exec time arg
  */
-template <typename Class, typename Parent, typename ReturnType, typename A1,
-          typename A2, typename A3, typename Arg1>
+template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
 class MethodCallback3_1: public Parent {
   public:
-    typedef ReturnType (Class::*Method)(A1, A2, A3, Arg1 arg);
-
-    /*
-     * @param object the object to use in the method call
-     * @param callback the method to call
-     */
-    MethodCallback3_1(Class *object, Method callback, A1 a1, A2 a2, A3 a3):
+    typedef ReturnType (Class::*Method)(A0, A1, A2, Arg0);
+    MethodCallback3_1(Class *object, Method callback, A0 a0, A1 a1, A2 a2):
       Parent(),
       m_object(object),
       m_callback(callback),
+      m_a0(a0),
       m_a1(a1),
-      m_a2(a2),
-      m_a3(a3) {}
-    ReturnType DoRun(Arg1 arg1) {
-      return (m_object->*m_callback)(m_a1, m_a2, m_a3, arg1);
+      m_a2(a2) {}
+    ReturnType DoRun(Arg0 arg0) {
+      return (m_object->*m_callback)(m_a0, m_a1, m_a2, arg0);
     }
-
   private:
     Class *m_object;
     Method m_callback;
-    A1 m_a1;
-    A2 m_a2;
-    A3 m_a3;
+  A0 m_a0;
+  A1 m_a1;
+  A2 m_a2;
 };
 
-
 /*
- * Create a new single use method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename A1, typename A2,
-          typename A3, typename Arg1>
-inline SingleUseCallback1<ReturnType, Arg1>* NewSingleCallback(
+template <typename Class, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
+inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
     Class* object,
-    ReturnType (Class::*method)(A1 a1, A2 a2, A3 a3, Arg1 arg),
+    ReturnType (Class::*method)(A0, A1, A2, Arg0),
+    A0 a0,
     A1 a1,
-    A2 a2,
-    A3 a3) {
+    A2 a2) {
   return new MethodCallback3_1<Class,
-                               SingleUseCallback1<ReturnType, Arg1>,
+                               SingleUseCallback1<ReturnType, Arg0>,
                                ReturnType,
+                               A0,
                                A1,
                                A2,
-                               A3,
-                               Arg1>(
+                               Arg0>(
       object,
       method,
+      a0,
       a1,
-      a2,
-      a3);
+      a2);
 }
-
 
 /*
- * Create a new method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename A1, typename A2,
-          typename A3, typename Arg1>
-inline Callback1<ReturnType, Arg1>* NewCallback(
+template <typename Class, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
+inline Callback1<ReturnType, Arg0>* NewCallback(
     Class* object,
-    ReturnType (Class::*method)(A1 a1, A2 a2, A3 a3, Arg1 arg),
+    ReturnType (Class::*method)(A0, A1, A2, Arg0),
+    A0 a0,
     A1 a1,
-    A2 a2,
-    A3 a3) {
+    A2 a2) {
   return new MethodCallback3_1<Class,
-                              Callback1<ReturnType, Arg1>,
-                              ReturnType,
-                              A1,
-                              A2,
-                              A3,
-                              Arg1>(
+                               Callback1<ReturnType, Arg0>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2,
+                               Arg0>(
       object,
       method,
+      a0,
       a1,
-      a2,
-      a3);
+      a2);
 }
 
-
-// Two argument callbacks
-template <typename ReturnType, typename Arg1, typename Arg2>
+// 2 argument callbacks
+template <typename ReturnType, typename Arg0, typename Arg1>
 class BaseCallback2 {
   public:
     virtual ~BaseCallback2() {}
-    virtual ReturnType Run(Arg1 arg1, Arg2 arg2) = 0;
-    virtual ReturnType DoRun(Arg1 arg1, Arg2 arg2) = 0;
+    virtual ReturnType Run(Arg0 arg0, Arg1 arg1) = 0;
+    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1) = 0;
 };
 
 
 /*
- * Callback, this is a closure that can be called multiple times
+ * A callback, this can be called multiple times
  */
-template <typename ReturnType, typename Arg1, typename Arg2>
-class Callback2: public BaseCallback2<ReturnType, Arg1, Arg2> {
+template <typename ReturnType, typename Arg0, typename Arg1>
+class Callback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
   public:
     virtual ~Callback2() {}
-    ReturnType Run(Arg1 arg1, Arg2 arg2) { return this->DoRun(arg1, arg2); }
+    ReturnType Run(Arg0 arg0, Arg1 arg1) { return DoRun(arg0, arg1); }
 };
 
 
 /*
- * A single use closure, this deletes itself after it's run.
+ * A single use callback, this deletes itself after it's run.
  */
-template <typename ReturnType, typename Arg1, typename Arg2>
-class SingleUseCallback2: public BaseCallback2<ReturnType, Arg1, Arg2> {
+template <typename ReturnType, typename Arg0, typename Arg1>
+class SingleUseCallback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
   public:
     virtual ~SingleUseCallback2() {}
-    ReturnType Run(Arg1 arg1, Arg2 arg2) {
-      ReturnType ret = this->DoRun(arg1, arg2);
+    ReturnType Run(Arg0 arg0, Arg1 arg1) {
+      ReturnType ret = DoRun(arg0, arg1);
       delete this;
       return ret;
     }
@@ -395,189 +355,159 @@ class SingleUseCallback2: public BaseCallback2<ReturnType, Arg1, Arg2> {
 
 
 /*
- * A single use closure returning void, this deletes itself after it's run.
+ * A single use callback returning void.
  */
-template <typename Arg1, typename Arg2>
-class SingleUseCallback2<void, Arg1, Arg2>
-    : public BaseCallback2<void, Arg1, Arg2> {
+template <typename Arg0, typename Arg1>
+class SingleUseCallback2<void, Arg0, Arg1>: public BaseCallback2<void, Arg0, Arg1> {
   public:
     virtual ~SingleUseCallback2() {}
-    void Run(Arg1 arg1, Arg2 arg2) {
-      DoRun(arg1, arg2);
+    void Run(Arg0 arg0, Arg1 arg1) {
+      DoRun(arg0, arg1);
       delete this;
-      return;
     }
 };
 
 
 /*
- * An method closure with no create-time arguments, and two exec time arg
+ * An method callback with 0 create-time args, and 2 exec time arg
  */
-template <typename Class, typename Parent, typename ReturnType,
-          typename Arg1, typename Arg2>
+template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1>
 class MethodCallback0_2: public Parent {
   public:
-    typedef ReturnType (Class::*Method)(Arg1 arg, Arg2 arg2);
-
-    /*
-     * @param object the object to use in the method call
-     * @param callback the method to call
-     */
+    typedef ReturnType (Class::*Method)(Arg0, Arg1);
     MethodCallback0_2(Class *object, Method callback):
       Parent(),
       m_object(object),
       m_callback(callback) {}
-    ReturnType DoRun(Arg1 arg1, Arg2 arg2) {
-      return (m_object->*m_callback)(arg1, arg2);
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
+      return (m_object->*m_callback)(arg0, arg1);
     }
-
   private:
     Class *m_object;
     Method m_callback;
 };
 
-
 /*
- * Create a new single use method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename Arg1, typename Arg2>
-inline SingleUseCallback2<ReturnType, Arg1, Arg2>* NewSingleCallback(
+template <typename Class, typename ReturnType, typename Arg0, typename Arg1>
+inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
     Class* object,
-    ReturnType (Class::*method)(Arg1 arg, Arg2 arg2)) {
+    ReturnType (Class::*method)(Arg0, Arg1)) {
   return new MethodCallback0_2<Class,
-                               SingleUseCallback2<ReturnType, Arg1, Arg2>,
+                               SingleUseCallback2<ReturnType, Arg0, Arg1>,
                                ReturnType,
-                               Arg1,
-                               Arg2>(
+                               Arg0,
+                               Arg1>(
       object,
       method);
 }
 
-
 /*
- * Create a new method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename Arg1, typename Arg2>
-inline Callback2<ReturnType, Arg1, Arg2>* NewCallback(
+template <typename Class, typename ReturnType, typename Arg0, typename Arg1>
+inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
     Class* object,
-    ReturnType (Class::*method)(Arg1 arg, Arg2 arg2)) {
+    ReturnType (Class::*method)(Arg0, Arg1)) {
   return new MethodCallback0_2<Class,
-                               Callback2<ReturnType, Arg1, Arg2>,
+                               Callback2<ReturnType, Arg0, Arg1>,
                                ReturnType,
-                               Arg1,
-                               Arg2>(
+                               Arg0,
+                               Arg1>(
       object,
       method);
 }
 
-
 /*
- * An method closure with one create-time argument, and two exec time arg
+ * An method callback with 1 create-time args, and 2 exec time arg
  */
-template <typename Class, typename Parent, typename ReturnType,
-          typename A1, typename Arg1, typename Arg2>
+template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1>
 class MethodCallback1_2: public Parent {
   public:
-    typedef ReturnType (Class::*Method)(A1 a1, Arg1 arg, Arg2 arg2);
-
-    /*
-     * @param object the object to use in the method call
-     * @param callback the method to call
-     */
-    MethodCallback1_2(Class *object, Method callback, A1 a1):
+    typedef ReturnType (Class::*Method)(A0, Arg0, Arg1);
+    MethodCallback1_2(Class *object, Method callback, A0 a0):
       Parent(),
       m_object(object),
       m_callback(callback),
-      m_a1(a1) {}
-    ReturnType DoRun(Arg1 arg1, Arg2 arg2) {
-      return (m_object->*m_callback)(m_a1, arg1, arg2);
+      m_a0(a0) {}
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
+      return (m_object->*m_callback)(m_a0, arg0, arg1);
     }
-
   private:
     Class *m_object;
     Method m_callback;
-    A1 m_a1;
+  A0 m_a0;
 };
 
-
 /*
- * Create a new single use method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename A1, typename Arg1,
-          typename Arg2>
-inline SingleUseCallback2<ReturnType, Arg1, Arg2>* NewSingleCallback(
+template <typename Class, typename ReturnType, typename A0, typename Arg0, typename Arg1>
+inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
     Class* object,
-    ReturnType (Class::*method)(A1 a1, Arg1 arg, Arg2 arg2),
-    A1 a1) {
+    ReturnType (Class::*method)(A0, Arg0, Arg1),
+    A0 a0) {
   return new MethodCallback1_2<Class,
-                               SingleUseCallback2<ReturnType, Arg1, Arg2>,
+                               SingleUseCallback2<ReturnType, Arg0, Arg1>,
                                ReturnType,
-                               A1,
-                               Arg1,
-                               Arg2>(
+                               A0,
+                               Arg0,
+                               Arg1>(
       object,
       method,
-      a1);
+      a0);
 }
-
 
 /*
- * Create a new method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename A1, typename Arg1,
-          typename Arg2>
-inline Callback2<ReturnType, Arg1, Arg2>* NewCallback(
+template <typename Class, typename ReturnType, typename A0, typename Arg0, typename Arg1>
+inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
     Class* object,
-    ReturnType (Class::*method)(A1 a1, Arg1 arg, Arg2 arg2),
-    A1 a1) {
+    ReturnType (Class::*method)(A0, Arg0, Arg1),
+    A0 a0) {
   return new MethodCallback1_2<Class,
-                               Callback2<ReturnType, Arg1, Arg2>,
+                               Callback2<ReturnType, Arg0, Arg1>,
                                ReturnType,
-                               A1,
-                               Arg1,
-                               Arg2>(
+                               A0,
+                               Arg0,
+                               Arg1>(
       object,
       method,
-      a1);
+      a0);
 }
 
-
-// Four argument callbacks
-template <typename ReturnType, typename Arg1, typename Arg2, typename Arg3,
-          typename Arg4>
+// 4 argument callbacks
+template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 class BaseCallback4 {
   public:
     virtual ~BaseCallback4() {}
-    virtual ReturnType Run(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) = 0;
-    virtual ReturnType DoRun(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) = 0;
+    virtual ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
+    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
 
 
 /*
- * Callback, this is a closure that can be called multiple times
+ * A callback, this can be called multiple times
  */
-template <typename ReturnType, typename Arg1, typename Arg2, typename Arg3,
-          typename Arg4>
-class Callback4: public BaseCallback4<ReturnType, Arg1, Arg2, Arg3, Arg4> {
+template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+class Callback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3> {
   public:
     virtual ~Callback4() {}
-    ReturnType Run(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) {
-      return this->DoRun(arg1, arg2, arg3, arg4);
-    }
+    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) { return DoRun(arg0, arg1, arg2, arg3); }
 };
 
 
 /*
- * A single use closure, this deletes itself after it's run.
+ * A single use callback, this deletes itself after it's run.
  */
-template <typename ReturnType, typename Arg1, typename Arg2, typename Arg3,
-          typename Arg4>
-class SingleUseCallback4: public
-                          BaseCallback4<ReturnType, Arg1, Arg2, Arg3, Arg4> {
+template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+class SingleUseCallback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3> {
   public:
     virtual ~SingleUseCallback4() {}
-    ReturnType Run(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) {
-      ReturnType ret = this->DoRun(arg1, arg2, arg3, arg4);
+    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
+      ReturnType ret = DoRun(arg0, arg1, arg2, arg3);
       delete this;
       return ret;
     }
@@ -585,88 +515,73 @@ class SingleUseCallback4: public
 
 
 /*
- * A single use closure returning void, this deletes itself after it's run.
+ * A single use callback returning void.
  */
-template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-class SingleUseCallback4<void, Arg1, Arg2, Arg3, Arg4>
-    : public BaseCallback4<void, Arg1, Arg2, Arg3, Arg4> {
+template <typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+class SingleUseCallback4<void, Arg0, Arg1, Arg2, Arg3>: public BaseCallback4<void, Arg0, Arg1, Arg2, Arg3> {
   public:
     virtual ~SingleUseCallback4() {}
-    void Run(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) {
-      DoRun(arg1, arg2, arg3, arg4);
+    void Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
+      DoRun(arg0, arg1, arg2, arg3);
       delete this;
-      return;
     }
 };
 
 
 /*
- * An method closure with no create-time arguments, and four exec time arg
+ * An method callback with 0 create-time args, and 4 exec time arg
  */
-template <typename Class, typename Parent, typename ReturnType,
-          typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 class MethodCallback0_4: public Parent {
   public:
-    typedef ReturnType (Class::*Method)(Arg1 arg, Arg2 arg2, Arg3 arg3,
-                                        Arg4 arg4);
-
-    /*
-     * @param object the object to use in the method call
-     * @param callback the method to call
-     */
+    typedef ReturnType (Class::*Method)(Arg0, Arg1, Arg2, Arg3);
     MethodCallback0_4(Class *object, Method callback):
       Parent(),
       m_object(object),
       m_callback(callback) {}
-    ReturnType DoRun(Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4) {
-      return (m_object->*m_callback)(arg1, arg2, arg3, arg4);
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
+      return (m_object->*m_callback)(arg0, arg1, arg2, arg3);
     }
-
   private:
     Class *m_object;
     Method m_callback;
 };
 
-
 /*
- * Create a new single use method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename Arg1, typename Arg2,
-          typename Arg3, typename Arg4>
-inline SingleUseCallback4<ReturnType, Arg1, Arg2, Arg3, Arg4>*
-  NewSingleCallback(
+template <typename Class, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+inline SingleUseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewSingleCallback(
     Class* object,
-    ReturnType (Class::*method)(Arg1 arg, Arg2 arg2, Arg3 arg3, Arg4 arg4)) {
+    ReturnType (Class::*method)(Arg0, Arg1, Arg2, Arg3)) {
   return new MethodCallback0_4<Class,
-                               SingleUseCallback4<ReturnType, Arg1, Arg2, Arg3,
-                                                  Arg4>,
+                               SingleUseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3>,
                                ReturnType,
+                               Arg0,
                                Arg1,
                                Arg2,
-                               Arg3,
-                               Arg4>(
+                               Arg3>(
       object,
       method);
 }
 
-
 /*
- * Create a new method closure.
+ * Create a new single use method callback.
  */
-template <typename Class, typename ReturnType, typename Arg1, typename Arg2,
-          typename Arg3, typename Arg4>
-inline Callback4<ReturnType, Arg1, Arg2, Arg3, Arg4>* NewCallback(
+template <typename Class, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
     Class* object,
-    ReturnType (Class::*method)(Arg1 arg, Arg2 arg2, Arg3 arg3, Arg4 arg4)) {
+    ReturnType (Class::*method)(Arg0, Arg1, Arg2, Arg3)) {
   return new MethodCallback0_4<Class,
-                               Callback4<ReturnType, Arg1, Arg2, Arg3, Arg4>,
+                               Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>,
                                ReturnType,
+                               Arg0,
                                Arg1,
                                Arg2,
-                               Arg3,
-                               Arg4>(
+                               Arg3>(
       object,
       method);
 }
+
 }  // ola
 #endif  // INCLUDE_OLA_CALLBACK_H_
