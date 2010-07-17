@@ -61,6 +61,7 @@ class OlaHttpServer {
     int DisplayPluginInfo(const HttpRequest *request, HttpResponse *response);
     int DisplayDevices(const HttpRequest *request, HttpResponse *response);
     int DisplayUniverses(const HttpRequest *request, HttpResponse *response);
+    int DisplayRDM(const HttpRequest *request, HttpResponse *response);
     int DisplayConsole(const HttpRequest *request, HttpResponse *response);
     int HandleSetDmx(const HttpRequest *request, HttpResponse *response);
     int DisplayDebug(const HttpRequest *request, HttpResponse *response);

@@ -24,6 +24,7 @@
      <th>Name</th>
      <th>Merge Mode</th>
      <th>Console</th>
+     <th>RDM</th>
     </tr>
     {{#NO_UNIVERSES}}
      <tr><td colspan="4" align="center">No universes active</td></tr>
@@ -38,6 +39,7 @@
          <option value="htp" {{#HTP_MODE}}selected{{/HTP_MODE}}>HTP</option>
         </select></td>
       <td align="center"><a href="#" onClick="openConsole({{ID:h}})">Console</a></td>
+      <td align="center"><a href="/rdm?universe={{ID:h}}">RDM</a></td>
      </tr>
      {{/UNIVERSE}}
    </table>

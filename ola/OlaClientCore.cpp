@@ -960,11 +960,13 @@ bool OlaClientCore::RDMCommand(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  if (!m_connected)
-    return false;
-
   if (!callback) {
     OLA_WARN << "RDM callback was null, command to " << uid << " won't be sent";
+    return false;
+  }
+
+  if (!m_connected) {
+    delete callback;
     return false;
   }
 

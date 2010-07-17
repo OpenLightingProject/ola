@@ -21,8 +21,12 @@
 #ifndef INCLUDE_OLA_RDM_RDMENUMS_H_
 #define INCLUDE_OLA_RDM_RDMENUMS_H_
 
+#include <stdint.h>
+
 namespace ola {
 namespace rdm {
+
+static const uint16_t ROOT_RDM_DEVICE = 0;
 
 typedef enum {
   ACK = 0x00,

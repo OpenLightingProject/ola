@@ -28,13 +28,15 @@
 #include "ola/DmxBuffer.h"
 #include "ola/StringUtils.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/UIDSet.h"
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
 #include "olad/OlaHttpServer.h"
+#include "olad/OlaServer.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
 #include "olad/Port.h"
-#include "olad/OlaServer.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
 
@@ -58,6 +60,7 @@ RegisterTemplateFilename(PLUGINS_FILENAME, "show_loaded_plugins.tpl");
 RegisterTemplateFilename(PLUGIN_INFO_FILENAME, "show_plugin_info.tpl");
 RegisterTemplateFilename(DEVICE_FILENAME, "show_loaded_devices.tpl");
 RegisterTemplateFilename(UNIVERSE_FILENAME, "show_universe_settings.tpl");
+RegisterTemplateFilename(UNIVERSE_UIDS_FILENAME, "show_universe_uids.tpl");
 RegisterTemplateFilename(CONSOLE_FILENAME, "show_dmx_console.tpl");
 
 OlaHttpServer::OlaHttpServer(ExportMap *export_map,
@@ -90,6 +93,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterHandler("/plugin", &OlaHttpServer::DisplayPluginInfo);
   RegisterHandler("/devices", &OlaHttpServer::DisplayDevices);
   RegisterHandler("/universes", &OlaHttpServer::DisplayUniverses);
+  RegisterHandler("/rdm", &OlaHttpServer::DisplayRDM);
   RegisterHandler("/console", &OlaHttpServer::DisplayConsole);
   RegisterHandler("/reload_templates", &OlaHttpServer::DisplayTemplateReload);
   RegisterHandler("/set_dmx", &OlaHttpServer::HandleSetDmx);
@@ -304,6 +308,52 @@ int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
     dict.ShowSection("NO_UNIVERSES");
   }
   return m_server.DisplayTemplate(UNIVERSE_FILENAME, &dict, response);
+}
+
+
+/*
+ * Show a basic RDM page
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::DisplayRDM(const HttpRequest *request,
+                              HttpResponse *response) {
+  string uni_id = request->GetParameter("universe");
+  unsigned int universe_id;
+  if (!StringToUInt(uni_id, &universe_id))
+    return m_server.ServeNotFound(response);
+
+  Universe *universe = m_universe_store->GetUniverse(universe_id);
+
+  if (!universe)
+    return m_server.ServeNotFound(response);
+
+  string action = request->GetParameter("action");
+
+  if (!request->GetParameter("action").empty()) {
+    // force discovery
+    universe->RunRDMDiscovery();
+  }
+
+  TemplateDictionary dict("rdm");
+  dict.SetValue("UNIVERSE", IntToString(universe->UniverseId()));
+  ola::rdm::UIDSet uids;
+  universe->GetUIDs(&uids);
+
+  if (uids.Size()) {
+    ola::rdm::UIDSet::Iterator iter = uids.Begin();
+    for (; iter != uids.End(); ++iter) {
+      TemplateDictionary *sub_dict = dict.AddSectionDictionary("UID");
+      sub_dict->SetValue("UID", iter->ToString());
+    }
+  } else {
+    dict.ShowSection("NO_UIDS");
+  }
+  string refresh = "5; url=/rdm?universe=" +
+    IntToString(universe->UniverseId());
+  response->SetHeader("Refresh", refresh);
+  return m_server.DisplayTemplate(UNIVERSE_UIDS_FILENAME, &dict, response);
 }
 
 
