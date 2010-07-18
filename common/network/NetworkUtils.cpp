@@ -86,6 +86,26 @@ uint32_t NetworkToHost(uint32_t value) {
 }
 
 
+int8_t NetworkToHost(int8_t value) {
+  return value;
+}
+
+
+/*
+ * Convert a int16_t from network to host byte order
+ */
+int16_t NetworkToHost(int16_t value) {
+  return ntohs(value);
+}
+
+
+/*
+ * Convert a int32_t from network to host byte order
+ */
+int32_t NetworkToHost(int32_t value) {
+  return ntohl(value);
+}
+
 uint8_t HostToNetwork(uint8_t value) {
   return value;
 }
