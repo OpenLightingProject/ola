@@ -468,11 +468,13 @@ bool RDMAPI::GetDeviceInfo(
     this,
     &RDMAPI::_HandleGetDeviceDescriptor,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_DEVICE_INFO);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DEVICE_INFO),
+    error);
 }
 
 
@@ -501,11 +503,13 @@ bool RDMAPI::GetProductDetailIdList(
     this,
     &RDMAPI::_HandleGetProductDetailIdList,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_PRODUCT_DETAIL_ID_LIST);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_PRODUCT_DETAIL_ID_LIST),
+    error);
 }
 
 
@@ -533,11 +537,13 @@ bool RDMAPI::GetDeviceModelDescription(
     this,
     &RDMAPI::_HandleLabelResponse,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_DEVICE_MODEL_DESCRIPTION);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DEVICE_MODEL_DESCRIPTION),
+    error);
 }
 
 
@@ -565,11 +571,13 @@ bool RDMAPI::GetManufacturerLabel(
     this,
     &RDMAPI::_HandleLabelResponse,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_MANUFACTURER_LABEL);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_MANUFACTURER_LABEL),
+    error);
 }
 
 
@@ -597,11 +605,13 @@ bool RDMAPI::GetDeviceLabel(
     this,
     &RDMAPI::_HandleLabelResponse,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_DEVICE_LABEL);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DEVICE_LABEL),
+    error);
 }
 
 
@@ -627,13 +637,15 @@ bool RDMAPI::SetDeviceLabel(
     this,
     &RDMAPI::_HandleEmptyResponse,
     callback);
-  return m_impl->RDMSet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_DEVICE_LABEL,
-                        reinterpret_cast<const uint8_t*>(label.data()),
-                        label.size());
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DEVICE_LABEL,
+                   reinterpret_cast<const uint8_t*>(label.data()),
+                   label.size()),
+    error);
 }
 
 
@@ -661,11 +673,13 @@ bool RDMAPI::GetFactoryDefaults(
     this,
     &RDMAPI::_HandleGetFactoryDefaults,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_FACTORY_DEFAULTS);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_FACTORY_DEFAULTS),
+    error);
 }
 
 
@@ -691,11 +705,13 @@ bool RDMAPI::ResetToFactoryDefaults(
     this,
     &RDMAPI::_HandleEmptyResponse,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_FACTORY_DEFAULTS);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_FACTORY_DEFAULTS),
+    error);
 }
 
 
@@ -723,11 +739,13 @@ bool RDMAPI::GetLanguageCapabilities(
     this,
     &RDMAPI::_HandleGetLanguageCapabilities,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_LANGUAGE_CAPABILITIES);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_LANGUAGE_CAPABILITIES),
+    error);
 }
 
 
@@ -755,12 +773,15 @@ bool RDMAPI::GetLanguage(
     this,
     &RDMAPI::_HandleGetLanguage,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_LANGUAGE);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_LANGUAGE),
+    error);
 }
+
 
 /*
  * Set the language for this device
@@ -791,13 +812,15 @@ bool RDMAPI::SetLanguage(
     this,
     &RDMAPI::_HandleEmptyResponse,
     callback);
-  return m_impl->RDMSet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_LANGUAGE,
-                        reinterpret_cast<const uint8_t*>(language.data()),
-                        DATA_SIZE);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_LANGUAGE,
+                   reinterpret_cast<const uint8_t*>(language.data()),
+                   DATA_SIZE),
+    error);
 }
 
 
@@ -825,11 +848,13 @@ bool RDMAPI::GetSoftwareVersionLabel(
     this,
     &RDMAPI::_HandleLabelResponse,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_SOFTWARE_VERSION_LABEL);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_SOFTWARE_VERSION_LABEL),
+    error);
 }
 
 
@@ -857,11 +882,13 @@ bool RDMAPI::GetBootSoftwareVersion(
     this,
     &RDMAPI::_HandleGetBootSoftwareVersion,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_BOOT_SOFTWARE_VERSION_ID);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_BOOT_SOFTWARE_VERSION_ID),
+    error);
 }
 
 
@@ -889,11 +916,449 @@ bool RDMAPI::GetBootSoftwareVersionLabel(
     this,
     &RDMAPI::_HandleLabelResponse,
     callback);
-  return m_impl->RDMGet(cb,
-                        m_universe,
-                        uid,
-                        sub_device,
-                        PID_BOOT_SOFTWARE_VERSION_LABEL);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_BOOT_SOFTWARE_VERSION_LABEL),
+    error);
+}
+
+
+/*
+ * Get the current DMX personality
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetDMXPersonality(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint8_t,
+                       uint8_t> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetDMXPersonality,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DMX_PERSONALITY),
+    error);
+}
+
+
+/*
+ * Set the DMX personality
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param personality the value of the personality to choose
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::SetDMXPersonality(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t personality,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DMX_PERSONALITY,
+                   &personality,
+                   sizeof(personality)),
+    error);
+}
+
+
+/*
+ * Get the description for a DMX personality
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param personality the value of the personality to get the description of
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetDMXPersonalityDescription(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t personality,
+    SingleUseCallback4<void,
+                       const ResponseStatus&,
+                       uint8_t,
+                       uint16_t,
+                       const string&> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetDMXPersonalityDescription,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DMX_PERSONALITY_DESCRIPTION,
+                   &personality,
+                   sizeof(personality)),
+    error);
+}
+
+
+/*
+ * Get the DMX start address
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetDMXAddress(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       uint16_t> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetDMXAddress,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DMX_START_ADDRESS),
+    error);
+}
+
+
+/*
+ * Set the DMX start address
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param start_address the new start address
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::SetDMXAddress(
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t start_address,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  start_address = HostToNetwork(start_address);
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DMX_START_ADDRESS,
+                   reinterpret_cast<const uint8_t*>(&start_address),
+                   sizeof(start_address)),
+    error);
+}
+
+
+/*
+ * Fetch the DMX slot info
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetSlotInfo(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const vector<SlotDescriptor>&> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetSlotInfo,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_SLOT_INFO),
+    error);
+}
+
+
+/*
+ * Fetch a DMX slot description
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param slot_offset the offset of the slot to get the description of
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetSlotDescription(
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t slot_offset,
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint16_t,
+                       const string&> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  slot_offset = HostToNetwork(slot_offset);
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetSlotDescription,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_SLOT_DESCRIPTION,
+                   reinterpret_cast<const uint8_t*>(&slot_offset),
+                   sizeof(slot_offset)),
+    error);
+}
+
+
+/*
+ * Get the default value for a slot
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetSlotDefaultValues(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const vector<SlotDefault>&> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetSlotDefaultValues,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_DEFAULT_SLOT_VALUE),
+    error);
+}
+
+
+/*
+ * Get the definition for a sensor
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param sensor_number the sensor index to get the descriptor for
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetSensorDefinition(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t sensor_number,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const SensorDescriptor&> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleGetSensorDefinition,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_SENSOR_DEFINITION,
+                   &sensor_number,
+                   sizeof(sensor_number)),
+    error);
+}
+
+
+/*
+ * Get the value of a sensor
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param sensor_number the sensor index to get the value of
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetSensorValue(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t sensor_number,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const SensorValueDescriptor&> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleSensorValue,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_RECORD_SENSORS,
+                   &sensor_number,
+                   sizeof(sensor_number)),
+    error);
+}
+
+
+/*
+ * Reset a sensor
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param sensor_number the sensor index to reset
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::SetSensorValue(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t sensor_number,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const SensorValueDescriptor&> *callback,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleSensorValue,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_RECORD_SENSORS,
+                   &sensor_number,
+                   sizeof(sensor_number)),
+    error);
+}
+
+
+/*
+ * Put a sensor into record mode
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param sensor_number the sensor index to record
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::RecordSensors(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t sensor_number,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_RECORD_SENSORS,
+                   &sensor_number,
+                   sizeof(sensor_number)),
+    error);
 }
 
 // Handlers follow. These are invoked by the RDMAPIImpl when responses arrive
@@ -1157,7 +1622,6 @@ void RDMAPI::_HandleGetParameterDescriptor(
                        const ParameterDescriptor&> *callback,
     const RDMAPIImplResponseStatus &status,
     const string &data) {
-  enum {DESCRIPTION_SIZE = 32};
   ResponseStatus response_status(status, data);
   ParameterDescriptor description;
 
@@ -1175,28 +1639,28 @@ void RDMAPI::_HandleGetParameterDescriptor(
       uint32_t max_value;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
-      char description[DESCRIPTION_SIZE + 1];
+      char description[LABEL_SIZE + 1];
     } __attribute__((packed));
     struct param_description raw_description;
 
     unsigned int max = sizeof(raw_description) - 1;
-    unsigned int min = max - DESCRIPTION_SIZE;
+    unsigned int min = max - LABEL_SIZE;
     unsigned int data_size = data.size();
     if (data_size >= min && data_size <= max) {
       memcpy(&raw_description, data.data(),
              std::min(static_cast<unsigned int>(data.size()), max));
-      description.description[DESCRIPTION_SIZE] = 0;
+      description.description[LABEL_SIZE] = 0;
       description.pid = NetworkToHost(raw_description.pid);
       description.pdl_size = raw_description.pdl_size;
       description.data_type = raw_description.data_type;
       description.command_class = raw_description.command_class;
       description.unit = raw_description.unit;
       description.prefix = raw_description.prefix;
-      description.min_value = HostToNetwork(raw_description.min_value);
-      description.default_value = HostToNetwork(raw_description.default_value);
-      description.max_value = HostToNetwork(raw_description.max_value);
+      description.min_value = NetworkToHost(raw_description.min_value);
+      description.default_value = NetworkToHost(raw_description.default_value);
+      description.max_value = NetworkToHost(raw_description.max_value);
       description.description = std::string(raw_description.description,
-                                            DESCRIPTION_SIZE);
+                                            LABEL_SIZE);
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
@@ -1381,6 +1845,295 @@ void RDMAPI::_HandleGetBootSoftwareVersion(
   callback->Run(response_status, boot_version);
 }
 
+
+/*
+ * Handle a get DMX_PERSONALITY response
+ */
+void RDMAPI::_HandleGetDMXPersonality(
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint8_t,
+                       uint8_t> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+  static const unsigned int DATA_SIZE = 2;
+  uint8_t current_personality = 0;
+  uint8_t personality_count = 0;
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    if (data.size() != DATA_SIZE) {
+      SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
+    } else {
+      current_personality = data[0];
+      personality_count = data[1];
+    }
+  }
+  callback->Run(response_status, current_personality, personality_count);
+}
+
+
+/*
+ * Handle a get DMX_PERSONALITY_DESCRIPTION response
+ */
+void RDMAPI::_HandleGetDMXPersonalityDescription(
+    SingleUseCallback4<void,
+                       const ResponseStatus&,
+                       uint8_t,
+                       uint16_t,
+                       const string&> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+
+  uint8_t personality = 0;
+  uint16_t dmx_slots = 0;
+  string description;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    struct personality_description {
+      uint8_t personality;
+      uint16_t dmx_slots;
+      // +1 for a null since it's not clear in the spec if this is null
+      // terminated
+      char description[LABEL_SIZE + 1];
+    } __attribute__((packed));
+    struct personality_description raw_description;
+
+    unsigned int max = sizeof(personality_description) - 1;
+    unsigned int min = max - LABEL_SIZE;
+    unsigned int data_size = data.size();
+    if (data_size >= min && data_size <= max) {
+      memcpy(&raw_description, data.data(),
+             std::min(static_cast<unsigned int>(data.size()), max));
+      personality = raw_description.personality;
+      dmx_slots = NetworkToHost(raw_description.dmx_slots);
+      description = std::string(raw_description.description, LABEL_SIZE);
+    } else {
+      std::stringstream str;
+      str << data_size << " needs to be between " << min << " and " << max;
+      response_status.MalformedResponse(str.str());
+    }
+  }
+  callback->Run(response_status, personality, dmx_slots, description);
+}
+
+
+/*
+ * Handle a get DMX_START_ADDRESS response
+ */
+void RDMAPI::_HandleGetDMXAddress(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       uint16_t> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+  static const unsigned int DATA_SIZE = 2;
+  uint16_t start_address = 0;
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    if (data.size() != DATA_SIZE) {
+      SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
+    } else {
+      start_address = *(reinterpret_cast<const uint16_t*>(data.data()));
+      start_address = NetworkToHost(start_address);
+    }
+  }
+  callback->Run(response_status, start_address);
+}
+
+
+/*
+ * Handle a get SLOT_INFO response
+ */
+void RDMAPI::_HandleGetSlotInfo(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const vector<SlotDescriptor>&> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+  vector<SlotDescriptor> slots;
+  SlotDescriptor slot_info;
+  unsigned int slot_info_size = sizeof(slot_info);
+
+  unsigned int data_size = data.size();
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    if (data_size % slot_info_size) {
+      response_status.MalformedResponse("PDL size not a multiple of " +
+          IntToString(slot_info_size) + ", was " +
+          IntToString(static_cast<int>(data_size)));
+    } else {
+      const uint8_t *ptr = reinterpret_cast<const uint8_t*>(data.data());
+      const uint8_t *end = ptr + data.size();
+      while (ptr < end) {
+        memcpy(&slot_info, ptr, slot_info_size);
+        slot_info.slot_offset = NetworkToHost(slot_info.slot_offset);
+        slot_info.slot_label = NetworkToHost(slot_info.slot_label);
+        slots.push_back(slot_info);
+      }
+    }
+  }
+  callback->Run(response_status, slots);
+}
+
+
+/*
+ * Handle a get SLOT_DESCRIPTION response
+ */
+void RDMAPI::_HandleGetSlotDescription(
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint16_t,
+                       const string&> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+
+  uint16_t slot_index = 0;
+  string description;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    struct slot_description {
+      uint16_t slot_index;
+      // +1 for a null since it's not clear in the spec if this is null
+      // terminated
+      char description[LABEL_SIZE + 1];
+    } __attribute__((packed));
+    struct slot_description raw_description;
+
+    unsigned int max = sizeof(raw_description) - 1;
+    unsigned int min = max - LABEL_SIZE;
+    unsigned int data_size = data.size();
+    if (data_size >= min && data_size <= max) {
+      memcpy(&raw_description, data.data(),
+             std::min(static_cast<unsigned int>(data.size()), max));
+      slot_index = NetworkToHost(raw_description.slot_index);
+      description = std::string(raw_description.description, LABEL_SIZE);
+    } else {
+      std::stringstream str;
+      str << data_size << " needs to be between " << min << " and " << max;
+      response_status.MalformedResponse(str.str());
+    }
+  }
+  callback->Run(response_status, slot_index, description);
+}
+
+
+/*
+ * Handle a get DEFAULT_SLOT_VALUE response
+ */
+void RDMAPI::_HandleGetSlotDefaultValues(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const vector<SlotDefault>&> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+  vector<SlotDefault> slots;
+  SlotDefault slot_default;
+  unsigned int slot_default_size = sizeof(slot_default);
+
+  unsigned int data_size = data.size();
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    if (data_size % slot_default_size) {
+      response_status.MalformedResponse("PDL size not a multiple of " +
+          IntToString(slot_default_size) + ", was " +
+          IntToString(static_cast<int>(data_size)));
+    } else {
+      const uint8_t *ptr = reinterpret_cast<const uint8_t*>(data.data());
+      const uint8_t *end = ptr + data.size();
+      while (ptr < end) {
+        memcpy(&slot_default, ptr, slot_default_size);
+        slot_default.slot_offset = NetworkToHost(slot_default.slot_offset);
+        slots.push_back(slot_default);
+      }
+    }
+  }
+  callback->Run(response_status, slots);
+}
+
+
+/*
+ * Handle a SENSOR_DEFINITION response
+ */
+void RDMAPI::_HandleGetSensorDefinition(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const SensorDescriptor&> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+  SensorDescriptor sensor;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    struct sensor_definition_s {
+      uint8_t sensor_number;
+      uint8_t type;
+      uint8_t unit;
+      uint8_t prefix;
+      uint16_t range_min;
+      uint16_t range_max;
+      uint16_t normal_min;
+      uint16_t normal_max;
+      uint8_t recorded_value_support;
+      char description[LABEL_SIZE + 1];
+    } __attribute__((packed));
+    struct sensor_definition_s raw_description;
+
+    unsigned int max = sizeof(raw_description) - 1;
+    unsigned int min = max - LABEL_SIZE;
+    unsigned int data_size = data.size();
+    if (data_size >= min && data_size <= max) {
+      memcpy(&raw_description, data.data(),
+             std::min(static_cast<unsigned int>(data.size()), max));
+
+      sensor.sensor_number = raw_description.sensor_number;
+      sensor.type = raw_description.type;
+      sensor.unit = raw_description.unit;
+      sensor.prefix = raw_description.prefix;
+      sensor.range_min = NetworkToHost(raw_description.range_min);
+      sensor.range_max = NetworkToHost(raw_description.range_max);
+      sensor.normal_min = NetworkToHost(raw_description.normal_min);
+      sensor.normal_max = NetworkToHost(raw_description.normal_max);
+      sensor.recorded_value_support = raw_description.recorded_value_support;
+      sensor.description = std::string(raw_description.description,
+                                       data_size - min);
+    } else {
+      std::stringstream str;
+      str << data_size << " needs to be between " << min << " and " << max;
+      response_status.MalformedResponse(str.str());
+    }
+  }
+  callback->Run(response_status, sensor);
+}
+
+
+/*
+ * Handle a SENSOR_VALUE response
+ */
+void RDMAPI::_HandleSensorValue(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const SensorValueDescriptor&> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+  SensorValueDescriptor sensor;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    unsigned int data_size = data.size();
+    if (data_size == sizeof(sensor)) {
+      memcpy(&sensor, data.data(), sizeof(sensor));
+      sensor.present_value = NetworkToHost(sensor.present_value);
+      sensor.lowest = NetworkToHost(sensor.lowest);
+      sensor.highest = NetworkToHost(sensor.highest);
+      sensor.recorded = NetworkToHost(sensor.recorded);
+    } else {
+      SetIncorrectPDL(&response_status, data.size(), sizeof(sensor));
+    }
+  }
+  callback->Run(response_status, sensor);
+}
 
 //-----------------------------------------------------------------------------
 // Private methods follow

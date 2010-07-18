@@ -151,6 +151,58 @@ typedef struct device_info_s DeviceDescriptor;
 
 
 /*
+ * Information about a DMX slot
+ */
+struct slot_info_s {
+  uint16_t slot_offset;
+  uint8_t slot_type;
+  uint16_t slot_label;
+} __attribute__((packed));
+
+typedef struct slot_info_s SlotDescriptor;
+
+/*
+ * The default values for a slot
+ */
+struct slot_default_s {
+  uint16_t slot_offset;
+  uint8_t default_value;
+} __attribute__((packed));
+
+typedef struct slot_default_s SlotDefault;
+
+
+/*
+ * Sensor definition
+ */
+typedef struct {
+  uint8_t sensor_number;
+  uint8_t type;
+  uint8_t unit;
+  uint8_t prefix;
+  uint16_t range_min;
+  uint16_t range_max;
+  uint16_t normal_min;
+  uint16_t normal_max;
+  uint8_t recorded_value_support;
+  string description;
+} SensorDescriptor;
+
+
+/*
+ * Sensor values
+ */
+struct sensor_values_s {
+  uint8_t sensor_number;
+  uint16_t present_value;
+  uint16_t lowest;
+  uint16_t highest;
+  uint16_t recorded;
+} __attribute__((packed));
+
+typedef struct sensor_values_s SensorValueDescriptor;
+
+/*
  * An object which deals with queued messages
  */
 class QueuedMessageHandler {
@@ -199,6 +251,28 @@ class QueuedMessageHandler {
                                      uint32_t version) = 0;
     virtual void BootSoftwareVersionLabel(const ResponseStatus &status,
                                           const string &label) = 0;
+    virtual void GetDMXPersonality(const ResponseStatus &status,
+                                   uint8_t current_personality,
+                                   uint8_t personality_count) = 0;
+    virtual void GetDMXPersonalityDescription(const ResponseStatus &status,
+                                              uint8_t personality,
+                                              uint16_t slots_requires,
+                                              const string &label) = 0;
+    virtual void GetDMXAddress(const ResponseStatus &status,
+                               uint16_t start_address) = 0;
+    virtual void GetSlotInfo(const ResponseStatus &status,
+                             const vector<SlotDescriptor> &slots) = 0;
+    virtual void GetSlotDescription(const ResponseStatus &status,
+                                    uint16_t slot_offset,
+                                    const string &description) = 0;
+    virtual void GetSlotDefaultValues(const ResponseStatus &status,
+                                      const vector<SlotDefault> &defaults) = 0;
+    virtual void GetSensorDefinition(const ResponseStatus &status,
+                                     const SensorDescriptor &descriptor) = 0;
+    virtual void GetSensorValue(const ResponseStatus &status,
+                                const SensorValueDescriptor &descriptor) = 0;
+
+    // TODO(simon): add a default handler here
 };
 
 
@@ -416,6 +490,108 @@ class RDMAPI {
                            const string&> *callback,
         string *error);
 
+    bool GetDMXPersonality(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint8_t,
+                           uint8_t> *callback,
+        string *error);
+
+    bool SetDMXPersonality(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t personality,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetDMXPersonalityDescription(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t personality,
+        SingleUseCallback4<void,
+                           const ResponseStatus&,
+                           uint8_t,
+                           uint16_t,
+                           const string&> *callback,
+        string *error);
+
+    bool GetDMXAddress(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           uint16_t> *callback,
+        string *error);
+
+    bool SetDMXAddress(
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t start_address,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetSlotInfo(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const vector<SlotDescriptor>&> *callback,
+        string *error);
+
+    bool GetSlotDescription(
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t slot_offset,
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           const string&> *callback,
+        string *error);
+
+    bool GetSlotDefaultValues(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const vector<SlotDefault>&> *callback,
+        string *error);
+
+    bool GetSensorDefinition(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t sensor_number,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const SensorDescriptor&> *callback,
+        string *error);
+
+    bool GetSensorValue(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t sensor_number,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const SensorValueDescriptor&> *callback,
+        string *error);
+
+    bool SetSensorValue(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t sensor_number,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const SensorValueDescriptor&> *callback,
+        string *error);
+
+    bool RecordSensors(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t sensor_number,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
     // Handlers, these are called by the RDMAPIImpl.
 
     // Generic handlers
@@ -532,10 +708,72 @@ class RDMAPI {
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
+    void _HandleGetDMXPersonality(
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint8_t,
+                           uint8_t> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetDMXPersonalityDescription(
+        SingleUseCallback4<void,
+                           const ResponseStatus&,
+                           uint8_t,
+                           uint16_t,
+                           const string&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetDMXAddress(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           uint16_t> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetSlotInfo(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const vector<SlotDescriptor>&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetSlotDescription(
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           const string&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetSlotDefaultValues(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const vector<SlotDefault>&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetSensorDefinition(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const SensorDescriptor&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleSensorValue(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const SensorValueDescriptor&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
   private:
     unsigned int m_universe;
     class RDMAPIImplInterface *m_impl;
     std::map<UID, uint8_t> m_outstanding_messages;
+
+    enum {LABEL_SIZE = 32};
 
     bool CheckNotBroadcast(const UID &uid, string *error);
     bool CheckValidSubDevice(uint16_t sub_device,
