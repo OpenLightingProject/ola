@@ -232,7 +232,7 @@ class QueuedMessageHandler {
     virtual void DeviceInfo(const ResponseStatus &status,
                             const DeviceDescriptor &device_info) = 0;
     virtual void ProductDetailIdList(const ResponseStatus &status,
-                                     const vector<uint16_t> *ids) = 0;
+                                     const vector<uint16_t> &ids) = 0;
     virtual void DeviceModelDescription(const ResponseStatus &status,
                                         const string &description) = 0;
     virtual void ManufacturerLabel(const ResponseStatus &status,
