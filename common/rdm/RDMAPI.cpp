@@ -215,7 +215,7 @@ bool RDMAPI::GetStatusMessage(
   rdm_status_type status_type,
   SingleUseCallback2<void,
                      const ResponseStatus&,
-                     const vector<StatusMessage> > *callback,
+                     const vector<StatusMessage>&> *callback,
   string *error) {
   if (CheckNotBroadcast(uid, error))
     return false;
@@ -388,7 +388,7 @@ bool RDMAPI::GetSupportedParameters(
     uint16_t sub_device,
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       vector<uint16_t> > *callback,
+                       const vector<uint16_t>&> *callback,
     string *error) {
   if (CheckNotBroadcast(uid, error))
     return false;
@@ -421,14 +421,14 @@ bool RDMAPI::GetParameterDescription(
     uint16_t pid,
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       const ParameterDescription&> *callback,
+                       const ParameterDescriptor&> *callback,
     string *error) {
   if (CheckNotBroadcast(uid, error))
     return false;
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
-    &RDMAPI::_HandleGetParameterDescription,
+    &RDMAPI::_HandleGetParameterDescriptor,
     callback);
   pid = HostToNetwork(pid);
   return CheckReturnStatus(
@@ -456,7 +456,7 @@ bool RDMAPI::GetDeviceInfo(
     uint16_t sub_device,
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       const DeviceInfo&> *callback,
+                       const DeviceDescriptor&> *callback,
   string *error) {
   if (CheckNotBroadcast(uid, error))
     return false;
@@ -466,7 +466,7 @@ bool RDMAPI::GetDeviceInfo(
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
-    &RDMAPI::_HandleGetDeviceInfo,
+    &RDMAPI::_HandleGetDeviceDescriptor,
     callback);
   return m_impl->RDMGet(cb,
                         m_universe,
@@ -489,7 +489,7 @@ bool RDMAPI::GetProductDetailIdList(
     uint16_t sub_device,
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       vector<uint16_t> > *callback,
+                       const vector<uint16_t>&> *callback,
     string *error) {
   if (CheckNotBroadcast(uid, error))
     return false;
@@ -712,7 +712,7 @@ bool RDMAPI::GetLanguageCapabilities(
     uint16_t sub_device,
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       vector<string>&> *callback,
+                       const vector<string>&> *callback,
     string *error) {
   if (CheckNotBroadcast(uid, error))
     return false;
@@ -1040,7 +1040,7 @@ void RDMAPI::_HandleGetCommStatus(
 void RDMAPI::_HandleGetStatusMessage(
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       const vector<StatusMessage> > *callback,
+                       const vector<StatusMessage>&> *callback,
     const RDMAPIImplResponseStatus &status,
     const string &data) {
 
@@ -1126,7 +1126,7 @@ void RDMAPI::_HandleGetSubDeviceReporting(
 void RDMAPI::_HandleGetSupportedParameters(
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       vector<uint16_t> > *callback,
+                       const vector<uint16_t>&> *callback,
     const RDMAPIImplResponseStatus &status,
     const string &data) {
   ResponseStatus response_status(status, data);
@@ -1151,15 +1151,15 @@ void RDMAPI::_HandleGetSupportedParameters(
 /*
  * Handle a PARAMETER_DESCRIPTION message
  */
-void RDMAPI::_HandleGetParameterDescription(
+void RDMAPI::_HandleGetParameterDescriptor(
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       const ParameterDescription&> *callback,
+                       const ParameterDescriptor&> *callback,
     const RDMAPIImplResponseStatus &status,
     const string &data) {
   enum {DESCRIPTION_SIZE = 32};
   ResponseStatus response_status(status, data);
-  ParameterDescription description;
+  ParameterDescriptor description;
 
   if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
     struct param_description {
@@ -1210,14 +1210,14 @@ void RDMAPI::_HandleGetParameterDescription(
 /*
  * Handle a DEVICE_INFO Get command
  */
-void RDMAPI::_HandleGetDeviceInfo(
+void RDMAPI::_HandleGetDeviceDescriptor(
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       const DeviceInfo&> *callback,
+                       const DeviceDescriptor&> *callback,
     const RDMAPIImplResponseStatus &status,
     const string &data) {
   ResponseStatus response_status(status, data);
-  DeviceInfo device_info;
+  DeviceDescriptor device_info;
 
   if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
     unsigned int data_size = data.size();
@@ -1252,7 +1252,7 @@ void RDMAPI::_HandleGetDeviceInfo(
 void RDMAPI::_HandleGetProductDetailIdList(
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       vector<uint16_t> > *callback,
+                       const vector<uint16_t>&> *callback,
     const RDMAPIImplResponseStatus &status,
     const string &data) {
   static const unsigned int MAX_DETAIL_IDS = 6;
@@ -1313,7 +1313,7 @@ void RDMAPI::_HandleGetFactoryDefaults(
 void RDMAPI::_HandleGetLanguageCapabilities(
     SingleUseCallback2<void,
                        const ResponseStatus&,
-                       vector<string>&> *callback,
+                       const vector<string>&> *callback,
     const RDMAPIImplResponseStatus &status,
     const string &data) {
   ResponseStatus response_status(status, data);

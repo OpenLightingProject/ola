@@ -129,11 +129,11 @@ typedef struct {
   uint32_t default_value;
   uint32_t max_value;
   string description;
-} ParameterDescription;
+} ParameterDescriptor;
 
 
 /*
- * Represents a DeviceInfo reply
+ * Represents a DeviceDescriptor reply
  */
 struct device_info_s {
   uint16_t protocol_version;
@@ -147,7 +147,7 @@ struct device_info_s {
   uint8_t sensor_count;
 } __attribute__((packed));
 
-typedef struct device_info_s DeviceInfo;
+typedef struct device_info_s DeviceDescriptor;
 
 
 /*
@@ -157,8 +157,48 @@ class QueuedMessageHandler {
   public:
     virtual ~QueuedMessageHandler() {}
 
+    virtual void ProxiedDeviceCount(const ResponseStatus &status,
+                                    uint16_t device_count,
+                                    bool list_changed) = 0;
+    virtual void ProxiedDevices(const ResponseStatus &status,
+                                const vector<UID> &uids) = 0;
+    virtual void CommStatus(const ResponseStatus &status,
+                            uint16_t short_message,
+                            uint16_t length_mismatch,
+                            uint16_t checksum_fail) = 0;
+    virtual void StatusMessages(const ResponseStatus &status,
+                                const vector<StatusMessage> messages) = 0;
+    virtual void StatusIdDescription(const ResponseStatus &status,
+                                     const string &status_id) = 0;
+    virtual void SubDeviceReporting(const ResponseStatus &status,
+                                    uint8_t status_type) = 0;
+    virtual void SupportedParameters(const ResponseStatus &status,
+                                     const vector<uint16_t> &parameters) = 0;
+    virtual void ParameterDescription(
+        const ResponseStatus &status,
+        const ParameterDescriptor &description) = 0;
     virtual void DeviceInfo(const ResponseStatus &status,
-                            const ola::rdm::DeviceInfo &device_info) = 0;
+                            const DeviceDescriptor &device_info) = 0;
+    virtual void ProductDetailIdList(const ResponseStatus &status,
+                                     const vector<uint16_t> *ids) = 0;
+    virtual void DeviceModelDescription(const ResponseStatus &status,
+                                        const string &description) = 0;
+    virtual void ManufacturerLabel(const ResponseStatus &status,
+                                   const string &label) = 0;
+    virtual void DeviceLabel(const ResponseStatus &status,
+                             const string &label) = 0;
+    virtual void FactoryDefaults(const ResponseStatus &status,
+                                 bool using_defaults) = 0;
+    virtual void LanguageCapabilities(const ResponseStatus &status,
+                                      const vector<string> &langs) = 0;
+    virtual void Language(const ResponseStatus &status,
+                          const string &language) = 0;
+    virtual void SoftwareVersionLabel(const ResponseStatus &status,
+                                      const string &label) = 0;
+    virtual void BootSoftwareVersion(const ResponseStatus &status,
+                                     uint32_t version) = 0;
+    virtual void BootSoftwareVersionLabel(const ResponseStatus &status,
+                                          const string &label) = 0;
 };
 
 
@@ -220,7 +260,7 @@ class RDMAPI {
         rdm_status_type status_type,
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           const vector<StatusMessage> > *callback,
+                           const vector<StatusMessage>&> *callback,
         string *error);
 
     bool GetStatusIdDescription(
@@ -257,7 +297,7 @@ class RDMAPI {
         uint16_t sub_device,
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           vector<uint16_t> > *callback,
+                           const vector<uint16_t> &> *callback,
         string *error);
 
     bool GetParameterDescription(
@@ -265,7 +305,7 @@ class RDMAPI {
         uint16_t pid,
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           const ParameterDescription&> *callback,
+                           const ParameterDescriptor&> *callback,
         string *error);
 
     bool GetDeviceInfo(
@@ -273,7 +313,7 @@ class RDMAPI {
         uint16_t sub_device,
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           const DeviceInfo&> *callback,
+                           const DeviceDescriptor&> *callback,
         string *error);
 
     bool GetProductDetailIdList(
@@ -281,7 +321,7 @@ class RDMAPI {
         uint16_t sub_device,
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           vector<uint16_t> > *callback,
+                           const vector<uint16_t> &> *callback,
         string *error);
 
     bool GetDeviceModelDescription(
@@ -334,7 +374,7 @@ class RDMAPI {
         uint16_t sub_device,
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           vector<string>&> *callback,
+                           const vector<string>&> *callback,
         string *error);
 
     bool GetLanguage(
@@ -419,7 +459,7 @@ class RDMAPI {
     void _HandleGetStatusMessage(
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           const vector<StatusMessage> > *callback,
+                           const vector<StatusMessage>&> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
@@ -439,28 +479,28 @@ class RDMAPI {
     void _HandleGetSupportedParameters(
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           vector<uint16_t> > *callback,
+                           const vector<uint16_t>&> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
-    void _HandleGetParameterDescription(
+    void _HandleGetParameterDescriptor(
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           const ParameterDescription&> *callback,
+                           const ParameterDescriptor&> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
-    void _HandleGetDeviceInfo(
+    void _HandleGetDeviceDescriptor(
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           const DeviceInfo&> *callback,
+                           const DeviceDescriptor&> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
     void _HandleGetProductDetailIdList(
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           vector<uint16_t> > *callback,
+                           const vector<uint16_t>&> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
@@ -474,7 +514,7 @@ class RDMAPI {
     void _HandleGetLanguageCapabilities(
         SingleUseCallback2<void,
                            const ResponseStatus&,
-                           vector<string>&> *callback,
+                           const vector<string>&> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
