@@ -194,10 +194,10 @@ typedef struct {
  */
 struct sensor_values_s {
   uint8_t sensor_number;
-  uint16_t present_value;
-  uint16_t lowest;
-  uint16_t highest;
-  uint16_t recorded;
+  int16_t present_value;
+  int16_t lowest;
+  int16_t highest;
+  int16_t recorded;
 } __attribute__((packed));
 
 typedef struct sensor_values_s SensorValueDescriptor;
@@ -271,7 +271,6 @@ class QueuedMessageHandler {
                                      const SensorDescriptor &descriptor) = 0;
     virtual void GetSensorValue(const ResponseStatus &status,
                                 const SensorValueDescriptor &descriptor) = 0;
-
     virtual void GetDeviceHours(const ResponseStatus &status,
                                 uint32_t hours) = 0;
     virtual void GetLampHours(const ResponseStatus &status,
