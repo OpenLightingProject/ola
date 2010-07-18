@@ -272,6 +272,17 @@ class QueuedMessageHandler {
     virtual void GetSensorValue(const ResponseStatus &status,
                                 const SensorValueDescriptor &descriptor) = 0;
 
+    virtual void GetDeviceHours(const ResponseStatus &status,
+                                uint32_t hours) = 0;
+    virtual void GetLampHours(const ResponseStatus &status,
+                              uint32_t hours) = 0;
+    virtual void GetLampStrikes(const ResponseStatus &status,
+                                uint32_t hours) = 0;
+    virtual void GetDevicePowerCycles(const ResponseStatus &status,
+                                      uint32_t hours) = 0;
+    virtual void GetIdentifyMode(const ResponseStatus &status,
+                                 bool mode) = 0;
+
     // TODO(simon): add a default handler here
 };
 
@@ -592,6 +603,78 @@ class RDMAPI {
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 
+    bool GetDeviceHours(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+        string *error);
+
+    bool SetDeviceHours(
+        const UID &uid,
+        uint16_t sub_device,
+        uint32_t device_hours,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetLampHours(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+        string *error);
+
+    bool SetLampHours(
+        const UID &uid,
+        uint16_t sub_device,
+        uint32_t lamp_hours,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetLampStrikes(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+        string *error);
+
+    bool SetLampStrikes(
+        const UID &uid,
+        uint16_t sub_device,
+        uint32_t lamp_strikes,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetDevicePowerCycles(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+        string *error);
+
+    bool SetDevicePowerCycles(
+        const UID &uid,
+        uint16_t sub_device,
+        uint32_t power_cycles,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetIdentifyMode(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
+        string *error);
+
+    bool IdentifyDevice(
+        const UID &uid,
+        uint16_t sub_device,
+        bool mode,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool ResetDevice(
+        const UID &uid,
+        uint16_t sub_device,
+        bool warm_reset,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
     // Handlers, these are called by the RDMAPIImpl.
 
     // Generic handlers
@@ -599,6 +682,20 @@ class RDMAPI {
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const string&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleBoolResponse(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           bool> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleU32Response(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           uint32_t> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
@@ -677,13 +774,6 @@ class RDMAPI {
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const vector<uint16_t>&> *callback,
-        const RDMAPIImplResponseStatus &status,
-        const string &data);
-
-    void _HandleGetFactoryDefaults(
-        SingleUseCallback2<void,
-                           const ResponseStatus&,
-                           bool> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
@@ -774,6 +864,21 @@ class RDMAPI {
     std::map<UID, uint8_t> m_outstanding_messages;
 
     enum {LABEL_SIZE = 32};
+
+    bool GenericGetU32(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+        uint16_t pid,
+        string *error);
+
+    bool GenericSetU32(
+        const UID &uid,
+        uint16_t sub_device,
+        uint32_t value,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        uint16_t pid,
+        string *error);
 
     bool CheckNotBroadcast(const UID &uid, string *error);
     bool CheckValidSubDevice(uint16_t sub_device,

@@ -671,7 +671,7 @@ bool RDMAPI::GetFactoryDefaults(
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
-    &RDMAPI::_HandleGetFactoryDefaults,
+    &RDMAPI::_HandleBoolResponse,
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
@@ -1361,6 +1361,295 @@ bool RDMAPI::RecordSensors(
     error);
 }
 
+
+/*
+ * Check the identify mode for a device
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetIdentifyMode(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleBoolResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_IDENTIFY_DEVICE),
+    error);
+}
+
+
+/*
+ * Change the identify mode for a device
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param mode the identify mode to set
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::IdentifyDevice(
+    const UID &uid,
+    uint16_t sub_device,
+    bool mode,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  uint8_t option = mode;
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_IDENTIFY_DEVICE,
+                   &option,
+                   sizeof(option)),
+    error);
+}
+
+
+/*
+ * Reset a device
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param warm_reset true for a warm reset, false for a cold reset
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::ResetDevice(
+    const UID &uid,
+    uint16_t sub_device,
+    bool warm_reset,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  uint8_t option = warm_reset ? 0x01 : 0xff;
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_IDENTIFY_DEVICE,
+                   &option,
+                   sizeof(option)),
+    error);
+}
+
+
+/*
+ * Get the device hours
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetDeviceHours(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+    string *error) {
+  return GenericGetU32(
+      uid,
+      sub_device,
+      callback,
+      PID_DEVICE_HOURS,
+      error);
+}
+
+
+/*
+ * Set the device hours
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param device_hours the number of device hours
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetDeviceHours(
+    const UID &uid,
+    uint16_t sub_device,
+    uint32_t device_hours,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU32(
+      uid,
+      sub_device,
+      device_hours,
+      callback,
+      PID_DEVICE_HOURS,
+      error);
+}
+
+
+/*
+* Get the lamp hours
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetLampHours(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+    string *error) {
+  return GenericGetU32(
+      uid,
+      sub_device,
+      callback,
+      PID_LAMP_HOURS,
+      error);
+}
+
+
+/*
+ * Set the lamp hours
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param lamp_hours the number of lamp hours
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetLampHours(
+    const UID &uid,
+    uint16_t sub_device,
+    uint32_t lamp_hours,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU32(
+      uid,
+      sub_device,
+      lamp_hours,
+      callback,
+      PID_LAMP_STRIKES,
+      error);
+}
+
+
+/*
+* Get the number of lamp strikes
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetLampStrikes(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+    string *error) {
+  return GenericGetU32(
+      uid,
+      sub_device,
+      callback,
+      PID_LAMP_STRIKES,
+      error);
+}
+
+
+/*
+ * Set the lamp strikes
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param lamp_strikes the number of lamp strikes
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetLampStrikes(
+    const UID &uid,
+    uint16_t sub_device,
+    uint32_t lamp_strikes,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU32(
+      uid,
+      sub_device,
+      lamp_strikes,
+      callback,
+      PID_LAMP_STRIKES,
+      error);
+}
+
+
+/*
+* Get the number of device power cycles
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetDevicePowerCycles(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+    string *error) {
+  return GenericGetU32(
+      uid,
+      sub_device,
+      callback,
+      PID_DEVICE_POWER_CYCLES,
+      error);
+}
+
+
+/*
+ * Set the number of power cycles
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param power_cycles the number of power cycles
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetDevicePowerCycles(
+    const UID &uid,
+    uint16_t sub_device,
+    uint32_t power_cycles,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU32(
+      uid,
+      sub_device,
+      power_cycles,
+      callback,
+      PID_DEVICE_POWER_CYCLES,
+      error);
+}
 // Handlers follow. These are invoked by the RDMAPIImpl when responses arrive
 // ----------------------------------------------------------------------------
 
@@ -1373,19 +1662,67 @@ void RDMAPI::_HandleLabelResponse(
                        const string&> *callback,
     const RDMAPIImplResponseStatus &status,
     const string &data) {
-  static const unsigned int MAX_DATA_SIZE = 32;
   ResponseStatus response_status(status, data);
   if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE &&
-      data.size() > MAX_DATA_SIZE) {
+      data.size() > LABEL_SIZE) {
     std::stringstream str;
-    str << "PDL needs to be <= " << MAX_DATA_SIZE << ", was " << data.size();
+    str << "PDL needs to be <= " << LABEL_SIZE << ", was " << data.size();
     response_status.MalformedResponse(str.str());
   }
   callback->Run(response_status, data);
 }
 
+
 /*
- * HAndle a response that doesn't contain any data
+ * Handle a response that contains a bool
+ */
+void RDMAPI::_HandleBoolResponse(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       bool> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  static const unsigned int DATA_SIZE = 1;
+  ResponseStatus response_status(status, data);
+  bool option = false;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    if (data.size() == DATA_SIZE) {
+      option = data.data()[0];
+    } else {
+      SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
+    }
+  }
+  callback->Run(response_status, option);
+}
+
+
+/*
+ * Handle a response that contains a uint32_t
+ */
+void RDMAPI::_HandleU32Response(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       uint32_t> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+  uint32_t value = 0;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    if (data.size() == sizeof(value)) {
+      const uint32_t *ptr = reinterpret_cast<const uint32_t*>(data.data());
+      value = NetworkToHost(*ptr);
+    } else {
+      SetIncorrectPDL(&response_status, data.size(), sizeof(value));
+    }
+  }
+  callback->Run(response_status, value);
+}
+
+
+/*
+ * Handle a response that doesn't contain any data
  */
 void RDMAPI::_HandleEmptyResponse(
     SingleUseCallback1<void, const ResponseStatus&> *callback,
@@ -1744,30 +2081,6 @@ void RDMAPI::_HandleGetProductDetailIdList(
     }
   }
   callback->Run(response_status, product_detail_ids);
-}
-
-
-/*
- * Handle a get FACTORY_DEFAULTS response
- */
-void RDMAPI::_HandleGetFactoryDefaults(
-    SingleUseCallback2<void,
-                       const ResponseStatus&,
-                       bool> *callback,
-    const RDMAPIImplResponseStatus &status,
-    const string &data) {
-  static const unsigned int DATA_SIZE = 1;
-  ResponseStatus response_status(status, data);
-  bool defaults_enabled = false;
-
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
-    if (data.size() == DATA_SIZE) {
-      defaults_enabled = data.data()[0];
-    } else {
-      SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
-    }
-  }
-  callback->Run(response_status, defaults_enabled);
 }
 
 
@@ -2137,6 +2450,59 @@ void RDMAPI::_HandleSensorValue(
 
 //-----------------------------------------------------------------------------
 // Private methods follow
+
+// get a 32 bit value
+bool RDMAPI::GenericGetU32(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
+    uint16_t pid,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleU32Response,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   pid),
+    error);
+}
+
+
+// set a 32 bit value
+bool RDMAPI::GenericSetU32(
+    const UID &uid,
+    uint16_t sub_device,
+    uint32_t value,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    uint16_t pid,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  value = HostToNetwork(value);
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   pid,
+                   reinterpret_cast<const uint8_t*>(&value),
+                   sizeof(value)),
+    error);
+}
 
 // Check that a UID is not a broadcast address
 bool RDMAPI::CheckNotBroadcast(const UID &uid, string *error) {
