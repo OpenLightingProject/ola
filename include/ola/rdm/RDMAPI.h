@@ -16,6 +16,9 @@
  * RDMAPI.h
  * Provide a generic RDM API that can use different implementations.
  * Copyright (C) 2010 Simon Newton
+ *
+ * This class provides a high level C++ RDM API for PIDs defined in
+ * E1.20. It includes errors checking for out of range arguments.
  */
 
 #ifndef INCLUDE_OLA_RDM_RDMAPI_H_
@@ -37,32 +40,53 @@ using std::string;
 using std::vector;
 using ola::SingleUseCallback1;
 using ola::SingleUseCallback2;
+using ola::SingleUseCallback3;
 using ola::SingleUseCallback4;
 
 
 /*
- * Represents the state of a response (ack, nack etc.) and the reason if there
- * is one.
- *
- * RDM Handles should first check for Error() being non-empty as this
- * represents an underlying transport error. Then the value of response_type
- * should be checked against the rdm_response_type codes.
+ * Represents the state of a response.
+ * RDM requests can fail in a number of ways:
+ *  - transport error talking to the OLA server
+ *  - no response received
+ *  - response was NACKED
+ *  - the Param data wasn't what we expected
+ * This object describes the response state, ResponseType() type should be
+ * checked first, and for anything other than NACK_REASON & VALID_RESPONSE,
+ * there should be a human readable error in Error(). In the event of a
+ * NACK_REASON, NackReason() contains the error code (unless it itself was
+ * malformed, in which case MALFORMED_RESPONSE is used).
  */
 class ResponseStatus {
   public:
     ResponseStatus(const RDMAPIImplResponseStatus &status,
                    const string &data);
 
-    bool WasBroadcast() const { return m_was_broadcast; }
-    bool WasNacked() const { return m_was_nacked; }
+    typedef enum {
+      TRANSPORT_ERROR,
+      BROADCAST_REQUEST,
+      REQUEST_NACKED,
+      MALFORMED_RESPONSE,
+      VALID_RESPONSE,
+    } response_type;
+
+    // This indicates this result of the command
+    response_type ResponseType() const { return m_response_type; }
+    // The NACK reason if the type was NACK_REASON
     uint16_t NackReason() const { return m_nack_reason; }
+    // Provides an error string for the user
     const string& Error() const { return m_error; }
 
+    // Used to change the response type to malformed, with an error string
+    void MalformedResponse(const string &error) {
+      m_response_type = MALFORMED_RESPONSE;
+      m_error = error;
+    }
+
   private:
-    bool m_was_broadcast;
-    bool m_was_nacked;
-    uint16_t m_nack_reason;  // The NACK reason if the type was NACK_REASON
-    string m_error;  // Non empty if the RPC failed
+    response_type m_response_type;
+    uint16_t m_nack_reason;
+    string m_error;
 };
 
 
@@ -72,7 +96,7 @@ class ResponseStatus {
 class StatusMessage {
   public:
     StatusMessage(uint16_t sub_device,
-                  rdm_status_type status_type,
+                  uint8_t status_type,
                   uint16_t status_message_id,
                   int16_t value1,
                   int16_t value2):
@@ -84,7 +108,7 @@ class StatusMessage {
     }
 
     uint16_t sub_device;
-    rdm_status_type status_type;
+    uint8_t status_type;
     uint16_t status_message_id;
     int16_t value1;
     int16_t value2;
@@ -94,33 +118,36 @@ class StatusMessage {
 /*
  * Represents the description for a parameter
  */
-class ParameterDescription {
-  public:
-    ParameterDescription() {}
+typedef struct {
+  uint16_t pid;
+  uint8_t pdl_size;
+  uint8_t data_type;
+  uint8_t command_class;
+  uint8_t unit;
+  uint8_t prefix;
+  uint32_t min_value;
+  uint32_t default_value;
+  uint32_t max_value;
+  string description;
+} ParameterDescription;
 
-
-    uint16_t m_pid;
-    uint8_t m_pdl_size;
-    rdm_data_type m_data_type;
-    rdm_command_class m_command_class;
-    rdm_pid_unit m_unit;
-    rdm_pid_prefix m_prefix;
-    uint32_t m_min_value;
-    uint32_t m_default_value;
-    uint32_t m_max_value;
-    string m_description;
-};
 
 /*
  * Represents a DeviceInfo reply
  */
-class DeviceInfo {
-  public:
+struct device_info_s {
+  uint16_t protocol_version;
+  uint16_t device_model;
+  uint16_t product_category;
+  uint32_t software_version;
+  uint16_t dmx_footprint;
+  uint16_t dmx_personality;
+  uint16_t dmx_start_address;
+  uint16_t sub_device_count;
+  uint8_t sensor_count;
+} __attribute__((packed));
 
-    uint16_t protocol_version;
-    uint16_t device_model;
-    rdm_product_category product_category;
-};
+typedef struct device_info_s DeviceInfo;
 
 
 /*
@@ -129,6 +156,9 @@ class DeviceInfo {
 class QueuedMessageHandler {
   public:
     virtual ~QueuedMessageHandler() {}
+
+    virtual void DeviceInfo(const ResponseStatus &status,
+                            const ola::rdm::DeviceInfo &device_info) = 0;
 };
 
 
@@ -147,6 +177,22 @@ class RDMAPI {
     // This is used to check for queued messages
     uint8_t OutstandingMessagesCount(const UID &uid);
 
+    // Proxy methods
+    bool GetProxiedDeviceCount(
+        const UID &uid,
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           bool> *callback,
+        string *error);
+
+    bool GetProxiedDevices(
+        const UID &uid,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const vector<UID>&> *callback,
+        string *error);
+
     // Network Managment Methods
     bool GetCommStatus(
         const UID &uid,
@@ -154,91 +200,311 @@ class RDMAPI {
                            const ResponseStatus&,
                            uint16_t,
                            uint16_t,
-                           uint16_t> *callback);
+                           uint16_t> *callback,
+        string *error);
 
     bool ClearCommStatus(
         const UID &uid,
-        SingleUseCallback1<void, const ResponseStatus&> *callback);
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
 
+    /*
     bool GetQueuedMessage(
       const UID &uid,
       rdm_status_type status_type,
       QueuedMessageHandler *message_handler);
+    */
 
     bool GetStatusMessage(
-      const UID &uid,
-      rdm_status_type status_type,
-      SingleUseCallback2<void,
-                         const ResponseStatus&,
-                         const vector<StatusMessage> > *callback);
+        const UID &uid,
+        rdm_status_type status_type,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const vector<StatusMessage> > *callback,
+        string *error);
 
     bool GetStatusIdDescription(
-      const UID &uid,
-      uint16_t status_id,
-      SingleUseCallback2<void, const ResponseStatus&, const string&> *callback);
+        const UID &uid,
+        uint16_t status_id,
+        SingleUseCallback2<void, const ResponseStatus&,
+                           const string&> *callback,
+        string *error);
 
     bool ClearStatusId(
-      const UID &uid,
-      SingleUseCallback1<void, const ResponseStatus&> *callback);
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
 
     bool GetSubDeviceReporting(
-      const UID &uid,
-      uint16_t sub_device,
-      SingleUseCallback2<void,
-                         const ResponseStatus&,
-                         rdm_status_type> *callback);
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           uint8_t> *callback,
+        string *error);
 
     bool SetSubDeviceReporting(
-      const UID &uid,
-      uint16_t sub_device,
-      rdm_status_type status_type,
-      SingleUseCallback1<void, const ResponseStatus&> *callback);
+        const UID &uid,
+        uint16_t sub_device,
+        rdm_status_type status_type,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
 
     // Information Methods
     bool GetSupportedParameters(
-      const UID &uid,
-      uint16_t sub_device,
-      SingleUseCallback2<void,
-                         const ResponseStatus&,
-                         vector<uint16_t> > *callback);
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           vector<uint16_t> > *callback,
+        string *error);
 
     bool GetParameterDescription(
-      const UID &uid,
-      uint16_t pid,
-      SingleUseCallback2<void,
-                         const ResponseStatus&,
-                         ParameterDescription> *callback);
+        const UID &uid,
+        uint16_t pid,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const ParameterDescription&> *callback,
+        string *error);
 
     bool GetDeviceInfo(
-      const UID &uid,
-      uint16_t sub_device,
-      SingleUseCallback2<void,
-                         const ResponseStatus&,
-                         const DeviceInfo&> *callback);
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const DeviceInfo&> *callback,
+        string *error);
 
+    bool GetProductDetailIdList(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           vector<uint16_t> > *callback,
+        string *error);
 
+    bool GetDeviceModelDescription(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const string&> *callback,
+        string *error);
 
+    bool GetManufacturerLabel(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const string&> *callback,
+        string *error);
+
+    bool GetDeviceLabel(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const string&> *callback,
+        string *error);
+
+    bool SetDeviceLabel(
+        const UID &uid,
+        uint16_t sub_device,
+        const string &label,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetFactoryDefaults(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           bool> *callback,
+        string *error);
+
+    bool ResetToFactoryDefaults(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetLanguageCapabilities(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           vector<string>&> *callback,
+        string *error);
+
+    bool GetLanguage(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const string&> *callback,
+        string *error);
+
+    bool SetLanguage(
+        const UID &uid,
+        uint16_t sub_device,
+        const string &language,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetSoftwareVersionLabel(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const string&> *callback,
+        string *error);
+
+    bool GetBootSoftwareVersion(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           uint32_t> *callback,
+        string *error);
+
+    bool GetBootSoftwareVersionLabel(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const string&> *callback,
+        string *error);
 
     // Handlers, these are called by the RDMAPIImpl.
-    void HandleGetSupportedParameters(
-      SingleUseCallback2<void,
+
+    // Generic handlers
+    void _HandleLabelResponse(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const string&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleEmptyResponse(
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    // specific handlers follow
+    void _HandleGetProxiedDeviceCount(
+      SingleUseCallback3<void,
                          const ResponseStatus&,
-                         vector<uint16_t> > *callback,
+                         uint16_t,
+                         bool> *callback,
       const RDMAPIImplResponseStatus &status,
       const string &data);
 
-
-    void HandleGetDeviceInfo(
+    void _HandleGetProxiedDevices(
       SingleUseCallback2<void,
                          const ResponseStatus&,
-                         const DeviceInfo&> *callback,
+                         const vector<UID>&> *callback,
       const RDMAPIImplResponseStatus &status,
       const string &data);
+
+    void _HandleGetCommStatus(
+        SingleUseCallback4<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           uint16_t,
+                           uint16_t> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetStatusMessage(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const vector<StatusMessage> > *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetStatusIdDescription(
+        SingleUseCallback2<void, const ResponseStatus&,
+                           const string&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetSubDeviceReporting(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           uint8_t> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetSupportedParameters(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           vector<uint16_t> > *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetParameterDescription(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const ParameterDescription&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetDeviceInfo(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const DeviceInfo&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetProductDetailIdList(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           vector<uint16_t> > *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetFactoryDefaults(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           bool> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetLanguageCapabilities(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           vector<string>&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetLanguage(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const string&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleGetBootSoftwareVersion(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           uint32_t> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
 
   private:
     unsigned int m_universe;
     class RDMAPIImplInterface *m_impl;
     std::map<UID, uint8_t> m_outstanding_messages;
+
+    bool CheckNotBroadcast(const UID &uid, string *error);
+    bool CheckValidSubDevice(uint16_t sub_device,
+                             bool broadcast_allowed,
+                             string *error);
+    bool CheckReturnStatus(bool status, string *error);
+    void SetIncorrectPDL(ResponseStatus *status,
+                         unsigned int actual,
+                         unsigned int expected);
 };
 }  // rdm
 }  // ola

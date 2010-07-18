@@ -74,8 +74,8 @@ class RDMAPIImplInterface {
                         const UID &uid,
                         uint16_t sub_device,
                         uint16_t pid,
-                        const uint8_t *data,
-                        unsigned int data_length) = 0;
+                        const uint8_t *data = NULL,
+                        unsigned int data_length = 0) = 0;
 };
 }  // rdm
 }  // ola
