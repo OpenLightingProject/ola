@@ -383,6 +383,23 @@ typedef enum {
   STS_NOT_READY = 0x0051,
   STS_LOW_FLUID = 0x0052,
 } rdm_status_message_id;
+
+
+typedef enum {
+  LAMP_OFF = 0x00,
+  LAMP_ON = 0x01,
+  LAMP_STRIKE = 0x02,
+  LAMP_STANDBY = 0x03,
+  LAMP_NOT_PRESENT = 0x04,
+  LAMP_ERROR = 0x7F,
+} rdm_lamp_state;
+
+typedef enum {
+  LAMP_ON_MODE_OFF = 0x00,
+  LAMP_ON_MODE_DMX = 0x01,
+  LAMP_ON_MODE_ON = 0x02,
+  LAMP_ON_MODE_AFTER_CAL = 0x03,
+} rdm_lamp_mode;
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_
