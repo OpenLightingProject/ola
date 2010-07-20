@@ -22,6 +22,7 @@ dist_www_DATA = GPL.txt \
                 show_plugin_info.tpl \
                 show_loaded_devices.tpl \
                 show_universe_settings.tpl \
+                show_universe_uids.tpl \
                 show_dmx_console.tpl \
                 ajax_request.js \
                 console.js \
