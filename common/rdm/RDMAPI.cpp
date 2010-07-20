@@ -1363,108 +1363,6 @@ bool RDMAPI::RecordSensors(
 
 
 /*
- * Check the identify mode for a device
- * @param uid the UID to fetch the outstanding message count for
- * @param sub_device the sub device to use
- * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
- * @return true if the request is sent correctly, false otherwise
- */
-bool RDMAPI::GetIdentifyMode(
-    const UID &uid,
-    uint16_t sub_device,
-    SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
-    string *error) {
-  if (CheckNotBroadcast(uid, error))
-    return false;
-  if (CheckValidSubDevice(sub_device, false, error))
-    return false;
-
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleBoolResponse,
-    callback);
-  return CheckReturnStatus(
-    m_impl->RDMGet(cb,
-                   m_universe,
-                   uid,
-                   sub_device,
-                   PID_IDENTIFY_DEVICE),
-    error);
-}
-
-
-/*
- * Change the identify mode for a device
- * @param uid the UID to fetch the outstanding message count for
- * @param sub_device the sub device to use
- * @param mode the identify mode to set
- * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
- * @return true if the request is sent correctly, false otherwise
-*/
-bool RDMAPI::IdentifyDevice(
-    const UID &uid,
-    uint16_t sub_device,
-    bool mode,
-    SingleUseCallback1<void, const ResponseStatus&> *callback,
-    string *error) {
-  if (CheckValidSubDevice(sub_device, true, error))
-    return false;
-
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleEmptyResponse,
-    callback);
-  uint8_t option = mode;
-  return CheckReturnStatus(
-    m_impl->RDMSet(cb,
-                   m_universe,
-                   uid,
-                   sub_device,
-                   PID_IDENTIFY_DEVICE,
-                   &option,
-                   sizeof(option)),
-    error);
-}
-
-
-/*
- * Reset a device
- * @param uid the UID to fetch the outstanding message count for
- * @param sub_device the sub device to use
- * @param warm_reset true for a warm reset, false for a cold reset
- * @param callback the callback to invoke when this request completes
- * @param error a pointer to a string which it set if an error occurs
- * @return true if the request is sent correctly, false otherwise
-*/
-bool RDMAPI::ResetDevice(
-    const UID &uid,
-    uint16_t sub_device,
-    bool warm_reset,
-    SingleUseCallback1<void, const ResponseStatus&> *callback,
-    string *error) {
-  if (CheckValidSubDevice(sub_device, true, error))
-    return false;
-
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleEmptyResponse,
-    callback);
-  uint8_t option = warm_reset ? 0x01 : 0xff;
-  return CheckReturnStatus(
-    m_impl->RDMSet(cb,
-                   m_universe,
-                   uid,
-                   sub_device,
-                   PID_IDENTIFY_DEVICE,
-                   &option,
-                   sizeof(option)),
-    error);
-}
-
-
-/*
  * Get the device hours
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
@@ -1606,6 +1504,100 @@ bool RDMAPI::SetLampStrikes(
 
 
 /*
+* Get the state of the lamp
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetLampState(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+    string *error) {
+  return GenericGetU8(
+      uid,
+      sub_device,
+      callback,
+      PID_LAMP_STATE,
+      error);
+}
+
+
+/*
+ * Set the lamp state
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param lamp_state the new lamp state
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetLampState(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t lamp_state,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU8(
+      uid,
+      sub_device,
+      lamp_state,
+      callback,
+      PID_LAMP_STATE,
+      error);
+}
+
+
+/*
+* Get the mode of the lamp
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetLampMode(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+    string *error) {
+  return GenericGetU8(
+      uid,
+      sub_device,
+      callback,
+      PID_LAMP_ON_MODE,
+      error);
+}
+
+
+/*
+ * Set the lamp mode
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param lamp_mode the new lamp mode
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetLampMode(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t lamp_mode,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU8(
+      uid,
+      sub_device,
+      lamp_mode,
+      callback,
+      PID_LAMP_ON_MODE,
+      error);
+}
+
+
+/*
 * Get the number of device power cycles
 * @param uid the UID to fetch the outstanding message count for
 * @param sub_device the sub device to use
@@ -1650,6 +1642,345 @@ bool RDMAPI::SetDevicePowerCycles(
       PID_DEVICE_POWER_CYCLES,
       error);
 }
+
+
+/*
+* Get the display invert setting
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetDisplayInvert(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+    string *error) {
+  return GenericGetU8(
+      uid,
+      sub_device,
+      callback,
+      PID_DISPLAY_INVERT,
+      error);
+}
+
+
+/*
+ * Set the display invert setting
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param display_invert the new invert setting
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetDisplayInvert(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t display_invert,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU8(
+      uid,
+      sub_device,
+      display_invert,
+      callback,
+      PID_DISPLAY_INVERT,
+      error);
+}
+
+
+/*
+* Get the display level
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetDisplayLevel(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+    string *error) {
+  return GenericGetU8(
+      uid,
+      sub_device,
+      callback,
+      PID_DISPLAY_LEVEL,
+      error);
+}
+
+
+/*
+ * Set the display level
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param display_level the new setting
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetDisplayLevel(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t display_level,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU8(
+      uid,
+      sub_device,
+      display_level,
+      callback,
+      PID_DISPLAY_LEVEL,
+      error);
+}
+
+
+/*
+* Get the pan invert parameter
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetPanInvert(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+    string *error) {
+  return GenericGetU8(
+      uid,
+      sub_device,
+      callback,
+      PID_PAN_INVERT,
+      error);
+}
+
+
+/*
+ * Invert the pan parameter
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param invert set to true to invert
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetPanInvert(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t invert,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU8(
+      uid,
+      sub_device,
+      invert,
+      callback,
+      PID_PAN_INVERT,
+      error);
+}
+
+
+/*
+* Get the tilt invert parameter
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetTiltInvert(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+    string *error) {
+  return GenericGetU8(
+      uid,
+      sub_device,
+      callback,
+      PID_TILT_INVERT,
+      error);
+}
+
+
+/*
+ * Invert the tilt parameter
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param invert set to true to invert
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetTiltInvert(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t invert,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU8(
+      uid,
+      sub_device,
+      invert,
+      callback,
+      PID_TILT_INVERT,
+      error);
+}
+
+
+/*
+* Get the pan/tilt swap parameter
+* @param uid the UID to fetch the outstanding message count for
+* @param sub_device the sub device to use
+* @param callback the callback to invoke when this request completes
+* @param error a pointer to a string which it set if an error occurs
+* @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetPanTiltSwap(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+    string *error) {
+  return GenericGetU8(
+      uid,
+      sub_device,
+      callback,
+      PID_PAN_TILT_SWAP,
+      error);
+}
+
+
+/*
+ * Swap the pan and tilt actions
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param swap, true to swap, false otherwise
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetPanTiltSwap(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t swap,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  return GenericSetU8(
+      uid,
+      sub_device,
+      swap,
+      callback,
+      PID_PAN_TILT_SWAP,
+      error);
+}
+
+
+/*
+ * Check the identify mode for a device
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+ */
+bool RDMAPI::GetIdentifyMode(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleBoolResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_IDENTIFY_DEVICE),
+    error);
+}
+
+
+/*
+ * Change the identify mode for a device
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param mode the identify mode to set
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::IdentifyDevice(
+    const UID &uid,
+    uint16_t sub_device,
+    bool mode,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  uint8_t option = mode;
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_IDENTIFY_DEVICE,
+                   &option,
+                   sizeof(option)),
+    error);
+}
+
+
+/*
+ * Reset a device
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param warm_reset true for a warm reset, false for a cold reset
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::ResetDevice(
+    const UID &uid,
+    uint16_t sub_device,
+    bool warm_reset,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  uint8_t option = warm_reset ? 0x01 : 0xff;
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_IDENTIFY_DEVICE,
+                   &option,
+                   sizeof(option)),
+    error);
+}
+
+
 // Handlers follow. These are invoked by the RDMAPIImpl when responses arrive
 // ----------------------------------------------------------------------------
 
@@ -1694,6 +2025,29 @@ void RDMAPI::_HandleBoolResponse(
     }
   }
   callback->Run(response_status, option);
+}
+
+
+/*
+ * Handle a response that contains a uint8_t
+ */
+void RDMAPI::_HandleU8Response(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       uint8_t> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+  uint8_t value = 0;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    if (data.size() == sizeof(value)) {
+      value = data.data()[0];
+    } else {
+      SetIncorrectPDL(&response_status, data.size(), sizeof(value));
+    }
+  }
+  callback->Run(response_status, value);
 }
 
 
@@ -2450,6 +2804,59 @@ void RDMAPI::_HandleSensorValue(
 
 //-----------------------------------------------------------------------------
 // Private methods follow
+
+// get a 8 bit value
+bool RDMAPI::GenericGetU8(
+    const UID &uid,
+    uint8_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+    uint16_t pid,
+    string *error) {
+  if (CheckNotBroadcast(uid, error))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleU8Response,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   pid),
+    error);
+}
+
+
+// set an 8 bit value
+bool RDMAPI::GenericSetU8(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t value,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    uint16_t pid,
+    string *error) {
+  if (CheckValidSubDevice(sub_device, true, error))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   pid,
+                   &value,
+                   sizeof(value)),
+    error);
+}
+
 
 // get a 32 bit value
 bool RDMAPI::GenericGetU32(

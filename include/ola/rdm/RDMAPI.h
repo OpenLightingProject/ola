@@ -202,8 +202,9 @@ struct sensor_values_s {
 
 typedef struct sensor_values_s SensorValueDescriptor;
 
+
 /*
- * An object which deals with queued messages
+ * The interface for objects which deal with queued messages
  */
 class QueuedMessageHandler {
   public:
@@ -281,6 +282,20 @@ class QueuedMessageHandler {
                                       uint32_t hours) = 0;
     virtual void GetIdentifyMode(const ResponseStatus &status,
                                  bool mode) = 0;
+     virtual void GetLampState(const ResponseStatus &status,
+                               uint8_t state) = 0;
+     virtual void GetLampMode(const ResponseStatus &status,
+                              uint8_t mode) = 0;
+     virtual void GetDisplayInvert(const ResponseStatus &status,
+                                   uint8_t invert_mode) = 0;
+     virtual void GetDisplayLevel(const ResponseStatus &status,
+                                  uint8_t level) = 0;
+    virtual void GetPanInvert(const ResponseStatus &status,
+                              uint8_t inverted) = 0;
+    virtual void GetTiltInvert(const ResponseStatus &status,
+                               uint8_t inverted) = 0;
+    virtual void GetPanTiltSwap(const ResponseStatus &status,
+                                uint8_t inverted) = 0;
 
     // TODO(simon): add a default handler here
 };
@@ -641,6 +656,32 @@ class RDMAPI {
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 
+    bool GetLampState(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        string *error);
+
+    bool SetLampState(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t lamp_state,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetLampMode(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        string *error);
+
+    bool SetLampMode(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t lamp_mode,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
     bool GetDevicePowerCycles(
         const UID &uid,
         uint16_t sub_device,
@@ -651,6 +692,71 @@ class RDMAPI {
         const UID &uid,
         uint16_t sub_device,
         uint32_t power_cycles,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetDisplayInvert(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        string *error);
+
+    bool SetDisplayInvert(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t display_invert,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetDisplayLevel(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        string *error);
+
+    bool SetDisplayLevel(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t display_level,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetPanInvert(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        string *error);
+
+    bool SetPanInvert(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t invert,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetTiltInvert(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        string *error);
+
+    bool SetTiltInvert(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t invert,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool GetPanTiltSwap(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        string *error);
+
+    bool SetPanTiltSwap(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t swap,
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 
@@ -688,6 +794,13 @@ class RDMAPI {
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            bool> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleU8Response(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           uint8_t> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
@@ -863,6 +976,21 @@ class RDMAPI {
     std::map<UID, uint8_t> m_outstanding_messages;
 
     enum {LABEL_SIZE = 32};
+
+    bool GenericGetU8(
+        const UID &uid,
+        uint8_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        uint16_t pid,
+        string *error);
+
+    bool GenericSetU8(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t value,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        uint16_t pid,
+        string *error);
 
     bool GenericGetU32(
         const UID &uid,
