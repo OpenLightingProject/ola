@@ -2113,7 +2113,7 @@ void RDMAPI::_HandleGetProxiedDeviceCount(
         uint8_t list_change;
       } unpacked_data;
       memcpy(&unpacked_data, data.data(), DATA_SIZE);
-      device_count = unpacked_data.device_count;
+      device_count = NetworkToHost(unpacked_data.device_count);
       list_change = unpacked_data.list_change;
     } else {
       SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
@@ -2916,9 +2916,9 @@ bool RDMAPI::CheckNotBroadcast(const UID &uid, string *error) {
   if (uid.IsBroadcast()) {
     if (error)
       *error = "Cannot send to broadcast address";
-    return false;
+    return true;
   }
-  return true;
+  return false;
 }
 
 
@@ -2927,17 +2927,17 @@ bool RDMAPI::CheckValidSubDevice(uint16_t sub_device,
                                  bool broadcast_allowed,
                                  string *error) {
   if (sub_device <= 0x0200)
-    return true;
+    return false;
 
   if (broadcast_allowed && sub_device == 0xffff)
-    return true;
+    return false;
 
   if (error) {
     *error = "Sub device must be <= 0x0200";
     if (broadcast_allowed)
       *error += " or 0xffff";
   }
-  return false;
+  return true;
 }
 
 
