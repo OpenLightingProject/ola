@@ -278,24 +278,24 @@ class QueuedMessageHandler {
                               uint32_t hours) = 0;
     virtual void GetLampStrikes(const ResponseStatus &status,
                                 uint32_t hours) = 0;
+    virtual void GetLampState(const ResponseStatus &status,
+                              uint8_t state) = 0;
+    virtual void GetLampMode(const ResponseStatus &status,
+                             uint8_t mode) = 0;
     virtual void GetDevicePowerCycles(const ResponseStatus &status,
                                       uint32_t hours) = 0;
-    virtual void GetIdentifyMode(const ResponseStatus &status,
-                                 bool mode) = 0;
-     virtual void GetLampState(const ResponseStatus &status,
-                               uint8_t state) = 0;
-     virtual void GetLampMode(const ResponseStatus &status,
-                              uint8_t mode) = 0;
-     virtual void GetDisplayInvert(const ResponseStatus &status,
-                                   uint8_t invert_mode) = 0;
-     virtual void GetDisplayLevel(const ResponseStatus &status,
-                                  uint8_t level) = 0;
+    virtual void GetDisplayInvert(const ResponseStatus &status,
+                                  uint8_t invert_mode) = 0;
+    virtual void GetDisplayLevel(const ResponseStatus &status,
+                                 uint8_t level) = 0;
     virtual void GetPanInvert(const ResponseStatus &status,
                               uint8_t inverted) = 0;
     virtual void GetTiltInvert(const ResponseStatus &status,
                                uint8_t inverted) = 0;
     virtual void GetPanTiltSwap(const ResponseStatus &status,
                                 uint8_t inverted) = 0;
+    virtual void GetIdentifyMode(const ResponseStatus &status,
+                                 bool mode) = 0;
 
     // TODO(simon): add a default handler here
 };
