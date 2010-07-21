@@ -93,26 +93,13 @@ class ResponseStatus {
 /*
  * Represents a Status Message
  */
-class StatusMessage {
-  public:
-    StatusMessage(uint16_t sub_device,
-                  uint8_t status_type,
-                  uint16_t status_message_id,
-                  int16_t value1,
-                  int16_t value2):
-      sub_device(sub_device),
-      status_type(status_type),
-      status_message_id(status_message_id),
-      value1(value1),
-      value2(value2) {
-    }
-
-    uint16_t sub_device;
-    uint8_t status_type;
-    uint16_t status_message_id;
-    int16_t value1;
-    int16_t value2;
-};
+typedef struct {
+  uint16_t sub_device;
+  uint16_t status_message_id;
+  int16_t value1;
+  int16_t value2;
+  uint8_t status_type;
+} StatusMessage;
 
 
 /*

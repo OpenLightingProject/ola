@@ -2223,12 +2223,14 @@ void RDMAPI::_HandleGetStatusMessage(
       for (const uint8_t *ptr = start; ptr < start + data_size;
            ptr += sizeof(message)) {
         memcpy(&message, ptr, sizeof(message));
-        StatusMessage msg_object(
-           message.sub_device_hi << 8 + message.sub_device_lo,
-           message.status_type,
-           message.message_id_hi << 8 + message.message_id_lo,
-           message.value_1_hi << 8 + message.value_1_lo,
-           message.value_2_hi << 8 + message.value_2_lo);
+        StatusMessage msg_object;
+        msg_object.sub_device = (message.sub_device_hi << 8 +
+            message.sub_device_lo);
+        msg_object.status_message_id = (message.message_id_hi << 8 +
+            message.message_id_lo);
+        msg_object.value1 = (message.value_1_hi << 8 + message.value_1_lo);
+        msg_object.value2 = (message.value_2_hi << 8 + message.value_2_lo);
+        msg_object.status_type = message.status_type;
         messages.push_back(msg_object);
       }
     } else {
