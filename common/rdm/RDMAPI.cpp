@@ -2178,9 +2178,9 @@ void RDMAPI::_HandleGetCommStatus(
         uint16_t checksum_fail;
       } unpacked_data;
       memcpy(&unpacked_data, data.data(), DATA_SIZE);
-      short_message = unpacked_data.short_message;
-      length_mismatch = unpacked_data.length_mismatch;
-      checksum_fail = unpacked_data.checksum_fail;
+      short_message = NetworkToHost(unpacked_data.short_message);
+      length_mismatch = NetworkToHost(unpacked_data.length_mismatch);
+      checksum_fail = NetworkToHost(unpacked_data.checksum_fail);
     } else {
       SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
     }
