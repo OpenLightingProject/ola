@@ -2326,8 +2326,8 @@ void RDMAPI::_HandleGetParameterDescriptor(
       uint8_t unit;
       uint8_t prefix;
       uint32_t min_value;
-      uint32_t default_value;
       uint32_t max_value;
+      uint32_t default_value;
       // +1 for a null since it's not clear in the spec if this is null
       // terminated
       char description[LABEL_SIZE + 1];
@@ -2350,8 +2350,10 @@ void RDMAPI::_HandleGetParameterDescriptor(
       description.min_value = NetworkToHost(raw_description.min_value);
       description.default_value = NetworkToHost(raw_description.default_value);
       description.max_value = NetworkToHost(raw_description.max_value);
+      unsigned int label_size = data_size - (
+          sizeof(raw_description) - LABEL_SIZE - 1);
       description.description = std::string(raw_description.description,
-                                            LABEL_SIZE);
+                                            label_size);
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
