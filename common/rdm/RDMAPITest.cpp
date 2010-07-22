@@ -221,7 +221,6 @@ class RDMAPITest: public CppUnit::TestFixture {
                                  uint16_t count,
                                  bool changed) {
       CheckResponseStatus(status);
-      std::cout << status.Error() << std::endl;
       CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(2), count);
       CPPUNIT_ASSERT_EQUAL(false, changed);
     }
@@ -263,6 +262,24 @@ class RDMAPITest: public CppUnit::TestFixture {
         const ResponseStatus &status,
         const ola::rdm::ParameterDescriptor &description) {
       CheckResponseStatus(status);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x1234), description.pid);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(10), description.pdl_size);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(ola::rdm::DS_UNSIGNED_DWORD),
+                           description.data_type);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(ola::rdm::CC_GET),
+                           description.command_class);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(ola::rdm::UNITS_METERS),
+                           description.unit);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(ola::rdm::PREFIX_KILO),
+                           description.prefix);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(0), description.min_value);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(200000),
+                           description.max_value);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(1000),
+                           description.default_value);
+      CPPUNIT_ASSERT_EQUAL(string(TEST_DESCRIPTION).size(),
+                           description.description.size());
+      CPPUNIT_ASSERT_EQUAL(string(TEST_DESCRIPTION), description.description);
     }
 
     void CheckMalformedParameterDescription(
@@ -271,6 +288,29 @@ class RDMAPITest: public CppUnit::TestFixture {
       CPPUNIT_ASSERT_EQUAL(ola::rdm::ResponseStatus::MALFORMED_RESPONSE,
                            status.ResponseType());
       (void) description;
+    }
+
+    void CheckDeviceInfo(const ResponseStatus &status,
+                         const ola::rdm::DeviceDescriptor &descriptor) {
+      CheckResponseStatus(status);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(1),
+                           descriptor.protocol_version);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(2),
+                           descriptor.device_model);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(3),
+                           descriptor.product_category);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(0x12345678),
+                           descriptor.software_version);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(400),
+                           descriptor.dmx_footprint);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(1),
+                           descriptor.dmx_personality);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(12),
+                           descriptor.dmx_start_address);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(10),
+                           descriptor.sub_device_count);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(4),
+                           descriptor.sensor_count);
     }
 
     void CheckProductDetailList(const ResponseStatus &status,
@@ -496,6 +536,46 @@ void RDMAPITest::testRDMInformation() {
     pid,
     NewSingleCallback(this, &RDMAPITest::CheckMalformedParameterDescription),
     &error));
+
+  struct param_info_s {
+    uint16_t pid;
+    uint8_t pdl_size;
+    uint8_t data_type;
+    uint8_t command_class;
+    uint8_t type;
+    uint8_t unit;
+    uint8_t prefix;
+    uint32_t min_value;
+    uint32_t max_value;
+    uint32_t default_value;
+    char label[32];
+  } __attribute__((packed));
+  struct param_info_s param_info;
+  param_info.pid = HostToNetwork(static_cast<uint16_t>(0x1234));
+  param_info.pdl_size = 10;
+  param_info.data_type = ola::rdm::DS_UNSIGNED_DWORD;
+  param_info.command_class = ola::rdm::CC_GET;
+  param_info.type = 0;
+  param_info.unit = ola::rdm::UNITS_METERS;
+  param_info.prefix = ola::rdm::PREFIX_KILO;
+  param_info.min_value = HostToNetwork(static_cast<uint32_t>(0));
+  param_info.max_value = HostToNetwork(static_cast<uint32_t>(200000));
+  param_info.default_value = HostToNetwork(static_cast<uint32_t>(1000));
+  strncpy(param_info.label, TEST_DESCRIPTION, sizeof(param_info.label));
+
+  string s2(reinterpret_cast<char*>(&param_info),
+            sizeof(param_info) - sizeof(param_info.label) +
+            strlen(TEST_DESCRIPTION));
+  m_impl.AddExpectedGet(s2,
+                        UNIVERSE,
+                        m_uid,
+                        ola::rdm::ROOT_RDM_DEVICE,
+                        ola::rdm::PID_PARAMETER_DESCRIPTION);
+  CPPUNIT_ASSERT(m_api.GetParameterDescription(
+    m_uid,
+    ola::rdm::ROOT_RDM_DEVICE,
+    NewSingleCallback(this, &RDMAPITest::CheckParameterDescription),
+    &error));
 }
 
 
@@ -504,6 +584,48 @@ void RDMAPITest::testRDMInformation() {
  */
 void RDMAPITest::testProductInformation() {
   string error;
+  uint16_t sub_device = 1;
+
+  // device info
+  struct device_info_s {
+    uint16_t version;
+    uint16_t model;
+    uint16_t product_category;
+    uint32_t software_version;
+    uint16_t dmx_footprint;
+    uint16_t dmx_personality;
+    uint16_t dmx_start_address;
+    uint16_t sub_device_count;
+    uint8_t sensor_count;
+  } __attribute__((packed));
+  struct device_info_s device_info;
+  device_info.version = HostToNetwork(static_cast<uint16_t>(1));
+  device_info.model = HostToNetwork(static_cast<uint16_t>(2));
+  device_info.product_category = HostToNetwork(static_cast<uint16_t>(3));
+  device_info.software_version = HostToNetwork(
+    static_cast<uint32_t>(0x12345678));
+  device_info.dmx_footprint = HostToNetwork(static_cast<uint16_t>(400));
+  device_info.dmx_personality = HostToNetwork(static_cast<uint16_t>(1));
+  device_info.dmx_start_address = HostToNetwork(static_cast<uint16_t>(12));
+  device_info.sub_device_count = HostToNetwork(static_cast<uint16_t>(10));
+  device_info.sensor_count = 4;
+
+  CPPUNIT_ASSERT(!m_api.GetDeviceInfo(m_bcast_uid, sub_device, NULL, &error));
+  CheckForBroadcastError(&error);
+  CPPUNIT_ASSERT(!m_api.GetDeviceInfo(m_group_uid, sub_device, NULL, &error));
+  CheckForBroadcastError(&error);
+  string s(reinterpret_cast<char*>(&device_info), sizeof(device_info));
+  m_impl.AddExpectedGet(s,
+                        UNIVERSE,
+                        m_uid,
+                        ola::rdm::ROOT_RDM_DEVICE,
+                        ola::rdm::PID_DEVICE_INFO);
+  CPPUNIT_ASSERT(m_api.GetDeviceInfo(
+    m_uid,
+    ola::rdm::ROOT_RDM_DEVICE,
+    NewSingleCallback(this, &RDMAPITest::CheckDeviceInfo),
+    &error));
+
   // product detail id list
   struct {
     uint16_t detail1;
@@ -513,15 +635,14 @@ void RDMAPITest::testProductInformation() {
   detail_list.detail1 = HostToNetwork(static_cast<uint16_t>(0x5678));
   detail_list.detail2 = HostToNetwork(static_cast<uint16_t>(0xfedc));
   detail_list.detail3 = HostToNetwork(static_cast<uint16_t>(0xaa00));
-  uint16_t sub_device = 1;
   CPPUNIT_ASSERT(!m_api.GetProductDetailIdList(m_bcast_uid, sub_device, NULL,
                                                &error));
   CheckForBroadcastError(&error);
   CPPUNIT_ASSERT(!m_api.GetProductDetailIdList(m_group_uid, sub_device, NULL,
                                                &error));
   CheckForBroadcastError(&error);
-  string s(reinterpret_cast<char*>(&detail_list), sizeof(detail_list));
-  m_impl.AddExpectedGet(s,
+  string s2(reinterpret_cast<char*>(&detail_list), sizeof(detail_list));
+  m_impl.AddExpectedGet(s2,
                         UNIVERSE,
                         m_uid,
                         ola::rdm::ROOT_RDM_DEVICE,
@@ -590,4 +711,43 @@ void RDMAPITest::testProductInformation() {
     &error));
 
   // TODO(simon): set device label
+
+
+  // software version label
+  CPPUNIT_ASSERT(!m_api.GetSoftwareVersionLabel(m_bcast_uid, sub_device,
+                                                NULL, &error));
+  CheckForBroadcastError(&error);
+  CPPUNIT_ASSERT(!m_api.GetSoftwareVersionLabel(m_group_uid, sub_device,
+                                                NULL, &error));
+  CheckForBroadcastError(&error);
+
+  m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
+                        UNIVERSE,
+                        m_uid,
+                        sub_device,
+                        ola::rdm::PID_SOFTWARE_VERSION_LABEL);
+  CPPUNIT_ASSERT(m_api.GetSoftwareVersionLabel(
+    m_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
+
+  // Boot software label
+  CPPUNIT_ASSERT(!m_api.GetBootSoftwareVersionLabel(m_bcast_uid, sub_device,
+                                                NULL, &error));
+  CheckForBroadcastError(&error);
+  CPPUNIT_ASSERT(!m_api.GetBootSoftwareVersionLabel(m_group_uid, sub_device,
+                                                NULL, &error));
+  CheckForBroadcastError(&error);
+
+  m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
+                        UNIVERSE,
+                        m_uid,
+                        sub_device,
+                        ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL);
+  CPPUNIT_ASSERT(m_api.GetBootSoftwareVersionLabel(
+    m_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
 }
