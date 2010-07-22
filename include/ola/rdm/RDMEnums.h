@@ -27,6 +27,7 @@ namespace ola {
 namespace rdm {
 
 static const uint16_t ROOT_RDM_DEVICE = 0;
+static const uint16_t ALL_RDM_SUBDEVICES = 0xff;
 
 typedef enum {
   ACK = 0x00,
