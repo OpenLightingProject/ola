@@ -282,9 +282,6 @@ bool RDMAPI::ClearStatusId(
     uint16_t sub_device,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
-  if (CheckNotBroadcast(uid, error))
-    return false;
-
   if (CheckValidSubDevice(sub_device, true, error))
     return false;
 
@@ -436,7 +433,7 @@ bool RDMAPI::GetParameterDescription(
                      m_universe,
                      uid,
                      ROOT_RDM_DEVICE,
-                     PID_STATUS_ID_DESCRIPTION,
+                     PID_PARAMETER_DESCRIPTION,
                      reinterpret_cast<const uint8_t*>(&pid),
                      sizeof(pid)),
       error);
@@ -2294,7 +2291,7 @@ void RDMAPI::_HandleGetSupportedParameters(
   if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
     if (data_size % 2 == 0) {
       const uint16_t *start = reinterpret_cast<const uint16_t*>(data.data());
-      for (const uint16_t *ptr = start; ptr < start + data_size; ptr++) {
+      for (const uint16_t *ptr = start; ptr < start + (data_size / 2); ptr++) {
         pids.push_back(NetworkToHost(*ptr));
       }
     } else {
