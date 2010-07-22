@@ -1083,8 +1083,6 @@ bool RDMAPI::SetDMXAddress(
     uint16_t start_address,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
-  if (CheckNotBroadcast(uid, error))
-    return false;
   if (CheckValidSubDevice(sub_device, true, error))
     return false;
 
@@ -2930,7 +2928,7 @@ bool RDMAPI::CheckValidSubDevice(uint16_t sub_device,
   if (sub_device <= 0x0200)
     return false;
 
-  if (broadcast_allowed && sub_device == 0xffff)
+  if (broadcast_allowed && sub_device == ALL_RDM_SUBDEVICES)
     return false;
 
   if (error) {
