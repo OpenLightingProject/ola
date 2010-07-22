@@ -2291,7 +2291,8 @@ void RDMAPI::_HandleGetSupportedParameters(
   if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
     if (data_size % 2 == 0) {
       const uint16_t *start = reinterpret_cast<const uint16_t*>(data.data());
-      for (const uint16_t *ptr = start; ptr < start + (data_size / 2); ptr++) {
+      const uint16_t *end = start + (data_size / sizeof(*start));
+      for (const uint16_t *ptr = start; ptr < end; ptr++) {
         pids.push_back(NetworkToHost(*ptr));
       }
     } else {
@@ -2426,10 +2427,9 @@ void RDMAPI::_HandleGetProductDetailIdList(
       response_status.MalformedResponse(str.str());
     } else {
       const uint16_t *start = reinterpret_cast<const uint16_t*>(data.data());
-      const uint16_t *ptr = start;
-      while (ptr < start + (data_size / sizeof(*ptr))) {
-        product_detail_ids.push_back(*ptr);
-        ptr++;
+      const uint16_t *end = start + (data_size / sizeof(*start));
+      for (const uint16_t *ptr = start; ptr < end; ptr++) {
+        product_detail_ids.push_back(NetworkToHost(*ptr));
       }
     }
   }
