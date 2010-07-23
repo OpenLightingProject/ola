@@ -2297,6 +2297,7 @@ void RDMAPI::_HandleGetSupportedParameters(
       response_status.MalformedResponse("PDL size not a multiple of 2 : " +
           IntToString(static_cast<int>(data_size)));
     }
+    sort(pids.begin(), pids.end());
   }
   callback->Run(response_status, pids);
 }
