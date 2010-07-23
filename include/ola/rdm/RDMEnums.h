@@ -31,9 +31,9 @@ static const uint16_t ALL_RDM_SUBDEVICES = 0xff;
 
 typedef enum {
   ACK = 0x00,
-  ACK_OVERFLOW = 0x01,
-  ACK_TIMER = 0x02,
-  NACK_REASON = 0x03,
+  ACK_TIMER = 0x01,
+  NACK_REASON = 0x02,
+  ACK_OVERFLOW = 0x03,
 } rdm_response_type;
 
 
