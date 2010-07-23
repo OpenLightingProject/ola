@@ -551,8 +551,8 @@ void DmxTriDevice::HandleRemoteRDMResponse(uint8_t return_code,
     }
     GetOutputPort(0)->HandleRDMResponse(response);
   } else {
-    OLA_WARN << "unknown RDM request class " <<
-      static_cast<int>(request->CommandClass());
+    OLA_WARN << "Response was returned with 0x" << std::hex <<
+      static_cast<int>(return_code);
   }
   delete request;
   m_pending_requests.pop();
