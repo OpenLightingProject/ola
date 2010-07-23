@@ -252,7 +252,7 @@ class BaseRDMResponse: public RDMResponse {
                   data,
                   length) {
     }
-    RDMCommandClass CommandClass() const { return SET_COMMAND; }
+    RDMCommandClass CommandClass() const { return command_class; }
 };
 
 typedef BaseRDMResponse<RDMCommand::GET_COMMAND_RESPONSE> RDMGetResponse;
