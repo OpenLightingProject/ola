@@ -207,7 +207,7 @@ class QueuedMessageHandler {
                             uint16_t length_mismatch,
                             uint16_t checksum_fail) = 0;
     virtual void StatusMessages(const ResponseStatus &status,
-                                const vector<StatusMessage> messages) = 0;
+                                const vector<StatusMessage> &messages) = 0;
     virtual void StatusIdDescription(const ResponseStatus &status,
                                      const string &status_id) = 0;
     virtual void SubDeviceReporting(const ResponseStatus &status,
