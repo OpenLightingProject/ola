@@ -22,7 +22,7 @@ ola_e131_LDADD = @LIBS@ -lolae131conf libolaconfig.la
 ola_streaming_client_SOURCES = ola-streaming-client.cpp
 ola_usbpro_SOURCES = ola-usbpro.cpp
 ola_usbpro_LDADD = @LIBS@ -lolausbproconf libolaconfig.la
-ola_rdm_get_SOURCES = ola-rdm.cpp
+ola_rdm_get_SOURCES = RDMController.cpp RDMHandler.cpp ola-rdm.cpp
 ola_rdm_discover_SOURCES = ola-rdm-discover.cpp
 
 noinst_PROGRAMS = ola_throughput
@@ -32,7 +32,7 @@ ola_throughput_LDADD = @LIBS@
 noinst_LTLIBRARIES = libolaconfig.la
 libolaconfig_la_SOURCES = OlaConfigurator.cpp
 
-EXTRA_DIST = OlaConfigurator.h
+EXTRA_DIST = OlaConfigurator.h RDMController.h RDMHandler.h
 
 install-exec-hook:
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_plugin_info

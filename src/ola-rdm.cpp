@@ -29,11 +29,14 @@
 #include <ola/rdm/RDMAPI.h>
 #include <ola/rdm/UID.h>
 
-
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <vector>
+
+#include "src/RDMController.h"
+#include "src/RDMHandler.h"
 
 using std::cout;
 using std::endl;
@@ -44,7 +47,6 @@ using ola::SimpleClient;
 using ola::OlaClient;
 using ola::network::SelectServer;
 using ola::rdm::RDMAPI;
-using ola::rdm::ResponseStatus;
 
 typedef struct {
   bool set_mode;
@@ -52,119 +54,12 @@ typedef struct {
   bool list_pids;  // show the pid list
   int uni;         // universe id
   UID *uid;         // uid
-  uint16_t sub_device; // the sub device
+  uint16_t sub_device;  // the sub device
   string pid;      // pid to get/set
   vector<string> args;  // extra args
   string cmd;  // argv[0]
 } options;
 
-
-class RDMController {
-  public:
-    RDMController(const UID *uid,
-                  uint16_t sub_device,
-                  RDMAPI *api,
-                  SelectServer *ss):
-      m_uid(*uid),
-      m_sub_device(sub_device),
-      m_api(api),
-      m_ss(ss),
-      m_exit_code(EX_OK) {
-    }
-
-    bool GetPID(const vector<string> &tokens);
-    bool SetPID(const vector<string> &tokens);
-
-    void PrintDeviceInfo(const ResponseStatus &status,
-                         const ola::rdm::DeviceInfo &device_info);
-
-    uint8_t ExitCode() const { return m_exit_code; }
-
-  private:
-    UID m_uid;
-    uint16_t m_sub_device;
-    RDMAPI *m_api;
-    SelectServer *m_ss;
-    uint8_t m_exit_code;
-
-    bool CheckForSuccess(const ResponseStatus &status);
-    bool CheckForQueuedMessages();
-};
-
-
-/*
- * Get a pid
- */
-bool RDMController::GetPID(const vector<string> &tokens) {
-  return m_api->GetDeviceInfo(
-      m_uid,
-      m_sub_device,
-      ola::NewSingleCallback(this,
-                             &RDMController::PrintDeviceInfo));
-}
-
-
-/*
- * Set a pid
- */
-bool RDMController::SetPID(const vector<string> &tokens) {
-  // client->FetchUIDList(opts.uni);
-  return false;
-}
-
-
-void RDMController::PrintDeviceInfo(
-    const ResponseStatus &status,
-    const ola::rdm::DeviceInfo &device_info) {
-  if (!CheckForSuccess(status))
-    return;
-
-  // print device info
-  OLA_INFO << "Got a response, we should really print it here";
-
-  // check for queued messages
-  if (!CheckForQueuedMessages())
-    m_ss->Terminate();
-}
-
-
-/*
- * Check if a request completed sucessfully, if not display the errors.
- */
-bool RDMController::CheckForSuccess(const ResponseStatus &status) {
-  if (!status.Error().empty()) {
-    std::cerr << status.Error() << endl;
-    m_ss->Terminate();
-    m_exit_code = EX_SOFTWARE;
-    return false;
-  }
-
-  if (status.WasBroadcast()) {
-    m_ss->Terminate();
-    return false;
-  }
-
-  if (status.WasNacked()) {
-    cout << "Request was NACKED with code " << status.NackReason();
-    m_ss->Terminate();
-    return false;
-  }
-  return true;
-}
-
-
-bool RDMController::CheckForQueuedMessages() {
-  if (!m_api->OutstandingMessagesCount(m_uid)) {
-    return false;
-  }
-
-  OLA_INFO << "queued messages remain";
-  // TODO(simon): query user here and then possibly print?
-  return true;
-}
-
-
-// End RDMController implementation
 
 /*
  * parse our cmd line options
@@ -178,7 +73,10 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   opts->uid = NULL;
   opts->sub_device = 0;
 
-  if (string(argv[0]) == "ola_rdm_set")
+  std::vector<string> tokens;
+  ola::StringSplit(argv[0], tokens, "/");
+
+  if (string(tokens[tokens.size() - 1]) == "ola_rdm_set")
     opts->set_mode = true;
 
   int uid_set = 0;
@@ -282,7 +180,7 @@ void DisplayHelpAndExit(const options &opts) {
  * Dump the list of known pids
  */
 void DisplayPIDsAndExit() {
-  cout << "pids" << endl;
+  RDMController::DumpPids();
   exit(EX_OK);
 }
 
@@ -315,21 +213,24 @@ int main(int argc, char *argv[]) {
   SelectServer *ss = ola_client.GetSelectServer();
   RDMAPI rdm_api(opts.uni, ola_client.GetClient());
 
-  RDMController controller(opts.uid,
-                           opts.sub_device,
-                           &rdm_api,
-                           ss);
+  ResponseHandler handler(&rdm_api, ss);
+  RDMController controller(&rdm_api, &handler);
 
-  bool ret = false;
-  if (opts.set_mode)
-    ret = controller.SetPID(opts.args);
-  else
-    ret = controller.GetPID(opts.args);
-
-  if (ret)
+  string pid_name = opts.args[0];
+  string error;
+  vector<string> params;
+  copy(++(opts.args.begin()), opts.args.end(), params.begin());
+  if (controller.RequestPID(*opts.uid,
+                            opts.sub_device,
+                            opts.set_mode,
+                            pid_name,
+                            params,
+                            &error))
     ss->Run();
+  else
+    std::cerr << error << endl;
 
   if (opts.uid)
     delete opts.uid;
-  return controller.ExitCode();
+  return handler.ExitCode();
 }
