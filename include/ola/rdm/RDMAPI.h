@@ -239,50 +239,50 @@ class QueuedMessageHandler {
                                      uint32_t version) = 0;
     virtual void BootSoftwareVersionLabel(const ResponseStatus &status,
                                           const string &label) = 0;
-    virtual void GetDMXPersonality(const ResponseStatus &status,
-                                   uint8_t current_personality,
-                                   uint8_t personality_count) = 0;
-    virtual void GetDMXPersonalityDescription(const ResponseStatus &status,
-                                              uint8_t personality,
-                                              uint16_t slots_requires,
-                                              const string &label) = 0;
-    virtual void GetDMXAddress(const ResponseStatus &status,
-                               uint16_t start_address) = 0;
-    virtual void GetSlotInfo(const ResponseStatus &status,
-                             const vector<SlotDescriptor> &slots) = 0;
-    virtual void GetSlotDescription(const ResponseStatus &status,
-                                    uint16_t slot_offset,
-                                    const string &description) = 0;
-    virtual void GetSlotDefaultValues(const ResponseStatus &status,
-                                      const vector<SlotDefault> &defaults) = 0;
-    virtual void GetSensorDefinition(const ResponseStatus &status,
-                                     const SensorDescriptor &descriptor) = 0;
-    virtual void GetSensorValue(const ResponseStatus &status,
-                                const SensorValueDescriptor &descriptor) = 0;
-    virtual void GetDeviceHours(const ResponseStatus &status,
-                                uint32_t hours) = 0;
-    virtual void GetLampHours(const ResponseStatus &status,
-                              uint32_t hours) = 0;
-    virtual void GetLampStrikes(const ResponseStatus &status,
-                                uint32_t hours) = 0;
-    virtual void GetLampState(const ResponseStatus &status,
-                              uint8_t state) = 0;
-    virtual void GetLampMode(const ResponseStatus &status,
-                             uint8_t mode) = 0;
-    virtual void GetDevicePowerCycles(const ResponseStatus &status,
-                                      uint32_t hours) = 0;
-    virtual void GetDisplayInvert(const ResponseStatus &status,
-                                  uint8_t invert_mode) = 0;
-    virtual void GetDisplayLevel(const ResponseStatus &status,
-                                 uint8_t level) = 0;
-    virtual void GetPanInvert(const ResponseStatus &status,
-                              uint8_t inverted) = 0;
-    virtual void GetTiltInvert(const ResponseStatus &status,
-                               uint8_t inverted) = 0;
-    virtual void GetPanTiltSwap(const ResponseStatus &status,
-                                uint8_t inverted) = 0;
-    virtual void GetIdentifyMode(const ResponseStatus &status,
-                                 bool mode) = 0;
+    virtual void DMXPersonality(const ResponseStatus &status,
+                                uint8_t current_personality,
+                                uint8_t personality_count) = 0;
+    virtual void DMXPersonalityDescription(const ResponseStatus &status,
+                                           uint8_t personality,
+                                           uint16_t slots_requires,
+                                           const string &label) = 0;
+    virtual void DMXAddress(const ResponseStatus &status,
+                            uint16_t start_address) = 0;
+    virtual void SlotInfo(const ResponseStatus &status,
+                          const vector<SlotDescriptor> &slots) = 0;
+    virtual void SlotDescription(const ResponseStatus &status,
+                                 uint16_t slot_offset,
+                                 const string &description) = 0;
+    virtual void SlotDefaultValues(const ResponseStatus &status,
+                                   const vector<SlotDefault> &defaults) = 0;
+    virtual void SensorDefinition(const ResponseStatus &status,
+                                  const SensorDescriptor &descriptor) = 0;
+    virtual void SensorValue(const ResponseStatus &status,
+                             const SensorValueDescriptor &descriptor) = 0;
+    virtual void DeviceHours(const ResponseStatus &status,
+                             uint32_t hours) = 0;
+    virtual void LampHours(const ResponseStatus &status,
+                           uint32_t hours) = 0;
+    virtual void LampStrikes(const ResponseStatus &status,
+                             uint32_t hours) = 0;
+    virtual void LampState(const ResponseStatus &status,
+                           uint8_t state) = 0;
+    virtual void LampMode(const ResponseStatus &status,
+                          uint8_t mode) = 0;
+    virtual void DevicePowerCycles(const ResponseStatus &status,
+                                   uint32_t hours) = 0;
+    virtual void DisplayInvert(const ResponseStatus &status,
+                               uint8_t invert_mode) = 0;
+    virtual void DisplayLevel(const ResponseStatus &status,
+                              uint8_t level) = 0;
+    virtual void PanInvert(const ResponseStatus &status,
+                           uint8_t inverted) = 0;
+    virtual void TiltInvert(const ResponseStatus &status,
+                            uint8_t inverted) = 0;
+    virtual void PanTiltSwap(const ResponseStatus &status,
+                             uint8_t inverted) = 0;
+    virtual void IdentifyMode(const ResponseStatus &status,
+                              bool mode) = 0;
 
     // TODO(simon): add a default handler here
 };
