@@ -112,7 +112,22 @@ bool StringToUInt(const string &value, unsigned int *output) {
     return false;
   if (value == end_ptr)
     return false;
-  *output = static_cast<int>(l);
+  *output = static_cast<unsigned int>(l);
+  return true;
+}
+
+
+/*
+ * Convert a string to a uint16_t.
+ * @returns true if sucessfull, false otherwise
+ */
+bool StringToUInt16(const string &value, uint16_t *output) {
+  unsigned int v;
+  if (!StringToUInt(value, &v))
+    return false;
+  if (v > 0xffff)
+    return false;
+  *output = static_cast<uint16_t>(v);
   return true;
 }
 

@@ -36,6 +36,7 @@ string IntToString(int i);
 string IntToString(unsigned int i);
 void Escape(string *original);
 bool StringToUInt(const string &value, unsigned int *output);
+bool StringToUInt16(const string &value, uint16_t *output);
 bool HexStringToUInt(const string &value, unsigned int *output);
 }  // ola
 

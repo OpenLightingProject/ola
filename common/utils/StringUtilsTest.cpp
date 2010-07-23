@@ -31,6 +31,7 @@ using ola::HexStringToUInt;
 using ola::IntToString;
 using ola::StringSplit;
 using ola::StringToUInt;
+using ola::StringToUInt16;
 using ola::StringTrim;
 
 class StringUtilsTest: public CppUnit::TestFixture {
@@ -40,6 +41,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIntToString);
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testStringToUInt);
+  CPPUNIT_TEST(testStringToUInt16);
   CPPUNIT_TEST(testHexStringToUInt);
   CPPUNIT_TEST_SUITE_END();
 
@@ -49,6 +51,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testIntToString();
     void testEscape();
     void testStringToUInt();
+    void testStringToUInt16();
     void testHexStringToUInt();
 };
 
@@ -207,4 +210,22 @@ void StringUtilsTest::testHexStringToUInt() {
   CPPUNIT_ASSERT(!HexStringToUInt("fz", &value));
   CPPUNIT_ASSERT(!HexStringToUInt("zfff", &value));
   CPPUNIT_ASSERT(!HexStringToUInt("0xf", &value));
+}
+
+
+void StringUtilsTest::testStringToUInt16() {
+  uint16_t value;
+
+  CPPUNIT_ASSERT(!StringToUInt16("", &value));
+  CPPUNIT_ASSERT(!StringToUInt16("-1", &value));
+  CPPUNIT_ASSERT(!StringToUInt16("65536", &value));
+
+  CPPUNIT_ASSERT(StringToUInt16("0", &value));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 0, value);
+  CPPUNIT_ASSERT(StringToUInt16("1", &value));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 1, value);
+  CPPUNIT_ASSERT(StringToUInt16("143", &value));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 143, value);
+  CPPUNIT_ASSERT(StringToUInt16("65535", &value));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 65535, value);
 }
