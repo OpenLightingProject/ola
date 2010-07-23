@@ -183,7 +183,7 @@ bool OlaClient::RDMSet(rdm_callback *callback,
                        uint16_t pid,
                        const uint8_t *data,
                        unsigned int data_length) {
-  return m_core->RDMGet(callback,
+  return m_core->RDMSet(callback,
                         universe,
                         uid,
                         sub_device,
