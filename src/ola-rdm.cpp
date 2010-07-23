@@ -261,12 +261,25 @@ void DisplayPIDsAndExit(const map<string, uint16_t> &pid_map) {
 
 
 /*
+ * Build a pid -> name map so we can nicely display pids for the user
+ */
+void ReversePidMap(const map<string, uint16_t> &pid_map,
+                   map<uint16_t, string> *reverse_map) {
+  map<string, uint16_t>::const_iterator map_iter = pid_map.begin();
+  for (; map_iter != pid_map.end(); ++map_iter)
+    (*reverse_map)[map_iter->second] = map_iter->first;
+}
+
+
+/*
  * Main
  */
 int main(int argc, char *argv[]) {
   // map pid names to numbers
   map<string, uint16_t> pid_name_map;
+  map<uint16_t, string> reverse_pid_name_map;
   PopulatePidMap(&pid_name_map);
+  ReversePidMap(pid_name_map, &reverse_pid_name_map);
 
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
   SimpleClient ola_client;
@@ -300,7 +313,7 @@ int main(int argc, char *argv[]) {
   SelectServer *ss = ola_client.GetSelectServer();
   RDMAPI rdm_api(opts.uni, ola_client.GetClient());
 
-  ResponseHandler handler(&rdm_api, ss);
+  ResponseHandler handler(&rdm_api, ss, reverse_pid_name_map);
   RDMController controller(&rdm_api, &handler);
 
   string error;

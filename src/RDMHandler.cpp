@@ -44,10 +44,12 @@ using ola::rdm::RDMAPI;
 using ola::rdm::ResponseStatus;
 
 
-ResponseHandler::ResponseHandler(RDMAPI *api, SelectServer *ss)
+ResponseHandler::ResponseHandler(RDMAPI *api, SelectServer *ss,
+                                 const map<uint16_t, string> &pid_to_name_map)
   : m_api(api),
     m_ss(ss),
-    m_exit_code(EX_OK) {
+    m_exit_code(EX_OK),
+    m_pid_to_name_map(pid_to_name_map) {
 }
 
 
@@ -154,8 +156,14 @@ void ResponseHandler::SupportedParameters(
     return;
   vector<uint16_t>::const_iterator iter = parameters.begin();
   cout << "Supported Parameters" << endl;
-  for (; iter != parameters.end(); ++iter)
-    cout << "  0x" << std::hex << *iter << endl;
+  for (; iter != parameters.end(); ++iter) {
+    cout << "  0x" << std::hex << *iter;
+    map<uint16_t, string>::const_iterator pid_to_name_iter =
+      m_pid_to_name_map.find(*iter);
+    if (pid_to_name_iter != m_pid_to_name_map.end())
+      cout << " (" << pid_to_name_iter->second << ")";
+    cout << endl;
+  }
 }
 
 
@@ -208,9 +216,11 @@ void ResponseHandler::DeviceInfo(
   cout << "Software Version: 0x" << std::hex << device_info.software_version
     << endl;
   cout << "DMX Footprint: " << device_info.dmx_footprint << endl;
-  cout << "DMX Footprint: " << device_info.dmx_footprint << endl;
-  cout << "DMX Personality: " << device_info.dmx_personality << endl;
-  cout << "DMX Start Address: " << device_info.dmx_start_address << endl;
+  cout << "DMX Personality: " <<
+    static_cast<int>(device_info.current_personality) << " / " <<
+    static_cast<int>(device_info.personaility_count) << endl;
+  cout << "DMX Start Address: " << std::dec <<
+    static_cast<int>(device_info.dmx_start_address) << endl;
   cout << "# of Subdevices: " << device_info.sub_device_count << endl;
   cout << "Sensor Count: " << static_cast<int>(device_info.sensor_count) <<
     endl;

@@ -29,17 +29,20 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 using ola::network::SelectServer;
 using ola::rdm::RDMAPI;
 using ola::rdm::ResponseStatus;
 using ola::rdm::UID;
+using std::map;
 using std::string;
 using std::vector;
 
 class ResponseHandler: public ola::rdm::QueuedMessageHandler {
   public:
-    ResponseHandler(RDMAPI *api, SelectServer *ss);
+    ResponseHandler(RDMAPI *api, SelectServer *ss,
+                    const map<uint16_t, string> &pid_to_name_map);
 
     void ProxiedDeviceCount(const ResponseStatus &status,
                             uint16_t device_count,
@@ -152,6 +155,7 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     RDMAPI *m_api;
     SelectServer *m_ss;
     uint8_t m_exit_code;
+    map<uint16_t, string> m_pid_to_name_map;
 
     bool CheckForSuccess(const ResponseStatus &status);
     void PrintDataType(uint8_t type);
