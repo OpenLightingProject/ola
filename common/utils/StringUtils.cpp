@@ -20,6 +20,8 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <algorithm>
+#include <functional>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -133,6 +135,21 @@ bool StringToUInt16(const string &value, uint16_t *output) {
 
 
 /*
+ * Convert a string to a uint16_t.
+ * @returns true if sucessfull, false otherwise
+ */
+bool StringToUInt8(const string &value, uint8_t *output) {
+  unsigned int v;
+  if (!StringToUInt(value, &v))
+    return false;
+  if (v > 0xff)
+    return false;
+  *output = static_cast<uint8_t>(v);
+  return true;
+}
+
+
+/*
  * Escape \
  */
 void Escape(string *original) {
@@ -158,5 +175,14 @@ bool HexStringToUInt(const string &value, unsigned int *output) {
     return false;
   *output = strtoul(value.data(), NULL, 16);
   return true;
+}
+
+
+/*
+ * Return a lower case version of this string
+ */
+void ToLower(string *s) {
+  std::transform(s->begin(), s->end(), s->begin(),
+      std::ptr_fun<int, int>(std::tolower));
 }
 }  // ola

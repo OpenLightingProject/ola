@@ -32,7 +32,9 @@ using ola::IntToString;
 using ola::StringSplit;
 using ola::StringToUInt;
 using ola::StringToUInt16;
+using ola::StringToUInt8;
 using ola::StringTrim;
+using ola::ToLower;
 
 class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringUtilsTest);
@@ -42,7 +44,9 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testStringToUInt);
   CPPUNIT_TEST(testStringToUInt16);
+  CPPUNIT_TEST(testStringToUInt8);
   CPPUNIT_TEST(testHexStringToUInt);
+  CPPUNIT_TEST(testToLower);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -52,7 +56,9 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testEscape();
     void testStringToUInt();
     void testStringToUInt16();
+    void testStringToUInt8();
     void testHexStringToUInt();
+    void testToLower();
 };
 
 
@@ -228,4 +234,29 @@ void StringUtilsTest::testStringToUInt16() {
   CPPUNIT_ASSERT_EQUAL((uint16_t) 143, value);
   CPPUNIT_ASSERT(StringToUInt16("65535", &value));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 65535, value);
+}
+
+
+void StringUtilsTest::testStringToUInt8() {
+  uint8_t value;
+
+  CPPUNIT_ASSERT(!StringToUInt8("", &value));
+  CPPUNIT_ASSERT(!StringToUInt8("-1", &value));
+  CPPUNIT_ASSERT(!StringToUInt8("256", &value));
+
+  CPPUNIT_ASSERT(StringToUInt8("0", &value));
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, value);
+  CPPUNIT_ASSERT(StringToUInt8("1", &value));
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, value);
+  CPPUNIT_ASSERT(StringToUInt8("143", &value));
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 143, value);
+  CPPUNIT_ASSERT(StringToUInt8("255", &value));
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 255, value);
+}
+
+
+void StringUtilsTest::testToLower() {
+  string s = "HelLo There";
+  ToLower(&s);
+  CPPUNIT_ASSERT_EQUAL(string("hello there"), s);
 }

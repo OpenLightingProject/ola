@@ -37,7 +37,9 @@ string IntToString(unsigned int i);
 void Escape(string *original);
 bool StringToUInt(const string &value, unsigned int *output);
 bool StringToUInt16(const string &value, uint16_t *output);
+bool StringToUInt8(const string &value, uint8_t *output);
 bool HexStringToUInt(const string &value, unsigned int *output);
+void ToLower(string *s);
 }  // ola
 
 #endif  // INCLUDE_OLA_STRINGUTILS_H_
