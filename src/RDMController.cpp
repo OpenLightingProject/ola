@@ -40,7 +40,6 @@ using ola::rdm::RDMAPI;
 using ola::rdm::UID;
 
 
-map<string, uint16_t> RDMController::s_pid_name_map;
 map<uint16_t, const RDMController::pid_descriptor> RDMController::s_pid_map;
 
 /*
@@ -56,20 +55,11 @@ map<uint16_t, const RDMController::pid_descriptor> RDMController::s_pid_map;
 bool RDMController::RequestPID(const UID &uid,
                                uint16_t sub_device,
                                bool set,
-                               const string &pid_name,
+                               uint16_t pid,
                                const vector<string> &params,
                                string *error) {
-  map<const string, uint16_t>::const_iterator name_iter =
-    s_pid_name_map.find(pid_name);
-
-  if (name_iter == s_pid_name_map.end()) {
-    *error = "Invalid pid name: ";
-    *error += pid_name;
-    return false;
-  }
-
   map<uint16_t, const pid_descriptor>::const_iterator iter =
-    s_pid_map.find(name_iter->second);
+    s_pid_map.find(pid);
 
   if (iter == s_pid_map.end()) {
     *error = "Unknown PID";
@@ -107,67 +97,6 @@ bool RDMController::RequestPID(const UID &uid,
 void RDMController::LoadMap() {
   if (s_pid_map.size())
     return;
-
-  // populate the name -> pid map
-  s_pid_name_map["proxied_devices"] = ola::rdm::PID_PROXIED_DEVICES;
-  s_pid_name_map["proxied_device_count"] = ola::rdm::PID_PROXIED_DEVICE_COUNT;
-  s_pid_name_map["comms_status"] = ola::rdm::PID_COMMS_STATUS;
-  s_pid_name_map["queued_message"] = ola::rdm::PID_QUEUED_MESSAGE;
-  s_pid_name_map["status_messages"] = ola::rdm::PID_STATUS_MESSAGES;
-  s_pid_name_map["status_id_description"] =
-    ola::rdm::PID_STATUS_ID_DESCRIPTION;
-  s_pid_name_map["clear_status_id"] = ola::rdm::PID_CLEAR_STATUS_ID;
-  s_pid_name_map["sub_device_status_report_threshold"] =
-    ola::rdm::PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD;
-  s_pid_name_map["supported_parameters"] = ola::rdm::PID_SUPPORTED_PARAMETERS;
-  s_pid_name_map["param_description"] = ola::rdm::PID_PARAMETER_DESCRIPTION;
-  s_pid_name_map["device_info"] = ola::rdm::PID_DEVICE_INFO;
-  s_pid_name_map["product_detail_id_list"] =
-    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST;
-  s_pid_name_map["device_model_description"] =
-    ola::rdm::PID_DEVICE_MODEL_DESCRIPTION;
-  s_pid_name_map["manufacturer_label"] = ola::rdm::PID_MANUFACTURER_LABEL;
-  s_pid_name_map["device_label"] = ola::rdm::PID_DEVICE_LABEL;
-  s_pid_name_map["factory_defaults"] = ola::rdm::PID_FACTORY_DEFAULTS;
-  s_pid_name_map["language_capabilities"] =
-    ola::rdm::PID_LANGUAGE_CAPABILITIES;
-  s_pid_name_map["language"] = ola::rdm::PID_LANGUAGE;
-  s_pid_name_map["software_version_label"] =
-    ola::rdm::PID_SOFTWARE_VERSION_LABEL;
-  s_pid_name_map["boot_software_version_id"] =
-    ola::rdm::PID_BOOT_SOFTWARE_VERSION_ID;
-  s_pid_name_map["boot_software_version_label"] =
-    ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL;
-  s_pid_name_map["dmx_personaility"] = ola::rdm::PID_DMX_PERSONALITY;
-  s_pid_name_map["dmx_personaility_description"] =
-    ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION;
-  s_pid_name_map["dmx_start_address"] = ola::rdm::PID_DMX_START_ADDRESS;
-  s_pid_name_map["slot_info"] = ola::rdm::PID_SLOT_INFO;
-  s_pid_name_map["slot_description"] = ola::rdm::PID_SLOT_DESCRIPTION;
-  s_pid_name_map["default_slot_value"] = ola::rdm::PID_DEFAULT_SLOT_VALUE;
-  s_pid_name_map["sensor_definition"] = ola::rdm::PID_SENSOR_DEFINITION;
-  s_pid_name_map["sensor_value"] = ola::rdm::PID_SENSOR_VALUE;
-  s_pid_name_map["record_sensors"] = ola::rdm::PID_RECORD_SENSORS;
-  s_pid_name_map["device_hours"] = ola::rdm::PID_DEVICE_HOURS;
-  s_pid_name_map["lamp_hours"] = ola::rdm::PID_LAMP_HOURS;
-  s_pid_name_map["lamp_strikes"] = ola::rdm::PID_LAMP_STRIKES;
-  s_pid_name_map["lamp_state"] = ola::rdm::PID_LAMP_STATE;
-  s_pid_name_map["lamp_on_mode"] = ola::rdm::PID_LAMP_ON_MODE;
-  s_pid_name_map["device_power_cycles"] = ola::rdm::PID_DEVICE_POWER_CYCLES;
-  s_pid_name_map["display_invert"] = ola::rdm::PID_DISPLAY_INVERT;
-  s_pid_name_map["display_level"] = ola::rdm::PID_DISPLAY_LEVEL;
-  s_pid_name_map["pan_invert"] = ola::rdm::PID_PAN_INVERT;
-  s_pid_name_map["tilt_invert"] = ola::rdm::PID_TILT_INVERT;
-  s_pid_name_map["pan_tilt_swap"] = ola::rdm::PID_PAN_TILT_SWAP;
-  s_pid_name_map["real_time_clock"] = ola::rdm::PID_REAL_TIME_CLOCK;
-  s_pid_name_map["identify_device"] = ola::rdm::PID_IDENTIFY_DEVICE;
-  s_pid_name_map["reset_device"] = ola::rdm::PID_RESET_DEVICE;
-  s_pid_name_map["power_state"] = ola::rdm::PID_POWER_STATE;
-  s_pid_name_map["perform_self_test"] = ola::rdm::PID_PERFORM_SELFTEST;
-  s_pid_name_map["self_test_description"] =
-    ola::rdm::PID_SELF_TEST_DESCRIPTION;
-  s_pid_name_map["capture_preset"] = ola::rdm::PID_CAPTURE_PRESET;
-  s_pid_name_map["preset_playback"] = ola::rdm::PID_PRESET_PLAYBACK;
 
   // populate the PID descriptor map
   MakeDescriptor(ola::rdm::PID_PROXIED_DEVICES,
@@ -382,24 +311,6 @@ void RDMController::LoadMap() {
     NULL,
     &RDMController::ResetDevice,
     NULL);
-}
-
-
-/*
- * Dump the known pids to stdout
- */
-void RDMController::DumpPids() {
-  RDMController::LoadMap();
-  vector<string> pids;
-  map<string, uint16_t>::const_iterator map_iter = s_pid_name_map.begin();
-  for (; map_iter != s_pid_name_map.end(); ++map_iter)
-    pids.push_back(map_iter->first);
-
-  sort(pids.begin(), pids.end());
-  vector<string>::const_iterator iter = pids.begin();
-  for (; iter != pids.end(); ++iter) {
-    std::cout << *iter << std::endl;
-  }
 }
 
 

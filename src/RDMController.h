@@ -48,12 +48,11 @@ class RDMController {
     bool RequestPID(const UID &uid,
                     uint16_t sub_device,
                     bool set,
-                    const string &pid_name,
+                    uint16_t pid,
                     const vector<string> &params,
                     string *error);
 
     static void LoadMap();
-    static void DumpPids();
 
   private:
     typedef bool (RDMController::*CheckMethod)(const UID &uid,
@@ -427,7 +426,6 @@ class RDMController {
     bool StringToWarmCold(const string &arg, uint8_t *mode);
 
     // static data / methods
-    static map<string, uint16_t> s_pid_name_map;
     static map<uint16_t, const pid_descriptor> s_pid_map;
 
     static void MakeDescriptor(uint16_t pid,
