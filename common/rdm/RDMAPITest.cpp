@@ -43,22 +43,39 @@ using std::vector;
 
 class ExpectedResult {
   public:
+    unsigned int universe;
+    const UID uid;
+    uint16_t sub_device;
+    uint16_t pid;
+    const string return_data;
+    const uint8_t *data;
+    unsigned int data_length;
+
     ExpectedResult(unsigned int universe,
                    const UID &uid,
                    uint16_t sub_device,
                    uint16_t pid,
-                   const string &return_data):
+                   const string &return_data,
+                   const uint8_t *data_arg = NULL,
+                   unsigned int data_length = 0):
       universe(universe),
       uid(uid),
       sub_device(sub_device),
       pid(pid),
-      return_data(return_data) {
+      return_data(return_data),
+      data(NULL),
+      data_length(data_length) {
+    if (data_arg) {
+      uint8_t *d = new uint8_t[data_length];
+      memcpy(d, data_arg, data_length);
+      data = d;
+    }
   }
-  unsigned int universe;
-  const UID uid;
-  uint16_t sub_device;
-  uint16_t pid;
-  const string return_data;
+
+  ~ExpectedResult() {
+    if (data)
+      delete[] data;
+  }
 };
 
 class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
@@ -102,6 +119,11 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
       CPPUNIT_ASSERT_EQUAL(result->sub_device, sub_device);
       CPPUNIT_ASSERT_EQUAL(result->pid, pid);
 
+      if (result->data) {
+        CPPUNIT_ASSERT_EQUAL(result->data_length, data_length);
+        CPPUNIT_ASSERT(0 == memcmp(result->data, data, data_length));
+      }
+
       RDMAPIImplResponseStatus status;
       status.was_broadcast = uid.IsBroadcast();
       status.response_type = ola::rdm::ACK;
@@ -126,7 +148,9 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
                                                            uid,
                                                            sub_device,
                                                            pid,
-                                                           return_data);
+                                                           return_data,
+                                                           data,
+                                                           data_length);
       m_get_expected.push_back(expected_result);
     }
 
@@ -141,7 +165,9 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
                                                            uid,
                                                            sub_device,
                                                            pid,
-                                                           s);
+                                                           s,
+                                                           data,
+                                                           data_length);
       m_set_expected.push_back(expected_result);
     }
 
@@ -162,6 +188,7 @@ class RDMAPITest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNetworkCommands);
   CPPUNIT_TEST(testRDMInformation);
   CPPUNIT_TEST(testProductInformation);
+  CPPUNIT_TEST(testDmxSetup);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -177,6 +204,7 @@ class RDMAPITest: public CppUnit::TestFixture {
     void testNetworkCommands();
     void testRDMInformation();
     void testProductInformation();
+    void testDmxSetup();
     void setUp() {}
     void tearDown();
 
@@ -184,6 +212,7 @@ class RDMAPITest: public CppUnit::TestFixture {
     static const unsigned int UNIVERSE = 1;
     static const char BROADCAST_ERROR[];
     static const char DEVICE_RANGE_ERROR[];
+    static const char DEVICE_RANGE_BCAST_ERROR[];
     static const char TEST_DESCRIPTION[];
     MockRDMAPIImpl m_impl;
     RDMAPI m_api;
@@ -202,6 +231,11 @@ class RDMAPITest: public CppUnit::TestFixture {
     // check that a RDM call failed because we tried to send to all devices
     void CheckForDeviceRangeError(string *error) {
       CPPUNIT_ASSERT_EQUAL(string(DEVICE_RANGE_ERROR), *error);
+      error->clear();
+    }
+
+    void CheckForDeviceRangeBcastError(string *error) {
+      CPPUNIT_ASSERT_EQUAL(string(DEVICE_RANGE_BCAST_ERROR), *error);
       error->clear();
     }
 
@@ -321,10 +355,18 @@ class RDMAPITest: public CppUnit::TestFixture {
       CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0xfedc), params[1]);
       CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0xaa00), params[2]);
     }
+
+    void CheckDMXStartAddress(const ResponseStatus &status,
+                              uint16_t start_address) {
+      CheckResponseStatus(status);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(44), start_address);
+    }
 };
 
 const char RDMAPITest::BROADCAST_ERROR[] = "Cannot send to broadcast address";
 const char RDMAPITest::DEVICE_RANGE_ERROR[] = "Sub device must be <= 0x0200";
+const char RDMAPITest::DEVICE_RANGE_BCAST_ERROR[] =
+  "Sub device must be <= 0x0200 or 0xffff";
 const char RDMAPITest::TEST_DESCRIPTION[] = "This is a description";
 
 void RDMAPITest::tearDown() {
@@ -438,7 +480,7 @@ void RDMAPITest::testNetworkCommands() {
 
   // TODO(simon): test status message here
 
-  // status id decsription
+  // status id description
   uint16_t status_id = 12;
   CPPUNIT_ASSERT(!m_api.GetStatusIdDescription(m_bcast_uid, status_id, NULL,
                                                &error));
@@ -673,25 +715,6 @@ void RDMAPITest::testProductInformation() {
     &error));
 
   // manufacturer label
-  CPPUNIT_ASSERT(!m_api.GetDeviceLabel(m_bcast_uid, sub_device,
-                                       NULL, &error));
-  CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetDeviceLabel(m_group_uid, sub_device,
-                                       NULL, &error));
-  CheckForBroadcastError(&error);
-
-  m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
-                        UNIVERSE,
-                        m_uid,
-                        sub_device,
-                        ola::rdm::PID_DEVICE_LABEL);
-  CPPUNIT_ASSERT(m_api.GetDeviceLabel(
-    m_uid,
-    sub_device,
-    NewSingleCallback(this, &RDMAPITest::CheckLabel),
-    &error));
-
-  // get device label
   CPPUNIT_ASSERT(!m_api.GetManufacturerLabel(m_bcast_uid, sub_device,
                                              NULL, &error));
   CheckForBroadcastError(&error);
@@ -710,8 +733,72 @@ void RDMAPITest::testProductInformation() {
     NewSingleCallback(this, &RDMAPITest::CheckLabel),
     &error));
 
-  // TODO(simon): set device label
+  // get device label
+  CPPUNIT_ASSERT(!m_api.GetDeviceLabel(m_bcast_uid, sub_device,
+                                       NULL, &error));
+  CheckForBroadcastError(&error);
+  CPPUNIT_ASSERT(!m_api.GetDeviceLabel(m_group_uid, sub_device,
+                                       NULL, &error));
+  CheckForBroadcastError(&error);
 
+  m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
+                        UNIVERSE,
+                        m_uid,
+                        sub_device,
+                        ola::rdm::PID_DEVICE_LABEL);
+  CPPUNIT_ASSERT(m_api.GetDeviceLabel(
+    m_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
+
+  // set device label
+  s = TEST_DESCRIPTION;
+  m_impl.AddExpectedSet(UNIVERSE,
+                        m_uid,
+                        sub_device,
+                        ola::rdm::PID_DEVICE_LABEL,
+                        reinterpret_cast<const uint8_t*>(s.data()),
+                        s.size());
+  CPPUNIT_ASSERT(m_api.SetDeviceLabel(
+    m_uid,
+    sub_device,
+    s,
+    NewSingleCallback(this, &RDMAPITest::CheckResponseStatus),
+    &error));
+  // check we can bcast
+  m_impl.AddExpectedSet(UNIVERSE,
+                        m_bcast_uid,
+                        ola::rdm::ALL_RDM_SUBDEVICES,
+                        ola::rdm::PID_DEVICE_LABEL,
+                        reinterpret_cast<const uint8_t*>(s.data()),
+                        s.size());
+  CPPUNIT_ASSERT(m_api.SetDeviceLabel(
+    m_bcast_uid,
+    ola::rdm::ALL_RDM_SUBDEVICES,
+    s,
+    NewSingleCallback(this, &RDMAPITest::CheckWasBroadcast),
+    &error));
+  m_impl.AddExpectedSet(UNIVERSE,
+                        m_group_uid,
+                        ola::rdm::ALL_RDM_SUBDEVICES,
+                        ola::rdm::PID_DEVICE_LABEL,
+                        reinterpret_cast<const uint8_t*>(s.data()),
+                        s.size());
+  CPPUNIT_ASSERT(m_api.SetDeviceLabel(
+    m_group_uid,
+    ola::rdm::ALL_RDM_SUBDEVICES,
+    s,
+    NewSingleCallback(this, &RDMAPITest::CheckWasBroadcast),
+    &error));
+  // check out of range sub devices fail
+  CPPUNIT_ASSERT(!m_api.SetDeviceLabel(
+    m_group_uid,
+    0x0201,
+    s,
+    NewSingleCallback(this, &RDMAPITest::CheckResponseStatus),
+    &error));
+  CheckForDeviceRangeBcastError(&error);
 
   // software version label
   CPPUNIT_ASSERT(!m_api.GetSoftwareVersionLabel(m_bcast_uid, sub_device,
@@ -750,4 +837,81 @@ void RDMAPITest::testProductInformation() {
     sub_device,
     NewSingleCallback(this, &RDMAPITest::CheckLabel),
     &error));
+}
+
+/*
+ * Check that DMX commands work
+ */
+void RDMAPITest::testDmxSetup() {
+  string error;
+  uint16_t sub_device = 1;
+
+  // Check get start address
+  CPPUNIT_ASSERT(!m_api.GetDMXAddress(m_bcast_uid, sub_device,
+                                      NULL, &error));
+  CheckForBroadcastError(&error);
+  CPPUNIT_ASSERT(!m_api.GetDMXAddress(m_group_uid, sub_device,
+                                      NULL, &error));
+  CheckForBroadcastError(&error);
+
+  uint16_t start_address = HostToNetwork(static_cast<uint16_t>(44));
+  string s(reinterpret_cast<char*>(&start_address), sizeof(start_address));
+  m_impl.AddExpectedGet(s,
+                        UNIVERSE,
+                        m_uid,
+                        sub_device,
+                        ola::rdm::PID_DMX_START_ADDRESS);
+  CPPUNIT_ASSERT(m_api.GetDMXAddress(
+    m_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckDMXStartAddress),
+    &error));
+
+  // Check set start address
+  start_address = 64;
+  uint16_t address_data = HostToNetwork(start_address);
+  m_impl.AddExpectedSet(UNIVERSE,
+                        m_uid,
+                        sub_device,
+                        ola::rdm::PID_DMX_START_ADDRESS,
+                        reinterpret_cast<const uint8_t*>(&address_data),
+                        sizeof(address_data));
+  CPPUNIT_ASSERT(m_api.SetDMXAddress(
+    m_uid,
+    sub_device,
+    start_address,
+    NewSingleCallback(this, &RDMAPITest::CheckResponseStatus),
+    &error));
+  // check bcasts work
+  m_impl.AddExpectedSet(UNIVERSE,
+                        m_bcast_uid,
+                        ola::rdm::ALL_RDM_SUBDEVICES,
+                        ola::rdm::PID_DMX_START_ADDRESS,
+                        reinterpret_cast<const uint8_t*>(&address_data),
+                        sizeof(address_data));
+  CPPUNIT_ASSERT(m_api.SetDMXAddress(
+    m_bcast_uid,
+    ola::rdm::ALL_RDM_SUBDEVICES,
+    start_address,
+    NewSingleCallback(this, &RDMAPITest::CheckWasBroadcast),
+    &error));
+  m_impl.AddExpectedSet(UNIVERSE,
+                        m_group_uid,
+                        0x0200,
+                        ola::rdm::PID_DMX_START_ADDRESS,
+                        reinterpret_cast<const uint8_t*>(&address_data),
+                        sizeof(address_data));
+  CPPUNIT_ASSERT(m_api.SetDMXAddress(
+    m_group_uid,
+    0x0200,
+    start_address,
+    NewSingleCallback(this, &RDMAPITest::CheckWasBroadcast),
+    &error));
+  CPPUNIT_ASSERT(!m_api.SetDMXAddress(
+    m_group_uid,
+    0x0201,
+    start_address,
+    NewSingleCallback(this, &RDMAPITest::CheckWasBroadcast),
+    &error));
+  CheckForDeviceRangeBcastError(&error);
 }
