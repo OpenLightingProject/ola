@@ -83,7 +83,7 @@ void ResponseHandler::CommStatus(const ResponseStatus &status,
   cout << "Communication Status" << endl;
   cout << "  Short Messages: " << short_message << endl;
   cout << "  Length Mismatch: " << length_mismatch << endl;
-  cout << "  Checksum Failed: " << checksum_fail;
+  cout << "  Checksum Failed: " << checksum_fail << endl;
 }
 
 
