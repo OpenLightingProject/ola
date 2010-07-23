@@ -2388,8 +2388,6 @@ void RDMAPI::_HandleGetDeviceDescriptor(
         NetworkToHost(device_info.software_version);
       device_info.dmx_footprint =
         NetworkToHost(device_info.dmx_footprint);
-      device_info.dmx_personality =
-        NetworkToHost(device_info.dmx_personality);
       device_info.dmx_start_address =
         NetworkToHost(device_info.dmx_start_address);
       device_info.sub_device_count =

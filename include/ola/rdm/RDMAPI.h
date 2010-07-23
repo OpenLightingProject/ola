@@ -128,7 +128,8 @@ struct device_info_s {
   uint16_t product_category;
   uint32_t software_version;
   uint16_t dmx_footprint;
-  uint16_t dmx_personality;
+  uint8_t current_personality;
+  uint8_t personaility_count;
   uint16_t dmx_start_address;
   uint16_t sub_device_count;
   uint8_t sensor_count;
