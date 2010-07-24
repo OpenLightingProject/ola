@@ -27,8 +27,9 @@
 #include <ola/rdm/RDMAPI.h>
 #include <ola/rdm/UID.h>
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -222,7 +223,7 @@ void ResponseHandler::DeviceInfo(
     static_cast<int>(device_info.personaility_count) << endl;
   cout << "DMX Start Address: ";
   if (device_info.dmx_start_address > DMX_UNIVERSE_SIZE) {
-   cout << "N/A";
+    cout << "N/A";
   } else {
     cout << std::dec <<
     static_cast<int>(device_info.dmx_start_address);
@@ -353,7 +354,7 @@ void ResponseHandler::DMXAddress(const ResponseStatus &status,
     return;
   cout << "DMX Start Address: ";
   if (start_address > DMX_UNIVERSE_SIZE) {
-   cout << "N/A";
+    cout << "N/A";
   } else {
     cout << std::dec <<
     static_cast<int>(start_address);
