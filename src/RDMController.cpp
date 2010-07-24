@@ -263,7 +263,6 @@ void RDMController::LoadMap() {
   MakeDescriptor(ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
                  &RDMController::GetDMXPersonalityDescription,
                  NULL)->AddGetVerify(
-      &RDMController::NoArgsCheck)->AddGetVerify(
       &RDMController::ValidSubDeviceCheck);
 
   MakeDescriptor(ola::rdm::PID_DMX_START_ADDRESS,
