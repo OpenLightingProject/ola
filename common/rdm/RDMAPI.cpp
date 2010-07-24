@@ -2670,10 +2670,11 @@ void RDMAPI::_HandleGetSlotDescription(
     unsigned int min = max - LABEL_SIZE;
     unsigned int data_size = data.size();
     if (data_size >= min && data_size <= max) {
-      memcpy(&raw_description, data.data(),
-             std::min(static_cast<unsigned int>(data.size()), max));
+      raw_description.description[LABEL_SIZE] = 0;
+      memcpy(&raw_description, data.data(), data.size());
       slot_index = NetworkToHost(raw_description.slot_index);
-      description = std::string(raw_description.description, LABEL_SIZE);
+      description = std::string(raw_description.description,
+                                data.size() - min);
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
