@@ -482,7 +482,7 @@ void ResponseHandler::DisplayInvert(const ResponseStatus &status,
                                     uint8_t invert_mode) {
   if (!CheckForSuccess(status))
     return;
-  cout << "Display Invert";
+  cout << "Display Invert: ";
   switch (invert_mode) {
     case 0:
       cout << "Off";

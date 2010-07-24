@@ -209,8 +209,8 @@ void PopulatePidMap(map<string, uint16_t> *pid_map) {
     ola::rdm::PID_BOOT_SOFTWARE_VERSION_ID;
   (*pid_map)["boot_software_version_label"] =
     ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL;
-  (*pid_map)["dmx_personaility"] = ola::rdm::PID_DMX_PERSONALITY;
-  (*pid_map)["dmx_personaility_description"] =
+  (*pid_map)["dmx_personality"] = ola::rdm::PID_DMX_PERSONALITY;
+  (*pid_map)["dmx_personality_description"] =
     ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION;
   (*pid_map)["dmx_start_address"] = ola::rdm::PID_DMX_START_ADDRESS;
   (*pid_map)["slot_info"] = ola::rdm::PID_SLOT_INFO;
