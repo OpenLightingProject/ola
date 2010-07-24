@@ -18,6 +18,7 @@
  *  Copyright (C) 2010 Simon Newton
  */
 
+#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
@@ -40,7 +41,56 @@ using ola::rdm::RDMAPI;
 using ola::rdm::UID;
 
 
-map<uint16_t, const RDMController::pid_descriptor> RDMController::s_pid_map;
+PidDescriptor::PidDescriptor(ExecuteMethod get_execute,
+                               ExecuteMethod set_execute):
+  m_get_execute(get_execute),
+  m_set_execute(set_execute) {
+}
+
+PidDescriptor *PidDescriptor::AddGetVerify(CheckMethod method) {
+  m_get_verify.push_back(method);
+  return this;
+}
+
+
+PidDescriptor *PidDescriptor::AddSetVerify(CheckMethod method) {
+  m_set_verify.push_back(method);
+  return this;
+}
+
+bool PidDescriptor::Run(RDMController *controller,
+                        const UID &uid,
+                        uint16_t sub_device,
+                        bool set,
+                        uint16_t pid,
+                        const vector<string> &params,
+                        string *error) {
+  vector<CheckMethod> &methods = set ? m_set_verify : m_get_verify;
+  vector<CheckMethod>::const_iterator iter;
+  for (iter = methods.begin(); iter != methods.end(); ++iter) {
+    if (!(controller->*(*iter))(uid, sub_device, params, error))
+      return false;
+  }
+
+  ExecuteMethod exec_method = set ? m_set_execute : m_get_execute;
+
+  if (!exec_method) {
+    *error = set ? "Set" : "Get";
+    *error += " not permitted";
+    return false;
+  }
+  return (controller->*exec_method)(uid, sub_device, params, error);
+}
+
+
+RDMController::~RDMController() {
+  map<uint16_t, PidDescriptor*>::iterator iter;
+  for (iter = m_pid_map.begin(); iter != m_pid_map.end(); ++iter) {
+    delete iter->second;
+  }
+  m_pid_map.clear();
+}
+
 
 /*
  * Make a GET/SET PID request
@@ -54,40 +104,18 @@ map<uint16_t, const RDMController::pid_descriptor> RDMController::s_pid_map;
  */
 bool RDMController::RequestPID(const UID &uid,
                                uint16_t sub_device,
-                               bool set,
+                               bool is_set,
                                uint16_t pid,
                                const vector<string> &params,
                                string *error) {
-  map<uint16_t, const pid_descriptor>::const_iterator iter =
-    s_pid_map.find(pid);
+  map<uint16_t, PidDescriptor*>::const_iterator iter =
+    m_pid_map.find(pid);
 
-  if (iter == s_pid_map.end()) {
+  if (iter == m_pid_map.end()) {
     *error = "Unknown PID";
     return false;
   }
-
-  CheckMethod check_method = set ? iter->second.set_verify :
-    iter->second.get_verify;
-  if (!check_method) {
-    *error = set ? "Set" : "Get";
-    *error += " not permitted";
-    return false;
-  }
-
-  if (!(this->*check_method)(uid,
-                             sub_device,
-                             params,
-                             error))
-    return false;
-
-  ExecuteMethod exec_method = set ? iter->second.set_execute :
-    iter->second.get_execute;
-
-  if (!exec_method) {
-    *error = "No get/set method supplied, this indicates a bug!";
-    return false;
-  }
-  return (this->*exec_method)(uid, sub_device, params, error);
+  return iter->second->Run(this, uid, sub_device, is_set, pid, params, error);
 }
 
 
@@ -95,224 +123,288 @@ bool RDMController::RequestPID(const UID &uid,
  * Populate the pid maps
  */
 void RDMController::LoadMap() {
-  if (s_pid_map.size())
+  if (m_pid_map.size())
     return;
 
   // populate the PID descriptor map
   MakeDescriptor(ola::rdm::PID_PROXIED_DEVICES,
-    &RDMController::NoArgsRootDeviceCheck,
-    NULL,
-    &RDMController::GetProxiedDeviceCount,
-    NULL);
+                 &RDMController::GetProxiedDeviceCount,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::RootDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_PROXIED_DEVICE_COUNT,
-    &RDMController::NoArgsRootDeviceCheck,
-    NULL,
-    &RDMController::GetProxiedDevices,
-    NULL);
+                 &RDMController::GetProxiedDevices,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::RootDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_COMMS_STATUS,
-    &RDMController::NoArgsRootDeviceCheck,
-    &RDMController::NoArgsRootDeviceCheck,
-    &RDMController::GetCommStatus,
-    &RDMController::ClearCommStatus);
+                 &RDMController::GetCommStatus,
+                 &RDMController::ClearCommStatus)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::RootDeviceCheck)->AddSetVerify(
+      &RDMController::NoArgsCheck)->AddSetVerify(
+      &RDMController::RootDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_STATUS_MESSAGES,
-    &RDMController::StatusTypeCheck,
-    NULL,
-    &RDMController::GetStatusMessage,
-    NULL);
+                 &RDMController::GetStatusMessage,
+                 NULL)->AddGetVerify(
+      &RDMController::RootDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_STATUS_ID_DESCRIPTION,
-    &RDMController::UInt16Check,
-    NULL,
-    &RDMController::GetStatusIdDescription,
-    NULL);
+                 &RDMController::GetStatusIdDescription,
+                 NULL)->AddGetVerify(
+      &RDMController::RootDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_CLEAR_STATUS_ID,
-    NULL,
-    &RDMController::NoArgsValidBroadcastSubDeviceCheck,
-    NULL,
-    &RDMController::ClearStatusId);
+                 NULL,
+                 &RDMController::ClearStatusId)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    //&RDMController::StatusTypeCheck,
-    NULL,
-    &RDMController::GetSubDeviceReporting,
-    &RDMController::SetSubDeviceReporting);
+                 &RDMController::GetSubDeviceReporting,
+                 &RDMController::SetSubDeviceReporting)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_SUPPORTED_PARAMETERS,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetSupportedParameters,
-    NULL);
+                 &RDMController::GetSupportedParameters,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_PARAMETER_DESCRIPTION,
-    NULL,
-    NULL,
-    &RDMController::GetParameterDescription,
-    NULL);
+                 &RDMController::GetParameterDescription,
+                 NULL)->AddGetVerify(
+      &RDMController::RootDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_DEVICE_INFO,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetDeviceInfo,
-    NULL);
+                 &RDMController::GetDeviceInfo,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetProductDetailIdList,
-    NULL);
+                 &RDMController::GetProductDetailIdList,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetDeviceModelDescription,
-    NULL);
+                 &RDMController::GetDeviceModelDescription,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_MANUFACTURER_LABEL,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetManufacturerLabel,
-    NULL);
+                 &RDMController::GetManufacturerLabel,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_DEVICE_LABEL,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetDeviceLabel,
-    &RDMController::SetDeviceLabel);
-  MakeDescriptor(ola::rdm::PID_FACTORY_DEFAULTS,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    &RDMController::NoArgsValidBroadcastSubDeviceCheck,
-    &RDMController::GetFactoryDefaults,
-    &RDMController::ResetToFactoryDefaults);
-  MakeDescriptor(ola::rdm::PID_LANGUAGE_CAPABILITIES,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetLanguageCapabilities,
-    NULL);
-  MakeDescriptor(ola::rdm::PID_LANGUAGE,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetLanguage,
-    &RDMController::SetLanguage);
-  MakeDescriptor(ola::rdm::PID_SOFTWARE_VERSION_LABEL,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetSoftwareVersionLabel,
-    NULL);
-  MakeDescriptor(ola::rdm::PID_BOOT_SOFTWARE_VERSION_ID,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetBootSoftwareVersion,
-    NULL);
-  MakeDescriptor(ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL,
-    &RDMController::NoArgsValidSubDeviceCheck,
-    NULL,
-    &RDMController::GetBootSoftwareVersionLabel,
-    NULL);
+                 &RDMController::GetDeviceLabel,
+                 &RDMController::SetDeviceLabel)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   // DONE UP TO HERE!!!
+
+  MakeDescriptor(ola::rdm::PID_FACTORY_DEFAULTS,
+                 &RDMController::GetFactoryDefaults,
+                 &RDMController::ResetToFactoryDefaults)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::NoArgsCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_LANGUAGE_CAPABILITIES,
+                 &RDMController::GetLanguageCapabilities,
+                  NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_LANGUAGE,
+                 &RDMController::GetLanguage,
+                 &RDMController::SetLanguage)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_SOFTWARE_VERSION_LABEL,
+                 &RDMController::GetSoftwareVersionLabel,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_BOOT_SOFTWARE_VERSION_ID,
+                 &RDMController::GetBootSoftwareVersion,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL,
+                 &RDMController::GetBootSoftwareVersionLabel,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_DMX_PERSONALITY,
-    NULL,
-    NULL,
-    &RDMController::GetDMXPersonality,
-    &RDMController::SetDMXPersonality);
+                 &RDMController::GetDMXPersonality,
+                 &RDMController::SetDMXPersonality)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+
   MakeDescriptor(ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
-    NULL,
-    NULL,
-    &RDMController::GetDMXPersonalityDescription,
-    NULL);
+                 &RDMController::GetDMXPersonalityDescription,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_DMX_START_ADDRESS,
-    NULL,
-    NULL,
-    &RDMController::GetDMXAddress,
-    &RDMController::SetDMXAddress);
+                 &RDMController::GetDMXAddress,
+                 &RDMController::SetDMXAddress)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_SLOT_INFO,
-    NULL,
-    NULL,
-    &RDMController::GetSlotInfo,
-    NULL);
+                 &RDMController::GetSlotInfo,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_SLOT_DESCRIPTION,
-    NULL,
-    NULL,
-    &RDMController::GetSlotDescription,
-    NULL);
+                 &RDMController::GetSlotDescription,
+                 NULL)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_DEFAULT_SLOT_VALUE,
-    NULL,
-    NULL,
-    &RDMController::GetSlotDefaultValues,
-    NULL);
+                 &RDMController::GetSlotDefaultValues,
+                 NULL)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_SENSOR_DEFINITION,
-    NULL,
-    NULL,
-    &RDMController::GetSensorDefinition,
-    NULL);
+                 &RDMController::GetSensorDefinition,
+                 NULL)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_SENSOR_VALUE,
-    NULL,
-    NULL,
-    &RDMController::GetSensorValue,
-    &RDMController::SetSensorValue);
+                 &RDMController::GetSensorValue,
+                 &RDMController::SetSensorValue)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_RECORD_SENSORS,
-    NULL,
-    NULL,
-    &RDMController::RecordSensors,
-    NULL);
+                 NULL,
+                 &RDMController::RecordSensors)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_DEVICE_HOURS,
-    NULL,
-    NULL,
     &RDMController::GetDeviceHours,
-    &RDMController::SetDeviceHours);
+    &RDMController::SetDeviceHours)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_LAMP_HOURS,
-    NULL,
-    NULL,
-    &RDMController::GetLampHours,
-    &RDMController::SetLampHours);
+                 &RDMController::GetLampHours,
+                 &RDMController::SetLampHours)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_LAMP_STRIKES,
-    NULL,
-    NULL,
-    &RDMController::GetLampStrikes,
-    &RDMController::SetLampStrikes);
+                 &RDMController::GetLampStrikes,
+                 &RDMController::SetLampStrikes)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_LAMP_STATE,
-    NULL,
-    NULL,
-    &RDMController::GetLampState,
-    &RDMController::SetLampState);
+                 &RDMController::GetLampState,
+                 &RDMController::SetLampState)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_LAMP_ON_MODE,
-    NULL,
-    NULL,
-    &RDMController::GetLampMode,
-    &RDMController::SetLampMode);
+                 &RDMController::GetLampMode,
+                 &RDMController::SetLampMode)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_DEVICE_POWER_CYCLES,
-    NULL,
-    NULL,
-    &RDMController::GetDevicePowerCycles,
-    &RDMController::SetDevicePowerCycles);
+                 &RDMController::GetDevicePowerCycles,
+                 &RDMController::SetDevicePowerCycles)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+  // done up to here
   MakeDescriptor(ola::rdm::PID_DISPLAY_INVERT,
-    NULL,
-    NULL,
-    &RDMController::GetDisplayInvert,
-    &RDMController::SetDisplayInvert);
+                 &RDMController::GetDisplayInvert,
+                 &RDMController::SetDisplayInvert)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_DISPLAY_LEVEL,
-    NULL,
-    NULL,
-    &RDMController::GetDisplayLevel,
-    &RDMController::SetDisplayLevel);
+                 &RDMController::GetDisplayLevel,
+                 &RDMController::SetDisplayLevel)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_PAN_INVERT,
-    NULL,
-    NULL,
-    &RDMController::GetPanInvert,
-    &RDMController::SetPanInvert);
+                 &RDMController::GetPanInvert,
+                 &RDMController::SetPanInvert)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_TILT_INVERT,
-    NULL,
-    NULL,
-    &RDMController::GetTiltInvert,
-    &RDMController::SetTiltInvert);
+                 &RDMController::GetTiltInvert,
+                 &RDMController::SetTiltInvert)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_PAN_TILT_SWAP,
-    NULL,
-    NULL,
-    &RDMController::GetPanTiltSwap,
-    &RDMController::SetPanTiltSwap);
+                 &RDMController::GetPanTiltSwap,
+                 &RDMController::SetPanTiltSwap)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_IDENTIFY_DEVICE,
-    NULL,
-    NULL,
-    &RDMController::GetIdentifyMode,
-    &RDMController::IdentifyDevice);
+                 &RDMController::GetIdentifyMode,
+                 &RDMController::IdentifyDevice)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_RESET_DEVICE,
-    NULL,
-    NULL,
-    &RDMController::ResetDevice,
-    NULL);
+                 NULL,
+                 &RDMController::ResetDevice)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
 }
 
+
+//-----------------------------------------------------------------------------
+PidDescriptor *RDMController::MakeDescriptor(uint16_t pid,
+                                             ExecuteMethod get_execute,
+                                             ExecuteMethod set_execute) {
+  PidDescriptor *d = new PidDescriptor(get_execute, set_execute);
+  m_pid_map.insert(std::pair<uint16_t, PidDescriptor*>(pid, d));
+  return d;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -320,39 +412,39 @@ void RDMController::LoadMap() {
 
 
 /*
- * Check that no args have been supplied and that the sub device is 0
+ * Check that the sub device is 0
  */
-bool RDMController::NoArgsRootDeviceCheck(const UID &uid,
-                                          uint16_t sub_device,
-                                          const vector<string> &args,
-                                          string *error) {
+bool RDMController::RootDeviceCheck(const UID &uid,
+                                    uint16_t sub_device,
+                                    const vector<string> &args,
+                                    string *error) {
   if (sub_device) {
     *error = "Sub device must be 0 (root device)";
     return false;
   }
-  return NoArgsGetCheck(uid, sub_device, args, error);
+  return true;
 }
 
 
 /*
  * Check the sub device is valid
  */
-bool RDMController::NoArgsValidSubDeviceCheck(const UID &uid,
-                                              uint16_t sub_device,
-                                              const vector<string> &args,
-                                              string *error) {
+bool RDMController::ValidSubDeviceCheck(const UID &uid,
+                                        uint16_t sub_device,
+                                        const vector<string> &args,
+                                        string *error) {
   if (sub_device > 0x0200) {
     *error = "Sub device must be <= 512";
     return false;
   }
-  return NoArgsGetCheck(uid, sub_device, args, error);
+  return true;
 }
 
 
 /*
  * Check the sub device is valid or broadcast
  */
-bool RDMController::NoArgsValidBroadcastSubDeviceCheck(
+bool RDMController::ValidBroadcastSubDeviceCheck(
     const UID &uid,
     uint16_t sub_device,
     const vector<string> &args,
@@ -361,18 +453,18 @@ bool RDMController::NoArgsValidBroadcastSubDeviceCheck(
     *error = "Sub device must be <= 512 or 65535";
     return false;
   }
-  return NoArgsGetCheck(uid, sub_device, args, error);
+  return true;
 }
 
 
 
 /*
- * Check that no arguments were supplied and this isn't broadcast
+ * Check that no arguments were supplied
  */
-bool RDMController::NoArgsGetCheck(const UID &uid,
-                                   uint16_t sub_device,
-                                   const vector<string> &args,
-                                   string *error) {
+bool RDMController::NoArgsCheck(const UID &uid,
+                                uint16_t sub_device,
+                                const vector<string> &args,
+                                string *error) {
   if (args.size()) {
     *error = "No args required";
     return false;
@@ -419,30 +511,6 @@ bool RDMController::StatusTypeCheck(const UID &uid,
   if (!StringToStatusType(args[0], &status_type)) {
     *error = "Invalid arg: ";
     *error += args[0];
-    return false;
-  }
-  return true;
-}
-
-
-/*
- * Check the sub device is valid or broadcast
- */
-bool RDMController::UInt16Check(const UID &uid,
-                                uint16_t sub_device,
-                                const vector<string> &args,
-                                string *error) {
-  if (sub_device) {
-    *error = "Sub device must be 0 (root device)";
-    return false;
-  }
-  if (!args.size() || args.size() > 1) {
-    *error = "Requires a unsigned 16 bit int";
-    return false;
-  }
-  uint16_t value;
-  if (!ola::StringToUInt16(args[0], &value)) {
-    *error = "Invalid arg";
     return false;
   }
   return true;
@@ -504,7 +572,7 @@ bool RDMController::GetStatusMessage(const UID &uid,
                                      const vector<string> &args,
                                      string *error) {
   ola::rdm::rdm_status_type status_type;
-  if (!StringToStatusType(args[0], &status_type)) {
+  if (args.size() != 1 || (!StringToStatusType(args[0], &status_type))) {
     *error = "arg must be one of {none,error,warning,advisory}";
     return false;
   }
@@ -522,8 +590,10 @@ bool RDMController::GetStatusIdDescription(const UID &uid,
                                            const vector<string> &args,
                                            string *error) {
   uint16_t status_id;
-  if (!ola::StringToUInt16(args[0], &status_id))
+  if (args.size() != 1 || (!ola::StringToUInt16(args[0], &status_id))) {
+    *error = "Argument must be a uint16";
     return false;
+  }
   return m_api->GetStatusIdDescription(
       uid,
       status_id,
@@ -561,7 +631,7 @@ bool RDMController::SetSubDeviceReporting(const UID &uid,
                                           const vector<string> &args,
                                           string *error) {
   ola::rdm::rdm_status_type status_type;
-  if (!StringToStatusType(args[0], &status_type)) {
+  if (args.size() != 1 || (!StringToStatusType(args[0], &status_type))) {
     *error = "arg must be one of {none, error, warning, advisory}";
     return false;
   }
@@ -592,8 +662,10 @@ bool RDMController::GetParameterDescription(const UID &uid,
                                             const vector<string> &args,
                                             string *error) {
   uint16_t pid;
-  if (!ola::StringToUInt16(args[0], &pid))
+  if (args.size() != 1 || (!ola::StringToUInt16(args[0], &pid))) {
+    *error = "Argument must be a uint16";
     return false;
+  }
   return m_api->GetParameterDescription(
       uid,
       pid,
@@ -668,6 +740,10 @@ bool RDMController::SetDeviceLabel(const UID &uid,
                                    uint16_t sub_device,
                                    const vector<string> &args,
                                    string *error) {
+  if (args.size() != 1) {
+    *error = "Argument must be supplied";
+    return false;
+  }
   return m_api->SetDeviceLabel(
       uid,
       sub_device,
@@ -731,6 +807,10 @@ bool RDMController::SetLanguage(const UID &uid,
                                 uint16_t sub_device,
                                 const vector<string> &args,
                                 string *error) {
+  if (args.size() != 1 || args[0].size() != 2) {
+    *error = "Argument must be a 2 char string";
+    return false;
+  }
   string language = args[0].substr(0, 2);
   return m_api->SetLanguage(
       uid,
@@ -796,8 +876,10 @@ bool RDMController::SetDMXPersonality(const UID &uid,
                                       const vector<string> &args,
                                       string *error) {
   uint8_t personality;
-  if (!ola::StringToUInt8(args[0], &personality))
+  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &personality))) {
+    *error = "Argument must be a uint8";
     return false;
+  }
   return m_api->SetDMXPersonality(
       uid,
       sub_device,
@@ -812,8 +894,10 @@ bool RDMController::GetDMXPersonalityDescription(const UID &uid,
                                                  const vector<string> &args,
                                                  string *error) {
   uint8_t personality;
-  if (!ola::StringToUInt8(args[0], &personality))
+  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &personality))) {
+    *error = "Argument must be a uint8";
     return false;
+  }
   return m_api->GetDMXPersonalityDescription(
       uid,
       sub_device,
@@ -841,8 +925,14 @@ bool RDMController::SetDMXAddress(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   uint16_t dmx_address = 0;
-  if (!ola::StringToUInt16(args[0], &dmx_address))
+  if (args.size() != 1 || (!ola::StringToUInt16(args[0], &dmx_address))) {
+    *error = "Argument must be a uint16";
     return false;
+  }
+  if (dmx_address == 0 || dmx_address > DMX_UNIVERSE_SIZE) {
+    *error = "Dmx address must be between 1 and 512";
+    return false;
+  }
   return m_api->SetDMXAddress(
       uid,
       sub_device,
@@ -869,8 +959,10 @@ bool RDMController::GetSlotDescription(const UID &uid,
                                        const vector<string> &args,
                                        string *error) {
   uint16_t slot_id = 0;
-  if (!ola::StringToUInt16(args[0], &slot_id))
+  if (args.size() != 1 || (!ola::StringToUInt16(args[0], &slot_id))) {
+    *error = "Argument must be a uint16";
     return false;
+  }
   return m_api->GetSlotDescription(
       uid,
       sub_device,
@@ -897,8 +989,10 @@ bool RDMController::GetSensorDefinition(const UID &uid,
                                         const vector<string> &args,
                                         string *error) {
   uint8_t sensor;
-  if (!ola::StringToUInt8(args[0], &sensor))
+  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &sensor))) {
+    *error = "Argument must be a uint8";
     return false;
+  }
   return m_api->GetSensorDefinition(
       uid,
       sub_device,
@@ -913,8 +1007,10 @@ bool RDMController::GetSensorValue(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint8_t sensor;
-  if (!ola::StringToUInt8(args[0], &sensor))
+  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &sensor))) {
+    *error = "Argument must be a uint8";
     return false;
+  }
   return m_api->GetSensorValue(
       uid,
       sub_device,
@@ -929,8 +1025,10 @@ bool RDMController::SetSensorValue(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint8_t sensor;
-  if (!ola::StringToUInt8(args[0], &sensor))
+  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &sensor))) {
+    *error = "Argument must be a uint8";
     return false;
+  }
   return m_api->SetSensorValue(
       uid,
       sub_device,
@@ -945,8 +1043,10 @@ bool RDMController::RecordSensors(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   uint8_t sensor;
-  if (!ola::StringToUInt8(args[0], &sensor))
+  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &sensor))) {
+    *error = "Argument must be a uint8";
     return false;
+  }
   return m_api->RecordSensors(
       uid,
       sub_device,
@@ -973,8 +1073,10 @@ bool RDMController::SetDeviceHours(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint32_t device_hours = 0;
-  if (!ola::StringToUInt(args[0], &device_hours))
+  if (args.size() != 1 || (!ola::StringToUInt(args[0], &device_hours))) {
+    *error = "Argument must be a uint32";
     return false;
+  }
   return m_api->SetDeviceHours(
       uid,
       sub_device,
@@ -1001,8 +1103,10 @@ bool RDMController::SetLampHours(const UID &uid,
                                  const vector<string> &args,
                                  string *error) {
   uint32_t lamp_hours = 0;
-  if (!ola::StringToUInt(args[0], &lamp_hours))
+  if (args.size() != 1 || (!ola::StringToUInt(args[0], &lamp_hours))) {
+    *error = "Argument must be a uint32";
     return false;
+  }
   return m_api->SetLampHours(
       uid,
       sub_device,
@@ -1029,8 +1133,10 @@ bool RDMController::SetLampStrikes(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint32_t lamp_strikes = 0;
-  if (!ola::StringToUInt(args[0], &lamp_strikes))
+  if (args.size() != 1 || (!ola::StringToUInt(args[0], &lamp_strikes))) {
+    *error = "Argument must be a uint32";
     return false;
+  }
   return m_api->SetLampStrikes(
       uid,
       sub_device,
@@ -1058,8 +1164,10 @@ bool RDMController::SetLampState(const UID &uid,
                                  const vector<string> &args,
                                  string *error) {
   ola::rdm::rdm_lamp_state state;
-  if (!StringToLampState(args[0], &state))
+  if (args.size() != 1 || (!StringToLampState(args[0], &state))) {
+    *error = "Argument must be one of {off, on, strike, standby}";
     return false;
+  }
   return m_api->SetLampState(
       uid,
       sub_device,
@@ -1086,8 +1194,10 @@ bool RDMController::SetLampMode(const UID &uid,
                                 const vector<string> &args,
                                 string *error) {
   ola::rdm::rdm_lamp_mode mode;
-  if (!StringToLampMode(args[0], &mode))
+  if (args.size() != 1 || (!StringToLampMode(args[0], &mode))) {
+    *error = "Argument must be one of {off, dmx, on, calibration}";
     return false;
+  }
   return m_api->SetLampMode(
       uid,
       sub_device,
@@ -1114,8 +1224,10 @@ bool RDMController::SetDevicePowerCycles(const UID &uid,
                                          const vector<string> &args,
                                          string *error) {
   uint32_t power_cycles = 0;
-  if (!ola::StringToUInt(args[0], &power_cycles))
+  if (args.size() != 1 || (!ola::StringToUInt(args[0], &power_cycles))) {
+    *error = " Argument must be a uint32";
     return false;
+  }
   return m_api->SetDevicePowerCycles(
       uid,
       sub_device,
@@ -1143,8 +1255,10 @@ bool RDMController::SetDisplayInvert(const UID &uid,
                                      const vector<string> &args,
                                      string *error) {
   uint8_t mode;
-  if (!StringToOnOffAuto(args[0], &mode))
+  if (args.size() != 1 || (!StringToOnOffAuto(args[0], &mode))) {
+    *error = "Argument must be one of {on, off, auto}";
     return false;
+  }
   return m_api->SetDisplayInvert(
       uid,
       sub_device,
@@ -1171,8 +1285,10 @@ bool RDMController::SetDisplayLevel(const UID &uid,
                                     const vector<string> &args,
                                     string *error) {
   uint8_t level;
-  if (!ola::StringToUInt8(args[0], &level))
+  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &level))) {
+    *error = "Argument must be a uint8";
     return false;
+  }
   return m_api->SetDisplayLevel(
       uid,
       sub_device,
@@ -1199,8 +1315,10 @@ bool RDMController::SetPanInvert(const UID &uid,
                                  const vector<string> &args,
                                  string *error) {
   uint8_t mode;
-  if (!StringToOnOff(args[0], &mode))
+  if (args.size() != 1 || (!StringToOnOff(args[0], &mode))) {
+    *error = "Argument must be on of {on, off}";
     return false;
+  }
   return m_api->SetPanInvert(
       uid,
       sub_device,
@@ -1227,8 +1345,10 @@ bool RDMController::SetTiltInvert(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   uint8_t mode;
-  if (!StringToOnOff(args[0], &mode))
+  if (args.size() != 1 || (!StringToOnOff(args[0], &mode))) {
+    *error = "Argument must be on of {on, off}";
     return false;
+  }
   return m_api->SetTiltInvert(
       uid,
       sub_device,
@@ -1255,8 +1375,10 @@ bool RDMController::SetPanTiltSwap(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint8_t mode;
-  if (!StringToOnOff(args[0], &mode))
+  if (args.size() != 1 || (!StringToOnOff(args[0], &mode))) {
+    *error = "Argument must be on of {on, off}";
     return false;
+  }
   return m_api->SetPanTiltSwap(
       uid,
       sub_device,
@@ -1283,8 +1405,10 @@ bool RDMController::IdentifyDevice(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint8_t mode;
-  if (!StringToOnOff(args[0], &mode))
+  if (args.size() != 1 || (!StringToOnOff(args[0], &mode))) {
+    *error = "Argument must be on of {on, off}";
     return false;
+  }
   return m_api->IdentifyDevice(
       uid,
       sub_device,
@@ -1299,8 +1423,10 @@ bool RDMController::ResetDevice(const UID &uid,
                                 const vector<string> &args,
                                 string *error) {
   uint8_t mode;
-  if (!StringToWarmCold(args[0], &mode))
+  if (args.size() != 1 || (!StringToWarmCold(args[0], &mode))) {
+    *error = "Argument must be on of {warm, cold}";
     return false;
+  }
   return m_api->ResetDevice(
       uid,
       sub_device,
@@ -1421,16 +1547,3 @@ bool RDMController::StringToWarmCold(const string &arg, uint8_t *mode) {
 }
 
 
-//-----------------------------------------------------------------------------
-/*
- * A helper method to contruct pid_descriptors
- */
-void RDMController::MakeDescriptor(uint16_t pid,
-                                   CheckMethod get_verify,
-                                   CheckMethod set_verify,
-                                   ExecuteMethod get_execute,
-                                   ExecuteMethod set_execute) {
-  pid_descriptor d = {get_verify, set_verify, get_execute, set_execute};
-  s_pid_map.insert(std::pair<uint16_t, const pid_descriptor>(
-    pid, d));
-}

@@ -36,6 +36,38 @@ using std::string;
 using std::vector;
 using ola::rdm::UID;
 
+
+class RDMController;
+
+typedef bool (RDMController::*CheckMethod)(const UID &uid,
+                                           uint16_t sub_device,
+                                           const vector<string> &args,
+                                           string *error);
+typedef bool (RDMController::*ExecuteMethod)(const UID &uid,
+                                             uint16_t sub_device,
+                                             const vector<string> &args,
+                                             string *error);
+class PidDescriptor {
+  public:
+    PidDescriptor(ExecuteMethod get_execute, ExecuteMethod set_execute);
+    PidDescriptor *AddGetVerify(CheckMethod method);
+    PidDescriptor *AddSetVerify(CheckMethod method);
+
+    bool Run(RDMController *controller,
+             const UID &uid,
+             uint16_t sub_device,
+             bool set,
+             uint16_t pid,
+             const vector<string> &params,
+             string *error);
+
+  private:
+    vector<CheckMethod> m_get_verify;
+    vector<CheckMethod> m_set_verify;
+    ExecuteMethod m_get_execute;
+    ExecuteMethod m_set_execute;
+};
+
 class RDMController {
   public:
     RDMController(ola::rdm::RDMAPI *api, ResponseHandler *handler):
@@ -43,7 +75,7 @@ class RDMController {
       m_handler(handler) {
       RDMController::LoadMap();
     }
-    ~RDMController() {}
+    ~RDMController();
 
     bool RequestPID(const UID &uid,
                     uint16_t sub_device,
@@ -52,44 +84,35 @@ class RDMController {
                     const vector<string> &params,
                     string *error);
 
-    static void LoadMap();
-
   private:
-    typedef bool (RDMController::*CheckMethod)(const UID &uid,
-                                               uint16_t sub_device,
-                                               const vector<string> &args,
-                                               string *error);
-    typedef bool (RDMController::*ExecuteMethod)(const UID &uid,
-                                                 uint16_t sub_device,
-                                                 const vector<string> &args,
-                                                 string *error);
-    typedef struct {
-      CheckMethod get_verify;
-      CheckMethod set_verify;
-      ExecuteMethod get_execute;
-      ExecuteMethod set_execute;
-    } pid_descriptor;
-
+    map<uint16_t, PidDescriptor*> m_pid_map;
     ola::rdm::RDMAPI *m_api;
     ResponseHandler *m_handler;
 
+    void LoadMap();
+    PidDescriptor* MakeDescriptor(uint16_t pid,
+                                  ExecuteMethod get_execute,
+                                  ExecuteMethod set_execute);
+
     // generic methods
-    bool NoArgsRootDeviceCheck(const UID &uid,
-                               uint16_t sub_device,
-                               const vector<string> &args,
-                               string *error);
-    bool NoArgsValidSubDeviceCheck(const UID &uid,
-                                   uint16_t sub_device,
-                                   const vector<string> &args,
-                                   string *error);
-    bool NoArgsValidBroadcastSubDeviceCheck(const UID &uid,
-                                            uint16_t sub_device,
-                                            const vector<string> &args,
-                                            string *error);
-    bool NoArgsGetCheck(const UID &uid,
-                        uint16_t sub_device,
-                        const vector<string> &args,
-                        string *error);
+    bool RootDeviceCheck(const UID &uid,
+                         uint16_t sub_device,
+                         const vector<string> &args,
+                         string *error);
+    bool ValidSubDeviceCheck(const UID &uid,
+                             uint16_t sub_device,
+                             const vector<string> &args,
+                             string *error);
+    bool ValidBroadcastSubDeviceCheck(const UID &uid,
+                                      uint16_t sub_device,
+                                      const vector<string> &args,
+                                      string *error);
+    bool NoArgsCheck(const UID &uid,
+                     uint16_t sub_device,
+                     const vector<string> &args,
+                     string *error);
+
+
     bool NoArgsRootDeviceSetCheck(const UID &uid,
                                   uint16_t sub_device,
                                   const vector<string> &args,
@@ -98,10 +121,6 @@ class RDMController {
                          uint16_t sub_device,
                          const vector<string> &args,
                          string *error);
-    bool UInt16Check(const UID &uid,
-                     uint16_t sub_device,
-                     const vector<string> &args,
-                     string *error);
 
     // pid specific methods
     bool GetProxiedDeviceCount(const UID &uid,
@@ -425,13 +444,5 @@ class RDMController {
     bool StringToOnOff(const string &arg, uint8_t *mode);
     bool StringToWarmCold(const string &arg, uint8_t *mode);
 
-    // static data / methods
-    static map<uint16_t, const pid_descriptor> s_pid_map;
-
-    static void MakeDescriptor(uint16_t pid,
-                               CheckMethod get_verify,
-                               CheckMethod set_verify,
-                               ExecuteMethod get_execute,
-                               ExecuteMethod set_execute);
 };
 #endif  // SRC_RDMCONTROLLER_H_
