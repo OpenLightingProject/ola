@@ -267,7 +267,7 @@ class ArtNetNode {
     // seconds after which a node is marked as inactive for the dmx merging
     static const unsigned int NODE_TIMEOUT = 31;
     // mseconds we wait for a TodData packet before declaring a node missing
-    static const unsigned int RDM_TOD_TIMEOUT_MS = 3000;
+    static const unsigned int RDM_TOD_TIMEOUT_MS = 10000;
     // Number of missed TODs before we decide a UID has gone
     static const unsigned int RDM_MISSED_TODDATA_LIMIT = 3;
 };
