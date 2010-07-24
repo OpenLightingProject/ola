@@ -19,6 +19,7 @@
  */
 
 #include <sysexits.h>
+#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/network/SelectServer.h>
@@ -219,8 +220,14 @@ void ResponseHandler::DeviceInfo(
   cout << "DMX Personality: " <<
     static_cast<int>(device_info.current_personality) << " / " <<
     static_cast<int>(device_info.personaility_count) << endl;
-  cout << "DMX Start Address: " << std::dec <<
-    static_cast<int>(device_info.dmx_start_address) << endl;
+  cout << "DMX Start Address: ";
+  if (device_info.dmx_start_address > DMX_UNIVERSE_SIZE) {
+   cout << "N/A";
+  } else {
+    cout << std::dec <<
+    static_cast<int>(device_info.dmx_start_address);
+  }
+  cout << endl;
   cout << "# of Subdevices: " << device_info.sub_device_count << endl;
   cout << "Sensor Count: " << static_cast<int>(device_info.sensor_count) <<
     endl;
@@ -344,7 +351,14 @@ void ResponseHandler::DMXAddress(const ResponseStatus &status,
                                  uint16_t start_address) {
   if (!CheckForSuccess(status))
     return;
-  cout << "DMX Start Address: " << start_address << endl;
+  cout << "DMX Start Address: ";
+  if (start_address > DMX_UNIVERSE_SIZE) {
+   cout << "N/A";
+  } else {
+    cout << std::dec <<
+    static_cast<int>(start_address);
+  }
+  cout << endl;
 }
 
 
