@@ -317,8 +317,8 @@ int main(int argc, char *argv[]) {
   RDMController controller(&rdm_api, &handler);
 
   string error;
-  vector<string> params;
-  copy(++(opts.args.begin()), opts.args.end(), params.begin());
+  vector<string> params(opts.args.size()-1);
+  copy(opts.args.begin() + 1, opts.args.end(), params.begin());
   if (controller.RequestPID(*opts.uid,
                             opts.sub_device,
                             opts.set_mode,

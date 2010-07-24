@@ -127,8 +127,8 @@ void RDMController::LoadMap() {
   MakeDescriptor(ola::rdm::PID_CLEAR_STATUS_ID,
     NULL,
     &RDMController::NoArgsValidBroadcastSubDeviceCheck,
-    &RDMController::ClearStatusId,
-    NULL);
+    NULL,
+    &RDMController::ClearStatusId);
   MakeDescriptor(ola::rdm::PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD,
     &RDMController::NoArgsValidSubDeviceCheck,
     //&RDMController::StatusTypeCheck,
@@ -412,12 +412,13 @@ bool RDMController::StatusTypeCheck(const UID &uid,
     return false;
   }
   if (!args.size() || args.size() > 1) {
-    *error = "Requires one of {none,error,warning,advisory";
+    *error = "Requires one of {none,error,warning,advisory}";
     return false;
   }
   ola::rdm::rdm_status_type status_type;
   if (!StringToStatusType(args[0], &status_type)) {
-    *error = "Invalid arg";
+    *error = "Invalid arg: ";
+    *error += args[0];
     return false;
   }
   return true;
@@ -436,7 +437,7 @@ bool RDMController::UInt16Check(const UID &uid,
     return false;
   }
   if (!args.size() || args.size() > 1) {
-    *error = "Requires one of {none,error,warning,advisory";
+    *error = "Requires a unsigned 16 bit int";
     return false;
   }
   uint16_t value;
@@ -561,7 +562,7 @@ bool RDMController::SetSubDeviceReporting(const UID &uid,
                                           string *error) {
   ola::rdm::rdm_status_type status_type;
   if (!StringToStatusType(args[0], &status_type)) {
-    *error = "arg must be one of {none,error,warning,advisory}";
+    *error = "arg must be one of {none, error, warning, advisory}";
     return false;
   }
   return m_api->SetSubDeviceReporting(
