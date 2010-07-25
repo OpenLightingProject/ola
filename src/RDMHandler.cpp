@@ -410,12 +410,13 @@ void ResponseHandler::SensorDefinition(
   PrintType(descriptor.type);
   PrintUnit(descriptor.unit);
   PrintPrefix(descriptor.prefix);
-  cout << "Range Min: " << descriptor.range_min << endl;
-  cout << "Range Max: " << descriptor.range_max << endl;
-  cout << "Normal Min: " << descriptor.normal_min << endl;
-  cout << "Normal Max: " << descriptor.normal_max << endl;
+  cout << "Range: " << descriptor.range_min << " - " << descriptor.range_max
+    << endl;
+  cout << "Normal: " << descriptor.normal_min << " - " << descriptor.normal_max
+    << endl;
   cout << "Recording support: " <<
     ((descriptor.recorded_value_support & 0x2) ? "Highest/Lowest" : "") <<
+    ((descriptor.recorded_value_support == 0x3) ? "/" : "") <<
     ((descriptor.recorded_value_support & 0x1) ? "Snapshot" : "") <<
     endl;
   cout << "Description: " << descriptor.description << endl;
