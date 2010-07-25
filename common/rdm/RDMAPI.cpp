@@ -2572,7 +2572,7 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
              std::min(static_cast<unsigned int>(data.size()), max));
       personality = raw_description.personality;
       dmx_slots = NetworkToHost(raw_description.dmx_slots);
-      description = std::string(raw_description.description, LABEL_SIZE);
+      description = std::string(raw_description.description, data_size - min);
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
