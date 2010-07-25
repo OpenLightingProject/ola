@@ -1280,7 +1280,7 @@ bool RDMAPI::GetSensorValue(
                    m_universe,
                    uid,
                    sub_device,
-                   PID_RECORD_SENSORS,
+                   PID_SENSOR_VALUE,
                    &sensor_number,
                    sizeof(sensor_number)),
     error);
@@ -1316,7 +1316,7 @@ bool RDMAPI::SetSensorValue(
                    m_universe,
                    uid,
                    sub_device,
-                   PID_RECORD_SENSORS,
+                   PID_SENSOR_VALUE,
                    &sensor_number,
                    sizeof(sensor_number)),
     error);
@@ -2737,10 +2737,10 @@ void RDMAPI::_HandleGetSensorDefinition(
       uint8_t type;
       uint8_t unit;
       uint8_t prefix;
-      uint16_t range_min;
-      uint16_t range_max;
-      uint16_t normal_min;
-      uint16_t normal_max;
+      int16_t range_min;
+      int16_t range_max;
+      int16_t normal_min;
+      int16_t normal_max;
       uint8_t recorded_value_support;
       char description[LABEL_SIZE + 1];
     } __attribute__((packed));

@@ -168,10 +168,10 @@ typedef struct {
   uint8_t type;
   uint8_t unit;
   uint8_t prefix;
-  uint16_t range_min;
-  uint16_t range_max;
-  uint16_t normal_min;
-  uint16_t normal_max;
+  int16_t range_min;
+  int16_t range_max;
+  int16_t normal_min;
+  int16_t normal_max;
   uint8_t recorded_value_support;
   string description;
 } SensorDescriptor;
