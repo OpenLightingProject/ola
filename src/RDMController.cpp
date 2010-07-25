@@ -128,13 +128,13 @@ void RDMController::LoadMap() {
 
   // populate the PID descriptor map
   MakeDescriptor(ola::rdm::PID_PROXIED_DEVICES,
-                 &RDMController::GetProxiedDeviceCount,
+                 &RDMController::GetProxiedDevices,
                  NULL)->AddGetVerify(
       &RDMController::NoArgsCheck)->AddGetVerify(
       &RDMController::RootDeviceCheck);
 
   MakeDescriptor(ola::rdm::PID_PROXIED_DEVICE_COUNT,
-                 &RDMController::GetProxiedDevices,
+                 &RDMController::GetProxiedDeviceCount,
                  NULL)->AddGetVerify(
       &RDMController::NoArgsCheck)->AddGetVerify(
       &RDMController::RootDeviceCheck);
