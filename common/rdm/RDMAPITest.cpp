@@ -287,9 +287,10 @@ class RDMAPITest: public CppUnit::TestFixture {
                               const vector<uint16_t> &params) {
       CheckResponseStatus(status);
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(3), params.size());
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x1234), params[0]);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0xabcd), params[1]);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x00aa), params[2]);
+      // params are sorted
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x00aa), params[0]);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x1234), params[1]);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0xabcd), params[2]);
     }
 
     void CheckParameterDescription(
@@ -337,8 +338,10 @@ class RDMAPITest: public CppUnit::TestFixture {
                            descriptor.software_version);
       CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(400),
                            descriptor.dmx_footprint);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(1),
-                           descriptor.dmx_personality);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(1),
+                           descriptor.current_personality);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(2),
+                           descriptor.personaility_count);
       CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(12),
                            descriptor.dmx_start_address);
       CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(10),
@@ -635,7 +638,8 @@ void RDMAPITest::testProductInformation() {
     uint16_t product_category;
     uint32_t software_version;
     uint16_t dmx_footprint;
-    uint16_t dmx_personality;
+    uint8_t current_personality;
+    uint8_t personaility_count;
     uint16_t dmx_start_address;
     uint16_t sub_device_count;
     uint8_t sensor_count;
@@ -647,7 +651,8 @@ void RDMAPITest::testProductInformation() {
   device_info.software_version = HostToNetwork(
     static_cast<uint32_t>(0x12345678));
   device_info.dmx_footprint = HostToNetwork(static_cast<uint16_t>(400));
-  device_info.dmx_personality = HostToNetwork(static_cast<uint16_t>(1));
+  device_info.current_personality = 1;
+  device_info.personaility_count = 2;
   device_info.dmx_start_address = HostToNetwork(static_cast<uint16_t>(12));
   device_info.sub_device_count = HostToNetwork(static_cast<uint16_t>(10));
   device_info.sensor_count = 4;
