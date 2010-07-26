@@ -20,12 +20,14 @@
  *
  */
 
+#include <execinfo.h>
+#include <fcntl.h>
+#include <getopt.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <getopt.h>
 #include <sys/resource.h>
-#include <fcntl.h>
+#include <unistd.h>
 #include <iostream>
 #include <string>
 
@@ -53,6 +55,19 @@ typedef struct {
   string http_data_dir;
 } ola_options;
 
+
+/*
+ * Print a stack trace on seg fault
+ */
+static void sig_segv(int signo) {
+  enum {STACK_SIZE = 64};
+  void *array[STACK_SIZE];
+  size_t size = backtrace(array, STACK_SIZE);
+
+  cout << "Recieved SIGSEGV or SIGBUS" << endl;
+  backtrace_symbols_fd(array, size, STDERR_FILENO);
+  exit(1);
+}
 
 /*
  * Terminate cleanly on interrupt
@@ -85,9 +100,9 @@ static void sig_user1(int signo) {
 /*
  * Set up the interrupt signal
  *
- * @return 0 on success, non 0 on failure
+ * @return true on success, false on failure
  */
-static int InstallSignals() {
+static bool InstallSignals() {
   struct sigaction act, oact;
 
   act.sa_handler = sig_interupt;
@@ -96,28 +111,38 @@ static int InstallSignals() {
 
   if (sigaction(SIGINT, &act, &oact) < 0) {
     OLA_WARN << "Failed to install signal SIGINT";
-    return -1;
+    return false;
   }
 
   if (sigaction(SIGTERM, &act, &oact) < 0) {
     OLA_WARN << "Failed to install signal SIGTERM";
-    return -1;
+    return false;
+  }
+
+  act.sa_handler = sig_segv;
+  if (sigaction(SIGSEGV, &act, &oact) < 0) {
+    OLA_WARN << "Failed to install signal SIGSEGV";
+    return false;
+  }
+  if (sigaction(SIGBUS, &act, &oact) < 0) {
+    OLA_WARN << "Failed to install signal SIGSEGV";
+    return false;
   }
 
   act.sa_handler = sig_hup;
 
   if (sigaction(SIGHUP, &act, &oact) < 0) {
     OLA_WARN << "Failed to install signal SIGHUP";
-    return -1;
+    return false;
   }
 
   act.sa_handler = sig_user1;
 
   if (sigaction(SIGUSR1, &act, &oact) < 0) {
     OLA_WARN << "Failed to install signal SIGUSR1";
-    return -1;
+    return false;
   }
-  return 0;
+  return true;
 }
 
 
@@ -357,7 +382,7 @@ int main(int argc, char *argv[]) {
 
   InitExportMap(&export_map, argc, argv);
 
-  if (InstallSignals())
+  if (!InstallSignals())
     OLA_WARN << "Failed to install signal handlers";
 
   ola::ola_server_options ola_options;
