@@ -28,6 +28,7 @@ using std::string;
 using std::vector;
 using ola::Escape;
 using ola::HexStringToUInt;
+using ola::HexStringToUInt16;
 using ola::IntToString;
 using ola::StringSplit;
 using ola::StringToUInt;
@@ -216,6 +217,37 @@ void StringUtilsTest::testHexStringToUInt() {
   CPPUNIT_ASSERT(!HexStringToUInt("fz", &value));
   CPPUNIT_ASSERT(!HexStringToUInt("zfff", &value));
   CPPUNIT_ASSERT(!HexStringToUInt("0xf", &value));
+
+  // test HexStringToUInt16
+  uint16_t value2;
+  CPPUNIT_ASSERT(!HexStringToUInt16("", &value2));
+  CPPUNIT_ASSERT(!HexStringToUInt16("-1", &value2));
+
+  CPPUNIT_ASSERT(HexStringToUInt16("0", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 0, value2);
+  CPPUNIT_ASSERT(HexStringToUInt16("1", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 1, value2);
+  CPPUNIT_ASSERT(HexStringToUInt16("a", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, value2);
+  CPPUNIT_ASSERT(HexStringToUInt16("f", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 15, value2);
+  CPPUNIT_ASSERT(HexStringToUInt16("a1", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 161, value2);
+  CPPUNIT_ASSERT(HexStringToUInt16("ff", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 255, value2);
+  CPPUNIT_ASSERT(HexStringToUInt16("a1", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 161, value2);
+  CPPUNIT_ASSERT(HexStringToUInt16("ff", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 255, value2);
+  CPPUNIT_ASSERT(HexStringToUInt16("ffff", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 65535, value2);
+
+  CPPUNIT_ASSERT(!HexStringToUInt16("ffffff", &value2));
+  CPPUNIT_ASSERT(!HexStringToUInt16("ffffffff", &value2));
+  CPPUNIT_ASSERT(!HexStringToUInt16("ef123456", &value2));
+  CPPUNIT_ASSERT(!HexStringToUInt16("fz", &value2));
+  CPPUNIT_ASSERT(!HexStringToUInt16("zfff", &value2));
+  CPPUNIT_ASSERT(!HexStringToUInt16("0xf", &value2));
 }
 
 

@@ -28,6 +28,7 @@ namespace rdm {
 
 static const uint16_t ROOT_RDM_DEVICE = 0;
 static const uint16_t ALL_RDM_SUBDEVICES = 0xffff;
+static const uint16_t MAX_SUBDEVICE_NUMBER = 0x0200;
 
 typedef enum {
   ACK = 0x00,

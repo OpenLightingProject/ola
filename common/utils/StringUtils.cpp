@@ -179,6 +179,20 @@ bool HexStringToUInt(const string &value, unsigned int *output) {
 
 
 /*
+ * Convert a hex string to a uint16_t
+ */
+bool HexStringToUInt16(const string &value, uint16_t *output) {
+  unsigned int v;
+  if (!HexStringToUInt(value, &v))
+    return false;
+  if (v > 0xffff)
+    return false;
+  *output = static_cast<uint16_t>(v);
+  return true;
+}
+
+
+/*
  * Return a lower case version of this string
  */
 void ToLower(string *s) {
