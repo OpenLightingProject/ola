@@ -18,7 +18,9 @@
  * Copyright (C) 2010 Simon Newton
  *
  * This class provides a high level C++ RDM API for PIDs defined in
- * E1.20. It includes errors checking for out of range arguments.
+ * E1.20. It includes errors checking for out-of-range arguments. Each RDM
+ * method takes a pointer to a string, which will be populated with an english
+ * error message if the command fails.
  */
 
 #ifndef INCLUDE_OLA_RDM_RDMAPI_H_
@@ -48,12 +50,12 @@ using ola::SingleUseCallback4;
  * Represents the state of a response.
  * RDM requests can fail in a number of ways:
  *  - transport error talking to the OLA server
- *  - no response received
+ *  - no response received (time out)
  *  - response was NACKED
- *  - the Param data wasn't what we expected
- * This object describes the response state, ResponseType() type should be
+ *  - the param data wasn't what we expected
+ * This object describes the response state. ResponseType() type should be
  * checked first, and for anything other than NACK_REASON & VALID_RESPONSE,
- * there should be a human readable error in Error(). In the event of a
+ * there will be a human readable error in Error(). In the event of a
  * NACK_REASON, NackReason() contains the error code (unless it itself was
  * malformed, in which case MALFORMED_RESPONSE is used).
  */
