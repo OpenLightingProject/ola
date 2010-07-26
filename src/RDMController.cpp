@@ -432,8 +432,10 @@ bool RDMController::ValidSubDeviceCheck(const UID &uid,
                                         uint16_t sub_device,
                                         const vector<string> &args,
                                         string *error) {
-  if (sub_device > 0x0200) {
-    *error = "Sub device must be <= 512";
+  if (sub_device > ola::rdm::MAX_SUBDEVICE_NUMBER) {
+    std::stringstream str;
+    str << "Sub device must be <= " << ola::rdm::MAX_SUBDEVICE_NUMBER;
+    *error = str.str();
     return false;
   }
   return true;
@@ -448,8 +450,12 @@ bool RDMController::ValidBroadcastSubDeviceCheck(
     uint16_t sub_device,
     const vector<string> &args,
     string *error) {
-  if (sub_device > 0x0200 && sub_device != ola::rdm::ALL_RDM_SUBDEVICES) {
-    *error = "Sub device must be <= 512 or 65535";
+  if (sub_device > ola::rdm::MAX_SUBDEVICE_NUMBER &&
+      sub_device != ola::rdm::ALL_RDM_SUBDEVICES) {
+    std::stringstream str;
+    str << "Sub device must be <= " << ola::rdm::MAX_SUBDEVICE_NUMBER <<
+      " or " << ola::rdm::ALL_RDM_SUBDEVICES << " (all subdevices)";
+    *error = str.str();
     return false;
   }
   return true;
@@ -503,7 +509,7 @@ bool RDMController::StatusTypeCheck(const UID &uid,
     return false;
   }
   if (!args.size() || args.size() > 1) {
-    *error = "Requires one of {none,error,warning,advisory}";
+    *error = "Requires one of {none, error, warning, advisory}";
     return false;
   }
   ola::rdm::rdm_status_type status_type;
@@ -572,7 +578,7 @@ bool RDMController::GetStatusMessage(const UID &uid,
                                      string *error) {
   ola::rdm::rdm_status_type status_type;
   if (args.size() != 1 || (!StringToStatusType(args[0], &status_type))) {
-    *error = "arg must be one of {none,error,warning,advisory}";
+    *error = "arg must be one of {none, error, warning, advisory}";
     return false;
   }
   return m_api->GetStatusMessage(
@@ -589,10 +595,8 @@ bool RDMController::GetStatusIdDescription(const UID &uid,
                                            const vector<string> &args,
                                            string *error) {
   uint16_t status_id;
-  if (args.size() != 1 || (!ola::StringToUInt16(args[0], &status_id))) {
-    *error = "Argument must be a uint16";
+  if (!CheckForUInt16(&status_id, error, args))
     return false;
-  }
   return m_api->GetStatusIdDescription(
       uid,
       status_id,
@@ -661,10 +665,9 @@ bool RDMController::GetParameterDescription(const UID &uid,
                                             const vector<string> &args,
                                             string *error) {
   uint16_t pid;
-  if (args.size() != 1 || (!ola::StringToUInt16(args[0], &pid))) {
-    *error = "Argument must be a uint16";
+  if (!CheckForUInt16(&pid, error, args))
     return false;
-  }
+  std::cout << pid << std::endl;
   return m_api->GetParameterDescription(
       uid,
       pid,
@@ -740,7 +743,7 @@ bool RDMController::SetDeviceLabel(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   if (args.size() != 1) {
-    *error = "Argument must be supplied";
+    *error = "Argument must be supplied, the first 32 characters will be used";
     return false;
   }
   return m_api->SetDeviceLabel(
@@ -876,7 +879,7 @@ bool RDMController::SetDMXPersonality(const UID &uid,
                                       string *error) {
   uint8_t personality;
   if (args.size() != 1 || (!ola::StringToUInt8(args[0], &personality))) {
-    *error = "Argument must be a uint8";
+    *error = "Argument must be an integer between 0 and 255";
     return false;
   }
   return m_api->SetDMXPersonality(
@@ -894,7 +897,7 @@ bool RDMController::GetDMXPersonalityDescription(const UID &uid,
                                                  string *error) {
   uint8_t personality;
   if (args.size() != 1 || (!ola::StringToUInt8(args[0], &personality))) {
-    *error = "Argument must be a uint8";
+    *error = "Argument must be an integer between 0 and 255";
     return false;
   }
   return m_api->GetDMXPersonalityDescription(
@@ -958,10 +961,8 @@ bool RDMController::GetSlotDescription(const UID &uid,
                                        const vector<string> &args,
                                        string *error) {
   uint16_t slot_id = 0;
-  if (args.size() != 1 || (!ola::StringToUInt16(args[0], &slot_id))) {
-    *error = "Argument must be a uint16";
+  if (!CheckForUInt16(&slot_id, error, args))
     return false;
-  }
   return m_api->GetSlotDescription(
       uid,
       sub_device,
@@ -1437,6 +1438,30 @@ bool RDMController::ResetDevice(const UID &uid,
 
 //-----------------------------------------------------------------------------
 // Util methods
+
+bool RDMController::CheckForUInt16(uint16_t *value,
+                                   string *error,
+                                   const vector <string> &args) {
+  const string error_message =
+    "Argument must be a value between 0 - 65535.  Use 0x for hex values";
+  const string hex_prefix = "0x";
+  if (args.size() == 1) {
+    if (hex_prefix == args[0].substr(0, hex_prefix.size())) {
+      const string digit = args[0].substr(hex_prefix.size(),
+                                          args[0].size() - hex_prefix.size());
+      if (ola::HexStringToUInt16(digit, value)) {
+        return true;
+      } else {
+        *error = error_message;
+        return false;
+      }
+    } else if (ola::StringToUInt16(args[0], value)) {
+      return true;
+    }
+  }
+  *error = error_message;
+  return false;
+}
 
 
 bool RDMController::StringToStatusType(

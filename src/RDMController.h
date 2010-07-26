@@ -434,6 +434,9 @@ class RDMController {
                      string *error);
 
     // util methods
+    bool CheckForUInt16(uint16_t *value,
+                        string *error,
+                        const vector <string> &args);
     bool StringToStatusType(const string &arg,
                             ola::rdm::rdm_status_type *status_type);
     bool StringToLampState(const string &arg,
