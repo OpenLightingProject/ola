@@ -142,7 +142,7 @@ void WidgetDetector::DiscoveryTimeout(UsbWidget *widget) {
     OLA_WARN << "Usb Widget didn't respond to messages, esta id " <<
       iter->second.esta_id << ", device id " << iter->second.device_id;
     delete widget;
-    m_widgets.erase(widget);
+    m_widgets.erase(iter);
   }
 }
 
