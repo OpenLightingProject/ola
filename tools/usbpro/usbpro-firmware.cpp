@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * usbpro-firmware.cpp
- * Copyright (C) 2005-2009 Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #include <errno.h>
@@ -32,6 +32,7 @@
 #include <string>
 
 #include "plugins/usbpro/UsbWidget.h"
+#include "tools/usbpro/usbpro-common.h"
 
 using std::cout;
 using std::endl;
@@ -51,23 +52,6 @@ typedef struct {
   string firmware;
   string device;
 } options;
-
-/*
- * Abstract away the interface to the select server
- */
-class MySelectServerAdaptor: public ola::plugin::usbpro::SelectServerAdaptor {
-  public:
-    explicit MySelectServerAdaptor(SelectServer *ss):
-        m_ss(ss) {
-    }
-
-    bool AddSocket(ola::network::ConnectedSocket *socket,
-                           bool delete_on_close = false) const {
-      return m_ss->AddSocket(socket, delete_on_close);
-    }
-  private:
-    SelectServer *m_ss;
-};
 
 
 class FirmwareTransferer: public ola::plugin::usbpro::WidgetListener {
@@ -252,26 +236,6 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -l, --log-level <level>  Set the loggging level 0 .. 4.\n"
   << endl;
   exit(0);
-}
-
-
-/*
- * Open the widget device
- */
-int ConnectToWidget(const string &path) {
-  struct termios newtio;
-  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
-
-  if (fd == -1) {
-    OLA_WARN << "Failed to open " << path << " " << strerror(errno);
-    return -1;
-  }
-
-  bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
-  cfsetispeed(&newtio, B115200);
-  cfsetospeed(&newtio, B115200);
-  tcsetattr(fd, TCSANOW, &newtio);
-  return fd;
 }
 
 
