@@ -19,6 +19,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include <algorithm>
 #include <map>
 #include <string>
@@ -2219,12 +2220,12 @@ void RDMAPI::_HandleGetStatusMessage(
            ptr += sizeof(message)) {
         memcpy(&message, ptr, sizeof(message));
         StatusMessage msg_object;
-        msg_object.sub_device = (message.sub_device_hi << 8 +
-            message.sub_device_lo);
-        msg_object.status_message_id = (message.message_id_hi << 8 +
-            message.message_id_lo);
-        msg_object.value1 = (message.value_1_hi << 8 + message.value_1_lo);
-        msg_object.value2 = (message.value_2_hi << 8 + message.value_2_lo);
+        msg_object.sub_device = (message.sub_device_hi << 8) +
+            message.sub_device_lo;
+        msg_object.status_message_id = (message.message_id_hi << 8) +
+            message.message_id_lo;
+        msg_object.value1 = (message.value_1_hi << 8) + message.value_1_lo;
+        msg_object.value2 = (message.value_2_hi << 8) + message.value_2_lo;
         msg_object.status_type = message.status_type;
         messages.push_back(msg_object);
       }
