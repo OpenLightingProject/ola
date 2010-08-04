@@ -168,5 +168,7 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     void PrintStatusMessageId(uint16_t message_id);
     void PrintLampState(uint8_t lamp_state);
     void PrintLampMode(uint8_t lamp_mode);
+    void PrintNackReason(uint16_t reason);
+
 };
 #endif  // SRC_RDMHANDLER_H_

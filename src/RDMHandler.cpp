@@ -217,7 +217,7 @@ void ResponseHandler::DeviceInfo(
   PrintProductCategory(device_info.product_category);
   cout << "Software Version: 0x" << std::hex << device_info.software_version
     << endl;
-  cout << "DMX Footprint: " << device_info.dmx_footprint << endl;
+  cout << "DMX Footprint: " << std::dec << device_info.dmx_footprint << endl;
   cout << "DMX Personality: " <<
     static_cast<int>(device_info.current_personality) << " / " <<
     static_cast<int>(device_info.personaility_count) << endl;
@@ -663,7 +663,9 @@ bool ResponseHandler::CheckForSuccess(const ResponseStatus &status) {
     case ResponseStatus::BROADCAST_REQUEST:
       return false;
     case ResponseStatus::REQUEST_NACKED:
-      cout << "Request was NACKED with code " << status.NackReason();
+      cout << "Request was NACKED with code: ";
+      PrintNackReason(status.NackReason());
+      cout << endl;
       return false;
     case ResponseStatus::MALFORMED_RESPONSE:
       std::cerr << status.Error() << endl;
@@ -1490,5 +1492,43 @@ void ResponseHandler::PrintLampMode(uint8_t lamp_mode) {
       cout << "Unknown, was " << static_cast<int>(lamp_mode);
   }
   cout << endl;
+}
+
+
+void ResponseHandler::PrintNackReason(uint16_t reason) {
+  switch (reason) {
+    case ola::rdm::NR_UNKNOWN_PID:
+      cout << "Unknown PID";
+      break;
+    case ola::rdm::NR_FORMAT_ERROR:
+      cout << "Format error";
+      break;
+    case ola::rdm::NR_HARDWARE_FAULT:
+      cout << "Hardware fault";
+      break;
+    case ola::rdm::NR_PROXY_REJECT:
+      cout << "Proxy reject";
+      break;
+    case ola::rdm::NR_WRITE_PROTECT:
+      cout << "Write protect";
+      break;
+    case ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS:
+      cout << "Unsupported command class";
+      break;
+    case ola::rdm::NR_DATA_OUT_OF_RANGE:
+      cout << "Data out of range";
+      break;
+    case ola::rdm::NR_BUFFER_FULL:
+      cout << "Buffer full";
+      break;
+    case ola::rdm::NR_PACKET_SIZE_UNSUPPORTED:
+      cout << "Packet size unsupported";
+      break;
+    case ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE:
+      cout << "Sub device out of range";
+      break;
+    default:
+      cout << "Unknown, was " << reason;
+  }
 }
 // End  implementation
