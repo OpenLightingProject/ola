@@ -787,6 +787,9 @@ void ArtNetNode::HandlePacket(const IPAddress &source_address,
                       packet.data.ip_program,
                       packet_size - header_size);
       break;
+    case ARTNET_RDM_SUB:
+      // Not implemented
+      break;
     default:
       OLA_INFO << "ArtNet got unknown packet " << std::hex <<
         LittleEndianToHost(packet.op_code);
@@ -1028,8 +1031,11 @@ void ArtNetNode::HandleRdm(const IPAddress &source_address,
       RDMRequest *request = RDMRequest::InflateFromData(packet.data,
                                                         rdm_length);
 
-      if (request)
+      if (request) {
+        // update the output port uid map
+        m_output_ports[port_id].uid_map[request->SourceUID()] = source_address;
         m_output_ports[port_id].on_rdm_request->Run(request);
+      }
     }
 
     if (m_input_ports[port_id].enabled &&

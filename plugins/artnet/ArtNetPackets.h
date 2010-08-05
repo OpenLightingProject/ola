@@ -52,6 +52,7 @@ typedef enum artnet_packet_type_e {
   ARTNET_TODDATA = 0x8100,
   ARTNET_TODCONTROL = 0x8200,
   ARTNET_RDM = 0x8300,
+  ARTNET_RDM_SUB = 0x8400,
   ARTNET_IP_PROGRAM = 0xf800,
   ARTNET_IP_PROGRAM_REPLY = 0xf900,
 } artnet_packet_type;

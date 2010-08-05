@@ -65,6 +65,20 @@ string ArtNetPortHelper::Description(const Universe *universe,
 
 
 /*
+ * Send a RDM response over ArtNet
+ */
+bool ArtNetInputPort::HandleRDMResponse(
+    const ola::rdm::RDMResponse *response) {
+  // TODO(simonn): handle fragmentation here?
+  m_helper.GetNode()->SendRDMResponse(
+      PortId(),
+      *response);
+  delete response;
+  return true;
+}
+
+
+/*
  * Set the DMX Handlers as needed
  */
 void ArtNetInputPort::PostSetUniverse(Universe *old_universe,

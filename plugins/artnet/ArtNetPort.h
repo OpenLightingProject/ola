@@ -57,6 +57,7 @@ class ArtNetInputPort: public BasicInputPort {
 
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
+    bool HandleRDMResponse(const ola::rdm::RDMResponse *response);
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
     void PolitelyHandleRDMRequest(const ola::rdm::RDMRequest *request);
     void RespondWithTod();
