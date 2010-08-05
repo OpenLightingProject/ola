@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_RDM_RDMCOMMAND_H_
 
 #include <stdint.h>
+#include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/UID.h>
 
 namespace ola {
@@ -44,6 +45,7 @@ class RDMCommand {
     } RDMCommandClass;
 
     virtual ~RDMCommand();
+    bool operator==(const RDMCommand &other) const;
 
     // subclasses provide this
     virtual RDMCommandClass CommandClass() const = 0;
@@ -104,7 +106,6 @@ class RDMCommand {
     uint8_t m_transaction_number;
     uint8_t m_message_count;
     uint16_t m_sub_device;
-    RDMCommandClass m_command;
     uint16_t m_param_id;
     uint8_t *m_data;
     unsigned int m_data_length;
@@ -113,7 +114,7 @@ class RDMCommand {
     static const unsigned int CHECKSUM_LENGTH = 2;
 
     RDMCommand(const RDMCommand &other);
-    bool operator==(const RDMCommand &other) const;
+    bool operator=(const RDMCommand &other) const;
     RDMCommand& operator=(const RDMCommand &other);
     static uint16_t CalculateChecksum(const uint8_t *data,
                                       unsigned int packet_length);
@@ -205,7 +206,7 @@ class RDMResponse: public RDMCommand {
     RDMResponse(const UID &source,
                const UID &destination,
                uint8_t transaction_number,
-               uint8_t port_id,
+               uint8_t response_type,
                uint8_t message_count,
                uint16_t sub_device,
                uint16_t param_id,
@@ -214,7 +215,7 @@ class RDMResponse: public RDMCommand {
       RDMCommand(source,
                  destination,
                  transaction_number,
-                 port_id,
+                 response_type,
                  message_count,
                  sub_device,
                  param_id,
@@ -236,7 +237,7 @@ class BaseRDMResponse: public RDMResponse {
     BaseRDMResponse(const UID &source,
                     const UID &destination,
                     uint8_t transaction_number,
-                    uint8_t port_id,
+                    uint8_t response_type,
                     uint8_t message_count,
                     uint16_t sub_device,
                     uint16_t param_id,
@@ -245,7 +246,7 @@ class BaseRDMResponse: public RDMResponse {
       RDMResponse(source,
                   destination,
                   transaction_number,
-                  port_id,
+                  response_type,
                   message_count,
                   sub_device,
                   param_id,
@@ -257,6 +258,13 @@ class BaseRDMResponse: public RDMResponse {
 
 typedef BaseRDMResponse<RDMCommand::GET_COMMAND_RESPONSE> RDMGetResponse;
 typedef BaseRDMResponse<RDMCommand::SET_COMMAND_RESPONSE> RDMSetResponse;
+
+// Helper functions for dealing with RDMCommands
+RDMResponse *NackWithReason(const RDMRequest *request,
+                            rdm_nack_reason reason);
+RDMResponse *GetResponseWithData(const RDMRequest *request,
+                                 const uint8_t *data,
+                                 unsigned int length);
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_

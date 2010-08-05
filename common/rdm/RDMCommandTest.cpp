@@ -24,22 +24,28 @@
 #include <iomanip>
 
 #include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 
-using std::string;
+using ola::network::HostToNetwork;
 using ola::rdm::RDMCommand;
-using ola::rdm::RDMRequest;
 using ola::rdm::RDMGetRequest;
-using ola::rdm::RDMSetRequest;
+using ola::rdm::RDMGetResponse;
+using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
+using ola::rdm::RDMSetRequest;
 using ola::rdm::UID;
+using std::string;
 
 class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RDMCommandTest);
   CPPUNIT_TEST(testRDMCommand);
   CPPUNIT_TEST(testRequestInflation);
   CPPUNIT_TEST(testResponseInflation);
+  CPPUNIT_TEST(testNackWithReason);
+  CPPUNIT_TEST(testGetResponseWithData);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -48,6 +54,8 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testRDMCommand();
     void testRequestInflation();
     void testResponseInflation();
+    void testNackWithReason();
+    void testGetResponseWithData();
 
   private:
     void PackAndVerify(const RDMCommand &command,
@@ -69,7 +77,7 @@ uint8_t RDMCommandTest::EXPECTED_GET_BUFFER[] = {
   0, 3, 0, 0, 0, 4,   // dst uid
   0, 1, 0, 0, 0, 2,   // src uid
   0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
-  32, 1, 40, 0,  // command, param id, param data length
+  0x20, 1, 40, 0,  // command, param id, param data length
   0, 0  // checksum, filled in below
 };
 
@@ -78,7 +86,7 @@ uint8_t RDMCommandTest::EXPECTED_SET_BUFFER[] = {
     0, 3, 0, 0, 0, 4,   // dst uid
     0, 1, 0, 0, 0, 2,   // src uid
     0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
-    48, 1, 40, 4,  // command, param id, param data length
+    0x30, 1, 40, 4,  // command, param id, param data length
     0xa5, 0xa5, 0xa5, 0xa5,  // param data
     0, 0  // checksum, filled in below
 };
@@ -89,7 +97,7 @@ uint8_t RDMCommandTest::EXPECTED_GET_RESPONSE_BUFFER[] = {
     0, 3, 0, 0, 0, 4,   // dst uid
     0, 1, 0, 0, 0, 2,   // src uid
     0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
-    33, 1, 40, 4,  // command, param id, param data length
+    0x21, 1, 40, 4,  // command, param id, param data length
     0x5a, 0x5a, 0x5a, 0x5a,  // param data
     0, 0  // checksum, filled in below
 };
@@ -174,6 +182,8 @@ void RDMCommandTest::testRDMCommand() {
  * Test that we can inflate RDM request messages correctly
  */
 void RDMCommandTest::testRequestInflation() {
+  UID source(1, 2);
+  UID destination(3, 4);
   RDMRequest *command = RDMRequest::InflateFromData(NULL, 10);
   CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMRequest*>(NULL), command);
 
@@ -184,6 +194,17 @@ void RDMCommandTest::testRequestInflation() {
       EXPECTED_GET_BUFFER,
       sizeof(EXPECTED_GET_BUFFER));
   CPPUNIT_ASSERT(NULL != command);
+
+  RDMGetRequest expected_command(source,
+                                 destination,
+                                 0,  // transaction #
+                                 1,  // port id
+                                 0,  // message count
+                                 10,  // sub device
+                                 296,  // param id
+                                 NULL,  // data
+                                 0);  // data length
+  CPPUNIT_ASSERT(expected_command == *command);
   delete command;
 
   command = RDMRequest::InflateFromData(
@@ -258,6 +279,8 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
  * Test that we can inflate RDM response correctly
  */
 void RDMCommandTest::testResponseInflation() {
+  UID source(1, 2);
+  UID destination(3, 4);
   RDMResponse *command = RDMResponse::InflateFromData(NULL, 10);
   CPPUNIT_ASSERT_EQUAL(reinterpret_cast<RDMResponse*>(NULL), command);
 
@@ -272,6 +295,19 @@ void RDMCommandTest::testResponseInflation() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4, command->ParamDataSize());
   CPPUNIT_ASSERT(0 == memcmp(expected_data, command->ParamData(),
                              command->ParamDataSize()));
+
+  uint32_t data_value = 0x5a5a5a5a;
+  RDMGetResponse expected_command(source,
+                                  destination,
+                                  0,  // transaction #
+                                  1,  // port id
+                                  0,  // message count
+                                  10,  // sub device
+                                  296,  // param id
+                                  reinterpret_cast<uint8_t*>(&data_value),
+                                  sizeof(data_value));  // data length
+  CPPUNIT_ASSERT(expected_command == *command);
+
   delete command;
 
   // change the param length and make sure the checksum fails
@@ -322,4 +358,144 @@ void RDMCommandTest::UpdateChecksum(uint8_t *expected,
 
   expected[expected_length - 2] = checksum >> 8;
   expected[expected_length - 1] = checksum & 0xff;
+}
+
+
+void RDMCommandTest::testNackWithReason() {
+  UID source(1, 2);
+  UID destination(3, 4);
+
+  RDMGetRequest get_command(source,
+                            destination,
+                            0,  // transaction #
+                            1,  // port id
+                            0,  // message count
+                            10,  // sub device
+                            296,  // param id
+                            NULL,  // data
+                            0);  // data length
+
+  RDMResponse *response = NackWithReason(&get_command,
+                                         ola::rdm::NR_UNKNOWN_PID);
+  uint16_t reason = ola::rdm::NR_UNKNOWN_PID;
+  CPPUNIT_ASSERT(response);
+  CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::NACK_REASON,
+                       response->ResponseType());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND_RESPONSE,
+                       response->CommandClass());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 296, response->ParamId());
+  CPPUNIT_ASSERT_EQUAL(HostToNetwork(reason),
+                       *(reinterpret_cast<uint16_t*>(response->ParamData())));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(reason),
+                       response->ParamDataSize());
+  delete response;
+
+  response = NackWithReason(&get_command,
+                            ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+  reason = ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE;
+  CPPUNIT_ASSERT(response);
+  CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::NACK_REASON,
+                       response->ResponseType());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND_RESPONSE,
+                       response->CommandClass());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 296, response->ParamId());
+  CPPUNIT_ASSERT_EQUAL(HostToNetwork(reason),
+                       *(reinterpret_cast<uint16_t*>(response->ParamData())));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(reason),
+                       response->ParamDataSize());
+  delete response;
+
+  RDMSetRequest set_command(source,
+                            destination,
+                            0,  // transaction #
+                            1,  // port id
+                            0,  // message count
+                            10,  // sub device
+                            296,  // param id
+                            NULL,  // data
+                            0);  // data length
+
+  response = NackWithReason(&set_command,
+                            ola::rdm::NR_WRITE_PROTECT);
+  reason = ola::rdm::NR_WRITE_PROTECT;
+  CPPUNIT_ASSERT(response);
+  CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::NACK_REASON,
+                       response->ResponseType());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::SET_COMMAND_RESPONSE,
+                       response->CommandClass());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 296, response->ParamId());
+  CPPUNIT_ASSERT_EQUAL(HostToNetwork(reason),
+                       *(reinterpret_cast<uint16_t*>(response->ParamData())));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(reason),
+                       response->ParamDataSize());
+  delete response;
+}
+
+
+void RDMCommandTest::testGetResponseWithData() {
+  UID source(1, 2);
+  UID destination(3, 4);
+
+  RDMGetRequest get_command(source,
+                            destination,
+                            0,  // transaction #
+                            1,  // port id
+                            0,  // message count
+                            10,  // sub device
+                            296,  // param id
+                            NULL,  // data
+                            0);  // data length
+
+  RDMResponse *response = GetResponseWithData(&get_command, NULL, 0);
+  CPPUNIT_ASSERT(response);
+  CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::ACK, response->ResponseType());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND_RESPONSE,
+                       response->CommandClass());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 296, response->ParamId());
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<uint8_t*>(NULL),
+                       response->ParamData());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0,
+                       response->ParamDataSize());
+  delete response;
+
+  uint32_t data_value = 0xa5a5a5a5;
+  response = GetResponseWithData(
+      &get_command,
+      reinterpret_cast<const uint8_t*>(&data_value),
+      sizeof(data_value));
+  CPPUNIT_ASSERT(response);
+  CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::ACK, response->ResponseType());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND_RESPONSE,
+                       response->CommandClass());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 296, response->ParamId());
+  CPPUNIT_ASSERT_EQUAL(data_value,
+                       *(reinterpret_cast<uint32_t*>(response->ParamData())));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(data_value),
+                       response->ParamDataSize());
+  delete response;
 }

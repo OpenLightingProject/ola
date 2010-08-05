@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
 
 namespace ola {
@@ -65,6 +66,24 @@ RDMCommand::RDMCommand(const UID &source,
 RDMCommand::~RDMCommand() {
   if (m_data)
     delete[] m_data;
+}
+
+
+/*
+ * Equality test
+ */
+bool RDMCommand::operator==(const RDMCommand &other) const {
+  if (m_source == other.m_source &&
+      m_destination == other.m_destination &&
+      m_transaction_number == other.m_transaction_number &&
+      m_message_count == other.m_message_count &&
+      m_sub_device == other.m_sub_device &&
+      CommandClass() == other.CommandClass() &&
+      m_param_id == other.m_param_id &&
+      m_data_length == other.m_data_length) {
+    return 0 == memcmp(m_data, other.m_data, m_data_length);
+  }
+  return false;
 }
 
 
@@ -293,6 +312,58 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
       OLA_WARN << "Expected a RDM response command but got " << command_class;
       return NULL;
   }
+}
+
+
+// Helper functions follow
+/*
+ * Generate a NACK response with a reason code
+ */
+RDMResponse *NackWithReason(const RDMRequest *request,
+                            rdm_nack_reason reason_enum) {
+  uint16_t reason = ola::network::HostToNetwork(static_cast<uint16_t>(
+    reason_enum));
+  if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
+    return new ola::rdm::RDMGetResponse(
+      request->DestinationUID(),
+      request->SourceUID(),
+      request->TransactionNumber(),
+      NACK_REASON,
+      0,
+      request->SubDevice(),
+      request->ParamId(),
+      reinterpret_cast<uint8_t*>(&reason),
+      sizeof(reason));
+  } else  {
+    return new ola::rdm::RDMSetResponse(
+      request->DestinationUID(),
+      request->SourceUID(),
+      request->TransactionNumber(),
+      NACK_REASON,
+      0,
+      request->SubDevice(),
+      request->ParamId(),
+      reinterpret_cast<uint8_t*>(&reason),
+      sizeof(reason));
+  }
+}
+
+/*
+ * Generate a ACK Response with some data
+ */
+RDMResponse *GetResponseWithData(const RDMRequest *request,
+                                 const uint8_t *data,
+                                 unsigned int length) {
+  return new RDMGetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    data,
+    length);
 }
 }  // rdm
 }  //  ola
