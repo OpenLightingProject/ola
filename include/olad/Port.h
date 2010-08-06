@@ -206,7 +206,8 @@ class BasicOutputPort: public OutputPort {
     // rdm methods, the child class provides HandleRDMRequest and
     // RunRDMDiscovery
     virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
-    bool HandleRDMResponse(const ola::rdm::RDMResponse *response);
+    // This is virtual so that we can override it in unittests
+    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response);
     virtual void RunRDMDiscovery();
     virtual void NewUIDList(const ola::rdm::UIDSet &uids);
 

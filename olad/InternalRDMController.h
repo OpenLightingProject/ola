@@ -21,9 +21,9 @@
 #ifndef OLAD_INTERNALRDMCONTROLLER_H_
 #define OLAD_INTERNALRDMCONTROLLER_H_
 
+#include <deque>
 #include <map>
 #include <string>
-#include <vector>
 
 #include "ola/Callback.h"
 #include "ola/Clock.h"
@@ -36,6 +36,7 @@ namespace ola {
 
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
+using std::deque;
 
 typedef enum {
   RDM_RESPONSE_OK,
@@ -109,7 +110,7 @@ class InternalRDMController: public InternalInputPortResponseHandler {
     PortManager *m_port_manager;
     map<unsigned int, InternalInputPort*> m_input_ports;
     map<pair<unsigned int, const UID>, uint8_t> m_transaction_numbers;
-    map<unsigned int, vector<OutstandingRDMRequest*> > m_outstanding_requests;
+    map<unsigned int, deque<OutstandingRDMRequest*> > m_outstanding_requests;
     class ExportMap *m_export_map;
 
     static const char MISMATCHED_RDM_RESPONSE_VAR[];

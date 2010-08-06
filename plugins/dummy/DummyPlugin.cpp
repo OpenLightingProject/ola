@@ -79,7 +79,9 @@ string DummyPlugin::Description() const {
 "\n"
 "The plugin creates a single device with one port. "
 "When used as an output port it prints the first two bytes of dmx data to "
-"stdout.\n";
+"stdout.\n\n"
+"It also emulates a simple RDM device which can be querried and the DMX\n"
+"start address can be changed.\n";
 }
 }  // dummy
 }  // plugin

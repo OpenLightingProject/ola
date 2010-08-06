@@ -18,6 +18,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+#include <deque>
 #include <map>
 #include <string>
 #include <vector>
@@ -120,8 +121,8 @@ InternalRDMController::~InternalRDMController() {
   m_input_ports.clear();
 
   // delete out OutstandingRDMRequests
-  map<unsigned int, vector<OutstandingRDMRequest*> >::iterator iter;
-  vector<OutstandingRDMRequest*>::iterator request_iter;
+  map<unsigned int, deque<OutstandingRDMRequest*> >::iterator iter;
+  deque<OutstandingRDMRequest*>::iterator request_iter;
 
   rdm_response_data data = {RDM_RESPONSE_TIMED_OUT, NULL};
   for (iter = m_outstanding_requests.begin();
@@ -210,6 +211,13 @@ bool InternalRDMController::SendRDMRequest(
   // this has to be done before the request is deleted below
   OutstandingRDMRequest *outstanding_request =
     new OutstandingRDMRequest(request, callback);
+  // We need to push this on now, because HandleRDMResponse could be called
+  // immediately
+  deque<OutstandingRDMRequest*> &request_list =
+    m_outstanding_requests[universe->UniverseId()];
+  if (!destination.IsBroadcast())
+    request_list.push_back(outstanding_request);
+
   if (port_iter->second->HandleRDMRequest(request)) {
     if (destination.IsBroadcast()) {
       (*m_export_map->GetUIntMapVar(BROADCAST_RDM_REQUESTS_VAR))[
@@ -219,11 +227,11 @@ bool InternalRDMController::SendRDMRequest(
       delete outstanding_request;
       return true;
     } else {
-      m_outstanding_requests[universe->UniverseId()].push_back(
-        outstanding_request);
       return true;
     }
   }
+  // the request failed, remove it from the request queue
+  request_list.pop_back();
   (*m_export_map->GetUIntMapVar(FAILED_RDM_REQUESTS_VAR))[
     IntToString(universe->UniverseId())]++;
   delete outstanding_request;
@@ -239,7 +247,7 @@ bool InternalRDMController::HandleRDMResponse(
     const ola::rdm::RDMResponse *response) {
   // try to locate a match
   OutstandingRDMRequest *request = NULL;
-  map<unsigned int, vector<OutstandingRDMRequest*> >::iterator iter =
+  map<unsigned int, deque<OutstandingRDMRequest*> >::iterator iter =
     m_outstanding_requests.find(universe);
 
   if (iter == m_outstanding_requests.end()) {
@@ -249,7 +257,7 @@ bool InternalRDMController::HandleRDMResponse(
     return false;
   }
 
-  vector<OutstandingRDMRequest*>::iterator request_iter;
+  deque<OutstandingRDMRequest*>::iterator request_iter;
   for (request_iter = iter->second.begin();
        request_iter != iter->second.end(); ++request_iter) {
     if ((*request_iter)->Matches(response)) {
@@ -279,8 +287,8 @@ bool InternalRDMController::HandleRDMResponse(
  */
 void InternalRDMController::CheckTimeouts(const TimeStamp &now) {
   vector<pair<unsigned int, OutstandingRDMRequest*> > expired_requests;
-  map<unsigned int, vector<OutstandingRDMRequest*> >::iterator iter;
-  vector<OutstandingRDMRequest*>::iterator request_iter;
+  map<unsigned int, deque<OutstandingRDMRequest*> >::iterator iter;
+  deque<OutstandingRDMRequest*>::iterator request_iter;
   vector<pair<unsigned int, OutstandingRDMRequest*> >::iterator expired_iter;
 
   for (iter = m_outstanding_requests.begin();

@@ -23,6 +23,7 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/RDMEnums.h"
 #include "olad/Port.h"
 #include "plugins/dummy/DummyDevice.h"
 
@@ -33,13 +34,26 @@ namespace dummy {
 class DummyPort: public BasicOutputPort {
   public:
     DummyPort(DummyDevice *parent, unsigned int id):
-      BasicOutputPort(parent, id) {}
+      BasicOutputPort(parent, id, true),
+      m_start_address(1) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
+    void RunRDMDiscovery();
+    bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
 
   private:
+    bool HandleUnknownPacket(const ola::rdm::RDMRequest *request);
+    bool HandleSupportedParams(const ola::rdm::RDMRequest *request);
+    bool HandleDeviceInfo(const ola::rdm::RDMRequest *request);
+    bool HandleStringResponse(const ola::rdm::RDMRequest *request,
+                              const string &value);
+    bool HandleDmxStartAddress(const ola::rdm::RDMRequest *request);
+
+    uint16_t m_start_address;
     DmxBuffer m_buffer;
+
+    static const uint16_t DUMMY_DMX_FOOTPRINT = 10;
 };
 }  // dummy
 }  // plugin
