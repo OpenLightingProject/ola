@@ -370,16 +370,29 @@ RDMResponse *NackWithReason(const RDMRequest *request,
 RDMResponse *GetResponseWithData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length) {
-  return new RDMGetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    data,
-    length);
+  if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
+    return new RDMGetResponse(
+      request->DestinationUID(),
+      request->SourceUID(),
+      request->TransactionNumber(),
+      ACK,
+      0,
+      request->SubDevice(),
+      request->ParamId(),
+      data,
+      length);
+  } else {
+    return new RDMSetResponse(
+      request->DestinationUID(),
+      request->SourceUID(),
+      request->TransactionNumber(),
+      ACK,
+      0,
+      request->SubDevice(),
+      request->ParamId(),
+      data,
+      length);
+  }
 }
 }  // rdm
 }  //  ola

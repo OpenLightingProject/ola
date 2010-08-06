@@ -478,6 +478,33 @@ void RDMCommandTest::testGetResponseWithData() {
                        response->ParamDataSize());
   delete response;
 
+  RDMSetRequest set_command(source,
+                            destination,
+                            0,  // transaction #
+                            1,  // port id
+                            0,  // message count
+                            10,  // sub device
+                            296,  // param id
+                            NULL,  // data
+                            0);  // data length
+
+  response = GetResponseWithData(&set_command, NULL, 0);
+  CPPUNIT_ASSERT(response);
+  CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::ACK, response->ResponseType());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::SET_COMMAND_RESPONSE,
+                       response->CommandClass());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 296, response->ParamId());
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<uint8_t*>(NULL),
+                       response->ParamData());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0,
+                       response->ParamDataSize());
+  delete response;
+
   uint32_t data_value = 0xa5a5a5a5;
   response = GetResponseWithData(
       &get_command,
