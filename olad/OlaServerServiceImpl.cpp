@@ -528,7 +528,6 @@ void OlaServerServiceImpl::HandleRDMResponse(
     ola::proto::RDMResponse* response,
     google::protobuf::Closure* done,
     const rdm_response_data &status) {
-  OLA_WARN << "in handle RDM response";
 
   // check for time out errors
   if (status.status == RDM_RESPONSE_TIMED_OUT) {
