@@ -98,7 +98,7 @@ typedef enum {
   PID_SELF_TEST_DESCRIPTION = 0x1021,
   PID_CAPTURE_PRESET = 0x1030,
   PID_PRESET_PLAYBACK = 0x1031,
-} rdm_pids;
+} rdm_pid;
 
 
 typedef enum {
