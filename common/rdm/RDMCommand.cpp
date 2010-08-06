@@ -19,6 +19,7 @@
  */
 
 #include <string.h>
+#include <string>
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
@@ -84,6 +85,21 @@ bool RDMCommand::operator==(const RDMCommand &other) const {
     return 0 == memcmp(m_data, other.m_data, m_data_length);
   }
   return false;
+}
+
+
+std::string RDMCommand::ToString() const {
+  std::stringstream str;
+  str << m_source << " -> " << m_destination << ", Trans # " <<
+    static_cast<int>(m_transaction_number) << ", Port ID " <<
+    static_cast<int>(m_port_id) << ", Msg Cnt " <<
+    static_cast<int>(m_message_count) << ", SubDevice " << m_sub_device
+    << ", Cmd Class " << CommandClass() << ", Param ID " << m_param_id
+    << ", Data Len " << m_data_length;
+  str << ", Data ";
+  for (unsigned int i = 0 ; i < m_data_length; i++)
+    str << std::hex << std::setw(2) << static_cast<int>(m_data[i]) << " ";
+  return str.str();
 }
 
 

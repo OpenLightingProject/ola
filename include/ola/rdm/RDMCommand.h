@@ -24,6 +24,8 @@
 #include <stdint.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/UID.h>
+#include <sstream>
+#include <string>
 
 namespace ola {
 namespace rdm {
@@ -46,6 +48,12 @@ class RDMCommand {
 
     virtual ~RDMCommand();
     bool operator==(const RDMCommand &other) const;
+
+    std::string ToString() const;
+
+    friend ostream& operator<< (ostream &out, const RDMCommand &command) {
+      return out << command.ToString();
+    }
 
     // subclasses provide this
     virtual RDMCommandClass CommandClass() const = 0;
