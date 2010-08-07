@@ -1,4 +1,10 @@
-18/4/2010 ola-0.7.4
+7/8/2010 ola-0.8.0
+  Initial RDM support for the ArtNet, Dummy & DMX-TRI devices
+  New ArtNet stack to support RDM - no more dependency on libartnet
+  Support for packetheads DMX dongle
+  Make the FPS limit for USB Pro devices configurable
+
+20/5/2010 ola-0.7.4
   Fixed the python API
   Fixed the client deadlock issue
   Fixed the USBDMX2 firmware loading
