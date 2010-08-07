@@ -32,7 +32,7 @@ class RunLengthDecoder {
     RunLengthDecoder() {}
     ~RunLengthDecoder() {}
 
-    bool Decode(DmxBuffer *dst,
+    void Decode(DmxBuffer *dst,
                 const uint8_t *data,
                 unsigned int length);
   private:

@@ -31,7 +31,7 @@ namespace espnet {
  * @param src_data the data to decode
  * @param length the length of the data to decode
  */
-bool RunLengthDecoder::Decode(DmxBuffer *dst,
+void RunLengthDecoder::Decode(DmxBuffer *dst,
                               const uint8_t *src_data,
                               unsigned int length) {
   dst->Reset();
