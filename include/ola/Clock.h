@@ -90,7 +90,8 @@ class TimeInterval {
     }
 
     int64_t AsInt() const {
-      return (m_interval.tv_sec * USEC_IN_SECONDS + m_interval.tv_usec);
+      return (m_interval.tv_sec * static_cast<uint64_t>(USEC_IN_SECONDS) +
+              m_interval.tv_usec);
     }
 
     time_t Seconds() const {
