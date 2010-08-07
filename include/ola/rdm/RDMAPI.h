@@ -1034,10 +1034,40 @@ class RDMAPI {
         uint16_t pid,
         string *error);
 
-    bool CheckNotBroadcast(const UID &uid, string *error);
+    // Check that a UID is not a broadcast address
+    template <typename callback_type>
+    bool CheckNotBroadcast(const UID &uid, string *error,
+                           const callback_type *cb) {
+      if (uid.IsBroadcast()) {
+        if (error)
+          *error = "Cannot send to broadcast address";
+        delete cb;
+        return true;
+      }
+      return false;
+    }
+
+    // Check the subdevice value is valid
+    template <typename callback_type>
     bool CheckValidSubDevice(uint16_t sub_device,
                              bool broadcast_allowed,
-                             string *error);
+                             string *error,
+                             const callback_type *cb) {
+      if (sub_device <= 0x0200)
+        return false;
+
+      if (broadcast_allowed && sub_device == ALL_RDM_SUBDEVICES)
+        return false;
+
+      if (error) {
+        *error = "Sub device must be <= 0x0200";
+        if (broadcast_allowed)
+          *error += " or 0xffff";
+      }
+      delete cb;
+      return true;
+    }
+
     bool CheckReturnStatus(bool status, string *error);
     void SetIncorrectPDL(ResponseStatus *status,
                          unsigned int actual,
