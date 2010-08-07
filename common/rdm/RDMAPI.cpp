@@ -1875,6 +1875,70 @@ bool RDMAPI::SetPanTiltSwap(
 
 
 /*
+ * Get the clock value
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetClock(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const ClockValue&> *callback,
+    string *error) {
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleClock,
+    callback);
+  return CheckReturnStatus(
+      m_impl->RDMGet(cb,
+                     m_universe,
+                     uid,
+                     sub_device,
+                     PID_REAL_TIME_CLOCK),
+      error);
+}
+
+
+/*
+ * Set the clock value
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param clock, the new clock settings
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetClock(
+    const UID &uid,
+    uint16_t sub_device,
+    const ClockValue &clock,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  ClockValue clock_data;
+  memcpy(&clock_data, &clock, sizeof(clock_data));
+  clock_data.year = HostToNetwork(clock_data.year);
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+      m_impl->RDMSet(cb,
+                     m_universe,
+                     uid,
+                     sub_device,
+                     PID_REAL_TIME_CLOCK,
+                     reinterpret_cast<const uint8_t*>(&clock_data),
+                     sizeof(struct clock_value_s)),
+      error);
+}
+
+
+/*
  * Check the identify mode for a device
  * @param uid the UID to fetch the outstanding message count for
  * @param sub_device the sub device to use
@@ -2800,6 +2864,32 @@ void RDMAPI::_HandleSensorValue(
   }
   callback->Run(response_status, sensor);
 }
+
+
+/*
+ * Handle a REAL_TIME_CLOCK response
+ */
+void RDMAPI::_HandleClock(
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const ClockValue&> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+  ClockValue clock;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    unsigned int data_size = data.size();
+    if (data_size == sizeof(clock)) {
+      memcpy(&clock, data.data(), sizeof(clock));
+      clock.year = NetworkToHost(clock.year);
+    } else {
+      SetIncorrectPDL(&response_status, data.size(), sizeof(clock));
+    }
+  }
+  callback->Run(response_status, clock);
+}
+
 
 //-----------------------------------------------------------------------------
 // Private methods follow

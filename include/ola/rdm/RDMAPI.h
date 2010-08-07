@@ -192,6 +192,19 @@ struct sensor_values_s {
 
 typedef struct sensor_values_s SensorValueDescriptor;
 
+/*
+ * Clock structure
+ */
+struct clock_value_s {
+  uint16_t year;
+  uint8_t month;
+  uint8_t day;
+  uint8_t hour;
+  uint8_t minute;
+  uint8_t second;
+} __attribute__((packed));
+
+typedef struct clock_value_s ClockValue;
 
 /*
  * The interface for objects which deal with queued messages
@@ -286,6 +299,8 @@ class QueuedMessageHandler {
                              uint8_t inverted) = 0;
     virtual void IdentifyMode(const ResponseStatus &status,
                               bool mode) = 0;
+    virtual void Clock(const ResponseStatus&,
+                       const ClockValue &clock) = 0;
 
     // TODO(simon): add a default handler here
 };
@@ -750,6 +765,21 @@ class RDMAPI {
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 
+    bool GetClock(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const ClockValue&> *callback,
+        string *error);
+
+    bool SetClock(
+        const UID &uid,
+        uint16_t sub_device,
+        const ClockValue &clock,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
     bool GetIdentifyMode(
         const UID &uid,
         uint16_t sub_device,
@@ -957,6 +987,13 @@ class RDMAPI {
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const SensorValueDescriptor&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleClock(
+        SingleUseCallback2<void,
+                           const ResponseStatus&,
+                           const ClockValue&> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
