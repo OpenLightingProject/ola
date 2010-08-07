@@ -79,14 +79,14 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
       buffer[offset++] = (uint8_t) m_vector;
       break;
     case PDU::TWO_BYTES:
-      buffer[offset++] = 0xff & (m_vector >> 8);
-      buffer[offset++] = 0xff & m_vector;
+      buffer[offset++] = static_cast<uint8_t>(0xff & (m_vector >> 8));
+      buffer[offset++] = static_cast<uint8_t>(0xff & m_vector);
       break;
     case PDU::FOUR_BYTES:
-      buffer[offset++] = 0xff & (m_vector >> 24);
-      buffer[offset++] = 0xff & (m_vector >> 16);
-      buffer[offset++] = 0xff & (m_vector >> 8);
-      buffer[offset++] = 0xff & m_vector;
+      buffer[offset++] = static_cast<uint8_t>(0xff & (m_vector >> 24));
+      buffer[offset++] = static_cast<uint8_t>(0xff & (m_vector >> 16));
+      buffer[offset++] = static_cast<uint8_t>(0xff & (m_vector >> 8));
+      buffer[offset++] = static_cast<uint8_t>(0xff & m_vector);
       break;
     default:
       OLA_WARN << "unknown vector size " << m_vector_size;

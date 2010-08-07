@@ -71,7 +71,7 @@ class DMPGetProperty: public DMPPDU {
       m_addresses(addresses) {}
 
     unsigned int DataSize() const {
-      return (m_addresses.size() * m_header.Bytes() *
+      return static_cast<unsigned int>(m_addresses.size() * m_header.Bytes() *
               (m_header.Type() == NON_RANGE ? 1 : 3));
     }
 

@@ -56,9 +56,9 @@ unsigned int E131PDU::DataSize() const {
  * Pack the header portion.
  */
 bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
-  unsigned int header_size = m_header.UsingRev2() ?
+  unsigned int header_size = static_cast<unsigned int>(m_header.UsingRev2() ?
     sizeof(E131Rev2Header::e131_rev2_pdu_header) :
-    sizeof(E131Header::e131_pdu_header);
+    sizeof(E131Header::e131_pdu_header));
 
   if (length < header_size) {
     OLA_WARN << "E131PDU::PackHeader: buffer too small, got " << length <<
@@ -83,7 +83,7 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
     header.priority = m_header.Priority();
     header.reserved = 0;
     header.sequence = m_header.Sequence();
-    header.options = (
+    header.options = static_cast<uint8_t>(
         (m_header.PreviewData() ? E131Header::PREVIEW_DATA_MASK : 0) |
         (m_header.StreamTerminated() ? E131Header::STREAM_TERMINATED_MASK : 0));
     header.universe = HostToNetwork(m_header.Universe());
