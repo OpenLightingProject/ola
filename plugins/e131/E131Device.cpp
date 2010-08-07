@@ -160,6 +160,8 @@ void E131Device::HandlePreviewMode(Request *request, string *response) {
       InputPort *port = GetInputPort(port_id);
       if (port) {
         E131InputPort *e131_port = reinterpret_cast<E131InputPort*>(port);
+        // TODO(simon): figure out what to do here
+        (void) e131_port;
         // e131_port->SetPreviewMode(preview_mode);
       }
     } else {

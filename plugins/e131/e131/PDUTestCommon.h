@@ -49,8 +49,16 @@ class FakePDU: public PDU {
       length = sizeof(m_value);
       return true;
     }
-    bool PackHeader(uint8_t *data, unsigned int &length) const { return true; }
-    bool PackData(uint8_t *data, unsigned int &length) const { return true; }
+    bool PackHeader(uint8_t *data, unsigned int &length) const {
+      return true;
+      (void) data;
+      (void) length;
+    }
+    bool PackData(uint8_t *data, unsigned int &length) const {
+      return true;
+      (void) data;
+      (void) length;
+    }
 
   private:
     unsigned int m_value;
@@ -119,11 +127,13 @@ class MockInflator: public BaseInflator {
     void ResetHeaderField() {}
     bool DecodeHeader(HeaderSet &headers,
                       const uint8_t *data,
-                      unsigned int len,
+                      unsigned int length,
                       unsigned int &bytes_used) {
       bytes_used = 4;
       m_last_header = *((unsigned int*) data);
       return true;
+      (void) headers;
+      (void) length;
     }
 
     bool HandlePDUData(uint32_t vector, HeaderSet &headers,

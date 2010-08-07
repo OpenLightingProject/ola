@@ -34,6 +34,7 @@ namespace stageprofi {
 bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer,
                                     uint8_t priority) {
   return m_widget->SendDmx(buffer);
+  (void) priority;
 }
 }  // stageprofi
 }  // plugin

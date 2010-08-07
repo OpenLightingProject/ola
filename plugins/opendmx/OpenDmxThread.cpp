@@ -50,6 +50,7 @@ void *thread_run(void *d) {
   t_args *args = reinterpret_cast<t_args*>(d);
   args->th->Run(args->path);
   delete args;
+  return NULL;
 }
 
 /*
@@ -151,7 +152,6 @@ int OpenDmxThread::Start(const string &path) {
 
 /*
  * Stop the thread
- *
  */
 int OpenDmxThread::Stop() {
   pthread_mutex_lock(&m_term_mutex);
@@ -160,8 +160,8 @@ int OpenDmxThread::Stop() {
 
   pthread_cond_signal(&m_term_cond);
   pthread_join(m_tid, NULL);
+  return 0;
 }
-
 
 
 /*

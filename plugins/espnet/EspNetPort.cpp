@@ -80,6 +80,7 @@ bool EspNetOutputPort::WriteDMX(const DmxBuffer &buffer,
   if (!m_node->SendDMX(m_helper.EspNetUniverseId(GetUniverse()), buffer))
     return false;
   return true;
+  (void) priority;
 }
 }  // espnet
 }  // plugin

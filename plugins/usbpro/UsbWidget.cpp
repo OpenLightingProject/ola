@@ -86,7 +86,7 @@ bool UsbWidget::SendMessage(uint8_t label,
     return false;
 
   if (length) {
-    ssize_t bytes_sent = m_socket->Send(data, length);
+    unsigned int bytes_sent = m_socket->Send(data, length);
     if (bytes_sent != length)
       // we've probably screwed framing at this point
       return false;

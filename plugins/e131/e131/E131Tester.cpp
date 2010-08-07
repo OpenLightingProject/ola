@@ -31,4 +31,6 @@ int main(int argc, char* argv[]) {
       new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
   bool wasSucessful = runner.run();
   return wasSucessful ? 0 : 1;
+  (void) argc;
+  (void) argv;
 }

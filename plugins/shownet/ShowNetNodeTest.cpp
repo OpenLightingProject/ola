@@ -79,6 +79,7 @@ void ShowNetNodeTest::tearDown() {
  */
 void ShowNetNodeTest::UpdateData(unsigned int universe) {
   m_hander_called = true;
+  (void) universe;
 }
 
 
@@ -87,7 +88,6 @@ void ShowNetNodeTest::UpdateData(unsigned int universe) {
  */
 void ShowNetNodeTest::testHandlePacket() {
   unsigned int universe = 0;
-  unsigned int size;
   shownet_data_packet packet;
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
   const uint8_t ENCODED_DATA[] = {4, 1, 2, 4, 3};
@@ -181,7 +181,6 @@ void ShowNetNodeTest::testHandlePacket() {
  * Check the packet construction code
  */
 void ShowNetNodeTest::testPopulatePacket() {
-  const uint32_t IP = 0;
   const string NAME = "foobarbaz";
   const string DMX_DATA = "abc";
 

@@ -108,9 +108,6 @@ void DMPAddressTest::checkAddress(
  * Test that addresses work.
  */
 void DMPAddressTest::testAddress() {
-  uint32_t temp = 0;
-  unsigned int length = sizeof(temp);
-
   OneByteDMPAddress addr1(10);
   checkAddress(&addr1, 10, 0, 1, 1, ONE_BYTES, false);
   TwoByteDMPAddress addr2(1024);

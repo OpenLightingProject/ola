@@ -139,9 +139,10 @@ bool ShowNetNode::SendDMX(unsigned int universe,
 
   shownet_data_packet packet;
   unsigned int size = PopulatePacket(&packet, universe, buffer);
-  ssize_t bytes_sent = m_socket->SendTo(reinterpret_cast<uint8_t*>(&packet),
-                                        size,
-                                        m_destination);
+  unsigned int bytes_sent = m_socket->SendTo(
+      reinterpret_cast<uint8_t*>(&packet),
+      size,
+      m_destination);
 
   if (bytes_sent != size) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;

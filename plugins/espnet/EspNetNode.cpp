@@ -285,6 +285,8 @@ void EspNetNode::HandleReply(const espnet_poll_reply_t &reply,
   }
 
   // TODO(simon): Call a handler here
+  (void) reply;
+  (void) source;
 }
 
 
@@ -299,6 +301,9 @@ void EspNetNode::HandleAck(const espnet_ack_t &ack,
       sizeof(espnet_ack_t);
     return;
   }
+
+  (void) ack;
+  (void) source;
 }
 
 
@@ -342,6 +347,7 @@ void EspNetNode::HandleData(const espnet_data_t &data,
       return;
   }
   iter->second.closure->Run();
+  (void) source;
 }
 
 

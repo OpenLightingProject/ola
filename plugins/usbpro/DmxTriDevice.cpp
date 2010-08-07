@@ -568,6 +568,10 @@ void DmxTriDevice::HandleQueuedGetResponse(uint8_t return_code,
                                            const uint8_t *data,
                                            unsigned int length) {
   OLA_INFO << "got queued message response";
+  // TODO(simon): implement this
+  (void) return_code;
+  (void) data;
+  (void) length;
 }
 
 

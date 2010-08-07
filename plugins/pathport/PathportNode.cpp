@@ -161,7 +161,7 @@ void PathportNode::SocketReady(UdpSocket *socket) {
   pathport_packet_pdu *pdu =
     reinterpret_cast<pathport_packet_pdu*>(packet.data);
 
-  if (packet_size < sizeof(pathport_pdu_header)) {
+  if (packet_size < static_cast<ssize_t>(sizeof(pathport_pdu_header))) {
     OLA_WARN << "Pathport packet too small to fit a pdu header";
     return;
   }

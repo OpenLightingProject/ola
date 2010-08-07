@@ -67,6 +67,7 @@ static void sig_segv(int signo) {
   cout << "Recieved SIGSEGV or SIGBUS" << endl;
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   exit(1);
+  (void) signo;
 }
 
 /*

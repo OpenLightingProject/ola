@@ -52,6 +52,7 @@ class PathportInputPort: public BasicInputPort {
     const DmxBuffer &ReadDMX() const { return m_buffer; }
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
       return m_helper.PreSetUniverse(new_universe);
+      (void) old_universe;
     }
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
@@ -76,6 +77,7 @@ class PathportOutputPort: public BasicOutputPort {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     bool PreSetUniverse(Universe *old_universe, Universe *new_universe) {
       return m_helper.PreSetUniverse(new_universe);
+      (void) old_universe;
     }
 
   private:

@@ -80,6 +80,7 @@ bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer,
   if (GetUniverse())
     return m_node->SendDMX(GetUniverse()->UniverseId(), buffer);
   return true;
+  (void) priority;
 }
 }  // pathport
 }  // plugin

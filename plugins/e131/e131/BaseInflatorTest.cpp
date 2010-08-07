@@ -63,10 +63,13 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
     void ResetHeaderField() {}
     bool DecodeHeader(HeaderSet &headers,
                      const uint8_t *data,
-                     unsigned int len,
+                     unsigned int length,
                      unsigned int &bytes_used) {
       bytes_used = 0;
       return true;
+      (void) headers;
+      (void) data;
+      (void) length;
     }
 
     bool HandlePDUData(uint32_t vector, HeaderSet &headers,
@@ -76,6 +79,7 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
       CPPUNIT_ASSERT(!memcmp(data, PDU_DATA, pdu_length));
       m_blocks_handled++;
       return true;
+      (void) headers;
     }
 
   private:

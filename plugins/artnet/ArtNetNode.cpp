@@ -1103,7 +1103,7 @@ bool ArtNetNode::SendPacket(const artnet_packet &packet,
   destination.sin_addr = ip_destination;
 
   size += sizeof(packet.id) + sizeof(packet.op_code);
-  ssize_t bytes_sent = m_socket->SendTo(
+  unsigned int bytes_sent = m_socket->SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
       size,
       destination);
