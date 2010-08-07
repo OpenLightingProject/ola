@@ -127,6 +127,8 @@ void TestServiceImpl::Stream(::google::protobuf::RpcController* controller,
   CPPUNIT_ASSERT(!controller);
   CPPUNIT_ASSERT(!response);
   CPPUNIT_ASSERT(!done);
+  CPPUNIT_ASSERT(request);
+  CPPUNIT_ASSERT_EQUAL(string("foo"), request->data());
   m_ss->Terminate();
 }
 
