@@ -69,6 +69,8 @@ bool ConnectedSocket::SetNoSigPipe(int fd) {
       strerror(errno);
     return false;
   }
+  #else
+    (void) fd;
   #endif
   return true;
 }
