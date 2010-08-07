@@ -52,6 +52,7 @@ class OpenDmxOutputPort: public BasicOutputPort {
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       return m_thread.WriteDmx(buffer);
+      (void) priority;
     }
 
   private:
