@@ -171,7 +171,7 @@ const RDMCommand::rdm_command_message* RDMCommand::VerifyData(
   const rdm_command_message *command_message = (
       reinterpret_cast<const rdm_command_message*>(data));
 
-  uint8_t message_length = command_message->message_length;
+  unsigned int message_length = command_message->message_length;
 
   if (length < message_length + 1) {
     OLA_WARN << "RDM message is too small, needs to be " <<

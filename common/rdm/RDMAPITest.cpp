@@ -94,6 +94,9 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
       CPPUNIT_ASSERT_EQUAL(result->sub_device, sub_device);
       CPPUNIT_ASSERT_EQUAL(result->pid, pid);
 
+      (void) data;
+      (void) data_length;
+
       RDMAPIImplResponseStatus status;
       status.was_broadcast = uid.IsBroadcast();
       status.response_type = ola::rdm::ACK;
