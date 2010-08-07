@@ -388,9 +388,15 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RDMAPITest);
 void RDMAPITest::testProxyCommands() {
   string error;
   // get proxied device count
-  CPPUNIT_ASSERT(!m_api.GetProxiedDeviceCount(m_bcast_uid, NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetProxiedDeviceCount(
+    m_bcast_uid,
+    NewSingleCallback(this, &RDMAPITest::CheckProxiedDeviceCount),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetProxiedDeviceCount(m_group_uid, NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetProxiedDeviceCount(
+    m_group_uid,
+    NewSingleCallback(this, &RDMAPITest::CheckProxiedDeviceCount),
+    &error));
   CheckForBroadcastError(&error);
 
   struct {
@@ -411,9 +417,15 @@ void RDMAPITest::testProxyCommands() {
     &error));
 
   // get proxied devices
-  CPPUNIT_ASSERT(!m_api.GetProxiedDevices(m_bcast_uid, NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetProxiedDevices(
+    m_bcast_uid,
+    NewSingleCallback(this, &RDMAPITest::CheckProxiedDevices),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetProxiedDevices(m_group_uid, NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetProxiedDevices(
+    m_bcast_uid,
+    NewSingleCallback(this, &RDMAPITest::CheckProxiedDevices),
+    &error));
   CheckForBroadcastError(&error);
 
   struct {
@@ -441,9 +453,15 @@ void RDMAPITest::testProxyCommands() {
 void RDMAPITest::testNetworkCommands() {
   string error;
   // get comms status
-  CPPUNIT_ASSERT(!m_api.GetCommStatus(m_bcast_uid, NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetCommStatus(
+    m_group_uid,
+    NewSingleCallback(this, &RDMAPITest::CheckCommsStatus),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetCommStatus(m_group_uid, NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetCommStatus(
+    m_group_uid,
+    NewSingleCallback(this, &RDMAPITest::CheckCommsStatus),
+    &error));
   CheckForBroadcastError(&error);
 
   struct {
@@ -488,11 +506,17 @@ void RDMAPITest::testNetworkCommands() {
 
   // status id description
   uint16_t status_id = 12;
-  CPPUNIT_ASSERT(!m_api.GetStatusIdDescription(m_bcast_uid, status_id, NULL,
-                                               &error));
+  CPPUNIT_ASSERT(!m_api.GetStatusIdDescription(
+    m_bcast_uid,
+    status_id,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetStatusIdDescription(m_group_uid, status_id, NULL,
-                                               &error));
+  CPPUNIT_ASSERT(!m_api.GetStatusIdDescription(
+    m_bcast_uid,
+    status_id,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
 
   m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
@@ -546,11 +570,17 @@ void RDMAPITest::testRDMInformation() {
   pid_list.param2 = HostToNetwork(static_cast<uint16_t>(0xabcd));
   pid_list.param3 = HostToNetwork(static_cast<uint16_t>(0x00aa));
   uint16_t sub_device = 1;
-  CPPUNIT_ASSERT(!m_api.GetSupportedParameters(m_bcast_uid, sub_device, NULL,
-                                               &error));
+  CPPUNIT_ASSERT(!m_api.GetSupportedParameters(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckSupportedParams),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetSupportedParameters(m_group_uid, sub_device, NULL,
-                                                &error));
+  CPPUNIT_ASSERT(!m_api.GetSupportedParameters(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckSupportedParams),
+    &error));
   CheckForBroadcastError(&error);
   string s(reinterpret_cast<char*>(&pid_list), sizeof(pid_list));
   m_impl.AddExpectedGet(s,
@@ -566,11 +596,17 @@ void RDMAPITest::testRDMInformation() {
 
   // parameter description
   uint16_t pid = 16;
-  CPPUNIT_ASSERT(!m_api.GetParameterDescription(m_bcast_uid, pid, NULL,
-                                                &error));
+  CPPUNIT_ASSERT(!m_api.GetParameterDescription(
+    m_bcast_uid,
+    pid,
+    NewSingleCallback(this, &RDMAPITest::CheckMalformedParameterDescription),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetParameterDescription(m_group_uid, pid, NULL,
-                                                &error));
+  CPPUNIT_ASSERT(!m_api.GetParameterDescription(
+    m_bcast_uid,
+    pid,
+    NewSingleCallback(this, &RDMAPITest::CheckMalformedParameterDescription),
+    &error));
   CheckForBroadcastError(&error);
 
   s = "";
@@ -660,9 +696,17 @@ void RDMAPITest::testProductInformation() {
   device_info.sub_device_count = HostToNetwork(static_cast<uint16_t>(10));
   device_info.sensor_count = 4;
 
-  CPPUNIT_ASSERT(!m_api.GetDeviceInfo(m_bcast_uid, sub_device, NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetDeviceInfo(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckDeviceInfo),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetDeviceInfo(m_group_uid, sub_device, NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetDeviceInfo(
+    m_group_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckDeviceInfo),
+    &error));
   CheckForBroadcastError(&error);
   string s(reinterpret_cast<char*>(&device_info), sizeof(device_info));
   m_impl.AddExpectedGet(s,
@@ -685,11 +729,17 @@ void RDMAPITest::testProductInformation() {
   detail_list.detail1 = HostToNetwork(static_cast<uint16_t>(0x5678));
   detail_list.detail2 = HostToNetwork(static_cast<uint16_t>(0xfedc));
   detail_list.detail3 = HostToNetwork(static_cast<uint16_t>(0xaa00));
-  CPPUNIT_ASSERT(!m_api.GetProductDetailIdList(m_bcast_uid, sub_device, NULL,
-                                               &error));
+  CPPUNIT_ASSERT(!m_api.GetProductDetailIdList(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckProductDetailList),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetProductDetailIdList(m_group_uid, sub_device, NULL,
-                                               &error));
+  CPPUNIT_ASSERT(!m_api.GetProductDetailIdList(
+    m_group_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckProductDetailList),
+    &error));
   CheckForBroadcastError(&error);
   string s2(reinterpret_cast<char*>(&detail_list), sizeof(detail_list));
   m_impl.AddExpectedGet(s2,
@@ -704,11 +754,17 @@ void RDMAPITest::testProductInformation() {
     &error));
 
   // device model description
-  CPPUNIT_ASSERT(!m_api.GetDeviceModelDescription(m_bcast_uid, sub_device,
-                                                  NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetDeviceModelDescription(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetDeviceModelDescription(m_group_uid, sub_device,
-                                                  NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetDeviceModelDescription(
+    m_group_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
 
   m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
@@ -723,11 +779,17 @@ void RDMAPITest::testProductInformation() {
     &error));
 
   // manufacturer label
-  CPPUNIT_ASSERT(!m_api.GetManufacturerLabel(m_bcast_uid, sub_device,
-                                             NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetManufacturerLabel(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetManufacturerLabel(m_group_uid, sub_device,
-                                             NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetManufacturerLabel(
+    m_group_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
 
   m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
@@ -742,11 +804,17 @@ void RDMAPITest::testProductInformation() {
     &error));
 
   // get device label
-  CPPUNIT_ASSERT(!m_api.GetDeviceLabel(m_bcast_uid, sub_device,
-                                       NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetDeviceLabel(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetDeviceLabel(m_group_uid, sub_device,
-                                       NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetDeviceLabel(
+    m_group_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
 
   m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
@@ -809,11 +877,17 @@ void RDMAPITest::testProductInformation() {
   CheckForDeviceRangeBcastError(&error);
 
   // software version label
-  CPPUNIT_ASSERT(!m_api.GetSoftwareVersionLabel(m_bcast_uid, sub_device,
-                                                NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetSoftwareVersionLabel(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetSoftwareVersionLabel(m_group_uid, sub_device,
-                                                NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetSoftwareVersionLabel(
+    m_group_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
 
   m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
@@ -828,11 +902,17 @@ void RDMAPITest::testProductInformation() {
     &error));
 
   // Boot software label
-  CPPUNIT_ASSERT(!m_api.GetBootSoftwareVersionLabel(m_bcast_uid, sub_device,
-                                                NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetBootSoftwareVersionLabel(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetBootSoftwareVersionLabel(m_group_uid, sub_device,
-                                                NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetBootSoftwareVersionLabel(
+    m_group_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckLabel),
+    &error));
   CheckForBroadcastError(&error);
 
   m_impl.AddExpectedGet(string(TEST_DESCRIPTION),
@@ -855,11 +935,17 @@ void RDMAPITest::testDmxSetup() {
   uint16_t sub_device = 1;
 
   // Check get start address
-  CPPUNIT_ASSERT(!m_api.GetDMXAddress(m_bcast_uid, sub_device,
-                                      NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetDMXAddress(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckDMXStartAddress),
+    &error));
   CheckForBroadcastError(&error);
-  CPPUNIT_ASSERT(!m_api.GetDMXAddress(m_group_uid, sub_device,
-                                      NULL, &error));
+  CPPUNIT_ASSERT(!m_api.GetDMXAddress(
+    m_bcast_uid,
+    sub_device,
+    NewSingleCallback(this, &RDMAPITest::CheckDMXStartAddress),
+    &error));
   CheckForBroadcastError(&error);
 
   uint16_t start_address = HostToNetwork(static_cast<uint16_t>(44));

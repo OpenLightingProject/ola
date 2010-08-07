@@ -1034,6 +1034,17 @@ class RDMAPI {
         uint16_t pid,
         string *error);
 
+    // Check that a callback is not null
+    template <typename callback_type>
+    bool CheckCallback(string *error, const callback_type *cb) {
+      if (cb == NULL) {
+        if (error)
+          *error = "Callback is null, this is a programming error";
+        return true;
+      }
+      return false;
+    }
+
     // Check that a UID is not a broadcast address
     template <typename callback_type>
     bool CheckNotBroadcast(const UID &uid, string *error,

@@ -99,6 +99,8 @@ bool RDMAPI::GetProxiedDeviceCount(
                        uint16_t,
                        bool> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
 
@@ -129,6 +131,8 @@ bool RDMAPI::GetProxiedDevices(
                        const ResponseStatus&,
                        const vector<UID>&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
 
@@ -161,6 +165,8 @@ bool RDMAPI::GetCommStatus(
                        uint16_t,
                        uint16_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
 
@@ -189,6 +195,8 @@ bool RDMAPI::ClearCommStatus(
     const UID &uid,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
     &RDMAPI::_HandleEmptyResponse,
@@ -218,6 +226,8 @@ bool RDMAPI::GetStatusMessage(
                      const ResponseStatus&,
                      const vector<StatusMessage>&> *callback,
   string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
 
@@ -250,6 +260,8 @@ bool RDMAPI::GetStatusIdDescription(
     uint16_t status_id,
     SingleUseCallback2<void, const ResponseStatus&, const string&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
 
@@ -283,6 +295,8 @@ bool RDMAPI::ClearStatusId(
     uint16_t sub_device,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
@@ -315,6 +329,8 @@ bool RDMAPI::GetSubDeviceReporting(
                        const ResponseStatus&,
                        uint8_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -349,6 +365,8 @@ bool RDMAPI::SetSubDeviceReporting(
     rdm_status_type status_type,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
@@ -386,6 +404,8 @@ bool RDMAPI::GetSupportedParameters(
                        const ResponseStatus&,
                        const vector<uint16_t>&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -418,6 +438,8 @@ bool RDMAPI::GetParameterDescription(
                        const ResponseStatus&,
                        const ParameterDescriptor&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
 
@@ -452,7 +474,9 @@ bool RDMAPI::GetDeviceInfo(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const DeviceDescriptor&> *callback,
-  string *error) {
+    string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -487,6 +511,8 @@ bool RDMAPI::GetProductDetailIdList(
                        const ResponseStatus&,
                        const vector<uint16_t>&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -521,6 +547,8 @@ bool RDMAPI::GetDeviceModelDescription(
                        const ResponseStatus&,
                        const string&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -555,6 +583,8 @@ bool RDMAPI::GetManufacturerLabel(
                        const ResponseStatus&,
                        const string&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -589,6 +619,8 @@ bool RDMAPI::GetDeviceLabel(
                        const ResponseStatus&,
                        const string&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -622,6 +654,8 @@ bool RDMAPI::SetDeviceLabel(
     const string &label,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   // It doesn't really make sense to broadcast this but allow it anyway
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
@@ -657,6 +691,8 @@ bool RDMAPI::GetFactoryDefaults(
                        const ResponseStatus&,
                        bool> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -689,6 +725,8 @@ bool RDMAPI::ResetToFactoryDefaults(
     uint16_t sub_device,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
@@ -723,6 +761,8 @@ bool RDMAPI::GetLanguageCapabilities(
                        const ResponseStatus&,
                        const vector<string>&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -757,6 +797,8 @@ bool RDMAPI::GetLanguage(
                        const ResponseStatus&,
                        const string&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -792,6 +834,8 @@ bool RDMAPI::SetLanguage(
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
   static const unsigned int DATA_SIZE = 2;
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
@@ -833,6 +877,8 @@ bool RDMAPI::GetSoftwareVersionLabel(
                        const ResponseStatus&,
                        const string&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -867,6 +913,8 @@ bool RDMAPI::GetBootSoftwareVersion(
                        const ResponseStatus&,
                        uint32_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -901,6 +949,8 @@ bool RDMAPI::GetBootSoftwareVersionLabel(
                        const ResponseStatus&,
                        const string&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -936,6 +986,8 @@ bool RDMAPI::GetDMXPersonality(
                        uint8_t,
                        uint8_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -970,6 +1022,8 @@ bool RDMAPI::SetDMXPersonality(
     uint8_t personality,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
@@ -1010,6 +1064,8 @@ bool RDMAPI::GetDMXPersonalityDescription(
                        uint16_t,
                        const string&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -1046,6 +1102,8 @@ bool RDMAPI::GetDMXAddress(
                        const ResponseStatus&,
                        uint16_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -1080,6 +1138,8 @@ bool RDMAPI::SetDMXAddress(
     uint16_t start_address,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
@@ -1115,6 +1175,8 @@ bool RDMAPI::GetSlotInfo(
                        const ResponseStatus&,
                        const vector<SlotDescriptor>&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -1152,6 +1214,8 @@ bool RDMAPI::GetSlotDescription(
                        uint16_t,
                        const string&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -1189,6 +1253,8 @@ bool RDMAPI::GetSlotDefaultValues(
                        const ResponseStatus&,
                        const vector<SlotDefault>&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -1225,6 +1291,8 @@ bool RDMAPI::GetSensorDefinition(
                        const ResponseStatus&,
                        const SensorDescriptor&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -1263,6 +1331,8 @@ bool RDMAPI::GetSensorValue(
                        const ResponseStatus&,
                        const SensorValueDescriptor&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -1301,6 +1371,8 @@ bool RDMAPI::SetSensorValue(
                        const ResponseStatus&,
                        const SensorValueDescriptor&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
@@ -1335,6 +1407,8 @@ bool RDMAPI::RecordSensors(
     uint8_t sensor_number,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
@@ -1367,6 +1441,8 @@ bool RDMAPI::GetDeviceHours(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU32(
       uid,
       sub_device,
@@ -1391,6 +1467,8 @@ bool RDMAPI::SetDeviceHours(
     uint32_t device_hours,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU32(
       uid,
       sub_device,
@@ -1414,6 +1492,8 @@ bool RDMAPI::GetLampHours(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU32(
       uid,
       sub_device,
@@ -1438,6 +1518,8 @@ bool RDMAPI::SetLampHours(
     uint32_t lamp_hours,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU32(
       uid,
       sub_device,
@@ -1461,6 +1543,8 @@ bool RDMAPI::GetLampStrikes(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU32(
       uid,
       sub_device,
@@ -1485,6 +1569,8 @@ bool RDMAPI::SetLampStrikes(
     uint32_t lamp_strikes,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU32(
       uid,
       sub_device,
@@ -1508,6 +1594,8 @@ bool RDMAPI::GetLampState(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU8(
       uid,
       sub_device,
@@ -1532,6 +1620,8 @@ bool RDMAPI::SetLampState(
     uint8_t lamp_state,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU8(
       uid,
       sub_device,
@@ -1555,6 +1645,8 @@ bool RDMAPI::GetLampMode(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU8(
       uid,
       sub_device,
@@ -1579,6 +1671,8 @@ bool RDMAPI::SetLampMode(
     uint8_t lamp_mode,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU8(
       uid,
       sub_device,
@@ -1602,6 +1696,8 @@ bool RDMAPI::GetDevicePowerCycles(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU32(
       uid,
       sub_device,
@@ -1626,6 +1722,8 @@ bool RDMAPI::SetDevicePowerCycles(
     uint32_t power_cycles,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU32(
       uid,
       sub_device,
@@ -1649,6 +1747,8 @@ bool RDMAPI::GetDisplayInvert(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU8(
       uid,
       sub_device,
@@ -1673,6 +1773,8 @@ bool RDMAPI::SetDisplayInvert(
     uint8_t display_invert,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU8(
       uid,
       sub_device,
@@ -1696,6 +1798,8 @@ bool RDMAPI::GetDisplayLevel(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU8(
       uid,
       sub_device,
@@ -1720,6 +1824,8 @@ bool RDMAPI::SetDisplayLevel(
     uint8_t display_level,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU8(
       uid,
       sub_device,
@@ -1743,6 +1849,8 @@ bool RDMAPI::GetPanInvert(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU8(
       uid,
       sub_device,
@@ -1767,6 +1875,8 @@ bool RDMAPI::SetPanInvert(
     uint8_t invert,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU8(
       uid,
       sub_device,
@@ -1790,6 +1900,8 @@ bool RDMAPI::GetTiltInvert(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU8(
       uid,
       sub_device,
@@ -1814,6 +1926,8 @@ bool RDMAPI::SetTiltInvert(
     uint8_t invert,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU8(
       uid,
       sub_device,
@@ -1837,6 +1951,8 @@ bool RDMAPI::GetPanTiltSwap(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericGetU8(
       uid,
       sub_device,
@@ -1861,6 +1977,8 @@ bool RDMAPI::SetPanTiltSwap(
     uint8_t swap,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   return GenericSetU8(
       uid,
       sub_device,
@@ -1886,6 +2004,8 @@ bool RDMAPI::GetClock(
                        const ResponseStatus&,
                        const ClockValue&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
     &RDMAPI::_HandleClock,
@@ -1915,6 +2035,8 @@ bool RDMAPI::SetClock(
     const ClockValue &clock,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   ClockValue clock_data;
   memcpy(&clock_data, &clock, sizeof(clock_data));
   clock_data.year = HostToNetwork(clock_data.year);
@@ -1948,6 +2070,8 @@ bool RDMAPI::GetIdentifyMode(
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckNotBroadcast(uid, error, callback))
     return false;
   if (CheckValidSubDevice(sub_device, false, error, callback))
@@ -1982,6 +2106,8 @@ bool RDMAPI::IdentifyDevice(
     bool mode,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
@@ -2017,6 +2143,8 @@ bool RDMAPI::ResetDevice(
     bool warm_reset,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
+  if (CheckCallback(error, callback))
+    return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
