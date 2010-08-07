@@ -66,8 +66,8 @@ bool StateManager::Init() {
           ola::NewClosure(this, &StateManager::NewDMX)));
   }
 
-  m_node1 = new E131Node("", m_cid1, false, true, 5567);
-  m_node2 = new E131Node("", m_cid2, false, true, 5569);
+  m_node1 = new E131Node("", m_cid1, false, true, 0, 5567);
+  m_node2 = new E131Node("", m_cid2, false, true, 0, 5569);
   assert(m_node1->Start());
   assert(m_node2->Start());
   assert(m_ss->AddSocket(m_node1->GetSocket()));

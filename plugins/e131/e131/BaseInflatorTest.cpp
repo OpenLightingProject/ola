@@ -323,7 +323,7 @@ void BaseInflatorTest::testInflatePDUBlock() {
   uint8_t *data = new uint8_t[data_size];
   // setup the vector
   data[0] = PDU::VFLAG_MASK;
-  data[1] = data_size;
+  data[1] = static_cast<uint8_t>(data_size);
   data[2] = 0x01;
   data[3] = 0x21;
   memcpy(data + length_size + PDU::TWO_BYTES, PDU_DATA,
@@ -336,14 +336,14 @@ void BaseInflatorTest::testInflatePDUBlock() {
   // inflate a multi-pdu block
   data = new uint8_t[2 * data_size];
   data[0] = PDU::VFLAG_MASK;
-  data[1] = data_size;
+  data[1] = static_cast<uint8_t>(data_size);
   data[2] = 0x01;
   data[3] = 0x21;
   memcpy(data + length_size + PDU::TWO_BYTES,
          PDU_DATA,
          sizeof(PDU_DATA));
   data[data_size] = PDU::VFLAG_MASK;
-  data[data_size + 1] = data_size;
+  data[data_size + 1] = static_cast<uint8_t>(data_size);
   data[data_size + 2] = 0x01;
   data[data_size + 3] = 0x21;
   memcpy(data + data_size + length_size + PDU::TWO_BYTES, PDU_DATA,
@@ -361,11 +361,11 @@ void BaseInflatorTest::testInflatePDUBlock() {
   data = new uint8_t[pdu_size];
 
   data[0] = PDU::VFLAG_MASK;
-  data[1] = pdu_size;
+  data[1] = static_cast<uint8_t>(pdu_size);
   data[2] = 0x01;
   data[3] = 0x21;
   data[4] = PDU::VFLAG_MASK;
-  data[5] = data_size;
+  data[5] = static_cast<uint8_t>(data_size);
   data[6] = 0x01;
   data[7] = 0x21;
   memcpy(data + 2 * (length_size + PDU::TWO_BYTES),

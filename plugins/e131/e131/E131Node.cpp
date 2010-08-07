@@ -193,7 +193,7 @@ bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
 
   E131Header header(settings->source,
                     priority,
-                    settings->sequence + sequence_offset,
+                    static_cast<uint8_t>(settings->sequence + sequence_offset),
                     universe,
                     preview,  // preview
                     false,  // terminated

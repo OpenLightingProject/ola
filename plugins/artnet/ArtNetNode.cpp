@@ -869,7 +869,7 @@ void ArtNetNode::HandleDataPacket(const IPAddress &source_address,
 
   uint16_t universe_id = LittleEndianToHost(packet.universe);
   uint16_t data_size = std::min(
-      (unsigned int) (packet.length[0] << 8 + packet.length[1]),
+      (unsigned int) ((packet.length[0] << 8) + packet.length[1]),
       packet_size - header_size);
 
   for (unsigned int port_id = 0; port_id < ARTNET_MAX_PORTS; port_id++) {

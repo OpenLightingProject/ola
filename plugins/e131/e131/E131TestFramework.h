@@ -288,7 +288,8 @@ class NodeVarySequenceNumber: public NodeAction {
         DmxBuffer output;
         output.SetRangeToValue(0, m_bad, DMX_UNIVERSE_SIZE);
         int offset = 1 + (rand() / (RAND_MAX / 18));
-        m_node->SendDMXWithSequenceOffset(UNIVERSE_ID, output, -offset);
+        m_node->SendDMXWithSequenceOffset(UNIVERSE_ID, output,
+                                          static_cast<int8_t>(-offset));
       }
       m_counter++;
     }

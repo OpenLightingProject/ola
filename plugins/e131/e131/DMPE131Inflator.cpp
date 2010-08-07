@@ -300,7 +300,8 @@ bool DMPE131Inflator::TrackSourceIfRequired(
 
   } else {
     // We already know about this one, check the seq #
-    int8_t seq_diff = e131_header.Sequence() - iter->sequence;
+    int8_t seq_diff = static_cast<uint8_t>(e131_header.Sequence() -
+                                           iter->sequence);
     if (seq_diff <= 0 && seq_diff > SEQUENCE_DIFF_THRESHOLD) {
       OLA_INFO << "Old packet received, ignoring, this # " <<
         static_cast<int>(e131_header.Sequence()) << ", last " <<
