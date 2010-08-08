@@ -418,6 +418,16 @@ class RDMController {
                         const vector<string> &args,
                         string *error);
 
+    bool GetClock(const UID &uid,
+                  uint16_t sub_device,
+                  const vector<string> &args,
+                  string *error);
+
+    bool SetClock(const UID &uid,
+                  uint16_t sub_device,
+                  const vector<string> &args,
+                  string *error);
+
     bool GetIdentifyMode(const UID &uid,
                          uint16_t sub_device,
                          const vector<string> &args,
@@ -446,6 +456,5 @@ class RDMController {
     bool StringToOnOffAuto(const string &arg, uint8_t *mode);
     bool StringToOnOff(const string &arg, uint8_t *mode);
     bool StringToWarmCold(const string &arg, uint8_t *mode);
-
 };
 #endif  // SRC_RDMCONTROLLER_H_

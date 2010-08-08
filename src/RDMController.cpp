@@ -18,6 +18,7 @@
  *  Copyright (C) 2010 Simon Newton
  */
 
+#include <time.h>
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
@@ -378,6 +379,13 @@ void RDMController::LoadMap() {
   MakeDescriptor(ola::rdm::PID_PAN_TILT_SWAP,
                  &RDMController::GetPanTiltSwap,
                  &RDMController::SetPanTiltSwap)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_REAL_TIME_CLOCK,
+                 &RDMController::GetClock,
+                 &RDMController::SetClock)->AddGetVerify(
       &RDMController::NoArgsCheck)->AddGetVerify(
       &RDMController::ValidSubDeviceCheck)->AddSetVerify(
       &RDMController::ValidBroadcastSubDeviceCheck);
@@ -1384,6 +1392,50 @@ bool RDMController::SetPanTiltSwap(const UID &uid,
       sub_device,
       mode,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SetPanTiltSwap),
+      error);
+}
+
+
+bool RDMController::GetClock(const UID &uid,
+                             uint16_t sub_device,
+                             const vector<string> &args,
+                             string *error) {
+  return m_api->GetClock(
+      uid,
+      sub_device,
+      ola::NewSingleCallback(m_handler, &ResponseHandler::Clock),
+      error);
+}
+
+
+bool RDMController::SetClock(const UID &uid,
+                             uint16_t sub_device,
+                             const vector<string> &args,
+                             string *error) {
+  const string invalid_format_error =
+    "Requires an argument in the form YYYY-MM-DD hh:mm:ss";
+  if (args.size() != 1) {
+    *error = invalid_format_error;
+    return false;
+  }
+  struct tm time_spec;
+  char *result = strptime(args[0].data(), "%Y-%m-%d %H:%M:%S", &time_spec);
+  if (!result) {
+    *error = invalid_format_error;
+    return false;
+  }
+  ola::rdm::ClockValue clock;
+  clock.year = time_spec.tm_year;
+  clock.month = time_spec.tm_mon;
+  clock.day = time_spec.tm_mday;
+  clock.hour = time_spec.tm_hour;
+  clock.minute = time_spec.tm_min;
+  clock.second = time_spec.tm_sec;
+  return m_api->SetClock(
+      uid,
+      sub_device,
+      clock,
+      ola::NewSingleCallback(m_handler, &ResponseHandler::SetClock),
       error);
 }
 

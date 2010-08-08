@@ -117,6 +117,8 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     void PanInvert(const ResponseStatus &status, uint8_t inverted);
     void TiltInvert(const ResponseStatus &status, uint8_t inverted);
     void PanTiltSwap(const ResponseStatus &status, uint8_t inverted);
+    void Clock(const ResponseStatus &status,
+               const ola::rdm::ClockValue &clock);
     void IdentifyMode(const ResponseStatus &status, bool mode);
 
 
@@ -144,6 +146,7 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     void SetPanInvert(const ResponseStatus &status);
     void SetPanTiltSwap(const ResponseStatus &status);
     void SetTiltInvert(const ResponseStatus &status);
+    void SetClock(const ResponseStatus &status);
     void IdentifyDevice(const ResponseStatus &status);
     void ResetDevice(const ResponseStatus &status);
 
@@ -169,6 +172,5 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     void PrintLampState(uint8_t lamp_state);
     void PrintLampMode(uint8_t lamp_mode);
     void PrintNackReason(uint16_t reason);
-
 };
 #endif  // SRC_RDMHANDLER_H_

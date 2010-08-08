@@ -528,6 +528,15 @@ void ResponseHandler::PanTiltSwap(const ResponseStatus &status,
   cout << "Pan/Tilt Swap: " << (inverted ? "Yes" : "No") << endl;
 }
 
+void ResponseHandler::Clock(const ResponseStatus &status,
+                            const ola::rdm::ClockValue &clock) {
+  if (!CheckForSuccess(status))
+    return;
+  cout << "Current time:" << endl;
+  cout << "d/m/y: " << clock.day << "/" << clock.month << "/" << clock.year <<
+    ", " << clock.hour << ":" << clock.minute << ":" << clock.second << endl;
+}
+
 void ResponseHandler::IdentifyMode(const ResponseStatus &status, bool mode) {
   if (!CheckForSuccess(status))
     return;
@@ -641,6 +650,10 @@ void ResponseHandler::SetTiltInvert(const ResponseStatus &status) {
 }
 
 void ResponseHandler::IdentifyDevice(const ResponseStatus &status) {
+  CheckForSuccess(status);
+}
+
+void ResponseHandler::SetClock(const ResponseStatus &status) {
   CheckForSuccess(status);
 }
 
