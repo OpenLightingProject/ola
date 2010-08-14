@@ -44,8 +44,7 @@ class FakePDU: public PDU {
     bool Pack(uint8_t *data, unsigned int &length) const {
       if (length < sizeof(m_value))
         return false;
-      unsigned int *int_data = (unsigned int*) data;
-      *int_data = m_value;
+      memcpy(data, &m_value, sizeof(m_value));
       length = sizeof(m_value);
       return true;
     }
@@ -84,8 +83,7 @@ class MockPDU: public PDU {
         length = 0;
         return false;
       }
-      uint32_t *header = reinterpret_cast<uint32_t*>(data);
-      *header = m_header;
+      memcpy(data, &m_header, sizeof(m_header));
       length = HeaderSize();
       return true;
     }
@@ -95,8 +93,7 @@ class MockPDU: public PDU {
         length = 0;
         return false;
       }
-      uint32_t *value = reinterpret_cast<uint32_t*>(data);
-      *value = m_value;
+      memcpy(data, &m_value, sizeof(m_value));
       length = DataSize();
       return true;
     }
@@ -130,7 +127,7 @@ class MockInflator: public BaseInflator {
                       unsigned int length,
                       unsigned int &bytes_used) {
       bytes_used = 4;
-      m_last_header = *((unsigned int*) data);
+      memcpy(&m_last_header, data, sizeof(m_last_header));
       return true;
       (void) headers;
       (void) length;

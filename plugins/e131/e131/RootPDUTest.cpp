@@ -70,8 +70,10 @@ void RootPDUTest::testSimpleRootPDU() {
   // spot check the data
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  unsigned int actual_value;
+  memcpy(&actual_value, data + 2, sizeof(actual_value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR),
-                       *((unsigned int*) &data[2]));
+                       actual_value);
   CID cid2 = CID::FromData(&data[6]);
   CPPUNIT_ASSERT(cid2 == cid);
 
@@ -91,8 +93,9 @@ void RootPDUTest::testSimpleRootPDU() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  memcpy(&actual_value, data + 2, sizeof(actual_value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR2),
-                       *((unsigned int*) &data[2]));
+                       actual_value);
   cid2 = CID::FromData(&data[6]);
   CPPUNIT_ASSERT(cid2 == cid);
 
@@ -136,8 +139,11 @@ void RootPDUTest::testNestedRootPDU() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
 
   // spot check
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, *((unsigned int*) &data[22]));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 42, *((unsigned int*) &data[26]));
+  unsigned int actual_value;
+  memcpy(&actual_value, data + 22, sizeof(actual_value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, actual_value);
+  memcpy(&actual_value, data + 26, sizeof(actual_value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 42, actual_value);
 
   delete[] data;
 }

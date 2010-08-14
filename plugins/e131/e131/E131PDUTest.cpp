@@ -74,8 +74,11 @@ void E131PDUTest::testSimpleRev2E131PDU() {
   // spot check the data
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+
+  unsigned int actual_value;
+  memcpy(&actual_value, data + 2, sizeof(actual_value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR),
-                       *((unsigned int*) &data[2]));
+                       actual_value);
 
   CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1,
@@ -122,15 +125,18 @@ void E131PDUTest::testSimpleE131PDU() {
   // spot check the data
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  unsigned int actual_value;
+  memcpy(&actual_value, data + 2, sizeof(actual_value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR),
-                       *((unsigned int*) &data[2]));
+                       actual_value);
 
   CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, data[6 + E131Header::SOURCE_NAME_LEN]);
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[9 + E131Header::SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL(
-      HostToNetwork((uint16_t) 6000),
-      *(reinterpret_cast<uint16_t*>(data + 11 + E131Header::SOURCE_NAME_LEN)));
+  uint16_t actual_universe;
+  memcpy(&actual_universe, data + 11 + E131Header::SOURCE_NAME_LEN,
+         sizeof(actual_universe));
+  CPPUNIT_ASSERT_EQUAL(HostToNetwork((uint16_t) 6000), actual_universe);
 
   // test undersized buffer
   bytes_used = size - 1;
