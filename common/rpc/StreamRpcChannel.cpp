@@ -297,13 +297,12 @@ int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
  */
 int StreamRpcChannel::ReadHeader(unsigned int *version,
                                  unsigned int *size) const {
-  static const int HEADER_SIZE = 4;
-  uint8_t header[HEADER_SIZE];
+  uint32_t header;
   unsigned int data_read = 0;
   *version = *size = 0;
 
-  if (m_socket->Receive(reinterpret_cast<uint8_t*>(header),
-                        HEADER_SIZE, data_read)) {
+  if (m_socket->Receive(reinterpret_cast<uint8_t*>(&header),
+                        sizeof(header), data_read)) {
     OLA_WARN << "read header error: " << strerror(errno);
     return -1;
   }
@@ -311,8 +310,7 @@ int StreamRpcChannel::ReadHeader(unsigned int *version,
   if (!data_read)
     return 0;
 
-  StreamRpcHeader::DecodeHeader(*(reinterpret_cast<uint32_t*>(header)),
-                                version, size);
+  StreamRpcHeader::DecodeHeader(header, version, size);
   return 0;
 }
 

@@ -112,7 +112,8 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
         information.device.empty()))
     device_name += " - ";
   device_name += information.device;
-  uint32_t serial = *(reinterpret_cast<const uint32_t*>(information.serial));
+  uint32_t serial;
+  memcpy(&serial, information.serial, sizeof(serial));
   widget->SetMessageHandler(NULL);
 
   switch (information.esta_id) {

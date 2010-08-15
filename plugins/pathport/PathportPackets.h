@@ -149,7 +149,10 @@ typedef struct pathport_packet_header_s pathport_packet_header;
  */
 struct pathport_packet_s {
   pathport_packet_header header;
-  uint8_t data[1480];  // 1500 - header size
+  union {
+    uint8_t data[1480];  // 1500 - header size
+    pathport_packet_pdu pdu;
+  } d;
 }__attribute__((packed));
 }  // pathport
 }  // plugin

@@ -158,8 +158,7 @@ void PathportNode::SocketReady(UdpSocket *socket) {
   }
 
   // TODO(simon): Handle multiple pdus here
-  pathport_packet_pdu *pdu =
-    reinterpret_cast<pathport_packet_pdu*>(packet.data);
+  pathport_packet_pdu *pdu = &packet.d.pdu;
 
   if (packet_size < static_cast<ssize_t>(sizeof(pathport_pdu_header))) {
     OLA_WARN << "Pathport packet too small to fit a pdu header";
@@ -238,14 +237,13 @@ bool PathportNode::SendArpReply() {
     return false;
 
   pathport_packet_s packet;
-  pathport_packet_pdu *pdu =
-    reinterpret_cast<pathport_packet_pdu*>(packet.data);
 
   // Should this go to status or config?
   PopulateHeader(&packet.header, PATHPORT_STATUS_GROUP);
+
+  pathport_packet_pdu *pdu = &packet.d.pdu;
   pdu->head.type = HostToNetwork((uint16_t) PATHPORT_ARP_REPLY);
   pdu->head.len = HostToNetwork((uint16_t) sizeof(pathport_pdu_arp_reply));
-
   pdu->d.arp_reply.id = HostToNetwork(m_device_id);
   pdu->d.arp_reply.ip = m_interface.ip_address.s_addr;
   pdu->d.arp_reply.manufacturer_code = NODE_MANUF_ZP_TECH;
@@ -275,12 +273,12 @@ bool PathportNode::SendDMX(unsigned int universe, const DmxBuffer &buffer) {
   }
 
   pathport_packet_s packet;
-  pathport_packet_pdu *pdu =
-    reinterpret_cast<pathport_packet_pdu*>(packet.data);
 
   // pad to a multiple of 4 bytes
   unsigned int padded_size = (buffer.Size() + 3) & ~3;
   PopulateHeader(&packet.header, PATHPORT_DATA_GROUP);
+
+  pathport_packet_pdu *pdu = &packet.d.pdu;
   pdu->head.type = HostToNetwork((uint16_t) PATHPORT_DATA);
   pdu->head.len = HostToNetwork(
       (uint16_t) (padded_size + sizeof(pathport_pdu_data)));
@@ -422,12 +420,9 @@ bool PathportNode::SendArpRequest(uint32_t destination) {
     return false;
 
   pathport_packet_s packet;
-  pathport_packet_pdu *pdu =
-    reinterpret_cast<pathport_packet_pdu*>(packet.data);
-
   PopulateHeader(&packet.header, destination);
-  pdu->head.type = HostToNetwork((uint16_t) PATHPORT_ARP_REQUEST);
-  pdu->head.len = 0;
+  packet.d.pdu.head.type = HostToNetwork((uint16_t) PATHPORT_ARP_REQUEST);
+  packet.d.pdu.head.len = 0;
 
   unsigned int length = sizeof(pathport_packet_header) +
                         sizeof(pathport_pdu_header);
