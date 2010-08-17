@@ -1,0 +1,26 @@
+{
+  "id": 1,
+  "name": "Test Universe",
+  "merge_mode": "HTP",
+
+  "input_ports": [
+    {
+      "name": "Artnet",
+      "id" : 1,
+    },
+    {
+      "name": "Shownet",
+      "id" : 2,
+    },
+  ],
+  "output_ports": [
+    {
+      "name": "Test Universe",
+      "id": 1,
+    },
+    {
+      "name": "This is a universe with a reall",
+      "id": 2,
+    },
+  ],
+}

@@ -1,0 +1,43 @@
+{
+  "plugins": [
+    {
+      "name": "Artnet",
+      "id" : 1,
+    },
+    {
+      "name": "Shownet",
+      "id" : 2,
+    },
+    {
+      "name": "Pathport",
+      "id" : 3,
+    },
+    {
+      "name": "E1.31",
+      "id" : 4,
+    },
+  ],
+  "universes": [
+    {
+      "id": 1,
+      "input_ports": 3,
+      "name": "Test Universe",
+      "output_ports": 2,
+      "rdm_devices": 10,
+    },
+    {
+      "id": 2,
+      "input_ports": 2,
+      "name": "New name",
+      "output_ports": 0,
+      "rdm_devices": 0,
+    },
+    {
+      "id": 3,
+      "input_ports": 0,
+      "name": "Universe III",
+      "output_ports": 0,
+      "rdm_devices": 0,
+    },
+  ],
+}

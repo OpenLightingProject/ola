@@ -1,0 +1,401 @@
+<html>
+  <head>
+    <script src="closure-library/closure/goog/base.js"></script>
+    <script type="text/javascript">
+goog.require('goog.events.EventTarget');
+goog.require('goog.events.Event');
+    </script>
+    <script src="ola.js"></script>
+    <script src="control_list.js"></script>
+    <!--
+    <script src="js/bundle.js"></script> -->
+    <link rel="stylesheet" href="/custombutton.css">
+    <title>OLA Admin</title>
+<style class="text/css">
+
+  body {
+    margin: 0px;
+    padding: 0px;
+    font-family: sans-serif;
+    font-size: 13px;
+  }
+
+  table {
+    font-family: sans-serif;
+    font-size: 13px;
+    padding: 0px;
+    margin: 0px;
+    border: 0px;
+    border-spacing: 0px;
+  }
+
+  legend {
+    font-weight: bold;
+  }
+
+  #header {
+    margin: 0px;
+    padding: 0px;
+    left: 0px;
+    text-align: left;
+    font-size: 11px;
+  }
+
+  #right_nav {
+    position: absolute;
+    right: 0px;
+    margin-right: 4px;
+    text-align: right;
+  }
+
+  #footer {
+    padding-top: 5px;
+    text-align: center;
+    clear: both;
+    font-size: 11px;
+  }
+
+  /* NOTE: A bug in Safari 3 requires these css definitions to be in here.
+     Do not move these to a seperate file without testing safari 3! */
+  /* These are recommended styles for the default splitpane */
+  .goog-splitpane {
+    width: 100%;
+  }
+
+  .goog-splitpane-handle {
+    border-left: 2px solid #67a7e3;
+    border-right: 2px solid #67a7e3;
+    background: #c00;
+    position: absolute;
+  }
+
+  .goog-splitpane-handle-horizontal {
+    cursor: col-resize;
+  }
+
+  .goog-splitpane-first-container {
+    font-size: 13px;
+    overflow: auto;
+    position: absolute;
+  }
+
+  .goog-splitpane-second-container {
+    border-top: 4px solid #67a7e3;
+    border-bottom: 4px solid #67a7e3;
+    border-right: 4px solid #67a7e3;
+    overflow: auto;
+    position: absolute;
+  }
+
+  .goog-control {
+    cursor: pointer;
+    outline: none;
+  }
+
+  .goog-control-hover {
+  }
+
+  .goog-splitpane-first-container .goog-control {
+    padding: 2px 0px 2px 5px;
+    color: #0066cc;
+    background-color: #fff;
+  }
+
+  .goog-container .goog-control {
+    overflow: hidden;
+    padding-left: 12px;
+  }
+
+  .goog-splitpane-first-container .goog-control-hover {
+    background-color: #b3d3f7;
+  }
+
+  .goog-debug-panel .logdiv {
+    position: relative;
+    width: 398px;
+    height: 198px;
+    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+
+  .popup {
+    position:absolute;
+    background-color:#e0ecff;
+    color:black;
+    visibility:hidden;
+    width:400px;
+    height:200px;
+    font-size: 80%;
+    border:solid #000000 1px;
+    -moz-outline:0;
+    outline:0;
+    z-index: 100;
+  }
+
+  .goog-zippy-expanded img {
+    background-image: url('./images/expander.png');
+    background-position: 0px 0px;
+  }
+  .goog-zippy-collapsed img {
+    background-image: url('./images/expander.png');
+    background-position: -40px 0px;
+  }
+
+  .goog-splitpane-first-container img {
+    width: 12px;
+    height: 12px;
+    padding-right: 5px;
+  }
+
+  .goog-splitpane-first-container .goog-container {
+    padding: 5px;
+  }
+
+  .goog-inline-block {
+    position: relative;
+    display: -moz-inline-box; /* Ignored by FF3 and later. */
+    display: inline-block;
+  }
+
+  .goog-tabpane {
+    position: relative;
+    margin-left: 2px;
+  }
+
+  .goog-tabpane-tabs {
+    outline: none;
+    list-style: none;
+    margin: 0px;
+    padding: 0px;
+    position: relative;
+  }
+
+  .goog-tabpane-tab, .goog-tabpane-tab-selected {
+    display: block;
+    background: #e3e9ff;
+    border-right: 1px solid #67a7e3;
+    margin: 0px;
+    padding: 5px 10px;
+    float: left;
+    cursor: pointer;
+  }
+
+  .goog-tabpane-tab-selected {
+    background: #bbccff;
+  }
+
+  .goog-tabpane-cont {
+    border-top: #67a7e3 1px solid;
+  }
+
+  fieldset {
+    border: #67a7e3 1px solid;
+  }
+
+  .modal-dialog {
+    width: 430px;
+  }
+
+  .modal-dialog {
+    background: #c1d9ff;
+    border: 1px solid #3a5774;
+    color: #000;
+    padding: 4px;
+    position: absolute;
+  }
+
+  .modal-dialog-bg {
+    background: #666;
+    left: 0;
+    position: absolute;
+    top: 0;
+  }
+
+  .modal-dialog-title {
+    background: #e0edfe;
+    color: #000;
+    cursor: pointer;
+    font-size: 120%;
+    font-weight: bold;
+    padding: 8px 15px 8px 8px;
+    position: relative;
+    _zoom: 1; /* Ensures proper width in IE6 RTL. */
+  }
+
+  .modal-dialog-buttons,
+  .modal-dialog-content {
+    background-color: #fff;
+    padding: 8px;
+  }
+
+  .ola-table {
+    width: 100%;
+    border-bottom: 1px solid #67a7e3;
+  }
+
+  .ola-table thead {
+    text-align: left;
+  }
+
+  .ola-table td {
+    border-top: 1px solid #67a7e3;
+  }
+
+  </style>
+  </head>
+  <body onload="ola.Setup()">
+    <div id="header">
+      <div id="right_nav">
+        <span id="log_control" class="goog-control">View Log</span>
+      </div>
+      <div id="title">
+       <img src="./logo.png">
+      </div>
+    </div>
+
+    <div id='log_popup' class='popup' tabindex="0">
+     <div class="goog-debug-panel">
+        <div id="log"></div>
+     </div>
+    </div>
+
+    <div class='goog-splitpane' id='split_pane' style='display: none'>
+      <div class='goog-splitpane-first-container'>
+       <div id="home_control" class="goog-control"
+         title="Main page">
+         <img src="./images/blank.gif" />Home
+       </div>
+       <div id="universe_list_control" class="goog-control"
+         title="Click to show/hide active universes">
+         <img src="./images/blank.gif" />Universes
+       </div>
+       <div id="universe_container" class="goog-container"></div>
+       <div id="plugin_list_control" class="goog-control"
+         title="Click to show/hide plugins">
+         <img src="./images/blank.gif" />Plugins
+       </div>
+       <div id="plugin_container" class="goog-container"></div>
+      </div>
+
+      <div class='goog-splitpane-second-container'>
+        <div id="home_frame" style="margin: 5px">
+          <fieldset>
+            <legend>Active Universes</legend>
+            <table class="ola-table">
+             <thead>
+              <tr>
+               <th>Universe #</th>
+               <th>Universe Name</th>
+               <th>Input Ports</th>
+               <th>Output Ports</th>
+               <th>RDM Devices</th>
+              </tr>
+             </thead>
+             <tbody id="universe_list">
+             </tbody>
+           </table>
+          </fieldset>
+
+          <div style="text-align: center">
+           <div id="new_universe_button"
+             class="goog-custom-button goog-inline-block"
+             title="Setup a new universe">Add Universe</div>
+          </div>
+          <fieldset>
+            <legend>Server Info</legend>
+            <table>
+             <tr>
+              <td>Hostname</td><td><div id="server_hostname"></div></td>
+             </tr>
+             <tr>
+              <td>IP</td><td><div id="server_ip"></div></td>
+             </tr>
+             <tr>
+              <td>Version</td><td><div id="server_version"></div></td>
+             </tr>
+             <tr>
+              <td>Started</td><td><div id="server_uptime"></div></td>
+             </tr>
+           </table>
+          </fieldset>
+          <div style="text-align: center">
+           <div id="reload_button" class="goog-custom-button goog-inline-block"
+             title="Reload all plugins">
+             Reload Plugins
+           </div>
+           <div id="stop_button" class="goog-custom-button goog-inline-block"
+             title="Stop OLA">Stop OLA</div>
+          </div>
+        </div>
+
+        <div id="new_universe_frame" style="margin: 5px">
+          <fieldset>
+           <legend>New Universe Settings</legend>
+           <table>
+            <tr>
+             <td>Universe Id</td><td><input name="universe_id"</input></td>
+            </tr>
+            <tr>
+             <td>Universe Name</td><td><input id="universe_name"</input></td>
+            </tr>
+           </table>
+          </fieldset>
+        </div>
+
+        <div id="universe_frame">
+          <div id="universe_tab_pane"></div>
+
+          <div id="tab_page_1">
+            <fieldset>
+             <legend>Universe Settings</legend>
+             <table>
+              <tr>
+               <td>Universe Id</td><td><div id="universe_id"</div></td>
+              </tr>
+              <tr>
+               <td>Universe Name</td><td><div id="universe_name"</div></td>
+              </tr>
+              <tr>
+               <td>Merge Mode</td><td><div id="universe_merge_mode"></div></td>
+              </tr>
+             </table>
+            </fieldset>
+            <fieldset>
+              <legend>Input Ports</legend>
+              <table>
+               <tr>
+                <td>ArtNet I</td><td> </td>
+               </tr>
+             </table>
+            </fieldset>
+            <fieldset>
+              <legend>Output Ports</legend>
+              <table>
+               <tr>
+                <td>DMX USB</td><td> </td>
+               </tr>
+             </table>
+            </fieldset>
+            <div style="text-align: center">
+             <div id="universe_save_button"
+               class="goog-custom-button goog-inline-block"
+               title="Save Changes">Save</div>
+            </div>
+          </div>
+
+          <div id="tab_page_2">foo</div>
+          <div id="tab_page_3">bar</div>
+        </div>
+        <div id="plugin_frame" style="margin: 5px">
+            <pre id="plugin_description"></pre>
+        </div>
+      </div>
+      <div class='goog-splitpane-handle'></div>
+    </div>
+
+    <div id="footer">
+      OLA &copy; 2005-2010 Simon Newton
+    </div>
+  </body>
+</html>

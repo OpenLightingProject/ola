@@ -1,0 +1,6 @@
+{
+  "hostname": "my.host.localdomain",
+  "ip": "10.0.0.1",
+  "version": "0.8.0",
+  "up_since": "A couple of days ago",
+}
