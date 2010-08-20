@@ -306,7 +306,7 @@ int main(int argc, char *argv[]) {
     pid_name_map.find(opts.args[0]);
 
   if (name_iter == pid_name_map.end()) {
-    cout << "Invalid pid name: " << opts.args[0];
+    cout << "Invalid pid name: " << opts.args[0] << endl;
     exit(EX_USAGE);
   }
 
