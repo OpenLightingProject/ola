@@ -39,11 +39,16 @@ ola.NewUniverseFrame = function(element_id, ola_server) {
   ola.BaseFrame.call(this, element_id);
   this.ola_server = ola_server
 
-  var confirm_button = goog.dom.$('confirm_new_universe_button');
-  goog.ui.decorate(confirm_button);
-
   var cancel_button = goog.dom.$('cancel_new_universe_button');
   goog.ui.decorate(cancel_button);
+
+  var confirm_button = goog.dom.$('confirm_new_universe_button');
+  goog.ui.decorate(confirm_button);
+  goog.events.listen(confirm_button,
+                     goog.events.EventType.CLICK,
+                     this._AddButtonClicked,
+                     false, this);
+
 
   /*
   this.current_universe = undefined;
@@ -74,9 +79,10 @@ goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
 
 
 /**
- * Show this frame. We extent the base method so we can populate the correct
- * tab.
+ * Called when the stop button is clicked
  */
-ola.NewUniverseFrame.prototype.Show = function(universe_id) {
-  ola.NewUniverseFrame.superClass_.Show.call(this);
+ola.NewUniverseFrame.prototype._AddButtonClicked = function(e) {
+  var dialog = ola.Dialog.getInstance();
+  dialog.SetAsBusy();
+  dialog.setVisible(true);
 }

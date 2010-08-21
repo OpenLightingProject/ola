@@ -20,12 +20,12 @@
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.Dialog');
 goog.require('ola.BaseFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
+goog.require('ola.Dialog');
 
 goog.provide('ola.HomeFrame');
 
@@ -141,8 +141,6 @@ ola.HomeFrame = function(element_id, ola_server) {
                      false, this);
   ola_server.UpdateServerInfo();
 
-  this.dialog = new goog.ui.Dialog(null, true);
-
   var table_container = new ola.TableContainer();
   table_container.decorate(goog.dom.$('active_universe_list'));
   this.universe_list = new ola.SortedList(
@@ -175,9 +173,10 @@ ola.HomeFrame.prototype._UniverseListChanged = function(e) {
  * Called when the stop button is clicked
  */
 ola.HomeFrame.prototype._StopButtonClicked = function(e) {
-  this.dialog.setTitle('Please confirm');
-  this.dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
-  this.dialog.setContent('Are you sure? OLA may not be configured to restart '
-                         + 'automatically');
-  this.dialog.setVisible(true);
+  var dialog = ola.Dialog.getInstance();
+  dialog.setTitle('Please confirm');
+  dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
+  dialog.setContent('Are you sure? OLA may not be configured to restart '
+                    + 'automatically');
+  dialog.setVisible(true);
 }

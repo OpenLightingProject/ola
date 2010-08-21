@@ -15,12 +15,13 @@ goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.TabPane');
 goog.require('goog.ui.SplitPane.Orientation');
 
+goog.require('ola.Dialog');
+goog.require('ola.HomeFrame');
 goog.require('ola.LoggerWindow');
-goog.require('ola.SortedList');
+goog.require('ola.NewUniverseFrame');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
-goog.require('ola.HomeFrame');
-goog.require('ola.NewUniverseFrame');
+goog.require('ola.SortedList');
 
 goog.provide('ola');
 
@@ -315,7 +316,7 @@ ola.OlaUI.prototype._UpdateUniverseList = function(e) {
   }
 
   if (this.universe_frame.IsVisible() && !found) {
-    var dialog = new goog.ui.Dialog(null, true);
+    var dialog = ola.Dialog.getInstance();
     dialog.setTitle('Universe ' + active_universe + ' Removed');
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
     dialog.setContent('This universe has been removed by another user.');
