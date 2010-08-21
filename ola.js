@@ -1,240 +1,37 @@
 goog.require('goog.Timer');
-goog.require('goog.debug.DivConsole');
-goog.require('goog.debug.LogManager');
 goog.require('goog.dom');
 goog.require('goog.dom.ViewportSizeMonitor');
 goog.require('goog.events');
 goog.require('goog.math');
 goog.require('goog.net.XhrIo');
 goog.require('goog.net.XhrIoPool');
-goog.require('goog.positioning.Corner');
 goog.require('goog.ui.AnimatedZippy');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Container');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.Dialog');
-goog.require('goog.ui.Popup');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.TabPane');
 goog.require('goog.ui.SplitPane.Orientation');
 
-//goog.require('ola.ControlList');
+goog.require('ola.LoggerWindow');
+goog.require('ola.SortedList');
+goog.require('ola.Server');
+goog.require('ola.Server.EventType');
 
 goog.provide('ola');
 
-var ola = {}
-ola.logger;
+var ola = ola || {}
 
-ola.PLUGIN_EVENT = 'plugin_change';
-ola.PLUGIN_LIST_EVENT = 'plugin_list_change';
-ola.SERVER_INFO_EVENT = 'server_info_change';
-ola.UNIVERSE_LIST_EVENT = 'universe_list_change';
-ola.UNIVERSE_EVENT = 'universe_change';
+ola.LIST_UPDATE_INTERVAL_MS = 5000;
 
 ola.HOME_FRAME_ID = 'home_frame';
 ola.UNIVERSE_FRAME_ID = 'universe_frame';
 ola.PLUGIN_FRAME_ID = 'plugin_frame';
 ola.SPLIT_PANE_ID = 'split_pane';
 ola.NEW_UNIVERSE_FRAME_ID = 'new_universe_frame';
-
-ola.SERVER_INFO_URL = '/json/server_stats';
-ola.PLUGIN_INFO_URL = '/json/plugin_info';
-ola.UNIVERSE_INFO_URL = '/json/universe_info';
-ola.PLUGIN_UNIVERSE_LIST_URL = '/json/universe_plugin_list';
-
 ola.UNIVERSE_TAB_PANE_ID = 'universe_tab_pane';
-
-ola.LIST_UPDATE_INTERVAL_MS = 5000;
-
-
-/**
- * Setup the logger window
- * @constructor
- */
-ola.LoggerWindow = function() {
-  goog.debug.LogManager.getRoot().setLevel(goog.debug.Logger.Level.ALL);
-  ola.logger = goog.debug.Logger.getLogger('ola');
-  var logconsole = new goog.debug.DivConsole(goog.dom.$('log'));
-  logconsole.setCapturing(true);
-
-  this.log_control = goog.dom.$('log_control');
-
-  var control = new goog.ui.Control("log_control");
-  control.decorate(this.log_control);
-  goog.events.listen(this.log_control, goog.events.EventType.CLICK,
-                     this.Show, false, this);
-
-  var popupElt = document.getElementById('log_popup');
-  this.popup = new goog.ui.Popup(popupElt);
-  this.popup.setHideOnEscape(true);
-  this.popup.setAutoHide(true);
-}
-
-
-/**
- * Display the logger window
- */
-ola.LoggerWindow.prototype.Show = function() {
-  this.popup.setVisible(false);
-  this.popup.setPinnedCorner(goog.positioning.Corner.TOP_RIGHT);
-  var margin = new goog.math.Box(2, 2, 2, 2);
-  this.popup.setMargin(margin);
-  this.popup.setPosition(new goog.positioning.AnchoredViewportPosition(
-    this.log_control,
-    goog.positioning.Corner.BOTTOM_RIGHT));
-  this.popup.setVisible(true);
-}
-
-
-/**
- * This event is fired when the server info changes
- */
-ola.ServerInfoChangeEvent = function(server_info) {
-  goog.events.Event.call(this, ola.SERVER_INFO_EVENT);
-  this.server_info = server_info;
-}
-goog.inherits(ola.ServerInfoChangeEvent, goog.events.Event);
-
-
-/**
- * This event is fired when the plugin list changes
- */
-ola.PluginListChangeEvent = function(new_list) {
-  goog.events.Event.call(this, ola.PLUGIN_LIST_EVENT);
-  this.plugins = new_list;
-}
-goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
-
-
-/**
- * This event is fired when the universe list changes
- */
-ola.UniverseListChangeEvent = function(new_list) {
-  goog.events.Event.call(this, ola.UNIVERSE_LIST_EVENT);
-  this.universes = new_list;
-}
-goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
-
-
-/**
- * This event is fired when the plugin info is available
- */
-ola.PluginChangeEvent = function(plugin) {
-  goog.events.Event.call(this, ola.PLUGIN_EVENT);
-  this.plugin = plugin;
-}
-goog.inherits(ola.PluginChangeEvent, goog.events.Event);
-
-
-/**
- * This event is fired when the universe info is available
- */
-ola.UniverseChangeEvent = function(universe) {
-  goog.events.Event.call(this, ola.UNIVERSE_EVENT);
-  this.universe = universe;
-}
-goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
-
-
-/**
- * Create a new Server object, this is used to communicate with the OLA server
- * and fires events when the state changes.
- * @constructor
- */
-ola.Server = function() {
-  goog.events.EventTarget.call(this);
-  this.pool = new goog.net.XhrIoPool({}, 1);
-}
-goog.inherits(ola.Server, goog.events.EventTarget);
-
-
-/**
- * Update the server info data
- */
-ola.Server.prototype.UpdateServerInfo = function() {
-  var on_complete = function(e) {
-    var obj = e.target.getResponseJson();
-    this.dispatchEvent(new ola.ServerInfoChangeEvent(obj));
-    this._CleanupRequest(e.target);
-  }
-  this._InitiateRequest(ola.SERVER_INFO_URL, on_complete);
-}
-
-ola.Server.prototype.ReloadPlugins = function() {
-
-}
-
-ola.Server.prototype.StopServer = function () {
-
-}
-
-
-/**
- * Fetch the list of plugins & universes active on the server
- */
-ola.Server.prototype.FetchUniversePluginList = function() {
-  var on_complete = function(e) {
-    var obj = e.target.getResponseJson();
-    this.dispatchEvent(new ola.PluginListChangeEvent(obj.plugins));
-    this.dispatchEvent(new ola.UniverseListChangeEvent(obj.universes));
-    this._CleanupRequest(e.target);
-  }
-  this._InitiateRequest(ola.PLUGIN_UNIVERSE_LIST_URL, on_complete);
-}
-
-
-/**
- * Fetch the info for a plugin
- */
-ola.Server.prototype.FetchPluginInfo = function(plugin_id) {
-  var on_complete = function(e) {
-    var obj = e.target.getResponseJson();
-    this.dispatchEvent(new ola.PluginChangeEvent(obj));
-    this._CleanupRequest(e.target);
-  }
-  var url = ola.PLUGIN_INFO_URL + '?id=' + plugin_id;
-  this._InitiateRequest(url, on_complete);
-}
-
-
-/**
- * Fetch the info for a universe
- */
-ola.Server.prototype.FetchUniverseInfo = function(universe_id) {
-  var on_complete = function(e) {
-    var obj = e.target.getResponseJson();
-    this.dispatchEvent(new ola.UniverseChangeEvent(obj));
-    this._CleanupRequest(e.target);
-  }
-  var url = ola.UNIVERSE_INFO_URL + '?id=' + universe_id;
-  this._InitiateRequest(url, on_complete);
-}
-
-
-/**
- * Initiate a JSON request
- * @param url the url to fetch
- * @param callback the callback to invoke when the request completes
- * @private
- */
-ola.Server.prototype._InitiateRequest = function(url, callback) {
-  var xhr = this.pool.getObject(undefined, 1);
-  goog.events.listen(xhr, goog.net.EventType.COMPLETE, callback, false, this);
-  xhr.send(url);
-}
-
-
-/**
- * Clean up from a request, this removes the listener and returns the channel
- * to the pool.
- * @private
- */
-ola.Server.prototype._CleanupRequest = function(xhr) {
-  goog.events.removeAll(xhr);
-  this.pool.releaseObject(xhr);
-}
-
 
 /**
  * The base frame class
@@ -296,17 +93,18 @@ ola.HomeFrame = function(element_id, ola_server) {
                      false,
                      ola_server);
 
-  goog.events.listen(ola_server, ola.SERVER_INFO_EVENT,
+  goog.events.listen(ola_server, ola.Server.EventType.SERVER_INFO_EVENT,
                      this._UpdateFromData,
                      false, this);
-  goog.events.listen(ola_server, ola.UNIVERSE_LIST_EVENT,
+  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_LIST_EVENT,
                      this._UniverseListChanged,
                      false, this);
   ola_server.UpdateServerInfo();
 
   this.dialog = new goog.ui.Dialog(null, true);
 
-  this.universe_list = new ola.ControlList(
+  /*
+  this.universe_list = new ola.SortedList(
       'universe_list',
       function(item) {
         var new_tr = goog.dom.createDom(
@@ -329,6 +127,7 @@ ola.HomeFrame = function(element_id, ola_server) {
         td = goog.dom.getNextElementSibling(td);
         td.innerHTML = data.rdm_devices.toString();
       });
+  */
 }
 goog.inherits(ola.HomeFrame, ola.BaseFrame);
 
@@ -348,7 +147,7 @@ ola.HomeFrame.prototype._UpdateFromData = function(e) {
  * Update the universe set
  */
 ola.HomeFrame.prototype._UniverseListChanged = function(e) {
-  this.universe_list.UpdateFromData(e.universes);
+  //this.universe_list.UpdateFromData(e.universes);
 }
 
 
@@ -372,7 +171,7 @@ ola.UniverseFrame = function(element_id, ola_server) {
   ola.BaseFrame.call(this, element_id);
   this.ola_server = ola_server
   this.current_universe = undefined;
-  goog.events.listen(ola_server, ola.UNIVERSE_EVENT,
+  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
                      this._UpdateFromData,
                      false, this);
 
@@ -406,7 +205,7 @@ ola.UniverseFrame.prototype.ActiveUniverse = function() {
 
 
 /**
- * Show this frame. We extent the base method so we can populate the correct
+ * Show this frame. We extend the base method so we can populate the correct
  * tab.
  */
 ola.UniverseFrame.prototype.Show = function(universe_id) {
@@ -424,6 +223,7 @@ ola.UniverseFrame.prototype.TabChanged = function(e) {
   this._UpdateSelectedTab();
 }
 
+
 ola.UniverseFrame.prototype._UpdateSelectedTab = function() {
   if (this.selected_tab == 0) {
     this.ola_server.FetchUniverseInfo(this.current_universe);
@@ -431,6 +231,7 @@ ola.UniverseFrame.prototype._UpdateSelectedTab = function() {
     // update RDM
   }
 }
+
 
 /**
  * Update this universe frame from a Universe object
@@ -454,7 +255,7 @@ ola.NewUniverseFrame = function(element_id, ola_server) {
 
   /*
   this.current_universe = undefined;
-  goog.events.listen(ola_server, ola.UNIVERSE_EVENT,
+  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
                      this._UpdateFromData,
                      false, this);
 
@@ -506,7 +307,7 @@ ola.UniverseFrame.prototype._UpdateFromData = function(e) {
  */
 ola.PluginFrame = function(element_id, ola_server) {
   ola.BaseFrame.call(this, element_id);
-  goog.events.listen(ola_server, ola.PLUGIN_EVENT,
+  goog.events.listen(ola_server, ola.Server.EventType.PLUGIN_EVENT,
                      this._UpdateFromData,
                      false, this);
 }
@@ -549,7 +350,6 @@ ola.OlaUI = function(server) {
   this.splitpane1.setHandleSize(2);
   this.splitpane1.decorate(goog.dom.$(ola.SPLIT_PANE_ID));
 
-
   // show the main frame now
   goog.dom.$(ola.SPLIT_PANE_ID).style.display = 'block';
 
@@ -561,62 +361,63 @@ ola.OlaUI = function(server) {
 
   this._SetupNavigation();
   this._ShowHome();
-
-}
-
-
-
-//---------------------
-
-
-/**
- * A ControlItemFactory that produces DivControlItems
- */
-ola.DivControlItemFactory = function() {
-}
-goog.inherits(ola.DivControlItemFactory, ola.ControlItemFactory);
-
-/**
- * Create a new DivControlItem
- * @returns a new DivControlItem from the data
- */
-ola.ControlItemFactory.prototype.newItem = function(data) {
-  return new ola.DivControlItem(data);
 }
 
 
 /**
- * A ControlItem that uses a div
+ * The base class for an item in the control list
  */
-ola.DivControlItem = function(data) {
-  this.div = goog.dom.createDom(
-      'div',
-      {'title': 'Universe ' + data.id},
-      data.name);
-  /*
-  goog.events.listen(this.div,
+ola.SortedListControl = function(data, callback, opt_renderer, opt_domHelper) {
+  goog.ui.Control.call(this, data['name'], opt_renderer, opt_domHelper);
+  this.id = data['id'];
+  this.callback = callback;
+};
+goog.inherits(ola.SortedListControl, goog.ui.Control);
+
+
+/**
+ * Update this item with from new data
+ */
+ola.SortedListControl.prototype.Id = function() {
+  return this.id
+}
+
+
+ola.SortedListControl.prototype.enterDocument = function() {
+  goog.ui.Control.superClass_.enterDocument.call(this);
+  this.getElement().title = 'Universe ' + this.Id();
+  goog.events.listen(this.getElement(),
                      goog.events.EventType.CLICK,
-                     function() { ui._ShowUniverse(data.id); });
-  */
-}
-goog.inherits(ola.DivControlItem, ola.ControlItem);
+                     function() { this.callback(this.id); },
+                     false,
+                     this);
+};
+
 
 /**
- * Update this item with new data
+ * Update this item with from new data
  */
-ola.DivControlItem.prototype.Update = function(new_data) {
-  if (this.div.innerHTML != new_data.name) {
-    this.div.innerHTML = new_data.name;
+ola.SortedListControl.prototype.Update = function(new_data) {
+  this.setContent(new_data['name']);
 }
+
 
 /**
- * Return the div for this ControlItem
+ * The base class for a factory which produces control items
+ * @class
  */
-ola.DivControlItem.prototype.getElement = function() {
-  this.div;
+ola.ControlFactory = function(callback) {
+  this.callback = callback;
 }
 
-//---------------------
+
+/**
+ * @returns an instance of a SortedListComponent
+ */
+ola.ControlFactory.prototype.newComponent = function(data) {
+  return new ola.SortedListControl(data, this.callback);
+}
+
 
 /**
  * Setup the navigation section of the UI
@@ -638,53 +439,21 @@ ola.OlaUI.prototype._SetupNavigation = function() {
 
   // setup the plugin & universe lists
   var ui = this;
-  this.plugin_list = new ola.ControlList(
+  this.plugin_list = new ola.SortedList(
       'plugin_container',
-      new DivControlItemFactory());
-  /*
-      function(item) {
-        var new_div = goog.dom.createDom(
-            'div',
-            {'title': item.name},
-            item.name);
-        goog.events.listen(new_div,
-                           goog.events.EventType.CLICK,
-                           function() { ui._ShowPlugin(item.id); });
-        return new_div;
-      },
-      function(element, data) {
-        if (element.innerHTML != data.name) {
-          element.innerHTML = data.name;
-        }
-      });
-  */
+      new ola.ControlFactory(function (id) { ui._ShowPlugin(id); }));
+
   goog.events.listen(this.ola_server,
-                     ola.PLUGIN_LIST_EVENT,
+                     ola.Server.EventType.PLUGIN_LIST_EVENT,
                      function(e) { this.UpdateFromData(e.plugins); },
                      false, this.plugin_list);
 
-  this.universe_list = new ola.ControlList(
+  this.universe_list = new ola.SortedList(
       'universe_container',
-      new DivControlItemFactory();
-      /*
-      function(item) {
-        var new_div = goog.dom.createDom(
-            'div',
-            {'title': 'Universe ' + item.id},
-            item.name);
-        goog.events.listen(new_div,
-                           goog.events.EventType.CLICK,
-                           function() { ui._ShowUniverse(item.id); });
-        return new_div;
-      },
-      function(element, data) {
-        if (element.innerHTML != data.name) {
-          element.innerHTML = data.name;
-        }
-      });
-  */
+      new ola.ControlFactory(function(id) { ui._ShowUniverse(id); }));
+
   goog.events.listen(this.ola_server,
-                     ola.UNIVERSE_LIST_EVENT,
+                     ola.Server.EventType.UNIVERSE_LIST_EVENT,
                      this._UpdateUniverseList,
                      false, this);
 

@@ -2,11 +2,15 @@
   <head>
     <script src="closure-library/closure/goog/base.js"></script>
     <script type="text/javascript">
+goog.require('goog.ui.Component');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.Event');
+goog.require('goog.debug.Logger');
     </script>
+    <script src="sorted_list.js"></script>
+    <script src="server.js"></script>
+    <script src="logger.js"></script>
     <script src="ola.js"></script>
-    <script src="control_list.js"></script>
     <!--
     <script src="js/bundle.js"></script> -->
     <link rel="stylesheet" href="/custombutton.css">
@@ -334,10 +338,10 @@ goog.require('goog.events.Event');
            <legend>New Universe Settings</legend>
            <table>
             <tr>
-             <td>Universe Id</td><td><input name="universe_id"</input></td>
+             <td>Universe Id</td><td><input id="new_universe_id"></td>
             </tr>
             <tr>
-             <td>Universe Name</td><td><input id="universe_name"</input></td>
+             <td>Universe Name</td><td><input id="new_universe_name"></td>
             </tr>
            </table>
           </fieldset>
