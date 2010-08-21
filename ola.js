@@ -311,8 +311,10 @@ ola.OlaUI.prototype._SetupNavigation = function() {
 
   // setup the plugin & universe lists
   var ui = this;
+  var plugin_container = new goog.ui.Container();
+  plugin_container.decorate(goog.dom.$('plugin_container'));
   this.plugin_list = new ola.SortedList(
-      'plugin_container',
+      plugin_container,
       new ola.ControlFactory(function (id) { ui._ShowPlugin(id); }));
 
   goog.events.listen(this.ola_server,
@@ -320,8 +322,10 @@ ola.OlaUI.prototype._SetupNavigation = function() {
                      function(e) { this.UpdateFromData(e.plugins); },
                      false, this.plugin_list);
 
+  var universe_container = new goog.ui.Container();
+  universe_container.decorate(goog.dom.$('universe_container'));
   this.universe_list = new ola.SortedList(
-      'universe_container',
+      universe_container,
       new ola.ControlFactory(function(id) { ui._ShowUniverse(id); }));
 
   goog.events.listen(this.ola_server,

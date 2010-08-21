@@ -22,8 +22,42 @@ goog.require('goog.ui.Component');
 goog.require('goog.ui.Container');
 
 goog.provide('ola.SortedList');
+goog.provide('ola.TableContainer');
 
 var ola = ola || {}
+
+
+/**
+ * A container that uses the tbody element
+ */
+ola.TableContainer = function(opt_domHelper) {
+  goog.ui.Component.call(this, opt_domHelper);
+}
+goog.inherits(ola.TableContainer, goog.ui.Component);
+
+
+/**
+ * Create the dom for the TableContainer
+ */
+ola.TableContainer.prototype.createDom = function(container) {
+  this.decorateInternal(this.dom_.createElement('tbody'));
+};
+
+
+/**
+ * Decorate an existing element
+ */
+ola.TableContainer.prototype.decorateInternal = function(element) {
+  ola.TableContainer.superClass_.decorateInternal.call(this, element);
+}
+
+
+/**
+ * Check if we can decorate an element.
+ */
+ola.TableContainer.prototype.canDecorate = function(element) {
+  return element.tagName == 'TBODY';
+}
 
 /**
  * The base class for a factory which produces control items
@@ -71,10 +105,8 @@ ola.SortedListComponent.prototype.Update = function(new_data) {
  * @param component_factory a SortedListComponentFactory class to produce the
  *   SortedListComponents
  */
-ola.SortedList = function(container_id, component_factory) {
-  this.container_id = container_id;
-  this.container = new goog.ui.Container();
-  this.container.decorate(goog.dom.$(container_id));
+ola.SortedList = function(container, component_factory) {
+  this.container = container;
   this.component_factory = component_factory;
 }
 

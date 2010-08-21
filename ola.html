@@ -298,7 +298,7 @@ goog.require('goog.debug.Logger');
                <th>RDM Devices</th>
               </tr>
              </thead>
-             <tbody id="universe_list">
+             <tbody id="active_universe_list">
              </tbody>
            </table>
           </fieldset>
@@ -347,6 +347,26 @@ goog.require('goog.debug.Logger');
             </tr>
            </table>
           </fieldset>
+          <fieldset>
+            <legend>Available Ports</legend>
+            <table class="ola-table">
+             <thead>
+              <tr>
+               <th>&nbsp;</th>
+               <th>Device</th>
+               <th>Direction</th>
+               <th>Description</th>
+              </tr>
+             </thead>
+             <tbody id="universe_list">
+             </tbody>
+           </table>
+          </fieldset>
+          <div style="text-align: center">
+           <div id="confirm_new_universe_button"
+             class="goog-custom-button goog-inline-block"
+             title="Setup a new universe">Add Universe</div>
+          </div>
         </div>
 
         <div id="universe_frame">

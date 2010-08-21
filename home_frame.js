@@ -19,6 +19,7 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.ui.Component');
 goog.require('goog.ui.Dialog');
 goog.require('ola.BaseFrame');
 goog.require('ola.LoggerWindow');
@@ -29,6 +30,81 @@ goog.require('ola.SortedList');
 goog.provide('ola.HomeFrame');
 
 var ola = ola || {}
+
+
+/**
+ * A line in the active universe list.
+ * @class
+ */
+ola.UniverseComponent = function(data, opt_domHelper) {
+  goog.ui.Component.call(this, opt_domHelper);
+  this.data = data;
+};
+goog.inherits(ola.UniverseComponent, goog.ui.Component);
+
+
+/**
+ * This component can't be used to decorate
+ */
+ola.UniverseComponent.prototype.canDecorate = function() {
+  return false;
+};
+
+
+/**
+ * Create the dom for this component
+ */
+ola.UniverseComponent.prototype.createDom = function() {
+  var tr = this.dom_.createDom(
+      'tr', {},
+      goog.dom.createDom('td', {}, this.data.id.toString()),
+      goog.dom.createDom('td', {}, this.data.name),
+      goog.dom.createDom('td', {}, this.data.input_ports.toString()),
+      goog.dom.createDom('td', {}, this.data.output_ports.toString()),
+      goog.dom.createDom('td', {}, this.data.rdm_devices.toString()));
+  this.setElementInternal(tr);
+};
+
+
+/**
+ * Get the id of this item
+ */
+ola.UniverseComponent.prototype.Id = function() {
+  return this.data['id'];
+};
+
+
+/**
+ * Update this item with from new data
+ */
+ola.UniverseComponent.prototype.Update = function(new_data) {
+  var element = this.getElement();
+  var td = goog.dom.getFirstElementChild(element);
+  td = goog.dom.getNextElementSibling(td);
+  td.innerHTML = new_data['name'];
+  td = goog.dom.getNextElementSibling(td);
+  td.innerHTML = new_data['input_ports'].toString();
+  td = goog.dom.getNextElementSibling(td);
+  td.innerHTML = new_data['output_ports'].toString();
+  td = goog.dom.getNextElementSibling(td);
+  td.innerHTML = new_data['rdm_devices'].toString();
+};
+
+
+/**
+ * The base class for a factory which produces UniverseComponents
+ * @class
+ */
+ola.UniverseComponentFactory = function() {
+};
+
+
+/**
+ * @returns an instance of a UniverseComponent
+ */
+ola.UniverseComponentFactory.prototype.newComponent = function(data) {
+  return new ola.UniverseComponent(data);
+};
 
 
 /**
@@ -67,31 +143,11 @@ ola.HomeFrame = function(element_id, ola_server) {
 
   this.dialog = new goog.ui.Dialog(null, true);
 
-  /*
+  var table_container = new ola.TableContainer();
+  table_container.decorate(goog.dom.$('active_universe_list'));
   this.universe_list = new ola.SortedList(
-      'universe_list',
-      function(item) {
-        var new_tr = goog.dom.createDom(
-            'tr', {},
-            goog.dom.createDom('td', {}, item.id.toString()),
-            goog.dom.createDom('td', {}, item.name),
-            goog.dom.createDom('td', {}, item.input_ports.toString()),
-            goog.dom.createDom('td', {}, item.output_ports.toString()),
-            goog.dom.createDom('td', {}, item.rdm_devices.toString()));
-        return new_tr;
-      },
-      function(element, data) {
-        var td = goog.dom.getFirstElementChild(element);
-        td = goog.dom.getNextElementSibling(td);
-        td.innerHTML = data.name;
-        td = goog.dom.getNextElementSibling(td);
-        td.innerHTML = data.input_ports.toString();
-        td = goog.dom.getNextElementSibling(td);
-        td.innerHTML = data.output_ports.toString();
-        td = goog.dom.getNextElementSibling(td);
-        td.innerHTML = data.rdm_devices.toString();
-      });
-  */
+      table_container,
+      new ola.UniverseComponentFactory());
 }
 goog.inherits(ola.HomeFrame, ola.BaseFrame);
 
@@ -111,7 +167,7 @@ ola.HomeFrame.prototype._UpdateFromData = function(e) {
  * Update the universe set
  */
 ola.HomeFrame.prototype._UniverseListChanged = function(e) {
-  //this.universe_list.UpdateFromData(e.universes);
+  this.universe_list.UpdateFromData(e.universes);
 }
 
 
