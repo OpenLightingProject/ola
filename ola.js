@@ -19,6 +19,7 @@ goog.require('ola.LoggerWindow');
 goog.require('ola.SortedList');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
+goog.require('ola.HomeFrame');
 
 goog.provide('ola');
 
@@ -32,135 +33,6 @@ ola.PLUGIN_FRAME_ID = 'plugin_frame';
 ola.SPLIT_PANE_ID = 'split_pane';
 ola.NEW_UNIVERSE_FRAME_ID = 'new_universe_frame';
 ola.UNIVERSE_TAB_PANE_ID = 'universe_tab_pane';
-
-/**
- * The base frame class
- * @param element_id the id of the div to use for the home frame
- * @constructor
- */
-ola.BaseFrame = function(element_id) {
-  this.element = goog.dom.$(element_id);
-}
-
-
-/**
- * Is this frame visible?
- */
-ola.BaseFrame.prototype.IsVisible = function() {
-  return this.element.style.display == 'block';
-}
-
-
-/**
- * Show this frame
- */
-ola.BaseFrame.prototype.Show = function() {
-  this.element.style.display = 'block';
-}
-
-
-/**
- * Hide this frame
- */
-ola.BaseFrame.prototype.Hide = function() {
-  this.element.style.display = 'none';
-}
-
-
-/**
- * A class representing the home frame
- * @param element_id the id of the div to use for the home frame
- * @constructor
- */
-ola.HomeFrame = function(element_id, ola_server) {
-  ola.BaseFrame.call(this, element_id);
-  var reload_button = goog.dom.$('reload_button');
-  goog.ui.decorate(reload_button);
-
-  var stop_button = goog.dom.$('stop_button');
-  goog.ui.decorate(stop_button);
-  goog.events.listen(stop_button,
-                     goog.events.EventType.CLICK,
-                     this._StopButtonClicked,
-                     false, this);
-
-  var new_universe_button = goog.dom.$('new_universe_button');
-  goog.ui.decorate(new_universe_button);
-
-  goog.events.listen(reload_button,
-                     goog.events.EventType.CLICK,
-                     ola_server.FetchUniversePluginList,
-                     false,
-                     ola_server);
-
-  goog.events.listen(ola_server, ola.Server.EventType.SERVER_INFO_EVENT,
-                     this._UpdateFromData,
-                     false, this);
-  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_LIST_EVENT,
-                     this._UniverseListChanged,
-                     false, this);
-  ola_server.UpdateServerInfo();
-
-  this.dialog = new goog.ui.Dialog(null, true);
-
-  /*
-  this.universe_list = new ola.SortedList(
-      'universe_list',
-      function(item) {
-        var new_tr = goog.dom.createDom(
-            'tr', {},
-            goog.dom.createDom('td', {}, item.id.toString()),
-            goog.dom.createDom('td', {}, item.name),
-            goog.dom.createDom('td', {}, item.input_ports.toString()),
-            goog.dom.createDom('td', {}, item.output_ports.toString()),
-            goog.dom.createDom('td', {}, item.rdm_devices.toString()));
-        return new_tr;
-      },
-      function(element, data) {
-        var td = goog.dom.getFirstElementChild(element);
-        td = goog.dom.getNextElementSibling(td);
-        td.innerHTML = data.name;
-        td = goog.dom.getNextElementSibling(td);
-        td.innerHTML = data.input_ports.toString();
-        td = goog.dom.getNextElementSibling(td);
-        td.innerHTML = data.output_ports.toString();
-        td = goog.dom.getNextElementSibling(td);
-        td.innerHTML = data.rdm_devices.toString();
-      });
-  */
-}
-goog.inherits(ola.HomeFrame, ola.BaseFrame);
-
-
-/**
- * Update the home frame with new server data
- */
-ola.HomeFrame.prototype._UpdateFromData = function(e) {
-  goog.dom.$('server_hostname').innerHTML = e.server_info.hostname;
-  goog.dom.$('server_ip').innerHTML = e.server_info.ip;
-  goog.dom.$('server_version').innerHTML = e.server_info.version;
-  goog.dom.$('server_uptime').innerHTML = e.server_info.up_since;
-}
-
-
-/**
- * Update the universe set
- */
-ola.HomeFrame.prototype._UniverseListChanged = function(e) {
-  //this.universe_list.UpdateFromData(e.universes);
-}
-
-
-/**
- * Called when the stop button is clicked
- */
-ola.HomeFrame.prototype._StopButtonClicked = function(e) {
-  this.dialog.setTitle('Please confirm');
-  this.dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
-  this.dialog.setContent('Are you sure? OLA may not be configured to restart '
-                         + 'automatically');
-  this.dialog.setVisible(true);
-}
 
 
 /**
