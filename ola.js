@@ -20,6 +20,7 @@ goog.require('ola.SortedList');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.HomeFrame');
+goog.require('ola.NewUniverseFrame');
 
 goog.provide('ola');
 
@@ -113,52 +114,6 @@ ola.UniverseFrame.prototype._UpdateFromData = function(e) {
   goog.dom.$('universe_id').innerHTML = e.universe.id;
   goog.dom.$('universe_name').innerHTML = e.universe.name;
   goog.dom.$('universe_merge_mode').innerHTML = e.universe.merge_mode;
-}
-
-
-
-/**
- * The class representing the Universe frame
- * @constructor
- */
-ola.NewUniverseFrame = function(element_id, ola_server) {
-  ola.BaseFrame.call(this, element_id);
-  this.ola_server = ola_server
-
-  /*
-  this.current_universe = undefined;
-  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
-                     this._UpdateFromData,
-                     false, this);
-
-  var tabPane = new goog.ui.TabPane(
-    document.getElementById(ola.UNIVERSE_TAB_PANE_ID));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_1'), "Settings"));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_2'), 'RDM'));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_3'), 'Console'));
-  tabPane.setSelectedIndex(0);
-  this.selected_tab = 0;
-
-  goog.events.listen(tabPane, goog.ui.TabPane.Events.CHANGE,
-                     this.TabChanged, false, this);
-
-  var save_button = goog.dom.$('new_universe_save_button');
-  goog.ui.decorate(save_button);
-  */
-}
-
-goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
-
-
-/**
- * Show this frame. We extent the base method so we can populate the correct
- * tab.
- */
-ola.NewUniverseFrame.prototype.Show = function(universe_id) {
-  ola.NewUniverseFrame.superClass_.Show.call(this);
 }
 
 
