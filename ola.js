@@ -17,6 +17,7 @@ goog.require('goog.ui.SplitPane.Orientation');
 
 goog.require('ola.Dialog');
 goog.require('ola.HomeFrame');
+goog.require('ola.UniverseFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.NewUniverseFrame');
 goog.require('ola.Server');
@@ -35,125 +36,6 @@ ola.PLUGIN_FRAME_ID = 'plugin_frame';
 ola.SPLIT_PANE_ID = 'split_pane';
 ola.NEW_UNIVERSE_FRAME_ID = 'new_universe_frame';
 ola.UNIVERSE_TAB_PANE_ID = 'universe_tab_pane';
-
-
-/**
- * The class representing the Universe frame
- * @constructor
- */
-ola.UniverseFrame = function(element_id, ola_server) {
-  ola.BaseFrame.call(this, element_id);
-  this.ola_server = ola_server
-  this.current_universe = undefined;
-  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
-                     this._UpdateFromData,
-                     false, this);
-
-  var tabPane = new goog.ui.TabPane(
-    document.getElementById(ola.UNIVERSE_TAB_PANE_ID));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_1'), "Settings"));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_2'), 'RDM'));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_3'), 'Console'));
-  this.selected_tab = 0;
-  tabPane.setSelectedIndex(1);
-
-  goog.events.listen(tabPane, goog.ui.TabPane.Events.CHANGE,
-                     this.TabChanged, false, this);
-
-  this._SetupMainTab();
-  this._SetupRDMTab();
-  // this has to be done after the RDM split pane is setup otherwise the size
-  // doesn't render correctly.
-  tabPane.setSelectedIndex(0);
-}
-
-goog.inherits(ola.UniverseFrame, ola.BaseFrame);
-
-
-/**
- * Setup the main universe settings tab
- */
-ola.UniverseFrame.prototype._SetupMainTab = function() {
-
-  var save_button = goog.dom.$('universe_save_button');
-  goog.ui.decorate(save_button);
-}
-
-/**
- * Setup the RDM tab
- */
-ola.UniverseFrame.prototype._SetupRDMTab = function() {
-  var lhs2 = new goog.ui.Component();
-  var rhs2 = new goog.ui.Component();
-  this.splitpane2 = new goog.ui.SplitPane(lhs2, rhs2,
-      goog.ui.SplitPane.Orientation.HORIZONTAL);
-  this.splitpane2.setInitialSize(150);
-  this.splitpane2.setHandleSize(2);
-  this.splitpane2.decorate(goog.dom.$('rdm_split_pane'));
-  this.splitpane2.setSize(new goog.math.Size(500, 400));
-}
-
-
-/**
- * Get the current selected universe
- */
-ola.UniverseFrame.prototype.ActiveUniverse = function() {
-  return this.current_universe;
-}
-
-
-/**
- * Show this frame. We extend the base method so we can populate the correct
- * tab.
- */
-ola.UniverseFrame.prototype.Show = function(universe_id) {
-  this.current_universe = universe_id;
-  this._UpdateSelectedTab();
-  ola.UniverseFrame.superClass_.Show.call(this);
-}
-
-
-/**
- * Called when the select tab changes
- */
-ola.UniverseFrame.prototype.TabChanged = function(e) {
-  this.selected_tab = e.page.getIndex();
-  this._UpdateSelectedTab();
-}
-
-
-ola.UniverseFrame.prototype._UpdateSelectedTab = function() {
-  if (this.selected_tab == 0) {
-    this.ola_server.FetchUniverseInfo(this.current_universe);
-  } else if (this.selected_tab == 1) {
-    // update RDM
-  }
-}
-
-
-/**
- * Update this universe frame from a Universe object
- */
-ola.UniverseFrame.prototype._UpdateFromData = function(e) {
-  this.current_universe = e.universe.id;
-  goog.dom.$('universe_id').innerHTML = e.universe.id;
-  goog.dom.$('universe_name').innerHTML = e.universe.name;
-  goog.dom.$('universe_merge_mode').innerHTML = e.universe.merge_mode;
-}
-
-
-/**
- * Update this universe frame from a Universe object
- */
-ola.UniverseFrame.prototype._UpdateFromData = function(e) {
-  this.current_universe = e.universe.id;
-  goog.dom.$('universe_id').innerHTML = e.universe.id;
-  goog.dom.$('universe_name').innerHTML = e.universe.name;
-  goog.dom.$('universe_merge_mode').innerHTML = e.universe.merge_mode;
-}
 
 
 /**
@@ -206,7 +88,7 @@ ola.OlaUI = function(server) {
   this.splitpane1.decorate(goog.dom.$(ola.SPLIT_PANE_ID));
 
   // show the main frame now
-  //goog.dom.$(ola.SPLIT_PANE_ID).style.display = 'block';
+  goog.dom.$(ola.SPLIT_PANE_ID).style.visible = 'visible';
 
   // redraw on resize events
   this.vsm = new goog.dom.ViewportSizeMonitor();

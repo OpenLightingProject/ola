@@ -14,6 +14,7 @@ goog.require('goog.ui.Dialog');
     <script src="dialog.js"></script>
     <script src="base_frame.js"></script>
     <script src="home_frame.js"></script>
+    <script src="universe_frame.js"></script>
     <script src="new_universe_frame.js"></script>
     <script src="ola.js"></script>
     <!--
@@ -304,7 +305,7 @@ goog.require('goog.ui.Dialog');
      </div>
     </div>
 
-    <div class='goog-splitpane' id='split_pane'>
+    <div class='goog-splitpane' id='split_pane' style='visible: hidden'>
       <div class='goog-splitpane-handle'></div>
       <div class='goog-splitpane-first-container'>
        <div id="home_control" class="goog-control"
@@ -460,6 +461,11 @@ goog.require('goog.ui.Dialog');
           </div>
 
           <div id="tab_page_2">
+            <div>
+             <div id="force_discovery_button"
+               class="goog-custom-button goog-inline-block"
+               title="Run RDM Discovery">Force Discovery</div>
+            </div>
             <div class='goog-splitpane' id='rdm_split_pane'>
               <div class='goog-splitpane-first-container'>
                 This would be the UID list
