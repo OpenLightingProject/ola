@@ -39,16 +39,19 @@ ola.logger = goog.debug.Logger.getLogger('ola');
  */
 ola.LoggerWindow = function() {
   goog.debug.LogManager.getRoot().setLevel(goog.debug.Logger.Level.ALL);
-  var logconsole = new goog.debug.DivConsole(goog.dom.$('log'));
-  logconsole.setCapturing(true);
 
+  // setup the log console
+  var log_console = new goog.debug.DivConsole(goog.dom.$('log'));
+  log_console.setCapturing(true);
+
+  // setup the control which shows the console
   this.log_control = goog.dom.$('log_control');
-
-  var control = new goog.ui.Control("log_control");
+  var control = new goog.ui.Control();
   control.decorate(this.log_control);
   goog.events.listen(this.log_control, goog.events.EventType.CLICK,
                      this.Show, false, this);
 
+  // setup the popup that the console is contained in
   var popupElt = document.getElementById('log_popup');
   this.popup = new goog.ui.Popup(popupElt);
   this.popup.setHideOnEscape(true);
