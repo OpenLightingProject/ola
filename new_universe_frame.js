@@ -25,6 +25,7 @@ goog.require('ola.LoggerWindow');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
+goog.require('goog.ui.Checkbox');
 
 goog.provide('ola.NewUniverseFrame');
 
@@ -54,14 +55,23 @@ ola.AvailablePortComponent.prototype.canDecorate = function() {
  * Create the dom for this component
  */
 ola.AvailablePortComponent.prototype.createDom = function() {
-  var tr = this.dom_.createDom(
-      'tr', {},
-      goog.dom.createDom('td', {}, ''),
-      goog.dom.createDom('td', {}, this.data['device']),
-      goog.dom.createDom('td', {}, this.data['is_output'] ? 'Output' :
-        'Input'),
-      goog.dom.createDom('td', {}, this.data['description']));
+  var tr = this.dom_.createDom('tr', {});
+  tr.style.cursor = 'pointer';
+  var td = goog.dom.createDom('td', {}, '');
+  this.dom_.appendChild(tr, td);
+  this.checkbox = new goog.ui.Checkbox();
+  this.checkbox.render(td);
+  this.dom_.appendChild(tr, goog.dom.createDom('td', {}, this.data['device']));
+  this.dom_.appendChild(tr, goog.dom.createDom('td', {},
+      this.data['is_output'] ?  'Output' : 'Input'));
+  this.dom_.appendChild(tr, goog.dom.createDom('td', {},
+      this.data['description']));
   this.setElementInternal(tr);
+
+  goog.events.listen(tr,
+                     goog.events.EventType.CLICK,
+                     function () { this.checkbox.toggle(); },
+                     false, this);
 };
 
 
@@ -70,6 +80,14 @@ ola.AvailablePortComponent.prototype.createDom = function() {
  */
 ola.AvailablePortComponent.prototype.Id = function() {
   return this.data['id'];
+};
+
+
+/**
+ * Check is this was selected
+ */
+ola.AvailablePortComponent.prototype.IsSelected = function() {
+  return this.checkbox.isChecked();
 };
 
 
@@ -125,10 +143,10 @@ ola.NewUniverseFrame = function(element_id, ola_ui) {
                      this._AddButtonClicked,
                      false, this);
 
-  var table_container = new ola.TableContainer();
-  table_container.decorate(goog.dom.$('available_ports'));
+  this.table_container = new ola.TableContainer();
+  this.table_container.decorate(goog.dom.$('available_ports'));
   this.port_list = new ola.SortedList(
-      table_container,
+      this.table_container,
       new ola.AvailablePortComponentFactory());
 }
 goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
@@ -161,13 +179,53 @@ ola.NewUniverseFrame.prototype._UpdateAvailablePorts = function(e) {
       false, this);
 }
 
+
 /**
- * Called when the stop button is clicked
+ * Called when the add universe button is clicked
  */
 ola.NewUniverseFrame.prototype._AddButtonClicked = function(e) {
-  // verify all fields here
-
   var dialog = ola.Dialog.getInstance();
+  var universe_id_input = goog.dom.$('new_universe_id');
+  var universe_id = parseInt(universe_id_input.value);
+  if (isNaN(universe_id) || universe_id < 0 || universe_id > 65535) {
+    dialog.setTitle('Invalid Universe Number');
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setContent('The universe number must be between 0 and 65535');
+    dialog.setVisible(true);
+    return;
+  }
+
+  var ola_server = ola.Server.getInstance();
+  // check if we already know about this universe
+  if (ola_server.CheckIfUniverseExists(universe_id)) {
+    dialog.setTitle('Universe already exists');
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setContent('Universe ' + universe_id + ' already exists');
+    dialog.setVisible(true);
+    return;
+  }
+
+  // universe names are optional
+  var universe_name = goog.dom.$('new_universe_name').value;
+
+  var count = this.table_container.getChildCount();
+  var selected_ports = new Array();
+  for (var i = 0; i < count; ++i) {
+    var port_component = this.table_container.getChildAt(i);
+    if (port_component.IsSelected()) {
+      selected_ports.push(port_component.Id());
+    }
+  }
+
+  if (selected_ports.length == 0) {
+    dialog.setTitle('No ports selected');
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setContent('At least one port must be bound to the universe');
+    dialog.setVisible(true);
+    return;
+  }
+
+  //ola.server.NewUniverse(new_universe_id, new_universe_name, selected_ports);
   dialog.SetAsBusy();
-  dialog.setVisible(true);
+  //dialog.setVisible(true);
 }

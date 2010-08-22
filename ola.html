@@ -129,12 +129,12 @@ goog.require('goog.ui.Dialog');
   }
 
   .popup {
-    position:absolute;
-    background-color:#e0ecff;
-    color:black;
-    visibility:hidden;
-    width:400px;
-    height:200px;
+    position: absolute;
+    background-color: #e0ecff;
+    color: black;
+    visibility: hidden;
+    width: 400px;
+    height: 200px;
     font-size: 80%;
     border:solid #000000 1px;
     -moz-outline:0;
@@ -255,6 +255,37 @@ goog.require('goog.ui.Dialog');
     border-top: 1px solid #67a7e3;
   }
 
+  .goog-checkbox {
+    border: 1px solid #1C5180;
+    cursor: pointer;
+    display: -moz-inline-box;
+    display: inline-block;
+    font-size: 1px;  /* Fixes the height in IE6 */
+    height: 11px;
+    margin: 0 4px 0 1px;
+    vertical-align: text-bottom;
+    width: 11px;
+    outline: none;
+  }
+
+  .goog-checkbox-checked {
+    background: #fff url('/images/check-sprite.gif') no-repeat 2px center;
+  }
+
+  .goog-checkbox-undetermined {
+    background: #bbb url('/images/check-sprite.gif') no-repeat 2px center;
+  }
+
+  .goog-checkbox-unchecked {
+    background: #fff;
+  }
+
+  .goog-checkbox-disabled {
+    border: 1px solid lightgray;
+    cursor: default !important;
+    background-position: -7px;
+  }
+
   </style>
   </head>
   <body onload="ola.Setup()">
@@ -273,7 +304,8 @@ goog.require('goog.ui.Dialog');
      </div>
     </div>
 
-    <div class='goog-splitpane' id='split_pane' style='display: none'>
+    <div class='goog-splitpane' id='split_pane'>
+      <div class='goog-splitpane-handle'></div>
       <div class='goog-splitpane-first-container'>
        <div id="home_control" class="goog-control"
          title="Main page">
@@ -399,11 +431,18 @@ goog.require('goog.ui.Dialog');
             </fieldset>
             <fieldset>
               <legend>Input Ports</legend>
-              <table>
-               <tr>
-                <td>ArtNet I</td><td> </td>
-               </tr>
-             </table>
+                <table class="ola-table">
+                 <thead>
+                  <tr>
+                   <th>&nbsp;</th>
+                   <th>Device</th>
+                   <th>Direction</th>
+                   <th>Description</th>
+                  </tr>
+                 </thead>
+                 <tbody id="available_ports">
+                 </tbody>
+               </table>
             </fieldset>
             <fieldset>
               <legend>Output Ports</legend>
@@ -420,14 +459,23 @@ goog.require('goog.ui.Dialog');
             </div>
           </div>
 
-          <div id="tab_page_2">foo</div>
+          <div id="tab_page_2">
+            <div class='goog-splitpane' id='rdm_split_pane'>
+              <div class='goog-splitpane-first-container'>
+                This would be the UID list
+              </div>
+              <div class='goog-splitpane-second-container'>
+                This is the second tab
+              </div>
+              <div class='goog-splitpane-handle'></div>
+            </div>
+          </div>
           <div id="tab_page_3">bar</div>
         </div>
         <div id="plugin_frame" style="margin: 5px">
             <pre id="plugin_description"></pre>
         </div>
       </div>
-      <div class='goog-splitpane-handle'></div>
     </div>
 
     <div id="footer">

@@ -57,17 +57,44 @@ ola.UniverseFrame = function(element_id, ola_server) {
     goog.dom.$('tab_page_2'), 'RDM'));
   tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_3'), 'Console'));
-  tabPane.setSelectedIndex(0);
   this.selected_tab = 0;
+  tabPane.setSelectedIndex(1);
 
   goog.events.listen(tabPane, goog.ui.TabPane.Events.CHANGE,
                      this.TabChanged, false, this);
+
+  this._SetupMainTab();
+  this._SetupRDMTab();
+  // this has to be done after the RDM split pane is setup otherwise the size
+  // doesn't render correctly.
+  tabPane.setSelectedIndex(0);
+}
+
+goog.inherits(ola.UniverseFrame, ola.BaseFrame);
+
+
+/**
+ * Setup the main universe settings tab
+ */
+ola.UniverseFrame.prototype._SetupMainTab = function() {
 
   var save_button = goog.dom.$('universe_save_button');
   goog.ui.decorate(save_button);
 }
 
-goog.inherits(ola.UniverseFrame, ola.BaseFrame);
+/**
+ * Setup the RDM tab
+ */
+ola.UniverseFrame.prototype._SetupRDMTab = function() {
+  var lhs2 = new goog.ui.Component();
+  var rhs2 = new goog.ui.Component();
+  this.splitpane2 = new goog.ui.SplitPane(lhs2, rhs2,
+      goog.ui.SplitPane.Orientation.HORIZONTAL);
+  this.splitpane2.setInitialSize(150);
+  this.splitpane2.setHandleSize(2);
+  this.splitpane2.decorate(goog.dom.$('rdm_split_pane'));
+  this.splitpane2.setSize(new goog.math.Size(500, 400));
+}
 
 
 /**
@@ -179,7 +206,7 @@ ola.OlaUI = function(server) {
   this.splitpane1.decorate(goog.dom.$(ola.SPLIT_PANE_ID));
 
   // show the main frame now
-  goog.dom.$(ola.SPLIT_PANE_ID).style.display = 'block';
+  //goog.dom.$(ola.SPLIT_PANE_ID).style.display = 'block';
 
   // redraw on resize events
   this.vsm = new goog.dom.ViewportSizeMonitor();

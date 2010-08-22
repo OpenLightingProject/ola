@@ -35,6 +35,7 @@ var ola = ola || {}
 ola.Server = function() {
   goog.events.EventTarget.call(this);
   this.pool = new goog.net.XhrIoPool({}, 1);
+  this.universes = {};
 }
 goog.inherits(ola.Server, goog.events.EventTarget);
 
@@ -141,6 +142,13 @@ goog.inherits(ola.AvailablePortsEvent, goog.events.Event);
 
 
 /**
+ * Check if this universe is active
+ */
+ola.Server.prototype.CheckIfUniverseExists = function(universe_id) {
+  return this.universes[universe_id] != undefined;
+}
+
+/**
  * Update the server info data
  */
 ola.Server.prototype.UpdateServerInfo = function() {
@@ -183,6 +191,12 @@ ola.Server.prototype.StopServer = function () {
 ola.Server.prototype.FetchUniversePluginList = function() {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
+
+    // update the internal list of universes here
+    this.universes = {}
+    for (var i = 0; i < obj.universes.length; ++i) {
+      this.universes[obj.plugins[i].id] = true;
+    }
     this.dispatchEvent(new ola.PluginListChangeEvent(obj.plugins));
     this.dispatchEvent(new ola.UniverseListChangeEvent(obj.universes));
     this._CleanupRequest(e.target);
