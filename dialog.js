@@ -36,7 +36,8 @@ goog.addSingletonGetter(ola.Dialog);
  * Make this dialog show the spinner
  */
 ola.Dialog.prototype.SetAsBusy = function() {
-  this.setTitle('Waiting....');
+  this.setTitle('Waiting for server response....');
   this.setButtonSet(null);
-  this.setContent('Waiting....');
+  this.setContent('<div align="center"><img src="/images/ajax-loader.gif">' +
+                  '</div>');
 }

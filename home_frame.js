@@ -112,10 +112,15 @@ ola.UniverseComponentFactory.prototype.newComponent = function(data) {
  * @param element_id the id of the div to use for the home frame
  * @constructor
  */
-ola.HomeFrame = function(element_id, ola_server) {
+ola.HomeFrame = function(element_id) {
+  var ola_server = ola.Server.getInstance();
   ola.BaseFrame.call(this, element_id);
   var reload_button = goog.dom.$('reload_button');
   goog.ui.decorate(reload_button);
+  goog.events.listen(reload_button,
+                     goog.events.EventType.CLICK,
+                     this._ReloadButtonClicked,
+                     false, this);
 
   var stop_button = goog.dom.$('stop_button');
   goog.ui.decorate(stop_button);
@@ -127,17 +132,17 @@ ola.HomeFrame = function(element_id, ola_server) {
   var new_universe_button = goog.dom.$('new_universe_button');
   goog.ui.decorate(new_universe_button);
 
-  goog.events.listen(reload_button,
-                     goog.events.EventType.CLICK,
-                     ola_server.FetchUniversePluginList,
-                     false,
-                     ola_server);
-
   goog.events.listen(ola_server, ola.Server.EventType.SERVER_INFO_EVENT,
                      this._UpdateFromData,
                      false, this);
   goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_LIST_EVENT,
                      this._UniverseListChanged,
+                     false, this);
+  goog.events.listen(ola_server, ola.Server.EventType.SERVER_STOP_EVENT,
+                     this._StopServerComplete,
+                     false, this);
+  goog.events.listen(ola_server, ola.Server.EventType.PLUGIN_RELOAD_EVENT,
+                     this._PluginReloadComplete,
                      false, this);
   ola_server.UpdateServerInfo();
 
@@ -174,9 +179,58 @@ ola.HomeFrame.prototype._UniverseListChanged = function(e) {
  */
 ola.HomeFrame.prototype._StopButtonClicked = function(e) {
   var dialog = ola.Dialog.getInstance();
+
+  goog.events.listen(dialog, goog.ui.Dialog.EventType.SELECT,
+      this._StopDialogSelected, false, this);
+
   dialog.setTitle('Please confirm');
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
   dialog.setContent('Are you sure? OLA may not be configured to restart '
                     + 'automatically');
   dialog.setVisible(true);
+}
+
+
+/**
+ * Called when the stop dialog exits.
+ */
+ola.HomeFrame.prototype._StopDialogSelected = function(e) {
+  var dialog = ola.Dialog.getInstance();
+
+  goog.events.unlisten(dialog, goog.ui.Dialog.EventType.SELECT,
+      this._StopDialogSelected, false, this);
+
+  if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
+    dialog.SetAsBusy();
+    dialog.setVisible(true);
+    ola.Server.getInstance().StopServer();
+    return false;
+  }
+}
+
+
+/**
+ * Update the home frame with new server data
+ */
+ola.HomeFrame.prototype._StopServerComplete = function(e) {
+  ola.Dialog.getInstance().setVisible(false);
+}
+
+
+/**
+ * Called when the reload button is clicked
+ */
+ola.HomeFrame.prototype._ReloadButtonClicked = function(e) {
+  var dialog = ola.Dialog.getInstance();
+  dialog.SetAsBusy();
+  dialog.setVisible(true);
+  ola.Server.getInstance().ReloadPlugins();
+}
+
+
+/**
+ * Update the home frame with new server data
+ */
+ola.HomeFrame.prototype._PluginReloadComplete = function(e) {
+  ola.Dialog.getInstance().setVisible(false);
 }

@@ -157,7 +157,7 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
  */
 ola.OlaUI = function(server) {
   this.ola_server = server;
-  this.home_frame = new ola.HomeFrame(ola.HOME_FRAME_ID, server);
+  this.home_frame = new ola.HomeFrame(ola.HOME_FRAME_ID);
   this.universe_frame = new ola.UniverseFrame(ola.UNIVERSE_FRAME_ID, server);
   this.plugin_frame = new ola.PluginFrame(ola.PLUGIN_FRAME_ID, server);
   this.new_universe_frame = new ola.NewUniverseFrame(ola.NEW_UNIVERSE_FRAME_ID,
@@ -392,7 +392,7 @@ ola.OlaUI.prototype._UpdateUI = function(size) {
 
 ola.Setup = function() {
   var logger_window = new ola.LoggerWindow();
-  var server = new ola.Server();
+  var server = ola.Server.getInstance();
   var ola_ui = new ola.OlaUI(server);
 }
 goog.exportSymbol('ola.Setup', ola.Setup);
