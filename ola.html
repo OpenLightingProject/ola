@@ -22,7 +22,6 @@ goog.require('goog.ui.Dialog');
     <link rel="stylesheet" href="/custombutton.css">
     <title>OLA Admin</title>
 <style class="text/css">
-
   body {
     margin: 0px;
     padding: 0px;
@@ -39,9 +38,9 @@ goog.require('goog.ui.Dialog');
     border-spacing: 0px;
   }
 
-  legend {
-    font-weight: bold;
-  }
+  legend { font-weight: bold; }
+  fieldset { border: #67a7e3 1px solid; }
+  input { border: #67a7e3 1px solid; }
 
   #header {
     margin: 0px;
@@ -65,82 +64,129 @@ goog.require('goog.ui.Dialog');
     font-size: 11px;
   }
 
-  /* NOTE: A bug in Safari 3 requires these css definitions to be in here.
-     Do not move these to a seperate file without testing safari 3! */
-  /* These are recommended styles for the default splitpane */
-  .goog-splitpane {
-    width: 100%;
+  .goog-control {
+    cursor: pointer;
+    outline: none;
   }
 
-  .goog-splitpane-handle {
-    border-left: 2px solid #67a7e3;
-    border-right: 2px solid #67a7e3;
-    background: #c00;
+  .goog-inline-block {
+    position: relative;
+    display: -moz-inline-box; /* Ignored by FF3 and later. */
+    display: inline-block;
+  }
+
+  .ola-scroller {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    padding: 5px;
+  }
+
+  /* Log window css */
+  .log_popup {
     position: absolute;
+    visibility: hidden;
+    font-size: 80%;
+    -moz-outline: 0;
+    outline: 0;
+    z-index: 100;
+  }
+
+  .logdiv {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
+
+  /* CSS for the dialog box */
+  .modal-dialog {
+    width: 430px;
+    z-index: 101;
+    background: #c1d9ff;
+    border: 1px solid #3a5774;
+    padding: 4px;
+    position: absolute;
+  }
+
+  .modal-dialog-bg {
+    background: #666;
+    left: 0;
+    position: absolute;
+    top: 0;
+  }
+
+  .modal-dialog-title {
+    background: #e0edfe;
+    font-size: 120%;
+    font-weight: bold;
+    padding: 8px 15px 8px 8px;
+    position: relative;
+    _zoom: 1; /* Ensures proper width in IE6 RTL. */
+  }
+
+  .modal-dialog-buttons,
+  .modal-dialog-content {
+    background-color: #fff;
+    padding: 8px;
+  }
+
+  /* Generic split pane styles */
+  /* NOTE: A bug in Safari 3 requires these css definitions to be in here.
+     Do not move these to a seperate file without testing safari 3! */
+  .goog-splitpane {
+    width: 100%;
   }
 
   .goog-splitpane-handle-horizontal {
     cursor: col-resize;
   }
 
-  .goog-splitpane-first-container {
+  /* CSS for the main split pane */
+  .ola-splitpane-handle {
+    border-left: 2px solid #67a7e3;
+    border-right: 2px solid #67a7e3;
+    position: absolute;
+  }
+
+  .ola-splitpane-navigation {
     font-size: 13px;
     overflow: auto;
     position: absolute;
+    white-space: nowrap;
   }
 
-  .goog-splitpane-second-container {
+  .ola-splitpane-content {
     border-top: 4px solid #67a7e3;
     border-bottom: 4px solid #67a7e3;
     border-right: 4px solid #67a7e3;
-    overflow: auto;
     position: absolute;
+    overflow: hidden;
   }
 
-  .goog-control {
-    cursor: pointer;
-    outline: none;
-  }
-
-  .goog-control-hover {
-  }
-
-  .goog-splitpane-first-container .goog-control {
+  /* CSS for the navigation pane */
+  .ola-splitpane-navigation .goog-control {
     padding: 2px 0px 2px 5px;
     color: #0066cc;
     background-color: #fff;
   }
 
-  .goog-container .goog-control {
-    overflow: hidden;
-    padding-left: 12px;
-  }
-
-  .goog-splitpane-first-container .goog-control-hover {
+  .ola-splitpane-navigation .goog-control-hover {
     background-color: #b3d3f7;
   }
 
-  .goog-debug-panel .logdiv {
-    position: relative;
-    width: 398px;
-    height: 198px;
-    overflow: scroll;
-    overflow-x: hidden;
-    overflow-y: scroll;
+  .ola-splitpane-navigation .goog-container {
+    padding: 2px;
   }
 
-  .popup {
-    position: absolute;
-    background-color: #e0ecff;
-    color: black;
-    visibility: hidden;
-    width: 400px;
-    height: 200px;
-    font-size: 80%;
-    border:solid #000000 1px;
-    -moz-outline:0;
-    outline:0;
-    z-index: 100;
+  .ola-splitpane-navigation .goog-container .goog-control {
+    overflow: hidden;
+    padding-left: 17px;
   }
 
   .goog-zippy-expanded img {
@@ -152,22 +198,13 @@ goog.require('goog.ui.Dialog');
     background-position: -40px 0px;
   }
 
-  .goog-splitpane-first-container img {
+  .ola-splitpane-navigation img {
     width: 12px;
     height: 12px;
     padding-right: 5px;
   }
 
-  .goog-splitpane-first-container .goog-container {
-    padding: 5px;
-  }
-
-  .goog-inline-block {
-    position: relative;
-    display: -moz-inline-box; /* Ignored by FF3 and later. */
-    display: inline-block;
-  }
-
+  /* CSS for the tabs */
   .goog-tabpane {
     position: relative;
     margin-left: 2px;
@@ -199,50 +236,30 @@ goog.require('goog.ui.Dialog');
     border-top: #67a7e3 1px solid;
   }
 
-  fieldset {
-    border: #67a7e3 1px solid;
+  /* CSS for the RDM split pane */
+  .ola-splitpane-rdm {
+    border-top: 1px solid #67a7e3;
   }
 
-  input {
-    border: #67a7e3 1px solid;
-  }
-
-  .modal-dialog {
-    width: 430px;
-  }
-
-  .modal-dialog {
-    background: #c1d9ff;
-    border: 1px solid #3a5774;
-    color: #000;
-    padding: 4px;
+  .ola-splitpane-rdm-handle {
+    border-left: 2px solid #67a7e3;
+    border-right: 2px solid #67a7e3;
     position: absolute;
   }
 
-  .modal-dialog-bg {
-    background: #666;
-    left: 0;
-    position: absolute;
-    top: 0;
+  .ola-splitpane-rdm-uids {
+    overflow: auto;
   }
 
-  .modal-dialog-title {
-    background: #e0edfe;
-    color: #000;
-    cursor: pointer;
-    font-size: 120%;
-    font-weight: bold;
-    padding: 8px 15px 8px 8px;
-    position: relative;
-    _zoom: 1; /* Ensures proper width in IE6 RTL. */
+  .ola-splitpane-rdm-uids .goog-container {
+    outline: none;
   }
 
-  .modal-dialog-buttons,
-  .modal-dialog-content {
-    background-color: #fff;
-    padding: 8px;
+  .ola-splitpane-rdm-uids .goog-control {
+    padding-left: 4px;
   }
 
+  /* Tables are used in various frames */
   .ola-table {
     width: 100%;
     border-bottom: 1px solid #67a7e3;
@@ -256,6 +273,7 @@ goog.require('goog.ui.Dialog');
     border-top: 1px solid #67a7e3;
   }
 
+  /* Checkboxes are used in various frames */
   .goog-checkbox {
     border: 1px solid #1C5180;
     cursor: pointer;
@@ -286,28 +304,23 @@ goog.require('goog.ui.Dialog');
     cursor: default !important;
     background-position: -7px;
   }
-
   </style>
   </head>
   <body onload="ola.Setup()">
     <div id="header">
-      <div id="right_nav">
-        <span id="log_control" class="goog-control">View Log</span>
-      </div>
+      <div id="right_nav"><span id="log_control">View Log</span></div>
       <div id="title">
        <img src="./logo.png">
       </div>
     </div>
 
-    <div id='log_popup' class='popup' tabindex="0">
-     <div class="goog-debug-panel">
-        <div id="log"></div>
-     </div>
+    <div id='log_popup' class='log_popup' tabindex="0">
+      <div id="log" style="border: 1px solid #000000"></div>
     </div>
 
-    <div class='goog-splitpane' id='split_pane' style='visible: hidden'>
-      <div class='goog-splitpane-handle'></div>
-      <div class='goog-splitpane-first-container'>
+    <div class='goog-splitpane' id='split_pane' style='visibility: hidden'>
+      <div class='goog-splitpane-handle ola-splitpane-handle'></div>
+      <div class='goog-splitpane-first-container ola-splitpane-navigation'>
        <div id="home_control" class="goog-control"
          title="Main page">
          <img src="./images/blank.gif" />Home
@@ -324,8 +337,9 @@ goog.require('goog.ui.Dialog');
        <div id="plugin_container" class="goog-container"></div>
       </div>
 
-      <div class='goog-splitpane-second-container'>
-        <div id="home_frame" style="margin: 5px">
+      <div class='goog-splitpane-second-container ola-splitpane-content'
+          id='ola-splitpane-content'>
+        <div class="ola-scroller" id="home_frame" style="">
           <fieldset>
             <legend>Active Universes</legend>
             <table class="ola-table">
@@ -373,9 +387,10 @@ goog.require('goog.ui.Dialog');
            <div id="stop_button" class="goog-custom-button goog-inline-block"
              title="Stop OLA">Stop OLA</div>
           </div>
+          <br/>
         </div>
 
-        <div id="new_universe_frame" style="margin: 5px">
+        <div id="new_universe_frame" class="ola-scroller">
           <fieldset>
            <legend>New Universe Settings</legend>
            <table>
@@ -415,7 +430,7 @@ goog.require('goog.ui.Dialog');
         <div id="universe_frame">
           <div id="universe_tab_pane"></div>
 
-          <div id="tab_page_1">
+          <div id="tab_page_1" class="ola-scroller">
             <fieldset>
              <legend>Universe Settings</legend>
              <table>
@@ -458,6 +473,7 @@ goog.require('goog.ui.Dialog');
                class="goog-custom-button goog-inline-block"
                title="Save Changes">Save</div>
             </div>
+            <br/>
           </div>
 
           <div id="tab_page_2">
@@ -466,19 +482,21 @@ goog.require('goog.ui.Dialog');
                class="goog-custom-button goog-inline-block"
                title="Run RDM Discovery">Force Discovery</div>
             </div>
-            <div class='goog-splitpane' id='rdm_split_pane'>
-              <div class='goog-splitpane-first-container'>
+            <div class='goog-splitpane ola-splitpane-rdm' id='rdm_split_pane'>
+              <div class='goog-splitpane-first-container
+                          ola-splitpane-rdm-uids'>
                <div id="uid_container" class="goog-container"></div>
               </div>
-              <div class='goog-splitpane-second-container'>
+              <div class='goog-splitpane-second-container
+                          ola-splitpane-rdm-device'>
                 This is the second tab
               </div>
-              <div class='goog-splitpane-handle'></div>
+              <div class='goog-splitpane-handle ola-splitpane-rdm-handle'></div>
             </div>
           </div>
           <div id="tab_page_3">bar</div>
         </div>
-        <div id="plugin_frame" style="margin: 5px">
+        <div class="ola-scroller" id="plugin_frame">
             <pre id="plugin_description"></pre>
         </div>
       </div>

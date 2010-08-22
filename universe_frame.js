@@ -42,6 +42,7 @@ var ola = ola || {}
 
 
 ola.UID_REFRESH_INTERVAL = 5000;
+ola.UNIVERSE_TAB_PANE_ID = 'universe_tab_pane';
 
 /**
  * The class for an item in the uid list
@@ -118,8 +119,7 @@ ola.UniverseFrame = function(element_id) {
                      this._UpdateUids,
                      false, this);
 
-  this.tabPane = new goog.ui.TabPane(
-    document.getElementById(ola.UNIVERSE_TAB_PANE_ID));
+  this.tabPane = new goog.ui.TabPane(goog.dom.$(ola.UNIVERSE_TAB_PANE_ID));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_1'), "Settings"));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
@@ -141,7 +141,6 @@ ola.UniverseFrame = function(element_id) {
   this.uid_timer = new goog.Timer(ola.UID_REFRESH_INTERVAL);
   goog.events.listen(this.uid_timer, goog.Timer.TICK,
                      function() { ola_server.FetchUids(); });
-  this.uid_timer.start();
 }
 goog.inherits(ola.UniverseFrame, ola.BaseFrame);
 
@@ -165,7 +164,7 @@ ola.UniverseFrame.prototype._SetupRDMTab = function() {
   var rhs2 = new goog.ui.Component();
   this.splitpane = new goog.ui.SplitPane(lhs2, rhs2,
       goog.ui.SplitPane.Orientation.HORIZONTAL);
-  this.splitpane.setInitialSize(150);
+  this.splitpane.setInitialSize(120);
   this.splitpane.setHandleSize(2);
   this.splitpane.decorate(goog.dom.$('rdm_split_pane'));
   this.splitpane.setSize(new goog.math.Size(500, 400));
@@ -206,6 +205,7 @@ ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
   if (!this.IsVisible()) {
     return;
   }
+
   var server = ola.Server.getInstance();
   this.uid_timer.stop();
 
@@ -213,6 +213,7 @@ ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
     server.FetchUniverseInfo(this.current_universe);
   } else if (selected_tab == 1) {
     // update RDM
+    this.SetSplitPaneSize();
     server.FetchUids(this.current_universe);
     this.uid_timer.start();
   }
@@ -248,4 +249,17 @@ ola.UniverseFrame.prototype._UpdateUids = function(e) {
  */
 ola.UniverseFrame.prototype._ShowUID = function(uid) {
   alert(uid);
+}
+
+
+/**
+ * Set the size of the split pane to match the parent element
+ */
+ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
+  if (this.tabPane.getSelectedIndex() == 1) {
+    var big_frame = goog.dom.$('ola-splitpane-content');
+    var big_size = goog.style.getBorderBoxSize(big_frame);
+    this.splitpane.setSize(
+        new goog.math.Size(big_size.width - 7, big_size.height - 62));
+  }
 }

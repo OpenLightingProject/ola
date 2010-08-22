@@ -35,7 +35,6 @@ ola.UNIVERSE_FRAME_ID = 'universe_frame';
 ola.PLUGIN_FRAME_ID = 'plugin_frame';
 ola.SPLIT_PANE_ID = 'split_pane';
 ola.NEW_UNIVERSE_FRAME_ID = 'new_universe_frame';
-ola.UNIVERSE_TAB_PANE_ID = 'universe_tab_pane';
 
 
 /**
@@ -64,11 +63,13 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
  * Setup the OLA ola_ui widgets
  * @constructor
  */
-ola.OlaUI = function(server) {
-  this.ola_server = server;
+ola.OlaUI = function() {
+  this.logger_window = new ola.LoggerWindow();
+  this.ola_server = ola.Server.getInstance();
   this.home_frame = new ola.HomeFrame(ola.HOME_FRAME_ID);
-  this.universe_frame = new ola.UniverseFrame(ola.UNIVERSE_FRAME_ID, server);
-  this.plugin_frame = new ola.PluginFrame(ola.PLUGIN_FRAME_ID, server);
+  this.universe_frame = new ola.UniverseFrame(ola.UNIVERSE_FRAME_ID,
+      this.ola_server);
+  this.plugin_frame = new ola.PluginFrame(ola.PLUGIN_FRAME_ID, this.ola_server);
   this.new_universe_frame = new ola.NewUniverseFrame(ola.NEW_UNIVERSE_FRAME_ID,
                                                      this);
 
@@ -83,21 +84,21 @@ ola.OlaUI = function(server) {
   var rhs = new goog.ui.Component();
   this.splitpane1 = new goog.ui.SplitPane(lhs, rhs,
       goog.ui.SplitPane.Orientation.HORIZONTAL);
-  this.splitpane1.setInitialSize(150);
+  this.splitpane1.setInitialSize(120);
   this.splitpane1.setHandleSize(2);
   this.splitpane1.decorate(goog.dom.$(ola.SPLIT_PANE_ID));
 
-  // show the main frame now
-  goog.dom.$(ola.SPLIT_PANE_ID).style.visible = 'visible';
-
   // redraw on resize events
   this.vsm = new goog.dom.ViewportSizeMonitor();
-  this._UpdateUI(goog.dom.getViewportSize());
+  this._UpdateUI();
   goog.events.listen(this.vsm, goog.events.EventType.RESIZE, this._UpdateUI,
     false, this);
 
   this._SetupNavigation();
   this.ShowHome();
+
+  // show the main frame now
+  goog.dom.$(ola.SPLIT_PANE_ID).style.visibility = 'visible';
 }
 
 
@@ -293,15 +294,15 @@ ola.OlaUI.prototype._HideAllFrames = function() {
  * Update the UI size. This is called when the window size changes
  * @private
  */
-ola.OlaUI.prototype._UpdateUI = function(size) {
+ola.OlaUI.prototype._UpdateUI = function(e) {
   var size = this.vsm.getSize();
   this.splitpane1.setSize(new goog.math.Size(size.width, size.height - 80));
+  this.logger_window.SetSize(size);
+  this.universe_frame.SetSplitPaneSize();
 }
 
 
 ola.Setup = function() {
-  var logger_window = new ola.LoggerWindow();
-  var server = ola.Server.getInstance();
-  var ola_ui = new ola.OlaUI(server);
+  var ola_ui = new ola.OlaUI();
 }
 goog.exportSymbol('ola.Setup', ola.Setup);

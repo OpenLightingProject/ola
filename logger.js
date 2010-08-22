@@ -72,3 +72,16 @@ ola.LoggerWindow.prototype.Show = function() {
     goog.positioning.Corner.BOTTOM_RIGHT));
   this.popup.setVisible(true);
 }
+
+
+/**
+ * Set the size of the logger window
+ */
+ola.LoggerWindow.prototype.SetSize = function(size) {
+  goog.style.setBorderBoxSize(
+      goog.dom.$('log_popup'),
+      new goog.math.Size(0.75 * size.width, 0.5 * size.height));
+  this.popup.setPosition(new goog.positioning.AnchoredViewportPosition(
+    this.log_control,
+    goog.positioning.Corner.BOTTOM_RIGHT));
+}
