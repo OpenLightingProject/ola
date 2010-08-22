@@ -42,38 +42,100 @@ var ola = ola || {}
 
 
 /**
+ * The class for an item in the uid list
+ */
+ola.UidControl = function(data, callback, opt_renderer, opt_domHelper) {
+  goog.ui.Control.call(this, data['uid'], opt_renderer, opt_domHelper);
+  this.id = data['id'];
+  this.uid = data['uid'];
+  this.callback = callback;
+};
+goog.inherits(ola.UidControl, goog.ui.Control);
+
+
+/**
+ * Update this item with from new data
+ */
+ola.UidControl.prototype.Id = function() {
+  return this.id
+}
+
+
+/**
+ * Setup the event handlers for this control
+ */
+ola.UidControl.prototype.enterDocument = function() {
+  goog.ui.Control.superClass_.enterDocument.call(this);
+  this.getElement().title = 'UID ' + this.uid;
+  goog.events.listen(this.getElement(),
+                     goog.events.EventType.CLICK,
+                     function() { this.callback(this.id); },
+                     false,
+                     this);
+};
+
+
+/**
+ * Update this item with from new data.
+ */
+ola.UidControl.prototype.Update = function(new_data) {
+  this.setContent(new_data['uid']);
+}
+
+
+/**
+ * The base class for a factory which produces control items
+ * @class
+ */
+ola.UidControlFactory = function(callback) {
+  this.callback = callback;
+}
+
+
+/**
+ * @returns an instance of a UidControl
+ */
+ola.UidControlFactory.prototype.newComponent = function(data) {
+  return new ola.UidControl(data, this.callback);
+}
+
+
+/**
  * The class representing the Universe frame
  * @constructor
  */
-ola.UniverseFrame = function(element_id, ola_server) {
+ola.UniverseFrame = function(element_id) {
   ola.BaseFrame.call(this, element_id);
-  this.ola_server = ola_server
   this.current_universe = undefined;
+
+  var ola_server = ola.Server.getInstance();
   goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
                      this._UpdateFromData,
                      false, this);
+  goog.events.listen(ola_server, ola.Server.EventType.UIDS_EVENT,
+                     this._UpdateUids,
+                     false, this);
 
-  var tabPane = new goog.ui.TabPane(
+  this.tabPane = new goog.ui.TabPane(
     document.getElementById(ola.UNIVERSE_TAB_PANE_ID));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
+  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_1'), "Settings"));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
+  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_2'), 'RDM'));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
+  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_3'), 'Console'));
-  this.selected_tab = 0;
-  tabPane.setSelectedIndex(1);
 
-  goog.events.listen(tabPane, goog.ui.TabPane.Events.CHANGE,
-                     this.TabChanged, false, this);
+  goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
+                     this._UpdateSelectedTab, false, this);
 
   this._SetupMainTab();
-  this._SetupRDMTab();
-  // this has to be done after the RDM split pane is setup otherwise the size
-  // doesn't render correctly.
-  tabPane.setSelectedIndex(0);
-}
 
+  // We need to make the RDM pane visible here otherwise the splitter
+  // doesn't render correctly.
+  this.tabPane.setSelectedIndex(1);
+  this._SetupRDMTab();
+  this.tabPane.setSelectedIndex(0);
+}
 goog.inherits(ola.UniverseFrame, ola.BaseFrame);
 
 
@@ -81,7 +143,6 @@ goog.inherits(ola.UniverseFrame, ola.BaseFrame);
  * Setup the main universe settings tab
  */
 ola.UniverseFrame.prototype._SetupMainTab = function() {
-
   var save_button = goog.dom.$('universe_save_button');
   goog.ui.decorate(save_button);
 }
@@ -95,12 +156,19 @@ ola.UniverseFrame.prototype._SetupRDMTab = function() {
 
   var lhs2 = new goog.ui.Component();
   var rhs2 = new goog.ui.Component();
-  this.splitpane2 = new goog.ui.SplitPane(lhs2, rhs2,
+  this.splitpane = new goog.ui.SplitPane(lhs2, rhs2,
       goog.ui.SplitPane.Orientation.HORIZONTAL);
-  this.splitpane2.setInitialSize(150);
-  this.splitpane2.setHandleSize(2);
-  this.splitpane2.decorate(goog.dom.$('rdm_split_pane'));
-  this.splitpane2.setSize(new goog.math.Size(500, 400));
+  this.splitpane.setInitialSize(150);
+  this.splitpane.setHandleSize(2);
+  this.splitpane.decorate(goog.dom.$('rdm_split_pane'));
+  this.splitpane.setSize(new goog.math.Size(500, 400));
+
+  var frame = this;
+  var uid_container = new goog.ui.Container();
+  uid_container.decorate(goog.dom.$('uid_container'));
+  this.uid_list = new ola.SortedList(
+      uid_container,
+      new ola.UidControlFactory(function (id) { frame._ShowUID(id); }));
 }
 
 
@@ -124,19 +192,19 @@ ola.UniverseFrame.prototype.Show = function(universe_id) {
 
 
 /**
- * Called when the select tab changes
+ * Update the tab that was selected
  */
-ola.UniverseFrame.prototype.TabChanged = function(e) {
-  this.selected_tab = e.page.getIndex();
-  this._UpdateSelectedTab();
-}
-
-
-ola.UniverseFrame.prototype._UpdateSelectedTab = function() {
-  if (this.selected_tab == 0) {
-    this.ola_server.FetchUniverseInfo(this.current_universe);
-  } else if (this.selected_tab == 1) {
+ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
+  var selected_tab = this.tabPane.getSelectedIndex();
+  if (!this.IsVisible()) {
+    return;
+  }
+  var server = ola.Server.getInstance();
+  if (selected_tab == 0) {
+    server.FetchUniverseInfo(this.current_universe);
+  } else if (selected_tab == 1) {
     // update RDM
+    server.FetchUids(this.current_universe);
   }
 }
 
@@ -153,11 +221,21 @@ ola.UniverseFrame.prototype._UpdateFromData = function(e) {
 
 
 /**
- * Update this universe frame from a Universe object
+ * Update the UID list
  */
-ola.UniverseFrame.prototype._UpdateFromData = function(e) {
-  this.current_universe = e.universe.id;
-  goog.dom.$('universe_id').innerHTML = e.universe.id;
-  goog.dom.$('universe_name').innerHTML = e.universe.name;
-  goog.dom.$('universe_merge_mode').innerHTML = e.universe.merge_mode;
+ola.UniverseFrame.prototype._UpdateUids = function(e) {
+  if (e.universe_id == this.current_universe) {
+    this.uid_list.UpdateFromData(e.uids);
+  } else {
+    ola.logger.info('RDM universe mismatch, was ' + e.universe_id +
+                    ', expected ' + this.current_universe);
+  }
+}
+
+
+/**
+ * Show information for a particular UID
+ */
+ola.UniverseFrame.prototype._ShowUID = function(uid) {
+  alert(uid);
 }
