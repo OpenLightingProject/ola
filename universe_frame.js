@@ -17,6 +17,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.dom.ViewportSizeMonitor');
 goog.require('goog.events');
@@ -28,9 +29,8 @@ goog.require('goog.ui.Container');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.SplitPane');
-goog.require('goog.ui.TabPane');
 goog.require('goog.ui.SplitPane.Orientation');
-
+goog.require('goog.ui.TabPane');
 goog.require('ola.Dialog');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
@@ -40,6 +40,8 @@ goog.provide('ola.UniverseFrame');
 
 var ola = ola || {}
 
+
+ola.UID_REFRESH_INTERVAL = 5000;
 
 /**
  * The class for an item in the uid list
@@ -135,6 +137,11 @@ ola.UniverseFrame = function(element_id) {
   this.tabPane.setSelectedIndex(1);
   this._SetupRDMTab();
   this.tabPane.setSelectedIndex(0);
+
+  this.uid_timer = new goog.Timer(ola.UID_REFRESH_INTERVAL);
+  goog.events.listen(this.uid_timer, goog.Timer.TICK,
+                     function() { ola_server.FetchUids(); });
+  this.uid_timer.start();
 }
 goog.inherits(ola.UniverseFrame, ola.BaseFrame);
 
@@ -200,11 +207,14 @@ ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
     return;
   }
   var server = ola.Server.getInstance();
+  this.uid_timer.stop();
+
   if (selected_tab == 0) {
     server.FetchUniverseInfo(this.current_universe);
   } else if (selected_tab == 1) {
     // update RDM
     server.FetchUids(this.current_universe);
+    this.uid_timer.start();
   }
 }
 
