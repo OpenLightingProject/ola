@@ -32,15 +32,91 @@ var ola = ola || {}
 
 
 /**
+ * A line in the active universe list.
+ * @class
+ */
+ola.AvailablePortComponent = function(data, opt_domHelper) {
+  goog.ui.Component.call(this, opt_domHelper);
+  this.data = data;
+};
+goog.inherits(ola.AvailablePortComponent, goog.ui.Component);
+
+
+/**
+ * This component can't be used to decorate
+ */
+ola.AvailablePortComponent.prototype.canDecorate = function() {
+  return false;
+};
+
+
+/**
+ * Create the dom for this component
+ */
+ola.AvailablePortComponent.prototype.createDom = function() {
+  var tr = this.dom_.createDom(
+      'tr', {},
+      goog.dom.createDom('td', {}, ''),
+      goog.dom.createDom('td', {}, this.data['device']),
+      goog.dom.createDom('td', {}, this.data['is_output'] ? 'Output' :
+        'Input'),
+      goog.dom.createDom('td', {}, this.data['description']));
+  this.setElementInternal(tr);
+};
+
+
+/**
+ * Get the id of this item
+ */
+ola.AvailablePortComponent.prototype.Id = function() {
+  return this.data['id'];
+};
+
+
+/**
+ * Update this item with from new data
+ */
+ola.AvailablePortComponent.prototype.Update = function(new_data) {
+  var element = this.getElement();
+  var td = goog.dom.getFirstElementChild(element);
+  td = goog.dom.getNextElementSibling(td);
+  td.innerHTML = new_data['device'];
+  td = goog.dom.getNextElementSibling(td);
+  td.innerHTML = new_data['is_output'] ? 'Output' : 'Input';
+  td = goog.dom.getNextElementSibling(td);
+  td.innerHTML = new_data['description'];
+};
+
+
+/**
+ * The base class for a factory which produces AvailablePortComponents
+ * @class
+ */
+ola.AvailablePortComponentFactory = function() {
+};
+
+
+/**
+ * @returns an instance of a AvailablePortComponent
+ */
+ola.AvailablePortComponentFactory.prototype.newComponent = function(data) {
+  return new ola.AvailablePortComponent(data);
+};
+
+
+/**
  * The class representing the Universe frame
  * @constructor
  */
-ola.NewUniverseFrame = function(element_id, ola_server) {
+ola.NewUniverseFrame = function(element_id, ola_ui) {
   ola.BaseFrame.call(this, element_id);
-  this.ola_server = ola_server
 
   var cancel_button = goog.dom.$('cancel_new_universe_button');
   goog.ui.decorate(cancel_button);
+  goog.events.listen(cancel_button,
+                     goog.events.EventType.CLICK,
+                     ola_ui.ShowHome,
+                     false, ola_ui);
 
   var confirm_button = goog.dom.$('confirm_new_universe_button');
   goog.ui.decorate(confirm_button);
@@ -49,39 +125,48 @@ ola.NewUniverseFrame = function(element_id, ola_server) {
                      this._AddButtonClicked,
                      false, this);
 
-
-  /*
-  this.current_universe = undefined;
-  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
-                     this._UpdateFromData,
-                     false, this);
-
-  var tabPane = new goog.ui.TabPane(
-    document.getElementById(ola.UNIVERSE_TAB_PANE_ID));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_1'), "Settings"));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_2'), 'RDM'));
-  tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_3'), 'Console'));
-  tabPane.setSelectedIndex(0);
-  this.selected_tab = 0;
-
-  goog.events.listen(tabPane, goog.ui.TabPane.Events.CHANGE,
-                     this.TabChanged, false, this);
-
-  var save_button = goog.dom.$('new_universe_save_button');
-  goog.ui.decorate(save_button);
-  */
+  var table_container = new ola.TableContainer();
+  table_container.decorate(goog.dom.$('available_ports'));
+  this.port_list = new ola.SortedList(
+      table_container,
+      new ola.AvailablePortComponentFactory());
 }
-
 goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
 
+
+/**
+ * Show this frame. We extend the base method so we can populate the ports.
+ */
+ola.NewUniverseFrame.prototype.Show = function() {
+  // get available ports
+  var ola_server = ola.Server.getInstance();
+  goog.events.listen(ola_server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
+                     this._UpdateAvailablePorts,
+                     false, this);
+  ola_server.FetchAvailablePorts();
+
+  ola.UniverseFrame.superClass_.Show.call(this);
+}
+
+
+/**
+ * Called when the available ports are updated
+ */
+ola.NewUniverseFrame.prototype._UpdateAvailablePorts = function(e) {
+  this.port_list.UpdateFromData(e.ports);
+  goog.events.unlisten(
+      ola.Server.getInstance(),
+      ola.Server.EventType.AVAILBLE_PORTS_EVENT,
+      this._UpdateAvailablePorts,
+      false, this);
+}
 
 /**
  * Called when the stop button is clicked
  */
 ola.NewUniverseFrame.prototype._AddButtonClicked = function(e) {
+  // verify all fields here
+
   var dialog = ola.Dialog.getInstance();
   dialog.SetAsBusy();
   dialog.setVisible(true);

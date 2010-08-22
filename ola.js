@@ -161,7 +161,7 @@ ola.OlaUI = function(server) {
   this.universe_frame = new ola.UniverseFrame(ola.UNIVERSE_FRAME_ID, server);
   this.plugin_frame = new ola.PluginFrame(ola.PLUGIN_FRAME_ID, server);
   this.new_universe_frame = new ola.NewUniverseFrame(ola.NEW_UNIVERSE_FRAME_ID,
-                                                     server);
+                                                     this);
 
   goog.events.listen(goog.dom.$('new_universe_button'),
                      goog.events.EventType.CLICK,
@@ -188,7 +188,7 @@ ola.OlaUI = function(server) {
     false, this);
 
   this._SetupNavigation();
-  this._ShowHome();
+  this.ShowHome();
 }
 
 
@@ -256,7 +256,7 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   goog.ui.decorate(home_control);
   goog.events.listen(home_control,
                      goog.events.EventType.CLICK,
-                     this._ShowHome,
+                     this.ShowHome,
                      false,
                      this);
 
@@ -321,7 +321,7 @@ ola.OlaUI.prototype._UpdateUniverseList = function(e) {
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
     dialog.setContent('This universe has been removed by another user.');
     dialog.setVisible(true);
-    this._ShowHome();
+    this.ShowHome();
   }
 }
 
@@ -329,7 +329,7 @@ ola.OlaUI.prototype._UpdateUniverseList = function(e) {
  * Display the home frame
  * @private
  */
-ola.OlaUI.prototype._ShowHome = function() {
+ola.OlaUI.prototype.ShowHome = function() {
   this._HideAllFrames();
   this.home_frame.Show();
 }
