@@ -3,26 +3,23 @@ goog.require('goog.dom');
 goog.require('goog.dom.ViewportSizeMonitor');
 goog.require('goog.events');
 goog.require('goog.math');
-goog.require('goog.net.XhrIo');
-goog.require('goog.net.XhrIoPool');
 goog.require('goog.ui.AnimatedZippy');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Container');
 goog.require('goog.ui.Control');
-goog.require('goog.ui.CustomButton');
 goog.require('goog.ui.Dialog');
 goog.require('goog.ui.SplitPane');
-goog.require('goog.ui.TabPane');
 goog.require('goog.ui.SplitPane.Orientation');
 
 goog.require('ola.Dialog');
 goog.require('ola.HomeFrame');
-goog.require('ola.UniverseFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.NewUniverseFrame');
+goog.require('ola.PluginFrame');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
+goog.require('ola.UniverseFrame');
 
 goog.provide('ola');
 
@@ -35,28 +32,6 @@ ola.UNIVERSE_FRAME_ID = 'universe_frame';
 ola.PLUGIN_FRAME_ID = 'plugin_frame';
 ola.SPLIT_PANE_ID = 'split_pane';
 ola.NEW_UNIVERSE_FRAME_ID = 'new_universe_frame';
-
-
-/**
- * The class representing the Plugin frame
- * @constructor
- */
-ola.PluginFrame = function(element_id, ola_server) {
-  ola.BaseFrame.call(this, element_id);
-  goog.events.listen(ola_server, ola.Server.EventType.PLUGIN_EVENT,
-                     this._UpdateFromData,
-                     false, this);
-}
-
-goog.inherits(ola.PluginFrame, ola.BaseFrame);
-
-
-/**
- * Update this plugin frame from a Plugin object
- */
-ola.PluginFrame.prototype._UpdateFromData = function(e) {
-  goog.dom.$('plugin_description').innerHTML = e.plugin.description;
-}
 
 
 /**
@@ -219,7 +194,7 @@ ola.OlaUI.prototype._UpdateUniverseList = function(e) {
 
   ola.logger.info('Got ' + e.universes.length + ' universes');
   for (var i = 0; i != e.universes.length; i++) {
-    if (e.universes[i].id == active_universe) {
+    if (e.universes[i]['id'] == active_universe) {
       found = true;
       break;
     }

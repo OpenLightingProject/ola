@@ -163,7 +163,6 @@ goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
  * Show this frame. We extend the base method so we can populate the ports.
  */
 ola.NewUniverseFrame.prototype.Show = function() {
-  // get available ports
   var ola_server = ola.Server.getInstance();
   goog.events.listen(ola_server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
                      this._UpdateAvailablePorts,
