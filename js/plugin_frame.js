@@ -23,7 +23,7 @@ goog.require('ola.BaseFrame');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 
-goog.provide('ola');
+goog.provide('ola.PluginFrame');
 
 var ola = ola || {}
 

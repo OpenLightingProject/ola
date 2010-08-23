@@ -21,7 +21,8 @@ goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
 goog.require('ola.UniverseFrame');
 
-goog.provide('ola');
+goog.provide('ola.OlaUi');
+goog.provide('ola.Setup');
 
 var ola = ola || {}
 
