@@ -54,6 +54,7 @@ ola.Server.EventType = {
   UIDS_EVENT: 'uids_change',
   UNIVERSE_EVENT: 'universe_change',
   UNIVERSE_LIST_EVENT: 'universe_list_change',
+  NEW_UNIVERSE_EVENT: 'new_unvierse',
 }
 
 ola.Server.SERVER_INFO_URL = '/json/server_stats';
@@ -65,6 +66,7 @@ ola.Server.STOP_SERVER_URL = '/json/stop_server';
 ola.Server.AVAILBLE_PORTS_URL = '/json/get_ports';
 ola.Server.UIDS_URL = '/json/uids';
 ola.Server.RDM_DISCOVERY_URL = '/json/run_discovery';
+ola.Server.NEW_UNIVERSE_URL = '/json/new_universe';
 
 
 /**
@@ -160,9 +162,21 @@ goog.inherits(ola.UidsEvent, goog.events.Event);
  * This event is fired when discovery is triggered
  */
 ola.RdmDiscoveryEvent = function() {
-  goog.events.Event.call(this, ola.Server.EventType.RdmDiscoveryEvent);
+  goog.events.Event.call(this, ola.Server.EventType.RDM_DISCOVERY_EVENT);
 }
 goog.inherits(ola.RdmDiscoveryEvent, goog.events.Event);
+
+
+/**
+ * This event is triggered when a new universe command completes
+ */
+ola.NewUniverseEvent = function(ok, universe, message) {
+  goog.events.Event.call(this, ola.Server.EventType.NEW_UNIVERSE_EVENT);
+  this.ok = ok;
+  this.universe = universe
+  this.message = message;
+}
+goog.inherits(ola.NewUniverseEvent, goog.events.Event);
 
 
 /**
@@ -267,6 +281,23 @@ ola.Server.prototype.FetchAvailablePorts = function() {
     this._CleanupRequest(e.target);
   }
   this._InitiateRequest(ola.Server.AVAILBLE_PORTS_URL, on_complete);
+}
+
+
+/**
+ * Create a new universe
+ */
+ola.Server.prototype.NewUniverse = function(universe_id, name, port_ids) {
+  var on_complete = function(e) {
+    var obj = e.target.getResponseJson();
+    this.dispatchEvent(
+        new ola.NewUniverseEvent(obj['ok'], obj['universe_id'],
+                                 obj['message']));
+    this._CleanupRequest(e.target);
+  }
+  var url = ola.Server.NEW_UNIVERSE_URL + '?id=' + universe_id + (
+      name ? '&name=' + escape(name) : '') + '&ports=' + port_ids.join(',');
+  this._InitiateRequest(url, on_complete);
 }
 
 

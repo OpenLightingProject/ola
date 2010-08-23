@@ -191,6 +191,9 @@ ola.UniverseFrame.prototype.ActiveUniverse = function() {
  * tab.
  */
 ola.UniverseFrame.prototype.Show = function(universe_id) {
+  if (this.current_universe != universe_id) {
+    this.uid_list.Clear();
+  }
   this.current_universe = universe_id;
   this._UpdateSelectedTab();
   ola.UniverseFrame.superClass_.Show.call(this);

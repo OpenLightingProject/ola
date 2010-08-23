@@ -128,6 +128,7 @@ ola.AvailablePortComponentFactory.prototype.newComponent = function(data) {
  */
 ola.NewUniverseFrame = function(element_id, ola_ui) {
   ola.BaseFrame.call(this, element_id);
+  this.ola_ui = ola_ui;
 
   var cancel_button = goog.dom.$('cancel_new_universe_button');
   goog.ui.decorate(cancel_button);
@@ -148,6 +149,12 @@ ola.NewUniverseFrame = function(element_id, ola_ui) {
   this.port_list = new ola.SortedList(
       this.table_container,
       new ola.AvailablePortComponentFactory());
+
+  // listen for new universe events
+  var server = ola.Server.getInstance();
+  goog.events.listen(server, ola.Server.EventType.NEW_UNIVERSE_EVENT,
+                     this._NewUniverseComplete,
+                     false, this);
 }
 goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
 
@@ -177,6 +184,23 @@ ola.NewUniverseFrame.prototype._UpdateAvailablePorts = function(e) {
       ola.Server.EventType.AVAILBLE_PORTS_EVENT,
       this._UpdateAvailablePorts,
       false, this);
+}
+
+
+/**
+ * Called when the new universe action completes.
+ */
+ola.NewUniverseFrame.prototype._NewUniverseComplete = function(e) {
+  var dialog = ola.Dialog.getInstance();
+  if (e.ok) {
+    dialog.setVisible(false);
+    this.ola_ui.ShowUniverse(e.universe);
+  } else {
+    dialog.setTitle('New Universe Failed');
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setContent(e.message);
+    dialog.setVisible(true);
+  }
 }
 
 
@@ -225,7 +249,7 @@ ola.NewUniverseFrame.prototype._AddButtonClicked = function(e) {
     return;
   }
 
-  //ola.server.NewUniverse(new_universe_id, new_universe_name, selected_ports);
+  ola_server.NewUniverse(universe_id, universe_name, selected_ports);
   dialog.SetAsBusy();
-  //dialog.setVisible(true);
+  dialog.setVisible(true);
 }

@@ -192,7 +192,7 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   universe_container.decorate(goog.dom.$('universe_container'));
   this.universe_list = new ola.SortedList(
       universe_container,
-      new ola.ControlFactory(function(id) { ui._ShowUniverse(id); }));
+      new ola.ControlFactory(function(id) { ui.ShowUniverse(id); }));
 
   goog.events.listen(this.ola_server,
                      ola.Server.EventType.UNIVERSE_LIST_EVENT,
@@ -250,7 +250,7 @@ ola.OlaUI.prototype.ShowHome = function() {
  * @param universe_id the ID of the universe to load in the frame
  * @private
  */
-ola.OlaUI.prototype._ShowUniverse = function(universe_id) {
+ola.OlaUI.prototype.ShowUniverse = function(universe_id) {
   this._HideAllFrames();
   this.universe_frame.Show(universe_id);
 }
