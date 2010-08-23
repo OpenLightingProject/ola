@@ -42,8 +42,11 @@ goog.require('goog.ui.Dialog');
   }
 
   legend { font-weight: bold; }
-  fieldset { border: #67a7e3 1px solid; }
   input { border: #67a7e3 1px solid; }
+  fieldset {
+    border: #67a7e3 1px solid;
+    margin-bottom: 5px;
+  }
 
   #header {
     margin: 0px;
@@ -455,20 +458,42 @@ goog.require('goog.ui.Dialog');
                   <tr>
                    <th>&nbsp;</th>
                    <th>Device</th>
-                   <th>Direction</th>
                    <th>Description</th>
+                   <th>Priority</th>
                   </tr>
                  </thead>
-                 <tbody id="available_ports">
+                 <tbody id="input_ports">
                  </tbody>
                </table>
             </fieldset>
             <fieldset>
               <legend>Output Ports</legend>
-              <table>
-               <tr>
-                <td>DMX USB</td><td> </td>
-               </tr>
+              <table class="ola-table">
+               <thead>
+                <tr>
+                 <th>&nbsp;</th>
+                 <th>Device</th>
+                 <th>Description</th>
+                 <th>Priority</th>
+                </tr>
+               </thead>
+               <tbody id="output_ports">
+               </tbody>
+             </table>
+            </fieldset>
+            <fieldset>
+              <legend>Add Additional Ports</legend>
+              <table class="ola-table">
+               <thead>
+                <tr>
+                 <th>&nbsp;</th>
+                 <th>Device</th>
+                 <th>Direction</th>
+                 <th>Description</th>
+                </tr>
+               </thead>
+               <tbody id="universe_available_ports">
+               </tbody>
              </table>
             </fieldset>
             <div style="text-align: center">

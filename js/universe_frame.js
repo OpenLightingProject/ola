@@ -151,7 +151,20 @@ goog.inherits(ola.UniverseFrame, ola.BaseFrame);
 ola.UniverseFrame.prototype._SetupMainTab = function() {
   var save_button = goog.dom.$('universe_save_button');
   goog.ui.decorate(save_button);
+
+  this.table_container = new ola.TableContainer();
+  this.table_container.decorate(goog.dom.$('universe_available_ports'));
+  this.port_list = new ola.SortedList(
+      this.table_container,
+      new ola.AvailablePortComponentFactory());
+
+  var ola_server = ola.Server.getInstance();
+  goog.events.listen(ola_server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
+                     this._UpdateAvailablePorts,
+                     false, this);
+  ola_server.FetchAvailablePorts();
 }
+
 
 /**
  * Setup the RDM tab
@@ -231,6 +244,19 @@ ola.UniverseFrame.prototype._UpdateFromData = function(e) {
   goog.dom.$('universe_id').innerHTML = e.universe.id;
   goog.dom.$('universe_name').innerHTML = e.universe.name;
   goog.dom.$('universe_merge_mode').innerHTML = e.universe.merge_mode;
+}
+
+
+/**
+ * Called when the available ports are updated
+ */
+ola.UniverseFrame.prototype._UpdateAvailablePorts = function(e) {
+  this.port_list.UpdateFromData(e.ports);
+  goog.events.unlisten(
+      ola.Server.getInstance(),
+      ola.Server.EventType.AVAILBLE_PORTS_EVENT,
+      this._UpdateAvailablePorts,
+      false, this);
 }
 
 
