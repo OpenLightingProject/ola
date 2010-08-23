@@ -57,11 +57,11 @@ ola.UniverseComponent.prototype.canDecorate = function() {
 ola.UniverseComponent.prototype.createDom = function() {
   var tr = this.dom_.createDom(
       'tr', {},
-      goog.dom.createDom('td', {}, this.data.id.toString()),
-      goog.dom.createDom('td', {}, this.data.name),
-      goog.dom.createDom('td', {}, this.data.input_ports.toString()),
-      goog.dom.createDom('td', {}, this.data.output_ports.toString()),
-      goog.dom.createDom('td', {}, this.data.rdm_devices.toString()));
+      goog.dom.createDom('td', {}, this.data['id'].toString()),
+      goog.dom.createDom('td', {}, this.data['name']),
+      goog.dom.createDom('td', {}, this.data['input_ports'].toString()),
+      goog.dom.createDom('td', {}, this.data['output_ports'].toString()),
+      goog.dom.createDom('td', {}, this.data['rdm_devices'].toString()));
   this.setElementInternal(tr);
 };
 
@@ -115,6 +115,7 @@ ola.UniverseComponentFactory.prototype.newComponent = function(data) {
 ola.HomeFrame = function(element_id) {
   var ola_server = ola.Server.getInstance();
   ola.BaseFrame.call(this, element_id);
+
   var reload_button = goog.dom.$('reload_button');
   goog.ui.decorate(reload_button);
   goog.events.listen(reload_button,
@@ -138,12 +139,14 @@ ola.HomeFrame = function(element_id) {
   goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_LIST_EVENT,
                      this._UniverseListChanged,
                      false, this);
-  goog.events.listen(ola_server, ola.Server.EventType.SERVER_STOP_EVENT,
-                     this._StopServerComplete,
-                     false, this);
   goog.events.listen(ola_server, ola.Server.EventType.PLUGIN_RELOAD_EVENT,
                      this._PluginReloadComplete,
                      false, this);
+  goog.events.listen(ola_server, ola.Server.EventType.SERVER_STOP_EVENT,
+                     this._StopServerComplete,
+                     false, this);
+
+  // update the server info now
   ola_server.UpdateServerInfo();
 
   var table_container = new ola.TableContainer();
@@ -159,10 +162,10 @@ goog.inherits(ola.HomeFrame, ola.BaseFrame);
  * Update the home frame with new server data
  */
 ola.HomeFrame.prototype._UpdateFromData = function(e) {
-  goog.dom.$('server_hostname').innerHTML = e.server_info.hostname;
-  goog.dom.$('server_ip').innerHTML = e.server_info.ip;
-  goog.dom.$('server_version').innerHTML = e.server_info.version;
-  goog.dom.$('server_uptime').innerHTML = e.server_info.up_since;
+  goog.dom.$('server_hostname').innerHTML = e.server_info['hostname'];
+  goog.dom.$('server_ip').innerHTML = e.server_info['ip'];
+  goog.dom.$('server_version').innerHTML = e.server_info['version'];
+  goog.dom.$('server_uptime').innerHTML = e.server_info['up_since'];
 }
 
 
@@ -185,8 +188,8 @@ ola.HomeFrame.prototype._StopButtonClicked = function(e) {
 
   dialog.setTitle('Please confirm');
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
-  dialog.setContent('Are you sure? OLA may not be configured to restart '
-                    + 'automatically');
+  dialog.setContent(
+      'Are you sure? OLA may not be configured to restart automatically');
   dialog.setVisible(true);
 }
 
