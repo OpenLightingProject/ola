@@ -103,7 +103,7 @@ ola.NewUniverseFrame.prototype._NewUniverseComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
   if (e.ok) {
     dialog.setVisible(false);
-    this.ola_ui.ShowUniverse(e.universe);
+    this.ola_ui.ShowUniverse(e.universe, true);
   } else {
     dialog.setTitle('New Universe Failed');
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);

@@ -28,6 +28,7 @@ goog.require('goog.ui.Component');
 goog.require('goog.ui.Container');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.CustomButton');
+goog.require('goog.ui.Select');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 goog.require('goog.ui.TabPane');
@@ -152,10 +153,25 @@ ola.UniverseFrame.prototype._SetupMainTab = function() {
   var save_button = goog.dom.$('universe_save_button');
   goog.ui.decorate(save_button);
 
-  this.table_container = new ola.TableContainer();
-  this.table_container.decorate(goog.dom.$('universe_available_ports'));
-  this.port_list = new ola.SortedList(
-      this.table_container,
+  this.merge_mode = goog.ui.decorate(goog.dom.$('universe_merge_mode'));
+
+  this.input_table_container = new ola.TableContainer();
+  this.input_table_container.decorate(goog.dom.$('input_ports'));
+  this.input_port_list = new ola.SortedList(
+      this.input_table_container,
+      new ola.PortComponentFactory());
+
+  this.output_table_container = new ola.TableContainer();
+  this.output_table_container.decorate(goog.dom.$('output_ports'));
+  this.output_port_list = new ola.SortedList(
+      this.output_table_container,
+      new ola.PortComponentFactory());
+
+  this.available_table_container = new ola.TableContainer();
+  this.available_table_container.decorate(
+      goog.dom.$('universe_available_ports'));
+  this.available_port_list = new ola.SortedList(
+      this.available_table_container,
       new ola.AvailablePortComponentFactory());
 
   var ola_server = ola.Server.getInstance();
@@ -202,13 +218,21 @@ ola.UniverseFrame.prototype.ActiveUniverse = function() {
 /**
  * Show this frame. We extend the base method so we can populate the correct
  * tab.
+ * @param universe_id {number} the universe id to show
+ * @param opt_select_main_tab {boolean} set to true to display the main tab
  */
-ola.UniverseFrame.prototype.Show = function(universe_id) {
+ola.UniverseFrame.prototype.Show = function(universe_id, opt_select_main_tab) {
   if (this.current_universe != universe_id) {
     this.uid_list.Clear();
+    this.input_port_list.Clear();
+    this.output_port_list.Clear();
+    this.available_port_list.Clear();
   }
   this.current_universe = universe_id;
   ola.UniverseFrame.superClass_.Show.call(this);
+  if (opt_select_main_tab) {
+    this.tabPane.setSelectedIndex(0);
+  }
   this._UpdateSelectedTab();
 }
 
@@ -240,18 +264,34 @@ ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
  * Update this universe frame from a Universe object
  */
 ola.UniverseFrame.prototype._UpdateFromData = function(e) {
-  this.current_universe = e.universe.id;
-  goog.dom.$('universe_id').innerHTML = e.universe.id;
-  goog.dom.$('universe_name').innerHTML = e.universe.name;
-  goog.dom.$('universe_merge_mode').innerHTML = e.universe.merge_mode;
+  if (this.current_universe != e.universe['id']) {
+    ola.logger.info('Mismatched universe, expected ' + this.current_universe +
+        ', got ' + e.universe['id']);
+    return;
+  }
+
+  this.current_universe = e.universe['id'];
+  goog.dom.$('universe_id').innerHTML = e.universe['id'];
+  goog.dom.$('universe_name').value = e.universe['name'];
+
+  if (e.universe['merge_mode'] == 'HTP') {
+    this.merge_mode.setSelectedIndex(0);
+  } else {
+    this.merge_mode.setSelectedIndex(1);
+  }
+
+  this.input_port_list.UpdateFromData(e.universe['input_ports']);
+  this.output_port_list.UpdateFromData(e.universe['output_ports']);
 }
+
 
 
 /**
  * Called when the available ports are updated
  */
 ola.UniverseFrame.prototype._UpdateAvailablePorts = function(e) {
-  this.port_list.UpdateFromData(e.ports);
+  alert(e.ports)
+  this.available_port_list.UpdateFromData(e.ports);
   goog.events.unlisten(
       ola.Server.getInstance(),
       ola.Server.EventType.AVAILBLE_PORTS_EVENT,

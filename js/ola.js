@@ -223,12 +223,12 @@ ola.OlaUI.prototype.ShowHome = function() {
 
 /**
  * Display the universe frame
- * @param universe_id the ID of the universe to load in the frame
- * @private
+ * @param universe_id {number} the ID of the universe to load in the frame
+ * @param opt_select_main_tab {boolean} set to true to display the main tab
  */
-ola.OlaUI.prototype.ShowUniverse = function(universe_id) {
+ola.OlaUI.prototype.ShowUniverse = function(universe_id, opt_select_main_tab) {
   this._HideAllFrames();
-  this.universe_frame.Show(universe_id);
+  this.universe_frame.Show(universe_id, opt_select_main_tab);
 }
 
 

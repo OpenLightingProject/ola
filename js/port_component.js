@@ -23,12 +23,103 @@ goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.Component');
 
 goog.provide('ola.AvailablePortComponent');
+goog.provide('ola.PortComponent');
 
 var ola = ola || {}
 
 
 /**
- * A line in the active universe list.
+ * A port bound to a universe
+ * @class
+ */
+ola.PortComponent = function(data, opt_domHelper) {
+  goog.ui.Component.call(this, opt_domHelper);
+  this.data = data;
+};
+goog.inherits(ola.PortComponent, goog.ui.Component);
+
+
+/**
+ * This component can't be used to decorate
+ */
+ola.PortComponent.prototype.canDecorate = function() {
+  return false;
+};
+
+
+/**
+ * Create the dom for this component
+ */
+ola.PortComponent.prototype.createDom = function() {
+  var tr = this.dom_.createDom('tr', {});
+  tr.style.cursor = 'pointer';
+  var td = goog.dom.createDom('td', {}, '');
+  this.dom_.appendChild(tr, td);
+  this.checkbox = new goog.ui.Checkbox();
+  this.checkbox.setChecked(true);
+  this.checkbox.render(td);
+  this.dom_.appendChild(tr, goog.dom.createDom('td', {}, this.data['device']));
+  this.dom_.appendChild(tr,
+      goog.dom.createDom('td', {}, this.data['description']));
+
+  var priority = this.data['priority'];
+  this.dom_.appendChild(tr, goog.dom.createDom('td', {}, 'foo'));
+  this.setElementInternal(tr);
+
+  goog.events.listen(tr,
+                     goog.events.EventType.CLICK,
+                     function () { this.checkbox.toggle(); },
+                     false, this);
+};
+
+
+/**
+ * Get the id of this item
+ */
+ola.PortComponent.prototype.Id = function() {
+  return this.data['id'];
+};
+
+
+/**
+ * Check is this was selected
+ */
+ola.PortComponent.prototype.IsSelected = function() {
+  return this.checkbox.isChecked();
+};
+
+
+/**
+ * Update this item with from new data
+ */
+ola.PortComponent.prototype.Update = function(new_data) {
+  var element = this.getElement();
+  var td = goog.dom.getFirstElementChild(element);
+  td = goog.dom.getNextElementSibling(td);
+  td.innerHTML = new_data['device'];
+  td = goog.dom.getNextElementSibling(td);
+  td.innerHTML = new_data['description'];
+};
+
+
+/**
+ * The base class for a factory which produces PortComponents
+ * @class
+ */
+ola.PortComponentFactory = function() {
+};
+
+
+/**
+ * @returns an instance of a PortComponent
+ */
+ola.PortComponentFactory.prototype.newComponent = function(data) {
+  return new ola.PortComponent(data);
+};
+
+
+/**
+ * A line in the available ports list.
  * @class
  */
 ola.AvailablePortComponent = function(data, opt_domHelper) {

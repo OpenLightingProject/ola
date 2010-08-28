@@ -42,7 +42,7 @@ goog.require('goog.ui.Dialog');
   }
 
   legend { font-weight: bold; }
-  input { border: #67a7e3 1px solid; }
+  input { border: #e4e9fe 1px solid; }
   fieldset {
     border: #67a7e3 1px solid;
     margin-bottom: 5px;
@@ -268,7 +268,7 @@ goog.require('goog.ui.Dialog');
   /* Tables are used in various frames */
   .ola-table {
     width: 100%;
-    border-bottom: 1px solid #67a7e3;
+    border-bottom: 1px solid #e4e9fe;
   }
 
   .ola-table thead {
@@ -276,7 +276,7 @@ goog.require('goog.ui.Dialog');
   }
 
   .ola-table td {
-    border-top: 1px solid #67a7e3;
+    border-top: 1px solid #e4e9fe;
   }
 
   /* Checkboxes are used in various frames */
@@ -310,6 +310,147 @@ goog.require('goog.ui.Dialog');
     cursor: default !important;
     background-position: -7px;
   }
+
+  /* menus are used in the main frame */
+  .goog-menu-button {
+    background: #ddd url(/images/button-bg.png) repeat-x top left;
+    border: 0;
+    color: #000;
+    cursor: pointer;
+    list-style: none;
+    margin: 2px;
+    outline: none;
+    padding: 0;
+    text-decoration: none;
+    vertical-align: middle;
+  }
+
+  /* Pseudo-rounded corners. */
+  .goog-menu-button-outer-box,
+  .goog-menu-button-inner-box {
+    border-style: solid;
+    border-color: #aaa;
+    vertical-align: top;
+  }
+  .goog-menu-button-outer-box {
+    margin: 0;
+    border-width: 1px 0;
+    padding: 0;
+  }
+  .goog-menu-button-inner-box {
+    margin: 0 -1px;
+    border-width: 0 1px;
+    padding: 3px 4px;
+  }
+
+  /* Pre-IE7 IE hack; ignored by IE7 and all non-IE browsers. */
+  * html .goog-menu-button-inner-box {
+    /* IE6 needs to have the box shifted to make the borders line up. */
+    left: -1px;
+  }
+
+  /* Pre-IE7 BiDi fixes. */
+  * html .goog-menu-button-rtl .goog-menu-button-outer-box {
+    /* @noflip */ left: -1px;
+    /* @noflip */ right: auto;
+  }
+  * html .goog-menu-button-rtl .goog-menu-button-inner-box {
+    /* @noflip */ right: auto;
+  }
+
+  /* IE7-only hack; ignored by all other browsers. */
+  *:first-child+html .goog-menu-button-inner-box {
+    /* IE7 needs to have the box shifted to make the borders line up. */
+    left: -1px;
+  }
+  /* IE7 BiDi fix. */
+  *:first-child+html .goog-menu-button-rtl .goog-menu-button-inner-box {
+    /* @noflip */ left: 1px;
+    /* @noflip */ right: auto;
+  }
+
+  /* Safari-only hacks. */
+  ::root .goog-menu-button,
+  ::root .goog-menu-button-outer-box,
+  ::root .goog-menu-button-inner-box {
+    /* Required to make pseudo-rounded corners work on Safari. */
+    line-height: 0;
+  }
+  ::root .goog-menu-button-caption,
+  ::root .goog-menu-button-dropdown {
+    /* Required to make pseudo-rounded corners work on Safari. */
+    line-height: normal;
+  }
+
+  /* State: hover. */
+  .goog-menu-button-hover .goog-menu-button-outer-box,
+  .goog-menu-button-hover .goog-menu-button-inner-box {
+    border-color: #9cf #69e #69e #7af !important; /* Hover border wins. */
+  }
+
+  /* State: active, open. */
+  .goog-menu-button-active,
+  .goog-menu-button-open {
+    background-color: #bbb;
+    background-position: bottom left;
+  }
+
+  /* State: focused. */
+  .goog-menu-button-focused .goog-menu-button-outer-box,
+  .goog-menu-button-focused .goog-menu-button-inner-box {
+    border-color: orange;
+  }
+
+  .goog-menu-button-caption {
+    padding: 0 4px 0 0;
+    vertical-align: top;
+  }
+
+  .goog-menu-button-dropdown {
+    height: 15px;
+    width: 7px;
+    background: url(/images/editortoolbar.png) no-repeat -388px 0;
+    vertical-align: top;
+  }
+
+  .goog-menu {
+    background: #fff;
+    border-color: #ccc #666 #666 #ccc;
+    border-style: solid;
+    border-width: 1px;
+    cursor: default;
+    font: normal 13px Arial, sans-serif;
+    margin: 0;
+    outline: none;
+    padding: 4px 0;
+    position: absolute;
+    z-index: 20000;
+  }
+
+  .goog-menuitem {
+    color: #000;
+    list-style: none;
+    margin: 0;
+    padding: 4px 7em 4px 10px;
+    white-space: nowrap;
+  }
+
+  .goog-menuitem-content {
+    color: #000;
+  }
+
+  .goog-menuitem-highlight,
+  .goog-menuitem-hover {
+    background-color: #d6e9f8;
+    /* Use an explicit top and bottom border so that the selection is visible
+     * in high contrast mode. */
+    border-color: #d6e9f8;
+    border-style: dotted;
+    border-width: 1px 0;
+    padding-bottom: 3px;
+    padding-top: 3px;
+  }
+
   </style>
   </head>
   <body onload="ola.Setup()">
@@ -392,6 +533,7 @@ goog.require('goog.ui.Dialog');
            </div>
            <div id="stop_button" class="goog-custom-button goog-inline-block"
              title="Stop OLA">Stop OLA</div>
+            <p>Switch to the <a href="/old">Old Interface</a></p>
           </div>
           <br/>
         </div>
@@ -401,7 +543,8 @@ goog.require('goog.ui.Dialog');
            <legend>New Universe Settings</legend>
            <table>
             <tr>
-             <td>Universe Id</td><td><input id="new_universe_id"></td>
+             <td>Universe Id</td>
+             <td><input id="new_universe_id" maxlength="200"></td>
             </tr>
             <tr>
              <td>Universe Name</td><td><input id="new_universe_name"></td>
@@ -444,10 +587,19 @@ goog.require('goog.ui.Dialog');
                <td>Universe Id</td><td><div id="universe_id"</div></td>
               </tr>
               <tr>
-               <td>Universe Name</td><td><div id="universe_name"</div></td>
+               <td>Universe Name</td>
+               <td><input id="universe_name" maxlength="200"></td>
               </tr>
               <tr>
-               <td>Merge Mode</td><td><div id="universe_merge_mode"></div></td>
+               <td>Merge Mode</td>
+               <td>
+                 <div id="universe_merge_mode" class="goog-select">
+                   <ul class="goog-menu">
+                    <li class="goog-menuitem">HTP</li>
+                    <li class="goog-menuitem">LTP</li>
+                   </ul>
+                 </div>
+               </td>
               </tr>
              </table>
             </fieldset>
@@ -518,24 +670,14 @@ goog.require('goog.ui.Dialog');
               <div class='goog-splitpane-second-container
                           ola-splitpane-rdm-device'>
                 <div class='ola-scroller'>
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
-                  This is the second tab
+                 This is where the RDM attributes go.
                 </div>
               </div>
               <div class='goog-splitpane-handle ola-splitpane-rdm-handle'></div>
             </div>
           </div>
-          <div id="tab_page_3">bar</div>
+          <div id="tab_page_3">The DMX console hasn't been moved over yet.
+            It can still be found in the <a href="/old">old interface</a></div>
         </div>
         <div class="ola-scroller" id="plugin_frame">
             <pre id="plugin_description"></pre>
