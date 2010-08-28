@@ -218,9 +218,13 @@ ola.UniverseFrame.prototype.ActiveUniverse = function() {
  * Set the size of the split pane to match the parent element
  */
 ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
-  if (this.tabPane.getSelectedIndex() == 1) {
-    var big_frame = goog.dom.$('ola-splitpane-content');
-    var big_size = goog.style.getBorderBoxSize(big_frame);
+  var big_frame = goog.dom.$('ola-splitpane-content');
+  var big_size = goog.style.getBorderBoxSize(big_frame);
+  if (this.tabPane.getSelectedIndex() == 0) {
+    goog.style.setBorderBoxSize(
+        goog.dom.$('tab_page_1'),
+        new goog.math.Size(big_size.width - 7, big_size.height - 34));
+  } else if (this.tabPane.getSelectedIndex() == 1) {
     this.splitpane.setSize(
         new goog.math.Size(big_size.width - 7, big_size.height - 62));
   }
@@ -261,6 +265,8 @@ ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
   var server = ola.Server.getInstance();
   this.uid_timer.stop();
 
+  this.SetSplitPaneSize();
+
   if (selected_tab == 0) {
     server.FetchUniverseInfo(this.current_universe);
 
@@ -271,7 +277,6 @@ ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
     ola_server.FetchAvailablePorts();
   } else if (selected_tab == 1) {
     // update RDM
-    this.SetSplitPaneSize();
     server.FetchUids(this.current_universe);
     this.uid_timer.start();
   }
