@@ -1,3 +1,4 @@
+<!DOCTYPE html> 
 <html>
   <head>
     <link rel="stylesheet" href="/custombutton.css">
@@ -24,7 +25,7 @@ goog.require('goog.ui.Dialog');
     <script src="output.js"></script> 
     -->
     <title>OLA Admin</title>
-<style class="text/css">
+<style type="text/css">
   body {
     margin: 0px;
     padding: 0px;
@@ -323,6 +324,7 @@ goog.require('goog.ui.Dialog');
     padding: 0;
     text-decoration: none;
     vertical-align: middle;
+    font-size: 11px;
   }
 
   /* Pseudo-rounded corners. */
@@ -407,9 +409,9 @@ goog.require('goog.ui.Dialog');
   }
 
   .goog-menu-button-dropdown {
-    height: 15px;
+    height: 13px;
     width: 7px;
-    background: url(/images/editortoolbar.png) no-repeat -388px 0;
+    background: url(/images/expander.png) no-repeat -73px 0;
     vertical-align: top;
   }
 
@@ -419,7 +421,7 @@ goog.require('goog.ui.Dialog');
     border-style: solid;
     border-width: 1px;
     cursor: default;
-    font: normal 13px Arial, sans-serif;
+    font: normal 11px Arial, sans-serif;
     margin: 0;
     outline: none;
     padding: 4px 0;
@@ -457,11 +459,11 @@ goog.require('goog.ui.Dialog');
     <div id="header">
       <div id="right_nav"><span id="log_control">View Log</span></div>
       <div id="title">
-       <img src="./logo.png" width="111px" height="48px">
+       <img src="./logo.png" width="111" height="48" alt="Logo">
       </div>
     </div>
 
-    <div id='log_popup' class='log_popup' tabindex="0">
+    <div id='log_popup' class='log_popup'>
       <div id="log" style="border: 1px solid #000000"></div>
     </div>
 
@@ -470,16 +472,16 @@ goog.require('goog.ui.Dialog');
       <div class='goog-splitpane-first-container ola-splitpane-navigation'>
        <div id="home_control" class="goog-control"
          title="Main page">
-         <img src="./images/blank.gif" />Home
+         <img src="./images/blank.gif">Home
        </div>
        <div id="universe_list_control" class="goog-control"
          title="Click to show/hide active universes">
-         <img src="./images/blank.gif" />Universes
+         <img src="./images/blank.gif">Universes
        </div>
        <div id="universe_container" class="goog-container"></div>
        <div id="plugin_list_control" class="goog-control"
          title="Click to show/hide plugins">
-         <img src="./images/blank.gif" />Plugins
+         <img src="./images/blank.gif">Plugins
        </div>
        <div id="plugin_container" class="goog-container"></div>
       </div>
@@ -535,7 +537,7 @@ goog.require('goog.ui.Dialog');
              title="Stop OLA">Stop OLA</div>
             <p>Switch to the <a href="/old">Old Interface</a></p>
           </div>
-          <br/>
+          <br>
         </div>
 
         <div id="new_universe_frame" class="ola-scroller">
@@ -584,7 +586,7 @@ goog.require('goog.ui.Dialog');
              <legend>Universe Settings</legend>
              <table>
               <tr>
-               <td>Universe Id</td><td><div id="universe_id"</div></td>
+               <td>Universe Id</td><td><div id="universe_id"></div></td>
               </tr>
               <tr>
                <td>Universe Name</td>
@@ -608,10 +610,10 @@ goog.require('goog.ui.Dialog');
                 <table class="ola-table">
                  <thead>
                   <tr>
-                   <th>&nbsp;</th>
-                   <th>Device</th>
-                   <th>Description</th>
-                   <th>Priority</th>
+                   <th width="30px">&nbsp;</th>
+                   <th width="15%">Device</th>
+                   <th width="50%">Description</th>
+                   <th width="35%">Priority</th>
                   </tr>
                  </thead>
                  <tbody id="input_ports">
@@ -623,10 +625,10 @@ goog.require('goog.ui.Dialog');
               <table class="ola-table">
                <thead>
                 <tr>
-                 <th>&nbsp;</th>
-                 <th>Device</th>
-                 <th>Description</th>
-                 <th>Priority</th>
+                 <th width="30px">&nbsp;</th>
+                 <th width="15%">Device</th>
+                 <th width="50%">Description</th>
+                 <th width="35%">Priority</th>
                 </tr>
                </thead>
                <tbody id="output_ports">

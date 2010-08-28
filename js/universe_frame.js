@@ -152,6 +152,11 @@ goog.inherits(ola.UniverseFrame, ola.BaseFrame);
 ola.UniverseFrame.prototype._SetupMainTab = function() {
   var save_button = goog.dom.$('universe_save_button');
   goog.ui.decorate(save_button);
+  goog.events.listen(save_button,
+                     goog.events.EventType.CLICK,
+                     function() { this._Save(); },
+                     false,
+                     this);
 
   this.merge_mode = goog.ui.decorate(goog.dom.$('universe_merge_mode'));
 
@@ -173,12 +178,6 @@ ola.UniverseFrame.prototype._SetupMainTab = function() {
   this.available_port_list = new ola.SortedList(
       this.available_table_container,
       new ola.AvailablePortComponentFactory());
-
-  var ola_server = ola.Server.getInstance();
-  goog.events.listen(ola_server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
-                     this._UpdateAvailablePorts,
-                     false, this);
-  ola_server.FetchAvailablePorts();
 }
 
 
@@ -212,6 +211,19 @@ ola.UniverseFrame.prototype._SetupRDMTab = function() {
  */
 ola.UniverseFrame.prototype.ActiveUniverse = function() {
   return this.current_universe;
+}
+
+
+/**
+ * Set the size of the split pane to match the parent element
+ */
+ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
+  if (this.tabPane.getSelectedIndex() == 1) {
+    var big_frame = goog.dom.$('ola-splitpane-content');
+    var big_size = goog.style.getBorderBoxSize(big_frame);
+    this.splitpane.setSize(
+        new goog.math.Size(big_size.width - 7, big_size.height - 62));
+  }
 }
 
 
@@ -251,6 +263,12 @@ ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
 
   if (selected_tab == 0) {
     server.FetchUniverseInfo(this.current_universe);
+
+    var ola_server = ola.Server.getInstance();
+    goog.events.listen(ola_server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
+                       this._UpdateAvailablePorts,
+                       false, this);
+    ola_server.FetchAvailablePorts();
   } else if (selected_tab == 1) {
     // update RDM
     this.SetSplitPaneSize();
@@ -290,7 +308,6 @@ ola.UniverseFrame.prototype._UpdateFromData = function(e) {
  * Called when the available ports are updated
  */
 ola.UniverseFrame.prototype._UpdateAvailablePorts = function(e) {
-  alert(e.ports)
   this.available_port_list.UpdateFromData(e.ports);
   goog.events.unlisten(
       ola.Server.getInstance(),
@@ -315,20 +332,53 @@ ola.UniverseFrame.prototype._UpdateUids = function(e) {
 
 /**
  * Show information for a particular UID
+ * @param id
  */
-ola.UniverseFrame.prototype._ShowUID = function(uid) {
-  alert(uid);
+ola.UniverseFrame.prototype._ShowUID = function(id) {
 }
 
 
 /**
- * Set the size of the split pane to match the parent element
+ * Called when the save button is clicked
  */
-ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
-  if (this.tabPane.getSelectedIndex() == 1) {
-    var big_frame = goog.dom.$('ola-splitpane-content');
-    var big_size = goog.style.getBorderBoxSize(big_frame);
-    this.splitpane.setSize(
-        new goog.math.Size(big_size.width - 7, big_size.height - 62));
+ola.UniverseFrame.prototype._Save = function(e) {
+
+  // see if we need to remove any ports
+  var remove_ports = new Array();
+  var count = this.input_table_container.getChildCount();
+  for (var i = 0; i < count; ++i) {
+    var port_component = this.input_table_container.getChildAt(i);
+    if (!port_component.IsSelected()) {
+      remove_ports.push(port_component.PortId());
+    }
   }
+  var count = this.output_table_container.getChildCount();
+  for (var i = 0; i < count; ++i) {
+    var port_component = this.output_table_container.getChildAt(i);
+    if (!port_component.IsSelected()) {
+      remove_ports.push(port_component.PortId());
+    }
+  }
+
+  // figure out the new ports to add
+  count = this.available_table_container.getChildCount();
+  var new_ports = new Array();
+  for (var i = 0; i < count; ++i) {
+    var port_component = this.available_table_container.getChildAt(i);
+    if (port_component.IsSelected()) {
+      new_ports.push(port_component.PortId());
+    }
+  }
+
+
+  var server = ola.Server.getInstance();
+  //server.modifyUniverse(  );
+}
+
+
+/**
+ * Called when the changes are saved
+ */
+ola.UniverseFrame.prototype._saveCompleted = function(e) {
+
 }

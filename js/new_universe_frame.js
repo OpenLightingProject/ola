@@ -146,7 +146,7 @@ ola.NewUniverseFrame.prototype._AddButtonClicked = function(e) {
   for (var i = 0; i < count; ++i) {
     var port_component = this.table_container.getChildAt(i);
     if (port_component.IsSelected()) {
-      selected_ports.push(port_component.Id());
+      selected_ports.push(port_component.PortId());
     }
   }
 

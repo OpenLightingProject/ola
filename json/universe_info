@@ -10,7 +10,7 @@
       "description": "/dev/ttyUSB0",
       "port_id": "4-1-I-0",
       "priority": {
-        "priority": 110,
+        "value": 110,
       }
     },
   ],
@@ -22,7 +22,7 @@
       "port_id": "2-1-I-0",
       "priority": {
         "current_mode": "inherit",
-        "priority": 100,
+        "value": 100,
       }
     },
     {
@@ -31,7 +31,15 @@
       "description": "ArtNet Subnet 0x01",
       "port_id": "3-1-I-0",
       "priority": {
+        "current_mode": "override",
+        "value": 100,
       }
+    },
+    {
+      "id": 3,
+      "device": "Shownet",
+      "description": "Show net uni 1",
+      "port_id": "5-1-I-0",
     },
   ],
 }
