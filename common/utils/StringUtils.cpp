@@ -155,9 +155,46 @@ bool StringToUInt8(const string &value, uint8_t *output) {
 void Escape(string *original) {
   for (string::iterator iter = original->begin(); iter != original->end();
       ++iter) {
-    if (*iter == '"') {
-      iter = original->insert(iter, '\\');
-      iter++;
+    switch (*iter) {
+      case '"':
+        iter = original->insert(iter, '\\');
+        iter++;
+        break;
+      case '\\':
+        iter = original->insert(iter, '\\');
+        iter++;
+        break;
+      case '/':
+        iter = original->insert(iter, '\\');
+        iter++;
+        break;
+      case '\b':
+        *iter = 'b';
+        iter = original->insert(iter, '\\');
+        iter++;
+        break;
+      case '\f':
+        *iter = 'f';
+        iter = original->insert(iter, '\\');
+        iter++;
+        break;
+      case '\n':
+        *iter = 'n';
+        iter = original->insert(iter, '\\');
+        iter++;
+        break;
+      case '\r':
+        *iter = 'r';
+        iter = original->insert(iter, '\\');
+        iter++;
+        break;
+      case '\t':
+        *iter = 't';
+        iter = original->insert(iter, '\\');
+        iter++;
+        break;
+      default:
+        break;
     }
   }
 }

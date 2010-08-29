@@ -164,9 +164,27 @@ void StringUtilsTest::testEscape() {
   Escape(&s1);
   CPPUNIT_ASSERT_EQUAL(string("foo\\\""), s1);
 
-  string s2 = "he said \"foo\"";
-  Escape(&s2);
-  CPPUNIT_ASSERT_EQUAL(string("he said \\\"foo\\\""), s2);
+  s1 = "he said \"foo\"";
+  Escape(&s1);
+  CPPUNIT_ASSERT_EQUAL(string("he said \\\"foo\\\""), s1);
+
+  s1 = "backslash\\test";
+  Escape(&s1);
+  CPPUNIT_ASSERT_EQUAL(string("backslash\\\\test"), s1);
+
+  s1 = "newline\ntest";
+  Escape(&s1);
+  CPPUNIT_ASSERT_EQUAL(string("newline\\ntest"), s1);
+
+  s1 = "tab\ttest";
+  Escape(&s1);
+  CPPUNIT_ASSERT_EQUAL(string("tab\\ttest"), s1);
+
+  s1 = "one\"two\\three/four\bfive\fsix\nseven\reight\tnine";
+  Escape(&s1);
+  CPPUNIT_ASSERT_EQUAL(
+      string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
+      s1);
 }
 
 
