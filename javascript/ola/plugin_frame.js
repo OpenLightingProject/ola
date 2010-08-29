@@ -25,11 +25,12 @@ goog.require('ola.Server.EventType');
 
 goog.provide('ola.PluginFrame');
 
-var ola = ola || {}
+var ola = ola || {};
 
 
 /**
  * The class representing the Plugin frame
+ * @param {string} element_id the ID of the element to use.
  * @constructor
  */
 ola.PluginFrame = function(element_id) {
@@ -40,13 +41,14 @@ ola.PluginFrame = function(element_id) {
       this._UpdateFromData,
       false,
       this);
-}
+};
 goog.inherits(ola.PluginFrame, ola.BaseFrame);
 
 
 /**
  * Update this plugin frame from a Plugin object
+ * @param {ola.PluginChangeEvent} e the plugin event.
  */
 ola.PluginFrame.prototype._UpdateFromData = function(e) {
   goog.dom.$('plugin_description').innerHTML = e.plugin['description'];
-}
+};

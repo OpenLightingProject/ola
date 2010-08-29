@@ -24,7 +24,7 @@ goog.require('ola.UniverseFrame');
 goog.provide('ola.OlaUi');
 goog.provide('ola.Setup');
 
-var ola = ola || {}
+var ola = ola || {};
 
 ola.LIST_UPDATE_INTERVAL_MS = 5000;
 
@@ -75,11 +75,12 @@ ola.OlaUI = function() {
 
   // show the main frame now
   goog.dom.$(ola.SPLIT_PANE_ID).style.visibility = 'visible';
-}
+};
 
 
 /**
  * The base class for an item in the control list
+ * @constructor
  */
 ola.SortedListControl = function(data, callback, opt_renderer, opt_domHelper) {
   goog.ui.Control.call(this, data['name'], opt_renderer, opt_domHelper);
@@ -93,10 +94,13 @@ goog.inherits(ola.SortedListControl, goog.ui.Control);
  * Update this item with from new data
  */
 ola.SortedListControl.prototype.Id = function() {
-  return this.id
-}
+  return this.id;
+};
 
 
+/**
+ * Setup the event handler for this object.
+ */
 ola.SortedListControl.prototype.enterDocument = function() {
   goog.ui.Control.superClass_.enterDocument.call(this);
   this.getElement().title = 'Universe ' + this.Id();
@@ -113,16 +117,16 @@ ola.SortedListControl.prototype.enterDocument = function() {
  */
 ola.SortedListControl.prototype.Update = function(new_data) {
   this.setContent(new_data['name']);
-}
+};
 
 
 /**
  * The base class for a factory which produces control items
- * @class
+ * @constructor
  */
 ola.ControlFactory = function(callback) {
   this.callback = callback;
-}
+};
 
 
 /**
@@ -130,7 +134,7 @@ ola.ControlFactory = function(callback) {
  */
 ola.ControlFactory.prototype.newComponent = function(data) {
   return new ola.SortedListControl(data, this.callback);
-}
+};
 
 
 /**
@@ -157,7 +161,7 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   plugin_container.decorate(goog.dom.$('plugin_container'));
   this.plugin_list = new ola.SortedList(
       plugin_container,
-      new ola.ControlFactory(function (id) { ui._ShowPlugin(id); }));
+      new ola.ControlFactory(function(id) { ui._ShowPlugin(id); }));
 
   goog.events.listen(this.ola_server,
                      ola.Server.EventType.PLUGIN_LIST_EVENT,
@@ -182,7 +186,7 @@ ola.OlaUI.prototype._SetupNavigation = function() {
                      this.ola_server);
   this.ola_server.FetchUniversePluginList();
   this.timer.start();
-}
+};
 
 
 /**
@@ -209,7 +213,8 @@ ola.OlaUI.prototype._UpdateUniverseList = function(e) {
     dialog.setVisible(true);
     this.ShowHome();
   }
-}
+};
+
 
 /**
  * Display the home frame
@@ -218,18 +223,18 @@ ola.OlaUI.prototype._UpdateUniverseList = function(e) {
 ola.OlaUI.prototype.ShowHome = function() {
   this._HideAllFrames();
   this.home_frame.Show();
-}
+};
 
 
 /**
  * Display the universe frame
- * @param universe_id {number} the ID of the universe to load in the frame
- * @param opt_select_main_tab {boolean} set to true to display the main tab
+ * @param universe_id {number} the ID of the universe to load in the frame.
+ * @param opt_select_main_tab {boolean} set to true to display the main tab.
  */
 ola.OlaUI.prototype.ShowUniverse = function(universe_id, opt_select_main_tab) {
   this._HideAllFrames();
   this.universe_frame.Show(universe_id, opt_select_main_tab);
-}
+};
 
 
 /**
@@ -239,19 +244,19 @@ ola.OlaUI.prototype.ShowUniverse = function(universe_id, opt_select_main_tab) {
 ola.OlaUI.prototype._ShowNewUniverse = function() {
   this._HideAllFrames();
   this.new_universe_frame.Show();
-}
+};
 
 
 /**
  * Display the plugin frame
- * @param plugin_id the ID of the plugin to show in the frame
+ * @param plugin_id the ID of the plugin to show in the frame.
  * @private
  */
 ola.OlaUI.prototype._ShowPlugin = function(plugin_id) {
   this.ola_server.FetchPluginInfo(plugin_id);
   this._HideAllFrames();
   this.plugin_frame.Show();
-}
+};
 
 
 /**
@@ -263,7 +268,7 @@ ola.OlaUI.prototype._HideAllFrames = function() {
   this.universe_frame.Hide();
   this.plugin_frame.Hide();
   this.new_universe_frame.Hide();
-}
+};
 
 
 /**
@@ -275,10 +280,10 @@ ola.OlaUI.prototype._UpdateUI = function(e) {
   this.splitpane1.setSize(new goog.math.Size(size.width, size.height - 80));
   this.logger_window.SetSize(size);
   this.universe_frame.SetSplitPaneSize();
-}
+};
 
 
 ola.Setup = function() {
   var ola_ui = new ola.OlaUI();
-}
+};
 goog.exportSymbol('ola.Setup', ola.Setup);

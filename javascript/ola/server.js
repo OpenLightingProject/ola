@@ -24,7 +24,7 @@ goog.require('goog.net.XhrIoPool');
 goog.provide('ola.Server');
 goog.provide('ola.Server.EventType');
 
-var ola = ola || {}
+var ola = ola || {};
 
 
 /**
@@ -36,7 +36,7 @@ ola.Server = function() {
   goog.events.EventTarget.call(this);
   this.pool = new goog.net.XhrIoPool({}, 1);
   this.universes = {};
-}
+};
 goog.inherits(ola.Server, goog.events.EventTarget);
 
 // This is a singleton, call ola.Server.getInstance() to access it.
@@ -51,7 +51,7 @@ ola.Server.EventType = {
   UIDS_EVENT: 'uids_change',
   UNIVERSE_EVENT: 'universe_change',
   UNIVERSE_LIST_EVENT: 'universe_list_change'
-}
+};
 
 ola.Server.SERVER_INFO_URL = '/json/server_stats';
 ola.Server.PLUGIN_INFO_URL = '/json/plugin_info';
@@ -68,6 +68,7 @@ ola.Server.MODIFY_UNIVERSE_URL = '/json/modify_universe';
 
 /**
  * This event is fired when the server info changes
+ * @constructor
  */
 ola.ServerInfoChangeEvent = function(server_info) {
   goog.events.Event.call(this, ola.Server.EventType.SERVER_INFO_EVENT);
@@ -78,6 +79,7 @@ goog.inherits(ola.ServerInfoChangeEvent, goog.events.Event);
 
 /**
  * This event is fired when the plugin list changes
+ * @constructor
  */
 ola.PluginListChangeEvent = function(new_list) {
   goog.events.Event.call(this, ola.Server.EventType.PLUGIN_LIST_EVENT);
@@ -88,6 +90,7 @@ goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
 
 /**
  * This event is fired when the universe list changes
+ * @constructor
  */
 ola.UniverseListChangeEvent = function(new_list) {
   goog.events.Event.call(this, ola.Server.EventType.UNIVERSE_LIST_EVENT);
@@ -98,6 +101,7 @@ goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
 
 /**
  * This event is fired when the plugin info is available
+ * @constructor
  */
 ola.PluginChangeEvent = function(plugin) {
   goog.events.Event.call(this, ola.Server.EventType.PLUGIN_EVENT);
@@ -108,6 +112,7 @@ goog.inherits(ola.PluginChangeEvent, goog.events.Event);
 
 /**
  * This event is fired when the universe info is available
+ * @constructor
  */
 ola.UniverseChangeEvent = function(universe) {
   goog.events.Event.call(this, ola.Server.EventType.UNIVERSE_EVENT);
@@ -118,6 +123,7 @@ goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
 
 /**
  * This event is fired when the available ports is ready
+ * @constructor
  */
 ola.AvailablePortsEvent = function(ports) {
   goog.events.Event.call(this, ola.Server.EventType.AVAILBLE_PORTS_EVENT);
@@ -128,6 +134,7 @@ goog.inherits(ola.AvailablePortsEvent, goog.events.Event);
 
 /**
  * This event is fired when the uids change
+ * @constructor
  */
 ola.UidsEvent = function(universe_id, uids) {
   goog.events.Event.call(this, ola.Server.EventType.UIDS_EVENT);
@@ -194,7 +201,7 @@ ola.Server.prototype.FetchUniversePluginList = function() {
     var obj = e.target.getResponseJson();
 
     // update the internal list of universes here
-    this.universes = {}
+    this.universes = {};
     for (var i = 0; i < obj['universes'].length; ++i) {
       this.universes[obj['plugins'][i].id] = true;
     }
@@ -268,7 +275,7 @@ ola.Server.prototype.createUniverse = function(universe_id,
  * Trigger RDM discovery for this universe. The discovery command is
  *   asyncronous and at the moment there is no way to check if discovery has
  *   completed.
- * @param {number} universe_id the ID of the universe to run discovery for
+ * @param {number} universe_id the ID of the universe to run discovery for.
  * @param {function(Object)} callback the function to call when the discovery
  *   request is ack'ed.
  */
@@ -298,14 +305,14 @@ ola.Server.prototype.FetchUids = function(universe_id) {
 
 /**
  * Update the settings for a universe.
- * @param universe_id {number} the id of the universe to modify.
- * @param universe_name {string} the new name.
- * @param merge_mode {string} HTP or LTP.
- * @param port_priorities {Array<{{id: string, mode: string, priority: number}}
+ * @param {number} universe_id the id of the universe to modify.
+ * @param {string} universe_name the new name.
+ * @param {string} merge_mode HTP or LTP.
+ * @param {Array<{{id: string, mode: string, priority: number}} port_priorities
  *   an array of new port priorities.
- * @param ports_to_remove {Array<string>} list of port ids to remove.
- * @param ports_to_add {Array<string>} list of port ids to add.
- * @param callback {function} the callback to invoke when complete
+ * @param {Array<string>} ports_to_remove list of port ids to remove.
+ * @param {Array<string>} ports_to_add list of port ids to add.
+ * @param {function} callback the callback to invoke when complete.
  */
 ola.Server.prototype.modifyUniverse = function(universe_id,
                                                universe_name,

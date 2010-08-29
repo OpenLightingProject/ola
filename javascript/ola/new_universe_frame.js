@@ -19,17 +19,17 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.Component');
 goog.require('ola.BaseFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
-goog.require('goog.ui.Checkbox');
 
 goog.provide('ola.NewUniverseFrame');
 
-var ola = ola || {}
+var ola = ola || {};
 
 
 /**
@@ -165,5 +165,3 @@ ola.NewUniverseFrame.prototype._newUniverseComplete = function(e) {
     dialog.setVisible(true);
   }
 };
-
-

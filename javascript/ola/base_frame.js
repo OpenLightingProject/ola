@@ -21,11 +21,11 @@ goog.require('goog.dom');
 
 goog.provide('ola.BaseFrame');
 
-var ola = ola || {}
+var ola = ola || {};
 
 /**
  * The base frame class
- * @param element_id the id of the div to use for the home frame
+ * @param {string} element_id the id of the div to use for the home frame.
  * @constructor
  */
 ola.BaseFrame = function(element_id) {
@@ -35,7 +35,7 @@ ola.BaseFrame = function(element_id) {
 
 /**
  * Check if this frame is visible.
- * @return {boolean} true if visible, false otherwise
+ * @return {boolean} true if visible, false otherwise.
  */
 ola.BaseFrame.prototype.IsVisible = function() {
   return this.element.style.display == 'block';

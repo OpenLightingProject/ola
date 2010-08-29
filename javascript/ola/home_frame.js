@@ -22,15 +22,15 @@ goog.require('goog.events');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.CustomButton');
 goog.require('ola.BaseFrame');
+goog.require('ola.Dialog');
 goog.require('ola.LoggerWindow');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
-goog.require('ola.Dialog');
 
 goog.provide('ola.HomeFrame');
 
-var ola = ola || {}
+var ola = ola || {};
 
 
 /**

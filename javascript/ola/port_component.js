@@ -29,12 +29,12 @@ goog.provide('ola.AvailablePortComponentFactory');
 goog.provide('ola.PortComponent');
 goog.provide('ola.PortComponentFactory');
 
-var ola = ola || {}
+var ola = ola || {};
 
 
 /**
  * A port bound to a universe
- * @class
+ * @constructor
  */
 ola.PortComponent = function(data, opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
@@ -62,7 +62,8 @@ ola.PortComponent.prototype.createDom = function() {
   this.checkbox = new goog.ui.Checkbox();
   this.checkbox.setChecked(true);
   this.checkbox.render(td);
-  this.dom_.appendChild(this.tr, goog.dom.createDom('td', {}, this.data['device']));
+  this.dom_.appendChild(
+      this.tr, goog.dom.createDom('td', {}, this.data['device']));
   this.dom_.appendChild(this.tr,
       goog.dom.createDom('td', {}, this.data['description']));
 
@@ -102,7 +103,7 @@ ola.PortComponent.prototype.createDom = function() {
 
 
 /**
- * setup the event handlers
+ * Setup the event handlers
  */
 ola.PortComponent.prototype.enterDocument = function() {
   if (this.priority_select != undefined) {
@@ -133,10 +134,10 @@ ola.PortComponent.prototype.enterDocument = function() {
 
   goog.events.listen(this.tr,
                      goog.events.EventType.CLICK,
-                     function () { this.checkbox.toggle(); },
+                     function() { this.checkbox.toggle(); },
                      false, this);
+};
 
-}
 
 /**
  * Get the id of this item
@@ -215,19 +216,19 @@ ola.PortComponent.prototype._prioritySelectChanged = function(e) {
     this.priority_input.style.visibility = 'hidden';
 
   }
-}
+};
 
 
 /**
  * The base class for a factory which produces PortComponents
- * @class
+ * @constructor
  */
 ola.PortComponentFactory = function() {
 };
 
 
 /**
- * @returns an instance of a PortComponent
+ * @return {ola.PortComponent} an instance of a PortComponent.
  */
 ola.PortComponentFactory.prototype.newComponent = function(data) {
   return new ola.PortComponent(data);
@@ -236,7 +237,7 @@ ola.PortComponentFactory.prototype.newComponent = function(data) {
 
 /**
  * A line in the available ports list.
- * @class
+ * @constructor
  */
 ola.AvailablePortComponent = function(data, opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
@@ -265,14 +266,14 @@ ola.AvailablePortComponent.prototype.createDom = function() {
   this.checkbox.render(td);
   this.dom_.appendChild(tr, goog.dom.createDom('td', {}, this.data['device']));
   this.dom_.appendChild(tr, goog.dom.createDom('td', {},
-      this.data['is_output'] ?  'Output' : 'Input'));
+      this.data['is_output'] ? 'Output' : 'Input'));
   this.dom_.appendChild(tr, goog.dom.createDom('td', {},
       this.data['description']));
   this.setElementInternal(tr);
 
   goog.events.listen(tr,
                      goog.events.EventType.CLICK,
-                     function () { this.checkbox.toggle(); },
+                     function() { this.checkbox.toggle(); },
                      false, this);
 };
 
@@ -317,14 +318,14 @@ ola.AvailablePortComponent.prototype.Update = function(new_data) {
 
 /**
  * The base class for a factory which produces AvailablePortComponents
- * @class
+ * @constructor
  */
 ola.AvailablePortComponentFactory = function() {
 };
 
 
 /**
- * @returns an instance of a AvailablePortComponent
+ * @return {ola.AvailablePortComponent} an instance of a AvailablePortComponent.
  */
 ola.AvailablePortComponentFactory.prototype.newComponent = function(data) {
   return new ola.AvailablePortComponent(data);

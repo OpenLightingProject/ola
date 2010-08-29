@@ -21,11 +21,15 @@ goog.require('goog.ui.Dialog');
 
 goog.provide('ola.Dialog');
 
-var ola = ola || {}
+var ola = ola || {};
 
+/**
+ * The OLA Dialog class
+ * @constructor
+ */
 ola.Dialog = function() {
   goog.ui.Dialog.call(this, null, true);
-}
+};
 goog.inherits(ola.Dialog, goog.ui.Dialog);
 
 // This is a singleton, call ola.Dialog.getInstance() to access it.
@@ -40,4 +44,4 @@ ola.Dialog.prototype.SetAsBusy = function() {
   this.setButtonSet(null);
   this.setContent('<div align="center"><img src="/images/ajax-loader.gif">' +
                   '</div>');
-}
+};

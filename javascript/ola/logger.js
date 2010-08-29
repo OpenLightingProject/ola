@@ -29,7 +29,8 @@ goog.require('goog.ui.Popup');
 
 goog.provide('ola.LoggerWindow');
 
-var ola = ola || {}
+var ola = ola || {};
+/** The logger instance */
 ola.logger = goog.debug.Logger.getLogger('ola');
 
 
@@ -56,7 +57,7 @@ ola.LoggerWindow = function() {
   this.popup = new goog.ui.Popup(popupElt);
   this.popup.setHideOnEscape(true);
   this.popup.setAutoHide(true);
-}
+};
 
 
 /**
@@ -71,11 +72,12 @@ ola.LoggerWindow.prototype.Show = function() {
     this.log_control,
     goog.positioning.Corner.BOTTOM_RIGHT));
   this.popup.setVisible(true);
-}
+};
 
 
 /**
  * Set the size of the logger window
+ * @param {number} size the size of the main window.
  */
 ola.LoggerWindow.prototype.SetSize = function(size) {
   goog.style.setBorderBoxSize(
@@ -84,4 +86,4 @@ ola.LoggerWindow.prototype.SetSize = function(size) {
   this.popup.setPosition(new goog.positioning.AnchoredViewportPosition(
     this.log_control,
     goog.positioning.Corner.BOTTOM_RIGHT));
-}
+};

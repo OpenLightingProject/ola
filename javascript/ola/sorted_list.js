@@ -24,15 +24,16 @@ goog.require('goog.ui.Container');
 goog.provide('ola.SortedList');
 goog.provide('ola.TableContainer');
 
-var ola = ola || {}
+var ola = ola || {};
 
 
 /**
  * A container that uses the tbody element
+ * @constructor
  */
 ola.TableContainer = function(opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
-}
+};
 goog.inherits(ola.TableContainer, goog.ui.Component);
 
 
@@ -49,7 +50,7 @@ ola.TableContainer.prototype.createDom = function(container) {
  */
 ola.TableContainer.prototype.decorateInternal = function(element) {
   ola.TableContainer.superClass_.decorateInternal.call(this, element);
-}
+};
 
 
 /**
@@ -57,24 +58,27 @@ ola.TableContainer.prototype.decorateInternal = function(element) {
  */
 ola.TableContainer.prototype.canDecorate = function(element) {
   return element.tagName == 'TBODY';
-}
+};
+
 
 /**
  * The base class for a factory which produces control items
  * @class
  */
 ola.SortedListComponentFactory = function() {
-}
+};
+
 
 /**
  * @returns an instance of a SortedListComponent
  */
 ola.SortedListComponentFactory.prototype.newComponent = function(data) {
-}
+};
 
 
 /**
  * The base class for an item in the control list
+ * @constructor
  */
 ola.SortedListComponent = function(data, opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
@@ -88,7 +92,7 @@ goog.inherits(ola.SortedListComponent, goog.ui.Component);
  */
 ola.SortedListComponent.prototype.Id = function() {
   return this.data['id'];
-}
+};
 
 
 /**
@@ -96,19 +100,20 @@ ola.SortedListComponent.prototype.Id = function() {
  */
 ola.SortedListComponent.prototype.Update = function(new_data) {
   this.data = new_data;
-}
+};
 
 
 /**
  * Represents a list on controls that are updated from a data model
  * @param container_id the id of the container to use as the control list.
  * @param component_factory a SortedListComponentFactory class to produce the
- *   SortedListComponents
+ *   SortedListComponents.
+ * @constructor
  */
-ola.SortedList = function(container, component_factory) {
-  this.container = container;
+ola.SortedList = function(container_id, component_factory) {
+  this.container = container_id;
   this.component_factory = component_factory;
-}
+};
 
 
 /**
@@ -150,7 +155,7 @@ ola.SortedList.prototype.UpdateFromData = function(data_list) {
     var component = this.component_factory.newComponent(data_list[data_index]);
     this.container.addChild(component, true);
   }
-}
+};
 
 
 /**
@@ -160,4 +165,4 @@ ola.SortedList.prototype.Clear = function() {
   while (this.container.getChildCount()) {
     delete this.container.removeChildAt(0, true);
   }
-}
+};

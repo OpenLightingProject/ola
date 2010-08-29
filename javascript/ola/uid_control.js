@@ -23,13 +23,13 @@ goog.require('goog.ui.Control');
 goog.provide('ola.UidControl');
 goog.provide('ola.UidControlFactory');
 
-var ola = ola || {}
+var ola = ola || {};
 
 
 /**
  * The class for an item in the uid list.
- * @param data {Object} the data to build this UID control from
- * @param callback {function} the function to call when clicked
+ * @param {Object} data the data to build this UID control from.
+ * @param {function} callback the function to call when clicked.
  * @constructor
  */
 ola.UidControl = function(data, callback, opt_renderer, opt_domHelper) {
@@ -46,10 +46,10 @@ goog.inherits(ola.UidControl, goog.ui.Control);
 /**
  * Return the ID of this item. The ID is a float in the form
  * manufactuer_id.device_id.
- * @return {number}
+ * @return {number} the ID of this UID.
  */
 ola.UidControl.prototype.Id = function() {
-  return this.id
+  return this.id;
 };
 
 
@@ -73,12 +73,12 @@ ola.UidControl.prototype.enterDocument = function() {
 ola.UidControl.prototype.Update = function(new_data) {
   // We don't expect the uid to change here.
   this.setContent(new_data['uid']);
-}
+};
 
 
 /**
  * The base class for a factory which produces control items
- * @param callback {function} the function to call when an item is clicked. The
+ * @param {function} callback the function to call when an item is clicked. The
  * first arg is the item id.
  * @constructor
  */
@@ -89,8 +89,8 @@ ola.UidControlFactory = function(callback) {
 
 /**
  * Create a new UidControl object from some data
- * @param {Object} the data to use for the control.
- * @returns {ola.UidControl}
+ * @param {Object} data the data to use for the control.
+ * @return {ola.UidControl}
  */
 ola.UidControlFactory.prototype.newComponent = function(data) {
   return new ola.UidControl(data, this.callback);
