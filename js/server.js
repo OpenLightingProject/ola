@@ -47,9 +47,7 @@ ola.Server.EventType = {
   AVAILBLE_PORTS_EVENT: 'available_ports',
   PLUGIN_EVENT: 'plugin_change',
   PLUGIN_LIST_EVENT: 'plugin_list_change',
-  PLUGIN_RELOAD_EVENT: 'plugins_reloaded',
   SERVER_INFO_EVENT: 'server_info_change',
-  SERVER_STOP_EVENT: 'server_stopped',
   UIDS_EVENT: 'uids_change',
   UNIVERSE_EVENT: 'universe_change',
   UNIVERSE_LIST_EVENT: 'universe_list_change',
@@ -119,24 +117,6 @@ goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
 
 
 /**
- * This event is fired when the server stops.
- */
-ola.ServerStopEvent = function() {
-  goog.events.Event.call(this, ola.Server.EventType.SERVER_STOP_EVENT);
-};
-goog.inherits(ola.ServerStopEvent, goog.events.Event);
-
-
-/**
- * This event is fired when the plugins_reload
- */
-ola.PluginReloadEvent = function() {
-  goog.events.Event.call(this, ola.Server.EventType.PLUGIN_RELOAD_EVENT);
-};
-goog.inherits(ola.PluginReloadEvent, goog.events.Event);
-
-
-/**
  * This event is fired when the available ports is ready
  */
 ola.AvailablePortsEvent = function(ports) {
@@ -180,10 +160,12 @@ ola.Server.prototype.UpdateServerInfo = function() {
 
 /**
  * Reload the plugins
+ * @param {function(Object)} callback the function to call when the request
+ * completes.
  */
-ola.Server.prototype.ReloadPlugins = function() {
+ola.Server.prototype.reloadPlugins = function(callback) {
   var on_complete = function(e) {
-    this.dispatchEvent(new ola.PluginReloadEvent());
+    callback(e);
     this._cleanupRequest(e.target);
   }
   this._initiateRequest(ola.Server.RELOAD_PLUGINS_URL, on_complete);
@@ -192,10 +174,12 @@ ola.Server.prototype.ReloadPlugins = function() {
 
 /**
  * Stop the server
+ * @param {function(Object)} callback the function to call when the request
+ * completes.
  */
-ola.Server.prototype.StopServer = function () {
+ola.Server.prototype.stopServer = function (callback) {
   var on_complete = function(e) {
-    this.dispatchEvent(new ola.ServerStopEvent());
+    callback(e);
     this._cleanupRequest(e.target);
   }
   this._initiateRequest(ola.Server.STOP_SERVER_URL, on_complete);

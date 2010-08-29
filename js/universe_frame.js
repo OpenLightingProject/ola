@@ -418,7 +418,7 @@ ola.UniverseFrame.prototype._discoveryComplete = function(e) {
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
   if (e.target.getStatus() == 200) {
     dialog.setTitle('Discovery Process Started');
-    dialog.setContent('The discovery process has begin.');
+    dialog.setContent('The discovery process has begun.');
   } else {
     dialog.setTitle('Failed to Start Discovery Process');
     dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());

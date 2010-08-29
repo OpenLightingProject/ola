@@ -121,30 +121,24 @@ ola.HomeFrame = function(element_id) {
   goog.ui.decorate(reload_button);
   goog.events.listen(reload_button,
                      goog.events.EventType.CLICK,
-                     this._ReloadButtonClicked,
+                     this._reloadButtonClicked,
                      false, this);
 
   var stop_button = goog.dom.$('stop_button');
   goog.ui.decorate(stop_button);
   goog.events.listen(stop_button,
                      goog.events.EventType.CLICK,
-                     this._StopButtonClicked,
+                     this._stopButtonClicked,
                      false, this);
 
   var new_universe_button = goog.dom.$('new_universe_button');
   goog.ui.decorate(new_universe_button);
 
   goog.events.listen(ola_server, ola.Server.EventType.SERVER_INFO_EVENT,
-                     this._UpdateFromData,
+                     this._updateServerInfo,
                      false, this);
   goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_LIST_EVENT,
-                     this._UniverseListChanged,
-                     false, this);
-  goog.events.listen(ola_server, ola.Server.EventType.PLUGIN_RELOAD_EVENT,
-                     this._PluginReloadComplete,
-                     false, this);
-  goog.events.listen(ola_server, ola.Server.EventType.SERVER_STOP_EVENT,
-                     this._StopServerComplete,
+                     this._universeListChanged,
                      false, this);
 
   // update the server info now
@@ -162,52 +156,56 @@ goog.inherits(ola.HomeFrame, ola.BaseFrame);
 /**
  * Update the home frame with new server data
  */
-ola.HomeFrame.prototype._UpdateFromData = function(e) {
+ola.HomeFrame.prototype._updateServerInfo = function(e) {
   goog.dom.$('server_hostname').innerHTML = e.server_info['hostname'];
   goog.dom.$('server_ip').innerHTML = e.server_info['ip'];
   goog.dom.$('server_version').innerHTML = e.server_info['version'];
   goog.dom.$('server_uptime').innerHTML = e.server_info['up_since'];
-}
+};
 
 
 /**
  * Update the universe set
  */
-ola.HomeFrame.prototype._UniverseListChanged = function(e) {
+ola.HomeFrame.prototype._universeListChanged = function(e) {
   this.universe_list.UpdateFromData(e.universes);
 };
 
 
 /**
  * Called when the stop button is clicked
+ * @private
  */
-ola.HomeFrame.prototype._StopButtonClicked = function(e) {
+ola.HomeFrame.prototype._stopButtonClicked = function(e) {
   var dialog = ola.Dialog.getInstance();
 
   goog.events.listen(dialog, goog.ui.Dialog.EventType.SELECT,
-      this._StopDialogSelected, false, this);
+      this._stopServerConfirmed, false, this);
 
   dialog.setTitle('Please confirm');
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
   dialog.setContent(
       'Are you sure? OLA may not be configured to restart automatically');
   dialog.setVisible(true);
-}
+};
 
 
 /**
  * Called when the stop dialog exits.
+ * @private
  */
-ola.HomeFrame.prototype._StopDialogSelected = function(e) {
+ola.HomeFrame.prototype._stopServerConfirmed = function(e) {
   var dialog = ola.Dialog.getInstance();
 
   goog.events.unlisten(dialog, goog.ui.Dialog.EventType.SELECT,
-      this._StopDialogSelected, false, this);
+      this._stopServerConfirmed, false, this);
 
   if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
     dialog.SetAsBusy();
     dialog.setVisible(true);
-    ola.Server.getInstance().StopServer();
+    var frame = this;
+    ola.Server.getInstance().stopServer(
+      function(e) { frame._stopServerComplete(e); });
     return false;
   }
 };
@@ -215,26 +213,45 @@ ola.HomeFrame.prototype._StopDialogSelected = function(e) {
 
 /**
  * Update the home frame with new server data
+ * @private
  */
-ola.HomeFrame.prototype._StopServerComplete = function(e) {
-  ola.Dialog.getInstance().setVisible(false);
+ola.HomeFrame.prototype._stopServerComplete = function(e) {
+  var dialog = ola.Dialog.getInstance();
+  if (e.target.getStatus() == 200) {
+    dialog.setVisible(false);
+  } else {
+    dialog.setTitle('Failed to stop the server');
+    dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+  }
 };
 
 
 /**
  * Called when the reload button is clicked
+ * @private
  */
-ola.HomeFrame.prototype._ReloadButtonClicked = function(e) {
+ola.HomeFrame.prototype._reloadButtonClicked = function(e) {
   var dialog = ola.Dialog.getInstance();
   dialog.SetAsBusy();
   dialog.setVisible(true);
-  ola.Server.getInstance().ReloadPlugins();
+  var frame = this;
+  ola.Server.getInstance().reloadPlugins(
+      function(e) { frame._pluginReloadComplete(e); });
 };
 
 
 /**
  * Update the home frame with new server data
+ * @private
  */
-ola.HomeFrame.prototype._PluginReloadComplete = function(e) {
-  ola.Dialog.getInstance().setVisible(false);
+ola.HomeFrame.prototype._pluginReloadComplete = function(e) {
+  var dialog = ola.Dialog.getInstance();
+  if (e.target.getStatus() == 200) {
+    dialog.setVisible(false);
+  } else {
+    dialog.setTitle('Failed to Reload plugins');
+    dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+  }
 };
