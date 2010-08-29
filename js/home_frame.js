@@ -20,6 +20,7 @@
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.ui.Component');
+goog.require('goog.ui.CustomButton');
 goog.require('ola.BaseFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.Server');

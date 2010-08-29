@@ -51,7 +51,7 @@ ola.NewUniverseFrame = function(element_id, ola_ui) {
   goog.ui.decorate(confirm_button);
   goog.events.listen(confirm_button,
                      goog.events.EventType.CLICK,
-                     this._AddButtonClicked,
+                     this._addUniverseButtonClicked,
                      false, this);
 
   this.table_container = new ola.TableContainer();
@@ -59,13 +59,7 @@ ola.NewUniverseFrame = function(element_id, ola_ui) {
   this.port_list = new ola.SortedList(
       this.table_container,
       new ola.AvailablePortComponentFactory());
-
-  // listen for new universe events
-  var server = ola.Server.getInstance();
-  goog.events.listen(server, ola.Server.EventType.NEW_UNIVERSE_EVENT,
-                     this._NewUniverseComplete,
-                     false, this);
-}
+};
 goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
 
 
@@ -75,48 +69,33 @@ goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
 ola.NewUniverseFrame.prototype.Show = function() {
   var ola_server = ola.Server.getInstance();
   goog.events.listen(ola_server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
-                     this._UpdateAvailablePorts,
+                     this._updateAvailablePorts,
                      false, this);
   ola_server.FetchAvailablePorts();
 
   ola.UniverseFrame.superClass_.Show.call(this);
-}
+};
 
 
 /**
  * Called when the available ports are updated
+ * @private
  */
-ola.NewUniverseFrame.prototype._UpdateAvailablePorts = function(e) {
+ola.NewUniverseFrame.prototype._updateAvailablePorts = function(e) {
   this.port_list.UpdateFromData(e.ports);
   goog.events.unlisten(
       ola.Server.getInstance(),
       ola.Server.EventType.AVAILBLE_PORTS_EVENT,
-      this._UpdateAvailablePorts,
+      this._updateAvailablePorts,
       false, this);
-}
-
-
-/**
- * Called when the new universe action completes.
- */
-ola.NewUniverseFrame.prototype._NewUniverseComplete = function(e) {
-  var dialog = ola.Dialog.getInstance();
-  if (e.ok) {
-    dialog.setVisible(false);
-    this.ola_ui.ShowUniverse(e.universe, true);
-  } else {
-    dialog.setTitle('New Universe Failed');
-    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
-    dialog.setContent(e.message);
-    dialog.setVisible(true);
-  }
-}
+};
 
 
 /**
  * Called when the add universe button is clicked
+ * @private
  */
-ola.NewUniverseFrame.prototype._AddButtonClicked = function(e) {
+ola.NewUniverseFrame.prototype._addUniverseButtonClicked = function(e) {
   var dialog = ola.Dialog.getInstance();
   var universe_id_input = goog.dom.$('new_universe_id');
   var universe_id = parseInt(universe_id_input.value);
@@ -158,7 +137,33 @@ ola.NewUniverseFrame.prototype._AddButtonClicked = function(e) {
     return;
   }
 
-  ola_server.NewUniverse(universe_id, universe_name, selected_ports);
+  var frame = this;
+  ola_server.createUniverse(
+      universe_id,
+      universe_name,
+      selected_ports,
+      function(e) { frame._newUniverseComplete(e); });
   dialog.SetAsBusy();
   dialog.setVisible(true);
-}
+};
+
+
+/**
+ * Called when the new universe action completes.
+ * @private
+ */
+ola.NewUniverseFrame.prototype._newUniverseComplete = function(e) {
+  var dialog = ola.Dialog.getInstance();
+  var obj = e.target.getResponseJson();
+  if (obj['ok']) {
+    dialog.setVisible(false);
+    this.ola_ui.ShowUniverse(obj['universe'], true);
+  } else {
+    dialog.setTitle('New Universe Failed');
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setContent(obj['message']);
+    dialog.setVisible(true);
+  }
+};
+
+

@@ -19,23 +19,19 @@
 
 goog.require('goog.Timer');
 goog.require('goog.dom');
-goog.require('goog.dom.ViewportSizeMonitor');
 goog.require('goog.events');
 goog.require('goog.math');
-goog.require('goog.net.XhrIo');
-goog.require('goog.net.XhrIoPool');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Container');
 goog.require('goog.ui.Control');
-goog.require('goog.ui.CustomButton');
-goog.require('goog.ui.Select');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 goog.require('goog.ui.TabPane');
-goog.require('ola.Dialog');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
+goog.require('ola.UidControl');
+goog.require('ola.UidControlFactory');
 
 goog.provide('ola.UniverseFrame');
 
@@ -43,84 +39,19 @@ var ola = ola || {}
 
 
 ola.UID_REFRESH_INTERVAL = 5000;
-ola.UNIVERSE_TAB_PANE_ID = 'universe_tab_pane';
-
-/**
- * The class for an item in the uid list
- */
-ola.UidControl = function(data, callback, opt_renderer, opt_domHelper) {
-  goog.ui.Control.call(this, data['uid'], opt_renderer, opt_domHelper);
-  this.id = data['id'];
-  this.uid = data['uid'];
-  this.callback = callback;
-};
-goog.inherits(ola.UidControl, goog.ui.Control);
-
-
-/**
- * Update this item with from new data
- */
-ola.UidControl.prototype.Id = function() {
-  return this.id
-}
-
-
-/**
- * Setup the event handlers for this control
- */
-ola.UidControl.prototype.enterDocument = function() {
-  goog.ui.Control.superClass_.enterDocument.call(this);
-  this.getElement().title = 'UID ' + this.uid;
-  goog.events.listen(this.getElement(),
-                     goog.events.EventType.CLICK,
-                     function() { this.callback(this.id); },
-                     false,
-                     this);
-};
-
-
-/**
- * Update this item with from new data.
- */
-ola.UidControl.prototype.Update = function(new_data) {
-  this.setContent(new_data['uid']);
-}
-
-
-/**
- * The base class for a factory which produces control items
- * @class
- */
-ola.UidControlFactory = function(callback) {
-  this.callback = callback;
-}
-
-
-/**
- * @returns an instance of a UidControl
- */
-ola.UidControlFactory.prototype.newComponent = function(data) {
-  return new ola.UidControl(data, this.callback);
-}
 
 
 /**
  * The class representing the Universe frame
+ * @param {string} element_id the id of the element to use for this frame.
  * @constructor
  */
 ola.UniverseFrame = function(element_id) {
   ola.BaseFrame.call(this, element_id);
   this.current_universe = undefined;
 
-  var ola_server = ola.Server.getInstance();
-  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
-                     this._UpdateFromData,
-                     false, this);
-  goog.events.listen(ola_server, ola.Server.EventType.UIDS_EVENT,
-                     this._UpdateUids,
-                     false, this);
-
-  this.tabPane = new goog.ui.TabPane(goog.dom.$(ola.UNIVERSE_TAB_PANE_ID));
+  // setup the tab pane
+  this.tabPane = new goog.ui.TabPane(goog.dom.$(element_id + '_tab_pane'));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_1'), "Settings"));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
@@ -129,32 +60,44 @@ ola.UniverseFrame = function(element_id) {
     goog.dom.$('tab_page_3'), 'Console'));
 
   goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
-                     this._UpdateSelectedTab, false, this);
+                     this._updateSelectedTab, false, this);
 
-  this._SetupMainTab();
+  this._setupMainTab();
 
   // We need to make the RDM pane visible here otherwise the splitter
   // doesn't render correctly.
   this.tabPane.setSelectedIndex(1);
-  this._SetupRDMTab();
+  this._setupRDMTab();
   this.tabPane.setSelectedIndex(0);
 
+  // setup notifications when the universe or uid lists changes
+  var ola_server = ola.Server.getInstance();
+  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
+                     this._UpdateFromData,
+                     false, this);
+  goog.events.listen(ola_server, ola.Server.EventType.UIDS_EVENT,
+                     this._updateUidList,
+                     false, this);
+
+  // setup the uid timer
   this.uid_timer = new goog.Timer(ola.UID_REFRESH_INTERVAL);
   goog.events.listen(this.uid_timer, goog.Timer.TICK,
                      function() { ola_server.FetchUids(); });
-}
+
+};
 goog.inherits(ola.UniverseFrame, ola.BaseFrame);
 
 
 /**
  * Setup the main universe settings tab
+ * @private
  */
-ola.UniverseFrame.prototype._SetupMainTab = function() {
+ola.UniverseFrame.prototype._setupMainTab = function() {
   var save_button = goog.dom.$('universe_save_button');
   goog.ui.decorate(save_button);
   goog.events.listen(save_button,
                      goog.events.EventType.CLICK,
-                     function() { this._Save(); },
+                     function() { this._saveButtonClicked(); },
                      false,
                      this);
 
@@ -178,24 +121,29 @@ ola.UniverseFrame.prototype._SetupMainTab = function() {
   this.available_port_list = new ola.SortedList(
       this.available_table_container,
       new ola.AvailablePortComponentFactory());
-}
+};
 
 
 /**
  * Setup the RDM tab
+ * @private
  */
-ola.UniverseFrame.prototype._SetupRDMTab = function() {
+ola.UniverseFrame.prototype._setupRDMTab = function() {
   var discovery_button = goog.dom.$('force_discovery_button');
   goog.ui.decorate(discovery_button);
+  goog.events.listen(discovery_button,
+                     goog.events.EventType.CLICK,
+                     function() { this._discoveryButtonClicked(); },
+                     false,
+                     this);
 
-  var lhs2 = new goog.ui.Component();
-  var rhs2 = new goog.ui.Component();
-  this.splitpane = new goog.ui.SplitPane(lhs2, rhs2,
+  this.splitpane = new goog.ui.SplitPane(
+      new goog.ui.Component(),
+      new goog.ui.Component(),
       goog.ui.SplitPane.Orientation.HORIZONTAL);
   this.splitpane.setInitialSize(120);
   this.splitpane.setHandleSize(2);
   this.splitpane.decorate(goog.dom.$('rdm_split_pane'));
-  this.splitpane.setSize(new goog.math.Size(500, 400));
 
   var frame = this;
   var uid_container = new goog.ui.Container();
@@ -203,15 +151,16 @@ ola.UniverseFrame.prototype._SetupRDMTab = function() {
   this.uid_list = new ola.SortedList(
       uid_container,
       new ola.UidControlFactory(function (id) { frame._ShowUID(id); }));
-}
+};
 
 
 /**
- * Get the current selected universe
+ * Get the current selected universe.
+ * @return {number} the selected universe.
  */
-ola.UniverseFrame.prototype.ActiveUniverse = function() {
+ola.UniverseFrame.prototype.getActiveUniverse = function() {
   return this.current_universe;
-}
+};
 
 
 /**
@@ -228,7 +177,7 @@ ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
     this.splitpane.setSize(
         new goog.math.Size(big_size.width - 7, big_size.height - 62));
   }
-}
+};
 
 
 /**
@@ -249,14 +198,15 @@ ola.UniverseFrame.prototype.Show = function(universe_id, opt_select_main_tab) {
   if (opt_select_main_tab) {
     this.tabPane.setSelectedIndex(0);
   }
-  this._UpdateSelectedTab();
-}
+  this._updateSelectedTab();
+};
 
 
 /**
  * Update the tab that was selected
+ * @private
  */
-ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
+ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
   var selected_tab = this.tabPane.getSelectedIndex();
   if (!this.IsVisible()) {
     return;
@@ -270,17 +220,16 @@ ola.UniverseFrame.prototype._UpdateSelectedTab = function(e) {
   if (selected_tab == 0) {
     server.FetchUniverseInfo(this.current_universe);
 
-    var ola_server = ola.Server.getInstance();
-    goog.events.listen(ola_server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
-                       this._UpdateAvailablePorts,
+    goog.events.listen(server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
+                       this._updateAvailablePorts,
                        false, this);
-    ola_server.FetchAvailablePorts();
+    server.FetchAvailablePorts();
   } else if (selected_tab == 1) {
     // update RDM
     server.FetchUids(this.current_universe);
     this.uid_timer.start();
   }
-}
+};
 
 
 /**
@@ -305,48 +254,51 @@ ola.UniverseFrame.prototype._UpdateFromData = function(e) {
 
   this.input_port_list.UpdateFromData(e.universe['input_ports']);
   this.output_port_list.UpdateFromData(e.universe['output_ports']);
-}
-
+};
 
 
 /**
  * Called when the available ports are updated
+ * @private
  */
-ola.UniverseFrame.prototype._UpdateAvailablePorts = function(e) {
+ola.UniverseFrame.prototype._updateAvailablePorts = function(e) {
   this.available_port_list.UpdateFromData(e.ports);
   goog.events.unlisten(
       ola.Server.getInstance(),
       ola.Server.EventType.AVAILBLE_PORTS_EVENT,
-      this._UpdateAvailablePorts,
+      this._updateAvailablePorts,
       false, this);
-}
+};
 
 
 /**
  * Update the UID list
+ * @private
  */
-ola.UniverseFrame.prototype._UpdateUids = function(e) {
+ola.UniverseFrame.prototype._updateUidList = function(e) {
   if (e.universe_id == this.current_universe) {
     this.uid_list.UpdateFromData(e.uids);
   } else {
     ola.logger.info('RDM universe mismatch, was ' + e.universe_id +
                     ', expected ' + this.current_universe);
   }
-}
+};
 
 
 /**
  * Show information for a particular UID
- * @param id
+ * @param id {number} the UID represented as a float
+ * @private
  */
 ola.UniverseFrame.prototype._ShowUID = function(id) {
-}
+};
 
 
 /**
  * Create a priority setting object from a port component
  * @param {Object} the port component to generate the setting from
  * @param {Array<Object>} the list to add the setting to
+ * @private
  */
 ola.UniverseFrame.prototype._generatePrioritySettingFromComponent = function(
     port_component, setting_list) {
@@ -361,12 +313,14 @@ ola.UniverseFrame.prototype._generatePrioritySettingFromComponent = function(
     }
     setting_list.push(priority_setting);
   }
-}
+};
+
 
 /**
  * Called when the save button is clicked
+ * @private
  */
-ola.UniverseFrame.prototype._Save = function(e) {
+ola.UniverseFrame.prototype._saveButtonClicked = function(e) {
   var port_priorities = new Array();
 
   var remove_ports = new Array();
@@ -412,12 +366,36 @@ ola.UniverseFrame.prototype._Save = function(e) {
       remove_ports,
       new_ports,
       function(e) { frame._saveCompleted(e); });
-}
+};
 
 
 /**
  * Called when the changes are saved
+ * @private
  */
 ola.UniverseFrame.prototype._saveCompleted = function(e) {
   alert("request done");
-}
+};
+
+
+/**
+ * Called when the discovery button is clicked.
+ * @private
+ */
+ola.UniverseFrame.prototype._discoveryButtonClicked = function(e) {
+  var server = ola.Server.getInstance();
+  var frame = this;
+  server.runRDMDiscovery(
+      this.current_universe,
+      function(e) { frame._discoveryComplete(e); });
+};
+
+
+/**
+ * Called when the discovery request returns. This doesn't actually mean that
+ * the discovery process has completed, just that it's started.
+ * @private
+ */
+ola.UniverseFrame.prototype._discoveryComplete = function(e) {
+  alert("discovery done");
+};

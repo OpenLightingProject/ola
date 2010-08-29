@@ -48,13 +48,11 @@ ola.Server.EventType = {
   PLUGIN_EVENT: 'plugin_change',
   PLUGIN_LIST_EVENT: 'plugin_list_change',
   PLUGIN_RELOAD_EVENT: 'plugins_reloaded',
-  RDM_DISCOVERY_EVENT: 'rdm_discovery',
   SERVER_INFO_EVENT: 'server_info_change',
   SERVER_STOP_EVENT: 'server_stopped',
   UIDS_EVENT: 'uids_change',
   UNIVERSE_EVENT: 'universe_change',
   UNIVERSE_LIST_EVENT: 'universe_list_change',
-  NEW_UNIVERSE_EVENT: 'new_unvierse'
 }
 
 ola.Server.SERVER_INFO_URL = '/json/server_stats';
@@ -76,7 +74,7 @@ ola.Server.MODIFY_UNIVERSE_URL = '/json/modify_universe';
 ola.ServerInfoChangeEvent = function(server_info) {
   goog.events.Event.call(this, ola.Server.EventType.SERVER_INFO_EVENT);
   this.server_info = server_info;
-}
+};
 goog.inherits(ola.ServerInfoChangeEvent, goog.events.Event);
 
 
@@ -86,7 +84,7 @@ goog.inherits(ola.ServerInfoChangeEvent, goog.events.Event);
 ola.PluginListChangeEvent = function(new_list) {
   goog.events.Event.call(this, ola.Server.EventType.PLUGIN_LIST_EVENT);
   this.plugins = new_list;
-}
+};
 goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
 
 
@@ -96,7 +94,7 @@ goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
 ola.UniverseListChangeEvent = function(new_list) {
   goog.events.Event.call(this, ola.Server.EventType.UNIVERSE_LIST_EVENT);
   this.universes = new_list;
-}
+};
 goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
 
 
@@ -106,7 +104,7 @@ goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
 ola.PluginChangeEvent = function(plugin) {
   goog.events.Event.call(this, ola.Server.EventType.PLUGIN_EVENT);
   this.plugin = plugin;
-}
+};
 goog.inherits(ola.PluginChangeEvent, goog.events.Event);
 
 
@@ -116,7 +114,7 @@ goog.inherits(ola.PluginChangeEvent, goog.events.Event);
 ola.UniverseChangeEvent = function(universe) {
   goog.events.Event.call(this, ola.Server.EventType.UNIVERSE_EVENT);
   this.universe = universe;
-}
+};
 goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
 
 
@@ -125,7 +123,7 @@ goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
  */
 ola.ServerStopEvent = function() {
   goog.events.Event.call(this, ola.Server.EventType.SERVER_STOP_EVENT);
-}
+};
 goog.inherits(ola.ServerStopEvent, goog.events.Event);
 
 
@@ -134,7 +132,7 @@ goog.inherits(ola.ServerStopEvent, goog.events.Event);
  */
 ola.PluginReloadEvent = function() {
   goog.events.Event.call(this, ola.Server.EventType.PLUGIN_RELOAD_EVENT);
-}
+};
 goog.inherits(ola.PluginReloadEvent, goog.events.Event);
 
 
@@ -144,7 +142,7 @@ goog.inherits(ola.PluginReloadEvent, goog.events.Event);
 ola.AvailablePortsEvent = function(ports) {
   goog.events.Event.call(this, ola.Server.EventType.AVAILBLE_PORTS_EVENT);
   this.ports = ports;
-}
+};
 goog.inherits(ola.AvailablePortsEvent, goog.events.Event);
 
 
@@ -155,29 +153,8 @@ ola.UidsEvent = function(universe_id, uids) {
   goog.events.Event.call(this, ola.Server.EventType.UIDS_EVENT);
   this.universe_id = universe_id;
   this.uids = uids;
-}
+};
 goog.inherits(ola.UidsEvent, goog.events.Event);
-
-
-/**
- * This event is fired when discovery is triggered
- */
-ola.RdmDiscoveryEvent = function() {
-  goog.events.Event.call(this, ola.Server.EventType.RDM_DISCOVERY_EVENT);
-}
-goog.inherits(ola.RdmDiscoveryEvent, goog.events.Event);
-
-
-/**
- * This event is triggered when a new universe command completes
- */
-ola.NewUniverseEvent = function(ok, universe, message) {
-  goog.events.Event.call(this, ola.Server.EventType.NEW_UNIVERSE_EVENT);
-  this.ok = ok;
-  this.universe = universe
-  this.message = message;
-}
-goog.inherits(ola.NewUniverseEvent, goog.events.Event);
 
 
 /**
@@ -185,7 +162,8 @@ goog.inherits(ola.NewUniverseEvent, goog.events.Event);
  */
 ola.Server.prototype.CheckIfUniverseExists = function(universe_id) {
   return this.universes[universe_id] != undefined;
-}
+};
+
 
 /**
  * Update the server info data
@@ -197,7 +175,7 @@ ola.Server.prototype.UpdateServerInfo = function() {
     this._CleanupRequest(e.target);
   }
   this._InitiateRequest(ola.Server.SERVER_INFO_URL, on_complete);
-}
+};
 
 
 /**
@@ -209,7 +187,7 @@ ola.Server.prototype.ReloadPlugins = function() {
     this._CleanupRequest(e.target);
   }
   this._InitiateRequest(ola.Server.RELOAD_PLUGINS_URL, on_complete);
-}
+};
 
 
 /**
@@ -221,7 +199,7 @@ ola.Server.prototype.StopServer = function () {
     this._CleanupRequest(e.target);
   }
   this._InitiateRequest(ola.Server.STOP_SERVER_URL, on_complete);
-}
+};
 
 
 /**
@@ -241,7 +219,7 @@ ola.Server.prototype.FetchUniversePluginList = function() {
     this._CleanupRequest(e.target);
   }
   this._InitiateRequest(ola.Server.PLUGIN_UNIVERSE_LIST_URL, on_complete);
-}
+};
 
 
 /**
@@ -255,7 +233,7 @@ ola.Server.prototype.FetchPluginInfo = function(plugin_id) {
   }
   var url = ola.Server.PLUGIN_INFO_URL + '?id=' + plugin_id;
   this._InitiateRequest(url, on_complete);
-}
+};
 
 
 /**
@@ -269,7 +247,7 @@ ola.Server.prototype.FetchUniverseInfo = function(universe_id) {
   }
   var url = ola.Server.UNIVERSE_INFO_URL + '?id=' + universe_id;
   this._InitiateRequest(url, on_complete);
-}
+};
 
 
 /**
@@ -282,37 +260,42 @@ ola.Server.prototype.FetchAvailablePorts = function() {
     this._CleanupRequest(e.target);
   }
   this._InitiateRequest(ola.Server.AVAILBLE_PORTS_URL, on_complete);
-}
+};
 
 
 /**
  * Create a new universe
  */
-ola.Server.prototype.NewUniverse = function(universe_id, name, port_ids) {
+ola.Server.prototype.createUniverse = function(universe_id,
+                                               name,
+                                               port_ids,
+                                               callback) {
   var on_complete = function(e) {
-    var obj = e.target.getResponseJson();
-    this.dispatchEvent(
-        new ola.NewUniverseEvent(obj['ok'], obj['universe_id'],
-                                 obj['message']));
+    callback(e);
     this._CleanupRequest(e.target);
   }
   var url = ola.Server.NEW_UNIVERSE_URL + '?id=' + universe_id + (
-      name ? '&name=' + escape(name) : '') + '&ports=' + port_ids.join(',');
+      name ? '&name=' + encodeURI(name) : '') + '&ports=' + port_ids.join(',');
   this._InitiateRequest(url, on_complete);
-}
+};
 
 
 /**
- * Trigger RDM discovery for this universe
+ * Trigger RDM discovery for this universe. The discovery command is
+ *   asyncronous and at the moment there is no way to check if discovery has
+ *   completed.
+ * @param {number} universe_id the ID of the universe to run discovery for
+ * @param {function(Object)} callback the function to call when the discovery
+ *   request is ack'ed.
  */
-ola.Server.prototype.RunRdmDiscovery = function(universe_id) {
+ola.Server.prototype.runRDMDiscovery = function(universe_id, callback) {
   var on_complete = function(e) {
-    this.dispatchEvent(new ola.RdmDiscoveryEvent());
+    callback(e);
     this._CleanupRequest(e.target);
   }
   var url = ola.Server.RDM_DISCOVERY_URL + '?id=' + universe_id;
   this._InitiateRequest(url, on_complete);
-}
+};
 
 
 /**
@@ -326,7 +309,7 @@ ola.Server.prototype.FetchUids = function(universe_id) {
   }
   var url = ola.Server.UIDS_URL + '?id=' + universe_id;
   this._InitiateRequest(url, on_complete);
-}
+};
 
 
 /**
@@ -365,7 +348,7 @@ ola.Server.prototype.modifyUniverse = function(universe_id,
   }
   var url = ola.Server.MODIFY_UNIVERSE_URL;
   this._InitiateRequest(url, on_complete);
-}
+};
 
 
 /**
@@ -383,7 +366,7 @@ ola.Server.prototype._InitiateRequest = function(url,
   var xhr = this.pool.getObject(undefined, 1);
   goog.events.listen(xhr, goog.net.EventType.COMPLETE, callback, false, this);
   xhr.send(url, opt_method, opt_content);
-}
+};
 
 
 /**
@@ -394,4 +377,4 @@ ola.Server.prototype._InitiateRequest = function(url,
 ola.Server.prototype._CleanupRequest = function(xhr) {
   goog.events.removeAll(xhr);
   this.pool.releaseObject(xhr);
-}
+};

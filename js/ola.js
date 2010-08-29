@@ -190,7 +190,7 @@ ola.OlaUI.prototype._SetupNavigation = function() {
  */
 ola.OlaUI.prototype._UpdateUniverseList = function(e) {
   this.universe_list.UpdateFromData(e.universes);
-  var active_universe = this.universe_frame.ActiveUniverse();
+  var active_universe = this.universe_frame.getActiveUniverse();
   var found = false;
 
   ola.logger.info('Got ' + e.universes.length + ' universes');

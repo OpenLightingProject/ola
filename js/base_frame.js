@@ -30,15 +30,16 @@ var ola = ola || {}
  */
 ola.BaseFrame = function(element_id) {
   this.element = goog.dom.$(element_id);
-}
+};
 
 
 /**
- * Is this frame visible?
+ * Check if this frame is visible.
+ * @return {boolean} true if visible, false otherwise
  */
 ola.BaseFrame.prototype.IsVisible = function() {
   return this.element.style.display == 'block';
-}
+};
 
 
 /**
@@ -46,7 +47,7 @@ ola.BaseFrame.prototype.IsVisible = function() {
  */
 ola.BaseFrame.prototype.Show = function() {
   this.element.style.display = 'block';
-}
+};
 
 
 /**
@@ -54,4 +55,4 @@ ola.BaseFrame.prototype.Show = function() {
  */
 ola.BaseFrame.prototype.Hide = function() {
   this.element.style.display = 'none';
-}
+};
