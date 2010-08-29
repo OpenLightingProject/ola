@@ -297,8 +297,9 @@ ola.UniverseFrame.prototype._ShowUID = function(id) {
 
 /**
  * Create a priority setting object from a port component
- * @param {Object} the port component to generate the setting from
- * @param {Array<Object>} the list to add the setting to
+ * @param {Object} port_component the port component to generate the setting
+ *   from.
+ * @param {Array.<Object>} setting_list the list to add the setting to
  * @private
  */
 ola.UniverseFrame.prototype._generatePrioritySettingFromComponent = function(
