@@ -67,6 +67,7 @@ ola.Server.AVAILBLE_PORTS_URL = '/json/get_ports';
 ola.Server.UIDS_URL = '/json/uids';
 ola.Server.RDM_DISCOVERY_URL = '/json/run_discovery';
 ola.Server.NEW_UNIVERSE_URL = '/json/new_universe';
+ola.Server.MODIFY_UNIVERSE_URL = '/json/modify_universe';
 
 
 /**
@@ -329,15 +330,59 @@ ola.Server.prototype.FetchUids = function(universe_id) {
 
 
 /**
+ * Update the settings for a universe.
+ * @param universe_id {number} the id of the universe to modify.
+ * @param universe_name {string} the new name.
+ * @param merge_mode {string} HTP or LTP.
+ * @param port_priorities {Array<{{id: string, mode: string, priority: number}}
+ *   an array of new port priorities.
+ * @param ports_to_remove {Array<string>} list of port ids to remove.
+ * @param ports_to_add {Array<string>} list of port ids to add.
+ * @param callback {function} the callback to invoke when complete
+ */
+ola.Server.prototype.modifyUniverse = function(universe_id,
+                                               universe_name,
+                                               merge_mode,
+                                               port_priorities,
+                                               ports_to_remove,
+                                               ports_to_add,
+                                               callback) {
+  var on_complete = function(e) {
+    callback(e);
+    this._CleanupRequest(e.target);
+  }
+  var post_data = ('id=' + universe_id + '&name=' + universe_name +
+      '&merge_mode=' + merge_mode + '&add_ports=' + ports_to_add.join(',') +
+      '&remove_ports=' + ports_to_remove.join(','));
+  for (var i = 0; i < port_priorities.length; ++i) {
+    var priority_setting = port_priorities[i];
+    post_data += ('&' + priority_setting.id + '_priority=' +
+        priority_setting.priority);
+    if (priority_setting.mode) {
+      post_data += ('&' + priority_setting.id + '_mode=' +
+          priority_setting.mode);
+    }
+  }
+  var url = ola.Server.MODIFY_UNIVERSE_URL;
+  this._InitiateRequest(url, on_complete);
+}
+
+
+/**
  * Initiate a JSON request
- * @param url the url to fetch
- * @param callback the callback to invoke when the request completes
+ * @param url the url to fetch.
+ * @param callback the callback to invoke when the request completes.
+ * @param opt_method {string=} 'GET' or 'POST'.
+ * @param opt_content {string=} The post form data.
  * @private
  */
-ola.Server.prototype._InitiateRequest = function(url, callback) {
+ola.Server.prototype._InitiateRequest = function(url,
+                                                 callback,
+                                                 opt_method,
+                                                 opt_content) {
   var xhr = this.pool.getObject(undefined, 1);
   goog.events.listen(xhr, goog.net.EventType.COMPLETE, callback, false, this);
-  xhr.send(url);
+  xhr.send(url, opt_method, opt_content);
 }
 
 

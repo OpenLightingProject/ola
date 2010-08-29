@@ -153,6 +153,34 @@ ola.PortComponent.prototype.PortId = function() {
 
 
 /**
+ * Get the priority value for this port
+ * @return {number|undefined} the priority value or undefined if this port
+ * doesn't support priorities.
+ */
+ola.PortComponent.prototype.priority = function() {
+  if (this.priority_input) {
+    return this.priority_input.value;
+  } else {
+    return undefined;
+  }
+};
+
+
+/**
+ * Get the priority mode for this port
+ * @return {string|undefined} the priority mode (inherit|override) or undefined
+ *   if this port doesn't support priority modes.
+ */
+ola.PortComponent.prototype.priorityMode = function() {
+  if (this.priority_select) {
+    return this.priority_select.getValue();
+  } else {
+    return undefined;
+  }
+};
+
+
+/**
  * Check is this was selected
  */
 ola.PortComponent.prototype.IsSelected = function() {

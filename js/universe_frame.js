@@ -344,23 +344,49 @@ ola.UniverseFrame.prototype._ShowUID = function(id) {
 
 
 /**
+ * Create a priority setting object from a port component
+ * @param {Object} the port component to generate the setting from
+ * @param {Array<Object>} the list to add the setting to
+ */
+ola.UniverseFrame.prototype._generatePrioritySettingFromComponent = function(
+    port_component, setting_list) {
+  var priority = port_component.priority();
+  if (priority != undefined) {
+    var priority_setting = new Object();
+    priority_setting.id = port_component.PortId();
+    priority_setting.priority = priority;
+    var priority_mode = port_component.priorityMode();
+    if (priority_mode != undefined) {
+      priority_setting.mode = priority_mode;
+    }
+    setting_list.push(priority_setting);
+  }
+}
+
+/**
  * Called when the save button is clicked
  */
 ola.UniverseFrame.prototype._Save = function(e) {
+  var port_priorities = new Array();
 
-  // see if we need to remove any ports
   var remove_ports = new Array();
   var count = this.input_table_container.getChildCount();
   for (var i = 0; i < count; ++i) {
     var port_component = this.input_table_container.getChildAt(i);
-    if (!port_component.IsSelected()) {
+    if (port_component.IsSelected()) {
+      this._generatePrioritySettingFromComponent(port_component,
+                                                 port_priorities);
+    } else {
       remove_ports.push(port_component.PortId());
     }
   }
   var count = this.output_table_container.getChildCount();
   for (var i = 0; i < count; ++i) {
     var port_component = this.output_table_container.getChildAt(i);
-    if (!port_component.IsSelected()) {
+    if (port_component.IsSelected()) {
+      this._generatePrioritySettingFromComponent(port_component,
+                                                 port_priorities);
+    } else {
       remove_ports.push(port_component.PortId());
     }
   }
@@ -377,7 +403,15 @@ ola.UniverseFrame.prototype._Save = function(e) {
 
 
   var server = ola.Server.getInstance();
-  //server.modifyUniverse(  );
+  var frame = this;
+  server.modifyUniverse(
+      this.current_universe,
+      goog.dom.$('universe_name').value,
+      this.merge_mode.getValue(),
+      port_priorities,
+      remove_ports,
+      new_ports,
+      function(e) { frame._saveCompleted(e); });
 }
 
 
@@ -385,5 +419,5 @@ ola.UniverseFrame.prototype._Save = function(e) {
  * Called when the changes are saved
  */
 ola.UniverseFrame.prototype._saveCompleted = function(e) {
-
+  alert("request done");
 }
