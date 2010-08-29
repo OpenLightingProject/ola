@@ -50,7 +50,7 @@ ola.Server.EventType = {
   SERVER_INFO_EVENT: 'server_info_change',
   UIDS_EVENT: 'uids_change',
   UNIVERSE_EVENT: 'universe_change',
-  UNIVERSE_LIST_EVENT: 'universe_list_change',
+  UNIVERSE_LIST_EVENT: 'universe_list_change'
 }
 
 ola.Server.SERVER_INFO_URL = '/json/server_stats';

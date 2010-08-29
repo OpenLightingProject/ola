@@ -25,7 +25,9 @@ goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.Select');
 
 goog.provide('ola.AvailablePortComponent');
+goog.provide('ola.AvailablePortComponentFactory');
 goog.provide('ola.PortComponent');
+goog.provide('ola.PortComponentFactory');
 
 var ola = ola || {}
 

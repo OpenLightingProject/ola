@@ -28,6 +28,8 @@ goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 goog.require('goog.ui.TabPane');
 goog.require('ola.Dialog');
+goog.require('ola.PortComponent');
+goog.require('ola.PortComponentFactory');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
