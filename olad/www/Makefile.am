@@ -15,14 +15,15 @@ dist_www_DATA = GPL.txt \
                 forward.png \
                 full.png \
                 handle.vertical.png \
-                index.html \
                 load.png \
                 loader.gif \
+                logo.png \
                 menu.html \
                 minus.png \
                 notice.gif \
                 ola.html \
                 ola.js \
+                old.html \
                 plus.png \
                 range.js \
                 save.png \

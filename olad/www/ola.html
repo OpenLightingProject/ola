@@ -1,467 +1,444 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" href="/custombutton.css">
-    <script src="closure-library/closure/goog/base.js"></script>
-    <script type="text/javascript">
-goog.require('goog.ui.Component');
-goog.require('goog.events.EventTarget');
-goog.require('goog.events.Event');
-goog.require('goog.debug.Logger');
-goog.require('goog.ui.Dialog');
-goog.require('goog.ui.Control');
-    </script>
-    <script src="js/uid_control.js"></script>
-    <script src="js/sorted_list.js"></script>
-    <script src="js/port_component.js"></script>
-    <script src="js/server.js"></script>
-    <script src="js/logger.js"></script>
-    <script src="js/dialog.js"></script>
-    <script src="js/base_frame.js"></script>
-    <script src="js/home_frame.js"></script>
-    <script src="js/plugin_frame.js"></script>
-    <script src="js/universe_frame.js"></script>
-    <script src="js/new_universe_frame.js"></script>
-    <script src="js/ola.js"></script>
-  <!--
-    <script src="output.js"></script> 
-    -->
+    <script src="/ola.js"></script> 
     <title>OLA Admin</title>
-<style type="text/css">
-  body {
-    margin: 0px;
-    padding: 0px;
-    font-family: sans-serif;
-    font-size: 13px;
-  }
+    <style type="text/css">
+      body {
+        margin: 0px;
+        padding: 0px;
+        font-family: sans-serif;
+        font-size: 13px;
+      }
 
-  table {
-    font-family: sans-serif;
-    font-size: 13px;
-    padding: 0px;
-    margin: 0px;
-    border: 0px;
-    border-spacing: 0px;
-  }
+      table {
+        font-family: sans-serif;
+        font-size: 13px;
+        padding: 0px;
+        margin: 0px;
+        border: 0px;
+        border-spacing: 0px;
+      }
 
-  legend { font-weight: bold; }
-  input { border: #e4e9fe 1px solid; }
-  fieldset {
-    border: #67a7e3 1px solid;
-    margin-bottom: 5px;
-  }
+      legend { font-weight: bold; }
+      input { border: #e4e9fe 1px solid; }
+      fieldset {
+        border: #67a7e3 1px solid;
+        margin-bottom: 5px;
+      }
 
-  #header {
-    margin: 0px;
-    padding: 0px;
-    left: 0px;
-    text-align: left;
-    font-size: 11px;
-  }
+      #header {
+        margin: 0px;
+        padding: 0px;
+        left: 0px;
+        text-align: left;
+        font-size: 11px;
+      }
 
-  #right_nav {
-    position: absolute;
-    right: 0px;
-    margin-right: 4px;
-    text-align: right;
-  }
+      #right_nav {
+        position: absolute;
+        right: 0px;
+        margin-right: 4px;
+        text-align: right;
+      }
 
-  #footer {
-    padding-top: 5px;
-    text-align: center;
-    clear: both;
-    font-size: 11px;
-  }
+      #footer {
+        padding-top: 5px;
+        text-align: center;
+        clear: both;
+        font-size: 11px;
+      }
 
-  .goog-control {
-    cursor: pointer;
-    outline: none;
-  }
+      .goog-control {
+        cursor: pointer;
+        outline: none;
+      }
 
-  .goog-inline-block {
-    position: relative;
-    display: -moz-inline-box; /* Ignored by FF3 and later. */
-    display: inline-block;
-  }
+      .goog-inline-block {
+        position: relative;
+        display: -moz-inline-box; /* Ignored by FF3 and later. */
+        display: inline-block;
+      }
 
-  .ola-scroller {
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -ms-box-sizing: border-box;
-    padding: 5px;
-  }
+      .ola-scroller {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -ms-box-sizing: border-box;
+        padding: 5px;
+      }
 
-  /* Log window css */
-  .log_popup {
-    position: absolute;
-    visibility: hidden;
-    font-size: 80%;
-    -moz-outline: 0;
-    outline: 0;
-    z-index: 100;
-  }
+      /* Log window css */
+      .log_popup {
+        position: absolute;
+        visibility: hidden;
+        font-size: 80%;
+        -moz-outline: 0;
+        outline: 0;
+        z-index: 100;
+      }
 
-  .logdiv {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: scroll;
-    overflow-x: hidden;
-    overflow-y: scroll;
-  }
+      .logdiv {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: scroll;
+        overflow-x: hidden;
+        overflow-y: scroll;
+      }
 
-  /* CSS for the dialog box */
-  .modal-dialog {
-    width: 430px;
-    z-index: 101;
-    background: #c1d9ff;
-    border: 1px solid #3a5774;
-    padding: 4px;
-    position: absolute;
-  }
+      /* CSS for the dialog box */
+      .modal-dialog {
+        width: 430px;
+        z-index: 101;
+        background: #c1d9ff;
+        border: 1px solid #3a5774;
+        padding: 4px;
+        position: absolute;
+      }
 
-  .modal-dialog-bg {
-    background: #666;
-    left: 0;
-    position: absolute;
-    top: 0;
-  }
+      .modal-dialog-bg {
+        background: #666;
+        left: 0;
+        position: absolute;
+        top: 0;
+      }
 
-  .modal-dialog-title {
-    background: #e0edfe;
-    font-size: 120%;
-    font-weight: bold;
-    padding: 8px 15px 8px 8px;
-    position: relative;
-    _zoom: 1; /* Ensures proper width in IE6 RTL. */
-  }
+      .modal-dialog-title {
+        background: #e0edfe;
+        font-size: 120%;
+        font-weight: bold;
+        padding: 8px 15px 8px 8px;
+        position: relative;
+        _zoom: 1; /* Ensures proper width in IE6 RTL. */
+      }
 
-  .modal-dialog-buttons,
-  .modal-dialog-content {
-    background-color: #fff;
-    padding: 8px;
-  }
+      .modal-dialog-buttons,
+      .modal-dialog-content {
+        background-color: #fff;
+        padding: 8px;
+      }
 
-  /* Generic split pane styles */
-  /* NOTE: A bug in Safari 3 requires these css definitions to be in here.
-     Do not move these to a seperate file without testing safari 3! */
-  .goog-splitpane {
-    width: 100%;
-  }
+      /* Generic split pane styles */
+      /* NOTE: A bug in Safari 3 requires these css definitions to be in here.
+         Do not move these to a seperate file without testing safari 3! */
+      .goog-splitpane {
+        width: 100%;
+      }
 
-  .goog-splitpane-handle-horizontal {
-    cursor: col-resize;
-  }
+      .goog-splitpane-handle-horizontal {
+        cursor: col-resize;
+      }
 
-  /* CSS for the main split pane */
-  .ola-splitpane-handle {
-    border-left: 2px solid #67a7e3;
-    border-right: 2px solid #67a7e3;
-    position: absolute;
-  }
+      /* CSS for the main split pane */
+      .ola-splitpane-handle {
+        border-left: 2px solid #67a7e3;
+        border-right: 2px solid #67a7e3;
+        position: absolute;
+      }
 
-  .ola-splitpane-navigation {
-    font-size: 13px;
-    overflow: auto;
-    position: absolute;
-    white-space: nowrap;
-  }
+      .ola-splitpane-navigation {
+        font-size: 13px;
+        overflow: auto;
+        position: absolute;
+        white-space: nowrap;
+      }
 
-  .ola-splitpane-content {
-    border-top: 4px solid #67a7e3;
-    border-bottom: 4px solid #67a7e3;
-    border-right: 4px solid #67a7e3;
-    position: absolute;
-    overflow: hidden;
-  }
+      .ola-splitpane-content {
+        border-top: 4px solid #67a7e3;
+        border-bottom: 4px solid #67a7e3;
+        border-right: 4px solid #67a7e3;
+        position: absolute;
+        overflow: hidden;
+      }
 
-  /* CSS for the navigation pane */
-  .ola-splitpane-navigation .goog-control {
-    padding: 2px 0px 2px 5px;
-    color: #0066cc;
-    background-color: #fff;
-  }
+      /* CSS for the navigation pane */
+      .ola-splitpane-navigation .goog-control {
+        padding: 2px 0px 2px 5px;
+        color: #0066cc;
+        background-color: #fff;
+      }
 
-  .ola-splitpane-navigation .goog-control-hover {
-    background-color: #b3d3f7;
-  }
+      .ola-splitpane-navigation .goog-control-hover {
+        background-color: #b3d3f7;
+      }
 
-  .ola-splitpane-navigation .goog-container {
-    padding: 2px;
-  }
+      .ola-splitpane-navigation .goog-container {
+        padding: 2px;
+      }
 
-  .ola-splitpane-navigation .goog-container .goog-control {
-    overflow: hidden;
-    padding-left: 17px;
-  }
+      .ola-splitpane-navigation .goog-container .goog-control {
+        overflow: hidden;
+        padding-left: 17px;
+      }
 
-  .goog-zippy-expanded img {
-    background-image: url('./images/expander.png');
-    background-position: 0px 0px;
-  }
-  .goog-zippy-collapsed img {
-    background-image: url('./images/expander.png');
-    background-position: -40px 0px;
-  }
+      .goog-zippy-expanded img {
+        background-image: url('./images/expander.png');
+        background-position: 0px 0px;
+      }
+      .goog-zippy-collapsed img {
+        background-image: url('./images/expander.png');
+        background-position: -40px 0px;
+      }
 
-  .ola-splitpane-navigation img {
-    width: 12px;
-    height: 12px;
-    padding-right: 5px;
-  }
+      .ola-splitpane-navigation img {
+        width: 12px;
+        height: 12px;
+        padding-right: 5px;
+      }
 
-  /* CSS for the tabs */
-  .goog-tabpane {
-    position: relative;
-    margin-left: 2px;
-  }
+      /* CSS for the tabs */
+      .goog-tabpane {
+        position: relative;
+        margin-left: 2px;
+      }
 
-  .goog-tabpane-tabs {
-    outline: none;
-    list-style: none;
-    margin: 0px;
-    padding: 0px;
-    position: relative;
-  }
+      .goog-tabpane-tabs {
+        outline: none;
+        list-style: none;
+        margin: 0px;
+        padding: 0px;
+        position: relative;
+      }
 
-  .goog-tabpane-tab, .goog-tabpane-tab-selected {
-    display: block;
-    background: #e3e9ff;
-    border-right: 1px solid #67a7e3;
-    margin: 0px;
-    padding: 5px 10px;
-    float: left;
-    cursor: pointer;
-  }
+      .goog-tabpane-tab, .goog-tabpane-tab-selected {
+        display: block;
+        background: #e3e9ff;
+        border-right: 1px solid #67a7e3;
+        margin: 0px;
+        padding: 5px 10px;
+        float: left;
+        cursor: pointer;
+      }
 
-  .goog-tabpane-tab-selected {
-    background: #bbccff;
-  }
+      .goog-tabpane-tab-selected {
+        background: #bbccff;
+      }
 
-  .goog-tabpane-cont {
-    border-top: #67a7e3 1px solid;
-  }
+      .goog-tabpane-cont {
+        border-top: #67a7e3 1px solid;
+      }
 
-  /* CSS for the RDM split pane */
-  .ola-splitpane-rdm {
-    border-top: 1px solid #67a7e3;
-  }
+      /* CSS for the RDM split pane */
+      .ola-splitpane-rdm {
+        border-top: 1px solid #67a7e3;
+      }
 
-  .ola-splitpane-rdm-handle {
-    border-left: 2px solid #67a7e3;
-    border-right: 2px solid #67a7e3;
-    position: absolute;
-  }
+      .ola-splitpane-rdm-handle {
+        border-left: 2px solid #67a7e3;
+        border-right: 2px solid #67a7e3;
+        position: absolute;
+      }
 
-  .ola-splitpane-rdm-uids {
-    overflow: auto;
-  }
+      .ola-splitpane-rdm-uids {
+        overflow: auto;
+      }
 
-  .ola-splitpane-rdm-uids .goog-container {
-    outline: none;
-  }
+      .ola-splitpane-rdm-uids .goog-container {
+        outline: none;
+      }
 
-  .ola-splitpane-rdm-uids .goog-control {
-    padding-left: 4px;
-  }
+      .ola-splitpane-rdm-uids .goog-control {
+        padding-left: 4px;
+      }
 
-  /* Tables are used in various frames */
-  .ola-table {
-    width: 100%;
-    border-bottom: 1px solid #e4e9fe;
-  }
+      /* Tables are used in various frames */
+      .ola-table {
+        width: 100%;
+        border-bottom: 1px solid #e4e9fe;
+      }
 
-  .ola-table thead {
-    text-align: left;
-  }
+      .ola-table thead {
+        text-align: left;
+      }
 
-  .ola-table td {
-    border-top: 1px solid #e4e9fe;
-  }
+      .ola-table td {
+        border-top: 1px solid #e4e9fe;
+      }
 
-  /* Checkboxes are used in various frames */
-  .goog-checkbox {
-    border: 1px solid #1C5180;
-    cursor: pointer;
-    display: -moz-inline-box;
-    display: inline-block;
-    font-size: 1px;  /* Fixes the height in IE6 */
-    height: 11px;
-    margin: 0 4px 0 1px;
-    vertical-align: text-bottom;
-    width: 11px;
-    outline: none;
-  }
+      /* Checkboxes are used in various frames */
+      .goog-checkbox {
+        border: 1px solid #1C5180;
+        cursor: pointer;
+        display: -moz-inline-box;
+        display: inline-block;
+        font-size: 1px;  /* Fixes the height in IE6 */
+        height: 11px;
+        margin: 0 4px 0 1px;
+        vertical-align: text-bottom;
+        width: 11px;
+        outline: none;
+      }
 
-  .goog-checkbox-checked {
-    background: #fff url('/images/check-sprite.gif') no-repeat 2px center;
-  }
+      .goog-checkbox-checked {
+        background: #fff url('/images/check-sprite.gif') no-repeat 2px center;
+      }
 
-  .goog-checkbox-undetermined {
-    background: #bbb url('/images/check-sprite.gif') no-repeat 2px center;
-  }
+      .goog-checkbox-undetermined {
+        background: #bbb url('/images/check-sprite.gif') no-repeat 2px center;
+      }
 
-  .goog-checkbox-unchecked {
-    background: #fff;
-  }
+      .goog-checkbox-unchecked {
+        background: #fff;
+      }
 
-  .goog-checkbox-disabled {
-    border: 1px solid lightgray;
-    cursor: default !important;
-    background-position: -7px;
-  }
+      .goog-checkbox-disabled {
+        border: 1px solid lightgray;
+        cursor: default !important;
+        background-position: -7px;
+      }
 
-  /* menus are used in the main frame */
-  .goog-menu-button {
-    background: #ddd url(/images/button-bg.png) repeat-x top left;
-    border: 0;
-    color: #000;
-    cursor: pointer;
-    list-style: none;
-    margin: 2px;
-    outline: none;
-    padding: 0;
-    text-decoration: none;
-    vertical-align: middle;
-    font-size: 11px;
-  }
+      /* menus are used in the main frame */
+      .goog-menu-button {
+        background: #ddd url(/images/button-bg.png) repeat-x top left;
+        border: 0;
+        color: #000;
+        cursor: pointer;
+        list-style: none;
+        margin: 2px;
+        outline: none;
+        padding: 0;
+        text-decoration: none;
+        vertical-align: middle;
+        font-size: 11px;
+      }
 
-  /* Pseudo-rounded corners. */
-  .goog-menu-button-outer-box,
-  .goog-menu-button-inner-box {
-    border-style: solid;
-    border-color: #aaa;
-    vertical-align: top;
-  }
-  .goog-menu-button-outer-box {
-    margin: 0;
-    border-width: 1px 0;
-    padding: 0;
-  }
-  .goog-menu-button-inner-box {
-    margin: 0 -1px;
-    border-width: 0 1px;
-    padding: 3px 4px;
-  }
+      /* Pseudo-rounded corners. */
+      .goog-menu-button-outer-box,
+      .goog-menu-button-inner-box {
+        border-style: solid;
+        border-color: #aaa;
+        vertical-align: top;
+      }
+      .goog-menu-button-outer-box {
+        margin: 0;
+        border-width: 1px 0;
+        padding: 0;
+      }
+      .goog-menu-button-inner-box {
+        margin: 0 -1px;
+        border-width: 0 1px;
+        padding: 3px 4px;
+      }
 
-  /* Pre-IE7 IE hack; ignored by IE7 and all non-IE browsers. */
-  * html .goog-menu-button-inner-box {
-    /* IE6 needs to have the box shifted to make the borders line up. */
-    left: -1px;
-  }
+      /* Pre-IE7 IE hack; ignored by IE7 and all non-IE browsers. */
+      * html .goog-menu-button-inner-box {
+        /* IE6 needs to have the box shifted to make the borders line up. */
+        left: -1px;
+      }
 
-  /* Pre-IE7 BiDi fixes. */
-  * html .goog-menu-button-rtl .goog-menu-button-outer-box {
-    /* @noflip */ left: -1px;
-    /* @noflip */ right: auto;
-  }
-  * html .goog-menu-button-rtl .goog-menu-button-inner-box {
-    /* @noflip */ right: auto;
-  }
+      /* Pre-IE7 BiDi fixes. */
+      * html .goog-menu-button-rtl .goog-menu-button-outer-box {
+        /* @noflip */ left: -1px;
+        /* @noflip */ right: auto;
+      }
+      * html .goog-menu-button-rtl .goog-menu-button-inner-box {
+        /* @noflip */ right: auto;
+      }
 
-  /* IE7-only hack; ignored by all other browsers. */
-  *:first-child+html .goog-menu-button-inner-box {
-    /* IE7 needs to have the box shifted to make the borders line up. */
-    left: -1px;
-  }
-  /* IE7 BiDi fix. */
-  *:first-child+html .goog-menu-button-rtl .goog-menu-button-inner-box {
-    /* @noflip */ left: 1px;
-    /* @noflip */ right: auto;
-  }
+      /* IE7-only hack; ignored by all other browsers. */
+      *:first-child+html .goog-menu-button-inner-box {
+        /* IE7 needs to have the box shifted to make the borders line up. */
+        left: -1px;
+      }
+      /* IE7 BiDi fix. */
+      *:first-child+html .goog-menu-button-rtl .goog-menu-button-inner-box {
+        /* @noflip */ left: 1px;
+        /* @noflip */ right: auto;
+      }
 
-  /* Safari-only hacks. */
-  ::root .goog-menu-button,
-  ::root .goog-menu-button-outer-box,
-  ::root .goog-menu-button-inner-box {
-    /* Required to make pseudo-rounded corners work on Safari. */
-    line-height: 0;
-  }
-  ::root .goog-menu-button-caption,
-  ::root .goog-menu-button-dropdown {
-    /* Required to make pseudo-rounded corners work on Safari. */
-    line-height: normal;
-  }
+      /* Safari-only hacks. */
+      ::root .goog-menu-button,
+      ::root .goog-menu-button-outer-box,
+      ::root .goog-menu-button-inner-box {
+        /* Required to make pseudo-rounded corners work on Safari. */
+        line-height: 0;
+      }
+      ::root .goog-menu-button-caption,
+      ::root .goog-menu-button-dropdown {
+        /* Required to make pseudo-rounded corners work on Safari. */
+        line-height: normal;
+      }
 
-  /* State: hover. */
-  .goog-menu-button-hover .goog-menu-button-outer-box,
-  .goog-menu-button-hover .goog-menu-button-inner-box {
-    border-color: #9cf #69e #69e #7af !important; /* Hover border wins. */
-  }
+      /* State: hover. */
+      .goog-menu-button-hover .goog-menu-button-outer-box,
+      .goog-menu-button-hover .goog-menu-button-inner-box {
+        border-color: #9cf #69e #69e #7af !important; /* Hover border wins. */
+      }
 
-  /* State: active, open. */
-  .goog-menu-button-active,
-  .goog-menu-button-open {
-    background-color: #bbb;
-    background-position: bottom left;
-  }
+      /* State: active, open. */
+      .goog-menu-button-active,
+      .goog-menu-button-open {
+        background-color: #bbb;
+        background-position: bottom left;
+      }
 
-  /* State: focused. */
-  .goog-menu-button-focused .goog-menu-button-outer-box,
-  .goog-menu-button-focused .goog-menu-button-inner-box {
-    border-color: orange;
-  }
+      /* State: focused. */
+      .goog-menu-button-focused .goog-menu-button-outer-box,
+      .goog-menu-button-focused .goog-menu-button-inner-box {
+        border-color: orange;
+      }
 
-  .goog-menu-button-caption {
-    padding: 0 4px 0 0;
-    vertical-align: top;
-  }
+      .goog-menu-button-caption {
+        padding: 0 4px 0 0;
+        vertical-align: top;
+      }
 
-  .goog-menu-button-dropdown {
-    height: 13px;
-    width: 7px;
-    background: url(/images/expander.png) no-repeat -73px 0;
-    vertical-align: top;
-  }
+      .goog-menu-button-dropdown {
+        height: 13px;
+        width: 7px;
+        background: url(/images/expander.png) no-repeat -73px 0;
+        vertical-align: top;
+      }
 
-  .goog-menu {
-    background: #fff;
-    border-color: #ccc #666 #666 #ccc;
-    border-style: solid;
-    border-width: 1px;
-    cursor: default;
-    font: normal 11px Arial, sans-serif;
-    margin: 0;
-    outline: none;
-    padding: 4px 0;
-    position: absolute;
-    z-index: 20000;
-  }
+      .goog-menu {
+        background: #fff;
+        border-color: #ccc #666 #666 #ccc;
+        border-style: solid;
+        border-width: 1px;
+        cursor: default;
+        font: normal 11px Arial, sans-serif;
+        margin: 0;
+        outline: none;
+        padding: 4px 0;
+        position: absolute;
+        z-index: 20000;
+      }
 
-  .goog-menuitem {
-    color: #000;
-    list-style: none;
-    margin: 0;
-    padding: 4px 7em 4px 10px;
-    white-space: nowrap;
-  }
+      .goog-menuitem {
+        color: #000;
+        list-style: none;
+        margin: 0;
+        padding: 4px 7em 4px 10px;
+        white-space: nowrap;
+      }
 
-  .goog-menuitem-content {
-    color: #000;
-  }
+      .goog-menuitem-content {
+        color: #000;
+      }
 
-  .goog-menuitem-highlight,
-  .goog-menuitem-hover {
-    background-color: #d6e9f8;
-    /* Use an explicit top and bottom border so that the selection is visible
-     * in high contrast mode. */
-    border-color: #d6e9f8;
-    border-style: dotted;
-    border-width: 1px 0;
-    padding-bottom: 3px;
-    padding-top: 3px;
-  }
+      .goog-menuitem-highlight,
+      .goog-menuitem-hover {
+        background-color: #d6e9f8;
+        /* Use an explicit top and bottom border so that the selection is visible
+         * in high contrast mode. */
+        border-color: #d6e9f8;
+        border-style: dotted;
+        border-width: 1px 0;
+        padding-bottom: 3px;
+        padding-top: 3px;
+      }
 
-  </style>
+    </style>
   </head>
   <body onload="ola.Setup()">
     <div id="header">
       <div id="right_nav"><span id="log_control">View Log</span></div>
       <div id="title">
-       <img src="./logo.png" width="111" height="48" alt="Logo">
+       <img src="/logo.png" width="111" height="48" alt="Logo">
       </div>
     </div>
 
@@ -478,12 +455,12 @@ goog.require('goog.ui.Control');
        </div>
        <div id="universe_list_control" class="goog-control"
          title="Click to show/hide active universes">
-         <img src="./images/blank.gif">Universes
+         <img src="/blank.gif">Universes
        </div>
        <div id="universe_container" class="goog-container"></div>
        <div id="plugin_list_control" class="goog-control"
          title="Click to show/hide plugins">
-         <img src="./images/blank.gif">Plugins
+         <img src="/blank.gif">Plugins
        </div>
        <div id="plugin_container" class="goog-container"></div>
       </div>
@@ -537,7 +514,7 @@ goog.require('goog.ui.Control');
            </div>
            <div id="stop_button" class="goog-custom-button goog-inline-block"
              title="Stop OLA">Stop OLA</div>
-            <p>Switch to the <a href="/old">Old Interface</a></p>
+            <p>Switch to the <a href="/old.html">Old Interface</a></p>
           </div>
           <br>
         </div>
@@ -681,7 +658,8 @@ goog.require('goog.ui.Control');
             </div>
           </div>
           <div id="tab_page_3">The DMX console hasn't been moved over yet.
-            It can still be found in the <a href="/old">old interface</a></div>
+            It can still be found in the <a href="/old.html">old interface</a>
+          </div>
         </div>
         <div class="ola-scroller" id="plugin_frame">
             <pre id="plugin_description"></pre>
