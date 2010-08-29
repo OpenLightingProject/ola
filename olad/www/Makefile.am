@@ -2,30 +2,37 @@ wwwdir = $(www_datadir)
 
 dist_www_DATA = GPL.txt \
                 about.html \
-                index.html \
-                menu.html \
-                console_values.html \
-                notice.gif \
-                plus.png \
-                minus.png \
-                forward.png \
+                ajax_request.js \
                 back.png \
-                full.png \
-                dbo.png \
-                load.png \
-                save.png \
-                handle.vertical.png \
+                blank.gif \
                 bluecurve.css \
-                simple.css \
-                show_main_page.tpl \
-                show_loaded_plugins.tpl \
-                show_plugin_info.tpl \
+                button-bg.png \
+                console.js \
+                console_values.html \
+                custombutton.css \
+                dbo.png \
+                expander.png \
+                forward.png \
+                full.png \
+                handle.vertical.png \
+                index.html \
+                load.png \
+                loader.gif \
+                menu.html \
+                minus.png \
+                notice.gif \
+                ola.html \
+                ola.js \
+                plus.png \
+                range.js \
+                save.png \
+                show_dmx_console.tpl \
                 show_loaded_devices.tpl \
+                show_loaded_plugins.tpl \
+                show_main_page.tpl \
+                show_plugin_info.tpl \
                 show_universe_settings.tpl \
                 show_universe_uids.tpl \
-                show_dmx_console.tpl \
-                ajax_request.js \
-                console.js \
-                range.js \
+                simple.css \
                 slider.js \
                 timer.js
