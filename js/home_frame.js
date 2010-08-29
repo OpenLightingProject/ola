@@ -155,7 +155,7 @@ ola.HomeFrame = function(element_id) {
   this.universe_list = new ola.SortedList(
       table_container,
       new ola.UniverseComponentFactory());
-}
+};
 goog.inherits(ola.HomeFrame, ola.BaseFrame);
 
 
@@ -175,7 +175,7 @@ ola.HomeFrame.prototype._UpdateFromData = function(e) {
  */
 ola.HomeFrame.prototype._UniverseListChanged = function(e) {
   this.universe_list.UpdateFromData(e.universes);
-}
+};
 
 
 /**
@@ -210,7 +210,7 @@ ola.HomeFrame.prototype._StopDialogSelected = function(e) {
     ola.Server.getInstance().StopServer();
     return false;
   }
-}
+};
 
 
 /**
@@ -218,7 +218,7 @@ ola.HomeFrame.prototype._StopDialogSelected = function(e) {
  */
 ola.HomeFrame.prototype._StopServerComplete = function(e) {
   ola.Dialog.getInstance().setVisible(false);
-}
+};
 
 
 /**
@@ -229,7 +229,7 @@ ola.HomeFrame.prototype._ReloadButtonClicked = function(e) {
   dialog.SetAsBusy();
   dialog.setVisible(true);
   ola.Server.getInstance().ReloadPlugins();
-}
+};
 
 
 /**
@@ -237,4 +237,4 @@ ola.HomeFrame.prototype._ReloadButtonClicked = function(e) {
  */
 ola.HomeFrame.prototype._PluginReloadComplete = function(e) {
   ola.Dialog.getInstance().setVisible(false);
-}
+};
