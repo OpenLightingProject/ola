@@ -200,6 +200,16 @@ void Escape(string *original) {
 }
 
 
+/**
+ * Escape a string, returning a copy
+ */
+string EscapeString(const string &original) {
+  string result = original;
+  Escape(&result);
+  return result;
+}
+
+
 /*
  * Convert a hex string to a unsigned int
  */

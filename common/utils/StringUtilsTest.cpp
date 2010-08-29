@@ -27,6 +27,7 @@
 using std::string;
 using std::vector;
 using ola::Escape;
+using ola::EscapeString;
 using ola::HexStringToUInt;
 using ola::HexStringToUInt16;
 using ola::IntToString;
@@ -185,6 +186,12 @@ void StringUtilsTest::testEscape() {
   CPPUNIT_ASSERT_EQUAL(
       string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
       s1);
+
+  s1 = "one\"two\\three/four\bfive\fsix\nseven\reight\tnine";
+  string result = EscapeString(s1);
+  CPPUNIT_ASSERT_EQUAL(
+      string("one\\\"two\\\\three\\/four\\bfive\\fsix\\nseven\\reight\\tnine"),
+      result);
 }
 
 
