@@ -192,6 +192,14 @@ ola.PortComponent.prototype.IsSelected = function() {
 
 
 /**
+ * Uncheck this box.
+ */
+ola.PortComponent.prototype.uncheck = function() {
+  return this.checkbox.setChecked(goog.ui.Checkbox.State.UNCHECKED);
+};
+
+
+/**
  * Update this item with from new data
  */
 ola.PortComponent.prototype.Update = function(new_data) {

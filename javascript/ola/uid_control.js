@@ -29,7 +29,7 @@ var ola = ola || {};
 /**
  * The class for an item in the uid list.
  * @param {Object} data the data to build this UID control from.
- * @param {function} callback the function to call when clicked.
+ * @param {function()} callback the function to call when clicked.
  * @constructor
  */
 ola.UidControl = function(data, callback, opt_renderer, opt_domHelper) {
@@ -78,8 +78,8 @@ ola.UidControl.prototype.Update = function(new_data) {
 
 /**
  * The base class for a factory which produces control items
- * @param {function} callback the function to call when an item is clicked. The
- * first arg is the item id.
+ * @param {function()} callback the function to call when an item is clicked.
+ *   The * first arg is the item id.
  * @constructor
  */
 ola.UidControlFactory = function(callback) {

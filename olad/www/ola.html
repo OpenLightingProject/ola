@@ -176,11 +176,11 @@
       }
 
       .goog-zippy-expanded img {
-        background-image: url('./images/expander.png');
+        background-image: url('/expander.png');
         background-position: 0px 0px;
       }
       .goog-zippy-collapsed img {
-        background-image: url('./images/expander.png');
+        background-image: url('/expander.png');
         background-position: -40px 0px;
       }
 
@@ -274,11 +274,11 @@
       }
 
       .goog-checkbox-checked {
-        background: #fff url('/images/check-sprite.gif') no-repeat 2px center;
+        background: #fff url('/tick.gif') no-repeat 2px center;
       }
 
       .goog-checkbox-undetermined {
-        background: #bbb url('/images/check-sprite.gif') no-repeat 2px center;
+        background: #bbb url('/tick.gif') no-repeat 2px center;
       }
 
       .goog-checkbox-unchecked {
@@ -293,7 +293,7 @@
 
       /* menus are used in the main frame */
       .goog-menu-button {
-        background: #ddd url(/images/button-bg.png) repeat-x top left;
+        background: #ddd url(/button-bg.png) repeat-x top left;
         border: 0;
         color: #000;
         cursor: pointer;
@@ -390,7 +390,7 @@
       .goog-menu-button-dropdown {
         height: 13px;
         width: 7px;
-        background: url(/images/expander.png) no-repeat -73px 0;
+        background: url(/expander.png) no-repeat -73px 0;
         vertical-align: top;
       }
 
@@ -451,7 +451,7 @@
       <div class='goog-splitpane-first-container ola-splitpane-navigation'>
        <div id="home_control" class="goog-control"
          title="Main page">
-         <img src="./images/blank.gif">Home
+         <img src="/blank.gif">Home
        </div>
        <div id="universe_list_control" class="goog-control"
          title="Click to show/hide active universes">
@@ -494,10 +494,12 @@
             <legend>Server Info</legend>
             <table>
              <tr>
-              <td>Hostname</td><td><div id="server_hostname"></div></td>
+              <td>Hostname</td>
+              <td><div id="server_hostname"></div></td>
              </tr>
              <tr>
-              <td>IP</td><td><div id="server_ip"></div></td>
+              <td style="padding-right: 10px">Primary IP</td>
+              <td><div id="server_ip"></div></td>
              </tr>
              <tr>
               <td>Version</td><td><div id="server_version"></div></td>
@@ -615,8 +617,10 @@
              </table>
             </fieldset>
             <fieldset>
-              <legend>Add Additional Ports</legend>
-              <table class="ola-table">
+              <legend style="cursor: pointer" id="additional_ports_expander">
+                <img style="width: 12px; height: 12px" src="/blank.gif">
+                Add Additional Ports</legend>
+              <table class="ola-table" id="additional_ports">
                <thead>
                 <tr>
                  <th>&nbsp;</th>

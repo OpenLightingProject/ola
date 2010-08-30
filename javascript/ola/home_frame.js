@@ -35,7 +35,7 @@ var ola = ola || {};
 
 /**
  * A line in the active universe list.
- * @class
+ * @constructor
  */
 ola.UniverseComponent = function(data, opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
@@ -161,6 +161,11 @@ ola.HomeFrame.prototype._updateServerInfo = function(e) {
   goog.dom.$('server_ip').innerHTML = e.server_info['ip'];
   goog.dom.$('server_version').innerHTML = e.server_info['version'];
   goog.dom.$('server_uptime').innerHTML = e.server_info['up_since'];
+
+  if (!e.server_info['quit_enabled']) {
+    var stop_button = goog.dom.$('stop_button');
+    stop_button.style.display = 'none';
+  }
 };
 
 

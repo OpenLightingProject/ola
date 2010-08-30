@@ -34,6 +34,7 @@
 #include "olad/DeviceManager.h"
 #include "olad/OlaHttpServer.h"
 #include "olad/OlaServer.h"
+#include "olad/OlaVersion.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
 #include "olad/Port.h"
@@ -84,10 +85,18 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_port_manager(port_manager),
       m_enable_quit(enable_quit),
       m_interface(interface) {
+
+  // The main handlers
+  RegisterHandler("/", &OlaHttpServer::DisplayIndex);
   RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
+  RegisterHandler("/help", &OlaHttpServer::DisplayHandlers);
   RegisterHandler("/quit", &OlaHttpServer::DisplayQuit);
   RegisterHandler("/reload", &OlaHttpServer::ReloadPlugins);
-  RegisterHandler("/help", &OlaHttpServer::DisplayHandlers);
+  RegisterHandler("/run_rdm_discovery", &OlaHttpServer::RunRDMDiscovery);
+  RegisterHandler("/new_universe", &OlaHttpServer::CreateNewUniverse);
+  RegisterHandler("/modify_universe", &OlaHttpServer::ModifyUniverse);
+
+  // Handlers for the old UI
   RegisterHandler("/main", &OlaHttpServer::DisplayMain);
   RegisterHandler("/plugins", &OlaHttpServer::DisplayPlugins);
   RegisterHandler("/plugin", &OlaHttpServer::DisplayPluginInfo);
@@ -97,8 +106,29 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterHandler("/console", &OlaHttpServer::DisplayConsole);
   RegisterHandler("/reload_templates", &OlaHttpServer::DisplayTemplateReload);
   RegisterHandler("/set_dmx", &OlaHttpServer::HandleSetDmx);
-  RegisterHandler("/", &OlaHttpServer::DisplayIndex);
-  RegisterFile("index.html", HttpServer::CONTENT_TYPE_HTML);
+
+  // json endpoints for the new UI
+  RegisterHandler("/json/server_stats", &OlaHttpServer::JsonServerStats);
+  RegisterHandler("/json/universe_plugin_list",
+                  &OlaHttpServer::JsonUniversePluginList);
+  RegisterHandler("/json/plugin_info", &OlaHttpServer::JsonPluginInfo);
+  RegisterHandler("/json/get_ports", &OlaHttpServer::JsonAvailablePorts);
+  RegisterHandler("/json/universe_info", &OlaHttpServer::JsonUniverseInfo);
+  RegisterHandler("/json/uids", &OlaHttpServer::JsonUIDs);
+
+  // these are the static files for the new UI
+  RegisterFile("blank.gif", HttpServer::CONTENT_TYPE_GIF);
+  RegisterFile("button-bg.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("custombutton.css", HttpServer::CONTENT_TYPE_CSS);
+  RegisterFile("expander.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("loader.gif", HttpServer::CONTENT_TYPE_GIF);
+  RegisterFile("logo.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("ola.html", HttpServer::CONTENT_TYPE_HTML);
+  RegisterFile("ola.js", HttpServer::CONTENT_TYPE_JS);
+  RegisterFile("tick.gif", HttpServer::CONTENT_TYPE_GIF);
+
+  // These are the static files for the old UI
+  RegisterFile("old.html", HttpServer::CONTENT_TYPE_HTML);
   RegisterFile("menu.html", HttpServer::CONTENT_TYPE_HTML);
   RegisterFile("about.html", HttpServer::CONTENT_TYPE_HTML);
   RegisterFile("console_values.html", HttpServer::CONTENT_TYPE_HTML);
@@ -125,10 +155,423 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
   data_dir_var->Set(m_server.DataDir());
   Clock::CurrentTime(&m_start_time);
+  m_start_time_t = time(NULL);
   export_map->GetStringVar(K_UPTIME_VAR);
 
   // warn on any missing templates
   TemplateNamelist::GetMissingList(false);
+}
+
+
+/*
+ * Print the server stats json
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::JsonServerStats(const HttpRequest *request,
+                                   HttpResponse *response) {
+  struct tm start_time;
+  char start_time_str[50];
+  localtime_r(&m_start_time_t, &start_time);
+  strftime(start_time_str, sizeof(start_time_str), "%c", &start_time);
+
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"hostname\": \"" << EscapeString(ola::network::FullHostname()) <<
+    "\"," << endl;
+  str << "  \"ip\": \"" <<
+    ola::network::AddressToString(m_interface.ip_address) << "\"," << endl;
+  str << "  \"version\": \"" << OLA_VERSION << "\"," << endl;
+  str << "  \"up_since\": \"" << start_time_str << "\"," << endl;
+  str << "  \"quit_enabled\": " << m_enable_quit << "," << endl;
+  str << "}";
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  return response->Send();
+  (void) request;
+}
+
+
+/**
+ * Print the list of universes / plugins as a json string
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::JsonUniversePluginList(const HttpRequest *request,
+                                          HttpResponse *response) {
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"plugins\": [" << endl;
+
+  vector<AbstractPlugin*> plugins;
+  vector<AbstractPlugin*>::const_iterator iter;
+  m_plugin_manager->Plugins(&plugins);
+  std::sort(plugins.begin(), plugins.end(), PluginLessThan());
+
+  for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
+    str << "    {\"name\": \"" << EscapeString((*iter)->Name()) <<
+      "\", \"id\": " << (*iter)->Id() << "}," << endl;
+  }
+
+  str << "  ]," << endl;
+  str << "  \"universes\": [" << endl;
+
+  vector<Universe*> universes;
+  vector<Universe*>::const_iterator universe_iter;
+  m_universe_store->GetList(&universes);
+  for (universe_iter = universes.begin(); universe_iter != universes.end();
+       ++universe_iter) {
+    str << "    {" << endl;
+    str << "      \"id\": " << (*universe_iter)->UniverseId() << "," << endl;
+    str << "      \"input_ports\": " << (*universe_iter)->InputPortCount() <<
+      "," << endl;
+    str << "      \"name\": \"" << EscapeString((*universe_iter)->Name()) <<
+      "\"," << endl;
+    str << "      \"output_ports\": " << (*universe_iter)->OutputPortCount() <<
+      "," << endl;
+    str << "      \"rdm_devices\": " << (*universe_iter)->UIDCount() << ","
+       << endl;
+    str << "    }," << endl;
+  }
+
+  str << "  ]," << endl;
+  str << "}";
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  return response->Send();
+  (void) request;
+}
+
+
+/**
+ * Print the plugin info as a json string
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::JsonPluginInfo(const HttpRequest *request,
+                                  HttpResponse *response) {
+  string val = request->GetParameter("id");
+  int plugin_id = atoi(val.data());
+  AbstractPlugin *plugin = NULL;
+  plugin = m_plugin_manager->GetPlugin((ola_plugin_id) plugin_id);
+
+  if (!plugin)
+    return m_server.ServeNotFound(response);
+
+  string description = plugin->Description();
+  Escape(&description);
+  stringstream str;
+  str << "{\"description\": \"" << description;
+  str << "\"}";
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  return response->Send();
+  (void) request;
+}
+
+
+/**
+ * Return information about a universe
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
+                                    HttpResponse *response) {
+  string uni_id = request->GetParameter("id");
+  unsigned int universe_id;
+  if (!StringToUInt(uni_id, &universe_id))
+    return m_server.ServeNotFound(response);
+
+  Universe *universe = m_universe_store->GetUniverse(universe_id);
+
+  if (!universe)
+    return m_server.ServeNotFound(response);
+
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"id\": " << universe->UniverseId() << "," << endl;
+  str << "  \"name\": \"" << EscapeString(universe->Name()) << "\"," << endl;
+  str << "  \"merge_mode\": \"" <<
+    (universe->MergeMode() == Universe::MERGE_HTP ? "HTP" : "LTP") << "\"," <<
+    endl;
+
+  unsigned int offset = 0;
+
+  vector<InputPort*> input_ports;
+  universe->InputPorts(&input_ports);
+  vector<InputPort*>::const_iterator input_iter = input_ports.begin();
+  str << "  \"input_ports\": [" << endl;
+  for (; input_iter != input_ports.end(); input_iter++) {
+    PortToJson(offset, *input_iter, &str);
+  }
+  str << "  ]," << endl;
+
+  vector<OutputPort*> output_ports;
+  universe->OutputPorts(&output_ports);
+  vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
+  str << "  \"output_ports\": [" << endl;
+  for (; output_iter != output_ports.end(); output_iter++) {
+    PortToJson(offset, *output_iter, &str);
+  }
+  str << "  ]," << endl;
+  str << "}" << endl;
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  return response->Send();
+  (void) request;
+}
+
+
+/**
+ * Return a list of unbound ports
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
+                                      HttpResponse *response) {
+  string uni_id = request->GetParameter("id");
+  unsigned int universe_id;
+  Universe *universe = NULL;
+  if ((!uni_id.empty()) && StringToUInt(uni_id, &universe_id))
+    universe = m_universe_store->GetUniverse(universe_id);
+
+  stringstream str;
+  str << "[" << endl;
+
+  vector<InputPort*> input_ports;
+  vector<OutputPort*> output_ports;
+
+  vector<device_alias_pair> device_pairs = m_device_manager->Devices();
+  sort(device_pairs.begin(), device_pairs.end());
+  vector<device_alias_pair>::const_iterator iter;
+  unsigned int offset = 0;
+
+  for (iter = device_pairs.begin(); iter != device_pairs.end(); ++iter) {
+    AbstractDevice *device = iter->device;
+    input_ports.clear();
+    output_ports.clear();
+    device->InputPorts(&input_ports);
+    device->OutputPorts(&output_ports);
+
+    vector<InputPort*>::const_iterator input_iter;
+    vector<OutputPort*>::const_iterator output_iter;
+    // check if this device already has ports bound to this universe
+    bool seen_input_port = false;
+    bool seen_output_port = false;
+    for (input_iter = input_ports.begin(); input_iter != input_ports.end();
+         input_iter++) {
+      if (universe && (*input_iter)->GetUniverse() == universe)
+        seen_input_port = true;
+    }
+
+    for (output_iter = output_ports.begin();
+         output_iter != output_ports.end(); output_iter++) {
+      if (universe && (*output_iter)->GetUniverse() == universe)
+        seen_output_port = true;
+    }
+
+    for (input_iter = input_ports.begin(); input_iter != input_ports.end();
+         input_iter++) {
+      if ((*input_iter)->GetUniverse())
+        continue;
+      if (seen_output_port && !device->AllowLooping())
+        continue;
+      if (seen_input_port && !device->AllowMultiPortPatching())
+        break;
+
+      str << "  {" << endl;
+      str << "    \"id\": " << offset << "," << endl;
+      str << "    \"device\": \"" << EscapeString(device->Name()) << "\","
+        << endl;
+      str << "    \"is_output\": false," << endl;
+      str << "    \"description\": \"" <<
+        EscapeString((*input_iter)->Description()) << "\"," << endl;
+      str << "    \"port_id\": \"" << (*input_iter)->UniqueId() << "\"," <<
+        endl;
+      str << "  }," << endl;
+      offset++;
+
+      if (!device->AllowMultiPortPatching())
+        break;
+    }
+
+    for (output_iter = output_ports.begin();
+         output_iter != output_ports.end(); output_iter++) {
+      if ((*output_iter)->GetUniverse())
+        continue;
+      if (seen_input_port && !device->AllowLooping())
+        continue;
+      if (seen_output_port && !device->AllowMultiPortPatching())
+        break;
+
+      str << "  {" << endl;
+      str << "    \"id\": " << offset << "," << endl;
+      str << "    \"device\": \"" << EscapeString(device->Name()) << "\","
+        << endl;
+      str << "    \"is_output\": true," << endl;
+      str << "    \"description\": \"" <<
+        EscapeString((*output_iter)->Description()) << "\"," << endl;
+      str << "    \"port_id\": \"" << (*output_iter)->UniqueId() << "\"," <<
+        endl;
+      str << "  }," << endl;
+      offset++;
+
+      if (!device->AllowMultiPortPatching())
+        break;
+    }
+  }
+  str << "]" << endl;
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  return response->Send();
+  (void) request;
+}
+
+
+/**
+ * Return the list of uids for this universe as json
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::JsonUIDs(const HttpRequest *request,
+                            HttpResponse *response) {
+  string uni_id = request->GetParameter("id");
+  unsigned int universe_id;
+  if (!StringToUInt(uni_id, &universe_id))
+    return m_server.ServeNotFound(response);
+
+  Universe *universe = m_universe_store->GetUniverse(universe_id);
+
+  if (!universe)
+    return m_server.ServeNotFound(response);
+
+  ola::rdm::UIDSet uids;
+  universe->GetUIDs(&uids);
+  ola::rdm::UIDSet::Iterator iter = uids.Begin();
+
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"universe\": " << universe->UniverseId() << "," << endl;
+  str << "  \"uids\": [" << endl;
+
+  for (; iter != uids.End(); ++iter) {
+    uint64_t uid_sort_id = iter->ManufacturerId();
+    uid_sort_id = uid_sort_id << 32;
+    uid_sort_id += iter->DeviceId();
+    str << "    {" << endl;
+    str << "       \"id\": " << uid_sort_id << "," << endl;
+    str << "       \"uid\": \"" << iter->ToString() << "\"," << endl;
+    str << "    }," << endl;
+  }
+
+  str << "  ]" << endl;
+  str << "}";
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  return response->Send();
+  (void) request;
+}
+
+
+/*
+ * Create a new universe by binding one or more ports.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::CreateNewUniverse(const HttpRequest *request,
+                                     HttpResponse *response) {
+  string uni_id = request->GetPostParameter("id");
+
+  unsigned int universe_id;
+  if (!StringToUInt(uni_id, &universe_id))
+    return m_server.ServeNotFound(response);
+
+  bool status = true;
+  string message;
+  Universe *universe = m_universe_store->GetUniverse(universe_id);
+
+  if (universe) {
+    status = false;
+    message = "Universe already exists";
+  } else {
+    UpdatePortsForUniverse(universe_id, request);
+    universe = m_universe_store->GetUniverse(universe_id);
+
+    if (universe) {
+      string name = request->GetPostParameter("name");
+      universe->SetName(name);
+    } else {
+      status = false;
+      message = "No ports patched.";
+    }
+  }
+
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"ok\": " << status << "," << endl;
+  str << "  \"universe\": " << universe_id << "," << endl;
+  str << "  \"message\": \"" << EscapeString(message) << "\"," << endl;
+  str << "}";
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  return response->Send();
+  (void) request;
+}
+
+
+/*
+ * Modify an existing universe.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
+                                  HttpResponse *response) {
+  string uni_id = request->GetPostParameter("id");
+  string name = request->GetPostParameter("name");
+  string merge_mode = request->GetPostParameter("merge_mode");
+  string add_ports = request->GetPostParameter("add_ports");
+  string remove_ports = request->GetPostParameter("remove_ports");
+
+  unsigned int universe_id;
+  if (!StringToUInt(uni_id, &universe_id))
+    return m_server.ServeNotFound(response);
+
+  Universe *universe = m_universe_store->GetUniverse(universe_id);
+  if (!universe)
+    return m_server.ServeNotFound(response);
+
+  if (name.size() > K_UNIVERSE_NAME_LIMIT)
+    name = name.substr(K_UNIVERSE_NAME_LIMIT);
+  universe->SetName(name);
+
+  if (merge_mode == "LTP")
+    universe->SetMergeMode(Universe::MERGE_LTP);
+  else
+    universe->SetMergeMode(Universe::MERGE_HTP);
+
+  string message;
+  UpdatePortsForUniverse(universe_id, request);
+
+  stringstream str;
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  return response->Send();
+  (void) request;
 }
 
 
@@ -141,7 +584,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
 int OlaHttpServer::DisplayIndex(const HttpRequest *request,
                                 HttpResponse *response) {
   HttpServer::static_file_info file_info;
-  file_info.file_path = "index.html";
+  file_info.file_path = "ola.html";
   file_info.content_type = HttpServer::CONTENT_TYPE_HTML;
   return m_server.ServeStaticContent(&file_info, response);
   (void) request;
@@ -482,6 +925,32 @@ int OlaHttpServer::ReloadPlugins(const HttpRequest *request,
 }
 
 
+/**
+ * Run RDM discovery for a universe
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::RunRDMDiscovery(const HttpRequest *request,
+                                   HttpResponse *response) {
+  string uni_id = request->GetParameter("id");
+  unsigned int universe_id;
+  if (!StringToUInt(uni_id, &universe_id))
+    return m_server.ServeNotFound(response);
+
+  Universe *universe = m_universe_store->GetUniverse(universe_id);
+
+  if (!universe)
+    return m_server.ServeNotFound(response);
+
+  universe->RunRDMDiscovery();
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append("ok");
+  return response->Send();
+  (void) request;
+}
+
+
 /*
  * Handle the template reload.
  */
@@ -610,10 +1079,11 @@ void OlaHttpServer::UpdatePortPriorites(const HttpRequest *request,
     string priority_id = (*iter)->UniqueId() +
       DeviceManager::PRIORITY_VALUE_SUFFIX;
 
-    m_port_manager->SetPriority(
-        *iter,
-        request->GetPostParameter(priority_mode_id),
-        request->GetPostParameter(priority_id));
+    string value = request->GetPostParameter(priority_id);
+    string mode = request->GetPostParameter(priority_mode_id);
+
+    if (!value.empty() || !mode.empty())
+      m_port_manager->SetPriority(*iter, mode, value);
   }
 }
 
@@ -656,6 +1126,100 @@ void OlaHttpServer::AddPortsToDict(TemplateDictionary *dict,
       port_dict->ShowSection("ODD");
     (*offset)++;
     iter++;
+  }
+}
+
+
+/**
+ * Add the json representation of this port to the stringstream
+ */
+void OlaHttpServer::PortToJson(unsigned int offset, const Port *port,
+                               stringstream *str) {
+  *str << "    {" << endl;
+  *str << "      \"id\": " << offset << "," << endl;
+  *str << "      \"device\": \"" << EscapeString(port->GetDevice()->Name())
+    << "\"," << endl;
+  *str << "      \"description\": \"" <<
+    EscapeString(port->Description()) << "\"," << endl;
+  *str << "      \"port_id\": \"" << port->UniqueId() << "\"," << endl;
+
+  if (port->PriorityCapability() != CAPABILITY_NONE) {
+    *str << "      \"priority\": {" << endl;
+    *str << "        \"value\": " << static_cast<int>(port->GetPriority()) <<
+      "," << endl;
+    if (port->PriorityCapability() == CAPABILITY_FULL) {
+      *str << "        \"current_mode\": \"" <<
+        (port->GetPriorityMode() == PRIORITY_MODE_INHERIT ?
+         "inherit" : "override") << "\"," <<
+        endl;
+    }
+    *str << "      }" << endl;
+  }
+  *str << "    }," << endl;
+}
+
+
+/**
+ * Add a list of ports to a universe and set the name
+ */
+bool OlaHttpServer::UpdatePortsForUniverse(unsigned int universe_id,
+                                           const HttpRequest *request) {
+  string add_port_ids = request->GetPostParameter("add_ports");
+  string remove_port_ids = request->GetPostParameter("remove_ports");
+
+  vector<string> add_ports;
+  vector<string> remove_ports;
+  StringSplit(add_port_ids, add_ports, ",");
+  StringSplit(remove_port_ids, remove_ports, ",");
+
+  vector<InputPort*> input_ports;
+  vector<OutputPort*> output_ports;
+
+  // There is no way to look up a port based on id, so we need to loop through
+  // all of them for now.
+  vector<device_alias_pair> device_pairs = m_device_manager->Devices();
+  vector<device_alias_pair>::const_iterator iter;
+  for (iter = device_pairs.begin(); iter != device_pairs.end(); ++iter) {
+    input_ports.clear();
+    output_ports.clear();
+    iter->device->InputPorts(&input_ports);
+    iter->device->OutputPorts(&output_ports);
+
+    vector<InputPort*>::iterator input_iter = input_ports.begin();
+    for (; input_iter != input_ports.end(); input_iter++) {
+      UpdatePortForUniverse(universe_id, *input_iter, add_ports, remove_ports);
+    }
+
+    vector<OutputPort*>::iterator output_iter = output_ports.begin();
+    for (; output_iter != output_ports.end(); output_iter++) {
+      UpdatePortForUniverse(universe_id, *output_iter, add_ports, remove_ports);
+    }
+
+    UpdatePortPriorites(request, &input_ports);
+    UpdatePortPriorites(request, &output_ports);
+  }
+  return true;
+}
+
+
+/*
+ * Update a single port from the http request
+ */
+template <class PortClass>
+void OlaHttpServer::UpdatePortForUniverse(unsigned int universe_id,
+                                          PortClass *port,
+                                          const vector<string> &ids_to_add,
+                                          const vector<string> &ids_to_remove) {
+  vector<string>::const_iterator iter;
+  for (iter = ids_to_add.begin(); iter != ids_to_add.end(); ++iter) {
+    if (port->UniqueId() == *iter) {
+      m_port_manager->PatchPort(port, universe_id);
+    }
+  }
+  for (iter = ids_to_remove.begin(); iter != ids_to_remove.end(); ++iter) {
+    if (port->UniqueId() == *iter) {
+      m_port_manager->UnPatchPort(port);
+    }
   }
 }
 }  // ola

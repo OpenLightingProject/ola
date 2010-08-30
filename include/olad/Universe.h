@@ -76,6 +76,8 @@ class Universe {
     bool ContainsPort(OutputPort *port) const;
     unsigned int InputPortCount() const { return m_input_ports.size(); }
     unsigned int OutputPortCount() const { return m_output_ports.size(); }
+    void InputPorts(vector<InputPort*> *ports);
+    void OutputPorts(vector<OutputPort*> *ports);
 
     // Source clients are those that provide us with data
     bool AddSourceClient(Client *client);
@@ -99,7 +101,8 @@ class Universe {
     bool HandleRDMResponse(OutputPort *port,
                            const ola::rdm::RDMResponse *response);
     void RunRDMDiscovery();
-    void GetUIDs(ola::rdm::UIDSet *uids);
+    void GetUIDs(ola::rdm::UIDSet *uids) const;
+    unsigned int UIDCount() const;
     void NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port);
 
     bool operator==(const Universe &other) {

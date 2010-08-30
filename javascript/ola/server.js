@@ -57,13 +57,13 @@ ola.Server.SERVER_INFO_URL = '/json/server_stats';
 ola.Server.PLUGIN_INFO_URL = '/json/plugin_info';
 ola.Server.UNIVERSE_INFO_URL = '/json/universe_info';
 ola.Server.PLUGIN_UNIVERSE_LIST_URL = '/json/universe_plugin_list';
-ola.Server.RELOAD_PLUGINS_URL = '/json/reload_plugins';
-ola.Server.STOP_SERVER_URL = '/json/stop_server';
+ola.Server.RELOAD_PLUGINS_URL = '/reload';
+ola.Server.STOP_SERVER_URL = '/quit';
 ola.Server.AVAILBLE_PORTS_URL = '/json/get_ports';
 ola.Server.UIDS_URL = '/json/uids';
-ola.Server.RDM_DISCOVERY_URL = '/json/run_discovery';
-ola.Server.NEW_UNIVERSE_URL = '/json/new_universe';
-ola.Server.MODIFY_UNIVERSE_URL = '/json/modify_universe';
+ola.Server.RDM_DISCOVERY_URL = '/run_rdm_discovery';
+ola.Server.NEW_UNIVERSE_URL = '/new_universe';
+ola.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
 
 
 /**
@@ -198,6 +198,12 @@ ola.Server.prototype.stopServer = function (callback) {
  */
 ola.Server.prototype.FetchUniversePluginList = function() {
   var on_complete = function(e) {
+    if (e.target.getStatus() != 200) {
+      ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
+          e.target.getLastError())
+      this._cleanupRequest(e.target);
+      return;
+    }
     var obj = e.target.getResponseJson();
 
     // update the internal list of universes here
@@ -243,14 +249,19 @@ ola.Server.prototype.FetchUniverseInfo = function(universe_id) {
 
 /**
  * Fetch the available pors
+ * @param {number=} opt_universe an optional universe id
  */
-ola.Server.prototype.FetchAvailablePorts = function() {
+ola.Server.prototype.FetchAvailablePorts = function(opt_universe) {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.AvailablePortsEvent(obj));
     this._cleanupRequest(e.target);
   }
-  this._initiateRequest(ola.Server.AVAILBLE_PORTS_URL, on_complete);
+  var url = ola.Server.AVAILBLE_PORTS_URL;
+  if (opt_universe != undefined) {
+    url += '?id=' + opt_universe;
+  }
+  this._initiateRequest(url, on_complete);
 };
 
 
@@ -265,9 +276,11 @@ ola.Server.prototype.createUniverse = function(universe_id,
     callback(e);
     this._cleanupRequest(e.target);
   }
-  var url = ola.Server.NEW_UNIVERSE_URL + '?id=' + universe_id + (
-      name ? '&name=' + encodeURI(name) : '') + '&ports=' + port_ids.join(',');
-  this._initiateRequest(url, on_complete);
+  var post_data = 'id=' + universe_id + (
+      name ? '&name=' + encodeURI(name) : '') + '&add_ports=' +
+      port_ids.join(',');
+  this._initiateRequest(ola.Server.NEW_UNIVERSE_URL, on_complete, 'POST',
+                        post_data);
 };
 
 
@@ -294,6 +307,12 @@ ola.Server.prototype.runRDMDiscovery = function(universe_id, callback) {
  */
 ola.Server.prototype.FetchUids = function(universe_id) {
   var on_complete = function(e) {
+    if (e.target.getStatus() != 200) {
+      ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
+          e.target.getLastError())
+      this._cleanupRequest(e.target);
+      return;
+    }
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.UidsEvent(obj['universe'], obj['uids']));
     this._cleanupRequest(e.target);
@@ -308,11 +327,11 @@ ola.Server.prototype.FetchUids = function(universe_id) {
  * @param {number} universe_id the id of the universe to modify.
  * @param {string} universe_name the new name.
  * @param {string} merge_mode HTP or LTP.
- * @param {Array<{{id: string, mode: string, priority: number}} port_priorities
+ * @param {Array.<{{id: string, mode: string, priority: number}}> port_priorities
  *   an array of new port priorities.
- * @param {Array<string>} ports_to_remove list of port ids to remove.
- * @param {Array<string>} ports_to_add list of port ids to add.
- * @param {function} callback the callback to invoke when complete.
+ * @param {Array.<string>} ports_to_remove list of port ids to remove.
+ * @param {Array.<string>} ports_to_add list of port ids to add.
+ * @param {function()} callback the callback to invoke when complete.
  */
 ola.Server.prototype.modifyUniverse = function(universe_id,
                                                universe_name,
@@ -330,15 +349,15 @@ ola.Server.prototype.modifyUniverse = function(universe_id,
       '&remove_ports=' + ports_to_remove.join(','));
   for (var i = 0; i < port_priorities.length; ++i) {
     var priority_setting = port_priorities[i];
-    post_data += ('&' + priority_setting.id + '_priority=' +
+    post_data += ('&' + priority_setting.id + '_priority_value=' +
         priority_setting.priority);
-    if (priority_setting.mode) {
-      post_data += ('&' + priority_setting.id + '_mode=' +
+    if (priority_setting.mode != undefined) {
+      post_data += ('&' + priority_setting.id + '_priority_mode=' +
           priority_setting.mode);
     }
   }
   var url = ola.Server.MODIFY_UNIVERSE_URL;
-  this._initiateRequest(url, on_complete);
+  this._initiateRequest(url, on_complete, 'POST', post_data);
 };
 
 
@@ -355,6 +374,15 @@ ola.Server.prototype._initiateRequest = function(url,
                                                  opt_method,
                                                  opt_content) {
   var xhr = this.pool.getObject(undefined, 1);
+  if (xhr == undefined) {
+  var dialog = ola.Dialog.getInstance();
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setTitle('Failed to Communicate with Server');
+    dialog.setContent(
+        'The request pool was empty, the server is probably down.');
+    dialog.setVisible(true);
+    return;
+  }
   goog.events.listen(xhr, goog.net.EventType.COMPLETE, callback, false, this);
   xhr.send(url, opt_method, opt_content);
 };

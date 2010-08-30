@@ -21,6 +21,7 @@ goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.math');
+goog.require('goog.ui.AnimatedZippy');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Container');
 goog.require('goog.ui.Control');
@@ -84,8 +85,16 @@ ola.UniverseFrame = function(element_id) {
 
   // setup the uid timer
   this.uid_timer = new goog.Timer(ola.UID_REFRESH_INTERVAL);
-  goog.events.listen(this.uid_timer, goog.Timer.TICK,
-                     function() { ola_server.FetchUids(); });
+  goog.events.listen(
+      this.uid_timer,
+      goog.Timer.TICK,
+      function() {
+        if (this.current_universe) {
+          ola.Server.getInstance().FetchUids(this.current_universe);
+        }
+      },
+      false,
+      this);
 
 };
 goog.inherits(ola.UniverseFrame, ola.BaseFrame);
@@ -117,6 +126,9 @@ ola.UniverseFrame.prototype._setupMainTab = function() {
   this.output_port_list = new ola.SortedList(
       this.output_table_container,
       new ola.PortComponentFactory());
+
+  var z1 = new goog.ui.AnimatedZippy('additional_ports_expander',
+                                     'additional_ports');
 
   this.available_table_container = new ola.TableContainer();
   this.available_table_container.decorate(
@@ -226,7 +238,7 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
     goog.events.listen(server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
                        this._updateAvailablePorts,
                        false, this);
-    server.FetchAvailablePorts();
+    server.FetchAvailablePorts(this.current_universe);
   } else if (selected_tab == 1) {
     // update RDM
     server.FetchUids(this.current_universe);
@@ -313,7 +325,7 @@ ola.UniverseFrame.prototype._generatePrioritySettingFromComponent = function(
     priority_setting.priority = priority;
     var priority_mode = port_component.priorityMode();
     if (priority_mode != undefined) {
-      priority_setting.mode = priority_mode;
+      priority_setting.mode = (priority_mode == 'Inherit' ? 0 : 1);
     }
     setting_list.push(priority_setting);
   }
@@ -385,6 +397,9 @@ ola.UniverseFrame.prototype._saveCompleted = function(e) {
   var dialog = ola.Dialog.getInstance();
   if (e.target.getStatus() == 200) {
     dialog.setVisible(false);
+
+    this.available_table_container.Clear();
+    this._updateSelectedTab()
   } else {
     dialog.setTitle('Failed to Save Settings');
     dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());

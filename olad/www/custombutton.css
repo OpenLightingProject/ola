@@ -18,7 +18,7 @@
   font-family: Arial, sans-serif;
   color: #000;
   /* Client apps may override the URL at which they serve the image. */
-  background: #ddd url(./images/button-bg.png) repeat-x top left;
+  background: #ddd url(/button-bg.png) repeat-x top left;
   text-decoration: none;
   list-style: none;
   vertical-align: middle;

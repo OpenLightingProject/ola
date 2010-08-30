@@ -21,6 +21,7 @@
 #ifndef OLAD_OLAHTTPSERVER_H_
 #define OLAD_OLAHTTPSERVER_H_
 
+#include <time.h>
 #include <ctemplate/template.h>
 #include <string>
 #include <vector>
@@ -55,6 +56,16 @@ class OlaHttpServer {
     bool Start() { return m_server.Start(); }
     void Stop() { return m_server.Stop(); }
 
+    int JsonServerStats(const HttpRequest *request, HttpResponse *response);
+    int JsonUniversePluginList(const HttpRequest *request,
+                               HttpResponse *response);
+    int JsonPluginInfo(const HttpRequest *request, HttpResponse *response);
+    int JsonUniverseInfo(const HttpRequest *request, HttpResponse *response);
+    int JsonAvailablePorts(const HttpRequest *request, HttpResponse *response);
+    int JsonUIDs(const HttpRequest *request, HttpResponse *response);
+    int CreateNewUniverse(const HttpRequest *request, HttpResponse *response);
+    int ModifyUniverse(const HttpRequest *request, HttpResponse *response);
+
     int DisplayIndex(const HttpRequest *request, HttpResponse *response);
     int DisplayMain(const HttpRequest *request, HttpResponse *response);
     int DisplayPlugins(const HttpRequest *request, HttpResponse *response);
@@ -67,6 +78,7 @@ class OlaHttpServer {
     int DisplayDebug(const HttpRequest *request, HttpResponse *response);
     int DisplayQuit(const HttpRequest *request, HttpResponse *response);
     int ReloadPlugins(const HttpRequest *request, HttpResponse *response);
+    int RunRDMDiscovery(const HttpRequest *request, HttpResponse *response);
     int DisplayTemplateReload(const HttpRequest *request,
                               HttpResponse *response);
     int DisplayHandlers(const HttpRequest *request, HttpResponse *response);
@@ -98,6 +110,16 @@ class OlaHttpServer {
                         const vector<PortClass*> &ports,
                         unsigned int *offset);
 
+    void PortToJson(unsigned int offset, const Port *port, stringstream *str);
+    bool UpdatePortsForUniverse(unsigned int universe_id,
+                                const HttpRequest *request);
+
+    template <class PortClass>
+    void UpdatePortForUniverse(unsigned int universe_id,
+                               PortClass *port,
+                               const vector<string> &ids_to_add,
+                               const vector<string> &ids_to_remove);
+
     class HttpServer m_server;
     ExportMap *m_export_map;
     SelectServer *m_ss;
@@ -109,6 +131,7 @@ class OlaHttpServer {
     bool m_enable_quit;
     TimeStamp m_start_time;
     ola::network::Interface m_interface;
+    time_t m_start_time_t;
 
     static const char K_DATA_DIR_VAR[];
     static const char K_UPTIME_VAR[];

@@ -334,9 +334,10 @@ AC_OUTPUT( Makefile\
     python/rpc/Makefile \
     python/examples/Makefile \
     olad/Makefile \
+    olad/OlaVersion.h \
+    olad/testdata/Makefile \
     olad/www/Makefile \
     olad/www/about.html \
-    olad/testdata/Makefile \
     plugins/Makefile \
     plugins/artnet/Makefile \
     plugins/artnet/messages/Makefile \

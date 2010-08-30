@@ -219,6 +219,28 @@ bool Universe::ContainsPort(OutputPort *port) const {
 
 
 /*
+ * Get a list of input ports associated with this universe
+ * @param ports, the vector to be populated
+ */
+void Universe::InputPorts(vector<InputPort*> *ports) {
+  ports->clear();
+  std::copy(m_input_ports.begin(), m_input_ports.end(),
+      std::back_inserter(*ports));
+}
+
+
+/*
+ * Get a list of output ports associated with this universe
+ * @param ports, the vector to be populated
+ */
+void Universe::OutputPorts(vector<OutputPort*> *ports) {
+  ports->clear();
+  std::copy(m_output_ports.begin(), m_output_ports.end(),
+      std::back_inserter(*ports));
+}
+
+
+/*
  * Add a client as a source for this universe
  * @param client the client to add
  */
@@ -417,10 +439,18 @@ void Universe::RunRDMDiscovery() {
 /*
  * Returns the complete UIDSet for this universe
  */
-void Universe::GetUIDs(ola::rdm::UIDSet *uids) {
-  map<UID, OutputPort*>::iterator iter = m_output_uids.begin();
+void Universe::GetUIDs(ola::rdm::UIDSet *uids) const {
+  map<UID, OutputPort*>::const_iterator iter = m_output_uids.begin();
   for (; iter != m_output_uids.end(); ++iter)
     uids->AddUID(iter->first);
+}
+
+
+/**
+ * Return the number of uids in the universe
+ */
+unsigned int Universe::UIDCount() const {
+  return m_output_uids.size();
 }
 
 

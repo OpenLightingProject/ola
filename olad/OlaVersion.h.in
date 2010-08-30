@@ -1,4 +1,4 @@
-/**
+/*
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
@@ -13,35 +13,17 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * The OLA dialog box
+ * OlaVersion.h
+ * Contains the build version as a string
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.require('goog.ui.Dialog');
+#ifndef OLAD_OLAVERSION_H_
+#define OLAD_OLAVERSION_H_
 
-goog.provide('ola.Dialog');
+namespace ola {
 
-var ola = ola || {};
+static const char OLA_VERSION[] = "@VERSION@";
 
-/**
- * The OLA Dialog class
- * @constructor
- */
-ola.Dialog = function() {
-  goog.ui.Dialog.call(this, null, true);
-};
-goog.inherits(ola.Dialog, goog.ui.Dialog);
-
-// This is a singleton, call ola.Dialog.getInstance() to access it.
-goog.addSingletonGetter(ola.Dialog);
-
-
-/**
- * Make this dialog show the spinner
- */
-ola.Dialog.prototype.SetAsBusy = function() {
-  this.setTitle('Waiting for server response....');
-  this.setButtonSet(null);
-  this.setContent('<div align="center"><img src="/loader.gif">' +
-                  '</div>');
-};
+}  // ola
+#endif  // OLAD_OLAVERSION_H_

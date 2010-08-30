@@ -67,6 +67,11 @@ goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
  * Show this frame. We extend the base method so we can populate the ports.
  */
 ola.NewUniverseFrame.prototype.Show = function() {
+  // clear out the fields
+  goog.dom.$('new_universe_id').value = ''
+  goog.dom.$('new_universe_name').value = ''
+  this.port_list.Clear();
+
   var ola_server = ola.Server.getInstance();
   goog.events.listen(ola_server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
                      this._updateAvailablePorts,
@@ -154,6 +159,13 @@ ola.NewUniverseFrame.prototype._addUniverseButtonClicked = function(e) {
  */
 ola.NewUniverseFrame.prototype._newUniverseComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
+  if (e.target.getStatus() != 200) {
+    dialog.setTitle('New Universe Failed');
+    dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setVisible(true);
+    return;
+  }
   var obj = e.target.getResponseJson();
   if (obj['ok']) {
     dialog.setVisible(false);
