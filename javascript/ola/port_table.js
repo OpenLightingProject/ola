@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * The new universe frame.
+ * The table that holds a list of available ports.
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -23,30 +23,30 @@ goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.Select');
+goog.require('ola.LoggerWindow');
+goog.require('ola.Server');
 
-goog.provide('ola.AvailablePortComponent');
-goog.provide('ola.AvailablePortComponentFactory');
-goog.provide('ola.PortComponent');
-goog.provide('ola.PortComponentFactory');
-
-var ola = ola || {};
+goog.provide('ola.Port');
+goog.provide('ola.PortTable');
 
 
 /**
- * A port bound to a universe
+ * A row in the available ports list.
+ * @param {Object} data the data to build this row from.
  * @constructor
  */
-ola.PortComponent = function(data, opt_domHelper) {
+ola.Port = function(data, opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
   this.data = data;
 };
-goog.inherits(ola.PortComponent, goog.ui.Component);
+goog.inherits(ola.Port, goog.ui.Component);
 
 
 /**
  * This component can't be used to decorate
+ * @return {bool} false.
  */
-ola.PortComponent.prototype.canDecorate = function() {
+ola.Port.prototype.canDecorate = function() {
   return false;
 };
 
@@ -54,7 +54,7 @@ ola.PortComponent.prototype.canDecorate = function() {
 /**
  * Create the dom for this component
  */
-ola.PortComponent.prototype.createDom = function() {
+ola.Port.prototype.createDom = function() {
   this.tr = this.dom_.createDom('tr', {});
   this.tr.style.cursor = 'pointer';
   var td = goog.dom.createDom('td', {}, '');
@@ -104,7 +104,7 @@ ola.PortComponent.prototype.createDom = function() {
 /**
  * Setup the event handlers
  */
-ola.PortComponent.prototype.enterDocument = function() {
+ola.Port.prototype.enterDocument = function() {
   if (this.priority_select != undefined) {
     goog.events.listen(
         this.priority_select,
@@ -139,18 +139,20 @@ ola.PortComponent.prototype.enterDocument = function() {
 
 
 /**
- * Get the id of this item
+ * Get the port id for this item
+ * @return {string} the id of this port.
  */
-ola.PortComponent.prototype.Id = function() {
+ola.Port.prototype.portId = function() {
   return this.data['id'];
 };
 
 
 /**
- * Get the port id for this item
+ * Check is this row was selected
+ * @return {boolean} true if selected, false otherwise.
  */
-ola.PortComponent.prototype.PortId = function() {
-  return this.data['port_id'];
+ola.Port.prototype.isSelected = function() {
+  return this.checkbox.isChecked();
 };
 
 
@@ -159,7 +161,7 @@ ola.PortComponent.prototype.PortId = function() {
  * @return {number|undefined} the priority value or undefined if this port
  * doesn't support priorities.
  */
-ola.PortComponent.prototype.priority = function() {
+ola.Port.prototype.priority = function() {
   if (this.priority_input) {
     return this.priority_input.value;
   } else {
@@ -173,7 +175,7 @@ ola.PortComponent.prototype.priority = function() {
  * @return {string|undefined} the priority mode (inherit|override) or undefined
  *   if this port doesn't support priority modes.
  */
-ola.PortComponent.prototype.priorityMode = function() {
+ola.Port.prototype.priorityMode = function() {
   if (this.priority_select) {
     return this.priority_select.getValue();
   } else {
@@ -183,38 +185,9 @@ ola.PortComponent.prototype.priorityMode = function() {
 
 
 /**
- * Check is this was selected
- */
-ola.PortComponent.prototype.IsSelected = function() {
-  return this.checkbox.isChecked();
-};
-
-
-/**
- * Uncheck this box.
- */
-ola.PortComponent.prototype.uncheck = function() {
-  return this.checkbox.setChecked(goog.ui.Checkbox.State.UNCHECKED);
-};
-
-
-/**
- * Update this item with from new data
- */
-ola.PortComponent.prototype.Update = function(new_data) {
-  var element = this.getElement();
-  var td = goog.dom.getFirstElementChild(element);
-  td = goog.dom.getNextElementSibling(td);
-  td.innerHTML = new_data['device'];
-  td = goog.dom.getNextElementSibling(td);
-  td.innerHTML = new_data['description'];
-};
-
-
-/**
  * Called when the port priority changes
  */
-ola.PortComponent.prototype._prioritySelectChanged = function(e) {
+ola.Port.prototype._prioritySelectChanged = function(e) {
   if (this.priority_select.getSelectedIndex()) {
     // override mode
     this.priority_input.style.visibility = 'visible';
@@ -227,113 +200,61 @@ ola.PortComponent.prototype._prioritySelectChanged = function(e) {
 
 
 /**
- * The base class for a factory which produces PortComponents
+ * An available port table component.
  * @constructor
  */
-ola.PortComponentFactory = function() {
-};
-
-
-/**
- * @return {ola.PortComponent} an instance of a PortComponent.
- */
-ola.PortComponentFactory.prototype.newComponent = function(data) {
-  return new ola.PortComponent(data);
-};
-
-
-/**
- * A line in the available ports list.
- * @constructor
- */
-ola.AvailablePortComponent = function(data, opt_domHelper) {
+ola.PortTable = function(opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
-  this.data = data;
 };
-goog.inherits(ola.AvailablePortComponent, goog.ui.Component);
+goog.inherits(ola.PortTable, goog.ui.Component);
 
 
 /**
- * This component can't be used to decorate
+ * Create the dom for the PortTable.
  */
-ola.AvailablePortComponent.prototype.canDecorate = function() {
-  return false;
-};
-
-
-/**
- * Create the dom for this component
- */
-ola.AvailablePortComponent.prototype.createDom = function() {
-  var tr = this.dom_.createDom('tr', {});
-  tr.style.cursor = 'pointer';
-  var td = goog.dom.createDom('td', {}, '');
-  this.dom_.appendChild(tr, td);
-  this.checkbox = new goog.ui.Checkbox();
-  this.checkbox.render(td);
-  this.dom_.appendChild(tr, goog.dom.createDom('td', {}, this.data['device']));
-  this.dom_.appendChild(tr, goog.dom.createDom('td', {},
-      this.data['is_output'] ? 'Output' : 'Input'));
-  this.dom_.appendChild(tr, goog.dom.createDom('td', {},
-      this.data['description']));
-  this.setElementInternal(tr);
-
-  goog.events.listen(tr,
-                     goog.events.EventType.CLICK,
-                     function() { this.checkbox.toggle(); },
-                     false, this);
+ola.PortTable.prototype.createDom = function() {
+  this.decorateInternal(this.dom_.createElement('tbody'));
 };
 
 
 /**
- * Get the id of this item
+ * Decorate an existing element
+ * @param {Element} element the dom element to decorate.
  */
-ola.AvailablePortComponent.prototype.Id = function() {
-  return this.data['id'];
+ola.PortTable.prototype.decorateInternal = function(element) {
+  ola.PortTable.superClass_.decorateInternal.call(this, element);
 };
 
 
 /**
- * Get the port id for this item
+ * Check if we can decorate an element.
+ * @param {Element} element the dom element to check.
+ * @return {boolean} true if this element can be decorated, false otherwise.
  */
-ola.AvailablePortComponent.prototype.PortId = function() {
-  return this.data['port_id'];
-};
-
-/**
- * Check is this was selected
- */
-ola.AvailablePortComponent.prototype.IsSelected = function() {
-  return this.checkbox.isChecked();
+ola.PortTable.prototype.canDecorate = function(element) {
+  return element.tagName == 'TBODY';
 };
 
 
 /**
- * Update this item with from new data
+ * Clear all rows from this table
  */
-ola.AvailablePortComponent.prototype.Update = function(new_data) {
-  var element = this.getElement();
-  var td = goog.dom.getFirstElementChild(element);
-  td = goog.dom.getNextElementSibling(td);
-  td.innerHTML = new_data['device'];
-  td = goog.dom.getNextElementSibling(td);
-  td.innerHTML = new_data['is_output'] ? 'Output' : 'Input';
-  td = goog.dom.getNextElementSibling(td);
-  td.innerHTML = new_data['description'];
+ola.PortTable.prototype.removeAllRows = function() {
+  while (this.getChildCount()) {
+    delete this.removeChildAt(0, true);
+  }
 };
 
 
 /**
- * The base class for a factory which produces AvailablePortComponents
- * @constructor
+ * Update the list of available ports
+ * @param {Array.<Object>} ports the new list of ports.
  */
-ola.AvailablePortComponentFactory = function() {
-};
-
-
-/**
- * @return {ola.AvailablePortComponent} an instance of a AvailablePortComponent.
- */
-ola.AvailablePortComponentFactory.prototype.newComponent = function(data) {
-  return new ola.AvailablePortComponent(data);
+ola.PortTable.prototype.update = function(ports) {
+  this.removeAllRows();
+  var port_length = ports.length;
+  for (var i = 0; i < port_length; ++i) {
+    var component = new ola.Port(ports[i]);
+    this.addChild(component, true);
+  }
 };

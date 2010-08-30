@@ -302,14 +302,12 @@ int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
     (universe->MergeMode() == Universe::MERGE_HTP ? "HTP" : "LTP") << "\"," <<
     endl;
 
-  unsigned int offset = 0;
-
   vector<InputPort*> input_ports;
   universe->InputPorts(&input_ports);
   vector<InputPort*>::const_iterator input_iter = input_ports.begin();
   str << "  \"input_ports\": [" << endl;
   for (; input_iter != input_ports.end(); input_iter++) {
-    PortToJson(offset, *input_iter, &str);
+    PortToJson(*input_iter, &str);
   }
   str << "  ]," << endl;
 
@@ -318,7 +316,7 @@ int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
   vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
   str << "  \"output_ports\": [" << endl;
   for (; output_iter != output_ports.end(); output_iter++) {
-    PortToJson(offset, *output_iter, &str);
+    PortToJson(*output_iter, &str);
   }
   str << "  ]," << endl;
   str << "}" << endl;
@@ -1126,15 +1124,13 @@ void OlaHttpServer::AddPortsToDict(TemplateDictionary *dict,
 /**
  * Add the json representation of this port to the stringstream
  */
-void OlaHttpServer::PortToJson(unsigned int offset, const Port *port,
-                               stringstream *str) {
+void OlaHttpServer::PortToJson(const Port *port, stringstream *str) {
   *str << "    {" << endl;
-  *str << "      \"id\": " << offset << "," << endl;
   *str << "      \"device\": \"" << EscapeString(port->GetDevice()->Name())
     << "\"," << endl;
   *str << "      \"description\": \"" <<
     EscapeString(port->Description()) << "\"," << endl;
-  *str << "      \"port_id\": \"" << port->UniqueId() << "\"," << endl;
+  *str << "      \"id\": \"" << port->UniqueId() << "\"," << endl;
 
   if (port->PriorityCapability() != CAPABILITY_NONE) {
     *str << "      \"priority\": {" << endl;

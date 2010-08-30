@@ -31,8 +31,8 @@ goog.require('goog.ui.TabPane');
 goog.require('ola.AvailablePort');
 goog.require('ola.AvailablePortTable');
 goog.require('ola.Dialog');
-goog.require('ola.PortComponent');
-goog.require('ola.PortComponentFactory');
+goog.require('ola.Port');
+goog.require('ola.PortTable');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
@@ -79,7 +79,7 @@ ola.UniverseFrame = function(element_id) {
   // setup notifications when the universe or uid lists changes
   var ola_server = ola.Server.getInstance();
   goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
-                     this._UpdateFromData,
+                     this._updateFromData,
                      false, this);
   goog.events.listen(ola_server, ola.Server.EventType.UIDS_EVENT,
                      this._updateUidList,
@@ -117,17 +117,11 @@ ola.UniverseFrame.prototype._setupMainTab = function() {
 
   this.merge_mode = goog.ui.decorate(goog.dom.$('universe_merge_mode'));
 
-  this.input_table_container = new ola.TableContainer();
-  this.input_table_container.decorate(goog.dom.$('input_ports'));
-  this.input_port_list = new ola.SortedList(
-      this.input_table_container,
-      new ola.PortComponentFactory());
+  this.input_table = new ola.PortTable();
+  this.input_table.decorate(goog.dom.$('input_ports'));
 
-  this.output_table_container = new ola.TableContainer();
-  this.output_table_container.decorate(goog.dom.$('output_ports'));
-  this.output_port_list = new ola.SortedList(
-      this.output_table_container,
-      new ola.PortComponentFactory());
+  this.output_table = new ola.PortTable();
+  this.output_table.decorate(goog.dom.$('output_ports'));
 
   var z1 = new goog.ui.AnimatedZippy('additional_ports_expander',
                                      'additional_ports');
@@ -163,7 +157,7 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
   uid_container.decorate(goog.dom.$('uid_container'));
   this.uid_list = new ola.SortedList(
       uid_container,
-      new ola.UidControlFactory(function (id) { frame._ShowUID(id); }));
+      new ola.UidControlFactory(function (id) { frame._showUID(id); }));
 };
 
 
@@ -238,25 +232,23 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
 /**
  * Update this universe frame from a Universe object
  */
-ola.UniverseFrame.prototype._UpdateFromData = function(e) {
+ola.UniverseFrame.prototype._updateFromData = function(e) {
   if (this.current_universe != e.universe['id']) {
     ola.logger.info('Mismatched universe, expected ' + this.current_universe +
         ', got ' + e.universe['id']);
     return;
   }
 
-  this.current_universe = e.universe['id'];
   goog.dom.$('universe_id').innerHTML = e.universe['id'];
   goog.dom.$('universe_name').value = e.universe['name'];
-
   if (e.universe['merge_mode'] == 'HTP') {
     this.merge_mode.setSelectedIndex(0);
   } else {
     this.merge_mode.setSelectedIndex(1);
   }
 
-  this.input_port_list.UpdateFromData(e.universe['input_ports']);
-  this.output_port_list.UpdateFromData(e.universe['output_ports']);
+  this.input_table.update(e.universe['input_ports']);
+  this.output_table.update(e.universe['output_ports']);
 };
 
 
@@ -279,7 +271,7 @@ ola.UniverseFrame.prototype._updateUidList = function(e) {
  * @param id {number} the UID represented as a float
  * @private
  */
-ola.UniverseFrame.prototype._ShowUID = function(id) {
+ola.UniverseFrame.prototype._showUID = function(id) {
 };
 
 
@@ -295,7 +287,7 @@ ola.UniverseFrame.prototype._generatePrioritySettingFromComponent = function(
   var priority = port_component.priority();
   if (priority != undefined) {
     var priority_setting = new Object();
-    priority_setting.id = port_component.PortId();
+    priority_setting.id = port_component.portId();
     priority_setting.priority = priority;
     var priority_mode = port_component.priorityMode();
     if (priority_mode != undefined) {
@@ -314,24 +306,22 @@ ola.UniverseFrame.prototype._saveButtonClicked = function(e) {
   var port_priorities = new Array();
 
   var remove_ports = new Array();
-  var count = this.input_table_container.getChildCount();
+  var count = this.input_table.getChildCount();
   for (var i = 0; i < count; ++i) {
-    var port_component = this.input_table_container.getChildAt(i);
-    if (port_component.IsSelected()) {
-      this._generatePrioritySettingFromComponent(port_component,
-                                                 port_priorities);
+    var port = this.input_table.getChildAt(i);
+    if (port.isSelected()) {
+      this._generatePrioritySettingFromComponent(port, port_priorities);
     } else {
-      remove_ports.push(port_component.PortId());
+      remove_ports.push(port.portId());
     }
   }
-  var count = this.output_table_container.getChildCount();
+  var count = this.output_table.getChildCount();
   for (var i = 0; i < count; ++i) {
-    var port_component = this.output_table_container.getChildAt(i);
-    if (port_component.IsSelected()) {
-      this._generatePrioritySettingFromComponent(port_component,
-                                                 port_priorities);
+    var port = this.output_table.getChildAt(i);
+    if (port.isSelected()) {
+      this._generatePrioritySettingFromComponent(port, port_priorities);
     } else {
-      remove_ports.push(port_component.PortId());
+      remove_ports.push(port.portId());
     }
   }
 

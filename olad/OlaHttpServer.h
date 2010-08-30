@@ -110,7 +110,7 @@ class OlaHttpServer {
                         const vector<PortClass*> &ports,
                         unsigned int *offset);
 
-    void PortToJson(unsigned int offset, const Port *port, stringstream *str);
+    void PortToJson(const Port *port, stringstream *str);
     bool UpdatePortsForUniverse(unsigned int universe_id,
                                 const HttpRequest *request);
 

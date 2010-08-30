@@ -42,6 +42,7 @@ goog.inherits(ola.AvailablePort, goog.ui.Component);
 
 /**
  * This component can't be used to decorate
+ * @return {bool} false
  */
 ola.AvailablePort.prototype.canDecorate = function() {
   return false;
@@ -74,16 +75,18 @@ ola.AvailablePort.prototype.createDom = function() {
 
 /**
  * Get the port id for this item
+ * @return {string} the id of this port
  */
-ola.AvailablePort.prototype.PortId = function() {
+ola.AvailablePort.prototype.portId = function() {
   return this.data['id'];
 };
 
 
 /**
  * Check is this row was selected
+ * @return {boolean} true if selected, false otherwise.
  */
-ola.AvailablePort.prototype.IsSelected = function() {
+ola.AvailablePort.prototype.isSelected = function() {
   return this.checkbox.isChecked();
 };
 
@@ -100,6 +103,7 @@ goog.inherits(ola.AvailablePortTable, goog.ui.Component);
 
 /**
  * Create the dom for the AvailablePortTable
+ * @param {Element} element the dom element to decorate.
  */
 ola.AvailablePortTable.prototype.createDom = function(container) {
   this.decorateInternal(this.dom_.createElement('tbody'));
@@ -116,6 +120,8 @@ ola.AvailablePortTable.prototype.decorateInternal = function(element) {
 
 /**
  * Check if we can decorate an element.
+ * @param {Element} element the dom element to check
+ * @return {boolean} true if this element can be decorated, false otherwise.
  */
 ola.AvailablePortTable.prototype.canDecorate = function(element) {
   return element.tagName == 'TBODY';
@@ -131,8 +137,8 @@ ola.AvailablePortTable.prototype.getSelectedRows = function() {
   var count = this.getChildCount();
   for (var i = 0; i < count; ++i) {
     var port = this.getChildAt(i);
-    if (port.IsSelected()) {
-      selected_ports.push(port.PortId());
+    if (port.isSelected()) {
+      selected_ports.push(port.portId());
     }
   }
   return selected_ports;
