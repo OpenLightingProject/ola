@@ -353,7 +353,6 @@ int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
   vector<device_alias_pair> device_pairs = m_device_manager->Devices();
   sort(device_pairs.begin(), device_pairs.end());
   vector<device_alias_pair>::const_iterator iter;
-  unsigned int offset = 0;
 
   for (iter = device_pairs.begin(); iter != device_pairs.end(); ++iter) {
     AbstractDevice *device = iter->device;
@@ -389,16 +388,13 @@ int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
         break;
 
       str << "  {" << endl;
-      str << "    \"id\": " << offset << "," << endl;
       str << "    \"device\": \"" << EscapeString(device->Name()) << "\","
         << endl;
+      str << "    \"id\": \"" << (*input_iter)->UniqueId() << "\"," << endl;
       str << "    \"is_output\": false," << endl;
       str << "    \"description\": \"" <<
         EscapeString((*input_iter)->Description()) << "\"," << endl;
-      str << "    \"port_id\": \"" << (*input_iter)->UniqueId() << "\"," <<
-        endl;
       str << "  }," << endl;
-      offset++;
 
       if (!device->AllowMultiPortPatching())
         break;
@@ -414,16 +410,13 @@ int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
         break;
 
       str << "  {" << endl;
-      str << "    \"id\": " << offset << "," << endl;
       str << "    \"device\": \"" << EscapeString(device->Name()) << "\","
         << endl;
+      str << "    \"id\": \"" << (*output_iter)->UniqueId() << "\"," << endl;
       str << "    \"is_output\": true," << endl;
       str << "    \"description\": \"" <<
         EscapeString((*output_iter)->Description()) << "\"," << endl;
-      str << "    \"port_id\": \"" << (*output_iter)->UniqueId() << "\"," <<
-        endl;
       str << "  }," << endl;
-      offset++;
 
       if (!device->AllowMultiPortPatching())
         break;

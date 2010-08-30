@@ -98,7 +98,6 @@ ola.PortComponent.prototype.createDom = function() {
     }
   }
   this.setElementInternal(this.tr);
-
 };
 
 

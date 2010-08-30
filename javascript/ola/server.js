@@ -44,7 +44,6 @@ goog.addSingletonGetter(ola.Server);
 
 
 ola.Server.EventType = {
-  AVAILBLE_PORTS_EVENT: 'available_ports',
   PLUGIN_EVENT: 'plugin_change',
   PLUGIN_LIST_EVENT: 'plugin_list_change',
   SERVER_INFO_EVENT: 'server_info_change',
@@ -119,17 +118,6 @@ ola.UniverseChangeEvent = function(universe) {
   this.universe = universe;
 };
 goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
-
-
-/**
- * This event is fired when the available ports is ready
- * @constructor
- */
-ola.AvailablePortsEvent = function(ports) {
-  goog.events.Event.call(this, ola.Server.EventType.AVAILBLE_PORTS_EVENT);
-  this.ports = ports;
-};
-goog.inherits(ola.AvailablePortsEvent, goog.events.Event);
 
 
 /**
@@ -251,10 +239,9 @@ ola.Server.prototype.FetchUniverseInfo = function(universe_id) {
  * Fetch the available pors
  * @param {number=} opt_universe an optional universe id
  */
-ola.Server.prototype.FetchAvailablePorts = function(opt_universe) {
+ola.Server.prototype.fetchAvailablePorts = function(opt_universe, callback) {
   var on_complete = function(e) {
-    var obj = e.target.getResponseJson();
-    this.dispatchEvent(new ola.AvailablePortsEvent(obj));
+    callback(e);
     this._cleanupRequest(e.target);
   }
   var url = ola.Server.AVAILBLE_PORTS_URL;

@@ -28,6 +28,8 @@ goog.require('goog.ui.Control');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 goog.require('goog.ui.TabPane');
+goog.require('ola.AvailablePort');
+goog.require('ola.AvailablePortTable');
 goog.require('ola.Dialog');
 goog.require('ola.PortComponent');
 goog.require('ola.PortComponentFactory');
@@ -130,12 +132,8 @@ ola.UniverseFrame.prototype._setupMainTab = function() {
   var z1 = new goog.ui.AnimatedZippy('additional_ports_expander',
                                      'additional_ports');
 
-  this.available_table_container = new ola.TableContainer();
-  this.available_table_container.decorate(
-      goog.dom.$('universe_available_ports'));
-  this.available_port_list = new ola.SortedList(
-      this.available_table_container,
-      new ola.AvailablePortComponentFactory());
+  this.available_ports = new ola.AvailablePortTable();
+  this.available_ports.decorate(goog.dom.$('universe_available_ports'));
 };
 
 
@@ -202,12 +200,6 @@ ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
  * @param opt_select_main_tab {boolean} set to true to display the main tab
  */
 ola.UniverseFrame.prototype.Show = function(universe_id, opt_select_main_tab) {
-  if (this.current_universe != universe_id) {
-    this.uid_list.Clear();
-    this.input_port_list.Clear();
-    this.output_port_list.Clear();
-    this.available_port_list.Clear();
-  }
   this.current_universe = universe_id;
   ola.UniverseFrame.superClass_.Show.call(this);
   if (opt_select_main_tab) {
@@ -234,11 +226,7 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
 
   if (selected_tab == 0) {
     server.FetchUniverseInfo(this.current_universe);
-
-    goog.events.listen(server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
-                       this._updateAvailablePorts,
-                       false, this);
-    server.FetchAvailablePorts(this.current_universe);
+    this.available_ports.update(this.current_universe);
   } else if (selected_tab == 1) {
     // update RDM
     server.FetchUids(this.current_universe);
@@ -269,20 +257,6 @@ ola.UniverseFrame.prototype._UpdateFromData = function(e) {
 
   this.input_port_list.UpdateFromData(e.universe['input_ports']);
   this.output_port_list.UpdateFromData(e.universe['output_ports']);
-};
-
-
-/**
- * Called when the available ports are updated
- * @private
- */
-ola.UniverseFrame.prototype._updateAvailablePorts = function(e) {
-  this.available_port_list.UpdateFromData(e.ports);
-  goog.events.unlisten(
-      ola.Server.getInstance(),
-      ola.Server.EventType.AVAILBLE_PORTS_EVENT,
-      this._updateAvailablePorts,
-      false, this);
 };
 
 
@@ -362,15 +336,7 @@ ola.UniverseFrame.prototype._saveButtonClicked = function(e) {
   }
 
   // figure out the new ports to add
-  count = this.available_table_container.getChildCount();
-  var new_ports = new Array();
-  for (var i = 0; i < count; ++i) {
-    var port_component = this.available_table_container.getChildAt(i);
-    if (port_component.IsSelected()) {
-      new_ports.push(port_component.PortId());
-    }
-  }
-
+  var new_ports = this.available_ports.getSelectedRows();
 
   var server = ola.Server.getInstance();
   var frame = this;
@@ -397,8 +363,6 @@ ola.UniverseFrame.prototype._saveCompleted = function(e) {
   var dialog = ola.Dialog.getInstance();
   if (e.target.getStatus() == 200) {
     dialog.setVisible(false);
-
-    this.available_table_container.Clear();
     this._updateSelectedTab()
   } else {
     dialog.setTitle('Failed to Save Settings');

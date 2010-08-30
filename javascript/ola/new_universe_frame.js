@@ -19,13 +19,12 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
-goog.require('goog.ui.Checkbox');
-goog.require('goog.ui.Component');
+goog.require('ola.AvailablePort');
+goog.require('ola.AvailablePortTable');
 goog.require('ola.BaseFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
-goog.require('ola.SortedList');
 
 goog.provide('ola.NewUniverseFrame');
 
@@ -54,11 +53,8 @@ ola.NewUniverseFrame = function(element_id, ola_ui) {
                      this._addUniverseButtonClicked,
                      false, this);
 
-  this.table_container = new ola.TableContainer();
-  this.table_container.decorate(goog.dom.$('available_ports'));
-  this.port_list = new ola.SortedList(
-      this.table_container,
-      new ola.AvailablePortComponentFactory());
+  this.available_ports = new ola.AvailablePortTable();
+  this.available_ports.decorate(goog.dom.$('available_ports'));
 };
 goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
 
@@ -70,29 +66,8 @@ ola.NewUniverseFrame.prototype.Show = function() {
   // clear out the fields
   goog.dom.$('new_universe_id').value = ''
   goog.dom.$('new_universe_name').value = ''
-  this.port_list.Clear();
-
-  var ola_server = ola.Server.getInstance();
-  goog.events.listen(ola_server, ola.Server.EventType.AVAILBLE_PORTS_EVENT,
-                     this._updateAvailablePorts,
-                     false, this);
-  ola_server.FetchAvailablePorts();
-
+  this.available_ports.update();
   ola.UniverseFrame.superClass_.Show.call(this);
-};
-
-
-/**
- * Called when the available ports are updated
- * @private
- */
-ola.NewUniverseFrame.prototype._updateAvailablePorts = function(e) {
-  this.port_list.UpdateFromData(e.ports);
-  goog.events.unlisten(
-      ola.Server.getInstance(),
-      ola.Server.EventType.AVAILBLE_PORTS_EVENT,
-      this._updateAvailablePorts,
-      false, this);
 };
 
 
@@ -125,15 +100,7 @@ ola.NewUniverseFrame.prototype._addUniverseButtonClicked = function(e) {
   // universe names are optional
   var universe_name = goog.dom.$('new_universe_name').value;
 
-  var count = this.table_container.getChildCount();
-  var selected_ports = new Array();
-  for (var i = 0; i < count; ++i) {
-    var port_component = this.table_container.getChildAt(i);
-    if (port_component.IsSelected()) {
-      selected_ports.push(port_component.PortId());
-    }
-  }
-
+  var selected_ports = this.available_ports.getSelectedRows();
   if (selected_ports.length == 0) {
     dialog.setTitle('No ports selected');
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
