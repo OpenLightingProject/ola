@@ -503,7 +503,8 @@ int OlaHttpServer::CreateNewUniverse(const HttpRequest *request,
 
     if (universe) {
       string name = request->GetPostParameter("name");
-      universe->SetName(name);
+      if (!name.empty())
+        universe->SetName(name);
     } else {
       status = false;
       message = "No ports patched.";
@@ -548,7 +549,9 @@ int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
 
   if (name.size() > K_UNIVERSE_NAME_LIMIT)
     name = name.substr(K_UNIVERSE_NAME_LIMIT);
-  universe->SetName(name);
+
+  if (!name.empty())
+    universe->SetName(name);
 
   if (merge_mode == "LTP")
     universe->SetMergeMode(Universe::MERGE_LTP);

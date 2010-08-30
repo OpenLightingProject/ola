@@ -303,6 +303,8 @@ ola.UniverseFrame.prototype._generatePrioritySettingFromComponent = function(
  * @private
  */
 ola.UniverseFrame.prototype._saveButtonClicked = function(e) {
+  var dialog = ola.Dialog.getInstance();
+
   var port_priorities = new Array();
 
   var remove_ports = new Array();
@@ -327,12 +329,21 @@ ola.UniverseFrame.prototype._saveButtonClicked = function(e) {
 
   // figure out the new ports to add
   var new_ports = this.available_ports.getSelectedRows();
+  var name = goog.dom.$('universe_name').value;
+
+  if (name == '') {
+    dialog.setTitle('Empty Universe Name');
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setContent('The universe name cannot be empty');
+    dialog.setVisible(true);
+    return;
+  }
 
   var server = ola.Server.getInstance();
   var frame = this;
   server.modifyUniverse(
       this.current_universe,
-      goog.dom.$('universe_name').value,
+      name,
       this.merge_mode.getValue(),
       port_priorities,
       remove_ports,

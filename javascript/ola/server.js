@@ -197,7 +197,7 @@ ola.Server.prototype.FetchUniversePluginList = function() {
     // update the internal list of universes here
     this.universes = {};
     for (var i = 0; i < obj['universes'].length; ++i) {
-      this.universes[obj['plugins'][i].id] = true;
+      this.universes[obj['universes'][i]['id']] = true;
     }
     this.dispatchEvent(new ola.PluginListChangeEvent(obj['plugins']));
     this.dispatchEvent(new ola.UniverseListChangeEvent(obj['universes']));
