@@ -36,4 +36,5 @@ dist_www_DATA = GPL.txt \
                 show_universe_uids.tpl \
                 simple.css \
                 slider.js \
+                tick.gif \
                 timer.js
