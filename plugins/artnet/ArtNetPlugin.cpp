@@ -43,7 +43,7 @@ namespace artnet {
 const char ArtNetPlugin::ARTNET_LONG_NAME[] = "ola - ArtNet node";
 const char ArtNetPlugin::ARTNET_SHORT_NAME[] = "ola - ArtNet node";
 const char ArtNetPlugin::ARTNET_SUBNET[] = "0";
-const char ArtNetPlugin::PLUGIN_NAME[] = "ArtNet Plugin";
+const char ArtNetPlugin::PLUGIN_NAME[] = "ArtNet";
 const char ArtNetPlugin::DEVICE_NAME[] = "ArtNet Device";
 const char ArtNetPlugin::PLUGIN_PREFIX[] = "artnet";
 

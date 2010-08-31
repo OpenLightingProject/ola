@@ -60,7 +60,7 @@ const char Dmx4LinuxPlugin::DMX4LINUX_OUT_DEVICE[] = "/dev/dmx";
 const char Dmx4LinuxPlugin::DMX4LINUX_IN_DEVICE[] = "/dev/dmxin";
 const char Dmx4LinuxPlugin::IN_DEV_KEY[] = "in_device";
 const char Dmx4LinuxPlugin::OUT_DEV_KEY[] = "out_device";
-const char Dmx4LinuxPlugin::PLUGIN_NAME[] = "Dmx4Linux Plugin";
+const char Dmx4LinuxPlugin::PLUGIN_NAME[] = "Dmx4Linux";
 const char Dmx4LinuxPlugin::PLUGIN_PREFIX[] = "dmx4linux";
 
 

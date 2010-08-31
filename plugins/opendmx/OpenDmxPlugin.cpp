@@ -39,7 +39,7 @@ using ola::PluginAdaptor;
 
 const char OpenDmxPlugin::OPENDMX_DEVICE_PATH[] = "/dev/dmx0";
 const char OpenDmxPlugin::OPENDMX_DEVICE_NAME[] = "OpenDmx USB Device";
-const char OpenDmxPlugin::PLUGIN_NAME[] = "OpenDmx Plugin";
+const char OpenDmxPlugin::PLUGIN_NAME[] = "Enttec Open DMX";
 const char OpenDmxPlugin::PLUGIN_PREFIX[] = "opendmx";
 const char OpenDmxPlugin::DEVICE_KEY[] = "device";
 

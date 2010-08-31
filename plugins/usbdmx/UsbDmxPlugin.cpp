@@ -48,7 +48,7 @@ namespace usbdmx {
 
 using ola::network::DeviceSocket;
 
-const char UsbDmxPlugin::PLUGIN_NAME[] = "OLA USB Plugin";
+const char UsbDmxPlugin::PLUGIN_NAME[] = "USB";
 const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";
 
 

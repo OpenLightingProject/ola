@@ -38,7 +38,7 @@ namespace espnet {
 
 const char EspNetPlugin::ESPNET_NODE_NAME[] = "ola-EspNet";
 const char EspNetPlugin::ESPNET_DEVICE_NAME[] = "EspNet Device";
-const char EspNetPlugin::PLUGIN_NAME[] = "EspNet Plugin";
+const char EspNetPlugin::PLUGIN_NAME[] = "EspNet";
 const char EspNetPlugin::PLUGIN_PREFIX[] = "espnet";
 
 

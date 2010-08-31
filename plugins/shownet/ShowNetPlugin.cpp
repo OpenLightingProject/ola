@@ -40,7 +40,7 @@ namespace shownet {
 
 const char ShowNetPlugin::SHOWNET_NODE_NAME[] = "ola-ShowNet";
 const char ShowNetPlugin::SHOWNET_DEVICE_NAME[] = "ShowNet Device";
-const char ShowNetPlugin::PLUGIN_NAME[] = "ShowNet Plugin";
+const char ShowNetPlugin::PLUGIN_NAME[] = "ShowNet";
 const char ShowNetPlugin::PLUGIN_PREFIX[] = "shownet";
 const char ShowNetPlugin::SHOWNET_NAME_KEY[] = "name";
 

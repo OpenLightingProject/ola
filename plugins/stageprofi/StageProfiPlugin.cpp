@@ -46,7 +46,7 @@ using std::string;
 
 const char StageProfiPlugin::STAGEPROFI_DEVICE_PATH[] = "/dev/ttyUSB0";
 const char StageProfiPlugin::STAGEPROFI_DEVICE_NAME[] = "StageProfi Device";
-const char StageProfiPlugin::PLUGIN_NAME[] = "StageProfi Plugin";
+const char StageProfiPlugin::PLUGIN_NAME[] = "StageProfi";
 const char StageProfiPlugin::PLUGIN_PREFIX[] = "stageprofi";
 const char StageProfiPlugin::DEVICE_KEY[] = "device";
 

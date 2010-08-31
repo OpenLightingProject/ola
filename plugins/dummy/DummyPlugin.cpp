@@ -40,7 +40,7 @@ namespace dummy {
 
 using std::string;
 
-const char DummyPlugin::PLUGIN_NAME[] = "Dummy Plugin";
+const char DummyPlugin::PLUGIN_NAME[] = "Dummy";
 const char DummyPlugin::PLUGIN_PREFIX[] = "dummy";
 const char DummyPlugin::DEVICE_NAME[] = "Dummy Device";
 

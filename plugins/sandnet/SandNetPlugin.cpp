@@ -39,7 +39,7 @@ namespace sandnet {
 
 const char SandNetPlugin::SANDNET_NODE_NAME[] = "ola-SandNet";
 const char SandNetPlugin::SANDNET_DEVICE_NAME[] = "SandNet Device";
-const char SandNetPlugin::PLUGIN_NAME[] = "SandNet Plugin";
+const char SandNetPlugin::PLUGIN_NAME[] = "SandNet";
 const char SandNetPlugin::PLUGIN_PREFIX[] = "sandnet";
 
 
