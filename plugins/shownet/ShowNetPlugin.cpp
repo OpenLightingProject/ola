@@ -82,14 +82,14 @@ bool ShowNetPlugin::StopHook() {
  */
 string ShowNetPlugin::Description() const {
   return
-"ShowNet Plugin\n"
+"Strand ShowNet Plugin\n"
 "----------------------------\n"
 "\n"
 "This plugin creates a single device with 8 input and 8 output ports.\n"
 "\n"
-"The ports correspond to the DMX channels used in the shownet protocol. "
-"For example port 0 (and 8)  is channels 1 - 512, port 1 (and 9) are "
-"channels 513 - 1024.\n"
+"The ports correspond to the DMX channels used in the shownet protocol.\n"
+"For example the first input and output port 0 is channels 1 - 512 and\n"
+"the second input and output ports are channels 513 - 1024.\n"
 "\n"
 "--- Config file : ola-shownet.conf ---\n"
 "\n"

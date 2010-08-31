@@ -77,19 +77,20 @@ bool PathportPlugin::StopHook() {
  */
 string PathportPlugin::Description() const {
   return
-"Pathport Plugin\n"
+"Pathway Pathport Plugin\n"
 "----------------------------\n"
 "\n"
 "This plugin creates a single device with 5 input and 5 output ports.\n"
 "\n"
 "The universe the port is patched to corresponds with the DMX channels used \n"
-"in the pathport protocol. For example universe 0 is xDMX channels 0 - 511, \n"
+"in the PathPort protocol. For example universe 0 is xDMX channels 0 - 511, \n"
 "universe 1 is xDMX channels 512 - 1023.\n"
 "\n"
 "--- Config file : ola-pathport.conf ---\n"
 "\n"
 "dscp = <int>\n"
-"Set the DSCP value for the packets. Range is 0-63"
+"Set the DSCP value for the packets. Range is 0-63\n"
+"\n"
 "ip = a.b.c.d\n"
 "The ip address to bind to. If not specified it will use the first \n"
 "non-loopback ip.\n"

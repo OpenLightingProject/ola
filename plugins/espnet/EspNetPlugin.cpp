@@ -37,8 +37,8 @@ namespace plugin {
 namespace espnet {
 
 const char EspNetPlugin::ESPNET_NODE_NAME[] = "ola-EspNet";
-const char EspNetPlugin::ESPNET_DEVICE_NAME[] = "EspNet Device";
-const char EspNetPlugin::PLUGIN_NAME[] = "EspNet";
+const char EspNetPlugin::ESPNET_DEVICE_NAME[] = "ESP Net Device";
+const char EspNetPlugin::PLUGIN_NAME[] = "ESP Net";
 const char EspNetPlugin::PLUGIN_PREFIX[] = "espnet";
 
 
@@ -82,16 +82,16 @@ bool EspNetPlugin::StopHook() {
  */
 string EspNetPlugin::Description() const {
   return
-"EspNet Plugin\n"
+"Enttec ESP Net Plugin\n"
 "----------------------------\n"
 "\n"
 "This plugin creates a single device with five input and five output ports.\n"
 "\n"
-"Esp supports up to 255 universes. As ESP has no notion of ports, we provide "
-"a fixed number of ports which can be patched to any universe. When sending "
-"data from a port, the data is addressed to the universe the port is patched "
-"to. For example if port 0 is patched to universe 10, the data will be sent to "
-"ESP universe 10.\n"
+"ESP supports up to 255 universes. As ESP has no notion of ports, we provide\n"
+"a fixed number of ports which can be patched to any universe. When sending\n"
+"data from a port, the data is addressed to the universe the port is patched\n"
+"to. For example if port 0 is patched to universe 10, the data will be\n"
+"sent to ESP universe 10.\n"
 "\n"
 "--- Config file : ola-espnet.conf ---\n"
 "\n"

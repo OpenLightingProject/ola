@@ -223,7 +223,7 @@ bool UsbDmxPlugin::StopHook() {
  */
 string UsbDmxPlugin::Description() const {
     return
-"Usb Dmx Plugin\n"
+"USB DMX Plugin\n"
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"

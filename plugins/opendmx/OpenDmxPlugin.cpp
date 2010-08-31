@@ -102,7 +102,7 @@ bool OpenDmxPlugin::StopHook() {
  */
 string OpenDmxPlugin::Description() const {
     return
-"OpenDmx Plugin\n"
+"Enttec Open DMX Plugin\n"
 "----------------------------\n"
 "\n"
 "The plugin creates a single device with one output port using the Enttec\n"

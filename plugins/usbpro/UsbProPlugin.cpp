@@ -59,10 +59,11 @@ const char UsbProPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
  */
 string UsbProPlugin::Description() const {
     return
-"Enttec Usb Pro Plugin\n"
+"Enttec USB Pro Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin supports devices that implement the Usb Pro spec. See\n"
+"This plugin supports devices that implement the Enttec USB Pro specfication\n"
+"including the DMX USB Pro, the DMXking USB DMX512-A & the DMX-TRI. See\n"
 "http://opendmx.net/index.php/USB_Protocol_Extensions for more info.\n"
 "\n"
 "--- Config file : ola-usbpro.conf ---\n"
