@@ -112,6 +112,7 @@ class WidgetDetector: public WidgetListener {
       uint8_t id_low;
       uint8_t id_high;
       uint8_t text[32];
+      uint8_t terminator;
     } id_response;
 
     WidgetDetectorListener *m_listener;

@@ -174,13 +174,16 @@ void WidgetDetector::HandleIdResponse(UsbWidget *widget,
                                       unsigned int length,
                                       const uint8_t *data,
                                       bool is_device) {
-  const id_response *response = reinterpret_cast<const id_response*>(data);
+  id_response response;
+  memcpy(&response, data, length);
+  response.terminator = 0;
+
   map<UsbWidget*, DeviceInformation>::iterator iter = m_widgets.find(widget);
 
   if (iter == m_widgets.end())
     return;
 
-  uint16_t id = (response->id_high << 8) + response->id_low;
+  uint16_t id = (response.id_high << 8) + response.id_low;
   if (length < sizeof(id)) {
     OLA_WARN << "Received small response packet";
     return;
@@ -188,13 +191,12 @@ void WidgetDetector::HandleIdResponse(UsbWidget *widget,
 
   if (is_device) {
     iter->second.device_id = id;
-    iter->second.device = string(reinterpret_cast<const char*>(response->text),
-                                 length - sizeof(id));
+    iter->second.device = string(
+        reinterpret_cast<const char*>(response.text));
   } else {
     iter->second.esta_id = id;
     iter->second.manufactuer = string(
-        reinterpret_cast<const char*>(response->text),
-        length - sizeof(id));
+        reinterpret_cast<const char*>(response.text));
   }
 }
 
