@@ -43,8 +43,7 @@ ola.OlaUI = function() {
   this.logger_window = new ola.LoggerWindow();
   this.ola_server = ola.Server.getInstance();
   this.home_frame = new ola.HomeFrame(ola.HOME_FRAME_ID);
-  this.universe_frame = new ola.UniverseFrame(ola.UNIVERSE_FRAME_ID,
-      this.ola_server);
+  this.universe_frame = new ola.UniverseFrame(ola.UNIVERSE_FRAME_ID, this);
   this.plugin_frame = new ola.PluginFrame(ola.PLUGIN_FRAME_ID, this.ola_server);
   this.new_universe_frame = new ola.NewUniverseFrame(ola.NEW_UNIVERSE_FRAME_ID,
                                                      this);

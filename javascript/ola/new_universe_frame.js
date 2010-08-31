@@ -33,6 +33,7 @@ var ola = ola || {};
 
 /**
  * The class representing the Universe frame
+ * @param {string} element_id the id of the element to use for this frame.
  * @constructor
  */
 ola.NewUniverseFrame = function(element_id, ola_ui) {
@@ -137,6 +138,8 @@ ola.NewUniverseFrame.prototype._newUniverseComplete = function(e) {
   if (obj['ok']) {
     dialog.setVisible(false);
     this.ola_ui.ShowUniverse(obj['universe'], true);
+    // update the universe list now
+    ola.Server.getInstance().FetchUniversePluginList();
   } else {
     dialog.setTitle('New Universe Failed');
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);

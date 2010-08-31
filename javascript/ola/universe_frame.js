@@ -52,8 +52,9 @@ ola.UID_REFRESH_INTERVAL = 5000;
  * @param {string} element_id the id of the element to use for this frame.
  * @constructor
  */
-ola.UniverseFrame = function(element_id) {
+ola.UniverseFrame = function(element_id, ola_ui) {
   ola.BaseFrame.call(this, element_id);
+  this.ola_ui = ola_ui;
   this.current_universe = undefined;
 
   // setup the tab pane
@@ -111,7 +112,7 @@ ola.UniverseFrame.prototype._setupMainTab = function() {
   goog.ui.decorate(save_button);
   goog.events.listen(save_button,
                      goog.events.EventType.CLICK,
-                     function() { this._saveButtonClicked(); },
+                     function() { this._saveButtonClicked(false); },
                      false,
                      this);
 
@@ -302,16 +303,18 @@ ola.UniverseFrame.prototype._generatePrioritySettingFromComponent = function(
  * Called when the save button is clicked
  * @private
  */
-ola.UniverseFrame.prototype._saveButtonClicked = function(e) {
+ola.UniverseFrame.prototype._saveButtonClicked = function(remove_confirmed) {
   var dialog = ola.Dialog.getInstance();
 
   var port_priorities = new Array();
 
   var remove_ports = new Array();
+  var one_port_selected = false;
   var count = this.input_table.getChildCount();
   for (var i = 0; i < count; ++i) {
     var port = this.input_table.getChildAt(i);
     if (port.isSelected()) {
+      one_port_selected = true;
       this._generatePrioritySettingFromComponent(port, port_priorities);
     } else {
       remove_ports.push(port.portId());
@@ -321,6 +324,7 @@ ola.UniverseFrame.prototype._saveButtonClicked = function(e) {
   for (var i = 0; i < count; ++i) {
     var port = this.output_table.getChildAt(i);
     if (port.isSelected()) {
+      one_port_selected = true;
       this._generatePrioritySettingFromComponent(port, port_priorities);
     } else {
       remove_ports.push(port.portId());
@@ -329,6 +333,30 @@ ola.UniverseFrame.prototype._saveButtonClicked = function(e) {
 
   // figure out the new ports to add
   var new_ports = this.available_ports.getSelectedRows();
+
+  // if we're deleting the universe ask for confirmation
+  if ((!one_port_selected) && new_ports.length == 0) {
+    if (remove_confirmed) {
+      this.was_removed = true;
+    } else {
+      goog.events.listen(
+          dialog,
+          goog.ui.Dialog.EventType.SELECT,
+          this._removeConfirmed,
+          false,
+          this);
+      dialog.setTitle('Confirm Universe Removal');
+      dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
+      dialog.setContent(
+          'Removing all ports will cause this universe to be deleted. Is ' +
+          'this ok?');
+      dialog.setVisible(true);
+      return;
+    }
+  } else {
+    this.was_removed = false;
+  }
+
   var name = goog.dom.$('universe_name').value;
 
   if (name == '') {
@@ -357,6 +385,18 @@ ola.UniverseFrame.prototype._saveButtonClicked = function(e) {
 
 
 /**
+ * Called when the universe removal is confirmed
+ */
+ola.UniverseFrame.prototype._removeConfirmed = function(e) {
+  var dialog = ola.Dialog.getInstance();
+  if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
+    dialog.setVisible(false);
+    this._saveButtonClicked(true);
+  }
+}
+
+
+/**
  * Called when the changes are saved
  * @private
  */
@@ -364,6 +404,9 @@ ola.UniverseFrame.prototype._saveCompleted = function(e) {
   var dialog = ola.Dialog.getInstance();
   if (e.target.getStatus() == 200) {
     dialog.setVisible(false);
+    if (this.was_removed) {
+      this.ola_ui.ShowHome();
+    }
     this._updateSelectedTab()
   } else {
     dialog.setTitle('Failed to Save Settings');
