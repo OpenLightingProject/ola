@@ -60,7 +60,7 @@ ola.OlaUI = function() {
   var rhs = new goog.ui.Component();
   this.splitpane1 = new goog.ui.SplitPane(lhs, rhs,
       goog.ui.SplitPane.Orientation.HORIZONTAL);
-  this.splitpane1.setInitialSize(120);
+  this.splitpane1.setInitialSize(130);
   this.splitpane1.setHandleSize(2);
   this.splitpane1.decorate(goog.dom.$(ola.SPLIT_PANE_ID));
 
