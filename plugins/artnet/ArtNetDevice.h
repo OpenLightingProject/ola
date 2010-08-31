@@ -70,6 +70,7 @@ class ArtNetDevice: public Device {
     class Preferences *m_preferences;
     ArtNetNode *m_node;
     const class PluginAdaptor *m_plugin_adaptor;
+    timeout_id m_timeout_id;
 
     void HandleOptions(Request *request, string *response);
 };

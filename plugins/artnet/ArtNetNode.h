@@ -190,6 +190,7 @@ class ArtNetNode {
     OutputPort m_output_ports[ARTNET_MAX_PORTS];
     ola::network::Interface m_interface;
     ola::network::UdpSocket *m_socket;
+    timeout_id m_discovery_timeout;
 
     ArtNetNode(const ArtNetNode&);
     ArtNetNode& operator=(const ArtNetNode&);

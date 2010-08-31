@@ -68,7 +68,8 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
   Device(owner, K_DEVICE_NAME),
   m_preferences(preferences),
   m_node(NULL),
-  m_plugin_adaptor(plugin_adaptor) {
+  m_plugin_adaptor(plugin_adaptor),
+  m_timeout_id(ola::network::INVALID_TIMEOUT) {
 }
 
 
@@ -117,7 +118,7 @@ bool ArtNetDevice::StartHook() {
   str << K_DEVICE_NAME << " (" << AddressToString(interface.ip_address) << ")";
   SetName(str.str());
 
-  m_plugin_adaptor->RegisterRepeatingTimeout(
+  m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
       POLL_INTERVAL,
       NewClosure(m_node, &ArtNetNode::MaybeSendPoll));
   return true;
@@ -128,6 +129,10 @@ bool ArtNetDevice::StartHook() {
  * Stop this device
  */
 void ArtNetDevice::PostPortStop() {
+  if (m_timeout_id != ola::network::INVALID_TIMEOUT) {
+    m_plugin_adaptor->RemoveTimeout(m_timeout_id);
+    m_timeout_id = ola::network::INVALID_TIMEOUT;
+  }
   m_node->Stop();
   delete m_node;
   m_node = NULL;

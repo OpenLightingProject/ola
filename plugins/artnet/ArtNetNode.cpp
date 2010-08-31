@@ -68,7 +68,8 @@ ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
       m_unsolicited_replies(0),
       m_plugin_adaptor(plugin_adaptor),
       m_interface(interface),
-      m_socket(NULL) {
+      m_socket(NULL),
+      m_discovery_timeout(ola::network::INVALID_TIMEOUT) {
 
   // reset all the port structures
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
@@ -145,6 +146,11 @@ bool ArtNetNode::Start() {
 bool ArtNetNode::Stop() {
   if (!m_running)
     return false;
+
+  if (m_discovery_timeout != ola::network::INVALID_TIMEOUT) {
+    m_plugin_adaptor->RemoveTimeout(m_discovery_timeout);
+    m_discovery_timeout = ola::network::INVALID_TIMEOUT;
+  }
 
   m_plugin_adaptor->RemoveSocket(m_socket);
 
@@ -1376,7 +1382,7 @@ bool ArtNetNode::GrabDiscoveryLock(uint8_t port_id) {
     iter->second.second++;
   }
 
-  m_plugin_adaptor->RegisterSingleTimeout(
+  m_discovery_timeout = m_plugin_adaptor->RegisterSingleTimeout(
       RDM_TOD_TIMEOUT_MS,
       ola::NewSingleClosure(this, &ArtNetNode::ReleaseDiscoveryLock, port_id));
   return true;
@@ -1388,6 +1394,7 @@ bool ArtNetNode::GrabDiscoveryLock(uint8_t port_id) {
  */
 void ArtNetNode::ReleaseDiscoveryLock(uint8_t port_id) {
   OLA_INFO << "Discovery process timeout";
+  m_discovery_timeout = ola::network::INVALID_TIMEOUT;
 
   // delete all uids that have reached the max count
   bool changed = false;
