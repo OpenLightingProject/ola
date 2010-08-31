@@ -226,10 +226,8 @@ string UsbDmxPlugin::Description() const {
 "Usb Dmx Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin supports various USB DMX devices.\n"
-"\n"
-"--- Config file : ola-usbdmx.conf ---\n"
-"\n";
+"This plugin supports various USB DMX devices including the \n"
+"Anyma uDMX, Sunlite USBDMX2 & Velleman K8062.\n";
 }
 
 
