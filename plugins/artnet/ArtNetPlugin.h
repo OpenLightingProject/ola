@@ -59,7 +59,6 @@ class ArtNetPlugin : public Plugin {
     static const char ARTNET_LONG_NAME[];
     static const char ARTNET_SHORT_NAME[];
     static const char PLUGIN_NAME[];
-    static const char DEVICE_NAME[];
     static const char PLUGIN_PREFIX[];
 };
 }  // artnet

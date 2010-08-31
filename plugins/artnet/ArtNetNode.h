@@ -29,7 +29,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UIDSet.h"
-#include "ola/network/InterfacePicker.h"
+#include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
 #include "olad/PluginAdaptor.h"
 #include "plugins/artnet/ArtNetPackets.h"
@@ -116,7 +116,7 @@ class ArtNetNode {
     };
 
   public:
-    explicit ArtNetNode(const string &ip_address,
+    explicit ArtNetNode(const ola::network::Interface &interface,
                         const string &short_name,
                         const string &long_name,
                         const PluginAdaptor *adaptor,
@@ -184,7 +184,6 @@ class ArtNetNode {
     string m_long_name;
     unsigned int m_broadcast_threshold;
     unsigned int m_unsolicited_replies;
-    std::string m_preferred_ip;
     const PluginAdaptor *m_plugin_adaptor;
 
     InputPort m_input_ports[ARTNET_MAX_PORTS];

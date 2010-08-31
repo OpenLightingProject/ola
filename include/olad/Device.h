@@ -95,6 +95,8 @@ class Device: public AbstractDevice {
     virtual ~Device();
 
     const string Name() const { return m_name; }
+    void SetName(const string &name) { m_name = name; }
+
     AbstractPlugin *Owner() const { return m_owner; }
     string UniqueId() const;
 

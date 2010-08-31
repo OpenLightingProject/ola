@@ -13,13 +13,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * InterfacePicker.h
- * Choose an interface to listen on
- * Copyright (C) 2005-2008 Simon Newton
+ * Interface.h
+ * Represents a network interface.
+ * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
-#define INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
+#ifndef INCLUDE_OLA_NETWORK_INTERFACE_H_
+#define INCLUDE_OLA_NETWORK_INTERFACE_H_
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -27,31 +27,32 @@
 #include <netinet/in.h>
 #endif
 
-#include <ola/network/Interface.h>
 #include <string>
 #include <vector>
 
 namespace ola {
 namespace network {
 
+enum { MAC_LENGTH = 6 };
+enum { IPV4_LENGTH = 4 };
 
 /*
- * Chooses an interface
+ * Represents an interface.
  */
-class InterfacePicker {
+class Interface {
   public:
-    InterfacePicker() {}
-    virtual ~InterfacePicker() {}
+    Interface();
+    Interface(const Interface &other);
+    Interface& operator=(const Interface &other);
+    bool operator==(const Interface &other);
 
-    // stupid windows, 'interface' seems to be a struct so we use iface here.
-    bool ChooseInterface(Interface *iface,
-                         const std::string &preferred_ip) const;
-
-    virtual std::vector<Interface> GetInterfaces() const = 0;
-
-    static InterfacePicker *NewPicker();
+    std::string name;
+    struct in_addr ip_address;
+    struct in_addr bcast_address;
+    struct in_addr subnet_address;
+    int8_t hw_address[MAC_LENGTH];
 };
 }  // network
 }  // ola
-#endif  // INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
+#endif  // INCLUDE_OLA_NETWORK_INTERFACE_H_
 

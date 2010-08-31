@@ -35,6 +35,8 @@
 #include "ola/Closure.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/NetworkUtils.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
 #include "olad/Preferences.h"
@@ -47,6 +49,7 @@ namespace artnet {
 
 using google::protobuf::RpcController;
 using google::protobuf::Closure;
+using ola::network::AddressToString;
 using ola::plugin::artnet::Request;
 using ola::plugin::artnet::Reply;
 
@@ -54,15 +57,15 @@ const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
 const char ArtNetDevice::K_LONG_NAME_KEY[] = "long_name";
 const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
 const char ArtNetDevice::K_IP_KEY[] = "ip";
+const char ArtNetDevice::K_DEVICE_NAME[] = "ArtNet";
 
 /*
  * Create a new Artnet Device
  */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
-                           const string &name,
                            ola::Preferences *preferences,
                            const PluginAdaptor *plugin_adaptor):
-  Device(owner, name),
+  Device(owner, K_DEVICE_NAME),
   m_preferences(preferences),
   m_node(NULL),
   m_plugin_adaptor(plugin_adaptor) {
@@ -79,7 +82,17 @@ bool ArtNetDevice::StartHook() {
   if (!ola::StringToUInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet))
       subnet = 0;
 
-  m_node = new ArtNetNode(m_preferences->GetValue(K_IP_KEY),
+  ola::network::Interface interface;
+  ola::network::InterfacePicker *picker =
+    ola::network::InterfacePicker::NewPicker();
+  if (!picker->ChooseInterface(&interface, m_preferences->GetValue(K_IP_KEY))) {
+    delete picker;
+    OLA_INFO << "Failed to find an interface";
+    return false;
+  }
+  delete picker;
+
+  m_node = new ArtNetNode(interface,
                           m_preferences->GetValue(K_SHORT_NAME_KEY),
                           m_preferences->GetValue(K_LONG_NAME_KEY),
                           m_plugin_adaptor,
@@ -99,6 +112,10 @@ bool ArtNetDevice::StartHook() {
     m_node = NULL;
     return false;
   }
+
+  stringstream str;
+  str << K_DEVICE_NAME << " (" << AddressToString(interface.ip_address) << ")";
+  SetName(str.str());
 
   m_plugin_adaptor->RegisterRepeatingTimeout(
       POLL_INTERVAL,

@@ -50,13 +50,12 @@ const char ArtNetNode::ARTNET_ID[] = "Art-Net";
 
 /*
  * Create a new node
- * @param ip_address the IP address to prefer to listen on, if NULL we choose
- * one.
- * @param short_name
- * @param long_name
+ * @param interface the interface to use.
+ * @param short_name the short node name
+ * @param long_name the long node name
  * @param subnet_address the ArtNet 'subnet' address, 4 bits.
  */
-ArtNetNode::ArtNetNode(const string &ip_address,
+ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
                        const string &short_name,
                        const string &long_name,
                        const PluginAdaptor *plugin_adaptor,
@@ -67,8 +66,8 @@ ArtNetNode::ArtNetNode(const string &ip_address,
       m_long_name(long_name),
       m_broadcast_threshold(BROADCAST_THRESHOLD),
       m_unsolicited_replies(0),
-      m_preferred_ip(ip_address),
       m_plugin_adaptor(plugin_adaptor),
+      m_interface(interface),
       m_socket(NULL) {
 
   // reset all the port structures
@@ -128,15 +127,6 @@ ArtNetNode::~ArtNetNode() {
 bool ArtNetNode::Start() {
   if (m_running)
     return false;
-
-  ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
-  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
-    delete picker;
-    OLA_INFO << "Failed to find an interface";
-    return false;
-  }
-  delete picker;
 
   if (!InitNetwork())
     return false;

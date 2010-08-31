@@ -43,7 +43,6 @@ using std::string;
 class ArtNetDevice: public Device {
   public:
     ArtNetDevice(AbstractPlugin *owner,
-                 const string &name,
                  class Preferences *preferences,
                  const class PluginAdaptor *plugin_adaptor);
 
@@ -59,6 +58,7 @@ class ArtNetDevice: public Device {
     static const char K_LONG_NAME_KEY[];
     static const char K_SUBNET_KEY[];
     static const char K_IP_KEY[];
+    static const char K_DEVICE_NAME[];
     // 10s between polls when we're sending data, DMX-workshop uses 8s;
     static const unsigned int POLL_INTERVAL = 10000;
 
