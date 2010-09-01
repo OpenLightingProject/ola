@@ -28,6 +28,7 @@ goog.require('goog.ui.Control');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 goog.require('goog.ui.TabPane');
+goog.require('ola.BaseFrame');
 goog.require('ola.AvailablePort');
 goog.require('ola.AvailablePortTable');
 goog.require('ola.Dialog');
@@ -259,7 +260,11 @@ ola.UniverseFrame.prototype._updateFromData = function(e) {
  */
 ola.UniverseFrame.prototype._updateUidList = function(e) {
   if (e.universe_id == this.current_universe) {
-    this.uid_list.UpdateFromData(e.uids);
+    var items = new Array();
+    for (var i = 0; i < e.uids.length; ++i) {
+      items.push(new ola.UidItem(e.uids[i]));
+    }
+    this.uid_list.updateFromData(items);
   } else {
     ola.logger.info('RDM universe mismatch, was ' + e.universe_id +
                     ', expected ' + this.current_universe);

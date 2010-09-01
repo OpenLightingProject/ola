@@ -27,90 +27,122 @@ goog.require('ola.LoggerWindow');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
+goog.require('ola.UniverseItem');
 
 goog.provide('ola.HomeFrame');
 
-var ola = ola || {};
+
+/**
+ * A container that uses the tbody element
+ * @constructor
+ */
+ola.TableContainer = function(opt_domHelper) {
+  goog.ui.Component.call(this, opt_domHelper);
+};
+goog.inherits(ola.TableContainer, goog.ui.Component);
+
+
+/**
+ * Create the dom for the TableContainer
+ */
+ola.TableContainer.prototype.createDom = function(container) {
+  this.decorateInternal(this.dom_.createElement('tbody'));
+};
+
+
+/**
+ * Decorate an existing element
+ */
+ola.TableContainer.prototype.decorateInternal = function(element) {
+  ola.TableContainer.superClass_.decorateInternal.call(this, element);
+};
+
+
+/**
+ * Check if we can decorate an element.
+ * @param {Element} element the dom element to check.
+ */
+ola.TableContainer.prototype.canDecorate = function(element) {
+  return element.tagName == 'TBODY';
+};
 
 
 /**
  * A line in the active universe list.
+ * @param {ola.UniverseItem} universe_item the item to use for this row.
  * @constructor
  */
-ola.UniverseComponent = function(data, opt_domHelper) {
+ola.UniverseRow = function(universe_item, opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
-  this.data = data;
+  this._item = universe_item;
 };
-goog.inherits(ola.UniverseComponent, goog.ui.Component);
+goog.inherits(ola.UniverseRow, goog.ui.Component);
+
+
+/**
+ * Return the underlying UniverseItem
+ * @return {ola.UniverseItem}
+ */
+ola.UniverseRow.prototype.item = function() { return this._item; };
 
 
 /**
  * This component can't be used to decorate
  */
-ola.UniverseComponent.prototype.canDecorate = function() {
-  return false;
-};
+ola.UniverseRow.prototype.canDecorate = function() { return false; };
 
 
 /**
  * Create the dom for this component
  */
-ola.UniverseComponent.prototype.createDom = function() {
+ola.UniverseRow.prototype.createDom = function() {
   var tr = this.dom_.createDom(
       'tr', {},
-      goog.dom.createDom('td', {}, this.data['id'].toString()),
-      goog.dom.createDom('td', {}, this.data['name']),
-      goog.dom.createDom('td', {}, this.data['input_ports'].toString()),
-      goog.dom.createDom('td', {}, this.data['output_ports'].toString()),
-      goog.dom.createDom('td', {}, this.data['rdm_devices'].toString()));
+      goog.dom.createDom('td', {}, this._item.id().toString()),
+      goog.dom.createDom('td', {}, this._item.name()),
+      goog.dom.createDom('td', {}, this._item.inputPortCount().toString()),
+      goog.dom.createDom('td', {}, this._item.outputPortCount().toString()),
+      goog.dom.createDom('td', {}, this._item.rdmDeviceCount().toString()));
   this.setElementInternal(tr);
 };
 
 
 /**
- * Get the id of this item
- */
-ola.UniverseComponent.prototype.Id = function() {
-  return this.data['id'];
-};
-
-
-/**
  * Update this item with from new data
+ * @param {ola.UniverseItem} universe_item the new item to update from.
  */
-ola.UniverseComponent.prototype.Update = function(new_data) {
+ola.UniverseRow.prototype.update = function(universe_item) {
   var element = this.getElement();
   var td = goog.dom.getFirstElementChild(element);
   td = goog.dom.getNextElementSibling(td);
-  td.innerHTML = new_data['name'];
+  td.innerHTML = universe_item.name();
   td = goog.dom.getNextElementSibling(td);
-  td.innerHTML = new_data['input_ports'].toString();
+  td.innerHTML = universe_item.inputPortCount().toString();
   td = goog.dom.getNextElementSibling(td);
-  td.innerHTML = new_data['output_ports'].toString();
+  td.innerHTML = universe_item.outputPortCount().toString();
   td = goog.dom.getNextElementSibling(td);
-  td.innerHTML = new_data['rdm_devices'].toString();
+  td.innerHTML = universe_item.rdmDeviceCount().toString();
 };
 
 
 /**
- * The base class for a factory which produces UniverseComponents
- * @class
+ * The base class for a factory which produces UniverseRows
+ * @constructor
  */
-ola.UniverseComponentFactory = function() {
-};
+ola.UniverseRowFactory = function() {};
 
 
 /**
- * @returns an instance of a UniverseComponent
+ * @return {ola.UniverseRow} an instance of a UniverseRow.
  */
-ola.UniverseComponentFactory.prototype.newComponent = function(data) {
-  return new ola.UniverseComponent(data);
+ola.UniverseRowFactory.prototype.newComponent = function(data) {
+  return new ola.UniverseRow(data);
 };
 
 
 /**
  * A class representing the home frame
- * @param element_id the id of the div to use for the home frame
+ * @param {string} element_id the id of the div to use for the home frame.
  * @constructor
  */
 ola.HomeFrame = function(element_id) {
@@ -146,9 +178,8 @@ ola.HomeFrame = function(element_id) {
 
   var table_container = new ola.TableContainer();
   table_container.decorate(goog.dom.$('active_universe_list'));
-  this.universe_list = new ola.SortedList(
-      table_container,
-      new ola.UniverseComponentFactory());
+  this.universe_list = new ola.SortedList(table_container,
+                                          new ola.UniverseRowFactory());
 };
 goog.inherits(ola.HomeFrame, ola.BaseFrame);
 
@@ -173,7 +204,11 @@ ola.HomeFrame.prototype._updateServerInfo = function(e) {
  * Update the universe set
  */
 ola.HomeFrame.prototype._universeListChanged = function(e) {
-  this.universe_list.UpdateFromData(e.universes);
+  var items = new Array();
+  for (var i = 0; i < e.universes.length; ++i) {
+    items.push(new ola.UniverseItem(e.universes[i]));
+  }
+  this.universe_list.updateFromData(items);
 };
 
 

@@ -20,6 +20,7 @@
 goog.require('goog.events');
 goog.require('goog.ui.Control');
 
+goog.provide('ola.UidItem');
 goog.provide('ola.UidControl');
 goog.provide('ola.UidControlFactory');
 
@@ -27,52 +28,63 @@ var ola = ola || {};
 
 
 /**
- * The class for an item in the uid list.
- * @param {Object} data the data to build this UID control from.
- * @param {function()} callback the function to call when clicked.
+ * An object which represents a UID in a list.
+ * @param {Object} data the data to use to construct this item.
  * @constructor
  */
-ola.UidControl = function(data, callback, opt_renderer, opt_domHelper) {
-  goog.ui.Control.call(this, data['uid'], opt_renderer, opt_domHelper);
-  // id is a float in the form manufacturer.device
-  this.id = data['id'];
-  // the actual UID of this item
-  this.uid = data['uid'];
-  this.callback = callback;
+ola.UidItem = function(data) {
+  this._id = data['id'];
+  this._uid = data['uid'];
 };
-goog.inherits(ola.UidControl, goog.ui.Control);
+goog.inherits(ola.UidItem, ola.DataItem);
 
 
 /**
- * Return the ID of this item. The ID is a float in the form
- * manufactuer_id.device_id.
- * @return {number} the ID of this UID.
+ * Get the id of this universe.
+ * @return {number} the universe id.
  */
-ola.UidControl.prototype.Id = function() {
-  return this.id;
-};
+ola.UidItem.prototype.id = function() { return this._id; };
 
 
 /**
- * Setup the event handlers for this control
+ * Get the sort key of this universe.
+ * @return {number} the unvierse id.
+ */
+ola.UidItem.prototype.sortKey = function() { return this._id; };
+
+
+/**
+ * Return the UID string
+ * @return {string} the UID.
+ */
+ola.UidItem.prototype.uid = function() { return this._uid; };
+
+
+/**
+ * An UID navigation control element.
+ * @constructor
+ */
+ola.UidControl = function(item, callback, opt_renderer, opt_domHelper) {
+  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+};
+goog.inherits(ola.UidControl, ola.GenericControl);
+
+
+/**
+ * Setup the event handler for this object.
  */
 ola.UidControl.prototype.enterDocument = function() {
-  goog.ui.Control.superClass_.enterDocument.call(this);
-  this.getElement().title = 'UID ' + this.uid;
-  goog.events.listen(this.getElement(),
-                     goog.events.EventType.CLICK,
-                     function() { this.callback(this.id); },
-                     false,
-                     this);
+  ola.UniverseControl.superClass_.enterDocument.call(this);
+  this.getElement().title = this._item.uid();
 };
 
 
 /**
  * Update this item with from new data.
  */
-ola.UidControl.prototype.Update = function(new_data) {
+ola.UidControl.prototype.update = function(item) {
   // We don't expect the uid to change here.
-  this.setContent(new_data['uid']);
+  this.setContent(item.uid());
 };
 
 

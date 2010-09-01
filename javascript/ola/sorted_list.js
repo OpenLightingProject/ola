@@ -17,97 +17,83 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.require('goog.dom');
-goog.require('goog.ui.Component');
-goog.require('goog.ui.Container');
-
+goog.provide('ola.DataItem');
+goog.provide('ola.GenericControl');
 goog.provide('ola.SortedList');
-goog.provide('ola.TableContainer');
-
-var ola = ola || {};
-
 
 /**
- * A container that uses the tbody element
+ * The base data object that represents an item in a sorted list
  * @constructor
  */
-ola.TableContainer = function(opt_domHelper) {
-  goog.ui.Component.call(this, opt_domHelper);
-};
-goog.inherits(ola.TableContainer, goog.ui.Component);
-
+ola.DataItem = function() {};
 
 /**
- * Create the dom for the TableContainer
+ * Get the id of this node.
+ * @return {number|string} the id of this element.
  */
-ola.TableContainer.prototype.createDom = function(container) {
-  this.decorateInternal(this.dom_.createElement('tbody'));
-};
-
+ola.DataItem.prototype.id = goog.nullFunction;
 
 /**
- * Decorate an existing element
+ * Get the sort key of this node
+ * @return {number|string} the sort key for this element.
  */
-ola.TableContainer.prototype.decorateInternal = function(element) {
-  ola.TableContainer.superClass_.decorateInternal.call(this, element);
-};
+ola.DataItem.prototype.sortKey = goog.nullFunction;
 
 
 /**
- * Check if we can decorate an element.
- */
-ola.TableContainer.prototype.canDecorate = function(element) {
-  return element.tagName == 'TBODY';
-};
-
-
-/**
- * The base class for a factory which produces control items
- * @class
- */
-ola.SortedListComponentFactory = function() {
-};
-
-
-/**
- * @returns an instance of a SortedListComponent
- */
-ola.SortedListComponentFactory.prototype.newComponent = function(data) {
-};
-
-
-/**
- * The base class for an item in the control list
+ * An Generic navigation control element.
  * @constructor
  */
-ola.SortedListComponent = function(data, opt_domHelper) {
-  goog.ui.Component.call(this, opt_domHelper);
-  this.data = data;
+ola.GenericControl = function(item, callback, opt_renderer, opt_domHelper) {
+  goog.ui.Control.call(this, '', opt_renderer, opt_domHelper);
+  this._item = item;
+  this.callback = callback;
 };
-goog.inherits(ola.SortedListComponent, goog.ui.Component);
+goog.inherits(ola.GenericControl, goog.ui.Control);
 
 
 /**
- * Update this item with from new data
+ * Return the underlying GenericItem
+ * @return {ola.GenericItem}
  */
-ola.SortedListComponent.prototype.Id = function() {
-  return this.data['id'];
+ola.GenericControl.prototype.item = function() { return this._item; };
+
+
+/**
+ * This component can't be used to decorate
+ */
+ola.GenericControl.prototype.canDecorate = function() { return false; };
+
+
+/**
+ * Setup the event handler for this object.
+ */
+ola.GenericControl.prototype.enterDocument = function() {
+  ola.GenericControl.superClass_.enterDocument.call(this);
+  goog.events.listen(this.getElement(),
+                     goog.events.EventType.CLICK,
+                     function() { this.callback(this._item.id()); },
+                     false,
+                     this);
 };
 
 
 /**
  * Update this item with from new data
+ * @param {ola.GenericItem} the new item to update from.
  */
-ola.SortedListComponent.prototype.Update = function(new_data) {
-  this.data = new_data;
+ola.GenericControl.prototype.update = function(item) {
+  this.setContent(item.name());
 };
+
 
 
 /**
  * Represents a list on controls that are updated from a data model
- * @param container_id the id of the container to use as the control list.
- * @param component_factory a SortedListComponentFactory class to produce the
- *   SortedListComponents.
+ * @param {string} container_id the id of the container to use as the control
+ *   list.
+ * @param {ola.SortedListComponentFactory} component_factory a
+ *   SortedListComponentFactory class to produce the SortedListComponents.
  * @constructor
  */
 ola.SortedList = function(container_id, component_factory) {
@@ -117,29 +103,30 @@ ola.SortedList = function(container_id, component_factory) {
 
 
 /**
- * Update this list from a new data set
+ * Update this list from a new list of data items.
+ * @param {Array.<ola.DataItem>} item_list the new set of data items.
  */
-ola.SortedList.prototype.UpdateFromData = function(data_list) {
+ola.SortedList.prototype.updateFromData = function(item_list) {
   var component_index = 0;
-  var data_index = 0;
-  var data_count = data_list.length;
+  var item_index = 0;
+  var item_count = item_list.length;
 
   while (component_index != this.container.getChildCount() &&
-         data_index != data_count) {
-    var data_id = data_list[data_index]['id'];
+         item_index != item_count) {
+    var item_id = item_list[item_index].id();
     var current_component = this.container.getChildAt(component_index);
-    var component_id = current_component.Id();
+    var component_id = current_component.item().id();
 
-    if (data_id < component_id) {
+    if (item_id < component_id) {
       var component = this.component_factory.newComponent(
-          data_list[data_index]);
+          item_list[item_index]);
       this.container.addChildAt(component, component_index, true);
-      data_index++;
+      item_index++;
       component_index++;
-    } else if (component_id == data_id) {
-      current_component.Update(data_list[data_index]);
+    } else if (component_id == item_id) {
+      current_component.update(item_list[item_index]);
       component_index++;
-      data_index++;
+      item_index++;
     } else {
       delete this.container.removeChild(current_component, true);
     }
@@ -151,18 +138,8 @@ ola.SortedList.prototype.UpdateFromData = function(data_list) {
   }
 
   // add any remaining items
-  for (; data_index < data_count; data_index++) {
-    var component = this.component_factory.newComponent(data_list[data_index]);
+  for (; item_index < item_count; item_index++) {
+    var component = this.component_factory.newComponent(item_list[item_index]);
     this.container.addChild(component, true);
-  }
-};
-
-
-/**
- * Clear the entire list
- */
-ola.SortedList.prototype.Clear = function() {
-  while (this.container.getChildCount()) {
-    delete this.container.removeChildAt(0, true);
   }
 };

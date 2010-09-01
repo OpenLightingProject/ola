@@ -12,14 +12,17 @@ goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 
 goog.require('ola.Dialog');
+goog.require('ola.GenericControl');
 goog.require('ola.HomeFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.NewUniverseFrame');
 goog.require('ola.PluginFrame');
+goog.require('ola.PluginItem');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
 goog.require('ola.UniverseFrame');
+goog.require('ola.UniverseItem');
 
 goog.provide('ola.OlaUi');
 goog.provide('ola.Setup');
@@ -33,6 +36,83 @@ ola.UNIVERSE_FRAME_ID = 'universe_frame';
 ola.PLUGIN_FRAME_ID = 'plugin_frame';
 ola.SPLIT_PANE_ID = 'split_pane';
 ola.NEW_UNIVERSE_FRAME_ID = 'new_universe_frame';
+
+
+/**
+ * An Universe navigation control element.
+ * @constructor
+ */
+ola.UniverseControl = function(item, callback, opt_renderer, opt_domHelper) {
+  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  this.setContent(item.name());
+};
+goog.inherits(ola.UniverseControl, ola.GenericControl);
+
+
+/**
+ * Setup the event handler for this object.
+ */
+ola.UniverseControl.prototype.enterDocument = function() {
+  ola.UniverseControl.superClass_.enterDocument.call(this);
+  this.getElement().title = 'Universe ' + this._item.id();
+};
+
+
+/**
+ * An Plugin navigation control element.
+ * @constructor
+ */
+ola.PluginControl = function(item, callback, opt_renderer, opt_domHelper) {
+  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  this.setContent(item.name());
+};
+goog.inherits(ola.PluginControl, ola.GenericControl);
+
+
+/**
+ * Setup the event handler for this object.
+ */
+ola.PluginControl.prototype.enterDocument = function() {
+  ola.PluginControl.superClass_.enterDocument.call(this);
+  this.getElement().title = this._item.name() + ' Plugin';
+};
+
+
+/**
+ * A factory which produces UniverseControls
+ * @param {function()} the funtion called when the control is clicked.
+ * @constructor
+ */
+ola.UniverseControlFactory = function(callback) {
+  this.callback = callback;
+};
+
+
+/**
+ * @return {ola.UniverseControl} an instance of a UniverseRow
+ */
+ola.UniverseControlFactory.prototype.newComponent = function(data) {
+  return new ola.UniverseControl(data, this.callback);
+};
+
+
+
+/**
+ * A factory which produces PluginControls
+ * @param {function()} the funtion called when the control is clicked.
+ * @constructor
+ */
+ola.PluginControlFactory = function(callback) {
+  this.callback = callback;
+};
+
+
+/**
+ * @return {ola.PluginControl} an instance of a PluginRow
+ */
+ola.PluginControlFactory.prototype.newComponent = function(data) {
+  return new ola.PluginControl(data, this.callback);
+};
 
 
 /**
@@ -78,65 +158,6 @@ ola.OlaUI = function() {
 
 
 /**
- * The base class for an item in the control list
- * @constructor
- */
-ola.SortedListControl = function(data, callback, opt_renderer, opt_domHelper) {
-  goog.ui.Control.call(this, data['name'], opt_renderer, opt_domHelper);
-  this.id = data['id'];
-  this.callback = callback;
-};
-goog.inherits(ola.SortedListControl, goog.ui.Control);
-
-
-/**
- * Update this item with from new data
- */
-ola.SortedListControl.prototype.Id = function() {
-  return this.id;
-};
-
-
-/**
- * Setup the event handler for this object.
- */
-ola.SortedListControl.prototype.enterDocument = function() {
-  goog.ui.Control.superClass_.enterDocument.call(this);
-  this.getElement().title = 'Universe ' + this.Id();
-  goog.events.listen(this.getElement(),
-                     goog.events.EventType.CLICK,
-                     function() { this.callback(this.id); },
-                     false,
-                     this);
-};
-
-
-/**
- * Update this item with from new data
- */
-ola.SortedListControl.prototype.Update = function(new_data) {
-  this.setContent(new_data['name']);
-};
-
-
-/**
- * The base class for a factory which produces control items
- * @constructor
- */
-ola.ControlFactory = function(callback) {
-  this.callback = callback;
-};
-
-
-/**
- * @returns an instance of a SortedListComponent
- */
-ola.ControlFactory.prototype.newComponent = function(data) {
-  return new ola.SortedListControl(data, this.callback);
-};
-
-
-/**
  * Setup the navigation section of the UI
  * @private
  */
@@ -160,22 +181,22 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   plugin_container.decorate(goog.dom.$('plugin_container'));
   this.plugin_list = new ola.SortedList(
       plugin_container,
-      new ola.ControlFactory(function(id) { ui._ShowPlugin(id); }));
+      new ola.PluginControlFactory(function(id) { ui._ShowPlugin(id); }));
 
   goog.events.listen(this.ola_server,
                      ola.Server.EventType.PLUGIN_LIST_EVENT,
-                     function(e) { this.UpdateFromData(e.plugins); },
-                     false, this.plugin_list);
+                     this._updatePluginList,
+                     false, this);
 
   var universe_container = new goog.ui.Container();
   universe_container.decorate(goog.dom.$('universe_container'));
   this.universe_list = new ola.SortedList(
       universe_container,
-      new ola.ControlFactory(function(id) { ui.ShowUniverse(id); }));
+      new ola.UniverseControlFactory(function(id) { ui.ShowUniverse(id); }));
 
   goog.events.listen(this.ola_server,
                      ola.Server.EventType.UNIVERSE_LIST_EVENT,
-                     this._UpdateUniverseList,
+                     this._updateUniverseList,
                      false, this);
 
   this.timer = new goog.Timer(ola.LIST_UPDATE_INTERVAL_MS);
@@ -189,20 +210,21 @@ ola.OlaUI.prototype._SetupNavigation = function() {
 
 
 /**
- * Update universe list
+ * Update universe list.
  */
-ola.OlaUI.prototype._UpdateUniverseList = function(e) {
-  this.universe_list.UpdateFromData(e.universes);
+ola.OlaUI.prototype._updateUniverseList = function(e) {
   var active_universe = this.universe_frame.getActiveUniverse();
+  var items = new Array();
   var found = false;
-
   ola.logger.info('Got ' + e.universes.length + ' universes');
-  for (var i = 0; i != e.universes.length; i++) {
-    if (e.universes[i]['id'] == active_universe) {
+  for (var i = 0; i < e.universes.length; ++i) {
+    var item = new ola.UniverseItem(e.universes[i]);
+    if (item.id() == active_universe) {
       found = true;
-      break;
     }
+    items.push(item);
   }
+  this.universe_list.updateFromData(items);
 
   if (this.universe_frame.IsVisible() && !found) {
     var dialog = ola.Dialog.getInstance();
@@ -213,6 +235,19 @@ ola.OlaUI.prototype._UpdateUniverseList = function(e) {
     this.ShowHome();
   }
 };
+
+
+/**
+ * Update the plugin list
+ */
+ola.OlaUI.prototype._updatePluginList = function(e) {
+  var items = new Array();
+  for (var i = 0; i < e.plugins.length; ++i) {
+    var item = new ola.PluginItem(e.plugins[i]);
+    items.push(item);
+  }
+  this.plugin_list.updateFromData(items);
+}
 
 
 /**
