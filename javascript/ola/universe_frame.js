@@ -206,6 +206,16 @@ ola.UniverseFrame.prototype.Show = function(universe_id, opt_select_main_tab) {
 
 
 /**
+ * Hide this frame. We extend the base method so we can stop updating the UID
+ * list.
+ */
+ola.UniverseFrame.prototype.Hide = function() {
+  this.uid_timer.stop();
+  ola.UniverseFrame.superClass_.Hide.call(this);
+};
+
+
+/**
  * Update the tab that was selected
  * @private
  */

@@ -66,6 +66,7 @@ ola.UidItem.prototype.uid = function() { return this._uid; };
  */
 ola.UidControl = function(item, callback, opt_renderer, opt_domHelper) {
   ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  this.setContent(item.uid());
 };
 goog.inherits(ola.UidControl, ola.GenericControl);
 
