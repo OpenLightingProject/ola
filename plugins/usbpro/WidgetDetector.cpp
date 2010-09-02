@@ -58,6 +58,9 @@ WidgetDetector::~WidgetDetector() {
   for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter)
     delete iter->first;
   m_widgets.clear();
+
+  if (m_timeout_id != ola::network::INVALID_TIMEOUT)
+    m_plugin_adaptor->RemoveTimeout(m_timeout_id);
 }
 
 
@@ -102,7 +105,7 @@ bool WidgetDetector::Discover(const string &path) {
   */
 
   // register a timeout for this widget
-  m_plugin_adaptor->RegisterSingleTimeout(
+  m_timeout_id = m_plugin_adaptor->RegisterSingleTimeout(
       1000,
       NewSingleClosure(this, &WidgetDetector::DiscoveryTimeout, widget));
   return true;
@@ -136,6 +139,7 @@ void WidgetDetector::HandleMessage(UsbWidget *widget,
  * Called if a widget fails to respond in a given interval
  */
 void WidgetDetector::DiscoveryTimeout(UsbWidget *widget) {
+  m_timeout_id = ola::network::INVALID_TIMEOUT;
   map<UsbWidget*, DeviceInformation>::iterator iter = m_widgets.find(widget);
 
   if (iter != m_widgets.end()) {

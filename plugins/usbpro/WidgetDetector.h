@@ -93,7 +93,9 @@ class WidgetDetectorListener {
 class WidgetDetector: public WidgetListener {
   public:
     explicit WidgetDetector(const ola::PluginAdaptor *plugin_adaptor):
-        m_plugin_adaptor(plugin_adaptor) {}
+        m_plugin_adaptor(plugin_adaptor),
+        m_timeout_id(ola::network::INVALID_TIMEOUT) {
+    }
     ~WidgetDetector();
 
     void SetListener(WidgetDetectorListener *listener) {
@@ -118,6 +120,7 @@ class WidgetDetector: public WidgetListener {
     WidgetDetectorListener *m_listener;
     const ola::PluginAdaptor *m_plugin_adaptor;
     std::map<UsbWidget*, DeviceInformation> m_widgets;
+    timeout_id m_timeout_id;
 
     bool SendDiscoveryMessages(UsbWidget *widget);
     void HandleIdResponse(UsbWidget *widget, unsigned int length,
