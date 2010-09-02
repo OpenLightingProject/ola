@@ -95,8 +95,7 @@ bool Dmx4LinuxPlugin::StartHook() {
 
 /*
  * Stop the plugin
- *
- * @return true on sucess, false on failure
+ * @return true on success, false on failure
  */
 bool Dmx4LinuxPlugin::StopHook() {
   vector<Dmx4LinuxDevice*>::iterator it;

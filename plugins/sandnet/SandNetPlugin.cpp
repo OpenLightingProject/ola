@@ -66,11 +66,15 @@ bool SandNetPlugin::StartHook() {
 
 /*
  * Stop the plugin
+ * @return true on success, false on failure
  */
 bool SandNetPlugin::StopHook() {
-  m_plugin_adaptor->UnregisterDevice(m_device);
-  m_device->Stop();
-  delete m_device;
+  if (m_device) {
+    m_plugin_adaptor->UnregisterDevice(m_device);
+    bool ret = m_device->Stop();
+    delete m_device;
+    return ret;
+  }
   return true;
 }
 

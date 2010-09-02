@@ -59,7 +59,7 @@ bool DummyPlugin::StartHook() {
 
 /*
  * Stop the plugin
- * @return true on sucess, false on failure
+ * @return true on success, false on failure
  */
 bool DummyPlugin::StopHook() {
   if (m_device) {

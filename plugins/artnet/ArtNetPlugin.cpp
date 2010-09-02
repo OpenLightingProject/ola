@@ -67,14 +67,13 @@ bool ArtNetPlugin::StartHook() {
 
 /*
  * Stop the plugin
- * @return true on sucess, false on failure
+ * @return true on success, false on failure
  */
 bool ArtNetPlugin::StopHook() {
   if (m_device) {
     // stop the device
     m_plugin_adaptor->UnregisterDevice(m_device);
     bool ret = m_device->Stop();
-
     delete m_device;
     return ret;
   }

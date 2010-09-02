@@ -55,7 +55,10 @@ Device::Device(AbstractPlugin *owner, const string &name)
  * Stop this device
  */
 Device::~Device() {
-  Stop();
+  // we can't call stop from here because it uses virtual methods
+  if (m_enabled)
+    OLA_FATAL << "Device " << m_name << " wasn't stopped before deleting, " <<
+      "this represents a serious programming error.";
 }
 
 
