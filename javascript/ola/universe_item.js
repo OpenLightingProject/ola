@@ -45,13 +45,6 @@ ola.UniverseItem.prototype.id = function() { return this._id; };
 
 
 /**
- * Get the sort key of this universe.
- * @return {number} the unvierse id.
- */
-ola.UniverseItem.prototype.sortKey = function() { return this._id; };
-
-
-/**
  * Return the universe name
  * @return {string} the name.
  */

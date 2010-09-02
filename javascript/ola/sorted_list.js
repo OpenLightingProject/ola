@@ -33,11 +33,20 @@ ola.DataItem = function() {};
  */
 ola.DataItem.prototype.id = goog.nullFunction;
 
+
 /**
- * Get the sort key of this node
- * @return {number|string} the sort key for this element.
+ * Compare one item to another.
+ * @param {ola.DataItem} other the other item to compare to.
+ * @return {number} -1 if less than, 1 if greater than, 0 if equal.
  */
-ola.DataItem.prototype.sortKey = goog.nullFunction;
+ola.DataItem.prototype.compare = function(other) {
+  if (this.id() > other.id()) {
+    return 1;
+  } else if (this.id() < other.id()) {
+    return -1;
+  }
+  return 0;
+}
 
 
 /**
@@ -111,19 +120,22 @@ ola.SortedList.prototype.updateFromData = function(item_list) {
   var item_index = 0;
   var item_count = item_list.length;
 
+  item_list.sort(function(a, b) { return a.compare(b); });
+
   while (component_index != this.container.getChildCount() &&
          item_index != item_count) {
-    var item_id = item_list[item_index].id();
-    var current_component = this.container.getChildAt(component_index);
-    var component_id = current_component.item().id();
+    var item = item_list[item_index];
 
-    if (item_id < component_id) {
-      var component = this.component_factory.newComponent(
-          item_list[item_index]);
+    var current_component = this.container.getChildAt(component_index);
+    var component_item = current_component.item();
+
+    var comparison = item.compare(component_item);
+    if (comparison == -1) {
+      var component = this.component_factory.newComponent(item);
       this.container.addChildAt(component, component_index, true);
       item_index++;
       component_index++;
-    } else if (component_id == item_id) {
+    } else if (comparison == 0) {
       current_component.update(item_list[item_index]);
       component_index++;
       item_index++;

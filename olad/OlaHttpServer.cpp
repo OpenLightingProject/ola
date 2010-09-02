@@ -457,12 +457,10 @@ int OlaHttpServer::JsonUIDs(const HttpRequest *request,
   str << "  \"uids\": [" << endl;
 
   for (; iter != uids.End(); ++iter) {
-    uint64_t uid_sort_id = iter->ManufacturerId();
-    uid_sort_id = uid_sort_id << 32;
-    uid_sort_id += iter->DeviceId();
     str << "    {" << endl;
-    str << "       \"id\": " << uid_sort_id << "," << endl;
-    str << "       \"uid\": \"" << iter->ToString() << "\"," << endl;
+    str << "       \"manufacturer_id\": " << iter->ManufacturerId() << ","
+      << endl;
+    str << "       \"device_id\": " << iter->DeviceId() << "," << endl;
     str << "    }," << endl;
   }
 

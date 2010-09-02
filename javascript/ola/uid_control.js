@@ -33,8 +33,8 @@ var ola = ola || {};
  * @constructor
  */
 ola.UidItem = function(data) {
-  this._id = data['id'];
-  this._uid = data['uid'];
+  this._device_id = data['device_id'];
+  this._manufacturer_id = data['manufacturer_id'];
 };
 goog.inherits(ola.UidItem, ola.DataItem);
 
@@ -47,10 +47,43 @@ ola.UidItem.prototype.id = function() { return this._id; };
 
 
 /**
- * Get the sort key of this universe.
- * @return {number} the unvierse id.
+ * Convert a number to the hex representation
+ * @param {number} n the number to convert.
+ * @return {string} the hex representation of the number.
  */
-ola.UidItem.prototype.sortKey = function() { return this._id; };
+ola.UidItem.prototype._toHex = function(n) {
+  if (n < 0) {
+    n = 0xffffffff + n + 1;
+  }
+  var s = n.toString(16);
+  ola.logger.info(s);
+  return s;
+};
+
+
+/**
+ * Return the device id
+ * @return {number} the device id
+ */
+ola.UidItem.prototype.toString = function() {
+  return (this._toHex(this._manufacturer_id) + ':' +
+          this._toHex(this._device_id));
+};
+
+
+/**
+ * Compare one uid to another.
+ * @param {ola.DataItem} other the other item to compare to.
+ * @return {number} -1 if less than, 1 if greater than, 0 if equal.
+ */
+ola.UidItem.prototype.compare = function(other) {
+  if (this._manufacturer_id > other._manufacturer_id) {
+    return 1;
+  } else if (this._manufacturer_id < other._manufacturer_id) {
+    return -1;
+  }
+  return this.device_id - other.device_id;
+};
 
 
 /**
@@ -66,7 +99,7 @@ ola.UidItem.prototype.uid = function() { return this._uid; };
  */
 ola.UidControl = function(item, callback, opt_renderer, opt_domHelper) {
   ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
-  this.setContent(item.uid());
+  this.setContent(item.toString());
 };
 goog.inherits(ola.UidControl, ola.GenericControl);
 
@@ -76,7 +109,7 @@ goog.inherits(ola.UidControl, ola.GenericControl);
  */
 ola.UidControl.prototype.enterDocument = function() {
   ola.UniverseControl.superClass_.enterDocument.call(this);
-  this.getElement().title = this._item.uid();
+  this.getElement().title = this.item().toString();
 };
 
 
@@ -85,7 +118,7 @@ ola.UidControl.prototype.enterDocument = function() {
  */
 ola.UidControl.prototype.update = function(item) {
   // We don't expect the uid to change here.
-  this.setContent(item.uid());
+  this.setContent(item.toString());
 };
 
 

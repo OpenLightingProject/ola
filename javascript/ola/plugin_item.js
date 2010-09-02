@@ -42,14 +42,22 @@ ola.PluginItem.prototype.id = function() { return this._id; };
 
 
 /**
- * Get the sort key of this universe.
- * @return {number} the unvierse id.
- */
-ola.PluginItem.prototype.sortKey = function() { return this._id; };
-
-
-/**
  * Return the universe name
  * @return {string} the name.
  */
 ola.PluginItem.prototype.name = function() { return this._name; };
+
+/**
+ * Compare one item to another.
+ * @param {ola.DataItem} other the other item to compare to.
+ * @return {number} -1 if less than, 1 if greater than, 0 if equal.
+ */
+ola.DataItem.prototype.compare = function(other) {
+  if (this.name() > other.name()) {
+    return 1;
+  } else if (this.name() < other.name()) {
+    return -1;
+  }
+  return 0;
+}
+
