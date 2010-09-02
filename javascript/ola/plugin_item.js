@@ -52,7 +52,7 @@ ola.PluginItem.prototype.name = function() { return this._name; };
  * @param {ola.DataItem} other the other item to compare to.
  * @return {number} -1 if less than, 1 if greater than, 0 if equal.
  */
-ola.DataItem.prototype.compare = function(other) {
+ola.PluginItem.prototype.compare = function(other) {
   if (this.name() > other.name()) {
     return 1;
   } else if (this.name() < other.name()) {
