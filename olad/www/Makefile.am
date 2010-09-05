@@ -10,6 +10,7 @@ dist_www_DATA = GPL.txt \
                 console.js \
                 console_values.html \
                 custombutton.css \
+                toolbar.css \
                 dbo.png \
                 expander.png \
                 forward.png \
@@ -37,4 +38,6 @@ dist_www_DATA = GPL.txt \
                 simple.css \
                 slider.js \
                 tick.gif \
-                timer.js
+                timer.js \
+                toolbar-bg.png \
+                vertical.gif
