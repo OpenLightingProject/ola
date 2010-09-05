@@ -49,14 +49,17 @@ ola.UidItem.prototype.id = function() { return this._id; };
 /**
  * Convert a number to the hex representation
  * @param {number} n the number to convert.
+ * @param {number} padding the length to pad to
  * @return {string} the hex representation of the number.
  */
-ola.UidItem.prototype._toHex = function(n) {
+ola.UidItem.prototype._toHex = function(n, padding) {
   if (n < 0) {
     n = 0xffffffff + n + 1;
   }
   var s = n.toString(16);
-  ola.logger.info(s);
+  while (s.length < padding) {
+    s = '0' + s;
+  }
   return s;
 };
 
@@ -66,8 +69,8 @@ ola.UidItem.prototype._toHex = function(n) {
  * @return {number} the device id
  */
 ola.UidItem.prototype.toString = function() {
-  return (this._toHex(this._manufacturer_id) + ':' +
-          this._toHex(this._device_id));
+  return (this._toHex(this._manufacturer_id, 4) + ':' +
+          this._toHex(this._device_id, 8));
 };
 
 
