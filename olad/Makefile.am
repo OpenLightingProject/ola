@@ -16,7 +16,6 @@ libolaserver_la_LDFLAGS = -lprotobuf ${PLUGIN_LIBS}
 
 if HAVE_LIBMICROHTTPD
 libolaserver_la_SOURCES += HttpServer.cpp OlaHttpServer.cpp
-libolaserver_la_LDFLAGS += -lctemplate
 endif
 
 libolaserver_la_LIBADD = $(top_builddir)/common/libolacommon.la

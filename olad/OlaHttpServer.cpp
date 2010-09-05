@@ -50,19 +50,10 @@ using std::endl;
 using std::string;
 using std::stringstream;
 using std::vector;
-using ctemplate::TemplateDictionary;
-using ctemplate::TemplateNamelist;
 
 const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
 const char OlaHttpServer::K_UPTIME_VAR[] = "uptime-in-ms";
 
-RegisterTemplateFilename(MAIN_FILENAME, "show_main_page.tpl");
-RegisterTemplateFilename(PLUGINS_FILENAME, "show_loaded_plugins.tpl");
-RegisterTemplateFilename(PLUGIN_INFO_FILENAME, "show_plugin_info.tpl");
-RegisterTemplateFilename(DEVICE_FILENAME, "show_loaded_devices.tpl");
-RegisterTemplateFilename(UNIVERSE_FILENAME, "show_universe_settings.tpl");
-RegisterTemplateFilename(UNIVERSE_UIDS_FILENAME, "show_universe_uids.tpl");
-RegisterTemplateFilename(CONSOLE_FILENAME, "show_dmx_console.tpl");
 
 OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              SelectServer *ss,
@@ -95,19 +86,9 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterHandler("/run_rdm_discovery", &OlaHttpServer::RunRDMDiscovery);
   RegisterHandler("/new_universe", &OlaHttpServer::CreateNewUniverse);
   RegisterHandler("/modify_universe", &OlaHttpServer::ModifyUniverse);
-
-  // Handlers for the old UI
-  RegisterHandler("/main", &OlaHttpServer::DisplayMain);
-  RegisterHandler("/plugins", &OlaHttpServer::DisplayPlugins);
-  RegisterHandler("/plugin", &OlaHttpServer::DisplayPluginInfo);
-  RegisterHandler("/devices", &OlaHttpServer::DisplayDevices);
-  RegisterHandler("/universes", &OlaHttpServer::DisplayUniverses);
-  RegisterHandler("/rdm", &OlaHttpServer::DisplayRDM);
-  RegisterHandler("/console", &OlaHttpServer::DisplayConsole);
-  RegisterHandler("/reload_templates", &OlaHttpServer::DisplayTemplateReload);
+  RegisterHandler("/set_dmx", &OlaHttpServer::HandleSetDmx);
 
   // json endpoints for the new UI
-  RegisterHandler("/set_dmx", &OlaHttpServer::HandleSetDmx);
   RegisterHandler("/json/server_stats", &OlaHttpServer::JsonServerStats);
   RegisterHandler("/json/universe_plugin_list",
                   &OlaHttpServer::JsonUniversePluginList);
@@ -131,38 +112,11 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterFile("toolbar.css", HttpServer::CONTENT_TYPE_CSS);
   RegisterFile("vertical.gif", HttpServer::CONTENT_TYPE_GIF);
 
-  // These are the static files for the old UI
-  RegisterFile("old.html", HttpServer::CONTENT_TYPE_HTML);
-  RegisterFile("menu.html", HttpServer::CONTENT_TYPE_HTML);
-  RegisterFile("about.html", HttpServer::CONTENT_TYPE_HTML);
-  RegisterFile("console_values.html", HttpServer::CONTENT_TYPE_HTML);
-  RegisterFile("simple.css", HttpServer::CONTENT_TYPE_CSS);
-  RegisterFile("bluecurve.css", HttpServer::CONTENT_TYPE_CSS);
-  RegisterFile("notice.gif", HttpServer::CONTENT_TYPE_GIF);
-  RegisterFile("plus.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("forward.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("back.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("full.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("dbo.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("save.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("load.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("minus.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("ajax_request.js", HttpServer::CONTENT_TYPE_JS);
-  RegisterFile("console.js", HttpServer::CONTENT_TYPE_JS);
-  RegisterFile("range.js", HttpServer::CONTENT_TYPE_JS);
-  RegisterFile("slider.js", HttpServer::CONTENT_TYPE_JS);
-  RegisterFile("timer.js", HttpServer::CONTENT_TYPE_JS);
-  RegisterFile("GPL.txt", HttpServer::CONTENT_TYPE_PLAIN);
-  m_server.RegisterFile("/boxsizing.htc", "boxsizing.htc", "text/x-component");
-
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
   data_dir_var->Set(m_server.DataDir());
   Clock::CurrentTime(&m_start_time);
   m_start_time_t = time(NULL);
   export_map->GetStringVar(K_UPTIME_VAR);
-
-  // warn on any missing templates
-  TemplateNamelist::GetMissingList(false);
 }
 
 
@@ -587,246 +541,6 @@ int OlaHttpServer::DisplayIndex(const HttpRequest *request,
 
 
 /*
- * Display the main page
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::DisplayMain(const HttpRequest *request,
-                               HttpResponse *response) {
-  TemplateDictionary dict("main");
-  TimeStamp now;
-  Clock::CurrentTime(&now);
-  TimeInterval diff = now - m_start_time;
-
-  stringstream str;
-  unsigned int minutes = diff.Seconds() / 60;
-  unsigned int hours = minutes / 60;
-  str << hours << " hours, " << minutes % 60 << " minutes, " <<
-    diff.Seconds() % 60 << " seconds";
-  dict.SetValue("UPTIME", str.str());
-  dict.SetValue("HOSTNAME", ola::network::FullHostname());
-  dict.SetValue("IP", ola::network::AddressToString(m_interface.ip_address));
-
-  if (m_enable_quit)
-    dict.ShowSection("QUIT_ENABLED");
-  return m_server.DisplayTemplate(MAIN_FILENAME, &dict, response);
-  (void) request;
-}
-
-
-
-/*
- * Display the plugins page.
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::DisplayPlugins(const HttpRequest *request,
-                                  HttpResponse *response) {
-  TemplateDictionary dict("plugins");
-  vector<AbstractPlugin*> plugins;
-  m_plugin_manager->Plugins(&plugins);
-  std::sort(plugins.begin(), plugins.end(), PluginLessThan());
-
-  if (plugins.size()) {
-    int i = 1;
-    vector<AbstractPlugin*>::const_iterator iter;
-    for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-      TemplateDictionary *sub_dict = dict.AddSectionDictionary("PLUGIN");
-      sub_dict->SetValue("ID", IntToString((*iter)->Id()));
-      sub_dict->SetValue("NAME", (*iter)->Name());
-      if (i % 2)
-        sub_dict->ShowSection("ODD");
-      i++;
-    }
-  } else {
-    dict.ShowSection("NO_PLUGINS");
-  }
-  return m_server.DisplayTemplate(PLUGINS_FILENAME, &dict, response);
-  (void) request;
-}
-
-
-/*
- * Display the info for a single plugin.
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::DisplayPluginInfo(const HttpRequest *request,
-                                     HttpResponse *response) {
-  string val = request->GetParameter("id");
-  int plugin_id = atoi(val.data());
-  AbstractPlugin *plugin = NULL;
-  plugin = m_plugin_manager->GetPlugin((ola_plugin_id) plugin_id);
-
-  if (!plugin)
-    return m_server.ServeNotFound(response);
-
-  TemplateDictionary dict("plugin");
-  dict.SetValue("NAME", plugin->Name());
-  dict.SetValue("DESCRIPTION", plugin->Description());
-  return m_server.DisplayTemplate(PLUGIN_INFO_FILENAME, &dict, response);
-}
-
-
-/*
- * Display the device page.
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::DisplayDevices(const HttpRequest *request,
-                                  HttpResponse *response) {
-  TemplateDictionary dict("device");
-  vector<device_alias_pair> device_pairs = m_device_manager->Devices();
-
-  string action = request->GetPostParameter("action");
-  bool save_changes = !action.empty();
-
-  if (device_pairs.size()) {
-    vector<device_alias_pair>::const_iterator iter;
-    sort(device_pairs.begin(), device_pairs.end());
-    for (iter = device_pairs.begin(); iter != device_pairs.end(); ++iter) {
-      TemplateDictionary *sub_dict = dict.AddSectionDictionary("DEVICE");
-      PopulateDeviceDict(request, sub_dict, *iter, save_changes);
-    }
-  } else {
-    dict.ShowSection("NO_DEVICES");
-  }
-  return m_server.DisplayTemplate(DEVICE_FILENAME, &dict, response);
-}
-
-
-/*
- * Show the universe settings page.
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::DisplayUniverses(const HttpRequest *request,
-                                    HttpResponse *response) {
-  TemplateDictionary dict("universes");
-  vector<Universe*> universes;
-  m_universe_store->GetList(&universes);
-
-  string action = request->GetParameter("action");
-  bool save_changes = !action.empty();
-
-  if (universes.size()) {
-    vector<Universe*>::const_iterator iter;
-    int i = 1;
-    for (iter = universes.begin(); iter != universes.end(); ++iter) {
-      if (save_changes) {
-        string uni_name = request->GetParameter(
-            "name_" + IntToString((*iter)->UniverseId()));
-        string uni_mode = request->GetParameter(
-            "mode_" + IntToString((*iter)->UniverseId()));
-
-        if (uni_name.size() > K_UNIVERSE_NAME_LIMIT)
-          uni_name = uni_name.substr(K_UNIVERSE_NAME_LIMIT);
-        (*iter)->SetName(uni_name);
-
-        if (uni_mode == "ltp")
-          (*iter)->SetMergeMode(Universe::MERGE_LTP);
-        else
-          (*iter)->SetMergeMode(Universe::MERGE_HTP);
-      }
-      TemplateDictionary *sub_dict = dict.AddSectionDictionary("UNIVERSE");
-      sub_dict->SetValue("ID", IntToString((*iter)->UniverseId()));
-      sub_dict->SetValue("NAME", (*iter)->Name());
-      if ((*iter)->MergeMode() == Universe::MERGE_HTP)
-        sub_dict->ShowSection("HTP_MODE");
-      if (i % 2)
-        sub_dict->ShowSection("ODD");
-      i++;
-    }
-  } else {
-    dict.ShowSection("NO_UNIVERSES");
-  }
-  return m_server.DisplayTemplate(UNIVERSE_FILENAME, &dict, response);
-}
-
-
-/*
- * Show a basic RDM page
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::DisplayRDM(const HttpRequest *request,
-                              HttpResponse *response) {
-  string uni_id = request->GetParameter("universe");
-  unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
-    return m_server.ServeNotFound(response);
-
-  Universe *universe = m_universe_store->GetUniverse(universe_id);
-
-  if (!universe)
-    return m_server.ServeNotFound(response);
-
-  string action = request->GetParameter("action");
-
-  if (!request->GetParameter("action").empty()) {
-    // force discovery
-    universe->RunRDMDiscovery();
-  }
-
-  TemplateDictionary dict("rdm");
-  dict.SetValue("UNIVERSE", IntToString(universe->UniverseId()));
-  ola::rdm::UIDSet uids;
-  universe->GetUIDs(&uids);
-
-  if (uids.Size()) {
-    ola::rdm::UIDSet::Iterator iter = uids.Begin();
-    for (; iter != uids.End(); ++iter) {
-      TemplateDictionary *sub_dict = dict.AddSectionDictionary("UID");
-      sub_dict->SetValue("UID", iter->ToString());
-    }
-  } else {
-    dict.ShowSection("NO_UIDS");
-  }
-  string refresh = "5; url=/rdm?universe=" +
-    IntToString(universe->UniverseId());
-  response->SetHeader("Refresh", refresh);
-  return m_server.DisplayTemplate(UNIVERSE_UIDS_FILENAME, &dict, response);
-}
-
-
-/*
- * Show the Dmx console page.
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::DisplayConsole(const HttpRequest *request,
-                                  HttpResponse *response) {
-  string uni_id = request->GetParameter("u");
-  unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
-    return m_server.ServeNotFound(response);
-
-  Universe *universe = m_universe_store->GetUniverse(universe_id);
-
-  if (!universe)
-    return m_server.ServeNotFound(response);
-
-  TemplateDictionary dict("console");
-  dict.SetValue("ID", IntToString(universe->UniverseId()));
-  dict.SetValue("NAME", universe->Name());
-
-  for (unsigned int i = 0; i <= K_CONSOLE_SLIDERS; i++) {
-    TemplateDictionary *sliders_dict = dict.AddSectionDictionary("SLIDERS");
-    sliders_dict->SetValue("INDEX", IntToString(i));
-  }
-
-  return m_server.DisplayTemplate(CONSOLE_FILENAME, &dict, response);
-}
-
-
-/*
  * Handle the set dmx command
  * @param request the HttpRequest
  * @param response the HttpResponse
@@ -947,19 +661,6 @@ int OlaHttpServer::RunRDMDiscovery(const HttpRequest *request,
 
 
 /*
- * Handle the template reload.
- */
-int OlaHttpServer::DisplayTemplateReload(const HttpRequest *request,
-                                         HttpResponse *response) {
-  ctemplate::Template::ReloadAllIfChanged();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append("ok");
-  return response->Send();
-  (void) request;
-}
-
-
-/*
  * Display a list of registered handlers
  */
 int OlaHttpServer::DisplayHandlers(const HttpRequest *request,
@@ -999,63 +700,6 @@ inline void OlaHttpServer::RegisterFile(const string &file,
   m_server.RegisterFile("/" + file, file, content_type);
 }
 
-/*
- * Populate a dictionary for this device.
- * @param dict the dictionary to fill
- * @param device the device to use
- */
-void OlaHttpServer::PopulateDeviceDict(const HttpRequest *request,
-                                       TemplateDictionary *dict,
-                                       const device_alias_pair &device_pair,
-                                       bool save_changes) {
-  AbstractDevice *device = device_pair.device;
-  dict->SetValue("ID", IntToString(device_pair.alias));
-  dict->SetValue("NAME", device->Name());
-  string val = request->GetPostParameter("show_" +
-                                         IntToString(device_pair.alias));
-  dict->SetValue("SHOW_VALUE", val == "1" ? "1" : "0");
-  dict->SetValue("SHOW", val == "1" ? "block" : "none");
-
-  vector<InputPort*> input_ports;
-  device->InputPorts(&input_ports);
-  vector<OutputPort*> output_ports;
-  device->OutputPorts(&output_ports);
-
-  if (save_changes) {
-    UpdatePortPatchings(request, &input_ports);
-    UpdatePortPatchings(request, &output_ports);
-    UpdatePortPriorites(request, &input_ports);
-    UpdatePortPriorites(request, &output_ports);
-  }
-
-  unsigned int offset = 0;
-  AddPortsToDict(dict, input_ports, &offset);
-  AddPortsToDict(dict, output_ports, &offset);
-}
-
-
-/*
- * Update the port patchings from the data in a HTTP request.
- */
-template <class PortClass>
-void OlaHttpServer::UpdatePortPatchings(const HttpRequest *request,
-                                        vector<PortClass*> *ports) {
-  typename vector<PortClass*>::iterator iter = ports->begin();
-
-  while (iter != ports->end()) {
-    string port_id = (*iter)->UniqueId();
-    string uni_id = request->GetPostParameter(port_id);
-    unsigned int universe_id;
-
-    if (StringToUInt(uni_id, &universe_id))
-      // valid universe number, patch this universe
-      m_port_manager->PatchPort(*iter, universe_id);
-    else
-      m_port_manager->UnPatchPort(*iter);
-    iter++;
-  }
-}
-
 
 /*
  * Update the port priorities from the data in a HTTP request.
@@ -1079,48 +723,6 @@ void OlaHttpServer::UpdatePortPriorites(const HttpRequest *request,
 
     if (!value.empty() || !mode.empty())
       m_port_manager->SetPriority(*iter, mode, value);
-  }
-}
-
-
-/*
- * Fill in a template dictionary with a list of ports.
- * @param dict the dictionary to fill
- * @param ports the vector of ports
- */
-template <class PortClass>
-void OlaHttpServer::AddPortsToDict(TemplateDictionary *dict,
-                                   const vector<PortClass*> &ports,
-                                   unsigned int *offset) {
-  typename vector<PortClass*>::const_iterator iter = ports.begin();
-
-  while (iter != ports.end()) {
-    TemplateDictionary *port_dict = dict->AddSectionDictionary("PORT");
-    port_dict->SetValue("PORT_NUMBER", IntToString((*iter)->PortId()));
-    port_dict->SetValue("PORT_ID", (*iter)->UniqueId());
-    port_dict->SetValue("CAPABILITY", IsInputPort<PortClass>() ? "IN" : "OUT");
-    port_dict->SetValue("DESCRIPTION", (*iter)->Description());
-
-    if ((*iter)->PriorityCapability() != CAPABILITY_NONE) {
-      TemplateDictionary *priority_dict =
-        port_dict->AddSectionDictionary("SUPPORTS_PRIORITY");
-      priority_dict->SetValue("PRIORITY", IntToString((*iter)->GetPriority()));
-      if ((*iter)->PriorityCapability() == CAPABILITY_FULL) {
-        TemplateDictionary *priority_mode_dict =
-          priority_dict->AddSectionDictionary("SUPPORTS_PRIORITY_MODE");
-        priority_mode_dict->SetValue("PRIORITY_MODE",
-                                     IntToString((*iter)->GetPriorityMode()));
-      }
-    }
-
-    Universe *universe = (*iter)->GetUniverse();
-    if (universe)
-      port_dict->SetValue("UNIVERSE", IntToString(universe->UniverseId()));
-
-    if (*offset % 2)
-      port_dict->ShowSection("ODD");
-    (*offset)++;
-    iter++;
   }
 }
 

@@ -15,8 +15,8 @@ URL:       http://code.google.com/p/linux-lighting
 #  http://www.opendmx.net/index.php/LLA_on_Linux
 Source0:   %{name}/%{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildRequires: libmicrohttpd-devel >= 0.4.0, libcppunit-devel, protobuf-devel >= 2.1.0, libctemplate-devel >= 0.95
-Requires:      libmicrohttpd >= 0.4.0, libcppunit, protobuf >= 2.1.0, libctemplate >= 0.95
+BuildRequires: libmicrohttpd-devel >= 0.4.0, libcppunit-devel, protobuf-devel >= 2.1.0
+Requires:      libmicrohttpd >= 0.4.0, libcppunit, protobuf >= 2.1.0
 
 %description
 The Open Lighting Architecture (OLA) consists of two parts, the daemon olad and the library, libola.

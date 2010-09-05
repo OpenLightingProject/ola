@@ -241,10 +241,6 @@ AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
 AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
 
 if test "${have_microhttpd}" = "yes"; then
- AC_CHECK_HEADER(
-   ctemplate/template.h,
-   [],
-   [AC_MSG_ERROR([Missing ctemplate, please install >= 0.95])])
  AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
  LIBS="-lmicrohttpd $LIBS"
 fi
@@ -337,7 +333,6 @@ AC_OUTPUT( Makefile\
     olad/OlaVersion.h \
     olad/testdata/Makefile \
     olad/www/Makefile \
-    olad/www/about.html \
     plugins/Makefile \
     plugins/artnet/Makefile \
     plugins/artnet/messages/Makefile \

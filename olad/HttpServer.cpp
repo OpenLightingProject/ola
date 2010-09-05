@@ -29,8 +29,6 @@
 
 namespace ola {
 
-using ctemplate::Template;
-using ctemplate::TemplateDictionary;
 using std::ifstream;
 using std::pair;
 using std::string;
@@ -311,8 +309,6 @@ HttpServer::HttpServer(unsigned int port, const string &data_dir)
       m_data_dir(data_dir) {
   if (m_data_dir.empty())
     m_data_dir = HTTP_DATA_DIR;
-
-  ctemplate::Template::SetTemplateRootDirectory(m_data_dir);
 }
 
 
@@ -332,7 +328,6 @@ HttpServer::~HttpServer() {
   }
 
   m_handlers.clear();
-  ctemplate::Template::ClearCache();
 }
 
 
@@ -455,37 +450,6 @@ vector<string> HttpServer::Handlers() const {
        file_iter != m_static_content.end(); ++file_iter)
     handlers.push_back(file_iter->first);
   return handlers;
-}
-
-
-/*
- * Display a template
- * @param template_name the name of the template
- * @param dict the dictionary to expand with
- * @param response the response to use.
- */
-int HttpServer::DisplayTemplate(const char *template_name,
-                                TemplateDictionary *dict,
-                                HttpResponse *response) {
-  Template* tpl = Template::GetTemplate(template_name,
-                                        ctemplate::STRIP_BLANK_LINES);
-
-  if (!tpl) {
-    OLA_WARN << "Failed to load template: " << template_name;
-    return ServeError(response, "Bad Template");
-  }
-
-  string output;
-  bool success = tpl->Expand(&output, dict);
-
-  if (!success) {
-    OLA_WARN << "Template expansion failed for: " << template_name;
-    return ServeError(response, "Expansion failed");
-  }
-
-  response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
-  response->Append(output);
-  return response->Send();
 }
 
 

@@ -22,7 +22,6 @@
 #ifndef OLAD_HTTPSERVER_H_
 #define OLAD_HTTPSERVER_H_
 
-#include <ctemplate/template.h>
 #include <ola/Callback.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -120,9 +119,6 @@ class HttpServer {
     void RegisterDefaultHandler(BaseHttpClosure *handler);
     vector<string> Handlers() const;
     const string DataDir() const { return m_data_dir; }
-    int DisplayTemplate(const char *template_name,
-                        ctemplate::TemplateDictionary *dict,
-                        HttpResponse *response);
     int ServeError(HttpResponse *response, const string &details="");
     int ServeNotFound(HttpResponse *response);
 

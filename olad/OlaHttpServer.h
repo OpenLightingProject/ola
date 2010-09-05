@@ -22,7 +22,6 @@
 #define OLAD_OLAHTTPSERVER_H_
 
 #include <time.h>
-#include <ctemplate/template.h>
 #include <string>
 #include <vector>
 #include "ola/Clock.h"
@@ -36,7 +35,6 @@
 namespace ola {
 
 using std::string;
-using ctemplate::TemplateDictionary;
 using ola::network::SelectServer;
 
 class OlaHttpServer {
@@ -67,20 +65,11 @@ class OlaHttpServer {
     int ModifyUniverse(const HttpRequest *request, HttpResponse *response);
 
     int DisplayIndex(const HttpRequest *request, HttpResponse *response);
-    int DisplayMain(const HttpRequest *request, HttpResponse *response);
-    int DisplayPlugins(const HttpRequest *request, HttpResponse *response);
-    int DisplayPluginInfo(const HttpRequest *request, HttpResponse *response);
-    int DisplayDevices(const HttpRequest *request, HttpResponse *response);
-    int DisplayUniverses(const HttpRequest *request, HttpResponse *response);
-    int DisplayRDM(const HttpRequest *request, HttpResponse *response);
-    int DisplayConsole(const HttpRequest *request, HttpResponse *response);
     int HandleSetDmx(const HttpRequest *request, HttpResponse *response);
     int DisplayDebug(const HttpRequest *request, HttpResponse *response);
     int DisplayQuit(const HttpRequest *request, HttpResponse *response);
     int ReloadPlugins(const HttpRequest *request, HttpResponse *response);
     int RunRDMDiscovery(const HttpRequest *request, HttpResponse *response);
-    int DisplayTemplateReload(const HttpRequest *request,
-                              HttpResponse *response);
     int DisplayHandlers(const HttpRequest *request, HttpResponse *response);
 
   private:
@@ -92,23 +81,9 @@ class OlaHttpServer {
                          HttpResponse*));
     void RegisterFile(const string &file, const string &content_type);
 
-    void PopulateDeviceDict(const HttpRequest *request,
-                            TemplateDictionary *dict,
-                            const device_alias_pair &device_pair,
-                            bool save_changes);
-
-    template <class PortClass>
-    void UpdatePortPatchings(const HttpRequest *request,
-                             vector<PortClass*> *ports);
-
     template <class PortClass>
     void UpdatePortPriorites(const HttpRequest *request,
                              vector<PortClass*> *ports);
-
-    template <class PortClass>
-    void AddPortsToDict(TemplateDictionary *dict,
-                        const vector<PortClass*> &ports,
-                        unsigned int *offset);
 
     void PortToJson(const Port *port, stringstream *str);
     bool UpdatePortsForUniverse(unsigned int universe_id,
@@ -136,7 +111,6 @@ class OlaHttpServer {
     static const char K_DATA_DIR_VAR[];
     static const char K_UPTIME_VAR[];
     static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;
-    static const unsigned int K_CONSOLE_SLIDERS = 15;
 };
 }  // ola
 #endif  // OLAD_OLAHTTPSERVER_H_

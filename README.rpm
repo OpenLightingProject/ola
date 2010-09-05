@@ -16,7 +16,7 @@ based distros.
    $ autoreconf -i -f && ./configure && make dist
    $ cp ola-X.Y.Z.tar.gz ~/rpm/SOURCES/
 
-4. Add Kev's repository to get latest ctemplate, libmicrohttpd and protobuf
+4. Add Kev's repository to get latest libmicrohttpd and protobuf
    (here for 64bits Mandriva 2009.1):
    $ urpmi.addmedia --update kev-rpms \
      http://kev.coolcavemen.com/static/repository/mandriva/2009.1/x86_64
@@ -24,8 +24,7 @@ based distros.
    For more details, see http://kev.coolcavemen.com/mandriva-rpm-repository/
 
 5. Install requires build dependencies of ola:
-   $ urpmi libmicrohttpd-devel libcppunit-devel protobuf-devel \
-     libctemplate-devel
+   $ urpmi libmicrohttpd-devel libcppunit-devel protobuf-devel
 
 6. Build ola from the spec file:
    $ cd ~/rpm/SPECS/
