@@ -63,6 +63,7 @@ ola.Server.UIDS_URL = '/json/uids';
 ola.Server.RDM_DISCOVERY_URL = '/run_rdm_discovery';
 ola.Server.NEW_UNIVERSE_URL = '/new_universe';
 ola.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
+ola.Server.SET_DMX_URL = '/set_dmx';
 
 
 /**
@@ -349,6 +350,21 @@ ola.Server.prototype.modifyUniverse = function(universe_id,
 
 
 /**
+ * Update the dmx values for a universe
+ * @param {number} universe_id the id of the universe to modify.
+ * @param {Array.<number>} data the channel values.
+ */
+ola.Server.prototype.setChannelValues = function(universe_id, data) {
+  var on_complete = function(e) {
+    this._cleanupRequest(e.target);
+  }
+  var post_data = 'u=' + universe_id + '&d=' + data.join(',');
+  var url = ola.Server.SET_DMX_URL;
+  this._initiateRequest(url, on_complete, 'POST', post_data);
+};
+
+
+/**
  * Initiate a JSON request
  * @param url the url to fetch.
  * @param callback the callback to invoke when the request completes.
@@ -362,7 +378,7 @@ ola.Server.prototype._initiateRequest = function(url,
                                                  opt_content) {
   var xhr = this.pool.getObject(undefined, 1);
   if (xhr == undefined) {
-  var dialog = ola.Dialog.getInstance();
+    var dialog = ola.Dialog.getInstance();
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
     dialog.setTitle('Failed to Communicate with Server');
     dialog.setContent(

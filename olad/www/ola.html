@@ -2,6 +2,7 @@
 <html>
   <head>
     <link rel="stylesheet" href="/custombutton.css">
+    <link rel="stylesheet" href="/toolbar.css">
     <script src="/ola.js"></script>
     <title>OLA Admin</title>
     <style type="text/css">
@@ -436,6 +437,58 @@
         padding-top: 3px;
       }
 
+      /* slider styles */
+      .goog-slider-vertical {
+        background-image: url('/vertical.gif');
+        position: relative;
+        overflow: hidden;
+        outline: none;
+        width: 23px;
+        height: 200px;
+      }
+
+      .goog-slider-thumb {
+        position: absolute;
+        background-image: url('/handle.vertical.png');
+        overflow: hidden;
+      }
+
+      .goog-slider-vertical .goog-slider-thumb {
+        left: 4px;
+        height: 31px;
+        width: 15px;
+      }
+
+      /* styles for the dmx console */
+      #console_table {
+        border: 1px solid #67a7e3;
+        float:left;
+      }
+
+      #console_value_row td {
+        border-top: #67a7e3 solid 1px;
+        font-size: 11px;
+        text-align: center;
+      }
+
+      #console_channel_row td {
+        font-size: 11px;
+        text-align: center;
+      }
+
+      #channel_values {
+        overflow-y: auto;
+      }
+
+      #channel_values div {
+        display: inline-block;
+        font-size: 11px;
+        border-bottom: 1px solid #67a7e3;
+        border-right: 1px solid #67a7e3;
+        width: 20px;
+        text-align: center;
+        margin: 1px;
+      }
     </style>
   </head>
   <body onload="ola.Setup()">
@@ -665,8 +718,16 @@
               <div class='goog-splitpane-handle ola-splitpane-rdm-handle'></div>
             </div>
           </div>
-          <div id="tab_page_3">The DMX console hasn't been moved over yet.
-            It can still be found in the <a href="/old.html">old interface</a>
+          <div id="tab_page_3" class="ola-scroller">
+            <div id="console_toolbar" class="goog-toolbar"></div>
+            <table cellspacing="0" cellpadding="0" id="console_table">
+             <tbody>
+              <tr id="console_channel_row"></tr>
+              <tr id="console_value_row"></tr>
+              <tr id="console_slider_row"></tr>
+             </tbody>
+            </table>
+            <div id="channel_values"></div>
           </div>
         </div>
         <div class="ola-scroller" id="plugin_frame">

@@ -32,6 +32,7 @@ goog.require('ola.BaseFrame');
 goog.require('ola.AvailablePort');
 goog.require('ola.AvailablePortTable');
 goog.require('ola.Dialog');
+goog.require('ola.DmxConsole');
 goog.require('ola.Port');
 goog.require('ola.PortTable');
 goog.require('ola.Server');
@@ -77,6 +78,8 @@ ola.UniverseFrame = function(element_id, ola_ui) {
   this.tabPane.setSelectedIndex(1);
   this._setupRDMTab();
   this.tabPane.setSelectedIndex(0);
+
+  this._setupConsoleTab();
 
   // setup notifications when the universe or uid lists changes
   var ola_server = ola.Server.getInstance();
@@ -164,6 +167,22 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
 
 
 /**
+ * Setup the console tab.
+ * @private
+ */
+ola.UniverseFrame.prototype._setupConsoleTab = function() {
+  // setup the console
+  this.dmx_console = new ola.DmxConsole();
+
+  goog.events.listen(
+      this.dmx_console,
+      ola.DmxConsole.CHANGE_EVENT,
+      this._consoleChanged,
+      false, this);
+};
+
+
+/**
  * Get the current selected universe.
  * @return {number} the selected universe.
  */
@@ -178,13 +197,18 @@ ola.UniverseFrame.prototype.getActiveUniverse = function() {
 ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
   var big_frame = goog.dom.$('ola-splitpane-content');
   var big_size = goog.style.getBorderBoxSize(big_frame);
-  if (this.tabPane.getSelectedIndex() == 0) {
+  var selected_tab = this.tabPane.getSelectedIndex();
+  if (selected_tab == 0) {
     goog.style.setBorderBoxSize(
         goog.dom.$('tab_page_1'),
         new goog.math.Size(big_size.width - 7, big_size.height - 34));
-  } else if (this.tabPane.getSelectedIndex() == 1) {
+  } else if (selected_tab == 1) {
     this.splitpane.setSize(
         new goog.math.Size(big_size.width - 7, big_size.height - 62));
+  } else if (selected_tab == 2) {
+    goog.style.setBorderBoxSize(
+        goog.dom.$('tab_page_3'),
+        new goog.math.Size(big_size.width - 7, big_size.height - 34));
   }
 };
 
@@ -196,6 +220,9 @@ ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
  * @param opt_select_main_tab {boolean} set to true to display the main tab
  */
 ola.UniverseFrame.prototype.Show = function(universe_id, opt_select_main_tab) {
+  if (this.current_universe != universe_id) {
+    this.dmx_console.resetConsole();
+  }
   this.current_universe = universe_id;
   ola.UniverseFrame.superClass_.Show.call(this);
   if (opt_select_main_tab) {
@@ -237,6 +264,9 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
     // update RDM
     server.FetchUids(this.current_universe);
     this.uid_timer.start();
+  } else if (selected_tab == 2) {
+    this.dmx_console.setupIfRequired();
+    this.dmx_console.update();
   }
 };
 
@@ -465,4 +495,13 @@ ola.UniverseFrame.prototype._discoveryComplete = function(e) {
     dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());
   }
   dialog.setVisible(true);
+};
+
+
+/**
+ * Called when the console values change
+ */
+ola.UniverseFrame.prototype._consoleChanged = function(e) {
+  var data = this.dmx_console.getData();
+  ola.Server.getInstance().setChannelValues(this.current_universe, data);
 };

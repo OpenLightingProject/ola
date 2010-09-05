@@ -105,9 +105,9 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterHandler("/rdm", &OlaHttpServer::DisplayRDM);
   RegisterHandler("/console", &OlaHttpServer::DisplayConsole);
   RegisterHandler("/reload_templates", &OlaHttpServer::DisplayTemplateReload);
-  RegisterHandler("/set_dmx", &OlaHttpServer::HandleSetDmx);
 
   // json endpoints for the new UI
+  RegisterHandler("/set_dmx", &OlaHttpServer::HandleSetDmx);
   RegisterHandler("/json/server_stats", &OlaHttpServer::JsonServerStats);
   RegisterHandler("/json/universe_plugin_list",
                   &OlaHttpServer::JsonUniversePluginList);
@@ -121,11 +121,15 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterFile("button-bg.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("custombutton.css", HttpServer::CONTENT_TYPE_CSS);
   RegisterFile("expander.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("handle.vertical.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("loader.gif", HttpServer::CONTENT_TYPE_GIF);
   RegisterFile("logo.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("ola.html", HttpServer::CONTENT_TYPE_HTML);
   RegisterFile("ola.js", HttpServer::CONTENT_TYPE_JS);
   RegisterFile("tick.gif", HttpServer::CONTENT_TYPE_GIF);
+  RegisterFile("toolbar-bg.png", HttpServer::CONTENT_TYPE_PNG);
+  RegisterFile("toolbar.css", HttpServer::CONTENT_TYPE_CSS);
+  RegisterFile("vertical.gif", HttpServer::CONTENT_TYPE_GIF);
 
   // These are the static files for the old UI
   RegisterFile("old.html", HttpServer::CONTENT_TYPE_HTML);
@@ -143,7 +147,6 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterFile("save.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("load.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("minus.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("handle.vertical.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("ajax_request.js", HttpServer::CONTENT_TYPE_JS);
   RegisterFile("console.js", HttpServer::CONTENT_TYPE_JS);
   RegisterFile("range.js", HttpServer::CONTENT_TYPE_JS);
