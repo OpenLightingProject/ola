@@ -40,6 +40,13 @@ const char HttpServer::CONTENT_TYPE_PNG[] = "image/png";
 const char HttpServer::CONTENT_TYPE_CSS[] = "text/css";
 const char HttpServer::CONTENT_TYPE_JS[] = "text/javascript";
 
+
+/**
+ * Called by MHD_get_connection_values to add headers to a request obect.
+ * @param cls a pointer to an HttpRequest object.
+ * @param key the header name
+ * @param value the header value
+ */
 static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
                       const char *value) {
   HttpRequest *request = reinterpret_cast<HttpRequest*>(cls);
@@ -50,6 +57,13 @@ static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
   (void) kind;
 }
 
+
+/**
+ * Called by MHD_create_post_processor to iterate over the post form data
+ * @param request_cls a pointer to a HttpRequest object
+ * @param key the header name
+ * @param value the header value
+ */
 int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
                 const char *filename, const char *content_type,
                 const char *transfer_encoding, const char *data, uint64_t off,
@@ -68,6 +82,10 @@ int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
 }
 
 
+/**
+ * Called whenever a new request is made. This sets up HttpRequest &
+ * HttpResponse objects and then calls DispatchRequest.
+ */
 static int HandleRequest(void *http_server_ptr,
                          struct MHD_Connection *connection,
                          const char *url,
@@ -79,7 +97,7 @@ static int HandleRequest(void *http_server_ptr,
   HttpServer *http_server = reinterpret_cast<HttpServer*>(http_server_ptr);
   HttpRequest *request;
 
-  // first call
+  // on the first call ptr is null
   if (*ptr == NULL) {
     request = new HttpRequest(url, method, version, connection);
     if (!request)
@@ -110,6 +128,10 @@ static int HandleRequest(void *http_server_ptr,
 }
 
 
+/**
+ * Called when a request completes. This deletes the associated HttpRequest
+ * object.
+ */
 void RequestCompleted(void *cls,
                       struct MHD_Connection *connection,
                       void **request_cls,
@@ -277,7 +299,6 @@ void HttpResponse::SetHeader(const string &key, const string &value) {
 
 /*
  * Send the HTTP response
- *
  * @returns true on success, false on error
  */
 int HttpResponse::Send() {
@@ -333,8 +354,7 @@ HttpServer::~HttpServer() {
 
 /*
  * Start the HTTP server
- *
- * @return 0 on success, -1 on failure
+ * @return true on success, false on failure
  */
 bool HttpServer::Start() {
   m_httpd = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION,
