@@ -255,7 +255,7 @@ ola.DmxConsole.prototype._updateSliderOffsets = function() {
   var channel_row = goog.dom.$('console_channel_row');
   var td = goog.dom.getFirstElementChild(channel_row);
   var i = this.slider_offset;
-  while (i < this.sliders.length && td != undefined) {
+  while (i < this.data.length && td != undefined) {
     td.innerHTML = i + 1;
     i++;
     td = goog.dom.getNextElementSibling(td);
