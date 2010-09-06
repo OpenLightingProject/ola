@@ -243,8 +243,11 @@ void ResponseHandler::ProductDetailIdList(
     return;
   vector<uint16_t>::const_iterator iter = ids.begin();
   cout << "Product Detail IDs" << endl;
-  for (; iter != ids.end(); ++iter)
-    cout << "  0x" << std::hex << *iter << endl;
+  for (; iter != ids.end(); ++iter) {
+    cout << "  ";
+    PrintProductDetail(*iter);
+    cout << endl;
+  }
 }
 
 
@@ -1543,6 +1546,254 @@ void ResponseHandler::PrintNackReason(uint16_t reason) {
       break;
     default:
       cout << "Unknown, was " << reason;
+  }
+}
+
+
+void ResponseHandler::PrintProductDetail(uint16_t detail) {
+  switch (detail) {
+    case ola::rdm::PRODUCT_DETAIL_NOT_DECLARED:
+      cout << "Not declared";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_ARC:
+      cout << "Arc Lamp";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_METAL_HALIDE:
+      cout << "Metal Halide Lamp";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_INCANDESCENT:
+      cout << "Incandescent Lamp";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_LED:
+      cout << "LED";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FLUROESCENT:
+      cout << "Fluroescent";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_COLDCATHODE:
+      cout << "Cold Cathode";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_ELECTROLUMINESCENT:
+      cout << "Electro-luminescent";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_LASER:
+      cout << "Lase";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FLASHTUBE:
+      cout << "Flash Tube";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_COLORSCROLLER:
+      cout << "Color Scroller";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_COLORWHEEL:
+      cout << "Color Wheel";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_COLORCHANGE:
+      cout << "Color Changer (Semaphore or other type)";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_IRIS_DOUSER:
+      cout << "Iris";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_DIMMING_SHUTTER:
+      cout << "Dimming Shuttle";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_PROFILE_SHUTTER:
+      cout << "Profile Shuttle";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_BARNDOOR_SHUTTER:
+      cout << "Barndoor Shuttle";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_EFFECTS_DISC:
+      cout << "Effects Disc";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_GOBO_ROTATOR:
+      cout << "Gobo Rotator";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_VIDEO:
+      cout << "Video";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_SLIDE:
+      cout << "Slide";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FILM:
+      cout << "Film";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_OILWHEEL:
+      cout << "Oil Wheel";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_LCDGATE:
+      cout << "LCD Gate";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FOGGER_GLYCOL:
+      cout << "Fogger, Glycol";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FOGGER_MINERALOIL:
+      cout << "Fogger, Mineral Oil";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FOGGER_WATER:
+      cout << "Fogger, Water";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_CO2:
+      cout << "Dry Ice/ Carbon Dioxide Device";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_LN2:
+      cout << "Nitrogen based";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_BUBBLE:
+      cout << "Bubble or Foam Machine";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FLAME_PROPANE:
+      cout << "Propane Flame";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FLAME_OTHER:
+      cout << "Other Flame";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_OLEFACTORY_STIMULATOR:
+      cout << "Scents";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_SNOW:
+      cout << "Snow Machine";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_WATER_JET:
+      cout << "Water Jet";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_WIND:
+      cout << "Wind Machine";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_CONFETTI:
+      cout << "Confetti Machine";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_HAZARD:
+      cout << "Hazard (Any form of pyrotechnic control or device.)";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_PHASE_CONTROL:
+      cout << "Phase Control";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_REVERSE_PHASE_CONTROL:
+      cout << "Phase Angle";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_SINE:
+      cout << "Sine";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_PWM:
+      cout << "PWM";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_DC:
+      cout << "DC";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_HFBALLAST:
+      cout << "HF Ballast";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_HFHV_NEONBALLAST:
+      cout << "HFHV Neon/Argon";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_HFHV_EL:
+      cout << "HFHV Electroluminscent";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_MHR_BALLAST:
+      cout << "Metal Halide Ballast";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_BITANGLE_MODULATION:
+      cout << "Bit Angle Modulation";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FREQUENCY_MODULATION:
+      cout << "Frequency Modulation";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_HIGHFREQUENCY_12V:
+      cout << "High Frequency 12V";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_RELAY_MECHANICAL:
+      cout << "Mechanical Relay";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_RELAY_ELECTRONIC:
+      cout << "Electronic Relay";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_SWITCH_ELECTRONIC:
+      cout << "Electronic Switch";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_CONTACTOR:
+      cout << "Contactor";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_MIRRORBALL_ROTATOR:
+      cout << "Mirror Ball Rotator";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_OTHER_ROTATOR:
+      cout << "Other Rotator";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_KABUKI_DROP:
+      cout << "Kabuki Drop";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_CURTAIN:
+      cout << "Curtain";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_LINESET:
+      cout << "Line Set";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_MOTOR_CONTROL:
+      cout << "Motor Control";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_DAMPER_CONTROL:
+      cout << "Damper Control";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_SPLITTER:
+      cout << "Splitter";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_ETHERNET_NODE:
+      cout << "Ethernet Node";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_MERGE:
+      cout << "DMX512 Merger";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_DATAPATCH:
+      cout << "Data Patch";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_WIRELESS_LINK:
+      cout << "Wireless link";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_PROTOCOL_CONVERTOR:
+      cout << "Protocol Convertor";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_ANALOG_DEMULTIPLEX:
+      cout << "DMX512 to DC Voltage";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_ANALOG_MULTIPLEX:
+      cout << "DC Voltage to DMX512";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_SWITCH_PANEL:
+      cout << "Switch Panel";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_ROUTER:
+      cout << "Router";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_FADER:
+      cout << "Fader, Single Channel";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_MIXER:
+      cout << "Mixer, Multi Channel";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_CHANGEOVER_MANUAL:
+      cout << "Manual Changeover";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_CHANGEOVER_AUTO:
+      cout << "Auto Changeover";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_TEST:
+      cout << "Test Device";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_GFI_RCD:
+      cout << "GFI / RCD Device";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_BATTERY:
+      cout << "Battery";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_CONTROLLABLE_BREAKER:
+      cout << "Controllable Breaker";
+      break;
+    case ola::rdm::PRODUCT_DETAIL_OTHER:
+      cout << "Other Device";
+      break;
+    default:
+      cout << "Unknown, was " << detail;
   }
 }
 // End  implementation
