@@ -591,7 +591,10 @@ void ResponseHandler::SetDMXAddress(const ResponseStatus &status) {
 void ResponseHandler::SetSensorValue(
     const ResponseStatus &status,
     const ola::rdm::SensorValueDescriptor &descriptor) {
-  CheckForSuccess(status);
+  if (!CheckForSuccess(status))
+    return;
+  // The labpack returns a sensor definition even when it nacks. This behaviour
+  // isn't guaranteed however.
   cout << "Sensor #: " << static_cast<int>(descriptor.sensor_number) << endl;
   cout << "Present Value: " << descriptor.present_value << endl;
   cout << "Lowest Value: " << descriptor.lowest << endl;
