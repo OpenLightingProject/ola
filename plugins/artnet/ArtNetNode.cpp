@@ -1094,7 +1094,7 @@ void ArtNetNode::HandleRdmResponse(unsigned int port_id,
     if (response->ResponseType() == ola::rdm::ACK_OVERFLOW) {
       OLA_INFO << "Continued ACK_OVERFLOW session for " <<
         iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
-        ", PID " << iter->first->ParamId();
+        ", PID " << std::hex << iter->first->ParamId();
       const RDMResponse *existing_reponse = iter->first;
       iter->first = RDMResponse::CombineResponses(existing_reponse,
                                                   response);
@@ -1112,7 +1112,7 @@ void ArtNetNode::HandleRdmResponse(unsigned int port_id,
       // end of the series, remove and call handler
       OLA_INFO << "Final packet in ACK_OVERFLOW session for " <<
         iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
-        ", PID " << iter->first->ParamId();
+        ", PID " << std::hex << iter->first->ParamId();
       const RDMResponse *full_response = RDMResponse::CombineResponses(
          iter->first,
          response);
@@ -1126,7 +1126,7 @@ void ArtNetNode::HandleRdmResponse(unsigned int port_id,
       OLA_INFO << "Got " << static_cast<int>(response->ResponseType()) <<
         " in ACK_OVERFLOW session for " <<
         iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
-        ", PID " << iter->first->ParamId() << ", aborting session";
+        ", PID " << std::hex << iter->first->ParamId() << ", aborting session";
       delete iter->first;
       delete response;
       m_overflowed_responses.erase(iter);
@@ -1134,7 +1134,7 @@ void ArtNetNode::HandleRdmResponse(unsigned int port_id,
   } else if (response->ResponseType() == ola::rdm::ACK_OVERFLOW) {
     OLA_INFO << "Got new ACK_OVERFLOW for " <<
       response->SourceUID() << " -> " << response->DestinationUID() <<
-      ", PID " << response->ParamId();
+      ", PID " << std::hex << response->ParamId();
 
     if (GetRemainingData(port_id, response)) {
       pair<const RDMResponse*, TimeStamp> p(response,
@@ -1154,12 +1154,11 @@ bool ArtNetNode::GetRemainingData(unsigned int port_id,
                                   const RDMResponse *response) {
   const RDMRequest *request = GenerateRequestFromResponse(response);
   if (request) {
-    if (SendRDMRequest(port_id, *request)) {
+    bool r = SendRDMRequest(port_id, *request);
+    delete request;
+    if (!r)
       OLA_INFO << "Failed to send a continuation message, aborting session";
-      delete request;
-      return true;
-    }
-    return false;
+    return r;
   }
   return false;
 }
