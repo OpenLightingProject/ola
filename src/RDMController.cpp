@@ -505,34 +505,6 @@ bool RDMController::NoArgsRootDeviceSetCheck(const UID &uid,
 }
 
 
-/*
- * Check the sub device is valid or broadcast
- */
-bool RDMController::StatusTypeCheck(const UID &uid,
-                                    uint16_t sub_device,
-                                    const vector<string> &args,
-                                    string *error) {
-  if (sub_device) {
-    *error = "Sub device must be 0 (root device)";
-    return false;
-  }
-  if (!args.size() || args.size() > 1) {
-    *error = "Requires one of {none, error, warning, advisory}";
-    return false;
-  }
-  ola::rdm::rdm_status_type status_type;
-  if (!StringToStatusType(args[0], &status_type)) {
-    *error = "Invalid arg: ";
-    *error += args[0];
-    return false;
-  }
-  return true;
-}
-
-
-// Custom verify methods
-
-
 // Now we have the get/ set methods
 //-----------------------------------------------------------------------------
 
@@ -586,7 +558,7 @@ bool RDMController::GetStatusMessage(const UID &uid,
                                      string *error) {
   ola::rdm::rdm_status_type status_type;
   if (args.size() != 1 || (!StringToStatusType(args[0], &status_type))) {
-    *error = "arg must be one of {none, error, warning, advisory}";
+    *error = "arg must be one of {none, last, error, warning, advisory}";
     return false;
   }
   return m_api->GetStatusMessage(
@@ -643,6 +615,10 @@ bool RDMController::SetSubDeviceReporting(const UID &uid,
                                           string *error) {
   ola::rdm::rdm_status_type status_type;
   if (args.size() != 1 || (!StringToStatusType(args[0], &status_type))) {
+    *error = "arg must be one of {none, error, warning, advisory}";
+    return false;
+  }
+  if (status_type == ola::rdm::STATUS_GET_LAST_MESSAGE) {
     *error = "arg must be one of {none, error, warning, advisory}";
     return false;
   }
@@ -1523,6 +1499,9 @@ bool RDMController::StringToStatusType(
   ola::ToLower(&lower_arg);
   if (arg == "none") {
     *status_type = ola::rdm::STATUS_NONE;
+    return true;
+  } else if (lower_arg == "last") {
+    *status_type = ola::rdm::STATUS_GET_LAST_MESSAGE;
     return true;
   } else if (lower_arg == "error") {
     *status_type = ola::rdm::STATUS_ERROR;

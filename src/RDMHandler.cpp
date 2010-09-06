@@ -96,6 +96,7 @@ void ResponseHandler::StatusMessages(
     return;
   vector<ola::rdm::StatusMessage>::const_iterator iter = messages.begin();
   cout << "Status Messages" << endl;
+  cout << "------------------" << endl;
   for (; iter != messages.end(); ++iter) {
     cout << "Sub Device: " << iter->sub_device << endl;
     PrintStatusType(iter->status_type);
