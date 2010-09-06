@@ -412,7 +412,7 @@ RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason_enum) {
   uint16_t reason = ola::network::HostToNetwork(static_cast<uint16_t>(
     reason_enum));
-  if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND_RESPONSE) {
+  if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
     return new ola::rdm::RDMGetResponse(
       request->DestinationUID(),
       request->SourceUID(),
