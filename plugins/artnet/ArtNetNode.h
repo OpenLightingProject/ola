@@ -21,10 +21,10 @@
 #ifndef PLUGINS_ARTNET_ARTNETNODE_H_
 #define PLUGINS_ARTNET_ARTNETNODE_H_
 
-#include <string>
 #include <map>
+#include <queue>
+#include <string>
 #include <utility>
-#include <vector>
 
 #include "ola/Clock.h"
 #include "ola/Closure.h"
@@ -40,8 +40,9 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
-using std::string;
 using std::map;
+using std::queue;
+using std::string;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -95,6 +96,11 @@ class ArtNetNode {
       rdm_tod_callback *on_tod;
       rdm_response_callback *on_rdm_response;
       bool discovery_running;
+
+      // these control the sending of RDM requests.
+      timeout_id rdm_send_timeout;
+      queue<const class ola::rdm::RDMRequest *> pending_rdm_requests;
+      const RDMResponse *overflowed_response;
     };
 
     enum { MAX_MERGE_SOURCES = 2 };
@@ -158,7 +164,7 @@ class ArtNetNode {
     bool SendDMX(uint8_t port_id, const ola::DmxBuffer &buffer);
     bool SendTodRequest(uint8_t port_id);
     bool ForceDiscovery(uint8_t port_id);
-    bool SendRDMRequest(uint8_t port_id, const RDMRequest &request);
+    bool SendRDMRequest(uint8_t port_id, const RDMRequest *request);
     bool SetInputPortRDMHandlers(
         uint8_t port_id,
         rdm_tod_callback *on_tod,
@@ -193,9 +199,6 @@ class ArtNetNode {
     ola::network::Interface m_interface;
     ola::network::UdpSocket *m_socket;
     timeout_id m_discovery_timeout;
-    // This has a list of ack_overflow responses and a timestamp of when they
-    // arrived.
-    vector<std::pair<const RDMResponse*, TimeStamp> > m_overflowed_responses;
 
     ArtNetNode(const ArtNetNode&);
     ArtNetNode& operator=(const ArtNetNode&);
@@ -227,8 +230,6 @@ class ArtNetNode {
                    unsigned int packet_size);
     void HandleRdmResponse(unsigned int port_id,
                            const RDMResponse *response);
-    bool GetRemainingData(unsigned int port_id,
-                          const RDMResponse *response);
     void HandleIPProgram(const IPAddress &source_address,
                          const artnet_ip_prog_t &packet,
                          unsigned int packet_size);
@@ -237,6 +238,10 @@ class ArtNetNode {
     bool SendPacket(const artnet_packet &packet,
                     unsigned int size,
                     const IPAddress &destination);
+    void MaybeSendRDMRequest(uint8_t port_id);
+    bool SendFirstRDMRequest(uint8_t port_id);
+    void TimeoutRDMRequest(uint8_t port_id);
+    void ClearPendingRDMRequest(uint8_t port_id);
     bool SendRDMCommand(const RDMCommand &command,
                         const IPAddress &destination,
                         uint8_t universe);
@@ -279,8 +284,11 @@ class ArtNetNode {
     static const unsigned int RDM_TOD_TIMEOUT_MS = 10000;
     // Number of missed TODs before we decide a UID has gone
     static const unsigned int RDM_MISSED_TODDATA_LIMIT = 3;
-    // The number of seconds after which we declare a ack_overflow session dead
-    static const unsigned int RDM_ACK_OVERFLOW_TIMEOUT = 3;
+    // The maximum number of requests we'll allow in the queue. This is a per
+    // port (universe) limit.
+    static const unsigned int RDM_REQUEST_QUEUE_LIMIT = 100;
+    // How long to wait for a response to an RDM Request
+    static const unsigned int RDM_REQUEST_TIMEOUT = 2;
 };
 }  // artnet
 }  // plugin

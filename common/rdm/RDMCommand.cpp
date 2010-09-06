@@ -285,19 +285,6 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
 
 
 /**
- * Check if this response is related to another. This is used to detect
- * continuations for ACK_OVERFLOW sequeneces.
- */
-bool RDMResponse::IsRelated(const RDMResponse *response) const {
-  return (SourceUID() == response->SourceUID() &&
-          DestinationUID() == response->DestinationUID() &&
-          SubDevice() == response->SubDevice() &&
-          ParamId() == response->ParamId() &&
-          CommandClass() == response->CommandClass());
-}
-
-
-/*
  * Inflate a request from some data
  */
 RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
@@ -351,13 +338,10 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
  * @param response1 the first response.
  * @param response1 the second response.
  * @return A new response with the data from the first and second combined or
- * NULL if these responses aren't related - see IsRelated().
+ * NULL if the size limit is reached.
  */
 RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
                                            const RDMResponse *response2) {
-  if (!response1->IsRelated(response2))
-    return NULL;
-
   unsigned int combined_length = response1->ParamDataSize() +
     response2->ParamDataSize();
   // do some sort of checking
@@ -468,32 +452,6 @@ RDMResponse *GetResponseWithData(const RDMRequest *request,
       data,
       length);
   }
-}
-
-
-/**
- * Generate a request to re-fetch this data. This is used to deal with
- * ACK_OVERFLOW cases.
- * This isn't perfect, because we don't have the original data to put in the
- * payload, see http://www.rdmprotocol.org/forums/showthread.php?t=1074
- */
-const RDMRequest *GenerateRequestFromResponse(const RDMResponse *response) {
-  if (response->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND_RESPONSE) {
-    return new RDMGetRequest(
-      response->DestinationUID(),
-      response->SourceUID(),
-      // yuck, re-use the transaction # here
-      response->TransactionNumber(),
-      1,  // use a port id of 1
-      0,
-      response->SubDevice(),
-      response->ParamId(),
-      NULL,
-      0);
-  }
-  OLA_INFO << "Not generating a request for a non-get command, CC was " <<
-    static_cast<int>(response->CommandClass());
-  return NULL;
 }
 }  // rdm
 }  //  ola

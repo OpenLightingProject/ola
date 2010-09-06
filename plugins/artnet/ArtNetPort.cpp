@@ -166,8 +166,7 @@ bool ArtNetOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
   // Discovery requests aren't proxied
   bool ret = true;
   if (request->CommandClass() != RDMCommand::DISCOVER_COMMAND)
-    ret = m_helper.GetNode()->SendRDMRequest(PortId(), *request);
-  delete request;
+    ret = m_helper.GetNode()->SendRDMRequest(PortId(), request);
   return ret;
 }
 

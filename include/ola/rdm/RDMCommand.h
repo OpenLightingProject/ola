@@ -233,8 +233,6 @@ class RDMResponse: public RDMCommand {
 
     uint8_t ResponseType() const { return m_port_id; }
 
-    bool IsRelated(const RDMResponse *response) const;
-
     // The maximum size of an ACK_OVERFLOW session that we'll buffer
     // 4k should be big enough for everyone ;)
     static const unsigned int MAX_OVERFLOW_SIZE = 4 << 10;
@@ -283,7 +281,6 @@ RDMResponse *NackWithReason(const RDMRequest *request,
 RDMResponse *GetResponseWithData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length);
-const RDMRequest *GenerateRequestFromResponse(const RDMResponse *response);
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_

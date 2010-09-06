@@ -23,7 +23,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
@@ -80,6 +79,8 @@ ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
     m_input_ports[i].on_tod = NULL;
     m_input_ports[i].on_rdm_response = NULL;
     m_input_ports[i].discovery_running = false;
+    m_input_ports[i].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
+    m_input_ports[i].overflowed_response = NULL;
 
     m_output_ports[i].universe_address = 0;
     m_output_ports[i].sequence_number = 0;
@@ -153,6 +154,19 @@ bool ArtNetNode::Stop() {
     m_discovery_timeout = ola::network::INVALID_TIMEOUT;
   }
 
+  for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
+    if (m_input_ports[i].rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
+      m_plugin_adaptor->RemoveTimeout(m_input_ports[i].rdm_send_timeout);
+      m_input_ports[i].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
+    }
+
+    // clean up any pending RDM messsages.
+    while (!m_input_ports[i].pending_rdm_requests.empty()) {
+      delete m_input_ports[i].pending_rdm_requests.front();
+      m_input_ports[i].pending_rdm_requests.pop();
+    }
+  }
+
   m_plugin_adaptor->RemoveSocket(m_socket);
 
   if (m_socket) {
@@ -160,12 +174,6 @@ bool ArtNetNode::Stop() {
     m_socket = NULL;
   }
 
-  // clean up any overflowed responses
-  vector<pair<const RDMResponse*, TimeStamp> >::iterator iter;
-  for (iter = m_overflowed_responses.begin(); iter !=
-      m_overflowed_responses.end(); ++iter) {
-    delete iter->first;
-  }
   m_running = false;
   return true;
 }
@@ -448,30 +456,25 @@ bool ArtNetNode::ForceDiscovery(uint8_t port_id) {
 
 
 /*
- * Send an RDMRequest on this port
+ * Send an RDMRequest on this port, this may defer the sending if there are
+ * other outstanding messages in the queue.
  * @param port_id the if of the port to send the request on
  * @param request the RDMRequest object
  */
-bool ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest &request) {
+bool ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request) {
   if (!CheckInputPortState(port_id, "ArtRDM"))
     return false;
 
-  const UID &uid_destination = request.DestinationUID();
-  uid_map::const_iterator iter =
-    m_input_ports[port_id].uids.find(uid_destination);
-
-  IPAddress destination = m_interface.bcast_address;
-
-  if (iter == m_input_ports[port_id].uids.end()) {
-    OLA_WARN << "Couldn't find " << uid_destination <<
-      " in the uid map, broadcasting packet";
-  } else {
-    destination = iter->second.first;
+  if (m_input_ports[port_id].pending_rdm_requests.size() >=
+      RDM_REQUEST_QUEUE_LIMIT) {
+    OLA_WARN << "RDM Request queue limit reached. " <<
+      m_input_ports[port_id].pending_rdm_requests.size() <<
+      " requests in queue, limit is " << RDM_REQUEST_QUEUE_LIMIT;
+    return false;
   }
-
-  return SendRDMCommand(request,
-                        destination,
-                        m_input_ports[port_id].universe_address);
+  m_input_ports[port_id].pending_rdm_requests.push(request);
+  MaybeSendRDMRequest(port_id);
+  return true;
 }
 
 
@@ -1065,102 +1068,92 @@ void ArtNetNode::HandleRdm(const IPAddress &source_address,
  */
 void ArtNetNode::HandleRdmResponse(unsigned int port_id,
                                    const RDMResponse *response) {
-  // clear out any expired overflow entries
-  TimeStamp last_heard_threshold = (
-      *m_plugin_adaptor->WakeUpTime() -
-      TimeInterval(RDM_ACK_OVERFLOW_TIMEOUT, 0));
-  vector<std::pair<const RDMResponse*, TimeStamp> >::iterator iter;
-  for (iter = m_overflowed_responses.begin();
-       iter != m_overflowed_responses.end();) {
-    if (iter->second < last_heard_threshold) {
-      OLA_INFO << "Timed out ACK_OVERFLOW session for " <<
-        iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
-        ", PID " << iter->first->ParamId();
-      iter = m_overflowed_responses.erase(iter);
-    } else {
-      iter++;
-    }
+  InputPort &input_port = m_input_ports[port_id];
+  if (input_port.pending_rdm_requests.empty())
+    return;
+
+  const RDMRequest *request = input_port.pending_rdm_requests.front();
+  if (request->SourceUID() != response->DestinationUID() ||
+      request->DestinationUID() != response->SourceUID() ||
+      request->SubDevice() != response->SubDevice() ||
+      request->ParamId() != response->ParamId()) {
+    OLA_INFO << "Got an unexpected RDM response";
+    return;
   }
 
-  // see if this response matches any outstanding sessions
-  for (iter = m_overflowed_responses.begin();
-       iter != m_overflowed_responses.end(); ++iter) {
-    if (iter->first->IsRelated(response))
-      break;
+  if ((request->CommandClass() == RDMCommand::GET_COMMAND &&
+       response->CommandClass() != RDMCommand::GET_COMMAND_RESPONSE) ||
+      (request->CommandClass() == RDMCommand::SET_COMMAND &&
+       response->CommandClass() != RDMCommand::SET_COMMAND_RESPONSE)) {
+    OLA_INFO << "Unmatched RDM response, request CC was " << std::hex <<
+      static_cast<int>(request->CommandClass()) << ", response CC was " <<
+      static_cast<int>(response->CommandClass());
+    return;
   }
 
-  if (iter != m_overflowed_responses.end()) {
-    // this matches part of an existing ack_overflow session.
+  if (input_port.overflowed_response) {
     if (response->ResponseType() == ola::rdm::ACK_OVERFLOW) {
       OLA_INFO << "Continued ACK_OVERFLOW session for " <<
-        iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
-        ", PID " << std::hex << iter->first->ParamId();
-      const RDMResponse *existing_reponse = iter->first;
-      iter->first = RDMResponse::CombineResponses(existing_reponse,
-                                                  response);
+        response->SourceUID() << " -> " << response->DestinationUID() <<
+        ", PID " << std::hex << response->ParamId();
+      const RDMResponse *existing_reponse = input_port.overflowed_response;
+      input_port.overflowed_response = RDMResponse::CombineResponses(
+          existing_reponse,
+          response);
       delete response;
       delete existing_reponse;
-      iter->second = *m_plugin_adaptor->WakeUpTime();
 
-      if (iter->first) {
-        if (GetRemainingData(port_id, iter->first))
+      if (input_port.overflowed_response) {
+        // combine worked
+        if (SendFirstRDMRequest(port_id)) {
+          input_port.overflowed_response = response;
           return;
-        delete iter->first;
+        } else {
+          // send failed, abort
+          delete input_port.overflowed_response;
+          input_port.overflowed_response = NULL;
+        }
       }
-      m_overflowed_responses.erase(iter);
     } else if (response->ResponseType() == ola::rdm::ACK) {
-      // end of the series, remove and call handler
+      // end of the session, remove and call handler
       OLA_INFO << "Final packet in ACK_OVERFLOW session for " <<
-        iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
-        ", PID " << std::hex << iter->first->ParamId();
+        response->SourceUID() << " -> " << response->DestinationUID() <<
+        ", PID " << std::hex << response->ParamId();
       const RDMResponse *full_response = RDMResponse::CombineResponses(
-         iter->first,
+         input_port.overflowed_response,
          response);
-      delete iter->first;
+      delete input_port.overflowed_response;
+      input_port.overflowed_response = NULL;
       delete response;
-      m_overflowed_responses.erase(iter);
 
       if (full_response)
-        m_input_ports[port_id].on_rdm_response->Run(full_response);
+        input_port.on_rdm_response->Run(full_response);
     } else {
+      // not an ack or overflow, abort transfer
       OLA_INFO << "Got " << static_cast<int>(response->ResponseType()) <<
         " in ACK_OVERFLOW session for " <<
-        iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
-        ", PID " << std::hex << iter->first->ParamId() << ", aborting session";
-      delete iter->first;
+        response->SourceUID() << " -> " << response->DestinationUID() <<
+        ", PID " << std::hex << response->ParamId() << ", aborting session";
       delete response;
-      m_overflowed_responses.erase(iter);
     }
   } else if (response->ResponseType() == ola::rdm::ACK_OVERFLOW) {
     OLA_INFO << "Got new ACK_OVERFLOW for " <<
       response->SourceUID() << " -> " << response->DestinationUID() <<
       ", PID " << std::hex << response->ParamId();
 
-    if (GetRemainingData(port_id, response)) {
-      pair<const RDMResponse*, TimeStamp> p(response,
-                                            *m_plugin_adaptor->WakeUpTime());
-      m_overflowed_responses.push_back(p);
+    if (SendFirstRDMRequest(port_id)) {
+      input_port.overflowed_response = response;
+      return;
     } else {
+      // send failed, abort
       delete response;
     }
   } else {
     // this is just a normal response
-    m_input_ports[port_id].on_rdm_response->Run(response);
+    input_port.on_rdm_response->Run(response);
   }
-}
-
-
-bool ArtNetNode::GetRemainingData(unsigned int port_id,
-                                  const RDMResponse *response) {
-  const RDMRequest *request = GenerateRequestFromResponse(response);
-  if (request) {
-    bool r = SendRDMRequest(port_id, *request);
-    delete request;
-    if (!r)
-      OLA_INFO << "Failed to send a continuation message, aborting session";
-    return r;
-  }
-  return false;
+  ClearPendingRDMRequest(port_id);
+  MaybeSendRDMRequest(port_id);
 }
 
 
@@ -1229,6 +1222,86 @@ bool ArtNetNode::SendPacket(const artnet_packet &packet,
     return false;
   }
   return true;
+}
+
+
+/**
+ * Send an pending RDM request if we can.
+ * @param port_id the id of the port to send the requests for.
+ */
+void ArtNetNode::MaybeSendRDMRequest(uint8_t port_id) {
+  InputPort &input_port = m_input_ports[port_id];
+
+  if (input_port.pending_rdm_requests.empty())
+    return;
+
+  if (input_port.rdm_send_timeout != ola::network::INVALID_TIMEOUT)
+    return;
+
+  if (SendFirstRDMRequest(port_id)) {
+    input_port.rdm_send_timeout = m_plugin_adaptor->RegisterSingleTimeout(
+      RDM_REQUEST_TIMEOUT,
+      ola::NewSingleClosure(this, &ArtNetNode::TimeoutRDMRequest, port_id));
+  } else {
+    // send failed, remove this request and try the next one.
+    ClearPendingRDMRequest(port_id);
+    MaybeSendRDMRequest(port_id);
+  }
+}
+
+
+/**
+ * Send the RDM request from the head of the queue.
+ * @param port_id the id of the port to send the requests for.
+ */
+bool ArtNetNode::SendFirstRDMRequest(uint8_t port_id) {
+  InputPort &input_port = m_input_ports[port_id];
+  const RDMRequest *request = input_port.pending_rdm_requests.front();
+
+  const UID &uid_destination = request->DestinationUID();
+  uid_map::const_iterator iter =
+    m_input_ports[port_id].uids.find(uid_destination);
+
+  IPAddress destination = m_interface.bcast_address;
+
+  if (iter == m_input_ports[port_id].uids.end()) {
+    OLA_WARN << "Couldn't find " << uid_destination <<
+      " in the uid map, broadcasting packet";
+  } else {
+    destination = iter->second.first;
+  }
+
+  return SendRDMCommand(*request,
+                        destination,
+                        m_input_ports[port_id].universe_address);
+}
+
+
+/**
+ * Timeout a pending RDM request
+ * @param port_id the id of the port to timeout.
+ */
+void ArtNetNode::TimeoutRDMRequest(uint8_t port_id) {
+  OLA_INFO << "RDM Request timed out.";
+  m_input_ports[port_id].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
+  ClearPendingRDMRequest(port_id);
+  MaybeSendRDMRequest(port_id);
+}
+
+
+/**
+ * Remove the head of the pending queue and reset the timeout.
+ */
+void ArtNetNode::ClearPendingRDMRequest(uint8_t port_id) {
+  InputPort &input_port = m_input_ports[port_id];
+  if (!input_port.pending_rdm_requests.empty()) {
+    delete input_port.pending_rdm_requests.front();
+    input_port.pending_rdm_requests.pop();
+  }
+  if (input_port.rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
+    m_plugin_adaptor->RemoveTimeout(input_port.rdm_send_timeout);
+    input_port.rdm_send_timeout = ola::network::INVALID_TIMEOUT;
+  }
 }
 
 
