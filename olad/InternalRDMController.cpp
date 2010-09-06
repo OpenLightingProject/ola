@@ -181,7 +181,7 @@ bool InternalRDMController::SendRDMRequest(
   if (transaction_iter == m_transaction_numbers.end())
     m_transaction_numbers[transaction_key] = 0;
   else
-    transaction_number = transaction_iter->second++;
+    transaction_number = ++transaction_iter->second;
 
   ola::rdm::RDMRequest *request = NULL;
   if (is_set) {
