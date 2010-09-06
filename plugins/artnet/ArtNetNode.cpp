@@ -1133,8 +1133,8 @@ void ArtNetNode::HandleRdmResponse(unsigned int port_id,
     }
   } else if (response->ResponseType() == ola::rdm::ACK_OVERFLOW) {
     OLA_INFO << "Got new ACK_OVERFLOW for " <<
-      iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
-      ", PID " << iter->first->ParamId();
+      response->SourceUID() << " -> " << response->DestinationUID() <<
+      ", PID " << response->ParamId();
     pair<const RDMResponse*, TimeStamp> p(response,
                                           *m_plugin_adaptor->WakeUpTime());
     m_overflowed_responses.push_back(p);
