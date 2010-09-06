@@ -863,7 +863,11 @@ bool RDMController::SetDMXPersonality(const UID &uid,
                                       string *error) {
   uint8_t personality;
   if (args.size() != 1 || (!ola::StringToUInt8(args[0], &personality))) {
-    *error = "Argument must be an integer between 0 and 255";
+    *error = "Argument must be an integer between 1 and 255";
+    return false;
+  }
+  if (personality == 0) {
+    *error = "Personality can't be 0";
     return false;
   }
   return m_api->SetDMXPersonality(
@@ -881,7 +885,11 @@ bool RDMController::GetDMXPersonalityDescription(const UID &uid,
                                                  string *error) {
   uint8_t personality;
   if (args.size() != 1 || (!ola::StringToUInt8(args[0], &personality))) {
-    *error = "Argument must be an integer between 0 and 255";
+    *error = "Argument must be an integer between 1 and 255";
+    return false;
+  }
+  if (personality == 0) {
+    *error = "Personality can't be 0";
     return false;
   }
   return m_api->GetDMXPersonalityDescription(
