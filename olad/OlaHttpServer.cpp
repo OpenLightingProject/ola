@@ -731,6 +731,10 @@ void OlaHttpServer::UpdatePortPriorites(const HttpRequest *request,
  * Add the json representation of this port to the stringstream
  */
 void OlaHttpServer::PortToJson(const Port *port, stringstream *str) {
+  // skip ports which don't have parent devices like the InternalInputPort
+  if (!port->GetDevice())
+    return;
+
   *str << "    {" << endl;
   *str << "      \"device\": \"" << EscapeString(port->GetDevice()->Name())
     << "\"," << endl;
