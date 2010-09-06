@@ -1240,7 +1240,7 @@ void ArtNetNode::MaybeSendRDMRequest(uint8_t port_id) {
 
   if (SendFirstRDMRequest(port_id)) {
     input_port.rdm_send_timeout = m_plugin_adaptor->RegisterSingleTimeout(
-      RDM_REQUEST_TIMEOUT,
+      RDM_REQUEST_TIMEOUT_MS,
       ola::NewSingleClosure(this, &ArtNetNode::TimeoutRDMRequest, port_id));
   } else {
     // send failed, remove this request and try the next one.
