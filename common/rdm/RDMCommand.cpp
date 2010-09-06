@@ -284,6 +284,19 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
 }
 
 
+/**
+ * Check if this response is related to another. This is used to detect
+ * continuations for ACK_OVERFLOW sequeneces.
+ */
+bool RDMResponse::IsRelated(const RDMResponse *response) const {
+  return (SourceUID() == response->SourceUID() &&
+          DestinationUID() == response->DestinationUID() &&
+          SubDevice() == response->SubDevice() &&
+          ParamId() == response->ParamId() &&
+          CommandClass() == response->CommandClass());
+}
+
+
 /*
  * Inflate a request from some data
  */
@@ -330,6 +343,66 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
   }
 }
 
+
+
+/**
+ * This combines two RDMResponses into one. It's used to combine the data from
+ * two responses in an ACK_OVERFLOW session together.
+ * @param response1 the first response.
+ * @param response1 the second response.
+ * @return A new response with the data from the first and second combined or
+ * NULL if these responses aren't related - see IsRelated().
+ */
+RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
+                                           const RDMResponse *response2) {
+  if (!response1->IsRelated(response2))
+    return NULL;
+
+  unsigned int combined_length = response1->ParamDataSize() +
+    response2->ParamDataSize();
+  // do some sort of checking
+  if (combined_length > MAX_OVERFLOW_SIZE) {
+    OLA_WARN << "ACK_OVERFLOW buffer size hit! Limit is " << MAX_OVERFLOW_SIZE
+      << ", request size is " << combined_length;
+    return NULL;
+  }
+  uint8_t *combined_data = new uint8_t[combined_length];
+  memcpy(combined_data, response1->ParamData(), response1->ParamDataSize());
+  memcpy(combined_data + response1->ParamDataSize(),
+         response2->ParamData(),
+         response2->ParamDataSize());
+
+  RDMResponse *response = NULL;
+  switch (response1->CommandClass()) {
+    case GET_COMMAND:
+      response = new RDMGetResponse(
+          response1->SourceUID(),
+          response1->DestinationUID(),
+          response1->TransactionNumber(),
+          response1->ResponseType(),
+          response1->MessageCount(),
+          response1->SubDevice(),
+          response1->ParamId(),
+          combined_data,
+          combined_length);
+    case SET_COMMAND:
+      response = new RDMSetResponse(
+          response1->SourceUID(),
+          response1->DestinationUID(),
+          response1->TransactionNumber(),
+          response1->ResponseType(),
+          response1->MessageCount(),
+          response1->SubDevice(),
+          response1->ParamId(),
+          combined_data,
+          combined_length);
+    default:
+      OLA_WARN << "Expected a RDM request command but got " <<
+        response1->CommandClass();
+  }
+  delete[] combined_data;
+  return response;
+}
 
 // Helper functions follow
 /*

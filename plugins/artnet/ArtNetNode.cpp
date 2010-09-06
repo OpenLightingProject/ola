@@ -23,6 +23,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
@@ -159,6 +160,12 @@ bool ArtNetNode::Stop() {
     m_socket = NULL;
   }
 
+  // clean up any overflowed responses
+  vector<pair<const RDMResponse*, TimeStamp> >::iterator iter;
+  for (iter = m_overflowed_responses.begin(); iter !=
+      m_overflowed_responses.end(); ++iter) {
+    delete iter->first;
+  }
   m_running = false;
   return true;
 }
@@ -1039,14 +1046,110 @@ void ArtNetNode::HandleRdm(const IPAddress &source_address,
         m_input_ports[port_id].on_rdm_response) {
       RDMResponse *response = RDMResponse::InflateFromData(packet.data,
                                                            rdm_length);
-
       if (response)
-        m_input_ports[port_id].on_rdm_response->Run(response);
+        HandleRdmResponse(port_id, response);
     }
   }
 }
 
 
+/**
+ * Handle an RDM response, taking care to deal with ACK_OVERFLOW messages.
+ * <rant>
+ * ArtNet as a protocol is broken, the nodes don't buffer ACK_OVERFLOW messages
+ * so if another GET/SET message arrives from *any* controller the ACK_OVERFLOW
+ * session will be reset, causing the controller to spin in a loop.
+ * TODO(simonn): lock out sending when we see an ACK_OVERFLOW to give us a
+ * better chance of completing the session.
+ * </rant>
+ */
+void ArtNetNode::HandleRdmResponse(unsigned int port_id,
+                                   const RDMResponse *response) {
+  // clear out any expired overflow entries
+  TimeStamp last_heard_threshold = (
+      *m_plugin_adaptor->WakeUpTime() -
+      TimeInterval(RDM_ACK_OVERFLOW_TIMEOUT, 0));
+  vector<std::pair<const RDMResponse*, TimeStamp> >::iterator iter;
+  for (iter = m_overflowed_responses.begin();
+       iter != m_overflowed_responses.end();) {
+    if (iter->second < last_heard_threshold) {
+      OLA_INFO << "Timed out ACK_OVERFLOW session for " <<
+        iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
+        ", PID " << iter->first->ParamId();
+      iter = m_overflowed_responses.erase(iter);
+    } else {
+      iter++;
+    }
+  }
+
+  // see if this response matches any outstanding sessions
+  for (iter = m_overflowed_responses.begin();
+       iter != m_overflowed_responses.end(); ++iter) {
+    if (iter->first->IsRelated(response))
+      break;
+  }
+
+  if (iter != m_overflowed_responses.end()) {
+    // this matches part of an existing ack_overflow session.
+    if (response->ResponseType() == ola::rdm::ACK_OVERFLOW) {
+      OLA_INFO << "Continued ACK_OVERFLOW session for " <<
+        iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
+        ", PID " << iter->first->ParamId();
+      const RDMResponse *existing_reponse = iter->first;
+      iter->first = RDMResponse::CombineResponses(existing_reponse,
+                                                  response);
+      delete response;
+      delete existing_reponse;
+      iter->second = *m_plugin_adaptor->WakeUpTime();
+
+      if (iter->first) {
+        // send another message here
+
+      } else {
+        m_overflowed_responses.erase(iter);
+      }
+    } else if (response->ResponseType() == ola::rdm::ACK) {
+      // end of the series, remove and call handler
+      OLA_INFO << "Final packet in ACK_OVERFLOW session for " <<
+        iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
+        ", PID " << iter->first->ParamId();
+      const RDMResponse *full_response = RDMResponse::CombineResponses(
+         iter->first,
+         response);
+      delete iter->first;
+      delete response;
+      m_overflowed_responses.erase(iter);
+
+      if (full_response)
+        m_input_ports[port_id].on_rdm_response->Run(full_response);
+    } else {
+      OLA_INFO << "Got " << static_cast<int>(response->ResponseType()) <<
+        " in ACK_OVERFLOW session for " <<
+        iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
+        ", PID " << iter->first->ParamId() << ", aborting session";
+      delete iter->first;
+      delete response;
+      m_overflowed_responses.erase(iter);
+    }
+  } else if (response->ResponseType() == ola::rdm::ACK_OVERFLOW) {
+    OLA_INFO << "Got new ACK_OVERFLOW for " <<
+      iter->first->SourceUID() << " -> " << iter->first->DestinationUID() <<
+      ", PID " << iter->first->ParamId();
+    pair<const RDMResponse*, TimeStamp> p(response,
+                                          *m_plugin_adaptor->WakeUpTime());
+    m_overflowed_responses.push_back(p);
+
+    // send another message here
+  } else {
+    // this is just a normal response
+    m_input_ports[port_id].on_rdm_response->Run(response);
+  }
+}
+
+
+/**
+ * Handle an IP Program message.
+ */
 void ArtNetNode::HandleIPProgram(const IPAddress &source_address,
                                  const artnet_ip_prog_t &packet,
                                  unsigned int packet_size) {

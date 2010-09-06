@@ -212,14 +212,14 @@ typedef BaseRDMRequest<RDMCommand::SET_COMMAND> RDMSetRequest;
 class RDMResponse: public RDMCommand {
   public:
     RDMResponse(const UID &source,
-               const UID &destination,
-               uint8_t transaction_number,
-               uint8_t response_type,
-               uint8_t message_count,
-               uint16_t sub_device,
-               uint16_t param_id,
-               const uint8_t *data,
-               unsigned int length):
+                const UID &destination,
+                uint8_t transaction_number,
+                uint8_t response_type,
+                uint8_t message_count,
+                uint16_t sub_device,
+                uint16_t param_id,
+                const uint8_t *data,
+                unsigned int length):
       RDMCommand(source,
                  destination,
                  transaction_number,
@@ -233,9 +233,19 @@ class RDMResponse: public RDMCommand {
 
     uint8_t ResponseType() const { return m_port_id; }
 
+    bool IsRelated(const RDMResponse *response) const;
+
+    // The maximum size of an ACK_OVERFLOW session that we'll buffer
+    // 4k should be big enough for everyone ;)
+    static const unsigned int MAX_OVERFLOW_SIZE = 4 << 10;
+
     // Convert a block of data to an RDMCommand object
     static RDMResponse* InflateFromData(const uint8_t *data,
-                                       unsigned int length);
+                                        unsigned int length);
+
+    // Combine two responses into one.
+    static RDMResponse* CombineResponses(const RDMResponse *response1,
+                                         const RDMResponse *response2);
 };
 
 

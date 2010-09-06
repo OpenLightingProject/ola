@@ -24,6 +24,8 @@
 #include <string>
 #include <map>
 #include <utility>
+#include <vector>
+
 #include "ola/Clock.h"
 #include "ola/Closure.h"
 #include "ola/DmxBuffer.h"
@@ -191,6 +193,9 @@ class ArtNetNode {
     ola::network::Interface m_interface;
     ola::network::UdpSocket *m_socket;
     timeout_id m_discovery_timeout;
+    // This has a list of ack_overflow responses and a timestamp of when they
+    // arrived.
+    vector<std::pair<const RDMResponse*, TimeStamp> > m_overflowed_responses;
 
     ArtNetNode(const ArtNetNode&);
     ArtNetNode& operator=(const ArtNetNode&);
@@ -220,6 +225,8 @@ class ArtNetNode {
     void HandleRdm(const IPAddress &source_address,
                    const artnet_rdm_t &packet,
                    unsigned int packet_size);
+    void HandleRdmResponse(unsigned int port_id,
+                           const RDMResponse *response);
     void HandleIPProgram(const IPAddress &source_address,
                          const artnet_ip_prog_t &packet,
                          unsigned int packet_size);
@@ -270,6 +277,8 @@ class ArtNetNode {
     static const unsigned int RDM_TOD_TIMEOUT_MS = 10000;
     // Number of missed TODs before we decide a UID has gone
     static const unsigned int RDM_MISSED_TODDATA_LIMIT = 3;
+    // The number of seconds after which we declare a ack_overflow session dead
+    static const unsigned int RDM_ACK_OVERFLOW_TIMEOUT = 3;
 };
 }  // artnet
 }  // plugin
