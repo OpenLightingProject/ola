@@ -385,6 +385,7 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
           response1->ParamId(),
           combined_data,
           combined_length);
+      break;
     case SET_COMMAND_RESPONSE:
       response = new RDMSetResponse(
           response1->SourceUID(),
@@ -396,9 +397,10 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
           response1->ParamId(),
           combined_data,
           combined_length);
+      break;
     default:
       OLA_WARN << "Expected a RDM request command but got " <<
-        response1->CommandClass();
+        std::hex << response1->CommandClass();
   }
   delete[] combined_data;
   return response;
