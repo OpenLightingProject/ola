@@ -1103,11 +1103,11 @@ void ArtNetNode::HandleRdmResponse(unsigned int port_id,
       iter->second = *m_plugin_adaptor->WakeUpTime();
 
       if (iter->first) {
-        // send another message here
-
-      } else {
-        m_overflowed_responses.erase(iter);
+        if (GetRemainingData(port_id, iter->first))
+          return;
+        delete iter->first;
       }
+      m_overflowed_responses.erase(iter);
     } else if (response->ResponseType() == ola::rdm::ACK) {
       // end of the series, remove and call handler
       OLA_INFO << "Final packet in ACK_OVERFLOW session for " <<
@@ -1135,15 +1135,33 @@ void ArtNetNode::HandleRdmResponse(unsigned int port_id,
     OLA_INFO << "Got new ACK_OVERFLOW for " <<
       response->SourceUID() << " -> " << response->DestinationUID() <<
       ", PID " << response->ParamId();
-    pair<const RDMResponse*, TimeStamp> p(response,
-                                          *m_plugin_adaptor->WakeUpTime());
-    m_overflowed_responses.push_back(p);
 
-    // send another message here
+    if (GetRemainingData(port_id, response)) {
+      pair<const RDMResponse*, TimeStamp> p(response,
+                                            *m_plugin_adaptor->WakeUpTime());
+      m_overflowed_responses.push_back(p);
+    } else {
+      delete response;
+    }
   } else {
     // this is just a normal response
     m_input_ports[port_id].on_rdm_response->Run(response);
   }
+}
+
+
+bool ArtNetNode::GetRemainingData(unsigned int port_id,
+                                  const RDMResponse *response) {
+  const RDMRequest *request = GenerateRequestFromResponse(response);
+  if (request) {
+    if (SendRDMRequest(port_id, *request)) {
+      OLA_INFO << "Failed to send a continuation message, aborting session";
+      delete request;
+      return true;
+    }
+    return false;
+  }
+  return false;
 }
 
 

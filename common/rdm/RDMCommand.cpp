@@ -467,5 +467,31 @@ RDMResponse *GetResponseWithData(const RDMRequest *request,
       length);
   }
 }
+
+
+/**
+ * Generate a request to re-fetch this data. This is used to deal with
+ * ACK_OVERFLOW cases.
+ * This isn't perfect, because we don't have the original data to put in the
+ * payload, see http://www.rdmprotocol.org/forums/showthread.php?t=1074
+ */
+const RDMRequest *GenerateRequestFromResponse(const RDMResponse *response) {
+  if (response->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND_RESPONSE) {
+    return new RDMGetRequest(
+      response->DestinationUID(),
+      response->SourceUID(),
+      // yuck, re-use the transaction # here
+      response->TransactionNumber(),
+      1,  // use a port id of 1
+      0,
+      response->SubDevice(),
+      response->ParamId(),
+      NULL,
+      0);
+  }
+  OLA_INFO << "Not generating a request for a non-get command, CC was " <<
+    static_cast<int>(response->CommandClass());
+  return NULL;
+}
 }  // rdm
 }  //  ola

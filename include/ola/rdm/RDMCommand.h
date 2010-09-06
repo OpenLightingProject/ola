@@ -283,6 +283,7 @@ RDMResponse *NackWithReason(const RDMRequest *request,
 RDMResponse *GetResponseWithData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length);
+const RDMRequest *GenerateRequestFromResponse(const RDMResponse *response);
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_

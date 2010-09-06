@@ -227,6 +227,8 @@ class ArtNetNode {
                    unsigned int packet_size);
     void HandleRdmResponse(unsigned int port_id,
                            const RDMResponse *response);
+    bool GetRemainingData(unsigned int port_id,
+                          const RDMResponse *response);
     void HandleIPProgram(const IPAddress &source_address,
                          const artnet_ip_prog_t &packet,
                          unsigned int packet_size);
