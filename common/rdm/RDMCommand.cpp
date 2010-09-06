@@ -374,7 +374,7 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
 
   RDMResponse *response = NULL;
   switch (response1->CommandClass()) {
-    case GET_COMMAND:
+    case GET_COMMAND_RESPONSE:
       response = new RDMGetResponse(
           response1->SourceUID(),
           response1->DestinationUID(),
@@ -385,7 +385,7 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
           response1->ParamId(),
           combined_data,
           combined_length);
-    case SET_COMMAND:
+    case SET_COMMAND_RESPONSE:
       response = new RDMSetResponse(
           response1->SourceUID(),
           response1->DestinationUID(),
