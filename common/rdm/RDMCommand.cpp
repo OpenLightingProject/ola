@@ -357,34 +357,33 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
          response2->ParamDataSize());
 
   RDMResponse *response = NULL;
-  switch (response1->CommandClass()) {
-    case GET_COMMAND_RESPONSE:
-      response = new RDMGetResponse(
-          response1->SourceUID(),
-          response1->DestinationUID(),
-          response1->TransactionNumber(),
-          ola::rdm::ACK,
-          response1->MessageCount(),
-          response1->SubDevice(),
-          response1->ParamId(),
-          combined_data,
-          combined_length);
-      break;
-    case SET_COMMAND_RESPONSE:
-      response = new RDMSetResponse(
-          response1->SourceUID(),
-          response1->DestinationUID(),
-          response1->TransactionNumber(),
-          ola::rdm::ACK,
-          response1->MessageCount(),
-          response1->SubDevice(),
-          response1->ParamId(),
-          combined_data,
-          combined_length);
-      break;
-    default:
-      OLA_WARN << "Expected a RDM request command but got " <<
-        std::hex << response1->CommandClass();
+  if (response1->CommandClass() == GET_COMMAND_RESPONSE &&
+      response2->CommandClass() == GET_COMMAND_RESPONSE) {
+    response = new RDMGetResponse(
+        response1->SourceUID(),
+        response1->DestinationUID(),
+        response1->TransactionNumber(),
+        ola::rdm::ACK,
+        response1->MessageCount(),
+        response1->SubDevice(),
+        response1->ParamId(),
+        combined_data,
+        combined_length);
+  } else if (response1->CommandClass() == SET_COMMAND_RESPONSE &&
+             response2->CommandClass() == SET_COMMAND_RESPONSE) {
+    response = new RDMSetResponse(
+        response1->SourceUID(),
+        response1->DestinationUID(),
+        response1->TransactionNumber(),
+        ola::rdm::ACK,
+        response1->MessageCount(),
+        response1->SubDevice(),
+        response1->ParamId(),
+        combined_data,
+        combined_length);
+  } else {
+    OLA_WARN << "Expected a RDM request command but got " <<
+      std::hex << response1->CommandClass();
   }
   delete[] combined_data;
   return response;

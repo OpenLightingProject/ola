@@ -36,6 +36,7 @@ using ola::rdm::RDMGetResponse;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
+using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
 using std::string;
 
@@ -46,6 +47,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testResponseInflation);
   CPPUNIT_TEST(testNackWithReason);
   CPPUNIT_TEST(testGetResponseWithData);
+  CPPUNIT_TEST(testCombineResponses);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -56,6 +58,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testResponseInflation();
     void testNackWithReason();
     void testGetResponseWithData();
+    void testCombineResponses();
 
   private:
     void PackAndVerify(const RDMCommand &command,
@@ -525,4 +528,135 @@ void RDMCommandTest::testGetResponseWithData() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(data_value),
                        response->ParamDataSize());
   delete response;
+}
+
+
+/**
+ * Check that CombineResponses() works.
+ */
+void RDMCommandTest::testCombineResponses() {
+  UID source(1, 2);
+  UID destination(3, 4);
+  uint16_t param_id = 296;
+
+  uint32_t data_value = 0x5a5a5a5a;
+  RDMGetResponse response1(source,
+                           destination,
+                           0,  // transaction #
+                           ola::rdm::ACK,  // response type
+                           0,  // message count
+                           10,  // sub device
+                           param_id,  // param id
+                           reinterpret_cast<uint8_t*>(&data_value),
+                           sizeof(data_value));  // data length
+
+  uint32_t data_value2 = 0xa5a5a5a5;
+  RDMGetResponse response2(source,
+                           destination,
+                           1,  // transaction #
+                           ola::rdm::ACK,  // response type
+                           0,  // message count
+                           10,  // sub device
+                           param_id,  // param id
+                           reinterpret_cast<uint8_t*>(&data_value2),
+                           sizeof(data_value2));  // data length
+
+  const RDMResponse *combined_response = RDMResponse::CombineResponses(
+      &response1,
+      &response2);
+  CPPUNIT_ASSERT(combined_response);
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND_RESPONSE,
+                       combined_response->CommandClass());
+  CPPUNIT_ASSERT_EQUAL(source, combined_response->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(destination, combined_response->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, combined_response->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, combined_response->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, combined_response->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(param_id, combined_response->ParamId());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 8, combined_response->ParamDataSize());
+  const uint8_t *combined_data = combined_response->ParamData();
+  const uint32_t expected_data[] = {0x5a5a5a5a, 0xa5a5a5a5};
+  CPPUNIT_ASSERT(0 == memcmp(expected_data,
+                             combined_data,
+                             sizeof(expected_data)));
+  delete combined_response;
+
+
+  // try to combine with a response with no data
+  RDMGetResponse response3(source,
+                           destination,
+                           1,  // transaction #
+                           ola::rdm::ACK,  // response type
+                           0,  // message count
+                           10,  // sub device
+                           param_id,  // param id
+                           NULL,
+                           0);
+
+  combined_response = RDMResponse::CombineResponses(
+      &response1,
+      &response3);
+  CPPUNIT_ASSERT(combined_response);
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND_RESPONSE,
+                       combined_response->CommandClass());
+  CPPUNIT_ASSERT_EQUAL(source, combined_response->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(destination, combined_response->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, combined_response->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, combined_response->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, combined_response->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(param_id, combined_response->ParamId());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, combined_response->ParamDataSize());
+  combined_data = combined_response->ParamData();
+  CPPUNIT_ASSERT_EQUAL(data_value,
+                       *(reinterpret_cast<const uint32_t*>(combined_data)));
+  delete combined_response;
+
+  // combining a GetResponse with a SetResponse is invalid
+  RDMSetResponse response4(source,
+                           destination,
+                           1,  // transaction #
+                           ola::rdm::ACK,  // response type
+                           0,  // message count
+                           10,  // sub device
+                           param_id,  // param id
+                           NULL,
+                           0);
+  combined_response = RDMResponse::CombineResponses(
+      &response1,
+      &response4);
+  CPPUNIT_ASSERT(!combined_response);
+  combined_response = RDMResponse::CombineResponses(
+      &response4,
+      &response1);
+  CPPUNIT_ASSERT(!combined_response);
+
+  // combine two set responses
+  RDMSetResponse response5(source,
+                           destination,
+                           0,  // transaction #
+                           ola::rdm::ACK,  // response type
+                           0,  // message count
+                           10,  // sub device
+                           param_id,  // param id
+                           reinterpret_cast<uint8_t*>(&data_value),
+                           sizeof(data_value));  // data length
+
+
+  combined_response = RDMResponse::CombineResponses(
+      &response5,
+      &response4);
+  CPPUNIT_ASSERT(combined_response);
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::SET_COMMAND_RESPONSE,
+                       combined_response->CommandClass());
+  CPPUNIT_ASSERT_EQUAL(source, combined_response->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(destination, combined_response->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, combined_response->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, combined_response->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, combined_response->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(param_id, combined_response->ParamId());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, combined_response->ParamDataSize());
+  combined_data = combined_response->ParamData();
+  CPPUNIT_ASSERT_EQUAL(data_value,
+                       *(reinterpret_cast<const uint32_t*>(combined_data)));
+  delete combined_response;
 }
