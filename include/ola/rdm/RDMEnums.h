@@ -487,6 +487,18 @@ typedef enum {
   LAMP_ON_MODE_ON = 0x02,
   LAMP_ON_MODE_AFTER_CAL = 0x03,
 } rdm_lamp_mode;
+
+
+typedef enum {
+  POWER_STATE_FULL_OFF = 0x00,
+  POWER_STATE_SHUTDOWN = 0x01,
+  POWER_STATE_STANDBY = 0x02,
+  POWER_STATE_NORMAL = 0xFF,
+} rdm_power_state;
+
+// the two special presets
+static const uint16_t PRESET_PLAYBACK_OFF = 0x0000;
+static const uint16_t PRESET_PLAYBACK_ALL = 0xffff;
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_

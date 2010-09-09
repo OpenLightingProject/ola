@@ -299,8 +299,18 @@ class QueuedMessageHandler {
                              uint8_t inverted) = 0;
     virtual void IdentifyMode(const ResponseStatus &status,
                               bool mode) = 0;
-    virtual void Clock(const ResponseStatus&,
+    virtual void Clock(const ResponseStatus &status,
                        const ClockValue &clock) = 0;
+    virtual void PowerState(const ResponseStatus &status,
+                            uint8_t power_state) = 0;
+    virtual void SelfTestEnabled(const ResponseStatus &status,
+                                 bool is_enabled) = 0;
+    virtual void SelfTestDescription(const ResponseStatus &status,
+                                     uint8_t self_test_number,
+                                     const string &description) = 0;
+    virtual void PresetPlaybackMode(const ResponseStatus&,
+                                    uint16_t preset_mode,
+                                    uint8_t level) = 0;
 
     // TODO(simon): add a default handler here
 };
@@ -800,6 +810,69 @@ class RDMAPI {
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 
+    bool GetPowerState(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+        string *error);
+
+    bool SetPowerState(
+        const UID &uid,
+        uint16_t sub_device,
+        rdm_power_state power_state,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool SelfTestEnabled(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
+        string *error);
+
+    bool PerformSelfTest(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t self_test_number,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool SelfTestDescription(
+        const UID &uid,
+        uint16_t sub_device,
+        uint8_t self_test_number,
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint8_t,
+                           const string&> *callback,
+        string *error);
+
+    bool CapturePreset(
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t scene,
+        uint16_t fade_up_time,
+        uint16_t fade_down_time,
+        uint16_t wait_time,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool PresetPlaybackMode(
+        const UID &uid,
+        uint16_t sub_device,
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           uint8_t> *callback,
+        string *error);
+
+    bool SetPresetPlaybackMode(
+        const UID &uid,
+        uint16_t sub_device,
+        uint16_t playback_mode,
+        uint8_t level,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
     // Handlers, these are called by the RDMAPIImpl.
 
     // Generic handlers
@@ -994,6 +1067,22 @@ class RDMAPI {
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const ClockValue&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleSelfTestDescription(
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint8_t,
+                           const string&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandlePlaybackMode(
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           uint8_t> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 

@@ -2165,6 +2165,333 @@ bool RDMAPI::ResetDevice(
 }
 
 
+/*
+ * Get the power state for a device
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::GetPowerState(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
+    string *error) {
+  if (CheckCallback(error, callback))
+    return false;
+  if (CheckNotBroadcast(uid, error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleU8Response,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_POWER_STATE),
+    error);
+}
+
+
+/*
+ * Set the power state for a device.
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param power_state the new power state
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetPowerState(
+    const UID &uid,
+    uint16_t sub_device,
+    rdm_power_state power_state,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, true, error, callback))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  uint8_t option = static_cast<uint8_t>(power_state);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_POWER_STATE,
+                   &option,
+                   sizeof(option)),
+    error);
+}
+
+
+/*
+ * Check if a device is in self test mode.
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SelfTestEnabled(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
+    string *error) {
+  if (CheckCallback(error, callback))
+    return false;
+  if (CheckNotBroadcast(uid, error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleBoolResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_PERFORM_SELFTEST),
+    error);
+}
+
+
+/*
+ * Perform a self test on a device.
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param self_test_number the number of the self test to perform.
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::PerformSelfTest(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t self_test_number,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, true, error, callback))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_POWER_STATE,
+                   &self_test_number,
+                   sizeof(self_test_number)),
+    error);
+}
+
+
+/*
+ * Fetch the description of a self test.
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param self_test_number the number of the self test to fetch the description
+ *   of.
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SelfTestDescription(
+    const UID &uid,
+    uint16_t sub_device,
+    uint8_t self_test_number,
+    SingleUseCallback3<void, const ResponseStatus&, uint8_t,
+                       const string&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback))
+    return false;
+  if (CheckNotBroadcast(uid, error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleSelfTestDescription,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_SELF_TEST_DESCRIPTION,
+                   &self_test_number,
+                   sizeof(self_test_number)),
+    error);
+}
+
+
+/*
+ * Capture the current state into a preset.
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param scene the number of the preset scene to store
+ * @param fade_up_time the time in 10s of a second to fade up this scene.
+ * @param fade_down_time the time in 10s of a second to fade down the previous
+ *   scene.
+ * @param wait_time the time in 10s of a second to hold this scene when the
+ *   playback mode is PRESET_PLAYBACK_ALL
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::CapturePreset(
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t scene,
+    uint16_t fade_up_time,
+    uint16_t fade_down_time,
+    uint16_t wait_time,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+  if (CheckCallback(error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, true, error, callback))
+    return false;
+
+  struct preset_config {
+    uint16_t scene;
+    uint16_t fade_up_time;
+    uint16_t fade_down_time;
+    uint16_t wait_time;
+  } __attribute__((packed));
+  struct preset_config raw_config;
+
+  raw_config.scene = HostToNetwork(scene);
+  raw_config.fade_up_time = HostToNetwork(fade_up_time);
+  raw_config.fade_down_time = HostToNetwork(fade_down_time);
+  raw_config.wait_time = HostToNetwork(wait_time);
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_CAPTURE_PRESET,
+                   reinterpret_cast<const uint8_t*>(&raw_config),
+                   sizeof(raw_config)),
+    error);
+}
+
+
+/*
+ * Fetch the current playback mode.
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::PresetPlaybackMode(
+    const UID &uid,
+    uint16_t sub_device,
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint16_t,
+                       uint8_t> *callback,
+    string *error) {
+  if (CheckCallback(error, callback))
+    return false;
+  if (CheckNotBroadcast(uid, error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, false, error, callback))
+    return false;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandlePlaybackMode,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMGet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_PRESET_PLAYBACK,
+                   NULL,
+                   0),
+    error);
+}
+
+
+
+/*
+ * Set the current playback mode.
+ * @param uid the UID to fetch the outstanding message count for
+ * @param sub_device the sub device to use
+ * @param playback_mode the playback scene to use, PRESET_PLAYBACK_OFF or
+ *   PRESET_PLAYBACK_ALL.
+ * @param level the level to use for the scene.
+ * @param callback the callback to invoke when this request completes
+ * @param error a pointer to a string which it set if an error occurs
+ * @return true if the request is sent correctly, false otherwise
+*/
+bool RDMAPI::SetPresetPlaybackMode(
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t playback_mode,
+    uint8_t level,
+    SingleUseCallback1<void, const ResponseStatus&> *callback,
+    string *error) {
+
+  if (CheckCallback(error, callback))
+    return false;
+  if (CheckValidSubDevice(sub_device, true, error, callback))
+    return false;
+
+  struct preset_config {
+    uint16_t mode;
+    uint8_t level;
+  } __attribute__((packed));
+  struct preset_config raw_config;
+
+  raw_config.mode = HostToNetwork(playback_mode);
+  raw_config.level = level;
+
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleEmptyResponse,
+    callback);
+  return CheckReturnStatus(
+    m_impl->RDMSet(cb,
+                   m_universe,
+                   uid,
+                   sub_device,
+                   PID_PRESET_PLAYBACK,
+                   reinterpret_cast<const uint8_t*>(&raw_config),
+                   sizeof(raw_config)),
+    error);
+}
+
+
 // Handlers follow. These are invoked by the RDMAPIImpl when responses arrive
 // ----------------------------------------------------------------------------
 
@@ -3013,6 +3340,85 @@ void RDMAPI::_HandleClock(
     }
   }
   callback->Run(response_status, clock);
+}
+
+
+/**
+ * Handle a PID_SELF_TEST_DESCRIPTION response.
+ */
+void RDMAPI::_HandleSelfTestDescription(
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint8_t,
+                       const string&> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+
+  uint8_t self_test_number = 0;
+  string description;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    struct self_test_description {
+      uint8_t self_test_number;
+      // +1 for a null since it's not clear in the spec if this is null
+      // terminated
+      char description[LABEL_SIZE + 1];
+    } __attribute__((packed));
+    struct self_test_description raw_description;
+
+    unsigned int max = sizeof(raw_description) - 1;
+    unsigned int min = max - LABEL_SIZE;
+    unsigned int data_size = data.size();
+    if (data_size >= min && data_size <= max) {
+      raw_description.description[LABEL_SIZE] = 0;
+      memcpy(&raw_description, data.data(), data.size());
+      self_test_number = raw_description.self_test_number;
+      description = std::string(raw_description.description,
+                                data.size() - min);
+    } else {
+      std::stringstream str;
+      str << data_size << " needs to be between " << min << " and " << max;
+      response_status.MalformedResponse(str.str());
+    }
+  }
+  callback->Run(response_status, self_test_number, description);
+}
+
+
+/**
+ * Handle a PID_PRESET_PLAYBACK response
+ */
+void RDMAPI::_HandlePlaybackMode(
+    SingleUseCallback3<void,
+                       const ResponseStatus&,
+                       uint16_t,
+                       uint8_t> *callback,
+    const RDMAPIImplResponseStatus &status,
+    const string &data) {
+  ResponseStatus response_status(status, data);
+
+  uint16_t mode = 0;
+  uint8_t level = 0;
+
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+    struct preset_mode {
+      uint16_t mode;
+      uint8_t level;
+    } __attribute__((packed));
+    struct preset_mode raw_config;
+
+    if (data.size() >= sizeof(raw_config)) {
+      memcpy(&raw_config, data.data(), data.size());
+      mode = NetworkToHost(raw_config.mode);
+      level = raw_config.level;
+    } else {
+      std::stringstream str;
+      str << data.size() << " needs to be more than " << sizeof(raw_config);
+      response_status.MalformedResponse(str.str());
+    }
+  }
+  callback->Run(response_status, mode, level);
 }
 
 
