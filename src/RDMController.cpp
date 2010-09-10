@@ -409,13 +409,6 @@ void RDMController::LoadMap() {
       &RDMController::ValidSubDeviceCheck)->AddSetVerify(
       &RDMController::ValidBroadcastSubDeviceCheck);
 
-  MakeDescriptor(ola::rdm::PID_POWER_STATE,
-                 &RDMController::GetPowerState,
-                 &RDMController::SetPowerState)->AddGetVerify(
-      &RDMController::NoArgsCheck)->AddGetVerify(
-      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
-      &RDMController::ValidBroadcastSubDeviceCheck);
-
   MakeDescriptor(ola::rdm::PID_PERFORM_SELFTEST,
                  &RDMController::GetSelfTest,
                  &RDMController::SetSelfTest)->AddGetVerify(
@@ -1531,7 +1524,7 @@ bool RDMController::SetPowerState(const UID &uid,
     *error = "Argument must be one of {off, shutdown, standby, normal}";
     return false;
   }
-  return m_api->ResetDevice(
+  return m_api->SetPowerState(
       uid,
       sub_device,
       state,
