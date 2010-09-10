@@ -2299,7 +2299,7 @@ bool RDMAPI::PerformSelfTest(
                    m_universe,
                    uid,
                    sub_device,
-                   PID_POWER_STATE,
+                   PID_PERFORM_SELFTEST,
                    &self_test_number,
                    sizeof(self_test_number)),
     error);
@@ -2440,7 +2440,6 @@ bool RDMAPI::PresetPlaybackMode(
                    0),
     error);
 }
-
 
 
 /*
