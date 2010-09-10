@@ -548,6 +548,50 @@ void ResponseHandler::IdentifyMode(const ResponseStatus &status, bool mode) {
 }
 
 
+void ResponseHandler::PowerState(const ResponseStatus &status,
+                                 uint8_t power_state) {
+  if (!CheckForSuccess(status))
+    return;
+  cout << "Power State: ";
+  PrintPowerState(power_state);
+  cout << endl;
+}
+
+
+void ResponseHandler::SelfTestEnabled(const ResponseStatus &status,
+                                      bool is_enabled) {
+  if (!CheckForSuccess(status))
+    return;
+  cout << "Self Test Mode: " << (is_enabled ? "On" : "Off") << endl;
+}
+
+
+void ResponseHandler::SelfTestDescription(const ResponseStatus &status,
+                                          uint8_t self_test_number,
+                                          const string &description) {
+  if (!CheckForSuccess(status))
+    return;
+  cout << "Self Test Number: " << static_cast<int>(self_test_number) << endl;
+  cout << description << endl;
+}
+
+
+void ResponseHandler::PresetPlaybackMode(const ResponseStatus &status,
+                                         uint16_t preset_mode,
+                                         uint8_t level) {
+  if (!CheckForSuccess(status))
+    return;
+  cout << "Preset Mode: ";
+  if (preset_mode == ola::rdm::PRESET_PLAYBACK_OFF)
+    cout << "Off (DMX Input)";
+  else if (preset_mode == ola::rdm::PRESET_PLAYBACK_ALL)
+    cout << "All (plays scenes in a sequence)";
+  else
+    cout << static_cast<int>(preset_mode);
+  cout << endl;
+  cout << "Level: " << static_cast<int>(level) << endl;
+}
+
 void ResponseHandler::ClearCommStatus(const ResponseStatus &status) {
   CheckForSuccess(status);
 }
@@ -665,6 +709,25 @@ void ResponseHandler::SetClock(const ResponseStatus &status) {
 }
 
 void ResponseHandler::ResetDevice(const ResponseStatus &status) {
+  CheckForSuccess(status);
+}
+
+
+void ResponseHandler::SetPowerState(const ResponseStatus &status) {
+  CheckForSuccess(status);
+}
+
+
+void ResponseHandler::PerformSelfTest(const ResponseStatus &status) {
+  CheckForSuccess(status);
+}
+
+void ResponseHandler::CapturePreset(const ResponseStatus &status) {
+  CheckForSuccess(status);
+}
+
+
+void ResponseHandler::SetPresetPlaybackMode(const ResponseStatus &status) {
   CheckForSuccess(status);
 }
 
@@ -1797,6 +1860,26 @@ void ResponseHandler::PrintProductDetail(uint16_t detail) {
       break;
     default:
       cout << "Unknown, was " << detail;
+  }
+}
+
+
+void ResponseHandler::PrintPowerState(uint8_t power_state) {
+  switch (power_state) {
+    case ola::rdm::POWER_STATE_FULL_OFF:
+        cout << "Full Off";
+        break;
+    case ola::rdm::POWER_STATE_SHUTDOWN:
+        cout << "Shutdown";
+        break;
+    case ola::rdm::POWER_STATE_STANDBY:
+        cout << "Standby";
+        break;
+    case ola::rdm::POWER_STATE_NORMAL:
+        cout << "Normal";
+        break;
+    default:
+      cout << "Unknown, was " << static_cast<int>(power_state);
   }
 }
 // End  implementation

@@ -120,7 +120,16 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     void Clock(const ResponseStatus &status,
                const ola::rdm::ClockValue &clock);
     void IdentifyMode(const ResponseStatus &status, bool mode);
-
+    void PowerState(const ResponseStatus &status,
+                    uint8_t power_state);
+    void SelfTestEnabled(const ResponseStatus &status,
+                         bool is_enabled);
+    void SelfTestDescription(const ResponseStatus &status,
+                             uint8_t self_test_number,
+                             const string &description);
+    void PresetPlaybackMode(const ResponseStatus &status,
+                            uint16_t preset_mode,
+                            uint8_t level);
 
     // Define these here so we can use the same object to handle non-queued
     // messages
@@ -149,7 +158,10 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     void SetClock(const ResponseStatus &status);
     void IdentifyDevice(const ResponseStatus &status);
     void ResetDevice(const ResponseStatus &status);
-
+    void SetPowerState(const ResponseStatus &status);
+    void PerformSelfTest(const ResponseStatus &status);
+    void CapturePreset(const ResponseStatus &status);
+    void SetPresetPlaybackMode(const ResponseStatus &status);
 
     // this returns the exit code once all is said and done
     uint8_t ExitCode() const { return m_exit_code; }
@@ -173,5 +185,6 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     void PrintLampMode(uint8_t lamp_mode);
     void PrintNackReason(uint16_t reason);
     void PrintProductDetail(uint16_t detail);
+    void PrintPowerState(uint8_t power_state);
 };
 #endif  // SRC_RDMHANDLER_H_

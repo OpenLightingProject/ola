@@ -306,8 +306,8 @@ void RDMController::LoadMap() {
       &RDMController::ValidBroadcastSubDeviceCheck);
 
   MakeDescriptor(ola::rdm::PID_DEVICE_HOURS,
-    &RDMController::GetDeviceHours,
-    &RDMController::SetDeviceHours)->AddGetVerify(
+                 &RDMController::GetDeviceHours,
+                 &RDMController::SetDeviceHours)->AddGetVerify(
       &RDMController::NoArgsCheck)->AddGetVerify(
       &RDMController::ValidSubDeviceCheck)->AddSetVerify(
       &RDMController::ValidBroadcastSubDeviceCheck);
@@ -400,6 +400,45 @@ void RDMController::LoadMap() {
   MakeDescriptor(ola::rdm::PID_RESET_DEVICE,
                  NULL,
                  &RDMController::ResetDevice)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_POWER_STATE,
+                 &RDMController::GetPowerState,
+                 &RDMController::SetPowerState)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_POWER_STATE,
+                 &RDMController::GetPowerState,
+                 &RDMController::SetPowerState)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_PERFORM_SELFTEST,
+                 &RDMController::GetSelfTest,
+                 &RDMController::SetSelfTest)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_SELF_TEST_DESCRIPTION,
+                 &RDMController::GetSelfTestDescription,
+                 NULL)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_CAPTURE_PRESET,
+                 NULL,
+                 &RDMController::CapturePreset)->AddSetVerify(
+      &RDMController::ValidBroadcastSubDeviceCheck);
+
+  MakeDescriptor(ola::rdm::PID_PRESET_PLAYBACK,
+                 &RDMController::GetPresetPlayback,
+                 &RDMController::SetPresetPlayback)->AddGetVerify(
+      &RDMController::NoArgsCheck)->AddGetVerify(
+      &RDMController::ValidSubDeviceCheck)->AddSetVerify(
       &RDMController::ValidBroadcastSubDeviceCheck);
 }
 
@@ -651,7 +690,6 @@ bool RDMController::GetParameterDescription(const UID &uid,
   uint16_t pid;
   if (!CheckForUInt16(&pid, error, args))
     return false;
-  std::cout << pid << std::endl;
   return m_api->GetParameterDescription(
       uid,
       pid,
@@ -1460,7 +1498,7 @@ bool RDMController::ResetDevice(const UID &uid,
                                 string *error) {
   uint8_t mode;
   if (args.size() != 1 || (!StringToWarmCold(args[0], &mode))) {
-    *error = "Argument must be on of {warm, cold}";
+    *error = "Argument must be one of {warm, cold}";
     return false;
   }
   return m_api->ResetDevice(
@@ -1468,6 +1506,157 @@ bool RDMController::ResetDevice(const UID &uid,
       sub_device,
       mode,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ResetDevice),
+      error);
+}
+
+
+bool RDMController::GetPowerState(const UID &uid,
+                                  uint16_t sub_device,
+                                  const vector<string> &args,
+                                  string *error) {
+  return m_api->GetPowerState(
+      uid,
+      sub_device,
+      ola::NewSingleCallback(m_handler, &ResponseHandler::PowerState),
+      error);
+}
+
+
+bool RDMController::SetPowerState(const UID &uid,
+                                  uint16_t sub_device,
+                                  const vector<string> &args,
+                                  string *error) {
+  ola::rdm::rdm_power_state state;
+  if (args.size() != 1 || (!StringToPowerState(args[0], &state))) {
+    *error = "Argument must be one of {off, shutdown, standby, normal}";
+    return false;
+  }
+  return m_api->ResetDevice(
+      uid,
+      sub_device,
+      state,
+      ola::NewSingleCallback(m_handler, &ResponseHandler::SetPowerState),
+      error);
+}
+
+
+bool RDMController::GetSelfTest(const UID &uid,
+                                uint16_t sub_device,
+                                const vector<string> &args,
+                                string *error) {
+  return m_api->SelfTestEnabled(
+      uid,
+      sub_device,
+      ola::NewSingleCallback(m_handler, &ResponseHandler::SelfTestEnabled),
+      error);
+}
+
+
+bool RDMController::SetSelfTest(const UID &uid,
+                                uint16_t sub_device,
+                                const vector<string> &args,
+                                string *error) {
+  uint8_t self_test;
+  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &self_test))) {
+    *error = "Argument must be an integer between 0 and 255. Use 0 for OFF "
+      "and 255 for ALL";
+    return false;
+  }
+  return m_api->PerformSelfTest(
+      uid,
+      sub_device,
+      self_test,
+      ola::NewSingleCallback(m_handler, &ResponseHandler::PerformSelfTest),
+      error);
+}
+
+
+bool RDMController::GetSelfTestDescription(const UID &uid,
+                                           uint16_t sub_device,
+                                           const vector<string> &args,
+                                           string *error) {
+  uint8_t self_test;
+  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &self_test))) {
+    *error = "Argument must be an integer between 0 and 255. Use 0 for OFF "
+      "and 255 for ALL";
+    return false;
+  }
+  return m_api->SelfTestDescription(
+      uid,
+      sub_device,
+      self_test,
+      ola::NewSingleCallback(m_handler, &ResponseHandler::SelfTestDescription),
+      error);
+}
+
+
+bool RDMController::CapturePreset(const UID &uid,
+                                  uint16_t sub_device,
+                                  const vector<string> &args,
+                                  string *error) {
+  enum { kArgsSize = 4 };
+  uint16_t int_args[kArgsSize];
+  if (args.size() != kArgsSize) {
+    *error = "Requires 4 arguments: <scene_number> <up_fade_time> "
+      "<down_fade_time> <wait_time>";
+    return false;
+  }
+  for (unsigned int i = 0; i < kArgsSize; i++) {
+    if (!ola::StringToUInt16(args[0], &int_args[i])) {
+      *error = "Argument must be an integer between 0 and 65535";
+      return false;
+    }
+  }
+
+  return m_api->CapturePreset(
+      uid,
+      sub_device,
+      int_args[0],
+      int_args[1],
+      int_args[2],
+      int_args[3],
+      ola::NewSingleCallback(m_handler, &ResponseHandler::CapturePreset),
+      error);
+}
+
+
+bool RDMController::GetPresetPlayback(const UID &uid,
+                                      uint16_t sub_device,
+                                      const vector<string> &args,
+                                      string *error) {
+  return m_api->PresetPlaybackMode(
+      uid,
+      sub_device,
+      ola::NewSingleCallback(m_handler, &ResponseHandler::PresetPlaybackMode),
+      error);
+}
+
+
+bool RDMController::SetPresetPlayback(const UID &uid,
+                                      uint16_t sub_device,
+                                      const vector<string> &args,
+                                      string *error) {
+  uint16_t mode;
+  uint8_t level;
+  if (args.size() != 2) {
+    *error = "Requires 2 arguments: [mode] [level]";
+    return false;
+  }
+  if (!ola::StringToUInt16(args[0], &mode)) {
+    *error = "First argument must be an integer between 0 and 65535";
+    return false;
+  }
+  if (!ola::StringToUInt8(args[1], &level)) {
+    *error = "Second Argument must be an integer between 0 and 255";
+    return false;
+  }
+  return m_api->SetPresetPlaybackMode(
+      uid,
+      sub_device,
+      mode,
+      level,
+      ola::NewSingleCallback(m_handler,
+                             &ResponseHandler::SetPresetPlaybackMode),
       error);
 }
 
@@ -1610,3 +1799,22 @@ bool RDMController::StringToWarmCold(const string &arg, uint8_t *mode) {
 }
 
 
+bool RDMController::StringToPowerState(const string &arg,
+                                       ola::rdm::rdm_power_state *mode) {
+  string lower_arg = arg;
+  ola::ToLower(&lower_arg);
+  if (arg == "off") {
+    *mode = ola::rdm::POWER_STATE_FULL_OFF;
+    return true;
+  } else if (lower_arg == "shutdown") {
+    *mode = ola::rdm::POWER_STATE_SHUTDOWN;
+    return true;
+  } else if (lower_arg == "standby") {
+    *mode = ola::rdm::POWER_STATE_STANDBY;
+    return true;
+  } else if (lower_arg == "normal") {
+    *mode = ola::rdm::POWER_STATE_NORMAL;
+    return true;
+  }
+  return false;
+}

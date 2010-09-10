@@ -439,6 +439,46 @@ class RDMController {
                      const vector<string> &args,
                      string *error);
 
+    bool GetPowerState(const UID &uid,
+                       uint16_t sub_device,
+                       const vector<string> &args,
+                       string *error);
+
+    bool SetPowerState(const UID &uid,
+                       uint16_t sub_device,
+                       const vector<string> &args,
+                       string *error);
+
+    bool GetSelfTest(const UID &uid,
+                     uint16_t sub_device,
+                     const vector<string> &args,
+                     string *error);
+
+    bool SetSelfTest(const UID &uid,
+                     uint16_t sub_device,
+                     const vector<string> &args,
+                     string *error);
+
+    bool GetSelfTestDescription(const UID &uid,
+                                uint16_t sub_device,
+                                const vector<string> &args,
+                                string *error);
+
+    bool CapturePreset(const UID &uid,
+                       uint16_t sub_device,
+                       const vector<string> &args,
+                       string *error);
+
+    bool GetPresetPlayback(const UID &uid,
+                           uint16_t sub_device,
+                           const vector<string> &args,
+                           string *error);
+
+    bool SetPresetPlayback(const UID &uid,
+                           uint16_t sub_device,
+                           const vector<string> &args,
+                           string *error);
+
     // util methods
     bool CheckForUInt16(uint16_t *value,
                         string *error,
@@ -452,5 +492,6 @@ class RDMController {
     bool StringToOnOffAuto(const string &arg, uint8_t *mode);
     bool StringToOnOff(const string &arg, uint8_t *mode);
     bool StringToWarmCold(const string &arg, uint8_t *mode);
+    bool StringToPowerState(const string &arg, ola::rdm::rdm_power_state *mode);
 };
 #endif  // SRC_RDMCONTROLLER_H_
