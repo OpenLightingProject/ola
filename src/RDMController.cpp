@@ -419,7 +419,6 @@ void RDMController::LoadMap() {
   MakeDescriptor(ola::rdm::PID_SELF_TEST_DESCRIPTION,
                  &RDMController::GetSelfTestDescription,
                  NULL)->AddGetVerify(
-      &RDMController::NoArgsCheck)->AddGetVerify(
       &RDMController::ValidSubDeviceCheck);
 
   MakeDescriptor(ola::rdm::PID_CAPTURE_PRESET,
