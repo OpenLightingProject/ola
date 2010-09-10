@@ -2,7 +2,7 @@ include $(top_srcdir)/common.mk
 
 
 noinst_LTLIBRARIES = libolardm.la
-libolardm_la_SOURCES = RDMCommand.cpp RDMAPI.cpp
+libolardm_la_SOURCES = RDMAPI.cpp RDMCommand.cpp RDMHelper.cpp
 
 TESTS = RDMTester
 check_PROGRAMS = $(TESTS)

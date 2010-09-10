@@ -1,0 +1,896 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * RDMHelper.cpp
+ * Various misc RDM functions.
+ * Copyright (C) 2010 Simon Newton
+ *
+ * At some point we may want to localize this file.
+ */
+
+#include <sstream>
+#include <string>
+#include "ola/rdm/RDMHelper.h"
+
+namespace ola {
+namespace rdm {
+
+
+using std::string;
+using std::stringstream;
+
+
+/**
+ * Convert a uint8_t representing a lamp mode to a human-readable string.
+ * @param type the lamp mode value
+ */
+string DataTypeToString(uint8_t type) {
+  switch (type) {
+    case DS_NOT_DEFINED:
+      return "Not defined";
+    case DS_BIT_FIELD:
+      return "Bit field";
+    case DS_ASCII:
+      return "ASCII";
+    case DS_UNSIGNED_BYTE:
+      return "uint8";
+    case DS_SIGNED_BYTE:
+      return "int8";
+    case DS_UNSIGNED_WORD:
+      return "uint16";
+    case DS_SIGNED_WORD:
+      return "int16";
+    case DS_UNSIGNED_DWORD:
+      return "uint32 ";
+    case DS_SIGNED_DWORD:
+      return "int32 ";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(type);
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint8_t representing a lamp mode to a human-readable string.
+ * @param lamp_mode the lamp mode value
+ */
+string LampModeToString(uint8_t lamp_mode) {
+  switch (lamp_mode) {
+    case LAMP_ON_MODE_OFF:
+      return "off";
+    case LAMP_ON_MODE_DMX:
+      return "dmx";
+    case LAMP_ON_MODE_ON:
+      return "on";
+    case LAMP_ON_MODE_AFTER_CAL:
+      return "on after calibration";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(lamp_mode);
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint8_t representing a lamp mode to a human-readable string.
+ * @param lamp_state the lamp mode value
+ */
+string LampStateToString(uint8_t lamp_state) {
+  switch (lamp_state) {
+    case LAMP_OFF:
+      return "off";
+    case LAMP_ON:
+      return "on";
+    case LAMP_STRIKE:
+      return "strike";
+    case LAMP_STANDBY:
+      return "standby";
+    case LAMP_NOT_PRESENT:
+      return "lamp not present";
+    case LAMP_ERROR:
+      return "error";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(lamp_state);
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint16_t representing a nack reason to a human-readable string.
+ * @param reason the nack reason value
+ */
+string NackReasonToString(uint16_t reason) {
+  switch (reason) {
+    case NR_UNKNOWN_PID:
+      return "Unknown PID";
+    case NR_FORMAT_ERROR:
+      return "Format error";
+    case NR_HARDWARE_FAULT:
+      return "Hardware fault";
+    case NR_PROXY_REJECT:
+      return "Proxy reject";
+    case NR_WRITE_PROTECT:
+      return "Write protect";
+    case NR_UNSUPPORTED_COMMAND_CLASS:
+      return "Unsupported command class";
+    case NR_DATA_OUT_OF_RANGE:
+      return "Data out of range";
+    case NR_BUFFER_FULL:
+      return "Buffer full";
+    case NR_PACKET_SIZE_UNSUPPORTED:
+      return "Packet size unsupported";
+    case NR_SUB_DEVICE_OUT_OF_RANGE:
+      return "Sub device out of range";
+    default:
+      stringstream str;
+      str << "Unknown, was " << reason;
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint8_t representing a power state to a human-readable string.
+ * @param power_state the power state value
+ */
+string PowerStateToString(uint8_t power_state) {
+  switch (power_state) {
+    case POWER_STATE_FULL_OFF:
+      return "Full Off";
+    case POWER_STATE_SHUTDOWN:
+      return "Shutdown";
+    case POWER_STATE_STANDBY:
+      return "Standby";
+    case POWER_STATE_NORMAL:
+      return "Normal";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(power_state);
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint8 representing a prefix to a human-readable string.
+ * @param prefix the prefix value
+ */
+string PrefixToString(uint8_t prefix) {
+  switch (prefix) {
+    case PREFIX_NONE:
+      return "None";
+    case PREFIX_DECI:
+      return "Deci";
+    case PREFIX_CENTI:
+      return "Centi";
+    case PREFIX_MILLI:
+      return "Milli";
+    case PREFIX_MICRO:
+      return "Micro";
+    case PREFIX_NANO:
+      return "Nano";
+    case PREFIX_PICO:
+      return "Pico";
+    case PREFIX_FEMPTO:
+      return "Fempto";
+    case PREFIX_ATTO:
+      return "Atto";
+    case PREFIX_ZEPTO:
+      return "Zepto";
+    case PREFIX_YOCTO:
+      return "Yocto";
+    case PREFIX_DECA:
+      return "Deca";
+    case PREFIX_HECTO:
+      return "Hecto";
+    case PREFIX_KILO:
+      return "Kilo";
+    case PREFIX_MEGA:
+      return "Mega";
+    case PREFIX_GIGA:
+      return "Giga";
+    case PREFIX_TERRA:
+      return "Terra";
+    case PREFIX_PETA:
+      return "Peta";
+    case PREFIX_EXA:
+      return "Exa";
+    case PREFIX_ZETTA:
+      return "Zetta";
+    case PREFIX_YOTTA:
+      return "Yotta";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(prefix);
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint16_t representing a product category to a human-readable
+ *   string.
+ * @param category the product category value
+ */
+string ProductCategoryToString(uint16_t category) {
+  switch (category) {
+    case PRODUCT_CATEGORY_NOT_DECLARED:
+      return "Not declared";
+    case PRODUCT_CATEGORY_FIXTURE:
+      return "fixture";
+    case PRODUCT_CATEGORY_FIXTURE_FIXED:
+      return "fixed fixture";
+    case PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE:
+      return "moving yoke fixture";
+    case PRODUCT_CATEGORY_FIXTURE_MOVING_MIRROR:
+      return "moving mirror fixture";
+    case PRODUCT_CATEGORY_FIXTURE_OTHER:
+      return "fixture other";
+    case PRODUCT_CATEGORY_FIXTURE_ACCESSORY:
+      return "fixture accessory";
+    case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_COLOR:
+      return "fixture accessory color";
+    case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_YOKE:
+      return "fixture accessory yoke";
+    case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_MIRROR:
+      return "fixture accessory mirror";
+    case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_EFFECT:
+      return "fixture accessory effect";
+    case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_BEAM:
+      return "fixture accessory beam";
+    case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_OTHER:
+      return "fixture accessory other";
+    case PRODUCT_CATEGORY_PROJECTOR:
+      return "projector";
+    case PRODUCT_CATEGORY_PROJECTOR_FIXED:
+      return "projector fixed";
+    case PRODUCT_CATEGORY_PROJECTOR_MOVING_YOKE:
+      return "projector moving yoke";
+    case PRODUCT_CATEGORY_PROJECTOR_MOVING_MIRROR:
+      return "projector moving mirror";
+    case PRODUCT_CATEGORY_PROJECTOR_OTHER:
+      return "projector other";
+    case PRODUCT_CATEGORY_ATMOSPHERIC:
+      return "atmospheric";
+    case PRODUCT_CATEGORY_ATMOSPHERIC_EFFECT:
+      return "atmospheric effect";
+    case PRODUCT_CATEGORY_ATMOSPHERIC_PYRO:
+      return "atmospheric pyro";
+    case PRODUCT_CATEGORY_ATMOSPHERIC_OTHER:
+      return "atmospheric other";
+    case PRODUCT_CATEGORY_DIMMER:
+      return "dimmer";
+    case PRODUCT_CATEGORY_DIMMER_AC_INCANDESCENT:
+      return "dimmer ac incandescent";
+    case PRODUCT_CATEGORY_DIMMER_AC_FLUORESCENT:
+      return "dimmer ac fluorescent";
+    case PRODUCT_CATEGORY_DIMMER_AC_COLDCATHODE:
+      return "dimmer ac cold cathode";
+    case PRODUCT_CATEGORY_DIMMER_AC_NONDIM:
+      return "dimmer ac no dim";
+    case PRODUCT_CATEGORY_DIMMER_AC_ELV:
+      return "dimmer ac ELV";
+    case PRODUCT_CATEGORY_DIMMER_AC_OTHER:
+      return "dimmer ac other";
+    case PRODUCT_CATEGORY_DIMMER_DC_LEVEL:
+      return "dimmer dc level";
+    case PRODUCT_CATEGORY_DIMMER_DC_PWM:
+      return "dimmer dc pwm";
+    case PRODUCT_CATEGORY_DIMMER_CS_LED:
+      return "dimmer dc led";
+    case PRODUCT_CATEGORY_DIMMER_OTHER:
+      return "dimmer other";
+    case PRODUCT_CATEGORY_POWER:
+      return "power";
+    case PRODUCT_CATEGORY_POWER_CONTROL:
+      return "power control";
+    case PRODUCT_CATEGORY_POWER_SOURCE:
+      return "power source";
+    case PRODUCT_CATEGORY_POWER_OTHER:
+      return "power other";
+    case PRODUCT_CATEGORY_SCENIC:
+      return "scenic";
+    case PRODUCT_CATEGORY_SCENIC_DRIVE:
+      return "scenic drive";
+    case PRODUCT_CATEGORY_SCENIC_OTHER:
+      return "scenic other";
+    case PRODUCT_CATEGORY_DATA:
+      return "data";
+    case PRODUCT_CATEGORY_DATA_DISTRIBUTION:
+      return "data distribution";
+    case PRODUCT_CATEGORY_DATA_CONVERSION:
+      return "data conversion";
+    case PRODUCT_CATEGORY_DATA_OTHER:
+      return "data other";
+    case PRODUCT_CATEGORY_AV:
+      return "A/V";
+    case PRODUCT_CATEGORY_AV_AUDIO:
+      return "A/V audio";
+    case PRODUCT_CATEGORY_AV_VIDEO:
+      return "A/V video";
+    case PRODUCT_CATEGORY_AV_OTHER:
+      return "AV other";
+    case PRODUCT_CATEGORY_MONITOR:
+      return "monitor";
+    case PRODUCT_CATEGORY_MONITOR_ACLINEPOWER:
+      return "AC line power monitor";
+    case PRODUCT_CATEGORY_MONITOR_DCPOWER:
+      return "DC power monitor";
+    case PRODUCT_CATEGORY_MONITOR_ENVIRONMENTAL:
+      return "environmental monitor";
+    case PRODUCT_CATEGORY_MONITOR_OTHER:
+      return "other monitor";
+    case PRODUCT_CATEGORY_CONTROL:
+      return "control";
+    case PRODUCT_CATEGORY_CONTROL_CONTROLLER:
+      return "controller";
+    case PRODUCT_CATEGORY_CONTROL_BACKUPDEVICE:
+      return "backup device";
+    case PRODUCT_CATEGORY_CONTROL_OTHER:
+      return "other control";
+    case PRODUCT_CATEGORY_TEST:
+      return "test";
+    case PRODUCT_CATEGORY_TEST_EQUIPMENT:
+      return "test equipment";
+    case PRODUCT_CATEGORY_TEST_EQUIPMENT_OTHER:
+      return "test equipment other";
+    case PRODUCT_CATEGORY_OTHER:
+      return "other";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(category);
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint16_t representing a product detail to a human-readable string.
+ * @param detail the product detail value.
+ */
+string ProductDetailToString(uint16_t detail) {
+  switch (detail) {
+    case PRODUCT_DETAIL_NOT_DECLARED:
+      return "Not declared";
+    case PRODUCT_DETAIL_ARC:
+      return "Arc Lamp";
+    case PRODUCT_DETAIL_METAL_HALIDE:
+      return "Metal Halide Lamp";
+    case PRODUCT_DETAIL_INCANDESCENT:
+      return "Incandescent Lamp";
+    case PRODUCT_DETAIL_LED:
+      return "LED";
+    case PRODUCT_DETAIL_FLUROESCENT:
+      return "Fluroescent";
+    case PRODUCT_DETAIL_COLDCATHODE:
+      return "Cold Cathode";
+    case PRODUCT_DETAIL_ELECTROLUMINESCENT:
+      return "Electro-luminescent";
+    case PRODUCT_DETAIL_LASER:
+      return "Lase";
+    case PRODUCT_DETAIL_FLASHTUBE:
+      return "Flash Tube";
+    case PRODUCT_DETAIL_COLORSCROLLER:
+      return "Color Scroller";
+    case PRODUCT_DETAIL_COLORWHEEL:
+      return "Color Wheel";
+    case PRODUCT_DETAIL_COLORCHANGE:
+      return "Color Changer (Semaphore or other type)";
+    case PRODUCT_DETAIL_IRIS_DOUSER:
+      return "Iris";
+    case PRODUCT_DETAIL_DIMMING_SHUTTER:
+      return "Dimming Shuttle";
+    case PRODUCT_DETAIL_PROFILE_SHUTTER:
+      return "Profile Shuttle";
+    case PRODUCT_DETAIL_BARNDOOR_SHUTTER:
+      return "Barndoor Shuttle";
+    case PRODUCT_DETAIL_EFFECTS_DISC:
+      return "Effects Disc";
+    case PRODUCT_DETAIL_GOBO_ROTATOR:
+      return "Gobo Rotator";
+    case PRODUCT_DETAIL_VIDEO:
+      return "Video";
+    case PRODUCT_DETAIL_SLIDE:
+      return "Slide";
+    case PRODUCT_DETAIL_FILM:
+      return "Film";
+    case PRODUCT_DETAIL_OILWHEEL:
+      return "Oil Wheel";
+    case PRODUCT_DETAIL_LCDGATE:
+      return "LCD Gate";
+    case PRODUCT_DETAIL_FOGGER_GLYCOL:
+      return "Fogger, Glycol";
+    case PRODUCT_DETAIL_FOGGER_MINERALOIL:
+      return "Fogger, Mineral Oil";
+    case PRODUCT_DETAIL_FOGGER_WATER:
+      return "Fogger, Water";
+    case PRODUCT_DETAIL_CO2:
+      return "Dry Ice/ Carbon Dioxide Device";
+    case PRODUCT_DETAIL_LN2:
+      return "Nitrogen based";
+    case PRODUCT_DETAIL_BUBBLE:
+      return "Bubble or Foam Machine";
+    case PRODUCT_DETAIL_FLAME_PROPANE:
+      return "Propane Flame";
+    case PRODUCT_DETAIL_FLAME_OTHER:
+      return "Other Flame";
+    case PRODUCT_DETAIL_OLEFACTORY_STIMULATOR:
+      return "Scents";
+    case PRODUCT_DETAIL_SNOW:
+      return "Snow Machine";
+    case PRODUCT_DETAIL_WATER_JET:
+      return "Water Jet";
+    case PRODUCT_DETAIL_WIND:
+      return "Wind Machine";
+    case PRODUCT_DETAIL_CONFETTI:
+      return "Confetti Machine";
+    case PRODUCT_DETAIL_HAZARD:
+      return "Hazard (Any form of pyrotechnic control or device.)";
+    case PRODUCT_DETAIL_PHASE_CONTROL:
+      return "Phase Control";
+    case PRODUCT_DETAIL_REVERSE_PHASE_CONTROL:
+      return "Phase Angle";
+    case PRODUCT_DETAIL_SINE:
+      return "Sine";
+    case PRODUCT_DETAIL_PWM:
+      return "PWM";
+    case PRODUCT_DETAIL_DC:
+      return "DC";
+    case PRODUCT_DETAIL_HFBALLAST:
+      return "HF Ballast";
+    case PRODUCT_DETAIL_HFHV_NEONBALLAST:
+      return "HFHV Neon/Argon";
+    case PRODUCT_DETAIL_HFHV_EL:
+      return "HFHV Electroluminscent";
+    case PRODUCT_DETAIL_MHR_BALLAST:
+      return "Metal Halide Ballast";
+    case PRODUCT_DETAIL_BITANGLE_MODULATION:
+      return "Bit Angle Modulation";
+    case PRODUCT_DETAIL_FREQUENCY_MODULATION:
+      return "Frequency Modulation";
+    case PRODUCT_DETAIL_HIGHFREQUENCY_12V:
+      return "High Frequency 12V";
+    case PRODUCT_DETAIL_RELAY_MECHANICAL:
+      return "Mechanical Relay";
+    case PRODUCT_DETAIL_RELAY_ELECTRONIC:
+      return "Electronic Relay";
+    case PRODUCT_DETAIL_SWITCH_ELECTRONIC:
+      return "Electronic Switch";
+    case PRODUCT_DETAIL_CONTACTOR:
+      return "Contactor";
+    case PRODUCT_DETAIL_MIRRORBALL_ROTATOR:
+      return "Mirror Ball Rotator";
+    case PRODUCT_DETAIL_OTHER_ROTATOR:
+      return "Other Rotator";
+    case PRODUCT_DETAIL_KABUKI_DROP:
+      return "Kabuki Drop";
+    case PRODUCT_DETAIL_CURTAIN:
+      return "Curtain";
+    case PRODUCT_DETAIL_LINESET:
+      return "Line Set";
+    case PRODUCT_DETAIL_MOTOR_CONTROL:
+      return "Motor Control";
+    case PRODUCT_DETAIL_DAMPER_CONTROL:
+      return "Damper Control";
+    case PRODUCT_DETAIL_SPLITTER:
+      return "Splitter";
+    case PRODUCT_DETAIL_ETHERNET_NODE:
+      return "Ethernet Node";
+    case PRODUCT_DETAIL_MERGE:
+      return "DMX512 Merger";
+    case PRODUCT_DETAIL_DATAPATCH:
+      return "Data Patch";
+    case PRODUCT_DETAIL_WIRELESS_LINK:
+      return "Wireless link";
+    case PRODUCT_DETAIL_PROTOCOL_CONVERTOR:
+      return "Protocol Convertor";
+    case PRODUCT_DETAIL_ANALOG_DEMULTIPLEX:
+      return "DMX512 to DC Voltage";
+    case PRODUCT_DETAIL_ANALOG_MULTIPLEX:
+      return "DC Voltage to DMX512";
+    case PRODUCT_DETAIL_SWITCH_PANEL:
+      return "Switch Panel";
+    case PRODUCT_DETAIL_ROUTER:
+      return "Router";
+    case PRODUCT_DETAIL_FADER:
+      return "Fader, Single Channel";
+    case PRODUCT_DETAIL_MIXER:
+      return "Mixer, Multi Channel";
+    case PRODUCT_DETAIL_CHANGEOVER_MANUAL:
+      return "Manual Changeover";
+    case PRODUCT_DETAIL_CHANGEOVER_AUTO:
+      return "Auto Changeover";
+    case PRODUCT_DETAIL_TEST:
+      return "Test Device";
+    case PRODUCT_DETAIL_GFI_RCD:
+      return "GFI / RCD Device";
+    case PRODUCT_DETAIL_BATTERY:
+      return "Battery";
+    case PRODUCT_DETAIL_CONTROLLABLE_BREAKER:
+      return "Controllable Breaker";
+    case PRODUCT_DETAIL_OTHER:
+      return "Other Device";
+    default:
+      stringstream str;
+      str << "Unknown, was " << detail;
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint8_t representing a sensor type to a human-readable string.
+ * @param type the sensor type value
+ */
+string SensorTypeToString(uint8_t type) {
+  switch (type) {
+    case SENSOR_TEMPERATURE:
+      return "Temperature";
+    case SENSOR_VOLTAGE:
+      return "Voltage";
+    case SENSOR_CURRENT:
+      return "Current";
+    case SENSOR_FREQUENCY:
+      return "Frequency";
+    case SENSOR_RESISTANCE:
+      return "Resistance";
+    case SENSOR_POWER:
+      return "Power";
+    case SENSOR_MASS:
+      return "Mass";
+    case SENSOR_LENGTH:
+      return "Length";
+    case SENSOR_AREA:
+      return "Area";
+    case SENSOR_VOLUME:
+      return "Volume";
+    case SENSOR_DENSITY:
+      return "Density";
+    case SENSOR_VELOCITY:
+      return "Velocity";
+    case SENSOR_ACCELERATION:
+      return "Acceleration";
+    case SENSOR_FORCE:
+      return "Force";
+    case SENSOR_ENERGY:
+      return "Energy";
+    case SENSOR_PRESSURE:
+      return "Pressure";
+    case SENSOR_TIME:
+      return "Time";
+    case SENSOR_ANGLE:
+      return "Angle";
+    case SENSOR_POSITION_X:
+      return "Position X";
+    case SENSOR_POSITION_Y:
+      return "Position Y";
+    case SENSOR_POSITION_Z:
+      return "Position Z";
+    case SENSOR_ANGULAR_VELOCITY:
+      return "Angular velocity";
+    case SENSOR_LUMINOUS_INTENSITY:
+      return "luminous intensity";
+    case SENSOR_LUMINOUS_FLUX:
+      return "luminous flux";
+    case SENSOR_ILLUMINANCE:
+      return "illuminance";
+    case SENSOR_CHROMINANCE_RED:
+      return "chrominance red";
+    case SENSOR_CHROMINANCE_GREEN:
+      return "chrominance green";
+    case SENSOR_CHROMINANCE_BLUE:
+      return "chrominance blue";
+    case SENSOR_CONTACTS:
+      return "contacts";
+    case SENSOR_MEMORY:
+      return "memory";
+    case SENSOR_ITEMS:
+      return "items";
+    case SENSOR_HUMIDITY:
+      return "humidity";
+    case SENSOR_COUNTER_16BIT:
+      return "16 bith counter";
+    case SENSOR_OTHER:
+      return "Other";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(type);
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint16_t representing a slot type to a human-readable string.
+ * @param slot_type the type of the slot.
+ * @param slot_label the label for the slot.
+ */
+string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
+  if (slot_type == ST_PRIMARY) {
+    switch (slot_label) {
+      case SD_INTENSITY:
+        return "Primary, intensity";
+      case SD_INTENSITY_MASTER:
+        return "Primary, intensity master";
+      case SD_PAN:
+        return "Primary, pan";
+      case SD_TILT:
+        return "Primary, tilt";
+      case SD_COLOR_WHEEL:
+        return "Primary, color wheel";
+      case SD_COLOR_SUB_CYAN:
+        return "Primary, subtractive cyan";
+      case SD_COLOR_SUB_YELLOW:
+        return "Primary, subtractive yellow";
+      case SD_COLOR_SUB_MAGENTA:
+        return "Primary, subtractive magenta";
+      case SD_COLOR_ADD_RED:
+        return "Primary, additive red";
+      case SD_COLOR_ADD_GREEN:
+        return "Primary, additive green";
+      case SD_COLOR_ADD_BLUE:
+        return "Primary, additive blue";
+      case SD_COLOR_CORRECTION:
+        return "Primary, color correction";
+      case SD_COLOR_SCROLL:
+        return "Primary, scroll";
+      case SD_COLOR_SEMAPHORE:
+        return "Primary, color semaphone";
+      case SD_STATIC_GOBO_WHEEL:
+        return "Primary, static gobo wheel";
+      case SD_ROTO_GOBO_WHEEL:
+        return "Primary, gobo wheel";
+      case SD_PRISM_WHEEL:
+        return "Primary, prism wheel";
+      case SD_EFFECTS_WHEEL:
+        return "Primary, effects wheel";
+      case SD_BEAM_SIZE_IRIS:
+        return "Primary, iris size";
+      case SD_EDGE:
+        return "Primary, edge";
+      case SD_FROST:
+        return "Primary, frost";
+      case SD_STROBE:
+        return "Primary, strobe";
+      case SD_ZOOM:
+        return "Primary, zoom";
+      case SD_FRAMING_SHUTTER:
+        return "Primary, framing shutter";
+      case SD_SHUTTER_ROTATE:
+        return "Primary, shuttle rotate";
+      case SD_DOUSER:
+        return "Primary, douser";
+      case SD_BARN_DOOR:
+        return "Primary, barn door";
+      case SD_LAMP_CONTROL:
+        return "Primary, lamp control";
+      case SD_FIXTURE_CONTROL:
+        return "Primary, fixture control";
+      case SD_FIXTURE_SPEED:
+        return "Primary, fixture speed";
+      case SD_MACRO:
+        return "Primary, macro";
+      case SD_UNDEFINED:
+        return "Primary, undefined";
+      default:
+        stringstream str;
+        str << "Primary unknown, was " << slot_label;
+        return str.str();
+    }
+  } else {
+    stringstream str;
+    switch (slot_type) {
+      case ST_SEC_FINE:
+        str << "fine control for slot " << slot_label;
+        break;
+      case ST_SEC_TIMING:
+        str << "timing control for slot " << slot_label;
+        break;
+      case ST_SEC_SPEED:
+        str << "speed control for slot " << slot_label;
+        break;
+      case ST_SEC_CONTROL:
+        str << "mode control for slot " << slot_label;
+        break;
+      case ST_SEC_INDEX:
+        str << "index control for slot " << slot_label;
+        break;
+      case ST_SEC_ROTATION:
+        str << "rotation speed control for slot " << slot_label;
+        break;
+      case ST_SEC_INDEX_ROTATE:
+        str << "rotation index control for slot " << slot_label;
+        break;
+      case ST_SEC_UNDEFINED:
+        str << "undefined for slot " << slot_label;
+        break;
+      default:
+        str << "unknown for slot " << slot_label;
+    }
+    return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint16_t representing a status message to a human-readable string.
+ * @param message_id the status message value
+ */
+string StatusMessageIdToString(uint16_t message_id) {
+  switch (message_id) {
+    case STS_CAL_FAIL:
+      return "Failed calibration";
+    case STS_SENS_NOT_FOUND:
+      return "sensor not found";
+    case STS_SENS_ALWAYS_ON:
+      return "sensor always on";
+    case STS_LAMP_DOUSED:
+      return "sensor lamp doused";
+    case STS_LAMP_STRIKE:
+      return "sensor lamp failed to strike";
+    case STS_OVERTEMP:
+      return "over temp";
+    case STS_UNDERTEMP:
+      return "under temp";
+    case STS_SENS_OUT_RANGE:
+      return "sensor out of range";
+    case STS_OVERVOLTAGE_PHASE:
+      return "phase over voltage";
+    case STS_UNDERVOLTAGE_PHASE:
+      return "phase under voltage";
+    case STS_OVERCURRENT:
+      return "over current";
+    case STS_UNDERCURRENT:
+      return "under current";
+    case STS_PHASE:
+      return "out of phase";
+    case STS_PHASE_ERROR:
+      return "phase error";
+    case STS_AMPS:
+      return "amps";
+    case STS_VOLTS:
+      return "volts";
+    case STS_DIMSLOT_OCCUPIED:
+      return "no dimmer";
+    case STS_BREAKER_TRIP:
+      return "breaker tripped";
+    case STS_WATTS:
+      return "watts";
+    case STS_DIM_FAILURE:
+      return "dimmer failure";
+    case STS_DIM_PANIC:
+      return "dimmer panic mode";
+    case STS_READY:
+      return "ready";
+    case STS_NOT_READY:
+      return "not ready";
+    case STS_LOW_FLUID:
+      return "low fluid";
+    default:
+      stringstream str;
+      str << "Unknown, was " << message_id;
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert a uint8_t representing a status type to a human-readable string.
+ * @param status_type the status type value
+ */
+string StatusTypeToString(uint8_t status_type) {
+  switch (status_type) {
+    case STATUS_NONE:
+      return "None";
+    case STATUS_GET_LAST_MESSAGE:
+      return "Get last messages";
+    case STATUS_ADVISORY:
+      return "Advisory";
+    case STATUS_WARNING:
+      return "Warning";
+    case STATUS_ERROR:
+      return "Error";
+    case STATUS_ADVISORY_CLEARED:
+      return "Advisory cleared";
+    case STATUS_WARNING_CLEARED:
+      return "Warning cleared";
+    case STATUS_ERROR_CLEARED:
+      return "Error cleared";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(status_type);
+      return str.str();
+  }
+}
+
+
+
+/**
+ * Convert a uint8_t representing a unit to a human-readable string.
+ * @param unit the unit value
+ */
+string UnitToString(uint8_t unit) {
+  switch (unit) {
+    case UNITS_NONE:
+      return "none";
+    case UNITS_CENTIGRADE:
+      return "degrees C";
+    case UNITS_VOLTS_DC:
+      return "Volts (DC)";
+    case UNITS_VOLTS_AC_PEAK:
+      return "Volts (AC Peak)";
+    case UNITS_VOLTS_AC_RMS:
+      return "Volts (AC RMS)";
+    case UNITS_AMPERE_DC:
+      return "Amps (DC)";
+    case UNITS_AMPERE_AC_PEAK:
+      return "Amps (AC Peak)";
+    case UNITS_AMPERE_AC_RMS:
+      return "Amps (AC RMS)";
+    case UNITS_HERTZ:
+      return "Hz";
+    case UNITS_OHM:
+      return "ohms";
+    case UNITS_WATT:
+      return "W";
+    case UNITS_KILOGRAM:
+      return "kg";
+    case UNITS_METERS:
+      return "m";
+    case UNITS_METERS_SQUARED:
+      return "m^2";
+    case UNITS_METERS_CUBED:
+      return "m^3";
+    case UNITS_KILOGRAMMES_PER_METER_CUBED:
+      return "kg/m^3";
+    case UNITS_METERS_PER_SECOND:
+      return "m/s";
+    case UNITS_METERS_PER_SECOND_SQUARED:
+      return "m/s^2";
+    case UNITS_NEWTON:
+      return "newton";
+    case UNITS_JOULE:
+      return "joule";
+    case UNITS_PASCAL:
+      return "pascal";
+    case UNITS_SECOND:
+      return "second";
+    case UNITS_DEGREE:
+      return "degree";
+    case UNITS_STERADIAN:
+      return "steradian";
+    case UNITS_CANDELA:
+      return "candela";
+    case UNITS_LUMEN:
+      return "lumen";
+    case UNITS_LUX:
+      return "lux";
+    case UNITS_IRE:
+      return "ire";
+    case UNITS_BYTE:
+      return "bytes";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(unit);
+      return str.str();
+  }
+}
+}  // rdm
+}  //  ola
