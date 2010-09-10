@@ -1439,8 +1439,8 @@ bool RDMController::SetClock(const UID &uid,
     return false;
   }
   ola::rdm::ClockValue clock;
-  clock.year = time_spec.tm_year;
-  clock.month = time_spec.tm_mon;
+  clock.year = time_spec.tm_year + 1900;
+  clock.month = time_spec.tm_mon + 1;
   clock.day = time_spec.tm_mday;
   clock.hour = time_spec.tm_hour;
   clock.minute = time_spec.tm_min;
