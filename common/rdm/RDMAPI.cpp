@@ -737,7 +737,7 @@ bool RDMAPI::ResetToFactoryDefaults(
     &RDMAPI::_HandleEmptyResponse,
     callback);
   return CheckReturnStatus(
-    m_impl->RDMGet(cb,
+    m_impl->RDMSet(cb,
                    m_universe,
                    uid,
                    sub_device,
