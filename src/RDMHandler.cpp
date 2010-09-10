@@ -537,8 +537,11 @@ void ResponseHandler::Clock(const ResponseStatus &status,
   if (!CheckForSuccess(status))
     return;
   cout << "Current time:" << endl;
-  cout << "d/m/y: " << clock.day << "/" << clock.month << "/" << clock.year <<
-    ", " << clock.hour << ":" << clock.minute << ":" << clock.second << endl;
+  cout << "d/m/y: " << static_cast<int>(clock.day) << "/" <<
+    static_cast<int>(clock.month) << "/" <<
+    static_cast<int>(clock.year) << ", " << static_cast<int>(clock.hour) <<
+    ":" << static_cast<int>(clock.minute) << ":" <<
+    static_cast<int>(clock.second) << endl;
 }
 
 void ResponseHandler::IdentifyMode(const ResponseStatus &status, bool mode) {
