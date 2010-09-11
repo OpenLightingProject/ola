@@ -173,18 +173,5 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     map<uint16_t, string> m_pid_to_name_map;
 
     bool CheckForSuccess(const ResponseStatus &status);
-    void PrintDataType(uint8_t type);
-    void PrintType(uint8_t type);
-    void PrintUnit(uint8_t unit);
-    void PrintPrefix(uint8_t prefix);
-    void PrintProductCategory(uint16_t category);
-    void PrintSlotInfo(uint8_t slot_type, uint16_t slot_label);
-    void PrintStatusType(uint8_t status_type);
-    void PrintStatusMessageId(uint16_t message_id);
-    void PrintLampState(uint8_t lamp_state);
-    void PrintLampMode(uint8_t lamp_mode);
-    void PrintNackReason(uint16_t reason);
-    void PrintProductDetail(uint16_t detail);
-    void PrintPowerState(uint8_t power_state);
 };
 #endif  // SRC_RDMHANDLER_H_
