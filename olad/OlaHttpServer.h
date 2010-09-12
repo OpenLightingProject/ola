@@ -53,7 +53,7 @@ class OlaHttpServer {
     ~OlaHttpServer() {}
     bool Init() { return m_server.Init(); }
     bool Start() { return m_server.Start(); }
-    void Stop();
+    void Stop() { return m_server.Stop(); }
 
     int JsonServerStats(const HttpRequest *request, HttpResponse *response);
     int JsonUniversePluginList(const HttpRequest *request,

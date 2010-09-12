@@ -144,6 +144,11 @@ class HttpServer: public OlaThread {
     static const char CONTENT_TYPE_CSS[];
     static const char CONTENT_TYPE_JS[];
 
+    // Expose the SelectServer
+    ola::network::SelectServer *SelectServer() const {
+      return m_select_server;
+    }
+
   private :
     HttpServer(const HttpServer&);
     HttpServer& operator=(const HttpServer&);

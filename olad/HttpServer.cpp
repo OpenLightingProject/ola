@@ -329,6 +329,7 @@ int HttpResponse::Send() {
 HttpServer::HttpServer(unsigned int port, const string &data_dir)
     : OlaThread(),
       m_httpd(NULL),
+      m_select_server(NULL),
       m_default_handler(NULL),
       m_port(port),
       m_data_dir(data_dir) {
@@ -342,6 +343,12 @@ HttpServer::HttpServer(unsigned int port, const string &data_dir)
  */
 HttpServer::~HttpServer() {
   Stop();
+
+  if (m_select_server)
+    delete m_select_server;
+
+  if (m_httpd)
+    MHD_stop_daemon(m_httpd);
 
   map<string, BaseHttpClosure*>::const_iterator iter;
   for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter)
@@ -361,6 +368,11 @@ HttpServer::~HttpServer() {
  * @return true on success, false on failure
  */
 bool HttpServer::Init() {
+  if (m_httpd || m_select_server) {
+    OLA_INFO << "Non null pointers found, Init() was probably called twice";
+    return false;
+  }
+
   m_httpd = MHD_start_daemon(MHD_NO_FLAG,
                              m_port,
                              NULL,
@@ -371,6 +383,12 @@ bool HttpServer::Init() {
                              RequestCompleted,
                              NULL,
                              MHD_OPTION_END);
+
+  if (m_httpd) {
+    m_select_server = new ola::network::SelectServer();
+    m_select_server->RunInLoop(NewClosure(this, &HttpServer::UpdateSockets));
+  }
+
   return m_httpd ? true : false;
 }
 
@@ -379,29 +397,21 @@ bool HttpServer::Init() {
  * The entry point into the new thread
  */
 void *HttpServer::Run() {
-  if (!m_httpd) {
+  if (!(m_httpd || m_select_server)) {
     OLA_WARN << "HttpServer::Run called but the server wasn't setup.";
     return NULL;
   }
 
-  m_select_server = new ola::network::SelectServer();
-  m_select_server->RunInLoop(NewClosure(this, &HttpServer::UpdateSockets));
-
   m_select_server->Run();
 
   // clean up any remaining sockets
-  set<UnmanagedSocket*, unmanaged_socket_lt>::iterator iter = m_sockets.begin();
+  set<UnmanagedSocket*, unmanaged_socket_lt>::iterator iter =
+    m_sockets.begin();
   for (; iter != m_sockets.end(); ++iter) {
     m_select_server->RemoveSocket(*iter);
     m_select_server->UnRegisterWriteSocket(*iter);
     delete *iter;
   }
-  delete m_select_server;
-  m_select_server = NULL;
-
-  MHD_stop_daemon(m_httpd);
-
-  m_httpd = NULL;
   return NULL;
 }
 
@@ -410,8 +420,13 @@ void *HttpServer::Run() {
  * Stop the HTTP server
  */
 void HttpServer::Stop() {
-  if (m_select_server)
+  if (IsRunning()) {
+    OLA_INFO << "Notifying HTTP server thread to stop";
     m_select_server->Terminate();
+    OLA_INFO << "Waiting for HTTP server thread to exit";
+    Join();
+    OLA_INFO << "HTTP server thread exited";
+  }
 }
 
 
