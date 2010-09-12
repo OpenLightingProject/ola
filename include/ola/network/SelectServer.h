@@ -29,6 +29,7 @@
 #include <ola/Closure.h>  // NOLINT
 #include <ola/Clock.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
+#include <ola/network/Socket.h>  // NOLINT
 
 namespace ola {
 namespace network {
@@ -146,6 +147,10 @@ class SelectServer {
                    bool delete_on_close = false);
     bool RemoveSocket(class Socket *socket);
     bool RemoveSocket(class ConnectedSocket *socket);
+
+    bool RegisterWriteSocket(class BidirectionalSocket *socket);
+    bool UnRegisterWriteSocket(class BidirectionalSocket *socket);
+
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                         ola::Closure<bool> *closure);
     timeout_id RegisterSingleTimeout(unsigned int ms,
@@ -156,6 +161,7 @@ class SelectServer {
     void RunInLoop(ola::Closure<void> *closure);
 
     static const char K_SOCKET_VAR[];
+    static const char K_WRITE_SOCKET_VAR[];
     static const char K_CONNECTED_SOCKET_VAR[];
     static const char K_TIMER_VAR[];
     static const char K_LOOP_TIME[];
@@ -163,15 +169,22 @@ class SelectServer {
 
   private :
     typedef struct {
-      class ConnectedSocket *socket;
+      ConnectedSocket *socket;
       bool delete_on_close;
     } connected_socket_t;
+
+    struct connected_socket_t_lt {
+      bool operator()(const connected_socket_t &c1,
+                      const connected_socket_t &c2) const {
+        return c1.socket->ReadDescriptor() < c2.socket->ReadDescriptor();
+      }
+    };
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
     bool CheckForEvents(const TimeInterval &poll_interval);
-    void CheckSockets(fd_set *set);
-    void AddSocketsToSet(fd_set *set, int *max_sd);
+    void CheckSockets(fd_set *r_set, fd_set *w_set);
+    void AddSocketsToSet(fd_set *r_set, fd_set *w_set, int *max_sd);
     TimeStamp CheckTimeouts(const TimeStamp &now);
     void UnregisterAll();
 
@@ -184,9 +197,9 @@ class SelectServer {
     bool m_free_wake_up_time;
     TimeInterval m_poll_interval;
     unsigned int m_next_id;
-    vector<class Socket*> m_sockets;
-    vector<connected_socket_t> m_connected_sockets;
-    vector<Closure<void>*> m_ready_queue;
+    std::set<class Socket*> m_sockets;
+    std::set<connected_socket_t, connected_socket_t_lt> m_connected_sockets;
+    std::set<BidirectionalSocket*> m_write_sockets;
     std::set<timeout_id> m_removed_timeouts;
     ExportMap *m_export_map;
 

@@ -16,6 +16,33 @@
  * Socket.h
  * The Socket interface
  * Copyright (C) 2005-2009 Simon Newton
+ *
+ * This defines all the different types of sockets that can be used by the
+ * SelectServer. At the top level, the Socket interface provides the minimum
+ * functionality needed to register a socket with the SelectServer to handle
+ * read events. The BidirectionalSocket extends this interface to handle
+ * ready-to-write events as well.
+ *
+ * The UnmanagedSocket allows socket descriptors controller by other libraries
+ * to be used with the SelectServer.
+ *
+ * ConnectedSocket is a socket with tighter intergration with the SelectServer.
+ * This allows the SelectServer to detect when the socket is closed and call
+ * the OnClose() handler. It also provides methods to disable SIGPIPE, control
+ * the blocking attributes and check how much data remains to be read.
+ * ConnectedSocket has the following sub-classes:
+ *
+ *  - LoopbackSocket this socket is just a pipe(). Data written to the socket
+ *  is available to be read
+ *  - PipeSocket allows a pair of sockets to be created. Data written to socket
+ *  A is available at Socket B and visa versa.
+ *  - TcpSocket, this represents a TCP connection to a remote endpoint
+ *  - DeviceSocket, this is a generic ConnectedSocket. It can be used with file
+ *    descriptors to handle local devices.
+ *
+ * AcceptingSocket is the interface that defines sockets which can spawn new
+ * Socket. TcpAcceptingSocket is the only subclass and provides the accept()
+ * functionality.
  */
 
 #ifndef INCLUDE_OLA_NETWORK_SOCKET_H_
@@ -33,12 +60,15 @@
 #include <string>
 #include <ola/Closure.h>  // NOLINT
 
+
 namespace ola {
 namespace network {
 
 
 /*
- * The base Socket class with the functionality required by the select server.
+ * The base Socket Interface with the functionality required by the select
+ * server. This provides just enough functionality to be registered with the
+ * SelectServer, and a callback to be invoked when data is available.
  * All other sockets inherit from this one.
  */
 class Socket {
@@ -53,6 +83,7 @@ class Socket {
      * Returns the read descriptor for this socket
      */
     virtual int ReadDescriptor() const = 0;
+
     /*
      * Close this socket
      */
@@ -77,18 +108,69 @@ class Socket {
 
 
 /*
+ * A bi-directional socket. This can be registered with the SelectServer for
+ * both Read and Write events.
+ */
+class BidirectionalSocket: public Socket {
+  public :
+    BidirectionalSocket(): Socket(), m_on_write(NULL) {}
+    virtual ~BidirectionalSocket() {
+      if (m_on_write)
+        delete m_on_write;
+    }
+
+    virtual int WriteDescriptor() const = 0;
+
+    /*
+     * Set the OnWrite closure
+     */
+    void SetOnWritable(ola::Closure<void> *on_write) {
+      if (m_on_write)
+        delete m_on_write;
+      m_on_write = on_write;
+    }
+
+    /*
+     * This is called when the socket is ready to be written to
+     */
+    ola::Closure<void> *PerformWrite() const { return m_on_write; }
+
+  private:
+    ola::Closure<void> *m_on_write;
+};
+
+
+/*
+ * An unmanaged socket is used to glue sockets from other software into the
+ * SelectServer. This class doesn't define any read/write methods, it simply
+ * allows a third-party sd to be registered with a callback.
+ */
+class UnmanagedSocket: public BidirectionalSocket {
+  public :
+    explicit UnmanagedSocket(int sd): BidirectionalSocket(), m_sd(sd) {}
+    ~UnmanagedSocket() {}
+    int ReadDescriptor() const { return m_sd; }
+    int WriteDescriptor() const { return m_sd; }
+    // Closing is left to something else
+    bool Close() { return true; }
+  private:
+    int m_sd;
+    UnmanagedSocket(const UnmanagedSocket &other);
+    UnmanagedSocket& operator=(const UnmanagedSocket &other);
+};
+
+
+
+/*
  * A connected socket can be read from / written to.
  */
-class ConnectedSocket: public Socket {
+class ConnectedSocket: public BidirectionalSocket {
   public:
-    ConnectedSocket(): m_on_close(NULL) {}
+    ConnectedSocket(): BidirectionalSocket(), m_on_close(NULL) {}
     virtual ~ConnectedSocket() {
       if (m_on_close)
         delete m_on_close;
     }
-
-    virtual int ReadDescriptor() const = 0;
-    virtual int WriteDescriptor() const = 0;
 
     virtual ssize_t Send(const uint8_t *buffer, unsigned int size) const {
       return FDSend(WriteDescriptor(), buffer, size);
@@ -122,6 +204,9 @@ class ConnectedSocket: public Socket {
       return false;
     }
 
+    /*
+     * Set the OnClose closure
+     */
     void SetOnClose(ola::SingleUseClosure<void> *on_close) {
       if (m_on_close)
         delete m_on_close;
@@ -246,35 +331,19 @@ class DeviceSocket: public ConnectedSocket {
 
 
 /*
- * An unmanaged socket is used to glue sockets from other software into the
- * SelectServer.
- */
-class UnmanagedSocket: public Socket {
-  public :
-    explicit UnmanagedSocket(int sd): m_sd(sd) {}
-    ~UnmanagedSocket() {}
-    int ReadDescriptor() const { return m_sd; }
-    // Closing is left to something else
-    bool Close() { return true; }
-  private:
-    int m_sd;
-    UnmanagedSocket(const UnmanagedSocket &other);
-    UnmanagedSocket& operator=(const UnmanagedSocket &other);
-};
-
-
-/*
  * A UdpSocket (non connected)
  */
-class UdpSocket: public Socket {
+class UdpSocket: public BidirectionalSocket {
   public:
-    UdpSocket(): m_fd(INVALID_SOCKET),
+    UdpSocket(): BidirectionalSocket(),
+                 m_fd(INVALID_SOCKET),
                  m_bound_to_port(false) {}
     ~UdpSocket() { Close(); }
     bool Init();
     bool Bind(unsigned short port = INADDR_ANY);
     bool Close();
     int ReadDescriptor() const { return m_fd; }
+    int WriteDescriptor() const { return m_fd; }
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
                    const struct sockaddr_in &destination) const;
@@ -314,7 +383,7 @@ class UdpSocket: public Socket {
 
 
 /*
- * A server socket creates new Sockets when clients connect
+ * A Socket creates new Sockets when clients connect.
  */
 class AcceptingSocket: public Socket {
   public:
