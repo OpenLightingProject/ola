@@ -52,8 +52,11 @@ bool OlaThread::Start() {
  * Join this thread
  */
 bool OlaThread::Join(void *ptr) {
-  if (m_thread_id)
-    return 0 == pthread_join(m_thread_id, &ptr);
+  if (m_thread_id) {
+    int ret = pthread_join(m_thread_id, &ptr);
+    m_thread_id = 0;
+    return 0 == ret;
+  }
   return false;
 }
 }  // ola

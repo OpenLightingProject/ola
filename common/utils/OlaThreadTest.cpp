@@ -60,6 +60,7 @@ void OlaThreadTest::testOlaThread() {
   MockThread thread;
   CPPUNIT_ASSERT(!thread.thread_ran);
   thread.Start();
+  CPPUNIT_ASSERT(thread.IsRunning());
   CPPUNIT_ASSERT(thread.Join());
   CPPUNIT_ASSERT(thread.thread_ran);
 }

@@ -32,6 +32,7 @@ class OlaThread {
 
     bool Start();
     bool Join(void *ptr = NULL);
+    bool IsRunning() const { return m_thread_id != 0; }
     virtual void *Run() = 0;
 
   private:
