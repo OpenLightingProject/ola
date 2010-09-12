@@ -154,9 +154,8 @@ inline SingleUseClosure<ReturnType>* NewSingleClosure(
  * Create a new function closure.
  */
 template <typename ReturnType, typename Arg>
-inline Closure<ReturnType>* NewClosure(
-    ReturnType (*callback)(Arg arg),
-    Arg arg) {
+inline Closure<ReturnType>* NewClosure(ReturnType (*callback)(Arg arg),
+                                       Arg arg) {
   return new FunctionArgClosure<Closure<ReturnType>, ReturnType, Arg>(
       callback,
       arg);
@@ -263,8 +262,8 @@ inline SingleUseClosure<ReturnType>* NewSingleClosure(
  */
 template <typename Class, typename ReturnType, typename Arg>
 inline Closure<ReturnType>* NewClosure(Class* object,
-                           ReturnType (Class::*method)(Arg arg),
-                           Arg arg) {
+                                       ReturnType (Class::*method)(Arg arg),
+                                       Arg arg) {
   return new MethodArgClosure<Class, Closure<ReturnType>, ReturnType, Arg>(
       object,
       method,
@@ -334,9 +333,10 @@ inline SingleUseClosure<ReturnType>* NewSingleClosure(
  * Create a new two-arg method closure
  */
 template <typename Class, typename ReturnType, typename Arg, typename Arg2>
-inline Closure<ReturnType>* NewClosure(Class* object,
-                           ReturnType (Class::*method)(Arg arg, Arg2 arg2),
-                           Arg arg, Arg2 arg2) {
+inline Closure<ReturnType>* NewClosure(
+    Class* object,
+    ReturnType (Class::*method)(Arg arg, Arg2 arg2),
+    Arg arg, Arg2 arg2) {
   return new MethodTwoArgClosure<Class,
                                  Closure<ReturnType>,
                                  ReturnType,
