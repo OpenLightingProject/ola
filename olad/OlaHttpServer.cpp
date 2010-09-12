@@ -120,6 +120,18 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
 }
 
 
+/**
+ * Stop the HttpServer and wait for it to exit.
+ */
+void OlaHttpServer::Stop() {
+  OLA_INFO << "Notifying HTTP server thread to stop";
+  m_server.Stop();
+  OLA_INFO << "Waiting for HTTP server thread to exit";
+  m_server.Join();
+  OLA_INFO << "HTTP server thread exited";
+}
+
+
 /*
  * Print the server stats json
  * @param request the HttpRequest

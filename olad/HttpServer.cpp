@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 #include "olad/HttpServer.h"
@@ -31,7 +32,9 @@ namespace ola {
 
 using std::ifstream;
 using std::pair;
+using std::set;
 using std::string;
+using ola::network::UnmanagedSocket;
 
 const char HttpServer::CONTENT_TYPE_PLAIN[] = "text/plain";
 const char HttpServer::CONTENT_TYPE_HTML[] = "text/html";
@@ -324,7 +327,8 @@ int HttpResponse::Send() {
  * @param data_dir the directory to serve static content from
  */
 HttpServer::HttpServer(unsigned int port, const string &data_dir)
-    : m_httpd(NULL),
+    : OlaThread(),
+      m_httpd(NULL),
       m_default_handler(NULL),
       m_port(port),
       m_data_dir(data_dir) {
@@ -353,11 +357,11 @@ HttpServer::~HttpServer() {
 
 
 /*
- * Start the HTTP server
+ * Setup the HTTP server
  * @return true on success, false on failure
  */
-bool HttpServer::Start() {
-  m_httpd = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION,
+bool HttpServer::Init() {
+  m_httpd = MHD_start_daemon(MHD_NO_FLAG,
                              m_port,
                              NULL,
                              NULL,
@@ -371,13 +375,125 @@ bool HttpServer::Start() {
 }
 
 
+/**
+ * The entry point into the new thread
+ */
+void *HttpServer::Run() {
+  if (!m_httpd) {
+    OLA_WARN << "HttpServer::Run called but the server wasn't setup.";
+    return NULL;
+  }
+
+  m_select_server = new ola::network::SelectServer();
+  m_select_server->RunInLoop(NewClosure(this, &HttpServer::UpdateSockets));
+
+  m_select_server->Run();
+
+  // clean up any remaining sockets
+  set<UnmanagedSocket*, unmanaged_socket_lt>::iterator iter = m_sockets.begin();
+  for (; iter != m_sockets.end(); ++iter) {
+    m_select_server->RemoveSocket(*iter);
+    m_select_server->UnRegisterWriteSocket(*iter);
+    delete *iter;
+  }
+  delete m_select_server;
+  m_select_server = NULL;
+
+  MHD_stop_daemon(m_httpd);
+
+  m_httpd = NULL;
+  return NULL;
+}
+
+
 /*
  * Stop the HTTP server
  */
 void HttpServer::Stop() {
-  if (m_httpd) {
-    MHD_stop_daemon(m_httpd);
-    m_httpd = NULL;
+  if (m_select_server)
+    m_select_server->Terminate();
+}
+
+
+/**
+ * This is run every loop iteration to update the list of sockets in the
+  * SelectServer from MHD.
+ */
+void HttpServer::UpdateSockets() {
+  fd_set r_set, w_set, e_set;
+  int max_fd = 0;
+  FD_ZERO(&r_set);
+  FD_ZERO(&w_set);
+
+  if (MHD_YES != MHD_get_fdset(m_httpd, &r_set, &w_set, &e_set, &max_fd)) {
+    OLA_WARN << "Failed to get a list of the file descriptors for MHD";
+    return;
+  }
+
+  set<UnmanagedSocket*, unmanaged_socket_lt>::iterator iter =
+    m_sockets.begin();
+
+  // This isn't the best plan, talk to the MHD devs about exposing the list of
+  // FD in a more suitable way
+  int i = 0;
+  while (iter != m_sockets.end() && i <= max_fd) {
+    if ((*iter)->ReadDescriptor() < i) {
+      // this socket is no longer required so remove it
+      OLA_INFO << "Removing unsed socket " << (*iter)->ReadDescriptor();
+      m_select_server->RemoveSocket(*iter);
+      m_select_server->UnRegisterWriteSocket(*iter);
+      delete *iter;
+      m_sockets.erase(iter++);
+    } else if ((*iter)->ReadDescriptor() == i) {
+      // this socket may need to be updated
+      if (FD_ISSET(i, &r_set))
+        m_select_server->AddSocket(*iter);
+      else
+        m_select_server->RemoveSocket(*iter);
+
+      if (FD_ISSET(i, &w_set))
+        m_select_server->RegisterWriteSocket(*iter);
+      else
+        m_select_server->UnRegisterWriteSocket(*iter);
+      iter++;
+      i++;
+    } else {
+      // this is a new socket
+      if (FD_ISSET(i, &r_set) || FD_ISSET(i, &w_set)) {
+        OLA_INFO << "Adding new socket " << i;
+        UnmanagedSocket *socket = NewSocket(&r_set, &w_set, i);
+        m_sockets.insert(socket);
+      }
+      i++;
+    }
+  }
+
+  while (iter != m_sockets.end()) {
+    OLA_INFO << "Removing " << (*iter)->ReadDescriptor() <<
+      " as it's not longer needed";
+    m_select_server->UnRegisterWriteSocket(*iter);
+    m_select_server->RemoveSocket(*iter);
+    delete *iter;
+    m_sockets.erase(iter++);
+  }
+
+  for (;i <= max_fd; i++) {
+    // add the remaining sockets to the SS
+    if (FD_ISSET(i, &r_set) || FD_ISSET(i, &w_set)) {
+      OLA_INFO << "Adding " << i << " as a new socket";
+      UnmanagedSocket *socket = NewSocket(&r_set, &w_set, i);
+      m_sockets.insert(socket);
+    }
+  }
+}
+
+
+/**
+ * Called when there is HTTP IO activity to deal with.
+ */
+void HttpServer::HandleHTTPIO() {
+  if (MHD_run(m_httpd) == MHD_NO) {
+    OLA_WARN << "MHD run failed";
   }
 }
 
@@ -548,5 +664,21 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
                                mhd_response);
   MHD_destroy_response(mhd_response);
   return ret;
+}
+
+
+UnmanagedSocket *HttpServer::NewSocket(fd_set *r_set,
+                                       fd_set *w_set,
+                                       int fd) {
+  UnmanagedSocket *socket = new UnmanagedSocket(fd);
+  socket->SetOnData(NewClosure(this, &HttpServer::HandleHTTPIO));
+  socket->SetOnWritable(NewClosure(this, &HttpServer::HandleHTTPIO));
+
+  if (FD_ISSET(fd, r_set))
+    m_select_server->AddSocket(socket);
+
+  if (FD_ISSET(fd, w_set))
+    m_select_server->RegisterWriteSocket(socket);
+  return socket;
 }
 }  // ola

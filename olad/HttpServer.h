@@ -23,12 +23,15 @@
 #define OLAD_HTTPSERVER_H_
 
 #include <ola/Callback.h>
+#include <ola/OlaThread.h>
+#include <ola/network/SelectServer.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <microhttpd.h>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -102,15 +105,19 @@ class HttpResponse {
 /*
  * The base HTTP Server
  */
-class HttpServer {
+class HttpServer: public OlaThread {
   public:
     typedef ola::Callback2<int, const HttpRequest*, HttpResponse*>
       BaseHttpClosure;
 
     HttpServer(unsigned int port, const string &data_dir);
     virtual ~HttpServer();
-    bool Start();
+    bool Init();
+    void *Run();
     void Stop();
+    void UpdateSockets();
+    void HandleHTTPIO();
+
     int DispatchRequest(const HttpRequest *request, HttpResponse *response);
     bool RegisterHandler(const string &path, BaseHttpClosure *handler);
     bool RegisterFile(const string &path,
@@ -141,7 +148,22 @@ class HttpServer {
     HttpServer(const HttpServer&);
     HttpServer& operator=(const HttpServer&);
 
+    struct unmanaged_socket_lt {
+      bool operator()(const ola::network::UnmanagedSocket *s1,
+                      const ola::network::UnmanagedSocket *s2) const {
+        return s1->ReadDescriptor() < s2->ReadDescriptor();
+      }
+    };
+
+    ola::network::UnmanagedSocket *NewSocket(fd_set *r_set,
+                                             fd_set *w_set,
+                                             int fd);
+
     struct MHD_Daemon *m_httpd;
+    ola::network::SelectServer *m_select_server;
+
+    std::set<ola::network::UnmanagedSocket*, unmanaged_socket_lt> m_sockets;
+
     map<string, BaseHttpClosure*> m_handlers;
     map<string, static_file_info> m_static_content;
     BaseHttpClosure *m_default_handler;

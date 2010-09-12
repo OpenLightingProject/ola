@@ -51,8 +51,9 @@ class OlaHttpServer {
                   const string &data_dir,
                   const ola::network::Interface &interface);
     ~OlaHttpServer() {}
+    bool Init() { return m_server.Init(); }
     bool Start() { return m_server.Start(); }
-    void Stop() { return m_server.Stop(); }
+    void Stop();
 
     int JsonServerStats(const HttpRequest *request, HttpResponse *response);
     int JsonUniversePluginList(const HttpRequest *request,

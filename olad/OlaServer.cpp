@@ -247,7 +247,9 @@ bool OlaServer::Init() {
                                 m_options.http_enable_quit,
                                 m_options.http_data_dir,
                                 interface);
-    m_httpd->Start();
+    if (m_httpd->Init()) {
+      m_httpd->Start();
+    }
   }
 #endif
 
