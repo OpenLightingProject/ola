@@ -95,7 +95,8 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_free_export_map(false),
       m_housekeeping_timeout(ola::network::INVALID_TIMEOUT),
       m_httpd(NULL),
-      m_options(*ola_options) {
+      m_options(*ola_options),
+      m_rdm_controller(NULL) {
   if (!m_export_map) {
     m_export_map = new ExportMap();
     m_free_export_map = true;
@@ -126,7 +127,8 @@ OlaServer::~OlaServer() {
   StopPlugins();
 
   // this will remove any input ports and fail any outstanding rdm requests
-  delete m_rdm_controller;
+  if (m_rdm_controller)
+    delete m_rdm_controller;
 
   map<int, OlaServerServiceImpl*>::iterator iter;
   for (iter = m_sd_to_service.begin(); iter != m_sd_to_service.end(); ++iter) {
