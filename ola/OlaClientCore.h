@@ -23,18 +23,20 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <string>
+#include <vector>
 
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/SimpleRpcController.h"
 #include "common/rpc/StreamRpcChannel.h"
+#include "ola/Closure.h"
 #include "ola/DmxBuffer.h"
-#include "ola/OlaClient.h"
-#include "ola/OlaClientServiceImpl.h"
 #include "ola/OlaDevice.h"
 #include "ola/common.h"
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/UIDSet.h"
 
 namespace ola {
 
@@ -45,109 +47,206 @@ using ola::network::ConnectedSocket;
 using ola::rpc::SimpleRpcController;
 using ola::rpc::StreamRpcChannel;
 
-class OlaClientCore {
+class OlaClientCore: public ola::proto::OlaClientService {
   public:
     explicit OlaClientCore(ConnectedSocket *socket);
     ~OlaClientCore();
 
     bool Setup();
     bool Stop();
-    bool SetObserver(OlaClientObserver *observer);
 
-    bool FetchPluginInfo(ola_plugin_id filter, bool include_description);
-    bool FetchDeviceInfo(ola_plugin_id filter);
-    bool FetchUniverseInfo();
+    // plugin methods
+    bool FetchPluginList(
+        SingleUseCallback2<void,
+                           const vector<class OlaPlugin>&,
+                           const string&> *callback);
+
+    bool FetchPluginDescription(
+        ola_plugin_id plugin_id,
+        SingleUseCallback2<void, const string&, const string&> *callback);
+
+    // device methods
+    bool FetchDeviceInfo(
+        ola_plugin_id filter,
+        SingleUseCallback2<void,
+                           const vector <class OlaDevice>&,
+                           const string&> *callback);
+
+    bool ConfigureDevice(
+        unsigned int device_alias,
+        const string &msg,
+        SingleUseCallback2<void, const string&, const string&> *callback);
+
+    // port methods
+    bool SetPortPriorityInherit(
+        unsigned int device_alias,
+        unsigned int port,
+        PortDirection port_direction,
+        SingleUseCallback1<void, const string&> *callback);
+    bool SetPortPriorityOverride(
+        unsigned int device_alias,
+        unsigned int port,
+        PortDirection port_direction,
+        uint8_t value,
+        SingleUseCallback1<void, const string&> *callback);
+
+    // universe methods
+    bool FetchUniverseInfo(
+        SingleUseCallback2<void,
+                           const vector <class OlaUniverse>&,
+                           const string &> *callback);
+    bool SetUniverseName(
+        unsigned int uni,
+        const string &name,
+        SingleUseCallback1<void, const string&> *callback);
+    bool SetUniverseMergeMode(
+        unsigned int uni,
+        OlaUniverse::merge_mode mode,
+        SingleUseCallback1<void, const string&> *callback);
+
+    // patching
+    bool Patch(
+        unsigned int device_alias,
+        unsigned int port,
+        ola::PortDirection port_direction,
+        ola::PatchAction action,
+        unsigned int uni,
+        SingleUseCallback1<void, const string&> *callback);
 
     // dmx methods
-    bool SendDmx(unsigned int universe, const DmxBuffer &data);
-    bool FetchDmx(unsigned int uni);
+    void SetDmxCallback(
+        Callback3<void,
+                  unsigned int,
+                  const DmxBuffer&, const string&> *callback);
+
+    bool RegisterUniverse(
+        unsigned int universe,
+        ola::RegisterAction register_action,
+        SingleUseCallback1<void, const string&> *callback);
+    bool SendDmx(
+        unsigned int universe,
+        const DmxBuffer &data,
+        SingleUseCallback1<void, const string&> *callback);
+    bool FetchDmx(
+        unsigned int universe,
+        SingleUseCallback2<void, const DmxBuffer&, const string&> *callback);
 
     // rdm methods
-    bool FetchUIDList(unsigned int universe);
-    bool ForceDiscovery(unsigned int universe);
-    bool SetSourceUID(const UID &uid,
-                      ola::SingleUseCallback1<void, const string &> *callback);
+    bool FetchUIDList(
+        unsigned int universe,
+        SingleUseCallback2<void,
+                           const ola::rdm::UIDSet&,
+                           const string&> *callback);
+    bool ForceDiscovery(
+        unsigned int universe,
+        ola::SingleUseCallback1<void, const string&> *callback);
+    bool SetSourceUID(const ola::rdm::UID &uid,
+                      ola::SingleUseCallback1<void, const string&> *callback);
 
     bool RDMGet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
                 unsigned int universe,
-                const UID &uid,
+                const ola::rdm::UID &uid,
                 uint16_t sub_device,
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length);
     bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
                 unsigned int universe,
-                const UID &uid,
+                const ola::rdm::UID &uid,
                 uint16_t sub_device,
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length);
 
-    bool SetUniverseName(unsigned int uni, const string &name);
-    bool SetUniverseMergeMode(unsigned int uni, OlaUniverse::merge_mode mode);
+    /*
+     * This is called by the channel when new DMX data turns up
+     */
+    void UpdateDmxData(::google::protobuf::RpcController* controller,
+                       const ola::proto::DmxData* request,
+                       ola::proto::Ack* response,
+                       ::google::protobuf::Closure* done);
 
-    bool RegisterUniverse(unsigned int universe, ola::RegisterAction action);
+    // unfortunately all of these need to be public because they're used in the
+    // closures. That's why this class is wrapped in OlaClient or
+    // OlaCallbackClient.
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::PluginListReply *reply;
+      SingleUseCallback2<void,
+                         const vector<class OlaPlugin>&,
+                         const string&> *callback;
+    } plugin_list_arg;
 
-    bool Patch(unsigned int device_alias,
-               unsigned int port,
-               bool is_output,
-               ola::PatchAction action,
-               unsigned int uni);
+    void HandlePluginList(plugin_list_arg *args);
 
-    bool SetPortPriorityInherit(unsigned int device_alias,
-                                unsigned int port,
-                                bool is_output);
-    bool SetPortPriorityOverride(unsigned int device_alias,
-                                 unsigned int port,
-                                 bool is_output,
-                                 uint8_t value);
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::PluginDescriptionReply *reply;
+      SingleUseCallback2<void, const string&, const string&> *callback;
+    } plugin_description_arg;
 
-    bool ConfigureDevice(unsigned int device_alias, const string &msg);
+    void HandlePluginDescription(plugin_description_arg *args);
 
-    // request callbacks
-    void HandlePluginInfo(SimpleRpcController *controller,
-                          ola::proto::PluginInfoReply *reply);
-    void HandleSendDmx(SimpleRpcController *controller,
-                       ola::proto::Ack *reply);
-    void HandleGetDmx(SimpleRpcController *controller,
-                      ola::proto::DmxData *reply);
-    void HandleUIDList(SimpleRpcController *controller,
-                       ola::proto::UIDListReply *reply);
-    void HandleDeviceInfo(SimpleRpcController *controller,
-                          ola::proto::DeviceInfoReply *reply);
-    void HandleUniverseInfo(SimpleRpcController *controller,
-                            ola::proto::UniverseInfoReply *reply);
-    void HandleUniverseName(SimpleRpcController *controller,
-                            ola::proto::Ack *reply);
-    void HandleUniverseMergeMode(SimpleRpcController *controller,
-                                 ola::proto::Ack *reply);
-    void HandleRegister(SimpleRpcController *controller,
-                        ola::proto::Ack *reply);
-    void HandlePatch(SimpleRpcController *controller,
-                     ola::proto::Ack *reply);
-    void HandleSetPriority(SimpleRpcController *controller,
-                           ola::proto::Ack *reply);
-    void HandleDeviceConfig(SimpleRpcController *controller,
-                            ola::proto::DeviceConfigReply *reply);
-    void HandleDiscovery(SimpleRpcController *controller,
-                         ola::proto::UniverseAck *reply);
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::DeviceInfoReply *reply;
+      SingleUseCallback2<void,
+                         const vector <class OlaDevice> &,
+                         const string &> *callback;
+    } device_info_arg;
 
-    // we need these because a google::protobuf::Closure can't take more than 2
-    // args
-    struct rdm_response_args {
+    void HandleDeviceInfo(device_info_arg *arg);
+
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::DeviceConfigReply *reply;
+      SingleUseCallback2<void, const string&, const string&> *callback;
+    } configure_device_args;
+
+    void HandleDeviceConfig(configure_device_args *arg);
+
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::Ack *reply;
+      SingleUseCallback1<void, const string&> *callback;
+    } ack_args;
+
+    void HandleAck(ack_args *args);
+
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::UniverseInfoReply *reply;
+      SingleUseCallback2<void,
+                         const vector <class OlaUniverse>&,
+                         const string&> *callback;
+    } universe_info_args;
+
+    void HandleUniverseInfo(universe_info_args *args);
+
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::DmxData *reply;
+      SingleUseCallback2<void, const DmxBuffer&, const string&> *callback;
+    } get_dmx_args;
+
+    void HandleGetDmx(get_dmx_args *args);
+
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::UIDListReply *reply;
+      SingleUseCallback2<void,
+                         const ola::rdm::UIDSet&,
+                         const string&> *callback;
+    } uid_list_args;
+
+    void HandleUIDList(uid_list_args *args);
+
+    typedef struct {
       ola::rdm::RDMAPIImplInterface::rdm_callback *callback;
       SimpleRpcController *controller;
       ola::proto::RDMResponse *reply;
-    };
-
-    struct set_source_uid_args {
-      ola::SingleUseCallback1<void, const string &> *callback;
-      SimpleRpcController *controller;
-      ola::proto::Ack *reply;
-    };
-
-    void HandleRDM(struct rdm_response_args *args);
-    void HandleSetSourceUID(struct set_source_uid_args *args);
+    } rdm_response_args;
+    void HandleRDM(rdm_response_args *args);
 
   private:
     OlaClientCore(const OlaClientCore&);
@@ -156,18 +255,54 @@ class OlaClientCore {
     bool RDMCommand(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
                     bool is_set,
                     unsigned int universe,
-                    const UID &uid,
+                    const ola::rdm::UID &uid,
                     uint16_t sub_device,
                     uint16_t pid,
                     const uint8_t *data,
                     unsigned int data_length);
 
+    template <typename arg_type, typename reply_type, typename callback_type>
+    arg_type *NewArgs(
+        SimpleRpcController *controller,
+        reply_type reply,
+        callback_type callback);
+
+    template <typename arg_type>
+    void FreeArgs(arg_type *args);
+
     ConnectedSocket *m_socket;
-    OlaClientServiceImpl *m_client_service;
+    Callback3<void, unsigned int, const DmxBuffer&, const string&>
+      *m_dmx_callback;
     StreamRpcChannel *m_channel;
     ola::proto::OlaServerService_Stub *m_stub;
     int m_connected;
-    OlaClientObserver *m_observer;
 };
+
+
+/**
+ * Create a new args structure
+ */
+template <typename arg_type, typename reply_type, typename callback_type>
+arg_type *OlaClientCore::NewArgs(
+    SimpleRpcController *controller,
+    reply_type reply,
+    callback_type callback) {
+  arg_type *args = new arg_type();
+  args->controller = controller;
+  args->reply = reply;
+  args->callback = callback;
+  return args;
+}
+
+
+/**
+ * Free an args structure
+ */
+template <typename arg_type>
+void OlaClientCore::FreeArgs(arg_type *args) {
+  delete args->controller;
+  delete args->reply;
+  delete args;
+}
 }  // ola
 #endif  // OLA_OLACLIENTCORE_H_

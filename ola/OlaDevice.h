@@ -31,20 +31,23 @@ using std::string;
 using std::vector;
 
 
+enum PatchAction {PATCH, UNPATCH};
+enum RegisterAction {REGISTER, UNREGISTER};
+enum PortDirection {INPUT_PORT, OUTPUT_PORT};
+
+
 /*
  * Represents a Plugin
  */
 class OlaPlugin {
   public:
-    OlaPlugin(unsigned int id, const string &name, const string &desc = ""):
+    OlaPlugin(unsigned int id, const string &name):
       m_id(id),
-      m_name(name),
-      m_description(desc) {}
+      m_name(name) {}
     ~OlaPlugin() {}
 
     unsigned int Id() const { return m_id; }
     string Name() const { return m_name; }
-    string Description() const { return m_description; }
 
     bool operator<(const OlaPlugin &other) const {
       return m_id < other.m_id;
@@ -52,7 +55,6 @@ class OlaPlugin {
   private:
     unsigned int m_id;  // id of this plugin
     string m_name;  // plugin name
-    string m_description;  // optional description
 };
 
 
@@ -182,20 +184,34 @@ class OlaUniverse {
       MERGE_LTP,
     };
 
-    OlaUniverse(int id, merge_mode m, const string &name):
+    OlaUniverse(unsigned int id,
+                merge_mode m,
+                const string &name,
+                unsigned int input_port_count,
+                unsigned int output_port_count,
+                unsigned int rdm_device_count):
       m_id(id),
       m_merge_mode(m),
-      m_name(name) {}
+      m_name(name),
+      m_input_port_count(input_port_count),
+      m_output_port_count(output_port_count),
+      m_rdm_device_count(rdm_device_count) {}
     ~OlaUniverse() {}
 
-    int Id() const { return m_id;}
+    unsigned int Id() const { return m_id;}
     merge_mode MergeMode() const { return m_merge_mode; }
     string Name() const { return m_name;}
+    unsigned int InputPortCount() const { return m_input_port_count; }
+    unsigned int OutputPortCount() const { return m_output_port_count; }
+    unsigned int RDMDeviceCount() const { return m_rdm_device_count; }
 
   private:
-    int m_id;      // id of this universe
+    unsigned int m_id;      // id of this universe
     merge_mode m_merge_mode;  // merge mode
     string m_name;    // universe name
+    unsigned int m_input_port_count;
+    unsigned int m_output_port_count;
+    unsigned int m_rdm_device_count;
 };
 }  // ola
 #endif  // OLA_OLADEVICE_H_

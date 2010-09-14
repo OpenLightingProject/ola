@@ -1,11 +1,10 @@
 include $(top_srcdir)/common.mk
 
-HEADER_FILES = OlaClient.h OlaDevice.h SimpleClient.h StreamingClient.h \
-               common.h
+HEADER_FILES = OlaClient.h OlaCallbackClient.h OlaDevice.h \
+               SimpleClient.h StreamingClient.h common.h
 
 lib_LTLIBRARIES = libola.la
-libola_la_SOURCES = OlaClient.cpp \
-                    OlaClientServiceImpl.cpp OlaClientCore.cpp \
+libola_la_SOURCES = OlaClient.cpp OlaCallbackClient.cpp OlaClientCore.cpp \
                     SimpleClient.cpp StreamingClient.cpp
 libola_la_LDFLAGS = -version-info 1:1:0
 libola_la_LIBADD = $(top_builddir)/common/libolacommon.la
@@ -13,8 +12,7 @@ libola_la_LIBADD = $(top_builddir)/common/libolacommon.la
 pkgincludedir = $(includedir)/ola
 pkginclude_HEADERS = $(HEADER_FILES)
 
-EXTRA_DIST = $(HEADER_FILES) OlaClientServiceImpl.h OlaClientCore.h \
-             common-h.in
+EXTRA_DIST = $(HEADER_FILES) OlaClientCore.h common-h.in
 
 
 # Test Programs

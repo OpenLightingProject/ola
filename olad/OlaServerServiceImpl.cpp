@@ -54,9 +54,11 @@ using ola::proto::DmxData;
 using ola::proto::DmxReadRequest;
 using ola::proto::MergeModeRequest;
 using ola::proto::PatchPortRequest;
+using ola::proto::PluginDescriptionReply;
+using ola::proto::PluginDescriptionRequest;
 using ola::proto::PluginInfo;
-using ola::proto::PluginInfoReply;
-using ola::proto::PluginInfoRequest;
+using ola::proto::PluginListReply;
+using ola::proto::PluginListRequest;
 using ola::proto::PortInfo;
 using ola::proto::RegisterDmxRequest;
 using ola::proto::UniverseInfo;
@@ -332,6 +334,9 @@ void OlaServerServiceImpl::GetUniverseInfo(
     universe_info->set_name(universe->Name());
     universe_info->set_merge_mode(universe->MergeMode() == Universe::MERGE_HTP
         ? ola::proto::HTP: ola::proto::LTP);
+    universe_info->set_input_port_count(universe->InputPortCount());
+    universe_info->set_output_port_count(universe->OutputPortCount());
+    universe_info->set_rdm_devices(universe->UIDCount());
   } else {
     // return all
     vector<Universe*> uni_list;
@@ -344,6 +349,9 @@ void OlaServerServiceImpl::GetUniverseInfo(
       universe_info->set_name((*iter)->Name());
       universe_info->set_merge_mode((*iter)->MergeMode() == Universe::MERGE_HTP
           ? ola::proto::HTP: ola::proto::LTP);
+      universe_info->set_input_port_count((*iter)->InputPortCount());
+      universe_info->set_output_port_count((*iter)->OutputPortCount());
+      universe_info->set_rdm_devices((*iter)->UIDCount());
     }
   }
   done->Run();
@@ -353,23 +361,41 @@ void OlaServerServiceImpl::GetUniverseInfo(
 /*
  * Return info on available plugins
  */
-void OlaServerServiceImpl::GetPluginInfo(RpcController* controller,
-                                         const PluginInfoRequest* request,
-                                         PluginInfoReply* response,
-                                         google::protobuf::Closure* done) {
+void OlaServerServiceImpl::GetPlugins(
+    RpcController* controller,
+    const PluginListRequest* request,
+    PluginListReply* response,
+    google::protobuf::Closure* done) {
   vector<AbstractPlugin*> plugin_list;
   vector<AbstractPlugin*>::const_iterator iter;
   m_plugin_manager->Plugins(&plugin_list);
 
-  bool include_all = (!request->has_plugin_id() ||
-      request->plugin_id() == ola::OLA_PLUGIN_ALL);
+  for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter)
+    AddPlugin(*iter, response);
+  done->Run();
+  (void) request;
+  (void) controller;
+}
 
-  for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter) {
-    if (include_all || (*iter)->Id() == request->plugin_id())
-      AddPlugin(*iter, response, request->include_description());
-  }
-  if (!response->plugin_size() && request->has_plugin_id())
+
+/*
+ * Return the description for a plugin.
+ */
+void OlaServerServiceImpl::GetPluginDescription(
+    RpcController* controller,
+    const ola::proto::PluginDescriptionRequest* request,
+    ola::proto::PluginDescriptionReply* response,
+    google::protobuf::Closure* done) {
+
+  AbstractPlugin *plugin =
+    m_plugin_manager->GetPlugin((ola_plugin_id) request->plugin_id());
+
+  if (plugin) {
+    response->set_name(plugin->Name());
+    response->set_description(plugin->Description());
+  } else {
     controller->SetFailed("Plugin not loaded");
+  }
   done->Run();
 }
 
@@ -447,7 +473,7 @@ void OlaServerServiceImpl::GetUIDs(RpcController* controller,
 void OlaServerServiceImpl::ForceDiscovery(
     RpcController* controller,
     const ola::proto::UniverseRequest* request,
-    ola::proto::UniverseAck* response,
+    ola::proto::Ack* response,
     google::protobuf::Closure* done) {
 
   Universe *universe = m_universe_store->GetUniverse(request->universe());
@@ -455,8 +481,8 @@ void OlaServerServiceImpl::ForceDiscovery(
     return MissingUniverseError(controller, done);
 
   universe->RunRDMDiscovery();
-  response->set_universe(request->universe());
   done->Run();
+  (void) response;
 }
 
 
@@ -605,14 +631,10 @@ void OlaServerServiceImpl::MissingPortError(RpcController* controller,
  * Add this device to the DeviceInfo response
  */
 void OlaServerServiceImpl::AddPlugin(AbstractPlugin *plugin,
-                                     PluginInfoReply* response,
-                                     bool include_description) const {
+                                     PluginListReply* response) const {
   PluginInfo *plugin_info = response->add_plugin();
   plugin_info->set_plugin_id(plugin->Id());
   plugin_info->set_name(plugin->Name());
-  if (include_description) {
-    plugin_info->set_description(plugin->Description());
-  }
 }
 
 

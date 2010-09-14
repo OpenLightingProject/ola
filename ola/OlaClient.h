@@ -16,12 +16,17 @@
  * OlaClient.h
  * Interface to the OLA Client class
  * Copyright (C) 2005-2008 Simon Newton
+ *
+ * This is the legacy client which uses an Observer object. It suffers from the
+ * de-multiplexing problem so it's recommended to use the OlaCallbackClient.
+ * instead.
  */
 
 #ifndef OLA_OLACLIENT_H_
 #define OLA_OLACLIENT_H_
 
 #include <ola/BaseTypes.h>
+#include <ola/Closure.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaDevice.h>
 #include <ola/common.h>
@@ -44,9 +49,6 @@ using ola::rdm::UID;
 
 class OlaClientCore;
 
-enum PatchAction {PATCH, UNPATCH};
-enum RegisterAction {REGISTER, UNREGISTER};
-
 
 class OlaClientObserver {
   public:
@@ -59,40 +61,69 @@ class OlaClientObserver {
       (void) data;
       (void) error;
     }
-    virtual void Plugins(const vector <class OlaPlugin> &plugins,
+    virtual void Plugins(const vector<class OlaPlugin> &plugins,
                          const string &error) {
       (void) plugins;
       (void) error;
     }
-    virtual void Devices(const vector <class OlaDevice> devices,
+
+    virtual void PluginDescription(ola_plugin_id plugin_id,
+                                   const string &description,
+                                   const string &error) {
+      (void) plugin_id;
+      (void) description;
+      (void) error;
+    }
+    virtual void Devices(const vector <class OlaDevice> &devices,
                          const string &error) {
       (void) devices;
       (void) error;
     }
-    virtual void Universes(const vector <class OlaUniverse> universes,
+    virtual void Universes(const vector <class OlaUniverse> &universes,
                            const string &error) {
       (void) universes;
       (void) error;
     }
-    virtual void DeviceConfig(const string &reply,
+    virtual void DeviceConfig(unsigned int device_alias,
+                              const string &reply,
                               const string &error) {
+      (void) device_alias;
       (void) reply;
       (void) error;
     }
 
-    virtual void PatchComplete(const string &error) {
+    virtual void PatchComplete(unsigned int device_alias,
+                               unsigned int port,
+                               PortDirection port_direction,
+                               const string &error) {
+      (void) device_alias;
+      (void) port;
+      (void) port_direction;
       (void) error;
     }
-    virtual void UniverseNameComplete(const string &error) {
+    virtual void UniverseNameComplete(unsigned int universe,
+                                      const string &error) {
+      (void) universe;
       (void) error;
     }
-    virtual void UniverseMergeModeComplete(const string &error) {
+    virtual void UniverseMergeModeComplete(unsigned int universe,
+                                           const string &error) {
+      (void) universe;
       (void) error;
     }
-    virtual void SendDmxComplete(const string &error) {
+    virtual void SendDmxComplete(unsigned int universe,
+                                 const string &error) {
+      (void) universe;
       (void) error;
     }
-    virtual void SetPortPriorityComplete(const string &error) {
+    virtual void SetPortPriorityComplete(
+        unsigned int device_alias,
+        unsigned int port,
+        PortDirection port_direction,
+        const string &error) {
+      (void) device_alias;
+      (void) port;
+      (void) port_direction;
       (void) error;
     }
 
@@ -109,6 +140,15 @@ class OlaClientObserver {
       (void) universe;
       (void) error;
     }
+    virtual void SetSourceUIDComplete(const string &error) {
+      (void) error;
+    }
+
+    virtual void RegistrationComplete(unsigned int universe,
+                                      const string &error) {
+      (void) universe;
+      (void) error;
+    }
 };
 
 
@@ -122,10 +162,10 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
 
     bool Setup();
     bool Stop();
-    bool SetObserver(OlaClientObserver *observer);
+    void SetObserver(OlaClientObserver *observer);
 
-    bool FetchPluginInfo(ola_plugin_id filter = ola::OLA_PLUGIN_ALL,
-                         bool include_description = false);
+    bool FetchPluginList();
+    bool FetchPluginDescription(ola_plugin_id plugin_id);
     bool FetchDeviceInfo(ola_plugin_id filter = ola::OLA_PLUGIN_ALL);
     bool FetchUniverseInfo();
 
@@ -136,8 +176,7 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
     // rdm methods
     bool FetchUIDList(unsigned int universe);
     bool ForceDiscovery(unsigned int universe);
-    bool SetSourceUID(const UID &uid,
-                      ola::SingleUseCallback1<void, const string &> *callback);
+    bool SetSourceUID(const UID &uid);
 
     bool RDMGet(rdm_callback *callback,
                 unsigned int universe,
@@ -161,16 +200,16 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
 
     bool Patch(unsigned int device_alias,
                unsigned int port,
-               bool is_output,
+               PortDirection port_direction,
                ola::PatchAction action,
                unsigned int uni);
 
     bool SetPortPriorityInherit(unsigned int device_alias,
                                 unsigned int port,
-                                bool is_output);
+                                PortDirection port_direction);
     bool SetPortPriorityOverride(unsigned int device_alias,
                                  unsigned int port,
-                                 bool is_output,
+                                 PortDirection port_direction,
                                  uint8_t value);
 
     bool ConfigureDevice(unsigned int device_alias, const string &msg);
@@ -178,7 +217,9 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
   private:
     OlaClient(const OlaClient&);
     OlaClient operator=(const OlaClient&);
+
     OlaClientCore *m_core;
+    OlaClientObserver *m_observer;
 };
 }  // ola
 #endif  // OLA_OLACLIENT_H_

@@ -51,13 +51,68 @@ enum PluginIds {
   OLA_PLUGIN_USBDMX = 12;
 }
 
-message Ack {
-}
+
 
 // This is a special string which indicates that no response will be received
 // for an RPC.
-message STREAMING_NO_RESPONSE {
+message STREAMING_NO_RESPONSE {}
+
+// Generic Ack Message
+message Ack {}
+
+// request the list of available plugins
+message PluginListRequest {}
+
+message PluginInfo {
+  required int32 plugin_id = 1;
+  required string name = 2;
 }
+
+message PluginListReply {
+  repeated PluginInfo plugin = 1;
+}
+
+// request the description for a plugin
+message PluginDescriptionRequest {
+  required int32 plugin_id = 1;
+}
+
+message PluginDescriptionReply {
+  required string name = 1;
+  required string description = 2;
+}
+
+
+// request info on a device
+message DeviceInfoRequest {
+  optional int32 plugin_id = 1;
+}
+
+message PortInfo {
+  required int32 port_id = 1;
+  required int32 priority_capability = 2;
+  required string description = 5;
+  optional int32 universe = 3;
+  optional bool active = 4;
+  optional int32 priority_mode = 6;
+  optional int32 priority = 7;
+}
+
+message DeviceInfo {
+  required int32 device_alias = 1;
+  required int32 plugin_id = 2;
+  required string device_name = 3;
+  repeated PortInfo input_port = 4;
+  repeated PortInfo output_port = 5;
+  required string device_id = 6;
+}
+
+message DeviceInfoReply {
+  repeated DeviceInfo device = 1;
+}
+
+
+
 
 message DmxReadRequest {
   required int32 universe = 1;
@@ -101,6 +156,9 @@ message UniverseInfo {
   required int32 universe = 1;
   required string name = 2;
   required MergeMode merge_mode = 3;
+  required int32 input_port_count = 4;
+  required int32 output_port_count = 5;
+  required int32 rdm_devices = 6;
 }
 
 message UniverseInfoReply {
@@ -115,49 +173,7 @@ message PortPriorityRequest {
   optional int32 priority = 5;
 }
 
-// request info on available plugins
-message PluginInfoRequest {
-  optional int32 plugin_id = 1;
-  optional bool include_description = 2 [default = false];
-}
 
-message PluginInfo {
-  required int32 plugin_id = 1;
-  required string name = 2;
-  optional string description = 3;
-}
-
-message PluginInfoReply {
-  repeated PluginInfo plugin = 1;
-}
-
-// request info on a device
-message DeviceInfoRequest {
-  optional int32 plugin_id = 1;
-}
-
-message PortInfo {
-  required int32 port_id = 1;
-  required int32 priority_capability = 2;
-  required string description = 5;
-  optional int32 universe = 3;
-  optional bool active = 4;
-  optional int32 priority_mode = 6;
-  optional int32 priority = 7;
-}
-
-message DeviceInfo {
-  required int32 device_alias = 1;
-  required int32 plugin_id = 2;
-  required string device_name = 3;
-  repeated PortInfo input_port = 4;
-  repeated PortInfo output_port = 5;
-  required string device_id = 6;
-}
-
-message DeviceInfoReply {
-  repeated DeviceInfo device = 1;
-}
 
 // a device config request
 message DeviceConfigRequest {
@@ -178,10 +194,6 @@ message UID {
 
 // Request the UID list for a universe
 message UniverseRequest {
-  required int32 universe = 1;
-}
-
-message UniverseAck {
   required int32 universe = 1;
 }
 
@@ -210,22 +222,26 @@ message RDMResponse {
 
 // RPCs handled by the OLA Server
 service OlaServerService {
-  rpc GetDmx (DmxReadRequest) returns (DmxData);
-  rpc RegisterForDmx (RegisterDmxRequest) returns (Ack);
-  rpc UpdateDmxData (DmxData) returns (Ack);
-  rpc StreamDmxData (DmxData) returns (STREAMING_NO_RESPONSE);
+  rpc GetPlugins (PluginListRequest) returns (PluginListReply);
+  rpc GetPluginDescription (PluginDescriptionRequest) returns
+    (PluginDescriptionReply);
+  rpc GetDeviceInfo (DeviceInfoRequest) returns (DeviceInfoReply);
+  rpc ConfigureDevice (DeviceConfigRequest) returns (DeviceConfigReply);
+  rpc SetPortPriority (PortPriorityRequest) returns (Ack);
+  rpc GetUniverseInfo (UniverseInfoRequest) returns (UniverseInfoReply);
   rpc SetUniverseName (UniverseNameRequest) returns (Ack);
   rpc SetMergeMode (MergeModeRequest) returns (Ack);
   rpc PatchPort (PatchPortRequest) returns (Ack);
-  rpc SetPortPriority (PortPriorityRequest) returns (Ack);
-  rpc GetUniverseInfo (UniverseInfoRequest) returns (UniverseInfoReply);
-  rpc GetPluginInfo (PluginInfoRequest) returns (PluginInfoReply);
-  rpc GetDeviceInfo (DeviceInfoRequest) returns (DeviceInfoReply);
-  rpc ConfigureDevice (DeviceConfigRequest) returns (DeviceConfigReply);
+
+  rpc RegisterForDmx (RegisterDmxRequest) returns (Ack);
+  rpc UpdateDmxData (DmxData) returns (Ack);
+  rpc GetDmx (DmxReadRequest) returns (DmxData);
   rpc GetUIDs (UniverseRequest) returns (UIDListReply);
-  rpc ForceDiscovery (UniverseRequest) returns (UniverseAck);
-  rpc RDMCommand (RDMRequest) returns (RDMResponse);
+  rpc ForceDiscovery (UniverseRequest) returns (Ack);
   rpc SetSourceUID (UID) returns (Ack);
+  rpc RDMCommand (RDMRequest) returns (RDMResponse);
+
+  rpc StreamDmxData (DmxData) returns (STREAMING_NO_RESPONSE);
 }
 
 // RPCs handled by the OLA Client

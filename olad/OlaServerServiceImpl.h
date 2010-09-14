@@ -88,10 +88,15 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                          const ola::proto::UniverseInfoRequest* request,
                          ola::proto::UniverseInfoReply* response,
                          google::protobuf::Closure* done);
-    void GetPluginInfo(RpcController* controller,
-                       const ola::proto::PluginInfoRequest* request,
-                       ola::proto::PluginInfoReply* response,
+    void GetPlugins(RpcController* controller,
+                       const ola::proto::PluginListRequest* request,
+                       ola::proto::PluginListReply* response,
                        google::protobuf::Closure* done);
+    void GetPluginDescription(
+        RpcController* controller,
+        const ola::proto::PluginDescriptionRequest* request,
+        ola::proto::PluginDescriptionReply* response,
+        google::protobuf::Closure* done);
     void GetDeviceInfo(RpcController* controller,
                        const ola::proto::DeviceInfoRequest* request,
                        ola::proto::DeviceInfoReply* response,
@@ -106,7 +111,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                  google::protobuf::Closure* done);
     void ForceDiscovery(RpcController* controller,
                         const ola::proto::UniverseRequest* request,
-                        ola::proto::UniverseAck* response,
+                        ola::proto::Ack* response,
                         google::protobuf::Closure* done);
     void RDMCommand(RpcController* controller,
                     const ::ola::proto::RDMRequest* request,
@@ -135,8 +140,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                           google::protobuf::Closure* done);
 
     void AddPlugin(class AbstractPlugin *plugin,
-                   ola::proto::PluginInfoReply* response,
-                   bool include_description) const;
+                   ola::proto::PluginListReply* response) const;
     void AddDevice(class AbstractDevice *device,
                    unsigned int alias,
                    ola::proto::DeviceInfoReply* response) const;
