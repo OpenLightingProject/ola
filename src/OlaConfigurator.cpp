@@ -20,22 +20,30 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include <string>
+#include <vector>
 
-#include "OlaConfigurator.h"
+#include "src/OlaConfigurator.h"
 
-using namespace std;
-using ola::SimpleClient;
 using ola::OlaClient;
-using ola::network::SelectServer;
 using ola::OlaDevice;
+using ola::SimpleClient;
+using ola::network::SelectServer;
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
 
 
-void Observer::DeviceConfig(const string &reply, const string &error) {
+void Observer::DeviceConfig(unsigned int device_alias,
+                            const string &reply,
+                            const string &error) {
   m_configurator->HandleConfigResponse(reply, error);
 }
 
 
-void Observer::Devices(const vector <OlaDevice> devices, const string &error) {
+void Observer::Devices(const vector <OlaDevice> &devices,
+                       const string &error) {
   m_configurator->HandleDevices(devices, error);
 }
 
@@ -76,7 +84,7 @@ bool OlaConfigurator::Setup() {
  * Send a ConfigureDevice() request
  * @param message the request to send
  */
-bool OlaConfigurator::SendMessage(google::protobuf::Message &message) {
+bool OlaConfigurator::SendMessage(const google::protobuf::Message &message) {
   string request_string;
   message.SerializeToString(&request_string);
   return m_client->ConfigureDevice(m_alias, request_string);
@@ -90,7 +98,7 @@ bool OlaConfigurator::SendMessage(google::protobuf::Message &message) {
  * @param devices a vector of OlaDevice objects
  * @param error an error string
  */
-void OlaConfigurator::HandleDevices(const vector <OlaDevice> devices,
+void OlaConfigurator::HandleDevices(const vector <OlaDevice> &devices,
                                     const string &error) {
   if (!error.empty()) {
     cout << "Error: " << error << endl;

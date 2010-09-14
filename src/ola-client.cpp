@@ -71,7 +71,7 @@ typedef struct {
   bool help;       // show the help
   int device_id;   // device id
   int port_id;     // port id
-  bool is_output;  // true if this is an output port
+  ola::PortDirection port_direction;  // input or output
   ola::PatchAction patch_action;      // patch or unpatch
   OlaUniverse::merge_mode merge_mode;  // the merge mode
   string cmd;      // argv[0]
@@ -90,13 +90,25 @@ class Observer: public ola::OlaClientObserver {
     Observer(options *opts, SelectServer *ss): m_opts(opts), m_ss(ss) {}
 
     void Plugins(const vector <OlaPlugin> &plugins, const string &error);
-    void Devices(const vector <OlaDevice> devices, const string &error);
-    void Universes(const vector <OlaUniverse> universes, const string &error);
-    void PatchComplete(const string &error);
-    void UniverseNameComplete(const string &error);
-    void UniverseMergeModeComplete(const string &error);
-    void SendDmxComplete(const string &error);
-    void SetPortPriorityComplete(const string &error);
+    void PluginDescription(ola::ola_plugin_id plugin_id,
+                           const string &description,
+                           const string &error);
+    void Devices(const vector <OlaDevice> &devices, const string &error);
+    void Universes(const vector <OlaUniverse> &universes, const string &error);
+    void PatchComplete(unsigned int device_alias,
+                       unsigned int port,
+                       ola::PortDirection port_direction,
+                       const string &error);
+    void UniverseNameComplete(unsigned int universe,
+                              const string &error);
+    void UniverseMergeModeComplete(unsigned int universe,
+                                   const string &error);
+    void SendDmxComplete(unsigned int universe,
+                         const string &error);
+    void SetPortPriorityComplete(unsigned int device_alias,
+                                 unsigned int port,
+                                 ola::PortDirection port_direction,
+                                 const string &error);
 
   private:
     options *m_opts;
@@ -111,7 +123,7 @@ class Observer: public ola::OlaClientObserver {
  * This is called when we recieve universe results from the client
  * @param universes a vector of OlaUniverses
  */
-void Observer::Universes(const vector <OlaUniverse> universes,
+void Observer::Universes(const vector <OlaUniverse> &universes,
                          const string &error) {
   vector<OlaUniverse>::const_iterator iter;
 
@@ -137,7 +149,8 @@ void Observer::Universes(const vector <OlaUniverse> universes,
 /*
  * @params plugins a vector of OlaPlugins
  */
-void Observer::Plugins(const vector <OlaPlugin> &plugins, const string &error) {
+void Observer::Plugins(const vector <OlaPlugin> &plugins,
+                       const string &error) {
   vector<OlaPlugin>::const_iterator iter;
 
   if (!error.empty()) {
@@ -146,26 +159,35 @@ void Observer::Plugins(const vector <OlaPlugin> &plugins, const string &error) {
     return;
   }
 
-  if (m_opts->plugin_id > 0) {
-    for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-      if (iter->Id() == m_opts->plugin_id)
-        cout << iter->Description() << endl;
-    }
-  } else {
-    cout << setw(5) << "Id" << "\tDevice Name" << endl;
-    cout << "--------------------------------------" << endl;
-    for (iter = plugins.begin(); iter != plugins.end(); ++iter)
-      cout << setw(5) << iter->Id() << "\t" << iter->Name() << endl;
-    cout << "--------------------------------------" << endl;
-  }
+  cout << setw(5) << "Id" << "\tPlugin Name" << endl;
+  cout << "--------------------------------------" << endl;
+  for (iter = plugins.begin(); iter != plugins.end(); ++iter)
+    cout << setw(5) << iter->Id() << "\t" << iter->Name() << endl;
+  cout << "--------------------------------------" << endl;
   m_ss->Terminate();
+}
+
+
+/*
+ * Print a plugin description
+ */
+void Observer::PluginDescription(ola::ola_plugin_id plugin_id,
+                                 const string &description,
+                                 const string &error) {
+  if (!error.empty())
+    cout << error << endl;
+  else
+    cout << description << endl;
+  m_ss->Terminate();
+  return;
 }
 
 
 /*
  * @param devices a vector of OlaDevices
  */
-void Observer::Devices(const vector <OlaDevice> devices, const string &error) {
+void Observer::Devices(const vector <OlaDevice> &devices, const string &error) {
+  printf("in devices\n");
   vector<OlaDevice>::const_iterator iter;
 
   if (!error.empty()) {
@@ -188,7 +210,10 @@ void Observer::Devices(const vector <OlaDevice> devices, const string &error) {
 /*
  * Called when the patch command completes.
  */
-void Observer::PatchComplete(const string &error) {
+void Observer::PatchComplete(unsigned int device_alias,
+                             unsigned int port,
+                             ola::PortDirection port_direction,
+                             const string &error) {
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
@@ -197,27 +222,33 @@ void Observer::PatchComplete(const string &error) {
 /*
  * Called when the name command completes.
  */
-void Observer::UniverseNameComplete(const string &error) {
+void Observer::UniverseNameComplete(unsigned int universe,
+                                    const string &error) {
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
 }
 
 
-void Observer::UniverseMergeModeComplete(const string &error) {
+void Observer::UniverseMergeModeComplete(unsigned int universe,
+                                         const string &error) {
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
 }
 
 
-void Observer::SendDmxComplete(const string &error) {
+void Observer::SendDmxComplete(unsigned int universe,
+                               const string &error) {
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
 }
 
-void Observer::SetPortPriorityComplete(const string &error) {
+void Observer::SetPortPriorityComplete(unsigned int device_alias,
+                                       unsigned int port,
+                                       ola::PortDirection port_direction,
+                                       const string &error) {
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
@@ -238,10 +269,10 @@ void Observer::ListPorts(const vector<PortClass> &ports, bool input) {
     cout << " " << port_iter->Description();
 
     switch (port_iter->PriorityCapability()) {
-      case (ola::CAPABILITY_STATIC):
+      case ola::CAPABILITY_STATIC:
         cout << ", priority " << static_cast<int>(port_iter->Priority());
         break;
-      case (ola::CAPABILITY_FULL):
+      case ola::CAPABILITY_FULL:
         cout << ", priority ";
         if (port_iter->PriorityMode() == ola::PRIORITY_MODE_INHERIT)
           cout << "inherited";
@@ -269,7 +300,7 @@ void InitOptions(options *opts) {
   opts->help = false;
   opts->patch_action = ola::PATCH;
   opts->port_id = INVALID_VALUE;
-  opts->is_output = true;
+  opts->port_direction = ola::OUTPUT_PORT;
   opts->device_id = INVALID_VALUE;
   opts->merge_mode = OlaUniverse::MERGE_HTP;
   opts->priority_mode = ola::PRIORITY_MODE_INHERIT;
@@ -306,7 +337,7 @@ void SetMode(options *opts) {
 /*
  * parse our cmd line options
  */
-void ParseOptions(int argc, char *argv[], options &opts) {
+void ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"dmx", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
@@ -330,22 +361,22 @@ void ParseOptions(int argc, char *argv[], options &opts) {
       case 0:
         break;
       case 'd':
-        opts.dmx = optarg;
+        opts->dmx = optarg;
         break;
       case 'h':
-        opts.help = true;
+        opts->help = true;
         break;
       case 'l':
-        opts.merge_mode = OlaUniverse::MERGE_LTP;
+        opts->merge_mode = OlaUniverse::MERGE_LTP;
         break;
       case 'n':
-        opts.uni_name = optarg;
+        opts->uni_name = optarg;
         break;
       case 'p':
-        opts.plugin_id = atoi(optarg);
+        opts->plugin_id = atoi(optarg);
         break;
       case 'u':
-        opts.uni = atoi(optarg);
+        opts->uni = atoi(optarg);
         break;
       case '?':
         break;
@@ -359,7 +390,7 @@ void ParseOptions(int argc, char *argv[], options &opts) {
 /*
  * parse our cmd line options for the patch command
  */
-int ParsePatchOptions(int argc, char *argv[], options &opts) {
+int ParsePatchOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"device", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
@@ -384,25 +415,25 @@ int ParsePatchOptions(int argc, char *argv[], options &opts) {
       case 0:
         break;
       case 'a':
-        opts.patch_action = ola::PATCH;
+        opts->patch_action = ola::PATCH;
         break;
       case 'd':
-        opts.device_id = atoi(optarg);
+        opts->device_id = atoi(optarg);
         break;
       case 'p':
-        opts.port_id = atoi(optarg);
+        opts->port_id = atoi(optarg);
         break;
       case 'r':
-        opts.patch_action = ola::UNPATCH;
+        opts->patch_action = ola::UNPATCH;
         break;
       case 'u':
-        opts.uni = atoi(optarg);
+        opts->uni = atoi(optarg);
         break;
       case 'h':
-        opts.help = true;
+        opts->help = true;
         break;
       case 'i':
-        opts.is_output = false;
+        opts->port_direction = ola::INPUT_PORT;
         break;
       case '?':
         break;
@@ -417,7 +448,7 @@ int ParsePatchOptions(int argc, char *argv[], options &opts) {
 /*
  * parse our cmd line options for the set priority command
  */
-int ParseSetPriorityOptions(int argc, char *argv[], options &opts) {
+int ParseSetPriorityOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"device", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
@@ -440,20 +471,20 @@ int ParseSetPriorityOptions(int argc, char *argv[], options &opts) {
       case 0:
         break;
       case 'd':
-        opts.device_id = atoi(optarg);
+        opts->device_id = atoi(optarg);
         break;
       case 'h':
-        opts.help = true;
+        opts->help = true;
         break;
       case 'i':
-        opts.is_output = false;
+        opts->port_direction = ola::INPUT_PORT;
         break;
       case 'o':
-        opts.priority_mode = ola::PRIORITY_MODE_OVERRIDE;
-        opts.priority_value = atoi(optarg);
+        opts->priority_mode = ola::PRIORITY_MODE_OVERRIDE;
+        opts->priority_value = atoi(optarg);
         break;
       case 'p':
-        opts.port_id = atoi(optarg);
+        opts->port_id = atoi(optarg);
         break;
       case '?':
         break;
@@ -637,6 +668,7 @@ void DisplayHelpAndExit(const options &opts) {
  * @param opts  the const options
  */
 int FetchDeviceInfo(OlaClient *client, const options &opts) {
+  printf("calling fetch");
   client->FetchDeviceInfo((ola::ola_plugin_id) opts.plugin_id);
   return 0;
 }
@@ -652,7 +684,9 @@ void Patch(OlaClient *client, const options &opts) {
     DisplayPatchHelp(opts);
     exit(1);
   }
-  client->Patch(opts.device_id, opts.port_id, opts.is_output,
+  client->Patch(opts.device_id,
+                opts.port_id,
+                opts.port_direction,
                 opts.patch_action, opts.uni);
 }
 
@@ -662,9 +696,9 @@ void Patch(OlaClient *client, const options &opts) {
  */
 int FetchPluginInfo(OlaClient *client, const options &opts) {
   if (opts.plugin_id > 0)
-    client->FetchPluginInfo((ola::ola_plugin_id) opts.plugin_id, true);
+    client->FetchPluginDescription((ola::ola_plugin_id) opts.plugin_id);
   else
-    client->FetchPluginInfo();
+    client->FetchPluginList();
   return 0;
 }
 
@@ -734,11 +768,11 @@ void SetPortPriority(OlaClient *client, const options &opts) {
   if (opts.priority_mode == ola::PRIORITY_MODE_INHERIT) {
     client->SetPortPriorityInherit(opts.device_id,
                                    opts.port_id,
-                                   opts.is_output);
+                                   opts.port_direction);
   } else if (opts.priority_mode == ola::PRIORITY_MODE_OVERRIDE) {
     client->SetPortPriorityOverride(opts.device_id,
                                     opts.port_id,
-                                    opts.is_output,
+                                    opts.port_direction,
                                     opts.priority_value);
   } else {
     DisplaySetPriorityHelp(opts);
@@ -761,11 +795,11 @@ int main(int argc, char *argv[]) {
   SetMode(&opts);
 
   if (opts.m == DEVICE_PATCH)
-    ParsePatchOptions(argc, argv, opts);
+    ParsePatchOptions(argc, argv, &opts);
   else if (opts.m == SET_PORT_PRIORITY)
-    ParseSetPriorityOptions(argc, argv, opts);
+    ParseSetPriorityOptions(argc, argv, &opts);
   else
-    ParseOptions(argc, argv, opts);
+    ParseOptions(argc, argv, &opts);
 
   if (opts.help)
     DisplayHelpAndExit(opts);

@@ -26,6 +26,8 @@
 #include <string>
 #include "src/OlaConfigurator.h"
 
+using std::cout;
+using std::endl;
 using std::string;
 
 typedef struct {

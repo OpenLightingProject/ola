@@ -20,7 +20,7 @@
  * The Configurator makes it easy to use the device specific ConfigureDevice()
  * rpc. For each device type you want to manage, subclass the Configurator and
  * implement the SendConfigRequest() and HandleConfigResponse() methods.
- * Briefly, upon calling Setup() the Configurator will send a DeviceInfo
+ * Upon calling Setup() the Configurator will send a DeviceInfo
  * request to check that the device type matches the plugin_id given in the
  * constructor. On successfull match, it will call SendConfigRequest() which
  * the subclass uses to send the desired request.
@@ -29,15 +29,20 @@
  * subclass.
  */
 
-#include <string>
 #include <google/protobuf/message.h>
-
 #include <ola/OlaClient.h>
 #include <ola/OlaDevice.h>
 #include <ola/SimpleClient.h>
 #include <ola/network/SelectServer.h>
 
-using namespace std;
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
+
+#ifndef SRC_OLACONFIGURATOR_H_
+#define SRC_OLACONFIGURATOR_H_
 
 class OlaConfigurator;
 
@@ -46,9 +51,12 @@ class OlaConfigurator;
  */
 class Observer: public ola::OlaClientObserver {
   public:
-    Observer(OlaConfigurator *configurator): m_configurator(configurator) {}
-    void Devices(const vector <ola::OlaDevice> devices, const string &error);
-    void DeviceConfig(const string &reply, const string &error);
+    explicit Observer(OlaConfigurator *configurator):
+      m_configurator(configurator) {}
+    void Devices(const vector <ola::OlaDevice> &devices, const string &error);
+    void DeviceConfig(unsigned int device_alias,
+                      const string &reply,
+                      const string &error);
   private:
     OlaConfigurator *m_configurator;
 };
@@ -78,9 +86,9 @@ class OlaConfigurator {
     bool Setup();
     void Run() { m_ss->Run(); }
     void Terminate() { m_ss->Terminate(); }
-    void HandleDevices(const vector <ola::OlaDevice> devices,
+    void HandleDevices(const vector <ola::OlaDevice> &devices,
                        const string &error);
-    bool SendMessage(google::protobuf::Message &message);
+    bool SendMessage(const google::protobuf::Message &message);
 
     // Subclasses implement this
     virtual void HandleConfigResponse(const string &reply,
@@ -97,3 +105,4 @@ class OlaConfigurator {
     ola::network::SelectServer *m_ss;
     Observer *m_observer;
 };
+#endif  // SRC_OLACONFIGURATOR_H_
