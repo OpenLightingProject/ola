@@ -1,11 +1,11 @@
 include $(top_srcdir)/common.mk
 
 HEADER_FILES = OlaClient.h OlaCallbackClient.h OlaDevice.h \
-               SimpleClient.h StreamingClient.h common.h
+               OlaClientWrapper.h StreamingClient.h common.h
 
 lib_LTLIBRARIES = libola.la
 libola_la_SOURCES = OlaClient.cpp OlaCallbackClient.cpp OlaClientCore.cpp \
-                    SimpleClient.cpp StreamingClient.cpp
+                    OlaClientWrapper.cpp StreamingClient.cpp
 libola_la_LDFLAGS = -version-info 1:1:0
 libola_la_LIBADD = $(top_builddir)/common/libolacommon.la
 
@@ -42,3 +42,7 @@ stamp-common: $(srcdir)/common-h.in $(top_builddir)/config.status
 # Don't distribute common.h, since it is build host dependent!
 dist-hook:
 	rm -f $(distdir)/common.h
+
+install-exec-hook:
+	$(LN_S) -f $(includedir)/ola/OlaClientWrapper.h $(DESTDIR)$(includedir)/ola/SimpleClient.h	
+

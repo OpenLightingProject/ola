@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * SimpleClient.cpp
+ * OlaClientWrapper.cpp
  * Implementation of Simple Client
  * Copyright (C) 2005-2008 Simon Newton
  */
@@ -24,24 +24,22 @@
 
 namespace ola {
 
-
-SimpleClient::SimpleClient()
-    : m_client(NULL),
-      m_ss(NULL),
-      m_socket(NULL) {
+BaseClientWrapper::BaseClientWrapper()
+    : m_socket(NULL),
+      m_ss(NULL) {
 }
 
-SimpleClient::~SimpleClient() {
+
+BaseClientWrapper::~BaseClientWrapper() {
   Cleanup();
 }
 
 
 /*
  * Setup the Simple Client
- *
  * @returns true on success, false on failure
  */
-bool SimpleClient::Setup() {
+bool BaseClientWrapper::Setup() {
   if (!m_ss)
     m_ss = new SelectServer();
 
@@ -55,26 +53,20 @@ bool SimpleClient::Setup() {
       return false;
     }
     m_socket->SetOnClose(
-        ola::NewSingleClosure(this, &SimpleClient::SocketClosed));
+        ola::NewSingleClosure(this, &OlaClientWrapper::SocketClosed));
   }
 
-  if (!m_client) {
-    m_client = new OlaClient(m_socket);
-  }
+  CreateClient();
   m_ss->AddSocket(m_socket);
-  return m_client->Setup();
+  return StartupClient();
 }
 
 
 /*
  * Close the ola connection.
- *
  * @return true on sucess, false on failure
  */
-bool SimpleClient::Cleanup() {
-  if (m_client)
-    delete m_client;
-
+bool BaseClientWrapper::Cleanup() {
   if (m_socket)
     delete m_socket;
 
@@ -86,7 +78,7 @@ bool SimpleClient::Cleanup() {
 /*
  * Called if the server closed the connection
  */
-void SimpleClient::SocketClosed() {
+void BaseClientWrapper::SocketClosed() {
   OLA_INFO << "Server closed the connection";
   m_ss->Terminate();
 }
