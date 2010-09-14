@@ -30,9 +30,9 @@
  */
 
 #include <google/protobuf/message.h>
-#include <ola/OlaClient.h>
+#include <ola/OlaCallbackClient.h>
+#include <ola/OlaClientWrapper.h>
 #include <ola/OlaDevice.h>
-#include <ola/SimpleClient.h>
 #include <ola/network/SelectServer.h>
 
 #include <string>
@@ -45,21 +45,6 @@ using std::vector;
 #define SRC_OLACONFIGURATOR_H_
 
 class OlaConfigurator;
-
-/*
- * The observer class which repsonds to events
- */
-class Observer: public ola::OlaClientObserver {
-  public:
-    explicit Observer(OlaConfigurator *configurator):
-      m_configurator(configurator) {}
-    void Devices(const vector <ola::OlaDevice> &devices, const string &error);
-    void DeviceConfig(unsigned int device_alias,
-                      const string &reply,
-                      const string &error);
-  private:
-    OlaConfigurator *m_configurator;
-};
 
 
 /*
@@ -74,10 +59,9 @@ class OlaConfigurator {
     OlaConfigurator(unsigned int device_id, ola::ola_plugin_id plugin_id):
       m_alias(device_id),
       m_plugin_id(plugin_id),
-      m_simple_client(NULL),
+      m_client_wrapper(NULL),
       m_client(NULL),
-      m_ss(NULL),
-      m_observer(NULL) {}
+      m_ss(NULL) {}
     virtual ~OlaConfigurator();
 
     /*
@@ -100,9 +84,8 @@ class OlaConfigurator {
     ola::ola_plugin_id m_plugin_id;
 
   private:
-    ola::SimpleClient *m_simple_client;
-    ola::OlaClient *m_client;
+    ola::OlaCallbackClientWrapper *m_client_wrapper;
+    ola::OlaCallbackClient *m_client;
     ola::network::SelectServer *m_ss;
-    Observer *m_observer;
 };
 #endif  // SRC_OLACONFIGURATOR_H_

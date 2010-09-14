@@ -18,6 +18,7 @@
  *  Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <ola/Callback.h>
 #include <stdlib.h>
 #include <iostream>
 #include <string>
@@ -25,9 +26,9 @@
 
 #include "src/OlaConfigurator.h"
 
-using ola::OlaClient;
+using ola::NewSingleCallback;
+using ola::OlaCallbackClient;
 using ola::OlaDevice;
-using ola::SimpleClient;
 using ola::network::SelectServer;
 using std::cout;
 using std::endl;
@@ -35,25 +36,11 @@ using std::string;
 using std::vector;
 
 
-void Observer::DeviceConfig(unsigned int device_alias,
-                            const string &reply,
-                            const string &error) {
-  m_configurator->HandleConfigResponse(reply, error);
-}
-
-
-void Observer::Devices(const vector <OlaDevice> &devices,
-                       const string &error) {
-  m_configurator->HandleDevices(devices, error);
-}
-
-
 /*
  * Clean up
  */
 OlaConfigurator::~OlaConfigurator() {
-  delete m_simple_client;
-  delete m_observer;
+  delete m_client_wrapper;
 }
 
 
@@ -62,20 +49,20 @@ OlaConfigurator::~OlaConfigurator() {
  * @return true on success, false on failure
  */
 bool OlaConfigurator::Setup() {
-  m_simple_client = new SimpleClient();
-  if (!m_simple_client->Setup()) {
-    delete m_simple_client;
-    m_simple_client = NULL;
+  m_client_wrapper = new ola::OlaCallbackClientWrapper();
+  if (!m_client_wrapper->Setup()) {
+    delete m_client_wrapper;
+    m_client_wrapper = NULL;
     return false;
   }
 
-  m_client = m_simple_client->GetClient();
-  m_ss = m_simple_client->GetSelectServer();
-  m_observer = new Observer(this);
-  m_client->SetObserver(m_observer);
+  m_client = m_client_wrapper->GetClient();
+  m_ss = m_client_wrapper->GetSelectServer();
 
   // fire off a DeviceInfo request
-  m_client->FetchDeviceInfo(m_plugin_id);
+  m_client->FetchDeviceInfo(
+      m_plugin_id,
+      NewSingleCallback(this, &OlaConfigurator::HandleDevices));
   return true;
 }
 
@@ -87,7 +74,10 @@ bool OlaConfigurator::Setup() {
 bool OlaConfigurator::SendMessage(const google::protobuf::Message &message) {
   string request_string;
   message.SerializeToString(&request_string);
-  return m_client->ConfigureDevice(m_alias, request_string);
+  return m_client->ConfigureDevice(
+      m_alias,
+      request_string,
+      NewSingleCallback(this, &OlaConfigurator::HandleConfigResponse));
 }
 
 
