@@ -29,6 +29,7 @@ class ClosureTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClosureTest);
   CPPUNIT_TEST(testFunctionClosures);
   CPPUNIT_TEST(testMethodClosures);
+  CPPUNIT_TEST(testFunctionCallbacks1);
   CPPUNIT_TEST(testMethodCallbacks1);
   CPPUNIT_TEST(testMethodCallbacks2);
   CPPUNIT_TEST_SUITE_END();
@@ -36,6 +37,7 @@ class ClosureTest: public CppUnit::TestFixture {
   public:
     void testFunctionClosures();
     void testMethodClosures();
+    void testFunctionCallbacks1();
     void testMethodCallbacks1();
     void testMethodCallbacks2();
     void testMethodCallbacks4();
@@ -125,6 +127,17 @@ void Function1(unsigned int i) {
 
 bool BoolFunction1(unsigned int i) {
   CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE, i);
+  return true;
+}
+
+void Function2(unsigned int i, int j) {
+  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE, i);
+  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE2, j);
+}
+
+bool BoolFunction2(unsigned int i, int j) {
+  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE, i);
+  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE2, j);
   return true;
 }
 
@@ -279,6 +292,41 @@ void ClosureTest::testMethodClosures() {
   CPPUNIT_ASSERT(c16->Run());
   CPPUNIT_ASSERT(c16->Run());
   delete c16;
+}
+
+
+
+/*
+ * Test the single argument function closures
+ */
+void ClosureTest::testFunctionCallbacks1() {
+  // single arg, void return closures
+  BaseCallback1<void, unsigned int> *c1 = NewSingleCallback(&Function1);
+  c1->Run(TEST_INT_VALUE);
+  BaseCallback1<void, unsigned int> *c2 = NewCallback(&Function1);
+  c2->Run(TEST_INT_VALUE);
+  c2->Run(TEST_INT_VALUE);
+  delete c2;
+
+  // test a function that returns bool
+  BaseCallback1<bool, unsigned int> *c3 = NewSingleCallback(&BoolFunction1);
+  CPPUNIT_ASSERT(c3->Run(TEST_INT_VALUE));
+  BaseCallback1<bool, unsigned int> *c4 = NewCallback(&BoolFunction1);
+  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE));
+  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE));
+  delete c4;
+
+  // single arg, void return closures
+  BaseCallback1<void, int> *c6 = NewSingleCallback(
+      &Function2,
+      TEST_INT_VALUE);
+  c6->Run(TEST_INT_VALUE2);
+  BaseCallback1<void, int> *c7 = NewCallback(
+    &Function2,
+    TEST_INT_VALUE);
+  c7->Run(TEST_INT_VALUE2);
+  c7->Run(TEST_INT_VALUE2);
+  delete c7;
 }
 
 
