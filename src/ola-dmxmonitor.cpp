@@ -44,8 +44,8 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/Closure.h>
-#include <ola/OlaClient.h>
-#include <ola/SimpleClient.h>
+#include <ola/OlaCallbackClient.h>
+#include <ola/OlaClientWrapper.h>
 #include <ola/DmxBuffer.h>
 #include <ola/network/SelectServer.h>
 
@@ -53,8 +53,8 @@
 #include <iostream>
 
 using ola::DmxBuffer;
-using ola::OlaClient;
-using ola::OlaClientObserver;
+using ola::OlaCallbackClient;
+using ola::OlaCallbackClientWrapper;
 using ola::network::SelectServer;
 using ola::SimpleClient;
 using std::string;
@@ -91,7 +91,7 @@ static int palette[MAXCOLOR];
 /*
  * The observer class which repsonds to events
  */
-class DmxMonitor: public OlaClientObserver {
+class DmxMonitor {
   public:
     explicit DmxMonitor(unsigned int universe):
         m_universe(universe),
@@ -115,6 +115,7 @@ class DmxMonitor: public OlaClientObserver {
     void NewDmx(unsigned int universe,
                 const DmxBuffer &buffer,
                 const string &error);
+    void RegisterComplete(const string &error);
     void StdinReady();
     bool CheckDataLoss();
     void TerminalResized();
@@ -128,7 +129,7 @@ class DmxMonitor: public OlaClientObserver {
     WINDOW *m_window;
     WINDOW *m_data_loss_window;
     bool m_channels_offset;  // start from channel 1 rather than 0;
-    SimpleClient m_client;
+    OlaCallbackClientWrapper m_client;
 
     void Mask();
     void Values(const DmxBuffer &buffer);
@@ -147,9 +148,12 @@ bool DmxMonitor::Init() {
     return false;
   }
 
-  OlaClient *client = m_client.GetClient();
-  client->SetObserver(this);
-  client->RegisterUniverse(m_universe, ola::REGISTER);
+  OlaCallbackClient *client = m_client.GetClient();
+  client->SetDmxCallback(ola::NewCallback(this, &DmxMonitor::NewDmx));
+  client->RegisterUniverse(
+      m_universe,
+      ola::REGISTER,
+      ola::NewSingleCallback(this, &DmxMonitor::RegisterComplete));
 
   /* init curses */
   m_window = initscr();
@@ -216,6 +220,14 @@ void DmxMonitor::NewDmx(unsigned int universe,
   refresh();
 }
 
+
+void DmxMonitor::RegisterComplete(const string &error) {
+  if (!error.empty()) {
+    std::cerr << "Register command failed with " << errno <<
+      std::endl; 
+    m_client.GetSelectServer()->Terminate();
+  }
+}
 
 /*
  * Called when there is input from the keyboard
