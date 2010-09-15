@@ -56,7 +56,6 @@ using ola::DmxBuffer;
 using ola::OlaCallbackClient;
 using ola::OlaCallbackClientWrapper;
 using ola::network::SelectServer;
-using ola::SimpleClient;
 using std::string;
 
 /* color names used */

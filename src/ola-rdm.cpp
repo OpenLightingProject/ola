@@ -23,8 +23,8 @@
 #include <sysexits.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
-#include <ola/OlaClient.h>
-#include <ola/SimpleClient.h>
+#include <ola/OlaCallbackClient.h>
+#include <ola/OlaClientWrapper.h>
 #include <ola/network/SelectServer.h>
 #include <ola/rdm/RDMAPI.h>
 #include <ola/rdm/UID.h>
@@ -44,8 +44,8 @@ using std::endl;
 using std::string;
 using std::vector;
 using ola::rdm::UID;
-using ola::SimpleClient;
-using ola::OlaClient;
+using ola::OlaCallbackClient;
+using ola::OlaCallbackClientWrapper;
 using ola::network::SelectServer;
 using ola::rdm::RDMAPI;
 
@@ -282,7 +282,7 @@ int main(int argc, char *argv[]) {
   ReversePidMap(pid_name_map, &reverse_pid_name_map);
 
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
-  SimpleClient ola_client;
+  OlaCallbackClientWrapper ola_client;
   options opts;
   ParseOptions(argc, argv, &opts);
 
