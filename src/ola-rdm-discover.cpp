@@ -21,8 +21,8 @@
 #include <errno.h>
 #include <getopt.h>
 #include <ola/Logging.h>
-#include <ola/OlaClient.h>
-#include <ola/SimpleClient.h>
+#include <ola/OlaCallbackClient.h>
+#include <ola/OlaClientWrapper.h>
 #include <ola/network/SelectServer.h>
 
 
@@ -36,13 +36,12 @@ using std::endl;
 using std::setw;
 using std::string;
 using std::vector;
-using ola::rdm::UIDSet;
-using ola::SimpleClient;
-using ola::OlaClient;
+using ola::OlaCallbackClient;
+using ola::OlaCallbackClientWrapper;
 using ola::network::SelectServer;
+using ola::rdm::UIDSet;
 
 static const int INVALID_VALUE = -1;
-
 
 typedef struct {
   int uni;         // universe id
@@ -52,31 +51,13 @@ typedef struct {
 } options;
 
 
-/*
- * The observer class which responds to events
- */
-class Observer: public ola::OlaClientObserver {
-  public:
-    Observer(options *opts, SelectServer *ss): m_opts(opts), m_ss(ss) {}
-
-    void UIDList(unsigned int universe,
-                 const ola::rdm::UIDSet &uids,
-                 const string &error);
-    void ForceRDMDiscoveryComplete(unsigned int universe,
-                                   const string &error);
-
-  private:
-    options *m_opts;
-    SelectServer *m_ss;
-};
-
+SelectServer *ss;
 
 /*
  * This is called when we recieve uids for a universe
  * @param universes a vector of OlaUniverses
  */
-void Observer::UIDList(unsigned int universe,
-                       const ola::rdm::UIDSet &uids,
+void UIDList(const ola::rdm::UIDSet &uids,
                        const string &error) {
   if (error.empty()) {
     UIDSet::Iterator iter = uids.Begin();
@@ -86,18 +67,17 @@ void Observer::UIDList(unsigned int universe,
   } else {
     cout << error << endl;
   }
-  m_ss->Terminate();
+  ss->Terminate();
 }
 
 
 /*
  * Called once we get an ack for the discovery request
  */
-void Observer::ForceRDMDiscoveryComplete(unsigned int universe,
-                                         const string &error) {
+void ForceRDMDiscoveryComplete(const string &error) {
   if (!error.empty())
     cout << error << endl;
-  m_ss->Terminate();
+  ss->Terminate();
 }
 
 
@@ -167,16 +147,20 @@ void DisplayGetUIDsHelp(const options &opts) {
  * @param client  the ola client
  * @param opts  the const options
  */
-bool FetchUIDs(OlaClient *client, const options &opts) {
+bool FetchUIDs(OlaCallbackClient *client, const options &opts) {
   if (opts.uni == INVALID_VALUE) {
     DisplayGetUIDsHelp(opts);
     return false;
   }
 
   if (opts.force_discovery)
-    return client->ForceDiscovery(opts.uni);
+    return client->ForceDiscovery(
+        opts.uni,
+        ola::NewSingleCallback(&ForceRDMDiscoveryComplete));
   else
-    return client->FetchUIDList(opts.uni);
+    return client->FetchUIDList(
+        opts.uni,
+        ola::NewSingleCallback(&UIDList));
 }
 
 
@@ -185,7 +169,7 @@ bool FetchUIDs(OlaClient *client, const options &opts) {
  */
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
-  SimpleClient ola_client;
+  OlaCallbackClientWrapper ola_client;
   options opts;
   opts.cmd = argv[0];
 
@@ -199,11 +183,8 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  OlaClient *client = ola_client.GetClient();
-  SelectServer *ss = ola_client.GetSelectServer();
-
-  Observer observer(&opts, ss);
-  client->SetObserver(&observer);
+  OlaCallbackClient *client = ola_client.GetClient();
+  ss = ola_client.GetSelectServer();
 
   if (FetchUIDs(client, opts))
     ss->Run();
