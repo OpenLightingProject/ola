@@ -110,8 +110,10 @@ bool OlaClientCore::FetchPluginList(
     SingleUseCallback2<void,
                        const std::vector<OlaPlugin>&,
                        const string &> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   SimpleRpcController *controller = new SimpleRpcController();
   ola::proto::PluginListRequest request;
@@ -133,8 +135,10 @@ bool OlaClientCore::FetchPluginList(
 bool OlaClientCore::FetchPluginDescription(
     ola_plugin_id plugin_id,
     SingleUseCallback2<void, const string&, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   SimpleRpcController *controller = new SimpleRpcController();
   ola::proto::PluginDescriptionRequest request;
@@ -162,8 +166,10 @@ bool OlaClientCore::FetchDeviceInfo(
     SingleUseCallback2<void,
                        const vector <class OlaDevice>&,
                        const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::DeviceInfoRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -188,8 +194,10 @@ bool OlaClientCore::ConfigureDevice(
     unsigned int device_alias,
     const string &msg,
     SingleUseCallback2<void, const string&, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::DeviceConfigRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -219,9 +227,10 @@ bool OlaClientCore::SetPortPriorityInherit(
     unsigned int port,
     PortDirection port_direction,
     SingleUseCallback1<void, const string&> *callback) {
-
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::PortPriorityRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -254,8 +263,10 @@ bool OlaClientCore::SetPortPriorityOverride(
     PortDirection port_direction,
     uint8_t value,
     SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::PortPriorityRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -284,8 +295,10 @@ bool OlaClientCore::FetchUniverseInfo(
     SingleUseCallback2<void,
                        const vector <class OlaUniverse>&,
                        const string &> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   SimpleRpcController *controller = new SimpleRpcController();
   ola::proto::UniverseInfoRequest request;
@@ -310,8 +323,10 @@ bool OlaClientCore::SetUniverseName(
     unsigned int universe,
     const string &name,
     SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::UniverseNameRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -339,8 +354,10 @@ bool OlaClientCore::SetUniverseMergeMode(
     unsigned int universe,
     OlaUniverse::merge_mode mode,
     SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::MergeModeRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -374,8 +391,10 @@ bool OlaClientCore::Patch(
     ola::PatchAction patch_action,
     unsigned int universe,
     SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::PatchPortRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -419,8 +438,10 @@ bool OlaClientCore::RegisterUniverse(
     unsigned int universe,
     ola::RegisterAction register_action,
     SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::RegisterDmxRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -451,8 +472,10 @@ bool OlaClientCore::SendDmx(
     unsigned int universe,
     const DmxBuffer &data,
     SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::DmxData request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -478,8 +501,10 @@ bool OlaClientCore::SendDmx(
 bool OlaClientCore::FetchDmx(
     unsigned int universe,
     SingleUseCallback2<void, const DmxBuffer&, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::DmxReadRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -504,8 +529,10 @@ bool OlaClientCore::FetchUIDList(
     SingleUseCallback2<void,
                        const ola::rdm::UIDSet&,
                        const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::UniverseRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -530,8 +557,10 @@ bool OlaClientCore::FetchUIDList(
 bool OlaClientCore::ForceDiscovery(
     unsigned int universe,
     ola::SingleUseCallback1<void, const string&> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::UniverseRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
@@ -554,8 +583,10 @@ bool OlaClientCore::ForceDiscovery(
 bool OlaClientCore::SetSourceUID(
     const UID &uid,
     ola::SingleUseCallback1<void, const string &> *callback) {
-  if (!m_connected)
+  if (!m_connected) {
+    delete callback;
     return false;
+  }
 
   ola::proto::UID request;
   SimpleRpcController *controller = new SimpleRpcController();
