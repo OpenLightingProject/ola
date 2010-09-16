@@ -103,11 +103,16 @@ bool OlaDaemon::Init() {
  * Shutdown the daemon
  */
 void OlaDaemon::Shutdown() {
-  delete m_server;
-  delete m_service_factory;
-  delete m_preferences_factory;
-  delete m_ss;
-  delete m_accepting_socket;
+  if (m_server)
+    delete m_server;
+  if (m_service_factory)
+    delete m_service_factory;
+  if (m_preferences_factory)
+    delete m_preferences_factory;
+  if (m_ss)
+    delete m_ss;
+  if (m_accepting_socket)
+    delete m_accepting_socket;
   m_accepting_socket = NULL;
   m_preferences_factory = NULL;
   m_server = NULL;

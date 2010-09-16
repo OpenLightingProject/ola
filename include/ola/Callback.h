@@ -71,7 +71,47 @@ class SingleUseCallback1<void, Arg0>: public BaseCallback1<void, Arg0> {
 };
 
 
-// An method callback with 0 create-time args, and 1 exec time arg
+// A Function callback with 0 create-time args and 1 exec time args
+template <typename Parent, typename ReturnType, typename Arg0>
+class FunctionCallback0_1: public Parent {
+  public:
+    typedef ReturnType (*Function)(Arg0);
+    FunctionCallback0_1(Function callback):
+      Parent(),
+      m_callback(callback) {}
+    ReturnType DoRun(Arg0 arg0) {
+      return m_callback(arg0);
+    }
+  private:
+    Function m_callback;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename Arg0>
+inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
+    ReturnType (*callback)(Arg0)) {
+  return new FunctionCallback0_1<
+                               SingleUseCallback1<ReturnType, Arg0>,
+                               ReturnType,
+                               Arg0>(
+      callback);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename Arg0>
+inline Callback1<ReturnType, Arg0>* NewCallback(
+    ReturnType (*callback)(Arg0)) {
+  return new FunctionCallback0_1<
+                               Callback1<ReturnType, Arg0>,
+                               ReturnType,
+                               Arg0>(
+      callback);
+}
+
+
+// A Method callback with 0 create-time args and 1 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename Arg0>
 class MethodCallback0_1: public Parent {
   public:
@@ -88,6 +128,7 @@ class MethodCallback0_1: public Parent {
     Method m_callback;
 };
 
+
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename Arg0>
 inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
@@ -100,6 +141,7 @@ inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
       object,
       method);
 }
+
 
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename Arg0>
@@ -114,7 +156,56 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
       method);
 }
 
-// An method callback with 1 create-time args, and 1 exec time arg
+
+// A Function callback with 1 create-time args and 1 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename Arg0>
+class FunctionCallback1_1: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, Arg0);
+    FunctionCallback1_1(Function callback, A0 a0):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0) {}
+    ReturnType DoRun(Arg0 arg0) {
+      return m_callback(m_a0, arg0);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename Arg0>
+inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
+    ReturnType (*callback)(A0, Arg0),
+    A0 a0) {
+  return new FunctionCallback1_1<
+                               SingleUseCallback1<ReturnType, Arg0>,
+                               ReturnType,
+                               A0,
+                               Arg0>(
+      callback,
+      a0);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename Arg0>
+inline Callback1<ReturnType, Arg0>* NewCallback(
+    ReturnType (*callback)(A0, Arg0),
+    A0 a0) {
+  return new FunctionCallback1_1<
+                               Callback1<ReturnType, Arg0>,
+                               ReturnType,
+                               A0,
+                               Arg0>(
+      callback,
+      a0);
+}
+
+
+// A Method callback with 1 create-time args and 1 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0>
 class MethodCallback1_1: public Parent {
   public:
@@ -133,6 +224,7 @@ class MethodCallback1_1: public Parent {
   A0 m_a0;
 };
 
+
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename A0, typename Arg0>
 inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
@@ -148,6 +240,7 @@ inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
       method,
       a0);
 }
+
 
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename A0, typename Arg0>
@@ -165,7 +258,64 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
       a0);
 }
 
-// An method callback with 2 create-time args, and 1 exec time arg
+
+// A Function callback with 2 create-time args and 1 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0>
+class FunctionCallback2_1: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, A1, Arg0);
+    FunctionCallback2_1(Function callback, A0 a0, A1 a1):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1) {}
+    ReturnType DoRun(Arg0 arg0) {
+      return m_callback(m_a0, m_a1, arg0);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+  A1 m_a1;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename A1, typename Arg0>
+inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
+    ReturnType (*callback)(A0, A1, Arg0),
+    A0 a0,
+    A1 a1) {
+  return new FunctionCallback2_1<
+                               SingleUseCallback1<ReturnType, Arg0>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               Arg0>(
+      callback,
+      a0,
+      a1);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename A1, typename Arg0>
+inline Callback1<ReturnType, Arg0>* NewCallback(
+    ReturnType (*callback)(A0, A1, Arg0),
+    A0 a0,
+    A1 a1) {
+  return new FunctionCallback2_1<
+                               Callback1<ReturnType, Arg0>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               Arg0>(
+      callback,
+      a0,
+      a1);
+}
+
+
+// A Method callback with 2 create-time args and 1 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0>
 class MethodCallback2_1: public Parent {
   public:
@@ -186,6 +336,7 @@ class MethodCallback2_1: public Parent {
   A1 m_a1;
 };
 
+
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename A0, typename A1, typename Arg0>
 inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
@@ -204,6 +355,7 @@ inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
       a0,
       a1);
 }
+
 
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename A0, typename A1, typename Arg0>
@@ -224,7 +376,72 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
       a1);
 }
 
-// An method callback with 3 create-time args, and 1 exec time arg
+
+// A Function callback with 3 create-time args and 1 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
+class FunctionCallback3_1: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, A1, A2, Arg0);
+    FunctionCallback3_1(Function callback, A0 a0, A1 a1, A2 a2):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1),
+      m_a2(a2) {}
+    ReturnType DoRun(Arg0 arg0) {
+      return m_callback(m_a0, m_a1, m_a2, arg0);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+  A1 m_a1;
+  A2 m_a2;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
+inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
+    ReturnType (*callback)(A0, A1, A2, Arg0),
+    A0 a0,
+    A1 a1,
+    A2 a2) {
+  return new FunctionCallback3_1<
+                               SingleUseCallback1<ReturnType, Arg0>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2,
+                               Arg0>(
+      callback,
+      a0,
+      a1,
+      a2);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
+inline Callback1<ReturnType, Arg0>* NewCallback(
+    ReturnType (*callback)(A0, A1, A2, Arg0),
+    A0 a0,
+    A1 a1,
+    A2 a2) {
+  return new FunctionCallback3_1<
+                               Callback1<ReturnType, Arg0>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2,
+                               Arg0>(
+      callback,
+      a0,
+      a1,
+      a2);
+}
+
+
+// A Method callback with 3 create-time args and 1 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
 class MethodCallback3_1: public Parent {
   public:
@@ -247,6 +464,7 @@ class MethodCallback3_1: public Parent {
   A2 m_a2;
 };
 
+
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
 inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
@@ -269,6 +487,7 @@ inline SingleUseCallback1<ReturnType, Arg0>* NewSingleCallback(
       a2);
 }
 
+
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
 inline Callback1<ReturnType, Arg0>* NewCallback(
@@ -290,6 +509,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
       a1,
       a2);
 }
+
 
 // 2 argument callbacks
 template <typename ReturnType, typename Arg0, typename Arg1>
@@ -335,7 +555,49 @@ class SingleUseCallback2<void, Arg0, Arg1>: public BaseCallback2<void, Arg0, Arg
 };
 
 
-// An method callback with 0 create-time args, and 2 exec time arg
+// A Function callback with 0 create-time args and 2 exec time args
+template <typename Parent, typename ReturnType, typename Arg0, typename Arg1>
+class FunctionCallback0_2: public Parent {
+  public:
+    typedef ReturnType (*Function)(Arg0, Arg1);
+    FunctionCallback0_2(Function callback):
+      Parent(),
+      m_callback(callback) {}
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
+      return m_callback(arg0, arg1);
+    }
+  private:
+    Function m_callback;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename Arg0, typename Arg1>
+inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
+    ReturnType (*callback)(Arg0, Arg1)) {
+  return new FunctionCallback0_2<
+                               SingleUseCallback2<ReturnType, Arg0, Arg1>,
+                               ReturnType,
+                               Arg0,
+                               Arg1>(
+      callback);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename Arg0, typename Arg1>
+inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
+    ReturnType (*callback)(Arg0, Arg1)) {
+  return new FunctionCallback0_2<
+                               Callback2<ReturnType, Arg0, Arg1>,
+                               ReturnType,
+                               Arg0,
+                               Arg1>(
+      callback);
+}
+
+
+// A Method callback with 0 create-time args and 2 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1>
 class MethodCallback0_2: public Parent {
   public:
@@ -352,6 +614,7 @@ class MethodCallback0_2: public Parent {
     Method m_callback;
 };
 
+
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename Arg0, typename Arg1>
 inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
@@ -365,6 +628,7 @@ inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
       object,
       method);
 }
+
 
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename Arg0, typename Arg1>
@@ -380,7 +644,58 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
       method);
 }
 
-// An method callback with 1 create-time args, and 2 exec time arg
+
+// A Function callback with 1 create-time args and 2 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1>
+class FunctionCallback1_2: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, Arg0, Arg1);
+    FunctionCallback1_2(Function callback, A0 a0):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0) {}
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
+      return m_callback(m_a0, arg0, arg1);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename Arg0, typename Arg1>
+inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
+    ReturnType (*callback)(A0, Arg0, Arg1),
+    A0 a0) {
+  return new FunctionCallback1_2<
+                               SingleUseCallback2<ReturnType, Arg0, Arg1>,
+                               ReturnType,
+                               A0,
+                               Arg0,
+                               Arg1>(
+      callback,
+      a0);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename Arg0, typename Arg1>
+inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
+    ReturnType (*callback)(A0, Arg0, Arg1),
+    A0 a0) {
+  return new FunctionCallback1_2<
+                               Callback2<ReturnType, Arg0, Arg1>,
+                               ReturnType,
+                               A0,
+                               Arg0,
+                               Arg1>(
+      callback,
+      a0);
+}
+
+
+// A Method callback with 1 create-time args and 2 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1>
 class MethodCallback1_2: public Parent {
   public:
@@ -399,6 +714,7 @@ class MethodCallback1_2: public Parent {
   A0 m_a0;
 };
 
+
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename A0, typename Arg0, typename Arg1>
 inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
@@ -416,6 +732,7 @@ inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
       a0);
 }
 
+
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename A0, typename Arg0, typename Arg1>
 inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
@@ -432,6 +749,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
       method,
       a0);
 }
+
 
 // 3 argument callbacks
 template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
@@ -477,7 +795,51 @@ class SingleUseCallback3<void, Arg0, Arg1, Arg2>: public BaseCallback3<void, Arg
 };
 
 
-// An method callback with 0 create-time args, and 3 exec time arg
+// A Function callback with 0 create-time args and 3 exec time args
+template <typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
+class FunctionCallback0_3: public Parent {
+  public:
+    typedef ReturnType (*Function)(Arg0, Arg1, Arg2);
+    FunctionCallback0_3(Function callback):
+      Parent(),
+      m_callback(callback) {}
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
+      return m_callback(arg0, arg1, arg2);
+    }
+  private:
+    Function m_callback;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
+inline SingleUseCallback3<ReturnType, Arg0, Arg1, Arg2>* NewSingleCallback(
+    ReturnType (*callback)(Arg0, Arg1, Arg2)) {
+  return new FunctionCallback0_3<
+                               SingleUseCallback3<ReturnType, Arg0, Arg1, Arg2>,
+                               ReturnType,
+                               Arg0,
+                               Arg1,
+                               Arg2>(
+      callback);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
+inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
+    ReturnType (*callback)(Arg0, Arg1, Arg2)) {
+  return new FunctionCallback0_3<
+                               Callback3<ReturnType, Arg0, Arg1, Arg2>,
+                               ReturnType,
+                               Arg0,
+                               Arg1,
+                               Arg2>(
+      callback);
+}
+
+
+// A Method callback with 0 create-time args and 3 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 class MethodCallback0_3: public Parent {
   public:
@@ -494,6 +856,7 @@ class MethodCallback0_3: public Parent {
     Method m_callback;
 };
 
+
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 inline SingleUseCallback3<ReturnType, Arg0, Arg1, Arg2>* NewSingleCallback(
@@ -508,6 +871,7 @@ inline SingleUseCallback3<ReturnType, Arg0, Arg1, Arg2>* NewSingleCallback(
       object,
       method);
 }
+
 
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
@@ -524,7 +888,60 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
       method);
 }
 
-// An method callback with 1 create-time args, and 3 exec time arg
+
+// A Function callback with 1 create-time args and 3 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>
+class FunctionCallback1_3: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, Arg0, Arg1, Arg2);
+    FunctionCallback1_3(Function callback, A0 a0):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0) {}
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
+      return m_callback(m_a0, arg0, arg1, arg2);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>
+inline SingleUseCallback3<ReturnType, Arg0, Arg1, Arg2>* NewSingleCallback(
+    ReturnType (*callback)(A0, Arg0, Arg1, Arg2),
+    A0 a0) {
+  return new FunctionCallback1_3<
+                               SingleUseCallback3<ReturnType, Arg0, Arg1, Arg2>,
+                               ReturnType,
+                               A0,
+                               Arg0,
+                               Arg1,
+                               Arg2>(
+      callback,
+      a0);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>
+inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
+    ReturnType (*callback)(A0, Arg0, Arg1, Arg2),
+    A0 a0) {
+  return new FunctionCallback1_3<
+                               Callback3<ReturnType, Arg0, Arg1, Arg2>,
+                               ReturnType,
+                               A0,
+                               Arg0,
+                               Arg1,
+                               Arg2>(
+      callback,
+      a0);
+}
+
+
+// A Method callback with 1 create-time args and 3 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>
 class MethodCallback1_3: public Parent {
   public:
@@ -543,6 +960,7 @@ class MethodCallback1_3: public Parent {
   A0 m_a0;
 };
 
+
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>
 inline SingleUseCallback3<ReturnType, Arg0, Arg1, Arg2>* NewSingleCallback(
@@ -561,6 +979,7 @@ inline SingleUseCallback3<ReturnType, Arg0, Arg1, Arg2>* NewSingleCallback(
       a0);
 }
 
+
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>
 inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
@@ -578,6 +997,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
       method,
       a0);
 }
+
 
 // 4 argument callbacks
 template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
@@ -623,7 +1043,53 @@ class SingleUseCallback4<void, Arg0, Arg1, Arg2, Arg3>: public BaseCallback4<voi
 };
 
 
-// An method callback with 0 create-time args, and 4 exec time arg
+// A Function callback with 0 create-time args and 4 exec time args
+template <typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+class FunctionCallback0_4: public Parent {
+  public:
+    typedef ReturnType (*Function)(Arg0, Arg1, Arg2, Arg3);
+    FunctionCallback0_4(Function callback):
+      Parent(),
+      m_callback(callback) {}
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
+      return m_callback(arg0, arg1, arg2, arg3);
+    }
+  private:
+    Function m_callback;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+inline SingleUseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewSingleCallback(
+    ReturnType (*callback)(Arg0, Arg1, Arg2, Arg3)) {
+  return new FunctionCallback0_4<
+                               SingleUseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3>,
+                               ReturnType,
+                               Arg0,
+                               Arg1,
+                               Arg2,
+                               Arg3>(
+      callback);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
+    ReturnType (*callback)(Arg0, Arg1, Arg2, Arg3)) {
+  return new FunctionCallback0_4<
+                               Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>,
+                               ReturnType,
+                               Arg0,
+                               Arg1,
+                               Arg2,
+                               Arg3>(
+      callback);
+}
+
+
+// A Method callback with 0 create-time args and 4 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 class MethodCallback0_4: public Parent {
   public:
@@ -639,6 +1105,7 @@ class MethodCallback0_4: public Parent {
     Class *m_object;
     Method m_callback;
 };
+
 
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
@@ -656,6 +1123,7 @@ inline SingleUseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewSingleCallback
       method);
 }
 
+
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
@@ -672,7 +1140,62 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
       method);
 }
 
-// An method callback with 1 create-time args, and 4 exec time arg
+
+// A Function callback with 1 create-time args and 4 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+class FunctionCallback1_4: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, Arg0, Arg1, Arg2, Arg3);
+    FunctionCallback1_4(Function callback, A0 a0):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0) {}
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
+      return m_callback(m_a0, arg0, arg1, arg2, arg3);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+inline SingleUseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewSingleCallback(
+    ReturnType (*callback)(A0, Arg0, Arg1, Arg2, Arg3),
+    A0 a0) {
+  return new FunctionCallback1_4<
+                               SingleUseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3>,
+                               ReturnType,
+                               A0,
+                               Arg0,
+                               Arg1,
+                               Arg2,
+                               Arg3>(
+      callback,
+      a0);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
+inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
+    ReturnType (*callback)(A0, Arg0, Arg1, Arg2, Arg3),
+    A0 a0) {
+  return new FunctionCallback1_4<
+                               Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>,
+                               ReturnType,
+                               A0,
+                               Arg0,
+                               Arg1,
+                               Arg2,
+                               Arg3>(
+      callback,
+      a0);
+}
+
+
+// A Method callback with 1 create-time args and 4 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 class MethodCallback1_4: public Parent {
   public:
@@ -691,6 +1214,7 @@ class MethodCallback1_4: public Parent {
   A0 m_a0;
 };
 
+
 // Helper method to create a new SingleUseCallback.
 template <typename Class, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 inline SingleUseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewSingleCallback(
@@ -710,6 +1234,7 @@ inline SingleUseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewSingleCallback
       a0);
 }
 
+
 // Helper method to create a new Callback.
 template <typename Class, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
@@ -728,6 +1253,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
       method,
       a0);
 }
+
 
 }  // ola
 #endif  // INCLUDE_OLA_CALLBACK_H_
