@@ -71,7 +71,7 @@ class SingleUseCallback1<void, Arg0>: public BaseCallback1<void, Arg0> {
 };
 
 
-// A function callback with 0 create-time args and 1 exec timeargs
+// A Function callback with 0 create-time args and 1 exec time args
 template <typename Parent, typename ReturnType, typename Arg0>
 class FunctionCallback0_1: public Parent {
   public:
@@ -111,7 +111,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
 }
 
 
-// An method callback with 0 create-time args, and 1 exec time arg
+// A Method callback with 0 create-time args and 1 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename Arg0>
 class MethodCallback0_1: public Parent {
   public:
@@ -157,7 +157,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
 }
 
 
-// A function callback with 1 create-time args and 1 exec timeargs
+// A Function callback with 1 create-time args and 1 exec time args
 template <typename Parent, typename ReturnType, typename A0, typename Arg0>
 class FunctionCallback1_1: public Parent {
   public:
@@ -205,7 +205,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
 }
 
 
-// An method callback with 1 create-time args, and 1 exec time arg
+// A Method callback with 1 create-time args and 1 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0>
 class MethodCallback1_1: public Parent {
   public:
@@ -259,7 +259,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
 }
 
 
-// A function callback with 2 create-time args and 1 exec timeargs
+// A Function callback with 2 create-time args and 1 exec time args
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0>
 class FunctionCallback2_1: public Parent {
   public:
@@ -315,7 +315,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
 }
 
 
-// An method callback with 2 create-time args, and 1 exec time arg
+// A Method callback with 2 create-time args and 1 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0>
 class MethodCallback2_1: public Parent {
   public:
@@ -377,7 +377,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
 }
 
 
-// A function callback with 3 create-time args and 1 exec timeargs
+// A Function callback with 3 create-time args and 1 exec time args
 template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
 class FunctionCallback3_1: public Parent {
   public:
@@ -441,7 +441,7 @@ inline Callback1<ReturnType, Arg0>* NewCallback(
 }
 
 
-// An method callback with 3 create-time args, and 1 exec time arg
+// A Method callback with 3 create-time args and 1 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename Arg0>
 class MethodCallback3_1: public Parent {
   public:
@@ -555,7 +555,7 @@ class SingleUseCallback2<void, Arg0, Arg1>: public BaseCallback2<void, Arg0, Arg
 };
 
 
-// A function callback with 0 create-time args and 2 exec timeargs
+// A Function callback with 0 create-time args and 2 exec time args
 template <typename Parent, typename ReturnType, typename Arg0, typename Arg1>
 class FunctionCallback0_2: public Parent {
   public:
@@ -597,7 +597,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
 }
 
 
-// An method callback with 0 create-time args, and 2 exec time arg
+// A Method callback with 0 create-time args and 2 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1>
 class MethodCallback0_2: public Parent {
   public:
@@ -645,7 +645,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
 }
 
 
-// A function callback with 1 create-time args and 2 exec timeargs
+// A Function callback with 1 create-time args and 2 exec time args
 template <typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1>
 class FunctionCallback1_2: public Parent {
   public:
@@ -695,7 +695,7 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
 }
 
 
-// An method callback with 1 create-time args, and 2 exec time arg
+// A Method callback with 1 create-time args and 2 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1>
 class MethodCallback1_2: public Parent {
   public:
@@ -795,7 +795,7 @@ class SingleUseCallback3<void, Arg0, Arg1, Arg2>: public BaseCallback3<void, Arg
 };
 
 
-// A function callback with 0 create-time args and 3 exec timeargs
+// A Function callback with 0 create-time args and 3 exec time args
 template <typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 class FunctionCallback0_3: public Parent {
   public:
@@ -839,7 +839,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
 }
 
 
-// An method callback with 0 create-time args, and 3 exec time arg
+// A Method callback with 0 create-time args and 3 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 class MethodCallback0_3: public Parent {
   public:
@@ -889,7 +889,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
 }
 
 
-// A function callback with 1 create-time args and 3 exec timeargs
+// A Function callback with 1 create-time args and 3 exec time args
 template <typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>
 class FunctionCallback1_3: public Parent {
   public:
@@ -941,7 +941,7 @@ inline Callback3<ReturnType, Arg0, Arg1, Arg2>* NewCallback(
 }
 
 
-// An method callback with 1 create-time args, and 3 exec time arg
+// A Method callback with 1 create-time args and 3 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2>
 class MethodCallback1_3: public Parent {
   public:
@@ -1043,7 +1043,7 @@ class SingleUseCallback4<void, Arg0, Arg1, Arg2, Arg3>: public BaseCallback4<voi
 };
 
 
-// A function callback with 0 create-time args and 4 exec timeargs
+// A Function callback with 0 create-time args and 4 exec time args
 template <typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 class FunctionCallback0_4: public Parent {
   public:
@@ -1089,7 +1089,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
 }
 
 
-// An method callback with 0 create-time args, and 4 exec time arg
+// A Method callback with 0 create-time args and 4 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 class MethodCallback0_4: public Parent {
   public:
@@ -1141,7 +1141,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
 }
 
 
-// A function callback with 1 create-time args and 4 exec timeargs
+// A Function callback with 1 create-time args and 4 exec time args
 template <typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 class FunctionCallback1_4: public Parent {
   public:
@@ -1195,7 +1195,7 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
 }
 
 
-// An method callback with 1 create-time args, and 4 exec time arg
+// A Method callback with 1 create-time args and 4 exec time args
 template <typename Class, typename Parent, typename ReturnType, typename A0, typename Arg0, typename Arg1, typename Arg2, typename Arg3>
 class MethodCallback1_4: public Parent {
   public:
