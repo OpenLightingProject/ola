@@ -26,7 +26,8 @@ namespace ola {
 
 using ola::network::ConnectedSocket;
 
-OlaClient::OlaClient(ConnectedSocket *socket) {
+OlaClient::OlaClient(ConnectedSocket *socket):
+  m_observer(NULL) {
   m_core = new OlaClientCore(socket);
 }
 
