@@ -26,8 +26,9 @@
 #include <vector>
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
-#include "ola/network/SelectServer.h"
+#include "ola/OlaClient.h"
 #include "ola/network/InterfacePicker.h"
+#include "ola/network/SelectServer.h"
 #include "olad/Device.h"
 #include "olad/HttpServer.h"
 #include "olad/PortManager.h"
@@ -41,6 +42,8 @@ class OlaHttpServer {
   public:
     OlaHttpServer(ExportMap *export_map,
                   SelectServer *ss,
+                  ola::network::ConnectedSocket *client_socket,
+
                   class OlaServer *ola_server,
                   class UniverseStore *universe_store,
                   class PluginManager *plugin_manager,
@@ -50,8 +53,9 @@ class OlaHttpServer {
                   bool enable_quit,
                   const string &data_dir,
                   const ola::network::Interface &interface);
-    ~OlaHttpServer() {}
-    bool Init() { return m_server.Init(); }
+    ~OlaHttpServer();
+
+    bool Init();
     bool Start() { return m_server.Start(); }
     void Stop() { return m_server.Stop(); }
 
@@ -99,6 +103,9 @@ class OlaHttpServer {
     class HttpServer m_server;
     ExportMap *m_export_map;
     SelectServer *m_ss;
+    class ola::network::ConnectedSocket *m_client_socket;
+    ola::OlaClient m_client;
+
     class OlaServer *m_ola_server;
     UniverseStore *m_universe_store;
     PluginManager *m_plugin_manager;

@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "ola/ExportMap.h"
+#include "ola/network/InterfacePicker.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
@@ -77,6 +78,8 @@ class OlaServer {
   private :
     OlaServer(const OlaServer&);
     OlaServer& operator=(const OlaServer&);
+
+    bool StartHttpServer(const ola::network::Interface &interface);
     void StopPlugins();
     void CleanupConnection(class OlaServerServiceImpl *service);
 

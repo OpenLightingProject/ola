@@ -234,24 +234,8 @@ bool OlaServer::Init() {
 
   m_plugin_manager->LoadAll();
 
-#ifdef HAVE_LIBMICROHTTPD
-  if (m_options.http_enable) {
-    m_httpd = new OlaHttpServer(m_export_map,
-                                m_ss,
-                                this,
-                                m_universe_store,
-                                m_plugin_manager,
-                                m_device_manager,
-                                m_port_manager,
-                                m_options.http_port,
-                                m_options.http_enable_quit,
-                                m_options.http_data_dir,
-                                interface);
-    if (m_httpd->Init()) {
-      m_httpd->Start();
-    }
-  }
-#endif
+  if (!StartHttpServer(interface))
+    OLA_WARN << "Failed to start the HTTP server.";
 
   m_housekeeping_timeout = m_ss->RegisterRepeatingTimeout(
       K_HOUSEKEEPING_TIMEOUT_MS,
@@ -360,6 +344,54 @@ void OlaServer::CheckForReload() {
     StopPlugins();
     m_plugin_manager->LoadAll();
   }
+}
+
+
+/*
+ * Setup the HTTP server if required.
+ * @param interface the primary interface that the server is using.
+ */
+bool OlaServer::StartHttpServer(const ola::network::Interface &interface) {
+#ifdef HAVE_LIBMICROHTTPD
+  if (!m_options.http_enable)
+    return true;
+
+  // create a pipe socket for the http server to communicate with the main
+  // server on.
+  ola::network::PipeSocket *socket = new ola::network::PipeSocket();
+  if (!socket->Init()) {
+    delete socket;
+    return false;
+  }
+
+  // ownership of the socket is transferred here.
+  m_httpd = new OlaHttpServer(m_export_map,
+                              m_ss,
+                              socket->OppositeEnd(),
+
+                              this,
+                              m_universe_store,
+                              m_plugin_manager,
+                              m_device_manager,
+                              m_port_manager,
+                              m_options.http_port,
+                              m_options.http_enable_quit,
+                              m_options.http_data_dir,
+                              interface);
+
+  if (m_httpd->Init()) {
+    m_httpd->Start();
+    // register the pipe socket as a client
+    NewConnection(socket);
+    return true;
+  } else {
+    socket->Close();
+    delete socket;
+    delete m_httpd;
+    m_httpd = NULL;
+    return false;
+  }
+#endif
 }
 
 
