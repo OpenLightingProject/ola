@@ -751,6 +751,128 @@ inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
 }
 
 
+// A Function callback with 2 create-time args and 2 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1>
+class FunctionCallback2_2: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, A1, Arg0, Arg1);
+    FunctionCallback2_2(Function callback, A0 a0, A1 a1):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1) {}
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
+      return m_callback(m_a0, m_a1, arg0, arg1);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+  A1 m_a1;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1>
+inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
+    ReturnType (*callback)(A0, A1, Arg0, Arg1),
+    A0 a0,
+    A1 a1) {
+  return new FunctionCallback2_2<
+                               SingleUseCallback2<ReturnType, Arg0, Arg1>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               Arg0,
+                               Arg1>(
+      callback,
+      a0,
+      a1);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1>
+inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
+    ReturnType (*callback)(A0, A1, Arg0, Arg1),
+    A0 a0,
+    A1 a1) {
+  return new FunctionCallback2_2<
+                               Callback2<ReturnType, Arg0, Arg1>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               Arg0,
+                               Arg1>(
+      callback,
+      a0,
+      a1);
+}
+
+
+// A Method callback with 2 create-time args and 2 exec time args
+template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1>
+class MethodCallback2_2: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(A0, A1, Arg0, Arg1);
+    MethodCallback2_2(Class *object, Method callback, A0 a0, A1 a1):
+      Parent(),
+      m_object(object),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1) {}
+    ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
+      return (m_object->*m_callback)(m_a0, m_a1, arg0, arg1);
+    }
+  private:
+    Class *m_object;
+    Method m_callback;
+  A0 m_a0;
+  A1 m_a1;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename Class, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1>
+inline SingleUseCallback2<ReturnType, Arg0, Arg1>* NewSingleCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0, A1, Arg0, Arg1),
+    A0 a0,
+    A1 a1) {
+  return new MethodCallback2_2<Class,
+                               SingleUseCallback2<ReturnType, Arg0, Arg1>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               Arg0,
+                               Arg1>(
+      object,
+      method,
+      a0,
+      a1);
+}
+
+
+// Helper method to create a new Callback.
+template <typename Class, typename ReturnType, typename A0, typename A1, typename Arg0, typename Arg1>
+inline Callback2<ReturnType, Arg0, Arg1>* NewCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0, A1, Arg0, Arg1),
+    A0 a0,
+    A1 a1) {
+  return new MethodCallback2_2<Class,
+                               Callback2<ReturnType, Arg0, Arg1>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               Arg0,
+                               Arg1>(
+      object,
+      method,
+      a0,
+      a1);
+}
+
+
 // 3 argument callbacks
 template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 class BaseCallback3 {

@@ -291,7 +291,7 @@ def main():
 
   # exec_time : [bind time args]
   calback_types = {1: [0, 1, 2, 3],
-                   2: [0, 1],
+                   2: [0, 1, 2],
                    3: [0, 1],
                    4: [0, 1],
                   }
