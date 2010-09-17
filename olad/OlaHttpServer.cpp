@@ -50,13 +50,25 @@ using std::endl;
 using std::string;
 using std::stringstream;
 using std::vector;
+using ola::network::ConnectedSocket;
 
 const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
 const char OlaHttpServer::K_UPTIME_VAR[] = "uptime-in-ms";
+const char OlaHttpServer::K_BACKEND_DISCONNECTED_ERROR[] =
+  "Failed to send request, client isn't connected";
 
 
+/**
+ * Create a new OLA HTTP server
+ * @param export_map the ExportMap to display when /debug is called
+ * @param ss the main server's SelectServer
+ * @param client_socket A ConnectedSocket which is used to communicate with the
+ *   server.
+ * @param
+ */
 OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              SelectServer *ss,
+                             ConnectedSocket *client_socket,
                              OlaServer *ola_server,
                              UniverseStore *universe_store,
                              PluginManager *plugin_manager,
@@ -69,6 +81,10 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
     : m_server(port, data_dir),
       m_export_map(export_map),
       m_ss(ss),
+      m_client_socket(client_socket),
+      m_client(client_socket),
+
+
       m_ola_server(ola_server),
       m_universe_store(universe_store),
       m_plugin_manager(plugin_manager),
@@ -76,6 +92,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_port_manager(port_manager),
       m_enable_quit(enable_quit),
       m_interface(interface) {
+
 
   // The main handlers
   RegisterHandler("/", &OlaHttpServer::DisplayIndex);
@@ -121,6 +138,39 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
 
 
 /*
+ * Teardown
+ */
+OlaHttpServer::~OlaHttpServer() {
+  m_client.Stop();
+  if (m_client_socket) {
+    m_server.SelectServer()->RemoveSocket(m_client_socket);
+    delete m_client_socket;
+  }
+}
+
+
+/**
+ * Setup the OLA HTTP server
+ * @return true if this worked, false otherwise.
+ */
+bool OlaHttpServer::Init() {
+  bool ret = m_server.Init();
+  if (ret) {
+    if (!m_client.Setup()) {
+      return false;
+    }
+    /*
+    Setup disconnect notifications.
+    m_socket->SetOnClose(
+      ola::NewSingleClosure(this, &SimpleClient::SocketClosed));
+    */
+    m_server.SelectServer()->AddSocket(m_client_socket);
+  }
+  return ret;
+}
+
+
+/*
  * Print the server stats json
  * @param request the HttpRequest
  * @param response the HttpResponse
@@ -146,7 +196,9 @@ int OlaHttpServer::JsonServerStats(const HttpRequest *request,
 
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -199,7 +251,9 @@ int OlaHttpServer::JsonUniversePluginList(const HttpRequest *request,
 
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -214,22 +268,16 @@ int OlaHttpServer::JsonPluginInfo(const HttpRequest *request,
                                   HttpResponse *response) {
   string val = request->GetParameter("id");
   int plugin_id = atoi(val.data());
-  AbstractPlugin *plugin = NULL;
-  plugin = m_plugin_manager->GetPlugin((ola_plugin_id) plugin_id);
 
-  if (!plugin)
-    return m_server.ServeNotFound(response);
+  bool ok = m_client.FetchPluginDescription(
+      (ola_plugin_id) plugin_id,
+      NewSingleCallback(this,
+                        &OlaHttpServer::HandlePluginInfo,
+                        response));
 
-  string description = plugin->Description();
-  Escape(&description);
-  stringstream str;
-  str << "{\"description\": \"" << description;
-  str << "\"}";
-
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  return response->Send();
-  (void) request;
+  if (!ok)
+    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
 }
 
 
@@ -280,7 +328,9 @@ int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
 
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -381,7 +431,9 @@ int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
 
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -426,7 +478,9 @@ int OlaHttpServer::JsonUIDs(const HttpRequest *request,
 
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -475,7 +529,9 @@ int OlaHttpServer::CreateNewUniverse(const HttpRequest *request,
 
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -519,7 +575,9 @@ int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
   stringstream str;
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -563,7 +621,9 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
   if (buffer.Size())
     universe->SetDMX(buffer);
   response->Append("ok");
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
 }
 
 
@@ -591,7 +651,9 @@ int OlaHttpServer::DisplayDebug(const HttpRequest *request,
     out << (*iter)->Name() << ": " << (*iter)->Value() << "\n";
     response->Append(out.str());
   }
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -613,7 +675,9 @@ int OlaHttpServer::DisplayQuit(const HttpRequest *request,
     response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
     response->Append("<b>403 Unauthorized</b>");
   }
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -629,7 +693,9 @@ int OlaHttpServer::ReloadPlugins(const HttpRequest *request,
   m_ola_server->ReloadPlugins();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -655,7 +721,9 @@ int OlaHttpServer::RunRDMDiscovery(const HttpRequest *request,
   universe->RunRDMDiscovery();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
 }
 
@@ -673,8 +741,35 @@ int OlaHttpServer::DisplayHandlers(const HttpRequest *request,
     response->Append("<li><a href='" + *iter + "'>" + *iter + "</a></li>");
   }
   response->Append("</ul></body></html>");
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
   (void) request;
+}
+
+
+/*
+ * Handle the plugin description response.
+ * @param response the HttpResponse that is associated with the request.
+ * @param description the plugin description.
+ * @param error an error string.
+ */
+void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
+                                     const string &description,
+                                     const string &error) {
+  if (!error.empty()) {
+    m_server.ServeError(response, error);
+    return;
+  }
+  string escaped_description = description;
+  Escape(&escaped_description);
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append("{\"description\": \"");
+  response->Append(escaped_description);
+  response->Append("\"}");
+  response->Send();
+  delete response;
 }
 
 

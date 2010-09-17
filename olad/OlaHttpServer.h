@@ -26,7 +26,7 @@
 #include <vector>
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
-#include "ola/OlaClient.h"
+#include "ola/OlaCallbackClient.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/SelectServer.h"
 #include "olad/Device.h"
@@ -77,6 +77,11 @@ class OlaHttpServer {
     int RunRDMDiscovery(const HttpRequest *request, HttpResponse *response);
     int DisplayHandlers(const HttpRequest *request, HttpResponse *response);
 
+
+    void HandlePluginInfo(HttpResponse *response,
+                          const string &description,
+                          const string &error);
+
   private:
     OlaHttpServer(const OlaHttpServer&);
     OlaHttpServer& operator=(const OlaHttpServer&);
@@ -104,7 +109,7 @@ class OlaHttpServer {
     ExportMap *m_export_map;
     SelectServer *m_ss;
     class ola::network::ConnectedSocket *m_client_socket;
-    ola::OlaClient m_client;
+    ola::OlaCallbackClient m_client;
 
     class OlaServer *m_ola_server;
     UniverseStore *m_universe_store;
@@ -118,6 +123,7 @@ class OlaHttpServer {
 
     static const char K_DATA_DIR_VAR[];
     static const char K_UPTIME_VAR[];
+    static const char K_BACKEND_DISCONNECTED_ERROR[];
     static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;
 };
 }  // ola

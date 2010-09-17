@@ -116,16 +116,17 @@ static int HandleRequest(void *http_server_ptr,
 
   request = reinterpret_cast<HttpRequest*>(*ptr);
   if (request->Method() == MHD_HTTP_METHOD_GET) {
-    HttpResponse response(connection);
-    return http_server->DispatchRequest(request, &response);
+    HttpResponse *response = new HttpResponse(connection);
+    return http_server->DispatchRequest(request, response);
+
   } else if (request->Method() == MHD_HTTP_METHOD_POST) {
     if (*upload_data_size != 0) {
       request->ProcessPostData(upload_data, upload_data_size);
       *upload_data_size = 0;
       return MHD_YES;
     }
-    HttpResponse response(connection);
-    return http_server->DispatchRequest(request, &response);
+    HttpResponse *response = new HttpResponse(connection);
+    return http_server->DispatchRequest(request, response);
   }
   return MHD_NO;
 }
@@ -435,6 +436,14 @@ void HttpServer::Stop() {
   * SelectServer from MHD.
  */
 void HttpServer::UpdateSockets() {
+  // We always call MHD_run so we send any queued responses. This isn't
+  // inefficient because the only thing that can wake up the select server is
+  // activity on a http socket or the client socket. The latter almost always
+  // results in a change to HTTP state.
+  if (MHD_run(m_httpd) == MHD_NO) {
+    OLA_WARN << "MHD run failed";
+  }
+
   fd_set r_set, w_set, e_set;
   int max_fd = 0;
   FD_ZERO(&r_set);
@@ -504,13 +513,10 @@ void HttpServer::UpdateSockets() {
 
 
 /**
- * Called when there is HTTP IO activity to deal with.
+ * Called when there is HTTP IO activity to deal with. This is a noop as
+ * MHD_run is called in UpdateSockets above.
  */
-void HttpServer::HandleHTTPIO() {
-  if (MHD_run(m_httpd) == MHD_NO) {
-    OLA_WARN << "MHD run failed";
-  }
-}
+void HttpServer::HandleHTTPIO() {}
 
 
 /*
@@ -618,7 +624,9 @@ int HttpServer::ServeError(HttpResponse *response, const string &details) {
     response->Append(details);
     response->Append("</p>");
   }
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
 }
 
 
@@ -631,7 +639,9 @@ int HttpServer::ServeNotFound(HttpResponse *response) {
   response->SetContentType(CONTENT_TYPE_HTML);
   response->SetStatus(404);
   response->Append("<b>404 Not Found</b>");
-  return response->Send();
+  int r = response->Send();
+  delete response;
+  return r;
 }
 
 
@@ -678,6 +688,7 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
                                MHD_HTTP_OK,
                                mhd_response);
   MHD_destroy_response(mhd_response);
+  delete response;
   return ret;
 }
 
