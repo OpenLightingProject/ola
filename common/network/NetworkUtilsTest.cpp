@@ -23,23 +23,37 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/Logging.h"
 
-using ola::network::NetworkToHost;
-using ola::network::HostToNetwork;
+using ola::network::HardwareAddressToString;
 using ola::network::HostToLittleEndian;
+using ola::network::HostToNetwork;
 using ola::network::LittleEndianToHost;
+using ola::network::NetworkToHost;
 
 class NetworkUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(NetworkUtilsTest);
+  CPPUNIT_TEST(testHardwareAddressToString);
   CPPUNIT_TEST(testToFromNetwork);
   CPPUNIT_TEST(testToFromLittleEndian);
   CPPUNIT_TEST_SUITE_END();
 
   public:
+    void testHardwareAddressToString();
     void testToFromNetwork();
     void testToFromLittleEndian();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(NetworkUtilsTest);
+
+
+/*
+ * Check that HardwareAddressToString works
+ */
+void NetworkUtilsTest::testHardwareAddressToString() {
+  uint8_t hw_address[ola::network::MAC_LENGTH] = {
+    0x0, 0xa, 0xff, 0x10, 0x25, 0x4};
+  const std::string mac_address = HardwareAddressToString(hw_address);
+  CPPUNIT_ASSERT_EQUAL(std::string("00:0a:ff:10:25:04"), mac_address);
+}
 
 
 /*

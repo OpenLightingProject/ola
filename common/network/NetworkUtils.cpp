@@ -33,10 +33,13 @@ typedef unsigned long in_addr_t;
 #include <limits.h>
 #include <string.h>
 #include <unistd.h>
+#include <iomanip>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/network/Interface.h"
 
 
 namespace ola {
@@ -62,6 +65,23 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
 
 string AddressToString(const struct in_addr &addr) {
   return inet_ntoa(addr);
+}
+
+
+/*
+ * Convert a mac address to a human readable string
+ * @param hw_address the mac address.
+ * @return a string
+ */
+std::string HardwareAddressToString(uint8_t hw_address[MAC_LENGTH]) {
+  std::stringstream str;
+  for (unsigned int i = 0 ; i < ola::network::MAC_LENGTH; i++) {
+    if (i != 0)
+      str << ":";
+    str << std::hex << std::setfill('0') << std::setw(2) <<
+      static_cast<int>(hw_address[i]);
+  }
+  return str.str();
 }
 
 

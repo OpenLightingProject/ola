@@ -27,6 +27,7 @@
 #include <arpa/inet.h>
 #endif
 
+#include <ola/network/Interface.h>
 #include <string>
 
 
@@ -35,6 +36,8 @@ namespace network {
 
 bool StringToAddress(const std::string &address, struct in_addr &addr);
 std::string AddressToString(const struct in_addr &addr);
+
+std::string HardwareAddressToString(uint8_t hw_address[MAC_LENGTH]);
 
 // we define uint8_t versions of these so we can call them with any type.
 uint8_t NetworkToHost(uint8_t value);
