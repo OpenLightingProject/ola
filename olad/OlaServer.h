@@ -60,13 +60,14 @@ class OlaServer {
     OlaServer(class OlaServerServiceImplFactory *factory,
               const vector<class PluginLoader*> &plugin_loaders,
               class PreferencesFactory *preferences_factory,
-              ola::network::SelectServer *network,
+              ola::network::SelectServer *ss,
               ola_server_options *ola_options,
               ola::network::AcceptingSocket *socket = NULL,
               ExportMap *export_map = NULL);
     ~OlaServer();
     bool Init();
     void ReloadPlugins();
+    void StopServer() { m_ss->Terminate(); }
     void AcceptNewConnection(ola::network::AcceptingSocket *socket);
     bool NewConnection(ola::network::ConnectedSocket *socket);
     void SocketClosed(ola::network::ConnectedSocket *socket);

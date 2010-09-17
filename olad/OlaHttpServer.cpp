@@ -61,13 +61,11 @@ const char OlaHttpServer::K_BACKEND_DISCONNECTED_ERROR[] =
 /**
  * Create a new OLA HTTP server
  * @param export_map the ExportMap to display when /debug is called
- * @param ss the main server's SelectServer
  * @param client_socket A ConnectedSocket which is used to communicate with the
  *   server.
  * @param
  */
 OlaHttpServer::OlaHttpServer(ExportMap *export_map,
-                             SelectServer *ss,
                              ConnectedSocket *client_socket,
                              OlaServer *ola_server,
                              UniverseStore *universe_store,
@@ -80,7 +78,6 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              const ola::network::Interface &interface)
     : m_server(port, data_dir),
       m_export_map(export_map),
-      m_ss(ss),
       m_client_socket(client_socket),
       m_client(client_socket),
 
@@ -598,18 +595,19 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
   if (!StringToUInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
-  Universe *universe = m_universe_store->GetUniverse(universe_id);
-  if (!universe)
-    return m_server.ServeNotFound(response);
-
   DmxBuffer buffer;
   buffer.SetFromString(dmx_data_str);
-  if (buffer.Size())
-    universe->SetDMX(buffer);
-  response->Append("ok");
-  int r = response->Send();
-  delete response;
-  return r;
+  if (!buffer.Size())
+    return m_server.ServeError(response, "Invalid DMX string");
+
+  bool ok = m_client.SendDmx(
+      universe_id,
+      buffer,
+      NewSingleCallback(this, &OlaHttpServer::HandleBoolResponse, response));
+
+  if (!ok)
+    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
 }
 
 
@@ -655,7 +653,7 @@ int OlaHttpServer::DisplayQuit(const HttpRequest *request,
   if (m_enable_quit) {
     response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
     response->Append("ok");
-    m_ss->Terminate();
+    m_ola_server->StopServer();
   } else {
     response->SetStatus(403);
     response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
@@ -702,7 +700,7 @@ int OlaHttpServer::RunRDMDiscovery(const HttpRequest *request,
   bool ok = m_client.ForceDiscovery(
       universe_id,
       NewSingleCallback(this,
-                        &OlaHttpServer::HandleRDMDiscovery,
+                        &OlaHttpServer::HandleBoolResponse,
                         response));
 
   if (!ok)
@@ -800,7 +798,7 @@ void OlaHttpServer::HandleUIDList(HttpResponse *response,
  * @param response the HttpResponse that is associated with the request.
  * @param error an error string.
  */
-void OlaHttpServer::HandleRDMDiscovery(HttpResponse *response,
+void OlaHttpServer::HandleBoolResponse(HttpResponse *response,
                                        const string &error) {
   if (!error.empty()) {
     m_server.ServeError(response, error);

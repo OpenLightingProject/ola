@@ -41,7 +41,6 @@ using ola::network::SelectServer;
 class OlaHttpServer {
   public:
     OlaHttpServer(ExportMap *export_map,
-                  SelectServer *ss,
                   ola::network::ConnectedSocket *client_socket,
 
                   class OlaServer *ola_server,
@@ -87,7 +86,7 @@ class OlaHttpServer {
                        const ola::rdm::UIDSet &uids,
                        const string &error);
 
-    void HandleRDMDiscovery(HttpResponse *response,
+    void HandleBoolResponse(HttpResponse *response,
                             const string &error);
 
   private:
@@ -115,7 +114,6 @@ class OlaHttpServer {
 
     class HttpServer m_server;
     ExportMap *m_export_map;
-    SelectServer *m_ss;
     class ola::network::ConnectedSocket *m_client_socket;
     ola::OlaCallbackClient m_client;
 

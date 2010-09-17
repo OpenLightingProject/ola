@@ -368,7 +368,6 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &interface) {
 
   // ownership of the socket is transferred here.
   m_httpd = new OlaHttpServer(m_export_map,
-                              m_ss,
                               socket->OppositeEnd(),
 
                               this,
