@@ -190,6 +190,8 @@ goog.inherits(ola.HomeFrame, ola.BaseFrame);
 ola.HomeFrame.prototype._updateServerInfo = function(e) {
   goog.dom.$('server_hostname').innerHTML = e.server_info['hostname'];
   goog.dom.$('server_ip').innerHTML = e.server_info['ip'];
+  goog.dom.$('server_broadcast').innerHTML = e.server_info['broadcast'];
+  goog.dom.$('server_mac').innerHTML = e.server_info['hw_address'];
   goog.dom.$('server_version').innerHTML = e.server_info['version'];
   goog.dom.$('server_uptime').innerHTML = e.server_info['up_since'];
 

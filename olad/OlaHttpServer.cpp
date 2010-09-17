@@ -189,6 +189,13 @@ int OlaHttpServer::JsonServerStats(const HttpRequest *request,
     "\"," << endl;
   str << "  \"ip\": \"" <<
     ola::network::AddressToString(m_interface.ip_address) << "\"," << endl;
+  str << "  \"broadcast\": \"" <<
+    ola::network::AddressToString(m_interface.bcast_address) << "\"," << endl;
+  str << "  \"subnet\": \"" <<
+    ola::network::AddressToString(m_interface.subnet_address) << "\"," << endl;
+  str << "  \"hw_address\": \"" <<
+    ola::network::HardwareAddressToString(m_interface.hw_address) << "\","
+    << endl;
   str << "  \"version\": \"" << OLA_VERSION << "\"," << endl;
   str << "  \"up_since\": \"" << start_time_str << "\"," << endl;
   str << "  \"quit_enabled\": " << m_enable_quit << "," << endl;
