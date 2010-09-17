@@ -458,37 +458,16 @@ int OlaHttpServer::JsonUIDs(const HttpRequest *request,
   if (!StringToUInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
-  Universe *universe = m_universe_store->GetUniverse(universe_id);
+  bool ok = m_client.FetchUIDList(
+      universe_id,
+      NewSingleCallback(this,
+                        &OlaHttpServer::HandleUIDList,
+                        response,
+                        universe_id));
 
-  if (!universe)
-    return m_server.ServeNotFound(response);
-
-  ola::rdm::UIDSet uids;
-  universe->GetUIDs(&uids);
-  ola::rdm::UIDSet::Iterator iter = uids.Begin();
-
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"universe\": " << universe->UniverseId() << "," << endl;
-  str << "  \"uids\": [" << endl;
-
-  for (; iter != uids.End(); ++iter) {
-    str << "    {" << endl;
-    str << "       \"manufacturer_id\": " << iter->ManufacturerId() << ","
-      << endl;
-    str << "       \"device_id\": " << iter->DeviceId() << "," << endl;
-    str << "    }," << endl;
-  }
-
-  str << "  ]" << endl;
-  str << "}";
-
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  int r = response->Send();
-  delete response;
-  return r;
-  (void) request;
+  if (!ok)
+    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
 }
 
 
@@ -720,18 +699,15 @@ int OlaHttpServer::RunRDMDiscovery(const HttpRequest *request,
   if (!StringToUInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
-  Universe *universe = m_universe_store->GetUniverse(universe_id);
+  bool ok = m_client.ForceDiscovery(
+      universe_id,
+      NewSingleCallback(this,
+                        &OlaHttpServer::HandleRDMDiscovery,
+                        response));
 
-  if (!universe)
-    return m_server.ServeNotFound(response);
-
-  universe->RunRDMDiscovery();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append("ok");
-  int r = response->Send();
-  delete response;
-  return r;
-  (void) request;
+  if (!ok)
+    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
 }
 
 
@@ -775,6 +751,63 @@ void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
   response->Append("{\"description\": \"");
   response->Append(escaped_description);
   response->Append("\"}");
+  response->Send();
+  delete response;
+}
+
+
+/*
+ * Handle the UID list response.
+ * @param response the HttpResponse that is associated with the request.
+ * @param uids the UIDs for this response.
+ * @param error an error string.
+ */
+void OlaHttpServer::HandleUIDList(HttpResponse *response,
+                                  unsigned int universe_id,
+                                  const ola::rdm::UIDSet &uids,
+                                  const string &error) {
+  if (!error.empty()) {
+    m_server.ServeError(response, error);
+    return;
+  }
+  ola::rdm::UIDSet::Iterator iter = uids.Begin();
+
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"universe\": " << universe_id << "," << endl;
+  str << "  \"uids\": [" << endl;
+
+  for (; iter != uids.End(); ++iter) {
+    str << "    {" << endl;
+    str << "       \"manufacturer_id\": " << iter->ManufacturerId() << ","
+      << endl;
+    str << "       \"device_id\": " << iter->DeviceId() << "," << endl;
+    str << "    }," << endl;
+  }
+
+  str << "  ]" << endl;
+  str << "}";
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+
+/*
+ * Handle the RDM discovery response
+ * @param response the HttpResponse that is associated with the request.
+ * @param error an error string.
+ */
+void OlaHttpServer::HandleRDMDiscovery(HttpResponse *response,
+                                       const string &error) {
+  if (!error.empty()) {
+    m_server.ServeError(response, error);
+    return;
+  }
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append("ok");
   response->Send();
   delete response;
 }

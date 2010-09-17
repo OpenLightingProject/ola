@@ -82,6 +82,14 @@ class OlaHttpServer {
                           const string &description,
                           const string &error);
 
+    void HandleUIDList(HttpResponse *response,
+                       unsigned int universe_id,
+                       const ola::rdm::UIDSet &uids,
+                       const string &error);
+
+    void HandleRDMDiscovery(HttpResponse *response,
+                            const string &error);
+
   private:
     OlaHttpServer(const OlaHttpServer&);
     OlaHttpServer& operator=(const OlaHttpServer&);
