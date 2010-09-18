@@ -133,11 +133,11 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
  * Teardown
  */
 OlaHttpServer::~OlaHttpServer() {
-  m_client.Stop();
-  if (m_client_socket) {
+  if (m_client_socket)
     m_server.SelectServer()->RemoveSocket(m_client_socket);
+  m_client.Stop();
+  if (m_client_socket)
     delete m_client_socket;
-  }
 }
 
 

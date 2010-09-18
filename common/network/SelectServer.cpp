@@ -211,7 +211,7 @@ bool SelectServer::RemoveSocket(Socket *socket) {
  */
 bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
   if (socket->ReadDescriptor() == Socket::INVALID_SOCKET)
-    OLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
+    OLA_WARN << "Removing a closed socket: " << socket;
 
   set<connected_socket_t>::iterator iter;
   for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
