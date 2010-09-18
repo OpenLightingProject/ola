@@ -92,6 +92,7 @@ message PortInfo {
   required int32 port_id = 1;
   required int32 priority_capability = 2;
   required string description = 5;
+  required string unique_id = 8;
   optional int32 universe = 3;
   optional bool active = 4;
   optional int32 priority_mode = 6;
@@ -109,13 +110,6 @@ message DeviceInfo {
 
 message DeviceInfoReply {
   repeated DeviceInfo device = 1;
-}
-
-
-
-
-message DmxReadRequest {
-  required int32 universe = 1;
 }
 
 message DmxData {
@@ -148,7 +142,7 @@ message MergeModeRequest {
 }
 
 // request info about a universe
-message UniverseInfoRequest {
+message OptionalUniverseRequest {
   optional int32 universe = 1;
 }
 
@@ -226,16 +220,17 @@ service OlaServerService {
   rpc GetPluginDescription (PluginDescriptionRequest) returns
     (PluginDescriptionReply);
   rpc GetDeviceInfo (DeviceInfoRequest) returns (DeviceInfoReply);
+  rpc GetCandidatePorts (OptionalUniverseRequest) returns (DeviceInfoReply);
   rpc ConfigureDevice (DeviceConfigRequest) returns (DeviceConfigReply);
   rpc SetPortPriority (PortPriorityRequest) returns (Ack);
-  rpc GetUniverseInfo (UniverseInfoRequest) returns (UniverseInfoReply);
+  rpc GetUniverseInfo (OptionalUniverseRequest) returns (UniverseInfoReply);
   rpc SetUniverseName (UniverseNameRequest) returns (Ack);
   rpc SetMergeMode (MergeModeRequest) returns (Ack);
   rpc PatchPort (PatchPortRequest) returns (Ack);
 
   rpc RegisterForDmx (RegisterDmxRequest) returns (Ack);
   rpc UpdateDmxData (DmxData) returns (Ack);
-  rpc GetDmx (DmxReadRequest) returns (DmxData);
+  rpc GetDmx (UniverseRequest) returns (DmxData);
   rpc GetUIDs (UniverseRequest) returns (UIDListReply);
   rpc ForceDiscovery (UniverseRequest) returns (Ack);
   rpc SetSourceUID (UID) returns (Ack);

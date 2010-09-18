@@ -280,97 +280,29 @@ int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
 int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
                                       HttpResponse *response) {
   string uni_id = request->GetParameter("id");
-  unsigned int universe_id;
-  Universe *universe = NULL;
-  if ((!uni_id.empty()) && StringToUInt(uni_id, &universe_id))
-    universe = m_universe_store->GetUniverse(universe_id);
+  bool ok = false;
 
-  stringstream str;
-  str << "[" << endl;
+  if (uni_id.empty()) {
+    // get all available ports
+    ok = m_client.FetchCandidatePorts(
+        NewSingleCallback(this,
+                          &OlaHttpServer::HandleCandidatePorts,
+                          response));
+  } else {
+    unsigned int universe_id;
+    if (!StringToUInt(uni_id, &universe_id))
+      return m_server.ServeNotFound(response);
 
-  vector<InputPort*> input_ports;
-  vector<OutputPort*> output_ports;
-
-  vector<device_alias_pair> device_pairs = m_device_manager->Devices();
-  sort(device_pairs.begin(), device_pairs.end());
-  vector<device_alias_pair>::const_iterator iter;
-
-  for (iter = device_pairs.begin(); iter != device_pairs.end(); ++iter) {
-    AbstractDevice *device = iter->device;
-    input_ports.clear();
-    output_ports.clear();
-    device->InputPorts(&input_ports);
-    device->OutputPorts(&output_ports);
-
-    vector<InputPort*>::const_iterator input_iter;
-    vector<OutputPort*>::const_iterator output_iter;
-    // check if this device already has ports bound to this universe
-    bool seen_input_port = false;
-    bool seen_output_port = false;
-    for (input_iter = input_ports.begin(); input_iter != input_ports.end();
-         input_iter++) {
-      if (universe && (*input_iter)->GetUniverse() == universe)
-        seen_input_port = true;
-    }
-
-    for (output_iter = output_ports.begin();
-         output_iter != output_ports.end(); output_iter++) {
-      if (universe && (*output_iter)->GetUniverse() == universe)
-        seen_output_port = true;
-    }
-
-    for (input_iter = input_ports.begin(); input_iter != input_ports.end();
-         input_iter++) {
-      if ((*input_iter)->GetUniverse())
-        continue;
-      if (seen_output_port && !device->AllowLooping())
-        continue;
-      if (seen_input_port && !device->AllowMultiPortPatching())
-        break;
-
-      str << "  {" << endl;
-      str << "    \"device\": \"" << EscapeString(device->Name()) << "\","
-        << endl;
-      str << "    \"id\": \"" << (*input_iter)->UniqueId() << "\"," << endl;
-      str << "    \"is_output\": false," << endl;
-      str << "    \"description\": \"" <<
-        EscapeString((*input_iter)->Description()) << "\"," << endl;
-      str << "  }," << endl;
-
-      if (!device->AllowMultiPortPatching())
-        break;
-    }
-
-    for (output_iter = output_ports.begin();
-         output_iter != output_ports.end(); output_iter++) {
-      if ((*output_iter)->GetUniverse())
-        continue;
-      if (seen_input_port && !device->AllowLooping())
-        continue;
-      if (seen_output_port && !device->AllowMultiPortPatching())
-        break;
-
-      str << "  {" << endl;
-      str << "    \"device\": \"" << EscapeString(device->Name()) << "\","
-        << endl;
-      str << "    \"id\": \"" << (*output_iter)->UniqueId() << "\"," << endl;
-      str << "    \"is_output\": true," << endl;
-      str << "    \"description\": \"" <<
-        EscapeString((*output_iter)->Description()) << "\"," << endl;
-      str << "  }," << endl;
-
-      if (!device->AllowMultiPortPatching())
-        break;
-    }
+    ok = m_client.FetchCandidatePorts(
+        universe_id,
+        NewSingleCallback(this,
+                          &OlaHttpServer::HandleCandidatePorts,
+                          response));
   }
-  str << "]" << endl;
 
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  int r = response->Send();
-  delete response;
-  return r;
-  (void) request;
+  if (!ok)
+    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
 }
 
 
@@ -824,14 +756,14 @@ void OlaHttpServer::HandlePortsForUniverse(
       for (input_iter = input_ports.begin(); input_iter != input_ports.end();
            ++input_iter) {
         if (input_iter->IsActive() && input_iter->Universe() == universe_id)
-          PortToJson(*iter, *input_iter, &input_str);
+          PortToJson(*iter, *input_iter, &input_str, false);
       }
 
       const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
       for (output_iter = output_ports.begin();
            output_iter != output_ports.end(); ++output_iter) {
         if (output_iter->IsActive() && output_iter->Universe() == universe_id)
-          PortToJson(*iter, *output_iter, &output_str);
+          PortToJson(*iter, *output_iter, &output_str, true);
       }
     }
     input_str << "  ]," << endl;
@@ -842,6 +774,50 @@ void OlaHttpServer::HandlePortsForUniverse(
 
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("}");
+  response->Send();
+  delete response;
+}
+
+
+/*
+ * Handle the list of candidate ports
+ * @param response the HttpResponse that is associated with the request.
+ * @param devices the possbile devices & ports
+ * @param error an error string.
+ */
+void OlaHttpServer::HandleCandidatePorts(
+    HttpResponse *response,
+    const vector<class OlaDevice> &devices,
+    const string &error) {
+  if (!error.empty()) {
+    m_server.ServeError(response, error);
+    return;
+  }
+
+  stringstream str;
+  str << "[" << endl;
+
+  vector<OlaDevice>::const_iterator iter = devices.begin();
+  vector<OlaInputPort>::const_iterator input_iter;
+  vector<OlaOutputPort>::const_iterator output_iter;
+
+  for (; iter != devices.end(); ++iter) {
+    const vector<OlaInputPort> &input_ports = iter->InputPorts();
+    for (input_iter = input_ports.begin(); input_iter != input_ports.end();
+         ++input_iter) {
+      PortToJson(*iter, *input_iter, &str, false);
+    }
+
+    const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
+    for (output_iter = output_ports.begin();
+         output_iter != output_ports.end(); ++output_iter) {
+      PortToJson(*iter, *output_iter, &str, true);
+    }
+  }
+  str << "]" << endl;
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
   response->Send();
   delete response;
 }
@@ -958,13 +934,16 @@ void OlaHttpServer::UpdatePortPriorites(const HttpRequest *request,
  */
 void OlaHttpServer::PortToJson(const OlaDevice &device,
                                const OlaPort &port,
-                               stringstream *str) {
+                               stringstream *str,
+                               bool is_output) {
   *str << "    {" << endl;
   *str << "      \"device\": \"" << EscapeString(device.Name())
     << "\"," << endl;
   *str << "      \"description\": \"" <<
     EscapeString(port.Description()) << "\"," << endl;
-  *str << "      \"id\": \"" << port.Id() << "\"," << endl;
+  *str << "      \"id\": \"" << port.UniqueId() << "\"," << endl;
+  *str << "      \"is_output\": " << (is_output ? "true" : "false") << "," <<
+    endl;
 
   if (port.PriorityCapability() != CAPABILITY_NONE) {
     *str << "      \"priority\": {" << endl;

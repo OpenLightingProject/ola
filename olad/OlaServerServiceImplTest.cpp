@@ -253,7 +253,7 @@ void OlaServerServiceImplTest::CallGetDmx(OlaServerServiceImpl *impl,
                                           int universe_id,
                                           GetDmxCheck &check) {
   SimpleRpcController *controller = new SimpleRpcController();
-  ola::proto::DmxReadRequest *request = new ola::proto::DmxReadRequest();
+  ola::proto::UniverseRequest *request = new ola::proto::UniverseRequest();
   ola::proto::DmxData *response = new ola::proto::DmxData();
   Closure *closure = NewCallback(
       &check,

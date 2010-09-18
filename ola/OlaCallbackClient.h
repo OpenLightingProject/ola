@@ -64,6 +64,17 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
                            const vector <class OlaDevice>&,
                            const string&> *callback);
 
+    bool FetchCandidatePorts(
+        unsigned int universe_id,
+        SingleUseCallback2<void,
+                           const vector <class OlaDevice>&,
+                           const string&> *callback);
+
+    bool FetchCandidatePorts(
+        SingleUseCallback2<void,
+                           const vector <class OlaDevice>&,
+                           const string&> *callback);
+
     bool ConfigureDevice(
         unsigned int device_alias,
         const string &msg,

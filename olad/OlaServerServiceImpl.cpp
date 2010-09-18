@@ -51,8 +51,8 @@ using ola::proto::DeviceInfo;
 using ola::proto::DeviceInfoReply;
 using ola::proto::DeviceInfoRequest;
 using ola::proto::DmxData;
-using ola::proto::DmxReadRequest;
 using ola::proto::MergeModeRequest;
+using ola::proto::OptionalUniverseRequest;
 using ola::proto::PatchPortRequest;
 using ola::proto::PluginDescriptionReply;
 using ola::proto::PluginDescriptionRequest;
@@ -63,8 +63,8 @@ using ola::proto::PortInfo;
 using ola::proto::RegisterDmxRequest;
 using ola::proto::UniverseInfo;
 using ola::proto::UniverseInfoReply;
-using ola::proto::UniverseInfoRequest;
 using ola::proto::UniverseNameRequest;
+using ola::proto::UniverseRequest;
 using ola::rdm::UIDSet;
 
 
@@ -79,7 +79,7 @@ OlaServerServiceImpl::~OlaServerServiceImpl() {
  */
 void OlaServerServiceImpl::GetDmx(
     RpcController* controller,
-    const DmxReadRequest* request,
+    const UniverseRequest* request,
     DmxData* response,
     google::protobuf::Closure* done) {
 
@@ -317,7 +317,7 @@ void OlaServerServiceImpl::SetPortPriority(
  */
 void OlaServerServiceImpl::GetUniverseInfo(
     RpcController* controller,
-    const UniverseInfoRequest* request,
+    const OptionalUniverseRequest* request,
     UniverseInfoReply* response,
     google::protobuf::Closure* done) {
 
@@ -420,6 +420,117 @@ void OlaServerServiceImpl::GetDeviceInfo(RpcController* controller,
     }
   }
   (void) controller;
+  done->Run();
+}
+
+
+/*
+ * Handle a GetCandidatePorts request
+ */
+void OlaServerServiceImpl::GetCandidatePorts(
+    RpcController* controller,
+    const ola::proto::OptionalUniverseRequest* request,
+    ola::proto::DeviceInfoReply* response,
+    google::protobuf::Closure* done) {
+  vector<device_alias_pair> device_list = m_device_manager->Devices();
+  vector<device_alias_pair>::const_iterator iter;
+
+  Universe *universe = NULL;
+
+  if (request->has_universe()) {
+    universe = m_universe_store->GetUniverse(request->universe());
+
+    if (!universe)
+      return MissingUniverseError(controller, done);
+  }
+
+  vector<InputPort*> input_ports;
+  vector<OutputPort*> output_ports;
+  vector<InputPort*>::const_iterator input_iter;
+  vector<OutputPort*>::const_iterator output_iter;
+
+  for (iter = device_list.begin(); iter != device_list.end(); ++iter) {
+    AbstractDevice *device = iter->device;
+    input_ports.clear();
+    output_ports.clear();
+    device->InputPorts(&input_ports);
+    device->OutputPorts(&output_ports);
+
+    bool seen_input_port = false;
+    bool seen_output_port = false;
+    unsigned int unpatched_input_ports = 0;
+    unsigned int unpatched_output_ports = 0;
+
+    if (universe) {
+      for (input_iter = input_ports.begin(); input_iter != input_ports.end();
+           input_iter++) {
+        if ((*input_iter)->GetUniverse() == universe)
+          seen_input_port = true;
+        else if (!(*input_iter)->GetUniverse())
+          unpatched_input_ports++;
+      }
+
+      for (output_iter = output_ports.begin();
+           output_iter != output_ports.end(); output_iter++) {
+        if ((*output_iter)->GetUniverse() == universe)
+          seen_output_port = true;
+        else if (!(*output_iter)->GetUniverse())
+          unpatched_output_ports++;
+      }
+    } else {
+      unpatched_input_ports = input_ports.size();
+      unpatched_output_ports = output_ports.size();
+    }
+
+    bool can_bind_more_input_ports = (
+      (!seen_output_port || device->AllowLooping()) &&
+      (!seen_input_port || device->AllowMultiPortPatching()));
+
+    bool can_bind_more_output_ports = (
+      (!seen_input_port || device->AllowLooping()) &&
+      (!seen_output_port || device->AllowMultiPortPatching()));
+
+    if ((unpatched_input_ports == 0 || !can_bind_more_input_ports) &&
+        (unpatched_output_ports == 0 || !can_bind_more_output_ports))
+      continue;
+
+    // go ahead and create the device at this point
+    DeviceInfo *device_info = response->add_device();
+    device_info->set_device_alias(iter->alias);
+    device_info->set_device_name(device->Name());
+    device_info->set_device_id(device->UniqueId());
+
+    if (device->Owner())
+      device_info->set_plugin_id(device->Owner()->Id());
+
+    for (input_iter = input_ports.begin(); input_iter != input_ports.end();
+         ++input_iter) {
+      if (universe && (*input_iter)->GetUniverse())
+        continue;
+      if (!can_bind_more_input_ports)
+        break;
+
+      PortInfo *port_info = device_info->add_input_port();
+      PopulatePort(**input_iter, port_info);
+
+      if (!device->AllowMultiPortPatching())
+        break;
+    }
+
+    for (output_iter = output_ports.begin(); output_iter != output_ports.end();
+        ++output_iter) {
+      if (universe && (*output_iter)->GetUniverse())
+        continue;
+      if (!can_bind_more_output_ports)
+        break;
+
+      PortInfo *port_info = device_info->add_output_port();
+      PopulatePort(**output_iter, port_info);
+
+      if (!device->AllowMultiPortPatching())
+        break;
+    }
+  }
   done->Run();
 }
 
@@ -678,6 +789,7 @@ template <class PortClass>
 void OlaServerServiceImpl::PopulatePort(const PortClass &port,
                                         PortInfo *port_info) const {
   port_info->set_port_id(port.PortId());
+  port_info->set_unique_id(port.UniqueId());
   port_info->set_priority_capability(port.PriorityCapability());
   port_info->set_description(port.Description());
 

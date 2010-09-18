@@ -53,7 +53,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     ~OlaServerServiceImpl();
 
     void GetDmx(RpcController* controller,
-                const ola::proto::DmxReadRequest* request,
+                const ola::proto::UniverseRequest* request,
                 ola::proto::DmxData* response,
                 google::protobuf::Closure* done);
     void RegisterForDmx(RpcController* controller,
@@ -85,7 +85,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                          Ack* response,
                          google::protobuf::Closure* done);
     void GetUniverseInfo(RpcController* controller,
-                         const ola::proto::UniverseInfoRequest* request,
+                         const ola::proto::OptionalUniverseRequest* request,
                          ola::proto::UniverseInfoReply* response,
                          google::protobuf::Closure* done);
     void GetPlugins(RpcController* controller,
@@ -101,6 +101,10 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                        const ola::proto::DeviceInfoRequest* request,
                        ola::proto::DeviceInfoReply* response,
                        google::protobuf::Closure* done);
+    void GetCandidatePorts(RpcController* controller,
+                           const ola::proto::OptionalUniverseRequest* request,
+                           ola::proto::DeviceInfoReply* response,
+                           google::protobuf::Closure* done);
     void ConfigureDevice(RpcController* controller,
                          const ola::proto::DeviceConfigRequest* request,
                          ola::proto::DeviceConfigReply* response,

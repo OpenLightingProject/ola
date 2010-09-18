@@ -96,6 +96,10 @@ class OlaHttpServer {
                                 const vector<class OlaDevice> &devices,
                                 const string &error);
 
+    void HandleCandidatePorts(HttpResponse *response,
+                              const vector<class OlaDevice> &devices,
+                              const string &error);
+
     void HandleUIDList(HttpResponse *response,
                        unsigned int universe_id,
                        const ola::rdm::UIDSet &uids,
@@ -119,7 +123,8 @@ class OlaHttpServer {
 
     void PortToJson(const class OlaDevice &device,
                     const class OlaPort &port,
-                    stringstream *str);
+                    stringstream *str,
+                    bool is_output);
     bool UpdatePortsForUniverse(unsigned int universe_id,
                                 const HttpRequest *request);
 

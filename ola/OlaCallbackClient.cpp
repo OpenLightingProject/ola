@@ -110,6 +110,32 @@ bool OlaCallbackClient::FetchDeviceInfo(
 
 
 /*
+ * Request a list of what ports could be patched to a universe.
+ * @param unique_id only fetch devices that belong to this plugin
+ * @return true on success, false on failure
+ */
+bool OlaCallbackClient::FetchCandidatePorts(
+        unsigned int universe_id,
+        SingleUseCallback2<void,
+                           const vector <class OlaDevice>&,
+                           const string&> *callback) {
+  return m_core->FetchCandidatePorts(universe_id, callback);
+}
+
+
+/*
+ * Request a list of what ports could be patched to a new universe.
+ * @return true on success, false on failure
+ */
+bool OlaCallbackClient::FetchCandidatePorts(
+        SingleUseCallback2<void,
+                           const vector <class OlaDevice>&,
+                           const string&> *callback) {
+  return m_core->FetchCandidatePorts(callback);
+}
+
+
+/*
  * Sends a device config request
  * @param device_alias the device_alias
  * @param msg  the request message

@@ -72,6 +72,17 @@ class OlaClientCore: public ola::proto::OlaClientService {
                            const vector <class OlaDevice>&,
                            const string&> *callback);
 
+    bool FetchCandidatePorts(
+        SingleUseCallback2<void,
+                           const vector <class OlaDevice>&,
+                           const string&> *callback);
+
+    bool FetchCandidatePorts(
+        unsigned int universe_id,
+        SingleUseCallback2<void,
+                           const vector <class OlaDevice>&,
+                           const string&> *callback);
+
     bool ConfigureDevice(
         unsigned int device_alias,
         const string &msg,
@@ -264,6 +275,13 @@ class OlaClientCore: public ola::proto::OlaClientService {
   private:
     OlaClientCore(const OlaClientCore&);
     OlaClientCore operator=(const OlaClientCore&);
+
+    bool GenericFetchCandidatePorts(
+        unsigned int universe_id,
+        bool include_universe,
+        SingleUseCallback2<void,
+                           const vector <class OlaDevice>&,
+                           const string&> *callback);
 
     bool RDMCommand(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
                     bool is_set,

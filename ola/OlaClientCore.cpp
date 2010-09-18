@@ -186,6 +186,32 @@ bool OlaClientCore::FetchDeviceInfo(
 
 
 /*
+ * Request a list of ports that could be patched to a universe.
+ * @param universe_id the universe id
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::FetchCandidatePorts(
+    unsigned int universe_id,
+    SingleUseCallback2<void,
+                       const vector <class OlaDevice>&,
+                       const string&> *callback) {
+  return GenericFetchCandidatePorts(universe_id, true, callback);
+}
+
+
+/*
+ * Request a list of ports that could be patched to a new universe.
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::FetchCandidatePorts(
+  SingleUseCallback2<void,
+                     const vector <class OlaDevice>&,
+                     const string&> *callback) {
+  return GenericFetchCandidatePorts(0, false, callback);
+}
+
+
+/*
  * Sends a device config request
  * @param device_alias the device alias
  * @param msg the data to send
@@ -301,7 +327,7 @@ bool OlaClientCore::FetchUniverseList(
   }
 
   SimpleRpcController *controller = new SimpleRpcController();
-  ola::proto::UniverseInfoRequest request;
+  ola::proto::OptionalUniverseRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
 
   google::protobuf::Closure *cb = google::protobuf::NewCallback(
@@ -327,7 +353,7 @@ bool OlaClientCore::FetchUniverseInfo(
   }
 
   SimpleRpcController *controller = new SimpleRpcController();
-  ola::proto::UniverseInfoRequest request;
+  ola::proto::OptionalUniverseRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
 
   request.set_universe(universe_id);
@@ -534,7 +560,7 @@ bool OlaClientCore::FetchDmx(
     return false;
   }
 
-  ola::proto::DmxReadRequest request;
+  ola::proto::UniverseRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
   ola::proto::DmxData *reply = new ola::proto::DmxData();
 
@@ -772,6 +798,7 @@ void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
         ola::proto::PortInfo port_info = device_info.input_port(j);
         OlaInputPort port(
             port_info.port_id(),
+            port_info.unique_id(),
             port_info.universe(),
             port_info.active(),
             port_info.description(),
@@ -789,6 +816,7 @@ void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
         ola::proto::PortInfo port_info = device_info.output_port(j);
         OlaOutputPort port(
             port_info.port_id(),
+            port_info.unique_id(),
             port_info.universe(),
             port_info.active(),
             port_info.description(),
@@ -1005,6 +1033,36 @@ void OlaClientCore::HandleRDM(rdm_response_args *args) {
 
   args->callback->Run(response_status, args->reply->data());
   FreeArgs(args);
+}
+
+
+/*
+ * Fetch a list of candidate ports, with or without a universe
+ */
+bool OlaClientCore::GenericFetchCandidatePorts(
+    unsigned int universe_id,
+    bool include_universe,
+    SingleUseCallback2<void,
+                       const vector <class OlaDevice>&,
+                       const string&> *callback) {
+  if (!m_connected) {
+    delete callback;
+    return false;
+  }
+
+  ola::proto::OptionalUniverseRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::DeviceInfoReply *reply = new ola::proto::DeviceInfoReply();
+
+  if (include_universe)
+    request.set_universe(universe_id);
+
+  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+      this,
+      &ola::OlaClientCore::HandleDeviceInfo,
+      NewArgs<device_info_arg>(controller, reply, callback));
+  m_stub->GetCandidatePorts(controller, &request, reply, cb);
+  return true;
 }
 
 
