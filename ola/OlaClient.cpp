@@ -264,10 +264,10 @@ bool OlaClient::FetchDeviceInfo(ola_plugin_id filter) {
  */
 bool OlaClient::FetchUniverseInfo() {
   if (m_observer)
-    return m_core->FetchUniverseInfo(
+    return m_core->FetchUniverseList(
         NewSingleCallback(m_observer, &OlaClientObserver::Universes));
   else
-    return m_core->FetchUniverseInfo(NULL);
+    return m_core->FetchUniverseList(NULL);
 }
 
 

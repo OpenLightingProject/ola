@@ -291,10 +291,10 @@ bool OlaClientCore::SetPortPriorityOverride(
  * Request a universe listing
  * @return true on success, false on failure
  */
-bool OlaClientCore::FetchUniverseInfo(
+bool OlaClientCore::FetchUniverseList(
     SingleUseCallback2<void,
-                       const vector <class OlaUniverse>&,
-                       const string &> *callback) {
+                       const vector<class OlaUniverse>&,
+                       const string&> *callback) {
   if (!m_connected) {
     delete callback;
     return false;
@@ -303,6 +303,34 @@ bool OlaClientCore::FetchUniverseInfo(
   SimpleRpcController *controller = new SimpleRpcController();
   ola::proto::UniverseInfoRequest request;
   ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
+
+  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+      this,
+      &ola::OlaClientCore::HandleUniverseList,
+      NewArgs<universe_list_args>(controller, reply, callback));
+  m_stub->GetUniverseInfo(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
+ * Fetch the information for a single universe.
+ * @param universe_id the id of the universe
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::FetchUniverseInfo(
+    unsigned int universe_id,
+    SingleUseCallback2<void, OlaUniverse&, const string&> *callback) {
+  if (!m_connected) {
+    delete callback;
+    return false;
+  }
+
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::UniverseInfoRequest request;
+  ola::proto::UniverseInfoReply *reply = new ola::proto::UniverseInfoReply();
+
+  request.set_universe(universe_id);
 
   google::protobuf::Closure *cb = google::protobuf::NewCallback(
       this,
@@ -823,9 +851,9 @@ void OlaClientCore::HandleAck(ack_args *args) {
 
 
 /*
- * Called once PluginInfo completes
+ * Called once UniverseInfo completes
  */
-void OlaClientCore::HandleUniverseInfo(universe_info_args *args) {
+void OlaClientCore::HandleUniverseList(universe_list_args *args) {
   string error_string = "";
   vector<OlaUniverse> ola_universes;
 
@@ -853,6 +881,53 @@ void OlaClientCore::HandleUniverseInfo(universe_info_args *args) {
     }
   }
   args->callback->Run(ola_universes, error_string);
+  FreeArgs(args);
+}
+
+
+/*
+ * Called once UniverseInfo completes
+ */
+void OlaClientCore::HandleUniverseInfo(universe_info_args *args) {
+  string error_string = "";
+  OlaUniverse null_universe(0,
+                            OlaUniverse::MERGE_LTP,
+                            "",
+                            0,
+                            0,
+                            0);
+
+  if (!args->callback) {
+    FreeArgs(args);
+    return;
+  }
+
+  if (args->controller->Failed()) {
+    error_string = args->controller->ErrorText();
+  } else {
+    if (args->reply->universe_size() == 1) {
+      ola::proto::UniverseInfo universe_info = args->reply->universe(0);
+      OlaUniverse::merge_mode merge_mode = (
+        universe_info.merge_mode() == ola::proto::HTP ?
+        OlaUniverse::MERGE_HTP: OlaUniverse::MERGE_LTP);
+
+      OlaUniverse universe(universe_info.universe(),
+                           merge_mode,
+                           universe_info.name(),
+                           universe_info.input_port_count(),
+                           universe_info.output_port_count(),
+                           universe_info.rdm_devices());
+      args->callback->Run(universe, error_string);
+      FreeArgs(args);
+      return;
+
+    } else if (args->reply->universe_size() > 1) {
+      error_string = "Too many unvierses in response";
+    } else {
+      error_string = "Universe not found";
+    }
+  }
+  args->callback->Run(null_universe, error_string);
   FreeArgs(args);
 }
 

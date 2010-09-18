@@ -169,11 +169,24 @@ bool OlaCallbackClient::SetPortPriorityOverride(
  * Request information about active universes.
  * @return true on success, false on failure
  */
-bool OlaCallbackClient::FetchUniverseInfo(
+bool OlaCallbackClient::FetchUniverseList(
     SingleUseCallback2<void,
                        const vector <class OlaUniverse>&,
                        const string &> *callback) {
-  return m_core->FetchUniverseInfo(callback);
+  return m_core->FetchUniverseList(callback);
+}
+
+
+/*
+ * Request information about a universe.
+ * @return true on success, false on failure
+ */
+bool OlaCallbackClient::FetchUniverseInfo(
+    unsigned int universe_id,
+    SingleUseCallback2<void,
+                       class OlaUniverse&,
+                       const string &> *callback) {
+  return m_core->FetchUniverseInfo(universe_id, callback);
 }
 
 

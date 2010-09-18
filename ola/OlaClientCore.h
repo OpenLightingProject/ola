@@ -91,9 +91,14 @@ class OlaClientCore: public ola::proto::OlaClientService {
         SingleUseCallback1<void, const string&> *callback);
 
     // universe methods
-    bool FetchUniverseInfo(
+    bool FetchUniverseList(
         SingleUseCallback2<void,
                            const vector <class OlaUniverse>&,
+                           const string &> *callback);
+    bool FetchUniverseInfo(
+        unsigned int universe,
+        SingleUseCallback2<void,
+                           class OlaUniverse&,
                            const string &> *callback);
     bool SetUniverseName(
         unsigned int uni,
@@ -219,6 +224,14 @@ class OlaClientCore: public ola::proto::OlaClientService {
       SingleUseCallback2<void,
                          const vector <class OlaUniverse>&,
                          const string&> *callback;
+    } universe_list_args;
+
+    void HandleUniverseList(universe_list_args *args);
+
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::UniverseInfoReply *reply;
+      SingleUseCallback2<void, class OlaUniverse&, const string&> *callback;
     } universe_info_args;
 
     void HandleUniverseInfo(universe_info_args *args);

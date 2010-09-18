@@ -157,8 +157,8 @@ class OlaDevice {
     string Name() const { return m_name; }
     int PluginId() const { return m_plugin_id; }
 
-    const vector<OlaInputPort> InputPorts() const { return m_input_ports; }
-    const vector<OlaOutputPort> OutputPorts() const { return m_output_ports; }
+    const vector<OlaInputPort> &InputPorts() const { return m_input_ports; }
+    const vector<OlaOutputPort> &OutputPorts() const { return m_output_ports; }
 
     bool operator<(const OlaDevice &other) const {
       return m_alias < other.m_alias;

@@ -83,9 +83,14 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
         SingleUseCallback1<void, const string&> *callback);
 
     // universe methods
-    bool FetchUniverseInfo(
+    bool FetchUniverseList(
         SingleUseCallback2<void,
                            const vector <class OlaUniverse>&,
+                           const string &> *callback);
+    bool FetchUniverseInfo(
+        unsigned int universe,
+        SingleUseCallback2<void,
+                           class OlaUniverse&,
                            const string &> *callback);
     bool SetUniverseName(
         unsigned int uni,
