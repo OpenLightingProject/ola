@@ -69,7 +69,6 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              ConnectedSocket *client_socket,
                              OlaServer *ola_server,
                              UniverseStore *universe_store,
-                             PluginManager *plugin_manager,
                              DeviceManager *device_manager,
                              PortManager *port_manager,
                              unsigned int port,
@@ -84,7 +83,6 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
 
       m_ola_server(ola_server),
       m_universe_store(universe_store),
-      m_plugin_manager(plugin_manager),
       m_device_manager(device_manager),
       m_port_manager(port_manager),
       m_enable_quit(enable_quit),
@@ -207,7 +205,7 @@ int OlaHttpServer::JsonServerStats(const HttpRequest *request,
 }
 
 
-/**
+/*
  * Print the list of universes / plugins as a json string
  * @param request the HttpRequest
  * @param response the HttpResponse
@@ -215,49 +213,14 @@ int OlaHttpServer::JsonServerStats(const HttpRequest *request,
  */
 int OlaHttpServer::JsonUniversePluginList(const HttpRequest *request,
                                           HttpResponse *response) {
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"plugins\": [" << endl;
+  bool ok = m_client.FetchPluginList(
+      NewSingleCallback(this,
+                        &OlaHttpServer::HandlePluginList,
+                        response));
 
-  vector<AbstractPlugin*> plugins;
-  vector<AbstractPlugin*>::const_iterator iter;
-  m_plugin_manager->Plugins(&plugins);
-  std::sort(plugins.begin(), plugins.end(), PluginLessThan());
-
-  for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-    str << "    {\"name\": \"" << EscapeString((*iter)->Name()) <<
-      "\", \"id\": " << (*iter)->Id() << "}," << endl;
-  }
-
-  str << "  ]," << endl;
-  str << "  \"universes\": [" << endl;
-
-  vector<Universe*> universes;
-  vector<Universe*>::const_iterator universe_iter;
-  m_universe_store->GetList(&universes);
-  for (universe_iter = universes.begin(); universe_iter != universes.end();
-       ++universe_iter) {
-    str << "    {" << endl;
-    str << "      \"id\": " << (*universe_iter)->UniverseId() << "," << endl;
-    str << "      \"input_ports\": " << (*universe_iter)->InputPortCount() <<
-      "," << endl;
-    str << "      \"name\": \"" << EscapeString((*universe_iter)->Name()) <<
-      "\"," << endl;
-    str << "      \"output_ports\": " << (*universe_iter)->OutputPortCount() <<
-      "," << endl;
-    str << "      \"rdm_devices\": " << (*universe_iter)->UIDCount() << ","
-       << endl;
-    str << "    }," << endl;
-  }
-
-  str << "  ]," << endl;
-  str << "}";
-
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  int r = response->Send();
-  delete response;
-  return r;
+  if (!ok)
+    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
   (void) request;
 }
 
@@ -730,6 +693,86 @@ int OlaHttpServer::DisplayHandlers(const HttpRequest *request,
 
 
 /*
+ * Handle the plugin list callback
+ * @param response the HttpResponse that is associated with the request.
+ * @param plugins a list of plugins
+ * @param error an error string.
+ */
+void OlaHttpServer::HandlePluginList(HttpResponse *response,
+                                     const vector<OlaPlugin> &plugins,
+                                     const string &error) {
+  if (!error.empty()) {
+    m_server.ServeError(response, error);
+    return;
+  }
+
+  // fire off the universe request now. the main server is running in a
+  // separate thread.
+  bool ok = m_client.FetchUniverseInfo(
+      NewSingleCallback(this,
+                        &OlaHttpServer::HandleUniverseList,
+                        response));
+
+  if (!ok) {
+    m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+    return;
+  }
+
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"plugins\": [" << endl;
+
+  vector<OlaPlugin>::const_iterator iter;
+  for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
+    str << "    {\"name\": \"" << EscapeString(iter->Name()) <<
+      "\", \"id\": " << iter->Id() << "}," << endl;
+  }
+
+  str << "  ]," << endl;
+  response->Append(str.str());
+}
+
+
+/*
+ * Handle the universe list callback
+ * @param response the HttpResponse that is associated with the request.
+ * @param plugins a list of plugins
+ * @param error an error string.
+ */
+void OlaHttpServer::HandleUniverseList(HttpResponse *response,
+                                       const vector<OlaUniverse> &universes,
+                                       const string &error) {
+  stringstream str;
+  if (error.empty()) {
+    str << "  \"universes\": [" << endl;
+
+    vector<OlaUniverse>::const_iterator iter;
+    for (iter = universes.begin(); iter != universes.end(); ++iter) {
+      str << "    {" << endl;
+      str << "      \"id\": " << iter->Id() << "," << endl;
+      str << "      \"input_ports\": " << iter->InputPortCount() << "," <<
+        endl;
+      str << "      \"name\": \"" << EscapeString(iter->Name()) << "\"," <<
+        endl;
+      str << "      \"output_ports\": " << iter->OutputPortCount() << "," <<
+        endl;
+      str << "      \"rdm_devices\": " << iter->RDMDeviceCount() << "," <<
+        endl;
+      str << "    }," << endl;
+    }
+    str << "  ]," << endl;
+  }
+
+  str << "}";
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+
+/*
  * Handle the plugin description response.
  * @param response the HttpResponse that is associated with the request.
  * @param description the plugin description.
@@ -938,10 +981,11 @@ bool OlaHttpServer::UpdatePortsForUniverse(unsigned int universe_id,
  * Update a single port from the http request
  */
 template <class PortClass>
-void OlaHttpServer::UpdatePortForUniverse(unsigned int universe_id,
-                                          PortClass *port,
-                                          const vector<string> &ids_to_add,
-                                          const vector<string> &ids_to_remove) {
+void OlaHttpServer::UpdatePortForUniverse(
+    unsigned int universe_id,
+    PortClass *port,
+    const vector<string> &ids_to_add,
+    const vector<string> &ids_to_remove) {
   vector<string>::const_iterator iter;
   for (iter = ids_to_add.begin(); iter != ids_to_add.end(); ++iter) {
     if (port->UniqueId() == *iter) {

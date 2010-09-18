@@ -45,7 +45,6 @@ class OlaHttpServer {
 
                   class OlaServer *ola_server,
                   class UniverseStore *universe_store,
-                  class PluginManager *plugin_manager,
                   class DeviceManager *device_manager,
                   PortManager *port_manager,
                   unsigned int port,
@@ -76,6 +75,13 @@ class OlaHttpServer {
     int RunRDMDiscovery(const HttpRequest *request, HttpResponse *response);
     int DisplayHandlers(const HttpRequest *request, HttpResponse *response);
 
+    void HandlePluginList(HttpResponse *response,
+                          const vector<class OlaPlugin> &plugins,
+                          const string &error);
+
+    void HandleUniverseList(HttpResponse *response,
+                            const vector<class OlaUniverse> &universes,
+                            const string &error);
 
     void HandlePluginInfo(HttpResponse *response,
                           const string &description,
@@ -119,7 +125,6 @@ class OlaHttpServer {
 
     class OlaServer *m_ola_server;
     UniverseStore *m_universe_store;
-    PluginManager *m_plugin_manager;
     DeviceManager *m_device_manager;
     PortManager *m_port_manager;
     bool m_enable_quit;

@@ -372,7 +372,6 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &interface) {
 
                               this,
                               m_universe_store,
-                              m_plugin_manager,
                               m_device_manager,
                               m_port_manager,
                               m_options.http_port,
