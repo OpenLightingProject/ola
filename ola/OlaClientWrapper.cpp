@@ -20,7 +20,7 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
-#include <ola/SimpleClient.h>
+#include <ola/OlaClientWrapper.h>
 
 namespace ola {
 
