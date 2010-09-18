@@ -54,7 +54,7 @@ AC_PROG_LIBTOOL
 AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 
 # check for protobuf support
-PROTOBUF_SUPPORT([2.1.0])
+PROTOBUF_SUPPORT([2.2.0])
 
 # check for pthread support
 AC_CHECK_HEADER([pthread.h],
