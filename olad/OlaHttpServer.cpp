@@ -79,16 +79,13 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_export_map(export_map),
       m_client_socket(client_socket),
       m_client(client_socket),
-
-
       m_ola_server(ola_server),
+
       m_universe_store(universe_store),
       m_device_manager(device_manager),
       m_port_manager(port_manager),
       m_enable_quit(enable_quit),
       m_interface(interface) {
-
-
   // The main handlers
   RegisterHandler("/", &OlaHttpServer::DisplayIndex);
   RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
@@ -261,43 +258,15 @@ int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
   if (!StringToUInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
-  Universe *universe = m_universe_store->GetUniverse(universe_id);
+  bool ok = m_client.FetchUniverseInfo(
+      universe_id,
+      NewSingleCallback(this,
+                        &OlaHttpServer::HandleUniverseInfo,
+                        response));
 
-  if (!universe)
-    return m_server.ServeNotFound(response);
-
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"id\": " << universe->UniverseId() << "," << endl;
-  str << "  \"name\": \"" << EscapeString(universe->Name()) << "\"," << endl;
-  str << "  \"merge_mode\": \"" <<
-    (universe->MergeMode() == Universe::MERGE_HTP ? "HTP" : "LTP") << "\"," <<
-    endl;
-
-  vector<InputPort*> input_ports;
-  universe->InputPorts(&input_ports);
-  vector<InputPort*>::const_iterator input_iter = input_ports.begin();
-  str << "  \"input_ports\": [" << endl;
-  for (; input_iter != input_ports.end(); input_iter++) {
-    PortToJson(*input_iter, &str);
-  }
-  str << "  ]," << endl;
-
-  vector<OutputPort*> output_ports;
-  universe->OutputPorts(&output_ports);
-  vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
-  str << "  \"output_ports\": [" << endl;
-  for (; output_iter != output_ports.end(); output_iter++) {
-    PortToJson(*output_iter, &str);
-  }
-  str << "  ]," << endl;
-  str << "}" << endl;
-
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  int r = response->Send();
-  delete response;
-  return r;
+  if (!ok)
+    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
   (void) request;
 }
 
@@ -708,7 +677,7 @@ void OlaHttpServer::HandlePluginList(HttpResponse *response,
 
   // fire off the universe request now. the main server is running in a
   // separate thread.
-  bool ok = m_client.FetchUniverseInfo(
+  bool ok = m_client.FetchUniverseList(
       NewSingleCallback(this,
                         &OlaHttpServer::HandleUniverseList,
                         response));
@@ -792,6 +761,87 @@ void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
   response->Append("{\"description\": \"");
   response->Append(escaped_description);
   response->Append("\"}");
+  response->Send();
+  delete response;
+}
+
+
+/*
+ * Handle the universe info
+ * @param response the HttpResponse that is associated with the request.
+ * @param universe the OlaUniverse object
+ * @param error an error string.
+ */
+void OlaHttpServer::HandleUniverseInfo(HttpResponse *response,
+                                       OlaUniverse &universe,
+                                       const string &error) {
+  if (!error.empty()) {
+    m_server.ServeError(response, error);
+    return;
+  }
+
+  // fire off the device/port request now. the main server is running in a
+  // separate thread.
+  bool ok = m_client.FetchDeviceInfo(
+      ola::OLA_PLUGIN_ALL,
+      NewSingleCallback(this,
+                        &OlaHttpServer::HandlePortsForUniverse,
+                        response,
+                        universe.Id()));
+
+  if (!ok) {
+    m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+    return;
+  }
+
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"id\": " << universe.Id() << "," << endl;
+  str << "  \"name\": \"" << EscapeString(universe.Name()) << "\"," << endl;
+  str << "  \"merge_mode\": \"" <<
+    (universe.MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP") << "\","
+    << endl;
+
+  response->Append(str.str());
+}
+
+
+void OlaHttpServer::HandlePortsForUniverse(
+    HttpResponse *response,
+    unsigned int universe_id,
+    const vector<OlaDevice> &devices,
+    const string &error) {
+  if (error.empty()) {
+    stringstream input_str, output_str;
+    vector<OlaDevice>::const_iterator iter = devices.begin();
+    vector<OlaInputPort>::const_iterator input_iter;
+    vector<OlaOutputPort>::const_iterator output_iter;
+
+    input_str << "  \"input_ports\": [" << endl;
+    output_str << "  \"output_ports\": [" << endl;
+    for (; iter != devices.end(); ++iter) {
+      const vector<OlaInputPort> &input_ports = iter->InputPorts();
+      for (input_iter = input_ports.begin(); input_iter != input_ports.end();
+           ++input_iter) {
+        if (input_iter->IsActive() && input_iter->Universe() == universe_id)
+          PortToJson(*iter, *input_iter, &input_str);
+      }
+
+      const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
+      for (output_iter = output_ports.begin();
+           output_iter != output_ports.end(); ++output_iter) {
+        if (output_iter->IsActive() && output_iter->Universe() == universe_id)
+          PortToJson(*iter, *output_iter, &output_str);
+      }
+    }
+    input_str << "  ]," << endl;
+    output_str << "  ]," << endl;
+    response->Append(input_str.str());
+    response->Append(output_str.str());
+  }
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append("}");
   response->Send();
   delete response;
 }
@@ -906,25 +956,23 @@ void OlaHttpServer::UpdatePortPriorites(const HttpRequest *request,
 /**
  * Add the json representation of this port to the stringstream
  */
-void OlaHttpServer::PortToJson(const Port *port, stringstream *str) {
-  // skip ports which don't have parent devices like the InternalInputPort
-  if (!port->GetDevice())
-    return;
-
+void OlaHttpServer::PortToJson(const OlaDevice &device,
+                               const OlaPort &port,
+                               stringstream *str) {
   *str << "    {" << endl;
-  *str << "      \"device\": \"" << EscapeString(port->GetDevice()->Name())
+  *str << "      \"device\": \"" << EscapeString(device.Name())
     << "\"," << endl;
   *str << "      \"description\": \"" <<
-    EscapeString(port->Description()) << "\"," << endl;
-  *str << "      \"id\": \"" << port->UniqueId() << "\"," << endl;
+    EscapeString(port.Description()) << "\"," << endl;
+  *str << "      \"id\": \"" << port.Id() << "\"," << endl;
 
-  if (port->PriorityCapability() != CAPABILITY_NONE) {
+  if (port.PriorityCapability() != CAPABILITY_NONE) {
     *str << "      \"priority\": {" << endl;
-    *str << "        \"value\": " << static_cast<int>(port->GetPriority()) <<
+    *str << "        \"value\": " << static_cast<int>(port.Priority()) <<
       "," << endl;
-    if (port->PriorityCapability() == CAPABILITY_FULL) {
+    if (port.PriorityCapability() == CAPABILITY_FULL) {
       *str << "        \"current_mode\": \"" <<
-        (port->GetPriorityMode() == PRIORITY_MODE_INHERIT ?
+        (port.PriorityMode() == PRIORITY_MODE_INHERIT ?
          "inherit" : "override") << "\"," <<
         endl;
     }
