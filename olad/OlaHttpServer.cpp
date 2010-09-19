@@ -941,7 +941,8 @@ void OlaHttpServer::PortToJson(const OlaDevice &device,
     << "\"," << endl;
   *str << "      \"description\": \"" <<
     EscapeString(port.Description()) << "\"," << endl;
-  *str << "      \"id\": \"" << port.UniqueId() << "\"," << endl;
+  *str << "      \"id\": \"" << device.Alias() << "-" <<
+    (is_output ? "O" : "I") << "-" << port.Id() << "\"," << endl;
   *str << "      \"is_output\": " << (is_output ? "true" : "false") << "," <<
     endl;
 
