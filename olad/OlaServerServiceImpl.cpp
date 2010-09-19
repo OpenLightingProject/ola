@@ -505,7 +505,7 @@ void OlaServerServiceImpl::GetCandidatePorts(
 
     for (input_iter = input_ports.begin(); input_iter != input_ports.end();
          ++input_iter) {
-      if (universe && (*input_iter)->GetUniverse())
+      if ((*input_iter)->GetUniverse())
         continue;
       if (!can_bind_more_input_ports)
         break;
@@ -519,7 +519,7 @@ void OlaServerServiceImpl::GetCandidatePorts(
 
     for (output_iter = output_ports.begin(); output_iter != output_ports.end();
         ++output_iter) {
-      if (universe && (*output_iter)->GetUniverse())
+      if ((*output_iter)->GetUniverse())
         continue;
       if (!can_bind_more_output_ports)
         break;
