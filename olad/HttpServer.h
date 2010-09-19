@@ -66,6 +66,9 @@ class HttpRequest {
     const string GetParameter(const string &key) const;
     const string GetPostParameter(const string &key) const;
 
+    bool InFlight() const { return m_in_flight; }
+    void SetInFlight() { m_in_flight = true; }
+
   private:
     string m_url;
     string m_method;
@@ -74,6 +77,7 @@ class HttpRequest {
     map<string, string> m_headers;
     map<string, string> m_post_params;
     struct MHD_PostProcessor *m_processor;
+    bool m_in_flight;
 
     static const unsigned int K_POST_BUFFER_SIZE = 1024;
 };

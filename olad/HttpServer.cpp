@@ -115,8 +115,14 @@ static int HandleRequest(void *http_server_ptr,
   }
 
   request = reinterpret_cast<HttpRequest*>(*ptr);
+
+  if (request->InFlight())
+    // don't dispatch more than once
+    return MHD_YES;
+
   if (request->Method() == MHD_HTTP_METHOD_GET) {
     HttpResponse *response = new HttpResponse(connection);
+    request->SetInFlight();
     return http_server->DispatchRequest(request, response);
 
   } else if (request->Method() == MHD_HTTP_METHOD_POST) {
@@ -125,6 +131,7 @@ static int HandleRequest(void *http_server_ptr,
       *upload_data_size = 0;
       return MHD_YES;
     }
+    request->SetInFlight();
     HttpResponse *response = new HttpResponse(connection);
     return http_server->DispatchRequest(request, response);
   }
@@ -165,7 +172,8 @@ HttpRequest::HttpRequest(const string &url,
   m_method(method),
   m_version(version),
   m_connection(connection),
-  m_processor(NULL) {
+  m_processor(NULL),
+  m_in_flight(false) {
 }
 
 
