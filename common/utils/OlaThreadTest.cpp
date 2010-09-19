@@ -54,7 +54,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(OlaThreadTest);
 
 
 /*
- * Check that the Token Bucket works
+ * Check that basic thread functionality works.
  */
 void OlaThreadTest::testOlaThread() {
   MockThread thread;
