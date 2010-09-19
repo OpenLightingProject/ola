@@ -15,7 +15,7 @@
  *
  * OlaHttpServer.h
  * Interface for the OLA HTTP class
- * Copyright (C) 2005-2008 Simon Newton
+ * Copyright (C) 2005-2010 Simon Newton
  */
 
 #ifndef OLAD_OLAHTTPSERVER_H_
@@ -24,29 +24,71 @@
 #include <time.h>
 #include <string>
 #include <vector>
-#include "ola/Clock.h"
+#include "ola/Callback.h"
 #include "ola/ExportMap.h"
 #include "ola/OlaCallbackClient.h"
-#include "ola/network/InterfacePicker.h"
-#include "ola/network/SelectServer.h"
-#include "olad/Device.h"
+#include "ola/network/Interface.h"
 #include "olad/HttpServer.h"
-#include "olad/PortManager.h"
 
 namespace ola {
 
 using std::string;
-using ola::network::SelectServer;
 
+
+class NewUniverseAction {
+  public:
+    NewUniverseAction(OlaCallbackClient *client,
+                      SingleUseCallback1<void, NewUniverseAction*> *on_complete,
+                      unsigned int universe,
+                      const string &name,
+                      const string &ports_to_add,
+                      const string &ports_to_remove):
+        m_client(client),
+        m_on_complete(on_complete),
+        m_universe(universe),
+        m_name(name),
+        m_ports_to_add(ports_to_add),
+        m_ports_to_remove(ports_to_remove),
+        m_expected_ports(0),
+        m_completed_ports(0),
+        m_failed_ports(0) {
+    }
+
+    unsigned int UniverseId() const { return m_universe; }
+    const string &ErrorMessage() const { return m_error; }
+    void PatchPortComplete(const string &error);
+    void SetNameComplete(const string &error);
+    bool Start();
+
+  private:
+    OlaCallbackClient *m_client;
+    SingleUseCallback1<void, NewUniverseAction*> *m_on_complete;
+    unsigned int m_universe;
+    const string m_name;
+    const string m_ports_to_add;
+    const string m_ports_to_remove;
+    unsigned int m_expected_ports;
+    unsigned int m_completed_ports;
+    unsigned int m_failed_ports;
+    string m_error;
+
+    void PatchPortsFromString(const string &ports, ola::PatchAction action);
+};
+
+
+/*
+ * This is the main OLA HTTP Server
+ */
 class OlaHttpServer {
   public:
     OlaHttpServer(ExportMap *export_map,
                   ola::network::ConnectedSocket *client_socket,
-
                   class OlaServer *ola_server,
+
                   class UniverseStore *universe_store,
                   class DeviceManager *device_manager,
-                  PortManager *port_manager,
+                  class PortManager *port_manager,
+
                   unsigned int port,
                   bool enable_quit,
                   const string &data_dir,
@@ -105,6 +147,13 @@ class OlaHttpServer {
                        const ola::rdm::UIDSet &uids,
                        const string &error);
 
+    void NewUniverseComplete(HttpResponse *response,
+                             NewUniverseAction *action);
+
+    void SendNewUniverseResponse(HttpResponse *response,
+                                 NewUniverseAction *action);
+
+
     void HandleBoolResponse(HttpResponse *response,
                             const string &error);
 
@@ -142,7 +191,7 @@ class OlaHttpServer {
     class OlaServer *m_ola_server;
     UniverseStore *m_universe_store;
     DeviceManager *m_device_manager;
-    PortManager *m_port_manager;
+    class PortManager *m_port_manager;
     bool m_enable_quit;
     TimeStamp m_start_time;
     ola::network::Interface m_interface;
