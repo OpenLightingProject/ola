@@ -335,6 +335,8 @@ ola.Server.prototype.modifyUniverse = function(universe_id,
   var post_data = ('id=' + universe_id + '&name=' + universe_name +
       '&merge_mode=' + merge_mode + '&add_ports=' + ports_to_add.join(',') +
       '&remove_ports=' + ports_to_remove.join(','));
+
+  modified_port_ids = new Array();
   for (var i = 0; i < port_priorities.length; ++i) {
     var priority_setting = port_priorities[i];
     post_data += ('&' + priority_setting.id + '_priority_value=' +
@@ -343,7 +345,9 @@ ola.Server.prototype.modifyUniverse = function(universe_id,
       post_data += ('&' + priority_setting.id + '_priority_mode=' +
           priority_setting.mode);
     }
+    modified_port_ids.push(priority_setting.id);
   }
+  post_data += ('&modify_ports=' + modified_port_ids.join(','));
   var url = ola.Server.MODIFY_UNIVERSE_URL;
   this._initiateRequest(url, on_complete, 'POST', post_data);
 };
