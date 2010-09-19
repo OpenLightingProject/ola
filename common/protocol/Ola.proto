@@ -92,7 +92,6 @@ message PortInfo {
   required int32 port_id = 1;
   required int32 priority_capability = 2;
   required string description = 5;
-  required string unique_id = 8;
   optional int32 universe = 3;
   optional bool active = 4;
   optional int32 priority_mode = 6;

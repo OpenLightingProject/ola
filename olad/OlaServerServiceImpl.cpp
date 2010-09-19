@@ -789,7 +789,6 @@ template <class PortClass>
 void OlaServerServiceImpl::PopulatePort(const PortClass &port,
                                         PortInfo *port_info) const {
   port_info->set_port_id(port.PortId());
-  port_info->set_unique_id(port.UniqueId());
   port_info->set_priority_capability(port.PriorityCapability());
   port_info->set_description(port.Description());
 

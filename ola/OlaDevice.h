@@ -64,7 +64,6 @@ class OlaPlugin {
 class OlaPort {
   public:
     OlaPort(unsigned int port_id,
-            const string &unique_id,
             unsigned int universe,
             bool active,
             const string &description,
@@ -72,7 +71,6 @@ class OlaPort {
             port_priority_mode mode,
             uint8_t priority):
       m_id(port_id),
-      m_unique_id(unique_id),
       m_universe(universe),
       m_active(active),
       m_description(description),
@@ -83,7 +81,6 @@ class OlaPort {
 
     unsigned int Id() const { return m_id; }
 
-    const string &UniqueId() const { return m_unique_id; }
     unsigned int Universe() const { return m_universe; }
     bool IsActive() const { return m_active; }
     string Description() const { return m_description; }
@@ -98,7 +95,6 @@ class OlaPort {
 
   private:
     unsigned int m_id;  // id of this port
-    string m_unique_id;  // the unique string for this port
     unsigned int m_universe;  // universe
     bool m_active;  // active
     string m_description;
@@ -111,14 +107,13 @@ class OlaPort {
 class OlaInputPort: public OlaPort {
   public:
     OlaInputPort(unsigned int port_id,
-                 const string &unique_id,
                  unsigned int universe,
                  bool active,
                  const string &description,
                  port_priority_capability capability,
                  port_priority_mode mode,
                  uint8_t priority):
-        OlaPort(port_id, unique_id, universe, active, description,
+        OlaPort(port_id, universe, active, description,
                 capability, mode, priority) {
     }
 };
@@ -127,14 +122,13 @@ class OlaInputPort: public OlaPort {
 class OlaOutputPort: public OlaPort {
   public:
     OlaOutputPort(unsigned int port_id,
-                  const string &unique_id,
                   unsigned int universe,
                   bool active,
                   const string &description,
                   port_priority_capability capability,
                   port_priority_mode mode,
                   uint8_t priority):
-        OlaPort(port_id, unique_id, universe, active, description,
+        OlaPort(port_id, universe, active, description,
                 capability, mode, priority) {
     }
 };

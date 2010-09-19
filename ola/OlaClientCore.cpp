@@ -798,7 +798,6 @@ void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
         ola::proto::PortInfo port_info = device_info.input_port(j);
         OlaInputPort port(
             port_info.port_id(),
-            port_info.unique_id(),
             port_info.universe(),
             port_info.active(),
             port_info.description(),
@@ -816,7 +815,6 @@ void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
         ola::proto::PortInfo port_info = device_info.output_port(j);
         OlaOutputPort port(
             port_info.port_id(),
-            port_info.unique_id(),
             port_info.universe(),
             port_info.active(),
             port_info.description(),
