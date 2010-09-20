@@ -1055,7 +1055,8 @@ void OlaHttpServer::AddPriorityActions(ActionQueue *action_queue,
         iter->device_alias,
         iter->port,
         iter->direction));
-    } else if (mode == "1") {
+    } else if (mode == "1" || mode == "") {
+      // an empty mode param means this is a static port
       string value = request->GetPostParameter(priority_id);
       uint8_t priority_value;
       if (StringToUInt8(value, &priority_value)) {

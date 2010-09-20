@@ -213,47 +213,18 @@ void PortManagerTest::testInputPortSetPriority() {
   CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(),
                        DmxSource::PRIORITY_DEFAULT);
 
-  // this port doesn't support priorities so the mode is a noop
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port, "1", "2"));
+  // this port doesn't support priorities so this is a noop
+  CPPUNIT_ASSERT(patcher.SetPriorityInherit(&input_port));
   CPPUNIT_ASSERT_EQUAL(input_port.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(), (uint8_t) 2);
+  CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(),
+                       DmxSource::PRIORITY_DEFAULT);
 
-  // try an invalid mode, this shouldn't fail for the reasons above
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port, "2", "2"));
+  // set the static priority to 20
+  CPPUNIT_ASSERT(patcher.SetPriorityOverride(&input_port, 20));
   CPPUNIT_ASSERT_EQUAL(input_port.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(), (uint8_t) 2);
-
-  // try an invalid priority
-  CPPUNIT_ASSERT(!patcher.SetPriority(&input_port, "2", "201"));
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(), (uint8_t) 2);
-
-  // try invalid mode string, this should set the priority
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port, "f00", "199"));
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(), (uint8_t) 199);
-
-  // test invalid priority string, this should fail
-  CPPUNIT_ASSERT(!patcher.SetPriority(&input_port, "f00", "bar"));
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(), (uint8_t) 199);
-
-  // try with pedantic mode off
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port, "f00", "40", false));
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(), (uint8_t) 40);
-
-  // try with pedantic mode off
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port, "1", "201", false));
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(), (uint8_t) 200);
+  CPPUNIT_ASSERT_EQUAL(input_port.GetPriority(), (uint8_t) 20);
 
   // Now test an input port that does support priorities
   TestMockPriorityInputPort input_port2(NULL, 1, NULL);
@@ -264,59 +235,23 @@ void PortManagerTest::testInputPortSetPriority() {
   CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(),
                        DmxSource::PRIORITY_DEFAULT);
 
-  // try changing to static mode
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port2, "1", "2"));
+  // try changing to override mode
+  CPPUNIT_ASSERT(patcher.SetPriorityOverride(&input_port2, 20));
   CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_OVERRIDE);
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 2);
+  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 20);
 
   // bump priority
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port2, "1", "180"));
+  CPPUNIT_ASSERT(patcher.SetPriorityOverride(&input_port2, 180));
   CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_OVERRIDE);
   CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 180);
 
   // change back to inherit mode
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port2, "0", "180"));
+  CPPUNIT_ASSERT(patcher.SetPriorityInherit(&input_port2));
   CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
   CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 180);
-
-  // try an invalid mode
-  CPPUNIT_ASSERT(!patcher.SetPriority(&input_port2, "2", "180"));
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 180);
-
-  // try an invalid priority
-  CPPUNIT_ASSERT(!patcher.SetPriority(&input_port2, "1", "201"));
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 180);
-
-  // try an invalid mode string
-  CPPUNIT_ASSERT(!patcher.SetPriority(&input_port2, "foo", "180"));
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 180);
-
-  // try an invalid prioity string
-  CPPUNIT_ASSERT(!patcher.SetPriority(&input_port2, "0", "bar"));
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 180);
-
-  // try with pedantic mode off
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port2, "f00", "40", false));
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 40);
-
-  // try with pedantic mode off
-  CPPUNIT_ASSERT(patcher.SetPriority(&input_port2, "1", "201", false));
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
-  CPPUNIT_ASSERT_EQUAL(input_port2.GetPriority(), (uint8_t) 200);
 }
 
 
@@ -337,27 +272,12 @@ void PortManagerTest::testOutputPortSetPriority() {
                        DmxSource::PRIORITY_DEFAULT);
 
   // this port doesn't support priorities so these are all noops
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port, "1", "2"));
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port, "2", "2"));
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port, "2", "201"));
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port, "f00", "199"));
-  CPPUNIT_ASSERT(!patcher.SetPriority(&output_port, "f00", "bar"));
+  CPPUNIT_ASSERT(patcher.SetPriorityInherit(&output_port));
+  CPPUNIT_ASSERT(patcher.SetPriorityOverride(&output_port, 20));
   CPPUNIT_ASSERT_EQUAL(output_port.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
   CPPUNIT_ASSERT_EQUAL(output_port.GetPriority(),
                        DmxSource::PRIORITY_DEFAULT);
-
-  // try with pedantic mode off
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port, "f00", "40", false));
-  CPPUNIT_ASSERT_EQUAL(output_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(output_port.GetPriority(), DmxSource::PRIORITY_DEFAULT);
-
-  // try with pedantic mode off
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port, "1", "201", false));
-  CPPUNIT_ASSERT_EQUAL(output_port.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(output_port.GetPriority(), DmxSource::PRIORITY_DEFAULT);
 
   // now test an output port that supports priorities
   TestMockPriorityOutputPort output_port2(NULL, 1);
@@ -370,56 +290,20 @@ void PortManagerTest::testOutputPortSetPriority() {
                        DmxSource::PRIORITY_DEFAULT);
 
   // try changing to static mode
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port2, "1", "2"));
+  CPPUNIT_ASSERT(patcher.SetPriorityOverride(&output_port2, 20));
   CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_OVERRIDE);
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 2);
+  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 20);
 
   // bump priority
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port2, "1", "180"));
+  CPPUNIT_ASSERT(patcher.SetPriorityOverride(&output_port2, 180));
   CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_OVERRIDE);
   CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 180);
 
   // change back to inherit mode
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port2, "0", "180"));
+  CPPUNIT_ASSERT(patcher.SetPriorityInherit(&output_port2));
   CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
                        ola::PRIORITY_MODE_INHERIT);
   CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 180);
-
-  // try an invalid mode
-  CPPUNIT_ASSERT(!patcher.SetPriority(&output_port2, "2", "180"));
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 180);
-
-  // try an invalid priority
-  CPPUNIT_ASSERT(!patcher.SetPriority(&output_port2, "1", "201"));
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 180);
-
-  // try an invalid mode string
-  CPPUNIT_ASSERT(!patcher.SetPriority(&output_port2, "foo", "180"));
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 180);
-
-  // try an invalid prioity string
-  CPPUNIT_ASSERT(!patcher.SetPriority(&output_port2, "0", "bar"));
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 180);
-
-  // try with pedantic mode off
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port2, "f00", "40", false));
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_INHERIT);
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 40);
-
-  // try with pedantic mode off
-  CPPUNIT_ASSERT(patcher.SetPriority(&output_port2, "1", "201", false));
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriorityMode(),
-                       ola::PRIORITY_MODE_OVERRIDE);
-  CPPUNIT_ASSERT_EQUAL(output_port2.GetPriority(), (uint8_t) 200);
 }

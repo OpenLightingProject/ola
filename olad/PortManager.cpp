@@ -94,8 +94,15 @@ bool PortManager::SetPriorityOverride(Port *port, uint8_t value) {
   if (port->PriorityCapability() == CAPABILITY_NONE)
     return true;
 
-  if (port->GetPriorityMode() != PRIORITY_MODE_OVERRIDE)
+  if (port->PriorityCapability() == CAPABILITY_FULL &&
+      port->GetPriorityMode() != PRIORITY_MODE_OVERRIDE)
     port->SetPriorityMode(PRIORITY_MODE_OVERRIDE);
+
+  if (value > DmxSource::PRIORITY_MAX) {
+    OLA_WARN << "Priority " << value <<
+      " is greater than the max priority (" << DmxSource::PRIORITY_MAX << ")";
+    value = DmxSource::PRIORITY_MAX;
+  }
 
   if (port->GetPriority() != value)
     port->SetPriority(value);

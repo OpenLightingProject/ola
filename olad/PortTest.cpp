@@ -102,8 +102,7 @@ void PortTest::testInputPortPriorities() {
 
   // change the priority
   uint8_t new_priority = 120;
-  port_manager.SetPriority(&input_port, ola::PRIORITY_MODE_OVERRIDE,
-                           new_priority);
+  port_manager.SetPriorityOverride(&input_port, new_priority);
 
   Clock::CurrentTime(&time_stamp);
   input_port.WriteDMX(buffer);
@@ -111,8 +110,7 @@ void PortTest::testInputPortPriorities() {
   CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
 
   new_priority = 0;
-  port_manager.SetPriority(&input_port, ola::PRIORITY_MODE_OVERRIDE,
-                           new_priority);
+  port_manager.SetPriorityOverride(&input_port, new_priority);
 
   Clock::CurrentTime(&time_stamp);
   input_port.WriteDMX(buffer);
@@ -139,8 +137,7 @@ void PortTest::testInputPortPriorities() {
 
   // now try override mode
   new_priority = 108;
-  port_manager.SetPriority(&input_port2, ola::PRIORITY_MODE_OVERRIDE,
-                           new_priority);
+  port_manager.SetPriorityOverride(&input_port2, new_priority);
   Clock::CurrentTime(&time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
