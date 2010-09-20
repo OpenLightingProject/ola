@@ -334,16 +334,24 @@ void DeviceManager::RestorePortPriority(Port *port) const {
   if (port_id.empty())
     return;
 
-  string priority = m_port_preferences->GetValue(
+  string priority_str = m_port_preferences->GetValue(
       port_id + PRIORITY_VALUE_SUFFIX);
-  string priority_mode = m_port_preferences->GetValue(
+  string priority_mode_str = m_port_preferences->GetValue(
       port_id + PRIORITY_MODE_SUFFIX);
 
-  if (priority.empty() && priority_mode.empty())
+  if (priority_str.empty() && priority_mode_str.empty())
     return;
 
-  // pedantic mode off
-  m_port_manager->SetPriority(port, priority_mode, priority, false);
+  uint8_t priority, priority_mode;
+  // setting the priority to overide mode first means we remember the over
+  // value even if it's in inherit mode
+  if (StringToUInt8(priority_str, &priority))
+    m_port_manager->SetPriorityOverride(port, priority);
+
+  if (StringToUInt8(priority_mode_str, &priority_mode)) {
+    if (priority_mode == PRIORITY_MODE_INHERIT)
+      m_port_manager->SetPriorityInherit(port);
+  }
 }
 
 

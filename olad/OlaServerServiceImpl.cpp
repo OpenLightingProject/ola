@@ -286,22 +286,40 @@ void OlaServerServiceImpl::SetPortPriority(
 
   bool status;
 
+  bool inherit_mode = true;
+  uint8_t value = 0;
+  if (request->priority_mode() == PRIORITY_MODE_OVERRIDE) {
+    if (request->has_priority()) {
+      inherit_mode = false;
+      value = request->priority();
+    } else {
+      OLA_INFO << "In Set Port Priority, override mode was set but the value "
+        "wasn't specified";
+      controller->SetFailed(
+          "Invalid SetPortPriority request, see logs for more info");
+      done->Run();
+      return;
+    }
+  }
+
   if (request->is_output()) {
     OutputPort *port = device->GetOutputPort(request->port_id());
     if (!port)
       return MissingPortError(controller, done);
 
-    status = m_port_manager->SetPriority(port,
-                                         request->priority_mode(),
-                                         request->priority());
+    if (inherit_mode)
+      status = m_port_manager->SetPriorityInherit(port);
+    else
+      status = m_port_manager->SetPriorityOverride(port, value);
   } else {
     InputPort *port = device->GetInputPort(request->port_id());
     if (!port)
       return MissingPortError(controller, done);
 
-    status = m_port_manager->SetPriority(port,
-                                         request->priority_mode(),
-                                         request->priority());
+    if (inherit_mode)
+      status = m_port_manager->SetPriorityInherit(port);
+    else
+      status = m_port_manager->SetPriorityOverride(port, value);
   }
 
   if (!status)

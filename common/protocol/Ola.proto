@@ -226,7 +226,6 @@ service OlaServerService {
   rpc SetUniverseName (UniverseNameRequest) returns (Ack);
   rpc SetMergeMode (MergeModeRequest) returns (Ack);
   rpc PatchPort (PatchPortRequest) returns (Ack);
-
   rpc RegisterForDmx (RegisterDmxRequest) returns (Ack);
   rpc UpdateDmxData (DmxData) returns (Ack);
   rpc GetDmx (UniverseRequest) returns (DmxData);
@@ -234,7 +233,6 @@ service OlaServerService {
   rpc ForceDiscovery (UniverseRequest) returns (Ack);
   rpc SetSourceUID (UID) returns (Ack);
   rpc RDMCommand (RDMRequest) returns (RDMResponse);
-
   rpc StreamDmxData (DmxData) returns (STREAMING_NO_RESPONSE);
 }
 

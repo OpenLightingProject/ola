@@ -72,76 +72,33 @@ bool PortManager::UnPatchPort(OutputPort *port) {
 
 
 /*
- * Set the priority settings for a port. This only applies the settings if all
- * parameters are valid.
+ * Set a port to inherit priority mode.
  * @param port the port to configure
- * @param mode the new mode
- * @param priority the new priority
- * @param pedantic don't take any action if there are errors, if this is false
- * we do the best we can and try to set a priority.
  */
-bool PortManager::SetPriority(Port *port,
-                              const string &mode_str,
-                              const string &priority_str,
-                              bool pedantic) {
-  unsigned int mode = PRIORITY_MODE_INHERIT;
-  unsigned int priority = DmxSource::PRIORITY_DEFAULT;
+bool PortManager::SetPriorityInherit(Port *port) {
+  if (port->PriorityCapability() == CAPABILITY_NONE)
+    return true;
 
-  if (port->PriorityCapability() == CAPABILITY_FULL) {
-    if (!StringToUInt(mode_str, &mode)) {
-      OLA_WARN << "Invalid priority mode: " << mode_str;
-      if (pedantic)
-        return false;
-    }
-  }
-
-  if (!StringToUInt(priority_str, &priority)) {
-    OLA_WARN << "Invalid priority value: " << priority_str;
-    if (pedantic)
-      return false;
-  }
-
-  return SetPriority(port, mode, priority, pedantic);
+  if (port->GetPriorityMode() != PRIORITY_MODE_INHERIT)
+    port->SetPriorityMode(PRIORITY_MODE_INHERIT);
+  return true;
 }
 
 
 /*
- * Set the priority settings for a port. This only applies the settings if all
- * parameters are valid.
+ * Set a port to override priority mode.
  * @param port the port to configure
- * @param mode the new mode
- * @param priority the new priority
- * @param pedantic don't take any action if there are errors, if this is false
- * we do the best we can and try to set a priority.
+ * @param value the new priority
  */
-bool PortManager::SetPriority(Port *port,
-                              unsigned int mode,
-                              unsigned int priority,
-                              bool pedantic) {
+bool PortManager::SetPriorityOverride(Port *port, uint8_t value) {
   if (port->PriorityCapability() == CAPABILITY_NONE)
     return true;
 
-  if (priority > DmxSource::PRIORITY_MAX) {
-    OLA_WARN << "Priority " << priority <<
-      " is greater than the max priority (" << DmxSource::PRIORITY_MAX << ")";
-    if (pedantic)
-      return false;
-    priority = DmxSource::PRIORITY_MAX;
-  }
+  if (port->GetPriorityMode() != PRIORITY_MODE_OVERRIDE)
+    port->SetPriorityMode(PRIORITY_MODE_OVERRIDE);
 
-  if (port->PriorityCapability() == CAPABILITY_FULL &&
-      port->GetPriorityMode() != static_cast<port_priority_mode>(mode)) {
-    if (mode >= PRIORITY_MODE_END) {
-      OLA_WARN << "Priority mode " << mode << " is out of range";
-      if (pedantic)
-        return false;
-    } else {
-      port->SetPriorityMode((port_priority_mode) mode);
-    }
-  }
-
-  if (priority != port->GetPriority())
-    port->SetPriority(priority);
+  if (port->GetPriority() != value)
+    port->SetPriority(value);
   return true;
 }
 
