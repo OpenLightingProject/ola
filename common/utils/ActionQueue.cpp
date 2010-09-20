@@ -72,4 +72,10 @@ void ActionQueue::NextAction() {
         NewSingleClosure(this, &ActionQueue::NextAction));
   }
 }
+
+Action *ActionQueue::GetAction(unsigned int i) {
+  if (i >= ActionCount())
+    return NULL;
+  return m_actions[i];
+}
 }  // ola

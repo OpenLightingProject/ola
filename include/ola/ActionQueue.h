@@ -65,6 +65,9 @@ class ActionQueue {
     void NextAction();
     bool WasSuccessful() const { return m_success; }
 
+    unsigned int ActionCount() const { return m_actions.size(); }
+    Action *GetAction(unsigned int i);
+
   private:
     SingleUseCallback1<void, ActionQueue*> *m_on_complete;
     std::vector<Action*> m_actions;
