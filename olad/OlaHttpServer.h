@@ -35,47 +35,6 @@ namespace ola {
 using std::string;
 
 
-class NewUniverseAction {
-  public:
-    NewUniverseAction(OlaCallbackClient *client,
-                      SingleUseCallback1<void, NewUniverseAction*> *on_complete,
-                      unsigned int universe,
-                      const string &name,
-                      const string &ports_to_add,
-                      const string &ports_to_remove):
-        m_client(client),
-        m_on_complete(on_complete),
-        m_universe(universe),
-        m_name(name),
-        m_ports_to_add(ports_to_add),
-        m_ports_to_remove(ports_to_remove),
-        m_expected_ports(0),
-        m_completed_ports(0),
-        m_failed_ports(0) {
-    }
-
-    unsigned int UniverseId() const { return m_universe; }
-    const string &ErrorMessage() const { return m_error; }
-    void PatchPortComplete(const string &error);
-    void SetNameComplete(const string &error);
-    bool Start();
-
-  private:
-    OlaCallbackClient *m_client;
-    SingleUseCallback1<void, NewUniverseAction*> *m_on_complete;
-    unsigned int m_universe;
-    const string m_name;
-    const string m_ports_to_add;
-    const string m_ports_to_remove;
-    unsigned int m_expected_ports;
-    unsigned int m_completed_ports;
-    unsigned int m_failed_ports;
-    string m_error;
-
-    void PatchPortsFromString(const string &ports, ola::PatchAction action);
-};
-
-
 /*
  * This is the main OLA HTTP Server
  */
@@ -142,16 +101,20 @@ class OlaHttpServer {
                        const ola::rdm::UIDSet &uids,
                        const string &error);
 
-    void NewUniverseComplete(HttpResponse *response,
-                             NewUniverseAction *action);
+    void CreateUniverseComplete(HttpResponse *response,
+                                unsigned int universe_id,
+                                bool included_name,
+                                class ActionQueue *action_queue);
 
-    void SendNewUniverseResponse(HttpResponse *response,
-                                 NewUniverseAction *action);
+    void SendCreateUniverseResponse(HttpResponse *response,
+                                    unsigned int universe_id,
+                                    bool included_name,
+                                    class ActionQueue *action_queue);
 
     void ModifyUniverseComplete(HttpResponse *response,
-                                class ActionQueue *action);
+                                class ActionQueue *action_queue);
     void SendModifyUniverseResponse(HttpResponse *response,
-                                    class ActionQueue *action);
+                                    class ActionQueue *action_queue);
 
     void HandleBoolResponse(HttpResponse *response,
                             const string &error);

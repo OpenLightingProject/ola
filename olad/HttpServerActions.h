@@ -70,13 +70,15 @@ class SetNameAction: public BaseHttpAction {
   public:
     SetNameAction(OlaCallbackClient *client,
                   unsigned int universe,
-                  const string &name):
+                  const string &name,
+                  bool is_fatal):
       BaseHttpAction(client),
       m_universe(universe),
-      m_name(name) {
+      m_name(name),
+      m_is_fatal(is_fatal) {
     }
 
-    bool IsFatal() const { return true; }
+    bool IsFatal() const { return m_is_fatal; }
 
   protected:
     bool DoAction();
@@ -84,6 +86,7 @@ class SetNameAction: public BaseHttpAction {
   private:
     unsigned int m_universe;
     string m_name;
+    bool m_is_fatal;
 
     SetNameAction(const SetNameAction&);
     SetNameAction& operator=(const SetNameAction&);

@@ -54,97 +54,6 @@ const char OlaHttpServer::K_PRIORITY_VALUE_SUFFIX[] = "_priority_value";
 const char OlaHttpServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
 
 
-
-/*
- * This class handles the actions required to create a new universe
- */
-void NewUniverseAction::PatchPortComplete(const string &error) {
-  m_completed_ports++;
-  if (!error.empty())
-    m_failed_ports++;
-
-  if (m_completed_ports != m_expected_ports)
-    // still more requests outstanding
-    return;
-
-  if (m_failed_ports == m_completed_ports) {
-    m_error = error;
-    m_on_complete->Run(this);
-    return;
-  }
-
-  if (m_name.empty()) {
-    m_on_complete->Run(this);
-    return;
-  }
-
-  // at least one port was patched, try to set the name now
-  bool r = m_client->SetUniverseName(
-    m_universe,
-    m_name,
-    NewSingleCallback(this, &NewUniverseAction::SetNameComplete));
-
-  if (!r) {
-    // set name isn't fatal
-    m_on_complete->Run(this);
-    return;
-  }
-}
-
-
-void NewUniverseAction::SetNameComplete(const string &error) {
-  // the set name command isn't fatal
-  (void) error;
-  m_on_complete->Run(this);
-}
-
-
-bool NewUniverseAction::Start() {
-  PatchPortsFromString(m_ports_to_add, PATCH);
-  PatchPortsFromString(m_ports_to_remove, UNPATCH);
-  return m_expected_ports != 0;
-}
-
-
-void NewUniverseAction::PatchPortsFromString(const string &port_ids,
-                                             ola::PatchAction action) {
-  vector<string> ports;
-  StringSplit(port_ids, ports, ",");
-  vector<string>::const_iterator iter;
-  vector<string> tokens;
-  for (iter = ports.begin(); iter != ports.end(); ++iter) {
-    if (iter->empty())
-      continue;
-
-    tokens.clear();
-    StringSplit(*iter, tokens, "-");
-
-    if (tokens.size() != 3 || (tokens[1] != "I" && tokens[1] != "O")) {
-      OLA_INFO << "Not a valid port id " << *iter;
-      continue;
-    }
-
-    unsigned int device_alias, port;
-    if (!StringToUInt(tokens[0], &device_alias) ||
-        !StringToUInt(tokens[2], &port)) {
-      OLA_INFO << "Not a valid port id " << *iter;
-      continue;
-    }
-
-    bool r = m_client->Patch(
-      device_alias,
-      port,
-      (tokens[1] == "I" ? INPUT_PORT : OUTPUT_PORT),
-      action,
-      m_universe,
-      NewSingleCallback(this, &NewUniverseAction::PatchPortComplete));
-
-    if (r)
-      m_expected_ports++;
-  }
-}
-
-
 /**
  * Create a new OLA HTTP server
  * @param export_map the ExportMap to display when /debug is called
@@ -421,26 +330,32 @@ int OlaHttpServer::JsonUIDs(const HttpRequest *request,
 int OlaHttpServer::CreateNewUniverse(const HttpRequest *request,
                                      HttpResponse *response) {
   string uni_id = request->GetPostParameter("id");
+  string name = request->GetPostParameter("name");
+
+  if (name.size() > K_UNIVERSE_NAME_LIMIT)
+    name = name.substr(K_UNIVERSE_NAME_LIMIT);
 
   unsigned int universe_id;
   if (!StringToUInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
+  ActionQueue *action_queue = new ActionQueue(
+      NewSingleCallback(this,
+                        &OlaHttpServer::CreateUniverseComplete,
+                        response,
+                        universe_id,
+                        !name.empty()));
+
+  // add patch actions here
   string add_port_ids = request->GetPostParameter("add_ports");
-  string remove_port_ids = request->GetPostParameter("remove_ports");
-  string name = request->GetPostParameter("name");
+  AddPatchActions(action_queue, add_port_ids, universe_id, PATCH);
 
-  NewUniverseAction *action = new NewUniverseAction(
-    &m_client,
-    NewSingleCallback(this, &OlaHttpServer::NewUniverseComplete, response),
-    universe_id,
-    name,
-    add_port_ids,
-    remove_port_ids);
 
-  if (!action->Start()) {
-    return m_server.ServeError(response, "Failed to patch any ports");
-  }
+  if (!name.empty())
+    action_queue->AddAction(
+        new SetNameAction(&m_client, universe_id, name, false));
+
+  action_queue->NextAction();
   return MHD_YES;
 }
 
@@ -472,7 +387,8 @@ int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
                         &OlaHttpServer::ModifyUniverseComplete,
                         response));
 
-  action_queue->AddAction(new SetNameAction(&m_client, universe_id, name));
+  action_queue->AddAction(
+      new SetNameAction(&m_client, universe_id, name, true));
 
   if (merge_mode == "LTP" || merge_mode == "HTP") {
     OlaUniverse::merge_mode mode = (
@@ -930,39 +846,49 @@ void OlaHttpServer::HandleUIDList(HttpResponse *response,
 /*
  * Schedule a callback to send the new universe response to the client
  */
-void OlaHttpServer::NewUniverseComplete(HttpResponse *response,
-                                        NewUniverseAction *action) {
+void OlaHttpServer::CreateUniverseComplete(HttpResponse *response,
+                                           unsigned int universe_id,
+                                           bool included_name,
+                                           class ActionQueue *action_queue) {
   // this is a trick to unwind the stack and return control to a method outside
   // the Action
   m_server.SelectServer()->RegisterSingleTimeout(
     0,
-    NewSingleClosure(this, &OlaHttpServer::SendNewUniverseResponse,
-                     response, action));
+    NewSingleClosure(this, &OlaHttpServer::SendCreateUniverseResponse,
+                     response, universe_id, included_name, action_queue));
 }
+
 
 
 /*
  * Send the response to a new universe request
  */
-void OlaHttpServer::SendNewUniverseResponse(HttpResponse *response,
-                                            NewUniverseAction *action) {
-  bool ok = true;
-  string error  = action->ErrorMessage();
-  if (!error.empty()) {
-    ok = false;
+void OlaHttpServer::SendCreateUniverseResponse(
+    HttpResponse *response,
+    unsigned int universe_id,
+    bool included_name,
+    class ActionQueue *action_queue) {
+  unsigned int action_count = action_queue->ActionCount();
+  if (included_name)
+    action_count--;
+  bool failed = true;
+  // it only takes one port patch to pass
+  for (unsigned int i = 0; i < action_count; i++) {
+    failed &= action_queue->GetAction(i)->Failed();
   }
 
   stringstream str;
   str << "{" << endl;
-  str << "  \"ok\": " << ok << "," << endl;
-  str << "  \"universe\": " << action->UniverseId() << "," << endl;
-  str << "  \"message\": \"" << EscapeString(error) << "\"," << endl;
+  str << "  \"ok\": " << !failed << "," << endl;
+  str << "  \"universe\": " << universe_id << "," << endl;
+  str << "  \"message\": \"" << (failed ? "Failed to patch any ports" : "") <<
+    "\"," << endl;
   str << "}";
 
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
-  delete action;
+  delete action_queue;
   delete response;
 }
 
@@ -1092,7 +1018,6 @@ void OlaHttpServer::AddPatchActions(ActionQueue *action_queue,
     return;
 
   for (iter = ports.begin(); iter != ports.end(); ++iter) {
-    OLA_INFO << "patch action for " << iter->string_id;
     action_queue->AddAction(new PatchPortAction(
       &m_client,
       iter->device_alias,
