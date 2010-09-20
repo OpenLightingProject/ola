@@ -1,3 +1,13 @@
+19/9/2010 ola-0.8.2
+  Moved the DMX Console to the new UI
+  Removed the old web UI, no more requirements for ctemplate
+  Added ACK_OVERFLOW support for RDM over ArtNet
+  Added Support for the last remaining E1.20 PIDS
+  Re-factored the Ola Client code to fix the problem of de-multiplexing
+    responses.
+  Add the OlaCallbackClient as the recommended C++ API
+  Moved the HTTP Server to using the OlaCallbackClient directly.
+
 2/9/2010 ola-0.8.1
   New web UI
   Fixed some bugs in the device shutdown code
