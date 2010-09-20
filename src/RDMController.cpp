@@ -544,6 +544,7 @@ bool RDMController::GetProxiedDeviceCount(const UID &uid,
                                           const vector<string> &args,
                                           string *error) {
   return m_api->GetProxiedDeviceCount(
+      m_universe,
       uid,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ProxiedDeviceCount),
       error);
@@ -555,6 +556,7 @@ bool RDMController::GetProxiedDevices(const UID &uid,
                                       const vector<string> &args,
                                       string *error) {
   return m_api->GetProxiedDevices(
+      m_universe,
       uid,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ProxiedDevices),
       error);
@@ -566,6 +568,7 @@ bool RDMController::GetCommStatus(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   return m_api->GetCommStatus(
+      m_universe,
       uid,
       ola::NewSingleCallback(m_handler, &ResponseHandler::CommStatus),
       error);
@@ -577,6 +580,7 @@ bool RDMController::ClearCommStatus(const UID &uid,
                                     const vector<string> &args,
                                     string *error) {
   return m_api->ClearCommStatus(
+      m_universe,
       uid,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ClearCommStatus),
       error);
@@ -593,6 +597,7 @@ bool RDMController::GetStatusMessage(const UID &uid,
     return false;
   }
   return m_api->GetStatusMessage(
+      m_universe,
       uid,
       status_type,
       ola::NewSingleCallback(m_handler,
@@ -609,6 +614,7 @@ bool RDMController::GetStatusIdDescription(const UID &uid,
   if (!CheckForUInt16(&status_id, error, args))
     return false;
   return m_api->GetStatusIdDescription(
+      m_universe,
       uid,
       status_id,
       ola::NewSingleCallback(m_handler, &ResponseHandler::StatusIdDescription),
@@ -621,6 +627,7 @@ bool RDMController::ClearStatusId(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   return m_api->ClearStatusId(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ClearStatusId),
@@ -633,6 +640,7 @@ bool RDMController::GetSubDeviceReporting(const UID &uid,
                                           const vector<string> &args,
                                           string *error) {
   return m_api->GetSubDeviceReporting(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SubDeviceReporting),
@@ -654,6 +662,7 @@ bool RDMController::SetSubDeviceReporting(const UID &uid,
     return false;
   }
   return m_api->SetSubDeviceReporting(
+      m_universe,
       uid,
       sub_device,
       status_type,
@@ -668,6 +677,7 @@ bool RDMController::GetSupportedParameters(const UID &uid,
                                            const vector<string> &args,
                                            string *error) {
   return m_api->GetSupportedParameters(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SupportedParameters),
@@ -683,6 +693,7 @@ bool RDMController::GetParameterDescription(const UID &uid,
   if (!CheckForUInt16(&pid, error, args))
     return false;
   return m_api->GetParameterDescription(
+      m_universe,
       uid,
       pid,
       ola::NewSingleCallback(m_handler,
@@ -696,6 +707,7 @@ bool RDMController::GetDeviceInfo(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   return m_api->GetDeviceInfo(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DeviceInfo),
@@ -708,6 +720,7 @@ bool RDMController::GetProductDetailIdList(const UID &uid,
                                            const vector<string> &args,
                                            string *error) {
   return m_api->GetProductDetailIdList(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ProductDetailIdList),
@@ -720,6 +733,7 @@ bool RDMController::GetDeviceModelDescription(const UID &uid,
                                               const vector<string> &args,
                                               string *error) {
   return m_api->GetDeviceModelDescription(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler,
@@ -733,6 +747,7 @@ bool RDMController::GetManufacturerLabel(const UID &uid,
                                          const vector<string> &args,
                                          string *error) {
   return m_api->GetManufacturerLabel(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ManufacturerLabel),
@@ -745,6 +760,7 @@ bool RDMController::GetDeviceLabel(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   return m_api->GetDeviceLabel(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DeviceLabel),
@@ -761,6 +777,7 @@ bool RDMController::SetDeviceLabel(const UID &uid,
     return false;
   }
   return m_api->SetDeviceLabel(
+      m_universe,
       uid,
       sub_device,
       args[0],
@@ -774,6 +791,7 @@ bool RDMController::GetFactoryDefaults(const UID &uid,
                                        const vector<string> &args,
                                        string *error) {
   return m_api->GetFactoryDefaults(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::FactoryDefaults),
@@ -786,6 +804,7 @@ bool RDMController::ResetToFactoryDefaults(const UID &uid,
                                            const vector<string> &args,
                                            string *error) {
   return m_api->ResetToFactoryDefaults(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler,
@@ -799,6 +818,7 @@ bool RDMController::GetLanguageCapabilities(const UID &uid,
                                             const vector<string> &args,
                                             string *error) {
   return m_api->GetLanguageCapabilities(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler,
@@ -812,6 +832,7 @@ bool RDMController::GetLanguage(const UID &uid,
                                 const vector<string> &args,
                                 string *error) {
   return m_api->GetLanguage(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::Language),
@@ -829,6 +850,7 @@ bool RDMController::SetLanguage(const UID &uid,
   }
   string language = args[0].substr(0, 2);
   return m_api->SetLanguage(
+      m_universe,
       uid,
       sub_device,
       language,
@@ -842,6 +864,7 @@ bool RDMController::GetSoftwareVersionLabel(const UID &uid,
                                             const vector<string> &args,
                                             string *error) {
   return m_api->GetSoftwareVersionLabel(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler,
@@ -855,6 +878,7 @@ bool RDMController::GetBootSoftwareVersion(const UID &uid,
                                            const vector<string> &args,
                                            string *error) {
   return m_api->GetBootSoftwareVersion(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::BootSoftwareVersion),
@@ -867,6 +891,7 @@ bool RDMController::GetBootSoftwareVersionLabel(const UID &uid,
                                                 const vector<string> &args,
                                                 string *error) {
   return m_api->GetBootSoftwareVersionLabel(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler,
@@ -880,6 +905,7 @@ bool RDMController::GetDMXPersonality(const UID &uid,
                                       const vector<string> &args,
                                       string *error) {
   return m_api->GetDMXPersonality(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DMXPersonality),
@@ -901,6 +927,7 @@ bool RDMController::SetDMXPersonality(const UID &uid,
     return false;
   }
   return m_api->SetDMXPersonality(
+      m_universe,
       uid,
       sub_device,
       personality,
@@ -923,6 +950,7 @@ bool RDMController::GetDMXPersonalityDescription(const UID &uid,
     return false;
   }
   return m_api->GetDMXPersonalityDescription(
+      m_universe,
       uid,
       sub_device,
       personality,
@@ -937,6 +965,7 @@ bool RDMController::GetDMXAddress(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   return m_api->GetDMXAddress(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DMXAddress),
@@ -958,6 +987,7 @@ bool RDMController::SetDMXAddress(const UID &uid,
     return false;
   }
   return m_api->SetDMXAddress(
+      m_universe,
       uid,
       sub_device,
       dmx_address,
@@ -971,6 +1001,7 @@ bool RDMController::GetSlotInfo(const UID &uid,
                                 const vector<string> &args,
                                 string *error) {
   return m_api->GetSlotInfo(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SlotInfo),
@@ -986,6 +1017,7 @@ bool RDMController::GetSlotDescription(const UID &uid,
   if (!CheckForUInt16(&slot_id, error, args))
     return false;
   return m_api->GetSlotDescription(
+      m_universe,
       uid,
       sub_device,
       slot_id,
@@ -999,6 +1031,7 @@ bool RDMController::GetSlotDefaultValues(const UID &uid,
                                          const vector<string> &args,
                                          string *error) {
   return m_api->GetSlotDefaultValues(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SlotDefaultValues),
@@ -1016,6 +1049,7 @@ bool RDMController::GetSensorDefinition(const UID &uid,
     return false;
   }
   return m_api->GetSensorDefinition(
+      m_universe,
       uid,
       sub_device,
       sensor,
@@ -1034,6 +1068,7 @@ bool RDMController::GetSensorValue(const UID &uid,
     return false;
   }
   return m_api->GetSensorValue(
+      m_universe,
       uid,
       sub_device,
       sensor,
@@ -1052,6 +1087,7 @@ bool RDMController::SetSensorValue(const UID &uid,
     return false;
   }
   return m_api->SetSensorValue(
+      m_universe,
       uid,
       sub_device,
       sensor,
@@ -1070,6 +1106,7 @@ bool RDMController::RecordSensors(const UID &uid,
     return false;
   }
   return m_api->RecordSensors(
+      m_universe,
       uid,
       sub_device,
       sensor,
@@ -1083,6 +1120,7 @@ bool RDMController::GetDeviceHours(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   return m_api->GetDeviceHours(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DeviceHours),
@@ -1100,6 +1138,7 @@ bool RDMController::SetDeviceHours(const UID &uid,
     return false;
   }
   return m_api->SetDeviceHours(
+      m_universe,
       uid,
       sub_device,
       device_hours,
@@ -1113,6 +1152,7 @@ bool RDMController::GetLampHours(const UID &uid,
                                  const vector<string> &args,
                                  string *error) {
   return m_api->GetLampHours(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::LampHours),
@@ -1130,6 +1170,7 @@ bool RDMController::SetLampHours(const UID &uid,
     return false;
   }
   return m_api->SetLampHours(
+      m_universe,
       uid,
       sub_device,
       lamp_hours,
@@ -1143,6 +1184,7 @@ bool RDMController::GetLampStrikes(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   return m_api->GetLampStrikes(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::LampStrikes),
@@ -1160,6 +1202,7 @@ bool RDMController::SetLampStrikes(const UID &uid,
     return false;
   }
   return m_api->SetLampStrikes(
+      m_universe,
       uid,
       sub_device,
       lamp_strikes,
@@ -1173,6 +1216,7 @@ bool RDMController::GetLampState(const UID &uid,
                                  const vector<string> &args,
                                  string *error) {
   return m_api->GetLampState(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler,
@@ -1191,6 +1235,7 @@ bool RDMController::SetLampState(const UID &uid,
     return false;
   }
   return m_api->SetLampState(
+      m_universe,
       uid,
       sub_device,
       state,
@@ -1204,6 +1249,7 @@ bool RDMController::GetLampMode(const UID &uid,
                                 const vector<string> &args,
                                 string *error) {
   return m_api->GetLampMode(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::LampMode),
@@ -1221,6 +1267,7 @@ bool RDMController::SetLampMode(const UID &uid,
     return false;
   }
   return m_api->SetLampMode(
+      m_universe,
       uid,
       sub_device,
       mode,
@@ -1234,6 +1281,7 @@ bool RDMController::GetDevicePowerCycles(const UID &uid,
                                          const vector<string> &args,
                                          string *error) {
   return m_api->GetDevicePowerCycles(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DevicePowerCycles),
@@ -1251,6 +1299,7 @@ bool RDMController::SetDevicePowerCycles(const UID &uid,
     return false;
   }
   return m_api->SetDevicePowerCycles(
+      m_universe,
       uid,
       sub_device,
       power_cycles,
@@ -1265,6 +1314,7 @@ bool RDMController::GetDisplayInvert(const UID &uid,
                                      const vector<string> &args,
                                      string *error) {
   return m_api->GetDisplayInvert(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DisplayInvert),
@@ -1282,6 +1332,7 @@ bool RDMController::SetDisplayInvert(const UID &uid,
     return false;
   }
   return m_api->SetDisplayInvert(
+      m_universe,
       uid,
       sub_device,
       mode,
@@ -1295,6 +1346,7 @@ bool RDMController::GetDisplayLevel(const UID &uid,
                                     const vector<string> &args,
                                     string *error) {
   return m_api->GetDisplayLevel(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DisplayLevel),
@@ -1312,6 +1364,7 @@ bool RDMController::SetDisplayLevel(const UID &uid,
     return false;
   }
   return m_api->SetDisplayLevel(
+      m_universe,
       uid,
       sub_device,
       level,
@@ -1325,6 +1378,7 @@ bool RDMController::GetPanInvert(const UID &uid,
                                  const vector<string> &args,
                                  string *error) {
   return m_api->GetPanInvert(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::PanInvert),
@@ -1342,6 +1396,7 @@ bool RDMController::SetPanInvert(const UID &uid,
     return false;
   }
   return m_api->SetPanInvert(
+      m_universe,
       uid,
       sub_device,
       mode,
@@ -1355,6 +1410,7 @@ bool RDMController::GetTiltInvert(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   return m_api->GetTiltInvert(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::TiltInvert),
@@ -1372,6 +1428,7 @@ bool RDMController::SetTiltInvert(const UID &uid,
     return false;
   }
   return m_api->SetTiltInvert(
+      m_universe,
       uid,
       sub_device,
       mode,
@@ -1385,6 +1442,7 @@ bool RDMController::GetPanTiltSwap(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   return m_api->GetPanTiltSwap(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::PanTiltSwap),
@@ -1402,6 +1460,7 @@ bool RDMController::SetPanTiltSwap(const UID &uid,
     return false;
   }
   return m_api->SetPanTiltSwap(
+      m_universe,
       uid,
       sub_device,
       mode,
@@ -1415,6 +1474,7 @@ bool RDMController::GetClock(const UID &uid,
                              const vector<string> &args,
                              string *error) {
   return m_api->GetClock(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::Clock),
@@ -1446,6 +1506,7 @@ bool RDMController::SetClock(const UID &uid,
   clock.minute = time_spec.tm_min;
   clock.second = time_spec.tm_sec;
   return m_api->SetClock(
+      m_universe,
       uid,
       sub_device,
       clock,
@@ -1459,6 +1520,7 @@ bool RDMController::GetIdentifyMode(const UID &uid,
                                     const vector<string> &args,
                                     string *error) {
   return m_api->GetIdentifyMode(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::IdentifyMode),
@@ -1476,6 +1538,7 @@ bool RDMController::IdentifyDevice(const UID &uid,
     return false;
   }
   return m_api->IdentifyDevice(
+      m_universe,
       uid,
       sub_device,
       mode,
@@ -1494,6 +1557,7 @@ bool RDMController::ResetDevice(const UID &uid,
     return false;
   }
   return m_api->ResetDevice(
+      m_universe,
       uid,
       sub_device,
       mode,
@@ -1507,6 +1571,7 @@ bool RDMController::GetPowerState(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   return m_api->GetPowerState(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::PowerState),
@@ -1524,6 +1589,7 @@ bool RDMController::SetPowerState(const UID &uid,
     return false;
   }
   return m_api->SetPowerState(
+      m_universe,
       uid,
       sub_device,
       state,
@@ -1537,6 +1603,7 @@ bool RDMController::GetSelfTest(const UID &uid,
                                 const vector<string> &args,
                                 string *error) {
   return m_api->SelfTestEnabled(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SelfTestEnabled),
@@ -1555,6 +1622,7 @@ bool RDMController::SetSelfTest(const UID &uid,
     return false;
   }
   return m_api->PerformSelfTest(
+      m_universe,
       uid,
       sub_device,
       self_test,
@@ -1574,6 +1642,7 @@ bool RDMController::GetSelfTestDescription(const UID &uid,
     return false;
   }
   return m_api->SelfTestDescription(
+      m_universe,
       uid,
       sub_device,
       self_test,
@@ -1601,6 +1670,7 @@ bool RDMController::CapturePreset(const UID &uid,
   }
 
   return m_api->CapturePreset(
+      m_universe,
       uid,
       sub_device,
       int_args[0],
@@ -1617,6 +1687,7 @@ bool RDMController::GetPresetPlayback(const UID &uid,
                                       const vector<string> &args,
                                       string *error) {
   return m_api->PresetPlaybackMode(
+      m_universe,
       uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::PresetPlaybackMode),
@@ -1643,6 +1714,7 @@ bool RDMController::SetPresetPlayback(const UID &uid,
     return false;
   }
   return m_api->SetPresetPlaybackMode(
+      m_universe,
       uid,
       sub_device,
       mode,

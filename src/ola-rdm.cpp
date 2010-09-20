@@ -311,10 +311,10 @@ int main(int argc, char *argv[]) {
   }
 
   SelectServer *ss = ola_client.GetSelectServer();
-  RDMAPI rdm_api(opts.uni, ola_client.GetClient());
+  RDMAPI rdm_api(ola_client.GetClient());
 
   ResponseHandler handler(&rdm_api, ss, reverse_pid_name_map);
-  RDMController controller(&rdm_api, &handler);
+  RDMController controller(opts.uni, &rdm_api, &handler);
 
   string error;
   vector<string> params(opts.args.size()-1);

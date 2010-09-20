@@ -70,7 +70,10 @@ class PidDescriptor {
 
 class RDMController {
   public:
-    RDMController(ola::rdm::RDMAPI *api, ResponseHandler *handler):
+    RDMController(unsigned int universe,
+                  ola::rdm::RDMAPI *api,
+                  ResponseHandler *handler):
+      m_universe(universe),
       m_api(api),
       m_handler(handler) {
       RDMController::LoadMap();
@@ -86,6 +89,7 @@ class RDMController {
 
   private:
     map<uint16_t, PidDescriptor*> m_pid_map;
+    unsigned int m_universe;
     ola::rdm::RDMAPI *m_api;
     ResponseHandler *m_handler;
 
