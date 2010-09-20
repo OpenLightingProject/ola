@@ -438,5 +438,106 @@ inline Closure<ReturnType>* NewClosure(
       arg2,
       arg3);
 }
+
+
+/*
+ * A method closure that takes four arguments
+ */
+template <typename Class,
+          typename Parent,
+          typename ReturnType,
+          typename Arg,
+          typename Arg2,
+          typename Arg3,
+          typename Arg4>
+class MethodFourArgClosure: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(Arg arg, Arg2 arg2, Arg3 arg3,
+                                        Arg4 arg4);
+
+    /*
+     * @param object the object to use in the method call
+     * @param method the method to call
+     * @param arg the argument to pass to the method
+     * @param arg2 the second argument to pass to the method
+     */
+    MethodFourArgClosure(Class *object,
+                          Method callback,
+                          Arg arg,
+                          Arg2 arg2,
+                          Arg3 arg3,
+                          Arg4 arg4):
+      Parent(),
+      m_object(object),
+      m_callback(callback),
+      m_arg(arg),
+      m_arg2(arg2),
+      m_arg3(arg3),
+      m_arg4(arg4) {}
+    ReturnType DoRun() {
+      return (m_object->*m_callback)(m_arg, m_arg2, m_arg3, m_arg4);
+    }
+
+  private:
+    Class *m_object;
+    Method m_callback;
+    Arg m_arg;
+    Arg2 m_arg2;
+    Arg3 m_arg3;
+    Arg4 m_arg4;
+};
+
+
+/*
+ * Create a new single use four-arg method closure
+ */
+template <typename Class, typename ReturnType, typename Arg, typename Arg2,
+          typename Arg3, typename Arg4>
+inline SingleUseClosure<ReturnType>* NewSingleClosure(
+    Class* object,
+    ReturnType (Class::*method)(Arg arg, Arg2 arg2, Arg3 arg3, Arg4 arg4),
+    Arg arg,
+    Arg2 arg2,
+    Arg3 arg3,
+    Arg4 arg4) {
+  return new MethodFourArgClosure<Class,
+                                   SingleUseClosure<ReturnType>,
+                                   ReturnType,
+                                   Arg,
+                                   Arg2,
+                                   Arg3,
+                                   Arg4>(
+      object,
+      method,
+      arg,
+      arg2,
+      arg3,
+      arg4);
+}
+
+
+/*
+ * Create a new three-arg method closure
+ */
+template <typename Class, typename ReturnType, typename Arg, typename Arg2,
+          typename Arg3, typename Arg4>
+inline Closure<ReturnType>* NewClosure(
+    Class* object,
+    ReturnType (Class::*method)(Arg arg, Arg2 arg2, Arg3 arg3, Arg4 arg4),
+    Arg arg, Arg2 arg2, Arg3 arg3, Arg4 arg4) {
+  return new MethodFourArgClosure<Class,
+                                   Closure<ReturnType>,
+                                   ReturnType,
+                                   Arg,
+                                   Arg2,
+                                   Arg3,
+                                   Arg4>(
+      object,
+      method,
+      arg,
+      arg2,
+      arg3,
+      arg4);
+}
 }  // ola
 #endif  // INCLUDE_OLA_CLOSURE_H_
