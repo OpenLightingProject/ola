@@ -321,9 +321,7 @@ class QueuedMessageHandler {
  */
 class RDMAPI {
   public:
-    explicit RDMAPI(unsigned int universe,
-                    class RDMAPIImplInterface *impl):
-      m_universe(universe),
+    explicit RDMAPI(class RDMAPIImplInterface *impl):
       m_impl(impl) {
     }
     ~RDMAPI() {}
@@ -333,6 +331,7 @@ class RDMAPI {
 
     // Proxy methods
     bool GetProxiedDeviceCount(
+        unsigned int universe,
         const UID &uid,
         SingleUseCallback3<void,
                            const ResponseStatus&,
@@ -341,6 +340,7 @@ class RDMAPI {
         string *error);
 
     bool GetProxiedDevices(
+        unsigned int universe,
         const UID &uid,
         SingleUseCallback2<void,
                            const ResponseStatus&,
@@ -349,6 +349,7 @@ class RDMAPI {
 
     // Network Managment Methods
     bool GetCommStatus(
+        unsigned int universe,
         const UID &uid,
         SingleUseCallback4<void,
                            const ResponseStatus&,
@@ -358,6 +359,7 @@ class RDMAPI {
         string *error);
 
     bool ClearCommStatus(
+        unsigned int universe,
         const UID &uid,
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
@@ -370,6 +372,7 @@ class RDMAPI {
     */
 
     bool GetStatusMessage(
+        unsigned int universe,
         const UID &uid,
         rdm_status_type status_type,
         SingleUseCallback2<void,
@@ -378,6 +381,7 @@ class RDMAPI {
         string *error);
 
     bool GetStatusIdDescription(
+        unsigned int universe,
         const UID &uid,
         uint16_t status_id,
         SingleUseCallback2<void, const ResponseStatus&,
@@ -385,12 +389,14 @@ class RDMAPI {
         string *error);
 
     bool ClearStatusId(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 
     bool GetSubDeviceReporting(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -399,6 +405,7 @@ class RDMAPI {
         string *error);
 
     bool SetSubDeviceReporting(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         rdm_status_type status_type,
@@ -407,6 +414,7 @@ class RDMAPI {
 
     // Information Methods
     bool GetSupportedParameters(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -415,6 +423,7 @@ class RDMAPI {
         string *error);
 
     bool GetParameterDescription(
+        unsigned int universe,
         const UID &uid,
         uint16_t pid,
         SingleUseCallback2<void,
@@ -423,6 +432,7 @@ class RDMAPI {
         string *error);
 
     bool GetDeviceInfo(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -431,6 +441,7 @@ class RDMAPI {
         string *error);
 
     bool GetProductDetailIdList(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -439,6 +450,7 @@ class RDMAPI {
         string *error);
 
     bool GetDeviceModelDescription(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -447,6 +459,7 @@ class RDMAPI {
         string *error);
 
     bool GetManufacturerLabel(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -455,6 +468,7 @@ class RDMAPI {
         string *error);
 
     bool GetDeviceLabel(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -463,6 +477,7 @@ class RDMAPI {
         string *error);
 
     bool SetDeviceLabel(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         const string &label,
@@ -470,6 +485,7 @@ class RDMAPI {
         string *error);
 
     bool GetFactoryDefaults(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -478,12 +494,14 @@ class RDMAPI {
         string *error);
 
     bool ResetToFactoryDefaults(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 
     bool GetLanguageCapabilities(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -492,6 +510,7 @@ class RDMAPI {
         string *error);
 
     bool GetLanguage(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -500,6 +519,7 @@ class RDMAPI {
         string *error);
 
     bool SetLanguage(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         const string &language,
@@ -507,6 +527,7 @@ class RDMAPI {
         string *error);
 
     bool GetSoftwareVersionLabel(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -515,6 +536,7 @@ class RDMAPI {
         string *error);
 
     bool GetBootSoftwareVersion(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -523,6 +545,7 @@ class RDMAPI {
         string *error);
 
     bool GetBootSoftwareVersionLabel(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -531,6 +554,7 @@ class RDMAPI {
         string *error);
 
     bool GetDMXPersonality(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback3<void,
@@ -540,6 +564,7 @@ class RDMAPI {
         string *error);
 
     bool SetDMXPersonality(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t personality,
@@ -547,6 +572,7 @@ class RDMAPI {
         string *error);
 
     bool GetDMXPersonalityDescription(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t personality,
@@ -558,6 +584,7 @@ class RDMAPI {
         string *error);
 
     bool GetDMXAddress(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -566,6 +593,7 @@ class RDMAPI {
         string *error);
 
     bool SetDMXAddress(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint16_t start_address,
@@ -573,6 +601,7 @@ class RDMAPI {
         string *error);
 
     bool GetSlotInfo(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -581,6 +610,7 @@ class RDMAPI {
         string *error);
 
     bool GetSlotDescription(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint16_t slot_offset,
@@ -591,6 +621,7 @@ class RDMAPI {
         string *error);
 
     bool GetSlotDefaultValues(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -599,6 +630,7 @@ class RDMAPI {
         string *error);
 
     bool GetSensorDefinition(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t sensor_number,
@@ -608,6 +640,7 @@ class RDMAPI {
         string *error);
 
     bool GetSensorValue(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t sensor_number,
@@ -617,6 +650,7 @@ class RDMAPI {
         string *error);
 
     bool SetSensorValue(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t sensor_number,
@@ -626,6 +660,7 @@ class RDMAPI {
         string *error);
 
     bool RecordSensors(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t sensor_number,
@@ -633,12 +668,14 @@ class RDMAPI {
         string *error);
 
     bool GetDeviceHours(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
         string *error);
 
     bool SetDeviceHours(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t device_hours,
@@ -646,12 +683,14 @@ class RDMAPI {
         string *error);
 
     bool GetLampHours(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
         string *error);
 
     bool SetLampHours(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t lamp_hours,
@@ -659,12 +698,14 @@ class RDMAPI {
         string *error);
 
     bool GetLampStrikes(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
         string *error);
 
     bool SetLampStrikes(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t lamp_strikes,
@@ -672,12 +713,14 @@ class RDMAPI {
         string *error);
 
     bool GetLampState(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
         string *error);
 
     bool SetLampState(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t lamp_state,
@@ -685,12 +728,14 @@ class RDMAPI {
         string *error);
 
     bool GetLampMode(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
         string *error);
 
     bool SetLampMode(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t lamp_mode,
@@ -698,12 +743,14 @@ class RDMAPI {
         string *error);
 
     bool GetDevicePowerCycles(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
         string *error);
 
     bool SetDevicePowerCycles(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t power_cycles,
@@ -711,12 +758,14 @@ class RDMAPI {
         string *error);
 
     bool GetDisplayInvert(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
         string *error);
 
     bool SetDisplayInvert(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t display_invert,
@@ -724,12 +773,14 @@ class RDMAPI {
         string *error);
 
     bool GetDisplayLevel(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
         string *error);
 
     bool SetDisplayLevel(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t display_level,
@@ -737,12 +788,14 @@ class RDMAPI {
         string *error);
 
     bool GetPanInvert(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
         string *error);
 
     bool SetPanInvert(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t invert,
@@ -750,12 +803,14 @@ class RDMAPI {
         string *error);
 
     bool GetTiltInvert(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
         string *error);
 
     bool SetTiltInvert(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t invert,
@@ -763,12 +818,14 @@ class RDMAPI {
         string *error);
 
     bool GetPanTiltSwap(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
         string *error);
 
     bool SetPanTiltSwap(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t swap,
@@ -776,6 +833,7 @@ class RDMAPI {
         string *error);
 
     bool GetClock(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void,
@@ -784,6 +842,7 @@ class RDMAPI {
         string *error);
 
     bool SetClock(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         const ClockValue &clock,
@@ -791,12 +850,14 @@ class RDMAPI {
         string *error);
 
     bool GetIdentifyMode(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
         string *error);
 
     bool IdentifyDevice(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         bool mode,
@@ -804,6 +865,7 @@ class RDMAPI {
         string *error);
 
     bool ResetDevice(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         bool warm_reset,
@@ -811,12 +873,14 @@ class RDMAPI {
         string *error);
 
     bool GetPowerState(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
         string *error);
 
     bool SetPowerState(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         rdm_power_state power_state,
@@ -824,12 +888,14 @@ class RDMAPI {
         string *error);
 
     bool SelfTestEnabled(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
         string *error);
 
     bool PerformSelfTest(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t self_test_number,
@@ -837,6 +903,7 @@ class RDMAPI {
         string *error);
 
     bool SelfTestDescription(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t self_test_number,
@@ -847,6 +914,7 @@ class RDMAPI {
         string *error);
 
     bool CapturePreset(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint16_t scene,
@@ -857,6 +925,7 @@ class RDMAPI {
         string *error);
 
     bool PresetPlaybackMode(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback3<void,
@@ -866,6 +935,7 @@ class RDMAPI {
         string *error);
 
     bool SetPresetPlaybackMode(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint16_t playback_mode,
@@ -1087,13 +1157,13 @@ class RDMAPI {
         const string &data);
 
   private:
-    unsigned int m_universe;
     class RDMAPIImplInterface *m_impl;
     std::map<UID, uint8_t> m_outstanding_messages;
 
     enum {LABEL_SIZE = 32};
 
     bool GenericGetU8(
+        unsigned int universe,
         const UID &uid,
         uint8_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -1101,6 +1171,7 @@ class RDMAPI {
         string *error);
 
     bool GenericSetU8(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint8_t value,
@@ -1109,6 +1180,7 @@ class RDMAPI {
         string *error);
 
     bool GenericGetU32(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
@@ -1116,6 +1188,7 @@ class RDMAPI {
         string *error);
 
     bool GenericSetU32(
+        unsigned int universe,
         const UID &uid,
         uint16_t sub_device,
         uint32_t value,

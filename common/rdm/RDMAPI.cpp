@@ -93,6 +93,7 @@ uint8_t RDMAPI::OutstandingMessagesCount(const UID &uid) {
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::GetProxiedDeviceCount(
+    unsigned int universe,
     const UID &uid,
     SingleUseCallback3<void,
                        const ResponseStatus&,
@@ -110,7 +111,7 @@ bool RDMAPI::GetProxiedDeviceCount(
     callback);
   return CheckReturnStatus(
       m_impl->RDMGet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      ROOT_RDM_DEVICE,
                      PID_PROXIED_DEVICE_COUNT),
@@ -126,6 +127,7 @@ bool RDMAPI::GetProxiedDeviceCount(
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::GetProxiedDevices(
+    unsigned int universe,
     const UID &uid,
     SingleUseCallback2<void,
                        const ResponseStatus&,
@@ -142,7 +144,7 @@ bool RDMAPI::GetProxiedDevices(
     callback);
   return CheckReturnStatus(
       m_impl->RDMGet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      ROOT_RDM_DEVICE,
                      PID_PROXIED_DEVICES),
@@ -158,6 +160,7 @@ bool RDMAPI::GetProxiedDevices(
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::GetCommStatus(
+    unsigned int universe,
     const UID &uid,
     SingleUseCallback4<void,
                        const ResponseStatus&,
@@ -176,7 +179,7 @@ bool RDMAPI::GetCommStatus(
     callback);
   return CheckReturnStatus(
       m_impl->RDMGet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      ROOT_RDM_DEVICE,
                      PID_COMMS_STATUS),
@@ -192,6 +195,7 @@ bool RDMAPI::GetCommStatus(
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::ClearCommStatus(
+    unsigned int universe,
     const UID &uid,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
     string *error) {
@@ -203,7 +207,7 @@ bool RDMAPI::ClearCommStatus(
     callback);
   return CheckReturnStatus(
       m_impl->RDMSet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      ROOT_RDM_DEVICE,
                      PID_COMMS_STATUS),
@@ -220,11 +224,12 @@ bool RDMAPI::ClearCommStatus(
  * @return false if an error occurred, true otherwise
  */
 bool RDMAPI::GetStatusMessage(
-  const UID &uid,
-  rdm_status_type status_type,
-  SingleUseCallback2<void,
-                     const ResponseStatus&,
-                     const vector<StatusMessage>&> *callback,
+    unsigned int universe,
+    const UID &uid,
+    rdm_status_type status_type,
+    SingleUseCallback2<void,
+                       const ResponseStatus&,
+                       const vector<StatusMessage>&> *callback,
   string *error) {
   if (CheckCallback(error, callback))
     return false;
@@ -238,7 +243,7 @@ bool RDMAPI::GetStatusMessage(
   uint8_t type = static_cast<uint8_t>(status_type);
   return CheckReturnStatus(
       m_impl->RDMGet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      ROOT_RDM_DEVICE,
                      PID_STATUS_MESSAGES,
@@ -256,6 +261,7 @@ bool RDMAPI::GetStatusMessage(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetStatusIdDescription(
+    unsigned int universe,
     const UID &uid,
     uint16_t status_id,
     SingleUseCallback2<void, const ResponseStatus&, const string&> *callback,
@@ -272,7 +278,7 @@ bool RDMAPI::GetStatusIdDescription(
   status_id = HostToNetwork(status_id);
   return CheckReturnStatus(
       m_impl->RDMGet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      ROOT_RDM_DEVICE,
                      PID_STATUS_ID_DESCRIPTION,
@@ -291,6 +297,7 @@ bool RDMAPI::GetStatusIdDescription(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::ClearStatusId(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
@@ -306,7 +313,7 @@ bool RDMAPI::ClearStatusId(
     callback);
   return CheckReturnStatus(
       m_impl->RDMSet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      sub_device,
                      PID_CLEAR_STATUS_ID),
@@ -323,6 +330,7 @@ bool RDMAPI::ClearStatusId(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSubDeviceReporting(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -342,7 +350,7 @@ bool RDMAPI::GetSubDeviceReporting(
     callback);
   return CheckReturnStatus(
       m_impl->RDMGet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      sub_device,
                      PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD),
@@ -360,6 +368,7 @@ bool RDMAPI::GetSubDeviceReporting(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetSubDeviceReporting(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     rdm_status_type status_type,
@@ -379,7 +388,7 @@ bool RDMAPI::SetSubDeviceReporting(
   uint8_t type = static_cast<uint8_t>(status_type);
   return CheckReturnStatus(
       m_impl->RDMSet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      ROOT_RDM_DEVICE,
                      PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD,
@@ -398,6 +407,7 @@ bool RDMAPI::SetSubDeviceReporting(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSupportedParameters(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -416,7 +426,7 @@ bool RDMAPI::GetSupportedParameters(
     &RDMAPI::_HandleGetSupportedParameters,
     callback);
   return m_impl->RDMGet(cb,
-                        m_universe,
+                        universe,
                         uid,
                         sub_device,
                         PID_SUPPORTED_PARAMETERS);
@@ -432,6 +442,7 @@ bool RDMAPI::GetSupportedParameters(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetParameterDescription(
+    unsigned int universe,
     const UID &uid,
     uint16_t pid,
     SingleUseCallback2<void,
@@ -450,7 +461,7 @@ bool RDMAPI::GetParameterDescription(
   pid = HostToNetwork(pid);
   return CheckReturnStatus(
       m_impl->RDMGet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      ROOT_RDM_DEVICE,
                      PID_PARAMETER_DESCRIPTION,
@@ -469,6 +480,7 @@ bool RDMAPI::GetParameterDescription(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDeviceInfo(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -488,7 +500,7 @@ bool RDMAPI::GetDeviceInfo(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DEVICE_INFO),
@@ -505,6 +517,7 @@ bool RDMAPI::GetDeviceInfo(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetProductDetailIdList(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -524,7 +537,7 @@ bool RDMAPI::GetProductDetailIdList(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_PRODUCT_DETAIL_ID_LIST),
@@ -541,6 +554,7 @@ bool RDMAPI::GetProductDetailIdList(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDeviceModelDescription(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -560,7 +574,7 @@ bool RDMAPI::GetDeviceModelDescription(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DEVICE_MODEL_DESCRIPTION),
@@ -577,6 +591,7 @@ bool RDMAPI::GetDeviceModelDescription(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetManufacturerLabel(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -596,7 +611,7 @@ bool RDMAPI::GetManufacturerLabel(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_MANUFACTURER_LABEL),
@@ -613,6 +628,7 @@ bool RDMAPI::GetManufacturerLabel(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDeviceLabel(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -632,7 +648,7 @@ bool RDMAPI::GetDeviceLabel(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DEVICE_LABEL),
@@ -649,6 +665,7 @@ bool RDMAPI::GetDeviceLabel(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetDeviceLabel(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     const string &label,
@@ -666,7 +683,7 @@ bool RDMAPI::SetDeviceLabel(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DEVICE_LABEL,
@@ -685,6 +702,7 @@ bool RDMAPI::SetDeviceLabel(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetFactoryDefaults(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -704,7 +722,7 @@ bool RDMAPI::GetFactoryDefaults(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_FACTORY_DEFAULTS),
@@ -721,6 +739,7 @@ bool RDMAPI::GetFactoryDefaults(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::ResetToFactoryDefaults(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback1<void, const ResponseStatus&> *callback,
@@ -738,7 +757,7 @@ bool RDMAPI::ResetToFactoryDefaults(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_FACTORY_DEFAULTS),
@@ -755,6 +774,7 @@ bool RDMAPI::ResetToFactoryDefaults(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetLanguageCapabilities(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -774,7 +794,7 @@ bool RDMAPI::GetLanguageCapabilities(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_LANGUAGE_CAPABILITIES),
@@ -791,6 +811,7 @@ bool RDMAPI::GetLanguageCapabilities(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetLanguage(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -810,7 +831,7 @@ bool RDMAPI::GetLanguage(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_LANGUAGE),
@@ -828,6 +849,7 @@ bool RDMAPI::GetLanguage(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetLanguage(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     const string &language,
@@ -852,7 +874,7 @@ bool RDMAPI::SetLanguage(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_LANGUAGE,
@@ -871,6 +893,7 @@ bool RDMAPI::SetLanguage(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSoftwareVersionLabel(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -890,7 +913,7 @@ bool RDMAPI::GetSoftwareVersionLabel(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_SOFTWARE_VERSION_LABEL),
@@ -907,6 +930,7 @@ bool RDMAPI::GetSoftwareVersionLabel(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetBootSoftwareVersion(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -926,7 +950,7 @@ bool RDMAPI::GetBootSoftwareVersion(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_BOOT_SOFTWARE_VERSION_ID),
@@ -943,6 +967,7 @@ bool RDMAPI::GetBootSoftwareVersion(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetBootSoftwareVersionLabel(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -962,7 +987,7 @@ bool RDMAPI::GetBootSoftwareVersionLabel(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_BOOT_SOFTWARE_VERSION_LABEL),
@@ -979,6 +1004,7 @@ bool RDMAPI::GetBootSoftwareVersionLabel(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDMXPersonality(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback3<void,
@@ -999,7 +1025,7 @@ bool RDMAPI::GetDMXPersonality(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DMX_PERSONALITY),
@@ -1017,6 +1043,7 @@ bool RDMAPI::GetDMXPersonality(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetDMXPersonality(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t personality,
@@ -1035,7 +1062,7 @@ bool RDMAPI::SetDMXPersonality(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DMX_PERSONALITY,
@@ -1055,6 +1082,7 @@ bool RDMAPI::SetDMXPersonality(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDMXPersonalityDescription(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t personality,
@@ -1077,7 +1105,7 @@ bool RDMAPI::GetDMXPersonalityDescription(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DMX_PERSONALITY_DESCRIPTION,
@@ -1096,6 +1124,7 @@ bool RDMAPI::GetDMXPersonalityDescription(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetDMXAddress(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -1115,7 +1144,7 @@ bool RDMAPI::GetDMXAddress(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DMX_START_ADDRESS),
@@ -1133,6 +1162,7 @@ bool RDMAPI::GetDMXAddress(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetDMXAddress(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint16_t start_address,
@@ -1150,7 +1180,7 @@ bool RDMAPI::SetDMXAddress(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DMX_START_ADDRESS,
@@ -1169,6 +1199,7 @@ bool RDMAPI::SetDMXAddress(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSlotInfo(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -1188,7 +1219,7 @@ bool RDMAPI::GetSlotInfo(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_SLOT_INFO),
@@ -1206,6 +1237,7 @@ bool RDMAPI::GetSlotInfo(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSlotDescription(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint16_t slot_offset,
@@ -1228,7 +1260,7 @@ bool RDMAPI::GetSlotDescription(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_SLOT_DESCRIPTION,
@@ -1247,6 +1279,7 @@ bool RDMAPI::GetSlotDescription(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSlotDefaultValues(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -1266,7 +1299,7 @@ bool RDMAPI::GetSlotDefaultValues(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_DEFAULT_SLOT_VALUE),
@@ -1284,6 +1317,7 @@ bool RDMAPI::GetSlotDefaultValues(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSensorDefinition(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t sensor_number,
@@ -1304,7 +1338,7 @@ bool RDMAPI::GetSensorDefinition(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_SENSOR_DEFINITION,
@@ -1324,6 +1358,7 @@ bool RDMAPI::GetSensorDefinition(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetSensorValue(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t sensor_number,
@@ -1344,7 +1379,7 @@ bool RDMAPI::GetSensorValue(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_SENSOR_VALUE,
@@ -1364,6 +1399,7 @@ bool RDMAPI::GetSensorValue(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::SetSensorValue(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t sensor_number,
@@ -1382,7 +1418,7 @@ bool RDMAPI::SetSensorValue(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_SENSOR_VALUE,
@@ -1402,6 +1438,7 @@ bool RDMAPI::SetSensorValue(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::RecordSensors(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t sensor_number,
@@ -1418,7 +1455,7 @@ bool RDMAPI::RecordSensors(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_RECORD_SENSORS,
@@ -1437,6 +1474,7 @@ bool RDMAPI::RecordSensors(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetDeviceHours(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
@@ -1444,6 +1482,7 @@ bool RDMAPI::GetDeviceHours(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU32(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1462,6 +1501,7 @@ bool RDMAPI::GetDeviceHours(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetDeviceHours(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint32_t device_hours,
@@ -1470,6 +1510,7 @@ bool RDMAPI::SetDeviceHours(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU32(
+      universe,
       uid,
       sub_device,
       device_hours,
@@ -1488,6 +1529,7 @@ bool RDMAPI::SetDeviceHours(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetLampHours(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
@@ -1495,6 +1537,7 @@ bool RDMAPI::GetLampHours(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU32(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1513,6 +1556,7 @@ bool RDMAPI::GetLampHours(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetLampHours(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint32_t lamp_hours,
@@ -1521,6 +1565,7 @@ bool RDMAPI::SetLampHours(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU32(
+      universe,
       uid,
       sub_device,
       lamp_hours,
@@ -1539,6 +1584,7 @@ bool RDMAPI::SetLampHours(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetLampStrikes(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
@@ -1546,6 +1592,7 @@ bool RDMAPI::GetLampStrikes(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU32(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1564,6 +1611,7 @@ bool RDMAPI::GetLampStrikes(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetLampStrikes(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint32_t lamp_strikes,
@@ -1572,6 +1620,7 @@ bool RDMAPI::SetLampStrikes(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU32(
+      universe,
       uid,
       sub_device,
       lamp_strikes,
@@ -1590,6 +1639,7 @@ bool RDMAPI::SetLampStrikes(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetLampState(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -1597,6 +1647,7 @@ bool RDMAPI::GetLampState(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU8(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1615,6 +1666,7 @@ bool RDMAPI::GetLampState(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetLampState(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t lamp_state,
@@ -1623,6 +1675,7 @@ bool RDMAPI::SetLampState(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU8(
+      universe,
       uid,
       sub_device,
       lamp_state,
@@ -1641,6 +1694,7 @@ bool RDMAPI::SetLampState(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetLampMode(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -1648,6 +1702,7 @@ bool RDMAPI::GetLampMode(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU8(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1666,6 +1721,7 @@ bool RDMAPI::GetLampMode(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetLampMode(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t lamp_mode,
@@ -1674,6 +1730,7 @@ bool RDMAPI::SetLampMode(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU8(
+      universe,
       uid,
       sub_device,
       lamp_mode,
@@ -1692,6 +1749,7 @@ bool RDMAPI::SetLampMode(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetDevicePowerCycles(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
@@ -1699,6 +1757,7 @@ bool RDMAPI::GetDevicePowerCycles(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU32(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1717,6 +1776,7 @@ bool RDMAPI::GetDevicePowerCycles(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetDevicePowerCycles(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint32_t power_cycles,
@@ -1725,6 +1785,7 @@ bool RDMAPI::SetDevicePowerCycles(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU32(
+      universe,
       uid,
       sub_device,
       power_cycles,
@@ -1743,6 +1804,7 @@ bool RDMAPI::SetDevicePowerCycles(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetDisplayInvert(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -1750,6 +1812,7 @@ bool RDMAPI::GetDisplayInvert(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU8(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1768,6 +1831,7 @@ bool RDMAPI::GetDisplayInvert(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetDisplayInvert(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t display_invert,
@@ -1776,6 +1840,7 @@ bool RDMAPI::SetDisplayInvert(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU8(
+      universe,
       uid,
       sub_device,
       display_invert,
@@ -1794,6 +1859,7 @@ bool RDMAPI::SetDisplayInvert(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetDisplayLevel(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -1801,6 +1867,7 @@ bool RDMAPI::GetDisplayLevel(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU8(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1819,6 +1886,7 @@ bool RDMAPI::GetDisplayLevel(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetDisplayLevel(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t display_level,
@@ -1827,6 +1895,7 @@ bool RDMAPI::SetDisplayLevel(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU8(
+      universe,
       uid,
       sub_device,
       display_level,
@@ -1845,6 +1914,7 @@ bool RDMAPI::SetDisplayLevel(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetPanInvert(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -1852,6 +1922,7 @@ bool RDMAPI::GetPanInvert(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU8(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1870,6 +1941,7 @@ bool RDMAPI::GetPanInvert(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetPanInvert(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t invert,
@@ -1878,6 +1950,7 @@ bool RDMAPI::SetPanInvert(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU8(
+      universe,
       uid,
       sub_device,
       invert,
@@ -1896,6 +1969,7 @@ bool RDMAPI::SetPanInvert(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetTiltInvert(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -1903,6 +1977,7 @@ bool RDMAPI::GetTiltInvert(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU8(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1921,6 +1996,7 @@ bool RDMAPI::GetTiltInvert(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetTiltInvert(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t invert,
@@ -1929,6 +2005,7 @@ bool RDMAPI::SetTiltInvert(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU8(
+      universe,
       uid,
       sub_device,
       invert,
@@ -1947,6 +2024,7 @@ bool RDMAPI::SetTiltInvert(
 * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetPanTiltSwap(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -1954,6 +2032,7 @@ bool RDMAPI::GetPanTiltSwap(
   if (CheckCallback(error, callback))
     return false;
   return GenericGetU8(
+      universe,
       uid,
       sub_device,
       callback,
@@ -1972,6 +2051,7 @@ bool RDMAPI::GetPanTiltSwap(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetPanTiltSwap(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t swap,
@@ -1980,6 +2060,7 @@ bool RDMAPI::SetPanTiltSwap(
   if (CheckCallback(error, callback))
     return false;
   return GenericSetU8(
+      universe,
       uid,
       sub_device,
       swap,
@@ -1998,6 +2079,7 @@ bool RDMAPI::SetPanTiltSwap(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetClock(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void,
@@ -2012,7 +2094,7 @@ bool RDMAPI::GetClock(
     callback);
   return CheckReturnStatus(
       m_impl->RDMGet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      sub_device,
                      PID_REAL_TIME_CLOCK),
@@ -2030,6 +2112,7 @@ bool RDMAPI::GetClock(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetClock(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     const ClockValue &clock,
@@ -2047,7 +2130,7 @@ bool RDMAPI::SetClock(
     callback);
   return CheckReturnStatus(
       m_impl->RDMSet(cb,
-                     m_universe,
+                     universe,
                      uid,
                      sub_device,
                      PID_REAL_TIME_CLOCK,
@@ -2066,6 +2149,7 @@ bool RDMAPI::SetClock(
  * @return true if the request is sent correctly, false otherwise
  */
 bool RDMAPI::GetIdentifyMode(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
@@ -2083,7 +2167,7 @@ bool RDMAPI::GetIdentifyMode(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_IDENTIFY_DEVICE),
@@ -2101,6 +2185,7 @@ bool RDMAPI::GetIdentifyMode(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::IdentifyDevice(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     bool mode,
@@ -2118,7 +2203,7 @@ bool RDMAPI::IdentifyDevice(
   uint8_t option = mode;
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_IDENTIFY_DEVICE,
@@ -2138,6 +2223,7 @@ bool RDMAPI::IdentifyDevice(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::ResetDevice(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     bool warm_reset,
@@ -2155,7 +2241,7 @@ bool RDMAPI::ResetDevice(
   uint8_t option = warm_reset ? 0x01 : 0xff;
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_IDENTIFY_DEVICE,
@@ -2174,6 +2260,7 @@ bool RDMAPI::ResetDevice(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::GetPowerState(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -2191,7 +2278,7 @@ bool RDMAPI::GetPowerState(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_POWER_STATE),
@@ -2209,6 +2296,7 @@ bool RDMAPI::GetPowerState(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetPowerState(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     rdm_power_state power_state,
@@ -2226,7 +2314,7 @@ bool RDMAPI::SetPowerState(
   uint8_t option = static_cast<uint8_t>(power_state);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_POWER_STATE,
@@ -2245,6 +2333,7 @@ bool RDMAPI::SetPowerState(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SelfTestEnabled(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, bool> *callback,
@@ -2262,7 +2351,7 @@ bool RDMAPI::SelfTestEnabled(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_PERFORM_SELFTEST),
@@ -2280,6 +2369,7 @@ bool RDMAPI::SelfTestEnabled(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::PerformSelfTest(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t self_test_number,
@@ -2296,7 +2386,7 @@ bool RDMAPI::PerformSelfTest(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_PERFORM_SELFTEST,
@@ -2317,6 +2407,7 @@ bool RDMAPI::PerformSelfTest(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SelfTestDescription(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t self_test_number,
@@ -2336,7 +2427,7 @@ bool RDMAPI::SelfTestDescription(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_SELF_TEST_DESCRIPTION,
@@ -2361,6 +2452,7 @@ bool RDMAPI::SelfTestDescription(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::CapturePreset(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint16_t scene,
@@ -2393,7 +2485,7 @@ bool RDMAPI::CapturePreset(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_CAPTURE_PRESET,
@@ -2412,6 +2504,7 @@ bool RDMAPI::CapturePreset(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::PresetPlaybackMode(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback3<void,
@@ -2432,7 +2525,7 @@ bool RDMAPI::PresetPlaybackMode(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_PRESET_PLAYBACK,
@@ -2454,6 +2547,7 @@ bool RDMAPI::PresetPlaybackMode(
  * @return true if the request is sent correctly, false otherwise
 */
 bool RDMAPI::SetPresetPlaybackMode(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint16_t playback_mode,
@@ -2481,7 +2575,7 @@ bool RDMAPI::SetPresetPlaybackMode(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    PID_PRESET_PLAYBACK,
@@ -3426,6 +3520,7 @@ void RDMAPI::_HandlePlaybackMode(
 
 // get a 8 bit value
 bool RDMAPI::GenericGetU8(
+    unsigned int universe,
     const UID &uid,
     uint8_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint8_t> *callback,
@@ -3442,7 +3537,7 @@ bool RDMAPI::GenericGetU8(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    pid),
@@ -3452,6 +3547,7 @@ bool RDMAPI::GenericGetU8(
 
 // set an 8 bit value
 bool RDMAPI::GenericSetU8(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint8_t value,
@@ -3467,7 +3563,7 @@ bool RDMAPI::GenericSetU8(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    pid,
@@ -3479,6 +3575,7 @@ bool RDMAPI::GenericSetU8(
 
 // get a 32 bit value
 bool RDMAPI::GenericGetU32(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     SingleUseCallback2<void, const ResponseStatus&, uint32_t> *callback,
@@ -3495,7 +3592,7 @@ bool RDMAPI::GenericGetU32(
     callback);
   return CheckReturnStatus(
     m_impl->RDMGet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    pid),
@@ -3505,6 +3602,7 @@ bool RDMAPI::GenericGetU32(
 
 // set a 32 bit value
 bool RDMAPI::GenericSetU32(
+    unsigned int universe,
     const UID &uid,
     uint16_t sub_device,
     uint32_t value,
@@ -3521,7 +3619,7 @@ bool RDMAPI::GenericSetU32(
     callback);
   return CheckReturnStatus(
     m_impl->RDMSet(cb,
-                   m_universe,
+                   universe,
                    uid,
                    sub_device,
                    pid,
