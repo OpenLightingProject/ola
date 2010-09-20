@@ -84,11 +84,6 @@ class OlaHttpServer {
     OlaHttpServer(ExportMap *export_map,
                   ola::network::ConnectedSocket *client_socket,
                   class OlaServer *ola_server,
-
-                  class UniverseStore *universe_store,
-                  class DeviceManager *device_manager,
-                  class PortManager *port_manager,
-
                   unsigned int port,
                   bool enable_quit,
                   const string &data_dir,
@@ -153,11 +148,26 @@ class OlaHttpServer {
     void SendNewUniverseResponse(HttpResponse *response,
                                  NewUniverseAction *action);
 
+    void ModifyUniverseComplete(HttpResponse *response,
+                                class ActionQueue *action);
+    void SendModifyUniverseResponse(HttpResponse *response,
+                                    class ActionQueue *action);
 
     void HandleBoolResponse(HttpResponse *response,
                             const string &error);
 
   private:
+    class HttpServer m_server;
+    ExportMap *m_export_map;
+    class ola::network::ConnectedSocket *m_client_socket;
+    ola::OlaCallbackClient m_client;
+
+    class OlaServer *m_ola_server;
+    bool m_enable_quit;
+    TimeStamp m_start_time;
+    ola::network::Interface m_interface;
+    time_t m_start_time_t;
+
     OlaHttpServer(const OlaHttpServer&);
     OlaHttpServer& operator=(const OlaHttpServer&);
 
@@ -166,41 +176,34 @@ class OlaHttpServer {
                          HttpResponse*));
     void RegisterFile(const string &file, const string &content_type);
 
-    template <class PortClass>
-    void UpdatePortPriorites(const HttpRequest *request,
-                             vector<PortClass*> *ports);
-
     void PortToJson(const class OlaDevice &device,
                     const class OlaPort &port,
                     stringstream *str,
                     bool is_output);
-    bool UpdatePortsForUniverse(unsigned int universe_id,
-                                const HttpRequest *request);
 
-    template <class PortClass>
-    void UpdatePortForUniverse(unsigned int universe_id,
-                               PortClass *port,
-                               const vector<string> &ids_to_add,
-                               const vector<string> &ids_to_remove);
+    void AddPatchActions(ActionQueue *action_queue,
+                         const string port_id_string,
+                         unsigned int universe,
+                         PatchAction port_action);
 
-    class HttpServer m_server;
-    ExportMap *m_export_map;
-    class ola::network::ConnectedSocket *m_client_socket;
-    ola::OlaCallbackClient m_client;
+    void AddPriorityActions(ActionQueue *action_queue,
+                            const HttpRequest *request);
 
-    class OlaServer *m_ola_server;
-    UniverseStore *m_universe_store;
-    DeviceManager *m_device_manager;
-    class PortManager *m_port_manager;
-    bool m_enable_quit;
-    TimeStamp m_start_time;
-    ola::network::Interface m_interface;
-    time_t m_start_time_t;
+    typedef struct {
+      unsigned int device_alias;
+      unsigned int port;
+      PortDirection direction;
+      string string_id;
+    } port_identifier;
+
+    void DecodePortIds(const string &port_ids, vector<port_identifier> *ports);
 
     static const char K_DATA_DIR_VAR[];
     static const char K_UPTIME_VAR[];
     static const char K_BACKEND_DISCONNECTED_ERROR[];
     static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;
+    static const char K_PRIORITY_VALUE_SUFFIX[];
+    static const char K_PRIORITY_MODE_SUFFIX[];
 };
 }  // ola
 #endif  // OLAD_OLAHTTPSERVER_H_

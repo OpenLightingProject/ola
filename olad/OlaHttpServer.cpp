@@ -21,27 +21,20 @@
 #include <sys/time.h>
 #include <string>
 #include <iostream>
-#include <algorithm>
 #include <vector>
 
+#include "ola/ActionQueue.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "olad/HttpServerActions.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
-#include "olad/Device.h"
-#include "olad/DeviceManager.h"
 #include "olad/OlaHttpServer.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaVersion.h"
-#include "olad/Plugin.h"
-#include "olad/PluginManager.h"
-#include "olad/PortManager.h"
-#include "olad/Port.h"
-#include "olad/Universe.h"
-#include "olad/UniverseStore.h"
 
 
 namespace ola {
@@ -57,6 +50,9 @@ const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
 const char OlaHttpServer::K_UPTIME_VAR[] = "uptime-in-ms";
 const char OlaHttpServer::K_BACKEND_DISCONNECTED_ERROR[] =
   "Failed to send request, client isn't connected";
+const char OlaHttpServer::K_PRIORITY_VALUE_SUFFIX[] = "_priority_value";
+const char OlaHttpServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
+
 
 
 /*
@@ -159,9 +155,6 @@ void NewUniverseAction::PatchPortsFromString(const string &port_ids,
 OlaHttpServer::OlaHttpServer(ExportMap *export_map,
                              ConnectedSocket *client_socket,
                              OlaServer *ola_server,
-                             UniverseStore *universe_store,
-                             DeviceManager *device_manager,
-                             PortManager *port_manager,
                              unsigned int port,
                              bool enable_quit,
                              const string &data_dir,
@@ -171,10 +164,6 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_client_socket(client_socket),
       m_client(client_socket),
       m_ola_server(ola_server),
-
-      m_universe_store(universe_store),
-      m_device_manager(device_manager),
-      m_port_manager(port_manager),
       m_enable_quit(enable_quit),
       m_interface(interface) {
   // The main handlers
@@ -452,7 +441,6 @@ int OlaHttpServer::CreateNewUniverse(const HttpRequest *request,
   if (!action->Start()) {
     return m_server.ServeError(response, "Failed to patch any ports");
   }
-  OLA_INFO << "dispatch completed";
   return MHD_YES;
 }
 
@@ -468,38 +456,41 @@ int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
   string merge_mode = request->GetPostParameter("merge_mode");
-  string add_ports = request->GetPostParameter("add_ports");
-  string remove_ports = request->GetPostParameter("remove_ports");
 
   unsigned int universe_id;
   if (!StringToUInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
-  Universe *universe = m_universe_store->GetUniverse(universe_id);
-  if (!universe)
-    return m_server.ServeNotFound(response);
+  if (name.empty())
+    return m_server.ServeError(response, "No name supplied");
 
   if (name.size() > K_UNIVERSE_NAME_LIMIT)
     name = name.substr(K_UNIVERSE_NAME_LIMIT);
 
-  if (!name.empty())
-    universe->SetName(name);
+  ActionQueue *action_queue = new ActionQueue(
+      NewSingleCallback(this,
+                        &OlaHttpServer::ModifyUniverseComplete,
+                        response));
 
-  if (merge_mode == "LTP")
-    universe->SetMergeMode(Universe::MERGE_LTP);
-  else
-    universe->SetMergeMode(Universe::MERGE_HTP);
+  action_queue->AddAction(new SetNameAction(&m_client, universe_id, name));
 
-  string message;
-  UpdatePortsForUniverse(universe_id, request);
+  if (merge_mode == "LTP" || merge_mode == "HTP") {
+    OlaUniverse::merge_mode mode = (
+      merge_mode == "LTP" ? OlaUniverse::MERGE_LTP : OlaUniverse::MERGE_HTP);
+    action_queue->AddAction(
+      new SetMergeModeAction(&m_client, universe_id, mode));
+  }
 
-  stringstream str;
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  int r = response->Send();
-  delete response;
-  return r;
-  (void) request;
+  string remove_port_ids = request->GetPostParameter("remove_ports");
+  AddPatchActions(action_queue, remove_port_ids, universe_id, UNPATCH);
+
+  string add_port_ids = request->GetPostParameter("add_ports");
+  AddPatchActions(action_queue, add_port_ids, universe_id, PATCH);
+
+  AddPriorityActions(action_queue, request);
+
+  action_queue->NextAction();
+  return MHD_YES;
 }
 
 
@@ -977,6 +968,38 @@ void OlaHttpServer::SendNewUniverseResponse(HttpResponse *response,
 
 
 /*
+ * Schedule a callback to send the modify universe response to the client
+ */
+void OlaHttpServer::ModifyUniverseComplete(HttpResponse *response,
+                                           ActionQueue *action_queue) {
+  // this is a trick to unwind the stack and return control to a method outside
+  // the Action
+  m_server.SelectServer()->RegisterSingleTimeout(
+    0,
+    NewSingleClosure(this, &OlaHttpServer::SendModifyUniverseResponse,
+                     response, action_queue));
+}
+
+
+/*
+ * Send the response to a modify universe request.
+ */
+void OlaHttpServer::SendModifyUniverseResponse(HttpResponse *response,
+                                               ActionQueue *action_queue) {
+  if (!action_queue->WasSuccessful()) {
+    delete action_queue;
+    m_server.ServeError(response, "Update failed");
+  } else {
+    response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+    response->Append("ok");
+    response->Send();
+    delete action_queue;
+    delete response;
+  }
+}
+
+
+/*
  * Handle the RDM discovery response
  * @param response the HttpResponse that is associated with the request.
  * @param error an error string.
@@ -1017,32 +1040,6 @@ inline void OlaHttpServer::RegisterFile(const string &file,
 }
 
 
-/*
- * Update the port priorities from the data in a HTTP request.
- */
-template <class PortClass>
-void OlaHttpServer::UpdatePortPriorites(const HttpRequest *request,
-                                        vector<PortClass*> *ports) {
-  typename vector<PortClass*>::iterator iter = ports->begin();
-
-  for (;iter != ports->end(); ++iter) {
-    if ((*iter)->PriorityCapability() == CAPABILITY_NONE)
-      continue;
-
-    string priority_mode_id = (*iter)->UniqueId() +
-      DeviceManager::PRIORITY_MODE_SUFFIX;
-    string priority_id = (*iter)->UniqueId() +
-      DeviceManager::PRIORITY_VALUE_SUFFIX;
-
-    string value = request->GetPostParameter(priority_id);
-    string mode = request->GetPostParameter(priority_mode_id);
-
-    if (!value.empty() || !mode.empty())
-      m_port_manager->SetPriority(*iter, mode, value);
-  }
-}
-
-
 /**
  * Add the json representation of this port to the stringstream
  */
@@ -1076,68 +1073,114 @@ void OlaHttpServer::PortToJson(const OlaDevice &device,
 }
 
 
-/**
- * Add a list of ports to a universe and set the name
+/*
+ * Add the Patch Actions to the ActionQueue.
+ * @param action_queue the ActionQueue to add the actions to.
+ * @param port_id_string a string to ports to add/remove.
+ * @param universe the universe id to add these ports if
+ * @param port_action either PATCH or UNPATCH.
  */
-bool OlaHttpServer::UpdatePortsForUniverse(unsigned int universe_id,
-                                           const HttpRequest *request) {
-  string add_port_ids = request->GetPostParameter("add_ports");
-  string remove_port_ids = request->GetPostParameter("remove_ports");
+void OlaHttpServer::AddPatchActions(ActionQueue *action_queue,
+                                    const string port_id_string,
+                                    unsigned int universe,
+                                    PatchAction port_action) {
+  vector<port_identifier> ports;
+  vector<port_identifier>::const_iterator iter;
+  DecodePortIds(port_id_string, &ports);
 
-  vector<string> add_ports;
-  vector<string> remove_ports;
-  StringSplit(add_port_ids, add_ports, ",");
-  StringSplit(remove_port_ids, remove_ports, ",");
+  if (!ports.size())
+    return;
 
-  vector<InputPort*> input_ports;
-  vector<OutputPort*> output_ports;
-
-  // There is no way to look up a port based on id, so we need to loop through
-  // all of them for now.
-  vector<device_alias_pair> device_pairs = m_device_manager->Devices();
-  vector<device_alias_pair>::const_iterator iter;
-  for (iter = device_pairs.begin(); iter != device_pairs.end(); ++iter) {
-    input_ports.clear();
-    output_ports.clear();
-    iter->device->InputPorts(&input_ports);
-    iter->device->OutputPorts(&output_ports);
-
-    vector<InputPort*>::iterator input_iter = input_ports.begin();
-    for (; input_iter != input_ports.end(); input_iter++) {
-      UpdatePortForUniverse(universe_id, *input_iter, add_ports, remove_ports);
-    }
-
-    vector<OutputPort*>::iterator output_iter = output_ports.begin();
-    for (; output_iter != output_ports.end(); output_iter++) {
-      UpdatePortForUniverse(universe_id, *output_iter, add_ports, remove_ports);
-    }
-
-    UpdatePortPriorites(request, &input_ports);
-    UpdatePortPriorites(request, &output_ports);
+  for (iter = ports.begin(); iter != ports.end(); ++iter) {
+    OLA_INFO << "patch action for " << iter->string_id;
+    action_queue->AddAction(new PatchPortAction(
+      &m_client,
+      iter->device_alias,
+      iter->port,
+      iter->direction,
+      universe,
+      port_action));
   }
-  return true;
 }
 
 
 /*
- * Update a single port from the http request
+ * Add the Priority Actions to the ActionQueue.
+ * @param action_queue the ActionQueue to add the actions to.
+ * @param request the HttpRequest to read the url params from.
  */
-template <class PortClass>
-void OlaHttpServer::UpdatePortForUniverse(
-    unsigned int universe_id,
-    PortClass *port,
-    const vector<string> &ids_to_add,
-    const vector<string> &ids_to_remove) {
-  vector<string>::const_iterator iter;
-  for (iter = ids_to_add.begin(); iter != ids_to_add.end(); ++iter) {
-    if (port->UniqueId() == *iter) {
-      m_port_manager->PatchPort(port, universe_id);
+void OlaHttpServer::AddPriorityActions(ActionQueue *action_queue,
+                                       const HttpRequest *request) {
+  string port_ids = request->GetPostParameter("modify_ports");
+  vector<port_identifier> ports;
+  vector<port_identifier>::const_iterator iter;
+  DecodePortIds(port_ids, &ports);
+
+  if (!ports.size())
+    return;
+
+  for (iter = ports.begin(); iter != ports.end(); ++iter) {
+    string priority_mode_id = iter->string_id + K_PRIORITY_MODE_SUFFIX;
+    string priority_id = iter->string_id + K_PRIORITY_VALUE_SUFFIX;
+    string mode = request->GetPostParameter(priority_mode_id);
+
+    if (mode == "0") {
+      action_queue->AddAction(new PortPriorityInheritAction(
+        &m_client,
+        iter->device_alias,
+        iter->port,
+        iter->direction));
+    } else if (mode == "1") {
+      string value = request->GetPostParameter(priority_id);
+      uint8_t priority_value;
+      if (StringToUInt8(value, &priority_value)) {
+        action_queue->AddAction(new PortPriorityOverrideAction(
+          &m_client,
+          iter->device_alias,
+          iter->port,
+          iter->direction,
+          priority_value));
+      }
     }
   }
-  for (iter = ids_to_remove.begin(); iter != ids_to_remove.end(); ++iter) {
-    if (port->UniqueId() == *iter) {
-      m_port_manager->UnPatchPort(port);
+}
+
+
+/*
+ * Decode port ids in a string.
+ * This converts a string like "4-I-1,2-O-3" into a vector of port identifiers.
+ * @param port_ids the port ids in a , separated string
+ * @param ports a vector of port_identifiers that will be filled.
+ */
+void OlaHttpServer::DecodePortIds(const string &port_ids,
+                                  vector<port_identifier> *ports) {
+  vector<string> port_strings;
+  StringSplit(port_ids, port_strings, ",");
+  vector<string>::const_iterator iter;
+  vector<string> tokens;
+
+  for (iter = port_strings.begin(); iter != port_strings.end(); ++iter) {
+    if (iter->empty())
+      continue;
+
+    tokens.clear();
+    StringSplit(*iter, tokens, "-");
+
+    if (tokens.size() != 3 || (tokens[1] != "I" && tokens[1] != "O")) {
+      OLA_INFO << "Not a valid port id " << *iter;
+      continue;
     }
+
+    unsigned int device_alias, port;
+    if (!StringToUInt(tokens[0], &device_alias) ||
+        !StringToUInt(tokens[2], &port)) {
+      OLA_INFO << "Not a valid port id " << *iter;
+      continue;
+    }
+
+    PortDirection direction = tokens[1] == "I" ? INPUT_PORT : OUTPUT_PORT;
+    port_identifier port_id = {device_alias, port, direction, *iter};
+    ports->push_back(port_id);
   }
 }
 }  // ola

@@ -15,7 +15,8 @@ libolaserver_la_SOURCES = $(OLASERVER_SOURCES) OlaServer.cpp OlaDaemon.cpp
 libolaserver_la_LDFLAGS = -lprotobuf ${PLUGIN_LIBS}
 
 if HAVE_LIBMICROHTTPD
-libolaserver_la_SOURCES += HttpServer.cpp OlaHttpServer.cpp
+libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \
+                           OlaHttpServer.cpp
 endif
 
 libolaserver_la_LIBADD = $(top_builddir)/common/libolacommon.la \
@@ -28,10 +29,10 @@ pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 
 EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
              DynamicPluginLoader.h \
-             HttpServer.h InternalInputPort.h InternalRDMController.h \
-             OlaHttpServer.h OlaVersion.h OlaServerServiceImpl.h \
-             PluginLoader.h PluginManager.h  PortManager.h TestCommon.h \
-             UniverseStore.h
+             HttpServer.h HttpServerActions.h InternalInputPort.h \
+             InternalRDMController.h OlaHttpServer.h OlaVersion.h \
+             OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
+             PortManager.h TestCommon.h UniverseStore.h
 
 # Olad Server
 bin_PROGRAMS = olad
