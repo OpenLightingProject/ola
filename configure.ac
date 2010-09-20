@@ -5,7 +5,7 @@ AC_PREREQ(2.57)
 AC_INIT(configure.ac)
 AC_CONFIG_AUX_DIR(config)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(ola-examples, 0.8.0)
+AM_INIT_AUTOMAKE(ola-examples, 0.8.2)
 
 # Checks for programs.
 AC_PROG_CC
