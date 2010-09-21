@@ -25,6 +25,8 @@
 #include <ola/Callback.h>
 #include <ola/OlaThread.h>
 #include <ola/network/SelectServer.h>
+// 0.4.6 of microhttp doesn't include stdarg so we do it here.
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/select.h>
