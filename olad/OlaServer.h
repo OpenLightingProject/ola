@@ -80,7 +80,9 @@ class OlaServer {
     OlaServer(const OlaServer&);
     OlaServer& operator=(const OlaServer&);
 
+#ifdef HAVE_LIBMICROHTTPD
     bool StartHttpServer(const ola::network::Interface &interface);
+#endif
     void StopPlugins();
     void CleanupConnection(class OlaServerServiceImpl *service);
 

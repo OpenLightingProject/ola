@@ -236,8 +236,10 @@ bool OlaServer::Init() {
 
   m_plugin_manager->LoadAll();
 
+#ifdef HAVE_LIBMICROHTTPD
   if (!StartHttpServer(interface))
     OLA_WARN << "Failed to start the HTTP server.";
+#endif
 
   m_housekeeping_timeout = m_ss->RegisterRepeatingTimeout(
       K_HOUSEKEEPING_TIMEOUT_MS,
@@ -353,8 +355,8 @@ void OlaServer::CheckForReload() {
  * Setup the HTTP server if required.
  * @param interface the primary interface that the server is using.
  */
-bool OlaServer::StartHttpServer(const ola::network::Interface &interface) {
 #ifdef HAVE_LIBMICROHTTPD
+bool OlaServer::StartHttpServer(const ola::network::Interface &interface) {
   if (!m_options.http_enable)
     return true;
 
@@ -387,8 +389,8 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &interface) {
     m_httpd = NULL;
     return false;
   }
-#endif
 }
+#endif
 
 
 /*
