@@ -187,7 +187,6 @@ void Observer::PluginDescription(ola::ola_plugin_id plugin_id,
  * @param devices a vector of OlaDevices
  */
 void Observer::Devices(const vector <OlaDevice> &devices, const string &error) {
-  printf("in devices\n");
   vector<OlaDevice>::const_iterator iter;
 
   if (!error.empty()) {
@@ -668,7 +667,6 @@ void DisplayHelpAndExit(const options &opts) {
  * @param opts  the const options
  */
 int FetchDeviceInfo(OlaClient *client, const options &opts) {
-  printf("calling fetch");
   client->FetchDeviceInfo((ola::ola_plugin_id) opts.plugin_id);
   return 0;
 }
