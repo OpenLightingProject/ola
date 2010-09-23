@@ -35,6 +35,8 @@ var ola = ola || {};
 ola.UidItem = function(data) {
   this._device_id = data['device_id'];
   this._manufacturer_id = data['manufacturer_id'];
+  this._device = data['device'];
+  this._manufacturer = data['manufacturer'];
 };
 goog.inherits(ola.UidItem, ola.DataItem);
 
@@ -69,8 +71,27 @@ ola.UidItem.prototype._toHex = function(n, padding) {
  * @return {number} the device id
  */
 ola.UidItem.prototype.toString = function() {
-  return (this._toHex(this._manufacturer_id, 4) + ':' +
+  var uid = "";
+  if (this._manufacturer) {
+    uid += this._manufacturer;
+  }
+  if (this._manufacturer && this._device) {
+    uid += ", ";
+  }
+  if (this._device) {
+    uid += this._device;
+  }
+  if (this._manufacturer || this._device) {
+    uid += " [";
+  }
+
+  uid += (this._toHex(this._manufacturer_id, 4) + ':' +
           this._toHex(this._device_id, 8));
+
+  if (this._manufacturer || this._device) {
+    uid += "]";
+  }
+  return uid;
 };
 
 
@@ -85,15 +106,8 @@ ola.UidItem.prototype.compare = function(other) {
   } else if (this._manufacturer_id < other._manufacturer_id) {
     return -1;
   }
-  return this.device_id - other.device_id;
+  return this._device_id - other._device_id;
 };
-
-
-/**
- * Return the UID string
- * @return {string} the UID.
- */
-ola.UidItem.prototype.uid = function() { return this._uid; };
 
 
 /**
