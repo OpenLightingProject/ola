@@ -254,6 +254,7 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
 
   var server = ola.Server.getInstance();
   this.uid_timer.stop();
+  this.dmx_console.stopTimer();
 
   this.SetSplitPaneSize();
 
@@ -267,6 +268,7 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
   } else if (selected_tab == 2) {
     this.dmx_console.setupIfRequired();
     this.dmx_console.update();
+  this.dmx_console.startTimer();
   }
 };
 
