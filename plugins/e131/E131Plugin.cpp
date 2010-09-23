@@ -45,7 +45,6 @@ namespace e131 {
 
 const char E131Plugin::CID_KEY[] = "cid";
 const char E131Plugin::DSCP_KEY[] = "dscp";
-const char E131Plugin::DEVICE_NAME[] = "E1.31 (DMX over ACN) Device";
 const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
 const char E131Plugin::IP_KEY[] = "ip";
 const char E131Plugin::PLUGIN_NAME[] = "E1.31 (sACN)";
@@ -78,7 +77,6 @@ bool E131Plugin::StartHook() {
   }
 
   m_device = new E131Device(this,
-                            DEVICE_NAME,
                             cid,
                             ip_addr,
                             m_plugin_adaptor,

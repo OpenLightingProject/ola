@@ -37,7 +37,7 @@ using ola::plugin::e131::Request;
 
 class E131Device: public ola::Device {
   public:
-    E131Device(Plugin *owner, const string &name,
+    E131Device(Plugin *owner,
                const ola::plugin::e131::CID &cid,
                std::string ip_addr,
                const class PluginAdaptor *plugin_adaptor,
@@ -70,6 +70,7 @@ class E131Device: public ola::Device {
     void HandlePreviewMode(Request *request, string *response);
     void HandlePortStatusRequest(string *response);
 
+    static const char DEVICE_NAME[];
     static const unsigned int NUMBER_OF_E131_PORTS = 5;
 };
 }  // e131

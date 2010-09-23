@@ -26,6 +26,7 @@
 #include <string>
 #include "ola/Closure.h"
 #include "ola/DmxBuffer.h"
+#include "ola/network/Interface.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Layer.h"
 #include "plugins/e131/e131/RootLayer.h"
@@ -71,6 +72,8 @@ class E131Node {
                     uint8_t *priority, ola::Closure<void> *handler);
     bool RemoveHandler(unsigned int universe);
 
+    const ola::network::Interface &GetInterface() const { return m_interface; }
+
     ola::network::UdpSocket* GetSocket() { return m_transport.GetSocket(); }
 
   private:
@@ -80,6 +83,7 @@ class E131Node {
     } tx_universe;
 
     string m_preferred_ip;
+    ola::network::Interface m_interface;
     CID m_cid;
     bool m_use_rev2;
     uint8_t m_dscp;

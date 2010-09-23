@@ -82,15 +82,14 @@ E131Node::~E131Node() {
 bool E131Node::Start() {
   ola::network::InterfacePicker *picker =
     ola::network::InterfacePicker::NewPicker();
-  ola::network::Interface interface;
-  if (!picker->ChooseInterface(&interface, m_preferred_ip)) {
+  if (!picker->ChooseInterface(&m_interface, m_preferred_ip)) {
     OLA_INFO << "Failed to find an interface";
     delete picker;
     return false;
   }
   delete picker;
 
-  if (!m_transport.Init(interface)) {
+  if (!m_transport.Init(m_interface)) {
     return false;
   }
 

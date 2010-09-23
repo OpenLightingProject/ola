@@ -24,10 +24,12 @@
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <google/protobuf/service.h>
 #include <google/protobuf/stubs/common.h>
+#include <iostream>
 #include <string>
 #include <vector>
 
 #include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
@@ -39,10 +41,12 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+const char E131Device::DEVICE_NAME[] = "E1.31 (DMX over ACN)";
+
 /*
  * Create a new device
  */
-E131Device::E131Device(Plugin *owner, const string &name,
+E131Device::E131Device(Plugin *owner,
                        const ola::plugin::e131::CID &cid,
                        std::string ip_addr,
                        const PluginAdaptor *plugin_adaptor,
@@ -50,7 +54,7 @@ E131Device::E131Device(Plugin *owner, const string &name,
                        bool prepend_hostname,
                        bool ignore_preview,
                        uint8_t dscp)
-    : Device(owner, name),
+    : Device(owner, DEVICE_NAME),
       m_plugin_adaptor(plugin_adaptor),
       m_node(NULL),
       m_use_rev2(use_rev2),
@@ -75,6 +79,11 @@ bool E131Device::StartHook() {
     DeleteAllPorts();
     return false;
   }
+
+  stringstream str;
+  str << DEVICE_NAME << " [" <<
+    ola::network::AddressToString(m_node->GetInterface().ip_address) << "]";
+  SetName(str.str());
 
   for (unsigned int i = 0; i < NUMBER_OF_E131_PORTS; i++) {
     E131InputPort *input_port = new E131InputPort(
