@@ -49,7 +49,6 @@ class SandNetPlugin: public ola::Plugin {
     bool SetDefaultPreferences();
 
     static const char SANDNET_NODE_NAME[];
-    static const char SANDNET_DEVICE_NAME[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
 };

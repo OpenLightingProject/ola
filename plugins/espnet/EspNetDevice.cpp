@@ -20,8 +20,10 @@
  *
  */
 
+#include <sstream>
 #include <string>
 #include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
@@ -35,17 +37,17 @@ namespace ola {
 namespace plugin {
 namespace espnet {
 
-const std::string EspNetDevice::IP_KEY = "ip";
-const std::string EspNetDevice::NODE_NAME_KEY = "name";
+const char EspNetDevice::ESPNET_DEVICE_NAME[] = "ESP Net";
+const char EspNetDevice::IP_KEY[] = "ip";
+const char EspNetDevice::NODE_NAME_KEY[] = "name";
 
 /*
  * Create a new device
  */
 EspNetDevice::EspNetDevice(Plugin *owner,
-                           const string &name,
                            Preferences *prefs,
                            const PluginAdaptor *plugin_adaptor):
-  Device(owner, name),
+  Device(owner, ESPNET_DEVICE_NAME),
   m_preferences(prefs),
   m_plugin_adaptor(plugin_adaptor),
   m_node(NULL) {
@@ -65,6 +67,11 @@ bool EspNetDevice::StartHook() {
     m_node = NULL;
     return false;
   }
+
+  stringstream str;
+  str << ESPNET_DEVICE_NAME << " [" <<
+    ola::network::AddressToString(m_node->GetInterface().ip_address) << "]";
+  SetName(str.str());
 
   for (unsigned int i = 0; i < PORTS_PER_DEVICE; i++) {
     EspNetInputPort *input_port = new EspNetInputPort(

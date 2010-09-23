@@ -18,9 +18,11 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <sstream>
 #include <string>
 
 #include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
@@ -32,6 +34,7 @@ namespace ola {
 namespace plugin {
 namespace shownet {
 
+const char ShowNetDevice::SHOWNET_DEVICE_NAME[] = "ShowNet";
 const char ShowNetDevice::IP_KEY[] = "ip";
 
 
@@ -39,10 +42,9 @@ const char ShowNetDevice::IP_KEY[] = "ip";
  * Create a new device
  */
 ShowNetDevice::ShowNetDevice(ola::Plugin *owner,
-                             const string &name,
                              Preferences *preferences,
                              const PluginAdaptor *plugin_adaptor):
-  Device(owner, name),
+  Device(owner, SHOWNET_DEVICE_NAME),
   m_preferences(preferences),
   m_plugin_adaptor(plugin_adaptor),
   m_node(NULL) {}
@@ -61,6 +63,12 @@ bool ShowNetDevice::StartHook() {
     DeleteAllPorts();
     return false;
   }
+
+  stringstream str;
+  str << SHOWNET_DEVICE_NAME << " [" <<
+    ola::network::AddressToString(m_node->GetInterface().ip_address) << "]";
+  SetName(str.str());
+
 
   for (unsigned int i = 0; i < ShowNetNode::SHOWNET_MAX_UNIVERSES; i++) {
     ShowNetInputPort *input_port = new ShowNetInputPort(

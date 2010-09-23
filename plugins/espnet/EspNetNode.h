@@ -25,6 +25,7 @@
 #include <map>
 #include "ola/Closure.h"
 #include "ola/DmxBuffer.h"
+#include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
 #include "plugins/espnet/EspNetPackets.h"
 #include "plugins/espnet/RunLengthDecoder.h"
@@ -52,6 +53,11 @@ class EspNetNode {
 
     bool Start();
     bool Stop();
+
+    const ola::network::Interface &GetInterface() const {
+      return m_interface;
+    }
+
     void SetName(const std::string &name) { m_node_name = name; }
     void SetType(espnet_node_type type) { m_type = type; }
     void SetUniverse(uint8_t universe) { m_universe = universe; }

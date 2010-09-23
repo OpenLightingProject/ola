@@ -39,7 +39,6 @@ namespace shownet {
 
 
 const char ShowNetPlugin::SHOWNET_NODE_NAME[] = "ola-ShowNet";
-const char ShowNetPlugin::SHOWNET_DEVICE_NAME[] = "ShowNet Device";
 const char ShowNetPlugin::PLUGIN_NAME[] = "ShowNet";
 const char ShowNetPlugin::PLUGIN_PREFIX[] = "shownet";
 const char ShowNetPlugin::SHOWNET_NAME_KEY[] = "name";
@@ -48,8 +47,7 @@ const char ShowNetPlugin::SHOWNET_NAME_KEY[] = "name";
  * Start the plugin
  */
 bool ShowNetPlugin::StartHook() {
-  m_device = new ShowNetDevice(this, SHOWNET_DEVICE_NAME, m_preferences,
-                               m_plugin_adaptor);
+  m_device = new ShowNetDevice(this, m_preferences, m_plugin_adaptor);
 
   if (!m_device->Start()) {
     delete m_device;

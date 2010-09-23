@@ -49,7 +49,6 @@ class PathportPlugin: public ola::Plugin {
     class PathportDevice *m_device;
 
     static const char DEFAULT_DSCP_VALUE[];
-    static const char PATHPORT_DEVICE_NAME[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     // 0x28 is assigned to the OLA project

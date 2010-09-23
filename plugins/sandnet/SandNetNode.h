@@ -50,6 +50,10 @@ class SandNetNode {
     explicit SandNetNode(const string &preferred_ip);
     ~SandNetNode();
 
+    const ola::network::Interface &GetInterface() const {
+      return m_interface;
+    }
+
     void SetName(const string &name) {
       m_node_name = name;
     }

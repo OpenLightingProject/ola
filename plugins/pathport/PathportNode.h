@@ -43,6 +43,9 @@ class PathportNode {
 
     bool Start();
     bool Stop();
+    const ola::network::Interface &GetInterface() const {
+      return m_interface;
+    }
     UdpSocket *GetSocket() { return &m_socket; }
     void SocketReady(UdpSocket *socket);
 

@@ -32,14 +32,13 @@ namespace espnet {
 class EspNetDevice: public Device {
   public:
     EspNetDevice(Plugin *owner,
-                 const std::string &name,
                  class Preferences *prefs,
                  const class PluginAdaptor *plugin_adaptor);
 
     string DeviceId() const { return "1"; }
 
-    static const std::string IP_KEY;
-    static const std::string NODE_NAME_KEY;
+    static const char IP_KEY[];
+    static const char NODE_NAME_KEY[];
 
   protected:
     bool StartHook();
@@ -50,6 +49,8 @@ class EspNetDevice: public Device {
     class Preferences *m_preferences;
     const class PluginAdaptor *m_plugin_adaptor;
     class EspNetNode *m_node;
+
+    static const char ESPNET_DEVICE_NAME[];
 };
 }  // espnet
 }  // plugin

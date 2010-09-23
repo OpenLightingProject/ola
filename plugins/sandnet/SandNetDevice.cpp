@@ -18,32 +18,34 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <sstream>
 #include <string>
 #include <vector>
 
 #include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
-#include "plugins/sandnet/SandNetPlugin.h"
 #include "plugins/sandnet/SandNetDevice.h"
+#include "plugins/sandnet/SandNetPlugin.h"
 #include "plugins/sandnet/SandNetPort.h"
 
 namespace ola {
 namespace plugin {
 namespace sandnet {
 
-const char SandNetDevice::NAME_KEY[] = "name";
 const char SandNetDevice::IP_KEY[] = "ip";
+const char SandNetDevice::NAME_KEY[] = "name";
+const char SandNetDevice::SANDNET_DEVICE_NAME[] = "SandNet";
 
 /*
  * Create a new device
  */
 SandNetDevice::SandNetDevice(SandNetPlugin *owner,
-                             const string &name,
                              Preferences *prefs,
                              const PluginAdaptor *plugin_adaptor):
-  Device(owner, name),
+  Device(owner, SANDNET_DEVICE_NAME),
   m_preferences(prefs),
   m_plugin_adaptor(plugin_adaptor),
   m_node(NULL),
@@ -69,12 +71,23 @@ bool SandNetDevice::StartHook() {
                                          i);
     if (!ret) {
       OLA_WARN << "SetPortParameters failed";
-      goto e_sandnet_failed;
+      DeleteAllPorts();
+      delete m_node;
+      return false;
     }
   }
 
-  if (!m_node->Start())
-    goto e_sandnet_failed;
+  if (!m_node->Start()) {
+    DeleteAllPorts();
+    delete m_node;
+    return false;
+  }
+
+  stringstream str;
+  str << SANDNET_DEVICE_NAME << " [" <<
+    ola::network::AddressToString(m_node->GetInterface().ip_address) << "]";
+  SetName(str.str());
+
 
   for (unsigned int i = 0; i < INPUT_PORTS; i++) {
     SandNetInputPort *port = new SandNetInputPort(
@@ -98,11 +111,6 @@ bool SandNetDevice::StartHook() {
       NewClosure(this, &SandNetDevice::SendAdvertisement));
 
   return true;
-
-  e_sandnet_failed:
-    DeleteAllPorts();
-    delete m_node;
-    return false;
 }
 
 

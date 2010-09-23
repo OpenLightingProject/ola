@@ -50,7 +50,6 @@ class EspNetPlugin: public ola::Plugin {
 
     EspNetDevice *m_device;
     static const char ESPNET_NODE_NAME[];
-    static const char ESPNET_DEVICE_NAME[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
 };

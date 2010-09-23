@@ -33,7 +33,6 @@ namespace pathport {
 class PathportDevice: public ola::Device {
   public:
     PathportDevice(class PathportPlugin *owner,
-                   const std::string &name,
                    class Preferences *preferences,
                    const class PluginAdaptor *plugin_adaptor);
 
@@ -58,6 +57,7 @@ class PathportDevice: public ola::Device {
     PathportNode *m_node;
     ola::network::timeout_id m_timeout_id;
 
+    static const char PATHPORT_DEVICE_NAME[];
     static const uint32_t PORTS_PER_DEVICE = 8;
     static const int ADVERTISTMENT_PERIOD_MS = 6000;
 };

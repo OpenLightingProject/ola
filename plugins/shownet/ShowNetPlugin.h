@@ -54,7 +54,6 @@ class ShowNetPlugin: public Plugin {
 
     ShowNetDevice *m_device;
     static const char SHOWNET_NODE_NAME[];
-    static const char SHOWNET_DEVICE_NAME[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     static const char SHOWNET_NAME_KEY[];

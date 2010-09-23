@@ -49,6 +49,10 @@ class ShowNetNode {
                     ola::Closure<void> *handler);
     bool RemoveHandler(unsigned int universe);
 
+    const ola::network::Interface &GetInterface() const {
+      return m_interface;
+    }
+
     ola::network::UdpSocket* GetSocket() { return m_socket; }
     void SocketReady();
 

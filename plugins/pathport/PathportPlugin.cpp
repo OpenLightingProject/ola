@@ -32,7 +32,6 @@ namespace ola {
 namespace plugin {
 namespace pathport {
 
-const char PathportPlugin::PATHPORT_DEVICE_NAME[] = "Pathport Device";
 const char PathportPlugin::PLUGIN_NAME[] = "Pathport";
 const char PathportPlugin::PLUGIN_PREFIX[] = "pathport";
 const char PathportPlugin::DEFAULT_DSCP_VALUE[] = "0";
@@ -44,7 +43,6 @@ const char PathportPlugin::DEFAULT_DSCP_VALUE[] = "0";
  */
 bool PathportPlugin::StartHook() {
   m_device = new PathportDevice(this,
-                                PATHPORT_DEVICE_NAME,
                                 m_preferences,
                                 m_plugin_adaptor);
 

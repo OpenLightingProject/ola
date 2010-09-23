@@ -35,7 +35,6 @@ namespace sandnet {
 class SandNetDevice: public ola::Device {
   public:
     SandNetDevice(class SandNetPlugin *owner,
-                  const std::string &name,
                   class Preferences *prefs,
                   const class PluginAdaptor *plugin_adaptor);
 
@@ -58,6 +57,7 @@ class SandNetDevice: public ola::Device {
     SandNetNode *m_node;
     ola::network::timeout_id m_timeout_id;
 
+    static const char SANDNET_DEVICE_NAME[];
     // the number of input ports to create
     static const unsigned int INPUT_PORTS = 8;
     // send an advertistment every 2s.

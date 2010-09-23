@@ -38,7 +38,6 @@ namespace plugin {
 namespace sandnet {
 
 const char SandNetPlugin::SANDNET_NODE_NAME[] = "ola-SandNet";
-const char SandNetPlugin::SANDNET_DEVICE_NAME[] = "SandNet Device";
 const char SandNetPlugin::PLUGIN_NAME[] = "SandNet";
 const char SandNetPlugin::PLUGIN_PREFIX[] = "sandnet";
 
@@ -48,9 +47,8 @@ const char SandNetPlugin::PLUGIN_PREFIX[] = "sandnet";
  */
 bool SandNetPlugin::StartHook() {
   m_device = new SandNetDevice(this,
-                              SANDNET_DEVICE_NAME,
-                              m_preferences,
-                              m_plugin_adaptor);
+                               m_preferences,
+                               m_plugin_adaptor);
 
   if (!m_device)
     return false;

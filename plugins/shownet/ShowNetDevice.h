@@ -33,7 +33,7 @@ using ola::Plugin;
 
 class ShowNetDevice: public ola::Device {
   public:
-    ShowNetDevice(Plugin *owner, const string &name,
+    ShowNetDevice(Plugin *owner,
                   class Preferences *preferences,
                   const class PluginAdaptor *plugin_adaptor);
     ~ShowNetDevice() {}
@@ -52,6 +52,8 @@ class ShowNetDevice: public ola::Device {
     class Preferences *m_preferences;
     const class PluginAdaptor *m_plugin_adaptor;
     class ShowNetNode *m_node;
+
+    static const char SHOWNET_DEVICE_NAME[];
 };
 }  // shownet
 }  // plugin
