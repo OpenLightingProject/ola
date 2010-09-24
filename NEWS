@@ -1,3 +1,10 @@
+23/9/2010 ola-0.8.3
+  Add Manufacturer / Device name resolution to the web UI for RDM devices.
+  Fix a couple of compile bugs.
+  For each DMX-over-IP plugin, display the bound IP address in the device name.
+  Change the DMX console to send a packet every second even if nothing changes.
+  Fix a memory leak in the RDM controller
+
 19/9/2010 ola-0.8.2
   Moved the DMX Console to the new UI
   Removed the old web UI, no more requirements for ctemplate
