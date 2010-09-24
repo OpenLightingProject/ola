@@ -96,7 +96,7 @@ ola.UniverseFrame = function(element_id, ola_ui) {
       this.uid_timer,
       goog.Timer.TICK,
       function() {
-        if (this.current_universe) {
+        if (this.current_universe != undefined) {
           ola.Server.getInstance().FetchUids(this.current_universe);
         }
       },
