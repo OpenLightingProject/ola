@@ -12,7 +12,7 @@ OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp DmxSource.cpp \
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
 libolaserver_la_SOURCES = $(OLASERVER_SOURCES) OlaServer.cpp OlaDaemon.cpp
-libolaserver_la_LDFLAGS = -lprotobuf ${PLUGIN_LIBS}
+libolaserver_la_LDFLAGS = -lprotobuf ${PLUGIN_LIBS} ${MICROHTTPD_LIBS}
 
 if HAVE_LIBMICROHTTPD
 libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \

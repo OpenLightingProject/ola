@@ -241,9 +241,12 @@ AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
 AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
 
 if test "${have_microhttpd}" = "yes"; then
- AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
- LIBS="-lmicrohttpd $LIBS"
+  AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
+  MICROHTTPD_LIBS="-lmicrohttpd"
+else
+  MICROHTTPD_LIBS=''
 fi
+AC_SUBST(MICROHTTPD_LIBS)
 
 # python wrappers
 AC_ARG_ENABLE(python-libs,
