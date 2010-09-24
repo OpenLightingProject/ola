@@ -276,7 +276,9 @@ bool InternalRDMController::HandleRDMResponse(
   }
 
   rdm_response_data data = {RDM_RESPONSE_OK, response};
-  (*request_iter)->RunCallback(data);
+  request->RunCallback(data);
+  delete request;
+  delete response;
   return true;
 }
 
