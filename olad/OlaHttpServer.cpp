@@ -19,8 +19,10 @@
  */
 
 #include <sys/time.h>
-#include <string>
 #include <iostream>
+#include <map>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "ola/ActionQueue.h"
@@ -30,6 +32,7 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/RDMHelper.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "olad/OlaHttpServer.h"
@@ -39,12 +42,14 @@
 
 namespace ola {
 
+using ola::network::ConnectedSocket;
+using ola::rdm::UID;
 using std::cout;
 using std::endl;
+using std::pair;
 using std::string;
 using std::stringstream;
 using std::vector;
-using ola::network::ConnectedSocket;
 
 const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
 const char OlaHttpServer::K_UPTIME_VAR[] = "uptime-in-ms";
@@ -72,6 +77,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_export_map(export_map),
       m_client_socket(client_socket),
       m_client(client_socket),
+      m_rdm_api(&m_client),
       m_ola_server(ola_server),
       m_enable_quit(enable_quit),
       m_interface(interface) {
@@ -127,6 +133,13 @@ OlaHttpServer::~OlaHttpServer() {
   m_client.Stop();
   if (m_client_socket)
     delete m_client_socket;
+
+  map<unsigned int, uid_resolution_state*>::iterator uid_iter;
+  for (uid_iter = m_universe_uids.begin(); uid_iter != m_universe_uids.end();
+       uid_iter++) {
+    delete uid_iter->second;
+  }
+  m_universe_uids.clear();
 }
 
 
@@ -625,6 +638,12 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
                                        const vector<OlaUniverse> &universes,
                                        const string &error) {
   stringstream str;
+  map<unsigned int, uid_resolution_state*>::iterator uid_iter;
+  for (uid_iter = m_universe_uids.begin(); uid_iter != m_universe_uids.end();
+       uid_iter++) {
+    uid_iter->second->active = false;
+  }
+
   if (error.empty()) {
     str << "  \"universes\": [" << endl;
 
@@ -641,6 +660,10 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
       str << "      \"rdm_devices\": " << iter->RDMDeviceCount() << "," <<
         endl;
       str << "    }," << endl;
+
+      uid_iter = m_universe_uids.find(iter->Id());
+      if (uid_iter != m_universe_uids.end())
+        uid_iter->second->active = true;
     }
     str << "  ]," << endl;
   }
@@ -651,6 +674,17 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
   response->Append(str.str());
   response->Send();
   delete response;
+
+  // clean up the uid map for those universes that no longer exist
+  for (uid_iter = m_universe_uids.begin(); uid_iter != m_universe_uids.end();) {
+    if (!uid_iter->second->active) {
+      OLA_DEBUG << "removing " << uid_iter->first << " from the uid map";
+      delete uid_iter->second;
+      m_universe_uids.erase(uid_iter++);
+    } else {
+      uid_iter++;
+    }
+  }
 }
 
 
@@ -819,6 +853,13 @@ void OlaHttpServer::HandleUIDList(HttpResponse *response,
     return;
   }
   ola::rdm::UIDSet::Iterator iter = uids.Begin();
+  uid_resolution_state *uid_state = GetUniverseUidsOrCreate(universe_id);
+
+  // mark all uids as inactive so we can remove the unused ones at the end
+  map<UID, resolved_uid>::iterator uid_iter;
+  for (uid_iter = uid_state->resolved_uids.begin();
+       uid_iter != uid_state->resolved_uids.end(); ++uid_iter)
+    uid_iter->second.active = false;
 
   stringstream str;
   str << "{" << endl;
@@ -826,10 +867,32 @@ void OlaHttpServer::HandleUIDList(HttpResponse *response,
   str << "  \"uids\": [" << endl;
 
   for (; iter != uids.End(); ++iter) {
+    uid_iter = uid_state->resolved_uids.find(*iter);
+
+    string manufacturer = "";
+    string device = "";
+
+    if (uid_iter == uid_state->resolved_uids.end()) {
+      // schedule resolution
+      uid_state->pending_uids.push(
+          std::pair<UID, uid_resolve_action>(*iter, RESOLVE_MANUFACTURER));
+      uid_state->pending_uids.push(
+          std::pair<UID, uid_resolve_action>(*iter, RESOLVE_DEVICE));
+      resolved_uid uid_descriptor = {"", "", true};
+      uid_state->resolved_uids[*iter] = uid_descriptor;
+      OLA_DEBUG << "Adding UID " << uid_iter->first << " to resolution queue";
+    } else {
+      manufacturer = uid_iter->second.manufacturer;
+      device = uid_iter->second.device;
+      uid_iter->second.active = true;
+    }
     str << "    {" << endl;
     str << "       \"manufacturer_id\": " << iter->ManufacturerId() << ","
       << endl;
     str << "       \"device_id\": " << iter->DeviceId() << "," << endl;
+    str << "       \"device\": \"" << EscapeString(device) << "\"," << endl;
+    str << "       \"manufacturer\": \"" << EscapeString(manufacturer) <<
+      "\"," << endl;
     str << "    }," << endl;
   }
 
@@ -840,6 +903,20 @@ void OlaHttpServer::HandleUIDList(HttpResponse *response,
   response->Append(str.str());
   response->Send();
   delete response;
+
+  // remove any old uids
+  for (uid_iter = uid_state->resolved_uids.begin();
+       uid_iter != uid_state->resolved_uids.end();) {
+    if (!uid_iter->second.active) {
+      OLA_DEBUG << "Removed UID " << uid_iter->first;
+      uid_state->resolved_uids.erase(uid_iter++);
+    } else {
+      ++uid_iter;
+    }
+  }
+
+  if (!uid_state->uid_resolution_running)
+    ResolveUID(universe_id);
 }
 
 
@@ -1107,6 +1184,170 @@ void OlaHttpServer::DecodePortIds(const string &port_ids,
     PortDirection direction = tokens[1] == "I" ? INPUT_PORT : OUTPUT_PORT;
     port_identifier port_id = {device_alias, port, direction, *iter};
     ports->push_back(port_id);
+  }
+}
+
+
+/*
+ * Send the RDM command needed to resolve the next uid in the queue
+ * @param universe_id the universe id to resolve the next UID for.
+ */
+void OlaHttpServer::ResolveUID(unsigned int universe_id) {
+  bool sent_request = false;
+  string error;
+  uid_resolution_state *uid_state = GetUniverseUids(universe_id);
+
+  if (!uid_state)
+    return;
+
+  while (!sent_request) {
+    if (!uid_state->pending_uids.size()) {
+      uid_state->uid_resolution_running = false;
+      return;
+    }
+    uid_state->uid_resolution_running = true;
+
+    pair<UID, uid_resolve_action> &uid_action_pair =
+      uid_state->pending_uids.front();
+    if (uid_action_pair.second == RESOLVE_MANUFACTURER) {
+      OLA_DEBUG << "sending manufacturer request for " << uid_action_pair.first;
+      sent_request = m_rdm_api.GetManufacturerLabel(
+          universe_id,
+          uid_action_pair.first,
+          ola::rdm::ROOT_RDM_DEVICE,
+          NewSingleCallback(this,
+                            &OlaHttpServer::UIDManufacturerLabelHandler,
+                            universe_id,
+                            uid_action_pair.first),
+          &error);
+      OLA_DEBUG << "return code was " << sent_request;
+      uid_state->pending_uids.pop();
+    } else if (uid_action_pair.second == RESOLVE_DEVICE) {
+      OLA_INFO << "sending device request for " << uid_action_pair.first;
+      sent_request = m_rdm_api.GetDeviceLabel(
+          universe_id,
+          uid_action_pair.first,
+          ola::rdm::ROOT_RDM_DEVICE,
+          NewSingleCallback(this,
+                            &OlaHttpServer::UIDDeviceLabelHandler,
+                            universe_id,
+                            uid_action_pair.first),
+          &error);
+      uid_state->pending_uids.pop();
+      OLA_DEBUG << "return code was " << sent_request;
+    } else {
+      OLA_WARN << "Unknown UID resolve action " <<
+        static_cast<int>(uid_action_pair.second);
+    }
+  }
+}
+
+
+/*
+ * Handle the manufacturer label response.
+ */
+void OlaHttpServer::UIDManufacturerLabelHandler(
+    unsigned int universe,
+    UID uid,
+    const ola::rdm::ResponseStatus &status,
+    const string &manufacturer_label) {
+  uid_resolution_state *uid_state = GetUniverseUids(universe);
+
+  if (!uid_state)
+    return;
+
+  if (CheckForRDMSuccess(status)) {
+    map<UID, resolved_uid>::iterator uid_iter;
+    uid_iter = uid_state->resolved_uids.find(uid);
+    if (uid_iter != uid_state->resolved_uids.end())
+      uid_iter->second.manufacturer = manufacturer_label;
+  }
+  ResolveUID(universe);
+}
+
+
+/*
+ * Handle the device label response.
+ */
+void OlaHttpServer::UIDDeviceLabelHandler(
+    unsigned int universe,
+    UID uid,
+    const ola::rdm::ResponseStatus &status,
+    const string &device_label) {
+  uid_resolution_state *uid_state = GetUniverseUids(universe);
+
+  if (!uid_state)
+    return;
+
+  if (CheckForRDMSuccess(status)) {
+    map<UID, resolved_uid>::iterator uid_iter;
+    uid_iter = uid_state->resolved_uids.find(uid);
+    if (uid_iter != uid_state->resolved_uids.end())
+      uid_iter->second.device = device_label;
+  }
+  ResolveUID(universe);
+}
+
+
+/*
+ * Get the UID resolution state for a particular universe
+ * @param universe the id of the universe to get the state for
+ */
+OlaHttpServer::uid_resolution_state *OlaHttpServer::GetUniverseUids(
+    unsigned int universe) {
+  map<unsigned int, uid_resolution_state*>::iterator iter =
+    m_universe_uids.find(universe);
+  return iter == m_universe_uids.end() ? NULL : iter->second;
+}
+
+
+/*
+ * Get the UID resolution state for a particular universe or create one if it
+ * doesn't exist.
+ * @param universe the id of the universe to get the state for
+ */
+OlaHttpServer::uid_resolution_state *OlaHttpServer::GetUniverseUidsOrCreate(
+    unsigned int universe) {
+  map<unsigned int, uid_resolution_state*>::iterator iter =
+    m_universe_uids.find(universe);
+
+  if (iter == m_universe_uids.end()) {
+    OLA_DEBUG << "Adding a new state entry for " << universe;
+    uid_resolution_state *state  = new uid_resolution_state();
+    state->uid_resolution_running = false;
+    state->active = true;
+    pair<unsigned int, uid_resolution_state*> p(universe, state);
+    iter = m_universe_uids.insert(p).first;
+  }
+  return iter->second;
+}
+
+
+/*
+ * Check the success of an RDM command
+ * @returns true if this command was ok, false otherwise.
+ */
+bool OlaHttpServer::CheckForRDMSuccess(
+    const ola::rdm::ResponseStatus &status) {
+  switch (status.ResponseType()) {
+    case ola::rdm::ResponseStatus::TRANSPORT_ERROR:
+      OLA_INFO << "RDM command error: " << status.Error();
+      return false;
+    case ola::rdm::ResponseStatus::BROADCAST_REQUEST:
+      return false;
+    case ola::rdm::ResponseStatus::REQUEST_NACKED:
+      OLA_INFO << "Request was NACKED with code: " <<
+        ola::rdm::NackReasonToString(status.NackReason());
+      return false;
+    case ola::rdm::ResponseStatus::MALFORMED_RESPONSE:
+      OLA_INFO << "Malformed RDM response " << status.Error();
+      return false;
+    case ola::rdm::ResponseStatus::VALID_RESPONSE:
+      return true;
+    default:
+      OLA_INFO << "Unknown response status " <<
+        static_cast<int>(status.ResponseType());
+      return false;
   }
 }
 }  // ola

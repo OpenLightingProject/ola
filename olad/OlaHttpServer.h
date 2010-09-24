@@ -22,12 +22,16 @@
 #define OLAD_OLAHTTPSERVER_H_
 
 #include <time.h>
+#include <map>
+#include <queue>
 #include <string>
 #include <vector>
 #include "ola/Callback.h"
 #include "ola/ExportMap.h"
 #include "ola/OlaCallbackClient.h"
 #include "ola/network/Interface.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/RDMAPI.h"
 #include "olad/HttpServer.h"
 
 namespace ola {
@@ -124,12 +128,33 @@ class OlaHttpServer {
     ExportMap *m_export_map;
     class ola::network::ConnectedSocket *m_client_socket;
     ola::OlaCallbackClient m_client;
+    ola::rdm::RDMAPI m_rdm_api;
 
     class OlaServer *m_ola_server;
     bool m_enable_quit;
     TimeStamp m_start_time;
     ola::network::Interface m_interface;
     time_t m_start_time_t;
+
+    typedef struct {
+      string manufacturer;
+      string device;
+      bool active;
+    } resolved_uid;
+
+    typedef enum {
+      RESOLVE_MANUFACTURER,
+      RESOLVE_DEVICE,
+    } uid_resolve_action;
+
+    typedef struct {
+      map<ola::rdm::UID, resolved_uid> resolved_uids;
+      std::queue<std::pair<ola::rdm::UID, uid_resolve_action> > pending_uids;
+      bool uid_resolution_running;
+      bool active;
+    } uid_resolution_state;
+
+    map<unsigned int, uid_resolution_state*> m_universe_uids;
 
     OlaHttpServer(const OlaHttpServer&);
     OlaHttpServer& operator=(const OlaHttpServer&);
@@ -160,6 +185,21 @@ class OlaHttpServer {
     } port_identifier;
 
     void DecodePortIds(const string &port_ids, vector<port_identifier> *ports);
+
+    void ResolveUID(unsigned int universe_id);
+    void UIDManufacturerLabelHandler(
+        unsigned int universe,
+        ola::rdm::UID uid,
+        const ola::rdm::ResponseStatus &status,
+        const string &device_label);
+    void UIDDeviceLabelHandler(unsigned int universe,
+                               ola::rdm::UID uid,
+                               const ola::rdm::ResponseStatus &status,
+                               const string &device_label);
+
+    uid_resolution_state *GetUniverseUids(unsigned int universe);
+    uid_resolution_state *GetUniverseUidsOrCreate(unsigned int universe);
+    bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
 
     static const char K_DATA_DIR_VAR[];
     static const char K_UPTIME_VAR[];
