@@ -175,10 +175,17 @@ void StreamRpcChannel::CallMethod(
 
   request->SerializeToString(&output);
   message.set_buffer(output);
-  SendMsg(&message);
+  bool r = SendMsg(&message);
 
   if (is_streaming)
     return;
+
+  if (!r) {
+    // send failed, call the handler now
+    controller->SetFailed("Failed to send request");
+    done->Run();
+    return;
+  }
 
   OutstandingResponse *response = GetOutstandingResponse(message.id());
   if (response) {
@@ -225,10 +232,10 @@ void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
 /*
  * Write an RpcMessage to the write socket.
  */
-int StreamRpcChannel::SendMsg(RpcMessage *msg) {
+bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
   if (m_socket->ReadDescriptor() == ola::network::Socket::INVALID_SOCKET) {
     OLA_WARN << "RPC Socket closed, not sending messages";
-    return -1;
+    return false;
   }
 
   string output;
@@ -254,12 +261,12 @@ int StreamRpcChannel::SendMsg(RpcMessage *msg) {
 
     if (m_export_map)
       (*m_export_map->GetCounterVar(K_RPC_SENT_ERROR_VAR))++;
-    return -1;
+    return false;
   }
 
   if (m_export_map)
     (*m_export_map->GetCounterVar(K_RPC_SENT_VAR))++;
-  return 0;
+  return true;
 }
 
 

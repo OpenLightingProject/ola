@@ -109,7 +109,7 @@ class StreamRpcChannel: public RpcChannel {
     static const unsigned int PROTOCOL_VERSION = 1;
 
   private:
-    int SendMsg(RpcMessage *msg);
+    bool SendMsg(RpcMessage *msg);
     int AllocateMsgBuffer(unsigned int size);
     int ReadHeader(unsigned int *version, unsigned int *size) const;
     bool HandleNewMsg(uint8_t *buffer, unsigned int size);
