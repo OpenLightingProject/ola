@@ -6,8 +6,8 @@ OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp DmxSource.cpp \
                     DynamicPluginLoader.cpp InternalInputPort.cpp \
                     InternalRDMController.cpp OlaServerServiceImpl.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
-                    Preferences.cpp Port.cpp PortManager.cpp Universe.cpp \
-                    UniverseStore.cpp
+                    Preferences.cpp Port.cpp PortManager.cpp \
+                    RDMHttpModule.cpp Universe.cpp UniverseStore.cpp
 
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
@@ -32,7 +32,7 @@ EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
              HttpServer.h HttpServerActions.h InternalInputPort.h \
              InternalRDMController.h OlaHttpServer.h OlaVersion.h \
              OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
-             PortManager.h TestCommon.h UniverseStore.h
+             PortManager.h RDMHttpModule.h TestCommon.h UniverseStore.h
 
 # Olad Server
 bin_PROGRAMS = olad

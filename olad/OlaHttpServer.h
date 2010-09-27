@@ -30,9 +30,10 @@
 #include "ola/ExportMap.h"
 #include "ola/OlaCallbackClient.h"
 #include "ola/network/Interface.h"
-#include "ola/rdm/UID.h"
 #include "ola/rdm/RDMAPI.h"
+#include "ola/rdm/UID.h"
 #include "olad/HttpServer.h"
+#include "olad/RDMHttpModule.h"
 
 namespace ola {
 
@@ -64,7 +65,6 @@ class OlaHttpServer {
     int JsonUniverseInfo(const HttpRequest *request, HttpResponse *response);
     int JsonAvailablePorts(const HttpRequest *request, HttpResponse *response);
     int JsonUIDs(const HttpRequest *request, HttpResponse *response);
-    int JsonSupportedPIDs(const HttpRequest *request, HttpResponse *response);
     int CreateNewUniverse(const HttpRequest *request, HttpResponse *response);
     int ModifyUniverse(const HttpRequest *request, HttpResponse *response);
 
@@ -135,6 +135,7 @@ class OlaHttpServer {
     bool m_enable_quit;
     TimeStamp m_start_time;
     ola::network::Interface m_interface;
+    RDMHttpModule m_rdm_module;
     time_t m_start_time_t;
 
     typedef struct {
@@ -197,9 +198,6 @@ class OlaHttpServer {
                                ola::rdm::UID uid,
                                const ola::rdm::ResponseStatus &status,
                                const string &device_label);
-    void SupportedParamsHandler(HttpResponse *response,
-                                const ola::rdm::ResponseStatus &status,
-                                const vector<uint16_t> &pids);
 
     uid_resolution_state *GetUniverseUids(unsigned int universe);
     uid_resolution_state *GetUniverseUidsOrCreate(unsigned int universe);

@@ -80,7 +80,8 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
       m_rdm_api(&m_client),
       m_ola_server(ola_server),
       m_enable_quit(enable_quit),
-      m_interface(interface) {
+      m_interface(interface),
+      m_rdm_module(&m_server, &m_client) {
   // The main handlers
   RegisterHandler("/", &OlaHttpServer::DisplayIndex);
   RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
@@ -100,7 +101,6 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterHandler("/json/get_ports", &OlaHttpServer::JsonAvailablePorts);
   RegisterHandler("/json/universe_info", &OlaHttpServer::JsonUniverseInfo);
   RegisterHandler("/json/uids", &OlaHttpServer::JsonUIDs);
-  RegisterHandler("/json/supported_pids", &OlaHttpServer::JsonSupportedPIDs);
 
   // these are the static files for the new UI
   RegisterFile("blank.gif", HttpServer::CONTENT_TYPE_GIF);
@@ -328,41 +328,6 @@ int OlaHttpServer::JsonUIDs(const HttpRequest *request,
                         &OlaHttpServer::HandleUIDList,
                         response,
                         universe_id));
-
-  if (!ok)
-    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
-  return MHD_YES;
-}
-
-
-/**
- * Return a list of pids supported by this device.
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::JsonSupportedPIDs(const HttpRequest *request,
-                                     HttpResponse *response) {
-  string uni_id = request->GetParameter("id");
-  string uid_string = request->GetParameter("uid");
-  unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
-    return m_server.ServeNotFound(response);
-
-  UID *uid = UID::FromString(uid_string);
-  if (!uid)
-    return m_server.ServeNotFound(response);
-
-  string error;
-  bool ok = m_rdm_api.GetSupportedParameters(
-      universe_id,
-      *uid,
-      ola::rdm::ROOT_RDM_DEVICE,
-      NewSingleCallback(this,
-                        &OlaHttpServer::SupportedParamsHandler,
-                        response),
-      &error);
-  delete uid;
 
   if (!ok)
     return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
@@ -1323,35 +1288,6 @@ void OlaHttpServer::UIDDeviceLabelHandler(
   }
   ResolveUID(universe);
 }
-
-
-/*
- * Handle the response from a supported params request
- */
-void OlaHttpServer::SupportedParamsHandler(HttpResponse *response,
-                            const ola::rdm::ResponseStatus &status,
-                            const vector<uint16_t> &pids) {
-  stringstream str;
-  if (CheckForRDMSuccess(status)) {
-    vector<uint16_t>::const_iterator iter = pids.begin();
-
-    str << "{" << endl;
-    str << "  \"pids\": [" << endl;
-
-    for (; iter != pids.end(); ++iter) {
-      str << "    " << *iter << ",\n";
-    }
-
-    str << "  ]" << endl;
-    str << "}";
-  }
-
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
-  delete response;
-}
-
 
 
 /*
