@@ -21,10 +21,13 @@
 #ifndef OLAD_RDMHTTPMODULE_H_
 #define OLAD_RDMHTTPMODULE_H_
 
+#include <map>
+#include <queue>
 #include <string>
 #include <vector>
-#include "ola/Callback.h"
+#include "ola/OlaCallbackClient.h"
 #include "ola/rdm/RDMAPI.h"
+#include "ola/rdm/UID.h"
 #include "olad/HttpServer.h"
 
 namespace ola {
@@ -43,12 +46,37 @@ class RDMHttpModule {
                   class OlaCallbackClient *client);
     ~RDMHttpModule();
 
+    int RunRDMDiscovery(const HttpRequest *request, HttpResponse *response);
+
+    int JsonUIDs(const HttpRequest *request, HttpResponse *response);
     int JsonSupportedPIDs(const HttpRequest *request, HttpResponse *response);
 
+    void PruneUniverseList(const vector<OlaUniverse> &universes);
+
   private:
+    typedef struct {
+      string manufacturer;
+      string device;
+      bool active;
+    } resolved_uid;
+
+    typedef enum {
+      RESOLVE_MANUFACTURER,
+      RESOLVE_DEVICE,
+    } uid_resolve_action;
+
+    typedef struct {
+      map<ola::rdm::UID, resolved_uid> resolved_uids;
+      std::queue<std::pair<ola::rdm::UID, uid_resolve_action> > pending_uids;
+      bool uid_resolution_running;
+      bool active;
+    } uid_resolution_state;
+
     HttpServer *m_server;
     class OlaCallbackClient *m_client;
     ola::rdm::RDMAPI m_rdm_api;
+    map<unsigned int, uid_resolution_state*> m_universe_uids;
+
 
     RDMHttpModule(const RDMHttpModule&);
     RDMHttpModule& operator=(const RDMHttpModule&);
@@ -57,11 +85,33 @@ class RDMHttpModule {
                          int (RDMHttpModule::*method)(const HttpRequest*,
                          HttpResponse*));
 
+    void HandleBoolResponse(HttpResponse *response,
+                            const string &error);
+
+    void HandleUIDList(HttpResponse *response,
+                       unsigned int universe_id,
+                       const ola::rdm::UIDSet &uids,
+                       const string &error);
+
     void SupportedParamsHandler(HttpResponse *response,
                                 const ola::rdm::ResponseStatus &status,
                                 const vector<uint16_t> &pids);
 
     bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
+
+    void ResolveUID(unsigned int universe_id);
+    void UIDManufacturerLabelHandler(
+        unsigned int universe,
+        ola::rdm::UID uid,
+        const ola::rdm::ResponseStatus &status,
+        const string &device_label);
+    void UIDDeviceLabelHandler(unsigned int universe,
+                               ola::rdm::UID uid,
+                               const ola::rdm::ResponseStatus &status,
+                               const string &device_label);
+
+    uid_resolution_state *GetUniverseUids(unsigned int universe);
+    uid_resolution_state *GetUniverseUidsOrCreate(unsigned int universe);
 
     static const char BACKEND_DISCONNECTED_ERROR[];
 };
