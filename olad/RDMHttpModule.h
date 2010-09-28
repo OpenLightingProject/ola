@@ -29,10 +29,12 @@
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/UID.h"
 #include "olad/HttpServer.h"
+#include "olad/HttpModule.h"
 
 namespace ola {
 
 using std::string;
+using ola::rdm::UID;
 
 
 /*
@@ -40,7 +42,7 @@ using std::string;
  * TODO(simon): factor out the common functionality like RegisterHandler into a
  *   parent class.
  */
-class RDMHttpModule {
+class RDMHttpModule: public HttpModule {
   public:
     RDMHttpModule(HttpServer *http_server,
                   class OlaCallbackClient *client);
@@ -50,8 +52,10 @@ class RDMHttpModule {
 
     int JsonUIDs(const HttpRequest *request, HttpResponse *response);
     int JsonSupportedPIDs(const HttpRequest *request, HttpResponse *response);
-    int JsonDmxStartAddress(const HttpRequest *request,
-                            HttpResponse *response);
+    int JsonSupportedSections(const HttpRequest *request,
+                              HttpResponse *response);
+    int JsonSectionInfo(const HttpRequest *request,
+                        HttpResponse *response);
 
     void PruneUniverseList(const vector<OlaUniverse> &universes);
 
@@ -68,8 +72,8 @@ class RDMHttpModule {
     } uid_resolve_action;
 
     typedef struct {
-      map<ola::rdm::UID, resolved_uid> resolved_uids;
-      std::queue<std::pair<ola::rdm::UID, uid_resolve_action> > pending_uids;
+      map<UID, resolved_uid> resolved_uids;
+      std::queue<std::pair<UID, uid_resolve_action> > pending_uids;
       bool uid_resolution_running;
       bool active;
     } uid_resolution_state;
@@ -82,51 +86,69 @@ class RDMHttpModule {
     RDMHttpModule(const RDMHttpModule&);
     RDMHttpModule& operator=(const RDMHttpModule&);
 
-    void RegisterHandler(const string &path,
-                         int (RDMHttpModule::*method)(const HttpRequest*,
-                         HttpResponse*));
-
-    bool CheckForInvalidId(const HttpRequest *request,
-                           unsigned int *universe_id);
-
-    bool CheckForInvalidUid(const HttpRequest *request,
-                            ola::rdm::UID **uid);
-
-    void HandleBoolResponse(HttpResponse *response,
-                            const string &error);
-
+    // uid resolution methods
     void HandleUIDList(HttpResponse *response,
                        unsigned int universe_id,
                        const ola::rdm::UIDSet &uids,
                        const string &error);
 
-    void SupportedParamsHandler(HttpResponse *response,
-                                const ola::rdm::ResponseStatus &status,
-                                const vector<uint16_t> &pids);
+    void ResolveNextUID(unsigned int universe_id);
 
-    void DmxAddressHandler(HttpResponse *response,
-                           const ola::rdm::ResponseStatus &status,
-                           uint16_t address);
+    void UpdateUIDManufacturerLabel(unsigned int universe,
+                                    UID uid,
+                                    const ola::rdm::ResponseStatus &status,
+                                    const string &device_label);
 
-    bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
-
-    void ResolveUID(unsigned int universe_id);
-
-    void UIDManufacturerLabelHandler(unsigned int universe,
-                                     ola::rdm::UID uid,
-                                     const ola::rdm::ResponseStatus &status,
-                                     const string &device_label);
-
-    void UIDDeviceLabelHandler(unsigned int universe,
-                               ola::rdm::UID uid,
-                               const ola::rdm::ResponseStatus &status,
-                               const string &device_label);
+    void UpdateUIDDeviceLabel(unsigned int universe,
+                              UID uid,
+                              const ola::rdm::ResponseStatus &status,
+                              const string &device_label);
 
     uid_resolution_state *GetUniverseUids(unsigned int universe);
     uid_resolution_state *GetUniverseUidsOrCreate(unsigned int universe);
 
+    // supported params / sections
+    void SupportedParamsHandler(HttpResponse *response,
+                                const ola::rdm::ResponseStatus &status,
+                                const vector<uint16_t> &pids);
+    void SupportedSectionsHandler(HttpResponse *response,
+                                  const ola::rdm::ResponseStatus &status,
+                                  const vector<uint16_t> &pids);
+
+    // section methods
+    string ProcessDeviceInfo(const HttpRequest *request,
+                             HttpResponse *response,
+                             unsigned int universe_id,
+                             const UID &uid);
+
+    void GetDeviceInfoHandler(HttpResponse *response,
+                              const ola::rdm::ResponseStatus &status,
+                              const ola::rdm::DeviceDescriptor &device);
+
+    string ProcessStartAddress(const HttpRequest *request,
+                               HttpResponse *response,
+                               unsigned int universe_id,
+                               const UID &uid);
+
+    void GetStartAddressHandler(HttpResponse *response,
+                                const ola::rdm::ResponseStatus &status,
+                                uint16_t address);
+
+
+
+    // util methods
+    bool CheckForInvalidId(const HttpRequest *request,
+                           unsigned int *universe_id);
+
+    bool CheckForInvalidUid(const HttpRequest *request, UID **uid);
+
+    bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
+
+    void HandleBoolResponse(HttpResponse *response, const string &error);
+
     static const char BACKEND_DISCONNECTED_ERROR[];
     static const char ID_KEY[];
+    static const char SECTION_KEY[];
     static const char UID_KEY[];
 };
 }  // ola

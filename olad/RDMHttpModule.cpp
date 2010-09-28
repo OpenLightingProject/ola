@@ -18,9 +18,11 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <queue>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -48,6 +50,7 @@ using std::vector;
 const char RDMHttpModule::BACKEND_DISCONNECTED_ERROR[] =
     "Failed to send request, client isn't connected";
 const char RDMHttpModule::ID_KEY[] = "id";
+const char RDMHttpModule::SECTION_KEY[] = "section";
 const char RDMHttpModule::UID_KEY[] = "uid";
 
 
@@ -60,16 +63,26 @@ const char RDMHttpModule::UID_KEY[] = "uid";
  */
 RDMHttpModule::RDMHttpModule(HttpServer *http_server,
                              OlaCallbackClient *client)
-    : m_server(http_server),
+    : HttpModule(http_server, client),
+      m_server(http_server),
       m_client(client),
       m_rdm_api(m_client) {
-  RegisterHandler("/run_rdm_discovery", &RDMHttpModule::RunRDMDiscovery);
 
-  RegisterHandler("/json/uids", &RDMHttpModule::JsonUIDs);
-  RegisterHandler("/json/rdm/supported_pids",
-                  &RDMHttpModule::JsonSupportedPIDs);
-  RegisterHandler("/json/rdm/dmx_start_address",
-                  &RDMHttpModule::JsonDmxStartAddress);
+  m_server->RegisterHandler(
+      "/run_rdm_discovery",
+      NewCallback(this, &RDMHttpModule::RunRDMDiscovery));
+  m_server->RegisterHandler(
+      "/json/rdm/uids",
+      NewCallback(this, &RDMHttpModule::JsonUIDs));
+  m_server->RegisterHandler(
+      "/json/rdm/supported_pids",
+      NewCallback(this, &RDMHttpModule::JsonSupportedPIDs));
+  m_server->RegisterHandler(
+      "/json/rdm/supported_sections",
+      NewCallback(this, &RDMHttpModule::JsonSupportedSections));
+  m_server->RegisterHandler(
+      "/json/rdm/section_info",
+      NewCallback(this, &RDMHttpModule::JsonSectionInfo));
 }
 
 
@@ -136,7 +149,8 @@ int RDMHttpModule::JsonUIDs(const HttpRequest *request,
 
 
 /**
- * Return a list of pids supported by this device.
+ * Return a list of pids supported by this device. This isn't used by the UI
+ * but it's useful for debugging.
  * @param request the HttpRequest
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
@@ -169,10 +183,13 @@ int RDMHttpModule::JsonSupportedPIDs(const HttpRequest *request,
 
 
 /**
- * Returns the dmx start address of this device
+ * Return a list of sections to display in the RDM control panel.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
  */
-int RDMHttpModule::JsonDmxStartAddress(const HttpRequest *request,
-                                       HttpResponse *response) {
+int RDMHttpModule::JsonSupportedSections(const HttpRequest *request,
+                                         HttpResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -182,18 +199,48 @@ int RDMHttpModule::JsonDmxStartAddress(const HttpRequest *request,
     return m_server->ServeNotFound(response);
 
   string error;
-  bool ok = m_rdm_api.GetDMXAddress(
+  bool ok = m_rdm_api.GetSupportedParameters(
       universe_id,
       *uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::DmxAddressHandler,
+                        &RDMHttpModule::SupportedSectionsHandler,
                         response),
       &error);
   delete uid;
 
   if (!ok)
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
+}
+
+
+/**
+ * Get the information required to render a section in the RDM controller panel
+ */
+int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
+                                   HttpResponse *response) {
+  unsigned int universe_id;
+  if (!CheckForInvalidId(request, &universe_id))
+    return m_server->ServeNotFound(response);
+
+  UID *uid = NULL;
+  if (!CheckForInvalidUid(request, &uid))
+    return m_server->ServeNotFound(response);
+
+  string section_id = request->GetParameter(SECTION_KEY);
+  string error;
+  if (section_id == "device_info") {
+    error = ProcessDeviceInfo(request, response, universe_id, *uid);
+  } else if (section_id == "dmx_address") {
+    error = ProcessStartAddress(request, response, universe_id, *uid);
+  } else {
+    OLA_INFO << "Missing or unknown section id: " << section_id;
+    return m_server->ServeNotFound(response);
+  }
+
+  if (!error.empty())
+    return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
   return MHD_YES;
 }
 
@@ -227,59 +274,6 @@ void RDMHttpModule::PruneUniverseList(const vector<OlaUniverse> &universes) {
       uid_iter++;
     }
   }
-}
-
-
-/*
- * Register a handler
- */
-inline void RDMHttpModule::RegisterHandler(
-    const string &path,
-    int (RDMHttpModule::*method)(const HttpRequest*, HttpResponse*)) {
-  m_server->RegisterHandler(
-      path,
-      NewCallback<RDMHttpModule, int, const HttpRequest*, HttpResponse*>(
-        this,
-        method));
-}
-
-
-/**
- * Check if the id url param exists and is valid.
- */
-bool RDMHttpModule::CheckForInvalidId(const HttpRequest *request,
-                                      unsigned int *universe_id) {
-  string uni_id = request->GetParameter(ID_KEY);
-  return StringToUInt(uni_id, universe_id);
-}
-
-
-/**
- * Check that the uid url param exists and is valid.
- */
-bool RDMHttpModule::CheckForInvalidUid(const HttpRequest *request,
-                                       UID **uid) {
-  string uid_string = request->GetParameter(UID_KEY);
-  *uid = UID::FromString(uid_string);
-  return uid != NULL;
-}
-
-
-/*
- * Handle the RDM discovery response
- * @param response the HttpResponse that is associated with the request.
- * @param error an error string.
- */
-void RDMHttpModule::HandleBoolResponse(HttpResponse *response,
-                                       const string &error) {
-  if (!error.empty()) {
-    m_server->ServeError(response, error);
-    return;
-  }
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append("ok");
-  response->Send();
-  delete response;
 }
 
 
@@ -361,82 +355,7 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
   }
 
   if (!uid_state->uid_resolution_running)
-    ResolveUID(universe_id);
-}
-
-
-/*
- * Handle the response from a supported params request
- */
-void RDMHttpModule::SupportedParamsHandler(
-    HttpResponse *response,
-    const ola::rdm::ResponseStatus &status,
-    const vector<uint16_t> &pids) {
-  stringstream str;
-  if (CheckForRDMSuccess(status)) {
-    vector<uint16_t>::const_iterator iter = pids.begin();
-
-    str << "{" << endl;
-    str << "  \"pids\": [" << endl;
-
-    for (; iter != pids.end(); ++iter) {
-      str << "    0x" << std::hex << *iter << ",\n";
-    }
-
-    str << "  ]" << endl;
-    str << "}";
-  }
-
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
-  delete response;
-}
-
-
-void RDMHttpModule::DmxAddressHandler(HttpResponse *response,
-                                      const ola::rdm::ResponseStatus &status,
-                                      uint16_t address) {
-  stringstream str;
-  if (CheckForRDMSuccess(status)) {
-    str << "{" << endl;
-    str << "  \"address\": " << address << endl;
-    str << "}";
-  }
-
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
-  delete response;
-}
-
-
-/*
- * Check the success of an RDM command
- * @returns true if this command was ok, false otherwise.
- */
-bool RDMHttpModule::CheckForRDMSuccess(
-    const ola::rdm::ResponseStatus &status) {
-  switch (status.ResponseType()) {
-    case ola::rdm::ResponseStatus::TRANSPORT_ERROR:
-      OLA_INFO << "RDM command error: " << status.Error();
-      return false;
-    case ola::rdm::ResponseStatus::BROADCAST_REQUEST:
-      return false;
-    case ola::rdm::ResponseStatus::REQUEST_NACKED:
-      OLA_INFO << "Request was NACKED with code: " <<
-        ola::rdm::NackReasonToString(status.NackReason());
-      return false;
-    case ola::rdm::ResponseStatus::MALFORMED_RESPONSE:
-      OLA_INFO << "Malformed RDM response " << status.Error();
-      return false;
-    case ola::rdm::ResponseStatus::VALID_RESPONSE:
-      return true;
-    default:
-      OLA_INFO << "Unknown response status " <<
-        static_cast<int>(status.ResponseType());
-      return false;
-  }
+    ResolveNextUID(universe_id);
 }
 
 
@@ -444,7 +363,7 @@ bool RDMHttpModule::CheckForRDMSuccess(
  * Send the RDM command needed to resolve the next uid in the queue
  * @param universe_id the universe id to resolve the next UID for.
  */
-void RDMHttpModule::ResolveUID(unsigned int universe_id) {
+void RDMHttpModule::ResolveNextUID(unsigned int universe_id) {
   bool sent_request = false;
   string error;
   uid_resolution_state *uid_state = GetUniverseUids(universe_id);
@@ -468,7 +387,7 @@ void RDMHttpModule::ResolveUID(unsigned int universe_id) {
           uid_action_pair.first,
           ola::rdm::ROOT_RDM_DEVICE,
           NewSingleCallback(this,
-                            &RDMHttpModule::UIDManufacturerLabelHandler,
+                            &RDMHttpModule::UpdateUIDManufacturerLabel,
                             universe_id,
                             uid_action_pair.first),
           &error);
@@ -481,7 +400,7 @@ void RDMHttpModule::ResolveUID(unsigned int universe_id) {
           uid_action_pair.first,
           ola::rdm::ROOT_RDM_DEVICE,
           NewSingleCallback(this,
-                            &RDMHttpModule::UIDDeviceLabelHandler,
+                            &RDMHttpModule::UpdateUIDDeviceLabel,
                             universe_id,
                             uid_action_pair.first),
           &error);
@@ -497,7 +416,7 @@ void RDMHttpModule::ResolveUID(unsigned int universe_id) {
 /*
  * Handle the manufacturer label response.
  */
-void RDMHttpModule::UIDManufacturerLabelHandler(
+void RDMHttpModule::UpdateUIDManufacturerLabel(
     unsigned int universe,
     UID uid,
     const ola::rdm::ResponseStatus &status,
@@ -513,14 +432,14 @@ void RDMHttpModule::UIDManufacturerLabelHandler(
     if (uid_iter != uid_state->resolved_uids.end())
       uid_iter->second.manufacturer = manufacturer_label;
   }
-  ResolveUID(universe);
+  ResolveNextUID(universe);
 }
 
 
 /*
  * Handle the device label response.
  */
-void RDMHttpModule::UIDDeviceLabelHandler(
+void RDMHttpModule::UpdateUIDDeviceLabel(
     unsigned int universe,
     UID uid,
     const ola::rdm::ResponseStatus &status,
@@ -536,7 +455,7 @@ void RDMHttpModule::UIDDeviceLabelHandler(
     if (uid_iter != uid_state->resolved_uids.end())
       uid_iter->second.device = device_label;
   }
-  ResolveUID(universe);
+  ResolveNextUID(universe);
 }
 
 
@@ -571,5 +490,245 @@ RDMHttpModule::uid_resolution_state *RDMHttpModule::GetUniverseUidsOrCreate(
     iter = m_universe_uids.insert(p).first;
   }
   return iter->second;
+}
+
+
+/*
+ * Handle the response from a supported params request
+ */
+void RDMHttpModule::SupportedParamsHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const vector<uint16_t> &pids) {
+  stringstream str;
+  if (CheckForRDMSuccess(status)) {
+    vector<uint16_t>::const_iterator iter = pids.begin();
+
+    str << "{" << endl;
+    str << "  \"pids\": [" << endl;
+
+    for (; iter != pids.end(); ++iter) {
+      str << "    0x" << std::hex << *iter << ",\n";
+    }
+
+    str << "  ]" << endl;
+    str << "}";
+  }
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+
+/**
+ * Takes the supported pids for a device and come up with the list of sections
+ * to display in the RDM panel
+ */
+void RDMHttpModule::SupportedSectionsHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const vector<uint16_t> &pid_list) {
+  vector<pair<string, string> > sections;
+  std::set<uint16_t> pids;
+
+  if (CheckForRDMSuccess(status)) {
+    copy(pid_list.begin(), pid_list.end(), inserter(pids, pids.end()));
+
+    if (pids.find(ola::rdm::PID_DEVICE_INFO) != pids.end())
+      sections.push_back(pair<string, string>("device_info", "Device Info"));
+
+    if (pids.find(ola::rdm::PID_DMX_START_ADDRESS) != pids.end())
+      sections.push_back(pair<string, string>(
+            "dmx_address", "DMX Start Address"));
+
+    if (pids.find(ola::rdm::PID_PRODUCT_DETAIL_ID_LIST) != pids.end())
+      sections.push_back(pair<string, string>(
+            "product_detail", "Product Details"));
+  }
+
+  vector<pair<string, string> >::const_iterator section_iter;
+  stringstream str;
+  str << "[" << endl;
+  for (section_iter = sections.begin(); section_iter != sections.end();
+       ++section_iter) {
+    str << "  {" << endl;
+    str << "    \"id\": \"" << section_iter->first << "\"," << endl;
+    str << "    \"name\": \"" << section_iter->second << "\"," << endl;
+    str << "  }," << endl;
+  }
+  str << "]" << endl;
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+
+/*
+ * Handle the request for the device info section.
+ */
+string RDMHttpModule::ProcessDeviceInfo(const HttpRequest *request,
+                                        HttpResponse *response,
+                                        unsigned int universe_id,
+                                        const UID &uid) {
+  string error;
+  m_rdm_api.GetDeviceInfo(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetDeviceInfoHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a device info call and build the response
+ */
+void RDMHttpModule::GetDeviceInfoHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const ola::rdm::DeviceDescriptor &device) {
+  stringstream str;
+  str << "[" << endl;
+  if (CheckForRDMSuccess(status)) {
+    str << "  {" << endl;
+    str << "  \"name\": \"DMX Start Address\"," << endl;
+    str << "  \"type\": \"int\"," << endl;
+    str << "  \"editable\": true," << endl;
+    str << "  \"value\": " << address << endl;
+    str << "  }," << endl;
+  }
+  str << "]";
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+/**
+ * Handle the request for the start address section.
+ */
+string RDMHttpModule::ProcessStartAddress(const HttpRequest *request,
+                                          HttpResponse *response,
+                                          unsigned int universe_id,
+                                          const UID &uid) {
+  string error;
+  m_rdm_api.GetDMXAddress(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetStartAddressHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a dmx start address call and build the response
+ */
+void RDMHttpModule::GetStartAddressHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    uint16_t address) {
+  stringstream str;
+  str << "[" << endl;
+  if (CheckForRDMSuccess(status)) {
+    str << "  {" << endl;
+    str << "  \"name\": \"DMX Start Address\"," << endl;
+    str << "  \"type\": \"int\"," << endl;
+    str << "  \"editable\": true," << endl;
+    str << "  \"value\": " << address << endl;
+    str << "  }," << endl;
+  }
+  str << "]";
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+
+/**
+ * Check if the id url param exists and is valid.
+ */
+bool RDMHttpModule::CheckForInvalidId(const HttpRequest *request,
+                                      unsigned int *universe_id) {
+  string uni_id = request->GetParameter(ID_KEY);
+  if (!StringToUInt(uni_id, universe_id)) {
+    OLA_INFO << "Invalid universe id: " << uni_id;
+    return false;
+  }
+  return true;
+}
+
+
+/**
+ * Check that the uid url param exists and is valid.
+ */
+bool RDMHttpModule::CheckForInvalidUid(const HttpRequest *request,
+                                       UID **uid) {
+  string uid_string = request->GetParameter(UID_KEY);
+  *uid = UID::FromString(uid_string);
+  if (uid == NULL) {
+    OLA_INFO << "Invalid uid: " << uid_string;
+    return false;
+  }
+  return true;
+}
+
+
+/*
+ * Check the success of an RDM command
+ * @returns true if this command was ok, false otherwise.
+ */
+bool RDMHttpModule::CheckForRDMSuccess(
+    const ola::rdm::ResponseStatus &status) {
+  switch (status.ResponseType()) {
+    case ola::rdm::ResponseStatus::TRANSPORT_ERROR:
+      OLA_INFO << "RDM command error: " << status.Error();
+      return false;
+    case ola::rdm::ResponseStatus::BROADCAST_REQUEST:
+      return false;
+    case ola::rdm::ResponseStatus::REQUEST_NACKED:
+      OLA_INFO << "Request was NACKED with code: " <<
+        ola::rdm::NackReasonToString(status.NackReason());
+      return false;
+    case ola::rdm::ResponseStatus::MALFORMED_RESPONSE:
+      OLA_INFO << "Malformed RDM response " << status.Error();
+      return false;
+    case ola::rdm::ResponseStatus::VALID_RESPONSE:
+      return true;
+    default:
+      OLA_INFO << "Unknown response status " <<
+        static_cast<int>(status.ResponseType());
+      return false;
+  }
+}
+
+
+/*
+ * Handle the RDM discovery response
+ * @param response the HttpResponse that is associated with the request.
+ * @param error an error string.
+ */
+void RDMHttpModule::HandleBoolResponse(HttpResponse *response,
+                                       const string &error) {
+  if (!error.empty()) {
+    m_server->ServeError(response, error);
+    return;
+  }
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append("ok");
+  response->Send();
+  delete response;
 }
 }  // ola

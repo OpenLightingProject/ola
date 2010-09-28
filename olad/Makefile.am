@@ -3,10 +3,10 @@ SUBDIRS = www testdata
 
 
 OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp DmxSource.cpp \
-                    DynamicPluginLoader.cpp InternalInputPort.cpp \
-                    InternalRDMController.cpp OlaServerServiceImpl.cpp \
-                    Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
-                    Preferences.cpp Port.cpp PortManager.cpp \
+                    DynamicPluginLoader.cpp HttpModule.cpp \
+                    InternalInputPort.cpp InternalRDMController.cpp \
+                    OlaServerServiceImpl.cpp Plugin.cpp PluginAdaptor.cpp \
+                    PluginManager.cpp Preferences.cpp Port.cpp PortManager.cpp \
                     RDMHttpModule.cpp Universe.cpp UniverseStore.cpp
 
 # lib olaserver
@@ -28,7 +28,7 @@ pkgincludedir = $(includedir)/olad
 pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 
 EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
-             DynamicPluginLoader.h \
+             DynamicPluginLoader.h HttpModule.h \
              HttpServer.h HttpServerActions.h InternalInputPort.h \
              InternalRDMController.h OlaHttpServer.h OlaVersion.h \
              OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
