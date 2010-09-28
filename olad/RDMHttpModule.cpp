@@ -47,6 +47,8 @@ using std::vector;
 
 const char RDMHttpModule::BACKEND_DISCONNECTED_ERROR[] =
     "Failed to send request, client isn't connected";
+const char RDMHttpModule::ID_KEY[] = "id";
+const char RDMHttpModule::UID_KEY[] = "uid";
 
 
 /**
@@ -66,6 +68,8 @@ RDMHttpModule::RDMHttpModule(HttpServer *http_server,
   RegisterHandler("/json/uids", &RDMHttpModule::JsonUIDs);
   RegisterHandler("/json/rdm/supported_pids",
                   &RDMHttpModule::JsonSupportedPIDs);
+  RegisterHandler("/json/rdm/dmx_start_address",
+                  &RDMHttpModule::JsonDmxStartAddress);
 }
 
 
@@ -90,9 +94,8 @@ RDMHttpModule::~RDMHttpModule() {
  */
 int RDMHttpModule::RunRDMDiscovery(const HttpRequest *request,
                                    HttpResponse *response) {
-  string uni_id = request->GetParameter("id");
   unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
 
   bool ok = m_client->ForceDiscovery(
@@ -115,9 +118,8 @@ int RDMHttpModule::RunRDMDiscovery(const HttpRequest *request,
  */
 int RDMHttpModule::JsonUIDs(const HttpRequest *request,
                             HttpResponse *response) {
-  string uni_id = request->GetParameter("id");
   unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
 
   bool ok = m_client->FetchUIDList(
@@ -141,14 +143,12 @@ int RDMHttpModule::JsonUIDs(const HttpRequest *request,
  */
 int RDMHttpModule::JsonSupportedPIDs(const HttpRequest *request,
                                      HttpResponse *response) {
-  string uni_id = request->GetParameter("id");
-  string uid_string = request->GetParameter("uid");
   unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
+  if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
 
-  UID *uid = UID::FromString(uid_string);
-  if (!uid)
+  UID *uid = NULL;
+  if (!CheckForInvalidUid(request, &uid))
     return m_server->ServeNotFound(response);
 
   string error;
@@ -158,6 +158,36 @@ int RDMHttpModule::JsonSupportedPIDs(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
                         &RDMHttpModule::SupportedParamsHandler,
+                        response),
+      &error);
+  delete uid;
+
+  if (!ok)
+    return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
+}
+
+
+/**
+ * Returns the dmx start address of this device
+ */
+int RDMHttpModule::JsonDmxStartAddress(const HttpRequest *request,
+                                       HttpResponse *response) {
+  unsigned int universe_id;
+  if (!CheckForInvalidId(request, &universe_id))
+    return m_server->ServeNotFound(response);
+
+  UID *uid = NULL;
+  if (!CheckForInvalidUid(request, &uid))
+    return m_server->ServeNotFound(response);
+
+  string error;
+  bool ok = m_rdm_api.GetDMXAddress(
+      universe_id,
+      *uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::DmxAddressHandler,
                         response),
       &error);
   delete uid;
@@ -211,6 +241,27 @@ inline void RDMHttpModule::RegisterHandler(
       NewCallback<RDMHttpModule, int, const HttpRequest*, HttpResponse*>(
         this,
         method));
+}
+
+
+/**
+ * Check if the id url param exists and is valid.
+ */
+bool RDMHttpModule::CheckForInvalidId(const HttpRequest *request,
+                                      unsigned int *universe_id) {
+  string uni_id = request->GetParameter(ID_KEY);
+  return StringToUInt(uni_id, universe_id);
+}
+
+
+/**
+ * Check that the uid url param exists and is valid.
+ */
+bool RDMHttpModule::CheckForInvalidUid(const HttpRequest *request,
+                                       UID **uid) {
+  string uid_string = request->GetParameter(UID_KEY);
+  *uid = UID::FromString(uid_string);
+  return uid != NULL;
 }
 
 
@@ -329,10 +380,27 @@ void RDMHttpModule::SupportedParamsHandler(
     str << "  \"pids\": [" << endl;
 
     for (; iter != pids.end(); ++iter) {
-      str << "    " << *iter << ",\n";
+      str << "    0x" << std::hex << *iter << ",\n";
     }
 
     str << "  ]" << endl;
+    str << "}";
+  }
+
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+
+void RDMHttpModule::DmxAddressHandler(HttpResponse *response,
+                                      const ola::rdm::ResponseStatus &status,
+                                      uint16_t address) {
+  stringstream str;
+  if (CheckForRDMSuccess(status)) {
+    str << "{" << endl;
+    str << "  \"address\": " << address << endl;
     str << "}";
   }
 

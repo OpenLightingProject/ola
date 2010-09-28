@@ -50,6 +50,8 @@ class RDMHttpModule {
 
     int JsonUIDs(const HttpRequest *request, HttpResponse *response);
     int JsonSupportedPIDs(const HttpRequest *request, HttpResponse *response);
+    int JsonDmxStartAddress(const HttpRequest *request,
+                            HttpResponse *response);
 
     void PruneUniverseList(const vector<OlaUniverse> &universes);
 
@@ -77,13 +79,18 @@ class RDMHttpModule {
     ola::rdm::RDMAPI m_rdm_api;
     map<unsigned int, uid_resolution_state*> m_universe_uids;
 
-
     RDMHttpModule(const RDMHttpModule&);
     RDMHttpModule& operator=(const RDMHttpModule&);
 
     void RegisterHandler(const string &path,
                          int (RDMHttpModule::*method)(const HttpRequest*,
                          HttpResponse*));
+
+    bool CheckForInvalidId(const HttpRequest *request,
+                           unsigned int *universe_id);
+
+    bool CheckForInvalidUid(const HttpRequest *request,
+                            ola::rdm::UID **uid);
 
     void HandleBoolResponse(HttpResponse *response,
                             const string &error);
@@ -97,14 +104,19 @@ class RDMHttpModule {
                                 const ola::rdm::ResponseStatus &status,
                                 const vector<uint16_t> &pids);
 
+    void DmxAddressHandler(HttpResponse *response,
+                           const ola::rdm::ResponseStatus &status,
+                           uint16_t address);
+
     bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
 
     void ResolveUID(unsigned int universe_id);
-    void UIDManufacturerLabelHandler(
-        unsigned int universe,
-        ola::rdm::UID uid,
-        const ola::rdm::ResponseStatus &status,
-        const string &device_label);
+
+    void UIDManufacturerLabelHandler(unsigned int universe,
+                                     ola::rdm::UID uid,
+                                     const ola::rdm::ResponseStatus &status,
+                                     const string &device_label);
+
     void UIDDeviceLabelHandler(unsigned int universe,
                                ola::rdm::UID uid,
                                const ola::rdm::ResponseStatus &status,
@@ -114,6 +126,8 @@ class RDMHttpModule {
     uid_resolution_state *GetUniverseUidsOrCreate(unsigned int universe);
 
     static const char BACKEND_DISCONNECTED_ERROR[];
+    static const char ID_KEY[];
+    static const char UID_KEY[];
 };
 }  // ola
 #endif  // OLAD_RDMHTTPMODULE_H_
