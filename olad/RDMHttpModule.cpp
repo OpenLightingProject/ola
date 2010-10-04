@@ -69,7 +69,7 @@ RDMHttpModule::RDMHttpModule(HttpServer *http_server,
       m_rdm_api(m_client) {
 
   m_server->RegisterHandler(
-      "/run_rdm_discovery",
+      "/rdm/run_discovery",
       NewCallback(this, &RDMHttpModule::RunRDMDiscovery));
   m_server->RegisterHandler(
       "/json/rdm/uids",
@@ -530,32 +530,42 @@ void RDMHttpModule::SupportedSectionsHandler(
     HttpResponse *response,
     const ola::rdm::ResponseStatus &status,
     const vector<uint16_t> &pid_list) {
-  vector<pair<string, string> > sections;
+
+  vector<section_info> sections;
   std::set<uint16_t> pids;
 
   if (CheckForRDMSuccess(status)) {
     copy(pid_list.begin(), pid_list.end(), inserter(pids, pids.end()));
 
-    if (pids.find(ola::rdm::PID_DEVICE_INFO) != pids.end())
-      sections.push_back(pair<string, string>("device_info", "Device Info"));
+    if (pids.find(ola::rdm::PID_DEVICE_INFO) != pids.end()) {
+      string hint;
+      if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
+          hint.push_back('m');  // m is for device model
+      if (pids.find(ola::rdm::PID_SOFTWARE_VERSION_LABEL) != pids.end())
+          hint.push_back('s');  // s is for software
+      section_info info = {"device_info", "Device Info", hint};
+      sections.push_back(info);
+    }
 
-    if (pids.find(ola::rdm::PID_DMX_START_ADDRESS) != pids.end())
-      sections.push_back(pair<string, string>(
-            "dmx_address", "DMX Start Address"));
+    if (pids.find(ola::rdm::PID_DMX_START_ADDRESS) != pids.end()) {
+      section_info info = {"dmx_address", "DMX Start Address", ""};
+      sections.push_back(info);
+    }
 
-    if (pids.find(ola::rdm::PID_PRODUCT_DETAIL_ID_LIST) != pids.end())
-      sections.push_back(pair<string, string>(
-            "product_detail", "Product Details"));
+    if (pids.find(ola::rdm::PID_PRODUCT_DETAIL_ID_LIST) != pids.end()) {
+      section_info info = {"product_detail", "Product Details", ""};
+      sections.push_back(info);
+    }
   }
 
-  vector<pair<string, string> >::const_iterator section_iter;
+  vector<section_info>::const_iterator iter;
   stringstream str;
   str << "[" << endl;
-  for (section_iter = sections.begin(); section_iter != sections.end();
-       ++section_iter) {
+  for (iter = sections.begin(); iter != sections.end(); ++iter) {
     str << "  {" << endl;
-    str << "    \"id\": \"" << section_iter->first << "\"," << endl;
-    str << "    \"name\": \"" << section_iter->second << "\"," << endl;
+    str << "    \"id\": \"" << iter->id << "\"," << endl;
+    str << "    \"name\": \"" << iter->name << "\"," << endl;
+    str << "    \"hint\": \"" << iter->hint << "\"," << endl;
     str << "  }," << endl;
   }
   str << "]" << endl;
@@ -597,12 +607,25 @@ void RDMHttpModule::GetDeviceInfoHandler(
   stringstream str;
   str << "[" << endl;
   if (CheckForRDMSuccess(status)) {
-    str << "  {" << endl;
-    str << "  \"name\": \"DMX Start Address\"," << endl;
-    str << "  \"type\": \"int\"," << endl;
-    str << "  \"editable\": true," << endl;
-    str << "  \"value\": " << address << endl;
-    str << "  }," << endl;
+    stringstream stream;
+    stream << static_cast<int>(device.protocol_version_high) << "."
+      << static_cast<int>(device.protocol_version_low);
+    AddStringVariable(&str, "Protocol Version", stream.str());
+    AddIntVariable(&str, "Device Model", device.device_model);
+    AddStringVariable(
+        &str,
+        "Product Category",
+        ola::rdm::ProductCategoryToString(device.product_category));
+    AddIntVariable(&str, "Software Version", device.software_version);
+    AddIntVariable(&str, "DMX Footprint", device.dmx_footprint);
+
+    stream.str("");
+    stream << static_cast<int>(device.current_personality) << " of " <<
+      static_cast<int>(device.personaility_count);
+    AddStringVariable(&str, "Personality", stream.str());
+
+    AddIntVariable(&str, "Sub Devices", device.sub_device_count);
+    AddIntVariable(&str, "Sensors", device.sensor_count);
   }
   str << "]";
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
@@ -641,14 +664,8 @@ void RDMHttpModule::GetStartAddressHandler(
     uint16_t address) {
   stringstream str;
   str << "[" << endl;
-  if (CheckForRDMSuccess(status)) {
-    str << "  {" << endl;
-    str << "  \"name\": \"DMX Start Address\"," << endl;
-    str << "  \"type\": \"int\"," << endl;
-    str << "  \"editable\": true," << endl;
-    str << "  \"value\": " << address << endl;
-    str << "  }," << endl;
-  }
+  if (CheckForRDMSuccess(status))
+    AddIntVariable(&str, "DMX Start Address", address);
   str << "]";
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
@@ -730,5 +747,37 @@ void RDMHttpModule::HandleBoolResponse(HttpResponse *response,
   response->Append("ok");
   response->Send();
   delete response;
+}
+
+
+/**
+ * Add a int variable to the output
+ */
+void RDMHttpModule::AddIntVariable(stringstream *str,
+                                   const string &name,
+                                   unsigned int value,
+                                   bool editable) {
+  *str << "  {" << endl;
+  *str << "  \"name\": \"" << name << "\"," << endl;
+  *str << "  \"type\": \"int\"," << endl;
+  *str << "  \"editable\": " << editable << "," << endl;
+  *str << "  \"value\": " << value << endl;
+  *str << "  }," << endl;
+}
+
+
+/**
+ * Add a string variable to the output
+ */
+void RDMHttpModule::AddStringVariable(stringstream *str,
+                                      const string &name,
+                                      const string &value,
+                                      bool editable) {
+  *str << "  {" << endl;
+  *str << "  \"name\": \"" << name << "\"," << endl;
+  *str << "  \"type\": \"string\"," << endl;
+  *str << "  \"editable\": " << editable << "," << endl;
+  *str << "  \"value\": \"" << value << "\"," << endl;
+  *str << "  }," << endl;
 }
 }  // ola

@@ -83,6 +83,12 @@ class RDMHttpModule: public HttpModule {
     ola::rdm::RDMAPI m_rdm_api;
     map<unsigned int, uid_resolution_state*> m_universe_uids;
 
+    typedef struct {
+      string id;
+      string name;
+      string hint;
+    } section_info;
+
     RDMHttpModule(const RDMHttpModule&);
     RDMHttpModule& operator=(const RDMHttpModule&);
 
@@ -134,8 +140,6 @@ class RDMHttpModule: public HttpModule {
                                 const ola::rdm::ResponseStatus &status,
                                 uint16_t address);
 
-
-
     // util methods
     bool CheckForInvalidId(const HttpRequest *request,
                            unsigned int *universe_id);
@@ -145,6 +149,16 @@ class RDMHttpModule: public HttpModule {
     bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
 
     void HandleBoolResponse(HttpResponse *response, const string &error);
+
+    // json methods
+    void AddIntVariable(stringstream *str,
+                        const string &name,
+                        unsigned int value,
+                        bool editable = false);
+    void AddStringVariable(stringstream *str,
+                           const string &name,
+                           const string &value,
+                           bool editable = false);
 
     static const char BACKEND_DISCONNECTED_ERROR[];
     static const char ID_KEY[];
