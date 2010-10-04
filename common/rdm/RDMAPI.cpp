@@ -2988,8 +2988,6 @@ void RDMAPI::_HandleGetDeviceDescriptor(
     unsigned int data_size = data.size();
     if (data_size == sizeof(device_info)) {
       memcpy(&device_info, data.data(), sizeof(device_info));
-      device_info.protocol_version =
-        NetworkToHost(device_info.protocol_version);
       device_info.device_model = NetworkToHost(device_info.device_model);
       device_info.product_category =
         NetworkToHost(device_info.product_category);

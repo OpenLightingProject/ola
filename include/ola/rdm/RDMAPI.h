@@ -125,7 +125,8 @@ typedef struct {
  * Represents a DeviceDescriptor reply
  */
 struct device_info_s {
-  uint16_t protocol_version;
+  uint8_t protocol_version_high;
+  uint8_t protocol_version_low;
   uint16_t device_model;
   uint16_t product_category;
   uint32_t software_version;
