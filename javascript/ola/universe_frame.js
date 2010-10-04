@@ -35,6 +35,7 @@ goog.require('ola.Dialog');
 goog.require('ola.DmxConsole');
 goog.require('ola.Port');
 goog.require('ola.PortTable');
+goog.require('ola.RDMAttributesPanel');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
@@ -157,12 +158,15 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
   this.splitpane.setHandleSize(2);
   this.splitpane.decorate(goog.dom.$('rdm_split_pane'));
 
+  var rdm_panel = new ola.RDMAttributesPanel('rdm_attributes');
+  this.rdm_panel = rdm_panel;
+
   var frame = this;
   var uid_container = new goog.ui.Container();
   uid_container.decorate(goog.dom.$('uid_container'));
   this.uid_list = new ola.SortedList(
       uid_container,
-      new ola.UidControlFactory(function (id) { frame._showUID(id); }));
+      new ola.UidControlFactory(function (item) { rdm_panel.showUID(item); }));
 };
 
 
@@ -222,6 +226,8 @@ ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
 ola.UniverseFrame.prototype.Show = function(universe_id, opt_select_main_tab) {
   if (this.current_universe != universe_id) {
     this.dmx_console.resetConsole();
+    this.rdm_panel.updateUniverse(universe_id);
+    this.rdm_panel.clear();
   }
   this.current_universe = universe_id;
   ola.UniverseFrame.superClass_.Show.call(this);
@@ -311,15 +317,6 @@ ola.UniverseFrame.prototype._updateUidList = function(e) {
     ola.logger.info('RDM universe mismatch, was ' + e.universe_id +
                     ', expected ' + this.current_universe);
   }
-};
-
-
-/**
- * Show information for a particular UID
- * @param id {number} the UID represented as a float
- * @private
- */
-ola.UniverseFrame.prototype._showUID = function(id) {
 };
 
 

@@ -59,8 +59,10 @@ ola.Server.PLUGIN_UNIVERSE_LIST_URL = '/json/universe_plugin_list';
 ola.Server.RELOAD_PLUGINS_URL = '/reload';
 ola.Server.STOP_SERVER_URL = '/quit';
 ola.Server.AVAILBLE_PORTS_URL = '/json/get_ports';
-ola.Server.UIDS_URL = '/json/uids';
-ola.Server.RDM_DISCOVERY_URL = '/run_rdm_discovery';
+ola.Server.UIDS_URL = '/json/rdm/uids';
+ola.Server.RDM_DISCOVERY_URL = '/rdm/run_discovery';
+ola.Server.RDM_SECTIONS_URL = '/json/rdm/supported_sections';
+ola.Server.RDM_SECTION_INFO_URL = '/json/rdm/section_info';
 ola.Server.NEW_UNIVERSE_URL = '/new_universe';
 ola.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
 ola.Server.SET_DMX_URL = '/set_dmx';
@@ -286,6 +288,50 @@ ola.Server.prototype.runRDMDiscovery = function(universe_id, callback) {
     this._cleanupRequest(e.target);
   }
   var url = ola.Server.RDM_DISCOVERY_URL + '?id=' + universe_id;
+  this._initiateRequest(url, on_complete);
+};
+
+
+/**
+ * Get the list of supported sections for a UID.
+ * @param {number} universe_id the ID of the universe.
+ * @param {string} uid the string representation of a UID.
+ * @param {function(Object)} callback the function to call when the discovery
+ *   request is ack'ed.
+ */
+ola.Server.prototype.rdmGetSupportedSections = function(universe_id,
+                                                        uid,
+                                                        callback) {
+  var on_complete = function(e) {
+    callback(e);
+    this._cleanupRequest(e.target);
+  }
+  var url = (ola.Server.RDM_SECTIONS_URL + '?id=' + universe_id + '&uid=' +
+      uid);
+  this._initiateRequest(url, on_complete);
+};
+
+
+/**
+ * Get the details for a particular rdm section
+ * @param {number} universe_id the ID of the universe.
+ * @param {string} uid the string representation of a UID.
+ * @param {string} section_name the section to get.
+ * @param {string} hint an arbitary string passed back to the server.
+ * @param {function(Object)} callback the function to call when the discovery
+ *   request is ack'ed.
+ */
+ola.Server.prototype.rdmGetSectionInfo = function(universe_id,
+                                                  uid,
+                                                  section_name,
+                                                  hint,
+                                                  callback) {
+  var on_complete = function(e) {
+    callback(e);
+    this._cleanupRequest(e.target);
+  }
+  var url = (ola.Server.RDM_SECTION_INFO_URL + '?id=' + universe_id + '&uid=' +
+      uid + '&section=' + section_name + '&hint=' + hint);
   this._initiateRequest(url, on_complete);
 };
 

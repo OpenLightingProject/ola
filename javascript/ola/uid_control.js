@@ -67,8 +67,18 @@ ola.UidItem.prototype._toHex = function(n, padding) {
 
 
 /**
- * Return the device id
- * @return {number} the device id
+ * Return the string representation of the uid.
+ * @return {string} the uid
+ */
+ola.UidItem.prototype.asString = function() {
+  return (this._toHex(this._manufacturer_id, 4) + ':' +
+          this._toHex(this._device_id, 8));
+};
+
+
+/**
+ * Return the uid as a string
+ * @return {number} the uid as a string
  */
 ola.UidItem.prototype.toString = function() {
   var uid = "";
@@ -85,8 +95,7 @@ ola.UidItem.prototype.toString = function() {
     uid += " [";
   }
 
-  uid += (this._toHex(this._manufacturer_id, 4) + ':' +
-          this._toHex(this._device_id, 8));
+  uid += this.asString();
 
   if (this._manufacturer || this._device) {
     uid += "]";

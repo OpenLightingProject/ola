@@ -81,7 +81,7 @@ ola.GenericControl.prototype.enterDocument = function() {
   ola.GenericControl.superClass_.enterDocument.call(this);
   goog.events.listen(this.getElement(),
                      goog.events.EventType.CLICK,
-                     function() { this.callback(this._item.id()); },
+                     function() { this.callback(this._item); },
                      false,
                      this);
 };

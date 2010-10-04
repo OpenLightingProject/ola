@@ -181,7 +181,8 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   plugin_container.decorate(goog.dom.$('plugin_container'));
   this.plugin_list = new ola.SortedList(
       plugin_container,
-      new ola.PluginControlFactory(function(id) { ui._ShowPlugin(id); }));
+      new ola.PluginControlFactory(
+        function(item) { ui._ShowPlugin(item.id()); }));
 
   goog.events.listen(this.ola_server,
                      ola.Server.EventType.PLUGIN_LIST_EVENT,
@@ -192,7 +193,8 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   universe_container.decorate(goog.dom.$('universe_container'));
   this.universe_list = new ola.SortedList(
       universe_container,
-      new ola.UniverseControlFactory(function(id) { ui.ShowUniverse(id); }));
+      new ola.UniverseControlFactory(
+        function(item) { ui.ShowUniverse(item.id()); }));
 
   goog.events.listen(this.ola_server,
                      ola.Server.EventType.UNIVERSE_LIST_EVENT,

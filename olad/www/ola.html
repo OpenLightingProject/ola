@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="/custombutton.css">
-    <link rel="stylesheet" href="/toolbar.css">
-    <script src="/ola.js"></script>
+    <link rel='stylesheet' href='/custombutton.css'>
+    <link rel='stylesheet' href='/toolbar.css'>
+    <script src='/ola.js'></script>
     <title>OLA Admin</title>
-    <style type="text/css">
+    <style type='text/css'>
       body {
         margin: 0px;
         padding: 0px;
@@ -492,43 +492,43 @@
       }
     </style>
   </head>
-  <body onload="ola.Setup()">
-    <div id="header">
-      <div id="right_nav"><span id="log_control">View Log</span></div>
-      <div id="title">
-       <img src="/logo.png" width="111" height="48" alt="Logo">
+  <body onload='ola.Setup()'>
+    <div id='header'>
+      <div id='right_nav'><span id='log_control'>View Log</span></div>
+      <div id='title'>
+       <img src='/logo.png' width='111' height='48' alt='Logo'>
       </div>
     </div>
 
     <div id='log_popup' class='log_popup'>
-      <div id="log" style="border: 1px solid #000000"></div>
+      <div id='log' style='border: 1px solid #000000'></div>
     </div>
 
     <div class='goog-splitpane' id='split_pane' style='visibility: hidden'>
       <div class='goog-splitpane-handle ola-splitpane-handle'></div>
       <div class='goog-splitpane-first-container ola-splitpane-navigation'>
-       <div id="home_control" class="goog-control"
-         title="Main page">
-         <img src="/blank.gif">Home
+       <div id='home_control' class='goog-control'
+         title='Main page'>
+         <img src='/blank.gif'>Home
        </div>
-       <div id="universe_list_control" class="goog-control"
-         title="Click to show/hide active universes">
-         <img src="/blank.gif">Universes
+       <div id='universe_list_control' class='goog-control'
+         title='Click to show/hide active universes'>
+         <img src='/blank.gif'>Universes
        </div>
-       <div id="universe_container" class="goog-container"></div>
-       <div id="plugin_list_control" class="goog-control"
-         title="Click to show/hide plugins">
-         <img src="/blank.gif">Plugins
+       <div id='universe_container' class='goog-container'></div>
+       <div id='plugin_list_control' class='goog-control'
+         title='Click to show/hide plugins'>
+         <img src='/blank.gif'>Plugins
        </div>
-       <div id="plugin_container" class="goog-container"></div>
+       <div id='plugin_container' class='goog-container'></div>
       </div>
 
       <div class='goog-splitpane-second-container ola-splitpane-content'
           id='ola-splitpane-content'>
-        <div class="ola-scroller" id="home_frame" style="">
+        <div class='ola-scroller' id='home_frame' style=''>
           <fieldset>
             <legend>Active Universes</legend>
-            <table class="ola-table">
+            <table class='ola-table'>
              <thead>
               <tr>
                <th>Universe #</th>
@@ -538,70 +538,70 @@
                <th>RDM Devices</th>
               </tr>
              </thead>
-             <tbody id="active_universe_list">
+             <tbody id='active_universe_list'>
              </tbody>
            </table>
           </fieldset>
 
-          <div style="text-align: center">
-           <div id="new_universe_button"
-             class="goog-custom-button goog-inline-block"
-             title="Setup a new universe">Add Universe</div>
+          <div style='text-align: center'>
+           <div id='new_universe_button'
+             class='goog-custom-button goog-inline-block'
+             title='Setup a new universe'>Add Universe</div>
           </div>
           <fieldset>
             <legend>Server Info</legend>
             <table>
              <tr>
               <td>Hostname</td>
-              <td><div id="server_hostname"></div></td>
+              <td><div id='server_hostname'></div></td>
              </tr>
              <tr>
               <td>Primary IP</td>
-              <td><div id="server_ip"></div></td>
+              <td><div id='server_ip'></div></td>
              </tr>
              <tr>
-              <td style="padding-right: 10px">Primary Broadcast Address</td>
-              <td><div id="server_broadcast"></div></td>
+              <td style='padding-right: 10px'>Primary Broadcast Address</td>
+              <td><div id='server_broadcast'></div></td>
              </tr>
              <tr>
               <td>Primary MAC Address</td>
-              <td><div id="server_mac"></div></td>
+              <td><div id='server_mac'></div></td>
              </tr>
              <tr>
-              <td>Version</td><td><div id="server_version"></div></td>
+              <td>Version</td><td><div id='server_version'></div></td>
              </tr>
              <tr>
-              <td>Started</td><td><div id="server_uptime"></div></td>
+              <td>Started</td><td><div id='server_uptime'></div></td>
              </tr>
            </table>
           </fieldset>
-          <div style="text-align: center">
-           <div id="reload_button" class="goog-custom-button goog-inline-block"
-             title="Reload all plugins">
+          <div style='text-align: center'>
+           <div id='reload_button' class='goog-custom-button goog-inline-block'
+             title='Reload all plugins'>
              Reload Plugins
            </div>
-           <div id="stop_button" class="goog-custom-button goog-inline-block"
-             title="Stop OLA">Stop OLA</div>
+           <div id='stop_button' class='goog-custom-button goog-inline-block'
+             title='Stop OLA'>Stop OLA</div>
           </div>
           <br>
         </div>
 
-        <div id="new_universe_frame" class="ola-scroller">
+        <div id='new_universe_frame' class='ola-scroller'>
           <fieldset>
            <legend>New Universe Settings</legend>
            <table>
             <tr>
              <td>Universe Id</td>
-             <td><input id="new_universe_id" maxlength="200"></td>
+             <td><input id='new_universe_id' maxlength='200'></td>
             </tr>
             <tr>
-             <td>Universe Name</td><td><input id="new_universe_name"></td>
+             <td>Universe Name</td><td><input id='new_universe_name'></td>
             </tr>
            </table>
           </fieldset>
           <fieldset>
             <legend>Available Ports</legend>
-            <table class="ola-table">
+            <table class='ola-table'>
              <thead>
               <tr>
                <th>&nbsp;</th>
@@ -610,41 +610,41 @@
                <th>Description</th>
               </tr>
              </thead>
-             <tbody id="available_ports">
+             <tbody id='available_ports'>
              </tbody>
            </table>
           </fieldset>
-          <div style="text-align: center">
-           <div id="cancel_new_universe_button"
-             class="goog-custom-button goog-inline-block"
-             title="Go back">Cancel</div>
-           <div id="confirm_new_universe_button"
-             class="goog-custom-button goog-inline-block"
-             title="Setup a new universe">Add Universe</div>
+          <div style='text-align: center'>
+           <div id='cancel_new_universe_button'
+             class='goog-custom-button goog-inline-block'
+             title='Go back'>Cancel</div>
+           <div id='confirm_new_universe_button'
+             class='goog-custom-button goog-inline-block'
+             title='Setup a new universe'>Add Universe</div>
           </div>
         </div>
 
-        <div id="universe_frame">
-          <div id="universe_frame_tab_pane"></div>
+        <div id='universe_frame'>
+          <div id='universe_frame_tab_pane'></div>
 
-          <div id="tab_page_1" class="ola-scroller">
+          <div id='tab_page_1' class='ola-scroller'>
             <fieldset>
              <legend>Universe Settings</legend>
              <table>
               <tr>
-               <td>Universe Id</td><td><div id="universe_id"></div></td>
+               <td>Universe Id</td><td><div id='universe_id'></div></td>
               </tr>
               <tr>
                <td>Universe Name</td>
-               <td><input id="universe_name" maxlength="200"></td>
+               <td><input id='universe_name' maxlength='200'></td>
               </tr>
               <tr>
                <td>Merge Mode</td>
                <td>
-                 <div id="universe_merge_mode" class="goog-select">
-                   <ul class="goog-menu">
-                    <li class="goog-menuitem">HTP</li>
-                    <li class="goog-menuitem">LTP</li>
+                 <div id='universe_merge_mode' class='goog-select'>
+                   <ul class='goog-menu'>
+                    <li class='goog-menuitem'>HTP</li>
+                    <li class='goog-menuitem'>LTP</li>
                    </ul>
                  </div>
                </td>
@@ -653,39 +653,39 @@
             </fieldset>
             <fieldset>
               <legend>Input Ports</legend>
-                <table class="ola-table">
+                <table class='ola-table'>
                  <thead>
                   <tr>
-                   <th width="30px">&nbsp;</th>
-                   <th width="40%">Device</th>
-                   <th width="30%">Description</th>
-                   <th width="30%">Priority</th>
+                   <th width='30px'>&nbsp;</th>
+                   <th width='40%'>Device</th>
+                   <th width='30%'>Description</th>
+                   <th width='30%'>Priority</th>
                   </tr>
                  </thead>
-                 <tbody id="input_ports">
+                 <tbody id='input_ports'>
                  </tbody>
                </table>
             </fieldset>
             <fieldset>
               <legend>Output Ports</legend>
-              <table class="ola-table">
+              <table class='ola-table'>
                <thead>
                 <tr>
-                 <th width="30px">&nbsp;</th>
-                 <th width="40%">Device</th>
-                 <th width="30%">Description</th>
-                 <th width="30%">Priority</th>
+                 <th width='30px'>&nbsp;</th>
+                 <th width='40%'>Device</th>
+                 <th width='30%'>Description</th>
+                 <th width='30%'>Priority</th>
                 </tr>
                </thead>
-               <tbody id="output_ports">
+               <tbody id='output_ports'>
                </tbody>
              </table>
             </fieldset>
             <fieldset>
-              <legend style="cursor: pointer" id="additional_ports_expander">
-                <img style="width: 12px; height: 12px" src="/blank.gif">
+              <legend style='cursor: pointer' id='additional_ports_expander'>
+                <img style='width: 12px; height: 12px' src='/blank.gif'>
                 Add Additional Ports</legend>
-              <table class="ola-table" id="additional_ports">
+              <table class='ola-table' id='additional_ports'>
                <thead>
                 <tr>
                  <th>&nbsp;</th>
@@ -694,57 +694,56 @@
                  <th>Description</th>
                 </tr>
                </thead>
-               <tbody id="universe_available_ports">
+               <tbody id='universe_available_ports'>
                </tbody>
              </table>
             </fieldset>
-            <div style="text-align: center">
-             <div id="universe_save_button"
-               class="goog-custom-button goog-inline-block"
-               title="Save Changes">Save</div>
+            <div style='text-align: center'>
+             <div id='universe_save_button'
+               class='goog-custom-button goog-inline-block'
+               title='Save Changes'>Save</div>
             </div>
             <br/>
           </div>
 
-          <div id="tab_page_2">
+          <div id='tab_page_2'>
             <div>
-             <div id="force_discovery_button"
-               class="goog-custom-button goog-inline-block"
-               title="Run RDM Discovery">Run RDM Discovery</div>
+             <div id='force_discovery_button'
+               class='goog-custom-button goog-inline-block'
+               title='Run RDM Discovery'>Run RDM Discovery</div>
             </div>
             <div class='goog-splitpane ola-splitpane-rdm' id='rdm_split_pane'>
               <div class='goog-splitpane-first-container
                           ola-splitpane-rdm-uids'>
-               <div id="uid_container" class="goog-container"></div>
+               <div id='uid_container' class='goog-container'></div>
               </div>
               <div class='goog-splitpane-second-container
                           ola-splitpane-rdm-device'>
-                <div class='ola-scroller'>
-                 This is where the RDM attributes will go.
+                <div id='rdm_attributes' class='ola-scroller'>
                 </div>
               </div>
               <div class='goog-splitpane-handle ola-splitpane-rdm-handle'></div>
             </div>
           </div>
-          <div id="tab_page_3" class="ola-scroller">
-            <div id="console_toolbar" class="goog-toolbar"></div>
-            <table cellspacing="0" cellpadding="0" id="console_table">
+          <div id='tab_page_3' class='ola-scroller'>
+            <div id='console_toolbar' class='goog-toolbar'></div>
+            <table cellspacing='0' cellpadding='0' id='console_table'>
              <tbody>
-              <tr id="console_channel_row"></tr>
-              <tr id="console_value_row"></tr>
-              <tr id="console_slider_row"></tr>
+              <tr id='console_channel_row'></tr>
+              <tr id='console_value_row'></tr>
+              <tr id='console_slider_row'></tr>
              </tbody>
             </table>
-            <div id="channel_values"></div>
+            <div id='channel_values'></div>
           </div>
         </div>
-        <div class="ola-scroller" id="plugin_frame">
-            <pre id="plugin_description"></pre>
+        <div class='ola-scroller' id='plugin_frame'>
+            <pre id='plugin_description'></pre>
         </div>
       </div>
     </div>
 
-    <div id="footer">
+    <div id='footer'>
       OLA &copy; 2005-2010 Simon Newton
     </div>
   </body>
