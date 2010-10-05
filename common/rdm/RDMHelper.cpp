@@ -71,13 +71,13 @@ string DataTypeToString(uint8_t type) {
 string LampModeToString(uint8_t lamp_mode) {
   switch (lamp_mode) {
     case LAMP_ON_MODE_OFF:
-      return "off";
+      return "Off";
     case LAMP_ON_MODE_DMX:
-      return "dmx";
+      return "DMX";
     case LAMP_ON_MODE_ON:
-      return "on";
+      return "On";
     case LAMP_ON_MODE_AFTER_CAL:
-      return "on after calibration";
+      return "On after calibration";
     default:
       stringstream str;
       str << "Unknown, was " << static_cast<int>(lamp_mode);
@@ -93,17 +93,17 @@ string LampModeToString(uint8_t lamp_mode) {
 string LampStateToString(uint8_t lamp_state) {
   switch (lamp_state) {
     case LAMP_OFF:
-      return "off";
+      return "Off";
     case LAMP_ON:
-      return "on";
+      return "On";
     case LAMP_STRIKE:
-      return "strike";
+      return "Strike";
     case LAMP_STANDBY:
-      return "standby";
+      return "Standby";
     case LAMP_NOT_PRESENT:
-      return "lamp not present";
+      return "Lamp not present";
     case LAMP_ERROR:
-      return "error";
+      return "Error";
     default:
       stringstream str;
       str << "Unknown, was " << static_cast<int>(lamp_state);
@@ -234,91 +234,91 @@ string ProductCategoryToString(uint16_t category) {
     case PRODUCT_CATEGORY_NOT_DECLARED:
       return "Not declared";
     case PRODUCT_CATEGORY_FIXTURE:
-      return "fixture";
+      return "Fixture";
     case PRODUCT_CATEGORY_FIXTURE_FIXED:
-      return "fixed fixture";
+      return "Fixed fixture";
     case PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE:
-      return "moving yoke fixture";
+      return "Moving yoke fixture";
     case PRODUCT_CATEGORY_FIXTURE_MOVING_MIRROR:
-      return "moving mirror fixture";
+      return "Moving mirror fixture";
     case PRODUCT_CATEGORY_FIXTURE_OTHER:
-      return "fixture other";
+      return "Fixture other";
     case PRODUCT_CATEGORY_FIXTURE_ACCESSORY:
-      return "fixture accessory";
+      return "Fixture accessory";
     case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_COLOR:
-      return "fixture accessory color";
+      return "Fixture accessory color";
     case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_YOKE:
-      return "fixture accessory yoke";
+      return "Fixture accessory yoke";
     case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_MIRROR:
-      return "fixture accessory mirror";
+      return "Fixture accessory mirror";
     case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_EFFECT:
-      return "fixture accessory effect";
+      return "Fixture accessory effect";
     case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_BEAM:
-      return "fixture accessory beam";
+      return "Fixture accessory beam";
     case PRODUCT_CATEGORY_FIXTURE_ACCESSORY_OTHER:
-      return "fixture accessory other";
+      return "Fixture accessory other";
     case PRODUCT_CATEGORY_PROJECTOR:
-      return "projector";
+      return "Projector";
     case PRODUCT_CATEGORY_PROJECTOR_FIXED:
-      return "projector fixed";
+      return "Projector fixed";
     case PRODUCT_CATEGORY_PROJECTOR_MOVING_YOKE:
-      return "projector moving yoke";
+      return "Projector moving yoke";
     case PRODUCT_CATEGORY_PROJECTOR_MOVING_MIRROR:
-      return "projector moving mirror";
+      return "Projector moving mirror";
     case PRODUCT_CATEGORY_PROJECTOR_OTHER:
-      return "projector other";
+      return "Projector other";
     case PRODUCT_CATEGORY_ATMOSPHERIC:
-      return "atmospheric";
+      return "Atmospheric";
     case PRODUCT_CATEGORY_ATMOSPHERIC_EFFECT:
-      return "atmospheric effect";
+      return "Atmospheric effect";
     case PRODUCT_CATEGORY_ATMOSPHERIC_PYRO:
-      return "atmospheric pyro";
+      return "Atmospheric pyro";
     case PRODUCT_CATEGORY_ATMOSPHERIC_OTHER:
-      return "atmospheric other";
+      return "Atmospheric other";
     case PRODUCT_CATEGORY_DIMMER:
-      return "dimmer";
+      return "Dimmer";
     case PRODUCT_CATEGORY_DIMMER_AC_INCANDESCENT:
-      return "dimmer ac incandescent";
+      return "Dimmer AC incandescent";
     case PRODUCT_CATEGORY_DIMMER_AC_FLUORESCENT:
-      return "dimmer ac fluorescent";
+      return "Dimmer AC fluorescent";
     case PRODUCT_CATEGORY_DIMMER_AC_COLDCATHODE:
-      return "dimmer ac cold cathode";
+      return "Dimmer AC cold cathode";
     case PRODUCT_CATEGORY_DIMMER_AC_NONDIM:
-      return "dimmer ac no dim";
+      return "Dimmer AC no dim";
     case PRODUCT_CATEGORY_DIMMER_AC_ELV:
-      return "dimmer ac ELV";
+      return "Dimmer AC ELV";
     case PRODUCT_CATEGORY_DIMMER_AC_OTHER:
-      return "dimmer ac other";
+      return "Dimmer AC other";
     case PRODUCT_CATEGORY_DIMMER_DC_LEVEL:
-      return "dimmer dc level";
+      return "Dimmer DC level";
     case PRODUCT_CATEGORY_DIMMER_DC_PWM:
-      return "dimmer dc pwm";
+      return "Dimmer DC PWM";
     case PRODUCT_CATEGORY_DIMMER_CS_LED:
-      return "dimmer dc led";
+      return "Dimmer DC led";
     case PRODUCT_CATEGORY_DIMMER_OTHER:
-      return "dimmer other";
+      return "Dimmer other";
     case PRODUCT_CATEGORY_POWER:
-      return "power";
+      return "Power";
     case PRODUCT_CATEGORY_POWER_CONTROL:
-      return "power control";
+      return "Power control";
     case PRODUCT_CATEGORY_POWER_SOURCE:
-      return "power source";
+      return "Power source";
     case PRODUCT_CATEGORY_POWER_OTHER:
-      return "power other";
+      return "Power other";
     case PRODUCT_CATEGORY_SCENIC:
-      return "scenic";
+      return "Scenic";
     case PRODUCT_CATEGORY_SCENIC_DRIVE:
-      return "scenic drive";
+      return "Scenic drive";
     case PRODUCT_CATEGORY_SCENIC_OTHER:
-      return "scenic other";
+      return "Scenic other";
     case PRODUCT_CATEGORY_DATA:
-      return "data";
+      return "Data";
     case PRODUCT_CATEGORY_DATA_DISTRIBUTION:
-      return "data distribution";
+      return "Data distribution";
     case PRODUCT_CATEGORY_DATA_CONVERSION:
-      return "data conversion";
+      return "Data conversion";
     case PRODUCT_CATEGORY_DATA_OTHER:
-      return "data other";
+      return "Data other";
     case PRODUCT_CATEGORY_AV:
       return "A/V";
     case PRODUCT_CATEGORY_AV_AUDIO:
@@ -334,25 +334,25 @@ string ProductCategoryToString(uint16_t category) {
     case PRODUCT_CATEGORY_MONITOR_DCPOWER:
       return "DC power monitor";
     case PRODUCT_CATEGORY_MONITOR_ENVIRONMENTAL:
-      return "environmental monitor";
+      return "Environmental monitor";
     case PRODUCT_CATEGORY_MONITOR_OTHER:
-      return "other monitor";
+      return "Other monitor";
     case PRODUCT_CATEGORY_CONTROL:
-      return "control";
+      return "Control";
     case PRODUCT_CATEGORY_CONTROL_CONTROLLER:
-      return "controller";
+      return "Controller";
     case PRODUCT_CATEGORY_CONTROL_BACKUPDEVICE:
-      return "backup device";
+      return "Backup device";
     case PRODUCT_CATEGORY_CONTROL_OTHER:
-      return "other control";
+      return "Other control";
     case PRODUCT_CATEGORY_TEST:
-      return "test";
+      return "Test";
     case PRODUCT_CATEGORY_TEST_EQUIPMENT:
-      return "test equipment";
+      return "Test equipment";
     case PRODUCT_CATEGORY_TEST_EQUIPMENT_OTHER:
-      return "test equipment other";
+      return "Test equipment other";
     case PRODUCT_CATEGORY_OTHER:
-      return "other";
+      return "Other";
     default:
       stringstream str;
       str << "Unknown, was " << static_cast<int>(category);
@@ -586,25 +586,25 @@ string SensorTypeToString(uint8_t type) {
     case SENSOR_ANGULAR_VELOCITY:
       return "Angular velocity";
     case SENSOR_LUMINOUS_INTENSITY:
-      return "luminous intensity";
+      return "Luminous intensity";
     case SENSOR_LUMINOUS_FLUX:
-      return "luminous flux";
+      return "Luminous flux";
     case SENSOR_ILLUMINANCE:
-      return "illuminance";
+      return "Illuminance";
     case SENSOR_CHROMINANCE_RED:
-      return "chrominance red";
+      return "Chrominance red";
     case SENSOR_CHROMINANCE_GREEN:
-      return "chrominance green";
+      return "Chrominance green";
     case SENSOR_CHROMINANCE_BLUE:
-      return "chrominance blue";
+      return "Chrominance blue";
     case SENSOR_CONTACTS:
-      return "contacts";
+      return "Contacts";
     case SENSOR_MEMORY:
-      return "memory";
+      return "Memory";
     case SENSOR_ITEMS:
-      return "items";
+      return "Items";
     case SENSOR_HUMIDITY:
-      return "humidity";
+      return "Humidity";
     case SENSOR_COUNTER_16BIT:
       return "16 bith counter";
     case SENSOR_OTHER:
