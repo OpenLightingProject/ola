@@ -154,7 +154,7 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
       new goog.ui.Component(),
       new goog.ui.Component(),
       goog.ui.SplitPane.Orientation.HORIZONTAL);
-  this.splitpane.setInitialSize(160);
+  this.splitpane.setInitialSize(250);
   this.splitpane.setHandleSize(2);
   this.splitpane.decorate(goog.dom.$('rdm_split_pane'));
 

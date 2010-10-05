@@ -41,6 +41,7 @@ ola.RDMAttributesPanel = function(element_id) {
   this.current_universe = undefined;
   this.current_uid = undefined;
   this.divs = new Array();
+  this.loaded_sections = new Array();
   this.section_data = undefined;
 };
 
@@ -60,7 +61,7 @@ ola.RDMAttributesPanel.prototype.updateUniverse = function(universe_id) {
  * @param {ola.UidItem} item the uid to show
  */
 ola.RDMAttributesPanel.prototype.showUID = function(item) {
-  this._setLoading();
+  this._setLoading(this.element);
   var server = ola.Server.getInstance();
   var panel = this;
   server.rdmGetSupportedSections(
@@ -93,9 +94,9 @@ ola.RDMAttributesPanel.prototype._setEmpty = function() {
  * Display the loading image
  * @private
  */
-ola.RDMAttributesPanel.prototype._setLoading = function() {
-  this.element.innerHTML = (
-      '<div style="margin-top: 30px" align="center"><img src="/loader.gif">' +
+ola.RDMAttributesPanel.prototype._setLoading = function(element) {
+  element.innerHTML = (
+      '<div align="center"><img src="/loader.gif">' +
       '<br>Loading...</div>');
 };
 
@@ -107,6 +108,7 @@ ola.RDMAttributesPanel.prototype._setLoading = function() {
 ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
   this.element.innerHTML = '';
   this.divs = new Array();
+  this.loaded_sections = new Array();
 
   var sections = e.target.getResponseJson();
   var section_count = sections.length;
@@ -114,14 +116,21 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
     var section = obj[i]
     var fieldset = goog.dom.createElement('fieldset');
     var legend = goog.dom.createElement('legend');
-    legend.innerHTML = sections[i]['name'];
+    var image = goog.dom.createElement('img');
+    image.src = '/blank.gif';
+    image.width = "12";
+    image.height = "12";
+    goog.dom.appendChild(legend, image);
+    var title = goog.dom.createTextNode(' ' + sections[i]['name']);
+    goog.dom.appendChild(legend, title);
     var div = goog.dom.createElement('div');
-    div.innerHTML = '';
+    this._setLoading(div);
     goog.dom.appendChild(fieldset, legend);
     goog.dom.appendChild(fieldset, div);
     goog.dom.appendChild(this.element, fieldset);
     var z = new goog.ui.AnimatedZippy(legend, div);
     this.divs.push(div);
+    this.loaded_sections.push(false);
 
     goog.events.listen(z,
         goog.ui.Zippy.Events.TOGGLE,
@@ -142,6 +151,9 @@ ola.RDMAttributesPanel.prototype._expandZippy = function(e, i) {
   if (!e.expanded)
     return;
 
+  if (this.loaded_sections[i])
+    return;
+
   var server = ola.Server.getInstance();
   var panel = this;
   server.rdmGetSectionInfo(
@@ -150,6 +162,7 @@ ola.RDMAttributesPanel.prototype._expandZippy = function(e, i) {
       this.section_data[i]['id'],
       this.section_data[i]['hint'],
       function(e) { panel._populateZippy(e, i); });
+  this.loaded_sections[i] = true;
 };
 
 
@@ -168,12 +181,28 @@ ola.RDMAttributesPanel.prototype._populateZippy = function(e, i) {
     var name_td = goog.dom.createElement('td');
     name_td.innerHTML = section_info[i]['name'];
     var td = goog.dom.createElement('td');
-    td.innerHTML = section_info[i]['value'];
-    // switch based on type here
+    this._buildElement(td, section_info[i]);
 
     goog.dom.appendChild(tr, name_td);
     goog.dom.appendChild(tr, td);
     goog.dom.appendChild(table, tr);
   }
   goog.dom.appendChild(div, table);
+};
+
+
+/**
+ * Generate the html for an element
+ */
+ola.RDMAttributesPanel.prototype._buildElement = function(parent, element) {
+  var editable = element['editable'];
+  var value = element['value'];
+
+  if (editable) {
+    var input = goog.dom.createElement('input');
+    input.value = value;
+    goog.dom.appendChild(parent, input);
+  } else {
+    parent.innerHTML = value;
+  }
 };
