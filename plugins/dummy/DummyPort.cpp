@@ -80,6 +80,8 @@ bool DummyPort::HandleRDMRequest(const RDMRequest *request) {
       return HandleSupportedParams(request);
     case ola::rdm::PID_DEVICE_INFO:
       return HandleDeviceInfo(request);
+    case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
+      return HandleProductDetailList(request);
     case ola::rdm::PID_MANUFACTURER_LABEL:
       return HandleStringResponse(request, "Open Lighting");
     case ola::rdm::PID_DEVICE_LABEL:
@@ -124,6 +126,7 @@ bool DummyPort::HandleSupportedParams(const RDMRequest *request) {
     uint16_t supported_params[] = {
       ola::rdm::PID_SUPPORTED_PARAMETERS,
       ola::rdm::PID_DEVICE_INFO,
+      ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
       ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
       ola::rdm::PID_MANUFACTURER_LABEL,
       ola::rdm::PID_DEVICE_LABEL,
@@ -188,6 +191,42 @@ bool DummyPort::HandleDeviceInfo(const RDMRequest *request) {
     response = GetResponseWithData(request,
                                    reinterpret_cast<uint8_t*>(&device_info),
                                    sizeof(device_info));
+  }
+  HandleRDMResponse(response);
+  delete request;
+  return true;
+}
+
+
+/**
+ * Handle a request for PID_PRODUCT_DETAIL_ID_LIST
+ */
+bool DummyPort::HandleProductDetailList(const RDMRequest *request) {
+  if (request->DestinationUID().IsBroadcast()) {
+    delete request;
+    return true;
+  }
+
+  RDMResponse *response;
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
+  } else if (request->SubDevice()) {
+    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+  } else if (request->ParamDataSize()) {
+    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  } else {
+    uint16_t product_details[] = {
+      ola::rdm::PRODUCT_DETAIL_TEST,
+      ola::rdm::PRODUCT_DETAIL_OTHER
+    };
+
+    for (unsigned int i = 0; i < sizeof(product_details) / 2; i++)
+      product_details[i] = HostToNetwork(product_details[i]);
+
+    response = GetResponseWithData(
+        request,
+        reinterpret_cast<uint8_t*>(&product_details),
+        sizeof(product_details));
   }
   HandleRDMResponse(response);
   delete request;

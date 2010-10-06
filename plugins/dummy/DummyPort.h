@@ -46,6 +46,7 @@ class DummyPort: public BasicOutputPort {
     bool HandleUnknownPacket(const ola::rdm::RDMRequest *request);
     bool HandleSupportedParams(const ola::rdm::RDMRequest *request);
     bool HandleDeviceInfo(const ola::rdm::RDMRequest *request);
+    bool HandleProductDetailList(const ola::rdm::RDMRequest *request);
     bool HandleStringResponse(const ola::rdm::RDMRequest *request,
                               const string &value);
     bool HandleDmxStartAddress(const ola::rdm::RDMRequest *request);
