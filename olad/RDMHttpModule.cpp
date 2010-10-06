@@ -49,6 +49,7 @@ using std::vector;
 
 const char RDMHttpModule::BACKEND_DISCONNECTED_ERROR[] =
     "Failed to send request, client isn't connected";
+const char RDMHttpModule::HINT_KEY[] = "hint";
 const char RDMHttpModule::ID_KEY[] = "id";
 const char RDMHttpModule::SECTION_KEY[] = "section";
 const char RDMHttpModule::UID_KEY[] = "uid";
@@ -232,6 +233,12 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
   string error;
   if (section_id == "device_info") {
     error = ProcessDeviceInfo(request, response, universe_id, *uid);
+  } else if (section_id == "product_detail") {
+    error = ProcessDetailIds(request, response, universe_id, *uid);
+  } else if (section_id == "manufacturer_label") {
+    error = ProcessManufacturerLabel(request, response, universe_id, *uid);
+  } else if (section_id == "device_label") {
+    error = ProcessDeviceLabel(request, response, universe_id, *uid);
   } else if (section_id == "dmx_address") {
     error = ProcessStartAddress(request, response, universe_id, *uid);
   } else {
@@ -536,27 +543,34 @@ void RDMHttpModule::SupportedSectionsHandler(
 
   if (CheckForRDMSuccess(status)) {
     copy(pid_list.begin(), pid_list.end(), inserter(pids, pids.end()));
-
-    if (pids.find(ola::rdm::PID_DEVICE_INFO) != pids.end()) {
+    vector<uint16_t>::const_iterator iter = pid_list.begin();
+    for (; iter != pid_list.end(); ++iter) {
       string hint;
-      if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
-          hint.push_back('m');  // m is for device model
-      if (pids.find(ola::rdm::PID_SOFTWARE_VERSION_LABEL) != pids.end())
-          hint.push_back('s');  // s is for software
-      section_info info = {"device_info", "Device Info", hint};
-      sections.push_back(info);
-    }
-
-    if (pids.find(ola::rdm::PID_DMX_START_ADDRESS) != pids.end()) {
-      section_info info = {"dmx_address", "DMX Start Address", ""};
-      sections.push_back(info);
-    }
-
-    if (pids.find(ola::rdm::PID_PRODUCT_DETAIL_ID_LIST) != pids.end()) {
-      section_info info = {"product_detail", "Product Details", ""};
-      sections.push_back(info);
+      switch (*iter) {
+        case ola::rdm::PID_DEVICE_INFO:
+          if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
+              hint.push_back('m');  // m is for device model
+          if (pids.find(ola::rdm::PID_SOFTWARE_VERSION_LABEL) != pids.end())
+              hint.push_back('s');  // s is for software
+          AddSection(&sections, "device_info", "Device Info", hint);
+          break;
+        case ola::rdm::PID_MANUFACTURER_LABEL:
+          AddSection(&sections, "manufacturer_label", "Manufacturer Label", "");
+          break;
+        case ola::rdm::PID_DEVICE_LABEL:
+          AddSection(&sections, "device_label", "Device Label", "");
+          break;
+        case ola::rdm::PID_DMX_START_ADDRESS:
+          AddSection(&sections, "dmx_address", "DMX Start Address", "");
+          break;
+        case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
+          AddSection(&sections, "product_detail", "Product Details", "");
+          break;
+      }
     }
   }
+
+  sort(sections.begin(), sections.end(), lt_section_info());
 
   vector<section_info>::const_iterator iter;
   stringstream str;
@@ -583,17 +597,101 @@ string RDMHttpModule::ProcessDeviceInfo(const HttpRequest *request,
                                         HttpResponse *response,
                                         unsigned int universe_id,
                                         const UID &uid) {
+  string hint = request->GetParameter(HINT_KEY);
   string error;
-  m_rdm_api.GetDeviceInfo(
+  device_info dev_info = {universe_id, uid, hint, "", ""};
+
+  if (hint.find('s') != string::npos) {
+    m_rdm_api.GetSoftwareVersionLabel(
       universe_id,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetDeviceInfoHandler,
-                        response),
+                        &RDMHttpModule::GetSoftwareVersionHandler,
+                        response,
+                        dev_info),
       &error);
+  } else {
+    string software_version;
+    m_rdm_api.GetDeviceInfo(
+        universe_id,
+        uid,
+        ola::rdm::ROOT_RDM_DEVICE,
+        NewSingleCallback(this,
+                          &RDMHttpModule::GetDeviceInfoHandler,
+                          response,
+                          dev_info),
+        &error);
+  }
   return error;
-  (void) request;
+}
+
+
+/**
+ * Handle the response to a software version call.
+ */
+void RDMHttpModule::GetSoftwareVersionHandler(
+    HttpResponse *response,
+    device_info dev_info,
+    const ola::rdm::ResponseStatus &status,
+    const string &software_version) {
+  string error;
+
+  if (CheckForRDMSuccess(status))
+    dev_info.software_version = software_version;
+
+  if (dev_info.hint.find('m') != string::npos) {
+    m_rdm_api.GetDeviceModelDescription(
+        dev_info.universe_id,
+        dev_info.uid,
+        ola::rdm::ROOT_RDM_DEVICE,
+        NewSingleCallback(this,
+                          &RDMHttpModule::GetDeviceModelHandler,
+                          response,
+                          dev_info),
+        &error);
+  } else {
+    m_rdm_api.GetDeviceInfo(
+        dev_info.universe_id,
+        dev_info.uid,
+        ola::rdm::ROOT_RDM_DEVICE,
+        NewSingleCallback(this,
+                          &RDMHttpModule::GetDeviceInfoHandler,
+                          response,
+                          dev_info),
+        &error);
+  }
+
+  if (!error.empty())
+    m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+}
+
+
+/**
+ * Handle the response to a device model call.
+ */
+void RDMHttpModule::GetDeviceModelHandler(
+    HttpResponse *response,
+    device_info dev_info,
+    const ola::rdm::ResponseStatus &status,
+    const string &device_model) {
+  string error;
+
+  if (CheckForRDMSuccess(status))
+    dev_info.device_model = device_model;
+
+  m_rdm_api.GetDeviceInfo(
+      dev_info.universe_id,
+      dev_info.uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetDeviceInfoHandler,
+                        response,
+                        dev_info),
+      &error);
+
+  if (!error.empty())
+    m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
 }
 
 
@@ -602,6 +700,7 @@ string RDMHttpModule::ProcessDeviceInfo(const HttpRequest *request,
  */
 void RDMHttpModule::GetDeviceInfoHandler(
     HttpResponse *response,
+    device_info dev_info,
     const ola::rdm::ResponseStatus &status,
     const ola::rdm::DeviceDescriptor &device) {
   stringstream str;
@@ -611,12 +710,25 @@ void RDMHttpModule::GetDeviceInfoHandler(
     stream << static_cast<int>(device.protocol_version_high) << "."
       << static_cast<int>(device.protocol_version_low);
     AddStringVariable(&str, "Protocol Version", stream.str());
-    AddIntVariable(&str, "Device Model", device.device_model);
+
+    stream.str("");
+    if (dev_info.device_model.empty())
+      stream << device.device_model;
+    else
+      stream << dev_info.device_model << " (" << device.device_model << ")";
+    AddStringVariable(&str, "Device Model", stream.str());
+
     AddStringVariable(
         &str,
         "Product Category",
         ola::rdm::ProductCategoryToString(device.product_category));
-    AddIntVariable(&str, "Software Version", device.software_version);
+    stream.str("");
+    if (dev_info.software_version.empty())
+      stream << device.software_version;
+    else
+      stream << dev_info.software_version << " (" << device.software_version
+        << ")";
+    AddStringVariable(&str, "Software Version", stream.str());
     AddIntVariable(&str, "DMX Footprint", device.dmx_footprint);
 
     stream.str("");
@@ -633,6 +745,142 @@ void RDMHttpModule::GetDeviceInfoHandler(
   response->Send();
   delete response;
 }
+
+
+/*
+ * Handle the request for the product details ids.
+ */
+string RDMHttpModule::ProcessDetailIds(const HttpRequest *request,
+                                       HttpResponse *response,
+                                       unsigned int universe_id,
+                                       const UID &uid) {
+  string error;
+  m_rdm_api.GetProductDetailIdList(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetProductIdsHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a product detail ids call and build the response.
+ */
+void RDMHttpModule::GetProductIdsHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const vector<uint16_t> &ids) {
+  bool first = true;
+  stringstream str, product_ids;
+  str << "[" << endl;
+  if (CheckForRDMSuccess(status)) {
+    vector<uint16_t>::const_iterator iter = ids.begin();
+    for (; iter != ids.end(); ++iter) {
+      string product_id = ola::rdm::ProductDetailToString(*iter);
+      if (product_id.empty())
+        continue;
+
+      if (first)
+        first = false;
+      else
+        product_ids << ", ";
+      product_ids << product_id;
+    }
+    AddStringVariable(&str, "Product Detail IDs", product_ids.str());
+  }
+  str << "]";
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+
+/**
+ * Handle the request for the Manufacturer label.
+ */
+string RDMHttpModule::ProcessManufacturerLabel(const HttpRequest *request,
+                                               HttpResponse *response,
+                                               unsigned int universe_id,
+                                               const UID &uid) {
+  string error;
+  m_rdm_api.GetManufacturerLabel(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetManufacturerLabelHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a manufacturer label call and build the response
+ */
+void RDMHttpModule::GetManufacturerLabelHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const string &label) {
+  stringstream str;
+  str << "[" << endl;
+  if (CheckForRDMSuccess(status))
+    AddStringVariable(&str, "Manufacturer Label", label, true);
+  str << "]";
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+
+}
+
+
+/**
+ * Handle the request for the Device label.
+ */
+string RDMHttpModule::ProcessDeviceLabel(const HttpRequest *request,
+                                         HttpResponse *response,
+                                         unsigned int universe_id,
+                                         const UID &uid) {
+  string error;
+  m_rdm_api.GetDeviceLabel(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetDeviceLabelHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a device label call and build the response
+ */
+void RDMHttpModule::GetDeviceLabelHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    const string &label) {
+  stringstream str;
+  str << "[" << endl;
+  if (CheckForRDMSuccess(status))
+    AddStringVariable(&str, "Device Label", label, true);
+  str << "]";
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
 
 /**
  * Handle the request for the start address section.
@@ -665,7 +913,7 @@ void RDMHttpModule::GetStartAddressHandler(
   stringstream str;
   str << "[" << endl;
   if (CheckForRDMSuccess(status))
-    AddIntVariable(&str, "DMX Start Address", address);
+    AddIntVariable(&str, "DMX Start Address", address, true);
   str << "]";
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
@@ -747,6 +995,18 @@ void RDMHttpModule::HandleBoolResponse(HttpResponse *response,
   response->Append("ok");
   response->Send();
   delete response;
+}
+
+
+/**
+ * Add a section to the supported section list
+ */
+void RDMHttpModule::AddSection(vector<section_info> *sections,
+                               const string &section_id,
+                               const string &section_name,
+                               const string &hint) {
+  section_info info = {section_id, section_name, hint};
+  sections->push_back(info);
 }
 
 
