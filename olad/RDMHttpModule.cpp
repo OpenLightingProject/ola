@@ -544,16 +544,15 @@ void RDMHttpModule::SupportedSectionsHandler(
   if (CheckForRDMSuccess(status)) {
     copy(pid_list.begin(), pid_list.end(), inserter(pids, pids.end()));
     vector<uint16_t>::const_iterator iter = pid_list.begin();
+
+    // PID_DEVICE_INFO is required so we always add it
+    string hint;
+    if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
+        hint.push_back('m');  // m is for device model
+    AddSection(&sections, "device_info", "Device Info", hint);
+
     for (; iter != pid_list.end(); ++iter) {
-      string hint;
       switch (*iter) {
-        case ola::rdm::PID_DEVICE_INFO:
-          if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
-              hint.push_back('m');  // m is for device model
-          if (pids.find(ola::rdm::PID_SOFTWARE_VERSION_LABEL) != pids.end())
-              hint.push_back('s');  // s is for software
-          AddSection(&sections, "device_info", "Device Info", hint);
-          break;
         case ola::rdm::PID_MANUFACTURER_LABEL:
           AddSection(&sections, "manufacturer_label", "Manufacturer Label", "");
           break;
@@ -601,28 +600,15 @@ string RDMHttpModule::ProcessDeviceInfo(const HttpRequest *request,
   string error;
   device_info dev_info = {universe_id, uid, hint, "", ""};
 
-  if (hint.find('s') != string::npos) {
-    m_rdm_api.GetSoftwareVersionLabel(
-      universe_id,
-      uid,
-      ola::rdm::ROOT_RDM_DEVICE,
-      NewSingleCallback(this,
-                        &RDMHttpModule::GetSoftwareVersionHandler,
-                        response,
-                        dev_info),
-      &error);
-  } else {
-    string software_version;
-    m_rdm_api.GetDeviceInfo(
-        universe_id,
-        uid,
-        ola::rdm::ROOT_RDM_DEVICE,
-        NewSingleCallback(this,
-                          &RDMHttpModule::GetDeviceInfoHandler,
-                          response,
-                          dev_info),
-        &error);
-  }
+  m_rdm_api.GetSoftwareVersionLabel(
+    universe_id,
+    uid,
+    ola::rdm::ROOT_RDM_DEVICE,
+    NewSingleCallback(this,
+                      &RDMHttpModule::GetSoftwareVersionHandler,
+                      response,
+                      dev_info),
+    &error);
   return error;
 }
 
