@@ -1012,12 +1012,6 @@ class RDMAPI {
         const RDMAPIImplResponseStatus &status,
         const string &data);
 
-    void _HandleGetStatusIdDescription(
-        SingleUseCallback2<void, const ResponseStatus&,
-                           const string&> *callback,
-        const RDMAPIImplResponseStatus &status,
-        const string &data);
-
     void _HandleGetSubDeviceReporting(
         SingleUseCallback2<void,
                            const ResponseStatus&,

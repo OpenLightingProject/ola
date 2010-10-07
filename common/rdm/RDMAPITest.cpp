@@ -331,8 +331,10 @@ class RDMAPITest: public CppUnit::TestFixture {
     void CheckDeviceInfo(const ResponseStatus &status,
                          const ola::rdm::DeviceDescriptor &descriptor) {
       CheckResponseStatus(status);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(1),
-                           descriptor.protocol_version);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(1),
+                           descriptor.protocol_version_high);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0),
+                           descriptor.protocol_version_low);
       CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(2),
                            descriptor.device_model);
       CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(3),
@@ -695,7 +697,8 @@ void RDMAPITest::testProductInformation() {
 
   // device info
   struct device_info_s {
-    uint16_t version;
+    uint8_t version_high;
+    uint8_t version_low;
     uint16_t model;
     uint16_t product_category;
     uint32_t software_version;
@@ -707,7 +710,8 @@ void RDMAPITest::testProductInformation() {
     uint8_t sensor_count;
   } __attribute__((packed));
   struct device_info_s device_info;
-  device_info.version = HostToNetwork(static_cast<uint16_t>(1));
+  device_info.version_high = 1;
+  device_info.version_low = 0;
   device_info.model = HostToNetwork(static_cast<uint16_t>(2));
   device_info.product_category = HostToNetwork(static_cast<uint16_t>(3));
   device_info.software_version = HostToNetwork(

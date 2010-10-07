@@ -273,7 +273,7 @@ bool RDMAPI::GetStatusIdDescription(
 
   RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
     this,
-    &RDMAPI::_HandleGetStatusIdDescription,
+    &RDMAPI::_HandleLabelResponse,
     callback);
   status_id = HostToNetwork(status_id);
   return CheckReturnStatus(
@@ -2851,18 +2851,6 @@ void RDMAPI::_HandleGetStatusMessage(
 
 
 /*
- * Handle a STATUS_ID_DESCRIPTION message
- */
-void RDMAPI::_HandleGetStatusIdDescription(
-    SingleUseCallback2<void, const ResponseStatus&, const string&> *callback,
-    const RDMAPIImplResponseStatus &status,
-    const string &data) {
-  ResponseStatus response_status(status, data);
-  callback->Run(response_status, data);
-}
-
-
-/*
  * Handle a get SUB_DEVICE_STATUS_REPORT_THRESHOLD message
  */
 void RDMAPI::_HandleGetSubDeviceReporting(
@@ -2965,6 +2953,7 @@ void RDMAPI::_HandleGetParameterDescriptor(
           sizeof(raw_description) - LABEL_SIZE - 1);
       description.description = std::string(raw_description.description,
                                             label_size);
+      ShortenString(&description.description);
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
@@ -3183,6 +3172,7 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
       personality = raw_description.personality;
       dmx_slots = NetworkToHost(raw_description.dmx_slots);
       description = std::string(raw_description.description, data_size - min);
+      ShortenString(&description);
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
@@ -3285,6 +3275,7 @@ void RDMAPI::_HandleGetSlotDescription(
       slot_index = NetworkToHost(raw_description.slot_index);
       description = std::string(raw_description.description,
                                 data.size() - min);
+      ShortenString(&description);
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
@@ -3374,6 +3365,7 @@ void RDMAPI::_HandleGetSensorDefinition(
       sensor.recorded_value_support = raw_description.recorded_value_support;
       sensor.description = std::string(raw_description.description,
                                        data_size - min);
+      ShortenString(&sensor.description);
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
@@ -3470,6 +3462,7 @@ void RDMAPI::_HandleSelfTestDescription(
       self_test_number = raw_description.self_test_number;
       description = std::string(raw_description.description,
                                 data.size() - min);
+      ShortenString(&description);
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
