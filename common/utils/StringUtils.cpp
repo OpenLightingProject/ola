@@ -76,6 +76,17 @@ void StringTrim(std::string *input) {
 }
 
 
+/**
+ * Take care of any NULLs embedded in the string
+ * @param the string to shorten
+ */
+void ShortenString(string *input) {
+  unsigned int index = input->find(static_cast<char>(0));
+  if (index != string::npos)
+    input->erase(index);
+}
+
+
 /*
  * Convert an int to a string.
  * @param i the int to convert

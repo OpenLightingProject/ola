@@ -33,6 +33,7 @@ void StringSplit(const string &input,
                  std::vector<string> &tokens,
                  const string &delimiters=" ");
 void StringTrim(string *input);
+void ShortenString(string *input);
 string IntToString(int i);
 string IntToString(unsigned int i);
 void Escape(string *original);

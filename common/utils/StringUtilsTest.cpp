@@ -28,13 +28,14 @@ using std::string;
 using std::vector;
 using ola::Escape;
 using ola::EscapeString;
-using ola::HexStringToUInt;
 using ola::HexStringToUInt16;
+using ola::HexStringToUInt;
 using ola::IntToString;
+using ola::ShortenString;
 using ola::StringSplit;
-using ola::StringToUInt;
 using ola::StringToUInt16;
 using ola::StringToUInt8;
+using ola::StringToUInt;
 using ola::StringTrim;
 using ola::ToLower;
 
@@ -42,6 +43,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringUtilsTest);
   CPPUNIT_TEST(testSplit);
   CPPUNIT_TEST(testTrim);
+  CPPUNIT_TEST(testShorten);
   CPPUNIT_TEST(testIntToString);
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testStringToUInt);
@@ -54,6 +56,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   public:
     void testSplit();
     void testTrim();
+    void testShorten();
     void testIntToString();
     void testEscape();
     void testStringToUInt();
@@ -140,7 +143,7 @@ void StringUtilsTest::testSplit() {
 void StringUtilsTest::testTrim() {
   string input = "foo bar baz";
   StringTrim(&input);
-  CPPUNIT_ASSERT_EQUAL(input, input);
+  CPPUNIT_ASSERT_EQUAL(string("foo bar baz"), input);
   input = "  \rfoo bar\t\n";
   StringTrim(&input);
   CPPUNIT_ASSERT_EQUAL(string("foo bar"), input);
@@ -148,6 +151,23 @@ void StringUtilsTest::testTrim() {
   StringTrim(&input);
   CPPUNIT_ASSERT_EQUAL(string(""), input);
 }
+
+
+/*
+ * Test the shorten function.
+ */
+void StringUtilsTest::testShorten() {
+  string input = "foo bar baz";
+  ShortenString(&input);
+  CPPUNIT_ASSERT_EQUAL(string("foo bar baz"), input);
+  input = "foo \0bar";
+  ShortenString(&input);
+  CPPUNIT_ASSERT_EQUAL(string("foo "), input);
+  input = "foo\0bar\0baz";
+  StringTrim(&input);
+  CPPUNIT_ASSERT_EQUAL(string("foo"), input);
+}
+
 
 /*
  * test the IntToString function.
