@@ -200,7 +200,7 @@ string MemoryPreferences::GetValue(const string &key) const {
   iter = m_pref_map.find(key);
 
   if (iter != m_pref_map.end())
-    return iter->second.c_str();
+    return iter->second;
   return "";
 }
 

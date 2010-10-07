@@ -2604,7 +2604,10 @@ void RDMAPI::_HandleLabelResponse(
     str << "PDL needs to be <= " << LABEL_SIZE << ", was " << data.size();
     response_status.MalformedResponse(str.str());
   }
-  callback->Run(response_status, data);
+
+  string label = data;
+  ShortenString(&label);
+  callback->Run(response_status, label);
 }
 
 
