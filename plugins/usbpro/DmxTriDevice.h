@@ -73,6 +73,7 @@ class DmxTriDevice: public UsbDevice, public WidgetListener {
     queue<const class ola::rdm::RDMRequest *> m_pending_requests;
     bool m_rdm_request_pending;
     uint16_t m_last_esta_id;
+    ola::rdm::RDMResponse *m_rdm_response;
 
     bool InDiscoveryMode() const;
     bool SendDiscoveryStart();

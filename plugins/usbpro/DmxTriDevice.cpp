@@ -59,7 +59,8 @@ DmxTriDevice::DmxTriDevice(const ola::PluginAdaptor *plugin_adaptor,
     m_rdm_timeout_id(ola::network::INVALID_TIMEOUT),
     m_uid_count(0),
     m_rdm_request_pending(false),
-    m_last_esta_id(UID::ALL_MANUFACTURERS) {
+    m_last_esta_id(UID::ALL_MANUFACTURERS),
+    m_rdm_response(NULL) {
   std::stringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" <<
     NetworkToHost(serial);
@@ -331,7 +332,6 @@ void DmxTriDevice::DispatchNextRequest() {
 
   rdm_message message;
 
-
   if (request->CommandClass() == RDMCommand::GET_COMMAND) {
     message.command = REMOTE_GET_COMMAND_ID;
   } else if (request->CommandClass() == RDMCommand::SET_COMMAND) {
@@ -363,12 +363,6 @@ void DmxTriDevice::DispatchNextRequest() {
   unsigned int size = sizeof(message) -
     ola::rdm::RDMCommand::MAX_PARAM_DATA_LENGTH + request->ParamDataSize();
 
-  /*
-  uint8_t *foo = reinterpret_cast<uint8_t*>(&message);
-  for(unsigned int i = 0; i < size; i++) {
-    OLA_INFO << std::hex << (int) *foo++;
-  }
-  */
   m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
                         size,
                         reinterpret_cast<uint8_t*>(&message));
@@ -522,7 +516,8 @@ void DmxTriDevice::HandleRemoteRDMResponse(uint8_t return_code,
   OLA_WARN << "got get response! " << static_cast<int>(return_code) <<
     " length " << length;
   const RDMRequest *request = m_pending_requests.front();
-  if (return_code == EC_NO_ERROR || return_code == EC_RESPONSE_WAIT) {
+  if (return_code == EC_NO_ERROR || return_code == EC_RESPONSE_WAIT ||
+      return_code == EC_RESPONSE_MORE) {
     ola::rdm::RDMResponse *response;
     if (request->CommandClass() == RDMCommand::GET_COMMAND) {
       response = new ola::rdm::RDMGetResponse(
@@ -549,11 +544,35 @@ void DmxTriDevice::HandleRemoteRDMResponse(uint8_t return_code,
           data,
           length);
     }
-    GetOutputPort(0)->HandleRDMResponse(response);
+
+    if (m_rdm_response) {
+      // if this is part of an overflowed response we need to combine it
+      ola::rdm::RDMResponse *combined_response =
+        ola::rdm::RDMResponse::CombineResponses(m_rdm_response, response);
+      delete m_rdm_response;
+      delete response;
+      m_rdm_response = combined_response;
+    } else {
+      m_rdm_response = response;
+    }
+
+    if (m_rdm_response) {
+      if (return_code == EC_RESPONSE_MORE) {
+        // send the same command again;
+        DispatchNextRequest();
+      } else {
+        GetOutputPort(0)->HandleRDMResponse(m_rdm_response);
+        m_rdm_response = NULL;
+      }
+    }
   } else {
     // TODO(simonn): Implement the correct response here when we error out
     OLA_WARN << "Response was returned with 0x" << std::hex <<
       static_cast<int>(return_code);
+    if (m_rdm_response) {
+      delete m_rdm_response;
+      m_rdm_response = NULL;
+    }
   }
   delete request;
   m_pending_requests.pop();
