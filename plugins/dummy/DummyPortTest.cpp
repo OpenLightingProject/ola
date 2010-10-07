@@ -174,6 +174,7 @@ void DummyPortTest::testSupportedParams() {
   uint16_t supported_params[] = {
     ola::rdm::PID_SUPPORTED_PARAMETERS,
     ola::rdm::PID_DEVICE_INFO,
+    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
     ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
     ola::rdm::PID_MANUFACTURER_LABEL,
     ola::rdm::PID_DEVICE_LABEL,
@@ -215,8 +216,8 @@ void DummyPortTest::testDeviceInfo() {
       0);  // data length
 
   ola::rdm::DeviceDescriptor device_descriptor;
-  device_descriptor.protocol_version =
-    HostToNetwork(static_cast<uint16_t>(0x100));
+  device_descriptor.protocol_version_high = 1;
+  device_descriptor.protocol_version_low = 0;
   device_descriptor.device_model = HostToNetwork(static_cast<uint16_t>(1));
   device_descriptor.product_category = HostToNetwork(
       static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_OTHER));
