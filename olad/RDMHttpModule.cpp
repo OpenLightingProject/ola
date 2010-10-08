@@ -185,6 +185,8 @@ int RDMHttpModule::JsonSupportedPIDs(const HttpRequest *request,
 
 /**
  * Return a list of sections to display in the RDM control panel.
+ * We use the response from SUPPORTED_PARAMS and DEVICE_INFO to decide which
+ * pids exist.
  * @param request the HttpRequest
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
@@ -206,7 +208,9 @@ int RDMHttpModule::JsonSupportedSections(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
                         &RDMHttpModule::SupportedSectionsHandler,
-                        response),
+                        response,
+                        universe_id,
+                        *uid),
       &error);
   delete uid;
 
@@ -535,50 +539,100 @@ void RDMHttpModule::SupportedParamsHandler(
  */
 void RDMHttpModule::SupportedSectionsHandler(
     HttpResponse *response,
+    unsigned int universe_id,
+    UID uid,
     const ola::rdm::ResponseStatus &status,
     const vector<uint16_t> &pid_list) {
+  string error;
 
+  // nacks here are ok if the device doesn't support SUPPORTED_PARAMS
+  if (!CheckForRDMSuccess(status) &&
+      status.ResponseType() != ola::rdm::ResponseStatus::REQUEST_NACKED) {
+    m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+    return;
+  }
+
+  m_rdm_api.GetDeviceInfo(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SupportedSectionsDeviceInfoHandler,
+                        response,
+                        pid_list),
+      &error);
+  if (!error.empty())
+    m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+}
+
+
+/**
+ * Handle the second part of the supported sections request.
+ */
+void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
+    HttpResponse *response,
+    const vector<uint16_t> pid_list,
+    const ola::rdm::ResponseStatus &status,
+    const ola::rdm::DeviceDescriptor &device) {
   vector<section_info> sections;
   std::set<uint16_t> pids;
+  copy(pid_list.begin(), pid_list.end(), inserter(pids, pids.end()));
+
+  // PID_DEVICE_INFO is required so we always add it
+  string hint;
+  if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
+      hint.push_back('m');  // m is for device model
+  AddSection(&sections, "device_info", "Device Info", hint);
+
+  AddSection(&sections, "identify", "Identify Mode", hint);
+
+  bool dmx_address_added = false;
+  vector<uint16_t>::const_iterator iter = pid_list.begin();
+  for (; iter != pid_list.end(); ++iter) {
+    switch (*iter) {
+      case ola::rdm::PID_MANUFACTURER_LABEL:
+        AddSection(&sections, "manufacturer_label", "Manufacturer Label", "");
+        break;
+      case ola::rdm::PID_DEVICE_LABEL:
+        AddSection(&sections, "device_label", "Device Label", "");
+        break;
+      case ola::rdm::PID_DMX_START_ADDRESS:
+        AddSection(&sections, "dmx_address", "DMX Start Address", "");
+        dmx_address_added = true;
+        break;
+      case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
+        AddSection(&sections, "product_detail", "Product Details", "");
+        break;
+    }
+  }
 
   if (CheckForRDMSuccess(status)) {
-    copy(pid_list.begin(), pid_list.end(), inserter(pids, pids.end()));
-    vector<uint16_t>::const_iterator iter = pid_list.begin();
-
-    // PID_DEVICE_INFO is required so we always add it
-    string hint;
-    if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
-        hint.push_back('m');  // m is for device model
-    AddSection(&sections, "device_info", "Device Info", hint);
-
-    for (; iter != pid_list.end(); ++iter) {
-      switch (*iter) {
-        case ola::rdm::PID_MANUFACTURER_LABEL:
-          AddSection(&sections, "manufacturer_label", "Manufacturer Label", "");
-          break;
-        case ola::rdm::PID_DEVICE_LABEL:
-          AddSection(&sections, "device_label", "Device Label", "");
-          break;
-        case ola::rdm::PID_DMX_START_ADDRESS:
-          AddSection(&sections, "dmx_address", "DMX Start Address", "");
-          break;
-        case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
-          AddSection(&sections, "product_detail", "Product Details", "");
-          break;
+    if (device.dmx_footprint && !dmx_address_added)
+      AddSection(&sections, "dmx_address", "DMX Start Address", "");
+    if (device.sensor_count &&
+        pids.find(ola::rdm::PID_SENSOR_DEFINITION) != pids.end() &&
+        pids.find(ola::rdm::PID_SENSOR_VALUE) != pids.end()) {
+      // sensors count from 1
+      for (unsigned int i = 1; i <= device.sensor_count; ++i) {
+        stringstream heading, hint;
+        hint << i;
+        heading << "Sensor " << i;
+        AddSection(&sections, "sensor", heading.str(), hint.str());
       }
     }
   }
 
   sort(sections.begin(), sections.end(), lt_section_info());
 
-  vector<section_info>::const_iterator iter;
+  vector<section_info>::const_iterator section_iter;
   stringstream str;
   str << "[" << endl;
-  for (iter = sections.begin(); iter != sections.end(); ++iter) {
+  for (section_iter = sections.begin(); section_iter != sections.end();
+       ++section_iter) {
     str << "  {" << endl;
-    str << "    \"id\": \"" << iter->id << "\"," << endl;
-    str << "    \"name\": \"" << iter->name << "\"," << endl;
-    str << "    \"hint\": \"" << iter->hint << "\"," << endl;
+    str << "    \"id\": \"" << section_iter->id << "\"," << endl;
+    str << "    \"name\": \"" << section_iter->name << "\"," << endl;
+    str << "    \"hint\": \"" << section_iter->hint << "\"," << endl;
     str << "  }," << endl;
   }
   str << "]" << endl;
@@ -824,7 +878,6 @@ void RDMHttpModule::GetManufacturerLabelHandler(
   response->Append(str.str());
   response->Send();
   delete response;
-
 }
 
 

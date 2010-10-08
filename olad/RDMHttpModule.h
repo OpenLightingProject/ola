@@ -132,8 +132,15 @@ class RDMHttpModule: public HttpModule {
                                 const ola::rdm::ResponseStatus &status,
                                 const vector<uint16_t> &pids);
     void SupportedSectionsHandler(HttpResponse *response,
+                                  unsigned int universe,
+                                  UID uid,
                                   const ola::rdm::ResponseStatus &status,
                                   const vector<uint16_t> &pids);
+    void SupportedSectionsDeviceInfoHandler(
+        HttpResponse *response,
+        const vector<uint16_t> pids,
+        const ola::rdm::ResponseStatus &status,
+        const ola::rdm::DeviceDescriptor &device);
 
     // section methods
     string ProcessDeviceInfo(const HttpRequest *request,
