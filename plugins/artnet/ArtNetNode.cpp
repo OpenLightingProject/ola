@@ -1533,8 +1533,9 @@ void ArtNetNode::UpdatePortFromTodPacket(uint8_t port_id,
   }
 
   // If this is the one and only block from this node, we can remove all uids
-  // that don't appear in it
-  if (uid_count == NetworkToHost(packet.uid_total)) {
+  // that don't appear in it.
+  // There is a bug in ArtNet nodes where sometimes UidCount > UidTotal.
+  if (uid_count >= NetworkToHost(packet.uid_total)) {
     uid_map::iterator iter = port_uids.begin();
     while (iter != port_uids.end()) {
       if (iter->second.first.s_addr == source_address.s_addr &&
