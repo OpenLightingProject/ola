@@ -72,12 +72,12 @@ JsonSection::JsonSection(bool allow_refresh)
 void JsonSection::AddIntVariable(const string &name,
                                  unsigned int value,
                                  bool editable) {
-  m_output << "   {" << endl;
-  m_output << "   \"name\": \"" << name << "\"," << endl;
-  m_output << "   \"type\": \"int\"," << endl;
-  m_output << "   \"editable\": " << editable << "," << endl;
-  m_output << "   \"value\": " << value << endl;
-  m_output << "   }," << endl;
+  m_output << "    {" << endl;
+  m_output << "    \"name\": \"" << name << "\"," << endl;
+  m_output << "    \"type\": \"int\"," << endl;
+  m_output << "    \"editable\": " << editable << "," << endl;
+  m_output << "    \"value\": " << value << endl;
+  m_output << "    }," << endl;
 }
 
 
@@ -87,12 +87,12 @@ void JsonSection::AddIntVariable(const string &name,
 void JsonSection::AddStringVariable(const string &name,
                                 const string &value,
                                 bool editable) {
-  m_output << "   {" << endl;
-  m_output << "   \"name\": \"" << name << "\"," << endl;
-  m_output << "   \"type\": \"string\"," << endl;
-  m_output << "   \"editable\": " << editable << "," << endl;
-  m_output << "   \"value\": \"" << value << "\"," << endl;
-  m_output << "   }," << endl;
+  m_output << "    {" << endl;
+  m_output << "    \"name\": \"" << name << "\"," << endl;
+  m_output << "    \"type\": \"string\"," << endl;
+  m_output << "    \"editable\": " << editable << "," << endl;
+  m_output << "    \"value\": \"" << value << "\"," << endl;
+  m_output << "    }," << endl;
 }
 
 /*
