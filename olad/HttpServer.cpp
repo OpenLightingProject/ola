@@ -471,7 +471,7 @@ void HttpServer::UpdateSockets() {
   while (iter != m_sockets.end() && i <= max_fd) {
     if ((*iter)->ReadDescriptor() < i) {
       // this socket is no longer required so remove it
-      OLA_INFO << "Removing unsed socket " << (*iter)->ReadDescriptor();
+      OLA_DEBUG << "Removing unsed socket " << (*iter)->ReadDescriptor();
       m_select_server->RemoveSocket(*iter);
       m_select_server->UnRegisterWriteSocket(*iter);
       delete *iter;
@@ -492,7 +492,7 @@ void HttpServer::UpdateSockets() {
     } else {
       // this is a new socket
       if (FD_ISSET(i, &r_set) || FD_ISSET(i, &w_set)) {
-        OLA_INFO << "Adding new socket " << i;
+        OLA_DEBUG << "Adding new socket " << i;
         UnmanagedSocket *socket = NewSocket(&r_set, &w_set, i);
         m_sockets.insert(socket);
       }
@@ -501,7 +501,7 @@ void HttpServer::UpdateSockets() {
   }
 
   while (iter != m_sockets.end()) {
-    OLA_INFO << "Removing " << (*iter)->ReadDescriptor() <<
+    OLA_DEBUG << "Removing " << (*iter)->ReadDescriptor() <<
       " as it's not longer needed";
     m_select_server->UnRegisterWriteSocket(*iter);
     m_select_server->RemoveSocket(*iter);
@@ -512,7 +512,7 @@ void HttpServer::UpdateSockets() {
   for (;i <= max_fd; i++) {
     // add the remaining sockets to the SS
     if (FD_ISSET(i, &r_set) || FD_ISSET(i, &w_set)) {
-      OLA_INFO << "Adding " << i << " as a new socket";
+      OLA_DEBUG << "Adding " << i << " as a new socket";
       UnmanagedSocket *socket = NewSocket(&r_set, &w_set, i);
       m_sockets.insert(socket);
     }
