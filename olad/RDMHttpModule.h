@@ -63,8 +63,6 @@ class JsonSection {
 
 /*
  * The module that deals with RDM requests.
- * TODO(simon): factor out the common functionality like RegisterHandler into a
- *   parent class.
  */
 class RDMHttpModule: public HttpModule {
   public:
