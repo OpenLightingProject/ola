@@ -40,7 +40,7 @@ ola.RDMAttributesPanel = function(element_id) {
   this.current_universe = undefined;
   this.current_uid = undefined;
   this.divs = new Array();
-  this.loaded_sections = new Array();
+  // This holds the list of sections, and is updated as a section is loaded
   this.section_data = undefined;
 };
 
@@ -107,7 +107,6 @@ ola.RDMAttributesPanel.prototype._setLoading = function(element) {
 ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
   this.element.innerHTML = '';
   this.divs = new Array();
-  this.loaded_sections = new Array();
 
   var sections = e.target.getResponseJson();
   var section_count = sections.length;
@@ -130,15 +129,17 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
     goog.dom.appendChild(this.element, fieldset);
     var z = new goog.ui.AnimatedZippy(legend, div);
     this.divs.push(div);
-    this.loaded_sections.push(false);
 
     goog.events.listen(z,
         goog.ui.Zippy.Events.TOGGLE,
         (function(x) {
-          return function(e) { this._expandZippy(e, x); } }
+          return function(e) { this._expandSection(e, x); } }
         )(i),
         false,
         this);
+
+    sections['data'] = undefined;
+    sections['loaded'] = false;
   }
   this.section_data = sections;
 };
@@ -147,44 +148,47 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
 /**
  * Called when one of the zippies is expanded
  */
-ola.RDMAttributesPanel.prototype._expandZippy = function(e, i) {
+ola.RDMAttributesPanel.prototype._expandSection = function(e, index) {
   if (!e.expanded)
     return;
 
-  if (this.loaded_sections[i])
+  if (this.section_data[index]['loaded'])
     return;
 
-  this._loadZippy(i);
+  this._loadSection(index);
 };
 
 
 /**
  * Load the contents for a zippy section
  */
-ola.RDMAttributesPanel.prototype._loadZippy = function(i) {
+ola.RDMAttributesPanel.prototype._loadSection = function(index) {
   var server = ola.Server.getInstance();
   var panel = this;
   server.rdmGetSectionInfo(
       this.current_universe,
       this.current_uid,
-      this.section_data[i]['id'],
-      this.section_data[i]['hint'],
-      function(e) { panel._populateZippy(e, i); });
-  this.loaded_sections[i] = true;
+      this.section_data[index]['id'],
+      this.section_data[index]['hint'],
+      function(e) { panel._populateSection(e, index); });
+  this.section_data[index]['loaded'] = true;
 };
 
 
 /**
  * Populate a zippy
  */
-ola.RDMAttributesPanel.prototype._populateZippy = function(e, index) {
+ola.RDMAttributesPanel.prototype._populateSection = function(e, index) {
   var section_response = e.target.getResponseJson();
   var section_info = section_response['fields'];
   var count = section_info.length;
   var div = this.divs[index];
   div.innerHTML = '';
+  var form = goog.dom.createElement('form');
   var table = goog.dom.createElement('table');
   table.className = 'ola-table';
+  var editable = false;
+
   for (var i = 0; i < count; ++i) {
     var tr = goog.dom.createElement('tr');
     var name_td = goog.dom.createElement('td');
@@ -195,8 +199,10 @@ ola.RDMAttributesPanel.prototype._populateZippy = function(e, index) {
     goog.dom.appendChild(tr, name_td);
     goog.dom.appendChild(tr, td);
     goog.dom.appendChild(table, tr);
+    editable |= section_info[i]['editable'];
   }
-  goog.dom.appendChild(div, table);
+  goog.dom.appendChild(form, table);
+  goog.dom.appendChild(div, form);
 
   if (section_response['refresh']) {
     var button = new goog.ui.CustomButton('Refresh');
@@ -204,9 +210,21 @@ ola.RDMAttributesPanel.prototype._populateZippy = function(e, index) {
 
     goog.events.listen(button,
                        goog.ui.Component.EventType.ACTION,
-                       function() { this._loadZippy(index) },
+                       function() { this._loadSection(index) },
                        false, this);
   }
+
+  if (editable) {
+    var button = new goog.ui.CustomButton('Save');
+    button.render(div);
+
+    goog.events.listen(button,
+                       goog.ui.Component.EventType.ACTION,
+                       function() { this._saveSection(index) },
+                       false, this);
+  }
+
+  this.section_data[index]['data'] = section_response;
 };
 
 
@@ -224,4 +242,12 @@ ola.RDMAttributesPanel.prototype._buildElement = function(parent, element) {
   } else {
     parent.innerHTML = value;
   }
+};
+
+
+/**
+ * Save the contents of a section.
+ */
+ola.RDMAttributesPanel.prototype._saveSection = function(index) {
+  alert(this.section_data[index]['data']);
 };
