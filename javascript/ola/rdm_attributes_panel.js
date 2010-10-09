@@ -19,11 +19,10 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.ui.Component.EventType');
 goog.require('goog.ui.AnimatedZippy');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.Container');
 goog.require('goog.ui.Control');
-goog.require('goog.ui.Zippy');
 goog.require('ola.Dialog');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
@@ -53,7 +52,7 @@ ola.RDMAttributesPanel = function(element_id) {
 ola.RDMAttributesPanel.prototype.updateUniverse = function(universe_id) {
   this.current_universe = universe_id;
   this.current_uid = undefined;
-}
+};
 
 
 /**
@@ -124,6 +123,7 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
     var title = goog.dom.createTextNode(' ' + sections[i]['name']);
     goog.dom.appendChild(legend, title);
     var div = goog.dom.createElement('div');
+    div.align = 'center';
     this._setLoading(div);
     goog.dom.appendChild(fieldset, legend);
     goog.dom.appendChild(fieldset, div);
@@ -154,6 +154,14 @@ ola.RDMAttributesPanel.prototype._expandZippy = function(e, i) {
   if (this.loaded_sections[i])
     return;
 
+  this._loadZippy(i);
+};
+
+
+/**
+ * Load the contents for a zippy section
+ */
+ola.RDMAttributesPanel.prototype._loadZippy = function(i) {
   var server = ola.Server.getInstance();
   var panel = this;
   server.rdmGetSectionInfo(
@@ -169,10 +177,11 @@ ola.RDMAttributesPanel.prototype._expandZippy = function(e, i) {
 /**
  * Populate a zippy
  */
-ola.RDMAttributesPanel.prototype._populateZippy = function(e, i) {
-  var section_info = e.target.getResponseJson();
+ola.RDMAttributesPanel.prototype._populateZippy = function(e, index) {
+  var section_response = e.target.getResponseJson();
+  var section_info = section_response['fields'];
   var count = section_info.length;
-  var div = this.divs[i];
+  var div = this.divs[index];
   div.innerHTML = '';
   var table = goog.dom.createElement('table');
   table.className = 'ola-table';
@@ -188,6 +197,16 @@ ola.RDMAttributesPanel.prototype._populateZippy = function(e, i) {
     goog.dom.appendChild(table, tr);
   }
   goog.dom.appendChild(div, table);
+
+  if (section_response['refresh']) {
+    var button = new goog.ui.CustomButton('Refresh');
+    button.render(div);
+
+    goog.events.listen(button,
+                       goog.ui.Component.EventType.ACTION,
+                       function() { this._loadZippy(index) },
+                       false, this);
+  }
 };
 
 
