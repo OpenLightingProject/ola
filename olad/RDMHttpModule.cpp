@@ -56,6 +56,59 @@ const char RDMHttpModule::UID_KEY[] = "uid";
 
 
 /**
+ * Create a new section response
+ */
+JsonSection::JsonSection(bool allow_refresh)
+    : m_complete(false) {
+  m_output << "{" << endl;
+  m_output << "  \"refresh\": " << allow_refresh << "," << endl;
+  m_output << "  \"fields\": [" << endl;
+}
+
+
+/**
+ * Add a int variable to the output
+ */
+void JsonSection::AddIntVariable(const string &name,
+                                 unsigned int value,
+                                 bool editable) {
+  m_output << "   {" << endl;
+  m_output << "   \"name\": \"" << name << "\"," << endl;
+  m_output << "   \"type\": \"int\"," << endl;
+  m_output << "   \"editable\": " << editable << "," << endl;
+  m_output << "   \"value\": " << value << endl;
+  m_output << "   }," << endl;
+}
+
+
+/**
+ * Add a string variable to the output
+ */
+void JsonSection::AddStringVariable(const string &name,
+                                const string &value,
+                                bool editable) {
+  m_output << "   {" << endl;
+  m_output << "   \"name\": \"" << name << "\"," << endl;
+  m_output << "   \"type\": \"string\"," << endl;
+  m_output << "   \"editable\": " << editable << "," << endl;
+  m_output << "   \"value\": \"" << value << "\"," << endl;
+  m_output << "   }," << endl;
+}
+
+/*
+ * Return the section as a string.
+ */
+string JsonSection::AsString() {
+  if (!m_complete) {
+    m_output << "  ]," << endl;
+    m_output << "  \"error\": \"" << m_error << "\"," << endl;
+    m_output << "}" << endl;
+  }
+  return m_output.str();
+}
+
+
+/**
  * Create a new OLA HTTP server
  * @param export_map the ExportMap to display when /debug is called
  * @param client_socket A ConnectedSocket which is used to communicate with the
@@ -743,23 +796,21 @@ void RDMHttpModule::GetDeviceInfoHandler(
     device_info dev_info,
     const ola::rdm::ResponseStatus &status,
     const ola::rdm::DeviceDescriptor &device) {
-  stringstream str;
-  str << "[" << endl;
+  JsonSection section;
   if (CheckForRDMSuccess(status)) {
     stringstream stream;
     stream << static_cast<int>(device.protocol_version_high) << "."
       << static_cast<int>(device.protocol_version_low);
-    AddStringVariable(&str, "Protocol Version", stream.str());
+    section.AddStringVariable("Protocol Version", stream.str());
 
     stream.str("");
     if (dev_info.device_model.empty())
       stream << device.device_model;
     else
       stream << dev_info.device_model << " (" << device.device_model << ")";
-    AddStringVariable(&str, "Device Model", stream.str());
+    section.AddStringVariable("Device Model", stream.str());
 
-    AddStringVariable(
-        &str,
+    section.AddStringVariable(
         "Product Category",
         ola::rdm::ProductCategoryToString(device.product_category));
     stream.str("");
@@ -768,20 +819,19 @@ void RDMHttpModule::GetDeviceInfoHandler(
     else
       stream << dev_info.software_version << " (" << device.software_version
         << ")";
-    AddStringVariable(&str, "Software Version", stream.str());
-    AddIntVariable(&str, "DMX Footprint", device.dmx_footprint);
+    section.AddStringVariable("Software Version", stream.str());
+    section.AddIntVariable("DMX Footprint", device.dmx_footprint);
 
     stream.str("");
     stream << static_cast<int>(device.current_personality) << " of " <<
       static_cast<int>(device.personaility_count);
-    AddStringVariable(&str, "Personality", stream.str());
+    section.AddStringVariable("Personality", stream.str());
 
-    AddIntVariable(&str, "Sub Devices", device.sub_device_count);
-    AddIntVariable(&str, "Sensors", device.sensor_count);
+    section.AddIntVariable("Sub Devices", device.sub_device_count);
+    section.AddIntVariable("Sensors", device.sensor_count);
   }
-  str << "]";
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
+  response->Append(section.AsString());
   response->Send();
   delete response;
 }
@@ -816,8 +866,8 @@ void RDMHttpModule::GetProductIdsHandler(
     const ola::rdm::ResponseStatus &status,
     const vector<uint16_t> &ids) {
   bool first = true;
-  stringstream str, product_ids;
-  str << "[" << endl;
+  stringstream product_ids;
+  JsonSection section;
   if (CheckForRDMSuccess(status)) {
     vector<uint16_t>::const_iterator iter = ids.begin();
     for (; iter != ids.end(); ++iter) {
@@ -831,11 +881,10 @@ void RDMHttpModule::GetProductIdsHandler(
         product_ids << ", ";
       product_ids << product_id;
     }
-    AddStringVariable(&str, "Product Detail IDs", product_ids.str());
+    section.AddStringVariable("Product Detail IDs", product_ids.str());
   }
-  str << "]";
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
+  response->Append(section.AsString());
   response->Send();
   delete response;
 }
@@ -869,13 +918,11 @@ void RDMHttpModule::GetManufacturerLabelHandler(
     HttpResponse *response,
     const ola::rdm::ResponseStatus &status,
     const string &label) {
-  stringstream str;
-  str << "[" << endl;
+  JsonSection section;
   if (CheckForRDMSuccess(status))
-    AddStringVariable(&str, "Manufacturer Label", label, true);
-  str << "]";
+    section.AddStringVariable("Manufacturer Label", label, true);
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
+  response->Append(section.AsString());
   response->Send();
   delete response;
 }
@@ -909,13 +956,11 @@ void RDMHttpModule::GetDeviceLabelHandler(
     HttpResponse *response,
     const ola::rdm::ResponseStatus &status,
     const string &label) {
-  stringstream str;
-  str << "[" << endl;
+  JsonSection section;
   if (CheckForRDMSuccess(status))
-    AddStringVariable(&str, "Device Label", label, true);
-  str << "]";
+    section.AddStringVariable("Device Label", label, true);
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
+  response->Append(section.AsString());
   response->Send();
   delete response;
 }
@@ -949,13 +994,11 @@ void RDMHttpModule::GetStartAddressHandler(
     HttpResponse *response,
     const ola::rdm::ResponseStatus &status,
     uint16_t address) {
-  stringstream str;
-  str << "[" << endl;
+  JsonSection section;
   if (CheckForRDMSuccess(status))
-    AddIntVariable(&str, "DMX Start Address", address, true);
-  str << "]";
+    section.AddIntVariable("DMX Start Address", address, true);
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
+  response->Append(section.AsString());
   response->Send();
   delete response;
 }
@@ -1046,37 +1089,5 @@ void RDMHttpModule::AddSection(vector<section_info> *sections,
                                const string &hint) {
   section_info info = {section_id, section_name, hint};
   sections->push_back(info);
-}
-
-
-/**
- * Add a int variable to the output
- */
-void RDMHttpModule::AddIntVariable(stringstream *str,
-                                   const string &name,
-                                   unsigned int value,
-                                   bool editable) {
-  *str << "  {" << endl;
-  *str << "  \"name\": \"" << name << "\"," << endl;
-  *str << "  \"type\": \"int\"," << endl;
-  *str << "  \"editable\": " << editable << "," << endl;
-  *str << "  \"value\": " << value << endl;
-  *str << "  }," << endl;
-}
-
-
-/**
- * Add a string variable to the output
- */
-void RDMHttpModule::AddStringVariable(stringstream *str,
-                                      const string &name,
-                                      const string &value,
-                                      bool editable) {
-  *str << "  {" << endl;
-  *str << "  \"name\": \"" << name << "\"," << endl;
-  *str << "  \"type\": \"string\"," << endl;
-  *str << "  \"editable\": " << editable << "," << endl;
-  *str << "  \"value\": \"" << value << "\"," << endl;
-  *str << "  }," << endl;
 }
 }  // ola
