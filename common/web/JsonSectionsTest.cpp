@@ -160,7 +160,7 @@ void JsonSectionsTest::testSection() {
     "  \"refresh\": 0,\n"
     "  \"error\": \"\",\n"
     "  \"save_button\": \"Action\",\n"
-    "  \"fields\": [\n"
+    "  \"items\": [\n"
     "    {\n"
     "    \"description\": \"Foo\",\n"
     "    \"id\": \"baz\",\n"

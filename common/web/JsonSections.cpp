@@ -127,7 +127,7 @@ string JsonSection::AsString() {
   output << "  \"error\": \"" << m_error << "\"," << endl;
   if (!m_save_button_text.empty())
     output << "  \"save_button\": \"" << m_save_button_text << "\"," << endl;
-  output << "  \"fields\": [" << endl;
+  output << "  \"items\": [" << endl;
 
   vector<const GenericItem*>::const_iterator iter = m_items.begin();
   for (; iter != m_items.end(); ++iter) {
