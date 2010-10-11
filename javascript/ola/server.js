@@ -62,7 +62,8 @@ ola.Server.AVAILBLE_PORTS_URL = '/json/get_ports';
 ola.Server.UIDS_URL = '/json/rdm/uids';
 ola.Server.RDM_DISCOVERY_URL = '/rdm/run_discovery';
 ola.Server.RDM_SECTIONS_URL = '/json/rdm/supported_sections';
-ola.Server.RDM_SECTION_INFO_URL = '/json/rdm/section_info';
+ola.Server.RDM_GET_SECTION_INFO_URL = '/json/rdm/section_info';
+ola.Server.RDM_SET_SECTION_INFO_URL = '/json/rdm/set_section_info';
 ola.Server.NEW_UNIVERSE_URL = '/new_universe';
 ola.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
 ola.Server.SET_DMX_URL = '/set_dmx';
@@ -330,8 +331,32 @@ ola.Server.prototype.rdmGetSectionInfo = function(universe_id,
     callback(e);
     this._cleanupRequest(e.target);
   }
-  var url = (ola.Server.RDM_SECTION_INFO_URL + '?id=' + universe_id + '&uid=' +
-      uid + '&section=' + section_name + '&hint=' + hint);
+  var url = (ola.Server.RDM_GET_SECTION_INFO_URL + '?id=' + universe_id +
+      '&uid=' + uid + '&section=' + section_name + '&hint=' + hint);
+  this._initiateRequest(url, on_complete);
+};
+
+
+/**
+ * Get the details for a particular rdm section
+ * @param {number} universe_id the ID of the universe.
+ * @param {string} uid the string representation of a UID.
+ * @param {string} section_name the section to get.
+ * @param {data} data passed back to the server
+ * @param {function(Object)} callback the function to call when the discovery
+ *   request is ack'ed.
+ */
+ola.Server.prototype.rdmSetSectionInfo = function(universe_id,
+                                                  uid,
+                                                  section_name,
+                                                  data,
+                                                  callback) {
+  var on_complete = function(e) {
+    callback(e);
+    this._cleanupRequest(e.target);
+  }
+  var url = (ola.Server.RDM_SET_SECTION_INFO_URL + '?id=' + universe_id +
+      '&uid=' + uid + '&section=' + section_name + '&' + data);
   this._initiateRequest(url, on_complete);
 };
 
