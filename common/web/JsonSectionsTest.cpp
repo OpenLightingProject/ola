@@ -24,6 +24,8 @@
 
 using std::string;
 using std::vector;
+using ola::web::HiddenItem;
+using ola::web::JsonSection;
 using ola::web::StringItem;
 using ola::web::UIntItem;
 
@@ -31,11 +33,15 @@ class JsonSectionsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(JsonSectionsTest);
   CPPUNIT_TEST(testStringItem);
   CPPUNIT_TEST(testUIntItem);
+  CPPUNIT_TEST(testHiddenItem);
+  CPPUNIT_TEST(testSection);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testStringItem();
     void testUIntItem();
+    void testHiddenItem();
+    void testSection();
 };
 
 
@@ -118,4 +124,50 @@ void JsonSectionsTest::testUIntItem() {
     "    \"max\": 30,\n"
     "    },\n";
   CPPUNIT_ASSERT_EQUAL(expected4, item4.AsString());
+}
+
+
+/*
+ * Test the hidden item
+ */
+void JsonSectionsTest::testHiddenItem() {
+  HiddenItem item("Foo", "bar", "baz");
+  item.SetButtonText("Action");
+  string expected =
+    "    {\n"
+    "    \"button\": \"Action\",\n"
+    "    \"description\": \"Foo\",\n"
+    "    \"id\": \"baz\",\n"
+    "    \"type\": \"hidden\",\n"
+    "    \"value\": \"bar\",\n"
+    "    },\n";
+  CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
+}
+
+
+/*
+ * Test the entire section
+ */
+void JsonSectionsTest::testSection() {
+  JsonSection section(false);
+  HiddenItem item("Foo", "bar", "baz");
+
+  section.AddItem(&item);
+  section.SetSaveButton("Action");
+
+  string expected =
+    "{\n"
+    "  \"refresh\": 0,\n"
+    "  \"error\": \"\",\n"
+    "  \"save_button\": \"Action\",\n"
+    "  \"fields\": [\n"
+    "    {\n"
+    "    \"description\": \"Foo\",\n"
+    "    \"id\": \"baz\",\n"
+    "    \"type\": \"hidden\",\n"
+    "    \"value\": \"bar\",\n"
+    "    },\n"
+    "  ],\n"
+    "}\n";
+  CPPUNIT_ASSERT_EQUAL(expected, section.AsString());
 }

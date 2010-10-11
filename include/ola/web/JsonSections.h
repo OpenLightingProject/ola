@@ -123,7 +123,7 @@ class HiddenItem: public GenericItem {
   public:
     HiddenItem(const string &description,
                const string &value,
-               const string &id = ""):
+               const string &id):
       GenericItem(description, id),
       m_value(value) {
     }
