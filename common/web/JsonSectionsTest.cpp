@@ -150,9 +150,9 @@ void JsonSectionsTest::testHiddenItem() {
  */
 void JsonSectionsTest::testSection() {
   JsonSection section(false);
-  HiddenItem item("Foo", "bar", "baz");
+  HiddenItem *item = new HiddenItem("Foo", "bar", "baz");
 
-  section.AddItem(&item);
+  section.AddItem(item);
   section.SetSaveButton("Action");
 
   string expected =

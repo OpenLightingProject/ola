@@ -165,7 +165,7 @@ class SelectItem: public GenericItem {
 class JsonSection {
   public:
     explicit JsonSection(bool allow_refresh = true);
-    ~JsonSection() {}
+    ~JsonSection();
 
     void SetSaveButton(const string &text) { m_save_button_text = text; }
     void SetError(const string &error) { m_error = error; }

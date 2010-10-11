@@ -99,7 +99,18 @@ JsonSection::JsonSection(bool allow_refresh)
 
 
 /**
- * Add an item to this section
+ * Cleanup
+ */
+JsonSection::~JsonSection() {
+  vector<const GenericItem*>::const_iterator iter = m_items.begin();
+  for (; iter != m_items.end(); ++iter) {
+    delete *iter;
+  }
+}
+
+
+/**
+ * Add an item to this section, ownership is transferred.
  */
 void JsonSection::AddItem(const GenericItem *item) {
   m_items.push_back(item);
