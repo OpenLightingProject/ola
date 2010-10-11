@@ -26,6 +26,7 @@
 #include <string>
 #include <vector>
 
+#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/OlaCallbackClient.h"
@@ -33,6 +34,7 @@
 #include "ola/rdm/RDMHelper.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/web/JsonSections.h"
 #include "olad/OlaServer.h"
 #include "olad/RDMHttpModule.h"
 
@@ -40,6 +42,9 @@
 namespace ola {
 
 using ola::rdm::UID;
+using ola::web::JsonSection;
+using ola::web::StringItem;
+using ola::web::UIntItem;
 using std::endl;
 using std::pair;
 using std::string;
@@ -53,59 +58,6 @@ const char RDMHttpModule::HINT_KEY[] = "hint";
 const char RDMHttpModule::ID_KEY[] = "id";
 const char RDMHttpModule::SECTION_KEY[] = "section";
 const char RDMHttpModule::UID_KEY[] = "uid";
-
-
-/**
- * Create a new section response
- */
-JsonSection::JsonSection(bool allow_refresh)
-    : m_complete(false) {
-  m_output << "{" << endl;
-  m_output << "  \"refresh\": " << allow_refresh << "," << endl;
-  m_output << "  \"fields\": [" << endl;
-}
-
-
-/**
- * Add a int variable to the output
- */
-void JsonSection::AddIntVariable(const string &name,
-                                 unsigned int value,
-                                 bool editable) {
-  m_output << "    {" << endl;
-  m_output << "    \"name\": \"" << name << "\"," << endl;
-  m_output << "    \"type\": \"int\"," << endl;
-  m_output << "    \"editable\": " << editable << "," << endl;
-  m_output << "    \"value\": " << value << endl;
-  m_output << "    }," << endl;
-}
-
-
-/**
- * Add a string variable to the output
- */
-void JsonSection::AddStringVariable(const string &name,
-                                const string &value,
-                                bool editable) {
-  m_output << "    {" << endl;
-  m_output << "    \"name\": \"" << name << "\"," << endl;
-  m_output << "    \"type\": \"string\"," << endl;
-  m_output << "    \"editable\": " << editable << "," << endl;
-  m_output << "    \"value\": \"" << value << "\"," << endl;
-  m_output << "    }," << endl;
-}
-
-/*
- * Return the section as a string.
- */
-string JsonSection::AsString() {
-  if (!m_complete) {
-    m_output << "  ]," << endl;
-    m_output << "  \"error\": \"" << m_error << "\"," << endl;
-    m_output << "}" << endl;
-  }
-  return m_output.str();
-}
 
 
 /**
@@ -801,34 +753,34 @@ void RDMHttpModule::GetDeviceInfoHandler(
     stringstream stream;
     stream << static_cast<int>(device.protocol_version_high) << "."
       << static_cast<int>(device.protocol_version_low);
-    section.AddStringVariable("Protocol Version", stream.str());
+    section.AddItem(new StringItem("Protocol Version", stream.str()));
 
     stream.str("");
     if (dev_info.device_model.empty())
       stream << device.device_model;
     else
       stream << dev_info.device_model << " (" << device.device_model << ")";
-    section.AddStringVariable("Device Model", stream.str());
+    section.AddItem(new StringItem("Device Model", stream.str()));
 
-    section.AddStringVariable(
+    section.AddItem(new StringItem(
         "Product Category",
-        ola::rdm::ProductCategoryToString(device.product_category));
+        ola::rdm::ProductCategoryToString(device.product_category)));
     stream.str("");
     if (dev_info.software_version.empty())
       stream << device.software_version;
     else
       stream << dev_info.software_version << " (" << device.software_version
         << ")";
-    section.AddStringVariable("Software Version", stream.str());
-    section.AddIntVariable("DMX Footprint", device.dmx_footprint);
+    section.AddItem(new StringItem("Software Version", stream.str()));
+    section.AddItem(new UIntItem("DMX Footprint", device.dmx_footprint));
 
     stream.str("");
     stream << static_cast<int>(device.current_personality) << " of " <<
       static_cast<int>(device.personaility_count);
-    section.AddStringVariable("Personality", stream.str());
+    section.AddItem(new StringItem("Personality", stream.str()));
 
-    section.AddIntVariable("Sub Devices", device.sub_device_count);
-    section.AddIntVariable("Sensors", device.sensor_count);
+    section.AddItem(new UIntItem("Sub Devices", device.sub_device_count));
+    section.AddItem(new UIntItem("Sensors", device.sensor_count));
   }
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
@@ -881,7 +833,7 @@ void RDMHttpModule::GetProductIdsHandler(
         product_ids << ", ";
       product_ids << product_id;
     }
-    section.AddStringVariable("Product Detail IDs", product_ids.str());
+    section.AddItem(new StringItem("Product Detail IDs", product_ids.str()));
   }
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
@@ -920,7 +872,7 @@ void RDMHttpModule::GetManufacturerLabelHandler(
     const string &label) {
   JsonSection section;
   if (CheckForRDMSuccess(status))
-    section.AddStringVariable("Manufacturer Label", label, true);
+    section.AddItem(new StringItem("Manufacturer Label", label, "label"));
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
@@ -958,7 +910,7 @@ void RDMHttpModule::GetDeviceLabelHandler(
     const string &label) {
   JsonSection section;
   if (CheckForRDMSuccess(status))
-    section.AddStringVariable("Device Label", label, true);
+    section.AddItem(new StringItem("Device Label", label, "label"));
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
@@ -995,8 +947,12 @@ void RDMHttpModule::GetStartAddressHandler(
     const ola::rdm::ResponseStatus &status,
     uint16_t address) {
   JsonSection section;
-  if (CheckForRDMSuccess(status))
-    section.AddIntVariable("DMX Start Address", address, true);
+  if (CheckForRDMSuccess(status)) {
+    UIntItem *item = new UIntItem("DMX Start Address", address, "address");
+    item->SetMin(0);
+    item->SetMax(DMX_UNIVERSE_SIZE - 1);
+    section.AddItem(item);
+  }
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();

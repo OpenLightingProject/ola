@@ -20,6 +20,7 @@ libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \
 endif
 
 libolaserver_la_LIBADD = $(top_builddir)/common/libolacommon.la \
+                         $(top_builddir)/common/web/libolaweb.la \
                          $(top_builddir)/ola/libola.la
 libolaserver_la_CXXFLAGS = -Wall -Wformat -W @OLAD_DEFINES@ $(libusb_CFLAGS)
 

@@ -37,30 +37,6 @@ using std::string;
 using ola::rdm::UID;
 
 
-class JsonSection {
-  public:
-    explicit JsonSection(bool allow_refresh = true);
-    ~JsonSection() {}
-
-    void SetError(const string &error) {
-      m_error = error;
-    }
-
-    void AddIntVariable(const string &name,
-                        unsigned int value,
-                        bool editable = false);
-    void AddStringVariable(const string &name,
-                           const string &value,
-                           bool editable = false);
-    string AsString();
-
-  private:
-    bool m_complete;
-    string m_error;
-    stringstream m_output;
-};
-
-
 /*
  * The module that deals with RDM requests.
  */
