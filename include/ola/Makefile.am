@@ -1,4 +1,4 @@
-SUBDIRS = network rdm
+SUBDIRS = network rdm web
 
 SOURCES = ActionQueue.h BaseTypes.h Callback.h Clock.h Closure.h DmxBuffer.h \
           ExportMap.h Logging.h OlaThread.h RunLengthEncoder.h StringUtils.h

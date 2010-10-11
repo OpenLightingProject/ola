@@ -322,11 +322,13 @@ AC_OUTPUT( Makefile\
     common/rpc/Makefile\
     common/network/Makefile\
     common/utils/Makefile\
+    common/web/Makefile\
     debian/Makefile\
     include/Makefile\
     include/ola/Makefile\
     include/ola/network/Makefile\
     include/ola/rdm/Makefile\
+    include/ola/web/Makefile\
     include/olad/Makefile\
     ola/Makefile \
     python/Makefile \
