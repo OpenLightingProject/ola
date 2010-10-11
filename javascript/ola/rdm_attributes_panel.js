@@ -330,6 +330,7 @@ ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
     dialog.setTitle('Set Failed');
     dialog.setContent(response['error']);
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setVisible(true);
   } else {
     // reload data
     this._loadSection(index);
