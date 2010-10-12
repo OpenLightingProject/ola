@@ -54,6 +54,8 @@ class RDMHttpModule: public HttpModule {
                               HttpResponse *response);
     int JsonSectionInfo(const HttpRequest *request,
                         HttpResponse *response);
+    int JsonSaveSectionInfo(const HttpRequest *request,
+                            HttpResponse *response);
 
     void PruneUniverseList(const vector<OlaUniverse> &universes);
 
@@ -141,10 +143,10 @@ class RDMHttpModule: public HttpModule {
         const ola::rdm::DeviceDescriptor &device);
 
     // section methods
-    string ProcessDeviceInfo(const HttpRequest *request,
-                             HttpResponse *response,
-                             unsigned int universe_id,
-                             const UID &uid);
+    string GetDeviceInfo(const HttpRequest *request,
+                         HttpResponse *response,
+                         unsigned int universe_id,
+                         const UID &uid);
 
     void GetSoftwareVersionHandler(HttpResponse *response,
                                    device_info dev_info,
@@ -161,41 +163,55 @@ class RDMHttpModule: public HttpModule {
                               const ola::rdm::ResponseStatus &status,
                               const ola::rdm::DeviceDescriptor &device);
 
-    string ProcessDetailIds(const HttpRequest *request,
-                            HttpResponse *response,
-                            unsigned int universe_id,
-                            const UID &uid);
+    string GetProductIds(const HttpRequest *request,
+                         HttpResponse *response,
+                         unsigned int universe_id,
+                         const UID &uid);
 
     void GetProductIdsHandler(HttpResponse *response,
                               const ola::rdm::ResponseStatus &status,
                               const vector<uint16_t> &ids);
 
-    string ProcessManufacturerLabel(const HttpRequest *request,
-                                    HttpResponse *response,
-                                    unsigned int universe_id,
-                                    const UID &uid);
+    string GetManufacturerLabel(const HttpRequest *request,
+                                HttpResponse *response,
+                                unsigned int universe_id,
+                                const UID &uid);
 
     void GetManufacturerLabelHandler(HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID uid,
                                      const ola::rdm::ResponseStatus &status,
                                      const string &label);
 
-    string ProcessDeviceLabel(const HttpRequest *request,
-                                    HttpResponse *response,
-                                    unsigned int universe_id,
-                                    const UID &uid);
+    string GetDeviceLabel(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
 
     void GetDeviceLabelHandler(HttpResponse *response,
-                                     const ola::rdm::ResponseStatus &status,
-                                     const string &label);
-
-    string ProcessStartAddress(const HttpRequest *request,
-                               HttpResponse *response,
                                unsigned int universe_id,
-                               const UID &uid);
+                               const UID uid,
+                               const ola::rdm::ResponseStatus &status,
+                               const string &label);
+
+    string SetDeviceLabel(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
+
+    string GetStartAddress(const HttpRequest *request,
+                           HttpResponse *response,
+                           unsigned int universe_id,
+                           const UID &uid);
 
     void GetStartAddressHandler(HttpResponse *response,
                                 const ola::rdm::ResponseStatus &status,
                                 uint16_t address);
+
+    string SetStartAddress(const HttpRequest *request,
+                           HttpResponse *response,
+                           unsigned int universe_id,
+                           const UID &uid);
 
     // util methods
     bool CheckForInvalidId(const HttpRequest *request,
@@ -203,7 +219,14 @@ class RDMHttpModule: public HttpModule {
 
     bool CheckForInvalidUid(const HttpRequest *request, UID **uid);
 
+    void SetHandler(HttpResponse *response,
+                    const ola::rdm::ResponseStatus &status);
+
+    int RespondWithError(HttpResponse *response, const string &error);
+
     bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
+    bool CheckForRDMSuccessWithError(const ola::rdm::ResponseStatus &status,
+                                     string *error);
 
     void HandleBoolResponse(HttpResponse *response, const string &error);
 
@@ -217,6 +240,8 @@ class RDMHttpModule: public HttpModule {
     static const char ID_KEY[];
     static const char SECTION_KEY[];
     static const char UID_KEY[];
+    static const char ADDRESS_FIELD[];
+    static const char LABEL_FIELD[];
 };
 }  // ola
 #endif  // OLAD_RDMHTTPMODULE_H_
