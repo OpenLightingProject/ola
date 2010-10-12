@@ -359,10 +359,9 @@ ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
  * Show the dialog with an error message
  */
 ola.RDMAttributesPanel.prototype._showErrorDialog = function(title, error) {
-  alert(error);
   var dialog = ola.Dialog.getInstance();
   dialog.setTitle('Set Failed');
-  dialog.setContent(response['error']);
+  dialog.setContent(error);
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
   dialog.setVisible(true);
 }
