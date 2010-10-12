@@ -304,6 +304,27 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
     var id = items[i]['id'];
     if (id) {
       var value = form.elements[id].value;
+      if (items[i]['type'] == 'uint') {
+        // integer
+        var int_val = parseInt(value);
+        if (isNaN(int_val)) {
+          this._showErrorDialog('Invalid Value',
+             items[i]['description'] + ' must be an integer');
+          return;
+        }
+        var min = items[i]['min'];
+        if (min != undefined && int_val < min) {
+          this._showErrorDialog('Invalid Value',
+             items[i]['description'] + ' must be > ' + (min - 1));
+          return;
+        }
+        var max = items[i]['max'];
+        if (max != undefined && int_val > max) {
+          this._showErrorDialog('Invalid Value',
+             items[i]['description'] + ' must be < ' + (max + 1));
+          return;
+        }
+      }
       data += id + '=' + value + '&';
     }
   }
@@ -326,13 +347,22 @@ ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
   var response = e.target.getResponseJson();
 
   if (response['error']) {
-    var dialog = ola.Dialog.getInstance();
-    dialog.setTitle('Set Failed');
-    dialog.setContent(response['error']);
-    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
-    dialog.setVisible(true);
+    this._showErrorDialog('Set Failed', response['error']);
   } else {
     // reload data
     this._loadSection(index);
   }
+}
+
+
+/*
+ * Show the dialog with an error message
+ */
+ola.RDMAttributesPanel.prototype._showErrorDialog = function(title, error) {
+  alert(error);
+  var dialog = ola.Dialog.getInstance();
+  dialog.setTitle('Set Failed');
+  dialog.setContent(response['error']);
+  dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+  dialog.setVisible(true);
 }
