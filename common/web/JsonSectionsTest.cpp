@@ -26,6 +26,7 @@ using std::string;
 using std::vector;
 using ola::web::HiddenItem;
 using ola::web::JsonSection;
+using ola::web::SelectItem;
 using ola::web::StringItem;
 using ola::web::UIntItem;
 
@@ -33,6 +34,7 @@ class JsonSectionsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(JsonSectionsTest);
   CPPUNIT_TEST(testStringItem);
   CPPUNIT_TEST(testUIntItem);
+  CPPUNIT_TEST(testSelectItem);
   CPPUNIT_TEST(testHiddenItem);
   CPPUNIT_TEST(testSection);
   CPPUNIT_TEST_SUITE_END();
@@ -40,6 +42,7 @@ class JsonSectionsTest: public CppUnit::TestFixture {
   public:
     void testStringItem();
     void testUIntItem();
+    void testSelectItem();
     void testHiddenItem();
     void testSection();
 };
@@ -135,6 +138,35 @@ void JsonSectionsTest::testUIntItem() {
     "    \"max\": 30,\n"
     "    },\n";
   CPPUNIT_ASSERT_EQUAL(expected4, item4.AsString());
+}
+
+
+/*
+ * Test the select item
+ */
+void JsonSectionsTest::testSelectItem() {
+  SelectItem item("Language", "lang");
+  item.AddItem("English", "EN");
+  item.AddItem("German", 2);
+  item.SetSelectedOffset(1);
+  string expected =
+    "    {\n"
+    "    \"description\": \"Language\",\n"
+    "    \"id\": \"lang\",\n"
+    "    \"type\": \"select\",\n"
+    "    \"value\": [\n"
+    "      {\n"
+    "        \"label\": \"English\",\n"
+    "        \"value\": \"EN\",\n"
+    "      },\n"
+    "      {\n"
+    "        \"label\": \"German\",\n"
+    "        \"value\": \"2\",\n"
+    "      },\n"
+    "    ],\n"
+    "    \"selected_offset\": 1,\n"
+    "    },\n";
+  CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
 }
 
 

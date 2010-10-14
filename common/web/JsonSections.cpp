@@ -90,7 +90,19 @@ void SelectItem::AddItem(const string &label, unsigned int value) {
 }
 
 string SelectItem::Value() const {
-  return "\"\"";
+  stringstream str;
+  str << "[" << endl;
+  vector<pair<string, string> >::const_iterator iter;
+  for (iter = m_values.begin(); iter != m_values.end(); ++iter) {
+    str << "      {" << endl;
+    str << "        \"label\": \"" << EscapeString(iter->first) << "\"," <<
+      endl;
+    str << "        \"value\": \"" << EscapeString(iter->second) << "\"," <<
+      endl;
+    str << "      }," << endl;
+  }
+  str << "    ]";
+  return str.str();
 }
 
 

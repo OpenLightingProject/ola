@@ -103,8 +103,14 @@ class UIntItem: public GenericItem {
       m_max_set(false) {
     }
 
-    void SetMin(unsigned int min) { m_min_set = true; m_min = min; }
-    void SetMax(unsigned int max) { m_max_set = true; m_max = max; }
+    void SetMin(unsigned int min) {
+      m_min_set = true;
+      m_min = min;
+    }
+    void SetMax(unsigned int max) {
+      m_max_set = true;
+      m_max = max;
+    }
 
   protected:
     string ExtraProperties() const;
@@ -147,6 +153,7 @@ class SelectItem: public GenericItem {
       GenericItem(description, id) {
     }
 
+    void SetSelectedOffset(unsigned int offset) { m_selected_offset = offset; }
     void AddItem(const string &label, const string &value);
     // helper method which converts ints to strings
     void AddItem(const string &label, unsigned int value);
