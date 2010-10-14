@@ -47,12 +47,11 @@ olad_LDADD = @LIBS@ libolaserver.la \
 # Test Programs
 TESTS = OlaTester
 check_PROGRAMS = $(TESTS)
-OlaTester_SOURCES = $(OLASERVER_SOURCES) OlaServerTester.cpp \
+OlaTester_SOURCES = OlaServerTester.cpp \
                     UniverseTest.cpp DeviceTest.cpp DeviceManagerTest.cpp \
                     DmxSourceTest.cpp PluginManagerTest.cpp \
                     PreferencesTest.cpp PortManagerTest.cpp PortTest.cpp \
                     OlaServerServiceImplTest.cpp ClientTest.cpp
-OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS) $(libusb_CFLAGS)
-OlaTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
-OlaTester_LDADD = @LIBS@ ${PLUGIN_LIBS} \
-                  $(top_builddir)/common/libolacommon.la
+OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
+OlaTester_LDFLAGS = $(CPPUNIT_LIBS)
+OlaTester_LDADD = @LIBS@ $(top_builddir)/olad/libolaserver.la
