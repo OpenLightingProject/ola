@@ -28,8 +28,9 @@
 #include "ola/OlaCallbackClient.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/UID.h"
-#include "olad/HttpServer.h"
+#include "ola/web/JsonSections.h"
 #include "olad/HttpModule.h"
+#include "olad/HttpServer.h"
 
 namespace ola {
 
@@ -258,6 +259,8 @@ class RDMHttpModule: public HttpModule {
     bool CheckForRDMError(HttpResponse *response,
                           const ola::rdm::ResponseStatus &status);
     int RespondWithError(HttpResponse *response, const string &error);
+    void RespondWithSection(HttpResponse *response,
+                            const ola::web::JsonSection &section);
 
     bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
     bool CheckForRDMSuccessWithError(const ola::rdm::ResponseStatus &status,

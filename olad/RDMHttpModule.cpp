@@ -834,10 +834,7 @@ void RDMHttpModule::GetDeviceInfoHandler(
 
   section.AddItem(new UIntItem("Sub Devices", device.sub_device_count));
   section.AddItem(new UIntItem("Sensors", device.sensor_count));
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(section.AsString());
-  response->Send();
-  delete response;
+  RespondWithSection(response, section);
 }
 
 
@@ -888,10 +885,7 @@ void RDMHttpModule::GetProductIdsHandler(
     product_ids << product_id;
   }
   section.AddItem(new StringItem("Product Detail IDs", product_ids.str()));
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(section.AsString());
-  response->Send();
-  delete response;
+  RespondWithSection(response, section);
 }
 
 
@@ -931,10 +925,7 @@ void RDMHttpModule::GetManufacturerLabelHandler(
     return;
   JsonSection section;
   section.AddItem(new StringItem("Manufacturer Label", label));
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(section.AsString());
-  response->Send();
-  delete response;
+  RespondWithSection(response, section);
 
   // update the map as well
   uid_resolution_state *uid_state = GetUniverseUids(universe_id);
@@ -979,15 +970,12 @@ void RDMHttpModule::GetDeviceLabelHandler(
     const UID uid,
     const ola::rdm::ResponseStatus &status,
     const string &label) {
-  if (!CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status))
     return;
 
   JsonSection section;
   section.AddItem(new StringItem("Device Label", label, LABEL_FIELD));
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(section.AsString());
-  response->Send();
-  delete response;
+  RespondWithSection(response, section);
 
   // update the map as well
   uid_resolution_state *uid_state = GetUniverseUids(universe_id);
@@ -1093,10 +1081,7 @@ void RDMHttpModule::GetLanguageHandler(HttpResponse *response,
     item->SetSelectedOffset(0);
   }
   section.AddItem(item);
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(section.AsString());
-  response->Send();
-  delete response;
+  RespondWithSection(response, section);
 }
 
 
@@ -1150,7 +1135,7 @@ void RDMHttpModule::GetStartAddressHandler(
     HttpResponse *response,
     const ola::rdm::ResponseStatus &status,
     uint16_t address) {
-  if (!CheckForRDMError(response, status))
+  if (CheckForRDMError(response, status))
     return;
 
   JsonSection section;
@@ -1158,10 +1143,7 @@ void RDMHttpModule::GetStartAddressHandler(
   item->SetMin(0);
   item->SetMax(DMX_UNIVERSE_SIZE - 1);
   section.AddItem(item);
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(section.AsString());
-  response->Send();
-  delete response;
+  RespondWithSection(response, section);
 }
 
 
@@ -1225,10 +1207,7 @@ void RDMHttpModule::GetIdentifyModeHandler(
   JsonSection section;
   BoolItem *item = new BoolItem("Idenify Mode", mode, IDENTIFY_FIELD);
   section.AddItem(item);
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(section.AsString());
-  response->Send();
-  delete response;
+  RespondWithSection(response, section);
 }
 
 
@@ -1318,6 +1297,18 @@ int RDMHttpModule::RespondWithError(HttpResponse *response,
   int r = response->Send();
   delete response;
   return r;
+}
+
+
+/**
+ * Build & send a response from a JsonSection
+ */
+void RDMHttpModule::RespondWithSection(HttpResponse *response,
+                                       const ola::web::JsonSection &section) {
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(section.AsString());
+  response->Send();
+  delete response;
 }
 
 
