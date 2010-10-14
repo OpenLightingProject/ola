@@ -192,10 +192,12 @@ ola.RDMAttributesPanel.prototype._populateSection = function(e, index) {
     return;
   }
 
+  var panel = this;  // used in the onsubmit handler below
   var items = section_response['items'];
   var count = items.length;
   var form = goog.dom.createElement('form');
   form.id = this.section_data[index]['id'];
+  form.onsubmit = function() { panel._saveSection(index); return false};
   var table = goog.dom.createElement('table');
   table.className = 'ola-table';
   var editable = false;
