@@ -20,6 +20,7 @@
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.ui.AnimatedZippy');
+goog.require('goog.ui.Checkbox')
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Component.EventType');
 goog.require('goog.ui.Control');
@@ -284,6 +285,11 @@ ola.RDMAttributesPanel.prototype._buildItem = function(table, item_info) {
         var button = new goog.ui.CustomButton(item_info['button']);
         button.render(td);
       }
+    } else if (type == 'bool') {
+      var check = new goog.ui.Checkbox();
+      check.setChecked(value);
+      check.render(td);
+      item_info['object'] = check;
     } else {
       // select box
       var select = new goog.ui.Select();
@@ -341,15 +347,18 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
       } else if (items[i]['type'] == 'string') {
         var value = form.elements[id].value;
         data += id + '=' + value + '&';
+      } else if (items[i]['type'] == 'bool') {
+        var checked = items[i]['object'].isChecked();
+        alert(checked);
+        data += id + '=' + (checked ? '1' : '0') + '&';
+        alert(data);
       } else if (items[i]['type'] == 'select') {
-        alert(items[i]['object']);
         var offset = items[i]['object'].getSelectedIndex();
         var value = items[i]['value'][offset]['value'];
         data += id + '=' + value + '&';
       }
     }
   }
-  alert(data);
 
   var server = ola.Server.getInstance();
   var panel = this;
