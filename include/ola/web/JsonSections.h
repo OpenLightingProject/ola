@@ -150,7 +150,8 @@ class SelectItem: public GenericItem {
   public:
     SelectItem(const string &description,
                const string &id = ""):
-      GenericItem(description, id) {
+      GenericItem(description, id),
+      m_selected_offset(0) {
     }
 
     void SetSelectedOffset(unsigned int offset) { m_selected_offset = offset; }

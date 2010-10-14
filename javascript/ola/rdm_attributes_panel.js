@@ -19,10 +19,12 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
-goog.require('goog.ui.Component.EventType');
 goog.require('goog.ui.AnimatedZippy');
 goog.require('goog.ui.Component');
+goog.require('goog.ui.Component.EventType');
 goog.require('goog.ui.Control');
+goog.require('goog.ui.Option');
+goog.require('goog.ui.Select');
 goog.require('ola.Dialog');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
@@ -284,11 +286,20 @@ ola.RDMAttributesPanel.prototype._buildItem = function(table, item_info) {
       }
     } else {
       // select box
+      var select = new goog.ui.Select();
+      var count = value.length;
+      for (var i = 0; i < count; ++i) {
+        select.addItem(new goog.ui.Option(value[i]['label']));
+      }
+      if (item_info['selected_offset'] != undefined) {
+        select.setSelectedIndex(item_info['selected_offset']);
+      }
+      select.render(td);
+      item_info['object'] = select;
     }
   } else {
     td.innerHTML = value;
   }
-
 };
 
 
@@ -305,9 +316,9 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
   for (var i = 0; i < count; ++i) {
     var id = items[i]['id'];
     if (id) {
-      var value = form.elements[id].value;
       if (items[i]['type'] == 'uint') {
         // integer
+        var value = form.elements[id].value;
         var int_val = parseInt(value);
         if (isNaN(int_val)) {
           this._showErrorDialog('Invalid Value',
@@ -326,10 +337,19 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
              items[i]['description'] + ' must be < ' + (max + 1));
           return;
         }
+        data += id + '=' + value + '&';
+      } else if (items[i]['type'] == 'string') {
+        var value = form.elements[id].value;
+        data += id + '=' + value + '&';
+      } else if (items[i]['type'] == 'select') {
+        alert(items[i]['object']);
+        var offset = items[i]['object'].getSelectedIndex();
+        var value = items[i]['value'][offset]['value'];
+        data += id + '=' + value + '&';
       }
-      data += id + '=' + value + '&';
     }
   }
+  alert(data);
 
   var server = ola.Server.getInstance();
   var panel = this;
