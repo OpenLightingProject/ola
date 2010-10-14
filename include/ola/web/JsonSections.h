@@ -82,7 +82,7 @@ class StringItem: public GenericItem {
 
   protected:
     string Type() const { return "string"; }
-    string Value() const { return "\"" + m_value + "\""; }
+    string Value() const;
 
   private:
     string m_value;
@@ -130,7 +130,7 @@ class HiddenItem: public GenericItem {
 
   protected:
     string Type() const { return "hidden"; }
-    string Value() const { return "\"" + m_value + "\""; }
+    string Value() const;
 
   private:
     string m_value;

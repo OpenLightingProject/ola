@@ -37,6 +37,7 @@ using std::pair;
 using std::string;
 using std::stringstream;
 using std::vector;
+using ola::EscapeString;
 
 
 
@@ -44,15 +45,22 @@ string GenericItem::AsString() const {
   stringstream output;
   output << "    {" << endl;
   if (!m_button_text.empty())
-    output << "    \"button\": \"" << m_button_text << "\"," << endl;
-  output << "    \"description\": \"" << m_description << "\"," << endl;
+    output << "    \"button\": \"" << EscapeString(m_button_text) << "\","
+      << endl;
+  output << "    \"description\": \"" << EscapeString(m_description) << "\","
+    << endl;
   if (!m_id.empty())
-    output << "    \"id\": \"" << m_id << "\"," << endl;
+    output << "    \"id\": \"" << EscapeString(m_id) << "\"," << endl;
   output << "    \"type\": \"" << Type() << "\"," << endl;
   output << "    \"value\": " << Value() << "," << endl;
   output << ExtraProperties();
   output << "    }," << endl;
   return output.str();
+}
+
+
+string StringItem::Value() const {
+  return "\"" + EscapeString(m_value) + "\"";
 }
 
 
@@ -63,6 +71,11 @@ string UIntItem::ExtraProperties() const {
   if (m_max_set)
     output << "    \"max\": " << m_max << "," << endl;
   return output.str();
+}
+
+
+string HiddenItem::Value() const {
+  return "\"" + EscapeString(m_value) + "\"";
 }
 
 
@@ -124,9 +137,10 @@ string JsonSection::AsString() {
   stringstream output;
   output << "{" << endl;
   output << "  \"refresh\": " << m_allow_refresh << "," << endl;
-  output << "  \"error\": \"" << m_error << "\"," << endl;
+  output << "  \"error\": \"" << EscapeString(m_error) << "\"," << endl;
   if (!m_save_button_text.empty())
-    output << "  \"save_button\": \"" << m_save_button_text << "\"," << endl;
+    output << "  \"save_button\": \"" << EscapeString(m_save_button_text) <<
+      "\"," << endl;
   output << "  \"items\": [" << endl;
 
   vector<const GenericItem*>::const_iterator iter = m_items.begin();

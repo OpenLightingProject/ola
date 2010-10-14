@@ -71,6 +71,17 @@ void JsonSectionsTest::testStringItem() {
     "    \"value\": \"bar\",\n"
     "    },\n";
   CPPUNIT_ASSERT_EQUAL(expected2, item2.AsString());
+
+  StringItem item3("Foo\" bar", "baz\\");
+  item3.SetButtonText("Action\n");
+  string expected3 =
+    "    {\n"
+    "    \"button\": \"Action\\n\",\n"
+    "    \"description\": \"Foo\\\" bar\",\n"
+    "    \"type\": \"string\",\n"
+    "    \"value\": \"baz\\\\\",\n"
+    "    },\n";
+  CPPUNIT_ASSERT_EQUAL(expected3, item3.AsString());
 }
 
 
@@ -150,22 +161,22 @@ void JsonSectionsTest::testHiddenItem() {
  */
 void JsonSectionsTest::testSection() {
   JsonSection section(false);
-  HiddenItem *item = new HiddenItem("Foo", "bar", "baz");
+  HiddenItem *item = new HiddenItem("Foo", "bar\r", "baz");
 
   section.AddItem(item);
-  section.SetSaveButton("Action");
+  section.SetSaveButton("Action\\");
 
   string expected =
     "{\n"
     "  \"refresh\": 0,\n"
     "  \"error\": \"\",\n"
-    "  \"save_button\": \"Action\",\n"
+    "  \"save_button\": \"Action\\\\\",\n"
     "  \"items\": [\n"
     "    {\n"
     "    \"description\": \"Foo\",\n"
     "    \"id\": \"baz\",\n"
     "    \"type\": \"hidden\",\n"
-    "    \"value\": \"bar\",\n"
+    "    \"value\": \"bar\\r\",\n"
     "    },\n"
     "  ],\n"
     "}\n";
