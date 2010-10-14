@@ -125,6 +125,24 @@ class UIntItem: public GenericItem {
 };
 
 
+class BoolItem: public GenericItem {
+  public:
+    BoolItem(const string &description,
+             bool value,
+             const string &id):
+      GenericItem(description, id),
+      m_value(value) {
+    }
+
+  protected:
+    string Type() const { return "bool"; }
+    string Value() const;
+
+  private:
+    bool m_value;
+};
+
+
 class HiddenItem: public GenericItem {
   public:
     HiddenItem(const string &description,

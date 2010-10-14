@@ -24,6 +24,7 @@
 
 using std::string;
 using std::vector;
+using ola::web::BoolItem;
 using ola::web::HiddenItem;
 using ola::web::JsonSection;
 using ola::web::SelectItem;
@@ -35,6 +36,7 @@ class JsonSectionsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringItem);
   CPPUNIT_TEST(testUIntItem);
   CPPUNIT_TEST(testSelectItem);
+  CPPUNIT_TEST(testBoolItem);
   CPPUNIT_TEST(testHiddenItem);
   CPPUNIT_TEST(testSection);
   CPPUNIT_TEST_SUITE_END();
@@ -43,6 +45,7 @@ class JsonSectionsTest: public CppUnit::TestFixture {
     void testStringItem();
     void testUIntItem();
     void testSelectItem();
+    void testBoolItem();
     void testHiddenItem();
     void testSection();
 };
@@ -169,6 +172,31 @@ void JsonSectionsTest::testSelectItem() {
   CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
 }
 
+
+/*
+ * Test the bool item
+ */
+void JsonSectionsTest::testBoolItem() {
+  BoolItem item("Foo", true, "baz");
+  string expected =
+    "    {\n"
+    "    \"description\": \"Foo\",\n"
+    "    \"id\": \"baz\",\n"
+    "    \"type\": \"bool\",\n"
+    "    \"value\": 1,\n"
+    "    },\n";
+  CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
+
+  BoolItem item2("Foo", false, "baz");
+  string expected2 =
+    "    {\n"
+    "    \"description\": \"Foo\",\n"
+    "    \"id\": \"baz\",\n"
+    "    \"type\": \"bool\",\n"
+    "    \"value\": 0,\n"
+    "    },\n";
+  CPPUNIT_ASSERT_EQUAL(expected2, item2.AsString());
+}
 
 /*
  * Test the hidden item

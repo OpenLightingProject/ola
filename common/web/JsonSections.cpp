@@ -74,6 +74,10 @@ string UIntItem::ExtraProperties() const {
 }
 
 
+string BoolItem::Value() const {
+  return m_value ? "1" : "0";
+}
+
 string HiddenItem::Value() const {
   return "\"" + EscapeString(m_value) + "\"";
 }
