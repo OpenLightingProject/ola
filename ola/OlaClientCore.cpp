@@ -1021,12 +1021,13 @@ void OlaClientCore::HandleRDM(rdm_response_args *args) {
 
   if (args->controller->Failed()) {
     response_status.error = args->controller->ErrorText();
-  } else if (args->reply->response_code() == ola::rdm::ACK_OVERFLOW ||
-             args->reply->response_code() == ola::rdm::ACK_TIMER) {
-    // TODO(simon): handle to ACK_OVERFLOW and ACK_TIMER cases here or
-    // preferably in the ola server.
-    OLA_WARN << "We don't handle ACK_OVERFLOW or ACK_TIMER yet!";
-    response_status.error = "OVERFLOW or ACK not implemented in OLA Client";
+  } else if (args->reply->response_code() == ola::rdm::ACK_OVERFLOW) {
+    OLA_WARN << "Unexpected ACK_OVERFLOW";
+    response_status.error = "Unexpected ACK_OVERFLOW in OLA Client";
+  } else if (args->reply->response_code() == ola::rdm::ACK_TIMER) {
+    // TODO(simon): handle ACK_TIMER case here.
+    OLA_WARN << "We don't handle ACK_TIMER yet!";
+    response_status.error = "ACK_TIMER not implemented in OLA Client";
   }
 
   args->callback->Run(response_status, args->reply->data());
