@@ -42,7 +42,9 @@
 namespace ola {
 
 using ola::rdm::UID;
+using ola::web::BoolItem;
 using ola::web::JsonSection;
+using ola::web::SelectItem;
 using ola::web::StringItem;
 using ola::web::UIntItem;
 using std::endl;
@@ -56,8 +58,10 @@ const char RDMHttpModule::ADDRESS_FIELD[] = "address";
 const char RDMHttpModule::BACKEND_DISCONNECTED_ERROR[] =
     "Failed to send request, client isn't connected";
 const char RDMHttpModule::HINT_KEY[] = "hint";
+const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHttpModule::ID_KEY[] = "id";
 const char RDMHttpModule::LABEL_FIELD[] = "label";
+const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
 const char RDMHttpModule::SECTION_KEY[] = "section";
 const char RDMHttpModule::UID_KEY[] = "uid";
 
@@ -253,8 +257,12 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetManufacturerLabel(request, response, universe_id, *uid);
   } else if (section_id == "device_label") {
     error = GetDeviceLabel(request, response, universe_id, *uid);
+  } else if (section_id == "language") {
+    error = GetLanguage(response, universe_id, *uid);
   } else if (section_id == "dmx_address") {
     error = GetStartAddress(request, response, universe_id, *uid);
+  } else if (section_id == "identify") {
+    error = GetIdentifyMode(response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     return m_server->ServeNotFound(response);
@@ -283,8 +291,12 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
   string error;
   if (section_id == "device_label") {
     error = SetDeviceLabel(request, response, universe_id, *uid);
+  } else if (section_id == "language") {
+    error = SetLanguage(request, response, universe_id, *uid);
   } else if (section_id == "dmx_address") {
     error = SetStartAddress(request, response, universe_id, *uid);
+  } else if (section_id == "identify") {
+    error = SetIdentifyMode(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     return m_server->ServeNotFound(response);
@@ -636,6 +648,9 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
       case ola::rdm::PID_DEVICE_LABEL:
         AddSection(&sections, "device_label", "Device Label", "");
         break;
+      case ola::rdm::PID_LANGUAGE:
+        AddSection(&sections, "language", "Language", "");
+        break;
       case ola::rdm::PID_DMX_START_ADDRESS:
         AddSection(&sections, "dmx_address", "DMX Start Address", "");
         dmx_address_added = true;
@@ -784,39 +799,41 @@ void RDMHttpModule::GetDeviceInfoHandler(
     const ola::rdm::ResponseStatus &status,
     const ola::rdm::DeviceDescriptor &device) {
   JsonSection section;
-  if (CheckForRDMSuccess(status)) {
-    stringstream stream;
-    stream << static_cast<int>(device.protocol_version_high) << "."
-      << static_cast<int>(device.protocol_version_low);
-    section.AddItem(new StringItem("Protocol Version", stream.str()));
 
-    stream.str("");
-    if (dev_info.device_model.empty())
-      stream << device.device_model;
-    else
-      stream << dev_info.device_model << " (" << device.device_model << ")";
-    section.AddItem(new StringItem("Device Model", stream.str()));
+  if (CheckForRDMError(response, status))
+    return;
 
-    section.AddItem(new StringItem(
-        "Product Category",
-        ola::rdm::ProductCategoryToString(device.product_category)));
-    stream.str("");
-    if (dev_info.software_version.empty())
-      stream << device.software_version;
-    else
-      stream << dev_info.software_version << " (" << device.software_version
-        << ")";
-    section.AddItem(new StringItem("Software Version", stream.str()));
-    section.AddItem(new UIntItem("DMX Footprint", device.dmx_footprint));
+  stringstream stream;
+  stream << static_cast<int>(device.protocol_version_high) << "."
+    << static_cast<int>(device.protocol_version_low);
+  section.AddItem(new StringItem("Protocol Version", stream.str()));
 
-    stream.str("");
-    stream << static_cast<int>(device.current_personality) << " of " <<
-      static_cast<int>(device.personaility_count);
-    section.AddItem(new StringItem("Personality", stream.str()));
+  stream.str("");
+  if (dev_info.device_model.empty())
+    stream << device.device_model;
+  else
+    stream << dev_info.device_model << " (" << device.device_model << ")";
+  section.AddItem(new StringItem("Device Model", stream.str()));
 
-    section.AddItem(new UIntItem("Sub Devices", device.sub_device_count));
-    section.AddItem(new UIntItem("Sensors", device.sensor_count));
-  }
+  section.AddItem(new StringItem(
+      "Product Category",
+      ola::rdm::ProductCategoryToString(device.product_category)));
+  stream.str("");
+  if (dev_info.software_version.empty())
+    stream << device.software_version;
+  else
+    stream << dev_info.software_version << " (" << device.software_version
+      << ")";
+  section.AddItem(new StringItem("Software Version", stream.str()));
+  section.AddItem(new UIntItem("DMX Footprint", device.dmx_footprint));
+
+  stream.str("");
+  stream << static_cast<int>(device.current_personality) << " of " <<
+    static_cast<int>(device.personaility_count);
+  section.AddItem(new StringItem("Personality", stream.str()));
+
+  section.AddItem(new UIntItem("Sub Devices", device.sub_device_count));
+  section.AddItem(new UIntItem("Sensors", device.sensor_count));
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
@@ -852,24 +869,25 @@ void RDMHttpModule::GetProductIdsHandler(
     HttpResponse *response,
     const ola::rdm::ResponseStatus &status,
     const vector<uint16_t> &ids) {
+  if (CheckForRDMError(response, status))
+    return;
+
   bool first = true;
   stringstream product_ids;
   JsonSection section;
-  if (CheckForRDMSuccess(status)) {
-    vector<uint16_t>::const_iterator iter = ids.begin();
-    for (; iter != ids.end(); ++iter) {
-      string product_id = ola::rdm::ProductDetailToString(*iter);
-      if (product_id.empty())
-        continue;
+  vector<uint16_t>::const_iterator iter = ids.begin();
+  for (; iter != ids.end(); ++iter) {
+    string product_id = ola::rdm::ProductDetailToString(*iter);
+    if (product_id.empty())
+      continue;
 
-      if (first)
-        first = false;
-      else
-        product_ids << ", ";
-      product_ids << product_id;
-    }
-    section.AddItem(new StringItem("Product Detail IDs", product_ids.str()));
+    if (first)
+      first = false;
+    else
+      product_ids << ", ";
+    product_ids << product_id;
   }
+  section.AddItem(new StringItem("Product Detail IDs", product_ids.str()));
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
@@ -909,9 +927,10 @@ void RDMHttpModule::GetManufacturerLabelHandler(
     const UID uid,
     const ola::rdm::ResponseStatus &status,
     const string &label) {
+  if (CheckForRDMError(response, status))
+    return;
   JsonSection section;
-  if (CheckForRDMSuccess(status))
-    section.AddItem(new StringItem("Manufacturer Label", label));
+  section.AddItem(new StringItem("Manufacturer Label", label));
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
@@ -960,9 +979,11 @@ void RDMHttpModule::GetDeviceLabelHandler(
     const UID uid,
     const ola::rdm::ResponseStatus &status,
     const string &label) {
+  if (!CheckForRDMError(response, status))
+    return;
+
   JsonSection section;
-  if (CheckForRDMSuccess(status))
-    section.AddItem(new StringItem("Device Label", label, LABEL_FIELD));
+  section.AddItem(new StringItem("Device Label", label, LABEL_FIELD));
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
@@ -989,6 +1010,106 @@ string RDMHttpModule::SetDeviceLabel(const HttpRequest *request,
   string label = request->GetParameter(LABEL_FIELD);
   string error;
   m_rdm_api.SetDeviceLabel(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      label,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the language section.
+ */
+string RDMHttpModule::GetLanguage(HttpResponse *response,
+                                  unsigned int universe_id,
+                                  const UID &uid) {
+  string error;
+  m_rdm_api.GetLanguageCapabilities(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetSupportedLanguagesHandler,
+                        response,
+                        universe_id,
+                        uid),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to language capability call.
+ */
+void RDMHttpModule::GetSupportedLanguagesHandler(
+    HttpResponse *response,
+    unsigned int universe_id,
+    const UID uid,
+    const ola::rdm::ResponseStatus &status,
+    const vector<string> &languages) {
+  string error;
+  m_rdm_api.GetLanguage(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetLanguageHandler,
+                        response,
+                        languages),
+      &error);
+
+  if (!error.empty())
+    m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+  (void) status;
+}
+
+
+/**
+ * Handle the response to language call and build the response
+ */
+void RDMHttpModule::GetLanguageHandler(HttpResponse *response,
+                                       vector<string> languages,
+                                       const ola::rdm::ResponseStatus &status,
+                                       const string &language) {
+  JsonSection section;
+  SelectItem *item = new SelectItem("Language", LANGUAGE_FIELD);
+  bool ok = CheckForRDMSuccess(status);
+
+  vector<string>::const_iterator iter = languages.begin();
+  unsigned int i = 0;
+  for (; iter != languages.end(); ++iter, i++) {
+    item->AddItem(*iter, *iter);
+    if (ok && *iter == language)
+      item->SetSelectedOffset(i);
+  }
+
+  if (ok && !languages.size()) {
+    item->AddItem(language, language);
+    item->SetSelectedOffset(0);
+  }
+  section.AddItem(item);
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(section.AsString());
+  response->Send();
+  delete response;
+}
+
+
+/*
+ * Set the language
+ */
+string RDMHttpModule::SetLanguage(const HttpRequest *request,
+                                  HttpResponse *response,
+                                  unsigned int universe_id,
+                                  const UID &uid) {
+  string label = request->GetParameter(LANGUAGE_FIELD);
+  string error;
+  m_rdm_api.SetLanguage(
       universe_id,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
@@ -1029,13 +1150,14 @@ void RDMHttpModule::GetStartAddressHandler(
     HttpResponse *response,
     const ola::rdm::ResponseStatus &status,
     uint16_t address) {
+  if (!CheckForRDMError(response, status))
+    return;
+
   JsonSection section;
-  if (CheckForRDMSuccess(status)) {
-    UIntItem *item = new UIntItem("DMX Start Address", address, ADDRESS_FIELD);
-    item->SetMin(0);
-    item->SetMax(DMX_UNIVERSE_SIZE - 1);
-    section.AddItem(item);
-  }
+  UIntItem *item = new UIntItem("DMX Start Address", address, ADDRESS_FIELD);
+  item->SetMin(0);
+  item->SetMax(DMX_UNIVERSE_SIZE - 1);
+  section.AddItem(item);
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
@@ -1063,6 +1185,67 @@ string RDMHttpModule::SetStartAddress(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       address,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the identify mode section.
+ */
+string RDMHttpModule::GetIdentifyMode(HttpResponse *response,
+                                      unsigned int universe_id,
+                                      const UID &uid) {
+  string error;
+  m_rdm_api.GetIdentifyMode(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetIdentifyModeHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to identify mode call and build the response
+ */
+void RDMHttpModule::GetIdentifyModeHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    bool mode) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  BoolItem *item = new BoolItem("Idenify Mode", mode, IDENTIFY_FIELD);
+  section.AddItem(item);
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(section.AsString());
+  response->Send();
+  delete response;
+}
+
+
+/*
+ * Set the idenify mode
+ */
+string RDMHttpModule::SetIdentifyMode(const HttpRequest *request,
+                                      HttpResponse *response,
+                                      unsigned int universe_id,
+                                      const UID &uid) {
+  string mode = request->GetParameter(IDENTIFY_FIELD);
+  string error;
+  m_rdm_api.IdentifyDevice(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      mode == "1",
       NewSingleCallback(this,
                         &RDMHttpModule::SetHandler,
                         response),
@@ -1110,6 +1293,22 @@ void RDMHttpModule::SetHandler(
   CheckForRDMSuccessWithError(status, &error);
   RespondWithError(response, error);
 }
+
+
+/**
+ * Check for an RDM error, and if it occurs, return a json response.
+ * @return true if an error occured.
+ */
+bool RDMHttpModule::CheckForRDMError(HttpResponse *response,
+                                     const ola::rdm::ResponseStatus &status) {
+  string error;
+  if (!CheckForRDMSuccessWithError(status, &error)) {
+    RespondWithError(response, error);
+    return true;
+  }
+  return false;
+}
+
 
 
 int RDMHttpModule::RespondWithError(HttpResponse *response,

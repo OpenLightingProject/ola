@@ -199,6 +199,26 @@ class RDMHttpModule: public HttpModule {
                           unsigned int universe_id,
                           const UID &uid);
 
+    string GetLanguage(HttpResponse *response,
+                       unsigned int universe_id,
+                       const UID &uid);
+
+    void GetSupportedLanguagesHandler(HttpResponse *response,
+                                      unsigned int universe_id,
+                                      const UID uid,
+                                      const ola::rdm::ResponseStatus &status,
+                                      const vector<string> &languages);
+
+    string SetLanguage(const HttpRequest *request,
+                       HttpResponse *response,
+                       unsigned int universe_id,
+                       const UID &uid);
+
+    void GetLanguageHandler(HttpResponse *response,
+                            vector<string> languages,
+                            const ola::rdm::ResponseStatus &status,
+                            const string &language);
+
     string GetStartAddress(const HttpRequest *request,
                            HttpResponse *response,
                            unsigned int universe_id,
@@ -213,6 +233,19 @@ class RDMHttpModule: public HttpModule {
                            unsigned int universe_id,
                            const UID &uid);
 
+    string GetIdentifyMode(HttpResponse *response,
+                           unsigned int universe_id,
+                           const UID &uid);
+
+    void GetIdentifyModeHandler(HttpResponse *response,
+                                const ola::rdm::ResponseStatus &status,
+                                bool mode);
+
+    string SetIdentifyMode(const HttpRequest *request,
+                           HttpResponse *response,
+                           unsigned int universe_id,
+                           const UID &uid);
+
     // util methods
     bool CheckForInvalidId(const HttpRequest *request,
                            unsigned int *universe_id);
@@ -222,6 +255,8 @@ class RDMHttpModule: public HttpModule {
     void SetHandler(HttpResponse *response,
                     const ola::rdm::ResponseStatus &status);
 
+    bool CheckForRDMError(HttpResponse *response,
+                          const ola::rdm::ResponseStatus &status);
     int RespondWithError(HttpResponse *response, const string &error);
 
     bool CheckForRDMSuccess(const ola::rdm::ResponseStatus &status);
@@ -235,13 +270,15 @@ class RDMHttpModule: public HttpModule {
                     const string &section_name,
                     const string &hint);
 
+    static const char ADDRESS_FIELD[];
     static const char BACKEND_DISCONNECTED_ERROR[];
     static const char HINT_KEY[];
+    static const char IDENTIFY_FIELD[];
     static const char ID_KEY[];
+    static const char LABEL_FIELD[];
+    static const char LANGUAGE_FIELD[];
     static const char SECTION_KEY[];
     static const char UID_KEY[];
-    static const char ADDRESS_FIELD[];
-    static const char LABEL_FIELD[];
 };
 }  // ola
 #endif  // OLAD_RDMHTTPMODULE_H_
