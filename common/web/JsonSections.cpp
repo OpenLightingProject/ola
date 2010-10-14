@@ -149,7 +149,7 @@ void JsonSection::AddItem(const GenericItem *item) {
 /*
  * Return the section as a string.
  */
-string JsonSection::AsString() {
+string JsonSection::AsString() const {
   stringstream output;
   output << "{" << endl;
   output << "  \"refresh\": " << m_allow_refresh << "," << endl;

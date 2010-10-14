@@ -197,7 +197,7 @@ class JsonSection {
     void SetError(const string &error) { m_error = error; }
 
     void AddItem(const GenericItem *item);
-    string AsString();
+    string AsString() const;
 
   private:
     bool m_allow_refresh;
