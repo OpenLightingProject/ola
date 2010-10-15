@@ -267,6 +267,11 @@ class RDMHttpModule: public HttpModule {
                             const ola::rdm::ResponseStatus &status,
                             const ola::rdm::SensorValueDescriptor &value);
 
+    string RecordSensor(const HttpRequest *request,
+                        HttpResponse *response,
+                        unsigned int universe_id,
+                        const UID &uid);
+
     string GetIdentifyMode(HttpResponse *response,
                            unsigned int universe_id,
                            const UID &uid);
@@ -317,6 +322,7 @@ class RDMHttpModule: public HttpModule {
     static const char IDENTIFY_FIELD[];
     static const char LABEL_FIELD[];
     static const char LANGUAGE_FIELD[];
+    static const char RECORD_SENSOR_FIELD[];
 
     static const char BOOT_SOFTWARE_SECTION[];
     static const char DEVICE_INFO_SECTION[];

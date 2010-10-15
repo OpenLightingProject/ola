@@ -145,10 +145,8 @@ class BoolItem: public GenericItem {
 
 class HiddenItem: public GenericItem {
   public:
-    HiddenItem(const string &description,
-               const string &value,
-               const string &id):
-      GenericItem(description, id),
+    HiddenItem(const string &value, const string &id):
+      GenericItem("", id),
       m_value(value) {
     }
 

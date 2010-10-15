@@ -43,6 +43,7 @@ namespace ola {
 
 using ola::rdm::UID;
 using ola::web::BoolItem;
+using ola::web::HiddenItem;
 using ola::web::JsonSection;
 using ola::web::SelectItem;
 using ola::web::StringItem;
@@ -68,6 +69,7 @@ const char RDMHttpModule::ADDRESS_FIELD[] = "address";
 const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHttpModule::LABEL_FIELD[] = "label";
 const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
+const char RDMHttpModule::RECORD_SENSOR_FIELD[] = "record";
 
 // section identifiers
 const char RDMHttpModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
@@ -313,6 +315,8 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetLanguage(request, response, universe_id, *uid);
   } else if (section_id == DMX_ADDRESS_SECTION) {
     error = SetStartAddress(request, response, universe_id, *uid);
+  } else if (section_id == SENSOR_SECTION) {
+    error = RecordSensor(request, response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = SetIdentifyMode(request, response, universe_id, *uid);
   } else {
@@ -1391,11 +1395,38 @@ void RDMHttpModule::SensorValueHandler(
   section.AddItem(new StringItem("Present Value", str.str()));
 
   if (definition && definition->recorded_value_support) {
-    // add hidden field
-    // section.AddItem(new HiddenItem("", str.str()));
+    section.AddItem(new HiddenItem(RECORD_SENSOR_FIELD, str.str()));
   }
+  section.SetSaveButton("Record Sensor");
   RespondWithSection(response, section);
   delete definition;
+}
+
+
+/*
+ * Record a sensor value
+ */
+string RDMHttpModule::RecordSensor(const HttpRequest *request,
+                                   HttpResponse *response,
+                                   unsigned int universe_id,
+                                   const UID &uid) {
+  string hint = request->GetParameter(HINT_KEY);
+  uint8_t sensor_id;
+  if (!StringToUInt8(hint, &sensor_id)) {
+    return "Invalid hint (sensor #)";
+  }
+
+  string error;
+  m_rdm_api.RecordSensors(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      sensor_id,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
 }
 
 
