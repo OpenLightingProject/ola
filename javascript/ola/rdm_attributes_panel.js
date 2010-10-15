@@ -191,7 +191,7 @@ ola.RDMAttributesPanel.prototype._populateSection = function(e, index) {
   div.innerHTML = '';
 
   if (section_response['error']) {
-    alert(section_response['error']);
+    this._showErrorDialog('Error', section_response['error']);
     return;
   }
 
@@ -287,7 +287,7 @@ ola.RDMAttributesPanel.prototype._buildItem = function(table, item_info) {
       }
     } else if (type == 'bool') {
       var check = new goog.ui.Checkbox();
-      check.setChecked(value);
+      check.setChecked(value == 1);
       check.render(td);
       item_info['object'] = check;
     } else {
@@ -349,9 +349,7 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
         data += id + '=' + value + '&';
       } else if (items[i]['type'] == 'bool') {
         var checked = items[i]['object'].isChecked();
-        alert(checked);
         data += id + '=' + (checked ? '1' : '0') + '&';
-        alert(data);
       } else if (items[i]['type'] == 'select') {
         var offset = items[i]['object'].getSelectedIndex();
         var value = items[i]['value'][offset]['value'];
