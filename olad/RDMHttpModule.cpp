@@ -69,6 +69,15 @@ const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHttpModule::LABEL_FIELD[] = "label";
 const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
 
+// section identifiers
+const char BOOT_SOFTWARE_SECTION[] = "boot_software";
+const char DEVICE_INFO_SECTION[] = "device_info";
+const char DEVICE_LABEL_SECTION[] = "device_label";
+const char DMX_ADDRESS_SECTION[] = "dmx_address";
+const char IDENTIFY_SECTION[] = "identify";
+const char LANGUAGE_SECTION[] = "language";
+const char MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
+const char PRODUCT_DETAIL_SECTION[] = "product_detail";
 
 /**
  * Create a new OLA HTTP server
@@ -253,21 +262,21 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
 
   string section_id = request->GetParameter(SECTION_KEY);
   string error;
-  if (section_id == "device_info") {
+  if (section_id == DEVICE_INFO_SECTION) {
     error = GetDeviceInfo(request, response, universe_id, *uid);
-  } else if (section_id == "product_detail") {
+  } else if (section_id == PRODUCT_DETAIL_SECTION) {
     error = GetProductIds(request, response, universe_id, *uid);
-  } else if (section_id == "manufacturer_label") {
+  } else if (section_id == MANUFACTURER_LABEL_SECTION) {
     error = GetManufacturerLabel(request, response, universe_id, *uid);
-  } else if (section_id == "device_label") {
+  } else if (section_id == DEVICE_LABEL_SECTION) {
     error = GetDeviceLabel(request, response, universe_id, *uid);
-  } else if (section_id == "language") {
+  } else if (section_id == LANGUAGE_SECTION) {
     error = GetLanguage(response, universe_id, *uid);
-  } else if (section_id == "boot_software") {
+  } else if (section_id == BOOT_SOFTWARE_SECTION) {
     error = GetBootSoftware(response, universe_id, *uid);
-  } else if (section_id == "dmx_address") {
+  } else if (section_id == DMX_ADDRESS_SECTION) {
     error = GetStartAddress(request, response, universe_id, *uid);
-  } else if (section_id == "identify") {
+  } else if (section_id == IDENTIFY_SECTION) {
     error = GetIdentifyMode(response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
@@ -295,13 +304,13 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
 
   string section_id = request->GetParameter(SECTION_KEY);
   string error;
-  if (section_id == "device_label") {
+  if (section_id == DEVICE_LABEL_SECTION) {
     error = SetDeviceLabel(request, response, universe_id, *uid);
-  } else if (section_id == "language") {
+  } else if (section_id == LANGUAGE_SECTION) {
     error = SetLanguage(request, response, universe_id, *uid);
-  } else if (section_id == "dmx_address") {
+  } else if (section_id == DMX_ADDRESS_SECTION) {
     error = SetStartAddress(request, response, universe_id, *uid);
-  } else if (section_id == "identify") {
+  } else if (section_id == IDENTIFY_SECTION) {
     error = SetIdentifyMode(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
@@ -640,9 +649,9 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
   string hint;
   if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
       hint.push_back('m');  // m is for device model
-  AddSection(&sections, "device_info", "Device Info", hint);
+  AddSection(&sections, DEVICE_INFO_SECTION, "Device Info", hint);
 
-  AddSection(&sections, "identify", "Identify Mode", hint);
+  AddSection(&sections, IDENTIFY_SECTION, "Identify Mode", hint);
 
   bool dmx_address_added = false;
   bool include_software_version = false;
@@ -650,34 +659,35 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
   for (; iter != pid_list.end(); ++iter) {
     switch (*iter) {
       case ola::rdm::PID_MANUFACTURER_LABEL:
-        AddSection(&sections, "manufacturer_label", "Manufacturer Label");
+        AddSection(&sections, MANUFACTURER_LABEL_SECTION,
+                   "Manufacturer Label");
         break;
       case ola::rdm::PID_DEVICE_LABEL:
-        AddSection(&sections, "device_label", "Device Label");
+        AddSection(&sections, DEVICE_LABEL_SECTION, "Device Label");
         break;
       case ola::rdm::PID_LANGUAGE:
-        AddSection(&sections, "language", "Language");
+        AddSection(&sections, LANGUAGE_SECTION, "Language");
         break;
       case ola::rdm::PID_BOOT_SOFTWARE_VERSION_ID:
       case ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL:
         include_software_version = true;
         break;
       case ola::rdm::PID_DMX_START_ADDRESS:
-        AddSection(&sections, "dmx_address", "DMX Start Address");
+        AddSection(&sections, DMX_ADDRESS_SECTION, "DMX Start Address");
         dmx_address_added = true;
         break;
       case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
-        AddSection(&sections, "product_detail", "Product Details");
+        AddSection(&sections, PRODUCT_DETAIL_SECTION, "Product Details");
         break;
     }
   }
 
   if (include_software_version)
-    AddSection(&sections, "software_version", "Boot Software Version");
+    AddSection(&sections, BOOT_SOFTWARE_SECTION, "Boot Software Version");
 
   if (CheckForRDMSuccess(status)) {
     if (device.dmx_footprint && !dmx_address_added)
-      AddSection(&sections, "dmx_address", "DMX Start Address");
+      AddSection(&sections, DMX_ADDRESS_SECTION, "DMX Start Address");
     if (device.sensor_count &&
         pids.find(ola::rdm::PID_SENSOR_DEFINITION) != pids.end() &&
         pids.find(ola::rdm::PID_SENSOR_VALUE) != pids.end()) {

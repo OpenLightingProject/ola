@@ -300,6 +300,15 @@ class RDMHttpModule: public HttpModule {
     static const char IDENTIFY_FIELD[];
     static const char LABEL_FIELD[];
     static const char LANGUAGE_FIELD[];
+
+    static const char BOOT_SOFTWARE_SECTION[];
+    static const char DEVICE_INFO_SECTION[];
+    static const char DEVICE_LABEL_SECTION[];
+    static const char DMX_ADDRESS_SECTION[];
+    static const char IDENTIFY_SECTION[];
+    static const char LANGUAGE_SECTION[];
+    static const char MANUFACTURER_LABEL_SECTION[];
+    static const char PRODUCT_DETAIL_SECTION[];
 };
 }  // ola
 #endif  // OLAD_RDMHTTPMODULE_H_
