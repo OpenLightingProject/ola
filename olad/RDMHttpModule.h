@@ -210,15 +210,31 @@ class RDMHttpModule: public HttpModule {
                                       const ola::rdm::ResponseStatus &status,
                                       const vector<string> &languages);
 
+    void GetLanguageHandler(HttpResponse *response,
+                            vector<string> languages,
+                            const ola::rdm::ResponseStatus &status,
+                            const string &language);
+
     string SetLanguage(const HttpRequest *request,
                        HttpResponse *response,
                        unsigned int universe_id,
                        const UID &uid);
 
-    void GetLanguageHandler(HttpResponse *response,
-                            vector<string> languages,
-                            const ola::rdm::ResponseStatus &status,
-                            const string &language);
+    string GetBootSoftware(HttpResponse *response,
+                           unsigned int universe_id,
+                           const UID &uid);
+
+    void GetBootSoftwareLabelHandler(HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID uid,
+                                     const ola::rdm::ResponseStatus &status,
+                                     const string &label);
+
+    void GetBootSoftwareVersionHandler(
+        HttpResponse *response,
+        string label,
+        const ola::rdm::ResponseStatus &status,
+        uint32_t version);
 
     string GetStartAddress(const HttpRequest *request,
                            HttpResponse *response,
@@ -271,17 +287,19 @@ class RDMHttpModule: public HttpModule {
     void AddSection(vector<section_info> *sections,
                     const string &section_id,
                     const string &section_name,
-                    const string &hint);
+                    const string &hint="");
 
-    static const char ADDRESS_FIELD[];
     static const char BACKEND_DISCONNECTED_ERROR[];
+
     static const char HINT_KEY[];
-    static const char IDENTIFY_FIELD[];
     static const char ID_KEY[];
-    static const char LABEL_FIELD[];
-    static const char LANGUAGE_FIELD[];
     static const char SECTION_KEY[];
     static const char UID_KEY[];
+
+    static const char ADDRESS_FIELD[];
+    static const char IDENTIFY_FIELD[];
+    static const char LABEL_FIELD[];
+    static const char LANGUAGE_FIELD[];
 };
 }  // ola
 #endif  // OLAD_RDMHTTPMODULE_H_

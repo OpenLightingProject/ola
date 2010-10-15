@@ -54,16 +54,20 @@ using std::stringstream;
 using std::vector;
 
 
-const char RDMHttpModule::ADDRESS_FIELD[] = "address";
 const char RDMHttpModule::BACKEND_DISCONNECTED_ERROR[] =
     "Failed to send request, client isn't connected";
+
+// global url params
 const char RDMHttpModule::HINT_KEY[] = "hint";
-const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHttpModule::ID_KEY[] = "id";
-const char RDMHttpModule::LABEL_FIELD[] = "label";
-const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
 const char RDMHttpModule::SECTION_KEY[] = "section";
 const char RDMHttpModule::UID_KEY[] = "uid";
+
+// url params for particular sections
+const char RDMHttpModule::ADDRESS_FIELD[] = "address";
+const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
+const char RDMHttpModule::LABEL_FIELD[] = "label";
+const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
 
 
 /**
@@ -259,6 +263,8 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetDeviceLabel(request, response, universe_id, *uid);
   } else if (section_id == "language") {
     error = GetLanguage(response, universe_id, *uid);
+  } else if (section_id == "boot_software") {
+    error = GetBootSoftware(response, universe_id, *uid);
   } else if (section_id == "dmx_address") {
     error = GetStartAddress(request, response, universe_id, *uid);
   } else if (section_id == "identify") {
@@ -639,31 +645,39 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
   AddSection(&sections, "identify", "Identify Mode", hint);
 
   bool dmx_address_added = false;
+  bool include_software_version = false;
   vector<uint16_t>::const_iterator iter = pid_list.begin();
   for (; iter != pid_list.end(); ++iter) {
     switch (*iter) {
       case ola::rdm::PID_MANUFACTURER_LABEL:
-        AddSection(&sections, "manufacturer_label", "Manufacturer Label", "");
+        AddSection(&sections, "manufacturer_label", "Manufacturer Label");
         break;
       case ola::rdm::PID_DEVICE_LABEL:
-        AddSection(&sections, "device_label", "Device Label", "");
+        AddSection(&sections, "device_label", "Device Label");
         break;
       case ola::rdm::PID_LANGUAGE:
-        AddSection(&sections, "language", "Language", "");
+        AddSection(&sections, "language", "Language");
+        break;
+      case ola::rdm::PID_BOOT_SOFTWARE_VERSION_ID:
+      case ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL:
+        include_software_version = true;
         break;
       case ola::rdm::PID_DMX_START_ADDRESS:
-        AddSection(&sections, "dmx_address", "DMX Start Address", "");
+        AddSection(&sections, "dmx_address", "DMX Start Address");
         dmx_address_added = true;
         break;
       case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
-        AddSection(&sections, "product_detail", "Product Details", "");
+        AddSection(&sections, "product_detail", "Product Details");
         break;
     }
   }
 
+  if (include_software_version)
+    AddSection(&sections, "software_version", "Boot Software Version");
+
   if (CheckForRDMSuccess(status)) {
     if (device.dmx_footprint && !dmx_address_added)
-      AddSection(&sections, "dmx_address", "DMX Start Address", "");
+      AddSection(&sections, "dmx_address", "DMX Start Address");
     if (device.sensor_count &&
         pids.find(ola::rdm::PID_SENSOR_DEFINITION) != pids.end() &&
         pids.find(ola::rdm::PID_SENSOR_VALUE) != pids.end()) {
@@ -1104,6 +1118,76 @@ string RDMHttpModule::SetLanguage(const HttpRequest *request,
                         response),
       &error);
   return error;
+}
+
+
+/**
+ * Handle the request for the boot software section.
+ */
+string RDMHttpModule::GetBootSoftware(HttpResponse *response,
+                                      unsigned int universe_id,
+                                      const UID &uid) {
+  string error;
+  m_rdm_api.GetBootSoftwareVersionLabel(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetBootSoftwareLabelHandler,
+                        response,
+                        universe_id,
+                        uid),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to a boot software label.
+ */
+void RDMHttpModule::GetBootSoftwareLabelHandler(
+    HttpResponse *response,
+    unsigned int universe_id,
+    const UID uid,
+    const ola::rdm::ResponseStatus &status,
+    const string &label) {
+  string error;
+  m_rdm_api.GetBootSoftwareVersion(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetBootSoftwareVersionHandler,
+                        response,
+                        label),
+      &error);
+  if (!error.empty())
+    m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+  (void) status;
+}
+
+
+/**
+ * Handle the response to a boot software version.
+ */
+void RDMHttpModule::GetBootSoftwareVersionHandler(
+    HttpResponse *response,
+    string label,
+    const ola::rdm::ResponseStatus &status,
+    uint32_t version) {
+  stringstream str;
+  str << label;
+  if (CheckForRDMSuccess(status)) {
+    if (!label.empty())
+      str << " (" << version << ")";
+    else
+      str << version;
+  }
+
+  JsonSection section;
+  StringItem *item = new StringItem("Boot Software", str.str());
+  section.AddItem(item);
+  RespondWithSection(response, section);
 }
 
 
