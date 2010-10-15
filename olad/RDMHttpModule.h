@@ -250,6 +250,23 @@ class RDMHttpModule: public HttpModule {
                            unsigned int universe_id,
                            const UID &uid);
 
+    string GetSensor(const HttpRequest *request,
+                     HttpResponse *response,
+                     unsigned int universe_id,
+                     const UID &uid);
+
+    void SensorDefinitionHandler(HttpResponse *response,
+                                 unsigned int universe_id,
+                                 const UID uid,
+                                 uint8_t sensor_id,
+                                 const ola::rdm::ResponseStatus &status,
+                                 const ola::rdm::SensorDescriptor &definition);
+
+    void SensorValueHandler(HttpResponse *response,
+                            ola::rdm::SensorDescriptor *definition,
+                            const ola::rdm::ResponseStatus &status,
+                            const ola::rdm::SensorValueDescriptor &value);
+
     string GetIdentifyMode(HttpResponse *response,
                            unsigned int universe_id,
                            const UID &uid);
@@ -309,6 +326,7 @@ class RDMHttpModule: public HttpModule {
     static const char LANGUAGE_SECTION[];
     static const char MANUFACTURER_LABEL_SECTION[];
     static const char PRODUCT_DETAIL_SECTION[];
+    static const char SENSOR_SECTION[];
 };
 }  // ola
 #endif  // OLAD_RDMHTTPMODULE_H_

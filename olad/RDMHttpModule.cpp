@@ -78,6 +78,7 @@ const char RDMHttpModule::IDENTIFY_SECTION[] = "identify";
 const char RDMHttpModule::LANGUAGE_SECTION[] = "language";
 const char RDMHttpModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
 const char RDMHttpModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
+const char RDMHttpModule::SENSOR_SECTION[] = "sensor";
 
 /**
  * Create a new OLA HTTP server
@@ -276,6 +277,8 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetBootSoftware(response, universe_id, *uid);
   } else if (section_id == DMX_ADDRESS_SECTION) {
     error = GetStartAddress(request, response, universe_id, *uid);
+  } else if (section_id == SENSOR_SECTION) {
+    error = GetSensor(request, response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = GetIdentifyMode(response, universe_id, *uid);
   } else {
@@ -696,7 +699,7 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
         stringstream heading, hint;
         hint << i;
         heading << "Sensor " << i;
-        AddSection(&sections, "sensor", heading.str(), hint.str());
+        AddSection(&sections, SENSOR_SECTION, heading.str(), hint.str());
       }
     }
   }
@@ -1266,6 +1269,92 @@ string RDMHttpModule::SetStartAddress(const HttpRequest *request,
                         response),
       &error);
   return error;
+}
+
+
+/**
+ * Handle the request for the sensor section.
+ */
+string RDMHttpModule::GetSensor(const HttpRequest *request,
+                                HttpResponse *response,
+                                unsigned int universe_id,
+                                const UID &uid) {
+  string hint = request->GetParameter(HINT_KEY);
+  uint8_t sensor_id;
+  if (!StringToUInt8(hint, &sensor_id)) {
+    return "Invalid hint (sensor #)";
+  }
+
+  string error;
+  m_rdm_api.GetSensorDefinition(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      sensor_id,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SensorDefinitionHandler,
+                        response,
+                        universe_id,
+                        uid,
+                        sensor_id),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to a sensor definition request.
+ */
+void RDMHttpModule::SensorDefinitionHandler(
+    HttpResponse *response,
+    unsigned int universe_id,
+    const UID uid,
+    uint8_t sensor_id,
+    const ola::rdm::ResponseStatus &status,
+    const ola::rdm::SensorDescriptor &definition) {
+  ola::rdm::SensorDescriptor *definition_arg = NULL;
+
+  if (CheckForRDMSuccess(status)) {
+    definition_arg = new ola::rdm::SensorDescriptor();
+    *definition_arg = definition;
+  }
+  string error;
+  m_rdm_api.GetSensorValue(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      sensor_id,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SensorValueHandler,
+                        response,
+                        definition_arg),
+      &error);
+  if (!error.empty())
+    m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
+}
+
+
+/**
+ * Handle the response to a sensor value request & build the response.
+ */
+void RDMHttpModule::SensorValueHandler(
+    HttpResponse *response,
+    ola::rdm::SensorDescriptor *definition,
+    const ola::rdm::ResponseStatus &status,
+    const ola::rdm::SensorValueDescriptor &value) {
+  if (CheckForRDMError(response, status)) {
+    if (definition)
+      delete definition;
+    return;
+  }
+
+  JsonSection section;
+  if (definition) {
+    section.AddItem(new StringItem("Description", definition->description));
+  }
+  section.AddItem(new UIntItem("Present Value", value.present_value));
+  RespondWithSection(response, section);
+  delete definition;
 }
 
 
