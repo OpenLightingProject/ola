@@ -1205,7 +1205,7 @@ void RDMHttpModule::GetIdentifyModeHandler(
     return;
 
   JsonSection section;
-  BoolItem *item = new BoolItem("Idenify Mode", mode, IDENTIFY_FIELD);
+  BoolItem *item = new BoolItem("Identify Mode", mode, IDENTIFY_FIELD);
   section.AddItem(item);
   RespondWithSection(response, section);
 }
