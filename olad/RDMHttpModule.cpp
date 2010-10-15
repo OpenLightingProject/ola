@@ -70,14 +70,14 @@ const char RDMHttpModule::LABEL_FIELD[] = "label";
 const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
 
 // section identifiers
-const char BOOT_SOFTWARE_SECTION[] = "boot_software";
-const char DEVICE_INFO_SECTION[] = "device_info";
-const char DEVICE_LABEL_SECTION[] = "device_label";
-const char DMX_ADDRESS_SECTION[] = "dmx_address";
-const char IDENTIFY_SECTION[] = "identify";
-const char LANGUAGE_SECTION[] = "language";
-const char MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
-const char PRODUCT_DETAIL_SECTION[] = "product_detail";
+const char RDMHttpModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
+const char RDMHttpModule::DEVICE_INFO_SECTION[] = "device_info";
+const char RDMHttpModule::DEVICE_LABEL_SECTION[] = "device_label";
+const char RDMHttpModule::DMX_ADDRESS_SECTION[] = "dmx_address";
+const char RDMHttpModule::IDENTIFY_SECTION[] = "identify";
+const char RDMHttpModule::LANGUAGE_SECTION[] = "language";
+const char RDMHttpModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
+const char RDMHttpModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
 
 /**
  * Create a new OLA HTTP server
@@ -1348,7 +1348,7 @@ bool RDMHttpModule::CheckForInvalidUid(const HttpRequest *request,
                                        UID **uid) {
   string uid_string = request->GetParameter(UID_KEY);
   *uid = UID::FromString(uid_string);
-  if (uid == NULL) {
+  if (*uid == NULL) {
     OLA_INFO << "Invalid uid: " << uid_string;
     return false;
   }
