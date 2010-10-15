@@ -175,7 +175,7 @@ string PowerStateToString(uint8_t power_state) {
 string PrefixToString(uint8_t prefix) {
   switch (prefix) {
     case PREFIX_NONE:
-      return "None";
+      return "";
     case PREFIX_DECI:
       return "Deci";
     case PREFIX_CENTI:

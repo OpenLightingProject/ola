@@ -1349,12 +1349,12 @@ void RDMHttpModule::SensorValueHandler(
   }
 
   JsonSection section;
+  stringstream str;
   if (definition) {
     section.AddItem(new StringItem("Description", definition->description));
     section.AddItem(new StringItem(
           "Type",
           ola::rdm::SensorTypeToString(definition->type)));
-    stringstream str;
     str << definition->range_min << " - " << definition->range_max <<
       " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
       ola::rdm::UnitToString(definition->unit);
@@ -1365,8 +1365,35 @@ void RDMHttpModule::SensorValueHandler(
       " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
       ola::rdm::UnitToString(definition->unit);
     section.AddItem(new StringItem("Normal Range", str.str()));
+
+    if (definition->recorded_value_support &&
+        ola::rdm::SENSOR_RECORDED_VALUE) {
+      str.str("");
+      str << value.recorded << " " <<
+        ola::rdm::PrefixToString(definition->prefix) << " " <<
+        ola::rdm::UnitToString(definition->unit);
+      section.AddItem(new StringItem("Recorded Value", str.str()));
+    }
+
+    if (definition->recorded_value_support &&
+        ola::rdm::SENSOR_RECORDED_RANGE_VALUES) {
+      str.str("");
+      str << value.lowest << " - " << value.highest <<
+        " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
+        ola::rdm::UnitToString(definition->unit);
+      section.AddItem(new StringItem("Min / Max Recorded Values", str.str()));
+    }
   }
-  section.AddItem(new UIntItem("Present Value", value.present_value));
+  str.str("");
+  str << value.present_value << " " <<
+    ola::rdm::PrefixToString(definition->prefix) << " " <<
+    ola::rdm::UnitToString(definition->unit);
+  section.AddItem(new StringItem("Present Value", str.str()));
+
+  if (definition && definition->recorded_value_support) {
+    // add hidden field
+    // section.AddItem(new HiddenItem("", str.str()));
+  }
   RespondWithSection(response, section);
   delete definition;
 }
