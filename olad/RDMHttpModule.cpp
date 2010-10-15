@@ -695,10 +695,10 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
         pids.find(ola::rdm::PID_SENSOR_DEFINITION) != pids.end() &&
         pids.find(ola::rdm::PID_SENSOR_VALUE) != pids.end()) {
       // sensors count from 1
-      for (unsigned int i = 1; i <= device.sensor_count; ++i) {
+      for (unsigned int i = 0; i < device.sensor_count; ++i) {
         stringstream heading, hint;
         hint << i;
-        heading << "Sensor " << i;
+        heading << "Sensor " << (i + 1);
         AddSection(&sections, SENSOR_SECTION, heading.str(), hint.str());
       }
     }
@@ -1351,6 +1351,13 @@ void RDMHttpModule::SensorValueHandler(
   JsonSection section;
   if (definition) {
     section.AddItem(new StringItem("Description", definition->description));
+    section.AddItem(new StringItem(
+          "Type",
+          ola::rdm::SensorTypeToString(definition->type)));
+    stringstream str;
+    str << definition->range_min << " - " << definition->range_max <<
+      ola::rdm::UnitToString(definition->unit);
+    section.AddItem(new StringItem("Range", str.str()));
   }
   section.AddItem(new UIntItem("Present Value", value.present_value));
   RespondWithSection(response, section);
