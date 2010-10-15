@@ -1356,8 +1356,15 @@ void RDMHttpModule::SensorValueHandler(
           ola::rdm::SensorTypeToString(definition->type)));
     stringstream str;
     str << definition->range_min << " - " << definition->range_max <<
+      " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
       ola::rdm::UnitToString(definition->unit);
     section.AddItem(new StringItem("Range", str.str()));
+
+    str.str("");
+    str << definition->normal_min << " - " << definition->normal_max <<
+      " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
+      ola::rdm::UnitToString(definition->unit);
+    section.AddItem(new StringItem("Normal Range", str.str()));
   }
   section.AddItem(new UIntItem("Present Value", value.present_value));
   RespondWithSection(response, section);
