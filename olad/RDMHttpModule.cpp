@@ -709,7 +709,7 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
         AddSection(&sections, DEVICE_HOURS_SECTION, "Device Hours");
         break;
       case ola::rdm::PID_LAMP_HOURS:
-        AddSection(&sections, DEVICE_HOURS_SECTION, "Lamp Hours");
+        AddSection(&sections, LAMP_HOURS_SECTION, "Lamp Hours");
         break;
       case ola::rdm::PID_LAMP_STRIKES:
         AddSection(&sections, LAMP_STRIKES_SECITON, "Lamp Strikes");

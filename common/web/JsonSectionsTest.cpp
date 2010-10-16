@@ -202,12 +202,12 @@ void JsonSectionsTest::testBoolItem() {
  * Test the hidden item
  */
 void JsonSectionsTest::testHiddenItem() {
-  HiddenItem item("Foo", "bar", "baz");
+  HiddenItem item("bar", "baz");
   item.SetButtonText("Action");
   string expected =
     "    {\n"
     "    \"button\": \"Action\",\n"
-    "    \"description\": \"Foo\",\n"
+    "    \"description\": \"\",\n"
     "    \"id\": \"baz\",\n"
     "    \"type\": \"hidden\",\n"
     "    \"value\": \"bar\",\n"
@@ -221,7 +221,7 @@ void JsonSectionsTest::testHiddenItem() {
  */
 void JsonSectionsTest::testSection() {
   JsonSection section(false);
-  HiddenItem *item = new HiddenItem("Foo", "bar\r", "baz");
+  HiddenItem *item = new HiddenItem("bar\r", "baz");
 
   section.AddItem(item);
   section.SetSaveButton("Action\\");
@@ -233,7 +233,7 @@ void JsonSectionsTest::testSection() {
     "  \"save_button\": \"Action\\\\\",\n"
     "  \"items\": [\n"
     "    {\n"
-    "    \"description\": \"Foo\",\n"
+    "    \"description\": \"\",\n"
     "    \"id\": \"baz\",\n"
     "    \"type\": \"hidden\",\n"
     "    \"value\": \"bar\\r\",\n"
