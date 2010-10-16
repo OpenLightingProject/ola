@@ -277,10 +277,6 @@ class RDMHttpModule: public HttpModule {
                           unsigned int universe_id,
                           const UID &uid);
 
-    void DeviceHoursHandler(HttpResponse *response,
-                            const ola::rdm::ResponseStatus &status,
-                            uint32_t hours);
-
     string SetDeviceHours(const HttpRequest *request,
                           HttpResponse *response,
                           unsigned int universe_id,
@@ -290,10 +286,6 @@ class RDMHttpModule: public HttpModule {
                         HttpResponse *response,
                         unsigned int universe_id,
                         const UID &uid);
-
-    void LampHoursHandler(HttpResponse *response,
-                          const ola::rdm::ResponseStatus &status,
-                          uint32_t hours);
 
     string SetLampHours(const HttpRequest *request,
                         HttpResponse *response,
@@ -305,10 +297,6 @@ class RDMHttpModule: public HttpModule {
                           unsigned int universe_id,
                           const UID &uid);
 
-    void LampStrikesHandler(HttpResponse *response,
-                            const ola::rdm::ResponseStatus &status,
-                            uint32_t strikes);
-
     string SetLampStrikes(const HttpRequest *request,
                           HttpResponse *response,
                           unsigned int universe_id,
@@ -318,10 +306,6 @@ class RDMHttpModule: public HttpModule {
                           HttpResponse *response,
                           unsigned int universe_id,
                           const UID &uid);
-
-    void PowerCyclesHandler(HttpResponse *response,
-                            const ola::rdm::ResponseStatus &status,
-                            uint32_t cycles);
 
     string SetPowerCycles(const HttpRequest *request,
                           HttpResponse *response,
@@ -350,6 +334,11 @@ class RDMHttpModule: public HttpModule {
     void SetHandler(HttpResponse *response,
                     const ola::rdm::ResponseStatus &status);
 
+    void GenericUIntHandler(HttpResponse *response,
+                            string description,
+                            const ola::rdm::ResponseStatus &status,
+                            uint32_t value);
+
     bool CheckForRDMError(HttpResponse *response,
                           const ola::rdm::ResponseStatus &status);
     int RespondWithError(HttpResponse *response, const string &error);
@@ -375,12 +364,12 @@ class RDMHttpModule: public HttpModule {
     static const char UID_KEY[];
 
     static const char ADDRESS_FIELD[];
+    static const char GENERIC_UINT_FIELD[];
     static const char HOURS_FIELD[];
     static const char IDENTIFY_FIELD[];
     static const char LABEL_FIELD[];
     static const char LANGUAGE_FIELD[];
     static const char RECORD_SENSOR_FIELD[];
-    static const char STRIKES_FIELD[];
 
     static const char BOOT_SOFTWARE_SECTION[];
     static const char DEVICE_HOURS_SECTION[];

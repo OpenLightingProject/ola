@@ -66,12 +66,12 @@ const char RDMHttpModule::UID_KEY[] = "uid";
 
 // url params for particular sections
 const char RDMHttpModule::ADDRESS_FIELD[] = "address";
+const char RDMHttpModule::GENERIC_UINT_FIELD[] = "int";
 const char RDMHttpModule::HOURS_FIELD[] = "hours";
 const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHttpModule::LABEL_FIELD[] = "label";
 const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
 const char RDMHttpModule::RECORD_SENSOR_FIELD[] = "record";
-const char RDMHttpModule::STRIKES_FIELD[] = "strikes";
 
 // section identifiers
 const char RDMHttpModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
@@ -1477,26 +1477,12 @@ string RDMHttpModule::GetDeviceHours(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::DeviceHoursHandler,
-                        response),
+                        &RDMHttpModule::GenericUIntHandler,
+                        response,
+                        string("Device Hours")),
       &error);
   return error;
   (void) request;
-}
-
-
-/**
- * Handle the response to a device hours request and build the response.
- */
-void RDMHttpModule::DeviceHoursHandler(HttpResponse *response,
-                                       const ola::rdm::ResponseStatus &status,
-                                       uint32_t hours) {
-  if (CheckForRDMError(response, status))
-    return;
-
-  JsonSection section;
-  section.AddItem(new UIntItem("Device Hours", hours, HOURS_FIELD));
-  RespondWithSection(response, section);
 }
 
 
@@ -1507,12 +1493,11 @@ string RDMHttpModule::SetDeviceHours(const HttpRequest *request,
                                      HttpResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
-  string device_hours = request->GetParameter(HOURS_FIELD);
+  string device_hours = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t dev_hours;
 
-  if (!StringToUInt(device_hours, &dev_hours)) {
+  if (!StringToUInt(device_hours, &dev_hours))
     return "Invalid device hours";
-  }
 
   string error;
   m_rdm_api.SetDeviceHours(
@@ -1541,26 +1526,12 @@ string RDMHttpModule::GetLampHours(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::LampHoursHandler,
-                        response),
+                        &RDMHttpModule::GenericUIntHandler,
+                        response,
+                        string("Lamp Hours")),
       &error);
   return error;
   (void) request;
-}
-
-
-/**
- * Handle the response to a lamp hours request and build the response.
- */
-void RDMHttpModule::LampHoursHandler(HttpResponse *response,
-                                     const ola::rdm::ResponseStatus &status,
-                                     uint32_t hours) {
-  if (CheckForRDMError(response, status))
-    return;
-
-  JsonSection section;
-  section.AddItem(new UIntItem("Lamp Hours", hours, HOURS_FIELD));
-  RespondWithSection(response, section);
 }
 
 
@@ -1571,12 +1542,11 @@ string RDMHttpModule::SetLampHours(const HttpRequest *request,
                                     HttpResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
-  string lamp_hours_str = request->GetParameter(HOURS_FIELD);
+  string lamp_hours_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t lamp_hours;
 
-  if (!StringToUInt(lamp_hours_str, &lamp_hours)) {
+  if (!StringToUInt(lamp_hours_str, &lamp_hours))
     return "Invalid lamp hours";
-  }
 
   string error;
   m_rdm_api.SetLampHours(
@@ -1605,26 +1575,12 @@ string RDMHttpModule::GetLampStrikes(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::LampStrikesHandler,
-                        response),
+                        &RDMHttpModule::GenericUIntHandler,
+                        response,
+                        string("Lamp Strikes")),
       &error);
   return error;
   (void) request;
-}
-
-
-/**
- * Handle the response to a lamp strikes request and build the response.
- */
-void RDMHttpModule::LampStrikesHandler(HttpResponse *response,
-                                       const ola::rdm::ResponseStatus &status,
-                                       uint32_t strikes) {
-  if (CheckForRDMError(response, status))
-    return;
-
-  JsonSection section;
-  section.AddItem(new UIntItem("Lamp Strikes", strikes, STRIKES_FIELD));
-  RespondWithSection(response, section);
 }
 
 
@@ -1635,12 +1591,11 @@ string RDMHttpModule::SetLampStrikes(const HttpRequest *request,
                                      HttpResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
-  string lamp_strikes_str = request->GetParameter(STRIKES_FIELD);
+  string lamp_strikes_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t lamp_strikes;
 
-  if (!StringToUInt(lamp_strikes_str, &lamp_strikes)) {
+  if (!StringToUInt(lamp_strikes_str, &lamp_strikes))
     return "Invalid lamp strikes";
-  }
 
   string error;
   m_rdm_api.SetLampStrikes(
@@ -1669,26 +1624,12 @@ string RDMHttpModule::GetPowerCycles(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::PowerCyclesHandler,
-                        response),
+                        &RDMHttpModule::GenericUIntHandler,
+                        response,
+                        string("Device Power Cycles")),
       &error);
   return error;
   (void) request;
-}
-
-
-/**
- * Handle the response to a power cycles request and build the response.
- */
-void RDMHttpModule::PowerCyclesHandler(HttpResponse *response,
-                                       const ola::rdm::ResponseStatus &status,
-                                       uint32_t cycles) {
-  if (CheckForRDMError(response, status))
-    return;
-
-  JsonSection section;
-  section.AddItem(new UIntItem("Device Power Cycles", cycles, STRIKES_FIELD));
-  RespondWithSection(response, section);
 }
 
 
@@ -1699,12 +1640,11 @@ string RDMHttpModule::SetPowerCycles(const HttpRequest *request,
                                      HttpResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
-  string power_cycles_str = request->GetParameter(STRIKES_FIELD);
+  string power_cycles_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t power_cycles;
 
-  if (!StringToUInt(power_cycles_str, &power_cycles)) {
+  if (!StringToUInt(power_cycles_str, &power_cycles))
     return "Invalid power cycles";
-  }
 
   string error;
   m_rdm_api.SetDevicePowerCycles(
@@ -1816,6 +1756,22 @@ void RDMHttpModule::SetHandler(
   string error;
   CheckForRDMSuccessWithError(status, &error);
   RespondWithError(response, error);
+}
+
+
+/*
+ * Build a response to a RDM call that returns a uint32_t
+ */
+void RDMHttpModule::GenericUIntHandler(HttpResponse *response,
+                                       string description,
+                                       const ola::rdm::ResponseStatus &status,
+                                       uint32_t value) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  section.AddItem(new UIntItem(description, value, GENERIC_UINT_FIELD));
+  RespondWithSection(response, section);
 }
 
 
