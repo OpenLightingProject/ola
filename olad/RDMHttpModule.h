@@ -272,6 +272,34 @@ class RDMHttpModule: public HttpModule {
                         unsigned int universe_id,
                         const UID &uid);
 
+    string GetDeviceHours(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
+
+    void DeviceHoursHandler(HttpResponse *response,
+                            const ola::rdm::ResponseStatus &status,
+                            uint32_t hours);
+
+    string SetDeviceHours(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
+
+    string GetLampHours(const HttpRequest *request,
+                        HttpResponse *response,
+                        unsigned int universe_id,
+                        const UID &uid);
+
+    void LampHoursHandler(HttpResponse *response,
+                          const ola::rdm::ResponseStatus &status,
+                          uint32_t hours);
+
+    string SetLampHours(const HttpRequest *request,
+                        HttpResponse *response,
+                        unsigned int universe_id,
+                        const UID &uid);
+
     string GetIdentifyMode(HttpResponse *response,
                            unsigned int universe_id,
                            const UID &uid);
@@ -319,16 +347,19 @@ class RDMHttpModule: public HttpModule {
     static const char UID_KEY[];
 
     static const char ADDRESS_FIELD[];
+    static const char HOURS_FIELD[];
     static const char IDENTIFY_FIELD[];
     static const char LABEL_FIELD[];
     static const char LANGUAGE_FIELD[];
     static const char RECORD_SENSOR_FIELD[];
 
     static const char BOOT_SOFTWARE_SECTION[];
+    static const char DEVICE_HOURS_SECTION[];
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];
     static const char DMX_ADDRESS_SECTION[];
     static const char IDENTIFY_SECTION[];
+    static const char LAMP_HOURS_SECTION[];
     static const char LANGUAGE_SECTION[];
     static const char MANUFACTURER_LABEL_SECTION[];
     static const char PRODUCT_DETAIL_SECTION[];

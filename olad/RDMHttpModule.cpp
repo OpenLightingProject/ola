@@ -66,6 +66,7 @@ const char RDMHttpModule::UID_KEY[] = "uid";
 
 // url params for particular sections
 const char RDMHttpModule::ADDRESS_FIELD[] = "address";
+const char RDMHttpModule::HOURS_FIELD[] = "hours";
 const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHttpModule::LABEL_FIELD[] = "label";
 const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
@@ -73,10 +74,12 @@ const char RDMHttpModule::RECORD_SENSOR_FIELD[] = "record";
 
 // section identifiers
 const char RDMHttpModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
+const char RDMHttpModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHttpModule::DEVICE_INFO_SECTION[] = "device_info";
 const char RDMHttpModule::DEVICE_LABEL_SECTION[] = "device_label";
 const char RDMHttpModule::DMX_ADDRESS_SECTION[] = "dmx_address";
 const char RDMHttpModule::IDENTIFY_SECTION[] = "identify";
+const char RDMHttpModule::LAMP_HOURS_SECTION[] = "lamp_hours";
 const char RDMHttpModule::LANGUAGE_SECTION[] = "language";
 const char RDMHttpModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
 const char RDMHttpModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
@@ -281,6 +284,10 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetStartAddress(request, response, universe_id, *uid);
   } else if (section_id == SENSOR_SECTION) {
     error = GetSensor(request, response, universe_id, *uid);
+  } else if (section_id == DEVICE_HOURS_SECTION) {
+    error = GetDeviceHours(request, response, universe_id, *uid);
+  } else if (section_id == LAMP_HOURS_SECTION) {
+    error = GetLampHours(request, response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = GetIdentifyMode(response, universe_id, *uid);
   } else {
@@ -317,6 +324,10 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetStartAddress(request, response, universe_id, *uid);
   } else if (section_id == SENSOR_SECTION) {
     error = RecordSensor(request, response, universe_id, *uid);
+  } else if (section_id == DEVICE_HOURS_SECTION) {
+    error = SetDeviceHours(request, response, universe_id, *uid);
+  } else if (section_id == LAMP_HOURS_SECTION) {
+    error = SetLampHours(request, response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = SetIdentifyMode(request, response, universe_id, *uid);
   } else {
@@ -682,6 +693,12 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
       case ola::rdm::PID_DMX_START_ADDRESS:
         AddSection(&sections, DMX_ADDRESS_SECTION, "DMX Start Address");
         dmx_address_added = true;
+        break;
+      case ola::rdm::PID_DEVICE_HOURS:
+        AddSection(&sections, DEVICE_HOURS_SECTION, "Device Hours");
+        break;
+      case ola::rdm::PID_LAMP_HOURS:
+        AddSection(&sections, DEVICE_HOURS_SECTION, "Lamp Hours");
         break;
       case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
         AddSection(&sections, PRODUCT_DETAIL_SECTION, "Product Details");
@@ -1422,6 +1439,134 @@ string RDMHttpModule::RecordSensor(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       sensor_id,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the device hours section.
+ */
+string RDMHttpModule::GetDeviceHours(const HttpRequest *request,
+                                     HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string error;
+  m_rdm_api.GetDeviceHours(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::DeviceHoursHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a device hours request and build the response.
+ */
+void RDMHttpModule::DeviceHoursHandler(HttpResponse *response,
+                                       const ola::rdm::ResponseStatus &status,
+                                       uint32_t hours) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  section.AddItem(new UIntItem("Device Hours", hours, HOURS_FIELD));
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * Set the device hours
+ */
+string RDMHttpModule::SetDeviceHours(const HttpRequest *request,
+                                     HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string device_hours = request->GetParameter(HOURS_FIELD);
+  uint32_t dev_hours;
+
+  if (!StringToUInt(device_hours, &dev_hours)) {
+    return "Invalid device hours";
+  }
+
+  string error;
+  m_rdm_api.SetDeviceHours(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      dev_hours,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the device hours section.
+ */
+string RDMHttpModule::GetLampHours(const HttpRequest *request,
+                                     HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string error;
+  m_rdm_api.GetLampHours(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::LampHoursHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a lamp hours request and build the response.
+ */
+void RDMHttpModule::LampHoursHandler(HttpResponse *response,
+                                     const ola::rdm::ResponseStatus &status,
+                                     uint32_t hours) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  section.AddItem(new UIntItem("Lamp Hours", hours, HOURS_FIELD));
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * Set the lamp hours
+ */
+string RDMHttpModule::SetLampHours(const HttpRequest *request,
+                                    HttpResponse *response,
+                                    unsigned int universe_id,
+                                    const UID &uid) {
+  string lamp_hours_str = request->GetParameter(HOURS_FIELD);
+  uint32_t lamp_hours;
+
+  if (!StringToUInt(lamp_hours_str, &lamp_hours)) {
+    return "Invalid device hours";
+  }
+
+  string error;
+  m_rdm_api.SetLampHours(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      lamp_hours,
       NewSingleCallback(this,
                         &RDMHttpModule::SetHandler,
                         response),
