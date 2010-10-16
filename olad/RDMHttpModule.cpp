@@ -71,6 +71,7 @@ const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHttpModule::LABEL_FIELD[] = "label";
 const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
 const char RDMHttpModule::RECORD_SENSOR_FIELD[] = "record";
+const char RDMHttpModule::STRIKES_FIELD[] = "strikes";
 
 // section identifiers
 const char RDMHttpModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
@@ -80,8 +81,10 @@ const char RDMHttpModule::DEVICE_LABEL_SECTION[] = "device_label";
 const char RDMHttpModule::DMX_ADDRESS_SECTION[] = "dmx_address";
 const char RDMHttpModule::IDENTIFY_SECTION[] = "identify";
 const char RDMHttpModule::LAMP_HOURS_SECTION[] = "lamp_hours";
+const char RDMHttpModule::LAMP_STRIKES_SECITON[] = "lamp_strikes";
 const char RDMHttpModule::LANGUAGE_SECTION[] = "language";
 const char RDMHttpModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
+const char RDMHttpModule::POWER_CYCLES_SECTION[] = "power_cycles";
 const char RDMHttpModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
 const char RDMHttpModule::SENSOR_SECTION[] = "sensor";
 
@@ -288,6 +291,10 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetDeviceHours(request, response, universe_id, *uid);
   } else if (section_id == LAMP_HOURS_SECTION) {
     error = GetLampHours(request, response, universe_id, *uid);
+  } else if (section_id == LAMP_STRIKES_SECITON) {
+    error = GetLampStrikes(request, response, universe_id, *uid);
+  } else if (section_id == POWER_CYCLES_SECTION) {
+    error = GetPowerCycles(request, response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = GetIdentifyMode(response, universe_id, *uid);
   } else {
@@ -328,6 +335,10 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetDeviceHours(request, response, universe_id, *uid);
   } else if (section_id == LAMP_HOURS_SECTION) {
     error = SetLampHours(request, response, universe_id, *uid);
+  } else if (section_id == LAMP_STRIKES_SECITON) {
+    error = SetLampStrikes(request, response, universe_id, *uid);
+  } else if (section_id == POWER_CYCLES_SECTION) {
+    error = SetPowerCycles(request, response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = SetIdentifyMode(request, response, universe_id, *uid);
   } else {
@@ -699,6 +710,12 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
         break;
       case ola::rdm::PID_LAMP_HOURS:
         AddSection(&sections, DEVICE_HOURS_SECTION, "Lamp Hours");
+        break;
+      case ola::rdm::PID_LAMP_STRIKES:
+        AddSection(&sections, LAMP_STRIKES_SECITON, "Lamp Strikes");
+        break;
+      case ola::rdm::PID_DEVICE_POWER_CYCLES:
+        AddSection(&sections, POWER_CYCLES_SECTION, "Device Power Cycles");
         break;
       case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
         AddSection(&sections, PRODUCT_DETAIL_SECTION, "Product Details");
@@ -1512,7 +1529,7 @@ string RDMHttpModule::SetDeviceHours(const HttpRequest *request,
 
 
 /**
- * Handle the request for the device hours section.
+ * Handle the request for the lamp hours section.
  */
 string RDMHttpModule::GetLampHours(const HttpRequest *request,
                                      HttpResponse *response,
@@ -1558,7 +1575,7 @@ string RDMHttpModule::SetLampHours(const HttpRequest *request,
   uint32_t lamp_hours;
 
   if (!StringToUInt(lamp_hours_str, &lamp_hours)) {
-    return "Invalid device hours";
+    return "Invalid lamp hours";
   }
 
   string error;
@@ -1567,6 +1584,134 @@ string RDMHttpModule::SetLampHours(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       lamp_hours,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the lamp strikes section
+ */
+string RDMHttpModule::GetLampStrikes(const HttpRequest *request,
+                                     HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string error;
+  m_rdm_api.GetLampStrikes(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::LampStrikesHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a lamp strikes request and build the response.
+ */
+void RDMHttpModule::LampStrikesHandler(HttpResponse *response,
+                                       const ola::rdm::ResponseStatus &status,
+                                       uint32_t strikes) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  section.AddItem(new UIntItem("Lamp Strikes", strikes, STRIKES_FIELD));
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * Set the lamp strikes
+ */
+string RDMHttpModule::SetLampStrikes(const HttpRequest *request,
+                                     HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string lamp_strikes_str = request->GetParameter(STRIKES_FIELD);
+  uint32_t lamp_strikes;
+
+  if (!StringToUInt(lamp_strikes_str, &lamp_strikes)) {
+    return "Invalid lamp strikes";
+  }
+
+  string error;
+  m_rdm_api.SetLampStrikes(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      lamp_strikes,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the device power cycles section
+ */
+string RDMHttpModule::GetPowerCycles(const HttpRequest *request,
+                                     HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string error;
+  m_rdm_api.GetDevicePowerCycles(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::PowerCyclesHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a power cycles request and build the response.
+ */
+void RDMHttpModule::PowerCyclesHandler(HttpResponse *response,
+                                       const ola::rdm::ResponseStatus &status,
+                                       uint32_t cycles) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  section.AddItem(new UIntItem("Device Power Cycles", cycles, STRIKES_FIELD));
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * Set the device power cycles
+ */
+string RDMHttpModule::SetPowerCycles(const HttpRequest *request,
+                                     HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string power_cycles_str = request->GetParameter(STRIKES_FIELD);
+  uint32_t power_cycles;
+
+  if (!StringToUInt(power_cycles_str, &power_cycles)) {
+    return "Invalid power cycles";
+  }
+
+  string error;
+  m_rdm_api.SetDevicePowerCycles(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      power_cycles,
       NewSingleCallback(this,
                         &RDMHttpModule::SetHandler,
                         response),

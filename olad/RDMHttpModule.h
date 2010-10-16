@@ -300,6 +300,34 @@ class RDMHttpModule: public HttpModule {
                         unsigned int universe_id,
                         const UID &uid);
 
+    string GetLampStrikes(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
+
+    void LampStrikesHandler(HttpResponse *response,
+                            const ola::rdm::ResponseStatus &status,
+                            uint32_t strikes);
+
+    string SetLampStrikes(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
+
+    string GetPowerCycles(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
+
+    void PowerCyclesHandler(HttpResponse *response,
+                            const ola::rdm::ResponseStatus &status,
+                            uint32_t cycles);
+
+    string SetPowerCycles(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
+
     string GetIdentifyMode(HttpResponse *response,
                            unsigned int universe_id,
                            const UID &uid);
@@ -352,6 +380,7 @@ class RDMHttpModule: public HttpModule {
     static const char LABEL_FIELD[];
     static const char LANGUAGE_FIELD[];
     static const char RECORD_SENSOR_FIELD[];
+    static const char STRIKES_FIELD[];
 
     static const char BOOT_SOFTWARE_SECTION[];
     static const char DEVICE_HOURS_SECTION[];
@@ -360,8 +389,10 @@ class RDMHttpModule: public HttpModule {
     static const char DMX_ADDRESS_SECTION[];
     static const char IDENTIFY_SECTION[];
     static const char LAMP_HOURS_SECTION[];
+    static const char LAMP_STRIKES_SECITON[];
     static const char LANGUAGE_SECTION[];
     static const char MANUFACTURER_LABEL_SECTION[];
+    static const char POWER_CYCLES_SECTION[];
     static const char PRODUCT_DETAIL_SECTION[];
     static const char SENSOR_SECTION[];
 };
