@@ -225,7 +225,7 @@ ola.RDMAttributesPanel.prototype._populateSection = function(e, index) {
   }
 
   if (editable) {
-    var text = section_response['button'] || 'Save';
+    var text = section_response['save_button'] || 'Save';
     var button = new goog.ui.CustomButton(text);
     button.render(div);
 
