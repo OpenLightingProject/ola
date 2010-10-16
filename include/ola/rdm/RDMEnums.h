@@ -496,6 +496,12 @@ typedef enum {
   POWER_STATE_NORMAL = 0xFF,
 } rdm_power_state;
 
+typedef enum {
+  DISPLAY_INVERT_OFF = 0x00,
+  DISPLAY_INVERT_ON = 0x01,
+  DISPLAY_INVERT_AUTO = 0x02,
+} rdm_display_invert;
+
 // the two special presets
 static const uint16_t PRESET_PLAYBACK_OFF = 0x0000;
 static const uint16_t PRESET_PLAYBACK_ALL = 0xffff;

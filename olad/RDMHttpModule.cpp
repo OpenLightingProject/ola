@@ -66,8 +66,9 @@ const char RDMHttpModule::UID_KEY[] = "uid";
 
 // url params for particular sections
 const char RDMHttpModule::ADDRESS_FIELD[] = "address";
+const char RDMHttpModule::DISPLAY_INVERT_FIELD[] = "invert";
 const char RDMHttpModule::GENERIC_UINT_FIELD[] = "int";
-const char RDMHttpModule::HOURS_FIELD[] = "hours";
+const char RDMHttpModule::GENERIC_BOOL_FIELD[] = "bool";
 const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHttpModule::LABEL_FIELD[] = "label";
 const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
@@ -78,15 +79,19 @@ const char RDMHttpModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
 const char RDMHttpModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHttpModule::DEVICE_INFO_SECTION[] = "device_info";
 const char RDMHttpModule::DEVICE_LABEL_SECTION[] = "device_label";
+const char RDMHttpModule::DISPLAY_INVERT_SECTION[] = "display_invert";
 const char RDMHttpModule::DMX_ADDRESS_SECTION[] = "dmx_address";
 const char RDMHttpModule::IDENTIFY_SECTION[] = "identify";
 const char RDMHttpModule::LAMP_HOURS_SECTION[] = "lamp_hours";
 const char RDMHttpModule::LAMP_STRIKES_SECITON[] = "lamp_strikes";
 const char RDMHttpModule::LANGUAGE_SECTION[] = "language";
 const char RDMHttpModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
+const char RDMHttpModule::PAN_INVERT_SECTION[] = "pan_invert";
+const char RDMHttpModule::PAN_TILT_SWAP_SECTION[] = "pan_tilt_swap";
 const char RDMHttpModule::POWER_CYCLES_SECTION[] = "power_cycles";
 const char RDMHttpModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
 const char RDMHttpModule::SENSOR_SECTION[] = "sensor";
+const char RDMHttpModule::TILT_INVERT_SECTION[] = "tilt_invert";
 
 /**
  * Create a new OLA HTTP server
@@ -295,6 +300,14 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetLampStrikes(request, response, universe_id, *uid);
   } else if (section_id == POWER_CYCLES_SECTION) {
     error = GetPowerCycles(request, response, universe_id, *uid);
+  } else if (section_id == DISPLAY_INVERT_SECTION) {
+    error = GetDisplayInvert(response, universe_id, *uid);
+  } else if (section_id == PAN_INVERT_SECTION) {
+    error = GetPanInvert(response, universe_id, *uid);
+  } else if (section_id == TILT_INVERT_SECTION) {
+    error = GetTiltInvert(response, universe_id, *uid);
+  } else if (section_id == PAN_TILT_SWAP_SECTION) {
+    error = GetPanTiltSwap(response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = GetIdentifyMode(response, universe_id, *uid);
   } else {
@@ -339,6 +352,14 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetLampStrikes(request, response, universe_id, *uid);
   } else if (section_id == POWER_CYCLES_SECTION) {
     error = SetPowerCycles(request, response, universe_id, *uid);
+  } else if (section_id == DISPLAY_INVERT_SECTION) {
+    error = SetDisplayInvert(request, response, universe_id, *uid);
+  } else if (section_id == PAN_INVERT_SECTION) {
+    error = SetPanInvert(request, response, universe_id, *uid);
+  } else if (section_id == TILT_INVERT_SECTION) {
+    error = SetTiltInvert(request, response, universe_id, *uid);
+  } else if (section_id == PAN_TILT_SWAP_SECTION) {
+    error = SetPanTiltSwap(request, response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = SetIdentifyMode(request, response, universe_id, *uid);
   } else {
@@ -687,6 +708,9 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
   vector<uint16_t>::const_iterator iter = pid_list.begin();
   for (; iter != pid_list.end(); ++iter) {
     switch (*iter) {
+      case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
+        AddSection(&sections, PRODUCT_DETAIL_SECTION, "Product Details");
+        break;
       case ola::rdm::PID_MANUFACTURER_LABEL:
         AddSection(&sections, MANUFACTURER_LABEL_SECTION,
                    "Manufacturer Label");
@@ -717,8 +741,17 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
       case ola::rdm::PID_DEVICE_POWER_CYCLES:
         AddSection(&sections, POWER_CYCLES_SECTION, "Device Power Cycles");
         break;
-      case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
-        AddSection(&sections, PRODUCT_DETAIL_SECTION, "Product Details");
+      case ola::rdm::PID_DISPLAY_INVERT:
+        AddSection(&sections, DISPLAY_INVERT_SECTION, "Display Invert");
+        break;
+      case ola::rdm::PID_PAN_INVERT:
+        AddSection(&sections, PAN_INVERT_SECTION, "Pan Invert");
+        break;
+      case ola::rdm::PID_TILT_INVERT:
+        AddSection(&sections, TILT_INVERT_SECTION, "Tilt Invert");
+        break;
+      case ola::rdm::PID_PAN_TILT_SWAP:
+        AddSection(&sections, PAN_TILT_SWAP_SECTION, "Pan/Tilt Swap");
         break;
     }
   }
@@ -1660,6 +1693,204 @@ string RDMHttpModule::SetPowerCycles(const HttpRequest *request,
 }
 
 
+
+/**
+ * Handle the request for the display invert section.
+ */
+string RDMHttpModule::GetDisplayInvert(HttpResponse *response,
+                                       unsigned int universe_id,
+                                       const UID &uid) {
+  string error;
+  m_rdm_api.GetDisplayInvert(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::DisplayInvertHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to display invert call and build the response
+ */
+void RDMHttpModule::DisplayInvertHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    uint8_t value) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  SelectItem *item = new SelectItem("Display Invert", DISPLAY_INVERT_FIELD);
+
+  item->AddItem("Off", ola::rdm::DISPLAY_INVERT_OFF);
+  item->AddItem("On", ola::rdm::DISPLAY_INVERT_ON);
+  item->AddItem("Auto", ola::rdm::DISPLAY_INVERT_AUTO);
+
+  if (value <= ola::rdm::DISPLAY_INVERT_AUTO)
+    item->SetSelectedOffset(value);
+
+  section.AddItem(item);
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * Set the display invert.
+ */
+string RDMHttpModule::SetDisplayInvert(const HttpRequest *request,
+                                       HttpResponse *response,
+                                       unsigned int universe_id,
+                                       const UID &uid) {
+  string invert_field = request->GetParameter(DISPLAY_INVERT_FIELD);
+  uint8_t display_mode;
+  if (!StringToUInt8(invert_field, &display_mode)) {
+    return "Invalid display mode";
+  }
+
+  string error;
+  m_rdm_api.SetDisplayInvert(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      display_mode,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the pan invert section.
+ */
+string RDMHttpModule::GetPanInvert(HttpResponse *response,
+                                   unsigned int universe_id,
+                                   const UID &uid) {
+  string error;
+  m_rdm_api.GetPanInvert(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GenericUInt8BoolHandler,
+                        response,
+                        string("Pan Invert")),
+      &error);
+  return error;
+}
+
+
+/**
+ * Set the pan invert.
+ */
+string RDMHttpModule::SetPanInvert(const HttpRequest *request,
+                                   HttpResponse *response,
+                                   unsigned int universe_id,
+                                   const UID &uid) {
+  string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+  string error;
+  m_rdm_api.SetPanInvert(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      mode == "1",
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the tilt invert section.
+ */
+string RDMHttpModule::GetTiltInvert(HttpResponse *response,
+                                    unsigned int universe_id,
+                                    const UID &uid) {
+  string error;
+  m_rdm_api.GetTiltInvert(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GenericUInt8BoolHandler,
+                        response,
+                        string("Tilt Invert")),
+      &error);
+  return error;
+}
+
+
+/**
+ * Set the tilt invert.
+ */
+string RDMHttpModule::SetTiltInvert(const HttpRequest *request,
+                                    HttpResponse *response,
+                                    unsigned int universe_id,
+                                    const UID &uid) {
+  string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+  string error;
+  m_rdm_api.SetTiltInvert(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      mode == "1",
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the pan/tilt swap section.
+ */
+string RDMHttpModule::GetPanTiltSwap(HttpResponse *response,
+                                 unsigned int universe_id,
+                                 const UID &uid) {
+  string error;
+  m_rdm_api.GetPanTiltSwap(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GenericUInt8BoolHandler,
+                        response,
+                        string("Pan Tilt Swap")),
+      &error);
+  return error;
+}
+
+
+/**
+ * Set the pan/tilt swap.
+ */
+string RDMHttpModule::SetPanTiltSwap(const HttpRequest *request,
+                                     HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string mode = request->GetParameter(GENERIC_BOOL_FIELD);
+  string error;
+  m_rdm_api.SetPanTiltSwap(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      mode == "1",
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
 /**
  * Handle the request for the identify mode section.
  */
@@ -1672,27 +1903,11 @@ string RDMHttpModule::GetIdentifyMode(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetIdentifyModeHandler,
-                        response),
+                        &RDMHttpModule::GenericBoolHandler,
+                        response,
+                        string("Identify Mode")),
       &error);
   return error;
-}
-
-
-/**
- * Handle the response to identify mode call and build the response
- */
-void RDMHttpModule::GetIdentifyModeHandler(
-    HttpResponse *response,
-    const ola::rdm::ResponseStatus &status,
-    bool mode) {
-  if (CheckForRDMError(response, status))
-    return;
-
-  JsonSection section;
-  BoolItem *item = new BoolItem("Identify Mode", mode, IDENTIFY_FIELD);
-  section.AddItem(item);
-  RespondWithSection(response, section);
 }
 
 
@@ -1703,7 +1918,7 @@ string RDMHttpModule::SetIdentifyMode(const HttpRequest *request,
                                       HttpResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
-  string mode = request->GetParameter(IDENTIFY_FIELD);
+  string mode = request->GetParameter(GENERIC_BOOL_FIELD);
   string error;
   m_rdm_api.IdentifyDevice(
       universe_id,
@@ -1774,6 +1989,33 @@ void RDMHttpModule::GenericUIntHandler(HttpResponse *response,
   RespondWithSection(response, section);
 }
 
+
+/*
+ * Build a response to a RDM call that returns a bool
+ */
+void RDMHttpModule::GenericUInt8BoolHandler(
+    HttpResponse *response,
+    string description,
+    const ola::rdm::ResponseStatus &status,
+    uint8_t value) {
+  GenericBoolHandler(response, description, status, value > 0);
+}
+
+
+/*
+ * Build a response to a RDM call that returns a bool
+ */
+void RDMHttpModule::GenericBoolHandler(HttpResponse *response,
+                                       string description,
+                                       const ola::rdm::ResponseStatus &status,
+                                       bool value) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  section.AddItem(new BoolItem(description, value, GENERIC_BOOL_FIELD));
+  RespondWithSection(response, section);
+}
 
 /**
  * Check for an RDM error, and if it occurs, return a json response.

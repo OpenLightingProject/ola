@@ -312,13 +312,49 @@ class RDMHttpModule: public HttpModule {
                           unsigned int universe_id,
                           const UID &uid);
 
+    string GetDisplayInvert(HttpResponse *response,
+                            unsigned int universe_id,
+                            const UID &uid);
+
+    void DisplayInvertHandler(HttpResponse *response,
+                              const ola::rdm::ResponseStatus &status,
+                              uint8_t value);
+
+    string SetDisplayInvert(const HttpRequest *request,
+                            HttpResponse *response,
+                            unsigned int universe_id,
+                            const UID &uid);
+
+    string GetPanInvert(HttpResponse *response,
+                        unsigned int universe_id,
+                        const UID &uid);
+
+    string SetPanInvert(const HttpRequest *request,
+                        HttpResponse *response,
+                        unsigned int universe_id,
+                        const UID &uid);
+
+    string GetTiltInvert(HttpResponse *response,
+                         unsigned int universe_id,
+                         const UID &uid);
+
+    string SetTiltInvert(const HttpRequest *request,
+                         HttpResponse *response,
+                         unsigned int universe_id,
+                         const UID &uid);
+
+    string GetPanTiltSwap(HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
+
+    string SetPanTiltSwap(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
+
     string GetIdentifyMode(HttpResponse *response,
                            unsigned int universe_id,
                            const UID &uid);
-
-    void GetIdentifyModeHandler(HttpResponse *response,
-                                const ola::rdm::ResponseStatus &status,
-                                bool mode);
 
     string SetIdentifyMode(const HttpRequest *request,
                            HttpResponse *response,
@@ -338,6 +374,15 @@ class RDMHttpModule: public HttpModule {
                             string description,
                             const ola::rdm::ResponseStatus &status,
                             uint32_t value);
+
+    void GenericUInt8BoolHandler(HttpResponse *response,
+                                 string description,
+                                 const ola::rdm::ResponseStatus &status,
+                                 uint8_t value);
+    void GenericBoolHandler(HttpResponse *response,
+                            string description,
+                            const ola::rdm::ResponseStatus &status,
+                            bool value);
 
     bool CheckForRDMError(HttpResponse *response,
                           const ola::rdm::ResponseStatus &status);
@@ -364,8 +409,9 @@ class RDMHttpModule: public HttpModule {
     static const char UID_KEY[];
 
     static const char ADDRESS_FIELD[];
+    static const char DISPLAY_INVERT_FIELD[];
+    static const char GENERIC_BOOL_FIELD[];
     static const char GENERIC_UINT_FIELD[];
-    static const char HOURS_FIELD[];
     static const char IDENTIFY_FIELD[];
     static const char LABEL_FIELD[];
     static const char LANGUAGE_FIELD[];
@@ -375,15 +421,19 @@ class RDMHttpModule: public HttpModule {
     static const char DEVICE_HOURS_SECTION[];
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];
+    static const char DISPLAY_INVERT_SECTION[];
     static const char DMX_ADDRESS_SECTION[];
     static const char IDENTIFY_SECTION[];
     static const char LAMP_HOURS_SECTION[];
     static const char LAMP_STRIKES_SECITON[];
     static const char LANGUAGE_SECTION[];
     static const char MANUFACTURER_LABEL_SECTION[];
+    static const char PAN_INVERT_SECTION[];
+    static const char PAN_TILT_SWAP_SECTION[];
     static const char POWER_CYCLES_SECTION[];
     static const char PRODUCT_DETAIL_SECTION[];
     static const char SENSOR_SECTION[];
+    static const char TILT_INVERT_SECTION[];
 };
 }  // ola
 #endif  // OLAD_RDMHTTPMODULE_H_
