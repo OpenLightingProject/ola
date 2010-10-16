@@ -349,6 +349,7 @@ ola.Server.prototype.rdmGetSectionInfo = function(universe_id,
 ola.Server.prototype.rdmSetSectionInfo = function(universe_id,
                                                   uid,
                                                   section_name,
+                                                  hint,
                                                   data,
                                                   callback) {
   var on_complete = function(e) {
@@ -356,7 +357,8 @@ ola.Server.prototype.rdmSetSectionInfo = function(universe_id,
     this._cleanupRequest(e.target);
   }
   var url = (ola.Server.RDM_SET_SECTION_INFO_URL + '?id=' + universe_id +
-      '&uid=' + uid + '&section=' + section_name + '&' + data);
+      '&uid=' + uid + '&section=' + section_name + '&hint=' + hint + '&' +
+      data);
   this._initiateRequest(url, on_complete);
 };
 

@@ -364,6 +364,7 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
       this.current_universe,
       this.current_uid,
       this.section_data[index]['id'],
+      this.section_data[index]['hint'],
       data,
       function(e) { panel._saveSectionComplete(e, index); });
 };
