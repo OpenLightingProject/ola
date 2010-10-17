@@ -325,6 +325,19 @@ class RDMHttpModule: public HttpModule {
                             unsigned int universe_id,
                             const UID &uid);
 
+    string GetDisplayLevel(HttpResponse *response,
+                           unsigned int universe_id,
+                           const UID &uid);
+
+    void DisplayLevelHandler(HttpResponse *response,
+                             const ola::rdm::ResponseStatus &status,
+                             uint8_t value);
+
+    string SetDisplayLevel(const HttpRequest *request,
+                           HttpResponse *response,
+                           unsigned int universe_id,
+                           const UID &uid);
+
     string GetPanInvert(HttpResponse *response,
                         unsigned int universe_id,
                         const UID &uid);
@@ -422,6 +435,7 @@ class RDMHttpModule: public HttpModule {
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];
     static const char DISPLAY_INVERT_SECTION[];
+    static const char DISPLAY_LEVEL_SECTION[];
     static const char DMX_ADDRESS_SECTION[];
     static const char IDENTIFY_SECTION[];
     static const char LAMP_HOURS_SECTION[];

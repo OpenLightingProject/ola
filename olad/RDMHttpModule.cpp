@@ -80,6 +80,7 @@ const char RDMHttpModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHttpModule::DEVICE_INFO_SECTION[] = "device_info";
 const char RDMHttpModule::DEVICE_LABEL_SECTION[] = "device_label";
 const char RDMHttpModule::DISPLAY_INVERT_SECTION[] = "display_invert";
+const char RDMHttpModule::DISPLAY_LEVEL_SECTION[] = "display_level";
 const char RDMHttpModule::DMX_ADDRESS_SECTION[] = "dmx_address";
 const char RDMHttpModule::IDENTIFY_SECTION[] = "identify";
 const char RDMHttpModule::LAMP_HOURS_SECTION[] = "lamp_hours";
@@ -302,6 +303,8 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetPowerCycles(request, response, universe_id, *uid);
   } else if (section_id == DISPLAY_INVERT_SECTION) {
     error = GetDisplayInvert(response, universe_id, *uid);
+  } else if (section_id == DISPLAY_LEVEL_SECTION) {
+    error = GetDisplayLevel(response, universe_id, *uid);
   } else if (section_id == PAN_INVERT_SECTION) {
     error = GetPanInvert(response, universe_id, *uid);
   } else if (section_id == TILT_INVERT_SECTION) {
@@ -354,6 +357,8 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetPowerCycles(request, response, universe_id, *uid);
   } else if (section_id == DISPLAY_INVERT_SECTION) {
     error = SetDisplayInvert(request, response, universe_id, *uid);
+  } else if (section_id == DISPLAY_LEVEL_SECTION) {
+    error = SetDisplayLevel(request, response, universe_id, *uid);
   } else if (section_id == PAN_INVERT_SECTION) {
     error = SetPanInvert(request, response, universe_id, *uid);
   } else if (section_id == TILT_INVERT_SECTION) {
@@ -743,6 +748,9 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
         break;
       case ola::rdm::PID_DISPLAY_INVERT:
         AddSection(&sections, DISPLAY_INVERT_SECTION, "Display Invert");
+        break;
+      case ola::rdm::PID_DISPLAY_LEVEL:
+        AddSection(&sections, DISPLAY_LEVEL_SECTION, "Display Level");
         break;
       case ola::rdm::PID_PAN_INVERT:
         AddSection(&sections, PAN_INVERT_SECTION, "Pan Invert");
@@ -1757,6 +1765,71 @@ string RDMHttpModule::SetDisplayInvert(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       display_mode,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the display level section.
+ */
+string RDMHttpModule::GetDisplayLevel(HttpResponse *response,
+                                      unsigned int universe_id,
+                                      const UID &uid) {
+  string error;
+  m_rdm_api.GetDisplayLevel(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::DisplayLevelHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to display level call and build the response
+ */
+void RDMHttpModule::DisplayLevelHandler(HttpResponse *response,
+                                        const ola::rdm::ResponseStatus &status,
+                                        uint8_t value) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  UIntItem *item = new UIntItem("Display Level", value, GENERIC_UINT_FIELD);
+  item->SetMin(0);
+  item->SetMax(255);
+
+  section.AddItem(item);
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * Set the display level.
+ */
+string RDMHttpModule::SetDisplayLevel(const HttpRequest *request,
+                                      HttpResponse *response,
+                                      unsigned int universe_id,
+                                      const UID &uid) {
+  string display_level_str = request->GetParameter(GENERIC_UINT_FIELD);
+  uint8_t display_level;
+  if (!StringToUInt8(display_level_str, &display_level)) {
+    return "Invalid display mode";
+  }
+
+  string error;
+  m_rdm_api.SetDisplayLevel(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      display_level,
       NewSingleCallback(this,
                         &RDMHttpModule::SetHandler,
                         response),
