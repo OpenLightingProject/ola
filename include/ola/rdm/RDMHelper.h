@@ -35,6 +35,7 @@ string LampModeToString(uint8_t lamp_mode);
 string LampStateToString(uint8_t lamp_state);
 string NackReasonToString(uint16_t reason);
 string PowerStateToString(uint8_t power_state);
+bool UIntToPowerState(uint8_t state, rdm_power_state *power_state);
 string PrefixToString(uint8_t prefix);
 string ProductCategoryToString(uint16_t category);
 string ProductDetailToString(uint16_t detail);

@@ -169,6 +169,29 @@ string PowerStateToString(uint8_t power_state) {
 
 
 /**
+ * Safely convert a uint8_t to a rdm_power_state
+ */
+bool UIntToPowerState(uint8_t state, rdm_power_state *power_state) {
+  switch (state) {
+    case POWER_STATE_FULL_OFF:
+      *power_state = POWER_STATE_FULL_OFF;
+      return true;
+    case POWER_STATE_SHUTDOWN:
+      *power_state = POWER_STATE_SHUTDOWN;
+      return true;
+    case POWER_STATE_STANDBY:
+      *power_state = POWER_STATE_STANDBY;
+      return true;
+    case POWER_STATE_NORMAL:
+      *power_state = POWER_STATE_NORMAL;
+      return true;
+    default:
+      return false;
+  }
+}
+
+
+/**
  * Convert a uint8 representing a prefix to a human-readable string.
  * @param prefix the prefix value
  */
