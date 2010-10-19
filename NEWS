@@ -1,3 +1,8 @@
+19/10/2010 ola-0.8.4
+  Add the RDM web UI
+  Work around an ArtNet RDM bug
+  Handle ACK overflow in the DMX-TRI
+
 23/9/2010 ola-0.8.3
   Add Manufacturer / Device name resolution to the web UI for RDM devices.
   Fix a couple of compile bugs.
