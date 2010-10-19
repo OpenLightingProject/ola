@@ -374,6 +374,19 @@ class RDMHttpModule: public HttpModule {
                            unsigned int universe_id,
                            const UID &uid);
 
+    string GetPowerState(HttpResponse *response,
+                         unsigned int universe_id,
+                         const UID &uid);
+
+    void PowerStateHandler(HttpResponse *response,
+                           const ola::rdm::ResponseStatus &status,
+                           uint8_t value);
+
+    string SetPowerState(const HttpRequest *request,
+                         HttpResponse *response,
+                         unsigned int universe_id,
+                         const UID &uid);
+
     // util methods
     bool CheckForInvalidId(const HttpRequest *request,
                            unsigned int *universe_id);
@@ -424,6 +437,7 @@ class RDMHttpModule: public HttpModule {
     static const char ADDRESS_FIELD[];
     static const char DISPLAY_INVERT_FIELD[];
     static const char GENERIC_BOOL_FIELD[];
+    static const char GENERIC_STRING_FIELD[];
     static const char GENERIC_UINT_FIELD[];
     static const char IDENTIFY_FIELD[];
     static const char LABEL_FIELD[];
@@ -445,6 +459,7 @@ class RDMHttpModule: public HttpModule {
     static const char PAN_INVERT_SECTION[];
     static const char PAN_TILT_SWAP_SECTION[];
     static const char POWER_CYCLES_SECTION[];
+    static const char POWER_STATE_SECTION[];
     static const char PRODUCT_DETAIL_SECTION[];
     static const char SENSOR_SECTION[];
     static const char TILT_INVERT_SECTION[];

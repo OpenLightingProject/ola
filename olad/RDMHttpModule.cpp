@@ -67,8 +67,9 @@ const char RDMHttpModule::UID_KEY[] = "uid";
 // url params for particular sections
 const char RDMHttpModule::ADDRESS_FIELD[] = "address";
 const char RDMHttpModule::DISPLAY_INVERT_FIELD[] = "invert";
-const char RDMHttpModule::GENERIC_UINT_FIELD[] = "int";
 const char RDMHttpModule::GENERIC_BOOL_FIELD[] = "bool";
+const char RDMHttpModule::GENERIC_STRING_FIELD[] = "string";
+const char RDMHttpModule::GENERIC_UINT_FIELD[] = "int";
 const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHttpModule::LABEL_FIELD[] = "label";
 const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
@@ -90,6 +91,7 @@ const char RDMHttpModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
 const char RDMHttpModule::PAN_INVERT_SECTION[] = "pan_invert";
 const char RDMHttpModule::PAN_TILT_SWAP_SECTION[] = "pan_tilt_swap";
 const char RDMHttpModule::POWER_CYCLES_SECTION[] = "power_cycles";
+const char RDMHttpModule::POWER_STATE_SECTION[] = "power_state";
 const char RDMHttpModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
 const char RDMHttpModule::SENSOR_SECTION[] = "sensor";
 const char RDMHttpModule::TILT_INVERT_SECTION[] = "tilt_invert";
@@ -313,6 +315,8 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetPanTiltSwap(response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = GetIdentifyMode(response, universe_id, *uid);
+  } else if (section_id == POWER_STATE_SECTION) {
+    error = GetPowerState(response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     return m_server->ServeNotFound(response);
@@ -367,6 +371,8 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetPanTiltSwap(request, response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = SetIdentifyMode(request, response, universe_id, *uid);
+  } else if (section_id == POWER_STATE_SECTION) {
+    error = SetPowerState(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     return m_server->ServeNotFound(response);
@@ -760,6 +766,9 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
         break;
       case ola::rdm::PID_PAN_TILT_SWAP:
         AddSection(&sections, PAN_TILT_SWAP_SECTION, "Pan/Tilt Swap");
+        break;
+      case ola::rdm::PID_POWER_STATE:
+        AddSection(&sections, POWER_STATE_SECTION, "Power State");
         break;
     }
   }
@@ -1998,6 +2007,89 @@ string RDMHttpModule::SetIdentifyMode(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       mode == "1",
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the power state section.
+ */
+string RDMHttpModule::GetPowerState(HttpResponse *response,
+                                    unsigned int universe_id,
+                                    const UID &uid) {
+  string error;
+  m_rdm_api.GetPowerState(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::PowerStateHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to power state call and build the response
+ */
+void RDMHttpModule::PowerStateHandler(HttpResponse *response,
+                                      const ola::rdm::ResponseStatus &status,
+                                      uint8_t value) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  SelectItem *item = new SelectItem("Power State", GENERIC_UINT_FIELD);
+
+  typedef struct {
+    string label;
+    ola::rdm::rdm_power_state state;
+  } values_s;
+
+  values_s possible_values[] = {
+    {"Full Off", ola::rdm::POWER_STATE_FULL_OFF},
+    {"Shutdown", ola::rdm::POWER_STATE_SHUTDOWN},
+    {"Standby", ola::rdm::POWER_STATE_STANDBY},
+    {"Normal", ola::rdm::POWER_STATE_NORMAL}};
+
+  for (unsigned int i = 0; i != sizeof(possible_values) / sizeof(values_s);
+       ++i) {
+    item->AddItem(possible_values[i].label, possible_values[i].state);
+    if (value == possible_values[i].state)
+      item->SetSelectedOffset(i);
+  }
+
+  section.AddItem(item);
+  RespondWithSection(response, section);
+}
+
+
+/*
+ * Set the power state.
+ */
+string RDMHttpModule::SetPowerState(const HttpRequest *request,
+                                    HttpResponse *response,
+                                    unsigned int universe_id,
+                                    const UID &uid) {
+  string power_state_str = request->GetParameter(GENERIC_UINT_FIELD);
+  uint8_t power_state;
+  ola::rdm::rdm_power_state power_state_enum;
+  if (!StringToUInt8(power_state_str, &power_state) ||
+      !ola::rdm::UIntToPowerState(power_state, &power_state_enum)) {
+    return "Invalid power state";
+  }
+
+  string error;
+  m_rdm_api.SetPowerState(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      power_state_enum,
       NewSingleCallback(this,
                         &RDMHttpModule::SetHandler,
                         response),
