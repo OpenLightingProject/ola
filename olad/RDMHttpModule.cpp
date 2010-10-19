@@ -86,6 +86,8 @@ const char RDMHttpModule::DISPLAY_LEVEL_SECTION[] = "display_level";
 const char RDMHttpModule::DMX_ADDRESS_SECTION[] = "dmx_address";
 const char RDMHttpModule::IDENTIFY_SECTION[] = "identify";
 const char RDMHttpModule::LAMP_HOURS_SECTION[] = "lamp_hours";
+const char RDMHttpModule::LAMP_MODE_SECTION[] = "lamp_mode";
+const char RDMHttpModule::LAMP_STATE_SECTION[] = "lamp_state";
 const char RDMHttpModule::LAMP_STRIKES_SECITON[] = "lamp_strikes";
 const char RDMHttpModule::LANGUAGE_SECTION[] = "language";
 const char RDMHttpModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
@@ -300,6 +302,10 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetDeviceHours(request, response, universe_id, *uid);
   } else if (section_id == LAMP_HOURS_SECTION) {
     error = GetLampHours(request, response, universe_id, *uid);
+  } else if (section_id == LAMP_MODE_SECTION) {
+    error = GetLampMode(request, response, universe_id, *uid);
+  } else if (section_id == LAMP_STATE_SECTION) {
+    error = GetLampState(request, response, universe_id, *uid);
   } else if (section_id == LAMP_STRIKES_SECITON) {
     error = GetLampStrikes(request, response, universe_id, *uid);
   } else if (section_id == POWER_CYCLES_SECTION) {
@@ -358,6 +364,10 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetDeviceHours(request, response, universe_id, *uid);
   } else if (section_id == LAMP_HOURS_SECTION) {
     error = SetLampHours(request, response, universe_id, *uid);
+  } else if (section_id == LAMP_MODE_SECTION) {
+    error = SetLampMode(request, response, universe_id, *uid);
+  } else if (section_id == LAMP_STATE_SECTION) {
+    error = SetLampState(request, response, universe_id, *uid);
   } else if (section_id == LAMP_STRIKES_SECITON) {
     error = SetLampStrikes(request, response, universe_id, *uid);
   } else if (section_id == POWER_CYCLES_SECTION) {
@@ -751,6 +761,12 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
         break;
       case ola::rdm::PID_LAMP_STRIKES:
         AddSection(&sections, LAMP_STRIKES_SECITON, "Lamp Strikes");
+        break;
+      case ola::rdm::PID_LAMP_STATE:
+        AddSection(&sections, LAMP_STATE_SECTION, "Lamp State");
+        break;
+      case ola::rdm::PID_LAMP_ON_MODE:
+        AddSection(&sections, LAMP_MODE_SECTION, "Lamp On Mode");
         break;
       case ola::rdm::PID_DEVICE_POWER_CYCLES:
         AddSection(&sections, POWER_CYCLES_SECTION, "Device Power Cycles");
@@ -1668,6 +1684,172 @@ string RDMHttpModule::SetLampStrikes(const HttpRequest *request,
 
 
 /**
+ * Handle the request for the lamp state section
+ */
+string RDMHttpModule::GetLampState(const HttpRequest *request,
+                                   HttpResponse *response,
+                                   unsigned int universe_id,
+                                   const UID &uid) {
+  string error;
+  m_rdm_api.GetLampState(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::LampStateHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to lamp state call and build the response
+ */
+void RDMHttpModule::LampStateHandler(HttpResponse *response,
+                                     const ola::rdm::ResponseStatus &status,
+                                     uint8_t state) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  SelectItem *item = new SelectItem("Lamp State", GENERIC_UINT_FIELD);
+
+  typedef struct {
+    string label;
+    ola::rdm::rdm_lamp_state state;
+  } values_s;
+
+  values_s possible_values[] = {
+    {"Off", ola::rdm::LAMP_OFF},
+    {"On", ola::rdm::LAMP_ON},
+    {"Strike", ola::rdm::LAMP_STRIKE},
+    {"Standby", ola::rdm::LAMP_STANDBY}};
+
+  for (unsigned int i = 0; i != sizeof(possible_values) / sizeof(values_s);
+       ++i) {
+    item->AddItem(possible_values[i].label, possible_values[i].state);
+    if (state == possible_values[i].state)
+      item->SetSelectedOffset(i);
+  }
+
+  section.AddItem(item);
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * Set the lamp state
+ */
+string RDMHttpModule::SetLampState(const HttpRequest *request,
+                                   HttpResponse *response,
+                                   unsigned int universe_id,
+                                   const UID &uid) {
+  string lamp_state_str = request->GetParameter(GENERIC_UINT_FIELD);
+  uint8_t lamp_state;
+  if (!StringToUInt8(lamp_state_str, &lamp_state)) {
+    return "Invalid lamp state";
+  }
+
+  string error;
+  m_rdm_api.SetLampState(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      lamp_state,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the lamp mode section
+ */
+string RDMHttpModule::GetLampMode(const HttpRequest *request,
+                                  HttpResponse *response,
+                                  unsigned int universe_id,
+                                  const UID &uid) {
+  string error;
+  m_rdm_api.GetLampMode(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::LampModeHandler,
+                        response),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to lamp mode call and build the response
+ */
+void RDMHttpModule::LampModeHandler(HttpResponse *response,
+                                    const ola::rdm::ResponseStatus &status,
+                                    uint8_t mode) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  SelectItem *item = new SelectItem("Lamp Mode", GENERIC_UINT_FIELD);
+
+  typedef struct {
+    string label;
+    ola::rdm::rdm_lamp_mode mode;
+  } values_s;
+
+  values_s possible_values[] = {
+    {"Off", ola::rdm::LAMP_ON_MODE_OFF},
+    {"DMX", ola::rdm::LAMP_ON_MODE_DMX},
+    {"On", ola::rdm::LAMP_ON_MODE_ON},
+    {"On After Calibration", ola::rdm::LAMP_ON_MODE_AFTER_CAL}};
+
+  for (unsigned int i = 0; i != sizeof(possible_values) / sizeof(values_s);
+       ++i) {
+    item->AddItem(possible_values[i].label, possible_values[i].mode);
+    if (mode == possible_values[i].mode)
+      item->SetSelectedOffset(i);
+  }
+
+  section.AddItem(item);
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * Set the lamp mode
+ */
+string RDMHttpModule::SetLampMode(const HttpRequest *request,
+                                  HttpResponse *response,
+                                  unsigned int universe_id,
+                                  const UID &uid) {
+  string lamp_mode_str = request->GetParameter(GENERIC_UINT_FIELD);
+  uint8_t lamp_mode;
+  if (!StringToUInt8(lamp_mode_str, &lamp_mode)) {
+    return "Invalid lamp mode";
+  }
+
+  string error;
+  m_rdm_api.SetLampMode(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      lamp_mode,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
  * Handle the request for the device power cycles section
  */
 string RDMHttpModule::GetPowerCycles(const HttpRequest *request,
@@ -2009,8 +2191,10 @@ void RDMHttpModule::ClockHandler(HttpResponse *response,
 
   JsonSection section;
   stringstream str;
-  str << clock.hour << ":" << clock.minute << ":" << clock.second << " " <<
-    clock.day << "/" << clock.month << "/" << clock.year;
+  str << static_cast<int>(clock.hour) << ":" << static_cast<int>(clock.minute)
+    << ":" << static_cast<int>(clock.second) << " " <<
+    static_cast<int>(clock.day) << "/" << static_cast<int>(clock.month) << "/"
+    << clock.year;
 
   section.AddItem(new StringItem("Clock", str.str()));
   RespondWithSection(response, section);

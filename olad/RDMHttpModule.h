@@ -302,6 +302,34 @@ class RDMHttpModule: public HttpModule {
                           unsigned int universe_id,
                           const UID &uid);
 
+    string GetLampState(const HttpRequest *request,
+                        HttpResponse *response,
+                        unsigned int universe_id,
+                        const UID &uid);
+
+    void LampStateHandler(HttpResponse *response,
+                          const ola::rdm::ResponseStatus &status,
+                          uint8_t state);
+
+    string SetLampState(const HttpRequest *request,
+                        HttpResponse *response,
+                        unsigned int universe_id,
+                        const UID &uid);
+
+    string GetLampMode(const HttpRequest *request,
+                        HttpResponse *response,
+                        unsigned int universe_id,
+                        const UID &uid);
+
+    void LampModeHandler(HttpResponse *response,
+                          const ola::rdm::ResponseStatus &status,
+                          uint8_t mode);
+
+    string SetLampMode(const HttpRequest *request,
+                        HttpResponse *response,
+                        unsigned int universe_id,
+                        const UID &uid);
+
     string GetPowerCycles(const HttpRequest *request,
                           HttpResponse *response,
                           unsigned int universe_id,
@@ -462,6 +490,8 @@ class RDMHttpModule: public HttpModule {
     static const char DMX_ADDRESS_SECTION[];
     static const char IDENTIFY_SECTION[];
     static const char LAMP_HOURS_SECTION[];
+    static const char LAMP_MODE_SECTION[];
+    static const char LAMP_STATE_SECTION[];
     static const char LAMP_STRIKES_SECITON[];
     static const char LANGUAGE_SECTION[];
     static const char MANUFACTURER_LABEL_SECTION[];
