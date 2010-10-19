@@ -365,6 +365,14 @@ class RDMHttpModule: public HttpModule {
                           unsigned int universe_id,
                           const UID &uid);
 
+    string GetClock(HttpResponse *response,
+                    unsigned int universe_id,
+                    const UID &uid);
+
+    void ClockHandler(HttpResponse *response,
+                      const ola::rdm::ResponseStatus &status,
+                      const ola::rdm::ClockValue &clock);
+
     string GetIdentifyMode(HttpResponse *response,
                            unsigned int universe_id,
                            const UID &uid);
@@ -445,6 +453,7 @@ class RDMHttpModule: public HttpModule {
     static const char RECORD_SENSOR_FIELD[];
 
     static const char BOOT_SOFTWARE_SECTION[];
+    static const char CLOCK_SECTION[];
     static const char DEVICE_HOURS_SECTION[];
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];

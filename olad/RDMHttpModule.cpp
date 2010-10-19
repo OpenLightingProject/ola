@@ -77,6 +77,7 @@ const char RDMHttpModule::RECORD_SENSOR_FIELD[] = "record";
 
 // section identifiers
 const char RDMHttpModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
+const char RDMHttpModule::CLOCK_SECTION[] = "clock";
 const char RDMHttpModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHttpModule::DEVICE_INFO_SECTION[] = "device_info";
 const char RDMHttpModule::DEVICE_LABEL_SECTION[] = "device_label";
@@ -313,6 +314,8 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetTiltInvert(response, universe_id, *uid);
   } else if (section_id == PAN_TILT_SWAP_SECTION) {
     error = GetPanTiltSwap(response, universe_id, *uid);
+  } else if (section_id == CLOCK_SECTION) {
+    error = GetClock(response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = GetIdentifyMode(response, universe_id, *uid);
   } else if (section_id == POWER_STATE_SECTION) {
@@ -766,6 +769,9 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
         break;
       case ola::rdm::PID_PAN_TILT_SWAP:
         AddSection(&sections, PAN_TILT_SWAP_SECTION, "Pan/Tilt Swap");
+        break;
+      case ola::rdm::PID_REAL_TIME_CLOCK:
+        AddSection(&sections, CLOCK_SECTION, "Clock");
         break;
       case ola::rdm::PID_POWER_STATE:
         AddSection(&sections, POWER_STATE_SECTION, "Power State");
@@ -1970,6 +1976,44 @@ string RDMHttpModule::SetPanTiltSwap(const HttpRequest *request,
                         response),
       &error);
   return error;
+}
+
+
+/**
+ * Handle the request for the clock section.
+ */
+string RDMHttpModule::GetClock(HttpResponse *response,
+                               unsigned int universe_id,
+                               const UID &uid) {
+  string error;
+  m_rdm_api.GetClock(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::ClockHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to clock call and build the response
+ */
+void RDMHttpModule::ClockHandler(HttpResponse *response,
+                                 const ola::rdm::ResponseStatus &status,
+                                 const ola::rdm::ClockValue &clock) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  stringstream str;
+  str << clock.hour << ":" << clock.minute << ":" << clock.second << " " <<
+    clock.day << "/" << clock.month << "/" << clock.year;
+
+  section.AddItem(new StringItem("Clock", str.str()));
+  RespondWithSection(response, section);
 }
 
 
