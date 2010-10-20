@@ -81,7 +81,7 @@ void StringTrim(std::string *input) {
  * @param the string to shorten
  */
 void ShortenString(string *input) {
-  unsigned int index = input->find(static_cast<char>(0));
+  size_t index = input->find(static_cast<char>(0));
   if (index != string::npos)
     input->erase(index);
 }
