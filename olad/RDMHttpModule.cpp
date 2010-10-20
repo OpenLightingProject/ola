@@ -93,6 +93,7 @@ const char RDMHttpModule::LANGUAGE_SECTION[] = "language";
 const char RDMHttpModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
 const char RDMHttpModule::PAN_INVERT_SECTION[] = "pan_invert";
 const char RDMHttpModule::PAN_TILT_SWAP_SECTION[] = "pan_tilt_swap";
+const char RDMHttpModule::PERSONALITY_SECTION[] = "personality";
 const char RDMHttpModule::POWER_CYCLES_SECTION[] = "power_cycles";
 const char RDMHttpModule::POWER_STATE_SECTION[] = "power_state";
 const char RDMHttpModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
@@ -294,6 +295,8 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetLanguage(response, universe_id, *uid);
   } else if (section_id == BOOT_SOFTWARE_SECTION) {
     error = GetBootSoftware(response, universe_id, *uid);
+  } else if (section_id == PERSONALITY_SECTION) {
+    error = GetPersonalities(request, response, universe_id, *uid);
   } else if (section_id == DMX_ADDRESS_SECTION) {
     error = GetStartAddress(request, response, universe_id, *uid);
   } else if (section_id == SENSOR_SECTION) {
@@ -748,6 +751,12 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
       case ola::rdm::PID_BOOT_SOFTWARE_VERSION_ID:
       case ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL:
         include_software_version = true;
+        break;
+      case ola::rdm::PID_DMX_PERSONALITY:
+        if (pids.find(ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION) == pids.end())
+          AddSection(&sections, PERSONALITY_SECTION, "DMX Personality");
+        else
+          AddSection(&sections, PERSONALITY_SECTION, "DMX Personality", "l");
         break;
       case ola::rdm::PID_DMX_START_ADDRESS:
         AddSection(&sections, DMX_ADDRESS_SECTION, "DMX Start Address");
@@ -1311,6 +1320,178 @@ void RDMHttpModule::GetBootSoftwareVersionHandler(
   StringItem *item = new StringItem("Boot Software", str.str());
   section.AddItem(item);
   RespondWithSection(response, section);
+}
+
+
+/**
+ * Handle the request for the personality section.
+ */
+string RDMHttpModule::GetPersonalities(const HttpRequest *request,
+                                       HttpResponse *response,
+                                       unsigned int universe_id,
+                                       const UID &uid) {
+  string hint = request->GetParameter(HINT_KEY);
+  string error;
+
+  personality_info *info = new personality_info;
+  info->universe_id = universe_id;
+  info->uid = new UID(uid);
+  info->include_descriptions = (hint == "l");
+  info->active = 0;
+  info->next = 1;
+  info->total = 0;
+
+  m_rdm_api.GetDMXPersonality(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::GetPersonalityHandler,
+                        response,
+                        info),
+      &error);
+  return error;
+  (void) request;
+}
+
+
+/**
+ * Handle the response to a dmx personality call.
+ */
+void RDMHttpModule::GetPersonalityHandler(
+    HttpResponse *response,
+    personality_info *info,
+    const ola::rdm::ResponseStatus &status,
+    uint8_t current,
+    uint8_t total) {
+  if (CheckForRDMError(response, status)) {
+    delete info->uid;
+    delete info;
+    return;
+  }
+
+  info->active = current;
+  info->total = total;
+
+  if (info->include_descriptions)
+    GetNextPersonalityDescription(response, info);
+  else
+    SendPersonalityResponse(response, info);
+}
+
+
+/**
+ * Get the description of the next dmx personality
+ */
+void RDMHttpModule::GetNextPersonalityDescription(HttpResponse *response,
+                                                  personality_info *info) {
+  string error;
+  while (info->next <= info->total) {
+    bool r = m_rdm_api.GetDMXPersonalityDescription(
+        info->universe_id,
+        *(info->uid),
+        ola::rdm::ROOT_RDM_DEVICE,
+        info->next,
+        NewSingleCallback(this,
+                          &RDMHttpModule::GetPersonalityLabelHandler,
+                          response,
+                          info),
+        &error);
+    if (r)
+      return;
+
+    info->next++;
+  }
+  SendPersonalityResponse(response, info);
+}
+
+
+/**
+ * Handle the response to a Personality label call. This fetches the next
+ * personality in the sequence, or sends the response if we have all the info.
+ */
+void RDMHttpModule::GetPersonalityLabelHandler(
+        HttpResponse *response,
+        personality_info *info,
+        const ola::rdm::ResponseStatus &status,
+        uint8_t personality,
+        uint16_t slot_count,
+        const string &label) {
+  string description = "";
+  uint32_t slots = INVALID_PERSONALITY;
+
+  if (CheckForRDMSuccess(status)) {
+    slots = slot_count;
+    description = label;
+  }
+
+  info->personalities.push_back(pair<uint32_t, string>(slots, description));
+
+  if (info->next == info->total) {
+    SendPersonalityResponse(response, info);
+  } else {
+    info->next++;
+    GetNextPersonalityDescription(response, info);
+  }
+  (void) personality;
+}
+
+
+/**
+ * Send the response to a dmx personality section
+ */
+void RDMHttpModule::SendPersonalityResponse(HttpResponse *response,
+                                            personality_info *info) {
+  JsonSection section;
+  SelectItem *item = new SelectItem("Personality", GENERIC_UINT_FIELD);
+
+  for (unsigned int i = 1; i <= info->total; i++) {
+    if (i <= info->personalities.size() &&
+        info->personalities[i - 1].first != INVALID_PERSONALITY) {
+      stringstream str;
+      str << info->personalities[i - 1].second << " (" <<
+        info->personalities[i - 1].first << ")";
+      item->AddItem(str.str(), i);
+    } else {
+      item->AddItem(IntToString(i), i);
+    }
+
+    if (info->active == i)
+      item->SetSelectedOffset(i);
+  }
+  section.AddItem(item);
+  RespondWithSection(response, section);
+
+  delete info->uid;
+  delete info;
+}
+
+
+/**
+ * Set the personality
+ */
+string RDMHttpModule::SetPersonality(const HttpRequest *request,
+                                     HttpResponse *response,
+                                     unsigned int universe_id,
+                                     const UID &uid) {
+  string personality_str = request->GetParameter(GENERIC_UINT_FIELD);
+  uint8_t personality;
+
+  if (!StringToUInt8(personality_str, &personality)) {
+    return "Invalid personality";
+  }
+
+  string error;
+  m_rdm_api.SetDMXPersonality(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      personality,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
 }
 
 

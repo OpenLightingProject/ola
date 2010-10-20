@@ -104,6 +104,16 @@ class RDMHttpModule: public HttpModule {
       string software_version;
     } device_info;
 
+    typedef struct {
+      unsigned int universe_id;
+      const UID *uid;
+      bool include_descriptions;
+      unsigned int active;
+      unsigned int next;
+      unsigned int total;
+      vector<std::pair<uint32_t, string> > personalities;
+    } personality_info;
+
     RDMHttpModule(const RDMHttpModule&);
     RDMHttpModule& operator=(const RDMHttpModule&);
 
@@ -235,6 +245,37 @@ class RDMHttpModule: public HttpModule {
         string label,
         const ola::rdm::ResponseStatus &status,
         uint32_t version);
+
+    string GetPersonalities(const HttpRequest *request,
+                            HttpResponse *response,
+                            unsigned int universe_id,
+                            const UID &uid);
+
+    void GetPersonalityHandler(
+        HttpResponse *response,
+        personality_info *info,
+        const ola::rdm::ResponseStatus &status,
+        uint8_t current,
+        uint8_t total);
+
+    void GetNextPersonalityDescription(HttpResponse *response,
+                                       personality_info *info);
+
+    void GetPersonalityLabelHandler(
+        HttpResponse *response,
+        personality_info *info,
+        const ola::rdm::ResponseStatus &status,
+        uint8_t personality,
+        uint16_t slot_count,
+        const string &label);
+
+    void SendPersonalityResponse(HttpResponse *response,
+                                 personality_info *info);
+
+    string SetPersonality(const HttpRequest *request,
+                          HttpResponse *response,
+                          unsigned int universe_id,
+                          const UID &uid);
 
     string GetStartAddress(const HttpRequest *request,
                            HttpResponse *response,
@@ -463,6 +504,7 @@ class RDMHttpModule: public HttpModule {
                     const string &section_name,
                     const string &hint="");
 
+    static const uint32_t INVALID_PERSONALITY = 0xffff;
     static const char BACKEND_DISCONNECTED_ERROR[];
 
     static const char HINT_KEY[];
@@ -497,6 +539,7 @@ class RDMHttpModule: public HttpModule {
     static const char MANUFACTURER_LABEL_SECTION[];
     static const char PAN_INVERT_SECTION[];
     static const char PAN_TILT_SWAP_SECTION[];
+    static const char PERSONALITY_SECTION[];
     static const char POWER_CYCLES_SECTION[];
     static const char POWER_STATE_SECTION[];
     static const char PRODUCT_DETAIL_SECTION[];
