@@ -54,7 +54,7 @@ string GenericItem::AsString() const {
   output << "    \"type\": \"" << Type() << "\"," << endl;
   output << "    \"value\": " << Value() << "," << endl;
   output << ExtraProperties();
-  output << "    }," << endl;
+  output << "    }";
   return output.str();
 }
 
@@ -96,14 +96,18 @@ void SelectItem::AddItem(const string &label, unsigned int value) {
 string SelectItem::Value() const {
   stringstream str;
   str << "[" << endl;
-  vector<pair<string, string> >::const_iterator iter;
-  for (iter = m_values.begin(); iter != m_values.end(); ++iter) {
+  vector<pair<string, string> >::const_iterator iter = m_values.begin();
+  while (iter != m_values.end()) {
     str << "      {" << endl;
     str << "        \"label\": \"" << EscapeString(iter->first) << "\"," <<
       endl;
     str << "        \"value\": \"" << EscapeString(iter->second) << "\"," <<
       endl;
-    str << "      }," << endl;
+    str << "      }";
+    iter++;
+    if (iter != m_values.end())
+      str << ",";
+    str << endl;
   }
   str << "    ]";
   return str.str();
@@ -160,8 +164,12 @@ string JsonSection::AsString() const {
   output << "  \"items\": [" << endl;
 
   vector<const GenericItem*>::const_iterator iter = m_items.begin();
-  for (; iter != m_items.end(); ++iter) {
+  while (iter != m_items.end()) {
     output << (*iter)->AsString();
+    iter++;
+    if (iter != m_items.end())
+      output << ",";
+    output << endl;
   }
   output << "  ]," << endl;
   output << "}" << endl;

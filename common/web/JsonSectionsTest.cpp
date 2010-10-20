@@ -63,7 +63,7 @@ void JsonSectionsTest::testStringItem() {
     "    \"description\": \"Foo\",\n"
     "    \"type\": \"string\",\n"
     "    \"value\": \"bar\",\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
 
   StringItem item2("Foo", "bar", "baz");
@@ -75,7 +75,7 @@ void JsonSectionsTest::testStringItem() {
     "    \"id\": \"baz\",\n"
     "    \"type\": \"string\",\n"
     "    \"value\": \"bar\",\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected2, item2.AsString());
 
   StringItem item3("Foo\" bar", "baz\\");
@@ -86,7 +86,7 @@ void JsonSectionsTest::testStringItem() {
     "    \"description\": \"Foo\\\" bar\",\n"
     "    \"type\": \"string\",\n"
     "    \"value\": \"baz\\\\\",\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected3, item3.AsString());
 }
 
@@ -101,7 +101,7 @@ void JsonSectionsTest::testUIntItem() {
     "    \"description\": \"Foo\",\n"
     "    \"type\": \"uint\",\n"
     "    \"value\": 10,\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
 
   UIntItem item2("Foo", 20, "baz");
@@ -115,7 +115,7 @@ void JsonSectionsTest::testUIntItem() {
     "    \"type\": \"uint\",\n"
     "    \"value\": 20,\n"
     "    \"min\": 10,\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected2, item2.AsString());
 
   UIntItem item3("Foo", 20);
@@ -126,7 +126,7 @@ void JsonSectionsTest::testUIntItem() {
     "    \"type\": \"uint\",\n"
     "    \"value\": 20,\n"
     "    \"max\": 30,\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected3, item3.AsString());
 
   UIntItem item4("Foo", 20);
@@ -139,7 +139,7 @@ void JsonSectionsTest::testUIntItem() {
     "    \"value\": 20,\n"
     "    \"min\": 10,\n"
     "    \"max\": 30,\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected4, item4.AsString());
 }
 
@@ -165,10 +165,10 @@ void JsonSectionsTest::testSelectItem() {
     "      {\n"
     "        \"label\": \"German\",\n"
     "        \"value\": \"2\",\n"
-    "      },\n"
+    "      }\n"
     "    ],\n"
     "    \"selected_offset\": 1,\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
 }
 
@@ -184,7 +184,7 @@ void JsonSectionsTest::testBoolItem() {
     "    \"id\": \"baz\",\n"
     "    \"type\": \"bool\",\n"
     "    \"value\": 1,\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
 
   BoolItem item2("Foo", false, "baz");
@@ -194,7 +194,7 @@ void JsonSectionsTest::testBoolItem() {
     "    \"id\": \"baz\",\n"
     "    \"type\": \"bool\",\n"
     "    \"value\": 0,\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected2, item2.AsString());
 }
 
@@ -211,7 +211,7 @@ void JsonSectionsTest::testHiddenItem() {
     "    \"id\": \"baz\",\n"
     "    \"type\": \"hidden\",\n"
     "    \"value\": \"bar\",\n"
-    "    },\n";
+    "    }";
   CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
 }
 
@@ -237,7 +237,7 @@ void JsonSectionsTest::testSection() {
     "    \"id\": \"baz\",\n"
     "    \"type\": \"hidden\",\n"
     "    \"value\": \"bar\\r\",\n"
-    "    },\n"
+    "    }\n"
     "  ],\n"
     "}\n";
   CPPUNIT_ASSERT_EQUAL(expected, section.AsString());

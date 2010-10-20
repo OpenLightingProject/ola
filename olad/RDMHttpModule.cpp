@@ -467,7 +467,7 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
   str << "  \"universe\": " << universe_id << "," << endl;
   str << "  \"uids\": [" << endl;
 
-  for (; iter != uids.End(); ++iter) {
+  while (iter != uids.End()) {
     uid_iter = uid_state->resolved_uids.find(*iter);
 
     string manufacturer = "";
@@ -494,7 +494,12 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
     str << "       \"device\": \"" << EscapeString(device) << "\"," << endl;
     str << "       \"manufacturer\": \"" << EscapeString(manufacturer) <<
       "\"," << endl;
-    str << "    }," << endl;
+    str << "    }";
+
+    iter++;
+    if (iter != uids.End())
+      str << ",";
+    str << endl;
   }
 
   str << "  ]" << endl;
@@ -669,8 +674,12 @@ void RDMHttpModule::SupportedParamsHandler(
     str << "{" << endl;
     str << "  \"pids\": [" << endl;
 
-    for (; iter != pids.end(); ++iter) {
-      str << "    0x" << std::hex << *iter << ",\n";
+    while (iter != pids.end()) {
+      str << "    0x" << std::hex << *iter;
+      iter++;
+      if (iter != pids.end())
+        str << ",";
+      str << "\n";
     }
 
     str << "  ]" << endl;
@@ -835,16 +844,19 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
 
   sort(sections.begin(), sections.end(), lt_section_info());
 
-  vector<section_info>::const_iterator section_iter;
+  vector<section_info>::const_iterator section_iter = sections.begin();
   stringstream str;
   str << "[" << endl;
-  for (section_iter = sections.begin(); section_iter != sections.end();
-       ++section_iter) {
+  while (section_iter != sections.end()) {
     str << "  {" << endl;
     str << "    \"id\": \"" << section_iter->id << "\"," << endl;
     str << "    \"name\": \"" << section_iter->name << "\"," << endl;
     str << "    \"hint\": \"" << section_iter->hint << "\"," << endl;
-    str << "  }," << endl;
+    str << "  }";
+    section_iter++;
+    if (section_iter != sections.end())
+      str << ",";
+    str << endl;
   }
   str << "]" << endl;
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
