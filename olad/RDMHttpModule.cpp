@@ -2191,8 +2191,9 @@ void RDMHttpModule::ClockHandler(HttpResponse *response,
 
   JsonSection section;
   stringstream str;
-  str << static_cast<int>(clock.hour) << ":" << static_cast<int>(clock.minute)
-    << ":" << static_cast<int>(clock.second) << " " <<
+  str << std::setfill('0') << std::setw(2) << static_cast<int>(clock.hour) <<
+    ":" << std::setw(2) << static_cast<int>(clock.minute) << ":" <<
+    std::setw(2) << static_cast<int>(clock.second) << " " <<
     static_cast<int>(clock.day) << "/" << static_cast<int>(clock.month) << "/"
     << clock.year;
 
