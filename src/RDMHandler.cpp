@@ -216,8 +216,8 @@ void ResponseHandler::DeviceInfo(
     return;
 
   cout << "Device Info" << endl;
-  cout << "RDM Protocol Version: " << (device_info.protocol_version >> 8) <<
-    "." << (device_info.protocol_version & 0xff) << endl;
+  cout << "RDM Protocol Version: " << device_info.protocol_version_high <<
+    "." << device_info.protocol_version_low << endl;
   cout << "Device Model: 0x" << std::hex << device_info.device_model << endl;
   cout << "Product Category: " <<
     ola::rdm::ProductCategoryToString(device_info.product_category) << endl;
