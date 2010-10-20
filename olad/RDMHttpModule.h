@@ -210,6 +210,18 @@ class RDMHttpModule: public HttpModule {
                           unsigned int universe_id,
                           const UID &uid);
 
+    string GetFactoryDefaults(HttpResponse *response,
+                              unsigned int universe_id,
+                              const UID &uid);
+
+    void FactoryDefaultsHandler(HttpResponse *response,
+                                const ola::rdm::ResponseStatus &status,
+                                bool defaults);
+
+    string SetFactoryDefault(HttpResponse *response,
+                             unsigned int universe_id,
+                             const UID &uid);
+
     string GetLanguage(HttpResponse *response,
                        unsigned int universe_id,
                        const UID &uid);
@@ -530,6 +542,7 @@ class RDMHttpModule: public HttpModule {
     static const char DISPLAY_INVERT_SECTION[];
     static const char DISPLAY_LEVEL_SECTION[];
     static const char DMX_ADDRESS_SECTION[];
+    static const char FACTORY_DEFAULTS_SECTION[];
     static const char IDENTIFY_SECTION[];
     static const char LAMP_HOURS_SECTION[];
     static const char LAMP_MODE_SECTION[];

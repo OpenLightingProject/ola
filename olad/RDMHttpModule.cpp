@@ -84,6 +84,7 @@ const char RDMHttpModule::DEVICE_LABEL_SECTION[] = "device_label";
 const char RDMHttpModule::DISPLAY_INVERT_SECTION[] = "display_invert";
 const char RDMHttpModule::DISPLAY_LEVEL_SECTION[] = "display_level";
 const char RDMHttpModule::DMX_ADDRESS_SECTION[] = "dmx_address";
+const char RDMHttpModule::FACTORY_DEFAULTS_SECTION[] = "factory_defaults";
 const char RDMHttpModule::IDENTIFY_SECTION[] = "identify";
 const char RDMHttpModule::LAMP_HOURS_SECTION[] = "lamp_hours";
 const char RDMHttpModule::LAMP_MODE_SECTION[] = "lamp_mode";
@@ -291,6 +292,8 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetManufacturerLabel(request, response, universe_id, *uid);
   } else if (section_id == DEVICE_LABEL_SECTION) {
     error = GetDeviceLabel(request, response, universe_id, *uid);
+  } else if (section_id == FACTORY_DEFAULTS_SECTION) {
+    error = GetFactoryDefaults(response, universe_id, *uid);
   } else if (section_id == LANGUAGE_SECTION) {
     error = GetLanguage(response, universe_id, *uid);
   } else if (section_id == BOOT_SOFTWARE_SECTION) {
@@ -357,6 +360,8 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
   string error;
   if (section_id == DEVICE_LABEL_SECTION) {
     error = SetDeviceLabel(request, response, universe_id, *uid);
+  } else if (section_id == FACTORY_DEFAULTS_SECTION) {
+    error = SetFactoryDefault(response, universe_id, *uid);
   } else if (section_id == LANGUAGE_SECTION) {
     error = SetLanguage(request, response, universe_id, *uid);
   } else if (section_id == PERSONALITY_SECTION) {
@@ -746,6 +751,9 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
         break;
       case ola::rdm::PID_DEVICE_LABEL:
         AddSection(&sections, DEVICE_LABEL_SECTION, "Device Label");
+        break;
+      case ola::rdm::PID_FACTORY_DEFAULTS:
+        AddSection(&sections, FACTORY_DEFAULTS_SECTION, "Factory Defaults");
         break;
       case ola::rdm::PID_LANGUAGE:
         AddSection(&sections, LANGUAGE_SECTION, "Language");
@@ -1150,6 +1158,62 @@ string RDMHttpModule::SetDeviceLabel(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       label,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the factory defaults section
+ */
+string RDMHttpModule::GetFactoryDefaults(HttpResponse *response,
+                                         unsigned int universe_id,
+                                         const UID &uid) {
+  string error;
+  m_rdm_api.GetFactoryDefaults(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::FactoryDefaultsHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to a factory defaults call and build the response
+ */
+void RDMHttpModule::FactoryDefaultsHandler(
+    HttpResponse *response,
+    const ola::rdm::ResponseStatus &status,
+    bool defaults) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  JsonSection section;
+  section.AddItem(new StringItem("Using Defaults",
+                                 defaults ? "Yes" : "No"));
+  section.AddItem(new HiddenItem(GENERIC_UINT_FIELD, "1"));
+  RespondWithSection(response, section);
+}
+
+
+/*
+ * Reset to the factory defaults
+ */
+string RDMHttpModule::SetFactoryDefault(HttpResponse *response,
+                                        unsigned int universe_id,
+                                        const UID &uid) {
+  string error;
+  m_rdm_api.ResetToFactoryDefaults(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
                         &RDMHttpModule::SetHandler,
                         response),
