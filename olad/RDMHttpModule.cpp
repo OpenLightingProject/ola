@@ -1459,7 +1459,7 @@ void RDMHttpModule::SendPersonalityResponse(HttpResponse *response,
     }
 
     if (info->active == i)
-      item->SetSelectedOffset(i);
+      item->SetSelectedOffset(i - 1);
   }
   section.AddItem(item);
   RespondWithSection(response, section);
