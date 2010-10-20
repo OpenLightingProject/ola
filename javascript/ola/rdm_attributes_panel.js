@@ -250,7 +250,7 @@ ola.RDMAttributesPanel.prototype._buildItem = function(table, item_info) {
   var value = item_info['value'];
   var id = item_info['id'];
 
-  if (type == 'hidden' && !id) {
+  if (type == 'hidden') {
     // we don't need a new row here
     var input = goog.dom.createElement('input');
     input.id = id;

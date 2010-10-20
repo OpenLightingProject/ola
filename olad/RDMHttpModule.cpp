@@ -1198,7 +1198,8 @@ void RDMHttpModule::FactoryDefaultsHandler(
   JsonSection section;
   section.AddItem(new StringItem("Using Defaults",
                                  defaults ? "Yes" : "No"));
-  section.AddItem(new HiddenItem(GENERIC_UINT_FIELD, "1"));
+  section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
+  section.SetSaveButton("Reset to Defaults");
   RespondWithSection(response, section);
 }
 
@@ -1748,7 +1749,7 @@ void RDMHttpModule::SensorValueHandler(
   section.AddItem(new StringItem("Present Value", str.str()));
 
   if (definition && definition->recorded_value_support) {
-    section.AddItem(new HiddenItem(RECORD_SENSOR_FIELD, str.str()));
+    section.AddItem(new HiddenItem("1", RECORD_SENSOR_FIELD));
   }
   section.SetSaveButton("Record Sensor");
   RespondWithSection(response, section);
