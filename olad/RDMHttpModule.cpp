@@ -359,6 +359,8 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetDeviceLabel(request, response, universe_id, *uid);
   } else if (section_id == LANGUAGE_SECTION) {
     error = SetLanguage(request, response, universe_id, *uid);
+  } else if (section_id == PERSONALITY_SECTION) {
+    error = SetPersonality(request, response, universe_id, *uid);
   } else if (section_id == DMX_ADDRESS_SECTION) {
     error = SetStartAddress(request, response, universe_id, *uid);
   } else if (section_id == SENSOR_SECTION) {
