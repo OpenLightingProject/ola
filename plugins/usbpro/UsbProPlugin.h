@@ -80,6 +80,7 @@ class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
     static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
     static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
     static const uint16_t JESE_DMX_TRI_ID = 1;
+    static const uint16_t JESE_RDM_TRI_ID = 2;
     static const uint16_t DMX_KING_DEVICE_ID = 0;
     static const uint16_t ENTTEC_ESTA_ID = 0x454E;
 };

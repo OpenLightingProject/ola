@@ -133,7 +133,8 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
       }
       break;
     case JESE_ESTA_ID:
-      if (information.device_id == JESE_DMX_TRI_ID) {
+      if (information.device_id == JESE_DMX_TRI_ID ||
+          information.device_id == JESE_RDM_TRI_ID) {
         AddDevice(new DmxTriDevice(
             m_plugin_adaptor,
             this,
