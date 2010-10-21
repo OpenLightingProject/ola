@@ -56,6 +56,7 @@ class DmxTriDevice: public UsbDevice, public WidgetListener {
 
     bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
     void RunRDMDiscovery();
+    void SendUIDUpdate();
 
     bool CheckDiscoveryStatus();
 
@@ -171,6 +172,12 @@ class DmxTriOutputPort: public BasicOutputPort {
 
     bool HandleRDMRequest(const ola::rdm::RDMRequest *request) {
       return m_device->HandleRDMRequest(request);
+    }
+
+    void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
+      if (new_universe)
+        m_device->SendUIDUpdate();
+      (void) old_universe;
     }
 
     void RunRDMDiscovery() {

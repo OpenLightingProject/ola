@@ -93,6 +93,16 @@ bool DmxTriDevice::StartHook() {
 }
 
 
+void DmxTriDevice::SendUIDUpdate() {
+  UIDSet uid_set;
+  map<UID, uint8_t>::iterator iter = m_uid_index_map.begin();
+  for (; iter != m_uid_index_map.end(); ++iter) {
+    uid_set.AddUID(iter->first);
+  }
+  GetOutputPort(0)->NewUIDList(uid_set);
+}
+
+
 /*
  * Remove the rdm timeout if it's still running
  */
@@ -494,12 +504,7 @@ void DmxTriDevice::HandleRemoteUIDResponse(uint8_t return_code,
     FetchNextUID();
   } else {
     // notify the universe
-    UIDSet uid_set;
-    map<UID, uint8_t>::iterator iter = m_uid_index_map.begin();
-    for (; iter != m_uid_index_map.end(); ++iter) {
-      uid_set.AddUID(iter->first);
-    }
-    GetOutputPort(0)->NewUIDList(uid_set);
+    SendUIDUpdate();
 
     // start sending rdm commands again
     MaybeSendRDMRequest();
