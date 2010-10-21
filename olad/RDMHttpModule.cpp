@@ -1746,7 +1746,7 @@ void RDMHttpModule::SensorValueHandler(
       ola::rdm::UnitToString(definition->unit);
     section.AddItem(new StringItem("Normal Range", str.str()));
 
-    if (definition->recorded_value_support &&
+    if (definition->recorded_value_support &
         ola::rdm::SENSOR_RECORDED_VALUE) {
       str.str("");
       str << value.recorded << " " <<
@@ -1755,7 +1755,7 @@ void RDMHttpModule::SensorValueHandler(
       section.AddItem(new StringItem("Recorded Value", str.str()));
     }
 
-    if (definition->recorded_value_support &&
+    if (definition->recorded_value_support &
         ola::rdm::SENSOR_RECORDED_RANGE_VALUES) {
       str.str("");
       str << value.lowest << " - " << value.highest <<
