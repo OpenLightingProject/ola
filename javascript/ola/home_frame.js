@@ -26,6 +26,7 @@ goog.require('ola.Dialog');
 goog.require('ola.LoggerWindow');
 goog.require('ola.Server');
 goog.require('ola.Server.EventType');
+goog.require('ola.ServerStats');
 goog.require('ola.SortedList');
 goog.require('ola.UniverseItem');
 
@@ -166,15 +167,11 @@ ola.HomeFrame = function(element_id) {
   var new_universe_button = goog.dom.$('new_universe_button');
   goog.ui.decorate(new_universe_button);
 
-  goog.events.listen(ola_server, ola.Server.EventType.SERVER_INFO_EVENT,
-                     this._updateServerInfo,
-                     false, this);
   goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_LIST_EVENT,
                      this._universeListChanged,
                      false, this);
 
-  // update the server info now
-  ola_server.UpdateServerInfo();
+  this.server_stats = new ola.ServerStats();
 
   var table_container = new ola.TableContainer();
   table_container.decorate(goog.dom.$('active_universe_list'));
@@ -182,24 +179,6 @@ ola.HomeFrame = function(element_id) {
                                           new ola.UniverseRowFactory());
 };
 goog.inherits(ola.HomeFrame, ola.BaseFrame);
-
-
-/**
- * Update the home frame with new server data
- */
-ola.HomeFrame.prototype._updateServerInfo = function(e) {
-  goog.dom.$('server_hostname').innerHTML = e.server_info['hostname'];
-  goog.dom.$('server_ip').innerHTML = e.server_info['ip'];
-  goog.dom.$('server_broadcast').innerHTML = e.server_info['broadcast'];
-  goog.dom.$('server_mac').innerHTML = e.server_info['hw_address'];
-  goog.dom.$('server_version').innerHTML = e.server_info['version'];
-  goog.dom.$('server_uptime').innerHTML = e.server_info['up_since'];
-
-  if (!e.server_info['quit_enabled']) {
-    var stop_button = goog.dom.$('stop_button');
-    stop_button.style.display = 'none';
-  }
-};
 
 
 /**
