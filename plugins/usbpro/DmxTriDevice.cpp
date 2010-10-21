@@ -513,8 +513,8 @@ void DmxTriDevice::HandleRemoteUIDResponse(uint8_t return_code,
 void DmxTriDevice::HandleRemoteRDMResponse(uint8_t return_code,
                                            const uint8_t *data,
                                            unsigned int length) {
-  OLA_WARN << "got get response! " << static_cast<int>(return_code) <<
-    " length " << length;
+  OLA_INFO << "got get response! 0x" <<
+    static_cast<int>(return_code) << " length " << length;
   const RDMRequest *request = m_pending_requests.front();
   if (return_code == EC_NO_ERROR || return_code == EC_RESPONSE_WAIT ||
       return_code == EC_RESPONSE_MORE) {
@@ -560,6 +560,7 @@ void DmxTriDevice::HandleRemoteRDMResponse(uint8_t return_code,
       if (return_code == EC_RESPONSE_MORE) {
         // send the same command again;
         DispatchNextRequest();
+        return;
       } else {
         GetOutputPort(0)->HandleRDMResponse(m_rdm_response);
         m_rdm_response = NULL;
