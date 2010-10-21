@@ -1720,11 +1720,21 @@ void RDMHttpModule::SensorValueHandler(
 
   JsonSection section;
   stringstream str;
-  if (definition) {
+
+  if (definition)
     section.AddItem(new StringItem("Description", definition->description));
+
+  str << value.present_value;
+  if (definition)
+    str << " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
+    ola::rdm::UnitToString(definition->unit);
+  section.AddItem(new StringItem("Present Value", str.str()));
+
+  if (definition) {
     section.AddItem(new StringItem(
           "Type",
           ola::rdm::SensorTypeToString(definition->type)));
+    str.str("");
     str << definition->range_min << " - " << definition->range_max <<
       " " << ola::rdm::PrefixToString(definition->prefix) << " " <<
       ola::rdm::UnitToString(definition->unit);
@@ -1754,11 +1764,6 @@ void RDMHttpModule::SensorValueHandler(
       section.AddItem(new StringItem("Min / Max Recorded Values", str.str()));
     }
   }
-  str.str("");
-  str << value.present_value << " " <<
-    ola::rdm::PrefixToString(definition->prefix) << " " <<
-    ola::rdm::UnitToString(definition->unit);
-  section.AddItem(new StringItem("Present Value", str.str()));
 
   if (definition && definition->recorded_value_support) {
     section.AddItem(new HiddenItem("1", RECORD_SENSOR_FIELD));
