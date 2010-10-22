@@ -505,6 +505,7 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
   str << "  ]" << endl;
   str << "}";
 
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
@@ -686,6 +687,7 @@ void RDMHttpModule::SupportedParamsHandler(
     str << "}";
   }
 
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
@@ -859,6 +861,8 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
     str << endl;
   }
   str << "]" << endl;
+
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
@@ -2694,6 +2698,7 @@ bool RDMHttpModule::CheckForRDMError(HttpResponse *response,
 
 int RDMHttpModule::RespondWithError(HttpResponse *response,
                                     const string &error) {
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("{\"error\": \"" + error + "\"}");
   int r = response->Send();
@@ -2707,6 +2712,7 @@ int RDMHttpModule::RespondWithError(HttpResponse *response,
  */
 void RDMHttpModule::RespondWithSection(HttpResponse *response,
                                        const ola::web::JsonSection &section) {
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
@@ -2779,6 +2785,7 @@ void RDMHttpModule::HandleBoolResponse(HttpResponse *response,
     m_server->ServeError(response, error);
     return;
   }
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   response->Send();
