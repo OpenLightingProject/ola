@@ -479,6 +479,7 @@ int OlaHttpServer::DisplayQuit(const HttpRequest *request,
     response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
     response->Append("<b>403 Unauthorized</b>");
   }
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   int r = response->Send();
   delete response;
   return r;
@@ -495,6 +496,7 @@ int OlaHttpServer::DisplayQuit(const HttpRequest *request,
 int OlaHttpServer::ReloadPlugins(const HttpRequest *request,
                                  HttpResponse *response) {
   m_ola_server->ReloadPlugins();
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   int r = response->Send();
@@ -597,6 +599,7 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
 
   str << "}";
 
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
