@@ -6,8 +6,12 @@ dist_www_DATA = blank.gif \
                 toolbar.css \
                 expander.png \
                 handle.vertical.png \
+                landing.html \
                 loader.gif \
                 logo.png \
+                logo-mini.png \
+                mobile.html \
+                mobile.js \
                 ola.html \
                 ola.js \
                 tick.gif \
