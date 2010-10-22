@@ -43,9 +43,9 @@ goog.inherits(ola.UidItem, ola.DataItem);
 
 /**
  * Get the id of this universe.
- * @return {number} the universe id.
+ * @return {number} the uid id.
  */
-ola.UidItem.prototype.id = function() { return this._id; };
+ola.UidItem.prototype.id = function() { return this.asString(); };
 
 
 /**

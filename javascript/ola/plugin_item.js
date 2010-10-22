@@ -20,6 +20,7 @@
 goog.require('ola.DataItem');
 
 goog.provide('ola.PluginItem');
+goog.provide('ola.PluginControlFactory');
 
 
 /**
@@ -60,4 +61,43 @@ ola.PluginItem.prototype.compare = function(other) {
   }
   return 0;
 }
+
+/**
+ * An Plugin navigation control element.
+ * @constructor
+ */
+ola.PluginControl = function(item, callback, opt_renderer, opt_domHelper) {
+  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  this.setContent(item.name());
+};
+goog.inherits(ola.PluginControl, ola.GenericControl);
+
+
+/**
+ * Setup the event handler for this object.
+ */
+ola.PluginControl.prototype.enterDocument = function() {
+  ola.PluginControl.superClass_.enterDocument.call(this);
+  this.getElement().title = this._item.name() + ' Plugin';
+};
+
+
+/**
+ * A factory which produces PluginControls
+ * @param {function()} the funtion called when the control is clicked.
+ * @constructor
+ */
+ola.PluginControlFactory = function(callback) {
+  this.callback = callback;
+};
+
+
+/**
+ * @return {ola.PluginControl} an instance of a PluginRow
+ */
+ola.PluginControlFactory.prototype.newComponent = function(data) {
+  return new ola.PluginControl(data, this.callback);
+};
+
+
 

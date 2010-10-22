@@ -16,6 +16,7 @@ goog.require('ola.GenericControl');
 goog.require('ola.HomeFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.NewUniverseFrame');
+goog.require('ola.PluginControlFactory');
 goog.require('ola.PluginFrame');
 goog.require('ola.PluginItem');
 goog.require('ola.Server');
@@ -23,6 +24,7 @@ goog.require('ola.Server.EventType');
 goog.require('ola.SortedList');
 goog.require('ola.UniverseFrame');
 goog.require('ola.UniverseItem');
+goog.require('ola.UniverseControl');
 
 goog.provide('ola.OlaUi');
 goog.provide('ola.Setup');
@@ -36,83 +38,6 @@ ola.UNIVERSE_FRAME_ID = 'universe_frame';
 ola.PLUGIN_FRAME_ID = 'plugin_frame';
 ola.SPLIT_PANE_ID = 'split_pane';
 ola.NEW_UNIVERSE_FRAME_ID = 'new_universe_frame';
-
-
-/**
- * An Universe navigation control element.
- * @constructor
- */
-ola.UniverseControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
-  this.setContent(item.name());
-};
-goog.inherits(ola.UniverseControl, ola.GenericControl);
-
-
-/**
- * Setup the event handler for this object.
- */
-ola.UniverseControl.prototype.enterDocument = function() {
-  ola.UniverseControl.superClass_.enterDocument.call(this);
-  this.getElement().title = 'Universe ' + this._item.id();
-};
-
-
-/**
- * An Plugin navigation control element.
- * @constructor
- */
-ola.PluginControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
-  this.setContent(item.name());
-};
-goog.inherits(ola.PluginControl, ola.GenericControl);
-
-
-/**
- * Setup the event handler for this object.
- */
-ola.PluginControl.prototype.enterDocument = function() {
-  ola.PluginControl.superClass_.enterDocument.call(this);
-  this.getElement().title = this._item.name() + ' Plugin';
-};
-
-
-/**
- * A factory which produces UniverseControls
- * @param {function()} the funtion called when the control is clicked.
- * @constructor
- */
-ola.UniverseControlFactory = function(callback) {
-  this.callback = callback;
-};
-
-
-/**
- * @return {ola.UniverseControl} an instance of a UniverseRow
- */
-ola.UniverseControlFactory.prototype.newComponent = function(data) {
-  return new ola.UniverseControl(data, this.callback);
-};
-
-
-
-/**
- * A factory which produces PluginControls
- * @param {function()} the funtion called when the control is clicked.
- * @constructor
- */
-ola.PluginControlFactory = function(callback) {
-  this.callback = callback;
-};
-
-
-/**
- * @return {ola.PluginControl} an instance of a PluginRow
- */
-ola.PluginControlFactory.prototype.newComponent = function(data) {
-  return new ola.PluginControl(data, this.callback);
-};
 
 
 /**

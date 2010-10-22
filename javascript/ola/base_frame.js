@@ -56,3 +56,20 @@ ola.BaseFrame.prototype.Show = function() {
 ola.BaseFrame.prototype.Hide = function() {
   this.element.style.display = 'none';
 };
+
+
+/**
+ * Make this frame show the spinner
+ */
+ola.BaseFrame.prototype.SetAsBusy = function() {
+  this.element.innerHTML = (
+      '<div align="center"><img src="/loader.gif"></div>');
+};
+
+
+/**
+ * Make this frame show the spinner
+ */
+ola.BaseFrame.prototype.Clear = function() {
+  this.element.innerHTML = '';
+};
