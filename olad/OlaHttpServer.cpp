@@ -182,6 +182,7 @@ int OlaHttpServer::JsonServerStats(const HttpRequest *request,
   str << "  \"quit_enabled\": " << m_enable_quit << "," << endl;
   str << "}";
 
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   int r = response->Send();
@@ -619,6 +620,7 @@ void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
   string escaped_description = description;
   Escape(&escaped_description);
 
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("{\"description\": \"");
   response->Append(escaped_description);
@@ -702,6 +704,7 @@ void OlaHttpServer::HandlePortsForUniverse(
     response->Append(output_str.str());
   }
 
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("}");
   response->Send();
@@ -746,6 +749,7 @@ void OlaHttpServer::HandleCandidatePorts(
   }
   str << "]" << endl;
 
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
@@ -795,6 +799,7 @@ void OlaHttpServer::SendCreateUniverseResponse(
     "\"," << endl;
   str << "}";
 
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
