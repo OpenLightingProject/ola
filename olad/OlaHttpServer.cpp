@@ -393,7 +393,7 @@ int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
 int OlaHttpServer::DisplayIndex(const HttpRequest *request,
                                 HttpResponse *response) {
   HttpServer::static_file_info file_info;
-  file_info.file_path = "ola.html";
+  file_info.file_path = "landing.html";
   file_info.content_type = HttpServer::CONTENT_TYPE_HTML;
   return m_server.ServeStaticContent(&file_info, response);
   (void) request;
