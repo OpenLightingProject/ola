@@ -153,7 +153,15 @@ ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
     this.uid_list = new ola.SortedList(
         uid_container,
         new ola.UidControlFactory(
-          function(item) { tab._uidSelected(item); }));
+          function(item) { tab._uidSelected(item.id()); }));
+
+    var button = new goog.ui.Button('Back');
+    button.render(this.uid_frame.element);
+
+    goog.events.listen(button,
+                       goog.ui.Component.EventType.ACTION,
+                       function() { this.update() },
+                       false, this);
   }
 
   var items = new Array();
@@ -171,13 +179,13 @@ ola.mobile.UniverseTab.prototype._uidSelected = function(uid) {
   this._hideAllFrames();
   this.rdm_frame.SetAsBusy();
   this.rdm_list = undefined;
-  this.active_uid = uid.id();
+  this.active_uid = uid;
   this.rdm_frame.Show();
 
   var tab = this;
   this.ola_server.rdmGetSupportedSections(
       this.active_universe,
-      uid.id(),
+      uid,
       function(e) { tab._updateSupportedSections(e); });
 };
 
@@ -197,6 +205,15 @@ ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
         rdm_container,
         new ola.RdmSectionControlFactory(
           function(item) { tab._sectionSelected(item); }));
+
+    var button = new goog.ui.Button('Back');
+    button.render(this.rdm_frame.element);
+
+    goog.events.listen(
+        button,
+        goog.ui.Component.EventType.ACTION,
+        function() { this._universeSelected(this.active_universe) },
+        false, this);
   }
 
   var sections = e.target.getResponseJson();
@@ -269,6 +286,14 @@ ola.mobile.UniverseTab.prototype._updateSection = function(e) {
   }
   goog.dom.appendChild(form, table);
   goog.dom.appendChild(div, form);
+
+  var button = new goog.ui.Button('Back');
+  button.render(div);
+
+  goog.events.listen(button,
+                     goog.ui.Component.EventType.ACTION,
+                     function() { this._uidSelected(this.active_uid) },
+                     false, this);
 
   if (section_response['refresh']) {
     var button = new goog.ui.Button('Refresh');
