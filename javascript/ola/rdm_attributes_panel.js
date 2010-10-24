@@ -43,6 +43,7 @@ ola.RDMAttributesPanel = function(element_id) {
   this.current_universe = undefined;
   this.current_uid = undefined;
   this.divs = new Array();
+  this.zippies = new Array();
   // This holds the list of sections, and is updated as a section is loaded
   this.section_data = undefined;
 };
@@ -110,6 +111,7 @@ ola.RDMAttributesPanel.prototype._setLoading = function(element) {
 ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
   this.element.innerHTML = '';
   this.divs = new Array();
+  this.zippies = new Array();
 
   var sections = e.target.getResponseJson();
   var section_count = sections.length;
@@ -132,9 +134,10 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
     goog.dom.appendChild(this.element, fieldset);
     var z = new goog.ui.AnimatedZippy(legend, div);
     this.divs.push(div);
+    this.zippies.push(z);
 
-    goog.events.listen(z,
-        goog.ui.Zippy.Events.TOGGLE,
+    goog.events.listen(legend,
+        goog.events.EventType.CLICK,
         (function(x) {
           return function(e) { this._expandSection(e, x); } }
         )(i),
@@ -153,7 +156,7 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
  * @private
  */
 ola.RDMAttributesPanel.prototype._expandSection = function(e, index) {
-  if (!e.expanded)
+  if (e.expanded)
     return;
 
   if (this.section_data[index]['loaded'])
@@ -192,6 +195,11 @@ ola.RDMAttributesPanel.prototype._populateSection = function(e, index) {
 
   if (section_response['error']) {
     this._showErrorDialog('Error', section_response['error']);
+    this.section_data[index]['loaded'] = false;
+    var zippy = this.zippies[index];
+    if (zippy.isExpanded) {
+      zippy.setExpanded(false);
+    }
     return;
   }
 
