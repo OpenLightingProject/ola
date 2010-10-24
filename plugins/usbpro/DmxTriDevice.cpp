@@ -467,6 +467,8 @@ void DmxTriDevice::HandleDiscoverStatResponse(uint8_t return_code,
     m_uid_index_map.clear();
     if (m_uid_count)
       FetchNextUID();
+    else
+      SendUIDUpdate();
   }
 }
 
@@ -551,19 +553,57 @@ void DmxTriDevice::HandleRemoteRDMResponse(uint8_t return_code,
         m_rdm_response = NULL;
       }
     }
-  } else if (return_code == EC_UNKNOWN_PID) {
+  } else if (return_code >= EC_UNKNOWN_PID &&
+             return_code <= EC_SUBDEVICE_UNKNOWN) {
     if (m_rdm_response) {
       delete m_rdm_response;
       m_rdm_response = NULL;
     }
 
+    // avoid the compiler warnings
+    ola::rdm::rdm_nack_reason reason = ola::rdm::NR_UNKNOWN_PID;
+
+    switch (return_code) {
+      case EC_UNKNOWN_PID:
+        reason = ola::rdm::NR_UNKNOWN_PID;
+        break;
+      case EC_FORMAT_ERROR:
+        reason = ola::rdm::NR_FORMAT_ERROR;
+        break;
+      case EC_HARDWARE_FAULT:
+        reason = ola::rdm::NR_HARDWARE_FAULT;
+        break;
+      case EC_PROXY_REJECT:
+        reason = ola::rdm::NR_PROXY_REJECT;
+        break;
+      case EC_WRITE_PROTECT:
+        reason = ola::rdm::NR_WRITE_PROTECT;
+        break;
+      case EC_UNSUPPORTED_COMMAND_CLASS:
+        reason = ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS;
+        break;
+      case EC_OUT_OF_RANGE:
+        reason = ola::rdm::NR_DATA_OUT_OF_RANGE;
+        break;
+      case EC_BUFFER_FULL:
+        reason = ola::rdm::NR_BUFFER_FULL;
+        break;
+      case EC_FRAME_OVERFLOW:
+        reason = ola::rdm::NR_PACKET_SIZE_UNSUPPORTED;
+        break;
+      case EC_SUBDEVICE_UNKNOWN:
+        reason = ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE;
+        break;
+    }
     ola::rdm::RDMResponse *response =
-      ola::rdm::NackWithReason(request, ola::rdm::NR_UNKNOWN_PID);
+      ola::rdm::NackWithReason(request, reason);
 
     GetOutputPort(0)->HandleRDMResponse(response);
   } else {
     // TODO(simonn): Implement the correct response here when we error out
-    OLA_WARN << "Response was returned with 0xxxxx" << std::hex <<
+    // case 0x15
+    // case 0x18
+    OLA_WARN << "Response was returned with 0x" << std::hex <<
       static_cast<int>(return_code);
 
     if (m_rdm_response) {
