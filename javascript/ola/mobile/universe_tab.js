@@ -29,12 +29,11 @@ goog.require('ola.common.Server.EventType');
 goog.require('ola.common.SortedList');
 goog.require('ola.UniverseControl');
 goog.require('ola.UniverseItem');
-goog.require('ola.UidItem');
-goog.require('ola.UidControl');
-goog.require('ola.UidControlFactory');
-goog.require('ola.RdmSectionItem');
-goog.require('ola.RdmSectionControl');
-goog.require('ola.RdmSectionControlFactory');
+goog.require('ola.common.UidItem');
+goog.require('ola.common.UidControlFactory');
+goog.require('ola.common.RdmSectionItem');
+goog.require('ola.common.RdmSectionControl');
+goog.require('ola.common.RdmSectionControlFactory');
 
 goog.provide('ola.mobile.UniverseTab');
 
@@ -153,7 +152,7 @@ ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
     var tab = this;
     this.uid_list = new ola.common.SortedList(
         uid_container,
-        new ola.UidControlFactory(
+        new ola.common.UidControlFactory(
           function(item) { tab._uidSelected(item.id()); }));
 
     var button = new goog.ui.Button('Back');
@@ -167,7 +166,7 @@ ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
 
   var items = new Array();
   for (var i = 0; i < e.uids.length; ++i) {
-    items.push(new ola.UidItem(e.uids[i]));
+    items.push(new ola.common.UidItem(e.uids[i]));
   }
   this.uid_list.updateFromData(items);
 };

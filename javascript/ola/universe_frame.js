@@ -28,6 +28,7 @@ goog.require('goog.ui.Control');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 goog.require('goog.ui.TabPane');
+
 goog.require('ola.BaseFrame');
 goog.require('ola.AvailablePort');
 goog.require('ola.AvailablePortTable');
@@ -39,8 +40,8 @@ goog.require('ola.RDMAttributesPanel');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.SortedList');
-goog.require('ola.UidControl');
-goog.require('ola.UidControlFactory');
+goog.require('ola.common.UidControl');
+goog.require('ola.common.UidControlFactory');
 
 goog.provide('ola.UniverseFrame');
 
@@ -164,7 +165,8 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
   uid_container.decorate(goog.dom.$('uid_container'));
   this.uid_list = new ola.common.SortedList(
       uid_container,
-      new ola.UidControlFactory(function (item) { rdm_panel.showUID(item); }));
+      new ola.common.UidControlFactory(
+        function (item) { rdm_panel.showUID(item); }));
 };
 
 
@@ -308,7 +310,7 @@ ola.UniverseFrame.prototype._updateUidList = function(e) {
   if (e.universe_id == this.current_universe) {
     var items = new Array();
     for (var i = 0; i < e.uids.length; ++i) {
-      items.push(new ola.UidItem(e.uids[i]));
+      items.push(new ola.common.UidItem(e.uids[i]));
     }
     this.uid_list.updateFromData(items);
   } else {

@@ -13,16 +13,16 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * An item in the UID list
+ * An order preserving, list of UIDs
  * Copyright (C) 2010 Simon Newton
  */
 
 goog.require('goog.events');
 goog.require('goog.ui.Control');
 
-goog.provide('ola.UidItem');
-goog.provide('ola.UidControl');
-goog.provide('ola.UidControlFactory');
+goog.provide('ola.common.UidItem');
+goog.provide('ola.common.UidControl');
+goog.provide('ola.common.UidControlFactory');
 
 
 /**
@@ -30,20 +30,20 @@ goog.provide('ola.UidControlFactory');
  * @param {Object} data the data to use to construct this item.
  * @constructor
  */
-ola.UidItem = function(data) {
+ola.common.UidItem = function(data) {
   this._device_id = data['device_id'];
   this._manufacturer_id = data['manufacturer_id'];
   this._device = data['device'];
   this._manufacturer = data['manufacturer'];
 };
-goog.inherits(ola.UidItem, ola.common.DataItem);
+goog.inherits(ola.common.UidItem, ola.common.DataItem);
 
 
 /**
  * Get the id of this universe.
  * @return {number} the uid id.
  */
-ola.UidItem.prototype.id = function() { return this.asString(); };
+ola.common.UidItem.prototype.id = function() { return this.asString(); };
 
 
 /**
@@ -52,7 +52,7 @@ ola.UidItem.prototype.id = function() { return this.asString(); };
  * @param {number} padding the length to pad to
  * @return {string} the hex representation of the number.
  */
-ola.UidItem.prototype._toHex = function(n, padding) {
+ola.common.UidItem.prototype._toHex = function(n, padding) {
   if (n < 0) {
     n = 0xffffffff + n + 1;
   }
@@ -68,7 +68,7 @@ ola.UidItem.prototype._toHex = function(n, padding) {
  * Return the string representation of the uid.
  * @return {string} the uid
  */
-ola.UidItem.prototype.asString = function() {
+ola.common.UidItem.prototype.asString = function() {
   return (this._toHex(this._manufacturer_id, 4) + ':' +
           this._toHex(this._device_id, 8));
 };
@@ -78,7 +78,7 @@ ola.UidItem.prototype.asString = function() {
  * Return the uid as a string
  * @return {number} the uid as a string
  */
-ola.UidItem.prototype.toString = function() {
+ola.common.UidItem.prototype.toString = function() {
   var uid = "";
   if (this._manufacturer) {
     uid += this._manufacturer;
@@ -107,7 +107,7 @@ ola.UidItem.prototype.toString = function() {
  * @param {ola.common.DataItem} other the other item to compare to.
  * @return {number} -1 if less than, 1 if greater than, 0 if equal.
  */
-ola.UidItem.prototype.compare = function(other) {
+ola.common.UidItem.prototype.compare = function(other) {
   if (this._manufacturer_id > other._manufacturer_id) {
     return 1;
   } else if (this._manufacturer_id < other._manufacturer_id) {
@@ -121,17 +121,17 @@ ola.UidItem.prototype.compare = function(other) {
  * An UID navigation control element.
  * @constructor
  */
-ola.UidControl = function(item, callback, opt_renderer, opt_domHelper) {
+ola.common.UidControl = function(item, callback, opt_renderer, opt_domHelper) {
   ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
   this.setContent(item.toString());
 };
-goog.inherits(ola.UidControl, ola.common.GenericControl);
+goog.inherits(ola.common.UidControl, ola.common.GenericControl);
 
 
 /**
  * Setup the event handler for this object.
  */
-ola.UidControl.prototype.enterDocument = function() {
+ola.common.UidControl.prototype.enterDocument = function() {
   ola.UniverseControl.superClass_.enterDocument.call(this);
   this.getElement().title = this.item().toString();
 };
@@ -140,7 +140,7 @@ ola.UidControl.prototype.enterDocument = function() {
 /**
  * Update this item with from new data.
  */
-ola.UidControl.prototype.update = function(item) {
+ola.common.UidControl.prototype.update = function(item) {
   // We don't expect the uid to change here.
   this.setContent(item.toString());
 };
@@ -152,7 +152,7 @@ ola.UidControl.prototype.update = function(item) {
  *   The * first arg is the item id.
  * @constructor
  */
-ola.UidControlFactory = function(callback) {
+ola.common.UidControlFactory = function(callback) {
   this.callback = callback;
 };
 
@@ -160,8 +160,8 @@ ola.UidControlFactory = function(callback) {
 /**
  * Create a new UidControl object from some data
  * @param {Object} data the data to use for the control.
- * @return {ola.UidControl}
+ * @return {ola.common.UidControl}
  */
-ola.UidControlFactory.prototype.newComponent = function(data) {
-  return new ola.UidControl(data, this.callback);
+ola.common.UidControlFactory.prototype.newComponent = function(data) {
+  return new ola.common.UidControl(data, this.callback);
 };

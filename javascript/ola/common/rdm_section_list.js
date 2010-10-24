@@ -20,9 +20,9 @@
 goog.require('goog.events');
 goog.require('goog.ui.Control');
 
-goog.provide('ola.RdmSectionItem');
-goog.provide('ola.RdmSectionControl');
-goog.provide('ola.RdmSectionControlFactory');
+goog.provide('ola.common.RdmSectionItem');
+goog.provide('ola.common.RdmSectionControl');
+goog.provide('ola.common.RdmSectionControlFactory');
 
 
 /**
@@ -30,26 +30,26 @@ goog.provide('ola.RdmSectionControlFactory');
  * @param {Object} data the data to use to construct this item.
  * @constructor
  */
-ola.RdmSectionItem = function(data) {
+ola.common.RdmSectionItem = function(data) {
   this._id = data['id'];
   this._name = data['name'];
   this._hint = data['hint'];
 };
-goog.inherits(ola.RdmSectionItem, ola.common.DataItem);
+goog.inherits(ola.common.RdmSectionItem, ola.common.DataItem);
 
 
 /**
  * Get the id of this universe.
  * @return {number} the uid id.
  */
-ola.RdmSectionItem.prototype.id = function() { return this._id; };
-ola.RdmSectionItem.prototype.hint = function() { return this._hint; };
+ola.common.RdmSectionItem.prototype.id = function() { return this._id; };
+ola.common.RdmSectionItem.prototype.hint = function() { return this._hint; };
 
 /**
  * Return the uid as a string
  * @return {number} the uid as a string
  */
-ola.RdmSectionItem.prototype.toString = function() {
+ola.common.RdmSectionItem.prototype.toString = function() {
   return this._name;
 };
 
@@ -59,7 +59,7 @@ ola.RdmSectionItem.prototype.toString = function() {
  * @param {ola.common.DataItem} other the other item to compare to.
  * @return {number} -1 if less than, 1 if greater than, 0 if equal.
  */
-ola.RdmSectionItem.prototype.compare = function(other) {
+ola.common.RdmSectionItem.prototype.compare = function(other) {
   if (this._name < other._name) {
     return -1;
   } else if (this._name > other._name) {
@@ -74,17 +74,17 @@ ola.RdmSectionItem.prototype.compare = function(other) {
  * An section navigation control element.
  * @constructor
  */
-ola.RdmSectionControl = function(item, callback, opt_renderer, opt_domHelper) {
+ola.common.RdmSectionControl = function(item, callback, opt_renderer, opt_domHelper) {
   ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
   this.setContent(item.toString());
 };
-goog.inherits(ola.RdmSectionControl, ola.common.GenericControl);
+goog.inherits(ola.common.RdmSectionControl, ola.common.GenericControl);
 
 
 /**
  * Setup the event handler for this object.
  */
-ola.RdmSectionControl.prototype.enterDocument = function() {
+ola.common.RdmSectionControl.prototype.enterDocument = function() {
   ola.UniverseControl.superClass_.enterDocument.call(this);
   this.getElement().title = this.item().toString();
 };
@@ -93,7 +93,7 @@ ola.RdmSectionControl.prototype.enterDocument = function() {
 /**
  * Update this item with from new data.
  */
-ola.RdmSectionControl.prototype.update = function(item) {
+ola.common.RdmSectionControl.prototype.update = function(item) {
   this.setContent(item.toString());
 };
 
@@ -104,7 +104,7 @@ ola.RdmSectionControl.prototype.update = function(item) {
  *   The * first arg is the item id.
  * @constructor
  */
-ola.RdmSectionControlFactory = function(callback) {
+ola.common.RdmSectionControlFactory = function(callback) {
   this.callback = callback;
 };
 
@@ -112,8 +112,8 @@ ola.RdmSectionControlFactory = function(callback) {
 /**
  * Create a new RdmSectionControl object from some data
  * @param {Object} data the data to use for the control.
- * @return {ola.RdmSectionControl}
+ * @return {ola.common.RdmSectionControl}
  */
-ola.RdmSectionControlFactory.prototype.newComponent = function(data) {
-  return new ola.RdmSectionControl(data, this.callback);
+ola.common.RdmSectionControlFactory.prototype.newComponent = function(data) {
+  return new ola.common.RdmSectionControl(data, this.callback);
 };
