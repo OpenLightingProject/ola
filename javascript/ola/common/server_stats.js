@@ -19,7 +19,6 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
-goog.require('goog.ui.Component');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 

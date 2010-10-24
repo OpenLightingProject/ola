@@ -17,8 +17,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.require('goog.events');
-goog.require('goog.ui.Control');
+goog.require('ola.common.DataItem');
 
 goog.provide('ola.common.RdmSectionItem');
 goog.provide('ola.common.RdmSectionControl');

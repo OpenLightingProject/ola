@@ -203,7 +203,7 @@ ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
     var tab = this;
     this.rdm_list = new ola.common.SortedList(
         rdm_container,
-        new ola.RdmSectionControlFactory(
+        new ola.common.RdmSectionControlFactory(
           function(item) { tab._sectionSelected(item); }));
 
     var button = new goog.ui.Button('Back');
@@ -220,7 +220,7 @@ ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
   var section_count = sections.length;
   var items = new Array();
   for (var i = 0; i < section_count; ++i) {
-    items.push(new ola.RdmSectionItem(sections[i]));
+    items.push(new ola.common.RdmSectionItem(sections[i]));
   }
   this.rdm_list.updateFromData(items);
 };

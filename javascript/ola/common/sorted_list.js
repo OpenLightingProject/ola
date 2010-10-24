@@ -17,6 +17,9 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+goog.require('goog.events');
+goog.require('goog.ui.Control');
+
 goog.provide('ola.common.DataItem');
 goog.provide('ola.common.GenericControl');
 goog.provide('ola.common.SortedList');

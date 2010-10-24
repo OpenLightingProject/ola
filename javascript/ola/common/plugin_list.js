@@ -20,6 +20,7 @@
 goog.require('ola.common.DataItem');
 
 goog.provide('ola.common.PluginItem');
+goog.provide('ola.common.PluginControl');
 goog.provide('ola.common.PluginControlFactory');
 
 
