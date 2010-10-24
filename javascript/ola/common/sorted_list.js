@@ -17,29 +17,29 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.provide('ola.DataItem');
-goog.provide('ola.GenericControl');
-goog.provide('ola.SortedList');
+goog.provide('ola.common.DataItem');
+goog.provide('ola.common.GenericControl');
+goog.provide('ola.common.SortedList');
 
 /**
  * The base data object that represents an item in a sorted list
  * @constructor
  */
-ola.DataItem = function() {};
+ola.common.DataItem = function() {};
 
 /**
  * Get the id of this node.
  * @return {number|string} the id of this element.
  */
-ola.DataItem.prototype.id = goog.nullFunction;
+ola.common.DataItem.prototype.id = goog.nullFunction;
 
 
 /**
  * Compare one item to another.
- * @param {ola.DataItem} other the other item to compare to.
+ * @param {ola.common.DataItem} other the other item to compare to.
  * @return {number} -1 if less than, 1 if greater than, 0 if equal.
  */
-ola.DataItem.prototype.compare = function(other) {
+ola.common.DataItem.prototype.compare = function(other) {
   if (this.id() > other.id()) {
     return 1;
   } else if (this.id() < other.id()) {
@@ -53,32 +53,32 @@ ola.DataItem.prototype.compare = function(other) {
  * An Generic navigation control element.
  * @constructor
  */
-ola.GenericControl = function(item, callback, opt_renderer, opt_domHelper) {
+ola.common.GenericControl = function(item, callback, opt_renderer, opt_domHelper) {
   goog.ui.Control.call(this, '', opt_renderer, opt_domHelper);
   this._item = item;
   this.callback = callback;
 };
-goog.inherits(ola.GenericControl, goog.ui.Control);
+goog.inherits(ola.common.GenericControl, goog.ui.Control);
 
 
 /**
  * Return the underlying GenericItem
  * @return {ola.GenericItem}
  */
-ola.GenericControl.prototype.item = function() { return this._item; };
+ola.common.GenericControl.prototype.item = function() { return this._item; };
 
 
 /**
  * This component can't be used to decorate
  */
-ola.GenericControl.prototype.canDecorate = function() { return false; };
+ola.common.GenericControl.prototype.canDecorate = function() { return false; };
 
 
 /**
  * Setup the event handler for this object.
  */
-ola.GenericControl.prototype.enterDocument = function() {
-  ola.GenericControl.superClass_.enterDocument.call(this);
+ola.common.GenericControl.prototype.enterDocument = function() {
+  ola.common.GenericControl.superClass_.enterDocument.call(this);
   goog.events.listen(this.getElement(),
                      goog.events.EventType.CLICK,
                      function() { this.callback(this._item); },
@@ -91,7 +91,7 @@ ola.GenericControl.prototype.enterDocument = function() {
  * Update this item with from new data
  * @param {ola.GenericItem} the new item to update from.
  */
-ola.GenericControl.prototype.update = function(item) {
+ola.common.GenericControl.prototype.update = function(item) {
   this.setContent(item.name());
 };
 
@@ -101,11 +101,11 @@ ola.GenericControl.prototype.update = function(item) {
  * Represents a list on controls that are updated from a data model
  * @param {string} container_id the id of the container to use as the control
  *   list.
- * @param {ola.SortedListComponentFactory} component_factory a
+ * @param {ola.common.SortedListComponentFactory} component_factory a
  *   SortedListComponentFactory class to produce the SortedListComponents.
  * @constructor
  */
-ola.SortedList = function(container_id, component_factory) {
+ola.common.SortedList = function(container_id, component_factory) {
   this.container = container_id;
   this.component_factory = component_factory;
 };
@@ -113,9 +113,9 @@ ola.SortedList = function(container_id, component_factory) {
 
 /**
  * Update this list from a new list of data items.
- * @param {Array.<ola.DataItem>} item_list the new set of data items.
+ * @param {Array.<ola.common.DataItem>} item_list the new set of data items.
  */
-ola.SortedList.prototype.updateFromData = function(item_list) {
+ola.common.SortedList.prototype.updateFromData = function(item_list) {
   var component_index = 0;
   var item_index = 0;
   var item_count = item_list.length;

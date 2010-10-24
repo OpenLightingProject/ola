@@ -12,16 +12,16 @@ goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 
 goog.require('ola.Dialog');
-goog.require('ola.GenericControl');
+goog.require('ola.common.GenericControl');
 goog.require('ola.HomeFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.NewUniverseFrame');
-goog.require('ola.PluginControlFactory');
+goog.require('ola.common.PluginControlFactory');
 goog.require('ola.PluginFrame');
-goog.require('ola.PluginItem');
+goog.require('ola.common.PluginItem');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
-goog.require('ola.SortedList');
+goog.require('ola.common.SortedList');
 goog.require('ola.UniverseFrame');
 goog.require('ola.UniverseItem');
 goog.require('ola.UniverseControl');
@@ -104,9 +104,9 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   var ui = this;
   var plugin_container = new goog.ui.Container();
   plugin_container.decorate(goog.dom.$('plugin_container'));
-  this.plugin_list = new ola.SortedList(
+  this.plugin_list = new ola.common.SortedList(
       plugin_container,
-      new ola.PluginControlFactory(
+      new ola.common.PluginControlFactory(
         function(item) { ui._ShowPlugin(item.id()); }));
 
   goog.events.listen(this.ola_server,
@@ -116,7 +116,7 @@ ola.OlaUI.prototype._SetupNavigation = function() {
 
   var universe_container = new goog.ui.Container();
   universe_container.decorate(goog.dom.$('universe_container'));
-  this.universe_list = new ola.SortedList(
+  this.universe_list = new ola.common.SortedList(
       universe_container,
       new ola.UniverseControlFactory(
         function(item) { ui.ShowUniverse(item.id()); }));
@@ -170,7 +170,7 @@ ola.OlaUI.prototype._updateUniverseList = function(e) {
 ola.OlaUI.prototype._updatePluginList = function(e) {
   var items = new Array();
   for (var i = 0; i < e.plugins.length; ++i) {
-    var item = new ola.PluginItem(e.plugins[i]);
+    var item = new ola.common.PluginItem(e.plugins[i]);
     items.push(item);
   }
   this.plugin_list.updateFromData(items);

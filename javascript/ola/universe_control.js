@@ -17,7 +17,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.require('ola.GenericControl');
+goog.require('ola.common.GenericControl');
 
 goog.provide('ola.UniverseControl');
 
@@ -27,10 +27,10 @@ goog.provide('ola.UniverseControl');
  * @constructor
  */
 ola.UniverseControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
   this.setContent(item.name());
 };
-goog.inherits(ola.UniverseControl, ola.GenericControl);
+goog.inherits(ola.UniverseControl, ola.common.GenericControl);
 
 
 /**

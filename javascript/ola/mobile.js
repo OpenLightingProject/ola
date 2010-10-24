@@ -8,7 +8,7 @@ goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.Select');
 
 goog.require('ola.Dialog');
-goog.require('ola.GenericControl');
+goog.require('ola.common.GenericControl');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.ServerStats');

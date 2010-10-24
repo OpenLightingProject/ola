@@ -38,7 +38,7 @@ goog.require('ola.PortTable');
 goog.require('ola.RDMAttributesPanel');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
-goog.require('ola.SortedList');
+goog.require('ola.common.SortedList');
 goog.require('ola.UidControl');
 goog.require('ola.UidControlFactory');
 
@@ -162,7 +162,7 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
   var frame = this;
   var uid_container = new goog.ui.Container();
   uid_container.decorate(goog.dom.$('uid_container'));
-  this.uid_list = new ola.SortedList(
+  this.uid_list = new ola.common.SortedList(
       uid_container,
       new ola.UidControlFactory(function (item) { rdm_panel.showUID(item); }));
 };

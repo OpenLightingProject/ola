@@ -35,7 +35,7 @@ ola.RdmSectionItem = function(data) {
   this._name = data['name'];
   this._hint = data['hint'];
 };
-goog.inherits(ola.RdmSectionItem, ola.DataItem);
+goog.inherits(ola.RdmSectionItem, ola.common.DataItem);
 
 
 /**
@@ -56,7 +56,7 @@ ola.RdmSectionItem.prototype.toString = function() {
 
 /**
  * Compare one uid to another.
- * @param {ola.DataItem} other the other item to compare to.
+ * @param {ola.common.DataItem} other the other item to compare to.
  * @return {number} -1 if less than, 1 if greater than, 0 if equal.
  */
 ola.RdmSectionItem.prototype.compare = function(other) {
@@ -75,10 +75,10 @@ ola.RdmSectionItem.prototype.compare = function(other) {
  * @constructor
  */
 ola.RdmSectionControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
   this.setContent(item.toString());
 };
-goog.inherits(ola.RdmSectionControl, ola.GenericControl);
+goog.inherits(ola.RdmSectionControl, ola.common.GenericControl);
 
 
 /**

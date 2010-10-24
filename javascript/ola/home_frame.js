@@ -27,7 +27,7 @@ goog.require('ola.LoggerWindow');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.ServerStats');
-goog.require('ola.SortedList');
+goog.require('ola.common.SortedList');
 goog.require('ola.UniverseItem');
 
 goog.provide('ola.HomeFrame');
@@ -175,7 +175,7 @@ ola.HomeFrame = function(element_id) {
 
   var table_container = new ola.TableContainer();
   table_container.decorate(goog.dom.$('active_universe_list'));
-  this.universe_list = new ola.SortedList(table_container,
+  this.universe_list = new ola.common.SortedList(table_container,
                                           new ola.UniverseRowFactory());
 };
 goog.inherits(ola.HomeFrame, ola.BaseFrame);

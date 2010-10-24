@@ -17,10 +17,10 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.require('ola.DataItem');
+goog.require('ola.common.DataItem');
 
-goog.provide('ola.PluginItem');
-goog.provide('ola.PluginControlFactory');
+goog.provide('ola.common.PluginItem');
+goog.provide('ola.common.PluginControlFactory');
 
 
 /**
@@ -28,32 +28,32 @@ goog.provide('ola.PluginControlFactory');
  * @param {Object} data the data to use to construct this item.
  * @constructor
  */
-ola.PluginItem = function(data) {
+ola.common.PluginItem = function(data) {
   this._id = data['id'];
   this._name = data['name'];
 };
-goog.inherits(ola.PluginItem, ola.DataItem);
+goog.inherits(ola.common.PluginItem, ola.common.DataItem);
 
 
 /**
  * Get the id of this universe.
  * @return {number} the universe id.
  */
-ola.PluginItem.prototype.id = function() { return this._id; };
+ola.common.PluginItem.prototype.id = function() { return this._id; };
 
 
 /**
  * Return the universe name
  * @return {string} the name.
  */
-ola.PluginItem.prototype.name = function() { return this._name; };
+ola.common.PluginItem.prototype.name = function() { return this._name; };
 
 /**
  * Compare one item to another.
- * @param {ola.DataItem} other the other item to compare to.
+ * @param {ola.common.DataItem} other the other item to compare to.
  * @return {number} -1 if less than, 1 if greater than, 0 if equal.
  */
-ola.PluginItem.prototype.compare = function(other) {
+ola.common.PluginItem.prototype.compare = function(other) {
   if (this.name() > other.name()) {
     return 1;
   } else if (this.name() < other.name()) {
@@ -67,10 +67,10 @@ ola.PluginItem.prototype.compare = function(other) {
  * @constructor
  */
 ola.PluginControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
   this.setContent(item.name());
 };
-goog.inherits(ola.PluginControl, ola.GenericControl);
+goog.inherits(ola.PluginControl, ola.common.GenericControl);
 
 
 /**
@@ -87,7 +87,7 @@ ola.PluginControl.prototype.enterDocument = function() {
  * @param {function()} the funtion called when the control is clicked.
  * @constructor
  */
-ola.PluginControlFactory = function(callback) {
+ola.common.PluginControlFactory = function(callback) {
   this.callback = callback;
 };
 
@@ -95,7 +95,7 @@ ola.PluginControlFactory = function(callback) {
 /**
  * @return {ola.PluginControl} an instance of a PluginRow
  */
-ola.PluginControlFactory.prototype.newComponent = function(data) {
+ola.common.PluginControlFactory.prototype.newComponent = function(data) {
   return new ola.PluginControl(data, this.callback);
 };
 

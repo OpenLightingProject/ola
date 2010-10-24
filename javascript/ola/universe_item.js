@@ -17,7 +17,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.require('ola.DataItem');
+goog.require('ola.common.DataItem');
 
 goog.provide('ola.UniverseItem');
 
@@ -34,7 +34,7 @@ ola.UniverseItem = function(data) {
   this._output_ports = data['output_ports'];
   this._rdm_devices = data['rdm_devices'];
 };
-goog.inherits(ola.UniverseItem, ola.DataItem);
+goog.inherits(ola.UniverseItem, ola.common.DataItem);
 
 
 /**

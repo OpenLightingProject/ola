@@ -36,7 +36,7 @@ ola.UidItem = function(data) {
   this._device = data['device'];
   this._manufacturer = data['manufacturer'];
 };
-goog.inherits(ola.UidItem, ola.DataItem);
+goog.inherits(ola.UidItem, ola.common.DataItem);
 
 
 /**
@@ -104,7 +104,7 @@ ola.UidItem.prototype.toString = function() {
 
 /**
  * Compare one uid to another.
- * @param {ola.DataItem} other the other item to compare to.
+ * @param {ola.common.DataItem} other the other item to compare to.
  * @return {number} -1 if less than, 1 if greater than, 0 if equal.
  */
 ola.UidItem.prototype.compare = function(other) {
@@ -122,10 +122,10 @@ ola.UidItem.prototype.compare = function(other) {
  * @constructor
  */
 ola.UidControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
   this.setContent(item.toString());
 };
-goog.inherits(ola.UidControl, ola.GenericControl);
+goog.inherits(ola.UidControl, ola.common.GenericControl);
 
 
 /**

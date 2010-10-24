@@ -23,9 +23,9 @@ goog.require('goog.ui.Container');
 goog.require('ola.BaseFrame');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
-goog.require('ola.SortedList');
-goog.require('ola.PluginItem');
-goog.require('ola.PluginControlFactory');
+goog.require('ola.common.SortedList');
+goog.require('ola.common.PluginItem');
+goog.require('ola.common.PluginControlFactory');
 
 goog.provide('ola.mobile.PluginTab');
 
@@ -87,15 +87,15 @@ ola.mobile.PluginTab.prototype._updatePluginList = function(e) {
     plugin_container.render(this.plugin_frame.element);
 
     var tab = this;
-    this.plugin_list = new ola.SortedList(
+    this.plugin_list = new ola.common.SortedList(
         plugin_container,
-        new ola.PluginControlFactory(
+        new ola.common.PluginControlFactory(
           function(item) { tab._pluginSelected(item.id()); }));
   }
 
   var items = new Array();
   for (var i = 0; i < e.plugins.length; ++i) {
-    var item = new ola.PluginItem(e.plugins[i]);
+    var item = new ola.common.PluginItem(e.plugins[i]);
     items.push(item);
   }
   this.plugin_list.updateFromData(items);

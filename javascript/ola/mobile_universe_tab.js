@@ -26,7 +26,7 @@ goog.require('goog.ui.Container');
 goog.require('ola.BaseFrame');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
-goog.require('ola.SortedList');
+goog.require('ola.common.SortedList');
 goog.require('ola.UniverseControl');
 goog.require('ola.UniverseItem');
 goog.require('ola.UidItem');
@@ -109,7 +109,7 @@ ola.mobile.UniverseTab.prototype._updateUniverseList = function(e) {
     universe_container.render(this.universe_frame.element);
 
     var tab = this;
-    this.universe_list = new ola.SortedList(
+    this.universe_list = new ola.common.SortedList(
         universe_container,
         new ola.UniverseControlFactory(
           function(item) { tab._universeSelected(item.id()); }));
@@ -151,7 +151,7 @@ ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
     uid_container.render(this.uid_frame.element);
 
     var tab = this;
-    this.uid_list = new ola.SortedList(
+    this.uid_list = new ola.common.SortedList(
         uid_container,
         new ola.UidControlFactory(
           function(item) { tab._uidSelected(item.id()); }));
@@ -202,7 +202,7 @@ ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
     rdm_container.render(this.rdm_frame.element);
 
     var tab = this;
-    this.rdm_list = new ola.SortedList(
+    this.rdm_list = new ola.common.SortedList(
         rdm_container,
         new ola.RdmSectionControlFactory(
           function(item) { tab._sectionSelected(item); }));
