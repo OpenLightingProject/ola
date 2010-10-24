@@ -24,7 +24,7 @@ goog.require('goog.ui.Component');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.Select');
 goog.require('ola.LoggerWindow');
-goog.require('ola.Server');
+goog.require('ola.common.Server');
 
 goog.provide('ola.Port');
 goog.provide('ola.PortTable');

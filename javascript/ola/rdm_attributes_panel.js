@@ -27,8 +27,8 @@ goog.require('goog.ui.Control');
 goog.require('goog.ui.Option');
 goog.require('goog.ui.Select');
 goog.require('ola.Dialog');
-goog.require('ola.Server');
-goog.require('ola.Server.EventType');
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
 
 goog.provide('ola.RDMAttributesPanel');
 
@@ -65,7 +65,7 @@ ola.RDMAttributesPanel.prototype.updateUniverse = function(universe_id) {
  */
 ola.RDMAttributesPanel.prototype.showUID = function(item) {
   this._setLoading(this.element);
-  var server = ola.Server.getInstance();
+  var server = ola.common.Server.getInstance();
   var panel = this;
   server.rdmGetSupportedSections(
       this.current_universe,
@@ -171,7 +171,7 @@ ola.RDMAttributesPanel.prototype._expandSection = function(e, index) {
  * @private
  */
 ola.RDMAttributesPanel.prototype._loadSection = function(index) {
-  var server = ola.Server.getInstance();
+  var server = ola.common.Server.getInstance();
   var panel = this;
   server.rdmGetSectionInfo(
       this.current_universe,
@@ -366,7 +366,7 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
     }
   }
 
-  var server = ola.Server.getInstance();
+  var server = ola.common.Server.getInstance();
   var panel = this;
   server.rdmSetSectionInfo(
       this.current_universe,

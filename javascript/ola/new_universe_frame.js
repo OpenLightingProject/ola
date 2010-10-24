@@ -23,12 +23,10 @@ goog.require('ola.AvailablePort');
 goog.require('ola.AvailablePortTable');
 goog.require('ola.BaseFrame');
 goog.require('ola.LoggerWindow');
-goog.require('ola.Server');
-goog.require('ola.Server.EventType');
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
 
 goog.provide('ola.NewUniverseFrame');
-
-var ola = ola || {};
 
 
 /**
@@ -88,7 +86,7 @@ ola.NewUniverseFrame.prototype._addUniverseButtonClicked = function(e) {
     return;
   }
 
-  var ola_server = ola.Server.getInstance();
+  var ola_server = ola.common.Server.getInstance();
   // check if we already know about this universe
   if (ola_server.CheckIfUniverseExists(universe_id)) {
     dialog.setTitle('Universe already exists');
@@ -139,7 +137,7 @@ ola.NewUniverseFrame.prototype._newUniverseComplete = function(e) {
     dialog.setVisible(false);
     this.ola_ui.ShowUniverse(obj['universe'], true);
     // update the universe list now
-    ola.Server.getInstance().FetchUniversePluginList();
+    ola.common.Server.getInstance().FetchUniversePluginList();
   } else {
     dialog.setTitle('New Universe Failed');
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);

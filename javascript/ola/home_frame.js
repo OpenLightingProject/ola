@@ -24,9 +24,9 @@ goog.require('goog.ui.CustomButton');
 goog.require('ola.BaseFrame');
 goog.require('ola.Dialog');
 goog.require('ola.LoggerWindow');
-goog.require('ola.Server');
-goog.require('ola.Server.EventType');
-goog.require('ola.ServerStats');
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
+goog.require('ola.common.ServerStats');
 goog.require('ola.SortedList');
 goog.require('ola.UniverseItem');
 
@@ -147,7 +147,7 @@ ola.UniverseRowFactory.prototype.newComponent = function(data) {
  * @constructor
  */
 ola.HomeFrame = function(element_id) {
-  var ola_server = ola.Server.getInstance();
+  var ola_server = ola.common.Server.getInstance();
   ola.BaseFrame.call(this, element_id);
 
   var reload_button = goog.dom.$('reload_button');
@@ -167,11 +167,11 @@ ola.HomeFrame = function(element_id) {
   var new_universe_button = goog.dom.$('new_universe_button');
   goog.ui.decorate(new_universe_button);
 
-  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_LIST_EVENT,
+  goog.events.listen(ola_server, ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
                      this._universeListChanged,
                      false, this);
 
-  this.server_stats = new ola.ServerStats();
+  this.server_stats = new ola.common.ServerStats();
 
   var table_container = new ola.TableContainer();
   table_container.decorate(goog.dom.$('active_universe_list'));
@@ -225,7 +225,7 @@ ola.HomeFrame.prototype._stopServerConfirmed = function(e) {
     dialog.SetAsBusy();
     dialog.setVisible(true);
     var frame = this;
-    ola.Server.getInstance().stopServer(
+    ola.common.Server.getInstance().stopServer(
       function(e) { frame._stopServerComplete(e); });
     return false;
   }
@@ -257,7 +257,7 @@ ola.HomeFrame.prototype._reloadButtonClicked = function(e) {
   dialog.SetAsBusy();
   dialog.setVisible(true);
   var frame = this;
-  ola.Server.getInstance().reloadPlugins(
+  ola.common.Server.getInstance().reloadPlugins(
       function(e) { frame._pluginReloadComplete(e); });
 };
 

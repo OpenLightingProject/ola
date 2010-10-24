@@ -21,7 +21,6 @@ goog.require('goog.dom');
 
 goog.provide('ola.BaseFrame');
 
-var ola = ola || {};
 
 /**
  * The base frame class

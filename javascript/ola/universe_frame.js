@@ -36,15 +36,13 @@ goog.require('ola.DmxConsole');
 goog.require('ola.Port');
 goog.require('ola.PortTable');
 goog.require('ola.RDMAttributesPanel');
-goog.require('ola.Server');
-goog.require('ola.Server.EventType');
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
 goog.require('ola.SortedList');
 goog.require('ola.UidControl');
 goog.require('ola.UidControlFactory');
 
 goog.provide('ola.UniverseFrame');
-
-var ola = ola || {}
 
 
 ola.UID_REFRESH_INTERVAL = 5000;
@@ -83,11 +81,11 @@ ola.UniverseFrame = function(element_id, ola_ui) {
   this._setupConsoleTab();
 
   // setup notifications when the universe or uid lists changes
-  var ola_server = ola.Server.getInstance();
-  goog.events.listen(ola_server, ola.Server.EventType.UNIVERSE_EVENT,
+  var ola_server = ola.common.Server.getInstance();
+  goog.events.listen(ola_server, ola.common.Server.EventType.UNIVERSE_EVENT,
                      this._updateFromData,
                      false, this);
-  goog.events.listen(ola_server, ola.Server.EventType.UIDS_EVENT,
+  goog.events.listen(ola_server, ola.common.Server.EventType.UIDS_EVENT,
                      this._updateUidList,
                      false, this);
 
@@ -98,7 +96,7 @@ ola.UniverseFrame = function(element_id, ola_ui) {
       goog.Timer.TICK,
       function() {
         if (this.current_universe != undefined) {
-          ola.Server.getInstance().FetchUids(this.current_universe);
+          ola.common.Server.getInstance().FetchUids(this.current_universe);
         }
       },
       false,
@@ -258,7 +256,7 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
     return;
   }
 
-  var server = ola.Server.getInstance();
+  var server = ola.common.Server.getInstance();
   this.uid_timer.stop();
   this.dmx_console.stopTimer();
 
@@ -411,7 +409,7 @@ ola.UniverseFrame.prototype._saveButtonClicked = function(remove_confirmed) {
     return;
   }
 
-  var server = ola.Server.getInstance();
+  var server = ola.common.Server.getInstance();
   var frame = this;
   server.modifyUniverse(
       this.current_universe,
@@ -466,7 +464,7 @@ ola.UniverseFrame.prototype._saveCompleted = function(e) {
  * @private
  */
 ola.UniverseFrame.prototype._discoveryButtonClicked = function(e) {
-  var server = ola.Server.getInstance();
+  var server = ola.common.Server.getInstance();
   var frame = this;
   server.runRDMDiscovery(
       this.current_universe,
@@ -502,5 +500,5 @@ ola.UniverseFrame.prototype._discoveryComplete = function(e) {
  */
 ola.UniverseFrame.prototype._consoleChanged = function(e) {
   var data = this.dmx_console.getData();
-  ola.Server.getInstance().setChannelValues(this.current_universe, data);
+  ola.common.Server.getInstance().setChannelValues(this.current_universe, data);
 };

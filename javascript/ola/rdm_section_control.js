@@ -24,8 +24,6 @@ goog.provide('ola.RdmSectionItem');
 goog.provide('ola.RdmSectionControl');
 goog.provide('ola.RdmSectionControlFactory');
 
-var ola = ola || {};
-
 
 /**
  * An object which represents a section in a list.

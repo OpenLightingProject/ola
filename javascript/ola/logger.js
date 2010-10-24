@@ -29,7 +29,6 @@ goog.require('goog.ui.Popup');
 
 goog.provide('ola.LoggerWindow');
 
-var ola = ola || {};
 /** The logger instance */
 ola.logger = goog.debug.Logger.getLogger('ola');
 

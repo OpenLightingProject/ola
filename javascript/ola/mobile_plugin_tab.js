@@ -21,8 +21,8 @@ goog.require('goog.events');
 goog.require('goog.ui.Container');
 
 goog.require('ola.BaseFrame');
-goog.require('ola.Server');
-goog.require('ola.Server.EventType');
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
 goog.require('ola.SortedList');
 goog.require('ola.PluginItem');
 goog.require('ola.PluginControlFactory');
@@ -43,14 +43,14 @@ ola.mobile.PluginTab = function() {
 
   this.plugin_list = undefined;
 
-  this.ola_server = ola.Server.getInstance();
+  this.ola_server = ola.common.Server.getInstance();
   goog.events.listen(this.ola_server,
-                     ola.Server.EventType.PLUGIN_LIST_EVENT,
+                     ola.common.Server.EventType.PLUGIN_LIST_EVENT,
                      this._updatePluginList,
                      false, this);
 
   goog.events.listen(this.ola_server,
-                     ola.Server.EventType.PLUGIN_EVENT,
+                     ola.common.Server.EventType.PLUGIN_EVENT,
                      this._updatePluginInfo,
                      false, this);
 };

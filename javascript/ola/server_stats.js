@@ -20,10 +20,10 @@
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.ui.Component');
-goog.require('ola.Server');
-goog.require('ola.Server.EventType');
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
 
-goog.provide('ola.ServerStats');
+goog.provide('ola.common.ServerStats');
 
 
 /**
@@ -31,10 +31,10 @@ goog.provide('ola.ServerStats');
  * @param {string} element_id the id of the div to use for the home frame.
  * @constructor
  */
-ola.ServerStats = function(element_id) {
-  var ola_server = ola.Server.getInstance();
+ola.common.ServerStats = function(element_id) {
+  var ola_server = ola.common.Server.getInstance();
 
-  goog.events.listen(ola_server, ola.Server.EventType.SERVER_INFO_EVENT,
+  goog.events.listen(ola_server, ola.common.Server.EventType.SERVER_INFO_EVENT,
                      this._updateServerInfo,
                      false, this);
 
@@ -46,7 +46,7 @@ ola.ServerStats = function(element_id) {
 /**
  * Update the home frame with new server data
  */
-ola.ServerStats.prototype._updateServerInfo = function(e) {
+ola.common.ServerStats.prototype._updateServerInfo = function(e) {
   goog.dom.$('server_hostname').innerHTML = e.server_info['hostname'];
   goog.dom.$('server_ip').innerHTML = e.server_info['ip'];
   goog.dom.$('server_broadcast').innerHTML = e.server_info['broadcast'];

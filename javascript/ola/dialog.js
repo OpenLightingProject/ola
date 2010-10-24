@@ -21,7 +21,6 @@ goog.require('goog.ui.Dialog');
 
 goog.provide('ola.Dialog');
 
-var ola = ola || {};
 
 /**
  * The OLA Dialog class

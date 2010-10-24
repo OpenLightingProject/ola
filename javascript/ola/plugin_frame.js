@@ -20,12 +20,10 @@
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('ola.BaseFrame');
-goog.require('ola.Server');
-goog.require('ola.Server.EventType');
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
 
 goog.provide('ola.PluginFrame');
-
-var ola = ola || {};
 
 
 /**
@@ -36,8 +34,8 @@ var ola = ola || {};
 ola.PluginFrame = function(element_id) {
   ola.BaseFrame.call(this, element_id);
   goog.events.listen(
-      ola.Server.getInstance(),
-      ola.Server.EventType.PLUGIN_EVENT,
+      ola.common.Server.getInstance(),
+      ola.common.Server.EventType.PLUGIN_EVENT,
       this._UpdateFromData,
       false,
       this);

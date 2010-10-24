@@ -21,10 +21,8 @@ goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.net.XhrIoPool');
 
-goog.provide('ola.Server');
-goog.provide('ola.Server.EventType');
-
-var ola = ola || {};
+goog.provide('ola.common.Server');
+goog.provide('ola.common.Server.EventType');
 
 
 /**
@@ -32,18 +30,18 @@ var ola = ola || {};
  * and fires events when the state changes.
  * @constructor
  */
-ola.Server = function() {
+ola.common.Server = function() {
   goog.events.EventTarget.call(this);
   this.pool = new goog.net.XhrIoPool({}, 1);
   this.universes = {};
 };
-goog.inherits(ola.Server, goog.events.EventTarget);
+goog.inherits(ola.common.Server, goog.events.EventTarget);
 
-// This is a singleton, call ola.Server.getInstance() to access it.
-goog.addSingletonGetter(ola.Server);
+// This is a singleton, call ola.common.Server.getInstance() to access it.
+goog.addSingletonGetter(ola.common.Server);
 
 
-ola.Server.EventType = {
+ola.common.Server.EventType = {
   PLUGIN_EVENT: 'plugin_change',
   PLUGIN_LIST_EVENT: 'plugin_list_change',
   SERVER_INFO_EVENT: 'server_info_change',
@@ -52,32 +50,32 @@ ola.Server.EventType = {
   UNIVERSE_LIST_EVENT: 'universe_list_change'
 };
 
-ola.Server.SERVER_INFO_URL = '/json/server_stats';
-ola.Server.PLUGIN_INFO_URL = '/json/plugin_info';
-ola.Server.UNIVERSE_INFO_URL = '/json/universe_info';
-ola.Server.PLUGIN_UNIVERSE_LIST_URL = '/json/universe_plugin_list';
-ola.Server.RELOAD_PLUGINS_URL = '/reload';
-ola.Server.STOP_SERVER_URL = '/quit';
-ola.Server.AVAILBLE_PORTS_URL = '/json/get_ports';
-ola.Server.UIDS_URL = '/json/rdm/uids';
-ola.Server.RDM_DISCOVERY_URL = '/rdm/run_discovery';
-ola.Server.RDM_SECTIONS_URL = '/json/rdm/supported_sections';
-ola.Server.RDM_GET_SECTION_INFO_URL = '/json/rdm/section_info';
-ola.Server.RDM_SET_SECTION_INFO_URL = '/json/rdm/set_section_info';
-ola.Server.NEW_UNIVERSE_URL = '/new_universe';
-ola.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
-ola.Server.SET_DMX_URL = '/set_dmx';
+ola.common.Server.SERVER_INFO_URL = '/json/server_stats';
+ola.common.Server.PLUGIN_INFO_URL = '/json/plugin_info';
+ola.common.Server.UNIVERSE_INFO_URL = '/json/universe_info';
+ola.common.Server.PLUGIN_UNIVERSE_LIST_URL = '/json/universe_plugin_list';
+ola.common.Server.RELOAD_PLUGINS_URL = '/reload';
+ola.common.Server.STOP_SERVER_URL = '/quit';
+ola.common.Server.AVAILBLE_PORTS_URL = '/json/get_ports';
+ola.common.Server.UIDS_URL = '/json/rdm/uids';
+ola.common.Server.RDM_DISCOVERY_URL = '/rdm/run_discovery';
+ola.common.Server.RDM_SECTIONS_URL = '/json/rdm/supported_sections';
+ola.common.Server.RDM_GET_SECTION_INFO_URL = '/json/rdm/section_info';
+ola.common.Server.RDM_SET_SECTION_INFO_URL = '/json/rdm/set_section_info';
+ola.common.Server.NEW_UNIVERSE_URL = '/new_universe';
+ola.common.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
+ola.common.Server.SET_DMX_URL = '/set_dmx';
 
 
 /**
  * This event is fired when the server info changes
  * @constructor
  */
-ola.ServerInfoChangeEvent = function(server_info) {
-  goog.events.Event.call(this, ola.Server.EventType.SERVER_INFO_EVENT);
+ola.common.ServerInfoChangeEvent = function(server_info) {
+  goog.events.Event.call(this, ola.common.Server.EventType.SERVER_INFO_EVENT);
   this.server_info = server_info;
 };
-goog.inherits(ola.ServerInfoChangeEvent, goog.events.Event);
+goog.inherits(ola.common.ServerInfoChangeEvent, goog.events.Event);
 
 
 /**
@@ -85,7 +83,7 @@ goog.inherits(ola.ServerInfoChangeEvent, goog.events.Event);
  * @constructor
  */
 ola.PluginListChangeEvent = function(new_list) {
-  goog.events.Event.call(this, ola.Server.EventType.PLUGIN_LIST_EVENT);
+  goog.events.Event.call(this, ola.common.Server.EventType.PLUGIN_LIST_EVENT);
   this.plugins = new_list;
 };
 goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
@@ -96,7 +94,7 @@ goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
  * @constructor
  */
 ola.UniverseListChangeEvent = function(new_list) {
-  goog.events.Event.call(this, ola.Server.EventType.UNIVERSE_LIST_EVENT);
+  goog.events.Event.call(this, ola.common.Server.EventType.UNIVERSE_LIST_EVENT);
   this.universes = new_list;
 };
 goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
@@ -107,7 +105,7 @@ goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
  * @constructor
  */
 ola.PluginChangeEvent = function(plugin) {
-  goog.events.Event.call(this, ola.Server.EventType.PLUGIN_EVENT);
+  goog.events.Event.call(this, ola.common.Server.EventType.PLUGIN_EVENT);
   this.plugin = plugin;
 };
 goog.inherits(ola.PluginChangeEvent, goog.events.Event);
@@ -118,7 +116,7 @@ goog.inherits(ola.PluginChangeEvent, goog.events.Event);
  * @constructor
  */
 ola.UniverseChangeEvent = function(universe) {
-  goog.events.Event.call(this, ola.Server.EventType.UNIVERSE_EVENT);
+  goog.events.Event.call(this, ola.common.Server.EventType.UNIVERSE_EVENT);
   this.universe = universe;
 };
 goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
@@ -129,7 +127,7 @@ goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
  * @constructor
  */
 ola.UidsEvent = function(universe_id, uids) {
-  goog.events.Event.call(this, ola.Server.EventType.UIDS_EVENT);
+  goog.events.Event.call(this, ola.common.Server.EventType.UIDS_EVENT);
   this.universe_id = universe_id;
   this.uids = uids;
 };
@@ -139,7 +137,7 @@ goog.inherits(ola.UidsEvent, goog.events.Event);
 /**
  * Check if this universe is active
  */
-ola.Server.prototype.CheckIfUniverseExists = function(universe_id) {
+ola.common.Server.prototype.CheckIfUniverseExists = function(universe_id) {
   return this.universes[universe_id] != undefined;
 };
 
@@ -147,13 +145,13 @@ ola.Server.prototype.CheckIfUniverseExists = function(universe_id) {
 /**
  * Update the server info data
  */
-ola.Server.prototype.UpdateServerInfo = function() {
+ola.common.Server.prototype.UpdateServerInfo = function() {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
-    this.dispatchEvent(new ola.ServerInfoChangeEvent(obj));
+    this.dispatchEvent(new ola.common.ServerInfoChangeEvent(obj));
     this._cleanupRequest(e.target);
   }
-  this._initiateRequest(ola.Server.SERVER_INFO_URL, on_complete);
+  this._initiateRequest(ola.common.Server.SERVER_INFO_URL, on_complete);
 };
 
 
@@ -162,12 +160,12 @@ ola.Server.prototype.UpdateServerInfo = function() {
  * @param {function(Object)} callback the function to call when the request
  * completes.
  */
-ola.Server.prototype.reloadPlugins = function(callback) {
+ola.common.Server.prototype.reloadPlugins = function(callback) {
   var on_complete = function(e) {
     callback(e);
     this._cleanupRequest(e.target);
   }
-  this._initiateRequest(ola.Server.RELOAD_PLUGINS_URL, on_complete);
+  this._initiateRequest(ola.common.Server.RELOAD_PLUGINS_URL, on_complete);
 };
 
 
@@ -176,19 +174,19 @@ ola.Server.prototype.reloadPlugins = function(callback) {
  * @param {function(Object)} callback the function to call when the request
  * completes.
  */
-ola.Server.prototype.stopServer = function (callback) {
+ola.common.Server.prototype.stopServer = function (callback) {
   var on_complete = function(e) {
     callback(e);
     this._cleanupRequest(e.target);
   }
-  this._initiateRequest(ola.Server.STOP_SERVER_URL, on_complete);
+  this._initiateRequest(ola.common.Server.STOP_SERVER_URL, on_complete);
 };
 
 
 /**
  * Fetch the list of plugins & universes active on the server
  */
-ola.Server.prototype.FetchUniversePluginList = function() {
+ola.common.Server.prototype.FetchUniversePluginList = function() {
   var on_complete = function(e) {
     if (e.target.getStatus() != 200) {
       ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
@@ -207,20 +205,20 @@ ola.Server.prototype.FetchUniversePluginList = function() {
     this.dispatchEvent(new ola.UniverseListChangeEvent(obj['universes']));
     this._cleanupRequest(e.target);
   }
-  this._initiateRequest(ola.Server.PLUGIN_UNIVERSE_LIST_URL, on_complete);
+  this._initiateRequest(ola.common.Server.PLUGIN_UNIVERSE_LIST_URL, on_complete);
 };
 
 
 /**
  * Fetch the info for a plugin
  */
-ola.Server.prototype.FetchPluginInfo = function(plugin_id) {
+ola.common.Server.prototype.FetchPluginInfo = function(plugin_id) {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.PluginChangeEvent(obj));
     this._cleanupRequest(e.target);
   }
-  var url = ola.Server.PLUGIN_INFO_URL + '?id=' + plugin_id;
+  var url = ola.common.Server.PLUGIN_INFO_URL + '?id=' + plugin_id;
   this._initiateRequest(url, on_complete);
 };
 
@@ -228,13 +226,13 @@ ola.Server.prototype.FetchPluginInfo = function(plugin_id) {
 /**
  * Fetch the info for a universe
  */
-ola.Server.prototype.FetchUniverseInfo = function(universe_id) {
+ola.common.Server.prototype.FetchUniverseInfo = function(universe_id) {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.UniverseChangeEvent(obj));
     this._cleanupRequest(e.target);
   }
-  var url = ola.Server.UNIVERSE_INFO_URL + '?id=' + universe_id;
+  var url = ola.common.Server.UNIVERSE_INFO_URL + '?id=' + universe_id;
   this._initiateRequest(url, on_complete);
 };
 
@@ -243,12 +241,12 @@ ola.Server.prototype.FetchUniverseInfo = function(universe_id) {
  * Fetch the available pors
  * @param {number=} opt_universe an optional universe id
  */
-ola.Server.prototype.fetchAvailablePorts = function(opt_universe, callback) {
+ola.common.Server.prototype.fetchAvailablePorts = function(opt_universe, callback) {
   var on_complete = function(e) {
     callback(e);
     this._cleanupRequest(e.target);
   }
-  var url = ola.Server.AVAILBLE_PORTS_URL;
+  var url = ola.common.Server.AVAILBLE_PORTS_URL;
   if (opt_universe != undefined) {
     url += '?id=' + opt_universe;
   }
@@ -259,7 +257,7 @@ ola.Server.prototype.fetchAvailablePorts = function(opt_universe, callback) {
 /**
  * Create a new universe
  */
-ola.Server.prototype.createUniverse = function(universe_id,
+ola.common.Server.prototype.createUniverse = function(universe_id,
                                                name,
                                                port_ids,
                                                callback) {
@@ -270,7 +268,7 @@ ola.Server.prototype.createUniverse = function(universe_id,
   var post_data = 'id=' + universe_id + (
       name ? '&name=' + encodeURI(name) : '') + '&add_ports=' +
       port_ids.join(',');
-  this._initiateRequest(ola.Server.NEW_UNIVERSE_URL, on_complete, 'POST',
+  this._initiateRequest(ola.common.Server.NEW_UNIVERSE_URL, on_complete, 'POST',
                         post_data);
 };
 
@@ -283,12 +281,12 @@ ola.Server.prototype.createUniverse = function(universe_id,
  * @param {function(Object)} callback the function to call when the discovery
  *   request is ack'ed.
  */
-ola.Server.prototype.runRDMDiscovery = function(universe_id, callback) {
+ola.common.Server.prototype.runRDMDiscovery = function(universe_id, callback) {
   var on_complete = function(e) {
     callback(e);
     this._cleanupRequest(e.target);
   }
-  var url = ola.Server.RDM_DISCOVERY_URL + '?id=' + universe_id;
+  var url = ola.common.Server.RDM_DISCOVERY_URL + '?id=' + universe_id;
   this._initiateRequest(url, on_complete);
 };
 
@@ -300,14 +298,14 @@ ola.Server.prototype.runRDMDiscovery = function(universe_id, callback) {
  * @param {function(Object)} callback the function to call when the discovery
  *   request is ack'ed.
  */
-ola.Server.prototype.rdmGetSupportedSections = function(universe_id,
+ola.common.Server.prototype.rdmGetSupportedSections = function(universe_id,
                                                         uid,
                                                         callback) {
   var on_complete = function(e) {
     callback(e);
     this._cleanupRequest(e.target);
   }
-  var url = (ola.Server.RDM_SECTIONS_URL + '?id=' + universe_id + '&uid=' +
+  var url = (ola.common.Server.RDM_SECTIONS_URL + '?id=' + universe_id + '&uid=' +
       uid);
   this._initiateRequest(url, on_complete);
 };
@@ -322,7 +320,7 @@ ola.Server.prototype.rdmGetSupportedSections = function(universe_id,
  * @param {function(Object)} callback the function to call when the discovery
  *   request is ack'ed.
  */
-ola.Server.prototype.rdmGetSectionInfo = function(universe_id,
+ola.common.Server.prototype.rdmGetSectionInfo = function(universe_id,
                                                   uid,
                                                   section_name,
                                                   hint,
@@ -331,7 +329,7 @@ ola.Server.prototype.rdmGetSectionInfo = function(universe_id,
     callback(e);
     this._cleanupRequest(e.target);
   }
-  var url = (ola.Server.RDM_GET_SECTION_INFO_URL + '?id=' + universe_id +
+  var url = (ola.common.Server.RDM_GET_SECTION_INFO_URL + '?id=' + universe_id +
       '&uid=' + uid + '&section=' + section_name + '&hint=' + hint);
   this._initiateRequest(url, on_complete);
 };
@@ -346,7 +344,7 @@ ola.Server.prototype.rdmGetSectionInfo = function(universe_id,
  * @param {function(Object)} callback the function to call when the discovery
  *   request is ack'ed.
  */
-ola.Server.prototype.rdmSetSectionInfo = function(universe_id,
+ola.common.Server.prototype.rdmSetSectionInfo = function(universe_id,
                                                   uid,
                                                   section_name,
                                                   hint,
@@ -356,7 +354,7 @@ ola.Server.prototype.rdmSetSectionInfo = function(universe_id,
     callback(e);
     this._cleanupRequest(e.target);
   }
-  var url = (ola.Server.RDM_SET_SECTION_INFO_URL + '?id=' + universe_id +
+  var url = (ola.common.Server.RDM_SET_SECTION_INFO_URL + '?id=' + universe_id +
       '&uid=' + uid + '&section=' + section_name + '&hint=' + hint + '&' +
       data);
   this._initiateRequest(url, on_complete);
@@ -366,7 +364,7 @@ ola.Server.prototype.rdmSetSectionInfo = function(universe_id,
 /**
  * Fetch the uids for a universe
  */
-ola.Server.prototype.FetchUids = function(universe_id) {
+ola.common.Server.prototype.FetchUids = function(universe_id) {
   var on_complete = function(e) {
     if (e.target.getStatus() != 200) {
       ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
@@ -378,7 +376,7 @@ ola.Server.prototype.FetchUids = function(universe_id) {
     this.dispatchEvent(new ola.UidsEvent(obj['universe'], obj['uids']));
     this._cleanupRequest(e.target);
   }
-  var url = ola.Server.UIDS_URL + '?id=' + universe_id;
+  var url = ola.common.Server.UIDS_URL + '?id=' + universe_id;
   this._initiateRequest(url, on_complete);
 };
 
@@ -394,7 +392,7 @@ ola.Server.prototype.FetchUids = function(universe_id) {
  * @param {Array.<string>} ports_to_add list of port ids to add.
  * @param {function()} callback the callback to invoke when complete.
  */
-ola.Server.prototype.modifyUniverse = function(universe_id,
+ola.common.Server.prototype.modifyUniverse = function(universe_id,
                                                universe_name,
                                                merge_mode,
                                                port_priorities,
@@ -421,7 +419,7 @@ ola.Server.prototype.modifyUniverse = function(universe_id,
     modified_port_ids.push(priority_setting.id);
   }
   post_data += ('&modify_ports=' + modified_port_ids.join(','));
-  var url = ola.Server.MODIFY_UNIVERSE_URL;
+  var url = ola.common.Server.MODIFY_UNIVERSE_URL;
   this._initiateRequest(url, on_complete, 'POST', post_data);
 };
 
@@ -431,12 +429,12 @@ ola.Server.prototype.modifyUniverse = function(universe_id,
  * @param {number} universe_id the id of the universe to modify.
  * @param {Array.<number>} data the channel values.
  */
-ola.Server.prototype.setChannelValues = function(universe_id, data) {
+ola.common.Server.prototype.setChannelValues = function(universe_id, data) {
   var on_complete = function(e) {
     this._cleanupRequest(e.target);
   }
   var post_data = 'u=' + universe_id + '&d=' + data.join(',');
-  var url = ola.Server.SET_DMX_URL;
+  var url = ola.common.Server.SET_DMX_URL;
   this._initiateRequest(url, on_complete, 'POST', post_data);
 };
 
@@ -449,7 +447,7 @@ ola.Server.prototype.setChannelValues = function(universe_id, data) {
  * @param opt_content {string=} The post form data.
  * @private
  */
-ola.Server.prototype._initiateRequest = function(url,
+ola.common.Server.prototype._initiateRequest = function(url,
                                                  callback,
                                                  opt_method,
                                                  opt_content) {
@@ -473,7 +471,7 @@ ola.Server.prototype._initiateRequest = function(url,
  * to the pool.
  * @private
  */
-ola.Server.prototype._cleanupRequest = function(xhr) {
+ola.common.Server.prototype._cleanupRequest = function(xhr) {
   goog.events.removeAll(xhr);
   this.pool.releaseObject(xhr);
 };

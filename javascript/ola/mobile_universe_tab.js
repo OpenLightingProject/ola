@@ -24,8 +24,8 @@ goog.require('goog.ui.Container');
 //goog.require('goog.ui.CustomButton');
 
 goog.require('ola.BaseFrame');
-goog.require('ola.Server');
-goog.require('ola.Server.EventType');
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
 goog.require('ola.SortedList');
 goog.require('ola.UniverseControl');
 goog.require('ola.UniverseItem');
@@ -60,14 +60,14 @@ ola.mobile.UniverseTab = function() {
   this.active_section = undefined;
   this.items = undefined;
 
-  this.ola_server = ola.Server.getInstance();
+  this.ola_server = ola.common.Server.getInstance();
   goog.events.listen(this.ola_server,
-                     ola.Server.EventType.UNIVERSE_LIST_EVENT,
+                     ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
                      this._updateUniverseList,
                      false, this);
 
   goog.events.listen(this.ola_server,
-                     ola.Server.EventType.UIDS_EVENT,
+                     ola.common.Server.EventType.UIDS_EVENT,
                      this._updateUidList,
                      false, this);
 };

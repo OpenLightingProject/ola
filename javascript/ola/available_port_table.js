@@ -22,7 +22,7 @@ goog.require('goog.events');
 goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.Component');
 goog.require('ola.LoggerWindow');
-goog.require('ola.Server');
+goog.require('ola.common.Server');
 
 goog.provide('ola.AvailablePort');
 goog.provide('ola.AvailablePortTable');
@@ -162,7 +162,7 @@ ola.AvailablePortTable.prototype.removeAllRows = function() {
  */
 ola.AvailablePortTable.prototype.update = function(universe_id) {
   var table = this;
-  ola.Server.getInstance().fetchAvailablePorts(
+  ola.common.Server.getInstance().fetchAvailablePorts(
       universe_id,
       function(e) { table._updateCompleted(e); });
 };

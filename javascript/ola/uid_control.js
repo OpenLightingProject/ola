@@ -24,8 +24,6 @@ goog.provide('ola.UidItem');
 goog.provide('ola.UidControl');
 goog.provide('ola.UidControlFactory');
 
-var ola = ola || {};
-
 
 /**
  * An object which represents a UID in a list.

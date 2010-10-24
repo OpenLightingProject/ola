@@ -9,9 +9,9 @@ goog.require('goog.ui.Select');
 
 goog.require('ola.Dialog');
 goog.require('ola.GenericControl');
-goog.require('ola.Server');
-goog.require('ola.Server.EventType');
-goog.require('ola.ServerStats');
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
+goog.require('ola.common.ServerStats');
 goog.require('ola.mobile.UniverseTab');
 goog.require('ola.mobile.PluginTab');
 
@@ -25,7 +25,7 @@ var ola = ola || {};
  * @constructor
  */
 ola.MobileUI = function() {
-  this.ola_server = ola.Server.getInstance();
+  this.ola_server = ola.common.Server.getInstance();
 
   var foo = new goog.ui.Checkbox();
 
@@ -41,11 +41,11 @@ ola.MobileUI = function() {
   goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
                      this._updateSelectedTab, false, this);
 
-  goog.events.listen(this.ola_server, ola.Server.EventType.SERVER_INFO_EVENT,
+  goog.events.listen(this.ola_server, ola.common.Server.EventType.SERVER_INFO_EVENT,
                      this._updateServerInfo,
                      false, this);
 
-  this.server_stats = new ola.ServerStats();
+  this.server_stats = new ola.common.ServerStats();
   this.universe_tab = new ola.mobile.UniverseTab();
   this.plugin_tab = new ola.mobile.PluginTab();
 };
