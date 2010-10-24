@@ -20,20 +20,19 @@
 goog.require('goog.events');
 goog.require('goog.ui.Button');
 goog.require('goog.ui.Container');
-//goog.require('goog.ui.Select');
-//goog.require('goog.ui.CustomButton');
 
 goog.require('ola.BaseFrame');
+goog.require('ola.UniverseControl');
+goog.require('ola.UniverseItem');
+goog.require('ola.common.RdmSectionControl');
+goog.require('ola.common.RdmSectionControlFactory');
+goog.require('ola.common.RdmSectionItem');
+goog.require('ola.common.SectionRenderer');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.SortedList');
-goog.require('ola.UniverseControl');
-goog.require('ola.UniverseItem');
-goog.require('ola.common.UidItem');
 goog.require('ola.common.UidControlFactory');
-goog.require('ola.common.RdmSectionItem');
-goog.require('ola.common.RdmSectionControl');
-goog.require('ola.common.RdmSectionControlFactory');
+goog.require('ola.common.UidItem');
 
 goog.provide('ola.mobile.UniverseTab');
 
@@ -279,7 +278,7 @@ ola.mobile.UniverseTab.prototype._updateSection = function(e) {
   var editable = false;
 
   for (var i = 0; i < count; ++i) {
-    this._buildItem(table, items[i]);
+    ola.common.SectionRenderer.RenderItem(table, items[i]);
     // if any field has an id and doesn't have it's own button we display the
     // save button.
     editable |= (items[i]['id'] && !items[i]['button']);
@@ -317,76 +316,6 @@ ola.mobile.UniverseTab.prototype._updateSection = function(e) {
   }
 
   this.items = section_response['items'];
-};
-
-
-/**
- * Generate the html for an item
- * @param {Element} table the table object to add the row to.
- * @param {Object} item_info the data for the item.
- * @private
- */
-ola.mobile.UniverseTab.prototype._buildItem = function(table, item_info) {
-  var type = item_info['type'];
-  var value = item_info['value'];
-  var id = item_info['id'];
-
-  if (type == 'hidden') {
-    // we don't need a new row here
-    var input = goog.dom.createElement('input');
-    input.id = id;
-    input.type = 'hidden';
-    input.value = value;
-    goog.dom.appendChild(table, input);
-    return;
-  }
-
-  // everything else needs a row
-  var row = goog.dom.createElement('tr');
-  goog.dom.appendChild(table, row);
-  var name_td = goog.dom.createElement('td');
-  name_td.innerHTML = item_info['description'];
-  goog.dom.appendChild(row, name_td);
-  var td = goog.dom.createElement('td');
-  goog.dom.appendChild(row, td);
-
-  if (id) {
-    // id implies this field is editable
-    if (type == 'string' || type == 'uint' || type == 'hidden') {
-      var input = goog.dom.createElement('input');
-      input.value = value;
-      input.name = id;
-      if (type == 'hidden') {
-        input.type = 'hidden';
-      }
-      goog.dom.appendChild(td, input);
-
-      if (item_info['button']) {
-        // this item get's it's own button
-        var button = new goog.ui.CustomButton(item_info['button']);
-        button.render(td);
-      }
-    } else if (type == 'bool') {
-      var check = new goog.ui.Checkbox();
-      check.setChecked(value == 1);
-      check.render(td);
-      item_info['object'] = check;
-    } else {
-      // select box
-      var select = new goog.ui.Select();
-      var count = value.length;
-      for (var i = 0; i < count; ++i) {
-        select.addItem(new goog.ui.Option(value[i]['label']));
-      }
-      if (item_info['selected_offset'] != undefined) {
-        select.setSelectedIndex(item_info['selected_offset']);
-      }
-      select.render(td);
-      item_info['object'] = select;
-    }
-  } else {
-    td.innerHTML = value;
-  }
 };
 
 
