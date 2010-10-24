@@ -852,7 +852,7 @@ string StatusTypeToString(uint8_t status_type) {
 string UnitToString(uint8_t unit) {
   switch (unit) {
     case UNITS_NONE:
-      return "none";
+      return "";
     case UNITS_CENTIGRADE:
       return "degrees C";
     case UNITS_VOLTS_DC:
