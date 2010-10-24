@@ -427,14 +427,15 @@ RDMResponse *NackWithReason(const RDMRequest *request,
  */
 RDMResponse *GetResponseWithData(const RDMRequest *request,
                                  const uint8_t *data,
-                                 unsigned int length) {
+                                 unsigned int length,
+                                 uint8_t outstanding_messages) {
   if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
     return new RDMGetResponse(
       request->DestinationUID(),
       request->SourceUID(),
       request->TransactionNumber(),
       ACK,
-      0,
+      outstanding_messages,
       request->SubDevice(),
       request->ParamId(),
       data,
@@ -445,7 +446,7 @@ RDMResponse *GetResponseWithData(const RDMRequest *request,
       request->SourceUID(),
       request->TransactionNumber(),
       ACK,
-      0,
+      outstanding_messages,
       request->SubDevice(),
       request->ParamId(),
       data,

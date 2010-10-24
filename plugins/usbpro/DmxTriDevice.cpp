@@ -523,32 +523,12 @@ void DmxTriDevice::HandleRemoteRDMResponse(uint8_t return_code,
   const RDMRequest *request = m_pending_requests.front();
   if (return_code == EC_NO_ERROR || return_code == EC_RESPONSE_WAIT ||
       return_code == EC_RESPONSE_MORE) {
-    ola::rdm::RDMResponse *response;
-    if (request->CommandClass() == RDMCommand::GET_COMMAND) {
-      response = new ola::rdm::RDMGetResponse(
-          request->DestinationUID(),
-          request->SourceUID(),
-          request->TransactionNumber(),
-          ola::rdm::ACK,
-          // this is a hack, there is no way to expose # of queues messages
-          return_code == EC_RESPONSE_WAIT ? 1 : 0,
-          request->SubDevice(),
-          request->ParamId(),
-          data,
-          length);
-    } else {
-      response = new ola::rdm::RDMSetResponse(
-          request->DestinationUID(),
-          request->SourceUID(),
-          request->TransactionNumber(),
-          ola::rdm::ACK,
-          // this is a hack, there is no way to expose # of queues messages
-          return_code == EC_RESPONSE_WAIT ? 1 : 0,
-          request->SubDevice(),
-          request->ParamId(),
-          data,
-          length);
-    }
+    ola::rdm::RDMResponse *response = ola::rdm::GetResponseWithData(
+        request,
+        data,
+        length,
+        // this is a hack, there is no way to expose # of queues messages
+        return_code == EC_RESPONSE_WAIT ? 1 : 0);
 
     if (m_rdm_response) {
       // if this is part of an overflowed response we need to combine it
@@ -571,10 +551,21 @@ void DmxTriDevice::HandleRemoteRDMResponse(uint8_t return_code,
         m_rdm_response = NULL;
       }
     }
+  } else if (return_code == EC_UNKNOWN_PID) {
+    if (m_rdm_response) {
+      delete m_rdm_response;
+      m_rdm_response = NULL;
+    }
+
+    ola::rdm::RDMResponse *response =
+      ola::rdm::NackWithReason(request, ola::rdm::NR_UNKNOWN_PID);
+
+    GetOutputPort(0)->HandleRDMResponse(response);
   } else {
     // TODO(simonn): Implement the correct response here when we error out
-    OLA_WARN << "Response was returned with 0x" << std::hex <<
+    OLA_WARN << "Response was returned with 0xxxxx" << std::hex <<
       static_cast<int>(return_code);
+
     if (m_rdm_response) {
       delete m_rdm_response;
       m_rdm_response = NULL;

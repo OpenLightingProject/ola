@@ -49,6 +49,7 @@ ResponseStatus::ResponseStatus(const RDMAPIImplResponseStatus &status,
                                const string &data):
     m_response_type(VALID_RESPONSE),
     m_nack_reason(0),
+    m_message_count(status.message_count),
     m_error(status.error) {
   if (!m_error.empty()) {
     m_response_type = TRANSPORT_ERROR;

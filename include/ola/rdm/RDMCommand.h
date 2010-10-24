@@ -280,7 +280,8 @@ RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason);
 RDMResponse *GetResponseWithData(const RDMRequest *request,
                                  const uint8_t *data,
-                                 unsigned int length);
+                                 unsigned int length,
+                                 uint8_t outstanding_messages = 0);
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_

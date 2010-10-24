@@ -18,8 +18,9 @@
  */
 
 goog.require('goog.events');
-goog.require('goog.ui.Container');
 goog.require('goog.ui.Button');
+goog.require('goog.ui.Container');
+//goog.require('goog.ui.Select');
 //goog.require('goog.ui.CustomButton');
 
 goog.require('ola.BaseFrame');

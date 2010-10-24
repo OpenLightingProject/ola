@@ -1,11 +1,11 @@
 goog.require('goog.dom');
-goog.require('goog.dom.ViewportSizeMonitor');
 goog.require('goog.events');
-goog.require('goog.math');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Container');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.TabPane');
+goog.require('goog.ui.Checkbox');
+goog.require('goog.ui.Select');
 
 goog.require('ola.Dialog');
 goog.require('ola.GenericControl');
@@ -26,6 +26,8 @@ var ola = ola || {};
  */
 ola.MobileUI = function() {
   this.ola_server = ola.Server.getInstance();
+
+  var foo = new goog.ui.Checkbox();
 
   // setup the tab pane
   this.tabPane = new goog.ui.TabPane(goog.dom.$('tab_pane'));

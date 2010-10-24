@@ -79,6 +79,9 @@ class ResponseStatus {
     // Provides an error string for the user
     const string& Error() const { return m_error; }
 
+    // the number of messages remaining
+    uint8_t MessageCount() const { return m_message_count; }
+
     // Used to change the response type to malformed, with an error string
     void MalformedResponse(const string &error) {
       m_response_type = MALFORMED_RESPONSE;
@@ -88,6 +91,7 @@ class ResponseStatus {
   private:
     response_type m_response_type;
     uint16_t m_nack_reason;
+    uint8_t m_message_count;
     string m_error;
 };
 
