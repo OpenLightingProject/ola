@@ -97,6 +97,7 @@ const char RDMHttpModule::PAN_TILT_SWAP_SECTION[] = "pan_tilt_swap";
 const char RDMHttpModule::PERSONALITY_SECTION[] = "personality";
 const char RDMHttpModule::POWER_CYCLES_SECTION[] = "power_cycles";
 const char RDMHttpModule::POWER_STATE_SECTION[] = "power_state";
+const char RDMHttpModule::PROXIED_DEVICES_SECTION[] = "proxied_devices";
 const char RDMHttpModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
 const char RDMHttpModule::SENSOR_SECTION[] = "sensor";
 const char RDMHttpModule::TILT_INVERT_SECTION[] = "tilt_invert";
@@ -284,7 +285,9 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
 
   string section_id = request->GetParameter(SECTION_KEY);
   string error;
-  if (section_id == DEVICE_INFO_SECTION) {
+  if (section_id == PROXIED_DEVICES_SECTION) {
+    error = GetProxiedDevices(response, universe_id, *uid);
+  } else if (section_id == DEVICE_INFO_SECTION) {
     error = GetDeviceInfo(request, response, universe_id, *uid);
   } else if (section_id == PRODUCT_DETAIL_SECTION) {
     error = GetProductIds(request, response, universe_id, *uid);
@@ -559,7 +562,6 @@ void RDMHttpModule::ResolveNextUID(unsigned int universe_id) {
                             universe_id,
                             uid_action_pair.first),
           &error);
-      OLA_DEBUG << "return code was " << sent_request;
       uid_state->pending_uids.pop();
     } else if (uid_action_pair.second == RESOLVE_DEVICE) {
       OLA_INFO << "sending device request for " << uid_action_pair.first;
@@ -573,7 +575,6 @@ void RDMHttpModule::ResolveNextUID(unsigned int universe_id) {
                             uid_action_pair.first),
           &error);
       uid_state->pending_uids.pop();
-      OLA_DEBUG << "return code was " << sent_request;
     } else {
       OLA_WARN << "Unknown UID resolve action " <<
         static_cast<int>(uid_action_pair.second);
@@ -753,6 +754,9 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
   vector<uint16_t>::const_iterator iter = pid_list.begin();
   for (; iter != pid_list.end(); ++iter) {
     switch (*iter) {
+      case ola::rdm::PID_PROXIED_DEVICES:
+        AddSection(&sections, PROXIED_DEVICES_SECTION, "Proxied Devices");
+        break;
       case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
         AddSection(&sections, PRODUCT_DETAIL_SECTION, "Product Details");
         break;
@@ -867,6 +871,73 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
   response->Append(str.str());
   response->Send();
   delete response;
+}
+
+
+
+/*
+ * Handle the request for the proxied devices
+ */
+string RDMHttpModule::GetProxiedDevices(HttpResponse *response,
+                                        unsigned int universe_id,
+                                        const UID &uid) {
+  string error;
+
+  m_rdm_api.GetProxiedDevices(
+    universe_id,
+    uid,
+    NewSingleCallback(this,
+                      &RDMHttpModule::ProxiedDevicesHandler,
+                      response,
+                      universe_id),
+    &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to a proxied devices call.
+ */
+void RDMHttpModule::ProxiedDevicesHandler(
+    HttpResponse *response,
+    unsigned int universe_id,
+    const ola::rdm::ResponseStatus &status,
+    const vector<UID> &uids) {
+  if (CheckForRDMError(response, status))
+    return;
+  JsonSection section;
+
+  uid_resolution_state *uid_state = GetUniverseUids(universe_id);
+  vector<UID>::const_iterator iter = uids.begin();
+  unsigned int i = 1;
+  for (; iter != uids.end(); ++iter, ++i) {
+    string uid = iter->ToString();
+
+    // attempt to add device & manufacturer names
+    if (uid_state) {
+      map<UID, resolved_uid>::iterator uid_iter =
+        uid_state->resolved_uids.find(*iter);
+
+      if (uid_iter != uid_state->resolved_uids.end()) {
+        string device = uid_iter->second.device;
+        string manufacturer = uid_iter->second.manufacturer;
+
+        if (!(device.empty() && manufacturer.empty())) {
+          stringstream str;
+          str << uid_iter->second.manufacturer;
+          if ((!device.empty()) && (!manufacturer.empty()))
+            str << ", ";
+          str << uid_iter->second.device;
+          str << " [";
+          str << iter->ToString();
+          str << "]";
+          uid = str.str();
+        }
+      }
+    }
+    section.AddItem(new StringItem("Device " + IntToString(i), uid));
+  }
+  RespondWithSection(response, section);
 }
 
 

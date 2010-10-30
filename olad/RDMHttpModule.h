@@ -154,6 +154,16 @@ class RDMHttpModule: public HttpModule {
         const ola::rdm::DeviceDescriptor &device);
 
     // section methods
+    string GetProxiedDevices(HttpResponse *response,
+                             unsigned int universe_id,
+                             const UID &uid);
+
+
+    void ProxiedDevicesHandler(HttpResponse *response,
+                               unsigned int universe_id,
+                               const ola::rdm::ResponseStatus &status,
+                               const vector<UID> &uids);
+
     string GetDeviceInfo(const HttpRequest *request,
                          HttpResponse *response,
                          unsigned int universe_id,
@@ -556,6 +566,7 @@ class RDMHttpModule: public HttpModule {
     static const char POWER_CYCLES_SECTION[];
     static const char POWER_STATE_SECTION[];
     static const char PRODUCT_DETAIL_SECTION[];
+    static const char PROXIED_DEVICES_SECTION[];
     static const char SENSOR_SECTION[];
     static const char TILT_INVERT_SECTION[];
 };
