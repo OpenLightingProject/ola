@@ -77,6 +77,7 @@ const char RDMHttpModule::RECORD_SENSOR_FIELD[] = "record";
 
 // section identifiers
 const char RDMHttpModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
+const char RDMHttpModule::COMMS_STATUS_SECTION[] = "comms_status";
 const char RDMHttpModule::CLOCK_SECTION[] = "clock";
 const char RDMHttpModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHttpModule::DEVICE_INFO_SECTION[] = "device_info";
@@ -287,6 +288,8 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
   string error;
   if (section_id == PROXIED_DEVICES_SECTION) {
     error = GetProxiedDevices(response, universe_id, *uid);
+  } else if (section_id == COMMS_STATUS_SECTION) {
+    error = GetCommStatus(response, universe_id, *uid);
   } else if (section_id == DEVICE_INFO_SECTION) {
     error = GetDeviceInfo(request, response, universe_id, *uid);
   } else if (section_id == PRODUCT_DETAIL_SECTION) {
@@ -363,6 +366,8 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
   string error;
   if (section_id == DEVICE_LABEL_SECTION) {
     error = SetDeviceLabel(request, response, universe_id, *uid);
+  } else if (section_id == COMMS_STATUS_SECTION) {
+    error = ClearCommsCounters(response, universe_id, *uid);
   } else if (section_id == FACTORY_DEFAULTS_SECTION) {
     error = SetFactoryDefault(response, universe_id, *uid);
   } else if (section_id == LANGUAGE_SECTION) {
@@ -757,6 +762,9 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
       case ola::rdm::PID_PROXIED_DEVICES:
         AddSection(&sections, PROXIED_DEVICES_SECTION, "Proxied Devices");
         break;
+      case ola::rdm::PID_COMMS_STATUS:
+        AddSection(&sections, COMMS_STATUS_SECTION, "Communication Status");
+        break;
       case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
         AddSection(&sections, PRODUCT_DETAIL_SECTION, "Product Details");
         break;
@@ -874,6 +882,62 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
 }
 
 
+/*
+ * Handle the request for the communication status.
+ */
+string RDMHttpModule::GetCommStatus(HttpResponse *response,
+                                    unsigned int universe_id,
+                                    const UID &uid) {
+  string error;
+  m_rdm_api.GetCommStatus(
+    universe_id,
+    uid,
+    NewSingleCallback(this,
+                      &RDMHttpModule::CommStatusHandler,
+                      response),
+    &error);
+  return error;
+}
+
+
+/**
+ * Handle the response to a communication status call
+ */
+void RDMHttpModule::CommStatusHandler(HttpResponse *response,
+                                      const ola::rdm::ResponseStatus &status,
+                                      uint16_t short_messages,
+                                      uint16_t length_mismatch,
+                                      uint16_t checksum_fail) {
+  if (CheckForRDMError(response, status))
+    return;
+  JsonSection section;
+
+  section.AddItem(new UIntItem("Short Messages", short_messages));
+  section.AddItem(new UIntItem("Length Mismatch", length_mismatch));
+  section.AddItem(new UIntItem("Checksum Failures", checksum_fail));
+  section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
+  section.SetSaveButton("Clear Counters");
+  RespondWithSection(response, section);
+}
+
+
+/**
+ * Clear the communication status counters
+ */
+string RDMHttpModule::ClearCommsCounters(HttpResponse *response,
+                                         unsigned int universe_id,
+                                         const UID &uid) {
+  string error;
+  m_rdm_api.ClearCommStatus(
+      universe_id,
+      uid,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
 
 /*
  * Handle the request for the proxied devices
@@ -882,7 +946,6 @@ string RDMHttpModule::GetProxiedDevices(HttpResponse *response,
                                         unsigned int universe_id,
                                         const UID &uid) {
   string error;
-
   m_rdm_api.GetProxiedDevices(
     universe_id,
     uid,

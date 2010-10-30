@@ -154,6 +154,20 @@ class RDMHttpModule: public HttpModule {
         const ola::rdm::DeviceDescriptor &device);
 
     // section methods
+    string GetCommStatus(HttpResponse *response,
+                         unsigned int universe_id,
+                         const UID &uid);
+
+    void CommStatusHandler(HttpResponse *response,
+                           const ola::rdm::ResponseStatus &status,
+                           uint16_t short_messages,
+                           uint16_t length_mismatch,
+                           uint16_t checksum_fail);
+
+    string ClearCommsCounters(HttpResponse *response,
+                              unsigned int universe_id,
+                              const UID &uid);
+
     string GetProxiedDevices(HttpResponse *response,
                              unsigned int universe_id,
                              const UID &uid);
@@ -545,6 +559,7 @@ class RDMHttpModule: public HttpModule {
     static const char RECORD_SENSOR_FIELD[];
 
     static const char BOOT_SOFTWARE_SECTION[];
+    static const char COMMS_STATUS_SECTION[];
     static const char CLOCK_SECTION[];
     static const char DEVICE_HOURS_SECTION[];
     static const char DEVICE_INFO_SECTION[];
