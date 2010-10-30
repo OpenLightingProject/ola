@@ -32,10 +32,10 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 
-#include "plugins/usbpro/UsbProPlugin.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/UsbProDevice.h"
+#include "plugins/usbpro/UsbProPlugin.h"
 
 
 namespace ola {
