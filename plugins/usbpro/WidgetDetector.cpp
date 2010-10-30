@@ -179,8 +179,8 @@ void WidgetDetector::HandleIdResponse(UsbWidget *widget,
                                       const uint8_t *data,
                                       bool is_device) {
   id_response response;
+  memset(&response, 0, sizeof(response));
   memcpy(&response, data, length);
-  response.terminator = 0;
 
   map<UsbWidget*, DeviceInformation>::iterator iter = m_widgets.find(widget);
 
