@@ -18,6 +18,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+#include <time.h>
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -400,6 +401,8 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetTiltInvert(request, response, universe_id, *uid);
   } else if (section_id == PAN_TILT_SWAP_SECTION) {
     error = SetPanTiltSwap(request, response, universe_id, *uid);
+  } else if (section_id == CLOCK_SECTION) {
+    error = SyncClock(response, universe_id, *uid);
   } else if (section_id == IDENTIFY_SECTION) {
     error = SetIdentifyMode(request, response, universe_id, *uid);
   } else if (section_id == POWER_STATE_SECTION) {
@@ -2601,7 +2604,40 @@ void RDMHttpModule::ClockHandler(HttpResponse *response,
     << clock.year;
 
   section.AddItem(new StringItem("Clock", str.str()));
+  section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
+  section.SetSaveButton("Sync to Serverj");
   RespondWithSection(response, section);
+}
+
+
+/**
+ * Sync the clock
+ */
+string RDMHttpModule::SyncClock(HttpResponse *response,
+                                unsigned int universe_id,
+                                const UID &uid) {
+  time_t now = time(NULL);
+  struct tm now_tm;
+  localtime_r(&now, &now_tm);
+  ola::rdm::ClockValue clock_value;
+
+  clock_value.year = now_tm.tm_year + 1900;
+  clock_value.month = now_tm.tm_mon + 1;
+  clock_value.day = now_tm.tm_mday;
+  clock_value.hour = now_tm.tm_hour;
+  clock_value.minute = now_tm.tm_min;
+  clock_value.second = now_tm.tm_sec;
+  string error;
+  m_rdm_api.SetClock(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      clock_value,
+      NewSingleCallback(this,
+                        &RDMHttpModule::SetHandler,
+                        response),
+      &error);
+  return error;
 }
 
 

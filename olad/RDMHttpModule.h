@@ -478,6 +478,10 @@ class RDMHttpModule: public HttpModule {
                       const ola::rdm::ResponseStatus &status,
                       const ola::rdm::ClockValue &clock);
 
+    string SyncClock(HttpResponse *response,
+                     unsigned int universe_id,
+                     const UID &uid);
+
     string GetIdentifyMode(HttpResponse *response,
                            unsigned int universe_id,
                            const UID &uid);
