@@ -48,5 +48,7 @@ goog.inherits(ola.PluginFrame, ola.BaseFrame);
  * @param {ola.PluginChangeEvent} e the plugin event.
  */
 ola.PluginFrame.prototype._UpdateFromData = function(e) {
-  goog.dom.$('plugin_description').innerHTML = e.plugin['description'];
+  var description = e.plugin['description']
+  description = description.replace(/\n/g, '<br>');
+  goog.dom.$('plugin_description').innerHTML = description;
 };
