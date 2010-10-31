@@ -21,34 +21,31 @@
 #ifndef PLUGINS_OPENDMX_OPENDMXTHREAD_H_
 #define PLUGINS_OPENDMX_OPENDMXTHREAD_H_
 
-#include <pthread.h>
 #include <string>
 #include "ola/DmxBuffer.h"
+#include "ola/OlaThread.h"
 
 namespace ola {
 namespace plugin {
 namespace opendmx {
 
-class OpenDmxThread {
+class OpenDmxThread: public ola::OlaThread {
   public:
-    OpenDmxThread();
+    explicit OpenDmxThread(const string &path);
     ~OpenDmxThread();
 
-    int Start(const std::string &path);
-    int Stop();
+    bool Stop();
     bool WriteDmx(const DmxBuffer &buffer);
-    void *Run(const std::string &path);
+    void *Run();
 
   private:
-    int DoWrite(uint8_t *buf, int length);
-
     int m_fd;
+    string m_path;
     DmxBuffer m_buffer;
     pthread_mutex_t m_mutex;
     bool m_term;
     pthread_mutex_t m_term_mutex;
     pthread_cond_t m_term_cond;
-    pthread_t m_tid;
 };
 }  // opendmx
 }  // plugin

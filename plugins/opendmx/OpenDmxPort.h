@@ -39,9 +39,9 @@ class OpenDmxOutputPort: public BasicOutputPort {
                       unsigned int id,
                       const string &path)
         : BasicOutputPort(parent, id),
-          m_thread(),
+          m_thread(path),
           m_path(path) {
-      m_thread.Start(path);
+      m_thread.Start();
     }
 
     ~OpenDmxOutputPort() {

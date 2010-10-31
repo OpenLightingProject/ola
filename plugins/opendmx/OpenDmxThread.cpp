@@ -18,16 +18,16 @@
  * Copyright (C) 2005-2007  Simon Newton
  */
 
+#include <errno.h>
+#include <fcntl.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <time.h>
+#include <unistd.h>
 #include <string>
 
 #include "ola/BaseTypes.h"
@@ -40,31 +40,17 @@ namespace opendmx {
 
 using std::string;
 
-typedef struct {
-  OpenDmxThread *th;
-  string path;
-} t_args;
-
-
-void *thread_run(void *d) {
-  t_args *args = reinterpret_cast<t_args*>(d);
-  args->th->Run(args->path);
-  delete args;
-  return NULL;
-}
-
 /*
  * Create a new OpenDmxThread object
- *
  */
-OpenDmxThread::OpenDmxThread() {
-  m_fd = -1;
+OpenDmxThread::OpenDmxThread(const string &path)
+    : OlaThread(),
+    m_fd(-1),
+    m_path(path),
+    m_term(false) {
   pthread_mutex_init(&m_mutex, NULL);
-  m_term = false;
   pthread_mutex_init(&m_term_mutex, NULL);
   pthread_cond_init(&m_term_cond, NULL);
-
-  m_tid = 0;
 }
 
 
@@ -81,7 +67,7 @@ OpenDmxThread::~OpenDmxThread() {
 /*
  * Run this thread
  */
-void *OpenDmxThread::Run(const string &path) {
+void *OpenDmxThread::Run() {
   uint8_t buffer[DMX_UNIVERSE_SIZE+1];
   unsigned int length = DMX_UNIVERSE_SIZE;
   struct timeval tv;
@@ -91,9 +77,9 @@ void *OpenDmxThread::Run(const string &path) {
 
   // start code
   buffer[0] = 0x00;
-  m_fd = open(path.c_str(), O_WRONLY);
+  m_fd = open(m_path.c_str(), O_WRONLY);
 
-  while (1) {
+  while (true) {
     pthread_mutex_lock(&m_term_mutex);
     if (m_term) {
       pthread_mutex_unlock(&m_term_mutex);
@@ -112,7 +98,7 @@ void *OpenDmxThread::Run(const string &path) {
       pthread_cond_timedwait(&m_term_cond, &m_term_mutex, &ts);
       pthread_mutex_unlock(&m_term_mutex);
 
-      m_fd = open(path.c_str(), O_WRONLY);
+      m_fd = open(m_path.c_str(), O_WRONLY);
 
       if (m_fd == -1)
         OLA_WARN << "Open " << m_fd << ": " << strerror(errno);
@@ -123,7 +109,14 @@ void *OpenDmxThread::Run(const string &path) {
       m_buffer.Get(buffer + 1, &length);
       pthread_mutex_unlock(&m_mutex);
 
-      DoWrite(buffer, length + 1);
+      if (write(m_fd, buffer, length + 1) < 0) {
+        // if you unplug the dongle
+        OLA_WARN << "Error writing to device: " << strerror(errno);
+
+        if (close(m_fd) < 0)
+          OLA_WARN << "Close failed " << strerror(errno);
+        m_fd = -1;
+      }
     }
   }
   return NULL;
@@ -131,36 +124,15 @@ void *OpenDmxThread::Run(const string &path) {
 
 
 /*
- * Start this thread
- *
- */
-int OpenDmxThread::Start(const string &path) {
-  // this is passed to the thread and free'ed there
-  t_args *args = new t_args;
-
-  args->th = this;
-  args->path = path;
-
-  if (pthread_create(&m_tid, NULL, ola::plugin::opendmx::thread_run,
-                     reinterpret_cast<void*>(args))) {
-    OLA_WARN << "pthread create failed";
-    return -1;
-  }
-  return 0;
-}
-
-
-/*
  * Stop the thread
  */
-int OpenDmxThread::Stop() {
+bool OpenDmxThread::Stop() {
   pthread_mutex_lock(&m_term_mutex);
   m_term = true;
   pthread_mutex_unlock(&m_term_mutex);
 
   pthread_cond_signal(&m_term_cond);
-  pthread_join(m_tid, NULL);
-  return 0;
+  return Join();
 }
 
 
@@ -173,25 +145,6 @@ bool OpenDmxThread::WriteDmx(const DmxBuffer &buffer) {
   m_buffer = buffer;
   pthread_mutex_unlock(&m_mutex);
   return true;
-}
-
-
-int OpenDmxThread::DoWrite(uint8_t *buf, int length) {
-  int res = write(m_fd, buf, length);
-
-  if (res < 0) {
-    // if you unplug devices from the dongle
-    perror("Error writing to device");
-
-    res = close(m_fd);
-    if (res < 0)
-      perror("close");
-    else
-      m_fd = -1;
-
-    return -1;
-  }
-  return 0;
 }
 }  // opendmx
 }  // plugin
