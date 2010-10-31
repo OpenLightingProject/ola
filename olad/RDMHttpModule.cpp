@@ -2605,7 +2605,7 @@ void RDMHttpModule::ClockHandler(HttpResponse *response,
 
   section.AddItem(new StringItem("Clock", str.str()));
   section.AddItem(new HiddenItem("1", GENERIC_UINT_FIELD));
-  section.SetSaveButton("Sync to Serverj");
+  section.SetSaveButton("Sync to Server");
   RespondWithSection(response, section);
 }
 
