@@ -53,6 +53,9 @@ AC_PROG_LIBTOOL
 # windows platform support
 AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 
+# check for hash_map
+AC_CXX_STL_HASH
+
 # check for protobuf support
 PROTOBUF_SUPPORT([2.3.0])
 

@@ -22,12 +22,13 @@
 #define COMMON_RPC_STREAMRPCCHANNEL_H_
 
 #include <stdint.h>
-#include <ext/hash_map>
 #include <google/protobuf/service.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SelectServer.h>
 #include <ola/Closure.h>
 #include "ola/ExportMap.h"
+#include "config.h"
+#include HASH_MAP_H
 
 namespace ola {
 namespace rpc {
@@ -138,8 +139,8 @@ class StreamRpcChannel: public RpcChannel {
     unsigned int m_buffer_size;  // size of the buffer
     unsigned int m_expected_size;  // the total size of the current msg
     unsigned int m_current_size;  // the amount of data read for the current msg
-    __gnu_cxx::hash_map<int, OutstandingRequest*> m_requests;
-    __gnu_cxx::hash_map<int, OutstandingResponse*> m_responses;
+    HASH_NAMESPACE::HASH_MAP_CLASS<int, OutstandingRequest*> m_requests;
+    HASH_NAMESPACE::HASH_MAP_CLASS<int, OutstandingResponse*> m_responses;
     ExportMap *m_export_map;
     UIntMap *m_recv_type_map;
 
