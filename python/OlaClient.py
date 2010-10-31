@@ -33,12 +33,10 @@ class Plugin(object):
   Attributes:
     id: the id of this plugin
     name: the name of this plugin
-    description: the description of this plugin
   """
-  def __init__(self, plugin_id, name, description):
+  def __init__(self, plugin_id, name):
     self.id = plugin_id
     self.name = name
-    self.description = description
 
   def __cmp__(self, other):
     return cmp(self.id, other.id)
@@ -147,23 +145,31 @@ class OlaClient(Ola_pb2.OlaClientService):
     """Called when the socket has new data."""
     self._channel.SocketReady()
 
-  def FetchPlugins(self, callback,
-                   plugin_filter=Plugin.OLA_PLUGIN_ALL,
-                   include_description=False):
+  def FetchPlugins(self, callback):
     """Fetch the list of plugins.
 
     Args:
       callback: the function to call once complete, takes two arguments, a
         RequestStatus object and a list of Plugin objects
-      filter: the id of the plugin if you want to filter the results
-      include_description: whether to include the plugin description or not
     """
     controller = SimpleRpcController()
-    request = Ola_pb2.PluginInfoRequest()
-    request.plugin_id = plugin_filter
-    request.include_description = include_description
-    done = lambda x, y: self._PluginInfoComplete(callback, x, y)
-    self._stub.GetPluginInfo(controller, request, done)
+    request = Ola_pb2.PluginListRequest()
+    done = lambda x, y: self._GetPluginsComplete(callback, x, y)
+    self._stub.GetPlugins(controller, request, done)
+
+  def PluginDescription(self, callback, plugin_id):
+    """Fetch the list of plugins.
+
+    Args:
+      callback: the function to call once complete, takes two arguments, a
+        RequestStatus object and a list of Plugin objects
+      plugin_id: the id of the plugin
+    """
+    controller = SimpleRpcController()
+    request = Ola_pb2.PluginDescriptionRequest()
+    request.plugin_id = plugin_id
+    done = lambda x, y: self._PluginDescriptionComplete(callback, x, y)
+    self._stub.GetPluginDescription(controller, request, done)
 
   def FetchDevices(self, callback, plugin_filter=Plugin.OLA_PLUGIN_ALL):
     """Fetch a list of devices from the server.
@@ -187,7 +193,7 @@ class OlaClient(Ola_pb2.OlaClientService):
         RequestStatus object and a list of Universe objects.
     """
     controller = SimpleRpcController()
-    request = Ola_pb2.UniverseInfoRequest()
+    request = Ola_pb2.OptionalUniverseRequest()
     done = lambda x, y: self._UniverseInfoComplete(callback, x, y)
     self._stub.GetUniverseInfo(controller, request, done)
 
@@ -200,7 +206,7 @@ class OlaClient(Ola_pb2.OlaClientService):
         RequestStatus object, a universe number and a list of dmx data.
     """
     controller = SimpleRpcController()
-    request = Ola_pb2.UniverseInfoRequest()
+    request = Ola_pb2.UniverseRequest()
     request.universe = universe
     done = lambda x, y: self._GetDmxComplete(callback, x, y)
     self._stub.GetDmx(controller, request, done)
@@ -342,7 +348,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     else:
       return RequestStatus()
 
-  def _PluginInfoComplete(self, callback, controller, response):
+  def _GetPluginsComplete(self, callback, controller, response):
     """Called when the list of plugins is returned.
 
     Args:
@@ -356,9 +362,24 @@ class OlaClient(Ola_pb2.OlaClientService):
     if not status.Succeeded():
       return
 
-    plugins = [Plugin(p.plugin_id, p.name, p.description) for p in
-        response.plugin]
+    plugins = [Plugin(p.plugin_id, p.name) for p in response.plugin]
+    plugins.sort(key=lambda x: x.id)
     callback(status, plugins)
+
+  def _PluginDescriptionComplete(self, callback, controller, response):
+    """Called when the plugin description is returned.
+
+    Args:
+      callback: the callback to run
+      controller: an RpcController
+      response: a PluginInfoReply message.
+    """
+    if not callback:
+      return
+    status = self._CreateStateFromController(controller)
+    if not status.Succeeded():
+      return
+    callback(status, response.description)
 
   def _DeviceInfoComplete(self, callback, controller, response):
     """Called when the Device info request returns.
