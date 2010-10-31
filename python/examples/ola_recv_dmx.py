@@ -20,12 +20,44 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import getopt
+import textwrap
+import sys
 import client_wrapper
 
 def NewData(data):
   print data
 
-wrapper = client_wrapper.ClientWrapper()
-client = wrapper.Client()
-client.RegisterUniverse(1, client.REGISTER, NewData)
-wrapper.Run()
+def Usage():
+  print textwrap.dedent("""
+  Usage: ola_recv_dmx.py --universe <universe>
+
+  Display the DXM512 data for the unvierse.
+
+  -h, --help                Display this help message and exit.
+  -u, --universe <universe> Universe number.""")
+
+def main():
+  try:
+      opts, args = getopt.getopt(sys.argv[1:], "hu:", ["help", "universe="])
+  except getopt.GetoptError, err:
+    print str(err)
+    Usage()
+    sys.exit(2)
+
+  universe = 1
+  for o, a in opts:
+    if o in ("-h", "--help"):
+      Usage()
+      sys.exit()
+    elif o in ("-u", "--universe"):
+      universe = int(a)
+
+  wrapper = client_wrapper.ClientWrapper()
+  client = wrapper.Client()
+  client.RegisterUniverse(universe, client.REGISTER, NewData)
+  wrapper.Run()
+
+
+if __name__ == "__main__":
+  main()
