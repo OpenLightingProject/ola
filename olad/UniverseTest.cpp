@@ -24,6 +24,7 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Client.h"
 #include "olad/DmxSource.h"
+#include "olad/InternalInputPort.h"
 #include "olad/Port.h"
 #include "olad/PortManager.h"
 #include "olad/Preferences.h"
@@ -111,35 +112,56 @@ void UniverseTest::testLifecycle() {
 
   universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
-  CPPUNIT_ASSERT_EQUAL(universe->UniverseId(), TEST_UNIVERSE);
-  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), (unsigned int) 1);
-  CPPUNIT_ASSERT_EQUAL(universe->MergeMode(), Universe::MERGE_LTP);
+  CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, universe->UniverseId());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_store->UniverseCount());
+  CPPUNIT_ASSERT_EQUAL(Universe::MERGE_LTP, universe->MergeMode());
   CPPUNIT_ASSERT(!universe->IsActive());
 
   string universe_name = "New Name";
   universe->SetName(universe_name);
   universe->SetMergeMode(Universe::MERGE_HTP);
 
-  CPPUNIT_ASSERT_EQUAL(universe->Name(), universe_name);
-  CPPUNIT_ASSERT_EQUAL(universe->MergeMode(), Universe::MERGE_HTP);
+  CPPUNIT_ASSERT_EQUAL(universe_name, universe->Name());
+  CPPUNIT_ASSERT_EQUAL(Universe::MERGE_HTP, universe->MergeMode());
 
   // delete it
   m_store->AddUniverseGarbageCollection(universe);
   m_store->GarbageCollectUniverses();
-  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_store->UniverseCount());
   universe = m_store->GetUniverse(TEST_UNIVERSE);
   CPPUNIT_ASSERT(!universe);
 
   // now re-create it
   universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
-  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), (unsigned int) 1);
-  CPPUNIT_ASSERT_EQUAL(universe->UniverseId(), TEST_UNIVERSE);
-  CPPUNIT_ASSERT_EQUAL(universe->Name(), universe_name);
-  CPPUNIT_ASSERT_EQUAL(universe->MergeMode(), Universe::MERGE_HTP);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_store->UniverseCount());
+  CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, universe->UniverseId());
+  CPPUNIT_ASSERT_EQUAL(universe_name, universe->Name());
+  CPPUNIT_ASSERT_EQUAL(Universe::MERGE_HTP, universe->MergeMode());
 
   m_store->DeleteAll();
-  CPPUNIT_ASSERT_EQUAL(m_store->UniverseCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_store->UniverseCount());
+
+  // now check that internal input ports aren't counted
+  ola::PortManager port_manager(m_store);
+  ola::InternalInputPort input_port(0, NULL);
+  TestMockOutputPort output_port(NULL, 1);  // output port
+  port_manager.PatchPort(&output_port, TEST_UNIVERSE);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_store->UniverseCount());
+  universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
+  CPPUNIT_ASSERT(universe);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->OutputPortCount());
+  CPPUNIT_ASSERT(universe->IsActive());
+
+  port_manager.PatchPort(&input_port, TEST_UNIVERSE);
+
+  port_manager.UnPatchPort(&output_port);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->InputPortCount());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
+  CPPUNIT_ASSERT(!universe->IsActive());
+
+  m_store->GarbageCollectUniverses();
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_store->UniverseCount());
 }
 
 
@@ -169,8 +191,8 @@ void UniverseTest::testSendDmx() {
 
   TestMockOutputPort port(NULL, 1);  // output port
   universe->AddPort(&port);
-  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 0);
-  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 1);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->OutputPortCount());
   CPPUNIT_ASSERT(universe->IsActive());
 
   // send some data to the universe and check the port gets it
@@ -179,8 +201,8 @@ void UniverseTest::testSendDmx() {
 
   // remove the port from the universe
   universe->RemovePort(&port);
-  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 0);
-  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
   CPPUNIT_ASSERT(!universe->IsActive());
 }
 
@@ -199,8 +221,8 @@ void UniverseTest::testReceiveDmx() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
 
-  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 1);
-  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->InputPortCount());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
   CPPUNIT_ASSERT(universe->IsActive());
 
   // Setup the port with some data, and check that signalling the universe
@@ -216,8 +238,8 @@ void UniverseTest::testReceiveDmx() {
   // Remove the port from the universe
   universe->RemovePort(&port);
   CPPUNIT_ASSERT(!universe->IsActive());
-  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 0);
-  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
 }
 
 
@@ -325,8 +347,8 @@ void UniverseTest::testLtpMerging() {
   CPPUNIT_ASSERT(universe);
   universe->SetMergeMode(Universe::MERGE_LTP);
 
-  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 2);
-  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, universe->InputPortCount());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
   CPPUNIT_ASSERT(universe->IsActive());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->GetDMX().Size());
 
@@ -406,7 +428,7 @@ void UniverseTest::testHtpMerging() {
   CPPUNIT_ASSERT(universe);
   universe->SetMergeMode(Universe::MERGE_HTP);
 
-  CPPUNIT_ASSERT_EQUAL(universe->InputPortCount(), (unsigned int) 2);
+  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
   CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
   CPPUNIT_ASSERT(universe->IsActive());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->GetDMX().Size());

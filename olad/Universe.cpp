@@ -486,8 +486,18 @@ void Universe::NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port) {
  * Return true if this universe is in use (has at least one port or client).
  */
 bool Universe::IsActive() const {
-  return (m_input_ports.size() || m_output_ports.size() ||
-          m_source_clients.size() || m_sink_clients.size());
+  // any of the following means the port is active
+  if (m_output_ports.size() || m_source_clients.size() ||
+      m_sink_clients.size())
+    return true;
+
+  // we need to handle the case of the internal input port here. These ports
+  // can be identified because they don't have a parent device.
+  int input_ports = m_input_ports.size();
+  if (input_ports == 0 ||
+      (input_ports == 1 && m_input_ports[0]->GetDevice() == NULL))
+    return false;
+  return true;
 }
 
 
