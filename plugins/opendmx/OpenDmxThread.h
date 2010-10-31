@@ -46,6 +46,8 @@ class OpenDmxThread: public ola::OlaThread {
     bool m_term;
     pthread_mutex_t m_term_mutex;
     pthread_cond_t m_term_cond;
+
+    static const int INVALID_FD = -1;
 };
 }  // opendmx
 }  // plugin

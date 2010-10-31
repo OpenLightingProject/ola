@@ -23,6 +23,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -45,7 +46,7 @@ using std::string;
  */
 OpenDmxThread::OpenDmxThread(const string &path)
     : OlaThread(),
-    m_fd(-1),
+    m_fd(INVALID_FD),
     m_path(path),
     m_term(false) {
   pthread_mutex_init(&m_mutex, NULL);
@@ -87,7 +88,7 @@ void *OpenDmxThread::Run() {
     }
     pthread_mutex_unlock(&m_term_mutex);
 
-    if (m_fd == -1) {
+    if (m_fd == INVALID_FD) {
       if (gettimeofday(&tv, NULL) < 0) {
         OLA_WARN << "gettimeofday error";
         break;
@@ -100,8 +101,8 @@ void *OpenDmxThread::Run() {
 
       m_fd = open(m_path.c_str(), O_WRONLY);
 
-      if (m_fd == -1)
-        OLA_WARN << "Open " << m_fd << ": " << strerror(errno);
+      if (m_fd == INVALID_FD)
+        OLA_WARN << "Open " << m_path << ": " << strerror(errno);
 
     } else {
       length = DMX_UNIVERSE_SIZE;
@@ -115,7 +116,7 @@ void *OpenDmxThread::Run() {
 
         if (close(m_fd) < 0)
           OLA_WARN << "Close failed " << strerror(errno);
-        m_fd = -1;
+        m_fd = INVALID_FD;
       }
     }
   }
