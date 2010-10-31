@@ -59,7 +59,8 @@ ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
                        const string &short_name,
                        const string &long_name,
                        const PluginAdaptor *plugin_adaptor,
-                       uint8_t subnet_address)
+                       uint8_t subnet_address,
+                       bool always_broadcast)
     : m_running(false),
       m_send_reply_on_change(true),
       m_short_name(short_name),
@@ -67,6 +68,7 @@ ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
       m_broadcast_threshold(BROADCAST_THRESHOLD),
       m_unsolicited_replies(0),
       m_plugin_adaptor(plugin_adaptor),
+      m_always_broadcast(always_broadcast),
       m_interface(interface),
       m_socket(NULL),
       m_discovery_timeout(ola::network::INVALID_TIMEOUT) {
@@ -371,7 +373,8 @@ bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
   unsigned int size = sizeof(packet.data.dmx) - DMX_UNIVERSE_SIZE + buffer_size;
 
   bool sent_ok = false;
-  if (m_input_ports[port_id].subscribed_nodes.size() >= BROADCAST_THRESHOLD) {
+  if (m_input_ports[port_id].subscribed_nodes.size() >= BROADCAST_THRESHOLD ||
+      m_always_broadcast) {
     sent_ok = SendPacket(packet, size, m_interface.bcast_address);
     m_input_ports[port_id].sequence_number++;
   } else {
@@ -392,7 +395,7 @@ bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
 
     if (!m_input_ports[port_id].subscribed_nodes.size()) {
       OLA_DEBUG <<
-        "Suppressing data transmit due to no active nodes for universe" <<
+        "Suppressing data transmit due to no active nodes for universe " <<
         static_cast<int>(m_input_ports[port_id].universe_address);
       sent_ok = true;
     } else {

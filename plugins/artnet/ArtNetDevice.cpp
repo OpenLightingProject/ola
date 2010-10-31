@@ -54,11 +54,12 @@ using ola::network::AddressToString;
 using ola::plugin::artnet::Request;
 using ola::plugin::artnet::Reply;
 
-const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
-const char ArtNetDevice::K_LONG_NAME_KEY[] = "long_name";
-const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
-const char ArtNetDevice::K_IP_KEY[] = "ip";
+const char ArtNetDevice::K_ALWAYS_BROADCAST_KEY[] = "always_broadcast";
 const char ArtNetDevice::K_DEVICE_NAME[] = "ArtNet";
+const char ArtNetDevice::K_IP_KEY[] = "ip";
+const char ArtNetDevice::K_LONG_NAME_KEY[] = "long_name";
+const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
+const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
 
 /*
  * Create a new Artnet Device
@@ -94,11 +95,13 @@ bool ArtNetDevice::StartHook() {
   }
   delete picker;
 
-  m_node = new ArtNetNode(interface,
-                          m_preferences->GetValue(K_SHORT_NAME_KEY),
-                          m_preferences->GetValue(K_LONG_NAME_KEY),
-                          m_plugin_adaptor,
-                          subnet);
+  m_node = new ArtNetNode(
+      interface,
+      m_preferences->GetValue(K_SHORT_NAME_KEY),
+      m_preferences->GetValue(K_LONG_NAME_KEY),
+      m_plugin_adaptor,
+      subnet,
+      m_preferences->GetValueAsBool(K_ALWAYS_BROADCAST_KEY));
 
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     AddPort(new ArtNetOutputPort(this, i, m_node));

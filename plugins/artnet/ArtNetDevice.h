@@ -54,11 +54,12 @@ class ArtNetDevice: public Device {
                    string *response,
                    google::protobuf::Closure *done);
 
-    static const char K_SHORT_NAME_KEY[];
-    static const char K_LONG_NAME_KEY[];
-    static const char K_SUBNET_KEY[];
-    static const char K_IP_KEY[];
+    static const char K_ALWAYS_BROADCAST_KEY[];
     static const char K_DEVICE_NAME[];
+    static const char K_IP_KEY[];
+    static const char K_LONG_NAME_KEY[];
+    static const char K_SHORT_NAME_KEY[];
+    static const char K_SUBNET_KEY[];
     // 10s between polls when we're sending data, DMX-workshop uses 8s;
     static const unsigned int POLL_INTERVAL = 10000;
 

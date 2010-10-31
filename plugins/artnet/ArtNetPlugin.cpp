@@ -108,6 +108,10 @@ string ArtNetPlugin::Description() const {
 " 15            | 15             | 255\n\n"
 "--- Config file : ola-artnet.conf ---\n"
 "\n"
+"always_broadcast = [true|false]\n"
+"Use ArtNet v1 and always broadcast the DMX data. Turn this on if\n"
+"you have devices that don't respond to ArtPoll messages.\n"
+"\n"
 "ip = a.b.c.d\n"
 "The ip address to bind to. If not specified it will use the first\n"
 "non-loopback ip.\n"
@@ -143,6 +147,9 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SUBNET_KEY,
                                          IntValidator(0, 15),
                                          ARTNET_SUBNET);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_ALWAYS_BROADCAST_KEY,
+                                         BoolValidator(),
+                                         BoolValidator::FALSE);
 
   if (save)
     m_preferences->Save();

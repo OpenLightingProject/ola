@@ -128,7 +128,8 @@ class ArtNetNode {
                         const string &short_name,
                         const string &long_name,
                         const PluginAdaptor *adaptor,
-                        uint8_t subnet_address = 0);
+                        uint8_t subnet_address = 0,
+                        bool always_broadcast = false);
     virtual ~ArtNetNode();
 
     bool Start();
@@ -193,6 +194,7 @@ class ArtNetNode {
     unsigned int m_broadcast_threshold;
     unsigned int m_unsolicited_replies;
     const PluginAdaptor *m_plugin_adaptor;
+    bool m_always_broadcast;
 
     InputPort m_input_ports[ARTNET_MAX_PORTS];
     OutputPort m_output_ports[ARTNET_MAX_PORTS];
