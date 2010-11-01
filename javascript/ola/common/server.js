@@ -25,6 +25,10 @@ goog.provide('ola.common.Server');
 goog.provide('ola.common.Server.EventType');
 
 
+/**
+ * A pending request.
+ * @constructor
+ */
 ola.common.Request = function(url,
                               callback,
                               opt_method,
