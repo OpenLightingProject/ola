@@ -238,11 +238,6 @@ ola.DmxConsole.prototype.update = function() {
   // update the slider offsets
   this._updateSliderOffsets();
 
-  // set the values of the sliders
-  for (var i = 0; i < this.sliders.length; ++i) {
-    this.sliders[i].setValue(this.data[i]);
-  }
-
   // update all channel valuess
   var data_length = this.data.length;
   for (var i = 0; i < data_length; ++i) {
@@ -292,6 +287,12 @@ ola.DmxConsole.prototype._updateSliderOffsets = function() {
     i++;
     td = goog.dom.getNextElementSibling(td);
   }
+
+  // set the values of the sliders
+  for (var i = 0; i < this.sliders.length; ++i) {
+    this.sliders[i].setValue(this.data[this.slider_offset + i]);
+  }
+
 };
 
 
