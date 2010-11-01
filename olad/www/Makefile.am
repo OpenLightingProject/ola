@@ -16,4 +16,5 @@ dist_www_DATA = blank.gif \
                 ola.js \
                 tick.gif \
                 toolbar-bg.png \
+                toolbar_sprites.png \
                 vertical.gif
