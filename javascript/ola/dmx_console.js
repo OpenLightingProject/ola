@@ -96,13 +96,19 @@ ola.DmxConsole.prototype.setupIfRequired = function() {
 
   // setup the toolbar
   var toolbar = new goog.ui.Toolbar();
-  this.previous_page_button = new goog.ui.ToolbarButton('Previous Page');
-  this.next_page_button = new goog.ui.ToolbarButton('Next Page');
+  this.previous_page_button = new goog.ui.ToolbarButton(
+      goog.dom.createDom('div', 'ola-icon ola-icon-prev'));
+  this.previous_page_button.setTooltip('Previous Page');
+  this.next_page_button = new goog.ui.ToolbarButton(
+      goog.dom.createDom('div', 'ola-icon ola-icon-next'));
+  this.next_page_button.setTooltip('Next Page');
   this.previous_page_button.setEnabled(false);
 
-  var blackout_button = new goog.ui.ToolbarButton('Blackout');
+  var blackout_button = new goog.ui.ToolbarButton(
+      goog.dom.createDom('div', 'ola-icon ola-icon-dbo'));
   blackout_button.setTooltip('Set all channels to 0');
-  var full_button = new goog.ui.ToolbarButton('Full');
+  var full_button = new goog.ui.ToolbarButton(
+      goog.dom.createDom('div', 'ola-icon ola-icon-full'));
   full_button.setTooltip('Set all channels to full');
 
   toolbar.addChild(this.previous_page_button, true);

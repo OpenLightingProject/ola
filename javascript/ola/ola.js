@@ -238,7 +238,7 @@ ola.OlaUI.prototype._HideAllFrames = function() {
  */
 ola.OlaUI.prototype._UpdateUI = function(e) {
   var size = this.vsm.getSize();
-  this.splitpane1.setSize(new goog.math.Size(size.width, size.height - 80));
+  this.splitpane1.setSize(new goog.math.Size(size.width, size.height - 85));
   this.logger_window.SetSize(size);
   this.universe_frame.SetSplitPaneSize();
 };

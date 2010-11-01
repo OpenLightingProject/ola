@@ -73,6 +73,9 @@
         -moz-box-sizing: border-box;
         -webkit-box-sizing: border-box;
         -ms-box-sizing: border-box;
+      }
+
+      .ola-container {
         padding: 5px;
       }
 
@@ -493,6 +496,21 @@
         text-align: center;
         margin: 1px;
       }
+
+      .ola-icon {
+        height: 16px;
+        width: 16px;
+        background-image: url(/toolbar_sprites.png);
+        background-color: transparent;
+        background-repeat: no-repeat;
+      }
+
+      .ola-icon-discovery { background-position: -16px -0px; }
+
+      .ola-icon-prev { background-position: -0px -0px; }
+      .ola-icon-next { background-position: -32px -0px; }
+      .ola-icon-full { background-position: -48px -0px; }
+      .ola-icon-dbo { background-position: -64px -0px; }
     </style>
   </head>
   <body onload='ola.Setup()'>
@@ -528,7 +546,7 @@
 
       <div class='goog-splitpane-second-container ola-splitpane-content'
           id='ola-splitpane-content'>
-        <div class='ola-scroller' id='home_frame' style=''>
+        <div class='ola-scroller ola-container' id='home_frame' style=''>
           <fieldset>
             <legend>Active Universes</legend>
             <table class='ola-table'>
@@ -589,7 +607,7 @@
           <br>
         </div>
 
-        <div id='new_universe_frame' class='ola-scroller'>
+        <div id='new_universe_frame' class='ola-scroller ola-container'>
           <fieldset>
            <legend>New Universe Settings</legend>
            <table>
@@ -630,7 +648,7 @@
         <div id='universe_frame'>
           <div id='universe_frame_tab_pane'></div>
 
-          <div id='tab_page_1' class='ola-scroller'>
+          <div id='tab_page_1' class='ola-scroller ola-container'>
             <fieldset>
              <legend>Universe Settings</legend>
              <table>
@@ -710,11 +728,7 @@
           </div>
 
           <div id='tab_page_2'>
-            <div>
-             <div id='force_discovery_button'
-               class='goog-custom-button goog-inline-block'
-               title='Run RDM Discovery'>Run RDM Discovery</div>
-            </div>
+            <div id='rdm_toolbar' class='goog-toolbar'></div>
             <div class='goog-splitpane ola-splitpane-rdm' id='rdm_split_pane'>
               <div class='goog-splitpane-first-container
                           ola-splitpane-rdm-uids'>
@@ -740,7 +754,7 @@
             <div id='channel_values'></div>
           </div>
         </div>
-        <div class='ola-scroller' id='plugin_frame'>
+        <div class='ola-scroller ola-container' id='plugin_frame'>
             <div id='plugin_description'></div>
         </div>
       </div>

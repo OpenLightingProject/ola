@@ -108,6 +108,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterFile("tick.gif", HttpServer::CONTENT_TYPE_GIF);
   RegisterFile("toolbar-bg.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("toolbar.css", HttpServer::CONTENT_TYPE_CSS);
+  RegisterFile("toolbar_sprites.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("vertical.gif", HttpServer::CONTENT_TYPE_GIF);
 
   StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
