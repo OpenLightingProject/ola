@@ -39,14 +39,21 @@ goog.provide('ola.RDMAttributesPanel');
  * @param {string} element_id the id of the element to use for this frame.
  * @constructor
  */
-ola.RDMAttributesPanel = function(element_id) {
+ola.RDMAttributesPanel = function(element_id, expander_button) {
   this.element = goog.dom.$(element_id);
+  this.expander_button = expander_button;
   this.current_universe = undefined;
   this.current_uid = undefined;
   this.divs = new Array();
   this.zippies = new Array();
   // This holds the list of sections, and is updated as a section is loaded
   this.section_data = undefined;
+
+  goog.events.listen(this.expander_button,
+                     goog.ui.Component.EventType.ACTION,
+                     function() { this._expandAllSections(); },
+                     false,
+                     this);
 };
 
 
@@ -73,6 +80,7 @@ ola.RDMAttributesPanel.prototype.showUID = function(item) {
       item.asString(),
       function(e) { panel._supportedSections(e); });
   this.current_uid = item.asString();
+  this.expander_button.setEnabled(true);
 };
 
 
@@ -81,7 +89,22 @@ ola.RDMAttributesPanel.prototype.showUID = function(item) {
  */
 ola.RDMAttributesPanel.prototype.clear = function() {
   this.current_uid = undefined;
+  this.expander_button.setEnabled(false);
   this._setEmpty();
+};
+
+
+/**
+ * Expand all the sections.
+ * @private
+ */
+ola.RDMAttributesPanel.prototype._expandAllSections = function() {
+  for (var i = 0; i < this.zippies.length; ++i) {
+    if (!this.zippies[i].isExpanded()) {
+      this.zippies[i].setExpanded(true);
+      this._expandSection(i);
+    }
+  }
 };
 
 
@@ -140,8 +163,12 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
     goog.events.listen(legend,
         goog.events.EventType.CLICK,
         (function(x) {
-          return function(e) { this._expandSection(e, x); } }
-        )(i),
+          return function(e) {
+            if (e.expanded)
+              return;
+            this._expandSection(x);
+          }
+        })(i),
         false,
         this);
 
@@ -156,10 +183,7 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
  * Called when one of the zippies is expanded
  * @private
  */
-ola.RDMAttributesPanel.prototype._expandSection = function(e, index) {
-  if (e.expanded)
-    return;
-
+ola.RDMAttributesPanel.prototype._expandSection = function(index) {
   if (this.section_data[index]['loaded'])
     return;
 
@@ -198,7 +222,7 @@ ola.RDMAttributesPanel.prototype._populateSection = function(e, index) {
     this._showErrorDialog('Error', section_response['error']);
     this.section_data[index]['loaded'] = false;
     var zippy = this.zippies[index];
-    if (zippy.isExpanded) {
+    if (zippy.isExpanded()) {
       zippy.setExpanded(false);
     }
     return;
@@ -329,7 +353,7 @@ ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
  */
 ola.RDMAttributesPanel.prototype._showErrorDialog = function(title, error) {
   var dialog = ola.Dialog.getInstance();
-  dialog.setTitle('Set Failed');
+  dialog.setTitle(title);
   dialog.setContent(error);
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
   dialog.setVisible(true);

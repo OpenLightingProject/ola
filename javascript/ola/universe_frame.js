@@ -151,10 +151,10 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
   toolbar.addChild(discovery_button, true);
   toolbar.addChild(new goog.ui.ToolbarSeparator(), true);
 
-  this.expander_button = new goog.ui.ToolbarButton('Show All Attributes');
-  this.expander_button.setTooltip('');
-  toolbar.addChild(this.expander_button, true);
-  this.expander_button.setEnabled(false);
+  expander_button = new goog.ui.ToolbarButton('Show All Attributes');
+  expander_button.setTooltip('');
+  toolbar.addChild(expander_button, true);
+  expander_button.setEnabled(false);
 
   toolbar.render(goog.dom.getElement('rdm_toolbar'));
 
@@ -172,7 +172,8 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
   this.splitpane.setHandleSize(2);
   this.splitpane.decorate(goog.dom.$('rdm_split_pane'));
 
-  var rdm_panel = new ola.RDMAttributesPanel('rdm_attributes');
+  var rdm_panel = new ola.RDMAttributesPanel('rdm_attributes',
+                                             expander_button);
   this.rdm_panel = rdm_panel;
 
   var frame = this;

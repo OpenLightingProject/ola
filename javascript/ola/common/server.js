@@ -25,6 +25,18 @@ goog.provide('ola.common.Server');
 goog.provide('ola.common.Server.EventType');
 
 
+ola.common.Request = function(url,
+                              callback,
+                              opt_method,
+                              opt_content) {
+  this.url = url;
+  this.callback = callback;
+  this.opt_method = opt_method;
+  this.opt_content = opt_content;
+};
+
+
+
 /**
  * Create a new Server object, this is used to communicate with the OLA server
  * and fires events when the state changes.
@@ -34,6 +46,7 @@ ola.common.Server = function() {
   goog.events.EventTarget.call(this);
   this.pool = new goog.net.XhrIoPool({}, 1);
   this.universes = {};
+  this.request_queue = new Array();
 };
 goog.inherits(ola.common.Server, goog.events.EventTarget);
 
@@ -65,7 +78,7 @@ ola.common.Server.RDM_SET_SECTION_INFO_URL = '/json/rdm/set_section_info';
 ola.common.Server.NEW_UNIVERSE_URL = '/new_universe';
 ola.common.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
 ola.common.Server.SET_DMX_URL = '/set_dmx';
-
+ola.common.Server.REQUEST_QUEUE_LIMIT = 10;
 
 /**
  * This event is fired when the server info changes
@@ -448,11 +461,10 @@ ola.common.Server.prototype.setChannelValues = function(universe_id, data) {
  * @private
  */
 ola.common.Server.prototype._initiateRequest = function(url,
-                                                 callback,
-                                                 opt_method,
-                                                 opt_content) {
-  var xhr = this.pool.getObject(undefined, 1);
-  if (xhr == undefined) {
+                                                        callback,
+                                                        opt_method,
+                                                        opt_content) {
+  if (this.request_queue.length >= ola.common.Server.REQUEST_QUEUE_LIMIT) {
     var dialog = ola.Dialog.getInstance();
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
     dialog.setTitle('Failed to Communicate with Server');
@@ -461,8 +473,20 @@ ola.common.Server.prototype._initiateRequest = function(url,
     dialog.setVisible(true);
     return;
   }
-  goog.events.listen(xhr, goog.net.EventType.COMPLETE, callback, false, this);
-  xhr.send(url, opt_method, opt_content);
+
+  var request = new ola.common.Request(url, callback, opt_method, opt_content);
+  this.request_queue.push(request);
+
+  var t = this;
+  this.pool.getObject(
+    function(xhr) {
+      if (!t.request_queue.length)
+        return;
+      var r = t.request_queue.shift();
+      goog.events.listen(xhr, goog.net.EventType.COMPLETE, r.callback, false, t);
+      xhr.send(r.url, r.opt_method, r.opt_content);
+    },
+    1);
 };
 
 

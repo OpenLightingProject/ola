@@ -292,7 +292,6 @@ ola.DmxConsole.prototype._updateSliderOffsets = function() {
   for (var i = 0; i < this.sliders.length; ++i) {
     this.sliders[i].setValue(this.data[this.slider_offset + i]);
   }
-
 };
 
 
