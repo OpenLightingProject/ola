@@ -167,7 +167,6 @@ ola.common.Server.prototype.UpdateServerInfo = function() {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.common.ServerInfoChangeEvent(obj));
-    this._cleanupRequest(e.target);
   }
   this._initiateRequest(ola.common.Server.SERVER_INFO_URL, on_complete);
 };
@@ -179,11 +178,7 @@ ola.common.Server.prototype.UpdateServerInfo = function() {
  * completes.
  */
 ola.common.Server.prototype.reloadPlugins = function(callback) {
-  var on_complete = function(e) {
-    callback(e);
-    this._cleanupRequest(e.target);
-  }
-  this._initiateRequest(ola.common.Server.RELOAD_PLUGINS_URL, on_complete);
+  this._initiateRequest(ola.common.Server.RELOAD_PLUGINS_URL, callback);
 };
 
 
@@ -193,11 +188,7 @@ ola.common.Server.prototype.reloadPlugins = function(callback) {
  * completes.
  */
 ola.common.Server.prototype.stopServer = function (callback) {
-  var on_complete = function(e) {
-    callback(e);
-    this._cleanupRequest(e.target);
-  }
-  this._initiateRequest(ola.common.Server.STOP_SERVER_URL, on_complete);
+  this._initiateRequest(ola.common.Server.STOP_SERVER_URL, callback);
 };
 
 
@@ -209,7 +200,6 @@ ola.common.Server.prototype.FetchUniversePluginList = function() {
     if (e.target.getStatus() != 200) {
       ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
           e.target.getLastError())
-      this._cleanupRequest(e.target);
       return;
     }
     var obj = e.target.getResponseJson();
@@ -221,7 +211,6 @@ ola.common.Server.prototype.FetchUniversePluginList = function() {
     }
     this.dispatchEvent(new ola.PluginListChangeEvent(obj['plugins']));
     this.dispatchEvent(new ola.UniverseListChangeEvent(obj['universes']));
-    this._cleanupRequest(e.target);
   }
   this._initiateRequest(ola.common.Server.PLUGIN_UNIVERSE_LIST_URL, on_complete);
 };
@@ -234,7 +223,6 @@ ola.common.Server.prototype.FetchPluginInfo = function(plugin_id) {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.PluginChangeEvent(obj));
-    this._cleanupRequest(e.target);
   }
   var url = ola.common.Server.PLUGIN_INFO_URL + '?id=' + plugin_id;
   this._initiateRequest(url, on_complete);
@@ -248,7 +236,6 @@ ola.common.Server.prototype.FetchUniverseInfo = function(universe_id) {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.UniverseChangeEvent(obj));
-    this._cleanupRequest(e.target);
   }
   var url = ola.common.Server.UNIVERSE_INFO_URL + '?id=' + universe_id;
   this._initiateRequest(url, on_complete);
@@ -260,15 +247,11 @@ ola.common.Server.prototype.FetchUniverseInfo = function(universe_id) {
  * @param {number=} opt_universe an optional universe id
  */
 ola.common.Server.prototype.fetchAvailablePorts = function(opt_universe, callback) {
-  var on_complete = function(e) {
-    callback(e);
-    this._cleanupRequest(e.target);
-  }
   var url = ola.common.Server.AVAILBLE_PORTS_URL;
   if (opt_universe != undefined) {
     url += '?id=' + opt_universe;
   }
-  this._initiateRequest(url, on_complete);
+  this._initiateRequest(url, callback);
 };
 
 
@@ -276,17 +259,13 @@ ola.common.Server.prototype.fetchAvailablePorts = function(opt_universe, callbac
  * Create a new universe
  */
 ola.common.Server.prototype.createUniverse = function(universe_id,
-                                               name,
-                                               port_ids,
-                                               callback) {
-  var on_complete = function(e) {
-    callback(e);
-    this._cleanupRequest(e.target);
-  }
+                                                      name,
+                                                      port_ids,
+                                                      callback) {
   var post_data = 'id=' + universe_id + (
       name ? '&name=' + encodeURI(name) : '') + '&add_ports=' +
       port_ids.join(',');
-  this._initiateRequest(ola.common.Server.NEW_UNIVERSE_URL, on_complete, 'POST',
+  this._initiateRequest(ola.common.Server.NEW_UNIVERSE_URL, callback, 'POST',
                         post_data);
 };
 
@@ -300,12 +279,8 @@ ola.common.Server.prototype.createUniverse = function(universe_id,
  *   request is ack'ed.
  */
 ola.common.Server.prototype.runRDMDiscovery = function(universe_id, callback) {
-  var on_complete = function(e) {
-    callback(e);
-    this._cleanupRequest(e.target);
-  }
   var url = ola.common.Server.RDM_DISCOVERY_URL + '?id=' + universe_id;
-  this._initiateRequest(url, on_complete);
+  this._initiateRequest(url, callback);
 };
 
 
@@ -317,15 +292,11 @@ ola.common.Server.prototype.runRDMDiscovery = function(universe_id, callback) {
  *   request is ack'ed.
  */
 ola.common.Server.prototype.rdmGetSupportedSections = function(universe_id,
-                                                        uid,
-                                                        callback) {
-  var on_complete = function(e) {
-    callback(e);
-    this._cleanupRequest(e.target);
-  }
+                                                               uid,
+                                                               callback) {
   var url = (ola.common.Server.RDM_SECTIONS_URL + '?id=' + universe_id + '&uid=' +
       uid);
-  this._initiateRequest(url, on_complete);
+  this._initiateRequest(url, callback);
 };
 
 
@@ -339,17 +310,13 @@ ola.common.Server.prototype.rdmGetSupportedSections = function(universe_id,
  *   request is ack'ed.
  */
 ola.common.Server.prototype.rdmGetSectionInfo = function(universe_id,
-                                                  uid,
-                                                  section_name,
-                                                  hint,
-                                                  callback) {
-  var on_complete = function(e) {
-    callback(e);
-    this._cleanupRequest(e.target);
-  }
+                                                         uid,
+                                                         section_name,
+                                                         hint,
+                                                         callback) {
   var url = (ola.common.Server.RDM_GET_SECTION_INFO_URL + '?id=' + universe_id +
       '&uid=' + uid + '&section=' + section_name + '&hint=' + hint);
-  this._initiateRequest(url, on_complete);
+  this._initiateRequest(url, callback);
 };
 
 
@@ -363,19 +330,15 @@ ola.common.Server.prototype.rdmGetSectionInfo = function(universe_id,
  *   request is ack'ed.
  */
 ola.common.Server.prototype.rdmSetSectionInfo = function(universe_id,
-                                                  uid,
-                                                  section_name,
-                                                  hint,
-                                                  data,
-                                                  callback) {
-  var on_complete = function(e) {
-    callback(e);
-    this._cleanupRequest(e.target);
-  }
+                                                         uid,
+                                                         section_name,
+                                                         hint,
+                                                         data,
+                                                         callback) {
   var url = (ola.common.Server.RDM_SET_SECTION_INFO_URL + '?id=' + universe_id +
       '&uid=' + uid + '&section=' + section_name + '&hint=' + hint + '&' +
       data);
-  this._initiateRequest(url, on_complete);
+  this._initiateRequest(url, callback);
 };
 
 
@@ -387,12 +350,10 @@ ola.common.Server.prototype.FetchUids = function(universe_id) {
     if (e.target.getStatus() != 200) {
       ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
           e.target.getLastError())
-      this._cleanupRequest(e.target);
       return;
     }
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.UidsEvent(obj['universe'], obj['uids']));
-    this._cleanupRequest(e.target);
   }
   var url = ola.common.Server.UIDS_URL + '?id=' + universe_id;
   this._initiateRequest(url, on_complete);
@@ -417,10 +378,6 @@ ola.common.Server.prototype.modifyUniverse = function(universe_id,
                                                ports_to_remove,
                                                ports_to_add,
                                                callback) {
-  var on_complete = function(e) {
-    callback(e);
-    this._cleanupRequest(e.target);
-  }
   var post_data = ('id=' + universe_id + '&name=' + universe_name +
       '&merge_mode=' + merge_mode + '&add_ports=' + ports_to_add.join(',') +
       '&remove_ports=' + ports_to_remove.join(','));
@@ -438,7 +395,7 @@ ola.common.Server.prototype.modifyUniverse = function(universe_id,
   }
   post_data += ('&modify_ports=' + modified_port_ids.join(','));
   var url = ola.common.Server.MODIFY_UNIVERSE_URL;
-  this._initiateRequest(url, on_complete, 'POST', post_data);
+  this._initiateRequest(url, callback, 'POST', post_data);
 };
 
 
@@ -448,12 +405,9 @@ ola.common.Server.prototype.modifyUniverse = function(universe_id,
  * @param {Array.<number>} data the channel values.
  */
 ola.common.Server.prototype.setChannelValues = function(universe_id, data) {
-  var on_complete = function(e) {
-    this._cleanupRequest(e.target);
-  }
   var post_data = 'u=' + universe_id + '&d=' + data.join(',');
   var url = ola.common.Server.SET_DMX_URL;
-  this._initiateRequest(url, on_complete, 'POST', post_data);
+  this._initiateRequest(url, undefined, 'POST', post_data);
 };
 
 
@@ -488,7 +442,9 @@ ola.common.Server.prototype._initiateRequest = function(url,
       if (!t.request_queue.length)
         return;
       var r = t.request_queue.shift();
-      goog.events.listen(xhr, goog.net.EventType.COMPLETE, r.callback, false, t);
+      if (r.callback)
+        goog.events.listen(xhr, goog.net.EventType.COMPLETE, r.callback, false, t);
+      goog.events.listen(xhr, goog.net.EventType.READY, t._cleanupRequest, false, t);
       xhr.send(r.url, r.opt_method, r.opt_content);
     },
     1);
@@ -500,7 +456,8 @@ ola.common.Server.prototype._initiateRequest = function(url,
  * to the pool.
  * @private
  */
-ola.common.Server.prototype._cleanupRequest = function(xhr) {
+ola.common.Server.prototype._cleanupRequest = function(e) {
+  var xhr = e.target;
   goog.events.removeAll(xhr);
   this.pool.releaseObject(xhr);
 };
