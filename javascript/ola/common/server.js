@@ -82,7 +82,8 @@ ola.common.Server.RDM_SET_SECTION_INFO_URL = '/json/rdm/set_section_info';
 ola.common.Server.NEW_UNIVERSE_URL = '/new_universe';
 ola.common.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
 ola.common.Server.SET_DMX_URL = '/set_dmx';
-ola.common.Server.REQUEST_QUEUE_LIMIT = 10;
+// This should be more than the max # of RDM sections we ever expect
+ola.common.Server.REQUEST_QUEUE_LIMIT = 30;
 
 /**
  * This event is fired when the server info changes
