@@ -135,6 +135,10 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
         unsigned int universe,
         const DmxBuffer &data,
         SingleUseCallback1<void, const string&> *callback);
+    bool SendDmx(
+        unsigned int universe,
+        const DmxBuffer &data,
+        Callback1<void, const string&> *callback);
     bool FetchDmx(
         unsigned int universe,
         SingleUseCallback2<void, const DmxBuffer&, const string&> *callback);

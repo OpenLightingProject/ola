@@ -310,6 +310,20 @@ bool OlaCallbackClient::SendDmx(
 
 
 /*
+ * Write some dmx data.
+ * @param universe universe to send to
+ * @param data a DmxBuffer with the data
+ * @return true on success, false on failure
+ */
+bool OlaCallbackClient::SendDmx(
+    unsigned int universe,
+    const DmxBuffer &data,
+    Callback1<void, const string&> *callback) {
+  return m_core->SendDmx(universe, data, callback);
+}
+
+
+/*
  * Read dmx data.
  * @param universe the universe id to get data for
  * @return true on success, false on failure

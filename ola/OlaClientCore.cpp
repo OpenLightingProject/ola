@@ -530,20 +530,21 @@ bool OlaClientCore::SendDmx(
     delete callback;
     return false;
   }
+  return GenericSendDmx(universe, data, callback);
+}
 
-  ola::proto::DmxData request;
-  SimpleRpcController *controller = new SimpleRpcController();
-  ola::proto::Ack *reply = new ola::proto::Ack();
 
-  request.set_universe(universe);
-  request.set_data(data.Get());
-
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
-      this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
-  m_stub->UpdateDmxData(controller, &request, reply, cb);
-  return true;
+/*
+ * Write some dmx data
+ * @param universe   universe to send to
+ * @param data the DmxBuffer with the data
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::SendDmx(
+    unsigned int universe,
+    const DmxBuffer &data,
+    Callback1<void, const string&> *callback) {
+  return GenericSendDmx(universe, data, callback);
 }
 
 
@@ -1032,6 +1033,29 @@ void OlaClientCore::HandleRDM(rdm_response_args *args) {
 
   args->callback->Run(response_status, args->reply->data());
   FreeArgs(args);
+}
+
+
+/**
+ * The generic SendDmx method
+ */
+bool OlaClientCore::GenericSendDmx(
+    unsigned int universe,
+    const DmxBuffer &data,
+    BaseCallback1<void, const string&> *callback) {
+  ola::proto::DmxData request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::Ack *reply = new ola::proto::Ack();
+
+  request.set_universe(universe);
+  request.set_data(data.Get());
+
+  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+      this,
+      &ola::OlaClientCore::HandleAck,
+      NewArgs<ack_args>(controller, reply, callback));
+  m_stub->UpdateDmxData(controller, &request, reply, cb);
+  return true;
 }
 
 

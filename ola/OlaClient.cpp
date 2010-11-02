@@ -26,8 +26,8 @@ namespace ola {
 
 using ola::network::ConnectedSocket;
 
-OlaClient::OlaClient(ConnectedSocket *socket):
-  m_observer(NULL) {
+OlaClient::OlaClient(ConnectedSocket *socket)
+    : m_observer(NULL) {
   m_core = new OlaClientCore(socket);
 }
 
@@ -115,7 +115,10 @@ bool OlaClient::SendDmx(unsigned int universe, const DmxBuffer &data) {
                           &OlaClientObserver::SendDmxComplete,
                           universe));
   else
-    return m_core->SendDmx(universe, data, NULL);
+    return m_core->SendDmx(
+        universe,
+        data,
+        reinterpret_cast<Callback1<void, const string&>*>(NULL));
 }
 
 

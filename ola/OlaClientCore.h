@@ -143,6 +143,10 @@ class OlaClientCore: public ola::proto::OlaClientService {
         unsigned int universe,
         const DmxBuffer &data,
         SingleUseCallback1<void, const string&> *callback);
+    bool SendDmx(
+        unsigned int universe,
+        const DmxBuffer &data,
+        Callback1<void, const string&> *callback);
     bool FetchDmx(
         unsigned int universe,
         SingleUseCallback2<void, const DmxBuffer&, const string&> *callback);
@@ -224,7 +228,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     typedef struct {
       SimpleRpcController *controller;
       ola::proto::Ack *reply;
-      SingleUseCallback1<void, const string&> *callback;
+      BaseCallback1<void, const string&> *callback;
     } ack_args;
 
     void HandleAck(ack_args *args);
@@ -275,6 +279,11 @@ class OlaClientCore: public ola::proto::OlaClientService {
   private:
     OlaClientCore(const OlaClientCore&);
     OlaClientCore operator=(const OlaClientCore&);
+
+    bool GenericSendDmx(
+        unsigned int universe,
+        const DmxBuffer &data,
+        BaseCallback1<void, const string&> *callback);
 
     bool GenericFetchCandidatePorts(
         unsigned int universe_id,
