@@ -503,14 +503,20 @@
         background-image: url(/toolbar_sprites.png);
         background-color: transparent;
         background-repeat: no-repeat;
+        position: relative;
+        display: -moz-inline-box; /* Ignored by FF3 and later. */
+        display: inline-block;
+        margin: 0px 2px 0px 2px;
       }
 
-      .ola-icon-discovery { background-position: -16px -0px; }
-
       .ola-icon-prev { background-position: -0px -0px; }
+      .ola-icon-discovery { background-position: -16px -0px; }
       .ola-icon-next { background-position: -32px -0px; }
-      .ola-icon-full { background-position: -48px -0px; }
-      .ola-icon-dbo { background-position: -64px -0px; }
+      .ola-icon-hide { background-position: -48px -0px; }
+      .ola-icon-full { background-position: -64px -0px; }
+      .ola-icon-dbo { background-position: -80px -0px; }
+      .ola-icon-refresh { background-position: -96px -0px; }
+      .ola-icon-show { background-position: -112px -0px; }
     </style>
   </head>
   <body onload='ola.Setup()'>
@@ -728,7 +734,29 @@
           </div>
 
           <div id='tab_page_2'>
-            <div id='rdm_toolbar' class='goog-toolbar'></div>
+            <div id='rdm_toolbar' class='goog-toolbar'>
+              <div id='discoveryButton' class='goog-toolbar-button'>
+                <div class='ola-icon ola-icon-discovery'></div>
+              </div>
+              <hr>
+              <div id='showAllSectionsButton' class='goog-toolbar-button'>
+                <div class='ola-icon ola-icon-show'></div>
+              </div>
+              <div id='hideAllSectionsButton' class='goog-toolbar-button'>
+                <div class='ola-icon ola-icon-hide'></div>
+              </div>
+              <hr>
+              <div id='refreshButton' class='goog-toolbar-menu-button'>
+                <span class='ola-icon ola-icon-refresh'>&nbsp;</span>
+                Refresh
+                <div id='decoratedMenu' class='goog-menu'>
+                  <div class='goog-menuitem'>Never</div>
+                  <div class='goog-menuitem'>30s</div>
+                  <div class='goog-menuitem'>1m</div>
+                  <div class='goog-menuitem'>5m</div>
+                </div>
+              </div>
+            </div>
             <div class='goog-splitpane ola-splitpane-rdm' id='rdm_split_pane'>
               <div class='goog-splitpane-first-container
                           ola-splitpane-rdm-uids'>

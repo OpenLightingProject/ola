@@ -30,6 +30,7 @@ goog.require('goog.ui.SplitPane.Orientation');
 goog.require('goog.ui.TabPane');
 goog.require('goog.ui.Toolbar');
 goog.require('goog.ui.ToolbarButton');
+goog.require('goog.ui.ToolbarMenuButton')
 goog.require('goog.ui.ToolbarSeparator');
 
 goog.require('ola.BaseFrame');
@@ -145,19 +146,10 @@ ola.UniverseFrame.prototype._setupMainTab = function() {
  */
 ola.UniverseFrame.prototype._setupRDMTab = function() {
   var toolbar = new goog.ui.Toolbar();
-  var discovery_button = new goog.ui.ToolbarButton(
-      goog.dom.createDom('div', 'ola-icon ola-icon-discovery'));
+  toolbar.decorate(goog.dom.$('rdm_toolbar'));
+
+  var discovery_button = toolbar.getChild('discoveryButton')
   discovery_button.setTooltip('Force RDM Discovery for this universe');
-  toolbar.addChild(discovery_button, true);
-  toolbar.addChild(new goog.ui.ToolbarSeparator(), true);
-
-  expander_button = new goog.ui.ToolbarButton('Show All Attributes');
-  expander_button.setTooltip('');
-  toolbar.addChild(expander_button, true);
-  expander_button.setEnabled(false);
-
-  toolbar.render(goog.dom.getElement('rdm_toolbar'));
-
   goog.events.listen(discovery_button,
                      goog.ui.Component.EventType.ACTION,
                      function() { this._discoveryButtonClicked(); },
@@ -172,8 +164,7 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
   this.splitpane.setHandleSize(2);
   this.splitpane.decorate(goog.dom.$('rdm_split_pane'));
 
-  var rdm_panel = new ola.RDMAttributesPanel('rdm_attributes',
-                                             expander_button);
+  var rdm_panel = new ola.RDMAttributesPanel('rdm_attributes', toolbar);
   this.rdm_panel = rdm_panel;
 
   var frame = this;

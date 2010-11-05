@@ -17,6 +17,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.ui.Component');

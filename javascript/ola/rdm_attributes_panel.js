@@ -17,6 +17,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.ui.AnimatedZippy');
@@ -39,9 +40,8 @@ goog.provide('ola.RDMAttributesPanel');
  * @param {string} element_id the id of the element to use for this frame.
  * @constructor
  */
-ola.RDMAttributesPanel = function(element_id, expander_button) {
+ola.RDMAttributesPanel = function(element_id, toolbar) {
   this.element = goog.dom.$(element_id);
-  this.expander_button = expander_button;
   this.current_universe = undefined;
   this.current_uid = undefined;
   this.divs = new Array();
@@ -49,11 +49,50 @@ ola.RDMAttributesPanel = function(element_id, expander_button) {
   // This holds the list of sections, and is updated as a section is loaded
   this.section_data = undefined;
 
+  this.expander_button = toolbar.getChild('showAllSectionsButton');
+  this.expander_button.setTooltip('Show All Attributes');
+  this.expander_button.setEnabled(false);
   goog.events.listen(this.expander_button,
                      goog.ui.Component.EventType.ACTION,
                      function() { this._expandAllSections(); },
                      false,
                      this);
+
+  this.collapse_button = toolbar.getChild('hideAllSectionsButton');
+  this.collapse_button.setTooltip('Hide All Attributes');
+  this.collapse_button.setEnabled(false);
+  goog.events.listen(this.collapse_button,
+                     goog.ui.Component.EventType.ACTION,
+                     function() { this._hideAllSections(); },
+                     false,
+                     this);
+
+  var refresh_menu = toolbar.getChild('refreshButton')
+  refresh_menu.setTooltip('Configure how often attributes are refreshed');
+  goog.events.listen(refresh_menu,
+                     goog.ui.Component.EventType.ACTION,
+                     this._refreshChanged,
+                     false,
+                     this);
+
+  this.refresh_timer = new goog.Timer(30000);
+
+  goog.events.listen(
+      this.refresh_timer,
+      goog.Timer.TICK,
+      this._refreshEvent,
+      false,
+      this);
+};
+
+
+/**
+ * The mapping of strings to timeout intervals.
+ */
+ola.RDMAttributesPanel.RefreshInterval = {
+  '30s': 30000,
+  '1m': 60000,
+  '5m': 300000
 };
 
 
@@ -81,6 +120,7 @@ ola.RDMAttributesPanel.prototype.showUID = function(item) {
       function(e) { panel._supportedSections(e); });
   this.current_uid = item.asString();
   this.expander_button.setEnabled(true);
+  this.collapse_button.setEnabled(true);
 };
 
 
@@ -90,6 +130,7 @@ ola.RDMAttributesPanel.prototype.showUID = function(item) {
 ola.RDMAttributesPanel.prototype.clear = function() {
   this.current_uid = undefined;
   this.expander_button.setEnabled(false);
+  this.collapse_button.setEnabled(false);
   this._setEmpty();
 };
 
@@ -103,6 +144,50 @@ ola.RDMAttributesPanel.prototype._expandAllSections = function() {
     if (!this.zippies[i].isExpanded()) {
       this.zippies[i].setExpanded(true);
       this._expandSection(i);
+    }
+  }
+};
+
+
+/**
+ * Hide all the sections.
+ * @private
+ */
+ola.RDMAttributesPanel.prototype._hideAllSections = function() {
+  for (var i = 0; i < this.zippies.length; ++i) {
+    if (this.zippies[i].isExpanded()) {
+      this.zippies[i].setExpanded(false);
+    }
+  }
+};
+
+
+/**
+ * Set the refresh rate
+ */
+ola.RDMAttributesPanel.prototype._refreshChanged = function(e) {
+  var value = e.target.getCaption();
+  if (value == 'Never') {
+    this.refresh_timer.stop();
+  } else {
+    var timeout = ola.RDMAttributesPanel.RefreshInterval[value];
+    if (timeout != undefined) {
+      this.refresh_timer.setInterval(timeout);
+    } else {
+      ola.logger.info('Invalid timeout ' + value);
+    }
+    this.refresh_timer.start();
+  }
+};
+
+
+/**
+ * Called when the refresh timer fires
+ */
+ola.RDMAttributesPanel.prototype._refreshEvent = function(e) {
+  for (var i = 0; i < this.zippies.length; ++i) {
+    if (this.zippies[i].isExpanded()) {
+      this._loadSection(i);
     }
   }
 };
