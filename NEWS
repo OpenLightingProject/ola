@@ -1,3 +1,11 @@
+06/11/2010 ola-0.8.5
+  Added a simple mobile web UI
+  Fixed the web UI so it works on Opera
+  Start olad automatically from the c++ clients if it's not already running
+  Add more attributes to the RDM web UI
+  Bug fixes for the RDM TRI
+  Python API bug fixes
+
 19/10/2010 ola-0.8.4
   Add the RDM web UI
   Work around an ArtNet RDM bug
