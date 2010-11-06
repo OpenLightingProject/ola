@@ -140,7 +140,7 @@ class DmxTriWidget: public WidgetListener {
       EC_OUT_OF_RANGE = 0x26,
       EC_BUFFER_FULL = 0x27,
       EC_FRAME_OVERFLOW = 0x28,
-      EC_SUBWIDGET_UNKNOWN = 0x29,
+      EC_SUBDEVICE_UNKNOWN = 0x29,
     } dmx_tri_error_codes;
 
     static const unsigned int DATA_OFFSET = 2;  // first two bytes are CI & RC
