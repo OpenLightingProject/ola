@@ -338,7 +338,6 @@ int HttpResponse::Send() {
 HttpServer::HttpServer(unsigned int port, const string &data_dir)
     : OlaThread(),
       m_httpd(NULL),
-      m_select_server(NULL),
       m_default_handler(NULL),
       m_port(port),
       m_data_dir(data_dir) {
@@ -352,9 +351,6 @@ HttpServer::HttpServer(unsigned int port, const string &data_dir)
  */
 HttpServer::~HttpServer() {
   Stop();
-
-  if (m_select_server)
-    delete m_select_server;
 
   if (m_httpd)
     MHD_stop_daemon(m_httpd);
@@ -377,7 +373,7 @@ HttpServer::~HttpServer() {
  * @return true on success, false on failure
  */
 bool HttpServer::Init() {
-  if (m_httpd || m_select_server) {
+  if (m_httpd) {
     OLA_INFO << "Non null pointers found, Init() was probably called twice";
     return false;
   }
@@ -393,10 +389,8 @@ bool HttpServer::Init() {
                              NULL,
                              MHD_OPTION_END);
 
-  if (m_httpd) {
-    m_select_server = new ola::network::SelectServer();
-    m_select_server->RunInLoop(NewClosure(this, &HttpServer::UpdateSockets));
-  }
+  if (m_httpd)
+    m_select_server.RunInLoop(NewClosure(this, &HttpServer::UpdateSockets));
 
   return m_httpd ? true : false;
 }
@@ -406,19 +400,19 @@ bool HttpServer::Init() {
  * The entry point into the new thread
  */
 void *HttpServer::Run() {
-  if (!(m_httpd || m_select_server)) {
+  if (!m_httpd) {
     OLA_WARN << "HttpServer::Run called but the server wasn't setup.";
     return NULL;
   }
 
-  m_select_server->Run();
+  m_select_server.Run();
 
   // clean up any remaining sockets
   set<UnmanagedSocket*, unmanaged_socket_lt>::iterator iter =
     m_sockets.begin();
   for (; iter != m_sockets.end(); ++iter) {
-    m_select_server->RemoveSocket(*iter);
-    m_select_server->UnRegisterWriteSocket(*iter);
+    m_select_server.RemoveSocket(*iter);
+    m_select_server.UnRegisterWriteSocket(*iter);
     delete *iter;
   }
   return NULL;
@@ -431,7 +425,7 @@ void *HttpServer::Run() {
 void HttpServer::Stop() {
   if (IsRunning()) {
     OLA_INFO << "Notifying HTTP server thread to stop";
-    m_select_server->Terminate();
+    m_select_server.Terminate();
     OLA_INFO << "Waiting for HTTP server thread to exit";
     Join();
     OLA_INFO << "HTTP server thread exited";
@@ -472,21 +466,21 @@ void HttpServer::UpdateSockets() {
     if ((*iter)->ReadDescriptor() < i) {
       // this socket is no longer required so remove it
       OLA_DEBUG << "Removing unsed socket " << (*iter)->ReadDescriptor();
-      m_select_server->RemoveSocket(*iter);
-      m_select_server->UnRegisterWriteSocket(*iter);
+      m_select_server.RemoveSocket(*iter);
+      m_select_server.UnRegisterWriteSocket(*iter);
       delete *iter;
       m_sockets.erase(iter++);
     } else if ((*iter)->ReadDescriptor() == i) {
       // this socket may need to be updated
       if (FD_ISSET(i, &r_set))
-        m_select_server->AddSocket(*iter);
+        m_select_server.AddSocket(*iter);
       else
-        m_select_server->RemoveSocket(*iter);
+        m_select_server.RemoveSocket(*iter);
 
       if (FD_ISSET(i, &w_set))
-        m_select_server->RegisterWriteSocket(*iter);
+        m_select_server.RegisterWriteSocket(*iter);
       else
-        m_select_server->UnRegisterWriteSocket(*iter);
+        m_select_server.UnRegisterWriteSocket(*iter);
       iter++;
       i++;
     } else {
@@ -503,8 +497,8 @@ void HttpServer::UpdateSockets() {
   while (iter != m_sockets.end()) {
     OLA_DEBUG << "Removing " << (*iter)->ReadDescriptor() <<
       " as it's not longer needed";
-    m_select_server->UnRegisterWriteSocket(*iter);
-    m_select_server->RemoveSocket(*iter);
+    m_select_server.UnRegisterWriteSocket(*iter);
+    m_select_server.RemoveSocket(*iter);
     delete *iter;
     m_sockets.erase(iter++);
   }
@@ -709,10 +703,10 @@ UnmanagedSocket *HttpServer::NewSocket(fd_set *r_set,
   socket->SetOnWritable(NewClosure(this, &HttpServer::HandleHTTPIO));
 
   if (FD_ISSET(fd, r_set))
-    m_select_server->AddSocket(socket);
+    m_select_server.AddSocket(socket);
 
   if (FD_ISSET(fd, w_set))
-    m_select_server->RegisterWriteSocket(socket);
+    m_select_server.RegisterWriteSocket(socket);
   return socket;
 }
 }  // ola

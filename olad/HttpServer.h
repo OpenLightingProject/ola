@@ -151,8 +151,8 @@ class HttpServer: public OlaThread {
     static const char CONTENT_TYPE_JS[];
 
     // Expose the SelectServer
-    ola::network::SelectServer *SelectServer() const {
-      return m_select_server;
+    ola::network::SelectServer *SelectServer() {
+      return &m_select_server;
     }
 
   private :
@@ -171,7 +171,7 @@ class HttpServer: public OlaThread {
                                              int fd);
 
     struct MHD_Daemon *m_httpd;
-    ola::network::SelectServer *m_select_server;
+    ola::network::SelectServer m_select_server;
 
     std::set<ola::network::UnmanagedSocket*, unmanaged_socket_lt> m_sockets;
 
