@@ -21,9 +21,9 @@
 #ifndef OLA_OLADEVICE_H_
 #define OLA_OLADEVICE_H_
 
+#include <olad/PortConstants.h>
 #include <string>
 #include <vector>
-#include <olad/PortConstants.h>
 
 namespace ola {
 

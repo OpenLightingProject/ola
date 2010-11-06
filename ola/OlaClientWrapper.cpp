@@ -18,14 +18,17 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+
+#include <ola/AutoStart.h>
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
 #include <ola/OlaClientWrapper.h>
 
 namespace ola {
 
-BaseClientWrapper::BaseClientWrapper()
+BaseClientWrapper::BaseClientWrapper(bool auto_start)
     : m_socket(NULL),
+      m_auto_start(auto_start),
       m_ss(NULL) {
 }
 
@@ -44,7 +47,11 @@ bool BaseClientWrapper::Setup() {
     m_ss = new SelectServer();
 
   if (!m_socket) {
+    if (m_auto_start)
+      m_socket = ola::client::ConnectToServer(OLA_DEFAULT_PORT);
+    else
     m_socket = TcpSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT);
+
     if (!m_socket) {
       delete m_socket;
       delete m_ss;

@@ -1,11 +1,11 @@
 include $(top_srcdir)/common.mk
 
-HEADER_FILES = OlaClient.h OlaCallbackClient.h OlaDevice.h \
+HEADER_FILES = AutoStart.h OlaClient.h OlaCallbackClient.h OlaDevice.h \
                OlaClientWrapper.h StreamingClient.h common.h
 
 lib_LTLIBRARIES = libola.la
-libola_la_SOURCES = OlaClient.cpp OlaCallbackClient.cpp OlaClientCore.cpp \
-                    OlaClientWrapper.cpp StreamingClient.cpp
+libola_la_SOURCES = AutoStart.cpp OlaClient.cpp OlaCallbackClient.cpp \
+                    OlaClientCore.cpp OlaClientWrapper.cpp StreamingClient.cpp
 libola_la_LDFLAGS = -version-info 1:1:0
 libola_la_LIBADD = $(top_builddir)/common/libolacommon.la
 

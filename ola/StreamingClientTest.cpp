@@ -143,7 +143,7 @@ void StreamingClientTest::tearDown() {
  * Check that the SendDMX method works correctly.
  */
 void StreamingClientTest::testSendDMX() {
-  ola::StreamingClient ola_client;
+  ola::StreamingClient ola_client(false);
 
   ola::DmxBuffer buffer;
   buffer.Blackout();

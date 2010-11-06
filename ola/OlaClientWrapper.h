@@ -40,7 +40,7 @@ using ola::network::TcpSocket;
  */
 class BaseClientWrapper {
   public:
-    BaseClientWrapper();
+    explicit BaseClientWrapper(bool auto_start);
     virtual ~BaseClientWrapper();
 
     SelectServer *GetSelectServer() const { return m_ss; }
@@ -57,6 +57,7 @@ class BaseClientWrapper {
     virtual void CreateClient() = 0;
     virtual bool StartupClient() = 0;
 
+    bool m_auto_start;
     SelectServer *m_ss;
 };
 
@@ -67,8 +68,8 @@ class BaseClientWrapper {
 template <typename client_class>
 class GenericClientWrapper: public BaseClientWrapper {
   public:
-    GenericClientWrapper():
-        BaseClientWrapper(),
+    explicit GenericClientWrapper(bool auto_start = true):
+        BaseClientWrapper(auto_start),
         m_client(NULL) {
     }
     ~GenericClientWrapper() {

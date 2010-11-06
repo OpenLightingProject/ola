@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <ola/AutoStart.h>
 #include <ola/BaseTypes.h>
 #include <ola/Closure.h>
 #include <ola/DmxBuffer.h>
@@ -31,8 +32,9 @@ namespace ola {
 using ola::rpc::StreamRpcChannel;
 using ola::proto::OlaServerService_Stub;
 
-StreamingClient::StreamingClient()
-    : m_socket(NULL),
+StreamingClient::StreamingClient(bool auto_start)
+    : m_auto_start(auto_start),
+      m_socket(NULL),
       m_ss(NULL),
       m_channel(NULL),
       m_stub(NULL),
@@ -53,7 +55,11 @@ bool StreamingClient::Setup() {
   if (m_socket || m_channel || m_stub)
     return false;
 
-  m_socket = TcpSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT);
+  if (m_auto_start)
+    m_socket = ola::client::ConnectToServer(OLA_DEFAULT_PORT);
+  else
+    m_socket = TcpSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT);
+
   if (!m_socket)
     return false;
 

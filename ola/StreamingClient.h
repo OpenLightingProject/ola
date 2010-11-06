@@ -47,7 +47,7 @@ using ola::network::SelectServer;
  */
 class StreamingClient {
   public:
-    StreamingClient();
+    explicit StreamingClient(bool auto_start = true);
     ~StreamingClient();
 
     bool Setup();
@@ -60,6 +60,7 @@ class StreamingClient {
     StreamingClient(const StreamingClient&);
     StreamingClient operator=(const StreamingClient&);
 
+    bool m_auto_start;
     TcpSocket *m_socket;
     SelectServer *m_ss;
     class ola::rpc::StreamRpcChannel *m_channel;
