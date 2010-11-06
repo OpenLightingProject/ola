@@ -94,8 +94,10 @@ bool UDPTransport::Send(const PDUBlock<PDU> &pdu_block,
   }
 
   unsigned int size = MAX_DATAGRAM_SIZE - DATA_OFFSET;
-  if (!pdu_block.Pack(m_send_buffer + DATA_OFFSET, size))
+  if (!pdu_block.Pack(m_send_buffer + DATA_OFFSET, size)) {
+    OLA_WARN << "Failed to pack E1.31 PDU";
     return false;
+  }
 
   return m_socket.SendTo(m_send_buffer, DATA_OFFSET + size, destination);
 }
