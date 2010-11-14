@@ -531,6 +531,12 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
     return false;
   }
 
+  if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_IF, &interface,
+                 sizeof(interface)) < 0) {
+    OLA_WARN << "Failed to set outgoing multicast interface for " <<
+      inet_ntoa(group) << ": " << strerror(errno);
+  }
+
   if (!multicast_loop) {
     if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop))) {
       OLA_WARN << "Failed to disable looping for " << m_fd << ":" <<
