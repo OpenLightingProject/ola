@@ -80,9 +80,9 @@ class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
     static const uint16_t DMX_KING_DEVICE_ID = 0;
     static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
     static const uint16_t ENTTEC_ESTA_ID = 0x454E;
-    static const uint16_t GODDARD_DMXSTER4_ID = 0x4d44;
+    static const uint16_t GODDARD_DMXSTER4_ID = 0x444d;
     static const uint16_t GODDARD_ESTA_ID = 0x4744;
-    static const uint16_t GODDARD_MINI_DMXSTER4_ID = 0x494d;
+    static const uint16_t GODDARD_MINI_DMXSTER4_ID = 0x4d49;
     static const uint16_t JESE_DMX_TRI_ID = 1;
     static const uint16_t JESE_ESTA_ID = 0x6864;
     static const uint16_t JESE_RDM_TRI_ID = 2;
