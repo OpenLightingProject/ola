@@ -74,15 +74,20 @@ class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
     static const char USB_PRO_FPS_LIMIT_KEY[];
     static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
 
-    // Open Lighting id is in BaseTypes.h
-    static const uint16_t JESE_ESTA_ID = 0x6864;
-    static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
-    static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
-    static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
-    static const uint16_t JESE_DMX_TRI_ID = 1;
-    static const uint16_t JESE_RDM_TRI_ID = 2;
+    // This is how device identification is done, see
+    // http://opendmx.net/index.php/USB_Protocol_Extensions
+    // OPEN_LIGHTING_ESTA_CODE is in BaseTypes.h
     static const uint16_t DMX_KING_DEVICE_ID = 0;
+    static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
     static const uint16_t ENTTEC_ESTA_ID = 0x454E;
+    static const uint16_t GODDARD_DMXSTER4_ID = 0x4d44;
+    static const uint16_t GODDARD_ESTA_ID = 0x4744;
+    static const uint16_t GODDARD_MINI_DMXSTER4_ID = 0x494d;
+    static const uint16_t JESE_DMX_TRI_ID = 1;
+    static const uint16_t JESE_ESTA_ID = 0x6864;
+    static const uint16_t JESE_RDM_TRI_ID = 2;
+    static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
+    static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
 };
 }  // usbpro
 }  // plugin

@@ -33,6 +33,7 @@
 #include "olad/Preferences.h"
 
 #include "plugins/usbpro/ArduinoRGBDevice.h"
+#include "plugins/usbpro/DMXter4Device.h"
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/UsbProDevice.h"
 #include "plugins/usbpro/UsbProPlugin.h"
@@ -118,10 +119,24 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
   widget->SetMessageHandler(NULL);
 
   switch (information.esta_id) {
-    case OPEN_LIGHTING_ESTA_CODE:
-      if (information.device_id == OPEN_LIGHTING_RGB_MIXER_ID ||
-          information.device_id == OPEN_LIGHTING_PACKETHEADS_ID) {
-        AddDevice(new ArduinoRGBDevice(
+    case DMX_KING_ESTA_ID:
+      if (information.device_id == DMX_KING_DEVICE_ID) {
+        // DMxKing devices are drop in replacements for a Usb Pro
+        AddDevice(new UsbProDevice(
+            m_plugin_adaptor,
+            this,
+            device_name,
+            widget,
+            information.esta_id,
+            information.device_id,
+            serial,
+            GetProFrameLimit()));
+        return;
+      }
+    case GODDARD_ESTA_ID:
+      if (information.device_id == GODDARD_DMXSTER4_ID ||
+          information.device_id == GODDARD_MINI_DMXSTER4_ID) {
+        AddDevice(new DMXter4Device(
             m_plugin_adaptor,
             this,
             device_name,
@@ -146,20 +161,20 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
         return;
       }
       break;
-    case DMX_KING_ESTA_ID:
-      if (information.device_id == DMX_KING_DEVICE_ID) {
-        // DMxKing devices are drop in replacements for a Usb Pro
-        AddDevice(new UsbProDevice(
+    case OPEN_LIGHTING_ESTA_CODE:
+      if (information.device_id == OPEN_LIGHTING_RGB_MIXER_ID ||
+          information.device_id == OPEN_LIGHTING_PACKETHEADS_ID) {
+        AddDevice(new ArduinoRGBDevice(
             m_plugin_adaptor,
             this,
             device_name,
             widget,
             information.esta_id,
             information.device_id,
-            serial,
-            GetProFrameLimit()));
+            serial));
         return;
       }
+      break;
   }
   OLA_WARN << "Defaulting to a Usb Pro device";
   device_name = USBPRO_DEVICE_NAME;
