@@ -139,16 +139,17 @@ void DMXter4Device::SendTodRequest() {
 void DMXter4Device::HandleTodResponse(unsigned int length,
                                       const uint8_t *data) {
   (void) data;
-  if (length % ola::rdm::UID::UID_SIZE) {
+  if (length % UID::UID_SIZE) {
     OLA_WARN << "Response length " << length << " not divisible by " <<
       (int) ola::rdm::UID::UID_SIZE << ", ignoring packet";
     return;
   }
 
   m_uids.Clear();
-  for (unsigned int i = 0; i < length / ola::rdm::UID::UID_SIZE; i++) {
-    // UID uid(  );
-    // m_uids.AddUID(uid);
+  for (unsigned int i = 0; i < length; i+= UID::UID_SIZE) {
+    UID uid(data + i);
+    OLA_INFO << "added " << uid.ToString();
+    m_uids.AddUID(uid);
   }
   SendUIDUpdate();
 }
