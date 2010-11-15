@@ -23,7 +23,9 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/UsbDevice.h"
+#include "plugins/usbpro/UsbWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -33,7 +35,7 @@ namespace usbpro {
 /*
  * An Arduino RGB Mixer Device
  */
-class DMXter4Device: public UsbDevice {
+class DMXter4Device: public UsbDevice, public WidgetListener {
   public:
     DMXter4Device(const ola::PluginAdaptor *plugin_adaptor,
                   ola::AbstractPlugin *owner,
@@ -42,8 +44,15 @@ class DMXter4Device: public UsbDevice {
                   uint16_t esta_id,
                   uint16_t device_id,
                   uint32_t serial);
-
+    ~DMXter4Device();
     string DeviceId() const { return m_device_id; }
+    bool StartHook();
+
+    void HandleMessage(UsbWidget *widget,
+                       uint8_t label,
+                       unsigned int length,
+                       const uint8_t *data);
+
 
     bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
     void RunRDMDiscovery();
@@ -51,6 +60,15 @@ class DMXter4Device: public UsbDevice {
 
   private:
     string m_device_id;
+    ola::rdm::UIDSet m_uids;
+    class DMXter4DeviceOutputPort *m_port;
+
+    void SendTodRequest();
+    void HandleTodResponse(unsigned int length, const uint8_t *data);
+
+    static const uint8_t RDM_REQUEST_LABEL = 0x80;
+    static const uint8_t RDM_BCAST_REQUEST_LABEL = 0x81;
+    static const uint8_t TOD_LABEL = 0x82;
 };
 
 
@@ -84,7 +102,7 @@ class DMXter4DeviceOutputPort: public BasicOutputPort {
       m_device->RunRDMDiscovery();
     }
 
-    string Description() const { return ""; }
+    string Description() const { return "RDM Only"; }
 
   private:
     DMXter4Device *m_device;

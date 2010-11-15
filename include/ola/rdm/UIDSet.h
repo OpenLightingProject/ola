@@ -56,6 +56,10 @@ class UIDSet {
       return *this;
     }
 
+    void Clear() {
+      m_uids.clear();
+    }
+
     // Number of UIDs in the set
     unsigned int Size() const {
       return m_uids.size();
