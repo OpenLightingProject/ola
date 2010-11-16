@@ -239,15 +239,23 @@ if test "${use_gcov}" = "yes"; then
   LDFLAGS="$LDFLAGS -fprofile-arcs"
 fi
 
-# look for microhttpd
-AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
+# look for microhttpd if the user asked us to
+AC_ARG_ENABLE(
+  [http],
+  AS_HELP_STRING([--disable-http], [Disable the built in HTTP server]))
+
+MICROHTTPD_LIBS=""
+have_microhttpd="no"
+
+if test "${enable_http}" != "no"; then
+  AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
+fi
+
 AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
 
 if test "${have_microhttpd}" = "yes"; then
   AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
   MICROHTTPD_LIBS="-lmicrohttpd"
-else
-  MICROHTTPD_LIBS=''
 fi
 AC_SUBST(MICROHTTPD_LIBS)
 

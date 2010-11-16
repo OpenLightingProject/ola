@@ -3,11 +3,11 @@ SUBDIRS = www testdata
 
 
 OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp DmxSource.cpp \
-                    DynamicPluginLoader.cpp HttpModule.cpp \
-                    InternalInputPort.cpp InternalRDMController.cpp \
-                    OlaServerServiceImpl.cpp Plugin.cpp PluginAdaptor.cpp \
-                    PluginManager.cpp Preferences.cpp Port.cpp PortManager.cpp \
-                    RDMHttpModule.cpp Universe.cpp UniverseStore.cpp
+                    DynamicPluginLoader.cpp InternalInputPort.cpp \
+                    InternalRDMController.cpp OlaServerServiceImpl.cpp \
+                    Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
+                    Preferences.cpp Port.cpp PortManager.cpp Universe.cpp \
+                    UniverseStore.cpp
 
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
@@ -16,7 +16,8 @@ libolaserver_la_LDFLAGS = -lprotobuf ${PLUGIN_LIBS} ${MICROHTTPD_LIBS}
 
 if HAVE_LIBMICROHTTPD
 libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \
-                           OlaHttpServer.cpp
+                           OlaHttpServer.cpp HttpModule.cpp \
+                           RDMHttpModule.cpp
 endif
 
 libolaserver_la_LIBADD = $(top_builddir)/common/libolacommon.la \
