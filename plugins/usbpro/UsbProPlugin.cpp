@@ -134,8 +134,8 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
         return;
       }
     case GODDARD_ESTA_ID:
-      if (information.device_id == GODDARD_DMXSTER4_ID ||
-          information.device_id == GODDARD_MINI_DMXSTER4_ID) {
+      if (information.device_id == GODDARD_DMXTER4_ID ||
+          information.device_id == GODDARD_MINI_DMXTER4_ID) {
         AddDevice(new DMXter4Device(
             m_plugin_adaptor,
             this,
