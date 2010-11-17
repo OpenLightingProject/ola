@@ -45,7 +45,7 @@ class InterfacePicker {
 
     // stupid windows, 'interface' seems to be a struct so we use iface here.
     bool ChooseInterface(Interface *iface,
-                         const std::string &preferred_ip) const;
+                         const std::string &ip_or_name) const;
 
     virtual std::vector<Interface> GetInterfaces() const = 0;
 

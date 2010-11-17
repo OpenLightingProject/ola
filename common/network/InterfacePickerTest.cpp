@@ -98,6 +98,7 @@ void InterfacePickerTest::testChooseInterface() {
 
   // now with one interface that doesn't match
   Interface iface1;
+  iface1.name = "eth0";
   StringToAddress("10.0.0.1", iface1.ip_address);
   interfaces.push_back(iface1);
   CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "192.168.1.1"));
@@ -105,9 +106,17 @@ void InterfacePickerTest::testChooseInterface() {
 
   // check that preferred works
   Interface iface2;
+  iface2.name = "eth1";
   StringToAddress("192.168.1.1", iface2.ip_address);
   interfaces.push_back(iface2);
   CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "192.168.1.1"));
+  CPPUNIT_ASSERT(iface2 == interface);
+
+  // now check for iface name
+  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "eth0"));
+  CPPUNIT_ASSERT(iface1 == interface);
+
+  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "eth1"));
   CPPUNIT_ASSERT(iface2 == interface);
 
   // a invalid address should return the first one

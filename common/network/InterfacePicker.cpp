@@ -78,13 +78,14 @@ bool Interface::operator==(const Interface &other) {
 /*
  * Select an interface to use
  * @param interface, the interface to populate
- * @param preferred_ip the ip address of the local interface we'd prefer to use
+ * @param ip_or_name the ip address or interface name  of the local interface
+ *   we'd prefer to use.
  * @return true if we found an interface, false otherwise
  */
 bool InterfacePicker::ChooseInterface(Interface *iface,
-                                      const string &preferred_ip) const {
+                                      const string &ip_or_name) const {
+  bool found = false;
   struct in_addr wanted_ip;
-  bool use_preferred = false;
   vector<Interface> interfaces = GetInterfaces();
 
   if (!interfaces.size()) {
@@ -92,21 +93,31 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
     return false;
   }
 
-  if (!preferred_ip.empty()) {
-    if (StringToAddress(preferred_ip, wanted_ip))
-      use_preferred = true;
-  }
-
-  if (use_preferred) {
-    vector<Interface>::const_iterator iter;
-    for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
-      if ((*iter).ip_address.s_addr == wanted_ip.s_addr) {
-        *iface = *iter;
-        return true;
+  vector<Interface>::const_iterator iter;
+  if (!ip_or_name.empty()) {
+    if (StringToAddress(ip_or_name, wanted_ip)) {
+      // search by IP
+      for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
+        if ((*iter).ip_address.s_addr == wanted_ip.s_addr) {
+          *iface = *iter;
+          found = true;
+          break;
+        }
+      }
+    } else {
+      // search by interface name
+      for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
+        if ((*iter).name == ip_or_name) {
+          *iface = *iter;
+          found = true;
+          break;
+        }
       }
     }
   }
-  *iface = interfaces[0];
+
+  if (!found)
+    *iface = interfaces[0];
   return true;
 }
 

@@ -92,9 +92,9 @@ string SandNetPlugin::Description() const {
 "\n"
 "--- Config file : ola-sandnet.conf ---\n"
 "\n"
-"ip = a.b.c.d\n"
-"The ip to listen for sandnet traffic on. If not specified it will use the "
-"first non-loopback ip.\n"
+"ip = [a.b.c.d|<interface_name>]\n"
+"The ip address or interface name to bind to. If not specified it will\n"
+"use the first non-loopback interface.\n"
 "\n"
 "name = ola-SandNet\n"
 "The name of the node.\n";
