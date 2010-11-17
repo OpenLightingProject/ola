@@ -137,7 +137,7 @@ bool ArtNetPlugin::SetDefaultPreferences() {
     return false;
 
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_IP_KEY,
-                                         IPv4Validator(), "");
+                                         StringValidator(), "");
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SHORT_NAME_KEY,
                                          StringValidator(),
                                          ARTNET_SHORT_NAME);

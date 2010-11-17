@@ -112,7 +112,7 @@ bool EspNetPlugin::SetDefaultPreferences() {
 
   bool save = false;
   save |= m_preferences->SetDefaultValue(EspNetDevice::IP_KEY,
-                                         IPv4Validator(), "");
+                                         StringValidator(), "");
 
   save |= m_preferences->SetDefaultValue(EspNetDevice::NODE_NAME_KEY,
                                          StringValidator(), ESPNET_NODE_NAME);

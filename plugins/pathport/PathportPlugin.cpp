@@ -118,7 +118,7 @@ bool PathportPlugin::SetDefaultPreferences() {
                                          IntValidator(0, 63),
                                          DEFAULT_DSCP_VALUE);
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_IP_KEY,
-                                         IPv4Validator(), "");
+                                         StringValidator(), "");
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_NAME_KEY,
                                          StringValidator(),
                                          PathportDevice::K_DEFAULT_NODE_NAME);

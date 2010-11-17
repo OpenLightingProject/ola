@@ -107,7 +107,7 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
     } else {
       // search by interface name
       for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
-        if ((*iter).name == ip_or_name) {
+        if (iter->name == ip_or_name) {
           *iface = *iter;
           found = true;
           break;
