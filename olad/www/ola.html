@@ -517,6 +517,74 @@
       .ola-icon-dbo { background-position: -80px -0px; }
       .ola-icon-refresh { background-position: -96px -0px; }
       .ola-icon-show { background-position: -112px -0px; }
+
+      /* patcher styles */
+      .patcher { position: relative; left: 0px; top: 0px; }
+      .patch_row { position: relative; }
+
+      .patcher_table {
+        width: 100%;
+        position: absolute;
+        top: 1px;
+        left: 0px;
+        border-collapse: collapse;
+      }
+
+      .patcher_table td {
+        border: #333333 1px solid;
+        padding: 0px;
+        width: 12.5%;
+      }
+
+      .content_table {
+        width: 100%;
+        position: absolute;
+        top: 1px;
+        left: 0px;
+        border-collapse:collapse;
+        border-right: #333333 1px solid;
+      }
+
+      .content_table td {
+        padding: 0px;
+      }
+
+      .patcher_title {
+        text-align: left;
+        width: 12.5%;
+        font-size: 10px;
+        border-left: #333333 1px solid;
+      }
+
+      .patcher_occupied_cell {
+        border-left: #333333 1px solid;
+        font-size: 11px;
+      }
+
+      .patcher_occupied_cell div {
+        overflow: hidden;
+        height: 12px;
+        margin: 1px;
+        cursor: pointer;
+      }
+
+      .patcher_device {
+        background-color: #c1d9ff;
+      }
+
+      .patcher_overflow_device {
+        background-color: #e78978;
+      }
+
+      .draggable_device {
+        position: absolute;
+        overflow: hidden;
+        height: 12px;
+        background-color: #c1d9ff;
+        margin: 1px;
+        cursor: pointer;
+        font-size: 11px;
+      }
     </style>
   </head>
   <body onload='ola.Setup()'>
@@ -770,7 +838,8 @@
               <div class='goog-splitpane-handle ola-splitpane-rdm-handle'></div>
             </div>
           </div>
-          <div id='tab_page_3' class='ola-scroller'>
+          <div id='tab_page_3' class='ola-scroller patcher'></div>
+          <div id='tab_page_4' class='ola-scroller'>
             <div id='console_toolbar' class='goog-toolbar'></div>
             <table cellspacing='0' cellpadding='0' id='console_table'>
              <tbody>

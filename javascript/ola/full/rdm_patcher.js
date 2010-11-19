@@ -133,7 +133,6 @@ ola.RDMPatcher = function(element_id) {
   this.dialog = undefined;
   this.active_device = undefined;
   this.start_address_input = undefined;
-
   this.scroller = new ola.CustomDragScrollSupport(this.element);
 };
 
@@ -144,6 +143,14 @@ ola.RDMPatcher.CHANNELS_PER_ROW = 8;
 ola.RDMPatcher.HEIGHT_PER_DEVICE = 14;
 ola.RDMPatcher.NUMBER_OF_ROWS = (ola.RDMPatcher.NUMBER_OF_CHANNELS /
   ola.RDMPatcher.CHANNELS_PER_ROW);
+
+
+/**
+ * Called when the size of the patcher changes
+ */
+ola.RDMPatcher.prototype.sizeChanged = function() {
+  this.scroller.updateBoundaries();
+};
 
 
 /**

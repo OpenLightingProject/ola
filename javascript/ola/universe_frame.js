@@ -33,14 +33,16 @@ goog.require('goog.ui.ToolbarButton');
 goog.require('goog.ui.ToolbarMenuButton')
 goog.require('goog.ui.ToolbarSeparator');
 
-goog.require('ola.BaseFrame');
 goog.require('ola.AvailablePort');
 goog.require('ola.AvailablePortTable');
+goog.require('ola.BaseFrame');
 goog.require('ola.Dialog');
 goog.require('ola.DmxConsole');
 goog.require('ola.Port');
 goog.require('ola.PortTable');
 goog.require('ola.RDMAttributesPanel');
+goog.require('ola.RDMPatcher');
+goog.require('ola.RDMPatcherDevice');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.SortedList');
@@ -70,7 +72,9 @@ ola.UniverseFrame = function(element_id, ola_ui) {
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_2'), 'RDM'));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_3'), 'Console'));
+    goog.dom.$('tab_page_3'), 'RDM Patcher'));
+  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
+    goog.dom.$('tab_page_4'), 'Console'));
 
   goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
                      this._updateSelectedTab, false, this);
@@ -83,6 +87,7 @@ ola.UniverseFrame = function(element_id, ola_ui) {
   this._setupRDMTab();
   this.tabPane.setSelectedIndex(0);
 
+  this._setupPatcherTab();
   this._setupConsoleTab();
 
   // setup notifications when the universe or uid lists changes
@@ -178,6 +183,16 @@ ola.UniverseFrame.prototype._setupRDMTab = function() {
 
 
 /**
+ * Setup the patcher tab.
+ * @private
+ */
+ola.UniverseFrame.prototype._setupPatcherTab = function() {
+  this.patcher = new ola.RDMPatcher('tab_page_3');
+  this.patcher.addDevice(new ola.RDMPatcherDevice('single slot A', 1, 2));
+};
+
+
+/**
  * Setup the console tab.
  * @private
  */
@@ -219,6 +234,11 @@ ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
   } else if (selected_tab == 2) {
     goog.style.setBorderBoxSize(
         goog.dom.$('tab_page_3'),
+        new goog.math.Size(big_size.width - 7, big_size.height - 34));
+    this.patcher.sizeChanged();
+  } else if (selected_tab == 3) {
+    goog.style.setBorderBoxSize(
+        goog.dom.$('tab_page_4'),
         new goog.math.Size(big_size.width - 7, big_size.height - 34));
   }
 };
@@ -279,9 +299,11 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
     server.FetchUids(this.current_universe);
     this.uid_timer.start();
   } else if (selected_tab == 2) {
+    this.patcher.update();
+  } else if (selected_tab == 3) {
     this.dmx_console.setupIfRequired();
     this.dmx_console.update();
-  this.dmx_console.startTimer();
+    this.dmx_console.startTimer();
   }
 };
 

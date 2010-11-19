@@ -38,7 +38,15 @@ ola.CustomDragScrollSupport.prototype.setEnabled = function(state) {
                               this.onMouseMove);
   } else {
     this.eventHandler_.unlisten(goog.dom.getOwnerDocument(this.containerNode_),
-                              goog.events.EventType.MOUSEMOVE,
-                              this.onMouseMove);
+                                goog.events.EventType.MOUSEMOVE,
+                                this.onMouseMove);
   }
+};
+
+
+ola.CustomDragScrollSupport.prototype.updateBoundaries = function() {
+  this.containerBounds_ = goog.style.getBounds(this.containerNode_);
+  this.scrollBounds_ = this.verticalMargin_ ?
+      this.constrainBounds_(this.containerBounds_.clone()) :
+      this.containerBounds_;
 };
