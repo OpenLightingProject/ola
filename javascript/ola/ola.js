@@ -1,3 +1,22 @@
+/**
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * The main OLA UI.
+ * Copyright (C) 2010 Simon Newton
+ */
+
 goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.dom.ViewportSizeMonitor');
@@ -7,11 +26,9 @@ goog.require('goog.ui.AnimatedZippy');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Container');
 goog.require('goog.ui.Control');
-goog.require('goog.ui.Dialog');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 
-goog.require('ola.Dialog');
 goog.require('ola.common.GenericControl');
 goog.require('ola.HomeFrame');
 goog.require('ola.LoggerWindow');
@@ -140,27 +157,12 @@ ola.OlaUI.prototype._SetupNavigation = function() {
  * Update universe list.
  */
 ola.OlaUI.prototype._updateUniverseList = function(e) {
-  var active_universe = this.universe_frame.getActiveUniverse();
   var items = new Array();
-  var found = false;
   ola.logger.info('Got ' + e.universes.length + ' universes');
   for (var i = 0; i < e.universes.length; ++i) {
-    var item = new ola.UniverseItem(e.universes[i]);
-    if (item.id() == active_universe) {
-      found = true;
-    }
-    items.push(item);
+    items.push(new ola.UniverseItem(e.universes[i]));
   }
   this.universe_list.updateFromData(items);
-
-  if (this.universe_frame.IsVisible() && !found) {
-    var dialog = ola.Dialog.getInstance();
-    dialog.setTitle('Universe ' + active_universe + ' Removed');
-    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
-    dialog.setContent('This universe has been removed by another user.');
-    dialog.setVisible(true);
-    this.ShowHome();
-  }
 };
 
 
@@ -240,7 +242,7 @@ ola.OlaUI.prototype._UpdateUI = function(e) {
   var size = this.vsm.getSize();
   this.splitpane1.setSize(new goog.math.Size(size.width, size.height - 85));
   this.logger_window.SetSize(size);
-  this.universe_frame.SetSplitPaneSize();
+  this.universe_frame.setSplitPaneSize();
 };
 
 

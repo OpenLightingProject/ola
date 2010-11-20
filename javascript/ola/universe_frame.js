@@ -21,10 +21,12 @@ goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.ui.TabPane');
 goog.require('ola.BaseFrame');
+goog.require('ola.Dialog');
 goog.require('ola.DmxConsoleTab');
 goog.require('ola.RDMPatcherTab');
 goog.require('ola.RDMTab');
 goog.require('ola.UniverseSettingsTab');
+goog.require('ola.common.Server');
 
 goog.provide('ola.UniverseFrame');
 
@@ -36,6 +38,7 @@ goog.provide('ola.UniverseFrame');
  */
 ola.UniverseFrame = function(element_id, ola_ui) {
   ola.BaseFrame.call(this, element_id);
+  this.ola_ui = ola_ui;
   this.current_universe = undefined;
 
   // setup the tab pane
@@ -69,23 +72,20 @@ ola.UniverseFrame = function(element_id, ola_ui) {
 
   goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
                      this._updateSelectedTab, false, this);
+
+  var server = ola.common.Server.getInstance();
+  goog.events.listen(server,
+                     ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
+                     this._newUniverseList,
+                     false, this);
 };
 goog.inherits(ola.UniverseFrame, ola.BaseFrame);
 
 
 /**
- * Get the current selected universe.
- * @return {number} the selected universe.
- */
-ola.UniverseFrame.prototype.getActiveUniverse = function() {
-  return this.current_universe;
-};
-
-
-/**
  * Set the size of the split pane to match the parent element
  */
-ola.UniverseFrame.prototype.SetSplitPaneSize = function(e) {
+ola.UniverseFrame.prototype.setSplitPaneSize = function(e) {
   var big_frame = goog.dom.$('ola-splitpane-content');
   var big_size = goog.style.getBorderBoxSize(big_frame);
 
@@ -143,7 +143,32 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
     }
   }
 
-  this.SetSplitPaneSize();
+  this.setSplitPaneSize();
   var selected_tab = this.tabPane.getSelectedIndex();
   this.tabs[selected_tab].setActive(true);
 };
+
+
+/**
+ * Called when new universes are available. We use this to detect if this
+ * universe has been deleted.
+ * @private
+ */
+ola.UniverseFrame.prototype._newUniverseList = function(e) {
+  var found = false;
+  for (var i = 0; i < e.universes.length; ++i) {
+    if (e.universes[i]['id'] == this.current_universe) {
+      found = true;
+      break;
+    }
+  }
+
+  if (this.IsVisible() && !found) {
+    var dialog = ola.Dialog.getInstance();
+    dialog.setTitle('Universe ' + this.current_universe + ' Removed');
+    dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+    dialog.setContent('This universe has been removed by another user.');
+    dialog.setVisible(true);
+    this.ola_ui.ShowHome();
+  }
+}
