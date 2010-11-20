@@ -96,6 +96,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterFile("blank.gif", HttpServer::CONTENT_TYPE_GIF);
   RegisterFile("button-bg.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("custombutton.css", HttpServer::CONTENT_TYPE_CSS);
+  RegisterFile("editortoolbar.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("expander.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("handle.vertical.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("loader.gif", HttpServer::CONTENT_TYPE_GIF);

@@ -297,6 +297,14 @@ void HttpResponse::SetContentType(const string &type) {
 }
 
 
+/**
+ * Set the appropriate headers so this response isn't cached
+ */
+void HttpResponse::SetNoCache() {
+  SetHeader("Cache-Control", "no-cache, must-revalidate");
+}
+
+
 /*
  * Set a header in the response
  * @param key the header name

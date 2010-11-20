@@ -125,6 +125,9 @@ RDMHttpModule::RDMHttpModule(HttpServer *http_server,
       "/json/rdm/uids",
       NewCallback(this, &RDMHttpModule::JsonUIDs));
   m_server->RegisterHandler(
+      "/json/rdm/uid_info",
+      NewCallback(this, &RDMHttpModule::JsonUIDInfo));
+  m_server->RegisterHandler(
       "/json/rdm/supported_pids",
       NewCallback(this, &RDMHttpModule::JsonSupportedPIDs));
   m_server->RegisterHandler(
@@ -194,6 +197,39 @@ int RDMHttpModule::JsonUIDs(const HttpRequest *request,
                         &RDMHttpModule::HandleUIDList,
                         response,
                         universe_id));
+
+  if (!ok)
+    return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
+}
+
+
+/**
+ * Return the device info for this uid.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int RDMHttpModule::JsonUIDInfo(const HttpRequest *request,
+                               HttpResponse *response) {
+  unsigned int universe_id;
+  if (!CheckForInvalidId(request, &universe_id))
+    return m_server->ServeNotFound(response);
+
+  UID *uid = NULL;
+  if (!CheckForInvalidUid(request, &uid))
+    return m_server->ServeNotFound(response);
+
+  string error;
+  bool ok = m_rdm_api.GetDeviceInfo(
+      universe_id,
+      *uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::UIDInfoHandler,
+                        response),
+      &error);
+  delete uid;
 
   if (!ok)
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
@@ -516,7 +552,7 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
   str << "  ]" << endl;
   str << "}";
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
@@ -670,6 +706,34 @@ RDMHttpModule::uid_resolution_state *RDMHttpModule::GetUniverseUidsOrCreate(
 }
 
 
+/**
+ * Handle the Device Info response and build the json
+ */
+void RDMHttpModule::UIDInfoHandler(HttpResponse *response,
+                                   const ola::rdm::ResponseStatus &status,
+                                   const ola::rdm::DeviceDescriptor &device) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"error\": \"\"," << endl;
+  str << "  \"address\": " << device.dmx_start_address << "," << endl;
+  str << "  \"footprint\": " << device.dmx_footprint << "," << endl;
+  str << "  \"personality\": " << static_cast<int>(device.current_personality)
+    << "," << endl;
+  str << "  \"personality_count\": " <<
+    static_cast<int>(device.personaility_count) << "," << endl;
+  str << "}";
+
+  response->SetNoCache();
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+
 /*
  * Handle the response from a supported params request
  */
@@ -696,7 +760,7 @@ void RDMHttpModule::SupportedParamsHandler(
     str << "}";
   }
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
@@ -877,7 +941,7 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
   }
   str << "]" << endl;
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(str.str());
   response->Send();
@@ -2868,7 +2932,7 @@ bool RDMHttpModule::CheckForRDMError(HttpResponse *response,
 
 int RDMHttpModule::RespondWithError(HttpResponse *response,
                                     const string &error) {
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("{\"error\": \"" + error + "\"}");
   int r = response->Send();
@@ -2882,7 +2946,7 @@ int RDMHttpModule::RespondWithError(HttpResponse *response,
  */
 void RDMHttpModule::RespondWithSection(HttpResponse *response,
                                        const ola::web::JsonSection &section) {
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
@@ -2955,7 +3019,7 @@ void RDMHttpModule::HandleBoolResponse(HttpResponse *response,
     m_server->ServeError(response, error);
     return;
   }
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   response->Send();

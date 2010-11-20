@@ -50,6 +50,7 @@ class RDMHttpModule: public HttpModule {
     int RunRDMDiscovery(const HttpRequest *request, HttpResponse *response);
 
     int JsonUIDs(const HttpRequest *request, HttpResponse *response);
+    int JsonUIDInfo(const HttpRequest *request, HttpResponse *response);
     int JsonSupportedPIDs(const HttpRequest *request, HttpResponse *response);
     int JsonSupportedSections(const HttpRequest *request,
                               HttpResponse *response);
@@ -137,6 +138,11 @@ class RDMHttpModule: public HttpModule {
 
     uid_resolution_state *GetUniverseUids(unsigned int universe);
     uid_resolution_state *GetUniverseUidsOrCreate(unsigned int universe);
+
+    // uid info handler
+    void UIDInfoHandler(HttpResponse *response,
+                        const ola::rdm::ResponseStatus &status,
+                        const ola::rdm::DeviceDescriptor &device);
 
     // supported params / sections
     void SupportedParamsHandler(HttpResponse *response,

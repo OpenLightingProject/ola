@@ -98,6 +98,7 @@ class HttpResponse {
     void SetContentType(const string &type);
     void SetHeader(const string &key, const string &value);
     void SetStatus(unsigned int status) { m_status_code = status; }
+    void SetNoCache();
     int Send();
     struct MHD_Connection *Connection() const { return m_connection; }
   private:
