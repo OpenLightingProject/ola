@@ -85,14 +85,7 @@ ola.RDMTab = function(element) {
   goog.events.listen(
       this.uid_timer,
       goog.Timer.TICK,
-      function() {
-        if (this.current_universe != undefined) {
-          var frame = this;
-          ola.common.Server.getInstance().fetchUids(
-            this.current_universe,
-            function(e) { return frame._updateUidList(e); });
-        }
-      },
+      this._updateUidList,
       false,
       this);
 };
@@ -127,14 +120,10 @@ ola.RDMTab.prototype.sizeChanged = function(frame_size) {
  */
 ola.RDMTab.prototype.setActive = function(state) {
   ola.RDMTab.superClass_.setActive.call(this, state);
+  this._updateUidList();
 
   if (this.isActive()) {
-    var tab = this;
-    var server = ola.common.Server.getInstance();
-    server.fetchUids(
-        this.getUniverse(),
-        function(e) { tab._updateUidList(e); });
-    this.uid_timer.start();
+    this._updateUidList();
   } else {
     this.uid_timer.stop();
   }
@@ -142,10 +131,24 @@ ola.RDMTab.prototype.setActive = function(state) {
 
 
 /**
+ * Fetch the uid list
+ * @private
+ */
+ola.RDMTab.prototype._updateUidList = function() {
+  var tab = this;
+  var server = ola.common.Server.getInstance();
+  server.fetchUids(
+      this.getUniverse(),
+      function(e) { tab._newUIDs(e); });
+  this.uid_timer.start();
+};
+
+
+/**
  * Update the UID list
  * @private
  */
-ola.RDMTab.prototype._updateUidList = function(e) {
+ola.RDMTab.prototype._newUIDs = function(e) {
   if (e.target.getStatus() != 200) {
     ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
         e.target.getLastError());

@@ -39,7 +39,6 @@ ola.common.BaseUniverseTab = function(element) {
  */
 ola.common.BaseUniverseTab.prototype.setUniverse = function(universe_id) {
   this.universe_id = universe_id;
-  ola.logger.info('in base set');
 };
 
 
