@@ -64,10 +64,6 @@ ola.mobile.UniverseTab = function() {
                      this._updateUniverseList,
                      false, this);
 
-  goog.events.listen(this.ola_server,
-                     ola.common.Server.EventType.UIDS_EVENT,
-                     this._updateUidList,
-                     false, this);
 };
 
 
@@ -132,7 +128,11 @@ ola.mobile.UniverseTab.prototype._universeSelected = function(universe_id) {
   this.rdm_list = undefined;
   this.active_universe = universe_id;
   this.uid_frame.Show();
-  this.ola_server.FetchUids(universe_id);
+
+  var tab = this;
+  this.ola_server.fetchUids(
+      universe_id,
+      function(e) { tab._updateUidList(e); });
 
   // setup a timer here
 };
@@ -142,6 +142,10 @@ ola.mobile.UniverseTab.prototype._universeSelected = function(universe_id) {
  * Called when a new list of uids is received.
  */
 ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
+  if (e.target.getStatus() != 200) {
+    return;
+  }
+
   if (this.uid_list == undefined) {
     this.uid_frame.Clear();
 
@@ -163,9 +167,11 @@ ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
                        false, this);
   }
 
+  var obj = e.target.getResponseJson();
+  var uids = obj['uids'];
   var items = new Array();
-  for (var i = 0; i < e.uids.length; ++i) {
-    items.push(new ola.common.UidItem(e.uids[i]));
+  for (var i = 0; i < uids.length; ++i) {
+    items.push(new ola.common.UidItem(uids[i]));
   }
   this.uid_list.updateFromData(items);
 };

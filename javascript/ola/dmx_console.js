@@ -17,7 +17,6 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.ui.Component');
@@ -43,7 +42,6 @@ ola.DmxConsole = function() {
   this.data = new Array(ola.DmxConsole.NUMBER_OF_CHANNELS);
   this.value_cells = new Array();
   this.slider_offset = 0;
-  this.tick_timer = new goog.Timer(1000);
 };
 goog.inherits(ola.DmxConsole, goog.events.EventTarget);
 
@@ -189,32 +187,7 @@ ola.DmxConsole.prototype.setupIfRequired = function() {
 
   // zero data
   this._setAllChannels(0);
-
-  goog.events.listen(
-      this.tick_timer,
-      goog.Timer.TICK,
-      function() {
-        this.dispatchEvent(new ola.DmxConsoleChangeEvent());
-      },
-      false,
-      this);
 };
-
-
-/**
- * Start the timer to send an update periodically.
- */
-ola.DmxConsole.prototype.startTimer = function() {
-  this.tick_timer.start();
-}
-
-
-/**
- * Stop the timer sending updates.
- */
-ola.DmxConsole.prototype.stopTimer = function() {
-  this.tick_timer.stop();
-}
 
 
 /**

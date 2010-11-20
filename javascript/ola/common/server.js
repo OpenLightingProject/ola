@@ -62,7 +62,6 @@ ola.common.Server.EventType = {
   PLUGIN_EVENT: 'plugin_change',
   PLUGIN_LIST_EVENT: 'plugin_list_change',
   SERVER_INFO_EVENT: 'server_info_change',
-  UIDS_EVENT: 'uids_change',
   UNIVERSE_EVENT: 'universe_change',
   UNIVERSE_LIST_EVENT: 'universe_list_change'
 };
@@ -79,6 +78,7 @@ ola.common.Server.RDM_DISCOVERY_URL = '/rdm/run_discovery';
 ola.common.Server.RDM_SECTIONS_URL = '/json/rdm/supported_sections';
 ola.common.Server.RDM_GET_SECTION_INFO_URL = '/json/rdm/section_info';
 ola.common.Server.RDM_SET_SECTION_INFO_URL = '/json/rdm/set_section_info';
+ola.common.Server.RDM_UID_INFO = '/json/rdm/uid_info_list';
 ola.common.Server.NEW_UNIVERSE_URL = '/new_universe';
 ola.common.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
 ola.common.Server.SET_DMX_URL = '/set_dmx';
@@ -138,18 +138,6 @@ ola.UniverseChangeEvent = function(universe) {
   this.universe = universe;
 };
 goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
-
-
-/**
- * This event is fired when the uids change
- * @constructor
- */
-ola.UidsEvent = function(universe_id, uids) {
-  goog.events.Event.call(this, ola.common.Server.EventType.UIDS_EVENT);
-  this.universe_id = universe_id;
-  this.uids = uids;
-};
-goog.inherits(ola.UidsEvent, goog.events.Event);
 
 
 /**
@@ -345,18 +333,22 @@ ola.common.Server.prototype.rdmSetSectionInfo = function(universe_id,
 /**
  * Fetch the uids for a universe
  */
-ola.common.Server.prototype.FetchUids = function(universe_id) {
-  var on_complete = function(e) {
-    if (e.target.getStatus() != 200) {
-      ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
-          e.target.getLastError())
-      return;
-    }
-    var obj = e.target.getResponseJson();
-    this.dispatchEvent(new ola.UidsEvent(obj['universe'], obj['uids']));
-  }
+ola.common.Server.prototype.fetchUids = function(universe_id, callback) {
   var url = ola.common.Server.UIDS_URL + '?id=' + universe_id;
-  this._initiateRequest(url, on_complete);
+  this._initiateRequest(url, callback);
+};
+
+
+/**
+ * Fetch the uids and their device name, dmx start address & footprint
+ * @param {number} universe_id the ID of the universe.
+ * @param {function(Object)} callback the function to call when the request
+ *   completes.
+ */
+ola.common.Server.prototype.rdmGetUIDInfoList = function(universe_id,
+                                                         callback) {
+  var url = (ola.common.Server.RDM_UID_INFO + '?id=' + universe_id);
+  this._initiateRequest(url, callback);
 };
 
 
@@ -372,12 +364,12 @@ ola.common.Server.prototype.FetchUids = function(universe_id) {
  * @param {function()} callback the callback to invoke when complete.
  */
 ola.common.Server.prototype.modifyUniverse = function(universe_id,
-                                               universe_name,
-                                               merge_mode,
-                                               port_priorities,
-                                               ports_to_remove,
-                                               ports_to_add,
-                                               callback) {
+                                                      universe_name,
+                                                      merge_mode,
+                                                      port_priorities,
+                                                      ports_to_remove,
+                                                      ports_to_add,
+                                                      callback) {
   var post_data = ('id=' + universe_id + '&name=' + universe_name +
       '&merge_mode=' + merge_mode + '&add_ports=' + ports_to_add.join(',') +
       '&remove_ports=' + ports_to_remove.join(','));

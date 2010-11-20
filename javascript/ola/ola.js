@@ -119,7 +119,7 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   this.universe_list = new ola.common.SortedList(
       universe_container,
       new ola.UniverseControlFactory(
-        function(item) { ui.ShowUniverse(item.id()); }));
+        function(item) { ui.ShowUniverse(item.id(), true); }));
 
   goog.events.listen(this.ola_server,
                      ola.common.Server.EventType.UNIVERSE_LIST_EVENT,

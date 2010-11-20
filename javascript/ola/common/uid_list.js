@@ -131,7 +131,7 @@ goog.inherits(ola.common.UidControl, ola.common.GenericControl);
  * Setup the event handler for this object.
  */
 ola.common.UidControl.prototype.enterDocument = function() {
-  ola.UniverseControl.superClass_.enterDocument.call(this);
+  ola.common.UidControl.superClass_.enterDocument.call(this);
   this.getElement().title = this.item().toString();
 };
 

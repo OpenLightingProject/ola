@@ -755,7 +755,7 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
       hint.push_back('m');  // m is for device model
   AddSection(&sections, DEVICE_INFO_SECTION, "Device Info", hint);
 
-  AddSection(&sections, IDENTIFY_SECTION, "Identify Mode", hint);
+  AddSection(&sections, IDENTIFY_SECTION, "Identify Mode");
 
   bool dmx_address_added = false;
   bool include_software_version = false;

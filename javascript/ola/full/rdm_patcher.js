@@ -28,6 +28,10 @@ goog.require('ola.CustomDragScrollSupport');
 goog.require('ola.CustomDragger');
 goog.require('ola.Dialog');
 
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
+goog.require('ola.common.UidItem');
+
 goog.provide('ola.RDMPatcher');
 goog.provide('ola.RDMPatcherDevice');
 
@@ -165,7 +169,7 @@ ola.RDMPatcher.prototype.addDevice = function(device) {
 
 
 /**
- * Remove a uid from the patcher
+ * Remove a device from the patcher
  */
 ola.RDMPatcher.prototype.removeDevice = function(uid) {
   for (var i = 0; i < this.devices.length; ++i) {
@@ -178,15 +182,22 @@ ola.RDMPatcher.prototype.removeDevice = function(uid) {
 
 
 /**
- * Clear all devices and re-render the view.
+ * Clear all devices.
  */
 ola.RDMPatcher.prototype.reset = function() {
   this.devices = new Array();
-  if (this.rows.length == 0) {
-    this._setup();
-  }
-  this._render();
 }
+
+
+/**
+ * Hide the patcher
+ */
+ola.RDMPatcher.prototype.hide = function() {
+  // hide all the rows
+  for (var i = 0; i < this.rows.length; ++i) {
+    this.rows[i].style.display = 'none';
+  }
+};
 
 
 /**
@@ -196,6 +207,11 @@ ola.RDMPatcher.prototype.update = function() {
   if (this.rows.length == 0) {
     this._setup();
   }
+
+  for (var i = 0; i < this.rows.length; ++i) {
+    this.rows[i].style.display = 'block';
+  }
+
   this._render();
 };
 
