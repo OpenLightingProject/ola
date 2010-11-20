@@ -1198,6 +1198,7 @@ void RDMHttpModule::GetDeviceInfoHandler(
     stream << dev_info.software_version << " (" << device.software_version
       << ")";
   section.AddItem(new StringItem("Software Version", stream.str()));
+  section.AddItem(new UIntItem("DMX Address", device.dmx_start_address));
   section.AddItem(new UIntItem("DMX Footprint", device.dmx_footprint));
 
   stream.str("");
