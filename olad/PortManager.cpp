@@ -99,8 +99,9 @@ bool PortManager::SetPriorityOverride(Port *port, uint8_t value) {
     port->SetPriorityMode(PRIORITY_MODE_OVERRIDE);
 
   if (value > DmxSource::PRIORITY_MAX) {
-    OLA_WARN << "Priority " << value <<
-      " is greater than the max priority (" << DmxSource::PRIORITY_MAX << ")";
+    OLA_WARN << "Priority " << static_cast<int>(value) <<
+      " is greater than the max priority (" <<
+      static_cast<int>(DmxSource::PRIORITY_MAX) << ")";
     value = DmxSource::PRIORITY_MAX;
   }
 
