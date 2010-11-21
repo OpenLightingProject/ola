@@ -110,7 +110,7 @@ ola.RDMTab.prototype.setUniverse = function(universe_id) {
 ola.RDMTab.prototype.sizeChanged = function(frame_size) {
   // don't call the base method.
   this.splitpane.setSize(
-      new goog.math.Size(frame_size.width - 7, frame_size.height - 62));
+      new goog.math.Size(frame_size.width - 7, frame_size.height - 67));
 };
 
 
