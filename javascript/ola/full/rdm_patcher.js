@@ -19,6 +19,7 @@
 
 goog.require('goog.array');
 goog.require('goog.dom');
+goog.require('goog.dom.classes');
 goog.require('goog.events');
 goog.require('goog.math.Rect');
 goog.require('goog.ui.Checkbox');
@@ -48,8 +49,9 @@ goog.provide('ola.RDMPatcherDevice');
  * @param {number} footprint the number of dmx channels consumed.
  * @constructor
  */
-ola.RDMPatcherDevice = function(uid, start_address, footprint) {
+ola.RDMPatcherDevice = function(uid, label, start_address, footprint) {
   this.uid = uid;
+  this.label = label;
   // convert to 0 offset
   this.start = start_address - 1;
   this.footprint = footprint;
@@ -121,6 +123,7 @@ ola.RDMPatcherDevice.sortByAddress = function(a, b) {
  */
 ola.RDMPatcher = function(element_id) {
   this.element = goog.dom.$(element_id);
+  this.universe_id = undefined;
   // this of RDMPatcherDevice objects
   this.devices = new Array();
 
@@ -158,35 +161,21 @@ ola.RDMPatcher.prototype.sizeChanged = function() {
 
 
 /**
- * Add a device to the patcher.
- * This doesn't check for duplicate devices
+ * Set the list of devices.
  * @param {object} device the device to add.
  */
-ola.RDMPatcher.prototype.addDevice = function(device) {
-  if (device.footprint)
-    this.devices.push(device);
+ola.RDMPatcher.prototype.setDevices = function(devices) {
+  this.devices = devices;
 };
 
 
 /**
- * Remove a device from the patcher
+ * Set the universe this patcher is operating on
+ * @param {object} device the device to add.
  */
-ola.RDMPatcher.prototype.removeDevice = function(uid) {
-  for (var i = 0; i < this.devices.length; ++i) {
-    if (this.devices[i].uid == uid) {
-      this.devices.splice(i, 1);
-      return;
-    }
-  }
+ola.RDMPatcher.prototype.setUniverse = function(universe_id) {
+  this.universe_id = universe_id;
 };
-
-
-/**
- * Clear all devices.
- */
-ola.RDMPatcher.prototype.reset = function() {
-  this.devices = new Array();
-}
 
 
 /**
@@ -375,7 +364,7 @@ ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
 
       // create a new div
       var div = goog.dom.createElement('div');
-      div.innerHTML = device.uid;
+      div.innerHTML = device.label;
       if (device.overflows()) {
         div.className = 'patcher_overflow_device';
         div.title = 'Device overflows the ' + ola.RDMPatcher.NUMBER_OF_CHANNELS
@@ -442,8 +431,11 @@ ola.RDMPatcher.prototype._startDrag = function(div, device, e) {
     }
   }
 
-  var row_table_size = goog.style.getBorderBoxSize(
-    goog.dom.getFirstElementChild(this.element));
+  var row_table = goog.dom.getFirstElementChild(this.element);
+  while (!goog.dom.classes.has(row_table, 'patch_row')) {
+    row_table = goog.dom.getNextElementSibling(row_table);
+  }
+  var row_table_size = goog.style.getBorderBoxSize(row_table);
 
   // figure out the cell size, remember to account for the borders
   this.cell_width = row_table_size.width / ola.RDMPatcher.CHANNELS_PER_ROW - 1;
@@ -493,9 +485,8 @@ ola.RDMPatcher.prototype._endDrag = function(div, device, e) {
         ola.RDMPatcher.CHANNELS_PER_ROW *
         Math.floor(center_y / this.cell_height))
 
-  device.setStart(new_start_address + 1);
   goog.dom.removeNode(div);
-  this._render();
+  this._setStartAddress(device, new_start_address + 1);
 };
 
 
@@ -552,10 +543,16 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
     td.innerHTML = 'Personality';
     goog.dom.appendChild(tr, td);
     td = goog.dom.createElement('td');
+    td.noWrap = true;
     goog.dom.appendChild(tr, td);
     var select = new goog.ui.Select();
     select.addItem(new goog.ui.MenuItem('One'));
     select.render(td);
+    this.personality_spinner = goog.dom.createElement('img');
+    this.personality_spinner.src = '/loader-mini.gif';
+    this.personality_spinner.style.display = 'none';
+    this.personality_spinner.style.verticalAlign = 'middle';
+    goog.dom.appendChild(td, this.personality_spinner);
     goog.dom.appendChild(table, tr);
 
     // now do the identify checkbox
@@ -564,17 +561,63 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
     td.innerHTML = 'Identify';
     goog.dom.appendChild(tr, td);
     td = goog.dom.createElement('td');
+    td.noWrap = true;
     var check = new goog.ui.Checkbox();
     check.render(td);
+
+    goog.events.listen(
+      check,
+      goog.ui.Component.EventType.CHANGE,
+      this._toggleIdentify,
+      false,
+      this);
+
+    this.identify_box = check;
+    this.identify_spinner = goog.dom.createElement('img');
+    this.identify_spinner.src = '/loader-mini.gif';
+    this.identify_spinner.style.display = 'none';
+    this.identify_spinner.style.verticalAlign = 'middle';
+    goog.dom.appendChild(td, this.identify_spinner);
     goog.dom.appendChild(tr, td);
     goog.dom.appendChild(table, tr);
 
     var content = this.dialog.getContentElement();
     goog.dom.appendChild(content, table);
   }
-  this.start_address_input.value = device.start + 1;
+
   this.active_device = device;
-  this.dialog.setTitle(device.uid);
+
+  // fetch the identify mode
+  var server = ola.common.Server.getInstance();
+  var patcher = this;
+  server.rdmGetUIDIdentifyMode(
+      this.universe_id,
+      device.uid,
+      function(e) { patcher._displayConfigureDevice(e); });
+
+  var dialog = ola.Dialog.getInstance();
+  dialog.SetAsBusy();
+  dialog.setVisible(true);
+};
+
+
+/**
+ * Display the configure device dialog
+ */
+ola.RDMPatcher.prototype._displayConfigureDevice = function(e) {
+  var dialog = ola.Dialog.getInstance();
+  dialog.setVisible(false);
+
+  var response = ola.common.Server.getInstance().checkForErrorLog(e);
+  if (response != undefined) {
+    var mode = (response['identify_mode'] ?
+      goog.ui.Checkbox.State.CHECKED :
+      goog.ui.Checkbox.State.UNCHECKED);
+    this.identify_box.setChecked(mode);
+  }
+
+  this.start_address_input.value = this.active_device.start + 1;
+  this.dialog.setTitle(this.active_device.label);
   this.dialog.setVisible(true);
   this.start_address_input.focus();
 };
@@ -596,6 +639,102 @@ ola.RDMPatcher.prototype._saveDevice = function(e) {
     return;
   }
 
-  this.active_device.setStart(value);
+  this._setStartAddress(this.active_device, value);
+};
+
+
+/**
+ * Called to set the start address of a device
+ */
+ola.RDMPatcher.prototype._setStartAddress = function(device, start_address) {
+  var server = ola.common.Server.getInstance();
+  var patcher = this;
+  server.rdmSetSectionInfo(
+      this.universe_id,
+      device.uid,
+      'dmx_address',
+      '',
+      'address=' + start_address,
+      function(e) {
+        patcher._setStartAddressComplete(device, start_address, e);
+      });
+
+  var dialog = ola.Dialog.getInstance();
+  dialog.SetAsBusy();
+  dialog.setVisible(true);
+};
+
+
+/**
+ * Called when the start address set command completes
+ */
+ola.RDMPatcher.prototype._setStartAddressComplete = function(device,
+                                                             start_address,
+                                                             e) {
+  var response = ola.common.Server.getInstance().checkForErrorDialog(e);
+  if (response != undefined) {
+    var dialog = ola.Dialog.getInstance();
+    dialog.setVisible(false);
+    device.setStart(start_address);
+  }
+
   this._render();
+};
+
+
+/**
+ * Set the personality.
+ */
+ola.RDMPatcher.prototype._setPersonality = function(e) {
+  var server = ola.common.Server.getInstance();
+  this.personality_spinner.style.display = 'inline';
+  var patcher = this;
+  server.rdmSetSectionInfo(
+      this.universe_id,
+      this.active_device.uid,
+      'personality',
+      '',
+      'int=' + e.target.getValue(),
+      function(e) { patcher._personalityComplete(e); });
+};
+
+
+/**
+ * Called when the set personality request completes.
+ */
+ola.RDMPatcher.prototype._personalityComplete = function(e) {
+  this.personality_spinner.style.display = 'none';
+  var response = ola.common.Server.getInstance().checkForErrorDialog(e);
+  if (response == undefined) {
+    this.dialog.setVisible(false);
+  }
+};
+
+
+/**
+ * Toggle the identify mode
+ */
+ola.RDMPatcher.prototype._toggleIdentify = function(e) {
+  var server = ola.common.Server.getInstance();
+  this.identify_spinner.style.display = 'inline';
+  var patcher = this;
+  server.rdmSetSectionInfo(
+      this.universe_id,
+      this.active_device.uid,
+      'identify',
+      '',
+      'bool=' + (e.target.isChecked() ? '1' : '0'),
+      function(e) { patcher._identifyComplete(e); });
+};
+
+
+/**
+ * Called when the identify request completes.
+ */
+ola.RDMPatcher.prototype._identifyComplete = function(e) {
+  this.identify_spinner.style.display = 'none';
+  var response = ola.common.Server.getInstance().checkForErrorDialog(e);
+  if (response == undefined) {
+    this.dialog.setVisible(false);
+  }
 };

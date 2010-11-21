@@ -36,9 +36,10 @@ ola.RDMPatcherTab = function(element) {
   this.patcher = new ola.RDMPatcher(element);
 
   // These are devices that we know exist, but we don't have the start address
-  // or footprint for. We only fetch that information when the patcher becomes
-  // visible.
+  // or footprint for.
   this.pending_devices = new Array();
+  // These are devices that we have all the info for.
+  this.devices = new Array();
 
   this.loading_div = goog.dom.createElement('div');
   this.loading_div.style.width = '100%';
@@ -55,8 +56,9 @@ goog.inherits(ola.RDMPatcherTab, ola.common.BaseUniverseTab);
  */
 ola.RDMPatcherTab.prototype.setUniverse = function(universe_id) {
   ola.RDMPatcherTab.superClass_.setUniverse.call(this, universe_id);
+  this.patcher.setUniverse(universe_id);
   this.pending_devices = new Array();
-  this.patcher.reset();
+  this.patcher.setDevices(new Array());
 };
 
 
@@ -94,25 +96,21 @@ ola.RDMPatcherTab.prototype.setActive = function(state) {
  * Called when the UID list changes.
  */
 ola.RDMPatcherTab.prototype._updateUidList = function(e) {
-  if (e.target.getStatus() != 200) {
-    ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
-        e.target.getLastError());
+  var response = ola.common.Server.getInstance().checkForErrorLog(e);
+  if (response == undefined) {
     return;
   }
 
-  var obj = e.target.getResponseJson();
-  var uids = obj['uids'];
+  // It would be really nice to re-used the old values so we didn't have to
+  // re-fetch everything but until we have some notification mechanism we can't
+  // risk caching stale data.
+  this.pending_devices = new Array();
+  this.devices = new Array();
 
-  ola.logger.info('got uids');
-
-  var items = new Array();
+  var uids = e.target.getResponseJson()['uids'];
   for (var i = 0; i < uids.length; ++i) {
-    items.push(new ola.common.UidItem(uids[i]));
+    this.pending_devices.push(new ola.common.UidItem(uids[i]));
   }
-
-  // add anything in items but not in the pending list
-  items.sort(function(a, b) { return a.compare(b); });
-  this.pending_devices.sort(function(a, b) { return a.compare(b); });
 
   if (this.isActive()) {
     this._fetchNextDeviceOrRender();
@@ -127,28 +125,52 @@ ola.RDMPatcherTab.prototype._updateUidList = function(e) {
 ola.RDMPatcherTab.prototype._fetchNextDeviceOrRender = function() {
   // fetch the new device in the list
   if (!this.pending_devices.length) {
-    //TODO(simon): we could be dragging or in a dialog at this point, so we
-    // don't want to force a render.
-    ola.logger.info('updating');
+    this.patcher.setDevices(this.devices);
+    this.loading_div.style.display = 'none';
     this.patcher.update();
     return;
   }
 
-  ola.logger.info('fetching device');
-  var ola_server = ola.common.Server.getInstance();
-
+  var server = ola.common.Server.getInstance();
+  var device = this.pending_devices.shift();
+  ola.logger.info('Fetching device ' + device.asString());
+  var tab = this;
+  server.rdmGetUIDInfo(
+      this.getUniverse(),
+      device.asString(),
+      function(e) {
+        tab._deviceInfoComplete(device, e);
+      });
 };
 
 
 /**
  * Called when we get new information for a device
  */
-ola.RDMPatcherTab.prototype._deviceInfoComplete = function(e) {
+ola.RDMPatcherTab.prototype._deviceInfoComplete = function(device, e) {
   if (!this.isActive()) {
     return;
   }
 
-  // add to the patcher
+  var response = ola.common.Server.getInstance().checkForErrorLog(e);
+  if (response == undefined) {
+    this._fetchNextDeviceOrRender();
+    return;
+  }
 
+  var label = device.deviceName();
+  if (label) {
+    label += ' [' + device.asString() + ']';
+  } else {
+    label = device.asString();
+  }
+
+  this.devices.push(
+    new ola.RDMPatcherDevice(
+      device.asString(),
+      label,
+      response['address'],
+      response['footprint'])
+  );
   this._fetchNextDeviceOrRender();
 };

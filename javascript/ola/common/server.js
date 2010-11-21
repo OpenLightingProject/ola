@@ -78,6 +78,7 @@ ola.common.Server.RDM_DISCOVERY_URL = '/rdm/run_discovery';
 ola.common.Server.RDM_SECTIONS_URL = '/json/rdm/supported_sections';
 ola.common.Server.RDM_GET_SECTION_INFO_URL = '/json/rdm/section_info';
 ola.common.Server.RDM_SET_SECTION_INFO_URL = '/json/rdm/set_section_info';
+ola.common.Server.RDM_UID_IDENTIFY = '/json/rdm/uid_identify';
 ola.common.Server.RDM_UID_INFO = '/json/rdm/uid_info';
 ola.common.Server.NEW_UNIVERSE_URL = '/new_universe';
 ola.common.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
@@ -340,16 +341,31 @@ ola.common.Server.prototype.fetchUids = function(universe_id, callback) {
 
 
 /**
- * Fetch the uids and their device name, dmx start address & footprint
+ * Fetch the dmx start address, footprint & personality for a uid.
  * @param {number} universe_id the ID of the universe.
  * @param {string} uid the string representation of a UID.
  * @param {function(Object)} callback the function to call when the request
  *   completes.
  */
-ola.common.Server.prototype.rdmGetUIDInfoList = function(universe_id,
+ola.common.Server.prototype.rdmGetUIDInfo = function(universe_id,
                                                          uid,
                                                          callback) {
   var url = (ola.common.Server.RDM_UID_INFO + '?id=' + universe_id +
+      '&uid=' + uid);
+  this._initiateRequest(url, callback);
+};
+
+/**
+ * Check if a device is in identify mode.
+ * @param {number} universe_id the ID of the universe.
+ * @param {string} uid the string representation of a UID.
+ * @param {function(Object)} callback the function to call when the request
+ *   completes.
+ */
+ola.common.Server.prototype.rdmGetUIDIdentifyMode = function(universe_id,
+                                                             uid,
+                                                             callback) {
+  var url = (ola.common.Server.RDM_UID_IDENTIFY + '?id=' + universe_id +
       '&uid=' + uid);
   this._initiateRequest(url, callback);
 };
@@ -403,6 +419,63 @@ ola.common.Server.prototype.setChannelValues = function(universe_id, data) {
   var post_data = 'u=' + universe_id + '&d=' + data.join(',');
   var url = ola.common.Server.SET_DMX_URL;
   this._initiateRequest(url, undefined, 'POST', post_data);
+};
+
+
+
+/**
+ * Check if a request completed properly and if not, show a dialog.
+ * This checks both the HTTP code, and the existance of the 'error' property in
+ * the response.
+ * @return {object} The JSON output, or undefined if an error occured.
+ */
+ola.common.Server.prototype.checkForErrorDialog = function(e) {
+  if (e.target.getStatus() == 200) {
+    var response = e.target.getResponseJson();
+    if (response['error']) {
+      this._showErrorDialog(response['error']);
+      return undefined;
+    }
+    return response;
+  } else {
+    this._showErrorDialog(e.target.getLastUri() + ' : ' +
+                          e.target.getLastError());
+    return undefined;
+  }
+};
+
+
+/**
+ * Check if a request completed properly and if not log the error
+ * This checks both the HTTP code, and the existance of the 'error' property in
+ * the response.
+ * @return {object} The JSON output, or undefined if an error occured.
+ */
+ola.common.Server.prototype.checkForErrorLog = function(e) {
+  if (e.target.getStatus() == 200) {
+    var response = e.target.getResponseJson();
+    if (response['error']) {
+      ola.logger.info(response['error']);
+      return undefined;
+    }
+    return response;
+  } else {
+    ola.logger.info(e.target.getLastUri() + ' : ' +
+                    e.target.getLastError());
+    return undefined;
+  }
+};
+
+
+/**
+ * Show the error dialog
+ */
+ola.common.Server.prototype._showErrorDialog = function(message) {
+  var dialog = ola.Dialog.getInstance();
+  dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+  dialog.setTitle('Request Failed');
+  dialog.setContent(message);
+  dialog.setVisible(true);
 };
 
 
