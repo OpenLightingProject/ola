@@ -178,7 +178,8 @@ ola.AvailablePortTable.prototype.getSelectedRows = function() {
  */
 ola.AvailablePortTable.prototype.removeAllRows = function() {
   while (this.getChildCount()) {
-    this.removeChildAt(0, true);
+    var row = this.removeChildAt(0, true);
+    row.dispose();
   }
 };
 

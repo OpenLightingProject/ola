@@ -55,16 +55,16 @@ ola.Port.prototype.canDecorate = function() {
  * Create the dom for this component
  */
 ola.Port.prototype.createDom = function() {
-  this.tr = this.dom_.createDom('tr', {});
-  this.tr.style.cursor = 'pointer';
+  var tr = this.dom_.createDom('tr', {});
+  tr.style.cursor = 'pointer';
   var td = goog.dom.createDom('td', {}, '');
-  this.dom_.appendChild(this.tr, td);
   this.checkbox = new goog.ui.Checkbox();
   this.checkbox.setChecked(true);
   this.checkbox.render(td);
+  this.dom_.appendChild(tr, td);
   this.dom_.appendChild(
-      this.tr, goog.dom.createDom('td', {}, this.data['device']));
-  this.dom_.appendChild(this.tr,
+      tr, goog.dom.createDom('td', {}, this.data['device']));
+  this.dom_.appendChild(tr,
       goog.dom.createDom('td', {}, this.data['description']));
 
   var priority = this.data['priority'];
@@ -72,7 +72,7 @@ ola.Port.prototype.createDom = function() {
   if (priority == undefined) {
     // this port doesn't support priorities at all
     this.dom_.appendChild(
-      this.tr, goog.dom.createDom('td', {}, 'Not supported'));
+      tr, goog.dom.createDom('td', {}, 'Not supported'));
   } else {
     this.priority_input = goog.dom.createElement('input');
     this.priority_input.value = priority['value'];
@@ -81,7 +81,7 @@ ola.Port.prototype.createDom = function() {
     if (priority['current_mode'] == undefined) {
       // this port only supports static priorities
       var td = goog.dom.createDom('td', {}, this.priority_input);
-      this.dom_.appendChild(this.tr, td);
+      this.dom_.appendChild(tr, td);
     } else {
       // this port supports both modes
       this.priority_select = new goog.ui.Select();
@@ -94,10 +94,10 @@ ola.Port.prototype.createDom = function() {
       var td = goog.dom.createElement('td');
       this.priority_select.render(td);
       this.dom_.appendChild(td, this.priority_input);
-      this.dom_.appendChild(this.tr, td);
+      this.dom_.appendChild(tr, td);
     }
   }
-  this.setElementInternal(this.tr);
+  this.setElementInternal(tr);
 };
 
 
@@ -105,6 +105,8 @@ ola.Port.prototype.createDom = function() {
  * Setup the event handlers
  */
 ola.Port.prototype.enterDocument = function() {
+  ola.Port.superClass_.enterDocument.call(this);
+
   if (this.priority_select != undefined) {
     goog.events.listen(
         this.priority_select,
@@ -131,10 +133,46 @@ ola.Port.prototype.enterDocument = function() {
           });
   }
 
-  goog.events.listen(this.tr,
+  goog.events.listen(this.getElement(),
                      goog.events.EventType.CLICK,
                      function() { this.checkbox.toggle(); },
                      false, this);
+};
+
+
+/**
+ * Clean up this object.
+ */
+ola.Port.prototype.exitDocument = function() {
+  ola.AvailablePort.superClass_.exitDocument.call(this);
+
+  this.checkbox.exitDocument();
+  if (this.priority_input) {
+    goog.events.removeAll(this.priority_input);
+  }
+  if (this.priority_select) {
+    goog.events.removeAll(this.priority_select.getElement());
+    goog.events.removeAll(this.priority_select);
+    this.priority_select.exitDocument();
+  }
+  goog.events.removeAll(this.getElement());
+};
+
+
+/**
+ * Dispose of this object.
+ */
+ola.Port.prototype.dispose = function() {
+  if (!this.getDisposed()) {
+    ola.Port.superClass_.dispose.call(this);
+    this.checkbox.dispose();
+    this.checkbox = undefined;
+    if (this.priority_select) {
+      this.priority_select.dispose();
+      this.priority_select = undefined;
+    }
+    this.priority_input = undefined;
+  }
 };
 
 
@@ -241,7 +279,8 @@ ola.PortTable.prototype.canDecorate = function(element) {
  */
 ola.PortTable.prototype.removeAllRows = function() {
   while (this.getChildCount()) {
-    delete this.removeChildAt(0, true);
+    var row = this.removeChildAt(0, true);
+    row.dispose();
   }
 };
 
