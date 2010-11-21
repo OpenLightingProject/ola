@@ -100,6 +100,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterFile("expander.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("handle.vertical.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("loader.gif", HttpServer::CONTENT_TYPE_GIF);
+  RegisterFile("loader-mini.gif", HttpServer::CONTENT_TYPE_GIF);
   RegisterFile("logo.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("logo-mini.png", HttpServer::CONTENT_TYPE_PNG);
   RegisterFile("mobile.html", HttpServer::CONTENT_TYPE_HTML);
