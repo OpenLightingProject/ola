@@ -19,6 +19,7 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <string.h>
 #include <iostream>
 #include <string>
 #include "ola/BaseTypes.h"
@@ -40,6 +41,16 @@ using ola::rdm::NackWithReason;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 
+
+const DummyPort::personality_info DummyPort::PERSONALITIES[] = {
+  {5, "Personality 1"},
+  {10, "Personality 2"},
+  {20, "Personality 3"},
+};
+
+const unsigned int DummyPort::PERSONALITY_COUNT = (
+  sizeof(DummyPort::PERSONALITIES) / sizeof(DummyPort::personality_info));
+
 /*
  * Write operation
  * @param  data  pointer to the dmx data
@@ -53,7 +64,8 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
   string data = buffer.Get();
 
   str << "Dummy port: got " << buffer.Size() << " bytes: ";
-  for (unsigned int i = 0; i < 10 && i < data.size(); i++)
+  for (unsigned int i = 0;
+       i < PERSONALITIES[m_personality].footprint && i < data.size(); i++)
     str << "0x" << std::hex << 0 + (uint8_t) data.at(i) << " ";
   OLA_INFO << str.str();
   return true;
@@ -90,6 +102,10 @@ bool DummyPort::HandleRDMRequest(const RDMRequest *request) {
       return HandleStringResponse(request, "Dummy Model");
     case ola::rdm::PID_SOFTWARE_VERSION_LABEL:
       return HandleStringResponse(request, "Dummy Software Version");
+    case ola::rdm::PID_DMX_PERSONALITY:
+      return HandlePersonality(request);
+    case ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION:
+      return HandlePersonalityDescription(request);
     case ola::rdm::PID_DMX_START_ADDRESS:
       return HandleDmxStartAddress(request);
     default:
@@ -110,38 +126,29 @@ bool DummyPort::HandleUnknownPacket(const RDMRequest *request) {
 
 
 bool DummyPort::HandleSupportedParams(const RDMRequest *request) {
-  if (request->DestinationUID().IsBroadcast()) {
-    delete request;
+  if (!CheckForBroadcastSubdeviceOrData(request))
     return true;
-  }
 
-  RDMResponse *response;
-  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
-    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
-  } else if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->ParamDataSize()) {
-    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
-  } else {
-    uint16_t supported_params[] = {
-      ola::rdm::PID_SUPPORTED_PARAMETERS,
-      ola::rdm::PID_DEVICE_INFO,
-      ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
-      ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
-      ola::rdm::PID_MANUFACTURER_LABEL,
-      ola::rdm::PID_DEVICE_LABEL,
-      ola::rdm::PID_SOFTWARE_VERSION_LABEL,
-      ola::rdm::PID_DMX_START_ADDRESS
-    };
+  uint16_t supported_params[] = {
+    ola::rdm::PID_DEVICE_INFO,
+    ola::rdm::PID_DEVICE_LABEL,
+    ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
+    ola::rdm::PID_DMX_PERSONALITY,
+    ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
+    ola::rdm::PID_DMX_START_ADDRESS,
+    ola::rdm::PID_MANUFACTURER_LABEL,
+    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
+    ola::rdm::PID_SOFTWARE_VERSION_LABEL,
+    ola::rdm::PID_SUPPORTED_PARAMETERS
+  };
 
-    for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
-      supported_params[i] = HostToNetwork(supported_params[i]);
+  for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
+    supported_params[i] = HostToNetwork(supported_params[i]);
 
-    response = GetResponseWithData(
+  RDMResponse *response = GetResponseWithData(
       request,
       reinterpret_cast<uint8_t*>(supported_params),
       sizeof(supported_params));
-  }
   HandleRDMResponse(response);
   delete request;
   return true;
@@ -149,49 +156,39 @@ bool DummyPort::HandleSupportedParams(const RDMRequest *request) {
 
 
 bool DummyPort::HandleDeviceInfo(const RDMRequest *request) {
-  if (request->DestinationUID().IsBroadcast()) {
-    delete request;
+  if (!CheckForBroadcastSubdeviceOrData(request))
     return true;
-  }
 
-  RDMResponse *response;
-  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
-    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
-  } else if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->ParamDataSize()) {
-    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
-  } else {
-    struct device_info_s {
-      uint16_t rdm_version;
-      uint16_t model;
-      uint16_t product_category;
-      uint32_t software_version;
-      uint16_t dmx_footprint;
-      uint8_t current_personality;
-      uint8_t personality_count;
-      uint16_t dmx_start_address;
-      uint16_t sub_device_count;
-      uint8_t sensor_count;
-    } __attribute__((packed));
+  struct device_info_s {
+    uint16_t rdm_version;
+    uint16_t model;
+    uint16_t product_category;
+    uint32_t software_version;
+    uint16_t dmx_footprint;
+    uint8_t current_personality;
+    uint8_t personality_count;
+    uint16_t dmx_start_address;
+    uint16_t sub_device_count;
+    uint8_t sensor_count;
+  } __attribute__((packed));
 
-    struct device_info_s device_info;
-    device_info.rdm_version = HostToNetwork(static_cast<uint16_t>(0x100));
-    device_info.model = HostToNetwork(static_cast<uint16_t>(1));
-    device_info.product_category = HostToNetwork(
-        static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_OTHER));
-    device_info.software_version = HostToNetwork(static_cast<uint32_t>(1));
-    device_info.dmx_footprint =
-      HostToNetwork(static_cast<uint16_t>(DUMMY_DMX_FOOTPRINT));
-    device_info.current_personality = 1;
-    device_info.personality_count = 1;
-    device_info.dmx_start_address = HostToNetwork(m_start_address);
-    device_info.sub_device_count = 0;
-    device_info.sensor_count = 0;
-    response = GetResponseWithData(request,
-                                   reinterpret_cast<uint8_t*>(&device_info),
-                                   sizeof(device_info));
-  }
+  struct device_info_s device_info;
+  device_info.rdm_version = HostToNetwork(static_cast<uint16_t>(0x100));
+  device_info.model = HostToNetwork(static_cast<uint16_t>(1));
+  device_info.product_category = HostToNetwork(
+      static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_OTHER));
+  device_info.software_version = HostToNetwork(static_cast<uint32_t>(1));
+  device_info.dmx_footprint =
+    HostToNetwork(PERSONALITIES[m_personality].footprint);
+  device_info.current_personality = m_personality + 1;
+  device_info.personality_count = PERSONALITY_COUNT;
+  device_info.dmx_start_address = HostToNetwork(m_start_address);
+  device_info.sub_device_count = 0;
+  device_info.sensor_count = 0;
+  RDMResponse *response = GetResponseWithData(
+      request,
+      reinterpret_cast<uint8_t*>(&device_info),
+      sizeof(device_info));
   HandleRDMResponse(response);
   delete request;
   return true;
@@ -202,32 +199,21 @@ bool DummyPort::HandleDeviceInfo(const RDMRequest *request) {
  * Handle a request for PID_PRODUCT_DETAIL_ID_LIST
  */
 bool DummyPort::HandleProductDetailList(const RDMRequest *request) {
-  if (request->DestinationUID().IsBroadcast()) {
-    delete request;
+  if (!CheckForBroadcastSubdeviceOrData(request))
     return true;
-  }
 
-  RDMResponse *response;
-  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
-    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
-  } else if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->ParamDataSize()) {
-    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
-  } else {
-    uint16_t product_details[] = {
-      ola::rdm::PRODUCT_DETAIL_TEST,
-      ola::rdm::PRODUCT_DETAIL_OTHER
-    };
+  uint16_t product_details[] = {
+    ola::rdm::PRODUCT_DETAIL_TEST,
+    ola::rdm::PRODUCT_DETAIL_OTHER
+  };
 
-    for (unsigned int i = 0; i < sizeof(product_details) / 2; i++)
-      product_details[i] = HostToNetwork(product_details[i]);
+  for (unsigned int i = 0; i < sizeof(product_details) / 2; i++)
+    product_details[i] = HostToNetwork(product_details[i]);
 
-    response = GetResponseWithData(
-        request,
-        reinterpret_cast<uint8_t*>(&product_details),
-        sizeof(product_details));
-  }
+  RDMResponse *response = GetResponseWithData(
+      request,
+      reinterpret_cast<uint8_t*>(&product_details),
+      sizeof(product_details));
   HandleRDMResponse(response);
   delete request;
   return true;
@@ -239,23 +225,120 @@ bool DummyPort::HandleProductDetailList(const RDMRequest *request) {
  */
 bool DummyPort::HandleStringResponse(const ola::rdm::RDMRequest *request,
                                      const string &value) {
+  if (!CheckForBroadcastSubdeviceOrData(request))
+    return true;
+
+  RDMResponse *response = GetResponseWithData(
+        request,
+        reinterpret_cast<const uint8_t*>(value.data()),
+        value.size());
+  HandleRDMResponse(response);
+  delete request;
+  return true;
+}
+
+
+/*
+ * Handle getting/setting the personality.
+ */
+bool DummyPort::HandlePersonality(const ola::rdm::RDMRequest *request) {
+  RDMResponse *response;
+  if (request->SubDevice()) {
+    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+  } else if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    // do set
+    if (request->ParamDataSize() != 1) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    } else {
+      uint8_t personality = *request->ParamData() - 1;
+      if (personality >= PERSONALITY_COUNT) {
+        response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+      } else {
+        m_personality = personality;
+        response = new ola::rdm::RDMSetResponse(
+          request->DestinationUID(),
+          request->SourceUID(),
+          request->TransactionNumber(),
+          ola::rdm::ACK,
+          0,
+          request->SubDevice(),
+          request->ParamId(),
+          NULL,
+          0);
+      }
+    }
+  } else {
+    if (request->ParamDataSize()) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    } else {
+      struct personality_info_s {
+        uint8_t personality;
+        uint8_t total;
+      } __attribute__((packed));
+
+      struct personality_info_s personality_info;
+      personality_info.personality = m_personality + 1;
+      personality_info.total = PERSONALITY_COUNT;
+      response = GetResponseWithData(
+        request,
+        reinterpret_cast<const uint8_t*>(&personality_info),
+        sizeof(personality_info));
+    }
+  }
+  if (request->DestinationUID().IsBroadcast()) {
+    delete response;
+  } else {
+    HandleRDMResponse(response);
+  }
+  delete request;
+  return true;
+}
+
+
+/*
+ * Handle getting the personality description.
+ */
+bool DummyPort::HandlePersonalityDescription(
+    const ola::rdm::RDMRequest *request) {
   if (request->DestinationUID().IsBroadcast()) {
     delete request;
-    return true;
+    return false;
   }
 
-  RDMResponse *response;
+  RDMResponse *response = NULL;
+  uint8_t personality = 0;
   if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
   } else if (request->SubDevice()) {
     response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->ParamDataSize()) {
+  } else if (request->ParamDataSize() != 1) {
     response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
   } else {
+    personality = *request->ParamData() - 1;
+    if (personality >= PERSONALITY_COUNT) {
+      response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    }
+  }
+
+  if (!response) {
+    struct personality_description_s {
+      uint8_t personality;
+      uint16_t slots_required;
+      char description[32];
+    } __attribute__((packed));
+
+    struct personality_description_s personality_description;
+    personality_description.personality = personality + 1;
+    personality_description.slots_required =
+      HostToNetwork(PERSONALITIES[personality].footprint);
+    strncpy(personality_description.description,
+            PERSONALITIES[personality].description,
+            sizeof(personality_description.description));
+
     response = GetResponseWithData(
         request,
-        reinterpret_cast<const uint8_t*>(value.data()),
-        value.size());
+        reinterpret_cast<uint8_t*>(&personality_description),
+        sizeof(personality_description));
   }
   HandleRDMResponse(response);
   delete request;
@@ -277,7 +360,9 @@ bool DummyPort::HandleDmxStartAddress(const RDMRequest *request) {
     } else {
       uint16_t address =
         NetworkToHost(*(reinterpret_cast<uint16_t*>(request->ParamData())));
-      if (address == 0 || address > DMX_UNIVERSE_SIZE - DUMMY_DMX_FOOTPRINT) {
+      uint16_t end_address = (
+          DMX_UNIVERSE_SIZE - PERSONALITIES[m_personality].footprint);
+      if (address == 0 || address > end_address) {
         response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
       } else {
         m_start_address = address;
@@ -309,7 +394,40 @@ bool DummyPort::HandleDmxStartAddress(const RDMRequest *request) {
   } else {
     HandleRDMResponse(response);
   }
+  delete request;
+  return true;
+}
+
+
+/**
+ * Check for the following:
+ *   - broadcast request
+ *   - request with a sub device set
+ *   - request with data
+ * And return the correct NACK reason
+ * @returns true is this request was ok, false if we nack'ed it
+ */
+bool DummyPort::CheckForBroadcastSubdeviceOrData(
+    const ola::rdm::RDMRequest *request) {
+  if (request->DestinationUID().IsBroadcast()) {
     delete request;
+    return false;
+  }
+
+  RDMResponse *response = NULL;
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
+  } else if (request->SubDevice()) {
+    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+  } else if (request->ParamDataSize()) {
+    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  }
+
+  if (response) {
+    HandleRDMResponse(response);
+    delete request;
+    return false;
+  }
   return true;
 }
 }  // dummy

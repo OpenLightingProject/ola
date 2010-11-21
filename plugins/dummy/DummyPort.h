@@ -35,7 +35,8 @@ class DummyPort: public BasicOutputPort {
   public:
     DummyPort(DummyDevice *parent, unsigned int id):
       BasicOutputPort(parent, id, true),
-      m_start_address(1) {}
+      m_start_address(1),
+      m_personality(0) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
@@ -49,12 +50,22 @@ class DummyPort: public BasicOutputPort {
     bool HandleProductDetailList(const ola::rdm::RDMRequest *request);
     bool HandleStringResponse(const ola::rdm::RDMRequest *request,
                               const string &value);
+    bool HandlePersonality(const ola::rdm::RDMRequest *request);
+    bool HandlePersonalityDescription(const ola::rdm::RDMRequest *request);
     bool HandleDmxStartAddress(const ola::rdm::RDMRequest *request);
+    bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request);
 
     uint16_t m_start_address;
+    uint8_t m_personality;
     DmxBuffer m_buffer;
 
-    static const uint16_t DUMMY_DMX_FOOTPRINT = 10;
+    typedef struct {
+      uint16_t footprint;
+      char *description;
+    } personality_info;
+
+    static const personality_info PERSONALITIES[];
+    static const unsigned int PERSONALITY_COUNT;
 };
 }  // dummy
 }  // plugin
