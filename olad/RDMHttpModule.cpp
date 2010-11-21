@@ -528,7 +528,7 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
           std::pair<UID, uid_resolve_action>(*iter, RESOLVE_DEVICE));
       resolved_uid uid_descriptor = {"", "", true};
       uid_state->resolved_uids[*iter] = uid_descriptor;
-      OLA_DEBUG << "Adding UID " << uid_iter->first << " to resolution queue";
+      OLA_INFO << "Adding UID " << *iter << " to resolution queue";
     } else {
       manufacturer = uid_iter->second.manufacturer;
       device = uid_iter->second.device;
@@ -562,7 +562,7 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
   for (uid_iter = uid_state->resolved_uids.begin();
        uid_iter != uid_state->resolved_uids.end();) {
     if (!uid_iter->second.active) {
-      OLA_DEBUG << "Removed UID " << uid_iter->first;
+      OLA_INFO << "Removed UID " << uid_iter->first;
       uid_state->resolved_uids.erase(uid_iter++);
     } else {
       ++uid_iter;
@@ -596,7 +596,7 @@ void RDMHttpModule::ResolveNextUID(unsigned int universe_id) {
     pair<UID, uid_resolve_action> &uid_action_pair =
       uid_state->pending_uids.front();
     if (uid_action_pair.second == RESOLVE_MANUFACTURER) {
-      OLA_DEBUG << "sending manufacturer request for " << uid_action_pair.first;
+      OLA_INFO << "sending manufacturer request for " << uid_action_pair.first;
       sent_request = m_rdm_api.GetManufacturerLabel(
           universe_id,
           uid_action_pair.first,

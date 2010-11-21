@@ -380,6 +380,10 @@ void DmxTriWidget::DispatchNextRequest() {
   unsigned int size = sizeof(message) -
     ola::rdm::RDMCommand::MAX_PARAM_DATA_LENGTH + request->ParamDataSize();
 
+  OLA_INFO << "Sending request to " << request->DestinationUID() <<
+    " with command " << std::hex << request->CommandClass() << " and param " <<
+    std::hex << request->ParamId();
+
   m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
                         size,
                         reinterpret_cast<uint8_t*>(&message));
@@ -525,10 +529,12 @@ void DmxTriWidget::HandleRemoteUIDResponse(uint8_t return_code,
 void DmxTriWidget::HandleRemoteRDMResponse(uint8_t return_code,
                                            const uint8_t *data,
                                            unsigned int length) {
-  OLA_INFO << "Received RDM response 0x" <<
-    static_cast<int>(return_code) << ", length " << length;
-
   const RDMRequest *request = m_pending_requests.front();
+
+  OLA_INFO << "Received RDM response with code 0x" <<
+    static_cast<int>(return_code) << ", " << length << " bytes, param " <<
+    std::hex << request->ParamId();
+
   if (return_code == EC_NO_ERROR ||
       return_code == EC_RESPONSE_WAIT ||
       return_code == EC_RESPONSE_MORE) {
@@ -621,6 +627,8 @@ void DmxTriWidget::HandleRemoteRDMResponse(uint8_t return_code,
   delete request;
   m_pending_requests.pop();
   m_rdm_request_pending = false;
+  //send the next one
+  MaybeSendRDMRequest();
 }
 
 

@@ -399,7 +399,7 @@ bool Universe::HandleRDMRequest(InputPort *port,
  */
 bool Universe::HandleRDMResponse(OutputPort *port,
                                  const ola::rdm::RDMResponse *response) {
-  OLA_INFO << "Got a RDM response for " << response->DestinationUID() <<
+  OLA_INFO << "Got a RDM response from " << response->SourceUID() <<
     " with command " << std::hex << response->CommandClass() << " and param "
     << response->ParamId();
 
