@@ -342,12 +342,15 @@ ola.common.Server.prototype.fetchUids = function(universe_id, callback) {
 /**
  * Fetch the uids and their device name, dmx start address & footprint
  * @param {number} universe_id the ID of the universe.
+ * @param {string} uid the string representation of a UID.
  * @param {function(Object)} callback the function to call when the request
  *   completes.
  */
 ola.common.Server.prototype.rdmGetUIDInfoList = function(universe_id,
+                                                         uid,
                                                          callback) {
-  var url = (ola.common.Server.RDM_UID_INFO + '?id=' + universe_id);
+  var url = (ola.common.Server.RDM_UID_INFO + '?id=' + universe_id +
+      '&uid=' + uid);
   this._initiateRequest(url, callback);
 };
 
