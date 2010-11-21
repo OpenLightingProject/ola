@@ -70,7 +70,7 @@ ola.mobile.PluginTab.prototype._hideAllFrames = function() {
  */
 ola.mobile.PluginTab.prototype.update = function() {
   this._hideAllFrames();
-  this.plugin_frame.SetAsBusy();
+  this.plugin_frame.setAsBusy();
   this.plugin_list = undefined;
   this.plugin_frame.Show();
   this.ola_server.FetchUniversePluginList();
@@ -107,7 +107,7 @@ ola.mobile.PluginTab.prototype._updatePluginList = function(e) {
  */
 ola.mobile.PluginTab.prototype._pluginSelected = function(plugin_id) {
   this._hideAllFrames();
-  this.plugin_info_frame.SetAsBusy();
+  this.plugin_info_frame.setAsBusy();
   this.plugin_info_frame.Show();
   this.ola_server.FetchPluginInfo(plugin_id);
 };

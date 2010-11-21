@@ -114,7 +114,7 @@ ola.NewUniverseFrame.prototype._addUniverseButtonClicked = function(e) {
       universe_name,
       selected_ports,
       function(e) { frame._newUniverseComplete(e); });
-  dialog.SetAsBusy();
+  dialog.setAsBusy();
   dialog.setVisible(true);
 };
 

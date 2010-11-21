@@ -83,7 +83,7 @@ ola.mobile.UniverseTab.prototype._hideAllFrames = function() {
  */
 ola.mobile.UniverseTab.prototype.update = function() {
   this._hideAllFrames();
-  this.universe_frame.SetAsBusy();
+  this.universe_frame.setAsBusy();
   this.universe_list = undefined;
   this.active_universe = undefined;
   this.active_uid = undefined;
@@ -123,7 +123,7 @@ ola.mobile.UniverseTab.prototype._updateUniverseList = function(e) {
  */
 ola.mobile.UniverseTab.prototype._universeSelected = function(universe_id) {
   this._hideAllFrames();
-  this.uid_frame.SetAsBusy();
+  this.uid_frame.setAsBusy();
   this.uid_list = undefined;
   this.rdm_list = undefined;
   this.active_universe = universe_id;
@@ -182,7 +182,7 @@ ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
  */
 ola.mobile.UniverseTab.prototype._uidSelected = function(uid) {
   this._hideAllFrames();
-  this.rdm_frame.SetAsBusy();
+  this.rdm_frame.setAsBusy();
   this.rdm_list = undefined;
   this.active_uid = uid;
   this.rdm_frame.Show();
@@ -236,7 +236,7 @@ ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
  */
 ola.mobile.UniverseTab.prototype._sectionSelected = function(section) {
   this._hideAllFrames();
-  this.rdm_section_frame.SetAsBusy();
+  this.rdm_section_frame.setAsBusy();
   this.rdm_section_frame.Show();
   this.active_section = section;
   this._loadSection();

@@ -235,7 +235,7 @@ ola.UniverseSettingsTab.prototype._saveButtonClicked = function(remove_confirmed
       function(e) { tab._saveCompleted(e); });
 
   var dialog = ola.Dialog.getInstance();
-  dialog.SetAsBusy();
+  dialog.setAsBusy();
   dialog.setVisible(true);
 };
 

@@ -596,7 +596,7 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
       function(e) { patcher._displayConfigureDevice(e); });
 
   var dialog = ola.Dialog.getInstance();
-  dialog.SetAsBusy();
+  dialog.setAsBusy();
   dialog.setVisible(true);
 };
 
@@ -660,7 +660,7 @@ ola.RDMPatcher.prototype._setStartAddress = function(device, start_address) {
       });
 
   var dialog = ola.Dialog.getInstance();
-  dialog.SetAsBusy();
+  dialog.setAsBusy();
   dialog.setVisible(true);
 };
 

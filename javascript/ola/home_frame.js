@@ -222,7 +222,7 @@ ola.HomeFrame.prototype._stopServerConfirmed = function(e) {
       this._stopServerConfirmed, false, this);
 
   if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
-    dialog.SetAsBusy();
+    dialog.setAsBusy();
     dialog.setVisible(true);
     var frame = this;
     ola.common.Server.getInstance().stopServer(
@@ -254,7 +254,7 @@ ola.HomeFrame.prototype._stopServerComplete = function(e) {
  */
 ola.HomeFrame.prototype._reloadButtonClicked = function(e) {
   var dialog = ola.Dialog.getInstance();
-  dialog.SetAsBusy();
+  dialog.setAsBusy();
   dialog.setVisible(true);
   var frame = this;
   ola.common.Server.getInstance().reloadPlugins(

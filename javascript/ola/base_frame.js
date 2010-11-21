@@ -60,7 +60,7 @@ ola.BaseFrame.prototype.Hide = function() {
 /**
  * Make this frame show the spinner
  */
-ola.BaseFrame.prototype.SetAsBusy = function() {
+ola.BaseFrame.prototype.setAsBusy = function() {
   this.element.innerHTML = (
       '<div align="center"><img src="/loader.gif"></div>');
 };

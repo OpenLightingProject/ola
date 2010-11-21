@@ -178,7 +178,7 @@ ola.RDMTab.prototype._discoveryButtonClicked = function(e) {
       function(e) { tab._discoveryComplete(e); });
 
   var dialog = ola.Dialog.getInstance();
-  dialog.SetAsBusy();
+  dialog.setAsBusy();
   dialog.setVisible(true);
 };
 
