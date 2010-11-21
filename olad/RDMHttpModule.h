@@ -50,7 +50,13 @@ class RDMHttpModule: public HttpModule {
     int RunRDMDiscovery(const HttpRequest *request, HttpResponse *response);
 
     int JsonUIDs(const HttpRequest *request, HttpResponse *response);
+
+    // these are used by the RDM Patcher
     int JsonUIDInfo(const HttpRequest *request, HttpResponse *response);
+    int JsonUIdIdentifyMode(const HttpRequest *request,
+                            HttpResponse *response);
+
+    // these are used by the RDM Attributes Panel
     int JsonSupportedPIDs(const HttpRequest *request, HttpResponse *response);
     int JsonSupportedSections(const HttpRequest *request,
                               HttpResponse *response);
@@ -143,6 +149,11 @@ class RDMHttpModule: public HttpModule {
     void UIDInfoHandler(HttpResponse *response,
                         const ola::rdm::ResponseStatus &status,
                         const ola::rdm::DeviceDescriptor &device);
+
+    // uid identify handler
+    void UIDIdentifyHandler(HttpResponse *response,
+                            const ola::rdm::ResponseStatus &status,
+                            bool value);
 
     // supported params / sections
     void SupportedParamsHandler(HttpResponse *response,

@@ -128,6 +128,9 @@ RDMHttpModule::RDMHttpModule(HttpServer *http_server,
       "/json/rdm/uid_info",
       NewCallback(this, &RDMHttpModule::JsonUIDInfo));
   m_server->RegisterHandler(
+      "/json/rdm/uid_identify",
+      NewCallback(this, &RDMHttpModule::JsonUIdIdentifyMode));
+  m_server->RegisterHandler(
       "/json/rdm/supported_pids",
       NewCallback(this, &RDMHttpModule::JsonSupportedPIDs));
   m_server->RegisterHandler(
@@ -227,6 +230,39 @@ int RDMHttpModule::JsonUIDInfo(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
                         &RDMHttpModule::UIDInfoHandler,
+                        response),
+      &error);
+  delete uid;
+
+  if (!ok)
+    return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
+}
+
+
+/**
+ * Returns the identify state for the device.
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int RDMHttpModule::JsonUIdIdentifyMode(const HttpRequest *request,
+                                       HttpResponse *response) {
+  unsigned int universe_id;
+  if (!CheckForInvalidId(request, &universe_id))
+    return m_server->ServeNotFound(response);
+
+  UID *uid = NULL;
+  if (!CheckForInvalidUid(request, &uid))
+    return m_server->ServeNotFound(response);
+
+  string error;
+  bool ok = m_rdm_api.GetIdentifyMode(
+      universe_id,
+      *uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      NewSingleCallback(this,
+                        &RDMHttpModule::UIDIdentifyHandler,
                         response),
       &error);
   delete uid;
@@ -724,6 +760,29 @@ void RDMHttpModule::UIDInfoHandler(HttpResponse *response,
     << "," << endl;
   str << "  \"personality_count\": " <<
     static_cast<int>(device.personaility_count) << "," << endl;
+  str << "}";
+
+  response->SetNoCache();
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
+}
+
+
+/**
+ * Handle the identify mode response and build the json.
+ */
+void RDMHttpModule::UIDIdentifyHandler(HttpResponse *response,
+                                       const ola::rdm::ResponseStatus &status,
+                                       bool value) {
+  if (CheckForRDMError(response, status))
+    return;
+
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"error\": \"\"," << endl;
+  str << "  \"identify_mode\": " << value << "," << endl;
   str << "}";
 
   response->SetNoCache();
