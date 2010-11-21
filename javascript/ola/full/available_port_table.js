@@ -65,11 +65,39 @@ ola.AvailablePort.prototype.createDom = function() {
   this.dom_.appendChild(tr, goog.dom.createDom('td', {},
       this.data['description']));
   this.setElementInternal(tr);
+};
 
-  goog.events.listen(tr,
+
+/**
+ * Attach the listener.
+ */
+ola.AvailablePort.prototype.enterDocument = function() {
+  ola.AvailablePort.superClass_.enterDocument.call(this);
+  goog.events.listen(this.getElement(),
                      goog.events.EventType.CLICK,
                      function() { this.checkbox.toggle(); },
                      false, this);
+};
+
+
+/**
+ * Clean up this object.
+ */
+ola.AvailablePort.prototype.exitDocument = function() {
+  ola.AvailablePort.superClass_.exitDocument.call(this);
+  this.checkbox.exitDocument();
+  goog.events.removeAll(this.getElement());
+};
+
+
+/**
+ * Dispose of this object.
+ */
+ola.AvailablePort.prototype.dispose = function() {
+  if (!this.getDisposed()) {
+    ola.AvailablePort.superClass_.dispose.call(this);
+    this.checkbox.dispose();
+  }
 };
 
 
@@ -150,7 +178,7 @@ ola.AvailablePortTable.prototype.getSelectedRows = function() {
  */
 ola.AvailablePortTable.prototype.removeAllRows = function() {
   while (this.getChildCount()) {
-    delete this.removeChildAt(0, true);
+    this.removeChildAt(0, true);
   }
 };
 
@@ -172,8 +200,7 @@ ola.AvailablePortTable.prototype.update = function(universe_id) {
  * Called when the list of available ports is returned
  */
 ola.AvailablePortTable.prototype._updateCompleted = function(e) {
-  if (e.target.getStatus() != 200) {
-    ola.logger.info(e.target.getLastUri() + ' : ' + e.target.getLastError());
+  if (!ola.common.Server.getInstance().checkStatusDialog(e)) {
     return;
   }
 

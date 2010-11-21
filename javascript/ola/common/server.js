@@ -425,6 +425,21 @@ ola.common.Server.prototype.setChannelValues = function(universe_id, data) {
 
 /**
  * Check if a request completed properly and if not, show a dialog.
+ * This checks just the HTTP code.
+ * @return {boolean} true if ok, false otherwise
+ */
+ola.common.Server.prototype.checkStatusDialog = function(e) {
+  if (e.target.getStatus() != 200) {
+    this._showErrorDialog(e.target.getLastUri() + ' : ' +
+                          e.target.getLastError());
+    return false;
+  }
+  return true;
+};
+
+
+/**
+ * Check if a request completed properly and if not, show a dialog.
  * This checks both the HTTP code, and the existance of the 'error' property in
  * the response.
  * @return {object} The JSON output, or undefined if an error occured.
