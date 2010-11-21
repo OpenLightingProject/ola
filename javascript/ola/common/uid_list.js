@@ -39,6 +39,12 @@ goog.inherits(ola.common.UidItem, ola.common.DataItem);
 
 
 /**
+ * Get the device name
+ */
+ola.common.UidItem.prototype.deviceName = function() { return this._device; }
+
+
+/**
  * Get the id of this universe.
  * @return {number} the uid id.
  */
