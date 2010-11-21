@@ -1052,8 +1052,6 @@ bool RDMAPI::SetDMXPersonality(
     string *error) {
   if (CheckCallback(error, callback))
     return false;
-  if (CheckNotBroadcast(uid, error, callback))
-    return false;
   if (CheckValidSubDevice(sub_device, true, error, callback))
     return false;
 
