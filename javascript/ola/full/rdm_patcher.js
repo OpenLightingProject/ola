@@ -37,11 +37,6 @@ goog.provide('ola.RDMPatcher');
 goog.provide('ola.RDMPatcherDevice');
 
 
-/*
- * TODO:
- *  personality support
- */
-
 /**
  * The model of an RDM device.
  * @param {string} uid the uid of the device.
@@ -49,12 +44,15 @@ goog.provide('ola.RDMPatcherDevice');
  * @param {number} footprint the number of dmx channels consumed.
  * @constructor
  */
-ola.RDMPatcherDevice = function(uid, label, start_address, footprint) {
+ola.RDMPatcherDevice = function(uid, label, start_address, footprint,
+                                current_personality, personality_count) {
   this.uid = uid;
   this.label = label;
   // convert to 0 offset
   this.start = start_address - 1;
   this.footprint = footprint;
+  this.current_personality = current_personality;
+  this.personality_count = personality_count;
 
   this.setStart(start_address);
   this._divs = new Array();
@@ -474,11 +472,14 @@ ola.RDMPatcher.prototype._endDrag = function(div, device, e) {
   this.scroller.setEnabled(false);
   var box = goog.style.getBorderBoxSize(div);
 
+  var deltaX = Math.max(0, e.dragger.deltaX);
+  var deltaY = Math.max(0, e.dragger.deltaY);
+
   var center_x = Math.min(
-    e.dragger.deltaX + (box.width / 2),
+    deltaX + (box.width / 2),
     this.cell_width * ola.RDMPatcher.CHANNELS_PER_ROW - 1);
   var center_y = Math.min(
-    e.dragger.deltaY + (box.height / 2),
+    deltaY + (box.height / 2),
     this.cell_height * ola.RDMPatcher.NUMBER_OF_ROWS - 1);
 
   var new_start_address = (Math.floor(center_x / this.cell_width) +
@@ -553,6 +554,7 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
     this.personality_spinner.style.display = 'none';
     this.personality_spinner.style.verticalAlign = 'middle';
     goog.dom.appendChild(td, this.personality_spinner);
+    this.personality_row = tr;
     goog.dom.appendChild(table, tr);
 
     // now do the identify checkbox
@@ -593,7 +595,7 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
   server.rdmGetUIDIdentifyMode(
       this.universe_id,
       device.uid,
-      function(e) { patcher._displayConfigureDevice(e); });
+      function(e) { patcher._getIdentifyComplete(e); });
 
   var dialog = ola.Dialog.getInstance();
   dialog.setAsBusy();
@@ -602,11 +604,9 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
 
 
 /**
- * Display the configure device dialog
+ * Called when the get identify mode completes.
  */
-ola.RDMPatcher.prototype._displayConfigureDevice = function(e) {
-  var dialog = ola.Dialog.getInstance();
-  dialog.setVisible(false);
+ola.RDMPatcher.prototype._getIdentifyComplete = function(e) {
 
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
   if (response != undefined) {
@@ -616,6 +616,31 @@ ola.RDMPatcher.prototype._displayConfigureDevice = function(e) {
     this.identify_box.setChecked(mode);
   }
 
+  if (this.active_device.personality_count == undefined ||
+      this.active_device.personality_count < 2) {
+    var dialog = ola.Dialog.getInstance();
+    dialog.setVisible(false);
+    this._displayConfigureDevice();
+    this.personality_row.style.display = 'none';
+  } else {
+    // fetch personalities here
+    /*
+    var server = ola.common.Server.getInstance();
+    var patcher = this;
+    server.rdmGetUIDIdentifyMode(
+        this.universe_id,
+        device.uid,
+        function(e) { patcher._getIdentifyComplete(e); });
+    */
+    this.personality_row.style.display = 'block';
+  }
+};
+
+
+/**
+ * Display the configure device dialog
+ */
+ola.RDMPatcher.prototype._displayConfigureDevice = function(e) {
   this.start_address_input.value = this.active_device.start + 1;
   this.dialog.setTitle(this.active_device.label);
   this.dialog.setVisible(true);

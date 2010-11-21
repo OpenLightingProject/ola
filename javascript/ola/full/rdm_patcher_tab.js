@@ -165,12 +165,16 @@ ola.RDMPatcherTab.prototype._deviceInfoComplete = function(device, e) {
     label = device.asString();
   }
 
-  this.devices.push(
-    new ola.RDMPatcherDevice(
-      device.asString(),
-      label,
-      response['address'],
-      response['footprint'])
-  );
+  if (response['footprint'] > 0) {
+    this.devices.push(
+      new ola.RDMPatcherDevice(
+        device.asString(),
+        label,
+        response['address'],
+        response['footprint'],
+        response['personality'],
+        response['personality_count'])
+    );
+  }
   this._fetchNextDeviceOrRender();
 };
