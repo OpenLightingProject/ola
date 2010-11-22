@@ -189,8 +189,16 @@ if test "${have_dmx4linux}" = "yes"; then
 fi
 
 # check for libusb
+# look for microhttpd if the user asked us to
+AC_ARG_ENABLE(
+  [libusb],
+  AS_HELP_STRING([--disable-libusb], [Don't use libusb even if it exists]))
+
 have_libusb="no"
-PKG_CHECK_MODULES(libusb, [libusb-1.0 >= 1.0.2], [have_libusb="yes"], [true])
+
+if test "${enable_libusb}" != "no"; then
+  PKG_CHECK_MODULES(libusb, [libusb-1.0 >= 1.0.2], [have_libusb="yes"], [true])
+fi
 AM_CONDITIONAL(HAVE_LIBUSB, test "${have_libusb}" = "yes")
 
 if test "${have_libusb}" = "yes"; then
