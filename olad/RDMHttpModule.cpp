@@ -129,7 +129,10 @@ RDMHttpModule::RDMHttpModule(HttpServer *http_server,
       NewCallback(this, &RDMHttpModule::JsonUIDInfo));
   m_server->RegisterHandler(
       "/json/rdm/uid_identify",
-      NewCallback(this, &RDMHttpModule::JsonUIdIdentifyMode));
+      NewCallback(this, &RDMHttpModule::JsonUIDIdentifyMode));
+  m_server->RegisterHandler(
+      "/json/rdm/uid_personalities",
+      NewCallback(this, &RDMHttpModule::JsonUIDPersonalities));
   m_server->RegisterHandler(
       "/json/rdm/supported_pids",
       NewCallback(this, &RDMHttpModule::JsonSupportedPIDs));
@@ -246,7 +249,7 @@ int RDMHttpModule::JsonUIDInfo(const HttpRequest *request,
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
  */
-int RDMHttpModule::JsonUIdIdentifyMode(const HttpRequest *request,
+int RDMHttpModule::JsonUIDIdentifyMode(const HttpRequest *request,
                                        HttpResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
@@ -269,6 +272,31 @@ int RDMHttpModule::JsonUIdIdentifyMode(const HttpRequest *request,
 
   if (!ok)
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
+  return MHD_YES;
+}
+
+
+/**
+ * Returns the personalities on the device
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int RDMHttpModule::JsonUIDPersonalities(const HttpRequest *request,
+                                        HttpResponse *response) {
+  unsigned int universe_id;
+  if (!CheckForInvalidId(request, &universe_id))
+    return m_server->ServeNotFound(response);
+
+  UID *uid = NULL;
+  if (!CheckForInvalidUid(request, &uid))
+    return m_server->ServeNotFound(response);
+
+  string error = GetPersonalities(request, response, universe_id, *uid, false,
+                                  true);
+
+  if (!error.empty())
+    return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
   return MHD_YES;
 }
 
@@ -378,7 +406,7 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
   } else if (section_id == BOOT_SOFTWARE_SECTION) {
     error = GetBootSoftware(response, universe_id, *uid);
   } else if (section_id == PERSONALITY_SECTION) {
-    error = GetPersonalities(request, response, universe_id, *uid);
+    error = GetPersonalities(request, response, universe_id, *uid, true);
   } else if (section_id == DMX_ADDRESS_SECTION) {
     error = GetStartAddress(request, response, universe_id, *uid);
   } else if (section_id == SENSOR_SECTION) {
@@ -790,6 +818,47 @@ void RDMHttpModule::UIDIdentifyHandler(HttpResponse *response,
   response->Append(str.str());
   response->Send();
   delete response;
+}
+
+
+/**
+ * Send the response to a dmx personality section
+ */
+void RDMHttpModule::SendPersonalityResponse(HttpResponse *response,
+                                            personality_info *info) {
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"error\": \"\"," << endl;
+  str << "  \"personalities\": [" << endl;
+
+  unsigned int i = 1;
+  while(i <= info->total && i <= info->personalities.size()) {
+    str << "    {" << endl;
+    if (info->personalities[i - 1].first != INVALID_PERSONALITY) {
+      str << "    \"name\": \"" << info->personalities[i - 1].second << "\","
+          << endl;
+      str << "    \"index\": " << i << ","
+          << endl;
+      str << "    \"footprint\": " << info->personalities[i - 1].first << ","
+          << endl;
+    }
+
+    if (i == info->total)
+      str << "    }" << endl;
+    else
+      str << "    }," << endl;
+    i++;
+  }
+  str << "  ]," << endl;
+  str << "  \"selected\": " << info->active << "," << endl;
+  str << "}";
+
+  response->SetNoCache();
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete info->uid;
+  delete info;
 }
 
 
@@ -1673,14 +1742,17 @@ void RDMHttpModule::GetBootSoftwareVersionHandler(
 string RDMHttpModule::GetPersonalities(const HttpRequest *request,
                                        HttpResponse *response,
                                        unsigned int universe_id,
-                                       const UID &uid) {
+                                       const UID &uid,
+                                       bool return_as_section,
+                                       bool include_descriptions) {
   string hint = request->GetParameter(HINT_KEY);
   string error;
 
   personality_info *info = new personality_info;
   info->universe_id = universe_id;
   info->uid = new UID(uid);
-  info->include_descriptions = (hint == "l");
+  info->include_descriptions = include_descriptions || (hint == "l");
+  info->return_as_section = return_as_section;
   info->active = 0;
   info->next = 1;
   info->total = 0;
@@ -1746,7 +1818,10 @@ void RDMHttpModule::GetNextPersonalityDescription(HttpResponse *response,
 
     info->next++;
   }
-  SendPersonalityResponse(response, info);
+  if (info->return_as_section)
+    SendSectionPersonalityResponse(response, info);
+  else
+    SendPersonalityResponse(response, info);
 }
 
 
@@ -1772,7 +1847,10 @@ void RDMHttpModule::GetPersonalityLabelHandler(
   info->personalities.push_back(pair<uint32_t, string>(slots, description));
 
   if (info->next == info->total) {
-    SendPersonalityResponse(response, info);
+    if (info->return_as_section)
+      SendSectionPersonalityResponse(response, info);
+    else
+      SendPersonalityResponse(response, info);
   } else {
     info->next++;
     GetNextPersonalityDescription(response, info);
@@ -1784,8 +1862,8 @@ void RDMHttpModule::GetPersonalityLabelHandler(
 /**
  * Send the response to a dmx personality section
  */
-void RDMHttpModule::SendPersonalityResponse(HttpResponse *response,
-                                            personality_info *info) {
+void RDMHttpModule::SendSectionPersonalityResponse(HttpResponse *response,
+                                                  personality_info *info) {
   JsonSection section;
   SelectItem *item = new SelectItem("Personality", GENERIC_UINT_FIELD);
 

@@ -53,8 +53,10 @@ class RDMHttpModule: public HttpModule {
 
     // these are used by the RDM Patcher
     int JsonUIDInfo(const HttpRequest *request, HttpResponse *response);
-    int JsonUIdIdentifyMode(const HttpRequest *request,
+    int JsonUIDIdentifyMode(const HttpRequest *request,
                             HttpResponse *response);
+    int JsonUIDPersonalities(const HttpRequest *request,
+                             HttpResponse *response);
 
     // these are used by the RDM Attributes Panel
     int JsonSupportedPIDs(const HttpRequest *request, HttpResponse *response);
@@ -115,6 +117,7 @@ class RDMHttpModule: public HttpModule {
       unsigned int universe_id;
       const UID *uid;
       bool include_descriptions;
+      bool return_as_section;
       unsigned int active;
       unsigned int next;
       unsigned int total;
@@ -154,6 +157,11 @@ class RDMHttpModule: public HttpModule {
     void UIDIdentifyHandler(HttpResponse *response,
                             const ola::rdm::ResponseStatus &status,
                             bool value);
+
+    // personality handler
+    void SendPersonalityResponse(HttpResponse *response,
+                                 personality_info *info);
+
 
     // supported params / sections
     void SupportedParamsHandler(HttpResponse *response,
@@ -302,7 +310,9 @@ class RDMHttpModule: public HttpModule {
     string GetPersonalities(const HttpRequest *request,
                             HttpResponse *response,
                             unsigned int universe_id,
-                            const UID &uid);
+                            const UID &uid,
+                            bool return_as_section,
+                            bool include_description = false);
 
     void GetPersonalityHandler(
         HttpResponse *response,
@@ -322,8 +332,8 @@ class RDMHttpModule: public HttpModule {
         uint16_t slot_count,
         const string &label);
 
-    void SendPersonalityResponse(HttpResponse *response,
-                                 personality_info *info);
+    void SendSectionPersonalityResponse(HttpResponse *response,
+                                        personality_info *info);
 
     string SetPersonality(const HttpRequest *request,
                           HttpResponse *response,
