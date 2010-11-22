@@ -253,6 +253,9 @@ bool DummyPort::HandlePersonality(const ola::rdm::RDMRequest *request) {
       uint8_t personality = *request->ParamData() - 1;
       if (personality >= PERSONALITY_COUNT) {
         response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+      } else if (m_start_address + PERSONALITIES[personality].footprint - 1 >
+          DMX_UNIVERSE_SIZE) {
+        response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
       } else {
         m_personality = personality;
         response = new ola::rdm::RDMSetResponse(
@@ -361,7 +364,7 @@ bool DummyPort::HandleDmxStartAddress(const RDMRequest *request) {
       uint16_t address =
         NetworkToHost(*(reinterpret_cast<uint16_t*>(request->ParamData())));
       uint16_t end_address = (
-          DMX_UNIVERSE_SIZE - PERSONALITIES[m_personality].footprint);
+          DMX_UNIVERSE_SIZE - PERSONALITIES[m_personality].footprint + 1);
       if (address == 0 || address > end_address) {
         response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
       } else {
