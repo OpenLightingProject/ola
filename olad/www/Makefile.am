@@ -8,6 +8,7 @@ dist_www_DATA = blank.gif \
                 handle.vertical.png \
                 landing.html \
                 loader.gif \
+                loader-mini.gif \
                 logo.png \
                 logo-mini.png \
                 mobile.html \
