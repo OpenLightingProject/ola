@@ -65,6 +65,24 @@ ola.RDMPatcherDevice = function(uid, label, start_address, footprint,
  */
 ola.RDMPatcherDevice.prototype.setStart = function(start_address) {
   this.start = start_address - 1;
+  this._updateEnd();
+};
+
+
+/**
+ * Set the start address of this device
+ * @param {number} start_address the start address, from 1 - 512.
+ */
+ola.RDMPatcherDevice.prototype.setFootprint = function(footprint) {
+  this.footprint = footprint;
+  this._updateEnd();
+};
+
+/**
+ * Update the end address.
+ * @param {number} start_address the start address, from 1 - 512.
+ */
+ola.RDMPatcherDevice.prototype._updateEnd = function() {
   this.end = Math.min(this.start + this.footprint - 1,
                       ola.RDMPatcher.NUMBER_OF_CHANNELS);
 };
@@ -139,6 +157,9 @@ ola.RDMPatcher = function(element_id) {
   this.active_device = undefined;
   this.start_address_input = undefined;
   this.scroller = new ola.CustomDragScrollSupport(this.element);
+
+  // the per-personality footprints for the active device
+  this.personalities = undefined;
 };
 
 
@@ -546,9 +567,8 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
     td = goog.dom.createElement('td');
     td.noWrap = true;
     goog.dom.appendChild(tr, td);
-    var select = new goog.ui.Select();
-    select.addItem(new goog.ui.MenuItem('One'));
-    select.render(td);
+    this.personality_select = new goog.ui.Select();
+    this.personality_select.render(td);
     this.personality_spinner = goog.dom.createElement('img');
     this.personality_spinner.src = '/loader-mini.gif';
     this.personality_spinner.style.display = 'none';
@@ -556,6 +576,13 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
     goog.dom.appendChild(td, this.personality_spinner);
     this.personality_row = tr;
     goog.dom.appendChild(table, tr);
+
+    goog.events.listen(
+      this.personality_select,
+      goog.ui.Component.EventType.ACTION,
+      this._setPersonality,
+      false,
+      this);
 
     // now do the identify checkbox
     tr = goog.dom.createElement('tr');
@@ -597,6 +624,7 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
       device.uid,
       function(e) { patcher._getIdentifyComplete(e); });
 
+  this.personality_row.style.display = 'none';
   var dialog = ola.Dialog.getInstance();
   dialog.setAsBusy();
   dialog.setVisible(true);
@@ -607,7 +635,6 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
  * Called when the get identify mode completes.
  */
 ola.RDMPatcher.prototype._getIdentifyComplete = function(e) {
-
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
   if (response != undefined) {
     var mode = (response['identify_mode'] ?
@@ -618,22 +645,46 @@ ola.RDMPatcher.prototype._getIdentifyComplete = function(e) {
 
   if (this.active_device.personality_count == undefined ||
       this.active_device.personality_count < 2) {
-    var dialog = ola.Dialog.getInstance();
-    dialog.setVisible(false);
     this._displayConfigureDevice();
-    this.personality_row.style.display = 'none';
   } else {
-    // fetch personalities here
-    /*
     var server = ola.common.Server.getInstance();
     var patcher = this;
-    server.rdmGetUIDIdentifyMode(
+    server.rdmGetUIDPersonalities(
         this.universe_id,
-        device.uid,
-        function(e) { patcher._getIdentifyComplete(e); });
-    */
-    this.personality_row.style.display = 'block';
+        this.active_device.uid,
+        function(e) { patcher._getPersonalitiesComplete(e); });
   }
+};
+
+
+/**
+ * Called when the fetch personalities completes.
+ */
+ola.RDMPatcher.prototype._getPersonalitiesComplete = function(e) {
+  var response = ola.common.Server.getInstance().checkForErrorLog(e);
+  if (response != undefined) {
+    // remove all items from select
+    for (var i = this.personality_select.getItemCount() -1; i >= 0; --i) {
+      this.personality_select.removeItemAt(i);
+    }
+    this.personalities = new Array();
+
+    personalities = response['personalities'];
+    for (var i = 0; i < personalities.length; ++i) {
+      if (personalities[i]['footprint'] > 0) {
+        var label = (personalities[i]['name'] + ' (' +
+            personalities[i]['footprint'] + ')');
+        var item = new goog.ui.MenuItem(label);
+        this.personality_select.addItem(item);
+        if (response['selected'] == i + 1) {
+          this.personality_select.setSelectedItem(item);
+        }
+        this.personalities.push(personalities[i]);
+      }
+    }
+    this.personality_row.style.display = 'table-row';
+  }
+  this._displayConfigureDevice();
 };
 
 
@@ -641,6 +692,7 @@ ola.RDMPatcher.prototype._getIdentifyComplete = function(e) {
  * Display the configure device dialog
  */
 ola.RDMPatcher.prototype._displayConfigureDevice = function(e) {
+  ola.Dialog.getInstance().setVisible(false);
   this.start_address_input.value = this.active_device.start + 1;
   this.dialog.setTitle(this.active_device.label);
   this.dialog.setVisible(true);
@@ -702,7 +754,6 @@ ola.RDMPatcher.prototype._setStartAddressComplete = function(device,
     dialog.setVisible(false);
     device.setStart(start_address);
   }
-
   this._render();
 };
 
@@ -713,25 +764,31 @@ ola.RDMPatcher.prototype._setStartAddressComplete = function(device,
 ola.RDMPatcher.prototype._setPersonality = function(e) {
   var server = ola.common.Server.getInstance();
   this.personality_spinner.style.display = 'inline';
+
+  var selected = this.personalities[e.target.getSelectedIndex()];
   var patcher = this;
+  var new_footprint = selected['footprint'];
   server.rdmSetSectionInfo(
       this.universe_id,
       this.active_device.uid,
       'personality',
       '',
-      'int=' + e.target.getValue(),
-      function(e) { patcher._personalityComplete(e); });
+      'int=' + selected['index'],
+      function(e) { patcher._personalityComplete(e, new_footprint); });
 };
 
 
 /**
  * Called when the set personality request completes.
  */
-ola.RDMPatcher.prototype._personalityComplete = function(e) {
+ola.RDMPatcher.prototype._personalityComplete = function(e, new_footprint) {
   this.personality_spinner.style.display = 'none';
   var response = ola.common.Server.getInstance().checkForErrorDialog(e);
   if (response == undefined) {
     this.dialog.setVisible(false);
+  } else {
+    this.active_device.setFootprint(new_footprint);
+    this._render();
   }
 };
 

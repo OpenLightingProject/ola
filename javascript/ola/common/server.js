@@ -80,6 +80,7 @@ ola.common.Server.RDM_GET_SECTION_INFO_URL = '/json/rdm/section_info';
 ola.common.Server.RDM_SET_SECTION_INFO_URL = '/json/rdm/set_section_info';
 ola.common.Server.RDM_UID_IDENTIFY = '/json/rdm/uid_identify';
 ola.common.Server.RDM_UID_INFO = '/json/rdm/uid_info';
+ola.common.Server.RDM_UID_PERSONALITY = '/json/rdm/uid_personalities';
 ola.common.Server.NEW_UNIVERSE_URL = '/new_universe';
 ola.common.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
 ola.common.Server.SET_DMX_URL = '/set_dmx';
@@ -355,6 +356,7 @@ ola.common.Server.prototype.rdmGetUIDInfo = function(universe_id,
   this._initiateRequest(url, callback);
 };
 
+
 /**
  * Check if a device is in identify mode.
  * @param {number} universe_id the ID of the universe.
@@ -366,6 +368,22 @@ ola.common.Server.prototype.rdmGetUIDIdentifyMode = function(universe_id,
                                                              uid,
                                                              callback) {
   var url = (ola.common.Server.RDM_UID_IDENTIFY + '?id=' + universe_id +
+      '&uid=' + uid);
+  this._initiateRequest(url, callback);
+};
+
+
+/**
+ * Fetch the personalities for a device
+ * @param {number} universe_id the ID of the universe.
+ * @param {string} uid the string representation of a UID.
+ * @param {function(Object)} callback the function to call when the request
+ *   completes.
+ */
+ola.common.Server.prototype.rdmGetUIDPersonalities = function(universe_id,
+                                                              uid,
+                                                              callback) {
+  var url = (ola.common.Server.RDM_UID_PERSONALITY + '?id=' + universe_id +
       '&uid=' + uid);
   this._initiateRequest(url, callback);
 };
