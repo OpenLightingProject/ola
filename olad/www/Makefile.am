@@ -4,6 +4,7 @@ dist_www_DATA = blank.gif \
                 button-bg.png \
                 custombutton.css \
                 toolbar.css \
+                editortoolbar.png \
                 expander.png \
                 handle.vertical.png \
                 landing.html \
