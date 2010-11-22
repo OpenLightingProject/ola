@@ -61,7 +61,7 @@ class DummyPort: public BasicOutputPort {
 
     typedef struct {
       uint16_t footprint;
-      char *description;
+      const char *description;
     } personality_info;
 
     static const personality_info PERSONALITIES[];
