@@ -172,14 +172,16 @@ void DummyPortTest::testSupportedParams() {
       0);  // data length
 
   uint16_t supported_params[] = {
-    ola::rdm::PID_SUPPORTED_PARAMETERS,
     ola::rdm::PID_DEVICE_INFO,
-    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
-    ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
-    ola::rdm::PID_MANUFACTURER_LABEL,
     ola::rdm::PID_DEVICE_LABEL,
+    ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
+    ola::rdm::PID_DMX_PERSONALITY,
+    ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
+    ola::rdm::PID_DMX_START_ADDRESS,
+    ola::rdm::PID_MANUFACTURER_LABEL,
+    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
     ola::rdm::PID_SOFTWARE_VERSION_LABEL,
-    ola::rdm::PID_DMX_START_ADDRESS
+    ola::rdm::PID_SUPPORTED_PARAMETERS
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
@@ -223,9 +225,9 @@ void DummyPortTest::testDeviceInfo() {
       static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_OTHER));
   device_descriptor.software_version = HostToNetwork(static_cast<uint32_t>(1));
   device_descriptor.dmx_footprint =
-    HostToNetwork(static_cast<uint16_t>(10));
+    HostToNetwork(static_cast<uint16_t>(5));
   device_descriptor.current_personality = 1;
-  device_descriptor.personaility_count = 1;
+  device_descriptor.personaility_count = 3;
   device_descriptor.dmx_start_address =
     HostToNetwork(static_cast<uint16_t>(1));
   device_descriptor.sub_device_count = 0;
