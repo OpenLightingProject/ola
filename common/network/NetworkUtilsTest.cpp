@@ -82,4 +82,7 @@ void NetworkUtilsTest::testToFromLittleEndian() {
 
   uint16_t v2 = 0x0102;
   CPPUNIT_ASSERT_EQUAL(v2, LittleEndianToHost(HostToLittleEndian(v2)));
+
+  uint32_t v3 = 0x01020304;
+  CPPUNIT_ASSERT_EQUAL(v3, LittleEndianToHost(HostToLittleEndian(v3)));
 }

@@ -169,6 +169,24 @@ uint16_t HostToLittleEndian(uint16_t value) {
 }
 
 
+uint32_t HostToLittleEndian(uint32_t value) {
+#ifdef HAVE_ENDIAN_H
+#  if BYTE_ORDER == __BIG_ENDIAN
+  return ((value & 0xff) << 24) | (value & 0xff00 << 16) |
+          (0xff00 & (value >> 16) | (value >> 24));
+#  else
+  return value;
+#  endif
+#else
+#  if BYTE_ORDER == BIG_ENDIAN
+  return ((value & 0xff) << 24) | (value & 0xff00 << 16) |
+          (0xff00 & (value >> 16) | (value >> 24));
+#  else
+  return value;
+#  endif
+#endif
+}
+
 uint8_t LittleEndianToHost(uint8_t value) {
   return value;
 }
@@ -177,13 +195,32 @@ uint8_t LittleEndianToHost(uint8_t value) {
 uint16_t LittleEndianToHost(uint16_t value) {
 #ifdef HAVE_ENDIAN_H
 #  if BYTE_ORDER == __BIG_ENDIAN
-  return (value >> 8) | ((value & 0xff) << 8);
+  return ((value & 0xff) << 8) | (value >> 8);
 #  else
   return value;
 #  endif
 #else
 #  if BYTE_ORDER == BIG_ENDIAN
-  return (value >> 8) | ((value & 0xff) << 8);
+  return ((value & 0xff) << 8) | (value >> 8);
+#  else
+  return value;
+#  endif
+#endif
+}
+
+
+uint32_t LittleEndianToHost(uint32_t value) {
+#ifdef HAVE_ENDIAN_H
+#  if BYTE_ORDER == __BIG_ENDIAN
+  return ((value & 0xff) << 24) | (value & 0xff00 << 16) |
+          (0xff00 & (value >> 16) | (value >> 24));
+#  else
+  return value;
+#  endif
+#else
+#  if BYTE_ORDER == BIG_ENDIAN
+  return ((value & 0xff) << 24) | (value & 0xff00 << 16) |
+          (0xff00 & (value >> 16) | (value >> 24));
 #  else
   return value;
 #  endif
