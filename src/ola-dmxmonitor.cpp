@@ -43,7 +43,7 @@
 #include <sys/timeb.h>
 
 #include <ola/BaseTypes.h>
-#include <ola/Closure.h>
+#include <ola/Callback.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/DmxBuffer.h>
@@ -168,10 +168,10 @@ bool DmxMonitor::Init() {
   keypad(m_window, TRUE);
 
   m_client.GetSelectServer()->AddSocket(&m_stdin_socket);
-  m_stdin_socket.SetOnData(ola::NewClosure(this, &DmxMonitor::StdinReady));
+  m_stdin_socket.SetOnData(ola::NewCallback(this, &DmxMonitor::StdinReady));
   m_client.GetSelectServer()->RegisterRepeatingTimeout(
       500,
-      ola::NewClosure(this, &DmxMonitor::CheckDataLoss));
+      ola::NewCallback(this, &DmxMonitor::CheckDataLoss));
   CalcScreenGeometry();
   ChangePalette(m_palette_number);
 

@@ -40,7 +40,7 @@
 #include <sys/timeb.h>
 
 #include <string>
-#include <ola/Closure.h>
+#include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClient.h>
 #include <ola/SimpleClient.h>
@@ -652,7 +652,7 @@ int main (int argc, char *argv[]) {
   /* set up ola connection */
   SimpleClient ola_client;
   ola::network::UnmanagedSocket stdin_socket(0);
-  stdin_socket.SetOnData(ola::NewClosure(&stdin_ready));
+  stdin_socket.SetOnData(ola::NewCallback(&stdin_ready));
 
   if (!ola_client.Setup()) {
     printf("error: %s", strerror(errno));
