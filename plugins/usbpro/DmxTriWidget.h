@@ -26,8 +26,9 @@
 #include <queue>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "ola/network/SelectServerInterface.h"
 #include "ola/rdm/UIDSet.h"
+#include "plugins/usbpro/UsbWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -39,9 +40,9 @@ using std::queue;
 /*
  * An DMX TRI Device
  */
-class DmxTriWidget: public WidgetListener {
+class DmxTriWidget {
   public:
-    DmxTriWidget(const ola::PluginAdaptor *plugin_adaptor,
+    DmxTriWidget(ola::network::SelectServerInterface *ss,
                  UsbWidget *widget);
     ~DmxTriWidget();
 
@@ -59,15 +60,14 @@ class DmxTriWidget: public WidgetListener {
     void SendUIDUpdate();
     bool CheckDiscoveryStatus();
 
-    void HandleMessage(UsbWidget* widget,
-                       uint8_t label,
+    void HandleMessage(uint8_t label,
                        unsigned int length,
                        const uint8_t *data);
 
   private:
-    const PluginAdaptor *m_plugin_adaptor;
+    ola::network::SelectServerInterface *m_ss;
     UsbWidget *m_widget;
-    timeout_id m_rdm_timeout_id;
+    ola::network::timeout_id m_rdm_timeout_id;
     std::map<const ola::rdm::UID, uint8_t> m_uid_index_map;
     unsigned int m_uid_count;
     queue<const class ola::rdm::RDMRequest*> m_pending_requests;

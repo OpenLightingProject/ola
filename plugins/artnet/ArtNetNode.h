@@ -29,11 +29,11 @@
 #include "ola/Clock.h"
 #include "ola/Closure.h"
 #include "ola/DmxBuffer.h"
+#include "ola/network/Interface.h"
+#include "ola/network/SelectServerInterface.h"
+#include "ola/network/Socket.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UIDSet.h"
-#include "ola/network/Interface.h"
-#include "ola/network/Socket.h"
-#include "olad/PluginAdaptor.h"
 #include "plugins/artnet/ArtNetPackets.h"
 
 namespace ola {
@@ -98,7 +98,7 @@ class ArtNetNode {
       bool discovery_running;
 
       // these control the sending of RDM requests.
-      timeout_id rdm_send_timeout;
+      ola::network::timeout_id rdm_send_timeout;
       queue<const class ola::rdm::RDMRequest *> pending_rdm_requests;
       const RDMResponse *overflowed_response;
     };
@@ -127,7 +127,7 @@ class ArtNetNode {
     explicit ArtNetNode(const ola::network::Interface &interface,
                         const string &short_name,
                         const string &long_name,
-                        const PluginAdaptor *adaptor,
+                        ola::network::SelectServerInterface *ss,
                         uint8_t subnet_address = 0,
                         bool always_broadcast = false);
     virtual ~ArtNetNode();
@@ -193,14 +193,14 @@ class ArtNetNode {
     string m_long_name;
     unsigned int m_broadcast_threshold;
     unsigned int m_unsolicited_replies;
-    const PluginAdaptor *m_plugin_adaptor;
+    ola::network::SelectServerInterface *m_ss;
     bool m_always_broadcast;
 
     InputPort m_input_ports[ARTNET_MAX_PORTS];
     OutputPort m_output_ports[ARTNET_MAX_PORTS];
     ola::network::Interface m_interface;
     ola::network::UdpSocket *m_socket;
-    timeout_id m_discovery_timeout;
+    ola::network::timeout_id m_discovery_timeout;
 
     ArtNetNode(const ArtNetNode&);
     ArtNetNode& operator=(const ArtNetNode&);

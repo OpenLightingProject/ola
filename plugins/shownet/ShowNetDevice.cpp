@@ -43,7 +43,7 @@ const char ShowNetDevice::IP_KEY[] = "ip";
  */
 ShowNetDevice::ShowNetDevice(ola::Plugin *owner,
                              Preferences *preferences,
-                             const PluginAdaptor *plugin_adaptor):
+                             PluginAdaptor *plugin_adaptor):
   Device(owner, SHOWNET_DEVICE_NAME),
   m_preferences(preferences),
   m_plugin_adaptor(plugin_adaptor),

@@ -23,6 +23,7 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
+#include "ola/network/SelectServerInterface.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/UsbDevice.h"
 #include "plugins/usbpro/UsbWidget.h"
@@ -35,9 +36,9 @@ namespace usbpro {
 /*
  * An Arduino RGB Mixer Device
  */
-class DMXter4Device: public UsbDevice, public WidgetListener {
+class DMXter4Device: public UsbDevice {
   public:
-    DMXter4Device(const ola::PluginAdaptor *plugin_adaptor,
+    DMXter4Device(ola::network::SelectServerInterface *ss,
                   ola::AbstractPlugin *owner,
                   const string &name,
                   UsbWidget *widget,
@@ -48,11 +49,9 @@ class DMXter4Device: public UsbDevice, public WidgetListener {
     string DeviceId() const { return m_device_id; }
     bool StartHook();
 
-    void HandleMessage(UsbWidget *widget,
-                       uint8_t label,
+    void HandleMessage(uint8_t label,
                        unsigned int length,
                        const uint8_t *data);
-
 
     bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
     void RunRDMDiscovery();

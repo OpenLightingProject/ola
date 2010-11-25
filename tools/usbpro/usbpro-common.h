@@ -17,7 +17,6 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#include <ola/network/SelectServer.h>
 #include <string>
 #include "plugins/usbpro/UsbWidget.h"
 
@@ -26,24 +25,6 @@
 #define TOOLS_USBPRO_USBPRO_COMMON_H_
 
 using std::string;
-using ola::network::SelectServer;
-
-/*
- * Abstract away the interface to the select server
- */
-class MySelectServerAdaptor: public ola::plugin::usbpro::SelectServerAdaptor {
-  public:
-    explicit MySelectServerAdaptor(SelectServer *ss):
-        m_ss(ss) {
-    }
-
-    bool AddSocket(ola::network::ConnectedSocket *socket,
-                   bool delete_on_close = false) const {
-      return m_ss->AddSocket(socket, delete_on_close);
-    }
-  private:
-    SelectServer *m_ss;
-};
 
 
 int ConnectToWidget(const string &path);

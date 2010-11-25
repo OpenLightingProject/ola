@@ -32,7 +32,7 @@ namespace pathport {
 
 class PathportPlugin: public ola::Plugin {
   public:
-    explicit PathportPlugin(const class ola::PluginAdaptor *plugin_adaptor)
+    explicit PathportPlugin(class ola::PluginAdaptor *plugin_adaptor)
         : Plugin(plugin_adaptor),
           m_device(NULL) {}
 

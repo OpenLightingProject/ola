@@ -39,7 +39,7 @@ using ola::rdm::UID;
 /*
  * New Arduino RGB Device
  */
-DMXter4Device::DMXter4Device(const ola::PluginAdaptor *plugin_adaptor,
+DMXter4Device::DMXter4Device(ola::network::SelectServerInterface *ss,
                              ola::AbstractPlugin *owner,
                              const string &name,
                              UsbWidget *widget,
@@ -56,9 +56,10 @@ DMXter4Device::DMXter4Device(const ola::PluginAdaptor *plugin_adaptor,
   m_port = new DMXter4DeviceOutputPort(this);
   AddPort(m_port);
 
-  widget->SetMessageHandler(this);
+  widget->SetMessageHandler(
+      NewCallback(this, &DMXter4Device::HandleMessage));
   Start();
-  (void) plugin_adaptor;
+  (void) ss;
 }
 
 
@@ -81,11 +82,11 @@ bool DMXter4Device::StartHook() {
 /**
  * Called when a new packet arrives
  */
-void DMXter4Device::HandleMessage(UsbWidget *widget,
-                                  uint8_t label,
+void DMXter4Device::HandleMessage(uint8_t label,
                                   unsigned int length,
                                   const uint8_t *data) {
-  OLA_INFO << "Got new packet: 0x" << std::hex << (int) label <<
+  OLA_INFO << "Got new packet: 0x" << std::hex <<
+    static_cast<int>(label) <<
     ", size " << length;
 
   switch (label) {
@@ -93,10 +94,10 @@ void DMXter4Device::HandleMessage(UsbWidget *widget,
       HandleTodResponse(length, data);
       break;
     default:
-      OLA_WARN << "Unknown label: 0x" << std::hex << (int) label;
+      OLA_WARN << "Unknown label: 0x" << std::hex <<
+        static_cast<int>(label);
   }
   return;
-  (void) widget;
 }
 
 
@@ -141,7 +142,7 @@ void DMXter4Device::HandleTodResponse(unsigned int length,
   (void) data;
   if (length % UID::UID_SIZE) {
     OLA_WARN << "Response length " << length << " not divisible by " <<
-      (int) ola::rdm::UID::UID_SIZE << ", ignoring packet";
+      static_cast<int>(ola::rdm::UID::UID_SIZE) << ", ignoring packet";
     return;
   }
 

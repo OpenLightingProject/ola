@@ -27,23 +27,39 @@ namespace plugin {
 namespace usbpro {
 
 
-UsbWidget::UsbWidget(const SelectServerAdaptor &ss_adaptor, int fd)
-    : m_listener(NULL),
+UsbWidget::UsbWidget(ola::network::SelectServerInterface *ss_adaptor, int fd)
+    : m_callback(NULL),
       m_socket(NULL),
       m_state(PRE_SOM),
       m_bytes_received(0) {
   m_socket = new ola::network::DeviceSocket(fd);
-  ss_adaptor.AddSocket(m_socket, true);
+  ss_adaptor->AddSocket(m_socket, true);
   m_socket->SetOnData(NewClosure(this, &UsbWidget::SocketReady));
 }
 
 
 UsbWidget::~UsbWidget() {
+  if (m_callback) {
+    delete m_callback;
+  }
   // don't delete because ownership is transferred to the ss so that device
   // removal works correctly. If you delete the socket the OnClose closure will
   // be deleted, which breaks if it's already running.
   m_socket->Close();
   m_socket = NULL;
+}
+
+
+/**
+ * Set the closure to be called when we receive a message from the widget
+ * @param callback the closure to run, ownership is transferred.
+ */
+void UsbWidget::SetMessageHandler(
+    ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *callback) {
+  if (m_callback) {
+    delete m_callback;
+  }
+  m_callback = callback;
 }
 
 
@@ -159,11 +175,10 @@ void UsbWidget::ReceiveMessage() {
 
       packet_length = (m_header.len_hi << 8) + m_header.len;
 
-      if (eom == EOM && m_listener)
-        m_listener->HandleMessage(this,
-                                  m_header.label,
-                                  packet_length,
-                                  m_recv_buffer);
+      if (eom == EOM && m_callback)
+        m_callback->Run(m_header.label,
+                        packet_length,
+                        m_recv_buffer);
       m_state = PRE_SOM;
   }
   return;

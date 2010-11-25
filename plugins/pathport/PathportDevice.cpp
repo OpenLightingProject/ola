@@ -49,7 +49,7 @@ const char PathportDevice::PATHPORT_DEVICE_NAME[] = "Pathport";
  */
 PathportDevice::PathportDevice(PathportPlugin *owner,
                                Preferences *prefs,
-                               const PluginAdaptor *plugin_adaptor)
+                               PluginAdaptor *plugin_adaptor)
     : Device(owner, PATHPORT_DEVICE_NAME),
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor),

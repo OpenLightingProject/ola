@@ -45,12 +45,11 @@ using ola::plugin::usbpro::Reply;
 
 /*
  * Create a new device
- *
  * @param owner  the plugin that owns this device
  * @param name  the device name
  * @param dev_path  path to the pro widget
  */
-UsbProDevice::UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
+UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                            ola::AbstractPlugin *owner,
                            const string &name,
                            UsbWidget *widget,
@@ -61,9 +60,9 @@ UsbProDevice::UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
     UsbDevice(owner, name, widget),
     m_got_parameters(false),
     m_in_shutdown(false),
-    m_plugin_adaptor(plugin_adaptor),
     m_serial() {
-  m_widget->SetMessageHandler(this);
+  m_widget->SetMessageHandler(
+      NewCallback(this, &UsbProDevice::HandleMessage));
 
   std::stringstream str;
   str << std::setfill('0');
@@ -79,7 +78,7 @@ UsbProDevice::UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
   UsbProInputPort *input_port = new UsbProInputPort(
       this,
       0,
-      m_plugin_adaptor->WakeUpTime(),
+      plugin_adaptor->WakeUpTime(),
       "");
   AddPort(input_port);
   OutputPort *output_port = new ThrottledOutputPortDecorator(
@@ -98,15 +97,9 @@ UsbProDevice::UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
 /*
  * Handle Messages from the widget
  */
-void UsbProDevice::HandleMessage(UsbWidget* widget,
-                                 uint8_t label,
+void UsbProDevice::HandleMessage(uint8_t label,
                                  unsigned int length,
                                  const uint8_t *data) {
-  if (widget != m_widget) {
-    OLA_WARN << "Something went really wrong...";
-    return;
-  }
-
   switch (label) {
     case REPROGRAM_FIRMWARE_LABEL:
       break;

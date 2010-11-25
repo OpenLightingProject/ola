@@ -34,7 +34,7 @@ class PathportDevice: public ola::Device {
   public:
     PathportDevice(class PathportPlugin *owner,
                    class Preferences *preferences,
-                   const class PluginAdaptor *plugin_adaptor);
+                   class PluginAdaptor *plugin_adaptor);
 
     string DeviceId() const { return "1"; }
     PathportNode *GetNode() const { return m_node; }
@@ -53,7 +53,7 @@ class PathportDevice: public ola::Device {
 
   private:
     class Preferences *m_preferences;
-    const class PluginAdaptor *m_plugin_adaptor;
+    class PluginAdaptor *m_plugin_adaptor;
     PathportNode *m_node;
     ola::network::timeout_id m_timeout_id;
 

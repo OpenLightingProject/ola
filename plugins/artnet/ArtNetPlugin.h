@@ -37,7 +37,7 @@ class ArtNetDevice;
 
 class ArtNetPlugin : public Plugin {
   public:
-    explicit ArtNetPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit ArtNetPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 

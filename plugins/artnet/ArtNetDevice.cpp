@@ -66,7 +66,7 @@ const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
  */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            ola::Preferences *preferences,
-                           const PluginAdaptor *plugin_adaptor):
+                           PluginAdaptor *plugin_adaptor):
   Device(owner, K_DEVICE_NAME),
   m_preferences(preferences),
   m_node(NULL),

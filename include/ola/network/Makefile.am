@@ -1,4 +1,5 @@
-SOURCES = Interface.h InterfacePicker.h NetworkUtils.h Socket.h SelectServer.h
+SOURCES = Interface.h InterfacePicker.h NetworkUtils.h Socket.h \
+          SelectServer.h SelectServerInterface.h
 
 EXTRA_DIST = $(SOURCES)
 pkginclude_HEADERS = $(SOURCES)

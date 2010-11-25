@@ -25,6 +25,7 @@
 #include <termios.h>
 #include <ola/Logging.h>
 #include <ola/Closure.h>
+#include <ola/Callback.h>
 #include <ola/network/SelectServer.h>
 
 #include <iostream>
@@ -54,7 +55,7 @@ typedef struct {
 } options;
 
 
-class FirmwareTransferer: public ola::plugin::usbpro::WidgetListener {
+class FirmwareTransferer {
   public:
     FirmwareTransferer(ifstream *file,
                        UsbWidget *widget,
@@ -63,13 +64,13 @@ class FirmwareTransferer: public ola::plugin::usbpro::WidgetListener {
         m_firmware(file),
         m_widget(widget),
         m_ss(ss) {
-      widget->SetMessageHandler(this);
+      widget->SetMessageHandler(
+          ola::NewCallback(this, &FirmwareTransferer::HandleMessage));
     }
 
     bool SendReprogram();
 
-    void HandleMessage(UsbWidget *widget,
-                       uint8_t label,
+    void HandleMessage(uint8_t label,
                        unsigned int length,
                        const uint8_t *data);
     bool SendNextChunk();
@@ -110,15 +111,9 @@ bool FirmwareTransferer::SendReprogram() {
 /*
  * Handle the flash page replies
  */
-void FirmwareTransferer::HandleMessage(UsbWidget *widget,
-                                       uint8_t label,
+void FirmwareTransferer::HandleMessage(uint8_t label,
                                        unsigned int length,
                                        const uint8_t *data) {
-  if (widget != m_widget) {
-    OLA_WARN << "Something went really wrong...";
-    return;
-  }
-
   if (label != FLASH_PAGE_LABEL || length != FLASH_STATUS_LENGTH)
     return;
 
@@ -268,7 +263,7 @@ int main(int argc, char *argv[]) {
   if (fd < 0)
     exit(EX_UNAVAILABLE);
 
-  UsbWidget widget(MySelectServerAdaptor(&ss), fd);
+  UsbWidget widget(&ss, fd);
 
   FirmwareTransferer transferer(&firmware_file, &widget, &ss);
 

@@ -34,7 +34,7 @@ class EspNetDevice;
 
 class EspNetPlugin: public ola::Plugin {
   public:
-    explicit EspNetPlugin(const ola::PluginAdaptor *plugin_adaptor):
+    explicit EspNetPlugin(ola::PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 

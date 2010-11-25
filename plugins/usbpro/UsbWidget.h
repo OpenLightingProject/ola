@@ -22,38 +22,15 @@
 #define PLUGINS_USBPRO_USBWIDGET_H_
 
 #include <stdint.h>
+#include <ola/Closure.h>
+#include <ola/network/SelectServerInterface.h>
 #include <string>
 #include "ola/network/Socket.h"
-#include "olad/PluginAdaptor.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
 
-class UsbWidget;
-
-/*
- * Implement this to respond to widget messages.
- */
-class WidgetListener {
-  public:
-    virtual ~WidgetListener() {}
-    virtual void HandleMessage(UsbWidget *widget,
-                               uint8_t label,
-                               unsigned int length,
-                               const uint8_t *data) = 0;
-};
-
-
-/*
- * Abstract away the interface to the select server
- */
-class SelectServerAdaptor {
-  public:
-    virtual ~SelectServerAdaptor() {}
-    virtual bool AddSocket(ola::network::ConnectedSocket *socket,
-                           bool delete_on_close = false) const = 0;
-};
 
 
 /*
@@ -62,9 +39,10 @@ class SelectServerAdaptor {
  */
 class UsbWidget {
   public:
-    UsbWidget(const SelectServerAdaptor &ss_adaptor, int fd);
+    UsbWidget(ola::network::SelectServerInterface *ss_adaptor, int fd);
     ~UsbWidget();
-    void SetMessageHandler(WidgetListener *listener) { m_listener = listener; }
+    void SetMessageHandler(
+      ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *callback);
     void SetOnRemove(ola::SingleUseClosure<void> *on_close);
 
     void SocketReady();
@@ -96,7 +74,7 @@ class UsbWidget {
       uint8_t len_hi;
     } message_header;
 
-    WidgetListener *m_listener;
+    ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *m_callback;
     ola::network::DeviceSocket *m_socket;
     receive_state m_state;
     unsigned int m_bytes_received;

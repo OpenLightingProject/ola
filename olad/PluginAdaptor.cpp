@@ -48,7 +48,7 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
  * @param socket the socket to register
  * @return true on sucess, false on failure.
  */
-bool PluginAdaptor::AddSocket(class Socket *socket) const {
+bool PluginAdaptor::AddSocket(ola::network::Socket *socket) {
   return m_ss->AddSocket(socket);
 }
 
@@ -57,8 +57,8 @@ bool PluginAdaptor::AddSocket(class Socket *socket) const {
  * @param socket the socket to register
  * @return true on sucess, false on failure.
  */
-bool PluginAdaptor::AddSocket(class ConnectedSocket *socket,
-                              bool delete_on_close) const {
+bool PluginAdaptor::AddSocket(ola::network::ConnectedSocket *socket,
+                              bool delete_on_close) {
   return m_ss->AddSocket(socket, delete_on_close);
 }
 
@@ -66,7 +66,7 @@ bool PluginAdaptor::AddSocket(class ConnectedSocket *socket,
 /*
  * Remove a socket from the select server
  */
-bool PluginAdaptor::RemoveSocket(class Socket *socket) const {
+bool PluginAdaptor::RemoveSocket(ola::network::Socket *socket) {
   return m_ss->RemoveSocket(socket);
 }
 
@@ -74,7 +74,7 @@ bool PluginAdaptor::RemoveSocket(class Socket *socket) const {
 /*
  * Remove a socket from the select server
  */
-bool PluginAdaptor::RemoveSocket(class ConnectedSocket *socket) const {
+bool PluginAdaptor::RemoveSocket(ola::network::ConnectedSocket *socket) {
   return m_ss->RemoveSocket(socket);
 }
 
@@ -87,7 +87,7 @@ bool PluginAdaptor::RemoveSocket(class ConnectedSocket *socket) const {
  */
 timeout_id PluginAdaptor::RegisterRepeatingTimeout(
     unsigned int ms,
-    Closure<bool> *closure) const {
+    Closure<bool> *closure) {
   return m_ss->RegisterRepeatingTimeout(ms, closure);
 }
 
@@ -100,7 +100,7 @@ timeout_id PluginAdaptor::RegisterRepeatingTimeout(
  */
 timeout_id PluginAdaptor::RegisterSingleTimeout(
     unsigned int ms,
-    SingleUseClosure<void> *closure) const {
+    SingleUseClosure<void> *closure) {
   return m_ss->RegisterSingleTimeout(ms, closure);
 }
 
@@ -109,7 +109,7 @@ timeout_id PluginAdaptor::RegisterSingleTimeout(
  * Remove a timeout
  * @param id the id of the timeout to remove
  */
-void PluginAdaptor::RemoveTimeout(timeout_id id) const {
+void PluginAdaptor::RemoveTimeout(timeout_id id) {
   m_ss->RemoveTimeout(id);
 }
 

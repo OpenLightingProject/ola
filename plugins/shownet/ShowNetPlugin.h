@@ -37,7 +37,7 @@ class ShowNetDevice;
 
 class ShowNetPlugin: public Plugin {
   public:
-    explicit ShowNetPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit ShowNetPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
     ~ShowNetPlugin() {}

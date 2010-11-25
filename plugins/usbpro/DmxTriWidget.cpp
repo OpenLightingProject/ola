@@ -36,6 +36,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using std::map;
 using std::string;
 using ola::network::NetworkToHost;
 using ola::network::HostToNetwork;
@@ -48,9 +49,9 @@ using ola::rdm::UIDSet;
 /*
  * New DMX TRI device
  */
-DmxTriWidget::DmxTriWidget(const ola::PluginAdaptor *plugin_adaptor,
+DmxTriWidget::DmxTriWidget(ola::network::SelectServerInterface *ss,
                            UsbWidget *widget):
-    m_plugin_adaptor(plugin_adaptor),
+    m_ss(ss),
     m_widget(widget),
     m_rdm_timeout_id(ola::network::INVALID_TIMEOUT),
     m_uid_count(0),
@@ -59,7 +60,8 @@ DmxTriWidget::DmxTriWidget(const ola::PluginAdaptor *plugin_adaptor,
     m_rdm_response(NULL),
     m_uid_set_callback(NULL),
     m_rdm_response_callback(NULL) {
-  m_widget->SetMessageHandler(this);
+  m_widget->SetMessageHandler(
+      NewCallback(this, &DmxTriWidget::HandleMessage));
 }
 
 
@@ -109,7 +111,7 @@ void DmxTriWidget::SetRDMResponseCallback(
  */
 void DmxTriWidget::Stop() {
   if (m_rdm_timeout_id != ola::network::INVALID_TIMEOUT) {
-    m_plugin_adaptor->RemoveTimeout(m_rdm_timeout_id);
+    m_ss->RemoveTimeout(m_rdm_timeout_id);
     m_rdm_timeout_id = ola::network::INVALID_TIMEOUT;
   }
 }
@@ -167,7 +169,7 @@ void DmxTriWidget::RunRDMDiscovery() {
   }
 
   // setup a stat every RDM_STATUS_INTERVAL_MS until we're done
-  m_rdm_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
+  m_rdm_timeout_id = m_ss->RegisterRepeatingTimeout(
       RDM_STATUS_INTERVAL_MS,
       NewClosure(this, &DmxTriWidget::CheckDiscoveryStatus));
 }
@@ -199,8 +201,7 @@ bool DmxTriWidget::CheckDiscoveryStatus() {
 /*
  * Handle a message received from the widget
  */
-void DmxTriWidget::HandleMessage(UsbWidget* widget,
-                                 uint8_t label,
+void DmxTriWidget::HandleMessage(uint8_t label,
                                  unsigned int length,
                                  const uint8_t *data) {
   if (label == EXTENDED_COMMAND_LABEL) {
@@ -242,7 +243,6 @@ void DmxTriWidget::HandleMessage(UsbWidget* widget,
   } else {
     OLA_INFO << "DMX-TRI got response " << static_cast<int>(label);
   }
-  (void) widget;
 }
 
 
@@ -415,7 +415,7 @@ void DmxTriWidget::DispatchQueuedGet(const ola::rdm::RDMRequest* request) {
  */
 void DmxTriWidget::StopDiscovery() {
   if (m_rdm_timeout_id != ola::network::INVALID_TIMEOUT) {
-    m_plugin_adaptor->RemoveTimeout(m_rdm_timeout_id);
+    m_ss->RemoveTimeout(m_rdm_timeout_id);
     m_rdm_timeout_id = ola::network::INVALID_TIMEOUT;
   }
 }
@@ -627,7 +627,7 @@ void DmxTriWidget::HandleRemoteRDMResponse(uint8_t return_code,
   delete request;
   m_pending_requests.pop();
   m_rdm_request_pending = false;
-  //send the next one
+  // send the next one
   MaybeSendRDMRequest();
 }
 

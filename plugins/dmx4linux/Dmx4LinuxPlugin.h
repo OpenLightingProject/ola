@@ -38,7 +38,7 @@ class Dmx4LinuxDevice;
 
 class Dmx4LinuxPlugin: public ola::Plugin {
   public:
-    explicit Dmx4LinuxPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit Dmx4LinuxPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_in_socket(NULL),
       m_out_socket(NULL),

@@ -38,7 +38,7 @@ class StageProfiDevice;
 
 class StageProfiPlugin: public Plugin {
   public:
-    explicit StageProfiPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit StageProfiPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
     ~StageProfiPlugin() {}
 

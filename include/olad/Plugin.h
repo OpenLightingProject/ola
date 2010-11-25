@@ -66,7 +66,7 @@ struct PluginLessThan: public std::binary_function<AbstractPlugin*,
 
 class Plugin: public AbstractPlugin {
   public :
-    explicit Plugin(const PluginAdaptor *plugin_adaptor):
+    explicit Plugin(PluginAdaptor *plugin_adaptor):
       AbstractPlugin(),
       m_plugin_adaptor(plugin_adaptor),
       m_preferences(NULL),
@@ -91,7 +91,7 @@ class Plugin: public AbstractPlugin {
     virtual bool StopHook() { return 0; }
     virtual bool SetDefaultPreferences() { return true; }
 
-    const PluginAdaptor *m_plugin_adaptor;
+    PluginAdaptor *m_plugin_adaptor;
     class Preferences *m_preferences;  // preferences container
     static const char ENABLED_KEY[];
 
@@ -104,6 +104,6 @@ class Plugin: public AbstractPlugin {
 }  // ola
 
 // interface functions
-typedef ola::AbstractPlugin* create_t(const ola::PluginAdaptor *plugin_adaptor);
+typedef ola::AbstractPlugin* create_t(ola::PluginAdaptor *plugin_adaptor);
 
 #endif  // INCLUDE_OLAD_PLUGIN_H_

@@ -32,7 +32,7 @@ namespace sandnet {
 
 class SandNetPlugin: public ola::Plugin {
   public:
-    explicit SandNetPlugin(const ola::PluginAdaptor *plugin_adaptor)
+    explicit SandNetPlugin(ola::PluginAdaptor *plugin_adaptor)
         : Plugin(plugin_adaptor),
           m_device(NULL) {}
 

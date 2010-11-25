@@ -31,7 +31,7 @@ namespace e131 {
 
 class E131Plugin: public ola::Plugin {
   public:
-    explicit E131Plugin(const ola::PluginAdaptor *plugin_adaptor):
+    explicit E131Plugin(ola::PluginAdaptor *plugin_adaptor):
       ola::Plugin(plugin_adaptor),
       m_device(NULL) {}
     ~E131Plugin() {}

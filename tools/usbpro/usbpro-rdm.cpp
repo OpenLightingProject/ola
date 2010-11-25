@@ -25,6 +25,7 @@
 #include <sysexits.h>
 #include <termios.h>
 #include <ola/Logging.h>
+#include <ola/Callback.h>
 #include <ola/Closure.h>
 #include <ola/network/SelectServer.h>
 #include <ola/rdm/RDMCommand.h>
@@ -39,7 +40,7 @@
 using std::cout;
 using std::endl;
 using std::string;
-using ola::network::SelectServer;
+using ola::network::SelectServerInterface;
 using ola::plugin::usbpro::UsbWidget;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
@@ -56,30 +57,20 @@ typedef struct {
 } options;
 
 
-class RDMSniffer: public ola::plugin::usbpro::WidgetListener {
+class RDMSniffer {
   public:
     RDMSniffer(UsbWidget *widget,
-               ola::network::SelectServer *ss,
+               SelectServerInterface *ss,
                bool dump_all,
-               bool verbose):
-        m_widget(widget),
-        m_ss(ss),
-        m_dump_all(dump_all),
-        m_verbose(verbose) {
-      widget->SetMessageHandler(this);
-    }
+               bool verbose);
 
-    void HandleMessage(UsbWidget *widget,
-                       uint8_t label,
+    void HandleMessage(uint8_t label,
                        unsigned int length,
                        const uint8_t *data);
-    void Stop() {
-      m_ss->Terminate();
-    }
 
   private:
     UsbWidget *m_widget;
-    SelectServer *m_ss;
+    SelectServerInterface *m_ss;
     bool m_dump_all;
     bool m_verbose;
 
@@ -93,18 +84,25 @@ class RDMSniffer: public ola::plugin::usbpro::WidgetListener {
 };
 
 
+RDMSniffer::RDMSniffer(UsbWidget *widget,
+                       SelectServerInterface *ss,
+                       bool dump_all,
+                       bool verbose):
+    m_widget(widget),
+    m_ss(ss),
+    m_dump_all(dump_all),
+    m_verbose(verbose) {
+  widget->SetMessageHandler(
+      ola::NewCallback(this, &RDMSniffer::HandleMessage));
+}
+
+
 /*
  * Handle the widget replies
  */
-void RDMSniffer::HandleMessage(UsbWidget *widget,
-                               uint8_t label,
+void RDMSniffer::HandleMessage(uint8_t label,
                                unsigned int length,
                                const uint8_t *data) {
-  if (widget != m_widget) {
-    OLA_WARN << "Something went really wrong...";
-    return;
-  }
-
   if (label != RECEIVED_DMX_LABEL) {
     OLA_INFO << "Not a RECEIVED_DMX_LABEL, was " << static_cast<int>(label);
     return;
@@ -316,6 +314,11 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
+void Stop(ola::network::SelectServer *ss) {
+  ss->Terminate();
+}
+
+
 /*
  * Dump RDM data
  */
@@ -337,11 +340,10 @@ int main(int argc, char *argv[]) {
     exit(EX_UNAVAILABLE);
 
   ola::network::SelectServer ss;
-  UsbWidget widget(MySelectServerAdaptor(&ss), fd);
+  UsbWidget widget(&ss, fd);
   RDMSniffer sniffer(&widget, &ss, opts.dump_all, opts.verbose);
 
-  widget.SetOnRemove(
-      ola::NewSingleClosure(&sniffer, &RDMSniffer::Stop));
+  widget.SetOnRemove(ola::NewSingleClosure(&Stop, &ss));
   ss.Run();
 
   return EX_OK;

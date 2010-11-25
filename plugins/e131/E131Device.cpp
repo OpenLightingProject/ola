@@ -49,7 +49,7 @@ const char E131Device::DEVICE_NAME[] = "E1.31 (DMX over ACN)";
 E131Device::E131Device(Plugin *owner,
                        const ola::plugin::e131::CID &cid,
                        std::string ip_addr,
-                       const PluginAdaptor *plugin_adaptor,
+                       PluginAdaptor *plugin_adaptor,
                        bool use_rev2,
                        bool prepend_hostname,
                        bool ignore_preview,

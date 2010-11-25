@@ -46,7 +46,7 @@ const char EspNetDevice::NODE_NAME_KEY[] = "name";
  */
 EspNetDevice::EspNetDevice(Plugin *owner,
                            Preferences *prefs,
-                           const PluginAdaptor *plugin_adaptor):
+                           PluginAdaptor *plugin_adaptor):
   Device(owner, ESPNET_DEVICE_NAME),
   m_preferences(prefs),
   m_plugin_adaptor(plugin_adaptor),

@@ -35,7 +35,7 @@
 /*
  * Entry point to this plugin
  */
-extern "C" ola::AbstractPlugin* create(const ola::PluginAdaptor *adaptor) {
+extern "C" ola::AbstractPlugin* create(ola::PluginAdaptor *adaptor) {
   return new ola::plugin::e131::E131Plugin(adaptor);
 }
 

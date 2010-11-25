@@ -33,7 +33,7 @@ class EspNetDevice: public Device {
   public:
     EspNetDevice(Plugin *owner,
                  class Preferences *prefs,
-                 const class PluginAdaptor *plugin_adaptor);
+                 class PluginAdaptor *plugin_adaptor);
 
     string DeviceId() const { return "1"; }
 
@@ -47,7 +47,7 @@ class EspNetDevice: public Device {
 
   private:
     class Preferences *m_preferences;
-    const class PluginAdaptor *m_plugin_adaptor;
+    class PluginAdaptor *m_plugin_adaptor;
     class EspNetNode *m_node;
 
     static const char ESPNET_DEVICE_NAME[];

@@ -22,34 +22,14 @@
 #define PLUGINS_USBPRO_WIDGETDETECTOR_H_
 
 #include <string.h>
+#include <ola/network/SelectServerInterface.h>
 #include <map>
 #include <string>
-#include "olad/PluginAdaptor.h"
 #include "plugins/usbpro/UsbWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
-
-
-/*
- * Abstract away the interface to the select server
- */
-class PluginAdaptorSelectServerAdaptor: public SelectServerAdaptor {
-  public:
-    explicit PluginAdaptorSelectServerAdaptor(
-        const ola::PluginAdaptor *plugin_adaptor):
-        m_plugin_adaptor(plugin_adaptor) {
-    }
-
-    bool AddSocket(ola::network::ConnectedSocket *socket,
-                   bool delete_on_close = false) const {
-      return m_plugin_adaptor->AddSocket(socket, delete_on_close);
-    }
-
-  private:
-    const ola::PluginAdaptor *m_plugin_adaptor;
-};
 
 
 /*
@@ -82,7 +62,7 @@ class WidgetDetectorListener {
     /*
      * Ownership of the widget is transferred here
      */
-    virtual void NewWidget(class UsbWidget *widget,
+    virtual void NewWidget(UsbWidget *widget,
                            const DeviceInformation &info) = 0;
 };
 
@@ -90,10 +70,10 @@ class WidgetDetectorListener {
 /*
  * Handles widget discovery
  */
-class WidgetDetector: public WidgetListener {
+class WidgetDetector {
   public:
-    explicit WidgetDetector(const ola::PluginAdaptor *plugin_adaptor):
-        m_plugin_adaptor(plugin_adaptor),
+    explicit WidgetDetector(ola::network::SelectServerInterface *ss):
+        m_ss(ss),
         m_timeout_id(ola::network::INVALID_TIMEOUT) {
     }
     ~WidgetDetector();
@@ -118,9 +98,9 @@ class WidgetDetector: public WidgetListener {
     } id_response;
 
     WidgetDetectorListener *m_listener;
-    const ola::PluginAdaptor *m_plugin_adaptor;
+    ola::network::SelectServerInterface *m_ss;
     std::map<UsbWidget*, DeviceInformation> m_widgets;
-    timeout_id m_timeout_id;
+    ola::network::timeout_id m_timeout_id;
 
     bool SendDiscoveryMessages(UsbWidget *widget);
     void HandleIdResponse(UsbWidget *widget, unsigned int length,

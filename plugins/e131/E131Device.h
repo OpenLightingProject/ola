@@ -40,7 +40,7 @@ class E131Device: public ola::Device {
     E131Device(Plugin *owner,
                const ola::plugin::e131::CID &cid,
                std::string ip_addr,
-               const class PluginAdaptor *plugin_adaptor,
+               class PluginAdaptor *plugin_adaptor,
                bool use_rev2,
                bool prepend_hostname,
                bool ignore_preview,
@@ -58,7 +58,7 @@ class E131Device: public ola::Device {
     void PostPortStop();
 
   private:
-    const class PluginAdaptor *m_plugin_adaptor;
+    class PluginAdaptor *m_plugin_adaptor;
     class E131Node *m_node;
     bool m_use_rev2;
     bool m_prepend_hostname;

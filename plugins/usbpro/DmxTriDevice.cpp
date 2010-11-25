@@ -21,6 +21,7 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SelectServerInterface.h"
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 
@@ -35,7 +36,7 @@ using ola::network::NetworkToHost;
 /*
  * New DMX TRI device
  */
-DmxTriDevice::DmxTriDevice(const ola::PluginAdaptor *plugin_adaptor,
+DmxTriDevice::DmxTriDevice(ola::network::SelectServerInterface *ss,
                            ola::AbstractPlugin *owner,
                            const string &name,
                            UsbWidget *widget,
@@ -43,15 +44,13 @@ DmxTriDevice::DmxTriDevice(const ola::PluginAdaptor *plugin_adaptor,
                            uint16_t device_id,
                            uint32_t serial):
     UsbDevice(owner, name, widget),
-    m_plugin_adaptor(plugin_adaptor),
     m_tri_widget(NULL) {
   std::stringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" <<
     NetworkToHost(serial);
   m_device_id = str.str();
 
-  m_tri_widget = new DmxTriWidget(plugin_adaptor, widget);
-
+  m_tri_widget = new DmxTriWidget(ss, widget);
 
   ola::BasicOutputPort *output_port = new DmxTriOutputPort(this);
   AddPort(output_port);

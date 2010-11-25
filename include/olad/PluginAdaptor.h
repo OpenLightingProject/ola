@@ -26,53 +26,43 @@
 #include <ola/Clock.h>  // NOLINT
 #include <ola/Closure.h>  // NOLINT
 #include <ola/network/SelectServer.h>  // NOLINT
+#include <ola/network/SelectServerInterface.h>  // NOLINT
 
 namespace ola {
 
-namespace network {
-  class Socket;
-  class ConnectedSocket;
-  class SocketManager;
-}
-
-
-using std::string;
-using ola::network::Socket;
-using ola::network::ConnectedSocket;
-using ola::network::SocketManager;
-using ola::network::SelectServer;
 using ola::network::timeout_id;
 
-class PluginAdaptor {
+class PluginAdaptor: public ola::network::SelectServerInterface {
   public :
     PluginAdaptor(class DeviceManager *device_manager,
-                  SelectServer *select_server,
+                  ola::network::SelectServer *select_server,
                   class PreferencesFactory *preferences_factory);
 
-    bool AddSocket(class Socket *socket) const;
-    bool AddSocket(class ConnectedSocket *socket,
-                   bool delete_on_close = false) const;
-    bool RemoveSocket(class Socket *socket) const;
-    bool RemoveSocket(class ConnectedSocket *socket) const;
+    // The following methods are part of the SelectServerInterface
+    bool AddSocket(ola::network::Socket *socket);
+    bool AddSocket(ola::network::ConnectedSocket *socket,
+                   bool delete_on_close = false);
+    bool RemoveSocket(ola::network::Socket *socket);
+    bool RemoveSocket(ola::network::ConnectedSocket *socket);
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
-                                        Closure<bool> *closure) const;
+                                        Closure<bool> *closure);
     timeout_id RegisterSingleTimeout(unsigned int ms,
-                                     SingleUseClosure<void> *closure) const;
-    void RemoveTimeout(timeout_id id) const;
-
-    bool RegisterDevice(class AbstractDevice *device) const;
-    bool UnregisterDevice(class AbstractDevice *device) const;
-
-    class Preferences *NewPreference(const string &name) const;
+                                     SingleUseClosure<void> *closure);
+    void RemoveTimeout(timeout_id id);
 
     const TimeStamp *WakeUpTime() const;
+
+    // These are the extra bits for the plugins
+    bool RegisterDevice(class AbstractDevice *device) const;
+    bool UnregisterDevice(class AbstractDevice *device) const;
+    class Preferences *NewPreference(const std::string &name) const;
 
   private:
     PluginAdaptor(const PluginAdaptor&);
     PluginAdaptor& operator=(const PluginAdaptor&);
 
     DeviceManager *m_device_manager;
-    class ola::network::SelectServer *m_ss;
+    ola::network::SelectServer *m_ss;
     class PreferencesFactory *m_preferences_factory;
 };
 }  // ola

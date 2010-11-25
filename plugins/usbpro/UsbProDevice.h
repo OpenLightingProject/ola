@@ -55,9 +55,9 @@ typedef struct {
 /*
  * An Enttec Usb Pro device
  */
-class UsbProDevice: public UsbDevice, public WidgetListener {
+class UsbProDevice: public UsbDevice {
   public:
-    UsbProDevice(const ola::PluginAdaptor *plugin_adaptor,
+    UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                  ola::AbstractPlugin *owner,
                  const string &name,
                  UsbWidget *widget,
@@ -65,8 +65,8 @@ class UsbProDevice: public UsbDevice, public WidgetListener {
                  uint16_t device_id,
                  uint32_t serial,
                  unsigned int fps_limit);
-    void HandleMessage(UsbWidget* widget,
-                       uint8_t label,
+
+    void HandleMessage(uint8_t label,
                        unsigned int length,
                        const uint8_t *data);
 
@@ -102,7 +102,6 @@ class UsbProDevice: public UsbDevice, public WidgetListener {
 
     bool m_got_parameters;
     bool m_in_shutdown;  // set to true if we're shutting down
-    const ola::PluginAdaptor *m_plugin_adaptor;
     string m_serial;
     DmxBuffer m_input_buffer;
     deque<OutstandingParamRequest> m_outstanding_param_requests;

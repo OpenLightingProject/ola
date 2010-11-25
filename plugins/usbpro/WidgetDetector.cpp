@@ -46,7 +46,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-
+using std::map;
 using std::set;
 using ola::network::NetworkToHost;
 
@@ -60,7 +60,7 @@ WidgetDetector::~WidgetDetector() {
   m_widgets.clear();
 
   if (m_timeout_id != ola::network::INVALID_TIMEOUT)
-    m_plugin_adaptor->RemoveTimeout(m_timeout_id);
+    m_ss->RemoveTimeout(m_timeout_id);
 }
 
 
@@ -84,9 +84,10 @@ bool WidgetDetector::Discover(const string &path) {
   tcsetattr(fd, TCSANOW, &newtio);
 
   UsbWidget *widget = new UsbWidget(
-      PluginAdaptorSelectServerAdaptor(m_plugin_adaptor),
+      m_ss,
       fd);
-  widget->SetMessageHandler(this);
+  widget->SetMessageHandler(
+    NewCallback(this, &WidgetDetector::HandleMessage, widget));
 
   bool ret = SendDiscoveryMessages(widget);
 
@@ -105,7 +106,7 @@ bool WidgetDetector::Discover(const string &path) {
   */
 
   // register a timeout for this widget
-  m_timeout_id = m_plugin_adaptor->RegisterSingleTimeout(
+  m_timeout_id = m_ss->RegisterSingleTimeout(
       1000,
       NewSingleClosure(this, &WidgetDetector::DiscoveryTimeout, widget));
   return true;

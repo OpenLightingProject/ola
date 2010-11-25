@@ -48,7 +48,7 @@
  * Entry point to this plugin
  */
 extern "C" ola::AbstractPlugin* create(
-    const ola::PluginAdaptor *plugin_adaptor) {
+    ola::PluginAdaptor *plugin_adaptor) {
   return new ola::plugin::dmx4linux::Dmx4LinuxPlugin(plugin_adaptor);
 }
 

@@ -44,7 +44,7 @@ const char SandNetDevice::SANDNET_DEVICE_NAME[] = "SandNet";
  */
 SandNetDevice::SandNetDevice(SandNetPlugin *owner,
                              Preferences *prefs,
-                             const PluginAdaptor *plugin_adaptor):
+                             PluginAdaptor *plugin_adaptor):
   Device(owner, SANDNET_DEVICE_NAME),
   m_preferences(prefs),
   m_plugin_adaptor(plugin_adaptor),

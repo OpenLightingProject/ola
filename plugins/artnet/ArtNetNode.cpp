@@ -58,7 +58,7 @@ const char ArtNetNode::ARTNET_ID[] = "Art-Net";
 ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
                        const string &short_name,
                        const string &long_name,
-                       const PluginAdaptor *plugin_adaptor,
+                       ola::network::SelectServerInterface *ss,
                        uint8_t subnet_address,
                        bool always_broadcast)
     : m_running(false),
@@ -67,7 +67,7 @@ ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
       m_long_name(long_name),
       m_broadcast_threshold(BROADCAST_THRESHOLD),
       m_unsolicited_replies(0),
-      m_plugin_adaptor(plugin_adaptor),
+      m_ss(ss),
       m_always_broadcast(always_broadcast),
       m_interface(interface),
       m_socket(NULL),
@@ -152,13 +152,13 @@ bool ArtNetNode::Stop() {
     return false;
 
   if (m_discovery_timeout != ola::network::INVALID_TIMEOUT) {
-    m_plugin_adaptor->RemoveTimeout(m_discovery_timeout);
+    m_ss->RemoveTimeout(m_discovery_timeout);
     m_discovery_timeout = ola::network::INVALID_TIMEOUT;
   }
 
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     if (m_input_ports[i].rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
-      m_plugin_adaptor->RemoveTimeout(m_input_ports[i].rdm_send_timeout);
+      m_ss->RemoveTimeout(m_input_ports[i].rdm_send_timeout);
       m_input_ports[i].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
     }
 
@@ -169,7 +169,7 @@ bool ArtNetNode::Stop() {
     }
   }
 
-  m_plugin_adaptor->RemoveSocket(m_socket);
+  m_ss->RemoveSocket(m_socket);
 
   if (m_socket) {
     delete m_socket;
@@ -382,7 +382,7 @@ bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
       m_input_ports[port_id].subscribed_nodes.begin();
 
     TimeStamp last_heard_threshold = (
-        *m_plugin_adaptor->WakeUpTime() - TimeInterval(NODE_TIMEOUT, 0));
+        *m_ss->WakeUpTime() - TimeInterval(NODE_TIMEOUT, 0));
     while (iter != m_input_ports[port_id].subscribed_nodes.end()) {
       // if this node has timed out, remove it from the set
       if (iter->second < last_heard_threshold) {
@@ -854,7 +854,7 @@ void ArtNetNode::HandleReplyPacket(const IPAddress &source_address,
         if (m_input_ports[port_id].enabled &&
             m_input_ports[port_id].universe_address == universe_id) {
           m_input_ports[port_id].subscribed_nodes[source_address] =
-            *m_plugin_adaptor->WakeUpTime();
+            *m_ss->WakeUpTime();
         }
       }
     }
@@ -889,7 +889,7 @@ void ArtNetNode::HandleDataPacket(const IPAddress &source_address,
       // update this port, doing a merge if necessary
       DMXSource source;
       source.address = source_address;
-      source.timestamp = *m_plugin_adaptor->WakeUpTime();
+      source.timestamp = *m_ss->WakeUpTime();
       source.buffer.Set(packet.data, data_size);
       UpdatePortFromSource(&m_output_ports[port_id], source);
     }
@@ -1242,7 +1242,7 @@ void ArtNetNode::MaybeSendRDMRequest(uint8_t port_id) {
     return;
 
   if (SendFirstRDMRequest(port_id)) {
-    input_port.rdm_send_timeout = m_plugin_adaptor->RegisterSingleTimeout(
+    input_port.rdm_send_timeout = m_ss->RegisterSingleTimeout(
       RDM_REQUEST_TIMEOUT_MS,
       ola::NewSingleClosure(this, &ArtNetNode::TimeoutRDMRequest, port_id));
   } else {
@@ -1302,7 +1302,7 @@ void ArtNetNode::ClearPendingRDMRequest(uint8_t port_id) {
     input_port.pending_rdm_requests.pop();
   }
   if (input_port.rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
-    m_plugin_adaptor->RemoveTimeout(input_port.rdm_send_timeout);
+    m_ss->RemoveTimeout(input_port.rdm_send_timeout);
     input_port.rdm_send_timeout = ola::network::INVALID_TIMEOUT;
   }
 }
@@ -1334,7 +1334,7 @@ bool ArtNetNode::SendRDMCommand(const RDMCommand &command,
 void ArtNetNode::UpdatePortFromSource(OutputPort *port,
                                       const DMXSource &source) {
   TimeStamp merge_time_threshold = (
-      *m_plugin_adaptor->WakeUpTime() - TimeInterval(MERGE_TIMEOUT, 0));
+      *m_ss->WakeUpTime() - TimeInterval(MERGE_TIMEOUT, 0));
   unsigned int first_empty_slot = MAX_MERGE_SOURCES;
   unsigned int source_slot = MAX_MERGE_SOURCES;
   unsigned int active_sources = 0;
@@ -1496,7 +1496,7 @@ bool ArtNetNode::InitNetwork() {
   }
 
   m_socket->SetOnData(NewClosure(this, &ArtNetNode::SocketReady));
-  m_plugin_adaptor->AddSocket(m_socket);
+  m_ss->AddSocket(m_socket);
   return true;
 }
 
@@ -1579,7 +1579,7 @@ bool ArtNetNode::GrabDiscoveryLock(uint8_t port_id) {
     iter->second.second++;
   }
 
-  m_discovery_timeout = m_plugin_adaptor->RegisterSingleTimeout(
+  m_discovery_timeout = m_ss->RegisterSingleTimeout(
       RDM_TOD_TIMEOUT_MS,
       ola::NewSingleClosure(this, &ArtNetNode::ReleaseDiscoveryLock, port_id));
   return true;

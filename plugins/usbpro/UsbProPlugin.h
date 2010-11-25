@@ -37,7 +37,7 @@ using ola::network::ConnectedSocket;
 
 class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
   public:
-    explicit UsbProPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit UsbProPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_detector(plugin_adaptor) {}
 

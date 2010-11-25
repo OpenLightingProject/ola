@@ -40,7 +40,7 @@ using ola::network::ConnectedSocket;
 
 class UsbDmxPlugin: public ola::Plugin {
   public:
-    explicit UsbDmxPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit UsbDmxPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_usb_context(NULL) {}
 

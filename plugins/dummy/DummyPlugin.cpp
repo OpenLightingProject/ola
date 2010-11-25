@@ -30,7 +30,7 @@
  * Entry point to this plugin
  */
 extern "C" ola::AbstractPlugin* create(
-    const ola::PluginAdaptor *plugin_adaptor) {
+    ola::PluginAdaptor *plugin_adaptor) {
   return new ola::plugin::dummy::DummyPlugin(plugin_adaptor);
 }
 

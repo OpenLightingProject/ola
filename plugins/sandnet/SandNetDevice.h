@@ -36,7 +36,7 @@ class SandNetDevice: public ola::Device {
   public:
     SandNetDevice(class SandNetPlugin *owner,
                   class Preferences *prefs,
-                  const class PluginAdaptor *plugin_adaptor);
+                  class PluginAdaptor *plugin_adaptor);
 
     string DeviceId() const { return "1"; }
     SandNetNode *GetNode() { return m_node; }
@@ -53,7 +53,7 @@ class SandNetDevice: public ola::Device {
 
   private:
     class Preferences *m_preferences;
-    const class PluginAdaptor *m_plugin_adaptor;
+    class PluginAdaptor *m_plugin_adaptor;
     SandNetNode *m_node;
     ola::network::timeout_id m_timeout_id;
 

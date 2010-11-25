@@ -35,7 +35,7 @@ namespace usbpro {
  */
 class ArduinoRGBDevice: public UsbDevice {
   public:
-    ArduinoRGBDevice(const ola::PluginAdaptor *plugin_adaptor,
+    ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
                      ola::AbstractPlugin *owner,
                      const string &name,
                      UsbWidget *widget,

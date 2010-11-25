@@ -29,6 +29,7 @@
 #include <map>
 #include <vector>
 
+#include "ola/network/Socket.h"
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
 #include "ola/BaseTypes.h"
@@ -141,8 +142,9 @@ OlaServer::~OlaServer() {
     */
   }
 
-  if (m_accepting_socket
-      && m_accepting_socket->ReadDescriptor() != Socket::INVALID_SOCKET)
+  if (m_accepting_socket &&
+      m_accepting_socket->ReadDescriptor() !=
+      ola::network::Socket::INVALID_SOCKET)
     m_ss->RemoveSocket(m_accepting_socket);
 
   if (m_universe_store) {

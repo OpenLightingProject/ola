@@ -44,7 +44,7 @@ class ArtNetDevice: public Device {
   public:
     ArtNetDevice(AbstractPlugin *owner,
                  class Preferences *preferences,
-                 const class PluginAdaptor *plugin_adaptor);
+                 class PluginAdaptor *plugin_adaptor);
 
     // only one ArtNet device
     string DeviceId() const { return "1"; }
@@ -70,8 +70,8 @@ class ArtNetDevice: public Device {
   private:
     class Preferences *m_preferences;
     ArtNetNode *m_node;
-    const class PluginAdaptor *m_plugin_adaptor;
-    timeout_id m_timeout_id;
+    class PluginAdaptor *m_plugin_adaptor;
+    ola::network::timeout_id m_timeout_id;
 
     void HandleOptions(Request *request, string *response);
 };

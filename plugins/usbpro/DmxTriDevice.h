@@ -38,7 +38,7 @@ class DmxTriWidget;
  */
 class DmxTriDevice: public UsbDevice {
   public:
-    DmxTriDevice(const ola::PluginAdaptor *plugin_adaptor,
+    DmxTriDevice(ola::network::SelectServerInterface *ss,
                  ola::AbstractPlugin *owner,
                  const string &name,
                  UsbWidget *widget,
@@ -58,7 +58,6 @@ class DmxTriDevice: public UsbDevice {
 
   private:
     string m_device_id;
-    const PluginAdaptor *m_plugin_adaptor;
     DmxTriWidget *m_tri_widget;
 };
 

@@ -26,9 +26,10 @@
 #include <string>
 #include <vector>
 
-#include <ola/Closure.h>  // NOLINT
 #include <ola/Clock.h>  // NOLINT
+#include <ola/Closure.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
+#include <ola/network/SelectServerInterface.h>  // NOLINT
 #include <ola/network/Socket.h>  // NOLINT
 
 namespace ola {
@@ -116,10 +117,6 @@ class RepeatingEvent: public Event {
 };
 
 
-typedef Event* timeout_id;
-static const timeout_id INVALID_TIMEOUT = 0;
-
-
 struct ltevent {
   bool operator()(Event *e1, Event *e2) const {
     return e1->NextTime() > e2->NextTime();
@@ -127,7 +124,7 @@ struct ltevent {
 };
 
 
-class SelectServer {
+class SelectServer: public SelectServerInterface {
   public :
     enum Direction {READ, WRITE};
 
@@ -142,14 +139,14 @@ class SelectServer {
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
 
-    bool AddSocket(class Socket *socket);
-    bool AddSocket(class ConnectedSocket *socket,
+    bool AddSocket(Socket *socket);
+    bool AddSocket(ConnectedSocket *socket,
                    bool delete_on_close = false);
-    bool RemoveSocket(class Socket *socket);
-    bool RemoveSocket(class ConnectedSocket *socket);
+    bool RemoveSocket(Socket *socket);
+    bool RemoveSocket(ConnectedSocket *socket);
 
-    bool RegisterWriteSocket(class BidirectionalSocket *socket);
-    bool UnRegisterWriteSocket(class BidirectionalSocket *socket);
+    bool RegisterWriteSocket(BidirectionalSocket *socket);
+    bool UnRegisterWriteSocket(BidirectionalSocket *socket);
 
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                         ola::Closure<bool> *closure);

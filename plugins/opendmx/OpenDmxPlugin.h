@@ -35,7 +35,7 @@ class OpenDmxDevice;
 
 class OpenDmxPlugin: public Plugin {
   public:
-    explicit OpenDmxPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit OpenDmxPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 

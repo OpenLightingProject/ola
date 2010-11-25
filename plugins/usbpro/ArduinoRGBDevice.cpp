@@ -37,7 +37,7 @@ using ola::network::NetworkToHost;
 /*
  * New Arduino RGB Device
  */
-ArduinoRGBDevice::ArduinoRGBDevice(const ola::PluginAdaptor *plugin_adaptor,
+ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
                                    ola::AbstractPlugin *owner,
                                    const string &name,
                                    UsbWidget *widget,
@@ -52,7 +52,7 @@ ArduinoRGBDevice::ArduinoRGBDevice(const ola::PluginAdaptor *plugin_adaptor,
 
   OutputPort *output_port = new ThrottledOutputPortDecorator(
       new ArduinoRGBOutputPort(this),
-      plugin_adaptor->WakeUpTime(),
+      ss->WakeUpTime(),
       5,  // start with 5 tokens in the bucket
       20);  // 22 frames per second seems to be the limit
   AddPort(output_port);

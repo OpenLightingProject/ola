@@ -151,7 +151,7 @@ class MockDeviceLoopAndMulti: public ola::Device {
  */
 class TestMockPlugin: public ola::Plugin {
   public:
-    explicit TestMockPlugin(const ola::PluginAdaptor *plugin_adaptor,
+    explicit TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
                             ola::ola_plugin_id plugin_id,
                             bool should_start = true):
       Plugin(plugin_adaptor),

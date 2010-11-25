@@ -47,7 +47,7 @@ const char OpenDmxPlugin::DEVICE_KEY[] = "device";
 /*
  * Entry point to this plugin
  */
-extern "C" ola::AbstractPlugin* create(const PluginAdaptor *plugin_adaptor) {
+extern "C" ola::AbstractPlugin* create(PluginAdaptor *plugin_adaptor) {
   return new OpenDmxPlugin(plugin_adaptor);
 }
 

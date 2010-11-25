@@ -36,7 +36,7 @@ class DummyDevice;
 
 class DummyPlugin: public Plugin {
   public:
-    explicit DummyPlugin(const PluginAdaptor *plugin_adaptor):
+    explicit DummyPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 
