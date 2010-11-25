@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <string>
 #include <ola/Clock.h>  // NOLINT
-#include <ola/Closure.h>  // NOLINT
+#include <ola/Callback.h>  // NOLINT
 #include <ola/network/SelectServer.h>  // NOLINT
 #include <ola/network/SelectServerInterface.h>  // NOLINT
 
@@ -45,9 +45,9 @@ class PluginAdaptor: public ola::network::SelectServerInterface {
     bool RemoveSocket(ola::network::Socket *socket);
     bool RemoveSocket(ola::network::ConnectedSocket *socket);
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
-                                        Closure<bool> *closure);
+                                        Callback0<bool> *closure);
     timeout_id RegisterSingleTimeout(unsigned int ms,
-                                     SingleUseClosure<void> *closure);
+                                     SingleUseCallback0<void> *closure);
     void RemoveTimeout(timeout_id id);
 
     const TimeStamp *WakeUpTime() const;

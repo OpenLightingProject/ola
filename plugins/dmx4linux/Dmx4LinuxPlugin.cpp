@@ -83,7 +83,7 @@ bool Dmx4LinuxPlugin::StartHook() {
 
   if (m_devices.size() > 0) {
     m_in_socket->SetOnData(
-        ola::NewClosure(this, &Dmx4LinuxPlugin::SocketReady));
+        ola::NewCallback(this, &Dmx4LinuxPlugin::SocketReady));
     m_plugin_adaptor->AddSocket(m_in_socket);
     return true;
   } else {

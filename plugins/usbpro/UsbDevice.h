@@ -22,7 +22,7 @@
 #define PLUGINS_USBPRO_USBDEVICE_H_
 
 #include <string>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "olad/Device.h"
 #include "plugins/usbpro/UsbWidget.h"
 
@@ -45,7 +45,7 @@ class UsbDevice: public ola::Device {
       delete m_widget;
     }
 
-    void SetOnRemove(ola::SingleUseClosure<void> *on_close) {
+    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
       m_widget->SetOnRemove(on_close);
     }
 

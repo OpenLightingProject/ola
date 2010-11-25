@@ -36,7 +36,7 @@ using std::string;
 using std::map;
 using ola::network::UdpSocket;
 using ola::network::HostToNetwork;
-using ola::Closure;
+using ola::Callback0;
 
 
 /*
@@ -157,12 +157,12 @@ bool ShowNetNode::SendDMX(unsigned int universe,
 /*
  * Set the closure to be called when we receive data for this universe.
  * @param universe the universe to register the handler for
- * @param handler the Closure to call when there is data for this universe.
+ * @param handler the Callback0 to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
 bool ShowNetNode::SetHandler(unsigned int universe,
                              DmxBuffer *buffer,
-                             Closure<void> *closure) {
+                             Callback0<void> *closure) {
   if (!closure)
     return false;
 
@@ -175,7 +175,7 @@ bool ShowNetNode::SetHandler(unsigned int universe,
     handler.closure = closure;
     m_handlers[universe] = handler;
   } else {
-    Closure<void> *old_closure = iter->second.closure;
+    Callback0<void> *old_closure = iter->second.closure;
     iter->second.closure = closure;
     delete old_closure;
   }
@@ -193,7 +193,7 @@ bool ShowNetNode::RemoveHandler(unsigned int universe) {
     m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
-    Closure<void> *old_closure = iter->second.closure;
+    Callback0<void> *old_closure = iter->second.closure;
     m_handlers.erase(iter);
     delete old_closure;
     return true;
@@ -352,7 +352,7 @@ bool ShowNetNode::InitNetwork() {
     return false;
   }
 
-  m_socket->SetOnData(NewClosure(this, &ShowNetNode::SocketReady));
+  m_socket->SetOnData(NewCallback(this, &ShowNetNode::SocketReady));
   return true;
 }
 }  // shownet

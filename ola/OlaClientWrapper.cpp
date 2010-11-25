@@ -60,7 +60,7 @@ bool BaseClientWrapper::Setup() {
       return false;
     }
     m_socket->SetOnClose(
-        ola::NewSingleClosure(this, &OlaClientWrapper::SocketClosed));
+        ola::NewSingleCallback(this, &OlaClientWrapper::SocketClosed));
   }
 
   CreateClient();

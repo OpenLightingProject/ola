@@ -59,14 +59,20 @@ def Footer():
 
 def GenerateBase(number_of_args):
   """Generate the base Callback classes."""
+  optional_comma = ''
+
+  if number_of_args > 0:
+    optional_comma = ', '
+
   typenames = ', '.join('typename Arg%d' % i for i in xrange(number_of_args))
   arg_list = ', '.join('Arg%d arg%d' % (i, i) for i in xrange(number_of_args))
   args = ', '.join('arg%d' % i for i in xrange(number_of_args))
+
   arg_types = ', '.join('Arg%d' % i for i in xrange(number_of_args))
 
   # generate the base callback class
   print '// %d argument callbacks' % number_of_args
-  print 'template <typename ReturnType, %s>' % typenames
+  print 'template <typename ReturnType%s%s>' % (optional_comma, typenames)
   print 'class BaseCallback%d {' % number_of_args
   print '  public:'
   print '    virtual ~BaseCallback%d() {}' % number_of_args
@@ -78,12 +84,12 @@ def GenerateBase(number_of_args):
 
   # generate the multi-use version of the callback
   print '// A callback, this can be called multiple times'
-  print 'template <typename ReturnType, %s>' % typenames
-  print ('class Callback%d: public BaseCallback%d<ReturnType, %s> {' %
-         (number_of_args, number_of_args, arg_types))
+  print 'template <typename ReturnType%s%s>' % (optional_comma, typenames)
+  print ('class Callback%d: public BaseCallback%d<ReturnType%s%s> {' %
+         (number_of_args, number_of_args, optional_comma, arg_types))
   print '  public:'
   print '    virtual ~Callback%d() {}' % number_of_args
-  print ('    ReturnType Run(%s) { return DoRun(%s); }' %
+  print ('    ReturnType Run(%s) { return this->DoRun(%s); }' %
          (arg_list, args))
   print '};'
   print ''
@@ -91,13 +97,13 @@ def GenerateBase(number_of_args):
 
   # generate the single-use version of the callback
   print "// A single use callback, this deletes itself after it's run."
-  print 'template <typename ReturnType, %s>' % typenames
-  print ('class SingleUseCallback%d: public BaseCallback%d<ReturnType, %s> {' %
-         (number_of_args, number_of_args, arg_types))
+  print 'template <typename ReturnType%s%s>' % (optional_comma, typenames)
+  print ('class SingleUseCallback%d: public BaseCallback%d<ReturnType%s%s> {' %
+         (number_of_args, number_of_args, optional_comma, arg_types))
   print '  public:'
   print '    virtual ~SingleUseCallback%d() {}' % number_of_args
   print '    ReturnType Run(%s) {' % arg_list
-  print '      ReturnType ret = DoRun(%s);' % args
+  print '      ReturnType ret = this->DoRun(%s);' % args
   print '      delete this;'
   print '      return ret;'
   print '    }'
@@ -108,8 +114,9 @@ def GenerateBase(number_of_args):
   # the void specialization
   print "// A single use callback returning void."
   print 'template <%s>' % typenames
-  print ('class SingleUseCallback%d<void, %s>: public BaseCallback%d<void, %s> {' %
-         (number_of_args, arg_types, number_of_args, arg_types))
+  print ('class SingleUseCallback%d<void%s%s>: public BaseCallback%d<void%s%s> {' %
+         (number_of_args, optional_comma, arg_types, number_of_args,
+           optional_comma, arg_types))
   print '  public:'
   print '    virtual ~SingleUseCallback%d() {}' % number_of_args
   print '    void Run(%s) {' % arg_list
@@ -136,11 +143,18 @@ def GenerateHelperFunction(bind_count,
     is_method True if this is a method callback, False if this is a function
       callback.
     """
+  optional_comma = ''
+  if bind_count > 0 or exec_count > 0:
+    optional_comma = ', '
+
   typenames = (['typename A%d' % i for i in xrange(bind_count)] +
                ['typename Arg%d' % i for i in xrange(exec_count)])
   bind_types = ['A%d' % i for i in xrange(bind_count)]
   exec_types = ['Arg%d' % i for i in xrange(exec_count)]
   method_types = ', '.join(bind_types + exec_types)
+  if exec_count > 0:
+    exec_types = [''] + exec_types
+  exec_type_str = ', '.join(exec_types)
   optional_class, ptr_name, signature = '', 'callback', '*callback'
   if is_method:
     optional_class, ptr_name, signature = (
@@ -148,10 +162,10 @@ def GenerateHelperFunction(bind_count,
 
   # The single use helper function
   print '// Helper method to create a new %s.' % parent_class
-  print ('template <%stypename ReturnType, %s>' %
-         (optional_class, ', '.join(typenames)))
-  print ('inline %s%d<ReturnType, %s>* %s(' %
-         (parent_class, exec_count, ', '.join(exec_types), function_name))
+  print ('template <%stypename ReturnType%s%s>' %
+         (optional_class, optional_comma, ', '.join(typenames)))
+  print ('inline %s%d<ReturnType%s>* %s(' %
+         (parent_class, exec_count, exec_type_str, function_name))
   if is_method:
     print '    Class* object,'
   if bind_count:
@@ -168,11 +182,18 @@ def GenerateHelperFunction(bind_count,
     print '  return new MethodCallback%d_%d<Class,' % (bind_count, exec_count)
   else:
     print '  return new FunctionCallback%d_%d<' % (bind_count, exec_count)
-  print ('                               %s%d<ReturnType, %s>,'
-         % (parent_class, exec_count, ', '.join(exec_types)))
-  print '                               ReturnType,'
+  print ('                               %s%d<ReturnType%s>,'
+         % (parent_class, exec_count, exec_type_str))
+  if bind_count > 0 or exec_count > 0:
+    print '                               ReturnType,'
+  else:
+    print '                               ReturnType>('
   for i in xrange(bind_count):
-    print '                               A%d,' % i
+    if i == bind_count - 1 and exec_count == 0:
+      suffix = '>('
+    else:
+      suffix = ','
+    print '                               A%d%s' % (i, suffix)
   for i in xrange(exec_count):
     suffix = ','
     if i == exec_count - 1:
@@ -203,6 +224,10 @@ def GenerateMethodCallback(bind_count,
     is_method True if this is a method callback, False if this is a function
       callback.
   """
+  optional_comma = ''
+  if bind_count > 0 or exec_count > 0:
+    optional_comma = ', '
+
   typenames = (['typename A%d' % i for i in xrange(bind_count)] +
                ['typename Arg%d' % i for i in xrange(exec_count)])
 
@@ -226,8 +251,8 @@ def GenerateMethodCallback(bind_count,
 
   print ('// A %s callback with %d create-time args and %d exec time '
          'args' % (method_or_function, bind_count, exec_count))
-  print ('template <%stypename Parent, typename ReturnType, %s>' %
-         (optional_class, ', '.join(typenames)))
+  print ('template <%stypename Parent, typename ReturnType%s%s>' %
+         (optional_class, optional_comma, ', '.join(typenames)))
 
   print 'class %s%d_%d: public Parent {' % (class_name, bind_count, exec_count)
   print '  public:'
@@ -290,7 +315,8 @@ def main():
   Header()
 
   # exec_time : [bind time args]
-  calback_types = {1: [0, 1, 2, 3],
+  calback_types = {0: [0, 1, 2, 3, 4],
+                   1: [0, 1, 2, 3],
                    2: [0, 1, 2, 3, 4],
                    3: [0, 1, 2, 3],
                    4: [0, 1, 2, 3],

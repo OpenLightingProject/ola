@@ -100,7 +100,7 @@ bool WidgetDetector::Discover(const string &path) {
 
   // Set delete_on_close here so that device removal works
   /*
-  widget->SetOnClose(NewSingleClosure(this,
+  widget->SetOnClose(NewSingleCallback(this,
                      &WidgetDetector::DeviceClosed,
                      widget));
   */
@@ -108,7 +108,7 @@ bool WidgetDetector::Discover(const string &path) {
   // register a timeout for this widget
   m_timeout_id = m_ss->RegisterSingleTimeout(
       1000,
-      NewSingleClosure(this, &WidgetDetector::DiscoveryTimeout, widget));
+      NewSingleCallback(this, &WidgetDetector::DiscoveryTimeout, widget));
   return true;
 }
 

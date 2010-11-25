@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "ola/BaseTypes.h"
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
 #include "ola/OlaDevice.h"

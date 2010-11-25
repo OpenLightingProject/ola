@@ -56,7 +56,7 @@ const char SelectServer::K_LOOP_COUNT[] = "ss-loop-count";
 using std::max;
 using std::set;
 using ola::ExportMap;
-using ola::Closure;
+using ola::Callback0;
 
 /*
  * Constructor
@@ -282,7 +282,7 @@ bool SelectServer::UnRegisterWriteSocket(class BidirectionalSocket *socket) {
  */
 timeout_id SelectServer::RegisterRepeatingTimeout(
     unsigned int ms,
-    ola::Closure<bool> *closure) {
+    ola::Callback0<bool> *closure) {
   if (!closure)
     return INVALID_TIMEOUT;
 
@@ -304,7 +304,7 @@ timeout_id SelectServer::RegisterRepeatingTimeout(
  */
 timeout_id SelectServer::RegisterSingleTimeout(
     unsigned int ms,
-    ola::SingleUseClosure<void> *closure) {
+    ola::SingleUseCallback0<void> *closure) {
   if (!closure)
     return INVALID_TIMEOUT;
 
@@ -332,7 +332,7 @@ void SelectServer::RemoveTimeout(timeout_id id) {
  * i/o and timeouts have been handled.
  * Ownership is transferred to the select server.
  */
-void SelectServer::RunInLoop(Closure<void> *closure) {
+void SelectServer::RunInLoop(Callback0<void> *closure) {
   m_loop_closures.insert(closure);
 }
 
@@ -347,7 +347,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   TimeStamp now;
   struct timeval tv;
 
-  set<Closure<void>*>::iterator loop_iter;
+  set<Callback0<void>*>::iterator loop_iter;
   for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
        ++loop_iter)
     (*loop_iter)->Run();
@@ -467,8 +467,8 @@ void SelectServer::AddSocketsToSet(fd_set *r_set,
 void SelectServer::CheckSockets(fd_set *r_set, fd_set *w_set) {
   // Because the callbacks can add or remove sockets from the select server, we
   // have to call them after we've used the iterators.
-  std::queue<Closure<void>*> read_ready_queue;
-  std::queue<Closure<void>*> write_ready_queue;
+  std::queue<Callback0<void>*> read_ready_queue;
+  std::queue<Callback0<void>*> write_ready_queue;
 
   set<Socket*>::iterator iter;
   for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
@@ -514,13 +514,13 @@ void SelectServer::CheckSockets(fd_set *r_set, fd_set *w_set) {
   }
 
   while (!read_ready_queue.empty()) {
-    Closure<void> *closure = read_ready_queue.front();
+    Callback0<void> *closure = read_ready_queue.front();
     closure->Run();
     read_ready_queue.pop();
   }
 
   while (!write_ready_queue.empty()) {
-    Closure<void> *closure = write_ready_queue.front();
+    Callback0<void> *closure = write_ready_queue.front();
     closure->Run();
     write_ready_queue.pop();
   }
@@ -585,7 +585,7 @@ void SelectServer::UnregisterAll() {
     m_events.pop();
   }
 
-  set<Closure<void>*>::iterator loop_iter;
+  set<Callback0<void>*>::iterator loop_iter;
   for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
        ++loop_iter)
     delete *loop_iter;

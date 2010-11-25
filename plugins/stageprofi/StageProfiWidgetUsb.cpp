@@ -24,7 +24,7 @@
 #include <string.h>
 #include <string>
 
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/network/Socket.h"
 #include "plugins/stageprofi/StageProfiWidgetUsb.h"
 
@@ -49,7 +49,7 @@ bool StageProfiWidgetUsb::Connect(const std::string &path) {
   tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ola::network::DeviceSocket(fd);
   m_socket->SetOnData(
-      NewClosure<StageProfiWidget>(this, &StageProfiWidget::SocketReady));
+      NewCallback<StageProfiWidget>(this, &StageProfiWidget::SocketReady));
   return true;
 }
 }  // stageprofi

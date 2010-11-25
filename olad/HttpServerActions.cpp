@@ -23,7 +23,6 @@
 
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
-#include "ola/Closure.h"
 #include "ola/Logging.h"
 #include "olad/HttpServerActions.h"
 
@@ -38,7 +37,7 @@ void BaseHttpAction::RequestComplete(bool failure) {
 }
 
 
-void BaseHttpAction::Perform(SingleUseClosure<void> *on_done) {
+void BaseHttpAction::Perform(SingleUseCallback0<void> *on_done) {
   m_on_done = on_done;
   if (!DoAction())
     RequestComplete(true);

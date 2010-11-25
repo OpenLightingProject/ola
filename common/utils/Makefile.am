@@ -6,7 +6,7 @@ libolautils_la_SOURCES = ActionQueue.cpp DmxBuffer.cpp OlaThread.cpp \
 
 TESTS = UtilsTester
 check_PROGRAMS = $(TESTS)
-UtilsTester_SOURCES = ActionQueueTest.cpp ClockTest.cpp ClosureTest.cpp \
+UtilsTester_SOURCES = ActionQueueTest.cpp ClockTest.cpp CallbackTest.cpp \
                       DmxBufferTest.cpp OlaThreadTest.cpp \
                       RunLengthEncoderTest.cpp  StringUtilsTest.cpp \
                       UtilsTester.cpp

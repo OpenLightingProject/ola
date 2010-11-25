@@ -25,7 +25,7 @@
 
 using ola::Action;
 using ola::ActionQueue;
-using ola::SingleUseClosure;
+using ola::SingleUseCallback0;
 
 class ActionQueueTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ActionQueueTest);
@@ -61,7 +61,7 @@ class MockAction: public Action {
     bool Failed() const { return m_failed; }
     bool Executed() const { return m_executed; }
 
-    void Perform(SingleUseClosure<void> *on_done);
+    void Perform(SingleUseCallback0<void> *on_done);
 
   private:
     bool m_fatal;
@@ -70,7 +70,7 @@ class MockAction: public Action {
 };
 
 
-void MockAction::Perform(SingleUseClosure<void> *on_done) {
+void MockAction::Perform(SingleUseCallback0<void> *on_done) {
   m_executed = true;
   on_done->Run();
 }

@@ -29,7 +29,7 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
-using ola::NewClosure;
+using ola::NewCallback;
 
 /*
  * Reprogram our port.
@@ -90,13 +90,13 @@ void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
     m_helper.GetNode()->SetDMXHandler(
         PortId(),
         &m_buffer,
-        NewClosure<ArtNetInputPort, void>(this, &ArtNetInputPort::DmxChanged));
+        NewCallback<ArtNetInputPort, void>(this, &ArtNetInputPort::DmxChanged));
     m_helper.GetNode()->SetOutputPortRDMHandlers(
         PortId(),
-        NewClosure<ArtNetInputPort, void>(
+        NewCallback<ArtNetInputPort, void>(
           this,
           &ArtNetInputPort::RespondWithTod),
-        NewClosure<ArtNetInputPort, void>(
+        NewCallback<ArtNetInputPort, void>(
           this,
           &ArtNetInputPort::TriggerRDMDiscovery),
         ola::NewCallback<ArtNetInputPort, void, const RDMRequest*>(

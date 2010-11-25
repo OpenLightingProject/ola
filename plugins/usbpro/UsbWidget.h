@@ -22,7 +22,7 @@
 #define PLUGINS_USBPRO_USBWIDGET_H_
 
 #include <stdint.h>
-#include <ola/Closure.h>
+#include <ola/Callback.h>
 #include <ola/network/SelectServerInterface.h>
 #include <string>
 #include "ola/network/Socket.h"
@@ -43,7 +43,7 @@ class UsbWidget {
     ~UsbWidget();
     void SetMessageHandler(
       ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *callback);
-    void SetOnRemove(ola::SingleUseClosure<void> *on_close);
+    void SetOnRemove(ola::SingleUseCallback0<void> *on_close);
 
     void SocketReady();
 

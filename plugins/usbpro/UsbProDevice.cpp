@@ -28,7 +28,7 @@
 #include <string>
 
 #include "ola/BaseTypes.h"
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "olad/PortDecorators.h"
 #include "olad/Preferences.h"

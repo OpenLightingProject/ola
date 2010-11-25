@@ -24,7 +24,7 @@
 
 #include <map>
 #include <string>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/Interface.h"
 #include "plugins/e131/e131/CID.h"
@@ -69,7 +69,7 @@ class E131Node {
                           uint8_t priority = DEFAULT_PRIORITY);
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
-                    uint8_t *priority, ola::Closure<void> *handler);
+                    uint8_t *priority, ola::Callback0<void> *handler);
     bool RemoveHandler(unsigned int universe);
 
     const ola::network::Interface &GetInterface() const { return m_interface; }

@@ -146,7 +146,7 @@ bool OlaHttpServer::Init() {
     /*
     Setup disconnect notifications.
     m_socket->SetOnClose(
-      ola::NewSingleClosure(this, &SimpleClient::SocketClosed));
+      ola::NewSingleCallback(this, &SimpleClient::SocketClosed));
     */
     m_server.SelectServer()->AddSocket(m_client_socket);
   }
@@ -774,8 +774,8 @@ void OlaHttpServer::CreateUniverseComplete(HttpResponse *response,
   // the Action
   m_server.SelectServer()->RegisterSingleTimeout(
     0,
-    NewSingleClosure(this, &OlaHttpServer::SendCreateUniverseResponse,
-                     response, universe_id, included_name, action_queue));
+    NewSingleCallback(this, &OlaHttpServer::SendCreateUniverseResponse,
+                      response, universe_id, included_name, action_queue));
 }
 
 
@@ -823,7 +823,7 @@ void OlaHttpServer::ModifyUniverseComplete(HttpResponse *response,
   // the Action
   m_server.SelectServer()->RegisterSingleTimeout(
     0,
-    NewSingleClosure(this, &OlaHttpServer::SendModifyUniverseResponse,
+    NewSingleCallback(this, &OlaHttpServer::SendModifyUniverseResponse,
                      response, action_queue));
 }
 

@@ -115,7 +115,7 @@ class HttpResponse {
 class HttpServer: public OlaThread {
   public:
     typedef ola::Callback2<int, const HttpRequest*, HttpResponse*>
-      BaseHttpClosure;
+      BaseHttpCallback;
 
     HttpServer(unsigned int port, const string &data_dir);
     virtual ~HttpServer();
@@ -126,11 +126,11 @@ class HttpServer: public OlaThread {
     void HandleHTTPIO();
 
     int DispatchRequest(const HttpRequest *request, HttpResponse *response);
-    bool RegisterHandler(const string &path, BaseHttpClosure *handler);
+    bool RegisterHandler(const string &path, BaseHttpCallback *handler);
     bool RegisterFile(const string &path,
                       const string &file,
                       const string &content_type="");
-    void RegisterDefaultHandler(BaseHttpClosure *handler);
+    void RegisterDefaultHandler(BaseHttpCallback *handler);
     vector<string> Handlers() const;
     const string DataDir() const { return m_data_dir; }
     int ServeError(HttpResponse *response, const string &details="");
@@ -176,9 +176,9 @@ class HttpServer: public OlaThread {
 
     std::set<ola::network::UnmanagedSocket*, unmanaged_socket_lt> m_sockets;
 
-    map<string, BaseHttpClosure*> m_handlers;
+    map<string, BaseHttpCallback*> m_handlers;
     map<string, static_file_info> m_static_content;
-    BaseHttpClosure *m_default_handler;
+    BaseHttpCallback *m_default_handler;
     unsigned int m_port;
     string m_data_dir;
 };

@@ -67,7 +67,7 @@ void E131InputPort::PostSetUniverse(Universe *old_universe,
         new_universe->UniverseId(),
         &m_buffer,
         &m_priority,
-        NewClosure<E131InputPort, void>(this, &E131InputPort::DmxChanged));
+        NewCallback<E131InputPort, void>(this, &E131InputPort::DmxChanged));
 }
 
 

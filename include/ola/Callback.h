@@ -27,6 +27,620 @@
 
 namespace ola {
 
+// 0 argument callbacks
+template <typename ReturnType>
+class BaseCallback0 {
+  public:
+    virtual ~BaseCallback0() {}
+    virtual ReturnType Run() = 0;
+    virtual ReturnType DoRun() = 0;
+};
+
+
+// A callback, this can be called multiple times
+template <typename ReturnType>
+class Callback0: public BaseCallback0<ReturnType> {
+  public:
+    virtual ~Callback0() {}
+    ReturnType Run() { return this->DoRun(); }
+};
+
+
+// A single use callback, this deletes itself after it's run.
+template <typename ReturnType>
+class SingleUseCallback0: public BaseCallback0<ReturnType> {
+  public:
+    virtual ~SingleUseCallback0() {}
+    ReturnType Run() {
+      ReturnType ret = this->DoRun();
+      delete this;
+      return ret;
+    }
+};
+
+
+// A single use callback returning void.
+template <>
+class SingleUseCallback0<void>: public BaseCallback0<void> {
+  public:
+    virtual ~SingleUseCallback0() {}
+    void Run() {
+      DoRun();
+      delete this;
+    }
+};
+
+
+// A Function callback with 0 create-time args and 0 exec time args
+template <typename Parent, typename ReturnType>
+class FunctionCallback0_0: public Parent {
+  public:
+    typedef ReturnType (*Function)();
+    FunctionCallback0_0(Function callback):
+      Parent(),
+      m_callback(callback) {}
+    ReturnType DoRun() {
+      return m_callback();
+    }
+  private:
+    Function m_callback;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    ReturnType (*callback)()) {
+  return new FunctionCallback0_0<
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType>(
+      callback);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType>
+inline Callback0<ReturnType>* NewCallback(
+    ReturnType (*callback)()) {
+  return new FunctionCallback0_0<
+                               Callback0<ReturnType>,
+                               ReturnType>(
+      callback);
+}
+
+
+// A Method callback with 0 create-time args and 0 exec time args
+template <typename Class, typename Parent, typename ReturnType>
+class MethodCallback0_0: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)();
+    MethodCallback0_0(Class *object, Method callback):
+      Parent(),
+      m_object(object),
+      m_callback(callback) {}
+    ReturnType DoRun() {
+      return (m_object->*m_callback)();
+    }
+  private:
+    Class *m_object;
+    Method m_callback;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename Class, typename ReturnType>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    Class* object,
+    ReturnType (Class::*method)()) {
+  return new MethodCallback0_0<Class,
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType>(
+      object,
+      method);
+}
+
+
+// Helper method to create a new Callback.
+template <typename Class, typename ReturnType>
+inline Callback0<ReturnType>* NewCallback(
+    Class* object,
+    ReturnType (Class::*method)()) {
+  return new MethodCallback0_0<Class,
+                               Callback0<ReturnType>,
+                               ReturnType>(
+      object,
+      method);
+}
+
+
+// A Function callback with 1 create-time args and 0 exec time args
+template <typename Parent, typename ReturnType, typename A0>
+class FunctionCallback1_0: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0);
+    FunctionCallback1_0(Function callback, A0 a0):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0) {}
+    ReturnType DoRun() {
+      return m_callback(m_a0);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    ReturnType (*callback)(A0),
+    A0 a0) {
+  return new FunctionCallback1_0<
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType,
+                               A0>(
+      callback,
+      a0);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0>
+inline Callback0<ReturnType>* NewCallback(
+    ReturnType (*callback)(A0),
+    A0 a0) {
+  return new FunctionCallback1_0<
+                               Callback0<ReturnType>,
+                               ReturnType,
+                               A0>(
+      callback,
+      a0);
+}
+
+
+// A Method callback with 1 create-time args and 0 exec time args
+template <typename Class, typename Parent, typename ReturnType, typename A0>
+class MethodCallback1_0: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(A0);
+    MethodCallback1_0(Class *object, Method callback, A0 a0):
+      Parent(),
+      m_object(object),
+      m_callback(callback),
+      m_a0(a0) {}
+    ReturnType DoRun() {
+      return (m_object->*m_callback)(m_a0);
+    }
+  private:
+    Class *m_object;
+    Method m_callback;
+  A0 m_a0;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename Class, typename ReturnType, typename A0>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0),
+    A0 a0) {
+  return new MethodCallback1_0<Class,
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType,
+                               A0>(
+      object,
+      method,
+      a0);
+}
+
+
+// Helper method to create a new Callback.
+template <typename Class, typename ReturnType, typename A0>
+inline Callback0<ReturnType>* NewCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0),
+    A0 a0) {
+  return new MethodCallback1_0<Class,
+                               Callback0<ReturnType>,
+                               ReturnType,
+                               A0>(
+      object,
+      method,
+      a0);
+}
+
+
+// A Function callback with 2 create-time args and 0 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename A1>
+class FunctionCallback2_0: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, A1);
+    FunctionCallback2_0(Function callback, A0 a0, A1 a1):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1) {}
+    ReturnType DoRun() {
+      return m_callback(m_a0, m_a1);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+  A1 m_a1;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename A1>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    ReturnType (*callback)(A0, A1),
+    A0 a0,
+    A1 a1) {
+  return new FunctionCallback2_0<
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1>(
+      callback,
+      a0,
+      a1);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename A1>
+inline Callback0<ReturnType>* NewCallback(
+    ReturnType (*callback)(A0, A1),
+    A0 a0,
+    A1 a1) {
+  return new FunctionCallback2_0<
+                               Callback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1>(
+      callback,
+      a0,
+      a1);
+}
+
+
+// A Method callback with 2 create-time args and 0 exec time args
+template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1>
+class MethodCallback2_0: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(A0, A1);
+    MethodCallback2_0(Class *object, Method callback, A0 a0, A1 a1):
+      Parent(),
+      m_object(object),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1) {}
+    ReturnType DoRun() {
+      return (m_object->*m_callback)(m_a0, m_a1);
+    }
+  private:
+    Class *m_object;
+    Method m_callback;
+  A0 m_a0;
+  A1 m_a1;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename Class, typename ReturnType, typename A0, typename A1>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0, A1),
+    A0 a0,
+    A1 a1) {
+  return new MethodCallback2_0<Class,
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1>(
+      object,
+      method,
+      a0,
+      a1);
+}
+
+
+// Helper method to create a new Callback.
+template <typename Class, typename ReturnType, typename A0, typename A1>
+inline Callback0<ReturnType>* NewCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0, A1),
+    A0 a0,
+    A1 a1) {
+  return new MethodCallback2_0<Class,
+                               Callback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1>(
+      object,
+      method,
+      a0,
+      a1);
+}
+
+
+// A Function callback with 3 create-time args and 0 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2>
+class FunctionCallback3_0: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, A1, A2);
+    FunctionCallback3_0(Function callback, A0 a0, A1 a1, A2 a2):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1),
+      m_a2(a2) {}
+    ReturnType DoRun() {
+      return m_callback(m_a0, m_a1, m_a2);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+  A1 m_a1;
+  A2 m_a2;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename A1, typename A2>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    ReturnType (*callback)(A0, A1, A2),
+    A0 a0,
+    A1 a1,
+    A2 a2) {
+  return new FunctionCallback3_0<
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2>(
+      callback,
+      a0,
+      a1,
+      a2);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename A1, typename A2>
+inline Callback0<ReturnType>* NewCallback(
+    ReturnType (*callback)(A0, A1, A2),
+    A0 a0,
+    A1 a1,
+    A2 a2) {
+  return new FunctionCallback3_0<
+                               Callback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2>(
+      callback,
+      a0,
+      a1,
+      a2);
+}
+
+
+// A Method callback with 3 create-time args and 0 exec time args
+template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2>
+class MethodCallback3_0: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(A0, A1, A2);
+    MethodCallback3_0(Class *object, Method callback, A0 a0, A1 a1, A2 a2):
+      Parent(),
+      m_object(object),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1),
+      m_a2(a2) {}
+    ReturnType DoRun() {
+      return (m_object->*m_callback)(m_a0, m_a1, m_a2);
+    }
+  private:
+    Class *m_object;
+    Method m_callback;
+  A0 m_a0;
+  A1 m_a1;
+  A2 m_a2;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename Class, typename ReturnType, typename A0, typename A1, typename A2>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0, A1, A2),
+    A0 a0,
+    A1 a1,
+    A2 a2) {
+  return new MethodCallback3_0<Class,
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2>(
+      object,
+      method,
+      a0,
+      a1,
+      a2);
+}
+
+
+// Helper method to create a new Callback.
+template <typename Class, typename ReturnType, typename A0, typename A1, typename A2>
+inline Callback0<ReturnType>* NewCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0, A1, A2),
+    A0 a0,
+    A1 a1,
+    A2 a2) {
+  return new MethodCallback3_0<Class,
+                               Callback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2>(
+      object,
+      method,
+      a0,
+      a1,
+      a2);
+}
+
+
+// A Function callback with 4 create-time args and 0 exec time args
+template <typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3>
+class FunctionCallback4_0: public Parent {
+  public:
+    typedef ReturnType (*Function)(A0, A1, A2, A3);
+    FunctionCallback4_0(Function callback, A0 a0, A1 a1, A2 a2, A3 a3):
+      Parent(),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1),
+      m_a2(a2),
+      m_a3(a3) {}
+    ReturnType DoRun() {
+      return m_callback(m_a0, m_a1, m_a2, m_a3);
+    }
+  private:
+    Function m_callback;
+  A0 m_a0;
+  A1 m_a1;
+  A2 m_a2;
+  A3 m_a3;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename ReturnType, typename A0, typename A1, typename A2, typename A3>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    ReturnType (*callback)(A0, A1, A2, A3),
+    A0 a0,
+    A1 a1,
+    A2 a2,
+    A3 a3) {
+  return new FunctionCallback4_0<
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2,
+                               A3>(
+      callback,
+      a0,
+      a1,
+      a2,
+      a3);
+}
+
+
+// Helper method to create a new Callback.
+template <typename ReturnType, typename A0, typename A1, typename A2, typename A3>
+inline Callback0<ReturnType>* NewCallback(
+    ReturnType (*callback)(A0, A1, A2, A3),
+    A0 a0,
+    A1 a1,
+    A2 a2,
+    A3 a3) {
+  return new FunctionCallback4_0<
+                               Callback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2,
+                               A3>(
+      callback,
+      a0,
+      a1,
+      a2,
+      a3);
+}
+
+
+// A Method callback with 4 create-time args and 0 exec time args
+template <typename Class, typename Parent, typename ReturnType, typename A0, typename A1, typename A2, typename A3>
+class MethodCallback4_0: public Parent {
+  public:
+    typedef ReturnType (Class::*Method)(A0, A1, A2, A3);
+    MethodCallback4_0(Class *object, Method callback, A0 a0, A1 a1, A2 a2, A3 a3):
+      Parent(),
+      m_object(object),
+      m_callback(callback),
+      m_a0(a0),
+      m_a1(a1),
+      m_a2(a2),
+      m_a3(a3) {}
+    ReturnType DoRun() {
+      return (m_object->*m_callback)(m_a0, m_a1, m_a2, m_a3);
+    }
+  private:
+    Class *m_object;
+    Method m_callback;
+  A0 m_a0;
+  A1 m_a1;
+  A2 m_a2;
+  A3 m_a3;
+};
+
+
+// Helper method to create a new SingleUseCallback.
+template <typename Class, typename ReturnType, typename A0, typename A1, typename A2, typename A3>
+inline SingleUseCallback0<ReturnType>* NewSingleCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0, A1, A2, A3),
+    A0 a0,
+    A1 a1,
+    A2 a2,
+    A3 a3) {
+  return new MethodCallback4_0<Class,
+                               SingleUseCallback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2,
+                               A3>(
+      object,
+      method,
+      a0,
+      a1,
+      a2,
+      a3);
+}
+
+
+// Helper method to create a new Callback.
+template <typename Class, typename ReturnType, typename A0, typename A1, typename A2, typename A3>
+inline Callback0<ReturnType>* NewCallback(
+    Class* object,
+    ReturnType (Class::*method)(A0, A1, A2, A3),
+    A0 a0,
+    A1 a1,
+    A2 a2,
+    A3 a3) {
+  return new MethodCallback4_0<Class,
+                               Callback0<ReturnType>,
+                               ReturnType,
+                               A0,
+                               A1,
+                               A2,
+                               A3>(
+      object,
+      method,
+      a0,
+      a1,
+      a2,
+      a3);
+}
+
+
 // 1 argument callbacks
 template <typename ReturnType, typename Arg0>
 class BaseCallback1 {
@@ -42,7 +656,7 @@ template <typename ReturnType, typename Arg0>
 class Callback1: public BaseCallback1<ReturnType, Arg0> {
   public:
     virtual ~Callback1() {}
-    ReturnType Run(Arg0 arg0) { return DoRun(arg0); }
+    ReturnType Run(Arg0 arg0) { return this->DoRun(arg0); }
 };
 
 
@@ -52,7 +666,7 @@ class SingleUseCallback1: public BaseCallback1<ReturnType, Arg0> {
   public:
     virtual ~SingleUseCallback1() {}
     ReturnType Run(Arg0 arg0) {
-      ReturnType ret = DoRun(arg0);
+      ReturnType ret = this->DoRun(arg0);
       delete this;
       return ret;
     }
@@ -526,7 +1140,7 @@ template <typename ReturnType, typename Arg0, typename Arg1>
 class Callback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
   public:
     virtual ~Callback2() {}
-    ReturnType Run(Arg0 arg0, Arg1 arg1) { return DoRun(arg0, arg1); }
+    ReturnType Run(Arg0 arg0, Arg1 arg1) { return this->DoRun(arg0, arg1); }
 };
 
 
@@ -536,7 +1150,7 @@ class SingleUseCallback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
   public:
     virtual ~SingleUseCallback2() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1) {
-      ReturnType ret = DoRun(arg0, arg1);
+      ReturnType ret = this->DoRun(arg0, arg1);
       delete this;
       return ret;
     }
@@ -1180,7 +1794,7 @@ template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 class Callback3: public BaseCallback3<ReturnType, Arg0, Arg1, Arg2> {
   public:
     virtual ~Callback3() {}
-    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) { return DoRun(arg0, arg1, arg2); }
+    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) { return this->DoRun(arg0, arg1, arg2); }
 };
 
 
@@ -1190,7 +1804,7 @@ class SingleUseCallback3: public BaseCallback3<ReturnType, Arg0, Arg1, Arg2> {
   public:
     virtual ~SingleUseCallback3() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
-      ReturnType ret = DoRun(arg0, arg1, arg2);
+      ReturnType ret = this->DoRun(arg0, arg1, arg2);
       delete this;
       return ret;
     }
@@ -1696,7 +2310,7 @@ template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, type
 class Callback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3> {
   public:
     virtual ~Callback4() {}
-    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) { return DoRun(arg0, arg1, arg2, arg3); }
+    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) { return this->DoRun(arg0, arg1, arg2, arg3); }
 };
 
 
@@ -1706,7 +2320,7 @@ class SingleUseCallback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg
   public:
     virtual ~SingleUseCallback4() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
-      ReturnType ret = DoRun(arg0, arg1, arg2, arg3);
+      ReturnType ret = this->DoRun(arg0, arg1, arg2, arg3);
       delete this;
       return ret;
     }

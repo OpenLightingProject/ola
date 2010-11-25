@@ -23,7 +23,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "olad/Universe.h"
 
@@ -97,7 +97,7 @@ void SandNetInputPort::PostSetUniverse(Universe *old_universe,
         m_helper.SandnetGroup(new_universe),
         m_helper.SandnetUniverse(new_universe),
         &m_buffer,
-        NewClosure<SandNetInputPort, void>(this,
+        NewCallback<SandNetInputPort, void>(this,
                                            &SandNetInputPort::DmxChanged));
   }
 }

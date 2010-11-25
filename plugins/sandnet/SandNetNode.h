@@ -24,7 +24,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
@@ -65,7 +65,7 @@ class SandNetNode {
     bool SetHandler(uint8_t group,
                     uint8_t universe,
                     DmxBuffer *buffer,
-                    Closure<void> *closure);
+                    Callback0<void> *closure);
     bool RemoveHandler(uint8_t group, uint8_t universe);
 
     bool SetPortParameters(uint8_t port_id, sandnet_port_type type,
@@ -82,7 +82,7 @@ class SandNetNode {
 
     typedef struct {
       DmxBuffer *buffer;
-      Closure<void> *closure;
+      Callback0<void> *closure;
     } universe_handler;
 
     typedef std::pair<uint8_t, uint8_t> group_universe_pair;

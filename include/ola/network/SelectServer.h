@@ -27,7 +27,7 @@
 #include <vector>
 
 #include <ola/Clock.h>  // NOLINT
-#include <ola/Closure.h>  // NOLINT
+#include <ola/Callback.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
 #include <ola/network/SelectServerInterface.h>  // NOLINT
 #include <ola/network/Socket.h>  // NOLINT
@@ -69,7 +69,7 @@ class Event {
 // An event that only happens once
 class SingleEvent: public Event {
   public:
-    SingleEvent(unsigned int ms, ola::BaseClosure<void> *closure):
+    SingleEvent(unsigned int ms, ola::BaseCallback0<void> *closure):
       Event(ms),
       m_closure(closure) {
     }
@@ -89,7 +89,7 @@ class SingleEvent: public Event {
     }
 
   private:
-    ola::BaseClosure<void> *m_closure;
+    ola::BaseCallback0<void> *m_closure;
 };
 
 
@@ -99,7 +99,7 @@ class SingleEvent: public Event {
  */
 class RepeatingEvent: public Event {
   public:
-    RepeatingEvent(unsigned int ms, ola::BaseClosure<bool> *closure):
+    RepeatingEvent(unsigned int ms, ola::BaseCallback0<bool> *closure):
       Event(ms),
       m_closure(closure) {
     }
@@ -113,7 +113,7 @@ class RepeatingEvent: public Event {
     }
 
   private:
-    ola::BaseClosure<bool> *m_closure;
+    ola::BaseCallback0<bool> *m_closure;
 };
 
 
@@ -149,13 +149,13 @@ class SelectServer: public SelectServerInterface {
     bool UnRegisterWriteSocket(BidirectionalSocket *socket);
 
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
-                                        ola::Closure<bool> *closure);
+                                        ola::Callback0<bool> *closure);
     timeout_id RegisterSingleTimeout(unsigned int ms,
-                                     ola::SingleUseClosure<void> *closure);
+                                     ola::SingleUseCallback0<void> *closure);
     void RemoveTimeout(timeout_id id);
     const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
 
-    void RunInLoop(ola::Closure<void> *closure);
+    void RunInLoop(ola::Callback0<void> *closure);
 
     static const char K_SOCKET_VAR[];
     static const char K_WRITE_SOCKET_VAR[];
@@ -205,7 +205,7 @@ class SelectServer: public SelectServerInterface {
     CounterVariable *m_loop_iterations;
     CounterVariable *m_loop_time;
     TimeStamp *m_wake_up_time;
-    std::set<ola::Closure<void>*> m_loop_closures;
+    std::set<ola::Callback0<void>*> m_loop_closures;
 };
 }  // network
 }  // ola

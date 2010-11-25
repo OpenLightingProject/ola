@@ -40,7 +40,7 @@ using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
 using ola::network::StringToAddress;
 using ola::network::UdpSocket;
-using ola::Closure;
+using ola::Callback0;
 
 /*
  * Create a new node
@@ -186,12 +186,12 @@ void PathportNode::SocketReady(UdpSocket *socket) {
 /*
  * Set the closure to be called when we receive data for this universe.
  * @param universe the universe to register the handler for
- * @param handler the Closure to call when there is data for this universe.
+ * @param handler the Callback0 to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
 bool PathportNode::SetHandler(uint8_t universe,
                              DmxBuffer *buffer,
-                             Closure<void> *closure) {
+                             Callback0<void> *closure) {
   if (!closure)
     return false;
 
@@ -203,7 +203,7 @@ bool PathportNode::SetHandler(uint8_t universe,
     handler.closure = closure;
     m_handlers[universe] = handler;
   } else {
-    Closure<void> *old_closure = iter->second.closure;
+    Callback0<void> *old_closure = iter->second.closure;
     iter->second.closure = closure;
     delete old_closure;
   }
@@ -220,7 +220,7 @@ bool PathportNode::RemoveHandler(uint8_t universe) {
   universe_handlers::iterator iter = m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
-    Closure<void> *old_closure = iter->second.closure;
+    Callback0<void> *old_closure = iter->second.closure;
     m_handlers.erase(iter);
     delete old_closure;
     return true;
@@ -336,7 +336,7 @@ bool PathportNode::InitNetwork() {
   }
 
   m_socket.SetOnData(
-    NewClosure(this, &PathportNode::SocketReady, &m_socket));
+    NewCallback(this, &PathportNode::SocketReady, &m_socket));
   return true;
 }
 

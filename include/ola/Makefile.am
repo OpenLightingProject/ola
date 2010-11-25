@@ -1,6 +1,6 @@
 SUBDIRS = network rdm web
 
-SOURCES = ActionQueue.h BaseTypes.h Callback.h Clock.h Closure.h DmxBuffer.h \
+SOURCES = ActionQueue.h BaseTypes.h Callback.h Clock.h DmxBuffer.h \
           ExportMap.h Logging.h OlaThread.h RunLengthEncoder.h StringUtils.h
 
 BUILT_SOURCES = plugin_id.h

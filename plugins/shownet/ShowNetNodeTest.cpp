@@ -25,7 +25,7 @@
 #include <string>
 
 #include "ola/BaseTypes.h"
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/shownet/ShowNetNode.h"
 
@@ -99,7 +99,7 @@ void ShowNetNodeTest::testHandlePacket() {
 
   m_node->SetHandler(universe,
                      &received_data,
-                     ola::NewClosure(this, &ShowNetNodeTest::UpdateData,
+                     ola::NewCallback(this, &ShowNetNodeTest::UpdateData,
                                      universe));
 
   // short packets
@@ -273,7 +273,7 @@ void ShowNetNodeTest::SendAndReceiveForUniverse(unsigned int universe) {
   m_node->SetHandler(
       universe,
       &received_data,
-      ola::NewClosure(this, &ShowNetNodeTest::UpdateData, universe));
+      ola::NewCallback(this, &ShowNetNodeTest::UpdateData, universe));
 
   // zero first
   size = m_node->PopulatePacket(&packet, universe, zero_buffer);

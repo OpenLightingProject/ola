@@ -27,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
@@ -88,7 +88,7 @@ bool UsbDmxPlugin::StartHook() {
     // a couple of seconds to re-scan for devices
     m_plugin_adaptor->RegisterSingleTimeout(
         3500,
-        NewSingleClosure(this, &UsbDmxPlugin::FindDevices));
+        NewSingleCallback(this, &UsbDmxPlugin::FindDevices));
   }
   FindDevices();
 
@@ -248,7 +248,7 @@ bool UsbDmxPlugin::AddDeviceSocket(int fd) {
       return true;
   }
   DeviceSocket *socket = new DeviceSocket(fd);
-  socket->SetOnData(NewClosure(this, &UsbDmxPlugin::SocketReady));
+  socket->SetOnData(NewCallback(this, &UsbDmxPlugin::SocketReady));
   m_plugin_adaptor->AddSocket(socket);
   m_sockets.push_back(socket);
 }

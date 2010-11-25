@@ -363,7 +363,7 @@ HttpServer::~HttpServer() {
   if (m_httpd)
     MHD_stop_daemon(m_httpd);
 
-  map<string, BaseHttpClosure*>::const_iterator iter;
+  map<string, BaseHttpCallback*>::const_iterator iter;
   for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter)
     delete iter->second;
 
@@ -398,7 +398,7 @@ bool HttpServer::Init() {
                              MHD_OPTION_END);
 
   if (m_httpd)
-    m_select_server.RunInLoop(NewClosure(this, &HttpServer::UpdateSockets));
+    m_select_server.RunInLoop(NewCallback(this, &HttpServer::UpdateSockets));
 
   return m_httpd ? true : false;
 }
@@ -534,7 +534,7 @@ void HttpServer::HandleHTTPIO() {}
  */
 int HttpServer::DispatchRequest(const HttpRequest *request,
                                 HttpResponse *response) {
-  map<string, BaseHttpClosure*>::iterator iter =
+  map<string, BaseHttpCallback*>::iterator iter =
     m_handlers.find(request->Url());
 
   if (iter != m_handlers.end())
@@ -559,11 +559,11 @@ int HttpServer::DispatchRequest(const HttpRequest *request,
  * @param handler the Closure to call for this request. These will be freed
  * once the HttpServer is destroyed.
  */
-bool HttpServer::RegisterHandler(const string &path, BaseHttpClosure *handler) {
-  map<string, BaseHttpClosure*>::const_iterator iter = m_handlers.find(path);
+bool HttpServer::RegisterHandler(const string &path, BaseHttpCallback *handler) {
+  map<string, BaseHttpCallback*>::const_iterator iter = m_handlers.find(path);
   if (iter != m_handlers.end())
     return false;
-  pair<string, BaseHttpClosure*> pair(path, handler);
+  pair<string, BaseHttpCallback*> pair(path, handler);
   m_handlers.insert(pair);
   return true;
 }
@@ -598,7 +598,7 @@ bool HttpServer::RegisterFile(const string &path,
  * @param handler the default handler to call. This will be freed when the
  * HttpServer is destroyed.
  */
-void HttpServer::RegisterDefaultHandler(BaseHttpClosure *handler) {
+void HttpServer::RegisterDefaultHandler(BaseHttpCallback *handler) {
   m_default_handler = handler;
 }
 
@@ -608,7 +608,7 @@ void HttpServer::RegisterDefaultHandler(BaseHttpClosure *handler) {
  */
 vector<string> HttpServer::Handlers() const {
   vector<string> handlers;
-  map<string, BaseHttpClosure*>::const_iterator iter;
+  map<string, BaseHttpCallback*>::const_iterator iter;
   for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter)
     handlers.push_back(iter->first);
 
@@ -707,8 +707,8 @@ UnmanagedSocket *HttpServer::NewSocket(fd_set *r_set,
                                        fd_set *w_set,
                                        int fd) {
   UnmanagedSocket *socket = new UnmanagedSocket(fd);
-  socket->SetOnData(NewClosure(this, &HttpServer::HandleHTTPIO));
-  socket->SetOnWritable(NewClosure(this, &HttpServer::HandleHTTPIO));
+  socket->SetOnData(NewCallback(this, &HttpServer::HandleHTTPIO));
+  socket->SetOnWritable(NewCallback(this, &HttpServer::HandleHTTPIO));
 
   if (FD_ISSET(fd, r_set))
     m_select_server.AddSocket(socket);

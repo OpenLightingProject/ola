@@ -27,7 +27,7 @@
 #include <utility>
 
 #include "ola/Clock.h"
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/Interface.h"
 #include "ola/network/SelectServerInterface.h"
@@ -117,9 +117,9 @@ class ArtNetNode {
       DMXSource sources[MAX_MERGE_SOURCES];
       DmxBuffer *buffer;
       map<UID, IPAddress> uid_map;
-      Closure<void> *on_data;
-      Closure<void> *on_discover;
-      Closure<void> *on_flush;
+      Callback0<void> *on_data;
+      Callback0<void> *on_discover;
+      Callback0<void> *on_flush;
       rdm_request_callback *on_rdm_request;
     };
 
@@ -174,13 +174,13 @@ class ArtNetNode {
     // The following apply to Output Ports (those which receive data);
     bool SetDMXHandler(uint8_t port_id,
                        DmxBuffer *buffer,
-                       ola::Closure<void> *handler);
+                       ola::Callback0<void> *handler);
     bool SendTod(uint8_t port_id, const UIDSet &uid_set);
     bool SendRDMResponse(uint8_t port_id, const RDMResponse &response);
     bool SetOutputPortRDMHandlers(
         uint8_t port_id,
-        ola::Closure<void> *on_discover,
-        ola::Closure<void> *on_flush,
+        ola::Callback0<void> *on_discover,
+        ola::Callback0<void> *on_flush,
         rdm_request_callback *on_rdm_request);
 
     // socket management

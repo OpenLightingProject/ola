@@ -22,7 +22,6 @@
 
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
-#include "ola/Closure.h"
 #include "ola/Logging.h"
 
 
@@ -69,7 +68,7 @@ void ActionQueue::NextAction() {
   } else {
     m_action_index++;
     m_actions[m_action_index]->Perform(
-        NewSingleClosure(this, &ActionQueue::NextAction));
+        NewSingleCallback(this, &ActionQueue::NextAction));
   }
 }
 

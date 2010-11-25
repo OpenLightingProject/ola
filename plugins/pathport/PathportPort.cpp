@@ -66,7 +66,7 @@ void PathportInputPort::PostSetUniverse(Universe *old_universe,
     m_node->SetHandler(
         new_universe->UniverseId(),
         &m_buffer,
-        NewClosure<PathportInputPort, void>(this,
+        NewCallback<PathportInputPort, void>(this,
                                             &PathportInputPort::DmxChanged));
   }
 }

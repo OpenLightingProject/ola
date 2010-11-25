@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 #include "ola/BaseTypes.h"
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/network/SelectServer.h"
@@ -63,7 +63,7 @@ bool StateManager::Init() {
           UNIVERSE_ID,
           &m_recv_buffer,
           NULL,  // don't track the priority
-          ola::NewClosure(this, &StateManager::NewDMX)));
+          ola::NewCallback(this, &StateManager::NewDMX)));
   }
 
   m_node1 = new E131Node("", m_cid1, false, true, 0, 5567);
@@ -76,7 +76,7 @@ bool StateManager::Init() {
   m_node2->SetSourceName(UNIVERSE_ID, "E1.31 Merge Test Node 2");
 
   // setup notifications for stdin & turn off buffering
-  m_stdin_socket.SetOnData(ola::NewClosure(this, &StateManager::Input));
+  m_stdin_socket.SetOnData(ola::NewCallback(this, &StateManager::Input));
   m_ss->AddSocket(&m_stdin_socket);
   tcgetattr(STDIN_FILENO, &m_old_tc);
   termios new_tc = m_old_tc;
@@ -86,7 +86,7 @@ bool StateManager::Init() {
   // tick every 200ms
   m_ss->RegisterRepeatingTimeout(
       TICK_INTERVAL_MS,
-      ola::NewClosure(this, &StateManager::Tick));
+      ola::NewCallback(this, &StateManager::Tick));
 
   cout << endl;
   cout << "========= E1.31 Tester ==========" << endl;

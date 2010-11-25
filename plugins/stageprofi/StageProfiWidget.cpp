@@ -20,7 +20,7 @@
 
 #include <string.h>
 #include <algorithm>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
@@ -103,7 +103,7 @@ bool StageProfiWidget::DetectDevice() {
   m_ss->AddSocket(m_socket, NULL);
   m_ss->RegisterSingleTimeout(
       100,
-      ola::NewSingleClosure(this, &StageProfiWidget::Timeout));
+      ola::NewSingleCallback(this, &StageProfiWidget::Timeout));
 
   // try a command, we should get a response
   SetChannel(0, 0);

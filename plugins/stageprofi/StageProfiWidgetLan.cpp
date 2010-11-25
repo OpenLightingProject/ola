@@ -21,7 +21,7 @@
  */
 
 #include <string>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/network/Socket.h"
 #include "plugins/stageprofi/StageProfiWidgetLan.h"
 
@@ -40,7 +40,7 @@ bool StageProfiWidgetLan::Connect(const std::string &ip) {
 
   if (m_socket)
     m_socket->SetOnData(
-        NewClosure<StageProfiWidget>(this,
+        NewCallback<StageProfiWidget>(this,
                                      &StageProfiWidget::SocketReady));
   return m_socket;
 }

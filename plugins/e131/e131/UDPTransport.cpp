@@ -22,7 +22,7 @@
 #include <string.h>
 #include <string>
 
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/UDPTransport.h"
@@ -60,7 +60,7 @@ bool UDPTransport::Init(const ola::network::Interface &interface) {
   if (!m_socket.EnableBroadcast())
     return false;
 
-  m_socket.SetOnData(NewClosure(this, &UDPTransport::Receive));
+  m_socket.SetOnData(NewCallback(this, &UDPTransport::Receive));
 
   if (!m_send_buffer) {
     m_send_buffer = new uint8_t[MAX_DATAGRAM_SIZE];

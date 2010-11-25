@@ -27,7 +27,6 @@
 
 #include <vector>
 #include "ola/Callback.h"
-#include "ola/Closure.h"
 
 namespace ola {
 
@@ -44,7 +43,7 @@ class Action {
     virtual bool IsFatal() const = 0;
     virtual bool Failed() const = 0;
 
-    virtual void Perform(SingleUseClosure<void> *on_done) = 0;
+    virtual void Perform(SingleUseCallback0<void> *on_done) = 0;
 };
 
 

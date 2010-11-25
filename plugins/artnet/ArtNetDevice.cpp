@@ -33,7 +33,7 @@
 #include <sstream>
 #include <string>
 
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/network/InterfacePicker.h"
@@ -124,7 +124,7 @@ bool ArtNetDevice::StartHook() {
 
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
       POLL_INTERVAL,
-      NewClosure(m_node, &ArtNetNode::MaybeSendPoll));
+      NewCallback(m_node, &ArtNetNode::MaybeSendPoll));
   return true;
 }
 

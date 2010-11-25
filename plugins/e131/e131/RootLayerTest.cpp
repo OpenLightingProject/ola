@@ -96,7 +96,7 @@ void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
   CPPUNIT_ASSERT(m_ss->AddSocket(transport.GetSocket()));
   RootLayer layer(&transport, root_cid);
 
-  Closure<void> *stop_closure = NewClosure(this, &RootLayerTest::Stop);
+  Callback0<void> *stop_closure = NewCallback(this, &RootLayerTest::Stop);
   MockInflator inflator(send_cid, stop_closure);
   CPPUNIT_ASSERT(layer.AddInflator(&inflator));
 
@@ -110,8 +110,8 @@ void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
     CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu,
                                  send_cid));
 
-  SingleUseClosure<void> *closure =
-    NewSingleClosure(this, &RootLayerTest::FatalStop);
+  SingleUseCallback0<void> *closure =
+    NewSingleCallback(this, &RootLayerTest::FatalStop);
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
   delete stop_closure;

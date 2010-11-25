@@ -23,7 +23,7 @@
 
 #include <string>
 #include <map>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/RunLengthEncoder.h"
 #include "ola/network/InterfacePicker.h"
@@ -46,7 +46,7 @@ class ShowNetNode {
     bool SendDMX(unsigned int universe, const ola::DmxBuffer &buffer);
     bool SetHandler(unsigned int universe,
                     DmxBuffer *buffer,
-                    ola::Closure<void> *handler);
+                    ola::Callback0<void> *handler);
     bool RemoveHandler(unsigned int universe);
 
     const ola::network::Interface &GetInterface() const {
@@ -63,7 +63,7 @@ class ShowNetNode {
   private:
     typedef struct {
       DmxBuffer *buffer;
-      Closure<void> *closure;
+      Callback0<void> *closure;
     } universe_handler;
 
     bool m_running;

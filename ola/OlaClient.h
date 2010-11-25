@@ -26,7 +26,7 @@
 #define OLA_OLACLIENT_H_
 
 #include <ola/BaseTypes.h>
-#include <ola/Closure.h>
+#include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaDevice.h>
 #include <ola/common.h>

@@ -35,7 +35,7 @@ namespace e131 {
 using std::map;
 using std::pair;
 using std::vector;
-using ola::Closure;
+using ola::Callback0;
 
 const TimeInterval DMPE131Inflator::EXPIRY_INTERVAL(2500);
 
@@ -170,13 +170,13 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
  * Set the closure to be called when we receive data for this universe.
  * @param universe the universe to register the handler for
  * @param buffer the DmxBuffer to update with the data
- * @param handler the Closure to call when there is data for this universe.
+ * @param handler the Callback0 to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
 bool DMPE131Inflator::SetHandler(unsigned int universe,
                                  ola::DmxBuffer *buffer,
                                  uint8_t *priority,
-                                 ola::Closure<void> *closure) {
+                                 ola::Callback0<void> *closure) {
   if (!closure || !buffer)
     return false;
 
@@ -192,7 +192,7 @@ bool DMPE131Inflator::SetHandler(unsigned int universe,
     m_handlers[universe] = handler;
     m_e131_layer->JoinUniverse(universe);
   } else {
-    Closure<void> *old_closure = iter->second.closure;
+    Callback0<void> *old_closure = iter->second.closure;
     iter->second.closure = closure;
     iter->second.buffer = buffer;
     iter->second.priority = priority;
@@ -212,7 +212,7 @@ bool DMPE131Inflator::RemoveHandler(unsigned int universe) {
     m_handlers.find(universe);
 
   if (iter != m_handlers.end()) {
-    Closure<void> *old_closure = iter->second.closure;
+    Callback0<void> *old_closure = iter->second.closure;
     m_handlers.erase(iter);
     m_e131_layer->LeaveUniverse(universe);
     delete old_closure;

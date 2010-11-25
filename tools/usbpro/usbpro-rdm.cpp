@@ -26,7 +26,6 @@
 #include <termios.h>
 #include <ola/Logging.h>
 #include <ola/Callback.h>
-#include <ola/Closure.h>
 #include <ola/network/SelectServer.h>
 #include <ola/rdm/RDMCommand.h>
 
@@ -343,7 +342,7 @@ int main(int argc, char *argv[]) {
   UsbWidget widget(&ss, fd);
   RDMSniffer sniffer(&widget, &ss, opts.dump_all, opts.verbose);
 
-  widget.SetOnRemove(ola::NewSingleClosure(&Stop, &ss));
+  widget.SetOnRemove(ola::NewSingleCallback(&Stop, &ss));
   ss.Run();
 
   return EX_OK;

@@ -45,7 +45,7 @@ class BaseHttpAction: public Action {
     virtual ~BaseHttpAction() {}
 
     bool Failed() const  { return m_failed; }
-    void Perform(SingleUseClosure<void> *on_done);
+    void Perform(SingleUseCallback0<void> *on_done);
     void CallbackComplete(const string &error);
 
   protected:
@@ -56,7 +56,7 @@ class BaseHttpAction: public Action {
 
   private:
     bool m_failed;
-    SingleUseClosure<void> *m_on_done;
+    SingleUseCallback0<void> *m_on_done;
 
     BaseHttpAction(const BaseHttpAction&);
     BaseHttpAction& operator=(const BaseHttpAction&);

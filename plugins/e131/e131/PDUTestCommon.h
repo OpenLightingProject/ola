@@ -21,7 +21,7 @@
 #ifndef PLUGINS_E131_E131_PDUTESTCOMMON_H_
 #define PLUGINS_E131_E131_PDUTESTCOMMON_H_
 
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
@@ -114,7 +114,7 @@ class MockPDU: public PDU {
  */
 class MockInflator: public BaseInflator {
   public:
-    MockInflator(const CID &cid, Closure<void> *on_recv = NULL):
+    MockInflator(const CID &cid, Callback0<void> *on_recv = NULL):
       BaseInflator(),
       m_cid(cid),
       m_on_recv(on_recv) {}
@@ -153,7 +153,7 @@ class MockInflator: public BaseInflator {
 
   private:
     CID m_cid;
-    Closure<void> *m_on_recv;
+    Callback0<void> *m_on_recv;
     unsigned int m_last_header;
 };
 }  // e131

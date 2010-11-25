@@ -20,6 +20,7 @@
  */
 
 #include <string>
+#include "ola/Callback.h"
 #include "olad/DeviceManager.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
@@ -87,7 +88,7 @@ bool PluginAdaptor::RemoveSocket(ola::network::ConnectedSocket *socket) {
  */
 timeout_id PluginAdaptor::RegisterRepeatingTimeout(
     unsigned int ms,
-    Closure<bool> *closure) {
+    Callback0<bool> *closure) {
   return m_ss->RegisterRepeatingTimeout(ms, closure);
 }
 
@@ -100,7 +101,7 @@ timeout_id PluginAdaptor::RegisterRepeatingTimeout(
  */
 timeout_id PluginAdaptor::RegisterSingleTimeout(
     unsigned int ms,
-    SingleUseClosure<void> *closure) {
+    SingleUseCallback0<void> *closure) {
   return m_ss->RegisterSingleTimeout(ms, closure);
 }
 

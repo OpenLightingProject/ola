@@ -25,7 +25,7 @@
 #include <google/protobuf/service.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SelectServer.h>
-#include <ola/Closure.h>
+#include <ola/Callback.h>
 #include "ola/ExportMap.h"
 #include "config.h"
 #include HASH_MAP_H
@@ -96,7 +96,7 @@ class StreamRpcChannel: public RpcChannel {
     ~StreamRpcChannel();
 
     void SocketReady();
-    void SetOnClose(SingleUseClosure<void> *closure);
+    void SetOnClose(SingleUseCallback0<void> *closure);
 
     void CallMethod(
         const MethodDescriptor *method,
@@ -131,7 +131,7 @@ class StreamRpcChannel: public RpcChannel {
     void InvokeCallbackAndCleanup(OutstandingResponse *response);
 
     Service *m_service;  // service to dispatch requests to
-    SingleUseClosure<void> *m_on_close;
+    SingleUseCallback0<void> *m_on_close;
     // the socket to read/write to.
     class ola::network::ConnectedSocket *m_socket;
     uint32_t m_seq;  // sequence number

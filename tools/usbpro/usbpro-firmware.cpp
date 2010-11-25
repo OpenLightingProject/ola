@@ -24,7 +24,6 @@
 #include <sysexits.h>
 #include <termios.h>
 #include <ola/Logging.h>
-#include <ola/Closure.h>
 #include <ola/Callback.h>
 #include <ola/network/SelectServer.h>
 
@@ -274,12 +273,12 @@ int main(int argc, char *argv[]) {
 
   ss.RegisterSingleTimeout(
       PAUSE_DELAY,
-      ola::NewSingleClosure(&transferer, &FirmwareTransferer::StartTransfer));
+      ola::NewSingleCallback(&transferer, &FirmwareTransferer::StartTransfer));
   widget.SetOnRemove(
-      ola::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
+      ola::NewSingleCallback(&transferer, &FirmwareTransferer::AbortTransfer));
   ss.RegisterSingleTimeout(
       ABORT_TIMEOUT,
-      ola::NewSingleClosure(&transferer, &FirmwareTransferer::AbortTransfer));
+      ola::NewSingleCallback(&transferer, &FirmwareTransferer::AbortTransfer));
   ss.Run();
 
   firmware_file.close();

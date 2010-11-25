@@ -185,7 +185,7 @@ bool OlaServer::Init() {
     if (!m_accepting_socket->Listen())
       return false;
     m_accepting_socket->SetOnData(
-      ola::NewClosure(this, &OlaServer::AcceptNewConnection,
+      ola::NewCallback(this, &OlaServer::AcceptNewConnection,
                       m_accepting_socket));
     m_ss->AddSocket(m_accepting_socket);
   }
@@ -245,8 +245,8 @@ bool OlaServer::Init() {
 
   m_housekeeping_timeout = m_ss->RegisterRepeatingTimeout(
       K_HOUSEKEEPING_TIMEOUT_MS,
-      ola::NewClosure(this, &OlaServer::RunHousekeeping));
-  m_ss->RunInLoop(ola::NewClosure(this, &OlaServer::CheckForReload));
+      ola::NewCallback(this, &OlaServer::RunHousekeeping));
+  m_ss->RunInLoop(ola::NewCallback(this, &OlaServer::CheckForReload));
 
   m_init_run = true;
   return true;
@@ -284,7 +284,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
     return false;
 
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
-  socket->SetOnClose(NewSingleClosure(this, &OlaServer::SocketClosed, socket));
+  socket->SetOnClose(NewSingleCallback(this, &OlaServer::SocketClosed, socket));
   OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
   Client *client = new Client(stub);
   OlaServerServiceImpl *service = m_service_factory->New(m_universe_store,

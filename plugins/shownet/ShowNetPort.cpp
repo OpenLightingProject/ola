@@ -21,7 +21,7 @@
 #include <string>
 
 #include "ola/BaseTypes.h"
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "plugins/shownet/ShowNetDevice.h"
 #include "plugins/shownet/ShowNetPort.h"
@@ -67,7 +67,7 @@ void ShowNetInputPort::PostSetUniverse(Universe *old_universe,
     m_node->SetHandler(
         PortId(),
         &m_buffer,
-        ola::NewClosure<ShowNetInputPort, void>(this,
+        ola::NewCallback<ShowNetInputPort, void>(this,
                                                 &ShowNetInputPort::DmxChanged));
 }
 

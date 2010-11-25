@@ -171,7 +171,7 @@ void DmxTriWidget::RunRDMDiscovery() {
   // setup a stat every RDM_STATUS_INTERVAL_MS until we're done
   m_rdm_timeout_id = m_ss->RegisterRepeatingTimeout(
       RDM_STATUS_INTERVAL_MS,
-      NewClosure(this, &DmxTriWidget::CheckDiscoveryStatus));
+      NewCallback(this, &DmxTriWidget::CheckDiscoveryStatus));
 }
 
 

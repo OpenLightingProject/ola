@@ -23,7 +23,7 @@
 
 #include <string>
 #include <map>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
@@ -68,7 +68,7 @@ class EspNetNode {
 
     // DMX Receiving methods
     bool SetHandler(uint8_t universe, DmxBuffer *buffer,
-                    ola::Closure<void> *handler);
+                    ola::Callback0<void> *handler);
     bool RemoveHandler(uint8_t universe);
 
     // Sending methods
@@ -78,7 +78,7 @@ class EspNetNode {
   private:
     typedef struct {
       DmxBuffer *buffer;
-      Closure<void> *closure;
+      Callback0<void> *closure;
     } universe_handler;
 
     EspNetNode(const EspNetNode&);

@@ -22,7 +22,7 @@
 
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 
@@ -36,7 +36,7 @@ class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SelectServerTest);
   CPPUNIT_TEST(testAddRemoveSocket);
   CPPUNIT_TEST(testTimeout);
-  CPPUNIT_TEST(testLoopClosures);
+  CPPUNIT_TEST(testLoopCallbacks);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -44,7 +44,7 @@ class SelectServerTest: public CppUnit::TestFixture {
     void tearDown();
     void testAddRemoveSocket();
     void testTimeout();
-    void testLoopClosures();
+    void testLoopCallbacks();
 
     void FatalTimeout() {
       CPPUNIT_ASSERT(false);
@@ -142,10 +142,10 @@ void SelectServerTest::testTimeout() {
   // check a single timeout
   m_ss->RegisterSingleTimeout(
       10,
-      ola::NewSingleClosure(this, &SelectServerTest::SingleIncrementTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::SingleIncrementTimeout));
   m_ss->RegisterSingleTimeout(
       20,
-      ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_timeout_counter);
 
@@ -153,10 +153,10 @@ void SelectServerTest::testTimeout() {
   m_timeout_counter = 0;
   m_ss->RegisterRepeatingTimeout(
       10,
-      ola::NewClosure(this, &SelectServerTest::IncrementTimeout));
+      ola::NewCallback(this, &SelectServerTest::IncrementTimeout));
   m_ss->RegisterSingleTimeout(
       98,
-      ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Restart();
   m_ss->Run();
   // Some systems have bad timing and only do 8 ticks here
@@ -165,10 +165,10 @@ void SelectServerTest::testTimeout() {
   // check timeouts are removed correctly
   ola::network::timeout_id timeout1 = m_ss->RegisterSingleTimeout(
       10,
-      ola::NewSingleClosure(this, &SelectServerTest::FatalTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::FatalTimeout));
   m_ss->RegisterSingleTimeout(
       20,
-      ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->RemoveTimeout(timeout1);
   m_ss->Restart();
   m_ss->Run();
@@ -178,13 +178,13 @@ void SelectServerTest::testTimeout() {
 /*
  * Check that the loop closures are called
  */
-void SelectServerTest::testLoopClosures() {
+void SelectServerTest::testLoopCallbacks() {
   m_ss->SetDefaultInterval(ola::TimeInterval(0, 100000));  // poll every 100ms
-  m_ss->RunInLoop(ola::NewClosure(this,
+  m_ss->RunInLoop(ola::NewCallback(this,
                                   &SelectServerTest::IncrementLoopCounter));
   m_ss->RegisterSingleTimeout(
       500,
-      ola::NewSingleClosure(this, &SelectServerTest::TerminateTimeout));
+      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
   // we should have at least 5 calls to IncrementLoopCounter
   CPPUNIT_ASSERT(m_loop_counter >= 5);

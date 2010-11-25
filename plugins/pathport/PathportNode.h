@@ -23,7 +23,7 @@
 
 #include <map>
 #include <string>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
@@ -51,7 +51,7 @@ class PathportNode {
 
     bool SetHandler(uint8_t universe,
                     DmxBuffer *buffer,
-                    Closure<void> *closure);
+                    Callback0<void> *closure);
     bool RemoveHandler(uint8_t universe);
 
     bool SendArpReply();
@@ -64,7 +64,7 @@ class PathportNode {
 
     typedef struct {
       DmxBuffer *buffer;
-      Closure<void> *closure;
+      Callback0<void> *closure;
     } universe_handler;
 
     enum {

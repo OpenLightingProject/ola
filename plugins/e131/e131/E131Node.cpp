@@ -32,7 +32,7 @@ namespace plugin {
 namespace e131 {
 
 using std::string;
-using ola::Closure;
+using ola::Callback0;
 using ola::DmxBuffer;
 
 
@@ -262,13 +262,13 @@ bool E131Node::StreamTerminated(uint16_t universe,
 /*
  * Set the closure to be called when we receive data for this universe.
  * @param universe the universe to register the handler for
- * @param handler the Closure to call when there is data for this universe.
+ * @param handler the Callback0 to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
 bool E131Node::SetHandler(unsigned int universe,
                           DmxBuffer *buffer,
                           uint8_t *priority,
-                          Closure<void> *closure) {
+                          Callback0<void> *closure) {
   return m_dmp_inflator.SetHandler(universe, buffer, priority, closure);
 }
 

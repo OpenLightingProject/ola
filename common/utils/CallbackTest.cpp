@@ -13,30 +13,30 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ClosureTest.cpp
- * Unittest for String functions.
+ * CallbackTest.cpp
+ * Unittest for the autogen'ed Callback code
  * Copyright (C) 2005-2010 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <unistd.h>
 #include <string>
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 
 using std::string;
 
-class ClosureTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(ClosureTest);
-  CPPUNIT_TEST(testFunctionClosures);
-  CPPUNIT_TEST(testMethodClosures);
+class CallbackTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(CallbackTest);
+  CPPUNIT_TEST(testFunctionCallbacks);
+  CPPUNIT_TEST(testMethodCallbacks);
   CPPUNIT_TEST(testFunctionCallbacks1);
   CPPUNIT_TEST(testMethodCallbacks1);
   CPPUNIT_TEST(testMethodCallbacks2);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testFunctionClosures();
-    void testMethodClosures();
+    void testFunctionCallbacks();
+    void testMethodCallbacks();
     void testFunctionCallbacks1();
     void testMethodCallbacks1();
     void testMethodCallbacks2();
@@ -100,21 +100,21 @@ class ClosureTest: public CppUnit::TestFixture {
 };
 
 
-const unsigned int ClosureTest::TEST_INT_VALUE = 42;
-const int ClosureTest::TEST_INT_VALUE2 = 53;
-const char ClosureTest::TEST_CHAR_VALUE = 'c';
-const char ClosureTest::TEST_STRING_VALUE[] = "foo";
-CPPUNIT_TEST_SUITE_REGISTRATION(ClosureTest);
+const unsigned int CallbackTest::TEST_INT_VALUE = 42;
+const int CallbackTest::TEST_INT_VALUE2 = 53;
+const char CallbackTest::TEST_CHAR_VALUE = 'c';
+const char CallbackTest::TEST_STRING_VALUE[] = "foo";
+CPPUNIT_TEST_SUITE_REGISTRATION(CallbackTest);
 
 using ola::BaseCallback1;
 using ola::BaseCallback2;
 using ola::BaseCallback4;
-using ola::Closure;
+using ola::Callback0;
 using ola::NewCallback;
-using ola::NewClosure;
+using ola::NewCallback;
 using ola::NewSingleCallback;
-using ola::NewSingleClosure;
-using ola::SingleUseClosure;
+using ola::NewSingleCallback;
+using ola::SingleUseCallback0;
 
 
 // Functions used for testing
@@ -122,62 +122,62 @@ void Function0() {}
 bool BoolFunction0() { return true; }
 
 void Function1(unsigned int i) {
-  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE, i);
+  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE, i);
 }
 
 bool BoolFunction1(unsigned int i) {
-  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE, i);
+  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE, i);
   return true;
 }
 
 void Function2(unsigned int i, int j) {
-  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE, i);
-  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE2, j);
+  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE, i);
+  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE2, j);
 }
 
 bool BoolFunction2(unsigned int i, int j) {
-  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE, i);
-  CPPUNIT_ASSERT_EQUAL(ClosureTest::TEST_INT_VALUE2, j);
+  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE, i);
+  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE2, j);
   return true;
 }
 
 
 /*
- * Test the Function Closures class
+ * Test the Function Callbacks class
  */
-void ClosureTest::testFunctionClosures() {
+void CallbackTest::testFunctionCallbacks() {
   // no arg, void return closures
-  SingleUseClosure<void> *c1 = NewSingleClosure(&Function0);
+  SingleUseCallback0<void> *c1 = NewSingleCallback(&Function0);
   c1->Run();
-  Closure<void> *c2 = NewClosure(&Function0);
+  Callback0<void> *c2 = NewCallback(&Function0);
   c2->Run();
   c2->Run();
   delete c2;
 
   // no arg, bool closures
-  SingleUseClosure<bool> *c3 = NewSingleClosure(&BoolFunction0);
+  SingleUseCallback0<bool> *c3 = NewSingleCallback(&BoolFunction0);
   CPPUNIT_ASSERT(c3->Run());
-  Closure<bool> *c4 = NewClosure(&BoolFunction0);
+  Callback0<bool> *c4 = NewCallback(&BoolFunction0);
   CPPUNIT_ASSERT(c4->Run());
   CPPUNIT_ASSERT(c4->Run());
   delete c4;
 
   // one arg, void return
-  SingleUseClosure<void> *c5 = NewSingleClosure(
+  SingleUseCallback0<void> *c5 = NewSingleCallback(
       &Function1,
       TEST_INT_VALUE);
   c5->Run();
-  Closure<void> *c6 = NewClosure(&Function1, TEST_INT_VALUE);
+  Callback0<void> *c6 = NewCallback(&Function1, TEST_INT_VALUE);
   c6->Run();
   c6->Run();
   delete c6;
 
   // one arg, bool closures
-  SingleUseClosure<bool> *c7 = NewSingleClosure(
+  SingleUseCallback0<bool> *c7 = NewSingleCallback(
       &BoolFunction1,
       TEST_INT_VALUE);
   CPPUNIT_ASSERT(c7->Run());
-  Closure<bool> *c8 = NewClosure(&BoolFunction1, TEST_INT_VALUE);
+  Callback0<bool> *c8 = NewCallback(&BoolFunction1, TEST_INT_VALUE);
   CPPUNIT_ASSERT(c8->Run());
   CPPUNIT_ASSERT(c8->Run());
   delete c8;
@@ -185,110 +185,112 @@ void ClosureTest::testFunctionClosures() {
 
 
 /*
- * Test the Method Closures
+ * Test the Method Callbacks
  */
-void ClosureTest::testMethodClosures() {
+void CallbackTest::testMethodCallbacks() {
   // no arg, void return closures
-  SingleUseClosure<void> *c1 = NewSingleClosure(this, &ClosureTest::Method0);
+  SingleUseCallback0<void> *c1 = NewSingleCallback(this,
+                                                   &CallbackTest::Method0);
   c1->Run();
-  Closure<void> *c2 = NewClosure(this, &ClosureTest::Method0);
+  Callback0<void> *c2 = NewCallback(this, &CallbackTest::Method0);
   c2->Run();
   c2->Run();
   delete c2;
 
   // no arg, bool closures
-  SingleUseClosure<bool> *c3 = NewSingleClosure(this,
-                                                &ClosureTest::BoolMethod0);
+  SingleUseCallback0<bool> *c3 = NewSingleCallback(this,
+                                                   &CallbackTest::BoolMethod0);
   CPPUNIT_ASSERT(c3->Run());
-  Closure<bool> *c4 = NewClosure(this, &ClosureTest::BoolMethod0);
+  Callback0<bool> *c4 = NewCallback(this, &CallbackTest::BoolMethod0);
   CPPUNIT_ASSERT(c4->Run());
   CPPUNIT_ASSERT(c4->Run());
   delete c4;
 
   // one arg, void return
-  SingleUseClosure<void> *c5 = NewSingleClosure(
+  SingleUseCallback0<void> *c5 = NewSingleCallback(
       this,
-      &ClosureTest::Method1,
+      &CallbackTest::Method1,
       TEST_INT_VALUE);
   c5->Run();
-  Closure<void> *c6 = NewClosure(this, &ClosureTest::Method1, TEST_INT_VALUE);
+  Callback0<void> *c6 = NewCallback(this, &CallbackTest::Method1,
+                                    TEST_INT_VALUE);
   c6->Run();
   c6->Run();
   delete c6;
 
   // one arg, bool closures
-  SingleUseClosure<bool> *c7 = NewSingleClosure(
+  SingleUseCallback0<bool> *c7 = NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod1,
+      &CallbackTest::BoolMethod1,
       TEST_INT_VALUE);
   CPPUNIT_ASSERT(c7->Run());
-  Closure<bool> *c8 = NewClosure(this,
-                                 &ClosureTest::BoolMethod1,
-                                 TEST_INT_VALUE);
+  Callback0<bool> *c8 = NewCallback(this,
+                                    &CallbackTest::BoolMethod1,
+                                    TEST_INT_VALUE);
   CPPUNIT_ASSERT(c8->Run());
   CPPUNIT_ASSERT(c8->Run());
   delete c8;
 
   // two arg, void return
-  SingleUseClosure<void> *c9 = NewSingleClosure(
+  SingleUseCallback0<void> *c9 = NewSingleCallback(
       this,
-      &ClosureTest::Method2,
+      &CallbackTest::Method2,
       TEST_INT_VALUE,
       TEST_INT_VALUE2);
   c9->Run();
-  Closure<void> *c10 = NewClosure(this,
-                                  &ClosureTest::Method2,
-                                  TEST_INT_VALUE,
-                                  TEST_INT_VALUE2);
+  Callback0<void> *c10 = NewCallback(this,
+                                     &CallbackTest::Method2,
+                                     TEST_INT_VALUE,
+                                     TEST_INT_VALUE2);
   c10->Run();
   c10->Run();
   delete c10;
 
   // two arg, bool closures
-  SingleUseClosure<bool> *c11 = NewSingleClosure(
+  SingleUseCallback0<bool> *c11 = NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod2,
+      &CallbackTest::BoolMethod2,
       TEST_INT_VALUE,
       TEST_INT_VALUE2);
   CPPUNIT_ASSERT(c11->Run());
-  Closure<bool> *c12 = NewClosure(this,
-                                  &ClosureTest::BoolMethod2,
-                                  TEST_INT_VALUE,
-                                  TEST_INT_VALUE2);
+  Callback0<bool> *c12 = NewCallback(this,
+                                     &CallbackTest::BoolMethod2,
+                                     TEST_INT_VALUE,
+                                     TEST_INT_VALUE2);
   CPPUNIT_ASSERT(c12->Run());
   CPPUNIT_ASSERT(c12->Run());
   delete c12;
 
   // three arg, void return
-  SingleUseClosure<void> *c13 = NewSingleClosure(
+  SingleUseCallback0<void> *c13 = NewSingleCallback(
       this,
-      &ClosureTest::Method3,
+      &CallbackTest::Method3,
       TEST_INT_VALUE,
       TEST_INT_VALUE2,
       TEST_CHAR_VALUE);
   c13->Run();
-  Closure<void> *c14 = NewClosure(this,
-                                  &ClosureTest::Method3,
-                                  TEST_INT_VALUE,
-                                  TEST_INT_VALUE2,
-                                  TEST_CHAR_VALUE);
+  Callback0<void> *c14 = NewCallback(this,
+                                     &CallbackTest::Method3,
+                                     TEST_INT_VALUE,
+                                     TEST_INT_VALUE2,
+                                     TEST_CHAR_VALUE);
   c14->Run();
   c14->Run();
   delete c14;
 
   // three arg, bool closures
-  SingleUseClosure<bool> *c15 = NewSingleClosure(
+  SingleUseCallback0<bool> *c15 = NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod3,
+      &CallbackTest::BoolMethod3,
       TEST_INT_VALUE,
       TEST_INT_VALUE2,
       TEST_CHAR_VALUE);
   CPPUNIT_ASSERT(c15->Run());
-  Closure<bool> *c16 = NewClosure(this,
-                                  &ClosureTest::BoolMethod3,
-                                  TEST_INT_VALUE,
-                                  TEST_INT_VALUE2,
-                                  TEST_CHAR_VALUE);
+  Callback0<bool> *c16 = NewCallback(this,
+                                     &CallbackTest::BoolMethod3,
+                                     TEST_INT_VALUE,
+                                     TEST_INT_VALUE2,
+                                     TEST_CHAR_VALUE);
   CPPUNIT_ASSERT(c16->Run());
   CPPUNIT_ASSERT(c16->Run());
   delete c16;
@@ -299,7 +301,7 @@ void ClosureTest::testMethodClosures() {
 /*
  * Test the single argument function closures
  */
-void ClosureTest::testFunctionCallbacks1() {
+void CallbackTest::testFunctionCallbacks1() {
   // single arg, void return closures
   BaseCallback1<void, unsigned int> *c1 = NewSingleCallback(&Function1);
   c1->Run(TEST_INT_VALUE);
@@ -333,14 +335,14 @@ void ClosureTest::testFunctionCallbacks1() {
 /*
  * Test the Method Callbacks
  */
-void ClosureTest::testMethodCallbacks1() {
+void CallbackTest::testMethodCallbacks1() {
   // test 1 arg callbacks that return unsigned ints
   BaseCallback1<void, unsigned int> *c1 = NewSingleCallback(
       this,
-      &ClosureTest::Method1);
+      &CallbackTest::Method1);
   c1->Run(TEST_INT_VALUE);
   BaseCallback1<void, unsigned int> *c2 = NewCallback(this,
-                                                      &ClosureTest::Method1);
+                                                      &CallbackTest::Method1);
   c2->Run(TEST_INT_VALUE);
   c2->Run(TEST_INT_VALUE);
   delete c2;
@@ -348,11 +350,11 @@ void ClosureTest::testMethodCallbacks1() {
   // test 1 arg callbacks that return bools
   BaseCallback1<bool, unsigned int> *c3 = NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod1);
+      &CallbackTest::BoolMethod1);
   CPPUNIT_ASSERT(c3->Run(TEST_INT_VALUE));
   BaseCallback1<bool, unsigned int> *c4 = NewCallback(
       this,
-      &ClosureTest::BoolMethod1);
+      &CallbackTest::BoolMethod1);
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE));
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE));
   delete c4;
@@ -360,12 +362,12 @@ void ClosureTest::testMethodCallbacks1() {
   // test 1 arg initial, 1 arg deferred callbacks that return ints
   BaseCallback1<void, int> *c5 = NewSingleCallback(
       this,
-      &ClosureTest::Method2,
+      &CallbackTest::Method2,
       TEST_INT_VALUE);
   c5->Run(TEST_INT_VALUE2);
   BaseCallback1<void, int> *c6 = NewCallback(
       this,
-      &ClosureTest::Method2,
+      &CallbackTest::Method2,
       TEST_INT_VALUE);
   c6->Run(TEST_INT_VALUE2);
   c6->Run(TEST_INT_VALUE2);
@@ -374,12 +376,12 @@ void ClosureTest::testMethodCallbacks1() {
   // test 1 arg initial, 1 arg deferred callbacks that return bools
   BaseCallback1<bool, int> *c7 = NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod2,
+      &CallbackTest::BoolMethod2,
       TEST_INT_VALUE);
   CPPUNIT_ASSERT(c7->Run(TEST_INT_VALUE2));
   BaseCallback1<bool, int> *c8 = NewCallback(
       this,
-      &ClosureTest::BoolMethod2,
+      &CallbackTest::BoolMethod2,
       TEST_INT_VALUE);
   CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2));
   CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2));
@@ -388,13 +390,13 @@ void ClosureTest::testMethodCallbacks1() {
   // test 2 arg initial, 1 arg deferred callbacks that return ints
   BaseCallback1<void, char> *c9 = NewSingleCallback(
       this,
-      &ClosureTest::Method3,
+      &CallbackTest::Method3,
       TEST_INT_VALUE,
       TEST_INT_VALUE2);
   c9->Run(TEST_CHAR_VALUE);
   BaseCallback1<void, char> *c10 = NewCallback(
       this,
-      &ClosureTest::Method3,
+      &CallbackTest::Method3,
       TEST_INT_VALUE,
       TEST_INT_VALUE2);
   c10->Run(TEST_CHAR_VALUE);
@@ -404,13 +406,13 @@ void ClosureTest::testMethodCallbacks1() {
   // test 2 arg initial, 1 arg deferred callbacks that return bools
   BaseCallback1<bool, char> *c11 = NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod3,
+      &CallbackTest::BoolMethod3,
       TEST_INT_VALUE,
       TEST_INT_VALUE2);
   CPPUNIT_ASSERT(c11->Run(TEST_CHAR_VALUE));
   BaseCallback1<bool, char> *c12 = NewCallback(
       this,
-      &ClosureTest::BoolMethod3,
+      &CallbackTest::BoolMethod3,
       TEST_INT_VALUE,
       TEST_INT_VALUE2);
   CPPUNIT_ASSERT(c12->Run(TEST_CHAR_VALUE));
@@ -420,14 +422,14 @@ void ClosureTest::testMethodCallbacks1() {
   // test 3 arg initial, 1 arg deferred callbacks that return ints
   BaseCallback1<void, const string&> *c13 = NewSingleCallback(
       this,
-      &ClosureTest::Method4,
+      &CallbackTest::Method4,
       TEST_INT_VALUE,
       TEST_INT_VALUE2,
       TEST_CHAR_VALUE);
   c13->Run(TEST_STRING_VALUE);
   BaseCallback1<void, const string&> *c14 = NewCallback(
       this,
-      &ClosureTest::Method4,
+      &CallbackTest::Method4,
       TEST_INT_VALUE,
       TEST_INT_VALUE2,
       TEST_CHAR_VALUE);
@@ -438,14 +440,14 @@ void ClosureTest::testMethodCallbacks1() {
   // test 3 arg initial, 1 arg deferred callbacks that return bools
   BaseCallback1<bool, const string&> *c15 = NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod4,
+      &CallbackTest::BoolMethod4,
       TEST_INT_VALUE,
       TEST_INT_VALUE2,
       TEST_CHAR_VALUE);
   CPPUNIT_ASSERT(c15->Run(TEST_STRING_VALUE));
   BaseCallback1<bool, const string&> *c16 = NewCallback(
       this,
-      &ClosureTest::BoolMethod4,
+      &CallbackTest::BoolMethod4,
       TEST_INT_VALUE,
       TEST_INT_VALUE2,
       TEST_CHAR_VALUE);
@@ -458,15 +460,15 @@ void ClosureTest::testMethodCallbacks1() {
 /*
  * Test the Method Callbacks
  */
-void ClosureTest::testMethodCallbacks2() {
+void CallbackTest::testMethodCallbacks2() {
   // test 2 arg callbacks that return void
   BaseCallback2<void, unsigned int, int> *c1 = NewSingleCallback(
       this,
-      &ClosureTest::Method2);
+      &CallbackTest::Method2);
   c1->Run(TEST_INT_VALUE, TEST_INT_VALUE2);
   BaseCallback2<void, unsigned int, int> *c2 = NewCallback(
       this,
-      &ClosureTest::Method2);
+      &CallbackTest::Method2);
   c2->Run(TEST_INT_VALUE, TEST_INT_VALUE2);
   c2->Run(TEST_INT_VALUE, TEST_INT_VALUE2);
   delete c2;
@@ -474,11 +476,11 @@ void ClosureTest::testMethodCallbacks2() {
   // test 2 arg callbacks that return bools
   BaseCallback2<bool, unsigned int, int> *c3 = NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod2);
+      &CallbackTest::BoolMethod2);
   CPPUNIT_ASSERT(c3->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
   BaseCallback2<bool, unsigned int, int> *c4 = NewCallback(
       this,
-      &ClosureTest::BoolMethod2);
+      &CallbackTest::BoolMethod2);
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
   delete c4;
@@ -486,12 +488,12 @@ void ClosureTest::testMethodCallbacks2() {
   // test 1 create time, 2 run time arg callbacks that return void
   BaseCallback2<void, int, char> *c5 = NewSingleCallback(
       this,
-      &ClosureTest::Method3,
+      &CallbackTest::Method3,
       TEST_INT_VALUE);
   c5->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE);
   BaseCallback2<void, int, char> *c6 = NewCallback(
       this,
-      &ClosureTest::Method3,
+      &CallbackTest::Method3,
       TEST_INT_VALUE);
   c6->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE);
   c6->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE);
@@ -500,12 +502,12 @@ void ClosureTest::testMethodCallbacks2() {
   // test 1 create time, 2 run time arg callbacks that return bools
   BaseCallback2<bool, int, char> *c7 = NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod3,
+      &CallbackTest::BoolMethod3,
       TEST_INT_VALUE);
   CPPUNIT_ASSERT(c7->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
   BaseCallback2<bool, int, char> *c8 = NewCallback(
       this,
-      &ClosureTest::BoolMethod3,
+      &CallbackTest::BoolMethod3,
       TEST_INT_VALUE);
   CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
   CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
@@ -516,16 +518,16 @@ void ClosureTest::testMethodCallbacks2() {
 /*
  * Test the Method Callbacks
  */
-void ClosureTest::testMethodCallbacks4() {
+void CallbackTest::testMethodCallbacks4() {
   // test 2 arg callbacks that return unsigned ints
   BaseCallback4<void, unsigned int, int, char, const string&> *c1 =
     NewSingleCallback(
       this,
-      &ClosureTest::Method4);
+      &CallbackTest::Method4);
   c1->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE, TEST_STRING_VALUE);
   BaseCallback4<void, unsigned int, int, char, const string&> *c2 = NewCallback(
       this,
-      &ClosureTest::Method4);
+      &CallbackTest::Method4);
   c2->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE, TEST_STRING_VALUE);
   c2->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE, TEST_STRING_VALUE);
   delete c2;
@@ -534,13 +536,13 @@ void ClosureTest::testMethodCallbacks4() {
   BaseCallback4<bool, unsigned int, int, char, const string&> *c3 =
     NewSingleCallback(
       this,
-      &ClosureTest::BoolMethod4);
+      &CallbackTest::BoolMethod4);
   CPPUNIT_ASSERT(c3->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
                          TEST_STRING_VALUE));
   BaseCallback4<bool, unsigned int, int, char, const string&> *c4 =
     NewCallback(
       this,
-      &ClosureTest::BoolMethod4);
+      &CallbackTest::BoolMethod4);
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
                          TEST_STRING_VALUE));
   CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,

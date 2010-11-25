@@ -28,7 +28,7 @@
 #include "common/rpc/Rpc.pb.h"
 #include "common/rpc/SimpleRpcController.h"
 #include "common/rpc/StreamRpcChannel.h"
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/Logging.h"
 
 
@@ -56,7 +56,7 @@ StreamRpcChannel::StreamRpcChannel(Service *service,
       m_current_size(0),
       m_export_map(export_map),
       m_recv_type_map(NULL) {
-  socket->SetOnData(NewClosure(this, &StreamRpcChannel::SocketReady));
+  socket->SetOnData(ola::NewCallback(this, &StreamRpcChannel::SocketReady));
 
   // init the counters
   const char *vars[] = {
@@ -136,7 +136,7 @@ void StreamRpcChannel::SocketReady() {
  * different from the Socket on close handler which is called when reads hit
  * EOF/
  */
-void StreamRpcChannel::SetOnClose(SingleUseClosure<void> *closure) {
+void StreamRpcChannel::SetOnClose(SingleUseCallback0<void> *closure) {
   if (closure != m_on_close) {
     delete m_on_close;
     m_on_close = closure;

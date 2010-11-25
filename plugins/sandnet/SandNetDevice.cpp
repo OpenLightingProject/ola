@@ -108,7 +108,7 @@ bool SandNetDevice::StartHook() {
 
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
       ADVERTISTMENT_PERIOD_MS,
-      NewClosure(this, &SandNetDevice::SendAdvertisement));
+      NewCallback(this, &SandNetDevice::SendAdvertisement));
 
   return true;
 }

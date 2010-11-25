@@ -25,7 +25,7 @@
 #include <map>
 #include <vector>
 #include "ola/Clock.h"
-#include "ola/Closure.h"
+#include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/e131/e131/DMPInflator.h"
 #include "plugins/e131/e131/E131Layer.h"
@@ -46,7 +46,7 @@ class DMPE131Inflator: public DMPInflator {
     ~DMPE131Inflator();
 
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
-                    uint8_t *priority, ola::Closure<void> *handler);
+                    uint8_t *priority, ola::Callback0<void> *handler);
     bool RemoveHandler(unsigned int universe);
 
   protected:
@@ -66,7 +66,7 @@ class DMPE131Inflator: public DMPInflator {
 
     typedef struct {
       DmxBuffer *buffer;
-      Closure<void> *closure;
+      Callback0<void> *closure;
       uint8_t active_priority;
       uint8_t *priority;
       std::vector<dmx_source> sources;

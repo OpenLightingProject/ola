@@ -35,7 +35,7 @@ namespace plugin {
 namespace artnet {
 
 using ola::Callback1;
-using ola::Closure;
+using ola::Callback0;
 using ola::network::AddressToString;
 using ola::network::HostToLittleEndian;
 using ola::network::HostToNetwork;
@@ -515,12 +515,12 @@ bool ArtNetNode::SetInputPortRDMHandlers(
 /*
  * Set the closure to be called when we receive data for this universe.
  * @param universe the universe to register the handler for
- * @param handler the Closure to call when there is data for this universe.
+ * @param handler the Callback0 to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
 bool ArtNetNode::SetDMXHandler(uint8_t port_id,
                                DmxBuffer *buffer,
-                               Closure<void> *on_data) {
+                               Callback0<void> *on_data) {
   if (port_id > ARTNET_MAX_PORTS) {
     OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
       ARTNET_MAX_PORTS;
@@ -618,8 +618,8 @@ bool ArtNetNode::SendRDMResponse(uint8_t port_id, const RDMResponse &response) {
  */
 bool ArtNetNode::SetOutputPortRDMHandlers(
     uint8_t port_id,
-    ola::Closure<void> *on_discover,
-    ola::Closure<void> *on_flush,
+    ola::Callback0<void> *on_discover,
+    ola::Callback0<void> *on_flush,
     rdm_request_callback *on_rdm_request) {
 
   if (port_id > ARTNET_MAX_PORTS) {
@@ -1244,7 +1244,7 @@ void ArtNetNode::MaybeSendRDMRequest(uint8_t port_id) {
   if (SendFirstRDMRequest(port_id)) {
     input_port.rdm_send_timeout = m_ss->RegisterSingleTimeout(
       RDM_REQUEST_TIMEOUT_MS,
-      ola::NewSingleClosure(this, &ArtNetNode::TimeoutRDMRequest, port_id));
+      ola::NewSingleCallback(this, &ArtNetNode::TimeoutRDMRequest, port_id));
   } else {
     // send failed, remove this request and try the next one.
     ClearPendingRDMRequest(port_id);
@@ -1495,7 +1495,7 @@ bool ArtNetNode::InitNetwork() {
     return false;
   }
 
-  m_socket->SetOnData(NewClosure(this, &ArtNetNode::SocketReady));
+  m_socket->SetOnData(NewCallback(this, &ArtNetNode::SocketReady));
   m_ss->AddSocket(m_socket);
   return true;
 }
@@ -1581,7 +1581,7 @@ bool ArtNetNode::GrabDiscoveryLock(uint8_t port_id) {
 
   m_discovery_timeout = m_ss->RegisterSingleTimeout(
       RDM_TOD_TIMEOUT_MS,
-      ola::NewSingleClosure(this, &ArtNetNode::ReleaseDiscoveryLock, port_id));
+      ola::NewSingleCallback(this, &ArtNetNode::ReleaseDiscoveryLock, port_id));
   return true;
 }
 

@@ -34,7 +34,7 @@ UsbWidget::UsbWidget(ola::network::SelectServerInterface *ss_adaptor, int fd)
       m_bytes_received(0) {
   m_socket = new ola::network::DeviceSocket(fd);
   ss_adaptor->AddSocket(m_socket, true);
-  m_socket->SetOnData(NewClosure(this, &UsbWidget::SocketReady));
+  m_socket->SetOnData(NewCallback(this, &UsbWidget::SocketReady));
 }
 
 
@@ -66,7 +66,7 @@ void UsbWidget::SetMessageHandler(
 /*
  * Set the onRemove handler
  */
-void UsbWidget::SetOnRemove(ola::SingleUseClosure<void> *on_close) {
+void UsbWidget::SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
   m_socket->SetOnClose(on_close);
 }
 

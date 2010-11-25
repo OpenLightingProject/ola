@@ -20,7 +20,7 @@
 
 #include <ola/AutoStart.h>
 #include <ola/BaseTypes.h>
-#include <ola/Closure.h>
+#include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>
@@ -85,9 +85,9 @@ bool StreamingClient::Setup() {
   }
 
   m_socket->SetOnClose(
-      NewSingleClosure(this, &StreamingClient::SocketClosed));
+      NewSingleCallback(this, &StreamingClient::SocketClosed));
   m_channel->SetOnClose(
-      NewSingleClosure(this, &StreamingClient::SocketClosed));
+      NewSingleCallback(this, &StreamingClient::SocketClosed));
 
   return true;
 }
