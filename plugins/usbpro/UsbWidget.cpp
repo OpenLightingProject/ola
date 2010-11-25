@@ -18,7 +18,17 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#include <algorithm>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <termios.h>
+#include <unistd.h>
+#include <string>
 #include "ola/Logging.h"
 #include "plugins/usbpro/UsbWidget.h"
 
@@ -37,9 +47,8 @@ UsbWidget::UsbWidget(ola::network::ConnectedSocket *socket)
 
 
 UsbWidget::~UsbWidget() {
-  if (m_callback) {
+  if (m_callback)
     delete m_callback;
-  }
   // don't delete because ownership is transferred to the ss so that device
   // removal works correctly. If you delete the socket the OnClose closure will
   // be deleted, which breaks if it's already running.
@@ -54,9 +63,8 @@ UsbWidget::~UsbWidget() {
  */
 void UsbWidget::SetMessageHandler(
     ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *callback) {
-  if (m_callback) {
+  if (m_callback)
     delete m_callback;
-  }
   m_callback = callback;
 }
 
@@ -114,6 +122,28 @@ bool UsbWidget::SendMessage(uint8_t label,
   if (bytes_sent != sizeof(EOM))
     return false;
   return true;
+}
+
+
+/**
+ * Open a path and apply the settings required for talking to widgets.
+ */
+ola::network::ConnectedSocket *UsbWidget::OpenDevice(
+    const string &path) {
+  struct termios newtio;
+  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
+
+  if (fd == -1) {
+    OLA_WARN << "Failed to open " << path << " " << strerror(errno);
+    return NULL;
+  }
+
+  bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
+  cfsetispeed(&newtio, B115200);
+  cfsetospeed(&newtio, B115200);
+  tcsetattr(fd, TCSANOW, &newtio);
+
+  return new ola::network::DeviceSocket(fd);
 }
 
 
@@ -184,7 +214,7 @@ void UsbWidget::ReceiveMessage() {
       if (eom == EOM && m_callback)
         m_callback->Run(m_header.label,
                         packet_length,
-                        m_recv_buffer);
+                        packet_length ? m_recv_buffer : NULL);
       m_state = PRE_SOM;
   }
   return;

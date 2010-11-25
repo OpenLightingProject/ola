@@ -21,6 +21,7 @@ libolausbpro_la_LIBADD = ./libolausbprowidget.la messages/libolausbproconf.la
 TESTS = UsbProTester
 check_PROGRAMS = $(TESTS)
 UsbProTester_SOURCES = UsbWidgetTest.cpp \
+                       WidgetDetectorTest.cpp \
                        UsbProTester.cpp
 
 UsbProTester_CXXFLAGS = $(CPPUNIT_CFLAGS)

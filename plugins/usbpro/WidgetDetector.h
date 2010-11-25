@@ -25,6 +25,7 @@
 #include <ola/network/SelectServerInterface.h>
 #include <map>
 #include <string>
+#include "ola/Callback.h"
 #include "plugins/usbpro/UsbWidget.h"
 
 namespace ola {
@@ -42,6 +43,7 @@ class DeviceInformation {
         device_id(0) {
       memset(serial, 0, SERIAL_LENGTH);
     }
+    DeviceInformation& operator=(const DeviceInformation &other);
     enum {SERIAL_LENGTH = 4};
 
     uint16_t esta_id;
@@ -53,35 +55,25 @@ class DeviceInformation {
 
 
 /*
- * Implement this to respond to widget discovery events
- */
-class WidgetDetectorListener {
-  public:
-    virtual ~WidgetDetectorListener() {}
-
-    /*
-     * Ownership of the widget is transferred here
-     */
-    virtual void NewWidget(UsbWidget *widget,
-                           const DeviceInformation &info) = 0;
-};
-
-
-/*
  * Handles widget discovery
  */
 class WidgetDetector {
   public:
-    explicit WidgetDetector(ola::network::SelectServerInterface *ss):
+    explicit WidgetDetector(ola::network::SelectServerInterface *ss,
+                            unsigned int timeout = 1000):
         m_ss(ss),
+        m_callback(NULL),
+        m_failure_callback(NULL),
+        m_timeout_ms(timeout),
         m_timeout_id(ola::network::INVALID_TIMEOUT) {
     }
     ~WidgetDetector();
 
-    void SetListener(WidgetDetectorListener *listener) {
-      m_listener = listener;
-    }
-    bool Discover(const string &path);
+    void SetSuccessHandler(
+        ola::Callback2<void, UsbWidget*, const DeviceInformation&> *callback);
+    void SetFailureHandler(
+        ola::Callback1<void, UsbWidget*> *callback);
+    bool Discover(UsbWidget *widget);
 
     // called by the widgets
     void HandleMessage(UsbWidget *widget, uint8_t label, unsigned int length,
@@ -97,9 +89,11 @@ class WidgetDetector {
       uint8_t terminator;
     } id_response;
 
-    WidgetDetectorListener *m_listener;
     ola::network::SelectServerInterface *m_ss;
+    ola::Callback2<void, UsbWidget*, const DeviceInformation&> *m_callback;
+    ola::Callback1<void, UsbWidget*> *m_failure_callback;
     std::map<UsbWidget*, DeviceInformation> m_widgets;
+    unsigned int m_timeout_ms;
     ola::network::timeout_id m_timeout_id;
 
     bool SendDiscoveryMessages(UsbWidget *widget);

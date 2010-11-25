@@ -20,20 +20,10 @@
  * The device represents the widget.
  */
 
-#include <errno.h>
 
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <termios.h>
-#include <unistd.h>
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "ola/Logging.h"
@@ -47,45 +37,69 @@ namespace plugin {
 namespace usbpro {
 
 using std::map;
-using std::set;
 using ola::network::NetworkToHost;
+
+DeviceInformation& DeviceInformation::operator=(
+    const DeviceInformation &other) {
+  esta_id = other.esta_id;
+  device_id = other.device_id;
+  manufactuer = other.manufactuer;
+  device = other.device;
+  memcpy(serial, other.serial, SERIAL_LENGTH);
+  return *this;
+}
+
 
 /*
  * Delete any in-discovery widgets
  */
 WidgetDetector::~WidgetDetector() {
   map<UsbWidget*, DeviceInformation>::iterator iter;
-  for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter)
-    delete iter->first;
+  for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter) {
+    if (m_failure_callback)
+      m_failure_callback->Run(iter->first);
+    else
+      delete iter->first;
+  }
   m_widgets.clear();
 
   if (m_timeout_id != ola::network::INVALID_TIMEOUT)
     m_ss->RemoveTimeout(m_timeout_id);
+
+  if (m_callback)
+    delete m_callback;
+  if (m_failure_callback)
+    delete m_failure_callback;
 }
 
+
+/**
+ * Set the callback to be run when new widgets are detected.
+ */
+void WidgetDetector::SetSuccessHandler(
+        ola::Callback2<void, UsbWidget*, const DeviceInformation&> *callback) {
+  if (m_callback)
+    delete m_callback;
+  m_callback = callback;
+}
+
+
+/**
+ * Set the callback to be run when widgets fail to respond.
+ */
+void WidgetDetector::SetFailureHandler(
+        ola::Callback1<void, UsbWidget*> *callback) {
+  if (m_failure_callback)
+    delete m_failure_callback;
+  m_failure_callback = callback;
+}
 
 /*
  * Start the discovery process for a widget
  * @param path the path to the device
  * @return is the process begun ok, false otherwise.
  */
-bool WidgetDetector::Discover(const string &path) {
-  struct termios newtio;
-  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
-
-  if (fd == -1) {
-    OLA_WARN << "Failed to open " << path << " " << strerror(errno);
-    return false;
-  }
-
-  bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
-  cfsetispeed(&newtio, B115200);
-  cfsetospeed(&newtio, B115200);
-  tcsetattr(fd, TCSANOW, &newtio);
-
-  ola::network::ConnectedSocket *socket = new ola::network::DeviceSocket(fd);
-  m_ss->AddSocket(socket, true);
-  UsbWidget *widget = new UsbWidget(socket);
+bool WidgetDetector::Discover(UsbWidget *widget) {
   widget->SetMessageHandler(
     NewCallback(this, &WidgetDetector::HandleMessage, widget));
 
@@ -107,7 +121,7 @@ bool WidgetDetector::Discover(const string &path) {
 
   // register a timeout for this widget
   m_timeout_id = m_ss->RegisterSingleTimeout(
-      1000,
+      m_timeout_ms,
       NewSingleCallback(this, &WidgetDetector::DiscoveryTimeout, widget));
   return true;
 }
@@ -146,7 +160,10 @@ void WidgetDetector::DiscoveryTimeout(UsbWidget *widget) {
   if (iter != m_widgets.end()) {
     OLA_WARN << "Usb Widget didn't respond to messages, esta id " <<
       iter->second.esta_id << ", device id " << iter->second.device_id;
-    delete widget;
+    if (m_failure_callback)
+      m_failure_callback->Run(widget);
+    else
+      delete widget;
     m_widgets.erase(iter);
   }
 }
@@ -230,12 +247,12 @@ void WidgetDetector::HandleSerialResponse(UsbWidget *widget,
     information.esta_id  << " (" << information.manufactuer << "), device: "
     << information.device_id << " (" << information.device << ")";
 
-  if (!m_listener) {
+  if (!m_callback) {
     OLA_WARN << "No listener provided";
     return;
   }
 
-  m_listener->NewWidget(widget, information);
+  m_callback->Run(widget, information);
   return;
 }
 }  // usbpro

@@ -34,7 +34,6 @@
 #include <string>
 
 #include "plugins/usbpro/UsbWidget.h"
-#include "tools/usbpro/usbpro-common.h"
 
 using std::cout;
 using std::endl;
@@ -334,7 +333,7 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(argv);
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
-  ola::network::ConnectedSocket *socket = ConnectToWidget(opts.device);
+  ola::network::ConnectedSocket *socket = UsbWidget::OpenDevice(opts.device);
   if (!socket);
     exit(EX_UNAVAILABLE);
 

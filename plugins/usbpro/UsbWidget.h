@@ -49,6 +49,8 @@ class UsbWidget {
     bool SendMessage(uint8_t label, unsigned int length,
                      const uint8_t *data) const;
 
+    static ola::network::ConnectedSocket *OpenDevice(const string &path);
+
     // we put these here so we don't have to duplicate them.
     static const uint8_t DMX_LABEL = 6;
     static const uint8_t SERIAL_LABEL = 10;

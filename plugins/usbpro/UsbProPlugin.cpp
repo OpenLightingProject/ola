@@ -212,13 +212,21 @@ void UsbProPlugin::AddDevice(UsbDevice *device) {
  * Start the plugin
  */
 bool UsbProPlugin::StartHook() {
-  m_detector.SetListener(this);
+  m_detector.SetSuccessHandler(
+      ola::NewCallback(this, &UsbProPlugin::NewWidget));
   vector<string>::iterator it;
   vector<string> device_paths = FindCandiateDevices();
 
-  for (it = device_paths.begin(); it != device_paths.end(); ++it)
+  for (it = device_paths.begin(); it != device_paths.end(); ++it) {
     // NewWidget (above) will be called when discovery completes.
-    m_detector.Discover(*it);
+    ola::network::ConnectedSocket *socket = UsbWidget::OpenDevice(*it);
+    if (!socket)
+      continue;
+
+    m_plugin_adaptor->AddSocket(socket, true);
+    UsbWidget *widget = new UsbWidget(socket);
+    m_detector.Discover(widget);
+  }
   return true;
 }
 

@@ -35,7 +35,7 @@ namespace usbpro {
 
 using ola::network::ConnectedSocket;
 
-class UsbProPlugin: public ola::Plugin, WidgetDetectorListener {
+class UsbProPlugin: public ola::Plugin {
   public:
     explicit UsbProPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
