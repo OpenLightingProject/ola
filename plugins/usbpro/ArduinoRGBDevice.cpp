@@ -23,6 +23,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SelectServerInterface.h"
 #include "olad/PortDecorators.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 

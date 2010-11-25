@@ -258,11 +258,12 @@ int main(int argc, char *argv[]) {
 
   ola::network::SelectServer ss;
 
-  int fd = ConnectToWidget(opts.device);
-  if (fd < 0)
+  ola::network::ConnectedSocket *socket = ConnectToWidget(opts.device);
+  if (!socket);
     exit(EX_UNAVAILABLE);
 
-  UsbWidget widget(&ss, fd);
+  ss.AddSocket(socket);
+  UsbWidget widget(socket);
 
   FirmwareTransferer transferer(&firmware_file, &widget, &ss);
 

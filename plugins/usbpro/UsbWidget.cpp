@@ -27,13 +27,11 @@ namespace plugin {
 namespace usbpro {
 
 
-UsbWidget::UsbWidget(ola::network::SelectServerInterface *ss_adaptor, int fd)
+UsbWidget::UsbWidget(ola::network::ConnectedSocket *socket)
     : m_callback(NULL),
-      m_socket(NULL),
+      m_socket(socket),
       m_state(PRE_SOM),
       m_bytes_received(0) {
-  m_socket = new ola::network::DeviceSocket(fd);
-  ss_adaptor->AddSocket(m_socket, true);
   m_socket->SetOnData(NewCallback(this, &UsbWidget::SocketReady));
 }
 
@@ -88,6 +86,9 @@ void UsbWidget::SocketReady() {
 bool UsbWidget::SendMessage(uint8_t label,
                             unsigned int length,
                             const uint8_t *data) const {
+  if (length && !data)
+    return false;
+
   message_header header;
   header.som = SOM;
   header.label = label;
@@ -96,7 +97,7 @@ bool UsbWidget::SendMessage(uint8_t label,
 
   // should really use writev here instead
   ssize_t bytes_sent = m_socket->Send(reinterpret_cast<uint8_t*>(&header),
-                                     sizeof(header));
+                                      sizeof(header));
   if (bytes_sent != sizeof(header))
     // we've probably screwed framing at this point
     return false;
@@ -145,10 +146,15 @@ void UsbWidget::ReceiveMessage() {
       if (cnt != 1)
         return;
 
-      if ((m_header.len_hi << 8) + m_header.len > MAX_DATA_SIZE) {
+      packet_length = (m_header.len_hi << 8) + m_header.len;
+      if (packet_length == 0) {
+        m_state = RECV_EOM;
+        return;
+      } else if (packet_length > MAX_DATA_SIZE) {
         m_state = PRE_SOM;
         return;
       }
+
       m_bytes_received = 0;
       m_state = RECV_BODY;
     case RECV_BODY:

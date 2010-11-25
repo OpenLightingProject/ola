@@ -334,12 +334,13 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(argv);
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
-  int fd = ConnectToWidget(opts.device);
-  if (fd < 0)
+  ola::network::ConnectedSocket *socket = ConnectToWidget(opts.device);
+  if (!socket);
     exit(EX_UNAVAILABLE);
 
   ola::network::SelectServer ss;
-  UsbWidget widget(&ss, fd);
+  ss.AddSocket(socket);
+  UsbWidget widget(socket);
   RDMSniffer sniffer(&widget, &ss, opts.dump_all, opts.verbose);
 
   widget.SetOnRemove(ola::NewSingleCallback(&Stop, &ss));

@@ -13,20 +13,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbpro-common.cpp
+ * UsbProTester.cpp
+ * Runs all the UsbPro tests
  * Copyright (C) 2010 Simon Newton
  */
 
-#include <string>
-#include "ola/network/Socket.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
 
-
-#ifndef TOOLS_USBPRO_USBPRO_COMMON_H_
-#define TOOLS_USBPRO_USBPRO_COMMON_H_
-
-using std::string;
-
-
-ola::network::ConnectedSocket *ConnectToWidget(const string &path);
-#endif  // TOOLS_USBPRO_USBPRO_COMMON_H_
+int main(int argc, char* argv[]) {
+  CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
+  CppUnit::TextUi::TestRunner runner;
+  runner.addTest(suite);
+  runner.setOutputter(
+      new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
+  bool wasSucessful = runner.run();
+  return wasSucessful ? 0 : 1;
+  (void) argc;
+  (void) argv;
+}

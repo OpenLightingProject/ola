@@ -23,7 +23,6 @@
 
 #include <stdint.h>
 #include <ola/Callback.h>
-#include <ola/network/SelectServerInterface.h>
 #include <string>
 #include "ola/network/Socket.h"
 
@@ -34,12 +33,12 @@ namespace usbpro {
 
 
 /*
- * The basic representation of a widget. This knows how to send and recieve usb
- * pro messages.
+ * The basic representation of a USB widget. This knows how to send and recieve
+ * usb pro messages.
  */
 class UsbWidget {
   public:
-    UsbWidget(ola::network::SelectServerInterface *ss_adaptor, int fd);
+    explicit UsbWidget(ola::network::ConnectedSocket *socket);
     ~UsbWidget();
     void SetMessageHandler(
       ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *callback);
@@ -50,6 +49,7 @@ class UsbWidget {
     bool SendMessage(uint8_t label, unsigned int length,
                      const uint8_t *data) const;
 
+    // we put these here so we don't have to duplicate them.
     static const uint8_t DMX_LABEL = 6;
     static const uint8_t SERIAL_LABEL = 10;
     static const uint8_t MANUFACTURER_LABEL = 77;
@@ -75,7 +75,7 @@ class UsbWidget {
     } message_header;
 
     ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *m_callback;
-    ola::network::DeviceSocket *m_socket;
+    ola::network::ConnectedSocket *m_socket;
     receive_state m_state;
     unsigned int m_bytes_received;
     message_header m_header;

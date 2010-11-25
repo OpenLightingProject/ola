@@ -83,9 +83,9 @@ bool WidgetDetector::Discover(const string &path) {
   cfsetospeed(&newtio, B115200);
   tcsetattr(fd, TCSANOW, &newtio);
 
-  UsbWidget *widget = new UsbWidget(
-      m_ss,
-      fd);
+  ola::network::ConnectedSocket *socket = new ola::network::DeviceSocket(fd);
+  m_ss->AddSocket(socket, true);
+  UsbWidget *widget = new UsbWidget(socket);
   widget->SetMessageHandler(
     NewCallback(this, &WidgetDetector::HandleMessage, widget));
 

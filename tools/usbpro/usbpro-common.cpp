@@ -32,18 +32,19 @@ using std::string;
 /*
  * Open the widget device
  */
-int ConnectToWidget(const string &path) {
+ola::network::ConnectedSocket *ConnectToWidget(const string &path) {
   struct termios newtio;
   int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
   if (fd == -1) {
     OLA_WARN << "Failed to open " << path << " " << strerror(errno);
-    return -1;
+    return NULL;
   }
 
   bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
   cfsetispeed(&newtio, B115200);
   cfsetospeed(&newtio, B115200);
   tcsetattr(fd, TCSANOW, &newtio);
-  return fd;
+
+  return new ola::network::DeviceSocket(fd);
 }
