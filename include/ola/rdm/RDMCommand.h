@@ -157,6 +157,10 @@ class RDMRequest: public RDMCommand {
     uint8_t PortId() const { return m_port_id; }
 
     virtual RDMRequest *Duplicate() const = 0;
+    virtual RDMRequest *CloneWithNewControllerParams(
+        const UID &source,
+        uint8_t transaction_number,
+        uint8_t port_id) const = 0;
 
     // Convert a block of data to an RDMCommand object
     static RDMRequest* InflateFromData(const uint8_t *data,
@@ -194,6 +198,22 @@ class BaseRDMRequest: public RDMRequest {
         DestinationUID(),
         TransactionNumber(),
         PortId(),
+        MessageCount(),
+        SubDevice(),
+        ParamId(),
+        ParamData(),
+        ParamDataSize());
+    }
+
+    BaseRDMRequest<command_class> *CloneWithNewControllerParams(
+        const UID &source,
+        uint8_t transaction_number,
+        uint8_t port_id) const {
+      return new BaseRDMRequest<command_class>(
+        source,
+        DestinationUID(),
+        transaction_number,
+        port_id,
         MessageCount(),
         SubDevice(),
         ParamId(),
