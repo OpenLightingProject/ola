@@ -31,15 +31,35 @@ namespace plugin {
 namespace usbpro {
 
 
+/*
+ * The UsbWidgetInterface, this is an interface so we can mock it out for
+ * testing.
+ */
+class UsbWidgetInterface {
+  public:
+    UsbWidgetInterface() {}
+    virtual ~UsbWidgetInterface() {}
+
+    virtual void SetMessageHandler(
+      ola::Callback3<void, uint8_t, unsigned int,
+                     const uint8_t*> *callback) = 0;
+
+    virtual void SetOnRemove(ola::SingleUseCallback0<void> *on_close) = 0;
+
+    virtual bool SendMessage(uint8_t label, unsigned int length,
+                     const uint8_t *data) const = 0;
+};
+
 
 /*
  * The basic representation of a USB widget. This knows how to send and recieve
  * usb pro messages.
  */
-class UsbWidget {
+class UsbWidget: public UsbWidgetInterface {
   public:
     explicit UsbWidget(ola::network::ConnectedSocket *socket);
     ~UsbWidget();
+
     void SetMessageHandler(
       ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *callback);
     void SetOnRemove(ola::SingleUseCallback0<void> *on_close);

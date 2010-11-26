@@ -47,7 +47,7 @@ const uint8_t DmxterWidgetImpl::DISCOVERY_BRANCH_LABEL = 0x83;
  * @param serial the 4 byte serial which forms part of the UID
  */
 DmxterWidgetImpl::DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
-                                   UsbWidget *widget,
+                                   UsbWidgetInterface *widget,
                                    uint16_t esta_id,
                                    uint32_t serial):
     m_uid(esta_id, serial),
@@ -234,7 +234,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
  * DmxterWidget Constructor
  */
 DmxterWidget::DmxterWidget(ola::network::SelectServerInterface *ss,
-                           UsbWidget *widget,
+                           UsbWidgetInterface *widget,
                            uint16_t esta_id,
                            uint32_t serial,
                            unsigned int queue_size):

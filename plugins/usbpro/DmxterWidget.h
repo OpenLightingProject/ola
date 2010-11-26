@@ -40,7 +40,7 @@ namespace usbpro {
 class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
   public:
     DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
-                     UsbWidget *widget,
+                     UsbWidgetInterface *widget,
                      uint16_t esta_id,
                      uint32_t serial);
     ~DmxterWidgetImpl();
@@ -61,7 +61,7 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
 
   private:
     ola::rdm::UID m_uid;
-    UsbWidget *m_widget;
+    UsbWidgetInterface *m_widget;
     ola::network::SelectServerInterface *m_ss;
     ola::rdm::UIDSet m_uids;
     ola::network::timeout_id m_rdm_timeout;
@@ -87,7 +87,7 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
 class DmxterWidget: public ola::rdm::RDMControllerInterface {
   public:
     DmxterWidget(ola::network::SelectServerInterface *ss,
-                 UsbWidget *widget,
+                 UsbWidgetInterface *widget,
                  uint16_t esta_id,
                  uint32_t serial,
                  unsigned int queue_size = 20);
