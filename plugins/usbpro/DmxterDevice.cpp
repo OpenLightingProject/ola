@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DMXter4Device.h
+ * DmxterDevice.h
  * The Ardunio RGB Mixer device.
  * Copyright (C) 2010 Simon Newton
  */
@@ -25,7 +25,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
-#include "plugins/usbpro/DMXter4Device.h"
+#include "plugins/usbpro/DmxterDevice.h"
 
 namespace ola {
 namespace plugin {
@@ -39,7 +39,7 @@ using ola::rdm::UID;
 /*
  * New Arduino RGB Device
  */
-DMXter4Device::DMXter4Device(ola::network::SelectServerInterface *ss,
+DmxterDevice::DmxterDevice(ola::network::SelectServerInterface *ss,
                              ola::AbstractPlugin *owner,
                              const string &name,
                              UsbWidget *widget,
@@ -53,11 +53,11 @@ DMXter4Device::DMXter4Device(ola::network::SelectServerInterface *ss,
     NetworkToHost(serial);
   m_device_id = str.str();
 
-  m_port = new DMXter4DeviceOutputPort(this);
+  m_port = new DmxterDeviceOutputPort(this);
   AddPort(m_port);
 
   widget->SetMessageHandler(
-      NewCallback(this, &DMXter4Device::HandleMessage));
+      NewCallback(this, &DmxterDevice::HandleMessage));
   Start();
   (void) ss;
 }
@@ -66,14 +66,14 @@ DMXter4Device::DMXter4Device(ola::network::SelectServerInterface *ss,
 /**
  * Clean up
  */
-DMXter4Device::~DMXter4Device() {
+DmxterDevice::~DmxterDevice() {
 }
 
 
 /**
  * Called after we start, use this to fetch the TOD.
  */
-bool DMXter4Device::StartHook() {
+bool DmxterDevice::StartHook() {
   SendTodRequest();
   return true;
 }
@@ -82,7 +82,7 @@ bool DMXter4Device::StartHook() {
 /**
  * Called when a new packet arrives
  */
-void DMXter4Device::HandleMessage(uint8_t label,
+void DmxterDevice::HandleMessage(uint8_t label,
                                   unsigned int length,
                                   const uint8_t *data) {
   OLA_INFO << "Got new packet: 0x" << std::hex <<
@@ -104,7 +104,7 @@ void DMXter4Device::HandleMessage(uint8_t label,
 /**
  *
  */
-bool DMXter4Device::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+bool DmxterDevice::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
   OLA_WARN << "RDM not implemented";
   delete request;
   return true;
@@ -113,14 +113,14 @@ bool DMXter4Device::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
 /**
  *
  */
-void DMXter4Device::RunRDMDiscovery() {
+void DmxterDevice::RunRDMDiscovery() {
 }
 
 
 /**
  * Notify the port that there are new UIDs
  */
-void DMXter4Device::SendUIDUpdate() {
+void DmxterDevice::SendUIDUpdate() {
   m_port->NewUIDList(m_uids);
 }
 
@@ -128,7 +128,7 @@ void DMXter4Device::SendUIDUpdate() {
 /**
  * Send a TOD request to the widget
  */
-void DMXter4Device::SendTodRequest() {
+void DmxterDevice::SendTodRequest() {
   m_widget->SendMessage(TOD_LABEL, 0, NULL);
   OLA_INFO << "Sent TOD request";
 }
@@ -137,7 +137,7 @@ void DMXter4Device::SendTodRequest() {
 /**
  * Handle a TOD response
  */
-void DMXter4Device::HandleTodResponse(unsigned int length,
+void DmxterDevice::HandleTodResponse(unsigned int length,
                                       const uint8_t *data) {
   (void) data;
   if (length % UID::UID_SIZE) {

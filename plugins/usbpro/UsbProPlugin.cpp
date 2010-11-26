@@ -33,7 +33,7 @@
 #include "olad/Preferences.h"
 
 #include "plugins/usbpro/ArduinoRGBDevice.h"
-#include "plugins/usbpro/DMXter4Device.h"
+#include "plugins/usbpro/DmxterDevice.h"
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/UsbProDevice.h"
 #include "plugins/usbpro/UsbProPlugin.h"
@@ -136,7 +136,7 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
     case GODDARD_ESTA_ID:
       if (information.device_id == GODDARD_DMXTER4_ID ||
           information.device_id == GODDARD_MINI_DMXTER4_ID) {
-        AddDevice(new DMXter4Device(
+        AddDevice(new DmxterDevice(
             m_plugin_adaptor,
             this,
             device_name,

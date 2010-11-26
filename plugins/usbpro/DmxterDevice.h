@@ -13,8 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DMXter4Device.h
- * The Goddard Design DMXter4 RDM and miniDMXter4
+ * DmxterDevice.h
+ * The Goddard Design Dmxter RDM and miniDmxter
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -36,16 +36,16 @@ namespace usbpro {
 /*
  * An Arduino RGB Mixer Device
  */
-class DMXter4Device: public UsbDevice {
+class DmxterDevice: public UsbDevice {
   public:
-    DMXter4Device(ola::network::SelectServerInterface *ss,
+    DmxterDevice(ola::network::SelectServerInterface *ss,
                   ola::AbstractPlugin *owner,
                   const string &name,
                   UsbWidget *widget,
                   uint16_t esta_id,
                   uint16_t device_id,
                   uint32_t serial);
-    ~DMXter4Device();
+    ~DmxterDevice();
     string DeviceId() const { return m_device_id; }
     bool StartHook();
 
@@ -60,7 +60,7 @@ class DMXter4Device: public UsbDevice {
   private:
     string m_device_id;
     ola::rdm::UIDSet m_uids;
-    class DMXter4DeviceOutputPort *m_port;
+    class DmxterDeviceOutputPort *m_port;
 
     void SendTodRequest();
     void HandleTodResponse(unsigned int length, const uint8_t *data);
@@ -74,9 +74,9 @@ class DMXter4Device: public UsbDevice {
 /*
  * A single Output port per device
  */
-class DMXter4DeviceOutputPort: public BasicOutputPort {
+class DmxterDeviceOutputPort: public BasicOutputPort {
   public:
-    explicit DMXter4DeviceOutputPort(DMXter4Device *parent)
+    explicit DmxterDeviceOutputPort(DmxterDevice *parent)
         : BasicOutputPort(parent, 0),
           m_device(parent) {}
 
@@ -104,7 +104,7 @@ class DMXter4DeviceOutputPort: public BasicOutputPort {
     string Description() const { return "RDM Only"; }
 
   private:
-    DMXter4Device *m_device;
+    DmxterDevice *m_device;
 };
 }  // usbpro
 }  // plugin
