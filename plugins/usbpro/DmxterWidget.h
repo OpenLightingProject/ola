@@ -111,6 +111,10 @@ class DmxterWidget: public ola::rdm::RDMControllerInterface {
       return m_impl.SendUIDUpdate();
     }
 
+    void SendTodRequest() {
+      return m_impl.SendTodRequest();
+    }
+
   private:
     DmxterWidgetImpl m_impl;
     ola::rdm::QueueingRDMController m_controller;
