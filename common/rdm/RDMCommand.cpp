@@ -349,7 +349,11 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
     OLA_WARN << "ACK_OVERFLOW buffer size hit! Limit is " << MAX_OVERFLOW_SIZE
       << ", request size is " << combined_length;
     return NULL;
+  } else if (response1->SourceUID() != response2->SourceUID()) {
+    OLA_WARN << "Source UIDs don't match";
+    return NULL;
   }
+
   uint8_t *combined_data = new uint8_t[combined_length];
   memcpy(combined_data, response1->ParamData(), response1->ParamDataSize());
   memcpy(combined_data + response1->ParamDataSize(),

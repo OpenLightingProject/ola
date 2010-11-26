@@ -87,6 +87,8 @@ bool InitLogging(log_level level, log_output output) {
  */
 void InitLogging(log_level level, LogDestination *destination) {
   SetLogLevel(level);
+  if (log_target)
+    delete log_target;
   log_target = destination;
 }
 
