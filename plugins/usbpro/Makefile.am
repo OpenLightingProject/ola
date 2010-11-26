@@ -3,13 +3,13 @@ include $(top_srcdir)/common.mk
 libdir = $(plugindir)
 SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h DmxterDevice.h DmxTriDevice.h DmxTriWidget.h \
-             UsbDevice.h UsbProDevice.h UsbProPlugin.h UsbWidget.h \
-             WidgetDetector.h
+             DmxterWidget.h UsbDevice.h UsbProDevice.h UsbProPlugin.h \
+             UsbWidget.h WidgetDetector.h
 
 # This is a library which doesn't contain any coupling to olad
 noinst_LTLIBRARIES = libolausbprowidget.la
-libolausbprowidget_la_SOURCES = DmxTriWidget.cpp UsbWidget.cpp \
-                                WidgetDetector.cpp
+libolausbprowidget_la_SOURCES = DmxTriWidget.cpp DmxterWidget.cpp \
+                                UsbWidget.cpp WidgetDetector.cpp
 
 lib_LTLIBRARIES = libolausbpro.la
 libolausbpro_la_SOURCES = UsbProPlugin.cpp ArduinoRGBDevice.cpp \
