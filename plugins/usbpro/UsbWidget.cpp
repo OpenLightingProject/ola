@@ -151,29 +151,29 @@ ola::network::ConnectedSocket *UsbWidget::OpenDevice(
  * Read the data and handle the messages.
  */
 void UsbWidget::ReceiveMessage() {
-  unsigned int cnt, packet_length;
+  unsigned int count, packet_length;
 
   switch (m_state) {
     case PRE_SOM:
       do {
-        m_socket->Receive(&m_header.som, 1, cnt);
-        if (cnt != 1)
+        m_socket->Receive(&m_header.som, 1, count);
+        if (count != 1)
           return;
       } while (m_header.som != SOM);
       m_state = RECV_LABEL;
     case RECV_LABEL:
-      m_socket->Receive(&m_header.label, 1, cnt);
-      if (cnt != 1)
+      m_socket->Receive(&m_header.label, 1, count);
+      if (count != 1)
         return;
       m_state = RECV_SIZE_LO;
     case RECV_SIZE_LO:
-      m_socket->Receive(&m_header.len, 1, cnt);
-      if (cnt != 1)
+      m_socket->Receive(&m_header.len, 1, count);
+      if (count != 1)
         return;
       m_state = RECV_SIZE_HI;
     case RECV_SIZE_HI:
-      m_socket->Receive(&m_header.len_hi, 1, cnt);
-      if (cnt != 1)
+      m_socket->Receive(&m_header.len_hi, 1, count);
+      if (count != 1)
         return;
 
       packet_length = (m_header.len_hi << 8) + m_header.len;
@@ -192,12 +192,12 @@ void UsbWidget::ReceiveMessage() {
       m_socket->Receive(
           reinterpret_cast<uint8_t*>(&m_recv_buffer) + m_bytes_received,
           packet_length - m_bytes_received,
-          cnt);
+          count);
 
-      if (!cnt)
+      if (!count)
         return;
 
-      m_bytes_received += cnt;
+      m_bytes_received += count;
       if (m_bytes_received != packet_length)
         return;
 
@@ -205,8 +205,8 @@ void UsbWidget::ReceiveMessage() {
     case RECV_EOM:
       // check this is a valid frame with an end byte
       uint8_t eom;
-      m_socket->Receive(&eom, 1, cnt);
-      if (cnt != 1)
+      m_socket->Receive(&eom, 1, count);
+      if (count != 1)
         return;
 
       packet_length = (m_header.len_hi << 8) + m_header.len;
