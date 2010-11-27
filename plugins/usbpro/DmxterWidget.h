@@ -66,7 +66,6 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
     ola::rdm::UIDSet m_uids;
     ola::network::timeout_id m_rdm_timeout;
     ola::Callback1<void, const ola::rdm::UIDSet&> *m_uid_set_callback;
-    const ola::rdm::RDMRequest *m_rdm_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
     uint8_t m_transaction_number;
 

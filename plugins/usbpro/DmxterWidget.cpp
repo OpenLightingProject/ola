@@ -29,9 +29,10 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using std::string;
+using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using std::string;
 
 const uint8_t DmxterWidgetImpl::RDM_REQUEST_LABEL = 0x80;
 const uint8_t DmxterWidgetImpl::RDM_BCAST_REQUEST_LABEL = 0x81;
@@ -55,7 +56,6 @@ DmxterWidgetImpl::DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
     m_ss(ss),
     m_rdm_timeout(ola::network::INVALID_TIMEOUT),
     m_uid_set_callback(NULL),
-    m_rdm_request(NULL),
     m_rdm_request_callback(NULL),
     m_transaction_number(0) {
   m_widget->SetMessageHandler(
@@ -72,7 +72,10 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
     m_rdm_timeout = ola::network::INVALID_TIMEOUT;
   }
 
-  // do something with the pending msg here
+  // timeout any existing message
+  if (m_rdm_request_callback)
+    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
+
 }
 
 
@@ -119,47 +122,48 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
  * that this is only called one-at-a-time.
  * @param request the RDMRequest object
  * @param on_complete the callback to run when the request completes or fails
+ *
+ * TODO(simon): Check the formatting for these and update the unittests
  */
-void DmxterWidgetImpl::SendRequest(const ola::rdm::RDMRequest *request,
+void DmxterWidgetImpl::SendRequest(const RDMRequest *request,
                                    ola::rdm::RDMCallback *on_complete) {
-  OLA_WARN << "RDM not implemented";
-
-  if (m_rdm_request) {
+  if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
     delete request;
     return;
   }
 
-  m_rdm_request = request->CloneWithNewControllerParams(
+  // the double copy here isn't nice
+  RDMRequest *our_request = request->CloneWithNewControllerParams(
     m_uid,
     m_transaction_number++,
     1);  // always port 1
   m_rdm_request_callback = on_complete;
 
-  unsigned int data_size = m_rdm_request->Size() + 1;  // add in the start code
+  unsigned int data_size = our_request->Size() + 1;  // add in the start code
   uint8_t *data = new uint8_t[data_size];
   data[0] = ola::rdm::RDMCommand::START_CODE;
   unsigned int length_used = data_size - 1;
 
-  if (m_rdm_request->Pack(data + 1, &length_used)) {
-    uint8_t label = m_rdm_request->DestinationUID().IsBroadcast() ?
+  if (our_request->Pack(data + 1, &length_used)) {
+    uint8_t label = our_request->DestinationUID().IsBroadcast() ?
       RDM_BCAST_REQUEST_LABEL : RDM_REQUEST_LABEL;
 
     if (m_widget->SendMessage(label, length_used + 1, data)) {
       delete[] data;
       delete request;
+      delete our_request;
       return;
     }
   } else {
     OLA_WARN << "Failed to pack message, dropping request";
   }
   on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
-  delete m_rdm_request;
-  m_rdm_request = NULL;
   m_rdm_request_callback = NULL;
   delete[] data;
   delete request;
+  delete our_request;
 }
 
 
@@ -227,6 +231,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
   // the format for this hasn't been decided yet. Just mark as a failure and
   // move on for now.
   m_rdm_request_callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+  m_rdm_request_callback = NULL;
 }
 
 

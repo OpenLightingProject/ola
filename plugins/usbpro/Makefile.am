@@ -20,7 +20,8 @@ libolausbpro_la_LIBADD = ./libolausbprowidget.la messages/libolausbproconf.la
 # Test programs
 TESTS = UsbProTester
 check_PROGRAMS = $(TESTS)
-UsbProTester_SOURCES = UsbWidgetTest.cpp \
+UsbProTester_SOURCES = DmxterWidgetTest.cpp \
+                       UsbWidgetTest.cpp \
                        WidgetDetectorTest.cpp \
                        UsbProTester.cpp
 
