@@ -50,8 +50,8 @@ class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
     }
 
     void SetMessageHandler(
-        ola::Callback3<void, uint8_t, unsigned int,
-                       const uint8_t*> *callback) {
+        ola::Callback3<void, uint8_t, const uint8_t*,
+                       unsigned int> *callback) {
       if (m_callback)
         delete m_callback;
       m_callback = callback;
@@ -63,8 +63,8 @@ class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
     }
 
     bool SendMessage(uint8_t label,
-                     unsigned int length,
-                     const uint8_t *data) const;
+                     const uint8_t *data,
+                     unsigned int length) const;
 
     void AddExpectedCall(uint8_t expected_label,
                          const uint8_t *expected_data,
@@ -78,7 +78,7 @@ class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
     }
 
   private:
-    ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *m_callback;
+    ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *m_callback;
 
     typedef struct {
       uint8_t label;
@@ -122,8 +122,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DmxterWidgetTest);
 
 
 bool MockUsbWidget::SendMessage(uint8_t label,
-                                unsigned int length,
-                                const uint8_t *data) const {
+                                const uint8_t *data,
+                                unsigned int length) const {
   CPPUNIT_ASSERT(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
   m_expected_calls.pop();
@@ -132,8 +132,8 @@ bool MockUsbWidget::SendMessage(uint8_t label,
   CPPUNIT_ASSERT(!memcmp(call.expected_command.data, data, length));
 
   m_callback->Run(call.return_command.label,
-                  call.return_command.length,
-                  call.return_command.data);
+                  call.return_command.data,
+                  call.return_command.length);
   return true;
 }
 

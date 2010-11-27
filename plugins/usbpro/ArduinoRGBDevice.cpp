@@ -78,8 +78,8 @@ bool ArduinoRGBDevice::SendDMX(const DmxBuffer &buffer) const {
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
   return m_widget->SendMessage(UsbWidget::DMX_LABEL,
-                               length + 1,
-                               reinterpret_cast<uint8_t*>(&widget_dmx));
+                               reinterpret_cast<uint8_t*>(&widget_dmx),
+                               length + 1);
 }
 }  // usbpro
 }  // plugin

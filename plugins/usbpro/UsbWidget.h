@@ -41,13 +41,13 @@ class UsbWidgetInterface {
     virtual ~UsbWidgetInterface() {}
 
     virtual void SetMessageHandler(
-      ola::Callback3<void, uint8_t, unsigned int,
-                     const uint8_t*> *callback) = 0;
+      ola::Callback3<void, uint8_t, const uint8_t*,
+                     unsigned int> *callback) = 0;
 
     virtual void SetOnRemove(ola::SingleUseCallback0<void> *on_close) = 0;
 
-    virtual bool SendMessage(uint8_t label, unsigned int length,
-                     const uint8_t *data) const = 0;
+    virtual bool SendMessage(uint8_t label, const uint8_t *data,
+                             unsigned int length) const = 0;
 };
 
 
@@ -61,13 +61,13 @@ class UsbWidget: public UsbWidgetInterface {
     ~UsbWidget();
 
     void SetMessageHandler(
-      ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *callback);
+      ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *callback);
     void SetOnRemove(ola::SingleUseCallback0<void> *on_close);
 
     void SocketReady();
 
-    bool SendMessage(uint8_t label, unsigned int length,
-                     const uint8_t *data) const;
+    bool SendMessage(uint8_t label, const uint8_t *data,
+                     unsigned int length) const;
 
     static ola::network::ConnectedSocket *OpenDevice(const string &path);
 
@@ -96,7 +96,7 @@ class UsbWidget: public UsbWidgetInterface {
       uint8_t len_hi;
     } message_header;
 
-    ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *m_callback;
+    ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *m_callback;
     ola::network::ConnectedSocket *m_socket;
     receive_state m_state;
     unsigned int m_bytes_received;

@@ -75,7 +75,6 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
   // timeout any existing message
   if (m_rdm_request_callback)
     m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
-
 }
 
 
@@ -95,8 +94,8 @@ void DmxterWidgetImpl::SetUIDListCallback(
  * Called when a new packet arrives
  */
 void DmxterWidgetImpl::HandleMessage(uint8_t label,
-                                     unsigned int length,
-                                     const uint8_t *data) {
+                                     const uint8_t *data,
+                                     unsigned int length) {
   OLA_INFO << "Got new packet: 0x" << std::hex <<
     static_cast<int>(label) <<
     ", size " << length;
@@ -150,7 +149,7 @@ void DmxterWidgetImpl::SendRequest(const RDMRequest *request,
     uint8_t label = our_request->DestinationUID().IsBroadcast() ?
       RDM_BCAST_REQUEST_LABEL : RDM_REQUEST_LABEL;
 
-    if (m_widget->SendMessage(label, length_used + 1, data)) {
+    if (m_widget->SendMessage(label, data, length_used + 1)) {
       delete[] data;
       delete request;
       delete our_request;
@@ -188,7 +187,7 @@ void DmxterWidgetImpl::SendUIDUpdate() {
  * Send a TOD request to the widget
  */
 void DmxterWidgetImpl::SendTodRequest() {
-  m_widget->SendMessage(TOD_LABEL, 0, NULL);
+  m_widget->SendMessage(TOD_LABEL, NULL, 0);
   OLA_INFO << "Sent TOD request";
 }
 

@@ -18,8 +18,8 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_DMXTER4DEVICE_H_
-#define PLUGINS_USBPRO_DMXTER4DEVICE_H_
+#ifndef PLUGINS_USBPRO_DMXTERDEVICE_H_
+#define PLUGINS_USBPRO_DMXTERDEVICE_H_
 
 #include <string>
 #include "ola/DmxBuffer.h"
@@ -50,8 +50,8 @@ class DmxterDevice: public UsbDevice {
     bool StartHook();
 
     void HandleMessage(uint8_t label,
-                       unsigned int length,
-                       const uint8_t *data);
+                       const uint8_t *data,
+                       unsigned int length);
 
     bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
     void RunRDMDiscovery();
@@ -109,4 +109,4 @@ class DmxterDeviceOutputPort: public BasicOutputPort {
 }  // usbpro
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBPRO_DMXTER4DEVICE_H_
+#endif  // PLUGINS_USBPRO_DMXTERDEVICE_H_

@@ -72,8 +72,8 @@ class WidgetDetectorTest: public CppUnit::TestFixture {
     void FailedWidget(UsbWidget *widget);
 
     void ResponderHandler(uint8_t label,
-                          unsigned int size,
-                          const uint8_t *data);
+                          const uint8_t *data,
+                          unsigned int size);
     void SendMessage(uint8_t label, uint16_t id, const string &description);
     void Timeout() { m_ss.Terminate(); }
 
@@ -151,8 +151,8 @@ void WidgetDetectorTest::FailedWidget(UsbWidget *widget) {
  * Called when a new message arrives
  */
 void WidgetDetectorTest::ResponderHandler(uint8_t label,
-                                          unsigned int size,
-                                          const uint8_t *data) {
+                                          const uint8_t *data,
+                                          unsigned int size) {
   if (label == UsbWidget::MANUFACTURER_LABEL) {
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), size);
     CPPUNIT_ASSERT_EQUAL(static_cast<const uint8_t*>(NULL), data);
@@ -173,8 +173,8 @@ void WidgetDetectorTest::ResponderHandler(uint8_t label,
 
     if (m_send_serial)
       m_responder->SendMessage(UsbWidget::SERIAL_LABEL,
-                               sizeof(SERIAL),
-                               reinterpret_cast<const uint8_t*>(&SERIAL));
+                               reinterpret_cast<const uint8_t*>(&SERIAL),
+                               sizeof(SERIAL));
   }
 }
 
@@ -189,8 +189,8 @@ void WidgetDetectorTest::SendMessage(uint8_t label,
     response.id = ola::network::HostToLittleEndian(id);
     strncpy(response.name, description.data(), sizeof(response.name));
     m_responder->SendMessage(label,
-                             sizeof(response),
-                             reinterpret_cast<uint8_t*>(&response));
+                             reinterpret_cast<uint8_t*>(&response),
+                             sizeof(response));
 }
 
 

@@ -63,8 +63,8 @@ class RDMSniffer {
                bool verbose);
 
     void HandleMessage(uint8_t label,
-                       unsigned int length,
-                       const uint8_t *data);
+                       const uint8_t *data,
+                       unsigned int length);
 
   private:
     UsbWidget *m_widget;
@@ -99,8 +99,8 @@ RDMSniffer::RDMSniffer(UsbWidget *widget,
  * Handle the widget replies
  */
 void RDMSniffer::HandleMessage(uint8_t label,
-                               unsigned int length,
-                               const uint8_t *data) {
+                               const uint8_t *data,
+                               unsigned int length) {
   if (label != RECEIVED_DMX_LABEL) {
     OLA_INFO << "Not a RECEIVED_DMX_LABEL, was " << static_cast<int>(label);
     return;

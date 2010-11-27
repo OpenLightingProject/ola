@@ -132,8 +132,8 @@ bool WidgetDetector::Discover(UsbWidget *widget) {
  */
 void WidgetDetector::HandleMessage(UsbWidget *widget,
                                   uint8_t label,
-                                  unsigned int length,
-                                  const uint8_t *data) {
+                                  const uint8_t *data,
+                                  unsigned int length) {
   switch (label) {
     case UsbWidget::MANUFACTURER_LABEL:
       HandleIdResponse(widget, length, data, false);
@@ -174,13 +174,13 @@ void WidgetDetector::DiscoveryTimeout(UsbWidget *widget) {
  * @param widget the widget to send to
  */
 bool WidgetDetector::SendDiscoveryMessages(UsbWidget *widget) {
-  if (!widget->SendMessage(UsbWidget::MANUFACTURER_LABEL, 0, NULL))
+  if (!widget->SendMessage(UsbWidget::MANUFACTURER_LABEL, NULL, 0))
     return false;
 
-  if (!widget->SendMessage(UsbWidget::DEVICE_LABEL, 0, NULL))
+  if (!widget->SendMessage(UsbWidget::DEVICE_LABEL, NULL, 0))
     return false;
 
-  return widget->SendMessage(UsbWidget::SERIAL_LABEL, 0, NULL);
+  return widget->SendMessage(UsbWidget::SERIAL_LABEL, NULL, 0);
 }
 
 

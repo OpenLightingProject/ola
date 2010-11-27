@@ -98,8 +98,8 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
  * Handle Messages from the widget
  */
 void UsbProDevice::HandleMessage(uint8_t label,
-                                 unsigned int length,
-                                 const uint8_t *data) {
+                                 const uint8_t *data,
+                                 unsigned int length) {
   switch (label) {
     case REPROGRAM_FIRMWARE_LABEL:
       break;
@@ -145,8 +145,8 @@ bool UsbProDevice::SendDMX(const DmxBuffer &buffer) {
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
   return m_widget->SendMessage(UsbWidget::DMX_LABEL,
-                               length + 1,
-                               reinterpret_cast<uint8_t*>(&widget_dmx));
+                               reinterpret_cast<uint8_t*>(&widget_dmx),
+                               length + 1);
 }
 
 
@@ -191,7 +191,7 @@ bool UsbProDevice::ChangeToReceiveMode(bool change_only) {
     return true;
 
   uint8_t mode = change_only;
-  bool status = m_widget->SendMessage(DMX_RX_MODE_LABEL, sizeof(mode), &mode);
+  bool status = m_widget->SendMessage(DMX_RX_MODE_LABEL, &mode, sizeof(mode));
 
   if (status && change_only)
     m_input_buffer.Blackout();
@@ -331,8 +331,8 @@ void UsbProDevice::HandleDMXDiff(const uint8_t *data, unsigned int length) {
 bool UsbProDevice::GetParameters() const {
   uint16_t user_size = 0;
   return m_widget->SendMessage(PARAMETERS_LABEL,
-                               sizeof(user_size),
-                               reinterpret_cast<uint8_t*>(&user_size));
+                               reinterpret_cast<uint8_t*>(&user_size),
+                               sizeof(user_size));
 }
 
 
@@ -375,8 +375,8 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
 
     bool ret = m_widget->SendMessage(
         SET_PARAMETERS_LABEL,
-        sizeof(widget_parameters),
-        reinterpret_cast<uint8_t*>(&widget_parameters));
+        reinterpret_cast<uint8_t*>(&widget_parameters),
+        sizeof(widget_parameters));
 
     if (!ret) {
       controller->SetFailed("SetParameters failed");

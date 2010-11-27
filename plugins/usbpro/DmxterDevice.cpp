@@ -83,8 +83,8 @@ bool DmxterDevice::StartHook() {
  * Called when a new packet arrives
  */
 void DmxterDevice::HandleMessage(uint8_t label,
-                                  unsigned int length,
-                                  const uint8_t *data) {
+                                 const uint8_t *data,
+                                 unsigned int length) {
   OLA_INFO << "Got new packet: 0x" << std::hex <<
     static_cast<int>(label) <<
     ", size " << length;
@@ -129,7 +129,7 @@ void DmxterDevice::SendUIDUpdate() {
  * Send a TOD request to the widget
  */
 void DmxterDevice::SendTodRequest() {
-  m_widget->SendMessage(TOD_LABEL, 0, NULL);
+  m_widget->SendMessage(TOD_LABEL, NULL, 0);
   OLA_INFO << "Sent TOD request";
 }
 

@@ -76,8 +76,8 @@ class WidgetDetector {
     bool Discover(UsbWidget *widget);
 
     // called by the widgets
-    void HandleMessage(UsbWidget *widget, uint8_t label, unsigned int length,
-                       const uint8_t *data);
+    void HandleMessage(UsbWidget *widget, uint8_t label, const uint8_t *data,
+                       unsigned int length);
     void DiscoveryTimeout(UsbWidget *widget);
     int DeviceClosed(UsbWidget *widget);
 

@@ -67,8 +67,8 @@ class UsbProDevice: public UsbDevice {
                  unsigned int fps_limit);
 
     void HandleMessage(uint8_t label,
-                       unsigned int length,
-                       const uint8_t *data);
+                       const uint8_t *data,
+                       unsigned int length);
 
     string DeviceId() const { return m_serial; }
 

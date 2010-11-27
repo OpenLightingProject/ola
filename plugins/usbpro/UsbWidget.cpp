@@ -62,7 +62,7 @@ UsbWidget::~UsbWidget() {
  * @param callback the closure to run, ownership is transferred.
  */
 void UsbWidget::SetMessageHandler(
-    ola::Callback3<void, uint8_t, unsigned int, const uint8_t*> *callback) {
+    ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *callback) {
   if (m_callback)
     delete m_callback;
   m_callback = callback;
@@ -92,8 +92,8 @@ void UsbWidget::SocketReady() {
  * @return true if successful, false otherwise
  */
 bool UsbWidget::SendMessage(uint8_t label,
-                            unsigned int length,
-                            const uint8_t *data) const {
+                            const uint8_t *data,
+                            unsigned int length) const {
   if (length && !data)
     return false;
 
@@ -213,8 +213,8 @@ void UsbWidget::ReceiveMessage() {
 
       if (eom == EOM && m_callback)
         m_callback->Run(m_header.label,
-                        packet_length,
-                        packet_length ? m_recv_buffer : NULL);
+                        packet_length ? m_recv_buffer : NULL,
+                        packet_length);
       m_state = PRE_SOM;
   }
   return;

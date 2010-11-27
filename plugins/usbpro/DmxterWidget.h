@@ -49,8 +49,8 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
         ola::Callback1<void, const ola::rdm::UIDSet&> *callback);
 
     void HandleMessage(uint8_t label,
-                       unsigned int length,
-                       const uint8_t *data);
+                       const uint8_t *data,
+                       unsigned int length);
 
     void SendRequest(const ola::rdm::RDMRequest *request,
                      ola::rdm::RDMCallback *on_complete);

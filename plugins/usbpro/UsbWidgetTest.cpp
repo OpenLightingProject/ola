@@ -73,8 +73,8 @@ class UsbWidgetTest: public CppUnit::TestFixture {
                             const uint8_t *data);
     void Receive();
     void ReceiveMessage(uint8_t label,
-                        unsigned int size,
-                        const uint8_t *data);
+                        const uint8_t *data,
+                        unsigned int size);
     void Timeout() { m_ss.Terminate(); }
     void DeviceRemoved() {
       m_removed = true;
@@ -144,8 +144,8 @@ void UsbWidgetTest::Receive() {
  * Called when a new message arrives
  */
 void UsbWidgetTest::ReceiveMessage(uint8_t label,
-                                   unsigned int size,
-                                   const uint8_t *data) {
+                                   const uint8_t *data,
+                                   unsigned int size) {
   CPPUNIT_ASSERT(m_messages.size());
   expected_message message = m_messages.front();
   m_messages.pop();
@@ -171,15 +171,15 @@ void UsbWidgetTest::testSend() {
     0x7e, 0x0b, 4, 0, 0xde, 0xad, 0xbe, 0xef, 0xe7,
   };
   AddExpected(string(reinterpret_cast<char*>(expected), sizeof(expected)));
-  CPPUNIT_ASSERT(m_widget->SendMessage(0, 0, NULL));
-  CPPUNIT_ASSERT(m_widget->SendMessage(10, 0, NULL));
+  CPPUNIT_ASSERT(m_widget->SendMessage(0, NULL, 0));
+  CPPUNIT_ASSERT(m_widget->SendMessage(10, NULL, 0));
 
   uint32_t data = ola::network::HostToNetwork(0xdeadbeef);
   CPPUNIT_ASSERT(m_widget->SendMessage(11,
-                                    sizeof(data),
-                                    reinterpret_cast<uint8_t*>(&data)));
+                                      reinterpret_cast<uint8_t*>(&data),
+                                      sizeof(data)));
 
-  CPPUNIT_ASSERT(!m_widget->SendMessage(10, 4, NULL));
+  CPPUNIT_ASSERT(!m_widget->SendMessage(10, NULL, 4));
   m_ss.Run();
 
   CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_expected.size());

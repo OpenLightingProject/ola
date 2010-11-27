@@ -61,8 +61,8 @@ class DmxTriWidget {
     bool CheckDiscoveryStatus();
 
     void HandleMessage(uint8_t label,
-                       unsigned int length,
-                       const uint8_t *data);
+                       const uint8_t *data,
+                       unsigned int length);
 
   private:
     ola::network::SelectServerInterface *m_ss;

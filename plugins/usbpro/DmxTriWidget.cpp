@@ -131,8 +131,8 @@ bool DmxTriWidget::SendDMX(const DmxBuffer &buffer) const {
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
   return m_widget->SendMessage(UsbWidget::DMX_LABEL,
-                               length + 1,
-                               reinterpret_cast<uint8_t*>(&widget_dmx));
+                               reinterpret_cast<uint8_t*>(&widget_dmx),
+                               length + 1);
 }
 
 
@@ -202,8 +202,8 @@ bool DmxTriWidget::CheckDiscoveryStatus() {
  * Handle a message received from the widget
  */
 void DmxTriWidget::HandleMessage(uint8_t label,
-                                 unsigned int length,
-                                 const uint8_t *data) {
+                                 const uint8_t *data,
+                                 unsigned int length) {
   if (label == EXTENDED_COMMAND_LABEL) {
     if (length < DATA_OFFSET) {
       OLA_WARN << "DMX-TRI frame too small";
@@ -262,8 +262,8 @@ bool DmxTriWidget::SendDiscoveryStart() {
   uint8_t command_id = DISCOVER_AUTO_COMMAND_ID;
 
   return m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
-                               sizeof(command_id),
-                               &command_id);
+                               &command_id,
+                               sizeof(command_id));
 }
 
 
@@ -277,8 +277,8 @@ void DmxTriWidget::FetchNextUID() {
   OLA_INFO << "fetching index  " << static_cast<int>(m_uid_count);
   uint8_t data[] = {REMOTE_UID_COMMAND_ID, m_uid_count};
   m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
-                        sizeof(data),
-                        data);
+                        data,
+                        sizeof(data));
 }
 
 
@@ -288,8 +288,8 @@ void DmxTriWidget::FetchNextUID() {
 bool DmxTriWidget::SendSetFilter(uint16_t esta_id) {
   uint8_t data[] = {SET_FILTER_COMMAND_ID, esta_id >> 8, esta_id & 0xff};
   return m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
-                               sizeof(data),
-                               reinterpret_cast<uint8_t*>(&data));
+                               reinterpret_cast<uint8_t*>(&data),
+                               sizeof(data));
 }
 
 
@@ -300,8 +300,8 @@ bool DmxTriWidget::SendDiscoveryStat() {
   uint8_t command_id = DISCOVER_STATUS_COMMAND_ID;
 
   return m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
-                               sizeof(command_id),
-                               &command_id);
+                               &command_id,
+                               sizeof(command_id));
 }
 
 
@@ -385,8 +385,8 @@ void DmxTriWidget::DispatchNextRequest() {
     std::hex << request->ParamId();
 
   m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
-                        size,
-                        reinterpret_cast<uint8_t*>(&message));
+                        reinterpret_cast<uint8_t*>(&message),
+                        size);
 }
 
 
@@ -405,8 +405,8 @@ void DmxTriWidget::DispatchQueuedGet(const ola::rdm::RDMRequest* request) {
                     request->ParamData()[0]};
 
   m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
-                        sizeof(data),
-                        reinterpret_cast<uint8_t*>(&data));
+                        reinterpret_cast<uint8_t*>(&data),
+                        sizeof(data));
 }
 
 

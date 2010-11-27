@@ -69,8 +69,8 @@ class FirmwareTransferer {
     bool SendReprogram();
 
     void HandleMessage(uint8_t label,
-                       unsigned int length,
-                       const uint8_t *data);
+                       const uint8_t *data,
+                       unsigned int length);
     bool SendNextChunk();
     void AbortTransfer() {
       m_ss->Terminate();
@@ -102,7 +102,7 @@ const char FirmwareTransferer::REPLY_SUCCESS[] = "TRUE";
  * Send the re-program request
  */
 bool FirmwareTransferer::SendReprogram() {
-  return m_widget->SendMessage(REPROGRAM_LABEL, 0, NULL);
+  return m_widget->SendMessage(REPROGRAM_LABEL, NULL, 0);
 }
 
 
@@ -110,8 +110,8 @@ bool FirmwareTransferer::SendReprogram() {
  * Handle the flash page replies
  */
 void FirmwareTransferer::HandleMessage(uint8_t label,
-                                       unsigned int length,
-                                       const uint8_t *data) {
+                                       const uint8_t *data,
+                                       unsigned int length) {
   if (label != FLASH_PAGE_LABEL || length != FLASH_STATUS_LENGTH)
     return;
 
@@ -141,7 +141,7 @@ bool FirmwareTransferer::SendNextChunk() {
   }
   cout << ".";
   fflush(stdout);
-  return m_widget->SendMessage(FLASH_PAGE_LABEL, size, page);
+  return m_widget->SendMessage(FLASH_PAGE_LABEL, page, size);
 }
 
 
