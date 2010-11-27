@@ -117,6 +117,18 @@ unsigned int RDMCommand::Size() const {
  * sometimes devices / protocols keep this separate.
  */
 bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size) const {
+  return Pack(buffer, size, m_source, m_transaction_number, m_port_id);
+}
+
+
+/*
+ * Pack this command into an RDM message structure with additional fields
+ * The packed data structure does not include the RDM start code (0xCC) because
+ * sometimes devices / protocols keep this separate.
+ */
+bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size, const UID &source,
+                      uint8_t transaction_number,
+                      uint8_t port_id) const {
   if (*size < Size())
     return false;
 
@@ -126,9 +138,9 @@ bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size) const {
   message.sub_start_code = SUB_START_CODE;
   message.message_length = packet_length + 1;  // add in start code as well
   m_destination.Pack(message.destination_uid, UID::UID_SIZE);
-  m_source.Pack(message.source_uid, UID::UID_SIZE);
-  message.transaction_number = m_transaction_number;
-  message.port_id = m_port_id;
+  source.Pack(message.source_uid, UID::UID_SIZE);
+  message.transaction_number = transaction_number;
+  message.port_id = port_id;
   message.message_count = m_message_count;
   message.sub_device[0] = m_sub_device >> 8;
   message.sub_device[1] = m_sub_device & 0xff;
@@ -146,7 +158,6 @@ bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size) const {
   *size = packet_length + CHECKSUM_LENGTH;
   return true;
 }
-
 
 /*
  * Convert a block of RDM data to an RDMCommand object.

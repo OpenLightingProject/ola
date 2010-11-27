@@ -244,16 +244,15 @@ void DmxterWidgetTest::testSendRequest() {
       NULL,  // data
       0);  // data length
 
-  RDMRequest *expected_request = request->CloneWithNewControllerParams(
-    new_source,
-    0,
-    1);
-
-  unsigned int size = expected_request->Size();
+  unsigned int size = request->Size();
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  unsigned int data_length = size;
-  CPPUNIT_ASSERT(expected_request->Pack(expected_packet + 1, &data_length));
+  CPPUNIT_ASSERT(request->PackWithControllerParams(
+        expected_packet + 1,
+        &size,
+        new_source,
+        0,
+        1));
 
   uint8_t return_packet[] = {
     0xcc, 0x70, 0x7a, 0xff, 0xff, 0xff, 0x00,
@@ -263,7 +262,7 @@ void DmxterWidgetTest::testSendRequest() {
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
       reinterpret_cast<uint8_t*>(expected_packet),
-      data_length + 1,
+      size + 1,
       RDM_REQUEST_LABEL,
       reinterpret_cast<uint8_t*>(return_packet),
       sizeof(return_packet));
@@ -272,7 +271,6 @@ void DmxterWidgetTest::testSendRequest() {
       request,
       ola::NewSingleCallback(this, &DmxterWidgetTest::ValidateResponse));
 
-  delete expected_request;
   delete[] expected_packet;
 
   // now check broadcast

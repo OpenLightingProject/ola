@@ -102,6 +102,12 @@ class RDMCommand {
       uint8_t param_data_length;
     } rdm_command_message;
 
+    bool Pack(uint8_t *buffer,
+              unsigned int *size,
+              const UID &source,
+              uint8_t transaction_number,
+              uint8_t port_id) const;
+
     static const rdm_command_message* VerifyData(const uint8_t *data,
                                                  unsigned int length);
     static RDMCommandClass ConvertCommandClass(uint8_t command_type);
@@ -157,7 +163,9 @@ class RDMRequest: public RDMCommand {
     uint8_t PortId() const { return m_port_id; }
 
     virtual RDMRequest *Duplicate() const = 0;
-    virtual RDMRequest *CloneWithNewControllerParams(
+    virtual bool PackWithControllerParams(
+        uint8_t *buffer,
+        unsigned int *size,
         const UID &source,
         uint8_t transaction_number,
         uint8_t port_id) const = 0;
@@ -205,20 +213,13 @@ class BaseRDMRequest: public RDMRequest {
         ParamDataSize());
     }
 
-    BaseRDMRequest<command_class> *CloneWithNewControllerParams(
+    bool PackWithControllerParams(
+        uint8_t *buffer,
+        unsigned int *size,
         const UID &source,
         uint8_t transaction_number,
         uint8_t port_id) const {
-      return new BaseRDMRequest<command_class>(
-        source,
-        DestinationUID(),
-        transaction_number,
-        port_id,
-        MessageCount(),
-        SubDevice(),
-        ParamId(),
-        ParamData(),
-        ParamDataSize());
+      return Pack(buffer, size, source, transaction_number, port_id);
     }
 };
 

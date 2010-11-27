@@ -75,6 +75,9 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
   // timeout any existing message
   if (m_rdm_request_callback)
     m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
+
+  if (m_uid_set_callback)
+    delete m_uid_set_callback;
 }
 
 
@@ -133,26 +136,23 @@ void DmxterWidgetImpl::SendRequest(const RDMRequest *request,
     return;
   }
 
-  // the double copy here isn't nice
-  RDMRequest *our_request = request->CloneWithNewControllerParams(
-    m_uid,
-    m_transaction_number++,
-    1);  // always port 1
   m_rdm_request_callback = on_complete;
-
-  unsigned int data_size = our_request->Size() + 1;  // add in the start code
-  uint8_t *data = new uint8_t[data_size];
+  unsigned int data_size = request->Size();  // add in the start code
+  uint8_t *data = new uint8_t[data_size + 1];
   data[0] = ola::rdm::RDMCommand::START_CODE;
-  unsigned int length_used = data_size - 1;
 
-  if (our_request->Pack(data + 1, &length_used)) {
-    uint8_t label = our_request->DestinationUID().IsBroadcast() ?
+  bool r = request->PackWithControllerParams(data + 1,
+                                             &data_size,
+                                             m_uid,
+                                             m_transaction_number,
+                                             1);
+  if (r) {
+    uint8_t label = request->DestinationUID().IsBroadcast() ?
       RDM_BCAST_REQUEST_LABEL : RDM_REQUEST_LABEL;
 
-    if (m_widget->SendMessage(label, data, length_used + 1)) {
+    if (m_widget->SendMessage(label, data, data_size + 1)) {
       delete[] data;
       delete request;
-      delete our_request;
       return;
     }
   } else {
@@ -162,7 +162,6 @@ void DmxterWidgetImpl::SendRequest(const RDMRequest *request,
   m_rdm_request_callback = NULL;
   delete[] data;
   delete request;
-  delete our_request;
 }
 
 

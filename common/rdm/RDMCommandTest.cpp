@@ -48,7 +48,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNackWithReason);
   CPPUNIT_TEST(testGetResponseWithData);
   CPPUNIT_TEST(testCombineResponses);
-  CPPUNIT_TEST(testClone);
+  CPPUNIT_TEST(testPackWithParams);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -60,7 +60,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testNackWithReason();
     void testGetResponseWithData();
     void testCombineResponses();
-    void testClone();
+    void testPackWithParams();
 
   private:
     void PackAndVerify(const RDMCommand &command,
@@ -667,7 +667,7 @@ void RDMCommandTest::testCombineResponses() {
 /**
  * Test that cloning works
  */
-void RDMCommandTest::testClone() {
+void RDMCommandTest::testPackWithParams() {
   UID source(1, 2);
   UID destination(3, 4);
   UID new_source(7, 8);
@@ -682,22 +682,25 @@ void RDMCommandTest::testClone() {
                             NULL,  // data
                             0);  // data length
 
-  RDMRequest *request = get_command.CloneWithNewControllerParams(
-     new_source,
-      99,
-      10);
+  uint8_t *data = new uint8_t[get_command.Size()];
+  unsigned int length = get_command.Size();
+  CPPUNIT_ASSERT(get_command.PackWithControllerParams(
+      data, &length, new_source, 99, 10));
 
-  CPPUNIT_ASSERT(request);
+  RDMRequest *command = RDMRequest::InflateFromData(data, length);
+  CPPUNIT_ASSERT(command);
 
-  CPPUNIT_ASSERT_EQUAL(new_source, request->SourceUID());
-  CPPUNIT_ASSERT_EQUAL(destination, request->DestinationUID());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 99, request->TransactionNumber());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 10, request->PortId());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, request->MessageCount());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, request->SubDevice());
-  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND, request->CommandClass());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 296, request->ParamId());
-  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<uint8_t*>(NULL), request->ParamData());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, request->ParamDataSize());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 25, request->Size());
+  CPPUNIT_ASSERT_EQUAL(new_source, command->SourceUID());
+  CPPUNIT_ASSERT_EQUAL(destination, command->DestinationUID());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 99, command->TransactionNumber());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 10, command->PortId());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, command->MessageCount());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, command->SubDevice());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND, command->CommandClass());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 296, command->ParamId());
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<uint8_t*>(NULL), command->ParamData());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, command->ParamDataSize());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 25, command->Size());
+  delete[] data;
+  delete command;
 }
