@@ -63,7 +63,8 @@ QueueingRDMController::~QueueingRDMController() {
   // delete all outstanding requests
   while (!m_pending_requests.empty()) {
     outstanding_rdm_request outstanding_request = m_pending_requests.front();
-    outstanding_request.on_complete->Run(RDM_FAILED_TO_SEND, NULL);
+    if (outstanding_request.on_complete)
+      outstanding_request.on_complete->Run(RDM_FAILED_TO_SEND, NULL);
     delete outstanding_request.request;
     m_pending_requests.pop();
   }
@@ -100,7 +101,8 @@ void QueueingRDMController::SendRequest(const RDMRequest *request,
                                         RDMCallback *on_complete) {
   if (m_pending_requests.size() >= m_max_queue_size) {
     OLA_WARN << "RDM Queue is full, dropping request";
-    on_complete->Run(RDM_FAILED_TO_SEND, NULL);
+    if (on_complete)
+      on_complete->Run(RDM_FAILED_TO_SEND, NULL);
     delete request;
     return;
   }
@@ -185,7 +187,8 @@ void QueueingRDMController::HandleRDMResponse(
     m_response = NULL;
   }
   outstanding_rdm_request outstanding_request = m_pending_requests.front();
-  outstanding_request.on_complete->Run(status, m_response);
+  if (outstanding_request.on_complete)
+    outstanding_request.on_complete->Run(status, m_response);
   m_response = NULL;
   delete outstanding_request.request;
   m_pending_requests.pop();
