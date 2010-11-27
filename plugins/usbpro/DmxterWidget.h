@@ -64,13 +64,13 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
     UsbWidgetInterface *m_widget;
     ola::network::SelectServerInterface *m_ss;
     ola::rdm::UIDSet m_uids;
-    ola::network::timeout_id m_rdm_timeout;
     ola::Callback1<void, const ola::rdm::UIDSet&> *m_uid_set_callback;
     ola::rdm::RDMCallback *m_rdm_request_callback;
     uint8_t m_transaction_number;
 
     void HandleTodResponse(const uint8_t *data, unsigned int length);
     void HandleRDMResponse(const uint8_t *data, unsigned int length);
+    void HandleBroadcastRDMResponse(const uint8_t *data, unsigned int length);
 
     static const uint8_t RDM_REQUEST_LABEL;
     static const uint8_t RDM_BCAST_REQUEST_LABEL;

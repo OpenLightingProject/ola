@@ -112,13 +112,14 @@ class DmxterWidgetTest: public CppUnit::TestFixture {
     void ValidateTod(const ola::rdm::UIDSet &uids);
     void ValidateResponse(ola::rdm::rdm_request_status status,
                           const ola::rdm::RDMResponse *response);
+    void ValidateBroadcastResponse(ola::rdm::rdm_request_status status,
+                                   const ola::rdm::RDMResponse *response);
 
     ola::network::SelectServer m_ss;
     MockUsbWidget m_widget;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DmxterWidgetTest);
-
 
 
 bool MockUsbWidget::SendMessage(uint8_t label,
@@ -187,6 +188,19 @@ void DmxterWidgetTest::ValidateResponse(
 
 
 /**
+ * Check the broadcast response matches what we expected.
+ */
+void DmxterWidgetTest::ValidateBroadcastResponse(
+    ola::rdm::rdm_request_status status,
+    const ola::rdm::RDMResponse *response) {
+
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_WAS_BROADCAST, status);
+  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<const ola::rdm::RDMResponse*>(NULL),
+                       response);
+}
+
+
+/**
  * Check that discovery works for a device that just implements the serial #
  */
 void DmxterWidgetTest::testTod() {
@@ -216,6 +230,8 @@ void DmxterWidgetTest::testTod() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_tod_counter);
   dmxter.SendUIDUpdate();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_tod_counter);
+
+  m_widget.Verify();
 }
 
 
@@ -224,8 +240,10 @@ void DmxterWidgetTest::testTod() {
  */
 void DmxterWidgetTest::testSendRequest() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
+  uint8_t RDM_BROADCAST_REQUEST_LABEL = 0x81;
   UID source(1, 2);
   UID destination(3, 4);
+  UID bcast_destination(3, 0xffffffff);
   UID new_source(0x5253, 0x12345678);
 
   ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
@@ -255,7 +273,9 @@ void DmxterWidgetTest::testSendRequest() {
         1));
 
   uint8_t return_packet[] = {
-    0xcc, 0x70, 0x7a, 0xff, 0xff, 0xff, 0x00,
+    0x00, 0x00,  // response code 'ok'
+    0xcc,
+    0x70, 0x7a, 0xff, 0xff, 0xff, 0x00,
     0x52, 0x52, 0x12, 0x34, 0x56, 0x78,
   };
 
@@ -271,7 +291,39 @@ void DmxterWidgetTest::testSendRequest() {
       request,
       ola::NewSingleCallback(this, &DmxterWidgetTest::ValidateResponse));
 
+  // now check broadcast
+  request = new ola::rdm::RDMGetRequest(
+      source,
+      bcast_destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      10,  // sub device
+      296,  // param id
+      NULL,  // data
+      0);  // data length
+
+  CPPUNIT_ASSERT(request->PackWithControllerParams(
+        expected_packet + 1,
+        &size,
+        new_source,
+        0,  // increment transaction #
+        1));
+
+  m_widget.AddExpectedCall(
+      RDM_BROADCAST_REQUEST_LABEL,
+      reinterpret_cast<uint8_t*>(expected_packet),
+      size + 1,
+      RDM_BROADCAST_REQUEST_LABEL,
+      reinterpret_cast<uint8_t*>(NULL),
+      0);
+
+  dmxter.SendRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxterWidgetTest::ValidateBroadcastResponse));
+
   delete[] expected_packet;
 
-  // now check broadcast
+  m_widget.Verify();
 }

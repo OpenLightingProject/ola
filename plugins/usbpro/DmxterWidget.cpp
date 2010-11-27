@@ -54,7 +54,6 @@ DmxterWidgetImpl::DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
     m_uid(esta_id, serial),
     m_widget(widget),
     m_ss(ss),
-    m_rdm_timeout(ola::network::INVALID_TIMEOUT),
     m_uid_set_callback(NULL),
     m_rdm_request_callback(NULL),
     m_transaction_number(0) {
@@ -67,11 +66,6 @@ DmxterWidgetImpl::DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
  * Clean up
  */
 DmxterWidgetImpl::~DmxterWidgetImpl() {
-  if (m_rdm_timeout != ola::network::INVALID_TIMEOUT) {
-    m_ss->RemoveTimeout(m_rdm_timeout);
-    m_rdm_timeout = ola::network::INVALID_TIMEOUT;
-  }
-
   // timeout any existing message
   if (m_rdm_request_callback)
     m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
@@ -108,14 +102,15 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
       HandleTodResponse(data, length);
       break;
     case RDM_REQUEST_LABEL:
-    case RDM_BCAST_REQUEST_LABEL:
       HandleRDMResponse(data, length);
+      break;
+    case RDM_BCAST_REQUEST_LABEL:
+      HandleBroadcastRDMResponse(data, length);
       break;
     default:
       OLA_WARN << "Unknown label: 0x" << std::hex <<
         static_cast<int>(label);
   }
-  return;
 }
 
 
@@ -218,17 +213,48 @@ void DmxterWidgetImpl::HandleTodResponse(const uint8_t *data,
  */
 void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                          unsigned int length) {
-  OLA_INFO << "got RDM response!";
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a response but no callback to run!";
     return;
   }
 
-  (void) data;
-  (void) length;
+  if (length < 2) {
+    OLA_WARN << "Invalid RDM response from the widget";
+    m_rdm_request_callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+    m_rdm_request_callback = NULL;
+    return;
+  }
+
+  uint16_t response_code;
+  memcpy(reinterpret_cast<uint8_t*>(&response_code),
+         data,
+         sizeof(response_code));
+
+  // TODO(simon): what ordering does the response_code use?
+  OLA_INFO << "Got response code " << std::hex << response_code;
+
   // the format for this hasn't been decided yet. Just mark as a failure and
   // move on for now.
   m_rdm_request_callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+  m_rdm_request_callback = NULL;
+}
+
+
+/**
+ * Handle a broadcast response
+ */
+void DmxterWidgetImpl::HandleBroadcastRDMResponse(const uint8_t *data,
+                                                  unsigned int length) {
+  if (m_rdm_request_callback == NULL) {
+    OLA_FATAL << "Got a response but no callback to run!";
+    return;
+  }
+
+  if (length != 0 || data != NULL) {
+    OLA_WARN << "Got strange broadcast response, length was " << length <<
+      ", data was " << data;
+  }
+  m_rdm_request_callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
   m_rdm_request_callback = NULL;
 }
 
