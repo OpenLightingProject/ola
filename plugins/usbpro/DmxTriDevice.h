@@ -23,6 +23,7 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/RDMControllerInterface.h"
 #include "plugins/usbpro/UsbDevice.h"
 
 namespace ola {
@@ -52,7 +53,9 @@ class DmxTriDevice: public UsbDevice {
     void PrePortStop();
     bool SendDMX(const DmxBuffer &buffer) const;
 
-    bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback);
+
     void RunRDMDiscovery();
     void SendUIDUpdate();
 
@@ -77,8 +80,9 @@ class DmxTriOutputPort: public BasicOutputPort {
     }
     string Description() const { return ""; }
 
-    bool HandleRDMRequest(const ola::rdm::RDMRequest *request) {
-      return m_device->HandleRDMRequest(request);
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback) {
+      return m_device->HandleRDMRequest(request, callback);
     }
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe) {

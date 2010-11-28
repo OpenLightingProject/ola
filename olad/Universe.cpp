@@ -54,7 +54,6 @@ const char Universe::K_UNIVERSE_MODE_VAR[] = "universe-mode";
 const char Universe::K_UNIVERSE_NAME_VAR[] = "universe-name";
 const char Universe::K_UNIVERSE_OUTPUT_PORT_VAR[] = "universe-output-ports";
 const char Universe::K_UNIVERSE_RDM_REQUESTS[] = "universe-rdm-requests";
-const char Universe::K_UNIVERSE_RDM_RESPONSES[] = "universe-rdm-responses";
 const char Universe::K_UNIVERSE_SINK_CLIENTS_VAR[] = "universe-sink-clients";
 const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
     "universe-source-clients";
@@ -87,7 +86,6 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
     K_UNIVERSE_INPUT_PORT_VAR,
     K_UNIVERSE_OUTPUT_PORT_VAR,
     K_UNIVERSE_RDM_REQUESTS,
-    K_UNIVERSE_RDM_RESPONSES,
     K_UNIVERSE_SINK_CLIENTS_VAR,
     K_UNIVERSE_SOURCE_CLIENTS_VAR,
     K_UNIVERSE_UID_COUNT_VAR,
@@ -114,7 +112,6 @@ Universe::~Universe() {
     K_UNIVERSE_INPUT_PORT_VAR,
     K_UNIVERSE_OUTPUT_PORT_VAR,
     K_UNIVERSE_RDM_REQUESTS,
-    K_UNIVERSE_RDM_RESPONSES,
     K_UNIVERSE_SINK_CLIENTS_VAR,
     K_UNIVERSE_SOURCE_CLIENTS_VAR,
     K_UNIVERSE_UID_COUNT_VAR,
@@ -353,14 +350,11 @@ bool Universe::SourceClientDataChanged(Client *client) {
  * transferred to this method.
  * @returns true if this request was sent to an Output port, false otherwise
  */
-bool Universe::HandleRDMRequest(InputPort *port,
-                                const ola::rdm::RDMRequest *request) {
+void Universe::HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                ola::rdm::RDMCallback *callback) {
   OLA_INFO << "Got a RDM request for " << request->DestinationUID() <<
     " with command " << std::hex << request->CommandClass() << " and param " <<
     request->ParamId();
-
-  // populate the input UID map so we know how to route this request later
-  m_input_uids[request->SourceUID()] = port;
 
   if (m_export_map)
     (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_REQUESTS))[
@@ -372,11 +366,12 @@ bool Universe::HandleRDMRequest(InputPort *port,
     for (port_iter = m_output_ports.begin(); port_iter != m_output_ports.end();
          ++port_iter) {
       // because each port deletes the request, we need to copy it here
-      (*port_iter)->HandleRDMRequest(request->Duplicate());
+      // TODO(simon): rather than blindly sending, we should only run the
+      // callback once we know all ports have sent the request
+      (*port_iter)->HandleRDMRequest(request->Duplicate(), NULL);
     }
     delete request;
-    return true;
-
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
   } else {
     map<UID, OutputPort*>::iterator iter =
       m_output_uids.find(request->DestinationUID());
@@ -384,41 +379,12 @@ bool Universe::HandleRDMRequest(InputPort *port,
     if (iter == m_output_uids.end()) {
       OLA_WARN << "Can't find UID " << request->DestinationUID() <<
         " in the output universe map, dropping request";
+      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
       delete request;
-      return false;
     } else {
-      iter->second->HandleRDMRequest(request);
+      iter->second->HandleRDMRequest(request, callback);
     }
   }
-  return true;
-}
-
-
-/*
- * Handle a RDM response
- */
-bool Universe::HandleRDMResponse(OutputPort *port,
-                                 const ola::rdm::RDMResponse *response) {
-  OLA_INFO << "Got a RDM response from " << response->SourceUID() <<
-    " with command " << std::hex << response->CommandClass() << " and param "
-    << response->ParamId();
-
-  map<UID, InputPort*>::iterator iter =
-    m_input_uids.find(response->DestinationUID());
-
-  if (m_export_map)
-    (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_RESPONSES))[
-      m_universe_id_str]++;
-
-  if (iter == m_input_uids.end()) {
-    OLA_WARN << "Can't find UID " << response->DestinationUID() <<
-      " in the input universe map, dropping response";
-    delete response;
-    return false;
-  } else {
-    return iter->second->HandleRDMResponse(response);
-  }
-  (void) port;
 }
 
 

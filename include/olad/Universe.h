@@ -28,6 +28,7 @@
 #include <ola/DmxBuffer.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
 #include <ola/rdm/RDMCommand.h>  // NOLINT
+#include <ola/rdm/RDMControllerInterface.h>  // NOLINT
 #include <ola/rdm/UID.h>  // NOLINT
 #include <ola/rdm/UIDSet.h>  // NOLINT
 #include <olad/DmxSource.h>  // NOLINT
@@ -96,10 +97,8 @@ class Universe {
     bool SourceClientDataChanged(Client *client);
 
     // RDM methods
-    bool HandleRDMRequest(InputPort *port,
-                          const ola::rdm::RDMRequest *request);
-    bool HandleRDMResponse(OutputPort *port,
-                           const ola::rdm::RDMResponse *response);
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback);
     void RunRDMDiscovery();
     void GetUIDs(ola::rdm::UIDSet *uids) const;
     unsigned int UIDCount() const;
@@ -117,7 +116,6 @@ class Universe {
     static const char K_UNIVERSE_NAME_VAR[];
     static const char K_UNIVERSE_OUTPUT_PORT_VAR[];
     static const char K_UNIVERSE_RDM_REQUESTS[];
-    static const char K_UNIVERSE_RDM_RESPONSES[];
     static const char K_UNIVERSE_SINK_CLIENTS_VAR[];
     static const char K_UNIVERSE_SOURCE_CLIENTS_VAR[];
     static const char K_UNIVERSE_UID_COUNT_VAR[];
@@ -145,7 +143,6 @@ class Universe {
     class UniverseStore *m_universe_store;
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
-    map<UID, InputPort*> m_input_uids;
     map<UID, OutputPort*> m_output_uids;
 
     template<class PortClass>

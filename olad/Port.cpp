@@ -98,12 +98,15 @@ void BasicInputPort::DmxChanged() {
  * Handle an RDM Request on this port.
  * @param request the RDMRequest object, ownership is transferred to us
  */
-bool BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
-  if (m_universe)
-    return m_universe->HandleRDMRequest(this, request);
-  else
+void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                      ola::rdm::RDMCallback *callback) {
+  // TODO(simon): fill this in with a callback to the broker
+  if (m_universe) {
+    //return m_universe->HandleRDMRequest(this, request);
+  } else {
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
     delete request;
-    return false;
+  }
 }
 
 

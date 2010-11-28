@@ -2,7 +2,7 @@ include $(top_srcdir)/common.mk
 
 libdir = $(plugindir)
 SUBDIRS = messages
-EXTRA_DIST = ArduinoRGBDevice.h DmxterDevice.h DmxTriDevice.h DmxTriWidget.h \
+EXTRA_DIST = ArduinoRGBDevice.h DmxTriDevice.h DmxTriWidget.h DmxterDevice.h \
              DmxterWidget.h MockUsbWidget.h UsbDevice.h UsbProDevice.h \
              UsbProPlugin.h UsbWidget.h WidgetDetector.h
 
@@ -20,7 +20,8 @@ libolausbpro_la_LIBADD = ./libolausbprowidget.la messages/libolausbproconf.la
 # Test programs
 TESTS = UsbProTester
 check_PROGRAMS = $(TESTS)
-UsbProTester_SOURCES = DmxterWidgetTest.cpp \
+UsbProTester_SOURCES = DmxTriWidgetTest.cpp \
+                       DmxterWidgetTest.cpp \
                        MockUsbWidget.cpp \
                        UsbProTester.cpp \
                        UsbWidgetTest.cpp \

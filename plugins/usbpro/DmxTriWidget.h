@@ -27,6 +27,8 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/SelectServerInterface.h"
+#include "ola/rdm/QueueingRDMController.h"
+#include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/UsbWidget.h"
 
@@ -38,24 +40,25 @@ using std::queue;
 
 
 /*
- * An DMX TRI Device
+ * A DMX TRI Widget implementation. We separate the Widget from the
+ * implementation so we can leverage the QueueingRDMController.
  */
-class DmxTriWidget {
+class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
   public:
-    DmxTriWidget(ola::network::SelectServerInterface *ss,
-                 UsbWidget *widget);
-    ~DmxTriWidget();
+    DmxTriWidgetImpl(ola::network::SelectServerInterface *ss,
+                     UsbWidgetInterface *widget);
+    ~DmxTriWidgetImpl();
 
     void SetUIDListCallback(
         ola::Callback1<void, const ola::rdm::UIDSet&> *callback);
-    void SetRDMResponseCallback(
-        ola::Callback1<bool, const ola::rdm::RDMResponse*> *callback);
-
+    void SetDiscoveryCallback(
+        ola::Callback0<void> *callback);
     void Stop();
 
     bool SendDMX(const DmxBuffer &buffer) const;
 
-    bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    void SendRequest(const ola::rdm::RDMRequest *request,
+                     ola::rdm::RDMCallback *on_complete);
     void RunRDMDiscovery();
     void SendUIDUpdate();
     bool CheckDiscoveryStatus();
@@ -66,26 +69,26 @@ class DmxTriWidget {
 
   private:
     ola::network::SelectServerInterface *m_ss;
-    UsbWidget *m_widget;
+    UsbWidgetInterface *m_widget;
     ola::network::timeout_id m_rdm_timeout_id;
     std::map<const ola::rdm::UID, uint8_t> m_uid_index_map;
     unsigned int m_uid_count;
-    queue<const class ola::rdm::RDMRequest*> m_pending_requests;
-    bool m_rdm_request_pending;
     uint16_t m_last_esta_id;
-    ola::rdm::RDMResponse *m_rdm_response;
 
     ola::Callback1<void, const ola::rdm::UIDSet&> *m_uid_set_callback;
-    ola::Callback1<bool, const ola::rdm::RDMResponse*> *m_rdm_response_callback;
+    ola::Callback0<void> *m_discovery_callback;
+    ola::rdm::RDMCallback *m_rdm_request_callback;
+    const ola::rdm::RDMRequest *m_pending_request;
+    uint8_t m_transaction_number;
 
     bool InDiscoveryMode() const;
     bool SendDiscoveryStart();
     bool SendDiscoveryStat();
     void FetchNextUID();
-    bool SendSetFilter(uint16_t esta_id);
-    void MaybeSendRDMRequest();
-    void DispatchNextRequest();
-    void DispatchQueuedGet(const ola::rdm::RDMRequest* request);
+    void DispatchRequest(const ola::rdm::RDMRequest *request,
+                         ola::rdm::RDMCallback *callback);
+    void DispatchQueuedGet(const ola::rdm::RDMRequest* request,
+                           ola::rdm::RDMCallback *callback);
     void StopDiscovery();
 
     void HandleDiscoveryAutoResponse(uint8_t return_code,
@@ -141,6 +144,7 @@ class DmxTriWidget {
       EC_BUFFER_FULL = 0x27,
       EC_FRAME_OVERFLOW = 0x28,
       EC_SUBDEVICE_UNKNOWN = 0x29,
+      EC_PROXY_BUFFER_FULL = 0x2a,  // this isn't included in the docs
     } dmx_tri_error_codes;
 
     static const unsigned int DATA_OFFSET = 2;  // first two bytes are CI & RC
@@ -154,6 +158,52 @@ class DmxTriWidget {
     static const uint8_t SET_FILTER_COMMAND_ID = 0x3d;
     // The ms delay between checking on the RDM discovery process
     static const unsigned int RDM_STATUS_INTERVAL_MS = 100;
+};
+
+
+/*
+ * An DMX TRI Device
+ */
+class DmxTriWidget {
+  public:
+    DmxTriWidget(ola::network::SelectServerInterface *ss,
+                 UsbWidgetInterface *widget,
+                 unsigned int queue_size = 20);
+    ~DmxTriWidget() {}
+
+    void Stop() { m_impl.Stop(); }
+
+    bool SendDMX(const DmxBuffer &buffer) const {
+      return m_impl.SendDMX(buffer);
+    }
+
+    void SetUIDListCallback(
+        ola::Callback1<void, const ola::rdm::UIDSet&> *callback) {
+      m_impl.SetUIDListCallback(callback);
+    }
+
+    void SendRequest(const ola::rdm::RDMRequest *request,
+                     ola::rdm::RDMCallback *on_complete) {
+      m_controller.SendRequest(request, on_complete);
+    }
+
+    void RunRDMDiscovery() {
+      // pause rdm sending
+      m_controller.Pause();
+      m_impl.RunRDMDiscovery();
+    }
+
+    void SendUIDUpdate() {
+      m_impl.SendUIDUpdate();
+    }
+
+  private:
+    DmxTriWidgetImpl m_impl;
+    ola::rdm::QueueingRDMController m_controller;
+
+    void ResumeRDMCommands() {
+      m_controller.Resume();
+    }
 };
 }  // usbpro
 }  // plugin

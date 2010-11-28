@@ -59,6 +59,10 @@ class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
 
     void AddExpectedCall(uint8_t expected_label,
                          const uint8_t *expected_data,
+                         unsigned int expected_length);
+
+    void AddExpectedCall(uint8_t expected_label,
+                         const uint8_t *expected_data,
                          unsigned int expected_length,
                          uint8_t return_label,
                          const uint8_t *return_data,
@@ -78,6 +82,7 @@ class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
     } command;
 
     typedef struct {
+      bool send_response;
       command expected_command;
       command return_command;
     } expected_call;

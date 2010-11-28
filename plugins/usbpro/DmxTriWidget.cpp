@@ -49,45 +49,45 @@ using ola::rdm::UIDSet;
 /*
  * New DMX TRI device
  */
-DmxTriWidget::DmxTriWidget(ola::network::SelectServerInterface *ss,
-                           UsbWidget *widget):
+DmxTriWidgetImpl::DmxTriWidgetImpl(ola::network::SelectServerInterface *ss,
+                                   UsbWidgetInterface *widget):
     m_ss(ss),
     m_widget(widget),
     m_rdm_timeout_id(ola::network::INVALID_TIMEOUT),
     m_uid_count(0),
-    m_rdm_request_pending(false),
     m_last_esta_id(UID::ALL_MANUFACTURERS),
-    m_rdm_response(NULL),
     m_uid_set_callback(NULL),
-    m_rdm_response_callback(NULL) {
+    m_discovery_callback(NULL),
+    m_rdm_request_callback(NULL),
+    m_pending_request(NULL),
+    m_transaction_number(0) {
   m_widget->SetMessageHandler(
-      NewCallback(this, &DmxTriWidget::HandleMessage));
+      NewCallback(this, &DmxTriWidgetImpl::HandleMessage));
 }
 
 
 /*
  * Shutdown
  */
-DmxTriWidget::~DmxTriWidget() {
-  // delete all outstanding requests
-  while (!m_pending_requests.empty()) {
-    const RDMRequest *request = m_pending_requests.front();
-    delete request;
-    m_pending_requests.pop();
-  }
+DmxTriWidgetImpl::~DmxTriWidgetImpl() {
+  Stop();
+
+  // timeout any existing message
+  if (m_rdm_request_callback)
+    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
 
   if (m_uid_set_callback)
     delete m_uid_set_callback;
 
-  if (m_rdm_response_callback)
-    delete m_rdm_response_callback;
+  if (m_discovery_callback)
+    delete m_discovery_callback;
 }
 
 
 /**
  * Set the callback used when the UIDSet changes
  */
-void DmxTriWidget::SetUIDListCallback(
+void DmxTriWidgetImpl::SetUIDListCallback(
     ola::Callback1<void, const ola::rdm::UIDSet&> *callback) {
   if (m_uid_set_callback)
     delete m_uid_set_callback;
@@ -96,20 +96,19 @@ void DmxTriWidget::SetUIDListCallback(
 
 
 /**
- * Set the callback used when a RDM response is received
+ * Set the callback to be run when discovery completes
  */
-void DmxTriWidget::SetRDMResponseCallback(
-        ola::Callback1<bool, const ola::rdm::RDMResponse*> *callback) {
-  if (m_rdm_response_callback)
-    delete m_rdm_response_callback;
-  m_rdm_response_callback = callback;
+void DmxTriWidgetImpl::SetDiscoveryCallback(ola::Callback0<void> *callback) {
+  if (m_discovery_callback)
+    delete m_discovery_callback;
+  m_discovery_callback = callback;
 }
 
 
-/*
- * Stop the widget.
+/**
+ * Stop the rdm discovery process if it's running
  */
-void DmxTriWidget::Stop() {
+void DmxTriWidgetImpl::Stop() {
   if (m_rdm_timeout_id != ola::network::INVALID_TIMEOUT) {
     m_ss->RemoveTimeout(m_rdm_timeout_id);
     m_rdm_timeout_id = ola::network::INVALID_TIMEOUT;
@@ -121,7 +120,7 @@ void DmxTriWidget::Stop() {
  * Send a DMX message
  * @returns true if we sent ok, false otherwise
  */
-bool DmxTriWidget::SendDMX(const DmxBuffer &buffer) const {
+bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
   struct {
     uint8_t start_code;
     uint8_t dmx[DMX_UNIVERSE_SIZE];
@@ -137,28 +136,53 @@ bool DmxTriWidget::SendDMX(const DmxBuffer &buffer) const {
 
 
 /*
- * Handle an RDM Request, ownership of the request object is transferred to us.
+ * Send an RDM request. Because this is wrapped in a QueueingRDMController it's
+ * only going to be called one-at-a-time.
  */
-bool DmxTriWidget::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
-  // if we can't find this UID, fail now. While in discovery mode the
-  // m_uid_index_map will be clear so skip the check in this case.
+void DmxTriWidgetImpl::SendRequest(const ola::rdm::RDMRequest *request,
+                                   ola::rdm::RDMCallback *on_complete) {
+  if (m_rdm_request_callback) {
+    OLA_FATAL << "Previous request hasn't completed yet, dropping request";
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    delete request;
+    return;
+  }
+
+  // if we can't find this UID, fail now.
   const UID &dest_uid = request->DestinationUID();
   if (!dest_uid.IsBroadcast() &&
-      !InDiscoveryMode() &&
       m_uid_index_map.find(dest_uid) == m_uid_index_map.end()) {
+    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL);
     delete request;
-    return false;
+    return;
   }
-  m_pending_requests.push(request);
-  MaybeSendRDMRequest();
-  return true;
+
+  if (request->DestinationUID().IsBroadcast() &&
+      request->DestinationUID().ManufacturerId() != m_last_esta_id) {
+    uint16_t esta_id = request->DestinationUID().ManufacturerId();
+    uint8_t data[] = {SET_FILTER_COMMAND_ID, esta_id >> 8, esta_id & 0xff};
+    m_pending_request = request;
+    m_rdm_request_callback = on_complete;
+    bool r = m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
+                                   reinterpret_cast<uint8_t*>(&data),
+                                   sizeof(data));
+    if (!r) {
+      OLA_INFO << "Failed to send set filter, aborting request";
+      delete request;
+      m_pending_request = NULL;
+      m_rdm_request_callback = NULL;
+      on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    }
+  } else {
+    DispatchRequest(request, on_complete);
+  }
 }
 
 
 /*
  * Kick off the discovery process if it's not already running
  */
-void DmxTriWidget::RunRDMDiscovery() {
+void DmxTriWidgetImpl::RunRDMDiscovery() {
   if (InDiscoveryMode())
     // process already running
     return;
@@ -171,14 +195,14 @@ void DmxTriWidget::RunRDMDiscovery() {
   // setup a stat every RDM_STATUS_INTERVAL_MS until we're done
   m_rdm_timeout_id = m_ss->RegisterRepeatingTimeout(
       RDM_STATUS_INTERVAL_MS,
-      NewCallback(this, &DmxTriWidget::CheckDiscoveryStatus));
+      NewCallback(this, &DmxTriWidgetImpl::CheckDiscoveryStatus));
 }
 
 
 /**
  * Call the UIDSet handler with the latest UID list.
  */
-void DmxTriWidget::SendUIDUpdate() {
+void DmxTriWidgetImpl::SendUIDUpdate() {
   UIDSet uid_set;
   map<UID, uint8_t>::iterator iter = m_uid_index_map.begin();
   for (; iter != m_uid_index_map.end(); ++iter) {
@@ -193,7 +217,7 @@ void DmxTriWidget::SendUIDUpdate() {
  * Check the status of the RDM discovery process.
  * This is called periodically while discovery is running
  */
-bool DmxTriWidget::CheckDiscoveryStatus() {
+bool DmxTriWidgetImpl::CheckDiscoveryStatus() {
   return SendDiscoveryStat();
 }
 
@@ -201,9 +225,9 @@ bool DmxTriWidget::CheckDiscoveryStatus() {
 /*
  * Handle a message received from the widget
  */
-void DmxTriWidget::HandleMessage(uint8_t label,
-                                 const uint8_t *data,
-                                 unsigned int length) {
+void DmxTriWidgetImpl::HandleMessage(uint8_t label,
+                                     const uint8_t *data,
+                                     unsigned int length) {
   if (label == EXTENDED_COMMAND_LABEL) {
     if (length < DATA_OFFSET) {
       OLA_WARN << "DMX-TRI frame too small";
@@ -238,7 +262,8 @@ void DmxTriWidget::HandleMessage(uint8_t label,
         HandleSetFilterResponse(return_code, data, length);
         break;
       default:
-        OLA_WARN << "Unknown DMX-TRI CI: " << static_cast<int>(command_id);
+        OLA_WARN << "Unknown DMX-TRI CI: 0x" << std::hex <<
+          static_cast<int>(command_id);
     }
   } else {
     OLA_INFO << "DMX-TRI got response " << static_cast<int>(label);
@@ -249,7 +274,7 @@ void DmxTriWidget::HandleMessage(uint8_t label,
 /*
  * Return true if discovery is running
  */
-bool DmxTriWidget::InDiscoveryMode() const {
+bool DmxTriWidgetImpl::InDiscoveryMode() const {
   return (m_rdm_timeout_id != ola::network::INVALID_TIMEOUT ||
           m_uid_count);
 }
@@ -258,7 +283,7 @@ bool DmxTriWidget::InDiscoveryMode() const {
 /*
  * Send a DiscoAuto message to begin the discovery process.
  */
-bool DmxTriWidget::SendDiscoveryStart() {
+bool DmxTriWidgetImpl::SendDiscoveryStart() {
   uint8_t command_id = DISCOVER_AUTO_COMMAND_ID;
 
   return m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
@@ -270,11 +295,11 @@ bool DmxTriWidget::SendDiscoveryStart() {
 /*
  * Send a DiscoAuto message to begin the discovery process.
  */
-void DmxTriWidget::FetchNextUID() {
+void DmxTriWidgetImpl::FetchNextUID() {
   if (!m_uid_count)
     return;
 
-  OLA_INFO << "fetching index  " << static_cast<int>(m_uid_count);
+  OLA_INFO << "Fetching index  " << static_cast<int>(m_uid_count);
   uint8_t data[] = {REMOTE_UID_COMMAND_ID, m_uid_count};
   m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
                         data,
@@ -283,20 +308,9 @@ void DmxTriWidget::FetchNextUID() {
 
 
 /*
- * Send a SetFilter command
- */
-bool DmxTriWidget::SendSetFilter(uint16_t esta_id) {
-  uint8_t data[] = {SET_FILTER_COMMAND_ID, esta_id >> 8, esta_id & 0xff};
-  return m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
-                               reinterpret_cast<uint8_t*>(&data),
-                               sizeof(data));
-}
-
-
-/*
  * Send a DiscoStat message to begin the discovery process.
  */
-bool DmxTriWidget::SendDiscoveryStat() {
+bool DmxTriWidgetImpl::SendDiscoveryStat() {
   uint8_t command_id = DISCOVER_STATUS_COMMAND_ID;
 
   return m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
@@ -306,37 +320,21 @@ bool DmxTriWidget::SendDiscoveryStat() {
 
 
 /*
- * If we're not in discovery mode, send the next request. This will call
- * SetFilter and defer the send if it's a broadcast UID.
- */
-void DmxTriWidget::MaybeSendRDMRequest() {
-  if (InDiscoveryMode() || m_pending_requests.empty() || m_rdm_request_pending)
-    return;
-
-  m_rdm_request_pending = true;
-  const RDMRequest *request = m_pending_requests.front();
-  if (request->DestinationUID().IsBroadcast() &&
-      request->DestinationUID().ManufacturerId() != m_last_esta_id) {
-    SendSetFilter(request->DestinationUID().ManufacturerId());
-  } else {
-    DispatchNextRequest();
-  }
-}
-
-
-/*
  * Send the next RDM request, this assumes that SetFilter has been called
  */
-void DmxTriWidget::DispatchNextRequest() {
-  const RDMRequest *request = m_pending_requests.front();
+void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
+                                       ola::rdm::RDMCallback *callback) {
   if (request->ParamId() == ola::rdm::PID_QUEUED_MESSAGE &&
       request->CommandClass() == RDMCommand::GET_COMMAND) {
     // these are special
-    if (request->ParamDataSize())
-      DispatchQueuedGet(request);
-    else
+    if (request->ParamDataSize()) {
+      DispatchQueuedGet(request, callback);
+    } else {
       OLA_WARN << "Missing param data in queued message get";
-    return;
+      delete request;
+      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+      return;
+    }
   }
 
   struct rdm_message {
@@ -356,6 +354,8 @@ void DmxTriWidget::DispatchNextRequest() {
   } else {
     OLA_WARN << "Request was not get or set: " <<
       static_cast<int>(request->CommandClass());
+    delete request;
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
     return;
   }
 
@@ -366,6 +366,8 @@ void DmxTriWidget::DispatchNextRequest() {
       m_uid_index_map.find(request->DestinationUID());
     if (iter == m_uid_index_map.end()) {
       OLA_WARN << request->DestinationUID() << " not found in uid map";
+      delete request;
+      callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL);
       return;
     }
     message.index = iter->second;
@@ -384,36 +386,53 @@ void DmxTriWidget::DispatchNextRequest() {
     " with command " << std::hex << request->CommandClass() << " and param " <<
     std::hex << request->ParamId();
 
-  m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
-                        reinterpret_cast<uint8_t*>(&message),
-                        size);
+  m_pending_request = request;
+  m_rdm_request_callback = callback;
+  bool r = m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
+                                 reinterpret_cast<uint8_t*>(&message),
+                                 size);
+  if (!r) {
+    m_pending_request = NULL;
+    delete request;
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+  }
 }
 
 
 /*
  * Send a queued get message
  */
-void DmxTriWidget::DispatchQueuedGet(const ola::rdm::RDMRequest* request) {
+void DmxTriWidgetImpl::DispatchQueuedGet(const ola::rdm::RDMRequest* request,
+                                         ola::rdm::RDMCallback *callback) {
   map<UID, uint8_t>::const_iterator iter =
     m_uid_index_map.find(request->DestinationUID());
   if (iter == m_uid_index_map.end()) {
     OLA_WARN << request->DestinationUID() << " not found in uid map";
+    delete request;
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
     return;
   }
   uint8_t data[] = {QUEUED_GET_COMMAND_ID,
                     iter->second,
                     request->ParamData()[0]};
 
-  m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
-                        reinterpret_cast<uint8_t*>(&data),
-                        sizeof(data));
+  m_pending_request = request;
+  bool r = m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
+                                 reinterpret_cast<uint8_t*>(&data),
+                                 sizeof(data));
+
+  if (!r) {
+    m_pending_request = NULL;
+    delete request;
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+  }
 }
 
 
 /*
  * Stop the discovery process
  */
-void DmxTriWidget::StopDiscovery() {
+void DmxTriWidgetImpl::StopDiscovery() {
   if (m_rdm_timeout_id != ola::network::INVALID_TIMEOUT) {
     m_ss->RemoveTimeout(m_rdm_timeout_id);
     m_rdm_timeout_id = ola::network::INVALID_TIMEOUT;
@@ -424,9 +443,9 @@ void DmxTriWidget::StopDiscovery() {
 /*
  * Handle the response from calling DiscoAuto
  */
-void DmxTriWidget::HandleDiscoveryAutoResponse(uint8_t return_code,
-                                               const uint8_t *data,
-                                               unsigned int length) {
+void DmxTriWidgetImpl::HandleDiscoveryAutoResponse(uint8_t return_code,
+                                                   const uint8_t *data,
+                                                   unsigned int length) {
   if (return_code != EC_NO_ERROR) {
     OLA_WARN << "DMX_TRI discovery returned error " <<
       static_cast<int>(return_code);
@@ -440,44 +459,55 @@ void DmxTriWidget::HandleDiscoveryAutoResponse(uint8_t return_code,
 /*
  * Handle the response from calling discovery stat
  */
-void DmxTriWidget::HandleDiscoverStatResponse(uint8_t return_code,
-                                              const uint8_t *data,
-                                              unsigned int length) {
-  switch (return_code) {
-    case EC_NO_ERROR:
-      break;
-    case EC_RESPONSE_MUTE:
-      OLA_WARN << "Failed to mute device, aborting discovery";
-      StopDiscovery();
-      return;
-    case EC_RESPONSE_DISCOVERY:
-      OLA_WARN <<
-        "Duplicated or erroneous device detected, aborting discovery";
-      StopDiscovery();
-      return;
-    case EC_RESPONSE_UNEXPECTED:
+void DmxTriWidgetImpl::HandleDiscoverStatResponse(uint8_t return_code,
+                                                  const uint8_t *data,
+                                                  unsigned int length) {
+  if (return_code == EC_NO_ERROR || return_code == EC_RESPONSE_UNEXPECTED) {
+    if (return_code == EC_RESPONSE_UNEXPECTED)
       OLA_INFO << "Got an unexpected RDM response during discovery";
-      break;
-    default:
-      OLA_WARN << "DMX_TRI discovery returned error " <<
-        static_cast<int>(return_code);
-      StopDiscovery();
+
+    if (length < 1) {
+      // don't cancel the timer, try again after RDM_STATUS_INTERVAL_MS
+      OLA_WARN << "DiscoStat command too short, was " << length;
       return;
-  }
+    }
 
-  if (length < 1) {
-    OLA_WARN << "DiscoStat command too short, was " << length;
-    return;
-  }
+    if (data[1] == 0) {
+      OLA_DEBUG << "Discovery process has completed, " <<
+        static_cast<int>(data[0]) << " devices found";
+      StopDiscovery();
+      m_uid_count = data[0];
+      m_uid_index_map.clear();
+      if (m_uid_count) {
+        FetchNextUID();
+      } else {
+        if (m_discovery_callback)
+          m_discovery_callback->Run();
+        SendUIDUpdate();
+      }
+    }
 
-  if (data[1] == 0) {
-    OLA_DEBUG << "Discovery process has completed, " <<
-      static_cast<int>(data[0]) << " devices found";
-    StopDiscovery();
-    m_uid_count = data[0];
+  } else {
+    // These are all fatal
+    switch (return_code) {
+      case EC_RESPONSE_MUTE:
+        OLA_WARN << "Failed to mute device, aborting discovery";
+        break;
+      case EC_RESPONSE_DISCOVERY:
+        OLA_WARN <<
+          "Duplicated or erroneous device detected, aborting discovery";
+        break;
+      default:
+        OLA_WARN << "DMX_TRI discovery returned error " <<
+          static_cast<int>(return_code);
+        break;
+    }
+    // clear out the old map
     m_uid_index_map.clear();
-    if (m_uid_count)
-      FetchNextUID();
+    StopDiscovery();
+    if (m_discovery_callback)
+      m_discovery_callback->Run();
+    SendUIDUpdate();
   }
 }
 
@@ -485,9 +515,9 @@ void DmxTriWidget::HandleDiscoverStatResponse(uint8_t return_code,
 /*
  * Handle the response to a RemoteGet command
  */
-void DmxTriWidget::HandleRemoteUIDResponse(uint8_t return_code,
-                                           const uint8_t *data,
-                                           unsigned int length) {
+void DmxTriWidgetImpl::HandleRemoteUIDResponse(uint8_t return_code,
+                                               const uint8_t *data,
+                                               unsigned int length) {
   if (!m_uid_count) {
     // not expecting any responses
     OLA_INFO << "Got an unexpected RemoteUID response";
@@ -515,65 +545,69 @@ void DmxTriWidget::HandleRemoteUIDResponse(uint8_t return_code,
     FetchNextUID();
   } else {
     // notify the universe
-    SendUIDUpdate();
+    if (m_discovery_callback)
+      m_discovery_callback->Run();
 
-    // start sending rdm commands again
-    MaybeSendRDMRequest();
+    SendUIDUpdate();
   }
 }
 
 
 /*
- * Handle the response to a RemoteGet command
+ * Handle the response to a Remote Get/Set command
  */
-void DmxTriWidget::HandleRemoteRDMResponse(uint8_t return_code,
-                                           const uint8_t *data,
-                                           unsigned int length) {
-  const RDMRequest *request = m_pending_requests.front();
+void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
+                                               const uint8_t *data,
+                                               unsigned int length) {
+  const ola::rdm::RDMRequest *request = m_pending_request;
+  m_pending_request = NULL;
+  ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+  m_rdm_request_callback = NULL;
 
   OLA_INFO << "Received RDM response with code 0x" <<
-    static_cast<int>(return_code) << ", " << length << " bytes, param " <<
-    std::hex << request->ParamId();
+    std::hex << static_cast<int>(return_code) << ", " << std::dec << length <<
+    " bytes, param " << std::hex << request->ParamId();
 
-  if (return_code == EC_NO_ERROR ||
-      return_code == EC_RESPONSE_WAIT ||
-      return_code == EC_RESPONSE_MORE) {
-    ola::rdm::RDMResponse *response = ola::rdm::GetResponseWithData(
+  if (callback == NULL || request == NULL) {
+    OLA_FATAL << "Got a response but missing callback or request object!";
+    return;
+  }
+  ola::rdm::RDMResponse *response = NULL;
+  ola::rdm::rdm_request_status status;
+
+  if (return_code == EC_NO_ERROR) {
+    if (request->DestinationUID().IsBroadcast()) {
+      status = ola::rdm::RDM_WAS_BROADCAST;
+    } else {
+      status = ola::rdm::RDM_COMPLETED_OK;
+      response = ola::rdm::GetResponseWithData(
+          request,
+          data,
+          length);
+    }
+  } else if (return_code == EC_RESPONSE_TIME ||
+             return_code == EC_RESPONSE_WAIT ||
+             return_code == EC_RESPONSE_MORE) {
+    ola::rdm::rdm_response_type type = ola::rdm::ACK;
+    if (return_code == EC_RESPONSE_TIME)
+      type = ola::rdm::ACK_TIMER;
+    else if (return_code == EC_RESPONSE_MORE)
+      type = ola::rdm::ACK_OVERFLOW;
+
+    response = ola::rdm::GetResponseWithData(
         request,
         data,
         length,
+        type,
         // this is a hack, there is no way to expose # of queues messages
         return_code == EC_RESPONSE_WAIT ? 1 : 0);
 
-    if (m_rdm_response) {
-      // if this is part of an overflowed response we need to combine it
-      ola::rdm::RDMResponse *combined_response =
-        ola::rdm::RDMResponse::CombineResponses(m_rdm_response, response);
-      delete m_rdm_response;
-      delete response;
-      m_rdm_response = combined_response;
-    } else {
-      m_rdm_response = response;
-    }
+    status = ola::rdm::RDM_COMPLETED_OK;
+  } else if (return_code == EC_RESPONSE_TIME) {
+    status = ola::rdm::RDM_TIMEOUT;
 
-    if (m_rdm_response) {
-      if (return_code == EC_RESPONSE_MORE) {
-        // send the same command again;
-        DispatchNextRequest();
-        return;
-      } else {
-        if (m_rdm_response_callback)
-          m_rdm_response_callback->Run(m_rdm_response);
-        m_rdm_response = NULL;
-      }
-    }
   } else if (return_code >= EC_UNKNOWN_PID &&
-             return_code <= EC_SUBDEVICE_UNKNOWN) {
-    if (m_rdm_response) {
-      delete m_rdm_response;
-      m_rdm_response = NULL;
-    }
-
+             return_code <= EC_PROXY_BUFFER_FULL) {
     // avoid compiler warnings
     ola::rdm::rdm_nack_reason reason = ola::rdm::NR_UNKNOWN_PID;
 
@@ -608,34 +642,30 @@ void DmxTriWidget::HandleRemoteRDMResponse(uint8_t return_code,
       case EC_SUBDEVICE_UNKNOWN:
         reason = ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE;
         break;
+      case EC_PROXY_BUFFER_FULL:
+        reason = ola::rdm::NR_PROXY_BUFFER_FULL;
+        break;
     }
-    ola::rdm::RDMResponse *response =
-      ola::rdm::NackWithReason(request, reason);
-    m_rdm_response_callback->Run(response);
-
+    response = ola::rdm::NackWithReason(request, reason);
+    status = ola::rdm::RDM_COMPLETED_OK;
+  } else if (return_code == EC_RESPONSE_NONE) {
+    OLA_INFO << "Response timed out";
+    status = ola::rdm::RDM_TIMEOUT;
   } else {
-    // TODO(simonn): Implement the correct response here when we error out
-    // case 0x15
-    // case 0x18
+    // TODO(simonn): Expand the error codes here
     OLA_WARN << "Response was returned with 0x" << std::hex <<
       static_cast<int>(return_code);
-    if (m_rdm_response) {
-      delete m_rdm_response;
-      m_rdm_response = NULL;
-    }
+    status = ola::rdm::RDM_INVALID_RESPONSE;
   }
   delete request;
-  m_pending_requests.pop();
-  m_rdm_request_pending = false;
-  // send the next one
-  MaybeSendRDMRequest();
+  callback->Run(status, response);
 }
 
 
 /*
  * Handle the response to a QueuedGet command
  */
-void DmxTriWidget::HandleQueuedGetResponse(uint8_t return_code,
+void DmxTriWidgetImpl::HandleQueuedGetResponse(uint8_t return_code,
                                            const uint8_t *data,
                                            unsigned int length) {
   OLA_INFO << "got queued message response";
@@ -649,23 +679,44 @@ void DmxTriWidget::HandleQueuedGetResponse(uint8_t return_code,
 /*
  * Handle a setfilter response
  */
-void DmxTriWidget::HandleSetFilterResponse(uint8_t return_code,
-                                           const uint8_t *data,
-                                           unsigned int length) {
+void DmxTriWidgetImpl::HandleSetFilterResponse(uint8_t return_code,
+                                               const uint8_t *data,
+                                               unsigned int length) {
+  if (!m_pending_request) {
+    OLA_WARN << "Set filter response but no RDM message to send!";
+    return;
+  }
+
+  ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+  m_rdm_request_callback = NULL;
+  const ola::rdm::RDMRequest *request = m_pending_request;
+  m_pending_request = NULL;
+
   if (return_code == EC_NO_ERROR) {
-    m_last_esta_id =
-      m_pending_requests.front()->DestinationUID().ManufacturerId();
-    DispatchNextRequest();
+    m_last_esta_id = request->DestinationUID().ManufacturerId();
+    DispatchRequest(request, callback);
   } else {
     OLA_WARN << "SetFilter returned " << static_cast<int>(return_code) <<
       ", we have no option but to drop the rdm request";
-    delete m_pending_requests.front();
-    m_pending_requests.pop();
-    m_rdm_request_pending = false;
-    MaybeSendRDMRequest();
+    delete request;
+    if (callback)
+      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
   }
   (void) data;
   (void) length;
+}
+
+
+/**
+ * DmxTriWidget Constructor
+ */
+DmxTriWidget::DmxTriWidget(ola::network::SelectServerInterface *ss,
+                           UsbWidgetInterface *widget,
+                           unsigned int queue_size):
+    m_impl(ss, widget),
+    m_controller(&m_impl, queue_size) {
+  m_impl.SetDiscoveryCallback(
+      NewCallback(this, &DmxTriWidget::ResumeRDMCommands));
 }
 }  // usbpro
 }  // plugin

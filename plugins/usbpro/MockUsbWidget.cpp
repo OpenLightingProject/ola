@@ -24,66 +24,7 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "plugins/usbpro/UsbWidget.h"
-
-
-/**
- * The MockUsbWidget, used to verify calls.
- */
-class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
-  public:
-    MockUsbWidget():
-      m_callback(NULL) {}
-    ~MockUsbWidget() {
-      if (m_callback)
-        delete m_callback;
-    }
-
-    void SetMessageHandler(
-        ola::Callback3<void, uint8_t, const uint8_t*,
-                       unsigned int> *callback) {
-      if (m_callback)
-        delete m_callback;
-      m_callback = callback;
-    }
-
-    // this doesn't do anything
-    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
-      delete on_close;
-    }
-
-    bool SendMessage(uint8_t label,
-                     const uint8_t *data,
-                     unsigned int length) const;
-
-    void AddExpectedCall(uint8_t expected_label,
-                         const uint8_t *expected_data,
-                         unsigned int expected_length,
-                         uint8_t return_label,
-                         const uint8_t *return_data,
-                         unsigned int return_length);
-
-    void Verify() {
-      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_expected_calls.size());
-    }
-
-  private:
-    ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *m_callback;
-
-    typedef struct {
-      uint8_t label;
-      unsigned int length;
-      const uint8_t *data;
-    } command;
-
-    typedef struct {
-      command expected_command;
-      command return_command;
-    } expected_call;
-
-    mutable std::queue<expected_call> m_expected_calls;
-};
-
+#include "plugins/usbpro/MockUsbWidget.h"
 
 bool MockUsbWidget::SendMessage(uint8_t label,
                                 const uint8_t *data,
@@ -95,13 +36,31 @@ bool MockUsbWidget::SendMessage(uint8_t label,
   CPPUNIT_ASSERT_EQUAL(call.expected_command.length, length);
   CPPUNIT_ASSERT(!memcmp(call.expected_command.data, data, length));
 
-  m_callback->Run(call.return_command.label,
-                  call.return_command.data,
-                  call.return_command.length);
+  if (call.send_response)
+    m_callback->Run(call.return_command.label,
+                    call.return_command.data,
+                    call.return_command.length);
   return true;
 }
 
 
+/**
+ * A Call that doesn't trigger a response
+ */
+void MockUsbWidget::AddExpectedCall(uint8_t expected_label,
+                                    const uint8_t *expected_data,
+                                    unsigned int expected_length) {
+  expected_call call;
+  call.send_response = false;
+  call.expected_command.label = expected_label;
+  call.expected_command.data = expected_data;
+  call.expected_command.length = expected_length;
+  m_expected_calls.push(call);
+}
+
+/**
+ * A Call that triggers a response
+ */
 void MockUsbWidget::AddExpectedCall(uint8_t expected_label,
                                     const uint8_t *expected_data,
                                     unsigned int expected_length,
@@ -109,6 +68,7 @@ void MockUsbWidget::AddExpectedCall(uint8_t expected_label,
                                     const uint8_t *return_data,
                                     unsigned int return_length) {
   expected_call call;
+  call.send_response = true;
   call.expected_command.label = expected_label;
   call.expected_command.data = expected_data;
   call.expected_command.length = expected_length;

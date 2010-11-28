@@ -57,8 +57,6 @@ DmxTriDevice::DmxTriDevice(ola::network::SelectServerInterface *ss,
 
   m_tri_widget->SetUIDListCallback(
       ola::NewCallback(output_port, &DmxTriOutputPort::NewUIDList));
-  m_tri_widget->SetRDMResponseCallback(
-      ola::NewCallback(output_port, &DmxTriOutputPort::HandleRDMResponse));
 }
 
 
@@ -104,8 +102,9 @@ bool DmxTriDevice::SendDMX(const DmxBuffer &buffer) const {
 /*
  * Handle an RDM Request, ownership of the request object is transferred to us.
  */
-bool DmxTriDevice::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
-  return m_tri_widget->HandleRDMRequest(request);
+void DmxTriDevice::HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                    ola::rdm::RDMCallback *callback) {
+  m_tri_widget->SendRequest(request, callback);
 }
 
 

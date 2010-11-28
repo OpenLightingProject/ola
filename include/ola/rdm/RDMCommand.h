@@ -302,6 +302,7 @@ RDMResponse *NackWithReason(const RDMRequest *request,
 RDMResponse *GetResponseWithData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length,
+                                 rdm_response_type type = ACK,
                                  uint8_t outstanding_messages = 0);
 }  // rdm
 }  // ola

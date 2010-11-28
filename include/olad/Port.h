@@ -25,6 +25,7 @@
 #include <ola/Clock.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
 #include <ola/rdm/RDMCommand.h>  // NOLINT
+#include <ola/rdm/RDMControllerInterface.h>  // NOLINT
 #include <olad/DmxSource.h>  // NOLINT
 #include <olad/PortConstants.h>  // NOLINT
 #include <olad/Universe.h>  // NOLINT
@@ -85,8 +86,8 @@ class InputPort: public Port {
     virtual const DmxSource &SourceData() const = 0;
 
     // Handle RDMRequests, ownership of the request object is transferred
-    virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request) = 0;
-    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response) = 0;
+    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                  ola::rdm::RDMCallback *callback) = 0;
 };
 
 
@@ -104,8 +105,8 @@ class OutputPort: public Port {
     virtual void UniverseNameChanged(const string &new_name) = 0;
 
     // Handle RDMRequests, ownership of the request object is transferred
-    virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request) = 0;
-    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response) = 0;
+    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                  ola::rdm::RDMCallback *callback) = 0;
     virtual void RunRDMDiscovery() = 0;
     virtual void NewUIDList(const ola::rdm::UIDSet &uids) = 0;
 };
@@ -134,8 +135,8 @@ class BasicInputPort: public InputPort {
     const DmxSource &SourceData() const { return m_dmx_source; }
 
     // rdm methods, the child class provides HandleRDMResponse
-    bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
-    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response);
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback);
     void TriggerRDMDiscovery();
 
     port_priority_capability PriorityCapability() const {
@@ -205,9 +206,8 @@ class BasicOutputPort: public OutputPort {
 
     // rdm methods, the child class provides HandleRDMRequest and
     // RunRDMDiscovery
-    virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
-    // This is virtual so that we can override it in unittests
-    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response);
+    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                  ola::rdm::RDMCallback *callback);
     virtual void RunRDMDiscovery();
     virtual void NewUIDList(const ola::rdm::UIDSet &uids);
 
@@ -308,12 +308,9 @@ class OutputPortDecorator: public OutputPort {
       return m_port->GetPriorityMode();
     }
 
-    virtual bool HandleRDMRequest(const ola::rdm::RDMRequest *request) {
-      return m_port->HandleRDMRequest(request);
-    }
-
-    virtual bool HandleRDMResponse(const ola::rdm::RDMResponse *response) {
-      return m_port->HandleRDMResponse(response);
+    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                  ola::rdm::RDMCallback *callback) {
+      return m_port->HandleRDMRequest(request, callback);
     }
 
     virtual void RunRDMDiscovery() {
