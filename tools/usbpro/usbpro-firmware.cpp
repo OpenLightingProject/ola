@@ -258,7 +258,7 @@ int main(int argc, char *argv[]) {
   ola::network::SelectServer ss;
 
   ola::network::ConnectedSocket *socket = UsbWidget::OpenDevice(opts.device);
-  if (!socket);
+  if (!socket)
     exit(EX_UNAVAILABLE);
 
   ss.AddSocket(socket);

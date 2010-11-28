@@ -334,7 +334,7 @@ int main(int argc, char *argv[]) {
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
   ola::network::ConnectedSocket *socket = UsbWidget::OpenDevice(opts.device);
-  if (!socket);
+  if (!socket)
     exit(EX_UNAVAILABLE);
 
   ola::network::SelectServer ss;
