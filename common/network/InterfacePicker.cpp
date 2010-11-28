@@ -118,6 +118,9 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
 
   if (!found)
     *iface = interfaces[0];
+  OLA_DEBUG << "Using interface " << iface->name << " (" <<
+    AddressToString(iface->ip_address)
+    << ")";
   return true;
 }
 
