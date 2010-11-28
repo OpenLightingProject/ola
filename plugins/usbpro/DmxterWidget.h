@@ -77,6 +77,48 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
     static const uint8_t TOD_LABEL;
     static const uint8_t DISCOVERY_BRANCH_LABEL;
     // add the shutdown msg here
+
+    typedef enum {
+      RC_CHECKSUM_ERROR = 1,
+      RC_FRAMING_ERROR = 2,
+      RC_FRAMING_ERROR2 = 3,
+      RC_BAD_STARTCODE = 4,
+      RC_BAD_SUB_STARTCODE = 5,
+      RC_WRONG_PDL = 6,
+      RC_BAD_PDL = 7,
+      RC_PACKET_TOO_SHORT = 8,
+      RC_PACKET_TOO_LONG = 9,
+      RC_PHYSICAL_LENGTH_MISTMATCH = 10,
+      RC_PDL_LENGTH_MISMATCH = 11,
+      RC_TRANSACTION_MISMATCH = 12,
+      RC_BAD_RESPONSE_TYPE = 13,
+      RC_GOOD_RESPONSE = 14,
+      RC_ACK_TIMER = 15,
+      RC_ACK_OVERFLOW = 16,
+      RC_TIMED_OUT = 17,
+      RC_IDLE_LEVEL = 18,
+      RC_GOOD_LEVEL = 19,
+      RC_BAD_LEVEL = 20,
+      RC_BROADCAST = 21,
+      RC_VENDORCAST = 22,
+      RC_NACK = 23,
+      RC_NACK_UNKNOWN_PID = 24,
+      RC_NACK_FORMAT_ERROR = 25,
+      RC_NACK_HARDWARE_FAULT = 26,
+      RC_NACK_PROXY_REJECT = 27,
+      RC_NACK_WRITE_PROECT = 28,
+      RC_NACK_COMMAND_CLASS = 29,
+      RC_NACK_DATA_RANGE = 30,
+      RC_NACK_BUFFER_FULL = 31,
+      RC_NACK_PACKET_SIZE = 32,
+      RC_NACK_SUB_DEVICE_RANGE = 33,
+      RC_NACK_PROXY_QUEUE_BUFFER_FULL = 34,
+      RC_DEST_UID_MISMATCH = 40,
+      RC_SRC_UID_MISMATCH = 41,
+      RC_SUBDEVICE_MISMATCH = 42,
+      RC_COMMAND_CLASS_MISMATCH = 43,
+      RC_PARAM_ID_MISMATCH = 44,
+    } response_code;
 };
 
 

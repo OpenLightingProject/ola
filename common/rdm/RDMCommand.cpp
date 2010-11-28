@@ -195,7 +195,7 @@ const RDMCommand::rdm_command_message* RDMCommand::VerifyData(
     data[message_length];
 
   if (actual_checksum != checksum) {
-    OLA_WARN << "RDM checmsum mismatch, was " << actual_checksum <<
+    OLA_WARN << "RDM checksum mismatch, was " << actual_checksum <<
       " but was supposed to be " << checksum;
     return NULL;
   }

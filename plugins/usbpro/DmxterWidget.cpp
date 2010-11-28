@@ -95,7 +95,7 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
                                      unsigned int length) {
   OLA_INFO << "Got new packet: 0x" << std::hex <<
     static_cast<int>(label) <<
-    ", size " << length;
+    ", size " << std::dec << length;
 
   switch (label) {
     case TOD_LABEL:
@@ -119,8 +119,6 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
  * that this is only called one-at-a-time.
  * @param request the RDMRequest object
  * @param on_complete the callback to run when the request completes or fails
- *
- * TODO(simon): Check the formatting for these and update the unittests
  */
 void DmxterWidgetImpl::SendRequest(const RDMRequest *request,
                                    ola::rdm::RDMCallback *on_complete) {
@@ -139,7 +137,7 @@ void DmxterWidgetImpl::SendRequest(const RDMRequest *request,
   bool r = request->PackWithControllerParams(data + 1,
                                              &data_size,
                                              m_uid,
-                                             m_transaction_number,
+                                             m_transaction_number++,
                                              1);
   if (r) {
     uint8_t label = request->DestinationUID().IsBroadcast() ?
@@ -225,17 +223,88 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
     return;
   }
 
-  uint16_t response_code;
-  memcpy(reinterpret_cast<uint8_t*>(&response_code),
-         data,
-         sizeof(response_code));
+  uint8_t version = data[0];
+  uint8_t response_code = data[1];
 
-  // TODO(simon): what ordering does the response_code use?
-  OLA_INFO << "Got response code " << std::hex << response_code;
+  if (version != 0) {
+    OLA_WARN << "Unknown version # in widget response: " <<
+      static_cast<int>(version);
+    m_rdm_request_callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+    m_rdm_request_callback = NULL;
+    return;
+  }
 
-  // the format for this hasn't been decided yet. Just mark as a failure and
-  // move on for now.
-  m_rdm_request_callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+  ola::rdm::rdm_request_status status = ola::rdm::RDM_COMPLETED_OK;
+  switch (response_code) {
+    // we map all of these errors onto ola::rdm::RDM_INVALID_RESPONSE
+    // At some point we should expand the number of error codes.
+    case RC_CHECKSUM_ERROR:
+    case RC_FRAMING_ERROR:
+    case RC_FRAMING_ERROR2:
+    case RC_BAD_STARTCODE:
+    case RC_BAD_SUB_STARTCODE:
+    case RC_WRONG_PDL:
+    case RC_BAD_PDL:
+    case RC_PACKET_TOO_SHORT:
+    case RC_PACKET_TOO_LONG:
+    case RC_PHYSICAL_LENGTH_MISTMATCH:
+    case RC_PDL_LENGTH_MISMATCH:
+    case RC_TRANSACTION_MISMATCH:
+    case RC_BAD_RESPONSE_TYPE:
+    case RC_IDLE_LEVEL:
+    case RC_GOOD_LEVEL:
+    case RC_BAD_LEVEL:
+    case RC_BROADCAST:
+    case RC_VENDORCAST:
+      OLA_INFO << "Got response code " << static_cast<int>(response_code);
+      status = ola::rdm::RDM_INVALID_RESPONSE;
+      break;
+    case RC_GOOD_RESPONSE:
+    case RC_ACK_TIMER:
+    case RC_ACK_OVERFLOW:
+    case RC_NACK:
+    case RC_NACK_UNKNOWN_PID:
+    case RC_NACK_FORMAT_ERROR:
+    case RC_NACK_HARDWARE_FAULT:
+    case RC_NACK_PROXY_REJECT:
+    case RC_NACK_WRITE_PROECT:
+    case RC_NACK_COMMAND_CLASS:
+    case RC_NACK_DATA_RANGE:
+    case RC_NACK_BUFFER_FULL:
+    case RC_NACK_PACKET_SIZE:
+    case RC_NACK_SUB_DEVICE_RANGE:
+    case RC_NACK_PROXY_QUEUE_BUFFER_FULL:
+      status = ola::rdm::RDM_COMPLETED_OK;
+      break;
+    case RC_TIMED_OUT:
+      OLA_INFO << "Request timed out";
+      status = ola::rdm::RDM_TIMEOUT;
+      break;
+    case RC_DEST_UID_MISMATCH:
+    case RC_SRC_UID_MISMATCH:
+    case RC_SUBDEVICE_MISMATCH:
+    case RC_COMMAND_CLASS_MISMATCH:
+    case RC_PARAM_ID_MISMATCH:
+      // this should *hopefully* be caught higher up the stack
+      status = ola::rdm::RDM_COMPLETED_OK;
+      break;
+    default:
+      OLA_WARN << "Unknown response code " << static_cast<int>(response_code);
+      status = ola::rdm::RDM_INVALID_RESPONSE;
+  }
+
+  if (status == ola::rdm::RDM_COMPLETED_OK) {
+    ola::rdm::RDMResponse *response = NULL;
+    if (length > 3)
+      response =  ola::rdm::RDMResponse::InflateFromData(data + 3,
+                                                         length - 3);
+    if (response)
+      m_rdm_request_callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+    else
+      m_rdm_request_callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+  } else {
+    m_rdm_request_callback->Run(status, NULL);
+  }
   m_rdm_request_callback = NULL;
 }
 
