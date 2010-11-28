@@ -151,10 +151,10 @@ void DmxterWidgetImpl::SendRequest(const RDMRequest *request,
   } else {
     OLA_WARN << "Failed to pack message, dropping request";
   }
-  on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
   m_rdm_request_callback = NULL;
   delete[] data;
   delete request;
+  on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
 }
 
 
