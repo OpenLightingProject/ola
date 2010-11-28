@@ -25,74 +25,14 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/network/SelectServer.h"
-#include "plugins/usbpro/UsbWidget.h"
 #include "plugins/usbpro/DmxterWidget.h"
+#include "plugins/usbpro/MockUsbWidget.h"
 
 
-using ola::network::ConnectedSocket;
-using ola::network::PipeSocket;
 using ola::plugin::usbpro::DmxterWidget;
 using ola::plugin::usbpro::UsbWidget;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
-
-
-/**
- * The MockUsbWidget, used to verify calls.
- */
-class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
-  public:
-    MockUsbWidget():
-      m_callback(NULL) {}
-    ~MockUsbWidget() {
-      if (m_callback)
-        delete m_callback;
-    }
-
-    void SetMessageHandler(
-        ola::Callback3<void, uint8_t, const uint8_t*,
-                       unsigned int> *callback) {
-      if (m_callback)
-        delete m_callback;
-      m_callback = callback;
-    }
-
-    // this doesn't do anything
-    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
-      delete on_close;
-    }
-
-    bool SendMessage(uint8_t label,
-                     const uint8_t *data,
-                     unsigned int length) const;
-
-    void AddExpectedCall(uint8_t expected_label,
-                         const uint8_t *expected_data,
-                         unsigned int expected_length,
-                         uint8_t return_label,
-                         const uint8_t *return_data,
-                         unsigned int return_length);
-
-    void Verify() {
-      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_expected_calls.size());
-    }
-
-  private:
-    ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *m_callback;
-
-    typedef struct {
-      uint8_t label;
-      unsigned int length;
-      const uint8_t *data;
-    } command;
-
-    typedef struct {
-      command expected_command;
-      command return_command;
-    } expected_call;
-
-    mutable std::queue<expected_call> m_expected_calls;
-};
 
 
 class DmxterWidgetTest: public CppUnit::TestFixture {
@@ -132,40 +72,6 @@ class DmxterWidgetTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(DmxterWidgetTest);
 
 
-bool MockUsbWidget::SendMessage(uint8_t label,
-                                const uint8_t *data,
-                                unsigned int length) const {
-  CPPUNIT_ASSERT(m_expected_calls.size());
-  expected_call call = m_expected_calls.front();
-  m_expected_calls.pop();
-  CPPUNIT_ASSERT_EQUAL(call.expected_command.label, label);
-  CPPUNIT_ASSERT_EQUAL(call.expected_command.length, length);
-  CPPUNIT_ASSERT(!memcmp(call.expected_command.data, data, length));
-
-  m_callback->Run(call.return_command.label,
-                  call.return_command.data,
-                  call.return_command.length);
-  return true;
-}
-
-
-void MockUsbWidget::AddExpectedCall(uint8_t expected_label,
-                                    const uint8_t *expected_data,
-                                    unsigned int expected_length,
-                                    uint8_t return_label,
-                                    const uint8_t *return_data,
-                                    unsigned int return_length) {
-  expected_call call;
-  call.expected_command.label = expected_label;
-  call.expected_command.data = expected_data;
-  call.expected_command.length = expected_length;
-  call.return_command.label = return_label;
-  call.return_command.data = return_data;
-  call.return_command.length = return_length;
-  m_expected_calls.push(call);
-}
-
-
 void DmxterWidgetTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_tod_counter = 0;
@@ -176,8 +82,8 @@ void DmxterWidgetTest::setUp() {
  * Check the TOD matches what we expect
  */
 void DmxterWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
-  ola::rdm::UID uid1(0x707a, 0xffffff00);
-  ola::rdm::UID uid2(0x5252, 0x12345678);
+  UID uid1(0x707a, 0xffffff00);
+  UID uid2(0x5252, 0x12345678);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 2, uids.Size());
   CPPUNIT_ASSERT(uids.Contains(uid1));
   CPPUNIT_ASSERT(uids.Contains(uid2));
