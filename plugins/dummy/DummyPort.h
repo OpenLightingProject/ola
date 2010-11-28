@@ -23,6 +23,7 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "olad/Port.h"
 #include "plugins/dummy/DummyDevice.h"
@@ -41,19 +42,29 @@ class DummyPort: public BasicOutputPort {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
     void RunRDMDiscovery();
-    bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback);
 
   private:
-    bool HandleUnknownPacket(const ola::rdm::RDMRequest *request);
-    bool HandleSupportedParams(const ola::rdm::RDMRequest *request);
-    bool HandleDeviceInfo(const ola::rdm::RDMRequest *request);
-    bool HandleProductDetailList(const ola::rdm::RDMRequest *request);
-    bool HandleStringResponse(const ola::rdm::RDMRequest *request,
+    void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
+                             ola::rdm::RDMCallback *callback);
+    void HandleSupportedParams(const ola::rdm::RDMRequest *request,
+                               ola::rdm::RDMCallback *callback);
+    void HandleDeviceInfo(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback);
+    void HandleProductDetailList(const ola::rdm::RDMRequest *request,
+                                 ola::rdm::RDMCallback *callback);
+    void HandleStringResponse(const ola::rdm::RDMRequest *request,
+                              ola::rdm::RDMCallback *callback,
                               const string &value);
-    bool HandlePersonality(const ola::rdm::RDMRequest *request);
-    bool HandlePersonalityDescription(const ola::rdm::RDMRequest *request);
-    bool HandleDmxStartAddress(const ola::rdm::RDMRequest *request);
-    bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request);
+    void HandlePersonality(const ola::rdm::RDMRequest *request,
+                           ola::rdm::RDMCallback *callback);
+    void HandlePersonalityDescription(const ola::rdm::RDMRequest *request,
+                                      ola::rdm::RDMCallback *callback);
+    void HandleDmxStartAddress(const ola::rdm::RDMRequest *request,
+                               ola::rdm::RDMCallback *callback);
+    bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request,
+                                          ola::rdm::RDMCallback *callback);
 
     uint16_t m_start_address;
     uint8_t m_personality;

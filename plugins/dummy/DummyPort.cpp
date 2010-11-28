@@ -86,48 +86,60 @@ void DummyPort::RunRDMDiscovery() {
 /*
  * Handle an RDM Request
  */
-bool DummyPort::HandleRDMRequest(const RDMRequest *request) {
+void DummyPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                 ola::rdm::RDMCallback *callback) {
   switch (request->ParamId()) {
     case ola::rdm::PID_SUPPORTED_PARAMETERS:
-      return HandleSupportedParams(request);
+      HandleSupportedParams(request, callback);
+      break;
     case ola::rdm::PID_DEVICE_INFO:
-      return HandleDeviceInfo(request);
+      HandleDeviceInfo(request, callback);
+      break;
     case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
-      return HandleProductDetailList(request);
+      HandleProductDetailList(request, callback);
+      break;
     case ola::rdm::PID_MANUFACTURER_LABEL:
-      return HandleStringResponse(request, "Open Lighting");
+      HandleStringResponse(request, callback, "Open Lighting");
+      break;
     case ola::rdm::PID_DEVICE_LABEL:
-      return HandleStringResponse(request, "Dummy RDM Device");
+      HandleStringResponse(request, callback, "Dummy RDM Device");
+      break;
     case ola::rdm::PID_DEVICE_MODEL_DESCRIPTION:
-      return HandleStringResponse(request, "Dummy Model");
+      HandleStringResponse(request, callback, "Dummy Model");
+      break;
     case ola::rdm::PID_SOFTWARE_VERSION_LABEL:
-      return HandleStringResponse(request, "Dummy Software Version");
+      HandleStringResponse(request, callback, "Dummy Software Version");
+      break;
     case ola::rdm::PID_DMX_PERSONALITY:
-      return HandlePersonality(request);
+      HandlePersonality(request, callback);
+      break;
     case ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION:
-      return HandlePersonalityDescription(request);
+      HandlePersonalityDescription(request, callback);
+      break;
     case ola::rdm::PID_DMX_START_ADDRESS:
-      return HandleDmxStartAddress(request);
+      HandleDmxStartAddress(request, callback);
+      break;
     default:
-      return HandleUnknownPacket(request);
+      HandleUnknownPacket(request, callback);
   }
 }
 
 
-bool DummyPort::HandleUnknownPacket(const RDMRequest *request) {
+void DummyPort::HandleUnknownPacket(const RDMRequest *request,
+                                    ola::rdm::RDMCallback *callback) {
   // no responses for broadcasts
-  if (!request->DestinationUID().IsBroadcast()) {
+  if (!request->DestinationUID().IsBroadcast() && callback) {
     RDMResponse *response = NackWithReason(request, ola::rdm::NR_UNKNOWN_PID);
-    HandleRDMResponse(response);
+    callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
   }
   delete request;
-  return true;
 }
 
 
-bool DummyPort::HandleSupportedParams(const RDMRequest *request) {
-  if (!CheckForBroadcastSubdeviceOrData(request))
-    return true;
+void DummyPort::HandleSupportedParams(const RDMRequest *request,
+                                      ola::rdm::RDMCallback *callback) {
+  if (!CheckForBroadcastSubdeviceOrData(request, callback))
+    return;
 
   uint16_t supported_params[] = {
     ola::rdm::PID_DEVICE_INFO,
@@ -149,15 +161,15 @@ bool DummyPort::HandleSupportedParams(const RDMRequest *request) {
       request,
       reinterpret_cast<uint8_t*>(supported_params),
       sizeof(supported_params));
-  HandleRDMResponse(response);
+  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
   delete request;
-  return true;
 }
 
 
-bool DummyPort::HandleDeviceInfo(const RDMRequest *request) {
-  if (!CheckForBroadcastSubdeviceOrData(request))
-    return true;
+void DummyPort::HandleDeviceInfo(const RDMRequest *request,
+                                 ola::rdm::RDMCallback *callback) {
+  if (!CheckForBroadcastSubdeviceOrData(request, callback))
+    return;
 
   struct device_info_s {
     uint16_t rdm_version;
@@ -189,18 +201,18 @@ bool DummyPort::HandleDeviceInfo(const RDMRequest *request) {
       request,
       reinterpret_cast<uint8_t*>(&device_info),
       sizeof(device_info));
-  HandleRDMResponse(response);
+  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
   delete request;
-  return true;
 }
 
 
 /**
  * Handle a request for PID_PRODUCT_DETAIL_ID_LIST
  */
-bool DummyPort::HandleProductDetailList(const RDMRequest *request) {
-  if (!CheckForBroadcastSubdeviceOrData(request))
-    return true;
+void DummyPort::HandleProductDetailList(const RDMRequest *request,
+                                        ola::rdm::RDMCallback *callback) {
+  if (!CheckForBroadcastSubdeviceOrData(request, callback))
+    return;
 
   uint16_t product_details[] = {
     ola::rdm::PRODUCT_DETAIL_TEST,
@@ -214,34 +226,34 @@ bool DummyPort::HandleProductDetailList(const RDMRequest *request) {
       request,
       reinterpret_cast<uint8_t*>(&product_details),
       sizeof(product_details));
-  HandleRDMResponse(response);
+  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
   delete request;
-  return true;
 }
 
 
 /*
  * Handle a request that returns a string
  */
-bool DummyPort::HandleStringResponse(const ola::rdm::RDMRequest *request,
+void DummyPort::HandleStringResponse(const ola::rdm::RDMRequest *request,
+                                     ola::rdm::RDMCallback *callback,
                                      const string &value) {
-  if (!CheckForBroadcastSubdeviceOrData(request))
-    return true;
+  if (!CheckForBroadcastSubdeviceOrData(request, callback))
+    return;
 
   RDMResponse *response = GetResponseWithData(
         request,
         reinterpret_cast<const uint8_t*>(value.data()),
         value.size());
-  HandleRDMResponse(response);
+  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
   delete request;
-  return true;
 }
 
 
 /*
  * Handle getting/setting the personality.
  */
-bool DummyPort::HandlePersonality(const ola::rdm::RDMRequest *request) {
+void DummyPort::HandlePersonality(const ola::rdm::RDMRequest *request,
+                                  ola::rdm::RDMCallback *callback) {
   RDMResponse *response;
   if (request->SubDevice()) {
     response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
@@ -289,23 +301,25 @@ bool DummyPort::HandlePersonality(const ola::rdm::RDMRequest *request) {
     }
   }
   if (request->DestinationUID().IsBroadcast()) {
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
     delete response;
   } else {
-    HandleRDMResponse(response);
+    callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
   }
   delete request;
-  return true;
 }
 
 
 /*
  * Handle getting the personality description.
  */
-bool DummyPort::HandlePersonalityDescription(
-    const ola::rdm::RDMRequest *request) {
+void DummyPort::HandlePersonalityDescription(
+    const ola::rdm::RDMRequest *request,
+    ola::rdm::RDMCallback *callback) {
   if (request->DestinationUID().IsBroadcast()) {
     delete request;
-    return false;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+    return;
   }
 
   RDMResponse *response = NULL;
@@ -343,16 +357,16 @@ bool DummyPort::HandlePersonalityDescription(
         reinterpret_cast<uint8_t*>(&personality_description),
         sizeof(personality_description));
   }
-  HandleRDMResponse(response);
+  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
   delete request;
-  return true;
 }
 
 
 /*
  * Handle getting/setting the dmx start address
  */
-bool DummyPort::HandleDmxStartAddress(const RDMRequest *request) {
+void DummyPort::HandleDmxStartAddress(const RDMRequest *request,
+                                      ola::rdm::RDMCallback *callback) {
   RDMResponse *response;
   if (request->SubDevice()) {
     response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
@@ -394,16 +408,17 @@ bool DummyPort::HandleDmxStartAddress(const RDMRequest *request) {
   }
   if (request->DestinationUID().IsBroadcast()) {
     delete response;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
   } else {
-    HandleRDMResponse(response);
+    callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
   }
   delete request;
-  return true;
 }
 
 
 /**
  * Check for the following:
+ *   - the callback was non-null
  *   - broadcast request
  *   - request with a sub device set
  *   - request with data
@@ -411,9 +426,16 @@ bool DummyPort::HandleDmxStartAddress(const RDMRequest *request) {
  * @returns true is this request was ok, false if we nack'ed it
  */
 bool DummyPort::CheckForBroadcastSubdeviceOrData(
-    const ola::rdm::RDMRequest *request) {
+    const ola::rdm::RDMRequest *request,
+    ola::rdm::RDMCallback *callback) {
+  if (!callback) {
+    delete request;
+    return false;
+  }
+
   if (request->DestinationUID().IsBroadcast()) {
     delete request;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
     return false;
   }
 
@@ -427,7 +449,7 @@ bool DummyPort::CheckForBroadcastSubdeviceOrData(
   }
 
   if (response) {
-    HandleRDMResponse(response);
+    callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
     delete request;
     return false;
   }
