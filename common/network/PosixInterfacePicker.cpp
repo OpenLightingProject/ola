@@ -187,6 +187,9 @@ vector<Interface> PosixInterfacePicker::GetInterfaces() const {
      * and hware addresses
      * i'll leave that for another day
      */
+    OLA_DEBUG << "Found: " << interface.name << ", " <<
+      AddressToString(interface.ip_address) << ", " <<
+      HardwareAddressToString(interface.hw_address);
     interfaces.push_back(interface);
   }
   close(sd);
