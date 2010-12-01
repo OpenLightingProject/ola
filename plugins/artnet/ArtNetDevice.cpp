@@ -97,11 +97,11 @@ bool ArtNetDevice::StartHook() {
 
   m_node = new ArtNetNode(
       interface,
-      m_preferences->GetValue(K_SHORT_NAME_KEY),
-      m_preferences->GetValue(K_LONG_NAME_KEY),
       m_plugin_adaptor,
-      subnet,
       m_preferences->GetValueAsBool(K_ALWAYS_BROADCAST_KEY));
+  m_node->SetSubnetAddress(subnet);
+  m_node->SetShortName(m_preferences->GetValue(K_SHORT_NAME_KEY));
+  m_node->SetLongName(m_preferences->GetValue(K_LONG_NAME_KEY));
 
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     AddPort(new ArtNetOutputPort(this, i, m_node));
@@ -124,7 +124,7 @@ bool ArtNetDevice::StartHook() {
 
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
       POLL_INTERVAL,
-      NewCallback(m_node, &ArtNetNode::MaybeSendPoll));
+      NewCallback(m_node, &ArtNetNode::SendPoll));
   return true;
 }
 

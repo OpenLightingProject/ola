@@ -46,7 +46,7 @@ using std::pair;
 using std::string;
 
 
-const char ArtNetNode::ARTNET_ID[] = "Art-Net";
+const char ArtNetNodeImpl::ARTNET_ID[] = "Art-Net";
 
 /*
  * Create a new node
@@ -55,16 +55,13 @@ const char ArtNetNode::ARTNET_ID[] = "Art-Net";
  * @param long_name the long node name
  * @param subnet_address the ArtNet 'subnet' address, 4 bits.
  */
-ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
-                       const string &short_name,
-                       const string &long_name,
-                       ola::network::SelectServerInterface *ss,
-                       uint8_t subnet_address,
-                       bool always_broadcast)
+ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
+                               ola::network::SelectServerInterface *ss,
+                               bool always_broadcast)
     : m_running(false),
       m_send_reply_on_change(true),
-      m_short_name(short_name),
-      m_long_name(long_name),
+      m_short_name(""),
+      m_long_name(""),
       m_broadcast_threshold(BROADCAST_THRESHOLD),
       m_unsolicited_replies(0),
       m_ss(ss),
@@ -79,10 +76,8 @@ ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
     m_input_ports[i].sequence_number = 0;
     m_input_ports[i].enabled = false;
     m_input_ports[i].on_tod = NULL;
-    m_input_ports[i].on_rdm_response = NULL;
     m_input_ports[i].discovery_running = false;
     m_input_ports[i].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
-    m_input_ports[i].overflowed_response = NULL;
 
     m_output_ports[i].universe_address = 0;
     m_output_ports[i].sequence_number = 0;
@@ -94,25 +89,21 @@ ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
     m_output_ports[i].on_discover = NULL;
     m_output_ports[i].on_flush = NULL;
     m_output_ports[i].on_rdm_request = NULL;
-    for (unsigned int j = 0; j < MAX_MERGE_SOURCES; j++)
+  for (unsigned int j = 0; j < MAX_MERGE_SOURCES; j++)
       m_output_ports[i].sources[j].address.s_addr = 0;
   }
-
-  SetSubnetAddress(subnet_address);
 }
 
 
 /*
  * Cleanup
  */
-ArtNetNode::~ArtNetNode() {
+ArtNetNodeImpl::~ArtNetNodeImpl() {
   Stop();
 
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     if (m_input_ports[i].on_tod)
       delete m_input_ports[i].on_tod;
-    if (m_input_ports[i].on_rdm_response)
-      delete m_input_ports[i].on_rdm_response;
 
     if (m_output_ports[i].on_data)
       delete m_output_ports[i].on_data;
@@ -129,7 +120,7 @@ ArtNetNode::~ArtNetNode() {
 /*
  * Start this node. The port modifying functions can be called before this.
  */
-bool ArtNetNode::Start() {
+bool ArtNetNodeImpl::Start() {
   if (m_running)
     return false;
 
@@ -138,7 +129,7 @@ bool ArtNetNode::Start() {
 
   m_running = true;
 
-  MaybeSendPoll();  // send a poll, this will result in us repling as well
+  SendPoll();  // send a poll, this will result in us repling as well
   SendPollReply(m_interface.bcast_address);
   return true;
 }
@@ -147,7 +138,7 @@ bool ArtNetNode::Start() {
 /*
  * Stop this node
  */
-bool ArtNetNode::Stop() {
+bool ArtNetNodeImpl::Stop() {
   if (!m_running)
     return false;
 
@@ -156,17 +147,18 @@ bool ArtNetNode::Stop() {
     m_discovery_timeout = ola::network::INVALID_TIMEOUT;
   }
 
+  // clean up any in-flight rdm requests
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
-    if (m_input_ports[i].rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
-      m_ss->RemoveTimeout(m_input_ports[i].rdm_send_timeout);
-      m_input_ports[i].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
+    InputPort &port = m_input_ports[i];
+    if (port.rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
+      m_ss->RemoveTimeout(port.rdm_send_timeout);
+      port.rdm_send_timeout = ola::network::INVALID_TIMEOUT;
     }
 
-    // clean up any pending RDM messsages.
-    while (!m_input_ports[i].pending_rdm_requests.empty()) {
-      delete m_input_ports[i].pending_rdm_requests.front();
-      m_input_ports[i].pending_rdm_requests.pop();
-    }
+    if (port.rdm_request_callback)
+      port.rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
+    if (port.pending_request)
+      delete port.pending_request;
   }
 
   m_ss->RemoveSocket(m_socket);
@@ -184,7 +176,7 @@ bool ArtNetNode::Stop() {
 /*
  * Set the short name
  */
-bool ArtNetNode::SetShortName(const string &name) {
+bool ArtNetNodeImpl::SetShortName(const string &name) {
   m_short_name = name;
   if (m_running && m_send_reply_on_change) {
     m_unsolicited_replies++;
@@ -197,7 +189,7 @@ bool ArtNetNode::SetShortName(const string &name) {
 /*
  * Set the long name
  */
-bool ArtNetNode::SetLongName(const string &name) {
+bool ArtNetNodeImpl::SetLongName(const string &name) {
   m_long_name = name;
   if (m_running && m_send_reply_on_change) {
     m_unsolicited_replies++;
@@ -210,7 +202,7 @@ bool ArtNetNode::SetLongName(const string &name) {
 /*
  * The the subnet address for this node
  */
-bool ArtNetNode::SetSubnetAddress(uint8_t subnet_address) {
+bool ArtNetNodeImpl::SetSubnetAddress(uint8_t subnet_address) {
   uint8_t old_address = m_input_ports[0].universe_address >> 4;
   if (old_address == subnet_address)
     return true;
@@ -235,7 +227,7 @@ bool ArtNetNode::SetSubnetAddress(uint8_t subnet_address) {
 /*
  * Set the universe for a port
  */
-bool ArtNetNode::SetPortUniverse(artnet_port_type type,
+bool ArtNetNodeImpl::SetPortUniverse(artnet_port_type type,
                                  uint8_t port_id,
                                  uint8_t universe_id) {
   if (port_id > ARTNET_MAX_PORTS) {
@@ -260,7 +252,7 @@ bool ArtNetNode::SetPortUniverse(artnet_port_type type,
 
     m_input_ports[port_id].enabled = universe_id != ARTNET_DISABLE_PORT;
     if (!ports_previously_enabled && m_input_ports[port_id].enabled)
-      MaybeSendPoll();
+      SendPoll();
   } else {
     m_output_ports[port_id].universe_address = (
         (universe_id & 0x0f) |
@@ -279,7 +271,8 @@ bool ArtNetNode::SetPortUniverse(artnet_port_type type,
 /*
  * Return the current universe address for a port
  */
-uint8_t ArtNetNode::GetPortUniverse(artnet_port_type type, uint8_t port_id) {
+uint8_t ArtNetNodeImpl::GetPortUniverse(artnet_port_type type,
+                                        uint8_t port_id) {
   if (port_id > ARTNET_MAX_PORTS) {
     OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
       ARTNET_MAX_PORTS;
@@ -296,7 +289,8 @@ uint8_t ArtNetNode::GetPortUniverse(artnet_port_type type, uint8_t port_id) {
 /*
  * Set the merge mode for an output port
  */
-bool ArtNetNode::SetMergeMode(uint8_t port_id, artnet_merge_mode merge_mode) {
+bool ArtNetNodeImpl::SetMergeMode(uint8_t port_id,
+                                  artnet_merge_mode merge_mode) {
   if (port_id > ARTNET_MAX_PORTS) {
     OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
       ARTNET_MAX_PORTS;
@@ -315,7 +309,7 @@ bool ArtNetNode::SetMergeMode(uint8_t port_id, artnet_merge_mode merge_mode) {
 /*
  * Send an ArtPoll if any of the ports are sending data
  */
-bool ArtNetNode::MaybeSendPoll() {
+bool ArtNetNodeImpl::SendPoll() {
   if (!m_running)
     return false;
 
@@ -345,7 +339,7 @@ bool ArtNetNode::MaybeSendPoll() {
  * @param buffer the DMX data
  * @return true if it was send successfully, false otherwise
  */
-bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
+bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
   if (!CheckInputPortState(port_id, "ArtDMX"))
     return false;
 
@@ -378,7 +372,7 @@ bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
     sent_ok = SendPacket(packet, size, m_interface.bcast_address);
     m_input_ports[port_id].sequence_number++;
   } else {
-    map<IPAddress, TimeStamp>::iterator iter =
+    map<struct in_addr, TimeStamp>::iterator iter =
       m_input_ports[port_id].subscribed_nodes.begin();
 
     TimeStamp last_heard_threshold = (
@@ -414,7 +408,7 @@ bool ArtNetNode::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
  * Send a TODRequest
  * @param port_id port to send on
  */
-bool ArtNetNode::SendTodRequest(uint8_t port_id) {
+bool ArtNetNodeImpl::SendTodRequest(uint8_t port_id) {
   if (!CheckInputPortState(port_id, "ArtTodRequest"))
     return false;
 
@@ -439,7 +433,7 @@ bool ArtNetNode::SendTodRequest(uint8_t port_id) {
  * Flush the TOD and force discovery
  * @param port_id port to send on
  */
-bool ArtNetNode::ForceDiscovery(uint8_t port_id) {
+bool ArtNetNodeImpl::ForceDiscovery(uint8_t port_id) {
   if (!CheckInputPortState(port_id, "ArtTodControl"))
     return false;
 
@@ -463,21 +457,54 @@ bool ArtNetNode::ForceDiscovery(uint8_t port_id) {
  * other outstanding messages in the queue.
  * @param port_id the if of the port to send the request on
  * @param request the RDMRequest object
+ *
+ * Because this is wrapped in the QueueingRDMController this will only be
+ * called one-at-a-time (per port)
  */
-bool ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request) {
-  if (!CheckInputPortState(port_id, "ArtRDM"))
-    return false;
-
-  if (m_input_ports[port_id].pending_rdm_requests.size() >=
-      RDM_REQUEST_QUEUE_LIMIT) {
-    OLA_WARN << "RDM Request queue limit reached. " <<
-      m_input_ports[port_id].pending_rdm_requests.size() <<
-      " requests in queue, limit is " << RDM_REQUEST_QUEUE_LIMIT;
-    return false;
+void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
+                                    const RDMRequest *request,
+                                    RDMCallback *on_complete) {
+  if (!CheckInputPortState(port_id, "ArtRDM")) {
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    delete request;
+    return;
   }
-  m_input_ports[port_id].pending_rdm_requests.push(request);
-  MaybeSendRDMRequest(port_id);
-  return true;
+
+  InputPort &port = m_input_ports[port_id];
+  if (port.rdm_request_callback) {
+    OLA_FATAL << "Previous request hasn't completed yet, dropping request";
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    delete request;
+    return;
+  }
+
+  struct in_addr destination = m_interface.bcast_address;
+  const UID &uid_destination = request->DestinationUID();
+  uid_map::const_iterator iter = port.uids.find(uid_destination);
+  if (iter == port.uids.end()) {
+    OLA_WARN << "Couldn't find " << uid_destination <<
+      " in the uid map, broadcasting packet";
+  } else {
+    destination = iter->second.first;
+  }
+
+  port.rdm_request_callback = on_complete;
+  port.pending_request = request;
+  bool r = SendRDMCommand(*request,
+                        destination,
+                        port.universe_address);
+  if (r) {
+    port.rdm_send_timeout = m_ss->RegisterSingleTimeout(
+      RDM_REQUEST_TIMEOUT_MS,
+      ola::NewSingleCallback(this,
+                             &ArtNetNodeImpl::TimeoutRDMRequest,
+                             port_id));
+  } else {
+    port.rdm_request_callback = NULL;
+    port.pending_request = NULL;
+    delete request;
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+  }
 }
 
 
@@ -487,14 +514,10 @@ bool ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request) {
  * @param on_tod the callback to be invoked when a ArtTod message is recieved,
  *   this callback is passed two UIDSets, one for the UIDs added and one for
  *   the UIDs that were removed
- * @param on_rdm_response the callback to be invoked when a RDMResponse message
- *   is received. The callback is responsible for deleting the RDMResponse
- *   object.
  */
-bool ArtNetNode::SetInputPortRDMHandlers(
+bool ArtNetNodeImpl::SetInputPortRDMHandlers(
     uint8_t port_id,
-    rdm_tod_callback *on_tod,
-    rdm_response_callback *on_rdm_response) {
+    ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod) {
   if (port_id > ARTNET_MAX_PORTS) {
     OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
       ARTNET_MAX_PORTS;
@@ -503,11 +526,7 @@ bool ArtNetNode::SetInputPortRDMHandlers(
 
   if (m_input_ports[port_id].on_tod)
     delete m_input_ports[port_id].on_tod;
-  if (m_input_ports[port_id].on_rdm_response)
-    delete m_input_ports[port_id].on_rdm_response;
-
   m_input_ports[port_id].on_tod = on_tod;
-  m_input_ports[port_id].on_rdm_response = on_rdm_response;
   return true;
 }
 
@@ -518,7 +537,7 @@ bool ArtNetNode::SetInputPortRDMHandlers(
  * @param handler the Callback0 to call when there is data for this universe.
  * Ownership of the closure is transferred to the node.
  */
-bool ArtNetNode::SetDMXHandler(uint8_t port_id,
+bool ArtNetNodeImpl::SetDMXHandler(uint8_t port_id,
                                DmxBuffer *buffer,
                                Callback0<void> *on_data) {
   if (port_id > ARTNET_MAX_PORTS) {
@@ -538,7 +557,7 @@ bool ArtNetNode::SetDMXHandler(uint8_t port_id,
 /*
  * Send an set of UIDs in one of more ArtTod packets
  */
-bool ArtNetNode::SendTod(uint8_t port_id, const UIDSet &uid_set) {
+bool ArtNetNodeImpl::SendTod(uint8_t port_id, const UIDSet &uid_set) {
   if (!CheckOutputPortState(port_id, "ArtTodData"))
     return false;
 
@@ -587,40 +606,13 @@ bool ArtNetNode::SendTod(uint8_t port_id, const UIDSet &uid_set) {
 
 
 /*
- * Send a RDMResponse
- * @param port_id the port id to send the response on
- * @param response the RDMResponse to send
- */
-bool ArtNetNode::SendRDMResponse(uint8_t port_id, const RDMResponse &response) {
-  if (!CheckOutputPortState(port_id, "ArtRDM"))
-    return false;
-
-  const UID &uid_destination = response.DestinationUID();
-  map<UID, IPAddress>::const_iterator iter =
-    m_output_ports[port_id].uid_map.find(uid_destination);
-
-  IPAddress destination = m_interface.bcast_address;
-
-  if (iter == m_output_ports[port_id].uid_map.end()) {
-    OLA_WARN << "Couldn't find " << uid_destination <<
-      " in the uid map, broadcasting packet";
-  } else {
-    destination = iter->second;
-  }
-  return SendRDMCommand(response,
-                        destination,
-                        m_output_ports[port_id].universe_address);
-}
-
-
-/*
  * Set the RDM handlers for an Output port
  */
-bool ArtNetNode::SetOutputPortRDMHandlers(
+bool ArtNetNodeImpl::SetOutputPortRDMHandlers(
     uint8_t port_id,
     ola::Callback0<void> *on_discover,
     ola::Callback0<void> *on_flush,
-    rdm_request_callback *on_rdm_request) {
+    ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request) {
 
   if (port_id > ARTNET_MAX_PORTS) {
     OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
@@ -644,7 +636,7 @@ bool ArtNetNode::SetOutputPortRDMHandlers(
 /*
  * Called when there is data on this socket
  */
-void ArtNetNode::SocketReady() {
+void ArtNetNodeImpl::SocketReady() {
   artnet_packet packet;
   ssize_t packet_size = sizeof(packet);
   struct sockaddr_in source;
@@ -665,7 +657,7 @@ void ArtNetNode::SocketReady() {
 /*
  * Send an ArtPollReply message
  */
-bool ArtNetNode::SendPollReply(const IPAddress &destination) {
+bool ArtNetNodeImpl::SendPollReply(const struct in_addr &destination) {
   artnet_packet packet;
   PopulatePacketHeader(&packet, ARTNET_REPLY);
   memset(&packet.data.reply, 0, sizeof(packet.data.reply));
@@ -720,7 +712,7 @@ bool ArtNetNode::SendPollReply(const IPAddress &destination) {
 /*
  * Send an IPProgReply
  */
-bool ArtNetNode::SendIPReply(const IPAddress &destination) {
+bool ArtNetNodeImpl::SendIPReply(const struct in_addr &destination) {
   artnet_packet packet;
   PopulatePacketHeader(&packet, ARTNET_REPLY);
   memset(&packet.data.ip_reply, 0, sizeof(packet.data.ip_reply));
@@ -745,7 +737,7 @@ bool ArtNetNode::SendIPReply(const IPAddress &destination) {
 /*
  * Handle a artnet packet
  */
-void ArtNetNode::HandlePacket(const IPAddress &source_address,
+void ArtNetNodeImpl::HandlePacket(const struct in_addr &source_address,
                               const artnet_packet &packet,
                               unsigned int packet_size) {
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
@@ -809,7 +801,7 @@ void ArtNetNode::HandlePacket(const IPAddress &source_address,
 /*
  * Handle an ArtPoll packet
  */
-void ArtNetNode::HandlePollPacket(const IPAddress &source_address,
+void ArtNetNodeImpl::HandlePollPacket(const struct in_addr &source_address,
                                   const artnet_poll_t &packet,
                                   unsigned int packet_size) {
   if (!CheckPacketSize(source_address, "ArtPoll", packet_size, sizeof(packet)))
@@ -828,7 +820,7 @@ void ArtNetNode::HandlePollPacket(const IPAddress &source_address,
 /*
  * Handle an ArtPollReply packet
  */
-void ArtNetNode::HandleReplyPacket(const IPAddress &source_address,
+void ArtNetNodeImpl::HandleReplyPacket(const struct in_addr &source_address,
                                    const artnet_reply_t &packet,
                                    unsigned int packet_size) {
   // older versions don't have the bind_ip and the extra filler, make sure we
@@ -865,7 +857,7 @@ void ArtNetNode::HandleReplyPacket(const IPAddress &source_address,
 /*
  * Handle a DMX Data packet, this takes care of the merging
  */
-void ArtNetNode::HandleDataPacket(const IPAddress &source_address,
+void ArtNetNodeImpl::HandleDataPacket(const struct in_addr &source_address,
                                   const artnet_dmx_t &packet,
                                   unsigned int packet_size) {
   // The data section needs to be at least 2 bytes according to the spec
@@ -900,9 +892,9 @@ void ArtNetNode::HandleDataPacket(const IPAddress &source_address,
 /*
  * Handle a TOD Request packet
  */
-void ArtNetNode::HandleTodRequest(const IPAddress &source_address,
-                                  const artnet_todrequest_t &packet,
-                                  unsigned int packet_size) {
+void ArtNetNodeImpl::HandleTodRequest(const struct in_addr &source_address,
+                                      const artnet_todrequest_t &packet,
+                                      unsigned int packet_size) {
   unsigned int header_size = sizeof(packet) - sizeof(packet.addresses);
   if (!CheckPacketSize(source_address, "ArtTodRequest", packet_size,
                        header_size))
@@ -945,7 +937,7 @@ void ArtNetNode::HandleTodRequest(const IPAddress &source_address,
 /*
  * Handle a TOD data packet
  */
-void ArtNetNode::HandleTodData(const IPAddress &source_address,
+void ArtNetNodeImpl::HandleTodData(const struct in_addr &source_address,
                                const artnet_toddata_t &packet,
                                unsigned int packet_size) {
   unsigned int expected_size = sizeof(packet) - sizeof(packet.tod);
@@ -980,7 +972,7 @@ void ArtNetNode::HandleTodData(const IPAddress &source_address,
 /*
  * Handle a TOD Control packet
  */
-void ArtNetNode::HandleTodControl(const IPAddress &source_address,
+void ArtNetNodeImpl::HandleTodControl(const struct in_addr &source_address,
                                   const artnet_todcontrol_t &packet,
                                   unsigned int packet_size) {
   if (!CheckPacketSize(source_address, "ArtTodControl", packet_size,
@@ -1006,9 +998,9 @@ void ArtNetNode::HandleTodControl(const IPAddress &source_address,
 /*
  * Handle an RDM packet
  */
-void ArtNetNode::HandleRdm(const IPAddress &source_address,
-                           const artnet_rdm_t &packet,
-                           unsigned int packet_size) {
+void ArtNetNodeImpl::HandleRdm(const struct in_addr &source_address,
+                               const artnet_rdm_t &packet,
+                               unsigned int packet_size) {
   unsigned int header_size = sizeof(packet) - ARTNET_MAX_RDM_DATA;
   if (!CheckPacketSize(source_address, "ArtRDM", packet_size, header_size))
     return;
@@ -1033,7 +1025,7 @@ void ArtNetNode::HandleRdm(const IPAddress &source_address,
 
   // look for the port that this was sent to, once we know the port we can try
   // to parse the message
-  for (unsigned int port_id = 0; port_id < ARTNET_MAX_PORTS; port_id++) {
+  for (uint8_t port_id = 0; port_id < ARTNET_MAX_PORTS; port_id++) {
     if (m_output_ports[port_id].enabled &&
         m_output_ports[port_id].universe_address == packet.address &&
         m_output_ports[port_id].on_rdm_request) {
@@ -1041,15 +1033,18 @@ void ArtNetNode::HandleRdm(const IPAddress &source_address,
                                                         rdm_length);
 
       if (request) {
-        // update the output port uid map
-        m_output_ports[port_id].uid_map[request->SourceUID()] = source_address;
-        m_output_ports[port_id].on_rdm_request->Run(request);
+        m_output_ports[port_id].on_rdm_request->Run(
+            request,
+            NewCallback(this,
+                        &ArtNetNodeImpl::RDMRequestCompletion,
+                        source_address,
+                        port_id,
+                        m_output_ports[port_id].universe_address));
       }
     }
 
     if (m_input_ports[port_id].enabled &&
-        m_input_ports[port_id].universe_address == packet.address &&
-        m_input_ports[port_id].on_rdm_response) {
+        m_input_ports[port_id].universe_address == packet.address) {
       RDMResponse *response = RDMResponse::InflateFromData(packet.data,
                                                            rdm_length);
       if (response)
@@ -1060,27 +1055,65 @@ void ArtNetNode::HandleRdm(const IPAddress &source_address,
 
 
 /**
+ * Handle the completion of a request for an Output port
+ */
+void ArtNetNodeImpl::RDMRequestCompletion(struct in_addr destination,
+                                          uint8_t port_id,
+                                          uint8_t universe_address,
+                                          ola::rdm::rdm_request_status status,
+                                          const RDMResponse *response) {
+  if (!CheckOutputPortState(port_id, "ArtRDM")) {
+    if (response)
+      delete response;
+    return;
+  }
+
+  if (m_output_ports[port_id].universe_address == universe_address) {
+    if (status == ola::rdm::RDM_COMPLETED_OK) {
+      // TODO(simon): handle fragmenation here
+      SendRDMCommand(*response,
+                     destination,
+                     universe_address);
+    } else if (status == ola::rdm::RDM_UNKNOWN_UID) {
+      // call the on discovery handler, which will send a new TOD and
+      // hopefull update the remote controller
+      m_output_ports[port_id].on_discover->Run();
+    } else {
+      OLA_WARN << "ArtNet RDM request failed with code " << status;
+    }
+  } else {
+    // the universe address has changed we need to drop this request
+    OLA_WARN <<
+      "ArtNet Output port has changed mid request, dropping response";
+  }
+  if (response)
+    delete response;
+}
+
+
+/**
  * Handle an RDM response, taking care to deal with ACK_OVERFLOW messages.
  * <rant>
  * ArtNet as a protocol is broken, the nodes don't buffer ACK_OVERFLOW messages
  * so if another GET/SET message arrives from *any* controller the ACK_OVERFLOW
- * session will be reset, causing the controller to spin in a loop.
- * TODO(simonn): lock out sending when we see an ACK_OVERFLOW to give us a
- * better chance of completing the session.
+ * session will be reset, possibly causing the controller to spin in a loop.
  * </rant>
  */
-void ArtNetNode::HandleRdmResponse(unsigned int port_id,
-                                   const RDMResponse *response) {
+void ArtNetNodeImpl::HandleRdmResponse(unsigned int port_id,
+                                       const RDMResponse *response) {
   InputPort &input_port = m_input_ports[port_id];
-  if (input_port.pending_rdm_requests.empty())
+  if (!input_port.pending_request) {
+    delete response;
     return;
+  }
 
-  const RDMRequest *request = input_port.pending_rdm_requests.front();
+  const RDMRequest *request = input_port.pending_request;
   if (request->SourceUID() != response->DestinationUID() ||
       request->DestinationUID() != response->SourceUID() ||
       request->SubDevice() != response->SubDevice() ||
       request->ParamId() != response->ParamId()) {
     OLA_INFO << "Got an unexpected RDM response";
+    delete response;
     return;
   }
 
@@ -1094,78 +1127,28 @@ void ArtNetNode::HandleRdmResponse(unsigned int port_id,
     return;
   }
 
-  if (input_port.overflowed_response) {
-    if (response->ResponseType() == ola::rdm::ACK_OVERFLOW) {
-      OLA_INFO << "Continued ACK_OVERFLOW session for " <<
-        response->SourceUID() << " -> " << response->DestinationUID() <<
-        ", PID " << std::hex << response->ParamId();
-      const RDMResponse *existing_reponse = input_port.overflowed_response;
-      input_port.overflowed_response = RDMResponse::CombineResponses(
-          existing_reponse,
-          response);
-      delete response;
-      delete existing_reponse;
+  // at this point we've decided it's for us
+  // TODO(simon): check the src address as well?
+  input_port.pending_request = NULL;
+  ola::rdm::RDMCallback *callback = input_port.rdm_request_callback;
+  input_port.rdm_request_callback = NULL;
 
-      if (input_port.overflowed_response) {
-        // combine worked
-        if (SendFirstRDMRequest(port_id)) {
-          input_port.overflowed_response = response;
-          return;
-        } else {
-          // send failed, abort
-          delete input_port.overflowed_response;
-          input_port.overflowed_response = NULL;
-        }
-      }
-    } else if (response->ResponseType() == ola::rdm::ACK) {
-      // end of the session, remove and call handler
-      OLA_INFO << "Final packet in ACK_OVERFLOW session for " <<
-        response->SourceUID() << " -> " << response->DestinationUID() <<
-        ", PID " << std::hex << response->ParamId();
-      const RDMResponse *full_response = RDMResponse::CombineResponses(
-         input_port.overflowed_response,
-         response);
-      delete input_port.overflowed_response;
-      input_port.overflowed_response = NULL;
-      delete response;
-
-      if (full_response)
-        input_port.on_rdm_response->Run(full_response);
-    } else {
-      // not an ack or overflow, abort transfer
-      OLA_INFO << "Got " << static_cast<int>(response->ResponseType()) <<
-        " in ACK_OVERFLOW session for " <<
-        response->SourceUID() << " -> " << response->DestinationUID() <<
-        ", PID " << std::hex << response->ParamId() << ", aborting session";
-      delete response;
-    }
-  } else if (response->ResponseType() == ola::rdm::ACK_OVERFLOW) {
-    OLA_INFO << "Got new ACK_OVERFLOW for " <<
-      response->SourceUID() << " -> " << response->DestinationUID() <<
-      ", PID " << std::hex << response->ParamId();
-
-    if (SendFirstRDMRequest(port_id)) {
-      input_port.overflowed_response = response;
-      return;
-    } else {
-      // send failed, abort
-      delete response;
-    }
-  } else {
-    // this is just a normal response
-    input_port.on_rdm_response->Run(response);
+  // remove the timeout
+  if (input_port.rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
+    m_ss->RemoveTimeout(input_port.rdm_send_timeout);
+    input_port.rdm_send_timeout = ola::network::INVALID_TIMEOUT;
   }
-  ClearPendingRDMRequest(port_id);
-  MaybeSendRDMRequest(port_id);
+
+  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
 }
 
 
 /**
  * Handle an IP Program message.
  */
-void ArtNetNode::HandleIPProgram(const IPAddress &source_address,
-                                 const artnet_ip_prog_t &packet,
-                                 unsigned int packet_size) {
+void ArtNetNodeImpl::HandleIPProgram(const struct in_addr &source_address,
+                                     const artnet_ip_prog_t &packet,
+                                     unsigned int packet_size) {
   if (!CheckPacketSize(source_address, "ArtIpProg", packet_size,
                        sizeof(packet)))
     return;
@@ -1180,7 +1163,7 @@ void ArtNetNode::HandleIPProgram(const IPAddress &source_address,
 /*
  * Fill in the header for a packet
  */
-void ArtNetNode::PopulatePacketHeader(artnet_packet *packet,
+void ArtNetNodeImpl::PopulatePacketHeader(artnet_packet *packet,
                                       uint16_t op_code) {
   strncpy(reinterpret_cast<char*>(packet->id), ARTNET_ID, sizeof(packet->id));
   packet->op_code = HostToLittleEndian(op_code);
@@ -1191,7 +1174,7 @@ void ArtNetNode::PopulatePacketHeader(artnet_packet *packet,
 /*
  * Increment the counts for all the uids
  */
-void ArtNetNode::IncrementUIDCounts(uint8_t port_id) {
+void ArtNetNodeImpl::IncrementUIDCounts(uint8_t port_id) {
   uid_map::iterator iter = m_input_ports[port_id].uids.begin();
 
   for (; iter != m_input_ports[port_id].uids.end(); ++iter) {
@@ -1206,9 +1189,9 @@ void ArtNetNode::IncrementUIDCounts(uint8_t port_id) {
  * @param size the size of the packet, excluding the header portion
  * @param destination where to send the packet to
  */
-bool ArtNetNode::SendPacket(const artnet_packet &packet,
+bool ArtNetNodeImpl::SendPacket(const artnet_packet &packet,
                             unsigned int size,
-                            const IPAddress &ip_destination) {
+                            const struct in_addr &ip_destination) {
   struct sockaddr_in destination;
   destination.sin_family = AF_INET;
   destination.sin_port = HostToNetwork(ARTNET_PORT);
@@ -1229,91 +1212,26 @@ bool ArtNetNode::SendPacket(const artnet_packet &packet,
 
 
 /**
- * Send an pending RDM request if we can.
- * @param port_id the id of the port to send the requests for.
- */
-void ArtNetNode::MaybeSendRDMRequest(uint8_t port_id) {
-  InputPort &input_port = m_input_ports[port_id];
-
-  if (input_port.pending_rdm_requests.empty())
-    return;
-
-  if (input_port.rdm_send_timeout != ola::network::INVALID_TIMEOUT)
-    return;
-
-  if (SendFirstRDMRequest(port_id)) {
-    input_port.rdm_send_timeout = m_ss->RegisterSingleTimeout(
-      RDM_REQUEST_TIMEOUT_MS,
-      ola::NewSingleCallback(this, &ArtNetNode::TimeoutRDMRequest, port_id));
-  } else {
-    // send failed, remove this request and try the next one.
-    ClearPendingRDMRequest(port_id);
-    MaybeSendRDMRequest(port_id);
-  }
-}
-
-
-/**
- * Send the RDM request from the head of the queue.
- * @param port_id the id of the port to send the requests for.
- */
-bool ArtNetNode::SendFirstRDMRequest(uint8_t port_id) {
-  InputPort &input_port = m_input_ports[port_id];
-  const RDMRequest *request = input_port.pending_rdm_requests.front();
-
-  const UID &uid_destination = request->DestinationUID();
-  uid_map::const_iterator iter =
-    m_input_ports[port_id].uids.find(uid_destination);
-
-  IPAddress destination = m_interface.bcast_address;
-
-  if (iter == m_input_ports[port_id].uids.end()) {
-    OLA_WARN << "Couldn't find " << uid_destination <<
-      " in the uid map, broadcasting packet";
-  } else {
-    destination = iter->second.first;
-  }
-
-  return SendRDMCommand(*request,
-                        destination,
-                        m_input_ports[port_id].universe_address);
-}
-
-
-/**
  * Timeout a pending RDM request
  * @param port_id the id of the port to timeout.
  */
-void ArtNetNode::TimeoutRDMRequest(uint8_t port_id) {
+void ArtNetNodeImpl::TimeoutRDMRequest(uint8_t port_id) {
   OLA_INFO << "RDM Request timed out.";
   m_input_ports[port_id].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
-  ClearPendingRDMRequest(port_id);
-  MaybeSendRDMRequest(port_id);
-}
-
-
-/**
- * Remove the head of the pending queue and reset the timeout.
- */
-void ArtNetNode::ClearPendingRDMRequest(uint8_t port_id) {
-  InputPort &input_port = m_input_ports[port_id];
-  if (!input_port.pending_rdm_requests.empty()) {
-    delete input_port.pending_rdm_requests.front();
-    input_port.pending_rdm_requests.pop();
-  }
-  if (input_port.rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
-    m_ss->RemoveTimeout(input_port.rdm_send_timeout);
-    input_port.rdm_send_timeout = ola::network::INVALID_TIMEOUT;
-  }
+  InputPort &port = m_input_ports[port_id];
+  delete port.pending_request;
+  ola::rdm::RDMCallback *callback = port.rdm_request_callback;
+  port.rdm_request_callback = NULL;
+  callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
 }
 
 
 /*
  * Send a generic ArtRdm message
  */
-bool ArtNetNode::SendRDMCommand(const RDMCommand &command,
-                                const IPAddress &destination,
-                                uint8_t universe) {
+bool ArtNetNodeImpl::SendRDMCommand(const RDMCommand &command,
+                                    const struct in_addr &destination,
+                                    uint8_t universe) {
   artnet_packet packet;
   PopulatePacketHeader(&packet, ARTNET_RDM);
   memset(&packet.data.rdm, 0, sizeof(packet.data.rdm));
@@ -1331,8 +1249,8 @@ bool ArtNetNode::SendRDMCommand(const RDMCommand &command,
 /*
  * Update a port from a source, merging if necessary
  */
-void ArtNetNode::UpdatePortFromSource(OutputPort *port,
-                                      const DMXSource &source) {
+void ArtNetNodeImpl::UpdatePortFromSource(OutputPort *port,
+                                          const DMXSource &source) {
   TimeStamp merge_time_threshold = (
       *m_ss->WakeUpTime() - TimeInterval(MERGE_TIMEOUT, 0));
   unsigned int first_empty_slot = MAX_MERGE_SOURCES;
@@ -1401,7 +1319,7 @@ void ArtNetNode::UpdatePortFromSource(OutputPort *port,
 /*
  * Check the version number of a incomming packet
  */
-bool ArtNetNode::CheckPacketVersion(const IPAddress &source_address,
+bool ArtNetNodeImpl::CheckPacketVersion(const struct in_addr &source_address,
                                     const string &packet_type,
                                     uint16_t version) {
   if (NetworkToHost(version) != ARTNET_VERSION) {
@@ -1417,7 +1335,7 @@ bool ArtNetNode::CheckPacketVersion(const IPAddress &source_address,
 /*
  * Check the size of an incoming packet
  */
-bool ArtNetNode::CheckPacketSize(const IPAddress &source_address,
+bool ArtNetNodeImpl::CheckPacketSize(const struct in_addr &source_address,
                                  const string &packet_type,
                                  unsigned int actual_size,
                                  unsigned int expected_size) {
@@ -1434,7 +1352,8 @@ bool ArtNetNode::CheckPacketSize(const IPAddress &source_address,
 /*
  * Check if the input port is available for sending
  */
-bool ArtNetNode::CheckInputPortState(uint8_t port_id, const string &action) {
+bool ArtNetNodeImpl::CheckInputPortState(uint8_t port_id,
+                                         const string &action) {
   return CheckPortState(port_id, action, false);
 }
 
@@ -1442,7 +1361,8 @@ bool ArtNetNode::CheckInputPortState(uint8_t port_id, const string &action) {
 /*
  * Check if the output port is available for sending
  */
-bool ArtNetNode::CheckOutputPortState(uint8_t port_id, const string &action) {
+bool ArtNetNodeImpl::CheckOutputPortState(uint8_t port_id,
+                                          const string &action) {
   return CheckPortState(port_id, action, true);
 }
 
@@ -1450,7 +1370,7 @@ bool ArtNetNode::CheckOutputPortState(uint8_t port_id, const string &action) {
 /*
  * Check if a port is available for sending
  */
-bool ArtNetNode::CheckPortState(uint8_t port_id,
+bool ArtNetNodeImpl::CheckPortState(uint8_t port_id,
                                 const string &action,
                                 bool is_output) {
   if (!m_running)
@@ -1474,7 +1394,7 @@ bool ArtNetNode::CheckPortState(uint8_t port_id,
 /*
  * Setup the networking components.
  */
-bool ArtNetNode::InitNetwork() {
+bool ArtNetNodeImpl::InitNetwork() {
   m_socket = new UdpSocket();
 
   if (!m_socket->Init()) {
@@ -1495,7 +1415,7 @@ bool ArtNetNode::InitNetwork() {
     return false;
   }
 
-  m_socket->SetOnData(NewCallback(this, &ArtNetNode::SocketReady));
+  m_socket->SetOnData(NewCallback(this, &ArtNetNodeImpl::SocketReady));
   m_ss->AddSocket(m_socket);
   return true;
 }
@@ -1504,8 +1424,8 @@ bool ArtNetNode::InitNetwork() {
 /*
  * Update a port with a new TOD list
  */
-void ArtNetNode::UpdatePortFromTodPacket(uint8_t port_id,
-                                         const IPAddress &source_address,
+void ArtNetNodeImpl::UpdatePortFromTodPacket(uint8_t port_id,
+                                         const struct in_addr &source_address,
                                          const artnet_toddata_t &packet,
                                          unsigned int packet_size) {
   unsigned int tod_size = packet_size - (sizeof(packet) - sizeof(packet.tod));
@@ -1522,7 +1442,7 @@ void ArtNetNode::UpdatePortFromTodPacket(uint8_t port_id,
     uid_set.AddUID(uid);
     uid_map::iterator iter = port_uids.find(uid);
     if (iter == port_uids.end()) {
-      port_uids[uid] = std::pair<IPAddress, uint8_t>(source_address, 0);
+      port_uids[uid] = std::pair<struct in_addr, uint8_t>(source_address, 0);
       changed = true;
     } else {
       if (iter->second.first.s_addr != source_address.s_addr) {
@@ -1565,7 +1485,7 @@ void ArtNetNode::UpdatePortFromTodPacket(uint8_t port_id,
  * Start the discovery process, this puts the port into discovery mode and
  * sets up the completion callback
  */
-bool ArtNetNode::GrabDiscoveryLock(uint8_t port_id) {
+bool ArtNetNodeImpl::GrabDiscoveryLock(uint8_t port_id) {
   if (m_input_ports[port_id].discovery_running) {
     OLA_INFO <<
       "ArtNet UID discovery already running, ignoring additional requests";
@@ -1581,7 +1501,9 @@ bool ArtNetNode::GrabDiscoveryLock(uint8_t port_id) {
 
   m_discovery_timeout = m_ss->RegisterSingleTimeout(
       RDM_TOD_TIMEOUT_MS,
-      ola::NewSingleCallback(this, &ArtNetNode::ReleaseDiscoveryLock, port_id));
+      ola::NewSingleCallback(this,
+                             &ArtNetNodeImpl::ReleaseDiscoveryLock,
+                             port_id));
   return true;
 }
 
@@ -1589,7 +1511,7 @@ bool ArtNetNode::GrabDiscoveryLock(uint8_t port_id) {
 /*
  * Called when the discovery process times out.
  */
-void ArtNetNode::ReleaseDiscoveryLock(uint8_t port_id) {
+void ArtNetNodeImpl::ReleaseDiscoveryLock(uint8_t port_id) {
   OLA_INFO << "Discovery process timeout";
   m_discovery_timeout = ola::network::INVALID_TIMEOUT;
 
@@ -1616,7 +1538,7 @@ void ArtNetNode::ReleaseDiscoveryLock(uint8_t port_id) {
 /*
  * Notify the client of a new TOD
  */
-void ArtNetNode::NotifyClientOfNewTod(uint8_t port_id) {
+void ArtNetNodeImpl::NotifyClientOfNewTod(uint8_t port_id) {
   if (m_input_ports[port_id].on_tod) {
     uid_map &port_uids = m_input_ports[port_id].uids;
     UIDSet uids;
@@ -1625,6 +1547,47 @@ void ArtNetNode::NotifyClientOfNewTod(uint8_t port_id) {
       uids.AddUID(uid_iter->first);
     m_input_ports[port_id].on_tod->Run(uids);
   }
+}
+
+
+
+/**
+ * DmxTriWidget Constructor
+ */
+ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
+                       ola::network::SelectServerInterface *ss,
+                       bool always_broadcast,
+                       unsigned int rdm_queue_size):
+    m_impl(interface, ss, always_broadcast) {
+  for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
+    m_wrappers[i] = new ArtNetNodeImplRDMWrapper(&m_impl, i);
+    m_controllers[i] = new ola::rdm::QueueingRDMController(
+        m_wrappers[i],
+        rdm_queue_size);
+  }
+}
+
+
+ArtNetNode::~ArtNetNode() {
+  for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
+    delete m_controllers[i];
+    delete m_wrappers[i];
+  }
+}
+
+
+/**
+ * Send a RDM request by passing it though the Queuing Controller
+ */
+void ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request,
+                                ola::rdm::RDMCallback *on_complete) {
+  if (port_id > ARTNET_MAX_PORTS) {
+    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
+      ARTNET_MAX_PORTS;
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    delete request;
+  }
+  m_wrappers[port_id]->SendRequest(request, on_complete);
 }
 }  // artnet
 }  // plugin

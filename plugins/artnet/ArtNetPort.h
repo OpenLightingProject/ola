@@ -22,9 +22,10 @@
 #define PLUGINS_ARTNET_ARTNETPORT_H_
 
 #include <string>
+#include "ola/rdm/RDMControllerInterface.h"
 #include "olad/Port.h"
-#include "plugins/artnet/ArtNetNode.h"
 #include "plugins/artnet/ArtNetDevice.h"
+#include "plugins/artnet/ArtNetNode.h"
 
 namespace ola {
 namespace plugin {
@@ -57,9 +58,7 @@ class ArtNetInputPort: public BasicInputPort {
 
     const DmxBuffer &ReadDMX() const { return m_buffer; }
 
-    bool HandleRDMResponse(const ola::rdm::RDMResponse *response);
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
-    void PolitelyHandleRDMRequest(const ola::rdm::RDMRequest *request);
     void RespondWithTod();
 
     string Description() const {
@@ -81,10 +80,9 @@ class ArtNetOutputPort: public BasicOutputPort {
           m_helper(node, true) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *on_complete);
     void RunRDMDiscovery();
-
-    void PolitelyHandleRDMResponse(const RDMResponse *response);
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 

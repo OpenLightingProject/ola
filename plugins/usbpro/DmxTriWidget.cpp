@@ -75,6 +75,8 @@ DmxTriWidgetImpl::~DmxTriWidgetImpl() {
   // timeout any existing message
   if (m_rdm_request_callback)
     m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
+  if (m_pending_request)
+    delete m_pending_request;
 
   if (m_uid_set_callback)
     delete m_uid_set_callback;
