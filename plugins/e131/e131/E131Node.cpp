@@ -95,6 +95,7 @@ bool E131Node::Start() {
 
   ola::network::UdpSocket *socket = m_transport.GetSocket();
   socket->SetTos(m_dscp);
+  socket->SetMulticastInterface(m_interface.ip_address);
 
   m_e131_layer.SetInflator(&m_dmp_inflator);
   return true;

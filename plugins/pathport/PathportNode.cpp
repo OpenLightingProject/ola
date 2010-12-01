@@ -317,6 +317,11 @@ bool PathportNode::InitNetwork() {
     return false;
   }
 
+  if (!m_socket.SetMulticastInterface(m_interface.ip_address)) {
+    m_socket.Close();
+    return false;
+  }
+
   if (!m_socket.JoinMulticast(m_interface.ip_address, m_config_addr)) {
       OLA_WARN << "Failed to join multicast to: " << inet_ntoa(m_config_addr);
     m_socket.Close();
