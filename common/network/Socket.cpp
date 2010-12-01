@@ -511,6 +511,20 @@ bool UdpSocket::EnableBroadcast() {
 }
 
 
+/**
+ * Set the outgoing interface to be used for multicast transmission
+ */
+bool UdpSocket::SetMulticastInterface(const struct in_addr &interface) {
+  if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_IF, &interface,
+                 sizeof(interface)) < 0) {
+    OLA_WARN << "Failed to set outgoing multicast interface to " <<
+      inet_ntoa(interface) << ": " << strerror(errno);
+    return false;
+  }
+  return true;
+}
+
+
 /*
  * Join a multicast group
  * @param group the address of the group to join
@@ -529,12 +543,6 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
     OLA_WARN << "Failed to join multicast group " << inet_ntoa(group) <<
     ": " << strerror(errno);
     return false;
-  }
-
-  if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_IF, &interface,
-                 sizeof(interface)) < 0) {
-    OLA_WARN << "Failed to set outgoing multicast interface for " <<
-      inet_ntoa(group) << ": " << strerror(errno);
   }
 
   if (!multicast_loop) {

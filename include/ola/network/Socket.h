@@ -357,6 +357,7 @@ class UdpSocket: public BidirectionalSocket {
                   socklen_t &src_size) const;
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool EnableBroadcast();
+    bool SetMulticastInterface(const struct in_addr &interface);
     bool JoinMulticast(const struct in_addr &interface,
                        const struct in_addr &group,
                        bool loop = false);

@@ -322,6 +322,18 @@ bool SandNetNode::InitNetwork() {
     return false;
   }
 
+  if (!m_control_socket.SetMulticastInterface(m_interface.ip_address)) {
+    m_data_socket.Close();
+    m_control_socket.Close();
+    return false;
+  }
+
+  if (!m_data_socket.SetMulticastInterface(m_interface.ip_address)) {
+    m_data_socket.Close();
+    m_control_socket.Close();
+    return false;
+  }
+
   if (!m_control_socket.JoinMulticast(m_interface.ip_address,
                                       m_control_addr)) {
       OLA_WARN << "Failed to join multicast to: " << CONTROL_ADDRESS;
