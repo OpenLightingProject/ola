@@ -1103,7 +1103,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(struct in_addr destination,
 
 
 /**
- * Handle an RDM response, taking care to deal with ACK_OVERFLOW messages.
+ * Handle an RDM response.
  * <rant>
  * ArtNet as a protocol is broken, the nodes don't buffer ACK_OVERFLOW messages
  * so if another GET/SET message arrives from *any* controller the ACK_OVERFLOW
@@ -1600,7 +1600,7 @@ void ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request,
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
     delete request;
   }
-  m_wrappers[port_id]->SendRDMRequest(request, on_complete);
+  m_controllers[port_id]->SendRDMRequest(request, on_complete);
 }
 }  // artnet
 }  // plugin
