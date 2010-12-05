@@ -216,10 +216,12 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
     return;
   }
 
+  ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+  m_rdm_request_callback = NULL;
+
   if (length < 2) {
     OLA_WARN << "Invalid RDM response from the widget";
-    m_rdm_request_callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
-    m_rdm_request_callback = NULL;
+    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
     return;
   }
 
@@ -229,8 +231,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
   if (version != 0) {
     OLA_WARN << "Unknown version # in widget response: " <<
       static_cast<int>(version);
-    m_rdm_request_callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
-    m_rdm_request_callback = NULL;
+    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
     return;
   }
 
@@ -299,13 +300,12 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
       response =  ola::rdm::RDMResponse::InflateFromData(data + 3,
                                                          length - 3);
     if (response)
-      m_rdm_request_callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+      callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
     else
-      m_rdm_request_callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+      callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
   } else {
-    m_rdm_request_callback->Run(status, NULL);
+    callback->Run(status, NULL);
   }
-  m_rdm_request_callback = NULL;
 }
 
 
