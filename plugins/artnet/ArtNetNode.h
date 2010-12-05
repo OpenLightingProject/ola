@@ -79,7 +79,8 @@ class ArtNetNodeImpl {
   public:
     ArtNetNodeImpl(const ola::network::Interface &interface,
                    ola::network::SelectServerInterface *ss,
-                   bool always_broadcast = false);
+                   bool always_broadcast = false,
+                   ola::network::UdpSocketInterface *socket = NULL);
     virtual ~ArtNetNodeImpl();
 
     bool Start();
@@ -106,7 +107,6 @@ class ArtNetNodeImpl {
     }
 
     bool SetMergeMode(uint8_t port_id, artnet_merge_mode merge_mode);
-
 
     // Poll, this should be called periodically if we're sending data.
     bool SendPoll();
@@ -195,7 +195,7 @@ class ArtNetNodeImpl {
     InputPort m_input_ports[ARTNET_MAX_PORTS];
     OutputPort m_output_ports[ARTNET_MAX_PORTS];
     ola::network::Interface m_interface;
-    ola::network::UdpSocket *m_socket;
+    ola::network::UdpSocketInterface *m_socket;
     ola::network::timeout_id m_discovery_timeout;
 
     ArtNetNodeImpl(const ArtNetNodeImpl&);
@@ -326,7 +326,8 @@ class ArtNetNode {
     ArtNetNode(const ola::network::Interface &interface,
                ola::network::SelectServerInterface *ss,
                bool always_broadcast = false,
-               unsigned int rdm_queue_size = 20);
+               unsigned int rdm_queue_size = 20,
+               ola::network::UdpSocketInterface *socket = NULL);
     virtual ~ArtNetNode();
 
     bool Start() { return m_impl.Start(); }

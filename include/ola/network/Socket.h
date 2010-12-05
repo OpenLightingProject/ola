@@ -331,11 +331,57 @@ class DeviceSocket: public ConnectedSocket {
 
 
 /*
+ * The UdpSocketInterface.
+ * This is done as an Interface so we can mock it out for testing.
+ */
+class UdpSocketInterface: public BidirectionalSocket {
+  public:
+    UdpSocketInterface(): BidirectionalSocket() {}
+    ~UdpSocketInterface() {}
+    virtual bool Init() = 0;
+    virtual bool Bind(unsigned short port = INADDR_ANY) = 0;
+    virtual bool Close() = 0;
+    virtual int ReadDescriptor() const = 0;
+    virtual int WriteDescriptor() const = 0;
+    virtual ssize_t SendTo(const uint8_t *buffer,
+                           unsigned int size,
+                           const struct sockaddr_in &destination) const = 0;
+    virtual ssize_t SendTo(const uint8_t *buffer,
+                           unsigned int size,
+                           const std::string &ip,
+                           unsigned short port) const = 0;
+    virtual bool RecvFrom(uint8_t *buffer,
+                          ssize_t *data_read,
+                          struct sockaddr_in &source,
+                          socklen_t &src_size) const = 0;
+    virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
+    virtual bool EnableBroadcast() = 0;
+    virtual bool SetMulticastInterface(const struct in_addr &interface) = 0;
+    virtual bool JoinMulticast(const struct in_addr &interface,
+                               const struct in_addr &group,
+                               bool loop = false) = 0;
+    virtual bool JoinMulticast(const struct in_addr &interface,
+                               const std::string &address,
+                               bool loop = false) = 0;
+    virtual bool LeaveMulticast(const struct in_addr &interface,
+                                const struct in_addr &group) = 0;
+    virtual bool LeaveMulticast(const struct in_addr &interface,
+                                const std::string &address) = 0;
+
+    virtual bool SetTos(uint8_t tos) = 0;
+
+  private:
+    UdpSocketInterface(const UdpSocketInterface &other);
+    UdpSocketInterface& operator=(const UdpSocketInterface &other);
+};
+
+
+/*
  * A UdpSocket (non connected)
  */
-class UdpSocket: public BidirectionalSocket {
+class UdpSocket: public UdpSocketInterface {
   public:
-    UdpSocket(): BidirectionalSocket(),
+    UdpSocket(): UdpSocketInterface(),
                  m_fd(INVALID_SOCKET),
                  m_bound_to_port(false) {}
     ~UdpSocket() { Close(); }

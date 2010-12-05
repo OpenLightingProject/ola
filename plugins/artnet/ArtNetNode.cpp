@@ -57,7 +57,8 @@ const char ArtNetNodeImpl::ARTNET_ID[] = "Art-Net";
  */
 ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
                                ola::network::SelectServerInterface *ss,
-                               bool always_broadcast)
+                               bool always_broadcast,
+                               ola::network::UdpSocketInterface *socket)
     : m_running(false),
       m_send_reply_on_change(true),
       m_short_name(""),
@@ -67,7 +68,7 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
       m_ss(ss),
       m_always_broadcast(always_broadcast),
       m_interface(interface),
-      m_socket(NULL),
+      m_socket(socket),
       m_discovery_timeout(ola::network::INVALID_TIMEOUT) {
 
   // reset all the port structures
@@ -1405,7 +1406,8 @@ bool ArtNetNodeImpl::CheckPortState(uint8_t port_id,
  * Setup the networking components.
  */
 bool ArtNetNodeImpl::InitNetwork() {
-  m_socket = new UdpSocket();
+  if (!m_socket)
+    m_socket = new UdpSocket();
 
   if (!m_socket->Init()) {
     OLA_WARN << "Socket init failed";
@@ -1567,8 +1569,9 @@ void ArtNetNodeImpl::NotifyClientOfNewTod(uint8_t port_id) {
 ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
                        ola::network::SelectServerInterface *ss,
                        bool always_broadcast,
-                       unsigned int rdm_queue_size):
-    m_impl(interface, ss, always_broadcast) {
+                       unsigned int rdm_queue_size,
+                       ola::network::UdpSocketInterface *socket):
+    m_impl(interface, ss, always_broadcast, socket) {
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     m_wrappers[i] = new ArtNetNodeImplRDMWrapper(&m_impl, i);
     m_controllers[i] = new ola::rdm::QueueingRDMController(
