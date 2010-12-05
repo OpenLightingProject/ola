@@ -157,6 +157,7 @@ class ArtNetNodeImpl {
       // the in-flight request and it's callback
       ola::rdm::RDMCallback *rdm_request_callback;
       const ola::rdm::RDMRequest *pending_request;
+      struct in_addr rdm_ip_destination;
 
       // these control the sending of RDM requests.
       ola::network::timeout_id rdm_send_timeout;
@@ -232,7 +233,8 @@ class ArtNetNodeImpl {
                               ola::rdm::rdm_request_status status,
                               const RDMResponse *response);
     void HandleRDMResponse(unsigned int port_id,
-                           const RDMResponse *response);
+                           const RDMResponse *response,
+                           const struct in_addr &source_address);
     void HandleIPProgram(const struct in_addr &source_address,
                          const artnet_ip_prog_t &packet,
                          unsigned int packet_size);

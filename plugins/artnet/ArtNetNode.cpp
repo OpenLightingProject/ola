@@ -481,7 +481,7 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
     return;
   }
 
-  struct in_addr destination = m_interface.bcast_address;
+  port.rdm_ip_destination = m_interface.bcast_address;
   const UID &uid_destination = request->DestinationUID();
   uid_map::const_iterator iter = port.uids.find(uid_destination);
   if (iter == port.uids.end()) {
@@ -489,14 +489,14 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
       OLA_WARN << "Couldn't find " << uid_destination <<
         " in the uid map, broadcasting packet";
   } else {
-    destination = iter->second.first;
+    port.rdm_ip_destination = iter->second.first;
   }
 
   port.rdm_request_callback = on_complete;
   port.pending_request = request;
   bool r = SendRDMCommand(*request,
-                        destination,
-                        port.universe_address);
+                          port.rdm_ip_destination,
+                          port.universe_address);
   if (r) {
     if (uid_destination.IsBroadcast()) {
       port.rdm_request_callback = NULL;
@@ -1059,7 +1059,7 @@ void ArtNetNodeImpl::HandleRdm(const struct in_addr &source_address,
       RDMResponse *response = RDMResponse::InflateFromData(packet.data,
                                                            rdm_length);
       if (response)
-        HandleRDMResponse(port_id, response);
+        HandleRDMResponse(port_id, response, source_address);
     }
   }
 }
@@ -1111,7 +1111,8 @@ void ArtNetNodeImpl::RDMRequestCompletion(struct in_addr destination,
  * </rant>
  */
 void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
-                                       const RDMResponse *response) {
+                                       const RDMResponse *response,
+                                       const struct in_addr &source_address) {
   InputPort &input_port = m_input_ports[port_id];
   if (!input_port.pending_request) {
     delete response;
@@ -1138,8 +1139,14 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
     return;
   }
 
+  if (input_port.rdm_ip_destination.s_addr !=
+      m_interface.bcast_address.s_addr &&
+      input_port.rdm_ip_destination.s_addr != source_address.s_addr) {
+    OLA_INFO << "IP address of RDM response didn't match";
+    return;
+  }
+
   // at this point we've decided it's for us
-  // TODO(simon): check the src address as well?
   input_port.pending_request = NULL;
   ola::rdm::RDMCallback *callback = input_port.rdm_request_callback;
   input_port.rdm_request_callback = NULL;
