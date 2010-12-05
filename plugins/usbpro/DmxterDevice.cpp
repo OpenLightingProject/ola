@@ -76,7 +76,7 @@ DmxterDevice::~DmxterDevice() {
  * Called after we start, use this to fetch the TOD.
  */
 bool DmxterDevice::StartHook() {
-  m_dmxter_widget->RunRDMDiscovery();
+  m_dmxter_widget->SendTodRequest();
   return true;
 }
 
