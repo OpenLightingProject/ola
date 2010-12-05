@@ -133,7 +133,7 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                            ola::proto::RDMResponse* response,
                            google::protobuf::Closure* done,
                            ola::rdm::rdm_request_status status,
-                           const ola::rdm::RDMResponse *response);
+                           const ola::rdm::RDMResponse *rdm_response);
 
   private:
     void MissingUniverseError(RpcController* controller,
