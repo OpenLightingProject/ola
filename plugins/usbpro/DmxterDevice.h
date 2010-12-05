@@ -32,6 +32,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+class DmxterWidget;
 
 /*
  * An Arduino RGB Mixer Device
@@ -39,44 +40,33 @@ namespace usbpro {
 class DmxterDevice: public UsbDevice {
   public:
     DmxterDevice(ola::network::SelectServerInterface *ss,
-                  ola::AbstractPlugin *owner,
-                  const string &name,
-                  UsbWidget *widget,
-                  uint16_t esta_id,
-                  uint16_t device_id,
-                  uint32_t serial);
+                ola::AbstractPlugin *owner,
+                const string &name,
+                UsbWidget *widget,
+                uint16_t esta_id,
+                uint16_t device_id,
+                uint32_t serial);
     ~DmxterDevice();
     string DeviceId() const { return m_device_id; }
     bool StartHook();
 
-    void HandleMessage(uint8_t label,
-                       const uint8_t *data,
-                       unsigned int length);
-
-    bool HandleRDMRequest(const ola::rdm::RDMRequest *request);
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback);
     void RunRDMDiscovery();
     void SendUIDUpdate();
 
   private:
     string m_device_id;
-    ola::rdm::UIDSet m_uids;
-    class DmxterDeviceOutputPort *m_port;
-
-    void SendTodRequest();
-    void HandleTodResponse(unsigned int length, const uint8_t *data);
-
-    static const uint8_t RDM_REQUEST_LABEL = 0x80;
-    static const uint8_t RDM_BCAST_REQUEST_LABEL = 0x81;
-    static const uint8_t TOD_LABEL = 0x82;
+    DmxterWidget *m_dmxter_widget;
 };
 
 
 /*
  * A single Output port per device
  */
-class DmxterDeviceOutputPort: public BasicOutputPort {
+class DmxterOutputPort: public BasicOutputPort {
   public:
-    explicit DmxterDeviceOutputPort(DmxterDevice *parent)
+    explicit DmxterOutputPort(DmxterDevice *parent)
         : BasicOutputPort(parent, 0),
           m_device(parent) {}
 
@@ -87,8 +77,9 @@ class DmxterDeviceOutputPort: public BasicOutputPort {
       (void) buffer;
     }
 
-    bool HandleRDMRequest(const ola::rdm::RDMRequest *request) {
-      return m_device->HandleRDMRequest(request);
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback) {
+      m_device->HandleRDMRequest(request, callback);
     }
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
