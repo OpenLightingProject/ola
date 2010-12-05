@@ -40,8 +40,8 @@ class QueueingRDMController: public RDMControllerInterface {
 
     void Pause();
     void Resume();
-    void SendRequest(const RDMRequest *request,
-                     RDMCallback *on_complete);
+    void SendRDMRequest(const RDMRequest *request,
+                        RDMCallback *on_complete);
 
   private:
     typedef struct {

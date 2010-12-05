@@ -311,7 +311,7 @@ void DmxTriWidgetTest::testSendRDM() {
       sizeof(param_data));  // data length
 
   // first of all confirm we can't send to a UID not in the TOD
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
@@ -355,7 +355,7 @@ void DmxTriWidgetTest::testSendRDM() {
       reinterpret_cast<uint8_t*>(return_data),
       sizeof(return_data));  // data length
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
@@ -384,7 +384,7 @@ void DmxTriWidgetTest::testSendRDM() {
       reinterpret_cast<uint8_t*>(&timeout_response),
       sizeof(timeout_response));
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
@@ -412,7 +412,7 @@ void DmxTriWidgetTest::testSendRDM() {
       reinterpret_cast<uint8_t*>(&invalid_response),
       sizeof(invalid_response));
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
@@ -451,7 +451,7 @@ void DmxTriWidgetTest::testSendRDM() {
       reinterpret_cast<uint8_t*>(return_data),
       sizeof(return_data));  // data length
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(
         this,
@@ -504,7 +504,7 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
       reinterpret_cast<uint8_t*>(&command_response),
       sizeof(command_response));
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
@@ -540,7 +540,7 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
       reinterpret_cast<uint8_t*>(&command_response),
       sizeof(command_response));
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
@@ -567,7 +567,7 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
       reinterpret_cast<uint8_t*>(&command_response),
       sizeof(command_response));
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
@@ -595,7 +595,7 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
       reinterpret_cast<uint8_t*>(&failed_set_filter_response),
       sizeof(failed_set_filter_response));
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
@@ -640,7 +640,7 @@ void DmxTriWidgetTest::testNack() {
       request,
       ola::rdm::NR_UNKNOWN_PID);
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
@@ -674,7 +674,7 @@ void DmxTriWidgetTest::testNack() {
       request,
       ola::rdm::NR_PROXY_BUFFER_FULL);
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
@@ -730,7 +730,7 @@ void DmxTriWidgetTest::testAckTimer() {
       reinterpret_cast<uint8_t*>(return_data),
       sizeof(return_data));  // data length
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
@@ -794,7 +794,7 @@ void DmxTriWidgetTest::testAckOverflow() {
       reinterpret_cast<uint8_t*>(return_data),
       sizeof(return_data));  // data length
 
-  dmxtri.SendRequest(
+  dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,

@@ -21,7 +21,7 @@
 #include "common/protocol/Ola.pb.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/RDMCommand.h"
-#include "olad/InternalRDMController.h"
+#include "olad/ClientBroker.h"
 
 #ifndef OLAD_OLASERVERSERVICEIMPL_H_
 #define OLAD_OLASERVERSERVICEIMPL_H_
@@ -39,17 +39,18 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
                          class Client *client,
                          class ExportMap *export_map,
                          class PortManager *port_manager,
-                         class InternalRDMController *rdm_controller,
-                         const class TimeStamp *wake_up_time):
+                         class ClientBroker *broker,
+                         const class TimeStamp *wake_up_time,
+                         const ola::rdm::UID &uid):
       m_universe_store(universe_store),
       m_device_manager(device_manager),
       m_plugin_manager(plugin_manager),
       m_client(client),
       m_export_map(export_map),
       m_port_manager(port_manager),
-      m_rdm_controller(rdm_controller),
+      m_broker(broker),
       m_wake_up_time(wake_up_time),
-      m_uid(NULL) {}
+      m_uid(uid) {}
     ~OlaServerServiceImpl();
 
     void GetDmx(RpcController* controller,
@@ -131,7 +132,8 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     void HandleRDMResponse(RpcController* controller,
                            ola::proto::RDMResponse* response,
                            google::protobuf::Closure* done,
-                           const rdm_response_data &status);
+                           ola::rdm::rdm_request_status status,
+                           const ola::rdm::RDMResponse *response);
 
   private:
     void MissingUniverseError(RpcController* controller,
@@ -159,9 +161,9 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     class Client *m_client;
     class ExportMap *m_export_map;
     class PortManager *m_port_manager;
-    class InternalRDMController *m_rdm_controller;
+    class ClientBroker *m_broker;
     const class TimeStamp *m_wake_up_time;
-    ola::rdm::UID *m_uid;
+    ola::rdm::UID m_uid;
 };
 
 
@@ -173,8 +175,9 @@ class OlaServerServiceImplFactory {
                               Client *client,
                               ExportMap *export_map,
                               PortManager *port_manager,
-                              InternalRDMController *rdm_controller,
-                              const TimeStamp *wake_up_time);
+                              ClientBroker *broker,
+                              const TimeStamp *wake_up_time,
+                              const ola::rdm::UID &uid);
 };
 }  // ola
 #endif  // OLAD_OLASERVERSERVICEIMPL_H_

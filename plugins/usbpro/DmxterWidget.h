@@ -52,8 +52,8 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
                        const uint8_t *data,
                        unsigned int length);
 
-    void SendRequest(const ola::rdm::RDMRequest *request,
-                     ola::rdm::RDMCallback *on_complete);
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *on_complete);
 
     void RunRDMDiscovery();
     void SendUIDUpdate();
@@ -139,9 +139,9 @@ class DmxterWidget: public ola::rdm::RDMControllerInterface {
       m_impl.SetUIDListCallback(callback);
     }
 
-    void SendRequest(const ola::rdm::RDMRequest *request,
-                     ola::rdm::RDMCallback *on_complete) {
-      m_controller.SendRequest(request, on_complete);
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *on_complete) {
+      m_controller.SendRDMRequest(request, on_complete);
     }
 
     void RunRDMDiscovery() {

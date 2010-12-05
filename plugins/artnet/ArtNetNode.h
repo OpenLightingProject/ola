@@ -183,7 +183,6 @@ class ArtNetNodeImpl {
       ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request;
     };
 
-  private:
     bool m_running;
     bool m_send_reply_on_change;
     string m_short_name;
@@ -232,7 +231,7 @@ class ArtNetNodeImpl {
                               uint8_t universe_address,
                               ola::rdm::rdm_request_status status,
                               const RDMResponse *response);
-    void HandleRdmResponse(unsigned int port_id,
+    void HandleRDMResponse(unsigned int port_id,
                            const RDMResponse *response);
     void HandleIPProgram(const struct in_addr &source_address,
                          const artnet_ip_prog_t &packet,
@@ -308,8 +307,8 @@ class ArtNetNodeImplRDMWrapper: public ola::rdm::RDMControllerInterface {
     }
     ~ArtNetNodeImplRDMWrapper() {}
 
-    void SendRequest(const ola::rdm::RDMRequest *request,
-                     ola::rdm::RDMCallback *on_complete) {
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *on_complete) {
       m_impl->SendRDMRequest(m_port_id, request, on_complete);
     }
 

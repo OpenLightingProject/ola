@@ -39,7 +39,7 @@
 #include "ola/rdm/UID.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
-#include "olad/InternalRDMController.h"
+#include "olad/ClientBroker.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
@@ -97,7 +97,8 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_housekeeping_timeout(ola::network::INVALID_TIMEOUT),
       m_httpd(NULL),
       m_options(*ola_options),
-      m_rdm_controller(NULL) {
+      m_broker(NULL),
+      m_default_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
   if (!m_export_map) {
     m_export_map = new ExportMap();
     m_free_export_map = true;
@@ -127,10 +128,6 @@ OlaServer::~OlaServer() {
 
   StopPlugins();
 
-  // this will remove any input ports and fail any outstanding rdm requests
-  if (m_rdm_controller)
-    delete m_rdm_controller;
-
   map<int, OlaServerServiceImpl*>::iterator iter;
   for (iter = m_sd_to_service.begin(); iter != m_sd_to_service.end(); ++iter) {
     CleanupConnection(iter->second);
@@ -141,6 +138,9 @@ OlaServer::~OlaServer() {
     socket->Close();
     */
   }
+
+  if (m_broker)
+    delete m_broker;
 
   if (m_accepting_socket &&
       m_accepting_socket->ReadDescriptor() !=
@@ -193,7 +193,6 @@ bool OlaServer::Init() {
   signal(SIGPIPE, SIG_IGN);
 
   // fetch the interface info
-  ola::rdm::UID default_uid(OPEN_LIGHTING_ESTA_CODE, 0);
   ola::network::Interface interface;
   ola::network::InterfacePicker *picker =
     ola::network::InterfacePicker::NewPicker();
@@ -201,12 +200,12 @@ bool OlaServer::Init() {
     OLA_WARN << "No network interface found";
   } else {
     // default to using the ip as a id
-    default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
-                                interface.ip_address.s_addr);
+    m_default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
+                                  interface.ip_address.s_addr);
   }
   delete picker;
-  m_export_map->GetStringVar(K_UID_VAR)->Set(default_uid.ToString());
-  OLA_INFO << "Server UID is " << default_uid;
+  m_export_map->GetStringVar(K_UID_VAR)->Set(m_default_uid.ToString());
+  OLA_INFO << "Server UID is " << m_default_uid;
 
   m_universe_preferences = m_preferences_factory->NewPreference(
       UNIVERSE_PREFERENCES);
@@ -214,9 +213,7 @@ bool OlaServer::Init() {
   m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
 
   m_port_manager = new PortManager(m_universe_store);
-  m_rdm_controller = new InternalRDMController(default_uid,
-                                               m_port_manager,
-                                               m_export_map);
+  m_broker = new ClientBroker();
 
   // setup the objects
   m_device_manager = new DeviceManager(m_preferences_factory, m_port_manager);
@@ -293,8 +290,10 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
                                                          client,
                                                          m_export_map,
                                                          m_port_manager,
-                                                         m_rdm_controller,
-                                                         m_ss->WakeUpTime());
+                                                         m_broker,
+                                                         m_ss->WakeUpTime(),
+                                                         m_default_uid);
+  m_broker->AddClient(service);
   channel->SetService(service);
 
   map<int, OlaServerServiceImpl*>::const_iterator iter;
@@ -335,7 +334,6 @@ void OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
 bool OlaServer::RunHousekeeping() {
   OLA_DEBUG << "Garbage collecting";
   m_universe_store->GarbageCollectUniverses();
-  m_rdm_controller->CheckTimeouts(*m_ss->WakeUpTime());
   return true;
 }
 
@@ -415,6 +413,7 @@ void OlaServer::StopPlugins() {
  * Cleanup everything related to a client connection
  */
 void OlaServer::CleanupConnection(OlaServerServiceImpl *service) {
+  m_broker->RemoveClient(service);
   Client *client = service->GetClient();
 
   vector<Universe*> universe_list;

@@ -104,7 +104,7 @@ bool DmxTriDevice::SendDMX(const DmxBuffer &buffer) const {
  */
 void DmxTriDevice::HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
-  m_tri_widget->SendRequest(request, callback);
+  m_tri_widget->SendRDMRequest(request, callback);
 }
 
 

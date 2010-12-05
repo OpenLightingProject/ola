@@ -111,19 +111,6 @@ void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 
 
 /*
- * Handle a response message
- * @param response, the RDMResponse object, ownership is transferred to us
- */
-bool BasicInputPort::HandleRDMResponse(
-    const ola::rdm::RDMResponse *response) {
-  OLA_WARN << "In base HandleRDMResponse, something has gone wrong with RDM" <<
-    " request routing";
-  delete response;
-  return true;
-}
-
-
-/*
  * Trigger the RDM Discovery procedure for this universe
  */
 void BasicInputPort::TriggerRDMDiscovery() {
@@ -193,26 +180,18 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
 /*
  * Handle an RDMRequest, subclasses can implement this to support RDM
  */
-bool BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
+void BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                       ola::rdm::RDMCallback *callback) {
   // broadcasts go to every port
-  if (!request->DestinationUID().IsBroadcast())
+  if (request->DestinationUID().IsBroadcast()) {
+    delete request;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+  } else {
     OLA_WARN << "In base HandleRDMRequest, something has gone wrong with RDM"
       << " request routing";
-  delete request;
-  return true;
-}
-
-
-/*
- * Handle a response message
- */
-bool BasicOutputPort::HandleRDMResponse(
-    const ola::rdm::RDMResponse *response) {
-  if (m_universe)
-    return m_universe->HandleRDMResponse(this, response);
-  else
-    delete response;
-    return false;
+    delete request;
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+  }
 }
 
 

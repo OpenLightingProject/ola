@@ -42,7 +42,7 @@ class Client;
 class InputPort;
 class OutputPort;
 
-class Universe {
+class Universe: public ola::rdm::RDMControllerInterface {
   public:
     enum merge_mode {
       MERGE_HTP,
@@ -97,8 +97,8 @@ class Universe {
     bool SourceClientDataChanged(Client *client);
 
     // RDM methods
-    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback);
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback);
     void RunRDMDiscovery();
     void GetUIDs(ola::rdm::UIDSet *uids) const;
     unsigned int UIDCount() const;
@@ -131,6 +131,17 @@ class Universe {
     void HTPMergeSources(const vector<DmxSource> &sources);
     bool MergeAll(const InputPort *port, const Client *client);
 
+    typedef struct {
+      unsigned int expected_count;
+      unsigned int current_count;
+      bool failed;
+      ola::rdm::RDMCallback *callback;
+    } broadcast_request_tracker;
+
+    void HandleBroadcastAck(broadcast_request_tracker *tracker,
+                            ola::rdm::rdm_request_status status,
+                            const ola::rdm::RDMResponse *response);
+
     string m_universe_name;
     unsigned int m_universe_id;
     string m_universe_id_str;
@@ -152,7 +163,7 @@ class Universe {
     template<class PortClass>
     bool GenericRemovePort(PortClass *port,
                           vector<PortClass*> *ports,
-                          map<UID, PortClass*> *uid_map);
+                          map<UID, PortClass*> *uid_map = NULL);
 
     template<class PortClass>
     bool GenericContainsPort(PortClass *port,

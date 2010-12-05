@@ -1,0 +1,90 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * ClientBroker.cpp
+ * Acts as the glue between clients and the RDM request path.
+ * Copyright (C) 2010 Simon Newton
+ */
+
+#include <set>
+#include "ola/Logging.h"
+#include "olad/ClientBroker.h"
+
+namespace ola {
+
+using std::set;
+
+/**
+ * Add a client to the broker
+ */
+void ClientBroker::AddClient(const OlaServerServiceImpl *impl) {
+  m_clients.insert(reinterpret_cast<const void*>(impl->GetClient()));
+}
+
+
+/**
+ * Remove a client from the broker
+ */
+void ClientBroker::RemoveClient(const OlaServerServiceImpl *impl) {
+  m_clients.erase(reinterpret_cast<const void*>(impl->GetClient()));
+}
+
+
+/**
+ * Make an RDM call
+ * @param impl the OlaServerServiceImpl that should exist when the call returns
+ * @param universe the universe to send the RDM request on
+ * @param request the RDM request
+ * @param callback the callback to run when the request completes
+ */
+void ClientBroker::SendRDMRequest(const OlaServerServiceImpl *impl,
+                                  Universe *universe,
+                                  const ola::rdm::RDMRequest *request,
+                                  ola::rdm::RDMCallback *callback) {
+  const void *key = reinterpret_cast<const void*>(impl->GetClient());
+  set<const void*>::const_iterator iter = m_clients.find(key);
+  if (iter == m_clients.end())
+    OLA_WARN <<
+      "Making an RDM call but the client doesn't exist in the broker!";
+
+  universe->SendRDMRequest(request,
+      NewCallback(this,
+                  &ClientBroker::RequestComplete,
+                  key,
+                  callback));
+}
+
+
+/**
+ * Return from an RDM call
+ * @param key the client associated with this request
+ * @param callback the callback to run if the key still exists
+ * @param status the status of the RDM request
+ * @param response the RDM response
+ */
+void ClientBroker::RequestComplete(const void *key,
+                                   ola::rdm::RDMCallback *callback,
+                                   ola::rdm::rdm_request_status status,
+                                   const ola::rdm::RDMResponse *response) {
+  set<const void*>::const_iterator iter = m_clients.find(key);
+  if (iter == m_clients.end()) {
+    OLA_INFO << "Client no longer exists, cleaning up from RDM response";
+    delete response;
+    delete callback;
+  } else {
+    callback->Run(status, response);
+  }
+}
+}  // ola

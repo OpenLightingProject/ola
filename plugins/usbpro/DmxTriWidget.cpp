@@ -141,8 +141,8 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
  * Send an RDM request. Because this is wrapped in a QueueingRDMController it's
  * only going to be called one-at-a-time.
  */
-void DmxTriWidgetImpl::SendRequest(const ola::rdm::RDMRequest *request,
-                                   ola::rdm::RDMCallback *on_complete) {
+void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
+                                      ola::rdm::RDMCallback *on_complete) {
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);

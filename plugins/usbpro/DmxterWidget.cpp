@@ -120,8 +120,8 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
  * @param request the RDMRequest object
  * @param on_complete the callback to run when the request completes or fails
  */
-void DmxterWidgetImpl::SendRequest(const RDMRequest *request,
-                                   ola::rdm::RDMCallback *on_complete) {
+void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
+                                      ola::rdm::RDMCallback *on_complete) {
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);

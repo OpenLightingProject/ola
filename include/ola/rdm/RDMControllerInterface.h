@@ -74,8 +74,8 @@ class RDMControllerInterface {
      * and possibly the UID (changing src UIDs isn't addresses by the RDM
      * spec).
      */
-    virtual void SendRequest(const RDMRequest *request,
-                             RDMCallback *on_complete) = 0;
+    virtual void SendRDMRequest(const RDMRequest *request,
+                                RDMCallback *on_complete) = 0;
 };
 }  // rdm
 }  // ola

@@ -97,8 +97,8 @@ void QueueingRDMController::Resume() {
 /**
  * Queue an RDM request for sending.
  */
-void QueueingRDMController::SendRequest(const RDMRequest *request,
-                                        RDMCallback *on_complete) {
+void QueueingRDMController::SendRDMRequest(const RDMRequest *request,
+                                           RDMCallback *on_complete) {
   if (m_pending_requests.size() >= m_max_queue_size) {
     OLA_WARN << "RDM Queue is full, dropping request";
     if (on_complete)
@@ -134,7 +134,7 @@ void QueueingRDMController::DispatchNextRequest() {
   outstanding_rdm_request outstanding_request = m_pending_requests.front();
   // We have to make a copy here because we pass ownership of the request to
   // the underlying controller.
-  m_controller->SendRequest(outstanding_request.request->Duplicate(),
+  m_controller->SendRDMRequest(outstanding_request.request->Duplicate(),
                             m_callback);
 }
 

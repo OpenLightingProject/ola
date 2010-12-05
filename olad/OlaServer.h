@@ -34,6 +34,7 @@
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
+#include "ola/rdm/UID.h"
 
 namespace ola {
 
@@ -107,7 +108,8 @@ class OlaServer {
     std::map<int, class OlaServerServiceImpl*> m_sd_to_service;
     OlaHttpServer_t *m_httpd;
     ola_server_options m_options;
-    class InternalRDMController *m_rdm_controller;
+    class ClientBroker *m_broker;
+    ola::rdm::UID m_default_uid;
 
     static const char UNIVERSE_PREFERENCES[];
     static const char K_CLIENT_VAR[];

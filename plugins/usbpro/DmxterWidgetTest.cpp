@@ -38,7 +38,7 @@ using ola::rdm::UID;
 class DmxterWidgetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DmxterWidgetTest);
   CPPUNIT_TEST(testTod);
-  CPPUNIT_TEST(testSendRequest);
+  CPPUNIT_TEST(testSendRDMRequest);
   CPPUNIT_TEST(testInvalidReponse);
   CPPUNIT_TEST(testTimeout);
   CPPUNIT_TEST(testErrorConditions);
@@ -48,7 +48,7 @@ class DmxterWidgetTest: public CppUnit::TestFixture {
     void setUp();
 
     void testTod();
-    void testSendRequest();
+    void testSendRDMRequest();
     void testInvalidReponse();
     void testTimeout();
     void testErrorConditions();
@@ -181,7 +181,7 @@ void DmxterWidgetTest::testTod() {
 /**
  * Check that we send messages correctly.
  */
-void DmxterWidgetTest::testSendRequest() {
+void DmxterWidgetTest::testSendRDMRequest() {
   uint8_t RDM_REQUEST_LABEL = 0x80;
   uint8_t RDM_BROADCAST_REQUEST_LABEL = 0x81;
   UID source(1, 2);
@@ -235,7 +235,7 @@ void DmxterWidgetTest::testSendRequest() {
       reinterpret_cast<uint8_t*>(return_packet),
       sizeof(return_packet));
 
-  dmxter.SendRequest(
+  dmxter.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateResponse));
@@ -267,7 +267,7 @@ void DmxterWidgetTest::testSendRequest() {
       reinterpret_cast<uint8_t*>(NULL),
       0);
 
-  dmxter.SendRequest(
+  dmxter.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateBroadcastResponse));
@@ -324,7 +324,7 @@ void DmxterWidgetTest::testInvalidReponse() {
       reinterpret_cast<uint8_t*>(return_packet),
       sizeof(return_packet));
 
-  dmxter.SendRequest(
+  dmxter.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateInvalidResponse));
@@ -380,7 +380,7 @@ void DmxterWidgetTest::testTimeout() {
       reinterpret_cast<uint8_t*>(return_packet),
       sizeof(return_packet));
 
-  dmxter.SendRequest(
+  dmxter.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateTimeoutResponse));
@@ -435,7 +435,7 @@ void DmxterWidgetTest::testErrorConditions() {
       reinterpret_cast<uint8_t*>(return_packet),
       sizeof(return_packet));
 
-  dmxter.SendRequest(
+  dmxter.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateInvalidResponse));
@@ -470,7 +470,7 @@ void DmxterWidgetTest::testErrorConditions() {
       reinterpret_cast<uint8_t*>(return_packet2),
       sizeof(return_packet2));
 
-  dmxter.SendRequest(
+  dmxter.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateInvalidResponse));

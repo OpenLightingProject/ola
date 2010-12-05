@@ -57,8 +57,8 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
 
     bool SendDMX(const DmxBuffer &buffer) const;
 
-    void SendRequest(const ola::rdm::RDMRequest *request,
-                     ola::rdm::RDMCallback *on_complete);
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *on_complete);
     void RunRDMDiscovery();
     void SendUIDUpdate();
     bool CheckDiscoveryStatus();
@@ -182,9 +182,9 @@ class DmxTriWidget {
       m_impl.SetUIDListCallback(callback);
     }
 
-    void SendRequest(const ola::rdm::RDMRequest *request,
-                     ola::rdm::RDMCallback *on_complete) {
-      m_controller.SendRequest(request, on_complete);
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *on_complete) {
+      m_controller.SendRDMRequest(request, on_complete);
     }
 
     void RunRDMDiscovery() {

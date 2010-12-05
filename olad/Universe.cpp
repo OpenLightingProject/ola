@@ -176,7 +176,7 @@ bool Universe::AddPort(OutputPort *port) {
  * @return true if the port was removed, false if it didn't exist
  */
 bool Universe::RemovePort(InputPort *port) {
-  return GenericRemovePort(port, &m_input_ports, &m_input_uids);
+  return GenericRemovePort(port, &m_input_ports);
 }
 
 
@@ -350,8 +350,8 @@ bool Universe::SourceClientDataChanged(Client *client) {
  * transferred to this method.
  * @returns true if this request was sent to an Output port, false otherwise
  */
-void Universe::HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                                ola::rdm::RDMCallback *callback) {
+void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
+                              ola::rdm::RDMCallback *callback) {
   OLA_INFO << "Got a RDM request for " << request->DestinationUID() <<
     " with command " << std::hex << request->CommandClass() << " and param " <<
     request->ParamId();
@@ -362,16 +362,21 @@ void Universe::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 
   if (request->DestinationUID().IsBroadcast()) {
     // send this request to all ports
+    broadcast_request_tracker *tracker = new broadcast_request_tracker;
+    tracker->expected_count = 0;
+    tracker->current_count = 0;
+    tracker->failed = false;
+    tracker->callback = callback;
     vector<OutputPort*>::iterator port_iter;
     for (port_iter = m_output_ports.begin(); port_iter != m_output_ports.end();
          ++port_iter) {
+      tracker->expected_count++;
       // because each port deletes the request, we need to copy it here
-      // TODO(simon): rather than blindly sending, we should only run the
-      // callback once we know all ports have sent the request
-      (*port_iter)->HandleRDMRequest(request->Duplicate(), NULL);
+      (*port_iter)->HandleRDMRequest(
+          request->Duplicate(),
+          NewCallback(this, &Universe::HandleBroadcastAck, tracker));
     }
     delete request;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
   } else {
     map<UID, OutputPort*>::iterator iter =
       m_output_uids.find(request->DestinationUID());
@@ -453,17 +458,8 @@ void Universe::NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port) {
  */
 bool Universe::IsActive() const {
   // any of the following means the port is active
-  if (m_output_ports.size() || m_source_clients.size() ||
-      m_sink_clients.size())
-    return true;
-
-  // we need to handle the case of the internal input port here. These ports
-  // can be identified because they don't have a parent device.
-  int input_ports = m_input_ports.size();
-  if (input_ports == 0 ||
-      (input_ports == 1 && m_input_ports[0]->GetDevice() == NULL))
-    return false;
-  return true;
+  return m_output_ports.size() || m_input_ports.size() ||
+      m_source_clients.size() || m_sink_clients.size();
 }
 
 
@@ -683,6 +679,29 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
 }
 
 
+/**
+ * Track fan-out responses for a broadcast request.
+ * This increments the port counter until we reach the expected value, and
+ * which point we run the callback for the client
+ */
+void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
+                                  ola::rdm::rdm_request_status status,
+                                  const ola::rdm::RDMResponse *response) {
+  tracker->current_count++;
+  if (status != ola::rdm::RDM_WAS_BROADCAST)
+    tracker->failed = true;
+  if (tracker->current_count == tracker->expected_count) {
+    // all ports have completed
+    tracker->callback->Run(
+        tracker->failed ?  ola::rdm::RDM_FAILED_TO_SEND :
+          ola::rdm::RDM_WAS_BROADCAST,
+        NULL);
+    delete tracker;
+  }
+  (void) response;
+}
+
+
 /*
  * Add an Input or Output port to this universe.
  * @param port, the port to add
@@ -733,12 +752,14 @@ bool Universe::GenericRemovePort(PortClass *port,
     m_universe_store->AddUniverseGarbageCollection(this);
 
   // Remove any uids that mapped to this port
-  typename map<UID, PortClass*>::iterator uid_iter = uid_map->begin();
-  while (uid_iter != uid_map->end()) {
-    if (uid_iter->second == port)
-      uid_map->erase(uid_iter++);
-    else
-      ++uid_iter;
+  if (uid_map) {
+    typename map<UID, PortClass*>::iterator uid_iter = uid_map->begin();
+    while (uid_iter != uid_map->end()) {
+      if (uid_iter->second == port)
+        uid_map->erase(uid_iter++);
+      else
+        ++uid_iter;
+    }
   }
   return true;
 }

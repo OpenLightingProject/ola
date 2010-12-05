@@ -72,7 +72,7 @@ class MockRDMController: public ola::rdm::RDMControllerInterface {
   public:
     MockRDMController() {}
     ~MockRDMController() {}
-    void SendRequest(const RDMRequest *request, RDMCallback *on_complete);
+    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
 
     void AddExpectedCall(RDMRequest *request,
                          ola::rdm::rdm_request_status status,
@@ -90,7 +90,7 @@ class MockRDMController: public ola::rdm::RDMControllerInterface {
 };
 
 
-void MockRDMController::SendRequest(const RDMRequest *request,
+void MockRDMController::SendRDMRequest(const RDMRequest *request,
                                     RDMCallback *on_complete) {
   CPPUNIT_ASSERT(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
@@ -191,7 +191,7 @@ void QueueingRDMControllerTest::testSendAndReceive() {
                                   ola::rdm::RDM_COMPLETED_OK,
                                   &expected_command);
 
-  controller.SendRequest(
+  controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
@@ -205,7 +205,7 @@ void QueueingRDMControllerTest::testSendAndReceive() {
   mock_controller.AddExpectedCall(get_request,
                                   ola::rdm::RDM_COMPLETED_OK,
                                   NULL);
-  controller.SendRequest(
+  controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
@@ -219,7 +219,7 @@ void QueueingRDMControllerTest::testSendAndReceive() {
   mock_controller.AddExpectedCall(get_request,
                                   ola::rdm::RDM_FAILED_TO_SEND,
                                   NULL);
-  controller.SendRequest(
+  controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
@@ -286,7 +286,7 @@ void QueueingRDMControllerTest::testAckOverflows() {
                                   ola::rdm::RDM_COMPLETED_OK,
                                   response2);
 
-  controller.SendRequest(
+  controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
@@ -316,7 +316,7 @@ void QueueingRDMControllerTest::testAckOverflows() {
                                   ola::rdm::RDM_TIMEOUT,
                                   NULL);
 
-  controller.SendRequest(
+  controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
@@ -357,7 +357,7 @@ void QueueingRDMControllerTest::testAckOverflows() {
                                   ola::rdm::RDM_COMPLETED_OK,
                                   response2);
 
-  controller.SendRequest(
+  controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
@@ -394,7 +394,7 @@ void QueueingRDMControllerTest::testPauseAndResume() {
                                   0);  // data length
 
   // queue up two requests
-  controller.SendRequest(
+  controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
@@ -404,7 +404,7 @@ void QueueingRDMControllerTest::testPauseAndResume() {
           false));
 
   get_request = NewGetRequest(source, destination);
-  controller.SendRequest(
+  controller.SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
@@ -437,7 +437,7 @@ void QueueingRDMControllerTest::testQueueOverflow() {
   controller->Pause();
 
   RDMRequest *get_request = NewGetRequest(source, destination);
-  controller->SendRequest(
+  controller->SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,
@@ -448,7 +448,7 @@ void QueueingRDMControllerTest::testQueueOverflow() {
 
   // this one should overflow the queue
   get_request = NewGetRequest(source, destination);
-  controller->SendRequest(
+  controller->SendRDMRequest(
       get_request,
       ola::NewSingleCallback(
           this,

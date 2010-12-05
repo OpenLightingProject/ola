@@ -77,6 +77,8 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
     m_input_ports[i].enabled = false;
     m_input_ports[i].on_tod = NULL;
     m_input_ports[i].discovery_running = false;
+    m_input_ports[i].rdm_request_callback = NULL;
+    m_input_ports[i].pending_request = NULL;
     m_input_ports[i].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
 
     m_output_ports[i].universe_address = 0;
@@ -482,8 +484,9 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
   const UID &uid_destination = request->DestinationUID();
   uid_map::const_iterator iter = port.uids.find(uid_destination);
   if (iter == port.uids.end()) {
-    OLA_WARN << "Couldn't find " << uid_destination <<
-      " in the uid map, broadcasting packet";
+    if (!uid_destination.IsBroadcast())
+      OLA_WARN << "Couldn't find " << uid_destination <<
+        " in the uid map, broadcasting packet";
   } else {
     destination = iter->second.first;
   }
@@ -494,11 +497,18 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
                         destination,
                         port.universe_address);
   if (r) {
-    port.rdm_send_timeout = m_ss->RegisterSingleTimeout(
-      RDM_REQUEST_TIMEOUT_MS,
-      ola::NewSingleCallback(this,
-                             &ArtNetNodeImpl::TimeoutRDMRequest,
-                             port_id));
+    if (uid_destination.IsBroadcast()) {
+      port.rdm_request_callback = NULL;
+      port.pending_request = NULL;
+      delete request;
+      on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+    } else {
+      port.rdm_send_timeout = m_ss->RegisterSingleTimeout(
+        RDM_REQUEST_TIMEOUT_MS,
+        ola::NewSingleCallback(this,
+                               &ArtNetNodeImpl::TimeoutRDMRequest,
+                               port_id));
+    }
   } else {
     port.rdm_request_callback = NULL;
     port.pending_request = NULL;
@@ -1048,7 +1058,7 @@ void ArtNetNodeImpl::HandleRdm(const struct in_addr &source_address,
       RDMResponse *response = RDMResponse::InflateFromData(packet.data,
                                                            rdm_length);
       if (response)
-        HandleRdmResponse(port_id, response);
+        HandleRDMResponse(port_id, response);
     }
   }
 }
@@ -1099,7 +1109,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(struct in_addr destination,
  * session will be reset, possibly causing the controller to spin in a loop.
  * </rant>
  */
-void ArtNetNodeImpl::HandleRdmResponse(unsigned int port_id,
+void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
                                        const RDMResponse *response) {
   InputPort &input_port = m_input_ports[port_id];
   if (!input_port.pending_request) {
@@ -1587,7 +1597,7 @@ void ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request,
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
     delete request;
   }
-  m_wrappers[port_id]->SendRequest(request, on_complete);
+  m_wrappers[port_id]->SendRDMRequest(request, on_complete);
 }
 }  // artnet
 }  // plugin

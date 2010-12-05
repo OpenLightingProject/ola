@@ -28,11 +28,11 @@
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/rdm/RDMCommand.h"
 #include "olad/Client.h"
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
 #include "olad/DmxSource.h"
-#include "olad/InternalRDMController.h"
 #include "olad/OlaServerServiceImpl.h"
 #include "olad/Plugin.h"
 #include "olad/PluginManager.h"
@@ -66,11 +66,10 @@ using ola::proto::UniverseInfoReply;
 using ola::proto::UniverseNameRequest;
 using ola::proto::UniverseRequest;
 using ola::rdm::UIDSet;
+using ola::rdm::RDMResponse;
 
 
 OlaServerServiceImpl::~OlaServerServiceImpl() {
-  if (m_uid)
-    delete m_uid;
 }
 
 
@@ -630,27 +629,40 @@ void OlaServerServiceImpl::RDMCommand(
   UID destination(request->uid().esta_id(),
                   request->uid().device_id());
 
-  SingleUseCallback1<void, const rdm_response_data&> *callback =
+  ola::rdm::RDMRequest *rdm_request = NULL;
+  if (request->is_set()) {
+    rdm_request = new ola::rdm::RDMSetRequest(
+      m_uid,
+      destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      request->sub_device(),
+      request->param_id(),
+      reinterpret_cast<const uint8_t*>(request->data().data()),
+      request->data().size());
+  } else {
+    rdm_request = new ola::rdm::RDMGetRequest(
+      m_uid,
+      destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      request->sub_device(),
+      request->param_id(),
+      reinterpret_cast<const uint8_t*>(request->data().data()),
+      request->data().size());
+  }
+
+  ola::rdm::RDMCallback *callback =
     NewSingleCallback(
         this,
         &OlaServerServiceImpl::HandleRDMResponse,
         controller,
         response,
         done);
-  bool r = m_rdm_controller->SendRDMRequest(
-    universe,
-    destination,
-    request->sub_device(),
-    request->param_id(),
-    request->data(),
-    request->is_set(),
-    callback,
-    m_uid);
-  if (!r) {
-    controller->SetFailed("Failed to send RDM command");
-    delete callback;
-    done->Run();
-  }
+
+  m_broker->SendRDMRequest(this, universe, rdm_request, callback);
 }
 
 
@@ -664,10 +676,7 @@ void OlaServerServiceImpl::SetSourceUID(
     google::protobuf::Closure* done) {
 
   UID source_uid(request->esta_id(), request->device_id());
-  if (!m_uid)
-    m_uid = new UID(source_uid);
-  else
-    *m_uid = source_uid;
+  m_uid = source_uid;
   done->Run();
   (void) controller;
   (void) response;
@@ -682,25 +691,45 @@ void OlaServerServiceImpl::HandleRDMResponse(
     RpcController* controller,
     ola::proto::RDMResponse* response,
     google::protobuf::Closure* done,
-    const rdm_response_data &status) {
+    ola::rdm::rdm_request_status status,
+    const RDMResponse *rdm_response) {
 
   // check for time out errors
-  if (status.status == RDM_RESPONSE_TIMED_OUT) {
-    controller->SetFailed("RDM command timed out");
+  string error;
+  switch (status) {
+    case ola::rdm::RDM_COMPLETED_OK:
+    case ola::rdm::RDM_WAS_BROADCAST:
+      break;
+    case ola::rdm::RDM_FAILED_TO_SEND:
+      error = "Failed to send RDM Command";
+      break;
+    case ola::rdm::RDM_TIMEOUT:
+      error = "Response timeout";
+      break;
+    case ola::rdm::RDM_INVALID_RESPONSE:
+      error = "Invalid RDM response";
+      break;
+    case ola::rdm::RDM_UNKNOWN_UID:
+      error = "Unknown UID";
+      break;
+  }
+
+  if (!error.empty()) {
+    controller->SetFailed(error);
     done->Run();
     return;
   }
 
-  if (status.status == RDM_RESPONSE_OK) {
-    if (status.response) {
-      response->set_response_code(status.response->ResponseType());
-      response->set_message_count(status.response->MessageCount());
+  if (status == ola::rdm::RDM_COMPLETED_OK) {
+    if (response) {
+      response->set_response_code(rdm_response->ResponseType());
+      response->set_message_count(rdm_response->MessageCount());
       response->set_was_broadcast(false);
 
-      if (status.response->ParamData() && status.response->ParamDataSize()) {
+      if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
         const string data(
-            reinterpret_cast<const char*>(status.response->ParamData()),
-            status.response->ParamDataSize());
+            reinterpret_cast<const char*>(rdm_response->ParamData()),
+            rdm_response->ParamDataSize());
         response->set_data(data);
       } else {
         response->set_data("");
@@ -709,15 +738,12 @@ void OlaServerServiceImpl::HandleRDMResponse(
       OLA_WARN << "RDM state was ok but response was NULL";
       controller->SetFailed("Missing Response");
     }
-  } else if (status.status == RDM_RESPONSE_BROADCAST) {
+  } else if (status == ola::rdm::RDM_WAS_BROADCAST) {
     response->set_was_broadcast(true);
     // fill these in with dummy values
     response->set_response_code(0);
     response->set_message_count(0);
     response->set_data("");
-  } else {
-    OLA_WARN << "unknown response status " << status.status;
-    controller->SetFailed("Unknown status, see the logs");
   }
 
   done->Run();
@@ -833,15 +859,17 @@ OlaServerServiceImpl *OlaServerServiceImplFactory::New(
     Client *client,
     ExportMap *export_map,
     PortManager *port_manager,
-    InternalRDMController *rdm_controller,
-    const TimeStamp *wake_up_time) {
+    ClientBroker *broker,
+    const TimeStamp *wake_up_time,
+    const ola::rdm::UID &uid) {
   return new OlaServerServiceImpl(universe_store,
                                   device_manager,
                                   plugin_manager,
                                   client,
                                   export_map,
                                   port_manager,
-                                  rdm_controller,
-                                  wake_up_time);
+                                  broker,
+                                  wake_up_time,
+                                  uid);
 };
 }  // ola

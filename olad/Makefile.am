@@ -2,9 +2,9 @@ include $(top_srcdir)/common.mk
 SUBDIRS = www testdata
 
 
-OLASERVER_SOURCES = Client.cpp Device.cpp DeviceManager.cpp DmxSource.cpp \
-                    DynamicPluginLoader.cpp InternalInputPort.cpp \
-                    InternalRDMController.cpp OlaServerServiceImpl.cpp \
+OLASERVER_SOURCES = Client.cpp ClientBroker.cpp Device.cpp DeviceManager.cpp \
+                    DmxSource.cpp DynamicPluginLoader.cpp \
+                    OlaServerServiceImpl.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
                     Preferences.cpp Port.cpp PortManager.cpp Universe.cpp \
                     UniverseStore.cpp
@@ -29,10 +29,10 @@ libolaserver_la_CXXFLAGS = -Wall -Wformat -W @OLAD_DEFINES@ $(libusb_CFLAGS)
 pkgincludedir = $(includedir)/olad
 pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 
-EXTRA_DIST = Client.h DeviceManager.h DlOpenPluginLoader.h \
+EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h DlOpenPluginLoader.h \
              DynamicPluginLoader.h HttpModule.h \
-             HttpServer.h HttpServerActions.h InternalInputPort.h \
-             InternalRDMController.h OlaHttpServer.h OlaVersion.h \
+             HttpServer.h HttpServerActions.h \
+             OlaHttpServer.h OlaVersion.h \
              OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
              PortManager.h RDMHttpModule.h TestCommon.h UniverseStore.h
 

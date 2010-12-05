@@ -24,7 +24,6 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Client.h"
 #include "olad/DmxSource.h"
-#include "olad/InternalInputPort.h"
 #include "olad/Port.h"
 #include "olad/PortManager.h"
 #include "olad/Preferences.h"
@@ -140,27 +139,6 @@ void UniverseTest::testLifecycle() {
   CPPUNIT_ASSERT_EQUAL(Universe::MERGE_HTP, universe->MergeMode());
 
   m_store->DeleteAll();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_store->UniverseCount());
-
-  // now check that internal input ports aren't counted
-  ola::PortManager port_manager(m_store);
-  ola::InternalInputPort input_port(0, NULL);
-  TestMockOutputPort output_port(NULL, 1);  // output port
-  port_manager.PatchPort(&output_port, TEST_UNIVERSE);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_store->UniverseCount());
-  universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->OutputPortCount());
-  CPPUNIT_ASSERT(universe->IsActive());
-
-  port_manager.PatchPort(&input_port, TEST_UNIVERSE);
-
-  port_manager.UnPatchPort(&output_port);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->InputPortCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
-  CPPUNIT_ASSERT(!universe->IsActive());
-
-  m_store->GarbageCollectUniverses();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_store->UniverseCount());
 }
 

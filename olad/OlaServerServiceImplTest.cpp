@@ -27,10 +27,12 @@
 #include <string>
 
 #include "common/rpc/SimpleRpcController.h"
+#include "ola/BaseTypes.h"
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
+#include "ola/rdm/UID.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
 #include "olad/OlaServerServiceImpl.h"
@@ -58,6 +60,9 @@ class OlaServerServiceImplTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
   public:
+    OlaServerServiceImplTest():
+      m_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
+    }
     void testGetDmx();
     void testRegisterForDmx();
     void testUpdateDmxData();
@@ -65,6 +70,7 @@ class OlaServerServiceImplTest: public CppUnit::TestFixture {
     void testSetMergeMode();
 
   private:
+    ola::rdm::UID m_uid;
     void CallGetDmx(OlaServerServiceImpl *impl,
                     int universe_id,
                     class GetDmxCheck &check);
@@ -215,7 +221,8 @@ void OlaServerServiceImplTest::testGetDmx() {
                             NULL,
                             NULL,
                             NULL,
-                            NULL);
+                            NULL,
+                            m_uid);
 
   GenericMissingUniverseCheck<GetDmxCheck, ola::proto::DmxData>
     missing_universe_check;
@@ -281,7 +288,8 @@ void OlaServerServiceImplTest::testRegisterForDmx() {
                             NULL,
                             NULL,
                             NULL,
-                            NULL);
+                            NULL,
+                            m_uid);
 
   // Register for a universe that doesn't exist
   unsigned int universe_id = 0;
@@ -371,7 +379,8 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
                             NULL,
                             NULL,
                             NULL,
-                            &time1);
+                            &time1,
+                            m_uid);
   OlaServerServiceImpl impl2(&store,
                              NULL,
                              NULL,
@@ -379,7 +388,8 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
                              NULL,
                              NULL,
                              NULL,
-                             &time2);
+                             &time2,
+                             m_uid);
 
   GenericMissingUniverseCheck<UpdateDmxDataCheck, ola::proto::Ack>
     missing_universe_check;
@@ -459,7 +469,8 @@ void OlaServerServiceImplTest::testSetUniverseName() {
                             NULL,
                             NULL,
                             NULL,
-                            NULL);
+                            NULL,
+                            m_uid);
 
   unsigned int universe_id = 0;
   string universe_name = "test 1";
@@ -530,7 +541,8 @@ void OlaServerServiceImplTest::testSetMergeMode() {
                             NULL,
                             NULL,
                             NULL,
-                            NULL);
+                            NULL,
+                            m_uid);
 
   unsigned int universe_id = 0;
 
