@@ -26,6 +26,7 @@
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/DmxterDevice.h"
+#include "plugins/usbpro/DmxterWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -47,19 +48,19 @@ DmxterDevice::DmxterDevice(ola::network::SelectServerInterface *ss,
                              uint16_t device_id,
                              uint32_t serial):
     UsbDevice(owner, name, widget),
-    m_port(NULL) {
+    m_dmxter_widget(NULL) {
   std::stringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" <<
     NetworkToHost(serial);
   m_device_id = str.str();
 
-  m_port = new DmxterDeviceOutputPort(this);
-  AddPort(m_port);
+  m_dmxter_widget = new DmxterWidget(ss, widget, esta_id, serial);
 
-  widget->SetMessageHandler(
-      NewCallback(this, &DmxterDevice::HandleMessage));
-  Start();
-  (void) ss;
+  ola::BasicOutputPort *port = new DmxterOutputPort(this);
+  AddPort(port);
+
+  m_dmxter_widget->SetUIDListCallback(
+      ola::NewCallback(port, &DmxterOutputPort::NewUIDList));
 }
 
 
@@ -67,6 +68,7 @@ DmxterDevice::DmxterDevice(ola::network::SelectServerInterface *ss,
  * Clean up
  */
 DmxterDevice::~DmxterDevice() {
+  delete m_dmxter_widget;
 }
 
 
@@ -74,40 +76,17 @@ DmxterDevice::~DmxterDevice() {
  * Called after we start, use this to fetch the TOD.
  */
 bool DmxterDevice::StartHook() {
-  SendTodRequest();
+  m_dmxter_widget->SendTodRequest();
   return true;
-}
-
-
-/**
- * Called when a new packet arrives
- */
-void DmxterDevice::HandleMessage(uint8_t label,
-                                 const uint8_t *data,
-                                 unsigned int length) {
-  OLA_INFO << "Got new packet: 0x" << std::hex <<
-    static_cast<int>(label) <<
-    ", size " << length;
-
-  switch (label) {
-    case TOD_LABEL:
-      HandleTodResponse(length, data);
-      break;
-    default:
-      OLA_WARN << "Unknown label: 0x" << std::hex <<
-        static_cast<int>(label);
-  }
-  return;
 }
 
 
 /**
  *
  */
-bool DmxterDevice::HandleRDMRequest(const ola::rdm::RDMRequest *request) {
-  OLA_WARN << "RDM not implemented";
-  delete request;
-  return true;
+void DmxterDevice::HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                    ola::rdm::RDMCallback *callback) {
+  m_dmxter_widget->SendRDMRequest(request, callback);
 }
 
 /**
@@ -121,38 +100,7 @@ void DmxterDevice::RunRDMDiscovery() {
  * Notify the port that there are new UIDs
  */
 void DmxterDevice::SendUIDUpdate() {
-  m_port->NewUIDList(m_uids);
-}
-
-
-/**
- * Send a TOD request to the widget
- */
-void DmxterDevice::SendTodRequest() {
-  m_widget->SendMessage(TOD_LABEL, NULL, 0);
-  OLA_INFO << "Sent TOD request";
-}
-
-
-/**
- * Handle a TOD response
- */
-void DmxterDevice::HandleTodResponse(unsigned int length,
-                                      const uint8_t *data) {
-  (void) data;
-  if (length % UID::UID_SIZE) {
-    OLA_WARN << "Response length " << length << " not divisible by " <<
-      static_cast<int>(ola::rdm::UID::UID_SIZE) << ", ignoring packet";
-    return;
-  }
-
-  m_uids.Clear();
-  for (unsigned int i = 0; i < length; i+= UID::UID_SIZE) {
-    UID uid(data + i);
-    OLA_INFO << "added " << uid.ToString();
-    m_uids.AddUID(uid);
-  }
-  SendUIDUpdate();
+  m_dmxter_widget->SendUIDUpdate();
 }
 }  // usbpro
 }  // plugin
