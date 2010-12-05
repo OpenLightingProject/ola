@@ -273,7 +273,7 @@ void EspNetNode::HandlePoll(const espnet_poll_t &poll,
 
 
 /*
- * Handle an Esp reply packet
+ * Handle an Esp reply packet. This does nothing at the moment.
  */
 void EspNetNode::HandleReply(const espnet_poll_reply_t &reply,
                              ssize_t length,
@@ -283,8 +283,6 @@ void EspNetNode::HandleReply(const espnet_poll_reply_t &reply,
       sizeof(espnet_poll_reply_t);
     return;
   }
-
-  // TODO(simon): Call a handler here
   (void) reply;
   (void) source;
 }
