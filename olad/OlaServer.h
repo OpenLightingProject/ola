@@ -58,7 +58,7 @@ typedef struct {
  */
 class OlaServer {
   public:
-    OlaServer(class OlaServerServiceImplFactory *factory,
+    OlaServer(class OlaClientServiceFactory *factory,
               const vector<class PluginLoader*> &plugin_loaders,
               class PreferencesFactory *preferences_factory,
               ola::network::SelectServer *ss,
@@ -85,9 +85,9 @@ class OlaServer {
     bool StartHttpServer(const ola::network::Interface &interface);
 #endif
     void StopPlugins();
-    void CleanupConnection(class OlaServerServiceImpl *service);
+    void CleanupConnection(class OlaClientService *service);
 
-    class OlaServerServiceImplFactory *m_service_factory;
+    class OlaClientServiceFactory *m_service_factory;
     vector<class PluginLoader*> m_plugin_loaders;
     ola::network::SelectServer *m_ss;
     ola::network::AcceptingSocket *m_accepting_socket;
@@ -100,12 +100,13 @@ class OlaServer {
     class UniverseStore *m_universe_store;
     class ExportMap *m_export_map;
     class PortManager *m_port_manager;
+    class OlaServerServiceImpl *m_service_impl;
 
     bool m_reload_plugins;
     bool m_init_run;
     bool m_free_export_map;
     ola::network::timeout_id m_housekeeping_timeout;
-    std::map<int, class OlaServerServiceImpl*> m_sd_to_service;
+    std::map<int, class OlaClientService*> m_sd_to_service;
     OlaHttpServer_t *m_httpd;
     ola_server_options m_options;
     class ClientBroker *m_broker;

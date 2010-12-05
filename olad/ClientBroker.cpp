@@ -29,31 +29,31 @@ using std::set;
 /**
  * Add a client to the broker
  */
-void ClientBroker::AddClient(const OlaServerServiceImpl *impl) {
-  m_clients.insert(reinterpret_cast<const void*>(impl->GetClient()));
+void ClientBroker::AddClient(const Client *client) {
+  m_clients.insert(reinterpret_cast<const void*>(client));
 }
 
 
 /**
  * Remove a client from the broker
  */
-void ClientBroker::RemoveClient(const OlaServerServiceImpl *impl) {
-  m_clients.erase(reinterpret_cast<const void*>(impl->GetClient()));
+void ClientBroker::RemoveClient(const Client *client) {
+  m_clients.erase(reinterpret_cast<const void*>(client));
 }
 
 
 /**
  * Make an RDM call
- * @param impl the OlaServerServiceImpl that should exist when the call returns
+ * @param client the OlaClientService that should exist when the call returns
  * @param universe the universe to send the RDM request on
  * @param request the RDM request
  * @param callback the callback to run when the request completes
  */
-void ClientBroker::SendRDMRequest(const OlaServerServiceImpl *impl,
+void ClientBroker::SendRDMRequest(const Client *client,
                                   Universe *universe,
                                   const ola::rdm::RDMRequest *request,
                                   ola::rdm::RDMCallback *callback) {
-  const void *key = reinterpret_cast<const void*>(impl->GetClient());
+  const void *key = reinterpret_cast<const void*>(client);
   set<const void*>::const_iterator iter = m_clients.find(key);
   if (iter == m_clients.end())
     OLA_WARN <<

@@ -80,7 +80,7 @@ bool OlaDaemon::Init() {
     return false;
 
   m_ss = new SelectServer(m_export_map);
-  m_service_factory = new OlaServerServiceImplFactory();
+  m_service_factory = new OlaClientServiceFactory();
 
   // Order is important here as we won't load the same plugin twice.
   m_plugin_loaders.push_back(new DynamicPluginLoader());

@@ -31,12 +31,19 @@ namespace ola {
 using google::protobuf::RpcController;
 using ola::proto::Ack;
 
-class OlaServerServiceImpl: public ola::proto::OlaServerService {
+/*
+ * This class forms part of the core of the Server. It implements all the
+ * methods the clients can invoke on the server.o
+ *
+ * This class doesn't contain any client specific data, which means we only
+ * need to create one of them. Any client specific data is passed in
+ * per-method.
+ */
+class OlaServerServiceImpl {
   public:
     OlaServerServiceImpl(class UniverseStore *universe_store,
                          class DeviceManager *device_manager,
                          class PluginManager *plugin_manager,
-                         class Client *client,
                          class ExportMap *export_map,
                          class PortManager *port_manager,
                          class ClientBroker *broker,
@@ -45,7 +52,6 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
       m_universe_store(universe_store),
       m_device_manager(device_manager),
       m_plugin_manager(plugin_manager),
-      m_client(client),
       m_export_map(export_map),
       m_port_manager(port_manager),
       m_broker(broker),
@@ -60,15 +66,18 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     void RegisterForDmx(RpcController* controller,
                         const ola::proto::RegisterDmxRequest* request,
                         Ack* response,
-                        google::protobuf::Closure* done);
+                        google::protobuf::Closure* done,
+                        class Client *client);
     void UpdateDmxData(RpcController* controller,
                        const ola::proto::DmxData* request,
                        Ack* response,
-                       google::protobuf::Closure* done);
+                       google::protobuf::Closure* done,
+                       class Client *client);
     void StreamDmxData(RpcController* controller,
                        const ::ola::proto::DmxData* request,
                        ::ola::proto::STREAMING_NO_RESPONSE* response,
-                       ::google::protobuf::Closure* done);
+                       ::google::protobuf::Closure* done,
+                       class Client *client);
     void SetUniverseName(RpcController* controller,
                          const ola::proto::UniverseNameRequest* request,
                          Ack* response,
@@ -121,19 +130,19 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     void RDMCommand(RpcController* controller,
                     const ::ola::proto::RDMRequest* request,
                     ola::proto::RDMResponse* response,
-                    google::protobuf::Closure* done);
+                    google::protobuf::Closure* done,
+                    const UID *uid,
+                    class Client *client);
     void SetSourceUID(RpcController* controller,
                       const ::ola::proto::UID* request,
                       ola::proto::Ack* response,
                       google::protobuf::Closure* done);
 
-    Client *GetClient() const { return m_client; }
-
     void HandleRDMResponse(RpcController* controller,
                            ola::proto::RDMResponse* response,
                            google::protobuf::Closure* done,
                            ola::rdm::rdm_request_status status,
-                           const ola::rdm::RDMResponse *response);
+                           const ola::rdm::RDMResponse *rdm_response);
 
   private:
     void MissingUniverseError(RpcController* controller,
@@ -158,7 +167,6 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
     UniverseStore *m_universe_store;
     DeviceManager *m_device_manager;
     class PluginManager *m_plugin_manager;
-    class Client *m_client;
     class ExportMap *m_export_map;
     class PortManager *m_port_manager;
     class ClientBroker *m_broker;
@@ -167,17 +175,163 @@ class OlaServerServiceImpl: public ola::proto::OlaServerService {
 };
 
 
-class OlaServerServiceImplFactory {
+/*
+ * This implements the client specific portion of the OlaServerService.
+ * In other words, it implements the methods that the clients can invoke on the
+ * server and holds the client data so the requests can be performed. It pretty
+ * much passes everything through to the OlaServerServiceImpl.
+ */
+class OlaClientService: public ola::proto::OlaServerService {
   public:
-    OlaServerServiceImpl *New(UniverseStore *universe_store,
-                              DeviceManager *device_manager,
-                              PluginManager *plugin_manager,
-                              Client *client,
-                              ExportMap *export_map,
-                              PortManager *port_manager,
-                              ClientBroker *broker,
-                              const TimeStamp *wake_up_time,
-                              const ola::rdm::UID &uid);
+    OlaClientService(class Client *client,
+                     OlaServerServiceImpl *impl):
+      m_client(client),
+      m_impl(impl),
+      m_uid(NULL) {
+    }
+    ~OlaClientService();
+
+    void GetDmx(RpcController* controller,
+                const ola::proto::UniverseRequest* request,
+                ola::proto::DmxData* response,
+                google::protobuf::Closure* done) {
+      m_impl->GetDmx(controller, request, response, done);
+    }
+
+    void RegisterForDmx(RpcController* controller,
+                        const ola::proto::RegisterDmxRequest* request,
+                        Ack* response,
+                        google::protobuf::Closure* done) {
+      m_impl->RegisterForDmx(controller, request, response, done, m_client);
+    }
+
+    void UpdateDmxData(RpcController* controller,
+                       const ola::proto::DmxData* request,
+                       Ack* response,
+                       google::protobuf::Closure* done) {
+      m_impl->UpdateDmxData(controller, request, response, done, m_client);
+    }
+
+    void StreamDmxData(RpcController* controller,
+                       const ::ola::proto::DmxData* request,
+                       ::ola::proto::STREAMING_NO_RESPONSE* response,
+                       ::google::protobuf::Closure* done) {
+      m_impl->StreamDmxData(controller, request, response, done, m_client);
+    }
+
+    void SetUniverseName(RpcController* controller,
+                         const ola::proto::UniverseNameRequest* request,
+                         Ack* response,
+                         google::protobuf::Closure* done) {
+      m_impl->SetUniverseName(controller, request, response, done);
+    }
+
+    void SetMergeMode(RpcController* controller,
+                      const ola::proto::MergeModeRequest* request,
+                      Ack* response,
+                      google::protobuf::Closure* done) {
+      m_impl->SetMergeMode(controller, request, response, done);
+    }
+
+    void PatchPort(RpcController* controller,
+                   const ola::proto::PatchPortRequest* request,
+                   Ack* response,
+                   google::protobuf::Closure* done) {
+      m_impl->PatchPort(controller, request, response, done);
+    }
+
+    void SetPortPriority(RpcController* controller,
+                         const ola::proto::PortPriorityRequest* request,
+                         Ack* response,
+                         google::protobuf::Closure* done) {
+      m_impl->SetPortPriority(controller, request, response, done);
+    }
+
+    void GetUniverseInfo(RpcController* controller,
+                         const ola::proto::OptionalUniverseRequest* request,
+                         ola::proto::UniverseInfoReply* response,
+                         google::protobuf::Closure* done) {
+      m_impl->GetUniverseInfo(controller, request, response, done);
+    }
+
+    void GetPlugins(RpcController* controller,
+                       const ola::proto::PluginListRequest* request,
+                       ola::proto::PluginListReply* response,
+                       google::protobuf::Closure* done) {
+      m_impl->GetPlugins(controller, request, response, done);
+    }
+
+    void GetPluginDescription(
+        RpcController* controller,
+        const ola::proto::PluginDescriptionRequest* request,
+        ola::proto::PluginDescriptionReply* response,
+        google::protobuf::Closure* done) {
+      m_impl->GetPluginDescription(controller, request, response, done);
+    }
+
+    void GetDeviceInfo(RpcController* controller,
+                       const ola::proto::DeviceInfoRequest* request,
+                       ola::proto::DeviceInfoReply* response,
+                       google::protobuf::Closure* done) {
+      m_impl->GetDeviceInfo(controller, request, response, done);
+    }
+
+    void GetCandidatePorts(RpcController* controller,
+                           const ola::proto::OptionalUniverseRequest* request,
+                           ola::proto::DeviceInfoReply* response,
+                           google::protobuf::Closure* done) {
+      m_impl->GetCandidatePorts(controller, request, response, done);
+    }
+
+    void ConfigureDevice(RpcController* controller,
+                         const ola::proto::DeviceConfigRequest* request,
+                         ola::proto::DeviceConfigReply* response,
+                         google::protobuf::Closure* done) {
+      m_impl->ConfigureDevice(controller, request, response, done);
+    }
+
+    void GetUIDs(RpcController* controller,
+                 const ola::proto::UniverseRequest* request,
+                 ola::proto::UIDListReply* response,
+                 google::protobuf::Closure* done) {
+      m_impl->GetUIDs(controller, request, response, done);
+    }
+
+    void ForceDiscovery(RpcController* controller,
+                        const ola::proto::UniverseRequest* request,
+                        ola::proto::Ack* response,
+                        google::protobuf::Closure* done) {
+      m_impl->ForceDiscovery(controller, request, response, done);
+    }
+
+    void RDMCommand(RpcController* controller,
+                    const ::ola::proto::RDMRequest* request,
+                    ola::proto::RDMResponse* response,
+                    google::protobuf::Closure* done) {
+      m_impl->RDMCommand(controller, request, response, done, m_uid, m_client);
+    }
+
+    void SetSourceUID(RpcController* controller,
+                      const ::ola::proto::UID* request,
+                      ola::proto::Ack* response,
+                      google::protobuf::Closure* done);
+
+    Client *GetClient() const { return m_client; }
+
+  private:
+    class Client *m_client;
+    OlaServerServiceImpl *m_impl;
+    ola::rdm::UID *m_uid;
+};
+
+
+/**
+ * This is the factory method for creating new OlaServerService(s)
+ */
+class OlaClientServiceFactory {
+  public:
+    OlaClientService *New(Client *client,
+                          OlaServerServiceImpl *impl);
 };
 }  // ola
 #endif  // OLAD_OLASERVERSERVICEIMPL_H_

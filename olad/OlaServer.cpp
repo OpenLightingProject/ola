@@ -72,7 +72,7 @@ const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 1000;
  * @param m_plugin_loader the loader to use for the plugins
  * @param socket the socket to listen on for new connections
  */
-OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
+OlaServer::OlaServer(OlaClientServiceFactory *factory,
                      const vector<PluginLoader*> &plugin_loaders,
                      PreferencesFactory *preferences_factory,
                      ola::network::SelectServer *select_server,
@@ -91,6 +91,7 @@ OlaServer::OlaServer(OlaServerServiceImplFactory *factory,
       m_universe_store(NULL),
       m_export_map(export_map),
       m_port_manager(NULL),
+      m_service_impl(NULL),
       m_reload_plugins(false),
       m_init_run(false),
       m_free_export_map(false),
@@ -128,7 +129,7 @@ OlaServer::~OlaServer() {
 
   StopPlugins();
 
-  map<int, OlaServerServiceImpl*>::iterator iter;
+  map<int, OlaClientService*>::iterator iter;
   for (iter = m_sd_to_service.begin(); iter != m_sd_to_service.end(); ++iter) {
     CleanupConnection(iter->second);
     // TODO(simon): close the socket here
@@ -160,6 +161,7 @@ OlaServer::~OlaServer() {
   delete m_plugin_adaptor;
   delete m_device_manager;
   delete m_plugin_manager;
+  delete m_service_impl;
 
   if (m_free_export_map)
     delete m_export_map;
@@ -222,9 +224,18 @@ bool OlaServer::Init() {
                                        m_preferences_factory);
 
   m_plugin_manager = new PluginManager(m_plugin_loaders, m_plugin_adaptor);
+  m_service_impl = new OlaServerServiceImpl(
+      m_universe_store,
+      m_device_manager,
+      m_plugin_manager,
+      m_export_map,
+      m_port_manager,
+      m_broker,
+      m_ss->WakeUpTime(),
+      m_default_uid);
 
   if (!m_universe_store || !m_device_manager || !m_plugin_adaptor ||
-      !m_port_manager || !m_plugin_manager) {
+      !m_port_manager || !m_plugin_manager || !m_broker || !m_service_impl) {
     delete m_plugin_adaptor;
     delete m_device_manager;
     delete m_port_manager;
@@ -284,25 +295,17 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
   socket->SetOnClose(NewSingleCallback(this, &OlaServer::SocketClosed, socket));
   OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
   Client *client = new Client(stub);
-  OlaServerServiceImpl *service = m_service_factory->New(m_universe_store,
-                                                         m_device_manager,
-                                                         m_plugin_manager,
-                                                         client,
-                                                         m_export_map,
-                                                         m_port_manager,
-                                                         m_broker,
-                                                         m_ss->WakeUpTime(),
-                                                         m_default_uid);
-  m_broker->AddClient(service);
+  OlaClientService *service = m_service_factory->New(client, m_service_impl);
+  m_broker->AddClient(client);
   channel->SetService(service);
 
-  map<int, OlaServerServiceImpl*>::const_iterator iter;
+  map<int, OlaClientService*>::const_iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
   if (iter != m_sd_to_service.end())
     OLA_INFO << "New socket but the client already exists!";
 
-  pair<int, OlaServerServiceImpl*> pair(socket->ReadDescriptor(), service);
+  pair<int, OlaClientService*> pair(socket->ReadDescriptor(), service);
   m_sd_to_service.insert(pair);
 
   // This hands off ownership to the select server
@@ -316,7 +319,7 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
  * Called when a socket is closed
  */
 void OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
-  map<int, OlaServerServiceImpl*>::iterator iter;
+  map<int, OlaClientService*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
   if (iter == m_sd_to_service.end())
@@ -412,9 +415,9 @@ void OlaServer::StopPlugins() {
 /*
  * Cleanup everything related to a client connection
  */
-void OlaServer::CleanupConnection(OlaServerServiceImpl *service) {
-  m_broker->RemoveClient(service);
+void OlaServer::CleanupConnection(OlaClientService *service) {
   Client *client = service->GetClient();
+  m_broker->RemoveClient(client);
 
   vector<Universe*> universe_list;
   m_universe_store->GetList(&universe_list);

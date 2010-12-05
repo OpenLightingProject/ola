@@ -59,7 +59,7 @@ class OlaDaemon {
     class OlaServer *m_server;
     class PreferencesFactory *m_preferences_factory;
     class AcceptingSocket *m_accepting_socket;
-    class OlaServerServiceImplFactory *m_service_factory;
+    class OlaClientServiceFactory *m_service_factory;
     ola_server_options m_options;
     class ExportMap *m_export_map;
     unsigned int m_rpc_port;

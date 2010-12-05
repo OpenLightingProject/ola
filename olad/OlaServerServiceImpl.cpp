@@ -101,7 +101,8 @@ void OlaServerServiceImpl::RegisterForDmx(
     RpcController* controller,
     const RegisterDmxRequest* request,
     Ack* response,
-    google::protobuf::Closure* done) {
+    google::protobuf::Closure* done,
+    Client *client) {
 
   Universe *universe = m_universe_store->GetUniverseOrCreate(
       request->universe());
@@ -109,9 +110,9 @@ void OlaServerServiceImpl::RegisterForDmx(
     return MissingUniverseError(controller, done);
 
   if (request->action() == ola::proto::REGISTER) {
-    universe->AddSinkClient(m_client);
+    universe->AddSinkClient(client);
   } else {
-    universe->RemoveSinkClient(m_client);
+    universe->RemoveSinkClient(client);
   }
   done->Run();
 
@@ -126,13 +127,14 @@ void OlaServerServiceImpl::UpdateDmxData(
     RpcController* controller,
     const DmxData* request,
     Ack* response,
-    google::protobuf::Closure* done) {
+    google::protobuf::Closure* done,
+    Client *client) {
 
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  if (m_client) {
+  if (client) {
     DmxBuffer buffer;
     buffer.Set(request->data());
 
@@ -143,8 +145,8 @@ void OlaServerServiceImpl::UpdateDmxData(
       priority = std::min(DmxSource::PRIORITY_MAX, priority);
     }
     DmxSource source(buffer, *m_wake_up_time, priority);
-    m_client->DMXRecieved(request->universe(), source);
-    universe->SourceClientDataChanged(m_client);
+    client->DMXRecieved(request->universe(), source);
+    universe->SourceClientDataChanged(client);
   }
   done->Run();
   (void) response;
@@ -158,14 +160,15 @@ void OlaServerServiceImpl::StreamDmxData(
     RpcController* controller,
     const ::ola::proto::DmxData* request,
     ::ola::proto::STREAMING_NO_RESPONSE* response,
-    ::google::protobuf::Closure* done) {
+    ::google::protobuf::Closure* done,
+    Client *client) {
 
   Universe *universe = m_universe_store->GetUniverse(request->universe());
 
   if (!universe)
     return;
 
-  if (m_client) {
+  if (client) {
     DmxBuffer buffer;
     buffer.Set(request->data());
 
@@ -176,8 +179,8 @@ void OlaServerServiceImpl::StreamDmxData(
       priority = std::min(DmxSource::PRIORITY_MAX, priority);
     }
     DmxSource source(buffer, *m_wake_up_time, priority);
-    m_client->DMXRecieved(request->universe(), source);
-    universe->SourceClientDataChanged(m_client);
+    client->DMXRecieved(request->universe(), source);
+    universe->SourceClientDataChanged(client);
   }
   (void) controller;
   (void) response;
@@ -621,18 +624,21 @@ void OlaServerServiceImpl::RDMCommand(
     RpcController* controller,
     const ::ola::proto::RDMRequest* request,
     ola::proto::RDMResponse* response,
-    google::protobuf::Closure* done) {
+    google::protobuf::Closure* done,
+    const UID *uid,
+    class Client *client) {
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
     return MissingUniverseError(controller, done);
 
+  UID source_uid = uid ? *uid : m_uid;
   UID destination(request->uid().esta_id(),
                   request->uid().device_id());
 
   ola::rdm::RDMRequest *rdm_request = NULL;
   if (request->is_set()) {
     rdm_request = new ola::rdm::RDMSetRequest(
-      m_uid,
+      source_uid,
       destination,
       0,  // transaction #
       1,  // port id
@@ -643,7 +649,7 @@ void OlaServerServiceImpl::RDMCommand(
       request->data().size());
   } else {
     rdm_request = new ola::rdm::RDMGetRequest(
-      m_uid,
+      source_uid,
       destination,
       0,  // transaction #
       1,  // port id
@@ -662,7 +668,7 @@ void OlaServerServiceImpl::RDMCommand(
         response,
         done);
 
-  m_broker->SendRDMRequest(this, universe, rdm_request, callback);
+  m_broker->SendRDMRequest(client, universe, rdm_request, callback);
 }
 
 
@@ -850,26 +856,39 @@ void OlaServerServiceImpl::PopulatePort(const PortClass &port,
 }
 
 
+// OlaClientService
+// ----------------------------------------------------------------------------
+OlaClientService::~OlaClientService() {
+  if (m_uid)
+    delete m_uid;
+}
+
+
+/*
+ * Set this client's source UID
+ */
+void OlaClientService::SetSourceUID(
+    RpcController* controller,
+    const ::ola::proto::UID* request,
+    ola::proto::Ack* response,
+    google::protobuf::Closure* done) {
+
+  UID source_uid(request->esta_id(), request->device_id());
+  if (!m_uid)
+    m_uid = new UID(source_uid);
+  else
+    *m_uid = source_uid;
+  done->Run();
+  (void) controller;
+  (void) response;
+}
+
+
 // OlaServerServiceImplFactory
 // ----------------------------------------------------------------------------
-OlaServerServiceImpl *OlaServerServiceImplFactory::New(
-    UniverseStore *universe_store,
-    DeviceManager *device_manager,
-    PluginManager *plugin_manager,
+OlaClientService *OlaClientServiceFactory::New(
     Client *client,
-    ExportMap *export_map,
-    PortManager *port_manager,
-    ClientBroker *broker,
-    const TimeStamp *wake_up_time,
-    const ola::rdm::UID &uid) {
-  return new OlaServerServiceImpl(universe_store,
-                                  device_manager,
-                                  plugin_manager,
-                                  client,
-                                  export_map,
-                                  port_manager,
-                                  broker,
-                                  wake_up_time,
-                                  uid);
+    OlaServerServiceImpl *impl) {
+  return new OlaClientService(client, impl);
 };
 }  // ola

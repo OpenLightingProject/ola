@@ -1086,7 +1086,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(struct in_addr destination,
                      universe_address);
     } else if (status == ola::rdm::RDM_UNKNOWN_UID) {
       // call the on discovery handler, which will send a new TOD and
-      // hopefull update the remote controller
+      // hopefully update the remote controller
       m_output_ports[port_id].on_discover->Run();
     } else {
       OLA_WARN << "ArtNet RDM request failed with code " << status;

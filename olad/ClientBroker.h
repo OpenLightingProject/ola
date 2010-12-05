@@ -29,7 +29,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/Callback.h"
 #include "olad/Universe.h"
-#include "olad/OlaServerServiceImpl.h"
+#include "olad/Client.h"
 
 namespace ola {
 
@@ -38,10 +38,10 @@ class ClientBroker {
     ClientBroker() {}
     ~ClientBroker() {}
 
-    void AddClient(const OlaServerServiceImpl *impl);
-    void RemoveClient(const OlaServerServiceImpl *impl);
+    void AddClient(const Client *client);
+    void RemoveClient(const Client *client);
 
-    void SendRDMRequest(const OlaServerServiceImpl *impl,
+    void SendRDMRequest(const Client *client,
                         Universe *universe,
                         const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
