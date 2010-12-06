@@ -77,3 +77,13 @@ void MockUsbWidget::AddExpectedCall(uint8_t expected_label,
   call.return_command.length = return_length;
   m_expected_calls.push(call);
 }
+
+
+/**
+ * Send an unsolicated message
+ */
+void MockUsbWidget::SendUnsolicited(uint8_t label,
+                                    const uint8_t *data,
+                                    unsigned int length) {
+    m_callback->Run(label, data, length);
+}

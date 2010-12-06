@@ -42,6 +42,7 @@ class DmxterWidgetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testInvalidReponse);
   CPPUNIT_TEST(testTimeout);
   CPPUNIT_TEST(testErrorConditions);
+  CPPUNIT_TEST(testShutdown);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -52,6 +53,7 @@ class DmxterWidgetTest: public CppUnit::TestFixture {
     void testInvalidReponse();
     void testTimeout();
     void testErrorConditions();
+    void testShutdown();
 
   private:
     unsigned int m_tod_counter;
@@ -476,5 +478,29 @@ void DmxterWidgetTest::testErrorConditions() {
                              &DmxterWidgetTest::ValidateInvalidResponse));
 
   delete[] expected_packet;
+  m_widget.Verify();
+}
+
+
+/**
+ * Check that the shutdown message works
+ */
+void DmxterWidgetTest::testShutdown() {
+  uint8_t SHUTDOWN_LABEL = 0xf0;
+
+  ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
+                                           &m_widget,
+                                           0x5253,
+                                           0x12345678);
+  CPPUNIT_ASSERT(!m_widget.IsClosed());
+
+  // first try a bad message
+  uint8_t data = 1;
+  m_widget.SendUnsolicited(SHUTDOWN_LABEL, &data, 1);
+  CPPUNIT_ASSERT(!m_widget.IsClosed());
+
+  // now a valid one
+  m_widget.SendUnsolicited(SHUTDOWN_LABEL, NULL, 0);
+  CPPUNIT_ASSERT(m_widget.IsClosed());
   m_widget.Verify();
 }

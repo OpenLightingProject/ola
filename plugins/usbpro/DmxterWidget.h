@@ -71,12 +71,13 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
     void HandleTodResponse(const uint8_t *data, unsigned int length);
     void HandleRDMResponse(const uint8_t *data, unsigned int length);
     void HandleBroadcastRDMResponse(const uint8_t *data, unsigned int length);
+    void HandleShutdown(const uint8_t *data, unsigned int length);
 
     static const uint8_t RDM_REQUEST_LABEL;
     static const uint8_t RDM_BCAST_REQUEST_LABEL;
     static const uint8_t TOD_LABEL;
     static const uint8_t DISCOVERY_BRANCH_LABEL;
-    // add the shutdown msg here
+    static const uint8_t SHUTDOWN_LABAEL;
 
     typedef enum {
       RC_CHECKSUM_ERROR = 1,

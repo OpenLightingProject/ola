@@ -125,6 +125,11 @@ bool UsbWidget::SendMessage(uint8_t label,
 }
 
 
+void UsbWidget::CloseSocket() {
+  m_socket->Close();
+}
+
+
 /**
  * Open a path and apply the settings required for talking to widgets.
  */

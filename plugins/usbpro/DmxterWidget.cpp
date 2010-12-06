@@ -38,6 +38,7 @@ const uint8_t DmxterWidgetImpl::RDM_REQUEST_LABEL = 0x80;
 const uint8_t DmxterWidgetImpl::RDM_BCAST_REQUEST_LABEL = 0x81;
 const uint8_t DmxterWidgetImpl::TOD_LABEL = 0x82;
 const uint8_t DmxterWidgetImpl::DISCOVERY_BRANCH_LABEL = 0x83;
+const uint8_t DmxterWidgetImpl::SHUTDOWN_LABAEL = 0xf0;
 
 
 /*
@@ -93,10 +94,6 @@ void DmxterWidgetImpl::SetUIDListCallback(
 void DmxterWidgetImpl::HandleMessage(uint8_t label,
                                      const uint8_t *data,
                                      unsigned int length) {
-  OLA_INFO << "Got new packet: 0x" << std::hex <<
-    static_cast<int>(label) <<
-    ", size " << std::dec << length;
-
   switch (label) {
     case TOD_LABEL:
       HandleTodResponse(data, length);
@@ -106,6 +103,9 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
       break;
     case RDM_BCAST_REQUEST_LABEL:
       HandleBroadcastRDMResponse(data, length);
+      break;
+    case SHUTDOWN_LABAEL:
+      HandleShutdown(data, length);
       break;
     default:
       OLA_WARN << "Unknown label: 0x" << std::hex <<
@@ -325,6 +325,22 @@ void DmxterWidgetImpl::HandleBroadcastRDMResponse(const uint8_t *data,
   }
   m_rdm_request_callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
   m_rdm_request_callback = NULL;
+}
+
+
+/**
+ * Handle a shutdown message
+ */
+void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
+                                      unsigned int length) {
+  if (length || data) {
+    OLA_WARN << "Invalid shutdown message, length was " << length;
+  } else {
+    OLA_INFO << "Received shutdown message from Dmxter";
+    // this closed socket will be detected the the ss, which will then
+    // invoke the on_close callback, removing the device.
+    m_widget->CloseSocket();
+  }
 }
 
 

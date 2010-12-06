@@ -48,6 +48,8 @@ class UsbWidgetInterface {
 
     virtual bool SendMessage(uint8_t label, const uint8_t *data,
                              unsigned int length) const = 0;
+
+    virtual void CloseSocket() = 0;
 };
 
 
@@ -68,6 +70,8 @@ class UsbWidget: public UsbWidgetInterface {
 
     bool SendMessage(uint8_t label, const uint8_t *data,
                      unsigned int length) const;
+
+    void CloseSocket();
 
     static ola::network::ConnectedSocket *OpenDevice(const string &path);
 
