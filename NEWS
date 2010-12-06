@@ -1,3 +1,13 @@
+XX/12/2010 ola-0.8.6
+ * added the graphical RDM patcher
+ * improved support for picking the outgoing multicast interface
+ * add RDM support for the DMXters
+ * fixed a couple of memory leaks in the UI
+ * internal refactoring to support testing
+ * merged the Callback & Closure classes
+ * added extensive testing for the DMX-TRI and DMXter widgets
+ * simplified internal RDM handling
+
 06/11/2010 ola-0.8.5
   Added a simple mobile web UI
   Fixed the web UI so it works on Opera
