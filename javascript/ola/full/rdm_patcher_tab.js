@@ -74,7 +74,7 @@ ola.RDMPatcherTab = function(element) {
   this.loading_div.style.textAlign = 'center';
   this.loading_div.innerHTML = '<img src="/loader.gif"><br>Loading...</div>'
   this.loading_div.style.marginTop = '10px';
-  goog.dom.appendChild(goog.dom.$(element), this.loading_div);
+  goog.dom.appendChild(goog.dom.$('patcher_div'), this.loading_div);
 };
 goog.inherits(ola.RDMPatcherTab, ola.common.BaseUniverseTab);
 
