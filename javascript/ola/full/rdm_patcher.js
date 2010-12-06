@@ -38,6 +38,16 @@ goog.provide('ola.RDMPatcherDevice');
 
 
 /**
+ * This represents a desired address change for a device
+ * @constructor
+ */
+ola.RDMPatcherAddressChange = function(device, new_start_address) {
+  this.device = device;
+  this.new_start_address = new_start_address;
+};
+
+
+/**
  * The model of an RDM device.
  * @param {string} uid the uid of the device.
  * @param {number} start_address the start address, from 1 - 512.
@@ -133,6 +143,14 @@ ola.RDMPatcherDevice.sortByAddress = function(a, b) {
 
 
 /**
+ * A comparison function used to sort an array of devices based on footprint.
+ */
+ola.RDMPatcherDevice.sortByFootprint = function(a, b) {
+  return a.footprint - b.footprint;
+};
+
+
+/**
  * The class representing the patcher.
  * @param {string} element_id the id of the element to use for this patcher.
  * @constructor
@@ -161,10 +179,14 @@ ola.RDMPatcher = function(element_id, status_id) {
 
   // the per-personality footprints for the active device
   this.personalities = undefined;
+
+  // the queue of pending address changes for the auto patcher
+  this.address_changes = new Array();
+  this.patching_failures = false;
 };
 
 
-/* Contants */
+/* Constants */
 ola.RDMPatcher.NUMBER_OF_CHANNELS = 512;
 ola.RDMPatcher.CHANNELS_PER_ROW = 8;
 ola.RDMPatcher.HEIGHT_PER_DEVICE = 14;
@@ -221,8 +243,75 @@ ola.RDMPatcher.prototype.update = function() {
   for (var i = 0; i < this.rows.length; ++i) {
     this.rows[i].style.display = 'block';
   }
-
   this._render();
+};
+
+
+/**
+ * A simple version of Auto patch.
+ */
+ola.RDMPatcher.prototype.autoPatch = function() {
+  this.address_changes = new Array();
+  var channels_required = 0;
+
+  // first work out how many channels we need;
+  for (var i = 0; i < this.devices.length; ++i) {
+    channels_required += this.devices[i].footprint;
+  }
+
+  // sort by ascending footprint
+  this.devices.sort(ola.RDMPatcherDevice.sortByFootprint);
+
+  if (channels_required > ola.RDMPatcher.NUMBER_OF_CHANNELS) {
+    // we're going to have to overlap. to minimize overlapping we assign
+    // largest footprint first
+
+    var devices = this.devices.slice(0);
+    while (devices.length) {
+      var devices_next_round = new Array();
+      var channel = 0;
+      var device;
+      ola.logger.info('new round');
+
+      while (devices.length &&
+             channel < ola.RDMPatcher.NUMBER_OF_CHANNELS) {
+        var device = devices.pop();
+        var remaining = ola.RDMPatcher.NUMBER_OF_CHANNELS - channel;
+        ola.logger.info(device.label + ' : ' + device.footprint);
+        if (device.footprint > remaining) {
+          // deal with this device next round
+          devices_next_round.unshift(device);
+          ola.logger.info('deferring ' + device.label);
+        } else {
+          this.address_changes.push(new ola.RDMPatcherAddressChange(
+            device,
+            channel + 1));
+          ola.logger.info('set ' + device.label + ' to ' + channel);
+          channel += device.footprint;
+        }
+      }
+      devices = devices.concat(devices_next_round);
+    }
+  } else {
+    // this is the easy case. Just assign starting with the smallest footprint.
+    var channel = 0;
+    for (var i = 0; i < this.devices.length; ++i) {
+      this.address_changes.push(new ola.RDMPatcherAddressChange(
+        this.devices[i],
+        channel + 1));
+      channel += this.devices[i].footprint;
+    }
+  }
+
+  if (this.address_changes.length) {
+    var dialog = ola.Dialog.getInstance();
+    dialog.setAsBusy();
+    dialog.setVisible(true);
+
+    // start the update sequence
+    this.patching_failures = false;
+    this._updateNextDevice();
+  }
 };
 
 
@@ -871,3 +960,55 @@ ola.RDMPatcher.prototype._identifyComplete = function(e) {
     this.dialog.setVisible(false);
   }
 };
+
+
+/**
+ * Update the start address for the next device in the queue.
+ */
+ola.RDMPatcher.prototype._updateNextDevice = function(e) {
+  var server = ola.common.Server.getInstance();
+  var address_change = this.address_changes[0];
+  var patcher = this;
+  server.rdmSetSectionInfo(
+      this.universe_id,
+      address_change.device.uid,
+      'dmx_address',
+      '',
+      'address=' + address_change.new_start_address,
+      function(e) {
+        patcher._updateStartAddressComplete(e);
+      });
+};
+
+
+/**
+ * Called when a device's start address is updated.
+ */
+ola.RDMPatcher.prototype._updateStartAddressComplete = function(e) {
+  var response = ola.common.Server.getInstance().checkForErrorLog(e);
+  var address_change = this.address_changes.shift();
+  if (response == undefined) {
+    // mark as error
+    this.patching_failures = true;
+  } else {
+    address_change.device.setStart(address_change.new_start_address);
+  }
+
+  if (this.address_changes.length) {
+    this._updateNextDevice();
+  } else {
+    var dialog = ola.Dialog.getInstance();
+
+    if (this.patching_failures) {
+      dialog.setTitle('Failed to Set Start Address');
+      dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
+      dialog.setContent(
+        'Some devices failed to change their DMX start address, ' +
+        ' click refresh to fetch the current state.');
+    } else {
+      dialog.setVisible(false);
+    }
+    this._render();
+  }
+};
+

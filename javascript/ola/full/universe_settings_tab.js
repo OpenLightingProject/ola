@@ -245,6 +245,12 @@ ola.UniverseSettingsTab.prototype._saveButtonClicked = function(remove_confirmed
  */
 ola.UniverseSettingsTab.prototype._removeConfirmed = function(e) {
   var dialog = ola.Dialog.getInstance();
+  goog.events.unlisten(
+      dialog,
+      goog.ui.Dialog.EventType.SELECT,
+      this._removeConfirmed,
+      false,
+      this);
   if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
     dialog.setVisible(false);
     this._saveButtonClicked(true);

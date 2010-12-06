@@ -23,6 +23,7 @@ goog.require('goog.ui.ToolbarButton');
 goog.require('goog.ui.ToolbarMenuButton')
 goog.require('goog.ui.ToolbarSeparator');
 
+goog.require('ola.Dialog');
 goog.require('ola.RDMPatcher');
 goog.require('ola.RDMPatcherDevice');
 goog.require('ola.common.BaseUniverseTab');
@@ -44,13 +45,11 @@ ola.RDMPatcherTab = function(element) {
 
   var autopatch_button = toolbar.getChild('autoPatchButton')
   autopatch_button.setTooltip('Automatically Patch Devices');
-  /*
-  goog.events.listen(discovery_button,
+  goog.events.listen(autopatch_button,
                      goog.ui.Component.EventType.ACTION,
-                     function() { this._discoveryButtonClicked(); },
+                     function() { this._autoPatchButtonClicked(); },
                      false,
                      this);
-  */
   var refresh_button = toolbar.getChild('patcherRefreshButton')
   refresh_button.setTooltip('Refresh Devices');
   goog.events.listen(refresh_button,
@@ -58,8 +57,6 @@ ola.RDMPatcherTab = function(element) {
                      function() { this._update(); },
                      false,
                      this);
-
-  toolbar.addChild(new goog.ui.ToolbarSeparator(), true);
 
   this.patcher = new ola.RDMPatcher('patcher_div', 'patcher_status');
 
@@ -213,4 +210,39 @@ ola.RDMPatcherTab.prototype._update = function() {
   server.fetchUids(
       this.universe_id,
       function(e) { tab._updateUidList(e); });
-}
+};
+
+
+/**
+ * Called when the user clicks on the auto patch button
+ */
+ola.RDMPatcherTab.prototype._autoPatchButtonClicked = function() {
+  var dialog = ola.Dialog.getInstance();
+  dialog.setTitle('Confirm Auto Patch');
+  dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
+  dialog.setContent('This will change the start addresses of all devices.' +
+    ' Are you sure you want to continue?');
+
+  goog.events.listen(
+      dialog,
+      goog.ui.Dialog.EventType.SELECT,
+      this._autoPatchConfirmed,
+      false,
+      this);
+  dialog.setVisible(true);
+};
+
+
+/**
+ * Called when the auto patch is confirmed
+ */
+ola.RDMPatcherTab.prototype._autoPatchConfirmed = function(e) {
+  var dialog = ola.Dialog.getInstance();
+
+  goog.events.unlisten(dialog, goog.ui.Dialog.EventType.SELECT,
+      this._autoPatchButtonClicked, false, this);
+
+  if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
+    this.patcher.autoPatch();
+  }
+};
