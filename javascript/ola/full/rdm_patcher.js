@@ -998,13 +998,13 @@ ola.RDMPatcher.prototype._updateStartAddressComplete = function(e) {
     this._updateNextDevice();
   } else {
     var dialog = ola.Dialog.getInstance();
-
     if (this.patching_failures) {
       dialog.setTitle('Failed to Set Start Address');
       dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
       dialog.setContent(
         'Some devices failed to change their DMX start address, ' +
         ' click refresh to fetch the current state.');
+      dialog.setVisible(true);
     } else {
       dialog.setVisible(false);
     }

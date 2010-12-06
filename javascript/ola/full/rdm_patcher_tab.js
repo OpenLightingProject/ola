@@ -244,5 +244,6 @@ ola.RDMPatcherTab.prototype._autoPatchConfirmed = function(e) {
 
   if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
     this.patcher.autoPatch();
+    return false;
   }
 };
