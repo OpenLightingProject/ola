@@ -137,8 +137,9 @@ ola.RDMPatcherDevice.sortByAddress = function(a, b) {
  * @param {string} element_id the id of the element to use for this patcher.
  * @constructor
  */
-ola.RDMPatcher = function(element_id) {
+ola.RDMPatcher = function(element_id, status_id) {
   this.element = goog.dom.$(element_id);
+  this.status_line = goog.dom.$(status_id);
   this.universe_id = undefined;
   // this of RDMPatcherDevice objects
   this.devices = new Array();
@@ -174,7 +175,8 @@ ola.RDMPatcher.NUMBER_OF_ROWS = (ola.RDMPatcher.NUMBER_OF_CHANNELS /
 /**
  * Called when the size of the patcher changes
  */
-ola.RDMPatcher.prototype.sizeChanged = function() {
+ola.RDMPatcher.prototype.sizeChanged = function(new_height) {
+  this.element.style.height = new_height + 'px';
   this.scroller.updateBoundaries();
 };
 
@@ -313,6 +315,55 @@ ola.RDMPatcher.prototype._render = function() {
     device.resetDivs();
   }
 
+  // calculate the first/last free slot & max unused channels
+  var first_free_channel = ola.RDMPatcher.NUMBER_OF_CHANNELS;
+  var last_free_channel = -1;
+  var max_unused_channels = 0;
+  var last_channel_used = true;
+  var running_channel_count = 0;
+
+  for (var channel = 0; channel < ola.RDMPatcher.NUMBER_OF_CHANNELS; ++channel) {
+    var used = false;
+    for (var slot = 0; slot < slots.length; ++slot) {
+      if (slots[slot][channel]) {
+        used = true;
+        break;
+      }
+    }
+    if (!used) {
+      running_channel_count++;
+      if (channel < first_free_channel) {
+        first_free_channel = channel;
+      }
+      if (channel > last_free_channel) {
+        last_free_channel = channel;
+      }
+    }
+
+    if (used && !last_channel_used &&
+        running_channel_count > max_unused_channels) {
+      max_unused_channels = running_channel_count;
+      running_channel_count = 0;
+    }
+    last_channel_used = used;
+  }
+
+  if (running_channel_count > max_unused_channels) {
+    max_unused_channels = running_channel_count;
+  }
+
+  // update the status line
+  var status_line;
+  if (first_free_channel == ola.RDMPatcher.NUMBER_OF_CHANNELS) {
+    status_line = 'No channels free';
+  } else {
+    first_free_channel++;
+    last_free_channel++;
+    status_line = ('Free channels: first: ' + first_free_channel + ', last: ' +
+      last_free_channel + ', max contiguous: ' + max_unused_channels);
+  }
+  this.status_line.innerHTML = status_line;
+
   // now update the cell heights according to how many slots we need
   this._updateCellHeights(slots.length);
 
@@ -324,7 +375,7 @@ ola.RDMPatcher.prototype._render = function() {
     tr = goog.dom.getNextElementSibling(tr);
 
     var slot = 0;
-    // updating in place leads to less changes of memory leaks in crappy
+    // updating in place leads to less chances of memory leaks in crappy
     // browers
     while (slot < slots.length) {
       if (tr == undefined) {

@@ -517,6 +517,7 @@
       .ola-icon-dbo { background-position: -80px -0px; }
       .ola-icon-refresh { background-position: -96px -0px; }
       .ola-icon-show { background-position: -112px -0px; }
+      .ola-icon-patch { background-position: -128px -0px; }
 
       /* patcher styles */
       .patcher { position: relative; left: 0px; top: 0px; }
@@ -575,6 +576,14 @@
 
       .patcher_overflow_device {
         background-color: #e78978;
+      }
+
+      #patcher_status {
+        font-size: 11px;
+        background-color: #efefef;
+        height: 14px;
+        border-top: 1px solid #d5d5d5;
+        padding-top: 2px;
       }
 
       .draggable_device {
@@ -839,7 +848,18 @@
               <div class='goog-splitpane-handle ola-splitpane-rdm-handle'></div>
             </div>
           </div>
-          <div id='tab_page_3' class='ola-scroller patcher'></div>
+          <div id='tab_page_3'>
+            <div id='patcher_toolbar' class='goog-toolbar'>
+              <div id='autoPatchButton' class='goog-toolbar-button'>
+                <div class='ola-icon ola-icon-patch'></div>
+              </div>
+              <div id='patcherRefreshButton' class='goog-toolbar-button'>
+                <div class='ola-icon ola-icon-refresh'></div>
+              </div>
+            </div>
+            <div id="patcher_div" class='ola-scroller patcher'></div>
+            <div id="patcher_status"></div>
+          </div>
           <div id='tab_page_4' class='ola-scroller'>
             <div id='console_toolbar' class='goog-toolbar'></div>
             <table cellspacing='0' cellpadding='0' id='console_table'>

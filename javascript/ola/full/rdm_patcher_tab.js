@@ -17,7 +17,12 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+goog.require('goog.ui.Toolbar');
 goog.require('goog.dom');
+goog.require('goog.ui.ToolbarButton');
+goog.require('goog.ui.ToolbarMenuButton')
+goog.require('goog.ui.ToolbarSeparator');
+
 goog.require('ola.RDMPatcher');
 goog.require('ola.RDMPatcherDevice');
 goog.require('ola.common.BaseUniverseTab');
@@ -33,7 +38,30 @@ goog.provide('ola.RDMPatcherTab');
  */
 ola.RDMPatcherTab = function(element) {
   ola.common.BaseUniverseTab.call(this, element);
-  this.patcher = new ola.RDMPatcher(element);
+
+  var toolbar = new goog.ui.Toolbar();
+  toolbar.decorate(goog.dom.$('patcher_toolbar'));
+
+  var autopatch_button = toolbar.getChild('autoPatchButton')
+  autopatch_button.setTooltip('Automatically Patch Devices');
+  /*
+  goog.events.listen(discovery_button,
+                     goog.ui.Component.EventType.ACTION,
+                     function() { this._discoveryButtonClicked(); },
+                     false,
+                     this);
+  */
+  var refresh_button = toolbar.getChild('patcherRefreshButton')
+  refresh_button.setTooltip('Refresh Devices');
+  goog.events.listen(refresh_button,
+                     goog.ui.Component.EventType.ACTION,
+                     function() { this._update(); },
+                     false,
+                     this);
+
+  toolbar.addChild(new goog.ui.ToolbarSeparator(), true);
+
+  this.patcher = new ola.RDMPatcher('patcher_div', 'patcher_status');
 
   // These are devices that we know exist, but we don't have the start address
   // or footprint for.
@@ -67,7 +95,8 @@ ola.RDMPatcherTab.prototype.setUniverse = function(universe_id) {
  */
 ola.RDMPatcherTab.prototype.sizeChanged = function(frame_size) {
   ola.RDMPatcherTab.superClass_.sizeChanged.call(this, frame_size);
-  this.patcher.sizeChanged();
+  // tab bar: 34, toolbar: 27, status line 16, extra: 5
+  this.patcher.sizeChanged(frame_size.height - 34 - 27 - 16 - 5);
 };
 
 
@@ -80,15 +109,7 @@ ola.RDMPatcherTab.prototype.setActive = function(state) {
 
   if (!this.isActive())
     return;
-
-  // we've just become visible
-  this.patcher.hide();
-  this.loading_div.style.display = 'block';
-  var server = ola.common.Server.getInstance();
-  var tab = this;
-  server.fetchUids(
-      this.universe_id,
-      function(e) { tab._updateUidList(e); });
+  this._update();
 };
 
 
@@ -178,3 +199,18 @@ ola.RDMPatcherTab.prototype._deviceInfoComplete = function(device, e) {
   }
   this._fetchNextDeviceOrRender();
 };
+
+
+/**
+ * Fetch the devices and render
+ */
+ola.RDMPatcherTab.prototype._update = function() {
+  // we've just become visible
+  this.patcher.hide();
+  this.loading_div.style.display = 'block';
+  var server = ola.common.Server.getInstance();
+  var tab = this;
+  server.fetchUids(
+      this.universe_id,
+      function(e) { tab._updateUidList(e); });
+}
