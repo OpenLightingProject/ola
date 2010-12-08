@@ -74,7 +74,7 @@ bool ShowNetDevice::StartHook() {
     ShowNetInputPort *input_port = new ShowNetInputPort(
         this,
         i,
-        m_plugin_adaptor->WakeUpTime(),
+        m_plugin_adaptor,
         m_node);
     AddPort(input_port);
     ShowNetOutputPort *output_port = new ShowNetOutputPort(this, i, m_node);

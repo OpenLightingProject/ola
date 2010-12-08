@@ -21,11 +21,9 @@
 #ifndef INCLUDE_OLAD_PLUGINADAPTOR_H_
 #define INCLUDE_OLAD_PLUGINADAPTOR_H_
 
-#include <stdio.h>
 #include <string>
 #include <ola/Clock.h>  // NOLINT
 #include <ola/Callback.h>  // NOLINT
-#include <ola/network/SelectServer.h>  // NOLINT
 #include <ola/network/SelectServerInterface.h>  // NOLINT
 
 namespace ola {
@@ -33,10 +31,11 @@ namespace ola {
 using ola::network::timeout_id;
 
 class PluginAdaptor: public ola::network::SelectServerInterface {
-  public :
+  public:
     PluginAdaptor(class DeviceManager *device_manager,
-                  ola::network::SelectServer *select_server,
-                  class PreferencesFactory *preferences_factory);
+                  ola::network::SelectServerInterface *select_server,
+                  class PreferencesFactory *preferences_factory,
+                  class PortBrokerInterface *port_broker);
 
     // The following methods are part of the SelectServerInterface
     bool AddSocket(ola::network::Socket *socket);
@@ -56,14 +55,18 @@ class PluginAdaptor: public ola::network::SelectServerInterface {
     bool RegisterDevice(class AbstractDevice *device) const;
     bool UnregisterDevice(class AbstractDevice *device) const;
     class Preferences *NewPreference(const std::string &name) const;
+    class PortBrokerInterface *GetPortBroker() const {
+      return m_port_broker;
+    }
 
   private:
     PluginAdaptor(const PluginAdaptor&);
     PluginAdaptor& operator=(const PluginAdaptor&);
 
     DeviceManager *m_device_manager;
-    ola::network::SelectServer *m_ss;
+    ola::network::SelectServerInterface *m_ss;
     class PreferencesFactory *m_preferences_factory;
+    class PortBrokerInterface *m_port_broker;
 };
 }  // ola
 #endif  // INCLUDE_OLAD_PLUGINADAPTOR_H_

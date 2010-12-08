@@ -51,9 +51,9 @@ class ArtNetInputPort: public BasicInputPort {
   public:
     ArtNetInputPort(ArtNetDevice *parent,
                     unsigned int port_id,
-                    const TimeStamp *wake_time,
+                    class PluginAdaptor *plugin_adaptor,
                     ArtNetNode *node)
-        : BasicInputPort(parent, port_id, wake_time),
+        : BasicInputPort(parent, port_id, plugin_adaptor),
           m_helper(node, false) {}
 
     const DmxBuffer &ReadDMX() const { return m_buffer; }

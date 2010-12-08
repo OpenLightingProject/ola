@@ -101,6 +101,8 @@ class OlaServer {
     class ExportMap *m_export_map;
     class PortManager *m_port_manager;
     class OlaServerServiceImpl *m_service_impl;
+    class ClientBroker *m_broker;
+    class PortBroker *m_port_broker;
 
     bool m_reload_plugins;
     bool m_init_run;
@@ -109,7 +111,6 @@ class OlaServer {
     std::map<int, class OlaClientService*> m_sd_to_service;
     OlaHttpServer_t *m_httpd;
     ola_server_options m_options;
-    class ClientBroker *m_broker;
     ola::rdm::UID m_default_uid;
 
     static const char UNIVERSE_PREFERENCES[];

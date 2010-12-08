@@ -98,7 +98,7 @@ bool PathportDevice::StartHook() {
     PathportInputPort *port = new PathportInputPort(
         this,
         i,
-        m_plugin_adaptor->WakeUpTime(),
+        m_plugin_adaptor,
         m_node);
     AddPort(port);
   }

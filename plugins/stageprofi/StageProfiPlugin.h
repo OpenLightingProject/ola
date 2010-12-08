@@ -54,7 +54,7 @@ class StageProfiPlugin: public Plugin {
     bool SetDefaultPreferences();
     void DeleteDevice(StageProfiDevice *device);
 
-    vector<StageProfiDevice*> m_devices;  // list of our devices
+    std::vector<StageProfiDevice*> m_devices;  // list of our devices
 
     static const char STAGEPROFI_DEVICE_PATH[];
     static const char STAGEPROFI_DEVICE_NAME[];

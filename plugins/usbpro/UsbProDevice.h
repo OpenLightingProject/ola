@@ -124,9 +124,11 @@ class UsbProDevice: public UsbDevice {
  */
 class UsbProInputPort: public BasicInputPort {
   public:
-    UsbProInputPort(UsbProDevice *parent, unsigned int id,
-                    const TimeStamp *wake_time, const string &path)
-        : BasicInputPort(parent, id, wake_time),
+    UsbProInputPort(UsbProDevice *parent,
+                    unsigned int id,
+                    ola::PluginAdaptor *plugin_adaptor,
+                    const string &path)
+        : BasicInputPort(parent, id, plugin_adaptor),
           m_path(path),
           m_device(parent) {}
 

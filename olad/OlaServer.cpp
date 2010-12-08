@@ -46,6 +46,7 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/PluginManager.h"
 #include "olad/Port.h"
+#include "olad/PortBroker.h"
 #include "olad/PortManager.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
@@ -92,13 +93,14 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
       m_export_map(export_map),
       m_port_manager(NULL),
       m_service_impl(NULL),
+      m_broker(NULL),
+      m_port_broker(NULL),
       m_reload_plugins(false),
       m_init_run(false),
       m_free_export_map(false),
       m_housekeeping_timeout(ola::network::INVALID_TIMEOUT),
       m_httpd(NULL),
       m_options(*ola_options),
-      m_broker(NULL),
       m_default_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
   if (!m_export_map) {
     m_export_map = new ExportMap();
@@ -142,6 +144,9 @@ OlaServer::~OlaServer() {
 
   if (m_broker)
     delete m_broker;
+
+  if (m_port_broker)
+    delete m_port_broker;
 
   if (m_accepting_socket &&
       m_accepting_socket->ReadDescriptor() !=
@@ -218,10 +223,12 @@ bool OlaServer::Init() {
   m_broker = new ClientBroker();
 
   // setup the objects
+  m_port_broker = new PortBroker();
   m_device_manager = new DeviceManager(m_preferences_factory, m_port_manager);
   m_plugin_adaptor = new PluginAdaptor(m_device_manager,
                                        m_ss,
-                                       m_preferences_factory);
+                                       m_preferences_factory,
+                                       m_port_broker);
 
   m_plugin_manager = new PluginManager(m_plugin_loaders, m_plugin_adaptor);
   m_service_impl = new OlaServerServiceImpl(
@@ -234,8 +241,9 @@ bool OlaServer::Init() {
       m_ss->WakeUpTime(),
       m_default_uid);
 
-  if (!m_universe_store || !m_device_manager || !m_plugin_adaptor ||
-      !m_port_manager || !m_plugin_manager || !m_broker || !m_service_impl) {
+  if (!m_port_broker || !m_universe_store || !m_device_manager ||
+      !m_plugin_adaptor || !m_port_manager || !m_plugin_manager || !m_broker ||
+      !m_service_impl) {
     delete m_plugin_adaptor;
     delete m_device_manager;
     delete m_port_manager;

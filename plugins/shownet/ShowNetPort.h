@@ -36,9 +36,9 @@ class ShowNetInputPort: public BasicInputPort {
   public:
     ShowNetInputPort(ShowNetDevice *parent,
                      unsigned int id,
-                     const TimeStamp *wake_time,
+                     class PluginAdaptor *plugin_adaptor,
                      ShowNetNode *node):
-      BasicInputPort(parent, id, wake_time),
+      BasicInputPort(parent, id, plugin_adaptor),
       m_node(node) {}
     ~ShowNetInputPort() {}
 

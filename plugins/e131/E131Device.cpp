@@ -90,7 +90,7 @@ bool E131Device::StartHook() {
         this,
         i,
         m_node,
-        m_plugin_adaptor->WakeUpTime());
+        m_plugin_adaptor);
     AddPort(input_port);
     E131OutputPort *output_port = new E131OutputPort(this,
                                                      i,

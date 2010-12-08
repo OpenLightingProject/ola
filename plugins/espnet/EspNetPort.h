@@ -40,8 +40,9 @@ class EspNetPortHelper {
 class EspNetInputPort: public BasicInputPort {
   public:
     EspNetInputPort(EspNetDevice *parent, unsigned int id,
-                    const TimeStamp *wake_time, EspNetNode *node)
-        : BasicInputPort(parent, id, wake_time),
+                    class PluginAdaptor *plugin_adaptor,
+                    EspNetNode *node)
+        : BasicInputPort(parent, id, plugin_adaptor),
           m_helper(),
           m_node(node) {}
     ~EspNetInputPort() {}

@@ -62,8 +62,8 @@ class Dmx4LinuxOutputPort: public BasicOutputPort {
 class Dmx4LinuxInputPort: public BasicInputPort {
   public:
     explicit Dmx4LinuxInputPort(Dmx4LinuxDevice *parent,
-                                const TimeStamp *wake_time):
-        BasicInputPort(parent, 0, wake_time) {
+                                class PluginAdaptor *plugin_adaptor):
+        BasicInputPort(parent, 0, plugin_adaptor) {
       m_read_buffer.SetRangeToValue(0, 0, DMX_UNIVERSE_SIZE);
     }
 

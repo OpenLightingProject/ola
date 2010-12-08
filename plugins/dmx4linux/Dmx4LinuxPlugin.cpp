@@ -251,7 +251,7 @@ bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
   if (dir == DMX_DIRECTION_INPUT) {
     Dmx4LinuxInputPort *port = new Dmx4LinuxInputPort(
         dev,
-        m_plugin_adaptor->WakeUpTime());
+        m_plugin_adaptor);
     m_in_ports.push_back(port);
     dev->AddPort(port);
   } else {

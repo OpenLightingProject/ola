@@ -77,7 +77,7 @@ bool EspNetDevice::StartHook() {
     EspNetInputPort *input_port = new EspNetInputPort(
         this,
         i,
-        m_plugin_adaptor->WakeUpTime(),
+        m_plugin_adaptor,
         m_node);
     AddPort(input_port);
     EspNetOutputPort *output_port = new EspNetOutputPort(this, i, m_node);

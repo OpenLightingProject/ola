@@ -21,7 +21,7 @@
 #ifndef INCLUDE_OLAD_TOKENBUCKET_H_
 #define INCLUDE_OLAD_TOKENBUCKET_H_
 
-#include "ola/Clock.h"
+#include <ola/Clock.h>
 
 namespace ola {
 

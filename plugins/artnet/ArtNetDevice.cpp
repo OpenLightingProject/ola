@@ -107,7 +107,7 @@ bool ArtNetDevice::StartHook() {
     AddPort(new ArtNetOutputPort(this, i, m_node));
     AddPort(new ArtNetInputPort(this,
                                 i,
-                                m_plugin_adaptor->WakeUpTime(),
+                                m_plugin_adaptor,
                                 m_node));
   }
 

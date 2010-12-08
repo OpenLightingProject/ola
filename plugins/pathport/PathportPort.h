@@ -42,9 +42,9 @@ class PathportInputPort: public BasicInputPort {
   public:
     PathportInputPort(PathportDevice *parent,
                      unsigned int id,
-                     const TimeStamp *wake_time,
+                     class PluginAdaptor *plugin_adaptor,
                      PathportNode *node):
-      BasicInputPort(parent, id, wake_time),
+      BasicInputPort(parent, id, plugin_adaptor),
       m_node(node) {}
     ~PathportInputPort() {}
 

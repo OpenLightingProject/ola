@@ -22,7 +22,7 @@
 #define INCLUDE_OLAD_PORT_H_
 
 #include <string>
-#include <ola/Clock.h>  // NOLINT
+#include <olad/PluginAdaptor.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
 #include <ola/rdm/RDMCommand.h>  // NOLINT
 #include <ola/rdm/RDMControllerInterface.h>  // NOLINT
@@ -120,7 +120,7 @@ class BasicInputPort: public InputPort {
   public:
     BasicInputPort(AbstractDevice *parent,
                    unsigned int port_id,
-                   const TimeStamp *wake_time);
+                   const PluginAdaptor *plugin_adaptor);
 
     unsigned int PortId() const { return m_port_id; }
     AbstractDevice *GetDevice() const { return m_device; }
@@ -178,7 +178,7 @@ class BasicInputPort: public InputPort {
     Universe *m_universe;  // the universe this port belongs to
     AbstractDevice *m_device;
     DmxSource m_dmx_source;
-    const TimeStamp *m_wakeup_time;
+    const PluginAdaptor *m_plugin_adaptor;
 
     BasicInputPort(const BasicInputPort&);
     BasicInputPort& operator=(const BasicInputPort&);

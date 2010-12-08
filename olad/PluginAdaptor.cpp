@@ -23,11 +23,12 @@
 #include "ola/Callback.h"
 #include "olad/DeviceManager.h"
 #include "olad/PluginAdaptor.h"
+#include "olad/PortBroker.h"
 #include "olad/Preferences.h"
 
 namespace ola {
 
-using ola::network::SelectServer;
+using ola::network::SelectServerInterface;
 
 /*
  * Create a new PluginAdaptor
@@ -36,11 +37,13 @@ using ola::network::SelectServer;
  * @param preferences_factory pointer to the PreferencesFactory object
  */
 PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
-                             SelectServer *select_server,
-                             PreferencesFactory *preferences_factory):
+                             SelectServerInterface *select_server,
+                             PreferencesFactory *preferences_factory,
+                             PortBrokerInterface *port_broker):
   m_device_manager(device_manager),
   m_ss(select_server),
-  m_preferences_factory(preferences_factory) {
+  m_preferences_factory(preferences_factory),
+  m_port_broker(port_broker) {
 }
 
 

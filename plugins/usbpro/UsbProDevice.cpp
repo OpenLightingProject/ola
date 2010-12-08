@@ -78,7 +78,7 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
   UsbProInputPort *input_port = new UsbProInputPort(
       this,
       0,
-      plugin_adaptor->WakeUpTime(),
+      plugin_adaptor,
       "");
   AddPort(input_port);
   OutputPort *output_port = new ThrottledOutputPortDecorator(

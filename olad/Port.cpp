@@ -24,6 +24,7 @@
 #include "ola/Logging.h"
 #include "olad/Device.h"
 #include "olad/Port.h"
+#include "olad/PortBroker.h"
 
 namespace ola {
 
@@ -32,14 +33,14 @@ namespace ola {
  */
 BasicInputPort::BasicInputPort(AbstractDevice *parent,
                                unsigned int port_id,
-                               const TimeStamp *wake_time):
+                               const PluginAdaptor *plugin_adaptor):
     m_port_id(port_id),
     m_priority(DmxSource::PRIORITY_DEFAULT),
     m_priority_mode(PRIORITY_MODE_INHERIT),
     m_port_string(""),
     m_universe(NULL),
     m_device(parent),
-    m_wakeup_time(wake_time) {
+    m_plugin_adaptor(plugin_adaptor) {
 }
 
 
@@ -88,7 +89,7 @@ void BasicInputPort::DmxChanged() {
                         GetPriorityMode() == PRIORITY_MODE_INHERIT ?
                         InheritedPriority() :
                         GetPriority());
-    m_dmx_source.UpdateData(buffer, *m_wakeup_time, priority);
+    m_dmx_source.UpdateData(buffer, *m_plugin_adaptor->WakeUpTime(), priority);
     GetUniverse()->PortDataChanged(this);
   }
 }
@@ -100,9 +101,12 @@ void BasicInputPort::DmxChanged() {
  */
 void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *callback) {
-  // TODO(simon): fill this in with a callback to the broker
   if (m_universe) {
-    //return m_universe->HandleRDMRequest(this, request);
+    m_plugin_adaptor->GetPortBroker()->SendRDMRequest(
+        this,
+        m_universe,
+        request,
+        callback);
   } else {
     callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
     delete request;
