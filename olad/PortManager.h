@@ -25,6 +25,7 @@
 #include <vector>
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
+#include "olad/PortBroker.h"
 #include "olad/UniverseStore.h"
 
 
@@ -32,8 +33,10 @@ namespace ola {
 
 class PortManager {
   public:
-    explicit PortManager(UniverseStore *universe_store)
-        : m_universe_store(universe_store) {
+    explicit PortManager(UniverseStore *universe_store,
+                         PortBroker *broker)
+        : m_universe_store(universe_store),
+          m_broker(broker) {
     }
     ~PortManager() {}
 
@@ -74,6 +77,7 @@ class PortManager {
                                       unsigned int universe_id) const;
 
     UniverseStore * const m_universe_store;
+    PortBroker *m_broker;
 };
 }  // ola
 #endif  // OLAD_PORTMANAGER_H_

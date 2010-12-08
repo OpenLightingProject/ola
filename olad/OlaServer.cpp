@@ -219,11 +219,11 @@ bool OlaServer::Init() {
   m_universe_preferences->Load();
   m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
 
-  m_port_manager = new PortManager(m_universe_store);
+  m_port_broker = new PortBroker();
+  m_port_manager = new PortManager(m_universe_store, m_port_broker);
   m_broker = new ClientBroker();
 
   // setup the objects
-  m_port_broker = new PortBroker();
   m_device_manager = new DeviceManager(m_preferences_factory, m_port_manager);
   m_plugin_adaptor = new PluginAdaptor(m_device_manager,
                                        m_ss,

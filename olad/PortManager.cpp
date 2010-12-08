@@ -139,6 +139,7 @@ bool PortManager::GenericPatchPort(PortClass *port,
   if (universe) {
     OLA_DEBUG << "Port " << port->UniqueId() << " is bound to universe " <<
       universe->UniverseId();
+    m_broker->RemovePort(port);
     universe->RemovePort(port);
   }
 
@@ -148,6 +149,7 @@ bool PortManager::GenericPatchPort(PortClass *port,
 
   OLA_INFO << "Patched " << port->UniqueId() << " to universe " <<
     universe->UniverseId();
+  m_broker->AddPort(port);
   universe->AddPort(port);
   port->SetUniverse(universe);
   return true;
@@ -160,6 +162,7 @@ bool PortManager::GenericUnPatchPort(PortClass *port) {
     return false;
 
   Universe *universe = port->GetUniverse();
+  m_broker->RemovePort(port);
   if (universe) {
     universe->RemovePort(port);
     port->SetUniverse(NULL);
