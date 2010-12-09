@@ -39,6 +39,7 @@ class UsbProWidgetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testParams);
   CPPUNIT_TEST(testSendDMX);
   CPPUNIT_TEST(testReceiveDMX);
+  CPPUNIT_TEST(testChangeMode);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -47,6 +48,7 @@ class UsbProWidgetTest: public CppUnit::TestFixture {
     void testParams();
     void testSendDMX();
     void testReceiveDMX();
+    void testChangeMode();
 
   private:
     void ValidateParams(bool status, const usb_pro_parameters &params);
@@ -221,4 +223,31 @@ void UsbProWidgetTest::testReceiveDMX() {
       reinterpret_cast<uint8_t*>(&change_of_state_packet),
       sizeof(change_of_state_packet));
   CPPUNIT_ASSERT(m_got_dmx);
+}
+
+
+/**
+ * Check that changing mode works.
+ */
+void UsbProWidgetTest::testChangeMode() {
+  uint8_t CHANGE_MODE_LABEL = 8;
+  ola::plugin::usbpro::UsbProWidget widget(&m_ss, &m_widget);
+
+  uint8_t expected_mode_packet = 0;
+  m_widget.AddExpectedCall(
+      CHANGE_MODE_LABEL,
+      &expected_mode_packet,
+      sizeof(expected_mode_packet));
+
+  widget.ChangeToReceiveMode(false);
+  m_widget.Verify();
+
+  expected_mode_packet = 1;
+  m_widget.AddExpectedCall(
+      CHANGE_MODE_LABEL,
+      &expected_mode_packet,
+      sizeof(expected_mode_packet));
+
+  widget.ChangeToReceiveMode(true);
+  m_widget.Verify();
 }
