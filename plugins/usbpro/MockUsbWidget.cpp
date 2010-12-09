@@ -50,11 +50,11 @@ bool MockUsbWidget::SendMessage(uint8_t label,
 void MockUsbWidget::AddExpectedCall(uint8_t expected_label,
                                     const uint8_t *expected_data,
                                     unsigned int expected_length) {
-  expected_call call;
-  call.send_response = false;
-  call.expected_command.label = expected_label;
-  call.expected_command.data = expected_data;
-  call.expected_command.length = expected_length;
+  expected_call call = {
+    true,
+    {expected_label, expected_length, expected_data},
+    {0, 0, NULL}
+  };
   m_expected_calls.push(call);
 }
 
@@ -67,14 +67,11 @@ void MockUsbWidget::AddExpectedCall(uint8_t expected_label,
                                     uint8_t return_label,
                                     const uint8_t *return_data,
                                     unsigned int return_length) {
-  expected_call call;
-  call.send_response = true;
-  call.expected_command.label = expected_label;
-  call.expected_command.data = expected_data;
-  call.expected_command.length = expected_length;
-  call.return_command.label = return_label;
-  call.return_command.data = return_data;
-  call.return_command.length = return_length;
+  expected_call call = {
+    true,
+    {expected_label, expected_length, expected_data},
+    {return_label, return_length, return_data}
+  };
   m_expected_calls.push(call);
 }
 
