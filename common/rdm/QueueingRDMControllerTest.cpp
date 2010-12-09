@@ -51,7 +51,7 @@ class QueueingRDMControllerTest: public CppUnit::TestFixture {
     void testPauseAndResume();
     void testQueueOverflow();
 
-    void QueueingRDMControllerTest::VerifyResponse(
+    void VerifyResponse(
         ola::rdm::rdm_request_status expected_status,
         const RDMResponse *expected_response,
         bool delete_response,
