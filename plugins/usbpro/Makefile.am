@@ -4,12 +4,13 @@ libdir = $(plugindir)
 SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h DmxTriDevice.h DmxTriWidget.h DmxterDevice.h \
              DmxterWidget.h MockUsbWidget.h UsbDevice.h UsbProDevice.h \
-             UsbProPlugin.h UsbWidget.h WidgetDetector.h
+             UsbProPlugin.h UsbProWidget.h UsbWidget.h WidgetDetector.h
 
 # This is a library which doesn't contain any coupling to olad
 noinst_LTLIBRARIES = libolausbprowidget.la
 libolausbprowidget_la_SOURCES = DmxTriWidget.cpp DmxterWidget.cpp \
-                                UsbWidget.cpp WidgetDetector.cpp
+                                UsbWidget.cpp UsbProWidget.cpp \
+                                WidgetDetector.cpp
 
 lib_LTLIBRARIES = libolausbpro.la
 libolausbpro_la_SOURCES = UsbProPlugin.cpp ArduinoRGBDevice.cpp \
@@ -24,6 +25,7 @@ UsbProTester_SOURCES = DmxTriWidgetTest.cpp \
                        DmxterWidgetTest.cpp \
                        MockUsbWidget.cpp \
                        UsbProTester.cpp \
+                       UsbProWidgetTest.cpp \
                        UsbWidgetTest.cpp \
                        WidgetDetectorTest.cpp
 

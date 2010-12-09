@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProDevice.h
- * Interface for the usbpro device
+ * Interface for the Enttec USB Pro device
  * Copyright (C) 2006-2007 Simon Newton
  */
 
@@ -22,15 +22,13 @@
 #define PLUGINS_USBPRO_USBPRODEVICE_H_
 
 #include <string>
-#include <deque>
 #include "ola/DmxBuffer.h"
-#include "ola/network/Socket.h"
-#include "olad/Device.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
 
 #include "plugins/usbpro/UsbDevice.h"
 #include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/UsbProWidget.h"
 #include "plugins/usbpro/messages/UsbProConfigMessages.pb.h"
 
 namespace ola {
@@ -39,17 +37,6 @@ namespace usbpro {
 
 using google::protobuf::RpcController;
 using ola::plugin::usbpro::Request;
-using ola::network::ConnectedSocket;
-using std::deque;
-
-/*
- * Outstanding requests to the widget
- */
-typedef struct {
-  RpcController *controller;
-  string *response;
-  google::protobuf::Closure *closure;
-} OutstandingParamRequest;
 
 
 /*
@@ -65,10 +52,7 @@ class UsbProDevice: public UsbDevice {
                  uint16_t device_id,
                  uint32_t serial,
                  unsigned int fps_limit);
-
-    void HandleMessage(uint8_t label,
-                       const uint8_t *data,
-                       unsigned int length);
+    ~UsbProDevice();
 
     string DeviceId() const { return m_serial; }
 
@@ -77,45 +61,35 @@ class UsbProDevice: public UsbDevice {
                    string *response,
                    google::protobuf::Closure *done);
 
-    bool SendDMX(const DmxBuffer &buffer);
-    const DmxBuffer &FetchDMX() const { return m_input_buffer; }
-    bool ChangeToReceiveMode(bool change_only);
-
   protected:
     void PrePortStop();
 
   private:
-    void HandleParameters(const uint8_t *data, unsigned int length);
-    void HandleDMX(const uint8_t *data, unsigned int length);
-    void HandleDMXDiff(const uint8_t *data, unsigned int length);
-    bool GetParameters() const;
+    void UpdateParams(bool status, const usb_pro_parameters &params);
 
     void HandleParametersRequest(RpcController *controller,
                                  const Request *request,
                                  string *response,
                                  google::protobuf::Closure *done);
 
+    void HandleParametersResponse(RpcController *controller,
+                                  string *response,
+                                  google::protobuf::Closure *done,
+                                  bool status,
+                                  const usb_pro_parameters &params);
+
     void HandleSerialRequest(RpcController *controller,
                              const Request *request,
                              string *response,
                              google::protobuf::Closure *done);
 
-    bool m_got_parameters;
-    bool m_in_shutdown;  // set to true if we're shutting down
+    UsbProWidget *m_pro_widget;
     string m_serial;
-    DmxBuffer m_input_buffer;
-    deque<OutstandingParamRequest> m_outstanding_param_requests;
 
+    bool m_got_parameters;
     uint8_t m_break_time;
     uint8_t m_mab_time;
     uint8_t m_rate;
-
-    static const uint8_t REPROGRAM_FIRMWARE_LABEL = 2;
-    static const uint8_t PARAMETERS_LABEL = 3;
-    static const uint8_t SET_PARAMETERS_LABEL = 4;
-    static const uint8_t RECEIVED_DMX_LABEL = 5;
-    static const uint8_t DMX_RX_MODE_LABEL = 8;
-    static const uint8_t DMX_CHANGED_LABEL = 9;
 };
 
 
@@ -125,24 +99,23 @@ class UsbProDevice: public UsbDevice {
 class UsbProInputPort: public BasicInputPort {
   public:
     UsbProInputPort(UsbProDevice *parent,
+                    UsbProWidget *widget,
                     unsigned int id,
                     ola::PluginAdaptor *plugin_adaptor,
                     const string &path)
         : BasicInputPort(parent, id, plugin_adaptor),
           m_path(path),
-          m_device(parent) {}
+          m_widget(widget) {}
 
     const DmxBuffer &ReadDMX() const {
-      return m_device->FetchDMX();
+      return m_widget->FetchDMX();
     }
 
-    string Description() const {
-      return m_path;
-    }
+    string Description() const { return m_path; }
 
   private:
     string m_path;
-    UsbProDevice *m_device;
+    UsbProWidget *m_widget;
 };
 
 
@@ -151,19 +124,22 @@ class UsbProInputPort: public BasicInputPort {
  */
 class UsbProOutputPort: public BasicOutputPort {
   public:
-    UsbProOutputPort(UsbProDevice *parent, unsigned int id, const string &path)
+    UsbProOutputPort(UsbProDevice *parent,
+                     UsbProWidget *widget,
+                     unsigned int id,
+                     const string &path)
         : BasicOutputPort(parent, id),
           m_path(path),
-          m_device(parent) {}
+          m_widget(widget) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_device->SendDMX(buffer);
+      return m_widget->SendDMX(buffer);
       (void) priority;
     }
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
       if (!new_universe)
-        m_device->ChangeToReceiveMode(false);
+        m_widget->ChangeToReceiveMode(false);
       (void) old_universe;
     }
 
@@ -171,7 +147,7 @@ class UsbProOutputPort: public BasicOutputPort {
 
   private:
     string m_path;
-    UsbProDevice *m_device;
+    UsbProWidget *m_widget;
 };
 }  // usbpro
 }  // plugin

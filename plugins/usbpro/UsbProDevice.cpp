@@ -58,11 +58,10 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                            uint32_t serial,
                            unsigned int fps_limit):
     UsbDevice(owner, name, widget),
-    m_got_parameters(false),
-    m_in_shutdown(false),
-    m_serial() {
-  m_widget->SetMessageHandler(
-      NewCallback(this, &UsbProDevice::HandleMessage));
+    m_pro_widget(NULL),
+    m_serial(),
+    m_got_parameters(false) {
+  m_pro_widget = new UsbProWidget(plugin_adaptor, widget);
 
   std::stringstream str;
   str << std::setfill('0');
@@ -73,16 +72,25 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
   }
   m_serial = str.str();
 
-  GetParameters();  // update our local values
+  m_pro_widget->GetParameters(NewSingleCallback(
+    this,
+    &UsbProDevice::UpdateParams));
 
   UsbProInputPort *input_port = new UsbProInputPort(
       this,
+      m_pro_widget,
       0,
       plugin_adaptor,
       "");
+
+  m_pro_widget->SetDMXCallback(
+      NewCallback(
+        reinterpret_cast<InputPort*>(input_port),
+        &InputPort::DmxChanged));
   AddPort(input_port);
+
   OutputPort *output_port = new ThrottledOutputPortDecorator(
-      new UsbProOutputPort(this, 0, ""),
+      new UsbProOutputPort(this, m_pro_widget, 0, ""),
       plugin_adaptor->WakeUpTime(),
       10,  // start with 10 tokens in the bucket
       fps_limit);  // 200 frames per second seems to be the limit
@@ -94,29 +102,8 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
 }
 
 
-/*
- * Handle Messages from the widget
- */
-void UsbProDevice::HandleMessage(uint8_t label,
-                                 const uint8_t *data,
-                                 unsigned int length) {
-  switch (label) {
-    case REPROGRAM_FIRMWARE_LABEL:
-      break;
-    case PARAMETERS_LABEL:
-      HandleParameters(data, length);
-      break;
-    case RECEIVED_DMX_LABEL:
-      HandleDMX(data, length);
-      break;
-    case DMX_CHANGED_LABEL:
-      HandleDMXDiff(data, length);
-      break;
-    case UsbWidget::SERIAL_LABEL:
-      break;
-    default:
-      OLA_WARN << "Unknown message type " << label;
-  }
+UsbProDevice::~UsbProDevice() {
+  delete m_pro_widget;
 }
 
 
@@ -124,29 +111,7 @@ void UsbProDevice::HandleMessage(uint8_t label,
  * Stop this device
  */
 void UsbProDevice::PrePortStop() {
-  m_in_shutdown = true;  // don't allow any more writes
-}
-
-
-/*
- * Send the dmx out the widget
- * @return true on success, false on failure
- */
-bool UsbProDevice::SendDMX(const DmxBuffer &buffer) {
-  struct {
-    uint8_t start_code;
-    uint8_t dmx[DMX_UNIVERSE_SIZE];
-  } widget_dmx;
-
-  if (!IsEnabled())
-    return true;
-
-  widget_dmx.start_code = 0;
-  unsigned int length = DMX_UNIVERSE_SIZE;
-  buffer.Get(widget_dmx.dmx, &length);
-  return m_widget->SendMessage(UsbWidget::DMX_LABEL,
-                               reinterpret_cast<uint8_t*>(&widget_dmx),
-                               length + 1);
+  m_pro_widget->Stop();
 }
 
 
@@ -182,159 +147,18 @@ void UsbProDevice::Configure(RpcController *controller,
 }
 
 
-/*
- * Put the device back into recv mode
- * @return true on success, false on failure
+/**
+ * Update the cached param values
  */
-bool UsbProDevice::ChangeToReceiveMode(bool change_only) {
-  if (m_in_shutdown)
-    return true;
-
-  uint8_t mode = change_only;
-  bool status = m_widget->SendMessage(DMX_RX_MODE_LABEL, &mode, sizeof(mode));
-
-  if (status && change_only)
-    m_input_buffer.Blackout();
-  return status;
-}
-
-
-
-/*
- * Called when we get new parameters from the widget.
- */
-void UsbProDevice::HandleParameters(const uint8_t *data, unsigned int length) {
-  if (m_outstanding_param_requests.empty())
-    return;
-
-  // parameters
-  typedef struct {
-    uint8_t firmware;
-    uint8_t firmware_high;
-    uint8_t break_time;
-    uint8_t mab_time;
-    uint8_t rate;
-  } widget_parameters_reply;
-
-  if (length < sizeof(widget_parameters_reply))
-    return;
-
-  const widget_parameters_reply *widget_reply =
-    reinterpret_cast<const widget_parameters_reply*>(data);
-
-  // update local values
-  m_got_parameters = true;
-  m_break_time = widget_reply->break_time;
-  m_mab_time = widget_reply->mab_time;
-  m_rate = widget_reply->rate;
-
-  if (!m_outstanding_param_requests.size())
-    return;
-
-  OutstandingParamRequest parameter_request =
-    m_outstanding_param_requests.front();
-  m_outstanding_param_requests.pop_front();
-
-  Reply reply;
-  reply.set_type(ola::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
-  ola::plugin::usbpro::ParameterReply *parameters_reply =
-    reply.mutable_parameters();
-
-  parameters_reply->set_firmware_high(widget_reply->firmware_high);
-  parameters_reply->set_firmware(widget_reply->firmware);
-  parameters_reply->set_break_time(widget_reply->break_time);
-  parameters_reply->set_mab_time(widget_reply->mab_time);
-  parameters_reply->set_rate(widget_reply->rate);
-  reply.SerializeToString(parameter_request.response);
-  parameter_request.closure->Run();
-}
-
-
-/*
- * Handle the dmx frame
- */
-void UsbProDevice::HandleDMX(const uint8_t *data, unsigned int length) {
-  typedef struct {
-    uint8_t status;
-    uint8_t dmx[DMX_UNIVERSE_SIZE + 1];
-  } widget_dmx;
-
-  if (length < 2)
-    return;
-
-  const widget_dmx *widget_reply =
-    reinterpret_cast<const widget_dmx*>(data);
-
-  if (widget_reply->status) {
-    OLA_WARN << "UsbPro got corrupted packet, status: " <<
-      static_cast<int>(widget_reply->status);
-    return;
+void UsbProDevice::UpdateParams(bool status,
+                                const usb_pro_parameters &params) {
+  if (status) {
+    m_got_parameters = true;
+    m_break_time = params.break_time;
+    m_mab_time = params.mab_time;
+    m_rate = params.rate;
   }
-
-  // only handle start code = 0
-  if (length > 2 && widget_reply->dmx[0] == 0) {
-    m_input_buffer.Set(widget_reply->dmx + 1, length - 2);
-    InputPort *port = GetInputPort(0);
-    port->DmxChanged();
-  }
-  return;
 }
-
-
-/*
- * Handle the dmx change of state frame
- */
-void UsbProDevice::HandleDMXDiff(const uint8_t *data, unsigned int length) {
-  typedef struct {
-    uint8_t start;
-    uint8_t changed[5];
-    uint8_t data[40];
-  } widget_data_changed;
-
-  if (length < sizeof(widget_data_changed))
-    return;
-
-  const widget_data_changed *widget_reply =
-    reinterpret_cast<const widget_data_changed*>(data);
-
-  unsigned int start_channel = widget_reply->start * 8;
-  unsigned int offset = 0;
-
-  // skip non-0 start codes, this code is pretty messed up because the USB Pro
-  // doesn't seem to provide a guarentee on the ordering of packets. Packets
-  // with non-0 start codes are almost certainly going to cause problems.
-  if (start_channel == 0 && (widget_reply->changed[0] & 0x01) &&
-      widget_reply->data[offset])
-    return;
-
-  for (int i = 0; i < 40; i++) {
-    if (start_channel + i > DMX_UNIVERSE_SIZE + 1 || offset + 6 >= length)
-      break;
-
-    if (widget_reply->changed[i/8] & (1 << (i % 8)) && start_channel + i != 0) {
-      m_input_buffer.SetChannel(start_channel + i - 1,
-                                widget_reply->data[offset]);
-      offset++;
-    }
-  }
-
-  InputPort *port = GetInputPort(0);
-  port->DmxChanged();
-  return;
-}
-
-
-/*
- * Fetch the widget parameters.
- * @returns true if we sent ok, false otherwise
- */
-bool UsbProDevice::GetParameters() const {
-  uint16_t user_size = 0;
-  return m_widget->SendMessage(PARAMETERS_LABEL,
-                               reinterpret_cast<uint8_t*>(&user_size),
-                               sizeof(user_size));
-}
-
 
 
 /*
@@ -348,13 +172,6 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
                                            const Request *request,
                                            string *response,
                                            google::protobuf::Closure *done) {
-  struct {
-    uint16_t length;
-    uint8_t break_time;
-    uint8_t mab_time;
-    uint8_t rate;
-  } widget_parameters;
-
   if (request->has_parameters() &&
       (request->parameters().has_break_time() ||
        request->parameters().has_mab_time() ||
@@ -365,18 +182,13 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
       return;
     }
 
-    widget_parameters.length = 0;
-    widget_parameters.break_time = request->parameters().has_break_time() ?
-      request->parameters().break_time() : m_break_time;
-    widget_parameters.mab_time = request->parameters().has_mab_time() ?
-      request->parameters().mab_time() : m_mab_time;
-    widget_parameters.rate = request->parameters().has_rate() ?
-      request->parameters().rate() : m_rate;
-
-    bool ret = m_widget->SendMessage(
-        SET_PARAMETERS_LABEL,
-        reinterpret_cast<uint8_t*>(&widget_parameters),
-        sizeof(widget_parameters));
+    bool ret = m_pro_widget->SetParameters(
+      request->parameters().has_break_time() ?
+        request->parameters().break_time() : m_break_time,
+      request->parameters().has_mab_time() ?
+        request->parameters().mab_time() : m_mab_time,
+      request->parameters().has_rate() ?
+        request->parameters().rate() : m_rate);
 
     if (!ret) {
       controller->SetFailed("SetParameters failed");
@@ -385,17 +197,40 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
     }
   }
 
-  if (!GetParameters()) {
+  m_pro_widget->GetParameters(NewSingleCallback(
+    this,
+    &UsbProDevice::HandleParametersResponse,
+    controller,
+    response,
+    done));
+}
+
+
+/**
+ * Handle the GetParameters response
+ */
+void UsbProDevice::HandleParametersResponse(RpcController *controller,
+                                            string *response,
+                                            google::protobuf::Closure *done,
+                                            bool status,
+                                            const usb_pro_parameters &params) {
+  if (!status) {
     controller->SetFailed("GetParameters failed");
-    done->Run();
   } else {
-    // TODO(simonn): we should time these out if we don't get a response
-    OutstandingParamRequest pending_request;
-    pending_request.controller = controller;
-    pending_request.response = response;
-    pending_request.closure = done;
-    m_outstanding_param_requests.push_back(pending_request);
+    UpdateParams(true, params);
+    Reply reply;
+    reply.set_type(ola::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
+    ola::plugin::usbpro::ParameterReply *parameters_reply =
+      reply.mutable_parameters();
+
+    parameters_reply->set_firmware_high(params.firmware_high);
+    parameters_reply->set_firmware(params.firmware);
+    parameters_reply->set_break_time(params.break_time);
+    parameters_reply->set_mab_time(params.mab_time);
+    parameters_reply->set_rate(params.rate);
+    reply.SerializeToString(response);
   }
+  done->Run();
 }
 
 
@@ -407,7 +242,6 @@ void UsbProDevice::HandleSerialRequest(
     const Request *request,
     string *response,
     google::protobuf::Closure *done) {
-
   Reply reply;
   reply.set_type(ola::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY);
   ola::plugin::usbpro::SerialNumberReply *serial_reply =
