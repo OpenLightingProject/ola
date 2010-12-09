@@ -24,16 +24,19 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Client.h"
 #include "olad/DmxSource.h"
+#include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
+#include "olad/PortBroker.h"
 #include "olad/PortManager.h"
+#include "ola/network/SelectServerInterface.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
 
 using ola::AbstractDevice;
-using ola::DmxBuffer;
 using ola::Clock;
+using ola::DmxBuffer;
 using ola::TimeStamp;
 using ola::Universe;
 using std::string;
@@ -189,11 +192,14 @@ void UniverseTest::testSendDmx() {
  * Check that we update when ports have new data
  */
 void UniverseTest::testReceiveDmx() {
-  ola::PortManager port_manager(m_store);
+  ola::PortBroker broker;
+  ola::PortManager port_manager(m_store, &broker);
+  TimeStamp time_stamp;
+  MockSelectServer ss(&time_stamp);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL);
 
   MockDevice device(NULL, "foo");
-  TimeStamp time_stamp;
-  TestMockInputPort port(&device, 1, &time_stamp);  // input port
+  TestMockInputPort port(&device, 1, &plugin_adaptor);  // input port
   port_manager.PatchPort(&port, TEST_UNIVERSE);
 
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
@@ -311,13 +317,16 @@ void UniverseTest::testLtpMerging() {
   buffer1.SetFromString("1,0,0,10");
   buffer2.SetFromString("0,255,0,5,6,7");
 
-  ola::PortManager port_manager(m_store);
+  ola::PortBroker broker;
+  ola::PortManager port_manager(m_store, &broker);
 
   TimeStamp time_stamp;
+  MockSelectServer ss(&time_stamp);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL);
   MockDevice device(NULL, "foo");
   MockDevice device2(NULL, "bar");
-  TestMockInputPort port(&device, 1, &time_stamp);  // input port
-  TestMockInputPort port2(&device2, 1, &time_stamp);  // input port
+  TestMockInputPort port(&device, 1, &plugin_adaptor);  // input port
+  TestMockInputPort port2(&device2, 1, &plugin_adaptor);  // input port
   port_manager.PatchPort(&port, TEST_UNIVERSE);
   port_manager.PatchPort(&port2, TEST_UNIVERSE);
 
@@ -392,13 +401,16 @@ void UniverseTest::testHtpMerging() {
   buffer2.SetFromString("0,255,0,5,6,7");
   htp_buffer.SetFromString("1,255,0,10,6,7");
 
-  ola::PortManager port_manager(m_store);
+  ola::PortBroker broker;
+  ola::PortManager port_manager(m_store, &broker);
 
   TimeStamp time_stamp;
+  MockSelectServer ss(&time_stamp);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL);
   MockDevice device(NULL, "foo");
   MockDevice device2(NULL, "bar");
-  TestMockInputPort port(&device, 1, &time_stamp);  // input port
-  TestMockInputPort port2(&device2, 1, &time_stamp);  // input port
+  TestMockInputPort port(&device, 1, &plugin_adaptor);  // input port
+  TestMockInputPort port2(&device2, 1, &plugin_adaptor);  // input port
   port_manager.PatchPort(&port, TEST_UNIVERSE);
   port_manager.PatchPort(&port2, TEST_UNIVERSE);
 

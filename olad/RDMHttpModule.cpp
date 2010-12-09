@@ -832,7 +832,7 @@ void RDMHttpModule::SendPersonalityResponse(HttpResponse *response,
   str << "  \"personalities\": [" << endl;
 
   unsigned int i = 1;
-  while(i <= info->total && i <= info->personalities.size()) {
+  while (i <= info->total && i <= info->personalities.size()) {
     str << "    {" << endl;
     if (info->personalities[i - 1].first != INVALID_PERSONALITY) {
       str << "    \"name\": \"" << info->personalities[i - 1].second << "\","

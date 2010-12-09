@@ -22,8 +22,9 @@
 #include <string>
 #include <vector>
 
-#include "olad/TestCommon.h"
+#include "olad/PortBroker.h"
 #include "olad/Preferences.h"
+#include "olad/TestCommon.h"
 #include "olad/UniverseStore.h"
 
 using ola::Clock;
@@ -81,12 +82,15 @@ void PortTest::testInputPortPriorities() {
   unsigned int universe_id = 1;
   ola::MemoryPreferences preferences("foo");
   ola::UniverseStore store(&preferences, NULL);
-  ola::PortManager port_manager(&store);
+  ola::PortBroker broker;
+  ola::PortManager port_manager(&store, &broker);
 
   MockDevice device(NULL, "foo");
   TimeStamp time_stamp;
+  MockSelectServer ss(&time_stamp);
+  ola::PluginAdaptor plugin_adaptor(NULL, &ss, NULL, NULL);
   // This port operates in static priority mode
-  TestMockInputPort input_port(&device, 1, &time_stamp);
+  TestMockInputPort input_port(&device, 1, &plugin_adaptor);
   port_manager.PatchPort(&input_port, universe_id);
 
   ola::DmxBuffer buffer("foo bar baz");
@@ -119,7 +123,7 @@ void PortTest::testInputPortPriorities() {
   port_manager.UnPatchPort(&input_port);
 
   // now try a port that supported priorities
-  TestMockPriorityInputPort input_port2(&device, 2, &time_stamp);
+  TestMockPriorityInputPort input_port2(&device, 2, &plugin_adaptor);
   port_manager.PatchPort(&input_port2, universe_id);
 
   // the default mode is inherit

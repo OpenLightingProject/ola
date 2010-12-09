@@ -93,7 +93,7 @@ void PluginManagerTest::testPluginManager() {
   loaders.push_back(&loader);
 
   ola::MemoryPreferencesFactory factory;
-  ola::PluginAdaptor adaptor(NULL, NULL, &factory);
+  ola::PluginAdaptor adaptor(NULL, NULL, &factory, NULL);
   PluginManager manager(loaders, &adaptor);
 
   manager.LoadAll();

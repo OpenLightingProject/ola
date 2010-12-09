@@ -22,6 +22,7 @@
 #include <string>
 
 #include "olad/DmxSource.h"
+#include "olad/PortBroker.h"
 #include "olad/PortManager.h"
 #include "olad/UniverseStore.h"
 #include "olad/TestCommon.h"
@@ -58,7 +59,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PortManagerTest);
  */
 void PortManagerTest::testPortPatching() {
   ola::UniverseStore uni_store(NULL, NULL);
-  PortManager port_manager(&uni_store);
+  ola::PortBroker broker;
+  ola::PortManager port_manager(&uni_store, &broker);
 
   // mock device, this doesn't allow looping or multiport patching
   MockDevice device1(NULL, "test_device_1");
@@ -140,7 +142,8 @@ void PortManagerTest::testPortPatching() {
  */
 void PortManagerTest::testPortPatchingLoopMulti() {
   ola::UniverseStore uni_store(NULL, NULL);
-  PortManager port_manager(&uni_store);
+  ola::PortBroker broker;
+  ola::PortManager port_manager(&uni_store, &broker);
 
   // mock device that allows looping and multi port patching
   MockDeviceLoopAndMulti device1(NULL, "test_device_1");
@@ -201,7 +204,8 @@ void PortManagerTest::testPortPatchingLoopMulti() {
  * Check that we can set priorities on an input port
  */
 void PortManagerTest::testInputPortSetPriority() {
-  PortManager patcher(NULL);  // we're not testing patching so pass NULL here
+  // we're not testing patching so pass NULL here
+  PortManager patcher(NULL, NULL);
 
   // Input port that doesn't support priorities
   TestMockInputPort input_port(NULL, 0, NULL);
@@ -259,7 +263,8 @@ void PortManagerTest::testInputPortSetPriority() {
  * Check that we can set priorities on an Output port
  */
 void PortManagerTest::testOutputPortSetPriority() {
-  PortManager patcher(NULL);  // we're not testing patching so pass NULL here
+  // we're not testing patching so pass NULL here
+  PortManager patcher(NULL, NULL);
 
   // Input port that doesn't support priorities
   TestMockOutputPort output_port(NULL, 0);
