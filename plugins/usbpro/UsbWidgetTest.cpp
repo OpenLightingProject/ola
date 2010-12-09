@@ -18,6 +18,7 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+#include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 #include <queue>

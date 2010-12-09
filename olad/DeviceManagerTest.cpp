@@ -27,6 +27,7 @@
 #include "olad/DeviceManager.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
+#include "olad/PortBroker.h"
 #include "olad/PortManager.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
@@ -160,7 +161,8 @@ void DeviceManagerTest::testDeviceManager() {
 void DeviceManagerTest::testRestorePatchings() {
   ola::MemoryPreferencesFactory prefs_factory;
   UniverseStore uni_store(NULL, NULL);
-  PortManager port_manager(&uni_store);
+  ola::PortBroker broker;
+  PortManager port_manager(&uni_store, &broker);
   DeviceManager manager(&prefs_factory, &port_manager);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 
@@ -206,7 +208,8 @@ void DeviceManagerTest::testRestorePatchings() {
 void DeviceManagerTest::testRestorePriorities() {
   ola::MemoryPreferencesFactory prefs_factory;
   UniverseStore uni_store(NULL, NULL);
-  PortManager port_manager(&uni_store);
+  ola::PortBroker broker;
+  PortManager port_manager(&uni_store, &broker);
   DeviceManager manager(&prefs_factory, &port_manager);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
 

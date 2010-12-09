@@ -45,8 +45,8 @@ class TestMockInputPort: public BasicInputPort {
   public:
     TestMockInputPort(AbstractDevice *parent,
                       unsigned int port_id,
-                      const TimeStamp *wake_time):
-      BasicInputPort(parent, port_id, wake_time) {}
+                      const ola::PluginAdaptor *plugin_adaptor):
+      BasicInputPort(parent, port_id, plugin_adaptor) {}
     ~TestMockInputPort() {}
 
     string Description() const { return ""; }
@@ -66,9 +66,10 @@ class TestMockInputPort: public BasicInputPort {
  */
 class TestMockPriorityInputPort: public TestMockInputPort {
   public:
-    TestMockPriorityInputPort(AbstractDevice *parent, unsigned int port_id,
-                              const TimeStamp *wake_time):
-        TestMockInputPort(parent, port_id, wake_time),
+    TestMockPriorityInputPort(AbstractDevice *parent,
+                              unsigned int port_id,
+                              const ola::PluginAdaptor *plugin_adaptor):
+        TestMockInputPort(parent, port_id, plugin_adaptor),
         m_inherited_priority(ola::DmxSource::PRIORITY_DEFAULT) {
     }
 
@@ -174,5 +175,60 @@ class TestMockPlugin: public ola::Plugin {
     bool m_start_run;
     bool m_should_start;
     ola::ola_plugin_id m_id;
+};
+
+
+/**
+ * We mock this out so we can manipulate the wake up time. It was either this
+ * or the mocking the plugin adaptor.
+ */
+class MockSelectServer: public ola::network::SelectServerInterface {
+  public:
+    explicit MockSelectServer(const TimeStamp *wake_up):
+      SelectServerInterface(),
+      m_wake_up(wake_up) {}
+    ~MockSelectServer() {}
+
+    bool AddSocket(ola::network::Socket *socket) {
+      (void) socket;
+      return true;
+    }
+
+    bool AddSocket(ola::network::ConnectedSocket *socket,
+                   bool delete_on_close = false) {
+      (void) socket;
+      (void) delete_on_close;
+      return true;
+    }
+
+    bool RemoveSocket(ola::network::Socket *socket) {
+      (void) socket;
+      return true;
+    }
+
+    bool RemoveSocket(ola::network::ConnectedSocket *socket) {
+      (void) socket;
+      return true;
+    }
+
+    ola::network::timeout_id RegisterRepeatingTimeout(
+        unsigned int ms,
+        ola::Callback0<bool> *closure) {
+      (void) ms;
+      (void) closure;
+      return ola::network::INVALID_TIMEOUT;
+    }
+    ola::network::timeout_id RegisterSingleTimeout(
+        unsigned int ms,
+        ola::SingleUseCallback0<void> *closure) {
+      (void) ms;
+      (void) closure;
+      return ola::network::INVALID_TIMEOUT;
+    }
+    void RemoveTimeout(ola::network::timeout_id id) { (void) id; }
+    const TimeStamp *WakeUpTime() const { return m_wake_up; }
+
+  private:
+    const TimeStamp *m_wake_up;
 };
 #endif  // OLAD_TESTCOMMON_H_

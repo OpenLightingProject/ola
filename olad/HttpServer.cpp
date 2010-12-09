@@ -559,7 +559,8 @@ int HttpServer::DispatchRequest(const HttpRequest *request,
  * @param handler the Closure to call for this request. These will be freed
  * once the HttpServer is destroyed.
  */
-bool HttpServer::RegisterHandler(const string &path, BaseHttpCallback *handler) {
+bool HttpServer::RegisterHandler(const string &path,
+                                 BaseHttpCallback *handler) {
   map<string, BaseHttpCallback*>::const_iterator iter = m_handlers.find(path);
   if (iter != m_handlers.end())
     return false;
