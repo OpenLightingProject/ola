@@ -14,5 +14,4 @@ DummyPluginTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 DummyPluginTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
 DummyPluginTester_LDADD = @LIBS@ \
                           ./liboladummy.la \
-                          $(top_builddir)/common/libolacommon.la \
-                          $(top_builddir)/olad/libolaserver.la
+                          $(top_builddir)/common/libolacommon.la
