@@ -122,6 +122,16 @@ bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size) const {
 
 
 /*
+ * Pack this command into an string.
+ * The packed data does not include the RDM start code (0xCC) because
+ * sometimes devices / protocols keep this separate.
+ */
+bool RDMCommand::Pack(string *data) const {
+  return Pack(data, m_source, m_transaction_number, m_port_id);
+}
+
+
+/*
  * Pack this command into an RDM message structure with additional fields
  * The packed data structure does not include the RDM start code (0xCC) because
  * sometimes devices / protocols keep this separate.
@@ -158,6 +168,25 @@ bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size, const UID &source,
   *size = packet_length + CHECKSUM_LENGTH;
   return true;
 }
+
+
+bool RDMCommand::Pack(string *buffer,
+                      const UID &source,
+                      uint8_t transaction_number,
+                      uint8_t port_id) const {
+  if (!buffer)
+    return false;
+
+  uint8_t data[
+    sizeof(rdm_command_message) + MAX_PARAM_DATA_LENGTH + CHECKSUM_LENGTH];
+  unsigned int size = sizeof(data);
+  bool r = Pack(data, &size, source, transaction_number, port_id);
+
+  if (r)
+    buffer->assign(reinterpret_cast<char*>(data), size);
+  return r;
+}
+
 
 /*
  * Convert a block of RDM data to an RDMCommand object.
@@ -296,6 +325,15 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
 
 
 /**
+ * Inflate from some data
+ */
+RDMRequest* RDMRequest::InflateFromData(const string &data) {
+  return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
+                         data.size());
+}
+
+
+/**
  * Inflate a request from some data
  */
 RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
@@ -341,6 +379,14 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
   }
 }
 
+
+/**
+ * Inflate from some data
+ */
+RDMResponse* RDMResponse::InflateFromData(const string &data) {
+  return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
+                         data.size());
+}
 
 
 /**

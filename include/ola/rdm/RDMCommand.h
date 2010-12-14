@@ -32,7 +32,8 @@ namespace rdm {
 
 
 /*
- * Represents a RDMCommand.
+ * The RDMCommand class, which RDMRequest and RDMResponse inherit from.
+ * RDMCommands are immutable.
  */
 class RDMCommand {
   public:
@@ -68,14 +69,17 @@ class RDMCommand {
     uint8_t *ParamData() const { return m_data; }
     unsigned int ParamDataSize() const { return m_data_length; }
 
-    // Pack this RDMCommand into memory
+    // Pack this RDMCommand into a buffer or as a string
     unsigned int Size() const;
     bool Pack(uint8_t *buffer, unsigned int *size) const;
+    bool Pack(string *data) const;
 
     static const uint8_t START_CODE = 0xcc;
     enum { MAX_PARAM_DATA_LENGTH = 231 };
 
   protected:
+    uint8_t m_port_id;
+
     RDMCommand(const UID &source,
                const UID &destination,
                uint8_t transaction_number,
@@ -108,11 +112,14 @@ class RDMCommand {
               uint8_t transaction_number,
               uint8_t port_id) const;
 
+    bool Pack(string *buffer,
+              const UID &source,
+              uint8_t transaction_number,
+              uint8_t port_id) const;
+
     static const rdm_command_message* VerifyData(const uint8_t *data,
                                                  unsigned int length);
     static RDMCommandClass ConvertCommandClass(uint8_t command_type);
-
-    uint8_t m_port_id;
 
   private:
     UID m_source;
@@ -170,9 +177,16 @@ class RDMRequest: public RDMCommand {
         uint8_t transaction_number,
         uint8_t port_id) const = 0;
 
+    virtual bool PackWithControllerParams(
+        string *buffer,
+        const UID &source,
+        uint8_t transaction_number,
+        uint8_t port_id) const = 0;
+
     // Convert a block of data to an RDMCommand object
     static RDMRequest* InflateFromData(const uint8_t *data,
                                        unsigned int length);
+    static RDMRequest* InflateFromData(const string &data);
 };
 
 
@@ -221,6 +235,14 @@ class BaseRDMRequest: public RDMRequest {
         uint8_t port_id) const {
       return Pack(buffer, size, source, transaction_number, port_id);
     }
+
+    bool PackWithControllerParams(
+        string *buffer,
+        const UID &source,
+        uint8_t transaction_number,
+        uint8_t port_id) const {
+      return Pack(buffer, source, transaction_number, port_id);
+    }
 };
 
 typedef BaseRDMRequest<RDMCommand::GET_COMMAND> RDMGetRequest;
@@ -261,6 +283,7 @@ class RDMResponse: public RDMCommand {
     // Convert a block of data to an RDMCommand object
     static RDMResponse* InflateFromData(const uint8_t *data,
                                         unsigned int length);
+    static RDMResponse* InflateFromData(const string &data);
 
     // Combine two responses into one.
     static RDMResponse* CombineResponses(const RDMResponse *response1,
