@@ -143,7 +143,7 @@ void QueueingRDMController::DispatchNextRequest() {
  * Handle the response to a RemoteGet command
  */
 void QueueingRDMController::HandleRDMResponse(
-    rdm_request_status status,
+    rdm_response_status status,
     const ola::rdm::RDMResponse *response) {
   m_rdm_request_pending = false;
 

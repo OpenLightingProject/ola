@@ -697,40 +697,16 @@ void OlaServerServiceImpl::HandleRDMResponse(
     RpcController* controller,
     ola::proto::RDMResponse* response,
     google::protobuf::Closure* done,
-    ola::rdm::rdm_request_status status,
+    ola::rdm::rdm_response_status status,
     const RDMResponse *rdm_response) {
 
-  // check for time out errors
-  string error;
-  switch (status) {
-    case ola::rdm::RDM_COMPLETED_OK:
-    case ola::rdm::RDM_WAS_BROADCAST:
-      break;
-    case ola::rdm::RDM_FAILED_TO_SEND:
-      error = "Failed to send RDM Command";
-      break;
-    case ola::rdm::RDM_TIMEOUT:
-      error = "Response timeout";
-      break;
-    case ola::rdm::RDM_INVALID_RESPONSE:
-      error = "Invalid RDM response";
-      break;
-    case ola::rdm::RDM_UNKNOWN_UID:
-      error = "Unknown UID";
-      break;
-  }
-
-  if (!error.empty()) {
-    controller->SetFailed(error);
-    done->Run();
-    return;
-  }
+  response->set_response_code(
+      static_cast<ola::proto::RDMResponseCode>(status));
 
   if (status == ola::rdm::RDM_COMPLETED_OK) {
     if (response) {
-      response->set_response_code(rdm_response->ResponseType());
+      response->set_response_type(rdm_response->ResponseType());
       response->set_message_count(rdm_response->MessageCount());
-      response->set_was_broadcast(false);
 
       if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
         const string data(
@@ -744,14 +720,7 @@ void OlaServerServiceImpl::HandleRDMResponse(
       OLA_WARN << "RDM state was ok but response was NULL";
       controller->SetFailed("Missing Response");
     }
-  } else if (status == ola::rdm::RDM_WAS_BROADCAST) {
-    response->set_was_broadcast(true);
-    // fill these in with dummy values
-    response->set_response_code(0);
-    response->set_message_count(0);
-    response->set_data("");
   }
-
   done->Run();
 }
 

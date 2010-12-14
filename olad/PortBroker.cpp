@@ -86,7 +86,7 @@ void PortBroker::SendRDMRequest(const Port *port,
  */
 void PortBroker::RequestComplete(port_key key,
                                  ola::rdm::RDMCallback *callback,
-                                 ola::rdm::rdm_request_status status,
+                                 ola::rdm::rdm_response_status status,
                                  const ola::rdm::RDMResponse *response) {
   set<port_key>::const_iterator iter = m_ports.find(key);
   if (iter == m_ports.end()) {

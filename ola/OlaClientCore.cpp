@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include "common/protocol/Ola.pb.h"
 #include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -1016,21 +1017,46 @@ void OlaClientCore::HandleRDM(rdm_response_args *args) {
     return;
   }
 
-  response_status.was_broadcast = args->reply->was_broadcast();
+  response_status.was_broadcast = false;
   response_status.response_type = args->reply->response_code();
   response_status.message_count = args->reply->message_count();
 
   if (args->controller->Failed()) {
     response_status.error = args->controller->ErrorText();
-  } else if (args->reply->response_code() == ola::rdm::ACK_OVERFLOW) {
-    OLA_WARN << "Unexpected ACK_OVERFLOW";
-    response_status.error = "Unexpected ACK_OVERFLOW in OLA Client";
-  } else if (args->reply->response_code() == ola::rdm::ACK_TIMER) {
-    // TODO(simon): handle ACK_TIMER case here.
-    OLA_WARN << "We don't handle ACK_TIMER yet!";
-    response_status.error = "ACK_TIMER not implemented in OLA Client";
+  } else {
+    switch (args->reply->response_code()) {
+      case ola::proto::RDM_COMPLETED_OK:
+        break;
+      case ola::proto::RDM_WAS_BROADCAST:
+        response_status.was_broadcast = true;
+        break;
+      case ola::proto::RDM_FAILED_TO_SEND:
+        response_status.error = "Failed to send RDM request";
+        break;
+      case ola::proto::RDM_TIMEOUT:
+        response_status.error = "No response received";
+        break;
+      case ola::proto::RDM_INVALID_RESPONSE:
+        response_status.error = "RDM response was invalid";
+        break;
+      case ola::proto::RDM_UNKNOWN_UID:
+        response_status.error =
+          "Could not find destination UID, request not sent";
+        break;
+      case ola::proto::RDM_CHECKSUM_INCORRECT:
+        response_status.error = "Response checksum invalid";
+        break;
+      case ola::proto::RDM_TRANSACTION_MISMATCH:
+        response_status.error = "Transaction ID mismatch";
+        break;
+      case ola::proto::RDM_SUB_DEVICE_MISMATCH:
+        response_status.error = "Sub device mismatch";
+        break;
+      case ola::proto::RDM_DEVICE_MISMATCH:
+        response_status.error = "Source UID mismatch";
+        break;
+    }
   }
-
   args->callback->Run(response_status, args->reply->data());
   FreeArgs(args);
 }

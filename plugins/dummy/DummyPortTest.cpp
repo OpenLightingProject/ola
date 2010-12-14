@@ -80,9 +80,9 @@ class DummyPortTest: public CppUnit::TestFixture {
     }
 
     void setUp() { m_expected_response = NULL; }
-    void HandleRDMResponse(ola::rdm::rdm_request_status status,
+    void HandleRDMResponse(ola::rdm::rdm_response_status status,
                            const RDMResponse *response);
-    void SetExpectedResponse(ola::rdm::rdm_request_status status,
+    void SetExpectedResponse(ola::rdm::rdm_response_status status,
                              const RDMResponse *response);
     void Verify() { CPPUNIT_ASSERT(!m_expected_response); }
 
@@ -97,7 +97,7 @@ class DummyPortTest: public CppUnit::TestFixture {
     UID m_expected_uid;
     UID m_test_source;
     MockDummyPort m_port;
-    ola::rdm::rdm_request_status m_expected_status;
+    ola::rdm::rdm_response_status m_expected_status;
     const RDMResponse *m_expected_response;
 
     void checkSubDeviceOutOfRange(ola::rdm::rdm_pid pid);
@@ -109,7 +109,7 @@ class DummyPortTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
 
 
-void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_request_status status,
+void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_status status,
                                       const ola::rdm::RDMResponse *response) {
   CPPUNIT_ASSERT_EQUAL(m_expected_status, status);
   if (m_expected_response)
@@ -121,7 +121,7 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_request_status status,
   m_expected_response = NULL;
 }
 
-void DummyPortTest::SetExpectedResponse(ola::rdm::rdm_request_status status,
+void DummyPortTest::SetExpectedResponse(ola::rdm::rdm_response_status status,
                                         const RDMResponse *response) {
   m_expected_status = status;
   m_expected_response = response;

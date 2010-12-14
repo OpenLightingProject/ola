@@ -23,27 +23,10 @@
 
 #include <ola/Callback.h>
 #include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMResponseCodes.h>
 
 namespace ola {
 namespace rdm {
-
-/**
- * The various states a request could return
- */
-typedef enum {
-  // The request/response completed correctly
-  RDM_COMPLETED_OK,
-  // The request was broadcast, no respone expected
-  RDM_WAS_BROADCAST,
-  // We failed to send this request
-  RDM_FAILED_TO_SEND,
-  // The response timed out
-  RDM_TIMEOUT,
-  // The response was invalid
-  RDM_INVALID_RESPONSE,
-  // The UID could not be located (may have been removed)
-  RDM_UNKNOWN_UID,
-} rdm_request_status;
 
 
 /**
@@ -52,7 +35,7 @@ typedef enum {
  * permanent callback.
  */
 typedef ola::BaseCallback2<void,
-                           rdm_request_status,
+                           rdm_response_status,
                            const RDMResponse*> RDMCallback;
 
 /**

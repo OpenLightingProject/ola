@@ -41,6 +41,7 @@ class DmxTriWidgetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testTod);
   CPPUNIT_TEST(testDmx);
   CPPUNIT_TEST(testSendRDM);
+  CPPUNIT_TEST(testSendRDMErrors);
   CPPUNIT_TEST(testSendRDMBroadcast);
   CPPUNIT_TEST(testNack);
   CPPUNIT_TEST(testAckTimer);
@@ -53,6 +54,7 @@ class DmxTriWidgetTest: public CppUnit::TestFixture {
     void testTod();
     void testDmx();
     void testSendRDM();
+    void testSendRDMErrors();
     void testSendRDMBroadcast();
     void testNack();
     void testAckTimer();
@@ -63,13 +65,17 @@ class DmxTriWidgetTest: public CppUnit::TestFixture {
     bool m_expect_uids_in_tod;
     void PopulateTod(DmxTriWidget *widget);
     void ValidateTod(const ola::rdm::UIDSet &uids);
-    void ValidateResponse(ola::rdm::rdm_request_status expected_status,
+    void ValidateResponse(ola::rdm::rdm_response_status expected_status,
                           const RDMResponse *expected_response,
-                          ola::rdm::rdm_request_status status,
+                          ola::rdm::rdm_response_status status,
                           const RDMResponse *response);
-    void ValidateStatus(ola::rdm::rdm_request_status expected_status,
-                        ola::rdm::rdm_request_status status,
+    void ValidateStatus(ola::rdm::rdm_response_status expected_status,
+                        ola::rdm::rdm_response_status status,
                         const RDMResponse *response);
+    const RDMRequest *NewRequest(const UID &source,
+                                 const UID &destination,
+                                 const uint8_t *data,
+                                 unsigned int length);
 
     ola::network::SelectServer m_ss;
     MockUsbWidget m_widget;
@@ -109,9 +115,9 @@ void DmxTriWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
  * Check the response matches what we expected.
  */
 void DmxTriWidgetTest::ValidateResponse(
-    ola::rdm::rdm_request_status expected_status,
+    ola::rdm::rdm_response_status expected_status,
     const RDMResponse *expected_response,
-    ola::rdm::rdm_request_status status,
+    ola::rdm::rdm_response_status status,
     const RDMResponse *response) {
   CPPUNIT_ASSERT_EQUAL(expected_status, status);
   CPPUNIT_ASSERT(response);
@@ -124,11 +130,31 @@ void DmxTriWidgetTest::ValidateResponse(
  * Check that we got an unknown UID status
  */
 void DmxTriWidgetTest::ValidateStatus(
-    ola::rdm::rdm_request_status expected_status,
-    ola::rdm::rdm_request_status status,
+    ola::rdm::rdm_response_status expected_status,
+    ola::rdm::rdm_response_status status,
     const RDMResponse *response) {
   CPPUNIT_ASSERT_EQUAL(expected_status, status);
   CPPUNIT_ASSERT(!response);
+}
+
+
+/**
+ * Helper method to create new request objects
+ */
+const RDMRequest *DmxTriWidgetTest::NewRequest(const UID &source,
+                                               const UID &destination,
+                                               const uint8_t *data,
+                                               unsigned int length) {
+  return new ola::rdm::RDMGetRequest(
+      source,
+      destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      10,  // sub device
+      296,  // param id
+      data,
+      length);
 }
 
 
@@ -295,20 +321,14 @@ void DmxTriWidgetTest::testDmx() {
 void DmxTriWidgetTest::testSendRDM() {
   UID source(1, 2);
   UID destination(0x707a, 0xffffff00);
-  UID bcast_destination(3, 0xffffffff);
   ola::plugin::usbpro::DmxTriWidget dmxtri(&m_ss, &m_widget);
   uint8_t param_data[] = {0xa1, 0xb2};
 
-  RDMRequest *request = new ola::rdm::RDMGetRequest(
+  const RDMRequest *request = NewRequest(
       source,
       destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
       reinterpret_cast<uint8_t*>(param_data),
-      sizeof(param_data));  // data length
+      sizeof(param_data));
 
   // first of all confirm we can't send to a UID not in the TOD
   dmxtri.SendRDMRequest(
@@ -320,16 +340,11 @@ void DmxTriWidgetTest::testSendRDM() {
   // now populate the TOD
   PopulateTod(&dmxtri);
 
-  request = new ola::rdm::RDMGetRequest(
+  request = NewRequest(
       source,
       destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
       reinterpret_cast<uint8_t*>(param_data),
-      sizeof(param_data));  // data length
+      sizeof(param_data));
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28, 0xa1,
                                     0xb2};
@@ -363,73 +378,12 @@ void DmxTriWidgetTest::testSendRDM() {
                              reinterpret_cast<const RDMResponse*>(&response)));
   m_widget.Verify();
 
-  // confirm a timeout behaves
-  request = new ola::rdm::RDMGetRequest(
+  // confirm a queued message shows up in the counter
+  request = NewRequest(
       source,
       destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
       reinterpret_cast<uint8_t*>(param_data),
-      sizeof(param_data));  // data length
-
-  uint8_t timeout_response[] = {0x38, 0x18};
-  m_widget.AddExpectedCall(
-      EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
-      sizeof(expected_rdm_command),
-      EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&timeout_response),
-      sizeof(timeout_response));
-
-  dmxtri.SendRDMRequest(
-      request,
-      ola::NewSingleCallback(this,
-                             &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_TIMEOUT));
-  m_widget.Verify();
-
-  // confirm a invalid reponse behaves
-  request = new ola::rdm::RDMGetRequest(
-      source,
-      destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      reinterpret_cast<uint8_t*>(param_data),
-      sizeof(param_data));  // data length
-
-  uint8_t invalid_response[] = {0x38, 0x15};
-  m_widget.AddExpectedCall(
-      EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
-      sizeof(expected_rdm_command),
-      EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&invalid_response),
-      sizeof(invalid_response));
-
-  dmxtri.SendRDMRequest(
-      request,
-      ola::NewSingleCallback(this,
-                             &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_INVALID_RESPONSE));
-  m_widget.Verify();
-
-  // confirm a queue message shows up in the counter
-  request = new ola::rdm::RDMGetRequest(
-      source,
-      destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      reinterpret_cast<uint8_t*>(param_data),
-      sizeof(param_data));  // data length
+      sizeof(param_data));
 
   uint8_t queued_command_response[] = {0x38, 0x11, 0x5a, 0xa5, 0x5a, 0xa5};
   m_widget.AddExpectedCall(
@@ -462,6 +416,135 @@ void DmxTriWidgetTest::testSendRDM() {
 }
 
 
+/**
+ * Check that various errors are handled correctly
+ */
+void DmxTriWidgetTest::testSendRDMErrors() {
+  UID source(1, 2);
+  UID destination(0x707a, 0xffffff00);
+  ola::plugin::usbpro::DmxTriWidget dmxtri(&m_ss, &m_widget);
+
+  // populate the TOD
+  PopulateTod(&dmxtri);
+
+  uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
+
+  // confirm transaction mis-match works
+  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
+
+  uint8_t transaction_mismatch_response[] = {0x38, 0x13};
+  m_widget.AddExpectedCall(
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      sizeof(expected_rdm_command),
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&transaction_mismatch_response),
+      sizeof(transaction_mismatch_response));
+
+  dmxtri.SendRDMRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_TRANSACTION_MISMATCH));
+  m_widget.Verify();
+
+  // confirm wrong sub device works
+  request = NewRequest(source, destination, NULL, 0);
+
+  uint8_t wrong_subdevice_response[] = {0x38, 0x14};
+  m_widget.AddExpectedCall(
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      sizeof(expected_rdm_command),
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&wrong_subdevice_response),
+      sizeof(wrong_subdevice_response));
+
+  dmxtri.SendRDMRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_SUB_DEVICE_MISMATCH));
+  m_widget.Verify();
+
+  // confirm a invalid reponse behaves
+  request = NewRequest(source, destination, NULL, 0);
+
+  uint8_t invalid_response[] = {0x38, 0x15};
+  m_widget.AddExpectedCall(
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      sizeof(expected_rdm_command),
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&invalid_response),
+      sizeof(invalid_response));
+
+  dmxtri.SendRDMRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_INVALID_RESPONSE));
+  m_widget.Verify();
+
+  // confirm a checksum mismatch fails
+  request = NewRequest(source, destination, NULL, 0);
+
+  uint8_t bad_checksum_response[] = {0x38, 0x16};
+  m_widget.AddExpectedCall(
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      sizeof(expected_rdm_command),
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&bad_checksum_response),
+      sizeof(bad_checksum_response));
+
+  dmxtri.SendRDMRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_CHECKSUM_INCORRECT));
+  m_widget.Verify();
+
+  // confirm a timeout behaves
+  request = NewRequest(source, destination, NULL, 0);
+
+  uint8_t timeout_response[] = {0x38, 0x18};
+  m_widget.AddExpectedCall(
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      sizeof(expected_rdm_command),
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&timeout_response),
+      sizeof(timeout_response));
+
+  dmxtri.SendRDMRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_TIMEOUT));
+  m_widget.Verify();
+
+  // confirm a wrong device works
+  request = NewRequest(source, destination, NULL, 0);
+
+  uint8_t wrong_device_response[] = {0x38, 0x1a};
+  m_widget.AddExpectedCall(
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      sizeof(expected_rdm_command),
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&wrong_device_response),
+      sizeof(wrong_device_response));
+
+  dmxtri.SendRDMRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_DEVICE_MISMATCH));
+  m_widget.Verify();
+}
+
+
 /*
  * Check that broadcast / vendorcast works
  */
@@ -473,16 +556,11 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
 
   PopulateTod(&dmxtri);
 
-  RDMRequest *request = new ola::rdm::RDMGetRequest(
+  const RDMRequest *request = NewRequest(
       source,
       vendor_cast_destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      NULL,  // data
-      0);  // data length
+      NULL,
+      0);
 
   uint8_t expected_set_filter[] = {0x3d, 0x70, 0x7a};
   uint8_t set_filter_response[] = {0x3d, 0x00};
@@ -512,16 +590,7 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
   m_widget.Verify();
 
   // check broad cast
-  request = new ola::rdm::RDMGetRequest(
-      source,
-      bcast_destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      NULL,  // data
-      0);  // data length
+  request = NewRequest(source, bcast_destination, NULL, 0);
 
   uint8_t expected_bcast_set_filter[] = {0x3d, 0xff, 0xff};
   m_widget.AddExpectedCall(
@@ -548,16 +617,7 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
   m_widget.Verify();
 
   // check that we don't call set filter if it's the same uid
-  request = new ola::rdm::RDMGetRequest(
-      source,
-      bcast_destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      NULL,  // data
-      0);  // data length
+  request = NewRequest(source, bcast_destination, NULL, 0);
 
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
@@ -575,16 +635,7 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
   m_widget.Verify();
 
   // check that we fail correctly if set filter fails
-  request = new ola::rdm::RDMGetRequest(
-      source,
-      vendor_cast_destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      NULL,  // data
-      0);  // data length
+  request = NewRequest(source, vendor_cast_destination, NULL, 0);
 
   uint8_t failed_set_filter_response[] = {0x3d, 0x02};
   m_widget.AddExpectedCall(
@@ -615,16 +666,7 @@ void DmxTriWidgetTest::testNack() {
   PopulateTod(&dmxtri);
 
   // try and unknown PID
-  RDMRequest *request = new ola::rdm::RDMGetRequest(
-      source,
-      destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      NULL,  // data
-      0);  // data length
+  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
   uint8_t nack_pid_response[] = {0x38, 0x20};  // unknown pid
@@ -650,16 +692,7 @@ void DmxTriWidgetTest::testNack() {
   delete response;
 
   // try a proxy buffer full
-  request = new ola::rdm::RDMGetRequest(
-      source,
-      destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      NULL,  // data
-      0);  // data length
+  request = NewRequest(source, destination, NULL, 0);
 
   uint8_t nack_proxy_response[] = {0x38, 0x2a};  // bad proxy
   m_widget.AddExpectedCall(
@@ -696,16 +729,7 @@ void DmxTriWidgetTest::testAckTimer() {
   PopulateTod(&dmxtri);
 
   // try and unknown PID
-  RDMRequest *request = new ola::rdm::RDMGetRequest(
-      source,
-      destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      NULL,  // data
-      0);  // data length
+  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
   uint8_t ack_timer_response[] = {0x38, 0x10, 0x00, 0x10};  // ack timer, 1.6s
@@ -751,16 +775,7 @@ void DmxTriWidgetTest::testAckOverflow() {
   PopulateTod(&dmxtri);
 
   // try and unknown PID
-  RDMRequest *request = new ola::rdm::RDMGetRequest(
-      source,
-      destination,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      10,  // sub device
-      296,  // param id
-      NULL,  // data
-      0);  // data length
+  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
   uint8_t ack_overflow_response[] = {0x38, 0x12, 0x12, 0x34};  // ack overflow

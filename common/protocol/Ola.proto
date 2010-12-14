@@ -51,6 +51,29 @@ enum PluginIds {
   OLA_PLUGIN_USBDMX = 12;
 }
 
+enum RDMResponseCode {
+  // The request/response completed correctly
+  RDM_COMPLETED_OK = 0;
+  // The request was broadcast, no respone expected
+  RDM_WAS_BROADCAST = 1;
+  // We failed to send this request
+  RDM_FAILED_TO_SEND = 2;
+  // The response timed out
+  RDM_TIMEOUT = 3;
+  // The response was invalid
+  RDM_INVALID_RESPONSE = 4;
+  // The UID could not be located (may have been removed)
+  RDM_UNKNOWN_UID = 5;
+  // The response checksum was wrong
+  RDM_CHECKSUM_INCORRECT = 6;
+  // Invalid transaction number
+  RDM_TRANSACTION_MISMATCH = 7;
+  // Wrong sub device
+  RDM_SUB_DEVICE_MISMATCH = 8;
+  // Wrong device responded
+  RDM_DEVICE_MISMATCH = 9;
+}
+
 
 
 // This is a special string which indicates that no response will be received
@@ -205,11 +228,19 @@ message RDMRequest {
 }
 
 message RDMResponse {
-  required bool was_broadcast = 1;
-  required uint32 response_code = 2;
-  required uint32 message_count = 3;
-  required bytes data = 4; // 0 - 231 bytes
+  required RDMResponseCode response_code = 1;
+  // ACK, OVERFLOW, NACK or TIMER
+  optional uint32 response_type = 2;
+  optional uint32 message_count = 3;
+  optional bytes data = 4; // 0 - 231 bytes
 }
+
+/*
+message FullRDMResponse {
+  required RDMResponseCode response_code = 1;
+  optional bytes data = 2; // full packet, excluding start code
+}
+*/
 
 // Services
 
@@ -232,7 +263,12 @@ service OlaServerService {
   rpc GetUIDs (UniverseRequest) returns (UIDListReply);
   rpc ForceDiscovery (UniverseRequest) returns (Ack);
   rpc SetSourceUID (UID) returns (Ack);
+
+  // There are two different RDM calls, the first returns a simplified response
+  // the second returns the entire response and is used for testing and queued
+  // messages.
   rpc RDMCommand (RDMRequest) returns (RDMResponse);
+  // rpc DetailedRDMCommand (RDMRequest) returns (FullRDMResponse);
   rpc StreamDmxData (DmxData) returns (STREAMING_NO_RESPONSE);
 }
 

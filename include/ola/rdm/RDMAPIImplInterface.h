@@ -36,7 +36,7 @@ using std::string;
  * Represents the state of a response (ack, nack etc.) and the reason if there
  * is one.
  *
- * RDM Handles should first check for rpc_error being non-empty as this
+ * RDM Handlers should first check for error being non-empty as this
  * represents an underlying transport error. Then was_broadcast should be
  * checked, as we don't get any response for broadcast messages. Finally, the
  * value of response_type should be checked against the rdm_response_type

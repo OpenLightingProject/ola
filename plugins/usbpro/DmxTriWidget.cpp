@@ -575,7 +575,7 @@ void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
     return;
   }
   ola::rdm::RDMResponse *response = NULL;
-  ola::rdm::rdm_request_status status;
+  ola::rdm::rdm_response_status status;
 
   if (return_code == EC_NO_ERROR) {
     if (request->DestinationUID().IsBroadcast()) {
@@ -605,9 +605,16 @@ void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
         return_code == EC_RESPONSE_WAIT ? 1 : 0);
 
     status = ola::rdm::RDM_COMPLETED_OK;
-  } else if (return_code == EC_RESPONSE_TIME) {
+  } else if (return_code == EC_RESPONSE_TRANSACTION) {
+    status = ola::rdm::RDM_TRANSACTION_MISMATCH;
+  } else if (return_code == EC_RESPONSE_SUB_DEVICE) {
+    status = ola::rdm::RDM_SUB_DEVICE_MISMATCH;
+  } else if (return_code == EC_RESPONSE_CHECKSUM) {
+    status = ola::rdm::RDM_CHECKSUM_INCORRECT;
+  } else if (return_code == EC_RESPONSE_NONE) {
     status = ola::rdm::RDM_TIMEOUT;
-
+  } else if (return_code == EC_RESPONSE_IDENTITY) {
+    status = ola::rdm::RDM_DEVICE_MISMATCH;
   } else if (return_code >= EC_UNKNOWN_PID &&
              return_code <= EC_PROXY_BUFFER_FULL) {
     // avoid compiler warnings
@@ -668,8 +675,8 @@ void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
  * Handle the response to a QueuedGet command
  */
 void DmxTriWidgetImpl::HandleQueuedGetResponse(uint8_t return_code,
-                                           const uint8_t *data,
-                                           unsigned int length) {
+                                               const uint8_t *data,
+                                               unsigned int length) {
   OLA_INFO << "got queued message response";
   // TODO(simon): implement this
   (void) return_code;

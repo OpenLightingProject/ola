@@ -52,7 +52,7 @@ class ClientBroker {
 
     void RequestComplete(const void *key,
                          ola::rdm::RDMCallback *callback,
-                         ola::rdm::rdm_request_status status,
+                         ola::rdm::rdm_response_status status,
                          const ola::rdm::RDMResponse *response);
 
     std::set<const void*> m_clients;

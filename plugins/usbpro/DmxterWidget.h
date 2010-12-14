@@ -89,7 +89,7 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
       RC_BAD_PDL = 7,
       RC_PACKET_TOO_SHORT = 8,
       RC_PACKET_TOO_LONG = 9,
-      RC_PHYSICAL_LENGTH_MISTMATCH = 10,
+      RC_PHYSICAL_LENGTH_MISMATCH = 10,
       RC_PDL_LENGTH_MISMATCH = 11,
       RC_TRANSACTION_MISMATCH = 12,
       RC_BAD_RESPONSE_TYPE = 13,

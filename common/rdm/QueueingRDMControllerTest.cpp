@@ -52,10 +52,10 @@ class QueueingRDMControllerTest: public CppUnit::TestFixture {
     void testQueueOverflow();
 
     void VerifyResponse(
-        ola::rdm::rdm_request_status expected_status,
+        ola::rdm::rdm_response_status expected_status,
         const RDMResponse *expected_response,
         bool delete_response,
-        ola::rdm::rdm_request_status status,
+        ola::rdm::rdm_response_status status,
         const RDMResponse *response);
 
   private:
@@ -75,14 +75,14 @@ class MockRDMController: public ola::rdm::RDMControllerInterface {
     void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
 
     void AddExpectedCall(RDMRequest *request,
-                         ola::rdm::rdm_request_status status,
+                         ola::rdm::rdm_response_status status,
                          RDMResponse *response);
 
     void Verify();
   private:
     typedef struct {
       RDMRequest *request;
-      ola::rdm::rdm_request_status status;
+      ola::rdm::rdm_response_status status;
       RDMResponse *response;
     } expected_call;
 
@@ -102,7 +102,7 @@ void MockRDMController::SendRDMRequest(const RDMRequest *request,
 
 
 void MockRDMController::AddExpectedCall(RDMRequest *request,
-                                        ola::rdm::rdm_request_status status,
+                                        ola::rdm::rdm_response_status status,
                                         RDMResponse *response) {
   expected_call call = {
     request,
@@ -130,10 +130,10 @@ void QueueingRDMControllerTest::setUp() {
  * Verify a response
  */
 void QueueingRDMControllerTest::VerifyResponse(
-    ola::rdm::rdm_request_status expected_status,
+    ola::rdm::rdm_response_status expected_status,
     const RDMResponse *expected_response,
     bool delete_response,
-    ola::rdm::rdm_request_status status,
+    ola::rdm::rdm_response_status status,
     const RDMResponse *response) {
   CPPUNIT_ASSERT_EQUAL(expected_status, status);
   if (expected_response)

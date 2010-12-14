@@ -76,7 +76,7 @@ void ClientBroker::SendRDMRequest(const Client *client,
  */
 void ClientBroker::RequestComplete(const void *key,
                                    ola::rdm::RDMCallback *callback,
-                                   ola::rdm::rdm_request_status status,
+                                   ola::rdm::rdm_response_status status,
                                    const ola::rdm::RDMResponse *response) {
   set<const void*>::const_iterator iter = m_clients.find(key);
   if (iter == m_clients.end()) {

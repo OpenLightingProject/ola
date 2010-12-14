@@ -126,7 +126,7 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
       EC_RESPONSE_WAIT = 0x11,
       EC_RESPONSE_MORE = 0x12,
       EC_RESPONSE_TRANSACTION = 0x13,
-      EC_RESPONSE_SUBWIDGET = 0x14,
+      EC_RESPONSE_SUB_DEVICE = 0x14,
       EC_RESPONSE_FORMAT = 0x15,
       EC_RESPONSE_CHECKSUM = 0x16,
       EC_RESPONSE_NONE = 0x18,

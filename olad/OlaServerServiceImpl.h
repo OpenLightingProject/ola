@@ -141,7 +141,7 @@ class OlaServerServiceImpl {
     void HandleRDMResponse(RpcController* controller,
                            ola::proto::RDMResponse* response,
                            google::protobuf::Closure* done,
-                           ola::rdm::rdm_request_status status,
+                           ola::rdm::rdm_response_status status,
                            const ola::rdm::RDMResponse *rdm_response);
 
   private:

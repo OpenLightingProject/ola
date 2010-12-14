@@ -1071,7 +1071,7 @@ void ArtNetNodeImpl::HandleRdm(const struct in_addr &source_address,
 void ArtNetNodeImpl::RDMRequestCompletion(struct in_addr destination,
                                           uint8_t port_id,
                                           uint8_t universe_address,
-                                          ola::rdm::rdm_request_status status,
+                                          ola::rdm::rdm_response_status status,
                                           const RDMResponse *response) {
   if (!CheckOutputPortState(port_id, "ArtRDM")) {
     if (response)

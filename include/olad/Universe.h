@@ -139,7 +139,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     } broadcast_request_tracker;
 
     void HandleBroadcastAck(broadcast_request_tracker *tracker,
-                            ola::rdm::rdm_request_status status,
+                            ola::rdm::rdm_response_status status,
                             const ola::rdm::RDMResponse *response);
 
     string m_universe_name;

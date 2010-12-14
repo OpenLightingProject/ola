@@ -230,7 +230,7 @@ class ArtNetNodeImpl {
     void RDMRequestCompletion(struct in_addr destination,
                               uint8_t port_id,
                               uint8_t universe_address,
-                              ola::rdm::rdm_request_status status,
+                              ola::rdm::rdm_response_status status,
                               const RDMResponse *response);
     void HandleRDMResponse(unsigned int port_id,
                            const RDMResponse *response,
