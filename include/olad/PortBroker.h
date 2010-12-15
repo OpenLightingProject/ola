@@ -21,17 +21,18 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef OLAD_PORTBROKER_H_
-#define OLAD_PORTBROKER_H_
+#ifndef INCLUDE_OLAD_PORTBROKER_H_
+#define INCLUDE_OLAD_PORTBROKER_H_
 
-#include <set>
-#include <string>
-#include <utility>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/Callback.h>
 #include <olad/Universe.h>
 #include <olad/Port.h>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace ola {
 
@@ -59,7 +60,7 @@ class PortBroker: public PortBrokerInterface {
     void SendRDMRequest(const Port *port,
                         Universe *universe,
                         const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *callback) ;
+                        ola::rdm::RDMCallback *callback);
 
   private:
     PortBroker(const PortBroker&);
@@ -70,9 +71,10 @@ class PortBroker: public PortBrokerInterface {
     void RequestComplete(port_key key,
                          ola::rdm::RDMCallback *callback,
                          ola::rdm::rdm_response_status status,
-                         const ola::rdm::RDMResponse *response);
+                         const ola::rdm::RDMResponse *response,
+                         const std::vector<std::string> &packets);
 
     std::set<port_key> m_ports;
 };
 }  // ola
-#endif  // OLAD_PORTBROKER_H_
+#endif  // INCLUDE_OLAD_PORTBROKER_H_

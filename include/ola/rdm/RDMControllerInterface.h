@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_RDM_RDMCONTROLLERINTERFACE_H_
 #define INCLUDE_OLA_RDM_RDMCONTROLLERINTERFACE_H_
 
+#include <vector>
 #include <ola/Callback.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMResponseCodes.h>
@@ -33,10 +34,16 @@ namespace rdm {
  * This is the type of callback that is run when a request completes or fails.
  * For performance reasons we can take either a single use callback or a
  * permanent callback.
+ *
+ * @param rdm_response_status the status code for the response
+ * @param RDMResponse a pointer to the response object
+ * @param vector<string> a list of strings that contain the raw response
+ * messages (if the device supports this, some don't).
  */
-typedef ola::BaseCallback2<void,
+typedef ola::BaseCallback3<void,
                            rdm_response_status,
-                           const RDMResponse*> RDMCallback;
+                           const RDMResponse*,
+                           const std::vector<std::string>&> RDMCallback;
 
 /**
  * This is a class that can send RDM messages.

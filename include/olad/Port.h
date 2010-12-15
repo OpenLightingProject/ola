@@ -22,6 +22,7 @@
 #define INCLUDE_OLAD_PORT_H_
 
 #include <string>
+#include <vector>
 #include <olad/PluginAdaptor.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
 #include <ola/rdm/RDMCommand.h>  // NOLINT

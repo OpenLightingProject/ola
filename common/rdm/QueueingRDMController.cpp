@@ -61,10 +61,11 @@ QueueingRDMController::QueueingRDMController(
  */
 QueueingRDMController::~QueueingRDMController() {
   // delete all outstanding requests
+  std::vector<string> packets;
   while (!m_pending_requests.empty()) {
     outstanding_rdm_request outstanding_request = m_pending_requests.front();
     if (outstanding_request.on_complete)
-      outstanding_request.on_complete->Run(RDM_FAILED_TO_SEND, NULL);
+      outstanding_request.on_complete->Run(RDM_FAILED_TO_SEND, NULL, packets);
     delete outstanding_request.request;
     m_pending_requests.pop();
   }
@@ -101,8 +102,10 @@ void QueueingRDMController::SendRDMRequest(const RDMRequest *request,
                                            RDMCallback *on_complete) {
   if (m_pending_requests.size() >= m_max_queue_size) {
     OLA_WARN << "RDM Queue is full, dropping request";
-    if (on_complete)
-      on_complete->Run(RDM_FAILED_TO_SEND, NULL);
+    if (on_complete) {
+      std::vector<string> packets;
+      on_complete->Run(RDM_FAILED_TO_SEND, NULL, packets);
+    }
     delete request;
     return;
   }
@@ -144,13 +147,16 @@ void QueueingRDMController::DispatchNextRequest() {
  */
 void QueueingRDMController::HandleRDMResponse(
     rdm_response_status status,
-    const ola::rdm::RDMResponse *response) {
+    const ola::rdm::RDMResponse *response,
+    const std::vector<std::string> &packets) {
   m_rdm_request_pending = false;
 
   if (m_pending_requests.empty()) {
     OLA_FATAL << "Recieved a response but the queue was empty!";
     return;
   }
+
+  m_packets.insert(m_packets.end(), packets.begin(), packets.end());
 
   if (status == RDM_COMPLETED_OK && response == NULL) {
     // this is invalid, the only option here is to fail it
@@ -188,7 +194,8 @@ void QueueingRDMController::HandleRDMResponse(
   }
   outstanding_rdm_request outstanding_request = m_pending_requests.front();
   if (outstanding_request.on_complete)
-    outstanding_request.on_complete->Run(status, m_response);
+    outstanding_request.on_complete->Run(status, m_response, m_packets);
+  m_packets.clear();
   m_response = NULL;
   delete outstanding_request.request;
   m_pending_requests.pop();

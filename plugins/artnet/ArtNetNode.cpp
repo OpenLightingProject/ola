@@ -23,6 +23,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
@@ -151,6 +152,7 @@ bool ArtNetNodeImpl::Stop() {
   }
 
   // clean up any in-flight rdm requests
+  std::vector<std::string> packets;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     InputPort &port = m_input_ports[i];
     if (port.rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
@@ -159,7 +161,7 @@ bool ArtNetNodeImpl::Stop() {
     }
 
     if (port.rdm_request_callback)
-      port.rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
+      port.rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
     if (port.pending_request)
       delete port.pending_request;
   }
@@ -467,8 +469,9 @@ bool ArtNetNodeImpl::ForceDiscovery(uint8_t port_id) {
 void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
                                     const RDMRequest *request,
                                     RDMCallback *on_complete) {
+  std::vector<std::string> packets;
   if (!CheckInputPortState(port_id, "ArtRDM")) {
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
     return;
   }
@@ -476,7 +479,7 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
   InputPort &port = m_input_ports[port_id];
   if (port.rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
     return;
   }
@@ -502,7 +505,7 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
       port.rdm_request_callback = NULL;
       port.pending_request = NULL;
       delete request;
-      on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+      on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
     } else {
       port.rdm_send_timeout = m_ss->RegisterSingleTimeout(
         RDM_REQUEST_TIMEOUT_MS,
@@ -514,7 +517,7 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
     port.rdm_request_callback = NULL;
     port.pending_request = NULL;
     delete request;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
   }
 }
 
@@ -1056,10 +1059,9 @@ void ArtNetNodeImpl::HandleRdm(const struct in_addr &source_address,
 
     if (m_input_ports[port_id].enabled &&
         m_input_ports[port_id].universe_address == packet.address) {
-      RDMResponse *response = RDMResponse::InflateFromData(packet.data,
-                                                           rdm_length);
-      if (response)
-        HandleRDMResponse(port_id, response, source_address);
+      string rdm_response(reinterpret_cast<const char*>(packet.data),
+                          rdm_length);
+      HandleRDMResponse(port_id, rdm_response, source_address);
     }
   }
 }
@@ -1068,11 +1070,13 @@ void ArtNetNodeImpl::HandleRdm(const struct in_addr &source_address,
 /**
  * Handle the completion of a request for an Output port
  */
-void ArtNetNodeImpl::RDMRequestCompletion(struct in_addr destination,
-                                          uint8_t port_id,
-                                          uint8_t universe_address,
-                                          ola::rdm::rdm_response_status status,
-                                          const RDMResponse *response) {
+void ArtNetNodeImpl::RDMRequestCompletion(
+    struct in_addr destination,
+    uint8_t port_id,
+    uint8_t universe_address,
+    ola::rdm::rdm_response_status status,
+    const RDMResponse *response,
+    const std::vector<std::string> &packets) {
   if (!CheckOutputPortState(port_id, "ArtRDM")) {
     if (response)
       delete response;
@@ -1099,6 +1103,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(struct in_addr destination,
   }
   if (response)
     delete response;
+  (void) packets;
 }
 
 
@@ -1111,8 +1116,15 @@ void ArtNetNodeImpl::RDMRequestCompletion(struct in_addr destination,
  * </rant>
  */
 void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
-                                       const RDMResponse *response,
+                                       const string &response_data,
                                        const struct in_addr &source_address) {
+  RDMResponse *response = RDMResponse::InflateFromData(response_data);
+
+  // without a valid response, we don't know which request this matches. This
+  // makes ArtNet rather useless for RDM regression testing
+  if (!response)
+    return;
+
   InputPort &input_port = m_input_ports[port_id];
   if (!input_port.pending_request) {
     delete response;
@@ -1120,6 +1132,7 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
   }
 
   const RDMRequest *request = input_port.pending_request;
+  // TODO(simon): relax the Param matching here to deal with queued messages
   if (request->SourceUID() != response->DestinationUID() ||
       request->DestinationUID() != response->SourceUID() ||
       request->SubDevice() != response->SubDevice() ||
@@ -1150,6 +1163,8 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
   input_port.pending_request = NULL;
   ola::rdm::RDMCallback *callback = input_port.rdm_request_callback;
   input_port.rdm_request_callback = NULL;
+  std::vector<string> packets;
+  packets.push_back(response_data);
 
   // remove the timeout
   if (input_port.rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
@@ -1157,7 +1172,7 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
     input_port.rdm_send_timeout = ola::network::INVALID_TIMEOUT;
   }
 
-  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+  callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
 }
 
 
@@ -1240,7 +1255,8 @@ void ArtNetNodeImpl::TimeoutRDMRequest(uint8_t port_id) {
   delete port.pending_request;
   ola::rdm::RDMCallback *callback = port.rdm_request_callback;
   port.rdm_request_callback = NULL;
-  callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
+  std::vector<std::string> packets;
+  callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
 }
 
 
@@ -1602,9 +1618,10 @@ ArtNetNode::~ArtNetNode() {
 void ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request,
                                 ola::rdm::RDMCallback *on_complete) {
   if (port_id > ARTNET_MAX_PORTS) {
+    std::vector<std::string> packets;
     OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
       ARTNET_MAX_PORTS;
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
   }
   m_controllers[port_id]->SendRDMRequest(request, on_complete);

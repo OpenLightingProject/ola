@@ -23,6 +23,8 @@
 
 #include <ola/rdm/RDMControllerInterface.h>
 #include <queue>
+#include <string>
+#include <vector>
 
 namespace ola {
 namespace rdm {
@@ -56,12 +58,14 @@ class QueueingRDMController: public RDMControllerInterface {
     bool m_active;
     RDMCallback *m_callback;
     const ola::rdm::RDMResponse *m_response;
+    std::vector<std::string> m_packets;
 
     void MaybeSendRDMRequest();
     void DispatchNextRequest();
 
     void HandleRDMResponse(rdm_response_status status,
-                           const ola::rdm::RDMResponse *response);
+                           const ola::rdm::RDMResponse *response,
+                           const std::vector<std::string> &packets);
 };
 }  // rdm
 }  // ola

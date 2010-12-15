@@ -22,6 +22,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <string>
+#include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -81,7 +82,8 @@ class DummyPortTest: public CppUnit::TestFixture {
 
     void setUp() { m_expected_response = NULL; }
     void HandleRDMResponse(ola::rdm::rdm_response_status status,
-                           const RDMResponse *response);
+                           const RDMResponse *response,
+                           const vector<string> &packets);
     void SetExpectedResponse(ola::rdm::rdm_response_status status,
                              const RDMResponse *response);
     void Verify() { CPPUNIT_ASSERT(!m_expected_response); }
@@ -110,12 +112,22 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
 
 
 void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_status status,
-                                      const ola::rdm::RDMResponse *response) {
+                                      const ola::rdm::RDMResponse *response,
+                                      const vector<string> &packets) {
   CPPUNIT_ASSERT_EQUAL(m_expected_status, status);
   if (m_expected_response)
     CPPUNIT_ASSERT(*m_expected_response == *response);
   else
     CPPUNIT_ASSERT_EQUAL(m_expected_response, response);
+
+  if (status == ola::rdm::RDM_COMPLETED_OK) {
+    CPPUNIT_ASSERT(response);
+    CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
+    ola::rdm::RDMResponse *raw_response =
+      ola::rdm::RDMResponse::InflateFromData(packets[0]);
+    CPPUNIT_ASSERT(raw_response);
+    CPPUNIT_ASSERT(*m_expected_response == *raw_response);
+  }
   delete response;
   delete m_expected_response;
   m_expected_response = NULL;

@@ -384,7 +384,8 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
     if (iter == m_output_uids.end()) {
       OLA_WARN << "Can't find UID " << request->DestinationUID() <<
         " in the output universe map, dropping request";
-      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+      std::vector<std::string> packets;
+      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
       delete request;
     } else {
       iter->second->HandleRDMRequest(request, callback);
@@ -686,7 +687,8 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
  */
 void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
                                   ola::rdm::rdm_response_status status,
-                                  const ola::rdm::RDMResponse *response) {
+                                  const ola::rdm::RDMResponse *response,
+                                  const std::vector<std::string> &packets) {
   tracker->current_count++;
   if (status != ola::rdm::RDM_WAS_BROADCAST)
     tracker->failed = true;
@@ -695,7 +697,8 @@ void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
     tracker->callback->Run(
         tracker->failed ?  ola::rdm::RDM_FAILED_TO_SEND :
           ola::rdm::RDM_WAS_BROADCAST,
-        NULL);
+        NULL,
+        packets);
     delete tracker;
   }
   (void) response;

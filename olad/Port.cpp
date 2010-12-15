@@ -21,6 +21,7 @@
  */
 
 #include <string>
+#include <vector>
 #include "ola/Logging.h"
 #include "olad/Device.h"
 #include "olad/Port.h"
@@ -108,7 +109,8 @@ void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
         request,
         callback);
   } else {
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    std::vector<std::string> packets;
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
   }
 }
@@ -187,14 +189,15 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
 void BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                        ola::rdm::RDMCallback *callback) {
   // broadcasts go to every port
+  std::vector<std::string> packets;
   if (request->DestinationUID().IsBroadcast()) {
     delete request;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
   } else {
     OLA_WARN << "In base HandleRDMRequest, something has gone wrong with RDM"
       << " request routing";
     delete request;
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
   }
 }
 

@@ -18,6 +18,8 @@
  * Copyright (C) 2005 - 2008 Simon Newton
  */
 
+#include <vector>
+#include <string>
 #include "common/protocol/Ola.pb.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/RDMCommand.h"
@@ -142,7 +144,8 @@ class OlaServerServiceImpl {
                            ola::proto::RDMResponse* response,
                            google::protobuf::Closure* done,
                            ola::rdm::rdm_response_status status,
-                           const ola::rdm::RDMResponse *rdm_response);
+                           const ola::rdm::RDMResponse *rdm_response,
+                           const std::vector<std::string> &packets);
 
   private:
     void MissingUniverseError(RpcController* controller,

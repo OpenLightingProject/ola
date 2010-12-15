@@ -21,6 +21,8 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <queue>
+#include <string>
+#include <vector>
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -33,6 +35,8 @@ using ola::plugin::usbpro::DmxterWidget;
 using ola::plugin::usbpro::UsbWidget;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
+using std::string;
+using std::vector;
 
 
 class DmxterWidgetTest: public CppUnit::TestFixture {
@@ -57,10 +61,13 @@ class DmxterWidgetTest: public CppUnit::TestFixture {
     unsigned int m_tod_counter;
     void ValidateTod(const ola::rdm::UIDSet &uids);
     void ValidateResponse(ola::rdm::rdm_response_status status,
-                          const ola::rdm::RDMResponse *response);
+                          const ola::rdm::RDMResponse *response,
+                          const vector<string> &packets);
     void ValidateStatus(ola::rdm::rdm_response_status expected_status,
+                        vector<string> expected_packets,
                         ola::rdm::rdm_response_status status,
-                        const ola::rdm::RDMResponse *response);
+                        const ola::rdm::RDMResponse *response,
+                        const vector<string> &packets);
     const RDMRequest *NewRequest(const UID &source,
                                  const UID &destination,
                                  const uint8_t *data,
@@ -97,13 +104,19 @@ void DmxterWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
  */
 void DmxterWidgetTest::ValidateResponse(
     ola::rdm::rdm_response_status status,
-    const ola::rdm::RDMResponse *response) {
+    const ola::rdm::RDMResponse *response,
+    const vector<string> &packets) {
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, status);
   CPPUNIT_ASSERT(response);
   uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4, response->ParamDataSize());
   CPPUNIT_ASSERT(0 == memcmp(expected_data, response->ParamData(),
                              response->ParamDataSize()));
+
+  CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
+  ola::rdm::RDMResponse *raw_response =
+    ola::rdm::RDMResponse::InflateFromData(packets[0]);
+  CPPUNIT_ASSERT(*raw_response == *response);
   delete response;
 }
 
@@ -113,10 +126,17 @@ void DmxterWidgetTest::ValidateResponse(
  */
 void DmxterWidgetTest::ValidateStatus(
     ola::rdm::rdm_response_status expected_status,
+    vector<string> expected_packets,
     ola::rdm::rdm_response_status status,
-    const ola::rdm::RDMResponse *response) {
+    const ola::rdm::RDMResponse *response,
+    const vector<string> &packets) {
   CPPUNIT_ASSERT_EQUAL(expected_status, status);
   CPPUNIT_ASSERT(!response);
+
+  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
+  for (unsigned int i = 0; i < packets.size(); i++) {
+    CPPUNIT_ASSERT(expected_packets[i] == packets[i]);
+  }
 }
 
 
@@ -186,6 +206,7 @@ void DmxterWidgetTest::testSendRDMRequest() {
   UID bcast_destination(3, 0xffffffff);
   UID new_source(0x5253, 0x12345678);
 
+  vector<string> packets;
   ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
                                            &m_widget,
                                            0x5253,
@@ -250,7 +271,8 @@ void DmxterWidgetTest::testSendRDMRequest() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_WAS_BROADCAST));
+                             ola::rdm::RDM_WAS_BROADCAST,
+                             packets));
 
   delete[] expected_packet;
   m_widget.Verify();
@@ -266,6 +288,8 @@ void DmxterWidgetTest::testErrorCodes() {
   UID destination(3, 4);
   UID new_source(0x5253, 0x12345678);
 
+  vector<string> packets;
+  packets.push_back("");  // empty string means we didn't get anything back
   ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
                                            &m_widget,
                                            0x5253,
@@ -299,7 +323,8 @@ void DmxterWidgetTest::testErrorCodes() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_CHECKSUM_INCORRECT));
+                             ola::rdm::RDM_CHECKSUM_INCORRECT,
+                             packets));
   m_widget.Verify();
 
   // update transaction # & checksum
@@ -319,7 +344,8 @@ void DmxterWidgetTest::testErrorCodes() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_INVALID_RESPONSE));
+                             ola::rdm::RDM_INVALID_RESPONSE,
+                             packets));
   m_widget.Verify();
 
   // update transaction # & checksum
@@ -339,12 +365,34 @@ void DmxterWidgetTest::testErrorCodes() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_TRANSACTION_MISMATCH));
+                             ola::rdm::RDM_TRANSACTION_MISMATCH,
+                             packets));
   m_widget.Verify();
 
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfc;
+  return_packet[1] = 17; // timeout
+  request = NewRequest(source, destination, NULL, 0);
+  m_widget.AddExpectedCall(
+      RDM_REQUEST_LABEL,
+      reinterpret_cast<uint8_t*>(expected_packet),
+      size + 1,
+      RDM_REQUEST_LABEL,
+      reinterpret_cast<uint8_t*>(return_packet),
+      sizeof(return_packet));
+
+  dmxter.SendRDMRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxterWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_TIMEOUT,
+                             packets));
+  m_widget.Verify();
+
+  // update transaction # & checksum
+  expected_packet[15]++;
+  expected_packet[25] = 0xfd;
   return_packet[1] = 41; // device mismatch
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
@@ -359,12 +407,13 @@ void DmxterWidgetTest::testErrorCodes() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_DEVICE_MISMATCH));
+                             ola::rdm::RDM_DEVICE_MISMATCH,
+                             packets));
   m_widget.Verify();
 
   // update transaction # & checksum
   expected_packet[15]++;
-  expected_packet[25] = 0xfd;
+  expected_packet[25] = 0xfe;
   return_packet[1] = 42; // sub device mismatch
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
@@ -379,61 +428,13 @@ void DmxterWidgetTest::testErrorCodes() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_SUB_DEVICE_MISMATCH));
+                             ola::rdm::RDM_SUB_DEVICE_MISMATCH,
+                             packets));
   m_widget.Verify();
 
   delete[] expected_packet;
   m_widget.Verify();
 }
-
-
-/**
- * Check that we handle a timeout correctly
-void DmxterWidgetTest::testTimeout() {
-  uint8_t RDM_REQUEST_LABEL = 0x80;
-  UID source(1, 2);
-  UID destination(3, 4);
-  UID new_source(0x5253, 0x12345678);
-
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
-                                           &m_widget,
-                                           0x5253,
-                                           0x12345678);
-
-  const RDMRequest *request = NewRequest(source, destination, NULL, 0);
-
-  unsigned int size = request->Size();
-  uint8_t *expected_packet = new uint8_t[size + 1];
-  expected_packet[0] = 0xcc;
-  CPPUNIT_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        0,
-        1));
-
-  uint8_t return_packet[] = {
-    0x00, 17,  // response code 'timeout'
-  };
-
-  m_widget.AddExpectedCall(
-      RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
-      size + 1,
-      RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet),
-      sizeof(return_packet));
-
-  request = NewRequest(source, destination, NULL, 0);
-  dmxter.SendRDMRequest(
-      request,
-      ola::NewSingleCallback(this,
-                             &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_TIMEOUT));
-  delete[] expected_packet;
-  m_widget.Verify();
-}
- */
 
 
 /**
@@ -445,6 +446,7 @@ void DmxterWidgetTest::testErrorConditions() {
   UID destination(3, 4);
   UID new_source(0x5253, 0x12345678);
 
+  vector<string> packets;
   ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
                                            &m_widget,
                                            0x5253,
@@ -477,7 +479,8 @@ void DmxterWidgetTest::testErrorConditions() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_INVALID_RESPONSE));
+                             ola::rdm::RDM_INVALID_RESPONSE,
+                             packets));
 
   // check mismatched version
   request = NewRequest(source, destination, NULL, 0);
@@ -504,7 +507,8 @@ void DmxterWidgetTest::testErrorConditions() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_INVALID_RESPONSE));
+                             ola::rdm::RDM_INVALID_RESPONSE,
+                             packets));
 
   delete[] expected_packet;
   m_widget.Verify();

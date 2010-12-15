@@ -19,6 +19,8 @@
  */
 
 #include <set>
+#include <string>
+#include <vector>
 #include "ola/Logging.h"
 #include "olad/ClientBroker.h"
 
@@ -77,14 +79,15 @@ void ClientBroker::SendRDMRequest(const Client *client,
 void ClientBroker::RequestComplete(const void *key,
                                    ola::rdm::RDMCallback *callback,
                                    ola::rdm::rdm_response_status status,
-                                   const ola::rdm::RDMResponse *response) {
+                                   const ola::rdm::RDMResponse *response,
+                                   const std::vector<std::string> &packets) {
   set<const void*>::const_iterator iter = m_clients.find(key);
   if (iter == m_clients.end()) {
     OLA_INFO << "Client no longer exists, cleaning up from RDM response";
     delete response;
     delete callback;
   } else {
-    callback->Run(status, response);
+    callback->Run(status, response, packets);
   }
 }
 }  // ola

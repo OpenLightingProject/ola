@@ -25,6 +25,8 @@
 #define OLAD_CLIENTBROKER_H_
 
 #include <set>
+#include <string>
+#include <vector>
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/Callback.h"
@@ -53,7 +55,8 @@ class ClientBroker {
     void RequestComplete(const void *key,
                          ola::rdm::RDMCallback *callback,
                          ola::rdm::rdm_response_status status,
-                         const ola::rdm::RDMResponse *response);
+                         const ola::rdm::RDMResponse *response,
+                         const std::vector<std::string> &packets);
 
     std::set<const void*> m_clients;
 };

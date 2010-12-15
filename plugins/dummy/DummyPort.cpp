@@ -22,6 +22,7 @@
 #include <string.h>
 #include <iostream>
 #include <string>
+#include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMEnums.h"
@@ -40,6 +41,8 @@ using ola::rdm::GetResponseWithData;
 using ola::rdm::NackWithReason;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
+using std::string;
+using std::vector;
 
 
 const DummyPort::personality_info DummyPort::PERSONALITIES[] = {
@@ -129,8 +132,9 @@ void DummyPort::HandleUnknownPacket(const RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
   // no responses for broadcasts
   if (!request->DestinationUID().IsBroadcast() && callback) {
+    vector<string> packets;
     RDMResponse *response = NackWithReason(request, ola::rdm::NR_UNKNOWN_PID);
-    callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+    RunRDMCallback(callback, response);
   }
   delete request;
 }
@@ -161,7 +165,8 @@ void DummyPort::HandleSupportedParams(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(supported_params),
       sizeof(supported_params));
-  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -201,7 +206,7 @@ void DummyPort::HandleDeviceInfo(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(&device_info),
       sizeof(device_info));
-  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -226,7 +231,7 @@ void DummyPort::HandleProductDetailList(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(&product_details),
       sizeof(product_details));
-  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -244,7 +249,7 @@ void DummyPort::HandleStringResponse(const ola::rdm::RDMRequest *request,
         request,
         reinterpret_cast<const uint8_t*>(value.data()),
         value.size());
-  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -301,10 +306,11 @@ void DummyPort::HandlePersonality(const ola::rdm::RDMRequest *request,
     }
   }
   if (request->DestinationUID().IsBroadcast()) {
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+    vector<string> packets;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
     delete response;
   } else {
-    callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+    RunRDMCallback(callback, response);
   }
   delete request;
 }
@@ -318,7 +324,8 @@ void DummyPort::HandlePersonalityDescription(
     ola::rdm::RDMCallback *callback) {
   if (request->DestinationUID().IsBroadcast()) {
     delete request;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+    vector<string> packets;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
     return;
   }
 
@@ -357,7 +364,7 @@ void DummyPort::HandlePersonalityDescription(
         reinterpret_cast<uint8_t*>(&personality_description),
         sizeof(personality_description));
   }
-  callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -407,10 +414,11 @@ void DummyPort::HandleDmxStartAddress(const RDMRequest *request,
     }
   }
   if (request->DestinationUID().IsBroadcast()) {
+    vector<string> packets;
     delete response;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
   } else {
-    callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+    RunRDMCallback(callback, response);
   }
   delete request;
 }
@@ -435,7 +443,8 @@ bool DummyPort::CheckForBroadcastSubdeviceOrData(
 
   if (request->DestinationUID().IsBroadcast()) {
     delete request;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+    vector<string> packets;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
     return false;
   }
 
@@ -449,11 +458,25 @@ bool DummyPort::CheckForBroadcastSubdeviceOrData(
   }
 
   if (response) {
-    callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+    RunRDMCallback(callback, response);
     delete request;
     return false;
   }
   return true;
+}
+
+
+/**
+ * Run the RDM callback with a response. This takes care of creating the fake
+ * raw data.
+ */
+void DummyPort::RunRDMCallback(ola::rdm::RDMCallback *callback,
+                               ola::rdm::RDMResponse *response) {
+  string raw_response;
+  response->Pack(&raw_response);
+  vector<string> packets;
+  packets.push_back(raw_response);
+  callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
 }
 }  // dummy
 }  // plugin

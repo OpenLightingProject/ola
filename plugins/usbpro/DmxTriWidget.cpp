@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <map>
 #include <string>
+#include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -73,8 +74,10 @@ DmxTriWidgetImpl::~DmxTriWidgetImpl() {
   Stop();
 
   // timeout any existing message
-  if (m_rdm_request_callback)
-    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
+  if (m_rdm_request_callback) {
+    std::vector<string> packets;
+    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+  }
   if (m_pending_request)
     delete m_pending_request;
 
@@ -143,9 +146,10 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
  */
 void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
+  std::vector<string> packets;
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
     return;
   }
@@ -154,7 +158,7 @@ void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
   const UID &dest_uid = request->DestinationUID();
   if (!dest_uid.IsBroadcast() &&
       m_uid_index_map.find(dest_uid) == m_uid_index_map.end()) {
-    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL);
+    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
     delete request;
     return;
   }
@@ -173,7 +177,7 @@ void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
       delete request;
       m_pending_request = NULL;
       m_rdm_request_callback = NULL;
-      on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+      on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     }
   } else {
     DispatchRequest(request, on_complete);
@@ -326,15 +330,17 @@ bool DmxTriWidgetImpl::SendDiscoveryStat() {
  */
 void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
                                        ola::rdm::RDMCallback *callback) {
+  std::vector<string> packets;
   if (request->ParamId() == ola::rdm::PID_QUEUED_MESSAGE &&
       request->CommandClass() == RDMCommand::GET_COMMAND) {
     // these are special
     if (request->ParamDataSize()) {
       DispatchQueuedGet(request, callback);
+      return;
     } else {
       OLA_WARN << "Missing param data in queued message get";
       delete request;
-      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
       return;
     }
   }
@@ -357,7 +363,7 @@ void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
     OLA_WARN << "Request was not get or set: " <<
       static_cast<int>(request->CommandClass());
     delete request;
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     return;
   }
 
@@ -369,7 +375,7 @@ void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
     if (iter == m_uid_index_map.end()) {
       OLA_WARN << request->DestinationUID() << " not found in uid map";
       delete request;
-      callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL);
+      callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
       return;
     }
     message.index = iter->second;
@@ -396,7 +402,7 @@ void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
   if (!r) {
     m_pending_request = NULL;
     delete request;
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
   }
 }
 
@@ -406,12 +412,13 @@ void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
  */
 void DmxTriWidgetImpl::DispatchQueuedGet(const ola::rdm::RDMRequest* request,
                                          ola::rdm::RDMCallback *callback) {
+  std::vector<string> packets;
   map<UID, uint8_t>::const_iterator iter =
     m_uid_index_map.find(request->DestinationUID());
   if (iter == m_uid_index_map.end()) {
     OLA_WARN << request->DestinationUID() << " not found in uid map";
     delete request;
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     return;
   }
   uint8_t data[] = {QUEUED_GET_COMMAND_ID,
@@ -426,7 +433,7 @@ void DmxTriWidgetImpl::DispatchQueuedGet(const ola::rdm::RDMRequest* request,
   if (!r) {
     m_pending_request = NULL;
     delete request;
-    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
   }
 }
 
@@ -667,7 +674,11 @@ void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
     status = ola::rdm::RDM_INVALID_RESPONSE;
   }
   delete request;
-  callback->Run(status, response);
+  std::vector<string> packets;
+  // Unfortunately we don't get to see the raw response here, which limits the
+  // use of the TRI for testing.
+  // TODO(simon): convince Hamish to provide us with this.
+  callback->Run(status, response, packets);
 }
 
 
@@ -708,8 +719,10 @@ void DmxTriWidgetImpl::HandleSetFilterResponse(uint8_t return_code,
     OLA_WARN << "SetFilter returned " << static_cast<int>(return_code) <<
       ", we have no option but to drop the rdm request";
     delete request;
-    if (callback)
-      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    if (callback) {
+      std::vector<string> packets;
+      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    }
   }
   (void) data;
   (void) length;

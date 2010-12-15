@@ -65,6 +65,8 @@ class DummyPort: public BasicOutputPort {
                                ola::rdm::RDMCallback *callback);
     bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request,
                                           ola::rdm::RDMCallback *callback);
+    void RunRDMCallback(ola::rdm::RDMCallback *callback,
+                        ola::rdm::RDMResponse *response);
 
     uint16_t m_start_address;
     uint8_t m_personality;

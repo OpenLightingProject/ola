@@ -25,6 +25,7 @@
 #include <queue>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "ola/Callback.h"
 #include "ola/Clock.h"
@@ -231,9 +232,10 @@ class ArtNetNodeImpl {
                               uint8_t port_id,
                               uint8_t universe_address,
                               ola::rdm::rdm_response_status status,
-                              const RDMResponse *response);
+                              const RDMResponse *response,
+                              const std::vector<std::string> &packets);
     void HandleRDMResponse(unsigned int port_id,
-                           const RDMResponse *response,
+                           const string &rdm_data,
                            const struct in_addr &source_address);
     void HandleIPProgram(const struct in_addr &source_address,
                          const artnet_ip_prog_t &packet,

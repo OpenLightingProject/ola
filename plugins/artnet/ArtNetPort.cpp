@@ -19,6 +19,7 @@
  */
 #include <string.h>
 #include <string>
+#include <vector>
 
 #include "ola/Logging.h"
 #include "olad/Universe.h"
@@ -140,9 +141,10 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
 void ArtNetOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                         ola::rdm::RDMCallback *on_complete) {
   // Discovery requests aren't proxied
+  std::vector<std::string> packets;
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
     OLA_WARN << "Blocked attempt to send discovery command via Artnet";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
   } else {
     m_helper.GetNode()->SendRDMRequest(PortId(), request, on_complete);

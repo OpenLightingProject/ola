@@ -698,7 +698,8 @@ void OlaServerServiceImpl::HandleRDMResponse(
     ola::proto::RDMResponse* response,
     google::protobuf::Closure* done,
     ola::rdm::rdm_response_status status,
-    const RDMResponse *rdm_response) {
+    const RDMResponse *rdm_response,
+    const std::vector<std::string> &packets) {
 
   response->set_response_code(
       static_cast<ola::proto::RDMResponseCode>(status));
@@ -722,6 +723,7 @@ void OlaServerServiceImpl::HandleRDMResponse(
     }
   }
   done->Run();
+  (void) packets;
 }
 
 

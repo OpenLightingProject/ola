@@ -19,6 +19,7 @@
  */
 
 #include <string>
+#include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/rdm/UID.h"
@@ -68,8 +69,9 @@ DmxterWidgetImpl::DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
  */
 DmxterWidgetImpl::~DmxterWidgetImpl() {
   // timeout any existing message
+  std::vector<std::string> packets;
   if (m_rdm_request_callback)
-    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL);
+    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
 
   if (m_uid_set_callback)
     delete m_uid_set_callback;
@@ -122,9 +124,10 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
  */
 void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
+  std::vector<std::string> packets;
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
-    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
     return;
   }
@@ -154,7 +157,7 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
   m_rdm_request_callback = NULL;
   delete[] data;
   delete request;
-  on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL);
+  on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
 }
 
 
@@ -211,6 +214,7 @@ void DmxterWidgetImpl::HandleTodResponse(const uint8_t *data,
  */
 void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                          unsigned int length) {
+  std::vector<std::string> packets;
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a response but no callback to run!";
     return;
@@ -221,7 +225,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
 
   if (length < 2) {
     OLA_WARN << "Invalid RDM response from the widget";
-    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
     return;
   }
 
@@ -231,7 +235,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
   if (version != 0) {
     OLA_WARN << "Unknown version # in widget response: " <<
       static_cast<int>(version);
-    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+    callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
     return;
   }
 
@@ -305,17 +309,20 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
       status = ola::rdm::RDM_INVALID_RESPONSE;
   }
 
+  string packet;
+  if (length > 3)
+    packet.assign(reinterpret_cast<const char*>(data + 3), length - 3);
+  packets.push_back(packet);
+
   if (status == ola::rdm::RDM_COMPLETED_OK) {
-    ola::rdm::RDMResponse *response = NULL;
-    if (length > 3)
-      response =  ola::rdm::RDMResponse::InflateFromData(data + 3,
-                                                         length - 3);
+    ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
+        packet);
     if (response)
-      callback->Run(ola::rdm::RDM_COMPLETED_OK, response);
+      callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
     else
-      callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL);
+      callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
   } else {
-    callback->Run(status, NULL);
+    callback->Run(status, NULL, packets);
   }
 }
 
@@ -334,7 +341,8 @@ void DmxterWidgetImpl::HandleBroadcastRDMResponse(const uint8_t *data,
     OLA_WARN << "Got strange broadcast response, length was " << length <<
       ", data was " << data;
   }
-  m_rdm_request_callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL);
+  std::vector<std::string> packets;
+  m_rdm_request_callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
   m_rdm_request_callback = NULL;
 }
 

@@ -21,6 +21,8 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <queue>
+#include <string>
+#include <vector>
 
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
@@ -34,6 +36,8 @@ using ola::plugin::usbpro::DmxTriWidget;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
+using std::string;
+using std::vector;
 
 
 class DmxTriWidgetTest: public CppUnit::TestFixture {
@@ -67,11 +71,15 @@ class DmxTriWidgetTest: public CppUnit::TestFixture {
     void ValidateTod(const ola::rdm::UIDSet &uids);
     void ValidateResponse(ola::rdm::rdm_response_status expected_status,
                           const RDMResponse *expected_response,
+                          vector<string> expected_packets,
                           ola::rdm::rdm_response_status status,
-                          const RDMResponse *response);
+                          const RDMResponse *response,
+                          const vector<string> &packets);
     void ValidateStatus(ola::rdm::rdm_response_status expected_status,
+                        vector<string> expected_packets,
                         ola::rdm::rdm_response_status status,
-                        const RDMResponse *response);
+                        const RDMResponse *response,
+                        const vector<string> &packets);
     const RDMRequest *NewRequest(const UID &source,
                                  const UID &destination,
                                  const uint8_t *data,
@@ -117,12 +125,17 @@ void DmxTriWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
 void DmxTriWidgetTest::ValidateResponse(
     ola::rdm::rdm_response_status expected_status,
     const RDMResponse *expected_response,
+    vector<string> expected_packets,
     ola::rdm::rdm_response_status status,
-    const RDMResponse *response) {
+    const RDMResponse *response,
+    const vector<string> &packets) {
   CPPUNIT_ASSERT_EQUAL(expected_status, status);
   CPPUNIT_ASSERT(response);
   CPPUNIT_ASSERT(*expected_response == *response);
   delete response;
+
+  // the TRIs can't return the actual packets
+  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
 }
 
 
@@ -131,10 +144,15 @@ void DmxTriWidgetTest::ValidateResponse(
  */
 void DmxTriWidgetTest::ValidateStatus(
     ola::rdm::rdm_response_status expected_status,
+    vector<string> expected_packets,
     ola::rdm::rdm_response_status status,
-    const RDMResponse *response) {
+    const RDMResponse *response,
+    const vector<string> &packets) {
   CPPUNIT_ASSERT_EQUAL(expected_status, status);
   CPPUNIT_ASSERT(!response);
+
+  // the TRIs can't return the actual packets
+  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
 }
 
 
@@ -331,11 +349,13 @@ void DmxTriWidgetTest::testSendRDM() {
       sizeof(param_data));
 
   // first of all confirm we can't send to a UID not in the TOD
+  vector<string> packets;
   dmxtri.SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_UNKNOWN_UID));
+                             ola::rdm::RDM_UNKNOWN_UID,
+                             packets));
 
   // now populate the TOD
   PopulateTod(&dmxtri);
@@ -375,7 +395,8 @@ void DmxTriWidgetTest::testSendRDM() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(&response)));
+                             reinterpret_cast<const RDMResponse*>(&response),
+                             packets));
   m_widget.Verify();
 
   // confirm a queued message shows up in the counter
@@ -411,7 +432,8 @@ void DmxTriWidgetTest::testSendRDM() {
         this,
         &DmxTriWidgetTest::ValidateResponse,
         ola::rdm::RDM_COMPLETED_OK,
-        reinterpret_cast<const RDMResponse*>(&response2)));
+        reinterpret_cast<const RDMResponse*>(&response2),
+        packets));
   m_widget.Verify();
 }
 
@@ -426,6 +448,7 @@ void DmxTriWidgetTest::testSendRDMErrors() {
 
   // populate the TOD
   PopulateTod(&dmxtri);
+  vector<string> packets;
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
 
@@ -445,7 +468,8 @@ void DmxTriWidgetTest::testSendRDMErrors() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_TRANSACTION_MISMATCH));
+                             ola::rdm::RDM_TRANSACTION_MISMATCH,
+                             packets));
   m_widget.Verify();
 
   // confirm wrong sub device works
@@ -464,7 +488,8 @@ void DmxTriWidgetTest::testSendRDMErrors() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_SUB_DEVICE_MISMATCH));
+                             ola::rdm::RDM_SUB_DEVICE_MISMATCH,
+                             packets));
   m_widget.Verify();
 
   // confirm a invalid reponse behaves
@@ -483,7 +508,8 @@ void DmxTriWidgetTest::testSendRDMErrors() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_INVALID_RESPONSE));
+                             ola::rdm::RDM_INVALID_RESPONSE,
+                             packets));
   m_widget.Verify();
 
   // confirm a checksum mismatch fails
@@ -502,7 +528,8 @@ void DmxTriWidgetTest::testSendRDMErrors() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_CHECKSUM_INCORRECT));
+                             ola::rdm::RDM_CHECKSUM_INCORRECT,
+                             packets));
   m_widget.Verify();
 
   // confirm a timeout behaves
@@ -521,7 +548,8 @@ void DmxTriWidgetTest::testSendRDMErrors() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_TIMEOUT));
+                             ola::rdm::RDM_TIMEOUT,
+                             packets));
   m_widget.Verify();
 
   // confirm a wrong device works
@@ -540,7 +568,8 @@ void DmxTriWidgetTest::testSendRDMErrors() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_DEVICE_MISMATCH));
+                             ola::rdm::RDM_DEVICE_MISMATCH,
+                             packets));
   m_widget.Verify();
 }
 
@@ -554,6 +583,7 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
   UID bcast_destination(0xffff, 0xffffffff);
   ola::plugin::usbpro::DmxTriWidget dmxtri(&m_ss, &m_widget);
 
+  vector<string> packets;
   PopulateTod(&dmxtri);
 
   const RDMRequest *request = NewRequest(
@@ -586,7 +616,8 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_WAS_BROADCAST));
+                             ola::rdm::RDM_WAS_BROADCAST,
+                             packets));
   m_widget.Verify();
 
   // check broad cast
@@ -613,7 +644,8 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_WAS_BROADCAST));
+                             ola::rdm::RDM_WAS_BROADCAST,
+                             packets));
   m_widget.Verify();
 
   // check that we don't call set filter if it's the same uid
@@ -631,7 +663,8 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_WAS_BROADCAST));
+                             ola::rdm::RDM_WAS_BROADCAST,
+                             packets));
   m_widget.Verify();
 
   // check that we fail correctly if set filter fails
@@ -650,7 +683,8 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_FAILED_TO_SEND));
+                             ola::rdm::RDM_FAILED_TO_SEND,
+                             packets));
   m_widget.Verify();
 }
 
@@ -663,6 +697,7 @@ void DmxTriWidgetTest::testNack() {
   UID destination(0x707a, 0xffffff00);
   ola::plugin::usbpro::DmxTriWidget dmxtri(&m_ss, &m_widget);
 
+  vector<string> packets;
   PopulateTod(&dmxtri);
 
   // try and unknown PID
@@ -687,7 +722,8 @@ void DmxTriWidgetTest::testNack() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(response)));
+                             reinterpret_cast<const RDMResponse*>(response),
+                             packets));
   m_widget.Verify();
   delete response;
 
@@ -712,7 +748,8 @@ void DmxTriWidgetTest::testNack() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(response)));
+                             reinterpret_cast<const RDMResponse*>(response),
+                             packets));
   m_widget.Verify();
   delete response;
 }
@@ -726,6 +763,7 @@ void DmxTriWidgetTest::testAckTimer() {
   UID destination(0x707a, 0xffffff00);
   ola::plugin::usbpro::DmxTriWidget dmxtri(&m_ss, &m_widget);
 
+  vector<string> packets;
   PopulateTod(&dmxtri);
 
   // try and unknown PID
@@ -759,7 +797,8 @@ void DmxTriWidgetTest::testAckTimer() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(&response)));
+                             reinterpret_cast<const RDMResponse*>(&response),
+                             packets));
   m_widget.Verify();
 }
 
@@ -772,6 +811,7 @@ void DmxTriWidgetTest::testAckOverflow() {
   UID destination(0x707a, 0xffffff00);
   ola::plugin::usbpro::DmxTriWidget dmxtri(&m_ss, &m_widget);
 
+  vector<string> packets;
   PopulateTod(&dmxtri);
 
   // try and unknown PID
@@ -814,6 +854,7 @@ void DmxTriWidgetTest::testAckOverflow() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(&response)));
+                             reinterpret_cast<const RDMResponse*>(&response),
+                             packets));
   m_widget.Verify();
 }
