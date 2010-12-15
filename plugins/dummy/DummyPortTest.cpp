@@ -213,7 +213,7 @@ void DummyPortTest::testSupportedParams() {
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
     supported_params[i] = HostToNetwork(supported_params[i]);
 
-  RDMResponse *response = GetResponseWithData(
+  RDMResponse *response = GetResponseFromData(
     request,
     reinterpret_cast<uint8_t*>(&supported_params),
     sizeof(supported_params));
@@ -262,7 +262,7 @@ void DummyPortTest::testDeviceInfo() {
   device_descriptor.sub_device_count = 0;
   device_descriptor.sensor_count = 0;
 
-  RDMResponse *response = GetResponseWithData(
+  RDMResponse *response = GetResponseFromData(
     request,
     reinterpret_cast<uint8_t*>(&device_descriptor),
     sizeof(device_descriptor));
@@ -296,7 +296,7 @@ void DummyPortTest::testSoftwareVersion() {
       0);  // data length
 
   const string version = "Dummy Software Version";
-  RDMResponse *response = GetResponseWithData(
+  RDMResponse *response = GetResponseFromData(
     request,
     reinterpret_cast<const uint8_t*>(version.data()),
     version.size());
@@ -330,7 +330,7 @@ void DummyPortTest::testDmxAddress() {
       0);  // data length
 
   uint16_t dmx_address = HostToNetwork(static_cast<uint16_t>(1));
-  RDMResponse *response = GetResponseWithData(
+  RDMResponse *response = GetResponseFromData(
     request,
     reinterpret_cast<const uint8_t*>(&dmx_address),
     sizeof(dmx_address));
@@ -354,7 +354,7 @@ void DummyPortTest::testDmxAddress() {
       reinterpret_cast<const uint8_t*>(&dmx_address),
       sizeof(dmx_address));
 
-  response = GetResponseWithData(request, NULL, 0);
+  response = GetResponseFromData(request, NULL, 0);
   SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
   m_port.HandleRDMRequest(
         request,
@@ -374,7 +374,7 @@ void DummyPortTest::testDmxAddress() {
       0);  // data length
 
   dmx_address = HostToNetwork(static_cast<uint16_t>(99));
-  response = GetResponseWithData(
+  response = GetResponseFromData(
     request,
     reinterpret_cast<const uint8_t*>(&dmx_address),
     sizeof(dmx_address));
@@ -419,7 +419,7 @@ void DummyPortTest::testDmxAddress() {
       0);  // data length
 
   dmx_address = HostToNetwork(static_cast<uint16_t>(48));
-  response = GetResponseWithData(
+  response = GetResponseFromData(
     request,
     reinterpret_cast<const uint8_t*>(&dmx_address),
     sizeof(dmx_address));

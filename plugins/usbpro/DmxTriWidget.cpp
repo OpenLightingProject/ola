@@ -401,6 +401,7 @@ void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
                                  size);
   if (!r) {
     m_pending_request = NULL;
+    m_rdm_request_callback = NULL;
     delete request;
     callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
   }
@@ -426,12 +427,14 @@ void DmxTriWidgetImpl::DispatchQueuedGet(const ola::rdm::RDMRequest* request,
                     request->ParamData()[0]};
 
   m_pending_request = request;
+  m_rdm_request_callback = callback;
   bool r = m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
                                  reinterpret_cast<uint8_t*>(&data),
                                  sizeof(data));
 
   if (!r) {
     m_pending_request = NULL;
+    m_rdm_request_callback = NULL;
     delete request;
     callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
   }
@@ -568,107 +571,113 @@ void DmxTriWidgetImpl::HandleRemoteUIDResponse(uint8_t return_code,
 void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
                                                const uint8_t *data,
                                                unsigned int length) {
+  if (m_pending_request == NULL) {
+    OLA_FATAL << "Got a response but missing callback or request object!";
+    return;
+  }
+
+  OLA_INFO << "Received RDM response with code 0x" <<
+    std::hex << static_cast<int>(return_code) << ", " << std::dec << length <<
+    " bytes, param " << std::hex << m_pending_request->ParamId();
+
+  HandleGenericRDMResponse(return_code,
+                           m_pending_request->ParamId(),
+                           data,
+                           length);
+}
+
+
+/*
+ * Handle the response to a QueuedGet command
+ */
+void DmxTriWidgetImpl::HandleQueuedGetResponse(uint8_t return_code,
+                                               const uint8_t *data,
+                                               unsigned int length) {
+  if (length < 2) {
+    OLA_FATAL << "Queued response too small, was " << length << " bytes";
+    delete m_pending_request;
+    m_pending_request = NULL;
+    ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+    m_rdm_request_callback = NULL;
+    if (callback) {
+      std::vector<string> packets;
+      callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
+    }
+    return;
+  }
+
+  uint16_t pid;
+  memcpy(reinterpret_cast<uint8_t*>(&pid), data, sizeof(pid));
+  pid = NetworkToHost(pid);
+
+  OLA_INFO << "Received queued message response with code 0x" <<
+    std::hex << static_cast<int>(return_code) << ", " << std::dec << length <<
+    " bytes, param " << std::hex << pid;
+
+  data += 2;
+  length -= 2;
+  if (!length)
+    data = NULL;
+  HandleGenericRDMResponse(return_code, pid, data, length);
+}
+
+
+/*
+ * Handle a RDM response for both queued and normal messages.
+ */
+void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
+                                                uint16_t pid,
+                                                const uint8_t *data,
+                                                unsigned int length) {
   const ola::rdm::RDMRequest *request = m_pending_request;
   m_pending_request = NULL;
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
 
-  OLA_INFO << "Received RDM response with code 0x" <<
-    std::hex << static_cast<int>(return_code) << ", " << std::dec << length <<
-    " bytes, param " << std::hex << request->ParamId();
-
   if (callback == NULL || request == NULL) {
     OLA_FATAL << "Got a response but missing callback or request object!";
     return;
   }
-  ola::rdm::RDMResponse *response = NULL;
-  ola::rdm::rdm_response_status status;
 
-  if (return_code == EC_NO_ERROR) {
+  ola::rdm::RDMResponse *response = NULL;
+  ola::rdm::rdm_response_status status = ola::rdm::RDM_COMPLETED_OK;
+  ola::rdm::rdm_nack_reason reason;
+
+  if (ReturnCodeToNackReason(return_code, &reason)) {
+    response = ola::rdm::NackWithReason(request, reason);
+    status = ola::rdm::RDM_COMPLETED_OK;
+  } else if (return_code == EC_NO_ERROR) {
     if (request->DestinationUID().IsBroadcast()) {
       status = ola::rdm::RDM_WAS_BROADCAST;
     } else {
       status = ola::rdm::RDM_COMPLETED_OK;
-      response = ola::rdm::GetResponseWithData(
+      response = ola::rdm::GetResponseWithPid(
           request,
+          pid,
           data,
           length);
     }
-  } else if (return_code == EC_RESPONSE_TIME ||
-             return_code == EC_RESPONSE_WAIT ||
-             return_code == EC_RESPONSE_MORE) {
-    ola::rdm::rdm_response_type type = ola::rdm::ACK;
-    if (return_code == EC_RESPONSE_TIME)
-      type = ola::rdm::ACK_TIMER;
-    else if (return_code == EC_RESPONSE_MORE)
-      type = ola::rdm::ACK_OVERFLOW;
-
-    response = ola::rdm::GetResponseWithData(
-        request,
-        data,
-        length,
-        type,
-        // this is a hack, there is no way to expose # of queues messages
-        return_code == EC_RESPONSE_WAIT ? 1 : 0);
-
-    status = ola::rdm::RDM_COMPLETED_OK;
-  } else if (return_code == EC_RESPONSE_TRANSACTION) {
-    status = ola::rdm::RDM_TRANSACTION_MISMATCH;
-  } else if (return_code == EC_RESPONSE_SUB_DEVICE) {
-    status = ola::rdm::RDM_SUB_DEVICE_MISMATCH;
-  } else if (return_code == EC_RESPONSE_CHECKSUM) {
-    status = ola::rdm::RDM_CHECKSUM_INCORRECT;
-  } else if (return_code == EC_RESPONSE_NONE) {
-    status = ola::rdm::RDM_TIMEOUT;
-  } else if (return_code == EC_RESPONSE_IDENTITY) {
-    status = ola::rdm::RDM_DEVICE_MISMATCH;
-  } else if (return_code >= EC_UNKNOWN_PID &&
-             return_code <= EC_PROXY_BUFFER_FULL) {
-    // avoid compiler warnings
-    ola::rdm::rdm_nack_reason reason = ola::rdm::NR_UNKNOWN_PID;
-
-    switch (return_code) {
-      case EC_UNKNOWN_PID:
-        reason = ola::rdm::NR_UNKNOWN_PID;
-        break;
-      case EC_FORMAT_ERROR:
-        reason = ola::rdm::NR_FORMAT_ERROR;
-        break;
-      case EC_HARDWARE_FAULT:
-        reason = ola::rdm::NR_HARDWARE_FAULT;
-        break;
-      case EC_PROXY_REJECT:
-        reason = ola::rdm::NR_PROXY_REJECT;
-        break;
-      case EC_WRITE_PROTECT:
-        reason = ola::rdm::NR_WRITE_PROTECT;
-        break;
-      case EC_UNSUPPORTED_COMMAND_CLASS:
-        reason = ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS;
-        break;
-      case EC_OUT_OF_RANGE:
-        reason = ola::rdm::NR_DATA_OUT_OF_RANGE;
-        break;
-      case EC_BUFFER_FULL:
-        reason = ola::rdm::NR_BUFFER_FULL;
-        break;
-      case EC_FRAME_OVERFLOW:
-        reason = ola::rdm::NR_PACKET_SIZE_UNSUPPORTED;
-        break;
-      case EC_SUBDEVICE_UNKNOWN:
-        reason = ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE;
-        break;
-      case EC_PROXY_BUFFER_FULL:
-        reason = ola::rdm::NR_PROXY_BUFFER_FULL;
-        break;
-    }
-    response = ola::rdm::NackWithReason(request, reason);
-    status = ola::rdm::RDM_COMPLETED_OK;
-  } else if (return_code == EC_RESPONSE_NONE) {
-    OLA_INFO << "Response timed out";
-    status = ola::rdm::RDM_TIMEOUT;
-  } else {
-    // TODO(simonn): Expand the error codes here
+  } else if (return_code == EC_RESPONSE_TIME) {
+    response = ola::rdm::GetResponseWithPid(request,
+                                            pid,
+                                            data,
+                                            length,
+                                            ola::rdm::ACK_TIMER);
+  } else if (return_code == EC_RESPONSE_WAIT) {
+    // this is a hack, there is no way to expose # of queued messages
+    response = ola::rdm::GetResponseWithPid(request,
+                                            pid,
+                                            data,
+                                            length,
+                                            ola::rdm::ACK,
+                                            1);
+  } else if (return_code == EC_RESPONSE_MORE) {
+    response = ola::rdm::GetResponseWithPid(request,
+                                            pid,
+                                            data,
+                                            length,
+                                            ola::rdm::ACK_OVERFLOW);
+  } else if (!ReturnCodeToStatus(return_code, &status)) {
     OLA_WARN << "Response was returned with 0x" << std::hex <<
       static_cast<int>(return_code);
     status = ola::rdm::RDM_INVALID_RESPONSE;
@@ -680,21 +689,6 @@ void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
   // TODO(simon): convince Hamish to provide us with this.
   callback->Run(status, response, packets);
 }
-
-
-/*
- * Handle the response to a QueuedGet command
- */
-void DmxTriWidgetImpl::HandleQueuedGetResponse(uint8_t return_code,
-                                               const uint8_t *data,
-                                               unsigned int length) {
-  OLA_INFO << "got queued message response";
-  // TODO(simon): implement this
-  (void) return_code;
-  (void) data;
-  (void) length;
-}
-
 
 /*
  * Handle a setfilter response
@@ -726,6 +720,86 @@ void DmxTriWidgetImpl::HandleSetFilterResponse(uint8_t return_code,
   }
   (void) data;
   (void) length;
+}
+
+
+/**
+ * Convert a DMX TRI return code to the appropriate rdm_response_status
+ * @return true if this was a matching code, false otherwise
+ */
+bool DmxTriWidgetImpl::ReturnCodeToStatus(
+    uint8_t return_code,
+    ola::rdm::rdm_response_status *status) {
+  switch (return_code) {
+    case EC_RESPONSE_TRANSACTION:
+      *status = ola::rdm::RDM_TRANSACTION_MISMATCH;
+      break;
+    case EC_RESPONSE_SUB_DEVICE:
+      *status = ola::rdm::RDM_SUB_DEVICE_MISMATCH;
+      break;
+    case EC_RESPONSE_FORMAT:
+      *status = ola::rdm::RDM_INVALID_RESPONSE;
+      break;
+    case EC_RESPONSE_CHECKSUM:
+      *status = ola::rdm::RDM_CHECKSUM_INCORRECT;
+      break;
+    case EC_RESPONSE_NONE:
+      *status = ola::rdm::RDM_TIMEOUT;
+      break;
+    case EC_RESPONSE_IDENTITY:
+      *status = ola::rdm::RDM_DEVICE_MISMATCH;
+      break;
+    default:
+      return false;
+  }
+  return true;
+}
+
+
+/**
+ * Convert a DMX-TRI return code to Nack reason code if appropriate
+ */
+bool DmxTriWidgetImpl::ReturnCodeToNackReason(
+    uint8_t return_code,
+    ola::rdm::rdm_nack_reason *reason) {
+  switch (return_code) {
+    case EC_UNKNOWN_PID:
+      *reason = ola::rdm::NR_UNKNOWN_PID;
+      break;
+    case EC_FORMAT_ERROR:
+      *reason = ola::rdm::NR_FORMAT_ERROR;
+      break;
+    case EC_HARDWARE_FAULT:
+      *reason = ola::rdm::NR_HARDWARE_FAULT;
+      break;
+    case EC_PROXY_REJECT:
+      *reason = ola::rdm::NR_PROXY_REJECT;
+      break;
+    case EC_WRITE_PROTECT:
+      *reason = ola::rdm::NR_WRITE_PROTECT;
+      break;
+    case EC_UNSUPPORTED_COMMAND_CLASS:
+      *reason = ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS;
+      break;
+    case EC_OUT_OF_RANGE:
+      *reason = ola::rdm::NR_DATA_OUT_OF_RANGE;
+      break;
+    case EC_BUFFER_FULL:
+      *reason = ola::rdm::NR_BUFFER_FULL;
+      break;
+    case EC_FRAME_OVERFLOW:
+      *reason = ola::rdm::NR_PACKET_SIZE_UNSUPPORTED;
+      break;
+    case EC_SUBDEVICE_UNKNOWN:
+      *reason = ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE;
+      break;
+    case EC_PROXY_BUFFER_FULL:
+      *reason = ola::rdm::NR_PROXY_BUFFER_FULL;
+      break;
+    default:
+      return false;
+  }
+  return true;
 }
 
 

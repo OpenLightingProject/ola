@@ -106,9 +106,17 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
     void HandleQueuedGetResponse(uint8_t return_code,
                                  const uint8_t *data,
                                  unsigned int length);
+    void HandleGenericRDMResponse(uint8_t return_code,
+                                  uint16_t pid,
+                                  const uint8_t *data,
+                                  unsigned int length);
     void HandleSetFilterResponse(uint8_t return_code,
                                  const uint8_t *data,
                                  unsigned int length);
+    bool ReturnCodeToStatus(uint8_t return_code,
+                            ola::rdm::rdm_response_status *status);
+    bool ReturnCodeToNackReason(uint8_t return_code,
+                                ola::rdm::rdm_nack_reason *reason);
 
     typedef enum {
       EC_NO_ERROR = 0,
@@ -162,7 +170,7 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
 
 
 /*
- * An DMX TRI Device
+ * A DMX TRI Device
  */
 class DmxTriWidget {
   public:

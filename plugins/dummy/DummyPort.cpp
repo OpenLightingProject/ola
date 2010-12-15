@@ -37,7 +37,7 @@ namespace dummy {
 
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
-using ola::rdm::GetResponseWithData;
+using ola::rdm::GetResponseFromData;
 using ola::rdm::NackWithReason;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -161,7 +161,7 @@ void DummyPort::HandleSupportedParams(const RDMRequest *request,
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
     supported_params[i] = HostToNetwork(supported_params[i]);
 
-  RDMResponse *response = GetResponseWithData(
+  RDMResponse *response = GetResponseFromData(
       request,
       reinterpret_cast<uint8_t*>(supported_params),
       sizeof(supported_params));
@@ -202,7 +202,7 @@ void DummyPort::HandleDeviceInfo(const RDMRequest *request,
   device_info.dmx_start_address = HostToNetwork(m_start_address);
   device_info.sub_device_count = 0;
   device_info.sensor_count = 0;
-  RDMResponse *response = GetResponseWithData(
+  RDMResponse *response = GetResponseFromData(
       request,
       reinterpret_cast<uint8_t*>(&device_info),
       sizeof(device_info));
@@ -227,7 +227,7 @@ void DummyPort::HandleProductDetailList(const RDMRequest *request,
   for (unsigned int i = 0; i < sizeof(product_details) / 2; i++)
     product_details[i] = HostToNetwork(product_details[i]);
 
-  RDMResponse *response = GetResponseWithData(
+  RDMResponse *response = GetResponseFromData(
       request,
       reinterpret_cast<uint8_t*>(&product_details),
       sizeof(product_details));
@@ -245,7 +245,7 @@ void DummyPort::HandleStringResponse(const ola::rdm::RDMRequest *request,
   if (!CheckForBroadcastSubdeviceOrData(request, callback))
     return;
 
-  RDMResponse *response = GetResponseWithData(
+  RDMResponse *response = GetResponseFromData(
         request,
         reinterpret_cast<const uint8_t*>(value.data()),
         value.size());
@@ -299,7 +299,7 @@ void DummyPort::HandlePersonality(const ola::rdm::RDMRequest *request,
       struct personality_info_s personality_info;
       personality_info.personality = m_personality + 1;
       personality_info.total = PERSONALITY_COUNT;
-      response = GetResponseWithData(
+      response = GetResponseFromData(
         request,
         reinterpret_cast<const uint8_t*>(&personality_info),
         sizeof(personality_info));
@@ -359,7 +359,7 @@ void DummyPort::HandlePersonalityDescription(
             PERSONALITIES[personality].description,
             sizeof(personality_description.description));
 
-    response = GetResponseWithData(
+    response = GetResponseFromData(
         request,
         reinterpret_cast<uint8_t*>(&personality_description),
         sizeof(personality_description));
@@ -407,7 +407,7 @@ void DummyPort::HandleDmxStartAddress(const RDMRequest *request,
       response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
     } else {
       uint16_t address = HostToNetwork(m_start_address);
-      response = GetResponseWithData(
+      response = GetResponseFromData(
         request,
         reinterpret_cast<const uint8_t*>(&address),
         sizeof(address));

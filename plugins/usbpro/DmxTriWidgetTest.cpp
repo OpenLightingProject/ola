@@ -50,6 +50,7 @@ class DmxTriWidgetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNack);
   CPPUNIT_TEST(testAckTimer);
   CPPUNIT_TEST(testAckOverflow);
+  CPPUNIT_TEST(testQueuedMessages);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -63,6 +64,7 @@ class DmxTriWidgetTest: public CppUnit::TestFixture {
     void testNack();
     void testAckTimer();
     void testAckOverflow();
+    void testQueuedMessages();
 
   private:
     unsigned int m_tod_counter;
@@ -84,6 +86,9 @@ class DmxTriWidgetTest: public CppUnit::TestFixture {
                                  const UID &destination,
                                  const uint8_t *data,
                                  unsigned int length);
+    const RDMRequest *NewQueuedMessageRequest(const UID &source,
+                                              const UID &destination,
+                                              uint8_t status);
 
     ola::network::SelectServer m_ss;
     MockUsbWidget m_widget;
@@ -173,6 +178,26 @@ const RDMRequest *DmxTriWidgetTest::NewRequest(const UID &source,
       296,  // param id
       data,
       length);
+}
+
+
+/**
+ * Helper method to create a new queued request object
+ */
+const RDMRequest *DmxTriWidgetTest::NewQueuedMessageRequest(
+    const UID &source,
+    const UID &destination,
+    uint8_t status) {
+  return new ola::rdm::RDMGetRequest(
+      source,
+      destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      10,  // sub device
+      ola::rdm::PID_QUEUED_MESSAGE,
+      &status,
+      sizeof(status));
 }
 
 
@@ -700,7 +725,6 @@ void DmxTriWidgetTest::testNack() {
   vector<string> packets;
   PopulateTod(&dmxtri);
 
-  // try and unknown PID
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
@@ -766,7 +790,6 @@ void DmxTriWidgetTest::testAckTimer() {
   vector<string> packets;
   PopulateTod(&dmxtri);
 
-  // try and unknown PID
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
@@ -814,7 +837,6 @@ void DmxTriWidgetTest::testAckOverflow() {
   vector<string> packets;
   PopulateTod(&dmxtri);
 
-  // try and unknown PID
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28};
@@ -847,6 +869,71 @@ void DmxTriWidgetTest::testAckOverflow() {
       10,  // sub device
       296,  // param id
       reinterpret_cast<uint8_t*>(return_data),
+      sizeof(return_data));  // data length
+
+  dmxtri.SendRDMRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::ValidateResponse,
+                             ola::rdm::RDM_COMPLETED_OK,
+                             reinterpret_cast<const RDMResponse*>(&response),
+                             packets));
+  m_widget.Verify();
+}
+
+
+/*
+ * Check that queued messages work.
+ */
+void DmxTriWidgetTest::testQueuedMessages() {
+  UID source(1, 2);
+  UID destination(0x707a, 0xffffff00);
+  ola::plugin::usbpro::DmxTriWidget dmxtri(&m_ss, &m_widget);
+
+  vector<string> packets;
+  PopulateTod(&dmxtri);
+
+  // first try a response which is too short
+  const RDMRequest *request = NewQueuedMessageRequest(source, destination, 1);
+  uint8_t expected_rdm_command[] = {0x3a, 0x02, 0x01};
+  uint8_t small_response[] = {0x3a, 0x04};
+  m_widget.AddExpectedCall(
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      sizeof(expected_rdm_command),
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&small_response),
+      sizeof(small_response));
+
+  dmxtri.SendRDMRequest(
+      request,
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_INVALID_RESPONSE,
+                             packets));
+  m_widget.Verify();
+
+  // now try a proper response
+  request = NewQueuedMessageRequest(source, destination, 1);
+  uint8_t queued_response[] = {0x3a, 0x00, 0x00, 0x60, 0x52};
+  m_widget.AddExpectedCall(
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      sizeof(expected_rdm_command),
+      EXTENDED_LABEL,
+      reinterpret_cast<uint8_t*>(&queued_response),
+      sizeof(queued_response));
+
+  uint8_t return_data = 0x52;
+  ola::rdm::RDMGetResponse response(
+      destination,
+      source,
+      0,  // transaction #
+      ola::rdm::ACK,
+      0,  // message count
+      10,  // sub device
+      0x0060,  // param id
+      &return_data,
       sizeof(return_data));  // data length
 
   dmxtri.SendRDMRequest(

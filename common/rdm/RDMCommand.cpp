@@ -486,11 +486,30 @@ RDMResponse *NackWithReason(const RDMRequest *request,
 /*
  * Generate a ACK Response with some data
  */
-RDMResponse *GetResponseWithData(const RDMRequest *request,
+RDMResponse *GetResponseFromData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length,
                                  rdm_response_type type,
                                  uint8_t outstanding_messages) {
+  // we can reuse GetResponseWithPid
+  return GetResponseWithPid(request,
+                            request->ParamId(),
+                            data,
+                            length,
+                            type,
+                            outstanding_messages);
+}
+
+
+/**
+ * Generate a queued message response
+ */
+RDMResponse *GetResponseWithPid(const RDMRequest *request,
+                                uint16_t pid,
+                                const uint8_t *data,
+                                unsigned int length,
+                                rdm_response_type type,
+                                uint8_t outstanding_messages) {
   if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
     return new RDMGetResponse(
       request->DestinationUID(),
@@ -499,7 +518,7 @@ RDMResponse *GetResponseWithData(const RDMRequest *request,
       type,
       outstanding_messages,
       request->SubDevice(),
-      request->ParamId(),
+      pid,
       data,
       length);
   } else {
@@ -510,7 +529,7 @@ RDMResponse *GetResponseWithData(const RDMRequest *request,
       type,
       outstanding_messages,
       request->SubDevice(),
-      request->ParamId(),
+      pid,
       data,
       length);
   }

@@ -46,7 +46,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRequestInflation);
   CPPUNIT_TEST(testResponseInflation);
   CPPUNIT_TEST(testNackWithReason);
-  CPPUNIT_TEST(testGetResponseWithData);
+  CPPUNIT_TEST(testGetResponseFromData);
   CPPUNIT_TEST(testCombineResponses);
   CPPUNIT_TEST(testPackWithParams);
   CPPUNIT_TEST_SUITE_END();
@@ -58,7 +58,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testRequestInflation();
     void testResponseInflation();
     void testNackWithReason();
-    void testGetResponseWithData();
+    void testGetResponseFromData();
     void testCombineResponses();
     void testPackWithParams();
 
@@ -521,7 +521,7 @@ void RDMCommandTest::testNackWithReason() {
 }
 
 
-void RDMCommandTest::testGetResponseWithData() {
+void RDMCommandTest::testGetResponseFromData() {
   UID source(1, 2);
   UID destination(3, 4);
 
@@ -535,7 +535,7 @@ void RDMCommandTest::testGetResponseWithData() {
                             NULL,  // data
                             0);  // data length
 
-  RDMResponse *response = GetResponseWithData(&get_command, NULL, 0);
+  RDMResponse *response = GetResponseFromData(&get_command, NULL, 0);
   CPPUNIT_ASSERT(response);
   CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
   CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
@@ -562,7 +562,7 @@ void RDMCommandTest::testGetResponseWithData() {
                             NULL,  // data
                             0);  // data length
 
-  response = GetResponseWithData(&set_command, NULL, 0);
+  response = GetResponseFromData(&set_command, NULL, 0);
   CPPUNIT_ASSERT(response);
   CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
   CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
@@ -580,7 +580,7 @@ void RDMCommandTest::testGetResponseWithData() {
   delete response;
 
   uint32_t data_value = 0xa5a5a5a5;
-  response = GetResponseWithData(
+  response = GetResponseFromData(
       &get_command,
       reinterpret_cast<const uint8_t*>(&data_value),
       sizeof(data_value));

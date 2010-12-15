@@ -320,13 +320,21 @@ typedef BaseRDMResponse<RDMCommand::GET_COMMAND_RESPONSE> RDMGetResponse;
 typedef BaseRDMResponse<RDMCommand::SET_COMMAND_RESPONSE> RDMSetResponse;
 
 // Helper functions for dealing with RDMCommands
+// These are mostly used with the RDM-TRI & dummy plugin
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason);
-RDMResponse *GetResponseWithData(const RDMRequest *request,
+RDMResponse *GetResponseFromData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length,
                                  rdm_response_type type = ACK,
                                  uint8_t outstanding_messages = 0);
+
+RDMResponse *GetResponseWithPid(const RDMRequest *request,
+                                uint16_t pid,
+                                const uint8_t *data,
+                                unsigned int length,
+                                rdm_response_type type = ACK,
+                                uint8_t outstanding_messages = 0);
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_
