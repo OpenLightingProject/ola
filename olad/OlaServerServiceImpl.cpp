@@ -666,7 +666,8 @@ void OlaServerServiceImpl::RDMCommand(
         &OlaServerServiceImpl::HandleRDMResponse,
         controller,
         response,
-        done);
+        done,
+        request->include_raw_response());
 
   m_broker->SendRDMRequest(client, universe, rdm_request, callback);
 }
@@ -697,9 +698,10 @@ void OlaServerServiceImpl::HandleRDMResponse(
     RpcController* controller,
     ola::proto::RDMResponse* response,
     google::protobuf::Closure* done,
+    bool include_raw_packets,
     ola::rdm::rdm_response_status status,
     const RDMResponse *rdm_response,
-    const std::vector<std::string> &packets) {
+    const vector<string> &packets) {
 
   response->set_response_code(
       static_cast<ola::proto::RDMResponseCode>(status));
@@ -708,6 +710,7 @@ void OlaServerServiceImpl::HandleRDMResponse(
     if (response) {
       response->set_response_type(rdm_response->ResponseType());
       response->set_message_count(rdm_response->MessageCount());
+      response->set_param_id(rdm_response->ParamId());
 
       if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
         const string data(
@@ -722,8 +725,14 @@ void OlaServerServiceImpl::HandleRDMResponse(
       controller->SetFailed("Missing Response");
     }
   }
+
+  if (include_raw_packets) {
+    vector<string>::const_iterator iter = packets.begin();
+    for (;iter != packets.end(); ++iter) {
+      response->add_raw_response(*iter);
+    }
+  }
   done->Run();
-  (void) packets;
 }
 
 

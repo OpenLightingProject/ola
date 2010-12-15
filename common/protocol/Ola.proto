@@ -225,6 +225,7 @@ message RDMRequest {
   required int32 param_id = 4;
   required bytes data = 5; // 0 - 231 bytes
   required bool is_set = 6;
+  optional bool include_raw_response = 7 [default = false];
 }
 
 message RDMResponse {
@@ -233,14 +234,9 @@ message RDMResponse {
   optional uint32 response_type = 2;
   optional uint32 message_count = 3;
   optional bytes data = 4; // 0 - 231 bytes
+  optional uint32 param_id = 5;  // the param id, required for queued messages
+  repeated bytes raw_response = 6;
 }
-
-/*
-message FullRDMResponse {
-  required RDMResponseCode response_code = 1;
-  optional bytes data = 2; // full packet, excluding start code
-}
-*/
 
 // Services
 
