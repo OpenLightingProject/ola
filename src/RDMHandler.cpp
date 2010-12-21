@@ -744,7 +744,7 @@ void ResponseHandler::DefaultHandler(const ResponseStatus &status,
   if (!CheckForSuccess(status))
     return;
   cout << "Got queued message for pid 0x" << std::hex << pid <<
-    ", length of data was " << data.size();
+    ", length of data was " << data.size() << endl;
 }
 
 
