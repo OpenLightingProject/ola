@@ -766,7 +766,7 @@ bool ResponseHandler::CheckForSuccess(const ResponseStatus &status) {
         return true;
       case ola::rdm::RDM_ACK_TIMER:
         // TODO(simon): handle this
-        cout << "Got ACK TIMER" << endl;
+        cout << "Got ACK TIMER for " << status.AckTimer() << " ms." << endl;
         break;
       case ola::rdm::RDM_NACK_REASON:
         cout << "Request was NACKED with code: ";
