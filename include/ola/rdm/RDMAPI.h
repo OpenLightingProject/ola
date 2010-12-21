@@ -369,12 +369,15 @@ class RDMAPI {
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 
-    /*
     bool GetQueuedMessage(
-      const UID &uid,
-      rdm_status_type status_type,
-      QueuedMessageHandler *message_handler);
-    */
+        unsigned int universe,
+        const UID &uid,
+        rdm_status_type status_type,
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           const string&> *callback,
+        string *error);
 
     bool GetStatusMessage(
         unsigned int universe,
@@ -1006,6 +1009,14 @@ class RDMAPI {
                            uint16_t,
                            uint16_t,
                            uint16_t> *callback,
+        const RDMAPIImplResponseStatus &status,
+        const string &data);
+
+    void _HandleQueuedMessage(
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           const string&> *callback,
         const RDMAPIImplResponseStatus &status,
         const string &data);
 

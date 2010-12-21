@@ -216,6 +216,37 @@ bool RDMAPI::ClearCommStatus(
 }
 
 
+/**
+ * Send a queued message request
+ */
+bool RDMAPI::GetQueuedMessage(
+        unsigned int universe,
+        const UID &uid,
+        rdm_status_type status_type,
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           const string&> *callback,
+        string *error) {
+  if (CheckCallback(error, callback))
+    return false;
+  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleQueuedMessage,
+    callback);
+  uint8_t type = status_type;
+  return CheckReturnStatus(
+      m_impl->RDMGet(cb,
+                     universe,
+                     uid,
+                     ROOT_RDM_DEVICE,
+                     PID_QUEUED_MESSAGE,
+                     &type,
+                     sizeof(type)),
+      error);
+}
+
+
 /*
  * Get the status information from a device
  * @param uid the UID of the device to address this message to
@@ -2793,6 +2824,30 @@ void RDMAPI::_HandleGetCommStatus(
   }
   callback->Run(response_status, short_message, length_mismatch,
                 checksum_fail);
+}
+
+
+/*
+ * Handle a QUEUED_MESSAGE response
+ */
+void RDMAPI::_HandleQueuedMessage(
+        SingleUseCallback3<void,
+                           const ResponseStatus&,
+                           uint16_t,
+                           const string&> *callback,
+        const RDMAPIImplResponseStatus &status,
+        uint16_t pid,
+        const string &data) {
+  ResponseStatus response_status(status, data);
+  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE &&
+      data.size() > LABEL_SIZE) {
+    std::stringstream str;
+    str << "PDL needs to be <= " << LABEL_SIZE << ", was " << data.size();
+    response_status.MalformedResponse(str.str());
+  }
+
+  string label = data;
+  callback->Run(response_status, pid, data);
 }
 
 
