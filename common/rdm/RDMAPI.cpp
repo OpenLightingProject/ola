@@ -191,7 +191,41 @@ bool RDMAPI::ClearCommStatus(
 
 
 /**
- * Send a queued message request
+ * Send a queued message request.
+ *
+ */
+bool RDMAPI::GetQueuedMessage(
+        unsigned int universe,
+        const UID &uid,
+        rdm_status_type status_type,
+        QueuedMessageHandler *handler,
+        string *error) {
+  if (!handler) {
+    if (error)
+      *error = "Callback is null, this is a programming error";
+    return false;
+  }
+
+  RDMAPIImplInterface::rdm_pid_callback *cb = NewSingleCallback(
+    this,
+    &RDMAPI::_HandleQueuedMessage,
+    handler);
+  uint8_t type = status_type;
+  return CheckReturnStatus(
+      m_impl->RDMGet(cb,
+                     universe,
+                     uid,
+                     ROOT_RDM_DEVICE,
+                     PID_QUEUED_MESSAGE,
+                     &type,
+                     sizeof(type)),
+      error);
+}
+
+
+/**
+ * Send a queued message request. When complete the callback will be run and
+ * it's up to the caller to decode the message based on the PID.
  */
 bool RDMAPI::GetQueuedMessage(
         unsigned int universe,
@@ -204,13 +238,9 @@ bool RDMAPI::GetQueuedMessage(
         string *error) {
   if (CheckCallback(error, callback))
     return false;
-  RDMAPIImplInterface::rdm_callback *cb = NewSingleCallback(
-    this,
-    &RDMAPI::_HandleQueuedMessage,
-    callback);
   uint8_t type = status_type;
   return CheckReturnStatus(
-      m_impl->RDMGet(cb,
+      m_impl->RDMGet(callback,
                      universe,
                      uid,
                      ROOT_RDM_DEVICE,
@@ -2803,23 +2833,14 @@ void RDMAPI::_HandleGetCommStatus(
  * Handle a QUEUED_MESSAGE response
  */
 void RDMAPI::_HandleQueuedMessage(
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           const string&> *callback,
-        const RDMAPIImplResponseStatus &status,
-        uint16_t pid,
-        const string &data) {
-  ResponseStatus response_status(status, data);
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE &&
-      data.size() > LABEL_SIZE) {
-    std::stringstream str;
-    str << "PDL needs to be <= " << LABEL_SIZE << ", was " << data.size();
-    response_status.MalformedResponse(str.str());
-  }
+    QueuedMessageHandler *handler,
+    const ResponseStatus &status,
+    uint16_t pid,
+    const string &data) {
 
-  string label = data;
-  callback->Run(response_status, pid, data);
+  // now we need to switch on pid, and dispatch to the handler
+  // we should also pass the uid here
+  handler->DefaultHandler(status, pid, data);
 }
 
 

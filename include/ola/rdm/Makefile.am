@@ -5,7 +5,7 @@ SOURCES = RDMAPI.h RDMAPIImplInterface.h RDMCommand.h \
 BUILT_SOURCES = RDMResponseCodes.h
 
 EXTRA_DIST = $(SOURCES) make_rdm_codes.sh
-pkginclude_HEADERS = $(SOURCES)
+pkginclude_HEADERS = $(SOURCES) RDMResponseCodes.h
 pkgincludedir = $(includedir)/ola/rdm/
 
 

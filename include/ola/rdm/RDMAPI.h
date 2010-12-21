@@ -263,11 +263,13 @@ class QueuedMessageHandler {
     virtual void SelfTestDescription(const ResponseStatus &status,
                                      uint8_t self_test_number,
                                      const string &description) = 0;
-    virtual void PresetPlaybackMode(const ResponseStatus&,
+    virtual void PresetPlaybackMode(const ResponseStatus &status,
                                     uint16_t preset_mode,
                                     uint8_t level) = 0;
 
-    // TODO(simon): add a default handler here
+    virtual void DefaultHandler(const ResponseStatus &status,
+                                uint16_t pid,
+                                const string &data) = 0;
 };
 
 
@@ -319,6 +321,19 @@ class RDMAPI {
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 
+    // There are two types of queued message calls, one that takes a
+    // QueuedMessageHandler and the other than just takes a callback.
+
+    // When complete, the appropriate method will be called on the handler.
+    bool GetQueuedMessage(
+        unsigned int universe,
+        const UID &uid,
+        rdm_status_type status_type,
+        QueuedMessageHandler *handler,
+        string *error);
+
+    // When complete, the callback will be run. It's up to the caller to unpack
+    // the message.
     bool GetQueuedMessage(
         unsigned int universe,
         const UID &uid,
@@ -963,11 +978,9 @@ class RDMAPI {
         const string &data);
 
     void _HandleQueuedMessage(
-        SingleUseCallback3<void,
-                           const ResponseStatus&,
-                           uint16_t,
-                           const string&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        QueuedMessageHandler *handler,
+        const ResponseStatus &status,
+        uint16_t pid,
         const string &data);
 
     void _HandleGetStatusMessage(
