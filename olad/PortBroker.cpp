@@ -88,7 +88,7 @@ void PortBroker::SendRDMRequest(const Port *port,
  */
 void PortBroker::RequestComplete(port_key key,
                                  ola::rdm::RDMCallback *callback,
-                                 ola::rdm::rdm_response_status status,
+                                 ola::rdm::rdm_response_code code,
                                  const ola::rdm::RDMResponse *response,
                                  const std::vector<std::string> &packets) {
   set<port_key>::const_iterator iter = m_ports.find(key);
@@ -97,7 +97,7 @@ void PortBroker::RequestComplete(port_key key,
     delete response;
     delete callback;
   } else {
-    callback->Run(status, response, packets);
+    callback->Run(code, response, packets);
   }
 }
 }  // ola

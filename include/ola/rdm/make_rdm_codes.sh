@@ -34,9 +34,17 @@ namespace rdm {
 
 typedef enum {
 EOM
-grep RDM_ ../../../common/protocol/Ola.proto | sed "s/;/,/"
+sed -ne  '/^enum RDMResponseCode/,/^}/p' ../../../common/protocol/Ola.proto |
+grep RDM_ | sed "s/;/,/"
 cat <<EOM
-} rdm_response_status;
+} rdm_response_code;
+
+typedef enum {
+EOM
+sed -ne  '/^enum RDMResponseType/,/^}/p' ../../../common/protocol/Ola.proto |
+grep RDM_ | sed "s/;/,/"
+cat <<EOM
+} rdm_response_type;
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMRESPONSECODES_H_

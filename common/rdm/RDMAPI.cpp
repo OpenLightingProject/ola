@@ -45,32 +45,6 @@ using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
 
 
-ResponseStatus::ResponseStatus(const RDMAPIImplResponseStatus &status,
-                               const string &data):
-    m_response_type(VALID_RESPONSE),
-    m_nack_reason(0),
-    m_message_count(status.message_count),
-    m_error(status.error) {
-  if (!m_error.empty()) {
-    m_response_type = TRANSPORT_ERROR;
-  } else {
-    if (status.was_broadcast) {
-      m_response_type = BROADCAST_REQUEST;
-    } else if (status.response_type == ola::rdm::NACK_REASON) {
-      if (data.size() < sizeof(m_nack_reason)) {
-        m_response_type = MALFORMED_RESPONSE;
-        m_error = "NACK_REASON data too small";
-      } else {
-        m_response_type = REQUEST_NACKED;
-        const uint8_t *ptr = reinterpret_cast<const uint8_t*>(
-          data.c_str());
-        m_nack_reason = (ptr[0] << 8) + ptr[1];
-      }
-    }
-  }
-}
-
-
 /*
  * Return the number of queues messages for a UID. Note that this is cached on
  * the client side so this number may not be correct.
@@ -2625,14 +2599,13 @@ void RDMAPI::_HandleLabelResponse(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const string&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE &&
-      data.size() > LABEL_SIZE) {
+  ResponseStatus response_status = status;
+  if (status.WasAcked() && data.size() > LABEL_SIZE) {
     std::stringstream str;
     str << "PDL needs to be <= " << LABEL_SIZE << ", was " << data.size();
-    response_status.MalformedResponse(str.str());
+    response_status.error = str.str();
   }
 
   string label = data;
@@ -2648,13 +2621,13 @@ void RDMAPI::_HandleBoolResponse(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        bool> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
   static const unsigned int DATA_SIZE = 1;
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   bool option = false;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data.size() == DATA_SIZE) {
       option = data.data()[0];
     } else {
@@ -2672,12 +2645,12 @@ void RDMAPI::_HandleU8Response(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        uint8_t> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   uint8_t value = 0;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data.size() == sizeof(value)) {
       value = data.data()[0];
     } else {
@@ -2695,12 +2668,12 @@ void RDMAPI::_HandleU32Response(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        uint32_t> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   uint32_t value = 0;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data.size() == sizeof(value)) {
       const uint32_t *ptr = reinterpret_cast<const uint32_t*>(data.data());
       value = NetworkToHost(*ptr);
@@ -2717,11 +2690,10 @@ void RDMAPI::_HandleU32Response(
  */
 void RDMAPI::_HandleEmptyResponse(
     SingleUseCallback1<void, const ResponseStatus&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE &&
-      data.size())
+  ResponseStatus response_status = status;
+  if (response_status.WasAcked() && data.size())
     SetIncorrectPDL(&response_status, data.size(), 0);
   callback->Run(response_status);
 }
@@ -2735,15 +2707,15 @@ void RDMAPI::_HandleGetProxiedDeviceCount(
                        const ResponseStatus&,
                        uint16_t,
                        bool> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
   static const unsigned int DATA_SIZE = 3;
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
 
   uint16_t device_count = 0;
   bool list_change = false;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data.size() >= DATA_SIZE) {
       struct {
         uint16_t device_count;
@@ -2767,13 +2739,13 @@ void RDMAPI::_HandleGetProxiedDevices(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<UID>&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   vector<UID> uids;
 
   unsigned int data_size = data.size();
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data_size % UID::UID_SIZE == 0) {
       const uint8_t *start = reinterpret_cast<const uint8_t*>(data.data());
       for (const uint8_t *ptr = start; ptr < start + data_size;
@@ -2782,7 +2754,7 @@ void RDMAPI::_HandleGetProxiedDevices(
         uids.push_back(uid);
       }
     } else {
-      response_status.MalformedResponse("PDL size not a multiple of " +
+      response_status.error = ("PDL size not a multiple of " +
           IntToString(static_cast<int>(UID::UID_SIZE)) + " : " +
           IntToString(static_cast<int>(data_size)));
     }
@@ -2800,14 +2772,14 @@ void RDMAPI::_HandleGetCommStatus(
                        uint16_t,
                        uint16_t,
                        uint16_t> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
   static const unsigned int DATA_SIZE = 6;
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
 
   uint16_t short_message = 0, length_mismatch = 0, checksum_fail = 0;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data.size() >= DATA_SIZE) {
       struct {
         uint16_t short_message;
@@ -2858,7 +2830,7 @@ void RDMAPI::_HandleGetStatusMessage(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<StatusMessage>&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
 
   // Seriously WTF, learn how to align data structures
@@ -2874,11 +2846,11 @@ void RDMAPI::_HandleGetStatusMessage(
     uint8_t value_2_lo;
   } message;
 
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   vector<StatusMessage> messages;
   unsigned int data_size = data.size();
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data_size % sizeof(message) == 0) {
       const uint8_t *start = reinterpret_cast<const uint8_t*>(data.data());
       for (const uint8_t *ptr = start; ptr < start + data_size;
@@ -2895,7 +2867,7 @@ void RDMAPI::_HandleGetStatusMessage(
         messages.push_back(msg_object);
       }
     } else {
-      response_status.MalformedResponse("PDL size not a multiple of " +
+      response_status.error = ("PDL size not a multiple of " +
           IntToString(static_cast<int>(sizeof(message))) + " : " +
           IntToString(static_cast<int>(data_size)));
     }
@@ -2911,12 +2883,12 @@ void RDMAPI::_HandleGetSubDeviceReporting(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        uint8_t> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   uint8_t status_type = 0;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data.size() == sizeof(status_type)) {
       status_type = data.data()[0];
     } else {
@@ -2934,13 +2906,13 @@ void RDMAPI::_HandleGetSupportedParameters(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<uint16_t>&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   vector<uint16_t> pids;
 
   unsigned int data_size = data.size();
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data_size % 2 == 0) {
       const uint16_t *start = reinterpret_cast<const uint16_t*>(data.data());
       const uint16_t *end = start + (data_size / sizeof(*start));
@@ -2948,7 +2920,7 @@ void RDMAPI::_HandleGetSupportedParameters(
         pids.push_back(NetworkToHost(*ptr));
       }
     } else {
-      response_status.MalformedResponse("PDL size not a multiple of 2 : " +
+      response_status.error = ("PDL size not a multiple of 2 : " +
           IntToString(static_cast<int>(data_size)));
     }
     sort(pids.begin(), pids.end());
@@ -2964,12 +2936,12 @@ void RDMAPI::_HandleGetParameterDescriptor(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const ParameterDescriptor&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   ParameterDescriptor description;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     struct param_description {
       uint16_t pid;
       uint8_t pdl_size;
@@ -3011,7 +2983,7 @@ void RDMAPI::_HandleGetParameterDescriptor(
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
-      response_status.MalformedResponse(str.str());
+      response_status.error = str.str();
     }
   }
   callback->Run(response_status, description);
@@ -3025,12 +2997,12 @@ void RDMAPI::_HandleGetDeviceDescriptor(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const DeviceDescriptor&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   DeviceDescriptor device_info;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size == sizeof(device_info)) {
       memcpy(&device_info, data.data(), sizeof(device_info));
@@ -3060,23 +3032,23 @@ void RDMAPI::_HandleGetProductDetailIdList(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<uint16_t>&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
   static const unsigned int MAX_DETAIL_IDS = 6;
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   vector<uint16_t> product_detail_ids;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size > MAX_DETAIL_IDS * sizeof(uint16_t)) {
       std::stringstream str;
       str << "PDL needs to be <= " << (MAX_DETAIL_IDS * sizeof(uint16_t)) <<
         ", was " << data_size;
-      response_status.MalformedResponse(str.str());
+      response_status.error = str.str();
     } else if (data_size % 2) {
       std::stringstream str;
       str << "PDL needs to be a multiple of 2, was " << data_size;
-      response_status.MalformedResponse(str.str());
+      response_status.error = str.str();
     } else {
       const uint16_t *start = reinterpret_cast<const uint16_t*>(data.data());
       const uint16_t *end = start + (data_size / sizeof(*start));
@@ -3096,17 +3068,17 @@ void RDMAPI::_HandleGetLanguageCapabilities(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<string>&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   vector<string> languages;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size % 2) {
       std::stringstream str;
       str << "PDL needs to be a multiple of 2, was " << data_size;
-      response_status.MalformedResponse(str.str());
+      response_status.error = str.str();
     } else {
       const char *ptr = data.data();
       const char *end = data.data() + data.size();
@@ -3127,14 +3099,12 @@ void RDMAPI::_HandleGetLanguage(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const string&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   static const unsigned int DATA_SIZE = 2;
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
-    if (data.size() != DATA_SIZE) {
-      SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
-    }
+  if (response_status.WasAcked() && data.size() != DATA_SIZE) {
+    SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
   }
   callback->Run(response_status, data);
 }
@@ -3147,12 +3117,12 @@ void RDMAPI::_HandleGetBootSoftwareVersion(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        uint32_t> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   static const unsigned int DATA_SIZE = 4;
   uint32_t boot_version = 0;
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data.size() != DATA_SIZE) {
       SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
     } else {
@@ -3172,13 +3142,13 @@ void RDMAPI::_HandleGetDMXPersonality(
                        const ResponseStatus&,
                        uint8_t,
                        uint8_t> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   static const unsigned int DATA_SIZE = 2;
   uint8_t current_personality = 0;
   uint8_t personality_count = 0;
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data.size() != DATA_SIZE) {
       SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
     } else {
@@ -3199,15 +3169,15 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
                        uint8_t,
                        uint16_t,
                        const string&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
 
   uint8_t personality = 0;
   uint16_t dmx_slots = 0;
   string description;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     struct personality_description {
       uint8_t personality;
       uint16_t dmx_slots;
@@ -3230,7 +3200,7 @@ void RDMAPI::_HandleGetDMXPersonalityDescription(
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
-      response_status.MalformedResponse(str.str());
+      response_status.error = str.str();
     }
   }
   callback->Run(response_status, personality, dmx_slots, description);
@@ -3244,12 +3214,12 @@ void RDMAPI::_HandleGetDMXAddress(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        uint16_t> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   static const unsigned int DATA_SIZE = 2;
   uint16_t start_address = 0;
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data.size() != DATA_SIZE) {
       SetIncorrectPDL(&response_status, data.size(), DATA_SIZE);
     } else {
@@ -3268,17 +3238,17 @@ void RDMAPI::_HandleGetSlotInfo(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<SlotDescriptor>&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   vector<SlotDescriptor> slots;
   SlotDescriptor slot_info;
   unsigned int slot_info_size = sizeof(slot_info);
 
   unsigned int data_size = data.size();
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data_size % slot_info_size) {
-      response_status.MalformedResponse("PDL size not a multiple of " +
+      response_status.error = ("PDL size not a multiple of " +
           IntToString(slot_info_size) + ", was " +
           IntToString(static_cast<int>(data_size)));
     } else {
@@ -3304,14 +3274,14 @@ void RDMAPI::_HandleGetSlotDescription(
                        const ResponseStatus&,
                        uint16_t,
                        const string&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
 
   uint16_t slot_index = 0;
   string description;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     struct slot_description {
       uint16_t slot_index;
       // +1 for a null since it's not clear in the spec if this is null
@@ -3333,7 +3303,7 @@ void RDMAPI::_HandleGetSlotDescription(
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
-      response_status.MalformedResponse(str.str());
+      response_status.error = str.str();
     }
   }
   callback->Run(response_status, slot_index, description);
@@ -3347,17 +3317,17 @@ void RDMAPI::_HandleGetSlotDefaultValues(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const vector<SlotDefault>&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   vector<SlotDefault> slots;
   SlotDefault slot_default;
   unsigned int slot_default_size = sizeof(slot_default);
 
   unsigned int data_size = data.size();
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     if (data_size % slot_default_size) {
-      response_status.MalformedResponse("PDL size not a multiple of " +
+      response_status.error = ("PDL size not a multiple of " +
           IntToString(slot_default_size) + ", was " +
           IntToString(static_cast<int>(data_size)));
     } else {
@@ -3381,12 +3351,12 @@ void RDMAPI::_HandleGetSensorDefinition(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const SensorDescriptor&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   SensorDescriptor sensor;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     struct sensor_definition_s {
       uint8_t sensor_number;
       uint8_t type;
@@ -3423,7 +3393,7 @@ void RDMAPI::_HandleGetSensorDefinition(
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
-      response_status.MalformedResponse(str.str());
+      response_status.error = str.str();
     }
   }
   callback->Run(response_status, sensor);
@@ -3437,12 +3407,12 @@ void RDMAPI::_HandleSensorValue(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const SensorValueDescriptor&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   SensorValueDescriptor sensor;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size == sizeof(sensor)) {
       memcpy(&sensor, data.data(), sizeof(sensor));
@@ -3465,12 +3435,12 @@ void RDMAPI::_HandleClock(
     SingleUseCallback2<void,
                        const ResponseStatus&,
                        const ClockValue&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
   ClockValue clock;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     unsigned int data_size = data.size();
     if (data_size == sizeof(clock)) {
       memcpy(&clock, data.data(), sizeof(clock));
@@ -3491,14 +3461,14 @@ void RDMAPI::_HandleSelfTestDescription(
                        const ResponseStatus&,
                        uint8_t,
                        const string&> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
 
   uint8_t self_test_number = 0;
   string description;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     struct self_test_description {
       uint8_t self_test_number;
       // +1 for a null since it's not clear in the spec if this is null
@@ -3520,7 +3490,7 @@ void RDMAPI::_HandleSelfTestDescription(
     } else {
       std::stringstream str;
       str << data_size << " needs to be between " << min << " and " << max;
-      response_status.MalformedResponse(str.str());
+      response_status.error = str.str();
     }
   }
   callback->Run(response_status, self_test_number, description);
@@ -3535,14 +3505,14 @@ void RDMAPI::_HandlePlaybackMode(
                        const ResponseStatus&,
                        uint16_t,
                        uint8_t> *callback,
-    const RDMAPIImplResponseStatus &status,
+    const ResponseStatus &status,
     const string &data) {
-  ResponseStatus response_status(status, data);
+  ResponseStatus response_status = status;
 
   uint16_t mode = 0;
   uint8_t level = 0;
 
-  if (response_status.ResponseType() == ResponseStatus::VALID_RESPONSE) {
+  if (response_status.WasAcked()) {
     struct preset_mode {
       uint16_t mode;
       uint8_t level;
@@ -3556,7 +3526,7 @@ void RDMAPI::_HandlePlaybackMode(
     } else {
       std::stringstream str;
       str << data.size() << " needs to be more than " << sizeof(raw_config);
-      response_status.MalformedResponse(str.str());
+      response_status.error = str.str();
     }
   }
   callback->Run(response_status, mode, level);
@@ -3688,7 +3658,7 @@ bool RDMAPI::CheckReturnStatus(bool status, string *error) {
 void RDMAPI::SetIncorrectPDL(ResponseStatus *status,
                              unsigned int actual,
                              unsigned int expected) {
-  status->MalformedResponse("PDL mismatch, " +
+  status->error = ("PDL mismatch, " +
     IntToString(actual) + " != " +
     IntToString(expected) + " (expected)");
 }

@@ -33,6 +33,47 @@ using std::stringstream;
 
 
 /**
+ * Convert a rdm_response_code to a string
+ */
+string ResponseCodeToString(rdm_response_code status) {
+  switch (status) {
+    case RDM_COMPLETED_OK:
+      return "Completed Ok";
+      break;
+    case RDM_WAS_BROADCAST:
+      return "Request was broacast";
+      break;
+    case RDM_FAILED_TO_SEND:
+      return "Failed to send request";
+      break;
+    case RDM_TIMEOUT:
+      return "Response Timeout";
+      break;
+    case RDM_INVALID_RESPONSE:
+      return "Invalid Response";
+      break;
+    case RDM_UNKNOWN_UID:
+      return "Unknown UID";
+      break;
+    case RDM_CHECKSUM_INCORRECT:
+      return "Incorrect checksum";
+      break;
+    case RDM_TRANSACTION_MISMATCH:
+      return "Transaction number mismatch";
+      break;
+    case RDM_SUB_DEVICE_MISMATCH:
+      return "Sub device mismatch";
+      break;
+    case RDM_DEVICE_MISMATCH:
+      return "Device mismatch";
+      break;
+    default:
+      return "Unknown";
+  }
+}
+
+
+/**
  * Convert a uint8_t representing a lamp mode to a human-readable string.
  * @param type the lamp mode value
  */

@@ -60,12 +60,12 @@ class DmxterWidgetTest: public CppUnit::TestFixture {
   private:
     unsigned int m_tod_counter;
     void ValidateTod(const ola::rdm::UIDSet &uids);
-    void ValidateResponse(ola::rdm::rdm_response_status status,
+    void ValidateResponse(ola::rdm::rdm_response_code code,
                           const ola::rdm::RDMResponse *response,
                           const vector<string> &packets);
-    void ValidateStatus(ola::rdm::rdm_response_status expected_status,
+    void ValidateStatus(ola::rdm::rdm_response_code expected_code,
                         vector<string> expected_packets,
-                        ola::rdm::rdm_response_status status,
+                        ola::rdm::rdm_response_code code,
                         const ola::rdm::RDMResponse *response,
                         const vector<string> &packets);
     const RDMRequest *NewRequest(const UID &source,
@@ -103,10 +103,10 @@ void DmxterWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
  * Check the response matches what we expected.
  */
 void DmxterWidgetTest::ValidateResponse(
-    ola::rdm::rdm_response_status status,
+    ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, status);
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, code);
   CPPUNIT_ASSERT(response);
   uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4, response->ParamDataSize());
@@ -122,15 +122,15 @@ void DmxterWidgetTest::ValidateResponse(
 
 
 /*
- * Check that we got an unknown UID status
+ * Check that we got an unknown UID code
  */
 void DmxterWidgetTest::ValidateStatus(
-    ola::rdm::rdm_response_status expected_status,
+    ola::rdm::rdm_response_code expected_code,
     vector<string> expected_packets,
-    ola::rdm::rdm_response_status status,
+    ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_status, status);
+  CPPUNIT_ASSERT_EQUAL(expected_code, code);
   CPPUNIT_ASSERT(!response);
 
   CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
@@ -330,7 +330,7 @@ void DmxterWidgetTest::testErrorCodes() {
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfa;
-  return_packet[1] = 8; // packet too short
+  return_packet[1] = 8;  // packet too short
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
@@ -351,7 +351,7 @@ void DmxterWidgetTest::testErrorCodes() {
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfb;
-  return_packet[1] = 12; // transaction mismatch
+  return_packet[1] = 12;  // transaction mismatch
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
@@ -372,7 +372,7 @@ void DmxterWidgetTest::testErrorCodes() {
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfc;
-  return_packet[1] = 17; // timeout
+  return_packet[1] = 17;  // timeout
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
@@ -393,7 +393,7 @@ void DmxterWidgetTest::testErrorCodes() {
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfd;
-  return_packet[1] = 41; // device mismatch
+  return_packet[1] = 41;  // device mismatch
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
@@ -414,7 +414,7 @@ void DmxterWidgetTest::testErrorCodes() {
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfe;
-  return_packet[1] = 42; // sub device mismatch
+  return_packet[1] = 42;  // sub device mismatch
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,

@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
 #include <sstream>
 #include <string>
@@ -326,14 +327,14 @@ RDMResponse *NackWithReason(const RDMRequest *request,
 RDMResponse *GetResponseFromData(const RDMRequest *request,
                                  const uint8_t *data,
                                  unsigned int length,
-                                 rdm_response_type type = ACK,
+                                 rdm_response_type type = RDM_ACK,
                                  uint8_t outstanding_messages = 0);
 
 RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint16_t pid,
                                 const uint8_t *data,
                                 unsigned int length,
-                                rdm_response_type type = ACK,
+                                uint8_t type = RDM_ACK,
                                 uint8_t outstanding_messages = 0);
 }  // rdm
 }  // ola

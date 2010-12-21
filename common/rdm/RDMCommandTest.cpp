@@ -456,7 +456,7 @@ void RDMCommandTest::testNackWithReason() {
   CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
   CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::NACK_REASON,
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::RDM_NACK_REASON,
                        response->ResponseType());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
@@ -476,7 +476,7 @@ void RDMCommandTest::testNackWithReason() {
   CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
   CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::NACK_REASON,
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::RDM_NACK_REASON,
                        response->ResponseType());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
@@ -506,7 +506,7 @@ void RDMCommandTest::testNackWithReason() {
   CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
   CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::NACK_REASON,
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::RDM_NACK_REASON,
                        response->ResponseType());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
@@ -540,7 +540,7 @@ void RDMCommandTest::testGetResponseFromData() {
   CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
   CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::ACK, response->ResponseType());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::RDM_ACK, response->ResponseType());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
   CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND_RESPONSE,
@@ -567,7 +567,7 @@ void RDMCommandTest::testGetResponseFromData() {
   CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
   CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::ACK, response->ResponseType());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::RDM_ACK, response->ResponseType());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
   CPPUNIT_ASSERT_EQUAL(RDMCommand::SET_COMMAND_RESPONSE,
@@ -588,7 +588,7 @@ void RDMCommandTest::testGetResponseFromData() {
   CPPUNIT_ASSERT_EQUAL(destination, response->SourceUID());
   CPPUNIT_ASSERT_EQUAL(source, response->DestinationUID());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->TransactionNumber());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::ACK, response->ResponseType());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) ola::rdm::RDM_ACK, response->ResponseType());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, response->MessageCount());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 10, response->SubDevice());
   CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND_RESPONSE,
@@ -614,7 +614,7 @@ void RDMCommandTest::testCombineResponses() {
   RDMGetResponse response1(source,
                            destination,
                            0,  // transaction #
-                           ola::rdm::ACK,  // response type
+                           ola::rdm::RDM_ACK,  // response type
                            0,  // message count
                            10,  // sub device
                            param_id,  // param id
@@ -625,7 +625,7 @@ void RDMCommandTest::testCombineResponses() {
   RDMGetResponse response2(source,
                            destination,
                            1,  // transaction #
-                           ola::rdm::ACK,  // response type
+                           ola::rdm::RDM_ACK,  // response type
                            0,  // message count
                            10,  // sub device
                            param_id,  // param id
@@ -657,7 +657,7 @@ void RDMCommandTest::testCombineResponses() {
   RDMGetResponse response3(source,
                            destination,
                            1,  // transaction #
-                           ola::rdm::ACK,  // response type
+                           ola::rdm::RDM_ACK,  // response type
                            0,  // message count
                            10,  // sub device
                            param_id,  // param id
@@ -686,7 +686,7 @@ void RDMCommandTest::testCombineResponses() {
   RDMSetResponse response4(source,
                            destination,
                            1,  // transaction #
-                           ola::rdm::ACK,  // response type
+                           ola::rdm::RDM_ACK,  // response type
                            0,  // message count
                            10,  // sub device
                            param_id,  // param id
@@ -705,7 +705,7 @@ void RDMCommandTest::testCombineResponses() {
   RDMSetResponse response5(source,
                            destination,
                            0,  // transaction #
-                           ola::rdm::ACK,  // response type
+                           ola::rdm::RDM_ACK,  // response type
                            0,  // message count
                            10,  // sub device
                            param_id,  // param id

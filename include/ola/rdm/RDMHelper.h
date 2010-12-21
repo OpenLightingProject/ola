@@ -23,12 +23,15 @@
 
 #include <stdint.h>
 #include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/RDMResponseCodes.h>
 #include <string>
 
 namespace ola {
 namespace rdm {
 
 using std::string;
+
+string ResponseCodeToString(rdm_response_code status);
 
 string DataTypeToString(uint8_t type);
 string LampModeToString(uint8_t lamp_mode);

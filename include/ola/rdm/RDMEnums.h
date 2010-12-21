@@ -29,13 +29,9 @@ namespace rdm {
 static const uint16_t ROOT_RDM_DEVICE = 0;
 static const uint16_t ALL_RDM_SUBDEVICES = 0xffff;
 static const uint16_t MAX_SUBDEVICE_NUMBER = 0x0200;
-
-typedef enum {
-  ACK = 0x00,
-  ACK_TIMER = 0x01,
-  NACK_REASON = 0x02,
-  ACK_OVERFLOW = 0x03,
-} rdm_response_type;
+// This is separated out because we never propagate OVERFLOWs up to the
+// clients.
+static const uint8_t ACK_OVERFLOW = 3;
 
 
 typedef enum {

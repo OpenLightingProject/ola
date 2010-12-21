@@ -51,6 +51,9 @@ enum PluginIds {
   OLA_PLUGIN_USBDMX = 12;
 }
 
+/**
+ * If you add more here be sure to update ResponseCodeToString in RDMHelper.cpp
+ */
 enum RDMResponseCode {
   // The request/response completed correctly
   RDM_COMPLETED_OK = 0;
@@ -72,6 +75,19 @@ enum RDMResponseCode {
   RDM_SUB_DEVICE_MISMATCH = 8;
   // Wrong device responded
   RDM_DEVICE_MISMATCH = 9;
+}
+
+
+/**
+ * The valid Response Types when the response_code is RDM_COMPLETED_OK.
+ * ACK_OVERFLOW isn't in this list because overflows are handed by the plugins,
+ * not the clients.
+ */
+enum RDMResponseType {
+  RDM_ACK = 0;
+  RDM_ACK_TIMER = 1;
+  RDM_NACK_REASON = 2;
+  // OVERFLOW can never be returned
 }
 
 
@@ -231,9 +247,9 @@ message RDMRequest {
 message RDMResponse {
   required RDMResponseCode response_code = 1;
   // ACK, OVERFLOW, NACK or TIMER
-  optional uint32 response_type = 2;
-  optional uint32 message_count = 3;
-  optional bytes data = 4; // 0 - 231 bytes
+  optional RDMResponseType response_type = 2;
+  required uint32 message_count = 3 [default = 0];
+  required bytes data = 4 [default = ""]; // 0 - 231 bytes
   optional uint32 param_id = 5;  // the param id, required for queued messages
   repeated bytes raw_response = 6;
 }
@@ -264,7 +280,6 @@ service OlaServerService {
   // the second returns the entire response and is used for testing and queued
   // messages.
   rpc RDMCommand (RDMRequest) returns (RDMResponse);
-  // rpc DetailedRDMCommand (RDMRequest) returns (FullRDMResponse);
   rpc StreamDmxData (DmxData) returns (STREAMING_NO_RESPONSE);
 }
 

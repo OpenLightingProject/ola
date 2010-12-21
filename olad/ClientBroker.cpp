@@ -73,12 +73,12 @@ void ClientBroker::SendRDMRequest(const Client *client,
  * Return from an RDM call
  * @param key the client associated with this request
  * @param callback the callback to run if the key still exists
- * @param status the status of the RDM request
+ * @param code the code of the RDM request
  * @param response the RDM response
  */
 void ClientBroker::RequestComplete(const void *key,
                                    ola::rdm::RDMCallback *callback,
-                                   ola::rdm::rdm_response_status status,
+                                   ola::rdm::rdm_response_code code,
                                    const ola::rdm::RDMResponse *response,
                                    const std::vector<std::string> &packets) {
   set<const void*>::const_iterator iter = m_clients.find(key);
@@ -87,7 +87,7 @@ void ClientBroker::RequestComplete(const void *key,
     delete response;
     delete callback;
   } else {
-    callback->Run(status, response, packets);
+    callback->Run(code, response, packets);
   }
 }
 }  // ola

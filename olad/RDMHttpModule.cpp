@@ -909,8 +909,7 @@ void RDMHttpModule::SupportedSectionsHandler(
   string error;
 
   // nacks here are ok if the device doesn't support SUPPORTED_PARAMS
-  if (!CheckForRDMSuccess(status) &&
-      status.ResponseType() != ola::rdm::ResponseStatus::REQUEST_NACKED) {
+  if (!CheckForRDMSuccess(status) && !status.WasNacked()) {
     m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
     return;
   }
@@ -3108,41 +3107,44 @@ bool RDMHttpModule::CheckForRDMSuccess(
 
 
 /*
- * Check the success of an RDM command
- * @returns true if this command was ok, false otherwise.
+ * Check the success of an RDM command. At the moment we're very strict in this
+ * method, some day this should be relaxed to handle the corner cases.
+ * @returns true if this command returns an ACK. false for any other condition.
  */
 bool RDMHttpModule::CheckForRDMSuccessWithError(
     const ola::rdm::ResponseStatus &status,
     string *error) {
   stringstream str;
-  switch (status.ResponseType()) {
-    case ola::rdm::ResponseStatus::TRANSPORT_ERROR:
-      str << "RDM command error: " << status.Error();
-      if (error)
-        *error = str.str();
-      return false;
-    case ola::rdm::ResponseStatus::BROADCAST_REQUEST:
-      return false;
-    case ola::rdm::ResponseStatus::REQUEST_NACKED:
-      str << "Request was NACKED with code: " <<
-        ola::rdm::NackReasonToString(status.NackReason());
-      if (error)
-        *error = str.str();
-      return false;
-    case ola::rdm::ResponseStatus::MALFORMED_RESPONSE:
-      str << "Malformed RDM response " << status.Error();
-      if (error)
-        *error = str.str();
-      return false;
-    case ola::rdm::ResponseStatus::VALID_RESPONSE:
-      return true;
-    default:
-      str << "Unknown response status " <<
-        static_cast<int>(status.ResponseType());
-      if (error)
-        *error = str.str();
-      return false;
+  if (!status.error.empty()) {
+    str << "RDM command error: " << status.error;
+    if (error)
+      *error = str.str();
+    return false;
   }
+
+  // TODO(simon): One day we should handle broadcast responses, ack timers etc.
+  if (status.response_code != ola::rdm::RDM_COMPLETED_OK) {
+    if (error)
+      *error = ola::rdm::ResponseCodeToString(status.response_code);
+  } else {
+    switch (status.response_type) {
+      case ola::rdm::RDM_ACK:
+        return true;
+      case ola::rdm::RDM_ACK_TIMER:
+        str << "Got ACK Timer for " << status.AckTimer() << " ms";
+        OLA_INFO << str;
+        if (error)
+          *error = str.str();
+        break;
+      case ola::rdm::RDM_NACK_REASON:
+        str << "Request was NACKED with code: " <<
+          ola::rdm::NackReasonToString(status.NackReason());
+        OLA_INFO << str.str();
+        if (error)
+          *error = str.str();
+    }
+  }
+  return false;
 }
 
 

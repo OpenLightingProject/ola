@@ -1074,7 +1074,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(
     struct in_addr destination,
     uint8_t port_id,
     uint8_t universe_address,
-    ola::rdm::rdm_response_status status,
+    ola::rdm::rdm_response_code code,
     const RDMResponse *response,
     const std::vector<std::string> &packets) {
   if (!CheckOutputPortState(port_id, "ArtRDM")) {
@@ -1084,17 +1084,17 @@ void ArtNetNodeImpl::RDMRequestCompletion(
   }
 
   if (m_output_ports[port_id].universe_address == universe_address) {
-    if (status == ola::rdm::RDM_COMPLETED_OK) {
+    if (code == ola::rdm::RDM_COMPLETED_OK) {
       // TODO(simon): handle fragmenation here
       SendRDMCommand(*response,
                      destination,
                      universe_address);
-    } else if (status == ola::rdm::RDM_UNKNOWN_UID) {
+    } else if (code == ola::rdm::RDM_UNKNOWN_UID) {
       // call the on discovery handler, which will send a new TOD and
       // hopefully update the remote controller
       m_output_ports[port_id].on_discover->Run();
     } else {
-      OLA_WARN << "ArtNet RDM request failed with code " << status;
+      OLA_WARN << "ArtNet RDM request failed with code " << code;
     }
   } else {
     // the universe address has changed we need to drop this request

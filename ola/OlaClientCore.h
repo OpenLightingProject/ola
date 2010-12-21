@@ -170,6 +170,14 @@ class OlaClientCore: public ola::proto::OlaClientService {
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length);
+    bool RDMGet(
+        ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
+        unsigned int universe,
+        const ola::rdm::UID &uid,
+        uint16_t sub_device,
+        uint16_t pid,
+        const uint8_t *data,
+        unsigned int data_length);
     bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_callback *callback,
                 unsigned int universe,
                 const ola::rdm::UID &uid,
@@ -274,7 +282,16 @@ class OlaClientCore: public ola::proto::OlaClientService {
       SimpleRpcController *controller;
       ola::proto::RDMResponse *reply;
     } rdm_response_args;
+
     void HandleRDM(rdm_response_args *args);
+
+    typedef struct {
+      ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback;
+      SimpleRpcController *controller;
+      ola::proto::RDMResponse *reply;
+    } rdm_pid_response_args;
+
+    void HandleRDMWithPID(rdm_pid_response_args *args);
 
   private:
     OlaClientCore(const OlaClientCore&);
@@ -300,6 +317,15 @@ class OlaClientCore: public ola::proto::OlaClientService {
                     uint16_t pid,
                     const uint8_t *data,
                     unsigned int data_length);
+
+    void CheckRDMResponseStatus(SimpleRpcController *controller,
+                                ola::proto::RDMResponse *reply,
+                                ola::rdm::ResponseStatus *new_status);
+
+    void OlaClientCore::GetParamFromReply(
+        const string &message_type,
+        ola::proto::RDMResponse *reply,
+        ola::rdm::ResponseStatus *new_status);
 
     template <typename arg_type, typename reply_type, typename callback_type>
     arg_type *NewArgs(
