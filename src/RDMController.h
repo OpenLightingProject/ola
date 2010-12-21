@@ -143,6 +143,11 @@ class RDMController {
                          const vector<string> &args,
                          string *error);
 
+    bool GetQueuedMessage(const UID &uid,
+                          uint16_t sub_device,
+                          const vector<string> &args,
+                          string *error);
+
     bool GetStatusMessage(const UID &uid,
                           uint16_t sub_device,
                           const vector<string> &args,

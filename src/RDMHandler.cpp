@@ -738,34 +738,45 @@ void ResponseHandler::SetPresetPlaybackMode(const ResponseStatus &status) {
 }
 
 
+void ResponseHandler::DefaultHandler(const ResponseStatus &status,
+                                     uint16_t pid,
+                                     const string &data) {
+  if (!CheckForSuccess(status))
+    return;
+  cout << "Got queued message for pid 0x" << std::hex << pid <<
+    ", length of data was " << data.size();
+}
+
+
 /*
  * Check if a request completed sucessfully, if not display the errors.
  */
 bool ResponseHandler::CheckForSuccess(const ResponseStatus &status) {
   // always terminate for now
   m_ss->Terminate();
-  switch (status.ResponseType()) {
-    case ResponseStatus::TRANSPORT_ERROR:
-      std::cerr << status.Error() << endl;
-      m_exit_code = EX_SOFTWARE;
-      return false;
-    case ResponseStatus::BROADCAST_REQUEST:
-      return false;
-    case ResponseStatus::REQUEST_NACKED:
-      cout << "Request was NACKED with code: ";
-      cout << ola::rdm::NackReasonToString(status.NackReason()) << endl;
-      cout << endl;
-      return false;
-    case ResponseStatus::MALFORMED_RESPONSE:
-      std::cerr << status.Error() << endl;
-      m_exit_code = EX_SOFTWARE;
-      return false;
-    case ResponseStatus::VALID_RESPONSE:
-      return true;
-    default:
-      cout << "Unknown response status " <<
-        static_cast<int>(status.ResponseType());
-      return false;
+  if (!status.error.empty()) {
+    std::cerr << status.error << endl;
+    m_exit_code = EX_SOFTWARE;
+    return false;
   }
+
+  if (status.response_code == ola::rdm::RDM_COMPLETED_OK) {
+    switch (status.response_type) {
+      case ola::rdm::RDM_ACK:
+        return true;
+      case ola::rdm::RDM_ACK_TIMER:
+        // TODO(simon): handle this
+        cout << "Got ACK TIMER" << endl;
+        break;
+      case ola::rdm::RDM_NACK_REASON:
+        cout << "Request was NACKED with code: ";
+        cout << ola::rdm::NackReasonToString(status.NackReason()) << endl;
+        break;
+    }
+  } else if (status.response_code != ola::rdm::RDM_WAS_BROADCAST) {
+    std::cerr << ola::rdm::ResponseCodeToString(status.response_code);
+    m_exit_code = EX_SOFTWARE;
+  }
+  return false;
 }
-// End  implementation
+// End implementation

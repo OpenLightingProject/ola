@@ -148,6 +148,11 @@ void RDMController::LoadMap() {
       &RDMController::NoArgsCheck)->AddSetVerify(
       &RDMController::RootDeviceCheck);
 
+  MakeDescriptor(ola::rdm::PID_QUEUED_MESSAGE,
+                 &RDMController::GetQueuedMessage,
+                 NULL)->AddGetVerify(
+      &RDMController::RootDeviceCheck);
+
   MakeDescriptor(ola::rdm::PID_STATUS_MESSAGES,
                  &RDMController::GetStatusMessage,
                  NULL)->AddGetVerify(
@@ -583,6 +588,24 @@ bool RDMController::ClearCommStatus(const UID &uid,
       m_universe,
       uid,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ClearCommStatus),
+      error);
+}
+
+
+bool RDMController::GetQueuedMessage(const UID &uid,
+                                     uint16_t sub_device,
+                                     const vector<string> &args,
+                                     string *error) {
+  ola::rdm::rdm_status_type status_type;
+  if (args.size() != 1 || (!StringToStatusType(args[0], &status_type))) {
+    *error = "arg must be one of {none, last, error, warning, advisory}";
+    return false;
+  }
+  return m_api->GetQueuedMessage(
+      m_universe,
+      uid,
+      status_type,
+      m_handler,
       error);
 }
 

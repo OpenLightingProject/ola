@@ -163,6 +163,11 @@ class ResponseHandler: public ola::rdm::QueuedMessageHandler {
     void CapturePreset(const ResponseStatus &status);
     void SetPresetPlaybackMode(const ResponseStatus &status);
 
+    // this is called when the queued message doesn't match anything else
+    void DefaultHandler(const ResponseStatus &status,
+                        uint16_t pid,
+                        const string &data);
+
     // this returns the exit code once all is said and done
     uint8_t ExitCode() const { return m_exit_code; }
 
