@@ -322,7 +322,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
                                 ola::proto::RDMResponse *reply,
                                 ola::rdm::ResponseStatus *new_status);
 
-    void OlaClientCore::GetParamFromReply(
+    void GetParamFromReply(
         const string &message_type,
         ola::proto::RDMResponse *reply,
         ola::rdm::ResponseStatus *new_status);
