@@ -113,8 +113,8 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
     void HandleSetFilterResponse(uint8_t return_code,
                                  const uint8_t *data,
                                  unsigned int length);
-    bool ReturnCodeToStatus(uint8_t return_code,
-                            ola::rdm::rdm_response_status *status);
+    bool TriToOlaReturnCode(uint8_t return_code,
+                            ola::rdm::rdm_response_code *code);
     bool ReturnCodeToNackReason(uint8_t return_code,
                                 ola::rdm::rdm_nack_reason *reason);
 

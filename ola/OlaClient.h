@@ -185,6 +185,13 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
                 uint16_t pid,
                 const uint8_t *data = NULL,
                 unsigned int data_length = 0);
+    bool RDMGet(rdm_pid_callback *callback,
+                unsigned int universe,
+                const UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data = NULL,
+                unsigned int data_length = 0);
     bool RDMSet(rdm_callback *callback,
                 unsigned int universe,
                 const UID &uid,

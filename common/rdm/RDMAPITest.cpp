@@ -33,7 +33,7 @@
 using ola::NewSingleCallback;
 using ola::network::HostToNetwork;
 using ola::rdm::RDMAPI;
-using ola::rdm::RDMAPIImplResponseStatus;
+using ola::rdm::ResponseStatus;
 using ola::rdm::ResponseStatus;
 using ola::rdm::UID;
 using std::deque;
@@ -78,6 +78,7 @@ class ExpectedResult {
   }
 };
 
+
 class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
   public:
     bool RDMGet(rdm_callback *callback,
@@ -97,11 +98,41 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
       (void) data;
       (void) data_length;
 
-      RDMAPIImplResponseStatus status;
-      status.was_broadcast = uid.IsBroadcast();
-      status.response_type = ola::rdm::ACK;
+      ResponseStatus status;
+      status.response_code = uid.IsBroadcast() ? ola::rdm::RDM_WAS_BROADCAST:
+        ola::rdm::RDM_COMPLETED_OK;
+      status.response_type = ola::rdm::RDM_ACK;
       status.message_count = 0;
       callback->Run(status, result->return_data);
+
+      delete result;
+      m_get_expected.pop_front();
+      return true;
+    }
+
+    bool RDMGet(rdm_pid_callback *callback,
+                unsigned int universe,
+                const UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data = NULL,
+                unsigned int data_length = 0) {
+      CPPUNIT_ASSERT(m_get_expected.size());
+      const ExpectedResult *result = m_get_expected.front();
+      CPPUNIT_ASSERT_EQUAL(result->universe, universe);
+      CPPUNIT_ASSERT_EQUAL(result->uid, uid);
+      CPPUNIT_ASSERT_EQUAL(result->sub_device, sub_device);
+      CPPUNIT_ASSERT_EQUAL(result->pid, pid);
+
+      (void) data;
+      (void) data_length;
+
+      ResponseStatus status;
+      status.response_code = uid.IsBroadcast() ? ola::rdm::RDM_WAS_BROADCAST:
+        ola::rdm::RDM_COMPLETED_OK;
+      status.response_type = ola::rdm::RDM_ACK;
+      status.message_count = 0;
+      callback->Run(status, pid, result->return_data);
 
       delete result;
       m_get_expected.pop_front();
@@ -127,9 +158,10 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
         CPPUNIT_ASSERT(0 == memcmp(result->data, data, data_length));
       }
 
-      RDMAPIImplResponseStatus status;
-      status.was_broadcast = uid.IsBroadcast();
-      status.response_type = ola::rdm::ACK;
+      ResponseStatus status;
+      status.response_code = uid.IsBroadcast() ? ola::rdm::RDM_WAS_BROADCAST:
+        ola::rdm::RDM_COMPLETED_OK;
+      status.response_type = ola::rdm::RDM_ACK;
       status.message_count = 0;
       callback->Run(status, result->return_data);
 
@@ -139,7 +171,7 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
     }
 
     void AddExpectedGet(
-                        // const RDMAPIImplResponseStatus &status,
+                        // const ResponseStatus &status,
                         const string &return_data,
                         unsigned int universe,
                         const UID &uid,
@@ -244,14 +276,12 @@ class RDMAPITest: public CppUnit::TestFixture {
 
     // check that a RDM command was successful
     void CheckResponseStatus(const ResponseStatus &status) {
-      CPPUNIT_ASSERT_EQUAL(ola::rdm::ResponseStatus::VALID_RESPONSE,
-                           status.ResponseType());
+      CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, status.response_code);
     }
 
     // check that a RDM command was successful and broadcast
     void CheckWasBroadcast(const ResponseStatus &status) {
-      CPPUNIT_ASSERT_EQUAL(ola::rdm::ResponseStatus::BROADCAST_REQUEST,
-                           status.ResponseType());
+      CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_WAS_BROADCAST, status.response_code);
     }
 
     void CheckProxiedDeviceCount(const ResponseStatus &status,
@@ -323,8 +353,8 @@ class RDMAPITest: public CppUnit::TestFixture {
     void CheckMalformedParameterDescription(
         const ResponseStatus &status,
         const ola::rdm::ParameterDescriptor &description) {
-      CPPUNIT_ASSERT_EQUAL(ola::rdm::ResponseStatus::MALFORMED_RESPONSE,
-                           status.ResponseType());
+      CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK,
+                           status.response_code);
       (void) description;
     }
 
@@ -430,7 +460,7 @@ void RDMAPITest::testProxyCommands() {
   CheckForBroadcastError(&error);
   CPPUNIT_ASSERT(!m_api.GetProxiedDevices(
     UNIVERSE,
-    m_bcast_uid,
+    m_group_uid,
     NewSingleCallback(this, &RDMAPITest::CheckProxiedDevices),
     &error));
   CheckForBroadcastError(&error);
@@ -463,7 +493,7 @@ void RDMAPITest::testNetworkCommands() {
   // get comms status
   CPPUNIT_ASSERT(!m_api.GetCommStatus(
     UNIVERSE,
-    m_group_uid,
+    m_bcast_uid,
     NewSingleCallback(this, &RDMAPITest::CheckCommsStatus),
     &error));
   CheckForBroadcastError(&error);
@@ -528,7 +558,7 @@ void RDMAPITest::testNetworkCommands() {
   CheckForBroadcastError(&error);
   CPPUNIT_ASSERT(!m_api.GetStatusIdDescription(
     UNIVERSE,
-    m_bcast_uid,
+    m_group_uid,
     status_id,
     NewSingleCallback(this, &RDMAPITest::CheckLabel),
     &error));
@@ -597,7 +627,7 @@ void RDMAPITest::testRDMInformation() {
   CheckForBroadcastError(&error);
   CPPUNIT_ASSERT(!m_api.GetSupportedParameters(
     UNIVERSE,
-    m_bcast_uid,
+    m_group_uid,
     sub_device,
     NewSingleCallback(this, &RDMAPITest::CheckSupportedParams),
     &error));
@@ -626,7 +656,7 @@ void RDMAPITest::testRDMInformation() {
   CheckForBroadcastError(&error);
   CPPUNIT_ASSERT(!m_api.GetParameterDescription(
     UNIVERSE,
-    m_bcast_uid,
+    m_group_uid,
     pid,
     NewSingleCallback(this, &RDMAPITest::CheckMalformedParameterDescription),
     &error));
@@ -996,7 +1026,7 @@ void RDMAPITest::testDmxSetup() {
   CheckForBroadcastError(&error);
   CPPUNIT_ASSERT(!m_api.GetDMXAddress(
     UNIVERSE,
-    m_bcast_uid,
+    m_group_uid,
     sub_device,
     NewSingleCallback(this, &RDMAPITest::CheckDMXStartAddress),
     &error));

@@ -403,6 +403,35 @@ bool OlaCallbackClient::RDMGet(RDMAPIImplInterface::rdm_callback *callback,
 
 
 /*
+ * Send an RDM Get Command and get the pid it returns.
+ * @param callback the Callback to invoke when this completes
+ * @param universe the universe to send the command on
+ * @param uid the UID to send the command to
+ * @param sub_device the sub device index
+ * @param pid the PID to address
+ * @param data the optional data to send
+ * @param data_length the length of the data
+ * @return true on success, false on failure
+ */
+bool OlaCallbackClient::RDMGet(
+    RDMAPIImplInterface::rdm_pid_callback *callback,
+    unsigned int universe,
+    const ola::rdm::UID &uid,
+    uint16_t sub_device,
+    uint16_t pid,
+    const uint8_t *data,
+    unsigned int data_length) {
+  return m_core->RDMGet(callback,
+                        universe,
+                        uid,
+                        sub_device,
+                        pid,
+                        data,
+                        data_length);
+}
+
+
+/*
  * Send an RDM Set Command
  * @param callback the Callback to invoke when this completes
  * @param universe the universe to send the command on

@@ -34,7 +34,7 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMGetResponse;
 using ola::rdm::UID;
-using ola::rdm::ACK;
+using ola::rdm::RDM_ACK;
 using ola::rdm::ACK_OVERFLOW;
 using std::string;
 using std::vector;
@@ -56,11 +56,11 @@ class QueueingRDMControllerTest: public CppUnit::TestFixture {
     void testQueueOverflow();
 
     void VerifyResponse(
-        ola::rdm::rdm_response_status expected_status,
+        ola::rdm::rdm_response_code expected_code,
         const RDMResponse *expected_response,
         vector<string> expected_packets,
         bool delete_response,
-        ola::rdm::rdm_response_status status,
+        ola::rdm::rdm_response_code code,
         const RDMResponse *response,
         const vector<string> &packets);
 
@@ -81,7 +81,7 @@ class MockRDMController: public ola::rdm::RDMControllerInterface {
     void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
 
     void AddExpectedCall(RDMRequest *request,
-                         ola::rdm::rdm_response_status status,
+                         ola::rdm::rdm_response_code code,
                          RDMResponse *response,
                          const string &packet);
 
@@ -89,7 +89,7 @@ class MockRDMController: public ola::rdm::RDMControllerInterface {
   private:
     typedef struct {
       RDMRequest *request;
-      ola::rdm::rdm_response_status status;
+      ola::rdm::rdm_response_code code;
       RDMResponse *response;
       string packet;
     } expected_call;
@@ -108,17 +108,17 @@ void MockRDMController::SendRDMRequest(const RDMRequest *request,
   vector<string> packets;
   if (!call.packet.empty())
     packets.push_back(call.packet);
-  on_complete->Run(call.status, call.response, packets);
+  on_complete->Run(call.code, call.response, packets);
 }
 
 
 void MockRDMController::AddExpectedCall(RDMRequest *request,
-                                        ola::rdm::rdm_response_status status,
+                                        ola::rdm::rdm_response_code code,
                                         RDMResponse *response,
                                         const string &packet) {
   expected_call call = {
     request,
-    status,
+    code,
     response,
     packet
   };
@@ -143,14 +143,14 @@ void QueueingRDMControllerTest::setUp() {
  * Verify a response
  */
 void QueueingRDMControllerTest::VerifyResponse(
-    ola::rdm::rdm_response_status expected_status,
+    ola::rdm::rdm_response_code expected_code,
     const RDMResponse *expected_response,
     vector<string> expected_packets,
     bool delete_response,
-    ola::rdm::rdm_response_status status,
+    ola::rdm::rdm_response_code code,
     const RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_status, status);
+  CPPUNIT_ASSERT_EQUAL(expected_code, code);
   if (expected_response)
     CPPUNIT_ASSERT((*expected_response) == (*response));
   else
@@ -199,7 +199,7 @@ void QueueingRDMControllerTest::testSendAndReceive() {
   RDMGetResponse expected_command(destination,
                                   source,
                                   0,  // transaction #
-                                  ACK,
+                                  RDM_ACK,
                                   0,  // message count
                                   10,  // sub device
                                   296,  // param id
@@ -290,7 +290,7 @@ void QueueingRDMControllerTest::testAckOverflows() {
       destination,
       source,
       0,  // transaction #
-      ACK,  // response type
+      RDM_ACK,  // response type
       0,  // message count
       10,  // sub device
       296,  // param id
@@ -301,7 +301,7 @@ void QueueingRDMControllerTest::testAckOverflows() {
       destination,
       source,
       0,  // transaction #
-      ACK,  // response type
+      RDM_ACK,  // response type
       0,  // message count
       10,  // sub device
       296,  // param id
@@ -381,7 +381,7 @@ void QueueingRDMControllerTest::testAckOverflows() {
       source,
       source,
       0,  // transaction #
-      ACK,  // response type
+      RDM_ACK,  // response type
       0,  // message count
       10,  // sub device
       296,  // param id
@@ -427,7 +427,7 @@ void QueueingRDMControllerTest::testPauseAndResume() {
   RDMGetResponse expected_command(destination,
                                   source,
                                   0,  // transaction #
-                                  ACK,  // response type
+                                  RDM_ACK,  // response type
                                   0,  // message count
                                   10,  // sub device
                                   296,  // param id

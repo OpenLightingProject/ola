@@ -33,6 +33,7 @@
 #include "ola/Logging.h"
 #include "ola/OlaClientCore.h"
 #include "ola/OlaDevice.h"
+#include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
@@ -685,6 +686,58 @@ bool OlaClientCore::RDMGet(
 
 
 /*
+ * Send an RDM Get Command
+ * @param callback the Callback to invoke when this completes
+ * @param universe the universe to send the command on
+ * @param uid the UID to send the command to
+ * @param sub_device the sub device index
+ * @param pid the PID to address
+ * @param data the optional data to send
+ * @param data_length the length of the data
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::RDMGet(
+    ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t pid,
+    const uint8_t *data,
+    unsigned int data_length) {
+  if (!callback) {
+    OLA_WARN << "RDM callback was null, command to " << uid << " won't be sent";
+    return false;
+  }
+
+  if (!m_connected) {
+    delete callback;
+    return false;
+  }
+
+  ola::proto::RDMRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::RDMResponse *reply = new ola::proto::RDMResponse();
+
+  request.set_universe(universe);
+  ola::proto::UID *pb_uid = request.mutable_uid();
+  pb_uid->set_esta_id(uid.ManufacturerId());
+  pb_uid->set_device_id(uid.DeviceId());
+  request.set_sub_device(sub_device);
+  request.set_param_id(pid);
+  request.set_is_set(false);
+  request.set_data(string(reinterpret_cast<const char*>(data), data_length));
+
+  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+      this,
+      &ola::OlaClientCore::HandleRDMWithPID,
+      NewArgs<rdm_pid_response_args>(controller, reply, callback));
+
+  m_stub->RDMCommand(controller, &request, reply, cb);
+  return true;
+}
+
+
+/*
  * Send an RDM Set Command
  * @param callback the Callback to invoke when this completes
  * @param universe the universe to send the command on
@@ -1010,54 +1063,36 @@ void OlaClientCore::HandleUIDList(uid_list_args *args) {
  * Handle an RDM message
  */
 void OlaClientCore::HandleRDM(rdm_response_args *args) {
-  ola::rdm::RDMAPIImplResponseStatus response_status;
-
   if (!args->callback) {
     FreeArgs(args);
     return;
   }
 
-  response_status.was_broadcast = false;
-  response_status.response_type = args->reply->response_code();
-  response_status.message_count = args->reply->message_count();
-
-  if (args->controller->Failed()) {
-    response_status.error = args->controller->ErrorText();
-  } else {
-    switch (args->reply->response_code()) {
-      case ola::proto::RDM_COMPLETED_OK:
-        break;
-      case ola::proto::RDM_WAS_BROADCAST:
-        response_status.was_broadcast = true;
-        break;
-      case ola::proto::RDM_FAILED_TO_SEND:
-        response_status.error = "Failed to send RDM request";
-        break;
-      case ola::proto::RDM_TIMEOUT:
-        response_status.error = "No response received";
-        break;
-      case ola::proto::RDM_INVALID_RESPONSE:
-        response_status.error = "RDM response was invalid";
-        break;
-      case ola::proto::RDM_UNKNOWN_UID:
-        response_status.error =
-          "Could not find destination UID, request not sent";
-        break;
-      case ola::proto::RDM_CHECKSUM_INCORRECT:
-        response_status.error = "Response checksum invalid";
-        break;
-      case ola::proto::RDM_TRANSACTION_MISMATCH:
-        response_status.error = "Transaction ID mismatch";
-        break;
-      case ola::proto::RDM_SUB_DEVICE_MISMATCH:
-        response_status.error = "Sub device mismatch";
-        break;
-      case ola::proto::RDM_DEVICE_MISMATCH:
-        response_status.error = "Source UID mismatch";
-        break;
-    }
-  }
+  ola::rdm::ResponseStatus response_status;
+  CheckRDMResponseStatus(args->controller,
+                         args->reply,
+                         &response_status);
   args->callback->Run(response_status, args->reply->data());
+  FreeArgs(args);
+}
+
+
+/**
+ * Handle a RDM response, and pass the PID back to the client
+ */
+void OlaClientCore::HandleRDMWithPID(rdm_pid_response_args *args) {
+  if (!args->callback) {
+    FreeArgs(args);
+    return;
+  }
+
+  ola::rdm::ResponseStatus response_status;
+  CheckRDMResponseStatus(args->controller,
+                         args->reply,
+                         &response_status);
+  args->callback->Run(response_status,
+                      args->reply->param_id(),
+                      args->reply->data());
   FreeArgs(args);
 }
 
@@ -1157,5 +1192,78 @@ bool OlaClientCore::RDMCommand(
 
   m_stub->RDMCommand(controller, &request, reply, cb);
   return true;
+}
+
+
+/**
+ * This converts the information in a ola::proto::RDMResponse into a
+ * ResponseStatus object. There are a whole bunch of modes:
+ *
+ * RPC error
+ * Request send error
+ * Response timeout / invalid format
+ * Broadcast request (no response expected)
+ * Ack Timer
+ * Malformed Ack Timer
+ * Nack, with reason
+ * Malformed Nack
+ * Ack
+ * Ack Overflow (should never make it to the client)
+ */
+void OlaClientCore::CheckRDMResponseStatus(
+    SimpleRpcController *controller,
+    ola::proto::RDMResponse *reply,
+    ola::rdm::ResponseStatus *new_status) {
+  new_status->message_count = reply->message_count();
+  new_status->m_param = 0;
+
+  // first we handle rpc failed responses
+  if (controller->Failed()) {
+    new_status->error = controller->ErrorText();
+    return;
+  }
+
+  new_status->response_code = static_cast<ola::rdm::rdm_response_code>(
+      reply->response_code());
+
+  if (new_status->response_code == ola::rdm::RDM_COMPLETED_OK) {
+    new_status->response_type = reply->response_type();
+    stringstream str;
+    switch (new_status->response_type) {
+      case ola::rdm::RDM_ACK:
+        // noop
+        break;
+      case ola::rdm::RDM_ACK_TIMER:
+        GetParamFromReply("ack timer", reply, new_status);
+        break;
+      case ola::rdm::RDM_NACK_REASON:
+        GetParamFromReply("nack", reply, new_status);
+        break;
+      default:
+        OLA_WARN << "Invalid response type 0x" << std::hex << (int)
+          reply->response_type();
+        new_status->response_type = ola::rdm::RDM_INVALID_RESPONSE;
+    }
+  }
+}
+
+
+/**
+ * Extract the uint16_t param for a ACK TIMER or NACK message and add it to the
+ * ResponseStatus.
+ */
+void OlaClientCore::GetParamFromReply(const string &message_type,
+                                      ola::proto::RDMResponse *reply,
+                                      ola::rdm::ResponseStatus *new_status) {
+  uint16_t param;
+  if (reply->data().size() != sizeof(param)) {
+    OLA_WARN << "Invalid PDL size for " << message_type << ", length was " <<
+        reply->data().size();
+    new_status->response_type = ola::rdm::RDM_INVALID_RESPONSE;
+  } else {
+    memcpy(reinterpret_cast<uint8_t*>(&param),
+           reply->data().data(), sizeof(param));
+    new_status->m_param = ola::network::NetworkToHost(param);
+  }
 }
 }  // ola

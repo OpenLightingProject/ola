@@ -686,11 +686,11 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
  * which point we run the callback for the client
  */
 void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
-                                  ola::rdm::rdm_response_status status,
+                                  ola::rdm::rdm_response_code code,
                                   const ola::rdm::RDMResponse *response,
                                   const std::vector<std::string> &packets) {
   tracker->current_count++;
-  if (status != ola::rdm::RDM_WAS_BROADCAST)
+  if (code != ola::rdm::RDM_WAS_BROADCAST)
     tracker->failed = true;
   if (tracker->current_count == tracker->expected_count) {
     // all ports have completed

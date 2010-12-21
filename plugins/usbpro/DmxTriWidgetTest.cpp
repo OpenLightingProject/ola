@@ -71,15 +71,15 @@ class DmxTriWidgetTest: public CppUnit::TestFixture {
     bool m_expect_uids_in_tod;
     void PopulateTod(DmxTriWidget *widget);
     void ValidateTod(const ola::rdm::UIDSet &uids);
-    void ValidateResponse(ola::rdm::rdm_response_status expected_status,
+    void ValidateResponse(ola::rdm::rdm_response_code expected_code,
                           const RDMResponse *expected_response,
                           vector<string> expected_packets,
-                          ola::rdm::rdm_response_status status,
+                          ola::rdm::rdm_response_code code,
                           const RDMResponse *response,
                           const vector<string> &packets);
-    void ValidateStatus(ola::rdm::rdm_response_status expected_status,
+    void ValidateStatus(ola::rdm::rdm_response_code expected_code,
                         vector<string> expected_packets,
-                        ola::rdm::rdm_response_status status,
+                        ola::rdm::rdm_response_code code,
                         const RDMResponse *response,
                         const vector<string> &packets);
     const RDMRequest *NewRequest(const UID &source,
@@ -88,7 +88,7 @@ class DmxTriWidgetTest: public CppUnit::TestFixture {
                                  unsigned int length);
     const RDMRequest *NewQueuedMessageRequest(const UID &source,
                                               const UID &destination,
-                                              uint8_t status);
+                                              uint8_t code);
 
     ola::network::SelectServer m_ss;
     MockUsbWidget m_widget;
@@ -128,13 +128,13 @@ void DmxTriWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
  * Check the response matches what we expected.
  */
 void DmxTriWidgetTest::ValidateResponse(
-    ola::rdm::rdm_response_status expected_status,
+    ola::rdm::rdm_response_code expected_code,
     const RDMResponse *expected_response,
     vector<string> expected_packets,
-    ola::rdm::rdm_response_status status,
+    ola::rdm::rdm_response_code code,
     const RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_status, status);
+  CPPUNIT_ASSERT_EQUAL(expected_code, code);
   CPPUNIT_ASSERT(response);
   CPPUNIT_ASSERT(*expected_response == *response);
   delete response;
@@ -145,15 +145,15 @@ void DmxTriWidgetTest::ValidateResponse(
 
 
 /*
- * Check that we got an unknown UID status
+ * Check that we got an unknown UID code
  */
 void DmxTriWidgetTest::ValidateStatus(
-    ola::rdm::rdm_response_status expected_status,
+    ola::rdm::rdm_response_code expected_code,
     vector<string> expected_packets,
-    ola::rdm::rdm_response_status status,
+    ola::rdm::rdm_response_code code,
     const RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_status, status);
+  CPPUNIT_ASSERT_EQUAL(expected_code, code);
   CPPUNIT_ASSERT(!response);
 
   // the TRIs can't return the actual packets
@@ -187,7 +187,7 @@ const RDMRequest *DmxTriWidgetTest::NewRequest(const UID &source,
 const RDMRequest *DmxTriWidgetTest::NewQueuedMessageRequest(
     const UID &source,
     const UID &destination,
-    uint8_t status) {
+    uint8_t code) {
   return new ola::rdm::RDMGetRequest(
       source,
       destination,
@@ -196,8 +196,8 @@ const RDMRequest *DmxTriWidgetTest::NewQueuedMessageRequest(
       0,  // message count
       10,  // sub device
       ola::rdm::PID_QUEUED_MESSAGE,
-      &status,
-      sizeof(status));
+      &code,
+      sizeof(code));
 }
 
 
@@ -444,7 +444,7 @@ void DmxTriWidgetTest::testSendRDM() {
       destination,
       source,
       0,  // transaction #
-      ola::rdm::ACK,
+      ola::rdm::RDM_ACK,
       1,  // message count
       10,  // sub device
       296,  // param id
@@ -808,7 +808,7 @@ void DmxTriWidgetTest::testAckTimer() {
       destination,
       source,
       0,  // transaction #
-      ola::rdm::ACK_TIMER,
+      ola::rdm::RDM_ACK_TIMER,
       0,  // message count
       10,  // sub device
       296,  // param id
@@ -864,7 +864,7 @@ void DmxTriWidgetTest::testAckOverflow() {
       destination,
       source,
       0,  // transaction #
-      ola::rdm::ACK,
+      ola::rdm::RDM_ACK,
       0,  // message count
       10,  // sub device
       296,  // param id
@@ -929,7 +929,7 @@ void DmxTriWidgetTest::testQueuedMessages() {
       destination,
       source,
       0,  // transaction #
-      ola::rdm::ACK,
+      ola::rdm::RDM_ACK,
       0,  // message count
       10,  // sub device
       0x0060,  // param id

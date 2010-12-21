@@ -35,13 +35,13 @@ namespace rdm {
  * For performance reasons we can take either a single use callback or a
  * permanent callback.
  *
- * @param rdm_response_status the status code for the response
+ * @param rdm_response_code the status code for the response
  * @param RDMResponse a pointer to the response object
  * @param vector<string> a list of strings that contain the raw response
  * messages (if the device supports this, some don't).
  */
 typedef ola::BaseCallback3<void,
-                           rdm_response_status,
+                           rdm_response_code,
                            const RDMResponse*,
                            const std::vector<std::string>&> RDMCallback;
 

@@ -146,7 +146,7 @@ void QueueingRDMController::DispatchNextRequest() {
  * Handle the response to a RemoteGet command
  */
 void QueueingRDMController::HandleRDMResponse(
-    rdm_response_status status,
+    rdm_response_code status,
     const ola::rdm::RDMResponse *response,
     const std::vector<std::string> &packets) {
   m_rdm_request_pending = false;

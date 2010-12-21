@@ -640,17 +640,17 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
   }
 
   ola::rdm::RDMResponse *response = NULL;
-  ola::rdm::rdm_response_status status = ola::rdm::RDM_COMPLETED_OK;
+  ola::rdm::rdm_response_code code = ola::rdm::RDM_COMPLETED_OK;
   ola::rdm::rdm_nack_reason reason;
 
   if (ReturnCodeToNackReason(return_code, &reason)) {
     response = ola::rdm::NackWithReason(request, reason);
-    status = ola::rdm::RDM_COMPLETED_OK;
+    code = ola::rdm::RDM_COMPLETED_OK;
   } else if (return_code == EC_NO_ERROR) {
     if (request->DestinationUID().IsBroadcast()) {
-      status = ola::rdm::RDM_WAS_BROADCAST;
+      code = ola::rdm::RDM_WAS_BROADCAST;
     } else {
-      status = ola::rdm::RDM_COMPLETED_OK;
+      code = ola::rdm::RDM_COMPLETED_OK;
       response = ola::rdm::GetResponseWithPid(
           request,
           pid,
@@ -662,14 +662,14 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
                                             pid,
                                             data,
                                             length,
-                                            ola::rdm::ACK_TIMER);
+                                            ola::rdm::RDM_ACK_TIMER);
   } else if (return_code == EC_RESPONSE_WAIT) {
     // this is a hack, there is no way to expose # of queued messages
     response = ola::rdm::GetResponseWithPid(request,
                                             pid,
                                             data,
                                             length,
-                                            ola::rdm::ACK,
+                                            ola::rdm::RDM_ACK,
                                             1);
   } else if (return_code == EC_RESPONSE_MORE) {
     response = ola::rdm::GetResponseWithPid(request,
@@ -677,17 +677,17 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
                                             data,
                                             length,
                                             ola::rdm::ACK_OVERFLOW);
-  } else if (!ReturnCodeToStatus(return_code, &status)) {
+  } else if (!TriToOlaReturnCode(return_code, &code)) {
     OLA_WARN << "Response was returned with 0x" << std::hex <<
       static_cast<int>(return_code);
-    status = ola::rdm::RDM_INVALID_RESPONSE;
+    code = ola::rdm::RDM_INVALID_RESPONSE;
   }
   delete request;
   std::vector<string> packets;
   // Unfortunately we don't get to see the raw response here, which limits the
   // use of the TRI for testing.
   // TODO(simon): convince Hamish to provide us with this.
-  callback->Run(status, response, packets);
+  callback->Run(code, response, packets);
 }
 
 /*
@@ -724,30 +724,30 @@ void DmxTriWidgetImpl::HandleSetFilterResponse(uint8_t return_code,
 
 
 /**
- * Convert a DMX TRI return code to the appropriate rdm_response_status
+ * Convert a DMX TRI return code to the appropriate rdm_response_code
  * @return true if this was a matching code, false otherwise
  */
-bool DmxTriWidgetImpl::ReturnCodeToStatus(
+bool DmxTriWidgetImpl::TriToOlaReturnCode(
     uint8_t return_code,
-    ola::rdm::rdm_response_status *status) {
+    ola::rdm::rdm_response_code *code) {
   switch (return_code) {
     case EC_RESPONSE_TRANSACTION:
-      *status = ola::rdm::RDM_TRANSACTION_MISMATCH;
+      *code = ola::rdm::RDM_TRANSACTION_MISMATCH;
       break;
     case EC_RESPONSE_SUB_DEVICE:
-      *status = ola::rdm::RDM_SUB_DEVICE_MISMATCH;
+      *code = ola::rdm::RDM_SUB_DEVICE_MISMATCH;
       break;
     case EC_RESPONSE_FORMAT:
-      *status = ola::rdm::RDM_INVALID_RESPONSE;
+      *code = ola::rdm::RDM_INVALID_RESPONSE;
       break;
     case EC_RESPONSE_CHECKSUM:
-      *status = ola::rdm::RDM_CHECKSUM_INCORRECT;
+      *code = ola::rdm::RDM_CHECKSUM_INCORRECT;
       break;
     case EC_RESPONSE_NONE:
-      *status = ola::rdm::RDM_TIMEOUT;
+      *code = ola::rdm::RDM_TIMEOUT;
       break;
     case EC_RESPONSE_IDENTITY:
-      *status = ola::rdm::RDM_DEVICE_MISMATCH;
+      *code = ola::rdm::RDM_DEVICE_MISMATCH;
       break;
     default:
       return false;

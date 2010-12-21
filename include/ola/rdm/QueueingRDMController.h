@@ -63,7 +63,7 @@ class QueueingRDMController: public RDMControllerInterface {
     void MaybeSendRDMRequest();
     void DispatchNextRequest();
 
-    void HandleRDMResponse(rdm_response_status status,
+    void HandleRDMResponse(rdm_response_code status,
                            const ola::rdm::RDMResponse *response,
                            const std::vector<std::string> &packets);
 };

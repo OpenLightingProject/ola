@@ -699,30 +699,41 @@ void OlaServerServiceImpl::HandleRDMResponse(
     ola::proto::RDMResponse* response,
     google::protobuf::Closure* done,
     bool include_raw_packets,
-    ola::rdm::rdm_response_status status,
+    ola::rdm::rdm_response_code code,
     const RDMResponse *rdm_response,
     const vector<string> &packets) {
 
   response->set_response_code(
-      static_cast<ola::proto::RDMResponseCode>(status));
+      static_cast<ola::proto::RDMResponseCode>(code));
 
-  if (status == ola::rdm::RDM_COMPLETED_OK) {
-    if (response) {
-      response->set_response_type(rdm_response->ResponseType());
-      response->set_message_count(rdm_response->MessageCount());
-      response->set_param_id(rdm_response->ParamId());
-
-      if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
-        const string data(
-            reinterpret_cast<const char*>(rdm_response->ParamData()),
-            rdm_response->ParamDataSize());
-        response->set_data(data);
-      } else {
-        response->set_data("");
-      }
+  if (code == ola::rdm::RDM_COMPLETED_OK) {
+    if (!rdm_response) {
+      OLA_WARN << "RDM code was ok but response was NULL";
+      response->set_response_code(static_cast<ola::proto::RDMResponseCode>(
+            ola::rdm::RDM_INVALID_RESPONSE));
     } else {
-      OLA_WARN << "RDM state was ok but response was NULL";
-      controller->SetFailed("Missing Response");
+      uint8_t response_type = rdm_response->ResponseType();
+      if (response_type <= ola::rdm::RDM_NACK_REASON) {
+        response->set_response_type(
+            static_cast<ola::proto::RDMResponseType>(response_type));
+        response->set_message_count(rdm_response->MessageCount());
+        response->set_param_id(rdm_response->ParamId());
+
+        if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
+          const string data(
+              reinterpret_cast<const char*>(rdm_response->ParamData()),
+              rdm_response->ParamDataSize());
+          response->set_data(data);
+        } else {
+          response->set_data("");
+        }
+      } else if (response) {
+        OLA_WARN <<
+          "RDM response present, but response type is invalid, was 0x" <<
+          std::hex << static_cast<int>(response_type);
+        response->set_response_code(static_cast<ola::proto::RDMResponseCode>(
+              ola::rdm::RDM_INVALID_RESPONSE));
+      }
     }
   }
 
@@ -733,6 +744,7 @@ void OlaServerServiceImpl::HandleRDMResponse(
     }
   }
   done->Run();
+  (void) controller;
 }
 
 

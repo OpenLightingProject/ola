@@ -81,10 +81,10 @@ class DummyPortTest: public CppUnit::TestFixture {
     }
 
     void setUp() { m_expected_response = NULL; }
-    void HandleRDMResponse(ola::rdm::rdm_response_status status,
+    void HandleRDMResponse(ola::rdm::rdm_response_code code,
                            const RDMResponse *response,
                            const vector<string> &packets);
-    void SetExpectedResponse(ola::rdm::rdm_response_status status,
+    void SetExpectedResponse(ola::rdm::rdm_response_code code,
                              const RDMResponse *response);
     void Verify() { CPPUNIT_ASSERT(!m_expected_response); }
 
@@ -99,7 +99,7 @@ class DummyPortTest: public CppUnit::TestFixture {
     UID m_expected_uid;
     UID m_test_source;
     MockDummyPort m_port;
-    ola::rdm::rdm_response_status m_expected_status;
+    ola::rdm::rdm_response_code m_expected_code;
     const RDMResponse *m_expected_response;
 
     void checkSubDeviceOutOfRange(ola::rdm::rdm_pid pid);
@@ -111,16 +111,16 @@ class DummyPortTest: public CppUnit::TestFixture {
 CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
 
 
-void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_status status,
+void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const ola::rdm::RDMResponse *response,
                                       const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(m_expected_status, status);
+  CPPUNIT_ASSERT_EQUAL(m_expected_code, code);
   if (m_expected_response)
     CPPUNIT_ASSERT(*m_expected_response == *response);
   else
     CPPUNIT_ASSERT_EQUAL(m_expected_response, response);
 
-  if (status == ola::rdm::RDM_COMPLETED_OK) {
+  if (code == ola::rdm::RDM_COMPLETED_OK) {
     CPPUNIT_ASSERT(response);
     CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
     ola::rdm::RDMResponse *raw_response =
@@ -133,9 +133,9 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_status status,
   m_expected_response = NULL;
 }
 
-void DummyPortTest::SetExpectedResponse(ola::rdm::rdm_response_status status,
+void DummyPortTest::SetExpectedResponse(ola::rdm::rdm_response_code code,
                                         const RDMResponse *response) {
-  m_expected_status = status;
+  m_expected_code = code;
   m_expected_response = response;
 }
 

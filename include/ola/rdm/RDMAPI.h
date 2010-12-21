@@ -47,56 +47,6 @@ using ola::SingleUseCallback4;
 
 
 /*
- * Represents the state of a response.
- * RDM requests can fail in a number of ways:
- *  - transport error talking to the OLA server
- *  - no response received (time out)
- *  - response was NACKED
- *  - the param data wasn't what we expected
- * This object describes the response state. ResponseType() type should be
- * checked first, and for anything other than NACK_REASON & VALID_RESPONSE,
- * there will be a human readable error in Error(). In the event of a
- * NACK_REASON, NackReason() contains the error code (unless it itself was
- * malformed, in which case MALFORMED_RESPONSE is used).
- */
-class ResponseStatus {
-  public:
-    ResponseStatus(const RDMAPIImplResponseStatus &status,
-                   const string &data);
-
-    typedef enum {
-      TRANSPORT_ERROR,
-      BROADCAST_REQUEST,
-      REQUEST_NACKED,
-      MALFORMED_RESPONSE,
-      VALID_RESPONSE,
-    } response_type;
-
-    // This indicates this result of the command
-    response_type ResponseType() const { return m_response_type; }
-    // The NACK reason if the type was NACK_REASON
-    uint16_t NackReason() const { return m_nack_reason; }
-    // Provides an error string for the user
-    const string& Error() const { return m_error; }
-
-    // the number of messages remaining
-    uint8_t MessageCount() const { return m_message_count; }
-
-    // Used to change the response type to malformed, with an error string
-    void MalformedResponse(const string &error) {
-      m_response_type = MALFORMED_RESPONSE;
-      m_error = error;
-    }
-
-  private:
-    response_type m_response_type;
-    uint16_t m_nack_reason;
-    uint8_t m_message_count;
-    string m_error;
-};
-
-
-/*
  * Represents a Status Message
  */
 typedef struct {
@@ -955,33 +905,33 @@ class RDMAPI {
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const string&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleBoolResponse(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            bool> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleU8Response(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            uint8_t> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleU32Response(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            uint32_t> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleEmptyResponse(
         SingleUseCallback1<void, const ResponseStatus&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     // specific handlers follow
@@ -990,14 +940,14 @@ class RDMAPI {
                          const ResponseStatus&,
                          uint16_t,
                          bool> *callback,
-      const RDMAPIImplResponseStatus &status,
+      const ResponseStatus &status,
       const string &data);
 
     void _HandleGetProxiedDevices(
       SingleUseCallback2<void,
                          const ResponseStatus&,
                          const vector<UID>&> *callback,
-      const RDMAPIImplResponseStatus &status,
+      const ResponseStatus &status,
       const string &data);
 
     void _HandleGetCommStatus(
@@ -1006,70 +956,70 @@ class RDMAPI {
                            uint16_t,
                            uint16_t,
                            uint16_t> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetStatusMessage(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const vector<StatusMessage>&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetSubDeviceReporting(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            uint8_t> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetSupportedParameters(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const vector<uint16_t>&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetParameterDescriptor(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const ParameterDescriptor&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetDeviceDescriptor(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const DeviceDescriptor&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetProductDetailIdList(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const vector<uint16_t>&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetLanguageCapabilities(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const vector<string>&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetLanguage(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const string&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetBootSoftwareVersion(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            uint32_t> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetDMXPersonality(
@@ -1077,7 +1027,7 @@ class RDMAPI {
                            const ResponseStatus&,
                            uint8_t,
                            uint8_t> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetDMXPersonalityDescription(
@@ -1086,21 +1036,21 @@ class RDMAPI {
                            uint8_t,
                            uint16_t,
                            const string&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetDMXAddress(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            uint16_t> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetSlotInfo(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const vector<SlotDescriptor>&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetSlotDescription(
@@ -1108,35 +1058,35 @@ class RDMAPI {
                            const ResponseStatus&,
                            uint16_t,
                            const string&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetSlotDefaultValues(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const vector<SlotDefault>&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleGetSensorDefinition(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const SensorDescriptor&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleSensorValue(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const SensorValueDescriptor&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleClock(
         SingleUseCallback2<void,
                            const ResponseStatus&,
                            const ClockValue&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandleSelfTestDescription(
@@ -1144,7 +1094,7 @@ class RDMAPI {
                            const ResponseStatus&,
                            uint8_t,
                            const string&> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
     void _HandlePlaybackMode(
@@ -1152,7 +1102,7 @@ class RDMAPI {
                            const ResponseStatus&,
                            uint16_t,
                            uint8_t> *callback,
-        const RDMAPIImplResponseStatus &status,
+        const ResponseStatus &status,
         const string &data);
 
   private:
