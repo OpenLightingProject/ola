@@ -137,7 +137,7 @@ class UsbProWidgetImpl {
 
 
 /*
- * An DMX TRI Device
+ * An Usb Pro Widget
  */
 class UsbProWidget {
   public:

@@ -41,7 +41,7 @@ string ResponseCodeToString(rdm_response_code status) {
       return "Completed Ok";
       break;
     case RDM_WAS_BROADCAST:
-      return "Request was broacast";
+      return "Request was broadcast";
       break;
     case RDM_FAILED_TO_SEND:
       return "Failed to send request";

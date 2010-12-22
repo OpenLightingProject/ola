@@ -385,7 +385,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
       OLA_WARN << "Can't find UID " << request->DestinationUID() <<
         " in the output universe map, dropping request";
       std::vector<std::string> packets;
-      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+      callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
       delete request;
     } else {
       iter->second->HandleRDMRequest(request, callback);
