@@ -28,7 +28,7 @@ from ola.OlaClient import Universe
 
 def Usage():
   print textwrap.dedent("""
-  Usage: ola_plugin_indo.py [--plugin <plugin_id>]
+  Usage: ola_plugin_info.py [--plugin <plugin_id>]
 
   Display a list of plugins, or a description for a particular plugin.
 

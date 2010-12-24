@@ -16,7 +16,10 @@ output_files = ArtnetConfigMessages_pb2.py Ola_pb2.py \
 
 BUILT_SOURCES = $(output_files)
 nodist_pkgpython_PYTHON = $(output_files)
-pkgpython_PYTHON = OlaClient.py __init__.py
+pkgpython_PYTHON = OlaClient.py RDMAPI.py PidStore.py UID.py __init__.py
+
+piddir = $(pid_datadir)
+dist_pid_DATA = pids.config
 
 ArtnetConfigMessages_pb2.py: $(artnet_proto)
 	protoc --python_out ./ -I $(artnet_path) $(artnet_proto)
@@ -29,5 +32,7 @@ UsbProConfigMessages_pb2.py: $(usbpro_proto)
 
 clean-local:
 	rm -f ArtnetConfigMessages_pb2.* Ola_pb2.* UsbProConfigMessages_pb2.*
+
+TESTS = UIDTest.py
 
 endif

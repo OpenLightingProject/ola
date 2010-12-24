@@ -20,9 +20,11 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import array
+import struct
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
 from ola import Ola_pb2
+from ola.UID import UID
 
 """The port that the OLA server listens on."""
 OLA_PORT = 9010
@@ -35,11 +37,23 @@ class Plugin(object):
     name: the name of this plugin
   """
   def __init__(self, plugin_id, name):
-    self.id = plugin_id
-    self.name = name
+    self._id = plugin_id
+    self._name = name
+
+  @property
+  def id(self):
+    return self._id
+
+  @property
+  def name(self):
+    return self._name
 
   def __cmp__(self, other):
-    return cmp(self.id, other.id)
+    return cmp(self._id, other._id)
+
+  def __str__(self):
+    return 'Plugin %d (%s)' % (self._id, self,_name)
+
 
 # Populate the Plugin class attributes from the protobuf
 for value in Ola_pb2._PLUGINIDS.values:
@@ -59,15 +73,39 @@ class Device(object):
   """
   def __init__(self, device_id, alias, name, plugin_id, input_ports,
                output_ports):
-    self.id = device_id
-    self.alias = alias
-    self.name = name
-    self.plugin_id = plugin_id
-    self.input_ports = sorted(input_ports)
-    self.output_ports = sorted(output_ports)
+    self._id = device_id
+    self._alias = alias
+    self._name = name
+    self._plugin_id = plugin_id
+    self._input_ports = sorted(input_ports)
+    self._output_ports = sorted(output_ports)
+
+  @property
+  def id(self):
+    return self._id
+
+  @property
+  def alias(self):
+    return self._alias
+
+  @property
+  def name(self):
+    return self._name
+
+  @property
+  def plugin_id(self):
+    return self._plugin_id
+
+  @property
+  def input_ports(self):
+    return self._input_ports
+
+  @property
+  def output_ports(self):
+    return self._output_ports
 
   def __cmp__(self, other):
-    return cmp(self.alias, other.alias)
+    return cmp(self._alias, other._alias)
 
 
 class Port(object):
@@ -80,13 +118,29 @@ class Port(object):
     description: the description of the port
   """
   def __init__(self, port_id, universe, active, description):
-    self.id = port_id
-    self.universe = universe
-    self.active = active
-    self.description = description
+    self._id = port_id
+    self._universe = universe
+    self._active = active
+    self._description = description
+
+  @property
+  def id(self):
+    return self._id
+
+  @property
+  def universe(self):
+    return self._universe
+
+  @property
+  def action(self):
+    return self._active
+
+  @property
+  def description(self):
+    return self._description
 
   def __cmp__(self, other):
-    return cmp(self.id, other.id)
+    return cmp(self._id, other._id)
 
 
 class Universe(object):
@@ -102,12 +156,24 @@ class Universe(object):
   HTP = Ola_pb2.HTP
 
   def __init__(self, universe_id, name, merge_mode):
-    self.id = universe_id
-    self.name = name
-    self.merge_mode = merge_mode
+    self._id = universe_id
+    self._name = name
+    self._merge_mode = merge_mode
+
+  @property
+  def id(self):
+    return self._id
+
+  @property
+  def name(self):
+    return self._name
+
+  @property
+  def merge_mode(self):
+    return self._merge_mode
 
   def __cmp__(self, other):
-    return cmp(self.id, other.id)
+    return cmp(self._id, other._id)
 
 
 class RequestStatus(object):
@@ -119,13 +185,152 @@ class RequestStatus(object):
   """
   SUCCESS, FAILED, CANCELLED = range(3)
 
-  def __init__(self, state=SUCCESS, message=None):
-    self.state = state
-    self.message = message
+  def __init__(self, controller):
+    if controller.Failed():
+      self._state = self.FAILED
+
+    elif controller.IsCanceled():
+      self._state = self.CANCELLED
+      self._message = controller.ErrorText()
+    else:
+      self._state = self.SUCCESS
+      self._message = None
 
   def Succeeded(self):
     """Returns true if this request succeeded."""
-    return self.state == self.SUCCESS
+    return self._state == self.SUCCESS
+
+  @property
+  def state(self):
+    return self._state
+
+  @property
+  def message(self):
+    return self._message
+
+
+class RDMRequestStatus(RequestStatus):
+  """Represents the status of a RDM request.
+
+  Attributes:
+    state: the state of the operation
+    message: an error message if it failed
+    rdm_ResponseCode: The response code for the RDM request
+    rdm_response_type: The response type (ACK, ACK_TIMER, NACK_REASON) for
+      the request.
+    nack_reason: If the response type was NACK_REASON, this is the reason for
+      the NACK.
+    ack_timer: If the response type was ACK_TIMER, this is the number of ms to
+      wait before checking for queued messages.
+  """
+
+  RESPONSE_CODES_TO_STRING = {
+      Ola_pb2.RDM_COMPLETED_OK: 'Ok',
+      Ola_pb2.RDM_WAS_BROADCAST: 'Request was broadcast',
+      Ola_pb2.RDM_FAILED_TO_SEND: 'Failed to send request',
+      Ola_pb2.RDM_TIMEOUT: 'Response Timeout',
+      Ola_pb2.RDM_INVALID_RESPONSE: 'Invalid Response',
+      Ola_pb2.RDM_UNKNOWN_UID: 'Unknown UID',
+      Ola_pb2.RDM_CHECKSUM_INCORRECT: 'Incorrect Checksum',
+      Ola_pb2.RDM_TRANSACTION_MISMATCH: 'Transaction number mismatch',
+      Ola_pb2.RDM_SUB_DEVICE_MISMATCH: 'Sub device mismatch',
+      Ola_pb2.RDM_DEVICE_MISMATCH: 'Device mismatch',
+  }
+
+  NR_UNKNOWN_PID = 0
+  NR_FORMAT_ERROR = 1
+  NR_HARDWARE_FAULT = 2
+  NR_PROXY_REJECT = 3
+  NR_WRITE_PROTECT = 4
+  NR_UNSUPPORTED_COMMAND_CLASS = 5
+  NR_DATA_OUT_OF_RANGE = 6
+  NR_BUFFER_FULL = 7
+  NR_PACKET_SIZE_UNSUPPORTED = 8
+  NR_SUB_DEVICE_OUT_OF_RANGE = 9
+  NR_PROXY_BUFFER_FULL = 10
+
+  NACK_REASONS_TO_STRING = {
+      NR_UNKNOWN_PID: 'Unknown PID',
+      NR_FORMAT_ERROR: 'Format error',
+      NR_HARDWARE_FAULT: 'Hardware fault',
+      NR_PROXY_REJECT: 'Proxy reject',
+      NR_WRITE_PROTECT: 'Write protect',
+      NR_UNSUPPORTED_COMMAND_CLASS: 'Unsupported command class',
+      NR_DATA_OUT_OF_RANGE: 'Data out of range',
+      NR_BUFFER_FULL: 'Buffer full',
+      NR_PACKET_SIZE_UNSUPPORTED: 'Packet size unsupported',
+      NR_SUB_DEVICE_OUT_OF_RANGE: 'Sub device out of range',
+      NR_PROXY_BUFFER_FULL: 'Proxy buffer full'
+  }
+
+  def __init__(self, controller, response):
+    super(RDMRequestStatus, self).__init__(controller)
+    self._ResponseCode = response.response_code
+    self._response_type = response.response_type
+    self._queued_messages = response.message_count
+    self._param = None
+
+    if self.Succeeded() and self.response_code == Ola_pb2.RDM_COMPLETED_OK:
+      # check for ack timer or nack
+      if self.response_type == Ola_pb2.RDM_NACK_REASON:
+        self._param = self._get_short_from_data(response.data)
+        if self._param is None:
+          self.response_code = Ola_pb2.RDM_INVALID_RESPONSE
+      elif self.response_type == Ola_pb2.RDM_ACK_TIMER:
+        self._param = self._get_short_from_data(response.data)
+        if self._param is None:
+          self.response_code = Ola_pb2.RDM_INVALID_RESPONSE
+
+  def ResponseCode(self):
+    return self._ResponseCode
+
+  def SetResponseCode(self, code):
+    self._ResponseCode = code
+
+  response_code = property(ResponseCode, SetResponseCode, None)
+
+  def ResponseCodeAsString(self):
+    return self.RESPONSE_CODES_TO_STRING.get(self._ResponseCode,
+                                             'Unknown')
+
+  @property
+  def response_type(self):
+    return self._response_type
+
+  @property
+  def queued_messages(self):
+    return self._queued_messages
+
+  @property
+  def nack_reason(self):
+    return self._param
+
+  def NackReasonAsString(self):
+    return self.NACK_REASONS_TO_STRING.get(self._param, 'Unknown')
+
+  def WasSuccessfull(self):
+    """Returns true if this RDM request returns a ACK response."""
+    return (self.Succeeded() and
+            self.response_code == OlaClient.RDM_COMPLETED_OK and
+            self.response_type == OlaClient.RDM_ACK)
+
+  @property
+  def ack_timer(self):
+    return 100 * self._param
+
+  def _get_short_from_data(self, data):
+    """Try to unpack the binary data into a short.
+
+    Args:
+      data: the binary data
+
+    Returns:
+      value: None if the unpacking failed
+    """
+    try:
+      return struct.unpack('!h', data)[0]
+    except struct.error:
+      return None
 
 
 class OlaClient(Ola_pb2.OlaClientService):
@@ -332,21 +537,78 @@ class OlaClient(Ola_pb2.OlaClientService):
     response = Ola_pb2.Ack()
     callback(response)
 
-  def _CreateStateFromController(self, controller):
-    """Return a Status object given a RpcController object.
+  def FetchUIDList(self, universe, callback):
+    """Used to get a list of UIDs for a particular universe.
 
     Args:
-      controller: An RpcController object.
-
-    Returns:
-      A RequestStatus object.
+      universe: The universe to get the UID list for.
+      callback: The function to call once complete, takes two arguments, a
+        RequestStatus object and a iterable of UIDs.
     """
-    if controller.Failed():
-      return RequestStatus(RequestStatus.FAILED, controller.ErrorText())
-    elif controller.IsCanceled():
-      return RequestStatus(RequestStatus.CANCELLED, controller.ErrorText())
-    else:
-      return RequestStatus()
+    controller = SimpleRpcController()
+    request = Ola_pb2.UniverseRequest()
+    request.universe = universe
+    done = lambda x, y: self._FetchUIDsComplete(callback, x, y)
+    self._stub.GetUIDs(controller, request, done)
+
+  def RunRDMDiscovery(self, universe, callback):
+    """Triggers RDM discovery for a universe.
+
+    Args:
+      universe: The universe to run discovery for.
+      callback: The function to call once complete, takes one argument, a
+        RequestStatus object.
+    """
+    controller = SimpleRpcController()
+    request = Ola_pb2.UniverseRequest()
+    request.universe = universe
+    done = lambda x, y: self._AckMessageComplete(callback, x, y)
+    self._stub.ForceDiscovery(controller, request, done)
+
+  def RDMGet(self, universe, uid, sub_device, param_id, callback, data = ''):
+    """Send an RDM get command.
+
+    Args:
+      universe: The universe to get the UID list for.
+      uid: A UID object
+      sub_device: The sub device index
+      param_id: the param ID
+      callback: The function to call once complete, takes two arguments, a
+        RequestStatus object and
+      data: the data to send
+    """
+    return self._RDMMessage(universe, uid, sub_device, param_id, callback,
+                            data);
+
+  def RDMSet(self, universe, uid, sub_device, param_id, callback, data = ''):
+    """Send an RDM set command.
+
+    Args:
+      universe: The universe to get the UID list for.
+      uid: A UID object
+      sub_device: The sub device index
+      param_id: the param ID
+      callback: The function to call once complete, takes two arguments, a
+        RequestStatus object and
+      data: the data to send
+    """
+    return self._RDMMessage(universe, uid, sub_device, param_id, callback,
+                            data, set = True);
+
+  def _RDMMessage(self, universe, uid, sub_device, param_id, callback, data,
+                  set = False):
+    controller = SimpleRpcController()
+    request = Ola_pb2.RDMRequest()
+    request.universe = universe
+    request.uid.esta_id = uid.manufacturer_id
+    request.uid.device_id = uid.device_id
+    request.sub_device = sub_device
+    request.param_id = param_id
+    request.data = data
+    request.is_set = set
+    done = lambda x, y: self._RDMCommandComplete(callback, x, y)
+    self._stub.RDMCommand(controller, request, done)
+    return True
 
   def _GetPluginsComplete(self, callback, controller, response):
     """Called when the list of plugins is returned.
@@ -358,7 +620,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
-    status = self._CreateStateFromController(controller)
+    status = RequestStatus(controller)
     if not status.Succeeded():
       return
 
@@ -376,7 +638,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
-    status = self._CreateStateFromController(controller)
+    status = RequestStatus(controller)
     if not status.Succeeded():
       return
     callback(status, response.description)
@@ -391,7 +653,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
-    status = self._CreateStateFromController(controller)
+    status = RequestStatus(controller)
     if not status.Succeeded():
       return
 
@@ -429,7 +691,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
-    status = self._CreateStateFromController(controller)
+    status = RequestStatus(controller)
     if not status.Succeeded():
       return
 
@@ -447,7 +709,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
-    status = self._CreateStateFromController(controller)
+    status = RequestStatus(controller)
     if not status.Succeeded():
       return
 
@@ -465,7 +727,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
-    status = self._CreateStateFromController(controller)
+    status = RequestStatus(controller)
     if not status.Succeeded():
       return
     callback(status)
@@ -480,13 +742,50 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
-    status = self._CreateStateFromController(controller)
+    status = RequestStatus(controller)
     if not status.Succeeded():
       return
     callback(status, response.data)
+
+  def _FetchUIDsComplete(self, callback, controller, response):
+    """Called when a FetchUIDList request completes.
+
+    Args:
+      callback: the callback to run
+      controller: an RpcController
+      response: an DeviceConfigReply message.
+    """
+    if not callback:
+      return
+    status = RequestStatus(controller)
+    uids = []
+    for uid in response.uid:
+      uids.append(UID(uid.esta_id, uid.device_id))
+    uids.sort()
+    callback(status, uids)
+
+  def _RDMCommandComplete(self, callback, controller, response):
+    """Called when a RDM request completes.
+
+    Args:
+      callback: the callback to run
+      controller: an RpcController
+      response: an DeviceConfigReply message.
+    """
+    if not callback:
+      return
+
+    status = RDMRequestStatus(controller, response)
+    callback(status, response.param_id, response.data, response.raw_response)
 
 # Populate the patch & register actions
 for value in Ola_pb2._PATCHACTION.values:
   setattr(OlaClient, value.name, value.number)
 for value in Ola_pb2._REGISTERACTION.values:
+  setattr(OlaClient, value.name, value.number)
+
+# populate the RDM response codes & types
+for value in Ola_pb2._RDMRESPONSECODE.values:
+  setattr(OlaClient, value.name, value.number)
+for value in Ola_pb2._RDMRESPONSETYPE.values:
   setattr(OlaClient, value.name, value.number)
