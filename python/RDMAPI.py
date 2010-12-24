@@ -22,6 +22,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import sys
 from ola.UID import UID
 from ola.OlaClient import OlaClient
+from ola import PidStore
 
 
 class RDMAPI(object):
@@ -38,7 +39,7 @@ class RDMAPI(object):
     self._pid_store = pid_store
     self._strict_checks = strict_checks
 
-  def Get(self, universe, uid, sub_device, pid, callback):
+  def Get(self, universe, uid, sub_device, pid, callback, args = []):
     """Send a RDM Get message.
 
     Args:
@@ -47,30 +48,20 @@ class RDMAPI(object):
       sub_device: The Sub Device to send the request to.
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
+      args: The args to pack into the param data section.
 
     Return:
       True if sent ok, False otherwise.
     """
-    if self._strict_checks:
-      if uid.IsBroadcast():
-        print >> sys.stderr, "Can't send GET to broadcast address %s" % uid
-        return False
+    if self._strict_checks and uid.IsBroadcast():
+      print >> sys.stderr, "Can't send GET to broadcast address %s" % uid
+      return False
 
-      args = {
-        'uid': uid,
-        'sub_device': sub_device,
-      }
-      if not pid.ValidateGet(args):
-        return False
+    return self._GenericSendRequest(universe, uid, sub_device, pid, callback,
+                                    args, PidStore.RDM_GET)
 
-    return self._client.RDMGet(
-        universe,
-        uid,
-        sub_device,
-        pid.value,
-        self._CreateCallback(callback))
 
-  def Set(self, universe, uid, sub_device, pid, callback):
+  def Set(self, universe, uid, sub_device, pid, callback, args = []):
     """Send a RDM Set message.
 
     Args:
@@ -79,40 +70,71 @@ class RDMAPI(object):
       sub_device: The Sub Device to send the request to.
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
+      args: The args to pack into the param data section.
+
+    Return:
+      True if sent ok, False otherwise.
+    """
+    return self._GenericSendRequest(universe, uid, sub_device, pid, callback,
+                                    args, PidStore.RDM_SET)
+
+  def _GenericSendRequest(self, universe, uid, sub_device, pid, callback, args,
+                          request_type):
+    """Send a RDM Request.
+
+    Args:
+      universe: The universe to send the request on.
+      uid: The UID to address the request to.
+      sub_device: The Sub Device to send the request to.
+      pid: A PID object that describes the format of the request.
+      callback: The callback to run when the request completes.
+      args: The args to pack into the param data section.
+      request_type: True for a Set request, False for a Get request
 
     Return:
       True if sent ok, False otherwise.
     """
     if self._strict_checks:
-      args = {
+      request_params = {
         'uid': uid,
         'sub_device': sub_device,
       }
-      if not pid.ValidateSet(args):
+      if not pid.ValidateAddressing(request_params, request_type):
         return False
 
-    return self._client.RDMSet(
+    data = pid.Pack(args, request_type)
+    if data is None:
+      print >> sys.stderr, 'Could not pack data'
+      return False
+
+    if request_type == PidStore.RDM_SET:
+      method = self._client.RDMSet
+    else:
+      method = self._client.RDMGet
+
+    return method(
         universe,
         uid,
         sub_device,
         pid.value,
-        self._CreateCallback(callback, is_set = True))
+        self._CreateCallback(callback, request_type),
+        data)
 
-  def _GenericHandler(self, callback, is_set, status, pid, data,
+  def _GenericHandler(self, callback, request_type, status, pid, data,
                       unused_raw_data):
     obj = None
     pid_descriptor = self._pid_store.get(pid)
     if status.WasSuccessfull():
       if pid_descriptor:
-        obj = pid_descriptor.Unpack(data, is_set)
+        obj = pid_descriptor.Unpack(data, request_type)
         if obj is None:
           status.response_code = RDMAPI.RDM_INVALID_RESPONSE
       else:
         obj = data
     callback(status, pid, obj)
 
-  def _CreateCallback(self, callback, is_set = False):
+  def _CreateCallback(self, callback, request_type):
     return lambda s, p, d, r: self._GenericHandler(
         callback,
-        is_set,
+        request_type,
         s, p, d, r)

@@ -30,9 +30,12 @@ ROOT_DEVICE = 0
 MAX_VALID_SUB_DEVICE = 0x0200;
 ALL_SUB_DEVICES = 0xffff
 
+RDM_GET, RDM_SET = range(2)
+
 class Pid(object):
   """A class that describes everything about a PID."""
-  def __init__(self, name, value, get_format = None, set_format = None,
+  def __init__(self, name, value, get_request = None, get_response = None,
+               set_request = None, set_response = None,
                get_validators = [], set_validators = []):
     """Create a new PID.
 
@@ -44,8 +47,10 @@ class Pid(object):
     """
     self._name = name
     self._value = value
-    self._get_format = get_format
-    self._set_format = set_format
+    self._get_request = get_request
+    self._get_response = get_response
+    self._set_request = set_request
+    self._set_response = set_response
     self._get_validators = get_validators
     self._set_validators = set_validators
 
@@ -57,21 +62,54 @@ class Pid(object):
   def value(self):
     return self._value
 
-  def GetSupported(self):
-    return self._get_format is not None
+  def RequestSupported(self, request_type):
+    if request_type == RDM_SET:
+      return self._set_request is not None
+    else:
+      return self._get_request is not None
 
-  def SetSupported(self):
-    return self._set_format is not None
+  def CheckArgs(self, args, request_type):
+    """Check the args against the list of atoms.
 
-  def ValidateGet(self, args):
-    return self._CheckValidators(self._get_validators, args)
+    Args:
+      args: A list of strings
+      request_type: either RDM_GET or RDM_SET
 
-  def ValidateSet(self, args):
-    return self._CheckValidators(self._set_validators, args)
+    Returns:
+      None if the args failed verification, otherwise a list of arguments,
+      converted to the correct types.
+    """
+    if request_type == RDM_SET:
+      atoms = self._set_request
+    else:
+      atoms = self._get_request
 
-  def _CheckValidators(self, validators, args):
+    if len(atoms) > len(args):
+      print >> sys.stderr, 'Insufficient number of arguments'
+      return None
+    elif len(atoms) < len(args):
+      print >> sys.stderr, 'Too many arguments'
+      return None
+
+    atoms_and_args = zip(atoms, args)
+    sanitized_args = []
+    for atom, arg in atoms_and_args:
+      santizied_arg = atom.ValidArg(arg)
+      if santizied_arg is None:
+        print >> sys.stderr, (
+            'Invalid value `%s` for arg `%s`' % (arg, atom.name))
+        return None
+      sanitized_args.append(santizied_arg)
+    return sanitized_args
+
+  def ValidateAddressing(self, args, request_type):
+    if request_type == RDM_SET:
+      validators = self._set_validators
+    else:
+      validators = self._get_validators
+
     args['pid'] = self
-    for validator in self._get_validators:
+    for validator in validators:
       if not validator(args):
         return False
     return True
@@ -80,12 +118,26 @@ class Pid(object):
     return cmp(self._value, other._value)
 
   def __str__(self):
-    return self._value
+    return '%s (0x%04hx)' % (self.name, self.value)
 
   def __hash__(self):
     return self._value
 
-  def Unpack(self, data, is_set):
+  def Pack(self, args, request_type):
+    if request_type == RDM_SET:
+      descriptor = self._set_request
+    else:
+      descriptor = self._get_request
+
+    format = self._GenerateFormatString(descriptor)
+
+    try:
+      data = struct.pack(format, *args)
+    except struct.error:
+      return None
+    return data
+
+  def Unpack(self, data, request_type):
     """Unpack a message."""
     def GenerateDictFromValues(atoms, values):
       obj = {}
@@ -95,10 +147,10 @@ class Pid(object):
 
 
     data_size = len(data)
-    if (is_set):
-      descriptor = self._set_format
+    if request_type == RDM_SET:
+      descriptor = self._set_response
     else:
-      descriptor = self._get_format
+      descriptor = self._get_response
 
     if isinstance(descriptor, RepeatedGroup):
       format = self._GenerateFormatString(descriptor)
@@ -151,6 +203,7 @@ class Pid(object):
       format = ''.join(['!'] + ['%d%c' % f for f in format_chars])
     return format
 
+
 # The following classes are used to describe RDM messages
 class Atom(object):
   """The basic field in an RDM message."""
@@ -176,25 +229,61 @@ class Bool(Atom):
     # once we have 2.6 use ? here
     super(Bool, self).__init__(name, 'c')
 
+  def ValidArg(self, arg):
+    return bool(arg)
+
 class UInt8(Atom):
   """A single unsigned byte field."""
   def __init__(self, name):
     super(UInt8, self).__init__(name, 'B')
+
+  def ValidArg(self, arg):
+    try:
+      value = int(arg)
+    except ValueError:
+      return None
+    if value >= 0 and value <= 255:
+      return value
+    return None
 
 class UInt16(Atom):
   """A two-byte unsigned field."""
   def __init__(self, name):
     super(UInt16, self).__init__(name, 'h')
 
+  def ValidArg(self, arg):
+    try:
+      value = int(arg)
+    except ValueError:
+      return None
+    if value >= 0 and value <= 0xffff:
+      return value
+    return None
+
 class UInt32(Atom):
   """A four-byte unsigned field."""
   def __init__(self, name):
     super(UInt32, self).__init__(name, 'I')
 
+  def ValidArg(self, arg):
+    try:
+      value = int(arg)
+    except ValueError:
+      return None
+    if value >= 0 and value <= 0xffffffffff:
+      return value
+    return None
+
 class String(Atom):
   """A string field."""
   def __init__(self, name, size = 32):
     super(String, self).__init__(name, 's', size)
+
+  def ValidArg(self, arg):
+    if len(arg) <= self.size:
+      return arg
+    return None
+
 
 
 class RepeatedGroup(list):

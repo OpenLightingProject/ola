@@ -68,7 +68,6 @@ def RequestComplete(status, pid, thing):
     print 'PID: 0x%04hx' % pid
     print thing
 
-
 def ListPids():
   pid_store = PidStore.GetStore()
   names = []
@@ -76,6 +75,13 @@ def ListPids():
     names.append('%s (0x%04hx)' % (pid.name, pid.value))
   names.sort()
   print '\n'.join(names)
+
+def ValidateArgs(pid, args, request_type):
+  if not pid.RequestSupported(request_type):
+    print >> sys.stderr, 'PID does not support command'
+    return None
+
+  return pid.CheckArgs(args, request_type)
 
 
 def main():
@@ -108,6 +114,8 @@ def main():
     elif o in ('-u', '--universe'):
       universe = int(a)
 
+  pid_store = PidStore.GetStore(pid_file)
+
   if list_pids:
     ListPids()
     sys.exit()
@@ -116,7 +124,6 @@ def main():
     Usage()
     sys.exit()
 
-  pid_store = PidStore.GetStore(pid_file)
   pid = None
   try:
     pid = pid_store[int(args[0], 0)]
@@ -132,19 +139,23 @@ def main():
   client = wrapper.Client()
   rdm_api = RDMAPI(client, pid_store)
 
+  request_type = PidStore.RDM_GET
   if os.path.basename(sys.argv[0]) == 'ola_rdm_set.py':
-    if not pid.SetSupported():
-      print 'PID does not support SET'
-      sys.exit()
+    request_type = PidStore.RDM_SET
 
-    if rdm_api.Set(universe, uid, sub_device, pid, RequestComplete):
+  rdm_args = args[1:]
+  santitized_args = ValidateArgs(pid, rdm_args, request_type)
+  if santitized_args is None:
+    # TODO(simon): print the format here
+    sys.exit()
+
+  if request_type == PidStore.RDM_SET:
+    if rdm_api.Set(universe, uid, sub_device, pid, RequestComplete,
+                   santitized_args):
       wrapper.Run()
   else:
-    if not pid.GetSupported():
-      print 'PID does not support GET'
-      sys.exit()
-
-    if rdm_api.Get(universe, uid, sub_device, pid, RequestComplete):
+    if rdm_api.Get(universe, uid, sub_device, pid, RequestComplete,
+                   santitized_args):
       wrapper.Run()
 
 if __name__ == '__main__':
