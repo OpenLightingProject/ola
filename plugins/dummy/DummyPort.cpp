@@ -130,11 +130,16 @@ void DummyPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 
 void DummyPort::HandleUnknownPacket(const RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
-  // no responses for broadcasts
-  if (!request->DestinationUID().IsBroadcast() && callback) {
-    vector<string> packets;
-    RDMResponse *response = NackWithReason(request, ola::rdm::NR_UNKNOWN_PID);
-    RunRDMCallback(callback, response);
+  if (callback) {
+    if (request->DestinationUID().IsBroadcast()) {
+      // no responses for broadcasts
+      vector<string> packets;
+      callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    } else if (callback) {
+      RDMResponse *response = NackWithReason(request,
+                                             ola::rdm::NR_UNKNOWN_PID);
+      RunRDMCallback(callback, response);
+    }
   }
   delete request;
 }
