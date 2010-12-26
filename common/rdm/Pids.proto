@@ -1,0 +1,78 @@
+/*
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Pids.proto
+ * Defines the structure for describing RDM PIDs
+ * Copyright (C) 2010 Simon Newton
+ */
+
+package ola.rdm.pid;
+
+
+enum SubDeviceRange {
+  ROOT_DEVICE = 1;  // 0
+  ROOT_OR_ANY_SUBDEVICE = 2;  // 0 - 512 or 0xffff
+  ROOT_OR_SUBDEVICE = 3;  // 0 - 512
+  ONLY_SUBDEVICES = 4;  // 1 - 512
+}
+
+
+enum FieldType {
+  BOOL = 1;
+  UINT8 = 2;
+  UINT16 = 3;
+  UINT32 = 4;
+  STRING = 5;
+}
+
+
+// At some point we should add enum fields
+message Field {
+  required FieldType type = 1;
+  required string name = 2;
+  optional uint32 size = 3;  // used for string fields
+}
+
+
+message FrameFormat {
+  repeated Field atoms = 1;
+  required bool repeated_group = 2 [default = false];
+}
+
+
+// A definition for a PID
+message Pid {
+  required string name = 1;  // A short name
+  required uint32 value = 2;  // The 2 byte PID value
+  repeated FrameFormat get_request = 3;
+  repeated FrameFormat get_response = 4;
+  repeated FrameFormat set_request = 5;
+  repeated FrameFormat set_response = 6;
+  optional SubDeviceRange sub_device_range = 7;
+}
+
+
+// Groups of Manufacturer PIDs
+message Manufacturer {
+  required uint32 manufacturer_id = 1;
+  repeated Pid pid = 2;
+}
+
+
+// The PID Store, which holds all PIDs
+message PidStore {
+  repeated Pid pid = 1;
+  repeated Manufacturer manufacturer = 2;
+}
