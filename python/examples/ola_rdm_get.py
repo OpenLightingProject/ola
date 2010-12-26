@@ -68,10 +68,17 @@ def RequestComplete(status, pid, thing):
     print 'PID: 0x%04hx' % pid
     print thing
 
-def ListPids():
+def ListPids(uid):
+  """List the pid available, taking into account manufacturer specific pids.
+
+  Args:
+    uid: Include manufacturer specific pids for this UID.
+  """
   pid_store = PidStore.GetStore()
   names = []
-  for pid in pid_store.values():
+  for pid in pid_store.Pids():
+    names.append('%s (0x%04hx)' % (pid.name, pid.value))
+  for pid in pid_store.ManufacturerPids(uid.manufacturer_id):
     names.append('%s (0x%04hx)' % (pid.name, pid.value))
   names.sort()
   print '\n'.join(names)
@@ -117,7 +124,7 @@ def main():
   pid_store = PidStore.GetStore(pid_file)
 
   if list_pids:
-    ListPids()
+    ListPids(uid)
     sys.exit()
 
   if not universe or not uid or len(args) == 0:
@@ -126,12 +133,12 @@ def main():
 
   pid = None
   try:
-    pid = pid_store[int(args[0], 0)]
+    pid = pid_store.GetPid(int(args[0], 0), uid)
   except ValueError:
-    pid = pid_store.GetName(args[0])
+    pid = pid_store.GetName(args[0], uid)
 
   if not pid:
-    ListPids()
+    ListPids(uid)
     sys.exit()
 
   global wrapper

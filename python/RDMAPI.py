@@ -117,13 +117,13 @@ class RDMAPI(object):
         uid,
         sub_device,
         pid.value,
-        self._CreateCallback(callback, request_type),
+        self._CreateCallback(callback, request_type, uid),
         data)
 
-  def _GenericHandler(self, callback, request_type, status, pid, data,
+  def _GenericHandler(self, callback, request_type, uid, status, pid, data,
                       unused_raw_data):
     obj = None
-    pid_descriptor = self._pid_store.get(pid)
+    pid_descriptor = self._pid_store.GetPid(pid, uid)
     if status.WasSuccessfull():
       if pid_descriptor:
         obj = pid_descriptor.Unpack(data, request_type)
@@ -133,8 +133,9 @@ class RDMAPI(object):
         obj = data
     callback(status, pid, obj)
 
-  def _CreateCallback(self, callback, request_type):
+  def _CreateCallback(self, callback, request_type, uid):
     return lambda s, p, d, r: self._GenericHandler(
         callback,
         request_type,
+        uid,
         s, p, d, r)

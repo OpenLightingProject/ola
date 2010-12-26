@@ -348,6 +348,8 @@ class PidStore(object):
   def __init__(self):
     self._pids = {}
     self._name_to_pid = {}
+    self._manufacturer_pids = {}
+    self._manufacturer_names_to_pids = {}
 
   def Load(self, file, validate = True):
     """Load a PidStore from a file.
@@ -373,6 +375,8 @@ class PidStore(object):
     execfile(file, globals, locals)
     for pid in locals['PIDS']:
       if validate:
+        assert (pid.value < 0x8000 or pid.value > 0xffe0), (
+          '%0x04hx between 0x8000 and 0xffdf' % pid.value)
         assert pid.value not in self._pids, (
           '0x%04hx listed more than once in %s' % (pid.value, file))
         assert pid.name not in self._name_to_pid, (
@@ -380,29 +384,44 @@ class PidStore(object):
       self._pids[pid.value] = pid
       self._name_to_pid[pid.name] = pid
 
-  def __len__(self):
-    return len(self._pids)
+    for manufacturer in locals['MANUFACTURER_PIDS']:
+      pid_dict = self._manufacturer_pids.setdefault(manufacturer, {})
+      name_dict = self._manufacturer_names_to_pids.setdefault(manufacturer, {})
 
-  def __getitem__(self, pid):
-    return self._pids[pid]
+      for pid in locals['MANUFACTURER_PIDS'][manufacturer]:
+        if validate:
+          assert (pid.value >= 0x8000 and pid.value <= 0xffdf), (
+            'manufacturer pid %0x04hx not between 0x8000 and 0xffdf' %
+            pid.value)
+          assert pid.value not in pid_dict, (
+            '0x%04hx listed more than once for 0x%04hx in %s' % (
+              pid.value, manufacturer, file))
+          assert pid.name not in name_dict, (
+            '%s listed more than once for 0x%04hx in %s' % (
+              pid.name, manufacturer, file))
+        pid_dict[pid.value] = pid
+        name_dict[pid.name] = pid
 
-  def __iter__(self):
-    return self._pids.__iter__()
 
-  def get(self, pid, default = None):
-    return self._pids.get(pid, default)
-
-  def iteritems(self):
-    return self._pids.iteritems()
-
-  def items(self):
-    return self._pids.items()
-
-  def values(self):
+  def Pids(self):
     return self._pids.values()
 
-  def GetName(self, name):
-    return self._name_to_pid.get(name)
+  def ManufacturerPids(self, esta_id):
+    return self._manufacturer_pids.get(esta_id, {}).values()
+
+  def GetPid(self, pid_value, uid):
+    pid = self._pids.get(pid_value, None)
+    if not pid:
+      pid = self._manufacturer_pids.get(uid.manufacturer_id, {}).get(
+          pid_value, None)
+    return pid
+
+  def GetName(self, pid_name, uid):
+    pid = self._name_to_pid.get(pid_name)
+    if not pid:
+      pid = self._manufacturer_names_to_pids.get(uid.manufacturer_id, {}).get(
+          pid_name, None)
+    return pid
 
   def NameToValue(self, name):
     pid = self.GetName(name)
