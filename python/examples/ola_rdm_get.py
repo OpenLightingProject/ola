@@ -25,7 +25,7 @@ import os.path
 import sys
 import textwrap
 from ola import PidStore
-from ola import client_wrapper
+from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
@@ -142,7 +142,7 @@ def main():
     sys.exit()
 
   global wrapper
-  wrapper = client_wrapper.ClientWrapper()
+  wrapper = ClientWrapper()
   client = wrapper.Client()
   rdm_api = RDMAPI(client, pid_store)
 

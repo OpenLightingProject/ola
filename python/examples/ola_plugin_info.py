@@ -23,7 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import getopt
 import textwrap
 import sys
-from ola import client_wrapper
+from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
 
 def Usage():
@@ -60,7 +60,7 @@ def main():
     elif o in ("-p", "--plugin"):
       plugin = int(a)
 
-  wrapper = client_wrapper.ClientWrapper()
+  wrapper = ClientWrapper()
   client = wrapper.Client()
 
   if plugin is not None:

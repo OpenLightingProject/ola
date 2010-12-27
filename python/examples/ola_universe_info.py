@@ -20,7 +20,7 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-from ola import client_wrapper
+from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import Universe
 
 def Universes(state, universes):
@@ -28,7 +28,7 @@ def Universes(state, universes):
     print '%d %s %r' % (uni.id, uni.name, uni.merge_mode == Universe.LTP)
   wrapper.Stop()
 
-wrapper = client_wrapper.ClientWrapper()
+wrapper = ClientWrapper()
 client = wrapper.Client()
 client.FetchUniverses(Universes)
 wrapper.Run()

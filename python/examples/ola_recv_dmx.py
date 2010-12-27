@@ -23,7 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import getopt
 import textwrap
 import sys
-from ola import client_wrapper
+from ola.ClientWrapper import ClientWrapper
 
 def NewData(data):
   print data
@@ -53,7 +53,7 @@ def main():
     elif o in ("-u", "--universe"):
       universe = int(a)
 
-  wrapper = client_wrapper.ClientWrapper()
+  wrapper = ClientWrapper()
   client = wrapper.Client()
   client.RegisterUniverse(universe, client.REGISTER, NewData)
   wrapper.Run()

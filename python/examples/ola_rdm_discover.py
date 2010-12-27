@@ -23,7 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import getopt
 import textwrap
 import sys
-from ola import client_wrapper
+from ola.ClientWrapper import ClientWrapper
 
 def usage():
   print textwrap.dedent("""\
@@ -60,7 +60,7 @@ def main():
     usage()
     sys.exit()
 
-  wrapper = client_wrapper.ClientWrapper()
+  wrapper = ClientWrapper()
   client = wrapper.Client()
 
   def show_uids(state, uids):
