@@ -222,8 +222,13 @@ AC_SUBST(OLA_SERVER_LIBS)
 plugindir=$libdir/olad
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
+pid_datadir=$datadir/ola/pids
+PID_DIR=$(echo "$pid_datadir")
+echo $PID_DIR
 AC_SUBST(plugindir)
 AC_SUBST(www_datadir)
+AC_SUBST(pid_datadir)
+AC_SUBST(PID_DIR)
 
 OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" "
 AC_SUBST(OLAD_DEFINES)
@@ -351,6 +356,7 @@ AC_OUTPUT( Makefile\
     include/olad/Makefile\
     ola/Makefile \
     python/Makefile \
+    python/PidStoreLocation.py \
     python/rpc/Makefile \
     python/examples/Makefile \
     olad/Makefile \

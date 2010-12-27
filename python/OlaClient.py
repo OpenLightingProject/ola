@@ -209,6 +209,47 @@ class RequestStatus(object):
     return self._message
 
 
+class RDMNack(object):
+  NR_UNKNOWN_PID = 0
+  NR_FORMAT_ERROR = 1
+  NR_HARDWARE_FAULT = 2
+  NR_PROXY_REJECT = 3
+  NR_WRITE_PROTECT = 4
+  NR_UNSUPPORTED_COMMAND_CLASS = 5
+  NR_DATA_OUT_OF_RANGE = 6
+  NR_BUFFER_FULL = 7
+  NR_PACKET_SIZE_UNSUPPORTED = 8
+  NR_SUB_DEVICE_OUT_OF_RANGE = 9
+  NR_PROXY_BUFFER_FULL = 10
+
+  NACK_REASONS_TO_STRING = {
+      NR_UNKNOWN_PID: 'Unknown PID',
+      NR_FORMAT_ERROR: 'Format error',
+      NR_HARDWARE_FAULT: 'Hardware fault',
+      NR_PROXY_REJECT: 'Proxy reject',
+      NR_WRITE_PROTECT: 'Write protect',
+      NR_UNSUPPORTED_COMMAND_CLASS: 'Unsupported command class',
+      NR_DATA_OUT_OF_RANGE: 'Data out of range',
+      NR_BUFFER_FULL: 'Buffer full',
+      NR_PACKET_SIZE_UNSUPPORTED: 'Packet size unsupported',
+      NR_SUB_DEVICE_OUT_OF_RANGE: 'Sub device out of range',
+      NR_PROXY_BUFFER_FULL: 'Proxy buffer full'
+  }
+
+  def __init__(self, nack_value):
+    self._value = nack_value
+
+  @property
+  def value(self):
+    return self._value
+
+  def __str__(self):
+    return self.NACK_REASONS_TO_STRING.get(self.value, 'Unknown')
+
+  def __cmp__(self, other):
+    return cmp(self.value, other.value)
+
+
 class RDMRequestStatus(RequestStatus):
   """Represents the status of a RDM request.
 
@@ -237,48 +278,26 @@ class RDMRequestStatus(RequestStatus):
       Ola_pb2.RDM_DEVICE_MISMATCH: 'Device mismatch',
   }
 
-  NR_UNKNOWN_PID = 0
-  NR_FORMAT_ERROR = 1
-  NR_HARDWARE_FAULT = 2
-  NR_PROXY_REJECT = 3
-  NR_WRITE_PROTECT = 4
-  NR_UNSUPPORTED_COMMAND_CLASS = 5
-  NR_DATA_OUT_OF_RANGE = 6
-  NR_BUFFER_FULL = 7
-  NR_PACKET_SIZE_UNSUPPORTED = 8
-  NR_SUB_DEVICE_OUT_OF_RANGE = 9
-  NR_PROXY_BUFFER_FULL = 10
-
-  NACK_REASONS_TO_STRING = {
-      NR_UNKNOWN_PID: 'Unknown PID',
-      NR_FORMAT_ERROR: 'Format error',
-      NR_HARDWARE_FAULT: 'Hardware fault',
-      NR_PROXY_REJECT: 'Proxy reject',
-      NR_WRITE_PROTECT: 'Write protect',
-      NR_UNSUPPORTED_COMMAND_CLASS: 'Unsupported command class',
-      NR_DATA_OUT_OF_RANGE: 'Data out of range',
-      NR_BUFFER_FULL: 'Buffer full',
-      NR_PACKET_SIZE_UNSUPPORTED: 'Packet size unsupported',
-      NR_SUB_DEVICE_OUT_OF_RANGE: 'Sub device out of range',
-      NR_PROXY_BUFFER_FULL: 'Proxy buffer full'
-  }
 
   def __init__(self, controller, response):
     super(RDMRequestStatus, self).__init__(controller)
     self._ResponseCode = response.response_code
     self._response_type = response.response_type
     self._queued_messages = response.message_count
-    self._param = None
+    self._nack_reason = None
+    self._ack_timer = None
 
     if self.Succeeded() and self.response_code == Ola_pb2.RDM_COMPLETED_OK:
       # check for ack timer or nack
       if self.response_type == Ola_pb2.RDM_NACK_REASON:
-        self._param = self._get_short_from_data(response.data)
-        if self._param is None:
+        nack_value = self._get_short_from_data(response.data)
+        if nack_value is None:
           self.response_code = Ola_pb2.RDM_INVALID_RESPONSE
+        else:
+          self._nack_reason = RDMNack(nack_value)
       elif self.response_type == Ola_pb2.RDM_ACK_TIMER:
-        self._param = self._get_short_from_data(response.data)
-        if self._param is None:
+        self._ack_timer = self._get_short_from_data(response.data)
+        if self._ack_timer is None:
           self.response_code = Ola_pb2.RDM_INVALID_RESPONSE
 
   def ResponseCode(self):
@@ -303,10 +322,7 @@ class RDMRequestStatus(RequestStatus):
 
   @property
   def nack_reason(self):
-    return self._param
-
-  def NackReasonAsString(self):
-    return self.NACK_REASONS_TO_STRING.get(self._param, 'Unknown')
+    return self._nack_reason
 
   def WasSuccessfull(self):
     """Returns true if this RDM request returns a ACK response."""
@@ -316,7 +332,7 @@ class RDMRequestStatus(RequestStatus):
 
   @property
   def ack_timer(self):
-    return 100 * self._param
+    return 100 * self._ack_timer
 
   def _get_short_from_data(self, data):
     """Try to unpack the binary data into a short.

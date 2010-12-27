@@ -21,7 +21,7 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import array
-import client_wrapper
+from ola import client_wrapper
 
 def DmxSent(state):
   wrapper.Stop()

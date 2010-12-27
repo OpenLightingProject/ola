@@ -23,7 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import getopt
 import textwrap
 import sys
-import client_wrapper
+from ola import client_wrapper
 
 def NewData(data):
   print data

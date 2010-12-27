@@ -22,8 +22,6 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import struct
 import sys
-# not very Pythonesque but meh
-from ola import PidStoreLocation
 
 # Various sub device enums
 ROOT_DEVICE = 0
@@ -249,7 +247,7 @@ class UInt8(Atom):
 class UInt16(Atom):
   """A two-byte unsigned field."""
   def __init__(self, name):
-    super(UInt16, self).__init__(name, 'h')
+    super(UInt16, self).__init__(name, 'H')
 
   def ValidArg(self, arg):
     try:

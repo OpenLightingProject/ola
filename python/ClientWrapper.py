@@ -35,6 +35,9 @@ class ClientWrapper(object):
   def Stop(self):
     self._quit = True
 
+  def Reset(self):
+    self._quit = False
+
   def Client(self):
     return self._client
 

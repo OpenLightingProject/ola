@@ -20,7 +20,7 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-import client_wrapper
+from ola import client_wrapper
 from ola.OlaClient import Universe
 
 def Universes(state, universes):

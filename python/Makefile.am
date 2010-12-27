@@ -16,7 +16,8 @@ output_files = ArtnetConfigMessages_pb2.py Ola_pb2.py \
 
 BUILT_SOURCES = $(output_files)
 nodist_pkgpython_PYTHON = $(output_files)
-pkgpython_PYTHON = OlaClient.py RDMAPI.py PidStore.py UID.py __init__.py
+pkgpython_PYTHON = ClientWrapper.py OlaClient.py RDMAPI.py PidStore.py UID.py \
+                   __init__.py
 
 piddir = $(pid_datadir)
 dist_pid_DATA = pids.config

@@ -20,14 +20,14 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-import client_wrapper
 import getopt
 import os.path
 import sys
 import textwrap
+from ola import PidStore
+from ola import client_wrapper
 from ola.OlaClient import OlaClient
 from ola.RDMAPI import RDMAPI
-from ola import PidStore
 from ola.UID import UID
 
 def Usage():
