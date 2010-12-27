@@ -128,7 +128,7 @@ class RDMAPI(object):
       if pid_descriptor:
         obj = pid_descriptor.Unpack(data, request_type)
         if obj is None:
-          status.response_code = RDMAPI.RDM_INVALID_RESPONSE
+          status.response_code = OlaClient.RDM_INVALID_RESPONSE
       else:
         obj = data
     callback(status, pid, obj)

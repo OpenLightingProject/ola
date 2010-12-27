@@ -93,7 +93,7 @@ class ExpectedResult(object):
     # fields may be either a list of dicts, or a dict
     if isinstance(fields, list):
       for item in fields:
-        fields_keys = set(item.keys())
+        field_keys = set(item.keys())
         for field in self._field_names:
           if field not in field_keys:
             print 'missing %s' % field

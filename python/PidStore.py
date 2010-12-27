@@ -194,7 +194,7 @@ class Pid(object):
         isinstance(atoms[-1], String)):
       full_size, char = format_chars[-1]
       delta = blob_size - data_size
-      if (delta < full_size):
+      if (delta <= full_size):
         format_chars = (format_chars[0:-1] +
                         [(full_size - (blob_size - data_size), char)])
 
