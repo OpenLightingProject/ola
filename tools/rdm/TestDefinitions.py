@@ -20,31 +20,36 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-import logging
+from ResponderTest import ResponderTest, ExpectedResult
 from ola import PidStore
 from ola.OlaClient import RDMNack
-from ResponderTest import ResponderTest, ExpectedResult
+import TestMixins
 
 MAX_DMX_ADDRESS = 512
+MAX_LABEL_SIZE = 32
 
 # First up we try to fetch device info which other tests depend on.
 #------------------------------------------------------------------------------
-class GetDeviceInfo(ResponderTest):
-  """Check that GET device info works."""
+class DeviceInfoTest(object):
+  """The base device info test class."""
   PID = 'device_info'
 
+  FIELDS = ['device_model', 'product_category', 'software_version',
+            'dmx_footprint', 'current_personality', 'personality_count',
+            'start_address', 'sub_device_count', 'sensor_count']
+  FIELD_VALUES = {
+      'protocol_major': 1,
+      'protocol_minor': 0,
+  }
+
+
+class GetDeviceInfo(ResponderTest, DeviceInfoTest):
+  """Check that GET device info works."""
   def Test(self):
-    fields = ['device_model', 'product_category', 'software_version',
-              'dmx_footprint', 'current_personality', 'personality_count',
-              'start_address', 'sub_device_count', 'sensor_count']
-    field_values = {
-        'protocol_major': 1,
-        'protocol_minor': 0,
-    }
     self.AddExpectedResults(
       ExpectedResult.AckResponse(self.pid.value,
-                                 fields,
-                                 field_values))
+                                 self.FIELDS,
+                                 self.FIELD_VALUES))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, unused_status, fields):
@@ -72,19 +77,28 @@ class GetDeviceInfo(ResponderTest):
 
 # Device Info tests
 #------------------------------------------------------------------------------
-class SetDeviceInfo(ResponderTest):
-  """Check that SET device info fails with a NACK."""
-  PID = 'device_info'
+class GetDeviceInfoWithData(ResponderTest, DeviceInfoTest):
+  """Check a GET device info request with data."""
+  def Test(self):
+    self.AddExpectedResults([
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
+      ExpectedResult.AckResponse(self.pid.value, self.FIELDS,
+                                 self.FIELD_VALUES)
+    ])
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
+
+class SetDeviceInfo(ResponderTest, DeviceInfoTest):
+  """Check that SET device info fails with a NACK."""
   def Test(self):
     self.AddExpectedResults(
       ExpectedResult.NackResponse(self.pid.value,
                                   RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid.value)
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 # TODO(simon): This fails with the RDM-TRI because the widget notices the
 # response has a different sub device.
-#class AllSubDevicesDeviceInfo(DeviceInfoTest):
+#class AllSubDevicesDeviceInfo(ResponderTest, DeviceInfoTest):
 #  """Devices should NACK a GET request sent to ALL_SUB_DEVICES."""
 #  def Test(self):
 #    self.AddExpectedResults(
@@ -128,7 +142,7 @@ class SetSupportedParameters(ResponderTest):
     self.AddExpectedResults(
       ExpectedResult.NackResponse(self.pid.value,
                                   RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid.value)
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
 # Sub Devices Test
@@ -265,30 +279,17 @@ class SetZeroStartAddress(ResponderTest):
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [0])
 
 
-# Software Version Label
-#------------------------------------------------------------------------------
-class GetSoftwareVersionLabel(ResponderTest):
-  """Check that we can get the software version label."""
-  PID = 'software_version_label'
+class SetOversizedStartAddress(ResponderTest):
+  """Send an over-sized SET dmx start address."""
+  PID = 'dmx_start_address'
+  DEPS = [SetStartAddress]
 
   def Test(self):
+    self.verify_result = False
     self.AddExpectedResults(
-      ExpectedResult.AckResponse(self.pid.value, ['label'])
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
     )
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-
-class SetSoftwareVersionLabel(ResponderTest):
-  """Check that SET software version label fails with a NACK."""
-  PID = 'software_version_label'
-
-  def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid.value)
-
-# TODO(simon): Add a test for every sub device
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
 # Parameter Description
@@ -323,58 +324,98 @@ class GetParamDescription(ResponderTest):
     pass
 
 
+# Manufacturer Label
+#------------------------------------------------------------------------------
+class GetManufacturerLabel(TestMixins.GetLabelMixin,
+                           ResponderTest):
+  """Check that we can get the manufacturer label."""
+  PID = 'manufacturer_label'
+
+
+class GetManufacturerLabelWithData(TestMixins.GetLabelWithDataMixin,
+                                   ResponderTest):
+  """Send a get manufacturer label with param data."""
+  PID = 'manufacturer_label'
+
+
+class SetManufacturerLabel(TestMixins.UnsupportedSetMixin,
+                           ResponderTest):
+  """Check that SET manufacturer label fails with a NACK."""
+  PID = 'manufacturer_label'
+
+
+class SetManufacturerLabelWithData(TestMixins.UnsupportedSetMixin,
+                                   ResponderTest):
+  """Check that SET manufacturer label with data fails with a NACK."""
+  PID = 'manufacturer_label'
+  DATA = 'foo bar'
+
+
 # Device Label
 #------------------------------------------------------------------------------
-class GetDeviceLabel(ResponderTest):
+class GetDeviceLabel(TestMixins.GetLabelMixin, ResponderTest):
   """Check that we can get the device label."""
   PID = 'device_label'
 
-  def Test(self):
-    self.AddExpectedResults([
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
-      ExpectedResult.AckResponse(self.pid.value, ['label'])
-    ])
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class GetDeviceLabelWithData(TestMixins.GetLabelWithDataMixin, ResponderTest):
+  """Send a get device label with param data."""
+  PID = 'device_label'
 
 
-class SetDeviceLabel(ResponderTest):
+class SetDeviceLabel(TestMixins.SetLabelMixin, ResponderTest):
   """Check that we can set the device label."""
   PID = 'device_label'
   DEPS = [GetDeviceLabel]
 
-  def Test(self):
-    self.test_label = 'test label'
-    self.AddExpectedResults([
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-      ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet)
-    ])
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.test_label])
 
-  def VerifySet(self):
-    self.AddExpectedResults(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values={'label': self.test_label}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-
-class SetEmptyDeviceLabel(ResponderTest):
+class SetEmptyDeviceLabel(TestMixins.SetEmptyLabelMixin, ResponderTest):
+  """Send an empty SET device label."""
   PID = 'device_label'
   DEPS = [GetDeviceLabel]
 
-  def Test(self):
-    self.test_label = ''
-    self.AddExpectedResults([
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-      ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet)
-    ])
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.test_label])
 
-  def VerifySet(self):
+class SetOversizedDeviceLabel(TestMixins.SetOversizedLabelMixin,
+                              ResponderTest):
+  """Send an over-sized SET device label."""
+  PID = 'device_label'
+  DEPS = [GetDeviceLabel]
+
+
+# Software Version Label
+#------------------------------------------------------------------------------
+class GetSoftwareVersionLabel(ResponderTest):
+  """Check that we can get the software version label."""
+  # We don't use the GetLabelMixin here because this PID is mandatory
+  PID = 'software_version_label'
+
+  def Test(self):
     self.AddExpectedResults(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values={'label': self.test_label}))
+      ExpectedResult.AckResponse(self.pid.value, ['label'])
+    )
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class GetSoftwareVersionLabelWithData(ResponderTest):
+  """Send a GET software_version_label with data."""
+  # We don't use the GetLabelMixin here because this PID is mandatory
+  PID = 'software_version_label'
+
+  def Test(self):
+    self.AddExpectedResults([
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
+      ExpectedResult.AckResponse(self.pid.value, ['label'])
+    ])
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foobarbaz')
+
+
+class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
+                              ResponderTest):
+  """Check that SET software version label fails with a NACK."""
+  PID = 'software_version_label'
+
+
+# TODO(simon): Add a test for every sub device
+
+
+
+#------------------------------------------------------------------------------

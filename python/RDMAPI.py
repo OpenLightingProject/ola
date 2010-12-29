@@ -40,7 +40,7 @@ class RDMAPI(object):
     self._strict_checks = strict_checks
 
   def Get(self, universe, uid, sub_device, pid, callback, args = []):
-    """Send a RDM Get message.
+    """Send a RDM Get message, packing the arguments into a message.
 
     Args:
       universe: The universe to send the request on.
@@ -57,9 +57,29 @@ class RDMAPI(object):
       print >> sys.stderr, "Can't send GET to broadcast address %s" % uid
       return False
 
-    return self._GenericSendRequest(universe, uid, sub_device, pid, callback,
-                                    args, PidStore.RDM_GET)
+    return self._SendRequest(universe, uid, sub_device, pid, callback, args,
+                             PidStore.RDM_GET)
 
+  def RawGet(self, universe, uid, sub_device, pid, callback, data):
+    """Send a RDM Get message with the raw data supplied.
+
+    Args:
+      universe: The universe to send the request on.
+      uid: The UID to address the request to.
+      sub_device: The Sub Device to send the request to.
+      pid: A PID object that describes the format of the request.
+      callback: The callback to run when the request completes.
+      data: The param data
+
+    Return:
+      True if sent ok, False otherwise.
+    """
+    if self._strict_checks and uid.IsBroadcast():
+      print >> sys.stderr, "Can't send GET to broadcast address %s" % uid
+      return False
+
+    return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
+                                PidStore.RDM_GET)
 
   def Set(self, universe, uid, sub_device, pid, callback, args = []):
     """Send a RDM Set message.
@@ -75,11 +95,28 @@ class RDMAPI(object):
     Return:
       True if sent ok, False otherwise.
     """
-    return self._GenericSendRequest(universe, uid, sub_device, pid, callback,
+    return self._SendRequest(universe, uid, sub_device, pid, callback, args,
+                             PidStore.RDM_SET)
+
+  def RawSet(self, universe, uid, sub_device, pid, callback, args = []):
+    """Send a RDM Set message with the raw data supplied.
+
+    Args:
+      universe: The universe to send the request on.
+      uid: The UID to address the request to.
+      sub_device: The Sub Device to send the request to.
+      pid: A PID object that describes the format of the request.
+      callback: The callback to run when the request completes.
+      data: The param data
+
+    Return:
+      True if sent ok, False otherwise.
+    """
+    return self._SendRawRequest(universe, uid, sub_device, pid, callback,
                                     args, PidStore.RDM_SET)
 
-  def _GenericSendRequest(self, universe, uid, sub_device, pid, callback, args,
-                          request_type):
+  def _SendRequest(self, universe, uid, sub_device, pid, callback, args,
+                   request_type):
     """Send a RDM Request.
 
     Args:
@@ -94,6 +131,30 @@ class RDMAPI(object):
     Return:
       True if sent ok, False otherwise.
     """
+    data = pid.Pack(args, request_type)
+    if data is None:
+      print >> sys.stderr, 'Could not pack data'
+      return False
+
+    self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
+                         request_type)
+
+  def _SendRawRequest(self, universe, uid, sub_device, pid, callback, data,
+                      request_type):
+    """Send a RDM Request.
+
+    Args:
+      universe: The universe to send the request on.
+      uid: The UID to address the request to.
+      sub_device: The Sub Device to send the request to.
+      pid: A PID object that describes the format of the request.
+      callback: The callback to run when the request completes.
+      data: The param data.
+      request_type: True for a Set request, False for a Get request
+
+    Return:
+      True if sent ok, False otherwise.
+    """
     if self._strict_checks:
       request_params = {
         'uid': uid,
@@ -101,11 +162,6 @@ class RDMAPI(object):
       }
       if not pid.ValidateAddressing(request_params, request_type):
         return False
-
-    data = pid.Pack(args, request_type)
-    if data is None:
-      print >> sys.stderr, 'Could not pack data'
-      return False
 
     if request_type == PidStore.RDM_SET:
       method = self._client.RDMSet

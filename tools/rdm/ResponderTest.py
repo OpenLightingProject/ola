@@ -20,7 +20,6 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-import logging
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
@@ -57,6 +56,18 @@ class ExpectedResult(object):
   @property
   def action(self):
     return self._action
+
+  def __str__(self):
+    """Represent this object as a string for logging."""
+    if self._response_code != OlaClient.RDM_COMPLETED_OK:
+      return str(self._response_code)
+
+    if self._response_type == OlaClient.RDM_ACK:
+      return 'Pid %04hx, ACK' % self._pid
+    elif self._response_type == OlaClient.RDM_ACK_TIMER:
+      return 'Pid %04hx, ACK TIMER' % self._pid
+    else:
+      return 'Pid %04hx, NACK %d' % (self._pid, self._nack_reason)
 
   def Matches(self, status, pid, fields):
     """Check if the response we receieved matches this object.
@@ -138,33 +149,44 @@ class ExpectedResult(object):
                           action = action)
 
 
+class TestState(object):
+  """Represents the state of a test."""
+  def __init__(self, state):
+    self._state = state
+
+  def __str__(self):
+    return self._state
+
+  def __cmp__(self, other):
+    return cmp(self._state, other._state)
+
+  def __hash__(self):
+    return hash(self._state)
+
+TestState.PASSED = TestState('Passed')
+TestState.FAILED = TestState('Failed')
+TestState.BROKEN = TestState('Broken')
+TestState.NOT_RUN = TestState('Not Run')
+
+
 class ResponderTest(object):
   """The base responder test class, every test inherits from this."""
-  PASSED, FAILED, BROKEN, NOT_RUN = range(4)
-
-  STATE_TO_STRING = {
-    PASSED: 'Passed',
-    FAILED: 'Failed',
-    BROKEN: 'Broken',
-    NOT_RUN: 'Not Run',
-  }
-
   DEPS = []
 
-  def __init__(self, universe, uid, pid_store, rdm_api, wrapper, deps):
+  def __init__(self, universe, uid, pid_store, rdm_api, wrapper, logger, deps):
     self._universe = universe;
     self._uid = uid
-    self._pid_store = pid_store
     self._api = rdm_api
     self._wrapper = wrapper
     self._status = None
     self._fields = None
     self._expected_results = []
     self._state = None
-    self.pid = self.GetPid(self.PID)
+    self.pid = pid_store.GetName(self.PID, self._uid)
     self._deps = {}
     self._error = None
     self._warnings = []
+    self._logger = logger
 
     for dep in deps:
       self._deps[dep.__class__.__name__] = dep
@@ -182,29 +204,23 @@ class ResponderTest(object):
     return cmp(self.__class__.__name__, other.__class__.__name__)
 
   @property
-  def error_message(self):
-    """An error string if the test failed."""
-    return self._error
-
-  @property
   def warnings(self):
     """Non-fatal warnings."""
     return self._warnings
 
-  def GetPid(self, pid_name):
-    """Return the pid object that this test case uses.
-
-    Args:
-      pid_name: The name of this pid in the PID Store
+  @property
+  def state(self):
+    """Returns the state of the test.
 
     Returns:
-      A instance of a PID object or None if not found.
+      An instance of TestState
     """
-    return self._pid_store.GetName(pid_name, self._uid)
+    return self._state
 
-  # Sub class can override these
-  def test(self):
+  # Sub classes can override these
+  def Test(self):
     self.SetBroken('test method not defined')
+    self.Stop()
 
   def PreCondition(self):
     """Return True if this test should run."""
@@ -216,28 +232,20 @@ class ResponderTest(object):
 
   def Run(self):
     """Run the test if all deps passed and the pre condition is true."""
+    self._logger.debug('Starting %s' % self)
     for dep in self._deps.values():
-      if dep.State()[0] != self.PASSED:
-        self._state = self.NOT_RUN
+      if dep.state != TestState.PASSED:
+        self._state = TestState.NOT_RUN
+        #self._logger.debug(' Dep: %s %s, not running' % (dep,dep.state()[1]))
         return
 
     if not self.PreCondition():
-      self._state = self.NOT_RUN
+      self._state = TestState.NOT_RUN
       return
 
     self.Test()
     self._wrapper.Run()
     self._wrapper.Reset()
-
-  def State(self):
-    """Returns the state of the test.
-
-    Returns:
-      PASSED, FAILED, BROKEN or None
-    """
-    return self._state, self.STATE_TO_STRING.get(
-        self._state,
-        'Unknown was %s' % self._state)
 
   def Deps(self, dep_class):
     """Lookup an object that this test depends on.
@@ -252,20 +260,23 @@ class ResponderTest(object):
     return self._fields.get(field)
 
   def SetNotRun(self):
-    self._state = self.NOT_RUN
+    self._state = TestState.NOT_RUN
 
   def SetBroken(self, message):
     self._error = message
-    self._state = self.BROKEN
+    self._logger.debug('Broken: %s' % message)
+    self._state = TestState.BROKEN
 
   def SetFailed(self, message):
     self._error = message
-    self._state = self.FAILED
+    self._logger.debug('Failed: %s' % message)
+    self._state = TestState.FAILED
 
   def Stop(self):
     self._wrapper.Stop()
 
   def AddWarning(self, message):
+    self._logger.debug('Warning: %s' % message)
     self._warnings.append(message)
 
   def AddExpectedResults(self, results):
@@ -298,13 +309,12 @@ class ResponderTest(object):
       pid: The pid value
       data: The param data
     """
-    return wrapper.Client().RDMGet(
-        self._universe,
-        self._uid,
-        sub_device,
-        pid,
-        self._HandleRawResponse,
-        data)
+    return self._api.RawGet(self._universe,
+                            self._uid,
+                            sub_device,
+                            pid,
+                            self._HandleResponse,
+                            data)
 
   def SendSet(self, sub_device, pid, args = []):
     """Send a SET request using the RDM API.
@@ -329,13 +339,12 @@ class ResponderTest(object):
       pid: The pid value
       data: The param data
     """
-    return self._wrapper.Client().RDMSet(
-        self._universe,
-        self._uid,
-        sub_device,
-        pid,
-        self._HandleRawResponse,
-        data)
+    return self._api.RawSet(self._universe,
+                            self._uid,
+                            sub_device,
+                            pid,
+                            self._HandleResponse,
+                            data)
 
   def _HandleResponse(self, status, pid, fields):
     """Handle a RDM response."""
@@ -344,7 +353,7 @@ class ResponderTest(object):
 
     for result in self._expected_results:
       if result.Matches(status, pid, fields):
-        self._state = self.PASSED
+        self._state = TestState.PASSED
         self._status = status
         self._fields = fields
         self.VerifyResult(status, fields)
@@ -357,27 +366,6 @@ class ResponderTest(object):
 
     # nothing matched
     print "nothing matched"
-    self.SetFailed('nothing matched')
-    self.Stop()
-
-  def _HandleRawResponse(self, status, pid, data, unused_raw_data):
-    """Handle a raw RDM response."""
-    if not self._CheckState(status):
-      return
-
-    for result in self._expected_results:
-      if result.Matches(status, pid, {}):
-        self._state = self.PASSED
-        if result.action is not None:
-          result.action()
-        else:
-          self._wrapper.Stop()
-        return
-
-    # nothing matched
-    print "nothing matched"
-    print status.response_type
-    print status.nack_reason
     self.SetFailed('nothing matched')
     self.Stop()
 
@@ -401,13 +389,13 @@ class ResponderTest(object):
 
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, pid_store, rdm_api, wrapper, test_logger):
+  def __init__(self, universe, uid, pid_store, wrapper, results_logger):
     self._universe = universe;
     self._uid = uid
     self._pid_store = pid_store
-    self._api = rdm_api
+    self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
-    self._logger = test_logger
+    self._logger = results_logger
     # A dict of class name to object mappings
     self._class_name_to_object = {}
     # dict in the form test_obj: first_order_deps
@@ -426,6 +414,23 @@ class TestRunner(object):
     test_obj = self._AddTest(test)
     return test_obj is not None
 
+  def RunTests(self):
+    """Run all the tests."""
+    test_order = self._TopologicalSort(self._deps_tree.copy())
+    self._logger.debug('Test order is %s' % test_order)
+    for test in test_order:
+      self._tests.append(test)
+      test.Run()
+
+  @property
+  def all_tests(self):
+    """Returns the list of tests in the order they were executed.
+
+    Returns:
+      A list of test objects
+    """
+    return self._tests
+
   def _AddTest(self, test, parents = []):
     """Add a test class, recursively adding all deps and checking for circular
     dependancies.
@@ -439,47 +444,29 @@ class TestRunner(object):
     if test in self._class_name_to_object:
       return self._class_name_to_object[test]
 
-    logging.debug('Adding %s' % test.__name__)
     self._class_name_to_object[test] = None
 
     new_parents = parents + [test]
     dep_objects = []
-    logging.debug(' Deps are %s' % test.DEPS)
     for dep_class in test.DEPS:
       if dep_class in parents:
-        logging.error('Circular depdendancy found %s' % parents)
+        self._logger.error('Circular depdendancy found %s' % parents)
         return None
       obj = self._AddTest(dep_class, new_parents)
       if obj is None:
         return None
       dep_objects.append(obj)
 
-    logging.debug('Creating %s with dep objects %s' % (test.__name__, dep_objects))
     test_obj = test(self._universe,
                     self._uid,
                     self._pid_store,
                     self._api,
                     self._wrapper,
+                    self._logger,
                     dep_objects)
     self._class_name_to_object[test] = test_obj
     self._deps_tree[test_obj] = set(dep_objects)
     return test_obj
-
-  def RunTests(self):
-    """Run all the tests."""
-    test_order = self._TopologicalSort(self._deps_tree.copy())
-    logging.info('Test order is %s' % test_order)
-    for test in test_order:
-      test.Run()
-      self._tests.append(test)
-
-  def GetTests(self):
-    """Returns the list of tests in the order they were executed.
-
-    Returns:
-      A list of test objects
-    """
-    return self._tests
 
   def _TopologicalSort(self, deps_dict):
     """Sort the tests according to the dep ordering.

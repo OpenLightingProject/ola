@@ -278,7 +278,6 @@ class RDMRequestStatus(RequestStatus):
       Ola_pb2.RDM_DEVICE_MISMATCH: 'Device mismatch',
   }
 
-
   def __init__(self, controller, response):
     super(RDMRequestStatus, self).__init__(controller)
     self._ResponseCode = response.response_code
@@ -333,6 +332,17 @@ class RDMRequestStatus(RequestStatus):
   @property
   def ack_timer(self):
     return 100 * self._ack_timer
+
+  def __str__(self):
+    if self.response_code != Ola_pb2.RDM_COMPLETED_OK:
+      return 'RDMRequestStatus: %s' % self.ResponseCodeAsString()
+
+    if self.response_type == OlaClient.RDM_ACK:
+      return 'RDMRequestStatus: ACK' % self._pid
+    elif self.response_type == OlaClient.RDM_ACK_TIMER:
+      return 'RDMRequestStatus: ACK TIMER, %d ms' % self.ack_timer
+    else:
+      return 'RDMRequestStatus:, NACK %s' % self.nack_reason
 
   def _get_short_from_data(self, data):
     """Try to unpack the binary data into a short.
