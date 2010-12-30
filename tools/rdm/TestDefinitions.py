@@ -20,7 +20,7 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-from ResponderTest import ResponderTest, ExpectedResult
+from ResponderTest import ExpectedResult, ResponderTest, TestCategory
 from ola import PidStore
 from ola.OlaClient import RDMNack
 import TestMixins
@@ -45,6 +45,8 @@ class DeviceInfoTest(object):
 
 class GetDeviceInfo(ResponderTest, DeviceInfoTest):
   """Check that GET device info works."""
+  CATEGORY = TestCategory.CORE
+
   def Test(self):
     self.AddExpectedResults(
       ExpectedResult.AckResponse(self.pid.value,
@@ -79,6 +81,8 @@ class GetDeviceInfo(ResponderTest, DeviceInfoTest):
 #------------------------------------------------------------------------------
 class GetDeviceInfoWithData(ResponderTest, DeviceInfoTest):
   """Check a GET device info request with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddExpectedResults([
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
@@ -90,6 +94,8 @@ class GetDeviceInfoWithData(ResponderTest, DeviceInfoTest):
 
 class SetDeviceInfo(ResponderTest, DeviceInfoTest):
   """Check that SET device info fails with a NACK."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
   def Test(self):
     self.AddExpectedResults(
       ExpectedResult.NackResponse(self.pid.value,
@@ -111,6 +117,7 @@ class SetDeviceInfo(ResponderTest, DeviceInfoTest):
 #------------------------------------------------------------------------------
 class GetSupportedParameters(ResponderTest):
   """Check that we can get the supported parameters message."""
+  CATEGORY = TestCategory.CORE
   PID = 'supported_parameters'
 
   def Test(self):
@@ -136,6 +143,7 @@ class GetSupportedParameters(ResponderTest):
 
 class SetSupportedParameters(ResponderTest):
   """Check that SET device info fails with a NACK."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'supported_parameters'
 
   def Test(self):
@@ -149,6 +157,7 @@ class SetSupportedParameters(ResponderTest):
 #------------------------------------------------------------------------------
 class FindSubDevices(ResponderTest):
   """Locate the sub devices by sending DeviceInfo messages."""
+  CATEGORY = TestCategory.SUB_DEVICES
   PID = 'device_info'
 
   DEPS = [GetSupportedParameters, GetDeviceInfo]
@@ -296,6 +305,7 @@ class SetOversizedStartAddress(ResponderTest):
 #------------------------------------------------------------------------------
 class GetParamDescription(ResponderTest):
   """Check that we can get the descriptions of any manufacturer params."""
+  CATEGORY = TestCategory.MANUFACTURER_PIDS
   PID = 'parameter_description'
   DEPS = [GetSupportedParameters]
 
@@ -335,18 +345,21 @@ class GetManufacturerLabel(TestMixins.GetLabelMixin,
 class GetManufacturerLabelWithData(TestMixins.GetLabelWithDataMixin,
                                    ResponderTest):
   """Send a get manufacturer label with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'manufacturer_label'
 
 
 class SetManufacturerLabel(TestMixins.UnsupportedSetMixin,
                            ResponderTest):
   """Check that SET manufacturer label fails with a NACK."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'manufacturer_label'
 
 
 class SetManufacturerLabelWithData(TestMixins.UnsupportedSetMixin,
                                    ResponderTest):
   """Check that SET manufacturer label with data fails with a NACK."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'manufacturer_label'
   DATA = 'foo bar'
 
@@ -360,6 +373,7 @@ class GetDeviceLabel(TestMixins.GetLabelMixin, ResponderTest):
 
 class GetDeviceLabelWithData(TestMixins.GetLabelWithDataMixin, ResponderTest):
   """Send a get device label with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'device_label'
 
 
@@ -378,6 +392,7 @@ class SetEmptyDeviceLabel(TestMixins.SetEmptyLabelMixin, ResponderTest):
 class SetOversizedDeviceLabel(TestMixins.SetOversizedLabelMixin,
                               ResponderTest):
   """Send an over-sized SET device label."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'device_label'
   DEPS = [GetDeviceLabel]
 
@@ -398,6 +413,7 @@ class GetSoftwareVersionLabel(ResponderTest):
 class GetSoftwareVersionLabelWithData(ResponderTest):
   """Send a GET software_version_label with data."""
   # We don't use the GetLabelMixin here because this PID is mandatory
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'software_version_label'
 
   def Test(self):
@@ -411,6 +427,7 @@ class GetSoftwareVersionLabelWithData(ResponderTest):
 class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
                               ResponderTest):
   """Check that SET software version label fails with a NACK."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'software_version_label'
 
 

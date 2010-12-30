@@ -80,7 +80,6 @@ class ExpectedResult(object):
         response.
     """
     if self._response_code != status.response_code:
-      print 'response code mis match %s' % status.ResponseCodeAsString()
       return False
 
     if status.response_code != OlaClient.RDM_COMPLETED_OK:
@@ -91,7 +90,6 @@ class ExpectedResult(object):
       return False
 
     if pid != self._pid:
-      print 'pid mismatch'
       return False
 
     if status.response_type == OlaClient.RDM_NACK_REASON:
@@ -149,6 +147,25 @@ class ExpectedResult(object):
                           action = action)
 
 
+class TestCategory(object):
+  """The category a test is part of."""
+  def __init__(self, category):
+    self._category = category
+
+  def __str__(self):
+    return self._category
+
+  def __hash__(self):
+    return hash(self._category)
+
+
+TestCategory.UNCLASSIFIED = TestCategory('Unclassified')
+TestCategory.CORE = TestCategory('Core Functionality')
+TestCategory.ERROR_CONDITIONS = TestCategory('Error Conditions')
+TestCategory.MANUFACTURER_PIDS = TestCategory('Manufacturer PIDs')
+TestCategory.SUB_DEVICES = TestCategory('Sub Devices')
+
+
 class TestState(object):
   """Represents the state of a test."""
   def __init__(self, state):
@@ -163,6 +180,17 @@ class TestState(object):
   def __hash__(self):
     return hash(self._state)
 
+  def ColorString(self):
+    strs = []
+    if self == TestState.PASSED:
+      strs.append('\x1b[32m')
+    elif self == TestState.FAILED:
+      strs.append('\x1b[31m')
+
+    strs.append(str(self._state))
+    strs.append('\x1b[0m')
+    return ''.join(strs)
+
 TestState.PASSED = TestState('Passed')
 TestState.FAILED = TestState('Failed')
 TestState.BROKEN = TestState('Broken')
@@ -172,6 +200,7 @@ TestState.NOT_RUN = TestState('Not Run')
 class ResponderTest(object):
   """The base responder test class, every test inherits from this."""
   DEPS = []
+  CATEGORY = TestCategory.UNCLASSIFIED
 
   def __init__(self, universe, uid, pid_store, rdm_api, wrapper, logger, deps):
     self._universe = universe;
@@ -204,9 +233,19 @@ class ResponderTest(object):
     return cmp(self.__class__.__name__, other.__class__.__name__)
 
   @property
+  def category(self):
+    """The category this test belongs to."""
+    return self.CATEGORY
+
+  # Warnings are logged independently of errors.
+  @property
   def warnings(self):
     """Non-fatal warnings."""
     return self._warnings
+
+  def AddWarning(self, message):
+    self._logger.debug('Warning: %s' % message)
+    self._warnings.append(message)
 
   @property
   def state(self):
@@ -232,14 +271,15 @@ class ResponderTest(object):
 
   def Run(self):
     """Run the test if all deps passed and the pre condition is true."""
-    self._logger.debug('Starting %s' % self)
+    self._logger.debug('%s: %s' % (self, self.__doc__))
     for dep in self._deps.values():
       if dep.state != TestState.PASSED:
         self._state = TestState.NOT_RUN
-        #self._logger.debug(' Dep: %s %s, not running' % (dep,dep.state()[1]))
+        self._logger.debug(' Dep: %s %s, not running' % (dep, dep.state))
         return
 
     if not self.PreCondition():
+      self._logger.debug(' Preconditions not met, test will not be run')
       self._state = TestState.NOT_RUN
       return
 
@@ -264,20 +304,16 @@ class ResponderTest(object):
 
   def SetBroken(self, message):
     self._error = message
-    self._logger.debug('Broken: %s' % message)
+    self._logger.debug(' Broken: %s' % message)
     self._state = TestState.BROKEN
 
   def SetFailed(self, message):
     self._error = message
-    self._logger.debug('Failed: %s' % message)
+    self._logger.debug(' Failed: %s' % message)
     self._state = TestState.FAILED
 
   def Stop(self):
     self._wrapper.Stop()
-
-  def AddWarning(self, message):
-    self._logger.debug('Warning: %s' % message)
-    self._warnings.append(message)
 
   def AddExpectedResults(self, results):
     """Add a set of expected results."""
@@ -294,6 +330,8 @@ class ResponderTest(object):
       pid: A PID object
       args: A list of arguments
     """
+    self._logger.debug(' GET: pid = %s, sub device = %d, args = %s' %
+        (pid, sub_device, args))
     return self._api.Get(self._universe,
                          self._uid,
                          sub_device,
@@ -309,6 +347,8 @@ class ResponderTest(object):
       pid: The pid value
       data: The param data
     """
+    self._logger.debug(' GET: pid = %s, sub device = %d, data = %s' %
+        (pid, sub_device, data))
     return self._api.RawGet(self._universe,
                             self._uid,
                             sub_device,
@@ -324,6 +364,8 @@ class ResponderTest(object):
       pid: A PID object
       args: A list of arguments
     """
+    self._logger.debug(' SET: pid = %s, sub device = %d, args = %s' %
+        (pid, sub_device, args))
     return self._api.Set(self._universe,
                          self._uid,
                          sub_device,
@@ -339,6 +381,8 @@ class ResponderTest(object):
       pid: The pid value
       data: The param data
     """
+    self._logger.debug(' SET: pid = %s, sub device = %d, data = %s' %
+        (pid, sub_device, data))
     return self._api.RawSet(self._universe,
                             self._uid,
                             sub_device,
@@ -351,6 +395,7 @@ class ResponderTest(object):
     if not self._CheckState(status):
       return
 
+    self._logger.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
     for result in self._expected_results:
       if result.Matches(status, pid, fields):
         self._state = TestState.PASSED
@@ -365,7 +410,6 @@ class ResponderTest(object):
         return
 
     # nothing matched
-    print "nothing matched"
     self.SetFailed('nothing matched')
     self.Stop()
 
@@ -373,14 +417,14 @@ class ResponderTest(object):
     """Check the state of a RDM response."""
     if not status.Succeeded():
       # this indicated a transport error
-      self.SetBroken('transport error')
+      self.SetBroken(' Error: %s' % status.message)
       self.Stop()
       return False
 
     # handle the case of an ack timer
     if (status.response_code == OlaClient.RDM_COMPLETED_OK and
         status.response_type == OlaClient.RDM_ACK_TIMER):
-      print 'Got ACK TIMER set to %d ms' % status.ack_timer
+      self._logger.error('Got ACK TIMER set to %d ms' % status.ack_timer)
       # TODO: schedule queued message fetch
 
       return False
@@ -389,13 +433,14 @@ class ResponderTest(object):
 
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, pid_store, wrapper, results_logger):
+  def __init__(self, universe, uid, pid_store, wrapper, results_logger, tests):
     self._universe = universe;
     self._uid = uid
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
     self._logger = results_logger
+    self._tests_filter = tests
     # A dict of class name to object mappings
     self._class_name_to_object = {}
     # dict in the form test_obj: first_order_deps
@@ -411,6 +456,10 @@ class TestRunner(object):
     Returns:
       True if added, False if there was an error.
     """
+    if (self._tests_filter is not None and
+        test.__name__ not in self._tests_filter):
+      return
+
     test_obj = self._AddTest(test)
     return test_obj is not None
 
@@ -421,6 +470,7 @@ class TestRunner(object):
     for test in test_order:
       self._tests.append(test)
       test.Run()
+      self._logger.info('%s: %s' % (test, test.state.ColorString()))
 
   @property
   def all_tests(self):

@@ -338,7 +338,7 @@ class RDMRequestStatus(RequestStatus):
       return 'RDMRequestStatus: %s' % self.ResponseCodeAsString()
 
     if self.response_type == OlaClient.RDM_ACK:
-      return 'RDMRequestStatus: ACK' % self._pid
+      return 'RDMRequestStatus: ACK'
     elif self.response_type == OlaClient.RDM_ACK_TIMER:
       return 'RDMRequestStatus: ACK TIMER, %d ms' % self.ack_timer
     else:
