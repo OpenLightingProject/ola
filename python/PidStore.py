@@ -140,9 +140,8 @@ class Pid(object):
     def GenerateDictFromValues(atoms, values):
       obj = {}
       for atom, value in zip(descriptor, values):
-        obj[atom.name] = value
+        obj[atom.name] = atom.PostUnpack(value)
       return obj
-
 
     data_size = len(data)
     if request_type == RDM_SET:
@@ -222,6 +221,11 @@ class Atom(object):
   def size(self):
     return self._size
 
+  def PostUnpack(self, value):
+    """Post process any un-packed data."""
+    return value
+
+
 class Bool(Atom):
   def __init__(self, name):
     # once we have 2.6 use ? here
@@ -229,6 +233,10 @@ class Bool(Atom):
 
   def ValidArg(self, arg):
     return bool(arg)
+
+  def PostUnpack(self, value):
+    return bool(value)
+
 
 class UInt8(Atom):
   """A single unsigned byte field."""
@@ -244,6 +252,7 @@ class UInt8(Atom):
       return value
     return None
 
+
 class UInt16(Atom):
   """A two-byte unsigned field."""
   def __init__(self, name):
@@ -258,6 +267,7 @@ class UInt16(Atom):
       return value
     return None
 
+
 class UInt32(Atom):
   """A four-byte unsigned field."""
   def __init__(self, name):
@@ -271,6 +281,7 @@ class UInt32(Atom):
     if value >= 0 and value <= 0xffffffffff:
       return value
     return None
+
 
 class String(Atom):
   """A string field."""
@@ -319,6 +330,7 @@ def SubDeviceValidator(args):
         "%s isn't a valid sub device" % sub_device)
     return False
   return True
+
 
 def NonBroadcastSubDeviceValiator(args):
   """Ensure the sub device is in the range 0 - 512."""

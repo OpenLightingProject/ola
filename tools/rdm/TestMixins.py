@@ -53,12 +53,12 @@ class UnsupportedSetMixin(object):
 
 
 # Generic Label Mixins
+# These all work in conjunction with the IsSupportedMixin
 #------------------------------------------------------------------------------
 class GetLabelMixin(object):
   """Fetch a PID, and make sure we get either a UNKNOWN_PID or ACK response."""
   def Test(self):
-    self.AddExpectedResults([
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
+    self.AddIfSupported([
       ExpectedResult.AckResponse(self.pid.value, ['label'])
     ])
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
@@ -69,8 +69,7 @@ class GetLabelWithDataMixin(object):
   DATA = 'foobarbaz'
 
   def Test(self):
-    self.AddExpectedResults([
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
+    self.AddIfSupported([
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
       ExpectedResult.AckResponse(self.pid.value, ['label'])
     ])
@@ -82,7 +81,7 @@ class SetLabelMixin(object):
   TEST_LABEL = 'test label'
 
   def Test(self):
-    self.AddExpectedResults([
+    self.AddIfSupported([
       ExpectedResult.NackResponse(self.pid.value,
                                   RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet)
@@ -101,7 +100,7 @@ class SetEmptyLabelMixin(object):
   """Send an empty SET label command."""
   def Test(self):
     self.test_label = ''
-    self.AddExpectedResults([
+    self.AddIfSupported([
       ExpectedResult.NackResponse(self.pid.value,
                                   RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet)
@@ -122,7 +121,7 @@ class SetOversizedLabelMixin(object):
 
   def Test(self):
     self.verify_result = False
-    self.AddExpectedResults([
+    self.AddIfSupported([
       ExpectedResult.NackResponse(self.pid.value,
                                   RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),

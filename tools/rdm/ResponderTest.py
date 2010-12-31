@@ -63,11 +63,11 @@ class ExpectedResult(object):
       return str(self._response_code)
 
     if self._response_type == OlaClient.RDM_ACK:
-      return 'Pid %04hx, ACK' % self._pid
+      return 'Pid 0x%04hx, ACK' % self._pid
     elif self._response_type == OlaClient.RDM_ACK_TIMER:
-      return 'Pid %04hx, ACK TIMER' % self._pid
+      return 'Pid 0x%04hx, ACK TIMER' % self._pid
     else:
-      return 'Pid %04hx, NACK %d' % (self._pid, self._nack_reason)
+      return 'Pid 0x%04hx, NACK %s' % (self._pid, self._nack_reason)
 
   def Matches(self, status, pid, fields):
     """Check if the response we receieved matches this object.
@@ -159,11 +159,21 @@ class TestCategory(object):
     return hash(self._category)
 
 
-TestCategory.UNCLASSIFIED = TestCategory('Unclassified')
+# These correspond to categories in the E1.20 document
+TestCategory.RDM_INFORMATION = TestCategory('RDM Information')
+TestCategory.PRODUCT_INFORMATION = TestCategory('Product Information')
+TestCategory.DMX_SETUP = TestCategory('DMX512 Setup')
+TestCategory.SENSORS = TestCategory('Sensors')
+TestCategory.POWER_LAMP_SETTINGS = TestCategory('Power / Lamp Settings')
+TestCategory.DISPLAY_SETTINGS = TestCategory('Display Settings')
+TestCategory.CONFIGURATION = TestCategory('Configuration')
+TestCategory.CONTROL = TestCategory('Control')
+
+# And others for things that don't quite fit
 TestCategory.CORE = TestCategory('Core Functionality')
 TestCategory.ERROR_CONDITIONS = TestCategory('Error Conditions')
-TestCategory.MANUFACTURER_PIDS = TestCategory('Manufacturer PIDs')
 TestCategory.SUB_DEVICES = TestCategory('Sub Devices')
+TestCategory.UNCLASSIFIED = TestCategory('Unclassified')
 
 
 class TestState(object):
@@ -205,15 +215,15 @@ class ResponderTest(object):
   def __init__(self, universe, uid, pid_store, rdm_api, wrapper, logger, deps):
     self._universe = universe;
     self._uid = uid
+    self._pid_store = pid_store
     self._api = rdm_api
     self._wrapper = wrapper
     self._status = None
     self._fields = None
     self._expected_results = []
     self._state = None
-    self.pid = pid_store.GetName(self.PID, self._uid)
+    self.pid = self.LookupPid(self.PID)
     self._deps = {}
-    self._error = None
     self._warnings = []
     self._logger = logger
 
@@ -231,6 +241,9 @@ class ResponderTest(object):
 
   def __cmp__(self, other):
     return cmp(self.__class__.__name__, other.__class__.__name__)
+
+  def LookupPid(self, pid_name):
+    return self._pid_store.GetName(pid_name, self._uid)
 
   @property
   def category(self):
@@ -303,12 +316,10 @@ class ResponderTest(object):
     self._state = TestState.NOT_RUN
 
   def SetBroken(self, message):
-    self._error = message
     self._logger.debug(' Broken: %s' % message)
     self._state = TestState.BROKEN
 
   def SetFailed(self, message):
-    self._error = message
     self._logger.debug(' Failed: %s' % message)
     self._state = TestState.FAILED
 
@@ -395,7 +406,12 @@ class ResponderTest(object):
     if not self._CheckState(status):
       return
 
-    self._logger.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
+    if status.WasSuccessfull():
+      self._logger.debug(' Response: %s, PID = 0x%04hx, data = %s' %
+                         (status, pid, fields))
+    else:
+      self._logger.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
+
     for result in self._expected_results:
       if result.Matches(status, pid, fields):
         self._state = TestState.PASSED
@@ -410,7 +426,10 @@ class ResponderTest(object):
         return
 
     # nothing matched
-    self.SetFailed('nothing matched')
+    self.SetFailed('expected one of:')
+
+    for result in self._expected_results:
+      self._logger.debug('  %s' % result)
     self.Stop()
 
   def _CheckState(self, status):
@@ -458,6 +477,7 @@ class TestRunner(object):
     """
     if (self._tests_filter is not None and
         test.__name__ not in self._tests_filter):
+      print 'skipping %s' % test.__name__
       return
 
     test_obj = self._AddTest(test)
@@ -499,8 +519,9 @@ class TestRunner(object):
     new_parents = parents + [test]
     dep_objects = []
     for dep_class in test.DEPS:
-      if dep_class in parents:
-        self._logger.error('Circular depdendancy found %s' % parents)
+      if dep_class in new_parents:
+        self._logger.error('Circular depdendancy found %s in %s' %
+                           (dep_class, new_parents))
         return None
       obj = self._AddTest(dep_class, new_parents)
       if obj is None:

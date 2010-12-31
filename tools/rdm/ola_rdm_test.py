@@ -42,7 +42,7 @@ def ParseOptions():
   parser = OptionParser(usage, description=description)
   parser.add_option('-p', '--pid_file', metavar='FILE',
                     help='The file to load the PID definitions from.')
-  parser.add_option('-t', '--tests',
+  parser.add_option('-t', '--tests', metavar='TEST1,TEST2',
                     help='A comma separated list of tests to run.')
   parser.add_option('-d', '--debug', action='store_true',
                     help='Print debug information to assist in diagnosing '
@@ -103,10 +103,10 @@ def DisplaySummary(test_runner):
 
   for category, counts in by_category.iteritems():
     passed = counts.get(TestState.PASSED, 0)
-    total_run = (passed + counts.get(TestState.FAILED, 0)) * 1.0
-    percent = 1
-    if total_run:
-      percent = passed / total_run
+    total_run = (passed + counts.get(TestState.FAILED, 0))
+    if total_run == 0:
+      continue
+    percent = 1.0 * passed / total_run
     logging.info(' %20s: %2d / %2d   %.0f%%' %
                  (category, passed, total_run, percent * 100))
 
@@ -167,7 +167,9 @@ def main():
     if obj == ResponderTest:
       continue
     if issubclass(obj, ResponderTest):
-      runner.AddTest(obj)
+      if not runner.AddTest(obj):
+        logging.info('Failed to add %s' % obj)
+        sys.exit()
 
   runner.RunTests()
   DisplaySummary(runner)
