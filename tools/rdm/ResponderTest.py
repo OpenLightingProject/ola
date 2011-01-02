@@ -63,7 +63,8 @@ class ExpectedResult(object):
       return str(self._response_code)
 
     if self._response_type == OlaClient.RDM_ACK:
-      return 'Pid 0x%04hx, ACK' % self._pid
+      return 'Pid 0x%04hx, ACK, fields %s, values %s' % (
+          self._pid, self._field_names, self._field_values)
     elif self._response_type == OlaClient.RDM_ACK_TIMER:
       return 'Pid 0x%04hx, ACK TIMER' % self._pid
     else:
@@ -105,21 +106,17 @@ class ExpectedResult(object):
         field_keys = set(item.keys())
         for field in self._field_names:
           if field not in field_keys:
-            print 'missing %s' % field
             return False
     else:
       field_keys = set(fields.keys())
       for field in self._field_names:
         if field not in field_keys:
-          print 'missing %s' % field
           return False
 
     for field, value in self._field_values.iteritems():
       if field not in fields:
-        print '%s missing' % field
         return False
       if value != fields[field]:
-        print 'Field %s, %s != %s' % (field, value, fields[field])
         return False
     return True
 
@@ -478,7 +475,7 @@ class TestRunner(object):
     if (self._tests_filter is not None and
         test.__name__ not in self._tests_filter):
       print 'skipping %s' % test.__name__
-      return
+      return True
 
     test_obj = self._AddTest(test)
     return test_obj is not None

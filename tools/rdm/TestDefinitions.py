@@ -27,6 +27,7 @@ import TestMixins
 
 MAX_DMX_ADDRESS = 512
 MAX_LABEL_SIZE = 32
+MAX_PERSONALITY_NUMBER = 255
 
 # First up we try to fetch device info which other tests depend on.
 #------------------------------------------------------------------------------
@@ -230,112 +231,6 @@ class FindSubDevices(ResponderTest):
       self._sub_devices.append(self._current_index)
 
 
-# DMX Start Address tests
-#------------------------------------------------------------------------------
-class GetStartAddress(ResponderTest):
-  """GET the DMX start address."""
-  CATEGORY = TestCategory.DMX_SETUP
-  PID = 'dmx_start_address'
-  DEPS = [GetDeviceInfo]
-
-  def Test(self):
-    result = ExpectedResult.NackResponse(self.pid.value,
-                                         RDMNack.NR_UNKNOWN_PID)
-    if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
-      result = ExpectedResult.AckResponse(self.pid.value, ['dmx_address'])
-    self.AddExpectedResults(result)
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-
-class SetStartAddress(ResponderTest):
-  """Set the DMX start address."""
-  CATEGORY = TestCategory.DMX_SETUP
-  PID = 'dmx_start_address'
-  DEPS = [GetStartAddress, GetDeviceInfo]
-
-  def Test(self):
-    footprint = self.Deps(GetDeviceInfo).GetField('dmx_footprint')
-    self.start_address = None
-
-    if footprint == 0:
-      result = ExpectedResult.NackResponse(self.pid.value,
-                                           RDMNack.NR_UNKNOWN_PID)
-    else:
-      current_address = self.Deps(GetStartAddress).GetField('dmx_address')
-      if footprint == MAX_DMX_ADDRESS:
-        self.start_address = 1
-      else:
-        self.start_address = current_address + 1
-        if self.start_address + footprint > MAX_DMX_ADDRESS + 1:
-          self.start_address = 1
-        result = ExpectedResult.AckResponse(self.pid.value,
-                                            action=self.VerifySet)
-    self.AddExpectedResults(result)
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.start_address])
-
-  def VerifySet(self):
-    self.AddExpectedResults(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values={'dmx_address': self.start_address}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-
-class DeviceInfoCheckStartAddress(ResponderTest):
-  """Confirm device info is updated after the dmx address is set."""
-  CATEGORY = TestCategory.DMX_SETUP
-  PID = 'device_info'
-  DEPS = [SetStartAddress]
-
-  def Test(self):
-    start_address =  self.Deps(SetStartAddress).start_address
-    self.AddExpectedResults(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values = {'start_address': start_address}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-
-class SetOutOfRangeStartAddress(ResponderTest):
-  """Check that the DMX address can't be set to > 512."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'dmx_start_address'
-  DEPS = [SetStartAddress]
-
-  def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [MAX_DMX_ADDRESS + 1])
-
-
-class SetZeroStartAddress(ResponderTest):
-  """Check the DMX address can't be set to 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'dmx_start_address'
-  DEPS = [SetStartAddress]
-
-  def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [0])
-
-
-class SetOversizedStartAddress(ResponderTest):
-  """Send an over-sized SET dmx start address."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'dmx_start_address'
-  DEPS = [SetStartAddress]
-
-  def Test(self):
-    self.verify_result = False
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
-    )
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
-
-
 # Parameter Description
 #------------------------------------------------------------------------------
 class GetParamDescription(ResponderTest):
@@ -499,7 +394,7 @@ class GetFactoryDefaults(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value, ['using_defaults']))
+      ExpectedResult.AckResponse(self.pid.value, ['using_defaults']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -510,7 +405,7 @@ class GetFactoryDefaultsWithData(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value, ['using_defaults']))
+      ExpectedResult.AckResponse(self.pid.value, ['using_defaults']))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foobar')
 
 
@@ -521,7 +416,7 @@ class ResetFactoryDefaults(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet))
+      ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifySet(self):
@@ -542,7 +437,7 @@ class GetLanguageCapabilities(IsSupportedMixin, ResponderTest):
   def Test(self):
     self.languages = []
     self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value, ['language']))
+      ExpectedResult.AckResponse(self.pid.value, ['language']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -568,7 +463,7 @@ class GetLanguageCapabilitiesWithData(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value, ['language']))
+      ExpectedResult.AckResponse(self.pid.value, ['language']))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foobar')
 
 
@@ -582,7 +477,7 @@ class GetLanguage(IsSupportedMixin, ResponderTest):
   def Test(self):
     self.language = None
     self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value, ['language']))
+      ExpectedResult.AckResponse(self.pid.value, ['language']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -657,8 +552,7 @@ class GetSoftwareVersionLabel(ResponderTest):
 
   def Test(self):
     self.AddExpectedResults(
-      ExpectedResult.AckResponse(self.pid.value, ['label'])
-    )
+      ExpectedResult.AckResponse(self.pid.value, ['label']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -685,5 +579,355 @@ class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin, ResponderTest):
 # TODO(simon): Add a test for every sub device
 
 
-
+# Boot Software Version
 #------------------------------------------------------------------------------
+class GetBootSoftwareVersion(IsSupportedMixin,
+                             ResponderTest):
+  """GET the boot software version."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'boot_software_version'
+
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.AckResponse(self.pid.value, ['version']))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+# Boot Software Version Label
+#------------------------------------------------------------------------------
+class GetBootSoftwareLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
+                           ResponderTest):
+  """GET the boot software label."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'boot_software_label'
+
+
+class GetBootSoftwareLabelWithData(IsSupportedMixin,
+                                   TestMixins.GetLabelWithDataMixin,
+                                   ResponderTest):
+  """GET the boot software label with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'boot_software_label'
+
+
+# DMX Personality
+#------------------------------------------------------------------------------
+class GetZeroPersonalityDescription(IsSupportedMixin, ResponderTest):
+  """GET the personality description for the 0th personality."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'dmx_personality_description'
+
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.NackResponse(self.pid.value,
+                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [0])
+
+
+class GetOutOfRangePersonalityDescription(IsSupportedMixin, ResponderTest):
+  """GET the personality description for the N + 1 personality."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'dmx_personality_description'
+  DEPS = IsSupportedMixin.DEPS + [GetDeviceInfo]
+
+  def Test(self):
+    personality_count = self.Deps(GetDeviceInfo).GetField('personality_count')
+    self.AddIfSupported(
+      ExpectedResult.NackResponse(self.pid.value,
+                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [personality_count + 1])
+
+
+class GetPersonalityDescription(IsSupportedMixin, ResponderTest):
+  """GET the personality description for the current personality."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'dmx_personality_description'
+  DEPS = IsSupportedMixin.DEPS + [GetDeviceInfo]
+
+  def Test(self):
+    current_personality = self.Deps(GetDeviceInfo).GetField(
+        'current_personality')
+    footprint = self.Deps(GetDeviceInfo).GetField('dmx_footprint')
+    # cross check against what we got from device info
+    self.AddIfSupported(
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        field_values={'personality': current_personality,
+                      'slots_required': footprint}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [current_personality])
+
+
+class GetPersonality(IsSupportedMixin, ResponderTest):
+  """Get the current personality settings."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'dmx_personality'
+  DEPS = IsSupportedMixin.DEPS + [GetDeviceInfo]
+
+  def Test(self):
+    self.AddIfSupported(ExpectedResult.AckResponse(
+        self.pid.value,
+        ['current_personality', 'personality_count']))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, status, fields):
+    if not status.WasSuccessfull():
+      return
+
+    current_personality = self.Deps(GetDeviceInfo).GetField(
+      'current_personality')
+    personality_count = self.Deps(GetDeviceInfo).GetField('personality_count')
+    warning_str = ("Personality information in device info doesn't match"
+      ' that in dmx_personality')
+
+    if current_personality != fields['current_personality']:
+      self.SetFailed('%s: current_personality %d != %d' % (
+        warning_str, current_personality, fields['current_personality']))
+
+    if personality_count != fields['personality_count']:
+      self.SetFailed('%s: personality_count %d != %d' % (
+        warning_str, personality_count, fields['personality_count']))
+
+
+class GetPersonalities(IsSupportedMixin, ResponderTest):
+  """Get information about all the personalities."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'dmx_personality_description'
+
+  DEPS = IsSupportedMixin.DEPS + [GetDeviceInfo]
+
+  def Test(self):
+    self.personalities = []
+    self._personality_count = self.Deps(GetDeviceInfo).GetField(
+        'personality_count')
+    self._current_index = 0
+    self._GetPersonality()
+
+  def _GetPersonality(self):
+    self._current_index += 1
+    if self._current_index > self._personality_count:
+      if self._personality_count == 0:
+        self.SetNotRun()
+      self.Stop()
+      return
+
+    if self._current_index >= MAX_PERSONALITY_NUMBER:
+      # This should never happen because personality_count is a uint8
+      self.SetFailed('Could not find all personalities')
+      self.Stop()
+      return
+
+    self.AddIfSupported(ExpectedResult.AckResponse(
+        self.pid.value,
+        ['slots_required', 'name'],
+        {'personality': self._current_index},
+        action=self._GetPersonality))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self._current_index])
+
+  def VerifyResult(self, status, fields):
+    """Save the personality for other tests to use."""
+    if status.WasSuccessfull():
+      self.personalities.append(fields)
+
+
+class SetPersonality(IsSupportedMixin, ResponderTest):
+  """Set the personality."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'dmx_personality'
+  # We depend on GetPersonality here so we don't set it before GetPersonality
+  DEPS = IsSupportedMixin.DEPS + [
+      GetPersonalities, GetPersonality, GetPersonalityDescription]
+
+  def Test(self):
+    if self.Deps(GetPersonalities).GetField('personality_count') == 0:
+      self.AddExpectedResults(
+        ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID))
+      self.new_personality = {'personality': 1}  # can use anything here really
+    else:
+      personalities = self.Deps(GetPersonalities).personalities
+      current = self.Deps(GetPersonality).GetField('current_personality')
+
+      if len(personalities) == 0:
+        self.SetFailed(
+          'personality_count was non 0 but failed to fetch all personalities')
+        self.Stop()
+        return
+
+      self.new_personality = personalities[0]
+      for personality in personalities:
+        if personality['personality'] != current:
+          self.new_personality = personality
+          break
+
+      self.AddIfSupported(ExpectedResult.AckResponse(
+          self.pid.value,
+          action=self.VerifySet))
+
+    self.SendSet(PidStore.ROOT_DEVICE,
+                 self.pid,
+                 [self.new_personality['personality']])
+
+  def VerifySet(self):
+    self.AddIfSupported(
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        field_values={
+          'current_personality': self.new_personality['personality'],
+        },
+        action=self.VerifyDeviceInfo))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyDeviceInfo(self):
+    device_info_pid = self.LookupPid('device_info')
+    self.AddIfSupported(
+      ExpectedResult.AckResponse(
+        device_info_pid.value,
+        field_values={
+          'current_personality': self.new_personality['personality'],
+          'dmx_footprint': self.new_personality['slots_required'],
+        }))
+    self.SendGet(PidStore.ROOT_DEVICE, device_info_pid)
+
+
+class SetZeroPersonality(IsSupportedMixin, ResponderTest):
+  """Try to set the personality to 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'dmx_personality'
+  DEPS = IsSupportedMixin.DEPS
+
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.NackResponse(self.pid.value,
+                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [0])
+
+
+class SetOutOfRangePersonality(IsSupportedMixin, ResponderTest):
+  """Try to set the personality to 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'dmx_personality'
+  DEPS = IsSupportedMixin.DEPS + [GetDeviceInfo]
+
+  def Test(self):
+    personality_count = self.Deps(GetDeviceInfo).GetField('personality_count')
+    self.AddIfSupported(
+      ExpectedResult.NackResponse(self.pid.value,
+                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [personality_count + 1])
+
+
+class SetOversizedPersonality(ResponderTest):
+  """Send an over-sized SET personality command."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'dmx_personality'
+  DEPS = IsSupportedMixin.DEPS
+
+  def Test(self):
+    self.AddExpectedResults(
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+
+
+# DMX Start Address tests
+#------------------------------------------------------------------------------
+class GetStartAddress(ResponderTest):
+  """GET the DMX start address."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'dmx_start_address'
+  DEPS = [GetDeviceInfo]
+
+  def Test(self):
+    result = ExpectedResult.NackResponse(self.pid.value,
+                                         RDMNack.NR_UNKNOWN_PID)
+    if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
+      result = ExpectedResult.AckResponse(self.pid.value, ['dmx_address'])
+    self.AddExpectedResults(result)
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class SetStartAddress(ResponderTest):
+  """Set the DMX start address."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'dmx_start_address'
+  DEPS = [GetStartAddress, GetDeviceInfo]
+
+  def Test(self):
+    footprint = self.Deps(GetDeviceInfo).GetField('dmx_footprint')
+    self.start_address = None
+
+    if footprint == 0:
+      result = ExpectedResult.NackResponse(self.pid.value,
+                                           RDMNack.NR_UNKNOWN_PID)
+    else:
+      current_address = self.Deps(GetStartAddress).GetField('dmx_address')
+      if footprint == MAX_DMX_ADDRESS:
+        self.start_address = 1
+      else:
+        self.start_address = current_address + 1
+        if self.start_address + footprint > MAX_DMX_ADDRESS + 1:
+          self.start_address = 1
+        result = ExpectedResult.AckResponse(self.pid.value,
+                                            action=self.VerifySet)
+    self.AddExpectedResults(result)
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.start_address])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        field_values={'dmx_address': self.start_address}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class DeviceInfoCheckStartAddress(ResponderTest):
+  """Confirm device info is updated after the dmx address is set."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'device_info'
+  DEPS = [SetStartAddress]
+
+  def Test(self):
+    start_address =  self.Deps(SetStartAddress).start_address
+    self.AddExpectedResults(
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        field_values = {'start_address': start_address}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class SetOutOfRangeStartAddress(ResponderTest):
+  """Check that the DMX address can't be set to > 512."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'dmx_start_address'
+  DEPS = [SetStartAddress]
+
+  def Test(self):
+    self.AddExpectedResults(
+      ExpectedResult.NackResponse(self.pid.value,
+                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [MAX_DMX_ADDRESS + 1])
+
+
+class SetZeroStartAddress(ResponderTest):
+  """Check the DMX address can't be set to 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'dmx_start_address'
+  DEPS = [SetStartAddress]
+
+  def Test(self):
+    self.AddExpectedResults(
+      ExpectedResult.NackResponse(self.pid.value,
+                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [0])
+
+
+class SetOversizedStartAddress(ResponderTest):
+  """Send an over-sized SET dmx start address."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'dmx_start_address'
+  DEPS = [SetStartAddress]
+
+  def Test(self):
+    self.AddExpectedResults(
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+
+
