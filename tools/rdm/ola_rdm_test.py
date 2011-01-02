@@ -23,8 +23,10 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import TestDefinitions
 import inspect
 import logging
+import re
 import sys
 import textwrap
+import time
 from ResponderTest import ResponderTest, TestRunner, TestState
 from ola import PidStore
 from ola.ClientWrapper import ClientWrapper
@@ -40,13 +42,15 @@ def ParseOptions():
     detected. You can confirm this by running ola_rdm_discover.py -u
     UNIVERSE""")
   parser = OptionParser(usage, description=description)
+  parser.add_option('-d', '--debug', action='store_true',
+                    help='Print debug information to assist in diagnosing '
+                         'failures.')
+  parser.add_option('-l', '--log', metavar='FILE',
+                    help='Also log to the file named FILE.uid.timestamp.')
   parser.add_option('-p', '--pid_file', metavar='FILE',
                     help='The file to load the PID definitions from.')
   parser.add_option('-t', '--tests', metavar='TEST1,TEST2',
                     help='A comma separated list of tests to run.')
-  parser.add_option('-d', '--debug', action='store_true',
-                    help='Print debug information to assist in diagnosing '
-                         'failures.')
   parser.add_option('-u', '--universe', default=0,
                     type='int',
                     help='The universe number to use, default is universe 0.')
@@ -67,6 +71,14 @@ def ParseOptions():
   return options
 
 
+class MyFilter(object):
+  """Filter out the ascii coloring."""
+  def filter(self, record):
+    msg = record.msg
+    record.msg = re.sub('\x1b\[\d*m', '', msg)
+    return True
+
+
 def SetupLogging(options):
   """Setup the logging for test results."""
   level = logging.INFO
@@ -77,6 +89,14 @@ def SetupLogging(options):
   logging.basicConfig(
       level=level,
       format='%(message)s')
+
+  if options.log:
+    file_name = '%s.%s.%d' % (options.log, options.uid, time.time())
+    file_handler =logging.FileHandler(file_name, 'w')
+    file_handler.addFilter(MyFilter())
+    if options.debug:
+      file_handler.setLevel(logging.DEBUG)
+    logging.getLogger('').addHandler(file_handler)
 
 
 def DisplaySummary(test_runner):

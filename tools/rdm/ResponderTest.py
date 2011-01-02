@@ -474,7 +474,6 @@ class TestRunner(object):
     """
     if (self._tests_filter is not None and
         test.__name__ not in self._tests_filter):
-      print 'skipping %s' % test.__name__
       return True
 
     test_obj = self._AddTest(test)
