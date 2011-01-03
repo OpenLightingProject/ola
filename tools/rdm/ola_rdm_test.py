@@ -75,7 +75,7 @@ class MyFilter(object):
   """Filter out the ascii coloring."""
   def filter(self, record):
     msg = record.msg
-    record.msg = re.sub('\x1b\[\d*m', '', msg)
+    record.msg = re.sub('\x1b\[\d*m', '', str(msg))
     return True
 
 

@@ -47,7 +47,7 @@ message Field {
 
 
 message FrameFormat {
-  repeated Field atoms = 1;
+  repeated Field field = 1;
   required bool repeated_group = 2 [default = false];
 }
 
@@ -56,18 +56,20 @@ message FrameFormat {
 message Pid {
   required string name = 1;  // A short name
   required uint32 value = 2;  // The 2 byte PID value
-  repeated FrameFormat get_request = 3;
-  repeated FrameFormat get_response = 4;
-  repeated FrameFormat set_request = 5;
-  repeated FrameFormat set_response = 6;
-  optional SubDeviceRange sub_device_range = 7;
+  optional FrameFormat get_request = 3;
+  optional FrameFormat get_response = 4;
+  optional FrameFormat set_request = 5;
+  optional FrameFormat set_response = 6;
+  optional SubDeviceRange get_sub_device_range = 7;
+  optional SubDeviceRange set_sub_device_range = 8;
 }
 
 
 // Groups of Manufacturer PIDs
 message Manufacturer {
   required uint32 manufacturer_id = 1;
-  repeated Pid pid = 2;
+  required string manufacturer_name = 2;
+  repeated Pid pid = 3;
 }
 
 
