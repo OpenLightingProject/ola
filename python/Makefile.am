@@ -35,6 +35,7 @@ UsbProConfigMessages_pb2.py: $(usbpro_proto)
 	protoc --python_out ./ -I $(usbpro_path) $(usbpro_proto)
 
 # This is a hack, but I can't find any other way to do it
+piddir = $(pid_datadir)
 PidStoreLocation.py:
 	echo "location = '${piddir}/pids.proto'" > PidStoreLocation.py
 
