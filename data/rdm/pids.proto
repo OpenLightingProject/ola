@@ -1,0 +1,1343 @@
+pid {
+  name: "proxied_devices"
+  value: 16
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "manufacturer_id"
+    }
+    field {
+      type: UINT32
+      name: "device_id"
+    }
+    repeated_group: true
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "proxied_device_count"
+  value: 17
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "device_count"
+    }
+    field {
+      type: BOOL
+      name: "list_changed"
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "comms_status"
+  value: 21
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "short_message"
+    }
+    field {
+      type: UINT16
+      name: "length_mismatch"
+    }
+    field {
+      type: UINT16
+      name: "checksum_fail"
+    }
+    repeated_group: false
+  }
+  set_request {
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "queued_message"
+  value: 32
+  get_request {
+    field {
+      type: UINT8
+      name: "status_type"
+    }
+    repeated_group: false
+  }
+  get_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "status_message"
+  value: 48
+  get_request {
+    field {
+      type: UINT8
+      name: "status_type"
+    }
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "sub_device"
+    }
+    field {
+      type: UINT8
+      name: "status_type"
+    }
+    field {
+      type: UINT16
+      name: "message_id"
+    }
+    field {
+      type: UINT16
+      name: "value1"
+    }
+    field {
+      type: UINT16
+      name: "value2"
+    }
+    repeated_group: true
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "status_id_description"
+  value: 49
+  get_request {
+    field {
+      type: UINT16
+      name: "status_id"
+    }
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "label"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "clear_status_id"
+  value: 50
+  set_request {
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "sub_device_status_report_threshold"
+  value: 51
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "status_type"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT8
+      name: "status_type"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ONLY_SUBDEVICES
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "supported_parameters"
+  value: 80
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "param"
+    }
+    repeated_group: true
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "parameter_description"
+  value: 81
+  get_request {
+    field {
+      type: UINT16
+      name: "pid"
+    }
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "pid"
+    }
+    field {
+      type: UINT8
+      name: "pdl_size"
+    }
+    field {
+      type: UINT8
+      name: "data_type"
+    }
+    field {
+      type: UINT8
+      name: "command_class"
+    }
+    field {
+      type: UINT8
+      name: "type"
+    }
+    field {
+      type: UINT8
+      name: "unit"
+    }
+    field {
+      type: UINT8
+      name: "prefix"
+    }
+    field {
+      type: UINT32
+      name: "min_value"
+    }
+    field {
+      type: UINT32
+      name: "max_value"
+    }
+    field {
+      type: UINT32
+      name: "default_value"
+    }
+    field {
+      type: STRING
+      name: "description"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "device_info"
+  value: 96
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "protocol_major"
+    }
+    field {
+      type: UINT8
+      name: "protocol_minor"
+    }
+    field {
+      type: UINT16
+      name: "device_model"
+    }
+    field {
+      type: UINT16
+      name: "product_category"
+    }
+    field {
+      type: UINT32
+      name: "software_version"
+    }
+    field {
+      type: UINT16
+      name: "dmx_footprint"
+    }
+    field {
+      type: UINT8
+      name: "current_personality"
+    }
+    field {
+      type: UINT8
+      name: "personality_count"
+    }
+    field {
+      type: UINT16
+      name: "start_address"
+    }
+    field {
+      type: UINT16
+      name: "sub_device_count"
+    }
+    field {
+      type: UINT8
+      name: "sensor_count"
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "product_detail_id_list"
+  value: 112
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "detail_id"
+    }
+    repeated_group: true
+    max_repeats: 6
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "device_model_description"
+  value: 128
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "label"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "manufacturer_label"
+  value: 129
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "label"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "device_label"
+  value: 130
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "label"
+      size: 32
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: STRING
+      name: "label"
+      size: 32
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "factory_defaults"
+  value: 144
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: BOOL
+      name: "using_defaults"
+    }
+    repeated_group: false
+  }
+  set_request {
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "language_capabilities"
+  value: 160
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "language"
+      size: 2
+    }
+    repeated_group: true
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "language"
+  value: 176
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "language"
+      size: 2
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: STRING
+      name: "language"
+      size: 2
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "software_version_label"
+  value: 192
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "label"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "boot_software_version"
+  value: 193
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT32
+      name: "version"
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "boot_software_label"
+  value: 194
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "label"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "dmx_personality"
+  value: 224
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "current_personality"
+    }
+    field {
+      type: UINT8
+      name: "personality_count"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT8
+      name: "personality"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "dmx_personality_description"
+  value: 225
+  get_request {
+    field {
+      type: UINT8
+      name: "personality"
+    }
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "personality"
+    }
+    field {
+      type: UINT16
+      name: "slots_required"
+    }
+    field {
+      type: STRING
+      name: "name"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "dmx_start_address"
+  value: 240
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "dmx_address"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT16
+      name: "dmx_address"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "slot_info"
+  value: 288
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "slot_offset"
+    }
+    field {
+      type: UINT8
+      name: "slot_type"
+    }
+    field {
+      type: UINT16
+      name: "slot_label_id"
+    }
+    repeated_group: true
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "slot_description"
+  value: 289
+  get_request {
+    field {
+      type: UINT16
+      name: "slot_number"
+    }
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "slot_number"
+    }
+    field {
+      type: STRING
+      name: "name"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "default_slot_value"
+  value: 290
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "slot_offset"
+    }
+    field {
+      type: UINT8
+      name: "default_slot_value"
+    }
+    repeated_group: true
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "sensor_definition"
+  value: 512
+  get_request {
+    field {
+      type: UINT8
+      name: "sensor_number"
+    }
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "sensor_number"
+    }
+    field {
+      type: UINT8
+      name: "type"
+    }
+    field {
+      type: UINT8
+      name: "unit"
+    }
+    field {
+      type: UINT8
+      name: "prefix"
+    }
+    field {
+      type: UINT16
+      name: "range_min"
+    }
+    field {
+      type: UINT16
+      name: "range_max"
+    }
+    field {
+      type: UINT16
+      name: "normal_min"
+    }
+    field {
+      type: UINT16
+      name: "normal_max"
+    }
+    field {
+      type: UINT8
+      name: "supports_recording"
+    }
+    field {
+      type: STRING
+      name: "name"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "sensor_value"
+  value: 513
+  get_request {
+    field {
+      type: UINT8
+      name: "sensor_number"
+    }
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "sensor_number"
+    }
+    field {
+      type: UINT16
+      name: "present_value"
+    }
+    field {
+      type: UINT16
+      name: "lowest"
+    }
+    field {
+      type: UINT16
+      name: "highest"
+    }
+    field {
+      type: UINT16
+      name: "recorded"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT8
+      name: "sensor_number"
+    }
+    repeated_group: false
+  }
+  set_response {
+    field {
+      type: UINT8
+      name: "sensor_number"
+    }
+    field {
+      type: UINT16
+      name: "present_value"
+    }
+    field {
+      type: UINT16
+      name: "lowest"
+    }
+    field {
+      type: UINT16
+      name: "highest"
+    }
+    field {
+      type: UINT16
+      name: "recorded"
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "record_sensors"
+  value: 514
+  set_request {
+    field {
+      type: UINT8
+      name: "sensor_number"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "device_hours"
+  value: 1024
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT32
+      name: "hours"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT32
+      name: "hours"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "lamp_hours"
+  value: 1025
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT32
+      name: "hours"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT32
+      name: "hours"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "lamp_strikes"
+  value: 1026
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT32
+      name: "strikes"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT32
+      name: "strikes"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "lamp_state"
+  value: 1027
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "state"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT8
+      name: "state"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "lamp_on_mode"
+  value: 1028
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "mode"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT8
+      name: "mode"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "device_power_cycles"
+  value: 1029
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT32
+      name: "power_cycles"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT32
+      name: "power_cycles"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "display_invert"
+  value: 1280
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "invert_status"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT8
+      name: "invert_status"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "display_level"
+  value: 1281
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "level"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT8
+      name: "level"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "pan_invert"
+  value: 1536
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: BOOL
+      name: "invert"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: BOOL
+      name: "invert"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "tilt_invert"
+  value: 1537
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: BOOL
+      name: "invert"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: BOOL
+      name: "invert"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "pan_tilt_swap"
+  value: 1538
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: BOOL
+      name: "swap"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: BOOL
+      name: "swap"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "real_time_clock"
+  value: 1539
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "year"
+    }
+    field {
+      type: UINT8
+      name: "month"
+    }
+    field {
+      type: UINT8
+      name: "day"
+    }
+    field {
+      type: UINT8
+      name: "hour"
+    }
+    field {
+      type: UINT8
+      name: "minute"
+    }
+    field {
+      type: UINT8
+      name: "second"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT16
+      name: "year"
+    }
+    field {
+      type: UINT8
+      name: "month"
+    }
+    field {
+      type: UINT8
+      name: "day"
+    }
+    field {
+      type: UINT8
+      name: "hour"
+    }
+    field {
+      type: UINT8
+      name: "minute"
+    }
+    field {
+      type: UINT8
+      name: "second"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "identify_device"
+  value: 4096
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: BOOL
+      name: "identify_state"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: BOOL
+      name: "identify_state"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "reset_device"
+  value: 4097
+  set_request {
+    field {
+      type: UINT8
+      name: "reset_mode"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "power_state"
+  value: 4112
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "state"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT8
+      name: "state"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "perform_self_test"
+  value: 4128
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: BOOL
+      name: "tests_active"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT8
+      name: "test_number"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "self_test_description"
+  value: 4129
+  get_request {
+    field {
+      type: UINT8
+      name: "test_number"
+    }
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "test_number"
+    }
+    field {
+      type: STRING
+      name: "description"
+      size: 32
+    }
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
+pid {
+  name: "capture_preset"
+  value: 4144
+  set_request {
+    field {
+      type: UINT16
+      name: "scene"
+    }
+    field {
+      type: UINT16
+      name: "fade_up_time"
+    }
+    field {
+      type: UINT16
+      name: "fade_down_time"
+    }
+    field {
+      type: UINT16
+      name: "wait_time"
+    }
+    repeated_group: false
+  }
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+pid {
+  name: "preset_playback"
+  value: 4145
+  get_request {
+    repeated_group: false
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "mode"
+    }
+    field {
+      type: UINT8
+      name: "level"
+    }
+    repeated_group: false
+  }
+  set_request {
+    field {
+      type: UINT16
+      name: "mode"
+    }
+    field {
+      type: UINT8
+      name: "level"
+    }
+    repeated_group: false
+  }
+  set_response {
+    repeated_group: false
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+  set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+}
+manufacturer {
+  manufacturer_id: 161
+  manufacturer_name: "Creative Lighting"
+  pid {
+    name: "device_mode"
+    value: 32768
+    get_request {
+      repeated_group: false
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+      }
+      repeated_group: false
+    }
+    set_request {
+      field {
+        type: UINT8
+        name: "mode"
+      }
+      repeated_group: false
+    }
+    set_response {
+      repeated_group: false
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 18501
+  manufacturer_name: "Howard Eaton Lighting"
+}
+

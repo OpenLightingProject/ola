@@ -23,7 +23,7 @@ package ola.rdm.pid;
 
 enum SubDeviceRange {
   ROOT_DEVICE = 1;  // 0
-  ROOT_OR_ANY_SUBDEVICE = 2;  // 0 - 512 or 0xffff
+  ROOT_OR_ALL_SUBDEVICE = 2;  // 0 - 512 or 0xffff
   ROOT_OR_SUBDEVICE = 3;  // 0 - 512
   ONLY_SUBDEVICES = 4;  // 1 - 512
 }
@@ -49,6 +49,7 @@ message Field {
 message FrameFormat {
   repeated Field field = 1;
   required bool repeated_group = 2 [default = false];
+  optional uint32 max_repeats = 3;
 }
 
 

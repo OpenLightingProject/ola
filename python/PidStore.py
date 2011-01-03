@@ -22,6 +22,10 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import struct
 import sys
+from google.protobuf import text_format
+from ola import PidStoreLocation
+from ola import Pids_pb2
+
 
 # Various sub device enums
 ROOT_DEVICE = 0
@@ -29,6 +33,15 @@ MAX_VALID_SUB_DEVICE = 0x0200;
 ALL_SUB_DEVICES = 0xffff
 
 RDM_GET, RDM_SET = range(2)
+
+
+class Error(Exception):
+  """Base error class."""
+
+
+class InvalidPidFormat(Error):
+  "Indicates the PID data file was invalid."""
+
 
 class Pid(object):
   """A class that describes everything about a PID."""
@@ -356,6 +369,7 @@ def SpecificSubDeviceValidator(args):
 class PidStore(object):
   """The class which holds information about all the PIDs."""
   def __init__(self):
+    self._pid_store = Pids_pb2.PidStore()
     self._pids = {}
     self._name_to_pid = {}
     self._manufacturer_pids = {}
@@ -368,47 +382,55 @@ class PidStore(object):
       file: The path to the pid store file
       validate: When True, enable strict checking.
     """
-    globals = {
-      'Bool': Bool,
-      'Pid': Pid,
-      'RepeatedGroup': RepeatedGroup,
-      'UInt8': UInt8,
-      'UInt16': UInt16,
-      'UInt32': UInt32,
-      'String': String,
-      'RootDevice': RootDeviceValidator,
-      'ValidSubDevice': SubDeviceValidator,
-      'SpecificSubDevice': SpecificSubDeviceValidator,
-      'NonBroadcastSubDevice': NonBroadcastSubDeviceValiator,
-    }
-    locals = {}
-    execfile(file, globals, locals)
-    for pid in locals['PIDS']:
+
+    pid_file = open(file, 'r')
+    lines = pid_file.readlines()
+    pid_file.close()
+
+    try:
+      text_format.Merge('\n'.join(lines), self._pid_store)
+    except text_format.ParseError, e:
+      raise InvalidPidFormat(str(e))
+
+    for pid_pb in self._pid_store.pid:
       if validate:
-        assert (pid.value < 0x8000 or pid.value > 0xffe0), (
-          '%0x04hx between 0x8000 and 0xffdf' % pid.value)
-        assert pid.value not in self._pids, (
-          '0x%04hx listed more than once in %s' % (pid.value, file))
-        assert pid.name not in self._name_to_pid, (
-          '%s listed more than once in %s' % (pid.name, file))
+        if pid_pb.value > 0x8000 and pid_pb.value < 0xffe0:
+          raise InvalidPidFormat('%0x04hx between 0x8000 and 0xffdf in %s' %
+                                 (pid_pb.value, file))
+        if pid_pb.value in self._pids:
+          raise InvalidPidFormat('0x%04hx listed more than once in %s' %
+                                 (pid_pb.value, file))
+        if pid_pb.name in self._name_to_pid:
+          raise InvalidPidFormat('%s listed more than once in %s' %
+                                 (pid_pb.name, file))
+
+      pid = self._PidProtoToObject(pid_pb)
       self._pids[pid.value] = pid
       self._name_to_pid[pid.name] = pid
 
-    for manufacturer in locals['MANUFACTURER_PIDS']:
-      pid_dict = self._manufacturer_pids.setdefault(manufacturer, {})
-      name_dict = self._manufacturer_names_to_pids.setdefault(manufacturer, {})
+    for manufacturer in self._pid_store.manufacturer:
+      pid_dict = self._manufacturer_pids.setdefault(
+          manufacturer.manufacturer_id,
+          {})
+      name_dict = self._manufacturer_names_to_pids.setdefault(
+          manufacturer.manufacturer_id,
+          {})
 
-      for pid in locals['MANUFACTURER_PIDS'][manufacturer]:
+      for pid_pb in manufacturer.pid:
         if validate:
-          assert (pid.value >= 0x8000 and pid.value <= 0xffdf), (
-            'manufacturer pid %0x04hx not between 0x8000 and 0xffdf' %
-            pid.value)
-          assert pid.value not in pid_dict, (
-            '0x%04hx listed more than once for 0x%04hx in %s' % (
-              pid.value, manufacturer, file))
-          assert pid.name not in name_dict, (
-            '%s listed more than once for 0x%04hx in %s' % (
-              pid.name, manufacturer, file))
+          if pid_pb.value < 0x8000 or pid_pb.value > 0xffdf:
+            raise InvalidPidFormat(
+              'Manufacturer pid %0x04hx not between 0x8000 and 0xffdf' %
+              pid_pb.value)
+          if pid.value in pid_dict:
+            raise InvalidPidFormat(
+                '0x%04hx listed more than once for 0x%04hx in %s' % (
+                pid_pb.value, manufacturer.manufacturer_id, file))
+          if pid_pb.name in name_dict:
+            raise InvalidPidFormat(
+                '%s listed more than once for 0x%04hx in %s' % (
+                pid_pb.name, manufacturer, file))
+        pid = self._PidProtoToObject(pid_pb)
         pid_dict[pid.value] = pid
         name_dict[pid.name] = pid
 
@@ -444,6 +466,86 @@ class PidStore(object):
 
   def __contains__(self, pid):
     return pid in self._pids
+
+  def _PidProtoToObject(self, pid_pb):
+    """Convert the protobuf representation of a PID to a PID object.
+
+    Returns:
+      A PIDStore.PID object.
+  """
+    get_request = None
+    if pid_pb.HasField('get_request'):
+      get_request = self._FrameFormatToList(pid_pb.get_request)
+
+    get_response = None
+    if pid_pb.HasField('get_response'):
+      get_response = self._FrameFormatToList(pid_pb.get_response)
+
+    set_request = None
+    if pid_pb.HasField('set_request'):
+      set_request = self._FrameFormatToList(pid_pb.set_request)
+
+    set_response = None
+    if pid_pb.HasField('set_response'):
+      set_response = self._FrameFormatToList(pid_pb.set_response)
+
+    get_validators = []
+    if pid_pb.HasField('get_sub_device_range'):
+      get_validators.append(self._SubDeviceRangeToValidator(
+        pid_pb.get_sub_device_range))
+    set_validators = []
+    if pid_pb.HasField('set_sub_device_range'):
+      set_validators.append(self._SubDeviceRangeToValidator(
+        pid_pb.set_sub_device_range))
+
+    return Pid(pid_pb.name,
+              pid_pb.value,
+              get_request,
+              get_response,
+              set_request,
+              set_response,
+              get_validators,
+              set_validators)
+
+  def _FrameFormatToList(self, frame_format):
+    """Convert a frame format to a list of atoms."""
+    atoms = []
+    for field in frame_format.field:
+      atoms.append(self._FieldToAtom(field))
+    if frame_format.repeated_group:
+      args = {}
+      if frame_format.HasField('max_repeats'):
+        args['max'] = frame_format.max_repeats
+      return RepeatedGroup(atoms)
+    else:
+      return atoms
+
+  def _FieldToAtom(self, field):
+    """Convert a PID proto field message into an atom."""
+    if field.type == Pids_pb2.BOOL:
+      return Bool(field.name)
+    elif field.type == Pids_pb2.UINT8:
+      return UInt8(field.name)
+    elif field.type == Pids_pb2.UINT16:
+      return UInt16(field.name)
+    elif field.type == Pids_pb2.UINT32:
+      return UInt32(field.name)
+    elif field.type == Pids_pb2.STRING:
+      if field.HasField('size'):
+        return String(field.name, field.size)
+      else:
+        return UInt32(field.name)
+
+  def _SubDeviceRangeToValidator(self, range):
+    """Convert a sub device range to a validator."""
+    if range == Pids_pb2.ROOT_DEVICE:
+      return RootDeviceValidator
+    elif range == Pids_pb2.ROOT_OR_ALL_SUBDEVICE:
+      return SubDeviceValidator
+    elif range == Pids_pb2.ROOT_OR_SUBDEVICE:
+      return NonBroadcastSubDeviceValiator
+    elif range == Pids_pb2.ONLY_SUBDEVICES:
+      return SpecificSubDeviceValidator
 
 
 _pid_store = None
