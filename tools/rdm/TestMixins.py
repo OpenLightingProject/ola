@@ -30,6 +30,13 @@ from ResponderTest import ResponderTest, ExpectedResult
 
 MAX_LABEL_SIZE = 32
 
+# When a 
+UNSUPPORTED_SET_NACKS = [
+    ExpectedResult.NackResponse(self.pid.value,
+                                RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID))
+]
+
 # Generic Get / Set Mixins
 #------------------------------------------------------------------------------
 class UnsupportedGetMixin(object):
@@ -46,9 +53,7 @@ class UnsupportedSetMixin(object):
   DATA = ''
 
   def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.AddExpectedResults(UNSUPPORTED_SET_NACKS)
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
@@ -56,7 +61,7 @@ class UnsupportedSetMixin(object):
 # These all work in conjunction with the IsSupportedMixin
 #------------------------------------------------------------------------------
 class GetLabelMixin(object):
-  """Fetch a PID, and make sure we get either a UNKNOWN_PID or ACK response."""
+  """Fetch a PID, and make sure we get an ACK response."""
   def Test(self):
     self.AddIfSupported([
       ExpectedResult.AckResponse(self.pid.value, ['label'])
