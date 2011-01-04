@@ -26,8 +26,12 @@
 #include <termios.h>
 #include <ola/Logging.h>
 #include <ola/Callback.h>
+#include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
 #include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/RDMHelper.h>
+#include <ola/rdm/RDMResponseCodes.h>
 
 #include <iostream>
 #include <fstream>
@@ -152,7 +156,6 @@ void RDMSniffer::HandleMessage(uint8_t label,
   }
 
   uint8_t command_class = data[20];
-  cout << static_cast<int>(command_class) << endl;
 
   switch (command_class) {
     case RDMCommand::GET_COMMAND:
@@ -164,6 +167,7 @@ void RDMSniffer::HandleMessage(uint8_t label,
       DumpResponse(length - 1, data + 1);
       return;
     case RDMCommand::DISCOVER_COMMAND:
+    case RDMCommand::DISCOVER_COMMAND_RESPONSE:
       DumpDiscover(length - 1, data + 1);
       return;
     default:
@@ -184,15 +188,19 @@ void RDMSniffer::DumpRequest(unsigned int length, const uint8_t *data) {
   if (request) {
     cout << (request->CommandClass() == RDMCommand::GET_COMMAND ? "GET" :
              "SET");
-    if (m_verbose)
-      cout << " src: " << request->SourceUID() << ", dst: " <<
-        request->DestinationUID() << ", transaction: " <<
-        request->TransactionNumber() << ", port: " << request->PortId() <<
-        ", PID " << std::hex << request->ParamId() << endl;
-    else
-      cout << " src: " << request->SourceUID() << ", dst: " <<
-        request->DestinationUID() << ", PID " << std::hex <<
-        request->ParamId() << endl;
+    cout << " src: " << request->SourceUID() << ", dst: " <<
+      request->DestinationUID() << ", sub-device: " << std::dec <<
+      request->SubDevice() << ", transaction: " <<
+      (int) request->TransactionNumber() << ", port: " << std::dec <<
+      (int) request->PortId() << ", PID 0x" << std::hex << std::setfill('0')
+      << std::setw(4) << request->ParamId();
+    if (m_verbose) {
+      cout << ", pdl: " << request->ParamDataSize() << ", param data: ";
+      const uint8_t *param_data = request->ParamData();
+      for (unsigned int i = 0; i < request->ParamDataSize(); ++i)
+        cout << std::hex << static_cast<int>(param_data[i]) << " ";
+    }
+    cout << endl;
   } else {
     DumpRawPacket(length, data);
   }
@@ -204,18 +212,43 @@ void RDMSniffer::DumpResponse(unsigned int length, const uint8_t *data) {
   if (response) {
     cout << (response->CommandClass() == RDMCommand::GET_COMMAND_RESPONSE ?
         "GET_RESPONSE" : "SET_RESPONSE");
-    if (m_verbose)
-      cout << " src: " << response->SourceUID() << ", dst: " <<
-        response->DestinationUID() << ", transaction: " <<
-        response->TransactionNumber() << ", response type: " <<
-        response->ResponseType() << ", PID " << std::hex << response->ParamId()
-        << endl;
-    else
-      cout << " src: " << response->SourceUID() << ", dst: " <<
-        response->DestinationUID() << ", PID " << std::hex <<
-        response->ParamId() << endl;
+    cout << " src: " << response->SourceUID() << ", dst: " <<
+      response->DestinationUID() << ", sub-device: " << std::dec <<
+      response->SubDevice() << ", transaction: " <<
+      (int) response->TransactionNumber() << ", response type: ";
+
+    switch (response->ResponseType()) {
+      case ola::rdm::RDM_ACK:
+        cout << "ACK";
+        break;
+      case ola::rdm::RDM_ACK_TIMER:
+        cout << "ACK TIMER";
+        break;
+      case ola::rdm::RDM_NACK_REASON:
+        uint16_t reason;
+        if (length >= 26)
+          memcpy(reinterpret_cast<uint8_t*>(&reason),
+                 reinterpret_cast<const void*>(data + 23),
+                 sizeof(reason));
+        reason = ola::network::NetworkToHost(reason);
+        cout << "NACK (" << ola::rdm::NackReasonToString(reason) << ")";
+        break;
+      case ola::rdm::ACK_OVERFLOW:
+        cout << "ACK OVERFLOW";
+        break;
+      default:
+        cout << "Unknown (" << response->ResponseType() << ")";
+    }
+    cout << ", PID 0x" << std::hex <<
+      std::setfill('0') << std::setw(4) << response->ParamId();
+    if (m_verbose) {
+      cout << ", pdl: " << response->ParamDataSize() << ", param data: ";
+      const uint8_t *param_data = response->ParamData();
+      for (unsigned int i = 0; i < response->ParamDataSize(); ++i)
+        cout << std::hex << static_cast<int>(param_data[i]) << " ";
+    }
+    cout << endl;
   }
-  DumpRawPacket(length, data);
 }
 
 
