@@ -306,6 +306,10 @@ class String(Atom):
       return arg
     return None
 
+  def PostUnpack(self, value):
+    """Remove any null padding."""
+    return value.rstrip('\x00')
+
 
 
 class RepeatedGroup(list):
