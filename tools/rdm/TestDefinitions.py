@@ -404,8 +404,10 @@ class GetFactoryDefaultsWithData(IsSupportedMixin, ResponderTest):
   PID = 'factory_defaults'
 
   def Test(self):
-    self.AddIfSupported(
-      ExpectedResult.AckResponse(self.pid.value, ['using_defaults']))
+    self.AddIfSupported([
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
+      ExpectedResult.AckResponse(self.pid.value, ['using_defaults']),
+    ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foobar')
 
 
@@ -457,13 +459,15 @@ class GetLanguageCapabilities(IsSupportedMixin, ResponderTest):
 
 
 class GetLanguageCapabilitiesWithData(IsSupportedMixin, ResponderTest):
-  """GET the language capabilities pid."""
+  """GET the language capabilities pid with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'language_capabilities'
 
   def Test(self):
-    self.AddIfSupported(
-      ExpectedResult.AckResponse(self.pid.value, ['language']))
+    self.AddIfSupported([
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
+      ExpectedResult.AckResponse(self.pid.value, ['language'])
+    ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foobar')
 
 
