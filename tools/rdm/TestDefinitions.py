@@ -102,16 +102,14 @@ class SetDeviceInfo(ResponderTest, DeviceInfoTest):
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
-# TODO(simon): This fails with the RDM-TRI because the widget notices the
-# response has a different sub device.
-#class AllSubDevicesDeviceInfo(ResponderTest, DeviceInfoTest):
-#  """Devices should NACK a GET request sent to ALL_SUB_DEVICES."""
-#  CATEGORY = TestCategory.SUB_DEVICES
-#  def Test(self):
-#    self.AddExpectedResults(
-#      ExpectedResult.NackResponse(self.pid.value,
-#                                  RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
-#    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
+class AllSubDevicesDeviceInfo(ResponderTest, DeviceInfoTest):
+  """Devices should NACK a GET request sent to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  def Test(self):
+    self.AddExpectedResults(
+      ExpectedResult.NackResponse(self.pid.value,
+                                  RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
 
 
 # Supported Parameters Tests & Mixin
