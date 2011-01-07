@@ -30,12 +30,14 @@ from ResponderTest import ResponderTest, ExpectedResult
 
 MAX_LABEL_SIZE = 32
 
-# When a 
-UNSUPPORTED_SET_NACKS = [
-    ExpectedResult.NackResponse(self.pid.value,
-                                RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
-    ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID))
-]
+def GetUnsupportedNacks(pid):
+  """Repsonders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
+  return [
+    ExpectedResult.NackResponse(pid.value,
+                                RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ExpectedResult.NackResponse(pid.value, RDMNack.NR_UNKNOWN_PID),
+  ]
+
 
 # Generic Get / Set Mixins
 #------------------------------------------------------------------------------
@@ -53,7 +55,7 @@ class UnsupportedSetMixin(object):
   DATA = ''
 
   def Test(self):
-    self.AddExpectedResults(UNSUPPORTED_SET_NACKS)
+    self.AddExpectedResults(GetUnsupportedNacks(self.pid))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 

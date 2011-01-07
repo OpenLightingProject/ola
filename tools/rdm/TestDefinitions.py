@@ -98,8 +98,7 @@ class SetDeviceInfo(ResponderTest, DeviceInfoTest):
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(TestMixins.UNSUPPORTED_SET_NACKS)
+    self.AddExpectedResults(TestMixins.GetUnsupportedNacks(self.pid))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -161,7 +160,7 @@ class SetSupportedParameters(ResponderTest):
   PID = 'supported_parameters'
 
   def Test(self):
-    self.AddExpectedResults(TestMixins.UNSUPPORTED_SET_NACKS)
+    self.AddExpectedResults(TestMixins.GetUnsupportedNacks(self.pid))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 
