@@ -52,7 +52,7 @@ def CheckStatus(status):
     if status.response_code != OlaClient.RDM_COMPLETED_OK:
       print status.ResponseCodeAsString()
     elif status.response_type == OlaClient.RDM_NACK_REASON:
-      print 'Got nack with reason: %s' % status.NackReasonAsString()
+      print 'Got nack with reason: %s' % status.nack_reason
     elif status.response_type == OlaClient.RDM_ACK_TIMER:
       print 'Got ACK TIMER set to %d ms' % status.ack_timer
     else:
@@ -61,12 +61,14 @@ def CheckStatus(status):
   return False
 
 
-def RequestComplete(status, pid, thing):
+def RequestComplete(status, pid, response_data):
   global wrapper
   wrapper.Stop()
   if CheckStatus(status):
     print 'PID: 0x%04hx' % pid
-    print thing
+    for key, value in response_data.iteritems():
+      print '%s: %s' % (key, value)
+
 
 def ListPids(uid):
   """List the pid available, taking into account manufacturer specific pids.
@@ -77,18 +79,12 @@ def ListPids(uid):
   pid_store = PidStore.GetStore()
   names = []
   for pid in pid_store.Pids():
-    names.append('%s (0x%04hx)' % (pid.name, pid.value))
-  for pid in pid_store.ManufacturerPids(uid.manufacturer_id):
-    names.append('%s (0x%04hx)' % (pid.name, pid.value))
+    names.append('%s (0x%04hx)' % (pid.name.lower(), pid.value))
+  if uid:
+    for pid in pid_store.ManufacturerPids(uid.manufacturer_id):
+      names.append('%s (0x%04hx)' % (pid.name.lower(), pid.value))
   names.sort()
   print '\n'.join(names)
-
-def ValidateArgs(pid, args, request_type):
-  if not pid.RequestSupported(request_type):
-    print >> sys.stderr, 'PID does not support command'
-    return None
-
-  return pid.CheckArgs(args, request_type)
 
 
 def main():
@@ -133,9 +129,9 @@ def main():
 
   pid = None
   try:
-    pid = pid_store.GetPid(int(args[0], 0), uid)
+    pid = pid_store.GetPid(int(args[0], 0), uid.manufacturer_id)
   except ValueError:
-    pid = pid_store.GetName(args[0], uid)
+    pid = pid_store.GetName(args[0].upper(), uid.manufacturer_id)
 
   if not pid:
     ListPids(uid)
@@ -151,19 +147,23 @@ def main():
     request_type = PidStore.RDM_SET
 
   rdm_args = args[1:]
-  santitized_args = ValidateArgs(pid, rdm_args, request_type)
-  if santitized_args is None:
-    # TODO(simon): print the format here
-    sys.exit()
+  if not pid.RequestSupported(request_type):
+    print >> sys.stderr, 'PID does not support command'
+    return None
 
   if request_type == PidStore.RDM_SET:
-    if rdm_api.Set(universe, uid, sub_device, pid, RequestComplete,
-                   santitized_args):
-      wrapper.Run()
+    method = rdm_api.Set
   else:
-    if rdm_api.Get(universe, uid, sub_device, pid, RequestComplete,
-                   santitized_args):
+    method = rdm_api.Get
+
+  try:
+    if method(universe, uid, sub_device, pid, RequestComplete, rdm_args):
       wrapper.Run()
+  except PidStore.ArgsValidationError, e:
+    # TODO(simon): print the format here
+    print >> sys.stderr, e
+    return None
+
 
 if __name__ == '__main__':
   main()

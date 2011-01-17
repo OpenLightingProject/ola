@@ -32,38 +32,61 @@ ROOT_DEVICE = 0
 MAX_VALID_SUB_DEVICE = 0x0200;
 ALL_SUB_DEVICES = 0xffff
 
+# The two types of commands classes
 RDM_GET, RDM_SET = range(2)
 
 
 class Error(Exception):
   """Base error class."""
 
-
 class InvalidPidFormat(Error):
   "Indicates the PID data file was invalid."""
+
+class PidStructureException(Error):
+  """Raised if the PID structure isn't vaild."""
+
+class ArgsValidationError(Error):
+  """Raised if the arguments don't match the expected frame format."""
+
+class UnpackException(Error):
+  """Raised if we can't unpack the data corectly."""
 
 
 class Pid(object):
   """A class that describes everything about a PID."""
-  def __init__(self, name, value, get_request = None, get_response = None,
-               set_request = None, set_response = None,
-               get_validators = [], set_validators = []):
+  def __init__(self, name, value,
+               get_request = None,
+               get_response = None,
+               set_request = None,
+               set_response = None,
+               get_validators = [],
+               set_validators = []):
     """Create a new PID.
 
     Args:
       name: the human readable name
       value: the 2 byte PID value
-      get_format:
-      set_format:
+      get_request: A Group object, or None if GET isn't supported
+      get_response:
+      set_request: A Group object, or None if SET isn't supported
+      set_response:
+      get_validators:
+      set_validators:
     """
     self._name = name
     self._value = value
-    self._get_request = get_request
-    self._get_response = get_response
-    self._set_request = set_request
-    self._set_response = set_response
-    self._get_validators = get_validators
-    self._set_validators = set_validators
+    self._requests = {
+      RDM_GET: get_request,
+      RDM_SET: set_request,
+    }
+    self._responses = {
+      RDM_GET: get_response,
+      RDM_SET: set_response,
+    }
+    self._validators = {
+      RDM_GET: get_validators,
+      RDM_SET: set_validators,
+    }
 
   @property
   def name(self):
@@ -73,51 +96,15 @@ class Pid(object):
   def value(self):
     return self._value
 
-  def RequestSupported(self, request_type):
-    if request_type == RDM_SET:
-      return self._set_request is not None
-    else:
-      return self._get_request is not None
+  def RequestSupported(self, command_class):
+    """Check if this PID allows a command class."""
+    return self._requests.get(command_class) is not None
 
-  def CheckArgs(self, args, request_type):
-    """Check the args against the list of atoms.
-
-    Args:
-      args: A list of strings
-      request_type: either RDM_GET or RDM_SET
-
-    Returns:
-      None if the args failed verification, otherwise a list of arguments,
-      converted to the correct types.
-    """
-    if request_type == RDM_SET:
-      atoms = self._set_request
-    else:
-      atoms = self._get_request
-
-    if len(atoms) > len(args):
-      print >> sys.stderr, 'Insufficient number of arguments'
-      return None
-    elif len(atoms) < len(args):
-      print >> sys.stderr, 'Too many arguments'
-      return None
-
-    atoms_and_args = zip(atoms, args)
-    sanitized_args = []
-    for atom, arg in atoms_and_args:
-      santizied_arg = atom.ValidArg(arg)
-      if santizied_arg is None:
-        print >> sys.stderr, (
-            'Invalid value `%s` for arg `%s`' % (arg, atom.name))
-        return None
-      sanitized_args.append(santizied_arg)
-    return sanitized_args
-
-  def ValidateAddressing(self, args, request_type):
-    if request_type == RDM_SET:
-      validators = self._set_validators
-    else:
-      validators = self._get_validators
+  def ValidateAddressing(self, args, command_class):
+    """Run the validators."""
+    validators = self._validators.get(command_class)
+    if validators is None:
+      return false
 
     args['pid'] = self
     for validator in validators:
@@ -134,190 +121,186 @@ class Pid(object):
   def __hash__(self):
     return self._value
 
-  def Pack(self, args, request_type):
-    if request_type == RDM_SET:
-      descriptor = self._set_request
-    else:
-      descriptor = self._get_request
+  def Pack(self, args, command_class):
+    """Pack args
 
-    format = self._GenerateFormatString(descriptor)
+    Args:
+      args: A list of arguments of the right types.
 
-    try:
-      data = struct.pack(format, *args)
-    except struct.error:
-      return None
-    return data
+    Returns:
+      Binary data which can be used as the Param Data.
+    """
+    group = self._requests.get(command_class)
+    blob, args_used = group.Pack(args)
+    return blob
 
-  def Unpack(self, data, request_type):
+  def Unpack(self, data, command_class):
     """Unpack a message."""
-    def GenerateDictFromValues(atoms, values):
-      obj = {}
-      for atom, value in zip(descriptor, values):
-        obj[atom.name] = atom.PostUnpack(value)
-      return obj
-
-    data_size = len(data)
-    if request_type == RDM_SET:
-      descriptor = self._set_response
-    else:
-      descriptor = self._get_response
-
-    if isinstance(descriptor, RepeatedGroup):
-      format = self._GenerateFormatString(descriptor)
-      group_size = struct.calcsize(format)
-      if data_size % group_size:
-        return None
-
-      groups = data_size / group_size
-      if descriptor.min is not None and groups < descriptor.min:
-        return None
-      if descriptor.max is not None and groups > descriptor.max:
-        return None
-
-      objects = []
-      i = 0;
-      while i < data_size:
-        values = struct.unpack_from(format, data, i)
-        objects.append(GenerateDictFromValues(descriptor, values))
-        i += group_size
-      return objects
-    else:
-      format = self._GenerateFormatString(descriptor, data_size)
-      try:
-        values =  struct.unpack(format, data)
-      except struct.error:
-        return None
-
-      return GenerateDictFromValues(descriptor, values)
-
-  def _GenerateFormatString(self, atoms, data_size = None):
-    """Generate the format string from a list of Atoms."""
-    format_chars = []
-    size = 0
-    for atom in atoms:
-      size += atom.size
-      format_chars.append((atom.size, atom.char))
-
-    format = ''.join(['!'] + ['%d%c' % f for f in format_chars])
-
-    # This is a hack to deal with the fact that strings are variable size
-    blob_size = struct.calcsize(format)
-    if (data_size is not None and blob_size != data_size and
-        isinstance(atoms[-1], String)):
-      full_size, char = format_chars[-1]
-      delta = blob_size - data_size
-      if (delta <= full_size):
-        format_chars = (format_chars[0:-1] +
-                        [(full_size - (blob_size - data_size), char)])
-
-      format = ''.join(['!'] + ['%d%c' % f for f in format_chars])
-    return format
+    group = self._responses.get(command_class)
+    output = group.Unpack(data)[0]
+    return output
 
 
 # The following classes are used to describe RDM messages
 class Atom(object):
   """The basic field in an RDM message."""
-  def __init__(self, name, format_char, size = 1):
+  def __init__(self, name):
     self._name = name
-    self._char = format_char
-    self._size = size
 
   @property
   def name(self):
     return self._name
 
-  @property
-  def char(self):
-    return self._char
+  def CheckForSingleArg(self, args):
+    if len(args) < 1:
+      raise ArgsValidationError('Missing argument for %s' % self.name)
+
+  def __str__(self):
+    return '%s, %s' % (self.__class__, self._name)
+
+  def __repr__(self):
+    return '%s, %s' % (self.__class__, self._name)
+
+
+class FixedSizeAtom(Atom):
+  def __init__(self, name, format_char):
+    super(FixedSizeAtom, self).__init__(name)
+    self._char = format_char
 
   @property
   def size(self):
-    return self._size
+    return struct.calcsize(self._FormatString())
 
-  def PostUnpack(self, value):
-    """Post process any un-packed data."""
-    return value
+  def FixedSize(self):
+    """Returns true if the size of this atom doesn't vary."""
+    return True
+
+  def Unpack(self, data):
+    format_string = self._FormatString()
+    try:
+      values = struct.unpack(format_string, data)
+    except struct.error:
+      raise UnpackException(e)
+    return values[0]
+
+  def Pack(self, args):
+    format_string = self._FormatString()
+    # TODO: Handle Labeled Values here here
+    try:
+      data = struct.pack(format_string, args[0])
+    except struct.error, e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return data, 1
+
+  def _FormatString(self):
+    return '!%c' % self._char
 
 
-class Bool(Atom):
+class Bool(FixedSizeAtom):
   def __init__(self, name):
     # once we have 2.6 use ? here
     super(Bool, self).__init__(name, 'c')
 
-  def ValidArg(self, arg):
-    return bool(arg)
+  def Pack(self, arg):
+    self.CheckForSingleArg(args)
+    return super(Bool, self).Pack([bool(args[0])])
 
-  def PostUnpack(self, value):
-    return bool(value)
+  def Unpack(self, value):
+    return bool(super(Bool, self).Unpack(value))
 
 
-class UInt8(Atom):
+class Range(object):
+  """A range of allowed int values."""
+  def __init__(self, min, max):
+    self.min = min
+    self.max = max
+
+  def Matches(self, value):
+    return value >= self.min and value <= self.max
+
+  def __str__(self):
+    if self.min == self.max:
+      return '%d' % self.min
+    else:
+      return '[%d, %d]' % (self.min, self.max)
+
+
+class IntAtom(FixedSizeAtom):
+  def __init__(self, name, char, max_value, labels = [], ranges = []):
+    super(IntAtom, self).__init__(name, char)
+    self._max_value = max_value
+
+    # About Labels & Ranges:
+    # If neither labels nor ranges are specified, the valid values is the range of
+    #   the data type.
+    # If labels are specified, and ranges aren't, the valid values are the labels
+    # If ranges are specified, the valid values are those which fall into the range
+    #   (inclusive).
+    # If both are specified, the enum values must fall into the specified ranges.
+
+    # ranges limit the allowed values for a field
+    self._ranges = ranges[:]
+
+    # labels provide a user friendly way of referring to data values
+    self._labels = {}
+    for value, label in labels:
+      self._labels[label.lower()] = value
+      if not ranges:
+        # Add the labels to the list of allowed values
+        self._ranges.append(Range(value, value))
+
+  def Pack(self, args):
+    self.CheckForSingleArg(args)
+    arg = args[0]
+    value = self._labels.get(arg.lower())
+    if value is None:
+      try:
+        value = int(args[0])
+      except ValueError, e:
+        raise ArgsValidationError(e)
+    if value < 0 or value > self._max_value:
+      raise ArgsValidationError('%s must be between 0 and %d, was %d' %
+                                (self.name, self._max_value, value))
+
+    if self._ranges:
+      value_ok = False
+      for range in self._ranges:
+        value_ok |= range.Matches(value)
+      if not value_ok:
+        # make a nice message
+        allowed_values = []
+        for range in self._ranges:
+          allowed_values.append(str(range))
+        raise ArgsValidationError('Param %d out of range, must be one of %s' %
+                                  (value, ', '.join(allowed_values)))
+
+    return super(IntAtom, self).Pack([value])
+
+
+class UInt8(IntAtom):
   """A single unsigned byte field."""
-  def __init__(self, name):
-    super(UInt8, self).__init__(name, 'B')
-
-  def ValidArg(self, arg):
-    try:
-      value = int(arg)
-    except ValueError:
-      return None
-    if value >= 0 and value <= 255:
-      return value
-    return None
+  def __init__(self, name, labels=[], ranges=[]):
+    super(UInt8, self).__init__(name, 'B', 0xff, labels, ranges)
 
 
-class UInt16(Atom):
+class UInt16(IntAtom):
   """A two-byte unsigned field."""
-  def __init__(self, name):
-    super(UInt16, self).__init__(name, 'H')
-
-  def ValidArg(self, arg):
-    try:
-      value = int(arg)
-    except ValueError:
-      return None
-    if value >= 0 and value <= 0xffff:
-      return value
-    return None
+  def __init__(self, name, labels=[], ranges=[]):
+    super(UInt16, self).__init__(name, 'H', 0xffff, labels, ranges)
 
 
-class UInt32(Atom):
+class UInt32(IntAtom):
   """A four-byte unsigned field."""
-  def __init__(self, name):
-    super(UInt32, self).__init__(name, 'I')
-
-  def ValidArg(self, arg):
-    try:
-      value = int(arg)
-    except ValueError:
-      return None
-    if value >= 0 and value <= 0xffffffffff:
-      return value
-    return None
+  def __init__(self, name, labels=[], ranges=[]):
+    super(UInt32, self).__init__(name, 'I', 0xffffffff, labels, ranges)
 
 
 class String(Atom):
   """A string field."""
-  def __init__(self, name, size = 32):
-    super(String, self).__init__(name, 's', size)
-
-  def ValidArg(self, arg):
-    if len(arg) <= self.size:
-      return arg
-    return None
-
-  def PostUnpack(self, value):
-    """Remove any null padding."""
-    return value.rstrip('\x00')
-
-
-
-class RepeatedGroup(list):
-  """A repeated group of atoms."""
-  def __init__(self, atoms, **kwargs):
-    super(RepeatedGroup, self).__init__(atoms)
-    self._min = kwargs.get('min')
-    self._max = kwargs.get('max')
+  def __init__(self, name, **kwargs):
+    super(String, self).__init__(name)
+    self._min = kwargs.get('min_size', 0)
+    self._max = kwargs.get('max_size', 32)
 
   @property
   def min(self):
@@ -326,6 +309,272 @@ class RepeatedGroup(list):
   @property
   def max(self):
     return self._max
+
+  @property
+  def size(self):
+    # only valid if FixedSize() == True
+    return self.min
+
+  def FixedSize(self):
+    return self.min == self.max
+
+  def Pack(self, args):
+    self.CheckForSingleArg(args)
+    arg = args[0]
+    arg_size = len(arg)
+
+    if self.max is not None and arg_size > self.max:
+      raise ArgsValidationError('%s can be at most %d,' %
+                                (self.name, self.max))
+
+    if self.min is not None and arg_size < self.min:
+      raise ArgsValidationError('%s must be more than %d,' %
+                                (self.name, self.min))
+
+    try:
+      data = struct.unpack('%ds' % arg_size, arg)
+    except struct.error, e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return data[0], 1
+
+  def Unpack(self, data):
+    data_size = len(data)
+    if self.min and data_size < self.min:
+      raise UnpackException('%s too short, required %d, got %d' %
+                            (self.name, self.min, data_size))
+
+    if self.max and data_size > self.max:
+      raise UnpackException('%s too long, required %d, got %d' %
+                            (self.name, self.max, data_size))
+
+    try:
+      value = struct.unpack('%ds' % data_size, data)
+    except struct.error, e:
+      raise UnpackException(e)
+
+    return value[0].rstrip('\x00')
+
+  def __str__(self):
+    return 'String(%s, min=%s, max=%s)' % (self.name, self.min, self.max)
+
+
+class Group(Atom):
+  """A repeated group of atoms."""
+  def __init__(self, name, atoms, **kwargs):
+    """Create a group of atoms.
+
+    Args:
+      name: The name of the group
+      atoms: The list of atoms the group contains
+
+    Raises:
+      PidStructureException: if the structure of this group is invalid.
+    """
+    super(Group, self).__init__(name)
+    self._atoms = atoms
+    self._min = kwargs.get('min_size')
+    self._max = kwargs.get('max_size')
+
+    # None for variable sized groups
+    self._group_size = self._VerifyStructure()
+
+  @property
+  def min(self):
+    return self._min
+
+  @property
+  def max(self):
+    return self._max
+
+  def _VerifyStructure(self):
+    """Verify that we can pack & unpack this group.
+
+      We need to make sure we have enough known information to pack & unpack a
+      group. We don't support repeated groups of variable length data, nor
+      nested, repeated groups.
+
+      For now we support the following cases:
+       - Fixed size group. This is easy to unpack
+       - Groups of variable size. We enforce two conditions for these, i) the
+         variable sized field MUST be the last one ii) Only a single occurance
+         is allowed. This means you can't do things like:
+
+           [(string, int)]   # variable sized types must be last
+           [(int, string)]   # assuming string is variable sized
+           [(int, [(bool,)]] # no way to tell where the group barriers are
+
+      Returns:
+        The number of bytes this group uses, or None if it's variable sized
+    """
+    variable_sized_atoms = []
+    group_size = 0
+    for atom in self._atoms:
+      if atom.FixedSize():
+        group_size += atom.size
+      else:
+        variable_sized_atoms.append(atom)
+
+    if len(variable_sized_atoms) > 1:
+      raise PidStore('More than one variable size field in %s: %s' %
+                            (self.name, variable_sized_atoms))
+
+    if not variable_sized_atoms:
+      # The group is of a fixed size, this means we don't care how many times
+      # it's repeated.
+      return group_size
+
+    # for now we only support the case where the variable sized field is the
+    # last one
+    if variable_sized_atoms[0] != self._atoms[-1]:
+      raise PidStructureException(
+        'The variable sized field %s must be the last one' %
+        variable_sized_atoms[0].name)
+
+    # It's impossible to unpack groups of variable length data without more
+    # information.
+    if self.min != 1 and self.max != 1:
+      raise PidStructureException("Repeated groups can't contain variable length data")
+    return None
+
+  def FixedSize(self):
+    """This is true if we know the exact size of the group and min == max.
+
+      Obviously this is unlikely.
+    """
+    can_determine_size = True
+    for atom in self._atoms:
+      if not atom.FixedSize():
+        can_determine_size = False
+        break
+    return (can_determine_size and self._min is not None and
+            self._min == self._max)
+
+  def Pack(self, args):
+    """Pack the args into binary data.
+
+    Args:
+      args: A list of string.
+
+    Returns:
+      binary data
+    """
+    if self._group_size is None:
+      # variable length data, work out the fixed length portion first
+      data = []
+      arg_offset = 0
+      for atom in self._atoms[0:-1]:
+        chunk, args_consumed = atom.Pack(args[arg_offset:])
+        data.append(chunk)
+        arg_offset += args_consumed
+
+      # what remains is for the variable length section
+      chunk, args_used = self._atoms[-1].Pack(args[arg_offset:])
+      arg_offset += args_used
+      data.append(chunk)
+
+      if arg_offset < len(args):
+        raise ArgsValidationError('Too many arguments, expected %d, got %d' %
+                                  (arg_offset, len(args)))
+
+      return ''.join(data), arg_offset
+
+    elif self._group_size == 0:
+      return '', 0
+    else:
+      # this could be groups of fields, but we don't support that yet
+      data = []
+      arg_offset = 0
+      for atom in self._atoms:
+        chunk, args_consumed = atom.Pack(args[arg_offset:])
+        data.append(chunk)
+        arg_offset += args_consumed
+
+      if arg_offset < len(args):
+        raise ArgsValidationError('Too many arguments, expected %d, got %d' %
+                                  (arg_offset, len(args)))
+      return ''.join(data), arg_offset
+
+  def Unpack(self, data):
+    """Unpack binary data.
+
+    Args:
+      data: The binary data
+
+    Returns:
+      A list of dicts.
+    """
+    # we've already performed checks in _VerifyStructure so we can rely on
+    # self._group_size
+    data_size = len(data)
+    if self._group_size is None:
+      total_size = 0
+      for atom in self._atoms[0:-1]:
+        total_size += atom.size
+
+      if data_size < total_size:
+          raise UnpackException('Response too small, required %d, only got %d' %
+                                (total_size, data_size))
+
+      output, used = self._UnpackFixedLength(self._atoms[0:-1], data)
+
+      # what remains is for the variable length section
+      variable_sized_atom = self._atoms[-1]
+      data = data[used:]
+      output[variable_sized_atom.name] = variable_sized_atom.Unpack(data)
+      return [output]
+    elif self._group_size == 0:
+      if data_size > 0:
+        raise UnpackException('Expected 0 bytes but got %d' % data_size)
+      return [{}]
+    else:
+      # groups of fixed length data
+      if data_size % self._group_size:
+        raise UnpackException(
+            'Data size issue for %s, data size %d, group size %d' %
+            (self.name, data_size, self._group_size))
+
+      group_count = data_size / self._group_size
+      if self.max is not None and group_count > self.max:
+        raise UnpackException(
+            'Too many repeated group_count for %s, limit is %d, found %d' %
+            (self.name, self.max, group_count))
+
+      if self.max is not None and group_count < self.min:
+        raise UnpackException(
+            'Too few repeated group_count for %s, limit is %d, found %d' %
+            (self.name, self.min, group_count))
+
+      offset = 0
+      groups = []
+      while offset + self._group_size <= data_size:
+        group = self._UnpackFixedLength(
+            self._atoms,
+            data[offset:offset + self._group_size])[0]
+        groups.append(group)
+        offset += self._group_size
+      return groups
+
+  def _UnpackFixedLength(self, atoms, data):
+    """Unpack a list of atoms of a known, fixed size.
+
+    Args:
+      atoms: A list of atoms, must all have FixedSize() == True.
+      data: The binary data.
+
+    Returns:
+      A tuple in the form (output_dict, data_consumed)
+    """
+    output = {}
+    offset = 0
+    for atom in atoms:
+      size = atom.size
+      output[atom.name] = atom.Unpack(data[offset:offset + size])
+      offset += size
+    return output, offset
+
+  def __str__(self):
+    return ('Group: atoms: %s, [%s, %s]' %
+            (str(self._atoms), self.min, self.max))
 
 
 # These are validators which can be applied before a request is sent
@@ -378,6 +627,7 @@ class PidStore(object):
     self._name_to_pid = {}
     self._manufacturer_pids = {}
     self._manufacturer_names_to_pids = {}
+    self._manufacturer_id_to_name = {}
 
   def Load(self, file, validate = True):
     """Load a PidStore from a file.
@@ -386,10 +636,11 @@ class PidStore(object):
       file: The path to the pid store file
       validate: When True, enable strict checking.
     """
-
     pid_file = open(file, 'r')
     lines = pid_file.readlines()
     pid_file.close()
+
+    self._pid_store.Clear()
 
     try:
       text_format.Merge('\n'.join(lines), self._pid_store)
@@ -420,78 +671,121 @@ class PidStore(object):
           manufacturer.manufacturer_id,
           {})
 
+      self._manufacturer_id_to_name[manufacturer.manufacturer_id] = (
+          manufacturer.manufacturer_name)
+
       for pid_pb in manufacturer.pid:
         if validate:
           if pid_pb.value < 0x8000 or pid_pb.value > 0xffdf:
             raise InvalidPidFormat(
-              'Manufacturer pid %0x04hx not between 0x8000 and 0xffdf' %
+              'Manufacturer pid 0x%04hx not between 0x8000 and 0xffdf' %
               pid_pb.value)
-          if pid.value in pid_dict:
+          if pid_pb.value in pid_dict:
             raise InvalidPidFormat(
                 '0x%04hx listed more than once for 0x%04hx in %s' % (
                 pid_pb.value, manufacturer.manufacturer_id, file))
           if pid_pb.name in name_dict:
             raise InvalidPidFormat(
-                '%s listed more than once for 0x%04hx in %s' % (
+                '%s listed more than once for %s in %s' % (
                 pid_pb.name, manufacturer, file))
         pid = self._PidProtoToObject(pid_pb)
         pid_dict[pid.value] = pid
         name_dict[pid.name] = pid
 
+    # we no longer need the protobuf representation
+    self._pid_store.Clear()
 
   def Pids(self):
+    """Returns a list of all PIDs. Manufacturer PIDs aren't included.
+
+    Returns:
+      A list of Pid objects.
+    """
     return self._pids.values()
 
   def ManufacturerPids(self, esta_id):
+    """Return a list of all Manufacturer PIDs for a given esta_id.
+
+    Args:
+      esta_id: The 2-byte esta / manufacturer ID.
+
+    Returns:
+      A list of Pid objects.
+    """
     return self._manufacturer_pids.get(esta_id, {}).values()
 
-  def GetPid(self, pid_value, uid):
+  def GetPid(self, pid_value, esta_id=None):
+    """Look up a PIDs by the 2-byte PID value.
+
+    Args:
+      pid_value: The 2-byte PID value, e.g. 0x8000
+      esta_id: The 2-byte esta / manufacturer ID.
+
+    Returns:
+      A Pid object, or None if no PID was found.
+    """
     pid = self._pids.get(pid_value, None)
     if not pid:
-      pid = self._manufacturer_pids.get(uid.manufacturer_id, {}).get(
+      pid = self._manufacturer_pids.get(esta_id, {}).get(
           pid_value, None)
     return pid
 
-  def GetName(self, pid_name, uid):
+  def GetName(self, pid_name, esta_id=None):
+    """Look up a PIDs by name.
+
+    Args:
+      pid_name: The name of the PID, e.g. 'DEVICE_INFO'
+      esta_id: The 2-byte esta / manufacturer ID.
+
+    Returns:
+      A Pid object, or None if no PID was found.
+    """
     pid = self._name_to_pid.get(pid_name)
     if not pid:
-      pid = self._manufacturer_names_to_pids.get(uid.manufacturer_id, {}).get(
+      pid = self._manufacturer_names_to_pids.get(esta_id, {}).get(
           pid_name, None)
     return pid
 
-  def NameToValue(self, name):
-    pid = self.GetName(name)
+  def NameToValue(self, pid_name, esta_id=None):
+    """A helper method to convert a PID name to a PID value
+
+    Args:
+      pid_name: The name of the PID, e.g. 'DEVICE_INFO'
+      esta_id: The 2-byte esta / manufacturer ID.
+
+    Returns:
+      The value for this PID, or None if it wasn't found.
+    """
+    pid = self.GetName(pid_name)
     if pid:
       return pid.value
     return pid
 
-  def Names(self):
-    return self._name_to_pid.keys()
-
-  def __contains__(self, pid):
-    return pid in self._pids
-
   def _PidProtoToObject(self, pid_pb):
     """Convert the protobuf representation of a PID to a PID object.
+
+    Args:
+      pid_pb: The protobuf version of the pid
 
     Returns:
       A PIDStore.PID object.
   """
-    get_request = None
-    if pid_pb.HasField('get_request'):
-      get_request = self._FrameFormatToList(pid_pb.get_request)
+    def BuildList(field_name):
+      if not pid_pb.HasField(field_name):
+        return None
 
-    get_response = None
-    if pid_pb.HasField('get_response'):
-      get_response = self._FrameFormatToList(pid_pb.get_response)
+      try:
+        group = self._FrameFormatToGroup(getattr(pid_pb, field_name))
+      except PidStructureException, e:
+        raise PidStructureException(
+            "The structure for the %s in %s isn't valid: %s" %
+            (field_name, pid_pb.name, e))
+      return group
 
-    set_request = None
-    if pid_pb.HasField('set_request'):
-      set_request = self._FrameFormatToList(pid_pb.set_request)
-
-    set_response = None
-    if pid_pb.HasField('set_response'):
-      set_response = self._FrameFormatToList(pid_pb.set_response)
+    get_request = BuildList('get_request')
+    get_response = BuildList('get_response')
+    set_request = BuildList('set_request')
+    set_response = BuildList('set_response')
 
     get_validators = []
     if pid_pb.HasField('get_sub_device_range'):
@@ -503,42 +797,54 @@ class PidStore(object):
         pid_pb.set_sub_device_range))
 
     return Pid(pid_pb.name,
-              pid_pb.value,
-              get_request,
-              get_response,
-              set_request,
-              set_response,
-              get_validators,
-              set_validators)
+               pid_pb.value,
+               get_request,
+               get_response,
+               set_request,
+               set_response,
+               get_validators,
+               set_validators)
 
-  def _FrameFormatToList(self, frame_format):
-    """Convert a frame format to a list of atoms."""
+  def _FrameFormatToGroup(self, frame_format):
+    """Convert a frame format to a group."""
     atoms = []
     for field in frame_format.field:
       atoms.append(self._FieldToAtom(field))
-    if frame_format.repeated_group:
-      args = {}
-      if frame_format.HasField('max_repeats'):
-        args['max'] = frame_format.max_repeats
-      return RepeatedGroup(atoms)
-    else:
-      return atoms
+    return Group('', atoms, min_size=1, max_size=1)
 
   def _FieldToAtom(self, field):
     """Convert a PID proto field message into an atom."""
+    args = {}
+    if field.HasField('max_size'):
+      args['max_size'] = field.max_size
+    if field.HasField('min_size'):
+      args['min_size'] = field.min_size
+
+    labels = []
+    for label in field.label:
+      labels.append((label.value, label.label))
+
+    ranges = []
+    for allowed_value in field.range:
+      ranges.append(Range(allowed_value.min, allowed_value.max))
+
     if field.type == Pids_pb2.BOOL:
       return Bool(field.name)
     elif field.type == Pids_pb2.UINT8:
-      return UInt8(field.name)
+      return UInt8(field.name, labels, ranges)
     elif field.type == Pids_pb2.UINT16:
-      return UInt16(field.name)
+      return UInt16(field.name, labels, ranges)
     elif field.type == Pids_pb2.UINT32:
-      return UInt32(field.name)
+      return UInt32(field.name, labels, ranges)
+    elif field.type == Pids_pb2.GROUP:
+      if not field.field:
+        raise InvalidPidFormat('Missing child fields for %s' % field.name)
+      atoms = []
+      for child_field in field.field:
+        atoms.append(self._FieldToAtom(child_field))
+      return Group(field.name, atoms, **args)
     elif field.type == Pids_pb2.STRING:
-      if field.HasField('size'):
-        return String(field.name, field.size)
-      else:
-        return UInt32(field.name)
+      return String(field.name, **args)
 
   def _SubDeviceRangeToValidator(self, range):
     """Convert a sub device range to a validator."""

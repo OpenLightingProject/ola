@@ -136,8 +136,8 @@ class RDMAPI(object):
       print >> sys.stderr, 'Could not pack data'
       return False
 
-    self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
-                         request_type)
+    return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
+                                request_type)
 
   def _SendRawRequest(self, universe, uid, sub_device, pid, callback, data,
                       request_type):
@@ -179,7 +179,7 @@ class RDMAPI(object):
   def _GenericHandler(self, callback, request_type, uid, status, pid, data,
                       unused_raw_data):
     obj = None
-    pid_descriptor = self._pid_store.GetPid(pid, uid)
+    pid_descriptor = self._pid_store.GetPid(pid, uid.manufacturer_id)
     if status.WasSuccessfull():
       if pid_descriptor:
         obj = pid_descriptor.Unpack(data, request_type)
