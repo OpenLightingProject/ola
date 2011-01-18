@@ -126,7 +126,7 @@ class RDMAPI(object):
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
       args: The args to pack into the param data section.
-      request_type: True for a Set request, False for a Get request
+      request_type: PidStore.RDM_GET or PidStore.RDM_SET
 
     Return:
       True if sent ok, False otherwise.
@@ -150,7 +150,7 @@ class RDMAPI(object):
       pid: A PID object that describes the format of the request.
       callback: The callback to run when the request completes.
       data: The param data.
-      request_type: True for a Set request, False for a Get request
+      request_type: PidStore.RDM_GET or PidStore.RDM_SET
 
     Return:
       True if sent ok, False otherwise.
@@ -178,16 +178,31 @@ class RDMAPI(object):
 
   def _GenericHandler(self, callback, request_type, uid, status, pid, data,
                       unused_raw_data):
+    """
+
+    Args:
+      callback: the function to run
+      request_type: PidStore.RDM_GET or PidStore.RDM_SET
+      uid: The uid the request was for
+      status: A RDMRequestStatus object
+      pid: The pid in the response
+      data: The parameter data
+      unused_raw_data: A list of raw packets that make up the response
+    """
     obj = None
+    unpack_exception = None
     pid_descriptor = self._pid_store.GetPid(pid, uid.manufacturer_id)
     if status.WasSuccessfull():
       if pid_descriptor:
-        obj = pid_descriptor.Unpack(data, request_type)
-        if obj is None:
+        try:
+          obj = pid_descriptor.Unpack(data, request_type)
+        except PidStore.UnpackException, e:
+          obj = None
+          unpack_exception = e
           status.response_code = OlaClient.RDM_INVALID_RESPONSE
       else:
         obj = data
-    callback(status, pid, obj)
+    callback(status, pid, obj, unpack_exception)
 
   def _CreateCallback(self, callback, request_type, uid):
     return lambda s, p, d, r: self._GenericHandler(

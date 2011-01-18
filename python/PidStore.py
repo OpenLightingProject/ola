@@ -252,7 +252,9 @@ class IntAtom(FixedSizeAtom):
   def Pack(self, args):
     self.CheckForSingleArg(args)
     arg = args[0]
-    value = self._labels.get(arg.lower())
+    if isinstance(arg, str):
+      arg = arg.lower()
+    value = self._labels.get(arg)
     if value is None:
       try:
         value = int(args[0])
