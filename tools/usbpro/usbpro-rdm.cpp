@@ -195,7 +195,8 @@ void RDMSniffer::DumpRequest(unsigned int length, const uint8_t *data) {
       << static_cast<int>(request->PortId()) << ", PID 0x" << std::hex <<
       std::setfill('0') << std::setw(4) << request->ParamId();
     if (m_verbose) {
-      cout << ", pdl: " << request->ParamDataSize() << ", param data: ";
+      cout << ", pdl: " << std::dec << request->ParamDataSize() <<
+        ", param data: ";
       const uint8_t *param_data = request->ParamData();
       for (unsigned int i = 0; i < request->ParamDataSize(); ++i)
         cout << std::hex << static_cast<int>(param_data[i]) << " ";
@@ -244,7 +245,8 @@ void RDMSniffer::DumpResponse(unsigned int length, const uint8_t *data) {
     cout << ", PID 0x" << std::hex <<
       std::setfill('0') << std::setw(4) << response->ParamId();
     if (m_verbose) {
-      cout << ", pdl: " << response->ParamDataSize() << ", param data: ";
+      cout << ", pdl: " << std::dec << response->ParamDataSize() <<
+        ", param data: ";
       const uint8_t *param_data = response->ParamData();
       for (unsigned int i = 0; i < response->ParamDataSize(); ++i)
         cout << std::hex << static_cast<int>(param_data[i]) << " ";
