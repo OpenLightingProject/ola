@@ -46,7 +46,8 @@ using std::queue;
 class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
   public:
     DmxTriWidgetImpl(ola::network::SelectServerInterface *ss,
-                     UsbWidgetInterface *widget);
+                     UsbWidgetInterface *widget,
+                     bool use_raw_rdm);
     ~DmxTriWidgetImpl();
 
     void SetUIDListCallback(
@@ -74,6 +75,7 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
     std::map<const ola::rdm::UID, uint8_t> m_uid_index_map;
     unsigned int m_uid_count;
     uint16_t m_last_esta_id;
+    bool m_use_raw_rdm;
 
     ola::Callback1<void, const ola::rdm::UIDSet&> *m_uid_set_callback;
     ola::Callback0<void> *m_discovery_callback;
@@ -85,6 +87,8 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
     bool SendDiscoveryStart();
     bool SendDiscoveryStat();
     void FetchNextUID();
+    void SendRawRDMRequest(const ola::rdm::RDMRequest *request,
+                           ola::rdm::RDMCallback *callback);
     void DispatchRequest(const ola::rdm::RDMRequest *request,
                          ola::rdm::RDMCallback *callback);
     void DispatchQueuedGet(const ola::rdm::RDMRequest* request,
@@ -100,6 +104,9 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
     void HandleRemoteUIDResponse(uint8_t return_code,
                                  const uint8_t *data,
                                  unsigned int length);
+    void HandleRawRDMResponse(uint8_t return_code,
+                              const uint8_t *data,
+                              unsigned int length);
     void HandleRemoteRDMResponse(uint8_t return_code,
                                  const uint8_t *data,
                                  unsigned int length);
@@ -160,6 +167,7 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
     static const uint8_t DISCOVER_AUTO_COMMAND_ID = 0x33;
     static const uint8_t DISCOVER_STATUS_COMMAND_ID = 0x34;
     static const uint8_t REMOTE_UID_COMMAND_ID = 0x35;
+    static const uint8_t RAW_RDM_COMMAND_ID = 0x37;
     static const uint8_t REMOTE_GET_COMMAND_ID = 0x38;
     static const uint8_t REMOTE_SET_COMMAND_ID = 0x39;
     static const uint8_t QUEUED_GET_COMMAND_ID = 0x3a;
@@ -176,7 +184,8 @@ class DmxTriWidget {
   public:
     DmxTriWidget(ola::network::SelectServerInterface *ss,
                  UsbWidgetInterface *widget,
-                 unsigned int queue_size = 20);
+                 unsigned int queue_size = 20,
+                 bool use_raw_rdm = false);
     ~DmxTriWidget() {}
 
     void Stop() { m_impl.Stop(); }

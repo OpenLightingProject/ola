@@ -20,6 +20,7 @@
 
 #include <string>
 #include "ola/Callback.h"
+#include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServerInterface.h"
 #include "plugins/usbpro/DmxTriDevice.h"
@@ -42,7 +43,8 @@ DmxTriDevice::DmxTriDevice(ola::network::SelectServerInterface *ss,
                            UsbWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
-                           uint32_t serial):
+                           uint32_t serial,
+                           bool use_raw_rdm):
     UsbDevice(owner, name, widget),
     m_tri_widget(NULL) {
   std::stringstream str;
@@ -50,7 +52,7 @@ DmxTriDevice::DmxTriDevice(ola::network::SelectServerInterface *ss,
     NetworkToHost(serial);
   m_device_id = str.str();
 
-  m_tri_widget = new DmxTriWidget(ss, widget);
+  m_tri_widget = new DmxTriWidget(ss, widget, 20, use_raw_rdm);
 
   ola::BasicOutputPort *output_port = new DmxTriOutputPort(this);
   AddPort(output_port);

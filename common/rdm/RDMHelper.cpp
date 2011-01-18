@@ -39,34 +39,40 @@ string ResponseCodeToString(rdm_response_code status) {
   switch (status) {
     case RDM_COMPLETED_OK:
       return "Completed Ok";
-      break;
     case RDM_WAS_BROADCAST:
       return "Request was broadcast";
-      break;
     case RDM_FAILED_TO_SEND:
       return "Failed to send request";
-      break;
     case RDM_TIMEOUT:
       return "Response Timeout";
-      break;
     case RDM_INVALID_RESPONSE:
       return "Invalid Response";
-      break;
     case RDM_UNKNOWN_UID:
-      return "Unknown UID";
-      break;
+      return "The RDM device could not be found";
     case RDM_CHECKSUM_INCORRECT:
       return "Incorrect checksum";
-      break;
     case RDM_TRANSACTION_MISMATCH:
       return "Transaction number mismatch";
-      break;
     case RDM_SUB_DEVICE_MISMATCH:
       return "Sub device mismatch";
-      break;
-    case RDM_DEVICE_MISMATCH:
-      return "Device mismatch";
-      break;
+    case RDM_SRC_UID_MISMATCH:
+      return "Source UID in response doesn't match";
+    case  RDM_DEST_UID_MISMATCH:
+      return "Destination UID in response doesn't match";
+    case RDM_WRONG_SUB_START_CODE:
+      return "Incorrect sub start code";
+    case RDM_PACKET_TOO_SHORT:
+      return "RDM response was smaller than the mimimun size";
+    case RDM_PACKET_LENGTH_MISMATCH:
+      return "The length field of packet didn't match length received";
+    case RDM_PARAM_LENGTH_MISMATCH:
+      return "The parameter length exceeds the remaining packet size";
+    case RDM_INVALID_COMMAND_CLASS:
+      return "The command class was not one of GET_RESPONSE or SET_RESPONSE";
+    case RDM_COMMAND_CLASS_MISMATCH:
+      return "The command class didn't match the request";
+    case RDM_INVALID_RESPONSE_TYPE:
+      return "The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK";
     default:
       return "Unknown";
   }

@@ -57,6 +57,7 @@ DmxterWidgetImpl::DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
     m_widget(widget),
     m_ss(ss),
     m_uid_set_callback(NULL),
+    m_pending_request(NULL),
     m_rdm_request_callback(NULL),
     m_transaction_number(0) {
   m_widget->SetMessageHandler(
@@ -72,6 +73,9 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
   std::vector<std::string> packets;
   if (m_rdm_request_callback)
     m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+
+  if (m_pending_request)
+    delete m_pending_request;
 
   if (m_uid_set_callback)
     delete m_uid_set_callback;
@@ -132,7 +136,6 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
     return;
   }
 
-  m_rdm_request_callback = on_complete;
   unsigned int data_size = request->Size();  // add in the start code
   uint8_t *data = new uint8_t[data_size + 1];
   data[0] = ola::rdm::RDMCommand::START_CODE;
@@ -146,15 +149,17 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
     uint8_t label = request->DestinationUID().IsBroadcast() ?
       RDM_BCAST_REQUEST_LABEL : RDM_REQUEST_LABEL;
 
+    m_rdm_request_callback = on_complete;
+    m_pending_request = request;
     if (m_widget->SendMessage(label, data, data_size + 1)) {
       delete[] data;
-      delete request;
       return;
     }
   } else {
     OLA_WARN << "Failed to pack message, dropping request";
   }
   m_rdm_request_callback = NULL;
+  m_pending_request = NULL;
   delete[] data;
   delete request;
   on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
@@ -222,10 +227,13 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
 
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
+  const ola::rdm::RDMRequest *request = m_pending_request;
+  m_pending_request = NULL;
 
   if (length < 2) {
     OLA_WARN << "Invalid RDM response from the widget";
     callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
+    delete request;
     return;
   }
 
@@ -236,33 +244,45 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
     OLA_WARN << "Unknown version # in widget response: " <<
       static_cast<int>(version);
     callback->Run(ola::rdm::RDM_INVALID_RESPONSE, NULL, packets);
+    delete request;
     return;
   }
 
   ola::rdm::rdm_response_code code = ola::rdm::RDM_COMPLETED_OK;
   switch (response_code) {
-    // we map all of these errors onto ola::rdm::RDM_INVALID_RESPONSE
-    // At some point we should expand the number of error codes.
     case RC_CHECKSUM_ERROR:
       code = ola::rdm::RDM_CHECKSUM_INCORRECT;
       break;
     case RC_FRAMING_ERROR:
     case RC_FRAMING_ERROR2:
     case RC_BAD_STARTCODE:
+      code = ola::rdm::RDM_INVALID_RESPONSE;
+      break;
     case RC_BAD_SUB_STARTCODE:
+      code = ola::rdm::RDM_WRONG_SUB_START_CODE;
+      break;
     case RC_WRONG_PDL:
     case RC_BAD_PDL:
-    case RC_PACKET_TOO_SHORT:
-    case RC_PACKET_TOO_LONG:
-    case RC_PHYSICAL_LENGTH_MISMATCH:
-    case RC_PDL_LENGTH_MISMATCH:
-      OLA_INFO << "Got response code " << static_cast<int>(response_code);
       code = ola::rdm::RDM_INVALID_RESPONSE;
+      break;
+    case RC_PACKET_TOO_SHORT:
+      code = ola::rdm::RDM_PACKET_TOO_SHORT;
+      break;
+    case RC_PACKET_TOO_LONG:
+      code = ola::rdm::RDM_INVALID_RESPONSE;
+      break;
+    case RC_PHYSICAL_LENGTH_MISMATCH:
+      code = ola::rdm::RDM_PACKET_LENGTH_MISMATCH;
+      break;
+    case RC_PDL_LENGTH_MISMATCH:
+      code = ola::rdm::RDM_PARAM_LENGTH_MISMATCH;
       break;
     case RC_TRANSACTION_MISMATCH:
       code = ola::rdm::RDM_TRANSACTION_MISMATCH;
       break;
     case RC_BAD_RESPONSE_TYPE:
+      code = ola::rdm::RDM_INVALID_RESPONSE_TYPE;
+      break;
     case RC_IDLE_LEVEL:
     case RC_GOOD_LEVEL:
     case RC_BAD_LEVEL:
@@ -296,10 +316,14 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
       code = ola::rdm::RDM_SUB_DEVICE_MISMATCH;
       break;
     case RC_SRC_UID_MISMATCH:
-      code = ola::rdm::RDM_DEVICE_MISMATCH;
+      code = ola::rdm::RDM_SRC_UID_MISMATCH;
       break;
     case RC_DEST_UID_MISMATCH:
+      code = ola::rdm::RDM_DEST_UID_MISMATCH;
+      break;
     case RC_COMMAND_CLASS_MISMATCH:
+      code = ola::rdm::RDM_COMMAND_CLASS_MISMATCH;
+      break;
     case RC_PARAM_ID_MISMATCH:
       // this should *hopefully* be caught higher up the stack
       code = ola::rdm::RDM_COMPLETED_OK;
@@ -316,7 +340,9 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
 
   if (code == ola::rdm::RDM_COMPLETED_OK) {
     ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
-        packet);
+        packet,
+        m_pending_request,
+        &code);
     if (response)
       callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
     else
@@ -324,6 +350,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
   } else {
     callback->Run(code, NULL, packets);
   }
+  delete request;
 }
 
 

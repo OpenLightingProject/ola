@@ -73,8 +73,24 @@ enum RDMResponseCode {
   RDM_TRANSACTION_MISMATCH = 7;
   // Wrong sub device
   RDM_SUB_DEVICE_MISMATCH = 8;
-  // Wrong device responded
-  RDM_DEVICE_MISMATCH = 9;
+  //Source UID in response doesn't match
+  RDM_SRC_UID_MISMATCH = 9;
+  //Destination UID in response doesn't match
+  RDM_DEST_UID_MISMATCH = 10;
+  //Incorrect sub start code
+  RDM_WRONG_SUB_START_CODE = 11;
+  //RDM response was smaller than the mimimun size
+  RDM_PACKET_TOO_SHORT = 12;
+  //The length field of packet didn't match length received
+  RDM_PACKET_LENGTH_MISMATCH = 13;
+  //The parameter length exceeds the remaining packet size
+  RDM_PARAM_LENGTH_MISMATCH = 14;
+  //The command class was not one of GET_RESPONSE or SET_RESPONSE
+  RDM_INVALID_COMMAND_CLASS = 15;
+  //The command class didn't match the request
+  RDM_COMMAND_CLASS_MISMATCH = 16;
+  //The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK
+  RDM_INVALID_RESPONSE_TYPE = 17;
 }
 
 
@@ -246,10 +262,10 @@ message RDMRequest {
 
 message RDMResponse {
   required RDMResponseCode response_code = 1;
-  // ACK, OVERFLOW, NACK or TIMER
+  // ACK, NACK or TIMER
   optional RDMResponseType response_type = 2;
-  required uint32 message_count = 3 [default = 0];
-  required bytes data = 4 [default = ""]; // 0 - 231 bytes
+  optional uint32 message_count = 3 [default = 0];
+  optional bytes data = 4 [default = ""]; // 0 - 231 bytes
   optional uint32 param_id = 5;  // the param id, required for queued messages
   repeated bytes raw_response = 6;
 }
