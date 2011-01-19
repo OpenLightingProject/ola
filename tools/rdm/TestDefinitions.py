@@ -452,7 +452,7 @@ class GetLanguageCapabilities(IsSupportedMixin, ResponderTest):
 
     self.languages = [f['language'] for f in fields['languages']]
 
-    if len(self.language) == 0:
+    if len(self.languages) == 0:
       self.SetFailed('No languages returned')
 
     language_set = set()
@@ -746,7 +746,8 @@ class SetPersonality(IsSupportedMixin, ResponderTest):
       GetPersonalities, GetPersonality, GetPersonalityDescription]
 
   def Test(self):
-    if self.Deps(GetPersonalities).GetField('personality_count') == 0:
+    count = self.Deps(GetPersonalities).GetField('personality_count')
+    if count is None or count == 0:
       self.AddExpectedResults(
         ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID))
       self.new_personality = {'personality': 1}  # can use anything here really

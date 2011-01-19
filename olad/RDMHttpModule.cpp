@@ -3132,7 +3132,6 @@ bool RDMHttpModule::CheckForRDMSuccessWithError(
         return true;
       case ola::rdm::RDM_ACK_TIMER:
         str << "Got ACK Timer for " << status.AckTimer() << " ms";
-        OLA_INFO << str;
         if (error)
           *error = str.str();
         break;

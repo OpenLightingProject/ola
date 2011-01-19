@@ -307,7 +307,9 @@ class ResponderTest(object):
 
   def GetField(self, field):
     """Return the fields in the response."""
-    return self._fields.get(field)
+    if self._fields is not None:
+      return self._fields.get(field)
+    return None
 
   def SetNotRun(self):
     self._state = TestState.NOT_RUN

@@ -118,10 +118,10 @@ class RDMCommand {
               uint8_t transaction_number,
               uint8_t port_id) const;
 
-    static rdm_response_code RDMCommand::VerifyData(
+    static rdm_response_code VerifyData(
         const uint8_t *data,
         unsigned int length,
-        RDMCommand::rdm_command_message *command_message);
+        rdm_command_message *command_message);
 
     static RDMCommandClass ConvertCommandClass(uint8_t command_type);
 
