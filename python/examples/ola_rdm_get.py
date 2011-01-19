@@ -49,7 +49,7 @@ def Usage():
 wrapper = None
 
 
-def CheckStatus(status):
+def CheckStatus(status, unpack_exception):
   if status.Succeeded():
     if status.response_code != OlaClient.RDM_COMPLETED_OK:
       print status.ResponseCodeAsString()
@@ -60,13 +60,15 @@ def CheckStatus(status):
     else:
       # proper response
       return True
+  else:
+    print unpack_exception
   return False
 
 
-def RequestComplete(status, pid, response_data):
+def RequestComplete(status, pid, response_data, unpack_exception):
   global wrapper
   wrapper.Stop()
-  if CheckStatus(status):
+  if CheckStatus(status, unpack_exception):
     print 'PID: 0x%04hx' % pid
     for key, value in response_data.iteritems():
       print '%s: %s' % (key, value)
