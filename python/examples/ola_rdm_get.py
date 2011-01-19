@@ -20,6 +20,8 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+
+import cmd
 import getopt
 import os.path
 import readline
@@ -49,49 +51,8 @@ def Usage():
 wrapper = None
 
 
-def CheckStatus(status, unpack_exception):
-  if status.Succeeded():
-    if status.response_code != OlaClient.RDM_COMPLETED_OK:
-      print status.ResponseCodeAsString()
-    elif status.response_type == OlaClient.RDM_NACK_REASON:
-      print 'Got nack with reason: %s' % status.nack_reason
-    elif status.response_type == OlaClient.RDM_ACK_TIMER:
-      print 'Got ACK TIMER set to %d ms' % status.ack_timer
-    else:
-      # proper response
-      return True
-  else:
-    print unpack_exception
-  return False
 
-
-def RequestComplete(status, pid, response_data, unpack_exception):
-  global wrapper
-  wrapper.Stop()
-  if CheckStatus(status, unpack_exception):
-    print 'PID: 0x%04hx' % pid
-    for key, value in response_data.iteritems():
-      print '%s: %s' % (key, value)
-
-
-def ListPids(uid):
-  """List the pid available, taking into account manufacturer specific pids.
-
-  Args:
-    uid: Include manufacturer specific pids for this UID.
-  """
-  pid_store = PidStore.GetStore()
-  names = []
-  for pid in pid_store.Pids():
-    names.append('%s (0x%04hx)' % (pid.name.lower(), pid.value))
-  if uid:
-    for pid in pid_store.ManufacturerPids(uid.manufacturer_id):
-      names.append('%s (0x%04hx)' % (pid.name.lower(), pid.value))
-  names.sort()
-  print '\n'.join(names)
-
-
-class InteractiveModeController(object):
+class InteractiveModeController(cmd.Cmd):
   """Interactive mode!"""
   def __init__(self, universe, uid, sub_device, pid_file):
     """Create a new InteractiveModeController.
@@ -101,6 +62,7 @@ class InteractiveModeController(object):
       sub_device:
       pid_file:
     """
+    cmd.Cmd.__init__(self)
     self._universe = universe
     self._uid = uid
     self._sub_device = sub_device
@@ -111,35 +73,54 @@ class InteractiveModeController(object):
     self.client = self.wrapper.Client()
     self.rdm_api = RDMAPI(self.client, self.pid_store)
 
-  def SetSubDevice(self, args):
-    """Set the sub device."""
+    self.prompt = '> '
+
+  def emptyline(self):
+    pass
+
+  def do_exit(self, s):
+    """Exit the intrepreter."""
+    return True
+
+  def do_EOF(self, s):
+    print ''
+    return self.do_exit('')
+
+  def do_subdevice(self, line):
+    """Sets the sub device."""
+    args = line.split()
     if len(args) != 1:
-      print 'Requires a single int argument'
+      print '*** Requires a single int argument'
       return
 
     try:
       sub_device = int(args[0])
     except ValueError:
-      print 'Requires a single int argument'
+      print '*** Requires a single int argument'
       return
 
     if sub_device < 0 or sub_device > PidStore.ALL_SUB_DEVICES:
-      print 'Argument must be between 0 and 0x%hx' % PidStore.ALL_SUB_DEVICES
+      print ('*** Argument must be between 0 and 0x%hx' %
+             PidStore.ALL_SUB_DEVICES)
       return
     self._sub_device = sub_device
 
-  def ShowHelp(self):
-    print textwrap.dedent("""\
-      Commands:
-        help              Show this help message
-        list              List available pids
-        print             Print universe, UID & sub device
-        subdevice <int>   Set the sub device
-        get <PID> [args]  Get a PID
-        set <PID> [args]  Set a PID
-        quit              Exit""")
+  def do_uid(self, line):
+    """Sets the active UID."""
+    args = line.split()
+    if len(args) != 1:
+      print '*** Requires a single UID argument'
+      return
 
-  def PrintState(self):
+    uid = UID.FromString(args[0])
+    if uid is None:
+      print '*** Invalid UID'
+      return
+
+    self._uid = uid
+
+  def do_print(self, l):
+    """Prints the current universe, UID and sub device."""
     print textwrap.dedent("""\
       Universe: %d
       UID: %s
@@ -148,7 +129,7 @@ class InteractiveModeController(object):
         self._uid,
         self._sub_device))
 
-  def ListPids(self):
+  def do_list(self, l):
     """List the pids available."""
     names = []
     for pid in self.pid_store.Pids():
@@ -159,14 +140,26 @@ class InteractiveModeController(object):
     names.sort()
     print '\n'.join(names)
 
-  def _RequestComplete(self, status, pid, response_data, unpack_exception):
-    self.wrapper.Stop()
-    if CheckStatus(status):
-      print 'PID: 0x%04hx' % pid
-      for key, value in response_data.iteritems():
-        print '%s: %s' % (key, value)
+  def do_uids(self, l):
+    """List the UIDs for this universe."""
+    self.client.FetchUIDList(self._universe, self._DisplayUids)
+    self.wrapper.Run()
 
-  def GetOrSet(self, request_type, args):
+  def do_discover(self, l):
+    """Run RDM discovery for this universe."""
+    self.client.RunRDMDiscovery(self._universe, self._DiscoveryDone)
+    self.wrapper.Run()
+
+  def do_get(self, l):
+    """Send a GET command."""
+    self.GetOrSet(PidStore.RDM_GET, l)
+
+  def do_set(self, l):
+    """Send a SET command."""
+    self.GetOrSet(PidStore.RDM_SET, l)
+
+  def GetOrSet(self, request_type, l):
+    args = l.split()
     if len(args) < 1:
       print 'get <pid> [args]'
       return
@@ -178,13 +171,13 @@ class InteractiveModeController(object):
     except ValueError:
       pid = self.pid_store.GetName(args[0].upper(),
                                    self._uid.manufacturer_id)
-    if not pid:
-      'Unknown pid'
+    if pid is None:
+      print '*** Unknown pid %s' % args[0]
       return
 
     rdm_args = args[1:]
     if not pid.RequestSupported(request_type):
-      print 'PID does not support command'
+      print '*** PID does not support command'
       return
 
     if request_type == PidStore.RDM_SET:
@@ -197,52 +190,46 @@ class InteractiveModeController(object):
                 self._uid,
                 self._sub_device,
                 pid,
-                self._RequestComplete,
+                self._RDMRequestComplete,
                 args[1:]):
-        self.wrapper.Reset()
         self.wrapper.Run()
     except PidStore.ArgsValidationError, e:
       # TODO(simon): print the format here
       print e
       return
 
-  def Run(self):
-    """Run the interactive mode."""
-    while True:
-      """
-      sys.stdout.write('> ')
-      sys.stdout.flush()
-      """
-      try:
-        input = raw_input('> ')
-      except EOFError:
-        print ''
-        return
+  def _DisplayUids(self, state, uids):
+    if state.Succeeded():
+      for uid in uids:
+        print str(uid)
+    self.wrapper.Stop()
 
-      if input.strip().lower() == 'quit':
-        return
+  def _DiscoveryDone(self, state):
+    self.wrapper.Stop()
 
-      input = input.strip()
-      if input == '':
-        continue
+  def _RDMRequestComplete(self, status, pid, response_data, unpack_exception):
+    self.wrapper.Stop()
+    if self._CheckStatus(status, unpack_exception):
+      print 'PID: 0x%04hx' % pid
+      for key, value in response_data.iteritems():
+        print '%s: %s' % (key, value)
 
-      commands = input.split()
-      main_command = commands[0]
-      args = commands[1:]
-      if main_command == 'help':
-        self.ShowHelp()
-      elif main_command == 'get':
-        self.GetOrSet(PidStore.RDM_GET, args)
-      elif main_command == 'list':
-        self.ListPids()
-      elif main_command == 'print':
-        self.PrintState()
-      elif main_command == 'set':
-        self.GetOrSet(PidStore.RDM_SET, args)
-      elif main_command == 'subdevice':
-        self.SetSubDevice(args)
+  def _CheckStatus(self, status, unpack_exception):
+    if status.Succeeded():
+      if status.response_code != OlaClient.RDM_COMPLETED_OK:
+        print status.ResponseCodeAsString()
+      elif status.response_type == OlaClient.RDM_NACK_REASON:
+        print 'Got nack with reason: %s' % status.nack_reason
+      elif status.response_type == OlaClient.RDM_ACK_TIMER:
+        print 'Got ACK TIMER set to %d ms' % status.ack_timer
       else:
-        print "Unknown command, type 'help'"
+        # proper response
+        return True
+    else:
+      print unpack_exception
+    return False
+
+
 
 
 def main():
@@ -287,57 +274,23 @@ def main():
     Usage()
     sys.exit()
 
+  controller = InteractiveModeController(universe, uid, sub_device, pid_file)
   if interactive_mode:
-    controller = InteractiveModeController(universe, uid, sub_device, pid_file)
-    controller.Run()
-    return
-
-  pid_store = PidStore.GetStore(pid_file)
+    controller.cmdloop()
+    sys.exit()
 
   if list_pids:
-    ListPids(uid)
+    controller.onecmd('list')
     sys.exit()
 
   if len(args) == 0:
     Usage()
     sys.exit()
 
-  pid = None
-  try:
-    pid = pid_store.GetPid(int(args[0], 0), uid.manufacturer_id)
-  except ValueError:
-    pid = pid_store.GetName(args[0].upper(), uid.manufacturer_id)
-
-  if not pid:
-    ListPids(uid)
-    sys.exit()
-
-  global wrapper
-  wrapper = ClientWrapper()
-  client = wrapper.Client()
-  rdm_api = RDMAPI(client, pid_store)
-
-  request_type = PidStore.RDM_GET
+  request_type = 'get'
   if os.path.basename(sys.argv[0]) == 'ola_rdm_set.py':
-    request_type = PidStore.RDM_SET
-
-  rdm_args = args[1:]
-  if not pid.RequestSupported(request_type):
-    print >> sys.stderr, 'PID does not support command'
-    return None
-
-  if request_type == PidStore.RDM_SET:
-    method = rdm_api.Set
-  else:
-    method = rdm_api.Get
-
-  try:
-    if method(universe, uid, sub_device, pid, RequestComplete, rdm_args):
-      wrapper.Run()
-  except PidStore.ArgsValidationError, e:
-    # TODO(simon): print the format here
-    print >> sys.stderr, e
-    return None
+    request_type = 'set'
+  controller.onecmd('%s %s' % (request_type, ' '.join(args)))
 
 
 if __name__ == '__main__':

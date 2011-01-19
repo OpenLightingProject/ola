@@ -42,6 +42,7 @@ class ClientWrapper(object):
     return self._client
 
   def Run(self):
+    self._quit = False
     while not self._quit:
       i, o, e = select.select([self._sock], [], [])
       if self._sock in i:
