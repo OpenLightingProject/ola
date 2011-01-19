@@ -58,7 +58,8 @@ class InteractiveModeController(cmd.Cmd):
     """Create a new InteractiveModeController.
 
     Args:
-      uid
+      universe:
+      uid:
       sub_device:
       pid_file:
     """
@@ -68,7 +69,6 @@ class InteractiveModeController(cmd.Cmd):
     self._sub_device = sub_device
 
     self.pid_store = PidStore.GetStore(pid_file)
-
     self.wrapper = ClientWrapper()
     self.client = self.wrapper.Client()
     self.rdm_api = RDMAPI(self.client, self.pid_store)
@@ -85,6 +85,20 @@ class InteractiveModeController(cmd.Cmd):
   def do_EOF(self, s):
     print ''
     return self.do_exit('')
+
+  def do_uid(self, line):
+    """Sets the active UID."""
+    args = line.split()
+    if len(args) != 1:
+      print '*** Requires a single UID argument'
+      return
+
+    uid = UID.FromString(args[0])
+    if uid is None:
+      print '*** Invalid UID'
+      return
+
+    self._uid = uid
 
   def do_subdevice(self, line):
     """Sets the sub device."""
@@ -105,20 +119,6 @@ class InteractiveModeController(cmd.Cmd):
       return
     self._sub_device = sub_device
 
-  def do_uid(self, line):
-    """Sets the active UID."""
-    args = line.split()
-    if len(args) != 1:
-      print '*** Requires a single UID argument'
-      return
-
-    uid = UID.FromString(args[0])
-    if uid is None:
-      print '*** Invalid UID'
-      return
-
-    self._uid = uid
-
   def do_print(self, l):
     """Prints the current universe, UID and sub device."""
     print textwrap.dedent("""\
@@ -128,6 +128,16 @@ class InteractiveModeController(cmd.Cmd):
         self._universe,
         self._uid,
         self._sub_device))
+
+  def do_uids(self, l):
+    """List the UIDs for this universe."""
+    self.client.FetchUIDList(self._universe, self._DisplayUids)
+    self.wrapper.Run()
+
+  def do_discover(self, l):
+    """Run RDM discovery for this universe."""
+    self.client.RunRDMDiscovery(self._universe, self._DiscoveryDone)
+    self.wrapper.Run()
 
   def do_list(self, l):
     """List the pids available."""
@@ -140,16 +150,6 @@ class InteractiveModeController(cmd.Cmd):
     names.sort()
     print '\n'.join(names)
 
-  def do_uids(self, l):
-    """List the UIDs for this universe."""
-    self.client.FetchUIDList(self._universe, self._DisplayUids)
-    self.wrapper.Run()
-
-  def do_discover(self, l):
-    """Run RDM discovery for this universe."""
-    self.client.RunRDMDiscovery(self._universe, self._DiscoveryDone)
-    self.wrapper.Run()
-
   def do_get(self, l):
     """Send a GET command."""
     self.GetOrSet(PidStore.RDM_GET, l)
@@ -161,7 +161,10 @@ class InteractiveModeController(cmd.Cmd):
   def GetOrSet(self, request_type, l):
     args = l.split()
     if len(args) < 1:
-      print 'get <pid> [args]'
+      command = 'get'
+      if request_type == PidStore.RDM_SET:
+        command = 'set'
+      print '%s <pid> [args]' % command
       return
 
     pid = None
@@ -228,8 +231,6 @@ class InteractiveModeController(cmd.Cmd):
     else:
       print unpack_exception
     return False
-
-
 
 
 def main():
