@@ -470,7 +470,7 @@ class GetLanguageCapabilitiesWithData(IsSupportedMixin, ResponderTest):
   def Test(self):
     self.AddIfSupported([
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
-      ExpectedResult.AckResponse(self.pid.value, ['language'])
+      ExpectedResult.AckResponse(self.pid.value, ['languages'])
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foobar')
 
