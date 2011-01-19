@@ -443,14 +443,14 @@ class GetLanguageCapabilities(IsSupportedMixin, ResponderTest):
   def Test(self):
     self.languages = []
     self.AddIfSupported(
-      ExpectedResult.AckResponse(self.pid.value, ['language']))
+      ExpectedResult.AckResponse(self.pid.value, ['languages']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
     if not status.WasSuccessfull():
       return
 
-    self.languages = [f['language'] for f in fields]
+    self.languages = [f['language'] for f in fields['languages']]
 
     if len(self.language) == 0:
       self.SetFailed('No languages returned')
