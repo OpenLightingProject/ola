@@ -861,16 +861,14 @@ class SetStartAddress(ResponderTest):
 
   def Test(self):
     footprint = self.Deps(GetDeviceInfo).GetField('dmx_footprint')
-    self.start_address = None
+    self.start_address = 1
 
-    if footprint == 0:
+    current_address = self.Deps(GetStartAddress).GetField('dmx_address')
+    if footprint == 0 or current_address == 0xffff:
       result = ExpectedResult.NackResponse(self.pid.value,
                                            RDMNack.NR_UNKNOWN_PID)
     else:
-      current_address = self.Deps(GetStartAddress).GetField('dmx_address')
-      if footprint == MAX_DMX_ADDRESS:
-        self.start_address = 1
-      else:
+      if footprint != MAX_DMX_ADDRESS:
         self.start_address = current_address + 1
         if self.start_address + footprint > MAX_DMX_ADDRESS + 1:
           self.start_address = 1
