@@ -191,11 +191,12 @@ void RDMSniffer::DumpRequest(unsigned int length, const uint8_t *data) {
     cout << " src: " << request->SourceUID() << ", dst: " <<
       request->DestinationUID() << ", sub-device: " << std::dec <<
       request->SubDevice() << ", transaction: " <<
-      (int) request->TransactionNumber() << ", port: " << std::dec <<
-      (int) request->PortId() << ", PID 0x" << std::hex << std::setfill('0')
-      << std::setw(4) << request->ParamId();
+      static_cast<int>(request->TransactionNumber()) << ", port: " << std::dec
+      << static_cast<int>(request->PortId()) << ", PID 0x" << std::hex <<
+      std::setfill('0') << std::setw(4) << request->ParamId();
     if (m_verbose) {
-      cout << ", pdl: " << request->ParamDataSize() << ", param data: ";
+      cout << ", pdl: " << std::dec << request->ParamDataSize() <<
+        ", param data: ";
       const uint8_t *param_data = request->ParamData();
       for (unsigned int i = 0; i < request->ParamDataSize(); ++i)
         cout << std::hex << static_cast<int>(param_data[i]) << " ";
@@ -208,14 +209,16 @@ void RDMSniffer::DumpRequest(unsigned int length, const uint8_t *data) {
 
 
 void RDMSniffer::DumpResponse(unsigned int length, const uint8_t *data) {
-  RDMResponse *response = RDMResponse::InflateFromData(data, length);
+  ola::rdm::rdm_response_code code;
+  RDMResponse *response = RDMResponse::InflateFromData(data, length, NULL,
+                                                       &code);
   if (response) {
     cout << (response->CommandClass() == RDMCommand::GET_COMMAND_RESPONSE ?
         "GET_RESPONSE" : "SET_RESPONSE");
     cout << " src: " << response->SourceUID() << ", dst: " <<
       response->DestinationUID() << ", sub-device: " << std::dec <<
       response->SubDevice() << ", transaction: " <<
-      (int) response->TransactionNumber() << ", response type: ";
+      static_cast<int>(response->TransactionNumber()) << ", response type: ";
 
     switch (response->ResponseType()) {
       case ola::rdm::RDM_ACK:
@@ -242,7 +245,8 @@ void RDMSniffer::DumpResponse(unsigned int length, const uint8_t *data) {
     cout << ", PID 0x" << std::hex <<
       std::setfill('0') << std::setw(4) << response->ParamId();
     if (m_verbose) {
-      cout << ", pdl: " << response->ParamDataSize() << ", param data: ";
+      cout << ", pdl: " << std::dec << response->ParamDataSize() <<
+        ", param data: ";
       const uint8_t *param_data = response->ParamData();
       for (unsigned int i = 0; i < response->ParamDataSize(); ++i)
         cout << std::hex << static_cast<int>(param_data[i]) << " ";

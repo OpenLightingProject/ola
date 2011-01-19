@@ -118,8 +118,11 @@ class RDMCommand {
               uint8_t transaction_number,
               uint8_t port_id) const;
 
-    static const rdm_command_message* VerifyData(const uint8_t *data,
-                                                 unsigned int length);
+    static rdm_response_code RDMCommand::VerifyData(
+        const uint8_t *data,
+        unsigned int length,
+        RDMCommand::rdm_command_message *command_message);
+
     static RDMCommandClass ConvertCommandClass(uint8_t command_type);
 
   private:
@@ -283,8 +286,12 @@ class RDMResponse: public RDMCommand {
 
     // Convert a block of data to an RDMCommand object
     static RDMResponse* InflateFromData(const uint8_t *data,
-                                        unsigned int length);
-    static RDMResponse* InflateFromData(const string &data);
+                                        unsigned int length,
+                                        const RDMRequest *request,
+                                        rdm_response_code *response_code);
+    static RDMResponse* InflateFromData(const string &data,
+                                        const RDMRequest *request,
+                                        rdm_response_code *response_code);
 
     // Combine two responses into one.
     static RDMResponse* CombineResponses(const RDMResponse *response1,

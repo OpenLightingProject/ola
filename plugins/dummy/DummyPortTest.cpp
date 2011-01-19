@@ -123,8 +123,9 @@ void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
   if (code == ola::rdm::RDM_COMPLETED_OK) {
     CPPUNIT_ASSERT(response);
     CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
+    ola::rdm::rdm_response_code code;
     ola::rdm::RDMResponse *raw_response =
-      ola::rdm::RDMResponse::InflateFromData(packets[0]);
+      ola::rdm::RDMResponse::InflateFromData(packets[0], NULL, &code);
     CPPUNIT_ASSERT(raw_response);
     CPPUNIT_ASSERT(*m_expected_response == *raw_response);
   }

@@ -70,6 +70,7 @@ class UsbProPlugin: public ola::Plugin {
     static const char MAC_DEVICE_PREFIX[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
+    static const char TRI_USE_RAW_RDM_KEY[];
     static const char USBPRO_DEVICE_NAME[];
     static const char USB_PRO_FPS_LIMIT_KEY[];
     static const unsigned int MAX_PRO_FPS_LIMIT = 1000;

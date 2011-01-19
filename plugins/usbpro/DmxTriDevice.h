@@ -45,7 +45,8 @@ class DmxTriDevice: public UsbDevice {
                  UsbWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
-                 uint32_t serial);
+                 uint32_t serial,
+                 bool use_raw_rdm);
     ~DmxTriDevice();
 
     string DeviceId() const { return m_device_id; }

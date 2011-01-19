@@ -593,7 +593,7 @@ void DmxTriWidgetTest::testSendRDMErrors() {
       request,
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_DEVICE_MISMATCH,
+                             ola::rdm::RDM_SRC_UID_MISMATCH,
                              packets));
   m_widget.Verify();
 }

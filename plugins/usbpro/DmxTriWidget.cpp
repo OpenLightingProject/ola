@@ -51,12 +51,14 @@ using ola::rdm::UIDSet;
  * New DMX TRI device
  */
 DmxTriWidgetImpl::DmxTriWidgetImpl(ola::network::SelectServerInterface *ss,
-                                   UsbWidgetInterface *widget):
+                                   UsbWidgetInterface *widget,
+                                   bool use_raw_rdm):
     m_ss(ss),
     m_widget(widget),
     m_rdm_timeout_id(ola::network::INVALID_TIMEOUT),
     m_uid_count(0),
     m_last_esta_id(UID::ALL_MANUFACTURERS),
+    m_use_raw_rdm(use_raw_rdm),
     m_uid_set_callback(NULL),
     m_discovery_callback(NULL),
     m_rdm_request_callback(NULL),
@@ -72,20 +74,6 @@ DmxTriWidgetImpl::DmxTriWidgetImpl(ola::network::SelectServerInterface *ss,
  */
 DmxTriWidgetImpl::~DmxTriWidgetImpl() {
   Stop();
-
-  // timeout any existing message
-  if (m_rdm_request_callback) {
-    std::vector<string> packets;
-    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
-  }
-  if (m_pending_request)
-    delete m_pending_request;
-
-  if (m_uid_set_callback)
-    delete m_uid_set_callback;
-
-  if (m_discovery_callback)
-    delete m_discovery_callback;
 }
 
 
@@ -117,6 +105,27 @@ void DmxTriWidgetImpl::Stop() {
   if (m_rdm_timeout_id != ola::network::INVALID_TIMEOUT) {
     m_ss->RemoveTimeout(m_rdm_timeout_id);
     m_rdm_timeout_id = ola::network::INVALID_TIMEOUT;
+  }
+
+  // timeout any existing message
+  if (m_rdm_request_callback) {
+    std::vector<string> packets;
+    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    m_rdm_request_callback = NULL;
+  }
+  if (m_pending_request) {
+    delete m_pending_request;
+    m_pending_request = NULL;
+  }
+
+  if (m_uid_set_callback) {
+    delete m_uid_set_callback;
+    m_uid_set_callback = NULL;
+  }
+
+  if (m_discovery_callback) {
+    delete m_discovery_callback;
+    m_discovery_callback = NULL;
   }
 }
 
@@ -160,6 +169,11 @@ void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
       m_uid_index_map.find(dest_uid) == m_uid_index_map.end()) {
     on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
     delete request;
+    return;
+  }
+
+  if (m_use_raw_rdm) {
+    SendRawRDMRequest(request, on_complete);
     return;
   }
 
@@ -255,6 +269,9 @@ void DmxTriWidgetImpl::HandleMessage(uint8_t label,
       case REMOTE_UID_COMMAND_ID:
         HandleRemoteUIDResponse(return_code, data, length);
         break;
+      case RAW_RDM_COMMAND_ID:
+        HandleRawRDMResponse(return_code, data, length);
+        break;
       case REMOTE_GET_COMMAND_ID:
         HandleRemoteRDMResponse(return_code, data, length);
         break;
@@ -322,6 +339,44 @@ bool DmxTriWidgetImpl::SendDiscoveryStat() {
   return m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
                                &command_id,
                                sizeof(command_id));
+}
+
+
+/**
+ * Send a raw RDM command, bypassing all the handling the RDM-TRI does.
+ */
+void DmxTriWidgetImpl::SendRawRDMRequest(const ola::rdm::RDMRequest *request,
+                                         ola::rdm::RDMCallback *callback) {
+  std::vector<string> packets;
+  // add two bytes for the command & option field
+  unsigned int packet_size = request->Size();
+  uint8_t *send_buffer = new uint8_t[packet_size + 2];
+
+  send_buffer[0] = RAW_RDM_COMMAND_ID;
+  send_buffer[1] = 0;
+
+  if (!request->Pack(send_buffer + 2, &packet_size)) {
+    OLA_WARN << "Failed to pack RDM request";
+    delete[] send_buffer;
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    return;
+  }
+
+  OLA_INFO << "Sending raw request to " << request->DestinationUID() <<
+    " with command " << std::hex << request->CommandClass() << " and param " <<
+    std::hex << request->ParamId();
+
+  m_pending_request = request;
+  m_rdm_request_callback = callback;
+  bool r = m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
+                                 send_buffer,
+                                 packet_size + 2);
+  if (!r) {
+    m_pending_request = NULL;
+    m_rdm_request_callback = NULL;
+    delete request;
+    callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+  }
 }
 
 
@@ -566,6 +621,56 @@ void DmxTriWidgetImpl::HandleRemoteUIDResponse(uint8_t return_code,
 
 
 /*
+ * Handle the response to a raw RDM command
+ */
+void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
+                                            const uint8_t *data,
+                                            unsigned int length) {
+  OLA_INFO << "got raw RDM response with code: " <<
+    static_cast<int>(return_code) << ", length: " << length;
+
+  const ola::rdm::RDMRequest *request = m_pending_request;
+  m_pending_request = NULL;
+  ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+  m_rdm_request_callback = NULL;
+
+  if (callback == NULL || request == NULL) {
+    OLA_FATAL << "Got a response but missing callback or request object!";
+    return;
+  }
+
+  if (return_code == EC_UNKNOWN_COMMAND) {
+    // This means raw mode isn't supported and we should fall back to the
+    // default mode
+    m_use_raw_rdm = false;
+    OLA_WARN <<
+      "Raw RDM mode not supported, switching back to the managed RDM mode";
+    SendRDMRequest(request, callback);
+    return;
+  }
+
+  std::vector<string> packets;
+  packets.push_back(string(reinterpret_cast<const char*>(data), length));
+  const UID &dest_uid = request->DestinationUID();
+
+  if (dest_uid.IsBroadcast()) {
+    if (return_code != EC_RESPONSE_NONE) {
+      OLA_WARN << "Unexpected response to broadcast message";
+    }
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    delete request;
+    return;
+  }
+
+  ola::rdm::rdm_response_code code = ola::rdm::RDM_COMPLETED_OK;
+  ola::rdm::RDMResponse *response =
+    ola::rdm::RDMResponse::InflateFromData(data, length, request, &code);
+  delete request;
+  callback->Run(code, response, packets);
+}
+
+
+/*
  * Handle the response to a Remote Get/Set command
  */
 void DmxTriWidgetImpl::HandleRemoteRDMResponse(uint8_t return_code,
@@ -685,8 +790,7 @@ void DmxTriWidgetImpl::HandleGenericRDMResponse(uint8_t return_code,
   delete request;
   std::vector<string> packets;
   // Unfortunately we don't get to see the raw response here, which limits the
-  // use of the TRI for testing.
-  // TODO(simon): convince Hamish to provide us with this.
+  // use of the TRI for testing. For testing use the raw mode.
   callback->Run(code, response, packets);
 }
 
@@ -747,7 +851,7 @@ bool DmxTriWidgetImpl::TriToOlaReturnCode(
       *code = ola::rdm::RDM_TIMEOUT;
       break;
     case EC_RESPONSE_IDENTITY:
-      *code = ola::rdm::RDM_DEVICE_MISMATCH;
+      *code = ola::rdm::RDM_SRC_UID_MISMATCH;
       break;
     default:
       return false;
@@ -808,8 +912,9 @@ bool DmxTriWidgetImpl::ReturnCodeToNackReason(
  */
 DmxTriWidget::DmxTriWidget(ola::network::SelectServerInterface *ss,
                            UsbWidgetInterface *widget,
-                           unsigned int queue_size):
-    m_impl(ss, widget),
+                           unsigned int queue_size,
+                           bool use_raw_rdm):
+    m_impl(ss, widget, use_raw_rdm),
     m_controller(&m_impl, queue_size) {
   m_impl.SetDiscoveryCallback(
       NewCallback(this, &DmxTriWidget::ResumeRDMCommands));

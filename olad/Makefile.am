@@ -56,4 +56,5 @@ OlaTester_SOURCES = OlaServerTester.cpp \
                     OlaServerServiceImplTest.cpp ClientTest.cpp
 OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 OlaTester_LDFLAGS = $(CPPUNIT_LIBS)
-OlaTester_LDADD = @LIBS@ $(top_builddir)/olad/libolaserver.la
+OlaTester_LDADD = @LIBS@ $(top_builddir)/olad/libolaserver.la \
+                  $(top_builddir)/common/libolacommon.la

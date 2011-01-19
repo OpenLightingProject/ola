@@ -51,6 +51,7 @@ const char UsbProPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
 const char UsbProPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
 const char UsbProPlugin::PLUGIN_NAME[] = "Enttec USB Pro";
 const char UsbProPlugin::PLUGIN_PREFIX[] = "usbpro";
+const char UsbProPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbProPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
 const char UsbProPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
 
@@ -76,7 +77,9 @@ string UsbProPlugin::Description() const {
 "The prefix of filenames to consider as devices, multiple keys are allowed\n"
 "\n"
 "pro_fps_limit = 190\n"
-"The max frames per second to send to a Usb Pro or DMXKing device\n";
+"The max frames per second to send to a Usb Pro or DMXKing device\n"
+"tri_use_raw_rdm = [true|false]\n"
+"Bypass RDM handling in the {DMX,RDM}-TRI widgets.\n";
 }
 
 
@@ -157,7 +160,8 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
             widget,
             information.esta_id,
             information.device_id,
-            serial));
+            serial,
+            m_preferences->GetValueAsBool(TRI_USE_RAW_RDM_KEY)));
         return;
       }
       break;
@@ -267,6 +271,10 @@ bool UsbProPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(USB_PRO_FPS_LIMIT_KEY,
                                          IntValidator(0, MAX_PRO_FPS_LIMIT),
                                          DEFAULT_PRO_FPS_LIMIT);
+
+  save |= m_preferences->SetDefaultValue(TRI_USE_RAW_RDM_KEY,
+                                         BoolValidator(),
+                                         BoolValidator::FALSE);
 
   if (save)
     m_preferences->Save();

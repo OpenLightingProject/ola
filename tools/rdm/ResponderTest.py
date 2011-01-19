@@ -400,8 +400,14 @@ class ResponderTest(object):
                             self._HandleResponse,
                             data)
 
-  def _HandleResponse(self, status, pid, fields):
-    """Handle a RDM response."""
+  def _HandleResponse(self, status, pid, fields, unpack_exception):
+    """Handle a RDM response.
+
+    Args:
+      status: A RDMRequestStatus object
+      pid: The pid in the response
+      obj: A dict of fields
+    """
     if not self._CheckState(status):
       return
 
@@ -409,7 +415,11 @@ class ResponderTest(object):
       self._logger.debug(' Response: %s, PID = 0x%04hx, data = %s' %
                          (status, pid, fields))
     else:
-      self._logger.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
+      if unpack_exception:
+        self._logger.debug(' Response: %s, PID = 0x%04hx, Error: %s' %
+                           (status, pid, unpack_exception))
+      else:
+        self._logger.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
 
     for result in self._expected_results:
       if result.Matches(status, pid, fields):

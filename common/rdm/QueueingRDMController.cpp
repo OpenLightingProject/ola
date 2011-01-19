@@ -138,7 +138,7 @@ void QueueingRDMController::DispatchNextRequest() {
   // We have to make a copy here because we pass ownership of the request to
   // the underlying controller.
   m_controller->SendRDMRequest(outstanding_request.request->Duplicate(),
-                            m_callback);
+                               m_callback);
 }
 
 

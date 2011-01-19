@@ -35,21 +35,37 @@ enum FieldType {
   UINT16 = 3;
   UINT32 = 4;
   STRING = 5;
+  GROUP = 6;
 }
 
+// A value which has a label applied
+message LabeledValue {
+  required uint32 value = 1;
+  required string label = 2;
+}
 
-// At some point we should add enum fields
+// An allowable range, only used for int fields
+message Range {
+  // min and max are inclusive
+  required uint32 min = 1;
+  required uint32 max = 2;
+}
+
+// A field within a frame, this can contain other fields
 message Field {
   required FieldType type = 1;
   required string name = 2;
-  optional uint32 size = 3;  // used for string fields
+  optional uint32 min_size = 3;  // used for strings & groups
+  optional uint32 max_size = 4;  // used for strings & groups
+  repeated LabeledValue label = 5;  // values with labels applied
+  repeated Range range = 6; // valid ranges
+  repeated Field field = 7; // for type == GROUP
 }
 
 
+// Describes the format of a frame
 message FrameFormat {
   repeated Field field = 1;
-  required bool repeated_group = 2 [default = false];
-  optional uint32 max_repeats = 3;
 }
 
 
@@ -78,4 +94,5 @@ message Manufacturer {
 message PidStore {
   repeated Pid pid = 1;
   repeated Manufacturer manufacturer = 2;
+  required uint64 version = 3;
 }

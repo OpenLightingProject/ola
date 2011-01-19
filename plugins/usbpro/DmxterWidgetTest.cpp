@@ -114,8 +114,9 @@ void DmxterWidgetTest::ValidateResponse(
                              response->ParamDataSize()));
 
   CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
+  ola::rdm::rdm_response_code raw_code;
   ola::rdm::RDMResponse *raw_response =
-    ola::rdm::RDMResponse::InflateFromData(packets[0]);
+    ola::rdm::RDMResponse::InflateFromData(packets[0], NULL, &raw_code);
   CPPUNIT_ASSERT(*raw_response == *response);
   delete response;
 }
@@ -344,7 +345,7 @@ void DmxterWidgetTest::testErrorCodes() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_INVALID_RESPONSE,
+                             ola::rdm::RDM_PACKET_TOO_SHORT,
                              packets));
   m_widget.Verify();
 
@@ -407,7 +408,7 @@ void DmxterWidgetTest::testErrorCodes() {
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
-                             ola::rdm::RDM_DEVICE_MISMATCH,
+                             ola::rdm::RDM_SRC_UID_MISMATCH,
                              packets));
   m_widget.Verify();
 

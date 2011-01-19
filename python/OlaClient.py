@@ -275,7 +275,22 @@ class RDMRequestStatus(RequestStatus):
       Ola_pb2.RDM_CHECKSUM_INCORRECT: 'Incorrect Checksum',
       Ola_pb2.RDM_TRANSACTION_MISMATCH: 'Transaction number mismatch',
       Ola_pb2.RDM_SUB_DEVICE_MISMATCH: 'Sub device mismatch',
-      Ola_pb2.RDM_DEVICE_MISMATCH: 'Device mismatch',
+      Ola_pb2.RDM_SRC_UID_MISMATCH: 'Source UID in response doesn\'t match',
+      Ola_pb2.RDM_DEST_UID_MISMATCH: (
+        'Destination UID in response doesn\'t match'),
+      Ola_pb2.RDM_WRONG_SUB_START_CODE: 'Incorrect sub start code',
+      Ola_pb2.RDM_PACKET_TOO_SHORT: (
+        'RDM response was smaller than the mimimun size'),
+      Ola_pb2.RDM_PACKET_LENGTH_MISMATCH: (
+        'The length field of packet didn\'t match length received'),
+      Ola_pb2.RDM_PARAM_LENGTH_MISMATCH: (
+        'The parameter length exceeds the remaining packet size'),
+      Ola_pb2.RDM_INVALID_COMMAND_CLASS: (
+        'The command class was not one of GET_RESPONSE or SET_RESPONSE'),
+      Ola_pb2.RDM_COMMAND_CLASS_MISMATCH: (
+        'The command class didn\'t match the request'),
+      Ola_pb2.RDM_INVALID_RESPONSE_TYPE: (
+        'The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK'),
   }
 
   def __init__(self, controller, response):
