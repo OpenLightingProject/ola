@@ -22,6 +22,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import getopt
 import os.path
+import readline
 import sys
 import textwrap
 from ola import PidStore
@@ -39,6 +40,7 @@ def Usage():
 
     -d, --sub_device <device> target a particular sub device (default is 0)
     -h, --help                Display this help message and exit.
+    -i, --interactive         Interactive mode
     -l, --list_pids           display a list of pids
     --pid_file                The PID data store to use.
     --uid                     The UID to send to.
@@ -87,11 +89,166 @@ def ListPids(uid):
   print '\n'.join(names)
 
 
+class InteractiveModeController(object):
+  """Interactive mode!"""
+  def __init__(self, universe, uid, sub_device, pid_file):
+    """Create a new InteractiveModeController.
+
+    Args:
+      uid
+      sub_device:
+      pid_file:
+    """
+    self._universe = universe
+    self._uid = uid
+    self._sub_device = sub_device
+
+    self.pid_store = PidStore.GetStore(pid_file)
+
+    self.wrapper = ClientWrapper()
+    self.client = self.wrapper.Client()
+    self.rdm_api = RDMAPI(self.client, self.pid_store)
+
+  def SetSubDevice(self, args):
+    """Set the sub device."""
+    if len(args) != 1:
+      print 'Requires a single int argument'
+      return
+
+    try:
+      sub_device = int(args[0])
+    except ValueError:
+      print 'Requires a single int argument'
+      return
+
+    if sub_device < 0 or sub_device > PidStore.ALL_SUB_DEVICES:
+      print 'Argument must be between 0 and 0x%hx' % PidStore.ALL_SUB_DEVICES
+      return
+    self._sub_device = sub_device
+
+  def ShowHelp(self):
+    print textwrap.dedent("""\
+      Commands:
+        help              Show this help message
+        list              List available pids
+        print             Print universe, UID & sub device
+        subdevice <int>   Set the sub device
+        get <PID> [args]  Get a PID
+        set <PID> [args]  Set a PID
+        quit              Exit""")
+
+  def PrintState(self):
+    print textwrap.dedent("""\
+      Universe: %d
+      UID: %s
+      Sub Device: %d""" % (
+        self._universe,
+        self._uid,
+        self._sub_device))
+
+  def ListPids(self):
+    """List the pids available."""
+    names = []
+    for pid in self.pid_store.Pids():
+      names.append('%s (0x%04hx)' % (pid.name.lower(), pid.value))
+    if self._uid:
+      for pid in self.pid_store.ManufacturerPids(self._uid.manufacturer_id):
+        names.append('%s (0x%04hx)' % (pid.name.lower(), pid.value))
+    names.sort()
+    print '\n'.join(names)
+
+  def _RequestComplete(self, status, pid, response_data, unpack_exception):
+    self.wrapper.Stop()
+    if CheckStatus(status):
+      print 'PID: 0x%04hx' % pid
+      for key, value in response_data.iteritems():
+        print '%s: %s' % (key, value)
+
+  def GetOrSet(self, request_type, args):
+    if len(args) < 1:
+      print 'get <pid> [args]'
+      return
+
+    pid = None
+    try:
+      pid = self.pid_store.GetPid(int(args[0], 0),
+                                  self._uid.manufacturer_id)
+    except ValueError:
+      pid = self.pid_store.GetName(args[0].upper(),
+                                   self._uid.manufacturer_id)
+    if not pid:
+      'Unknown pid'
+      return
+
+    rdm_args = args[1:]
+    if not pid.RequestSupported(request_type):
+      print 'PID does not support command'
+      return
+
+    if request_type == PidStore.RDM_SET:
+      method = self.rdm_api.Set
+    else:
+      method = self.rdm_api.Get
+
+    try:
+      if method(self._universe,
+                self._uid,
+                self._sub_device,
+                pid,
+                self._RequestComplete,
+                args[1:]):
+        self.wrapper.Reset()
+        self.wrapper.Run()
+    except PidStore.ArgsValidationError, e:
+      # TODO(simon): print the format here
+      print e
+      return
+
+  def Run(self):
+    """Run the interactive mode."""
+    while True:
+      """
+      sys.stdout.write('> ')
+      sys.stdout.flush()
+      """
+      try:
+        input = raw_input('> ')
+      except EOFError:
+        print ''
+        return
+
+      if input.strip().lower() == 'quit':
+        return
+
+      input = input.strip()
+      if input == '':
+        continue
+
+      commands = input.split()
+      main_command = commands[0]
+      args = commands[1:]
+      if main_command == 'help':
+        self.ShowHelp()
+      elif main_command == 'get':
+        self.GetOrSet(PidStore.RDM_GET, args)
+      elif main_command == 'list':
+        self.ListPids()
+      elif main_command == 'print':
+        self.PrintState()
+      elif main_command == 'set':
+        self.GetOrSet(PidStore.RDM_SET, args)
+      elif main_command == 'subdevice':
+        self.SetSubDevice(args)
+      else:
+        print "Unknown command, type 'help'"
+
+
 def main():
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'd:hlu:',
-                               ['sub_device=', 'help', 'list_pids',
-                                 'pid_file=', 'uid=', 'universe='])
+    opts, args = getopt.getopt(sys.argv[1:], 'd:hilu:',
+                               ['sub_device=', 'help', 'interactive',
+                                 'list_pids', 'pid_file=', 'uid=',
+                                 'universe='])
   except getopt.GetoptError, err:
     print str(err)
     Usage()
@@ -102,12 +259,15 @@ def main():
   sub_device = 0
   list_pids = False
   pid_file = None
+  interactive_mode = False
   for o, a in opts:
     if o in ('-d', '--sub_device'):
       sub_device = int(a)
     elif o in ('-h', '--help'):
       Usage()
       sys.exit()
+    elif o in ('-i', '--interactive'):
+      interactive_mode = True
     elif o in ('-l', '--list_pids'):
       list_pids = True
     elif o in ('--uid',):
@@ -117,13 +277,26 @@ def main():
     elif o in ('-u', '--universe'):
       universe = int(a)
 
+  if not universe:
+    Usage()
+    sys.exit()
+
+  if not uid and not list_pids:
+    Usage()
+    sys.exit()
+
+  if interactive_mode:
+    controller = InteractiveModeController(universe, uid, sub_device, pid_file)
+    controller.Run()
+    return
+
   pid_store = PidStore.GetStore(pid_file)
 
   if list_pids:
     ListPids(uid)
     sys.exit()
 
-  if not universe or not uid or len(args) == 0:
+  if len(args) == 0:
     Usage()
     sys.exit()
 
