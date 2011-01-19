@@ -844,10 +844,11 @@ class GetStartAddress(ResponderTest):
   DEPS = [GetDeviceInfo]
 
   def Test(self):
-    result = ExpectedResult.NackResponse(self.pid.value,
-                                         RDMNack.NR_UNKNOWN_PID)
     if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
       result = ExpectedResult.AckResponse(self.pid.value, ['dmx_address'])
+    else:
+      result = ExpectedResult.AckResponse(self.pid.value,
+                                          field_values={'dmx_address': 0xffff})
     self.AddExpectedResults(result)
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
