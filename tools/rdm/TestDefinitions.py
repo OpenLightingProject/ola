@@ -525,7 +525,7 @@ class SetLanguage(IsSupportedMixin, ResponderTest):
     self.AddExpectedResults(
       ExpectedResult.AckResponse(
         self.pid.value,
-        field_values={'dmx_address': self.start_address}))
+        field_values={'language': self.new_language}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
