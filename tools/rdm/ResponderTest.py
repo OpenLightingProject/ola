@@ -223,6 +223,7 @@ class ResponderTest(object):
     self._deps = {}
     self._warnings = []
     self._logger = logger
+    self._should_run_wrapper = True
 
     for dep in deps:
       self._deps[dep.__class__.__name__] = dep
@@ -294,7 +295,8 @@ class ResponderTest(object):
       return
 
     self.Test()
-    self._wrapper.Run()
+    if self._should_run_wrapper:
+      self._wrapper.Run()
     self._wrapper.Reset()
 
   def Deps(self, dep_class):
@@ -323,6 +325,7 @@ class ResponderTest(object):
     self._state = TestState.FAILED
 
   def Stop(self):
+    self._should_run_wrapper = False
     self._wrapper.Stop()
 
   def AddExpectedResults(self, results):
@@ -346,7 +349,7 @@ class ResponderTest(object):
                          self._uid,
                          sub_device,
                          pid,
-                         self._HandleResponse,
+                         self._BuildResponseHandler(sub_device),
                          args)
 
   def SendRawGet(self, sub_device, pid, data = ""):
@@ -363,7 +366,7 @@ class ResponderTest(object):
                             self._uid,
                             sub_device,
                             pid,
-                            self._HandleResponse,
+                            self._BuildResponseHandler(sub_device),
                             data)
 
   def SendSet(self, sub_device, pid, args = []):
@@ -380,7 +383,7 @@ class ResponderTest(object):
                          self._uid,
                          sub_device,
                          pid,
-                         self._HandleResponse,
+                         self._BuildResponseHandler(sub_device),
                          args)
 
   def SendRawSet(self, sub_device, pid, data = ""):
@@ -397,18 +400,19 @@ class ResponderTest(object):
                             self._uid,
                             sub_device,
                             pid,
-                            self._HandleResponse,
+                            self._BuildResponseHandler(sub_device),
                             data)
 
-  def _HandleResponse(self, status, pid, fields, unpack_exception):
+  def _HandleResponse(self, sub_device, status, pid, fields, unpack_exception):
     """Handle a RDM response.
 
     Args:
+      sub_device: the sub device this was for
       status: A RDMRequestStatus object
       pid: The pid in the response
       obj: A dict of fields
     """
-    if not self._CheckState(status):
+    if not self._CheckState(status, sub_device):
       return
 
     if status.WasSuccessfull():
@@ -441,7 +445,7 @@ class ResponderTest(object):
       self._logger.debug('  %s' % result)
     self.Stop()
 
-  def _CheckState(self, status):
+  def _CheckState(self, status, sub_device):
     """Check the state of a RDM response."""
     if not status.Succeeded():
       # this indicated a transport error
@@ -453,10 +457,30 @@ class ResponderTest(object):
     if (status.response_code == OlaClient.RDM_COMPLETED_OK and
         status.response_type == OlaClient.RDM_ACK_TIMER):
       self._logger.error('Got ACK TIMER set to %d ms' % status.ack_timer)
-      # TODO: schedule queued message fetch
+      self._wrapper.AddEvent(
+          status.ack_timer,
+          lambda: self._GetQueuedMessage(sub_device))
 
       return False
     return True
+
+  def _GetQueuedMessage(self, sub_device):
+    """Fetch queued messages."""
+    print 'queued message fetch'
+    pid = self.LookupPid('queued_message'),
+    data = ['error']
+    self._logger.debug(' GET: pid = %s, sub device = %d, data = %s' %
+        (pid, sub_device, data))
+    return self._api.Get(self._universe,
+                         self._uid,
+                         sub_device,
+                         pid,
+                         self._BuildResponseHandler(sub_device),
+                         data)
+
+  def _BuildResponseHandler(self, sub_device):
+    return lambda s, p, f, e: self._HandleResponse(sub_device,
+                                                   s, p, f, e)
 
 
 class TestRunner(object):
