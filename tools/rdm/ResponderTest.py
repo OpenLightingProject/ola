@@ -412,18 +412,8 @@ class ResponderTest(object):
       pid: The pid in the response
       obj: A dict of fields
     """
-    if not self._CheckState(status, sub_device):
+    if not self._CheckState(sub_device, status, pid, fields, unpack_exception):
       return
-
-    if status.WasSuccessfull():
-      self._logger.debug(' Response: %s, PID = 0x%04hx, data = %s' %
-                         (status, pid, fields))
-    else:
-      if unpack_exception:
-        self._logger.debug(' Response: %s, PID = 0x%04hx, Error: %s' %
-                           (status, pid, unpack_exception))
-      else:
-        self._logger.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
 
     for result in self._expected_results:
       if result.Matches(status, pid, fields):
@@ -447,7 +437,7 @@ class ResponderTest(object):
 
   def _HandleQueuedResponse(self, sub_device, status, pid, fields,
                             unpack_exception):
-    if not self._CheckState(status, sub_device):
+    if not self._CheckState(sub_device, status, pid, fields, unpack_exception):
       return
 
     if fields['messages'] == []:
@@ -458,7 +448,7 @@ class ResponderTest(object):
       # fetch the next one
       self._GetQueuedMessage(sub_device)
 
-  def _CheckState(self, status, sub_device):
+  def _CheckState(self, sub_device, status, pid, fields, unpack_exception):
     """Check the state of a RDM response."""
     if not status.Succeeded():
       # this indicated a transport error
@@ -470,16 +460,28 @@ class ResponderTest(object):
     if (status.response_code == OlaClient.RDM_COMPLETED_OK and
         status.response_type == OlaClient.RDM_ACK_TIMER):
       self._logger.error('Got ACK TIMER set to %d ms' % status.ack_timer)
+      # mark as failed, if we get a message that matches we'll set it to PASSED
+      self.SetFailed('Queued Messages failed to return the expected message')
       self._wrapper.AddEvent(
           status.ack_timer,
           lambda: self._GetQueuedMessage(sub_device))
 
       return False
+
+    if status.WasSuccessfull():
+      self._logger.debug(' Response: %s, PID = 0x%04hx, data = %s' %
+                         (status, pid, fields))
+    else:
+      if unpack_exception:
+        self._logger.debug(' Response: %s, PID = 0x%04hx, Error: %s' %
+                           (status, pid, unpack_exception))
+      else:
+        self._logger.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
+
     return True
 
   def _GetQueuedMessage(self, sub_device):
     """Fetch queued messages."""
-    print 'queued message fetch'
     pid = self.LookupPid('QUEUED_MESSAGE')
     data = ['error']
     self._logger.debug(' GET: pid = %s, sub device = %d, data = %s' %
