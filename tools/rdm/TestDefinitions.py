@@ -746,7 +746,7 @@ class SetPersonality(IsSupportedMixin, ResponderTest):
       GetPersonalities, GetPersonality, GetPersonalityDescription]
 
   def Test(self):
-    count = self.Deps(GetPersonalities).GetField('personality_count')
+    count = self.Deps(GetPersonality).GetField('personality_count')
     if count is None or count == 0:
       self.AddExpectedResults(
         ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID))
