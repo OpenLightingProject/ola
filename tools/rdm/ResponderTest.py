@@ -445,6 +445,19 @@ class ResponderTest(object):
       self._logger.debug('  %s' % result)
     self.Stop()
 
+  def _HandleQueuedResponse(self, sub_device, status, pid, fields,
+                            unpack_exception):
+    if not self._CheckState(status, sub_device):
+      return
+
+    if fields['messages'] == []:
+      # this means we've run out of messages
+      self.Stop()
+    else:
+      self._HandleResponse(sub_device, status, pid, fields, unpack_exception)
+      # fetch the next one
+      self._GetQueuedMessage(sub_device)
+
   def _CheckState(self, status, sub_device):
     """Check the state of a RDM response."""
     if not status.Succeeded():
@@ -471,11 +484,21 @@ class ResponderTest(object):
     data = ['error']
     self._logger.debug(' GET: pid = %s, sub device = %d, data = %s' %
         (pid, sub_device, data))
+
+    def QueuedResponseHandler(status,
+                              pid,
+                              fields,
+                              unpack_exception):
+      self._HandleQueuedResponse(sub_device,
+                                 status,
+                                 pid,
+                                 fields,
+                                 unpack_exception)
     return self._api.Get(self._universe,
                          self._uid,
                          sub_device,
                          pid,
-                         self._BuildResponseHandler(sub_device),
+                         QueuedResponseHandler,
                          data)
 
   def _BuildResponseHandler(self, sub_device):
