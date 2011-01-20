@@ -72,6 +72,7 @@ class InteractiveModeController(cmd.Cmd):
     self.wrapper = ClientWrapper()
     self.client = self.wrapper.Client()
     self.rdm_api = RDMAPI(self.client, self.pid_store)
+    self._uids = []
 
     self.prompt = '> '
 
@@ -99,6 +100,10 @@ class InteractiveModeController(cmd.Cmd):
       return
 
     self._uid = uid
+
+  def complete_uid(self, text, line, start_index, end_index):
+    uids = [str(uid) for uid in self._uids if str(uid).startswith(text)]
+    return uids
 
   def do_subdevice(self, line):
     """Sets the sub device."""
@@ -154,11 +159,38 @@ class InteractiveModeController(cmd.Cmd):
     """Send a GET command."""
     self.GetOrSet(PidStore.RDM_GET, l)
 
+  def complete_get(self, text, line, start_index, end_index):
+    return self.CompleteGetOrSet(PidStore.RDM_GET, text, line)
+
   def do_set(self, l):
     """Send a SET command."""
     self.GetOrSet(PidStore.RDM_SET, l)
 
+  def complete_set(self, text, line, start_index, end_index):
+    return self.CompleteGetOrSet(PidStore.RDM_SET, text, line)
+
+  def CompleteGetOrSet(self, request_type, text, line):
+    if len(line.split(' ')) > 2:
+      return []
+    pids = [pid for pid in self.pid_store.Pids()
+            if pid.name.lower().startswith(text)]
+    if self._uid:
+      for pid in self.pid_store.ManufacturerPids(self._uid.manufacturer_id):
+        if pid.name.lower().startswith(text):
+          pids.append(pid)
+
+    # now check if this type of request is supported
+    pid_names = [pid.name.lower() for pid in pids
+                 if pid.RequestSupported(request_type)]
+
+    pid_names.sort()
+    return pid_names
+
   def GetOrSet(self, request_type, l):
+    if self._uid is None:
+      print '*** No UID selected, use the uid command'
+      return
+
     args = l.split()
     if len(args) < 1:
       command = 'get'
@@ -202,18 +234,26 @@ class InteractiveModeController(cmd.Cmd):
       return
 
   def _DisplayUids(self, state, uids):
+    self._uids = []
     if state.Succeeded():
       for uid in uids:
+        self._uids.append(uid)
         print str(uid)
     self.wrapper.Stop()
 
   def _DiscoveryDone(self, state):
     self.wrapper.Stop()
 
-  def _RDMRequestComplete(self, status, pid, response_data, unpack_exception):
+  def _RDMRequestComplete(self, status, pid_value, response_data,
+                          unpack_exception):
     self.wrapper.Stop()
     if self._CheckStatus(status, unpack_exception):
-      print 'PID: 0x%04hx' % pid
+      pid = self.pid_store.GetPid(pid_value,
+                                  self._uid.manufacturer_id)
+      if pid is None:
+        print 'PID: 0x%04hx' % pid
+      else:
+        print pid
       for key, value in response_data.iteritems():
         print '%s: %s' % (key, value)
 
@@ -271,12 +311,14 @@ def main():
     Usage()
     sys.exit()
 
-  if not uid and not list_pids:
+  if not uid and not list_pids and not interactive_mode:
     Usage()
     sys.exit()
 
   controller = InteractiveModeController(universe, uid, sub_device, pid_file)
   if interactive_mode:
+    sys.stdout.write('Available Uids:\n')
+    controller.onecmd('uids')
     controller.cmdloop()
     sys.exit()
 
