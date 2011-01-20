@@ -197,13 +197,22 @@ class FixedSizeAtom(Atom):
 
 
 class Bool(FixedSizeAtom):
+  BOOL_MAP = {
+    'true': 1,
+    'false': 0,
+  }
+
   def __init__(self, name):
     # once we have 2.6 use ? here
-    super(Bool, self).__init__(name, 'c')
+    super(Bool, self).__init__(name, 'B')
 
-  def Pack(self, arg):
+  def Pack(self, args):
     self.CheckForSingleArg(args)
-    return super(Bool, self).Pack([bool(args[0])])
+
+    arg = args[0].lower()
+    if arg not in self.BOOL_MAP:
+      raise ArgsValidationError('Argument should be true or false')
+    return super(Bool, self).Pack([self.BOOL_MAP[arg]])
 
   def Unpack(self, value):
     return bool(super(Bool, self).Unpack(value))
