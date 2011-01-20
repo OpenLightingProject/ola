@@ -800,8 +800,9 @@ class OlaClient(Ola_pb2.OlaClientService):
       return
     status = RequestStatus(controller)
     uids = []
-    for uid in response.uid:
-      uids.append(UID(uid.esta_id, uid.device_id))
+    if response:
+      for uid in response.uid:
+        uids.append(UID(uid.esta_id, uid.device_id))
     uids.sort()
     callback(status, uids)
 
