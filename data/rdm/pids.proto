@@ -1487,45 +1487,117 @@ manufacturer {
   }
 }
 manufacturer {
-  manufacturer_id: 19041
-  manufacturer_name: "Jands Pty Ltd."
+  manufacturer_id: 18501
+  manufacturer_name: "Howard Eaton Lighting Ltd."
   pid {
-    name: "PREHEAT_LEVEL"
-    value: 32902
+    name: "PWRUP_TEST"
+    value: 51287
     get_request {
     }
     get_response {
       field {
-        type: UINT8
-        name: "level"
-        label {
-          value: 0
-          label: "Off"
-        }
+        type: BOOL
+        name: "enabled"
       }
-    }
-    get_sub_device_range: ROOT_OR_SUBDEVICE
-    set_request {
       field {
         type: UINT8
-        name: "level"
-        label {
-          value: 0
-          label: "Off"
-        }
-        range {
-          min: 0
-          max: 50
-        }
+        name: "max_allowed"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
       }
     }
     set_response {
     }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+    set_sub_device_range: ROOT_DEVICE
   }
+  pid {
+    name: "INTERNAL_STATS"
+    value: 51298
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "dmx_nsc_packet_count"
+      }
+      field {
+        type: UINT16
+        name: "dmx_asc_packet_count"
+      }
+      field {
+        type: UINT16
+        name: "rdm_asc_packet_count"
+      }
+      field {
+        type: UINT8
+        name: "uart_errors"
+      }
+      field {
+        type: UINT8
+        name: "device_minutes"
+      }
+      field {
+        type: UINT8
+        name: "brownout_count"
+      }
+      field {
+        type: UINT8
+        name: "watchdog_resets"
+      }
+      field {
+        type: UINT8
+        name: "software_resets"
+      }
+      field {
+        type: UINT16
+        name: "dither_adjust"
+      }
+      field {
+        type: UINT8
+        name: "record_sensor_counts"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
+  manufacturer_id: 19041
+  manufacturer_name: "Jands Pty Ltd."
   pid {
     name: "NE_FAULT_DETECT_MODE"
     value: 32896
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DMX_PROTECT_MODE"
+    value: 32898
     get_request {
     }
     get_response {
@@ -1584,48 +1656,38 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
-    name: "DMX_TERM_MODE"
-    value: 32906
+    name: "PREHEAT_LEVEL"
+    value: 32902
     get_request {
     }
     get_response {
       field {
-        type: BOOL
-        name: "enabled"
+        type: UINT8
+        name: "level"
+        label {
+          value: 0
+          label: "Off"
+        }
       }
     }
-    get_sub_device_range: ROOT_DEVICE
+    get_sub_device_range: ROOT_OR_SUBDEVICE
     set_request {
       field {
-        type: BOOL
-        name: "enabled"
+        type: UINT8
+        name: "level"
+        label {
+          value: 0
+          label: "Off"
+        }
+        range {
+          min: 0
+          max: 50
+        }
       }
     }
     set_response {
     }
-    set_sub_device_range: ROOT_DEVICE
-  }
-  pid {
-    name: "DMX_PROTECT_MODE"
-    value: 32898
-    get_request {
-    }
-    get_response {
-      field {
-        type: BOOL
-        name: "enabled"
-      }
-    }
-    get_sub_device_range: ROOT_DEVICE
-    set_request {
-      field {
-        type: BOOL
-        name: "enabled"
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_DEVICE
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
   pid {
     name: "OUTPUT_CAP_VALUE"
@@ -1753,181 +1815,32 @@ manufacturer {
     }
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
+  pid {
+    name: "DMX_TERM_MODE"
+    value: 32906
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
 }
 manufacturer {
   manufacturer_id: 21324
   manufacturer_name: "Soundlight"
-  pid {
-    name: "DC_CALIBRATION"
-    value: 56522
-    get_request {
-    }
-    get_response {
-      field {
-        type: UINT8
-        name: "scale_value"
-      }
-    }
-    get_sub_device_range: ROOT_OR_SUBDEVICE
-    set_request {
-      field {
-        type: UINT8
-        name: "scale_value"
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
-  }
-  pid {
-    name: "DC_FADER_OFFSET"
-    value: 56335
-    set_request {
-      field {
-        type: GROUP
-        name: "offsets"
-        field {
-          type: UINT8
-          name: "offset_value"
-        }
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
-  }
-  pid {
-    name: "CURVE_DEFINITION"
-    value: 56525
-    get_request {
-    }
-    get_response {
-      field {
-        type: UINT8
-        name: "curve_number"
-      }
-      field {
-        type: UINT8
-        name: "total_curves"
-      }
-      field {
-        type: UINT8
-        name: "segment_count"
-      }
-      field {
-        type: UINT8
-        name: "interpolation_method"
-        label {
-          value: 0
-          label: "Step"
-        }
-        label {
-          value: 1
-          label: "Linear"
-        }
-        label {
-          value: 2
-          label: "Square"
-        }
-        label {
-          value: 3
-          label: "Cubic"
-        }
-      }
-      field {
-        type: UINT8
-        name: "start_value"
-      }
-      field {
-        type: GROUP
-        name: "curve_values"
-        field {
-          type: UINT8
-          name: "value"
-        }
-      }
-    }
-    get_sub_device_range: ROOT_OR_SUBDEVICE
-    set_request {
-      field {
-        type: UINT8
-        name: "curve_number"
-      }
-      field {
-        type: UINT8
-        name: "total_curves"
-      }
-      field {
-        type: UINT8
-        name: "segment_count"
-      }
-      field {
-        type: UINT8
-        name: "interpolation_method"
-        label {
-          value: 0
-          label: "Step"
-        }
-        label {
-          value: 1
-          label: "Linear"
-        }
-        label {
-          value: 2
-          label: "Square"
-        }
-        label {
-          value: 3
-          label: "Cubic"
-        }
-      }
-      field {
-        type: UINT8
-        name: "start_value"
-      }
-      field {
-        type: GROUP
-        name: "curve_values"
-        field {
-          type: UINT8
-          name: "value"
-        }
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
-  }
-  pid {
-    name: "DC_OFFSET"
-    value: 56334
-    get_request {
-    }
-    get_response {
-      field {
-        type: GROUP
-        name: "dc_offsets"
-        field {
-          type: UINT8
-          name: "offset_value"
-        }
-      }
-    }
-    get_sub_device_range: ROOT_OR_SUBDEVICE
-    set_request {
-      field {
-        type: GROUP
-        name: "dc_offsets"
-        field {
-          type: UINT8
-          name: "offset_value"
-        }
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
-  }
   pid {
     name: "DMX_HOLD_MODE"
     value: 33009
@@ -2066,5 +1979,176 @@ manufacturer {
     }
     set_sub_device_range: ROOT_OR_SUBDEVICE
   }
+  pid {
+    name: "DC_CALIBRATION"
+    value: 56522
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "scale_value"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "scale_value"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DC_OFFSET"
+    value: 56334
+    get_request {
+    }
+    get_response {
+      field {
+        type: GROUP
+        name: "dc_offsets"
+        field {
+          type: UINT8
+          name: "offset_value"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: GROUP
+        name: "dc_offsets"
+        field {
+          type: UINT8
+          name: "offset_value"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DC_FADER_OFFSET"
+    value: 56335
+    set_request {
+      field {
+        type: GROUP
+        name: "offsets"
+        field {
+          type: UINT8
+          name: "offset_value"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CURVE_DEFINITION"
+    value: 56525
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "curve_number"
+      }
+      field {
+        type: UINT8
+        name: "total_curves"
+      }
+      field {
+        type: UINT8
+        name: "segment_count"
+      }
+      field {
+        type: UINT8
+        name: "interpolation_method"
+        label {
+          value: 0
+          label: "Step"
+        }
+        label {
+          value: 1
+          label: "Linear"
+        }
+        label {
+          value: 2
+          label: "Square"
+        }
+        label {
+          value: 3
+          label: "Cubic"
+        }
+      }
+      field {
+        type: UINT8
+        name: "start_value"
+      }
+      field {
+        type: GROUP
+        name: "curve_values"
+        field {
+          type: UINT8
+          name: "value"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "curve_number"
+      }
+      field {
+        type: UINT8
+        name: "total_curves"
+      }
+      field {
+        type: UINT8
+        name: "segment_count"
+      }
+      field {
+        type: UINT8
+        name: "interpolation_method"
+        label {
+          value: 0
+          label: "Step"
+        }
+        label {
+          value: 1
+          label: "Linear"
+        }
+        label {
+          value: 2
+          label: "Square"
+        }
+        label {
+          value: 3
+          label: "Cubic"
+        }
+      }
+      field {
+        type: UINT8
+        name: "start_value"
+      }
+      field {
+        type: GROUP
+        name: "curve_values"
+        field {
+          type: UINT8
+          name: "value"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
 }
-version: 1295145062
+version: 1295496699
