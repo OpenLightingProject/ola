@@ -307,7 +307,7 @@ def main():
     elif o in ('-u', '--universe'):
       universe = int(a)
 
-  if not universe:
+  if not universe and not list_pids:
     Usage()
     sys.exit()
 
