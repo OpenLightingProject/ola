@@ -459,7 +459,7 @@ class ResponderTest(object):
     # handle the case of an ack timer
     if (status.response_code == OlaClient.RDM_COMPLETED_OK and
         status.response_type == OlaClient.RDM_ACK_TIMER):
-      self._logger.error('Got ACK TIMER set to %d ms' % status.ack_timer)
+      self._logger.info('Got ACK TIMER set to %d ms' % status.ack_timer)
       # mark as failed, if we get a message that matches we'll set it to PASSED
       self.SetFailed('Queued Messages failed to return the expected message')
       self._wrapper.AddEvent(
