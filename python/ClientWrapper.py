@@ -31,7 +31,6 @@ class Event(object):
   def __init__(self, time_ms, callback):
     self._run_at = (datetime.datetime.now() +
                     datetime.timedelta(milliseconds = time_ms))
-    print self._run_at
     self._callback = callback
 
   def __cmp__(self, other):
@@ -42,7 +41,6 @@ class Event(object):
     time_delta = self._run_at - now
     seconds =  time_delta.seconds + time_delta.days * 24 * 3600
     seconds += time_delta.microseconds / 10.0**6
-    print "time left %f" % seconds
     return seconds
 
   def HasExpired(self, now):

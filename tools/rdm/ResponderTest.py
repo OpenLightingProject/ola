@@ -467,7 +467,7 @@ class ResponderTest(object):
   def _GetQueuedMessage(self, sub_device):
     """Fetch queued messages."""
     print 'queued message fetch'
-    pid = self.LookupPid('queued_message'),
+    pid = self.LookupPid('QUEUED_MESSAGE')
     data = ['error']
     self._logger.debug(' GET: pid = %s, sub device = %d, data = %s' %
         (pid, sub_device, data))
