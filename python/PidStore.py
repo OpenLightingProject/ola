@@ -215,11 +215,13 @@ class Bool(FixedSizeAtom):
 
   def Pack(self, args):
     self.CheckForSingleArg(args)
-
-    arg = args[0].lower()
-    if arg not in self.BOOL_MAP:
-      raise ArgsValidationError('Argument should be true or false')
-    return super(Bool, self).Pack([self.BOOL_MAP[arg]])
+    arg = args[0]
+    if isinstance(arg, str):
+      arg = args[0].lower()
+      if arg not in self.BOOL_MAP:
+        raise ArgsValidationError('Argument should be true or false')
+      arg = self.BOOL_MAP[arg]
+    return super(Bool, self).Pack([arg])
 
   def Unpack(self, value):
     return bool(super(Bool, self).Unpack(value))
