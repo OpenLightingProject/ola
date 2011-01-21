@@ -140,6 +140,10 @@ class Pid(object):
     output = group.Unpack(data)[0]
     return output
 
+  def GetRequestDescription(self, command_class):
+    group = self._requests.get(command_class)
+    return group.GetDescription()
+
 
 # The following classes are used to describe RDM messages
 class Atom(object):
@@ -160,6 +164,9 @@ class Atom(object):
 
   def __repr__(self):
     return '%s, %s' % (self.__class__, self._name)
+
+  def GetDescription(self, indent=0):
+    return str(self)
 
 
 class FixedSizeAtom(Atom):
@@ -216,6 +223,10 @@ class Bool(FixedSizeAtom):
 
   def Unpack(self, value):
     return bool(super(Bool, self).Unpack(value))
+
+  def GetDescription(self, indent=0):
+    indent = ' ' * indent
+    return '%s%s: <true|false>' % (indent, self.name)
 
 
 class Range(object):
@@ -286,6 +297,18 @@ class IntAtom(FixedSizeAtom):
                                   (value, ', '.join(allowed_values)))
 
     return super(IntAtom, self).Pack([value])
+
+  def GetDescription(self, indent=0):
+    indent = ' ' * indent
+    values = self._labels.keys()
+
+    for range in self._ranges:
+      if range.min == range.max:
+        values.append(str(range.min))
+      else:
+        values.append('[%d,%d]' % (range.min, range.max))
+
+    return ('%s%s: <%s>' % (indent, self.name, '|'.join(values)))
 
 
 class UInt8(IntAtom):
@@ -364,6 +387,11 @@ class String(Atom):
       raise UnpackException(e)
 
     return value[0].rstrip('\x00')
+
+  def GetDescription(self, indent=0):
+    indent = ' ' * indent
+    return ('%s%s: <string, [%d, %d] bytes>' %
+        (indent, self.name, self.min, self.max))
 
   def __str__(self):
     return 'String(%s, min=%s, max=%s)' % (self.name, self.min, self.max)
@@ -564,6 +592,17 @@ class Group(Atom):
         groups.append(group)
         offset += self._group_size
       return groups
+
+  def GetDescription(self, indent=0):
+    names = []
+    output = []
+
+    for atom in self._atoms:
+      names.append('<%s>' % atom.name)
+      output.append(atom.GetDescription(indent=2))
+
+    return ' '.join(names), '\n'.join(output)
+
 
   def _UnpackFixedLength(self, atoms, data):
     """Unpack a list of atoms of a known, fixed size.

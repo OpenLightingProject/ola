@@ -192,10 +192,10 @@ class InteractiveModeController(cmd.Cmd):
       return
 
     args = l.split()
+    command = 'get'
+    if request_type == PidStore.RDM_SET:
+      command = 'set'
     if len(args) < 1:
-      command = 'get'
-      if request_type == PidStore.RDM_SET:
-        command = 'set'
       print '%s <pid> [args]' % command
       return
 
@@ -230,7 +230,11 @@ class InteractiveModeController(cmd.Cmd):
         self.wrapper.Run()
     except PidStore.ArgsValidationError, e:
       # TODO(simon): print the format here
-      print e
+      args, help_string = pid.GetRequestDescription(request_type)
+      print 'Usage: %s %s %s' % (command, pid.name.lower(), args)
+      print help_string
+      print ''
+      print '*** %s' % e
       return
 
   def _DisplayUids(self, state, uids):
