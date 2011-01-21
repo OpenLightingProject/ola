@@ -65,7 +65,7 @@ class GetDeviceInfo(ResponderTest, DeviceInfoTest):
       personality_count = fields['personality_count']
       current_personality = fields['current_personality']
       if personality_count == 0:
-        self.AddWarning('DMX Footprint non 0, but no personalities listed')
+        self.AddAdvisory('DMX Footprint non 0, but no personalities listed')
       if current_personality == 0:
         self.AddWarning('Current personality should be >= 1, was %d' %
             current_personality)
@@ -120,6 +120,14 @@ class GetSupportedParameters(ResponderTest):
   CATEGORY = TestCategory.CORE
   PID = 'SUPPORTED_PARAMETERS'
 
+  # declaring support for any of these is a warning:
+  MANDATORY_PIDS = ['SUPPORTED_PARAMETERS',
+                    'PARAMETER_DESCRIPTION',
+                    'DEVICE_INFO',
+                    'SOFTWARE_VERSION_LABEL',
+                    'DMX_START_ADDRESS',
+                    'IDENTIFY_DEVICE']
+
   def Test(self):
     self._pid_supported = False
     self.supported_parameters = []
@@ -134,16 +142,25 @@ class GetSupportedParameters(ResponderTest):
     if not status.WasSuccessfull():
       return
 
+    mandatory_pids = {}
+    for p in self.MANDATORY_PIDS:
+      pid = self.LookupPid(p)
+      mandatory_pids[pid.value] = pid
+
     self._pid_supported = True
     for item in fields['params']:
-      self.supported_parameters.append(item['param_id'])
+      param_id = item['param_id']
+      self.supported_parameters.append(param_id)
+      if param_id in mandatory_pids:
+        self.AddAdvisory('%s listed in supported parameters' %
+                         mandatory_pids[param_id].name)
 
     pid_store = PidStore.GetStore()
     langugage_capability_pid = self.LookupPid('LANGUAGE_CAPABILITIES')
     language_pid = self.LookupPid('LANGUAGE')
     if (self.SupportsPid(langugage_capability_pid) and not
         self.SupportsPid(language_pid)):
-      self.AddWarning('language_capabilities supported but language is not')
+      self.AddAdvisory('language_capabilities supported but language is not')
 
   @property
   def supported(self):
@@ -458,7 +475,7 @@ class GetLanguageCapabilities(IsSupportedMixin, ResponderTest):
     language_set = set()
     for language in self.languages:
       if language in language_set:
-        self.AddWarning('%s listed twice in language capabilities' % language)
+        self.AddAdvisory('%s listed twice in language capabilities' % language)
       language_set.add(language)
 
 

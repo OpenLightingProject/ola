@@ -222,6 +222,7 @@ class ResponderTest(object):
     self.pid = self.LookupPid(self.PID)
     self._deps = {}
     self._warnings = []
+    self._advisories = []
     self._logger = logger
     self._should_run_wrapper = True
 
@@ -249,6 +250,8 @@ class ResponderTest(object):
     return self.CATEGORY
 
   # Warnings are logged independently of errors.
+  # They should be used to indicate deviations from the standard that will not
+  # cause interoperability issues
   @property
   def warnings(self):
     """Non-fatal warnings."""
@@ -257,6 +260,18 @@ class ResponderTest(object):
   def AddWarning(self, message):
     self._logger.debug('Warning: %s' % message)
     self._warnings.append(message)
+
+  # Advisories are logged independently of errors. They should be used to
+  # indicate conditions that while aren't covered by the standard, should still
+  # be fixed.
+  @property
+  def advisories(self):
+    """Non-fatal advisories message."""
+    return self._advisories
+
+  def AddAdvisory(self, message):
+    self._logger.debug('Advisory: %s' % message)
+    self._advisories.append(message)
 
   @property
   def state(self):

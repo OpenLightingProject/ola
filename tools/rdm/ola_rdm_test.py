@@ -103,11 +103,13 @@ def DisplaySummary(test_runner):
   """Print a summary of the tests."""
   by_category = {}
   warnings = []
+  advisories = []
   count_by_state = {}
   for test in test_runner.all_tests:
     state = test.state
     count_by_state[state] = count_by_state.get(state, 0) + 1
     warnings.extend(test.warnings)
+    advisories.extend(test.advisories)
 
     by_category.setdefault(test.category, {})
     by_category[test.category][state] = (1 +
@@ -118,6 +120,10 @@ def DisplaySummary(test_runner):
   logging.info('------------- Warnings --------------')
   for warning in warnings:
     logging.info(warning)
+
+  logging.info('------------ Advisories -------------')
+  for advisory in advisories:
+    logging.info(advisory)
 
   logging.info('------------ By Category ------------')
 
