@@ -117,15 +117,15 @@ def DisplaySummary(test_runner):
 
   total = sum(count_by_state.values())
 
-  logging.info('------------- Warnings --------------')
+  logging.info('-------------- Warnings ---------------')
   for warning in warnings:
     logging.info(warning)
 
-  logging.info('------------ Advisories -------------')
+  logging.info('------------- Advisories --------------')
   for advisory in advisories:
     logging.info(advisory)
 
-  logging.info('------------ By Category ------------')
+  logging.info('------------- By Category -------------')
 
   for category, counts in by_category.iteritems():
     passed = counts.get(TestState.PASSED, 0)
@@ -133,10 +133,10 @@ def DisplaySummary(test_runner):
     if total_run == 0:
       continue
     percent = 1.0 * passed / total_run
-    logging.info(' %20s: %2d / %2d   %.0f%%' %
+    logging.info(' %22s: %2d / %2d   %.0f%%' %
                  (category, passed, total_run, percent * 100))
 
-  logging.info('-------------------------------------')
+  logging.info('---------------------------------------')
   logging.info('%d / %d tests run, %d passed, %d failed, %d broken' % (
       total - count_by_state.get(TestState.NOT_RUN, 0),
       total,

@@ -40,6 +40,7 @@ def GetUnsupportedNacks(pid):
 
 
 # Generic Get / Set Mixins
+# These don't care about the format of the message.
 #------------------------------------------------------------------------------
 class UnsupportedGetMixin(object):
   """Check that Get fails with NR_UNSUPPORTED_COMMAND_CLASS."""
@@ -169,3 +170,103 @@ class SetOversizedLabelMixin(object):
       if fields['label'] != self.LONG_STRING[0:MAX_LABEL_SIZE]:
         self.AddWarning('Oversized %s returned %s' % (
           self.PID, fields['label']))
+
+# Generic Bool Mixins
+# These all work in conjunction with the IsSupportedMixin
+#------------------------------------------------------------------------------
+class GetBoolMixin(object):
+  """Get a pid and expect a bool (8 bit field) as the result."""
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.AckResponse(self.pid.value, [self.EXPECTED_FIELD]))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class SetBoolMixin(object):
+  """Attempt to SET a bool field."""
+  VALUE = True
+
+  def NewValue(self):
+    """Decide the new value to set based on the old one.
+      This ensures we change it.
+    """
+    value = self.OldValue()
+    if value is not None:
+      return not value
+    return self.VALUE
+
+  def Test(self):
+    self.AddIfSupported(
+        ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        field_values={self.EXPECTED_FIELD: self.NewValue()},
+        action=self.VerifyDeviceInfo))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  #TODO(simon): add a back out method here
+
+
+class SetBoolNoDataMixin(object):
+  """Set a bool field with no data."""
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+
+  # TODO(simon): add a method to check this didn't change the value
+
+
+# Generic UInt32 Mixins
+# These all work in conjunction with the IsSupportedMixin
+#------------------------------------------------------------------------------
+class GetUInt32Mixin(object):
+  """Get a pid and expect a uint32 as the result."""
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.AckResponse(self.pid.value, [self.EXPECTED_FIELD]))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class SetUInt32Mixin(object):
+  """Attempt to SET a uint32 field."""
+  VALUE = 100
+
+  def NewValue(self):
+    """Decide the new value to set based on the old one.
+      This ensures we change it.
+    """
+    value = self.OldValue()
+    if value is not None:
+      return (value + 1) % 0xffffffff
+    return self.VALUE
+
+  def Test(self):
+    self.AddIfSupported(
+        ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        field_values={self.EXPECTED_FIELD: self.NewValue()},
+        action=self.VerifyDeviceInfo))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  #TODO(simon): add a back out method here
+
+
+class SetUInt32NoDataMixin(object):
+  """Set a uint32 field with no data."""
+
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+
+  # TODO(simon): add a method to check this didn't change the value
