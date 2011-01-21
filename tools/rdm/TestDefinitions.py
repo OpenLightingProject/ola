@@ -88,8 +88,11 @@ class GetDeviceInfoWithData(ResponderTest, DeviceInfoTest):
   def Test(self):
     self.AddExpectedResults([
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
-      ExpectedResult.AckResponse(self.pid.value, self.FIELDS,
-                                 self.FIELD_VALUES)
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        self.FIELDS,
+        self.FIELD_VALUES,
+        advisory='Device Info with data shouldn\'t return an ACK')
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
@@ -131,6 +134,7 @@ class GetSupportedParameters(ResponderTest):
   def Test(self):
     self._pid_supported = False
     self.supported_parameters = []
+    self.manufacturer_parameters = []
 
     self.AddExpectedResults([
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
@@ -151,6 +155,8 @@ class GetSupportedParameters(ResponderTest):
     for item in fields['params']:
       param_id = item['param_id']
       self.supported_parameters.append(param_id)
+      if param_id >= 0x8000 and param_id < 0xffe0:
+        self.manufacturer_parameters.append(param_id)
       if param_id in mandatory_pids:
         self.AddAdvisory('%s listed in supported parameters' %
                          mandatory_pids[param_id].name)
@@ -168,6 +174,21 @@ class GetSupportedParameters(ResponderTest):
 
   def SupportsPid(self, pid):
     return pid.value in self.supported_parameters
+
+
+class GetSupportedParametersWithData(ResponderTest):
+  """GET supported parameters with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SUPPORTED_PARAMETERS'
+
+  def Test(self):
+    self.AddExpectedResults([
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        advisory='Supported parameters with data shouldn\'t return an ACK')
+    ])
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetSupportedParameters(ResponderTest):
@@ -200,7 +221,6 @@ class FindSubDevices(ResponderTest):
   """Locate the sub devices by sending DeviceInfo messages."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_INFO'
-
   DEPS = [GetDeviceInfo]
 
   def PreCondition(self):
@@ -210,8 +230,6 @@ class FindSubDevices(ResponderTest):
     return True
 
   def Test(self):
-    # TODO(simon): There seems to be an issue with the RDM_TRI and sub devices
-    # > 255. Investigate this.
     self._CheckForSubDevice()
 
   def _CheckForSubDevice(self):
@@ -252,8 +270,7 @@ class GetParamDescription(ResponderTest):
   DEPS = [GetSupportedParameters]
 
   def PreCondition(self):
-    params = self.Deps(GetSupportedParameters).supported_parameters
-    self.params = [p for p in params if p >= 0x8000 and p < 0xffe0]
+    self.params = self.Deps(GetSupportedParameters).manufacturer_parameters[:]
     return len(self.params) > 0
 
   def Test(self):
@@ -265,16 +282,62 @@ class GetParamDescription(ResponderTest):
       return
 
     self.AddExpectedResults(
-      ExpectedResult.AckResponse(self.pid.value,
-                                 action=self._GetParam)
-    )
-    param = self.params.pop()
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [param])
+      ExpectedResult.AckResponse(self.pid.value, action=self._GetParam))
+    self.current_param = self.params.pop()
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.current_param])
 
   def VerifyResult(self, status, fields):
     #TODO(simon): Hook into this to add new PIDs to the store
+    if not status.WasSuccessfull():
+      return
+
+    if self.current_param != fields['pid']:
+      self.SetFailed('Request for pid 0x%hx returned pid 0x%hx' %
+                     (self.current_param, fields['pid']))
+
+    if fields['type'] != 0:
+      self.AddWarning('type field in parameter description is not 0, was %d' %
+                      fields['type'])
+
+    if fields['command_class'] > 3:
+      self.AddWarning(
+          'command class field in parameter description should be 1, 2 or 3, '
+          'was %d' % fields['command_class'])
     self._logger.debug(fields)
-    pass
+
+
+class GetParamDescriptionForNonManufacturerPid(ResponderTest):
+  """GET parameter description for a non-manufacturer pid."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PARAMETER_DESCRIPTION'
+  DEPS = [GetSupportedParameters]
+
+  def Test(self):
+    device_info_pid = self.LookupPid('DEVICE_INFO')
+    result = ExpectedResult.NackResponse(self.pid.value,
+                                         RDMNack.NR_UNKNOWN_PID)
+    if self.Deps(GetSupportedParameters).manufacturer_parameters:
+      result = ExpectedResult.NackResponse(self.pid.value,
+                                           RDMNack.NR_DATA_OUT_OF_RANGE)
+
+    self.AddExpectedResults(result)
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [device_info_pid.value])
+
+
+class GetParamDescriptionWithData(ResponderTest):
+  """GET parameter description with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PARAMETER_DESCRIPTION'
+  DEPS = [GetSupportedParameters]
+
+  def Test(self):
+    result = ExpectedResult.NackResponse(self.pid.value,
+                                         RDMNack.NR_UNKNOWN_PID)
+    if self.Deps(GetSupportedParameters).manufacturer_parameters:
+      result = ExpectedResult.NackResponse(self.pid.value,
+                                           RDMNack.NR_FORMAT_ERROR)
+    self.AddExpectedResults(result)
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
 # Product Detail Id List
@@ -290,6 +353,21 @@ class GetProductDetailIdList(IsSupportedMixin, ResponderTest):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
+class GetProductDetailIdListWithData(IsSupportedMixin, TestMixins.GetWithData,
+                                     ResponderTest):
+  """GET product detail id list with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRODUCT_DETAIL_ID_LIST'
+
+
+class SetProductDetailIdListWithData(IsSupportedMixin,
+                                     TestMixins.UnsupportedSetMixin,
+                                     ResponderTest):
+  """SET product detail id list with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRODUCT_DETAIL_ID_LIST'
+
+
 # Device Model Description
 #------------------------------------------------------------------------------
 class GetDeviceModelLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
@@ -300,7 +378,7 @@ class GetDeviceModelLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
 
 
 class GetDeviceModelLabelWithData(IsSupportedMixin,
-                                  TestMixins.GetLabelWithDataMixin,
+                                  TestMixins.GetWithData,
                                   ResponderTest):
   """Get device_model label with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -333,7 +411,7 @@ class GetManufacturerLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
 
 
 class GetManufacturerLabelWithData(IsSupportedMixin,
-                                   TestMixins.GetLabelWithDataMixin,
+                                   TestMixins.GetWithData,
                                    ResponderTest):
   """Get manufacturer label with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -366,7 +444,7 @@ class GetDeviceLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
 
 
 class GetDeviceLabelWithData(IsSupportedMixin,
-                             TestMixins.GetLabelWithDataMixin,
+                             TestMixins.GetWithData,
                              ResponderTest):
   """GET the device label with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -419,17 +497,11 @@ class GetFactoryDefaults(IsSupportedMixin, ResponderTest):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class GetFactoryDefaultsWithData(IsSupportedMixin, ResponderTest):
+class GetFactoryDefaultsWithData(IsSupportedMixin, TestMixins.GetWithData,
+                                 ResponderTest):
   """GET the factory defaults pid with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'FACTORY_DEFAULTS'
-
-  def Test(self):
-    self.AddIfSupported([
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
-      ExpectedResult.AckResponse(self.pid.value, ['using_defaults']),
-    ])
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foobar')
 
 
 class ResetFactoryDefaults(IsSupportedMixin, ResponderTest):
@@ -448,6 +520,13 @@ class ResetFactoryDefaults(IsSupportedMixin, ResponderTest):
         self.pid.value,
         field_values={'using_defaults': True}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class ResetFactoryDefaultsWithData(IsSupportedMixin, TestMixins.SetWithData,
+                                   ResponderTest):
+  """Reset to factory defaults with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'FACTORY_DEFAULTS'
 
 
 # Language Capabilities
@@ -470,7 +549,7 @@ class GetLanguageCapabilities(IsSupportedMixin, ResponderTest):
     self.languages = [f['language'] for f in fields['languages']]
 
     if len(self.languages) == 0:
-      self.SetFailed('No languages returned')
+      self.AddWarning('No languages returned for LANGUAGE_CAPABILITIES')
 
     language_set = set()
     for language in self.languages:
@@ -479,17 +558,12 @@ class GetLanguageCapabilities(IsSupportedMixin, ResponderTest):
       language_set.add(language)
 
 
-class GetLanguageCapabilitiesWithData(IsSupportedMixin, ResponderTest):
+class GetLanguageCapabilitiesWithData(IsSupportedMixin,
+                                      TestMixins.GetWithData,
+                                      ResponderTest):
   """GET the language capabilities pid with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LANGUAGE_CAPABILITIES'
-
-  def Test(self):
-    self.AddIfSupported([
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
-      ExpectedResult.AckResponse(self.pid.value, ['languages'])
-    ])
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foobar')
 
 
 # Language
@@ -581,18 +655,14 @@ class GetSoftwareVersionLabel(ResponderTest):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class GetSoftwareVersionLabelWithData(ResponderTest):
+class GetSoftwareVersionLabelWithData(TestMixins.GetWithData, ResponderTest):
   """GET the software_version_label with param data."""
   # We don't use the GetLabelMixin here because this PID is mandatory
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SOFTWARE_VERSION_LABEL'
 
-  def Test(self):
-    self.AddExpectedResults([
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
-      ExpectedResult.AckResponse(self.pid.value, ['label'])
-    ])
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foobarbaz')
+  def AddIfSupported(self, results):
+    self.AddExpectedResults(results)
 
 
 class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin, ResponderTest):
@@ -618,6 +688,20 @@ class GetBootSoftwareVersion(IsSupportedMixin,
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
+class GetBootSoftwareVersionWithData(IsSupportedMixin,
+                                     TestMixins.GetWithData,
+                                     ResponderTest):
+  """GET the boot software version with extra data."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'BOOT_SOFTWARE_VERSION'
+
+
+class SetBootSoftwareVersion(TestMixins.UnsupportedSetMixin, ResponderTest):
+  """Attempt to SET the boot software version."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'BOOT_SOFTWARE_VERSION'
+
+
 # Boot Software Version Label
 #------------------------------------------------------------------------------
 class GetBootSoftwareLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
@@ -628,9 +712,16 @@ class GetBootSoftwareLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
 
 
 class GetBootSoftwareLabelWithData(IsSupportedMixin,
-                                   TestMixins.GetLabelWithDataMixin,
+                                   TestMixins.GetWithData,
                                    ResponderTest):
   """GET the boot software label with param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'BOOT_SOFTWARE_LABEL'
+
+class SetBootSoftwareLabel(IsSupportedMixin,
+                           TestMixins.UnsupportedSetMixin,
+                           ResponderTest):
+  """SET the boot software label."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BOOT_SOFTWARE_LABEL'
 

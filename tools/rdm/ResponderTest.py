@@ -33,9 +33,12 @@ class ExpectedResult(object):
     response_code: The OLA RDM response code we expect
     response_type: The RDM response type we expect
     nack_reason: The nack reason we expect if response_type is NACK
-    action: Run this action on match
     field_names: Check that these fields are present in the response
     field_dict: Check that fields & values are present in the response
+    action: Run this action on match
+    warning_message: Generates a warning message if this matches
+    advisory_message: Generates an advisory messaeg if this matches
+
   """
   def __init__(self,
                pid,
@@ -44,7 +47,9 @@ class ExpectedResult(object):
                nack_reason = None,
                field_names = None,
                field_values = None,
-               action = None):
+               action = None,
+               warning = None,
+               advisory = None):
     self._pid = pid
     self._response_code = response_code
     self._response_type = response_type
@@ -52,10 +57,20 @@ class ExpectedResult(object):
     self._field_names = field_names
     self._field_values = field_values
     self._action = action
+    self._warning_messae = warning
+    self._advisory_message = advisory
 
   @property
   def action(self):
     return self._action
+
+  @property
+  def warning(self):
+    return self._warning_messae
+
+  @property
+  def advisory(self):
+    return self._advisory_message
 
   def __str__(self):
     """Represent this object as a string for logging."""
@@ -122,26 +137,39 @@ class ExpectedResult(object):
 
   # Helper methods to create expected responses
   @staticmethod
-  def NackResponse(pid, nack_reason, action = None):
+  def NackResponse(pid,
+                   nack_reason,
+                   action = None,
+                   warning = None,
+                   advisory = None):
     nack = RDMNack(nack_reason)
     return ExpectedResult(pid,
                           OlaClient.RDM_COMPLETED_OK,
                           OlaClient.RDM_NACK_REASON,
                           nack_reason = nack,
-                          action = action)
+                          action = action,
+                          warning = warning,
+                          advisory = advisory)
 
   @staticmethod
   def BroadcastResponse(pid, nack_reason):
     return ExpectedResult(pid, OlaClient.RDM_WAS_BROADCAST)
 
   @staticmethod
-  def AckResponse(pid, field_names = [], field_values = {}, action = None):
+  def AckResponse(pid,
+                  field_names = [],
+                  field_values = {},
+                  action = None,
+                  warning = None,
+                  advisory = None):
     return ExpectedResult(pid,
                           OlaClient.RDM_COMPLETED_OK,
                           OlaClient.RDM_ACK,
                           field_names = field_names,
                           field_values = field_values,
-                          action = action)
+                          action = action,
+                          warning = warning,
+                          advisory = advisory)
 
 
 class TestCategory(object):
@@ -436,6 +464,10 @@ class ResponderTest(object):
         self._status = status
         self._fields = fields
         self.VerifyResult(status, fields)
+        if result.warning is not None:
+          self.AddWarning(result.warning)
+        if result.advisory is not None:
+          self.AddAdvisory(result.advisory)
         if result.action is not None:
           result.action()
         else:

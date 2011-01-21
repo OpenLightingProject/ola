@@ -59,6 +59,34 @@ class UnsupportedSetMixin(object):
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
+class GetWithData(ResponderTest):
+  """GET a PID with random param data."""
+  DATA = 'foobarbaz'
+
+  def Test(self):
+    self.AddIfSupported([
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        warning='Get %s with data shouldn\'t return an ack' % self.pid.name)
+    ])
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+
+
+class SetWithData(ResponderTest):
+  """SET a PID with random param data."""
+  DATA = 'foobarbaz'
+
+  def Test(self):
+    self.AddIfSupported([
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        warning='Set %s with data shouldn\'t return an ack' % self.pid.name)
+    ])
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+
+
 # Generic Label Mixins
 # These all work in conjunction with the IsSupportedMixin
 #------------------------------------------------------------------------------
@@ -69,18 +97,6 @@ class GetLabelMixin(object):
       ExpectedResult.AckResponse(self.pid.value, ['label'])
     ])
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-
-class GetLabelWithDataMixin(object):
-  """Fetch a PID with some random data."""
-  DATA = 'foobarbaz'
-
-  def Test(self):
-    self.AddIfSupported([
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
-      ExpectedResult.AckResponse(self.pid.value, ['label'])
-    ])
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
 class SetLabelMixin(object):
