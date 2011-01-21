@@ -881,23 +881,17 @@ class SetStartAddress(ResponderTest):
     self.AddExpectedResults(
       ExpectedResult.AckResponse(
         self.pid.value,
-        field_values={'dmx_address': self.start_address}))
+        field_values={'dmx_address': self.start_address},
+        action=self.VerifyDeviceInfo))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
-
-class DeviceInfoCheckStartAddress(ResponderTest):
-  """Confirm device info is updated after the dmx address is set."""
-  CATEGORY = TestCategory.DMX_SETUP
-  PID = 'DEVICE_INFO'
-  DEPS = [SetStartAddress]
-
-  def Test(self):
-    start_address =  self.Deps(SetStartAddress).start_address
+  def VerifyDeviceInfo(self):
+    device_info_pid = self.LookupPid('DEVICE_INFO')
     self.AddExpectedResults(
       ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values = {'start_address': start_address}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+        device_info_pid.value,
+        field_values = {'start_address': self.start_address}))
+    self.SendGet(PidStore.ROOT_DEVICE, device_info_pid)
 
 
 class SetOutOfRangeStartAddress(ResponderTest):
