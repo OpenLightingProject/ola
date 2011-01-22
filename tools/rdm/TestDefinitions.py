@@ -314,13 +314,20 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTest):
 
   def Test(self):
     device_info_pid = self.LookupPid('DEVICE_INFO')
-    result = ExpectedResult.NackResponse(self.pid.value,
-                                         RDMNack.NR_UNKNOWN_PID)
+    results = [
+        ExpectedResult.NackResponse(self.pid.value,
+                                    RDMNack.NR_UNKNOWN_PID),
+        ExpectedResult.NackResponse(
+            self.pid.value,
+            RDMNack.NR_DATA_OUT_OF_RANGE,
+            advisory='Parameter Description appears to be supposed but no'
+                     'manufacturer pids are defined'),
+    ]
     if self.Deps(GetSupportedParameters).manufacturer_parameters:
-      result = ExpectedResult.NackResponse(self.pid.value,
-                                           RDMNack.NR_DATA_OUT_OF_RANGE)
+      results = ExpectedResult.NackResponse(self.pid.value,
+                                            RDMNack.NR_DATA_OUT_OF_RANGE)
 
-    self.AddExpectedResults(result)
+    self.AddExpectedResults(results)
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
@@ -331,12 +338,19 @@ class GetParamDescriptionWithData(ResponderTest):
   DEPS = [GetSupportedParameters]
 
   def Test(self):
-    result = ExpectedResult.NackResponse(self.pid.value,
-                                         RDMNack.NR_UNKNOWN_PID)
+    results = [
+        ExpectedResult.NackResponse(self.pid.value,
+                                    RDMNack.NR_UNKNOWN_PID),
+        ExpectedResult.NackResponse(
+            self.pid.value,
+            RDMNack.NR_FORMAT_ERROR,
+            advisory='Parameter Description appears to be supposed but no'
+                     'manufacturer pids are defined'),
+    ]
     if self.Deps(GetSupportedParameters).manufacturer_parameters:
-      result = ExpectedResult.NackResponse(self.pid.value,
-                                           RDMNack.NR_FORMAT_ERROR)
-    self.AddExpectedResults(result)
+      results = ExpectedResult.NackResponse(self.pid.value,
+                                            RDMNack.NR_FORMAT_ERROR)
+    self.AddExpectedResults(results)
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
