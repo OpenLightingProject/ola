@@ -204,8 +204,7 @@ class SetBoolMixin(object):
     self.AddExpectedResults(
       ExpectedResult.AckResponse(
         self.pid.value,
-        field_values={self.EXPECTED_FIELD: self.NewValue()},
-        action=self.VerifyDeviceInfo))
+        field_values={self.EXPECTED_FIELD: self.NewValue()}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   #TODO(simon): add a back out method here
@@ -254,8 +253,7 @@ class SetUInt32Mixin(object):
     self.AddExpectedResults(
       ExpectedResult.AckResponse(
         self.pid.value,
-        field_values={self.EXPECTED_FIELD: self.NewValue()},
-        action=self.VerifyDeviceInfo))
+        field_values={self.EXPECTED_FIELD: self.NewValue()}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   #TODO(simon): add a back out method here

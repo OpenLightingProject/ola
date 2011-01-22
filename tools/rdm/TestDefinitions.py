@@ -953,11 +953,15 @@ class GetStartAddress(ResponderTest):
 
   def Test(self):
     if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
-      result = ExpectedResult.AckResponse(self.pid.value, ['dmx_address'])
+      results = ExpectedResult.AckResponse(self.pid.value, ['dmx_address'])
     else:
-      result = ExpectedResult.AckResponse(self.pid.value,
-                                          field_values={'dmx_address': 0xffff})
-    self.AddExpectedResults(result)
+      results = [
+          ExpectedResult.AckResponse(self.pid.value,
+                                     field_values={'dmx_address': 0xffff}),
+          ExpectedResult.NackResponse(self.pid.value,
+                                      RDMNack.NR_UNKNOWN_PID)
+      ]
+    self.AddExpectedResults(results)
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -1006,12 +1010,17 @@ class SetOutOfRangeStartAddress(ResponderTest):
   """Check that the DMX address can't be set to > 512."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  DEPS = [SetStartAddress]
+  DEPS = [SetStartAddress, GetDeviceInfo]
 
   def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
+      self.AddExpectedResults(
+        ExpectedResult.NackResponse(self.pid.value,
+                                    RDMNack.NR_DATA_OUT_OF_RANGE))
+    else:
+      self.AddExpectedResults(
+        ExpectedResult.NackResponse(self.pid.value,
+                                    RDMNack.NR_UNKNOWN_PID))
     data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, data)
 
@@ -1020,12 +1029,17 @@ class SetZeroStartAddress(ResponderTest):
   """Check the DMX address can't be set to 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  DEPS = [SetStartAddress]
+  DEPS = [GetDeviceInfo, SetStartAddress]
 
   def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
+      self.AddExpectedResults(
+        ExpectedResult.NackResponse(self.pid.value,
+                                    RDMNack.NR_DATA_OUT_OF_RANGE))
+    else:
+      self.AddExpectedResults(
+        ExpectedResult.NackResponse(self.pid.value,
+                                    RDMNack.NR_UNKNOWN_PID))
     data = struct.pack('!H', 0)
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, data)
 
@@ -1034,11 +1048,17 @@ class SetOversizedStartAddress(ResponderTest):
   """Send an over-sized SET dmx start address."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  DEPS = [SetStartAddress]
+  DEPS = [SetStartAddress, GetDeviceInfo]
 
   def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
+      self.AddExpectedResults(
+        ExpectedResult.NackResponse(self.pid.value,
+                                    RDMNack.NR_DATA_OUT_OF_RANGE))
+    else:
+      self.AddExpectedResults(
+        ExpectedResult.NackResponse(self.pid.value,
+                                    RDMNack.NR_UNKNOWN_PID))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
