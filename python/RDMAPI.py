@@ -191,8 +191,8 @@ class RDMAPI(object):
     """
     obj = None
     unpack_exception = None
-    pid_descriptor = self._pid_store.GetPid(pid, uid.manufacturer_id)
     if status.WasSuccessfull():
+      pid_descriptor = self._pid_store.GetPid(pid, uid.manufacturer_id)
       if pid_descriptor:
         try:
           obj = pid_descriptor.Unpack(data, request_type)

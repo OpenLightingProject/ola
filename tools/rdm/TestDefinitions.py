@@ -1068,7 +1068,7 @@ class SetOversizedStartAddress(ResponderTest):
     if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
       self.AddExpectedResults(
         ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_DATA_OUT_OF_RANGE))
+                                    RDMNack.NR_FORMAT_ERROR))
     else:
       self.AddExpectedResults(
         ExpectedResult.NackResponse(self.pid.value,
