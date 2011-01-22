@@ -404,7 +404,8 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
 
     // check command class
     if (request->CommandClass() == GET_COMMAND &&
-        command_class != GET_COMMAND_RESPONSE) {
+        command_class != GET_COMMAND_RESPONSE &&
+        request->ParamId() != PID_QUEUED_MESSAGE) {
       OLA_WARN << "Expected GET_COMMAND_RESPONSE, got 0x" << std::hex <<
         command_class;
       *response_code = RDM_COMMAND_CLASS_MISMATCH;
