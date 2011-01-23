@@ -137,6 +137,8 @@ class Pid(object):
   def Unpack(self, data, command_class):
     """Unpack a message."""
     group = self._responses.get(command_class)
+    if group is None:
+      raise UnpackException('Response contained data: %s' % data)
     output = group.Unpack(data)[0]
     return output
 
