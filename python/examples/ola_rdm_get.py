@@ -261,6 +261,9 @@ class InteractiveModeController(cmd.Cmd):
       for key, value in response_data.iteritems():
         print '%s: %s' % (key, value)
 
+      if status.queued_messages:
+        print '%d queued messages remain' % status.queued_messages
+
   def _CheckStatus(self, status, unpack_exception):
     if status.Succeeded():
       if status.response_code != OlaClient.RDM_COMPLETED_OK:
