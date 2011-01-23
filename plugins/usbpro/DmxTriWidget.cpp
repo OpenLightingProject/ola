@@ -626,8 +626,8 @@ void DmxTriWidgetImpl::HandleRemoteUIDResponse(uint8_t return_code,
 void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
                                             const uint8_t *data,
                                             unsigned int length) {
-  OLA_INFO << "got raw RDM response with code: " <<
-    static_cast<int>(return_code) << ", length: " << length;
+  OLA_INFO << "got raw RDM response with code: " << std::hex <<
+    static_cast<int>(return_code) << ", length: " << std::dec << length;
 
   const ola::rdm::RDMRequest *request = m_pending_request;
   m_pending_request = NULL;
