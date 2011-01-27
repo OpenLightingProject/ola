@@ -1192,7 +1192,7 @@ pid {
       name: "month"
       range {
         min: 1
-        max: 31
+        max: 12
       }
     }
     field {
@@ -1200,7 +1200,7 @@ pid {
       name: "day"
       range {
         min: 1
-        max: 23
+        max: 31
       }
     }
     field {
@@ -1304,7 +1304,7 @@ pid {
         label: "Standby"
       }
       label {
-        value: 3
+        value: 255
         label: "Normal"
       }
     }
@@ -1980,28 +1980,6 @@ manufacturer {
     set_sub_device_range: ROOT_OR_SUBDEVICE
   }
   pid {
-    name: "DC_CALIBRATION"
-    value: 56522
-    get_request {
-    }
-    get_response {
-      field {
-        type: UINT8
-        name: "scale_value"
-      }
-    }
-    get_sub_device_range: ROOT_OR_SUBDEVICE
-    set_request {
-      field {
-        type: UINT8
-        name: "scale_value"
-      }
-    }
-    set_response {
-    }
-    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
-  }
-  pid {
     name: "DC_OFFSET"
     value: 56334
     get_request {
@@ -2042,6 +2020,28 @@ manufacturer {
           type: UINT8
           name: "offset_value"
         }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DC_CALIBRATION"
+    value: 56522
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "scale_value"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "scale_value"
       }
     }
     set_response {
@@ -2151,4 +2151,4 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
-version: 1295496699
+version: 1296152025
