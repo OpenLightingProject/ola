@@ -70,6 +70,7 @@ class DummyPortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDeviceInfo);
   CPPUNIT_TEST(testSoftwareVersion);
   CPPUNIT_TEST(testDmxAddress);
+  CPPUNIT_TEST(testIdentifyDevice);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -94,6 +95,7 @@ class DummyPortTest: public CppUnit::TestFixture {
     void testDeviceInfo();
     void testSoftwareVersion();
     void testDmxAddress();
+    void testIdentifyDevice();
 
   private:
     UID m_expected_uid;
@@ -199,16 +201,12 @@ void DummyPortTest::testSupportedParams() {
       0);  // data length
 
   uint16_t supported_params[] = {
-    ola::rdm::PID_DEVICE_INFO,
     ola::rdm::PID_DEVICE_LABEL,
     ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
     ola::rdm::PID_DMX_PERSONALITY,
     ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
-    ola::rdm::PID_DMX_START_ADDRESS,
     ola::rdm::PID_MANUFACTURER_LABEL,
-    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
-    ola::rdm::PID_SOFTWARE_VERSION_LABEL,
-    ola::rdm::PID_SUPPORTED_PARAMETERS
+    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
@@ -434,6 +432,128 @@ void DummyPortTest::testDmxAddress() {
   checkSubDeviceOutOfRange(ola::rdm::PID_DMX_START_ADDRESS);
   checkMalformedRequest(ola::rdm::PID_DMX_START_ADDRESS);
   checkNoBroadcastResponse(ola::rdm::PID_DMX_START_ADDRESS);
+}
+
+
+/*
+ * Check that the identify mode works
+ */
+void DummyPortTest::testIdentifyDevice() {
+  RDMRequest *request = new RDMGetRequest(
+      m_test_source,
+      m_expected_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_IDENTIFY_DEVICE,  // param id
+      NULL,  // data
+      0);  // data length
+
+  uint8_t mode = 0;
+  RDMResponse *response = GetResponseFromData(
+    request,
+    &mode,
+    sizeof(mode));
+
+  SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
+  m_port.HandleRDMRequest(
+        request,
+        NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+  // now attempt to set it
+  uint8_t new_mode = 1;
+  request = new RDMSetRequest(
+      m_test_source,
+      m_expected_uid,
+      0,  // transaction #
+      1,  // port id
+      2,  // message count
+      0,  // sub device
+      ola::rdm::PID_IDENTIFY_DEVICE,  // param id
+      &new_mode,
+      sizeof(new_mode));
+
+  response = GetResponseFromData(request, NULL, 0);
+  SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
+  m_port.HandleRDMRequest(
+        request,
+        NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+  // now check it updated
+  request = new RDMGetRequest(
+      m_test_source,
+      m_expected_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_IDENTIFY_DEVICE,  // param id
+      NULL,  // data
+      0);  // data length
+
+  mode = 1;
+  response = GetResponseFromData(
+    request,
+    &mode,
+    sizeof(mode));
+
+  SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
+  m_port.HandleRDMRequest(
+        request,
+        NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+  // check that broadcasting changes the address
+  new_mode = 0;
+  UID broadcast_uid = UID::AllManufactureDevices(OPEN_LIGHTING_ESTA_CODE);
+  request = new RDMSetRequest(
+      m_test_source,
+      broadcast_uid,
+      0,  // transaction #
+      1,  // port id
+      3,  // message count
+      0,  // sub device
+      ola::rdm::PID_IDENTIFY_DEVICE,  // param id
+      &new_mode,
+      sizeof(new_mode));
+
+  // no response expected
+  SetExpectedResponse(ola::rdm::RDM_WAS_BROADCAST, NULL);
+  m_port.HandleRDMRequest(
+        request,
+        NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+  // now check it updated
+  request = new RDMGetRequest(
+      m_test_source,
+      m_expected_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_IDENTIFY_DEVICE,  // param id
+      NULL,  // data
+      0);  // data length
+
+  mode = 0;
+  response = GetResponseFromData(
+    request,
+    &mode,
+    sizeof(mode));
+
+  SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
+  m_port.HandleRDMRequest(
+        request,
+        NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+  checkSubDeviceOutOfRange(ola::rdm::PID_IDENTIFY_DEVICE);
+  checkMalformedRequest(ola::rdm::PID_IDENTIFY_DEVICE);
+  checkNoBroadcastResponse(ola::rdm::PID_IDENTIFY_DEVICE);
 }
 
 

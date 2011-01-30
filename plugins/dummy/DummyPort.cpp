@@ -122,6 +122,9 @@ void DummyPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
     case ola::rdm::PID_DMX_START_ADDRESS:
       HandleDmxStartAddress(request, callback);
       break;
+    case ola::rdm::PID_IDENTIFY_DEVICE:
+      HandleIdentifyDevice(request, callback);
+      break;
     default:
       HandleUnknownPacket(request, callback);
   }
@@ -424,6 +427,58 @@ void DummyPort::HandleDmxStartAddress(const RDMRequest *request,
   delete request;
 }
 
+
+/*
+ * Handle turning identify on/off
+ */
+void DummyPort::HandleIdentifyDevice(const RDMRequest *request,
+                                     ola::rdm::RDMCallback *callback) {
+  RDMResponse *response;
+  if (request->SubDevice()) {
+    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+  } else if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    // do set
+    if (request->ParamDataSize() != sizeof(m_identify_mode)) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    } else {
+      uint8_t mode = *request->ParamData();
+      if (mode == 0 || mode == 1) {
+        m_identify_mode = mode;
+        OLA_INFO << "Dummy device, identify mode " << (
+            m_identify_mode ? "on" : "off");
+        response = new ola::rdm::RDMSetResponse(
+          request->DestinationUID(),
+          request->SourceUID(),
+          request->TransactionNumber(),
+          ola::rdm::RDM_ACK,
+          0,
+          request->SubDevice(),
+          request->ParamId(),
+          NULL,
+          0);
+      } else {
+        response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+      }
+    }
+  } else {
+    if (request->ParamDataSize()) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    } else {
+      response = GetResponseFromData(
+        request,
+        &m_identify_mode,
+        sizeof(m_identify_mode));
+    }
+  }
+  if (request->DestinationUID().IsBroadcast()) {
+    vector<string> packets;
+    delete response;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+  } else {
+    RunRDMCallback(callback, response);
+  }
+  delete request;
+}
 
 /**
  * Check for the following:

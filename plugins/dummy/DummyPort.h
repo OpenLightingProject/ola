@@ -37,7 +37,8 @@ class DummyPort: public BasicOutputPort {
     DummyPort(DummyDevice *parent, unsigned int id):
       BasicOutputPort(parent, id, true),
       m_start_address(1),
-      m_personality(0) {}
+      m_personality(0),
+      m_identify_mode(0) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
@@ -63,6 +64,8 @@ class DummyPort: public BasicOutputPort {
                                       ola::rdm::RDMCallback *callback);
     void HandleDmxStartAddress(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback);
+    void HandleIdentifyDevice(const ola::rdm::RDMRequest *request,
+                              ola::rdm::RDMCallback *callback);
     bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request,
                                           ola::rdm::RDMCallback *callback);
     void RunRDMCallback(ola::rdm::RDMCallback *callback,
@@ -70,6 +73,7 @@ class DummyPort: public BasicOutputPort {
 
     uint16_t m_start_address;
     uint8_t m_personality;
+    uint8_t m_identify_mode;
     DmxBuffer m_buffer;
 
     typedef struct {
