@@ -19,6 +19,7 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <sstream>
 
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
@@ -54,7 +55,10 @@ class SelectServerTest: public CppUnit::TestFixture {
       if (m_ss) { m_ss->Terminate(); }
     }
 
-    void SingleIncrementTimeout() { m_timeout_counter++; }
+    void SingleIncrementTimeout() {
+      if (m_ss && m_ss->IsRunning())
+        m_timeout_counter++;
+    }
 
     bool IncrementTimeout() {
       m_timeout_counter++;
@@ -150,17 +154,22 @@ void SelectServerTest::testTimeout() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_timeout_counter);
 
   // check repeating timeouts
+  // Some systems (VMs in particular) can't do 10ms resolution so we go for
+  // larger numbers here.
   m_timeout_counter = 0;
   m_ss->RegisterRepeatingTimeout(
-      10,
+      100,
       ola::NewCallback(this, &SelectServerTest::IncrementTimeout));
   m_ss->RegisterSingleTimeout(
-      98,
+      980,
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Restart();
   m_ss->Run();
-  // Some systems have bad timing and only do 8 ticks here
-  CPPUNIT_ASSERT(m_timeout_counter == 8 || m_timeout_counter == 9);
+  // This seems to go as low as 7
+  std::stringstream str;
+  str << "Timeout counter was " << m_timeout_counter;
+  CPPUNIT_ASSERT_MESSAGE(str.str(),
+                         m_timeout_counter >= 7 && m_timeout_counter <= 9);
 
   // check timeouts are removed correctly
   ola::network::timeout_id timeout1 = m_ss->RegisterSingleTimeout(

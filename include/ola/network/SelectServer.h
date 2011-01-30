@@ -138,6 +138,7 @@ class SelectServer: public SelectServerInterface {
                  unsigned int delay_usec = POLL_INTERVAL_USECOND);
     void Terminate() { m_terminate = true; }
     void Restart() { m_terminate = false; }
+    bool IsRunning() const { return !m_terminate; }
 
     bool AddSocket(Socket *socket);
     bool AddSocket(ConnectedSocket *socket,
