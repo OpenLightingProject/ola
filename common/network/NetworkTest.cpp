@@ -56,12 +56,12 @@ class SelectServerTest: public CppUnit::TestFixture {
     }
 
     void SingleIncrementTimeout() {
-      if (m_ss && m_ss->IsRunning())
-        m_timeout_counter++;
+      m_timeout_counter++;
     }
 
     bool IncrementTimeout() {
-      m_timeout_counter++;
+      if (m_ss && m_ss->IsRunning())
+        m_timeout_counter++;
       return true;
     }
 
@@ -169,7 +169,7 @@ void SelectServerTest::testTimeout() {
   std::stringstream str;
   str << "Timeout counter was " << m_timeout_counter;
   CPPUNIT_ASSERT_MESSAGE(str.str(),
-                         m_timeout_counter >= 7 && m_timeout_counter <= 9);
+                         m_timeout_counter >= 5 && m_timeout_counter <= 9);
 
   // check timeouts are removed correctly
   ola::network::timeout_id timeout1 = m_ss->RegisterSingleTimeout(
