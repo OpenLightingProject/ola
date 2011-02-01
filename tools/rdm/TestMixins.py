@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
@@ -119,6 +118,11 @@ class SetLabelMixin(object):
         field_values={'label': self.TEST_LABEL}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
+  def ResetState(self):
+    self.AddExpectedResults(ExpectedResult.AckResponse(self.pid.value))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.OldValue()])
+    self._wrapper.Run()
+
 
 class SetEmptyLabelMixin(object):
   """Send an empty SET label command."""
@@ -137,6 +141,11 @@ class SetEmptyLabelMixin(object):
         self.pid.value,
         field_values={'label': self.test_label}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def ResetState(self):
+    self.AddExpectedResults(ExpectedResult.AckResponse(self.pid.value))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.OldValue()])
+    self._wrapper.Run()
 
 
 class SetOversizedLabelMixin(object):
@@ -212,6 +221,54 @@ class SetBoolMixin(object):
 
 class SetBoolNoDataMixin(object):
   """Set a bool field with no data."""
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+
+  # TODO(simon): add a method to check this didn't change the value
+
+
+# Generic UInt8 Mixins
+# These all work in conjunction with the IsSupportedMixin
+#------------------------------------------------------------------------------
+class GetUInt8Mixin(object):
+  """Get a pid and expect uint8 as the result."""
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.AckResponse(self.pid.value, [self.EXPECTED_FIELD]))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class SetUInt8Mixin(object):
+  """Attempt to SET a uint8 field."""
+  VALUE = True
+
+  def NewValue(self):
+    """Decide the new value to set based on the old one.
+      This ensures we change it.
+    """
+    value = self.OldValue()
+    if value is not None:
+      return (value + 1) % 0xff
+    return self.VALUE
+
+  def Test(self):
+    self.AddIfSupported(
+        ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        field_values={self.EXPECTED_FIELD: self.NewValue()}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  #TODO(simon): add a back out method here
+
+class SetUInt8NoDataMixin(object):
+  """Set a uint8 field with no data."""
   def Test(self):
     self.AddIfSupported(
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))

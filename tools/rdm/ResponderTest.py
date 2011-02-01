@@ -185,6 +185,7 @@ class TestCategory(object):
 
 
 # These correspond to categories in the E1.20 document
+TestCategory.STATUS_COLLECTION = TestCategory('Status Collection')
 TestCategory.RDM_INFORMATION = TestCategory('RDM Information')
 TestCategory.PRODUCT_INFORMATION = TestCategory('Product Information')
 TestCategory.DMX_SETUP = TestCategory('DMX512 Setup')
@@ -253,6 +254,7 @@ class ResponderTest(object):
     self._advisories = []
     self._logger = logger
     self._should_run_wrapper = True
+    self._in_reset_mode = False
 
     for dep in deps:
       self._deps[dep.__class__.__name__] = dep
@@ -315,6 +317,9 @@ class ResponderTest(object):
     self.SetBroken('test method not defined')
     self.Stop()
 
+  def ResetState(self):
+    pass
+
   def PreCondition(self):
     """Return True if this test should run."""
     return True
@@ -340,6 +345,8 @@ class ResponderTest(object):
     self.Test()
     if self._should_run_wrapper:
       self._wrapper.Run()
+    self._in_reset_mode = True
+    self.ResetState()
     self._wrapper.Reset()
 
   def Deps(self, dep_class):
@@ -446,7 +453,8 @@ class ResponderTest(object):
                             self._BuildResponseHandler(sub_device),
                             data)
 
-  def _HandleResponse(self, sub_device, status, pid, fields, unpack_exception):
+  def _HandleResponse(self, sub_device, status, command_class, pid, fields,
+                      unpack_exception):
     """Handle a RDM response.
 
     Args:
@@ -456,6 +464,10 @@ class ResponderTest(object):
       obj: A dict of fields
     """
     if not self._CheckState(sub_device, status, pid, fields, unpack_exception):
+      return
+
+    if self._in_reset_mode:
+      self._wrapper.Stop()
       return
 
     for result in self._expected_results:
@@ -482,21 +494,53 @@ class ResponderTest(object):
       self._logger.debug('  %s' % result)
     self.Stop()
 
-  def _HandleQueuedResponse(self, sub_device, status, pid, fields,
+  def _HandleQueuedResponse(self,
+                            sub_device,
+                            target_pid,
+                            status,
+                            pid,
+                            fields,
                             unpack_exception):
     if not self._CheckState(sub_device, status, pid, fields, unpack_exception):
       return
 
-    if fields['messages'] == []:
+    if status.response_code != OlaClient.RDM_COMPLETED_OK:
+      self.SetFailed(' Get Queued message returned: %s' %
+                     status.ResponseCodeAsString())
+      self.Stop()
+      return
+
+    # handle nacks
+    if status.response_type == OlaClient.RDM_NACK_REASON:
+      queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
+      if pid == queued_message_pid.value:
+        # a nack for this is is fatal
+        self.SetFailed(' Get Queued message returned nack: %s' %
+                       status.nack_reason)
+      elif pid != target_pid:
+        # this is a nack for something else
+        self._HandleResponse(sub_device, status, pid, fields, unpack_exception)
+        self._GetQueuedMessage(sub_device)
+      return
+
+    # at this point we just have RDM_ACKs left
+    self._logger.debug('pid 0x%hx' % pid)
+    self._logger.debug( fields)
+    if (fields.get('messages', None) == []):
       # this means we've run out of messages
       self.Stop()
     else:
       self._HandleResponse(sub_device, status, pid, fields, unpack_exception)
       # fetch the next one
-      self._GetQueuedMessage(sub_device)
+      self._GetQueuedMessage(sub_device, pid)
 
   def _CheckState(self, sub_device, status, pid, fields, unpack_exception):
-    """Check the state of a RDM response."""
+    """Check the state of a RDM response.
+
+    Returns:
+      True if processing should continue, False if there was a transport error
+      or a ACK_TIMER was received.
+    """
     if not status.Succeeded():
       # this indicated a transport error
       self.SetBroken(' Error: %s' % status.message)
@@ -511,7 +555,7 @@ class ResponderTest(object):
       self.SetFailed('Queued Messages failed to return the expected message')
       self._wrapper.AddEvent(
           status.ack_timer,
-          lambda: self._GetQueuedMessage(sub_device))
+          lambda: self._GetQueuedMessage(sub_device, pid))
 
       return False
 
@@ -527,18 +571,24 @@ class ResponderTest(object):
 
     return True
 
-  def _GetQueuedMessage(self, sub_device):
-    """Fetch queued messages."""
-    pid = self.LookupPid('QUEUED_MESSAGE')
+  def _GetQueuedMessage(self, sub_device, target_pid):
+    """Fetch queued messages.
+
+    Args:
+      sub_device: The sub device to fetch messages for
+      target_pid: The pid to look for in the response.
+    """
+    queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
     data = ['error']
     self._logger.debug(' GET: pid = %s, sub device = %d, data = %s' %
-        (pid, sub_device, data))
+        (queued_message_pid, sub_device, data))
 
     def QueuedResponseHandler(status,
                               pid,
                               fields,
                               unpack_exception):
       self._HandleQueuedResponse(sub_device,
+                                 target_pid,
                                  status,
                                  pid,
                                  fields,
@@ -546,13 +596,13 @@ class ResponderTest(object):
     return self._api.Get(self._universe,
                          self._uid,
                          sub_device,
-                         pid,
+                         queued_message_pid,
                          QueuedResponseHandler,
                          data)
 
   def _BuildResponseHandler(self, sub_device):
-    return lambda s, p, f, e: self._HandleResponse(sub_device,
-                                                   s, p, f, e)
+    return lambda s, c, p, f, e: self._HandleResponse(sub_device,
+                                                      s, c, p, f, e)
 
 
 class TestRunner(object):

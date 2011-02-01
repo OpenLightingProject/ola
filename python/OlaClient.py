@@ -614,8 +614,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       uid: A UID object
       sub_device: The sub device index
       param_id: the param ID
-      callback: The function to call once complete, takes two arguments, a
-        RequestStatus object and
+      callback: The function to call once complete, takes five arguments.
       data: the data to send
     """
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
@@ -629,8 +628,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       uid: A UID object
       sub_device: The sub device index
       param_id: the param ID
-      callback: The function to call once complete, takes two arguments, a
-        RequestStatus object and
+      callback: The function to call once complete, takes five arguments.
       data: the data to send
     """
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
@@ -818,7 +816,11 @@ class OlaClient(Ola_pb2.OlaClientService):
       return
 
     status = RDMRequestStatus(controller, response)
-    callback(status, response.param_id, response.data, response.raw_response)
+    callback(status,
+             response.command_class,
+             response.param_id,
+             response.data,
+             response.raw_response)
 
 # Populate the patch & register actions
 for value in Ola_pb2._PATCHACTION.values:
@@ -830,4 +832,6 @@ for value in Ola_pb2._REGISTERACTION.values:
 for value in Ola_pb2._RDMRESPONSECODE.values:
   setattr(OlaClient, value.name, value.number)
 for value in Ola_pb2._RDMRESPONSETYPE.values:
+  setattr(OlaClient, value.name, value.number)
+for value in Ola_pb2._RDMCOMMANDCLASS.values:
   setattr(OlaClient, value.name, value.number)

@@ -718,6 +718,16 @@ void OlaServerServiceImpl::HandleRDMResponse(
             static_cast<ola::proto::RDMResponseType>(response_type));
         response->set_message_count(rdm_response->MessageCount());
         response->set_param_id(rdm_response->ParamId());
+        if (rdm_response->CommandClass() ==
+            ola::rdm::RDMCommand::GET_COMMAND_RESPONSE) {
+          response->set_command_class(ola::proto::RDM_GET_RESPONSE);
+        } else if (rdm_response->CommandClass() ==
+                   ola::rdm::RDMCommand::SET_COMMAND_RESPONSE) {
+          response->set_command_class(ola::proto::RDM_SET_RESPONSE);
+        } else {
+          OLA_WARN << "Unknown command class 0x" << std::hex <<
+            rdm_response->CommandClass();
+        }
 
         if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
           const string data(

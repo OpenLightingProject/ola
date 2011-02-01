@@ -27,6 +27,13 @@ from ola import PidStore
 
 class RDMAPI(object):
   """The RDM API."""
+
+  # This maps ola.proto enums to PidStore enums
+  COMMAND_CLASS_DICT = {
+      OlaClient.RDM_GET_RESPONSE: PidStore.RDM_GET,
+      OlaClient.RDM_SET_RESPONSE: PidStore.RDM_SET,
+  }
+
   def __init__(self, client, pid_store, strict_checks = True):
     """Create a new RDM API.
 
@@ -176,7 +183,14 @@ class RDMAPI(object):
         self._CreateCallback(callback, request_type, uid),
         data)
 
-  def _GenericHandler(self, callback, request_type, uid, status, pid, data,
+  def _GenericHandler(self,
+                      callback,
+                      request_type,
+                      uid,
+                      status,
+                      command_class,
+                      pid,
+                      data,
                       unused_raw_data):
     """
 
@@ -191,6 +205,8 @@ class RDMAPI(object):
     """
     obj = None
     unpack_exception = None
+
+    request_type = self.COMMAND_CLASS_DICT[command_class]
     if status.WasSuccessfull():
       pid_descriptor = self._pid_store.GetPid(pid, uid.manufacturer_id)
       if pid_descriptor:
@@ -202,11 +218,12 @@ class RDMAPI(object):
           status.response_code = OlaClient.RDM_INVALID_RESPONSE
       else:
         obj = data
-    callback(status, pid, obj, unpack_exception)
+
+    callback(status, request_type, pid, obj, unpack_exception)
 
   def _CreateCallback(self, callback, request_type, uid):
-    return lambda s, p, d, r: self._GenericHandler(
+    return lambda s, c, p, d, r: self._GenericHandler(
         callback,
         request_type,
         uid,
-        s, p, d, r)
+        s, c, p, d, r)

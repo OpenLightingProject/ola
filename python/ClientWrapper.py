@@ -63,6 +63,10 @@ class ClientWrapper(object):
   def Stop(self):
     self._quit = True
 
+  def StopIfNoEvents(self):
+    if len(self._events) == 0:
+      self._quit = True
+
   def Reset(self):
     self._quit = False
 

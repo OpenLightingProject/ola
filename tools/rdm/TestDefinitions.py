@@ -20,6 +20,7 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import datetime
 import struct
 from ResponderTest import ExpectedResult, ResponderTest, TestCategory
 from ola import PidStore
@@ -354,6 +355,52 @@ class GetParamDescriptionWithData(ResponderTest):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
+# Comms Stqtus
+#------------------------------------------------------------------------------
+class GetCommsStatus(IsSupportedMixin, ResponderTest):
+  """Get the comms status."""
+  CATEGORY = TestCategory.STATUS_COLLECTION
+  PID = 'COMMS_STATUS'
+
+  def Test(self):
+    self.AddIfSupported(
+        ExpectedResult.AckResponse(self.pid.value))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class GetCommsStatusWithData(IsSupportedMixin, TestMixins.GetWithData,
+                             ResponderTest):
+  """Get the comms status with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'COMMS_STATUS'
+
+
+class ClearCommsStatus(IsSupportedMixin, ResponderTest):
+  """Clear the comms status."""
+  CATEGORY = TestCategory.STATUS_COLLECTION
+  PID = 'COMMS_STATUS'
+
+  def Test(self):
+    self.AddIfSupported(
+        ExpectedResult.AckResponse(self.pid.value,
+                                   action=self.VerifySet))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifySet(self):
+    self.AddIfSupported(
+        ExpectedResult.AckResponse(self.pid.value,
+                                   {'short_message': 0,
+                                    'length_mismatch': 0,
+                                    'checksum_fail': 0}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class ClearCommsStatusWithData(IsSupportedMixin, TestMixins.SetWithData,
+                               ResponderTest):
+  """Clear the comms status with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'COMMS_STATUS'
+
+
 # Product Detail Id List
 #------------------------------------------------------------------------------
 class GetProductDetailIdList(IsSupportedMixin, ResponderTest):
@@ -472,6 +519,9 @@ class SetDeviceLabel(IsSupportedMixin, TestMixins.SetLabelMixin,
   PID = 'DEVICE_LABEL'
   DEPS = IsSupportedMixin.DEPS + [GetDeviceLabel]
 
+  def OldValue(self):
+    return self.Deps(GetDeviceLabel).GetField('label')
+
 
 class SetFullSizeDeviceLabel(IsSupportedMixin, TestMixins.SetLabelMixin,
                              ResponderTest):
@@ -481,6 +531,9 @@ class SetFullSizeDeviceLabel(IsSupportedMixin, TestMixins.SetLabelMixin,
   PID = 'DEVICE_LABEL'
   DEPS = IsSupportedMixin.DEPS + [GetDeviceLabel]
 
+  def OldValue(self):
+    return self.Deps(GetDeviceLabel).GetField('label')
+
 
 class SetEmptyDeviceLabel(IsSupportedMixin, TestMixins.SetEmptyLabelMixin,
                           ResponderTest):
@@ -489,6 +542,9 @@ class SetEmptyDeviceLabel(IsSupportedMixin, TestMixins.SetEmptyLabelMixin,
   PID = 'DEVICE_LABEL'
   DEPS = IsSupportedMixin.DEPS + [GetDeviceLabel]
 
+  def OldValue(self):
+    return self.Deps(GetDeviceLabel).GetField('label')
+
 
 class SetOversizedDeviceLabel(IsSupportedMixin,
                               TestMixins.SetOversizedLabelMixin,
@@ -496,6 +552,9 @@ class SetOversizedDeviceLabel(IsSupportedMixin,
   """SET the device label with more than 32 bytes of data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_LABEL'
+
+  def OldValue(self):
+    return self.Deps(GetDeviceLabel).GetField('label')
 
 
 # Factory Defaults
@@ -1228,6 +1287,43 @@ class SetDevicePowerCyclesWithNoData(IsSupportedMixin,
   PID = 'DEVICE_POWER_CYCLES'
 
 
+# Display Level
+#------------------------------------------------------------------------------
+class GetDisplayLevel(IsSupportedMixin, TestMixins.GetBoolMixin,
+                      ResponderTest):
+  """GET the display level setting."""
+  CATEGORY = TestCategory.DISPLAY_SETTINGS
+  PID = 'DISPLAY_LEVEL'
+  EXPECTED_FIELD = 'level'
+
+
+class GetDisplayLevelWithData(IsSupportedMixin, TestMixins.GetWithData,
+                              ResponderTest):
+  """GET the pan invert setting with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DISPLAY_LEVEL'
+
+
+class SetDisplayLevel(IsSupportedMixin, TestMixins.SetUInt8Mixin,
+                      ResponderTest):
+  """Attempt to SET the display level setting."""
+  CATEGORY = TestCategory.DISPLAY_SETTINGS
+  PID = 'DISPLAY_LEVEL'
+  EXPECTED_FIELD = 'level'
+  DEPS = IsSupportedMixin.DEPS + [GetDisplayLevel]
+
+  def OldValue(self):
+    return self.Deps(GetDisplayLevel).GetField(self.EXPECTED_FIELD)
+
+
+class SetDisplayLevelWithNoData(IsSupportedMixin,
+                                TestMixins.SetUInt8NoDataMixin,
+                                ResponderTest):
+  """Set the display level with no param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DISPLAY_LEVEL'
+
+
 # Pan Invert
 #------------------------------------------------------------------------------
 class GetPanInvert(IsSupportedMixin, TestMixins.GetBoolMixin, ResponderTest):
@@ -1328,3 +1424,172 @@ class SetPanTiltSwapWithNoData(IsSupportedMixin, TestMixins.SetBoolNoDataMixin,
   """Set the pan tilt swap with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PAN_TILT_SWAP'
+
+
+# Real time clock
+#------------------------------------------------------------------------------
+class GetRealTimeClock(IsSupportedMixin, ResponderTest):
+  """GET the real time clock setting."""
+  CATEGORY = TestCategory.CONFIGURATION
+  PID = 'REAL_TIME_CLOCK'
+
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        ['year', 'month', 'day', 'hour', 'minute', 'second']))
+    # we don't need to verify the ranges because that's done at the PidStore
+    # layer
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class GetRealTimeClockWithData(IsSupportedMixin, TestMixins.GetWithData,
+                               ResponderTest):
+  """GET the teal time clock with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'REAL_TIME_CLOCK'
+
+
+class SetRealTimeClock(IsSupportedMixin, ResponderTest):
+  """Set the real time clock."""
+  CATEGORY = TestCategory.CONFIGURATION
+  PID = 'REAL_TIME_CLOCK'
+
+  def Test(self):
+    n = datetime.datetime.now()
+    self.AddIfSupported(ExpectedResult.AckResponse(self.pid.value))
+    args = [n.year, n.month, n.day, n.hour, n.minute, n.second]
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 args)
+
+
+class SetRealTimeClockWithNoData(IsSupportedMixin, ResponderTest):
+  """Set the real time clock without any data."""
+  CATEGORY = TestCategory.CONFIGURATION
+  PID = 'REAL_TIME_CLOCK'
+
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+
+
+# Identify Device
+#------------------------------------------------------------------------------
+class GetIdentifyDevice(ResponderTest):
+  """Get the identify mode."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'IDENTIFY_DEVICE'
+
+  def Test(self):
+    # don't inherit from GetBoolMixin because this is required
+    self.AddExpectedResults(ExpectedResult.AckResponse(self.pid.value))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+
+class GetIdentifyDeviceWithData(ResponderTest):
+  """Get the identify mode with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IDENTIFY_DEVICE'
+
+  def Test(self):
+    # don't inherit from GetWithData because this is required
+    self.AddExpectedResults(
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+
+
+class SetIdentifyDevice(ResponderTest):
+  """Set the identify mode."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'IDENTIFY_DEVICE'
+  DEPS = [GetIdentifyDevice]
+
+  def Test(self):
+    self.identify_mode = self.Deps(GetIdentifyDevice).GetField('identify_state')
+    self.new_mode = not self.identify_mode
+
+    self.AddExpectedResults(
+        ExpectedResult.AckResponse(self.pid.value,
+                                   action=self.VerifyIdentifyMode))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.new_mode])
+
+  def VerifyIdentifyMode(self):
+    self.AddExpectedResults(
+      ExpectedResult.AckResponse(
+        self.pid.value,
+        field_values = {'identify_state': self.new_mode},
+        action=self.ResetMode))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def ResetMode(self):
+    self.AddExpectedResults(ExpectedResult.AckResponse(self.pid.value))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.identify_mode])
+
+
+
+class SetIdentifyDeviceWithNoData(ResponderTest):
+  """Set the identify mode with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IDENTIFY_DEVICE'
+
+  def Test(self):
+    self.AddExpectedResults(
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+
+
+# Power State
+#------------------------------------------------------------------------------
+class GetPowerState(IsSupportedMixin, ResponderTest):
+  """Get the power state mode."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'POWER_STATE'
+
+  ALLOWED_STATES = [0, 1, 2, 0xff]
+
+  def Test(self):
+    self.AddIfSupported(ExpectedResult.AckResponse(self.pid.value))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, status, fields):
+    if not status.WasSuccessfull():
+      return
+
+    if fields['state'] not in self.ALLOWED_STATES:
+      self.AddWarning('Power state of 0x%hx is not defined' % fields['state'])
+
+
+class GetPowerStateWithData(IsSupportedMixin, TestMixins.GetWithData,
+                             ResponderTest):
+  """Get the power state mode with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'POWER_STATE'
+
+
+class SetPowerState(IsSupportedMixin, TestMixins.SetUInt8Mixin, ResponderTest):
+  """Set the power state."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'POWER_STATE'
+  DEPS = IsSupportedMixin.DEPS + [GetPowerState]
+  EXPECTED_FIELD = 'state'
+
+  def NewValue(self):
+    self.old_value = self.Deps(GetPowerState).GetField(self.EXPECTED_FIELD)
+    try:
+      index = GetPowerState.ALLOWED_STATES.index(self.old_value)
+    except ValueError:
+      return GetPowerState.ALLOWED_STATES[0]
+
+    length = len(GetPowerState.ALLOWED_STATES)
+    return GetPowerState.ALLOWED_STATES[(self.old_value + 1) % length]
+
+  def ResetState(self):
+    if not self.old_value:
+      return
+
+    # reset back to the old value
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.old_value])
+    self._wrapper.Run()
+
+#class SetPowerStateWithoutData(IsSupportedMixin, ResponderTest):

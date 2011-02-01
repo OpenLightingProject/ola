@@ -107,6 +107,14 @@ enum RDMResponseType {
 }
 
 
+/**
+ * The RDM command class
+ */
+enum RDMCommandClass {
+  RDM_GET_RESPONSE = 0;
+  RDM_SET_RESPONSE = 1;
+}
+
 
 // This is a special string which indicates that no response will be received
 // for an RPC.
@@ -267,7 +275,8 @@ message RDMResponse {
   optional uint32 message_count = 3 [default = 0];
   optional bytes data = 4 [default = ""]; // 0 - 231 bytes
   optional uint32 param_id = 5;  // the param id, required for queued messages
-  repeated bytes raw_response = 6;
+  optional RDMCommandClass command_class = 6; // the command class
+  repeated bytes raw_response = 7;
 }
 
 // Services
