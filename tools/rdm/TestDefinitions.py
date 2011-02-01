@@ -132,6 +132,26 @@ class GetSupportedParameters(ResponderTest):
                     'DMX_START_ADDRESS',
                     'IDENTIFY_DEVICE']
 
+  # Banned PIDs, these are pid values that can not appear in the list of
+  # supported parameters (these are used for discovery)
+  BANNED_PID_VALUES = [1, 2, 3]
+
+  # If responders support any of the pids in these groups, the should really
+  # support all of them.
+  PID_GROUPS = [
+      ('LANGUAGE_CAPABILITIES', 'LANGUAGE'),
+      ('DMX_PERSONALITY', 'DMX_PERSONALITY_DESCRIPTION'),
+      ('SENSOR_DEFINITION', 'SENSOR_VALUE'),
+      ('SELF_TEST_DESCRIPTION', 'PERFORM_SELF_TEST'),
+  ]
+
+  # If the first pid in each group is supported, the remainer of the group
+  # must be.
+  PID_DEPENDENCIES = [
+      ('RECORD_SENSORS', 'SENSOR_VALUE'),
+      ('DEFAULT_SLOT_VALUE', 'SLOT_DESCRIPTION'),
+  ]
+
   def SupportsPid(self, pid):
     """Returns true if this device supports this pid.
 
@@ -165,25 +185,22 @@ class GetSupportedParameters(ResponderTest):
     self._pid_supported = True
     for item in fields['params']:
       param_id = item['param_id']
-      self.supported_parameters.append(param_id)
-      if param_id >= 0x8000 and param_id < 0xffe0:
-        self.manufacturer_parameters.append(param_id)
+      if param_id in self.BANNED_PID_VALUES:
+        self.AddWarning('%d listed in supported parameters' % param_id)
+        continue
+
       if param_id in mandatory_pids:
         self.AddAdvisory('%s listed in supported parameters' %
                          mandatory_pids[param_id].name)
+        continue
+
+      self.supported_parameters.append(param_id)
+      if param_id >= 0x8000 and param_id < 0xffe0:
+        self.manufacturer_parameters.append(param_id)
 
     pid_store = PidStore.GetStore()
 
-    # If responders support any of the pids in these groups, the should really
-    # support all of them.
-    PID_GROUPS = [
-        ('LANGUAGE_CAPABILITIES', 'LANGUAGE'),
-        ('DMX_PERSONALITY', 'DMX_PERSONALITY_DESCRIPTION'),
-        ('SENSOR_DEFINITION', 'SENSOR_VALUE'),
-        ('SELF_TEST_DESCRIPTION', 'PERFORM_SELF_TEST'),
-    ]
-
-    for pid_names in PID_GROUPS:
+    for pid_names in self.PID_GROUPS:
       supported_pids = []
       unsupported_pids = []
       for pid_name in pid_names:
@@ -198,14 +215,7 @@ class GetSupportedParameters(ResponderTest):
             '%s supported but %s is not' %
             (','.join(supported_pids), ','.join(unsupported_pids)))
 
-    # If the first pid in each group is supported, the remainer of the group
-    # must be.
-    PID_DEPENDENCIES = [
-        ('RECORD_SENSORS', 'SENSOR_VALUE'),
-        ('DEFAULT_SLOT_VALUE', 'SLOT_DESCRIPTION'),
-    ]
-
-    for pid_names in PID_DEPENDENCIES:
+    for pid_names in self.PID_DEPENDENCIES:
       if not self.SupportsPid(self.LookupPid(pid_names[0])):
         continue
 
