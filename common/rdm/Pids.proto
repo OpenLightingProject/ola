@@ -57,9 +57,10 @@ message Field {
   required string name = 2;
   optional uint32 min_size = 3;  // used for strings & groups
   optional uint32 max_size = 4;  // used for strings & groups
-  repeated LabeledValue label = 5;  // values with labels applied
-  repeated Range range = 6; // valid ranges
-  repeated Field field = 7; // for type == GROUP
+  optional sint32 multiplier = 5; // used for ints, these are the exponents
+  repeated LabeledValue label = 6;  // values with labels applied
+  repeated Range range = 7; // valid ranges
+  repeated Field field = 8; // for type == GROUP
 }
 
 

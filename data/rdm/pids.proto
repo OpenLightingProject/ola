@@ -1839,6 +1839,86 @@ manufacturer {
   }
 }
 manufacturer {
+  manufacturer_id: 19541
+  manufacturer_name: "LumenRadio AB"
+  pid {
+    name: "FULL_DISCOVERY"
+    value: 32768
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "INCREMENTAL_DISCOVERY_INTERVAL"
+    value: 33025
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "interval"
+        multiplier: -1
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "interval"
+        multiplier: -1
+        range {
+          min: 257
+          max: 65535
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "ACK_TIMER_FACTOR"
+    value: 33026
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "timer_factor"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "timer_factor"
+        range {
+          min: 257
+          max: 65535
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+}
+manufacturer {
   manufacturer_id: 21324
   manufacturer_name: "Soundlight"
   pid {
@@ -2151,4 +2231,4 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
-version: 1296152025
+version: 1296497974
