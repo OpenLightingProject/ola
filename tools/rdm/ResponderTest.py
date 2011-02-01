@@ -320,10 +320,6 @@ class ResponderTest(object):
   def ResetState(self):
     pass
 
-  def PreCondition(self):
-    """Return True if this test should run."""
-    return True
-
   def VerifyResult(self, status, fields):
     """A hook to perform additional verification of data."""
     pass
@@ -336,11 +332,6 @@ class ResponderTest(object):
         self._state = TestState.NOT_RUN
         self._logger.debug(' Dep: %s %s, not running' % (dep, dep.state))
         return
-
-    if not self.PreCondition():
-      self._logger.debug(' Preconditions not met, test will not be run')
-      self._state = TestState.NOT_RUN
-      return
 
     self.Test()
     if self._should_run_wrapper:
@@ -363,8 +354,10 @@ class ResponderTest(object):
       return self._fields.get(field)
     return None
 
-  def SetNotRun(self):
+  def SetNotRun(self, message=None):
     self._state = TestState.NOT_RUN
+    if message:
+      self._logger.debug(message)
 
   def SetBroken(self, message):
     self._logger.debug(' Broken: %s' % message)

@@ -68,7 +68,7 @@ class GetWithData(ResponderTest):
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
       ExpectedResult.AckResponse(
         self.pid.value,
-        warning='Get %s with data shouldn\'t return an ack' % self.pid.name)
+        warning='Get %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
@@ -82,7 +82,7 @@ class SetWithData(ResponderTest):
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
       ExpectedResult.AckResponse(
         self.pid.value,
-        warning='Set %s with data shouldn\'t return an ack' % self.pid.name)
+        warning='Set %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
@@ -104,6 +104,7 @@ class SetLabelMixin(object):
   TEST_LABEL = 'test label'
 
   def Test(self):
+    self.verify_result = False
     self.AddIfSupported([
       ExpectedResult.NackResponse(self.pid.value,
                                   RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
@@ -112,35 +113,28 @@ class SetLabelMixin(object):
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.TEST_LABEL])
 
   def VerifySet(self):
+    self.verify_result = True
     self.AddExpectedResults(
       ExpectedResult.AckResponse(
         self.pid.value,
-        field_values={'label': self.TEST_LABEL}))
+        field_names=['label']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
-  def ResetState(self):
-    self.AddExpectedResults(ExpectedResult.AckResponse(self.pid.value))
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.OldValue()])
-    self._wrapper.Run()
+  def VerifyResult(self, status, fields):
+    if not self.verify_result:
+      return
 
+    new_label = fields['label']
+    if self.TEST_LABEL == new_label:
+      return
 
-class SetEmptyLabelMixin(object):
-  """Send an empty SET label command."""
-  def Test(self):
-    self.test_label = ''
-    self.AddIfSupported([
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-      ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet)
-    ])
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.test_label])
-
-  def VerifySet(self):
-    self.AddExpectedResults(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values={'label': self.test_label}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    if (len(new_label) < len(self.TEST_LABEL) and
+        self.TEST_LABEL.startswith(new_label)):
+      self.AddAdvisory('Label for %s was truncated to %d characters' %
+                       (self.pid, len(new_label)))
+    else:
+      self.SetFailed('Labels didn\'t match, expected %s, got %s' %
+                     (self.TEST_LABEL, self.new_label))
 
   def ResetState(self):
     self.AddExpectedResults(ExpectedResult.AckResponse(self.pid.value))
@@ -177,8 +171,9 @@ class SetOversizedLabelMixin(object):
       self.SetFailed('Missing label field in response')
     else:
       if fields['label'] != self.LONG_STRING[0:MAX_LABEL_SIZE]:
-        self.AddWarning('Oversized %s returned %s' % (
-          self.PID, fields['label']))
+        self.AddWarning(
+            'Setting an oversized %s set the first %d characters' % (
+            self.PID, len(fields['label'])))
 
 # Generic Bool Mixins
 # These all work in conjunction with the IsSupportedMixin

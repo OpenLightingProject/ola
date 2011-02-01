@@ -69,7 +69,7 @@ class GetDeviceInfo(ResponderTest, DeviceInfoTest):
         self.AddAdvisory('DMX Footprint non 0, but no personalities listed')
       if current_personality == 0:
         self.AddWarning('Current personality should be >= 1, was %d' %
-            current_personality)
+                        current_personality)
       elif current_personality > personality_count:
         self.AddWarning('Current personality (%d) should be less than the '
                         'personality count (%d)' %
@@ -93,13 +93,13 @@ class GetDeviceInfoWithData(ResponderTest, DeviceInfoTest):
         self.pid.value,
         self.FIELDS,
         self.FIELD_VALUES,
-        advisory='Device Info with data shouldn\'t return an ACK')
+        warning='Get %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetDeviceInfo(ResponderTest, DeviceInfoTest):
-  """Attempt to SET device info."""
+  """SET device info."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
   def Test(self):
@@ -108,7 +108,7 @@ class SetDeviceInfo(ResponderTest, DeviceInfoTest):
 
 
 class AllSubDevicesDeviceInfo(ResponderTest, DeviceInfoTest):
-  """Devices should NACK a GET request sent to ALL_SUB_DEVICES."""
+  """Send a Get Device Info to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   def Test(self):
     self.AddExpectedResults(
@@ -132,12 +132,22 @@ class GetSupportedParameters(ResponderTest):
                     'DMX_START_ADDRESS',
                     'IDENTIFY_DEVICE']
 
+  def SupportsPid(self, pid):
+    """Returns true if this device supports this pid.
+
+    Args:
+      pid: A PidStore.Pid object.
+    """
+    return pid.value in self.supported_parameters
+
   def Test(self):
     self._pid_supported = False
     self.supported_parameters = []
     self.manufacturer_parameters = []
 
     self.AddExpectedResults([
+      # TODO(simon): We should cross check this against support for anything
+      # more than the required set of parameters at the end of all tests.
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
       ExpectedResult.AckResponse(self.pid.value)
     ])
@@ -163,18 +173,50 @@ class GetSupportedParameters(ResponderTest):
                          mandatory_pids[param_id].name)
 
     pid_store = PidStore.GetStore()
-    langugage_capability_pid = self.LookupPid('LANGUAGE_CAPABILITIES')
-    language_pid = self.LookupPid('LANGUAGE')
-    if (self.SupportsPid(langugage_capability_pid) and not
-        self.SupportsPid(language_pid)):
-      self.AddAdvisory('language_capabilities supported but language is not')
 
-  @property
-  def supported(self):
-    return self._pid_supported
+    # If responders support any of the pids in these groups, the should really
+    # support all of them.
+    PID_GROUPS = [
+        ('LANGUAGE_CAPABILITIES', 'LANGUAGE'),
+        ('DMX_PERSONALITY', 'DMX_PERSONALITY_DESCRIPTION'),
+        ('SENSOR_DEFINITION', 'SENSOR_VALUE'),
+        ('SELF_TEST_DESCRIPTION', 'PERFORM_SELF_TEST'),
+    ]
 
-  def SupportsPid(self, pid):
-    return pid.value in self.supported_parameters
+    for pid_names in PID_GROUPS:
+      supported_pids = []
+      unsupported_pids = []
+      for pid_name in pid_names:
+        pid = self.LookupPid(pid_name)
+        if self.SupportsPid(pid):
+          supported_pids.append(pid_name)
+        else:
+          unsupported_pids.append(pid_name)
+
+      if supported_pids and unsupported_pids:
+        self.AddAdvisory(
+            '%s supported but %s is not' %
+            (','.join(supported_pids), ','.join(unsupported_pids)))
+
+    # If the first pid in each group is supported, the remainer of the group
+    # must be.
+    PID_DEPENDENCIES = [
+        ('RECORD_SENSORS', 'SENSOR_VALUE'),
+        ('DEFAULT_SLOT_VALUE', 'SLOT_DESCRIPTION'),
+    ]
+
+    for pid_names in PID_DEPENDENCIES:
+      if not self.SupportsPid(self.LookupPid(pid_names[0])):
+        continue
+
+      unsupported_pids = []
+      for pid_name in pid_names[1:]:
+        pid = self.LookupPid(pid_name)
+        if not self.SupportsPid(pid):
+          unsupported_pids.append(pid_name)
+      if unsupported_pids:
+        self.AddAdvisory('%s supported but %s is not' %
+                         (pid_names[0], ','.join(unsupported_pids)))
 
 
 class GetSupportedParametersWithData(ResponderTest):
@@ -187,7 +229,7 @@ class GetSupportedParametersWithData(ResponderTest):
       ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
       ExpectedResult.AckResponse(
         self.pid.value,
-        advisory='Supported parameters with data shouldn\'t return an ACK')
+        warning='Get %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
@@ -203,7 +245,7 @@ class SetSupportedParameters(ResponderTest):
 
 
 class IsSupportedMixin(object):
-  """A Mixin that changes the result if the pid isn't in the supported list."""
+  """A Mixin that changes the expected result if the pid isn't supported."""
   DEPS = [GetSupportedParameters]
 
   def PidSupported(self):
@@ -219,18 +261,15 @@ class IsSupportedMixin(object):
 # Sub Devices Test
 #------------------------------------------------------------------------------
 class FindSubDevices(ResponderTest):
-  """Locate the sub devices by sending DeviceInfo messages."""
+  """Locate the sub devices by sending DEVICE_INFO messages."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_INFO'
   DEPS = [GetDeviceInfo]
 
-  def PreCondition(self):
-    self._device_count = self.Deps(GetDeviceInfo).GetField('sub_device_count')
-    self._sub_devices = []
-    self._current_index = 0
-    return True
-
   def Test(self):
+    self._device_count = self.Deps(GetDeviceInfo).GetField('sub_device_count')
+    self._sub_devices = []  # stores the sub device indices
+    self._current_index = 0  # the current sub device we're trying to query
     self._CheckForSubDevice()
 
   def _CheckForSubDevice(self):
@@ -238,12 +277,13 @@ class FindSubDevices(ResponderTest):
     # range or an ack
     if len(self._sub_devices) == self._device_count:
       if self._device_count == 0:
-        self.SetNotRun()
+        self.SetNotRun(' No sub devices declared')
       self.Stop()
       return
 
     if self._current_index >= PidStore.MAX_VALID_SUB_DEVICE:
-      self.SetFailed('Could not find all sub devices')
+      self.SetFailed('Only found %d of %d sub devices' %
+                     (len(self._sub_devices), self._device_count))
       self.Stop()
       return
 
@@ -270,11 +310,12 @@ class GetParamDescription(ResponderTest):
   PID = 'PARAMETER_DESCRIPTION'
   DEPS = [GetSupportedParameters]
 
-  def PreCondition(self):
-    self.params = self.Deps(GetSupportedParameters).manufacturer_parameters[:]
-    return len(self.params) > 0
-
   def Test(self):
+    self.params = self.Deps(GetSupportedParameters).manufacturer_parameters[:]
+    if len(self.params) == 0:
+      self.SetNotRun(' No manufacturer params found')
+      self.Stop()
+      return
     self._GetParam()
 
   def _GetParam(self):
@@ -316,13 +357,12 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTest):
   def Test(self):
     device_info_pid = self.LookupPid('DEVICE_INFO')
     results = [
-        ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_UNKNOWN_PID),
+        ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
         ExpectedResult.NackResponse(
             self.pid.value,
             RDMNack.NR_DATA_OUT_OF_RANGE,
-            advisory='Parameter Description appears to be supposed but no'
-                     'manufacturer pids are defined'),
+            advisory='Parameter Description appears to be supported but no'
+                     'manufacturer pids were declared'),
     ]
     if self.Deps(GetSupportedParameters).manufacturer_parameters:
       results = ExpectedResult.NackResponse(self.pid.value,
@@ -340,13 +380,12 @@ class GetParamDescriptionWithData(ResponderTest):
 
   def Test(self):
     results = [
-        ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_UNKNOWN_PID),
+        ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
         ExpectedResult.NackResponse(
             self.pid.value,
             RDMNack.NR_FORMAT_ERROR,
-            advisory='Parameter Description appears to be supposed but no'
-                     'manufacturer pids are defined'),
+            advisory='Parameter Description appears to be supported but no'
+                     'manufacturer pids were declared'),
     ]
     if self.Deps(GetSupportedParameters).manufacturer_parameters:
       results = ExpectedResult.NackResponse(self.pid.value,
@@ -526,21 +565,23 @@ class SetDeviceLabel(IsSupportedMixin, TestMixins.SetLabelMixin,
 class SetFullSizeDeviceLabel(IsSupportedMixin, TestMixins.SetLabelMixin,
                              ResponderTest):
   """SET the device label."""
-  TEST_LABEL = 'this is a string with 32 charact'
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   DEPS = IsSupportedMixin.DEPS + [GetDeviceLabel]
+  TEST_LABEL = 'this is a string with 32 charact'
 
   def OldValue(self):
     return self.Deps(GetDeviceLabel).GetField('label')
 
 
-class SetEmptyDeviceLabel(IsSupportedMixin, TestMixins.SetEmptyLabelMixin,
+class SetEmptyDeviceLabel(IsSupportedMixin,
+                          TestMixins.SetLabelMixin,
                           ResponderTest):
   """SET the device label with no data."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   DEPS = IsSupportedMixin.DEPS + [GetDeviceLabel]
+  TEST_LABEL = ''
 
   def OldValue(self):
     return self.Deps(GetDeviceLabel).GetField('label')
@@ -895,7 +936,7 @@ class GetPersonalities(IsSupportedMixin, ResponderTest):
     self._current_index += 1
     if self._current_index > self._personality_count:
       if self._personality_count == 0:
-        self.SetNotRun()
+        self.SetNotRun(' No personalities declared')
       self.Stop()
       return
 

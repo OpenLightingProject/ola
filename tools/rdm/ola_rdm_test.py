@@ -118,11 +118,11 @@ def DisplaySummary(test_runner):
   total = sum(count_by_state.values())
 
   logging.info('-------------- Warnings ---------------')
-  for warning in warnings:
+  for warning in sorted(warnings):
     logging.info(warning)
 
   logging.info('------------- Advisories --------------')
-  for advisory in advisories:
+  for advisory in sorted(advisories):
     logging.info(advisory)
 
   logging.info('------------- By Category -------------')
