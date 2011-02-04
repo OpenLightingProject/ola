@@ -20,6 +20,7 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import math
 import struct
 import sys
 from google.protobuf import text_format
@@ -126,6 +127,7 @@ class Pid(object):
 
     Args:
       args: A list of arguments of the right types.
+      command_class: RDM_GET or RDM_SET
 
     Returns:
       Binary data which can be used as the Param Data.
@@ -135,7 +137,12 @@ class Pid(object):
     return blob
 
   def Unpack(self, data, command_class):
-    """Unpack a message."""
+    """Unpack a message.
+
+    Args:
+      data: The raw data
+      command_class: RDM_GET or RDM_SET
+    """
     group = self._responses.get(command_class)
     if group is None:
       raise UnpackException('Response contained data: %s' % data)
@@ -143,6 +150,14 @@ class Pid(object):
     return output
 
   def GetRequestDescription(self, command_class):
+    """Get a help string that describes the format of the request.
+
+    Args:
+      command_class: RDM_GET or RDM_SET
+
+    Returns:
+      A help string.
+    """
     group = self._requests.get(command_class)
     return group.GetDescription()
 
@@ -250,9 +265,8 @@ class Range(object):
 
 
 class IntAtom(FixedSizeAtom):
-  def __init__(self, name, char, max_value, labels = [], ranges = []):
+  def __init__(self, name, char, max_value, **kwargs):
     super(IntAtom, self).__init__(name, char)
-    self._max_value = max_value
 
     # About Labels & Ranges:
     # If neither labels nor ranges are specified, the valid values is the range of
@@ -263,15 +277,19 @@ class IntAtom(FixedSizeAtom):
     # If both are specified, the enum values must fall into the specified ranges.
 
     # ranges limit the allowed values for a field
-    self._ranges = ranges[:]
+    self._ranges = kwargs.get('ranges', [])[:]
+    self._multiplier = kwargs.get('multiplier', 0)
 
     # labels provide a user friendly way of referring to data values
     self._labels = {}
-    for value, label in labels:
+    for value, label in kwargs.get('labels', []):
       self._labels[label.lower()] = value
-      if not ranges:
+      if not kwargs.get('ranges', []):
         # Add the labels to the list of allowed values
         self._ranges.append(Range(value, value))
+
+    if not self._ranges:
+      self._ranges.append(Range(0, max_value))
 
   def Pack(self, args):
     self.CheckForSingleArg(args)
@@ -279,58 +297,91 @@ class IntAtom(FixedSizeAtom):
     if isinstance(arg, str):
       arg = arg.lower()
     value = self._labels.get(arg)
-    if value is None:
+
+    # not a labeled value
+    if value is None and self._multiplier >= 0:
       try:
         value = int(args[0])
       except ValueError, e:
         raise ArgsValidationError(e)
-    if value < 0 or value > self._max_value:
-      raise ArgsValidationError('%s must be between 0 and %d, was %d' %
-                                (self.name, self._max_value, value))
 
-    if self._ranges:
-      value_ok = False
-      for range in self._ranges:
-        value_ok |= range.Matches(value)
-      if not value_ok:
-        # make a nice message
-        allowed_values = []
-        for range in self._ranges:
-          allowed_values.append(str(range))
-        raise ArgsValidationError('Param %d out of range, must be one of %s' %
-                                  (value, ', '.join(allowed_values)))
+      multiplier = 10 ** self._multiplier
+      if value % multiplier:
+        raise ArgsValidationError('Conversion will lose data: %d -> %d' %
+                                  (value, (value / multiplier * multiplier)))
+      value = value / multiplier
+
+    elif value is None:
+      try:
+        value = float(args[0])
+      except ValueError, e:
+        raise ArgsValidationError(e)
+
+      scaled_value = value * 10 ** abs(self._multiplier)
+
+      fraction, int_value = math.modf(scaled_value)
+
+      if fraction:
+        raise ArgsValidationError(
+            'Conversion will lose data: %s -> %s' %
+            (value, int_value * (10.0 ** self._multiplier)))
+      value = int(int_value)
+
+    for range in self._ranges:
+      if range.Matches(value):
+        break
+    else:
+      raise ArgsValidationError('Param %d out of range, must be one of %s' %
+                                (value, self._GetAllowedRanges()))
 
     return super(IntAtom, self).Pack([value])
 
+  def Unpack(self, data):
+    return self._AccountForMultiplier(super(IntAtom, self).Unpack(data))
+
   def GetDescription(self, indent=0):
     indent = ' ' * indent
+    increment = ''
+    if self._multiplier:
+      increment = ', increment %s' % (10 ** self._multiplier)
+
+    return ('%s%s: <%s> %s' % (indent, self.name, self._GetAllowedRanges(),
+                               increment))
+
+  def _GetAllowedRanges(self):
     values = self._labels.keys()
 
     for range in self._ranges:
       if range.min == range.max:
-        values.append(str(range.min))
+        values.append(str(self._AccountForMultiplier(range.min)))
       else:
-        values.append('[%d,%d]' % (range.min, range.max))
+        values.append('[%s, %s]' %
+                     (self._AccountForMultiplier(range.min),
+                      self._AccountForMultiplier(range.max)))
 
-    return ('%s%s: <%s>' % (indent, self.name, '|'.join(values)))
+    return ('%s' % ', '.join(values))
+
+
+  def _AccountForMultiplier(self, value):
+    return value * (10 ** self._multiplier)
 
 
 class UInt8(IntAtom):
   """A single unsigned byte field."""
-  def __init__(self, name, labels=[], ranges=[]):
-    super(UInt8, self).__init__(name, 'B', 0xff, labels, ranges)
+  def __init__(self, name, **kwargs):
+    super(UInt8, self).__init__(name, 'B', 0xff, **kwargs)
 
 
 class UInt16(IntAtom):
   """A two-byte unsigned field."""
-  def __init__(self, name, labels=[], ranges=[]):
-    super(UInt16, self).__init__(name, 'H', 0xffff, labels, ranges)
+  def __init__(self, name, **kwargs):
+    super(UInt16, self).__init__(name, 'H', 0xffff, **kwargs)
 
 
 class UInt32(IntAtom):
   """A four-byte unsigned field."""
-  def __init__(self, name, labels=[], ranges=[]):
-    super(UInt32, self).__init__(name, 'I', 0xffffffff, labels, ranges)
+  def __init__(self, name, **kwargs):
+    super(UInt32, self).__init__(name, 'I', 0xffffffff, **kwargs)
 
 
 class String(Atom):
@@ -868,28 +919,30 @@ class PidStore(object):
 
   def _FieldToAtom(self, field):
     """Convert a PID proto field message into an atom."""
-    args = {}
+    args = {'labels': [],
+            'ranges': [],
+            }
     if field.HasField('max_size'):
       args['max_size'] = field.max_size
     if field.HasField('min_size'):
       args['min_size'] = field.min_size
+    if field.HasField('multiplier'):
+      args['multiplier'] = field.multiplier
 
-    labels = []
     for label in field.label:
-      labels.append((label.value, label.label))
+      args['labels'].append((label.value, label.label))
 
-    ranges = []
     for allowed_value in field.range:
-      ranges.append(Range(allowed_value.min, allowed_value.max))
+      args['ranges'].append(Range(allowed_value.min, allowed_value.max))
 
     if field.type == Pids_pb2.BOOL:
       return Bool(field.name)
     elif field.type == Pids_pb2.UINT8:
-      return UInt8(field.name, labels, ranges)
+      return UInt8(field.name, **args);
     elif field.type == Pids_pb2.UINT16:
-      return UInt16(field.name, labels, ranges)
+      return UInt16(field.name, **args);
     elif field.type == Pids_pb2.UINT32:
-      return UInt32(field.name, labels, ranges)
+      return UInt32(field.name, **args);
     elif field.type == Pids_pb2.GROUP:
       if not field.field:
         raise InvalidPidFormat('Missing child fields for %s' % field.name)
