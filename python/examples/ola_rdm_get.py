@@ -313,7 +313,8 @@ class InteractiveModeController(cmd.Cmd):
       return
     elif status.response_type == OlaClient.RDM_NACK_REASON:
       self.wrapper.Stop()
-      if status.nack_reason.value == RDMNack.NR_UNKNOWN_PID:
+      if (status.nack_reason.value == RDMNack.NR_UNKNOWN_PID and
+          pid_value == self.pid_store.GetName('QUEUED_MESSAGE').value):
         print 'Device doesn\'t support queued messages'
       else:
         print 'Got nack with reason: %s' % status.nack_reason
