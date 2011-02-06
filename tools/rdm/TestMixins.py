@@ -103,13 +103,16 @@ class SetLabelMixin(object):
   """Set a PID and make sure the value is saved."""
   TEST_LABEL = 'test label'
 
-  def Test(self):
-    self.verify_result = False
-    self.AddIfSupported([
+  def ExpectedResults(self):
+    return [
       ExpectedResult.NackResponse(self.pid.value,
                                   RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet)
-    ])
+    ]
+
+  def Test(self):
+    self.verify_result = False
+    self.AddIfSupported(self.ExpectedResults())
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.TEST_LABEL])
 
   def VerifySet(self):

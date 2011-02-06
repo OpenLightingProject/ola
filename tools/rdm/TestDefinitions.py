@@ -416,7 +416,9 @@ class GetCommsStatus(IsSupportedMixin, ResponderTest):
         ExpectedResult.AckResponse(self.pid.value))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
-class GetCommsStatusWithData(IsSupportedMixin, TestMixins.GetWithData,
+
+class GetCommsStatusWithData(IsSupportedMixin,
+                             TestMixins.GetWithData,
                              ResponderTest):
   """Get the comms status with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -430,8 +432,7 @@ class ClearCommsStatus(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value,
-                                   action=self.VerifySet))
+        ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifySet(self):
@@ -443,7 +444,8 @@ class ClearCommsStatus(IsSupportedMixin, ResponderTest):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class ClearCommsStatusWithData(IsSupportedMixin, TestMixins.SetWithData,
+class ClearCommsStatusWithData(IsSupportedMixin,
+                               TestMixins.SetWithData,
                                ResponderTest):
   """Clear the comms status with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -470,42 +472,44 @@ class GetProductDetailIdListWithData(IsSupportedMixin, TestMixins.GetWithData,
   PID = 'PRODUCT_DETAIL_ID_LIST'
 
 
-class SetProductDetailIdListWithData(IsSupportedMixin,
-                                     TestMixins.UnsupportedSetMixin,
-                                     ResponderTest):
-  """SET product detail id list with param data."""
+class SetProductDetailIdList(IsSupportedMixin,
+                             TestMixins.UnsupportedSetMixin,
+                             ResponderTest):
+  """SET product detail id list."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRODUCT_DETAIL_ID_LIST'
 
 
 # Device Model Description
 #------------------------------------------------------------------------------
-class GetDeviceModelLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
-                          ResponderTest):
-  """GET the device model label."""
+class GetDeviceModelDescription(IsSupportedMixin,
+                                TestMixins.GetLabelMixin,
+                                ResponderTest):
+  """GET the device model description."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_MODEL_DESCRIPTION'
 
 
-class GetDeviceModelLabelWithData(IsSupportedMixin,
-                                  TestMixins.GetWithData,
-                                  ResponderTest):
-  """Get device_model label with param data."""
+class GetDeviceModelDescriptionWithData(IsSupportedMixin,
+                                        TestMixins.GetWithData,
+                                        ResponderTest):
+  """Get device model description with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_MODEL_DESCRIPTION'
 
 
-class SetDeviceModelLabel(IsSupportedMixin,
-                          TestMixins.UnsupportedSetMixin, ResponderTest):
-  """Attempt to SET the device_model label with no data."""
+class SetDeviceModelDescription(IsSupportedMixin,
+                                TestMixins.UnsupportedSetMixin,
+                                ResponderTest):
+  """Attempt to SET the device model description with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_MODEL_DESCRIPTION'
 
 
-class SetDeviceModelLabelWithData(IsSupportedMixin,
-                                  TestMixins.UnsupportedSetMixin,
-                                  ResponderTest):
-  """SET the device_model label with data."""
+class SetDeviceModelDescriptionWithData(IsSupportedMixin,
+                                        TestMixins.UnsupportedSetMixin,
+                                        ResponderTest):
+  """SET the device model description with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_MODEL_DESCRIPTION'
   DATA = 'FOO BAR'
@@ -513,7 +517,8 @@ class SetDeviceModelLabelWithData(IsSupportedMixin,
 
 # Manufacturer Label
 #------------------------------------------------------------------------------
-class GetManufacturerLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
+class GetManufacturerLabel(IsSupportedMixin,
+                           TestMixins.GetLabelMixin,
                            ResponderTest):
   """GET the manufacturer label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -528,7 +533,8 @@ class GetManufacturerLabelWithData(IsSupportedMixin,
   PID = 'MANUFACTURER_LABEL'
 
 
-class SetManufacturerLabel(IsSupportedMixin, TestMixins.UnsupportedSetMixin,
+class SetManufacturerLabel(IsSupportedMixin,
+                           TestMixins.UnsupportedSetMixin,
                            ResponderTest):
   """Attempt to SET the manufacturer label with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -546,7 +552,8 @@ class SetManufacturerLabelWithData(IsSupportedMixin,
 
 # Device Label
 #------------------------------------------------------------------------------
-class GetDeviceLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
+class GetDeviceLabel(IsSupportedMixin,
+                     TestMixins.GetLabelMixin,
                      ResponderTest):
   """GET the device label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -561,7 +568,8 @@ class GetDeviceLabelWithData(IsSupportedMixin,
   PID = 'DEVICE_LABEL'
 
 
-class SetDeviceLabel(IsSupportedMixin, TestMixins.SetLabelMixin,
+class SetDeviceLabel(IsSupportedMixin,
+                     TestMixins.SetLabelMixin,
                      ResponderTest):
   """SET the device label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -572,13 +580,36 @@ class SetDeviceLabel(IsSupportedMixin, TestMixins.SetLabelMixin,
     return self.Deps(GetDeviceLabel).GetField('label')
 
 
-class SetFullSizeDeviceLabel(IsSupportedMixin, TestMixins.SetLabelMixin,
+class SetFullSizeDeviceLabel(IsSupportedMixin,
+                             TestMixins.SetLabelMixin,
                              ResponderTest):
   """SET the device label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   DEPS = IsSupportedMixin.DEPS + [GetDeviceLabel]
   TEST_LABEL = 'this is a string with 32 charact'
+
+  def OldValue(self):
+    return self.Deps(GetDeviceLabel).GetField('label')
+
+
+class SetNonAsciiDeviceLabel(IsSupportedMixin,
+                             TestMixins.SetLabelMixin,
+                             ResponderTest):
+  """SET the device label to something that contains non-ascii data."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'DEVICE_LABEL'
+  DEPS = IsSupportedMixin.DEPS + [GetDeviceLabel]
+  TEST_LABEL = 'string with\x0d non ascii\xc0'
+
+  def ExpectedResults(self):
+    return [
+      ExpectedResult.NackResponse(self.pid.value,
+                                  RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      ExpectedResult.NackResponse(self.pid.value,
+                                  RDMNack.NR_FORMAT_ERROR),
+      ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet)
+    ]
 
   def OldValue(self):
     return self.Deps(GetDeviceLabel).GetField('label')
@@ -621,7 +652,8 @@ class GetFactoryDefaults(IsSupportedMixin, ResponderTest):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class GetFactoryDefaultsWithData(IsSupportedMixin, TestMixins.GetWithData,
+class GetFactoryDefaultsWithData(IsSupportedMixin,
+                                 TestMixins.GetWithData,
                                  ResponderTest):
   """GET the factory defaults pid with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -646,7 +678,8 @@ class ResetFactoryDefaults(IsSupportedMixin, ResponderTest):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class ResetFactoryDefaultsWithData(IsSupportedMixin, TestMixins.SetWithData,
+class ResetFactoryDefaultsWithData(IsSupportedMixin,
+                                   TestMixins.SetWithData,
                                    ResponderTest):
   """Reset to factory defaults with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -744,6 +777,19 @@ class SetLanguage(IsSupportedMixin, ResponderTest):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
+class SetNonAsciiLanguage(IsSupportedMixin, ResponderTest):
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'LANGUAGE'
+  DEPS = IsSupportedMixin.DEPS + [GetLanguageCapabilities]
+
+  def Test(self):
+    self.AddIfSupported(
+        ExpectedResult.NackResponse(self.pid.value,
+                                    RDMNack.NR_DATA_OUT_OF_RANGE))
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, ['\x0d\xc0'])
+
+
 class SetUnsupportedLanguage(IsSupportedMixin, ResponderTest):
   """Try to set a language that doesn't exist in Language Capabilities."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -828,7 +874,8 @@ class SetBootSoftwareVersion(TestMixins.UnsupportedSetMixin, ResponderTest):
 
 # Boot Software Version Label
 #------------------------------------------------------------------------------
-class GetBootSoftwareLabel(IsSupportedMixin, TestMixins.GetLabelMixin,
+class GetBootSoftwareLabel(IsSupportedMixin,
+                           TestMixins.GetLabelMixin,
                            ResponderTest):
   """GET the boot software label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
@@ -1188,7 +1235,8 @@ class SetOversizedStartAddress(ResponderTest):
 
 # Device Hours
 #------------------------------------------------------------------------------
-class GetDeviceHours(IsSupportedMixin, TestMixins.GetUInt32Mixin,
+class GetDeviceHours(IsSupportedMixin,
+                     TestMixins.GetUInt32Mixin,
                      ResponderTest):
   """GET the device hours."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -1204,7 +1252,8 @@ class GetDeviceHoursWithData(IsSupportedMixin,
   PID = 'DEVICE_HOURS'
 
 
-class SetDeviceHours(IsSupportedMixin, TestMixins.SetUInt32Mixin,
+class SetDeviceHours(IsSupportedMixin,
+                     TestMixins.SetUInt32Mixin,
                      ResponderTest):
   """Attempt to SET the device hours."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -1226,8 +1275,9 @@ class SetDeviceHoursWithNoData(IsSupportedMixin,
 
 # Lamp Hours
 #------------------------------------------------------------------------------
-class GetLampHours(IsSupportedMixin, TestMixins.GetUInt32Mixin,
-                     ResponderTest):
+class GetLampHours(IsSupportedMixin,
+                   TestMixins.GetUInt32Mixin,
+                   ResponderTest):
   """GET the device hours."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'LAMP_HOURS'
@@ -1235,15 +1285,16 @@ class GetLampHours(IsSupportedMixin, TestMixins.GetUInt32Mixin,
 
 
 class GetLampHoursWithData(IsSupportedMixin,
-                             TestMixins.GetWithData,
-                             ResponderTest):
+                           TestMixins.GetWithData,
+                           ResponderTest):
   """GET the device hours with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_HOURS'
 
 
-class SetLampHours(IsSupportedMixin, TestMixins.SetUInt32Mixin,
-                     ResponderTest):
+class SetLampHours(IsSupportedMixin,
+                   TestMixins.SetUInt32Mixin,
+                   ResponderTest):
   """Attempt to SET the device hours."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'LAMP_HOURS'
@@ -1255,8 +1306,8 @@ class SetLampHours(IsSupportedMixin, TestMixins.SetUInt32Mixin,
 
 
 class SetLampHoursWithNoData(IsSupportedMixin,
-                               TestMixins.SetUInt32NoDataMixin,
-                               ResponderTest):
+                             TestMixins.SetUInt32NoDataMixin,
+                             ResponderTest):
   """Set the device hours with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_HOURS'
@@ -1264,7 +1315,8 @@ class SetLampHoursWithNoData(IsSupportedMixin,
 
 # Lamp Strikes
 #------------------------------------------------------------------------------
-class GetLampStrikes(IsSupportedMixin, TestMixins.GetUInt32Mixin,
+class GetLampStrikes(IsSupportedMixin,
+                     TestMixins.GetUInt32Mixin,
                      ResponderTest):
   """GET the device strikes."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -1280,7 +1332,8 @@ class GetLampStrikesWithData(IsSupportedMixin,
   PID = 'LAMP_STRIKES'
 
 
-class SetLampStrikes(IsSupportedMixin, TestMixins.SetUInt32Mixin,
+class SetLampStrikes(IsSupportedMixin,
+                     TestMixins.SetUInt32Mixin,
                      ResponderTest):
   """Attempt to SET the device strikes."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -1302,7 +1355,8 @@ class SetLampStrikesWithNoData(IsSupportedMixin,
 
 # Device Hours
 #------------------------------------------------------------------------------
-class GetDevicePowerCycles(IsSupportedMixin, TestMixins.GetUInt32Mixin,
+class GetDevicePowerCycles(IsSupportedMixin,
+                           TestMixins.GetUInt32Mixin,
                            ResponderTest):
   """GET the device power_cycles."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
@@ -1311,15 +1365,16 @@ class GetDevicePowerCycles(IsSupportedMixin, TestMixins.GetUInt32Mixin,
 
 
 class GetDevicePowerCyclesWithData(IsSupportedMixin,
-                             TestMixins.GetWithData,
-                             ResponderTest):
+                                   TestMixins.GetWithData,
+                                   ResponderTest):
   """GET the device power_cycles with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_POWER_CYCLES'
 
 
-class SetDevicePowerCycles(IsSupportedMixin, TestMixins.SetUInt32Mixin,
-                     ResponderTest):
+class SetDevicePowerCycles(IsSupportedMixin,
+                           TestMixins.SetUInt32Mixin,
+                           ResponderTest):
   """Attempt to SET the device power_cycles."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'DEVICE_POWER_CYCLES'
@@ -1331,8 +1386,8 @@ class SetDevicePowerCycles(IsSupportedMixin, TestMixins.SetUInt32Mixin,
 
 
 class SetDevicePowerCyclesWithNoData(IsSupportedMixin,
-                               TestMixins.SetUInt32NoDataMixin,
-                               ResponderTest):
+                                     TestMixins.SetUInt32NoDataMixin,
+                                     ResponderTest):
   """Set the device power_cycles with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_POWER_CYCLES'
@@ -1340,7 +1395,8 @@ class SetDevicePowerCyclesWithNoData(IsSupportedMixin,
 
 # Display Level
 #------------------------------------------------------------------------------
-class GetDisplayLevel(IsSupportedMixin, TestMixins.GetBoolMixin,
+class GetDisplayLevel(IsSupportedMixin,
+                      TestMixins.GetBoolMixin,
                       ResponderTest):
   """GET the display level setting."""
   CATEGORY = TestCategory.DISPLAY_SETTINGS
@@ -1348,14 +1404,16 @@ class GetDisplayLevel(IsSupportedMixin, TestMixins.GetBoolMixin,
   EXPECTED_FIELD = 'level'
 
 
-class GetDisplayLevelWithData(IsSupportedMixin, TestMixins.GetWithData,
+class GetDisplayLevelWithData(IsSupportedMixin,
+                              TestMixins.GetWithData,
                               ResponderTest):
   """GET the pan invert setting with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DISPLAY_LEVEL'
 
 
-class SetDisplayLevel(IsSupportedMixin, TestMixins.SetUInt8Mixin,
+class SetDisplayLevel(IsSupportedMixin,
+                      TestMixins.SetUInt8Mixin,
                       ResponderTest):
   """Attempt to SET the display level setting."""
   CATEGORY = TestCategory.DISPLAY_SETTINGS
@@ -1384,7 +1442,8 @@ class GetPanInvert(IsSupportedMixin, TestMixins.GetBoolMixin, ResponderTest):
   EXPECTED_FIELD = 'invert'
 
 
-class GetPanInvertWithData(IsSupportedMixin, TestMixins.GetWithData,
+class GetPanInvertWithData(IsSupportedMixin,
+                           TestMixins.GetWithData,
                            ResponderTest):
   """GET the pan invert setting with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -1402,7 +1461,8 @@ class SetPanInvert(IsSupportedMixin, TestMixins.SetBoolMixin, ResponderTest):
     return self.Deps(GetPanInvert).GetField(self.EXPECTED_FIELD)
 
 
-class SetPanInvertWithNoData(IsSupportedMixin, TestMixins.SetBoolNoDataMixin,
+class SetPanInvertWithNoData(IsSupportedMixin,
+                             TestMixins.SetBoolNoDataMixin,
                              ResponderTest):
   """Set the pan invert with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -1418,8 +1478,9 @@ class GetTiltInvert(IsSupportedMixin, TestMixins.GetBoolMixin, ResponderTest):
   EXPECTED_FIELD = 'invert'
 
 
-class GetTiltInvertWithData(IsSupportedMixin, TestMixins.GetWithData,
-                           ResponderTest):
+class GetTiltInvertWithData(IsSupportedMixin,
+                            TestMixins.GetWithData,
+                            ResponderTest):
   """GET the tilt invert setting with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'TILT_INVERT'
@@ -1436,8 +1497,9 @@ class SetTiltInvert(IsSupportedMixin, TestMixins.SetBoolMixin, ResponderTest):
     return self.Deps(GetTiltInvert).GetField(self.EXPECTED_FIELD)
 
 
-class SetTiltInvertWithNoData(IsSupportedMixin, TestMixins.SetBoolNoDataMixin,
-                             ResponderTest):
+class SetTiltInvertWithNoData(IsSupportedMixin,
+                              TestMixins.SetBoolNoDataMixin,
+                              ResponderTest):
   """Set the tilt invert with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'TILT_INVERT'
@@ -1452,8 +1514,9 @@ class GetPanTiltSwap(IsSupportedMixin, TestMixins.GetBoolMixin, ResponderTest):
   EXPECTED_FIELD = 'swap'
 
 
-class GetPanTiltSwapWithData(IsSupportedMixin, TestMixins.GetWithData,
-                           ResponderTest):
+class GetPanTiltSwapWithData(IsSupportedMixin,
+                             TestMixins.GetWithData,
+                             ResponderTest):
   """GET the pan tilt swap setting with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PAN_TILT_SWAP'
@@ -1470,8 +1533,9 @@ class SetPanTiltSwap(IsSupportedMixin, TestMixins.SetBoolMixin, ResponderTest):
     return self.Deps(GetPanTiltSwap).GetField(self.EXPECTED_FIELD)
 
 
-class SetPanTiltSwapWithNoData(IsSupportedMixin, TestMixins.SetBoolNoDataMixin,
-                             ResponderTest):
+class SetPanTiltSwapWithNoData(IsSupportedMixin,
+                               TestMixins.SetBoolNoDataMixin,
+                               ResponderTest):
   """Set the pan tilt swap with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PAN_TILT_SWAP'
@@ -1494,7 +1558,8 @@ class GetRealTimeClock(IsSupportedMixin, ResponderTest):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
-class GetRealTimeClockWithData(IsSupportedMixin, TestMixins.GetWithData,
+class GetRealTimeClockWithData(IsSupportedMixin,
+                               TestMixins.GetWithData,
                                ResponderTest):
   """GET the teal time clock with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -1578,7 +1643,6 @@ class SetIdentifyDevice(ResponderTest):
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.identify_mode])
 
 
-
 class SetIdentifyDeviceWithNoData(ResponderTest):
   """Set the identify mode with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -1611,8 +1675,9 @@ class GetPowerState(IsSupportedMixin, ResponderTest):
       self.AddWarning('Power state of 0x%hx is not defined' % fields['state'])
 
 
-class GetPowerStateWithData(IsSupportedMixin, TestMixins.GetWithData,
-                             ResponderTest):
+class GetPowerStateWithData(IsSupportedMixin,
+                            TestMixins.GetWithData,
+                            ResponderTest):
   """Get the power state mode with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'POWER_STATE'
@@ -1643,4 +1708,12 @@ class SetPowerState(IsSupportedMixin, TestMixins.SetUInt8Mixin, ResponderTest):
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.old_value])
     self._wrapper.Run()
 
-#class SetPowerStateWithoutData(IsSupportedMixin, ResponderTest):
+class SetPowerStateWithNoData(IsSupportedMixin, ResponderTest):
+  """Set the power state with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'POWER_STATE'
+
+  def Test(self):
+    self.AddIfSupported(
+      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
