@@ -51,10 +51,7 @@ class GetDeviceInfo(ResponderTest, DeviceInfoTest):
   CATEGORY = TestCategory.CORE
 
   def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.AckResponse(self.pid.value,
-                                 self.FIELDS,
-                                 self.FIELD_VALUES))
+    self.AddExpectedResults(self.AckResponse(self.FIELDS, self.FIELD_VALUES))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, unused_status, fields):
@@ -88,9 +85,8 @@ class GetDeviceInfoWithData(ResponderTest, DeviceInfoTest):
 
   def Test(self):
     self.AddExpectedResults([
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
-      ExpectedResult.AckResponse(
-        self.pid.value,
+      self.NackResponse(RDMNack.NR_FORMAT_ERROR),
+      self.AckResponse(
         self.FIELDS,
         self.FIELD_VALUES,
         warning='Get %s with data returned an ack' % self.pid.name)
@@ -112,8 +108,7 @@ class AllSubDevicesDeviceInfo(ResponderTest, DeviceInfoTest):
   CATEGORY = TestCategory.SUB_DEVICES
   def Test(self):
     self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+        self.NackResponse(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
     self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
 
 
@@ -168,8 +163,8 @@ class GetSupportedParameters(ResponderTest):
     self.AddExpectedResults([
       # TODO(simon): We should cross check this against support for anything
       # more than the required set of parameters at the end of all tests.
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
-      ExpectedResult.AckResponse(self.pid.value)
+      self.NackResponse(RDMNack.NR_UNKNOWN_PID),
+      self.AckResponse(),
     ])
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
@@ -236,9 +231,8 @@ class GetSupportedParametersWithData(ResponderTest):
 
   def Test(self):
     self.AddExpectedResults([
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR),
-      ExpectedResult.AckResponse(
-        self.pid.value,
+      self.NackResponse(RDMNack.NR_FORMAT_ERROR),
+      self.AckResponse(
         warning='Get %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
@@ -263,8 +257,7 @@ class IsSupportedMixin(object):
 
   def AddIfSupported(self, result):
     if not self.PidSupported():
-      result = ExpectedResult.NackResponse(self.pid.value,
-                                           RDMNack.NR_UNKNOWN_PID)
+      result = self.NackResponse(RDMNack.NR_UNKNOWN_PID)
     self.AddExpectedResults(result)
 
 
@@ -298,11 +291,9 @@ class FindSubDevices(ResponderTest):
       return
 
     self.AddExpectedResults([
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE,
-                                  action=self._CheckForSubDevice),
-      ExpectedResult.AckResponse(self.pid.value,
-                                 action=self._CheckForSubDevice)
+      self.NackResponse(RDMNack,NR_SUB_DEVICE_OUT_OF_RANGE,
+                        action=self._CheckForSubDevice),
+      self.AckResponse(action=self._CheckForSubDevice)
     ])
     self._current_index += 1
     self.SendGet(self._current_index, self.pid)
@@ -334,7 +325,7 @@ class GetParamDescription(ResponderTest):
       return
 
     self.AddExpectedResults(
-      ExpectedResult.AckResponse(self.pid.value, action=self._GetParam))
+      self.AckResponse(action=self._GetParam))
     self.current_param = self.params.pop()
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.current_param])
 
@@ -367,16 +358,14 @@ class GetParamDescriptionForNonManufacturerPid(ResponderTest):
   def Test(self):
     device_info_pid = self.LookupPid('DEVICE_INFO')
     results = [
-        ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
-        ExpectedResult.NackResponse(
-            self.pid.value,
+        self.NackResponse(RDMNack.NR_UNKNOWN_PID),
+        self.NackResponse(
             RDMNack.NR_DATA_OUT_OF_RANGE,
             advisory='Parameter Description appears to be supported but no'
                      'manufacturer pids were declared'),
     ]
     if self.Deps(GetSupportedParameters).manufacturer_parameters:
-      results = ExpectedResult.NackResponse(self.pid.value,
-                                            RDMNack.NR_DATA_OUT_OF_RANGE)
+      results = self.NackResponse(RDMNack.NR_DATA_OUT_OF_RANGE)
 
     self.AddExpectedResults(results)
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [device_info_pid.value])
@@ -390,16 +379,14 @@ class GetParamDescriptionWithData(ResponderTest):
 
   def Test(self):
     results = [
-        ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID),
-        ExpectedResult.NackResponse(
-            self.pid.value,
-            RDMNack.NR_FORMAT_ERROR,
-            advisory='Parameter Description appears to be supported but no'
-                     'manufacturer pids were declared'),
+        self.NackResponse(RDMNack.NR_UNKNOWN_PID),
+        self.NackResponse(RDMNack.NR_FORMAT_ERROR,
+                          advisory='Parameter Description appears to be '
+                                   'supported but no manufacturer pids were '
+                                   'declared'),
     ]
     if self.Deps(GetSupportedParameters).manufacturer_parameters:
-      results = ExpectedResult.NackResponse(self.pid.value,
-                                            RDMNack.NR_FORMAT_ERROR)
+      results = self.NackResponse(RDMNack.NR_FORMAT_ERROR)
     self.AddExpectedResults(results)
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
@@ -412,8 +399,7 @@ class GetCommsStatus(IsSupportedMixin, ResponderTest):
   PID = 'COMMS_STATUS'
 
   def Test(self):
-    self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value))
+    self.AddIfSupported(self.AckResponse())
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -431,16 +417,16 @@ class ClearCommsStatus(IsSupportedMixin, ResponderTest):
   PID = 'COMMS_STATUS'
 
   def Test(self):
-    self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet))
+    self.AddIfSupported(self.AckResponse(action=self.VerifySet))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifySet(self):
     self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value,
-                                   {'short_message': 0,
-                                    'length_mismatch': 0,
-                                    'checksum_fail': 0}))
+        self.AckResponse(field_dict={
+            'short_message': 0,
+            'length_mismatch': 0,
+            'checksum_fail': 0
+        }))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -460,8 +446,7 @@ class GetProductDetailIdList(IsSupportedMixin, ResponderTest):
   PID = 'PRODUCT_DETAIL_ID_LIST'
 
   def Test(self):
-    self.AddIfSupported(
-        ExpectedResult.AckResponse(self.pid.value, ['detail_ids']))
+    self.AddIfSupported(self.AckResponse(['detail_ids']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -604,11 +589,9 @@ class SetNonAsciiDeviceLabel(IsSupportedMixin,
 
   def ExpectedResults(self):
     return [
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_FORMAT_ERROR),
-      ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet)
+      self.NackResponse(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackResponse(RDMNack.NR_FORMAT_ERROR),
+      self.AckResponse(action=self.VerifySet)
     ]
 
   def OldValue(self):
@@ -648,7 +631,7 @@ class GetFactoryDefaults(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     self.AddIfSupported(
-      ExpectedResult.AckResponse(self.pid.value, ['using_defaults']))
+      self.AckResponse(['using_defaults']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -667,14 +650,12 @@ class ResetFactoryDefaults(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     self.AddIfSupported(
-      ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet))
+      self.AckResponse(action=self.VerifySet))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifySet(self):
     self.AddIfSupported(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values={'using_defaults': True}))
+      self.AckResponse(field_values={'using_defaults': True}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -695,8 +676,7 @@ class GetLanguageCapabilities(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     self.languages = []
-    self.AddIfSupported(
-      ExpectedResult.AckResponse(self.pid.value, ['languages']))
+    self.AddIfSupported(self.AckResponse(['languages']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -732,8 +712,7 @@ class GetLanguage(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     self.language = None
-    self.AddIfSupported(
-      ExpectedResult.AckResponse(self.pid.value, ['language']))
+    self.AddIfSupported(self.AckResponse(['language']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -749,9 +728,8 @@ class SetLanguage(IsSupportedMixin, ResponderTest):
   DEPS = IsSupportedMixin.DEPS + [GetLanguageCapabilities]
 
   def Test(self):
-    ack = ExpectedResult.AckResponse(self.pid.value, action=self.VerifySet)
-    nack = ExpectedResult.NackResponse(self.pid.value,
-                                       RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
+    ack = self.AckResponse(action=self.VerifySet)
+    nack = self.NackResponse(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
 
     # This is either empty, if GetLanguageCapabilities was NACK'ed or > 0
     available_langugages = self.Deps(GetLanguageCapabilities).languages
@@ -771,9 +749,7 @@ class SetLanguage(IsSupportedMixin, ResponderTest):
 
   def VerifySet(self):
     self.AddExpectedResults(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values={'language': self.new_language}))
+      self.AckResponse(field_values={'language': self.new_language}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -783,9 +759,7 @@ class SetNonAsciiLanguage(IsSupportedMixin, ResponderTest):
   DEPS = IsSupportedMixin.DEPS + [GetLanguageCapabilities]
 
   def Test(self):
-    self.AddIfSupported(
-        ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.AddIfSupported(self.NackResponse(RDMNack.NR_DATA_OUT_OF_RANGE))
 
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, ['\x0d\xc0'])
 
@@ -804,10 +778,9 @@ class SetUnsupportedLanguage(IsSupportedMixin, ResponderTest):
       return
 
     self.AddIfSupported([
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_DATA_OUT_OF_RANGE)])
+      self.NackResponse(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackResponse(RDMNack.NR_DATA_OUT_OF_RANGE),
+    ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, ['zz'])
 
 
@@ -820,8 +793,7 @@ class GetSoftwareVersionLabel(ResponderTest):
   PID = 'SOFTWARE_VERSION_LABEL'
 
   def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.AckResponse(self.pid.value, ['label']))
+    self.AddExpectedResults(self.AckResponse(['label']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -853,8 +825,7 @@ class GetBootSoftwareVersion(IsSupportedMixin,
   PID = 'BOOT_SOFTWARE_VERSION'
 
   def Test(self):
-    self.AddIfSupported(
-      ExpectedResult.AckResponse(self.pid.value, ['version']))
+    self.AddIfSupported(self.AckResponse(['version']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -905,9 +876,7 @@ class GetZeroPersonalityDescription(IsSupportedMixin, ResponderTest):
   PID = 'DMX_PERSONALITY_DESCRIPTION'
 
   def Test(self):
-    self.AddIfSupported(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.AddIfSupported(self.NackResponse(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [0])
 
 
@@ -919,9 +888,7 @@ class GetOutOfRangePersonalityDescription(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     personality_count = self.Deps(GetDeviceInfo).GetField('personality_count')
-    self.AddIfSupported(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.AddIfSupported(self.NackResponse(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [personality_count + 1])
 
 
@@ -936,11 +903,10 @@ class GetPersonalityDescription(IsSupportedMixin, ResponderTest):
         'current_personality')
     footprint = self.Deps(GetDeviceInfo).GetField('dmx_footprint')
     # cross check against what we got from device info
-    self.AddIfSupported(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values={'personality': current_personality,
-                      'slots_required': footprint}))
+    self.AddIfSupported(self.AckResponse(field_values={
+        'personality': current_personality,
+        'slots_required': footprint
+      }))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [current_personality])
 
 
@@ -951,9 +917,8 @@ class GetPersonality(IsSupportedMixin, ResponderTest):
   DEPS = IsSupportedMixin.DEPS + [GetDeviceInfo]
 
   def Test(self):
-    self.AddIfSupported(ExpectedResult.AckResponse(
-        self.pid.value,
-        ['current_personality', 'personality_count']))
+    self.AddIfSupported(self.AckResponse(
+      ['current_personality', 'personality_count']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -1003,8 +968,7 @@ class GetPersonalities(IsSupportedMixin, ResponderTest):
       self.Stop()
       return
 
-    self.AddIfSupported(ExpectedResult.AckResponse(
-        self.pid.value,
+    self.AddIfSupported(self.AckResponse(
         ['slots_required', 'name'],
         {'personality': self._current_index},
         action=self._GetPersonality))
@@ -1027,8 +991,7 @@ class SetPersonality(IsSupportedMixin, ResponderTest):
   def Test(self):
     count = self.Deps(GetPersonality).GetField('personality_count')
     if count is None or count == 0:
-      self.AddExpectedResults(
-        ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults(self.NackResponse(RDMNack.NR_UNKNOWN_PID))
       self.new_personality = {'personality': 1}  # can use anything here really
     else:
       personalities = self.Deps(GetPersonalities).personalities
@@ -1046,9 +1009,7 @@ class SetPersonality(IsSupportedMixin, ResponderTest):
           self.new_personality = personality
           break
 
-      self.AddIfSupported(ExpectedResult.AckResponse(
-          self.pid.value,
-          action=self.VerifySet))
+      self.AddIfSupported(self.AckResponse(action=self.VerifySet))
 
     self.SendSet(PidStore.ROOT_DEVICE,
                  self.pid,
@@ -1056,8 +1017,7 @@ class SetPersonality(IsSupportedMixin, ResponderTest):
 
   def VerifySet(self):
     self.AddIfSupported(
-      ExpectedResult.AckResponse(
-        self.pid.value,
+      self.AckResponse(
         field_values={
           'current_personality': self.new_personality['personality'],
         },
@@ -1083,9 +1043,7 @@ class SetZeroPersonality(IsSupportedMixin, ResponderTest):
   DEPS = IsSupportedMixin.DEPS
 
   def Test(self):
-    self.AddIfSupported(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.AddIfSupported(self.NackResponse(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [0])
 
 
@@ -1097,9 +1055,7 @@ class SetOutOfRangePersonality(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     personality_count = self.Deps(GetDeviceInfo).GetField('personality_count')
-    self.AddIfSupported(
-      ExpectedResult.NackResponse(self.pid.value,
-                                  RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.AddIfSupported(self.NackResponse(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [personality_count + 1])
 
 
@@ -1109,8 +1065,7 @@ class SetOversizedPersonality(IsSupportedMixin, ResponderTest):
   PID = 'DMX_PERSONALITY'
 
   def Test(self):
-    self.AddIfSupported(
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.AddIfSupported(self.NackResponse(RDMNack.NR_FORMAT_ERROR))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
@@ -1124,13 +1079,11 @@ class GetStartAddress(ResponderTest):
 
   def Test(self):
     if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
-      results = ExpectedResult.AckResponse(self.pid.value, ['dmx_address'])
+      results = self.AckResponse(['dmx_address'])
     else:
       results = [
-          ExpectedResult.AckResponse(self.pid.value,
-                                     field_values={'dmx_address': 0xffff}),
-          ExpectedResult.NackResponse(self.pid.value,
-                                      RDMNack.NR_UNKNOWN_PID)
+          self.AckResponse(field_values={'dmx_address': 0xffff}),
+          self.NackResponse(RDMNack.NR_UNKNOWN_PID)
       ]
     self.AddExpectedResults(results)
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
@@ -1148,24 +1101,20 @@ class SetStartAddress(ResponderTest):
 
     current_address = self.Deps(GetStartAddress).GetField('dmx_address')
     if footprint == 0 or current_address == 0xffff:
-      result = ExpectedResult.NackResponse(self.pid.value,
-                                           RDMNack.NR_UNKNOWN_PID)
+      result = self.NackResponse(RDMNack.NR_UNKNOWN_PID)
     else:
       if footprint != MAX_DMX_ADDRESS:
         self.start_address = current_address + 1
         if self.start_address + footprint > MAX_DMX_ADDRESS + 1:
           self.start_address = 1
-      result = ExpectedResult.AckResponse(self.pid.value,
-                                          action=self.VerifySet)
+      result = self.AckResponse(action=self.VerifySet)
     self.AddExpectedResults(result)
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.start_address])
 
   def VerifySet(self):
     self.AddExpectedResults(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        field_values={'dmx_address': self.start_address},
-        action=self.VerifyDeviceInfo))
+      self.AckResponse(field_values={'dmx_address': self.start_address},
+                       action=self.VerifyDeviceInfo))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyDeviceInfo(self):
@@ -1185,13 +1134,9 @@ class SetOutOfRangeStartAddress(ResponderTest):
 
   def Test(self):
     if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
-      self.AddExpectedResults(
-        ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.AddExpectedResults(self.NackResponse(RDMNack.NR_DATA_OUT_OF_RANGE))
     else:
-      self.AddExpectedResults(
-        ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults(self.NackResponse(RDMNack.NR_UNKNOWN_PID))
     data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, data)
 
@@ -1204,13 +1149,9 @@ class SetZeroStartAddress(ResponderTest):
 
   def Test(self):
     if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
-      self.AddExpectedResults(
-        ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.AddExpectedResults(self.NackResponse(RDMNack.NR_DATA_OUT_OF_RANGE))
     else:
-      self.AddExpectedResults(
-        ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults(self.NackResponse(RDMNack.NR_UNKNOWN_PID))
     data = struct.pack('!H', 0)
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, data)
 
@@ -1223,13 +1164,9 @@ class SetOversizedStartAddress(ResponderTest):
 
   def Test(self):
     if self.Deps(GetDeviceInfo).GetField('dmx_footprint') > 0:
-      self.AddExpectedResults(
-        ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_FORMAT_ERROR))
+      self.AddExpectedResults(self.NackResponse(RDMNack.NR_FORMAT_ERROR))
     else:
-      self.AddExpectedResults(
-        ExpectedResult.NackResponse(self.pid.value,
-                                    RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults(self.NackResponse(RDMNack.NR_UNKNOWN_PID))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
@@ -1548,14 +1485,28 @@ class GetRealTimeClock(IsSupportedMixin, ResponderTest):
   CATEGORY = TestCategory.CONFIGURATION
   PID = 'REAL_TIME_CLOCK'
 
+  ALLOWED_RANGES = {
+      'year': (2003, 65535),
+      'month': (1, 12),
+      'day': (1, 31),
+      'hour': (0, 23),
+      'minute': (0, 59),
+  }
+
   def Test(self):
     self.AddIfSupported(
-      ExpectedResult.AckResponse(
-        self.pid.value,
-        ['year', 'month', 'day', 'hour', 'minute', 'second']))
-    # we don't need to verify the ranges because that's done at the PidStore
-    # layer
+      self.AckResponse(self.ALLOWED_RANGES.keys() + ['second']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, status, fields):
+    if not status.WasSuccessfull():
+      return
+
+    for field, range in ALLOWED_RANGES:
+      value = fields[field]
+      if value < range[0] or value > range[1]:
+        self.AddWarning('%s in GET %s is out of range, was %d, expeced %s' %
+                        (field, self.PID, value, range))
 
 
 class GetRealTimeClockWithData(IsSupportedMixin,
@@ -1573,7 +1524,7 @@ class SetRealTimeClock(IsSupportedMixin, ResponderTest):
 
   def Test(self):
     n = datetime.datetime.now()
-    self.AddIfSupported(ExpectedResult.AckResponse(self.pid.value))
+    self.AddIfSupported(self.AckResponse())
     args = [n.year, n.month, n.day, n.hour, n.minute, n.second]
     self.SendSet(PidStore.ROOT_DEVICE, self.pid,
                  args)
@@ -1585,8 +1536,7 @@ class SetRealTimeClockWithNoData(IsSupportedMixin, ResponderTest):
   PID = 'REAL_TIME_CLOCK'
 
   def Test(self):
-    self.AddIfSupported(
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.AddIfSupported(self.NackResponse(RDMNack.NR_FORMAT_ERROR))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -1599,7 +1549,7 @@ class GetIdentifyDevice(ResponderTest):
 
   def Test(self):
     # don't inherit from GetBoolMixin because this is required
-    self.AddExpectedResults(ExpectedResult.AckResponse(self.pid.value))
+    self.AddExpectedResults(self.AckResponse())
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -1610,8 +1560,7 @@ class GetIdentifyDeviceWithData(ResponderTest):
 
   def Test(self):
     # don't inherit from GetWithData because this is required
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.AddExpectedResults(self.NackResponse(RDMNack.NR_FORMAT_ERROR))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
@@ -1625,21 +1574,17 @@ class SetIdentifyDevice(ResponderTest):
     self.identify_mode = self.Deps(GetIdentifyDevice).GetField('identify_state')
     self.new_mode = not self.identify_mode
 
-    self.AddExpectedResults(
-        ExpectedResult.AckResponse(self.pid.value,
-                                   action=self.VerifyIdentifyMode))
+    self.AddExpectedResults(self.AckResponse(action=self.VerifyIdentifyMode))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.new_mode])
 
   def VerifyIdentifyMode(self):
-    self.AddExpectedResults(
-      ExpectedResult.AckResponse(
-        self.pid.value,
+    self.AddExpectedResults(self.AckResponse(
         field_values = {'identify_state': self.new_mode},
         action=self.ResetMode))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def ResetMode(self):
-    self.AddExpectedResults(ExpectedResult.AckResponse(self.pid.value))
+    self.AddExpectedResults(self.AckResponse())
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.identify_mode])
 
 
@@ -1649,8 +1594,7 @@ class SetIdentifyDeviceWithNoData(ResponderTest):
   PID = 'IDENTIFY_DEVICE'
 
   def Test(self):
-    self.AddExpectedResults(
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.AddExpectedResults(self.NackResponse(RDMNack.NR_FORMAT_ERROR))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -1664,7 +1608,7 @@ class GetPowerState(IsSupportedMixin, ResponderTest):
   ALLOWED_STATES = [0, 1, 2, 0xff]
 
   def Test(self):
-    self.AddIfSupported(ExpectedResult.AckResponse(self.pid.value))
+    self.AddIfSupported(self.AckResponse())
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -1714,6 +1658,5 @@ class SetPowerStateWithNoData(IsSupportedMixin, ResponderTest):
   PID = 'POWER_STATE'
 
   def Test(self):
-    self.AddIfSupported(
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.AddIfSupported(self.NackResponse(RDMNack.NR_FORMAT_ERROR))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')

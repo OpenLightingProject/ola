@@ -318,8 +318,7 @@ class SetUInt32NoDataMixin(object):
   """Set a uint32 field with no data."""
 
   def Test(self):
-    self.AddIfSupported(
-      ExpectedResult.NackResponse(self.pid.value, RDMNack.NR_FORMAT_ERROR))
+    self.AddIfSupported(self.NackResponse(RDMNack.NR_FORMAT_ERROR))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
   # TODO(simon): add a method to check this didn't change the value
