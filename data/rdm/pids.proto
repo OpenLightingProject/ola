@@ -328,7 +328,7 @@ pid {
     }
     field {
       type: UINT16
-      name: "start_address"
+      name: "dmx_start_address"
     }
     field {
       type: UINT16
@@ -367,7 +367,7 @@ pid {
   get_response {
     field {
       type: STRING
-      name: "label"
+      name: "description"
       max_size: 32
     }
   }
@@ -1283,14 +1283,14 @@ pid {
   get_response {
     field {
       type: UINT8
-      name: "state"
+      name: "power_state"
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
   set_request {
     field {
       type: UINT8
-      name: "state"
+      name: "power_state"
       label {
         value: 0
         label: "Full Off"
