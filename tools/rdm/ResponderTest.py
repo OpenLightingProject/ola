@@ -20,9 +20,34 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import logging
 from ola import PidStore
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
+
+
+class Error(Exception):
+  """The base error class."""
+
+
+class DuplicatePropertyException(Error):
+  """Raised if a property is declared in more than one test."""
+
+
+class MissingPropertyException(Error):
+  """Raised if a property was listed in a REQUIRES list but it didn't appear in
+    any PROVIDES list.
+  """
+
+
+class CircularDepdendancyException(Error):
+  """Raised if there is a circular depdendancy created by PROVIDES &
+     REQUIRES statements.
+  """
+
+
+class UndeclaredPropertyException(Error):
+  """Raised if a test attempts to get/set a property that it didn't declare."""
 
 
 class ExpectedResult(object):
@@ -232,12 +257,38 @@ TestState.BROKEN = TestState('Broken')
 TestState.NOT_RUN = TestState('Not Run')
 
 
+class DeviceProperties(object):
+  """Encapsulates the properties of a device."""
+  def __init__(self, property_names):
+    object.__setattr__(self, '_property_names', property_names)
+    object.__setattr__(self, '_properties', {})
+
+  def __str__(self):
+    return str(self._properties)
+
+  def __repr__(self):
+    return self._properties
+
+  def __getattr__(self, property):
+    if property not in self._properties:
+      raise AttributeError(property)
+    return self._properties[property]
+
+  def __setattr__(self, property, value):
+    if property in self._properties:
+      logging.warning('Multiple sets of property %s' % property)
+    self._properties[property] = value
+
+
 class ResponderTest(object):
   """The base responder test class, every test inherits from this."""
-  DEPS = []
   CATEGORY = TestCategory.UNCLASSIFIED
+  DEPS = []
+  PROVIDES = []
+  REQUIRES = []
 
-  def __init__(self, universe, uid, pid_store, rdm_api, wrapper, logger, deps):
+  def __init__(self, device, universe, uid, pid_store, rdm_api, wrapper):
+    self._device_properties = device
     self._universe = universe;
     self._uid = uid
     self._pid_store = pid_store
@@ -248,15 +299,10 @@ class ResponderTest(object):
     self._expected_results = []
     self._state = None
     self.pid = self.LookupPid(self.PID)
-    self._deps = {}
     self._warnings = []
     self._advisories = []
-    self._logger = logger
     self._should_run_wrapper = True
     self._in_reset_mode = False
-
-    for dep in deps:
-      self._deps[dep.__class__.__name__] = dep
 
   def __hash__(self):
     return hash(self.__class__.__name__)
@@ -272,6 +318,10 @@ class ResponderTest(object):
 
   def LookupPid(self, pid_name):
     return self._pid_store.GetName(pid_name, self._uid)
+
+  def Requires(self):
+    """Returns a list of the properties this test requires to run."""
+    return self.REQUIRES
 
   @property
   def category(self):
@@ -292,7 +342,7 @@ class ResponderTest(object):
     Args:
       message: The text of the warning message.
     """
-    self._logger.debug('Warning: %s' % message)
+    logging.debug('Warning: %s' % message)
     self._warnings.append(message)
 
   # Advisories are logged independently of errors. They should be used to
@@ -309,8 +359,48 @@ class ResponderTest(object):
     Args:
       message: The text of the advisory message.
     """
-    self._logger.debug('Advisory: %s' % message)
+    logging.debug('Advisory: %s' % message)
     self._advisories.append(message)
+
+  def Property(self, property):
+    """Lookup a device property.
+
+    Args:
+      property: the name of the property.
+
+    Returns:
+      The value of the property.
+    """
+    if property not in self.Requires():
+      raise UndeclaredPropertyException(
+        '%s attempted to get %s which wasn\'t declared' %
+        (self.__class__.__name__, property))
+    return getattr(self._device_properties, property)
+
+  def SetProperty(self, property, value):
+    """Set a device property.
+
+    Args:
+      property: the name of the property.
+      value: the value of the property.
+    """
+    if property not in self.PROVIDES:
+      raise UndeclaredPropertyException(
+        '%s attempted to set %s which wasn\'t declared' %
+        (self.__class__.__name__, property))
+    setattr(self._device_properties, property, value)
+
+  def SetPropertyFromDict(self, dictionary, property):
+    """Set a property to the value of the same name in a dictionary.
+
+    Often it's useful to set a property to a value in a dictionary where the
+    key has the same name.
+
+    Args:
+      dictionary: A dictionary that has a value for the property key
+      property: the name of the property.
+    """
+    self.SetProperty(property, dictionary[property])
 
   def AckResponse(self,
                   field_names = [],
@@ -386,12 +476,14 @@ class ResponderTest(object):
     pass
 
   def Run(self):
-    """Run the test if all deps passed and the pre condition is true."""
-    self._logger.debug('%s: %s' % (self, self.__doc__))
-    for dep in self._deps.values():
-      if dep.state != TestState.PASSED:
-        self._state = TestState.NOT_RUN
-        self._logger.debug(' Dep: %s %s, not running' % (dep, dep.state))
+    """Run the test if all the required properties are available."""
+    logging.debug('%s: %s' % (self, self.__doc__))
+
+    for property in self.Requires():
+      try:
+        getattr(self._device_properties, property)
+      except AttributeError:
+        logging.debug(' Property: %s not found, skipping test.' % property)
         return
 
     self.Test()
@@ -400,14 +492,6 @@ class ResponderTest(object):
     self._in_reset_mode = True
     self.ResetState()
     self._wrapper.Reset()
-
-  def Deps(self, dep_class):
-    """Lookup an object that this test depends on.
-
-    Args:
-      dep_class: The class to lookup.
-    """
-    return self._deps[dep_class.__name__]
 
   def GetField(self, field):
     """Return the fields in the response."""
@@ -418,14 +502,14 @@ class ResponderTest(object):
   def SetNotRun(self, message=None):
     self._state = TestState.NOT_RUN
     if message:
-      self._logger.debug(message)
+      logging.debug(message)
 
   def SetBroken(self, message):
-    self._logger.debug(' Broken: %s' % message)
+    logging.debug(' Broken: %s' % message)
     self._state = TestState.BROKEN
 
   def SetFailed(self, message):
-    self._logger.debug(' Failed: %s' % message)
+    logging.debug(' Failed: %s' % message)
     self._state = TestState.FAILED
 
   def Stop(self):
@@ -447,7 +531,7 @@ class ResponderTest(object):
       pid: A PID object
       args: A list of arguments
     """
-    self._logger.debug(' GET: pid = %s, sub device = %d, args = %s' %
+    logging.debug(' GET: pid = %s, sub device = %d, args = %s' %
         (pid, sub_device, args))
     return self._api.Get(self._universe,
                          self._uid,
@@ -464,7 +548,7 @@ class ResponderTest(object):
       pid: The pid value
       data: The param data
     """
-    self._logger.debug(' GET: pid = %s, sub device = %d, data = %s' %
+    logging.debug(' GET: pid = %s, sub device = %d, data = %s' %
         (pid, sub_device, data))
     return self._api.RawGet(self._universe,
                             self._uid,
@@ -481,7 +565,7 @@ class ResponderTest(object):
       pid: A PID object
       args: A list of arguments
     """
-    self._logger.debug(' SET: pid = %s, sub device = %d, args = %s' %
+    logging.debug(' SET: pid = %s, sub device = %d, args = %s' %
         (pid, sub_device, args))
     return self._api.Set(self._universe,
                          self._uid,
@@ -498,7 +582,7 @@ class ResponderTest(object):
       pid: The pid value
       data: The param data
     """
-    self._logger.debug(' SET: pid = %s, sub device = %d, data = %s' %
+    logging.debug(' SET: pid = %s, sub device = %d, data = %s' %
         (pid, sub_device, data))
     return self._api.RawSet(self._universe,
                             self._uid,
@@ -545,7 +629,7 @@ class ResponderTest(object):
     self.SetFailed('expected one of:')
 
     for result in self._expected_results:
-      self._logger.debug('  %s' % result)
+      logging.debug('  %s' % result)
     self.Stop()
 
   def _HandleQueuedResponse(self,
@@ -578,8 +662,8 @@ class ResponderTest(object):
       return
 
     # at this point we just have RDM_ACKs left
-    self._logger.debug('pid 0x%hx' % pid)
-    self._logger.debug( fields)
+    logging.debug('pid 0x%hx' % pid)
+    logging.debug( fields)
     if (fields.get('messages', None) == []):
       # this means we've run out of messages
       self.Stop()
@@ -604,7 +688,7 @@ class ResponderTest(object):
     # handle the case of an ack timer
     if (status.response_code == OlaClient.RDM_COMPLETED_OK and
         status.response_type == OlaClient.RDM_ACK_TIMER):
-      self._logger.debug('Got ACK TIMER set to %d ms' % status.ack_timer)
+      logging.debug('Got ACK TIMER set to %d ms' % status.ack_timer)
       # mark as failed, if we get a message that matches we'll set it to PASSED
       self.SetFailed('Queued Messages failed to return the expected message')
       self._wrapper.AddEvent(
@@ -614,14 +698,14 @@ class ResponderTest(object):
       return False
 
     if status.WasSuccessfull():
-      self._logger.debug(' Response: %s, PID = 0x%04hx, data = %s' %
+      logging.debug(' Response: %s, PID = 0x%04hx, data = %s' %
                          (status, pid, fields))
     else:
       if unpack_exception:
-        self._logger.debug(' Response: %s, PID = 0x%04hx, Error: %s' %
+        logging.debug(' Response: %s, PID = 0x%04hx, Error: %s' %
                            (status, pid, unpack_exception))
       else:
-        self._logger.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
+        logging.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
 
     return True
 
@@ -634,7 +718,7 @@ class ResponderTest(object):
     """
     queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
     data = ['error']
-    self._logger.debug(' GET: pid = %s, sub device = %d, data = %s' %
+    logging.debug(' GET: pid = %s, sub device = %d, data = %s' %
         (queued_message_pid, sub_device, data))
 
     def QueuedResponseHandler(status,
@@ -659,91 +743,140 @@ class ResponderTest(object):
                                                       s, c, p, f, e)
 
 
+class SupportedParamResponderTest(ResponderTest):
+  """A sub class of ResponderTest that alters behaviour if the PID isn't
+     supported.
+  """
+  def Requires(self):
+    return self.REQUIRES + ['supported_parameters']
+
+  def PidSupported(self):
+    return self.pid.value in self.Property('supported_parameters')
+
+  def AddIfSupported(self, result):
+    if not self.PidSupported():
+      result = self.NackResponse(RDMNack.NR_UNKNOWN_PID)
+    self.AddExpectedResults(result)
+
+
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, pid_store, wrapper, results_logger, tests):
+  def __init__(self, universe, uid, pid_store, wrapper):
+    """Create a new TestRunner.
+
+    Args:
+      universe: The universe number to use
+      uid: The UID object to test
+      pid_store: A PidStore object
+      wrapper: A ClientWrapper object
+    """
     self._universe = universe;
     self._uid = uid
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
-    self._logger = results_logger
-    self._tests_filter = tests
     # A dict of class name to object mappings
     self._class_name_to_object = {}
     # dict in the form test_obj: first_order_deps
     self._deps_tree = {}
-    self._tests = []
 
-  def AddTest(self, test):
-    """Add a test to be run.
+    # maps device properties to the tests that provide them
+    self._property_map = {}
+    self._all_tests = []  # list of all test classes
+
+  def RegisterTest(self, test_class):
+    """Register a test.
+
+    This doesn't necessarily mean a test will be run as we may restrict which
+    tests are executed.
 
     Args:
       test: A child class of ResponderTest.
-
-    Returns:
-      True if added, False if there was an error.
     """
-    if (self._tests_filter is not None and
-        test.__name__ not in self._tests_filter):
-      return True
+    for property in test_class.PROVIDES:
+      if property in self._property_map:
+        raise DuplicatePropertyException('%s is declared in more than one test'
+                                         % property)
+      self._property_map[property] = test_class
+    self._all_tests.append(test_class)
 
-    test_obj = self._AddTest(test)
-    return test_obj is not None
-
-  def RunTests(self):
-    """Run all the tests."""
-    test_order = self._TopologicalSort(self._deps_tree.copy())
-    self._logger.debug('Test order is %s' % test_order)
-    for test in test_order:
-      self._tests.append(test)
-      test.Run()
-      self._logger.info('%s: %s' % (test, test.state.ColorString()))
-
-  @property
-  def all_tests(self):
-    """Returns the list of tests in the order they were executed.
-
-    Returns:
-      A list of test objects
-    """
-    return self._tests
-
-  def _AddTest(self, test, parents = []):
-    """Add a test class, recursively adding all deps and checking for circular
-    dependancies.
+  def RunTests(self, filter=None):
+    """Run all the tests.
 
     Args:
-      test: A class which sub classes ResponderTest.
+      filter: If not None, limit the tests to those in the list and their
+        dependancies.
 
     Returns:
-      An instance of the test class or None if an error occured.
+      A tuple in the form (tests, device), where tests is a list of tests that
+      exectuted, and device is an instance of DeviceProperties.
     """
-    if test in self._class_name_to_object:
-      return self._class_name_to_object[test]
+    if filter is None:
+      tests_to_run = self._all_tests
+    else:
+      tests_to_run = [test for test in self._all_tests
+                      if test.__name__ in filter]
 
-    self._class_name_to_object[test] = None
+    device = DeviceProperties(self._property_map.keys())
 
-    new_parents = parents + [test]
+    self._InstantiateTests(device, tests_to_run)
+    tests = self._TopologicalSort(self._deps_tree.copy())
+
+    logging.debug('Test order is %s' % tests)
+    for test in tests:
+      test.Run()
+      logging.info('%s: %s' % (test, test.state.ColorString()))
+    return tests, device
+
+  def _InstantiateTests(self, device, tests_to_run):
+    """Instantiate the required tests and calculate the dependancies.
+
+    Args:
+      device: A DeviceProperties object
+      tests_to_run: The list of test class names to run
+    """
+    for test_class in tests_to_run:
+      self._AddTest(device, test_class)
+
+  def _AddTest(self, device, test_class, parents = []):
+    """Add a test class, recursively adding all REQUIRES.
+       This also checks for circular dependancies.
+
+    Args:
+      test_class: A class which sub classes ResponderTest.
+
+    Returns:
+      An instance of the test class.
+    """
+    if test_class in self._class_name_to_object:
+      return self._class_name_to_object[test_class]
+
+    self._class_name_to_object[test_class] = None
+    test_obj = test_class(device,
+                          self._universe,
+                          self._uid,
+                          self._pid_store,
+                          self._api,
+                          self._wrapper)
+
+    new_parents = parents + [test_class]
+    dep_classes = []
+    for property in test_obj.Requires():
+      if property not in self._property_map:
+        raise MissingPropertyException(
+            '%s not listed in any PROVIDES list.' % property)
+      dep_classes.append(self._property_map[property])
+    dep_classes.extend(test_class.DEPS)
+
     dep_objects = []
-    for dep_class in test.DEPS:
+    for dep_class in dep_classes:
       if dep_class in new_parents:
-        self._logger.error('Circular depdendancy found %s in %s' %
-                           (dep_class, new_parents))
-        return None
-      obj = self._AddTest(dep_class, new_parents)
-      if obj is None:
-        return None
+        raise CircularDepdendancyException(
+            'Circular depdendancy found %s in %s' % (dep_class, new_parents))
+      obj = self._AddTest(device, dep_class, new_parents)
       dep_objects.append(obj)
 
-    test_obj = test(self._universe,
-                    self._uid,
-                    self._pid_store,
-                    self._api,
-                    self._wrapper,
-                    self._logger,
-                    dep_objects)
-    self._class_name_to_object[test] = test_obj
+    self._class_name_to_object[test_class] = test_obj
     self._deps_tree[test_obj] = set(dep_objects)
     return test_obj
 

@@ -27,7 +27,8 @@ import re
 import sys
 import textwrap
 import time
-from ResponderTest import ResponderTest, TestRunner, TestState
+import ResponderTest
+from ResponderTest import TestState
 from ola import PidStore
 from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
@@ -99,13 +100,13 @@ def SetupLogging(options):
     logging.getLogger('').addHandler(file_handler)
 
 
-def DisplaySummary(test_runner):
+def DisplaySummary(tests):
   """Print a summary of the tests."""
   by_category = {}
   warnings = []
   advisories = []
   count_by_state = {}
-  for test in test_runner.all_tests:
+  for test in tests:
     state = test.state
     count_by_state[state] = count_by_state.get(state, 0) + 1
     warnings.extend(test.warnings)
@@ -175,30 +176,31 @@ def main():
       (options.uid, options.universe))
     sys.exit()
 
-  tests = None
+  test_filter = None
   if options.tests is not None:
     logging.info('Restricting tests to %s' % options.tests)
-    tests = options.tests.split(',')
+    test_filter = set(options.tests.split(','))
 
   logging.info('Starting tests, universe %d, UID %s' %
       (options.universe, options.uid))
 
-  runner = TestRunner(options.universe, options.uid, pid_store, wrapper,
-                      logging, tests)
+  runner = ResponderTest.TestRunner(options.universe,
+                                    options.uid,
+                                    pid_store,
+                                    wrapper)
 
   for symbol in dir(TestDefinitions):
     obj = getattr(TestDefinitions, symbol)
     if not inspect.isclass(obj):
       continue
-    if obj == ResponderTest:
+    if (obj == ResponderTest.ResponderTest or
+        obj == ResponderTest.SupportedParamResponderTest):
       continue
-    if issubclass(obj, ResponderTest):
-      if not runner.AddTest(obj):
-        logging.info('Failed to add %s' % obj)
-        sys.exit()
+    if issubclass(obj, ResponderTest.ResponderTest):
+      runner.RegisterTest(obj)
 
-  runner.RunTests()
-  DisplaySummary(runner)
+  tests, device = runner.RunTests(test_filter)
+  DisplaySummary(tests)
 
 
 if __name__ == '__main__':
