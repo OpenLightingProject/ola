@@ -1056,7 +1056,7 @@ class GetStartAddress(ResponderTest):
 
   def VerifyResult(self, status, fields):
     if not status.WasSuccessfull():
-      self.SetPropertyFromDict(fields, None)
+      self.SetProperty('dmx_address', None)
       return
 
     if self.Property('dmx_start_address') != fields['dmx_address']:
