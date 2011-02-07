@@ -775,10 +775,6 @@ class TestRunner(object):
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
-    # A dict of class name to object mappings
-    self._class_name_to_object = {}
-    # dict in the form test_obj: first_order_deps
-    self._deps_tree = {}
 
     # maps device properties to the tests that provide them
     self._property_map = {}
@@ -795,8 +791,8 @@ class TestRunner(object):
     """
     for property in test_class.PROVIDES:
       if property in self._property_map:
-        raise DuplicatePropertyException('%s is declared in more than one test'
-                                         % property)
+        raise DuplicatePropertyException(
+            '%s is declared in more than one test' % property)
       self._property_map[property] = test_class
     self._all_tests.append(test_class)
 
@@ -811,16 +807,15 @@ class TestRunner(object):
       A tuple in the form (tests, device), where tests is a list of tests that
       exectuted, and device is an instance of DeviceProperties.
     """
+    device = DeviceProperties(self._property_map.keys())
     if filter is None:
       tests_to_run = self._all_tests
     else:
       tests_to_run = [test for test in self._all_tests
                       if test.__name__ in filter]
 
-    device = DeviceProperties(self._property_map.keys())
-
-    self._InstantiateTests(device, tests_to_run)
-    tests = self._TopologicalSort(self._deps_tree.copy())
+    deps_map = self._InstantiateTests(device, tests_to_run)
+    tests = self._TopologicalSort(deps_map)
 
     logging.debug('Test order is %s' % tests)
     for test in tests:
@@ -834,24 +829,36 @@ class TestRunner(object):
     Args:
       device: A DeviceProperties object
       tests_to_run: The list of test class names to run
-    """
-    for test_class in tests_to_run:
-      self._AddTest(device, test_class)
 
-  def _AddTest(self, device, test_class, parents = []):
+    Returns:
+      A dict mapping each test object to the set of test objects it depends on.
+    """
+    class_name_to_object = {}
+    deps_map = {}
+    for test_class in tests_to_run:
+      self._AddTest(device, class_name_to_object, deps_map, test_class)
+    return deps_map
+
+  def _AddTest(self, device, class_name_to_object, deps_map, test_class,
+               parents = []):
     """Add a test class, recursively adding all REQUIRES.
        This also checks for circular dependancies.
 
     Args:
+      device: A DeviceProperties object which is passed to each test.
+      class_name_to_object: A dict of class names to objects.
+      deps_map: A dict mapping each test object to the set of test objects it
+        depends on.
       test_class: A class which sub classes ResponderTest.
+      parents: The parents for the current class.
 
     Returns:
       An instance of the test class.
     """
-    if test_class in self._class_name_to_object:
-      return self._class_name_to_object[test_class]
+    if test_class in class_name_to_object:
+      return class_name_to_object[test_class]
 
-    self._class_name_to_object[test_class] = None
+    class_name_to_object[test_class] = None
     test_obj = test_class(device,
                           self._universe,
                           self._uid,
@@ -873,11 +880,15 @@ class TestRunner(object):
       if dep_class in new_parents:
         raise CircularDepdendancyException(
             'Circular depdendancy found %s in %s' % (dep_class, new_parents))
-      obj = self._AddTest(device, dep_class, new_parents)
+      obj = self._AddTest(device,
+                          class_name_to_object,
+                          deps_map,
+                          dep_class,
+                          new_parents)
       dep_objects.append(obj)
 
-    self._class_name_to_object[test_class] = test_obj
-    self._deps_tree[test_obj] = set(dep_objects)
+    class_name_to_object[test_class] = test_obj
+    deps_map[test_obj] = set(dep_objects)
     return test_obj
 
   def _TopologicalSort(self, deps_dict):
