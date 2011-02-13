@@ -1,4 +1,10 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = ola_rdm_test.py ResponderTest.py TestDefinitions.py TestMixins.py
-
+EXTRA_DIST = ExpectedResults.py \
+             ResponderTest.py \
+             TestCategory.py \
+             TestDefinitions.py \
+             TestMixins.py \
+             TestRunner.py \
+             TestState.py \
+             ola_rdm_test.py

@@ -25,16 +25,16 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 from ola import PidStore
 from ola.OlaClient import RDMNack
-from ResponderTest import ResponderTest, ExpectedResult
+from ExpectedResults import *
+from ResponderTest import ResponderTestFixture
 
 MAX_LABEL_SIZE = 32
 
-def GetUnsupportedNacks(pid):
+def UnsupportedSetNacks(pid):
   """Repsonders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
   return [
-    ExpectedResult.NackResponse(pid.value,
-                                RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-    ExpectedResult.NackResponse(pid.value, RDMNack.NR_UNKNOWN_PID),
+    NackSetResult(pid.value, RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    NackSetResult(pid.value, RDMNack.NR_UNKNOWN_PID),
   ]
 
 
@@ -45,7 +45,7 @@ class UnsupportedGetMixin(object):
   """Check that Get fails with NR_UNSUPPORTED_COMMAND_CLASS."""
   def Test(self):
     self.AddExpectedResults(
-        self.NackResponse(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+        self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
 
@@ -55,7 +55,7 @@ class GetMixin(object):
   The target class needs to set EXPECTED_FIELD and optionally PROVIDES.
   """
   def Test(self):
-    self.AddIfSupported(self.AckResponse([self.EXPECTED_FIELD]))
+    self.AddIfGetSupported(self.AckGetResult([self.EXPECTED_FIELD]))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -72,7 +72,7 @@ class GetRequiredMixin(object):
   The target class needs to set EXPECTED_FIELD and optionally PROVIDES.
   """
   def Test(self):
-    self.AddExpectedResults(self.AckResponse([self.EXPECTED_FIELD]))
+    self.AddExpectedResults(self.AckGetResult([self.EXPECTED_FIELD]))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -80,14 +80,14 @@ class GetRequiredMixin(object):
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
 
-class GetWithDataMixin(ResponderTest):
+class GetWithDataMixin(ResponderTestFixture):
   """GET a PID with random param data."""
   DATA = 'foobarbaz'
 
   def Test(self):
-    self.AddIfSupported([
-      self.NackResponse(RDMNack.NR_FORMAT_ERROR),
-      self.AckResponse(
+    self.AddIfGetSupported([
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckGetResult(
         warning='Get %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
@@ -98,18 +98,18 @@ class UnsupportedSetMixin(object):
   DATA = ''
 
   def Test(self):
-    self.AddExpectedResults(GetUnsupportedNacks(self.pid))
+    self.AddExpectedResults(UnsupportedSetNacks(self.pid))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 
-class SetWithDataMixin(ResponderTest):
+class SetWithDataMixin(ResponderTestFixture):
   """SET a PID with random param data."""
   DATA = 'foobarbaz'
 
   def Test(self):
-    self.AddIfSupported([
-      self.NackResponse(RDMNack.NR_FORMAT_ERROR),
-      self.AckResponse(
+    self.AddIfSetSupported([
+      self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckSetResult(
         warning='Set %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
@@ -118,7 +118,7 @@ class SetWithDataMixin(ResponderTest):
 class SetWithNoDataMixin(object):
   """Attempt a set with no data."""
   def Test(self):
-    self.AddIfSupported(self.NackResponse(RDMNack.NR_FORMAT_ERROR))
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
   # TODO(simon): add a method to check this didn't change the value
@@ -133,18 +133,18 @@ class SetLabelMixin(object):
 
   def ExpectedResults(self):
     return [
-      self.NackResponse(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-      self.AckResponse(action=self.VerifySet)
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.AckSetResult(action=self.VerifySet)
     ]
 
   def Test(self):
     self.verify_result = False
-    self.AddIfSupported(self.ExpectedResults())
+    self.AddIfSetSupported(self.ExpectedResults())
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.TEST_LABEL])
 
   def VerifySet(self):
     self.verify_result = True
-    self.AddExpectedResults(self.AckResponse(field_names=['label']))
+    self.AddExpectedResults(self.AckGetResult(field_names=['label']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -166,7 +166,7 @@ class SetLabelMixin(object):
   def ResetState(self):
     if not self.OldValue():
       return
-    self.AddExpectedResults(self.AckResponse())
+    self.AddExpectedResults(self.AckSetResult())
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.OldValue()])
     self._wrapper.Run()
 
@@ -177,17 +177,17 @@ class SetOversizedLabelMixin(object):
 
   def Test(self):
     self.verify_result = False
-    self.AddIfSupported([
-      self.NackResponse(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
-      self.NackResponse(RDMNack.NR_FORMAT_ERROR),
-      self.AckResponse(action=self.VerifySet),
+    self.AddIfSetSupported([
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckSetResult(action=self.VerifySet),
     ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.LONG_STRING)
 
   def VerifySet(self):
     """If we got an ACK back, we send a GET to check what the result was."""
     self.verify_result = True
-    self.AddExpectedResults(self.AckResponse(['label']))
+    self.AddExpectedResults(self.AckGetResult(['label']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
@@ -219,12 +219,12 @@ class SetBoolMixin(object):
     return self.VALUE
 
   def Test(self):
-    self.AddIfSupported(self.AckResponse(action=self.VerifySet))
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
   def VerifySet(self):
     self.AddExpectedResults(
-      self.AckResponse(field_values={self.EXPECTED_FIELD: self.NewValue()}))
+      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   #TODO(simon): add a back out method here
@@ -247,12 +247,12 @@ class SetUInt8Mixin(object):
     return self.VALUE
 
   def Test(self):
-    self.AddIfSupported(self.AckResponse(action=self.VerifySet))
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
   def VerifySet(self):
     self.AddExpectedResults(
-      self.AckResponse(field_values={self.EXPECTED_FIELD: self.NewValue()}))
+      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   #TODO(simon): add a back out method here
@@ -275,12 +275,12 @@ class SetUInt32Mixin(object):
     return self.VALUE
 
   def Test(self):
-    self.AddIfSupported(self.AckResponse(action=self.VerifySet))
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
   def VerifySet(self):
     self.AddExpectedResults(
-      self.AckResponse(field_values={self.EXPECTED_FIELD: self.NewValue()}))
+      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   #TODO(simon): add a back out method here

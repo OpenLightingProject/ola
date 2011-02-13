@@ -20,15 +20,16 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import ResponderTest
 import TestDefinitions
+import TestRunner
 import inspect
 import logging
 import re
 import sys
 import textwrap
 import time
-import ResponderTest
-from ResponderTest import TestState
+from TestState import TestState
 from ola import PidStore
 from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
@@ -184,7 +185,7 @@ def main():
   logging.info('Starting tests, universe %d, UID %s' %
       (options.universe, options.uid))
 
-  runner = ResponderTest.TestRunner(options.universe,
+  runner = TestRunner.TestRunner(options.universe,
                                     options.uid,
                                     pid_store,
                                     wrapper)
@@ -193,10 +194,11 @@ def main():
     obj = getattr(TestDefinitions, symbol)
     if not inspect.isclass(obj):
       continue
-    if (obj == ResponderTest.ResponderTest or
-        obj == ResponderTest.SupportedParamResponderTest):
+    if (obj == ResponderTest.ResponderTestFixture or
+        obj == ResponderTest.QueuedMessageTestFixture or
+        obj == ResponderTest.OptionalParameterTestFixture):
       continue
-    if issubclass(obj, ResponderTest.ResponderTest):
+    if issubclass(obj, ResponderTest.ResponderTestFixture):
       runner.RegisterTest(obj)
 
   tests, device = runner.RunTests(test_filter)

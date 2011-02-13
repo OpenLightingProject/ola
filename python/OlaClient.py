@@ -210,44 +210,49 @@ class RequestStatus(object):
 
 
 class RDMNack(object):
-  NR_UNKNOWN_PID = 0
-  NR_FORMAT_ERROR = 1
-  NR_HARDWARE_FAULT = 2
-  NR_PROXY_REJECT = 3
-  NR_WRITE_PROTECT = 4
-  NR_UNSUPPORTED_COMMAND_CLASS = 5
-  NR_DATA_OUT_OF_RANGE = 6
-  NR_BUFFER_FULL = 7
-  NR_PACKET_SIZE_UNSUPPORTED = 8
-  NR_SUB_DEVICE_OUT_OF_RANGE = 9
-  NR_PROXY_BUFFER_FULL = 10
-
-  NACK_REASONS_TO_STRING = {
-      NR_UNKNOWN_PID: 'Unknown PID',
-      NR_FORMAT_ERROR: 'Format error',
-      NR_HARDWARE_FAULT: 'Hardware fault',
-      NR_PROXY_REJECT: 'Proxy reject',
-      NR_WRITE_PROTECT: 'Write protect',
-      NR_UNSUPPORTED_COMMAND_CLASS: 'Unsupported command class',
-      NR_DATA_OUT_OF_RANGE: 'Data out of range',
-      NR_BUFFER_FULL: 'Buffer full',
-      NR_PACKET_SIZE_UNSUPPORTED: 'Packet size unsupported',
-      NR_SUB_DEVICE_OUT_OF_RANGE: 'Sub device out of range',
-      NR_PROXY_BUFFER_FULL: 'Proxy buffer full'
+  NACK_SYMBOLS_TO_VALUES = {
+    'NR_UNKNOWN_PID': (0, 'Unknown PID'),
+    'NR_FORMAT_ERROR': (1, 'Format Error'),
+    'NR_HARDWARE_FAULT': (2, 'Hardware fault'),
+    'NR_PROXY_REJECT': (3, 'Proxy reject'),
+    'NR_WRITE_PROTECT': (4, 'Write protect'),
+    'NR_UNSUPPORTED_COMMAND_CLASS': (5, 'Unsupported command class'),
+    'NR_DATA_OUT_OF_RANGE': (6, 'Data out of range'),
+    'NR_BUFFER_FULL': (7, 'Buffer full'),
+    'NR_PACKET_SIZE_UNSUPPORTED': (8, 'Packet size unsupported'),
+    'NR_SUB_DEVICE_OUT_OF_RANGE': (9, 'Sub device out of range'),
+    'NR_PROXY_BUFFER_FULL': (10, 'Proxy buffer full'),
   }
 
-  def __init__(self, nack_value):
+  # this is populated below
+  _CODE_TO_OBJECT = {}
+
+  def __init__(self, nack_value, description):
     self._value = nack_value
+    self._description = description
 
   @property
   def value(self):
     return self._value
 
   def __str__(self):
-    return self.NACK_REASONS_TO_STRING.get(self.value, 'Unknown')
+    return self._description
 
   def __cmp__(self, other):
     return cmp(self.value, other.value)
+
+  @classmethod
+  def LookupCode(cls, code):
+    obj = cls._CODE_TO_OBJECT.get(code, None)
+    if not obj:
+      obj = RDMNack(code, 'Unknown')
+    return obj
+
+
+for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.iteritems():
+  nack = RDMNack(value, description)
+  setattr(RDMNack, symbol, nack)
+  RDMNack._CODE_TO_OBJECT[value] = nack
 
 
 class RDMRequestStatus(RequestStatus):
@@ -308,7 +313,7 @@ class RDMRequestStatus(RequestStatus):
         if nack_value is None:
           self.response_code = Ola_pb2.RDM_INVALID_RESPONSE
         else:
-          self._nack_reason = RDMNack(nack_value)
+          self._nack_reason = RDMNack.LookupCode(nack_value)
       elif self.response_type == Ola_pb2.RDM_ACK_TIMER:
         self._ack_timer = self._get_short_from_data(response.data)
         if self._ack_timer is None:
