@@ -1864,6 +1864,58 @@ manufacturer {
     set_sub_device_range: ROOT_DEVICE
   }
   pid {
+    name: "OUTPUT_DEFAULT_VALUE"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "dmx_level"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "dmx_level"
+      }
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "dmx_level"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
+    name: "DALI_FADE_TIME"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fade_time"
+      }
+    }
+    get_sub_device_range: ROOT_DEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fade_time"
+      }
+    }
+    set_response {
+      field {
+        type: UINT8
+        name: "fade_time"
+      }
+    }
+    set_sub_device_range: ROOT_DEVICE
+  }
+  pid {
     name: "INCREMENTAL_DISCOVERY_INTERVAL"
     value: 33025
     get_request {
@@ -2231,4 +2283,4 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
-version: 1296497974
+version: 1297626091
