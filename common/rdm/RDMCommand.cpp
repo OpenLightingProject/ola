@@ -387,8 +387,8 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     // check transaction #
     if (command_message.transaction_number != request->TransactionNumber()) {
       OLA_WARN << "Transaction numbers don't match, got " <<
-        command_message.transaction_number << ", expected " <<
-        request->TransactionNumber();
+        static_cast<int>(command_message.transaction_number) << ", expected "
+        << static_cast<int>(request->TransactionNumber());
       *response_code = RDM_TRANSACTION_MISMATCH;
       return NULL;
     }

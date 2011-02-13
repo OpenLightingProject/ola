@@ -345,21 +345,25 @@ bool DmxTriWidgetImpl::SendDiscoveryStat() {
 /**
  * Send a raw RDM command, bypassing all the handling the RDM-TRI does.
  */
-void DmxTriWidgetImpl::SendRawRDMRequest(const ola::rdm::RDMRequest *request,
-                                         ola::rdm::RDMCallback *callback) {
+void DmxTriWidgetImpl::SendRawRDMRequest(
+    const ola::rdm::RDMRequest *raw_request,
+    ola::rdm::RDMCallback *callback) {
   std::vector<string> packets;
   // add two bytes for the command & option field
+  const ola::rdm::RDMRequest *request =
+    raw_request->DuplicateWithControllerParams(
+        raw_request->SourceUID(),
+        m_transaction_number,
+        1);  // port id is always 1
+  delete raw_request;
+
   unsigned int packet_size = request->Size();
   uint8_t *send_buffer = new uint8_t[packet_size + 2];
 
   send_buffer[0] = RAW_RDM_COMMAND_ID;
   send_buffer[1] = 0;
 
-  if (!request->PackWithControllerParams(send_buffer + 2,
-                                         &packet_size,
-                                         request->SourceUID(),
-                                         m_transaction_number,
-                                         1)) {
+  if (!request->Pack(send_buffer + 2, &packet_size)) {
     OLA_WARN << "Failed to pack RDM request";
     delete[] send_buffer;
     callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
