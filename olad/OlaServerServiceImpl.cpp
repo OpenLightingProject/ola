@@ -718,6 +718,7 @@ void OlaServerServiceImpl::HandleRDMResponse(
             static_cast<ola::proto::RDMResponseType>(response_type));
         response->set_message_count(rdm_response->MessageCount());
         response->set_param_id(rdm_response->ParamId());
+        response->set_sub_device(rdm_response->SubDevice());
         if (rdm_response->CommandClass() ==
             ola::rdm::RDMCommand::GET_COMMAND_RESPONSE) {
           response->set_command_class(ola::proto::RDM_GET_RESPONSE);
