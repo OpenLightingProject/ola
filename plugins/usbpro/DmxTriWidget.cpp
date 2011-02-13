@@ -355,7 +355,11 @@ void DmxTriWidgetImpl::SendRawRDMRequest(const ola::rdm::RDMRequest *request,
   send_buffer[0] = RAW_RDM_COMMAND_ID;
   send_buffer[1] = 0;
 
-  if (!request->Pack(send_buffer + 2, &packet_size)) {
+  if (!request->PackWithControllerParams(send_buffer + 2,
+                                         &packet_size,
+                                         request->SourceUID(),
+                                         m_transaction_number,
+                                         1)) {
     OLA_WARN << "Failed to pack RDM request";
     delete[] send_buffer;
     callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
@@ -371,7 +375,9 @@ void DmxTriWidgetImpl::SendRawRDMRequest(const ola::rdm::RDMRequest *request,
   bool r = m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
                                  send_buffer,
                                  packet_size + 2);
-  if (!r) {
+  if (r) {
+    m_transaction_number++;
+  } else {
     m_pending_request = NULL;
     m_rdm_request_callback = NULL;
     delete request;
