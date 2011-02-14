@@ -696,7 +696,7 @@ class GetLanguage(TestMixins.GetMixin, OptionalParameterTestFixture):
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'LANGUAGE'
   PROVIDES = ['language']
-  EXPECTED_FIELD = ['language']
+  EXPECTED_FIELD = 'language'
 
 
 class SetLanguage(OptionalParameterTestFixture):
