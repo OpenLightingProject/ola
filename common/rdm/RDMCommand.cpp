@@ -393,9 +393,11 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
       return NULL;
     }
 
-    // check subdevice, but ignore if request was for all sub devices
+    // check subdevice, but ignore if request was for all sub devices or
+    // QUEUED_MESSAGE
     if (sub_device != request->SubDevice() &&
-        request->SubDevice() != ALL_RDM_SUBDEVICES) {
+        request->SubDevice() != ALL_RDM_SUBDEVICES &&
+         request->ParamId() != PID_QUEUED_MESSAGE) {
       OLA_WARN << "Sub device didn't match, got " << sub_device <<
         ", expected " << request->SubDevice();
       *response_code = RDM_SUB_DEVICE_MISMATCH;
