@@ -180,50 +180,31 @@ class RDMAPI(object):
         uid,
         sub_device,
         pid.value,
-        self._CreateCallback(callback, request_type, uid),
+        lambda response: self._GenericHandler(callback, uid, response),
         data)
 
-  def _GenericHandler(self,
-                      callback,
-                      request_type,
-                      uid,
-                      status,
-                      command_class,
-                      pid,
-                      data,
-                      unused_raw_data):
+  def _GenericHandler(self, callback, uid, response):
     """
 
     Args:
       callback: the function to run
-      request_type: PidStore.RDM_GET or PidStore.RDM_SET
       uid: The uid the request was for
-      status: A RDMRequestStatus object
-      pid: The pid in the response
-      data: The parameter data
-      unused_raw_data: A list of raw packets that make up the response
+      response: A RDMResponse object
     """
     obj = None
     unpack_exception = None
 
-    request_type = self.COMMAND_CLASS_DICT[command_class]
-    if status.WasSuccessfull():
-      pid_descriptor = self._pid_store.GetPid(pid, uid.manufacturer_id)
+    if response.WasAcked():
+      request_type = self.COMMAND_CLASS_DICT[response.command_class]
+      pid_descriptor = self._pid_store.GetPid(response.pid,
+                                              uid.manufacturer_id)
       if pid_descriptor:
         try:
-          obj = pid_descriptor.Unpack(data, request_type)
+          obj = pid_descriptor.Unpack(response.data, request_type)
         except PidStore.UnpackException, e:
           obj = None
           unpack_exception = e
-          status.response_code = OlaClient.RDM_INVALID_RESPONSE
       else:
         obj = data
 
-    callback(status, request_type, pid, obj, unpack_exception)
-
-  def _CreateCallback(self, callback, request_type, uid):
-    return lambda s, c, p, d, r: self._GenericHandler(
-        callback,
-        request_type,
-        uid,
-        s, c, p, d, r)
+    callback(response, obj, unpack_exception)

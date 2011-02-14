@@ -195,7 +195,6 @@ def main():
     if not inspect.isclass(obj):
       continue
     if (obj == ResponderTest.ResponderTestFixture or
-        obj == ResponderTest.QueuedMessageTestFixture or
         obj == ResponderTest.OptionalParameterTestFixture):
       continue
     if issubclass(obj, ResponderTest.ResponderTestFixture):

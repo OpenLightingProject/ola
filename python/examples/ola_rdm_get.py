@@ -52,6 +52,49 @@ wrapper = None
 
 
 
+class ResponsePrinter(object):
+  def __init__(self):
+    self.pid_store = PidStore.GetStore()
+    # we can provide custom printers for PIDs below
+    self._handlers = {
+        'SUPPORTED_PARAMETERS': self.SupportedParameters,
+        'PROXIED_DEVICES': self.ProxiedDevices,
+    }
+
+  def PrintResponse(self, uid, pid_value, response_data):
+    pid = self.pid_store.GetPid(pid_value, uid.manufacturer_id)
+    if pid is None:
+      print 'PID: 0x%04hx' % pid_value
+      self.Default(uid, response_data)
+    else:
+      print pid
+      if pid.name in self._handlers:
+        self._handlers[pid.name](uid, response_data)
+      else:
+        self.Default(uid, response_data)
+
+  def SupportedParameters(self, uid, response_data):
+    params = [p['param_id'] for p in response_data['params']]
+    params.sort()
+    for pid_value in params:
+      pid = self.pid_store.GetPid(pid_value, uid.manufacturer_id)
+      if pid:
+        print pid
+      else:
+        print '0x%hx' % pid_value
+
+  def ProxiedDevices(self, uid, response_data):
+    uids = []
+    for uid_data in response_data['uids']:
+      uids.append(UID(uid_data['manufacturer_id'], uid_data['device_id']))
+    for uid in sorted(uids):
+      print uid
+
+  def Default(self, uid, response_data):
+    for key, value in response_data.iteritems():
+      print '%s: %s' % (key, value)
+
+
 class InteractiveModeController(cmd.Cmd):
   """Interactive mode!"""
   def __init__(self, universe, uid, sub_device, pid_file):
@@ -73,6 +116,10 @@ class InteractiveModeController(cmd.Cmd):
     self.client = self.wrapper.Client()
     self.rdm_api = RDMAPI(self.client, self.pid_store)
     self._uids = []
+    self._response_printer = ResponsePrinter()
+
+    # tuple of (sub_device, command_class, pid)
+    self._outstanding_request = None
 
     self.prompt = '> '
 
@@ -150,10 +197,21 @@ class InteractiveModeController(cmd.Cmd):
     self.client.FetchUIDList(self._universe, self._DisplayUids)
     self.wrapper.Run()
 
+  def _DisplayUids(self, state, uids):
+    self._uids = []
+    if state.Succeeded():
+      for uid in uids:
+        self._uids.append(uid)
+        print str(uid)
+    self.wrapper.Stop()
+
   def do_discover(self, l):
     """Run RDM discovery for this universe."""
     self.client.RunRDMDiscovery(self._universe, self._DiscoveryDone)
     self.wrapper.Run()
+
+  def _DiscoveryDone(self, state):
+    self.wrapper.Stop()
 
   def do_list(self, line):
     """List the pids available."""
@@ -241,6 +299,7 @@ class InteractiveModeController(cmd.Cmd):
                 pid,
                 self._RDMRequestComplete,
                 args[1:]):
+        self._outstanding_request = (self._sub_device, request_type, pid)
         self.wrapper.Run()
     except PidStore.ArgsValidationError, e:
       args, help_string = pid.GetRequestDescription(request_type)
@@ -249,47 +308,6 @@ class InteractiveModeController(cmd.Cmd):
       print ''
       print '*** %s' % e
       return
-
-  def _DisplayUids(self, state, uids):
-    self._uids = []
-    if state.Succeeded():
-      for uid in uids:
-        self._uids.append(uid)
-        print str(uid)
-    self.wrapper.Stop()
-
-  def _DiscoveryDone(self, state):
-    self.wrapper.Stop()
-
-  def _RDMRequestComplete(self, status, command_class, pid_value,
-                          response_data, unpack_exception):
-    self.wrapper.Stop()
-    if not status.Succeeded():
-      print unpack_exception
-      return
-
-    if status.response_code != OlaClient.RDM_COMPLETED_OK:
-      print status.ResponseCodeAsString()
-      return
-    elif status.response_type == OlaClient.RDM_NACK_REASON:
-      print 'Got nack with reason: %s' % status.nack_reason
-      return
-    elif status.response_type == OlaClient.RDM_ACK_TIMER:
-      # schedule the fetch
-      self.wrapper.AddEvent(status.ack_timer, self._FetchQueuedMessages)
-      self.wrapper.Reset()
-      return
-
-    pid = self.pid_store.GetPid(pid_value, self._uid.manufacturer_id)
-    if pid is None:
-      print 'PID: 0x%04hx' % pid
-    else:
-      print pid
-    for key, value in response_data.iteritems():
-      print '%s: %s' % (key, value)
-
-    if status.queued_messages:
-      print '%d queued messages remain' % status.queued_messages
 
   def _FetchQueuedMessages(self):
     """Fetch messages until the queue is empty."""
@@ -301,48 +319,86 @@ class InteractiveModeController(cmd.Cmd):
                      self._QueuedMessageComplete,
                      ['error'])
 
-  def _QueuedMessageComplete(self, status, command_class, pid_value,
-                             response_data, unpack_exception):
-    if not status.Succeeded():
-      self.wrapper.Stop()
+  def _RDMRequestComplete(self, response, unpacked_data, unpack_exception):
+    if not self._CheckForAckOrNack(response):
+      return
+
+    # at this stage the response is either a ack or nack
+    self._outstanding_request = None
+    self.wrapper.Stop()
+
+    if response.response_type == OlaClient.RDM_NACK_REASON:
+      print 'Got nack with reason: %s' % response.nack_reason
+    elif unpack_exception:
       print unpack_exception
-      return
-
-    if status.response_code != OlaClient.RDM_COMPLETED_OK:
-      print status.ResponseCodeAsString()
-      return
-    elif status.response_type == OlaClient.RDM_NACK_REASON:
-      self.wrapper.Stop()
-      if (status.nack_reason == RDMNack.NR_UNKNOWN_PID and
-          pid_value == self.pid_store.GetName('QUEUED_MESSAGE').value):
-        print 'Device doesn\'t support queued messages'
-      else:
-        print 'Got nack with reason: %s' % status.nack_reason
-      return
-    elif status.response_type == OlaClient.RDM_ACK_TIMER:
-      # schedule the fetch
-      self.wrapper.AddEvent(status.ack_timer, self._FetchQueuedMessages)
-      self.wrapper.Reset()
-      return
-
-    pid = self.pid_store.GetPid(pid_value, self._uid.manufacturer_id)
-    status_message_pid = self.pid_store.GetName('STATUS_MESSAGE')
-    if pid == status_message_pid and response_data.get('messages', []) == []:
-      self.wrapper.StopIfNoEvents()
-      return
-
-    if pid is None:
-      print 'PID: 0x%04hx' % pid
     else:
-      print pid
-    for key, value in response_data.iteritems():
-      print '%s: %s' % (key, value)
+      self._response_printer.PrintResponse(self._uid, response.pid,
+                                           unpacked_data)
 
-    if status.queued_messages:
-      print '%d queued messages remain' % status.queued_messages
+    if response.queued_messages:
+      print '%d queued messages remain' % response.queued_messages
+
+  def _QueuedMessageComplete(self, response, unpacked_data, unpack_exception):
+    if not self._CheckForAckOrNack(response):
+      return
+
+    if response.response_type == OlaClient.RDM_NACK_REASON:
+      if (self._outstanding_request and
+          response.sub_device == self._outstanding_request[0] and
+          response.command_class == self._outstanding_request[1] and
+          response.pid == self._outstanding_request[2].value):
+        # we found what we were looking for
+        self._outstanding_request = None
+        self.wrapper.StopIfNoEvents()
+
+      elif (response.nack_reason == RDMNack.NR_UNKNOWN_PID and
+            response.pid == self.pid_store.GetName('QUEUED_MESSAGE').value):
+        print 'Device doesn\'t support queued messages'
+        self.wrapper.StopIfNoEvents()
+      else:
+        print 'Got nack for 0x%04hx with reason: %s' % (
+            response.pid, response.nack_reason)
+
+    elif unpack_exception:
+      print 'Invalid Param data: %s' % unpack_exception
+    else:
+      status_message_pid = self.pid_store.GetName('STATUS_MESSAGE')
+      if (response.pid == status_message_pid.value and
+          unpacked_data.get('messages', []) == []):
+        self.wrapper.StopIfNoEvents()
+        return
+
+      self._response_printer.PrintResponse(self._uid,
+                                           response.pid,
+                                           unpacked_data)
+
+    if response.queued_messages:
       self._FetchQueuedMessages()
     else:
       self.wrapper.StopIfNoEvents()
+
+  def _CheckForAckOrNack(self, response):
+    """Check for all the different error conditions.
+
+    Returns:
+      True if this response was an ACK or NACK, False for all other cases.
+    """
+    if not response.status.Succeeded():
+      print response.status.message
+      self.wrapper.Stop()
+      return False
+
+    if response.response_code != OlaClient.RDM_COMPLETED_OK:
+      print response.ResponseCodeAsString()
+      self.wrapper.Stop()
+      return False
+
+    if response.response_type == OlaClient.RDM_ACK_TIMER:
+      # schedule the fetch
+      self.wrapper.AddEvent(response.ack_timer, self._FetchQueuedMessages)
+      return False
+
+    return True
 
 
 def main():

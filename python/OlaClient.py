@@ -255,15 +255,36 @@ for symbol, (value, description) in RDMNack.NACK_SYMBOLS_TO_VALUES.iteritems():
   RDMNack._CODE_TO_OBJECT[value] = nack
 
 
-class RDMRequestStatus(RequestStatus):
-  """Represents the status of a RDM request.
+class RDMResponse(object):
+  """Represents a RDM Response.
+
+  Failures can occur at many layers, the recommended way for dealing with
+  responses is:
+    Check .status.Succeeded(), if not true this indicates a rpc or server
+      error.
+    Check .response_code, if not RDM_COMPLETED_OK, it indicates a problem with
+      the RDM transport layer or malformed response.
+    If .response_code is RDM_COMPLETED_OK, .sub_device, .command_class, .pid,
+    .queued_messages hold the properties of the response.
+    Then check .response_type:
+    if .response_type is ACK:
+      .data holds the param data of the response.
+    If .response_type is ACK_TIMER:
+      .ack_timer: holds the number of ms before the response should be
+      available.
+    If .response_type is NACK_REASON:
+      .nack_reason holds the reason for nack'ing
 
   Attributes:
-    state: the state of the operation
-    message: an error message if it failed
-    rdm_ResponseCode: The response code for the RDM request
-    rdm_response_type: The response type (ACK, ACK_TIMER, NACK_REASON) for
+    status: The RequestStatus object for this request / response
+    response_code: The response code for the RDM request
+    response_type: The response type (ACK, ACK_TIMER, NACK_REASON) for
       the request.
+    sub_device: The sub device that sent the response
+    command_class:
+    pid:
+    data:
+    queued_messages: The number of queued messages the remain.
     nack_reason: If the response type was NACK_REASON, this is the reason for
       the NACK.
     ack_timer: If the response type was ACK_TIMER, this is the number of ms to
@@ -299,37 +320,40 @@ class RDMRequestStatus(RequestStatus):
   }
 
   def __init__(self, controller, response):
-    super(RDMRequestStatus, self).__init__(controller)
-    self._ResponseCode = response.response_code
+    self.status = RequestStatus(controller)
+    self._response_code = response.response_code
     self._response_type = response.response_type
     self._queued_messages = response.message_count
+    self.sub_device = response.sub_device
+    self.command_class = response.command_class
+    self.pid = response.param_id
+    self.data = response.data
+    self._raw_responses = response.raw_response
+
+    # we populate these below if required
     self._nack_reason = None
     self._ack_timer = None
 
-    if self.Succeeded() and self.response_code == Ola_pb2.RDM_COMPLETED_OK:
+    if (self.status.Succeeded() and
+        self._response_code == Ola_pb2.RDM_COMPLETED_OK):
       # check for ack timer or nack
-      if self.response_type == Ola_pb2.RDM_NACK_REASON:
+      if self._response_type == Ola_pb2.RDM_NACK_REASON:
         nack_value = self._get_short_from_data(response.data)
         if nack_value is None:
-          self.response_code = Ola_pb2.RDM_INVALID_RESPONSE
+          self._response_code = Ola_pb2.RDM_INVALID_RESPONSE
         else:
           self._nack_reason = RDMNack.LookupCode(nack_value)
-      elif self.response_type == Ola_pb2.RDM_ACK_TIMER:
+      elif self._response_type == Ola_pb2.RDM_ACK_TIMER:
         self._ack_timer = self._get_short_from_data(response.data)
         if self._ack_timer is None:
-          self.response_code = Ola_pb2.RDM_INVALID_RESPONSE
+          self._response_code = Ola_pb2.RDM_INVALID_RESPONSE
 
-  def ResponseCode(self):
-    return self._ResponseCode
-
-  def SetResponseCode(self, code):
-    self._ResponseCode = code
-
-  response_code = property(ResponseCode, SetResponseCode, None)
+  @property
+  def response_code(self):
+    return self._response_code
 
   def ResponseCodeAsString(self):
-    return self.RESPONSE_CODES_TO_STRING.get(self._ResponseCode,
-                                             'Unknown')
+    return self.RESPONSE_CODES_TO_STRING.get(self._response_code, 'Unknown')
 
   @property
   def response_type(self):
@@ -343,9 +367,9 @@ class RDMRequestStatus(RequestStatus):
   def nack_reason(self):
     return self._nack_reason
 
-  def WasSuccessfull(self):
-    """Returns true if this RDM request returns a ACK response."""
-    return (self.Succeeded() and
+  def WasAcked(self):
+    """Returns true if this RDM request returned a ACK response."""
+    return (self.status.Succeeded() and
             self.response_code == OlaClient.RDM_COMPLETED_OK and
             self.response_type == OlaClient.RDM_ACK)
 
@@ -355,14 +379,14 @@ class RDMRequestStatus(RequestStatus):
 
   def __str__(self):
     if self.response_code != Ola_pb2.RDM_COMPLETED_OK:
-      return 'RDMRequestStatus: %s' % self.ResponseCodeAsString()
+      return 'RDMResponse: %s' % self.ResponseCodeAsString()
 
     if self.response_type == OlaClient.RDM_ACK:
-      return 'RDMRequestStatus: ACK'
+      return 'RDMResponse: ACK'
     elif self.response_type == OlaClient.RDM_ACK_TIMER:
-      return 'RDMRequestStatus: ACK TIMER, %d ms' % self.ack_timer
+      return 'RDMResponse: ACK TIMER, %d ms' % self.ack_timer
     else:
-      return 'RDMRequestStatus:, NACK %s' % self.nack_reason
+      return 'RDMResponse:, NACK %s' % self.nack_reason
 
   def _get_short_from_data(self, data):
     """Try to unpack the binary data into a short.
@@ -619,7 +643,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       uid: A UID object
       sub_device: The sub device index
       param_id: the param ID
-      callback: The function to call once complete, takes five arguments.
+      callback: The function to call once complete, takes a RDMResponse object
       data: the data to send
     """
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
@@ -633,7 +657,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       uid: A UID object
       sub_device: The sub device index
       param_id: the param ID
-      callback: The function to call once complete, takes five arguments.
+      callback: The function to call once complete, takes a RDMResponse object
       data: the data to send
     """
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
@@ -819,13 +843,8 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     if not callback:
       return
+    callback(RDMResponse(controller, response))
 
-    status = RDMRequestStatus(controller, response)
-    callback(status,
-             response.command_class,
-             response.param_id,
-             response.data,
-             response.raw_response)
 
 # Populate the patch & register actions
 for value in Ola_pb2._PATCHACTION.values:

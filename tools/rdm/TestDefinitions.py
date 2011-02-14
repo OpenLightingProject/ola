@@ -23,7 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 import datetime
 import struct
 from ExpectedResults import *
-from ResponderTest import ResponderTestFixture, QueuedMessageTestFixture
+from ResponderTest import ResponderTestFixture, ResponderTestFixture
 from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
@@ -34,42 +34,6 @@ import TestMixins
 MAX_DMX_ADDRESS = 512
 MAX_LABEL_SIZE = 32
 MAX_PERSONALITY_NUMBER = 255
-
-
-# Queued Message Test
-#------------------------------------------------------------------------------
-class QueuedMessageTest(ResponderTestFixture):
-  """Check if queued messages are supported and flush the queue if required."""
-  CATEGORY = TestCategory.STATUS_COLLECTION
-  PID = 'QUEUED_MESSAGE'
-  PROVIDES = ['supports_queued_messages']
-
-  def Test(self):
-    self.FetchQueuedMessage()
-
-  def FetchQueuedMessage(self):
-    status_message_pid = self.LookupPid('STATUS_MESSAGE')
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_UNKNOWN_PID, action=self.Unsupported),
-      QueuedMessageResult(action=self.Supported),
-    ])
-    self.SendGet(ROOT_DEVICE, self.pid, ['error'])
-
-  def Unsupported(self):
-    self.SetProperty('supports_queued_messages', False)
-    self.Stop()
-
-  def Supported(self):
-    self.SetProperty('supports_queued_messages', True)
-    self.Stop()
-
-  def VerifyResult(self, status, fields):
-    if not status.WasSuccessfull():
-      return
-
-    # more remain, fetch the rest of them to clear out the queue
-    if status.queued_messages:
-      self.FetchQueuedMessage()
 
 
 # Device Info tests
@@ -87,7 +51,7 @@ class DeviceInfoTest(object):
   }
 
 
-class GetDeviceInfo(QueuedMessageTestFixture, DeviceInfoTest):
+class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
   """GET device info & verify."""
   CATEGORY = TestCategory.CORE
 
@@ -100,7 +64,9 @@ class GetDeviceInfo(QueuedMessageTestFixture, DeviceInfoTest):
   ]
 
   def Test(self):
-    self.AddExpectedResults(self.AckGetResult(self.FIELDS, self.FIELD_VALUES))
+    self.AddExpectedResults(self.AckGetResult(
+      field_names=self.FIELDS,
+      field_values=self.FIELD_VALUES))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, unused_status, fields):
@@ -129,7 +95,7 @@ class GetDeviceInfo(QueuedMessageTestFixture, DeviceInfoTest):
       self.AddWarning('Sub device count > 512, was %d' % sub_devices)
 
 
-class GetDeviceInfoWithData(QueuedMessageTestFixture, DeviceInfoTest):
+class GetDeviceInfoWithData(ResponderTestFixture, DeviceInfoTest):
   """GET device info with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
@@ -137,14 +103,14 @@ class GetDeviceInfoWithData(QueuedMessageTestFixture, DeviceInfoTest):
     self.AddExpectedResults([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckGetResult(
-        self.FIELDS,
-        self.FIELD_VALUES,
+        field_names=self.FIELDS,
+        field_values=self.FIELD_VALUES,
         warning='Get %s with data returned an ack' % self.pid.name)
     ])
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
-class SetDeviceInfo(QueuedMessageTestFixture, DeviceInfoTest):
+class SetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
   """SET device info."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
 
@@ -153,7 +119,7 @@ class SetDeviceInfo(QueuedMessageTestFixture, DeviceInfoTest):
     self.SendRawSet(ROOT_DEVICE, self.pid)
 
 
-class AllSubDevicesDeviceInfo(QueuedMessageTestFixture, DeviceInfoTest):
+class AllSubDevicesDeviceInfo(ResponderTestFixture, DeviceInfoTest):
   """Send a Get Device Info to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   def Test(self):
@@ -164,7 +130,7 @@ class AllSubDevicesDeviceInfo(QueuedMessageTestFixture, DeviceInfoTest):
 
 # Supported Parameters Tests & Mixin
 #------------------------------------------------------------------------------
-class GetSupportedParameters(QueuedMessageTestFixture):
+class GetSupportedParameters(ResponderTestFixture):
   """GET supported parameters."""
   CATEGORY = TestCategory.CORE
   PID = 'SUPPORTED_PARAMETERS'
@@ -208,7 +174,7 @@ class GetSupportedParameters(QueuedMessageTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
-    if not status.WasSuccessfull():
+    if not status.WasAcked():
       self.SetProperty('manufacturer_parameters', [])
       self.SetProperty('supported_parameters', [])
       return
@@ -270,7 +236,7 @@ class GetSupportedParameters(QueuedMessageTestFixture):
                          (pid_names[0], ','.join(unsupported_pids)))
 
 
-class GetSupportedParametersWithData(QueuedMessageTestFixture):
+class GetSupportedParametersWithData(ResponderTestFixture):
   """GET supported parameters with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SUPPORTED_PARAMETERS'
@@ -284,7 +250,7 @@ class GetSupportedParametersWithData(QueuedMessageTestFixture):
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
-class SetSupportedParameters(QueuedMessageTestFixture):
+class SetSupportedParameters(ResponderTestFixture):
   """Attempt to SET supported parameters."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SUPPORTED_PARAMETERS'
@@ -296,7 +262,7 @@ class SetSupportedParameters(QueuedMessageTestFixture):
 
 # Sub Devices Test
 #------------------------------------------------------------------------------
-class FindSubDevices(QueuedMessageTestFixture):
+class FindSubDevices(ResponderTestFixture):
   """Locate the sub devices by sending DEVICE_INFO messages."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_INFO'
@@ -334,13 +300,13 @@ class FindSubDevices(QueuedMessageTestFixture):
     self.SendGet(self._current_index, self.pid)
 
   def VerifyResult(self, status, fields):
-    if status.WasSuccessfull():
+    if status.WasAcked():
       self._sub_devices.append(self._current_index)
 
 
 # Parameter Description
 #------------------------------------------------------------------------------
-class GetParamDescription(QueuedMessageTestFixture):
+class GetParamDescription(ResponderTestFixture):
   """Check that GET parameter description works for any manufacturer params."""
   CATEGORY = TestCategory.RDM_INFORMATION
   PID = 'PARAMETER_DESCRIPTION'
@@ -366,7 +332,7 @@ class GetParamDescription(QueuedMessageTestFixture):
 
   def VerifyResult(self, status, fields):
     #TODO(simon): Hook into this to add new PIDs to the store
-    if not status.WasSuccessfull():
+    if not status.WasAcked():
       return
 
     if self.current_param != fields['pid']:
@@ -383,7 +349,7 @@ class GetParamDescription(QueuedMessageTestFixture):
           'was %d' % fields['command_class'])
 
 
-class GetParamDescriptionForNonManufacturerPid(QueuedMessageTestFixture):
+class GetParamDescriptionForNonManufacturerPid(ResponderTestFixture):
   """GET parameter description for a non-manufacturer pid."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PARAMETER_DESCRIPTION'
@@ -405,7 +371,7 @@ class GetParamDescriptionForNonManufacturerPid(QueuedMessageTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [device_info_pid.value])
 
 
-class GetParamDescriptionWithData(QueuedMessageTestFixture):
+class GetParamDescriptionWithData(ResponderTestFixture):
   """GET parameter description with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PARAMETER_DESCRIPTION'
@@ -455,7 +421,7 @@ class ClearCommsStatus(OptionalParameterTestFixture):
 
   def VerifySet(self):
     self.AddIfGetSupported(
-        self.AckGetResult(field_dict={
+        self.AckGetResult(field_values={
             'short_message': 0,
             'length_mismatch': 0,
             'checksum_fail': 0
@@ -478,7 +444,7 @@ class GetProductDetailIdList(OptionalParameterTestFixture):
   PID = 'PRODUCT_DETAIL_ID_LIST'
 
   def Test(self):
-    self.AddIfGetSupported(self.AckGetResult(['detail_ids']))
+    self.AddIfGetSupported(self.AckGetResult(field_names=['detail_ids']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
@@ -651,7 +617,7 @@ class GetFactoryDefaults(OptionalParameterTestFixture):
   PID = 'FACTORY_DEFAULTS'
 
   def Test(self):
-    self.AddIfGetSupported(self.AckGetResult(['using_defaults']))
+    self.AddIfGetSupported(self.AckGetResult(field_names=['using_defaults']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
@@ -694,11 +660,11 @@ class GetLanguageCapabilities(OptionalParameterTestFixture):
 
   def Test(self):
     self.languages = []
-    self.AddIfGetSupported(self.AckGetResult(['languages']))
+    self.AddIfGetSupported(self.AckGetResult(field_names=['languages']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
-    if not status.WasSuccessfull():
+    if not status.WasAcked():
       self.SetProperty('languages_capabilities', [])
       return
 
@@ -798,14 +764,14 @@ class SetUnsupportedLanguage(OptionalParameterTestFixture):
 # Software Version Label
 #------------------------------------------------------------------------------
 class GetSoftwareVersionLabel(TestMixins.GetRequiredMixin,
-                              QueuedMessageTestFixture):
+                              ResponderTestFixture):
   """GET the software version label."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'SOFTWARE_VERSION_LABEL'
   EXPECTED_FIELD = 'label'
 
 
-class GetSoftwareVersionLabelWithData(QueuedMessageTestFixture):
+class GetSoftwareVersionLabelWithData(ResponderTestFixture):
   """GET the software_version_label with param data."""
   # We don't use the GetLabelMixin here because this PID is mandatory
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -821,7 +787,7 @@ class GetSoftwareVersionLabelWithData(QueuedMessageTestFixture):
 
 
 class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
-                              QueuedMessageTestFixture):
+                              ResponderTestFixture):
   """Attempt to SET the software version label."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SOFTWARE_VERSION_LABEL'
@@ -838,7 +804,7 @@ class GetBootSoftwareVersion(OptionalParameterTestFixture):
   PID = 'BOOT_SOFTWARE_VERSION'
 
   def Test(self):
-    self.AddIfGetSupported(self.AckGetResult(['version']))
+    self.AddIfGetSupported(self.AckGetResult(field_names=['version']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
 
@@ -850,7 +816,7 @@ class GetBootSoftwareVersionWithData(TestMixins.GetWithDataMixin,
 
 
 class SetBootSoftwareVersion(TestMixins.UnsupportedSetMixin,
-                             QueuedMessageTestFixture):
+                             ResponderTestFixture):
   """Attempt to SET the boot software version."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'BOOT_SOFTWARE_VERSION'
@@ -928,11 +894,11 @@ class GetPersonality(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult(
-      ['current_personality', 'personality_count']))
+      field_names=['current_personality', 'personality_count']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
-    if not status.WasSuccessfull():
+    if not status.WasAcked():
       return
 
     current_personality = self.Property('current_personality')
@@ -978,14 +944,14 @@ class GetPersonalities(OptionalParameterTestFixture):
       return
 
     self.AddIfGetSupported(self.AckGetResult(
-        ['slots_required', 'name'],
-        {'personality': self._current_index},
+        field_names=['slots_required', 'name'],
+        field_values={'personality': self._current_index},
         action=self._GetPersonality))
     self.SendGet(ROOT_DEVICE, self.pid, [self._current_index])
 
   def VerifyResult(self, status, fields):
     """Save the personality for other tests to use."""
-    if status.WasSuccessfull():
+    if status.WasAcked():
       self._personalities.append(fields)
 
 
@@ -1080,7 +1046,7 @@ class SetOversizedPersonality(OptionalParameterTestFixture):
 
 # DMX Start Address tests
 #------------------------------------------------------------------------------
-class GetStartAddress(QueuedMessageTestFixture):
+class GetStartAddress(ResponderTestFixture):
   """GET the DMX start address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_START_ADDRESS'
@@ -1089,7 +1055,7 @@ class GetStartAddress(QueuedMessageTestFixture):
 
   def Test(self):
     if self.Property('dmx_footprint') > 0:
-      results = self.AckGetResult(['dmx_address'])
+      results = self.AckGetResult(field_names=['dmx_address'])
     else:
       results = [
           self.AckGetResult(field_values={'dmx_address': 0xffff}),
@@ -1099,7 +1065,7 @@ class GetStartAddress(QueuedMessageTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
-    if not status.WasSuccessfull():
+    if not status.WasAcked():
       self.SetProperty('dmx_address', None)
       return
 
@@ -1110,7 +1076,7 @@ class GetStartAddress(QueuedMessageTestFixture):
     self.SetPropertyFromDict(fields, 'dmx_address')
 
 
-class SetStartAddress(QueuedMessageTestFixture):
+class SetStartAddress(ResponderTestFixture):
   """Set the DMX start address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_START_ADDRESS'
@@ -1143,11 +1109,11 @@ class SetStartAddress(QueuedMessageTestFixture):
     self.AddExpectedResults(
       AckGetResult(
         device_info_pid.value,
-        field_values = {'dmx_start_address': self.start_address}))
+        field_values={'dmx_start_address': self.start_address}))
     self.SendGet(ROOT_DEVICE, device_info_pid)
 
 
-class SetOutOfRangeStartAddress(QueuedMessageTestFixture):
+class SetOutOfRangeStartAddress(ResponderTestFixture):
   """Check that the DMX address can't be set to > 512."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
@@ -1164,7 +1130,7 @@ class SetOutOfRangeStartAddress(QueuedMessageTestFixture):
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
-class SetZeroStartAddress(QueuedMessageTestFixture):
+class SetZeroStartAddress(ResponderTestFixture):
   """Check the DMX address can't be set to 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
@@ -1181,7 +1147,7 @@ class SetZeroStartAddress(QueuedMessageTestFixture):
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
-class SetOversizedStartAddress(QueuedMessageTestFixture):
+class SetOversizedStartAddress(ResponderTestFixture):
   """Send an over-sized SET dmx start address."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
@@ -1499,11 +1465,11 @@ class GetRealTimeClock(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(
-      self.AckGetResult(self.ALLOWED_RANGES.keys() + ['second']))
+      self.AckGetResult(field_names=self.ALLOWED_RANGES.keys() + ['second']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
-    if not status.WasSuccessfull():
+    if not status.WasAcked():
       return
 
     for field, range in self.ALLOWED_RANGES:
@@ -1542,7 +1508,7 @@ class SetRealTimeClockWithNoData(TestMixins.SetWithNoDataMixin,
 
 # Identify Device
 #------------------------------------------------------------------------------
-class GetIdentifyDevice(TestMixins.GetRequiredMixin, QueuedMessageTestFixture):
+class GetIdentifyDevice(TestMixins.GetRequiredMixin, ResponderTestFixture):
   """Get the identify mode."""
   CATEGORY = TestCategory.CONTROL
   PID = 'IDENTIFY_DEVICE'
@@ -1550,7 +1516,7 @@ class GetIdentifyDevice(TestMixins.GetRequiredMixin, QueuedMessageTestFixture):
   EXPECTED_FIELD = 'identify_state'
 
 
-class GetIdentifyDeviceWithData(QueuedMessageTestFixture):
+class GetIdentifyDeviceWithData(ResponderTestFixture):
   """Get the identify mode with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
@@ -1561,7 +1527,7 @@ class GetIdentifyDeviceWithData(QueuedMessageTestFixture):
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
-class SetIdentifyDevice(QueuedMessageTestFixture):
+class SetIdentifyDevice(ResponderTestFixture):
   """Set the identify mode."""
   CATEGORY = TestCategory.CONTROL
   PID = 'IDENTIFY_DEVICE'
@@ -1576,7 +1542,7 @@ class SetIdentifyDevice(QueuedMessageTestFixture):
 
   def VerifyIdentifyMode(self):
     self.AddExpectedResults(self.AckGetResult(
-        field_values = {'identify_state': self.new_mode},
+        field_values={'identify_state': self.new_mode},
         action=self.ResetMode))
     self.SendGet(ROOT_DEVICE, self.pid)
 
@@ -1585,7 +1551,7 @@ class SetIdentifyDevice(QueuedMessageTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.identify_mode])
 
 
-class SetIdentifyDeviceWithNoData(QueuedMessageTestFixture):
+class SetIdentifyDeviceWithNoData(ResponderTestFixture):
   """Set the identify mode with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
@@ -1609,7 +1575,7 @@ class GetPowerState(TestMixins.GetMixin, OptionalParameterTestFixture):
 
   def VerifyResult(self, status, fields):
     super(GetPowerState, self).VerifyResult(status, fields)
-    if status.WasSuccessfull():
+    if status.WasAcked():
       if fields['power_state'] not in self.ALLOWED_STATES:
         self.AddWarning('Power state of 0x%hx is not defined' %
                         fields['power_state'])

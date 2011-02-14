@@ -55,13 +55,14 @@ class GetMixin(object):
   The target class needs to set EXPECTED_FIELD and optionally PROVIDES.
   """
   def Test(self):
-    self.AddIfGetSupported(self.AckGetResult([self.EXPECTED_FIELD]))
+    self.AddIfGetSupported(self.AckGetResult(
+      field_names=[self.EXPECTED_FIELD]))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
     if self.PROVIDES:
       value = None
-      if status.WasSuccessfull():
+      if status.WasAcked():
         value = fields[self.EXPECTED_FIELD]
       self.SetProperty(self.PROVIDES[0], value)
 
@@ -72,11 +73,12 @@ class GetRequiredMixin(object):
   The target class needs to set EXPECTED_FIELD and optionally PROVIDES.
   """
   def Test(self):
-    self.AddExpectedResults(self.AckGetResult([self.EXPECTED_FIELD]))
+    self.AddExpectedResults(self.AckGetResult(
+      field_names=[self.EXPECTED_FIELD]))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):
-    if status.WasSuccessfull() and self.PROVIDES:
+    if status.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
 
@@ -187,7 +189,7 @@ class SetOversizedLabelMixin(object):
   def VerifySet(self):
     """If we got an ACK back, we send a GET to check what the result was."""
     self.verify_result = True
-    self.AddExpectedResults(self.AckGetResult(['label']))
+    self.AddExpectedResults(self.AckGetResult(field_names=['label']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, status, fields):

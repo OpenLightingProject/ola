@@ -21,16 +21,9 @@
 # TestFixture - The base test class, defines common behaviour
 #  ResponderTestFixture - A test which involves sending one or more RDM
 #                         commands to a responder
-#   QueuedMessageTestFixture - A test which handles ACK_TIMER and fetches the
-#                              appropriate queued message.
-#    OptionalParameterTestFixture - A test fixture that changes the expected
-#                                   result based on the output of
-#                                   SUPPORTED_PARAMETERS
-#
-# NOTE: Almost all tests that involve RDM commands should inherit from
-# QueuedMessageTestFixture. This ensures that by the time the test is run, we
-# know if QUEUED_MESSAGE is supported which determines if an ACK_TIMER is a
-# valid response.
+#   OptionalParameterTestFixture - A test fixture that changes the expected
+#                                  result based on the output of
+#                                  SUPPORTED_PARAMETERS
 
 '''Automated testing for RDM responders.'''
 
@@ -64,7 +57,6 @@ class TestFixture(object):
     self._device_properties = device
     self._uid = uid
     self._pid_store = pid_store
-    self._status = None
     self._state = TestState.NOT_RUN
     self.pid = self.LookupPid(self.PID)
     self._warnings = []
@@ -182,16 +174,7 @@ class TestFixture(object):
     self.SetBroken('test method not defined')
 
   def Run(self):
-    """Run the test if all the required properties are available."""
-    logging.debug('%s: %s' % (self, self.__doc__))
-
-    for property in self.Requires():
-      try:
-        getattr(self._device_properties, property)
-      except AttributeError:
-        logging.debug(' Property: %s not found, skipping test.' % property)
-        return
-
+    """Run the test."""
     self.Test()
 
   def SetNotRun(self, message=None):
@@ -210,14 +193,11 @@ class TestFixture(object):
 
 class ResponderTestFixture(TestFixture):
   """A Test that that sends one or more messages to a responder."""
-  def __init__(self,
-               device,
-               universe,
+  def __init__(self, device, universe,
                uid,
                pid_store,
                rdm_api,
-               wrapper,
-               check_for_queued_support=False):
+               wrapper):
     super(ResponderTestFixture, self).__init__(device, uid, pid_store)
     self._api = rdm_api
     self._expected_results = []
@@ -225,7 +205,11 @@ class ResponderTestFixture(TestFixture):
     self._should_run_wrapper = True
     self._universe = universe
     self._wrapper = wrapper
-    self._check_for_queued_support = check_for_queued_support
+
+    # This is set to the tuple of (sub_device, command_class, pid) when we sent
+    # a message. It's used to identify the response if we get an ACK_TIMER and
+    # use QUEUED_MESSAGEs
+    self._outstanding_request = None
 
   def Run(self):
     """Call the test method and then start running the loop wrapper."""
@@ -285,11 +269,12 @@ class ResponderTestFixture(TestFixture):
     """
     logging.debug(' GET: pid = %s, sub device = %d, args = %s' %
         (pid, sub_device, args))
+    self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
     return self._api.Get(self._universe,
                          self._uid,
                          sub_device,
                          pid,
-                         self._BuildResponseHandler(sub_device),
+                         self._HandleResponse,
                          args)
 
   def SendRawGet(self, sub_device, pid, data = ""):
@@ -302,11 +287,12 @@ class ResponderTestFixture(TestFixture):
     """
     logging.debug(' GET: pid = %s, sub device = %d, data = %s' %
         (pid, sub_device, data))
+    self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
     return self._api.RawGet(self._universe,
                             self._uid,
                             sub_device,
                             pid,
-                            self._BuildResponseHandler(sub_device),
+                            self._HandleResponse,
                             data)
 
   def SendSet(self, sub_device, pid, args = []):
@@ -319,11 +305,12 @@ class ResponderTestFixture(TestFixture):
     """
     logging.debug(' SET: pid = %s, sub device = %d, args = %s' %
         (pid, sub_device, args))
+    self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
     return self._api.Set(self._universe,
                          self._uid,
                          sub_device,
                          pid,
-                         self._BuildResponseHandler(sub_device),
+                         self._HandleResponse,
                          args)
 
   def SendRawSet(self, sub_device, pid, data = ""):
@@ -336,41 +323,125 @@ class ResponderTestFixture(TestFixture):
     """
     logging.debug(' SET: pid = %s, sub device = %d, data = %s' %
         (pid, sub_device, data))
+    self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
     return self._api.RawSet(self._universe,
                             self._uid,
                             sub_device,
                             pid,
-                            self._BuildResponseHandler(sub_device),
+                            self._HandleResponse,
                             data)
 
-  def _HandleResponse(self,
-                      sub_device,
-                      status,
-                      command_class,
-                      pid,
-                      fields,
-                      unpack_exception):
+  def _HandleResponse(self, response, unpacked_data, unpack_exception):
     """Handle a RDM response.
 
     Args:
-      sub_device: the sub device this was for
-      status: A RDMRequestStatus object
-      command_class: RDM_GET or RDM_SET
-      pid: The pid in the response
-      obj: A dict of fields
+      response: A RDMResponse object
+      unpacked_data: The unpacked data structure for this pid
+      unpack_exception: The exception if the data could not be unpacked
     """
-    if not self._CheckState(sub_device, status, pid, fields, unpack_exception):
+    if not self._CheckForAckOrNack(response, unpacked_data, unpack_exception):
       return
+
+    self._PerformMatching(response, unpacked_data, unpack_exception)
+
+  def _HandleQueuedResponse(self, response, unpacked_data, unpack_exception):
+    """Handle a response to a get QUEUED_MESSAGE request.
+
+    Args:
+      response: A RDMResponse object
+      unpacked_data: The unpacked data structure for this pid
+      unpack_exception: The exception if the data could not be unpacked
+    """
+    if not self._CheckForAckOrNack(response, unpacked_data, unpack_exception):
+      return
+
+    # At this stage we have NACKs and ACKs left
+    request_key = (response.sub_device, response.command_class, response.pid)
+    if (self._outstanding_request == request_key):
+      # this is what we've been waiting for
+      self._PerformMatching(response, unpacked_data, unpack_exception)
+      return
+
+    queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
+    status_message_pid = self.LookupPid('STATUS_MESSAGE')
+    if (response.pid == queued_message_pid.value and
+        response.response_type == OlaClient.RDM_NACK_REASON):
+        # A Nack here is fatal because if we get an ACK_TIMER, QUEUED_MESSAGE
+        # should be supported.
+        self.SetFailed(' Get Queued message returned nack: %s' %
+                       response.nack_reason)
+        self.Stop()
+        return
+    elif (response.pid == status_message_pid.value and
+          unpacked_data.get('messages', None) == []):
+        # this means we've run out of messages
+        if self._state == TestState.NOT_RUN:
+          self.SetFailed('ACK_TIMER issued but the response was never queued')
+        self.Stop()
+        return
+
+    # otherwise fetch the next one
+    self._GetQueuedMessage()
+
+  def _CheckForAckOrNack(self, response, unpacked_data, unpack_exception):
+    """Check the state of a RDM response.
+
+    Returns:
+      True if processing should continue, False if there was a transport error
+      or a ACK_TIMER was received.
+    """
+    if not response.status.Succeeded():
+      # this indicates a transport error
+      self.SetBroken(' Error: %s' % status.message)
+      self.Stop()
+      return False
+
+    if response.response_code != OlaClient.RDM_COMPLETED_OK:
+      self.SetFailed('Request failed: %s' % response.ResponseCodeAsString())
+      self.Stop()
+      return False
+
+    # handle the case of an ack timer
+    if response.response_type == OlaClient.RDM_ACK_TIMER:
+      logging.debug(' Received ACK TIMER set to %d ms' % response.ack_timer)
+      self._wrapper.AddEvent(response.ack_timer, self._GetQueuedMessage)
+      return False
+
+    # now log the result
+    if response.WasAcked():
+      if unpack_exception:
+        logging.debug(' Response: %s, PID = 0x%04hx, Error: %s' %
+                      (response, response.pid, unpack_exception))
+      else:
+        logging.debug(' Response: %s, PID = 0x%04hx, data = %s' %
+                      (response, response.pid, unpacked_data))
+    else:
+      logging.debug(' Response: %s, PID = 0x%04hx' % (response, response.pid))
+
+    return True
+
+  def _PerformMatching(self, response, unpacked_data, unpack_exception):
+    """Check if this response matched any of the expected values.
+
+    Args:
+      response: A RDMResponse object
+      unpacked_data: The unpacked data structure for this pid
+      unpack_exception: The exception if the data could not be unpacked
+    """
+    if response.WasAcked():
+      if unpack_exception:
+        self.SetFailed('Invalid Param data: %s' % unpack_exception)
+        self.Stop()
+        return
 
     if self._in_reset_mode:
       self._wrapper.Stop()
       return
 
     for result in self._expected_results:
-      if result.Matches(status, command_class, pid, fields):
+      if result.Matches(response, unpacked_data):
         self._state = TestState.PASSED
-        self._status = status
-        self.VerifyResult(status, fields)
+        self.VerifyResult(response, unpacked_data)
         if result.warning is not None:
           self.AddWarning(result.warning)
         if result.advisory is not None:
@@ -384,155 +455,26 @@ class ResponderTestFixture(TestFixture):
 
     # nothing matched
     self.SetFailed('expected one of:')
-
     for result in self._expected_results:
       logging.debug('  %s' % result)
     self.Stop()
 
-  def _HandleQueuedResponse(self,
-                            sub_device,
-                            command_class,
-                            target_pid,
-                            status,
-                            pid,
-                            fields,
-                            unpack_exception):
-    if not self._CheckState(sub_device, status, pid, fields, unpack_exception):
-      return
 
-    if status.response_code != OlaClient.RDM_COMPLETED_OK:
-      self.SetFailed(' Get Queued message returned: %s' %
-                     status.ResponseCodeAsString())
-      self.Stop()
-      return
-
-    # handle nacks
-    if status.response_type == OlaClient.RDM_NACK_REASON:
-      queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
-      if pid == queued_message_pid.value:
-        # a nack for this is is fatal
-        self.SetFailed(' Get Queued message returned nack: %s' %
-                       status.nack_reason)
-      elif pid != target_pid:
-        # this is a nack for something else
-        self._HandleResponse(sub_device, status, command_class, pid, fields,
-                             unpack_exception)
-        self._GetQueuedMessage(sub_device, target_pid)
-      return
-
-    # at this point we just have RDM_ACKs left
-    logging.debug('pid 0x%hx' % pid)
-    logging.debug(fields)
-    if (fields.get('messages', None) == []):
-      # this means we've run out of messages
-      self.Stop()
-    else:
-      self._HandleResponse(sub_device, status, command_class, pid, fields,
-                           unpack_exception)
-      # fetch the next one
-      self._GetQueuedMessage(sub_device, target_pid)
-
-  def _CheckState(self, sub_device, status, pid, fields, unpack_exception):
-    """Check the state of a RDM response.
-
-    Returns:
-      True if processing should continue, False if there was a transport error
-      or a ACK_TIMER was received.
-    """
-    if not status.Succeeded():
-      # this indicates a transport error
-      self.SetBroken(' Error: %s' % status.message)
-      self.Stop()
-      return False
-
-    # handle the case of an ack timer
-    if (status.response_code == OlaClient.RDM_COMPLETED_OK and
-        status.response_type == OlaClient.RDM_ACK_TIMER):
-      logging.debug('Got ACK TIMER set to %d ms' % status.ack_timer)
-      if (self._check_for_queued_support and
-          not self.Property('supports_queued_messages')):
-        # TODO(simon): this is wrong because we could have proxies on the line
-        self.SetFailed(
-            'ACK_TIMER received but device doesn\'t support QUEUED_MESSAGE')
-        self.Stop()
-      else:
-        # mark as failed, if we get a message that matches we'll set it to PASSED
-        self.SetFailed('Queued Messages failed to return the expected message')
-        self._wrapper.AddEvent(
-            status.ack_timer,
-            lambda: self._GetQueuedMessage(sub_device, pid))
-      return False
-
-    if status.WasSuccessfull():
-      logging.debug(' Response: %s, PID = 0x%04hx, data = %s' %
-                    (status, pid, fields))
-    else:
-      if unpack_exception:
-        logging.debug(' Response: %s, PID = 0x%04hx, Error: %s' %
-                      (status, pid, unpack_exception))
-      else:
-        logging.debug(' Response: %s, PID = 0x%04hx' % (status, pid))
-
-    return True
-
-  def _GetQueuedMessage(self, sub_device, target_pid):
-    """Fetch queued messages.
-
-    Args:
-      sub_device: The sub device to fetch messages for
-      target_pid: The pid to look for in the response.
-    """
+  def _GetQueuedMessage(self):
+    """Fetch queued messages."""
     queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
     data = ['error']
-    logging.debug(' GET: pid = %s, sub device = %d, data = %s' %
-        (queued_message_pid, sub_device, data))
+    logging.debug(' GET: pid = %s, data = %s' % (queued_message_pid, data))
 
-    def QueuedResponseHandler(status,
-                              command_class,
-                              pid,
-                              fields,
-                              unpack_exception):
-      self._HandleQueuedResponse(sub_device,
-                                 command_class,
-                                 target_pid,
-                                 status,
-                                 pid,
-                                 fields,
-                                 unpack_exception)
-    return self._api.Get(self._universe,
-                         self._uid,
-                         sub_device,
-                         queued_message_pid,
-                         QueuedResponseHandler,
-                         data)
-
-  def _BuildResponseHandler(self, sub_device):
-    return lambda s, c, p, f, e: self._HandleResponse(sub_device,
-                                                      s, c, p, f, e)
+    self._api.Get(self._universe,
+                  self._uid,
+                  PidStore.ROOT_DEVICE,
+                  queued_message_pid,
+                  self._HandleQueuedResponse,
+                  data)
 
 
-class QueuedMessageTestFixture(ResponderTestFixture):
-  """A test that depends on supports_queued_messages.
-
-  All tests that communicate with a responder should inherit from this test.
-  This ensures that QueuedMessageTest runs before anything else which allows us
-  to know if ACK_TIMER responses are valid (If a device ever returns an
-  ACK_TIMER it MUST support queued messages).
-  """
-  def __init__(self, device, universe, uid, pid_store, rdm_api, wrapper):
-    super(QueuedMessageTestFixture, self).__init__(device,
-                                  universe,
-                                  uid,
-                                  pid_store,
-                                  rdm_api,
-                                  wrapper,
-                                  check_for_queued_support=True)
-
-  def Requires(self):
-    return (super(QueuedMessageTestFixture, self).Requires() + ['supports_queued_messages'])
-
-
-class OptionalParameterTestFixture(QueuedMessageTestFixture):
+class OptionalParameterTestFixture(ResponderTestFixture):
   """A sub class of ResponderTestFixture that alters behaviour if the PID isn't
      supported.
   """

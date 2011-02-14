@@ -72,16 +72,13 @@ class BaseExpectedResult(object):
   def advisory(self):
     return self._advisory_message
 
-  def Matches(self, status, command_class, pid_value, fields):
+  def Matches(self, response, unpacked_data):
     """Check if the response we receieved matches this object.
 
     Args:
-      status: An RDMRequestStatus object
-      command_class: RDM_GET or RDM_SET
-      pid: The value of the pid that was returned, or None if we didn't get a
-        valid response.
-      fields: A dict of field name : value mappings that were present in the
-        response.
+      response: An RDMResponse object
+      unpacked_data: A dict of field name : value mappings that were present in
+        the response.
     """
     raise TypeError('Base method called')
 
@@ -91,8 +88,8 @@ class BroadcastResult(BaseExpectedResult):
   def __str__(self):
     return 'RDM_WAS_BROADCAST'
 
-  def Matches(self, status, command_class, pid_value, fields):
-    return OlaClient.RDM_WAS_BROADCAST == status.response_code
+  def Matches(self, response, unpacked_data):
+    return OlaClient.RDM_WAS_BROADCAST == response.response_code
 
 
 class SuccessfulResult(BaseExpectedResult):
@@ -105,8 +102,8 @@ class SuccessfulResult(BaseExpectedResult):
   def __str__(self):
     return 'RDM_COMPLETED_OK'
 
-  def Matches(self, status, command_class, pid_value, fields):
-    return status.response_code == OlaClient.RDM_COMPLETED_OK
+  def Matches(self, response, unpacked_data):
+    return response.response_code == OlaClient.RDM_COMPLETED_OK
 
 
 class QueuedMessageResult(SuccessfulResult):
@@ -114,11 +111,8 @@ class QueuedMessageResult(SuccessfulResult):
   def __str__(self):
     return 'It\'s complicated'
 
-  def Matches(self, status, command_class, pid_value, fields):
-    ok = super(QueuedMessageResult, self).Matches(status,
-                                                  command_class,
-                                                  pid_value,
-                                                  fields)
+  def Matches(self, response, unpacked_data):
+    ok = super(QueuedMessageResult, self).Matches(response, unpacked_data)
 
     if not ok:
       return False
@@ -126,9 +120,9 @@ class QueuedMessageResult(SuccessfulResult):
     pid_store = GetStore()
     queued_message_pid = pid_store.GetName('QUEUED_MESSAGE')
 
-    return ((status.response_type == OlaClient.RDM_NACK_REASON or
-             status.response_type == OlaClient.RDM_ACK) and
-            pid_value != queued_message_pid.value)
+    return ((response.response_type == OlaClient.RDM_NACK_REASON or
+             response.response_type == OlaClient.RDM_ACK) and
+             response.pid != queued_message_pid.value)
 
 
 class NackResult(SuccessfulResult):
@@ -162,17 +156,14 @@ class NackResult(SuccessfulResult):
              self._pid_id,
              self._nack_reason))
 
-  def Matches(self, status, command_class, pid_value, fields):
-    ok = super(NackResult, self).Matches(status,
-                                         command_class,
-                                         pid_value,
-                                         fields)
+  def Matches(self, response, unpacked_data):
+    ok = super(NackResult, self).Matches(response, unpacked_data)
 
     return (ok and
-            status.response_type == OlaClient.RDM_NACK_REASON and
-            command_class == self._command_class and
-            self._pid_id == pid_value and
-            self._nack_reason == status.nack_reason)
+            response.response_type == OlaClient.RDM_NACK_REASON and
+            response.command_class == self._command_class and
+            response.pid == self._pid_id and
+            response.nack_reason == self._nack_reason)
 
 
 class NackGetResult(NackResult):
@@ -260,34 +251,32 @@ class AckResult(SuccessfulResult):
             self._field_names,
             self._field_values))
 
-  def Matches(self, status, command_class, pid_value, fields):
-    ok = super(AckResult, self).Matches(status,
-                                          command_class,
-                                          pid_value,
-                                          fields)
+  def Matches(self, response, unpacked_data):
+    ok = super(AckResult, self).Matches(response, unpacked_data)
+
     if (not ok or
-        status.response_type != OlaClient.RDM_ACK or
-        command_class != self._command_class or
-        self._pid_id != pid_value):
+        response.response_type != OlaClient.RDM_ACK or
+        response.command_class != self._command_class or
+        response.pid != self._pid_id):
       return False
 
-    # fields may be either a list of dicts, or a dict
-    if isinstance(fields, list):
-      for item in fields:
+    # unpacked_data may be either a list of dicts, or a dict
+    if isinstance(unpacked_data, list):
+      for item in unpacked_data:
         field_keys = set(item.keys())
         for field in self._field_names:
           if field not in field_keys:
             return False
     else:
-      field_keys = set(fields.keys())
+      field_keys = set(unpacked_data.keys())
       for field in self._field_names:
         if field not in field_keys:
           return False
 
     for field, value in self._field_values.iteritems():
-      if field not in fields:
+      if field not in unpacked_data:
         return False
-      if value != fields[field]:
+      if value != unpacked_data[field]:
         return False
     return True
 
