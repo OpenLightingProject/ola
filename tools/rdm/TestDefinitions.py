@@ -416,7 +416,7 @@ class ClearCommsStatus(OptionalParameterTestFixture):
   PID = 'COMMS_STATUS'
 
   def Test(self):
-    self.AddIfSetSupported(self.AckGetResult(action=self.VerifySet))
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
     self.SendSet(ROOT_DEVICE, self.pid)
 
   def VerifySet(self):
@@ -709,7 +709,7 @@ class SetLanguage(OptionalParameterTestFixture):
     ack = self.AckSetResult(action=self.VerifySet)
     nack = self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)
 
-    available_langugages = self.Property('languages_capabilities')
+    available_langugages = list(self.Property('languages_capabilities'))
     if available_langugages:
       if len(available_langugages) > 1:
         # if the responder only supports 1 lang, we may not be able to set it
