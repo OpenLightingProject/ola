@@ -59,10 +59,10 @@ class GetMixin(object):
       field_names=[self.EXPECTED_FIELD]))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, status, fields):
+  def VerifyResult(self, response, fields):
     if self.PROVIDES:
       value = None
-      if status.WasAcked():
+      if response.WasAcked():
         value = fields[self.EXPECTED_FIELD]
       self.SetProperty(self.PROVIDES[0], value)
 
@@ -77,12 +77,12 @@ class GetRequiredMixin(object):
       field_names=[self.EXPECTED_FIELD]))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, status, fields):
-    if status.WasAcked() and self.PROVIDES:
+  def VerifyResult(self, response, fields):
+    if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
 
-class GetWithDataMixin(ResponderTestFixture):
+class GetWithDataMixin(object):
   """GET a PID with random param data."""
   DATA = 'foobarbaz'
 
@@ -149,7 +149,7 @@ class SetLabelMixin(object):
     self.AddExpectedResults(self.AckGetResult(field_names=['label']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, status, fields):
+  def VerifyResult(self, response, fields):
     if not self.verify_result:
       return
 
@@ -192,7 +192,7 @@ class SetOversizedLabelMixin(object):
     self.AddExpectedResults(self.AckGetResult(field_names=['label']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, status, fields):
+  def VerifyResult(self, response, fields):
     if not self.verify_result:
       return
 
@@ -203,6 +203,7 @@ class SetOversizedLabelMixin(object):
         self.AddWarning(
             'Setting an oversized %s set the first %d characters' % (
             self.PID, len(fields['label'])))
+
 
 # Generic Bool Mixins
 # These all work in conjunction with the IsSupportedMixin

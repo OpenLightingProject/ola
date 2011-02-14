@@ -69,7 +69,7 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
       field_values=self.FIELD_VALUES))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, unused_status, fields):
+  def VerifyResult(self, unused_response, fields):
     """Check the footprint, personalities & sub devices."""
     for property in self.PROVIDES:
       self.SetPropertyFromDict(fields, property)
@@ -151,6 +151,7 @@ class GetSupportedParameters(ResponderTestFixture):
   # If responders support any of the pids in these groups, the should really
   # support all of them.
   PID_GROUPS = [
+      ('PROXIED_DEVICE_COUNT', 'PROXIED_DEVICES'),
       ('LANGUAGE_CAPABILITIES', 'LANGUAGE'),
       ('DMX_PERSONALITY', 'DMX_PERSONALITY_DESCRIPTION'),
       ('SENSOR_DEFINITION', 'SENSOR_VALUE'),
@@ -173,8 +174,8 @@ class GetSupportedParameters(ResponderTestFixture):
     ])
     self.SendGet(ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, status, fields):
-    if not status.WasAcked():
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
       self.SetProperty('manufacturer_parameters', [])
       self.SetProperty('supported_parameters', [])
       return
@@ -299,8 +300,8 @@ class FindSubDevices(ResponderTestFixture):
     self._current_index += 1
     self.SendGet(self._current_index, self.pid)
 
-  def VerifyResult(self, status, fields):
-    if status.WasAcked():
+  def VerifyResult(self, response, fields):
+    if response.WasAcked():
       self._sub_devices.append(self._current_index)
 
 
@@ -330,9 +331,9 @@ class GetParamDescription(ResponderTestFixture):
     self.current_param = self.params.pop()
     self.SendGet(ROOT_DEVICE, self.pid, [self.current_param])
 
-  def VerifyResult(self, status, fields):
+  def VerifyResult(self, response, fields):
     #TODO(simon): Hook into this to add new PIDs to the store
-    if not status.WasAcked():
+    if not response.WasAcked():
       return
 
     if self.current_param != fields['pid']:
@@ -391,10 +392,76 @@ class GetParamDescriptionWithData(ResponderTestFixture):
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
-# Comms Stqtus
+# Proxied Device Count
+#------------------------------------------------------------------------------
+class GetProxiedDeviceCount(OptionalParameterTestFixture):
+  """GET the proxied device count."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'PROXIED_DEVICE_COUNT'
+  REQUIRES = ['proxied_devices']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, unpacked_data):
+    if not response.WasAcked():
+      return
+
+    proxied_devices = self.Property('proxied_devices')
+    if proxied_devices is None:
+      self.AddWarning(
+         'PROXIED_DEVICE_COUNT ack\'ed but PROXIED_DEVICES didn\'t')
+      return
+
+    if not unpacked_data['list_changed']:
+      # we expect the count to match the length of the list previously returned
+      if unpacked_data['device_count'] != len(proxied_devices):
+        self.SetFailed(
+           'Proxied device count doesn\'t match number of devices returned')
+
+
+class GetProxiedDeviceCountWithData(TestMixins.GetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """GET the proxied device count with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PROXIED_DEVICE_COUNT'
+
+
+class SetProxiedDeviceCount(TestMixins.UnsupportedSetMixin,
+                            ResponderTestFixture):
+  """SET the count of proxied devices."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'PROXIED_DEVICE_COUNT'
+
+
+# Proxied Devices
+#------------------------------------------------------------------------------
+class GetProxiedDevices(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """GET the list of proxied devices."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'PROXIED_DEVICES'
+  EXPECTED_FIELD = 'uids'
+  PROVIDES = ['proxied_devices']
+
+
+class GetProxiedDevicesWithData(TestMixins.GetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """GET the list of proxied devices with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PROXIED_DEVICES'
+
+
+class SetProxiedDevices(TestMixins.UnsupportedSetMixin, ResponderTestFixture):
+  """SET the list of proxied devices."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'PROXIED_DEVICES'
+
+
+# Comms Status
 #------------------------------------------------------------------------------
 class GetCommsStatus(OptionalParameterTestFixture):
-  """Get the comms status."""
+  """GET the comms status."""
   CATEGORY = TestCategory.STATUS_COLLECTION
   PID = 'COMMS_STATUS'
 
@@ -405,7 +472,7 @@ class GetCommsStatus(OptionalParameterTestFixture):
 
 class GetCommsStatusWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
-  """Get the comms status with extra data."""
+  """GET the comms status with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'COMMS_STATUS'
 
@@ -456,7 +523,7 @@ class GetProductDetailIdListWithData(TestMixins.GetWithDataMixin,
 
 
 class SetProductDetailIdList(TestMixins.UnsupportedSetMixin,
-                             OptionalParameterTestFixture):
+                             ResponderTestFixture):
   """SET product detail id list."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRODUCT_DETAIL_ID_LIST'
@@ -663,8 +730,8 @@ class GetLanguageCapabilities(OptionalParameterTestFixture):
     self.AddIfGetSupported(self.AckGetResult(field_names=['languages']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, status, fields):
-    if not status.WasAcked():
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
       self.SetProperty('languages_capabilities', [])
       return
 
@@ -845,7 +912,7 @@ class SetBootSoftwareLabel(TestMixins.UnsupportedSetMixin,
   PID = 'BOOT_SOFTWARE_LABEL'
 
 
-# DMX Personality
+# DMX Personality & DMX Personality Description
 #------------------------------------------------------------------------------
 class GetZeroPersonalityDescription(OptionalParameterTestFixture):
   """GET the personality description for the 0th personality."""
@@ -897,8 +964,8 @@ class GetPersonality(OptionalParameterTestFixture):
       field_names=['current_personality', 'personality_count']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, status, fields):
-    if not status.WasAcked():
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
       return
 
     current_personality = self.Property('current_personality')
@@ -949,9 +1016,9 @@ class GetPersonalities(OptionalParameterTestFixture):
         action=self._GetPersonality))
     self.SendGet(ROOT_DEVICE, self.pid, [self._current_index])
 
-  def VerifyResult(self, status, fields):
+  def VerifyResult(self, response, fields):
     """Save the personality for other tests to use."""
-    if status.WasAcked():
+    if response.WasAcked():
       self._personalities.append(fields)
 
 
@@ -1064,8 +1131,8 @@ class GetStartAddress(ResponderTestFixture):
     self.AddExpectedResults(results)
     self.SendGet(ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, status, fields):
-    if not status.WasAcked():
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
       self.SetProperty('dmx_address', None)
       return
 
@@ -1468,8 +1535,8 @@ class GetRealTimeClock(OptionalParameterTestFixture):
       self.AckGetResult(field_names=self.ALLOWED_RANGES.keys() + ['second']))
     self.SendGet(ROOT_DEVICE, self.pid)
 
-  def VerifyResult(self, status, fields):
-    if not status.WasAcked():
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
       return
 
     for field, range in self.ALLOWED_RANGES.iteritems():
@@ -1573,9 +1640,9 @@ class GetPowerState(TestMixins.GetMixin, OptionalParameterTestFixture):
   # The allowed power states
   ALLOWED_STATES = [0, 1, 2, 0xff]
 
-  def VerifyResult(self, status, fields):
-    super(GetPowerState, self).VerifyResult(status, fields)
-    if status.WasAcked():
+  def VerifyResult(self, response, fields):
+    super(GetPowerState, self).VerifyResult(response, fields)
+    if response.WasAcked():
       if fields['power_state'] not in self.ALLOWED_STATES:
         self.AddWarning('Power state of 0x%hx is not defined' %
                         fields['power_state'])

@@ -23,6 +23,7 @@ class TestCategory(object):
   """The category a test is part of."""
   SYMBOLS_TO_VALUES = {
     # These correspond to categories in the E1.20 document
+    'NETWORK_MANAGEMENT': 'Network Management',
     'STATUS_COLLECTION': 'Status Collection',
     'RDM_INFORMATION': 'RDM Information',
     'PRODUCT_INFORMATION': 'Product Information',
