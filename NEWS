@@ -1,4 +1,4 @@
-3/2/2011 ola-0.8.7
+13/2/2011 ola-0.8.7
  * Added a Python RDM API & example programs.
  * Integrated the python rdm code with the PID store (rdm.openlighting.org)
  * Added around ~110 RDM responder test cases
