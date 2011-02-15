@@ -293,7 +293,7 @@ class FindSubDevices(ResponderTestFixture):
       return
 
     self.AddExpectedResults([
-      self.NackGetResult(RDMNack,NR_SUB_DEVICE_OUT_OF_RANGE,
+      self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE,
                          action=self._CheckForSubDevice),
       self.AckGetResult(action=self._CheckForSubDevice)
     ])
