@@ -119,7 +119,7 @@ void WidgetDetectorTest::setUp() {
       ola::NewCallback(this, &WidgetDetectorTest::ResponderHandler));
 
   m_ss.RegisterSingleTimeout(
-      30,  // 30ms should be enough
+      40,  // 40ms should be enough
       ola::NewSingleCallback(this, &WidgetDetectorTest::Timeout));
 }
 

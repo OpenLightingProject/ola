@@ -54,18 +54,40 @@ class DeviceInformation {
 };
 
 
+/**
+ * Hold the discovery state for a widget
+ */
+class DiscoveryState {
+  public:
+    DiscoveryState():
+      discovery_state(MANUFACTURER_SENT),
+      timeout_id(ola::network::INVALID_TIMEOUT) {
+    }
+    ~DiscoveryState() {}
+
+    typedef enum {
+      MANUFACTURER_SENT,
+      DEVICE_SENT,
+      SERIAL_SENT,
+    } widget_state;
+
+    DeviceInformation information;
+    widget_state discovery_state;
+    ola::network::timeout_id timeout_id;
+};
+
+
 /*
  * Handles widget discovery
  */
 class WidgetDetector {
   public:
     explicit WidgetDetector(ola::network::SelectServerInterface *ss,
-                            unsigned int timeout = 1000):
+                            unsigned int timeout = 200):
         m_ss(ss),
         m_callback(NULL),
         m_failure_callback(NULL),
-        m_timeout_ms(timeout),
-        m_timeout_id(ola::network::INVALID_TIMEOUT) {
+        m_timeout_ms(timeout) {
     }
     ~WidgetDetector();
 
@@ -92,11 +114,13 @@ class WidgetDetector {
     ola::network::SelectServerInterface *m_ss;
     ola::Callback2<void, UsbWidget*, const DeviceInformation&> *m_callback;
     ola::Callback1<void, UsbWidget*> *m_failure_callback;
-    std::map<UsbWidget*, DeviceInformation> m_widgets;
+    std::map<UsbWidget*, DiscoveryState> m_widgets;
     unsigned int m_timeout_ms;
-    ola::network::timeout_id m_timeout_id;
 
-    bool SendDiscoveryMessages(UsbWidget *widget);
+    void SetupTimeout(UsbWidget *widget, DiscoveryState *discovery_state);
+    void RemoveTimeout(DiscoveryState *discovery_state);
+    void SendNameRequest(UsbWidget *widget);
+    void SendSerialRequest(UsbWidget *widget);
     void HandleIdResponse(UsbWidget *widget, unsigned int length,
                           const uint8_t *data, bool is_device);
     void HandleSerialResponse(UsbWidget *widget, unsigned int length,

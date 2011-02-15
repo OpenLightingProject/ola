@@ -54,17 +54,15 @@ DeviceInformation& DeviceInformation::operator=(
  * Delete any in-discovery widgets
  */
 WidgetDetector::~WidgetDetector() {
-  map<UsbWidget*, DeviceInformation>::iterator iter;
+  map<UsbWidget*, DiscoveryState>::iterator iter;
   for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter) {
     if (m_failure_callback)
       m_failure_callback->Run(iter->first);
     else
       delete iter->first;
+    RemoveTimeout(&iter->second);
   }
   m_widgets.clear();
-
-  if (m_timeout_id != ola::network::INVALID_TIMEOUT)
-    m_ss->RemoveTimeout(m_timeout_id);
 
   if (m_callback)
     delete m_callback;
@@ -94,23 +92,20 @@ void WidgetDetector::SetFailureHandler(
   m_failure_callback = callback;
 }
 
+
 /*
  * Start the discovery process for a widget
- * @param path the path to the device
- * @return is the process begun ok, false otherwise.
+ * @param widget, the UsbWidget object
+ * @return true if the process started ok, false otherwise.
  */
 bool WidgetDetector::Discover(UsbWidget *widget) {
   widget->SetMessageHandler(
     NewCallback(this, &WidgetDetector::HandleMessage, widget));
 
-  bool ret = SendDiscoveryMessages(widget);
-
-  if (!ret) {
+  if (!widget->SendMessage(UsbWidget::MANUFACTURER_LABEL, NULL, 0)) {
     delete widget;
     return false;
   }
-
-  m_widgets[widget];
 
   // Set delete_on_close here so that device removal works
   /*
@@ -120,9 +115,7 @@ bool WidgetDetector::Discover(UsbWidget *widget) {
   */
 
   // register a timeout for this widget
-  m_timeout_id = m_ss->RegisterSingleTimeout(
-      m_timeout_ms,
-      NewSingleCallback(this, &WidgetDetector::DiscoveryTimeout, widget));
+  SetupTimeout(widget, &m_widgets[widget]);
   return true;
 }
 
@@ -150,37 +143,63 @@ void WidgetDetector::HandleMessage(UsbWidget *widget,
 }
 
 
-/*
- * Called if a widget fails to respond in a given interval
- */
-void WidgetDetector::DiscoveryTimeout(UsbWidget *widget) {
-  m_timeout_id = ola::network::INVALID_TIMEOUT;
-  map<UsbWidget*, DeviceInformation>::iterator iter = m_widgets.find(widget);
+void WidgetDetector::SetupTimeout(UsbWidget *widget,
+                                  DiscoveryState *discovery_state) {
+  discovery_state->timeout_id = m_ss->RegisterSingleTimeout(
+      m_timeout_ms,
+      NewSingleCallback(this, &WidgetDetector::DiscoveryTimeout, widget));
+}
 
-  if (iter != m_widgets.end()) {
-    OLA_WARN << "Usb Widget didn't respond to messages, esta id " <<
-      iter->second.esta_id << ", device id " << iter->second.device_id;
-    if (m_failure_callback)
-      m_failure_callback->Run(widget);
-    else
-      delete widget;
-    m_widgets.erase(iter);
-  }
+
+void WidgetDetector::RemoveTimeout(DiscoveryState *discovery_state) {
+  if (discovery_state->timeout_id != ola::network::INVALID_TIMEOUT)
+    m_ss->RemoveTimeout(discovery_state->timeout_id);
+}
+
+
+void WidgetDetector::SendNameRequest(UsbWidget *widget) {
+  widget->SendMessage(UsbWidget::DEVICE_LABEL, NULL, 0);
+  DiscoveryState &discovery_state = m_widgets[widget];
+  discovery_state.discovery_state = DiscoveryState::DEVICE_SENT;
+  SetupTimeout(widget, &discovery_state);
+}
+
+
+void WidgetDetector::SendSerialRequest(UsbWidget *widget) {
+  widget->SendMessage(UsbWidget::SERIAL_LABEL, NULL, 0);
+  DiscoveryState &discovery_state = m_widgets[widget];
+  discovery_state.discovery_state = DiscoveryState::SERIAL_SENT;
+  SetupTimeout(widget, &discovery_state);
 }
 
 
 /*
- * Send the discovery messages to the widget
- * @param widget the widget to send to
+ * Called if a widget fails to respond in a given interval
  */
-bool WidgetDetector::SendDiscoveryMessages(UsbWidget *widget) {
-  if (!widget->SendMessage(UsbWidget::MANUFACTURER_LABEL, NULL, 0))
-    return false;
+void WidgetDetector::DiscoveryTimeout(UsbWidget *widget) {
+  map<UsbWidget*, DiscoveryState>::iterator iter = m_widgets.find(widget);
 
-  if (!widget->SendMessage(UsbWidget::DEVICE_LABEL, NULL, 0))
-    return false;
+  if (iter != m_widgets.end()) {
+    iter->second.timeout_id = ola::network::INVALID_TIMEOUT;
 
-  return widget->SendMessage(UsbWidget::SERIAL_LABEL, NULL, 0);
+    switch (iter->second.discovery_state) {
+      case DiscoveryState::MANUFACTURER_SENT:
+        SendNameRequest(widget);
+        break;
+      case DiscoveryState::DEVICE_SENT:
+        SendSerialRequest(widget);
+        break;
+      default:
+        OLA_WARN << "Usb Widget didn't respond to messages, esta id " <<
+          iter->second.information.esta_id << ", device id " <<
+          iter->second.information.device_id;
+        if (m_failure_callback)
+          m_failure_callback->Run(widget);
+        else
+          delete widget;
+        m_widgets.erase(iter);
+    }
+  }
 }
 
 
@@ -200,7 +219,7 @@ void WidgetDetector::HandleIdResponse(UsbWidget *widget,
   memset(&response, 0, sizeof(response));
   memcpy(&response, data, length);
 
-  map<UsbWidget*, DeviceInformation>::iterator iter = m_widgets.find(widget);
+  map<UsbWidget*, DiscoveryState>::iterator iter = m_widgets.find(widget);
 
   if (iter == m_widgets.end())
     return;
@@ -212,13 +231,21 @@ void WidgetDetector::HandleIdResponse(UsbWidget *widget,
   }
 
   if (is_device) {
-    iter->second.device_id = id;
-    iter->second.device = string(
+    iter->second.information.device_id = id;
+    iter->second.information.device = string(
         reinterpret_cast<const char*>(response.text));
+    if (iter->second.discovery_state == DiscoveryState::DEVICE_SENT) {
+      RemoveTimeout(&iter->second);
+      SendSerialRequest(widget);
+    }
   } else {
-    iter->second.esta_id = id;
-    iter->second.manufactuer = string(
+    iter->second.information.esta_id = id;
+    iter->second.information.manufactuer = string(
         reinterpret_cast<const char*>(response.text));
+    if (iter->second.discovery_state == DiscoveryState::MANUFACTURER_SENT) {
+      RemoveTimeout(&iter->second);
+      SendNameRequest(widget);
+    }
   }
 }
 
@@ -229,11 +256,12 @@ void WidgetDetector::HandleIdResponse(UsbWidget *widget,
 void WidgetDetector::HandleSerialResponse(UsbWidget *widget,
                                          unsigned int length,
                                          const uint8_t *data) {
-  map<UsbWidget*, DeviceInformation>::iterator iter = m_widgets.find(widget);
+  map<UsbWidget*, DiscoveryState>::iterator iter = m_widgets.find(widget);
 
   if (iter == m_widgets.end())
     return;
-  DeviceInformation information = iter->second;
+  RemoveTimeout(&iter->second);
+  DeviceInformation information = iter->second.information;
 
   if (length == DeviceInformation::SERIAL_LENGTH)
     memcpy(information.serial, data, DeviceInformation::SERIAL_LENGTH);
