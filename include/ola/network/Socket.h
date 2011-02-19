@@ -190,10 +190,21 @@ class ConnectedSocket: public BidirectionalSocket {
 
     int DataRemaining() const;
 
+    bool CheckIfInvalid() {
+      if (ReadDescriptor() == INVALID_SOCKET) {
+        if (m_on_close) {
+          m_on_close->Run();
+          m_on_close = NULL;
+        }
+        return true;
+      }
+      return false;
+    }
+
     /*
      * Used to check if the socket has been closed
      */
-    bool CheckIfClosed() {
+    bool CheckIfActive() {
       if (IsClosed()) {
         if (m_on_close) {
           m_on_close->Run();
