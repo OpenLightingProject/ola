@@ -1145,10 +1145,19 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
   }
 
   if (request->ParamId() != ola::rdm::PID_QUEUED_MESSAGE &&
-      (request->SubDevice() != response->SubDevice() ||
-       request->ParamId() != response->ParamId())) {
-    OLA_INFO << "Param ID / Sub device mismatch, was PID 0x" << std::hex <<
-      response->ParamId() << ", sub device " << response->SubDevice();
+      request->ParamId() != response->ParamId()) {
+    OLA_INFO << "Param ID mismatch, request was 0x" << std::hex <<
+      request->ParamId() << ", response was 0x" << std::hex <<
+      response->ParamId();
+    delete response;
+    return;
+  }
+
+  if (request->ParamId() != ola::rdm::PID_QUEUED_MESSAGE &&
+      request->SubDevice() != ola::rdm::ALL_RDM_SUBDEVICES &&
+      request->SubDevice() != response->SubDevice()) {
+    OLA_INFO << "Subdevice mismatch, request was for" <<
+      request->SubDevice() << ", response was " << response->SubDevice();
     delete response;
     return;
   }
