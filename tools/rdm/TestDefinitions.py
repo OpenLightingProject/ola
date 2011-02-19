@@ -1,4 +1,4 @@
-#!/usr/bin/python
+# !/usr/bin/python
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
@@ -1305,7 +1305,7 @@ class SetLampHoursWithNoData(TestMixins.SetWithNoDataMixin,
 # Lamp Strikes
 #------------------------------------------------------------------------------
 class GetLampStrikes(TestMixins.GetMixin, OptionalParameterTestFixture):
-  """GET the device strikes."""
+  """GET the lamp strikes."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'LAMP_STRIKES'
   EXPECTED_FIELD = 'strikes'
@@ -1314,13 +1314,13 @@ class GetLampStrikes(TestMixins.GetMixin, OptionalParameterTestFixture):
 
 class GetLampStrikesWithData(TestMixins.GetWithDataMixin,
                              OptionalParameterTestFixture):
-  """GET the device strikes with extra data."""
+  """GET the lamp strikes with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_STRIKES'
 
 
 class SetLampStrikes(TestMixins.SetUInt32Mixin, OptionalParameterTestFixture):
-  """Attempt to SET the device strikes."""
+  """Attempt to SET the lamp strikes."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'LAMP_STRIKES'
   EXPECTED_FIELD = 'strikes'
@@ -1332,9 +1332,90 @@ class SetLampStrikes(TestMixins.SetUInt32Mixin, OptionalParameterTestFixture):
 
 class SetLampStrikesWithNoData(TestMixins.SetWithNoDataMixin,
                                OptionalParameterTestFixture):
-  """Set the device strikes with no param data."""
+  """Set the lamp strikes with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_STRIKES'
+
+
+# Lamp State
+#------------------------------------------------------------------------------
+class GetLampState(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """GET the lamp state."""
+  CATEGORY = TestCategory.POWER_LAMP_SETTINGS
+  PID = 'LAMP_STATE'
+  EXPECTED_FIELD = 'state'
+  PROVIDES = ['lamp_state']
+
+
+class GetLampStateWithData(TestMixins.GetWithDataMixin,
+                           OptionalParameterTestFixture):
+  """GET the lamp state with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LAMP_STATE'
+
+
+class SetLampState(TestMixins.SetBoolMixin, OptionalParameterTestFixture):
+  """Attempt to SET the lamp state."""
+  CATEGORY = TestCategory.POWER_LAMP_SETTINGS
+  PID = 'LAMP_STATE'
+  EXPECTED_FIELD = 'state'
+  REQUIRES = ['lamp_state']
+
+  def OldValue(self):
+    # We use a bool here so we toggle between off and on
+    # Some responders may not support standby & strike
+    return bool(self.Property('lamp_state'))
+
+
+class SetLampStateWithNoData(TestMixins.SetWithNoDataMixin,
+                               OptionalParameterTestFixture):
+  """Set the device state with no param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LAMP_STATE'
+
+
+# Lamp On Mode
+#------------------------------------------------------------------------------
+class GetLampOnMode(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """GET the lamp on mode."""
+  CATEGORY = TestCategory.POWER_LAMP_SETTINGS
+  PID = 'LAMP_ON_MODE'
+  EXPECTED_FIELD = 'mode'
+  PROVIDES = ['lamp_on_mode']
+
+
+class GetLampOnModeWithData(TestMixins.GetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """GET the lamp on mode with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LAMP_ON_MODE'
+
+
+class SetLampOnMode(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
+  """Attempt to SET the lamp on mode."""
+  CATEGORY = TestCategory.POWER_LAMP_SETTINGS
+  PID = 'LAMP_ON_MODE'
+  EXPECTED_FIELD = 'mode'
+  REQUIRES = ['lamp_on_mode']
+  ALLOWED_MODES = [0, 1, 2]
+
+  def OldValue(self):
+    return self.Property('lamp_on_mode')
+
+  def NewValue(self):
+    old_value = self.OldValue()
+    try:
+      index = self.ALLOWED_MODES.index(old_value)
+    except ValueError:
+      return self.ALLOWED_MODES[0]
+    return self.ALLOWED_MODES[(old_value + 1) % len(self.ALLOWED_MODES)]
+
+
+class SetLampOnModeWithNoData(TestMixins.SetWithNoDataMixin,
+                              OptionalParameterTestFixture):
+  """Set the device on mode with no param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LAMP_ON_MODE'
 
 
 # Device Hours
@@ -1371,6 +1452,52 @@ class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,
   """Set the device power_cycles with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_POWER_CYCLES'
+
+
+# Display Invert
+#------------------------------------------------------------------------------
+class GetDisplayInvert(TestMixins.GetMixin,
+                       OptionalParameterTestFixture):
+  """GET the display invert setting."""
+  CATEGORY = TestCategory.DISPLAY_SETTINGS
+  PID = 'DISPLAY_INVERT'
+  EXPECTED_FIELD = 'invert_status'
+  PROVIDES = ['display_invert']
+
+
+class GetDisplayInvertWithData(TestMixins.GetWithDataMixin,
+                               OptionalParameterTestFixture):
+  """GET the pan invert setting with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DISPLAY_INVERT'
+
+
+class SetDisplayInvert(TestMixins.SetUInt8Mixin,
+                       OptionalParameterTestFixture):
+  """Attempt to SET the display invert setting."""
+  CATEGORY = TestCategory.DISPLAY_SETTINGS
+  PID = 'DISPLAY_INVERT'
+  EXPECTED_FIELD = 'invert'
+  REQUIRES = ['display_invert']
+  ALLOWED_MODES = [0, 1, 2]
+
+  def OldValue(self):
+    return self.Property('display_invert')
+
+  def NewValue(self):
+    old_value = self.OldValue()
+    try:
+      index = self.ALLOWED_MODES.index(old_value)
+    except ValueError:
+      return self.ALLOWED_MODES[0]
+    return self.ALLOWED_MODES[(old_value + 1) % len(self.ALLOWED_MODES)]
+
+
+class SetDisplayInvertWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
+  """Set the display invert with no param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DISPLAY_INVERT'
 
 
 # Display Level
@@ -1662,22 +1789,25 @@ class SetPowerState(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
   REQUIRES = ['power_state']
   EXPECTED_FIELD = 'power_state'
 
+  def OldValue(self):
+    return self.Property('power_state')
+
   def NewValue(self):
-    self.old_value = self.Property('power_state')
+    old_value = self.Property('power_state')
     try:
-      index = GetPowerState.ALLOWED_STATES.index(self.old_value)
+      index = GetPowerState.ALLOWED_STATES.index(old_value)
     except ValueError:
       return GetPowerState.ALLOWED_STATES[0]
 
     length = len(GetPowerState.ALLOWED_STATES)
-    return GetPowerState.ALLOWED_STATES[(self.old_value + 1) % length]
+    return GetPowerState.ALLOWED_STATES[(old_value + 1) % length]
 
   def ResetState(self):
-    if not self.old_value:
+    if not self.OldValue():
       return
 
     # reset back to the old value
-    self.SendSet(ROOT_DEVICE, self.pid, [self.old_value])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.OldValue()])
     self._wrapper.Run()
 
 
