@@ -27,6 +27,7 @@
 
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMEnums.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/artnet/ArtNetNode.h"
 
@@ -1135,22 +1136,34 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
   }
 
   const RDMRequest *request = input_port.pending_request;
-  // TODO(simon): relax the Param matching here to deal with queued messages
   if (request->SourceUID() != response->DestinationUID() ||
-      request->DestinationUID() != response->SourceUID() ||
-      request->SubDevice() != response->SubDevice() ||
-      request->ParamId() != response->ParamId()) {
-    OLA_INFO << "Got an unexpected RDM response";
+      request->DestinationUID() != response->SourceUID()) {
+    OLA_INFO << "Got response from/to unexpected UID: " <<
+      response->SourceUID() << " -> " << response->DestinationUID();
     delete response;
     return;
   }
 
-  if ((request->CommandClass() == RDMCommand::GET_COMMAND &&
-       response->CommandClass() != RDMCommand::GET_COMMAND_RESPONSE) ||
-      (request->CommandClass() == RDMCommand::SET_COMMAND &&
-       response->CommandClass() != RDMCommand::SET_COMMAND_RESPONSE)) {
-    OLA_INFO << "Unmatched RDM response, request CC was " << std::hex <<
-      static_cast<int>(request->CommandClass()) << ", response CC was " <<
+  if (request->ParamId() != ola::rdm::PID_QUEUED_MESSAGE &&
+      (request->SubDevice() != response->SubDevice() ||
+       request->ParamId() != response->ParamId())) {
+    OLA_INFO << "Param ID / Sub device mismatch, was PID 0x" << std::hex <<
+      response->ParamId() << ", sub device " << response->SubDevice();
+    delete response;
+    return;
+  }
+
+  if (request->CommandClass() == RDMCommand::GET_COMMAND &&
+      response->CommandClass() != RDMCommand::GET_COMMAND_RESPONSE &&
+      request->ParamId() != ola::rdm::PID_QUEUED_MESSAGE) {
+    OLA_INFO << "Invalid return CC in response to get, was " <<
+      static_cast<int>(response->CommandClass());
+    return;
+  }
+
+  if (request->CommandClass() == RDMCommand::SET_COMMAND &&
+      response->CommandClass() != RDMCommand::SET_COMMAND_RESPONSE) {
+    OLA_INFO << "Invalid return CC in response to set, was " <<
       static_cast<int>(response->CommandClass());
     return;
   }
