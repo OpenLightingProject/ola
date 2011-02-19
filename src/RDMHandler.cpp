@@ -774,7 +774,7 @@ bool ResponseHandler::CheckForSuccess(const ResponseStatus &status) {
         break;
     }
   } else if (status.response_code != ola::rdm::RDM_WAS_BROADCAST) {
-    std::cerr << ola::rdm::ResponseCodeToString(status.response_code);
+    std::cerr << ola::rdm::ResponseCodeToString(status.response_code) << endl;
     m_exit_code = EX_SOFTWARE;
   }
   return false;
