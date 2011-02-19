@@ -209,7 +209,6 @@ class FixedSizeAtom(Atom):
 
   def Pack(self, args):
     format_string = self._FormatString()
-    # TODO: Handle Labeled Values here here
     try:
       data = struct.pack(format_string, args[0])
     except struct.error, e:
