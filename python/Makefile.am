@@ -1,5 +1,7 @@
 # ola python client
 
+EXTRA_DIST = UIDTest.py
+
 if BUILD_PYTHON_LIBS
 
 SUBDIRS = examples rpc

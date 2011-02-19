@@ -1,5 +1,6 @@
 include $(top_srcdir)/common.mk
 
+EXTRA_DIST = Pids.proto
 
 noinst_LTLIBRARIES = libolardm.la
 libolardm_la_SOURCES = RDMAPI.cpp RDMCommand.cpp RDMHelper.cpp \
