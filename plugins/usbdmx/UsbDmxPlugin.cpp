@@ -241,7 +241,8 @@ string UsbDmxPlugin::Description() const {
 "--- Config file : ola-usbdmx.conf ---\n"
 "\n"
 "libusb_debug_level = {0,1,2,3}\n"
-"The debug level for libusb. 0 = No logging, 3 = Verbose.\n";
+"The debug level for libusb, see http://libusb.sourceforge.net/api-1.0/ .\n"
+"0 = No logging, 3 = Verbose.\n";
 }
 
 
