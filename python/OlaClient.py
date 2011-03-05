@@ -188,7 +188,7 @@ class RequestStatus(object):
   def __init__(self, controller):
     if controller.Failed():
       self._state = self.FAILED
-
+      self._message = controller.ErrorText()
     elif controller.IsCanceled():
       self._state = self.CANCELLED
       self._message = controller.ErrorText()
