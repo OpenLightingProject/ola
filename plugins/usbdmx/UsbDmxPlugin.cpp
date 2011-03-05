@@ -50,6 +50,9 @@ using ola::network::DeviceSocket;
 
 const char UsbDmxPlugin::PLUGIN_NAME[] = "USB";
 const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";
+const char UsbDmxPlugin::LIBUSB_DEBUG_LEVEL_KEY[] = "libusb_debug_level";
+int UsbDmxPlugin::LIBUSB_DEFAULT_DEBUG_LEVEL = 0;
+int UsbDmxPlugin::LIBUSB_MAX_DEBUG_LEVEL = 3;
 
 
 /*
@@ -82,7 +85,13 @@ bool UsbDmxPlugin::StartHook() {
     return false;
   }
 
-  // libusb_set_debug(NULL, 3);
+  unsigned int debug_level;
+  if (!StringToUInt(m_preferences->GetValue(LIBUSB_DEBUG_LEVEL_KEY) ,
+                    &debug_level))
+    debug_level = LIBUSB_DEFAULT_DEBUG_LEVEL;
+
+  libusb_set_debug(NULL, debug_level);
+
   if (LoadFirmware()) {
     // we loaded firmware for at least one device, set up a callback to run in
     // a couple of seconds to re-scan for devices
@@ -227,7 +236,12 @@ string UsbDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "This plugin supports various USB DMX devices including the \n"
-"Anyma uDMX, Sunlite USBDMX2 & Velleman K8062.\n";
+"Anyma uDMX, Sunlite USBDMX2 & Velleman K8062.\n"
+"\n"
+"--- Config file : ola-usbdmx.conf ---\n"
+"\n"
+"libusb_debug_level = {0,1,2,3}\n"
+"The debug level for libusb. 0 = No logging, 3 = Verbose.\n";
 }
 
 
@@ -237,6 +251,15 @@ string UsbDmxPlugin::Description() const {
 bool UsbDmxPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
+
+  bool save = m_preferences->SetDefaultValue(
+      LIBUSB_DEBUG_LEVEL_KEY,
+      IntValidator(LIBUSB_DEFAULT_DEBUG_LEVEL, LIBUSB_MAX_DEBUG_LEVEL),
+      IntToString(LIBUSB_DEFAULT_DEBUG_LEVEL));
+
+  if (save)
+    m_preferences->Save();
+
   return true;
 }
 

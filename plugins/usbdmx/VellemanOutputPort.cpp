@@ -85,8 +85,10 @@ bool VellemanOutputPort::Start() {
   }
 
   // this device only has one configuration
-  if (libusb_set_configuration(usb_handle, CONFIGURATION)) {
-    OLA_WARN << "Velleman set config failed";
+  int ret_code = libusb_set_configuration(usb_handle, CONFIGURATION);
+  if (ret_code) {
+    OLA_WARN << "Velleman set config failed, with libusb error code " <<
+      ret_code;
     libusb_close(usb_handle);
     return false;
   }

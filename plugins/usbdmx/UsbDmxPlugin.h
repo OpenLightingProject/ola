@@ -66,6 +66,9 @@ class UsbDmxPlugin: public ola::Plugin {
 
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
+    static const char LIBUSB_DEBUG_LEVEL_KEY[];
+    static int LIBUSB_DEFAULT_DEBUG_LEVEL;
+    static int LIBUSB_MAX_DEBUG_LEVEL;
 };
 }  // usbdmx
 }  // plugin
