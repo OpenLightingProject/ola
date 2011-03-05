@@ -21,8 +21,8 @@ output_files = ArtnetConfigMessages_pb2.py Ola_pb2.py \
 
 BUILT_SOURCES = $(output_files)
 nodist_pkgpython_PYTHON = $(output_files)
-pkgpython_PYTHON = ClientWrapper.py OlaClient.py RDMAPI.py PidStore.py UID.py \
-                   __init__.py
+pkgpython_PYTHON = ClientWrapper.py OlaClient.py RDMAPI.py RDMConstants.py \
+                   PidStore.py UID.py __init__.py
 
 ArtnetConfigMessages_pb2.py: $(artnet_proto)
 	protoc --python_out ./ -I $(artnet_path) $(artnet_proto)
