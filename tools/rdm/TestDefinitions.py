@@ -1816,3 +1816,96 @@ class SetPowerStateWithNoData(TestMixins.SetWithNoDataMixin,
   """Set the power state with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'POWER_STATE'
+
+
+# Self Test
+#------------------------------------------------------------------------------
+class GetPerformSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """Get the current self test settings."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PERFORM_SELF_TEST'
+  EXPECTED_FIELD = 'tests_active'
+
+class GetPerformSelfTestWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Get the current self test settings with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PERFORM_SELF_TEST'
+
+
+class SetPerformSelfTest(TestMixins.SetUInt8Mixin,
+                         OptionalParameterTestFixture):
+  """Turn any running self tests off."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PERFORM_SELF_TEST'
+  EXPECTED_FIELD = 'tests_active'
+
+  def NewValue(self):
+    return False
+
+class SetPerformSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
+                                   OptionalParameterTestFixture):
+  """Set the perform self test setting but don't provide any data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PERFORM_SELF_TEST'
+
+
+# Self Test Description
+#------------------------------------------------------------------------------
+class GetSelfTestDescription(OptionalParameterTestFixture):
+  """Get the self test description."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'SELF_TEST_DESCRIPTION'
+
+  def Test(self):
+    self.AddIfGetSupported([
+      self.AckGetResult(),
+      self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+    ])
+    # try to get a description for the first self test
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [1])
+
+
+class GetSelfTestDescriptionWithNoData(OptionalParameterTestFixture):
+  """Get the self test description with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SELF_TEST_DESCRIPTION'
+
+  def Test(self):
+    self.AddExpectedResults(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
+    self.SendRawGet(ROOT_DEVICE, self.pid)
+
+class FindSelfTests(ResponderTestFixture):
+  """Locate the self tests by sending SELF_TEST_DESCRIPTION messages."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'SELF_TEST_DESCRIPTION'
+  PROVIDES = ['self_test_descriptions']
+
+  def Test(self):
+    self._self_tests = {}  # stores the discovered self tests
+    self._current_index = 1  # the current self test we're trying to query
+    self._CheckForSelfTest()
+
+  def _CheckForSelfTest(self):
+    # For each message we should either see a NR_DATA_OUT_OF_RANGE or an ack
+    if self._current_index == 256:
+      self.SetProperty('self_test_descriptions', self._self_tests)
+      self.Stop()
+      return
+
+    self.AddExpectedResults([
+      self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
+                         action=self._CheckForSelfTest),
+      self.AckGetResult(action=self._CheckForSelfTest)
+    ])
+    self._current_index += 1
+    self.SendGet(ROOT_DEVICE, self.pid, [self._current_index])
+
+  def VerifyResult(self, response, fields):
+    if response.WasAcked():
+      if self._current_index != fields['test_number']:
+        self.AddWarning(
+            'Requested self test %d, message returned self test %d' %
+            (self._current_index, fields['test_number']))
+      else:
+        self._self_tests[self._current_index] = fields['description']
