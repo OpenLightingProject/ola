@@ -92,7 +92,7 @@ class ResponsePrinter(object):
 
   def Default(self, uid, response_data):
     for key, value in response_data.iteritems():
-      print '%s: %s' % (key, value)
+      print '%s: %r' % (key, value)
 
 
 class InteractiveModeController(cmd.Cmd):
