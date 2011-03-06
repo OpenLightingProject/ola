@@ -285,7 +285,7 @@ class ResponderTestFixture(TestFixture):
       pid: The pid value
       data: The param data
     """
-    logging.debug(' GET: pid = %s, sub device = %d, data = %s' %
+    logging.debug(' GET: pid = %s, sub device = %d, data = %r' %
         (pid, sub_device, data))
     self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
     return self._api.RawGet(self._universe,
@@ -321,7 +321,7 @@ class ResponderTestFixture(TestFixture):
       pid: The pid value
       data: The param data
     """
-    logging.debug(' SET: pid = %s, sub device = %d, data = %s' %
+    logging.debug(' SET: pid = %s, sub device = %d, data = %r' %
         (pid, sub_device, data))
     self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
     return self._api.RawSet(self._universe,
