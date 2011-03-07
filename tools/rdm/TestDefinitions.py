@@ -21,12 +21,14 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import datetime
+import operator
 import struct
 from ExpectedResults import *
 from ResponderTest import ResponderTestFixture, ResponderTestFixture
 from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
+from ola import RDMConstants
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
 import TestMixins
@@ -56,10 +58,11 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
   CATEGORY = TestCategory.CORE
 
   PROVIDES = [
-      'dmx_start_address',
       'current_personality',
       'dmx_footprint',
+      'dmx_start_address',
       'personality_count',
+      'sensor_count',
       'sub_device_count',
   ]
 
@@ -1230,6 +1233,607 @@ class SetOversizedStartAddress(ResponderTestFixture):
     self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
 
 
+# Slot Info
+#------------------------------------------------------------------------------
+class GetSlotInfo(OptionalParameterTestFixture):
+  """Get SLOT_INFO."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'SLOT_INFO'
+  PROVIDES = ['slot_info', 'defined_slots']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      self.SetProperty('slot_info', {})
+      self.SetProperty('defined_slots', [])
+      return
+
+    self.SetProperty('slot_info', fields)
+    slots = [d['slot_offset'] for d in fields['slots']]
+    self.SetProperty('defined_slots', set(slots))
+
+    for slot in fields['slots']:
+      if slot['slot_type'] not in RDMConstants.SLOT_TYPE_TO_NAME:
+        self.AddWarning('Unknown slot type %d for slot %d' %
+                        (slot['slot_type'], slot['slot_offset']))
+
+      if slot['slot_type'] == RDMConstants.SLOT_TYPES['ST_PRIMARY']:
+        # slot_label_id must be valid
+        if slot['slot_label_id'] not in RDMConstants.SLOT_DEFINITION_TO_NAME:
+          self.AddWarning('Unknown slot id %d for slot %d' %
+                          (slot['slot_label_id'], slot['slot_offset']))
+      else:
+        # slot_label_id must reference a defined slot
+        if slot['slot_label_id'] not in slots:
+          self.AddWarning(
+              'Slot %d is of type secondary and references an unknown slot %d'
+              % (slot['slot_offset'], slot['slot_label_id']))
+
+
+class GetSlotInfoWithData(TestMixins.GetWithDataMixin,
+                          OptionalParameterTestFixture):
+  """Get SLOT_INFO with invalid data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SLOT_INFO'
+
+
+class SetSlotInfo(TestMixins.UnsupportedSetMixin,
+                  OptionalParameterTestFixture):
+  """Set SLOT_INFO."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SLOT_INFO'
+
+
+# Slot Description
+#------------------------------------------------------------------------------
+class GetSlotDescriptions(OptionalParameterTestFixture):
+  """Get the slot descriptions for all defined slots."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'SLOT_DESCRIPTION'
+  REQUIRES = ['defined_slots']
+
+  def Test(self):
+    self._slots = list(self.Property('defined_slots'))
+
+    if self._slots:
+      self._GetSlotDescription()
+    else:
+      self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.SendGet(PidStore.ROOT_DEVICE, self.pid, [0])
+
+  def _GetSlotDescription(self):
+    if not self._slots:
+      self.Stop()
+      return
+
+    self.AddIfGetSupported(self.AckGetResult(action=self._GetNextSlot))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self._slots[0]])
+
+  def _GetNextSlot(self):
+    self._slots.pop(0)
+    self._GetSlotDescription()
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    if self._slots[0] != fields['slot_number']:
+      self.AddWarning(
+          'Requested descriptionfor slot %d, message returned slot %d' %
+          (self._current_index, fields['slot_number']))
+      return
+
+
+class GetSlotDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
+                                   OptionalParameterTestFixture):
+  """Get the slot description with no slot number specified."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SLOT_DESCRIPTION'
+
+
+class GetSlotDescriptionWithTooMuchData(OptionalParameterTestFixture):
+  """Get the slot description with more than 2 bytes of data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SLOT_DESCRIPTION'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+
+
+class SetSlotDescription(TestMixins.UnsupportedSetMixin,
+                         OptionalParameterTestFixture):
+  """Set SLOT_DESCRIPTION."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SLOT_DESCRIPTION'
+
+
+# Default Slot Value
+#------------------------------------------------------------------------------
+class GetDefaultSlotValues(OptionalParameterTestFixture):
+  """Get DEFAULT_SLOT_VALUE."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'DEFAULT_SLOT_VALUE'
+  REQUIRES = ['defined_slots']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    defined_slots = self.Property('defined_slots')
+    default_slots = set()
+
+    for slot in fields['slot_values']:
+      if slot['slot_offset'] not in defined_slots:
+        self.AddAdvisory(
+          "DEFAULT_SLOT_VALUE contained slot %d, which wasn't in SLOT_INFO" %
+          slot['slot_offset'])
+      default_slots.add(slot['slot_offset'])
+
+    for slot_offset in defined_slots:
+      if slot_offset not in default_slots:
+        self.AddAdvisory(
+          "SLOT_INFO contained slot %d, which wasn't in DEFAULT_SLOT_VALUE" %
+          slot_offset)
+
+
+class GetDefaultSlotInfoWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Get DEFAULT_SLOT_VALUE with invalid data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DEFAULT_SLOT_VALUE'
+
+
+class SetDefaultSlotInfo(TestMixins.UnsupportedSetMixin,
+                         OptionalParameterTestFixture):
+  """Set DEFAULT_SLOT_VALUE."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DEFAULT_SLOT_VALUE'
+
+
+# Sensor Definition
+#------------------------------------------------------------------------------
+class GetSensorDefinition(OptionalParameterTestFixture):
+  """Fetch all the sensor definitions."""
+  CATEGORY = TestCategory.SENSORS
+  PID = 'SENSOR_DEFINITION'
+  REQUIRES = ['sensor_count']
+  PROVIDES = ['sensor_definitions']
+  MAX_SENSOR_INDEX = 0xfe
+
+  PREDICATE_DICT = {
+      '==': operator.eq,
+      '<': operator.lt,
+      '>': operator.gt,
+  }
+
+  def Test(self):
+    self._sensors = {}  # stores the discovered sensors
+    self._current_index = -1  # the current sensor we're trying to query
+    self._sensor_holes = []  # indices of sensors that are missing
+    self._CheckForSensor()
+
+  def _CheckForSensor(self):
+    if self.PidSupported():
+      # If this pid is supported we attempt to locate all sensors
+      if self._current_index == self.MAX_SENSOR_INDEX:
+        if len(self._sensors) < self.Property('sensor_count'):
+          self.AddWarning('Only found %d/%d sensors' %
+                          (len(self._sensors), self.Property('sensor_count')))
+        elif len(self._sensors) > self.Property('sensor_count'):
+          self.AddWarning('Found too many %d/%d sensors' %
+                          (len(self._sensors), self.Property('sensor_count')))
+
+        self.SetProperty('sensor_definitions', self._sensors)
+        if self._sensor_holes:
+          self.AddWarning('Sensors missing in positions %s' %
+                          self._sensor_holes)
+
+        self.Stop()
+        return
+
+      # For each message we should either see a NR_DATA_OUT_OF_RANGE or an ack
+      self.AddExpectedResults([
+        self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
+                           action=self._AddToHoles),
+        self.AckGetResult(action=self._CheckForSensor)
+      ])
+    else:
+      # not supported, just check we get a NR_UNKNOWN_PID
+      self.AddExpectedResults(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
+      self.SetProperty('sensor_definitions', {})
+
+    self._current_index += 1
+    self.SendGet(ROOT_DEVICE, self.pid, [self._current_index])
+
+  def _AddToHoles(self):
+    self._sensor_holes.append(self._current_index)
+    self._CheckForSensor()
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    sensor_number = fields['sensor_number']
+    if self._current_index != sensor_number:
+      self.AddWarning(
+          'Requested sensor %d, message returned sensor %d' %
+          (self._current_index, fields['sensor_number']))
+      return
+
+    self._sensors[self._current_index] = fields
+
+    # perform sanity checks on the sensor infomation
+    if fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME:
+      self.AddWarning('Unknown type %d for sensor %d' %
+                      (fields['type'], sensor_number))
+
+    if fields['unit'] not in RDMConstants.UNIT_TO_NAME:
+      self.AddWarning('Unknown unit %d for sensor %d' %
+                      (fields['unit'], sensor_number))
+
+    if fields['prefix'] not in RDMConstants.PREFIX_TO_NAME:
+      self.AddWarning('Unknown prefix %d for sensor %d' %
+                      (fields['prefix'], sensor_number))
+
+    self.CheckCondition(sensor_number, fields, 'range_min', '>', 'range_max')
+    self.CheckCondition(sensor_number, fields, 'range_min', '==', 'range_max')
+
+    self.CheckCondition(sensor_number, fields, 'normal_min', '>', 'normal_max')
+    self.CheckCondition(sensor_number, fields, 'normal_min', '==',
+                        'normal_max')
+
+    self.CheckCondition(sensor_number, fields, 'normal_min', '<', 'range_min')
+    self.CheckCondition(sensor_number, fields, 'normal_max', '>', 'range_max')
+
+    if fields['supports_recording'] & 0xfc:
+      self.AddWarning('bits 7-2 in the recorded message support fields are set'
+                      ' for sensor %d' % sensor_number)
+
+  def CheckCondition(self, sensor_number, fields, lhs, predicate_str, rhs):
+    """Check for a condition and add a warning if it isn't true."""
+    predicate = self.PREDICATE_DICT[predicate_str]
+    if predicate(fields[lhs], fields[rhs]):
+      self.AddAdvisory(
+          'Sensor %d, %s (%d) %s %s (%d)' %
+          (sensor_number, lhs, fields[lhs], predicate_str, rhs, fields[rhs]))
+
+
+class GetSensorDefinitionWithNoData(TestMixins.GetWithNoDataMixin,
+                                    OptionalParameterTestFixture):
+  """Get the sensor definition with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SENSOR_DEFINITION'
+
+
+class GetSensorDefinitionWithTooMuchData(OptionalParameterTestFixture):
+  """Get the sensor definition with more than 1 byte of data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SENSOR_DEFINITION'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+
+
+class GetInvalidSensorDefinition(OptionalParameterTestFixture):
+  """Get the sensor definition with the all sensor value (0xff)."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SENSOR_DEFINITION'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
+    data = struct.pack('!B', 0xff)
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, data)
+
+
+class SetSensorDefinition(TestMixins.UnsupportedSetMixin,
+                          OptionalParameterTestFixture):
+  """SET the sensor definition."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SENSOR_DEFINITION'
+
+
+# Sensor Value
+#------------------------------------------------------------------------------
+class GetSensorValues(OptionalParameterTestFixture):
+  """Get values for all defined sensors."""
+  CATEGORY = TestCategory.SENSORS
+  PID = 'SENSOR_VALUE'
+  REQUIRES = ['sensor_definitions']
+  PROVIDES = ['sensor_values']
+
+  HIGHEST_LOWEST_MASK = 0x02
+  RECORDED_VALUE_MASK = 0x01
+
+  def Test(self):
+    # the head of the list is the current sensor we're querying
+    self._sensors = self.Property('sensor_definitions').values()
+    self._sensor_values = []
+
+    if self._sensors:
+      # loop and get all values
+      self._GetSensorValue()
+    else:
+      # no sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
+      self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.SendGet(ROOT_DEVICE, self.pid, [0])
+
+  def _GetSensorValue(self):
+    if not self._sensors:
+      # finished
+      self.SetProperty('sensor_values', self._sensor_values)
+      self.Stop()
+      return
+
+    self.AddExpectedResults(self.AckGetResult(action=self._GetNextSensor))
+    self.SendGet(ROOT_DEVICE, self.pid, [self._sensors[0]['sensor_number']])
+
+  def _GetNextSensor(self):
+    self._sensors.pop(0)
+    self._GetSensorValue()
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    sensor_def = self._sensors[0]
+    sensor_number = fields['sensor_number']
+    if sensor_def['sensor_number'] != sensor_number:
+      self.AddWarning(
+          'Requested sensor value for %d, message returned sensor %d' %
+          (sensor_def['sensor_number'], fields['sensor_number']))
+      return
+
+    self._sensor_values.append(fields)
+    range_min = sensor_def['range_min']
+    range_max = sensor_def['range_max']
+
+    # perform sanity checks on the sensor infomation
+    self._CheckValueWithinRange(sensor_number, fields, 'present_value',
+                                range_min, range_max)
+
+    if sensor_def['supports_recording'] & self.HIGHEST_LOWEST_MASK:
+      self._CheckValueWithinRange(sensor_number, fields, 'lowest',
+                                  range_min, range_max)
+      self._CheckValueWithinRange(sensor_number, fields, 'highest',
+                                  range_min, range_max)
+    else:
+      self._CheckForZeroField(sensor_number, fields, 'lowest')
+      self._CheckForZeroField(sensor_number, fields, 'highest')
+
+    if sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK:
+      self._CheckValueWithinRange(sensor_number, fields, 'recorded',
+                                  range_min, range_max)
+    else:
+      self._CheckForZeroField(sensor_number, fields, 'recorded')
+
+  def _CheckValueWithinRange(self, sensor_number, fields, name, min, max):
+    if fields[name] < min or fields[name] > max:
+      self.AddWarning(
+        '%s for sensor %d not within range %d - %d, was %d' %
+        (name, sensor_number, min, max, fields[name]))
+
+  def _CheckForZeroField(self, sensor_number, fields, name):
+    if fields[name]:
+      self.AddWarning(
+        '%s value for sensor %d non-0, but support not declared, was %d' %
+        (name, sensor_number, fields[name]))
+
+
+class GetUndefinedSensorValues(OptionalParameterTestFixture):
+  """Attempt to get sensor values for all sensors that weren't defined."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SENSOR_VALUE'
+  REQUIRES = ['sensor_definitions']
+
+  def Test(self):
+    sensors = self.Property('sensor_definitions')
+    self._missing_sensors = []
+    for i in xrange(0, 0xff):
+      if i not in sensors:
+        self._missing_sensors.append(i)
+
+    if self._missing_sensors:
+      # loop and get all values
+      self._GetSensorValue()
+    else:
+      self.SetNotRun(' All sensors declared')
+      self.Stop()
+      return
+
+  def _GetSensorValue(self):
+    if not self._missing_sensors:
+      self.Stop()
+      return
+
+    self.AddIfGetSupported(
+        self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
+                           action=self._GetSensorValue))
+    self.SendGet(ROOT_DEVICE, self.pid, [self._missing_sensors.pop(0)])
+
+
+class GetInvalidSensorValue(OptionalParameterTestFixture):
+  """Get the sensor value with the all sensor value (0xff)."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SENSOR_VALUE'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
+    data = struct.pack('!B', 0xff)
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, data)
+
+
+class GetSensorValueWithNoData(TestMixins.GetWithNoDataMixin,
+                               OptionalParameterTestFixture):
+  """GET sensor value without any sensor number."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SENSOR_VALUE'
+
+
+class ResetSensorValue(OptionalParameterTestFixture):
+  """Reset sensor values for all defined sensors."""
+  CATEGORY = TestCategory.SENSORS
+  PID = 'SENSOR_VALUE'
+  REQUIRES = ['sensor_definitions']
+
+  def Test(self):
+    # the head of the list is the current sensor we're querying
+    self._sensors = self.Property('sensor_definitions').values()
+    self._sensor_values = []
+
+    if self._sensors:
+      # loop and get all values
+      self._ResetSensor()
+    else:
+      # no sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
+      self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.SendSet(ROOT_DEVICE, self.pid, [0])
+
+  def _ResetSensor(self):
+    if not self._sensors:
+      # finished
+      self.Stop()
+      return
+
+    self.AddExpectedResults(self.AckSetResult(action=self._ResetNextSensor))
+    self.SendSet(ROOT_DEVICE, self.pid, [self._sensors[0]['sensor_number']])
+
+  def _ResetNextSensor(self):
+    self._sensors.pop(0)
+    self._ResetSensor()
+
+  def VerifyResult(self, response, fields):
+    # It's not clear at all what to expect in this case.
+    # See http://www.rdmprotocol.org/showthread.php?p=2160
+    # TODO(simonn, e1.20 task group): figure this out
+    pass
+
+
+class ResetAllSensorValues(OptionalParameterTestFixture):
+  """Set SENSOR_VALUE with sensor number set to 0xff."""
+  CATEGORY = TestCategory.SENSORS
+  PID = 'SENSOR_VALUE'
+  REQUIRES = ['sensor_definitions']
+
+  RECORDED_VALUE_MASK = 0x01
+  ALL_SENSORS = 0xff
+
+  def Test(self):
+    supports_recording = False
+    for sensor_def in self.Property('sensor_definitions').values():
+      supports_recording |= (
+          sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
+
+    if supports_recording:
+      self.AddIfSetSupported(self.AckSetResult())
+    else:
+      self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, [self.ALL_SENSORS])
+
+
+class ResetUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
+                                 OptionalParameterTestFixture):
+  """Attempt to reset sensor values for all sensors that weren't defined."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SENSOR_VALUE'
+  REQUIRES = ['sensor_definitions']
+
+
+class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
+  """SET sensor value without any sensor number."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'SENSOR_VALUE'
+
+
+# Record Sensors
+#------------------------------------------------------------------------------
+class RecordSensorValues(OptionalParameterTestFixture):
+  """Record values for all defined sensors."""
+  CATEGORY = TestCategory.SENSORS
+  PID = 'RECORD_SENSORS'
+  REQUIRES = ['sensor_definitions']
+
+  RECORDED_VALUE_MASK = 0x01
+
+  def Test(self):
+    # the head of the list is the current sensor we're querying
+    self._sensors = self.Property('sensor_definitions').values()
+    self._sensor_values = []
+
+    if self._sensors:
+      # loop and get all values
+      self._RecordSensor()
+    else:
+      # no sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
+      self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.SendSet(ROOT_DEVICE, self.pid, [0])
+
+  def _RecordSensor(self):
+    if not self._sensors:
+      # finished
+      self.Stop()
+      return
+
+    sensor_def = self._sensors[0]
+    if sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK:
+      self.AddExpectedResults(self.AckSetResult(action=self._RecordNextSensor))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
+                             action=self._RecordNextSensor))
+    self.SendSet(ROOT_DEVICE, self.pid, [self._sensors[0]['sensor_number']])
+
+  def _RecordNextSensor(self):
+    self._sensors.pop(0)
+    self._RecordSensor()
+
+
+class RecordAllSensorValues(OptionalParameterTestFixture):
+  """Set RECORD_SENSORS with sensor number set to 0xff."""
+  CATEGORY = TestCategory.SENSORS
+  PID = 'RECORD_SENSORS'
+  REQUIRES = ['sensor_definitions']
+
+  RECORDED_VALUE_MASK = 0x01
+  ALL_SENSORS = 0xff
+
+  def Test(self):
+    supports_recording = False
+    for sensor_def in self.Property('sensor_definitions').values():
+      supports_recording |= (
+          sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
+
+    if supports_recording:
+      self.AddIfSetSupported(self.AckSetResult())
+    else:
+      self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, [self.ALL_SENSORS])
+
+
+class RecordUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
+                                  OptionalParameterTestFixture):
+  """Attempt to reset sensor values for all sensors that weren't defined."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'RECORD_SENSORS'
+  REQUIRES = ['sensor_definitions']
+
+
+class RecordSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
+  """SET record sensors without any sensor number."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'RECORD_SENSORS'
+
+
 # Device Hours
 #------------------------------------------------------------------------------
 class GetDeviceHours(TestMixins.GetMixin, OptionalParameterTestFixture):
@@ -1826,6 +2430,7 @@ class GetPerformSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
   PID = 'PERFORM_SELF_TEST'
   EXPECTED_FIELD = 'tests_active'
 
+
 class GetPerformSelfTestWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """Get the current self test settings with extra data."""
@@ -1866,16 +2471,14 @@ class GetSelfTestDescription(OptionalParameterTestFixture):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [1])
 
 
-class GetSelfTestDescriptionWithNoData(OptionalParameterTestFixture):
+class GetSelfTestDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
+                                       OptionalParameterTestFixture):
   """Get the self test description with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SELF_TEST_DESCRIPTION'
 
-  def Test(self):
-    self.AddExpectedResults(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(ROOT_DEVICE, self.pid)
 
-class FindSelfTests(ResponderTestFixture):
+class FindSelfTests(OptionalParameterTestFixture):
   """Locate the self tests by sending SELF_TEST_DESCRIPTION messages."""
   CATEGORY = TestCategory.CONTROL
   PID = 'SELF_TEST_DESCRIPTION'
@@ -1883,7 +2486,7 @@ class FindSelfTests(ResponderTestFixture):
 
   def Test(self):
     self._self_tests = {}  # stores the discovered self tests
-    self._current_index = 1  # the current self test we're trying to query
+    self._current_index = 0  # the current self test we're trying to query
     self._CheckForSelfTest()
 
   def _CheckForSelfTest(self):
@@ -1893,11 +2496,15 @@ class FindSelfTests(ResponderTestFixture):
       self.Stop()
       return
 
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
-                         action=self._CheckForSelfTest),
-      self.AckGetResult(action=self._CheckForSelfTest)
-    ])
+    if self.PidSupported():
+      self.AddExpectedResults([
+        self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
+                           action=self._CheckForSelfTest),
+        self.AckGetResult(action=self._CheckForSelfTest)
+      ])
+    else:
+      self.AddExpectedResults(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
+
     self._current_index += 1
     self.SendGet(ROOT_DEVICE, self.pid, [self._current_index])
 

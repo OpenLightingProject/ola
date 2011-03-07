@@ -95,6 +95,13 @@ class GetWithDataMixin(object):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
 
 
+class GetWithNoDataMixin(object):
+  """Attempt a get with no data."""
+  def Test(self):
+    self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
+
+
 class UnsupportedSetMixin(object):
   """Check that SET fails with NR_UNSUPPORTED_COMMAND_CLASS."""
   DATA = ''
@@ -287,3 +294,33 @@ class SetUInt32Mixin(object):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   #TODO(simon): add a back out method here
+
+
+# Sensor mixins
+#------------------------------------------------------------------------------
+class SetUndefinedSensorValues(object):
+  """Attempt to set sensor values for all sensors that weren't defined."""
+  def Test(self):
+    sensors = self.Property('sensor_definitions')
+    self._missing_sensors = []
+    for i in xrange(0, 0xff):
+      if i not in sensors:
+        self._missing_sensors.append(i)
+
+    if self._missing_sensors:
+      # loop and get all values
+      self._DoAction()
+    else:
+      self.SetNotRun(' All sensors declared')
+      self.Stop()
+      return
+
+  def _DoAction(self):
+    if not self._missing_sensors:
+      self.Stop()
+      return
+
+    self.AddIfSetSupported(
+        self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
+                           action=self._DoAction))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self._missing_sensors.pop(0)])
