@@ -20,6 +20,13 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
+def _ReverseDict(input):
+  output = {}
+  for key, value in input.iteritems():
+    output[value] = key
+  return output
+
+
 SENSOR_TYPES = {
   'SENSOR_TEMPERATURE': 0x00,
   'SENSOR_VOLTAGE': 0x01,
@@ -57,6 +64,9 @@ SENSOR_TYPES = {
   'SENSOR_OTHER': 0x7F,
 }
 
+SENSOR_TYPE_TO_NAME = _ReverseDict(SENSOR_TYPES)
+
+
 UNITS = {
   'UNITS_NONE': 0x00,
   'UNITS_CENTIGRADE': 0x01,
@@ -89,6 +99,7 @@ UNITS = {
   'UNITS_BYTE': 0x1C,
 }
 
+UNIT_TO_NAME = _ReverseDict(UNITS)
 
 PREFIXES = {
   'PREFIX_NONE': 0x00,
@@ -114,6 +125,7 @@ PREFIXES = {
   'PREFIX_YOTTA': 0x1A,
 }
 
+PREFIX_TO_NAME = _ReverseDict(PREFIXES)
 
 PRODUCT_CATEGORIES = {
   'PRODUCT_CATEGORY_NOT_DECLARED': 0x0000,
@@ -276,6 +288,7 @@ SLOT_TYPES = {
   'ST_SEC_UNDEFINED': 0xFF,
 }
 
+SLOT_TYPE_TO_NAME = _ReverseDict(SLOT_TYPES)
 
 SLOT_DEFINITIONS = {
   'SD_INTENSITY': 0x0001,
@@ -311,3 +324,5 @@ SLOT_DEFINITIONS = {
   'SD_MACRO': 0x0504,
   'SD_UNDEFINED': 0xFFFF,
 }
+
+SLOT_DEFINITION_TO_NAME = _ReverseDict(SLOT_DEFINITIONS)
