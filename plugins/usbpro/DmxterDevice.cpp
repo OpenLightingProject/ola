@@ -38,7 +38,7 @@ using ola::rdm::UID;
 
 
 /*
- * New Arduino RGB Device
+ * New DMXter device
  */
 DmxterDevice::DmxterDevice(ola::network::SelectServerInterface *ss,
                              ola::AbstractPlugin *owner,
@@ -47,60 +47,15 @@ DmxterDevice::DmxterDevice(ola::network::SelectServerInterface *ss,
                              uint16_t esta_id,
                              uint16_t device_id,
                              uint32_t serial):
-    UsbDevice(owner, name, widget),
-    m_dmxter_widget(NULL) {
+    UsbDevice(owner, name, widget) {
   std::stringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" <<
     NetworkToHost(serial);
   m_device_id = str.str();
 
-  m_dmxter_widget = new DmxterWidget(ss, widget, esta_id, serial);
-
-  ola::BasicOutputPort *port = new DmxterOutputPort(this);
+  DmxterWidget *dmxter_widget = new DmxterWidget(ss, widget, esta_id, serial);
+  ola::BasicOutputPort *port = new DmxterOutputPort(this, dmxter_widget);
   AddPort(port);
-
-  m_dmxter_widget->SetUIDListCallback(
-      ola::NewCallback(port, &DmxterOutputPort::NewUIDList));
-}
-
-
-/**
- * Clean up
- */
-DmxterDevice::~DmxterDevice() {
-  delete m_dmxter_widget;
-}
-
-
-/**
- * Called after we start, use this to fetch the TOD.
- */
-bool DmxterDevice::StartHook() {
-  m_dmxter_widget->SendTodRequest();
-  return true;
-}
-
-
-/**
- *
- */
-void DmxterDevice::HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                                    ola::rdm::RDMCallback *callback) {
-  m_dmxter_widget->SendRDMRequest(request, callback);
-}
-
-/**
- *
- */
-void DmxterDevice::RunRDMDiscovery() {
-}
-
-
-/**
- * Notify the port that there are new UIDs
- */
-void DmxterDevice::SendUIDUpdate() {
-  m_dmxter_widget->SendUIDUpdate();
 }
 }  // usbpro
 }  // plugin

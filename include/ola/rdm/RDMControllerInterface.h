@@ -21,10 +21,12 @@
 #ifndef INCLUDE_OLA_RDM_RDMCONTROLLERINTERFACE_H_
 #define INCLUDE_OLA_RDM_RDMCONTROLLERINTERFACE_H_
 
-#include <vector>
 #include <ola/Callback.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMResponseCodes.h>
+#include <ola/rdm/UIDSet.h>
+#include <string>
+#include <vector>
 
 namespace ola {
 namespace rdm {
@@ -44,6 +46,11 @@ typedef ola::BaseCallback3<void,
                            rdm_response_code,
                            const RDMResponse*,
                            const std::vector<std::string>&> RDMCallback;
+
+/**
+ * This is the callback used when discovery completes.
+ */
+typedef ola::BaseCallback1<void, const ola::rdm::UIDSet&> RDMDiscoveryCallback;
 
 /**
  * This is a class that can send RDM messages.
@@ -66,6 +73,27 @@ class RDMControllerInterface {
      */
     virtual void SendRDMRequest(const RDMRequest *request,
                                 RDMCallback *on_complete) = 0;
+};
+
+
+/**
+ * This is a class that can send RDM messages as well as perform discovery.
+ * You only need to use this with the QueuingRDMController if discovery can't
+ * run at the same time as RDM messages are being sent.
+ */
+class DiscoverableRDMControllerInterface: public RDMControllerInterface {
+  public:
+    DiscoverableRDMControllerInterface(): RDMControllerInterface() {}
+    virtual ~DiscoverableRDMControllerInterface() {}
+
+    /**
+     * These methods trigger RDM discovery. In the event that this returns an
+     * error the callback is deleted without being run.
+     * @returns true if discovery started, false if there was an error
+     */
+    virtual bool RunFullDiscovery(RDMDiscoveryCallback *callback) = 0;
+
+    virtual bool RunIncrementalDiscovery(RDMDiscoveryCallback *callback) = 0;
 };
 }  // rdm
 }  // ola

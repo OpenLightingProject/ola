@@ -24,7 +24,7 @@
 #include <string>
 #include "ola/DmxBuffer.h"
 #include "ola/network/SelectServerInterface.h"
-#include "ola/rdm/UIDSet.h"
+#include "plugins/usbpro/DmxterWidget.h"
 #include "plugins/usbpro/UsbDevice.h"
 #include "plugins/usbpro/UsbWidget.h"
 
@@ -35,7 +35,7 @@ namespace usbpro {
 class DmxterWidget;
 
 /*
- * An Arduino RGB Mixer Device
+ * An DMXter Device
  */
 class DmxterDevice: public UsbDevice {
   public:
@@ -46,18 +46,11 @@ class DmxterDevice: public UsbDevice {
                 uint16_t esta_id,
                 uint16_t device_id,
                 uint32_t serial);
-    ~DmxterDevice();
+    ~DmxterDevice() {}
     string DeviceId() const { return m_device_id; }
-    bool StartHook();
-
-    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback);
-    void RunRDMDiscovery();
-    void SendUIDUpdate();
 
   private:
     string m_device_id;
-    DmxterWidget *m_dmxter_widget;
 };
 
 
@@ -66,9 +59,13 @@ class DmxterDevice: public UsbDevice {
  */
 class DmxterOutputPort: public BasicOutputPort {
   public:
-    explicit DmxterOutputPort(DmxterDevice *parent)
+    DmxterOutputPort(DmxterDevice *parent, DmxterWidget *widget)
         : BasicOutputPort(parent, 0),
-          m_device(parent) {}
+          m_widget(widget) {}
+
+    ~DmxterOutputPort() {
+      delete m_widget;
+    }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       // this device can't output DMX
@@ -79,23 +76,26 @@ class DmxterOutputPort: public BasicOutputPort {
 
     void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *callback) {
-      m_device->HandleRDMRequest(request, callback);
+      m_widget->SendRDMRequest(request, callback);
     }
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
       if (new_universe)
-        m_device->SendUIDUpdate();
+        RunRDMDiscovery();
       (void) old_universe;
     }
 
     void RunRDMDiscovery() {
-      m_device->RunRDMDiscovery();
+      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
+          reinterpret_cast<BasicOutputPort*>(this),
+          &DmxterOutputPort::NewUIDList);
+      m_widget->RunFullDiscovery(callback);
     }
 
     string Description() const { return "RDM Only"; }
 
   private:
-    DmxterDevice *m_device;
+    DmxterWidget *m_widget;
 };
 }  // usbpro
 }  // plugin

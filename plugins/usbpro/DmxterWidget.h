@@ -37,16 +37,13 @@ namespace usbpro {
  * A DMXter Widget implementation. We separate the Widget from the
  * implementation so we can leverage the QueueingRDMController.
  */
-class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
+class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
                      UsbWidgetInterface *widget,
                      uint16_t esta_id,
                      uint32_t serial);
     ~DmxterWidgetImpl();
-
-    void SetUIDListCallback(
-        ola::Callback1<void, const ola::rdm::UIDSet&> *callback);
 
     void HandleMessage(uint8_t label,
                        const uint8_t *data,
@@ -55,7 +52,8 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
-    void RunRDMDiscovery();
+    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void SendUIDUpdate();
     void SendTodRequest();
 
@@ -64,7 +62,7 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
     UsbWidgetInterface *m_widget;
     ola::network::SelectServerInterface *m_ss;
     ola::rdm::UIDSet m_uids;
-    ola::Callback1<void, const ola::rdm::UIDSet&> *m_uid_set_callback;
+    ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
     const ola::rdm::RDMRequest *m_pending_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
     uint8_t m_transaction_number;
@@ -78,6 +76,8 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
     static const uint8_t RDM_BCAST_REQUEST_LABEL;
     static const uint8_t TOD_LABEL;
     static const uint8_t DISCOVERY_BRANCH_LABEL;
+    static const uint8_t FULL_DISCOVERY_LABEL;
+    static const uint8_t INCREMENTAL_DISCOVERY_LABEL;
     static const uint8_t SHUTDOWN_LABAEL;
 
     typedef enum {
@@ -127,7 +127,7 @@ class DmxterWidgetImpl: public ola::rdm::RDMControllerInterface {
 /*
  * A DMXter Widget. This mostly just wraps the implementation.
  */
-class DmxterWidget: public ola::rdm::RDMControllerInterface {
+class DmxterWidget: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     DmxterWidget(ola::network::SelectServerInterface *ss,
                  UsbWidgetInterface *widget,
@@ -136,18 +136,17 @@ class DmxterWidget: public ola::rdm::RDMControllerInterface {
                  unsigned int queue_size = 20);
     ~DmxterWidget() {}
 
-    void SetUIDListCallback(
-        ola::Callback1<void, const ola::rdm::UIDSet&> *callback) {
-      m_impl.SetUIDListCallback(callback);
-    }
-
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_controller.SendRDMRequest(request, on_complete);
     }
 
-    void RunRDMDiscovery() {
-      return m_impl.RunRDMDiscovery();
+    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      return m_controller.RunFullDiscovery(callback);
+    }
+
+    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      return m_controller.RunIncrementalDiscovery(callback);
     }
 
     void SendUIDUpdate() {
@@ -160,7 +159,7 @@ class DmxterWidget: public ola::rdm::RDMControllerInterface {
 
   private:
     DmxterWidgetImpl m_impl;
-    ola::rdm::QueueingRDMController m_controller;
+    ola::rdm::DiscoverableQueueingRDMController m_controller;
 };
 }  // usbpro
 }  // plugin

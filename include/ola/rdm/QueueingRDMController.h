@@ -42,10 +42,9 @@ class QueueingRDMController: public RDMControllerInterface {
 
     void Pause();
     void Resume();
-    void SendRDMRequest(const RDMRequest *request,
-                        RDMCallback *on_complete);
+    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
 
-  private:
+  protected:
     typedef struct {
       const RDMRequest *request;
       RDMCallback *on_complete;
@@ -54,18 +53,49 @@ class QueueingRDMController: public RDMControllerInterface {
     RDMControllerInterface *m_controller;
     unsigned int m_max_queue_size;
     std::queue<outstanding_rdm_request> m_pending_requests;
-    bool m_rdm_request_pending;
-    bool m_active;
+    bool m_rdm_request_pending;  // true if a request is in progress
+    bool m_active;  // true if the controller is active
     RDMCallback *m_callback;
     const ola::rdm::RDMResponse *m_response;
     std::vector<std::string> m_packets;
 
     void MaybeSendRDMRequest();
     void DispatchNextRequest();
+    virtual bool CheckForBlockingCondition();
 
     void HandleRDMResponse(rdm_response_code status,
                            const ola::rdm::RDMResponse *response,
                            const std::vector<std::string> &packets);
+};
+
+
+class DiscoverableQueueingRDMController: public QueueingRDMController {
+  public:
+    DiscoverableQueueingRDMController(
+        DiscoverableRDMControllerInterface *controller,
+        unsigned int max_queue_size);
+
+    ~DiscoverableQueueingRDMController() {}
+
+    bool RunFullDiscovery(RDMDiscoveryCallback *callback);
+    bool RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
+
+  private:
+    typedef enum {
+      FREE,
+      PENDING,
+      RUNNING,
+    } discovery_state;
+
+    DiscoverableRDMControllerInterface *m_discoverable_controller;
+    discovery_state m_discovery_state;
+    RDMDiscoveryCallback *m_discovery_callback;
+    bool m_full_discovery;
+
+    bool GenericDiscovery(RDMDiscoveryCallback *callback, bool full);
+    bool CheckForBlockingCondition();
+    void StartRDMDiscovery();
+    void DiscoveryComplete(const ola::rdm::UIDSet &uids);
 };
 }  // rdm
 }  // ola

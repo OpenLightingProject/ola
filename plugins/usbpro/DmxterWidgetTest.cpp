@@ -166,6 +166,8 @@ const RDMRequest *DmxterWidgetTest::NewRequest(const UID &source,
  * Check that discovery works for a device that just implements the serial #
  */
 void DmxterWidgetTest::testTod() {
+  uint8_t FULL_DISCOVERY_LABEL = 0x84;
+  uint8_t INCREMENTAL_DISCOVERY_LABEL = 0x85;
   uint8_t TOD_LABEL = 0x82;
   ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
                                            &m_widget,
@@ -177,20 +179,28 @@ void DmxterWidgetTest::testTod() {
   };
 
   m_widget.AddExpectedCall(
-      TOD_LABEL,
+      FULL_DISCOVERY_LABEL,
       NULL,
       0,
       TOD_LABEL,
       reinterpret_cast<uint8_t*>(&return_packet),
       sizeof(return_packet));
 
-  dmxter.SetUIDListCallback(
-      ola::NewCallback(this, &DmxterWidgetTest::ValidateTod));
-
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_tod_counter);
-  dmxter.SendTodRequest();
+  dmxter.RunFullDiscovery(
+      ola::NewSingleCallback(this, &DmxterWidgetTest::ValidateTod));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_tod_counter);
-  dmxter.SendUIDUpdate();
+
+  m_widget.AddExpectedCall(
+      INCREMENTAL_DISCOVERY_LABEL,
+      NULL,
+      0,
+      TOD_LABEL,
+      reinterpret_cast<uint8_t*>(&return_packet),
+      sizeof(return_packet));
+
+  dmxter.RunIncrementalDiscovery(
+      ola::NewSingleCallback(this, &DmxterWidgetTest::ValidateTod));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_tod_counter);
 
   m_widget.Verify();

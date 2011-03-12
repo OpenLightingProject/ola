@@ -304,8 +304,7 @@ class ArtNetNodeImpl {
  */
 class ArtNetNodeImplRDMWrapper: public ola::rdm::RDMControllerInterface {
   public:
-    ArtNetNodeImplRDMWrapper(ArtNetNodeImpl *impl,
-                             uint8_t port_id):
+    ArtNetNodeImplRDMWrapper(ArtNetNodeImpl *impl, uint8_t port_id):
       m_impl(impl),
       m_port_id(port_id) {
     }

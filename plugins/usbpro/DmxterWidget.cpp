@@ -39,6 +39,8 @@ const uint8_t DmxterWidgetImpl::RDM_REQUEST_LABEL = 0x80;
 const uint8_t DmxterWidgetImpl::RDM_BCAST_REQUEST_LABEL = 0x81;
 const uint8_t DmxterWidgetImpl::TOD_LABEL = 0x82;
 const uint8_t DmxterWidgetImpl::DISCOVERY_BRANCH_LABEL = 0x83;
+const uint8_t DmxterWidgetImpl::FULL_DISCOVERY_LABEL = 0x84;
+const uint8_t DmxterWidgetImpl::INCREMENTAL_DISCOVERY_LABEL = 0x85;
 const uint8_t DmxterWidgetImpl::SHUTDOWN_LABAEL = 0xf0;
 
 
@@ -56,7 +58,7 @@ DmxterWidgetImpl::DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
     m_uid(esta_id, serial),
     m_widget(widget),
     m_ss(ss),
-    m_uid_set_callback(NULL),
+    m_discovery_callback(NULL),
     m_pending_request(NULL),
     m_rdm_request_callback(NULL),
     m_transaction_number(0) {
@@ -76,21 +78,6 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
 
   if (m_pending_request)
     delete m_pending_request;
-
-  if (m_uid_set_callback)
-    delete m_uid_set_callback;
-}
-
-
-/**
- * Set the callback used when the UIDSet changes
- * @param callback the callback to run when a new UIDSet is available.
- */
-void DmxterWidgetImpl::SetUIDListCallback(
-    ola::Callback1<void, const ola::rdm::UIDSet&> *callback) {
-  if (m_uid_set_callback)
-    delete m_uid_set_callback;
-  m_uid_set_callback = callback;
 }
 
 
@@ -167,10 +154,34 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
 
 
 /**
- * Trigger the RDM discovery for the widget.
+ * Trigger full RDM discovery for the widget.
  */
-void DmxterWidgetImpl::RunRDMDiscovery() {
-  // TODO(simon): maybe we should pause sending for this? Check with Eric.
+bool DmxterWidgetImpl::RunFullDiscovery(
+    ola::rdm::RDMDiscoveryCallback *callback) {
+  m_discovery_callback = callback;
+  if (!m_widget->SendMessage(FULL_DISCOVERY_LABEL, NULL, 0)) {
+    OLA_WARN << "Failed to send full dmxter discovery command";
+    delete callback;
+    m_discovery_callback = NULL;
+    return false;
+  }
+  return true;
+}
+
+
+/**
+ * Trigger incremental RDM discovery for the widget.
+ */
+bool DmxterWidgetImpl::RunIncrementalDiscovery(
+    ola::rdm::RDMDiscoveryCallback *callback) {
+  m_discovery_callback = callback;
+  if (!m_widget->SendMessage(INCREMENTAL_DISCOVERY_LABEL, NULL, 0)) {
+    OLA_WARN << "Failed to send incremental dmxter discovery command";
+    m_discovery_callback = NULL;
+    delete callback;
+    return false;
+  }
+  return true;
 }
 
 
@@ -178,8 +189,10 @@ void DmxterWidgetImpl::RunRDMDiscovery() {
  * Run the UID Set callback with the current list of UIDs
  */
 void DmxterWidgetImpl::SendUIDUpdate() {
-  if (m_uid_set_callback)
-    m_uid_set_callback->Run(m_uids);
+  if (m_discovery_callback) {
+    m_discovery_callback->Run(m_uids);
+    m_discovery_callback = NULL;
+  }
 }
 
 
