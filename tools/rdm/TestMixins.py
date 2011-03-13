@@ -98,7 +98,7 @@ class GetWithDataMixin(object):
 class GetWithNoDataMixin(object):
   """Attempt a get with no data."""
   def Test(self):
-    self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
 
