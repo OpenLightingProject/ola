@@ -32,6 +32,7 @@
 #include <vector>
 
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::setw;
 using std::string;
@@ -46,7 +47,8 @@ static const int INVALID_VALUE = -1;
 typedef struct {
   int uni;         // universe id
   bool help;       // show the help
-  bool force_discovery;  // force RDM discovery
+  bool full;       // full discovery
+  bool incremental; // incremental discovery
   string cmd;      // argv[0]
 } options;
 
@@ -87,11 +89,13 @@ void ForceRDMDiscoveryComplete(const string &error) {
 void ParseOptions(int argc, char *argv[], options *opts) {
   opts->uni = INVALID_VALUE;
   opts->help = false;
-  opts->force_discovery = false;
+  opts->full = false;
+  opts->incremental = false;
 
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
-      {"force_discovery", no_argument, 0, 'f'},
+      {"full", no_argument, 0, 'f'},
+      {"incremental", no_argument, 0, 'i'},
       {"universe", required_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
@@ -100,7 +104,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "u:hf", long_options, &option_index);
+    c = getopt_long(argc, argv, "u:fhi", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -109,10 +113,13 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 0:
         break;
       case 'f':
-        opts->force_discovery = true;
+        opts->full = true;
         break;
       case 'h':
         opts->help = true;
+        break;
+      case 'i':
+        opts->incremental = true;
         break;
       case 'u':
         opts->uni = atoi(optarg);
@@ -135,8 +142,9 @@ void DisplayGetUIDsHelp(const options &opts) {
   "\n"
   "Fetch the UID list for a universe.\n"
   "\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -f, --force_discovery     Force RDM Discovery for this universe\n"
+  "  -h, --help        Display this help message and exit.\n"
+  "  -f, --full        Force full RDM Discovery for this universe\n"
+  "  -i, --incremental Force incremental RDM Discovery for this universe\n"
   "  -u, --universe <universe> Universe number.\n"
   << endl;
 }
@@ -153,14 +161,21 @@ bool FetchUIDs(OlaCallbackClient *client, const options &opts) {
     return false;
   }
 
-  if (opts.force_discovery)
-    return client->ForceDiscovery(
+  if (opts.full) {
+    return client->RunDiscovery(
         opts.uni,
+        true,
         ola::NewSingleCallback(&ForceRDMDiscoveryComplete));
-  else
+  } else if (opts.incremental) {
+    return client->RunDiscovery(
+        opts.uni,
+        false,
+        ola::NewSingleCallback(&ForceRDMDiscoveryComplete));
+  } else {
     return client->FetchUIDList(
         opts.uni,
         ola::NewSingleCallback(&UIDList));
+  }
 }
 
 
@@ -177,6 +192,11 @@ int main(int argc, char *argv[]) {
 
   if (opts.help)
     DisplayGetUIDsHelp(opts);
+
+  if (opts.full && opts.incremental) {
+    cerr << "Only one of -i and -f can be specified" << endl;
+    exit(1);
+  }
 
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
