@@ -2491,7 +2491,7 @@ class FindSelfTests(OptionalParameterTestFixture):
 
   def _CheckForSelfTest(self):
     # For each message we should either see a NR_DATA_OUT_OF_RANGE or an ack
-    if self._current_index == 256:
+    if self._current_index == 255:
       self.SetProperty('self_test_descriptions', self._self_tests)
       self.Stop()
       return
