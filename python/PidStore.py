@@ -365,16 +365,34 @@ class IntAtom(FixedSizeAtom):
     return value * (10 ** self._multiplier)
 
 
+class Int8(IntAtom):
+  """A single signed byte field."""
+  def __init__(self, name, **kwargs):
+    super(Int8, self).__init__(name, 'b', 0xff, **kwargs)
+
+
 class UInt8(IntAtom):
   """A single unsigned byte field."""
   def __init__(self, name, **kwargs):
     super(UInt8, self).__init__(name, 'B', 0xff, **kwargs)
 
 
+class Int16(IntAtom):
+  """A two-byte signed field."""
+  def __init__(self, name, **kwargs):
+    super(Int16, self).__init__(name, 'h', 0xffff, **kwargs)
+
+
 class UInt16(IntAtom):
   """A two-byte unsigned field."""
   def __init__(self, name, **kwargs):
     super(UInt16, self).__init__(name, 'H', 0xffff, **kwargs)
+
+
+class Int32(IntAtom):
+  """A four-byte signed field."""
+  def __init__(self, name, **kwargs):
+    super(Int32, self).__init__(name, 'i', 0xffffffff, **kwargs)
 
 
 class UInt32(IntAtom):
@@ -936,10 +954,16 @@ class PidStore(object):
 
     if field.type == Pids_pb2.BOOL:
       return Bool(field.name)
+    elif field.type == Pids_pb2.INT8:
+      return Int8(field.name, **args);
     elif field.type == Pids_pb2.UINT8:
       return UInt8(field.name, **args);
+    elif field.type == Pids_pb2.INT16:
+      return Int16(field.name, **args);
     elif field.type == Pids_pb2.UINT16:
       return UInt16(field.name, **args);
+    elif field.type == Pids_pb2.INT32:
+      return Int32(field.name, **args);
     elif field.type == Pids_pb2.UINT32:
       return UInt32(field.name, **args);
     elif field.type == Pids_pb2.GROUP:

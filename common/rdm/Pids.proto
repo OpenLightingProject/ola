@@ -36,19 +36,22 @@ enum FieldType {
   UINT32 = 4;
   STRING = 5;
   GROUP = 6;
+  INT8 = 7;
+  INT16 = 8;
+  INT32 = 9;
 }
 
 // A value which has a label applied
 message LabeledValue {
-  required uint32 value = 1;
+  required int64 value = 1;
   required string label = 2;
 }
 
 // An allowable range, only used for int fields
 message Range {
   // min and max are inclusive
-  required uint32 min = 1;
-  required uint32 max = 2;
+  required int64 min = 1;
+  required int64 max = 2;
 }
 
 // A field within a frame, this can contain other fields
