@@ -150,7 +150,7 @@ void DummyPortTest::testRDMDiscovery() {
   MockDummyPort port;
   const UIDSet &uids = port.GetUIDSet();
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), uids.Size());
-  port.RunRDMDiscovery();
+  port.RunFullDiscovery();
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), uids.Size());
   CPPUNIT_ASSERT(uids.Contains(m_expected_uid));
 }

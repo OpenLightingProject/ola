@@ -119,9 +119,9 @@ void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 /*
  * Trigger the RDM Discovery procedure for this universe
  */
-void BasicInputPort::TriggerRDMDiscovery() {
+void BasicInputPort::TriggerRDMDiscovery(bool full) {
   if (m_universe)
-    m_universe->RunRDMDiscovery();
+    m_universe->RunRDMDiscovery(full);
 }
 
 
@@ -156,7 +156,7 @@ bool BasicOutputPort::SetUniverse(Universe *new_universe) {
     m_universe = new_universe;
     PostSetUniverse(old_universe, new_universe);
     if (m_discover_on_patch)
-      RunRDMDiscovery();
+      RunIncrementalDiscovery();
     return true;
   }
   return false;
@@ -205,7 +205,14 @@ void BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 /*
  * This is a noop for ports that don't support RDM
  */
-void BasicOutputPort::RunRDMDiscovery() {
+void BasicOutputPort::RunFullDiscovery() {
+}
+
+
+/*
+ * This is a noop for ports that don't support RDM
+ */
+void BasicOutputPort::RunIncrementalDiscovery() {
 }
 
 

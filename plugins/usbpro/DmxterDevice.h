@@ -81,15 +81,22 @@ class DmxterOutputPort: public BasicOutputPort {
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
       if (new_universe)
-        RunRDMDiscovery();
+        RunFullDiscovery();
       (void) old_universe;
     }
 
-    void RunRDMDiscovery() {
+    void RunFullDiscovery() {
       ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
           reinterpret_cast<BasicOutputPort*>(this),
           &DmxterOutputPort::NewUIDList);
       m_widget->RunFullDiscovery(callback);
+    }
+
+    void RunIncrementalDiscovery() {
+      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
+          reinterpret_cast<BasicOutputPort*>(this),
+          &DmxterOutputPort::NewUIDList);
+      m_widget->RunIncrementalDiscovery(callback);
     }
 
     string Description() const { return "RDM Only"; }

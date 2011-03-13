@@ -92,7 +92,12 @@ class DmxTriOutputPort: public BasicOutputPort {
       (void) old_universe;
     }
 
-    void RunRDMDiscovery() {
+    void RunFullDiscovery() {
+      m_device->RunRDMDiscovery();
+    }
+
+    void RunIncrementalDiscovery() {
+      // incremental isn't supported
       m_device->RunRDMDiscovery();
     }
 

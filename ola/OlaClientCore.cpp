@@ -611,19 +611,21 @@ bool OlaClientCore::FetchUIDList(
  * @param universe the universe id to run discovery on
  * @return true on success, false on failure
  */
-bool OlaClientCore::ForceDiscovery(
+bool OlaClientCore::RunDiscovery(
     unsigned int universe,
+    bool full,
     ola::SingleUseCallback1<void, const string&> *callback) {
   if (!m_connected) {
     delete callback;
     return false;
   }
 
-  ola::proto::UniverseRequest request;
+  ola::proto::DiscoveryRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
   ola::proto::Ack *reply = new ola::proto::Ack();
 
   request.set_universe(universe);
+  request.set_full(full);
 
   google::protobuf::Closure *cb = google::protobuf::NewCallback(
       this,
@@ -1240,8 +1242,8 @@ void OlaClientCore::CheckRDMResponseStatus(
         GetParamFromReply("nack", reply, new_status);
         break;
       default:
-        OLA_WARN << "Invalid response type 0x" << std::hex << (int)
-          reply->response_type();
+        OLA_WARN << "Invalid response type 0x" << std::hex <<
+          static_cast<int>(reply->response_type());
         new_status->response_type = ola::rdm::RDM_INVALID_RESPONSE;
     }
   }

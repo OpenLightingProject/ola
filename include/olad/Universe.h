@@ -99,7 +99,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     // RDM methods
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
-    void RunRDMDiscovery();
+    void RunRDMDiscovery(bool full = true);
     void GetUIDs(ola::rdm::UIDSet *uids) const;
     unsigned int UIDCount() const;
     void NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port);

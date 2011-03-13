@@ -51,19 +51,13 @@ typedef ola::SingleUseCallback2<void, bool, const usb_pro_parameters&>
  * implementation so we can leverage the QueueingRDMController.
  */
 class UsbProWidgetImpl {
-  //: public ola::rdm::RDMControllerInterface {
+  // : public ola::rdm::RDMControllerInterface {
   public:
     UsbProWidgetImpl(ola::network::SelectServerInterface *ss,
                      UsbWidgetInterface *widget);
     ~UsbProWidgetImpl();
 
     void SetDMXCallback(ola::Callback0<void> *callback);
-    /**
-    void SetUIDListCallback(
-        ola::Callback1<void, const ola::rdm::UIDSet&> *callback);
-    void SetDiscoveryCallback(
-        ola::Callback0<void> *callback);
-     */
     void Stop();
 
     bool SendDMX(const DmxBuffer &buffer) const;
@@ -79,8 +73,8 @@ class UsbProWidgetImpl {
      * TODO(simon): add RDM support
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
-    void RunRDMDiscovery();
-    void SendUIDUpdate();
+    void bool RunFullDiscovery(RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
     bool CheckDiscoveryStatus();
     */
 
@@ -186,20 +180,18 @@ class UsbProWidget {
       m_controller.SendRDMRequest(request, on_complete);
     }
 
-    void RunRDMDiscovery() {
-      // pause rdm sending
-      m_controller.Pause();
-      m_impl.RunRDMDiscovery();
+    bool RunFullDiscovery(RDMDiscoveryCallback *callback) {
+      m_controller.RunFullDiscovery(callback);
     }
 
-    void SendUIDUpdate() {
-      m_impl.SendUIDUpdate();
+    bool RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
+      m_controller.RunIncrementalDiscovery(callback);
     }
     */
 
   private:
     UsbProWidgetImpl m_impl;
-    //ola::rdm::QueueingRDMController m_controller;
+    //  ola::rdm::QueueingRDMController m_controller;
 
     /*
     void ResumeRDMCommands() {

@@ -149,8 +149,9 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
         SingleUseCallback2<void,
                            const ola::rdm::UIDSet&,
                            const string&> *callback);
-    bool ForceDiscovery(
+    bool RunDiscovery(
         unsigned int universe,
+        bool full,
         ola::SingleUseCallback1<void, const string&> *callback);
     bool SetSourceUID(const ola::rdm::UID &uid,
                       ola::SingleUseCallback1<void, const string&> *callback);

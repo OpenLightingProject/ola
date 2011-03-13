@@ -256,6 +256,11 @@ message UniverseRequest {
   required int32 universe = 1;
 }
 
+message DiscoveryRequest {
+  required int32 universe = 1;
+  required bool full = 2;
+}
+
 message UIDListReply {
   required int32 universe = 1;
   repeated UID uid = 2;
@@ -302,7 +307,7 @@ service OlaServerService {
   rpc UpdateDmxData (DmxData) returns (Ack);
   rpc GetDmx (UniverseRequest) returns (DmxData);
   rpc GetUIDs (UniverseRequest) returns (UIDListReply);
-  rpc ForceDiscovery (UniverseRequest) returns (Ack);
+  rpc ForceDiscovery (DiscoveryRequest) returns (Ack);
   rpc SetSourceUID (UID) returns (Ack);
 
   // There are two different RDM calls, the first returns a simplified response

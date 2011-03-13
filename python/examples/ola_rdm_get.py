@@ -205,9 +205,14 @@ class InteractiveModeController(cmd.Cmd):
         print str(uid)
     self.wrapper.Stop()
 
-  def do_discover(self, l):
-    """Run RDM discovery for this universe."""
-    self.client.RunRDMDiscovery(self._universe, self._DiscoveryDone)
+  def do_full_discovery(self, l):
+    """Run full RDM discovery for this universe."""
+    self.client.RunRDMDiscovery(self._universe, True, self._DiscoveryDone)
+    self.wrapper.Run()
+
+  def do_incremental_discovery(self, l):
+    """Run incremental RDM discovery for this universe."""
+    self.client.RunRDMDiscovery(self._universe, False, self._DiscoveryDone)
     self.wrapper.Run()
 
   def _DiscoveryDone(self, state):

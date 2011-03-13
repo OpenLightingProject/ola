@@ -32,32 +32,41 @@ def usage():
   Fetch the UID list for a universe.
 
     -h, --help                Display this help message and exit.
-    -f, --force_discovery     Force RDM Discovery for this universe
+    -f, --full                Full RDM Discovery for this universe.
+    -i, --incremental         Incremental RDM Discovery for this universe.
     -u, --universe <universe> Universe number.""")
 
 
 def main():
   try:
-      opts, args = getopt.getopt(sys.argv[1:], 'hfu:',
-                                 ['help', 'force_discovery', 'universe='])
+      opts, args = getopt.getopt(sys.argv[1:], 'fjiu:',
+                                 ['help', 'full', 'incremental', 'universe='])
   except getopt.GetoptError, err:
     print str(err)
     Usage()
     sys.exit(2)
 
   universe = None
-  run_discovery = False
+  full_discovery = False
+  incremental_discovery = False
+
   for o, a in opts:
     if o in ('-h', '--help'):
       usage()
       sys.exit()
-    elif o in ('-f', '--force_discovery'):
-      run_discovery = True
+    elif o in ('-f', '--full'):
+      full_discovery = True
+    elif o in ('-i', '--incremental'):
+      incremental_discovery = True
     elif o in ('-u', '--universe'):
       universe = int(a)
 
   if not universe:
     usage()
+    sys.exit()
+
+  if incremental_discovery and full_discovery:
+    print 'Only one of --incremental or --full can be specified'
     sys.exit()
 
   wrapper = ClientWrapper()
@@ -70,10 +79,14 @@ def main():
     wrapper.Stop()
 
   def discovery_done(state):
+    if not state.Succeeded():
+      print state.message
     wrapper.Stop()
 
-  if run_discovery:
-    client.RunRDMDiscovery(universe, discovery_done)
+  if full_discovery:
+    client.RunRDMDiscovery(universe, True, discovery_done)
+  elif incremental_discovery:
+    client.RunRDMDiscovery(universe, False, discovery_done)
   else:
     client.FetchUIDList(universe, show_uids)
   wrapper.Run()

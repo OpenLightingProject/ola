@@ -156,19 +156,20 @@ bool OlaClient::FetchUIDList(unsigned int universe) {
 
 
 /*
- * Force RDM discovery for a universe
+ * Run RDM discovery for a universe
  * @param universe the universe id to run discovery on
  * @return true on success, false on failure
  */
-bool OlaClient::ForceDiscovery(unsigned int universe) {
+bool OlaClient::RunDiscovery(unsigned int universe, bool full) {
   if (m_observer)
-    return m_core->ForceDiscovery(
+    return m_core->RunDiscovery(
         universe,
+        full,
         NewSingleCallback(m_observer,
                           &OlaClientObserver::ForceRDMDiscoveryComplete,
                           universe));
   else
-    return m_core->ForceDiscovery(universe, NULL);
+    return m_core->RunDiscovery(universe, full, NULL);
 }
 
 

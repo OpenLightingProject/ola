@@ -366,7 +366,7 @@ UsbProWidget::UsbProWidget(ola::network::SelectServerInterface *ss,
                            UsbWidgetInterface *widget,
                            unsigned int queue_size):
     m_impl(ss, widget) {
-    //m_controller(&m_impl, queue_size) {
+    // m_controller(&m_impl, queue_size) {
   /*
   m_impl.SetDiscoveryCallback(
       NewCallback(this, &UsbProWidget::ResumeRDMCommands));

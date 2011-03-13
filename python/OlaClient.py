@@ -621,17 +621,19 @@ class OlaClient(Ola_pb2.OlaClientService):
     done = lambda x, y: self._FetchUIDsComplete(callback, x, y)
     self._stub.GetUIDs(controller, request, done)
 
-  def RunRDMDiscovery(self, universe, callback):
+  def RunRDMDiscovery(self, universe, full, callback):
     """Triggers RDM discovery for a universe.
 
     Args:
       universe: The universe to run discovery for.
+      full: true to use full discovery, false for incremental (if supported)
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
     """
     controller = SimpleRpcController()
-    request = Ola_pb2.UniverseRequest()
+    request = Ola_pb2.DiscoveryRequest()
     request.universe = universe
+    request.full = full
     done = lambda x, y: self._AckMessageComplete(callback, x, y)
     self._stub.ForceDiscovery(controller, request, done)
 
@@ -796,8 +798,6 @@ class OlaClient(Ola_pb2.OlaClientService):
     if not callback:
       return
     status = RequestStatus(controller)
-    if not status.Succeeded():
-      return
     callback(status)
 
   def _ConfigureDeviceComplete(self, callback, controller, response):

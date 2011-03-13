@@ -108,7 +108,8 @@ class OutputPort: public Port {
     // Handle RDMRequests, ownership of the request object is transferred
     virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                   ola::rdm::RDMCallback *callback) = 0;
-    virtual void RunRDMDiscovery() = 0;
+    virtual void RunFullDiscovery() = 0;
+    virtual void RunIncrementalDiscovery() = 0;
     virtual void NewUIDList(const ola::rdm::UIDSet &uids) = 0;
 };
 
@@ -138,7 +139,7 @@ class BasicInputPort: public InputPort {
     // rdm methods, the child class provides HandleRDMResponse
     void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *callback);
-    void TriggerRDMDiscovery();
+    void TriggerRDMDiscovery(bool full = true);
 
     port_priority_capability PriorityCapability() const {
       return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_STATIC;
@@ -206,10 +207,10 @@ class BasicOutputPort: public OutputPort {
     port_priority_mode GetPriorityMode() const { return m_priority_mode; }
 
     // rdm methods, the child class provides HandleRDMRequest and
-    // RunRDMDiscovery
     virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                                   ola::rdm::RDMCallback *callback);
-    virtual void RunRDMDiscovery();
+    virtual void RunFullDiscovery();
+    virtual void RunIncrementalDiscovery();
     virtual void NewUIDList(const ola::rdm::UIDSet &uids);
 
     virtual void UniverseNameChanged(const string &new_name) {
@@ -314,8 +315,12 @@ class OutputPortDecorator: public OutputPort {
       return m_port->HandleRDMRequest(request, callback);
     }
 
-    virtual void RunRDMDiscovery() {
-      return m_port->RunRDMDiscovery();
+    virtual void RunFullDiscovery() {
+      return m_port->RunFullDiscovery();
+    }
+
+    virtual void RunIncrementalDiscovery() {
+      return m_port->RunIncrementalDiscovery();
     }
 
     virtual void NewUIDList(const ola::rdm::UIDSet &uids) {

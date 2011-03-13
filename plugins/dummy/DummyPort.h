@@ -42,11 +42,14 @@ class DummyPort: public BasicOutputPort {
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
-    void RunRDMDiscovery();
+    void RunFullDiscovery();
+    void RunIncrementalDiscovery();
     void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *callback);
 
   private:
+    void RunDiscovery();
+
     void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
                              ola::rdm::RDMCallback *callback);
     void HandleSupportedParams(const ola::rdm::RDMRequest *request,

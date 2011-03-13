@@ -68,6 +68,8 @@ class ArtNetInputPort: public BasicInputPort {
   private:
     DmxBuffer m_buffer;
     ArtNetPortHelper m_helper;
+
+    void TriggerDiscovery();
 };
 
 
@@ -82,7 +84,8 @@ class ArtNetOutputPort: public BasicOutputPort {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *on_complete);
-    void RunRDMDiscovery();
+    void RunFullDiscovery();
+    void RunIncrementalDiscovery();
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe);
 

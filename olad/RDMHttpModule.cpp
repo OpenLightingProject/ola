@@ -173,8 +173,12 @@ int RDMHttpModule::RunRDMDiscovery(const HttpRequest *request,
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
 
-  bool ok = m_client->ForceDiscovery(
+  string incremental_str = request->GetParameter("incremental");
+  bool incremental = incremental_str == "true";
+
+  bool ok = m_client->RunDiscovery(
       universe_id,
+      !incremental,
       NewSingleCallback(this,
                         &RDMHttpModule::HandleBoolResponse,
                         response));

@@ -78,13 +78,17 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
 /*
  * This returns a single device
  */
-void DummyPort::RunRDMDiscovery() {
-  ola::rdm::UID uid(OPEN_LIGHTING_ESTA_CODE, 0xffffff00);
-  ola::rdm::UIDSet uid_set;
-  uid_set.AddUID(uid);
-  NewUIDList(uid_set);
+void DummyPort::RunFullDiscovery() {
+  RunDiscovery();
 }
 
+
+/*
+ * This returns a single device
+ */
+void DummyPort::RunIncrementalDiscovery() {
+  RunDiscovery();
+}
 
 /*
  * Handle an RDM Request
@@ -128,6 +132,14 @@ void DummyPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
     default:
       HandleUnknownPacket(request, callback);
   }
+}
+
+
+void DummyPort::RunDiscovery() {
+  ola::rdm::UID uid(OPEN_LIGHTING_ESTA_CODE, 0xffffff00);
+  ola::rdm::UIDSet uid_set;
+  uid_set.AddUID(uid);
+  NewUIDList(uid_set);
 }
 
 

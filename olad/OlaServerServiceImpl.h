@@ -126,7 +126,7 @@ class OlaServerServiceImpl {
                  ola::proto::UIDListReply* response,
                  google::protobuf::Closure* done);
     void ForceDiscovery(RpcController* controller,
-                        const ola::proto::UniverseRequest* request,
+                        const ola::proto::DiscoveryRequest* request,
                         ola::proto::Ack* response,
                         google::protobuf::Closure* done);
     void RDMCommand(RpcController* controller,
@@ -302,7 +302,7 @@ class OlaClientService: public ola::proto::OlaServerService {
     }
 
     void ForceDiscovery(RpcController* controller,
-                        const ola::proto::UniverseRequest* request,
+                        const ola::proto::DiscoveryRequest* request,
                         ola::proto::Ack* response,
                         google::protobuf::Closure* done) {
       m_impl->ForceDiscovery(controller, request, response, done);

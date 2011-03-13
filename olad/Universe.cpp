@@ -397,12 +397,19 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
 /*
  * Trigger RDM discovery for this universe
  */
-void Universe::RunRDMDiscovery() {
-  OLA_INFO << "RDM discovery triggered for universe " << m_universe_id;
+void Universe::RunRDMDiscovery(bool full) {
+  if (full)
+    OLA_INFO << "Full RDM discovery triggered for universe " << m_universe_id;
+  else
+    OLA_INFO << "Incremental RDM discovery triggered for universe " <<
+      m_universe_id;
 
   vector<OutputPort*>::iterator iter;
   for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter)
-    (*iter)->RunRDMDiscovery();
+    if (full)
+      (*iter)->RunFullDiscovery();
+    else
+      (*iter)->RunIncrementalDiscovery();
 
   // somehow detect when this is done and then send new UIDSets
 }

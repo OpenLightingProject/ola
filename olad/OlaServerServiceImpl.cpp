@@ -603,7 +603,7 @@ void OlaServerServiceImpl::GetUIDs(RpcController* controller,
  */
 void OlaServerServiceImpl::ForceDiscovery(
     RpcController* controller,
-    const ola::proto::UniverseRequest* request,
+    const ola::proto::DiscoveryRequest* request,
     ola::proto::Ack* response,
     google::protobuf::Closure* done) {
 
@@ -611,7 +611,7 @@ void OlaServerServiceImpl::ForceDiscovery(
   if (!universe)
     return MissingUniverseError(controller, done);
 
-  universe->RunRDMDiscovery();
+  universe->RunRDMDiscovery(request->full());
   done->Run();
   (void) response;
 }
