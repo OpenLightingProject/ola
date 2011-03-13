@@ -1420,6 +1420,11 @@ class GetSensorDefinition(OptionalParameterTestFixture):
     self._sensor_holes = []  # indices of sensors that are missing
     self._CheckForSensor()
 
+  def _MissingSensorWarning(self):
+    max_sensor = max(self._sensors.keys())
+    missing_sensors = [i for i in self._sensor_holes if i < max_sensor]
+    self.AddWarning('Sensors missing in positions %s' % missing_sensors)
+
   def _CheckForSensor(self):
     if self.PidSupported():
       # If this pid is supported we attempt to locate all sensors
@@ -1432,10 +1437,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
                           (len(self._sensors), self.Property('sensor_count')))
 
         self.SetProperty('sensor_definitions', self._sensors)
-        if self._sensor_holes:
-          self.AddWarning('Sensors missing in positions %s' %
-                          self._sensor_holes)
-
+        self._MissingSensorWarning()
         self.Stop()
         return
 
