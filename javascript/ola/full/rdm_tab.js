@@ -54,10 +54,20 @@ ola.RDMTab = function(element) {
   toolbar.decorate(goog.dom.$('rdm_toolbar'));
 
   var discovery_button = toolbar.getChild('discoveryButton')
-  discovery_button.setTooltip('Force RDM Discovery for this universe');
+  discovery_button.setTooltip('Run full RDM discovery for this universe');
   goog.events.listen(discovery_button,
                      goog.ui.Component.EventType.ACTION,
-                     function() { this._discoveryButtonClicked(); },
+                     function() { this._discoveryButtonClicked(true); },
+                     false,
+                     this);
+
+  var incremental_discovery_button = toolbar.getChild(
+      'incrementalDiscoveryButton')
+  incremental_discovery_button.setTooltip(
+      'Run incremental RDM discovery for this universe');
+  goog.events.listen(incremental_discovery_button,
+                     goog.ui.Component.EventType.ACTION,
+                     function() { this._discoveryButtonClicked(false); },
                      false,
                      this);
 
@@ -170,11 +180,12 @@ ola.RDMTab.prototype._newUIDs = function(e) {
  * Called when the discovery button is clicked.
  * @private
  */
-ola.RDMTab.prototype._discoveryButtonClicked = function(e) {
+ola.RDMTab.prototype._discoveryButtonClicked = function(full) {
   var server = ola.common.Server.getInstance();
   var tab = this;
   server.runRDMDiscovery(
       this.getUniverse(),
+      full,
       function(e) { tab._discoveryComplete(e); });
 
   var dialog = ola.Dialog.getInstance();

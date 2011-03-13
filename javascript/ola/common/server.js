@@ -265,11 +265,18 @@ ola.common.Server.prototype.createUniverse = function(universe_id,
  *   asyncronous and at the moment there is no way to check if discovery has
  *   completed.
  * @param {number} universe_id the ID of the universe to run discovery for.
+ * @param {boolean} full true if we should do full discovery, false for
+ *   incremental.
  * @param {function(Object)} callback the function to call when the discovery
  *   request is ack'ed.
  */
-ola.common.Server.prototype.runRDMDiscovery = function(universe_id, callback) {
+ola.common.Server.prototype.runRDMDiscovery = function(universe_id,
+                                                       full,
+                                                       callback) {
   var url = ola.common.Server.RDM_DISCOVERY_URL + '?id=' + universe_id;
+  if (!full) {
+    url += '&incremental=true';
+  }
   this._initiateRequest(url, callback);
 };
 
