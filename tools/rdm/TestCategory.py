@@ -28,6 +28,7 @@ class TestCategory(object):
     'RDM_INFORMATION': 'RDM Information',
     'PRODUCT_INFORMATION': 'Product Information',
     'DMX_SETUP': 'DMX512 Setup',
+    'DIMMER_SETTINGS': 'Dimmer Settings',
     'SENSORS': 'Sensors',
     'POWER_LAMP_SETTINGS': 'Power / Lamp Settings',
     'DISPLAY_SETTINGS': 'Display Settings',

@@ -166,6 +166,11 @@ class GetSupportedParameters(ResponderTestFixture):
   PID_DEPENDENCIES = [
       ('RECORD_SENSORS', 'SENSOR_VALUE'),
       ('DEFAULT_SLOT_VALUE', 'SLOT_DESCRIPTION'),
+      ('CURVE', 'CURVE_DESCRIPTION'),
+      ('OUTPUT_RESPONSE_TIME', 'OUTPUT_RESPONSE_TIME_DESCRIPTION'),
+      ('MODULATION_FREQUENCY', 'MODULATION_FREQUENCY_DESCRIPTION'),
+      ('LOCK_STATE', ' LOCK_STATE_DESCRIPTION'),
+
   ]
 
   def Test(self):
@@ -2519,3 +2524,93 @@ class FindSelfTests(OptionalParameterTestFixture):
             (self._current_index, fields['test_number']))
       else:
         self._self_tests[self._current_index] = fields['description']
+
+
+# E1.37 PIDS
+#==============================================================================
+
+# IDENTIFY_MODE
+#------------------------------------------------------------------------------
+class GetIdentifyMode(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """Get identify mode."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'IDENTIFY_MODE'
+  PROVIDES = ['identify_mode']
+  EXPECTED_FIELD = 'identify_mode'
+
+
+class GetIdentifyModeWithData(TestMixins.GetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """Get identify mode with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IDENTIFY_MODE'
+
+
+class SetIdentifyMode(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
+  """Set identify mode with extra data."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'IDENTIFY_MODE'
+  REQUIRES = ['identify_mode']
+  LOUD = 0xff
+  QUIET = 0x00
+
+  def NewValue(self):
+    old_value = self.Property('identify_mode')
+    if old_value is None:
+      return self.QUIET
+
+    if old_value:
+      return self.QUIET
+    else:
+      return self.LOUD
+
+
+class SetIdentifyModeWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Set identify mode with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IDENTIFY_MODE'
+
+
+# DMX_BLOCK_ADDRESS
+#------------------------------------------------------------------------------
+class GetDMXBlockAddress(OptionalParameterTestFixture):
+  """Get the DMX block address."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'DMX_BLOCK_ADDRESS'
+  PROVIDES = ['sub_device_footprint', 'base_dmx_address']
+  NON_CONTIGUOUS = 0xffff
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    footprint = None
+    base_address = None
+    if response.WasAcked():
+      footprint = fields['sub_device_footprint']
+      base_address = fields['base_dmx_address']
+
+      if footprint > MAX_DMX_ADDRESS and footprint != self.NON_CONTIGUOUS:
+        self.AddWarning('Sub device footprint > 512, was %d' % footprint)
+
+      if base_dmx_address == 0 or base_dmx_address > MAX_DMX_ADDRESS:
+        self.AddWarning('Base DMX address is outside range 1- 512, was %d' %
+                        base_dmx_address)
+    self.SetProperty('sub_device_footprint', footprint)
+    self.SetProperty('base_dmx_address', base_address)
+
+
+class GetDMXBlockAddressWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """Get the dmx block address with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_BLOCK_ADDRESS'
+
+
+class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
+                                   OptionalParameterTestFixture):
+  """Set the DMX block address with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_BLOCK_ADDRESS'
