@@ -684,47 +684,6 @@ class SetOversizedDeviceLabel(TestMixins.SetOversizedLabelMixin,
     self.Property('device_label')
 
 
-# Factory Defaults
-#------------------------------------------------------------------------------
-class GetFactoryDefaults(OptionalParameterTestFixture):
-  """GET the factory defaults pid."""
-  CATEGORY = TestCategory.PRODUCT_INFORMATION
-  PID = 'FACTORY_DEFAULTS'
-
-  def Test(self):
-    self.AddIfGetSupported(self.AckGetResult(field_names=['using_defaults']))
-    self.SendGet(ROOT_DEVICE, self.pid)
-
-
-class GetFactoryDefaultsWithData(TestMixins.GetWithDataMixin,
-                                 OptionalParameterTestFixture):
-  """GET the factory defaults pid with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'FACTORY_DEFAULTS'
-
-
-class ResetFactoryDefaults(OptionalParameterTestFixture):
-  """Reset to factory defaults."""
-  CATEGORY = TestCategory.PRODUCT_INFORMATION
-  PID = 'FACTORY_DEFAULTS'
-
-  def Test(self):
-    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
-    self.SendSet(ROOT_DEVICE, self.pid)
-
-  def VerifySet(self):
-    self.AddIfGetSupported(
-      self.AckGetResult(field_values={'using_defaults': True}))
-    self.SendGet(ROOT_DEVICE, self.pid)
-
-
-class ResetFactoryDefaultsWithData(TestMixins.SetWithDataMixin,
-                                   OptionalParameterTestFixture):
-  """Reset to factory defaults with extra data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'FACTORY_DEFAULTS'
-
-
 # Language Capabilities
 #------------------------------------------------------------------------------
 class GetLanguageCapabilities(OptionalParameterTestFixture):
@@ -1192,7 +1151,7 @@ class SetOutOfRangeStartAddress(ResponderTestFixture):
   """Check that the DMX address can't be set to > 512."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  # we depend on dmx_address to make sure this runs in GetStartAddress
+  # we depend on dmx_address to make sure this runs after GetStartAddress
   DEPS = [GetStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -1209,7 +1168,7 @@ class SetZeroStartAddress(ResponderTestFixture):
   """Check the DMX address can't be set to 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  # we depend on dmx_address to make sure this runs in GetStartAddress
+  # we depend on dmx_address to make sure this runs after GetStartAddress
   DEPS = [GetStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -1226,7 +1185,7 @@ class SetOversizedStartAddress(ResponderTestFixture):
   """Send an over-sized SET dmx start address."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_START_ADDRESS'
-  # we depend on dmx_address to make sure this runs in GetStartAddress
+  # we depend on dmx_address to make sure this runs after GetStartAddress
   DEPS = [GetStartAddress]
   REQUIRES = ['dmx_footprint']
 
@@ -2524,6 +2483,49 @@ class FindSelfTests(OptionalParameterTestFixture):
             (self._current_index, fields['test_number']))
       else:
         self._self_tests[self._current_index] = fields['description']
+
+
+# Factory Defaults
+#------------------------------------------------------------------------------
+class GetFactoryDefaults(OptionalParameterTestFixture):
+  """GET the factory defaults pid."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'FACTORY_DEFAULTS'
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult(field_names=['using_defaults']))
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+
+class GetFactoryDefaultsWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """GET the factory defaults pid with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'FACTORY_DEFAULTS'
+
+
+class ResetFactoryDefaults(OptionalParameterTestFixture):
+  """Reset to factory defaults."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'FACTORY_DEFAULTS'
+  # Dependancies so that we don't reset the fields before checking them.
+  DEPS = [GetStartAddress, GetPersonality]
+
+  def Test(self):
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.SendSet(ROOT_DEVICE, self.pid)
+
+  def VerifySet(self):
+    self.AddIfGetSupported(
+      self.AckGetResult(field_values={'using_defaults': True}))
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+
+class ResetFactoryDefaultsWithData(TestMixins.SetWithDataMixin,
+                                   OptionalParameterTestFixture):
+  """Reset to factory defaults with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'FACTORY_DEFAULTS'
 
 
 # E1.37 PIDS
