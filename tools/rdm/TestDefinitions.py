@@ -2288,7 +2288,11 @@ class GetIdentifyDeviceWithData(ResponderTestFixture):
 
   def Test(self):
     # don't inherit from GetWithDataMixin because this is required
-    self.AddExpectedResults(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
+    self.AddExpectedResults([
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckGetResult(
+        warning='Get %s with data returned an ack' % self.pid.name)
+    ])
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
