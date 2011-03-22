@@ -24,23 +24,20 @@
 
 #ifdef HAVE_GETIFADDRS
   #ifdef HAVE_LINUX_IF_PACKET_H
-    #define OLA_USE_GETIFADDRS
+    #include <ifaddrs.h>
+    #include <linux/types.h>
+    #include <linux/if_packet.h>
   #endif
 #endif
 
-
-#ifdef OLA_USE_GETIFADDRS
-  #include <ifaddrs.h>
-  #include <linux/types.h>
-  #include <linux/if_packet.h>
+#ifdef HAVE_SYS_SOCKET_H
+  #include <sys/socket.h>  // order is important for FreeBSD
 #endif
-
-#include <sys/socket.h>  // order is important for FreeBSD
 #include <arpa/inet.h>
 #include <errno.h>
 #include <net/if.h>
 #ifdef HAVE_SOCKADDR_DL_STRUCT
-#include <net/if_dl.h>
+  #include <net/if_dl.h>
 #endif
 #include <string.h>
 #include <sys/ioctl.h>
