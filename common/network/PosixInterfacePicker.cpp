@@ -35,6 +35,7 @@
   #include <linux/if_packet.h>
 #endif
 
+#include <sys/socket.h>  // order is important for FreeBSD
 #include <arpa/inet.h>
 #include <errno.h>
 #include <net/if.h>
