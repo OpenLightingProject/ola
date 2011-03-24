@@ -748,6 +748,8 @@ void OlaServerServiceImpl::HandleRDMResponse(
     }
   }
 
+  delete rdm_response;
+
   if (include_raw_packets) {
     vector<string>::const_iterator iter = packets.begin();
     for (;iter != packets.end(); ++iter) {

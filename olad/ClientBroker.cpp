@@ -32,7 +32,7 @@ using std::set;
  * Add a client to the broker
  */
 void ClientBroker::AddClient(const Client *client) {
-  m_clients.insert(reinterpret_cast<const void*>(client));
+  m_clients.insert(client);
 }
 
 
@@ -40,7 +40,7 @@ void ClientBroker::AddClient(const Client *client) {
  * Remove a client from the broker
  */
 void ClientBroker::RemoveClient(const Client *client) {
-  m_clients.erase(reinterpret_cast<const void*>(client));
+  m_clients.erase(client);
 }
 
 
@@ -55,17 +55,16 @@ void ClientBroker::SendRDMRequest(const Client *client,
                                   Universe *universe,
                                   const ola::rdm::RDMRequest *request,
                                   ola::rdm::RDMCallback *callback) {
-  const void *key = reinterpret_cast<const void*>(client);
-  set<const void*>::const_iterator iter = m_clients.find(key);
+  client_set::const_iterator iter = m_clients.find(client);
   if (iter == m_clients.end())
     OLA_WARN <<
       "Making an RDM call but the client doesn't exist in the broker!";
 
   universe->SendRDMRequest(request,
-      NewCallback(this,
-                  &ClientBroker::RequestComplete,
-                  key,
-                  callback));
+      NewSingleCallback(this,
+                        &ClientBroker::RequestComplete,
+                        client,
+                        callback));
 }
 
 
@@ -76,12 +75,12 @@ void ClientBroker::SendRDMRequest(const Client *client,
  * @param code the code of the RDM request
  * @param response the RDM response
  */
-void ClientBroker::RequestComplete(const void *key,
+void ClientBroker::RequestComplete(const Client *key,
                                    ola::rdm::RDMCallback *callback,
                                    ola::rdm::rdm_response_code code,
                                    const ola::rdm::RDMResponse *response,
                                    const std::vector<std::string> &packets) {
-  set<const void*>::const_iterator iter = m_clients.find(key);
+  client_set::const_iterator iter = m_clients.find(key);
   if (iter == m_clients.end()) {
     OLA_INFO << "Client no longer exists, cleaning up from RDM response";
     delete response;

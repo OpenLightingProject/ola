@@ -52,13 +52,14 @@ class ClientBroker {
     ClientBroker(const ClientBroker&);
     ClientBroker& operator=(const ClientBroker&);
 
-    void RequestComplete(const void *key,
+    void RequestComplete(const Client *key,
                          ola::rdm::RDMCallback *callback,
                          ola::rdm::rdm_response_code code,
                          const ola::rdm::RDMResponse *response,
                          const std::vector<std::string> &packets);
 
-    std::set<const void*> m_clients;
+    typedef std::set<const Client*> client_set;
+    client_set m_clients;
 };
 }  // ola
 #endif  // OLAD_CLIENTBROKER_H_
