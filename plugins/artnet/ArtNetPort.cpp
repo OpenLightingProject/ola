@@ -78,7 +78,7 @@ void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
         PortId(),
         &m_buffer,
         NewCallback(
-          reinterpret_cast<ola::BasicInputPort*>(this),
+          static_cast<ola::BasicInputPort*>(this),
           &ArtNetInputPort::DmxChanged));
     m_helper.GetNode()->SetOutputPortRDMHandlers(
         PortId(),
@@ -89,7 +89,7 @@ void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
           this,
           &ArtNetInputPort::TriggerDiscovery),
         ola::NewCallback(
-          reinterpret_cast<ola::BasicInputPort*>(this),
+          static_cast<ola::BasicInputPort*>(this),
           &ArtNetInputPort::HandleRDMRequest));
 
   } else if (!new_universe) {
@@ -190,7 +190,7 @@ void ArtNetOutputPort::PostSetUniverse(Universe *old_universe,
     m_helper.GetNode()->SetInputPortRDMHandlers(
         PortId(),
         ola::NewCallback(
-          reinterpret_cast<ola::BasicOutputPort*>(this),
+          static_cast<ola::BasicOutputPort*>(this),
           &ArtNetOutputPort::NewUIDList));
   } else if (!new_universe) {
     m_helper.GetNode()->SetInputPortRDMHandlers(PortId(), NULL);

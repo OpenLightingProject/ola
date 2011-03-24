@@ -150,7 +150,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
     static_cast<uint16_t>(6454));
 
   socket->AddExpectedData(
-    reinterpret_cast<const uint8_t*>(POLL_REPLY_MESSAGE),
+    static_cast<const uint8_t*>(POLL_REPLY_MESSAGE),
     sizeof(POLL_REPLY_MESSAGE),
     bcast_destination);
 
@@ -160,7 +160,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
 
   // now enabled an input port and check that we send a poll
   socket->AddExpectedData(
-    reinterpret_cast<const uint8_t*>(POLL_MESSAGE),
+    static_cast<const uint8_t*>(POLL_MESSAGE),
     sizeof(POLL_MESSAGE),
     bcast_destination);
 
@@ -175,7 +175,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
   expected_poll_reply_packet[187] = 0x22;  // swin
 
   socket->AddExpectedData(
-    reinterpret_cast<uint8_t*>(expected_poll_reply_packet),
+    static_cast<uint8_t*>(expected_poll_reply_packet),
     sizeof(expected_poll_reply_packet),
     bcast_destination);
 
@@ -190,7 +190,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
 
   // check sending a poll works
   socket->AddExpectedData(
-    reinterpret_cast<const uint8_t*>(POLL_MESSAGE),
+    static_cast<const uint8_t*>(POLL_MESSAGE),
     sizeof(POLL_MESSAGE),
     bcast_destination);
   CPPUNIT_ASSERT(node.SendPoll());
