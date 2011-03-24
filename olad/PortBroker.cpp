@@ -72,10 +72,10 @@ void PortBroker::SendRDMRequest(const Port *port,
       "Making an RDM call but the port doesn't exist in the broker!";
 
   universe->SendRDMRequest(request,
-      NewCallback(this,
-                  &PortBroker::RequestComplete,
-                  key,
-                  callback));
+      NewSingleCallback(this,
+                        &PortBroker::RequestComplete,
+                        key,
+                        callback));
 }
 
 
