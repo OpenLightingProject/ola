@@ -118,7 +118,7 @@ bool OlaClient::SendDmx(unsigned int universe, const DmxBuffer &data) {
     return m_core->SendDmx(
         universe,
         data,
-        reinterpret_cast<Callback1<void, const string&>*>(NULL));
+        static_cast<Callback1<void, const string&>*>(NULL));
 }
 
 

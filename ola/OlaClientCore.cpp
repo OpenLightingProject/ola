@@ -1263,8 +1263,7 @@ void OlaClientCore::GetParamFromReply(const string &message_type,
         reply->data().size();
     new_status->response_type = ola::rdm::RDM_INVALID_RESPONSE;
   } else {
-    memcpy(reinterpret_cast<uint8_t*>(&param),
-           reply->data().data(), sizeof(param));
+    memcpy(&param, reply->data().data(), sizeof(param));
     new_status->m_param = ola::network::NetworkToHost(param);
   }
 }
