@@ -52,7 +52,7 @@ const char HttpServer::CONTENT_TYPE_JS[] = "text/javascript";
  */
 static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
                       const char *value) {
-  HttpRequest *request = reinterpret_cast<HttpRequest*>(cls);
+  HttpRequest *request = static_cast<HttpRequest*>(cls);
   string key_string = key;
   string value_string = value;
   request->AddHeader(key, value);
@@ -72,7 +72,7 @@ int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
                 const char *transfer_encoding, const char *data, uint64_t off,
                 size_t size) {
   // libmicrohttpd has a bug where the zie isn't set correctly.
-  HttpRequest *request = reinterpret_cast<HttpRequest*>(request_cls);
+  HttpRequest *request = static_cast<HttpRequest*>(request_cls);
   string value(data);
   request->AddPostParameter(key, value);
   return MHD_YES;
@@ -97,7 +97,7 @@ static int HandleRequest(void *http_server_ptr,
                          const char *upload_data,
                          size_t *upload_data_size,
                          void **ptr) {
-  HttpServer *http_server = reinterpret_cast<HttpServer*>(http_server_ptr);
+  HttpServer *http_server = static_cast<HttpServer*>(http_server_ptr);
   HttpRequest *request;
 
   // on the first call ptr is null
@@ -110,11 +110,11 @@ static int HandleRequest(void *http_server_ptr,
       delete request;
       return MHD_NO;
     }
-    *ptr = reinterpret_cast<void*>(request);
+    *ptr = static_cast<void*>(request);
     return MHD_YES;
   }
 
-  request = reinterpret_cast<HttpRequest*>(*ptr);
+  request = static_cast<HttpRequest*>(*ptr);
 
   if (request->InFlight())
     // don't dispatch more than once
@@ -147,7 +147,7 @@ void RequestCompleted(void *cls,
                       struct MHD_Connection *connection,
                       void **request_cls,
                       enum MHD_RequestTerminationCode toe) {
-  HttpRequest *request = reinterpret_cast<HttpRequest*>(*request_cls);
+  HttpRequest *request = static_cast<HttpRequest*>(*request_cls);
 
   if (!request)
     return;
@@ -188,7 +188,7 @@ bool HttpRequest::Init() {
     m_processor = MHD_create_post_processor(m_connection,
                                             K_POST_BUFFER_SIZE,
                                             IteratePost,
-                                            reinterpret_cast<void*>(this));
+                                            static_cast<void*>(this));
     return m_processor;
   }
   return true;
@@ -325,7 +325,7 @@ int HttpResponse::Send() {
   map<string, string>::const_iterator iter;
   struct MHD_Response *response = MHD_create_response_from_data(
       m_data.length(),
-      reinterpret_cast<void*>(const_cast<char*>(m_data.data())),
+      static_cast<void*>(const_cast<char*>(m_data.data())),
       MHD_NO,
       MHD_YES);
   for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
@@ -679,14 +679,14 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
   length = i_stream.tellg();
   i_stream.seekg(0, std::ios::beg);
 
-  data = reinterpret_cast<char*>(malloc(length * sizeof(char)));
+  data = static_cast<char*>(malloc(length * sizeof(char)));
 
   i_stream.read(data, length);
   i_stream.close();
 
   struct MHD_Response *mhd_response = MHD_create_response_from_data(
       length,
-      reinterpret_cast<void*>(data),
+      static_cast<void*>(data),
       MHD_YES,
       MHD_NO);
 

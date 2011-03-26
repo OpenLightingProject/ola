@@ -60,7 +60,7 @@ void DeviceTest::testDevice() {
   MockDevice orphaned_device(NULL, device_name);
 
   CPPUNIT_ASSERT_EQUAL(device_name, orphaned_device.Name());
-  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractPlugin*>(NULL),
+  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractPlugin*>(NULL),
                        orphaned_device.Owner());
   CPPUNIT_ASSERT_EQUAL(string(""), orphaned_device.UniqueId());
   AddPortsToDeviceAndCheck(&orphaned_device);
@@ -69,8 +69,7 @@ void DeviceTest::testDevice() {
   TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
   MockDevice device(&plugin, device_name);
   CPPUNIT_ASSERT_EQUAL(device.Name(), device_name);
-  CPPUNIT_ASSERT_EQUAL(reinterpret_cast<AbstractPlugin*>(&plugin),
-                       device.Owner());
+  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractPlugin*>(&plugin), device.Owner());
   CPPUNIT_ASSERT_EQUAL(string("2-test"), device.UniqueId());
   AddPortsToDeviceAndCheck(&device);
 }

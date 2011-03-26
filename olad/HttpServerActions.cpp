@@ -52,7 +52,7 @@ bool SetNameAction::DoAction() {
   return m_client->SetUniverseName(
     m_universe,
     m_name,
-    NewSingleCallback(reinterpret_cast<BaseHttpAction*>(this),
+    NewSingleCallback(static_cast<BaseHttpAction*>(this),
                       &SetNameAction::CallbackComplete));
 }
 
@@ -62,7 +62,7 @@ bool SetMergeModeAction::DoAction() {
   return m_client->SetUniverseMergeMode(
     m_universe,
     m_merge_mode,
-    NewSingleCallback(reinterpret_cast<BaseHttpAction*>(this),
+    NewSingleCallback(static_cast<BaseHttpAction*>(this),
                       &SetNameAction::CallbackComplete));
 }
 
@@ -74,7 +74,7 @@ bool PatchPortAction::DoAction() {
     m_direction,
     m_action,
     m_universe,
-    NewSingleCallback(reinterpret_cast<BaseHttpAction*>(this),
+    NewSingleCallback(static_cast<BaseHttpAction*>(this),
                       &SetNameAction::CallbackComplete));
 }
 
@@ -84,7 +84,7 @@ bool PortPriorityInheritAction::DoAction() {
     m_device_alias,
     m_port,
     m_direction,
-    NewSingleCallback(reinterpret_cast<BaseHttpAction*>(this),
+    NewSingleCallback(static_cast<BaseHttpAction*>(this),
                       &SetNameAction::CallbackComplete));
 }
 
@@ -95,7 +95,7 @@ bool PortPriorityOverrideAction::DoAction() {
     m_port,
     m_direction,
     m_override_value,
-    NewSingleCallback(reinterpret_cast<BaseHttpAction*>(this),
+    NewSingleCallback(static_cast<BaseHttpAction*>(this),
                       &SetNameAction::CallbackComplete));
 }
 }  // ola
