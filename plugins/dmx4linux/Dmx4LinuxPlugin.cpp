@@ -142,7 +142,7 @@ int Dmx4LinuxPlugin::SocketReady() {
     OLA_WARN << "failed to seek: " << strerror(errno);
     return -1;
   }
-  ret = m_in_socket->Receive(reinterpret_cast<uint8_t*>(m_in_buffer),
+  ret = m_in_socket->Receive(m_in_buffer,
                              DMX_UNIVERSE_SIZE * m_in_devices_count,
                              data_read);
   iter = m_in_ports.begin();

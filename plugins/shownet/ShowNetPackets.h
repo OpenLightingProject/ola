@@ -37,7 +37,7 @@ struct shownet_data_s {
   uint8_t  packetCountLo;    // sequence number
   uint8_t  block[4];         // the last 2 items here have something to do with
                              // the channels that have passwords are.
-  uint8_t  name[SHOWNET_NAME_LENGTH];  // name of console
+  char  name[SHOWNET_NAME_LENGTH];  // name of console
   uint8_t  data[DMX_UNIVERSE_SIZE];  // data
 } __attribute__((packed));
 

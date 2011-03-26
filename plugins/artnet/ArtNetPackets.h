@@ -75,9 +75,9 @@ struct artnet_reply_s {
   uint8_t  ubea;
   uint8_t  status1;
   uint16_t esta_id;
-  uint8_t  short_name[ARTNET_SHORT_NAME_LENGTH];
-  uint8_t  long_name[ARTNET_LONG_NAME_LENGTH];
-  uint8_t  node_report[ARTNET_REPORT_LENGTH];
+  char  short_name[ARTNET_SHORT_NAME_LENGTH];
+  char  long_name[ARTNET_LONG_NAME_LENGTH];
+  char  node_report[ARTNET_REPORT_LENGTH];
   uint8_t  number_ports[2];
   uint8_t  port_types[ARTNET_MAX_PORTS];
   uint8_t  good_input[ARTNET_MAX_PORTS];

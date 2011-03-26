@@ -685,16 +685,16 @@ bool ArtNetNodeImpl::SendPollReply(const struct in_addr &destination) {
   packet.data.reply.oem = HostToNetwork(OEM_CODE);
   packet.data.reply.status1 = 0xd2;  // normal indicators, rdm enabled
   packet.data.reply.esta_id = HostToLittleEndian(OPEN_LIGHTING_ESTA_CODE);
-  strncpy(reinterpret_cast<char*>(packet.data.reply.short_name),
+  strncpy(packet.data.reply.short_name,
           m_short_name.data(),
           ARTNET_SHORT_NAME_LENGTH);
-  strncpy(reinterpret_cast<char*>(packet.data.reply.long_name),
+  strncpy(packet.data.reply.long_name,
           m_long_name.data(),
           ARTNET_LONG_NAME_LENGTH);
 
   std::stringstream str;
   str << "#0001 [" << m_unsolicited_replies << "] OLA";
-  strncpy(reinterpret_cast<char*>(packet.data.reply.node_report),
+  strncpy(packet.data.reply.node_report,
           str.str().data(),
           ARTNET_REPORT_LENGTH);
   packet.data.reply.number_ports[1] = ARTNET_MAX_PORTS;

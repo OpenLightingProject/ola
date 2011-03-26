@@ -322,8 +322,7 @@ unsigned int ShowNetNode::PopulatePacket(shownet_data_packet *packet,
   packet->packetCountHi = ShortGetHigh(m_packet_count);
   packet->packetCountLo = ShortGetLow(m_packet_count);
 
-  strncpy(reinterpret_cast<char*>(packet->name), m_node_name.data(),
-          SHOWNET_NAME_LENGTH);
+  strncpy(packet->name, m_node_name.data(), SHOWNET_NAME_LENGTH);
   return sizeof(*packet) - sizeof(packet->data) + enc_len;
 }
 
