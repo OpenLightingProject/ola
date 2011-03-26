@@ -219,7 +219,7 @@ void QueueingRDMControllerTest::testSendAndReceive() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_COMPLETED_OK,
-          reinterpret_cast<const RDMResponse*>(&expected_command),
+          static_cast<const RDMResponse*>(&expected_command),
           packets,
           false));
 
@@ -236,7 +236,7 @@ void QueueingRDMControllerTest::testSendAndReceive() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_INVALID_RESPONSE,
-          reinterpret_cast<const RDMResponse*>(NULL),
+          static_cast<const RDMResponse*>(NULL),
           packets,
           false));
 
@@ -253,7 +253,7 @@ void QueueingRDMControllerTest::testSendAndReceive() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_FAILED_TO_SEND,
-          reinterpret_cast<const RDMResponse*>(NULL),
+          static_cast<const RDMResponse*>(NULL),
           empty_packets,
           false));
 
@@ -326,7 +326,7 @@ void QueueingRDMControllerTest::testAckOverflows() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_COMPLETED_OK,
-          reinterpret_cast<const RDMResponse*>(&expected_response),
+          static_cast<const RDMResponse*>(&expected_response),
           packets,
           true));
 
@@ -359,7 +359,7 @@ void QueueingRDMControllerTest::testAckOverflows() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_TIMEOUT,
-          reinterpret_cast<const RDMResponse*>(NULL),
+          static_cast<const RDMResponse*>(NULL),
           packets,
           false));
 
@@ -403,7 +403,7 @@ void QueueingRDMControllerTest::testAckOverflows() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_INVALID_RESPONSE,
-          reinterpret_cast<const RDMResponse*>(NULL),
+          static_cast<const RDMResponse*>(NULL),
           packets,
           false));
 
@@ -443,7 +443,7 @@ void QueueingRDMControllerTest::testPauseAndResume() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_COMPLETED_OK,
-          reinterpret_cast<const RDMResponse*>(&expected_command),
+          static_cast<const RDMResponse*>(&expected_command),
           packets,
           false));
 
@@ -455,7 +455,7 @@ void QueueingRDMControllerTest::testPauseAndResume() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_COMPLETED_OK,
-          reinterpret_cast<const RDMResponse*>(&expected_command),
+          static_cast<const RDMResponse*>(&expected_command),
           packets,
           false));
 
@@ -492,7 +492,7 @@ void QueueingRDMControllerTest::testQueueOverflow() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_FAILED_TO_SEND,
-          reinterpret_cast<const RDMResponse*>(NULL),
+          static_cast<const RDMResponse*>(NULL),
           packets,
           false));
 
@@ -504,7 +504,7 @@ void QueueingRDMControllerTest::testQueueOverflow() {
           this,
           &QueueingRDMControllerTest::VerifyResponse,
           ola::rdm::RDM_FAILED_TO_SEND,
-          reinterpret_cast<const RDMResponse*>(NULL),
+          static_cast<const RDMResponse*>(NULL),
           packets,
           false));
 

@@ -39,7 +39,7 @@ using ola::network::TcpSocket;
 using ola::network::StringToAddress;
 using ola::network::UdpSocket;
 
-static const char test_cstring[] = "Foo";
+static const unsigned char test_cstring[] = "Foo";
 // used to set a timeout which aborts the tests
 static const int ABORT_TIMEOUT_IN_MS = 1000;
 
@@ -125,7 +125,7 @@ void SocketTest::testLoopbackSocket() {
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   ssize_t bytes_sent = socket.Send(
-      reinterpret_cast<const uint8_t*>(test_cstring),
+      static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
@@ -158,7 +158,7 @@ void SocketTest::testPipeSocketClientClose() {
   CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
   ssize_t bytes_sent = socket.Send(
-      reinterpret_cast<const uint8_t*>(test_cstring),
+      static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
@@ -192,7 +192,7 @@ void SocketTest::testPipeSocketServerClose() {
   CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
   ssize_t bytes_sent = socket.Send(
-      reinterpret_cast<const uint8_t*>(test_cstring),
+      static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
@@ -293,7 +293,7 @@ void SocketTest::testUdpSocket() {
   CPPUNIT_ASSERT(m_ss->AddSocket(&client_socket));
 
   ssize_t bytes_sent = client_socket.SendTo(
-      reinterpret_cast<const uint8_t*>(test_cstring),
+      static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring),
       ip_address,
       server_port);
@@ -370,7 +370,7 @@ void SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
   ConnectedSocket *new_socket = socket->Accept();
   CPPUNIT_ASSERT(new_socket);
   ssize_t bytes_sent = new_socket->Send(
-      reinterpret_cast<const uint8_t*>(test_cstring),
+      static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   new_socket->SetOnClose(ola::NewSingleCallback(this,
@@ -386,7 +386,7 @@ void SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
   ConnectedSocket *new_socket = socket->Accept();
   CPPUNIT_ASSERT(new_socket);
   ssize_t bytes_sent = new_socket->Send(
-      reinterpret_cast<const uint8_t*>(test_cstring),
+      static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   new_socket->Close();

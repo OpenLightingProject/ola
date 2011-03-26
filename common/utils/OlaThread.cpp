@@ -27,7 +27,7 @@ namespace ola {
  * Called by the new thread
  */
 void *StartThread(void *d) {
-  OlaThread *thread = reinterpret_cast<OlaThread*>(d);
+  OlaThread *thread = static_cast<OlaThread*>(d);
   return thread->Run();
 }
 
@@ -39,7 +39,7 @@ bool OlaThread::Start() {
   int ret = pthread_create(&m_thread_id,
                            NULL,
                            ola::StartThread,
-                           reinterpret_cast<void*>(this));
+                           static_cast<void*>(this));
   if (ret) {
     OLA_WARN << "pthread create failed";
     return false;

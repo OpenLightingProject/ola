@@ -46,7 +46,7 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
   unsigned long net, mask;
 
   while (1) {
-    pAdapterInfo = reinterpret_cast<IP_ADAPTER_INFO*>(malloc(ulOutBufLen));
+    pAdapterInfo = static_cast<IP_ADAPTER_INFO*>(malloc(ulOutBufLen));
     if (!pAdapterInfo) {
       OLA_WARN << "Error allocating memory needed for GetAdaptersinfo";
       return interfaces;
