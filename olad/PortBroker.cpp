@@ -34,9 +34,7 @@ using std::pair;
  * Add a port to the broker
  */
 void PortBroker::AddPort(const Port *port) {
-  port_key key(
-      port->UniqueId(),
-      reinterpret_cast<const void*>(port));
+  port_key key(port->UniqueId(), port);
   m_ports.insert(key);
 }
 
@@ -45,9 +43,7 @@ void PortBroker::AddPort(const Port *port) {
  * Remove a port from the broker
  */
 void PortBroker::RemovePort(const Port *port) {
-  port_key key(
-      port->UniqueId(),
-      reinterpret_cast<const void*>(port));
+  port_key key(port->UniqueId(), port);
   m_ports.erase(key);
 }
 
@@ -63,9 +59,7 @@ void PortBroker::SendRDMRequest(const Port *port,
                                 Universe *universe,
                                 const ola::rdm::RDMRequest *request,
                                 ola::rdm::RDMCallback *callback) {
-  port_key key(
-      port->UniqueId(),
-      reinterpret_cast<const void*>(port));
+  port_key key(port->UniqueId(), port);
   set<port_key>::const_iterator iter = m_ports.find(key);
   if (iter == m_ports.end())
     OLA_WARN <<
