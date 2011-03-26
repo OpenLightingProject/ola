@@ -686,7 +686,7 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
 
   struct MHD_Response *mhd_response = MHD_create_response_from_data(
       length,
-      reinterpret_cast<void*>(const_cast<char*>(data)),
+      reinterpret_cast<void*>(data),
       MHD_YES,
       MHD_NO);
 
