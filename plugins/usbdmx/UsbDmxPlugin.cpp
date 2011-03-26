@@ -59,7 +59,7 @@ int UsbDmxPlugin::LIBUSB_MAX_DEBUG_LEVEL = 3;
  * Called by libusb when a new socket is created.
  */
 void libusb_fd_added(int fd, short events, void *data) {
-  UsbDmxPlugin *plugin = reinterpret_cast<UsbDmxPlugin*>(data);
+  UsbDmxPlugin *plugin = static_cast<UsbDmxPlugin*>(data);
 
   OLA_INFO << "USB new FD: " << fd;
   plugin->AddDeviceSocket(fd);
@@ -70,7 +70,7 @@ void libusb_fd_added(int fd, short events, void *data) {
  * Called by libusb when a socket is no longer needed.
  */
 void libusb_fd_removed(int fd, void *data) {
-  UsbDmxPlugin *plugin = reinterpret_cast<UsbDmxPlugin*>(data);
+  UsbDmxPlugin *plugin = static_cast<UsbDmxPlugin*>(data);
   OLA_INFO << "USB rm FD: " << fd;
   plugin->RemoveDeviceSocket(fd);
 }
