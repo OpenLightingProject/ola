@@ -373,7 +373,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
       // because each port deletes the request, we need to copy it here
       (*port_iter)->HandleRDMRequest(
           request->Duplicate(),
-          NewCallback(this, &Universe::HandleBroadcastAck, tracker));
+          NewSingleCallback(this, &Universe::HandleBroadcastAck, tracker));
     }
     delete request;
   } else {
