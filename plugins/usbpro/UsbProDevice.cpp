@@ -85,7 +85,7 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
 
   m_pro_widget->SetDMXCallback(
       NewCallback(
-        reinterpret_cast<InputPort*>(input_port),
+        static_cast<InputPort*>(input_port),
         &InputPort::DmxChanged));
   AddPort(input_port);
 
