@@ -379,6 +379,7 @@ void DmxTriWidgetImpl::SendRawRDMRequest(
   bool r = m_widget->SendMessage(EXTENDED_COMMAND_LABEL,
                                  send_buffer,
                                  packet_size + 2);
+  delete[] send_buffer;
   if (r) {
     m_transaction_number++;
   } else {
