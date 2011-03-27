@@ -31,10 +31,10 @@ from ola import PidStore
 from ola import RDMConstants
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
+from ola.UID import UID
 import TestMixins
+from TestMixins import MAX_DMX_ADDRESS
 
-MAX_DMX_ADDRESS = 512
-MAX_LABEL_SIZE = 32
 MAX_PERSONALITY_NUMBER = 255
 
 
@@ -625,9 +625,40 @@ class SetDeviceLabel(TestMixins.SetLabelMixin,
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
   REQUIRES = ['device_label']
+  PROVIDES = ['set_device_label_supported']
 
   def OldValue(self):
-    self.Property('device_label')
+    return self.Property('device_label')
+
+
+class SetVendorcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
+                               OptionalParameterTestFixture):
+  """SET the device label using the vendorcast address."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'DEVICE_LABEL'
+  REQUIRES = ['device_label', 'set_device_label_supported']
+  TEST_LABEL = 'vendorcast label'
+
+  def Uid(self):
+    return UID.AllManufacturerDevices(self._uid.manufacturer_id)
+
+  def OldValue(self):
+    return self.Property('device_label')
+
+
+class SetBroadcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
+                               OptionalParameterTestFixture):
+  """SET the device label using the broadcast address."""
+  CATEGORY = TestCategory.PRODUCT_INFORMATION
+  PID = 'DEVICE_LABEL'
+  REQUIRES = ['device_label', 'set_device_label_supported']
+  TEST_LABEL = 'broadcast label'
+
+  def Uid(self):
+    return UID.AllDevices()
+
+  def OldValue(self):
+    return self.Property('device_label')
 
 
 class SetFullSizeDeviceLabel(TestMixins.SetLabelMixin,
@@ -639,7 +670,7 @@ class SetFullSizeDeviceLabel(TestMixins.SetLabelMixin,
   TEST_LABEL = 'this is a string with 32 charact'
 
   def OldValue(self):
-    self.Property('device_label')
+    return self.Property('device_label')
 
 
 class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
@@ -658,7 +689,7 @@ class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
     ]
 
   def OldValue(self):
-    self.Property('device_label')
+    return self.Property('device_label')
 
 
 class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
@@ -670,7 +701,7 @@ class SetEmptyDeviceLabel(TestMixins.SetLabelMixin,
   TEST_LABEL = ''
 
   def OldValue(self):
-    self.Property('device_label')
+    return self.Property('device_label')
 
 
 class SetOversizedDeviceLabel(TestMixins.SetOversizedLabelMixin,
@@ -681,7 +712,7 @@ class SetOversizedDeviceLabel(TestMixins.SetOversizedLabelMixin,
   PID = 'DEVICE_LABEL'
 
   def OldValue(self):
-    self.Property('device_label')
+    return self.Property('device_label')
 
 
 # Language Capabilities
@@ -1110,41 +1141,53 @@ class GetStartAddress(ResponderTestFixture):
     self.SetPropertyFromDict(fields, 'dmx_address')
 
 
-class SetStartAddress(ResponderTestFixture):
+class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
   """Set the DMX start address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_START_ADDRESS'
   REQUIRES = ['dmx_footprint', 'dmx_address']
+  PROVIDES = ['set_dmx_address_supported']
 
   def Test(self):
     footprint = self.Property('dmx_footprint')
+    current_address = self.Property('dmx_address')
     self.start_address = 1
 
-    current_address = self.Property('dmx_address')
     if footprint == 0 or current_address == 0xffff:
       result = self.NackSetResult(RDMNack.NR_UNKNOWN_PID)
     else:
-      if footprint != MAX_DMX_ADDRESS:
-        self.start_address = current_address + 1
-        if self.start_address + footprint > MAX_DMX_ADDRESS + 1:
-          self.start_address = 1
+      self.start_address = self.CalculateNewAddress(current_address, footprint)
       result = self.AckSetResult(action=self.VerifySet)
+
+    self._test_state = self.SET
     self.AddExpectedResults(result)
     self.SendSet(ROOT_DEVICE, self.pid, [self.start_address])
 
-  def VerifySet(self):
-    self.AddExpectedResults(
-      self.AckGetResult(field_values={'dmx_address': self.start_address},
-                        action=self.VerifyDeviceInfo))
-    self.SendGet(ROOT_DEVICE, self.pid)
+  def VerifyResult(self, response, fields):
+    if self._test_state == self.SET:
+      self.SetProperty(self.PROVIDES[0], response.WasAcked())
 
-  def VerifyDeviceInfo(self):
-    device_info_pid = self.LookupPid('DEVICE_INFO')
-    self.AddExpectedResults(
-      AckGetResult(
-        device_info_pid.value,
-        field_values={'dmx_start_address': self.start_address}))
-    self.SendGet(ROOT_DEVICE, device_info_pid)
+
+class SetVendorcastStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
+                                ResponderTestFixture):
+  """SET the dmx start address using the vendorcast address."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'DMX_START_ADDRESS'
+  REQUIRES = ['dmx_footprint', 'dmx_address', 'set_dmx_address_supported']
+
+  def Uid(self):
+    return UID.AllManufacturerDevices(self._uid.manufacturer_id)
+
+
+class SetBroadcastStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
+                               ResponderTestFixture):
+  """SET the dmx start address using the broadcast address."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'DMX_START_ADDRESS'
+  REQUIRES = ['dmx_footprint', 'dmx_address', 'set_dmx_address_supported']
+
+  def Uid(self):
+    return UID.AllDevices()
 
 
 class SetOutOfRangeStartAddress(ResponderTestFixture):
@@ -2274,7 +2317,7 @@ class SetRealTimeClockWithNoData(TestMixins.SetWithNoDataMixin,
 # Identify Device
 #------------------------------------------------------------------------------
 class GetIdentifyDevice(TestMixins.GetRequiredMixin, ResponderTestFixture):
-  """Get the identify mode."""
+  """Get the identify state."""
   CATEGORY = TestCategory.CONTROL
   PID = 'IDENTIFY_DEVICE'
   PROVIDES = ['identify_state']
@@ -2282,7 +2325,7 @@ class GetIdentifyDevice(TestMixins.GetRequiredMixin, ResponderTestFixture):
 
 
 class GetIdentifyDeviceWithData(ResponderTestFixture):
-  """Get the identify mode with data."""
+  """Get the identify state with data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
 
@@ -2297,37 +2340,44 @@ class GetIdentifyDeviceWithData(ResponderTestFixture):
 
 
 class SetIdentifyDevice(ResponderTestFixture):
-  """Set the identify mode."""
+  """Set the identify state."""
   CATEGORY = TestCategory.CONTROL
+  PID = 'IDENTIFY_DEVICE'
+
+
+class SetVendorcastIdentifyDevice(TestMixins.SetIdentifyDeviceMixin,
+                                 ResponderTestFixture):
+  """Set the identify state using the vendorcast uid."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'IDENTIFY_DEVICE'
+
+  def Uid(self):
+    return UID.AllManufacturerDevices(self._uid.manufacturer_id)
+
+
+class SetBroadcastIdentifyDevice(TestMixins.SetIdentifyDeviceMixin,
+                                 ResponderTestFixture):
+  """Set the identify state using the broadcast uid."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'IDENTIFY_DEVICE'
+
+  def Uid(self):
+    return UID.AllDevices()
+
+
+class SetIdentifyDeviceWithNoData(ResponderTestFixture):
+  """Set the identify state with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_DEVICE'
   REQUIRES = ['identify_state']
 
   def Test(self):
-    self.identify_mode = self.Property('identify_state')
-    self.new_mode = not self.identify_mode
-
-    self.AddExpectedResults(self.AckSetResult(action=self.VerifyIdentifyMode))
-    self.SendSet(ROOT_DEVICE, self.pid, [self.new_mode])
-
-  def VerifyIdentifyMode(self):
-    self.AddExpectedResults(self.AckGetResult(
-        field_values={'identify_state': self.new_mode},
-        action=self.ResetMode))
-    self.SendGet(ROOT_DEVICE, self.pid)
-
-  def ResetMode(self):
-    self.AddExpectedResults(self.AckSetResult())
-    self.SendSet(ROOT_DEVICE, self.pid, [self.identify_mode])
-
-
-class SetIdentifyDeviceWithNoData(ResponderTestFixture):
-  """Set the identify mode with no data."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
-  PID = 'IDENTIFY_DEVICE'
-
-  def Test(self):
     self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawSet(ROOT_DEVICE, self.pid, '')
+
+  def ResetState(self):
+    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('identify_state')])
+    self._wrapper.Run()
 
 
 # Power State

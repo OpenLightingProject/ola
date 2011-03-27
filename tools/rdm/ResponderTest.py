@@ -221,8 +221,9 @@ class ResponderTestFixture(TestFixture):
 
     if self._should_run_wrapper:
       self._wrapper.Run()
-    self._in_reset_mode = True
-    self.ResetState()
+    if self.state != TestState.NOT_RUN:
+      self._in_reset_mode = True
+      self.ResetState()
     self._wrapper.Reset()
 
   def VerifyResult(self, status, fields):
@@ -267,11 +268,22 @@ class ResponderTestFixture(TestFixture):
       pid: A PID object
       args: A list of arguments
     """
-    logging.debug(' GET: pid = %s, sub device = %d, args = %s' %
-        (pid, sub_device, args))
+    return self.SendDirectedGet(self._uid, sub_device, pid, args)
+
+  def SendDirectedGet(self, uid, sub_device, pid, args = []):
+    """Send a GET request using the RDM API.
+
+    Args:
+      uid: The uid to send the GET to
+      sub_device: The sub device
+      pid: A PID object
+      args: A list of arguments
+    """
+    logging.debug(' GET: uid: %s, pid: %s, sub device: %d, args: %s' %
+        (uid, pid, sub_device, args))
     self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
     return self._api.Get(self._universe,
-                         self._uid,
+                         uid,
                          sub_device,
                          pid,
                          self._HandleResponse,
@@ -285,7 +297,7 @@ class ResponderTestFixture(TestFixture):
       pid: The pid value
       data: The param data
     """
-    logging.debug(' GET: pid = %s, sub device = %d, data = %r' %
+    logging.debug(' GET: pid: %s, sub device: %d, data: %r' %
         (pid, sub_device, data))
     self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
     return self._api.RawGet(self._universe,
@@ -303,11 +315,22 @@ class ResponderTestFixture(TestFixture):
       pid: A PID object
       args: A list of arguments
     """
-    logging.debug(' SET: pid = %s, sub device = %d, args = %s' %
-        (pid, sub_device, args))
+    return self.SendDirectedSet(self._uid, sub_device, pid, args)
+
+  def SendDirectedSet(self, uid, sub_device, pid, args = []):
+    """Send a SET request using the RDM API.
+
+    Args:
+      uid: The uid to send the GET to
+      sub_device: The sub device
+      pid: A PID object
+      args: A list of arguments
+    """
+    logging.debug(' SET: uid: %s, pid: %s, sub device: %d, args: %s' %
+        (uid, pid, sub_device, args))
     self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
     return self._api.Set(self._universe,
-                         self._uid,
+                         uid,
                          sub_device,
                          pid,
                          self._HandleResponse,
@@ -321,7 +344,7 @@ class ResponderTestFixture(TestFixture):
       pid: The pid value
       data: The param data
     """
-    logging.debug(' SET: pid = %s, sub device = %d, data = %r' %
+    logging.debug(' SET: pid: %s, sub device: %d, data: %r' %
         (pid, sub_device, data))
     self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
     return self._api.RawSet(self._universe,
@@ -395,6 +418,9 @@ class ResponderTestFixture(TestFixture):
       self.SetBroken(' Error: %s' % status.message)
       self.Stop()
       return False
+
+    if response.response_code == OlaClient.RDM_WAS_BROADCAST:
+      return True
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
       self.SetFailed('Request failed: %s' % response.ResponseCodeAsString())

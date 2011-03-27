@@ -29,6 +29,7 @@ from ExpectedResults import *
 from ResponderTest import ResponderTestFixture
 
 MAX_LABEL_SIZE = 32
+MAX_DMX_ADDRESS = 512
 
 def UnsupportedSetNacks(pid):
   """Repsonders use either NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID."""
@@ -137,8 +138,16 @@ class SetWithNoDataMixin(object):
 # These all work in conjunction with the IsSupportedMixin
 #------------------------------------------------------------------------------
 class SetLabelMixin(object):
-  """Set a PID and make sure the value is saved."""
+  """Set a PID and make sure the value is saved.
+
+  If PROVIDES is non empty, the first property will be used to indicate if the
+  set action is supported. If an ack is returned it'll be set to true,
+  otherwise false.
+  """
   TEST_LABEL = 'test label'
+  PROVIDES = []
+
+  SET, VERIFY, RESET = xrange(3)
 
   def ExpectedResults(self):
     return [
@@ -147,17 +156,21 @@ class SetLabelMixin(object):
     ]
 
   def Test(self):
-    self.verify_result = False
+    self._test_state = self.SET
     self.AddIfSetSupported(self.ExpectedResults())
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.TEST_LABEL])
 
   def VerifySet(self):
-    self.verify_result = True
+    self._test_state = self.VERIFY
     self.AddExpectedResults(self.AckGetResult(field_names=['label']))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
-    if not self.verify_result:
+    if self._test_state == self.SET:
+      if self.PROVIDES:
+        self.SetProperty(self.PROVIDES[0], response.WasAcked())
+      return
+    elif self._test_state == self.VERIFY:
       return
 
     new_label = fields['label']
@@ -169,15 +182,30 @@ class SetLabelMixin(object):
       self.AddAdvisory('Label for %s was truncated to %d characters' %
                        (self.pid, len(new_label)))
     else:
-      self.SetFailed('Labels didn\'t match, expected %s, got %s' %
-                     (self.TEST_LABEL, self.new_label))
+      self.SetFailed('Labels didn\'t match, expected "%s", got "%s"' %
+                     (self.TEST_LABEL, new_label))
 
   def ResetState(self):
     if not self.OldValue():
       return
+    self._test_state = self.RESET
     self.AddExpectedResults(self.AckSetResult())
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.OldValue()])
     self._wrapper.Run()
+
+
+class NonUnicastSetLabelMixin(SetLabelMixin):
+  """Send a SET device label to a broadcast or vendorcast uid."""
+  def Test(self):
+    if not self.Property('set_device_label_supported'):
+      self.SetNotRun(' Previous set label was nacked')
+      self.Stop()
+      return
+
+    self._test_state = self.SET
+    self.AddExpectedResults(BroadcastResult(action=self.VerifySet))
+    self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid,
+                         [self.TEST_LABEL])
 
 
 class SetOversizedLabelMixin(object):
@@ -286,6 +314,101 @@ class SetUInt32Mixin(SetMixin):
     if value is not None:
       return (value + 1) % 0xffffffff
     return self.VALUE
+
+
+# Start address mixins
+#------------------------------------------------------------------------------
+class SetStartAddressMixin(object):
+  """Set the dmx start address."""
+  SET, VERIFY, RESET = xrange(3)
+
+  def CalculateNewAddress(self, current_address, footprint):
+    if footprint == MAX_DMX_ADDRESS:
+      start_address = 1
+    else:
+      start_address = current_address + 1
+      if start_address + footprint > MAX_DMX_ADDRESS + 1:
+        start_address = 1
+    return start_address
+
+  def VerifySet(self):
+    self._test_state = self.VERIFY
+    self.AddExpectedResults(
+      self.AckGetResult(field_values={'dmx_address': self.start_address},
+                        action=self.VerifyDeviceInfo))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyDeviceInfo(self):
+    device_info_pid = self.LookupPid('DEVICE_INFO')
+    self.AddExpectedResults(
+      AckGetResult(
+        device_info_pid.value,
+        field_values={'dmx_start_address': self.start_address}))
+    self.SendGet(PidStore.ROOT_DEVICE, device_info_pid)
+
+  def ResetState(self):
+    old_address = self.Property('dmx_address')
+    if not old_address:
+      return
+    self._test_state = self.RESET
+    self.AddExpectedResults(self.AckSetResult())
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [self.Property('dmx_address')])
+    self._wrapper.Run()
+
+
+class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
+  """Send a set dmx start address to a non unicast uid."""
+
+  def Test(self):
+    footprint = self.Property('dmx_footprint')
+    current_address = self.Property('dmx_address')
+    if footprint == 0 or current_address == 0xffff:
+      self.SetNotRun(" Device doesn't use a DMX address")
+      self.Stop()
+      return
+
+    if not self.Property('set_dmx_address_supported'):
+      self.SetNotRun(' Previous set start address was nacked')
+      self.Stop()
+      return
+
+    self._test_state = self.SET
+    self.start_address = self.CalculateNewAddress(current_address, footprint)
+    self.AddExpectedResults(BroadcastResult(action=self.VerifySet))
+    self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid,
+                         [self.start_address])
+
+# Identify Device Mixin
+#------------------------------------------------------------------------------
+class SetIdentifyDeviceMixin(object):
+  """Set the identify device state."""
+  REQUIRES = ['identify_state']
+
+  def Uid(self):
+    return self.uid
+
+  def Test(self):
+    self.identify_mode = self.Property('identify_state')
+    self.new_mode = not self.identify_mode
+    uid = self.Uid()
+
+    if uid.IsBroadcast():
+      self.AddExpectedResults(BroadcastResult(action=self.VerifyIdentifyMode))
+    else:
+      self.AddExpectedResults(
+          self.AckSetResult(action=self.VerifyIdentifyMode))
+    self.SendDirectedSet(uid, PidStore.ROOT_DEVICE, self.pid, [self.new_mode])
+
+  def VerifyIdentifyMode(self):
+    self.AddExpectedResults(
+        self.AckGetResult(field_values={'identify_state': self.new_mode}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def ResetState(self):
+    # reset back to the old value
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.identify_mode])
+    self._wrapper.Run()
 
 
 # Sensor mixins
