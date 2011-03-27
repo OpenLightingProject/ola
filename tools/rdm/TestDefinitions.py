@@ -1766,6 +1766,13 @@ class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
 
 # Record Sensors
 #------------------------------------------------------------------------------
+class GetRecordSensors(TestMixins.UnsupportedGetMixin,
+                       OptionalParameterTestFixture):
+  """GET record sensors."""
+  CATEGORY = TestCategory.SENSORS
+  PID = 'RECORD_SENSORS'
+
+
 class RecordSensorValues(OptionalParameterTestFixture):
   """Record values for all defined sensors."""
   CATEGORY = TestCategory.SENSORS
@@ -2339,7 +2346,8 @@ class GetIdentifyDeviceWithData(ResponderTestFixture):
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
-class SetIdentifyDevice(ResponderTestFixture):
+class SetIdentifyDevice(TestMixins.SetIdentifyDeviceMixin,
+                        ResponderTestFixture):
   """Set the identify state."""
   CATEGORY = TestCategory.CONTROL
   PID = 'IDENTIFY_DEVICE'
@@ -2580,6 +2588,79 @@ class ResetFactoryDefaultsWithData(TestMixins.SetWithDataMixin,
   """Reset to factory defaults with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'FACTORY_DEFAULTS'
+
+
+# CAPTURE_PRESET
+#------------------------------------------------------------------------------
+class GetCapturePreset(TestMixins.UnsupportedGetMixin,
+                       OptionalParameterTestFixture):
+  """GET capture preset."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'CAPTURE_PRESET'
+
+
+class SetCapturePresetWithNoData(TestMixins.SetWithNoDataMixin,
+                                 OptionalParameterTestFixture):
+  """Set capture preset with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CAPTURE_PRESET'
+
+
+class CapturePreset(TestMixins.SetWithNoDataMixin,
+                    OptionalParameterTestFixture):
+  """Capture preset information."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'CAPTURE_PRESET'
+
+  def Test(self):
+    # this test doesn't check much because the standard is rather vague in this
+    # area. There is also no way to read back preset data so it's impossible to
+    # tell if this worked.
+    self.AddIfSetSupported(self.AckSetResult())
+    # scene 1, no timing information
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [1, 0, 0, 0])
+
+
+# PRESET_PLAYBACK
+#------------------------------------------------------------------------------
+class GetPresetPlaybackWithData(TestMixins.GetWithDataMixin,
+                                OptionalParameterTestFixture):
+  """Get the preset playback with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_PLAYBACK'
+
+
+class GetPresetPlayback(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """Get the preset playback."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_PLAYBACK'
+  EXPECTED_FIELD = 'mode'
+
+
+class SetPresetPlaybackWithNoData(TestMixins.SetWithNoDataMixin,
+                                  OptionalParameterTestFixture):
+  """Set preset playback with no data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_PLAYBACK'
+
+
+class SetPresetPlayback(OptionalParameterTestFixture):
+  """Set the preset playback."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_PLAYBACK'
+  OFF = 0
+  FULL = 0xff
+
+  def Test(self):
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.OFF, self.FULL])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      self.AckGetResult(field_values={
+        'mode': self.OFF,
+        'level': self.FULL}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 
 # E1.37 PIDS

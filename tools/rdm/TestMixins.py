@@ -45,7 +45,7 @@ def UnsupportedSetNacks(pid):
 class UnsupportedGetMixin(object):
   """Check that Get fails with NR_UNSUPPORTED_COMMAND_CLASS."""
   def Test(self):
-    self.AddExpectedResults(
+    self.AddIfGetSupported(
         self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
@@ -386,7 +386,7 @@ class SetIdentifyDeviceMixin(object):
   REQUIRES = ['identify_state']
 
   def Uid(self):
-    return self.uid
+    return self._uid
 
   def Test(self):
     self.identify_mode = self.Property('identify_state')
