@@ -312,6 +312,35 @@ class FindSubDevices(ResponderTestFixture):
     if response.WasAcked():
       self._sub_devices.append(self._current_index)
 
+# Clear Status ID
+#------------------------------------------------------------------------------
+class GetClearStatusMessages(TestMixins.UnsupportedGetMixin,
+                             OptionalParameterTestFixture):
+  """GET clear status id."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CLEAR_STATUS_ID'
+
+
+class ClearStatusMessagesWithData(TestMixins.SetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """Clear the status message queue with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CLEAR_STATUS_ID'
+
+
+class ClearStatusMessages(TestMixins.SetWithNoDataMixin,
+                          OptionalParameterTestFixture):
+  """Clear the status message queue."""
+  CATEGORY = TestCategory.STATUS_COLLECTION
+  PID = 'CLEAR_STATUS_ID'
+
+  def Test(self):
+    # I don't believe there is a reliable way to check that the queue is
+    # cleared. Note that this pid should only clear status messages, not
+    # responses to ACK_TIMERS so we can't check if the message count is 0.
+    self.AddIfSetSupported(self.AckSetResult())
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [])
+
 
 # Parameter Description
 #------------------------------------------------------------------------------
