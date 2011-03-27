@@ -212,10 +212,28 @@ class SetOversizedLabelMixin(object):
             self.PID, len(fields['label'])))
 
 
-# Generic Bool Mixins
+# Generic Set Mixins
 # These all work in conjunction with the IsSupportedMixin
 #------------------------------------------------------------------------------
-class SetBoolMixin(object):
+class SetMixin(object):
+  """The base class for set mixins."""
+
+  def NewValue(self):
+    self.SetBroken('base method of SetMixin called')
+
+  def Test(self):
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  #TODO(simon): add a back out method here
+
+
+class SetBoolMixin(SetMixin):
   """Attempt to SET a bool field."""
   VALUE = True
 
@@ -228,22 +246,8 @@ class SetBoolMixin(object):
       return not value
     return self.VALUE
 
-  def Test(self):
-    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
-  def VerifySet(self):
-    self.AddExpectedResults(
-      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-  #TODO(simon): add a back out method here
-
-
-# Generic UInt8 Mixins
-# These all work in conjunction with the IsSupportedMixin
-#------------------------------------------------------------------------------
-class SetUInt8Mixin(object):
+class SetUInt8Mixin(SetMixin):
   """Attempt to SET a uint8 field."""
   VALUE = True
 
@@ -256,22 +260,21 @@ class SetUInt8Mixin(object):
       return (value + 1) % 0xff
     return self.VALUE
 
-  def Test(self):
-    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
+class SetUInt16Mixin(SetMixin):
+  """Attempt to SET a uint16 field."""
+  VALUE = True
 
-  def VerifySet(self):
-    self.AddExpectedResults(
-      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+  def NewValue(self):
+    """Decide the new value to set based on the old one.
+      This ensures we change it.
+    """
+    value = self.OldValue()
+    if value is not None:
+      return (value + 1) % 0xffff
+    return self.VALUE
 
-  #TODO(simon): add a back out method here
 
-
-# Generic UInt32 Mixins
-# These all work in conjunction with the IsSupportedMixin
-#------------------------------------------------------------------------------
-class SetUInt32Mixin(object):
+class SetUInt32Mixin(SetMixin):
   """Attempt to SET a uint32 field."""
   VALUE = 100
 
@@ -283,17 +286,6 @@ class SetUInt32Mixin(object):
     if value is not None:
       return (value + 1) % 0xffffffff
     return self.VALUE
-
-  def Test(self):
-    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
-
-  def VerifySet(self):
-    self.AddExpectedResults(
-      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-  #TODO(simon): add a back out method here
 
 
 # Sensor mixins

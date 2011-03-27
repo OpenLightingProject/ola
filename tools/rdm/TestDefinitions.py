@@ -439,7 +439,7 @@ class GetProxiedDeviceCountWithData(TestMixins.GetWithDataMixin,
 class SetProxiedDeviceCount(TestMixins.UnsupportedSetMixin,
                             ResponderTestFixture):
   """SET the count of proxied devices."""
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PROXIED_DEVICE_COUNT'
 
 
@@ -462,7 +462,7 @@ class GetProxiedDevicesWithData(TestMixins.GetWithDataMixin,
 
 class SetProxiedDevices(TestMixins.UnsupportedSetMixin, ResponderTestFixture):
   """SET the list of proxied devices."""
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PROXIED_DEVICES'
 
 
@@ -1496,7 +1496,7 @@ class GetInvalidSensorDefinition(OptionalParameterTestFixture):
   PID = 'SENSOR_DEFINITION'
 
   def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     data = struct.pack('!B', 0xff)
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, data)
 
@@ -1633,7 +1633,7 @@ class GetInvalidSensorValue(OptionalParameterTestFixture):
   PID = 'SENSOR_VALUE'
 
   def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     data = struct.pack('!B', 0xff)
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, data)
 
@@ -1962,7 +1962,7 @@ class GetLampOnModeWithData(TestMixins.GetWithDataMixin,
   PID = 'LAMP_ON_MODE'
 
 
-class SetLampOnMode(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
+class SetLampOnMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   """Attempt to SET the lamp on mode."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'LAMP_ON_MODE'
@@ -2043,7 +2043,7 @@ class GetDisplayInvertWithData(TestMixins.GetWithDataMixin,
   PID = 'DISPLAY_INVERT'
 
 
-class SetDisplayInvert(TestMixins.SetUInt8Mixin,
+class SetDisplayInvert(TestMixins.SetMixin,
                        OptionalParameterTestFixture):
   """Attempt to SET the display invert setting."""
   CATEGORY = TestCategory.DISPLAY_SETTINGS
@@ -2357,7 +2357,7 @@ class GetPowerStateWithData(TestMixins.GetWithDataMixin,
   PID = 'POWER_STATE'
 
 
-class SetPowerState(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
+class SetPowerState(TestMixins.SetMixin, OptionalParameterTestFixture):
   """Set the power state."""
   CATEGORY = TestCategory.CONTROL
   PID = 'POWER_STATE'
@@ -2409,7 +2409,7 @@ class GetPerformSelfTestWithData(TestMixins.GetWithDataMixin,
   PID = 'PERFORM_SELF_TEST'
 
 
-class SetPerformSelfTest(TestMixins.SetUInt8Mixin,
+class SetPerformSelfTest(TestMixins.SetMixin,
                          OptionalParameterTestFixture):
   """Turn any running self tests off."""
   CATEGORY = TestCategory.CONTROL
@@ -2552,7 +2552,7 @@ class GetIdentifyModeWithData(TestMixins.GetWithDataMixin,
   PID = 'IDENTIFY_MODE'
 
 
-class SetIdentifyMode(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
+class SetIdentifyMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   """Set identify mode with extra data."""
   CATEGORY = TestCategory.CONTROL
   PID = 'IDENTIFY_MODE'
@@ -2615,8 +2615,213 @@ class GetDMXBlockAddressWithData(TestMixins.GetWithDataMixin,
   PID = 'DMX_BLOCK_ADDRESS'
 
 
+class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
+  """Attempt to SET the dmx block address."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'DMX_BLOCK_ADDRESS'
+  REQUIRES = ['sub_device_footprint', 'base_dmx_address']
+
+  def NewValue(self):
+    base_address =  self.Property('base_dmx_address')
+    footprint = self.Property('sub_device_footprint')
+
+    if base_address is None or footprint is None:
+      return 1
+
+    if base_address == GetDMXBlockAddress.NON_CONTIGUOUS:
+      return 1
+
+    new_address = base_address + 1
+    if new_address + footprint > MAX_DMX_ADDRESS:
+      new_address = 1
+    return new_address
+
+
+class SetZeroDMXBlockAddress(TestMixins.SetMixin,
+                             OptionalParameterTestFixture):
+  """Set the DMX block address to 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_BLOCK_ADDRESS'
+  DEPS = [SetDMXBlockAddress]
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!H', 0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+
+class SetOversizedDMXBlockAddress(TestMixins.SetMixin,
+                                  OptionalParameterTestFixture):
+  """Set the DMX block address to 513."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DMX_BLOCK_ADDRESS'
+  DEPS = [SetDMXBlockAddress]
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+
 class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set the DMX block address with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
+
+
+# POWER_ON_SELF_TEST
+#------------------------------------------------------------------------------
+class GetPowerOnSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """GET the power on self test setting."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'POWER_ON_SELF_TEST'
+  EXPECTED_FIELD = 'power_on_self_test'
+  PROVIDES = ['power_on_self_test']
+
+
+class GetPowerOnSelfTestWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """GET the power on self test setting with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'POWER_ON_SELF_TEST'
+
+
+class SetPowerOnSelfTest(TestMixins.SetBoolMixin,
+                         OptionalParameterTestFixture):
+  """Attempt to SET the power on self test setting."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'POWER_ON_SELF_TEST'
+  EXPECTED_FIELD = 'power_on_self_test'
+  REQUIRES = ['power_on_self_test']
+
+  def OldValue(self):
+    return self.Property('power_on_self_test')
+
+
+class SetPowerOnSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
+                                   OptionalParameterTestFixture):
+  """Set the power on self test with no param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'POWER_ON_SELF_TEST'
+
+
+# BURN_IN
+#------------------------------------------------------------------------------
+class GetBurnIn(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """GET the burn in hours setting."""
+  CATEGORY = TestCategory.POWER_LAMP_SETTINGS
+  PID = 'BURN_IN'
+  EXPECTED_FIELD = 'hours_remaining'
+  PROVIDES = ['burn_in_hours']
+
+
+class GetBurnInWithData(TestMixins.GetWithDataMixin,
+                        OptionalParameterTestFixture):
+  """GET the burn in hours with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'BURN_IN'
+
+
+class SetBurnIn(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
+  """Attempt to SET the burn in hours setting."""
+  CATEGORY = TestCategory.POWER_LAMP_SETTINGS
+  PID = 'BURN_IN'
+  EXPECTED_FIELD = 'hours'
+  REQUIRES = ['burn_in_hours']
+
+  def OldValue(self):
+    return self.Property('burn_in_hours')
+
+
+class SetBurnInWithNoData(TestMixins.SetWithNoDataMixin,
+                          OptionalParameterTestFixture):
+  """Set the burn in hours with no param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'BURN_IN'
+
+
+# DIMMER_INFO
+#------------------------------------------------------------------------------
+class GetDimmerInfo(OptionalParameterTestFixture):
+  """GET dimmer info."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = 'DIMMER_INFO'
+  PROVIDES = ['minimum_level_lower', 'minimum_level_upper',
+              'maximum_level_lower', 'maximum_level_upper', 'number_of_curves',
+              'level_resolution', 'split_levels_supported']
+  SPLIT_LEVEL_MASK = 0x01
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      for field in self.PROVIDES:
+        self.SetProperty(field, None)
+      return
+
+    if fields['minimum_level_lower'] > fields['minimum_level_upper']:
+      self.AddAdvisory('minimum_level_lower (%d) > minimum_level_upper (%d)'
+                       % (fields['minimum_level_lower'],
+                          fields['minimum_level_upper']))
+
+    if fields['maximum_level_lower'] > fields['maximum_level_upper']:
+      self.AddAdvisory('maximum_level_lower (%d) > maximum_level_upper (%d)'
+                       % (fields['maximum_level_lower'],
+                          fields['maximum_level_upper']))
+
+    self.SetPropertyFromDict('minimum_level_lower', fields);
+    self.SetPropertyFromDict('minimum_level_upper', fields);
+    self.SetPropertyFromDict('maximum_level_lower', fields);
+    self.SetPropertyFromDict('maximum_level_upper', fields);
+    self.SetPropertyFromDict('number_of_curves', fields);
+    self.SetPropertyFromDict('level_resolution', fields);
+
+    self.SetProperty('split_levels_supported',
+                     fields['split_levels_supported'] & self.SPLIT_LEVEL_MASK)
+
+    if fields['split_levels_supported'] & (~self.SPLIT_LEVEL_MASK):
+      self.AddWarning('split level field not 0 or 1, was %d' %
+                      fields['split_levels_supported'])
+
+
+class GetDimmerInfoWithData(TestMixins.GetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """GET dimmer info with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DIMMER_INFO'
+
+
+class SetDimmerInfo(TestMixins.UnsupportedSetMixin, ResponderTestFixture):
+  """SET dimmer info."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'DIMMER_INFO'
+
+
+# PRESET_MERGE_MODE
+#------------------------------------------------------------------------------
+class GetPresetMergeMode(TestMixins.GetMixin,
+                         OptionalParameterTestFixture):
+  """GET preset merge mode with extra data."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_MERGE_MODE'
+  PROVIDES = ['preset_merge_mode']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      self.SetProperty('preset_merge_mode', None)
+      return
+
+    self.SetPropertyFromDict('preset_merge_mode', fields)
+
+class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """GET preset merge mode with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_MERGE_MODE'
