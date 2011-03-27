@@ -1,3 +1,10 @@
+26/3/2011 ola-0.8.8
+ * Added RDM discovery for the DMXter widgets
+ * Added a bunch more RDM responder tests
+ * Two RDM memory leaks fixed
+ * Incremental RDM discovery added (where supported)
+ * Minor code cleanup
+
 19/2/2011 ola-0.8.7
  * Added a Python RDM API & example programs.
  * Integrated the python rdm code with the PID store (rdm.openlighting.org)
