@@ -363,14 +363,13 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
   if (request->DestinationUID().IsBroadcast()) {
     // send this request to all ports
     broadcast_request_tracker *tracker = new broadcast_request_tracker;
-    tracker->expected_count = 0;
+    tracker->expected_count = m_output_ports.size();
     tracker->current_count = 0;
     tracker->failed = false;
     tracker->callback = callback;
     vector<OutputPort*>::iterator port_iter;
     for (port_iter = m_output_ports.begin(); port_iter != m_output_ports.end();
          ++port_iter) {
-      tracker->expected_count++;
       // because each port deletes the request, we need to copy it here
       (*port_iter)->HandleRDMRequest(
           request->Duplicate(),

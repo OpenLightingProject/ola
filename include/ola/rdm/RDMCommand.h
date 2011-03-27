@@ -244,7 +244,6 @@ class BaseRDMRequest: public RDMRequest {
         ParamId(),
         ParamData(),
         ParamDataSize());
-
     }
 
     bool PackWithControllerParams(
