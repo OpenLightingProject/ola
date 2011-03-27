@@ -64,7 +64,7 @@ void CID::Pack(uint8_t *buffer) const {
   size_t data_length = CID_LENGTH;
   char *ptr = reinterpret_cast<char*>(buffer);
   if (m_uuid)
-    uuid_export(m_uuid, UUID_FMT_BIN, reinterpret_cast<void**>(&ptr),
+    uuid_export(m_uuid, UUID_FMT_BIN, static_cast<void**>(&ptr),
                 &data_length);
   else
     memset(buffer, 0, CID_LENGTH);
@@ -101,7 +101,7 @@ std::string CID::ToString() const {
   char cid[UUID_LEN_STR + 1];
   char *str = cid;
   size_t length = UUID_LEN_STR + 1;
-  uuid_export(m_uuid, UUID_FMT_STR, reinterpret_cast<void**>(&str), &length);
+  uuid_export(m_uuid, UUID_FMT_STR, static_cast<void**>(&str), &length);
   return std::string(str);
 }
 

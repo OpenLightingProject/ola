@@ -168,7 +168,7 @@ void E131Device::HandlePreviewMode(Request *request, string *response) {
     if (preview_request.input_port()) {
       InputPort *port = GetInputPort(port_id);
       if (port) {
-        E131InputPort *e131_port = reinterpret_cast<E131InputPort*>(port);
+        E131InputPort *e131_port = dynamic_cast<E131InputPort*>(port);
         // TODO(simon): figure out what to do here
         (void) e131_port;
         // e131_port->SetPreviewMode(preview_mode);
@@ -176,7 +176,7 @@ void E131Device::HandlePreviewMode(Request *request, string *response) {
     } else {
       OutputPort *port = GetOutputPort(port_id);
       if (port) {
-        E131OutputPort *e131_port = reinterpret_cast<E131OutputPort*>(port);
+        E131OutputPort *e131_port = dynamic_cast<E131OutputPort*>(port);
         e131_port->SetPreviewMode(preview_mode);
       }
     }
@@ -210,7 +210,7 @@ void E131Device::HandlePortStatusRequest(string *response) {
       port_reply->add_output_port();
     output_port->set_port_id(i);
     E131OutputPort *e131_port =
-      reinterpret_cast<E131OutputPort*>(output_ports[i]);
+      dynamic_cast<E131OutputPort*>(output_ports[i]);
     output_port->set_preview_mode(e131_port->PreviewMode());
   }
   reply.SerializeToString(response);
