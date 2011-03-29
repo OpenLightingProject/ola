@@ -2375,14 +2375,32 @@ class GetIdentifyDeviceWithData(ResponderTestFixture):
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
-class SetIdentifyDevice(TestMixins.SetIdentifyDeviceMixin,
-                        ResponderTestFixture):
+class SetIdentifyDevice(ResponderTestFixture):
   """Set the identify state."""
   CATEGORY = TestCategory.CONTROL
   PID = 'IDENTIFY_DEVICE'
+  REQUIRES = ['identify_state']
+
+  def Test(self):
+    self.identify_mode = self.Property('identify_state')
+    self.new_mode = not self.identify_mode
+
+    self.AddExpectedResults(
+        self.AckSetResult(action=self.VerifyIdentifyMode))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.new_mode])
+
+  def VerifyIdentifyMode(self):
+    self.AddExpectedResults(
+        self.AckGetResult(field_values={'identify_state': self.new_mode}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def ResetState(self):
+    # reset back to the old value
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.identify_mode])
+    self._wrapper.Run()
 
 
-class SetVendorcastIdentifyDevice(TestMixins.SetIdentifyDeviceMixin,
+class SetVendorcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
                                  ResponderTestFixture):
   """Set the identify state using the vendorcast uid."""
   CATEGORY = TestCategory.CONTROL
@@ -2392,7 +2410,7 @@ class SetVendorcastIdentifyDevice(TestMixins.SetIdentifyDeviceMixin,
     return UID.AllManufacturerDevices(self._uid.manufacturer_id)
 
 
-class SetBroadcastIdentifyDevice(TestMixins.SetIdentifyDeviceMixin,
+class SetBroadcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
                                  ResponderTestFixture):
   """Set the identify state using the broadcast uid."""
   CATEGORY = TestCategory.CONTROL

@@ -381,33 +381,41 @@ class SetNonUnicastStartAddressMixin(SetStartAddressMixin):
 
 # Identify Device Mixin
 #------------------------------------------------------------------------------
-class SetIdentifyDeviceMixin(object):
-  """Set the identify device state."""
+class SetNonUnicastIdentifyMixin(object):
+  """Sets the identify device state.
+
+  To avoid sending a broadcast identify on (which may strike all lamps in a
+  large rig), we instead turn identify on and then send a broadcast off.
+  """
   REQUIRES = ['identify_state']
 
-  def Uid(self):
-    return self._uid
-
   def Test(self):
-    self.identify_mode = self.Property('identify_state')
-    self.new_mode = not self.identify_mode
-    uid = self.Uid()
+    self.TurnOn()
 
-    if uid.IsBroadcast():
-      self.AddExpectedResults(BroadcastResult(action=self.VerifyIdentifyMode))
-    else:
-      self.AddExpectedResults(
-          self.AckSetResult(action=self.VerifyIdentifyMode))
-    self.SendDirectedSet(uid, PidStore.ROOT_DEVICE, self.pid, [self.new_mode])
-
-  def VerifyIdentifyMode(self):
+  def TurnOn(self):
     self.AddExpectedResults(
-        self.AckGetResult(field_values={'identify_state': self.new_mode}))
+        self.AckSetResult(action=self.VerifyOn))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [True])
+
+  def VerifyOn(self):
+    self.AddExpectedResults(
+        self.AckGetResult(field_values={'identify_state': True},
+                          action=self.TurnOff))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def TurnOff(self):
+    self.AddExpectedResults(BroadcastResult(action=self.VerifyOff))
+    self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid, [False])
+
+  def VerifyOff(self):
+    self.AddExpectedResults(
+        self.AckGetResult(field_values={'identify_state': False}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def ResetState(self):
     # reset back to the old value
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.identify_mode])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [self.Property('identify_state')])
     self._wrapper.Run()
 
 
