@@ -1,3 +1,9 @@
+X/Y/2011 ola-0.8.9
+ * Fixed a bug when a broadcast RDM request was sent to a universe with
+   multiple ports bound
+ * Fixed an memory leak in the RDM code
+ * Added more RDM tests including broadcast & vendorcast tests
+
 26/3/2011 ola-0.8.8
  * Added RDM discovery for the DMXter widgets
  * Added a bunch more RDM responder tests
