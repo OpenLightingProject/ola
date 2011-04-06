@@ -101,6 +101,7 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
 class GetDeviceInfoWithData(ResponderTestFixture, DeviceInfoTest):
   """GET device info with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
+  PROVIDES = ['supports_over_sized_pdl']
 
   def Test(self):
     self.AddExpectedResults([
@@ -110,8 +111,68 @@ class GetDeviceInfoWithData(ResponderTestFixture, DeviceInfoTest):
         field_values=self.FIELD_VALUES,
         warning='Get %s with data returned an ack' % self.pid.name)
     ])
-    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, 'x')
 
+  def VerifyResult(self, response, fields):
+    self.SetProperty('supports_over_sized_pdl', True)
+
+
+class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
+  """Check if the responder can handle a packet of the maximum size."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  MAX_PDL = 231
+  PROVIDES = ['supports_max_sized_pdl']
+
+  def Test(self):
+    self.AddExpectedResults([
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.AckGetResult(),  # some crazy devices continue to ack
+      InvalidResponse(),
+    ])
+    self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self.MAX_PDL)
+
+  def VerifyResult(self, response, fields):
+    self.SetProperty('supports_max_sized_pdl',
+                     response.response_code != OlaClient.RDM_INVALID_RESPONSE);
+
+
+class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
+  """Binary search the pdl length space to determine the max packet size."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  REQUIRES = ['supports_over_sized_pdl', 'supports_max_sized_pdl']
+
+  def Test(self):
+    if self.Property('supports_max_sized_pdl'):
+      self.SetNotRun(' Device supports full sized packet')
+      self.Stop()
+      return
+
+    self._lower = 1
+    self._upper = GetMaxPacketSize.MAX_PDL
+    self.SendGet()
+
+  def SendGet(self):
+    if self._lower + 1 == self._upper:
+      self.AddWarning('Max PDL supported is < %d, was %d' %
+                      (GetMaxPacketSize.MAX_PDL, self._lower))
+      self.Stop()
+      return
+
+    self._current = (self._lower + self._upper) / 2
+    self.AddExpectedResults([
+      self.NackGetResult(RDMNack.NR_FORMAT_ERROR, action=self.GetPassed),
+      self.AckGetResult(action=self.GetPassed),
+      InvalidResponse(action=self.GetFailed),
+    ])
+    self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self._current)
+
+  def GetPassed(self):
+    self._lower = self._current
+    self.SendGet()
+
+  def GetFailed(self):
+    self._upper = self._current
+    self.SendGet()
 
 class SetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
   """SET device info."""

@@ -92,6 +92,15 @@ class BroadcastResult(BaseExpectedResult):
     return OlaClient.RDM_WAS_BROADCAST == response.response_code
 
 
+class InvalidResponse(BaseExpectedResult):
+  """This checks that we got an invalid response back."""
+  def __str__(self):
+    return 'RDM_INVALID_RESPONSE'
+
+  def Matches(self, response, unpacked_data):
+    return OlaClient.RDM_INVALID_RESPONSE == response.response_code
+
+
 class SuccessfulResult(BaseExpectedResult):
   """This checks that we received a valid response from the device.
 

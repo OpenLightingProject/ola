@@ -378,6 +378,11 @@ class ResponderTestFixture(TestFixture):
     if not self._CheckForAckOrNack(response, unpacked_data, unpack_exception):
       return
 
+    if response.response_code != OlaClient.RDM_COMPLETED_OK:
+      self.SetFailed('Request failed: %s' % response.ResponseCodeAsString())
+      self.Stop()
+      return False
+
     # At this stage we have NACKs and ACKs left
     request_key = (response.sub_device, response.command_class, response.pid)
     if (self._outstanding_request == request_key):
@@ -423,9 +428,8 @@ class ResponderTestFixture(TestFixture):
       return True
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      self.SetFailed('Request failed: %s' % response.ResponseCodeAsString())
-      self.Stop()
-      return False
+      logging.debug('Request failed: %s' % response.ResponseCodeAsString())
+      return True
 
     # handle the case of an ack timer
     if response.response_type == OlaClient.RDM_ACK_TIMER:
