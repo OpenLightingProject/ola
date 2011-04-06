@@ -246,6 +246,9 @@ class SetOversizedLabelMixin(object):
 class SetMixin(object):
   """The base class for set mixins."""
 
+  def OldValue(self):
+    self.SetBroken('base method of SetMixin called')
+
   def NewValue(self):
     self.SetBroken('base method of SetMixin called')
 
@@ -258,7 +261,13 @@ class SetMixin(object):
       self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
-  #TODO(simon): add a back out method here
+  def ResetState(self):
+    old_value = self.OldValue()
+    if old_value is None:
+      return
+    self.AddExpectedResults(self.AckSetResult())
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [old_value])
+    self._wrapper.Run()
 
 
 class SetBoolMixin(SetMixin):

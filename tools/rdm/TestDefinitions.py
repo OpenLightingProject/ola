@@ -2127,9 +2127,10 @@ class SetDisplayInvert(TestMixins.SetMixin,
   """Attempt to SET the display invert setting."""
   CATEGORY = TestCategory.DISPLAY_SETTINGS
   PID = 'DISPLAY_INVERT'
-  EXPECTED_FIELD = 'invert'
+  EXPECTED_FIELD = 'invert_status'
   REQUIRES = ['display_invert']
-  ALLOWED_MODES = [0, 1, 2]
+  # some devices can't do auto so we just use on and off here
+  ALLOWED_MODES = [0, 1]
 
   def OldValue(self):
     return self.Property('display_invert')
@@ -2524,6 +2525,10 @@ class SetPerformSelfTest(TestMixins.SetMixin,
   def NewValue(self):
     return False
 
+  def ResetState(self):
+    # override this so we don't reset
+    pass
+
 class SetPerformSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
   """Set the perform self test setting but don't provide any data."""
@@ -2738,8 +2743,11 @@ class SetIdentifyMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   LOUD = 0xff
   QUIET = 0x00
 
+  def OldValue(self):
+    return self.Property('identify_mode')
+
   def NewValue(self):
-    old_value = self.Property('identify_mode')
+    old_value = self.OldValue()
     if old_value is None:
       return self.QUIET
 
@@ -2814,9 +2822,12 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
       new_address = 1
     return new_address
 
+  def ResetState(self):
+    # we can't reset as the addresses may not have been contiguous
+    pass
 
-class SetZeroDMXBlockAddress(TestMixins.SetMixin,
-                             OptionalParameterTestFixture):
+
+class SetZeroDMXBlockAddress(OptionalParameterTestFixture):
   """Set the DMX block address to 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
@@ -2828,8 +2839,7 @@ class SetZeroDMXBlockAddress(TestMixins.SetMixin,
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
-class SetOversizedDMXBlockAddress(TestMixins.SetMixin,
-                                  OptionalParameterTestFixture):
+class SetOversizedDMXBlockAddress(OptionalParameterTestFixture):
   """Set the DMX block address to 513."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
