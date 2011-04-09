@@ -147,11 +147,15 @@ bool PortManager::GenericPatchPort(PortClass *port,
   if (!universe)
     return false;
 
-  OLA_INFO << "Patched " << port->UniqueId() << " to universe " <<
-    universe->UniverseId();
-  m_broker->AddPort(port);
-  universe->AddPort(port);
-  port->SetUniverse(universe);
+  if (port->SetUniverse(universe)) {
+    OLA_INFO << "Patched " << port->UniqueId() << " to universe " <<
+      universe->UniverseId();
+    m_broker->AddPort(port);
+    universe->AddPort(port);
+  } else {
+    if (!universe->IsActive())
+      m_universe_store->AddUniverseGarbageCollection(universe);
+  }
   return true;
 }
 
