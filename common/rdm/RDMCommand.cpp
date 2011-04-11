@@ -217,7 +217,8 @@ rdm_response_code RDMCommand::VerifyData(
 
   if (command_message->sub_start_code != SUB_START_CODE) {
     OLA_WARN << "Sub start code mis match, was 0x" << std::hex <<
-      command_message->sub_start_code << "x, required 0x" << SUB_START_CODE;
+      static_cast<int>(command_message->sub_start_code) << ", required 0x"
+      << static_cast<int>(SUB_START_CODE);
     return RDM_WRONG_SUB_START_CODE;
   }
 
