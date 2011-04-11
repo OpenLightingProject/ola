@@ -198,7 +198,8 @@ class GetSupportedParameters(ResponderTestFixture):
   """GET supported parameters."""
   CATEGORY = TestCategory.CORE
   PID = 'SUPPORTED_PARAMETERS'
-  PROVIDES = ['manufacturer_parameters', 'supported_parameters']
+  PROVIDES = ['manufacturer_parameters', 'supported_parameters',
+              'acks_supported_parameters']
 
   # declaring support for any of these is a warning:
   MANDATORY_PIDS = ['SUPPORTED_PARAMETERS',
@@ -247,8 +248,10 @@ class GetSupportedParameters(ResponderTestFixture):
     if not response.WasAcked():
       self.SetProperty('manufacturer_parameters', [])
       self.SetProperty('supported_parameters', [])
+      self.SetProperty('acks_supported_parameters', False)
       return
 
+    self.SetProperty('acks_supported_parameters', True)
     mandatory_pids = {}
     for p in self.MANDATORY_PIDS:
       pid = self.LookupPid(p)
@@ -310,13 +313,17 @@ class GetSupportedParametersWithData(ResponderTestFixture):
   """GET supported parameters with param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SUPPORTED_PARAMETERS'
+  REQUIRES = ['acks_supported_parameters']
 
   def Test(self):
-    self.AddExpectedResults([
-      self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
-      self.AckGetResult(
-        warning='Get %s with data returned an ack' % self.pid.name)
-    ])
+    if self.Property('acks_supported_parameters'):
+      self.AddExpectedResults([
+        self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+        self.AckGetResult(
+          warning='Get %s with data returned an ack' % self.pid.name)
+      ])
+    else:
+      self.AddExpectedResults(self.NackGetResult(RDMNack.NR_UNKNOWN_PID))
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
@@ -2463,7 +2470,7 @@ class SetIdentifyDevice(ResponderTestFixture):
 
 
 class SetVendorcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
-                                 ResponderTestFixture):
+                                  ResponderTestFixture):
   """Set the identify state using the vendorcast uid."""
   CATEGORY = TestCategory.CONTROL
   PID = 'IDENTIFY_DEVICE'
