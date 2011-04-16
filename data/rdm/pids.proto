@@ -3256,4 +3256,21 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
-version: 1300049214
+manufacturer {
+  manufacturer_id: 31344
+  manufacturer_name: "Open Lighting"
+  pid {
+    name: "SERIAL_NUMBER"
+    value: 32768
+    set_request {
+      field {
+        type: UINT32
+        name: "serial_number"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+version: 1302986774
