@@ -253,7 +253,12 @@ class SetMixin(object):
     self.SetBroken('base method of SetMixin called')
 
   def Test(self):
-    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.AddIfSetSupported([
+      self.AckSetResult(action=self.VerifySet),
+      self.NackSetResult(
+        RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+        advisory='SET for %s returned unsupported command class' % self.PID),
+    ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
   def VerifySet(self):
