@@ -413,6 +413,8 @@ void *HttpServer::Run() {
     return NULL;
   }
 
+  OLA_INFO << "HTTP Server started on port " << m_port;
+
   m_select_server.Run();
 
   // clean up any remaining sockets
