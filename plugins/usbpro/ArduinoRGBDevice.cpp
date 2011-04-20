@@ -14,15 +14,15 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArduinoRGBDevice.h
- * The Ardunio RGB Mixer device.
+ * The Arduino RGB Mixer device.
  * Copyright (C) 2010 Simon Newton
  */
 
 #include <algorithm>
+#include <iomanip>
 #include <string>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
-#include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServerInterface.h"
 #include "olad/PortDecorators.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
@@ -32,7 +32,6 @@ namespace plugin {
 namespace usbpro {
 
 using std::string;
-using ola::network::NetworkToHost;
 
 
 /*
@@ -47,39 +46,29 @@ ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
                                    uint32_t serial):
     UsbDevice(owner, name, widget) {
   std::stringstream str;
-  str << std::hex << esta_id << "-" << device_id << "-" <<
-    NetworkToHost(serial);
+  str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
   OutputPort *output_port = new ThrottledOutputPortDecorator(
-      new ArduinoRGBOutputPort(this),
+      new ArduinoRGBOutputPort(this, widget, esta_id, serial),
       ss->WakeUpTime(),
       5,  // start with 5 tokens in the bucket
       20);  // 22 frames per second seems to be the limit
   AddPort(output_port);
-  Start();
 }
 
 
-/*
- * Send a dmx msg
- * @returns true if we sent ok, false otherwise
- */
-bool ArduinoRGBDevice::SendDMX(const DmxBuffer &buffer) const {
-  struct {
-    uint8_t start_code;
-    uint8_t dmx[DMX_UNIVERSE_SIZE];
-  } widget_dmx;
+ArduinoRGBOutputPort::ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
+                                           UsbWidget *widget,
+                                           uint16_t esta_id,
+                                           uint32_t serial)
+    : BasicOutputPort(parent, 0, true),
+      m_widget(widget, esta_id, serial) {
 
-  if (!IsEnabled())
-    return true;
-
-  widget_dmx.start_code = 0;
-  unsigned int length = DMX_UNIVERSE_SIZE;
-  buffer.Get(widget_dmx.dmx, &length);
-  return m_widget->SendMessage(UsbWidget::DMX_LABEL,
-                               reinterpret_cast<uint8_t*>(&widget_dmx),
-                               length + 1);
+  std::stringstream str;
+  str << "Serial #: 0x" <<  std::setfill('0') << std::setw(8) << std::hex <<
+    serial;
+  m_description = str.str();
 }
 }  // usbpro
 }  // plugin

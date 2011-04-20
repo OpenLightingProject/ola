@@ -40,17 +40,17 @@ class DeviceInformation {
   public:
     DeviceInformation():
         esta_id(0),
-        device_id(0) {
-      memset(serial, 0, SERIAL_LENGTH);
+        device_id(0),
+        serial(0) {
     }
     DeviceInformation& operator=(const DeviceInformation &other);
     enum {SERIAL_LENGTH = 4};
 
     uint16_t esta_id;
     uint16_t device_id;
+    uint32_t serial;
     string manufactuer;
     string device;
-    uint8_t serial[SERIAL_LENGTH];
 };
 
 
@@ -107,7 +107,7 @@ class WidgetDetector {
     typedef struct {
       uint8_t id_low;
       uint8_t id_high;
-      uint8_t text[32];
+      char text[32];
       uint8_t terminator;
     } id_response;
 

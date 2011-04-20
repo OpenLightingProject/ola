@@ -39,13 +39,12 @@ class DmxterWidget;
  */
 class DmxterDevice: public UsbDevice {
   public:
-    DmxterDevice(ola::network::SelectServerInterface *ss,
-                ola::AbstractPlugin *owner,
-                const string &name,
-                UsbWidget *widget,
-                uint16_t esta_id,
-                uint16_t device_id,
-                uint32_t serial);
+    DmxterDevice(ola::AbstractPlugin *owner,
+                 const string &name,
+                 UsbWidget *widget,
+                 uint16_t esta_id,
+                 uint16_t device_id,
+                 uint32_t serial);
     ~DmxterDevice() {}
     string DeviceId() const { return m_device_id; }
 
@@ -87,14 +86,14 @@ class DmxterOutputPort: public BasicOutputPort {
 
     void RunFullDiscovery() {
       ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
-          reinterpret_cast<BasicOutputPort*>(this),
+          static_cast<BasicOutputPort*>(this),
           &DmxterOutputPort::NewUIDList);
       m_widget->RunFullDiscovery(callback);
     }
 
     void RunIncrementalDiscovery() {
       ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
-          reinterpret_cast<BasicOutputPort*>(this),
+          static_cast<BasicOutputPort*>(this),
           &DmxterOutputPort::NewUIDList);
       m_widget->RunIncrementalDiscovery(callback);
     }

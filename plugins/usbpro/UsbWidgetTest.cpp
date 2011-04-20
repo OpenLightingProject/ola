@@ -177,8 +177,8 @@ void UsbWidgetTest::testSend() {
 
   uint32_t data = ola::network::HostToNetwork(0xdeadbeef);
   CPPUNIT_ASSERT(m_widget->SendMessage(11,
-                                      reinterpret_cast<uint8_t*>(&data),
-                                      sizeof(data)));
+                                       reinterpret_cast<uint8_t*>(&data),
+                                       sizeof(data)));
 
   CPPUNIT_ASSERT(!m_widget->SendMessage(10, NULL, 4));
   m_ss.Run();

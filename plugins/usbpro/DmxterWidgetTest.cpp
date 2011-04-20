@@ -169,10 +169,7 @@ void DmxterWidgetTest::testTod() {
   uint8_t FULL_DISCOVERY_LABEL = 0x84;
   uint8_t INCREMENTAL_DISCOVERY_LABEL = 0x85;
   uint8_t TOD_LABEL = 0x82;
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
-                                           &m_widget,
-                                           0,
-                                           0);
+  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget, 0, 0);
   uint8_t return_packet[] = {
     0x70, 0x7a, 0xff, 0xff, 0xff, 0x00,
     0x52, 0x52, 0x12, 0x34, 0x56, 0x78,
@@ -183,7 +180,7 @@ void DmxterWidgetTest::testTod() {
       NULL,
       0,
       TOD_LABEL,
-      reinterpret_cast<uint8_t*>(&return_packet),
+      return_packet,
       sizeof(return_packet));
 
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_tod_counter);
@@ -196,7 +193,7 @@ void DmxterWidgetTest::testTod() {
       NULL,
       0,
       TOD_LABEL,
-      reinterpret_cast<uint8_t*>(&return_packet),
+      return_packet,
       sizeof(return_packet));
 
   dmxter.RunIncrementalDiscovery(
@@ -219,8 +216,7 @@ void DmxterWidgetTest::testSendRDMRequest() {
   UID new_source(0x5253, 0x12345678);
 
   vector<string> packets;
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
-                                           &m_widget,
+  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget,
                                            0x5253,
                                            0x12345678);
 
@@ -250,10 +246,10 @@ void DmxterWidgetTest::testSendRDMRequest() {
 
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet),
+      return_packet,
       sizeof(return_packet));
 
   dmxter.SendRDMRequest(
@@ -273,10 +269,10 @@ void DmxterWidgetTest::testSendRDMRequest() {
 
   m_widget.AddExpectedCall(
       RDM_BROADCAST_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_BROADCAST_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(NULL),
+      static_cast<uint8_t*>(NULL),
       0);
 
   dmxter.SendRDMRequest(
@@ -302,8 +298,7 @@ void DmxterWidgetTest::testErrorCodes() {
 
   vector<string> packets;
   packets.push_back("");  // empty string means we didn't get anything back
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
-                                           &m_widget,
+  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget,
                                            0x5253,
                                            0x12345678);
 
@@ -325,10 +320,10 @@ void DmxterWidgetTest::testErrorCodes() {
 
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet),
+      return_packet,
       sizeof(return_packet));
 
   dmxter.SendRDMRequest(
@@ -346,10 +341,10 @@ void DmxterWidgetTest::testErrorCodes() {
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet),
+      return_packet,
       sizeof(return_packet));
 
   dmxter.SendRDMRequest(
@@ -367,10 +362,10 @@ void DmxterWidgetTest::testErrorCodes() {
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet),
+      return_packet,
       sizeof(return_packet));
 
   dmxter.SendRDMRequest(
@@ -388,10 +383,10 @@ void DmxterWidgetTest::testErrorCodes() {
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet),
+      return_packet,
       sizeof(return_packet));
 
   dmxter.SendRDMRequest(
@@ -409,10 +404,10 @@ void DmxterWidgetTest::testErrorCodes() {
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet),
+      return_packet,
       sizeof(return_packet));
 
   dmxter.SendRDMRequest(
@@ -430,10 +425,10 @@ void DmxterWidgetTest::testErrorCodes() {
   request = NewRequest(source, destination, NULL, 0);
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet),
+      return_packet,
       sizeof(return_packet));
 
   dmxter.SendRDMRequest(
@@ -459,8 +454,7 @@ void DmxterWidgetTest::testErrorConditions() {
   UID new_source(0x5253, 0x12345678);
 
   vector<string> packets;
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
-                                           &m_widget,
+  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget,
                                            0x5253,
                                            0x12345678);
 
@@ -481,10 +475,10 @@ void DmxterWidgetTest::testErrorConditions() {
 
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet),
+      return_packet,
       sizeof(return_packet));
 
   dmxter.SendRDMRequest(
@@ -509,10 +503,10 @@ void DmxterWidgetTest::testErrorConditions() {
 
   m_widget.AddExpectedCall(
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(expected_packet),
+      expected_packet,
       size + 1,
       RDM_REQUEST_LABEL,
-      reinterpret_cast<uint8_t*>(return_packet2),
+      return_packet2,
       sizeof(return_packet2));
 
   dmxter.SendRDMRequest(
@@ -533,8 +527,7 @@ void DmxterWidgetTest::testErrorConditions() {
 void DmxterWidgetTest::testShutdown() {
   uint8_t SHUTDOWN_LABEL = 0xf0;
 
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_ss,
-                                           &m_widget,
+  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget,
                                            0x5253,
                                            0x12345678);
   CPPUNIT_ASSERT(!m_widget.IsClosed());

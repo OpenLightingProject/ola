@@ -37,7 +37,6 @@ namespace plugin {
 namespace usbpro {
 
 using std::map;
-using ola::network::NetworkToHost;
 
 DeviceInformation& DeviceInformation::operator=(
     const DeviceInformation &other) {
@@ -45,7 +44,7 @@ DeviceInformation& DeviceInformation::operator=(
   device_id = other.device_id;
   manufactuer = other.manufactuer;
   device = other.device;
-  memcpy(serial, other.serial, SERIAL_LENGTH);
+  serial = other.serial;
   return *this;
 }
 
@@ -232,16 +231,14 @@ void WidgetDetector::HandleIdResponse(UsbWidget *widget,
 
   if (is_device) {
     iter->second.information.device_id = id;
-    iter->second.information.device = string(
-        reinterpret_cast<const char*>(response.text));
+    iter->second.information.device = string(response.text);
     if (iter->second.discovery_state == DiscoveryState::DEVICE_SENT) {
       RemoveTimeout(&iter->second);
       SendSerialRequest(widget);
     }
   } else {
     iter->second.information.esta_id = id;
-    iter->second.information.manufactuer = string(
-        reinterpret_cast<const char*>(response.text));
+    iter->second.information.manufactuer = string(response.text);
     if (iter->second.discovery_state == DiscoveryState::MANUFACTURER_SENT) {
       RemoveTimeout(&iter->second);
       SendNameRequest(widget);
@@ -254,8 +251,8 @@ void WidgetDetector::HandleIdResponse(UsbWidget *widget,
  * Handle a serial response, this ends the device detection phase.
  */
 void WidgetDetector::HandleSerialResponse(UsbWidget *widget,
-                                         unsigned int length,
-                                         const uint8_t *data) {
+                                          unsigned int length,
+                                          const uint8_t *data) {
   map<UsbWidget*, DiscoveryState>::iterator iter = m_widgets.find(widget);
 
   if (iter == m_widgets.end())
@@ -263,17 +260,22 @@ void WidgetDetector::HandleSerialResponse(UsbWidget *widget,
   RemoveTimeout(&iter->second);
   DeviceInformation information = iter->second.information;
 
-  if (length == DeviceInformation::SERIAL_LENGTH)
-    memcpy(information.serial, data, DeviceInformation::SERIAL_LENGTH);
-  else
+  if (length == sizeof(information.serial)) {
+    memcpy(reinterpret_cast<uint8_t*>(&information.serial),
+           data,
+           sizeof(information.serial));
+    information.serial = ola::network::LittleEndianToHost(information.serial);
+  } else {
     OLA_WARN << "Serial number response size " << length << " != " <<
-      DeviceInformation::SERIAL_LENGTH;
+      sizeof(information.serial);
+  }
 
   m_widgets.erase(iter);
 
   OLA_INFO << "Detected USB Device: ESTA Id: 0x" << std::hex <<
     information.esta_id  << " (" << information.manufactuer << "), device: "
-    << information.device_id << " (" << information.device << ")";
+    << information.device_id << " (" << information.device << "), serial: " <<
+    "0x" << information.serial;
 
   if (!m_callback) {
     OLA_WARN << "No listener provided";

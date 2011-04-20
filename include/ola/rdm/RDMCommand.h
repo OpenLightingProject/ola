@@ -347,8 +347,8 @@ typedef BaseRDMResponse<RDMCommand::SET_COMMAND_RESPONSE> RDMSetResponse;
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason);
 RDMResponse *GetResponseFromData(const RDMRequest *request,
-                                 const uint8_t *data,
-                                 unsigned int length,
+                                 const uint8_t *data = NULL,
+                                 unsigned int length = 0,
                                  rdm_response_type type = RDM_ACK,
                                  uint8_t outstanding_messages = 0);
 

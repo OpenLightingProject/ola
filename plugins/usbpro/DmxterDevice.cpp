@@ -33,27 +33,24 @@ namespace plugin {
 namespace usbpro {
 
 using std::string;
-using ola::network::NetworkToHost;
 using ola::rdm::UID;
 
 
 /*
  * New DMXter device
  */
-DmxterDevice::DmxterDevice(ola::network::SelectServerInterface *ss,
-                             ola::AbstractPlugin *owner,
-                             const string &name,
-                             UsbWidget *widget,
-                             uint16_t esta_id,
-                             uint16_t device_id,
-                             uint32_t serial):
+DmxterDevice::DmxterDevice(ola::AbstractPlugin *owner,
+                           const string &name,
+                           UsbWidget *widget,
+                           uint16_t esta_id,
+                           uint16_t device_id,
+                           uint32_t serial):
     UsbDevice(owner, name, widget) {
   std::stringstream str;
-  str << std::hex << esta_id << "-" << device_id << "-" <<
-    NetworkToHost(serial);
+  str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
-  DmxterWidget *dmxter_widget = new DmxterWidget(ss, widget, esta_id, serial);
+  DmxterWidget *dmxter_widget = new DmxterWidget(widget, esta_id, serial);
   ola::BasicOutputPort *port = new DmxterOutputPort(this, dmxter_widget);
   AddPort(port);
 }

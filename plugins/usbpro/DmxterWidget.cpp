@@ -51,13 +51,11 @@ const uint8_t DmxterWidgetImpl::SHUTDOWN_LABAEL = 0xf0;
  * @param esta_id the ESTA id, should normally be GODDARD Design
  * @param serial the 4 byte serial which forms part of the UID
  */
-DmxterWidgetImpl::DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
-                                   UsbWidgetInterface *widget,
+DmxterWidgetImpl::DmxterWidgetImpl(UsbWidgetInterface *widget,
                                    uint16_t esta_id,
                                    uint32_t serial):
     m_uid(esta_id, serial),
     m_widget(widget),
-    m_ss(ss),
     m_discovery_callback(NULL),
     m_pending_request(NULL),
     m_rdm_request_callback(NULL),
@@ -406,13 +404,21 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
 /**
  * DmxterWidget Constructor
  */
-DmxterWidget::DmxterWidget(ola::network::SelectServerInterface *ss,
-                           UsbWidgetInterface *widget,
+DmxterWidget::DmxterWidget(UsbWidgetInterface *widget,
                            uint16_t esta_id,
                            uint32_t serial,
-                           unsigned int queue_size):
-    m_impl(ss, widget, esta_id, serial),
-    m_controller(&m_impl, queue_size) {
+                           unsigned int queue_size) {
+  m_impl = new DmxterWidgetImpl(widget, esta_id, serial);
+  m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
+                                                                 queue_size);
+}
+
+
+DmxterWidget::~DmxterWidget() {
+  // delete the controller after the impl because the controller owns the
+  // callback
+  delete m_impl;
+  delete m_controller;
 }
 }  // usbpro
 }  // plugin

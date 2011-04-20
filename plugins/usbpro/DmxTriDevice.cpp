@@ -21,7 +21,6 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServerInterface.h"
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/DmxTriWidget.h"
@@ -31,7 +30,6 @@ namespace plugin {
 namespace usbpro {
 
 using std::string;
-using ola::network::NetworkToHost;
 
 
 /*
@@ -48,8 +46,7 @@ DmxTriDevice::DmxTriDevice(ola::network::SelectServerInterface *ss,
     UsbDevice(owner, name, widget),
     m_tri_widget(NULL) {
   std::stringstream str;
-  str << std::hex << esta_id << "-" << device_id << "-" <<
-    NetworkToHost(serial);
+  str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
   m_tri_widget = new DmxTriWidget(ss, widget, 20, use_raw_rdm);

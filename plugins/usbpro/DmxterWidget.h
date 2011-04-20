@@ -39,8 +39,7 @@ namespace usbpro {
  */
 class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    DmxterWidgetImpl(ola::network::SelectServerInterface *ss,
-                     UsbWidgetInterface *widget,
+    DmxterWidgetImpl(UsbWidgetInterface *widget,
                      uint16_t esta_id,
                      uint32_t serial);
     ~DmxterWidgetImpl();
@@ -60,7 +59,6 @@ class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
   private:
     ola::rdm::UID m_uid;
     UsbWidgetInterface *m_widget;
-    ola::network::SelectServerInterface *m_ss;
     ola::rdm::UIDSet m_uids;
     ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
     const ola::rdm::RDMRequest *m_pending_request;
@@ -129,37 +127,38 @@ class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
  */
 class DmxterWidget: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    DmxterWidget(ola::network::SelectServerInterface *ss,
-                 UsbWidgetInterface *widget,
+    DmxterWidget(UsbWidgetInterface *widget,
                  uint16_t esta_id,
                  uint32_t serial,
                  unsigned int queue_size = 20);
-    ~DmxterWidget() {}
+    ~DmxterWidget();
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
-      m_controller.SendRDMRequest(request, on_complete);
+      m_controller->SendRDMRequest(request, on_complete);
     }
 
     bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return m_controller.RunFullDiscovery(callback);
+      return m_controller->RunFullDiscovery(callback);
     }
 
     bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return m_controller.RunIncrementalDiscovery(callback);
+      return m_controller->RunIncrementalDiscovery(callback);
     }
 
     void SendUIDUpdate() {
-      return m_impl.SendUIDUpdate();
+      return m_impl->SendUIDUpdate();
     }
 
     void SendTodRequest() {
-      return m_impl.SendTodRequest();
+      return m_impl->SendTodRequest();
     }
 
   private:
-    DmxterWidgetImpl m_impl;
-    ola::rdm::DiscoverableQueueingRDMController m_controller;
+    // we need to control the order of construction & destruction here so these
+    // are pointers.
+    DmxterWidgetImpl *m_impl;
+    ola::rdm::DiscoverableQueueingRDMController *m_controller;
 };
 }  // usbpro
 }  // plugin

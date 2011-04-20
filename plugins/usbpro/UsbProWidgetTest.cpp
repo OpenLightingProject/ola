@@ -110,10 +110,10 @@ void UsbProWidgetTest::testParams() {
 
   m_widget.AddExpectedCall(
       GET_PARAM_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_get_param_packet),
+      expected_get_param_packet,
       sizeof(expected_get_param_packet),
       GET_PARAM_LABEL,
-      reinterpret_cast<uint8_t*>(&param_packet),
+      param_packet,
       sizeof(param_packet));
 
   widget.GetParameters(
@@ -126,7 +126,7 @@ void UsbProWidgetTest::testParams() {
 
   m_widget.AddExpectedCall(
       SET_PARAM_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_set_param_packet),
+      expected_set_param_packet,
       sizeof(expected_set_param_packet));
   CPPUNIT_ASSERT(widget.SetParameters(9, 63, 20));
 
@@ -156,7 +156,7 @@ void UsbProWidgetTest::testSendDMX() {
 
   m_widget.AddExpectedCall(
       SEND_DMX_LABEL,
-      reinterpret_cast<uint8_t*>(&dmx_packet),
+      dmx_packet,
       sizeof(dmx_packet));
 
   widget.SendDMX(buffer);
@@ -177,8 +177,8 @@ void UsbProWidgetTest::testReceiveDMX() {
   widget.SetDMXCallback(ola::NewCallback(
       this,
       &UsbProWidgetTest::ValidateDMX,
-      reinterpret_cast<const UsbProWidget*>(&widget),
-      reinterpret_cast<const ola::DmxBuffer*>(&buffer)));
+      const_cast<const UsbProWidget*>(&widget),
+      const_cast<const ola::DmxBuffer*>(&buffer)));
   uint8_t dmx_packet[] = {
     0, 0,  // no error
     1, 10, 14, 40
@@ -186,7 +186,7 @@ void UsbProWidgetTest::testReceiveDMX() {
 
   m_widget.SendUnsolicited(
       RECEIVE_DMX_LABEL,
-      reinterpret_cast<uint8_t*>(&dmx_packet),
+      dmx_packet,
       sizeof(dmx_packet));
   CPPUNIT_ASSERT(m_got_dmx);
 
@@ -195,7 +195,7 @@ void UsbProWidgetTest::testReceiveDMX() {
   m_got_dmx = false;
   m_widget.SendUnsolicited(
       RECEIVE_DMX_LABEL,
-      reinterpret_cast<uint8_t*>(&dmx_packet),
+      dmx_packet,
       sizeof(dmx_packet));
   CPPUNIT_ASSERT(!m_got_dmx);
 
@@ -205,7 +205,7 @@ void UsbProWidgetTest::testReceiveDMX() {
   m_got_dmx = false;
   m_widget.SendUnsolicited(
       RECEIVE_DMX_LABEL,
-      reinterpret_cast<uint8_t*>(&dmx_packet),
+      dmx_packet,
       sizeof(dmx_packet));
   CPPUNIT_ASSERT(!m_got_dmx);
 
@@ -220,7 +220,7 @@ void UsbProWidgetTest::testReceiveDMX() {
 
   m_widget.SendUnsolicited(
       CHANGE_OF_STATE_LABEL,
-      reinterpret_cast<uint8_t*>(&change_of_state_packet),
+      change_of_state_packet,
       sizeof(change_of_state_packet));
   CPPUNIT_ASSERT(m_got_dmx);
 }

@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArduinoRGBDevice.h
- * The Ardunio RGB Mixer device.
+ * The Arduino RGB Mixer device.
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -24,6 +24,7 @@
 #include <string>
 #include "ola/DmxBuffer.h"
 #include "plugins/usbpro/UsbDevice.h"
+#include "plugins/usbpro/ArduinoWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -44,7 +45,6 @@ class ArduinoRGBDevice: public UsbDevice {
                      uint32_t serial);
 
     string DeviceId() const { return m_device_id; }
-    bool SendDMX(const DmxBuffer &buffer) const;
 
   private:
     string m_device_id;
@@ -56,18 +56,40 @@ class ArduinoRGBDevice: public UsbDevice {
  */
 class ArduinoRGBOutputPort: public BasicOutputPort {
   public:
-    explicit ArduinoRGBOutputPort(ArduinoRGBDevice *parent)
-        : BasicOutputPort(parent, 0),
-          m_device(parent) {}
+    ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
+                         UsbWidget *widget,
+                         uint16_t esta_id,
+                         uint32_t serial);
+
+    string Description() const { return m_description; }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_device->SendDMX(buffer);
+      return m_widget.SendDMX(buffer);
       (void) priority;
     }
-    string Description() const { return ""; }
+
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback) {
+      return m_widget.SendRDMRequest(request, callback);
+    }
+
+    void RunFullDiscovery() {
+      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
+          static_cast<BasicOutputPort*>(this),
+          &ArduinoRGBOutputPort::NewUIDList);
+      m_widget.RunFullDiscovery(callback);
+    }
+
+    void RunIncrementalDiscovery() {
+      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
+          static_cast<BasicOutputPort*>(this),
+          &ArduinoRGBOutputPort::NewUIDList);
+      m_widget.RunIncrementalDiscovery(callback);
+    }
 
   private:
-    ArduinoRGBDevice *m_device;
+    ArduinoWidget m_widget;
+    string m_description;
 };
 }  // usbpro
 }  // plugin

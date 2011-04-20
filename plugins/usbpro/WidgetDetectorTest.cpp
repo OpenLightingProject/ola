@@ -205,13 +205,11 @@ void WidgetDetectorTest::testExtendedDiscovery() {
   CPPUNIT_ASSERT(m_found_widget);
   CPPUNIT_ASSERT(!m_failed_widget);
 
-  uint32_t serial;
-  memcpy(&serial, m_device_info.serial, DeviceInformation::SERIAL_LENGTH);
   CPPUNIT_ASSERT_EQUAL(MANUFACTURER_ID, m_device_info.esta_id);
   CPPUNIT_ASSERT_EQUAL(DEVICE_ID, m_device_info.device_id);
   CPPUNIT_ASSERT_EQUAL(string(MANUFACTURER_NAME), m_device_info.manufactuer);
   CPPUNIT_ASSERT_EQUAL(string(DEVICE_NAME), m_device_info.device);
-  CPPUNIT_ASSERT_EQUAL(SERIAL, serial);
+  CPPUNIT_ASSERT_EQUAL(SERIAL, m_device_info.serial);
 }
 
 
@@ -227,13 +225,11 @@ void WidgetDetectorTest::testDiscovery() {
   CPPUNIT_ASSERT(m_found_widget);
   CPPUNIT_ASSERT(!m_failed_widget);
 
-  uint32_t serial;
-  memcpy(&serial, m_device_info.serial, DeviceInformation::SERIAL_LENGTH);
   CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0), m_device_info.esta_id);
   CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0), m_device_info.device_id);
   CPPUNIT_ASSERT_EQUAL(string(), m_device_info.manufactuer);
   CPPUNIT_ASSERT_EQUAL(string(), m_device_info.device);
-  CPPUNIT_ASSERT_EQUAL(SERIAL, serial);
+  CPPUNIT_ASSERT_EQUAL(SERIAL, m_device_info.serial);
 }
 
 

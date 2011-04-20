@@ -212,7 +212,7 @@ void DmxTriWidgetTest::PopulateTod(DmxTriWidget *widget) {
       &expected_discovery,
       sizeof(expected_discovery),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&discovery_ack),
+      discovery_ack,
       sizeof(discovery_ack));
 
   uint8_t expected_stat = 0x34;
@@ -222,7 +222,7 @@ void DmxTriWidgetTest::PopulateTod(DmxTriWidget *widget) {
       &expected_stat,
       sizeof(expected_stat),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&stat_ack),
+      stat_ack,
       sizeof(stat_ack));
 
   uint8_t expected_fetch_uid1[] = {0x35, 0x02};
@@ -231,10 +231,10 @@ void DmxTriWidgetTest::PopulateTod(DmxTriWidget *widget) {
     0x70, 0x7a, 0xff, 0xff, 0xff, 0x00};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_fetch_uid1),
+      expected_fetch_uid1,
       sizeof(expected_fetch_uid1),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_fetch_response1),
+      expected_fetch_response1,
       sizeof(expected_fetch_response1));
 
   uint8_t expected_fetch_uid2[] = {0x35, 0x01};
@@ -243,10 +243,10 @@ void DmxTriWidgetTest::PopulateTod(DmxTriWidget *widget) {
     0x52, 0x52, 0x12, 0x34, 0x56, 0x78};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_fetch_uid2),
+      expected_fetch_uid2,
       sizeof(expected_fetch_uid2),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_fetch_response2),
+      expected_fetch_response2,
       sizeof(expected_fetch_response2));
 
   widget->SetUIDListCallback(
@@ -282,7 +282,7 @@ void DmxTriWidgetTest::testTod() {
       &expected_discovery,
       sizeof(expected_discovery),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&discovery_ack),
+      discovery_ack,
       sizeof(discovery_ack));
 
   uint8_t expected_stat = 0x34;
@@ -292,7 +292,7 @@ void DmxTriWidgetTest::testTod() {
       &expected_stat,
       sizeof(expected_stat),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&stat_in_progress_ack),
+      stat_in_progress_ack,
       sizeof(stat_in_progress_ack));
 
   uint8_t stat_nil_devices_ack[] = {0x34, 0x00, 0x00, 0x00};
@@ -301,7 +301,7 @@ void DmxTriWidgetTest::testTod() {
       &expected_stat,
       sizeof(expected_stat),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&stat_nil_devices_ack),
+      stat_nil_devices_ack,
       sizeof(stat_nil_devices_ack));
 
   m_expect_uids_in_tod = false;
@@ -317,7 +317,7 @@ void DmxTriWidgetTest::testTod() {
       &expected_discovery,
       sizeof(expected_discovery),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&discovery_ack),
+      discovery_ack,
       sizeof(discovery_ack));
 
   uint8_t stat_error_ack[] = {0x34, 0x1b, 0x00, 0x00};
@@ -326,7 +326,7 @@ void DmxTriWidgetTest::testTod() {
       &expected_stat,
       sizeof(expected_stat),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&stat_error_ack),
+      stat_error_ack,
       sizeof(stat_error_ack));
 
   m_expect_uids_in_tod = false;
@@ -350,7 +350,7 @@ void DmxTriWidgetTest::testDmx() {
   uint8_t expected_dmx[] = {0x00, 0x00, 0x12, 0x93, 0xcc, 0xff};
   m_widget.AddExpectedCall(
       DMX_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_dmx),
+      expected_dmx,
       sizeof(expected_dmx));
 
   dmxtri.SendDMX(buffer);
@@ -370,7 +370,7 @@ void DmxTriWidgetTest::testSendRDM() {
   const RDMRequest *request = NewRequest(
       source,
       destination,
-      reinterpret_cast<uint8_t*>(param_data),
+      param_data,
       sizeof(param_data));
 
   // first of all confirm we can't send to a UID not in the TOD
@@ -388,7 +388,7 @@ void DmxTriWidgetTest::testSendRDM() {
   request = NewRequest(
       source,
       destination,
-      reinterpret_cast<uint8_t*>(param_data),
+      param_data,
       sizeof(param_data));
 
   uint8_t expected_rdm_command[] = {0x38, 0x02, 0x00, 0x0a, 0x01, 0x28, 0xa1,
@@ -396,10 +396,10 @@ void DmxTriWidgetTest::testSendRDM() {
   uint8_t command_response[] = {0x38, 0x00, 0x5a, 0xa5, 0x5a, 0xa5};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&command_response),
+      command_response,
       sizeof(command_response));
 
   uint8_t return_data[] = {0x5a, 0xa5, 0x5a, 0xa5};
@@ -412,7 +412,7 @@ void DmxTriWidgetTest::testSendRDM() {
       0,  // message count
       10,  // sub device
       296,  // param id
-      reinterpret_cast<uint8_t*>(return_data),
+      return_data,
       sizeof(return_data));  // data length
 
   dmxtri.SendRDMRequest(
@@ -420,7 +420,7 @@ void DmxTriWidgetTest::testSendRDM() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(&response),
+                             static_cast<const RDMResponse*>(&response),
                              packets));
   m_widget.Verify();
 
@@ -428,16 +428,16 @@ void DmxTriWidgetTest::testSendRDM() {
   request = NewRequest(
       source,
       destination,
-      reinterpret_cast<uint8_t*>(param_data),
+      param_data,
       sizeof(param_data));
 
   uint8_t queued_command_response[] = {0x38, 0x11, 0x5a, 0xa5, 0x5a, 0xa5};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&queued_command_response),
+      queued_command_response,
       sizeof(queued_command_response));
 
   ola::rdm::RDMGetResponse response2(
@@ -448,7 +448,7 @@ void DmxTriWidgetTest::testSendRDM() {
       1,  // message count
       10,  // sub device
       296,  // param id
-      reinterpret_cast<uint8_t*>(return_data),
+      return_data,
       sizeof(return_data));  // data length
 
   dmxtri.SendRDMRequest(
@@ -457,7 +457,7 @@ void DmxTriWidgetTest::testSendRDM() {
         this,
         &DmxTriWidgetTest::ValidateResponse,
         ola::rdm::RDM_COMPLETED_OK,
-        reinterpret_cast<const RDMResponse*>(&response2),
+        static_cast<const RDMResponse*>(&response2),
         packets));
   m_widget.Verify();
 }
@@ -483,10 +483,10 @@ void DmxTriWidgetTest::testSendRDMErrors() {
   uint8_t transaction_mismatch_response[] = {0x38, 0x13};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&transaction_mismatch_response),
+      transaction_mismatch_response,
       sizeof(transaction_mismatch_response));
 
   dmxtri.SendRDMRequest(
@@ -503,10 +503,10 @@ void DmxTriWidgetTest::testSendRDMErrors() {
   uint8_t wrong_subdevice_response[] = {0x38, 0x14};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&wrong_subdevice_response),
+      wrong_subdevice_response,
       sizeof(wrong_subdevice_response));
 
   dmxtri.SendRDMRequest(
@@ -523,10 +523,10 @@ void DmxTriWidgetTest::testSendRDMErrors() {
   uint8_t invalid_response[] = {0x38, 0x15};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&invalid_response),
+      invalid_response,
       sizeof(invalid_response));
 
   dmxtri.SendRDMRequest(
@@ -543,10 +543,10 @@ void DmxTriWidgetTest::testSendRDMErrors() {
   uint8_t bad_checksum_response[] = {0x38, 0x16};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&bad_checksum_response),
+      bad_checksum_response,
       sizeof(bad_checksum_response));
 
   dmxtri.SendRDMRequest(
@@ -563,10 +563,10 @@ void DmxTriWidgetTest::testSendRDMErrors() {
   uint8_t timeout_response[] = {0x38, 0x18};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&timeout_response),
+      timeout_response,
       sizeof(timeout_response));
 
   dmxtri.SendRDMRequest(
@@ -583,10 +583,10 @@ void DmxTriWidgetTest::testSendRDMErrors() {
   uint8_t wrong_device_response[] = {0x38, 0x1a};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&wrong_device_response),
+      wrong_device_response,
       sizeof(wrong_device_response));
 
   dmxtri.SendRDMRequest(
@@ -621,20 +621,20 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
   uint8_t set_filter_response[] = {0x3d, 0x00};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_set_filter),
+      expected_set_filter,
       sizeof(expected_set_filter),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&set_filter_response),
+      set_filter_response,
       sizeof(set_filter_response));
 
   uint8_t expected_rdm_command[] = {0x38, 0x00, 0x00, 0x0a, 0x01, 0x28};
   uint8_t command_response[] = {0x38, 0x00};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&command_response),
+      command_response,
       sizeof(command_response));
 
   dmxtri.SendRDMRequest(
@@ -651,18 +651,18 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
   uint8_t expected_bcast_set_filter[] = {0x3d, 0xff, 0xff};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_bcast_set_filter),
+      expected_bcast_set_filter,
       sizeof(expected_bcast_set_filter),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&set_filter_response),
+      set_filter_response,
       sizeof(set_filter_response));
 
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&command_response),
+      command_response,
       sizeof(command_response));
 
   dmxtri.SendRDMRequest(
@@ -678,10 +678,10 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
 
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&command_response),
+      command_response,
       sizeof(command_response));
 
   dmxtri.SendRDMRequest(
@@ -698,10 +698,10 @@ void DmxTriWidgetTest::testSendRDMBroadcast() {
   uint8_t failed_set_filter_response[] = {0x3d, 0x02};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_set_filter),
+      expected_set_filter,
       sizeof(expected_set_filter),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&failed_set_filter_response),
+      failed_set_filter_response,
       sizeof(failed_set_filter_response));
 
   dmxtri.SendRDMRequest(
@@ -731,10 +731,10 @@ void DmxTriWidgetTest::testNack() {
   uint8_t nack_pid_response[] = {0x38, 0x20};  // unknown pid
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&nack_pid_response),
+      nack_pid_response,
       sizeof(nack_pid_response));
 
   RDMResponse *response = ola::rdm::NackWithReason(
@@ -746,7 +746,7 @@ void DmxTriWidgetTest::testNack() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(response),
+                             static_cast<const RDMResponse*>(response),
                              packets));
   m_widget.Verify();
   delete response;
@@ -757,10 +757,10 @@ void DmxTriWidgetTest::testNack() {
   uint8_t nack_proxy_response[] = {0x38, 0x2a};  // bad proxy
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&nack_proxy_response),
+      nack_proxy_response,
       sizeof(nack_proxy_response));
 
   response = ola::rdm::NackWithReason(
@@ -772,7 +772,7 @@ void DmxTriWidgetTest::testNack() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(response),
+                             static_cast<const RDMResponse*>(response),
                              packets));
   m_widget.Verify();
   delete response;
@@ -796,10 +796,10 @@ void DmxTriWidgetTest::testAckTimer() {
   uint8_t ack_timer_response[] = {0x38, 0x10, 0x00, 0x10};  // ack timer, 1.6s
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&ack_timer_response),
+      ack_timer_response,
       sizeof(ack_timer_response));
 
   uint8_t return_data[] = {0x00, 0x10};
@@ -812,7 +812,7 @@ void DmxTriWidgetTest::testAckTimer() {
       0,  // message count
       10,  // sub device
       296,  // param id
-      reinterpret_cast<uint8_t*>(return_data),
+      return_data,
       sizeof(return_data));  // data length
 
   dmxtri.SendRDMRequest(
@@ -820,7 +820,7 @@ void DmxTriWidgetTest::testAckTimer() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(&response),
+                             static_cast<const RDMResponse*>(&response),
                              packets));
   m_widget.Verify();
 }
@@ -844,18 +844,18 @@ void DmxTriWidgetTest::testAckOverflow() {
   uint8_t ack_response[] = {0x38, 0x0, 0x56, 0x78};  // ack overflow
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&ack_overflow_response),
+      ack_overflow_response,
       sizeof(ack_overflow_response));
 
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&ack_response),
+      ack_response,
       sizeof(ack_response));
 
   uint8_t return_data[] = {0x12, 0x34, 0x56, 0x78};
@@ -868,7 +868,7 @@ void DmxTriWidgetTest::testAckOverflow() {
       0,  // message count
       10,  // sub device
       296,  // param id
-      reinterpret_cast<uint8_t*>(return_data),
+      return_data,
       sizeof(return_data));  // data length
 
   dmxtri.SendRDMRequest(
@@ -876,7 +876,7 @@ void DmxTriWidgetTest::testAckOverflow() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(&response),
+                             static_cast<const RDMResponse*>(&response),
                              packets));
   m_widget.Verify();
 }
@@ -899,10 +899,10 @@ void DmxTriWidgetTest::testQueuedMessages() {
   uint8_t small_response[] = {0x3a, 0x04};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&small_response),
+      small_response,
       sizeof(small_response));
 
   dmxtri.SendRDMRequest(
@@ -918,10 +918,10 @@ void DmxTriWidgetTest::testQueuedMessages() {
   uint8_t queued_response[] = {0x3a, 0x00, 0x00, 0x60, 0x52};
   m_widget.AddExpectedCall(
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&expected_rdm_command),
+      expected_rdm_command,
       sizeof(expected_rdm_command),
       EXTENDED_LABEL,
-      reinterpret_cast<uint8_t*>(&queued_response),
+      queued_response,
       sizeof(queued_response));
 
   uint8_t return_data = 0x52;
@@ -941,7 +941,7 @@ void DmxTriWidgetTest::testQueuedMessages() {
       ola::NewSingleCallback(this,
                              &DmxTriWidgetTest::ValidateResponse,
                              ola::rdm::RDM_COMPLETED_OK,
-                             reinterpret_cast<const RDMResponse*>(&response),
+                             static_cast<const RDMResponse*>(&response),
                              packets));
   m_widget.Verify();
 }

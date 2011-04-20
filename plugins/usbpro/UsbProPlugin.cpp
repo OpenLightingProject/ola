@@ -117,8 +117,6 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
         information.device.empty()))
     device_name += " - ";
   device_name += information.device;
-  uint32_t serial;
-  memcpy(&serial, information.serial, sizeof(serial));
   widget->SetMessageHandler(NULL);
 
   switch (information.esta_id) {
@@ -132,7 +130,7 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
             widget,
             information.esta_id,
             information.device_id,
-            serial,
+            information.serial,
             GetProFrameLimit()));
         return;
       }
@@ -140,13 +138,12 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
       if (information.device_id == GODDARD_DMXTER4_ID ||
           information.device_id == GODDARD_MINI_DMXTER4_ID) {
         AddDevice(new DmxterDevice(
-            m_plugin_adaptor,
             this,
             device_name,
             widget,
             information.esta_id,
             information.device_id,
-            serial));
+            information.serial));
         return;
       }
       break;
@@ -160,7 +157,7 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
             widget,
             information.esta_id,
             information.device_id,
-            serial,
+            information.serial,
             m_preferences->GetValueAsBool(TRI_USE_RAW_RDM_KEY)));
         return;
       }
@@ -175,7 +172,7 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
             widget,
             information.esta_id,
             information.device_id,
-            serial));
+            information.serial));
         return;
       }
       break;
@@ -189,7 +186,7 @@ void UsbProPlugin::NewWidget(class UsbWidget *widget,
         widget,
         ENTTEC_ESTA_ID,
         0,  // assume device id is 0
-        serial,
+        information.serial,
         GetProFrameLimit()));
 }
 

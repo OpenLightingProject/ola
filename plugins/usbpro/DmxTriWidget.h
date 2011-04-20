@@ -186,40 +186,42 @@ class DmxTriWidget {
                  UsbWidgetInterface *widget,
                  unsigned int queue_size = 20,
                  bool use_raw_rdm = false);
-    ~DmxTriWidget() {}
+    ~DmxTriWidget();
 
-    void Stop() { m_impl.Stop(); }
+    void Stop() { m_impl->Stop(); }
 
     bool SendDMX(const DmxBuffer &buffer) const {
-      return m_impl.SendDMX(buffer);
+      return m_impl->SendDMX(buffer);
     }
 
     void SetUIDListCallback(
         ola::Callback1<void, const ola::rdm::UIDSet&> *callback) {
-      m_impl.SetUIDListCallback(callback);
+      m_impl->SetUIDListCallback(callback);
     }
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
-      m_controller.SendRDMRequest(request, on_complete);
+      m_controller->SendRDMRequest(request, on_complete);
     }
 
     void RunRDMDiscovery() {
       // pause rdm sending
-      m_controller.Pause();
-      m_impl.RunRDMDiscovery();
+      m_controller->Pause();
+      m_impl->RunRDMDiscovery();
     }
 
     void SendUIDUpdate() {
-      m_impl.SendUIDUpdate();
+      m_impl->SendUIDUpdate();
     }
 
   private:
-    DmxTriWidgetImpl m_impl;
-    ola::rdm::QueueingRDMController m_controller;
+    // we need to control the order of construction & destruction here so these
+    // are pointers.
+    DmxTriWidgetImpl *m_impl;
+    ola::rdm::QueueingRDMController *m_controller;
 
     void ResumeRDMCommands() {
-      m_controller.Resume();
+      m_controller->Resume();
     }
 };
 }  // usbpro

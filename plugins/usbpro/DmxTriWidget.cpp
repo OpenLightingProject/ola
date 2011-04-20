@@ -924,11 +924,19 @@ bool DmxTriWidgetImpl::ReturnCodeToNackReason(
 DmxTriWidget::DmxTriWidget(ola::network::SelectServerInterface *ss,
                            UsbWidgetInterface *widget,
                            unsigned int queue_size,
-                           bool use_raw_rdm):
-    m_impl(ss, widget, use_raw_rdm),
-    m_controller(&m_impl, queue_size) {
-  m_impl.SetDiscoveryCallback(
+                           bool use_raw_rdm) {
+  m_impl = new DmxTriWidgetImpl(ss, widget, use_raw_rdm);
+  m_controller = new ola::rdm::QueueingRDMController(m_impl, queue_size);
+  m_impl->SetDiscoveryCallback(
       NewCallback(this, &DmxTriWidget::ResumeRDMCommands));
+}
+
+
+DmxTriWidget::~DmxTriWidget() {
+  // delete the controller after the impl because the controller owns the
+  // callback
+  delete m_impl;
+  delete m_controller;
 }
 }  // usbpro
 }  // plugin
