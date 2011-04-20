@@ -676,7 +676,7 @@ string SensorTypeToString(uint8_t type) {
     case SENSOR_HUMIDITY:
       return "Humidity";
     case SENSOR_COUNTER_16BIT:
-      return "16 bith counter";
+      return "16 bit counter";
     case SENSOR_OTHER:
       return "Other";
     default:

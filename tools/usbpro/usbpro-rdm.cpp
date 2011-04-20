@@ -228,13 +228,16 @@ void RDMSniffer::DumpResponse(unsigned int length, const uint8_t *data) {
         cout << "ACK TIMER";
         break;
       case ola::rdm::RDM_NACK_REASON:
-        uint16_t reason;
-        if (length >= 26)
+        if (length >= 26) {
+          uint16_t reason;
           memcpy(reinterpret_cast<uint8_t*>(&reason),
                  reinterpret_cast<const void*>(data + 23),
                  sizeof(reason));
-        reason = ola::network::NetworkToHost(reason);
-        cout << "NACK (" << ola::rdm::NackReasonToString(reason) << ")";
+          reason = ola::network::NetworkToHost(reason);
+          cout << "NACK (" << ola::rdm::NackReasonToString(reason) << ")";
+        } else {
+          cout << "Malformed NACK ";
+        }
         break;
       case ola::rdm::ACK_OVERFLOW:
         cout << "ACK OVERFLOW";
