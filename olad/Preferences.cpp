@@ -44,7 +44,6 @@ using std::pair;
 const char BoolValidator::TRUE[] = "true";
 const char BoolValidator::FALSE[] = "false";
 
-const char FileBackedPreferences::OLA_CONFIG_DIR[] = ".ola";
 const char FileBackedPreferences::OLA_CONFIG_PREFIX[] = "ola-";
 const char FileBackedPreferences::OLA_CONFIG_SUFFIX[] = ".conf";
 
@@ -266,8 +265,6 @@ bool MemoryPreferences::GetValueAsBool(const string &key) const {
  * Load the preferences from storage
  */
 bool FileBackedPreferences::Load() {
-  if (!ChangeDir())
-    return false;
   return LoadFromFile(FileName());
 }
 
@@ -276,9 +273,6 @@ bool FileBackedPreferences::Load() {
  * Save the preferences to storage
  */
 bool FileBackedPreferences::Save() const {
-  if (!ChangeDir())
-    return false;
-
   return SaveToFile(FileName());
 }
 
@@ -287,7 +281,8 @@ bool FileBackedPreferences::Save() const {
  * Return the name of the file used to save the preferences
  */
 const string FileBackedPreferences::FileName() const {
-  return OLA_CONFIG_PREFIX + m_preference_name + OLA_CONFIG_SUFFIX;
+  return (m_directory + "/" + OLA_CONFIG_PREFIX + m_preference_name +
+          OLA_CONFIG_SUFFIX);
 }
 
 
@@ -349,50 +344,6 @@ bool FileBackedPreferences::SaveToFile(const string &filename) const {
   }
 
   pref_file.close();
-  return true;
-}
-
-
-/*
- * Change to the ola preferences directory
- */
-bool FileBackedPreferences::ChangeDir() const {
-  struct passwd pwd, *pwd_ptr;
-  unsigned int size = 1024;
-  bool ok = false;
-  char *buffer;
-
-  while (!ok) {
-    buffer = new char[size];
-    int ret = getpwuid_r(getuid(), &pwd, buffer, size, &pwd_ptr);
-    switch (ret) {
-      case 0:
-        ok = true;
-        break;
-      case ERANGE:
-        delete[] buffer;
-        size += 1024;
-        break;
-      default:
-        delete[] buffer;
-        return false;
-    }
-  }
-
-  string home_dir = pwd_ptr->pw_dir;
-  delete[] buffer;
-
-  if (chdir(home_dir.data()))
-    return false;
-
-  if (chdir(OLA_CONFIG_DIR)) {
-    // try and create it
-    if (mkdir(OLA_CONFIG_DIR, 0755))
-      return false;
-
-    if (chdir(OLA_CONFIG_DIR))
-      return false;
-  }
   return true;
 }
 }  // ola

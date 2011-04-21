@@ -53,6 +53,7 @@ typedef struct {
   int http_port;
   int rpc_port;
   string http_data_dir;
+  string config_dir;
 } ola_options;
 
 
@@ -156,6 +157,7 @@ static void DisplayHelp() {
   "\n"
   "Start the ola daemon.\n"
   "\n"
+  "  -c, --config-dir         Path to the config directory\n"
   "  -d, --http-data-dir      Path to the static content.\n"
   "  -f, --daemon             Fork into background.\n"
   "  -h, --help               Display this help message and exit.\n"
@@ -180,6 +182,7 @@ static void DisplayHelp() {
  */
 static void ParseOptions(int argc, char *argv[], ola_options *opts) {
   static struct option long_options[] = {
+      {"config-dir", required_argument, 0, 'c'},
       {"help", no_argument, 0, 'h'},
       {"http-data-dir", required_argument, 0, 'd'},
       {"http-port", required_argument, 0, 'p'},
@@ -196,12 +199,15 @@ static void ParseOptions(int argc, char *argv[], ola_options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "l:p:fd:hsr:", long_options, &option_index);
+    c = getopt_long(argc, argv, "c:l:p:fd:hsr:", long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
       case 0:
+        break;
+      case 'c':
+        opts->config_dir = optarg;
         break;
       case 'd':
         opts->http_data_dir = optarg;
@@ -328,6 +334,7 @@ static void Setup(int argc, char*argv[], ola_options *opts) {
   opts->http_port = ola::OlaServer::DEFAULT_HTTP_PORT;
   opts->rpc_port = ola::OlaDaemon::DEFAULT_RPC_PORT;
   opts->http_data_dir = "";
+  opts->config_dir = "";
 
   ParseOptions(argc, argv, opts);
 
@@ -392,7 +399,8 @@ int main(int argc, char *argv[]) {
   ola_options.http_port = opts.http_port;
   ola_options.http_data_dir = opts.http_data_dir;
 
-  olad = new OlaDaemon(ola_options, &export_map, opts.rpc_port);
+  olad = new OlaDaemon(ola_options, &export_map, opts.rpc_port,
+                       opts.config_dir);
   bool ret = olad->Init();
 
   if (ret) {

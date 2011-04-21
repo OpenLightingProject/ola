@@ -38,7 +38,8 @@ class OlaDaemon {
   public:
     OlaDaemon(const ola_server_options &options,
               ExportMap *export_map = NULL,
-              unsigned int rpc_port = OLA_DEFAULT_PORT);
+              unsigned int rpc_port = OLA_DEFAULT_PORT,
+              std::string config_dir = "");
     ~OlaDaemon();
     bool Init();
     void Shutdown();
@@ -54,6 +55,8 @@ class OlaDaemon {
     OlaDaemon(const OlaDaemon&);
     OlaDaemon& operator=(const OlaDaemon&);
 
+    bool InitDefaultConfigDir();
+
     vector<class PluginLoader *> m_plugin_loaders;
     class SelectServer *m_ss;
     class OlaServer *m_server;
@@ -63,8 +66,10 @@ class OlaDaemon {
     ola_server_options m_options;
     class ExportMap *m_export_map;
     unsigned int m_rpc_port;
+    std::string m_config_dir;
 
     static const char K_RPC_PORT_VAR[];
+    static const char OLA_CONFIG_DIR[];
 };
 }  // ola
 #endif  // OLAD_OLADAEMON_H_

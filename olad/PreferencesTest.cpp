@@ -184,7 +184,7 @@ void PreferencesTest::testFactory() {
  * Check that we can load from a file
  */
 void PreferencesTest::testLoad() {
-  FileBackedPreferences *preferences = new FileBackedPreferences("dummy");
+  FileBackedPreferences *preferences = new FileBackedPreferences("", "dummy");
   preferences->Clear();
   preferences->SetValue("foo", "bad");
   preferences->LoadFromFile("./testdata/test_preferences.conf");
@@ -202,8 +202,8 @@ void PreferencesTest::testLoad() {
 
 
 void PreferencesTest::testSave() {
-  FileBackedPreferencesFactory factory;
-  FileBackedPreferences *preferences = new FileBackedPreferences("dummy");
+  FileBackedPreferencesFactory factory("");
+  FileBackedPreferences *preferences = new FileBackedPreferences("", "dummy");
   preferences->Clear();
 
   string data_path = "./testdata/preferences.output";
@@ -220,7 +220,7 @@ void PreferencesTest::testSave() {
   preferences->SaveToFile(data_path);
 
   FileBackedPreferences *input_preferences = new
-    FileBackedPreferences("input");
+    FileBackedPreferences("", "input");
   input_preferences->LoadFromFile(data_path);
   CPPUNIT_ASSERT(*preferences == *input_preferences);
   delete preferences;

@@ -1,8 +1,10 @@
 X/Y/2011 ola-0.8.9
+ * Added support for the Arduino RDM RGB Mixer
  * Fixed a bug when a broadcast RDM request was sent to a universe with
    multiple ports bound
  * Fixed an memory leak in the RDM code
  * Added more RDM tests including broadcast & vendorcast tests
+ * Added a command line flag to specify the config directory
 
 26/3/2011 ola-0.8.8
  * Added RDM discovery for the DMXter widgets

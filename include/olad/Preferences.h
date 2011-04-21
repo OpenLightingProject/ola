@@ -211,25 +211,34 @@ class MemoryPreferencesFactory: public PreferencesFactory {
  */
 class FileBackedPreferences: public MemoryPreferences {
   public:
-    explicit FileBackedPreferences(const string name)
-        : MemoryPreferences(name) {}
+    explicit FileBackedPreferences(const string &directory,
+                                   const string &name)
+        : MemoryPreferences(name),
+          m_directory(directory) {}
     virtual bool Load();
     virtual bool Save() const;
     bool LoadFromFile(const string &filename);
     bool SaveToFile(const string &filename) const;
 
   private:
+    const string m_directory;
+
     bool ChangeDir() const;
     const string FileName() const;
-    static const char OLA_CONFIG_DIR[];
     static const char OLA_CONFIG_PREFIX[];
     static const char OLA_CONFIG_SUFFIX[];
 };
 
 class FileBackedPreferencesFactory: public PreferencesFactory {
+  public:
+    FileBackedPreferencesFactory(const string &directory)
+        : m_directory(directory) {}
+
   private:
+    const string m_directory;
+
     FileBackedPreferences *Create(const string &name) {
-      return new FileBackedPreferences(name);
+      return new FileBackedPreferences(m_directory, name);
     }
 };
 }  // ola

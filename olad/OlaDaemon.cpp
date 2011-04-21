@@ -18,12 +18,19 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#include <errno.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <string>
 #include <vector>
 
 #include "config.h"
 #include "ola/ExportMap.h"
+#include "ola/Logging.h"
 
 #include "olad/DynamicPluginLoader.h"
 #include "olad/OlaDaemon.h"
@@ -38,6 +45,7 @@ using ola::network::AcceptingSocket;
 using ola::network::SelectServer;
 
 const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";
+const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";
 
 /*
  * Create a new OlaDaemon
@@ -45,7 +53,8 @@ const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";
  */
 OlaDaemon::OlaDaemon(const ola_server_options &options,
                      ExportMap *export_map,
-                     unsigned int rpc_port)
+                     unsigned int rpc_port,
+                     std::string config_dir)
     : m_ss(NULL),
       m_server(NULL),
       m_preferences_factory(NULL),
@@ -53,7 +62,8 @@ OlaDaemon::OlaDaemon(const ola_server_options &options,
       m_service_factory(NULL),
       m_options(options),
       m_export_map(export_map),
-      m_rpc_port(rpc_port) {
+      m_rpc_port(rpc_port),
+      m_config_dir(config_dir) {
   if (m_export_map) {
     IntegerVariable *var = m_export_map->GetIntegerVar(K_RPC_PORT_VAR);
     var->Set(rpc_port);
@@ -79,13 +89,19 @@ bool OlaDaemon::Init() {
       m_accepting_socket || m_server)
     return false;
 
+  if (m_config_dir.empty() && !InitDefaultConfigDir()) {
+    return false;
+  }
+
+  OLA_INFO << "Using configs in " << m_config_dir;
+  m_preferences_factory = new FileBackedPreferencesFactory(m_config_dir);
+
   m_ss = new SelectServer(m_export_map);
   m_service_factory = new OlaClientServiceFactory();
 
   // Order is important here as we won't load the same plugin twice.
   m_plugin_loaders.push_back(new DynamicPluginLoader());
 
-  m_preferences_factory = new FileBackedPreferencesFactory();
   m_accepting_socket = new TcpAcceptingSocket("127.0.0.1", m_rpc_port);
 
   m_server = new OlaServer(m_service_factory,
@@ -149,5 +165,58 @@ void OlaDaemon::Terminate() {
 void OlaDaemon::ReloadPlugins() {
   if (m_server)
     m_server->ReloadPlugins();
+}
+
+
+
+/**
+ * Return the home directory for the current user
+ */
+bool OlaDaemon::InitDefaultConfigDir() {
+  struct passwd pwd, *pwd_ptr;
+  unsigned int size = 1024;
+  bool ok = false;
+  char *buffer;
+
+  while (!ok) {
+    buffer = new char[size];
+    int ret = getpwuid_r(getuid(), &pwd, buffer, size, &pwd_ptr);
+    switch (ret) {
+      case 0:
+        ok = true;
+        break;
+      case ERANGE:
+        delete[] buffer;
+        size += 1024;
+        break;
+      default:
+        delete[] buffer;
+        return false;
+    }
+  }
+
+  string home_dir = pwd_ptr->pw_dir;
+  delete[] buffer;
+
+  if (chdir(home_dir.data())) {
+    OLA_FATAL << "Couldn't chdir to " << home_dir;
+    return false;
+  }
+
+  if (chdir(OLA_CONFIG_DIR)) {
+    // try and create it
+    if (mkdir(OLA_CONFIG_DIR, 0755)) {
+      OLA_FATAL << "Couldn't mkdir " << home_dir << "/" << OLA_CONFIG_DIR;
+      return false;
+    }
+
+    if (chdir(OLA_CONFIG_DIR)) {
+      OLA_FATAL << home_dir << "/" << OLA_CONFIG_DIR << " doesn't exist";
+      return false;
+    }
+  }
+
+  m_config_dir = home_dir + "/" + OLA_CONFIG_DIR;
+  return true;
 }
 }  // ola
