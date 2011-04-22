@@ -41,8 +41,12 @@ def ParseOptions():
   description = textwrap.dedent("""\
     Run a series of tests on a RDM responder to check the behaviour.
     This requires the OLA server to be running, and the RDM device to have been
-    detected. You can confirm this by running ola_rdm_discover.py -u
-    UNIVERSE""")
+    detected. You can confirm this by running ola_rdm_discover -u
+    UNIVERSE.  This will send SET commands to the broadcast UIDs which means
+    the start address, device label etc. will be changed for all devices
+    connected to the responder. Think twice about running this on your
+    production lighting rig.
+  """)
   parser = OptionParser(usage, description=description)
   parser.add_option('-d', '--debug', action='store_true',
                     help='Print debug information to assist in diagnosing '
