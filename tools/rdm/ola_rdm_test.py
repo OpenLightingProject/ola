@@ -51,6 +51,8 @@ def ParseOptions():
                     help='Also log to the file named FILE.uid.timestamp.')
   parser.add_option('-p', '--pid_file', metavar='FILE',
                     help='The file to load the PID definitions from.')
+  parser.add_option('-s', '--skip_check', action='store_true',
+                    help='Skip the check for multiple devices.')
   parser.add_option('-t', '--tests', metavar='TEST1,TEST2',
                     help='A comma separated list of tests to run.')
   parser.add_option('-u', '--universe', default=0,
@@ -153,28 +155,43 @@ def main():
   pid_store = PidStore.GetStore(options.pid_file)
   wrapper = ClientWrapper()
 
-  global found_uid
-  found_uid = False
+  global uid_ok
+  uid_ok = False
 
   def UIDList(state, uids):
-    global found_uid
+    wrapper.Stop()
+    global uid_ok
     if not state.Succeeded():
       logging.error('Fetch failed: %s' % state.message)
-    else:
+      return
+
+    for uid in uids:
+      if uid == options.uid:
+        logging.debug('Found UID %s' % options.uid)
+        uid_ok = True
+
+    if not uid_ok:
+      logging.error('UID %s not found in universe %d' %
+        (options.uid, options.universe))
+      return
+
+    if len(uids) > 1:
+      logging.info(
+          'The following devices were detected and will be reconfigued')
       for uid in uids:
-        if uid == options.uid:
-          logging.debug('Found UID %s' % options.uid)
-          found_uid = True
-    wrapper.Stop()
+        logging.info(' %s' % uid)
+
+      if not options.skip_check:
+        logging.info('Continue ? [Y/n]')
+        response = raw_input().strip().lower()
+        uid_ok = response == 'y' or response == ''
 
   logging.debug('Fetching UID list from server')
   wrapper.Client().FetchUIDList(options.universe, UIDList)
   wrapper.Run()
   wrapper.Reset()
 
-  if not found_uid:
-    logging.error('UID %s not found in universe %d' %
-      (options.uid, options.universe))
+  if not uid_ok:
     sys.exit()
 
   test_filter = None
