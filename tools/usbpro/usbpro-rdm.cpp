@@ -210,8 +210,7 @@ void RDMSniffer::DumpRequest(unsigned int length, const uint8_t *data) {
 
 void RDMSniffer::DumpResponse(unsigned int length, const uint8_t *data) {
   ola::rdm::rdm_response_code code;
-  RDMResponse *response = RDMResponse::InflateFromData(data, length, NULL,
-                                                       &code);
+  RDMResponse *response = RDMResponse::InflateFromData(data, length, &code);
   if (response) {
     cout << (response->CommandClass() == RDMCommand::GET_COMMAND_RESPONSE ?
         "GET_RESPONSE" : "SET_RESPONSE");

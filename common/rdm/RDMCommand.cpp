@@ -354,8 +354,24 @@ RDMRequest* RDMRequest::InflateFromData(const string &data) {
  */
 RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
                                           unsigned int length,
+                                          rdm_response_code *response_code,
+                                          const RDMRequest *request) {
+  if (request)
+    return InflateFromData(data,
+                           length,
+                           response_code,
+                           request,
+                           request->TransactionNumber());
+  else
+    return InflateFromData(data, length, response_code, request, 0);
+}
+
+
+RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
+                                          unsigned int length,
+                                          rdm_response_code *response_code,
                                           const RDMRequest *request,
-                                          rdm_response_code *response_code) {
+                                          uint8_t transaction_number) {
   rdm_command_message command_message;
   *response_code = VerifyData(data, length, &command_message);
   if (*response_code != RDM_COMPLETED_OK)
@@ -386,10 +402,10 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     }
 
     // check transaction #
-    if (command_message.transaction_number != request->TransactionNumber()) {
+    if (command_message.transaction_number != transaction_number) {
       OLA_WARN << "Transaction numbers don't match, got " <<
         static_cast<int>(command_message.transaction_number) << ", expected "
-        << static_cast<int>(request->TransactionNumber());
+        << static_cast<int>(transaction_number);
       *response_code = RDM_TRANSACTION_MISMATCH;
       return NULL;
     }
@@ -433,6 +449,8 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
 
   uint16_t param_id = ((command_message.param_id[0] << 8) +
     command_message.param_id[1]);
+  uint8_t return_transaction_number = (request ? transaction_number :
+    command_message.transaction_number);
 
   switch (command_class) {
     case GET_COMMAND_RESPONSE:
@@ -440,7 +458,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
       return new RDMGetResponse(
           source_uid,
           destination_uid,
-          command_message.transaction_number,  // transaction #
+          return_transaction_number,  // transaction #
           command_message.port_id,  // port id
           command_message.message_count,  // message count
           sub_device,
@@ -452,7 +470,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
       return new RDMSetResponse(
           source_uid,
           destination_uid,
-          command_message.transaction_number,  // transaction #
+          return_transaction_number,  // transaction #
           command_message.port_id,  // port id
           command_message.message_count,  // message count
           sub_device,
@@ -472,12 +490,27 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
  * Inflate from some data
  */
 RDMResponse* RDMResponse::InflateFromData(const string &data,
-                                          const RDMRequest *request,
-                                          rdm_response_code *response_code) {
+                                          rdm_response_code *response_code,
+                                          const RDMRequest *request) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size(),
+                         response_code,
+                         request);
+}
+
+
+/**
+ * Inflate from some data
+ */
+RDMResponse* RDMResponse::InflateFromData(const string &data,
+                                          rdm_response_code *response_code,
+                                          const RDMRequest *request,
+                                          uint8_t transaction_number) {
+  return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
+                         data.size(),
+                         response_code,
                          request,
-                         response_code);
+                         transaction_number);
 }
 
 

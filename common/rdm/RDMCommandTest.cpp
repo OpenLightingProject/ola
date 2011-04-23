@@ -333,16 +333,16 @@ void RDMCommandTest::testResponseInflation() {
   UID source(1, 2);
   UID destination(3, 4);
   ola::rdm::rdm_response_code code;
-  RDMResponse *command = RDMResponse::InflateFromData(NULL, 10, NULL, &code);
+  RDMResponse *command = RDMResponse::InflateFromData(NULL, 10, &code);
   CPPUNIT_ASSERT_EQUAL(static_cast<RDMResponse*>(NULL), command);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_INVALID_RESPONSE, code);
 
   string empty_string;
-  command = RDMResponse::InflateFromData(empty_string, NULL, &code);
+  command = RDMResponse::InflateFromData(empty_string, &code);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_PACKET_TOO_SHORT, code);
   CPPUNIT_ASSERT_EQUAL(static_cast<RDMResponse*>(NULL), command);
 
-  command = RDMResponse::InflateFromData(EXPECTED_GET_RESPONSE_BUFFER, 0, NULL,
+  command = RDMResponse::InflateFromData(EXPECTED_GET_RESPONSE_BUFFER, 0,
                                          &code);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_PACKET_TOO_SHORT, code);
   CPPUNIT_ASSERT_EQUAL(static_cast<RDMResponse*>(NULL), command);
@@ -350,7 +350,6 @@ void RDMCommandTest::testResponseInflation() {
   command = RDMResponse::InflateFromData(
       EXPECTED_GET_RESPONSE_BUFFER,
       sizeof(EXPECTED_GET_RESPONSE_BUFFER),
-      NULL,
       &code);
   CPPUNIT_ASSERT(NULL != command);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, code);
@@ -375,7 +374,7 @@ void RDMCommandTest::testResponseInflation() {
   // now try from a string
   string response_string(reinterpret_cast<char*>(EXPECTED_GET_RESPONSE_BUFFER),
                          sizeof(EXPECTED_GET_RESPONSE_BUFFER));
-  command = RDMResponse::InflateFromData(response_string, NULL, &code);
+  command = RDMResponse::InflateFromData(response_string, &code);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, code);
   CPPUNIT_ASSERT(NULL != command);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4, command->ParamDataSize());
@@ -392,13 +391,12 @@ void RDMCommandTest::testResponseInflation() {
   command = RDMResponse::InflateFromData(
       bad_packet,
       sizeof(EXPECTED_GET_RESPONSE_BUFFER),
-      NULL,
       &code);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_CHECKSUM_INCORRECT, code);
   CPPUNIT_ASSERT(NULL == command);
 
   response_string[22] = 255;
-  command = RDMResponse::InflateFromData(response_string, NULL, &code);
+  command = RDMResponse::InflateFromData(response_string, &code);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_CHECKSUM_INCORRECT, code);
   CPPUNIT_ASSERT(NULL == command);
 
@@ -407,7 +405,6 @@ void RDMCommandTest::testResponseInflation() {
   command = RDMResponse::InflateFromData(
       bad_packet,
       sizeof(EXPECTED_GET_RESPONSE_BUFFER),
-      NULL,
       &code);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_PARAM_LENGTH_MISMATCH, code);
   CPPUNIT_ASSERT(NULL == command);
@@ -421,7 +418,6 @@ void RDMCommandTest::testResponseInflation() {
   command = RDMResponse::InflateFromData(
       bad_packet,
       sizeof(EXPECTED_SET_BUFFER),
-      NULL,
       &code);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_PARAM_LENGTH_MISMATCH, code);
   CPPUNIT_ASSERT(NULL == command);
@@ -431,13 +427,12 @@ void RDMCommandTest::testResponseInflation() {
   command = RDMResponse::InflateFromData(
       EXPECTED_GET_BUFFER,
       sizeof(EXPECTED_GET_BUFFER),
-      NULL,
       &code);
   CPPUNIT_ASSERT_EQUAL(static_cast<RDMResponse*>(NULL), command);
 
   string request_string(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
                         sizeof(EXPECTED_GET_BUFFER));
-  command = RDMResponse::InflateFromData(request_string, NULL, &code);
+  command = RDMResponse::InflateFromData(request_string, &code);
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_INVALID_COMMAND_CLASS, code);
   CPPUNIT_ASSERT_EQUAL(static_cast<RDMResponse*>(NULL), command);
 }

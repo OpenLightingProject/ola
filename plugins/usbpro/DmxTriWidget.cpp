@@ -675,7 +675,7 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
 
   ola::rdm::rdm_response_code code = ola::rdm::RDM_COMPLETED_OK;
   ola::rdm::RDMResponse *response =
-    ola::rdm::RDMResponse::InflateFromData(data, length, request, &code);
+    ola::rdm::RDMResponse::InflateFromData(data, length, &code, request);
   delete request;
   callback->Run(code, response, packets);
 }

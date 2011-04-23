@@ -116,7 +116,7 @@ void DmxterWidgetTest::ValidateResponse(
   CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
   ola::rdm::rdm_response_code raw_code;
   ola::rdm::RDMResponse *raw_response =
-    ola::rdm::RDMResponse::InflateFromData(packets[0], NULL, &raw_code);
+    ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code);
   CPPUNIT_ASSERT(*raw_response == *response);
   delete raw_response;
   delete response;
