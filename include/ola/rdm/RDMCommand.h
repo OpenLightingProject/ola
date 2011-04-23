@@ -302,11 +302,20 @@ class RDMResponse: public RDMCommand {
     // Convert a block of data to an RDMCommand object
     static RDMResponse* InflateFromData(const uint8_t *data,
                                         unsigned int length,
+                                        rdm_response_code *response_code,
+                                        const RDMRequest *request = NULL);
+    static RDMResponse* InflateFromData(const uint8_t *data,
+                                        unsigned int length,
+                                        rdm_response_code *response_code,
                                         const RDMRequest *request,
-                                        rdm_response_code *response_code);
+                                        uint8_t transaction_number);
     static RDMResponse* InflateFromData(const string &data,
+                                        rdm_response_code *response_code,
+                                        const RDMRequest *request = NULL);
+    static RDMResponse* InflateFromData(const string &data,
+                                        rdm_response_code *response_code,
                                         const RDMRequest *request,
-                                        rdm_response_code *response_code);
+                                        uint8_t transaction_number);
 
     // Combine two responses into one.
     static RDMResponse* CombineResponses(const RDMResponse *response1,

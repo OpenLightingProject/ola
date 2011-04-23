@@ -138,7 +138,7 @@ void ArduinoWidgetTest::ValidateResponse(
   CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
   ola::rdm::rdm_response_code raw_code;
   ola::rdm::RDMResponse *raw_response =
-    ola::rdm::RDMResponse::InflateFromData(packets[0], NULL, &raw_code);
+    ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code);
   CPPUNIT_ASSERT(*raw_response == *response);
   delete raw_response;
   delete response;
@@ -174,7 +174,7 @@ const RDMRequest *ArduinoWidgetTest::NewRequest(const UID &destination,
   return new ola::rdm::RDMGetRequest(
       SOURCE,
       destination,
-      0,  // transaction #
+      m_transaction_number++,  // transaction #
       1,  // port id
       0,  // message count
       10,  // sub device
@@ -192,12 +192,7 @@ uint8_t *ArduinoWidgetTest::PackRequest(const RDMRequest *request,
   unsigned int request_size = request->Size();
   uint8_t *expected_packet = new uint8_t[request_size + 1];
   expected_packet[0] = ola::rdm::RDMCommand::START_CODE;
-  CPPUNIT_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &request_size,
-        SOURCE,
-        m_transaction_number++,
-        1));
+  CPPUNIT_ASSERT(request->Pack(expected_packet + 1, &request_size));
   *size = request_size + 1;
   return expected_packet;
 }

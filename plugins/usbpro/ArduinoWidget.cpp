@@ -229,8 +229,9 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
   ola::rdm::rdm_response_code code;
   ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
       packet,
+      &code,
       request.get(),
-      &code);
+      m_transaction_id - 1);
 
   if (response)
     callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);

@@ -1120,9 +1120,7 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
                                        const string &response_data,
                                        const struct in_addr &source_address) {
   ola::rdm::rdm_response_code code;
-  RDMResponse *response = RDMResponse::InflateFromData(response_data,
-                                                       NULL,
-                                                       &code);
+  RDMResponse *response = RDMResponse::InflateFromData(response_data, &code);
 
   // without a valid response, we don't know which request this matches. This
   // makes ArtNet rather useless for RDM regression testing

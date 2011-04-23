@@ -352,8 +352,8 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
   if (code == ola::rdm::RDM_COMPLETED_OK) {
     ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
         packet,
-        m_pending_request,
-        &code);
+        &code,
+        m_pending_request);
     if (response)
       callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
     else
