@@ -299,6 +299,7 @@ int RDMHttpModule::JsonUIDPersonalities(const HttpRequest *request,
   string error = GetPersonalities(request, response, universe_id, *uid, false,
                                   true);
 
+  delete uid;
   if (!error.empty())
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
   return MHD_YES;
@@ -445,9 +446,11 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
     error = GetPowerState(response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
+    delete uid;
     return m_server->ServeNotFound(response);
   }
 
+  delete uid;
   if (!error.empty())
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR + error);
   return MHD_YES;
@@ -513,9 +516,11 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
     error = SetPowerState(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
+    delete uid;
     return m_server->ServeNotFound(response);
   }
 
+  delete uid;
   if (!error.empty())
     return RespondWithError(response, error);
   return MHD_YES;
