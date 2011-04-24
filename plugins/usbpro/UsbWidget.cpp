@@ -52,6 +52,7 @@ UsbWidget::~UsbWidget() {
   // don't delete because ownership is transferred to the ss so that device
   // removal works correctly. If you delete the socket the OnClose closure will
   // be deleted, which breaks if it's already running.
+  m_socket->SetOnClose(NULL);
   m_socket->Close();
   m_socket = NULL;
 }
