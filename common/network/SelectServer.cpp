@@ -424,8 +424,12 @@ void SelectServer::AddSocketsToSet(fd_set *r_set,
 
   ConnectedSocketSet::iterator con_iter = m_connected_sockets.begin();
   while (con_iter != m_connected_sockets.end()) {
-    if (con_iter->socket->CheckIfInvalid()) {
+    if (con_iter->socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
       // The socket was closed without removing it from the select server
+      ConnectedSocket::OnCloseCallback *on_close =
+        con_iter->socket->TransferOnClose();
+      if (on_close)
+        on_close->Run();
       if (con_iter->delete_on_close)
         delete con_iter->socket;
       if (m_export_map)
@@ -482,7 +486,11 @@ void SelectServer::CheckSockets(fd_set *r_set, fd_set *w_set) {
   ConnectedSocketSet::iterator con_iter = m_connected_sockets.begin();
   while (con_iter != m_connected_sockets.end()) {
     if (FD_ISSET(con_iter->socket->ReadDescriptor(), r_set)) {
-      if (con_iter->socket->CheckIfActive()) {
+      if (con_iter->socket->IsClosed()) {
+        ConnectedSocket::OnCloseCallback *on_close =
+          con_iter->socket->TransferOnClose();
+        if (on_close)
+          on_close->Run();
         if (con_iter->delete_on_close)
           delete con_iter->socket;
         if (m_export_map)

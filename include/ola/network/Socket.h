@@ -189,43 +189,36 @@ class ConnectedSocket: public BidirectionalSocket {
     virtual bool Close() = 0;
 
     int DataRemaining() const;
+    bool IsClosed() const;
 
-    bool CheckIfInvalid() {
-      if (ReadDescriptor() == INVALID_SOCKET) {
-        if (m_on_close) {
-          m_on_close->Run();
-          m_on_close = NULL;
-        }
-        return true;
-      }
-      return false;
-    }
-
-    /*
-     * Used to check if the socket has been closed
-     */
-    bool CheckIfActive() {
-      if (IsClosed()) {
-        if (m_on_close) {
-          m_on_close->Run();
-          m_on_close = NULL;
-        }
-        return true;
-      }
-      return false;
-    }
+    typedef ola::SingleUseCallback0<void> OnCloseCallback;
 
     /*
      * Set the OnClose closure
      */
-    void SetOnClose(ola::SingleUseCallback0<void> *on_close) {
+    void SetOnClose(OnCloseCallback *on_close) {
       if (m_on_close)
         delete m_on_close;
       m_on_close = on_close;
     }
 
+    /**
+     * This is a special method which transfers ownership of the on close
+     * handler away from the socket. Often when an on_close callback runs we
+     * want to delete the socket that it's bound to. This causes problems
+     * because we can't tell the difference between a normal deletion and a
+     * deletion triggered by a close, and the latter causes the callback to be
+     * deleted while it's running. To avoid this we we want to call the on
+     * close handler we transfer ownership away from the socket so doesn't need
+     * to delete the running handler.
+     */
+    ola::SingleUseCallback0<void> *TransferOnClose() {
+      OnCloseCallback *on_close = m_on_close;
+      m_on_close = NULL;
+      return on_close;
+    }
+
   protected:
-    virtual bool IsClosed() const;
     bool SetNonBlocking(int fd);
     bool SetNoSigPipe(int fd);
     ssize_t FDSend(int fd, const uint8_t *buffer, unsigned int size) const;
@@ -236,8 +229,9 @@ class ConnectedSocket: public BidirectionalSocket {
 
     ConnectedSocket(const ConnectedSocket &other);
     ConnectedSocket& operator=(const ConnectedSocket &other);
+
   private:
-    ola::SingleUseCallback0<void> *m_on_close;
+    OnCloseCallback *m_on_close;
 };
 
 
