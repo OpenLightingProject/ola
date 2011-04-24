@@ -202,8 +202,8 @@ void UsbProPlugin::AddDevice(UsbDevice *device) {
   }
 
   device->SetOnRemove(NewSingleCallback(this,
-                                       &UsbProPlugin::DeviceRemoved,
-                                       device));
+                                        &UsbProPlugin::DeviceRemoved,
+                                        device));
   m_devices.push_back(device);
   m_plugin_adaptor->RegisterDevice(device);
 }

@@ -124,6 +124,10 @@ struct ltevent {
 };
 
 
+/**
+ * This is the core of the event driven system. The SelectServer is responsible
+ * for invoking Callbacks when events occur.
+ */
 class SelectServer: public SelectServerInterface {
   public :
     enum Direction {READ, WRITE};
@@ -132,20 +136,21 @@ class SelectServer: public SelectServerInterface {
                  TimeStamp *wake_up_time = NULL);
     ~SelectServer();
 
+    bool IsRunning() const { return !m_terminate; }
+    const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
+
+    void Terminate() { m_terminate = true; }
+    void Restart() { m_terminate = false; }
+
     void SetDefaultInterval(const TimeInterval &poll_interval);
     void Run();
     void RunOnce(unsigned int delay_sec = POLL_INTERVAL_SECOND,
                  unsigned int delay_usec = POLL_INTERVAL_USECOND);
-    void Terminate() { m_terminate = true; }
-    void Restart() { m_terminate = false; }
-    bool IsRunning() const { return !m_terminate; }
 
     bool AddSocket(Socket *socket);
-    bool AddSocket(ConnectedSocket *socket,
-                   bool delete_on_close = false);
+    bool AddSocket(ConnectedSocket *socket, bool delete_on_close = false);
     bool RemoveSocket(Socket *socket);
     bool RemoveSocket(ConnectedSocket *socket);
-
     bool RegisterWriteSocket(BidirectionalSocket *socket);
     bool UnRegisterWriteSocket(BidirectionalSocket *socket);
 
@@ -154,10 +159,10 @@ class SelectServer: public SelectServerInterface {
     timeout_id RegisterSingleTimeout(unsigned int ms,
                                      ola::SingleUseCallback0<void> *closure);
     void RemoveTimeout(timeout_id id);
-    const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
 
     void RunInLoop(ola::Callback0<void> *closure);
 
+    // these are pubic so that the tests can access them
     static const char K_SOCKET_VAR[];
     static const char K_WRITE_SOCKET_VAR[];
     static const char K_CONNECTED_SOCKET_VAR[];
@@ -178,6 +183,29 @@ class SelectServer: public SelectServerInterface {
       }
     };
 
+    typedef std::set<Socket*> SocketSet;
+    typedef std::set<BidirectionalSocket*> BidirectionalSocketSet;
+    typedef std::set<connected_socket_t, connected_socket_t_lt>
+      ConnectedSocketSet;
+    typedef std::set<ola::Callback0<void>*> LoopClosureSet;
+
+    bool m_terminate;
+    bool m_free_wake_up_time;
+    TimeInterval m_poll_interval;
+    unsigned int m_next_id;
+    SocketSet m_sockets;
+    ConnectedSocketSet m_connected_sockets;
+    BidirectionalSocketSet m_write_sockets;
+    std::set<timeout_id> m_removed_timeouts;
+    ExportMap *m_export_map;
+
+    typedef priority_queue<Event*, vector<Event*>, ltevent> event_queue_t;
+    event_queue_t m_events;
+    CounterVariable *m_loop_iterations;
+    CounterVariable *m_loop_time;
+    TimeStamp *m_wake_up_time;
+    LoopClosureSet m_loop_closures;
+
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
     bool CheckForEvents(const TimeInterval &poll_interval);
@@ -190,23 +218,6 @@ class SelectServer: public SelectServerInterface {
     static const int K_US_IN_SECOND = 1000000;
     static const unsigned int POLL_INTERVAL_SECOND = 1;
     static const unsigned int POLL_INTERVAL_USECOND = 0;
-
-    bool m_terminate;
-    bool m_free_wake_up_time;
-    TimeInterval m_poll_interval;
-    unsigned int m_next_id;
-    std::set<class Socket*> m_sockets;
-    std::set<connected_socket_t, connected_socket_t_lt> m_connected_sockets;
-    std::set<BidirectionalSocket*> m_write_sockets;
-    std::set<timeout_id> m_removed_timeouts;
-    ExportMap *m_export_map;
-
-    typedef priority_queue<Event*, vector<Event*>, ltevent> event_queue_t;
-    event_queue_t m_events;
-    CounterVariable *m_loop_iterations;
-    CounterVariable *m_loop_time;
-    TimeStamp *m_wake_up_time;
-    std::set<ola::Callback0<void>*> m_loop_closures;
 };
 }  // network
 }  // ola

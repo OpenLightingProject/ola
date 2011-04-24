@@ -54,7 +54,6 @@ const char SelectServer::K_LOOP_TIME[] = "ss-loop-time";
 const char SelectServer::K_LOOP_COUNT[] = "ss-loop-count";
 
 using std::max;
-using std::set;
 using ola::ExportMap;
 using ola::Callback0;
 
@@ -139,7 +138,7 @@ bool SelectServer::AddSocket(Socket *socket) {
     return false;
   }
 
-  set<Socket*>::const_iterator iter = m_sockets.find(socket);
+  SocketSet::const_iterator iter = m_sockets.find(socket);
   if (iter != m_sockets.end())
     return false;
 
@@ -170,7 +169,7 @@ bool SelectServer::AddSocket(ConnectedSocket *socket,
   registered_socket.socket = socket;
   registered_socket.delete_on_close = delete_on_close;
 
-  set<connected_socket_t>::const_iterator iter;
+  ConnectedSocketSet::const_iterator iter;
   for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
        ++iter) {
     if (iter->socket->ReadDescriptor() == socket->ReadDescriptor())
@@ -193,7 +192,7 @@ bool SelectServer::RemoveSocket(Socket *socket) {
   if (socket->ReadDescriptor() == Socket::INVALID_SOCKET)
     OLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
 
-  set<Socket*>::iterator iter = m_sockets.find(socket);
+  SocketSet::iterator iter = m_sockets.find(socket);
   if (iter != m_sockets.end()) {
     m_sockets.erase(iter);
     if (m_export_map)
@@ -213,7 +212,7 @@ bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
   if (socket->ReadDescriptor() == Socket::INVALID_SOCKET)
     OLA_WARN << "Removing a closed socket: " << socket;
 
-  set<connected_socket_t>::iterator iter;
+  ConnectedSocketSet::iterator iter;
   for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
        ++iter) {
     if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
@@ -239,8 +238,7 @@ bool SelectServer::RegisterWriteSocket(class BidirectionalSocket *socket) {
     return false;
   }
 
-  set<BidirectionalSocket*>::const_iterator iter =
-    m_write_sockets.find(socket);
+  BidirectionalSocketSet::const_iterator iter = m_write_sockets.find(socket);
   if (iter != m_write_sockets.end())
     return false;
 
@@ -260,7 +258,7 @@ bool SelectServer::UnRegisterWriteSocket(class BidirectionalSocket *socket) {
   if (socket->WriteDescriptor() == Socket::INVALID_SOCKET)
     OLA_WARN << "Removing a closed socket: " << socket->WriteDescriptor();
 
-  set<BidirectionalSocket*>::iterator iter = m_write_sockets.find(socket);
+  BidirectionalSocketSet::iterator iter = m_write_sockets.find(socket);
   if (iter != m_write_sockets.end()) {
     m_write_sockets.erase(iter);
     if (m_export_map)
@@ -347,7 +345,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   TimeStamp now;
   struct timeval tv;
 
-  set<Callback0<void>*>::iterator loop_iter;
+  LoopClosureSet::iterator loop_iter;
   for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
        ++loop_iter)
     (*loop_iter)->Run();
@@ -408,7 +406,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
 void SelectServer::AddSocketsToSet(fd_set *r_set,
                                    fd_set *w_set,
                                    int *max_sd) {
-  set<Socket*>::iterator iter = m_sockets.begin();
+  SocketSet::iterator iter = m_sockets.begin();
   while (iter != m_sockets.end()) {
     if ((*iter)->ReadDescriptor() == Socket::INVALID_SOCKET) {
       // The socket was probably closed without removing it from the select
@@ -424,7 +422,7 @@ void SelectServer::AddSocketsToSet(fd_set *r_set,
     }
   }
 
-  set<connected_socket_t>::iterator con_iter = m_connected_sockets.begin();
+  ConnectedSocketSet::iterator con_iter = m_connected_sockets.begin();
   while (con_iter != m_connected_sockets.end()) {
     if (con_iter->socket->CheckIfInvalid()) {
       // The socket was closed without removing it from the select server
@@ -441,7 +439,7 @@ void SelectServer::AddSocketsToSet(fd_set *r_set,
     }
   }
 
-  set<BidirectionalSocket*>::iterator write_iter = m_write_sockets.begin();
+  BidirectionalSocketSet::iterator write_iter = m_write_sockets.begin();
   while (write_iter != m_write_sockets.end()) {
     if ((*write_iter)->WriteDescriptor() == Socket::INVALID_SOCKET) {
       // The socket was probably closed without removing it from the select
@@ -470,7 +468,7 @@ void SelectServer::CheckSockets(fd_set *r_set, fd_set *w_set) {
   std::queue<Callback0<void>*> read_ready_queue;
   std::queue<Callback0<void>*> write_ready_queue;
 
-  set<Socket*>::iterator iter;
+  SocketSet::iterator iter;
   for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
     if (FD_ISSET((*iter)->ReadDescriptor(), r_set)) {
       if ((*iter)->OnData())
@@ -481,7 +479,7 @@ void SelectServer::CheckSockets(fd_set *r_set, fd_set *w_set) {
     }
   }
 
-  set<connected_socket_t>::iterator con_iter = m_connected_sockets.begin();
+  ConnectedSocketSet::iterator con_iter = m_connected_sockets.begin();
   while (con_iter != m_connected_sockets.end()) {
     if (FD_ISSET(con_iter->socket->ReadDescriptor(), r_set)) {
       if (con_iter->socket->CheckIfActive()) {
@@ -502,7 +500,7 @@ void SelectServer::CheckSockets(fd_set *r_set, fd_set *w_set) {
     con_iter++;
   }
 
-  set<BidirectionalSocket*>::iterator write_iter = m_write_sockets.begin();
+  BidirectionalSocketSet::iterator write_iter = m_write_sockets.begin();
   for (;write_iter != m_write_sockets.end(); write_iter++) {
     if (FD_ISSET((*write_iter)->WriteDescriptor(), w_set)) {
       if ((*write_iter)->PerformWrite())
@@ -569,7 +567,7 @@ TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
  * Remove all registrations.
  */
 void SelectServer::UnregisterAll() {
-  set<connected_socket_t>::iterator iter = m_connected_sockets.begin();
+  ConnectedSocketSet::iterator iter = m_connected_sockets.begin();
   for (; iter != m_connected_sockets.end(); ++iter) {
     if (iter->delete_on_close) {
       delete iter->socket;
@@ -585,7 +583,7 @@ void SelectServer::UnregisterAll() {
     m_events.pop();
   }
 
-  set<Callback0<void>*>::iterator loop_iter;
+  LoopClosureSet::iterator loop_iter;
   for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
        ++loop_iter)
     delete *loop_iter;

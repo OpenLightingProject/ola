@@ -59,6 +59,17 @@ class SelectServerTest: public CppUnit::TestFixture {
       m_timeout_counter++;
     }
 
+    void ReentrantTimeout(SelectServer *ss) {
+      ss->RegisterSingleTimeout(
+          0,
+          ola::NewSingleCallback(this,
+                                 &SelectServerTest::SingleIncrementTimeout));
+      ss->RegisterSingleTimeout(
+          5,
+          ola::NewSingleCallback(this,
+                                 &SelectServerTest::SingleIncrementTimeout));
+    }
+
     bool IncrementTimeout() {
       if (m_ss && m_ss->IsRunning())
         m_timeout_counter++;
@@ -152,6 +163,19 @@ void SelectServerTest::testTimeout() {
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_timeout_counter);
+
+  // now check a timeout that adds another timeout
+  m_timeout_counter = 0;
+  m_ss->Restart();
+
+  m_ss->RegisterSingleTimeout(
+      10,
+      ola::NewSingleCallback(this, &SelectServerTest::ReentrantTimeout, m_ss));
+  m_ss->RegisterSingleTimeout(
+      20,
+      ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
+  m_ss->Run();
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_timeout_counter);
 
   // check repeating timeouts
   // Some systems (VMs in particular) can't do 10ms resolution so we go for
