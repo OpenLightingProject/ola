@@ -17,5 +17,5 @@ fi
 
 ./configure --disable-dependency-tracking
 make  CPPFLAGS="-arch ppc -arch i386 -arch x86_64 -mmacosx-version-min=10.5"  \
-  LDFLAGS=" -arch ppc -arch i386 -arch x86_64"
+  LDFLAGS=" -arch ppc -arch i386 -arch x86_64 -mmacosx-version-min=10.5"
 DESTDIR=${dest_dir} make install
