@@ -83,6 +83,9 @@ void HeaderSetTest::testE131Header() {
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header.Priority());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header.Sequence());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header.Universe());
+  CPPUNIT_ASSERT_EQUAL(false, header.PreviewData());
+  CPPUNIT_ASSERT_EQUAL(false, header.StreamTerminated());
+  CPPUNIT_ASSERT_EQUAL(false, header.IsRDMManagement());
   CPPUNIT_ASSERT(!header.UsingRev2());
 
   // test copy and assign
@@ -91,6 +94,9 @@ void HeaderSetTest::testE131Header() {
   CPPUNIT_ASSERT_EQUAL(header.Priority(), header2.Priority());
   CPPUNIT_ASSERT_EQUAL(header.Sequence(), header2.Sequence());
   CPPUNIT_ASSERT_EQUAL(header.Universe(), header2.Universe());
+  CPPUNIT_ASSERT_EQUAL(false, header2.PreviewData());
+  CPPUNIT_ASSERT_EQUAL(false, header2.StreamTerminated());
+  CPPUNIT_ASSERT_EQUAL(false, header2.IsRDMManagement());
   CPPUNIT_ASSERT(!header2.UsingRev2());
 
   E131Header header3(header);
@@ -111,6 +117,17 @@ void HeaderSetTest::testE131Header() {
 
   E131Rev2Header header2_rev2 = header_rev2;
   CPPUNIT_ASSERT(header2_rev2 == header_rev2);
+
+  // test a header with the special bits set
+  E131Header header4("foo", 1, 2, 2050, true, true, true);
+  CPPUNIT_ASSERT("foo" == header4.Source());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header4.Priority());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header4.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header4.Universe());
+  CPPUNIT_ASSERT_EQUAL(true, header4.PreviewData());
+  CPPUNIT_ASSERT_EQUAL(true, header4.StreamTerminated());
+  CPPUNIT_ASSERT_EQUAL(true, header4.IsRDMManagement());
+  CPPUNIT_ASSERT(!header4.UsingRev2());
 }
 
 
