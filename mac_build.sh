@@ -17,7 +17,7 @@ fi
 
 ./configure --disable-dependency-tracking --enable-python-libs
 make  CPPFLAGS="-arch ppc -arch i386 -arch x86_64 -mmacosx-version-min=10.5"  \
-  LDFLAGS=" -arch ppc -arch i386 -arch x86_64"
+  LDFLAGS=" -arch ppc -arch i386 -arch x86_64 -mmacosx-version-min=10.5"
 make check
 sudo make install
 DESTDIR=${dest_dir} make install
