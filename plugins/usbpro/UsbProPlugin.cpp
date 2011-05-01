@@ -256,7 +256,7 @@ bool UsbProPlugin::SetDefaultPreferences() {
 
   vector<string> device_prefixes =
     m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY);
-  if (!device_prefixes.size()) {
+  if (device_prefixes.empty()) {
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, LINUX_DEVICE_PREFIX);
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, MAC_DEVICE_PREFIX);
     save = true;
@@ -277,7 +277,7 @@ bool UsbProPlugin::SetDefaultPreferences() {
     m_preferences->Save();
 
   device_prefixes = m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY);
-  if (!device_prefixes.size())
+  if (device_prefixes.empty())
     return false;
   return true;
 }
@@ -301,7 +301,7 @@ vector<string> UsbProPlugin::FindCandiateDevices() {
     m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY);
   string device_dir = m_preferences->GetValue(DEVICE_DIR_KEY);
 
-  if (device_prefixes.size()) {
+  if (!device_prefixes.empty()) {
     DIR *dp;
     struct dirent dir_ent;
     struct dirent *dir_ent_p;

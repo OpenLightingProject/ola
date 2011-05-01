@@ -196,7 +196,7 @@ void MockUdpSocket::AddExpectedData(const uint8_t *data,
 
 
 void MockUdpSocket::Verify() {
-  CPPUNIT_ASSERT_EQUAL((size_t) 0, m_expected_calls.size());
+  CPPUNIT_ASSERT(m_expected_calls.empty());
 }
 
 

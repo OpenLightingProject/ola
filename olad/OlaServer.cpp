@@ -185,7 +185,7 @@ bool OlaServer::Init() {
     return false;
 
   // TODO(simon): run without preferences & PluginLoader
-  if (!m_plugin_loaders.size() || !m_preferences_factory)
+  if (m_plugin_loaders.empty() || !m_preferences_factory)
     return false;
 
   if (m_accepting_socket) {

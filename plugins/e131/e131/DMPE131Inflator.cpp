@@ -257,7 +257,7 @@ bool DMPE131Inflator::TrackSourceIfRequired(
     iter++;
   }
 
-  if (!sources.size())
+  if (sources.empty())
     universe_data->active_priority = 0;
 
   for (iter = sources.begin(); iter != sources.end(); ++iter) {
@@ -314,7 +314,7 @@ bool DMPE131Inflator::TrackSourceIfRequired(
       OLA_INFO << "CID " << headers.GetRootHeader().GetCid().ToString() <<
         " sent a termination for universe " << e131_header.Universe();
       sources.erase(iter);
-      if (!sources.size())
+      if (sources.empty())
         universe_data->active_priority = 0;
       // We need to trigger a merge here else the buffer will be stale, we keep
       // the buffer as NULL though so we don't use the data.

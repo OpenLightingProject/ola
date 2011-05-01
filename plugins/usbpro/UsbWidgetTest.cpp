@@ -136,7 +136,7 @@ void UsbWidgetTest::Receive() {
   CPPUNIT_ASSERT(0 == m_expected.compare(0, data_read, recieved));
   m_expected.erase(0, data_read);
 
-  if (m_expected.size() == 0)
+  if (m_expected.empty())
     m_ss.Terminate();
 }
 
@@ -155,7 +155,7 @@ void UsbWidgetTest::ReceiveMessage(uint8_t label,
   CPPUNIT_ASSERT_EQUAL(message.size, size);
   CPPUNIT_ASSERT(!memcmp(message.data, data, size));
 
-  if (!m_messages.size())
+  if (m_messages.empty())
     m_ss.Terminate();
 }
 
