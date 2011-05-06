@@ -22,8 +22,15 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/ioctl.h>
+#include <sys/types.h>
 #include <unistd.h>
+
+#ifdef WIN32
+#include <winsock2.h>
+#include <winioctl.h>
+#else
+#include <sys/ioctl.h>
+#endif
 
 #include <string>
 
@@ -34,9 +41,15 @@
 namespace ola {
 namespace network {
 
+#ifdef WIN32
+const int Socket::CLOSED_SOCKET = static_cast<int>(CLOSED_SOCKET);
+#else
+const int Socket::CLOSED_SOCKET = -1;
+#endif
+
+
 // ConnectedSocket
 // ------------------------------------------------
-
 
 /*
  * Turn on non-blocking reads.
@@ -44,12 +57,17 @@ namespace network {
  * @return true if it worked, false otherwise
  */
 bool ConnectedSocket::SetNonBlocking(int fd) {
-  if (fd == INVALID_SOCKET)
+  if (fd == CLOSED_SOCKET)
     return false;
 
+#ifdef WIN32
+  u_long mode = 1;
+  bool success = ioctlsocket(fd, FIONBIO, &mode) != SOCKET_ERROR;
+#else
   int val = fcntl(fd, F_GETFL, 0);
-  int ret = fcntl(fd, F_SETFL, val | O_NONBLOCK);
-  if (ret) {
+  bool success =  fcntl(fd, F_SETFL, val | O_NONBLOCK) == 0;
+#endif
+  if (!success) {
     OLA_WARN << "failed to set " << fd << " non-blocking: " << strerror(errno);
     return false;
   }
@@ -70,7 +88,7 @@ bool ConnectedSocket::SetNoSigPipe(int fd) {
     return false;
   }
   #else
-    (void) fd;
+  (void) fd;
   #endif
   return true;
 }
@@ -81,11 +99,17 @@ bool ConnectedSocket::SetNoSigPipe(int fd) {
  * @return the amount of unread data for the socket
  */
 int ConnectedSocket::DataRemaining() const {
-  int unread;
-  if (ReadDescriptor() == INVALID_SOCKET)
+  if (ReadDescriptor() == CLOSED_SOCKET)
     return 0;
 
-  if (ioctl(ReadDescriptor(), FIONREAD, &unread) < 0) {
+#ifdef WIN32
+  u_long unread;
+  bool failed = ioctlsocket(ReadDescriptor(), FIONREAD, &unread) < 0;
+#else
+  int unread;
+  bool failed = ioctl(ReadDescriptor(), FIONREAD, &unread) < 0;
+#endif
+  if (failed) {
     OLA_WARN << "ioctl error for " << ReadDescriptor() << ", "
       << strerror(errno);
     return 0;
@@ -104,7 +128,7 @@ int ConnectedSocket::DataRemaining() const {
 ssize_t ConnectedSocket::FDSend(int fd,
                                 const uint8_t *buffer,
                                 unsigned int size) const {
-  if (fd == INVALID_SOCKET)
+  if (fd == CLOSED_SOCKET)
     return 0;
 
 #ifdef HAVE_DECL_MSG_NOSIGNAL
@@ -135,7 +159,7 @@ int ConnectedSocket::FDReceive(int fd,
   int ret;
   uint8_t *data = buffer;
   data_read = 0;
-  if (fd == INVALID_SOCKET)
+  if (fd == CLOSED_SOCKET)
     return -1;
 
   while (data_read < size) {
@@ -173,7 +197,7 @@ bool ConnectedSocket::IsClosed() const {
  * Setup this loopback socket
  */
 bool LoopbackSocket::Init() {
-  if (m_fd_pair[0] != INVALID_SOCKET || m_fd_pair[1] != INVALID_SOCKET)
+  if (m_fd_pair[0] != CLOSED_SOCKET || m_fd_pair[1] != CLOSED_SOCKET)
     return false;
 
   if (pipe(m_fd_pair) < 0) {
@@ -192,14 +216,14 @@ bool LoopbackSocket::Init() {
  * @return true if close succeeded, false otherwise
  */
 bool LoopbackSocket::Close() {
-  if (m_fd_pair[0] != INVALID_SOCKET)
+  if (m_fd_pair[0] != CLOSED_SOCKET)
     close(m_fd_pair[0]);
 
-  if (m_fd_pair[1] != INVALID_SOCKET)
+  if (m_fd_pair[1] != CLOSED_SOCKET)
     close(m_fd_pair[1]);
 
-  m_fd_pair[0] = INVALID_SOCKET;
-  m_fd_pair[1] = INVALID_SOCKET;
+  m_fd_pair[0] = CLOSED_SOCKET;
+  m_fd_pair[1] = CLOSED_SOCKET;
   return true;
 }
 
@@ -209,10 +233,10 @@ bool LoopbackSocket::Close() {
  * @return true if close succeeded, false otherwise
  */
 bool LoopbackSocket::CloseClient() {
-  if (m_fd_pair[1] != INVALID_SOCKET)
+  if (m_fd_pair[1] != CLOSED_SOCKET)
     close(m_fd_pair[1]);
 
-  m_fd_pair[1] = INVALID_SOCKET;
+  m_fd_pair[1] = CLOSED_SOCKET;
   return true;
 }
 
@@ -225,7 +249,7 @@ bool LoopbackSocket::CloseClient() {
  * Create a new pipe socket
  */
 bool PipeSocket::Init() {
-  if (m_in_pair[0] != INVALID_SOCKET || m_out_pair[1] != INVALID_SOCKET)
+  if (m_in_pair[0] != CLOSED_SOCKET || m_out_pair[1] != CLOSED_SOCKET)
     return false;
 
   if (pipe(m_in_pair) < 0) {
@@ -237,7 +261,7 @@ bool PipeSocket::Init() {
     OLA_WARN << "pipe() failed, " << strerror(errno);
     close(m_in_pair[0]);
     close(m_in_pair[1]);
-    m_in_pair[0] = m_in_pair[1] = INVALID_SOCKET;
+    m_in_pair[0] = m_in_pair[1] = CLOSED_SOCKET;
     return false;
   }
 
@@ -253,7 +277,7 @@ bool PipeSocket::Init() {
  * @returns NULL if the socket wasn't initialized correctly.
  */
 PipeSocket *PipeSocket::OppositeEnd() {
-  if (m_in_pair[0] == INVALID_SOCKET || m_out_pair[1] == INVALID_SOCKET)
+  if (m_in_pair[0] == CLOSED_SOCKET || m_out_pair[1] == CLOSED_SOCKET)
     return NULL;
 
   if (!m_other_end) {
@@ -268,14 +292,14 @@ PipeSocket *PipeSocket::OppositeEnd() {
  * Close this PipeSocket
  */
 bool PipeSocket::Close() {
-  if (m_in_pair[0] != INVALID_SOCKET)
+  if (m_in_pair[0] != CLOSED_SOCKET)
     close(m_in_pair[0]);
 
-  if (m_out_pair[1] != INVALID_SOCKET)
+  if (m_out_pair[1] != CLOSED_SOCKET)
     close(m_out_pair[1]);
 
-  m_in_pair[0] = INVALID_SOCKET;
-  m_out_pair[1] = INVALID_SOCKET;
+  m_in_pair[0] = CLOSED_SOCKET;
+  m_out_pair[1] = CLOSED_SOCKET;
   return true;
 }
 
@@ -284,10 +308,10 @@ bool PipeSocket::Close() {
  * Close the write portion of this PipeSocket
  */
 bool PipeSocket::CloseClient() {
-  if (m_out_pair[1] != INVALID_SOCKET)
+  if (m_out_pair[1] != CLOSED_SOCKET)
     close(m_out_pair[1]);
 
-  m_out_pair[1] = INVALID_SOCKET;
+  m_out_pair[1] = CLOSED_SOCKET;
   return true;
 }
 
@@ -336,9 +360,9 @@ TcpSocket* TcpSocket::Connect(const std::string &ip_address,
  * Close this TcpSocket
  */
 bool TcpSocket::Close() {
-  if (m_sd != INVALID_SOCKET) {
+  if (m_sd != CLOSED_SOCKET) {
     close(m_sd);
-    m_sd = INVALID_SOCKET;
+    m_sd = CLOSED_SOCKET;
   }
   return true;
 }
@@ -348,11 +372,16 @@ bool TcpSocket::Close() {
 // ------------------------------------------------
 
 bool DeviceSocket::Close() {
-  if (m_fd == INVALID_SOCKET)
+  if (m_fd == CLOSED_SOCKET)
     return true;
 
+#ifdef WIN32
+  int ret = closesocket(m_fd);
+  WSACleanup();
+#else
   int ret = close(m_fd);
-  m_fd = INVALID_SOCKET;
+#endif
+  m_fd = CLOSED_SOCKET;
   return ret == 0;
 }
 
@@ -365,7 +394,7 @@ bool DeviceSocket::Close() {
  * @return true if it succeeded, false otherwise
  */
 bool UdpSocket::Init() {
-  if (m_fd != INVALID_SOCKET)
+  if (m_fd != CLOSED_SOCKET)
     return false;
 
   int sd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -384,7 +413,7 @@ bool UdpSocket::Init() {
  * Bind this socket to an external address/port
  */
 bool UdpSocket::Bind(unsigned short port) {
-  if (m_fd == INVALID_SOCKET)
+  if (m_fd == CLOSED_SOCKET)
     return false;
 
   struct sockaddr_in servAddr;
@@ -393,7 +422,8 @@ bool UdpSocket::Bind(unsigned short port) {
   servAddr.sin_port = HostToNetwork(port);
   servAddr.sin_addr.s_addr = HostToNetwork(INADDR_ANY);
 
-  OLA_DEBUG << "Binding to " << inet_ntoa(servAddr.sin_addr) << ":" << port;
+  OLA_DEBUG << "Binding to " << AddressToString(servAddr.sin_addr) << ":" <<
+    port;
 
   if (bind(m_fd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == -1) {
     OLA_INFO << "Failed to bind socket " << strerror(errno);
@@ -408,16 +438,21 @@ bool UdpSocket::Bind(unsigned short port) {
  * Close this socket
  */
 bool UdpSocket::Close() {
-  if (m_fd == INVALID_SOCKET)
+  if (m_fd == CLOSED_SOCKET)
     return false;
 
+  int fd = m_fd;
+  m_fd = CLOSED_SOCKET;
   m_bound_to_port = false;
-  int ret = true;
-  if (close(m_fd)) {
+#ifdef WIN32
+  if (closesocket(fd)) {
+      WSACleanup();
+#else
+  if (close(fd)) {
+#endif
     OLA_WARN << "close() failed, " << strerror(errno);
-    ret = false;
+    return false;
   }
-  m_fd = INVALID_SOCKET;
   return true;
 }
 
@@ -432,9 +467,13 @@ bool UdpSocket::Close() {
 ssize_t UdpSocket::SendTo(const uint8_t *buffer,
                           unsigned int size,
                           const struct sockaddr_in &destination) const {
-  ssize_t bytes_sent = sendto(m_fd, buffer, size, 0,
-                              (struct sockaddr*) &destination,
-                              sizeof(struct sockaddr));
+  ssize_t bytes_sent = sendto(
+    m_fd,
+    static_cast<const void*>(buffer),
+    size,
+    0,
+    reinterpret_cast<const struct sockaddr*>(&destination),
+    sizeof(struct sockaddr));
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
     OLA_WARN << "Failed to send, " << strerror(errno);
   return bytes_sent;
@@ -497,11 +536,12 @@ bool UdpSocket::RecvFrom(uint8_t *buffer,
  * @return true if it worked, false otherwise
  */
 bool UdpSocket::EnableBroadcast() {
-  if (m_fd == INVALID_SOCKET)
+  if (m_fd == CLOSED_SOCKET)
     return false;
 
   int broadcast_flag = 1;
-  if (setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST, &broadcast_flag,
+  if (setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST,
+                 static_cast<void*>(&broadcast_flag),
                  sizeof(broadcast_flag))
       == -1) {
     OLA_WARN << "Failed to enable broadcasting: " << strerror(errno);
@@ -515,10 +555,11 @@ bool UdpSocket::EnableBroadcast() {
  * Set the outgoing interface to be used for multicast transmission
  */
 bool UdpSocket::SetMulticastInterface(const struct in_addr &interface) {
-  if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_IF, &interface,
+  if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_IF,
+                 reinterpret_cast<const void*>(&interface),
                  sizeof(interface)) < 0) {
     OLA_WARN << "Failed to set outgoing multicast interface to " <<
-      inet_ntoa(interface) << ": " << strerror(errno);
+      AddressToString(interface) << ": " << strerror(errno);
     return false;
   }
   return true;
@@ -538,15 +579,17 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
   mreq.imr_interface = interface;
   mreq.imr_multiaddr = group;
 
-  if (setsockopt(m_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq,
+  if (setsockopt(m_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                 static_cast<void*>(&mreq),
                  sizeof(mreq)) < 0) {
-    OLA_WARN << "Failed to join multicast group " << inet_ntoa(group) <<
+    OLA_WARN << "Failed to join multicast group " << AddressToString(group) <<
     ": " << strerror(errno);
     return false;
   }
 
   if (!multicast_loop) {
-    if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop))) {
+    if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_LOOP,
+                   static_cast<void*>(&loop), sizeof(loop))) {
       OLA_WARN << "Failed to disable looping for " << m_fd << ":" <<
         strerror(errno);
       return false;
@@ -580,9 +623,10 @@ bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
   mreq.imr_interface = interface;
   mreq.imr_multiaddr = group;
 
-  if (setsockopt(m_fd, IPPROTO_IP, IP_DROP_MEMBERSHIP, &mreq,
+  if (setsockopt(m_fd, IPPROTO_IP, IP_DROP_MEMBERSHIP,
+                 static_cast<void*>(&mreq),
                  sizeof(mreq)) < 0) {
-    OLA_WARN << "Failed to leave multicast group " << inet_ntoa(group) <<
+    OLA_WARN << "Failed to leave multicast group " << AddressToString(group) <<
     ": " << strerror(errno);
     return false;
   }
@@ -605,9 +649,13 @@ bool UdpSocket::_RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
                           struct sockaddr_in *source,
                           socklen_t *src_size) const {
-  *data_read = recvfrom(m_fd, buffer, *data_read, 0,
-                        (struct sockaddr*) source,
-                        src_size);
+  *data_read = recvfrom(
+    m_fd,
+    static_cast<void*>(buffer),
+    *data_read,
+    0,
+    reinterpret_cast<struct sockaddr*>(source),
+    src_size);
   if (*data_read < 0) {
     OLA_WARN << "recvfrom failed: " << strerror(errno);
     return false;
@@ -645,7 +693,7 @@ TcpAcceptingSocket::TcpAcceptingSocket(const std::string &address,
     AcceptingSocket(),
     m_address(address),
     m_port(port),
-    m_sd(INVALID_SOCKET),
+    m_sd(CLOSED_SOCKET),
     m_backlog(backlog) {
 }
 
@@ -658,7 +706,7 @@ bool TcpAcceptingSocket::Listen() {
   struct sockaddr_in server_address;
   int reuse_flag = 1;
 
-  if (m_sd != INVALID_SOCKET)
+  if (m_sd != CLOSED_SOCKET)
     return false;
 
   // setup
@@ -675,7 +723,8 @@ bool TcpAcceptingSocket::Listen() {
     return false;
   }
 
-  if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &reuse_flag,
+  if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
+                 static_cast<const void*>(&reuse_flag),
                  sizeof(reuse_flag))) {
     OLA_WARN << "can't set reuse for " << sd << ", " << strerror(errno);
     close(sd);
@@ -706,12 +755,12 @@ bool TcpAcceptingSocket::Listen() {
  */
 bool TcpAcceptingSocket::Close() {
   bool ret = true;
-  if (m_sd != INVALID_SOCKET)
+  if (m_sd != CLOSED_SOCKET)
     if (close(m_sd)) {
       OLA_WARN << "close() failed " << strerror(errno);
       ret = false;
     }
-  m_sd = INVALID_SOCKET;
+  m_sd = CLOSED_SOCKET;
   return ret;
 }
 
@@ -724,7 +773,7 @@ ConnectedSocket *TcpAcceptingSocket::Accept() {
   struct sockaddr_in cli_address;
   socklen_t length = sizeof(cli_address);
 
-  if (m_sd == INVALID_SOCKET)
+  if (m_sd == CLOSED_SOCKET)
     return NULL;
 
   int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);

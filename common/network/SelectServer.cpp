@@ -133,7 +133,7 @@ void SelectServer::RunOnce(unsigned int delay_sec,
  * @return true on success, false on failure.
  */
 bool SelectServer::AddSocket(Socket *socket) {
-  if (socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
+  if (socket->ReadDescriptor() == Socket::CLOSED_SOCKET) {
     OLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
     return false;
   }
@@ -160,7 +160,7 @@ bool SelectServer::AddSocket(Socket *socket) {
  */
 bool SelectServer::AddSocket(ConnectedSocket *socket,
                              bool delete_on_close) {
-  if (socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
+  if (socket->ReadDescriptor() == Socket::CLOSED_SOCKET) {
     OLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
     return false;
   }
@@ -189,7 +189,7 @@ bool SelectServer::AddSocket(ConnectedSocket *socket,
  * @return true if removed successfully, false otherwise
  */
 bool SelectServer::RemoveSocket(Socket *socket) {
-  if (socket->ReadDescriptor() == Socket::INVALID_SOCKET)
+  if (socket->ReadDescriptor() == Socket::CLOSED_SOCKET)
     OLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
 
   SocketSet::iterator iter = m_sockets.find(socket);
@@ -209,7 +209,7 @@ bool SelectServer::RemoveSocket(Socket *socket) {
  * @return true if removed successfully, false otherwise
  */
 bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
-  if (socket->ReadDescriptor() == Socket::INVALID_SOCKET)
+  if (socket->ReadDescriptor() == Socket::CLOSED_SOCKET)
     OLA_WARN << "Removing a closed socket: " << socket;
 
   ConnectedSocketSet::iterator iter;
@@ -233,7 +233,7 @@ bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
  * @return true on success, false on failure.
  */
 bool SelectServer::RegisterWriteSocket(class BidirectionalSocket *socket) {
-  if (socket->WriteDescriptor() == Socket::INVALID_SOCKET) {
+  if (socket->WriteDescriptor() == Socket::CLOSED_SOCKET) {
     OLA_WARN << "AddSocket failed, fd: " << socket->WriteDescriptor();
     return false;
   }
@@ -255,7 +255,7 @@ bool SelectServer::RegisterWriteSocket(class BidirectionalSocket *socket) {
  * @return true on success, false on failure.
  */
 bool SelectServer::UnRegisterWriteSocket(class BidirectionalSocket *socket) {
-  if (socket->WriteDescriptor() == Socket::INVALID_SOCKET)
+  if (socket->WriteDescriptor() == Socket::CLOSED_SOCKET)
     OLA_WARN << "Removing a closed socket: " << socket->WriteDescriptor();
 
   BidirectionalSocketSet::iterator iter = m_write_sockets.find(socket);
@@ -408,7 +408,7 @@ void SelectServer::AddSocketsToSet(fd_set *r_set,
                                    int *max_sd) {
   SocketSet::iterator iter = m_sockets.begin();
   while (iter != m_sockets.end()) {
-    if ((*iter)->ReadDescriptor() == Socket::INVALID_SOCKET) {
+    if ((*iter)->ReadDescriptor() == Socket::CLOSED_SOCKET) {
       // The socket was probably closed without removing it from the select
       // server
       if (m_export_map)
@@ -424,7 +424,7 @@ void SelectServer::AddSocketsToSet(fd_set *r_set,
 
   ConnectedSocketSet::iterator con_iter = m_connected_sockets.begin();
   while (con_iter != m_connected_sockets.end()) {
-    if (con_iter->socket->ReadDescriptor() == Socket::INVALID_SOCKET) {
+    if (con_iter->socket->ReadDescriptor() == Socket::CLOSED_SOCKET) {
       // The socket was closed without removing it from the select server
       ConnectedSocket::OnCloseCallback *on_close =
         con_iter->socket->TransferOnClose();
@@ -445,7 +445,7 @@ void SelectServer::AddSocketsToSet(fd_set *r_set,
 
   BidirectionalSocketSet::iterator write_iter = m_write_sockets.begin();
   while (write_iter != m_write_sockets.end()) {
-    if ((*write_iter)->WriteDescriptor() == Socket::INVALID_SOCKET) {
+    if ((*write_iter)->WriteDescriptor() == Socket::CLOSED_SOCKET) {
       // The socket was probably closed without removing it from the select
       // server
       if (m_export_map)

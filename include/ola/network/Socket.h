@@ -52,6 +52,7 @@
 
 #ifdef WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -100,7 +101,7 @@ class Socket {
 
     ola::Callback0<void> *OnData() const { return m_on_read; }
 
-    static const int INVALID_SOCKET = -1;
+    static const int CLOSED_SOCKET;
 
   private:
     ola::Callback0<void> *m_on_read;
@@ -242,8 +243,8 @@ class ConnectedSocket: public BidirectionalSocket {
 class LoopbackSocket: public ConnectedSocket {
   public:
     LoopbackSocket() {
-      m_fd_pair[0] = INVALID_SOCKET;
-      m_fd_pair[1] = INVALID_SOCKET;
+      m_fd_pair[0] = CLOSED_SOCKET;
+      m_fd_pair[1] = CLOSED_SOCKET;
     }
     ~LoopbackSocket() { Close(); }
     bool Init();
@@ -266,8 +267,8 @@ class PipeSocket: public ConnectedSocket {
   public:
     PipeSocket():
       m_other_end(NULL) {
-      m_in_pair[0] = m_in_pair[1] = INVALID_SOCKET;
-      m_out_pair[0] = m_out_pair[1] = INVALID_SOCKET;
+      m_in_pair[0] = m_in_pair[1] = CLOSED_SOCKET;
+      m_out_pair[0] = m_out_pair[1] = CLOSED_SOCKET;
     }
     ~PipeSocket() { Close(); }
 
@@ -387,7 +388,7 @@ class UdpSocketInterface: public BidirectionalSocket {
 class UdpSocket: public UdpSocketInterface {
   public:
     UdpSocket(): UdpSocketInterface(),
-                 m_fd(INVALID_SOCKET),
+                 m_fd(CLOSED_SOCKET),
                  m_bound_to_port(false) {}
     ~UdpSocket() { Close(); }
     bool Init();

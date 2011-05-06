@@ -233,7 +233,7 @@ void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
  * Write an RpcMessage to the write socket.
  */
 bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
-  if (m_socket->ReadDescriptor() == ola::network::Socket::INVALID_SOCKET) {
+  if (m_socket->ReadDescriptor() == ola::network::Socket::CLOSED_SOCKET) {
     OLA_WARN << "RPC Socket closed, not sending messages";
     return false;
   }

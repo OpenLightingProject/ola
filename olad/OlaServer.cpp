@@ -150,7 +150,7 @@ OlaServer::~OlaServer() {
 
   if (m_accepting_socket &&
       m_accepting_socket->ReadDescriptor() !=
-      ola::network::Socket::INVALID_SOCKET)
+      ola::network::Socket::CLOSED_SOCKET)
     m_ss->RemoveSocket(m_accepting_socket);
 
   if (m_universe_store) {
