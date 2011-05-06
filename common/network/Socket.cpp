@@ -48,6 +48,38 @@ const int Socket::CLOSED_SOCKET = -1;
 #endif
 
 
+/**
+ * Helper function to create a annonymous pipe
+ * @param fd_pair a 2 element array which is updated with the fds
+ * @return true if successfull, false otherwise.
+ */
+bool CreatePipe(int fd_pair[2]) {
+#ifdef WIN32
+  HANDLE read_handle = NULL;
+  HANDLE write_handle = NULL;
+
+  SECURITY_ATTRIBUTES security_attributes;
+  // Set the bInheritHandle flag so pipe handles are inherited.
+  saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+  saAttr.bInheritHandle = TRUE;
+  saAttr.lpSecurityDescriptor = NULL;
+
+  if (!CreatePipe(&read_handle, &write_handle, &security_attributes, 0)) {
+    OLA_WARN << "CreatePipe() failed, " << strerror(errno);
+    return false;
+  }
+  fd_pair[0] = SetStdHandle(STD_INPUT_HANDLE, read_handle);
+  fd_pair[1] = SetStdHandle(STD_OUTPUT_HANDLE, write_handle);
+#else
+  if (pipe(fd_pair) < 0) {
+    OLA_WARN << "pipe() failed, " << strerror(errno);
+    return false;
+  }
+#endif
+  return true;
+}
+
+
 // ConnectedSocket
 // ------------------------------------------------
 
@@ -200,10 +232,8 @@ bool LoopbackSocket::Init() {
   if (m_fd_pair[0] != CLOSED_SOCKET || m_fd_pair[1] != CLOSED_SOCKET)
     return false;
 
-  if (pipe(m_fd_pair) < 0) {
-    OLA_WARN << "pipe() failed, " << strerror(errno);
+  if (!CreatePipe(m_fd_pair))
     return false;
-  }
 
   SetReadNonBlocking();
   SetNoSigPipe(WriteDescriptor());
@@ -252,13 +282,10 @@ bool PipeSocket::Init() {
   if (m_in_pair[0] != CLOSED_SOCKET || m_out_pair[1] != CLOSED_SOCKET)
     return false;
 
-  if (pipe(m_in_pair) < 0) {
-    OLA_WARN << "pipe() failed, " << strerror(errno);
+  if (!CreatePipe(m_in_pair))
     return false;
-  }
 
-  if (pipe(m_out_pair) < 0) {
-    OLA_WARN << "pipe() failed, " << strerror(errno);
+  if (!CreatePipe(m_out_pair)) {
     close(m_in_pair[0]);
     close(m_in_pair[1]);
     m_in_pair[0] = m_in_pair[1] = CLOSED_SOCKET;
