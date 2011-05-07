@@ -570,11 +570,11 @@ bool UdpSocket::EnableBroadcast() {
   if (m_fd == CLOSED_SOCKET)
     return false;
 
-  char broadcast_flag = 1;
+  int broadcast_flag = 1;
   int ok = setsockopt(m_fd,
                       SOL_SOCKET,
                       SO_BROADCAST,
-                      &broadcast_flag,
+                      reinterpret_cast<char*>(&broadcast_flag),
                       sizeof(broadcast_flag));
   if (ok == -1) {
     OLA_WARN << "Failed to enable broadcasting: " << strerror(errno);
@@ -712,8 +712,12 @@ bool UdpSocket::_RecvFrom(uint8_t *buffer,
  * @param tos the tos field
  */
 bool UdpSocket::SetTos(uint8_t tos) {
-  char value = tos & 0xFC;  // zero the ECN fields
-  int ok = setsockopt(m_fd, IPPROTO_IP, IP_TOS, &value, sizeof(value));
+  unsigned int value = tos & 0xFC;  // zero the ECN fields
+  int ok = setsockopt(m_fd,
+                      IPPROTO_IP,
+                      IP_TOS,
+                      reinterpret_cast<char*>(&value),
+                      sizeof(value));
   if (ok < 0) {
     OLA_WARN << "Failed to set tos for " << m_fd << ", " << strerror(errno);
     return false;
@@ -748,7 +752,7 @@ TcpAcceptingSocket::TcpAcceptingSocket(const std::string &address,
  */
 bool TcpAcceptingSocket::Listen() {
   struct sockaddr_in server_address;
-  char reuse_flag = 1;
+  int reuse_flag = 1;
 
   if (m_sd != CLOSED_SOCKET)
     return false;
@@ -757,7 +761,6 @@ bool TcpAcceptingSocket::Listen() {
   memset(&server_address, 0x00, sizeof(server_address));
   server_address.sin_family = AF_INET;
   server_address.sin_port = HostToNetwork(m_port);
-
   if (!StringToAddress(m_address, server_address.sin_addr))
     return false;
 
@@ -770,7 +773,7 @@ bool TcpAcceptingSocket::Listen() {
   int ok = setsockopt(sd,
                       SOL_SOCKET,
                       SO_REUSEADDR,
-                      &reuse_flag,
+                      reinterpret_cast<char*>(&reuse_flag),
                       sizeof(reuse_flag));
   if (ok < 0) {
     OLA_WARN << "can't set reuse for " << sd << ", " << strerror(errno);
