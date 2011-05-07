@@ -53,7 +53,7 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
   bool ok;
 
 #ifdef HAVE_INET_ATON
-  ok = (0 == inet_aton(address.data(), &addr));
+  ok = (1 == inet_aton(address.data(), &addr));
 #else
 #ifdef WIN32
   unsigned long ip_addr4;
@@ -61,7 +61,7 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
   in_addr_t ip_addr4;
 #endif
   ip_addr4 = inet_addr(address.c_str());
-  ok = (INADDR_NONE == ip_addr4);
+  ok = (INADDR_NONE != ip_addr4);
   addr.s_addr = ip_addr4;
 #endif
 
