@@ -78,17 +78,16 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
       // Windows doesn't seem to have the notion of an interface being 'up'
       // so we check if this interface has an address assigned.
       if (net) {
-        Interface interface;
-        interface.name = pAdapter->AdapterName;  // IFNAME_SIZE
-        memcpy(interface.hw_address, pAdapter->Address, MAC_LENGTH);
-        struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
-        interface.ip_address = sin->sin_addr;
+        Interface iface;
+        iface.name = pAdapter->AdapterName;  // IFNAME_SIZE
+        memcpy(iface.hw_address, pAdapter->Address, MAC_LENGTH);
+        iface.ip_address.s_addr = net;
 
         mask = inet_addr(ipAddress->IpMask.String);
-        interface.bcast_addr = ((interface.ip_address & mask) |
-                                (0xFFFFFFFF ^ mask));
+        iface.bcast_address.s_addr = ((iface.ip_address.s_addr & mask) |
+                                      (0xFFFFFFFF ^ mask));
 
-        interfaces.push_back(interface);
+        interfaces.push_back(iface);
       }
     }
   }

@@ -27,16 +27,17 @@ namespace ola {
 
 class OlaThread {
   public:
-    OlaThread(): m_thread_id(0) {}
+    OlaThread(): m_thread_id(), m_running(false) {}
     virtual ~OlaThread() {}
 
     bool Start();
     bool Join(void *ptr = NULL);
-    bool IsRunning() const { return m_thread_id != 0; }
+    bool IsRunning() const { return m_running; }
     virtual void *Run() = 0;
 
   private:
     pthread_t m_thread_id;
+    bool m_running;
 };
 }  // ola
 #endif  // INCLUDE_OLA_OLATHREAD_H_

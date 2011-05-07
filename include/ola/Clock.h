@@ -108,10 +108,10 @@ class TimeInterval {
 
   private:
     void Set(uint64_t interval_useconds) {
-      m_interval.tv_sec = static_cast<time_t>(
+      m_interval.tv_sec = (
           interval_useconds / USEC_IN_SECONDS);
-      m_interval.tv_usec = static_cast<suseconds_t>(
-          interval_useconds % USEC_IN_SECONDS);    
+      m_interval.tv_usec = (
+          interval_useconds % USEC_IN_SECONDS);
     }
     struct timeval m_interval;
 

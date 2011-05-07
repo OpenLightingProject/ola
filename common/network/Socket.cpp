@@ -60,9 +60,9 @@ bool CreatePipe(int fd_pair[2]) {
 
   SECURITY_ATTRIBUTES security_attributes;
   // Set the bInheritHandle flag so pipe handles are inherited.
-  saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-  saAttr.bInheritHandle = TRUE;
-  saAttr.lpSecurityDescriptor = NULL;
+  security_attributes.nLength = sizeof(SECURITY_ATTRIBUTES);
+  security_attributes.bInheritHandle = TRUE;
+  security_attributes.lpSecurityDescriptor = NULL;
 
   if (!CreatePipe(&read_handle, &write_handle, &security_attributes, 0)) {
     OLA_WARN << "CreatePipe() failed, " << strerror(errno);
@@ -113,8 +113,12 @@ bool ConnectedSocket::SetNonBlocking(int fd) {
 bool ConnectedSocket::SetNoSigPipe(int fd) {
   #ifdef SO_NOSIGPIPE
   int sig_pipe_flag = 1;
-  if (setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &sig_pipe_flag,
-                 sizeof(sig_pipe_flag)) == -1) {
+  int ok = setsockopt(fd,
+                      SOL_SOCKET,
+                      SO_NOSIGPIPE,
+                      &sig_pipe_flag,
+                      sizeof(sig_pipe_flag));
+  if (ok == -1) {
     OLA_WARN << "Failed to disable SIGPIPE on " << fd << ": " <<
       strerror(errno);
     return false;
@@ -447,7 +451,7 @@ bool UdpSocket::Bind(unsigned short port) {
   memset(&servAddr, 0x00, sizeof(servAddr));
   servAddr.sin_family = AF_INET;
   servAddr.sin_port = HostToNetwork(port);
-  servAddr.sin_addr.s_addr = HostToNetwork(INADDR_ANY);
+  servAddr.sin_addr.s_addr = HostToNetwork(static_cast<uint32_t>(INADDR_ANY));
 
   OLA_DEBUG << "Binding to " << AddressToString(servAddr.sin_addr) << ":" <<
     port;
@@ -496,7 +500,7 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
                           const struct sockaddr_in &destination) const {
   ssize_t bytes_sent = sendto(
     m_fd,
-    static_cast<const void*>(buffer),
+    reinterpret_cast<const char*>(buffer),
     size,
     0,
     reinterpret_cast<const struct sockaddr*>(&destination),
@@ -566,11 +570,13 @@ bool UdpSocket::EnableBroadcast() {
   if (m_fd == CLOSED_SOCKET)
     return false;
 
-  int broadcast_flag = 1;
-  if (setsockopt(m_fd, SOL_SOCKET, SO_BROADCAST,
-                 static_cast<void*>(&broadcast_flag),
-                 sizeof(broadcast_flag))
-      == -1) {
+  char broadcast_flag = 1;
+  int ok = setsockopt(m_fd,
+                      SOL_SOCKET,
+                      SO_BROADCAST,
+                      &broadcast_flag,
+                      sizeof(broadcast_flag));
+  if (ok == -1) {
     OLA_WARN << "Failed to enable broadcasting: " << strerror(errno);
     return false;
   }
@@ -581,12 +587,15 @@ bool UdpSocket::EnableBroadcast() {
 /**
  * Set the outgoing interface to be used for multicast transmission
  */
-bool UdpSocket::SetMulticastInterface(const struct in_addr &interface) {
-  if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_IF,
-                 reinterpret_cast<const void*>(&interface),
-                 sizeof(interface)) < 0) {
+bool UdpSocket::SetMulticastInterface(const struct in_addr &iface) {
+  int ok = setsockopt(m_fd,
+                      IPPROTO_IP,
+                      IP_MULTICAST_IF,
+                      reinterpret_cast<const char*>(&iface),
+                      sizeof(iface));
+  if (ok < 0) {
     OLA_WARN << "Failed to set outgoing multicast interface to " <<
-      AddressToString(interface) << ": " << strerror(errno);
+      AddressToString(iface) << ": " << strerror(errno);
     return false;
   }
   return true;
@@ -598,25 +607,28 @@ bool UdpSocket::SetMulticastInterface(const struct in_addr &interface) {
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::JoinMulticast(const struct in_addr &interface,
+bool UdpSocket::JoinMulticast(const struct in_addr &iface,
                               const struct in_addr &group,
                               bool multicast_loop) {
-  uint8_t loop = multicast_loop;
+  char loop = multicast_loop;
   struct ip_mreq mreq;
-  mreq.imr_interface = interface;
+  mreq.imr_interface = iface;
   mreq.imr_multiaddr = group;
 
-  if (setsockopt(m_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-                 static_cast<void*>(&mreq),
-                 sizeof(mreq)) < 0) {
+  int ok = setsockopt(m_fd,
+                      IPPROTO_IP,
+                      IP_ADD_MEMBERSHIP,
+                      reinterpret_cast<char*>(&mreq),
+                      sizeof(mreq));
+  if (ok < 0) {
     OLA_WARN << "Failed to join multicast group " << AddressToString(group) <<
     ": " << strerror(errno);
     return false;
   }
 
   if (!multicast_loop) {
-    if (setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_LOOP,
-                   static_cast<void*>(&loop), sizeof(loop))) {
+    ok = setsockopt(m_fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
+    if (ok < 0) {
       OLA_WARN << "Failed to disable looping for " << m_fd << ":" <<
         strerror(errno);
       return false;
@@ -629,13 +641,13 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
 /*
  * Join a multicase group
  */
-bool UdpSocket::JoinMulticast(const struct in_addr &interface,
+bool UdpSocket::JoinMulticast(const struct in_addr &iface,
                               const string &address,
                               bool loop) {
   struct in_addr addr;
   if (!StringToAddress(address, addr))
     return false;
-  return JoinMulticast(interface, addr, loop);
+  return JoinMulticast(iface, addr, loop);
 }
 
 
@@ -644,15 +656,18 @@ bool UdpSocket::JoinMulticast(const struct in_addr &interface,
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
+bool UdpSocket::LeaveMulticast(const struct in_addr &iface,
                               const struct in_addr &group) {
   struct ip_mreq mreq;
-  mreq.imr_interface = interface;
+  mreq.imr_interface = iface;
   mreq.imr_multiaddr = group;
 
-  if (setsockopt(m_fd, IPPROTO_IP, IP_DROP_MEMBERSHIP,
-                 static_cast<void*>(&mreq),
-                 sizeof(mreq)) < 0) {
+  int ok = setsockopt(m_fd,
+                      IPPROTO_IP,
+                      IP_DROP_MEMBERSHIP,
+                      reinterpret_cast<char*>(&mreq),
+                      sizeof(mreq));
+  if (ok < 0) {
     OLA_WARN << "Failed to leave multicast group " << AddressToString(group) <<
     ": " << strerror(errno);
     return false;
@@ -664,13 +679,14 @@ bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
 /*
  * Leave a multicase group
  */
-bool UdpSocket::LeaveMulticast(const struct in_addr &interface,
+bool UdpSocket::LeaveMulticast(const struct in_addr &iface,
                                const string &address) {
   struct in_addr addr;
   if (!StringToAddress(address, addr))
     return false;
-  return LeaveMulticast(interface, addr);
+  return LeaveMulticast(iface, addr);
 }
+
 
 bool UdpSocket::_RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
@@ -678,7 +694,7 @@ bool UdpSocket::_RecvFrom(uint8_t *buffer,
                           socklen_t *src_size) const {
   *data_read = recvfrom(
     m_fd,
-    static_cast<void*>(buffer),
+    reinterpret_cast<char*>(buffer),
     *data_read,
     0,
     reinterpret_cast<struct sockaddr*>(source),
@@ -696,8 +712,9 @@ bool UdpSocket::_RecvFrom(uint8_t *buffer,
  * @param tos the tos field
  */
 bool UdpSocket::SetTos(uint8_t tos) {
-  unsigned int value = tos & 0xFC;  // zero the ECN fields
-  if (setsockopt(m_fd, IPPROTO_IP, IP_TOS, &value, sizeof(value))) {
+  char value = tos & 0xFC;  // zero the ECN fields
+  int ok = setsockopt(m_fd, IPPROTO_IP, IP_TOS, &value, sizeof(value));
+  if (ok < 0) {
     OLA_WARN << "Failed to set tos for " << m_fd << ", " << strerror(errno);
     return false;
   }
@@ -731,7 +748,7 @@ TcpAcceptingSocket::TcpAcceptingSocket(const std::string &address,
  */
 bool TcpAcceptingSocket::Listen() {
   struct sockaddr_in server_address;
-  int reuse_flag = 1;
+  char reuse_flag = 1;
 
   if (m_sd != CLOSED_SOCKET)
     return false;
@@ -750,9 +767,12 @@ bool TcpAcceptingSocket::Listen() {
     return false;
   }
 
-  if (setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
-                 static_cast<const void*>(&reuse_flag),
-                 sizeof(reuse_flag))) {
+  int ok = setsockopt(sd,
+                      SOL_SOCKET,
+                      SO_REUSEADDR,
+                      &reuse_flag,
+                      sizeof(reuse_flag));
+  if (ok < 0) {
     OLA_WARN << "can't set reuse for " << sd << ", " << strerror(errno);
     close(sd);
     return false;

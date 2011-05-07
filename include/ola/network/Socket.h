@@ -62,8 +62,10 @@
 #include <ola/Callback.h>  // NOLINT
 
 
+
 namespace ola {
 namespace network {
+
 
 
 /*
@@ -362,16 +364,16 @@ class UdpSocketInterface: public BidirectionalSocket {
                           socklen_t &src_size) const = 0;
     virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool EnableBroadcast() = 0;
-    virtual bool SetMulticastInterface(const struct in_addr &interface) = 0;
-    virtual bool JoinMulticast(const struct in_addr &interface,
+    virtual bool SetMulticastInterface(const struct in_addr &iface) = 0;
+    virtual bool JoinMulticast(const struct in_addr &iface,
                                const struct in_addr &group,
                                bool loop = false) = 0;
-    virtual bool JoinMulticast(const struct in_addr &interface,
+    virtual bool JoinMulticast(const struct in_addr &iface,
                                const std::string &address,
                                bool loop = false) = 0;
-    virtual bool LeaveMulticast(const struct in_addr &interface,
+    virtual bool LeaveMulticast(const struct in_addr &iface,
                                 const struct in_addr &group) = 0;
-    virtual bool LeaveMulticast(const struct in_addr &interface,
+    virtual bool LeaveMulticast(const struct in_addr &iface,
                                 const std::string &address) = 0;
 
     virtual bool SetTos(uint8_t tos) = 0;
@@ -409,16 +411,16 @@ class UdpSocket: public UdpSocketInterface {
                   socklen_t &src_size) const;
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool EnableBroadcast();
-    bool SetMulticastInterface(const struct in_addr &interface);
-    bool JoinMulticast(const struct in_addr &interface,
+    bool SetMulticastInterface(const struct in_addr &iface);
+    bool JoinMulticast(const struct in_addr &iface,
                        const struct in_addr &group,
                        bool loop = false);
-    bool JoinMulticast(const struct in_addr &interface,
+    bool JoinMulticast(const struct in_addr &iface,
                        const std::string &address,
                        bool loop = false);
-    bool LeaveMulticast(const struct in_addr &interface,
+    bool LeaveMulticast(const struct in_addr &iface,
                         const struct in_addr &group);
-    bool LeaveMulticast(const struct in_addr &interface,
+    bool LeaveMulticast(const struct in_addr &iface,
                         const std::string &address);
 
     bool SetTos(uint8_t tos);
