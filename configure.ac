@@ -16,6 +16,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_LIBTOOL_WIN32_DLL
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
@@ -119,7 +120,9 @@ AC_CHECK_DECLS(SO_NOSIGPIPE,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
-if test "${have_msg_no_pipe}" = "no" && test "${have_so_no_pipe}" = "no"; then
+
+if test -z "${USING_WIN32_FALSE}" && test "${have_msg_no_pipe}" = "no" && \
+   test "${have_so_no_pipe}" = "no"; then
  AC_MSG_ERROR([Your system needs either MSG_NOSIGNAL or SO_NOSIGPIPE])
 fi
 
