@@ -41,8 +41,8 @@ using std::ifstream;
 using std::ofstream;
 using std::pair;
 
-const char BoolValidator::S_TRUE[] = "true";
-const char BoolValidator::S_FALSE[] = "false";
+const char BoolValidator::ENABLED[] = "true";
+const char BoolValidator::DISABLED[] = "false";
 
 const char FileBackedPreferences::OLA_CONFIG_PREFIX[] = "ola-";
 const char FileBackedPreferences::OLA_CONFIG_SUFFIX[] = ".conf";
@@ -56,7 +56,7 @@ bool StringValidator::IsValid(const string &value) const {
 
 
 bool BoolValidator::IsValid(const string &value) const {
-  return (value == S_TRUE || value == S_FALSE);
+  return (value == ENABLED || value == DISABLED);
 }
 
 
@@ -237,9 +237,9 @@ void MemoryPreferences::RemoveValue(const string &key) {
 void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
   m_pref_map.erase(key);
   if (value)
-    m_pref_map.insert(pair<string, string>(key, BoolValidator::S_TRUE));
+    m_pref_map.insert(pair<string, string>(key, BoolValidator::ENABLED));
   else
-    m_pref_map.insert(pair<string, string>(key, BoolValidator::S_FALSE));
+    m_pref_map.insert(pair<string, string>(key, BoolValidator::DISABLED));
 }
 
 
@@ -253,7 +253,7 @@ bool MemoryPreferences::GetValueAsBool(const string &key) const {
   iter = m_pref_map.find(key);
 
   if (iter != m_pref_map.end())
-    return iter->second == BoolValidator::S_TRUE;
+    return iter->second == BoolValidator::ENABLED;
   return false;
 }
 

@@ -149,7 +149,7 @@ bool ArtNetPlugin::SetDefaultPreferences() {
                                          ARTNET_SUBNET);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_ALWAYS_BROADCAST_KEY,
                                          BoolValidator(),
-                                         BoolValidator::S_FALSE);
+                                         BoolValidator::DISABLED);
 
   if (save)
     m_preferences->Save();
