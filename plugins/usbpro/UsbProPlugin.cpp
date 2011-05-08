@@ -271,7 +271,7 @@ bool UsbProPlugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(TRI_USE_RAW_RDM_KEY,
                                          BoolValidator(),
-                                         BoolValidator::FALSE);
+                                         BoolValidator::S_FALSE);
 
   if (save)
     m_preferences->Save();

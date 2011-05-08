@@ -80,8 +80,8 @@ class BoolValidator: public Validator {
     BoolValidator(): Validator() {}
     bool IsValid(const string &value) const;
 
-    static const char TRUE[];
-    static const char FALSE[];
+    static const char S_TRUE[];
+    static const char S_FALSE[];
 };
 
 
@@ -231,7 +231,7 @@ class FileBackedPreferences: public MemoryPreferences {
 
 class FileBackedPreferencesFactory: public PreferencesFactory {
   public:
-    FileBackedPreferencesFactory(const string &directory)
+    explicit FileBackedPreferencesFactory(const string &directory)
         : m_directory(directory) {}
 
   private:
