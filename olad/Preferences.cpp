@@ -20,7 +20,6 @@
 #include <string.h>
 #include <dirent.h>
 #include <stdio.h>
-#include <pwd.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <errno.h>
