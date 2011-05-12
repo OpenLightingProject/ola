@@ -25,6 +25,7 @@
 
 #include "plugins/e131/e131/RootHeader.h"
 #include "plugins/e131/e131/E131Header.h"
+#include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/DMPHeader.h"
 
 namespace ola {
@@ -37,13 +38,16 @@ class HeaderSet {
     ~HeaderSet() {}
 
     const RootHeader &GetRootHeader() const { return m_root_header; }
-    void SetRootHeader(RootHeader &header) { m_root_header = header; }
+    void SetRootHeader(const RootHeader &header) { m_root_header = header; }
 
     const E131Header &GetE131Header() const { return m_e131_header; }
-    void SetE131Header(E131Header &header) { m_e131_header = header; }
+    void SetE131Header(const E131Header &header) { m_e131_header = header; }
+
+    const E133Header &GetE133Header() const { return m_e133_header; }
+    void SetE133Header(const E133Header &header) { m_e133_header = header; }
 
     const DMPHeader &GetDMPHeader() const { return m_dmp_header; }
-    void SetDMPHeader(DMPHeader &header) { m_dmp_header = header; }
+    void SetDMPHeader(const DMPHeader &header) { m_dmp_header = header; }
 
     bool operator==(const HeaderSet &other) const {
       return m_root_header == other.m_root_header  &&
@@ -54,6 +58,7 @@ class HeaderSet {
   private:
     RootHeader m_root_header;
     E131Header m_e131_header;
+    E133Header m_e133_header;
     DMPHeader m_dmp_header;
 };
 }  // e131
