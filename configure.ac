@@ -107,6 +107,16 @@ AC_CHECK_MEMBER(
   [#include <sys/types.h>
    #include <net/if_dl.h>])
 
+# check for time_t and suseconds_t
+AC_CHECK_TYPE(time_t,
+              AC_DEFINE(HAVE_TIME_T, 1, define if we have time_t),
+              ,
+              [#include <sys/time.h>])
+AC_CHECK_TYPE(suseconds_t,
+              AC_DEFINE(HAVE_SUSECONDS_T, 1, define if we have suseconds_t),
+              ,
+              [#include <sys/time.h>])
+
 # check for SO_NOSIGPIPE or MSG_NOSIGNAL
 AC_CHECK_DECLS(MSG_NOSIGNAL,
                ,
