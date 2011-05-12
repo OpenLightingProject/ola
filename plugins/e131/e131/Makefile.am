@@ -2,10 +2,11 @@ include $(top_srcdir)/common.mk
 
 EXTRA_DIST = BaseInflator.h CID.h \
              DMPE131Inflator.h DMPAddress.h DMPHeader.h DMPInflator.h DMPPDU.h \
-             E131Header.h E131Includes.h E131Inflator.h E131Layer.h E131Node.h \
-             E131PDU.h E131TestFramework.h E133Header.h HeaderSet.h PDU.h \
-             PDUTestCommon.h RootHeader.h RootInflator.h RootLayer.h RootPDU.h \
-             UDPTransport.h
+             E131Header.h E131Includes.h E131Inflator.h E131Layer.h \
+             E131Node.h E131PDU.h E131TestFramework.h \
+             E133Header.h E133Inflator.h E133PDU.h \
+             HeaderSet.h PDU.h PDUTestCommon.h RootHeader.h RootInflator.h \
+             RootLayer.h RootPDU.h UDPTransport.h
 
 AM_CPPFLAGS += -Wconversion -W
 
@@ -14,7 +15,7 @@ libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             DMPAddress.cpp DMPE131Inflator.cpp DMPInflator.cpp \
                             DMPPDU.cpp \
                             E131Inflator.cpp E131Layer.cpp E131Node.cpp \
-                            E131PDU.cpp PDU.cpp \
+                            E131PDU.cpp E133Inflator.cpp E133PDU.cpp PDU.cpp \
                             RootInflator.cpp RootLayer.cpp RootPDU.cpp \
                             UDPTransport.cpp
 libolae131core_la_LIBADD = @LIBS@
@@ -38,12 +39,13 @@ TESTS = E131Tester
 check_PROGRAMS = $(TESTS)
 E131Tester_SOURCES = BaseInflatorTest.cpp \
                      CIDTest.cpp \
-                     DMPInflatorTest.cpp \
                      DMPAddressTest.cpp \
+                     DMPInflatorTest.cpp \
                      DMPPDUTest.cpp \
                      E131InflatorTest.cpp \
                      E131PDUTest.cpp \
                      E131Tester.cpp \
+                     E133InflatorTest.cpp \
                      HeaderSetTest.cpp \
                      PDUTest.cpp \
                      RootInflatorTest.cpp \
