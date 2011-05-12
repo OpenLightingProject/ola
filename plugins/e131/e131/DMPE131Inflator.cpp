@@ -22,6 +22,7 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <vector>
 #include "ola/Logging.h"
 #include "plugins/e131/e131/DMPE131Inflator.h"
@@ -91,12 +92,13 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   }
 
   unsigned int available_length = pdu_len;
-  const BaseDMPAddress *address = DecodeAddress(dmp_header.Size(),
-                                                dmp_header.Type(),
-                                                data,
-                                                available_length);
+  std::auto_ptr<const BaseDMPAddress> address(
+      DecodeAddress(dmp_header.Size(),
+                    dmp_header.Type(),
+                    data,
+                    available_length));
 
-  if (!address) {
+  if (!address.get()) {
     OLA_INFO << "DMP address parsing failed, the length is probably too small";
     return true;
   }
@@ -104,7 +106,6 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   if (address->Increment() != 1) {
     OLA_INFO << "E1.31 DMP packet with increment " << address->Increment()
       << ", disarding";
-    delete address;
     return true;
   }
 
@@ -119,14 +120,12 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   // contains a Terminate message.
   if (start_code && !e131_header.StreamTerminated()) {
     OLA_INFO << "Skipping packet with non-0 start code: " << start_code;
-    delete address;
     return true;
   }
 
   DmxBuffer *target_buffer;
   if (!TrackSourceIfRequired(&universe_iter->second, headers, &target_buffer)) {
     // no need to continue processing
-    delete address;
     return true;
   }
 
@@ -161,7 +160,6 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
         universe_iter->second.buffer->HTPMerge(source_iter->buffer);
       universe_iter->second.closure->Run();
   }
-  delete address;
   return true;
 }
 
