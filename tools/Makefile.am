@@ -1,1 +1,1 @@
-SUBDIRS = usbpro
+SUBDIRS = rdm usbpro
