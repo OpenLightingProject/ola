@@ -53,7 +53,7 @@ class UID {
     }
 
     explicit UID(const uint8_t *data) {
-      m_uid.esta_id = (data[0] << 8) + data[1];
+      m_uid.esta_id = static_cast<uint16_t>((data[0] << 8) + data[1]);
       m_uid.device_id = ((data[2] << 24) + (data[3] << 16) + (data[4] << 8) +
           data[5]);
     }
@@ -94,12 +94,12 @@ class UID {
     bool Pack(uint8_t *buffer, unsigned int length) const {
       if (length < UID_SIZE)
         return false;
-      buffer[0] = m_uid.esta_id >> 8;
-      buffer[1] = m_uid.esta_id & 0xff;
-      buffer[2] = m_uid.device_id >> 24;
-      buffer[3] = m_uid.device_id >> 16;
-      buffer[4] = m_uid.device_id >> 8;
-      buffer[5] = m_uid.device_id & 0xff;
+      buffer[0] = static_cast<uint8_t>(m_uid.esta_id >> 8);
+      buffer[1] = static_cast<uint8_t>(m_uid.esta_id & 0xff);
+      buffer[2] = static_cast<uint8_t>(m_uid.device_id >> 24);
+      buffer[3] = static_cast<uint8_t>(m_uid.device_id >> 16);
+      buffer[4] = static_cast<uint8_t>(m_uid.device_id >> 8);
+      buffer[5] = static_cast<uint8_t>(m_uid.device_id & 0xff);
       return true;
     }
 
@@ -120,8 +120,9 @@ class UID {
       if (tokens.size() != 2 || tokens[0].size() != 4 || tokens[1].size() != 8)
         return NULL;
 
-      unsigned int esta_id, device_id;
-      if (!ola::HexStringToUInt(tokens[0], &esta_id))
+      uint16_t esta_id;
+      unsigned int device_id;
+      if (!ola::HexStringToUInt16(tokens[0], &esta_id))
         return NULL;
       if (!ola::HexStringToUInt(tokens[1], &device_id))
         return NULL;
