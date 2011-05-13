@@ -19,6 +19,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+#include <stdio.h>
+
 #ifdef WIN32
 #include <windows.h>
 #else

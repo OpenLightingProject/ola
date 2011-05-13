@@ -52,6 +52,7 @@
 
 #ifdef WIN32
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -61,8 +62,10 @@
 #include <ola/Callback.h>  // NOLINT
 
 
+
 namespace ola {
 namespace network {
+
 
 
 /*
@@ -100,7 +103,7 @@ class Socket {
 
     ola::Callback0<void> *OnData() const { return m_on_read; }
 
-    static const int INVALID_SOCKET = -1;
+    static const int CLOSED_SOCKET;
 
   private:
     ola::Callback0<void> *m_on_read;
@@ -242,8 +245,8 @@ class ConnectedSocket: public BidirectionalSocket {
 class LoopbackSocket: public ConnectedSocket {
   public:
     LoopbackSocket() {
-      m_fd_pair[0] = INVALID_SOCKET;
-      m_fd_pair[1] = INVALID_SOCKET;
+      m_fd_pair[0] = CLOSED_SOCKET;
+      m_fd_pair[1] = CLOSED_SOCKET;
     }
     ~LoopbackSocket() { Close(); }
     bool Init();
@@ -266,8 +269,8 @@ class PipeSocket: public ConnectedSocket {
   public:
     PipeSocket():
       m_other_end(NULL) {
-      m_in_pair[0] = m_in_pair[1] = INVALID_SOCKET;
-      m_out_pair[0] = m_out_pair[1] = INVALID_SOCKET;
+      m_in_pair[0] = m_in_pair[1] = CLOSED_SOCKET;
+      m_out_pair[0] = m_out_pair[1] = CLOSED_SOCKET;
     }
     ~PipeSocket() { Close(); }
 
@@ -361,16 +364,16 @@ class UdpSocketInterface: public BidirectionalSocket {
                           socklen_t &src_size) const = 0;
     virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool EnableBroadcast() = 0;
-    virtual bool SetMulticastInterface(const struct in_addr &interface) = 0;
-    virtual bool JoinMulticast(const struct in_addr &interface,
+    virtual bool SetMulticastInterface(const struct in_addr &iface) = 0;
+    virtual bool JoinMulticast(const struct in_addr &iface,
                                const struct in_addr &group,
                                bool loop = false) = 0;
-    virtual bool JoinMulticast(const struct in_addr &interface,
+    virtual bool JoinMulticast(const struct in_addr &iface,
                                const std::string &address,
                                bool loop = false) = 0;
-    virtual bool LeaveMulticast(const struct in_addr &interface,
+    virtual bool LeaveMulticast(const struct in_addr &iface,
                                 const struct in_addr &group) = 0;
-    virtual bool LeaveMulticast(const struct in_addr &interface,
+    virtual bool LeaveMulticast(const struct in_addr &iface,
                                 const std::string &address) = 0;
 
     virtual bool SetTos(uint8_t tos) = 0;
@@ -387,7 +390,7 @@ class UdpSocketInterface: public BidirectionalSocket {
 class UdpSocket: public UdpSocketInterface {
   public:
     UdpSocket(): UdpSocketInterface(),
-                 m_fd(INVALID_SOCKET),
+                 m_fd(CLOSED_SOCKET),
                  m_bound_to_port(false) {}
     ~UdpSocket() { Close(); }
     bool Init();
@@ -408,16 +411,16 @@ class UdpSocket: public UdpSocketInterface {
                   socklen_t &src_size) const;
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool EnableBroadcast();
-    bool SetMulticastInterface(const struct in_addr &interface);
-    bool JoinMulticast(const struct in_addr &interface,
+    bool SetMulticastInterface(const struct in_addr &iface);
+    bool JoinMulticast(const struct in_addr &iface,
                        const struct in_addr &group,
                        bool loop = false);
-    bool JoinMulticast(const struct in_addr &interface,
+    bool JoinMulticast(const struct in_addr &iface,
                        const std::string &address,
                        bool loop = false);
-    bool LeaveMulticast(const struct in_addr &interface,
+    bool LeaveMulticast(const struct in_addr &iface,
                         const struct in_addr &group);
-    bool LeaveMulticast(const struct in_addr &interface,
+    bool LeaveMulticast(const struct in_addr &iface,
                         const std::string &address);
 
     bool SetTos(uint8_t tos);

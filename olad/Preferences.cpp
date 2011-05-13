@@ -20,7 +20,6 @@
 #include <string.h>
 #include <dirent.h>
 #include <stdio.h>
-#include <pwd.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -41,8 +40,8 @@ using std::ifstream;
 using std::ofstream;
 using std::pair;
 
-const char BoolValidator::TRUE[] = "true";
-const char BoolValidator::FALSE[] = "false";
+const char BoolValidator::ENABLED[] = "true";
+const char BoolValidator::DISABLED[] = "false";
 
 const char FileBackedPreferences::OLA_CONFIG_PREFIX[] = "ola-";
 const char FileBackedPreferences::OLA_CONFIG_SUFFIX[] = ".conf";
@@ -56,7 +55,7 @@ bool StringValidator::IsValid(const string &value) const {
 
 
 bool BoolValidator::IsValid(const string &value) const {
-  return (value == TRUE || value == FALSE);
+  return (value == ENABLED || value == DISABLED);
 }
 
 
@@ -237,9 +236,9 @@ void MemoryPreferences::RemoveValue(const string &key) {
 void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
   m_pref_map.erase(key);
   if (value)
-    m_pref_map.insert(pair<string, string>(key, BoolValidator::TRUE));
+    m_pref_map.insert(pair<string, string>(key, BoolValidator::ENABLED));
   else
-    m_pref_map.insert(pair<string, string>(key, BoolValidator::FALSE));
+    m_pref_map.insert(pair<string, string>(key, BoolValidator::DISABLED));
 }
 
 
@@ -253,7 +252,7 @@ bool MemoryPreferences::GetValueAsBool(const string &key) const {
   iter = m_pref_map.find(key);
 
   if (iter != m_pref_map.end())
-    return iter->second == BoolValidator::TRUE;
+    return iter->second == BoolValidator::ENABLED;
   return false;
 }
 

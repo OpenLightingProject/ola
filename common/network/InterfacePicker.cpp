@@ -88,7 +88,7 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
   struct in_addr wanted_ip;
   vector<Interface> interfaces = GetInterfaces();
 
-  if (!interfaces.size()) {
+  if (interfaces.empty()) {
     OLA_INFO << "No interfaces found";
     return false;
   }

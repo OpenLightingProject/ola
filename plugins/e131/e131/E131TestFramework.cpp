@@ -200,7 +200,7 @@ void StateManager::NextState() {
 }
 
 void StateManager::ShowStatus() {
-  if (m_failed_tests.size()) {
+  if (!m_failed_tests.empty()) {
     cout << "Some tests failed:" << endl;
     std::vector<TestState*>::iterator iter;
     for (iter = m_failed_tests.begin(); iter != m_failed_tests.end(); ++iter) {

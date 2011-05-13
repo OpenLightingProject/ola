@@ -29,9 +29,10 @@
 using ola::plugin::e131::CID;
 using ola::plugin::e131::DMPHeader;
 using ola::plugin::e131::E131Header;
-using ola::plugin::e131::E131Rev2Header;
-using ola::plugin::e131::FOUR_BYTES;
 using ola::plugin::e131::HeaderSet;
+using ola::plugin::e131::E131Rev2Header;
+using ola::plugin::e131::E133Header;
+using ola::plugin::e131::FOUR_BYTES;
 using ola::plugin::e131::NON_RANGE;
 using ola::plugin::e131::ONE_BYTES;
 using ola::plugin::e131::RANGE_EQUAL;
@@ -41,6 +42,7 @@ class HeaderSetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(HeaderSetTest);
   CPPUNIT_TEST(testRootHeader);
   CPPUNIT_TEST(testE131Header);
+  CPPUNIT_TEST(testE133Header);
   CPPUNIT_TEST(testDMPHeader);
   CPPUNIT_TEST(testHeaderSet);
   CPPUNIT_TEST_SUITE_END();
@@ -48,6 +50,7 @@ class HeaderSetTest: public CppUnit::TestFixture {
   public:
     void testRootHeader();
     void testE131Header();
+    void testE133Header();
     void testDMPHeader();
     void testHeaderSet();
 };
@@ -85,7 +88,6 @@ void HeaderSetTest::testE131Header() {
   CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header.Universe());
   CPPUNIT_ASSERT_EQUAL(false, header.PreviewData());
   CPPUNIT_ASSERT_EQUAL(false, header.StreamTerminated());
-  CPPUNIT_ASSERT_EQUAL(false, header.IsRDMManagement());
   CPPUNIT_ASSERT(!header.UsingRev2());
 
   // test copy and assign
@@ -96,7 +98,6 @@ void HeaderSetTest::testE131Header() {
   CPPUNIT_ASSERT_EQUAL(header.Universe(), header2.Universe());
   CPPUNIT_ASSERT_EQUAL(false, header2.PreviewData());
   CPPUNIT_ASSERT_EQUAL(false, header2.StreamTerminated());
-  CPPUNIT_ASSERT_EQUAL(false, header2.IsRDMManagement());
   CPPUNIT_ASSERT(!header2.UsingRev2());
 
   E131Header header3(header);
@@ -119,15 +120,50 @@ void HeaderSetTest::testE131Header() {
   CPPUNIT_ASSERT(header2_rev2 == header_rev2);
 
   // test a header with the special bits set
-  E131Header header4("foo", 1, 2, 2050, true, true, true);
+  E131Header header4("foo", 1, 2, 2050, true, true);
   CPPUNIT_ASSERT("foo" == header4.Source());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header4.Priority());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header4.Sequence());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header4.Universe());
   CPPUNIT_ASSERT_EQUAL(true, header4.PreviewData());
   CPPUNIT_ASSERT_EQUAL(true, header4.StreamTerminated());
-  CPPUNIT_ASSERT_EQUAL(true, header4.IsRDMManagement());
   CPPUNIT_ASSERT(!header4.UsingRev2());
+}
+
+
+/*
+ * test the E1.33 Header
+ */
+void HeaderSetTest::testE133Header() {
+  E133Header header("foo", 1, 2, 2050);
+  CPPUNIT_ASSERT("foo" == header.Source());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header.Priority());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header.Universe());
+  CPPUNIT_ASSERT_EQUAL(false, header.IsManagement());
+
+  // test copy and assign
+  E133Header header2 = header;
+  CPPUNIT_ASSERT(header.Source() == header2.Source());
+  CPPUNIT_ASSERT_EQUAL(header.Priority(), header2.Priority());
+  CPPUNIT_ASSERT_EQUAL(header.Sequence(), header2.Sequence());
+  CPPUNIT_ASSERT_EQUAL(header.Universe(), header2.Universe());
+  CPPUNIT_ASSERT_EQUAL(false, header2.IsManagement());
+
+  E133Header header3(header);
+  CPPUNIT_ASSERT(header.Source() == header3.Source());
+  CPPUNIT_ASSERT_EQUAL(header.Priority(), header3.Priority());
+  CPPUNIT_ASSERT_EQUAL(header.Sequence(), header3.Sequence());
+  CPPUNIT_ASSERT_EQUAL(header.Universe(), header3.Universe());
+  CPPUNIT_ASSERT(header == header3);
+
+  // test a header with the management bits set
+  E133Header header4("foo", 1, 2, 2050, true);
+  CPPUNIT_ASSERT("foo" == header4.Source());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header4.Priority());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header4.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header4.Universe());
+  CPPUNIT_ASSERT_EQUAL(true, header4.IsManagement());
 }
 
 
@@ -171,6 +207,7 @@ void HeaderSetTest::testHeaderSet() {
   HeaderSet headers;
   RootHeader root_header;
   E131Header e131_header("e131", 1, 2, 6001);
+  E133Header e133_header("foo", 1, 2, 2050, true);
   DMPHeader dmp_header(false, false, NON_RANGE, ONE_BYTES);
 
   // test the root header component
@@ -183,6 +220,10 @@ void HeaderSetTest::testHeaderSet() {
   headers.SetE131Header(e131_header);
   CPPUNIT_ASSERT(e131_header == headers.GetE131Header());
 
+  // test the E1.33 header component
+  headers.SetE133Header(e133_header);
+  CPPUNIT_ASSERT(e133_header == headers.GetE133Header());
+
   // test the DMP headers component
   headers.SetDMPHeader(dmp_header);
   CPPUNIT_ASSERT(dmp_header == headers.GetDMPHeader());
@@ -191,6 +232,7 @@ void HeaderSetTest::testHeaderSet() {
   HeaderSet headers2 = headers;
   CPPUNIT_ASSERT(root_header == headers2.GetRootHeader());
   CPPUNIT_ASSERT(e131_header == headers2.GetE131Header());
+  CPPUNIT_ASSERT(e133_header == headers2.GetE133Header());
   CPPUNIT_ASSERT(dmp_header == headers2.GetDMPHeader());
   CPPUNIT_ASSERT(headers2 == headers);
 
@@ -198,6 +240,7 @@ void HeaderSetTest::testHeaderSet() {
   HeaderSet headers3(headers);
   CPPUNIT_ASSERT(root_header == headers3.GetRootHeader());
   CPPUNIT_ASSERT(e131_header == headers3.GetE131Header());
+  CPPUNIT_ASSERT(e133_header == headers3.GetE133Header());
   CPPUNIT_ASSERT(dmp_header == headers3.GetDMPHeader());
   CPPUNIT_ASSERT(headers3 == headers);
 }

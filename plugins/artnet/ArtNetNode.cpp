@@ -393,7 +393,7 @@ bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
       ++iter;
     }
 
-    if (!m_input_ports[port_id].subscribed_nodes.size()) {
+    if (m_input_ports[port_id].subscribed_nodes.empty()) {
       OLA_DEBUG <<
         "Suppressing data transmit due to no active nodes for universe " <<
         static_cast<int>(m_input_ports[port_id].universe_address);

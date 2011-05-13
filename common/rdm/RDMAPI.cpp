@@ -2723,7 +2723,7 @@ void RDMAPI::_HandleEmptyResponse(
     const ResponseStatus &status,
     const string &data) {
   ResponseStatus response_status = status;
-  if (response_status.WasAcked() && data.size())
+  if (response_status.WasAcked() && !data.empty())
     SetIncorrectPDL(&response_status, data.size(), 0);
   callback->Run(response_status);
 }

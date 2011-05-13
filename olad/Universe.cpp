@@ -465,8 +465,8 @@ void Universe::NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port) {
  */
 bool Universe::IsActive() const {
   // any of the following means the port is active
-  return m_output_ports.size() || m_input_ports.size() ||
-      m_source_clients.size() || m_sink_clients.size();
+  return !(m_output_ports.empty() && m_input_ports.empty() &&
+           m_source_clients.empty() && m_sink_clients.empty());
 }
 
 
@@ -647,7 +647,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
     }
   }
 
-  if (!active_sources.size()) {
+  if (active_sources.empty()) {
     OLA_WARN << "Something changed but we didn't find any active sources " <<
       " for universe " << UniverseId();
     return false;
@@ -659,7 +659,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
 
   // only one source at the active priority
   if (active_sources.size() == 1) {
-      m_buffer.Set(active_sources[0].Data());
+    m_buffer.Set(active_sources[0].Data());
   } else {
     // multi source merge
     if (m_merge_mode == Universe::MERGE_LTP) {

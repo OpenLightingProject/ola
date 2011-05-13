@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include <arpa/inet.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <iomanip>
 #include <iostream>
@@ -93,33 +92,33 @@ void InterfacePickerTest::testChooseInterface() {
   MockPicker picker(interfaces);
 
   // no interfaces
-  Interface interface;
-  CPPUNIT_ASSERT(!picker.ChooseInterface(&interface, ""));
+  Interface iface;
+  CPPUNIT_ASSERT(!picker.ChooseInterface(&iface, ""));
 
-  // now with one interface that doesn't match
+  // now with one iface that doesn't match
   Interface iface1;
   iface1.name = "eth0";
   StringToAddress("10.0.0.1", iface1.ip_address);
   interfaces.push_back(iface1);
-  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "192.168.1.1"));
-  CPPUNIT_ASSERT(iface1 == interface);
+  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "192.168.1.1"));
+  CPPUNIT_ASSERT(iface1 == iface);
 
   // check that preferred works
   Interface iface2;
   iface2.name = "eth1";
   StringToAddress("192.168.1.1", iface2.ip_address);
   interfaces.push_back(iface2);
-  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "192.168.1.1"));
-  CPPUNIT_ASSERT(iface2 == interface);
+  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "192.168.1.1"));
+  CPPUNIT_ASSERT(iface2 == iface);
 
   // now check for iface name
-  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "eth0"));
-  CPPUNIT_ASSERT(iface1 == interface);
+  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "eth0"));
+  CPPUNIT_ASSERT(iface1 == iface);
 
-  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "eth1"));
-  CPPUNIT_ASSERT(iface2 == interface);
+  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "eth1"));
+  CPPUNIT_ASSERT(iface2 == iface);
 
   // a invalid address should return the first one
-  CPPUNIT_ASSERT(picker.ChooseInterface(&interface, "foo"));
-  CPPUNIT_ASSERT(iface1 == interface);
+  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "foo"));
+  CPPUNIT_ASSERT(iface1 == iface);
 }

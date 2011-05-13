@@ -56,7 +56,6 @@ class DMPE131Inflator: public DMPInflator {
                                unsigned int pdu_len);
 
   private:
-
     typedef struct {
       CID cid;
       uint8_t sequence;

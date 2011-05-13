@@ -220,7 +220,7 @@ bool UsbDmxPlugin::StopHook() {
 
   libusb_exit(NULL);
 
-  if (m_sockets.size()) {
+  if (!m_sockets.empty()) {
     OLA_WARN << "libusb is still using sockets, this is a bug";
   }
   return true;

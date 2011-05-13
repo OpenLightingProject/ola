@@ -56,13 +56,11 @@ unsigned int E131PDU::DataSize() const {
  * Pack the header portion.
  */
 bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
-  unsigned int header_size = static_cast<unsigned int>(m_header.UsingRev2() ?
-    sizeof(E131Rev2Header::e131_rev2_pdu_header) :
-    sizeof(E131Header::e131_pdu_header));
+  unsigned int header_size = HeaderSize();
 
   if (length < header_size) {
     OLA_WARN << "E131PDU::PackHeader: buffer too small, got " << length <<
-      " required " << sizeof(E131Rev2Header::e131_pdu_header);
+      " required " << header_size;
     length = 0;
     return false;
   }

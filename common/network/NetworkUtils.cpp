@@ -50,16 +50,25 @@ namespace network {
  * Convert a string to a struct in_addr
  */
 bool StringToAddress(const string &address, struct in_addr &addr) {
+  bool ok;
+
 #ifdef HAVE_INET_ATON
-  if (!inet_aton(address.data(), &addr)) {
+  ok = (1 == inet_aton(address.data(), &addr));
 #else
-  in_addr_t *ip_addr4 = static_cast<in_addr_t*>(&addr);
-  if ((*ip_addr4 = inet_addr(address.data())) == INADDR_NONE) {
+#ifdef WIN32
+  unsigned long ip_addr4;
+#else
+  in_addr_t ip_addr4;
 #endif
+  ip_addr4 = inet_addr(address.c_str());
+  ok = (INADDR_NONE != ip_addr4);
+  addr.s_addr = ip_addr4;
+#endif
+
+  if (!ok) {
     OLA_WARN << "Could not convert address " << address;
-    return false;
   }
-  return true;
+  return ok;
 }
 
 
@@ -172,15 +181,15 @@ uint16_t HostToLittleEndian(uint16_t value) {
 uint32_t HostToLittleEndian(uint32_t value) {
 #ifdef HAVE_ENDIAN_H
 #  if BYTE_ORDER == __BIG_ENDIAN
-  return ((value & 0xff) << 24) | (value & 0xff00 << 16) |
-          (0xff00 & (value >> 16) | (value >> 24));
+  return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
+          (0xff00 & (value >> 16)) | (value >> 24);
 #  else
   return value;
 #  endif
 #else
 #  if BYTE_ORDER == BIG_ENDIAN
-  return ((value & 0xff) << 24) | (value & 0xff00 << 16) |
-          (0xff00 & (value >> 16) | (value >> 24));
+  return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
+          (0xff00 & (value >> 16)) | (value >> 24);
 #  else
   return value;
 #  endif
@@ -212,15 +221,15 @@ uint16_t LittleEndianToHost(uint16_t value) {
 uint32_t LittleEndianToHost(uint32_t value) {
 #ifdef HAVE_ENDIAN_H
 #  if BYTE_ORDER == __BIG_ENDIAN
-  return ((value & 0xff) << 24) | (value & 0xff00 << 16) |
-          (0xff00 & (value >> 16) | (value >> 24));
+  return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
+          (0xff00 & (value >> 16)) | (value >> 24);
 #  else
   return value;
 #  endif
 #else
 #  if BYTE_ORDER == BIG_ENDIAN
-  return ((value & 0xff) << 24) | (value & 0xff00 << 16) |
-          (0xff00 & (value >> 16) | (value >> 24));
+  return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
+          (0xff00 & (value >> 16)) | (value >> 24);
 #  else
   return value;
 #  endif

@@ -21,6 +21,10 @@
 #ifndef INCLUDE_OLA_CLOCK_H_
 #define INCLUDE_OLA_CLOCK_H_
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <stdint.h>
 #include <sys/time.h>
 #include <iomanip>
@@ -108,10 +112,21 @@ class TimeInterval {
 
   private:
     void Set(uint64_t interval_useconds) {
+#ifdef HAVE_TIME_T
       m_interval.tv_sec = static_cast<time_t>(
           interval_useconds / USEC_IN_SECONDS);
-      m_interval.tv_usec = static_cast<suseconds_t>(
-          interval_useconds % USEC_IN_SECONDS);    
+#else
+      m_interval.tv_sec = (
+          interval_useconds / USEC_IN_SECONDS);
+#endif
+
+#ifdef HAVE_SUSECONDS_T
+       m_interval.tv_usec = static_cast<suseconds_t>(
+         interval_useconds % USEC_IN_SECONDS);
+#else
+      m_interval.tv_usec = (
+          interval_useconds % USEC_IN_SECONDS);
+#endif
     }
     struct timeval m_interval;
 

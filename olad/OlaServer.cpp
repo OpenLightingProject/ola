@@ -150,7 +150,7 @@ OlaServer::~OlaServer() {
 
   if (m_accepting_socket &&
       m_accepting_socket->ReadDescriptor() !=
-      ola::network::Socket::INVALID_SOCKET)
+      ola::network::Socket::CLOSED_SOCKET)
     m_ss->RemoveSocket(m_accepting_socket);
 
   if (m_universe_store) {
@@ -185,7 +185,7 @@ bool OlaServer::Init() {
     return false;
 
   // TODO(simon): run without preferences & PluginLoader
-  if (!m_plugin_loaders.size() || !m_preferences_factory)
+  if (m_plugin_loaders.empty() || !m_preferences_factory)
     return false;
 
   if (m_accepting_socket) {
@@ -200,18 +200,20 @@ bool OlaServer::Init() {
     m_ss->AddSocket(m_accepting_socket);
   }
 
+#ifndef WIN32
   signal(SIGPIPE, SIG_IGN);
+#endif
 
   // fetch the interface info
-  ola::network::Interface interface;
+  ola::network::Interface iface;
   ola::network::InterfacePicker *picker =
     ola::network::InterfacePicker::NewPicker();
-  if (!picker->ChooseInterface(&interface, "")) {
+  if (!picker->ChooseInterface(&iface, "")) {
     OLA_WARN << "No network interface found";
   } else {
     // default to using the ip as a id
     m_default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
-                                  interface.ip_address.s_addr);
+                                  iface.ip_address.s_addr);
   }
   delete picker;
   m_export_map->GetStringVar(K_UID_VAR)->Set(m_default_uid.ToString());
@@ -258,7 +260,7 @@ bool OlaServer::Init() {
   m_plugin_manager->LoadAll();
 
 #ifdef HAVE_LIBMICROHTTPD
-  if (!StartHttpServer(interface))
+  if (!StartHttpServer(iface))
     OLA_WARN << "Failed to start the HTTP server.";
 #endif
 
@@ -370,7 +372,7 @@ void OlaServer::CheckForReload() {
  * @param interface the primary interface that the server is using.
  */
 #ifdef HAVE_LIBMICROHTTPD
-bool OlaServer::StartHttpServer(const ola::network::Interface &interface) {
+bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
   if (!m_options.http_enable)
     return true;
 
@@ -389,7 +391,7 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &interface) {
                               m_options.http_port,
                               m_options.http_enable_quit,
                               m_options.http_data_dir,
-                              interface);
+                              iface);
 
   if (m_httpd->Init()) {
     m_httpd->Start();

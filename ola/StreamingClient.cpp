@@ -124,7 +124,7 @@ void StreamingClient::Stop() {
 bool StreamingClient::SendDmx(unsigned int universe,
                               const DmxBuffer &data) {
   if (!m_stub ||
-      m_socket->ReadDescriptor() == ola::network::Socket::INVALID_SOCKET)
+      m_socket->ReadDescriptor() == ola::network::Socket::CLOSED_SOCKET)
     return false;
 
   // We select() on the fd here to see if the remove end has closed the

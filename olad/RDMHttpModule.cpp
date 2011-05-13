@@ -660,7 +660,7 @@ void RDMHttpModule::ResolveNextUID(unsigned int universe_id) {
     return;
 
   while (!sent_request) {
-    if (!uid_state->pending_uids.size()) {
+    if (uid_state->pending_uids.empty()) {
       uid_state->uid_resolution_running = false;
       return;
     }
@@ -1643,7 +1643,7 @@ void RDMHttpModule::GetLanguageHandler(HttpResponse *response,
       item->SetSelectedOffset(i);
   }
 
-  if (ok && !languages.size()) {
+  if (ok && languages.empty()) {
     item->AddItem(language, language);
     item->SetSelectedOffset(0);
   }

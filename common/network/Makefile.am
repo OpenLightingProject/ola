@@ -23,3 +23,7 @@ NetworkTester_LDADD = ./libolanetwork.la \
                       ../export_map/libolaexportmap.la \
                       ../logging/liblogging.la \
                       ../utils/libolautils.la
+
+if USING_WIN32
+  NetworkTester_LDFLAGS += -no-undefined -liphlpapi -lnetapi32 -lcap -lws2_32 -ldpnet -lwsock32
+endif

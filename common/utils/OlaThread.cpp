@@ -44,6 +44,7 @@ bool OlaThread::Start() {
     OLA_WARN << "pthread create failed";
     return false;
   }
+  m_running = true;
   return true;
 }
 
@@ -52,9 +53,9 @@ bool OlaThread::Start() {
  * Join this thread
  */
 bool OlaThread::Join(void *ptr) {
-  if (m_thread_id) {
+  if (m_running) {
     int ret = pthread_join(m_thread_id, &ptr);
-    m_thread_id = 0;
+    m_running = false;
     return 0 == ret;
   }
   return false;

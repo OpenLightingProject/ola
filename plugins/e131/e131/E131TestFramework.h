@@ -326,7 +326,7 @@ class StateManager {
     bool Tick();
     void Input();
     void NewDMX();
-    bool Passed() const { return m_failed_tests.size() == 0; }
+    bool Passed() const { return m_failed_tests.empty(); }
 
   private:
     bool m_interactive;

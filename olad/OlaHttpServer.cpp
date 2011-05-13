@@ -935,9 +935,6 @@ void OlaHttpServer::AddPatchActions(ActionQueue *action_queue,
   vector<port_identifier>::const_iterator iter;
   DecodePortIds(port_id_string, &ports);
 
-  if (!ports.size())
-    return;
-
   for (iter = ports.begin(); iter != ports.end(); ++iter) {
     action_queue->AddAction(new PatchPortAction(
       &m_client,
@@ -961,9 +958,6 @@ void OlaHttpServer::AddPriorityActions(ActionQueue *action_queue,
   vector<port_identifier> ports;
   vector<port_identifier>::const_iterator iter;
   DecodePortIds(port_ids, &ports);
-
-  if (!ports.size())
-    return;
 
   for (iter = ports.begin(); iter != ports.end(); ++iter) {
     string priority_mode_id = iter->string_id + K_PRIORITY_MODE_SUFFIX;

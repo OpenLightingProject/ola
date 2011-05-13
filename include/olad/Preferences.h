@@ -80,8 +80,11 @@ class BoolValidator: public Validator {
     BoolValidator(): Validator() {}
     bool IsValid(const string &value) const;
 
-    static const char TRUE[];
-    static const char FALSE[];
+    // On win32 TRUE and FALSE are #define'd. We can #undef them here but that
+    // doesn't fix the case in the calling code. So we use ENABLED and DISABLED
+    // instead.
+    static const char ENABLED[];
+    static const char DISABLED[];
 };
 
 
@@ -231,7 +234,7 @@ class FileBackedPreferences: public MemoryPreferences {
 
 class FileBackedPreferencesFactory: public PreferencesFactory {
   public:
-    FileBackedPreferencesFactory(const string &directory)
+    explicit FileBackedPreferencesFactory(const string &directory)
         : m_directory(directory) {}
 
   private:

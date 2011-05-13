@@ -172,14 +172,14 @@ bool E131Plugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(
       IGNORE_PREVIEW_DATA_KEY,
       BoolValidator(),
-      BoolValidator::TRUE);
+      BoolValidator::ENABLED);
 
   save |= m_preferences->SetDefaultValue(IP_KEY, StringValidator(), "");
 
   save |= m_preferences->SetDefaultValue(
       PREPEND_HOSTNAME_KEY,
       BoolValidator(),
-      BoolValidator::TRUE);
+      BoolValidator::ENABLED);
 
   set<string> revision_values;
   revision_values.insert(REVISION_0_2);
