@@ -42,7 +42,6 @@ class E131Header {
                uint16_t universe,
                bool is_preview = false,
                bool has_terminated = false,
-               bool is_management = false,
                bool is_rev2 = false)
         : m_source(source),
           m_priority(priority),
@@ -50,7 +49,6 @@ class E131Header {
           m_universe(universe),
           m_is_preview(is_preview),
           m_has_terminated(has_terminated),
-          m_is_management(is_management),
           m_is_rev2(is_rev2) {
     }
     ~E131Header() {}
@@ -61,7 +59,6 @@ class E131Header {
     uint16_t Universe() const { return m_universe; }
     bool PreviewData() const { return m_is_preview; }
     bool StreamTerminated() const { return m_has_terminated; }
-    bool IsRDMManagement() const { return m_is_management; }
 
     bool UsingRev2() const { return m_is_rev2; }
 
@@ -72,7 +69,6 @@ class E131Header {
         m_universe == other.m_universe &&
         m_is_preview == other.m_is_preview &&
         m_has_terminated == other.m_has_terminated &&
-        m_is_management == other.m_is_management &&
         m_is_rev2 == other.m_is_rev2;
     }
 
@@ -90,7 +86,6 @@ class E131Header {
 
     static const uint8_t PREVIEW_DATA_MASK = 0x80;
     static const uint8_t STREAM_TERMINATED_MASK = 0x40;
-    static const uint8_t RDM_MANAGEMENT_MASK = 0x20;
 
   private:
     string m_source;
@@ -99,7 +94,6 @@ class E131Header {
     uint16_t m_universe;
     bool m_is_preview;
     bool m_has_terminated;
-    bool m_is_management;
     bool m_is_rev2;
 };
 
@@ -113,7 +107,7 @@ class E131Rev2Header: public E131Header {
                    bool is_preview = false,
                    bool has_terminated = false)
         : E131Header(source, priority, sequence, universe, is_preview,
-                     has_terminated, false, true) {
+                     has_terminated, true) {
     }
 
     enum { REV2_SOURCE_NAME_LEN = 32 };

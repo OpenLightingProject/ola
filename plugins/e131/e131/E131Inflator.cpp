@@ -54,8 +54,7 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
           raw_header.sequence,
           NetworkToHost(raw_header.universe),
           raw_header.options & E131Header::PREVIEW_DATA_MASK,
-          raw_header.options & E131Header::STREAM_TERMINATED_MASK,
-          raw_header.options & E131Header::RDM_MANAGEMENT_MASK);
+          raw_header.options & E131Header::STREAM_TERMINATED_MASK);
       m_last_header = header;
       m_last_header_valid = true;
       headers.SetE131Header(header);
