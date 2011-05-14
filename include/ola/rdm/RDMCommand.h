@@ -32,6 +32,12 @@ namespace ola {
 namespace rdm {
 
 
+typedef enum {
+  RDM_REQUEST,
+  RDM_RESPONSE,
+} rdm_message_type;
+
+
 /*
  * The RDMCommand class, which RDMRequest and RDMResponse inherit from.
  * RDMCommands are immutable.
@@ -50,6 +56,7 @@ class RDMCommand {
 
     virtual ~RDMCommand();
     bool operator==(const RDMCommand &other) const;
+    virtual rdm_message_type CommandType() const = 0;
 
     std::string ToString() const;
 
@@ -171,6 +178,7 @@ class RDMRequest: public RDMCommand {
                  length) {
     }
 
+    rdm_message_type CommandType() const { return RDM_REQUEST; }
     uint8_t PortId() const { return m_port_id; }
 
     virtual RDMRequest *Duplicate() const = 0;
@@ -293,6 +301,7 @@ class RDMResponse: public RDMCommand {
                  length) {
     }
 
+    rdm_message_type CommandType() const { return RDM_RESPONSE; }
     uint8_t ResponseType() const { return m_port_id; }
 
     // The maximum size of an ACK_OVERFLOW session that we'll buffer
@@ -353,6 +362,9 @@ typedef BaseRDMResponse<RDMCommand::SET_COMMAND_RESPONSE> RDMSetResponse;
 
 // Helper functions for dealing with RDMCommands
 // These are mostly used with the RDM-TRI & dummy plugin
+bool GuessMessageType(rdm_message_type *type,
+                      const uint8_t *data,
+                      unsigned int length);
 RDMResponse *NackWithReason(const RDMRequest *request,
                             rdm_nack_reason reason);
 RDMResponse *GetResponseFromData(const RDMRequest *request,

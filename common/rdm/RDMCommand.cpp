@@ -576,6 +576,38 @@ RDMResponse* RDMResponse::CombineResponses(const RDMResponse *response1,
 }
 
 // Helper functions follow
+
+/**
+ * Guess the type of an RDM message, so we know whether we should unpack it as
+ * a request or response. This doesn't perform any data checking (that's left
+ * to the Inflate* methods).
+ * @param type a pointer to a rdm_message_type variable which is set to
+ * RDM_REQUEST or RDM_RESPONSE.
+ * @param data a pointer to the rdm message (excluding the start code)
+ * @param length length of the rdm data
+ * @returns true if we could determine the type, false otherwise
+ */
+bool GuessMessageType(rdm_message_type *type,
+                      const uint8_t *data,
+                      unsigned int length) {
+  static const unsigned int COMMAND_CLASS_OFFSET = 19;
+  if (!data || length < COMMAND_CLASS_OFFSET + 1)
+    return false;
+
+  uint8_t command_class = data[COMMAND_CLASS_OFFSET];
+  if (command_class == RDMCommand::GET_COMMAND ||
+      command_class == RDMCommand::SET_COMMAND) {
+    *type = RDM_REQUEST;
+    return true;
+  } else if (command_class == RDMCommand::GET_COMMAND_RESPONSE ||
+             command_class == RDMCommand::SET_COMMAND_RESPONSE) {
+    *type = RDM_RESPONSE;
+    return true;
+  }
+  return false;
+}
+
+
 /*
  * Generate a NACK response with a reason code
  */

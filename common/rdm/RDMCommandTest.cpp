@@ -30,6 +30,7 @@
 #include "ola/rdm/UID.h"
 
 using ola::network::HostToNetwork;
+using ola::rdm::GuessMessageType;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMGetResponse;
@@ -49,6 +50,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testGetResponseFromData);
   CPPUNIT_TEST(testCombineResponses);
   CPPUNIT_TEST(testPackWithParams);
+  CPPUNIT_TEST(testGuessMessageType);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -61,6 +63,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testGetResponseFromData();
     void testCombineResponses();
     void testPackWithParams();
+    void testGuessMessageType();
 
   private:
     void PackAndVerify(const RDMCommand &command,
@@ -148,6 +151,7 @@ void RDMCommandTest::testRDMCommand() {
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t*>(NULL), command.ParamData());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, command.ParamDataSize());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 25, command.Size());
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, command.CommandType());
 
   // try one with extra long data
   uint8_t *data = new uint8_t[232];
@@ -177,8 +181,8 @@ void RDMCommandTest::testRDMCommand() {
                          sizeof(data_value));  // data length
 
   CPPUNIT_ASSERT_EQUAL((unsigned int) 29, command3.Size());
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, command.CommandType());
   PackAndVerify(command3, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
-
   delete[] data;
 }
 
@@ -355,6 +359,7 @@ void RDMCommandTest::testResponseInflation() {
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, code);
   uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4, command->ParamDataSize());
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_RESPONSE, command->CommandType());
   CPPUNIT_ASSERT(0 == memcmp(expected_data, command->ParamData(),
                              command->ParamDataSize()));
 
@@ -452,6 +457,9 @@ void RDMCommandTest::UpdateChecksum(uint8_t *expected,
 }
 
 
+/**
+ * Test that we can build nack messages
+ */
 void RDMCommandTest::testNackWithReason() {
   UID source(1, 2);
   UID destination(3, 4);
@@ -808,4 +816,35 @@ void RDMCommandTest::testPackWithParams() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, command->ParamDataSize());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 25, command->Size());
   delete command;
+}
+
+
+/**
+ * Check that GuessMessageType works
+ */
+void RDMCommandTest::testGuessMessageType() {
+  ola::rdm::rdm_message_type message_type;
+  CPPUNIT_ASSERT(!GuessMessageType(&message_type, NULL, 0));
+  CPPUNIT_ASSERT(!GuessMessageType(&message_type, NULL, 20));
+  CPPUNIT_ASSERT(!GuessMessageType(&message_type, EXPECTED_GET_BUFFER, 0));
+  CPPUNIT_ASSERT(!GuessMessageType(&message_type, EXPECTED_GET_BUFFER, 18));
+  CPPUNIT_ASSERT(!GuessMessageType(&message_type, EXPECTED_GET_BUFFER, 19));
+
+  CPPUNIT_ASSERT(GuessMessageType(
+        &message_type,
+        EXPECTED_GET_BUFFER,
+        sizeof(EXPECTED_GET_BUFFER)));
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, message_type);
+
+  CPPUNIT_ASSERT(GuessMessageType(
+        &message_type,
+        EXPECTED_SET_BUFFER,
+        sizeof(EXPECTED_SET_BUFFER)));
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, message_type);
+
+  CPPUNIT_ASSERT(GuessMessageType(
+        &message_type,
+        EXPECTED_GET_RESPONSE_BUFFER,
+        sizeof(EXPECTED_GET_RESPONSE_BUFFER)));
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_RESPONSE, message_type);
 }
