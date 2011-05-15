@@ -489,34 +489,11 @@ bool UdpSocket::Close() {
 
 
 /*
- * Send data.
- * @param buffer the data to send
- * @param size the length of the data
- * @param destination to destination to sent to
- * @return the number of bytes sent
- */
-ssize_t UdpSocket::SendTo(const uint8_t *buffer,
-                          unsigned int size,
-                          const struct sockaddr_in &destination) const {
-  ssize_t bytes_sent = sendto(
-    m_fd,
-    reinterpret_cast<const char*>(buffer),
-    size,
-    0,
-    reinterpret_cast<const struct sockaddr*>(&destination),
-    sizeof(struct sockaddr));
-  if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
-    OLA_WARN << "Failed to send, " << strerror(errno);
-  return bytes_sent;
-}
-
-
-/*
  * Send data
  * @param buffer the data to send
  * @param size the length of the data
  * @param ip_address the IP to send to
- * @param port the port to send to
+ * @param port the port to send to in HOST byte order.
  * @return the number of bytes sent
  */
 ssize_t UdpSocket::SendTo(const uint8_t *buffer,
@@ -528,7 +505,16 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
   destination.sin_family = AF_INET;
   destination.sin_port = HostToNetwork(port);
   destination.sin_addr = ip.Address();
-  return SendTo(buffer, size, destination);
+  ssize_t bytes_sent = sendto(
+    m_fd,
+    reinterpret_cast<const char*>(buffer),
+    size,
+    0,
+    reinterpret_cast<const struct sockaddr*>(&destination),
+    sizeof(struct sockaddr));
+  if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
+    OLA_WARN << "Failed to send, " << strerror(errno);
+  return bytes_sent;
 }
 
 
