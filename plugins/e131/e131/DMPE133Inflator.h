@@ -23,12 +23,11 @@
 #define PLUGINS_E131_E131_DMPE133INFLATOR_H_
 
 #include <map>
-#include "ola/Clock.h"
+#include <string>
 #include "ola/Callback.h"
-#include "ola/DmxBuffer.h"
-#include "ola/rdm/RDMCommand.h"
 #include "plugins/e131/e131/DMPInflator.h"
-#include "plugins/e131/e131/E133Layer.h"
+#include "plugins/e131/e131/E133Header.h"
+#include "ola/network/IPV4Address.h"
 
 namespace ola {
 namespace plugin {
@@ -38,22 +37,19 @@ class DMPE133Inflator: public DMPInflator {
   friend class DMPE133InflatorTest;
 
   public:
-    DMPE133Inflator(E133Layer *e133_layer)
-        : DMPInflator(),
-          m_e133_layer(e133_layer) {
-    }
+    explicit DMPE133Inflator(class E133Layer *e133_layer);
     ~DMPE133Inflator();
 
-    typedef ola::Callback2<void,
-                           unsigned int,
-                           const ola::rdm::RDMRequest*> RDMHandler;
-    typedef ola::Callback1<void,
-                           const ola::rdm::RDMRequest*> ManagementRDMHandler;
+    typedef ola::Callback3<void,
+                           const ola::network::IPV4Address&,  // src ip
+                           const E133Header&,  // the E1.33 header
+                           const std::string&  // rdm data
+                          > RDMMessageHandler;
 
-    bool SetRDMHandler(unsigned int universe, RDMHandler *handler);
+    bool SetRDMHandler(unsigned int universe, RDMMessageHandler *handler);
     bool RemoveRDMHandler(unsigned int universe);
 
-    void SetRDMManagementhandler(ManagementRDMHandler *handler);
+    bool SetRDMManagementhandler(RDMMessageHandler *handler);
     void RemoveRDMManagementHandler();
 
   protected:
@@ -63,11 +59,10 @@ class DMPE133Inflator: public DMPInflator {
                                unsigned int pdu_len);
 
   private:
-    typedef std::map<unsigned int, RDMHandler*> universe_handler_map;
+    typedef std::map<unsigned int, RDMMessageHandler*> universe_handler_map;
     universe_handler_map m_rdm_handlers;
-    ManagementRDMHandler *m_rdm_management_handler;
-
-    E133Layer *m_e133_layer;
+    RDMMessageHandler *m_management_handler;
+    class E133Layer *m_e133_layer;
 };
 }  // e131
 }  // plugin

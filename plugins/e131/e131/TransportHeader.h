@@ -35,15 +35,13 @@ namespace e131 {
  */
 class TransportHeader {
   public:
-    TransportHeader() {
-      m_src_ip.s_addr = 0;
-    }
+    TransportHeader() {}
 
     explicit TransportHeader(const ola::network::IPV4Address &src_ip)
         : m_src_ip(src_ip) {}
 
     ~TransportHeader() {}
-    const olka::network::IPV4Address& SourceIP() const { return m_src_ip; }
+    const ola::network::IPV4Address& SourceIP() const { return m_src_ip; }
 
     bool operator==(const TransportHeader &other) const {
       return m_src_ip == other.m_src_ip;
