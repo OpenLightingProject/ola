@@ -394,11 +394,6 @@ class UdpSocket: public UdpSocketInterface {
     bool Close();
     int ReadDescriptor() const { return m_fd; }
     int WriteDescriptor() const { return m_fd; }
-    /*
-    ssize_t SendTo(const uint8_t *buffer,
-                   unsigned int size,
-                   const struct sockaddr_in &destination) const;
-                   */
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
                    const IPV4Address &ip,
