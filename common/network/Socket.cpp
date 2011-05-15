@@ -489,15 +489,22 @@ bool UdpSocket::Close() {
 
 
 /*
- * Send data.
+ * Send data
  * @param buffer the data to send
  * @param size the length of the data
- * @param destination to destination to sent to
+ * @param ip_address the IP to send to
+ * @param port the port to send to in HOST byte order.
  * @return the number of bytes sent
  */
 ssize_t UdpSocket::SendTo(const uint8_t *buffer,
                           unsigned int size,
-                          const struct sockaddr_in &destination) const {
+                          const IPV4Address &ip,
+                          unsigned short port) const {
+  struct sockaddr_in destination;
+  memset(&destination, 0, sizeof(destination));
+  destination.sin_family = AF_INET;
+  destination.sin_port = HostToNetwork(port);
+  destination.sin_addr = ip.Address();
   ssize_t bytes_sent = sendto(
     m_fd,
     reinterpret_cast<const char*>(buffer),
@@ -508,29 +515,6 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
     OLA_WARN << "Failed to send, " << strerror(errno);
   return bytes_sent;
-}
-
-
-/*
- * Send data
- * @param buffer the data to send
- * @param size the length of the data
- * @param ip_address the IP to send to
- * @param port the port to send to
- * @return the number of bytes sent
- */
-ssize_t UdpSocket::SendTo(const uint8_t *buffer,
-                          unsigned int size,
-                          const std::string &ip_address,
-                          unsigned short port) const {
-  struct sockaddr_in destination;
-  memset(&destination, 0x00, sizeof(destination));
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(port);
-
-  if (!StringToAddress(ip_address, destination.sin_addr))
-    return 0;
-  return SendTo(buffer, size, destination);
 }
 
 
@@ -548,17 +532,46 @@ bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
 
 
 /*
- * Receive data and record the src address & port
+ * Receive data
  * @param buffer the buffer to store the data
  * @param data_read the size of the buffer, updated with the number of bytes
  * read
+ * @param source the src ip of the packet
  * @return true or false
  */
 bool UdpSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
-                         struct sockaddr_in &source,
-                         socklen_t &src_size) const {
-  return _RecvFrom(buffer, data_read, &source, &src_size);
+                         IPV4Address &source) const {
+  struct sockaddr_in src_sockaddr;
+  socklen_t src_size = sizeof(src_sockaddr);
+  bool ok = _RecvFrom(buffer, data_read, &src_sockaddr, &src_size);
+  if (ok)
+    source = IPV4Address(src_sockaddr.sin_addr);
+  return ok;
+}
+
+
+/*
+ * Receive data and record the src address & port
+ * @param buffer the buffer to store the data
+ * @param data_read the size of the buffer, updated with the number of bytes
+ * read
+ * @param source the src ip of the packet
+ * @param port the src port of the packet in host byte order
+ * @return true or false
+ */
+bool UdpSocket::RecvFrom(uint8_t *buffer,
+                         ssize_t *data_read,
+                         IPV4Address &source,
+                         uint16_t &port) const {
+  struct sockaddr_in src_sockaddr;
+  socklen_t src_size = sizeof(src_sockaddr);
+  bool ok = _RecvFrom(buffer, data_read, &src_sockaddr, &src_size);
+  if (ok) {
+    source = IPV4Address(src_sockaddr.sin_addr);
+    port = NetworkToHost(src_sockaddr.sin_port);
+  }
+  return ok;
 }
 
 
@@ -587,15 +600,16 @@ bool UdpSocket::EnableBroadcast() {
 /**
  * Set the outgoing interface to be used for multicast transmission
  */
-bool UdpSocket::SetMulticastInterface(const struct in_addr &iface) {
+bool UdpSocket::SetMulticastInterface(const IPV4Address &iface) {
+  struct in_addr addr = iface.Address();
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
                       IP_MULTICAST_IF,
-                      reinterpret_cast<const char*>(&iface),
-                      sizeof(iface));
+                      reinterpret_cast<const char*>(&addr),
+                      sizeof(addr));
   if (ok < 0) {
     OLA_WARN << "Failed to set outgoing multicast interface to " <<
-      AddressToString(iface) << ": " << strerror(errno);
+      iface << ": " << strerror(errno);
     return false;
   }
   return true;
@@ -607,13 +621,13 @@ bool UdpSocket::SetMulticastInterface(const struct in_addr &iface) {
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::JoinMulticast(const struct in_addr &iface,
-                              const struct in_addr &group,
+bool UdpSocket::JoinMulticast(const IPV4Address &iface,
+                              const IPV4Address &group,
                               bool multicast_loop) {
   char loop = multicast_loop;
   struct ip_mreq mreq;
-  mreq.imr_interface = iface;
-  mreq.imr_multiaddr = group;
+  mreq.imr_interface = iface.Address();
+  mreq.imr_multiaddr = group.Address();
 
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
@@ -621,7 +635,7 @@ bool UdpSocket::JoinMulticast(const struct in_addr &iface,
                       reinterpret_cast<char*>(&mreq),
                       sizeof(mreq));
   if (ok < 0) {
-    OLA_WARN << "Failed to join multicast group " << AddressToString(group) <<
+    OLA_WARN << "Failed to join multicast group " << group <<
     ": " << strerror(errno);
     return false;
   }
@@ -639,28 +653,15 @@ bool UdpSocket::JoinMulticast(const struct in_addr &iface,
 
 
 /*
- * Join a multicase group
- */
-bool UdpSocket::JoinMulticast(const struct in_addr &iface,
-                              const string &address,
-                              bool loop) {
-  struct in_addr addr;
-  if (!StringToAddress(address, addr))
-    return false;
-  return JoinMulticast(iface, addr, loop);
-}
-
-
-/*
  * Leave a multicast group
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::LeaveMulticast(const struct in_addr &iface,
-                              const struct in_addr &group) {
+bool UdpSocket::LeaveMulticast(const IPV4Address &iface,
+                               const IPV4Address &group) {
   struct ip_mreq mreq;
-  mreq.imr_interface = iface;
-  mreq.imr_multiaddr = group;
+  mreq.imr_interface = iface.Address();
+  mreq.imr_multiaddr = group.Address();
 
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
@@ -668,23 +669,11 @@ bool UdpSocket::LeaveMulticast(const struct in_addr &iface,
                       reinterpret_cast<char*>(&mreq),
                       sizeof(mreq));
   if (ok < 0) {
-    OLA_WARN << "Failed to leave multicast group " << AddressToString(group) <<
+    OLA_WARN << "Failed to leave multicast group " << group <<
     ": " << strerror(errno);
     return false;
   }
   return true;
-}
-
-
-/*
- * Leave a multicase group
- */
-bool UdpSocket::LeaveMulticast(const struct in_addr &iface,
-                               const string &address) {
-  struct in_addr addr;
-  if (!StringToAddress(address, addr))
-    return false;
-  return LeaveMulticast(iface, addr);
 }
 
 

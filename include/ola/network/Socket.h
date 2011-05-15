@@ -60,7 +60,7 @@
 
 #include <string>
 #include <ola/Callback.h>  // NOLINT
-
+#include <ola/network/IPV4Address.h>  // NOLINT
 
 
 namespace ola {
@@ -353,29 +353,24 @@ class UdpSocketInterface: public BidirectionalSocket {
     virtual int WriteDescriptor() const = 0;
     virtual ssize_t SendTo(const uint8_t *buffer,
                            unsigned int size,
-                           const struct sockaddr_in &destination) const = 0;
-    virtual ssize_t SendTo(const uint8_t *buffer,
-                           unsigned int size,
-                           const std::string &ip,
+                           const IPV4Address &ip,
                            unsigned short port) const = 0;
+    virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
-                          struct sockaddr_in &source,
-                          socklen_t &src_size) const = 0;
-    virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
-    virtual bool EnableBroadcast() = 0;
-    virtual bool SetMulticastInterface(const struct in_addr &iface) = 0;
-    virtual bool JoinMulticast(const struct in_addr &iface,
-                               const struct in_addr &group,
-                               bool loop = false) = 0;
-    virtual bool JoinMulticast(const struct in_addr &iface,
-                               const std::string &address,
-                               bool loop = false) = 0;
-    virtual bool LeaveMulticast(const struct in_addr &iface,
-                                const struct in_addr &group) = 0;
-    virtual bool LeaveMulticast(const struct in_addr &iface,
-                                const std::string &address) = 0;
+                          IPV4Address &source) const = 0;
+    virtual bool RecvFrom(uint8_t *buffer,
+                          ssize_t *data_read,
+                          IPV4Address &source,
+                          uint16_t &port) const = 0;
 
+    virtual bool EnableBroadcast() = 0;
+    virtual bool SetMulticastInterface(const IPV4Address &iface) = 0;
+    virtual bool JoinMulticast(const IPV4Address &iface,
+                               const IPV4Address &group,
+                               bool loop = false) = 0;
+    virtual bool LeaveMulticast(const IPV4Address &iface,
+                                const IPV4Address &group) = 0;
     virtual bool SetTos(uint8_t tos) = 0;
 
   private:
@@ -400,28 +395,23 @@ class UdpSocket: public UdpSocketInterface {
     int WriteDescriptor() const { return m_fd; }
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
-                   const struct sockaddr_in &destination) const;
-    ssize_t SendTo(const uint8_t *buffer,
-                   unsigned int size,
-                   const std::string &ip,
+                   const IPV4Address &ip,
                    unsigned short port) const;
+    bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
-                  struct sockaddr_in &source,
-                  socklen_t &src_size) const;
-    bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
+                  IPV4Address &source) const;
+    bool RecvFrom(uint8_t *buffer,
+                  ssize_t *data_read,
+                  IPV4Address &source,
+                  uint16_t &port) const;
     bool EnableBroadcast();
-    bool SetMulticastInterface(const struct in_addr &iface);
-    bool JoinMulticast(const struct in_addr &iface,
-                       const struct in_addr &group,
+    bool SetMulticastInterface(const IPV4Address &iface);
+    bool JoinMulticast(const IPV4Address &iface,
+                       const IPV4Address &group,
                        bool loop = false);
-    bool JoinMulticast(const struct in_addr &iface,
-                       const std::string &address,
-                       bool loop = false);
-    bool LeaveMulticast(const struct in_addr &iface,
-                        const struct in_addr &group);
-    bool LeaveMulticast(const struct in_addr &iface,
-                        const std::string &address);
+    bool LeaveMulticast(const IPV4Address &iface,
+                        const IPV4Address &group);
 
     bool SetTos(uint8_t tos);
 

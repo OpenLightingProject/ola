@@ -23,6 +23,7 @@
 #ifndef PLUGINS_E131_E131_ROOTLAYER_H_
 #define PLUGINS_E131_E131_ROOTLAYER_H_
 
+#include "ola/network/IPV4Address.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/RootPDU.h"
@@ -33,6 +34,8 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::network::IPV4Address;
+
 class RootLayer {
   public:
     RootLayer(UDPTransport *transport, const CID &cid);
@@ -41,20 +44,20 @@ class RootLayer {
     bool AddInflator(BaseInflator *inflator);
 
     // Convenience method to encapsulate & send a single PDU
-    bool SendPDU(struct in_addr &addr, unsigned int vector, const PDU &pdu);
+    bool SendPDU(const IPV4Address &addr, unsigned int vector, const PDU &pdu);
     // Use for testing to force a message from a particular cid
-    bool SendPDU(struct in_addr &addr, unsigned int vector, const PDU &pdu,
+    bool SendPDU(const IPV4Address &addr, unsigned int vector, const PDU &pdu,
                  const CID &cid);
     // Encapsulation & send a block of PDUs
-    bool SendPDUBlock(struct in_addr &addr,
+    bool SendPDUBlock(const IPV4Address &addr,
                       unsigned int vector,
                       const PDUBlock<PDU> &block);
 
     // TODO(simon): add methods to queue and send PDUs/blocks with different
     // vectors
 
-    bool JoinMulticast(const struct in_addr &group);
-    bool LeaveMulticast(const struct in_addr &group);
+    bool JoinMulticast(const IPV4Address &group);
+    bool LeaveMulticast(const IPV4Address &group);
 
   private:
     UDPTransport *m_transport;
@@ -65,7 +68,6 @@ class RootLayer {
 
     RootLayer(const RootLayer&);
     RootLayer& operator=(const RootLayer&);
-    bool SendBlock(struct in_addr &addr, const PDUBlock<PDU> &root_block);
 };
 }  // e131
 }  // plugin

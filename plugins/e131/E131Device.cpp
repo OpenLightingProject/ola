@@ -81,8 +81,7 @@ bool E131Device::StartHook() {
   }
 
   stringstream str;
-  str << DEVICE_NAME << " [" <<
-    ola::network::AddressToString(m_node->GetInterface().ip_address) << "]";
+  str << DEVICE_NAME << " [" << m_node->GetInterface().ip_address << "]";
   SetName(str.str());
 
   for (unsigned int i = 0; i < NUMBER_OF_E131_PORTS; i++) {

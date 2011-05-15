@@ -24,6 +24,7 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/IPV4Address.h"
 #include "plugins/e131/e131/UDPTransport.h"
@@ -33,6 +34,7 @@ namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
 
 const char UDPTransport::ACN_PACKET_ID[] = "ASC-E1.17\0\0\0";
 
@@ -88,7 +90,7 @@ bool UDPTransport::Init(const ola::network::Interface &interface) {
  * @param pdu_block the block of pdus to send
  */
 bool UDPTransport::Send(const PDUBlock<PDU> &pdu_block,
-                        const struct sockaddr_in &destination) {
+                        const IPV4Address &destination) {
   if (!m_send_buffer) {
     OLA_WARN << "Send called the transport hasn't been initialized";
     return false;
@@ -100,7 +102,9 @@ bool UDPTransport::Send(const PDUBlock<PDU> &pdu_block,
     return false;
   }
 
-  return m_socket.SendTo(m_send_buffer, DATA_OFFSET + size, destination);
+  return m_socket.SendTo(m_send_buffer, DATA_OFFSET + size,
+                         destination,
+                         m_port);
 }
 
 
@@ -140,12 +144,12 @@ void UDPTransport::Receive() {
 }
 
 
-bool UDPTransport::JoinMulticast(const struct in_addr &group) {
+bool UDPTransport::JoinMulticast(const IPV4Address &group) {
   return m_socket.JoinMulticast(m_interface.ip_address, group);
 }
 
 
-bool UDPTransport::LeaveMulticast(const struct in_addr &group) {
+bool UDPTransport::LeaveMulticast(const IPV4Address &group) {
   return m_socket.LeaveMulticast(m_interface.ip_address, group);
 }
 }  // e131

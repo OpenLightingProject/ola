@@ -65,8 +65,8 @@ bool ShowNetDevice::StartHook() {
   }
 
   stringstream str;
-  str << SHOWNET_DEVICE_NAME << " [" <<
-    ola::network::AddressToString(m_node->GetInterface().ip_address) << "]";
+  str << SHOWNET_DEVICE_NAME << " [" << m_node->GetInterface().ip_address <<
+    "]";
   SetName(str.str());
 
 

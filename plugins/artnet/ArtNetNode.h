@@ -30,6 +30,7 @@
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/SelectServerInterface.h"
 #include "ola/network/Socket.h"
@@ -43,15 +44,16 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
-using std::map;
-using std::queue;
-using std::string;
+using ola::network::IPV4Address;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using std::map;
+using std::queue;
+using std::string;
 
 
 // The directions are the opposite from what OLA uses
@@ -68,12 +70,6 @@ typedef enum {
 
 // This can be passed to SetPortUniverse to disable ports
 static const uint8_t ARTNET_DISABLE_PORT = 0xf0;
-
-struct ltIpAddress {
-  bool operator()(const struct in_addr &ip1, const struct in_addr &ip2) {
-    return ip1.s_addr < ip2.s_addr;
-  }
-};
 
 
 class ArtNetNodeImpl {
@@ -146,11 +142,11 @@ class ArtNetNodeImpl {
 
     // map a uid to a IP address and the number of times we've missed a
     // response.
-    typedef map<UID, std::pair<struct in_addr, uint8_t> > uid_map;
+    typedef map<UID, std::pair<IPV4Address, uint8_t> > uid_map;
 
     // Input ports are ones that send data using ArtNet
     struct InputPort: public GenericPort {
-      map<struct in_addr, TimeStamp, ltIpAddress> subscribed_nodes;
+      map<IPV4Address, TimeStamp> subscribed_nodes;
       uid_map uids;  // used to keep track of the UIDs
       // Called when we have a new TOD
       ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod;
@@ -158,7 +154,7 @@ class ArtNetNodeImpl {
       // the in-flight request and it's callback
       ola::rdm::RDMCallback *rdm_request_callback;
       const ola::rdm::RDMRequest *pending_request;
-      struct in_addr rdm_ip_destination;
+      IPV4Address rdm_ip_destination;
 
       // these control the sending of RDM requests.
       ola::network::timeout_id rdm_send_timeout;
@@ -169,7 +165,7 @@ class ArtNetNodeImpl {
     struct DMXSource {
       DmxBuffer buffer;
       TimeStamp timestamp;
-      struct in_addr address;
+      IPV4Address address;
     };
 
     // Output Ports receive ArtNet data
@@ -178,7 +174,7 @@ class ArtNetNodeImpl {
       bool is_merging;
       DMXSource sources[MAX_MERGE_SOURCES];
       DmxBuffer *buffer;
-      map<UID, struct in_addr> uid_map;
+      map<UID, IPV4Address> uid_map;
       Callback0<void> *on_data;
       Callback0<void> *on_discover;
       Callback0<void> *on_flush;
@@ -202,33 +198,33 @@ class ArtNetNodeImpl {
 
     ArtNetNodeImpl(const ArtNetNodeImpl&);
     ArtNetNodeImpl& operator=(const ArtNetNodeImpl&);
-    bool SendPollReply(const struct in_addr &destination);
-    bool SendIPReply(const struct in_addr &destination);
-    void HandlePacket(const struct in_addr &source_address,
+    bool SendPollReply(const IPV4Address &destination);
+    bool SendIPReply(const IPV4Address &destination);
+    void HandlePacket(const IPV4Address &source_address,
                       const artnet_packet &packet,
                       unsigned int packet_size);
-    void HandlePollPacket(const struct in_addr &source_address,
+    void HandlePollPacket(const IPV4Address &source_address,
                           const artnet_poll_t &packet,
                           unsigned int packet_size);
-    void HandleReplyPacket(const struct in_addr &source_address,
+    void HandleReplyPacket(const IPV4Address &source_address,
                            const artnet_reply_t &packet,
                            unsigned int packet_size);
-    void HandleDataPacket(const struct in_addr &source_address,
+    void HandleDataPacket(const IPV4Address &source_address,
                           const artnet_dmx_t &packet,
                           unsigned int packet_size);
-    void HandleTodRequest(const struct in_addr &source_address,
+    void HandleTodRequest(const IPV4Address &source_address,
                           const artnet_todrequest_t &packet,
                           unsigned int packet_size);
-    void HandleTodData(const struct in_addr &source_address,
+    void HandleTodData(const IPV4Address &source_address,
                        const artnet_toddata_t &packet,
                        unsigned int packet_size);
-    void HandleTodControl(const struct in_addr &source_address,
+    void HandleTodControl(const IPV4Address &source_address,
                           const artnet_todcontrol_t &packet,
                           unsigned int packet_size);
-    void HandleRdm(const struct in_addr &source_address,
+    void HandleRdm(const IPV4Address &source_address,
                    const artnet_rdm_t &packet,
                    unsigned int packet_size);
-    void RDMRequestCompletion(struct in_addr destination,
+    void RDMRequestCompletion(IPV4Address destination,
                               uint8_t port_id,
                               uint8_t universe_address,
                               ola::rdm::rdm_response_code code,
@@ -236,24 +232,24 @@ class ArtNetNodeImpl {
                               const std::vector<std::string> &packets);
     void HandleRDMResponse(unsigned int port_id,
                            const string &rdm_data,
-                           const struct in_addr &source_address);
-    void HandleIPProgram(const struct in_addr &source_address,
+                           const IPV4Address &source_address);
+    void HandleIPProgram(const IPV4Address &source_address,
                          const artnet_ip_prog_t &packet,
                          unsigned int packet_size);
     void PopulatePacketHeader(artnet_packet *packet, uint16_t op_code);
     void IncrementUIDCounts(uint8_t port_id);
     bool SendPacket(const artnet_packet &packet,
                     unsigned int size,
-                    const struct in_addr &destination);
+                    const IPV4Address &destination);
     void TimeoutRDMRequest(uint8_t port_id);
     bool SendRDMCommand(const RDMCommand &command,
-                        const struct in_addr &destination,
+                        const IPV4Address &destination,
                         uint8_t universe);
     void UpdatePortFromSource(OutputPort *port, const DMXSource &source);
-    bool CheckPacketVersion(const struct in_addr &source_address,
+    bool CheckPacketVersion(const IPV4Address &source_address,
                             const string &packet_type,
                             uint16_t version);
-    bool CheckPacketSize(const struct in_addr &source_address,
+    bool CheckPacketSize(const IPV4Address &source_address,
                          const string &packet_type,
                          unsigned int actual_size,
                          unsigned int expected_size);
@@ -261,7 +257,7 @@ class ArtNetNodeImpl {
     bool CheckOutputPortState(uint8_t port_id, const string &action);
     bool CheckPortState(uint8_t port_id, const string &action, bool is_output);
     void UpdatePortFromTodPacket(uint8_t port_id,
-                                 const struct in_addr &source_address,
+                                 const IPV4Address &source_address,
                                  const artnet_toddata_t &packet,
                                  unsigned int packet_size);
     bool GrabDiscoveryLock(uint8_t port_id);

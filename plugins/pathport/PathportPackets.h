@@ -23,7 +23,7 @@
 
 #include <sys/types.h>
 #include <stdint.h>
-#include <netinet/in.h>
+#include "ola/network/IPV4Address.h"
 
 namespace ola {
 namespace plugin {
@@ -95,7 +95,7 @@ typedef struct pathport_pdu_getrep_alv_s pathport_pdu_getrep_alv;
  */
 struct pathport_pdu_arp_reply_s {
   uint32_t id;
-  uint32_t ip;
+  uint8_t ip[ola::network::IPV4Address::LENGTH];
   uint8_t manufacturer_code;  // manufacturer code
   uint8_t device_class;  // device class
   uint8_t device_type;  // device type

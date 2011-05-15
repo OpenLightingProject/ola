@@ -24,6 +24,7 @@
 #include <string>
 
 #include "ola/Callback.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
@@ -31,12 +32,13 @@
 using std::string;
 using ola::network::AcceptingSocket;
 using ola::network::ConnectedSocket;
+using ola::network::IPV4Address;
 using ola::network::LoopbackSocket;
 using ola::network::PipeSocket;
 using ola::network::SelectServer;
+using ola::network::StringToAddress;
 using ola::network::TcpAcceptingSocket;
 using ola::network::TcpSocket;
-using ola::network::StringToAddress;
 using ola::network::UdpSocket;
 
 static const unsigned char test_cstring[] = "Foo";
@@ -181,7 +183,8 @@ void SocketTest::testPipeSocketServerClose() {
   socket.SetOnData(ola::NewCallback(
         this, &SocketTest::Receive,
         static_cast<ConnectedSocket*>(&socket)));
-  socket.SetOnClose(ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
+  socket.SetOnClose(
+      ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   PipeSocket *other_end = socket.OppositeEnd();
@@ -270,7 +273,8 @@ void SocketTest::testTcpSocketServerClose() {
  * data matches and then closes the connection.
  */
 void SocketTest::testUdpSocket() {
-  string ip_address = "127.0.0.1";
+  IPV4Address ip_address;
+  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &ip_address));
   uint16_t server_port = 9010;
   UdpSocket socket;
   CPPUNIT_ASSERT(socket.Init());
@@ -398,16 +402,15 @@ void SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
  * Receive some data and check it.
  */
 void SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
-  struct in_addr expected_address;
-  CPPUNIT_ASSERT(StringToAddress("127.0.0.1", expected_address));
+  IPV4Address expected_address, src_address;
+  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &expected_address));
 
-  struct sockaddr_in src;
-  socklen_t src_size = sizeof(src);
+  uint16_t src_port;
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, &data_read, src, src_size);
+  socket->RecvFrom(buffer, &data_read, src_address, src_port);
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
+  CPPUNIT_ASSERT(expected_address == src_address);
   m_ss->Terminate();
 }
 
@@ -416,17 +419,21 @@ void SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
  * Receive some data and echo it back.
  */
 void SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
-  struct in_addr expected_address;
-  CPPUNIT_ASSERT(StringToAddress("127.0.0.1", expected_address));
+  IPV4Address expected_address;
+  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &expected_address));
 
-  struct sockaddr_in src;
-  socklen_t src_size = sizeof(src);
+  IPV4Address src_address;
+  uint16_t src_port;
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, &data_read, src, src_size);
+  socket->RecvFrom(buffer, &data_read, src_address, src_port);
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
+  CPPUNIT_ASSERT(expected_address == src_address);
 
-  ssize_t data_sent = socket->SendTo(buffer, data_read, src);
+  ssize_t data_sent = socket->SendTo(
+      buffer,
+      data_read,
+      src_address,
+      src_port);
   CPPUNIT_ASSERT_EQUAL(data_read, data_sent);
 }

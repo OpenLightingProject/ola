@@ -20,6 +20,7 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/RootLayer.h"
 
@@ -27,6 +28,7 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::network::IPV4Address;
 using ola::network::NetworkToHost;
 
 /*
@@ -61,9 +63,9 @@ bool RootLayer::AddInflator(BaseInflator *inflator) {
  * @param vector the vector to use at the root level
  * @param pdu the pdu to send.
  */
-bool RootLayer::SendPDU(struct in_addr &addr,
-                       unsigned int vector,
-                       const PDU &pdu) {
+bool RootLayer::SendPDU(const IPV4Address &addr,
+                        unsigned int vector,
+                        const PDU &pdu) {
   m_working_block.Clear();
   m_working_block.AddPDU(&pdu);
   return SendPDUBlock(addr, vector, m_working_block);
@@ -77,7 +79,7 @@ bool RootLayer::SendPDU(struct in_addr &addr,
  * @param pdu the pdu to send.
  * @param cid the cid to send from
  */
-bool RootLayer::SendPDU(struct in_addr &addr, unsigned int vector,
+bool RootLayer::SendPDU(const IPV4Address &addr, unsigned int vector,
                         const PDU &pdu, const CID &cid) {
   if (!m_transport)
     return false;
@@ -88,7 +90,7 @@ bool RootLayer::SendPDU(struct in_addr &addr, unsigned int vector,
   root_pdu.Cid(cid);
   root_pdu.SetBlock(&working_block);
   root_block.AddPDU(&root_pdu);
-  return SendBlock(addr, root_block);
+  return m_transport->Send(root_block, addr);
 }
 
 
@@ -98,9 +100,9 @@ bool RootLayer::SendPDU(struct in_addr &addr, unsigned int vector,
  * @param vector the vector to use at the root level
  * @param block the PDUBlock to send.
  */
-bool RootLayer::SendPDUBlock(struct in_addr &addr,
-                            unsigned int vector,
-                            const PDUBlock<PDU> &block) {
+bool RootLayer::SendPDUBlock(const IPV4Address &addr,
+                             unsigned int vector,
+                             const PDUBlock<PDU> &block) {
   if (!m_transport)
     return false;
 
@@ -108,14 +110,14 @@ bool RootLayer::SendPDUBlock(struct in_addr &addr,
   m_root_pdu.SetBlock(&block);
   m_root_block.Clear();
   m_root_block.AddPDU(&m_root_pdu);
-  return SendBlock(addr, m_root_block);
+  return m_transport->Send(m_root_block, addr);
 }
 
 
 /*
  * Join a multicast group
  */
-bool RootLayer::JoinMulticast(const struct in_addr &group) {
+bool RootLayer::JoinMulticast(const IPV4Address &group) {
   if (m_transport)
     return m_transport->JoinMulticast(group);
   return false;
@@ -125,23 +127,10 @@ bool RootLayer::JoinMulticast(const struct in_addr &group) {
 /*
  * Leave a multicast group
  */
-bool RootLayer::LeaveMulticast(const struct in_addr &group) {
+bool RootLayer::LeaveMulticast(const IPV4Address &group) {
   if (m_transport)
     return m_transport->LeaveMulticast(group);
   return false;
-}
-
-
-/*
- * Send a block of pdus to an address
- */
-bool RootLayer::SendBlock(struct in_addr &addr,
-                          const PDUBlock<PDU> &root_block) {
-  struct sockaddr_in destination;
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(UDPTransport::ACN_PORT);
-  destination.sin_addr = addr;
-  return m_transport->Send(root_block, destination);
 }
 }  // e131
 }  // plugin

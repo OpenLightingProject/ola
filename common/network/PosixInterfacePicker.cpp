@@ -47,6 +47,7 @@
 
 #include "common/network/PosixInterfacePicker.h"
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 
 namespace ola {
@@ -146,7 +147,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces() const {
              std::min(hwlen, (uint8_t) MAC_LENGTH));
     }
     struct sockaddr_in *sin = (struct sockaddr_in *) &iface->ifr_addr;
-    interface.ip_address = sin->sin_addr;
+    interface.ip_address = IPV4Address(sin->sin_addr);
 
     // fetch bcast address
 #ifdef SIOCGIFBRDADDR
@@ -155,7 +156,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces() const {
         OLA_WARN << "ioctl error " << strerror(errno);
       } else {
         sin = (struct sockaddr_in *) &ifrcopy.ifr_broadaddr;
-        interface.bcast_address = sin->sin_addr;
+        interface.bcast_address = IPV4Address(sin->sin_addr);
       }
     }
 #endif
@@ -166,7 +167,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces() const {
       OLA_WARN << "ioctl error " << strerror(errno);
     } else {
       sin = (struct sockaddr_in *) &ifrcopy.ifr_broadaddr;
-      interface.subnet_address = sin->sin_addr;
+      interface.subnet_mask = IPV4Address(sin->sin_addr);
     }
 #endif
 
@@ -186,7 +187,7 @@ vector<Interface> PosixInterfacePicker::GetInterfaces() const {
      * i'll leave that for another day
      */
     OLA_DEBUG << "Found: " << interface.name << ", " <<
-      AddressToString(interface.ip_address) << ", " <<
+      interface.ip_address << ", " <<
       HardwareAddressToString(interface.hw_address);
     interfaces.push_back(interface);
   }

@@ -27,10 +27,12 @@
 #include <queue>
 
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/artnet/MockUdpSocket.h"
 
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
 
 
 bool MockUdpSocket::Init() {
@@ -58,67 +60,51 @@ int MockUdpSocket::WriteDescriptor() const { return 0; }
 
 ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
                               unsigned int size,
-                              const struct sockaddr_in &destination) const {
+                              const ola::network::IPV4Address &ip_address,
+                              unsigned short port) const {
   OLA_INFO << "sending packet of size " << size;
   CPPUNIT_ASSERT(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
 
+  CPPUNIT_ASSERT_EQUAL(call.size, size);
   /*
   unsigned int min_size = std::min(size, call.size);
   for (unsigned int i = 0; i < min_size; i++)
     OLA_INFO << i << ": " << (int) call.data[i] << ", " << (int) buffer[i] <<
       (call.data[i] != buffer[i] ? " !!!!" : "");
   */
-
-  CPPUNIT_ASSERT_EQUAL(call.size, size);
   CPPUNIT_ASSERT_EQUAL(0, memcmp(call.data, buffer, size));
-  CPPUNIT_ASSERT_EQUAL(call.destination.sin_addr.s_addr,
-                       destination.sin_addr.s_addr);
-  CPPUNIT_ASSERT_EQUAL(call.destination.sin_port, destination.sin_port);
+  CPPUNIT_ASSERT_EQUAL(call.address, ip_address);
+  CPPUNIT_ASSERT_EQUAL(call.port, port);
   m_expected_calls.pop();
   return size;
 }
 
 
-ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
-                              unsigned int size,
-                              const std::string &ip_address,
-                              unsigned short port) const {
-  struct sockaddr_in destination;
-  memset(&destination, 0x00, sizeof(destination));
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(port);
-
-  if (!ola::network::StringToAddress(ip_address, destination.sin_addr))
-    return 0;
-  return SendTo(buffer, size, destination);
+bool MockUdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
+  IPV4Address address;
+  uint16_t port;
+  return RecvFrom(buffer, data_read, address, port);
 }
 
 
 bool MockUdpSocket::RecvFrom(uint8_t *buffer,
                              ssize_t *data_read,
-                             struct sockaddr_in &source,
-                             socklen_t &src_size) const {
-  ssize_t length = std::min(m_available, *data_read);
-  memcpy(buffer, m_buffer, length);
-  *data_read = length;
-  source.sin_addr = m_source.sin_addr;
-  source.sin_port = m_source.sin_port;
-  (void) src_size;
-
-  buffer += length;
-  m_available -= length;
-  return true;
+                             ola::network::IPV4Address &source) const {
+  uint16_t port;
+  return RecvFrom(buffer, data_read, source, port);
 }
 
 
-bool MockUdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
-  ssize_t length = std::min(m_available, *data_read);
-  memcpy(buffer, m_buffer, length);
-  *data_read = length;
-
-  buffer += length;
-  m_available -= length;
+bool MockUdpSocket::RecvFrom(uint8_t *buffer,
+                             ssize_t *data_read,
+                             ola::network::IPV4Address &source,
+                             uint16_t &port) const {
+  // not implemented yet
+  (void) buffer;
+  (void) data_read;
+  (void) source;
+  (void) port;
   return true;
 }
 
@@ -129,46 +115,27 @@ bool MockUdpSocket::EnableBroadcast() {
 }
 
 
-bool MockUdpSocket::SetMulticastInterface(const struct in_addr &interface) {
-  CPPUNIT_ASSERT_EQUAL(m_interface.s_addr, interface.s_addr);
+bool MockUdpSocket::SetMulticastInterface(const IPV4Address &interface) {
+  CPPUNIT_ASSERT_EQUAL(m_interface, interface);
   return true;
 }
 
 
-bool MockUdpSocket::JoinMulticast(const struct in_addr &interface,
-                                  const struct in_addr &group,
+bool MockUdpSocket::JoinMulticast(const IPV4Address &interface,
+                                  const IPV4Address &group,
                                   bool loop) {
-  CPPUNIT_ASSERT_EQUAL(m_interface.s_addr, interface.s_addr);
+  CPPUNIT_ASSERT_EQUAL(m_interface, interface);
   (void) group;
   (void) loop;
   return true;
 }
 
 
-bool MockUdpSocket::JoinMulticast(const struct in_addr &interface,
-                                  const std::string &address,
-                                  bool loop) {
-  struct in_addr addr;
-  if (!ola::network::StringToAddress(address, addr))
-    return false;
-  return JoinMulticast(interface, addr, loop);
-}
-
-
-bool MockUdpSocket::LeaveMulticast(const struct in_addr &interface,
-                                   const struct in_addr &group) {
-  CPPUNIT_ASSERT_EQUAL(m_interface.s_addr, interface.s_addr);
+bool MockUdpSocket::LeaveMulticast(const IPV4Address &interface,
+                                   const IPV4Address &group) {
+  CPPUNIT_ASSERT_EQUAL(m_interface, interface);
   (void) group;
   return true;
-}
-
-
-bool MockUdpSocket::LeaveMulticast(const struct in_addr &interface,
-                                   const std::string &address) {
-  struct in_addr addr;
-  if (!ola::network::StringToAddress(address, addr))
-    return false;
-  return LeaveMulticast(interface, addr);
 }
 
 
@@ -177,7 +144,7 @@ bool MockUdpSocket::SetTos(uint8_t tos) {
   return true;
 }
 
-
+/*
 void MockUdpSocket::NewData(uint8_t *buffer,
                             ssize_t *data_read,
                             struct sockaddr_in &source) {
@@ -186,11 +153,13 @@ void MockUdpSocket::NewData(uint8_t *buffer,
   m_source = source;
   OnData()->Run();
 }
+*/
 
 void MockUdpSocket::AddExpectedData(const uint8_t *data,
                                     unsigned int size,
-                                    const struct sockaddr_in &destination) {
-  expected_call call = {data, size, destination};
+                                    const IPV4Address &ip,
+                                    uint16_t port) {
+  expected_call call = {data, size, ip, port};
   m_expected_calls.push(call);
 }
 
@@ -211,6 +180,6 @@ bool MockUdpSocket::CheckNetworkParamsMatch(bool init_called,
 }
 
 
-void MockUdpSocket::SetInterface(const struct in_addr &interface) {
+void MockUdpSocket::SetInterface(const IPV4Address &interface) {
   m_interface = interface;
 }

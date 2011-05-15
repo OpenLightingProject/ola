@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * IPV4Address.h
- * Represents a network interface.
- * Copyright (C) 2010 Simon Newton
+ * Represents a IPv4 Address
+ * Copyright (C) 2011 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_NETWORK_IPV4ADDRESS_H_
@@ -27,7 +27,7 @@
 #include <netinet/in.h>
 #endif
 
-#include <ola/network/NetworkUtils.h>
+#include <string.h>
 #include <sstream>
 #include <string>
 
@@ -41,12 +41,18 @@ using std::ostream;
  */
 class IPV4Address {
   public:
+    enum { LENGTH = 4 };
+
     IPV4Address() {
       m_address.s_addr = 0;
     }
 
     explicit IPV4Address(const struct in_addr &address)
         : m_address(address) {
+    }
+
+    explicit IPV4Address(unsigned int address) {
+      m_address.s_addr = address;
     }
 
     IPV4Address(const IPV4Address &other)
@@ -64,17 +70,42 @@ class IPV4Address {
       return m_address.s_addr == other.m_address.s_addr;
     }
 
+    bool operator!=(const IPV4Address &other) const {
+      return !(*this == other);
+    }
+
+    // Order addresses. Note that this won't order how humans expect
+    // because s_addr is in network byte order.
+    bool operator<(const IPV4Address &other) const {
+      return m_address.s_addr < other.m_address.s_addr;
+    }
+
     const struct in_addr Address() const {
       return m_address;
     }
 
-    std::string ToString() const {
-      return AddressToString(m_address);
+    uint32_t AsInt() const { return m_address.s_addr; }
+
+    bool IsWildcard() const {
+      return m_address.s_addr == INADDR_ANY;
     }
+
+    // copy the address in network byte order to a location. The location
+    // should be at least LENGTH bytes.
+    void Get(uint8_t ptr[LENGTH]) {
+      memcpy(ptr,
+             reinterpret_cast<uint8_t*>(&m_address.s_addr),
+             LENGTH);
+    }
+
+    std::string ToString() const;
 
     friend ostream& operator<< (ostream &out, const IPV4Address &address) {
       return out << address.ToString();
     }
+
+    static IPV4Address* FromString(const std::string &address);
+    static bool FromString(const std::string &address, IPV4Address *target);
 
   private:
     struct in_addr m_address;

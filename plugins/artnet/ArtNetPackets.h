@@ -23,7 +23,8 @@
 
 #include "ola/BaseTypes.h"
 #include "ola/rdm/UID.h"
-#include "ola/network/InterfacePicker.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/Interface.h"
 
 namespace ola {
 namespace plugin {
@@ -67,7 +68,7 @@ struct artnet_poll_s {
 typedef struct artnet_poll_s artnet_poll_t;
 
 struct artnet_reply_s {
-  uint8_t  ip[ola::network::IPV4_LENGTH];
+  uint8_t  ip[ola::network::IPV4Address::LENGTH];
   uint16_t port;
   uint16_t version;
   uint8_t  subnet_address[2];
@@ -92,7 +93,7 @@ struct artnet_reply_s {
   uint8_t  spare3;
   uint8_t  style;
   uint8_t  mac[ola::network::MAC_LENGTH];
-  uint8_t  bind_ip[ola::network::IPV4_LENGTH];
+  uint8_t  bind_ip[ola::network::IPV4Address::LENGTH];
   uint8_t  bind_index;
   uint8_t  status2;
   uint8_t  filler[26];
@@ -197,8 +198,8 @@ struct artnet_ip_prog_s {
   uint16_t filler;
   uint8_t command;
   uint8_t filler1;
-  uint8_t ip[ola::network::IPV4_LENGTH];
-  uint8_t subnet[ola::network::IPV4_LENGTH];
+  uint8_t ip[ola::network::IPV4Address::LENGTH];
+  uint8_t subnet[ola::network::IPV4Address::LENGTH];
   uint16_t port;
   uint8_t spare[8];
 } __attribute__((packed));
@@ -210,8 +211,8 @@ struct artnet_ip_reply_s {
   uint16_t filler;
   uint8_t command;
   uint8_t filler1;
-  uint8_t ip[ola::network::IPV4_LENGTH];
-  uint8_t subnet[ola::network::IPV4_LENGTH];
+  uint8_t ip[ola::network::IPV4Address::LENGTH];
+  uint8_t subnet[ola::network::IPV4Address::LENGTH];
   uint16_t port;
   uint8_t spare[8];
 } __attribute__((packed));

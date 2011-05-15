@@ -119,7 +119,7 @@ bool ArtNetDevice::StartHook() {
   }
 
   stringstream str;
-  str << K_DEVICE_NAME << " [" << AddressToString(interface.ip_address) << "]";
+  str << K_DEVICE_NAME << " [" << interface.ip_address << "]";
   SetName(str.str());
 
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(

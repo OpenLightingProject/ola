@@ -26,6 +26,7 @@
 #include <vector>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
 #include "ola/RunLengthEncoder.h"
@@ -35,6 +36,7 @@ namespace ola {
 namespace plugin {
 namespace sandnet {
 
+using ola::network::IPV4Address;
 using ola::network::UdpSocket;
 
 class SandNetNode {
@@ -110,8 +112,8 @@ class SandNetNode {
     UdpSocket m_control_socket;
     UdpSocket m_data_socket;
     RunLengthEncoder m_encoder;
-    struct in_addr m_data_addr;
-    struct in_addr m_control_addr;
+    IPV4Address m_control_addr;
+    IPV4Address m_data_addr;
 
     static const uint16_t CONTROL_PORT = 37895;
     static const uint16_t DATA_PORT = 37900;

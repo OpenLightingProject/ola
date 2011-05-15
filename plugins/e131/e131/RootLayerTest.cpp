@@ -32,6 +32,8 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::network::IPV4Address;
+
 class RootLayerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RootLayerTest);
   CPPUNIT_TEST(testRootLayer);
@@ -101,8 +103,8 @@ void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
   CPPUNIT_ASSERT(layer.AddInflator(&inflator));
 
   MockPDU mock_pdu(4, 8);
-  struct in_addr addr;
-  ola::network::StringToAddress("255.255.255.255", addr);
+  IPV4Address addr;
+  CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
 
   if (root_cid == send_cid)
     CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu));

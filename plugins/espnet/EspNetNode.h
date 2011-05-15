@@ -25,6 +25,7 @@
 #include <map>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
 #include "plugins/espnet/EspNetPackets.h"
@@ -33,6 +34,8 @@
 namespace ola {
 namespace plugin {
 namespace espnet {
+
+using ola::network::IPV4Address;
 
 // the node types
 typedef enum {
@@ -85,24 +88,24 @@ class EspNetNode {
     EspNetNode& operator=(const EspNetNode&);
     bool InitNetwork();
     void HandlePoll(const espnet_poll_t &poll, ssize_t length,
-                    const struct in_addr &source);
+                    const IPV4Address &source);
     void HandleReply(const espnet_poll_reply_t &reply,
                      ssize_t length,
-                     const struct in_addr &source);
+                     const IPV4Address &source);
     void HandleAck(const espnet_ack_t &ack, ssize_t length,
-                   const struct in_addr &source);
+                   const IPV4Address &source);
     void HandleData(const espnet_data_t &data, ssize_t length,
-                    const struct in_addr &source);
+                    const IPV4Address &source);
 
-    bool SendEspPoll(const struct in_addr &dst, bool full);
-    bool SendEspAck(const struct in_addr &dst,
+    bool SendEspPoll(const IPV4Address &dst, bool full);
+    bool SendEspAck(const IPV4Address &dst,
                     uint8_t status,
                     uint8_t crc);
-    bool SendEspPollReply(const struct in_addr &dst);
-    bool SendEspData(const struct in_addr &dst,
+    bool SendEspPollReply(const IPV4Address &dst);
+    bool SendEspData(const IPV4Address &dst,
                      uint8_t universe,
                      const DmxBuffer &buffer);
-    bool SendPacket(const struct in_addr &dst,
+    bool SendPacket(const IPV4Address &dst,
                     const espnet_packet_union_t &packet,
                     unsigned int size);
 

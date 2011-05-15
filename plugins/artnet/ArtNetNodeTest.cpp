@@ -26,6 +26,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
@@ -34,6 +35,7 @@
 #include "plugins/artnet/MockUdpSocket.h"
 
 
+using ola::network::IPV4Address;
 using ola::plugin::artnet::ArtNetNode;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -54,6 +56,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   private:
     static const uint8_t POLL_MESSAGE[];
     static const uint8_t POLL_REPLY_MESSAGE[];
+    static const uint16_t ARTNET_PORT = 6454;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ArtNetNodeTest);
@@ -115,8 +118,10 @@ void ArtNetNodeTest::setUp() {
 void ArtNetNodeTest::testBasicBehaviour() {
   ola::network::Interface interface;
   uint8_t mac_address[] = {0x0a, 0x0b, 0x0c, 0x12, 0x34, 0x56};
-  ola::network::StringToAddress("10.0.0.1", interface.ip_address);
-  ola::network::StringToAddress("10.255.255.255", interface.bcast_address);
+
+  CPPUNIT_ASSERT(IPV4Address::FromString("10.0.0.1", &interface.ip_address));
+  CPPUNIT_ASSERT(
+      IPV4Address::FromString("10.255.255.255", &interface.bcast_address));
   memcpy(&interface.hw_address, mac_address, sizeof(mac_address));
 
   ola::network::SelectServer ss;
@@ -144,25 +149,26 @@ void ArtNetNodeTest::testBasicBehaviour() {
     (uint8_t) 0x20,
     node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 1));
 
-  struct sockaddr_in bcast_destination;
-  ola::network::StringToAddress("10.255.255.255", bcast_destination.sin_addr);
-  bcast_destination.sin_port = ola::network::HostToNetwork(
-    static_cast<uint16_t>(6454));
+  IPV4Address bcast_destination;
+  CPPUNIT_ASSERT(IPV4Address::FromString("10.255.255.255",
+                                         &bcast_destination));
 
   socket->AddExpectedData(
     static_cast<const uint8_t*>(POLL_REPLY_MESSAGE),
     sizeof(POLL_REPLY_MESSAGE),
-    bcast_destination);
+    bcast_destination,
+    ARTNET_PORT);
 
   CPPUNIT_ASSERT(node.Start());
   socket->Verify();
   CPPUNIT_ASSERT(socket->CheckNetworkParamsMatch(true, true, 6454, true));
 
-  // now enabled an input port and check that we send a poll
+  // now enable an input port and check that we send a poll
   socket->AddExpectedData(
     static_cast<const uint8_t*>(POLL_MESSAGE),
     sizeof(POLL_MESSAGE),
-    bcast_destination);
+    bcast_destination,
+    ARTNET_PORT);
 
   // now we should see an unsolicted poll reply sent because conditions have
   // changed.
@@ -177,7 +183,8 @@ void ArtNetNodeTest::testBasicBehaviour() {
   socket->AddExpectedData(
     static_cast<uint8_t*>(expected_poll_reply_packet),
     sizeof(expected_poll_reply_packet),
-    bcast_destination);
+    bcast_destination,
+    ARTNET_PORT);
 
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 1, 2);
   CPPUNIT_ASSERT_EQUAL(
@@ -192,7 +199,8 @@ void ArtNetNodeTest::testBasicBehaviour() {
   socket->AddExpectedData(
     static_cast<const uint8_t*>(POLL_MESSAGE),
     sizeof(POLL_MESSAGE),
-    bcast_destination);
+    bcast_destination,
+    ARTNET_PORT);
   CPPUNIT_ASSERT(node.SendPoll());
   socket->Verify();
 

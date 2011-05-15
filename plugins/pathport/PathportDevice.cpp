@@ -90,8 +90,8 @@ bool PathportDevice::StartHook() {
   }
 
   stringstream str;
-  str << PATHPORT_DEVICE_NAME << " [" <<
-    ola::network::AddressToString(m_node->GetInterface().ip_address) << "]";
+  str << PATHPORT_DEVICE_NAME << " [" << m_node->GetInterface().ip_address <<
+    "]";
   SetName(str.str());
 
   for (unsigned int i = 0; i < PORTS_PER_DEVICE; i++) {

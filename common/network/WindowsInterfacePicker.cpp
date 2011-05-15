@@ -25,6 +25,7 @@ typedef int socklen_t;
 #include <unistd.h>
 #include <vector>
 
+#include "common/network/IPV4Address.h"
 #include "common/network/WindowsInterfacePicker.h"
 #include "ola/Logging.h"
 
@@ -81,11 +82,12 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
         Interface iface;
         iface.name = pAdapter->AdapterName;  // IFNAME_SIZE
         memcpy(iface.hw_address, pAdapter->Address, MAC_LENGTH);
-        iface.ip_address.s_addr = net;
+        iface.ip_address = IPV4Address(net);
 
         mask = inet_addr(ipAddress->IpMask.String);
-        iface.bcast_address.s_addr = ((iface.ip_address.s_addr & mask) |
-                                      (0xFFFFFFFF ^ mask));
+        iface.subnet_mask = IPV4Address(mask);
+        iface.bcast_address = IPV4Address((iface.ip_address.s_addr & mask) |
+                                          (0xFFFFFFFF ^ mask));
 
         interfaces.push_back(iface);
       }

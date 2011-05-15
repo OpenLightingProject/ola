@@ -25,6 +25,7 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
 #include "plugins/pathport/PathportPackets.h"
@@ -33,6 +34,7 @@ namespace ola {
 namespace plugin {
 namespace pathport {
 
+using ola::network::IPV4Address;
 using ola::network::UdpSocket;
 
 class PathportNode {
@@ -110,7 +112,7 @@ class PathportNode {
     bool SendArpRequest(uint32_t destination = PATHPORT_ID_BROADCAST);
     bool SendPacket(const pathport_packet_s &packet,
                     unsigned int size,
-                    struct in_addr dest);
+                    IPV4Address dest);
 
     bool m_running;
     uint8_t m_dscp;
@@ -121,9 +123,9 @@ class PathportNode {
     universe_handlers m_handlers;
     ola::network::Interface m_interface;
     UdpSocket m_socket;
-    struct in_addr m_config_addr;
-    struct in_addr m_status_addr;
-    struct in_addr m_data_addr;
+    IPV4Address m_config_addr;
+    IPV4Address m_status_addr;
+    IPV4Address m_data_addr;
 
     static const uint16_t PATHPORT_PORT = 0xed0;
     static const uint16_t PATHPORT_PROTOCOL = 0xed01;

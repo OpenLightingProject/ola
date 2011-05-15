@@ -21,20 +21,13 @@
 #ifndef INCLUDE_OLA_NETWORK_INTERFACE_H_
 #define INCLUDE_OLA_NETWORK_INTERFACE_H_
 
-#ifdef WIN32
-#include <winsock2.h>
-#else
-#include <netinet/in.h>
-#endif
-
+#include <ola/network/IPV4Address.h>
 #include <string>
-#include <vector>
 
 namespace ola {
 namespace network {
 
 enum { MAC_LENGTH = 6 };
-enum { IPV4_LENGTH = 4 };
 
 /*
  * Represents an interface.
@@ -47,9 +40,9 @@ class Interface {
     bool operator==(const Interface &other);
 
     std::string name;
-    struct in_addr ip_address;
-    struct in_addr bcast_address;
-    struct in_addr subnet_address;
+    IPV4Address ip_address;
+    IPV4Address bcast_address;
+    IPV4Address subnet_mask;
     uint8_t hw_address[MAC_LENGTH];
 };
 }  // network

@@ -40,9 +40,6 @@ using std::vector;
 
 
 Interface::Interface() {
-  ip_address.s_addr = 0;
-  bcast_address.s_addr = 0;
-  subnet_address.s_addr = 0;
   memset(hw_address, 0, MAC_LENGTH);
 }
 
@@ -51,7 +48,7 @@ Interface::Interface(const Interface &other) {
   name = other.name;
   ip_address = other.ip_address;
   bcast_address = other.bcast_address;
-  subnet_address = other.subnet_address;
+  subnet_mask = other.subnet_mask;
   memcpy(hw_address, other.hw_address, MAC_LENGTH);
 }
 
@@ -61,7 +58,7 @@ Interface& Interface::operator=(const Interface &other) {
     name = other.name;
     ip_address = other.ip_address;
     bcast_address = other.bcast_address;
-    subnet_address = other.subnet_address;
+    subnet_mask = other.subnet_mask;
     memcpy(hw_address, other.hw_address, MAC_LENGTH);
   }
   return *this;
@@ -70,8 +67,8 @@ Interface& Interface::operator=(const Interface &other) {
 
 bool Interface::operator==(const Interface &other) {
   return (name == other.name &&
-          ip_address.s_addr == other.ip_address.s_addr &&
-          subnet_address.s_addr == other.subnet_address.s_addr);
+          ip_address == other.ip_address &&
+          subnet_mask == other.subnet_mask);
 }
 
 
@@ -85,7 +82,6 @@ bool Interface::operator==(const Interface &other) {
 bool InterfacePicker::ChooseInterface(Interface *iface,
                                       const string &ip_or_name) const {
   bool found = false;
-  struct in_addr wanted_ip;
   vector<Interface> interfaces = GetInterfaces();
 
   if (interfaces.empty()) {
@@ -95,10 +91,11 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
 
   vector<Interface>::const_iterator iter;
   if (!ip_or_name.empty()) {
-    if (StringToAddress(ip_or_name, wanted_ip)) {
+    IPV4Address wanted_ip;
+    if (IPV4Address::FromString(ip_or_name, &wanted_ip)) {
       // search by IP
       for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
-        if ((*iter).ip_address.s_addr == wanted_ip.s_addr) {
+        if (iter->ip_address == wanted_ip) {
           *iface = *iter;
           found = true;
           break;
@@ -119,8 +116,7 @@ bool InterfacePicker::ChooseInterface(Interface *iface,
   if (!found)
     *iface = interfaces[0];
   OLA_DEBUG << "Using interface " << iface->name << " (" <<
-    AddressToString(iface->ip_address)
-    << ")";
+    iface->ip_address << ")";
   return true;
 }
 

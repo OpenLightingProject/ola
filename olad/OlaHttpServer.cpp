@@ -171,12 +171,9 @@ int OlaHttpServer::JsonServerStats(const HttpRequest *request,
   str << "{" << endl;
   str << "  \"hostname\": \"" << EscapeString(ola::network::FullHostname()) <<
     "\"," << endl;
-  str << "  \"ip\": \"" <<
-    ola::network::AddressToString(m_interface.ip_address) << "\"," << endl;
-  str << "  \"broadcast\": \"" <<
-    ola::network::AddressToString(m_interface.bcast_address) << "\"," << endl;
-  str << "  \"subnet\": \"" <<
-    ola::network::AddressToString(m_interface.subnet_address) << "\"," << endl;
+  str << "  \"ip\": \"" << m_interface.ip_address << "\"," << endl;
+  str << "  \"broadcast\": \"" << m_interface.bcast_address << "\"," << endl;
+  str << "  \"subnet\": \"" << m_interface.subnet_mask << "\"," << endl;
   str << "  \"hw_address\": \"" <<
     ola::network::HardwareAddressToString(m_interface.hw_address) << "\","
     << endl;

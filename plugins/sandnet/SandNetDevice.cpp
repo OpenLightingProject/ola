@@ -84,8 +84,8 @@ bool SandNetDevice::StartHook() {
   }
 
   stringstream str;
-  str << SANDNET_DEVICE_NAME << " [" <<
-    ola::network::AddressToString(m_node->GetInterface().ip_address) << "]";
+  str << SANDNET_DEVICE_NAME << " [" << m_node->GetInterface().ip_address <<
+    "]";
   SetName(str.str());
 
 
