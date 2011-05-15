@@ -395,6 +395,7 @@ AC_OUTPUT( Makefile\
     plugins/usbpro/messages/Makefile \
     plugins/usbpro/messages/libolausbproconf.pc \
     tools/Makefile \
+    tools/e133/Makefile \
     tools/rdm/Makefile \
     tools/usbpro/Makefile \
     libola.pc \

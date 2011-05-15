@@ -1,1 +1,1 @@
-SUBDIRS = rdm usbpro
+SUBDIRS = e133 rdm usbpro
