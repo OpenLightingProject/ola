@@ -355,15 +355,14 @@ class UdpSocketInterface: public BidirectionalSocket {
                            unsigned int size,
                            const IPV4Address &ip,
                            unsigned short port) const = 0;
-
-    virtual bool RecvFrom(uint8_t *buffer,
-                          ssize_t *data_read,
-                          struct sockaddr_in &source,
-                          socklen_t &src_size) const = 0;
+    virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
                           IPV4Address &source) const = 0;
-    virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
+    virtual bool RecvFrom(uint8_t *buffer,
+                          ssize_t *data_read,
+                          IPV4Address &source,
+                          uint16_t &port) const = 0;
 
     virtual bool EnableBroadcast() = 0;
     virtual bool SetMulticastInterface(const IPV4Address &iface) = 0;
@@ -398,14 +397,14 @@ class UdpSocket: public UdpSocketInterface {
                    unsigned int size,
                    const IPV4Address &ip,
                    unsigned short port) const;
-    bool RecvFrom(uint8_t *buffer,
-                  ssize_t *data_read,
-                  struct sockaddr_in &source,
-                  socklen_t &src_size) const;
+    bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
                   IPV4Address &source) const;
-    bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
+    bool RecvFrom(uint8_t *buffer,
+                  ssize_t *data_read,
+                  IPV4Address &source,
+                  uint16_t &port) const;
     bool EnableBroadcast();
     bool SetMulticastInterface(const IPV4Address &iface);
     bool JoinMulticast(const IPV4Address &iface,

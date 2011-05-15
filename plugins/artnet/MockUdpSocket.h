@@ -39,9 +39,7 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
                      m_init_called(false),
                      m_bound_to_port(false),
                      m_broadcast_set(false),
-                     m_port(0),
-                     m_buffer(NULL),
-                     m_available(0) {}
+                     m_port(0) {}
     ~MockUdpSocket() { Close(); }
 
     // These are the socket methods
@@ -52,19 +50,16 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
     int WriteDescriptor() const;
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
-                   const struct sockaddr_in &destination) const;
-    ssize_t SendTo(const uint8_t *buffer,
-                   unsigned int size,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
-                  struct sockaddr_in &source,
-                  socklen_t &src_size) const;
+                  ola::network::IPV4Address &source) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
-                  ola::network::IPV4Address &source) const;
+                  ola::network::IPV4Address &source,
+                  uint16_t &port) const;
     bool EnableBroadcast();
     bool SetMulticastInterface(const IPV4Address &interface);
     bool JoinMulticast(const IPV4Address &interface,
@@ -77,13 +72,10 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
 
 
     // these are methods used for verification
-    void NewData(uint8_t *buffer,
-                 ssize_t *data_read,
-                 struct sockaddr_in &source);
-
     void AddExpectedData(const uint8_t *data,
                          unsigned int size,
-                         const struct sockaddr_in &destination);
+                         const IPV4Address &ip,
+                         uint16_t port);
     void Verify();
 
     bool CheckNetworkParamsMatch(bool init_called,
@@ -97,7 +89,8 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
     typedef struct {
       const uint8_t *data;
       unsigned int size;
-      const struct sockaddr_in &destination;
+      IPV4Address address;
+      uint16_t port;
     } expected_call;
 
     bool m_init_called;
@@ -107,10 +100,6 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
     uint8_t m_tos;
     mutable std::queue<expected_call> m_expected_calls;
     IPV4Address m_interface;
-
-    mutable uint8_t *m_buffer;
-    mutable ssize_t m_available;
-    struct sockaddr_in m_source;
 };
 
 

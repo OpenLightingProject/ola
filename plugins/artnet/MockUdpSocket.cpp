@@ -60,78 +60,52 @@ int MockUdpSocket::WriteDescriptor() const { return 0; }
 
 ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
                               unsigned int size,
-                              const struct sockaddr_in &destination) const {
+                              const ola::network::IPV4Address &ip_address,
+                              unsigned short port) const {
   OLA_INFO << "sending packet of size " << size;
   CPPUNIT_ASSERT(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
 
+  CPPUNIT_ASSERT_EQUAL(call.size, size);
   /*
   unsigned int min_size = std::min(size, call.size);
   for (unsigned int i = 0; i < min_size; i++)
     OLA_INFO << i << ": " << (int) call.data[i] << ", " << (int) buffer[i] <<
       (call.data[i] != buffer[i] ? " !!!!" : "");
   */
-
-  CPPUNIT_ASSERT_EQUAL(call.size, size);
   CPPUNIT_ASSERT_EQUAL(0, memcmp(call.data, buffer, size));
-  CPPUNIT_ASSERT_EQUAL(call.destination.sin_addr.s_addr,
-                       destination.sin_addr.s_addr);
-  CPPUNIT_ASSERT_EQUAL(call.destination.sin_port, destination.sin_port);
+  CPPUNIT_ASSERT_EQUAL(call.address, ip_address);
+  CPPUNIT_ASSERT_EQUAL(call.port, port);
   m_expected_calls.pop();
   return size;
 }
 
 
-ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
-                              unsigned int size,
-                              const ola::network::IPV4Address &ip_address,
-                              unsigned short port) const {
-  struct sockaddr_in destination;
-  memset(&destination, 0x00, sizeof(destination));
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(port);
-  destination.sin_addr = ip_address.Address();
-  return SendTo(buffer, size, destination);
-}
-
-
-bool MockUdpSocket::RecvFrom(uint8_t *buffer,
-                             ssize_t *data_read,
-                             struct sockaddr_in &source,
-                             socklen_t &src_size) const {
-  ssize_t length = std::min(m_available, *data_read);
-  memcpy(buffer, m_buffer, length);
-  *data_read = length;
-  source.sin_addr = m_source.sin_addr;
-  source.sin_port = m_source.sin_port;
-  (void) src_size;
-
-  buffer += length;
-  m_available -= length;
-  return true;
-}
-
-
 bool MockUdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
-  ssize_t length = std::min(m_available, *data_read);
-  memcpy(buffer, m_buffer, length);
-  *data_read = length;
-
-  buffer += length;
-  m_available -= length;
-  return true;
+  IPV4Address address;
+  uint16_t port;
+  return RecvFrom(buffer, data_read, address, port);
 }
 
 
 bool MockUdpSocket::RecvFrom(uint8_t *buffer,
                              ssize_t *data_read,
                              ola::network::IPV4Address &source) const {
-  struct sockaddr_in src_sockaddr;
-  socklen_t src_size = sizeof(src_sockaddr);
-  bool ok = RecvFrom(buffer, data_read, src_sockaddr, src_size);
-  if (ok)
-    source = IPV4Address(src_sockaddr.sin_addr);
-  return ok;
+  uint16_t port;
+  return RecvFrom(buffer, data_read, source, port);
+}
+
+
+bool MockUdpSocket::RecvFrom(uint8_t *buffer,
+                             ssize_t *data_read,
+                             ola::network::IPV4Address &source,
+                             uint16_t &port) const {
+  // not implemented yet
+  (void) buffer;
+  (void) data_read;
+  (void) source;
+  (void) port;
+  return true;
 }
 
 
@@ -170,7 +144,7 @@ bool MockUdpSocket::SetTos(uint8_t tos) {
   return true;
 }
 
-
+/*
 void MockUdpSocket::NewData(uint8_t *buffer,
                             ssize_t *data_read,
                             struct sockaddr_in &source) {
@@ -179,11 +153,13 @@ void MockUdpSocket::NewData(uint8_t *buffer,
   m_source = source;
   OnData()->Run();
 }
+*/
 
 void MockUdpSocket::AddExpectedData(const uint8_t *data,
                                     unsigned int size,
-                                    const struct sockaddr_in &destination) {
-  expected_call call = {data, size, destination};
+                                    const IPV4Address &ip,
+                                    uint16_t port) {
+  expected_call call = {data, size, ip, port};
   m_expected_calls.push(call);
 }
 

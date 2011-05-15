@@ -556,13 +556,22 @@ bool UdpSocket::RecvFrom(uint8_t *buffer,
  * @param buffer the buffer to store the data
  * @param data_read the size of the buffer, updated with the number of bytes
  * read
+ * @param source the src ip of the packet
+ * @param port the src port of the packet in host byte order
  * @return true or false
  */
 bool UdpSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
-                         struct sockaddr_in &source,
-                         socklen_t &src_size) const {
-  return _RecvFrom(buffer, data_read, &source, &src_size);
+                         IPV4Address &source,
+                         uint16_t &port) const {
+  struct sockaddr_in src_sockaddr;
+  socklen_t src_size = sizeof(src_sockaddr);
+  bool ok = _RecvFrom(buffer, data_read, &src_sockaddr, &src_size);
+  if (ok) {
+    source = IPV4Address(src_sockaddr.sin_addr);
+    port = NetworkToHost(src_sockaddr.sin_port);
+  }
+  return ok;
 }
 
 

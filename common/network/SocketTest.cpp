@@ -402,16 +402,15 @@ void SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
  * Receive some data and check it.
  */
 void SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
-  struct in_addr expected_address;
-  CPPUNIT_ASSERT(StringToAddress("127.0.0.1", expected_address));
+  IPV4Address expected_address, src_address;
+  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &expected_address));
 
-  struct sockaddr_in src;
-  socklen_t src_size = sizeof(src);
+  uint16_t src_port;
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, &data_read, src, src_size);
+  socket->RecvFrom(buffer, &data_read, src_address, src_port);
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  CPPUNIT_ASSERT(expected_address.s_addr == src.sin_addr.s_addr);
+  CPPUNIT_ASSERT(expected_address == src_address);
   m_ss->Terminate();
 }
 
@@ -423,19 +422,18 @@ void SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
   IPV4Address expected_address;
   CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &expected_address));
 
-  struct sockaddr_in src;
-  socklen_t src_size = sizeof(src);
+  IPV4Address src_address;
+  uint16_t src_port;
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
-  socket->RecvFrom(buffer, &data_read, src, src_size);
+  socket->RecvFrom(buffer, &data_read, src_address, src_port);
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  IPV4Address src_address(src.sin_addr);
   CPPUNIT_ASSERT(expected_address == src_address);
 
   ssize_t data_sent = socket->SendTo(
       buffer,
       data_read,
       src_address,
-      ola::network::NetworkToHost(src.sin_port));
+      src_port);
   CPPUNIT_ASSERT_EQUAL(data_read, data_sent);
 }
