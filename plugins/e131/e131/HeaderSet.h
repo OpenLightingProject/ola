@@ -23,10 +23,11 @@
 #ifndef PLUGINS_E131_E131_HEADERSET_H_
 #define PLUGINS_E131_E131_HEADERSET_H_
 
-#include "plugins/e131/e131/RootHeader.h"
+#include "plugins/e131/e131/DMPHeader.h"
 #include "plugins/e131/e131/E131Header.h"
 #include "plugins/e131/e131/E133Header.h"
-#include "plugins/e131/e131/DMPHeader.h"
+#include "plugins/e131/e131/RootHeader.h"
+#include "plugins/e131/e131/TransportHeader.h"
 
 namespace ola {
 namespace plugin {
@@ -36,6 +37,13 @@ class HeaderSet {
   public:
     HeaderSet() {}
     ~HeaderSet() {}
+
+    const TransportHeader &GetTransportHeader() const {
+      return m_transport_header;
+    }
+    void SetTransportHeader(const TransportHeader &header) {
+      m_transport_header = header;
+    }
 
     const RootHeader &GetRootHeader() const { return m_root_header; }
     void SetRootHeader(const RootHeader &header) { m_root_header = header; }
@@ -50,12 +58,16 @@ class HeaderSet {
     void SetDMPHeader(const DMPHeader &header) { m_dmp_header = header; }
 
     bool operator==(const HeaderSet &other) const {
-      return m_root_header == other.m_root_header  &&
-      m_e131_header == other.m_e131_header &&
-       m_dmp_header == other.m_dmp_header;
+      return (
+          m_transport_header == other.m_transport_header &&
+          m_root_header == other.m_root_header  &&
+          m_e131_header == other.m_e131_header &&
+          m_e133_header == other.m_e133_header &&
+          m_dmp_header == other.m_dmp_header);
     }
 
   private:
+    TransportHeader m_transport_header;
     RootHeader m_root_header;
     E131Header m_e131_header;
     E133Header m_e133_header;

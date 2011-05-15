@@ -7,7 +7,7 @@ EXTRA_DIST = BaseInflator.h CID.h \
              E131Node.h E131PDU.h E131TestFramework.h \
              E133Header.h E133Inflator.h E133Layer.h E133PDU.h \
              HeaderSet.h PDU.h PDUTestCommon.h RootHeader.h RootInflator.h \
-             RootLayer.h RootPDU.h UDPTransport.h
+             RootLayer.h RootPDU.h TransportHeader.h UDPTransport.h
 
 AM_CPPFLAGS += -Wconversion -W
 

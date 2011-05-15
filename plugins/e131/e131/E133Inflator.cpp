@@ -53,7 +53,8 @@ bool E133Inflator::DecodeHeader(HeaderSet &headers,
           raw_header.priority,
           raw_header.sequence,
           NetworkToHost(raw_header.universe),
-          raw_header.options & E133Header::RDM_MANAGEMENT_MASK);
+          raw_header.options & E133Header::RDM_MANAGEMENT_MASK,
+          raw_header.options & E133Header::RDM_SQUAWK_MASK);
       m_last_header = header;
       m_last_header_valid = true;
       headers.SetE133Header(header);

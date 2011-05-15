@@ -40,12 +40,14 @@ class E133Header {
                uint8_t priority,
                uint8_t sequence,
                uint16_t universe,
-               bool is_management = false)
+               bool is_management = false,
+               bool is_squawk = false)
         : m_source(source),
           m_priority(priority),
           m_sequence(sequence),
           m_universe(universe),
-          m_is_management(is_management) {
+          m_is_management(is_management),
+          m_is_squawk(is_squawk) {
     }
     ~E133Header() {}
 
@@ -54,13 +56,15 @@ class E133Header {
     uint8_t Sequence() const { return m_sequence; }
     uint16_t Universe() const { return m_universe; }
     bool IsManagement() const { return m_is_management; }
+    bool IsSquawk() const { return m_is_squawk; }
 
     bool operator==(const E133Header &other) const {
       return m_source == other.m_source &&
         m_priority == other.m_priority &&
         m_sequence == other.m_sequence &&
         m_universe == other.m_universe &&
-        m_is_management == other.m_is_management;
+        m_is_management == other.m_is_management &&
+        m_is_squawk == other.m_is_squawk;
     }
 
     enum { SOURCE_NAME_LEN = 64 };
@@ -76,6 +80,7 @@ class E133Header {
     typedef struct e133_pdu_header_s e133_pdu_header;
 
     static const uint8_t RDM_MANAGEMENT_MASK = 0x20;
+    static const uint8_t RDM_SQUAWK_MASK = 0x10;
 
   private:
     string m_source;
@@ -83,6 +88,7 @@ class E133Header {
     uint8_t m_sequence;
     uint16_t m_universe;
     bool m_is_management;
+    bool m_is_squawk;
 };
 }  // e131
 }  // plugin

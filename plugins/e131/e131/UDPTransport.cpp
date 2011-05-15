@@ -25,6 +25,7 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/IPV4Address.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
@@ -113,7 +114,9 @@ void UDPTransport::Receive() {
   }
 
   ssize_t size = MAX_DATAGRAM_SIZE;
-  if (!m_socket.RecvFrom(m_recv_buffer, &size))
+  ola::network::IPV4Address src_address;
+
+  if (!m_socket.RecvFrom(m_recv_buffer, &size, src_address))
     return;
 
   if (size < (ssize_t) DATA_OFFSET) {
@@ -127,6 +130,9 @@ void UDPTransport::Receive() {
   }
 
   HeaderSet header_set;
+  TransportHeader transport_header(src_address);
+  header_set.SetTransportHeader(transport_header);
+
   m_inflator->InflatePDUBlock(header_set,
                               m_recv_buffer + DATA_OFFSET,
                               static_cast<unsigned int>(size - DATA_OFFSET));

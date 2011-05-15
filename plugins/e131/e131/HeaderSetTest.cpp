@@ -23,23 +23,28 @@
 #include <string>
 #include <iostream>
 
-#include "plugins/e131/e131/HeaderSet.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/HeaderSet.h"
 
+using ola::network::IPV4Address;
 using ola::plugin::e131::CID;
 using ola::plugin::e131::DMPHeader;
 using ola::plugin::e131::E131Header;
-using ola::plugin::e131::HeaderSet;
 using ola::plugin::e131::E131Rev2Header;
 using ola::plugin::e131::E133Header;
 using ola::plugin::e131::FOUR_BYTES;
+using ola::plugin::e131::HeaderSet;
 using ola::plugin::e131::NON_RANGE;
 using ola::plugin::e131::ONE_BYTES;
 using ola::plugin::e131::RANGE_EQUAL;
 using ola::plugin::e131::RootHeader;
+using ola::plugin::e131::TransportHeader;
 
 class HeaderSetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(HeaderSetTest);
+  CPPUNIT_TEST(testTransportHeader);
   CPPUNIT_TEST(testRootHeader);
   CPPUNIT_TEST(testE131Header);
   CPPUNIT_TEST(testE133Header);
@@ -49,6 +54,7 @@ class HeaderSetTest: public CppUnit::TestFixture {
 
   public:
     void testRootHeader();
+    void testTransportHeader();
     void testE131Header();
     void testE133Header();
     void testDMPHeader();
@@ -57,6 +63,25 @@ class HeaderSetTest: public CppUnit::TestFixture {
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(HeaderSetTest);
+
+/*
+ * Check that the transport header works.
+ */
+void HeaderSetTest::testTransportHeader() {
+  IPV4Address address;
+  CPPUNIT_ASSERT(IPV4Address::FromString("192.168.1.1", &address));
+  TransportHeader header(address);
+  CPPUNIT_ASSERT(address == header.SourceIP());
+
+  // test copy and assign
+  TransportHeader header2 = header;
+  CPPUNIT_ASSERT(address == header2.SourceIP());
+  CPPUNIT_ASSERT(header2 == header);
+  TransportHeader header3(header);
+  CPPUNIT_ASSERT(address == header3.SourceIP());
+  CPPUNIT_ASSERT(header3 == header);
+}
+
 
 /*
  * Check that the root header works.
@@ -141,6 +166,7 @@ void HeaderSetTest::testE133Header() {
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header.Sequence());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header.Universe());
   CPPUNIT_ASSERT_EQUAL(false, header.IsManagement());
+  CPPUNIT_ASSERT_EQUAL(false, header.IsSquawk());
 
   // test copy and assign
   E133Header header2 = header;
@@ -149,6 +175,7 @@ void HeaderSetTest::testE133Header() {
   CPPUNIT_ASSERT_EQUAL(header.Sequence(), header2.Sequence());
   CPPUNIT_ASSERT_EQUAL(header.Universe(), header2.Universe());
   CPPUNIT_ASSERT_EQUAL(false, header2.IsManagement());
+  CPPUNIT_ASSERT_EQUAL(false, header2.IsSquawk());
 
   E133Header header3(header);
   CPPUNIT_ASSERT(header.Source() == header3.Source());
@@ -157,13 +184,23 @@ void HeaderSetTest::testE133Header() {
   CPPUNIT_ASSERT_EQUAL(header.Universe(), header3.Universe());
   CPPUNIT_ASSERT(header == header3);
 
-  // test a header with the management bits set
+  // test a header with the management bit set
   E133Header header4("foo", 1, 2, 2050, true);
   CPPUNIT_ASSERT("foo" == header4.Source());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header4.Priority());
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header4.Sequence());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header4.Universe());
   CPPUNIT_ASSERT_EQUAL(true, header4.IsManagement());
+  CPPUNIT_ASSERT_EQUAL(false, header4.IsSquawk());
+
+  // test a header with the squawk bit set
+  E133Header header5("foo", 1, 2, 2050, false, true);
+  CPPUNIT_ASSERT("foo" == header5.Source());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header5.Priority());
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header5.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header5.Universe());
+  CPPUNIT_ASSERT_EQUAL(false, header5.IsManagement());
+  CPPUNIT_ASSERT_EQUAL(true, header5.IsSquawk());
 }
 
 
