@@ -23,6 +23,7 @@
 #ifndef PLUGINS_E131_E131_E133LAYER_H_
 #define PLUGINS_E131_E131_E133LAYER_H_
 
+#include "ola/network/IPV4Address.h"
 #include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133Inflator.h"
@@ -39,7 +40,9 @@ class E133Layer {
     ~E133Layer() {}
 
     // probably takes an IP as well here
-    bool SendDMP(const E133Header &header, const DMPPDU *pdu);
+    bool SendDMP(const ola::network::IPV4Address &destination,
+                 const E133Header &header,
+                 const DMPPDU *pdu);
     bool SetInflator(class DMPE133Inflator *inflator);
 
   private:
@@ -52,4 +55,4 @@ class E133Layer {
 }  // e131
 }  // plugin
 }  // ola
-#endif  // PLUGINS_E131_E131_E131LAYER_H_
+#endif  // PLUGINS_E131_E131_E133LAYER_H_

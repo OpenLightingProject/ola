@@ -48,15 +48,15 @@ E133Layer::E133Layer(RootLayer *root_layer)
  * @param header the E133Header
  * @param dmp_pdu the DMPPDU to send
  */
-bool E133Layer::SendDMP(const E133Header &header, const DMPPDU *dmp_pdu) {
+bool E133Layer::SendDMP(const ola::network::IPV4Address &destination,
+                        const E133Header &header,
+                        const DMPPDU *dmp_pdu) {
   if (!m_root_layer)
     return false;
 
-  struct in_addr addr;
-
   E133PDU pdu(DMPInflator::DMP_VECTOR, header, dmp_pdu);
   unsigned int vector = E133Inflator::E133_VECTOR;
-  return m_root_layer->SendPDU(addr, vector, pdu);
+  return m_root_layer->SendPDU(destination, vector, pdu);
 }
 
 

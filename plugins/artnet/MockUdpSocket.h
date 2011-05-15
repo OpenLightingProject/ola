@@ -25,7 +25,10 @@
 #include <string>
 #include <queue>
 
+#include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
+
+using ola::network::IPV4Address;
 
 /*
  * A MockUdpSocket
@@ -52,25 +55,23 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
                    const struct sockaddr_in &destination) const;
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
-                   const std::string &ip,
+                   const ola::network::IPV4Address &ip,
                    unsigned short port) const;
+    bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
                   struct sockaddr_in &source,
                   socklen_t &src_size) const;
-    bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
+    bool RecvFrom(uint8_t *buffer,
+                  ssize_t *data_read,
+                  ola::network::IPV4Address &source) const;
     bool EnableBroadcast();
-    bool SetMulticastInterface(const struct in_addr &interface);
-    bool JoinMulticast(const struct in_addr &interface,
-                       const struct in_addr &group,
+    bool SetMulticastInterface(const IPV4Address &interface);
+    bool JoinMulticast(const IPV4Address &interface,
+                       const IPV4Address &group,
                        bool loop = false);
-    bool JoinMulticast(const struct in_addr &interface,
-                       const std::string &address,
-                       bool loop = false);
-    bool LeaveMulticast(const struct in_addr &interface,
-                        const struct in_addr &group);
-    bool LeaveMulticast(const struct in_addr &interface,
-                        const std::string &address);
+    bool LeaveMulticast(const IPV4Address &interface,
+                        const IPV4Address &group);
 
     bool SetTos(uint8_t tos);
 
@@ -90,7 +91,7 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
                                  uint16_t port,
                                  bool broadcast_set);
 
-    void SetInterface(const struct in_addr &interface);
+    void SetInterface(const IPV4Address &interface);
 
   private:
     typedef struct {
@@ -105,7 +106,7 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
     uint16_t m_port;
     uint8_t m_tos;
     mutable std::queue<expected_call> m_expected_calls;
-    struct in_addr m_interface;
+    IPV4Address m_interface;
 
     mutable uint8_t *m_buffer;
     mutable ssize_t m_available;

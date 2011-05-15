@@ -25,6 +25,7 @@
 #include <vector>
 #include "ola/Logging.h"
 #include "ola/BaseTypes.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/pathport/PathportNode.h"
 
@@ -37,8 +38,8 @@ using std::string;
 using std::map;
 using std::vector;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
 using ola::network::NetworkToHost;
-using ola::network::StringToAddress;
 using ola::network::UdpSocket;
 using ola::Callback0;
 
@@ -88,9 +89,9 @@ bool PathportNode::Start() {
   }
   delete picker;
 
-  m_config_addr.s_addr = HostToNetwork(PATHPORT_CONFIG_GROUP);
-  m_status_addr.s_addr = HostToNetwork(PATHPORT_STATUS_GROUP);
-  m_data_addr.s_addr = HostToNetwork(PATHPORT_DATA_GROUP);
+  m_config_addr = IPV4Address(HostToNetwork(PATHPORT_CONFIG_GROUP));
+  m_status_addr= IPV4Address(HostToNetwork(PATHPORT_STATUS_GROUP));
+  m_data_addr = IPV4Address(HostToNetwork(PATHPORT_DATA_GROUP));
 
   if (!InitNetwork())
     return false;
@@ -122,17 +123,15 @@ bool PathportNode::Stop() {
 void PathportNode::SocketReady(UdpSocket *socket) {
   pathport_packet_s packet;
   ssize_t packet_size = sizeof(packet);
-  struct sockaddr_in source;
-  socklen_t source_length = sizeof(source);
+  IPV4Address source;
 
   if (!socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                         &packet_size,
-                        source,
-                        source_length))
+                        source))
     return;
 
   // skip packets sent by us
-  if (source.sin_addr.s_addr == m_interface.ip_address.s_addr)
+  if (source == m_interface.ip_address)
     return;
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.header))) {
@@ -245,7 +244,7 @@ bool PathportNode::SendArpReply() {
   pdu->head.type = HostToNetwork((uint16_t) PATHPORT_ARP_REPLY);
   pdu->head.len = HostToNetwork((uint16_t) sizeof(pathport_pdu_arp_reply));
   pdu->d.arp_reply.id = HostToNetwork(m_device_id);
-  pdu->d.arp_reply.ip = m_interface.ip_address.s_addr;
+  m_interface.ip_address.Get(pdu->d.arp_reply.ip);
   pdu->d.arp_reply.manufacturer_code = NODE_MANUF_ZP_TECH;
   pdu->d.arp_reply.device_class = NODE_CLASS_DMX_NODE;
   pdu->d.arp_reply.device_type = NODE_DEVICE_PATHPORT;
@@ -323,19 +322,19 @@ bool PathportNode::InitNetwork() {
   }
 
   if (!m_socket.JoinMulticast(m_interface.ip_address, m_config_addr)) {
-      OLA_WARN << "Failed to join multicast to: " << inet_ntoa(m_config_addr);
+      OLA_WARN << "Failed to join multicast to: " << m_config_addr;
     m_socket.Close();
     return false;
   }
 
   if (!m_socket.JoinMulticast(m_interface.ip_address, m_data_addr)) {
-      OLA_WARN << "Failed to join multicast to: " << inet_ntoa(m_data_addr);
+      OLA_WARN << "Failed to join multicast to: " << m_data_addr;
     m_socket.Close();
     return false;
   }
 
   if (!m_socket.JoinMulticast(m_interface.ip_address, m_status_addr)) {
-      OLA_WARN << "Failed to join multicast to: " << inet_ntoa(m_status_addr);
+      OLA_WARN << "Failed to join multicast to: " << m_status_addr;
     m_socket.Close();
     return false;
   }
@@ -440,16 +439,12 @@ bool PathportNode::SendArpRequest(uint32_t destination) {
  */
 bool PathportNode::SendPacket(const pathport_packet_s &packet,
                               unsigned int size,
-                              struct in_addr dest) {
-  struct sockaddr_in destination;
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(PATHPORT_PORT);
-  destination.sin_addr = dest;
-
+                              IPV4Address destination) {
   ssize_t bytes_sent = m_socket.SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
       size,
-      destination);
+      destination,
+      PATHPORT_PORT);
 
   if (bytes_sent != static_cast<ssize_t>(size)) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;

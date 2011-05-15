@@ -24,6 +24,7 @@
 #include <map>
 #include <vector>
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/sandnet/SandNetNode.h"
 
@@ -37,7 +38,6 @@ using std::map;
 using std::vector;
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
-using ola::network::StringToAddress;
 using ola::network::UdpSocket;
 using ola::Callback0;
 
@@ -91,10 +91,13 @@ bool SandNetNode::Start() {
   }
   delete picker;
 
-  if (!StringToAddress(CONTROL_ADDRESS, m_control_addr) ||
-      !StringToAddress(DATA_ADDRESS, m_data_addr)) {
-    OLA_WARN << "Could not convert " << CONTROL_ADDRESS << " or " <<
-      DATA_ADDRESS;
+  if (!IPV4Address::FromString(CONTROL_ADDRESS, &m_control_addr)) {
+    OLA_WARN << "Could not convert " << CONTROL_ADDRESS;
+    return false;
+  }
+
+  if (!IPV4Address::FromString(DATA_ADDRESS, &m_data_addr)) {
+    OLA_WARN << "Could not convert " << DATA_ADDRESS;
     return false;
   }
 
@@ -138,17 +141,15 @@ vector<UdpSocket*> SandNetNode::GetSockets() {
 void SandNetNode::SocketReady(UdpSocket *socket) {
   sandnet_packet packet;
   ssize_t packet_size = sizeof(packet);
-  struct sockaddr_in source;
-  socklen_t source_length = sizeof(source);
+  IPV4Address source;
 
   if (!socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                         &packet_size,
-                        source,
-                        source_length))
+                        source))
     return;
 
   // skip packets sent by us
-  if (source.sin_addr.s_addr == m_interface.ip_address.s_addr)
+  if (source == m_interface.ip_address)
     return;
 
   if (packet_size < static_cast<ssize_t>(sizeof(packet.opcode))) {
@@ -336,15 +337,14 @@ bool SandNetNode::InitNetwork() {
 
   if (!m_control_socket.JoinMulticast(m_interface.ip_address,
                                       m_control_addr)) {
-      OLA_WARN << "Failed to join multicast to: " << CONTROL_ADDRESS;
+      OLA_WARN << "Failed to join multicast to: " << m_control_addr;
     m_data_socket.Close();
     m_control_socket.Close();
     return false;
   }
 
-  if (!m_data_socket.JoinMulticast(m_interface.ip_address,
-                                   m_data_addr)) {
-      OLA_WARN << "Failed to join multicast to: " << DATA_ADDRESS;
+  if (!m_data_socket.JoinMulticast(m_interface.ip_address, m_data_addr)) {
+      OLA_WARN << "Failed to join multicast to: " << m_data_addr;
     m_data_socket.Close();
     m_control_socket.Close();
     return false;
@@ -443,25 +443,17 @@ bool SandNetNode::SendUncompressedDMX(uint8_t port_id,
 bool SandNetNode::SendPacket(const sandnet_packet &packet,
                              unsigned int size,
                              bool is_control) {
-  struct sockaddr_in destination;
-  destination.sin_family = AF_INET;
-
   UdpSocket *socket;
-
-  if (is_control) {
-    destination.sin_port = HostToNetwork(CONTROL_PORT);
-    destination.sin_addr = m_control_addr;
+  if (is_control)
     socket = &m_control_socket;
-  } else {
-    destination.sin_port = HostToNetwork(DATA_PORT);
-    destination.sin_addr = m_data_addr;
+  else
     socket = &m_data_socket;
-  }
 
   ssize_t bytes_sent = socket->SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
       size,
-      destination);
+      is_control ? m_control_addr : m_data_addr,
+      is_control ? CONTROL_PORT : DATA_PORT);
 
   if (bytes_sent != static_cast<ssize_t>(size)) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;

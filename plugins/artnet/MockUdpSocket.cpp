@@ -27,10 +27,12 @@
 #include <queue>
 
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/artnet/MockUdpSocket.h"
 
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
 
 
 bool MockUdpSocket::Init() {
@@ -82,15 +84,13 @@ ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
 
 ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
                               unsigned int size,
-                              const std::string &ip_address,
+                              const ola::network::IPV4Address &ip_address,
                               unsigned short port) const {
   struct sockaddr_in destination;
   memset(&destination, 0x00, sizeof(destination));
   destination.sin_family = AF_INET;
   destination.sin_port = HostToNetwork(port);
-
-  if (!ola::network::StringToAddress(ip_address, destination.sin_addr))
-    return 0;
+  destination.sin_addr = ip_address.Address();
   return SendTo(buffer, size, destination);
 }
 
@@ -123,52 +123,45 @@ bool MockUdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
 }
 
 
+bool MockUdpSocket::RecvFrom(uint8_t *buffer,
+                             ssize_t *data_read,
+                             ola::network::IPV4Address &source) const {
+  struct sockaddr_in src_sockaddr;
+  socklen_t src_size = sizeof(src_sockaddr);
+  bool ok = RecvFrom(buffer, data_read, src_sockaddr, src_size);
+  if (ok)
+    source = IPV4Address(src_sockaddr.sin_addr);
+  return ok;
+}
+
+
 bool MockUdpSocket::EnableBroadcast() {
   m_broadcast_set = true;
   return true;
 }
 
 
-bool MockUdpSocket::SetMulticastInterface(const struct in_addr &interface) {
-  CPPUNIT_ASSERT_EQUAL(m_interface.s_addr, interface.s_addr);
+bool MockUdpSocket::SetMulticastInterface(const IPV4Address &interface) {
+  CPPUNIT_ASSERT_EQUAL(m_interface, interface);
   return true;
 }
 
 
-bool MockUdpSocket::JoinMulticast(const struct in_addr &interface,
-                                  const struct in_addr &group,
+bool MockUdpSocket::JoinMulticast(const IPV4Address &interface,
+                                  const IPV4Address &group,
                                   bool loop) {
-  CPPUNIT_ASSERT_EQUAL(m_interface.s_addr, interface.s_addr);
+  CPPUNIT_ASSERT_EQUAL(m_interface, interface);
   (void) group;
   (void) loop;
   return true;
 }
 
 
-bool MockUdpSocket::JoinMulticast(const struct in_addr &interface,
-                                  const std::string &address,
-                                  bool loop) {
-  struct in_addr addr;
-  if (!ola::network::StringToAddress(address, addr))
-    return false;
-  return JoinMulticast(interface, addr, loop);
-}
-
-
-bool MockUdpSocket::LeaveMulticast(const struct in_addr &interface,
-                                   const struct in_addr &group) {
-  CPPUNIT_ASSERT_EQUAL(m_interface.s_addr, interface.s_addr);
+bool MockUdpSocket::LeaveMulticast(const IPV4Address &interface,
+                                   const IPV4Address &group) {
+  CPPUNIT_ASSERT_EQUAL(m_interface, interface);
   (void) group;
   return true;
-}
-
-
-bool MockUdpSocket::LeaveMulticast(const struct in_addr &interface,
-                                   const std::string &address) {
-  struct in_addr addr;
-  if (!ola::network::StringToAddress(address, addr))
-    return false;
-  return LeaveMulticast(interface, addr);
 }
 
 
@@ -211,6 +204,6 @@ bool MockUdpSocket::CheckNetworkParamsMatch(bool init_called,
 }
 
 
-void MockUdpSocket::SetInterface(const struct in_addr &interface) {
+void MockUdpSocket::SetInterface(const IPV4Address &interface) {
   m_interface = interface;
 }

@@ -24,6 +24,7 @@
 #include <string>
 
 #include "ola/Callback.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
@@ -31,12 +32,13 @@
 using std::string;
 using ola::network::AcceptingSocket;
 using ola::network::ConnectedSocket;
+using ola::network::IPV4Address;
 using ola::network::LoopbackSocket;
 using ola::network::PipeSocket;
 using ola::network::SelectServer;
+using ola::network::StringToAddress;
 using ola::network::TcpAcceptingSocket;
 using ola::network::TcpSocket;
-using ola::network::StringToAddress;
 using ola::network::UdpSocket;
 
 static const unsigned char test_cstring[] = "Foo";
@@ -181,7 +183,8 @@ void SocketTest::testPipeSocketServerClose() {
   socket.SetOnData(ola::NewCallback(
         this, &SocketTest::Receive,
         static_cast<ConnectedSocket*>(&socket)));
-  socket.SetOnClose(ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
+  socket.SetOnClose(
+      ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
   CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
 
   PipeSocket *other_end = socket.OppositeEnd();
@@ -270,7 +273,8 @@ void SocketTest::testTcpSocketServerClose() {
  * data matches and then closes the connection.
  */
 void SocketTest::testUdpSocket() {
-  string ip_address = "127.0.0.1";
+  IPV4Address ip_address;
+  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &ip_address));
   uint16_t server_port = 9010;
   UdpSocket socket;
   CPPUNIT_ASSERT(socket.Init());

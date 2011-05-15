@@ -20,6 +20,7 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/DMPE131Inflator.h"
 #include "plugins/e131/e131/E131Layer.h"
@@ -30,6 +31,7 @@ namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
 
 /*
  * Create a new E131Layer
@@ -53,8 +55,8 @@ bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
   if (!m_root_layer)
     return false;
 
-  struct in_addr addr;
-  if (!UniverseIP(header.Universe(), addr)) {
+  IPV4Address addr;
+  if (!UniverseIP(header.Universe(), &addr)) {
     OLA_INFO << "could not convert universe to ip.";
     return false;
   }
@@ -81,12 +83,12 @@ bool E131Layer::SetInflator(DMPE131Inflator *inflator) {
  * Join a universe.
  */
 bool E131Layer::JoinUniverse(unsigned int universe) {
-  struct in_addr addr;
+  IPV4Address addr;
 
   if (!m_root_layer)
     return false;
 
-  if (UniverseIP(universe, addr))
+  if (UniverseIP(universe, &addr))
     return m_root_layer->JoinMulticast(addr);
   return false;
 }
@@ -96,12 +98,12 @@ bool E131Layer::JoinUniverse(unsigned int universe) {
  * Leave a universe
  */
 bool E131Layer::LeaveUniverse(unsigned int universe) {
-  struct in_addr addr;
+  IPV4Address addr;
 
   if (!m_root_layer)
     return false;
 
-  if (UniverseIP(universe, addr))
+  if (UniverseIP(universe, &addr))
     return m_root_layer->LeaveMulticast(addr);
   return false;
 }
@@ -113,9 +115,9 @@ bool E131Layer::LeaveUniverse(unsigned int universe) {
  * @param addr where to store the address
  * @return true if this is a valid E1.31 universe, false otherwise
  */
-bool E131Layer::UniverseIP(unsigned int universe, struct in_addr &addr) {
-  addr.s_addr = HostToNetwork(239 << 24 | 255 << 16 | (universe & 0xFF00) |
-                      (universe & 0xFF));
+bool E131Layer::UniverseIP(unsigned int universe, IPV4Address *addr) {
+  *addr = IPV4Address(HostToNetwork(239 << 24 | 255 << 16 |
+                      (universe & 0xFF00) | (universe & 0xFF)));
   if (universe && (universe & 0xFFFF) != 0xFFFF)
     return true;
 

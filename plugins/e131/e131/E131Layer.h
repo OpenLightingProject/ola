@@ -23,6 +23,7 @@
 #ifndef PLUGINS_E131_E131_E131LAYER_H_
 #define PLUGINS_E131_E131_E131LAYER_H_
 
+#include "ola/network/IPV4Address.h"
 #include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/E131Header.h"
 #include "plugins/e131/e131/E131Inflator.h"
@@ -52,7 +53,7 @@ class E131Layer {
 
     E131Layer(const E131Layer&);
     E131Layer& operator=(const E131Layer&);
-    bool UniverseIP(unsigned int universe, struct in_addr &addr);
+    bool UniverseIP(unsigned int universe, ola::network::IPV4Address *addr);
 };
 }  // e131
 }  // plugin

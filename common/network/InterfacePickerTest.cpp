@@ -21,18 +21,19 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <iomanip>
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include "ola/network/InterfacePicker.h"
-#include "ola/network/NetworkUtils.h"
 #include "ola/Logging.h"
 
-using ola::network::InterfacePicker;
+using ola::network::IPV4Address;
 using ola::network::Interface;
-using ola::network::StringToAddress;
-using std::vector;
+using ola::network::InterfacePicker;
 using std::cout;
 using std::endl;
+using std::string;
+using std::vector;
 
 class InterfacePickerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(InterfacePickerTest);
@@ -44,6 +45,7 @@ class InterfacePickerTest: public CppUnit::TestFixture {
     void testGetInterfaces();
     void testChooseInterface();
 };
+
 
 class MockPicker: public InterfacePicker {
   public:
@@ -70,9 +72,9 @@ void InterfacePickerTest::testGetInterfaces() {
   cout << endl;
   for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
     cout << iter->name << endl;
-    cout << " ip: " << inet_ntoa(iter->ip_address) << endl;
-    cout << " bcast: " << inet_ntoa(iter->bcast_address) << endl;
-    cout << " subnet: " << inet_ntoa(iter->subnet_address) << endl;
+    cout << " ip: " << iter->ip_address << endl;
+    cout << " bcast: " << iter->bcast_address << endl;
+    cout << " subnet: " << iter->subnet_mask << endl;
     cout << " hw_addr: ";
     for (unsigned int i = 0; i < ola::network::MAC_LENGTH; i++) {
       if (i)
@@ -98,7 +100,7 @@ void InterfacePickerTest::testChooseInterface() {
   // now with one iface that doesn't match
   Interface iface1;
   iface1.name = "eth0";
-  StringToAddress("10.0.0.1", iface1.ip_address);
+  CPPUNIT_ASSERT(IPV4Address::FromString("10.0.0.1", &iface1.ip_address));
   interfaces.push_back(iface1);
   CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "192.168.1.1"));
   CPPUNIT_ASSERT(iface1 == iface);
@@ -106,7 +108,7 @@ void InterfacePickerTest::testChooseInterface() {
   // check that preferred works
   Interface iface2;
   iface2.name = "eth1";
-  StringToAddress("192.168.1.1", iface2.ip_address);
+  CPPUNIT_ASSERT(IPV4Address::FromString("192.168.1.1", &iface2.ip_address));
   interfaces.push_back(iface2);
   CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "192.168.1.1"));
   CPPUNIT_ASSERT(iface2 == iface);

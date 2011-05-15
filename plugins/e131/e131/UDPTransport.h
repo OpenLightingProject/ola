@@ -22,6 +22,7 @@
 #define PLUGINS_E131_E131_UDPTRANSPORT_H_
 
 #include <string>
+#include "ola/network/IPV4Address.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
@@ -31,6 +32,8 @@
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::network::IPV4Address;
 
 /*
  * Used to send and recv PDUs over UDP
@@ -57,13 +60,13 @@ class UDPTransport {
 
     bool Init(const ola::network::Interface &interface);
     bool Send(const PDUBlock<PDU> &pdu_block,
-              const struct sockaddr_in &destination);
+              const IPV4Address &destination);
     ola::network::UdpSocket *GetSocket() { return &m_socket; }
     void SetInflator(BaseInflator *inflator) { m_inflator = inflator; }
     void Receive();
 
-    bool JoinMulticast(const struct in_addr &group);
-    bool LeaveMulticast(const struct in_addr &group);
+    bool JoinMulticast(const IPV4Address &group);
+    bool LeaveMulticast(const IPV4Address &group);
 
   private:
     ola::network::UdpSocket m_socket;

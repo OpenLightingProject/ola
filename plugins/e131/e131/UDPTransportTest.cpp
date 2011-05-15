@@ -85,12 +85,9 @@ void UDPTransportTest::testUDPTransport() {
   MockPDU mock_pdu(4, 8);
   pdu_block.AddPDU(&mock_pdu);
 
-  struct sockaddr_in destination;
-  destination.sin_family = AF_INET;
-  destination.sin_port = HostToNetwork(UDPTransport::ACN_PORT);
-  ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-  ola::network::StringToAddress("255.255.255.255", destination.sin_addr);
-  CPPUNIT_ASSERT(transport.Send(pdu_block, destination));
+  IPV4Address addr;
+  CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
+  CPPUNIT_ASSERT(transport.Send(pdu_block, addr));
 
   SingleUseCallback0<void> *closure =
     NewSingleCallback(this, &UDPTransportTest::FatalStop);

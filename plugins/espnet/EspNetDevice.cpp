@@ -69,8 +69,8 @@ bool EspNetDevice::StartHook() {
   }
 
   stringstream str;
-  str << ESPNET_DEVICE_NAME << " [" <<
-    ola::network::AddressToString(m_node->GetInterface().ip_address) << "]";
+  str << ESPNET_DEVICE_NAME << " [" << m_node->GetInterface().ip_address <<
+    "]";
   SetName(str.str());
 
   for (unsigned int i = 0; i < PORTS_PER_DEVICE; i++) {

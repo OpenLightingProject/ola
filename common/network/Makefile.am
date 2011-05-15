@@ -1,8 +1,8 @@
 include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = libolanetwork.la
-libolanetwork_la_SOURCES = InterfacePicker.cpp NetworkUtils.cpp \
-                           SelectServer.cpp Socket.cpp
+libolanetwork_la_SOURCES = IPV4Address.cpp InterfacePicker.cpp \
+                           NetworkUtils.cpp SelectServer.cpp Socket.cpp
 
 if USING_WIN32
 libolanetwork_la_SOURCES += WindowsInterfacePicker.cpp

@@ -213,7 +213,7 @@ bool OlaServer::Init() {
   } else {
     // default to using the ip as a id
     m_default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
-                                  iface.ip_address.s_addr);
+                                  iface.ip_address.AsInt());
   }
   delete picker;
   m_export_map->GetStringVar(K_UID_VAR)->Set(m_default_uid.ToString());

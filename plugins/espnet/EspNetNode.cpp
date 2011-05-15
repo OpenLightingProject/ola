@@ -23,6 +23,7 @@
 #include <map>
 #include <string>
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/InterfacePicker.h"
 #include "plugins/espnet/EspNetNode.h"
@@ -34,9 +35,10 @@ namespace espnet {
 
 using std::string;
 using std::map;
-using ola::network::UdpSocket;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
 using ola::network::NetworkToHost;
+using ola::network::UdpSocket;
 using ola::Callback0;
 
 const char EspNetNode::NODE_NAME[] = "OLA Node";
@@ -115,14 +117,12 @@ bool EspNetNode::Stop() {
 void EspNetNode::SocketReady() {
   espnet_packet_union_t packet;
   memset(&packet, 0, sizeof(packet));
-  struct sockaddr_in source;
-  socklen_t source_length = sizeof(source);
+  ola::network::IPV4Address source;
 
   ssize_t packet_size = sizeof(packet);
   if (!m_socket.RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                          &packet_size,
-                         source,
-                         source_length))
+                         source))
     return;
 
   if (packet_size < (ssize_t) sizeof(packet.poll.head)) {
@@ -131,22 +131,22 @@ void EspNetNode::SocketReady() {
   }
 
   // skip packets sent by us
-  if (source.sin_addr.s_addr == m_interface.ip_address.s_addr) {
+  if (source == m_interface.ip_address) {
     return;
   }
 
   switch (NetworkToHost(packet.poll.head)) {
     case ESPNET_POLL:
-      HandlePoll(packet.poll, packet_size, source.sin_addr);
+      HandlePoll(packet.poll, packet_size, source);
       break;
     case ESPNET_REPLY:
-      HandleReply(packet.reply, packet_size, source.sin_addr);
+      HandleReply(packet.reply, packet_size, source);
       break;
     case ESPNET_DMX:
-      HandleData(packet.dmx, packet_size, source.sin_addr);
+      HandleData(packet.dmx, packet_size, source);
       break;
     case ESPNET_ACK:
-      HandleAck(packet.ack, packet_size, source.sin_addr);
+      HandleAck(packet.ack, packet_size, source);
       break;
     default:
       OLA_INFO << "Skipping a packet with invalid header" << packet.poll.head;
@@ -257,7 +257,7 @@ bool EspNetNode::InitNetwork() {
  */
 void EspNetNode::HandlePoll(const espnet_poll_t &poll,
                             ssize_t length,
-                            const struct in_addr &source) {
+                            const IPV4Address &source) {
   OLA_DEBUG << "Got ESP Poll " << poll.type;
   if (length < (ssize_t) sizeof(espnet_poll_t)) {
     OLA_DEBUG << "Poll size too small " << length << " < " <<
@@ -277,7 +277,7 @@ void EspNetNode::HandlePoll(const espnet_poll_t &poll,
  */
 void EspNetNode::HandleReply(const espnet_poll_reply_t &reply,
                              ssize_t length,
-                             const struct in_addr &source) {
+                             const IPV4Address &source) {
   if (length < (ssize_t) sizeof(espnet_poll_reply_t)) {
     OLA_DEBUG << "Poll reply size too small " << length << " < " <<
       sizeof(espnet_poll_reply_t);
@@ -293,7 +293,7 @@ void EspNetNode::HandleReply(const espnet_poll_reply_t &reply,
  */
 void EspNetNode::HandleAck(const espnet_ack_t &ack,
                            ssize_t length,
-                           const struct in_addr &source) {
+                           const IPV4Address &source) {
   if (length < (ssize_t) sizeof(espnet_ack_t)) {
     OLA_DEBUG << "Ack size too small " << length << " < " <<
       sizeof(espnet_ack_t);
@@ -310,7 +310,7 @@ void EspNetNode::HandleAck(const espnet_ack_t &ack,
  */
 void EspNetNode::HandleData(const espnet_data_t &data,
                             ssize_t length,
-                            const struct in_addr &source) {
+                            const IPV4Address &source) {
   static const ssize_t header_size = sizeof(espnet_data_t) - DMX_UNIVERSE_SIZE;
   if (length < header_size) {
     OLA_DEBUG << "Data size too small " << length << " < " << header_size;
@@ -352,7 +352,7 @@ void EspNetNode::HandleData(const espnet_data_t &data,
 /*
  * Send an EspNet poll
  */
-bool EspNetNode::SendEspPoll(const struct in_addr &dst, bool full) {
+bool EspNetNode::SendEspPoll(const IPV4Address &dst, bool full) {
   espnet_packet_union_t packet;
   packet.poll.head = HostToNetwork((uint32_t) ESPNET_POLL);
   packet.poll.type = full;
@@ -363,7 +363,7 @@ bool EspNetNode::SendEspPoll(const struct in_addr &dst, bool full) {
 /*
  * Send an EspNet Ack
  */
-bool EspNetNode::SendEspAck(const struct in_addr &dst,
+bool EspNetNode::SendEspAck(const IPV4Address &dst,
                             uint8_t status,
                             uint8_t crc) {
   espnet_packet_union_t packet;
@@ -377,7 +377,7 @@ bool EspNetNode::SendEspAck(const struct in_addr &dst,
 /*
  * Send an EspNet Poll Reply
  */
-bool EspNetNode::SendEspPollReply(const struct in_addr &dst) {
+bool EspNetNode::SendEspPollReply(const IPV4Address &dst) {
   espnet_packet_union_t packet;
   packet.reply.head = HostToNetwork((uint32_t) ESPNET_REPLY);
 
@@ -393,8 +393,7 @@ bool EspNetNode::SendEspPollReply(const struct in_addr &dst) {
   packet.reply.tos = m_tos;
   packet.reply.ttl = m_ttl;
   packet.reply.config.listen = 0x04;
-  memcpy(&packet.reply.config.ip, &m_interface.ip_address.s_addr,
-         sizeof(packet.reply.config.ip));
+  m_interface.ip_address.Get(packet.reply.config.ip);
   packet.reply.config.universe = m_universe;
   return SendPacket(dst, packet, sizeof(packet.reply));
 }
@@ -403,7 +402,7 @@ bool EspNetNode::SendEspPollReply(const struct in_addr &dst) {
 /*
  * Send an EspNet data packet
  */
-bool EspNetNode::SendEspData(const struct in_addr &dst,
+bool EspNetNode::SendEspData(const IPV4Address &dst,
                              uint8_t universe,
                              const DmxBuffer &buffer) {
   espnet_packet_union_t packet;
@@ -422,19 +421,14 @@ bool EspNetNode::SendEspData(const struct in_addr &dst,
 /*
  * Send an EspNet packet
  */
-bool EspNetNode::SendPacket(const struct in_addr &dst,
+bool EspNetNode::SendPacket(const IPV4Address &dst,
                             const espnet_packet_union_t &packet,
                             unsigned int size) {
-  struct sockaddr_in m_destination;
-  memset(&m_destination, 0, sizeof(m_destination));
-  m_destination.sin_family = AF_INET;
-  m_destination.sin_port = HostToNetwork((uint16_t) ESPNET_PORT);
-  m_destination.sin_addr = dst;
-
   ssize_t bytes_sent = m_socket.SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
       size,
-      m_destination);
+      dst,
+      ESPNET_PORT);
   if (bytes_sent != (ssize_t) size) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;
     return false;

@@ -24,6 +24,7 @@
 #include <string>
 
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/shownet/ShowNetNode.h"
 
@@ -49,7 +50,6 @@ ShowNetNode::ShowNetNode(const string &ip_address)
       m_packet_count(0),
       m_node_name(),
       m_preferred_ip(ip_address) {
-  memset(&m_destination, 0, sizeof(m_destination));
 }
 
 
@@ -86,9 +86,6 @@ bool ShowNetNode::Start() {
   if (!InitNetwork())
     return false;
 
-  m_destination.sin_family = AF_INET;
-  m_destination.sin_port = HostToNetwork(SHOWNET_PORT);
-  m_destination.sin_addr = m_interface.bcast_address;
   m_running = true;
   return true;
 }
@@ -142,7 +139,8 @@ bool ShowNetNode::SendDMX(unsigned int universe,
   unsigned int bytes_sent = m_socket->SendTo(
       reinterpret_cast<uint8_t*>(&packet),
       size,
-      m_destination);
+      m_interface.bcast_address,
+      SHOWNET_PORT);
 
   if (bytes_sent != size) {
     OLA_WARN << "Only sent " << bytes_sent << " of " << size;
@@ -208,17 +206,15 @@ bool ShowNetNode::RemoveHandler(unsigned int universe) {
 void ShowNetNode::SocketReady() {
   shownet_data_packet packet;
   ssize_t packet_size = sizeof(packet);
-  struct sockaddr_in source;
-  socklen_t source_length = sizeof(source);
+  ola::network::IPV4Address source;
 
   if (!m_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                           &packet_size,
-                          source,
-                          source_length))
+                          source))
     return;
 
   // skip packets sent by us
-  if (source.sin_addr.s_addr != m_interface.ip_address.s_addr)
+  if (source != m_interface.ip_address)
     HandlePacket(packet, packet_size);
 }
 

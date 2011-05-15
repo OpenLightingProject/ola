@@ -74,7 +74,6 @@ class ShowNetNode {
     ola::network::Interface m_interface;
     ola::RunLengthEncoder m_encoder;
     ola::network::UdpSocket *m_socket;
-    struct sockaddr_in m_destination;
 
     ShowNetNode(const ShowNetNode&);
     ShowNetNode& operator=(const ShowNetNode&);

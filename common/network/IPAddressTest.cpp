@@ -20,12 +20,16 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <algorithm>
 #include <iostream>
+#include <memory>
 #include <string>
+#include <vector>
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 
 using ola::network::IPV4Address;
+using std::auto_ptr;
 using std::string;
 
 class IPAddressTest: public CppUnit::TestFixture {
@@ -44,14 +48,25 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IPAddressTest);
  * Test the IPV4 Address class works
  */
 void IPAddressTest::testIPV4Address() {
-  IPV4Address zero_address;
-  CPPUNIT_ASSERT_EQUAL(string("0.0.0.0"), zero_address.ToString());
-  CPPUNIT_ASSERT_EQUAL(0, zero_address.Address().s_addr);
+  IPV4Address wildcard_address;
+  CPPUNIT_ASSERT_EQUAL(string("0.0.0.0"), wildcard_address.ToString());
+  CPPUNIT_ASSERT(0 == wildcard_address.Address().s_addr);
+  CPPUNIT_ASSERT(wildcard_address.IsWildcard());
 
   struct in_addr in_addr1;
   CPPUNIT_ASSERT(ola::network::StringToAddress("192.168.1.1", in_addr1));
   IPV4Address address1(in_addr1);
   CPPUNIT_ASSERT_EQUAL(in_addr1.s_addr, address1.Address().s_addr);
+  CPPUNIT_ASSERT(wildcard_address != address1);
+
+  // Test Get()
+  uint8_t addr[IPV4Address::LENGTH];
+  address1.Get(addr);
+  CPPUNIT_ASSERT_EQUAL(
+      0,
+      memcmp(addr,
+             reinterpret_cast<uint8_t*>(&in_addr1),
+             IPV4Address::LENGTH));
 
   // test copy and assignment
   IPV4Address address2(address1);
@@ -64,4 +79,29 @@ void IPAddressTest::testIPV4Address() {
   std::stringstream str;
   str << address1;
   CPPUNIT_ASSERT_EQUAL(string("192.168.1.1"), str.str());
+
+  // test from string
+  auto_ptr<IPV4Address> string_address(IPV4Address::FromString("10.0.0.1"));
+  CPPUNIT_ASSERT(string_address.get());
+  CPPUNIT_ASSERT_EQUAL(string("10.0.0.1"), string_address->ToString());
+
+  auto_ptr<IPV4Address> string_address2(IPV4Address::FromString("foo"));
+  CPPUNIT_ASSERT(!string_address2.get());
+
+  // and the second form
+  IPV4Address string_address3;
+  CPPUNIT_ASSERT(IPV4Address::FromString("172.16.4.1", &string_address3));
+  CPPUNIT_ASSERT_EQUAL(string("172.16.4.1"), string_address3.ToString());
+
+  // make sure sorting works
+  std::vector<IPV4Address> addresses;
+  addresses.push_back(address1);
+  addresses.push_back(*string_address);
+  addresses.push_back(string_address3);
+  std::sort(addresses.begin(), addresses.end());
+
+  // Addresses are in network byte order.
+  CPPUNIT_ASSERT_EQUAL(string("10.0.0.1"), addresses[0].ToString());
+  CPPUNIT_ASSERT_EQUAL(string("192.168.1.1"), addresses[1].ToString());
+  CPPUNIT_ASSERT_EQUAL(string("172.16.4.1"), addresses[2].ToString());
 }

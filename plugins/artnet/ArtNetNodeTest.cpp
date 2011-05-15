@@ -26,6 +26,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
@@ -34,6 +35,7 @@
 #include "plugins/artnet/MockUdpSocket.h"
 
 
+using ola::network::IPV4Address;
 using ola::plugin::artnet::ArtNetNode;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -115,8 +117,10 @@ void ArtNetNodeTest::setUp() {
 void ArtNetNodeTest::testBasicBehaviour() {
   ola::network::Interface interface;
   uint8_t mac_address[] = {0x0a, 0x0b, 0x0c, 0x12, 0x34, 0x56};
-  ola::network::StringToAddress("10.0.0.1", interface.ip_address);
-  ola::network::StringToAddress("10.255.255.255", interface.bcast_address);
+
+  CPPUNIT_ASSERT(IPV4Address::FromString("10.0.0.1", &interface.ip_address));
+  CPPUNIT_ASSERT(
+      IPV4Address::FromString("10.255.255.255", &interface.bcast_address));
   memcpy(&interface.hw_address, mac_address, sizeof(mac_address));
 
   ola::network::SelectServer ss;
