@@ -68,7 +68,7 @@ class RDMControllerInterface {
      * requests, or leak memory depending on the implementation.
      *
      * Also the implementor of this class should re-write the transaction #,
-     * and possibly the UID (changing src UIDs isn't addresses by the RDM
+     * and possibly the UID (changing src UIDs isn't addressed by the RDM
      * spec).
      */
     virtual void SendRDMRequest(const RDMRequest *request,

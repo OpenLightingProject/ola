@@ -104,7 +104,7 @@ bool UDPTransport::Send(const PDUBlock<PDU> &pdu_block,
 
   return m_socket.SendTo(m_send_buffer, DATA_OFFSET + size,
                          destination,
-                         m_port);
+                         ACN_PORT);
 }
 
 
