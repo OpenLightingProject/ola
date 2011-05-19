@@ -65,8 +65,10 @@ class VellemanOutputPort: public BasicOutputPort, OlaThread {
     // 25ms seems to be about the shortest we can go
     static const unsigned int URB_TIMEOUT_MS = 25;
     static const int CONFIGURATION = 1;
+    static const int INTERFACE = 0;
 
     bool m_term;
+    bool m_extended_commands;
     libusb_device *m_usb_device;
     libusb_device_handle *m_usb_handle;
     DmxBuffer m_buffer;

@@ -44,6 +44,7 @@ VellemanOutputPort::VellemanOutputPort(VellemanDevice *parent,
                                        libusb_device *usb_device)
     : BasicOutputPort(parent, id),
       m_term(false),
+      m_extended_commands(false),
       m_usb_device(usb_device),
       m_usb_handle(NULL) {
   pthread_mutex_init(&m_data_mutex, NULL);
@@ -70,6 +71,7 @@ VellemanOutputPort::~VellemanOutputPort() {
  */
 bool VellemanOutputPort::Start() {
   libusb_device_handle *usb_handle;
+  libusb_config_descriptor *config;
 
   if (libusb_open(m_usb_device, &usb_handle)) {
     OLA_WARN << "Failed to open Velleman usb device";
@@ -93,7 +95,29 @@ bool VellemanOutputPort::Start() {
     return false;
   }
 
-  if (libusb_claim_interface(usb_handle, 0)) {
+  if (libusb_get_active_config_descriptor(m_usb_device, &config)) {
+    OLA_WARN << "Could not get active config descriptor";
+    libusb_close(usb_handle);
+    return false;
+  }
+
+  // determine the max packet size, see
+  // http://opendmx.net/index.php/Velleman_K8062_Upgrade
+  if (config &&
+      config->interface &&
+      config->interface->altsetting &&
+      config->interface->altsetting->endpoint) {
+    uint16_t max_packet_size =
+      config->interface->altsetting->endpoint->wMaxPacketSize;
+      OLA_DEBUG << "Velleman K8062 max packet size is " << max_packet_size;
+      if (max_packet_size == 64)
+        // this means the upgrade is present
+        m_extended_commands = true;
+  }
+  libusb_free_config_descriptor(config);
+
+
+  if (libusb_claim_interface(usb_handle, INTERFACE)) {
     OLA_WARN << "Failed to claim Velleman usb device";
     libusb_close(usb_handle);
     return false;
@@ -103,7 +127,7 @@ bool VellemanOutputPort::Start() {
   bool ret = OlaThread::Start();
   if (!ret) {
     OLA_WARN << "pthread create failed";
-    libusb_release_interface(m_usb_handle, 0);
+    libusb_release_interface(m_usb_handle, INTERFACE);
     libusb_close(usb_handle);
     return false;
   }
