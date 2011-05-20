@@ -22,8 +22,7 @@
 AC_DEFUN([PROTOBUF_SUPPORT],
 [
 AC_REQUIRE_CPP()
-AC_CHECK_HEADER(google/protobuf/stubs/common.h, ,
-                AC_MSG_ERROR('protobuf library not installed'))
+PKG_CHECK_MODULES(protobuf, [protobuf >= version])
 AC_PATH_PROG([PROTOC],[protoc])
 if test -z "$PROTOC" ; then
   AC_MSG_ERROR([cannot find 'protoc' program]);

@@ -12,7 +12,7 @@ OLASERVER_SOURCES = Client.cpp ClientBroker.cpp Device.cpp DeviceManager.cpp \
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
 libolaserver_la_SOURCES = $(OLASERVER_SOURCES) OlaServer.cpp OlaDaemon.cpp
-libolaserver_la_LDFLAGS = -lprotobuf ${PLUGIN_LIBS} ${MICROHTTPD_LIBS}
+libolaserver_la_LDFLAGS = $(PROTOBUF_LIBS) ${PLUGIN_LIBS} ${MICROHTTPD_LIBS}
 
 if HAVE_LIBMICROHTTPD
 libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \
@@ -42,7 +42,7 @@ bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
 #olad_CXXFLAGS = -Wall -Werror  -Wformat -W
 olad_CXXFLAGS = -Wall -Wformat -W
-olad_LDFLAGS = -rdynamic -ldl -lprotobuf $(UUID_LIBS)
+olad_LDFLAGS = -rdynamic -ldl $(PROTOBUF_LIBS) $(UUID_LIBS)
 olad_LDADD = @LIBS@ libolaserver.la \
              $(top_builddir)/common/libolacommon.la
 

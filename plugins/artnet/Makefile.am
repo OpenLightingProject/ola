@@ -20,7 +20,6 @@ ArtNetTester_SOURCES = ArtNetNodeTest.cpp \
                        MockUdpSocket.cpp
 
 ArtNetTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-ArtNetTester_LDFLAGS = $(CPPUNIT_LIBS)
-ArtNetTester_LDADD = -lprotobuf \
-                     ./libolaartnetnode.la \
+ArtNetTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
+ArtNetTester_LDADD = ./libolaartnetnode.la \
                      ../../common/libolacommon.la

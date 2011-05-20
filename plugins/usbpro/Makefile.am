@@ -33,7 +33,6 @@ UsbProTester_SOURCES = ArduinoWidgetTest.cpp \
                        WidgetDetectorTest.cpp
 
 UsbProTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-UsbProTester_LDFLAGS = $(CPPUNIT_LIBS)
-UsbProTester_LDADD = -lprotobuf \
-                     ./libolausbprowidget.la \
+UsbProTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
+UsbProTester_LDADD = ./libolausbprowidget.la \
                      ../../common/libolacommon.la

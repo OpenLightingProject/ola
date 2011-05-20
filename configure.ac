@@ -57,9 +57,6 @@ AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 # check for hash_map
 AC_CXX_STL_HASH
 
-# check for protobuf support
-PROTOBUF_SUPPORT([2.3.0])
-
 # check for pthread support
 AC_CHECK_HEADER([pthread.h],
                 [],
@@ -142,6 +139,9 @@ PKG_PROG_PKG_CONFIG
 if test -z "$PKG_CONFIG"; then
   AC_MSG_ERROR([Missing pkg-config, please install it])
 fi
+
+# check for protobuf support
+PROTOBUF_SUPPORT([2.3.0])
 
 # check for uuid
 # uuid handling is quite complex as we can use either the OSSP uuid or the one

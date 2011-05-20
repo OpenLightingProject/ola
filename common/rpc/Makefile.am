@@ -21,7 +21,7 @@ RpcTester_SOURCES = RpcTester.cpp RpcControllerTest.cpp\
                     StreamRpcChannelTest.cpp StreamRpcHeaderTest.cpp
 nodist_RpcTester_SOURCES = TestService.pb.cc
 RpcTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-RpcTester_LDFLAGS = $(CPPUNIT_LIBS) -lprotobuf
+RpcTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
 RpcTester_LDADD = ./libstreamrpcchannel.la \
                   ../export_map/libolaexportmap.la \
                   ../logging/liblogging.la \

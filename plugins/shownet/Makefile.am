@@ -16,5 +16,5 @@ check_PROGRAMS = $(TESTS)
 ShowNetTester_SOURCES = ShowNetTester.cpp \
                         ShowNetNode.cpp ShowNetNodeTest.cpp
 ShowNetTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-ShowNetTester_LDFLAGS = $(CPPUNIT_LIBS)
-ShowNetTester_LDADD = @LIBS@ -lprotobuf ../../common/libolacommon.la
+ShowNetTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
+ShowNetTester_LDADD = @LIBS@ ../../common/libolacommon.la

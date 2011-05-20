@@ -30,11 +30,12 @@ libolae131tester_la_CPPFLAGS = $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) \
 # test program
 noinst_PROGRAMS = e131_transmit_test
 e131_transmit_test_SOURCES = e131_transmit_test.cpp
-e131_transmit_test_CPPFLAGS = $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) $(AM_CPPFLAGS)
-e131_transmit_test_LDADD = @LIBS@ -lprotobuf \
-                  ./libolae131core.la \
-                  ./libolae131tester.la \
-                  ../../../common/libolacommon.la
+e131_transmit_test_CPPFLAGS = $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) \
+                              $(PROTOBUF_LIBS) $(AM_CPPFLAGS)
+e131_transmit_test_LDADD = @LIBS@ \
+                           ./libolae131core.la \
+                           ./libolae131tester.la \
+                           ../../../common/libolacommon.la
 e131_transmit_test_LDFLAGS = $(UUID_LIBS) $(OSSP_UUID_LIBS)
 
 # Test programs
@@ -60,7 +61,8 @@ E131Tester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) \
                       $(AM_CPPFLAGS)
 # For some completely messed up reason on mac CPPUNIT_LIBS has to come after
 # UUID_LIBS. CPPUNIT_LIBS contains -ldl which causes the unittests to fail
-E131Tester_LDFLAGS = $(UUID_LIBS) $(OSSP_UUID_LIBS) $(CPPUNIT_LIBS)
-E131Tester_LDADD = @LIBS@ -lprotobuf \
+E131Tester_LDFLAGS = $(UUID_LIBS) $(OSSP_UUID_LIBS) $(PROTOBUF_LIBS) \
+                     $(CPPUNIT_LIBS)
+E131Tester_LDADD = @LIBS@ \
                    ./libolae131core.la \
                    ../../../common/libolacommon.la

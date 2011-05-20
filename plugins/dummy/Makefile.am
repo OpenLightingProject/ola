@@ -11,7 +11,7 @@ TESTS = DummyPluginTester
 check_PROGRAMS = $(TESTS)
 DummyPluginTester_SOURCES = DummyPluginTester.cpp DummyPortTest.cpp
 DummyPluginTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-DummyPluginTester_LDFLAGS = $(CPPUNIT_LIBS) -ldl -lprotobuf
+DummyPluginTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
 DummyPluginTester_LDADD = @LIBS@ \
                           ./liboladummy.la \
                           $(top_builddir)/common/libolacommon.la \

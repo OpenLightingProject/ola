@@ -15,5 +15,5 @@ check_PROGRAMS = $(TESTS)
 EspNetTester_SOURCES = EspNetTester.cpp RunLengthDecoderTest.cpp \
                        RunLengthDecoder.cpp
 EspNetTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-EspNetTester_LDFLAGS = $(CPPUNIT_LIBS)
-EspNetTester_LDADD = @LIBS@ -lprotobuf ../../common/libolacommon.la
+EspNetTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
+EspNetTester_LDADD = @LIBS@ ../../common/libolacommon.la
