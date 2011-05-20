@@ -31,12 +31,12 @@ libolae131tester_la_CPPFLAGS = $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) \
 noinst_PROGRAMS = e131_transmit_test
 e131_transmit_test_SOURCES = e131_transmit_test.cpp
 e131_transmit_test_CPPFLAGS = $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) \
-                              $(PROTOBUF_LIBS) $(AM_CPPFLAGS)
+                              $(AM_CPPFLAGS)
 e131_transmit_test_LDADD = @LIBS@ \
                            ./libolae131core.la \
                            ./libolae131tester.la \
                            ../../../common/libolacommon.la
-e131_transmit_test_LDFLAGS = $(UUID_LIBS) $(OSSP_UUID_LIBS)
+e131_transmit_test_LDFLAGS = $(UUID_LIBS) $(OSSP_UUID_LIBS) $(PROTOBUF_LIBS)
 
 # Test programs
 TESTS = E131Tester

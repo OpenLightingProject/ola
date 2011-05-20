@@ -3,6 +3,7 @@ include $(top_srcdir)/common.mk
 noinst_LTLIBRARIES = libstreamrpcchannel.la
 libstreamrpcchannel_la_SOURCES = StreamRpcChannel.cpp SimpleRpcController.cpp
 nodist_libstreamrpcchannel_la_SOURCES = Rpc.pb.cc
+libstreamrpcchannel_la_LDFLAGS = $(PROTOBUF_LIBS)
 
 EXTRA_DIST = Rpc.proto TestService.proto SimpleRpcController.h \
              StreamRpcChannel.h
