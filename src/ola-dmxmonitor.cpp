@@ -92,14 +92,14 @@ static int palette[MAXCOLOR];
  */
 class DmxMonitor {
   public:
-    explicit DmxMonitor(unsigned int universe):
-        m_universe(universe),
-        m_counter(0),
-        m_palette_number(0),
-        m_stdin_socket(STDIN_FILENO),
-        m_window(NULL),
-        m_data_loss_window(NULL),
-        m_channels_offset(false) {
+    explicit DmxMonitor(unsigned int universe)
+        : m_universe(universe),
+          m_counter(0),
+          m_palette_number(0),
+          m_stdin_socket(STDIN_FILENO),
+          m_window(NULL),
+          m_data_loss_window(NULL),
+          m_channels_offset(true) {
     };
 
     ~DmxMonitor() {
@@ -117,6 +117,7 @@ class DmxMonitor {
     void RegisterComplete(const string &error);
     void StdinReady();
     bool CheckDataLoss();
+    void DrawDataLossWindow();
     void TerminalResized();
 
   private:
@@ -129,9 +130,11 @@ class DmxMonitor {
     WINDOW *m_data_loss_window;
     bool m_channels_offset;  // start from channel 1 rather than 0;
     OlaCallbackClientWrapper m_client;
+    DmxBuffer m_buffer;
 
+    void DrawScreen(bool include_values = true);
     void Mask();
-    void Values(const DmxBuffer &buffer);
+    void Values();
     void ChangePalette(int p);
     void CalcScreenGeometry();
 };
@@ -175,11 +178,9 @@ bool DmxMonitor::Init() {
   CalcScreenGeometry();
   ChangePalette(m_palette_number);
 
-  DmxBuffer empty_buffer;
-  empty_buffer.Blackout();
-  NewDmx(m_universe, empty_buffer, "");
-
+  m_buffer.Blackout();
   timerclear(&m_last_data);
+  DrawScreen();
   return true;
 }
 
@@ -188,8 +189,11 @@ bool DmxMonitor::Init() {
  * Called when there is new DMX data
  */
 void DmxMonitor::NewDmx(unsigned int universe,
-                      const DmxBuffer &buffer,
-                      const string &error) {
+                        const DmxBuffer &buffer,
+                        const string &error) {
+
+  m_buffer.Set(buffer);
+
   if (m_data_loss_window) {
     // delete the window
     wborder(m_data_loss_window, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
@@ -215,7 +219,7 @@ void DmxMonitor::NewDmx(unsigned int universe,
   }
   m_counter++;
   gettimeofday(&m_last_data, NULL);
-  Values(buffer);
+  Values();
   refresh();
 }
 
@@ -223,7 +227,7 @@ void DmxMonitor::NewDmx(unsigned int universe,
 void DmxMonitor::RegisterComplete(const string &error) {
   if (!error.empty()) {
     std::cerr << "Register command failed with " << errno <<
-      std::endl; 
+      std::endl;
     m_client.GetSelectServer()->Terminate();
   }
 }
@@ -238,19 +242,21 @@ void DmxMonitor::StdinReady() {
     case KEY_HOME:
       current_channel = 0;
       first_channel = 0;
-      Mask();
+      DrawScreen();
       break;
 
+    case 'l':
     case KEY_RIGHT:
-      if (current_channel < DMX_UNIVERSE_SIZE-1) {
+      if (current_channel < DMX_UNIVERSE_SIZE - 1) {
         current_channel++;
         if (current_channel >= first_channel + channels_per_screen) {
-            first_channel += channels_per_line;
-            Mask();
+          first_channel += channels_per_line;
         }
+        DrawScreen();
       }
       break;
 
+    case 'h':
     case KEY_LEFT:
       if (current_channel > 0) {
         current_channel--;
@@ -258,21 +264,23 @@ void DmxMonitor::StdinReady() {
           first_channel -= channels_per_line;
           if (first_channel < 0)
             first_channel = 0;
-          Mask();
         }
+        DrawScreen();
       }
       break;
 
+    case 'j':
     case KEY_DOWN:
       current_channel += channels_per_line;
       if (current_channel >= DMX_UNIVERSE_SIZE)
         current_channel = DMX_UNIVERSE_SIZE - 1;
       if (current_channel >= first_channel+channels_per_screen) {
         first_channel += channels_per_line;
-        Mask();
       }
+      DrawScreen();
       break;
 
+    case 'k':
     case KEY_UP:
       current_channel -= channels_per_line;
       if (current_channel < 0)
@@ -281,26 +289,27 @@ void DmxMonitor::StdinReady() {
         first_channel -= channels_per_line;
         if (first_channel < 0)
           first_channel = 0;
-        Mask();
       }
+      DrawScreen();
       break;
 
     case 'M':
     case 'm':
       if (++display_mode >= DISP_MODE_MAX)
         display_mode = 0;
-      Mask();
+      DrawScreen();
       break;
 
     case 'N':
     case 'n':
       m_channels_offset = !m_channels_offset;
-      Mask();
+      DrawScreen(false);
       break;
 
     case 'P':
     case 'p':
       ChangePalette(++m_palette_number);
+      DrawScreen();
       break;
 
     case 'Q':
@@ -323,16 +332,22 @@ bool DmxMonitor::CheckDataLoss() {
   if (timerisset(&m_last_data)) {
     gettimeofday(&now, NULL);
     timersub(&now, &m_last_data, &diff);
-    if (!m_data_loss_window &&
-        (diff.tv_sec > 2 || (diff.tv_sec == 2 && diff.tv_usec > 500000))) {
+    if (diff.tv_sec > 2 || (diff.tv_sec == 2 && diff.tv_usec > 500000)) {
       // loss of data
-      m_data_loss_window = newwin(3, 14, (LINES - 14) / 2, (COLS - 3) / 2);
-      mvwprintw(m_data_loss_window, 1, 2, "Data Loss!");
-      wborder(m_data_loss_window, '|', '|', '-', '-', '+', '+', '+', '+');
-      wrefresh(m_data_loss_window);
+      DrawDataLossWindow();
     }
   }
   return true;
+}
+
+
+void DmxMonitor::DrawDataLossWindow() {
+  if (!m_data_loss_window) {
+    m_data_loss_window = newwin(3, 14, (LINES - 3) / 2, (COLS - 14) / 2);
+  }
+  mvwprintw(m_data_loss_window, 1, 2, "Data Loss!");
+  wborder(m_data_loss_window, '|', '|', '-', '-', '+', '+', '+', '+');
+  wrefresh(m_data_loss_window);
 }
 
 
@@ -346,7 +361,21 @@ void DmxMonitor::TerminalResized() {
 
   resizeterm(size.ws_row, size.ws_col);
   CalcScreenGeometry();
+  DrawScreen();
+}
+
+
+void DmxMonitor::DrawScreen(bool include_values) {
+  if (include_values)
+    erase();
   Mask();
+
+  if (include_values)
+    Values();
+  refresh();
+
+  if (m_data_loss_window)
+    DrawDataLossWindow();
 }
 
 
@@ -355,13 +384,16 @@ void DmxMonitor::Mask() {
   int i = 0, x, y;
   int channel = first_channel;
 
-  erase();
-
   /* clear headline */
   attrset(palette[HEADLINE]);
   move(0, 0);
   for (x = 0; x < COLS; x++)
     addch(' ');
+
+  if (COLS > 15) {
+    mvprintw(0 , 0, "Universe: ");
+    printw("%i", m_universe);
+  }
 
   /* write channel numbers */
   attrset(palette[CHANNEL]);
@@ -388,25 +420,8 @@ void DmxMonitor::Mask() {
 /*
  * Update the screen with new values
  */
-void DmxMonitor::Values(const DmxBuffer &buffer) {
+void DmxMonitor::Values() {
   int i = 0, x, y, z = first_channel;
-
-  /* headline */
-  if (COLS>24) {
-      time_t t = time(NULL);
-      struct tm *tt = localtime(&t);
-      char *s = asctime(tt);
-      s[strlen(s) - 1] = 0; /* strip newline at end of string */
-
-      attrset(palette[HEADLINE]);
-      mvprintw(0, 1, "%s", s);
-    }
-  if (COLS > 31) {
-      attrset(palette[HEADLINE]);
-      printw(" Universe:");
-      attrset(palette[HEADEMPH]);
-      printw("%02i", m_universe);
-    }
 
   /* values */
   for (y = 2; y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
@@ -414,7 +429,7 @@ void DmxMonitor::Values(const DmxBuffer &buffer) {
     move(y, 0);
     for (x = 0; x < channels_per_line && z < DMX_UNIVERSE_SIZE &&
         i < channels_per_screen; x++, z++, i++) {
-      const int d = buffer.Get(z);
+      const int d = m_buffer.Get(z);
       switch (d) {
         case 0: attrset(palette[ZERO]); break;
         case 255: attrset(palette[FULL]); break;
@@ -517,8 +532,6 @@ void DmxMonitor::ChangePalette(int p) {
       palette[HEADERROR]=A_BOLD;
       break;
     }
-
-  Mask();
 }
 
 
@@ -553,17 +566,19 @@ void cleanup() {
 int main(int argc, char *argv[]) {
   int optc;
   int universe = 0;
+
+  signal(SIGWINCH, terminalresize);
   atexit(cleanup);
 
   // parse options
   while ((optc = getopt(argc, argv, "u:")) != EOF) {
-      switch (optc) {
-          case 'u':
-          universe = atoi(optarg);
-          break;
-      default:
-          break;
-      }
+    switch (optc) {
+      case 'u':
+      universe = atoi(optarg);
+      break;
+    default:
+      break;
+    }
   }
 
   dmx_monitor = new DmxMonitor(universe);
