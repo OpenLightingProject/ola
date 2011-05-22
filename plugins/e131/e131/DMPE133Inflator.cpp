@@ -117,11 +117,11 @@ bool DMPE133Inflator::HandlePDUData(uint32_t vector,
                      rdm_message_length);
 
   if (e133_header.IsManagement()) {
-    m_management_handler->Run(headers.GetTransportHeader().SourceIP(),
+    m_management_handler->Run(headers.GetTransportHeader(),
                               e133_header,
                               rdm_message);
   } else {
-    universe_iter->second->Run(headers.GetTransportHeader().SourceIP(),
+    universe_iter->second->Run(headers.GetTransportHeader(),
                                e133_header,
                                rdm_message);
   }

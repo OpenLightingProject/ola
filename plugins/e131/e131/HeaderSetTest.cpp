@@ -69,16 +69,20 @@ CPPUNIT_TEST_SUITE_REGISTRATION(HeaderSetTest);
  */
 void HeaderSetTest::testTransportHeader() {
   IPV4Address address;
+  uint16_t port = 42;
   CPPUNIT_ASSERT(IPV4Address::FromString("192.168.1.1", &address));
-  TransportHeader header(address);
+  TransportHeader header(address, port);
   CPPUNIT_ASSERT(address == header.SourceIP());
+  CPPUNIT_ASSERT_EQUAL(port, header.SourcePort());
 
   // test copy and assign
   TransportHeader header2 = header;
   CPPUNIT_ASSERT(address == header2.SourceIP());
+  CPPUNIT_ASSERT_EQUAL(port, header2.SourcePort());
   CPPUNIT_ASSERT(header2 == header);
   TransportHeader header3(header);
   CPPUNIT_ASSERT(address == header3.SourceIP());
+  CPPUNIT_ASSERT_EQUAL(port, header3.SourcePort());
   CPPUNIT_ASSERT(header3 == header);
 }
 

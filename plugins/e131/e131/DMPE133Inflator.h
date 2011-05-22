@@ -26,6 +26,7 @@
 #include <string>
 #include "ola/Callback.h"
 #include "plugins/e131/e131/DMPInflator.h"
+#include "plugins/e131/e131/TransportHeader.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "ola/network/IPV4Address.h"
 
@@ -41,7 +42,7 @@ class DMPE133Inflator: public DMPInflator {
     ~DMPE133Inflator();
 
     typedef ola::Callback3<void,
-                           const ola::network::IPV4Address&,  // src ip
+                           const TransportHeader&,  // src ip & port
                            const E133Header&,  // the E1.33 header
                            const std::string&  // rdm data
                           > RDMMessageHandler;

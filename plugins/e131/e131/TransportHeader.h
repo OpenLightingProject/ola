@@ -37,17 +37,22 @@ class TransportHeader {
   public:
     TransportHeader() {}
 
-    explicit TransportHeader(const ola::network::IPV4Address &src_ip)
-        : m_src_ip(src_ip) {}
+    explicit TransportHeader(const ola::network::IPV4Address &src_ip,
+                             uint16_t source_port)
+        : m_src_ip(src_ip),
+          m_src_port(source_port) {}
 
     ~TransportHeader() {}
     const ola::network::IPV4Address& SourceIP() const { return m_src_ip; }
+    uint16_t SourcePort() const { return m_src_port; }
 
     bool operator==(const TransportHeader &other) const {
-      return m_src_ip == other.m_src_ip;
+      return (m_src_ip == other.m_src_ip &&
+              m_src_port == other.m_src_port);
     }
   private:
     ola::network::IPV4Address m_src_ip;
+    uint16_t m_src_port;
 };
 }  // e131
 }  // plugin
