@@ -22,7 +22,7 @@
 AC_DEFUN([PROTOBUF_SUPPORT],
 [
 AC_REQUIRE_CPP()
-PKG_CHECK_MODULES(PROTOBUF, [protobuf >= version])
+PKG_CHECK_MODULES(PROTOBUF, [protobuf >= $1])
 AC_PATH_PROG([PROTOC],[protoc])
 if test -z "$PROTOC" ; then
   AC_MSG_ERROR([cannot find 'protoc' program]);
