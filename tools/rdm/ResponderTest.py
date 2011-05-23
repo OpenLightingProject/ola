@@ -58,7 +58,10 @@ class TestFixture(object):
     self._uid = uid
     self._pid_store = pid_store
     self._state = TestState.NOT_RUN
-    self.pid = self.LookupPid(self.PID)
+    try:
+      self.pid = self.LookupPid(self.PID)
+    except AttributeError:
+      self.pid = None
     self._warnings = []
     self._advisories = []
 
@@ -189,6 +192,9 @@ class TestFixture(object):
   def SetFailed(self, message):
     logging.debug(' Failed: %s' % message)
     self._state = TestState.FAILED
+
+  def SetPassed(self):
+    self._state = TestState.PASSED
 
 
 class ResponderTestFixture(TestFixture):

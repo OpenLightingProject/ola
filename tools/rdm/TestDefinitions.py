@@ -24,7 +24,7 @@ import datetime
 import operator
 import struct
 from ExpectedResults import *
-from ResponderTest import ResponderTestFixture, ResponderTestFixture
+from ResponderTest import ResponderTestFixture
 from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
@@ -1502,6 +1502,31 @@ class SetDefaultSlotInfo(TestMixins.UnsupportedSetMixin,
   PID = 'DEFAULT_SLOT_VALUE'
 
 
+# Sensor Consistency Checks
+#------------------------------------------------------------------------------
+class CheckSensorConsistency(ResponderTestFixture):
+  """Check that sensor support is consistent."""
+  CATEGORY = TestCategory.SENSORS
+  REQUIRES = ['sensor_count', 'supported_parameters']
+
+  def IsSupported(self, pid):
+    return pid.value in self.Property('supported_parameters')
+
+  def CheckConsistency(self, pid_name):
+    pid = self.LookupPid(pid_name)
+    if (not self.IsSupported(pid)) and self.Property('sensor_count') > 0:
+      self.AddAdvisory('%s not supported but sensor count was  > 0' % pid)
+    if self.IsSupported(pid) and self.Property('sensor_count') == 0:
+      self.AddAdvisory('%s supported but sensor count was 0' % pid)
+
+  def Test(self):
+    self.CheckConsistency('SENSOR_DEFINITION')
+    self.CheckConsistency('SENSOR_VALUE')
+    self.CheckConsistency('RECORD_SENSORS')
+    self.SetPassed()
+    self.Stop()
+
+
 # Sensor Definition
 #------------------------------------------------------------------------------
 class GetSensorDefinition(OptionalParameterTestFixture):
@@ -1522,6 +1547,7 @@ class GetSensorDefinition(OptionalParameterTestFixture):
     self._sensors = {}  # stores the discovered sensors
     self._current_index = -1  # the current sensor we're trying to query
     self._sensor_holes = []  # indices of sensors that are missing
+
     self._CheckForSensor()
 
   def _MissingSensorWarning(self):
