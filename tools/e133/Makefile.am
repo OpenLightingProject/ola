@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = E133Node.h E133UniverseController.h
+EXTRA_DIST = E133Component.h E133Node.h E133UniverseController.h
 
 bin_PROGRAMS =  e133_controller #e133_node
 

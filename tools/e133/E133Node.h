@@ -46,8 +46,8 @@ class E133Node {
     void Run() { m_ss.Run(); }
     void Stop() { m_ss.Terminate(); }
 
-    bool RegisterController(class E133UniverseController *controller);
-    void DeRegisterController(class E133UniverseController *controller);
+    bool RegisterComponent(class E133Component *component);
+    void UnRegisterComponent(class E133Component *component);
     // bool RegisterReciever(E133UniverseReceiver *receiver);
 
     bool CheckForStaleRequests();
@@ -56,12 +56,12 @@ class E133Node {
   private:
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<
       unsigned int,
-      class E133UniverseController*> controller_map;
+      class E133Component*> component_map;
 
     const string m_preferred_ip;
     ola::network::SelectServer m_ss;
     ola::network::Event *m_timeout_event;
-    controller_map m_controller_map;
+    component_map m_component_map;
 
     ola::plugin::e131::CID m_cid;
     ola::plugin::e131::UDPTransport m_transport;

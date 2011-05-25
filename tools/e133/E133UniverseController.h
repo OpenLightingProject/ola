@@ -32,6 +32,8 @@
 #include "plugins/e131/e131/E133Layer.h"
 #include "plugins/e131/e131/TransportHeader.h"
 
+#include "E133Component.h"
+
 #ifndef TOOLS_E133_E133UNIVERSECONTROLLER_H_
 #define TOOLS_E133_E133UNIVERSECONTROLLER_H_
 
@@ -44,7 +46,8 @@ using ola::plugin::e131::E133Layer;
 /**
  * A RDM Controller for a single E1.33 universe
  */
-class E133UniverseController: public ola::rdm::RDMControllerInterface {
+class E133UniverseController: public ola::rdm::RDMControllerInterface,
+                              public E133Component {
   public:
     explicit E133UniverseController(unsigned int universe);
 

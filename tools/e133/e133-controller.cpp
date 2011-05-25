@@ -17,21 +17,14 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include <errno.h>
 #include <getopt.h>
-#include <string.h>
 #include <sysexits.h>
-#include HASH_MAP_H
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
-#include <ola/network/NetworkUtils.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
@@ -202,7 +195,7 @@ int main(int argc, char *argv[]) {
 
   E133UniverseController universe_controller(opts.universe);
   universe_controller.AddUID(*opts.uid, target_ip);
-  node.RegisterController(&universe_controller);
+  node.RegisterComponent(&universe_controller);
 
   ola::rdm::RDMGetRequest *command = new ola::rdm::RDMGetRequest(
       src_uid,
@@ -220,5 +213,5 @@ int main(int argc, char *argv[]) {
   universe_controller.SendRDMRequest(command, callback);
 
   node.Run();
-  node.DeRegisterController(&universe_controller);
+  node.UnRegisterComponent(&universe_controller);
 }
