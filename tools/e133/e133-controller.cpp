@@ -34,6 +34,7 @@
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
 
 #include <iostream>
@@ -157,7 +158,8 @@ void RequestCallback(E133Node *node,
                      ola::rdm::rdm_response_code rdm_code,
                      const ola::rdm::RDMResponse *response,
                      const std::vector<std::string> &packets) {
-  OLA_INFO << "callback was run with code " << rdm_code;
+  OLA_INFO << "Callback executed with code: " <<
+    ola::rdm::ResponseCodeToString(rdm_code);
   (void) response;
   (void) packets;
 
@@ -218,4 +220,5 @@ int main(int argc, char *argv[]) {
   universe_controller.SendRDMRequest(command, callback);
 
   node.Run();
+  node.DeRegisterController(&universe_controller);
 }

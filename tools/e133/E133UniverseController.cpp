@@ -24,6 +24,7 @@
 #include <ola/rdm/UID.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -41,12 +42,21 @@ using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 
 
+const char E133UniverseController::UNIVERSE_SQUAWK_IP_ADDRESS[] =
+    "239.255.250.0";
+
 E133UniverseController::E133UniverseController(unsigned int universe)
     : m_e133_layer(NULL),
       m_universe(universe) {
   if (!universe)
     OLA_FATAL <<
       "E133UniverseController created with universe 0, this isn't valid";
+
+  if (!IPV4Address::FromString(UNIVERSE_SQUAWK_IP_ADDRESS,
+                               &m_squawk_state.ip_address))
+    OLA_FATAL << "Unable to convert E1.33 universe squawk address: " <<
+      UNIVERSE_SQUAWK_IP_ADDRESS;
+  m_squawk_state.sequence_number = 0;
 }
 
 
@@ -151,6 +161,19 @@ void E133UniverseController::SendRDMRequest(const RDMRequest *request,
 
 
 /**
+ * Handle a RDM response addressed to this universe
+ */
+void E133UniverseController::HandleResponse(
+    const ola::plugin::e131::TransportHeader &transport_header,
+    const ola::plugin::e131::E133Header &e133_header,
+    const std::string &raw_response) {
+  OLA_INFO << "Got data from " << transport_header.SourceIP();
+  (void) e133_header;
+  (void) raw_response;
+}
+
+
+/**
  * Pack a RDM Request into a memory buffer including the start code.
  * @param request the RDMRequest
  * @param rdm_data pointer to a pointer of the new memory location
@@ -210,7 +233,7 @@ void E133UniverseController::SendBroadcastRequest(
   }
 
   // ownership is transferred to the squawker
-  QueueRequestForSquawking(request);
+  SquawkRequest(request);
 
   on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, raw_packets);
   delete[] rdm_data;
@@ -260,9 +283,19 @@ bool E133UniverseController::SendDataToUid(uid_state &uid_info,
  * Start the squawk process for this request
  * @param request the RDMRequest, ownership is transferred.
  */
-void E133UniverseController::QueueRequestForSquawking(
-    const ola::rdm::RDMRequest *request) {
-  // TODO(simonn): finish me!
+void E133UniverseController::SquawkRequest(
+    const ola::rdm::RDMRequest *rdm_request) {
+  std::auto_ptr<const ola::rdm::RDMRequest> request(rdm_request);
+
   // only squawk if this is a set request
-  delete request;
+  if (request->CommandClass() != ola::rdm::RDMRequest::SET_COMMAND)
+    return;
+
+  uint8_t *rdm_data;
+  unsigned int rdm_data_size;
+  if (!PackRDMRequest(request.get(), &rdm_data, &rdm_data_size)) {
+    OLA_WARN << "Unable to pack RDM request for squawking";
+    return;
+  }
+  SendDataToUid(m_squawk_state, rdm_data, rdm_data_size);
 }

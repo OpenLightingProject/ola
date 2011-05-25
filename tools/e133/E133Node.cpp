@@ -92,6 +92,9 @@ bool E133Node::RegisterController(E133UniverseController *controller) {
   if (iter == m_controller_map.end()) {
     m_controller_map[controller->Universe()] = controller;
     controller->SetE133Layer(&m_e133_layer);
+    m_dmp_inflator.SetRDMHandler(
+        controller->Universe(),
+        ola::NewCallback(controller, &E133UniverseController::HandleResponse));
     return true;
   }
   return false;
@@ -105,8 +108,12 @@ bool E133Node::RegisterController(E133UniverseController *controller) {
 void E133Node::DeRegisterController(E133UniverseController *controller) {
   controller_map::iterator iter = m_controller_map.find(
       controller->Universe());
-  if (iter != m_controller_map.end())
+  if (iter != m_controller_map.end()) {
+    controller->SetE133Layer(NULL);
+    m_dmp_inflator.RemoveRDMHandler(controller->Universe());
+    // TODO(simon): timeout all existing requests at this point
     m_controller_map.erase(iter);
+  }
 }
 
 
@@ -114,7 +121,7 @@ bool E133Node::CheckForStaleRequests() {
   const ola::TimeStamp *now = m_ss.WakeUpTime();
   controller_map::iterator iter = m_controller_map.begin();
   for (; iter != m_controller_map.end(); ++iter) {
-    OLA_INFO  << "checking " << iter->first;
+    OLA_INFO << "Checking";
     iter->second->CheckForStaleRequests(now);
   }
   return true;

@@ -28,7 +28,9 @@
 #include <string>
 #include <vector>
 
+#include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133Layer.h"
+#include "plugins/e131/e131/TransportHeader.h"
 
 #ifndef TOOLS_E133_E133UNIVERSECONTROLLER_H_
 #define TOOLS_E133_E133UNIVERSECONTROLLER_H_
@@ -60,8 +62,10 @@ class E133UniverseController: public ola::rdm::RDMControllerInterface {
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
-    void HandleResponse(const IPV4Address &src_address,
-                        const std::string &raw_response);
+    void HandleResponse(
+        const ola::plugin::e131::TransportHeader &transport_header,
+        const ola::plugin::e131::E133Header &e133_header,
+        const std::string &raw_response);
 
   private:
     typedef struct {
@@ -91,6 +95,7 @@ class E133UniverseController: public ola::rdm::RDMControllerInterface {
     E133Layer *m_e133_layer;
     unsigned int m_universe;
     request_queue m_request_queue;
+    uid_state m_squawk_state;
 
     bool PackRDMRequest(const ola::rdm::RDMRequest *request,
                         uint8_t **rdm_data,
@@ -100,6 +105,8 @@ class E133UniverseController: public ola::rdm::RDMControllerInterface {
     bool SendDataToUid(uid_state &uid_info,
                        const uint8_t *data,
                        unsigned int data_size);
-    void QueueRequestForSquawking(const ola::rdm::RDMRequest *request);
+    void SquawkRequest(const ola::rdm::RDMRequest *request);
+
+    static const char UNIVERSE_SQUAWK_IP_ADDRESS[];
 };
 #endif  // TOOLS_E133_E133UNIVERSECONTROLLER_H_
