@@ -163,7 +163,7 @@ void E133UniverseController::SendRDMRequest(const RDMRequest *request,
 /**
  * Handle a RDM response addressed to this universe
  */
-void E133UniverseController::HandleResponse(
+void E133UniverseController::HandlePacket(
     const ola::plugin::e131::TransportHeader &transport_header,
     const ola::plugin::e131::E133Header &e133_header,
     const std::string &raw_response) {

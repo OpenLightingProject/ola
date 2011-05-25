@@ -65,7 +65,7 @@ class E133UniverseController: public ola::rdm::RDMControllerInterface,
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
-    void HandleResponse(
+    void HandlePacket(
         const ola::plugin::e131::TransportHeader &transport_header,
         const ola::plugin::e131::E133Header &e133_header,
         const std::string &raw_response);

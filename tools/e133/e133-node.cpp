@@ -20,6 +20,8 @@
 #include <errno.h>
 #include <getopt.h>
 #include <string.h>
+#include <sysexits.h>
+
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
@@ -32,18 +34,23 @@
 #include <string>
 
 #include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/DMPE133Inflator.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133Layer.h"
 #include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/TransportHeader.h"
 #include "plugins/e131/e131/UDPTransport.h"
-#include "plugins/e131/e131/DMPE133Inflator.h"
 
+
+#include "E133Node.h"
+#include "E133Receiver.h"
 
 using std::string;
 using ola::network::IPV4Address;
 using ola::network::SelectServer;
 using ola::rdm::RDMRequest;
 using ola::plugin::e131::E133Header;
+using ola::plugin::e131::TransportHeader;
 
 typedef struct {
   bool help;
@@ -51,103 +58,6 @@ typedef struct {
   unsigned int universe;
   string ip_address;
 } options;
-
-
-class E133Node {
-  public:
-    E133Node(const string &preferred_ip, unsigned int universe);
-
-    bool Init();
-    void Run() { m_ss.Run(); }
-
-    void HandleManagementPacket(
-        const IPV4Address &src_addr,
-        const E133Header &e133_header,
-        const string &request);
-    void HandleRDMRequest(
-        const IPV4Address &src_addr,
-        const E133Header &e133_header,
-        const string &request);
-
-  private:
-    const string m_preferred_ip;
-    const unsigned int m_universe;
-    ola::network::SelectServer m_ss;
-
-    ola::plugin::e131::CID m_cid;
-    ola::plugin::e131::UDPTransport m_transport;
-    ola::plugin::e131::RootLayer m_root_layer;
-    ola::plugin::e131::E133Layer m_e133_layer;
-    ola::plugin::e131::DMPE133Inflator m_dmp_inflator;
-};
-
-
-E133Node::E133Node(const string &preferred_ip, unsigned int universe)
-    : m_preferred_ip(preferred_ip),
-      m_universe(universe),
-      m_cid(ola::plugin::e131::CID::Generate()),
-      m_transport(ola::plugin::e131::UDPTransport::ACN_PORT),
-      m_root_layer(&m_transport, m_cid),
-      m_e133_layer(&m_root_layer),
-      m_dmp_inflator(&m_e133_layer) {
-}
-
-
-bool E133Node::Init() {
-  ola::network::Interface interface;
-  const ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
-  if (!picker->ChooseInterface(&interface, m_preferred_ip)) {
-    OLA_INFO << "Failed to find an interface";
-    delete picker;
-    return false;
-  }
-  delete picker;
-  OLA_INFO << "Using " << interface.ip_address;
-
-  if (!m_transport.Init(interface)) {
-    return false;
-  }
-
-  ola::network::UdpSocket *socket = m_transport.GetSocket();
-  m_ss.AddSocket(socket);
-
-  m_e133_layer.SetInflator(&m_dmp_inflator);
-
-  // setup the callback to catch RDM packets
-  m_dmp_inflator.SetRDMManagementhandler(
-    ola::NewCallback(this, &E133Node::HandleManagementPacket));
-  m_dmp_inflator.SetRDMHandler(
-    m_universe,
-    ola::NewCallback(this, &E133Node::HandleRDMRequest));
-
-  return true;
-}
-
-
-/**
- * Called when we receive a management packet
- */
-void E133Node::HandleManagementPacket(const IPV4Address &src_addr,
-                                      const E133Header &e133_header,
-                                      const string &request) {
-  OLA_INFO << "got management packet from " << src_addr;
-  (void) e133_header;
-  (void) request;
-}
-
-
-/**
- * Called when we receive a rdm packet
- */
-void E133Node::HandleRDMRequest(const IPV4Address &src_addr,
-                                const E133Header &e133_header,
-                                const string &request) {
-  OLA_INFO << "Got RDM request on universe " << m_universe << ", from " <<
-    src_addr;
-  (void) e133_header;
-  (void) request;
-}
 
 
 /*
@@ -246,7 +156,13 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(argv);
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
-  E133Node node(opts.ip_address, opts.universe);
-  if (node.Init())
-    node.Run();
+
+  E133Node node(opts.ip_address, ola::plugin::e131::UDPTransport::ACN_PORT);
+  if (!node.Init()) {
+    exit(EX_UNAVAILABLE);
+  }
+
+  E133Receiver receiver(opts.universe);
+  node.RegisterComponent(&receiver);
+  node.Run();
 }

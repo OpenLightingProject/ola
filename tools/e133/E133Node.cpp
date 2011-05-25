@@ -93,7 +93,7 @@ bool E133Node::RegisterComponent(E133Component *component) {
     component->SetE133Layer(&m_e133_layer);
     m_dmp_inflator.SetRDMHandler(
         component->Universe(),
-        ola::NewCallback(component, &E133Component::HandleResponse));
+        ola::NewCallback(component, &E133Component::HandlePacket));
     return true;
   }
   return false;

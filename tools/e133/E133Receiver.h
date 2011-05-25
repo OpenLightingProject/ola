@@ -13,37 +13,47 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * E133Component.h
+ * E133Receiver.h
  * Copyright (C) 2011 Simon Newton
  */
 
 #include <ola/Clock.h>
+#include <ola/rdm/RDMCommand.h>
+
 #include <string>
 
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133Layer.h"
 #include "plugins/e131/e131/TransportHeader.h"
 
-#ifndef TOOLS_E133_E133COMPONENT_H_
-#define TOOLS_E133_E133COMPONENT_H_
+#include "E133Component.h"
+
+#ifndef TOOLS_E133_E133RECEIVER_H_
+#define TOOLS_E133_E133RECEIVER_H_
 
 
 /**
- * An E1.33 Component which can be registered with the E133Node.
+ * A RDM Receiver for a single E1.33 universe
  */
-class E133Component {
+class E133Receiver: public E133Component {
   public:
-    E133Component() {}
-    virtual ~E133Component() {}
+    explicit E133Receiver(unsigned int universe);
 
-    virtual unsigned int Universe() const = 0;
-    virtual void SetE133Layer(ola::plugin::e131::E133Layer *e133_layer) = 0;
+    unsigned int Universe() const { return m_universe; }
+    void SetE133Layer(ola::plugin::e131::E133Layer *e133_layer) {
+      m_e133_layer = e133_layer;
+    }
 
-    virtual void HandlePacket(
+    // Check for requests that need to be timed out
+    void CheckForStaleRequests(const ola::TimeStamp *now);
+
+    void HandlePacket(
         const ola::plugin::e131::TransportHeader &transport_header,
         const ola::plugin::e131::E133Header &e133_header,
-        const std::string &raw_response) = 0;
+        const std::string &raw_response);
 
-    virtual void CheckForStaleRequests(const ola::TimeStamp *now) = 0;
+  private:
+    ola::plugin::e131::E133Layer *m_e133_layer;
+    unsigned int m_universe;
 };
-#endif  // TOOLS_E133_E133COMPONENT_H_
+#endif  // TOOLS_E133_E133RECEIVER_H_
