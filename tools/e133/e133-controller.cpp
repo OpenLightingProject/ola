@@ -29,12 +29,9 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
-#include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
-#include <ola/network/InterfacePicker.h>
 #include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/UID.h>
@@ -43,25 +40,15 @@
 #include <string>
 #include <vector>
 
-#include "ola/rdm/RDMControllerInterface.h"
-#include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/DMPAddress.h"
-#include "plugins/e131/e131/DMPE133Inflator.h"
-#include "plugins/e131/e131/E133Header.h"
-#include "plugins/e131/e131/E133Layer.h"
-#include "plugins/e131/e131/RootLayer.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
-
-
+#include "E133Node.h"
 #include "E133UniverseController.h"
 
 using std::string;
 using ola::network::IPV4Address;
-using ola::network::SelectServer;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
-using ola::plugin::e131::E133Header;
 
 typedef struct {
   bool help;
@@ -72,125 +59,6 @@ typedef struct {
   UID *uid;
 } options;
 
-
-class E133Node {
-  public:
-    E133Node(const string &preferred_ip,
-             uint16_t port);
-    ~E133Node();
-
-    bool Init();
-    void Run() { m_ss.Run(); }
-    void Stop() { m_ss.Terminate(); }
-
-    bool RegisterController(E133UniverseController *controller);
-    void DeRegisterController(E133UniverseController *controller);
-    // bool RegisterReciever(E133UniverseReceiver *receiver);
-
-    bool CheckForStaleRequests();
-
-
-  private:
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<
-      unsigned int,
-      E133UniverseController*> controller_map;
-
-    const string m_preferred_ip;
-    ola::network::SelectServer m_ss;
-    ola::network::Event *m_timeout_event;
-    controller_map m_controller_map;
-
-    ola::plugin::e131::CID m_cid;
-    ola::plugin::e131::UDPTransport m_transport;
-    ola::plugin::e131::RootLayer m_root_layer;
-    ola::plugin::e131::E133Layer m_e133_layer;
-    ola::plugin::e131::DMPE133Inflator m_dmp_inflator;
-};
-
-
-
-E133Node::E133Node(const string &preferred_ip,
-                   uint16_t port)
-    : m_preferred_ip(preferred_ip),
-      m_timeout_event(NULL),
-      m_cid(ola::plugin::e131::CID::Generate()),
-      m_transport(port),
-      m_root_layer(&m_transport, m_cid),
-      m_e133_layer(&m_root_layer),
-      m_dmp_inflator(&m_e133_layer) {
-}
-
-
-E133Node::~E133Node() {
-  if (m_timeout_event)
-    m_ss.RemoveTimeout(m_timeout_event);
-}
-
-
-bool E133Node::Init() {
-  ola::network::Interface interface;
-  const ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
-  if (!picker->ChooseInterface(&interface, m_preferred_ip)) {
-    OLA_INFO << "Failed to find an interface";
-    delete picker;
-    return false;
-  }
-  delete picker;
-
-  if (!m_transport.Init(interface)) {
-    return false;
-  }
-
-  ola::network::UdpSocket *socket = m_transport.GetSocket();
-  m_ss.AddSocket(socket);
-  m_e133_layer.SetInflator(&m_dmp_inflator);
-
-  m_timeout_event = m_ss.RegisterRepeatingTimeout(
-      500,
-      ola::NewCallback(this, &E133Node::CheckForStaleRequests));
-  return true;
-}
-
-
-/**
- * Register a E133UniverseController
- * @param controller E133UniverseController to register
- * @return true if the registration succeeded, false otherwise.
- */
-bool E133Node::RegisterController(E133UniverseController *controller) {
-  controller_map::iterator iter = m_controller_map.find(
-      controller->Universe());
-  if (iter == m_controller_map.end()) {
-    m_controller_map[controller->Universe()] = controller;
-    controller->SetE133Layer(&m_e133_layer);
-    return true;
-  }
-  return false;
-}
-
-
-/**
- * Deregister a E133UniverseController
- * @param controller E133UniverseController to register
- */
-void E133Node::DeRegisterController(E133UniverseController *controller) {
-  controller_map::iterator iter = m_controller_map.find(
-      controller->Universe());
-  if (iter != m_controller_map.end())
-    m_controller_map.erase(iter);
-}
-
-
-bool E133Node::CheckForStaleRequests() {
-  const ola::TimeStamp *now = m_ss.WakeUpTime();
-  controller_map::iterator iter = m_controller_map.begin();
-  for (; iter != m_controller_map.end(); ++iter) {
-    OLA_INFO  << "checking " << iter->first;
-    iter->second->CheckForStaleRequests(now);
-  }
-  return true;
-}
 
 
 /*
