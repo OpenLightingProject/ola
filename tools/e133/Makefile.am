@@ -2,7 +2,7 @@ include $(top_srcdir)/common.mk
 
 EXTRA_DIST = E133Component.h E133Node.h E133Receiver.h E133UniverseController.h
 
-bin_PROGRAMS =  e133_controller e133_receiver
+bin_PROGRAMS = e133_controller e133_receiver
 
 e133_receiver_SOURCES = e133-receiver.cpp E133Node.cpp E133Receiver.cpp
 e133_receiver_LDFLAGS = $(PROTOBUF_LIBS)
