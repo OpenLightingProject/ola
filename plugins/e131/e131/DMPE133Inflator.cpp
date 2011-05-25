@@ -169,7 +169,7 @@ bool DMPE133Inflator::RemoveRDMHandler(unsigned int universe) {
  * @param handler the callback to invoke when there is mangagement rdm data for
  * this universe.
  */
-bool DMPE133Inflator::SetRDMManagementhandler(RDMMessageHandler *handler) {
+bool DMPE133Inflator::SetRDMManagementHandler(RDMMessageHandler *handler) {
   if (!handler)
     return false;
 

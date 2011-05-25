@@ -50,6 +50,11 @@ class E133Node {
     void UnRegisterComponent(class E133Component *component);
     // bool RegisterReciever(E133UniverseReceiver *receiver);
 
+    void HandleManagementPacket(
+        const ola::plugin::e131::TransportHeader &transport_header,
+        const ola::plugin::e131::E133Header &e133_header,
+        const string &request);
+
     bool CheckForStaleRequests();
 
 

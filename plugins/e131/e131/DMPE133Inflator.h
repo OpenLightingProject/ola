@@ -50,7 +50,7 @@ class DMPE133Inflator: public DMPInflator {
     bool SetRDMHandler(unsigned int universe, RDMMessageHandler *handler);
     bool RemoveRDMHandler(unsigned int universe);
 
-    bool SetRDMManagementhandler(RDMMessageHandler *handler);
+    bool SetRDMManagementHandler(RDMMessageHandler *handler);
     void RemoveRDMManagementHandler();
 
   protected:

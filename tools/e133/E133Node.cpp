@@ -17,12 +17,6 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include HASH_MAP_H
-
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/network/InterfacePicker.h>
@@ -52,6 +46,8 @@ E133Node::E133Node(const string &preferred_ip,
 E133Node::~E133Node() {
   if (m_timeout_event)
     m_ss.RemoveTimeout(m_timeout_event);
+
+  m_dmp_inflator.RemoveRDMManagementHandler();
 }
 
 
@@ -77,6 +73,9 @@ bool E133Node::Init() {
   m_timeout_event = m_ss.RegisterRepeatingTimeout(
       500,
       ola::NewCallback(this, &E133Node::CheckForStaleRequests));
+
+  m_dmp_inflator.SetRDMManagementHandler(
+      ola::NewCallback(this, &E133Node::HandleManagementPacket));
   return true;
 }
 
@@ -102,7 +101,7 @@ bool E133Node::RegisterComponent(E133Component *component) {
 
 
 /**
- * Deregister a E133UniverseComponent
+ * Unregister a E133UniverseComponent
  * @param component E133UniverseComponent to register
  */
 void E133Node::UnRegisterComponent(E133Component *component) {
@@ -117,6 +116,23 @@ void E133Node::UnRegisterComponent(E133Component *component) {
 }
 
 
+/**
+ * Handle management packets
+ */
+void E133Node::HandleManagementPacket(
+    const ola::plugin::e131::TransportHeader &transport_header,
+    const ola::plugin::e131::E133Header &e133_header,
+    const string &request) {
+
+  OLA_INFO << "Got management packet from " << transport_header.SourceIP();
+  (void) e133_header;
+  (void) request;
+}
+
+
+/**
+ * Check for any requests that have timed out
+ */
 bool E133Node::CheckForStaleRequests() {
   const ola::TimeStamp *now = m_ss.WakeUpTime();
   component_map::iterator iter = m_component_map.begin();
