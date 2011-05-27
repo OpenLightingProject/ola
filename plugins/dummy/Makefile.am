@@ -1,10 +1,11 @@
 include $(top_srcdir)/common.mk
 libdir = $(plugindir)
 
-EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h
+EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h DummyResponder.h
 
 lib_LTLIBRARIES = liboladummy.la
-liboladummy_la_SOURCES =  DummyPlugin.cpp DummyDevice.cpp DummyPort.cpp
+liboladummy_la_SOURCES =  DummyPlugin.cpp DummyDevice.cpp DummyPort.cpp \
+                          DummyResponder.cpp
 liboladummy_la_LIBADD = @LIBS@
 
 TESTS = DummyPluginTester

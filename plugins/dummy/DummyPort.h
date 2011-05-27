@@ -27,6 +27,7 @@
 #include "ola/rdm/RDMEnums.h"
 #include "olad/Port.h"
 #include "plugins/dummy/DummyDevice.h"
+#include "plugins/dummy/DummyResponder.h"
 
 namespace ola {
 namespace plugin {
@@ -35,10 +36,8 @@ namespace dummy {
 class DummyPort: public BasicOutputPort {
   public:
     DummyPort(DummyDevice *parent, unsigned int id):
-      BasicOutputPort(parent, id, true),
-      m_start_address(1),
-      m_personality(0),
-      m_identify_mode(0) {}
+      BasicOutputPort(parent, id, true) {
+    }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
@@ -50,42 +49,8 @@ class DummyPort: public BasicOutputPort {
   private:
     void RunDiscovery();
 
-    void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
-                             ola::rdm::RDMCallback *callback);
-    void HandleSupportedParams(const ola::rdm::RDMRequest *request,
-                               ola::rdm::RDMCallback *callback);
-    void HandleDeviceInfo(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback);
-    void HandleProductDetailList(const ola::rdm::RDMRequest *request,
-                                 ola::rdm::RDMCallback *callback);
-    void HandleStringResponse(const ola::rdm::RDMRequest *request,
-                              ola::rdm::RDMCallback *callback,
-                              const string &value);
-    void HandlePersonality(const ola::rdm::RDMRequest *request,
-                           ola::rdm::RDMCallback *callback);
-    void HandlePersonalityDescription(const ola::rdm::RDMRequest *request,
-                                      ola::rdm::RDMCallback *callback);
-    void HandleDmxStartAddress(const ola::rdm::RDMRequest *request,
-                               ola::rdm::RDMCallback *callback);
-    void HandleIdentifyDevice(const ola::rdm::RDMRequest *request,
-                              ola::rdm::RDMCallback *callback);
-    bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request,
-                                          ola::rdm::RDMCallback *callback);
-    void RunRDMCallback(ola::rdm::RDMCallback *callback,
-                        ola::rdm::RDMResponse *response);
-
-    uint16_t m_start_address;
-    uint8_t m_personality;
-    uint8_t m_identify_mode;
     DmxBuffer m_buffer;
-
-    typedef struct {
-      uint16_t footprint;
-      const char *description;
-    } personality_info;
-
-    static const personality_info PERSONALITIES[];
-    static const unsigned int PERSONALITY_COUNT;
+    DummyResponder m_responder;
 };
 }  // dummy
 }  // plugin
