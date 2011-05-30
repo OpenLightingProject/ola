@@ -1343,7 +1343,7 @@ class GetSlotInfo(OptionalParameterTestFixture):
   """Get SLOT_INFO."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'SLOT_INFO'
-  PROVIDES = ['slot_info', 'defined_slots']
+  PROVIDES = ['defined_slots']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -1351,11 +1351,9 @@ class GetSlotInfo(OptionalParameterTestFixture):
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
-      self.SetProperty('slot_info', {})
-      self.SetProperty('defined_slots', [])
+      self.SetProperty('defined_slots', None)
       return
 
-    self.SetProperty('slot_info', fields)
     slots = [d['slot_offset'] for d in fields['slots']]
     self.SetProperty('defined_slots', set(slots))
 
@@ -1400,9 +1398,10 @@ class GetSlotDescriptions(OptionalParameterTestFixture):
   REQUIRES = ['defined_slots']
 
   def Test(self):
-    self._slots = list(self.Property('defined_slots'))
+    self._slots = self.Property('defined_slots')
 
     if self._slots:
+      self._slots = list(self._slots)
       self._GetSlotDescription()
     else:
       self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
@@ -2186,9 +2185,14 @@ class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
   PID = 'DEVICE_POWER_CYCLES'
   EXPECTED_FIELD = 'power_cycles'
   REQUIRES = ['power_cycles']
+  PROVIDES = ['set_device_power_cycles_supported']
 
   def OldValue(self):
     return self.Property('power_cycles')
+
+  def VerifyResult(self, response, fields):
+    self.SetProperty('set_device_power_cycles_supported',
+                     response.WasAcked())
 
 
 class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,
@@ -2196,6 +2200,15 @@ class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,
   """Set the device power_cycles with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_POWER_CYCLES'
+  REQUIRES = ['set_device_power_cycles_supported']
+
+  def Test(self):
+    if self.Property('set_device_power_cycles_supported'):
+      expected_result= RDMNack.NR_FORMAT_ERROR
+    else:
+      expected_result= RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
+    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
 # Display Invert
