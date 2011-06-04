@@ -1926,9 +1926,15 @@ class RecordSensorValues(OptionalParameterTestFixture):
     if sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK:
       self.AddExpectedResults(self.AckSetResult(action=self._RecordNextSensor))
     else:
-      self.AddIfSetSupported(
+      message = ("Sensor %d ack'ed RECORD_SENSOR but recorded support was not "
+                 "declared" % sensor_def['sensor_number'])
+      self.AddIfSetSupported([
           self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
-                             action=self._RecordNextSensor))
+                             action=self._RecordNextSensor),
+          self.AckSetResult(action=self._RecordNextSensor,
+                            advisory=message),
+
+      ])
     self.SendSet(ROOT_DEVICE, self.pid, [self._sensors[0]['sensor_number']])
 
   def _RecordNextSensor(self):
