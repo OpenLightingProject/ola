@@ -189,7 +189,7 @@ string VellemanOutputPort::Description() const {
   if (m_chunk_size == UPGRADED_CHUNK_SIZE)
     return "VX8062";
   else
-    return "V8062";
+    return "K8062";
 }
 
 
