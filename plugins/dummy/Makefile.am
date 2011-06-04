@@ -3,10 +3,12 @@ libdir = $(plugindir)
 
 EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h DummyResponder.h
 
-lib_LTLIBRARIES = liboladummy.la
-liboladummy_la_SOURCES =  DummyPlugin.cpp DummyDevice.cpp DummyPort.cpp \
-                          DummyResponder.cpp
-liboladummy_la_LIBADD = @LIBS@
+lib_LTLIBRARIES = liboladummyresponder.la liboladummy.la
+liboladummyresponder_la_SOURCES = DummyResponder.cpp
+liboladummyresponder_la_LIBADD = @LIBS@
+
+liboladummy_la_SOURCES =  DummyPlugin.cpp DummyDevice.cpp DummyPort.cpp
+liboladummy_la_LIBADD = @LIBS@ ./liboladummyresponder.la
 
 TESTS = DummyPluginTester
 check_PROGRAMS = $(TESTS)
