@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <sys/types.h>
+#include <algorithm>
 #include <string>
 
 #include "ola/Logging.h"
@@ -44,7 +45,7 @@ VellemanOutputPort::VellemanOutputPort(VellemanDevice *parent,
                                        libusb_device *usb_device)
     : BasicOutputPort(parent, id),
       m_term(false),
-      m_extended_commands(false),
+      m_chunk_size(8),  // the standard unit uses 8
       m_usb_device(usb_device),
       m_usb_handle(NULL) {
   pthread_mutex_init(&m_data_mutex, NULL);
@@ -109,13 +110,12 @@ bool VellemanOutputPort::Start() {
       config->interface->altsetting->endpoint) {
     uint16_t max_packet_size =
       config->interface->altsetting->endpoint->wMaxPacketSize;
-      OLA_DEBUG << "Velleman K8062 max packet size is " << max_packet_size;
-      if (max_packet_size == 64)
-        // this means the upgrade is present
-        m_extended_commands = true;
+    OLA_DEBUG << "Velleman K8062 max packet size is " << max_packet_size;
+    if (max_packet_size == UPGRADED_CHUNK_SIZE)
+      // this means the upgrade is present
+      m_chunk_size = max_packet_size;
   }
   libusb_free_config_descriptor(config);
-
 
   if (libusb_claim_interface(usb_handle, INTERFACE)) {
     OLA_WARN << "Failed to claim Velleman usb device";
@@ -182,56 +182,97 @@ bool VellemanOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
 }
 
 
+/**
+ * Return the port description
+ */
+string VellemanOutputPort::Description() const {
+  if (m_chunk_size == UPGRADED_CHUNK_SIZE)
+    return "VX8062";
+  else
+    return "V8062";
+}
+
+
 /*
  * Send the dmx out the widget
  * @return true on success, false on failure
  */
 bool VellemanOutputPort::SendDMX(const DmxBuffer &buffer) {
-  unsigned char usb_data[VELLEMAN_USB_CHUNK_SIZE];
+  unsigned char usb_data[m_chunk_size];
   unsigned int size = buffer.Size();
   const uint8_t *data = buffer.GetRaw();
   unsigned int i = 0;
   unsigned int n;
 
+  // this could be up to 254 for the standard interface but then the shutdown
+  // process gets wacky. Limit it to 100 for the standard and 255 for the
+  // extended.
+  unsigned int max_compressed_channels = m_chunk_size == UPGRADED_CHUNK_SIZE ?
+    254 : 100;
+  unsigned int compressed_channel_count = m_chunk_size - 2;
+  unsigned int channel_count = m_chunk_size - 1;
+
   memset(usb_data, 0, sizeof(usb_data));
 
-  for (n = 0;
-       n < MAX_COMPRESSED_CHANNELS && n < size - COMPRESSED_CHANNEL_COUNT
+  if (m_chunk_size == UPGRADED_CHUNK_SIZE && size <= m_chunk_size - 2) {
+    // if the upgrade is present and we can fit the data in a single packet
+    // use the 7 message type
+    usb_data[0] = 7;
+    usb_data[1] = size;  // number of channels in packet
+    memcpy(usb_data + 2, data, std::min(size, m_chunk_size - 2));
+  } else {
+    // otherwise use 4 to signal the start of frame
+    for (n = 0;
+         n < max_compressed_channels && n < size - compressed_channel_count
          && !data[n];
-       n++);
-  usb_data[0] = 4;
-  usb_data[1] = n + 1;  // include start code
-  memcpy(usb_data + 2, data + n, COMPRESSED_CHANNEL_COUNT);
+         n++);
+    usb_data[0] = 4;
+    usb_data[1] = n + 1;  // include start code
+    memcpy(usb_data + 2, data + n, compressed_channel_count);
+    i += n + compressed_channel_count;
+  }
+
   if (!SendDataChunk(usb_data))
     return false;
-  i += n + COMPRESSED_CHANNEL_COUNT;
 
-  while (i < size - CHANNEL_COUNT) {
+  while (i < size - channel_count) {
     for (n = 0;
-         n < MAX_COMPRESSED_CHANNELS && n + i < size - COMPRESSED_CHANNEL_COUNT
+         n < max_compressed_channels && n + i < size - compressed_channel_count
            && !data[i + n];
          n++);
     if (n) {
       // we have leading zeros
       usb_data[0] = 5;
       usb_data[1] = n;
-      memcpy(usb_data + 2, data + i + n, COMPRESSED_CHANNEL_COUNT);
-      i += n + COMPRESSED_CHANNEL_COUNT;
+      memcpy(usb_data + 2, data + i + n, compressed_channel_count);
+      i += n + compressed_channel_count;
     } else {
       usb_data[0] = 2;
-      memcpy(usb_data + 1, data + i, CHANNEL_COUNT);
-      i += CHANNEL_COUNT;
+      memcpy(usb_data + 1, data + i, channel_count);
+      i += channel_count;
     }
     if (!SendDataChunk(usb_data))
       return false;
   }
 
   // send the last channels
-  for (;i != size; i++) {
-    usb_data[0] = 3;
-    usb_data[1] = data[i];
+  if (m_chunk_size == UPGRADED_CHUNK_SIZE) {
+    // if running in extended mode we can use the 6 message type to send
+    // everything at once.
+    usb_data[0] = 6;
+    usb_data[1] = size - i;
+    memcpy(usb_data + 2, data + i, size - i);
     if (!SendDataChunk(usb_data))
       return false;
+
+  } else {
+    // else we use the 3 message type to send one at a time
+    for (;i != size; i++) {
+      usb_data[0] = 3;
+      usb_data[1] = data[i];
+      if (!SendDataChunk(usb_data))
+        return false;
+    }
   }
   return true;
 }
@@ -247,7 +288,7 @@ bool VellemanOutputPort::SendDataChunk(uint8_t *usb_data) {
       m_usb_handle,
       ENDPOINT,
       reinterpret_cast<unsigned char*>(usb_data),
-      VELLEMAN_USB_CHUNK_SIZE,
+      m_chunk_size,
       &transferred,
       URB_TIMEOUT_MS);
   if (ret)

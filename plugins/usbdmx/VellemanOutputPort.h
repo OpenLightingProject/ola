@@ -52,23 +52,18 @@ class VellemanOutputPort: public BasicOutputPort, OlaThread {
     void *Run();
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return ""; }
+    string Description() const;
 
   private:
-    enum {VELLEMAN_USB_CHUNK_SIZE = 8};
-    enum {COMPRESSED_CHANNEL_COUNT = 6};
-    enum {CHANNEL_COUNT = 7};
-
-    // this could be up to 254 but then the shutdown process gets wacky.
-    static const uint8_t MAX_COMPRESSED_CHANNELS = 100;
     static const unsigned char ENDPOINT = 0x01;
     // 25ms seems to be about the shortest we can go
     static const unsigned int URB_TIMEOUT_MS = 25;
     static const int CONFIGURATION = 1;
     static const int INTERFACE = 0;
+    static const int UPGRADED_CHUNK_SIZE = 64;
 
     bool m_term;
-    bool m_extended_commands;
+    unsigned int m_chunk_size;
     libusb_device *m_usb_device;
     libusb_device_handle *m_usb_handle;
     DmxBuffer m_buffer;
