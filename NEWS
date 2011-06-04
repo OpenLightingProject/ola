@@ -1,3 +1,9 @@
+X/Y-2011 ola-8.8.10
+ * Added support for the VX8062 device
+ * Fixed a compile bug caused by bad libprotobuf handling
+ * RDM Responder tests enhancments
+ * Internal network API cleanup
+
 24/4/2011 ola-0.8.9
  * Added support for the Arduino RDM RGB Mixer
  * Fixed a bug when a broadcast RDM request was sent to a universe with
