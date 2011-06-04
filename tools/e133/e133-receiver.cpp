@@ -22,35 +22,17 @@
 #include <string.h>
 #include <sysexits.h>
 
-#include <ola/Callback.h>
 #include <ola/Logging.h>
-#include <ola/network/IPV4Address.h>
-#include <ola/network/InterfacePicker.h>
-#include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
-#include <ola/rdm/RDMCommand.h>
 
-#include <iostream>
 #include <string>
 
-#include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/DMPE133Inflator.h"
-#include "plugins/e131/e131/E133Header.h"
-#include "plugins/e131/e131/E133Layer.h"
-#include "plugins/e131/e131/RootLayer.h"
-#include "plugins/e131/e131/TransportHeader.h"
+#include "plugins/dummy/DummyResponder.h"
 #include "plugins/e131/e131/UDPTransport.h"
-
 
 #include "E133Node.h"
 #include "E133Receiver.h"
 
 using std::string;
-using ola::network::IPV4Address;
-using ola::network::SelectServer;
-using ola::rdm::RDMRequest;
-using ola::plugin::e131::E133Header;
-using ola::plugin::e131::TransportHeader;
 
 typedef struct {
   bool help;
@@ -131,7 +113,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
 void DisplayHelpAndExit(char *argv[]) {
   std::cout << "Usage: " << argv[0] << " [options]\n"
   "\n"
-  "Run a very simple E133 Node.\n"
+  "Run a very simple E1.33 Responder.\n"
   "\n"
   "  -h, --help         Display this help message and exit.\n"
   "  -i, --ip           The IP address to listen on.\n"
@@ -156,13 +138,12 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(argv);
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
-
   E133Node node(opts.ip_address, ola::plugin::e131::UDPTransport::ACN_PORT);
-  if (!node.Init()) {
+  if (!node.Init())
     exit(EX_UNAVAILABLE);
-  }
 
-  E133Receiver receiver(opts.universe);
+  ola::plugin::dummy::DummyResponder responder;
+  E133Receiver receiver(opts.universe, &responder);
   node.RegisterComponent(&receiver);
   node.Run();
 }

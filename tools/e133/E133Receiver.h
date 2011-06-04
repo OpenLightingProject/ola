@@ -19,8 +19,10 @@
 
 #include <ola/Clock.h>
 #include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMControllerInterface.h>
 
 #include <string>
+#include <vector>
 
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133Layer.h"
@@ -37,7 +39,8 @@
  */
 class E133Receiver: public E133Component {
   public:
-    explicit E133Receiver(unsigned int universe);
+    explicit E133Receiver(unsigned int universe,
+                          ola::rdm::RDMControllerInterface *local_controller);
 
     unsigned int Universe() const { return m_universe; }
     void SetE133Layer(ola::plugin::e131::E133Layer *e133_layer) {
@@ -50,10 +53,15 @@ class E133Receiver: public E133Component {
     void HandlePacket(
         const ola::plugin::e131::TransportHeader &transport_header,
         const ola::plugin::e131::E133Header &e133_header,
-        const std::string &raw_response);
+        const std::string &raw_request);
+
+    void RequestComplete(ola::rdm::rdm_response_code response_code,
+                         const ola::rdm::RDMResponse *response,
+                         const std::vector<std::string> &packets);
 
   private:
     ola::plugin::e131::E133Layer *m_e133_layer;
+    ola::rdm::RDMControllerInterface *m_local_controller;
     unsigned int m_universe;
 };
 #endif  // TOOLS_E133_E133RECEIVER_H_
