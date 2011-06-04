@@ -1351,7 +1351,7 @@ class GetSlotInfo(OptionalParameterTestFixture):
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
-      self.SetProperty('defined_slots', None)
+      self.SetProperty('defined_slots', set())
       return
 
     slots = [d['slot_offset'] for d in fields['slots']]
@@ -1395,24 +1395,28 @@ class GetSlotDescriptions(OptionalParameterTestFixture):
   """Get the slot descriptions for all defined slots."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'SLOT_DESCRIPTION'
-  REQUIRES = ['defined_slots']
+  REQUIRES = ['dmx_footprint']
 
   def Test(self):
-    self._slots = self.Property('defined_slots')
+    footprint = self.Property('dmx_footprint')
 
-    if self._slots:
-      self._slots = list(self._slots)
-      self._GetSlotDescription()
-    else:
+    if footprint == 0:
       self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
       self.SendGet(PidStore.ROOT_DEVICE, self.pid, [0])
+    else:
+      self._slots = range(footprint)
+      self._GetSlotDescription()
 
   def _GetSlotDescription(self):
     if not self._slots:
       self.Stop()
       return
 
-    self.AddIfGetSupported(self.AckGetResult(action=self._GetNextSlot))
+    self.AddIfGetSupported([
+      self.AckGetResult(action=self._GetNextSlot),
+      self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
+                         action=self._GetNextSlot)
+    ])
     self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self._slots[0]])
 
   def _GetNextSlot(self):
