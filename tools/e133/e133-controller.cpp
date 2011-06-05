@@ -25,6 +25,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/NetworkUtils.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
@@ -269,7 +270,8 @@ int main(int argc, char *argv[]) {
                  ola::rdm::PID_SOFTWARE_VERSION_LABEL);
 
   // now send a set message
-  uint16_t start_address = 52;
+  uint16_t start_address = 10;
+  start_address = ola::network::HostToNetwork(start_address);
   SendSetRequest(src_uid,
                  dst_uid,
                  &node,

@@ -235,7 +235,8 @@ void E133UniverseController::HandlePacket(
   }
 
   if (response_code == ola::rdm::RDM_COMPLETED_OK) {
-    if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND &&
+        response->ResponseType() == ola::rdm::RDM_ACK) {
       SquawkRequest(request.get());
     }
     if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND &&
