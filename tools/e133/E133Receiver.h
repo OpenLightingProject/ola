@@ -18,6 +18,7 @@
  */
 
 #include <ola/Clock.h>
+#include <ola/network/IPV4Address.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMControllerInterface.h>
 
@@ -55,7 +56,10 @@ class E133Receiver: public E133Component {
         const ola::plugin::e131::E133Header &e133_header,
         const std::string &raw_request);
 
-    void RequestComplete(ola::rdm::rdm_response_code response_code,
+    void RequestComplete(ola::network::IPV4Address src_ip,
+                         uint16_t src_port,
+                         uint8_t sequence_number,
+                         ola::rdm::rdm_response_code response_code,
                          const ola::rdm::RDMResponse *response,
                          const std::vector<std::string> &packets);
 

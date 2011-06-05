@@ -269,9 +269,9 @@ bool E133UniverseController::SendDataToUid(uid_state &uid_info,
                     false,  // management
                     false);  // squawk
 
-  bool result = m_e133_layer->SendDMP(uid_info.ip_address,
-                                      header,
-                                      pdu);
+  bool result = m_e133_layer->SendDMP(header,
+                                      pdu,
+                                      uid_info.ip_address);
 
   delete pdu;
   return result;
