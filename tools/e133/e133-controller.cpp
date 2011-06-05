@@ -155,7 +155,6 @@ void RequestCallback(E133Node *node,
                      const std::vector<std::string> &packets) {
   OLA_INFO << "Callback executed with code: " <<
     ola::rdm::ResponseCodeToString(rdm_code);
-  (void) packets;
 
   if (rdm_code == ola::rdm::RDM_COMPLETED_OK) {
     OLA_INFO << response->SourceUID() << " -> " << response->DestinationUID()
@@ -168,6 +167,7 @@ void RequestCallback(E133Node *node,
 
   if (!--responses_to_go)
     node->Stop();
+  (void) packets;
 }
 
 
@@ -276,6 +276,7 @@ int main(int argc, char *argv[]) {
                  reinterpret_cast<uint8_t*>(&start_address),
                  sizeof(start_address));
 
-  node.Run();
+  if (responses_to_go)
+    node.Run();
   node.UnRegisterComponent(&universe_controller);
 }
