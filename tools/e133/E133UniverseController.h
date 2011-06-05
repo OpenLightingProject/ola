@@ -23,10 +23,9 @@
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/UID.h>
 
+#include <deque>
 #include <map>
-#include <queue>
 #include <string>
-#include <vector>
 
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133Layer.h"
@@ -41,6 +40,54 @@
 using ola::network::IPV4Address;
 using ola::rdm::UID;
 using ola::plugin::e131::E133Layer;
+
+
+/**
+ * This holds everything we need to track about a pending E1.33 RDM request
+ */
+class PendingE133Request {
+  public:
+    PendingE133Request(const ola::rdm::RDMRequest *request,
+                       ola::rdm::RDMCallback *on_complete,
+                       ola::TimeStamp expiry_time,
+                       IPV4Address &destination_ip,
+                       uint8_t sequence_number)
+        : request(request),
+          on_complete(on_complete),
+          expiry_time(expiry_time),
+          destination_ip(destination_ip),
+          sequence_number(sequence_number) {
+    }
+
+    const ola::rdm::RDMRequest *request;
+    ola::rdm::RDMCallback *on_complete;
+    ola::TimeStamp expiry_time;
+    IPV4Address destination_ip;
+    uint8_t sequence_number;
+};
+
+
+/**
+ * A list of pending requests ordered by expiry time.
+ */
+class E133RequestContainer {
+  public:
+    E133RequestContainer() {}
+
+    typedef std::deque<PendingE133Request>::iterator  request_iterator;
+
+    void Add(PendingE133Request &request);
+    bool IsEmpty() const { return m_requests.empty(); }
+    const PendingE133Request &Front() const { return m_requests.front(); }
+    void Erase(request_iterator iter) { m_requests.erase(iter); }
+    request_iterator Begin() { return m_requests.begin(); }
+    request_iterator End() { return m_requests.end(); }
+    void PopFront();
+
+  private:
+    typedef std::deque<PendingE133Request> request_list;
+    request_list m_requests;
+};
 
 
 /**
@@ -77,27 +124,10 @@ class E133UniverseController: public ola::rdm::RDMControllerInterface,
     } uid_state;
     typedef std::map<UID, uid_state> uid_state_map;
 
-    typedef struct {
-      const ola::rdm::RDMRequest *request;
-      ola::rdm::RDMCallback *on_complete;
-      ola::TimeStamp expiry_time;
-    } pending_request;
-
-    struct ltrequest {
-      bool operator()(const pending_request &r1,
-                      const pending_request &r2) const {
-        return r1.expiry_time > r2.expiry_time;
-      }
-    };
-
-    typedef std::priority_queue<pending_request,
-                                std::vector<pending_request>,
-                                ltrequest> request_queue;
-
     uid_state_map m_uid_state_map;
     E133Layer *m_e133_layer;
     unsigned int m_universe;
-    request_queue m_request_queue;
+    E133RequestContainer m_requests;
     uid_state m_squawk_state;
 
     bool PackRDMRequest(const ola::rdm::RDMRequest *request,
@@ -109,6 +139,7 @@ class E133UniverseController: public ola::rdm::RDMControllerInterface,
                        const uint8_t *data,
                        unsigned int data_size);
     void SquawkRequest(const ola::rdm::RDMRequest *request);
+    void SquawkResponse(const ola::rdm::RDMResponse *request);
 
     static const char UNIVERSE_SQUAWK_IP_ADDRESS[];
 };

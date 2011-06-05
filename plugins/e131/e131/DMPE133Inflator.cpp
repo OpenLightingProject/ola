@@ -111,7 +111,6 @@ bool DMPE133Inflator::HandlePDUData(uint32_t vector,
   unsigned int rdm_message_length = std::min(
       pdu_len - address_length - 1,
       address->Number());
-  OLA_INFO << "rdm len is " << rdm_message_length;
 
   string rdm_message(reinterpret_cast<const char*>(rdm_message_data),
                      rdm_message_length);

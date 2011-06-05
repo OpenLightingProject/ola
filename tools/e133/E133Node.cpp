@@ -137,7 +137,6 @@ bool E133Node::CheckForStaleRequests() {
   const ola::TimeStamp *now = m_ss.WakeUpTime();
   component_map::iterator iter = m_component_map.begin();
   for (; iter != m_component_map.end(); ++iter) {
-    OLA_INFO << "Checking";
     iter->second->CheckForStaleRequests(now);
   }
   return true;

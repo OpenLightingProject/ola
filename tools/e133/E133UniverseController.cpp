@@ -39,7 +39,40 @@ using ola::plugin::e131::DMPAddressData;
 using ola::plugin::e131::E133Header;
 using ola::plugin::e131::TwoByteRangeDMPAddress;
 using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
 using ola::rdm::UID;
+
+
+
+/**
+ * Insert a request into the pending list
+ * O(n) in the worst case, constant time if all requests have the same timeout.
+ * @param request the request to insert
+ */
+void E133RequestContainer::Add(PendingE133Request &request) {
+  if (m_requests.empty()) {
+    m_requests.push_back(request);
+    return;
+  }
+
+  // if all requests have the same timeout this optimization works well
+  if (m_requests[m_requests.size() - 1].expiry_time < request.expiry_time) {
+    m_requests.push_back(request);
+    return;
+  }
+
+  request_list::iterator iter = m_requests.begin();
+  while (iter != m_requests.end() && iter->expiry_time < request.expiry_time)
+    iter++;
+
+  m_requests.insert(iter, request);
+}
+
+
+void E133RequestContainer::PopFront() {
+  if (!m_requests.empty())
+    m_requests.pop_front();
+}
 
 
 const char E133UniverseController::UNIVERSE_SQUAWK_IP_ADDRESS[] =
@@ -94,14 +127,13 @@ void E133UniverseController::RemoveUID(const UID &uid) {
 void E133UniverseController::CheckForStaleRequests(const ola::TimeStamp *now) {
   std::vector<std::string> raw_packets;
 
-  while (!m_request_queue.empty()) {
-    const pending_request &pending_request_s = m_request_queue.top();
-    if (pending_request_s.expiry_time > *now) {
-      OLA_INFO << "expired!!!";
-      pending_request_s.on_complete->Run(ola::rdm::RDM_TIMEOUT,
-                                         NULL,
-                                         raw_packets);
-      m_request_queue.pop();
+  while (!m_requests.IsEmpty()) {
+    const PendingE133Request &pending_request = m_requests.Front();
+    if (pending_request.expiry_time > *now) {
+      pending_request.on_complete->Run(ola::rdm::RDM_TIMEOUT,
+                                       NULL,
+                                       raw_packets);
+      m_requests.PopFront();
     }
   }
 }
@@ -145,16 +177,18 @@ void E133UniverseController::SendRDMRequest(const RDMRequest *request,
 
   ola::TimeStamp expiry_time;
   ola::Clock::CurrentTime(&expiry_time);
-  pending_request pending_request_s = {
+  PendingE133Request pending_request(
       request,
       handler,
-      expiry_time + ola::TimeInterval(1, 0)};
+      expiry_time + ola::TimeInterval(1, 0),
+      iter->second.ip_address,
+      iter->second.sequence_number);
 
   if (!SendDataToUid(iter->second, rdm_data, rdm_data_size)) {
     handler->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, raw_packets);
     delete request;
   }
-  m_request_queue.push(pending_request_s);
+  m_requests.Add(pending_request);
   delete[] rdm_data;
 }
 
@@ -166,9 +200,53 @@ void E133UniverseController::HandlePacket(
     const ola::plugin::e131::TransportHeader &transport_header,
     const ola::plugin::e131::E133Header &e133_header,
     const std::string &raw_response) {
+  // try to locate the pending request
   OLA_INFO << "Got data from " << transport_header.SourceIP();
-  (void) e133_header;
-  (void) raw_response;
+  E133RequestContainer::request_iterator iter = m_requests.Begin();
+  for (; iter != m_requests.End(); iter++) {
+    // TODO(simon): handle collisisons here and/or convince people to use 4
+    // byte sequence numbers.
+    if (iter->destination_ip == transport_header.SourceIP() &&
+        iter->sequence_number == e133_header.Sequence()) {
+      break;
+    }
+  }
+
+  if (iter == m_requests.End()) {
+    OLA_INFO << "not outstanding request found";
+    return;
+  }
+
+  ola::rdm::RDMCallback *callback = iter->on_complete;
+  std::auto_ptr<const ola::rdm::RDMRequest> request(iter->request);
+  m_requests.Erase(iter);
+
+  // attempt to unpack as a response
+  ola::rdm::rdm_response_code response_code;
+  const RDMResponse *response = RDMResponse::InflateFromData(
+    reinterpret_cast<const uint8_t*>(raw_response.data()),
+    raw_response.size(),
+    &response_code,
+    request.get());
+
+  if (!response) {
+    OLA_WARN << "Failed to unpack E1.33 RDM message, ignoring request.";
+    return;
+  }
+
+  if (response_code == ola::rdm::RDM_COMPLETED_OK) {
+    if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+      SquawkRequest(request.get());
+    }
+    if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND &&
+        (request->ParamId() == ola::rdm::PID_QUEUED_MESSAGE ||
+         request->ParamId() == ola::rdm::PID_STATUS_MESSAGES)) {
+      SquawkResponse(response);
+    }
+  }
+
+  std::vector<std::string> raw_packets;
+  callback->Run(response_code, response, raw_packets);
 }
 
 
@@ -203,17 +281,17 @@ bool E133UniverseController::PackRDMRequest(
  * @param on_complete the handler to call when done.
  */
 void E133UniverseController::SendBroadcastRequest(
-    const ola::rdm::RDMRequest *request,
+    const ola::rdm::RDMRequest *rdm_request,
     ola::rdm::RDMCallback *on_complete) {
+  std::auto_ptr<const ola::rdm::RDMRequest> request(rdm_request);
   std::vector<std::string> raw_packets;
   uid_state_map::iterator iter = m_uid_state_map.begin();
   const UID &dest_uid = request->DestinationUID();
 
   uint8_t *rdm_data;
   unsigned int rdm_data_size;
-  if (!PackRDMRequest(request, &rdm_data, &rdm_data_size)) {
+  if (!PackRDMRequest(request.get(), &rdm_data, &rdm_data_size)) {
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, raw_packets);
-    delete request;
     return;
   }
 
@@ -231,8 +309,7 @@ void E133UniverseController::SendBroadcastRequest(
     }
   }
 
-  // ownership is transferred to the squawker
-  SquawkRequest(request);
+  SquawkRequest(request.get());
 
   on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, raw_packets);
   delete[] rdm_data;
@@ -280,21 +357,44 @@ bool E133UniverseController::SendDataToUid(uid_state &uid_info,
 
 /**
  * Start the squawk process for this request
- * @param request the RDMRequest, ownership is transferred.
+ * @param request the RDMRequest
  */
 void E133UniverseController::SquawkRequest(
-    const ola::rdm::RDMRequest *rdm_request) {
-  std::auto_ptr<const ola::rdm::RDMRequest> request(rdm_request);
-
+    const ola::rdm::RDMRequest *request) {
   // only squawk if this is a set request
   if (request->CommandClass() != ola::rdm::RDMRequest::SET_COMMAND)
     return;
 
   uint8_t *rdm_data;
   unsigned int rdm_data_size;
-  if (!PackRDMRequest(request.get(), &rdm_data, &rdm_data_size)) {
+  if (!PackRDMRequest(request, &rdm_data, &rdm_data_size)) {
     OLA_WARN << "Unable to pack RDM request for squawking";
     return;
   }
   SendDataToUid(m_squawk_state, rdm_data, rdm_data_size);
+  delete[] rdm_data;
+}
+
+
+/**
+ * Start the squawk process for this response
+ * @param request the RDMResponse
+ */
+void E133UniverseController::SquawkResponse(
+    const ola::rdm::RDMResponse *response) {
+
+  unsigned int actual_size = response->Size();
+  uint8_t *rdm_data = new uint8_t[actual_size + 1];
+  rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
+
+  if (!response->Pack(rdm_data + 1, &actual_size)) {
+    OLA_WARN << "Failed to pack RDM response, aborting send";
+    delete[] rdm_data;
+    return;
+  }
+  unsigned int rdm_data_size = actual_size + 1;
+  SendDataToUid(m_squawk_state, rdm_data, rdm_data_size);
+  delete[] rdm_data;
+
+  // TODO(simon): squawk error messages a second time after some delay
 }

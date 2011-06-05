@@ -147,16 +147,76 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
+static unsigned int responses_to_go;
+
 void RequestCallback(E133Node *node,
                      ola::rdm::rdm_response_code rdm_code,
                      const ola::rdm::RDMResponse *response,
                      const std::vector<std::string> &packets) {
   OLA_INFO << "Callback executed with code: " <<
     ola::rdm::ResponseCodeToString(rdm_code);
-  (void) response;
   (void) packets;
 
-  node->Stop();
+  if (rdm_code == ola::rdm::RDM_COMPLETED_OK) {
+    OLA_INFO << response->SourceUID() << " -> " << response->DestinationUID()
+      << ", TN: " << (int) response->TransactionNumber() << ", Msg Count: " <<
+      (int) response->MessageCount() << ", sub dev: " << response->SubDevice()
+      << ", param 0x" << std::hex << response->ParamId() << ", data len: " <<
+      std::dec << (int) response->ParamDataSize();
+  }
+  delete response;
+
+  if (!--responses_to_go)
+    node->Stop();
+}
+
+
+void SendGetRequest(UID &src_uid,
+                    UID &dst_uid,
+                    E133Node *node,
+                    E133UniverseController *controller,
+                    ola::rdm::rdm_pid pid) {
+  // send a second one
+  ola::rdm::RDMGetRequest *command = new ola::rdm::RDMGetRequest(
+      src_uid,
+      dst_uid,
+      1,  // transaction #
+      1,  // port id
+      0,  // message count
+      ola::rdm::ROOT_RDM_DEVICE,  // sub device
+      pid,  // param id
+      NULL,  // data
+      0);  // data length
+
+  ola::rdm::RDMCallback *callback = ola::NewSingleCallback(RequestCallback,
+                                                           node);
+  controller->SendRDMRequest(command, callback);
+  responses_to_go++;
+}
+
+
+void SendSetRequest(UID &src_uid,
+                    UID &dst_uid,
+                    E133Node *node,
+                    E133UniverseController *controller,
+                    ola::rdm::rdm_pid pid,
+                    const uint8_t *data,
+                    unsigned int data_length) {
+  ola::rdm::RDMSetRequest *command = new ola::rdm::RDMSetRequest(
+      src_uid,
+      dst_uid,
+      1,  // transaction #
+      1,  // port id
+      0,  // message count
+      ola::rdm::ROOT_RDM_DEVICE,  // sub device
+      pid,  // param id
+      data,  // data
+      data_length);  // data length
+
+  ola::rdm::RDMCallback *callback = ola::NewSingleCallback(RequestCallback,
+                                                           node);
+  controller->SendRDMRequest(command, callback);
+  responses_to_go++;
 }
 
 
@@ -184,6 +244,8 @@ int main(int argc, char *argv[]) {
     OLA_FATAL << "Invalid UID";
     exit(EX_USAGE);
   }
+  UID dst_uid(*opts.uid);
+  delete opts.uid;
 
   UID src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd);
 
@@ -194,23 +256,25 @@ int main(int argc, char *argv[]) {
   }
 
   E133UniverseController universe_controller(opts.universe);
-  universe_controller.AddUID(*opts.uid, target_ip);
+  universe_controller.AddUID(dst_uid, target_ip);
   node.RegisterComponent(&universe_controller);
 
-  ola::rdm::RDMGetRequest *command = new ola::rdm::RDMGetRequest(
-      src_uid,
-      *opts.uid,
-      0,  // transaction #
-      1,  // port id
-      0,  // message count
-      ola::rdm::ROOT_RDM_DEVICE,  // sub device
-      ola::rdm::PID_DEVICE_INFO,  // param id
-      NULL,  // data
-      0);  // data length
+  // send some rdm get messages
+  SendGetRequest(src_uid, dst_uid, &node, &universe_controller,
+                 ola::rdm::PID_DEVICE_INFO);
+  SendGetRequest(src_uid, dst_uid, &node,
+                 &universe_controller,
+                 ola::rdm::PID_SOFTWARE_VERSION_LABEL);
 
-  ola::rdm::RDMCallback *callback = ola::NewSingleCallback(RequestCallback,
-                                                           &node);
-  universe_controller.SendRDMRequest(command, callback);
+  // now send a set message
+  uint16_t start_address = 52;
+  SendSetRequest(src_uid,
+                 dst_uid,
+                 &node,
+                 &universe_controller,
+                 ola::rdm::PID_DMX_START_ADDRESS,
+                 reinterpret_cast<uint8_t*>(&start_address),
+                 sizeof(start_address));
 
   node.Run();
   node.UnRegisterComponent(&universe_controller);
