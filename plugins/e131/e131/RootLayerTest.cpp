@@ -107,10 +107,10 @@ void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
   CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
 
   if (root_cid == send_cid)
-    CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu));
+    CPPUNIT_ASSERT(layer.SendPDU(MockPDU::TEST_VECTOR, mock_pdu, addr));
   else
-    CPPUNIT_ASSERT(layer.SendPDU(addr, MockPDU::TEST_VECTOR, mock_pdu,
-                                 send_cid));
+    CPPUNIT_ASSERT(layer.SendPDU(MockPDU::TEST_VECTOR, mock_pdu, send_cid,
+                                 addr));
 
   SingleUseCallback0<void> *closure =
     NewSingleCallback(this, &RootLayerTest::FatalStop);

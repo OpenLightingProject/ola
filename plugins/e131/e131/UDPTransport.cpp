@@ -87,9 +87,12 @@ bool UDPTransport::Init(const ola::network::Interface &interface) {
  * Send a block of PDU messages, this may send separate packets if the size of
  * the block is greater than the MAX_DATAGRAM_SIZE.
  * @param pdu_block the block of pdus to send
+ * @param destination the ipv4 address to send to
+ * @param port the destination port to send to
  */
 bool UDPTransport::Send(const PDUBlock<PDU> &pdu_block,
-                        const IPV4Address &destination) {
+                        const IPV4Address &destination,
+                        uint16_t port) {
   if (!m_send_buffer) {
     OLA_WARN << "Send called the transport hasn't been initialized";
     return false;
@@ -103,7 +106,7 @@ bool UDPTransport::Send(const PDUBlock<PDU> &pdu_block,
 
   return m_socket.SendTo(m_send_buffer, DATA_OFFSET + size,
                          destination,
-                         ACN_PORT);
+                         port);
 }
 
 

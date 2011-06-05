@@ -35,6 +35,7 @@ namespace plugin {
 namespace e131 {
 
 using ola::network::IPV4Address;
+using ola::plugin::e131::UDPTransport;
 
 class RootLayer {
   public:
@@ -44,14 +45,21 @@ class RootLayer {
     bool AddInflator(BaseInflator *inflator);
 
     // Convenience method to encapsulate & send a single PDU
-    bool SendPDU(const IPV4Address &addr, unsigned int vector, const PDU &pdu);
+    bool SendPDU(unsigned int vector,
+                 const PDU &pdu,
+                 const IPV4Address &destination,
+                 uint16_t port = UDPTransport::ACN_PORT);
     // Use for testing to force a message from a particular cid
-    bool SendPDU(const IPV4Address &addr, unsigned int vector, const PDU &pdu,
-                 const CID &cid);
+    bool SendPDU(unsigned int vector,
+                 const PDU &pdu,
+                 const CID &cid,
+                 const IPV4Address &destination,
+                 uint16_t port = UDPTransport::ACN_PORT);
     // Encapsulation & send a block of PDUs
-    bool SendPDUBlock(const IPV4Address &addr,
-                      unsigned int vector,
-                      const PDUBlock<PDU> &block);
+    bool SendPDUBlock(unsigned int vector,
+                      const PDUBlock<PDU> &block,
+                      const IPV4Address &destination,
+                      uint16_t port = UDPTransport::ACN_PORT);
 
     // TODO(simon): add methods to queue and send PDUs/blocks with different
     // vectors

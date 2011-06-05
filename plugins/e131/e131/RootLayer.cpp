@@ -59,28 +59,34 @@ bool RootLayer::AddInflator(BaseInflator *inflator) {
 
 /*
  * Encapsulate this PDU in a RootPDU and send it to the destination.
- * @param addr where to send the PDU
  * @param vector the vector to use at the root level
  * @param pdu the pdu to send.
+ * @param destination the ipv4 address to send to
+ * @param port the destination port to send to
  */
-bool RootLayer::SendPDU(const IPV4Address &addr,
-                        unsigned int vector,
-                        const PDU &pdu) {
+bool RootLayer::SendPDU(unsigned int vector,
+                        const PDU &pdu,
+                        const IPV4Address &destination,
+                        uint16_t port) {
   m_working_block.Clear();
   m_working_block.AddPDU(&pdu);
-  return SendPDUBlock(addr, vector, m_working_block);
+  return SendPDUBlock(vector, m_working_block, destination, port);
 }
 
 
 /*
  * This is used to inject a packet from a different CID.
- * @param addr where to send the PDU
  * @param vector the vector to use at the root level
  * @param pdu the pdu to send.
  * @param cid the cid to send from
+ * @param destination the ipv4 address to send to
+ * @param port the destination port to send to
  */
-bool RootLayer::SendPDU(const IPV4Address &addr, unsigned int vector,
-                        const PDU &pdu, const CID &cid) {
+bool RootLayer::SendPDU(unsigned int vector,
+                        const PDU &pdu,
+                        const CID &cid,
+                        const IPV4Address &destination,
+                        uint16_t port) {
   if (!m_transport)
     return false;
 
@@ -90,19 +96,21 @@ bool RootLayer::SendPDU(const IPV4Address &addr, unsigned int vector,
   root_pdu.Cid(cid);
   root_pdu.SetBlock(&working_block);
   root_block.AddPDU(&root_pdu);
-  return m_transport->Send(root_block, addr);
+  return m_transport->Send(root_block, destination, port);
 }
 
 
 /*
  * Encapsulate this PDUBlock in a RootPDU and send it to the destination.
- * @param addr where to send the PDU
  * @param vector the vector to use at the root level
  * @param block the PDUBlock to send.
+ * @param destination the ipv4 address to send to
+ * @param port the destination port to send to
  */
-bool RootLayer::SendPDUBlock(const IPV4Address &addr,
-                             unsigned int vector,
-                             const PDUBlock<PDU> &block) {
+bool RootLayer::SendPDUBlock(unsigned int vector,
+                             const PDUBlock<PDU> &block,
+                             const IPV4Address &destination,
+                             uint16_t port) {
   if (!m_transport)
     return false;
 
@@ -110,7 +118,7 @@ bool RootLayer::SendPDUBlock(const IPV4Address &addr,
   m_root_pdu.SetBlock(&block);
   m_root_block.Clear();
   m_root_block.AddPDU(&m_root_pdu);
-  return m_transport->Send(m_root_block, addr);
+  return m_transport->Send(m_root_block, destination, port);
 }
 
 

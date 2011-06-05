@@ -65,7 +65,7 @@ bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
   unsigned int vector = E131Inflator::E131_VECTOR;
   if (header.UsingRev2())
     vector = E131InflatorRev2::E131_REV2_VECTOR;
-  return m_root_layer->SendPDU(addr, vector, pdu);
+  return m_root_layer->SendPDU(vector, pdu, addr);
 }
 
 
