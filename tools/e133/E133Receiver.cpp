@@ -100,6 +100,8 @@ void E133Receiver::RequestComplete(ola::network::IPV4Address src_ip,
     OLA_WARN << "E1.33 request failed with code " <<
       ola::rdm::ResponseCodeToString(response_code) <<
       ", dropping request";
+    delete response;
+    return;
   }
 
   OLA_INFO << "rdm size is " << response->Size();
