@@ -54,6 +54,10 @@ typedef struct {
 } options;
 
 
+static unsigned int responses_to_go;
+static unsigned int transaction_number = 0;
+
+
 
 /*
  * Parse our command line options
@@ -147,8 +151,6 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
-static unsigned int responses_to_go;
-
 void RequestCallback(E133Node *node,
                      ola::rdm::rdm_response_code rdm_code,
                      const ola::rdm::RDMResponse *response,
@@ -180,7 +182,7 @@ void SendGetRequest(UID &src_uid,
   ola::rdm::RDMGetRequest *command = new ola::rdm::RDMGetRequest(
       src_uid,
       dst_uid,
-      1,  // transaction #
+      transaction_number++,  // transaction #
       1,  // port id
       0,  // message count
       ola::rdm::ROOT_RDM_DEVICE,  // sub device
@@ -205,7 +207,7 @@ void SendSetRequest(UID &src_uid,
   ola::rdm::RDMSetRequest *command = new ola::rdm::RDMSetRequest(
       src_uid,
       dst_uid,
-      1,  // transaction #
+      transaction_number++,  // transaction #
       1,  // port id
       0,  // message count
       ola::rdm::ROOT_RDM_DEVICE,  // sub device
