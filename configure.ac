@@ -262,6 +262,18 @@ if test "${use_gcov}" = "yes"; then
   LDFLAGS="$LDFLAGS -fprofile-arcs"
 fi
 
+# slp - used for E1.33 support
+AC_CHECK_LIB([slp], [SLPOpen], [have_slp="yes"])
+
+AM_CONDITIONAL(HAVE_SLP, test "${have_slp}" = "yes")
+
+SLP_LIBS=""
+if test "${have_slp}" = "yes"; then
+  AC_DEFINE(HAVE_LIBSLP, 1, [define if libslp is installed])
+  SLP_LIBS="-lslp"
+fi
+AC_SUBST(SLP_LIBS)
+
 # look for microhttpd if the user asked us to
 AC_ARG_ENABLE(
   [http],
