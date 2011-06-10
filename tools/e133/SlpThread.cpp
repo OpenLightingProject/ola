@@ -67,10 +67,13 @@ SLPBoolean ServiceCallback(SLPHandle slp_handle,
 SlpThread::SlpThread(ola::network::SelectServer *ss)
   : OlaThread(),
     m_main_ss(ss),
-    m_init_ok(false) {
-  m_incoming_socket.SetOnData(ola::NewCallback(this, &SlpThread::NewRequest));
+    m_init_ok(false),
+    m_terminate(false) {
   m_outgoing_socket.SetOnData(ola::NewCallback(this,
                                                &SlpThread::RequestComplete));
+  pthread_mutex_init(&m_incomming_mutex, NULL);
+  pthread_cond_init(&m_incomming_condition, NULL);
+  pthread_mutex_init(&m_outgoing_mutex, NULL);
 }
 
 
@@ -80,6 +83,9 @@ SlpThread::SlpThread(ola::network::SelectServer *ss)
 SlpThread::~SlpThread() {
   if (m_init_ok)
     SLPClose(m_slp_handle);
+  pthread_cond_destroy(&m_incomming_condition);
+  pthread_mutex_destroy(&m_incomming_mutex);
+  pthread_mutex_destroy(&m_outgoing_mutex);
 }
 
 
@@ -90,22 +96,15 @@ bool SlpThread::Init() {
   if (m_init_ok)
     return true;
 
-  if (!m_incoming_socket.Init())
+  if (!m_outgoing_socket.Init())
     return false;
-
-  if (!m_outgoing_socket.Init()) {
-    m_incoming_socket.Close();
-    return false;
-  }
 
   SLPError err = SLPOpen("en", SLP_FALSE, &m_slp_handle);
   if (err != SLP_OK) {
     OLA_INFO << "Error opening slp handle " << err;
-    m_incoming_socket.Close();
     m_outgoing_socket.Close();
     return false;
   }
-  m_ss.AddSocket(&m_incoming_socket);
   m_main_ss->AddSocket(&m_outgoing_socket);
   m_init_ok = true;
   return true;
@@ -126,7 +125,10 @@ bool SlpThread::Start() {
  * Stop the resolver thread
  */
 bool SlpThread::Join(void *ptr) {
-  m_ss.Terminate();
+  pthread_mutex_lock(&m_incomming_mutex);
+  m_terminate = true;
+  pthread_mutex_unlock(&m_incomming_mutex);
+  pthread_cond_signal(&m_incomming_condition);
   return OlaThread::Join(ptr);
 }
 
@@ -147,32 +149,23 @@ void SlpThread::Discover(slp_discovery_callback *callback,
   m_incoming_queue.push(action);
   pthread_mutex_unlock(&m_incomming_mutex);
 
-  // TODO(simon): use a condition variable here instead
-  // wake up the slp thread
-  WakeUpSocket(&m_incoming_socket);
+  pthread_cond_signal(&m_incomming_condition);
 }
 
 
 void *SlpThread::Run() {
-  m_ss.Run();
-  return NULL;
-}
-
-
-/**
- * Called when a new request arrives
- */
-void SlpThread::NewRequest() {
-  OLA_INFO << "new discovery request";
-  EmptySocket(&m_incoming_socket);
-
-  // add locking here
   while (true) {
     pthread_mutex_lock(&m_incomming_mutex);
     if (m_incoming_queue.empty()) {
-      pthread_mutex_unlock(&m_incomming_mutex);
-      return;
+      pthread_cond_wait(&m_incomming_condition, &m_incomming_mutex);
     }
+
+    if (m_terminate) {
+      pthread_mutex_unlock(&m_incomming_mutex);
+      return NULL;
+    }
+
+    OLA_INFO << "new discovery request";
 
     pending_action action = m_incoming_queue.front();
     m_incoming_queue.pop();

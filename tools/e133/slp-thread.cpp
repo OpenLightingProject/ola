@@ -31,6 +31,8 @@
 using std::string;
 using std::vector;
 
+unsigned int counter = 0;
+
 void DiscoveryDone(ola::network::SelectServer *ss,
                    bool ok,
                    std::vector<std::string> *urls) {
@@ -43,7 +45,9 @@ void DiscoveryDone(ola::network::SelectServer *ss,
     OLA_INFO << "  " << *iter;
   }
 
-  ss->Terminate();
+  counter++;
+  if (counter == 2)
+    ss->Terminate();
 }
 
 
@@ -63,8 +67,11 @@ int main(int argc, char *argv[]) {
   OLA_INFO << "in main thread " << pthread_self();
   thread.Start();
   std::vector<std::string> urls;
-  thread.Discover(ola::NewCallback(&DiscoveryDone, &ss),
+  std::vector<std::string> urls2;
+  thread.Discover(ola::NewSingleCallback(&DiscoveryDone, &ss),
                   &urls);
+  thread.Discover(ola::NewSingleCallback(&DiscoveryDone, &ss),
+                  &urls2);
 
   ss.Run();
   thread.Join(NULL);

@@ -68,17 +68,15 @@ class SlpThread: public ola::OlaThread {
       url_vector *urls;
     } completed_action;
 
-    ola::network::SelectServer m_ss;
     ola::network::SelectServer *m_main_ss;
-    ola::network::LoopbackSocket m_incoming_socket, m_outgoing_socket;
+    ola::network::LoopbackSocket m_outgoing_socket;
     std::queue<pending_action> m_incoming_queue;
     std::queue<completed_action> m_outgoing_queue;
-    pthread_mutex_t m_incomming_mutex;
-    pthread_mutex_t m_outgoing_mutex;
-    bool m_init_ok;
+    pthread_cond_t m_incomming_condition;
+    pthread_mutex_t m_incomming_mutex, m_outgoing_mutex;
+    bool m_init_ok, m_terminate;
     SLPHandle m_slp_handle;
 
-    void NewRequest();
     void RequestComplete();
     void WakeUpSocket(ola::network::LoopbackSocket *socket);
     void EmptySocket(ola::network::LoopbackSocket *socket);
