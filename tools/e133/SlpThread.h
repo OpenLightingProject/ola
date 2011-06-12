@@ -16,8 +16,24 @@
  * SlpThread.h
  * Copyright (C) 2011 Simon Newton
  *
- * Encapsulate all the SLP operations.
- * libslp is blocking, so we run this all from a separate thread.
+ * A thread to encapsulate all E1.33 SLP operations.
+ *
+ * Brief overview:
+ *   Like the name implies, the SLPThread starts up a new thread to handle SLP
+ *   operations (openslp docs indicate asynchronous operations aren't
+ *   supported and even if they were, you can't have more than one operation
+ *   pending at once so the need for serialization still exists).
+ *
+ *   Each call to Discover(), Register() & DeRegister() adds an action to the
+ *   queue and then sends data (is doesn't matter what data really) on a
+ *   loopback socket to wake up the thread's select server. The SLP thread then
+ *   performs each action in turn and once complete, adds the action to the
+ *   completed queue. Finally the thread then writes data to another loopback
+ *   socket, which wakes up the main select server and causes the callbacks to
+ *   be run in the main thread.
+ *
+ *   Summary: The callbacks passed to the SLP methods are run in the
+ *   thread that contains the SelectServer passed to the SlpThread constructor.
  */
 
 #include <slp.h>
@@ -159,15 +175,15 @@ class SlpThread: public ola::OlaThread {
     void *Run();
 
   private:
+    ola::network::SelectServer m_ss;
     ola::network::SelectServer *m_main_ss;
-    ola::network::LoopbackSocket m_outgoing_socket;
-    std::queue<BaseSlpAction*> m_incoming_queue;
-    std::queue<BaseSlpAction*> m_outgoing_queue;
-    pthread_cond_t m_incomming_condition;
+    ola::network::LoopbackSocket m_incoming_socket, m_outgoing_socket;
+    std::queue<BaseSlpAction*> m_incoming_queue, m_outgoing_queue;
     pthread_mutex_t m_incomming_mutex, m_outgoing_mutex;
-    bool m_init_ok, m_terminate;
+    bool m_init_ok;
     SLPHandle m_slp_handle;
 
+    void NewRequest();
     void RequestComplete();
     void WakeUpSocket(ola::network::LoopbackSocket *socket);
     void EmptySocket(ola::network::LoopbackSocket *socket);
