@@ -19,11 +19,22 @@
 
 #include <slp.h>
 #include <ola/Logging.h>
+#include <sstream>
 #include <string>
 #include "SlpThread.h"
 
 
 using std::string;
+
+// The service name we use for SLP
+const char BaseSlpAction::SERVICE_NAME[] = "esta.e133";
+
+
+void RegisterCallback(SLPHandle slp_handle, SLPError errcode, void* cookie) {
+  SLPError *error = static_cast<SLPError*>(cookie);
+  *error = errcode;
+  (void) slp_handle;
+}
 
 
 /**
@@ -57,6 +68,89 @@ SLPBoolean ServiceCallback(SLPHandle slp_handle,
   return SLP_TRUE;
   (void) slp_handle;
   (void) lifetime;
+}
+
+
+/**
+ * Perform the discovery action
+ */
+void SlpDiscoveryAction::Perform(SLPHandle handle) {
+  slp_cookie cookie;
+  cookie.urls = m_urls;
+
+  SLPError err = SLPFindSrvs(handle,
+                             SERVICE_NAME,
+                             0,  // use configured scopes
+                             0,  // no attr filter
+                             ServiceCallback,
+                             &cookie);
+
+  OLA_INFO << "slp call returned";
+  m_ok = true;
+
+  if ((err != SLP_OK)) {
+    OLA_INFO << "Error finding service with slp " << err;
+    m_ok = false;
+  }
+
+  if (cookie.error != SLP_OK) {
+    OLA_INFO << "Error finding service with slp " << cookie.error;
+    m_ok = false;
+  }
+}
+
+
+/**
+ * Perform the register action
+ */
+void SlpRegistrationAction::Perform(SLPHandle handle) {
+  std::stringstream str;
+  str << "service:" << SERVICE_NAME << "://" << m_url;
+  SLPError callbackerr;
+  SLPError err = SLPReg(handle,
+                        str.str().c_str(),
+                        m_lifetime,
+                        0,
+                        "",
+                        SLP_TRUE,
+                        RegisterCallback,
+                        &callbackerr);
+
+
+  if ((err != SLP_OK)) {
+    OLA_INFO << "Error registering service with slp " << err;
+    m_ok = false;
+  }
+
+  if (callbackerr != SLP_OK) {
+    OLA_INFO << "Error registering service with slp " << callbackerr;
+    m_ok = false;
+  }
+}
+
+
+/**
+ * Perform the deregister action
+ */
+void SlpDeRegistrationAction::Perform(SLPHandle handle) {
+  std::stringstream str;
+  str << "service:" << SERVICE_NAME << "://" << m_url;
+  SLPError callbackerr;
+  SLPError err = SLPDereg(handle,
+                          str.str().c_str(),
+                          RegisterCallback,
+                          &callbackerr);
+
+
+  if ((err != SLP_OK)) {
+    OLA_INFO << "Error deregistering service with slp " << err;
+    m_ok = false;
+  }
+
+  if (callbackerr != SLP_OK) {
+    OLA_INFO << "Error deregistering service with slp " << callbackerr;
+    m_ok = false;
+  }
 }
 
 
@@ -144,7 +238,7 @@ bool SlpThread::Join(void *ptr) {
  */
 void SlpThread::Discover(slp_discovery_callback *callback,
                          url_vector *urls) {
-  pending_action action = {callback, urls};
+  SlpDiscoveryAction *action = new SlpDiscoveryAction(callback, urls);
   pthread_mutex_lock(&m_incomming_mutex);
   m_incoming_queue.push(action);
   pthread_mutex_unlock(&m_incomming_mutex);
@@ -153,6 +247,52 @@ void SlpThread::Discover(slp_discovery_callback *callback,
 }
 
 
+/**
+ * Register a url.
+ * This registers a url with slpd, which either registers it with the DA if
+ * there is one, or responds to Findsrv requests as a SA.
+ * @param callback the callback to run when the registration is complete
+ * @param url the url to register
+ * @param lifetime the time in seconds for this registration to remain valid
+ */
+void SlpThread::Register(slp_registration_callback *callback,
+                         const string &url,
+                         unsigned short lifetime) {
+  SlpRegistrationAction *action = new SlpRegistrationAction(
+    callback,
+    url,
+    lifetime);
+  pthread_mutex_lock(&m_incomming_mutex);
+  m_incoming_queue.push(action);
+  pthread_mutex_unlock(&m_incomming_mutex);
+
+  pthread_cond_signal(&m_incomming_condition);
+}
+
+
+/**
+ * DeRegister a url.
+ * This deregisters a url with slpd, which either deregisters it with the DA if
+ * there is one, or stops responding to Findsrv requests as a SA.
+ * @param callback the callback to run when the registration is complete
+ * @param url the url to register
+ */
+void SlpThread::DeRegister(slp_registration_callback *callback,
+                           const string &url) {
+  SlpDeRegistrationAction *action = new SlpDeRegistrationAction(
+    callback,
+    url);
+  pthread_mutex_lock(&m_incomming_mutex);
+  m_incoming_queue.push(action);
+  pthread_mutex_unlock(&m_incomming_mutex);
+
+  pthread_cond_signal(&m_incomming_condition);
+}
+
+
+/**
+ * Entry point to the new thread
+ */
 void *SlpThread::Run() {
   while (true) {
     pthread_mutex_lock(&m_incomming_mutex);
@@ -165,43 +305,17 @@ void *SlpThread::Run() {
       return NULL;
     }
 
-    OLA_INFO << "new discovery request";
+    OLA_INFO << "new slp action";
 
-    pending_action action = m_incoming_queue.front();
+    BaseSlpAction *action = m_incoming_queue.front();
     m_incoming_queue.pop();
     pthread_mutex_unlock(&m_incomming_mutex);
 
-    slp_cookie cookie;
-    cookie.urls = action.urls;
-
-    SLPError err = SLPFindSrvs(m_slp_handle,
-                               "esta.e133",
-                               0,  // use configured scopes
-                               0,  // no attr filter
-                               ServiceCallback,
-                               &cookie);
-
-    OLA_INFO << "slp call returned";
-    bool ok = true;
-
-    if ((err != SLP_OK)) {
-      OLA_INFO << "Error finding service with slp " << err;
-      ok = false;
-    }
-
-    if (cookie.error != SLP_OK) {
-      OLA_INFO << "Error finding service with slp " << cookie.error;
-      ok = false;
-    }
-
-    completed_action done_action = {
-      action.callback,
-      ok,
-      action.urls
-    };
+    // this blocks and can take a while
+    action->Perform(m_slp_handle);
 
     pthread_mutex_lock(&m_outgoing_mutex);
-    m_outgoing_queue.push(done_action);
+    m_outgoing_queue.push(action);
     pthread_mutex_unlock(&m_outgoing_mutex);
     WakeUpSocket(&m_outgoing_socket);
   }
@@ -222,11 +336,12 @@ void SlpThread::RequestComplete() {
       return;
     }
 
-    completed_action action = m_outgoing_queue.front();
+    BaseSlpAction *action = m_outgoing_queue.front();
     m_outgoing_queue.pop();
     pthread_mutex_unlock(&m_outgoing_mutex);
 
-    action.callback->Run(action.ok, action.urls);
+    action->RequestComplete();
+    delete action;
   }
 }
 

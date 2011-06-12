@@ -34,8 +34,101 @@
 #ifndef TOOLS_E133_SLPTHREAD_H_
 #define TOOLS_E133_SLPTHREAD_H_
 
-typedef std::vector<std::string> url_vector;
+using std::string;
+
+typedef std::vector<string> url_vector;
+typedef ola::BaseCallback1<void, bool> slp_registration_callback;
 typedef ola::BaseCallback2<void, bool, url_vector*> slp_discovery_callback;
+
+// The interface for the SLPAction classes
+class BaseSlpAction {
+  public:
+    virtual ~BaseSlpAction() {}
+
+    virtual void Perform(SLPHandle handle) = 0;
+    virtual void RequestComplete() = 0;
+
+    static const char SERVICE_NAME[];
+};
+
+
+// A SLPAction, templatized by callback type
+template <typename callback_type>
+class SlpAction: public BaseSlpAction {
+  public:
+    SlpAction(callback_type *callback)
+        : m_ok(false),
+          m_callback(callback) {}
+    virtual ~SlpAction() {}
+
+    virtual void Perform(SLPHandle handle) = 0;
+    virtual void RequestComplete() = 0;
+
+
+  protected:
+    bool m_ok;
+    callback_type *m_callback;
+};
+
+
+// The SLP Discovery Action
+class SlpDiscoveryAction: public SlpAction<slp_discovery_callback> {
+  public:
+    SlpDiscoveryAction(slp_discovery_callback *callback,
+                       url_vector *urls)
+        : SlpAction<slp_discovery_callback>(callback),
+          m_urls(urls) {
+    }
+
+    void Perform(SLPHandle handle);
+    void RequestComplete() {
+      m_callback->Run(m_ok, m_urls);
+    }
+
+  private:
+    url_vector *m_urls;
+};
+
+
+// SLP Register Action
+class SlpRegistrationAction: public SlpAction<slp_registration_callback> {
+  public:
+    SlpRegistrationAction(slp_registration_callback *callback,
+                          const string &url,
+                          unsigned short lifetime)
+        : SlpAction<slp_registration_callback>(callback),
+          m_url(url),
+          m_lifetime(lifetime) {
+    }
+
+    void Perform(SLPHandle handle);
+    void RequestComplete() {
+      m_callback->Run(m_ok);
+    }
+
+  private:
+    string m_url;
+    unsigned short m_lifetime;
+};
+
+
+// SLP DeRegister Action
+class SlpDeRegistrationAction: public SlpAction<slp_registration_callback> {
+  public:
+    SlpDeRegistrationAction(slp_registration_callback *callback,
+                            const string &url)
+        : SlpAction<slp_registration_callback>(callback),
+          m_url(url) {
+    }
+
+    void Perform(SLPHandle handle);
+    void RequestComplete() {
+      m_callback->Run(m_ok);
+    }
+
+  private:
+    string m_url;
+};
 
 
 /**
@@ -50,28 +143,26 @@ class SlpThread: public ola::OlaThread {
     bool Start();
     bool Join(void *ptr = NULL);
 
-    // enqueue a request for discovery
+    // enqueue discovery request
     void Discover(slp_discovery_callback *callback,
                   url_vector *urls);
+
+    // queue a registration request
+    void Register(slp_registration_callback *callback,
+                  const string &url,
+                  unsigned short lifetime = SLP_LIFETIME_MAXIMUM);
+
+    // queue a de-register request
+    void DeRegister(slp_registration_callback *callback,
+                    const string &url);
 
     void *Run();
 
   private:
-    typedef struct {
-      slp_discovery_callback *callback;
-      url_vector *urls;
-    } pending_action;
-
-    typedef struct {
-      slp_discovery_callback *callback;
-      bool ok;
-      url_vector *urls;
-    } completed_action;
-
     ola::network::SelectServer *m_main_ss;
     ola::network::LoopbackSocket m_outgoing_socket;
-    std::queue<pending_action> m_incoming_queue;
-    std::queue<completed_action> m_outgoing_queue;
+    std::queue<BaseSlpAction*> m_incoming_queue;
+    std::queue<BaseSlpAction*> m_outgoing_queue;
     pthread_cond_t m_incomming_condition;
     pthread_mutex_t m_incomming_mutex, m_outgoing_mutex;
     bool m_init_ok, m_terminate;
