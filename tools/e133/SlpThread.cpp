@@ -526,6 +526,9 @@ void SlpThread::SimpleActionComplete(slp_registration_callback *callback,
  */
 void SlpThread::DiscoveryTriggered() {
   OLA_INFO << "scheduled next discovery run";
+  // set the discovery_timeout to invalid so we don't try and remove it while
+  // it's running.
+  m_discovery_timeout = ola::network::INVALID_TIMEOUT;
   DiscoveryRequest();
 }
 
