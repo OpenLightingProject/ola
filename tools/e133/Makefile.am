@@ -20,20 +20,15 @@ e133_controller_LDADD = @LIBS@ \
                         $(top_builddir)/plugins/e131/e131/libolae131core.la
 
 if HAVE_SLP
-bin_PROGRAMS += slp_locate slp_thread slp_register
+bin_PROGRAMS += slp_locate slp_register
 
-slp_locate_SOURCES = slp-locate.cpp
+slp_locate_SOURCES = slp-locate.cpp SlpThread.cpp
 slp_locate_LDFLAGS = $(SLP_LIBS)
 slp_locate_LDADD = @LIBS@ \
-                 $(top_builddir)/common/libolacommon.la
-
-slp_thread_SOURCES = slp-thread.cpp SlpThread.cpp
-slp_thread_LDFLAGS = $(SLP_LIBS)
-slp_thread_LDADD = @LIBS@ \
-                 $(top_builddir)/common/libolacommon.la
+                   $(top_builddir)/common/libolacommon.la
 
 slp_register_SOURCES = slp-register.cpp SlpThread.cpp
 slp_register_LDFLAGS = $(SLP_LIBS)
 slp_register_LDADD = @LIBS@ \
-                 $(top_builddir)/common/libolacommon.la
+                     $(top_builddir)/common/libolacommon.la
 endif
