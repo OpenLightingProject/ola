@@ -94,7 +94,7 @@ SlpThread::SlpThread(ola::network::SelectServer *ss,
   m_incoming_socket.SetOnData(ola::NewCallback(this, &SlpThread::NewRequest));
   m_outgoing_socket.SetOnData(ola::NewCallback(this,
                                                &SlpThread::RequestComplete));
-  pthread_mutex_init(&m_incomming_mutex, NULL);
+  pthread_mutex_init(&m_incoming_mutex, NULL);
   pthread_mutex_init(&m_outgoing_mutex, NULL);
 }
 
@@ -105,7 +105,7 @@ SlpThread::SlpThread(ola::network::SelectServer *ss,
 SlpThread::~SlpThread() {
   if (m_init_ok)
     SLPClose(m_slp_handle);
-  pthread_mutex_destroy(&m_incomming_mutex);
+  pthread_mutex_destroy(&m_incoming_mutex);
   pthread_mutex_destroy(&m_outgoing_mutex);
 }
 
@@ -242,18 +242,16 @@ void SlpThread::NewRequest() {
   EmptySocket(&m_incoming_socket);
 
   while (true) {
-    pthread_mutex_lock(&m_incomming_mutex);
+    pthread_mutex_lock(&m_incoming_mutex);
     if (m_incoming_queue.empty()) {
-      pthread_mutex_unlock(&m_incomming_mutex);
+      pthread_mutex_unlock(&m_incoming_mutex);
       return;
     }
 
-    ola::SingleUseCallback0<void> *action = m_incoming_queue.front();
+    ola::BaseCallback0<void> *callback = m_incoming_queue.front();
     m_incoming_queue.pop();
-    pthread_mutex_unlock(&m_incomming_mutex);
-
-    // this can take a while
-    action->Run();
+    pthread_mutex_unlock(&m_incoming_mutex);
+    callback->Run();
   }
 }
 
@@ -305,9 +303,9 @@ void SlpThread::EmptySocket(ola::network::LoopbackSocket *socket) {
  * Add a callback to the incoming queue
  */
 void SlpThread::AddToIncomingQueue(ola::SingleUseCallback0<void> *callback) {
-  pthread_mutex_lock(&m_incomming_mutex);
+  pthread_mutex_lock(&m_incoming_mutex);
   m_incoming_queue.push(callback);
-  pthread_mutex_unlock(&m_incomming_mutex);
+  pthread_mutex_unlock(&m_incoming_mutex);
 }
 
 

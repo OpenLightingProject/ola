@@ -99,7 +99,7 @@ class SlpThread: public ola::OlaThread {
     ola::network::LoopbackSocket m_incoming_socket, m_outgoing_socket;
     std::queue<ola::SingleUseCallback0<void>*> m_incoming_queue;
     std::queue<ola::BaseCallback0<void>*> m_outgoing_queue;
-    pthread_mutex_t m_incomming_mutex, m_outgoing_mutex;
+    pthread_mutex_t m_incoming_mutex, m_outgoing_mutex;
     bool m_init_ok;
     unsigned int m_refresh_time;
     SLPHandle m_slp_handle;
