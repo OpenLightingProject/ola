@@ -19,15 +19,21 @@
 
 #include <slp.h>
 #include <ola/Logging.h>
+#include <algorithm>
 #include <sstream>
 #include <string>
+#include <vector>
+#include <utility>
 #include "SlpThread.h"
 
 
+using std::pair;
 using std::string;
+using std::vector;
 
 // The service name we use for SLP
-const char BaseSlpAction::SERVICE_NAME[] = "esta.e133";
+const char SlpThread::SERVICE_NAME[] = "esta.e133";
+const unsigned short SlpThread::MIN_LIFETIME = 5;
 
 
 void RegisterCallback(SLPHandle slp_handle, SLPError errcode, void* cookie) {
@@ -42,7 +48,7 @@ void RegisterCallback(SLPHandle slp_handle, SLPError errcode, void* cookie) {
  */
 typedef struct {
   SLPError error;
-  url_vector *urls;
+  vector<pair<string, unsigned short> > urls;
 } slp_cookie;
 
 
@@ -57,7 +63,8 @@ SLPBoolean ServiceCallback(SLPHandle slp_handle,
   slp_cookie *cookie = static_cast<slp_cookie*>(raw_cookie);
 
   if (errcode == SLP_OK) {
-    cookie->urls->push_back(string(srvurl));
+    pair<string, unsigned short> p(srvurl, lifetime);
+    cookie->urls.push_back(p);
     cookie->error = SLP_OK;
   } else if (errcode == SLP_LAST_CALL) {
     cookie->error = SLP_OK;
@@ -72,99 +79,18 @@ SLPBoolean ServiceCallback(SLPHandle slp_handle,
 
 
 /**
- * Perform the discovery action
- */
-void SlpDiscoveryAction::Perform(SLPHandle handle) {
-  slp_cookie cookie;
-  cookie.urls = m_urls;
-
-  SLPError err = SLPFindSrvs(handle,
-                             SERVICE_NAME,
-                             0,  // use configured scopes
-                             0,  // no attr filter
-                             ServiceCallback,
-                             &cookie);
-
-  OLA_INFO << "slp call returned";
-  m_ok = true;
-
-  if ((err != SLP_OK)) {
-    OLA_INFO << "Error finding service with slp " << err;
-    m_ok = false;
-  }
-
-  if (cookie.error != SLP_OK) {
-    OLA_INFO << "Error finding service with slp " << cookie.error;
-    m_ok = false;
-  }
-}
-
-
-/**
- * Perform the register action
- */
-void SlpRegistrationAction::Perform(SLPHandle handle) {
-  unsigned short s = SLPGetRefreshInterval();
-  OLA_INFO << "min interval is " << s;
-
-  std::stringstream str;
-  str << "service:" << SERVICE_NAME << "://" << m_url;
-  SLPError callbackerr;
-  SLPError err = SLPReg(handle,
-                        str.str().c_str(),
-                        m_lifetime,
-                        0,
-                        "",
-                        SLP_TRUE,
-                        RegisterCallback,
-                        &callbackerr);
-
-
-  if ((err != SLP_OK)) {
-    OLA_INFO << "Error registering service with slp " << err;
-    m_ok = false;
-  }
-
-  if (callbackerr != SLP_OK) {
-    OLA_INFO << "Error registering service with slp " << callbackerr;
-    m_ok = false;
-  }
-}
-
-
-/**
- * Perform the deregister action
- */
-void SlpDeRegistrationAction::Perform(SLPHandle handle) {
-  std::stringstream str;
-  str << "service:" << SERVICE_NAME << "://" << m_url;
-  SLPError callbackerr;
-  SLPError err = SLPDereg(handle,
-                          str.str().c_str(),
-                          RegisterCallback,
-                          &callbackerr);
-
-
-  if ((err != SLP_OK)) {
-    OLA_INFO << "Error deregistering service with slp " << err;
-    m_ok = false;
-  }
-
-  if (callbackerr != SLP_OK) {
-    OLA_INFO << "Error deregistering service with slp " << callbackerr;
-    m_ok = false;
-  }
-}
-
-
-/**
  * Create a new resolver thread. This doesn't actually start it.
  * @param ss the select server to use to handle the callbacks.
  */
-SlpThread::SlpThread(ola::network::SelectServer *ss)
-  : OlaThread(),
-    m_main_ss(ss),
-    m_init_ok(false) {
+SlpThread::SlpThread(ola::network::SelectServer *ss,
+                     slp_discovery_callback *discovery_callback,
+                     unsigned int refresh_time)
+    : OlaThread(),
+      m_main_ss(ss),
+      m_init_ok(false),
+      m_refresh_time(refresh_time),
+      m_discovery_callback(discovery_callback),
+      m_discovery_timeout(ola::network::INVALID_TIMEOUT) {
   m_incoming_socket.SetOnData(ola::NewCallback(this, &SlpThread::NewRequest));
   m_outgoing_socket.SetOnData(ola::NewCallback(this,
                                                &SlpThread::RequestComplete));
@@ -235,22 +161,27 @@ bool SlpThread::Join(void *ptr) {
 
 
 /**
- * Schedule a discovery.
- * @param callback the callback to be invoked once the discovery is complete
+ * Trigger discovery.
  * @param urls a pointer to a vector which will be populated with the urls we
  * find.
  *
  * This call returns immediately. Upon completion, the callback will be invoked
  * in the thread running the select server passed to SlpThread's constructor.
  */
-void SlpThread::Discover(slp_discovery_callback *callback,
-                         url_vector *urls) {
-  SlpDiscoveryAction *action = new SlpDiscoveryAction(callback, urls);
-  pthread_mutex_lock(&m_incomming_mutex);
-  m_incoming_queue.push(action);
-  pthread_mutex_unlock(&m_incomming_mutex);
+bool SlpThread::Discover() {
+  if (m_discovery_callback == NULL) {
+    OLA_WARN <<
+        "Attempted to run discovery but no callback was passed to "
+        "SlpThread(), this is a programming error.";
+    return false;
+  }
 
+  ola::SingleUseCallback0<void> *callback = ola::NewSingleCallback(
+      this,
+      &SlpThread::DiscoveryRequest);
+  AddToIncomingQueue(callback);
   WakeUpSocket(&m_incoming_socket);
+  return true;
 }
 
 
@@ -262,17 +193,16 @@ void SlpThread::Discover(slp_discovery_callback *callback,
  * @param url the url to register
  * @param lifetime the time in seconds for this registration to remain valid
  */
-void SlpThread::Register(slp_registration_callback *callback,
+void SlpThread::Register(slp_registration_callback *on_complete,
                          const string &url,
                          unsigned short lifetime) {
-  SlpRegistrationAction *action = new SlpRegistrationAction(
-    callback,
-    url,
-    lifetime);
-  pthread_mutex_lock(&m_incomming_mutex);
-  m_incoming_queue.push(action);
-  pthread_mutex_unlock(&m_incomming_mutex);
-
+  ola::SingleUseCallback0<void> *callback = ola::NewSingleCallback(
+      this,
+      &SlpThread::RegisterRequest,
+      on_complete,
+      url,
+      lifetime);
+  AddToIncomingQueue(callback);
   WakeUpSocket(&m_incoming_socket);
 }
 
@@ -284,15 +214,14 @@ void SlpThread::Register(slp_registration_callback *callback,
  * @param callback the callback to run when the registration is complete
  * @param url the url to register
  */
-void SlpThread::DeRegister(slp_registration_callback *callback,
+void SlpThread::DeRegister(slp_registration_callback *on_complete,
                            const string &url) {
-  SlpDeRegistrationAction *action = new SlpDeRegistrationAction(
-    callback,
-    url);
-  pthread_mutex_lock(&m_incomming_mutex);
-  m_incoming_queue.push(action);
-  pthread_mutex_unlock(&m_incomming_mutex);
-
+  ola::SingleUseCallback0<void> *callback = ola::NewSingleCallback(
+      this,
+      &SlpThread::DeregisterRequest,
+      on_complete,
+      url);
+  AddToIncomingQueue(callback);
   WakeUpSocket(&m_incoming_socket);
 }
 
@@ -319,19 +248,12 @@ void SlpThread::NewRequest() {
       return;
     }
 
-    OLA_INFO << "new slp action";
-
-    BaseSlpAction *action = m_incoming_queue.front();
+    ola::SingleUseCallback0<void> *action = m_incoming_queue.front();
     m_incoming_queue.pop();
     pthread_mutex_unlock(&m_incomming_mutex);
 
-    // this blocks and can take a while
-    action->Perform(m_slp_handle);
-
-    pthread_mutex_lock(&m_outgoing_mutex);
-    m_outgoing_queue.push(action);
-    pthread_mutex_unlock(&m_outgoing_mutex);
-    WakeUpSocket(&m_outgoing_socket);
+    // this can take a while
+    action->Run();
   }
 }
 
@@ -340,7 +262,6 @@ void SlpThread::NewRequest() {
  * Called in the main thread when a request completes
  */
 void SlpThread::RequestComplete() {
-  OLA_INFO << "request complete";
   EmptySocket(&m_outgoing_socket);
 
   while (true) {
@@ -350,12 +271,10 @@ void SlpThread::RequestComplete() {
       return;
     }
 
-    BaseSlpAction *action = m_outgoing_queue.front();
+    ola::BaseCallback0<void> *callback = m_outgoing_queue.front();
     m_outgoing_queue.pop();
     pthread_mutex_unlock(&m_outgoing_mutex);
-
-    action->RequestComplete();
-    delete action;
+    callback->Run();
   }
 }
 
@@ -379,4 +298,247 @@ void SlpThread::EmptySocket(ola::network::LoopbackSocket *socket) {
     unsigned int size;
     socket->Receive(&message, sizeof(message), size);
   }
+}
+
+
+/**
+ * Add a callback to the incoming queue
+ */
+void SlpThread::AddToIncomingQueue(ola::SingleUseCallback0<void> *callback) {
+  pthread_mutex_lock(&m_incomming_mutex);
+  m_incoming_queue.push(callback);
+  pthread_mutex_unlock(&m_incomming_mutex);
+}
+
+
+/**
+ * Add a callback to the outgoing queue, this also writes to the socket to wake
+ * up the remote end
+ */
+void SlpThread::AddToOutgoingQueue(ola::BaseCallback0<void> *callback) {
+  pthread_mutex_lock(&m_outgoing_mutex);
+  m_outgoing_queue.push(callback);
+  pthread_mutex_unlock(&m_outgoing_mutex);
+  WakeUpSocket(&m_outgoing_socket);
+}
+
+
+/**
+ * Perform the discovery routine.
+ */
+void SlpThread::DiscoveryRequest() {
+  if (m_discovery_timeout != ola::network::INVALID_TIMEOUT) {
+    m_ss.RemoveTimeout(m_discovery_timeout);
+  }
+
+  slp_cookie cookie;
+  SLPError err = SLPFindSrvs(m_slp_handle,
+                             SERVICE_NAME,
+                             0,  // use configured scopes
+                             0,  // no attr filter
+                             ServiceCallback,
+                             &cookie);
+  bool ok = true;
+
+  if ((err != SLP_OK)) {
+    OLA_INFO << "Error finding service with slp " << err;
+    ok = false;
+  }
+
+  if (cookie.error != SLP_OK) {
+    OLA_INFO << "Error finding service with slp " << cookie.error;
+    ok = false;
+  }
+
+  // figure out the lowest expiry time and use that as the refresh timer.
+  // This will cause issues in large networks as all SLP clients will
+  // syncronize.
+  // TODO(simon): Add jitter here.
+  unsigned short next_discovery_duration = m_refresh_time;
+  if (ok) {
+    vector<pair<string, unsigned short> >::const_iterator iter;
+    for (iter = cookie.urls.begin(); iter != cookie.urls.end(); ++iter) {
+      next_discovery_duration = std::min(iter->second,
+                                         next_discovery_duration);
+    }
+  }
+
+  url_vector *urls = new url_vector;
+  // we lack select1st so we can't use transform
+  urls->reserve(cookie.urls.size());
+  vector<pair<string, unsigned short> >::const_iterator iter;
+  for (iter = cookie.urls.begin(); iter != cookie.urls.end(); ++iter)
+    urls->push_back(iter->first);
+
+  OLA_INFO << "next discovery time is " << next_discovery_duration;
+  m_discovery_timeout = m_ss.RegisterSingleTimeout(
+      next_discovery_duration * 1000,
+      ola::NewSingleCallback(this,
+                             &SlpThread::DiscoveryTriggered));
+
+  AddToOutgoingQueue(
+      NewSingleCallback(this,
+                        &SlpThread::DiscoveryActionComplete,
+                        ok,
+                        urls));
+}
+
+
+/**
+ * Register a url with slp
+ */
+void SlpThread::RegisterRequest(slp_registration_callback *callback,
+                                const string url,
+                                unsigned short lifetime) {
+  lifetime = std::max(lifetime, MIN_LIFETIME);
+  unsigned short min_lifetime = SLPGetRefreshInterval();
+  OLA_INFO << "min interval from DA is " << min_lifetime;
+
+  if (min_lifetime != 0 && lifetime < min_lifetime)
+    lifetime = min_lifetime;
+
+  url_state_map::iterator iter = m_url_map.find(url);
+  if (iter != m_url_map.end()) {
+    if (iter->second.lifetime == lifetime) {
+      OLA_INFO << "New lifetime of " << url << " matches current registration,"
+        << " ignoring update";
+      AddToOutgoingQueue(
+          NewSingleCallback(this,
+                            &SlpThread::SimpleActionComplete,
+                            callback,
+                            true));
+      return;
+    }
+    iter->second.lifetime = lifetime;
+    if (iter->second.timeout != ola::network::INVALID_TIMEOUT)
+      m_ss.RemoveTimeout(iter->second.timeout);
+  } else {
+    url_registration_state url_state = {
+      lifetime,
+      ola::network::INVALID_TIMEOUT
+    };
+    pair <string, url_registration_state> p(url, url_state);
+    iter = m_url_map.insert(p).first;
+  }
+
+  bool ok = PerformRegistration(url, lifetime, &(iter->second.timeout));
+
+  // mark as done
+  AddToOutgoingQueue(
+      NewSingleCallback(this,
+                        &SlpThread::SimpleActionComplete,
+                        callback,
+                        ok));
+}
+
+
+/**
+ * Do the actual SLP registration
+ */
+bool SlpThread::PerformRegistration(const string &url,
+                                    unsigned short lifetime,
+                                    ola::network::timeout_id *timeout) {
+  std::stringstream str;
+  str << "service:" << SERVICE_NAME << "://" << url;
+  SLPError callbackerr;
+  SLPError err = SLPReg(m_slp_handle,
+                        str.str().c_str(),
+                        lifetime,
+                        0,
+                        "",
+                        SLP_TRUE,
+                        RegisterCallback,
+                        &callbackerr);
+
+  bool ok = true;
+  if ((err != SLP_OK)) {
+    OLA_INFO << "Error registering service with slp " << err;
+    ok = false;
+  }
+
+  if (callbackerr != SLP_OK) {
+    OLA_INFO << "Error registering service with slp " << callbackerr;
+    ok = false;
+  }
+
+  // schedule timeout
+  OLA_INFO << "next registration for " << url << " in " <<
+    lifetime;
+  *timeout = m_ss.RegisterSingleTimeout(
+      (lifetime - 1) * 1000,
+      ola::NewSingleCallback(this,
+                             &SlpThread::RegistrationTriggered,
+                             url));
+  return ok;
+}
+
+
+void SlpThread::DeregisterRequest(slp_registration_callback *callback,
+                                  const string url) {
+  url_state_map::iterator iter = m_url_map.find(url);
+  if (iter != m_url_map.end()) {
+    OLA_INFO << "erasing " << url << " from map";
+    if (iter->second.timeout != ola::network::INVALID_TIMEOUT)
+      m_ss.RemoveTimeout(iter->second.timeout);
+    m_url_map.erase(iter);
+  }
+
+  std::stringstream str;
+  str << "service:" << SERVICE_NAME << "://" << url;
+  SLPError callbackerr;
+  SLPError err = SLPDereg(m_slp_handle,
+                          str.str().c_str(),
+                          RegisterCallback,
+                          &callbackerr);
+
+  bool ok = true;
+  if ((err != SLP_OK)) {
+    OLA_INFO << "Error deregistering service with slp " << err;
+    ok = false;
+  }
+
+  if (callbackerr != SLP_OK) {
+    OLA_INFO << "Error deregistering service with slp " << callbackerr;
+    ok = false;
+  }
+
+  AddToOutgoingQueue(
+      NewSingleCallback(this,
+                        &SlpThread::SimpleActionComplete,
+                        callback,
+                        ok));
+}
+
+
+void SlpThread::DiscoveryActionComplete(bool ok, url_vector *urls) {
+  m_discovery_callback->Run(ok, *urls);
+  delete urls;
+}
+
+void SlpThread::SimpleActionComplete(slp_registration_callback *callback,
+                                     bool ok) {
+  callback->Run(ok);
+}
+
+
+/**
+ * Called when the discovery timer triggers. This usually means that the
+ * lifetime of one of the discovered urls has expired and we need to check if
+ * it's still active.
+ */
+void SlpThread::DiscoveryTriggered() {
+  OLA_INFO << "scheduled next discovery run";
+  DiscoveryRequest();
+}
+
+
+/**
+ * Called when the lifetime for a service has expired and we need to register
+ * it again.
+ */
+void SlpThread::RegistrationTriggered(string url) {
+  OLA_INFO << "register " << url << " again";
+  url_state_map::iterator iter = m_url_map.find(url);
+  if (iter != m_url_map.end())
+    PerformRegistration(url, iter->second.lifetime, &(iter->second.timeout));
 }
