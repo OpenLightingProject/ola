@@ -119,7 +119,7 @@ bool ConnectedSocket::SetNoSigPipe(int fd) {
                       &sig_pipe_flag,
                       sizeof(sig_pipe_flag));
   if (ok == -1) {
-    OLA_WARN << "Failed to disable SIGPIPE on " << fd << ": " <<
+    OLA_INFO << "Failed to disable SIGPIPE on " << fd << ": " <<
       strerror(errno);
     return false;
   }
