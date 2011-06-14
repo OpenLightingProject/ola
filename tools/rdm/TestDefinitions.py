@@ -2151,9 +2151,13 @@ class SetLampOnMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELD = 'mode'
   REQUIRES = ['lamp_on_mode']
   ALLOWED_MODES = [0, 1, 2]
+  ALL_MODES = ALLOWED_MODES + [3] + range(0x80, 0xe0)
 
   def OldValue(self):
-    return self.Property('lamp_on_mode')
+    old = self.Property('lamp_on_mode')
+    if old in self.ALL_MODES:
+      return old
+    return self.ALL_MODES[0]
 
   def NewValue(self):
     old_value = self.OldValue()
@@ -2248,9 +2252,13 @@ class SetDisplayInvert(TestMixins.SetMixin,
   REQUIRES = ['display_invert']
   # some devices can't do auto so we just use on and off here
   ALLOWED_MODES = [0, 1]
+  ALL_MODES = ALLOWED_MODES + [2]
 
   def OldValue(self):
-    return self.Property('display_invert')
+    old = self.Property('display_invert')
+    if old in self.ALL_MODES:
+      return old
+    return self.ALL_MODES[0]
 
   def NewValue(self):
     old_value = self.OldValue()
@@ -2588,7 +2596,10 @@ class SetPowerState(TestMixins.SetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELD = 'power_state'
 
   def OldValue(self):
-    return self.Property('power_state')
+    old = self.Property('power_state')
+    if old in GetPowerState.ALLOWED_STATES:
+      return old
+    return GetPowerState.ALLOWED_STATES[0]
 
   def NewValue(self):
     old_value = self.Property('power_state')
