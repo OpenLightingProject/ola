@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-bin_PROGRAMS = usbpro_rdm_sniffer usbpro_firmware
+noinst_PROGRAMS = usbpro_rdm_sniffer usbpro_firmware
 usbpro_firmware_SOURCES = usbpro-firmware.cpp
 usbpro_firmware_LDFLAGS = $(PROTOBUF_LIBS)
 usbpro_firmware_LDADD = @LIBS@ \
