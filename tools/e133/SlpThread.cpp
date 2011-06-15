@@ -32,7 +32,7 @@ using std::string;
 using std::vector;
 
 // The service name we use for SLP
-const char SlpThread::SERVICE_NAME[] = "esta.e133";
+const char SlpThread::SERVICE_NAME[] = "e133.esta";
 const unsigned short SlpThread::MIN_LIFETIME = 5;
 
 
@@ -74,7 +74,6 @@ SLPBoolean ServiceCallback(SLPHandle slp_handle,
 
   return SLP_TRUE;
   (void) slp_handle;
-  (void) lifetime;
 }
 
 
