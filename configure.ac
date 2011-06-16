@@ -253,21 +253,29 @@ AM_PATH_CPPUNIT(
 AC_ARG_ENABLE(gcov,
               AC_HELP_STRING([--enable-gcov],
                              [turn on code coverage analysis tools]),
-              [use_gcov="yes"],
+              [enable_gov=$enablevar],
+              [enable_gov="no"],
              )
 
-if test "${use_gcov}" = "yes"; then
+if test "${enable_gov}" != "no"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   LDFLAGS="$LDFLAGS -fprofile-arcs"
 fi
 
 # slp - used for E1.33 support
-AC_CHECK_LIB([slp], [SLPOpen], [have_slp="yes"])
+AC_ARG_ENABLE(
+  slp,
+  AC_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
+
+SLP_LIBS=""
+have_slp=no
+if test "${enable_slp}" != "no"; then
+  AC_CHECK_LIB([slp], [SLPOpen], [have_slp="yes"])
+fi
 
 AM_CONDITIONAL(HAVE_SLP, test "${have_slp}" = "yes")
 
-SLP_LIBS=""
 if test "${have_slp}" = "yes"; then
   AC_DEFINE(HAVE_LIBSLP, 1, [define if libslp is installed])
   SLP_LIBS="-lslp"
