@@ -32,7 +32,7 @@ using std::string;
 using std::vector;
 
 // The service name we use for SLP
-const char SlpThread::SERVICE_NAME[] = "e133.esta";
+const char SlpThread::SERVICE_NAME[] = "service:e133.esta";
 const unsigned short SlpThread::MIN_LIFETIME = 5;
 
 
@@ -436,7 +436,7 @@ bool SlpThread::PerformRegistration(const string &url,
                                     unsigned short lifetime,
                                     ola::network::timeout_id *timeout) {
   std::stringstream str;
-  str << "service:" << SERVICE_NAME << "://" << url;
+  str << SERVICE_NAME << "://" << url;
   SLPError callbackerr;
   SLPError err = SLPReg(m_slp_handle,
                         str.str().c_str(),
