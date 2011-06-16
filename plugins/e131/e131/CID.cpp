@@ -60,14 +60,20 @@ bool CID::IsNil() const {
 }
 
 
+/**
+ * Pack a CID into the binary representation
+ */
 void CID::Pack(uint8_t *buffer) const {
   size_t data_length = CID_LENGTH;
-  char *ptr = reinterpret_cast<char*>(buffer);
-  if (m_uuid)
-    uuid_export(m_uuid, UUID_FMT_BIN, static_cast<void**>(&ptr),
-                &data_length);
-  else
+  // buffer may not be 4 byte aligned
+  char uid_data[CID_LENGTH];
+  void *ptr = static_cast<void*>(uid_data);
+  if (m_uuid) {
+    uuid_export(m_uuid, UUID_FMT_BIN, &ptr, &data_length);
+    memcpy(buffer, uid_data, CID_LENGTH);
+  } else {
     memset(buffer, 0, CID_LENGTH);
+  }
 }
 
 
@@ -99,10 +105,10 @@ bool CID::operator!=(const CID& c1) const {
 
 std::string CID::ToString() const {
   char cid[UUID_LEN_STR + 1];
-  char *str = cid;
+  void *str = static_cast<void*>(cid);
   size_t length = UUID_LEN_STR + 1;
-  uuid_export(m_uuid, UUID_FMT_STR, static_cast<void**>(&str), &length);
-  return std::string(str);
+  uuid_export(m_uuid, UUID_FMT_STR, &str, &length);
+  return std::string(cid);
 }
 
 
