@@ -28,7 +28,6 @@
 #include "plugins/e131/e131/DMPInflator.h"
 #include "plugins/e131/e131/TransportHeader.h"
 #include "plugins/e131/e131/E133Header.h"
-#include "ola/network/IPV4Address.h"
 
 namespace ola {
 namespace plugin {

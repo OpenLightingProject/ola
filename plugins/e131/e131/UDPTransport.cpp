@@ -26,6 +26,8 @@
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "plugins/e131/e131/BaseInflator.h"
+#include "plugins/e131/e131/HeaderSet.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {

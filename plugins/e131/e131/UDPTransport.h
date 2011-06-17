@@ -1,4 +1,5 @@
 /*
+#include <ola/Logging.h>
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
@@ -23,11 +24,9 @@
 
 #include <string>
 #include "ola/network/IPV4Address.h"
-#include "ola/network/InterfacePicker.h"
-#include "ola/network/SelectServer.h"
+#include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDU.h"
-#include "plugins/e131/e131/BaseInflator.h"
 
 namespace ola {
 namespace plugin {
@@ -49,7 +48,7 @@ class UDPTransport {
       m_recv_buffer(NULL) {
     }
 
-    UDPTransport(BaseInflator *inflator,
+    UDPTransport(class BaseInflator *inflator,
                  uint16_t port = ACN_PORT):
       m_inflator(inflator),
       m_port(port),
@@ -63,7 +62,7 @@ class UDPTransport {
               const IPV4Address &destination,
               uint16_t port = ACN_PORT);
     ola::network::UdpSocket *GetSocket() { return &m_socket; }
-    void SetInflator(BaseInflator *inflator) { m_inflator = inflator; }
+    void SetInflator(class BaseInflator *inflator) { m_inflator = inflator; }
     void Receive();
 
     bool JoinMulticast(const IPV4Address &group);
@@ -72,7 +71,7 @@ class UDPTransport {
   private:
     ola::network::UdpSocket m_socket;
     ola::network::Interface m_interface;
-    BaseInflator *m_inflator;
+    class BaseInflator *m_inflator;
     uint16_t m_port;
     uint8_t *m_send_buffer;
     uint8_t *m_recv_buffer;

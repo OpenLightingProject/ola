@@ -23,8 +23,10 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/DMPE131Inflator.h"
-#include "plugins/e131/e131/E131Layer.h"
 #include "plugins/e131/e131/E131Inflator.h"
+#include "plugins/e131/e131/E131Layer.h"
+#include "plugins/e131/e131/E131PDU.h"
+#include "plugins/e131/e131/RootLayer.h"
 
 namespace ola {
 namespace plugin {

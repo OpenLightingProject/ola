@@ -91,7 +91,7 @@ class E131Node {
     RootLayer m_root_layer;
     E131Layer m_e131_layer;
     DMPE131Inflator m_dmp_inflator;
-    map<unsigned int, tx_universe> m_tx_universes;
+    std::map<unsigned int, tx_universe> m_tx_universes;
     uint8_t *m_send_buffer;
 
     tx_universe *SetupOutgoingSettings(unsigned int universe);

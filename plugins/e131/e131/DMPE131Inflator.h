@@ -28,7 +28,6 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/e131/e131/DMPInflator.h"
-#include "plugins/e131/e131/E131Layer.h"
 
 namespace ola {
 namespace plugin {
@@ -38,7 +37,7 @@ class DMPE131Inflator: public DMPInflator {
   friend class DMPE131InflatorTest;
 
   public:
-    DMPE131Inflator(E131Layer *e131_layer, bool ignore_preview):
+    DMPE131Inflator(class E131Layer *e131_layer, bool ignore_preview):
       DMPInflator(),
       m_e131_layer(e131_layer),
       m_ignore_preview(ignore_preview) {
@@ -72,7 +71,7 @@ class DMPE131Inflator: public DMPInflator {
     } universe_handler;
 
     std::map<unsigned int, universe_handler> m_handlers;
-    E131Layer *m_e131_layer;
+    class E131Layer *m_e131_layer;
     bool m_ignore_preview;
 
     bool TrackSourceIfRequired(universe_handler *universe_data,

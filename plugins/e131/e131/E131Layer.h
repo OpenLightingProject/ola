@@ -23,12 +23,9 @@
 #ifndef PLUGINS_E131_E131_E131LAYER_H_
 #define PLUGINS_E131_E131_E131LAYER_H_
 
-#include "ola/network/IPV4Address.h"
 #include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/E131Header.h"
 #include "plugins/e131/e131/E131Inflator.h"
-#include "plugins/e131/e131/E131PDU.h"
-#include "plugins/e131/e131/RootLayer.h"
 
 namespace ola {
 namespace plugin {
@@ -38,7 +35,7 @@ class DMPInflator;
 
 class E131Layer {
   public:
-    explicit E131Layer(RootLayer *root_layer);
+    explicit E131Layer(class RootLayer *root_layer);
     ~E131Layer() {}
 
     bool SendDMP(const E131Header &header, const DMPPDU *pdu);
@@ -47,13 +44,14 @@ class E131Layer {
     bool LeaveUniverse(unsigned int universe);
 
   private:
-    RootLayer *m_root_layer;
+    class RootLayer *m_root_layer;
     E131Inflator m_e131_inflator;
     E131InflatorRev2 m_e131_rev2_inflator;
 
     E131Layer(const E131Layer&);
     E131Layer& operator=(const E131Layer&);
-    bool UniverseIP(unsigned int universe, ola::network::IPV4Address *addr);
+    bool UniverseIP(unsigned int universe,
+                    class ola::network::IPV4Address *addr);
 };
 }  // e131
 }  // plugin

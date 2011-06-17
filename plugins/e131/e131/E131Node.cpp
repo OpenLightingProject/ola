@@ -25,12 +25,14 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
+#include "ola/network/InterfacePicker.h"
 #include "plugins/e131/e131/E131Node.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
+using std::map;
 using std::string;
 using ola::Callback0;
 using ola::DmxBuffer;
