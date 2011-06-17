@@ -17,6 +17,7 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <errno.h>
 #include <getopt.h>
 #include <string.h>
@@ -27,7 +28,7 @@
 #include <string>
 
 #include "plugins/dummy/DummyResponder.h"
-#include "plugins/e131/e131/UDPTransport.h"
+#include "plugins/e131/e131/ACNPort.h"
 
 #include "E133Node.h"
 #include "E133Receiver.h"
@@ -138,7 +139,7 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(argv);
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
-  E133Node node(opts.ip_address, ola::plugin::e131::UDPTransport::ACN_PORT);
+  E133Node node(opts.ip_address, ola::plugin::e131::ACN_PORT);
   if (!node.Init())
     exit(EX_UNAVAILABLE);
 

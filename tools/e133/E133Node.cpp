@@ -17,6 +17,7 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/network/InterfacePicker.h>

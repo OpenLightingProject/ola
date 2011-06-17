@@ -17,6 +17,7 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
@@ -28,6 +29,7 @@
 
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/DMPAddress.h"
+#include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/E133Layer.h"
 
 #include "E133Receiver.h"

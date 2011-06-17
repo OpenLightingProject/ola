@@ -17,6 +17,7 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <errno.h>
 #include <getopt.h>
 #include <sysexits.h>
@@ -35,7 +36,7 @@
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/UDPTransport.h"
+#include "plugins/e131/e131/ACNPort.h"
 
 #include "E133Node.h"
 #include "E133UniverseController.h"
@@ -252,8 +253,7 @@ int main(int argc, char *argv[]) {
 
   UID src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd);
 
-  E133Node node(opts.ip_address,
-                ola::plugin::e131::UDPTransport::ACN_PORT + 1);
+  E133Node node(opts.ip_address, ola::plugin::e131::ACN_PORT + 1);
   if (!node.Init()) {
     exit(EX_UNAVAILABLE);
   }
