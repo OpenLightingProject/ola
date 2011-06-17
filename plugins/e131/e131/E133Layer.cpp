@@ -22,8 +22,11 @@
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/DMPE133Inflator.h"
-#include "plugins/e131/e131/E133Layer.h"
+#include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/E133Inflator.h"
+#include "plugins/e131/e131/E133Layer.h"
+#include "plugins/e131/e131/E133PDU.h"
+#include "plugins/e131/e131/RootLayer.h"
 
 namespace ola {
 namespace plugin {

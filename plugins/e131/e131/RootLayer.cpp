@@ -23,6 +23,7 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
 namespace plugin {

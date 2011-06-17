@@ -24,32 +24,27 @@
 #define PLUGINS_E131_E131_E133LAYER_H_
 
 #include "ola/network/IPV4Address.h"
-#include "plugins/e131/e131/DMPPDU.h"
+#include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133PDU.h"
-#include "plugins/e131/e131/RootLayer.h"
-#include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::plugin::e131::UDPTransport;
-
 class E133Layer {
   public:
-    explicit E133Layer(RootLayer *root_layer);
+    explicit E133Layer(class RootLayer *root_layer);
     ~E133Layer() {}
 
     bool SendDMP(const E133Header &header,
-                 const DMPPDU *pdu,
+                 const class DMPPDU *pdu,
                  const ola::network::IPV4Address &destination,
-                 uint16_t destination_port = UDPTransport::ACN_PORT);
+                 uint16_t destination_port = ACN_PORT);
     bool SetInflator(class DMPE133Inflator *inflator);
 
   private:
-    RootLayer *m_root_layer;
+    class RootLayer *m_root_layer;
     E133Inflator m_e133_inflator;
 
     E133Layer(const E133Layer&);

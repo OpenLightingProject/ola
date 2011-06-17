@@ -27,6 +27,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/Interface.h"
+#include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Layer.h"
 #include "plugins/e131/e131/RootLayer.h"
@@ -44,7 +45,7 @@ class E131Node {
              bool use_rev2 = false,
              bool ignore_preview = true,
              uint8_t dscp_value = 0,  // default off
-             uint16_t port = UDPTransport::ACN_PORT);
+             uint16_t port = ACN_PORT);
     ~E131Node();
 
     bool Start();

@@ -26,6 +26,7 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
+#include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/PDU.h"
 
 namespace ola {
@@ -39,8 +40,6 @@ using ola::network::IPV4Address;
  */
 class UDPTransport {
   public:
-    static const uint16_t ACN_PORT = 5568;
-
     explicit UDPTransport(uint16_t port = ACN_PORT):
       m_inflator(NULL),
       m_port(port),

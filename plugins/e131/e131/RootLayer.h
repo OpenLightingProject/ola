@@ -24,22 +24,21 @@
 #define PLUGINS_E131_E131_ROOTLAYER_H_
 
 #include "ola/network/IPV4Address.h"
+#include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
 using ola::network::IPV4Address;
-using ola::plugin::e131::UDPTransport;
 
 class RootLayer {
   public:
-    RootLayer(UDPTransport *transport, const CID &cid);
+    RootLayer(class UDPTransport *transport, const CID &cid);
     ~RootLayer() {}
 
     bool AddInflator(BaseInflator *inflator);
@@ -48,18 +47,18 @@ class RootLayer {
     bool SendPDU(unsigned int vector,
                  const PDU &pdu,
                  const IPV4Address &destination,
-                 uint16_t port = UDPTransport::ACN_PORT);
+                 uint16_t port = ACN_PORT);
     // Use for testing to force a message from a particular cid
     bool SendPDU(unsigned int vector,
                  const PDU &pdu,
                  const CID &cid,
                  const IPV4Address &destination,
-                 uint16_t port = UDPTransport::ACN_PORT);
+                 uint16_t port = ACN_PORT);
     // Encapsulation & send a block of PDUs
     bool SendPDUBlock(unsigned int vector,
                       const PDUBlock<PDU> &block,
                       const IPV4Address &destination,
-                      uint16_t port = UDPTransport::ACN_PORT);
+                      uint16_t port = ACN_PORT);
 
     // TODO(simon): add methods to queue and send PDUs/blocks with different
     // vectors
@@ -68,7 +67,7 @@ class RootLayer {
     bool LeaveMulticast(const IPV4Address &group);
 
   private:
-    UDPTransport *m_transport;
+    class UDPTransport *m_transport;
     RootInflator m_root_inflator;
     PDUBlock<PDU> m_working_block;
     PDUBlock<PDU> m_root_block;
