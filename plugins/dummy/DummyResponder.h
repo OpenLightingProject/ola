@@ -33,7 +33,7 @@ namespace dummy {
 
 class DummyResponder: public ola::rdm::RDMControllerInterface {
   public:
-    DummyResponder(const ola::rdm::UID &uid):
+    explicit DummyResponder(const ola::rdm::UID &uid):
       m_start_address(1),
       m_personality(0),
       m_identify_mode(0),
