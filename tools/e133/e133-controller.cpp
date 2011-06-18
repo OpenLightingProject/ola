@@ -145,9 +145,9 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -h, --help         Display this help message and exit.\n"
   "  -t, --target       IP to send the message to\n"
   "  -i, --ip           The IP address to listen on.\n"
-  "  -l, --log-level <level>  Set the loggging level 0 .. 4.\n"
-  "  -u, --universe <universe>  The universe to respond on (> 0).\n"
-  "  --uid <uid>               the UID of the device to control.\n"
+  "  -l, --log-level <level>   Set the loggging level 0 .. 4.\n"
+  "  -u, --universe <universe> The universe to respond on (> 0).\n"
+  "  --uid <uid>               The UID of the device to control.\n"
   << std::endl;
   exit(0);
 }
