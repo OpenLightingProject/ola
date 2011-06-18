@@ -21,9 +21,7 @@
 
 #include <iostream>
 #include <string>
-#include "ola/BaseTypes.h"
 #include "ola/Logging.h"
-#include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/dummy/DummyPort.h"
 
@@ -68,6 +66,7 @@ void DummyPort::RunIncrementalDiscovery() {
   RunDiscovery();
 }
 
+
 /*
  * Handle an RDM Request
  */
@@ -78,9 +77,8 @@ void DummyPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 
 
 void DummyPort::RunDiscovery() {
-  ola::rdm::UID uid(OPEN_LIGHTING_ESTA_CODE, 0xffffff00);
   ola::rdm::UIDSet uid_set;
-  uid_set.AddUID(uid);
+  uid_set.AddUID(m_responder.UID());
   NewUIDList(uid_set);
 }
 }  // dummy

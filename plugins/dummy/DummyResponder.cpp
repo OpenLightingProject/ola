@@ -52,11 +52,21 @@ const unsigned int DummyResponder::PERSONALITY_COUNT = (
   sizeof(DummyResponder::PERSONALITIES) /
   sizeof(DummyResponder::personality_info));
 
+
 /*
  * Handle an RDM Request
  */
 void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
+  if (request->DestinationUID() != m_uid &&
+      (!request->DestinationUID().IsBroadcast())) {
+    vector<string> packets;
+    OLA_WARN << "Dummy responder received request for the wrong UID, " <<
+      "expected " << m_uid << ", got " << request->DestinationUID();
+    delete request;
+    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+  }
+
   switch (request->ParamId()) {
     case ola::rdm::PID_SUPPORTED_PARAMETERS:
       HandleSupportedParams(request, callback);
@@ -493,7 +503,7 @@ bool DummyResponder::CheckForBroadcastSubdeviceOrData(
  * raw data.
  */
 void DummyResponder::RunRDMCallback(ola::rdm::RDMCallback *callback,
-                               ola::rdm::RDMResponse *response) {
+                                    ola::rdm::RDMResponse *response) {
   string raw_response;
   response->Pack(&raw_response);
   vector<string> packets;

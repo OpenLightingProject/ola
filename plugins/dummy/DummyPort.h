@@ -22,9 +22,11 @@
 #define PLUGINS_DUMMY_DUMMYPORT_H_
 
 #include <string>
+#include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/UID.h"
 #include "olad/Port.h"
 #include "plugins/dummy/DummyDevice.h"
 #include "plugins/dummy/DummyResponder.h"
@@ -36,7 +38,8 @@ namespace dummy {
 class DummyPort: public BasicOutputPort {
   public:
     DummyPort(DummyDevice *parent, unsigned int id):
-      BasicOutputPort(parent, id, true) {
+      BasicOutputPort(parent, id, true),
+      m_responder(ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffff00)) {
     }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
