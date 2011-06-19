@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 #include <utility>
-#include "SlpThread.h"
+#include "tools/e133/SlpThread.h"
 
 
 using std::pair;
@@ -481,7 +481,7 @@ void SlpThread::DeregisterRequest(slp_registration_callback *callback,
   }
 
   std::stringstream str;
-  str << "service:" << SERVICE_NAME << "://" << url;
+  str << SERVICE_NAME << "://" << url;
   SLPError callbackerr;
   SLPError err = SLPDereg(m_slp_handle,
                           str.str().c_str(),
