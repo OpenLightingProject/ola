@@ -23,9 +23,10 @@
 
 #include HASH_MAP_H
 
-#include <ola/network/SelectServer.h>
 #include <string>
 
+#include "ola/network/IPV4Address.h"
+#include "ola/network/SelectServerInterface.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/DMPE133Inflator.h"
 #include "plugins/e131/e131/E133Layer.h"
@@ -37,18 +38,19 @@
 
 using std::string;
 
+
 class E133Node {
   public:
-    E133Node(const string &preferred_ip, uint16_t port);
+    E133Node(ola::network::SelectServerInterface *ss,
+             const string &preferred_ip,
+             uint16_t port);
     ~E133Node();
 
     bool Init();
-    void Run() { m_ss.Run(); }
-    void Stop() { m_ss.Terminate(); }
+    ola::network::IPV4Address V4Address() const { return m_v4_address; }
 
     bool RegisterComponent(class E133Component *component);
     void UnRegisterComponent(class E133Component *component);
-    // bool RegisterReciever(E133UniverseReceiver *receiver);
 
     void HandleManagementPacket(
         const ola::plugin::e131::TransportHeader &transport_header,
@@ -57,15 +59,15 @@ class E133Node {
 
     bool CheckForStaleRequests();
 
-
   private:
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<
       unsigned int,
       class E133Component*> component_map;
 
     const string m_preferred_ip;
-    ola::network::SelectServer m_ss;
-    ola::network::Event *m_timeout_event;
+    ola::network::SelectServerInterface *m_ss;
+    ola::network::IPV4Address m_v4_address;
+    ola::network::timeout_id m_timeout_event;
     component_map m_component_map;
 
     ola::plugin::e131::CID m_cid;

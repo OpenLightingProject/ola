@@ -27,6 +27,7 @@
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
+#include <ola/network/SelectServer.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
@@ -38,8 +39,8 @@
 
 #include "plugins/e131/e131/ACNPort.h"
 
-#include "E133Node.h"
-#include "E133UniverseController.h"
+#include "tools/e133/E133Node.h"
+#include "tools/e133/E133UniverseController.h"
 
 using std::string;
 using ola::network::IPV4Address;
@@ -58,6 +59,8 @@ typedef struct {
 
 static unsigned int responses_to_go;
 static unsigned int transaction_number = 0;
+
+ola::network::SelectServer ss;
 
 
 
@@ -153,8 +156,7 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
-void RequestCallback(E133Node *node,
-                     ola::rdm::rdm_response_code rdm_code,
+void RequestCallback(ola::rdm::rdm_response_code rdm_code,
                      const ola::rdm::RDMResponse *response,
                      const std::vector<std::string> &packets) {
   OLA_INFO << "Callback executed with code: " <<
@@ -170,14 +172,13 @@ void RequestCallback(E133Node *node,
   delete response;
 
   if (!--responses_to_go)
-    node->Stop();
+    ss.Terminate();
   (void) packets;
 }
 
 
 void SendGetRequest(UID &src_uid,
                     UID &dst_uid,
-                    E133Node *node,
                     E133UniverseController *controller,
                     ola::rdm::rdm_pid pid) {
   // send a second one
@@ -192,8 +193,7 @@ void SendGetRequest(UID &src_uid,
       NULL,  // data
       0);  // data length
 
-  ola::rdm::RDMCallback *callback = ola::NewSingleCallback(RequestCallback,
-                                                           node);
+  ola::rdm::RDMCallback *callback = ola::NewSingleCallback(RequestCallback);
   controller->SendRDMRequest(command, callback);
   responses_to_go++;
 }
@@ -201,7 +201,6 @@ void SendGetRequest(UID &src_uid,
 
 void SendSetRequest(UID &src_uid,
                     UID &dst_uid,
-                    E133Node *node,
                     E133UniverseController *controller,
                     ola::rdm::rdm_pid pid,
                     const uint8_t *data,
@@ -217,8 +216,7 @@ void SendSetRequest(UID &src_uid,
       data,  // data
       data_length);  // data length
 
-  ola::rdm::RDMCallback *callback = ola::NewSingleCallback(RequestCallback,
-                                                           node);
+  ola::rdm::RDMCallback *callback = ola::NewSingleCallback(RequestCallback);
   controller->SendRDMRequest(command, callback);
   responses_to_go++;
 }
@@ -253,7 +251,7 @@ int main(int argc, char *argv[]) {
 
   UID src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd);
 
-  E133Node node(opts.ip_address, ola::plugin::e131::ACN_PORT + 1);
+  E133Node node(&ss, opts.ip_address, ola::plugin::e131::ACN_PORT + 1);
   if (!node.Init()) {
     exit(EX_UNAVAILABLE);
   }
@@ -263,9 +261,9 @@ int main(int argc, char *argv[]) {
   node.RegisterComponent(&universe_controller);
 
   // send some rdm get messages
-  SendGetRequest(src_uid, dst_uid, &node, &universe_controller,
+  SendGetRequest(src_uid, dst_uid, &universe_controller,
                  ola::rdm::PID_DEVICE_INFO);
-  SendGetRequest(src_uid, dst_uid, &node,
+  SendGetRequest(src_uid, dst_uid,
                  &universe_controller,
                  ola::rdm::PID_SOFTWARE_VERSION_LABEL);
 
@@ -274,13 +272,12 @@ int main(int argc, char *argv[]) {
   start_address = ola::network::HostToNetwork(start_address);
   SendSetRequest(src_uid,
                  dst_uid,
-                 &node,
                  &universe_controller,
                  ola::rdm::PID_DMX_START_ADDRESS,
                  reinterpret_cast<uint8_t*>(&start_address),
                  sizeof(start_address));
 
   if (responses_to_go)
-    node.Run();
+    ss.Run();
   node.UnRegisterComponent(&universe_controller);
 }

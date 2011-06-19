@@ -21,6 +21,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/network/InterfacePicker.h>
+#include <ola/network/SelectServerInterface.h>
 
 #include <string>
 
@@ -32,10 +33,12 @@
 using std::string;
 
 
-E133Node::E133Node(const string &preferred_ip,
+E133Node::E133Node(ola::network::SelectServerInterface *ss,
+                   const string &preferred_ip,
                    uint16_t port)
     : m_preferred_ip(preferred_ip),
-      m_timeout_event(NULL),
+      m_ss(ss),
+      m_timeout_event(ola::network::INVALID_TIMEOUT),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_transport(port),
       m_root_layer(&m_transport, m_cid),
@@ -46,7 +49,7 @@ E133Node::E133Node(const string &preferred_ip,
 
 E133Node::~E133Node() {
   if (m_timeout_event)
-    m_ss.RemoveTimeout(m_timeout_event);
+    m_ss->RemoveTimeout(m_timeout_event);
 
   m_dmp_inflator.RemoveRDMManagementHandler();
 }
@@ -66,12 +69,13 @@ bool E133Node::Init() {
   if (!m_transport.Init(interface)) {
     return false;
   }
+  m_v4_address = interface.ip_address;
 
   ola::network::UdpSocket *socket = m_transport.GetSocket();
-  m_ss.AddSocket(socket);
+  m_ss->AddSocket(socket);
   m_e133_layer.SetInflator(&m_dmp_inflator);
 
-  m_timeout_event = m_ss.RegisterRepeatingTimeout(
+  m_timeout_event = m_ss->RegisterRepeatingTimeout(
       500,
       ola::NewCallback(this, &E133Node::CheckForStaleRequests));
 
@@ -135,7 +139,7 @@ void E133Node::HandleManagementPacket(
  * Check for any requests that have timed out
  */
 bool E133Node::CheckForStaleRequests() {
-  const ola::TimeStamp *now = m_ss.WakeUpTime();
+  const ola::TimeStamp *now = m_ss->WakeUpTime();
   component_map::iterator iter = m_component_map.begin();
   for (; iter != m_component_map.end(); ++iter) {
     iter->second->CheckForStaleRequests(now);

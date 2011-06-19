@@ -71,6 +71,7 @@ class SlpThread: public ola::OlaThread {
     bool Init();
     bool Start();
     bool Join(void *ptr = NULL);
+    void Cleanup();
 
     // enqueue discovery request
     bool Discover();

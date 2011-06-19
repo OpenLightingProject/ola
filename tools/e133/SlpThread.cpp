@@ -102,8 +102,7 @@ SlpThread::SlpThread(ola::network::SelectServer *ss,
  * Clean up
  */
 SlpThread::~SlpThread() {
-  if (m_init_ok)
-    SLPClose(m_slp_handle);
+  Cleanup();
   pthread_mutex_destroy(&m_incoming_mutex);
   pthread_mutex_destroy(&m_outgoing_mutex);
 }
@@ -156,6 +155,29 @@ bool SlpThread::Join(void *ptr) {
   // kick the select server so the wake up is immediate
   WakeUpSocket(&m_incoming_socket);
   return OlaThread::Join(ptr);
+}
+
+
+/**
+ * Clean up
+ */
+void SlpThread::Cleanup() {
+  if (m_incoming_socket.ReadDescriptor() !=
+      ola::network::Socket::CLOSED_SOCKET) {
+    m_ss.RemoveSocket(&m_incoming_socket);
+    m_incoming_socket.Close();
+  }
+
+
+  if (m_outgoing_socket.ReadDescriptor() !=
+      ola::network::Socket::CLOSED_SOCKET) {
+    m_main_ss->RemoveSocket(&m_outgoing_socket);
+    m_outgoing_socket.Close();
+  }
+
+  if (m_init_ok)
+    SLPClose(m_slp_handle);
+  m_init_ok = false;
 }
 
 
