@@ -204,7 +204,9 @@ string ProcessServiceSpec(const string &service_spec,
   }
 
   std::stringstream str;
-  str << ipaddr << ":" << uid_str;
+  str << ipaddr << ":5568/" << std::setfill('0') << std::setw(4) << std::hex
+    << uid->ManufacturerId() << std::setw(8) << uid->DeviceId();
+
   return str.str();
 }
 
