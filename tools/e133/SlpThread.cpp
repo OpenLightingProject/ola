@@ -217,6 +217,12 @@ bool SlpThread::Discover() {
 void SlpThread::Register(slp_registration_callback *on_complete,
                          const string &url,
                          unsigned short lifetime) {
+  if (lifetime <= SLPD_AGING_TIME_S * 2) {
+    OLA_WARN << "Lifetime of " << url <<
+      " has been set to less than twice the slpd aging lifetime of " <<
+      SLPD_AGING_TIME_S << ", forcing to " << 2 * SLPD_AGING_TIME_S;
+    lifetime = 2 * SLPD_AGING_TIME_S;
+  }
   ola::SingleUseCallback0<void> *callback = ola::NewSingleCallback(
       this,
       &SlpThread::RegisterRequest,
@@ -481,6 +487,7 @@ bool SlpThread::PerformRegistration(const string &url,
   }
 
   // schedule timeout
+  lifetime = lifetime - SLPD_AGING_TIME_S;
   OLA_INFO << "next registration for " << url << " in " <<
     lifetime;
   *timeout = m_ss.RegisterSingleTimeout(

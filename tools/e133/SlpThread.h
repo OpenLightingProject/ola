@@ -137,6 +137,10 @@ class SlpThread: public ola::OlaThread {
     // the minimum lifetime we'll ever allow, may be more due to the
     // min-refresh-interval attribute sent by DAs
     static const unsigned short MIN_LIFETIME;
+    // This is the cycle period of SLP aging. Registrations must be renewed
+    // this many seconds before the registration is set to expire.
+    // See http://opendmx.net/index.php/Open_SLP_Notes
+    static const uint16_t SLPD_AGING_TIME_S = 15;
 };
 
 #endif  // TOOLS_E133_SLPTHREAD_H_
