@@ -20,7 +20,14 @@
  *
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
+#endif
+
 #include <fcntl.h>
 #include <getopt.h>
 #include <signal.h>
@@ -61,12 +68,14 @@ typedef struct {
  * Print a stack trace on seg fault
  */
 static void sig_segv(int signo) {
+  cout << "Recieved SIGSEGV or SIGBUS" << endl;
+  #ifdef HAVE_EXECINFO_H
   enum {STACK_SIZE = 64};
   void *array[STACK_SIZE];
   size_t size = backtrace(array, STACK_SIZE);
 
-  cout << "Recieved SIGSEGV or SIGBUS" << endl;
   backtrace_symbols_fd(array, size, STDERR_FILENO);
+  #endif
   exit(1);
   (void) signo;
 }
