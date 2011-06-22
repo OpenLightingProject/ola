@@ -4,6 +4,7 @@ X/Y-2011 ola-8.8.10
  * Add some more warnings / advisories to the RDM Responder tests
  * Internal network API cleanup
  * Fixed a crashing bug in the RDM responder tests
+ * Added tools for testing the E1.33 / SLP protocol 
 
 24/4/2011 ola-0.8.9
  * Added support for the Arduino RDM RGB Mixer
