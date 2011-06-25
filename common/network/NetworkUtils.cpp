@@ -94,6 +94,18 @@ std::string HardwareAddressToString(uint8_t hw_address[MAC_LENGTH]) {
 }
 
 
+/**
+ * True if we're big endian, false otherwise.
+ */
+bool IsBigEndian() {
+#ifdef HAVE_ENDIAN_H
+  return BYTE_ORDER == __BIG_ENDIAN;
+#else
+  return BYTE_ORDER == BIG_ENDIAN;
+#endif
+}
+
+
 uint8_t NetworkToHost(uint8_t value) {
   return value;
 }
@@ -162,39 +174,21 @@ uint8_t HostToLittleEndian(uint8_t value) {
 
 
 uint16_t HostToLittleEndian(uint16_t value) {
-#ifdef HAVE_ENDIAN_H
-#  if BYTE_ORDER == __BIG_ENDIAN
-  return ((value & 0xff) << 8) | (value >> 8);
-#  else
-  return value;
-#  endif
-#else
-#  if BYTE_ORDER == BIG_ENDIAN
-  return ((value & 0xff) << 8) | (value >> 8);
-#  else
-  return value;
-#  endif
-#endif
+  if (IsBigEndian())
+    return ((value & 0xff) << 8) | (value >> 8);
+  else
+    return value;
 }
 
 
 uint32_t HostToLittleEndian(uint32_t value) {
-#ifdef HAVE_ENDIAN_H
-#  if BYTE_ORDER == __BIG_ENDIAN
-  return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
-          (0xff00 & (value >> 16)) | (value >> 24);
-#  else
-  return value;
-#  endif
-#else
-#  if BYTE_ORDER == BIG_ENDIAN
-  return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
-          (0xff00 & (value >> 16)) | (value >> 24);
-#  else
-  return value;
-#  endif
-#endif
+  if (IsBigEndian())
+    return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
+            (0xff00 & (value >> 16)) | (value >> 24);
+  else
+    return value;
 }
+
 
 uint8_t LittleEndianToHost(uint8_t value) {
   return value;
@@ -202,39 +196,21 @@ uint8_t LittleEndianToHost(uint8_t value) {
 
 
 uint16_t LittleEndianToHost(uint16_t value) {
-#ifdef HAVE_ENDIAN_H
-#  if BYTE_ORDER == __BIG_ENDIAN
-  return ((value & 0xff) << 8) | (value >> 8);
-#  else
-  return value;
-#  endif
-#else
-#  if BYTE_ORDER == BIG_ENDIAN
-  return ((value & 0xff) << 8) | (value >> 8);
-#  else
-  return value;
-#  endif
-#endif
+  if (IsBigEndian())
+    return ((value & 0xff) << 8) | (value >> 8);
+  else
+    return value;
 }
 
 
 uint32_t LittleEndianToHost(uint32_t value) {
-#ifdef HAVE_ENDIAN_H
-#  if BYTE_ORDER == __BIG_ENDIAN
-  return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
-          (0xff00 & (value >> 16)) | (value >> 24);
-#  else
-  return value;
-#  endif
-#else
-#  if BYTE_ORDER == BIG_ENDIAN
-  return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
-          (0xff00 & (value >> 16)) | (value >> 24);
-#  else
-  return value;
-#  endif
-#endif
+  if (IsBigEndian())
+    return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
+            (0xff00 & (value >> 16)) | (value >> 24);
+  else
+    return value;
 }
+
 
 /*
  * Return the full hostname

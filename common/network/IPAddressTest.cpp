@@ -101,7 +101,13 @@ void IPAddressTest::testIPV4Address() {
   std::sort(addresses.begin(), addresses.end());
 
   // Addresses are in network byte order.
-  CPPUNIT_ASSERT_EQUAL(string("10.0.0.1"), addresses[0].ToString());
-  CPPUNIT_ASSERT_EQUAL(string("192.168.1.1"), addresses[1].ToString());
-  CPPUNIT_ASSERT_EQUAL(string("172.16.4.1"), addresses[2].ToString());
+  if (ola::network::IsBigEndian()) {
+    CPPUNIT_ASSERT_EQUAL(string("10.0.0.1"), addresses[0].ToString());
+    CPPUNIT_ASSERT_EQUAL(string("172.16.4.1"), addresses[1].ToString());
+    CPPUNIT_ASSERT_EQUAL(string("192.168.1.1"), addresses[2].ToString());
+  } else {
+    CPPUNIT_ASSERT_EQUAL(string("10.0.0.1"), addresses[0].ToString());
+    CPPUNIT_ASSERT_EQUAL(string("192.168.1.1"), addresses[1].ToString());
+    CPPUNIT_ASSERT_EQUAL(string("172.16.4.1"), addresses[2].ToString());
+  }
 }

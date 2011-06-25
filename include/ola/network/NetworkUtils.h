@@ -39,6 +39,8 @@ std::string AddressToString(const struct in_addr &addr);
 
 std::string HardwareAddressToString(uint8_t hw_address[MAC_LENGTH]);
 
+bool IsBigEndian();
+
 // we define uint8_t versions of these so we can call them with any type.
 uint8_t NetworkToHost(uint8_t value);
 uint16_t NetworkToHost(uint16_t value);
