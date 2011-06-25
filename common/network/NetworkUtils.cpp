@@ -181,10 +181,16 @@ uint16_t HostToLittleEndian(uint16_t value) {
 }
 
 
+uint32_t _ByteSwap(uint32_t value) {
+  return ((value & 0x000000ff) << 24) |
+         ((value & 0x0000ff00) << 8) |
+         ((value & 0x00ff0000) >> 8) |
+         ((value & 0xff000000) >> 24);
+}
+
 uint32_t HostToLittleEndian(uint32_t value) {
   if (IsBigEndian())
-    return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
-            (0xff00 & (value >> 16)) | (value >> 24);
+    return _ByteSwap(value);
   else
     return value;
 }
@@ -205,8 +211,7 @@ uint16_t LittleEndianToHost(uint16_t value) {
 
 uint32_t LittleEndianToHost(uint32_t value) {
   if (IsBigEndian())
-    return ((value & 0xff) << 24) | ((value & 0xff00) << 16) |
-            (0xff00 & (value >> 16)) | (value >> 24);
+    return _ByteSwap(value);
   else
     return value;
 }
