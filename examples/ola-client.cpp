@@ -180,6 +180,7 @@ void Observer::PluginDescription(ola::ola_plugin_id plugin_id,
     cout << description << endl;
   m_ss->Terminate();
   return;
+  (void) plugin_id;
 }
 
 
@@ -216,6 +217,9 @@ void Observer::PatchComplete(unsigned int device_alias,
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
+  (void) device_alias;
+  (void) port;
+  (void) port_direction;
 }
 
 /*
@@ -226,6 +230,7 @@ void Observer::UniverseNameComplete(unsigned int universe,
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
+  (void) universe;
 }
 
 
@@ -234,6 +239,7 @@ void Observer::UniverseMergeModeComplete(unsigned int universe,
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
+  (void) universe;
 }
 
 
@@ -242,6 +248,7 @@ void Observer::SendDmxComplete(unsigned int universe,
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
+  (void) universe;
 }
 
 void Observer::SetPortPriorityComplete(unsigned int device_alias,
@@ -251,6 +258,9 @@ void Observer::SetPortPriorityComplete(unsigned int device_alias,
   if (!error.empty())
     cout << error << endl;
   m_ss->Terminate();
+  (void) device_alias;
+  (void) port;
+  (void) port_direction;
 }
 
 

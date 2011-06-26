@@ -36,8 +36,8 @@
 #include <string>
 #include <vector>
 
-#include "src/RDMController.h"
-#include "src/RDMHandler.h"
+#include "examples/RDMController.h"
+#include "examples/RDMHandler.h"
 
 using std::cout;
 using std::endl;

@@ -221,6 +221,8 @@ void DmxMonitor::NewDmx(unsigned int universe,
   gettimeofday(&m_last_data, NULL);
   Values();
   refresh();
+  (void) universe;
+  (void) error;
 }
 
 
@@ -553,6 +555,7 @@ void DmxMonitor::CalcScreenGeometry() {
 /* signal handler for SIGWINCH */
 void terminalresize(int sig) {
   dmx_monitor->TerminalResized();
+  (void) sig;
 }
 
 

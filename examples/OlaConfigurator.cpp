@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "src/OlaConfigurator.h"
+#include "examples/OlaConfigurator.h"
 
 using ola::NewSingleCallback;
 using ola::OlaCallbackClient;

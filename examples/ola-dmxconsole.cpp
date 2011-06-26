@@ -274,7 +274,7 @@ void crossfade(unsigned int new_cue) {
   int max=MAXCHANNELS;
 
   /* check parameter */
-  if(new_cue>MAXFKEY || new_cue<0)
+  if(new_cue>MAXFKEY)
     return;
 
   undo_possible=0;
@@ -447,6 +447,7 @@ void terminalresize(int sig) {
   resizeterm(size.ws_row, size.ws_col);
   calcscreengeometry();
   mask();
+  (void) sig;
 }
 
 WINDOW  *w=NULL;

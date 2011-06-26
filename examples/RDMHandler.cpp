@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include "src/RDMHandler.h"
+#include "examples/RDMHandler.h"
 
 using std::cout;
 using std::endl;

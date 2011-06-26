@@ -24,7 +24,7 @@
 #include <ola/plugin_id.h>
 #include <iostream>
 #include <string>
-#include "src/OlaConfigurator.h"
+#include "examples/OlaConfigurator.h"
 
 using std::cout;
 using std::endl;

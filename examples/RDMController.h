@@ -29,7 +29,7 @@
 #include <string>
 #include <vector>
 
-#include "src/RDMHandler.h"
+#include "examples/RDMHandler.h"
 
 using std::map;
 using std::string;
@@ -57,7 +57,6 @@ class PidDescriptor {
              const UID &uid,
              uint16_t sub_device,
              bool set,
-             uint16_t pid,
              const vector<string> &params,
              string *error);
 

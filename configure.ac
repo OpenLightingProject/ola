@@ -51,6 +51,10 @@ AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
 
 AC_PROG_LIBTOOL
 
+# Check for ncurses
+AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
+AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
+
 # windows platform support
 AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 
@@ -302,6 +306,14 @@ if test "${have_microhttpd}" = "yes"; then
 fi
 AC_SUBST(MICROHTTPD_LIBS)
 
+# Decide if we should build the example programs
+AC_ARG_ENABLE(
+  examples,
+  AC_HELP_STRING([--disable-examples],
+                 [Disable the OLA example client programs]),)
+
+AM_CONDITIONAL(BUILD_EXAMPLES, test "${enable_examples}" != "no")
+
 # python wrappers
 AC_ARG_ENABLE(python-libs,
               AC_HELP_STRING([--enable-python-libs],
@@ -379,6 +391,7 @@ AC_OUTPUT( Makefile\
     common/web/Makefile\
     data/Makefile\
     data/rdm/Makefile\
+    examples/Makefile \
     debian/Makefile\
     include/Makefile\
     include/ola/Makefile\

@@ -32,8 +32,8 @@
 #include <string>
 #include <vector>
 
-#include "src/RDMController.h"
-#include "src/RDMHandler.h"
+#include "examples/RDMController.h"
+#include "examples/RDMHandler.h"
 
 using std::map;
 using std::string;
@@ -63,7 +63,6 @@ bool PidDescriptor::Run(RDMController *controller,
                         const UID &uid,
                         uint16_t sub_device,
                         bool set,
-                        uint16_t pid,
                         const vector<string> &params,
                         string *error) {
   vector<CheckMethod> &methods = set ? m_set_verify : m_get_verify;
@@ -116,7 +115,8 @@ bool RDMController::RequestPID(const UID &uid,
     *error = "Unknown PID";
     return false;
   }
-  return iter->second->Run(this, uid, sub_device, is_set, pid, params, error);
+  return iter->second->Run(this, uid, sub_device, is_set, params, error);
+  (void) sub_device;
 }
 
 
@@ -466,6 +466,8 @@ bool RDMController::RootDeviceCheck(const UID &uid,
     return false;
   }
   return true;
+  (void) uid;
+  (void) args;
 }
 
 
@@ -483,6 +485,8 @@ bool RDMController::ValidSubDeviceCheck(const UID &uid,
     return false;
   }
   return true;
+  (void) uid;
+  (void) args;
 }
 
 
@@ -503,6 +507,8 @@ bool RDMController::ValidBroadcastSubDeviceCheck(
     return false;
   }
   return true;
+  (void) uid;
+  (void) args;
 }
 
 
@@ -519,6 +525,8 @@ bool RDMController::NoArgsCheck(const UID &uid,
     return false;
   }
   return true;
+  (void) uid;
+  (void) sub_device;
 }
 
 
@@ -538,6 +546,7 @@ bool RDMController::NoArgsRootDeviceSetCheck(const UID &uid,
     return false;
   }
   return true;
+  (void) uid;
 }
 
 
@@ -553,6 +562,8 @@ bool RDMController::GetProxiedDeviceCount(const UID &uid,
       uid,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ProxiedDeviceCount),
       error);
+  (void) sub_device;
+  (void) args;
 }
 
 
@@ -565,6 +576,8 @@ bool RDMController::GetProxiedDevices(const UID &uid,
       uid,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ProxiedDevices),
       error);
+  (void) sub_device;
+  (void) args;
 }
 
 
@@ -577,6 +590,8 @@ bool RDMController::GetCommStatus(const UID &uid,
       uid,
       ola::NewSingleCallback(m_handler, &ResponseHandler::CommStatus),
       error);
+  (void) sub_device;
+  (void) args;
 }
 
 
@@ -589,6 +604,8 @@ bool RDMController::ClearCommStatus(const UID &uid,
       uid,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ClearCommStatus),
       error);
+  (void) sub_device;
+  (void) args;
 }
 
 
@@ -607,6 +624,7 @@ bool RDMController::GetQueuedMessage(const UID &uid,
       status_type,
       m_handler,
       error);
+  (void) sub_device;
 }
 
 
@@ -626,6 +644,7 @@ bool RDMController::GetStatusMessage(const UID &uid,
       ola::NewSingleCallback(m_handler,
                              &ResponseHandler::StatusMessages),
       error);
+  (void) sub_device;
 }
 
 
@@ -642,6 +661,7 @@ bool RDMController::GetStatusIdDescription(const UID &uid,
       status_id,
       ola::NewSingleCallback(m_handler, &ResponseHandler::StatusIdDescription),
       error);
+  (void) sub_device;
 }
 
 
@@ -655,6 +675,7 @@ bool RDMController::ClearStatusId(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ClearStatusId),
       error);
+  (void) args;
 }
 
 
@@ -668,6 +689,7 @@ bool RDMController::GetSubDeviceReporting(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SubDeviceReporting),
       error);
+  (void) args;
 }
 
 
@@ -705,6 +727,7 @@ bool RDMController::GetSupportedParameters(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SupportedParameters),
       error);
+  (void) args;
 }
 
 
@@ -722,6 +745,8 @@ bool RDMController::GetParameterDescription(const UID &uid,
       ola::NewSingleCallback(m_handler,
                              &ResponseHandler::ParameterDescription),
       error);
+  (void) args;
+  (void) sub_device;
 }
 
 
@@ -735,6 +760,7 @@ bool RDMController::GetDeviceInfo(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DeviceInfo),
       error);
+  (void) args;
 }
 
 
@@ -748,6 +774,7 @@ bool RDMController::GetProductDetailIdList(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ProductDetailIdList),
       error);
+  (void) args;
 }
 
 
@@ -762,6 +789,7 @@ bool RDMController::GetDeviceModelDescription(const UID &uid,
       ola::NewSingleCallback(m_handler,
                              &ResponseHandler::DeviceModelDescription),
       error);
+  (void) args;
 }
 
 
@@ -775,6 +803,7 @@ bool RDMController::GetManufacturerLabel(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::ManufacturerLabel),
       error);
+  (void) args;
 }
 
 
@@ -788,6 +817,7 @@ bool RDMController::GetDeviceLabel(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DeviceLabel),
       error);
+  (void) args;
 }
 
 
@@ -819,6 +849,7 @@ bool RDMController::GetFactoryDefaults(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::FactoryDefaults),
       error);
+  (void) args;
 }
 
 
@@ -833,6 +864,7 @@ bool RDMController::ResetToFactoryDefaults(const UID &uid,
       ola::NewSingleCallback(m_handler,
                              &ResponseHandler::ResetToFactoryDefaults),
       error);
+  (void) args;
 }
 
 
@@ -847,6 +879,7 @@ bool RDMController::GetLanguageCapabilities(const UID &uid,
       ola::NewSingleCallback(m_handler,
                              &ResponseHandler::LanguageCapabilities),
       error);
+  (void) args;
 }
 
 
@@ -860,6 +893,7 @@ bool RDMController::GetLanguage(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::Language),
       error);
+  (void) args;
 }
 
 
@@ -893,6 +927,7 @@ bool RDMController::GetSoftwareVersionLabel(const UID &uid,
       ola::NewSingleCallback(m_handler,
                              &ResponseHandler::SoftwareVersionLabel),
       error);
+  (void) args;
 }
 
 
@@ -906,6 +941,7 @@ bool RDMController::GetBootSoftwareVersion(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::BootSoftwareVersion),
       error);
+  (void) args;
 }
 
 
@@ -920,6 +956,7 @@ bool RDMController::GetBootSoftwareVersionLabel(const UID &uid,
       ola::NewSingleCallback(m_handler,
                              &ResponseHandler::BootSoftwareVersionLabel),
       error);
+  (void) args;
 }
 
 
@@ -933,6 +970,7 @@ bool RDMController::GetDMXPersonality(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DMXPersonality),
       error);
+  (void) args;
 }
 
 
@@ -980,6 +1018,7 @@ bool RDMController::GetDMXPersonalityDescription(const UID &uid,
       ola::NewSingleCallback(m_handler,
                              &ResponseHandler::DMXPersonalityDescription),
       error);
+  (void) args;
 }
 
 
@@ -993,6 +1032,7 @@ bool RDMController::GetDMXAddress(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DMXAddress),
       error);
+  (void) args;
 }
 
 
@@ -1029,6 +1069,7 @@ bool RDMController::GetSlotInfo(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SlotInfo),
       error);
+  (void) args;
 }
 
 
@@ -1046,6 +1087,7 @@ bool RDMController::GetSlotDescription(const UID &uid,
       slot_id,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SlotDescription),
       error);
+  (void) args;
 }
 
 
@@ -1059,6 +1101,7 @@ bool RDMController::GetSlotDefaultValues(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SlotDefaultValues),
       error);
+  (void) args;
 }
 
 
@@ -1148,6 +1191,7 @@ bool RDMController::GetDeviceHours(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DeviceHours),
       error);
+  (void) args;
 }
 
 
@@ -1180,6 +1224,7 @@ bool RDMController::GetLampHours(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::LampHours),
       error);
+  (void) args;
 }
 
 
@@ -1212,6 +1257,7 @@ bool RDMController::GetLampStrikes(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::LampStrikes),
       error);
+  (void) args;
 }
 
 
@@ -1245,6 +1291,7 @@ bool RDMController::GetLampState(const UID &uid,
       ola::NewSingleCallback(m_handler,
                              &ResponseHandler::LampState),
       error);
+  (void) args;
 }
 
 
@@ -1277,6 +1324,7 @@ bool RDMController::GetLampMode(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::LampMode),
       error);
+  (void) args;
 }
 
 
@@ -1309,6 +1357,7 @@ bool RDMController::GetDevicePowerCycles(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DevicePowerCycles),
       error);
+  (void) args;
 }
 
 
@@ -1342,6 +1391,7 @@ bool RDMController::GetDisplayInvert(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DisplayInvert),
       error);
+  (void) args;
 }
 
 
@@ -1374,6 +1424,7 @@ bool RDMController::GetDisplayLevel(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::DisplayLevel),
       error);
+  (void) args;
 }
 
 
@@ -1406,6 +1457,7 @@ bool RDMController::GetPanInvert(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::PanInvert),
       error);
+  (void) args;
 }
 
 
@@ -1438,6 +1490,7 @@ bool RDMController::GetTiltInvert(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::TiltInvert),
       error);
+  (void) args;
 }
 
 
@@ -1470,6 +1523,7 @@ bool RDMController::GetPanTiltSwap(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::PanTiltSwap),
       error);
+  (void) args;
 }
 
 
@@ -1502,6 +1556,7 @@ bool RDMController::GetClock(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::Clock),
       error);
+  (void) args;
 }
 
 
@@ -1548,6 +1603,7 @@ bool RDMController::GetIdentifyMode(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::IdentifyMode),
       error);
+  (void) args;
 }
 
 
@@ -1599,6 +1655,7 @@ bool RDMController::GetPowerState(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::PowerState),
       error);
+  (void) args;
 }
 
 
@@ -1631,6 +1688,7 @@ bool RDMController::GetSelfTest(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::SelfTestEnabled),
       error);
+  (void) args;
 }
 
 
@@ -1715,6 +1773,7 @@ bool RDMController::GetPresetPlayback(const UID &uid,
       sub_device,
       ola::NewSingleCallback(m_handler, &ResponseHandler::PresetPlaybackMode),
       error);
+  (void) args;
 }
 
 

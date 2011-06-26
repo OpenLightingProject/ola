@@ -92,7 +92,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
 /*
  * Display the help message
  */
-void DisplayHelpAndExit(char arg[], const options &opts) {
+void DisplayHelpAndExit(char arg[]) {
   cout << "Usage: " << arg <<
   " --dmx <dmx_data> --universe <universe_id>\n"
   "\n"
@@ -134,8 +134,8 @@ int main(int argc, char *argv[]) {
 
   ParseOptions(argc, argv, &opts);
 
-  if (opts.help || opts.universe < 0)
-    DisplayHelpAndExit(argv[0], opts);
+  if (opts.help)
+    DisplayHelpAndExit(argv[0]);
 
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
