@@ -171,10 +171,12 @@ void WidgetDetectorTest::ResponderHandler(uint8_t label,
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), size);
     CPPUNIT_ASSERT_EQUAL(static_cast<const uint8_t*>(NULL), data);
 
-    if (m_send_serial)
+    if (m_send_serial) {
+      uint32_t serial = ola::network::HostToLittleEndian(SERIAL);
       m_responder->SendMessage(UsbWidget::SERIAL_LABEL,
-                               reinterpret_cast<const uint8_t*>(&SERIAL),
-                               sizeof(SERIAL));
+                               reinterpret_cast<const uint8_t*>(&serial),
+                               sizeof(serial));
+    }
   }
 }
 
