@@ -1,4 +1,8 @@
-22/6/2011 ola-8.8.10
+X/Y/2011 ola-0.9.1
+ * Fix bugs on big endian systems
+ * Move ola-examples into the main package
+
+22/6/2011 ola-0.8.10
  * Added support for the VX8062 device
  * Fixed a compile bug caused by bad libprotobuf handling
  * Add some more warnings / advisories to the RDM Responder tests
