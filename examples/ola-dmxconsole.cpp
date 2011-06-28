@@ -43,7 +43,7 @@
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClient.h>
-#include <ola/SimpleClient.h>
+#include <ola/OlaClientWrapper.h>
 #include <ola/network/SelectServer.h>
 
 using ola::SimpleClient;

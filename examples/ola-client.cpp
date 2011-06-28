@@ -23,7 +23,7 @@
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaClient.h>
-#include <ola/SimpleClient.h>
+#include <ola/OlaClientWrapper.h>
 #include <ola/network/SelectServer.h>
 #include <olad/PortConstants.h>
 
