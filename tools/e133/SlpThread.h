@@ -131,7 +131,6 @@ class SlpThread: public ola::OlaThread {
     void DiscoveryTriggered();
     void RegistrationTriggered(string url);
 
-    static const char SERVICE_NAME[];
     // How often to repeat discovery
     static const unsigned short DISCOVERY_INTERVAL_S = 60;
     // the minimum lifetime we'll ever allow, may be more due to the

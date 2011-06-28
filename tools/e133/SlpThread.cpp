@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include "tools/e133/SlpConstants.h"
 #include "tools/e133/SlpThread.h"
 
 
@@ -32,7 +33,6 @@ using std::string;
 using std::vector;
 
 // The service name we use for SLP
-const char SlpThread::SERVICE_NAME[] = "service:e133.esta";
 const unsigned short SlpThread::MIN_LIFETIME = 5;
 
 
@@ -358,7 +358,7 @@ void SlpThread::DiscoveryRequest() {
 
   slp_cookie cookie;
   SLPError err = SLPFindSrvs(m_slp_handle,
-                             SERVICE_NAME,
+                             E133_SLP_SERVICE_NAME,
                              0,  // use configured scopes
                              0,  // no attr filter
                              ServiceCallback,
@@ -464,7 +464,7 @@ bool SlpThread::PerformRegistration(const string &url,
                                     unsigned short lifetime,
                                     ola::network::timeout_id *timeout) {
   std::stringstream str;
-  str << SERVICE_NAME << "://" << url;
+  str << E133_SLP_SERVICE_NAME << "://" << url;
   SLPError callbackerr;
   SLPError err = SLPReg(m_slp_handle,
                         str.str().c_str(),
@@ -510,7 +510,7 @@ void SlpThread::DeregisterRequest(slp_registration_callback *callback,
   }
 
   std::stringstream str;
-  str << SERVICE_NAME << "://" << url;
+  str << E133_SLP_SERVICE_NAME << "://" << url;
   SLPError callbackerr;
   SLPError err = SLPDereg(m_slp_handle,
                           str.str().c_str(),
