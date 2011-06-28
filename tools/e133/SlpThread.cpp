@@ -105,6 +105,8 @@ SlpThread::~SlpThread() {
   Cleanup();
   pthread_mutex_destroy(&m_incoming_mutex);
   pthread_mutex_destroy(&m_outgoing_mutex);
+  if (m_discovery_callback)
+    delete m_discovery_callback;
 }
 
 

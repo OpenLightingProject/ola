@@ -34,7 +34,7 @@
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133Layer.h"
 
-#include "E133UniverseController.h"
+#include "tools/e133/E133UniverseController.h"
 
 using ola::network::IPV4Address;
 using ola::plugin::e131::DMPAddressData;
@@ -135,6 +135,7 @@ void E133UniverseController::CheckForStaleRequests(const ola::TimeStamp *now) {
       pending_request.on_complete->Run(ola::rdm::RDM_TIMEOUT,
                                        NULL,
                                        raw_packets);
+      delete pending_request.request;
       m_requests.PopFront();
     }
   }
