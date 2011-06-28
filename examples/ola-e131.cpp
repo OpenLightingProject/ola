@@ -20,8 +20,8 @@
 
 #include <errno.h>
 #include <getopt.h>
-#include <ola/e131/E131ConfigMessages.pb.h>
 #include <ola/plugin_id.h>
+#include <plugins/e131/messages/E131ConfigMessages.pb.h>
 #include <iostream>
 #include <string>
 #include "examples/OlaConfigurator.h"

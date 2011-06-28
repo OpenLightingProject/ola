@@ -20,8 +20,8 @@
 
 #include <errno.h>
 #include <getopt.h>
-#include <ola/artnet/ArtnetConfigMessages.pb.h>
 #include <ola/plugin_id.h>
+#include <plugins/artnet/messages/ArtnetConfigMessages.pb.h>
 #include <iostream>
 #include <string>
 #include "examples/OlaConfigurator.h"

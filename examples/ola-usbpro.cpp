@@ -21,7 +21,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <ola/plugin_id.h>
-#include <ola/usbpro/UsbProConfigMessages.pb.h>
+#include <plugins/usbpro/messages/UsbProConfigMessages.pb.h>
 #include <iomanip>
 #include <iostream>
 #include <string>
