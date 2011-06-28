@@ -1,4 +1,4 @@
-X/Y/2011 ola-0.9.1
+28/6/2011 ola-0.8.11
  * Fix bugs on big endian systems
  * Move ola-examples into the main package
  * Add SLP support to the e133_controller
