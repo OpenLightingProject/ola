@@ -25,16 +25,16 @@ pkgpython_PYTHON = ClientWrapper.py OlaClient.py RDMAPI.py RDMConstants.py \
                    PidStore.py UID.py __init__.py
 
 ArtnetConfigMessages_pb2.py: $(artnet_proto)
-	protoc --python_out ./ -I $(artnet_path) $(artnet_proto)
+	$(PROTOC) --python_out ./ -I $(artnet_path) $(artnet_proto)
 
 Ola_pb2.py: $(ola_proto)
-	protoc --python_out ./ -I $(ola_path) $(ola_proto)
+	$(PROTOC) --python_out ./ -I $(ola_path) $(ola_proto)
 
 Pids_pb2.py: $(pids_proto)
-	protoc --python_out ./ -I $(pids_path) $(pids_proto)
+	$(PROTOC) --python_out ./ -I $(pids_path) $(pids_proto)
 
 UsbProConfigMessages_pb2.py: $(usbpro_proto)
-	protoc --python_out ./ -I $(usbpro_path) $(usbpro_proto)
+	$(PROTOC) --python_out ./ -I $(usbpro_path) $(usbpro_proto)
 
 # This is a hack, but I can't find any other way to do it
 piddir = $(pid_datadir)
