@@ -20,7 +20,7 @@
 
 
 #include <ola/messaging/Descriptor.h>
-#include <ola/messaging/SchemaPrinterVisitor.h>
+#include <ola/messaging/SchemaPrinter.h>
 #include <iostream>
 #include <string>
 
@@ -32,19 +32,19 @@ using std::string;
 using std::endl;
 
 
-void SchemaPrinterVisitor::Visit(const BoolFieldDescriptor *descriptor) {
+void SchemaPrinter::Visit(const BoolFieldDescriptor *descriptor) {
   std::cout << m_indent << std::endl;
   m_str << string(m_indent, ' ') << descriptor->Name() << ": bool" << endl;
 }
 
 
-void SchemaPrinterVisitor::Visit(const StringFieldDescriptor *descriptor) {
+void SchemaPrinter::Visit(const StringFieldDescriptor *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": string [" <<
     descriptor->MinSize() << ", " << descriptor->MaxSize() << "]" << endl;
 }
 
 
-void SchemaPrinterVisitor::Visit(
+void SchemaPrinter::Visit(
     const IntegerFieldDescriptor<uint8_t> *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": uint8";
 
@@ -52,47 +52,47 @@ void SchemaPrinterVisitor::Visit(
 }
 
 
-void SchemaPrinterVisitor::Visit(
+void SchemaPrinter::Visit(
     const IntegerFieldDescriptor<uint16_t> *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": uint16";
   m_str << endl;
 }
 
 
-void SchemaPrinterVisitor::Visit(
+void SchemaPrinter::Visit(
     const IntegerFieldDescriptor<uint32_t> *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": uint32";
   m_str << endl;
 }
 
 
-void SchemaPrinterVisitor::Visit(
+void SchemaPrinter::Visit(
     const IntegerFieldDescriptor<int8_t> *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": int8";
   m_str << endl;
 }
 
 
-void SchemaPrinterVisitor::Visit(
+void SchemaPrinter::Visit(
     const IntegerFieldDescriptor<int16_t> *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": int16";
   m_str << endl;
 }
 
 
-void SchemaPrinterVisitor::Visit(
+void SchemaPrinter::Visit(
     const IntegerFieldDescriptor<int32_t> *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": int32";
   m_str << endl;
 }
 
-void SchemaPrinterVisitor::Visit(const GroupFieldDescriptor *descriptor) {
+void SchemaPrinter::Visit(const GroupFieldDescriptor *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << " {" << endl;
   m_indent += m_indent_size;
 }
 
 
-void SchemaPrinterVisitor::PostVisit(const GroupFieldDescriptor *descriptor) {
+void SchemaPrinter::PostVisit(const GroupFieldDescriptor *descriptor) {
   m_indent -= m_indent_size;
   m_str << string(m_indent, ' ') << "}" << endl;
   (void) descriptor;

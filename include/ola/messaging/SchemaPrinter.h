@@ -18,8 +18,8 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_MESSAGING_SCHEMAPRINTERVISITOR_H_
-#define INCLUDE_OLA_MESSAGING_SCHEMAPRINTERVISITOR_H_
+#ifndef INCLUDE_OLA_MESSAGING_SCHEMAPRINTER_H_
+#define INCLUDE_OLA_MESSAGING_SCHEMAPRINTER_H_
 
 #include <ola/messaging/DescriptorVisitor.h>
 #include <string>
@@ -32,9 +32,9 @@ namespace messaging {
 /**
  * This visitor prints the schema as a string.
  */
-class SchemaPrinterVisitor: public FieldDescriptorVisitor {
+class SchemaPrinter: public FieldDescriptorVisitor {
   public:
-    SchemaPrinterVisitor(bool include_range,
+    SchemaPrinter(bool include_range,
                          bool include_labels,
                          unsigned int indent_size = DEFAULT_INDENT)
         : m_include_range(include_range),
@@ -42,7 +42,7 @@ class SchemaPrinterVisitor: public FieldDescriptorVisitor {
           m_indent(0),
           m_indent_size(indent_size) {
     }
-    ~SchemaPrinterVisitor() {}
+    ~SchemaPrinter() {}
 
     string AsString() { return m_str.str(); }
     void Reset() { m_str.str(""); }
@@ -67,4 +67,4 @@ class SchemaPrinterVisitor: public FieldDescriptorVisitor {
 };
 }  // messaging
 }  // ola
-#endif  // INCLUDE_OLA_MESSAGING_SCHEMAPRINTERVISITOR_H_
+#endif  // INCLUDE_OLA_MESSAGING_SCHEMAPRINTER_H_
