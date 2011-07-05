@@ -42,11 +42,13 @@ using ola::messaging::UInt8FieldDescriptor;
 class SchemaPrinterTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SchemaPrinterTest);
   CPPUNIT_TEST(testPrinter);
+  CPPUNIT_TEST(testIntervalsAndLabels);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     SchemaPrinterTest() {}
     void testPrinter();
+    void testIntervalsAndLabels();
 };
 
 
@@ -91,4 +93,36 @@ void SchemaPrinterTest::testPrinter() {
   string expected2 = "Device: string [0, 32]\nId: uint32\nGroup 1 {\n"
     "  On/Off: bool\n  Name: string [0, 32]\n  Count: uint8\n}\n";
   CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+}
+
+
+void SchemaPrinterTest::testIntervalsAndLabels() {
+  UInt16FieldDescriptor::IntervalVector intervals;
+  intervals.push_back(UInt16FieldDescriptor::Interval(2, 8));
+  intervals.push_back(UInt16FieldDescriptor::Interval(12, 14));
+
+  UInt16FieldDescriptor::LabeledValues labels;
+  labels["dozen"] = 12;
+  labels["bakers_dozen"] = 13;
+
+  UInt16FieldDescriptor uint8_descriptor("Count", intervals, labels);
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(&uint8_descriptor);
+  Descriptor test_descriptor("Test Descriptor", fields);
+
+  SchemaPrinter interval_printer(true, false);
+  test_descriptor.Accept(interval_printer);
+  string expected = "Count: uint16, (2, 8) (12, 14)\n";
+  CPPUNIT_ASSERT_EQUAL(expected, interval_printer.AsString());
+
+  SchemaPrinter label_printer(false, true);
+  test_descriptor.Accept(label_printer);
+  string expected2 = "Count: uint16\n  bakers_dozen: 13\n  dozen: 12\n";
+  CPPUNIT_ASSERT_EQUAL(expected2, label_printer.AsString());
+
+  SchemaPrinter interval_label_printer(true, true);
+  test_descriptor.Accept(interval_label_printer);
+  string expected3 = (
+      "Count: uint16, (2, 8) (12, 14)\n  bakers_dozen: 13\n  dozen: 12\n");
+  CPPUNIT_ASSERT_EQUAL(expected3, interval_label_printer.AsString());
 }
