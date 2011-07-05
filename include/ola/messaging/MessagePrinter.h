@@ -58,8 +58,14 @@ class MessagePrinter: public MessageVisitor {
     std::stringstream m_str;
     unsigned int m_indent, m_indent_size;
 
-    void AppendUInt(const string &name, unsigned int value, int8_t multipler);
-    void AppendInt(const string &name, int value, int8_t multipler);
+    void AppendUInt(const string &name,
+                    unsigned int value,
+                    const string &label,
+                    int8_t multipler);
+    void AppendInt(const string &name,
+                   int value,
+                   const string &label,
+                   int8_t multipler);
     void AppendMultipler(int8_t multipler);
     static const unsigned int DEFAULT_INDENT = 2;
 };

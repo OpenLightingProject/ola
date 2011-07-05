@@ -43,45 +43,50 @@ void SchemaPrinter::Visit(const StringFieldDescriptor *descriptor) {
 }
 
 
-void SchemaPrinter::Visit(
-    const IntegerFieldDescriptor<uint8_t> *descriptor) {
-  m_str << string(m_indent, ' ') << descriptor->Name() << ": uint8";
-
+void SchemaPrinter::Visit(const UInt8FieldDescriptor *descriptor) {
+  AppendHeading(descriptor->Name(), "uint8");
+  MaybeAppendIntervals(descriptor->Intervals());
+  MaybeAppendLabels(descriptor->Labels());
   m_str << endl;
 }
 
 
-void SchemaPrinter::Visit(
-    const IntegerFieldDescriptor<uint16_t> *descriptor) {
-  m_str << string(m_indent, ' ') << descriptor->Name() << ": uint16";
+void SchemaPrinter::Visit(const UInt16FieldDescriptor *descriptor) {
+  AppendHeading(descriptor->Name(), "uint16");
+  MaybeAppendIntervals(descriptor->Intervals());
+  MaybeAppendLabels(descriptor->Labels());
   m_str << endl;
 }
 
 
-void SchemaPrinter::Visit(
-    const IntegerFieldDescriptor<uint32_t> *descriptor) {
-  m_str << string(m_indent, ' ') << descriptor->Name() << ": uint32";
+void SchemaPrinter::Visit(const UInt32FieldDescriptor *descriptor) {
+  AppendHeading(descriptor->Name(), "uint32");
+  MaybeAppendIntervals(descriptor->Intervals());
+  MaybeAppendLabels(descriptor->Labels());
   m_str << endl;
 }
 
 
-void SchemaPrinter::Visit(
-    const IntegerFieldDescriptor<int8_t> *descriptor) {
-  m_str << string(m_indent, ' ') << descriptor->Name() << ": int8";
+void SchemaPrinter::Visit(const Int8FieldDescriptor *descriptor) {
+  AppendHeading(descriptor->Name(), "int8");
+  MaybeAppendIntervals(descriptor->Intervals());
+  MaybeAppendLabels(descriptor->Labels());
   m_str << endl;
 }
 
 
-void SchemaPrinter::Visit(
-    const IntegerFieldDescriptor<int16_t> *descriptor) {
-  m_str << string(m_indent, ' ') << descriptor->Name() << ": int16";
+void SchemaPrinter::Visit(const Int16FieldDescriptor *descriptor) {
+  AppendHeading(descriptor->Name(), "int16");
+  MaybeAppendIntervals(descriptor->Intervals());
+  MaybeAppendLabels(descriptor->Labels());
   m_str << endl;
 }
 
 
-void SchemaPrinter::Visit(
-    const IntegerFieldDescriptor<int32_t> *descriptor) {
-  m_str << string(m_indent, ' ') << descriptor->Name() << ": int32";
+void SchemaPrinter::Visit(const Int32FieldDescriptor *descriptor) {
+  AppendHeading(descriptor->Name(), "int32");
+  MaybeAppendIntervals(descriptor->Intervals());
+  MaybeAppendLabels(descriptor->Labels());
   m_str << endl;
 }
 
@@ -95,6 +100,11 @@ void SchemaPrinter::PostVisit(const GroupFieldDescriptor *descriptor) {
   m_indent -= m_indent_size;
   m_str << string(m_indent, ' ') << "}" << endl;
   (void) descriptor;
+}
+
+
+void SchemaPrinter::AppendHeading(const string &name, const string &type) {
+  m_str << string(m_indent, ' ') << name << ": " << type;
 }
 }  // messaging
 }  // ola

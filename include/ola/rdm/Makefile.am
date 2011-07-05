@@ -1,4 +1,4 @@
-SOURCES = RDMAPI.h RDMAPIImplInterface.h RDMCommand.h \
+SOURCES = PidStore.h RDMAPI.h RDMAPIImplInterface.h RDMCommand.h \
           RDMControllerInterface.h RDMEnums.h RDMHelper.h \
           QueueingRDMController.h UID.h UIDSet.h
 

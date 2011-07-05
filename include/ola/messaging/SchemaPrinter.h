@@ -34,10 +34,10 @@ namespace messaging {
  */
 class SchemaPrinter: public FieldDescriptorVisitor {
   public:
-    SchemaPrinter(bool include_range,
-                         bool include_labels,
-                         unsigned int indent_size = DEFAULT_INDENT)
-        : m_include_range(include_range),
+    SchemaPrinter(bool include_intervals,
+                  bool include_labels,
+                  unsigned int indent_size = DEFAULT_INDENT)
+        : m_include_intervals(include_intervals),
           m_include_labels(include_labels),
           m_indent(0),
           m_indent_size(indent_size) {
@@ -49,19 +49,43 @@ class SchemaPrinter: public FieldDescriptorVisitor {
 
     void Visit(const BoolFieldDescriptor*);
     void Visit(const StringFieldDescriptor*);
-    void Visit(const IntegerFieldDescriptor<uint8_t>*);
-    void Visit(const IntegerFieldDescriptor<uint16_t>*);
-    void Visit(const IntegerFieldDescriptor<uint32_t>*);
-    void Visit(const IntegerFieldDescriptor<int8_t>*);
-    void Visit(const IntegerFieldDescriptor<int16_t>*);
-    void Visit(const IntegerFieldDescriptor<int32_t>*);
+    void Visit(const UInt8FieldDescriptor*);
+    void Visit(const UInt16FieldDescriptor*);
+    void Visit(const UInt32FieldDescriptor*);
+    void Visit(const Int8FieldDescriptor*);
+    void Visit(const Int16FieldDescriptor*);
+    void Visit(const Int32FieldDescriptor*);
     void Visit(const GroupFieldDescriptor*);
     void PostVisit(const GroupFieldDescriptor*);
 
   private:
-    bool m_include_range, m_include_labels;
+    bool m_include_intervals, m_include_labels;
     std::stringstream m_str;
     unsigned int m_indent, m_indent_size;
+
+    void AppendHeading(const string &name, const string &type);
+
+    template<class vector_class>
+    void MaybeAppendIntervals(const vector_class &intervals) {
+      if (!m_include_intervals)
+        return;
+      typename vector_class::const_iterator iter = intervals.begin();
+      for (; iter != intervals.end(); ++iter) {
+        m_str << (iter != intervals.begin() ? " " : ", ");
+        m_str << "(" << iter->first << ", " << iter->second << ")";
+      }
+    }
+
+    template<class map_class>
+    void MaybeAppendLabels(const map_class &labels) {
+      if (!m_include_labels)
+        return;
+      typename map_class::const_iterator iter = labels.begin();
+      for (; iter != labels.end(); ++iter) {
+        m_str << std::endl << string(m_indent + m_indent_size, ' ') <<
+            iter->first << ": " << iter->second;
+      }
+    }
 
     static const unsigned int DEFAULT_INDENT = 2;
 };

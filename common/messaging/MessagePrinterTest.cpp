@@ -53,12 +53,14 @@ using ola::messaging::UInt8MessageField;
 class MessagePrinterTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(MessagePrinterTest);
   CPPUNIT_TEST(testSimplePrinter);
+  CPPUNIT_TEST(testLabeledPrinter);
   CPPUNIT_TEST(testNestedPrinter);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     MessagePrinterTest() {}
     void testSimplePrinter();
+    void testLabeledPrinter();
     void testNestedPrinter();
 };
 
@@ -105,6 +107,37 @@ void MessagePrinterTest::testSimplePrinter() {
   string expected = (
       "On/Off: false\nName: foobar\nId: 42\nCount: 4 x 10 ^ -3\n"
       "Delta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n");
+  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+}
+
+
+/**
+ * Check that labels are added
+ */
+void MessagePrinterTest::testLabeledPrinter() {
+  UInt8FieldDescriptor::IntervalVector intervals;
+  intervals.push_back(UInt8FieldDescriptor::Interval(0, 2));
+
+  UInt8FieldDescriptor::LabeledValues labels;
+  labels["off"] = 0;
+  labels["on"] = 1;
+  labels["auto"] = 2;
+
+  UInt8FieldDescriptor uint8_descriptor("State", intervals, labels);
+  UInt8MessageField uint8_message_off(&uint8_descriptor, 0);
+  UInt8MessageField uint8_message_on(&uint8_descriptor, 1);
+  UInt8MessageField uint8_message_auto(&uint8_descriptor, 2);
+
+  vector<const ola::messaging::MessageFieldInterface*> fields;
+  fields.push_back(&uint8_message_off);
+  fields.push_back(&uint8_message_on);
+  fields.push_back(&uint8_message_auto);
+
+  Message message(fields);
+  MessagePrinter printer;
+  message.Accept(printer);
+
+  string expected = "State: off\nState: on\nState: auto\n";
   CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
 }
 

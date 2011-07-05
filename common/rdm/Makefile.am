@@ -2,11 +2,15 @@ include $(top_srcdir)/common.mk
 
 EXTRA_DIST = Pids.proto
 
-noinst_LTLIBRARIES = libolardm.la
-libolardm_la_SOURCES = RDMAPI.cpp RDMCommand.cpp RDMHelper.cpp \
-                       QueueingRDMController.cpp
+BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
-TESTS = RDMTester
+noinst_LTLIBRARIES = libolardm.la
+libolardm_la_SOURCES = PidStore.cpp RDMAPI.cpp RDMCommand.cpp RDMHelper.cpp \
+                       QueueingRDMController.cpp
+nodist_libolardm_la_SOURCES = Pids.pb.cc
+libolardm_la_LDFLAGS = $(PROTOBUF_LIBS)
+
+TESTS = RDMTester PidStoreTester
 check_PROGRAMS = $(TESTS)
 RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp RDMTester.cpp \
                     QueueingRDMControllerTest.cpp UIDTest.cpp
@@ -14,3 +18,17 @@ RDMTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
 RDMTester_LDFLAGS = $(CPPUNIT_LIBS)
 RDMTester_LDADD = libolardm.la ../logging/liblogging.la \
                   ../network/libolanetwork.la ../utils/libolautils.la
+
+PidStoreTester_SOURCES = PidStoreTester.cpp PidStoreTest.cpp
+PidStoreTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
+PidStoreTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
+PidStoreTester_LDADD = libolardm.la ../logging/liblogging.la
+
+Pids.pb.cc Pids.pb.h: Pids.proto
+	$(PROTOC) --cpp_out ./ Pids.proto
+
+TestService.pb.cc TestService.pb.h: TestService.proto
+	$(PROTOC) --cpp_out ./ TestService.proto
+
+clean-local:
+	rm -f *.pb.{h,cc}

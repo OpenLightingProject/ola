@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_MESSAGING_DESCRIPTOR_H_
 
 #include <ola/messaging/DescriptorVisitor.h>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -52,12 +53,6 @@ class Descriptor {
     }
 
     void Accept(FieldDescriptorVisitor &visitor) const;
-
-    /*
-    Message *NewMessage() {
-      return new Message(this);
-    }
-    */
 
   private:
     string m_name;
@@ -151,11 +146,17 @@ class StringFieldDescriptor: public FieldDescriptor {
 
 
 /**
- * A FieldDescriptor that represents an integer type
+ * A FieldDescriptor that represents an integer type.
+ *
+ * Intervals are closed (include the endpoints).
  */
 template <typename type>
 class IntegerFieldDescriptor: public FieldDescriptor {
   public:
+    typedef std::pair<type, type> Interval;
+    typedef vector<std::pair<type, type> > IntervalVector;
+    typedef std::map<string, type> LabeledValues;
+
     IntegerFieldDescriptor(const string &name,
                            bool little_endian = false,
                            int8_t multiplier = 0)
@@ -164,21 +165,62 @@ class IntegerFieldDescriptor: public FieldDescriptor {
           m_multipler(multiplier) {
     }
 
+    IntegerFieldDescriptor(const string &name,
+                           const IntervalVector &intervals,
+                           const LabeledValues &labels,
+                           bool little_endian = false,
+                           int8_t multiplier = 0)
+        : FieldDescriptor(name),
+          m_little_endian(little_endian),
+          m_multipler(multiplier),
+          m_intervals(intervals),
+          m_labels(labels) {
+    }
+
     bool FixedSize() const { return true; }
     unsigned int Size() const { return sizeof(type); }
     int8_t Multiplier() const { return m_multipler; }
     bool IsLittleEndian() const { return m_little_endian; }
 
+    const IntervalVector &Intervals() const { return m_intervals; }
+
+    bool IsValid(type value) const {
+      typename IntervalVector::const_iterator iter = m_intervals.begin();
+      for (; iter != m_intervals.end(); ++iter) {
+        if (value >= iter->first && value <= iter->second)
+          return true;
+      }
+      return false;
+    }
+
+    const LabeledValues &Labels() const { return m_labels; }
+
+    bool LookupLabel(const string &label, type *value) const {
+      typename LabeledValues::const_iterator iter = m_labels.find(label);
+      if (iter == m_labels.end())
+        return false;
+      *value = iter->second;
+      return true;
+    }
+
+    const string LookupValue(type value) const {
+      typename LabeledValues::const_iterator iter = m_labels.begin();
+      for (; iter != m_labels.end(); ++iter) {
+        if (iter->second == value)
+          return iter->first;
+      }
+      return "";
+    }
+
     void Accept(FieldDescriptorVisitor &visitor) const {
       visitor.Visit(this);
     }
 
-    // list of Ranges
-    // list of LabeledValues
-
   private:
     bool m_little_endian;
     int8_t m_multipler;
+    IntervalVector m_intervals;
+    LabeledValues m_labels;
 };
 
 
