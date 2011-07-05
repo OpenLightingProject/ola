@@ -195,12 +195,21 @@ class IntegerFieldDescriptor: public FieldDescriptor {
 
     const LabeledValues &Labels() const { return m_labels; }
 
-    bool LookupLabel(const string &label, type *value) {
+    bool LookupLabel(const string &label, type *value) const {
       typename LabeledValues::const_iterator iter = m_labels.find(label);
       if (iter == m_labels.end())
         return false;
       *value = iter->second;
       return true;
+    }
+
+    const string LookupValue(type value) const {
+      typename LabeledValues::const_iterator iter = m_labels.begin();
+      for (; iter != m_labels.end(); ++iter) {
+        if (iter->second == value)
+          return iter->first;
+      }
+      return "";
     }
 
     void Accept(FieldDescriptorVisitor &visitor) const {

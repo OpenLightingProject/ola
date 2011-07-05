@@ -186,7 +186,6 @@ void DescriptorTest::testIntervalsAndLabels() {
   CPPUNIT_ASSERT(!uint16_descriptor.IsValid(255));
   CPPUNIT_ASSERT(!uint16_descriptor.IsValid(65535));
 
-
   // check LookupLabel()
   uint16_t value;
   CPPUNIT_ASSERT(!uint16_descriptor.LookupLabel("one", &value));
@@ -195,4 +194,10 @@ void DescriptorTest::testIntervalsAndLabels() {
   CPPUNIT_ASSERT(uint16_descriptor.LookupLabel("bakers_dozen", &value));
   CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(13), value);
   CPPUNIT_ASSERT(!uint16_descriptor.LookupLabel("twenty", &value));
+
+  // check LookupValue
+  CPPUNIT_ASSERT_EQUAL(string(""), uint16_descriptor.LookupValue(0));
+  CPPUNIT_ASSERT_EQUAL(string("dozen"), uint16_descriptor.LookupValue(12));
+  CPPUNIT_ASSERT_EQUAL(string("bakers_dozen"),
+                       uint16_descriptor.LookupValue(13));
 }

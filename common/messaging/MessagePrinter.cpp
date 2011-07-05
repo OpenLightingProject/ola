@@ -46,37 +46,55 @@ void MessagePrinter::Visit(const StringMessageField *message) {
 
 void MessagePrinter::Visit(const BasicMessageField<uint8_t> *message) {
   const UInt8FieldDescriptor *descriptor = message->GetDescriptor();
-  AppendUInt(descriptor->Name(), message->Value(), descriptor->Multiplier());
+  AppendUInt(descriptor->Name(),
+             message->Value(),
+             descriptor->LookupValue(message->Value()),
+             descriptor->Multiplier());
 }
 
 
 void MessagePrinter::Visit(const BasicMessageField<uint16_t> *message) {
   const UInt16FieldDescriptor *descriptor = message->GetDescriptor();
-  AppendUInt(descriptor->Name(), message->Value(), descriptor->Multiplier());
+  AppendUInt(descriptor->Name(),
+             message->Value(),
+             descriptor->LookupValue(message->Value()),
+             descriptor->Multiplier());
 }
 
 
 void MessagePrinter::Visit(const BasicMessageField<uint32_t> *message) {
   const UInt32FieldDescriptor *descriptor = message->GetDescriptor();
-  AppendUInt(descriptor->Name(), message->Value(), descriptor->Multiplier());
+  AppendUInt(descriptor->Name(),
+             message->Value(),
+             descriptor->LookupValue(message->Value()),
+             descriptor->Multiplier());
 }
 
 
 void MessagePrinter::Visit(const BasicMessageField<int8_t> *message) {
   const Int8FieldDescriptor *descriptor = message->GetDescriptor();
-  AppendInt(descriptor->Name(), message->Value(), descriptor->Multiplier());
+  AppendInt(descriptor->Name(),
+            message->Value(),
+            descriptor->LookupValue(message->Value()),
+            descriptor->Multiplier());
 }
 
 
 void MessagePrinter::Visit(const BasicMessageField<int16_t> *message) {
   const Int16FieldDescriptor *descriptor = message->GetDescriptor();
-  AppendInt(descriptor->Name(), message->Value(), descriptor->Multiplier());
+  AppendInt(descriptor->Name(),
+            message->Value(),
+            descriptor->LookupValue(message->Value()),
+            descriptor->Multiplier());
 }
 
 
 void MessagePrinter::Visit(const BasicMessageField<int32_t> *message) {
   const Int32FieldDescriptor *descriptor = message->GetDescriptor();
-  AppendInt(descriptor->Name(), message->Value(), descriptor->Multiplier());
+  AppendInt(descriptor->Name(),
+            message->Value(),
+            descriptor->LookupValue(message->Value()),
+            descriptor->Multiplier());
 }
 
 
@@ -96,18 +114,30 @@ void MessagePrinter::PostVisit(const GroupMessageField *message) {
 
 void MessagePrinter::AppendUInt(const string &name,
                                 unsigned int value,
+                                const string &label,
                                 int8_t multipler) {
-  m_str << string(m_indent, ' ') << name << ": " << value;
-  AppendMultipler(multipler);
+  m_str << string(m_indent, ' ') << name << ": ";
+  if (label.empty()) {
+    m_str << value;
+    AppendMultipler(multipler);
+  } else {
+    m_str << label;
+  }
   m_str << endl;
 }
 
 
 void MessagePrinter::AppendInt(const string &name,
                                int value,
+                               const string &label,
                                int8_t multipler) {
-  m_str << string(m_indent, ' ') << name << ": " << value;
-  AppendMultipler(multipler);
+  m_str << string(m_indent, ' ') << name << ": ";
+  if (label.empty()) {
+    m_str << value;
+    AppendMultipler(multipler);
+  } else {
+    m_str << label;
+  }
   m_str << endl;
 }
 
