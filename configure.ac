@@ -383,10 +383,11 @@ AC_OUTPUT( Makefile\
     common/Makefile\
     common/export_map/Makefile\
     common/logging/Makefile\
+    common/messaging/Makefile\
+    common/network/Makefile\
     common/protocol/Makefile\
     common/rdm/Makefile\
     common/rpc/Makefile\
-    common/network/Makefile\
     common/utils/Makefile\
     common/web/Makefile\
     data/Makefile\
@@ -396,6 +397,7 @@ AC_OUTPUT( Makefile\
     include/Makefile\
     include/ola/Makefile\
     include/ola/network/Makefile\
+    include/ola/messaging/Makefile\
     include/ola/rdm/Makefile\
     include/ola/web/Makefile\
     include/olad/Makefile\
