@@ -13,12 +13,12 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * Descriptor.cpp
+ * Message.cpp
  * Holds the metadata (schema) for a Message.
  * Copyright (C) 2011 Simon Newton
  */
 
-#include <ola/messaging/Descriptor.h>
+#include <ola/messaging/Message.h>
 #include <vector>
 
 namespace ola {
@@ -27,16 +27,16 @@ namespace messaging {
 using std::vector;
 
 
-void Descriptor::Accept(FieldDescriptorVisitor &visitor) const {
-  vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
+void Message::Accept(MessageVisitor &visitor) const {
+  vector<const MessageFieldInterface*>::const_iterator iter = m_fields.begin();
   for (; iter != m_fields.end(); ++iter)
     (*iter)->Accept(visitor);
 }
 
 
-void GroupFieldDescriptor::Accept(FieldDescriptorVisitor &visitor) const {
+void GroupMessageField::Accept(MessageVisitor &visitor) const {
   visitor.Visit(this);
-  vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
+  vector<const MessageFieldInterface*>::const_iterator iter = m_fields.begin();
   for (; iter != m_fields.end(); ++iter)
     (*iter)->Accept(visitor);
   visitor.PostVisit(this);

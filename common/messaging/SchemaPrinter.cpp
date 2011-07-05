@@ -13,8 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * Descriptor.cpp
- * Holds the metadata (schema) for a Message.
+ * SchemaPrinter.cpp
+ * Prints the text representation of a schema.
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -33,7 +33,6 @@ using std::endl;
 
 
 void SchemaPrinter::Visit(const BoolFieldDescriptor *descriptor) {
-  std::cout << m_indent << std::endl;
   m_str << string(m_indent, ' ') << descriptor->Name() << ": bool" << endl;
 }
 

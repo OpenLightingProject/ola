@@ -21,13 +21,15 @@
 #ifndef INCLUDE_OLA_MESSAGING_MESSAGEVISITOR_H_
 #define INCLUDE_OLA_MESSAGING_MESSAGEVISITOR_H_
 
+#include <stdint.h>
 
 namespace ola {
 namespace messaging {
 
 
-class StringMessageField;
+class BoolMessageField;
 class GroupMessageField;
+class StringMessageField;
 
 template <typename type>
 class BasicMessageField;
@@ -35,18 +37,18 @@ class BasicMessageField;
 /**
  * The interface for the Message Visitor
  */
-class FieldDescriptorVisitor {
+class MessageVisitor {
   public:
-    virtual ~FieldDescriptorVisitor() {}
+    virtual ~MessageVisitor() {}
 
-    virtual void Visit(const IntegerFieldDescriptor<bool>*) = 0;
+    virtual void Visit(const BoolMessageField*) = 0;
     virtual void Visit(const StringMessageField*) = 0;
-    virtual void Visit(const IntegerFieldDescriptor<uint8_t>*) = 0;
-    virtual void Visit(const IntegerFieldDescriptor<uint16_t>*) = 0;
-    virtual void Visit(const IntegerFieldDescriptor<uint32_t>*) = 0;
-    virtual void Visit(const IntegerFieldDescriptor<int8_t>*) = 0;
-    virtual void Visit(const IntegerFieldDescriptor<int16_t>*) = 0;
-    virtual void Visit(const IntegerFieldDescriptor<int32_t>*) = 0;
+    virtual void Visit(const BasicMessageField<uint8_t>*) = 0;
+    virtual void Visit(const BasicMessageField<uint16_t>*) = 0;
+    virtual void Visit(const BasicMessageField<uint32_t>*) = 0;
+    virtual void Visit(const BasicMessageField<int8_t>*) = 0;
+    virtual void Visit(const BasicMessageField<int16_t>*) = 0;
+    virtual void Visit(const BasicMessageField<int32_t>*) = 0;
     virtual void Visit(const GroupMessageField*) = 0;
     virtual void PostVisit(const GroupMessageField*) = 0;
 };

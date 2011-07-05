@@ -21,6 +21,8 @@
 #ifndef INCLUDE_OLA_MESSAGING_DESCRIPTORVISITOR_H_
 #define INCLUDE_OLA_MESSAGING_DESCRIPTORVISITOR_H_
 
+#include <stdint.h>
+
 namespace ola {
 namespace messaging {
 

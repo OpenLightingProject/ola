@@ -38,7 +38,7 @@ class FieldDescriptorVisitor;
 class Descriptor {
   public:
     Descriptor(const string &name,
-               const vector<class FieldDescriptor*> &fields)
+               const vector<const class FieldDescriptor*> &fields)
         : m_name(name),
           m_fields(fields) {
     }
@@ -61,7 +61,7 @@ class Descriptor {
 
   private:
     string m_name;
-    vector<class FieldDescriptor *> m_fields;
+    vector<const class FieldDescriptor *> m_fields;
 };
 
 
@@ -196,7 +196,7 @@ typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
 class GroupFieldDescriptor: public FieldDescriptor {
   public:
     GroupFieldDescriptor(const string &name,
-                         const vector<class FieldDescriptor*> &fields,
+                         const vector<const class FieldDescriptor*> &fields,
                          uint8_t min_size,
                          uint8_t max_size)
       : FieldDescriptor(name),
@@ -221,7 +221,7 @@ class GroupFieldDescriptor: public FieldDescriptor {
     void Accept(FieldDescriptorVisitor &visitor) const;
 
   private:
-    vector<class FieldDescriptor *> m_fields;
+    vector<const class FieldDescriptor *> m_fields;
     uint8_t m_min_size, m_max_size;
 };
 }  // messaging

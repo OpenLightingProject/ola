@@ -65,7 +65,7 @@ void SchemaPrinterTest::testPrinter() {
   UInt32FieldDescriptor uint32_descriptor("Id");
 
   // try a simple print first
-  vector<FieldDescriptor*> fields;
+  vector<const FieldDescriptor*> fields;
   fields.push_back(&bool_descriptor);
   fields.push_back(&string_descriptor);
   fields.push_back(&uint8_descriptor);
@@ -79,7 +79,7 @@ void SchemaPrinterTest::testPrinter() {
 
   // now do a descriptor which contains a GroupDescriptor
   GroupFieldDescriptor group_descriptor("Group 1", fields, 0, 2);
-  vector<FieldDescriptor*> fields2;
+  vector<const FieldDescriptor*> fields2;
   fields2.push_back(&string_descriptor2);
   fields2.push_back(&uint32_descriptor);
   fields2.push_back(&group_descriptor);

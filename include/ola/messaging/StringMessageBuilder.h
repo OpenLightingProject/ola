@@ -13,39 +13,36 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SchemaPrinter.h
- * Builds a string which contains the text representation of the schema.
+ * StringMessageBuilder.h
+ * The interface for the class which builds Message objects from a vector of
+ * strings.
  * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_MESSAGING_SCHEMAPRINTER_H_
-#define INCLUDE_OLA_MESSAGING_SCHEMAPRINTER_H_
+#ifndef INCLUDE_OLA_MESSAGING_STRINGMESSAGEBUILDER_H_
+#define INCLUDE_OLA_MESSAGING_STRINGMESSAGEBUILDER_H_
 
 #include <ola/messaging/DescriptorVisitor.h>
 #include <string>
-#include <sstream>
+#include <vector>
 
 namespace ola {
 namespace messaging {
 
 
-/**
- * This visitor prints the schema as a string.
- */
-class SchemaPrinter: public FieldDescriptorVisitor {
-  public:
-    SchemaPrinter(bool include_range,
-                         bool include_labels,
-                         unsigned int indent_size = DEFAULT_INDENT)
-        : m_include_range(include_range),
-          m_include_labels(include_labels),
-          m_indent(0),
-          m_indent_size(indent_size) {
-    }
-    ~SchemaPrinter() {}
+using std::string;
+using std::vector;
 
-    string AsString() { return m_str.str(); }
-    void Reset() { m_str.str(""); }
+
+/**
+ * This visitor builds a Message object from a list of strings.
+ */
+class StringMessageBuilder: public FieldDescriptorVisitor {
+  public:
+    StringMessageBuilder(const vector<string> &input)
+        : m_input(input) {
+    }
+    ~StringMessageBuilderVisitor() {}
 
     void Visit(const BoolFieldDescriptor*);
     void Visit(const StringFieldDescriptor*);
@@ -59,12 +56,8 @@ class SchemaPrinter: public FieldDescriptorVisitor {
     void PostVisit(const GroupFieldDescriptor*);
 
   private:
-    bool m_include_range, m_include_labels;
-    std::stringstream m_str;
-    unsigned int m_indent, m_indent_size;
-
-    static const unsigned int DEFAULT_INDENT = 2;
+    vector<string> m_input;
 };
 }  // messaging
 }  // ola
-#endif  // INCLUDE_OLA_MESSAGING_SCHEMAPRINTER_H_
+#endif  // INCLUDE_OLA_MESSAGING_STRINGMESSAGEBUILDER_H_

@@ -129,7 +129,7 @@ void DescriptorTest::testFieldDescriptors() {
   CPPUNIT_ASSERT_EQUAL(true, uint32_descriptor2.FixedSize());
 
   // group with a variable number of repeats
-  std::vector<FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   fields.push_back(&bool_descriptor);
   fields.push_back(&uint8_descriptor);
 
