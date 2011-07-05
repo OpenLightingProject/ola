@@ -30,6 +30,7 @@
 
 using ola::messaging::Descriptor;
 using ola::rdm::PidDescriptor;
+using ola::rdm::PidStore;
 using std::string;
 using std::vector;
 
@@ -37,10 +38,12 @@ using std::vector;
 class PidStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PidStoreTest);
   CPPUNIT_TEST(testPidDescriptor);
+  CPPUNIT_TEST(testPidStore);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testPidDescriptor();
+    void testPidStore();
     void setUp() {}
     void tearDown() {}
 
@@ -94,4 +97,42 @@ void PidStoreTest::testPidDescriptor() {
   CPPUNIT_ASSERT(pid.IsSetValid(512));
   CPPUNIT_ASSERT(!pid.IsSetValid(513));
   CPPUNIT_ASSERT(pid.IsSetValid(0xffff));
+}
+
+
+/**
+ * Check the PidStore works.
+ */
+void PidStoreTest::testPidStore() {
+  const PidDescriptor foo_pid("foo", 0, NULL, NULL, NULL, NULL,
+                              PidDescriptor::NON_BROADCAST_SUB_DEVICE,
+                              PidDescriptor::ANY_SUB_DEVICE);
+  const PidDescriptor bar_pid("bar", 1, NULL, NULL, NULL, NULL,
+                              PidDescriptor::NON_BROADCAST_SUB_DEVICE,
+                              PidDescriptor::ANY_SUB_DEVICE);
+
+  vector<const PidDescriptor*> pids;
+  pids.push_back(&foo_pid);
+  pids.push_back(&bar_pid);
+
+  PidStore store(pids);
+
+  // check value lookups
+  CPPUNIT_ASSERT_EQUAL(&foo_pid, store.LookupPID(0));
+  CPPUNIT_ASSERT_EQUAL(&bar_pid, store.LookupPID(1));
+  CPPUNIT_ASSERT_EQUAL(static_cast<const PidDescriptor*>(NULL),
+                       store.LookupPID(2));
+
+  // check name lookups
+  CPPUNIT_ASSERT_EQUAL(&foo_pid, store.LookupPID("foo"));
+  CPPUNIT_ASSERT_EQUAL(&bar_pid, store.LookupPID("bar"));
+  CPPUNIT_ASSERT_EQUAL(static_cast<const PidDescriptor*>(NULL),
+                       store.LookupPID("baz"));
+
+  // check all pids;
+  vector<const PidDescriptor*> all_pids;
+  store.AllPids(&all_pids);
+  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), all_pids.size());
+  CPPUNIT_ASSERT_EQUAL(&foo_pid, all_pids[0]);
+  CPPUNIT_ASSERT_EQUAL(&bar_pid, all_pids[1]);
 }

@@ -26,7 +26,6 @@
 #include "ola/rdm/RDMEnums.h"
 #include "common/rdm/Pids.pb.h"
 
-
 namespace ola {
 namespace rdm {
 
@@ -84,6 +83,7 @@ bool RootPidStore::LoadFromStream(std::istream *data, bool validate) {
 /**
  * Create a new PidStore
  * @param a list of PidDescriptors for this store.
+ * @pre the names and values for the pids in the vector are unique.
  */
 PidStore::PidStore(const vector<const PidDescriptor*> &pids) {
   vector<const PidDescriptor*>::const_iterator iter = pids.begin();
