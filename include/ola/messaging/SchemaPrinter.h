@@ -35,8 +35,8 @@ namespace messaging {
 class SchemaPrinter: public FieldDescriptorVisitor {
   public:
     SchemaPrinter(bool include_range,
-                         bool include_labels,
-                         unsigned int indent_size = DEFAULT_INDENT)
+                  bool include_labels,
+                  unsigned int indent_size = DEFAULT_INDENT)
         : m_include_range(include_range),
           m_include_labels(include_labels),
           m_indent(0),

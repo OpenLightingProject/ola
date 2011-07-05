@@ -39,11 +39,13 @@ using ola::messaging::UInt8FieldDescriptor;
 class DescriptorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DescriptorTest);
   CPPUNIT_TEST(testFieldDescriptors);
+  CPPUNIT_TEST(testIntervalsAndLabels);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     DescriptorTest() {}
     void testFieldDescriptors();
+    void testIntervalsAndLabels();
 };
 
 
@@ -153,4 +155,44 @@ void DescriptorTest::testFieldDescriptors() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
                        group_descriptor2.MaxSize());
   CPPUNIT_ASSERT_EQUAL(true, group_descriptor2.FixedSize());
+}
+
+
+/**
+ * Check that intervals and labels work
+ */
+void DescriptorTest::testIntervalsAndLabels() {
+  UInt16FieldDescriptor::IntervalVector intervals;
+  intervals.push_back(UInt16FieldDescriptor::Interval(2, 8));
+  intervals.push_back(UInt16FieldDescriptor::Interval(12, 14));
+
+  UInt16FieldDescriptor::LabeledValues labels;
+  labels["dozen"] = 12;
+  labels["bakers_dozen"] = 13;
+
+  UInt16FieldDescriptor uint16_descriptor("uint16", intervals, labels);
+
+  // check IsValid()
+  CPPUNIT_ASSERT(!uint16_descriptor.IsValid(0));
+  CPPUNIT_ASSERT(!uint16_descriptor.IsValid(1));
+  CPPUNIT_ASSERT(uint16_descriptor.IsValid(2));
+  CPPUNIT_ASSERT(uint16_descriptor.IsValid(8));
+  CPPUNIT_ASSERT(!uint16_descriptor.IsValid(9));
+  CPPUNIT_ASSERT(!uint16_descriptor.IsValid(11));
+  CPPUNIT_ASSERT(uint16_descriptor.IsValid(12));
+  CPPUNIT_ASSERT(uint16_descriptor.IsValid(13));
+  CPPUNIT_ASSERT(uint16_descriptor.IsValid(14));
+  CPPUNIT_ASSERT(!uint16_descriptor.IsValid(15));
+  CPPUNIT_ASSERT(!uint16_descriptor.IsValid(255));
+  CPPUNIT_ASSERT(!uint16_descriptor.IsValid(65535));
+
+
+  // check LookupLabel()
+  uint16_t value;
+  CPPUNIT_ASSERT(!uint16_descriptor.LookupLabel("one", &value));
+  CPPUNIT_ASSERT(uint16_descriptor.LookupLabel("dozen", &value));
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(12), value);
+  CPPUNIT_ASSERT(uint16_descriptor.LookupLabel("bakers_dozen", &value));
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(13), value);
+  CPPUNIT_ASSERT(!uint16_descriptor.LookupLabel("twenty", &value));
 }
