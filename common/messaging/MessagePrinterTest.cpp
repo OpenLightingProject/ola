@@ -144,20 +144,21 @@ void MessagePrinterTest::testLabeledPrinter() {
 
 void MessagePrinterTest::testNestedPrinter() {
   // this holds some information on people
-  StringFieldDescriptor string_descriptor("Name", 0, 32);
-  BoolFieldDescriptor bool_descriptor("Female");
-  UInt8FieldDescriptor uint8_descriptor("Age");
+  StringFieldDescriptor *string_descriptor = new StringFieldDescriptor(
+      "Name", 0, 32);
+  BoolFieldDescriptor *bool_descriptor = new BoolFieldDescriptor("Female");
+  UInt8FieldDescriptor *uint8_descriptor = new UInt8FieldDescriptor("Age");
 
   vector<const FieldDescriptor*> person_fields;
-  person_fields.push_back(&string_descriptor);
-  person_fields.push_back(&bool_descriptor);
-  person_fields.push_back(&uint8_descriptor);
+  person_fields.push_back(string_descriptor);
+  person_fields.push_back(bool_descriptor);
+  person_fields.push_back(uint8_descriptor);
   GroupFieldDescriptor group_descriptor("Person", person_fields, 0, 10);
 
   // setup the first person
-  StringMessageField string_message1(&string_descriptor, "Lisa");
-  BoolMessageField bool_message1(&bool_descriptor, true);
-  UInt8MessageField uint8_message1(&uint8_descriptor, 21);
+  StringMessageField string_message1(string_descriptor, "Lisa");
+  BoolMessageField bool_message1(bool_descriptor, true);
+  UInt8MessageField uint8_message1(uint8_descriptor, 21);
   vector<const MessageFieldInterface*> person1;
   person1.push_back(&string_message1);
   person1.push_back(&bool_message1);
@@ -165,9 +166,9 @@ void MessagePrinterTest::testNestedPrinter() {
   GroupMessageField group_message1(&group_descriptor, person1);
 
   // setup the second person
-  StringMessageField string_message2(&string_descriptor, "Simon");
-  BoolMessageField bool_message2(&bool_descriptor, false);
-  UInt8MessageField uint8_message2(&uint8_descriptor, 26);
+  StringMessageField string_message2(string_descriptor, "Simon");
+  BoolMessageField bool_message2(bool_descriptor, false);
+  UInt8MessageField uint8_message2(uint8_descriptor, 26);
   vector<const MessageFieldInterface*> person2;
   person2.push_back(&string_message2);
   person2.push_back(&bool_message2);

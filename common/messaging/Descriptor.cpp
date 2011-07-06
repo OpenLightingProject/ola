@@ -26,11 +26,24 @@ namespace messaging {
 
 using std::vector;
 
+Descriptor::~Descriptor() {
+  vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
+  for (; iter != m_fields.end(); ++iter)
+    delete *iter;
+}
+
 
 void Descriptor::Accept(FieldDescriptorVisitor &visitor) const {
   vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
   for (; iter != m_fields.end(); ++iter)
     (*iter)->Accept(visitor);
+}
+
+
+GroupFieldDescriptor::~GroupFieldDescriptor() {
+  vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
+  for (; iter != m_fields.end(); ++iter)
+    delete *iter;
 }
 
 

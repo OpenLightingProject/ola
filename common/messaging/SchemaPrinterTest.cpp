@@ -42,12 +42,14 @@ using ola::messaging::UInt8FieldDescriptor;
 class SchemaPrinterTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SchemaPrinterTest);
   CPPUNIT_TEST(testPrinter);
+  CPPUNIT_TEST(testGroupPrinter);
   CPPUNIT_TEST(testIntervalsAndLabels);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     SchemaPrinterTest() {}
     void testPrinter();
+    void testGroupPrinter();
     void testIntervalsAndLabels();
 };
 
@@ -60,17 +62,17 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SchemaPrinterTest);
  */
 void SchemaPrinterTest::testPrinter() {
   // setup some fields
-  BoolFieldDescriptor bool_descriptor("On/Off");
-  StringFieldDescriptor string_descriptor("Name", 0, 32);
-  StringFieldDescriptor string_descriptor2("Device", 0, 32);
-  UInt8FieldDescriptor uint8_descriptor("Count", false, 10);
-  UInt32FieldDescriptor uint32_descriptor("Id");
+  BoolFieldDescriptor *bool_descriptor = new BoolFieldDescriptor("On/Off");
+  StringFieldDescriptor *string_descriptor = new StringFieldDescriptor(
+      "Name", 0, 32);
+  UInt8FieldDescriptor *uint8_descriptor = new UInt8FieldDescriptor(
+      "Count", false, 10);
 
   // try a simple print first
   vector<const FieldDescriptor*> fields;
-  fields.push_back(&bool_descriptor);
-  fields.push_back(&string_descriptor);
-  fields.push_back(&uint8_descriptor);
+  fields.push_back(bool_descriptor);
+  fields.push_back(string_descriptor);
+  fields.push_back(uint8_descriptor);
 
   Descriptor test_descriptor("Test Descriptor", fields);
   SchemaPrinter printer(false, false);
@@ -78,21 +80,39 @@ void SchemaPrinterTest::testPrinter() {
 
   string expected = "On/Off: bool\nName: string [0, 32]\nCount: uint8\n";
   CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+}
+
+
+void SchemaPrinterTest::testGroupPrinter() {
+  BoolFieldDescriptor *bool_descriptor = new BoolFieldDescriptor("On/Off");
+  StringFieldDescriptor *string_descriptor = new StringFieldDescriptor(
+      "Name", 0, 32);
+  StringFieldDescriptor *string_descriptor2 = new StringFieldDescriptor(
+      "Device", 0, 32);
+  UInt8FieldDescriptor *uint8_descriptor = new UInt8FieldDescriptor(
+      "Count", false, 10);
+  UInt32FieldDescriptor *uint32_descriptor = new UInt32FieldDescriptor("Id");
+
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(bool_descriptor);
+  fields.push_back(string_descriptor);
+  fields.push_back(uint8_descriptor);
 
   // now do a descriptor which contains a GroupDescriptor
-  GroupFieldDescriptor group_descriptor("Group 1", fields, 0, 2);
+  GroupFieldDescriptor *group_descriptor = new GroupFieldDescriptor(
+      "Group 1", fields, 0, 2);
   vector<const FieldDescriptor*> fields2;
-  fields2.push_back(&string_descriptor2);
-  fields2.push_back(&uint32_descriptor);
-  fields2.push_back(&group_descriptor);
-  Descriptor test_descriptor2("Test Descriptor2", fields2);
+  fields2.push_back(string_descriptor2);
+  fields2.push_back(uint32_descriptor);
+  fields2.push_back(group_descriptor);
+  Descriptor test_descriptor("Test Descriptor2", fields2);
 
-  printer.Reset();
-  test_descriptor2.Accept(printer);
+  SchemaPrinter printer(false, false);
+  test_descriptor.Accept(printer);
 
-  string expected2 = "Device: string [0, 32]\nId: uint32\nGroup 1 {\n"
+  string expected = "Device: string [0, 32]\nId: uint32\nGroup 1 {\n"
     "  On/Off: bool\n  Name: string [0, 32]\n  Count: uint8\n}\n";
-  CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
 }
 
 
@@ -105,9 +125,10 @@ void SchemaPrinterTest::testIntervalsAndLabels() {
   labels["dozen"] = 12;
   labels["bakers_dozen"] = 13;
 
-  UInt16FieldDescriptor uint8_descriptor("Count", intervals, labels);
+  UInt16FieldDescriptor *uint8_descriptor = new UInt16FieldDescriptor(
+      "Count", intervals, labels);
   vector<const FieldDescriptor*> fields;
-  fields.push_back(&uint8_descriptor);
+  fields.push_back(uint8_descriptor);
   Descriptor test_descriptor("Test Descriptor", fields);
 
   SchemaPrinter interval_printer(true, false);
