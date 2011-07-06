@@ -200,4 +200,12 @@ void DescriptorTest::testIntervalsAndLabels() {
   CPPUNIT_ASSERT_EQUAL(string("dozen"), uint16_descriptor.LookupValue(12));
   CPPUNIT_ASSERT_EQUAL(string("bakers_dozen"),
                        uint16_descriptor.LookupValue(13));
+
+  // a Descriptor with no labels or intervals
+  UInt16FieldDescriptor::IntervalVector intervals2;
+  UInt16FieldDescriptor::LabeledValues labels2;
+  UInt16FieldDescriptor uint16_descriptor2("uint16", intervals2, labels2);
+  CPPUNIT_ASSERT(uint16_descriptor2.IsValid(0));
+  CPPUNIT_ASSERT(uint16_descriptor2.IsValid(255));
+  CPPUNIT_ASSERT(uint16_descriptor2.IsValid(65535));
 }

@@ -185,6 +185,9 @@ class IntegerFieldDescriptor: public FieldDescriptor {
     const IntervalVector &Intervals() const { return m_intervals; }
 
     bool IsValid(type value) const {
+      if (m_intervals.empty())
+        return true;
+
       typename IntervalVector::const_iterator iter = m_intervals.begin();
       for (; iter != m_intervals.end(); ++iter) {
         if (value >= iter->first && value <= iter->second)
