@@ -387,6 +387,7 @@ AC_OUTPUT( Makefile\
     common/network/Makefile\
     common/protocol/Makefile\
     common/rdm/Makefile\
+    common/rdm/testdata/Makefile \
     common/rpc/Makefile\
     common/utils/Makefile\
     common/web/Makefile\

@@ -254,6 +254,8 @@ class GroupFieldDescriptor: public FieldDescriptor {
     unsigned int Size() const { return m_max_size; }
 
     unsigned int MinSize() const { return m_min_size; }
+
+    // A max size of 0 means no restrictions
     unsigned int MaxSize() const { return m_max_size; }
 
     unsigned int FieldCount() const { return m_fields.size(); }

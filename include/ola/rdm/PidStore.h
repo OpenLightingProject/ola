@@ -36,7 +36,6 @@ using std::vector;
 using std::string;
 using ola::messaging::Descriptor;
 
-
 class PidStore;
 class PidDescriptor;
 
@@ -45,9 +44,14 @@ class PidDescriptor;
  */
 class RootPidStore {
   public:
-    RootPidStore()
-        : m_esta_store(NULL) {
+    typedef map<uint16_t, const PidStore*> ManufacturerMap;
+
+    RootPidStore(const PidStore *esta_store,
+                 const ManufacturerMap &manufacturer_stores)
+        : m_esta_store(esta_store),
+          m_manufacturer_store(manufacturer_stores) {
     }
+    ~RootPidStore();
 
     // This holds the ESTA PIDs
     const PidStore *EstaStore() const {
@@ -57,19 +61,13 @@ class RootPidStore {
     // Holds Manufacturer PID data
     const PidStore *ManufacturerStore(uint16_t esta_id) const;
 
-    // Load information into this store
-    bool LoadFromFile(const string &file, bool validate = true);
-
-    // Load information into this store
-    bool LoadFromStream(std::istream *data, bool validate = true);
-
   private:
-    typedef map<uint16_t, const PidStore*> ManufacturerMap;
-    PidStore *m_esta_store;
+    const PidStore *m_esta_store;
     ManufacturerMap m_manufacturer_store;
 
     RootPidStore(const RootPidStore&);
     RootPidStore& operator=(const RootPidStore&);
+    void CleanStore();
 };
 
 
@@ -79,6 +77,7 @@ class RootPidStore {
 class PidStore {
   public:
     explicit PidStore(const vector<const PidDescriptor*> &pids);
+    ~PidStore();
 
     void AllPids(vector<const PidDescriptor*> *pids) const;
     const PidDescriptor *LookupPID(uint16_t pid_value) const;
@@ -127,6 +126,7 @@ class PidDescriptor {
           m_get_subdevice_range(get_sub_device_range),
           m_set_subdevice_range(set_sub_device_range) {
     }
+    ~PidDescriptor();
 
     const string &Name() const { return m_name; }
     uint16_t Value() const { return m_pid_value; }
