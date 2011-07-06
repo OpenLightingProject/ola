@@ -18,20 +18,16 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/text_format.h>
 #include <string>
 #include <vector>
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
-#include "common/rdm/Pids.pb.h"
-
 
 namespace ola {
 namespace rdm {
 
-using std::map;
 using std::vector;
+
 
 /**
  * Lookup a PidStore based on Manufacturer Id
@@ -45,45 +41,37 @@ const PidStore *RootPidStore::ManufacturerStore(uint16_t esta_id) const {
   return iter->second;
 }
 
-/**
- * Load Pid information from a file.
- * @param file the path to the file to load
- * @param validate set to true if we should perform validation of the contents.
- * @returns true if loaded ok, false otherwise.
- */
-bool RootPidStore::LoadFromFile(const string &file, bool validate) {
-  ola::rdm::pid::PidStore pid_store_pb;
-  int fd = 0;
-  google::protobuf::io::FileInputStream input_stream(fd);
-  bool ok = google::protobuf::TextFormat::Parse(&input_stream, &pid_store_pb);
 
-  return ok;
-  (void) file;
-  (void) validate;
-  return true;
+/**
+ * Clean up
+ */
+RootPidStore::~RootPidStore() {
+  CleanStore();
 }
 
 
 /**
- * Load Pid information from a string
- * @param file the path to the file to load
- * @param validate set to true if we should perform validation of the contents.
- * @returns true if loaded ok, false otherwise.
+ * Empty the store and delete all objects. This is dangerous as all other
+ * objects like in-flight messages will be pointing to the underlying
+ * descriptors.
  */
-bool RootPidStore::LoadFromStream(std::istream *data, bool validate) {
-  ola::rdm::pid::PidStore pid_store_pb;
-  google::protobuf::io::IstreamInputStream input_stream(data);
-  bool ok = google::protobuf::TextFormat::Parse(&input_stream, &pid_store_pb);
-
-  return ok;
-  (void) data;
-  (void) validate;
+void RootPidStore::CleanStore() {
+  if (m_esta_store) {
+    delete m_esta_store;
+    m_esta_store = NULL;
+  }
+  ManufacturerMap::const_iterator iter = m_manufacturer_store.begin();
+  for (; iter != m_manufacturer_store.end(); ++iter) {
+    delete iter->second;
+  }
+  m_manufacturer_store.clear();
 }
 
 
 /**
  * Create a new PidStore
  * @param a list of PidDescriptors for this store.
+ * @pre the names and values for the pids in the vector are unique.
  */
 PidStore::PidStore(const vector<const PidDescriptor*> &pids) {
   vector<const PidDescriptor*>::const_iterator iter = pids.begin();
@@ -91,6 +79,19 @@ PidStore::PidStore(const vector<const PidDescriptor*> &pids) {
     m_pid_by_value[(*iter)->Value()] = *iter;
     m_pid_by_name[(*iter)->Name()] = *iter;
   }
+}
+
+
+/**
+ * Clean up.
+ */
+PidStore::~PidStore() {
+  PidMap::const_iterator iter = m_pid_by_value.begin();
+  for (; iter != m_pid_by_value.end(); ++iter) {
+    delete iter->second;
+  }
+  m_pid_by_value.clear();
+  m_pid_by_name.clear();
 }
 
 
@@ -105,6 +106,17 @@ void PidStore::AllPids(vector<const PidDescriptor*> *pids) const {
   for (; iter != m_pid_by_value.end(); ++iter) {
     pids->push_back(iter->second);
   }
+}
+
+
+/**
+ * Clean up
+ */
+PidDescriptor::~PidDescriptor() {
+  delete m_get_request;
+  delete m_get_response;
+  delete m_set_request;
+  delete m_set_response;
 }
 
 
@@ -154,6 +166,9 @@ bool PidDescriptor::IsSetValid(uint16_t sub_device) const {
 }
 
 
+/**
+ * Returns is a request is valid
+ */
 bool PidDescriptor::RequestValid(uint16_t sub_device,
                                  const sub_device_valiator &validator) const {
   switch (validator) {

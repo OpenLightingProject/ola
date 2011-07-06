@@ -185,6 +185,9 @@ class IntegerFieldDescriptor: public FieldDescriptor {
     const IntervalVector &Intervals() const { return m_intervals; }
 
     bool IsValid(type value) const {
+      if (m_intervals.empty())
+        return true;
+
       typename IntervalVector::const_iterator iter = m_intervals.begin();
       for (; iter != m_intervals.end(); ++iter) {
         if (value >= iter->first && value <= iter->second)
@@ -251,6 +254,8 @@ class GroupFieldDescriptor: public FieldDescriptor {
     unsigned int Size() const { return m_max_size; }
 
     unsigned int MinSize() const { return m_min_size; }
+
+    // A max size of 0 means no restrictions
     unsigned int MaxSize() const { return m_max_size; }
 
     unsigned int FieldCount() const { return m_fields.size(); }

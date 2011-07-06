@@ -1,12 +1,14 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = Pids.proto
+SUBDIRS = testdata
+
+EXTRA_DIST = Pids.proto PidStoreLoader.h
 
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
 noinst_LTLIBRARIES = libolardm.la
-libolardm_la_SOURCES = PidStore.cpp RDMAPI.cpp RDMCommand.cpp RDMHelper.cpp \
-                       QueueingRDMController.cpp
+libolardm_la_SOURCES = PidStore.cpp PidStoreLoader.cpp RDMAPI.cpp \
+                       RDMCommand.cpp RDMHelper.cpp QueueingRDMController.cpp
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LDFLAGS = $(PROTOBUF_LIBS)
 
@@ -22,7 +24,8 @@ RDMTester_LDADD = libolardm.la ../logging/liblogging.la \
 PidStoreTester_SOURCES = PidStoreTester.cpp PidStoreTest.cpp
 PidStoreTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
 PidStoreTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
-PidStoreTester_LDADD = libolardm.la ../logging/liblogging.la
+PidStoreTester_LDADD = libolardm.la ../logging/liblogging.la \
+                       ../messaging/libolamessaging.la
 
 Pids.pb.cc Pids.pb.h: Pids.proto
 	$(PROTOC) --cpp_out ./ Pids.proto
