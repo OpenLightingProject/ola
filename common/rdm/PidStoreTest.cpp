@@ -20,6 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -39,9 +40,10 @@ using ola::rdm::PidDescriptor;
 using ola::rdm::PidStore;
 using ola::rdm::PidStoreLoader;
 using ola::rdm::RootPidStore;
+using std::auto_ptr;
+using std::endl;
 using std::string;
 using std::vector;
-using std::endl;
 
 
 class PidStoreTest: public CppUnit::TestFixture {
@@ -50,6 +52,11 @@ class PidStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testPidStore);
   CPPUNIT_TEST(testPidStoreLoad);
   CPPUNIT_TEST(testPidStoreFileLoad);
+  CPPUNIT_TEST(testPidStoreLoadMissingFile);
+  CPPUNIT_TEST(testPidStoreLoadDuplicateManufacturer);
+  CPPUNIT_TEST(testPidStoreLoadDuplicateValue);
+  CPPUNIT_TEST(testPidStoreLoadDuplicateName);
+  CPPUNIT_TEST(testPidStoreLoadInvalidEstaPid);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -57,6 +64,12 @@ class PidStoreTest: public CppUnit::TestFixture {
     void testPidStore();
     void testPidStoreLoad();
     void testPidStoreFileLoad();
+    void testPidStoreLoadMissingFile();
+    void testPidStoreLoadDuplicateManufacturer();
+    void testPidStoreLoadDuplicateValue();
+    void testPidStoreLoadDuplicateName();
+    void testPidStoreLoadInvalidEstaPid();
+
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
@@ -167,8 +180,9 @@ void PidStoreTest::testPidStoreLoad() {
   std::stringstream str;
 
   // check that this fails to load
-  const RootPidStore *root_store = loader.LoadFromStream(&str);
-  CPPUNIT_ASSERT_EQUAL(static_cast<const RootPidStore*>(NULL), root_store);
+  const RootPidStore *empty_root_store = loader.LoadFromStream(&str);
+  CPPUNIT_ASSERT_EQUAL(static_cast<const RootPidStore*>(NULL),
+                       empty_root_store);
 
   // now try a simple pid store config
   str.clear();
@@ -199,10 +213,15 @@ void PidStoreTest::testPidStoreLoad() {
          "}" << endl <<
          "version: 1" << endl;
 
-  root_store = loader.LoadFromStream(&str);
-  CPPUNIT_ASSERT(root_store);
-  CPPUNIT_ASSERT_EQUAL(static_cast<const PidStore*>(NULL),
-                       root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE));
+  auto_ptr<const RootPidStore> root_store(loader.LoadFromStream(&str));
+  CPPUNIT_ASSERT(root_store.get());
+
+  // check manufacturer pids
+  const PidStore *open_lighting_store =
+    root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
+  CPPUNIT_ASSERT(open_lighting_store);
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
+                       open_lighting_store->PidCount());
 
   const PidStore *esta_store = root_store->EstaStore();
   CPPUNIT_ASSERT(esta_store);
@@ -263,9 +282,9 @@ void PidStoreTest::testPidStoreLoad() {
 void PidStoreTest::testPidStoreFileLoad() {
   PidStoreLoader loader;
 
-  const RootPidStore *root_store = loader.LoadFromFile(
-      "./testdata/test_pids.proto");
-  CPPUNIT_ASSERT(root_store);
+  auto_ptr<const RootPidStore> root_store(loader.LoadFromFile(
+      "./testdata/test_pids.proto"));
+  CPPUNIT_ASSERT(root_store.get());
 
   // Check all the esta pids are there
   const PidStore *esta_store = root_store->EstaStore();
@@ -298,4 +317,85 @@ void PidStoreTest::testPidStoreFileLoad() {
       "personality_count: uint8\ndmx_start_address: uint16\n"
       "sub_device_count: uint16\nsensor_count: uint8\n");
   CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+
+  // check manufacturer pids
+  const PidStore *open_lighting_store =
+    root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
+  CPPUNIT_ASSERT(open_lighting_store);
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
+                       open_lighting_store->PidCount());
+
+  const PidDescriptor *serial_number = open_lighting_store->LookupPID(
+      "SERIAL_NUMBER");
+  CPPUNIT_ASSERT(serial_number);
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(32768), serial_number->Value());
+  CPPUNIT_ASSERT_EQUAL(string("SERIAL_NUMBER"), serial_number->Name());
+
+  // check descriptors
+  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+                       serial_number->GetRequest());
+  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+                       serial_number->GetResponse());
+  CPPUNIT_ASSERT(serial_number->SetRequest());
+  CPPUNIT_ASSERT(serial_number->SetResponse());
+
+  printer.Reset();
+  serial_number->SetRequest()->Accept(printer);
+  string expected2 = "serial_number: uint32\n";
+  CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+}
+
+
+/**
+ * Check that loading a missing file fails.
+ */
+void PidStoreTest::testPidStoreLoadMissingFile() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/missing_file_pids.proto");
+  CPPUNIT_ASSERT(!root_store);
+}
+
+
+/**
+ * Check that loading a file with duplicate manufacturers fails.
+ */
+void PidStoreTest::testPidStoreLoadDuplicateManufacturer() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/duplicate_manufacturer.proto");
+  CPPUNIT_ASSERT(!root_store);
+}
+
+
+/**
+ * Check that loading file with duplicate pid values fails.
+ */
+void PidStoreTest::testPidStoreLoadDuplicateValue() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/duplicate_pid_value.proto");
+  CPPUNIT_ASSERT(!root_store);
+}
+
+
+/**
+ * Check that loading a file with duplicate pid names fails.
+ */
+void PidStoreTest::testPidStoreLoadDuplicateName() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/duplicate_pid_name.proto");
+  CPPUNIT_ASSERT(!root_store);
+}
+
+
+/**
+ * Check that loading a file with an out-of-range ESTA pid fails.
+ */
+void PidStoreTest::testPidStoreLoadInvalidEstaPid() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/invalid_esta_pid.proto");
+  CPPUNIT_ASSERT(!root_store);
 }

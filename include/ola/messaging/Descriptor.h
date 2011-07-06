@@ -38,11 +38,13 @@ class FieldDescriptorVisitor;
 
 class Descriptor {
   public:
+    // Ownership of the fields is transferred
     Descriptor(const string &name,
                const vector<const class FieldDescriptor*> &fields)
         : m_name(name),
           m_fields(fields) {
     }
+    ~Descriptor();
 
     const string &Name() const { return m_name; }
     unsigned int FieldCount() const { return m_fields.size(); }
@@ -241,7 +243,7 @@ typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
 class GroupFieldDescriptor: public FieldDescriptor {
   public:
     GroupFieldDescriptor(const string &name,
-                         const vector<const class FieldDescriptor*> &fields,
+                         const vector<const FieldDescriptor*> &fields,
                          uint8_t min_size,
                          uint8_t max_size)
       : FieldDescriptor(name),
@@ -249,6 +251,7 @@ class GroupFieldDescriptor: public FieldDescriptor {
         m_min_size(min_size),
         m_max_size(max_size) {
     }
+    ~GroupFieldDescriptor();
 
     bool FixedSize() const { return m_min_size == m_max_size; }
     unsigned int Size() const { return m_max_size; }
@@ -259,7 +262,7 @@ class GroupFieldDescriptor: public FieldDescriptor {
     unsigned int MaxSize() const { return m_max_size; }
 
     unsigned int FieldCount() const { return m_fields.size(); }
-    const class FieldDescriptor *GetField(unsigned int index) const {
+    const FieldDescriptor *GetField(unsigned int index) const {
       if (index < m_fields.size())
         return m_fields[index];
       return NULL;
@@ -268,7 +271,7 @@ class GroupFieldDescriptor: public FieldDescriptor {
     void Accept(FieldDescriptorVisitor &visitor) const;
 
   private:
-    vector<const class FieldDescriptor *> m_fields;
+    vector<const FieldDescriptor*> m_fields;
     uint8_t m_min_size, m_max_size;
 };
 }  // messaging

@@ -39,12 +39,14 @@ using ola::messaging::UInt8FieldDescriptor;
 class DescriptorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DescriptorTest);
   CPPUNIT_TEST(testFieldDescriptors);
+  CPPUNIT_TEST(testGroupFieldDescriptor);
   CPPUNIT_TEST(testIntervalsAndLabels);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     DescriptorTest() {}
     void testFieldDescriptors();
+    void testGroupFieldDescriptor();
     void testIntervalsAndLabels();
 };
 
@@ -129,18 +131,28 @@ void DescriptorTest::testFieldDescriptors() {
   CPPUNIT_ASSERT_EQUAL(static_cast<int8_t>(-1),
                        uint32_descriptor2.Multiplier());
   CPPUNIT_ASSERT_EQUAL(true, uint32_descriptor2.FixedSize());
+}
+
+
+/**
+ * Check GroupFieldDescriptor
+ */
+void DescriptorTest::testGroupFieldDescriptor() {
+  BoolFieldDescriptor *bool_descriptor = new BoolFieldDescriptor("bool");
+  UInt8FieldDescriptor *uint8_descriptor = new UInt8FieldDescriptor(
+      "uint8", false, 10);
 
   // group with a variable number of repeats
   std::vector<const FieldDescriptor*> fields;
-  fields.push_back(&bool_descriptor);
-  fields.push_back(&uint8_descriptor);
+  fields.push_back(bool_descriptor);
+  fields.push_back(uint8_descriptor);
 
   GroupFieldDescriptor group_descriptor("group", fields, 0, 3);
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
                        group_descriptor.FieldCount());
-  CPPUNIT_ASSERT_EQUAL(static_cast<const FieldDescriptor*>(&bool_descriptor),
+  CPPUNIT_ASSERT_EQUAL(static_cast<const FieldDescriptor*>(bool_descriptor),
                        group_descriptor.GetField(0));
-  CPPUNIT_ASSERT_EQUAL(static_cast<const FieldDescriptor*>(&uint8_descriptor),
+  CPPUNIT_ASSERT_EQUAL(static_cast<const FieldDescriptor*>(uint8_descriptor),
                        group_descriptor.GetField(1));
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
                        group_descriptor.MinSize());
@@ -149,7 +161,15 @@ void DescriptorTest::testFieldDescriptors() {
   CPPUNIT_ASSERT_EQUAL(false, group_descriptor.FixedSize());
 
   // A group with a fixed number of repeats.
-  GroupFieldDescriptor group_descriptor2("group", fields, 2, 2);
+  BoolFieldDescriptor *bool_descriptor2 = new BoolFieldDescriptor("bool");
+  UInt8FieldDescriptor *uint8_descriptor2 = new UInt8FieldDescriptor(
+      "uint8", false, 10);
+
+  std::vector<const FieldDescriptor*> fields2;
+  fields2.push_back(bool_descriptor2);
+  fields2.push_back(uint8_descriptor2);
+
+  GroupFieldDescriptor group_descriptor2("group", fields2, 2, 2);
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
                        group_descriptor2.MinSize());
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),

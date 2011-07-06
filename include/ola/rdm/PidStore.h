@@ -79,6 +79,7 @@ class PidStore {
     explicit PidStore(const vector<const PidDescriptor*> &pids);
     ~PidStore();
 
+    unsigned int PidCount() const { return m_pid_by_value.size(); }
     void AllPids(vector<const PidDescriptor*> *pids) const;
     const PidDescriptor *LookupPID(uint16_t pid_value) const;
     const PidDescriptor *LookupPID(const string &pid_name) const;
