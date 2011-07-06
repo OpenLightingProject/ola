@@ -90,10 +90,62 @@ const RootPidStore *PidStoreLoader::BuildStore(
   set<uint16_t> seen_values;
   set<string> seen_names;
 
-  vector<const PidDescriptor*> pids;
+  vector<const PidDescriptor*> esta_pids;
+  if (!GetPidList(&esta_pids, store_pb, validate, true)) {
+    return NULL;
+  }
 
-  for (int i = 0; i < store_pb.pid_size(); ++i) {
-    const ola::rdm::pid::Pid &pid = store_pb.pid(i);
+  bool ok = true;
+  for (int i = 0; i < store_pb.manufacturer_size(); ++i) {
+    const ola::rdm::pid::Manufacturer &manufacturer = store_pb.manufacturer(i);
+    vector<const PidDescriptor*> pids;
+    if (!GetPidList(&pids, manufacturer, validate, false)) {
+      ok = false;
+      break;
+    }
+
+    RootPidStore::ManufacturerMap::const_iterator iter = manufacturer_map.find(
+        manufacturer.manufacturer_id());
+    if (iter != manufacturer_map.end()) {
+      OLA_WARN << "Manufacturer id " << manufacturer.manufacturer_id() <<
+          "(" << manufacturer.manufacturer_name() <<
+          ") listed more than once in the pids file";
+      ok = false;
+      break;
+    }
+    manufacturer_map[manufacturer.manufacturer_id()] = new PidStore(
+        pids);
+  }
+
+  if (!ok) {
+    RootPidStore::ManufacturerMap::iterator iter = manufacturer_map.begin();
+    for (; iter != manufacturer_map.end(); ++iter) {
+      delete iter->second;
+    }
+    return NULL;
+  }
+
+  OLA_DEBUG << "Load Complete";
+  const PidStore *esta_store = new PidStore(esta_pids);
+  return new RootPidStore(esta_store, manufacturer_map);
+}
+
+
+
+/**
+ * Get a list of pids from a protobuf object
+ */
+template <typename pb_object>
+bool PidStoreLoader::GetPidList(vector<const PidDescriptor*> *pids,
+                                const pb_object &store,
+                                bool validate,
+                                bool limit_pid_values) {
+  set<uint16_t> seen_values;
+  set<string> seen_names;
+  bool ok = true;
+
+  for (int i = 0; i < store.pid_size(); ++i) {
+    const ola::rdm::pid::Pid &pid = store.pid(i);
 
     OLA_DEBUG << "Loading " << pid.name();
     if (validate) {
@@ -101,7 +153,8 @@ const RootPidStore *PidStoreLoader::BuildStore(
       if (value_iter != seen_values.end()) {
         OLA_WARN << "Pid " << pid.value() << " exists multiple times in the "
             " pid file";
-        return NULL;
+        ok = false;
+        break;
       }
       seen_values.insert(pid.value());
 
@@ -109,26 +162,35 @@ const RootPidStore *PidStoreLoader::BuildStore(
       if (name_iter != seen_names.end()) {
         OLA_WARN << "Pid " << pid.name() << " exists multiple times in the "
             " pid file";
-        return NULL;
+        ok = false;
+        break;
       }
       seen_names.insert(pid.name());
 
-      if (pid.value() > 0x8000 and pid.value() < 0xffe0) {
+      if (limit_pid_values && pid.value() > 0x8000 and pid.value() < 0xffe0) {
         OLA_WARN << "ESTA Pid " << pid.name() << " (" << pid.value() << ")" <<
             " is outside acceptable range";
-        return NULL;
+        ok = false;
+        break;
       }
     }
 
     const PidDescriptor *descriptor = PidToDescriptor(pid, validate);
-    if (!descriptor)
-      return NULL;
-    pids.push_back(descriptor);
+    if (!descriptor) {
+      ok = false;
+      break;
+    }
+    pids->push_back(descriptor);
   }
 
-  OLA_DEBUG << "Load Complete";
-  const PidStore *esta_store = new PidStore(pids);
-  return new RootPidStore(esta_store, manufacturer_map);
+  if (!ok) {
+    vector<const PidDescriptor*>::iterator iter = pids->begin();
+    for (; iter != pids->end(); ++iter) {
+      delete *iter;
+    }
+    return false;
+  }
+  return true;
 }
 
 
@@ -205,7 +267,7 @@ const Descriptor* PidStoreLoader::FrameFormatToDescriptor(
     const ola::rdm::pid::FrameFormat &format,
     bool validate) {
   bool ok = true;
-  vector<const class FieldDescriptor*> fields;
+  vector<const FieldDescriptor*> fields;
 
   for (int i = 0; i < format.field_size(); ++i) {
     const FieldDescriptor *field = FieldToFieldDescriptor(format.field(i));
@@ -217,7 +279,7 @@ const Descriptor* PidStoreLoader::FrameFormatToDescriptor(
   }
 
   if (!ok) {
-    vector<const class FieldDescriptor*>::iterator iter = fields.begin();
+    vector<const FieldDescriptor*>::iterator iter = fields.begin();
     for (; iter != fields.end(); ++iter) {
       delete *iter;
     }

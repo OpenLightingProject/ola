@@ -27,6 +27,7 @@
 #include <ola/rdm/PidStore.h>
 #include <istream>
 #include <string>
+#include <vector>
 #include "common/rdm/Pids.pb.h"
 
 namespace ola {
@@ -54,6 +55,11 @@ class PidStoreLoader {
 
     const RootPidStore *BuildStore(const ola::rdm::pid::PidStore &store_pb,
                                    bool validate);
+    template <typename pb_object>
+    bool GetPidList(vector<const PidDescriptor*> *pids,
+                    const pb_object &store,
+                    bool validate,
+                    bool limit_pid_values);
     PidDescriptor *PidToDescriptor(const ola::rdm::pid::Pid &pid,
                                    bool validate);
     const ola::messaging::Descriptor* FrameFormatToDescriptor(
