@@ -98,12 +98,6 @@ const RootPidStore *PidStoreLoader::BuildStore(
   bool ok = true;
   for (int i = 0; i < store_pb.manufacturer_size(); ++i) {
     const ola::rdm::pid::Manufacturer &manufacturer = store_pb.manufacturer(i);
-    vector<const PidDescriptor*> pids;
-    if (!GetPidList(&pids, manufacturer, validate, false)) {
-      ok = false;
-      break;
-    }
-
     RootPidStore::ManufacturerMap::const_iterator iter = manufacturer_map.find(
         manufacturer.manufacturer_id());
     if (iter != manufacturer_map.end()) {
@@ -113,15 +107,21 @@ const RootPidStore *PidStoreLoader::BuildStore(
       ok = false;
       break;
     }
+
+    vector<const PidDescriptor*> pids;
+    if (!GetPidList(&pids, manufacturer, validate, false)) {
+      ok = false;
+      break;
+    }
+
     manufacturer_map[manufacturer.manufacturer_id()] = new PidStore(
         pids);
   }
 
   if (!ok) {
     RootPidStore::ManufacturerMap::iterator iter = manufacturer_map.begin();
-    for (; iter != manufacturer_map.end(); ++iter) {
+    for (; iter != manufacturer_map.end(); ++iter)
       delete iter->second;
-    }
     return NULL;
   }
 
@@ -398,7 +398,7 @@ const FieldDescriptor *PidStoreLoader::StringFieldToFieldDescriptor(
     min = field.min_size();
 
   if (!field.has_max_size()) {
-    OLA_WARN << "String field failed to specific max size";
+    OLA_WARN << "String field failed to specify max size";
     return NULL;
   }
   return new ola::messaging::StringFieldDescriptor(

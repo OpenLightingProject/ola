@@ -1,0 +1,22 @@
+pid {
+  name: "PROXIED_DEVICES"
+  value: 32769
+  get_request {
+  }
+  get_response {
+    field {
+      type: GROUP
+      name: "uids"
+      field {
+        type: UINT16
+        name: "manufacturer_id"
+      }
+      field {
+        type: UINT32
+        name: "device_id"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+version: 1302986774

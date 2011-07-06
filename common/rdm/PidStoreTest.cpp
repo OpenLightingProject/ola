@@ -52,6 +52,11 @@ class PidStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testPidStore);
   CPPUNIT_TEST(testPidStoreLoad);
   CPPUNIT_TEST(testPidStoreFileLoad);
+  CPPUNIT_TEST(testPidStoreLoadMissingFile);
+  CPPUNIT_TEST(testPidStoreLoadDuplicateManufacturer);
+  CPPUNIT_TEST(testPidStoreLoadDuplicateValue);
+  CPPUNIT_TEST(testPidStoreLoadDuplicateName);
+  CPPUNIT_TEST(testPidStoreLoadInvalidEstaPid);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -59,6 +64,12 @@ class PidStoreTest: public CppUnit::TestFixture {
     void testPidStore();
     void testPidStoreLoad();
     void testPidStoreFileLoad();
+    void testPidStoreLoadMissingFile();
+    void testPidStoreLoadDuplicateManufacturer();
+    void testPidStoreLoadDuplicateValue();
+    void testPidStoreLoadDuplicateName();
+    void testPidStoreLoadInvalidEstaPid();
+
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
@@ -332,4 +343,59 @@ void PidStoreTest::testPidStoreFileLoad() {
   serial_number->SetRequest()->Accept(printer);
   string expected2 = "serial_number: uint32\n";
   CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+}
+
+
+/**
+ * Check that loading a missing file fails.
+ */
+void PidStoreTest::testPidStoreLoadMissingFile() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/missing_file_pids.proto");
+  CPPUNIT_ASSERT(!root_store);
+}
+
+
+/**
+ * Check that loading a file with duplicate manufacturers fails.
+ */
+void PidStoreTest::testPidStoreLoadDuplicateManufacturer() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/duplicate_manufacturer.proto");
+  CPPUNIT_ASSERT(!root_store);
+}
+
+
+/**
+ * Check that loading file with duplicate pid values fails.
+ */
+void PidStoreTest::testPidStoreLoadDuplicateValue() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/duplicate_pid_value.proto");
+  CPPUNIT_ASSERT(!root_store);
+}
+
+
+/**
+ * Check that loading a file with duplicate pid names fails.
+ */
+void PidStoreTest::testPidStoreLoadDuplicateName() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/duplicate_pid_name.proto");
+  CPPUNIT_ASSERT(!root_store);
+}
+
+
+/**
+ * Check that loading a file with an out-of-range ESTA pid fails.
+ */
+void PidStoreTest::testPidStoreLoadInvalidEstaPid() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/invalid_esta_pid.proto");
+  CPPUNIT_ASSERT(!root_store);
 }
