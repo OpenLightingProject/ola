@@ -127,7 +127,9 @@ const RootPidStore *PidStoreLoader::BuildStore(
 
   OLA_DEBUG << "Load Complete";
   const PidStore *esta_store = new PidStore(esta_pids);
-  return new RootPidStore(esta_store, manufacturer_map);
+  return new RootPidStore(esta_store,
+                          manufacturer_map,
+                          store_pb.version());
 }
 
 

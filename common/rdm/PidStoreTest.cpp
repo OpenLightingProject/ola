@@ -216,6 +216,9 @@ void PidStoreTest::testPidStoreLoad() {
   auto_ptr<const RootPidStore> root_store(loader.LoadFromStream(&str));
   CPPUNIT_ASSERT(root_store.get());
 
+  // check version
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), root_store->Version());
+
   // check manufacturer pids
   const PidStore *open_lighting_store =
     root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
@@ -285,6 +288,9 @@ void PidStoreTest::testPidStoreFileLoad() {
   auto_ptr<const RootPidStore> root_store(loader.LoadFromFile(
       "./testdata/test_pids.proto"));
   CPPUNIT_ASSERT(root_store.get());
+  // check version
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1302986774),
+                       root_store->Version());
 
   // Check all the esta pids are there
   const PidStore *esta_store = root_store->EstaStore();

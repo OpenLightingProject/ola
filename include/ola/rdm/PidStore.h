@@ -47,11 +47,16 @@ class RootPidStore {
     typedef map<uint16_t, const PidStore*> ManufacturerMap;
 
     RootPidStore(const PidStore *esta_store,
-                 const ManufacturerMap &manufacturer_stores)
+                 const ManufacturerMap &manufacturer_stores,
+                 uint64_t version = 0)
         : m_esta_store(esta_store),
-          m_manufacturer_store(manufacturer_stores) {
+          m_manufacturer_store(manufacturer_stores),
+          m_version(version) {
     }
     ~RootPidStore();
+
+    // Seconds since epoch in UTC
+    uint64_t Version() const { return m_version; }
 
     // This holds the ESTA PIDs
     const PidStore *EstaStore() const {
@@ -64,6 +69,7 @@ class RootPidStore {
   private:
     const PidStore *m_esta_store;
     ManufacturerMap m_manufacturer_store;
+    uint64_t m_version;
 
     RootPidStore(const RootPidStore&);
     RootPidStore& operator=(const RootPidStore&);
