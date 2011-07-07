@@ -125,6 +125,8 @@ bool StringToUInt(const string &value, unsigned int *output) {
     return false;
   if (value == end_ptr)
     return false;
+  if (l > UINT32_MAX)
+    return false;
   *output = static_cast<unsigned int>(l);
   return true;
 }
@@ -156,6 +158,57 @@ bool StringToUInt8(const string &value, uint8_t *output) {
   if (v > 0xff)
     return false;
   *output = static_cast<uint8_t>(v);
+  return true;
+}
+
+
+/*
+ * Convert a string to a int.
+ * @returns true if sucessfull, false otherwise
+ */
+bool StringToInt(const string &value, int *output) {
+  if (value.empty())
+    return false;
+  char *end_ptr;
+  errno = 0;
+  long l = strtol(value.data(), &end_ptr, 10);
+  if (l == 0 && errno != 0)
+    return false;
+  if (value == end_ptr)
+    return false;
+  if (l < INT32_MIN || l > INT32_MAX)
+    return false;
+  *output = static_cast<unsigned int>(l);
+  return true;
+}
+
+
+/*
+ * Convert a string to a int16_t.
+ * @returns true if sucessfull, false otherwise
+ */
+bool StringToInt16(const string &value, int16_t *output) {
+  int v;
+  if (!StringToInt(value, &v))
+    return false;
+  if (v < INT16_MIN || v > INT16_MAX)
+    return false;
+  *output = static_cast<int16_t>(v);
+  return true;
+}
+
+
+/*
+ * Convert a string to a int16_t.
+ * @returns true if sucessfull, false otherwise
+ */
+bool StringToInt8(const string &value, int8_t *output) {
+  int v;
+  if (!StringToInt(value, &v))
+    return false;
+  if (v < INT8_MIN || v > INT8_MAX)
+    return false;
+  *output = static_cast<int8_t>(v);
   return true;
 }
 

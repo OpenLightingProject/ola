@@ -36,6 +36,9 @@ using ola::StringSplit;
 using ola::StringToUInt16;
 using ola::StringToUInt8;
 using ola::StringToUInt;
+using ola::StringToInt16;
+using ola::StringToInt8;
+using ola::StringToInt;
 using ola::StringTrim;
 using ola::ToLower;
 
@@ -49,6 +52,9 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringToUInt);
   CPPUNIT_TEST(testStringToUInt16);
   CPPUNIT_TEST(testStringToUInt8);
+  CPPUNIT_TEST(testStringToInt);
+  CPPUNIT_TEST(testStringToInt16);
+  CPPUNIT_TEST(testStringToInt8);
   CPPUNIT_TEST(testHexStringToUInt);
   CPPUNIT_TEST(testToLower);
   CPPUNIT_TEST_SUITE_END();
@@ -62,6 +68,9 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testStringToUInt();
     void testStringToUInt16();
     void testStringToUInt8();
+    void testStringToInt();
+    void testStringToInt16();
+    void testStringToInt8();
     void testHexStringToUInt();
     void testToLower();
 };
@@ -180,6 +189,10 @@ void StringUtilsTest::testIntToString() {
   CPPUNIT_ASSERT_EQUAL(string("42"), IntToString(i));
 }
 
+
+/**
+ * Test escaping.
+ */
 void StringUtilsTest::testEscape() {
   string s1 = "foo\"";
   Escape(&s1);
@@ -225,6 +238,9 @@ void StringUtilsTest::testStringToUInt() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, value);
   CPPUNIT_ASSERT(StringToUInt("65537", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 65537, value);
+  CPPUNIT_ASSERT(StringToUInt("4294967295", &value));
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4294967295, value);
+  CPPUNIT_ASSERT(!StringToUInt("4294967296", &value));
   CPPUNIT_ASSERT(!StringToUInt("foo", &value));
 }
 
@@ -329,6 +345,84 @@ void StringUtilsTest::testStringToUInt8() {
   CPPUNIT_ASSERT_EQUAL((uint8_t) 143, value);
   CPPUNIT_ASSERT(StringToUInt8("255", &value));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 255, value);
+}
+
+
+
+void StringUtilsTest::testStringToInt() {
+  int value;
+  CPPUNIT_ASSERT(!StringToInt("", &value));
+  CPPUNIT_ASSERT(!StringToInt("a", &value));
+
+  CPPUNIT_ASSERT(!StringToInt("2147483649", &value));
+  CPPUNIT_ASSERT(StringToInt("-2147483648", &value));
+  CPPUNIT_ASSERT_EQUAL((int) -2147483648, value);
+  CPPUNIT_ASSERT(StringToInt("-2147483647", &value));
+  CPPUNIT_ASSERT_EQUAL(-2147483647, value);
+  CPPUNIT_ASSERT(StringToInt("-1", &value));
+  CPPUNIT_ASSERT_EQUAL(-1, value);
+
+  CPPUNIT_ASSERT(StringToInt("0", &value));
+  CPPUNIT_ASSERT_EQUAL(0, value);
+  CPPUNIT_ASSERT(StringToInt("1", &value));
+  CPPUNIT_ASSERT_EQUAL(1, value);
+  CPPUNIT_ASSERT(StringToInt("143", &value));
+  CPPUNIT_ASSERT_EQUAL(143, value);
+  CPPUNIT_ASSERT(StringToInt("2147483647", &value));
+  CPPUNIT_ASSERT_EQUAL(2147483647, value);
+  CPPUNIT_ASSERT(!StringToInt("2147483648", &value));
+}
+
+
+void StringUtilsTest::testStringToInt16() {
+  int16_t value;
+
+  CPPUNIT_ASSERT(!StringToInt16("", &value));
+  CPPUNIT_ASSERT(!StringToInt16("a", &value));
+
+  CPPUNIT_ASSERT(!StringToInt16("-32769", &value));
+  CPPUNIT_ASSERT(StringToInt16("-32768", &value));
+  CPPUNIT_ASSERT_EQUAL((int16_t) -32768, value);
+  CPPUNIT_ASSERT(StringToInt16("-32767", &value));
+  CPPUNIT_ASSERT_EQUAL((int16_t) -32767, value);
+  CPPUNIT_ASSERT(StringToInt16("-1", &value));
+  CPPUNIT_ASSERT_EQUAL((int16_t) -1, value);
+
+  CPPUNIT_ASSERT(StringToInt16("0", &value));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 0, value);
+  CPPUNIT_ASSERT(StringToInt16("1", &value));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 1, value);
+  CPPUNIT_ASSERT(StringToInt16("143", &value));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 143, value);
+  CPPUNIT_ASSERT(StringToInt16("32767", &value));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 32767, value);
+  CPPUNIT_ASSERT(!StringToInt16("32768", &value));
+}
+
+
+void StringUtilsTest::testStringToInt8() {
+  int8_t value;
+
+  CPPUNIT_ASSERT(!StringToInt8("", &value));
+  CPPUNIT_ASSERT(!StringToInt8("a", &value));
+
+  CPPUNIT_ASSERT(!StringToInt8("-129", &value));
+  CPPUNIT_ASSERT(StringToInt8("-128", &value));
+  CPPUNIT_ASSERT_EQUAL((int8_t) -128, value);
+  CPPUNIT_ASSERT(StringToInt8("-127", &value));
+  CPPUNIT_ASSERT_EQUAL((int8_t) -127, value);
+  CPPUNIT_ASSERT(StringToInt8("-127", &value));
+  CPPUNIT_ASSERT_EQUAL((int8_t) -127, value);
+  CPPUNIT_ASSERT(StringToInt8("-1", &value));
+  CPPUNIT_ASSERT_EQUAL((int8_t) -1, value);
+  CPPUNIT_ASSERT(StringToInt8("0", &value));
+  CPPUNIT_ASSERT_EQUAL((int8_t) 0, value);
+  CPPUNIT_ASSERT(StringToInt8("1", &value));
+  CPPUNIT_ASSERT_EQUAL((int8_t) 1, value);
+  CPPUNIT_ASSERT(StringToInt8("127", &value));
+  CPPUNIT_ASSERT_EQUAL((int8_t) 127, value);
+  CPPUNIT_ASSERT(!StringToInt8("128", &value));
+  CPPUNIT_ASSERT(!StringToInt8("129", &value));
 }
 
 
