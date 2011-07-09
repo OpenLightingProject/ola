@@ -74,31 +74,20 @@ CPPUNIT_TEST_SUITE_REGISTRATION(MessagePrinterTest);
 void MessagePrinterTest::testSimplePrinter() {
   // setup some fields
   BoolFieldDescriptor bool_descriptor("On/Off");
-  BoolMessageField bool_message(&bool_descriptor, false);
-
   StringFieldDescriptor string_descriptor("Name", 0, 32);
-  StringMessageField string_message(&string_descriptor, "foobar");
-
   UInt32FieldDescriptor uint32_descriptor("Id");
-  UInt32MessageField uint32_message(&uint32_descriptor, 42);
-
   UInt8FieldDescriptor uint8_descriptor("Count", false, -3);
-  UInt8MessageField uint8_message(&uint8_descriptor, 4);
-
   Int8FieldDescriptor int8_descriptor("Delta", false, 1);
-  Int8MessageField int8_message(&int8_descriptor, 10);
-
   Int16FieldDescriptor int16_descriptor("Rate", false, -1);
-  Int16MessageField int16_message(&int16_descriptor, 10);
 
   // try a simple print first
   vector<const ola::messaging::MessageFieldInterface*> fields;
-  fields.push_back(&bool_message);
-  fields.push_back(&string_message);
-  fields.push_back(&uint32_message);
-  fields.push_back(&uint8_message);
-  fields.push_back(&int8_message);
-  fields.push_back(&int16_message);
+  fields.push_back(new BoolMessageField(&bool_descriptor, false));
+  fields.push_back(new StringMessageField(&string_descriptor, "foobar"));
+  fields.push_back(new UInt32MessageField(&uint32_descriptor, 42));
+  fields.push_back(new UInt8MessageField(&uint8_descriptor, 4));
+  fields.push_back(new Int8MessageField(&int8_descriptor, 10));
+  fields.push_back(new Int16MessageField(&int16_descriptor, 10));
 
   Message message(fields);
   MessagePrinter printer;
@@ -124,14 +113,11 @@ void MessagePrinterTest::testLabeledPrinter() {
   labels["auto"] = 2;
 
   UInt8FieldDescriptor uint8_descriptor("State", intervals, labels);
-  UInt8MessageField uint8_message_off(&uint8_descriptor, 0);
-  UInt8MessageField uint8_message_on(&uint8_descriptor, 1);
-  UInt8MessageField uint8_message_auto(&uint8_descriptor, 2);
 
   vector<const ola::messaging::MessageFieldInterface*> fields;
-  fields.push_back(&uint8_message_off);
-  fields.push_back(&uint8_message_on);
-  fields.push_back(&uint8_message_auto);
+  fields.push_back(new UInt8MessageField(&uint8_descriptor, 0));
+  fields.push_back(new UInt8MessageField(&uint8_descriptor, 1));
+  fields.push_back(new UInt8MessageField(&uint8_descriptor, 2));
 
   Message message(fields);
   MessagePrinter printer;
@@ -156,28 +142,20 @@ void MessagePrinterTest::testNestedPrinter() {
   GroupFieldDescriptor group_descriptor("Person", person_fields, 0, 10);
 
   // setup the first person
-  StringMessageField string_message1(string_descriptor, "Lisa");
-  BoolMessageField bool_message1(bool_descriptor, true);
-  UInt8MessageField uint8_message1(uint8_descriptor, 21);
   vector<const MessageFieldInterface*> person1;
-  person1.push_back(&string_message1);
-  person1.push_back(&bool_message1);
-  person1.push_back(&uint8_message1);
-  GroupMessageField group_message1(&group_descriptor, person1);
+  person1.push_back(new StringMessageField(string_descriptor, "Lisa"));
+  person1.push_back(new BoolMessageField(bool_descriptor, true));
+  person1.push_back(new UInt8MessageField(uint8_descriptor, 21));
 
   // setup the second person
-  StringMessageField string_message2(string_descriptor, "Simon");
-  BoolMessageField bool_message2(bool_descriptor, false);
-  UInt8MessageField uint8_message2(uint8_descriptor, 26);
   vector<const MessageFieldInterface*> person2;
-  person2.push_back(&string_message2);
-  person2.push_back(&bool_message2);
-  person2.push_back(&uint8_message2);
-  GroupMessageField group_message2(&group_descriptor, person2);
+  person2.push_back(new StringMessageField(string_descriptor, "Simon"));
+  person2.push_back(new BoolMessageField(bool_descriptor, false));
+  person2.push_back(new UInt8MessageField(uint8_descriptor, 26));
 
   vector<const ola::messaging::MessageFieldInterface*> messages;
-  messages.push_back(&group_message1);
-  messages.push_back(&group_message2);
+  messages.push_back(new GroupMessageField(&group_descriptor, person1));
+  messages.push_back(new GroupMessageField(&group_descriptor, person2));
 
   Message message(messages);
   MessagePrinter printer;
