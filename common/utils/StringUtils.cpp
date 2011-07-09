@@ -187,7 +187,7 @@ bool StringToInt(const string &value, int *output) {
  * Convert a string to a int16_t.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToInt16(const string &value, int16_t *output) {
+bool StringToInt(const string &value, int16_t *output) {
   int v;
   if (!StringToInt(value, &v))
     return false;
@@ -202,7 +202,7 @@ bool StringToInt16(const string &value, int16_t *output) {
  * Convert a string to a int16_t.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToInt8(const string &value, int8_t *output) {
+bool StringToInt(const string &value, int8_t *output) {
   int v;
   if (!StringToInt(value, &v))
     return false;
