@@ -36,8 +36,6 @@ using ola::StringSplit;
 using ola::StringToUInt16;
 using ola::StringToUInt8;
 using ola::StringToUInt;
-using ola::StringToInt16;
-using ola::StringToInt8;
 using ola::StringToInt;
 using ola::StringTrim;
 using ola::ToLower;
@@ -377,52 +375,52 @@ void StringUtilsTest::testStringToInt() {
 void StringUtilsTest::testStringToInt16() {
   int16_t value;
 
-  CPPUNIT_ASSERT(!StringToInt16("", &value));
-  CPPUNIT_ASSERT(!StringToInt16("a", &value));
+  CPPUNIT_ASSERT(!StringToInt("", &value));
+  CPPUNIT_ASSERT(!StringToInt("a", &value));
 
-  CPPUNIT_ASSERT(!StringToInt16("-32769", &value));
-  CPPUNIT_ASSERT(StringToInt16("-32768", &value));
+  CPPUNIT_ASSERT(!StringToInt("-32769", &value));
+  CPPUNIT_ASSERT(StringToInt("-32768", &value));
   CPPUNIT_ASSERT_EQUAL((int16_t) -32768, value);
-  CPPUNIT_ASSERT(StringToInt16("-32767", &value));
+  CPPUNIT_ASSERT(StringToInt("-32767", &value));
   CPPUNIT_ASSERT_EQUAL((int16_t) -32767, value);
-  CPPUNIT_ASSERT(StringToInt16("-1", &value));
+  CPPUNIT_ASSERT(StringToInt("-1", &value));
   CPPUNIT_ASSERT_EQUAL((int16_t) -1, value);
 
-  CPPUNIT_ASSERT(StringToInt16("0", &value));
+  CPPUNIT_ASSERT(StringToInt("0", &value));
   CPPUNIT_ASSERT_EQUAL((int16_t) 0, value);
-  CPPUNIT_ASSERT(StringToInt16("1", &value));
+  CPPUNIT_ASSERT(StringToInt("1", &value));
   CPPUNIT_ASSERT_EQUAL((int16_t) 1, value);
-  CPPUNIT_ASSERT(StringToInt16("143", &value));
+  CPPUNIT_ASSERT(StringToInt("143", &value));
   CPPUNIT_ASSERT_EQUAL((int16_t) 143, value);
-  CPPUNIT_ASSERT(StringToInt16("32767", &value));
+  CPPUNIT_ASSERT(StringToInt("32767", &value));
   CPPUNIT_ASSERT_EQUAL((int16_t) 32767, value);
-  CPPUNIT_ASSERT(!StringToInt16("32768", &value));
+  CPPUNIT_ASSERT(!StringToInt("32768", &value));
 }
 
 
 void StringUtilsTest::testStringToInt8() {
   int8_t value;
 
-  CPPUNIT_ASSERT(!StringToInt8("", &value));
-  CPPUNIT_ASSERT(!StringToInt8("a", &value));
+  CPPUNIT_ASSERT(!StringToInt("", &value));
+  CPPUNIT_ASSERT(!StringToInt("a", &value));
 
-  CPPUNIT_ASSERT(!StringToInt8("-129", &value));
-  CPPUNIT_ASSERT(StringToInt8("-128", &value));
+  CPPUNIT_ASSERT(!StringToInt("-129", &value));
+  CPPUNIT_ASSERT(StringToInt("-128", &value));
   CPPUNIT_ASSERT_EQUAL((int8_t) -128, value);
-  CPPUNIT_ASSERT(StringToInt8("-127", &value));
+  CPPUNIT_ASSERT(StringToInt("-127", &value));
   CPPUNIT_ASSERT_EQUAL((int8_t) -127, value);
-  CPPUNIT_ASSERT(StringToInt8("-127", &value));
+  CPPUNIT_ASSERT(StringToInt("-127", &value));
   CPPUNIT_ASSERT_EQUAL((int8_t) -127, value);
-  CPPUNIT_ASSERT(StringToInt8("-1", &value));
+  CPPUNIT_ASSERT(StringToInt("-1", &value));
   CPPUNIT_ASSERT_EQUAL((int8_t) -1, value);
-  CPPUNIT_ASSERT(StringToInt8("0", &value));
+  CPPUNIT_ASSERT(StringToInt("0", &value));
   CPPUNIT_ASSERT_EQUAL((int8_t) 0, value);
-  CPPUNIT_ASSERT(StringToInt8("1", &value));
+  CPPUNIT_ASSERT(StringToInt("1", &value));
   CPPUNIT_ASSERT_EQUAL((int8_t) 1, value);
-  CPPUNIT_ASSERT(StringToInt8("127", &value));
+  CPPUNIT_ASSERT(StringToInt("127", &value));
   CPPUNIT_ASSERT_EQUAL((int8_t) 127, value);
-  CPPUNIT_ASSERT(!StringToInt8("128", &value));
-  CPPUNIT_ASSERT(!StringToInt8("129", &value));
+  CPPUNIT_ASSERT(!StringToInt("128", &value));
+  CPPUNIT_ASSERT(!StringToInt("129", &value));
 }
 
 
