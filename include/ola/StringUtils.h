@@ -41,6 +41,10 @@ string EscapeString(const string &original);
 bool StringToUInt(const string &value, unsigned int *output);
 bool StringToUInt16(const string &value, uint16_t *output);
 bool StringToUInt8(const string &value, uint8_t *output);
+
+bool StringToInt(const string &value, unsigned int *output);
+bool StringToInt(const string &value, uint16_t *output);
+bool StringToInt(const string &value, uint8_t *output);
 bool StringToInt(const string &value, int *output);
 bool StringToInt(const string &value, int16_t *output);
 bool StringToInt(const string &value, int8_t *output);

@@ -33,9 +33,6 @@ using ola::HexStringToUInt;
 using ola::IntToString;
 using ola::ShortenString;
 using ola::StringSplit;
-using ola::StringToUInt16;
-using ola::StringToUInt8;
-using ola::StringToUInt;
 using ola::StringToInt;
 using ola::StringTrim;
 using ola::ToLower;
@@ -228,18 +225,18 @@ void StringUtilsTest::testEscape() {
 
 void StringUtilsTest::testStringToUInt() {
   unsigned int value;
-  CPPUNIT_ASSERT(!StringToUInt("", &value));
-  CPPUNIT_ASSERT(!StringToUInt("-1", &value));
-  CPPUNIT_ASSERT(StringToUInt("0", &value));
+  CPPUNIT_ASSERT(!StringToInt("", &value));
+  CPPUNIT_ASSERT(!StringToInt("-1", &value));
+  CPPUNIT_ASSERT(StringToInt("0", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, value);
-  CPPUNIT_ASSERT(StringToUInt("1", &value));
+  CPPUNIT_ASSERT(StringToInt("1", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, value);
-  CPPUNIT_ASSERT(StringToUInt("65537", &value));
+  CPPUNIT_ASSERT(StringToInt("65537", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 65537, value);
-  CPPUNIT_ASSERT(StringToUInt("4294967295", &value));
+  CPPUNIT_ASSERT(StringToInt("4294967295", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4294967295, value);
-  CPPUNIT_ASSERT(!StringToUInt("4294967296", &value));
-  CPPUNIT_ASSERT(!StringToUInt("foo", &value));
+  CPPUNIT_ASSERT(!StringToInt("4294967296", &value));
+  CPPUNIT_ASSERT(!StringToInt("foo", &value));
 }
 
 
@@ -313,17 +310,17 @@ void StringUtilsTest::testHexStringToUInt() {
 void StringUtilsTest::testStringToUInt16() {
   uint16_t value;
 
-  CPPUNIT_ASSERT(!StringToUInt16("", &value));
-  CPPUNIT_ASSERT(!StringToUInt16("-1", &value));
-  CPPUNIT_ASSERT(!StringToUInt16("65536", &value));
+  CPPUNIT_ASSERT(!StringToInt("", &value));
+  CPPUNIT_ASSERT(!StringToInt("-1", &value));
+  CPPUNIT_ASSERT(!StringToInt("65536", &value));
 
-  CPPUNIT_ASSERT(StringToUInt16("0", &value));
+  CPPUNIT_ASSERT(StringToInt("0", &value));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 0, value);
-  CPPUNIT_ASSERT(StringToUInt16("1", &value));
+  CPPUNIT_ASSERT(StringToInt("1", &value));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 1, value);
-  CPPUNIT_ASSERT(StringToUInt16("143", &value));
+  CPPUNIT_ASSERT(StringToInt("143", &value));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 143, value);
-  CPPUNIT_ASSERT(StringToUInt16("65535", &value));
+  CPPUNIT_ASSERT(StringToInt("65535", &value));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 65535, value);
 }
 
@@ -331,20 +328,19 @@ void StringUtilsTest::testStringToUInt16() {
 void StringUtilsTest::testStringToUInt8() {
   uint8_t value;
 
-  CPPUNIT_ASSERT(!StringToUInt8("", &value));
-  CPPUNIT_ASSERT(!StringToUInt8("-1", &value));
-  CPPUNIT_ASSERT(!StringToUInt8("256", &value));
+  CPPUNIT_ASSERT(!StringToInt("", &value));
+  CPPUNIT_ASSERT(!StringToInt("-1", &value));
+  CPPUNIT_ASSERT(!StringToInt("256", &value));
 
-  CPPUNIT_ASSERT(StringToUInt8("0", &value));
+  CPPUNIT_ASSERT(StringToInt("0", &value));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 0, value);
-  CPPUNIT_ASSERT(StringToUInt8("1", &value));
+  CPPUNIT_ASSERT(StringToInt("1", &value));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 1, value);
-  CPPUNIT_ASSERT(StringToUInt8("143", &value));
+  CPPUNIT_ASSERT(StringToInt("143", &value));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 143, value);
-  CPPUNIT_ASSERT(StringToUInt8("255", &value));
+  CPPUNIT_ASSERT(StringToInt("255", &value));
   CPPUNIT_ASSERT_EQUAL((uint8_t) 255, value);
 }
-
 
 
 void StringUtilsTest::testStringToInt() {

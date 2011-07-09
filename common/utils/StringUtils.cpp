@@ -115,7 +115,7 @@ string IntToString(unsigned int i) {
  * Convert a string to a unsigned int.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToUInt(const string &value, unsigned int *output) {
+bool StringToInt(const string &value, unsigned int *output) {
   if (value.empty())
     return false;
   char *end_ptr;
@@ -132,13 +132,18 @@ bool StringToUInt(const string &value, unsigned int *output) {
 }
 
 
+bool StringToUInt(const string &value, unsigned int *output) {
+  return StringToInt(value, output);
+}
+
+
 /*
  * Convert a string to a uint16_t.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToUInt16(const string &value, uint16_t *output) {
+bool StringToInt(const string &value, uint16_t *output) {
   unsigned int v;
-  if (!StringToUInt(value, &v))
+  if (!StringToInt(value, &v))
     return false;
   if (v > 0xffff)
     return false;
@@ -147,18 +152,28 @@ bool StringToUInt16(const string &value, uint16_t *output) {
 }
 
 
+bool StringToUInt16(const string &value, uint16_t *output) {
+  return StringToInt(value, output);
+}
+
+
 /*
- * Convert a string to a uint16_t.
+ * Convert a string to a uint8_t.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToUInt8(const string &value, uint8_t *output) {
+bool StringToInt(const string &value, uint8_t *output) {
   unsigned int v;
-  if (!StringToUInt(value, &v))
+  if (!StringToInt(value, &v))
     return false;
   if (v > 0xff)
     return false;
   *output = static_cast<uint8_t>(v);
   return true;
+}
+
+
+bool StringToUInt8(const string &value, uint8_t *output) {
+  return StringToInt(value, output);
 }
 
 
