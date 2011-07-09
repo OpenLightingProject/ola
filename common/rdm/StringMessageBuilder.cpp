@@ -105,95 +105,40 @@ void StringMessageBuilder::Visit(
 
 /**
  * uint8
- * TODO(simon): overload StringToInt and move this all into templates.
  */
 void StringMessageBuilder::Visit(
     const ola::messaging::UInt8FieldDescriptor *descriptor) {
-  if (StopParsing())
-    return;
-
-  uint8_t int_value;
-  if (ola::StringToUInt8(m_inputs[m_offset++], &int_value)) {
-    m_messages.push_back(
-        new ola::messaging::UInt8MessageField(descriptor, int_value));
-  } else {
-    SetError(descriptor->Name());
-  }
+  VisitInt(descriptor);
 }
 
 
 void StringMessageBuilder::Visit(
     const ola::messaging::UInt16FieldDescriptor *descriptor) {
-  if (StopParsing())
-    return;
-
-  uint16_t int_value;
-  if (ola::StringToUInt16(m_inputs[m_offset++], &int_value)) {
-    m_messages.push_back(
-        new ola::messaging::UInt16MessageField(descriptor, int_value));
-  } else {
-    SetError(descriptor->Name());
-  }
+  VisitInt(descriptor);
 }
 
 
 void StringMessageBuilder::Visit(
     const ola::messaging::UInt32FieldDescriptor *descriptor) {
-  if (StopParsing())
-    return;
-
-  uint32_t int_value;
-  if (ola::StringToUInt(m_inputs[m_offset++], &int_value)) {
-    m_messages.push_back(
-        new ola::messaging::UInt32MessageField(descriptor, int_value));
-  } else {
-    SetError(descriptor->Name());
-  }
+  VisitInt(descriptor);
 }
 
 
 void StringMessageBuilder::Visit(
     const ola::messaging::Int8FieldDescriptor *descriptor) {
-  if (StopParsing())
-    return;
-
-  int8_t int_value;
-  if (ola::StringToInt8(m_inputs[m_offset++], &int_value)) {
-    m_messages.push_back(
-        new ola::messaging::Int8MessageField(descriptor, int_value));
-  } else {
-    SetError(descriptor->Name());
-  }
+  VisitInt(descriptor);
 }
 
 
 void StringMessageBuilder::Visit(
     const ola::messaging::Int16FieldDescriptor *descriptor) {
-  if (StopParsing())
-    return;
-
-  int16_t int_value;
-  if (ola::StringToInt16(m_inputs[m_offset++], &int_value)) {
-    m_messages.push_back(
-        new ola::messaging::Int16MessageField(descriptor, int_value));
-  } else {
-    SetError(descriptor->Name());
-  }
+  VisitInt(descriptor);
 }
 
 
 void StringMessageBuilder::Visit(
     const ola::messaging::Int32FieldDescriptor *descriptor) {
-  if (StopParsing())
-    return;
-
-  int32_t int_value;
-  if (ola::StringToInt(m_inputs[m_offset++], &int_value)) {
-    m_messages.push_back(
-        new ola::messaging::Int32MessageField(descriptor, int_value));
-  } else {
-    SetError(descriptor->Name());
-  }
+  VisitInt(descriptor);
 }
 
 
@@ -227,6 +172,22 @@ bool StringMessageBuilder::StopParsing() const {
 void StringMessageBuilder::SetError(const string &error) {
   m_error = true;
   m_error_string = error;
+}
+
+
+template<typename type>
+void StringMessageBuilder::VisitInt(
+    const ola::messaging::IntegerFieldDescriptor<type> *descriptor) {
+  if (StopParsing())
+    return;
+
+  type int_value;
+  if (ola::StringToInt(m_inputs[m_offset++], &int_value)) {
+    m_messages.push_back(
+        new ola::messaging::BasicMessageField<type>(descriptor, int_value));
+  } else {
+    SetError(descriptor->Name());
+  }
 }
 }  // rdm
 }  // ola

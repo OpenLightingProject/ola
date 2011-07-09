@@ -76,6 +76,9 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
 
     bool StopParsing() const;
     void SetError(const string &error);
+
+    template<typename type>
+    void VisitInt(const ola::messaging::IntegerFieldDescriptor<type> *);
 };
 }  // rdm
 }  // ola
