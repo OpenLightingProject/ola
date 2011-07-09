@@ -979,7 +979,7 @@ bool RDMController::SetDMXPersonality(const UID &uid,
                                       const vector<string> &args,
                                       string *error) {
   uint8_t personality;
-  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &personality))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &personality))) {
     *error = "Argument must be an integer between 1 and 255";
     return false;
   }
@@ -1002,7 +1002,7 @@ bool RDMController::GetDMXPersonalityDescription(const UID &uid,
                                                  const vector<string> &args,
                                                  string *error) {
   uint8_t personality;
-  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &personality))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &personality))) {
     *error = "Argument must be an integer between 1 and 255";
     return false;
   }
@@ -1041,7 +1041,7 @@ bool RDMController::SetDMXAddress(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   uint16_t dmx_address = 0;
-  if (args.size() != 1 || (!ola::StringToUInt16(args[0], &dmx_address))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &dmx_address))) {
     *error = "Argument must be a uint16";
     return false;
   }
@@ -1110,7 +1110,7 @@ bool RDMController::GetSensorDefinition(const UID &uid,
                                         const vector<string> &args,
                                         string *error) {
   uint8_t sensor;
-  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &sensor))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &sensor))) {
     *error = "Argument must be a uint8";
     return false;
   }
@@ -1129,7 +1129,7 @@ bool RDMController::GetSensorValue(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint8_t sensor;
-  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &sensor))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &sensor))) {
     *error = "Argument must be a uint8";
     return false;
   }
@@ -1148,7 +1148,7 @@ bool RDMController::SetSensorValue(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint8_t sensor;
-  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &sensor))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &sensor))) {
     *error = "Argument must be a uint8";
     return false;
   }
@@ -1167,7 +1167,7 @@ bool RDMController::RecordSensors(const UID &uid,
                                   const vector<string> &args,
                                   string *error) {
   uint8_t sensor;
-  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &sensor))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &sensor))) {
     *error = "Argument must be a uint8";
     return false;
   }
@@ -1200,7 +1200,7 @@ bool RDMController::SetDeviceHours(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint32_t device_hours = 0;
-  if (args.size() != 1 || (!ola::StringToUInt(args[0], &device_hours))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &device_hours))) {
     *error = "Argument must be a uint32";
     return false;
   }
@@ -1233,7 +1233,7 @@ bool RDMController::SetLampHours(const UID &uid,
                                  const vector<string> &args,
                                  string *error) {
   uint32_t lamp_hours = 0;
-  if (args.size() != 1 || (!ola::StringToUInt(args[0], &lamp_hours))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &lamp_hours))) {
     *error = "Argument must be a uint32";
     return false;
   }
@@ -1266,7 +1266,7 @@ bool RDMController::SetLampStrikes(const UID &uid,
                                    const vector<string> &args,
                                    string *error) {
   uint32_t lamp_strikes = 0;
-  if (args.size() != 1 || (!ola::StringToUInt(args[0], &lamp_strikes))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &lamp_strikes))) {
     *error = "Argument must be a uint32";
     return false;
   }
@@ -1366,7 +1366,7 @@ bool RDMController::SetDevicePowerCycles(const UID &uid,
                                          const vector<string> &args,
                                          string *error) {
   uint32_t power_cycles = 0;
-  if (args.size() != 1 || (!ola::StringToUInt(args[0], &power_cycles))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &power_cycles))) {
     *error = " Argument must be a uint32";
     return false;
   }
@@ -1433,7 +1433,7 @@ bool RDMController::SetDisplayLevel(const UID &uid,
                                     const vector<string> &args,
                                     string *error) {
   uint8_t level;
-  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &level))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &level))) {
     *error = "Argument must be a uint8";
     return false;
   }
@@ -1697,7 +1697,7 @@ bool RDMController::SetSelfTest(const UID &uid,
                                 const vector<string> &args,
                                 string *error) {
   uint8_t self_test;
-  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &self_test))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &self_test))) {
     *error = "Argument must be an integer between 0 and 255. Use 0 for OFF "
       "and 255 for ALL";
     return false;
@@ -1717,7 +1717,7 @@ bool RDMController::GetSelfTestDescription(const UID &uid,
                                            const vector<string> &args,
                                            string *error) {
   uint8_t self_test;
-  if (args.size() != 1 || (!ola::StringToUInt8(args[0], &self_test))) {
+  if (args.size() != 1 || (!ola::StringToInt(args[0], &self_test))) {
     *error = "Argument must be an integer between 0 and 255. Use 0 for OFF "
       "and 255 for ALL";
     return false;
@@ -1744,7 +1744,7 @@ bool RDMController::CapturePreset(const UID &uid,
     return false;
   }
   for (unsigned int i = 0; i < kArgsSize; i++) {
-    if (!ola::StringToUInt16(args[0], &int_args[i])) {
+    if (!ola::StringToInt(args[0], &int_args[i])) {
       *error = "Argument must be an integer between 0 and 65535";
       return false;
     }
@@ -1787,11 +1787,11 @@ bool RDMController::SetPresetPlayback(const UID &uid,
     *error = "Requires 2 arguments: [mode] [level]";
     return false;
   }
-  if (!ola::StringToUInt16(args[0], &mode)) {
+  if (!ola::StringToInt(args[0], &mode)) {
     *error = "First argument must be an integer between 0 and 65535";
     return false;
   }
-  if (!ola::StringToUInt8(args[1], &level)) {
+  if (!ola::StringToInt(args[1], &level)) {
     *error = "Second Argument must be an integer between 0 and 255";
     return false;
   }
@@ -1826,7 +1826,7 @@ bool RDMController::CheckForUInt16(uint16_t *value,
         *error = error_message;
         return false;
       }
-    } else if (ola::StringToUInt16(args[0], value)) {
+    } else if (ola::StringToInt(args[0], value)) {
       return true;
     }
   }

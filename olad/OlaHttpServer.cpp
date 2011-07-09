@@ -245,7 +245,7 @@ int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
                                     HttpResponse *response) {
   string uni_id = request->GetParameter("id");
   unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
   bool ok = m_client.FetchUniverseInfo(
@@ -280,7 +280,7 @@ int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
                           response));
   } else {
     unsigned int universe_id;
-    if (!StringToUInt(uni_id, &universe_id))
+    if (!StringToInt(uni_id, &universe_id))
       return m_server.ServeNotFound(response);
 
     ok = m_client.FetchCandidatePorts(
@@ -311,7 +311,7 @@ int OlaHttpServer::CreateNewUniverse(const HttpRequest *request,
     name = name.substr(K_UNIVERSE_NAME_LIMIT);
 
   unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
   ActionQueue *action_queue = new ActionQueue(
@@ -348,7 +348,7 @@ int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
   string merge_mode = request->GetPostParameter("merge_mode");
 
   unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
   if (name.empty())
@@ -412,7 +412,7 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
   unsigned int universe_id;
-  if (!StringToUInt(uni_id, &universe_id))
+  if (!StringToInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
 
   DmxBuffer buffer;
@@ -971,7 +971,7 @@ void OlaHttpServer::AddPriorityActions(ActionQueue *action_queue,
       // an empty mode param means this is a static port
       string value = request->GetPostParameter(priority_id);
       uint8_t priority_value;
-      if (StringToUInt8(value, &priority_value)) {
+      if (StringToInt(value, &priority_value)) {
         action_queue->AddAction(new PortPriorityOverrideAction(
           &m_client,
           iter->device_alias,
@@ -1010,8 +1010,8 @@ void OlaHttpServer::DecodePortIds(const string &port_ids,
     }
 
     unsigned int device_alias, port;
-    if (!StringToUInt(tokens[0], &device_alias) ||
-        !StringToUInt(tokens[2], &port)) {
+    if (!StringToInt(tokens[0], &device_alias) ||
+        !StringToInt(tokens[2], &port)) {
       OLA_INFO << "Not a valid port id " << *iter;
       continue;
     }

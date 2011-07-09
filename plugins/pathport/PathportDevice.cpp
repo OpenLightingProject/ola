@@ -66,12 +66,12 @@ bool PathportDevice::StartHook() {
   vector<ola::network::UdpSocket*>::iterator iter;
 
   uint32_t product_id;
-  if (!StringToUInt(m_preferences->GetValue(K_NODE_ID_KEY), &product_id)) {
+  if (!StringToInt(m_preferences->GetValue(K_NODE_ID_KEY), &product_id)) {
     OLA_WARN << "Invalid node Id " << m_preferences->GetValue(K_NODE_ID_KEY);
   }
 
   unsigned int dscp;
-  if (!StringToUInt(m_preferences->GetValue(K_DSCP_KEY), &dscp)) {
+  if (!StringToInt(m_preferences->GetValue(K_DSCP_KEY), &dscp)) {
     OLA_WARN << "Can't convert dscp value " <<
       m_preferences->GetValue(K_DSCP_KEY) << " to int";
     dscp = 0;

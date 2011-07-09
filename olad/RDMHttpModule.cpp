@@ -1907,7 +1907,7 @@ string RDMHttpModule::SetPersonality(const HttpRequest *request,
   string personality_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint8_t personality;
 
-  if (!StringToUInt8(personality_str, &personality)) {
+  if (!StringToInt(personality_str, &personality)) {
     return "Invalid personality";
   }
 
@@ -1975,7 +1975,7 @@ string RDMHttpModule::SetStartAddress(const HttpRequest *request,
   string dmx_address = request->GetParameter(ADDRESS_FIELD);
   uint16_t address;
 
-  if (!StringToUInt16(dmx_address, &address)) {
+  if (!StringToInt(dmx_address, &address)) {
     return "Invalid start address";
   }
 
@@ -2002,7 +2002,7 @@ string RDMHttpModule::GetSensor(const HttpRequest *request,
                                 const UID &uid) {
   string hint = request->GetParameter(HINT_KEY);
   uint8_t sensor_id;
-  if (!StringToUInt8(hint, &sensor_id)) {
+  if (!StringToInt(hint, &sensor_id)) {
     return "Invalid hint (sensor #)";
   }
 
@@ -2134,7 +2134,7 @@ string RDMHttpModule::RecordSensor(const HttpRequest *request,
                                    const UID &uid) {
   string hint = request->GetParameter(HINT_KEY);
   uint8_t sensor_id;
-  if (!StringToUInt8(hint, &sensor_id)) {
+  if (!StringToInt(hint, &sensor_id)) {
     return "Invalid hint (sensor #)";
   }
 
@@ -2184,7 +2184,7 @@ string RDMHttpModule::SetDeviceHours(const HttpRequest *request,
   string device_hours = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t dev_hours;
 
-  if (!StringToUInt(device_hours, &dev_hours))
+  if (!StringToInt(device_hours, &dev_hours))
     return "Invalid device hours";
 
   string error;
@@ -2233,7 +2233,7 @@ string RDMHttpModule::SetLampHours(const HttpRequest *request,
   string lamp_hours_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t lamp_hours;
 
-  if (!StringToUInt(lamp_hours_str, &lamp_hours))
+  if (!StringToInt(lamp_hours_str, &lamp_hours))
     return "Invalid lamp hours";
 
   string error;
@@ -2282,7 +2282,7 @@ string RDMHttpModule::SetLampStrikes(const HttpRequest *request,
   string lamp_strikes_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t lamp_strikes;
 
-  if (!StringToUInt(lamp_strikes_str, &lamp_strikes))
+  if (!StringToInt(lamp_strikes_str, &lamp_strikes))
     return "Invalid lamp strikes";
 
   string error;
@@ -2364,7 +2364,7 @@ string RDMHttpModule::SetLampState(const HttpRequest *request,
                                    const UID &uid) {
   string lamp_state_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint8_t lamp_state;
-  if (!StringToUInt8(lamp_state_str, &lamp_state)) {
+  if (!StringToInt(lamp_state_str, &lamp_state)) {
     return "Invalid lamp state";
   }
 
@@ -2447,7 +2447,7 @@ string RDMHttpModule::SetLampMode(const HttpRequest *request,
                                   const UID &uid) {
   string lamp_mode_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint8_t lamp_mode;
-  if (!StringToUInt8(lamp_mode_str, &lamp_mode)) {
+  if (!StringToInt(lamp_mode_str, &lamp_mode)) {
     return "Invalid lamp mode";
   }
 
@@ -2497,7 +2497,7 @@ string RDMHttpModule::SetPowerCycles(const HttpRequest *request,
   string power_cycles_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint32_t power_cycles;
 
-  if (!StringToUInt(power_cycles_str, &power_cycles))
+  if (!StringToInt(power_cycles_str, &power_cycles))
     return "Invalid power cycles";
 
   string error;
@@ -2568,7 +2568,7 @@ string RDMHttpModule::SetDisplayInvert(const HttpRequest *request,
                                        const UID &uid) {
   string invert_field = request->GetParameter(DISPLAY_INVERT_FIELD);
   uint8_t display_mode;
-  if (!StringToUInt8(invert_field, &display_mode)) {
+  if (!StringToInt(invert_field, &display_mode)) {
     return "Invalid display mode";
   }
 
@@ -2633,7 +2633,7 @@ string RDMHttpModule::SetDisplayLevel(const HttpRequest *request,
                                       const UID &uid) {
   string display_level_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint8_t display_level;
-  if (!StringToUInt8(display_level_str, &display_level)) {
+  if (!StringToInt(display_level_str, &display_level)) {
     return "Invalid display mode";
   }
 
@@ -2957,7 +2957,7 @@ string RDMHttpModule::SetPowerState(const HttpRequest *request,
   string power_state_str = request->GetParameter(GENERIC_UINT_FIELD);
   uint8_t power_state;
   ola::rdm::rdm_power_state power_state_enum;
-  if (!StringToUInt8(power_state_str, &power_state) ||
+  if (!StringToInt(power_state_str, &power_state) ||
       !ola::rdm::UIntToPowerState(power_state, &power_state_enum)) {
     return "Invalid power state";
   }
@@ -2982,7 +2982,7 @@ string RDMHttpModule::SetPowerState(const HttpRequest *request,
 bool RDMHttpModule::CheckForInvalidId(const HttpRequest *request,
                                       unsigned int *universe_id) {
   string uni_id = request->GetParameter(ID_KEY);
-  if (!StringToUInt(uni_id, universe_id)) {
+  if (!StringToInt(uni_id, universe_id)) {
     OLA_INFO << "Invalid universe id: " << uni_id;
     return false;
   }

@@ -61,7 +61,7 @@ bool BoolValidator::IsValid(const string &value) const {
 
 bool IntValidator::IsValid(const string &value) const {
   unsigned int output;
-  if (!StringToUInt(value, &output))
+  if (!StringToInt(value, &output))
     return false;
 
   return (output >= m_gt && output <= m_lt);
@@ -84,7 +84,7 @@ bool IPv4Validator::IsValid(const string &value) const {
 
   for (unsigned int i = 0 ; i < 4; i++) {
     unsigned int octet;
-    if (!StringToUInt(tokens[i], &octet))
+    if (!StringToInt(tokens[i], &octet))
       return false;
     if (octet > 255)
       return false;

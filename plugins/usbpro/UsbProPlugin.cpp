@@ -335,9 +335,9 @@ vector<string> UsbProPlugin::FindCandiateDevices() {
  */
 unsigned int UsbProPlugin::GetProFrameLimit() {
   unsigned int fps_limit;
-  if (!StringToUInt(m_preferences->GetValue(USB_PRO_FPS_LIMIT_KEY) ,
-                    &fps_limit))
-    StringToUInt(DEFAULT_PRO_FPS_LIMIT, &fps_limit);
+  if (!StringToInt(m_preferences->GetValue(USB_PRO_FPS_LIMIT_KEY) ,
+                   &fps_limit))
+    StringToInt(DEFAULT_PRO_FPS_LIMIT, &fps_limit);
   return fps_limit;
 }
 }  // usbpro

@@ -132,11 +132,6 @@ bool StringToInt(const string &value, unsigned int *output) {
 }
 
 
-bool StringToUInt(const string &value, unsigned int *output) {
-  return StringToInt(value, output);
-}
-
-
 /*
  * Convert a string to a uint16_t.
  * @returns true if sucessfull, false otherwise
@@ -152,11 +147,6 @@ bool StringToInt(const string &value, uint16_t *output) {
 }
 
 
-bool StringToUInt16(const string &value, uint16_t *output) {
-  return StringToInt(value, output);
-}
-
-
 /*
  * Convert a string to a uint8_t.
  * @returns true if sucessfull, false otherwise
@@ -169,11 +159,6 @@ bool StringToInt(const string &value, uint8_t *output) {
     return false;
   *output = static_cast<uint8_t>(v);
   return true;
-}
-
-
-bool StringToUInt8(const string &value, uint8_t *output) {
-  return StringToInt(value, output);
 }
 
 

@@ -86,8 +86,8 @@ bool UsbDmxPlugin::StartHook() {
   }
 
   unsigned int debug_level;
-  if (!StringToUInt(m_preferences->GetValue(LIBUSB_DEBUG_LEVEL_KEY) ,
-                    &debug_level))
+  if (!StringToInt(m_preferences->GetValue(LIBUSB_DEBUG_LEVEL_KEY) ,
+                   &debug_level))
     debug_level = LIBUSB_DEFAULT_DEBUG_LEVEL;
 
   libusb_set_debug(NULL, debug_level);

@@ -82,7 +82,7 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
 bool ArtNetDevice::StartHook() {
   string value = m_preferences->GetValue(K_SUBNET_KEY);
   unsigned int subnet;
-  if (!ola::StringToUInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet))
+  if (!ola::StringToInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet))
       subnet = 0;
 
   ola::network::Interface interface;

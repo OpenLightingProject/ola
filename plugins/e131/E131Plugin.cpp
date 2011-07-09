@@ -67,7 +67,7 @@ bool E131Plugin::StartHook() {
   bool prepend_hostname = m_preferences->GetValueAsBool(PREPEND_HOSTNAME_KEY);
   bool ignore_preview = m_preferences->GetValueAsBool(IGNORE_PREVIEW_DATA_KEY);
   unsigned int dscp;
-  if (!StringToUInt(m_preferences->GetValue(DSCP_KEY), &dscp)) {
+  if (!StringToInt(m_preferences->GetValue(DSCP_KEY), &dscp)) {
     OLA_WARN << "Can't convert dscp value " <<
       m_preferences->GetValue(DSCP_KEY) << " to int";
     dscp = 0;

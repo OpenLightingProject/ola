@@ -63,7 +63,7 @@ void StringMessageBuilder::Visit(
 
   if (!valid) {
     uint8_t int_value;
-    if (ola::StringToUInt8(token, &int_value)) {
+    if (ola::StringToInt(token, &int_value)) {
       if (int_value == 1) {
         valid = value = true;
       } else if (int_value == 0) {
