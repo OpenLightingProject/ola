@@ -38,27 +38,16 @@ class MessageVisitor;
 
 class Message {
   public:
-    Message(//const Descriptor *descriptor,
-            const vector<const class MessageFieldInterface*> &fields)
-        : //m_descriptor(descriptor),
-          m_fields(fields) {
+    Message(const vector<const class MessageFieldInterface*> &fields)
+        : m_fields(fields) {
     }
-
-    /*
-    const Descriptor *GetDescriptor() const { return m_descriptor; }
-
-    unsigned int FieldCount() const { return m_fields.size(); }
-    const class MessageField *GetField(unsigned int index) const {
-      if (index < m_fields.size())
-        return m_fields[index];
-      return NULL;
-    }
-    */
+    ~Message();
 
     void Accept(MessageVisitor &visitor) const;
 
+    unsigned int FieldCount() const { return m_fields.size(); }
+
   private:
-    //const Descriptor *m_descriptor;
     vector<const class MessageFieldInterface*> m_fields;
 };
 
@@ -172,6 +161,7 @@ class GroupMessageField: public MessageFieldInterface {
       : m_descriptor(descriptor),
         m_fields(fields) {
     }
+    ~GroupMessageField();
 
     const GroupFieldDescriptor *GetDescriptor() const { return m_descriptor; }
 

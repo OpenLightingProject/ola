@@ -27,10 +27,24 @@ namespace messaging {
 using std::vector;
 
 
+Message::~Message() {
+  vector<const MessageFieldInterface*>::const_iterator iter = m_fields.begin();
+  for (; iter != m_fields.end(); ++iter)
+    delete *iter;
+}
+
+
 void Message::Accept(MessageVisitor &visitor) const {
   vector<const MessageFieldInterface*>::const_iterator iter = m_fields.begin();
   for (; iter != m_fields.end(); ++iter)
     (*iter)->Accept(visitor);
+}
+
+
+GroupMessageField::~GroupMessageField() {
+  vector<const MessageFieldInterface*>::const_iterator iter = m_fields.begin();
+  for (; iter != m_fields.end(); ++iter)
+    delete *iter;
 }
 
 
