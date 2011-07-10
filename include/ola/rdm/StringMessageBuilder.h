@@ -44,15 +44,10 @@ using std::vector;
  */
 class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
   public:
-    explicit StringMessageBuilder(const vector<string> &inputs)
-        : m_inputs(inputs),
-          m_offset(0),
-          m_input_size(inputs.size()),
-          m_error(false) {
-    }
-    ~StringMessageBuilder() {}
+    explicit StringMessageBuilder(const vector<string> &inputs);
+    ~StringMessageBuilder();
 
-    const ola::messaging::Message *GetMessage() const;
+    const ola::messaging::Message *GetMessage();
     const string GetError() const { return m_error_string; }
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);
@@ -68,7 +63,6 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
 
   private:
     const vector<string> m_inputs;
-    vector<const ola::messaging::MessageFieldInterface*> m_messages;
     std::stack<vector<const ola::messaging::MessageFieldInterface*> > m_groups;
     unsigned int m_offset, m_input_size;
     bool m_error;

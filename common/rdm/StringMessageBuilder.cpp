@@ -33,10 +33,48 @@ namespace rdm {
 using ola::messaging::MessageFieldInterface;
 
 
-const ola::messaging::Message *StringMessageBuilder::GetMessage() const {
+StringMessageBuilder::StringMessageBuilder(const vector<string> &inputs)
+    : m_inputs(inputs),
+      m_offset(0),
+      m_input_size(inputs.size()),
+      m_error(false) {
+  // add the first fields vector to the stack
+  vector<const MessageFieldInterface*> fields;
+  m_groups.push(fields);
+}
+
+
+/**
+ * Clean up
+ */
+StringMessageBuilder::~StringMessageBuilder() {
+  while (!m_groups.empty()) {
+    const vector<const MessageFieldInterface*> &fields = m_groups.top();
+    vector<const MessageFieldInterface*>::const_iterator iter = fields.begin();
+    for (; iter != fields.end(); ++iter) {
+      delete *iter;
+    }
+    m_groups.pop();
+  }
+}
+
+
+/**
+ * Get the Message object that this Builder created
+ */
+const ola::messaging::Message *StringMessageBuilder::GetMessage() {
   if (m_error)
     return NULL;
-  return new ola::messaging::Message(m_messages);
+
+  if (m_groups.size() != 1) {
+    OLA_WARN << "Mismatched stack, size was " << m_groups.size();
+    return NULL;
+  }
+
+  const ola::messaging::Message *message =  new ola::messaging::Message(
+      m_groups.top());
+  m_groups.top().clear();
+  return message;
 }
 
 
@@ -78,7 +116,7 @@ void StringMessageBuilder::Visit(
     return;
   }
 
-  m_messages.push_back(
+  m_groups.top().push_back(
       new ola::messaging::BoolMessageField(descriptor, value));
 }
 
@@ -98,7 +136,7 @@ void StringMessageBuilder::Visit(
     return;
   }
 
-  m_messages.push_back(
+  m_groups.top().push_back(
       new ola::messaging::StringMessageField(descriptor, token));
 }
 
@@ -158,9 +196,10 @@ void StringMessageBuilder::PostVisit(
   }
 
   const vector<const MessageFieldInterface*> &fields = m_groups.top();
-  m_messages.push_back(
-      new ola::messaging::GroupMessageField(descriptor, fields));
+  const ola::messaging::MessageFieldInterface *message =
+      new ola::messaging::GroupMessageField(descriptor, fields);
   m_groups.pop();
+  m_groups.top().push_back(message);
 }
 
 
@@ -183,7 +222,7 @@ void StringMessageBuilder::VisitInt(
 
   type int_value;
   if (ola::StringToInt(m_inputs[m_offset++], &int_value)) {
-    m_messages.push_back(
+    m_groups.top().push_back(
         new ola::messaging::BasicMessageField<type>(descriptor, int_value));
   } else {
     SetError(descriptor->Name());

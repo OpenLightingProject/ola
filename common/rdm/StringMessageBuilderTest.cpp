@@ -34,6 +34,7 @@
 using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
+using ola::messaging::GroupFieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
@@ -50,13 +51,23 @@ using std::vector;
 
 class StringBuilderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringBuilderTest);
-  CPPUNIT_TEST(testStringBuilder);
+  CPPUNIT_TEST(testSimpleBuilder);
+  CPPUNIT_TEST(testBuilderWithGroups);
   CPPUNIT_TEST(testBoolFailure);
+  CPPUNIT_TEST(testUIntFailure);
+  CPPUNIT_TEST(testIntFailure);
+  CPPUNIT_TEST(testStringFailure);
+  CPPUNIT_TEST(testBadUsage);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testStringBuilder();
+    void testSimpleBuilder();
+    void testBuilderWithGroups();
     void testBoolFailure();
+    void testUIntFailure();
+    void testIntFailure();
+    void testStringFailure();
+    void testBadUsage();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
@@ -64,7 +75,7 @@ class StringBuilderTest: public CppUnit::TestFixture {
 
   private:
     const Message *BuildMessage(const Descriptor &descriptor,
-                                           const vector<string> &inputs);
+                                const vector<string> &inputs);
 
     const string MessageToString(const Message *message);
 };
@@ -102,7 +113,7 @@ const string StringBuilderTest::MessageToString(const Message *message) {
 /**
  * Check the StringBuilder works.
  */
-void StringBuilderTest::testStringBuilder() {
+void StringBuilderTest::testSimpleBuilder() {
   // build the descriptor
   vector<const FieldDescriptor*> fields;
   fields.push_back(new BoolFieldDescriptor("bool1"));
@@ -152,6 +163,58 @@ void StringBuilderTest::testStringBuilder() {
 
 
 /**
+ * Check the StringBuilder works with groups.
+ */
+void StringBuilderTest::testBuilderWithGroups() {
+  // build the descriptor
+  vector<const FieldDescriptor*> group_fields;
+  group_fields.push_back(new BoolFieldDescriptor("bool"));
+  group_fields.push_back(new UInt8FieldDescriptor("uint8"));
+
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new GroupFieldDescriptor("group", group_fields, 0, 5));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // now setup the inputs
+  vector<string> inputs;
+  inputs.push_back("true");
+  inputs.push_back("10");
+
+  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+
+  // verify
+  CPPUNIT_ASSERT(message.get());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), message->FieldCount());
+
+  string expected = (
+      "group {\n  bool: true\n  uint8: 10\n}\n");
+  CPPUNIT_ASSERT_EQUAL(expected, MessageToString(message.get()));
+
+  // now do multiple groups
+  vector<string> inputs2;
+  inputs2.push_back("true");
+  inputs2.push_back("10");
+  inputs2.push_back("true");
+  inputs2.push_back("42");
+  inputs2.push_back("false");
+  inputs2.push_back("240");
+
+  auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
+
+  // verify
+  CPPUNIT_ASSERT(message2.get());
+  // TODO(simon): make this pass
+  // CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3), message2->FieldCount());
+
+  string expected2 = (
+      "group {\n  bool: true\n  uint8: 10\n}\n"
+      "group {\n  bool: true\n  uint8: 42\n}\n"
+      "group {\n  bool: false\n  uint8: 240\n}\n");
+  // CPPUNIT_ASSERT_EQUAL(expected2, MessageToString(message2.get()));
+}
+
+
+/**
  * Test that the bool parsing fails with bad data.
  */
 void StringBuilderTest::testBoolFailure() {
@@ -162,14 +225,92 @@ void StringBuilderTest::testBoolFailure() {
   // bad string input
   vector<string> inputs;
   inputs.push_back("foo");
-  StringMessageBuilder builder(inputs);
-  descriptor.Accept(builder);
-  CPPUNIT_ASSERT(!builder.GetMessage());
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
 
   // bad int input
   vector<string> inputs2;
   inputs2.push_back("2");
-  StringMessageBuilder builder2(inputs2);
-  descriptor.Accept(builder2);
-  CPPUNIT_ASSERT(!builder2.GetMessage());
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs2));
+}
+
+
+/**
+ * Test that the int parsing fails with bad data.
+ */
+void StringBuilderTest::testUIntFailure() {
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new UInt8FieldDescriptor("uint8"));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // bad uint8 input
+  vector<string> inputs;
+  inputs.push_back("a");
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
+  vector<string> inputs2;
+  inputs2.push_back("-1");
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs2));
+  vector<string> inputs3;
+  inputs3.push_back("256");
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs3));
+}
+
+
+/**
+ * Test that the int parsing fails with bad data.
+ */
+void StringBuilderTest::testIntFailure() {
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new Int8FieldDescriptor("int8"));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // bad uint8 input
+  vector<string> inputs;
+  inputs.push_back("a");
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
+  vector<string> inputs2;
+  inputs2.push_back("-129");
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs2));
+  vector<string> inputs3;
+  inputs3.push_back("128");
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs3));
+}
+
+
+/**
+ * Test that the int parsing fails with bad data.
+ */
+void StringBuilderTest::testStringFailure() {
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new StringFieldDescriptor("string", 0, 10));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // bad string input
+  vector<string> inputs;
+  inputs.push_back("this is a very long string");
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
+}
+
+
+/**
+ * Check that we don't leak memory if GetMessage isn't called.
+ * This won't fail but it'll show up in the valgrind output.
+ */
+void StringBuilderTest::testBadUsage() {
+  // build the descriptor
+  vector<const FieldDescriptor*> group_fields;
+  group_fields.push_back(new BoolFieldDescriptor("bool"));
+  group_fields.push_back(new UInt8FieldDescriptor("uint8"));
+
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new GroupFieldDescriptor("group", group_fields, 0, 5));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // now setup the inputs
+  vector<string> inputs;
+  inputs.push_back("true");
+  inputs.push_back("10");
+
+  // Call accept but don't fetch the message
+  StringMessageBuilder builder(inputs);
+  descriptor.Accept(builder);
 }
