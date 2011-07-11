@@ -57,7 +57,6 @@ class StringBuilderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testUIntFailure);
   CPPUNIT_TEST(testIntFailure);
   CPPUNIT_TEST(testStringFailure);
-  CPPUNIT_TEST(testBadUsage);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -67,7 +66,6 @@ class StringBuilderTest: public CppUnit::TestFixture {
     void testUIntFailure();
     void testIntFailure();
     void testStringFailure();
-    void testBadUsage();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
@@ -91,9 +89,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StringBuilderTest);
 const Message *StringBuilderTest::BuildMessage(
     const Descriptor &descriptor,
     const vector<string> &inputs) {
-  StringMessageBuilder builder(inputs);
-  descriptor.Accept(builder);
-  const Message *message = builder.GetMessage();
+  StringMessageBuilder builder;
+  const Message *message = builder.GetMessage(inputs, &descriptor);
   if (!message)
     OLA_WARN << "Error with field: " << builder.GetError();
   return message;
@@ -288,29 +285,4 @@ void StringBuilderTest::testStringFailure() {
   vector<string> inputs;
   inputs.push_back("this is a very long string");
   CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
-}
-
-
-/**
- * Check that we don't leak memory if GetMessage isn't called.
- * This won't fail but it'll show up in the valgrind output.
- */
-void StringBuilderTest::testBadUsage() {
-  // build the descriptor
-  vector<const FieldDescriptor*> group_fields;
-  group_fields.push_back(new BoolFieldDescriptor("bool"));
-  group_fields.push_back(new UInt8FieldDescriptor("uint8"));
-
-  vector<const FieldDescriptor*> fields;
-  fields.push_back(new FieldDescriptorGroup("group", group_fields, 0, 5));
-  Descriptor descriptor("Test Descriptor", fields);
-
-  // now setup the inputs
-  vector<string> inputs;
-  inputs.push_back("true");
-  inputs.push_back("10");
-
-  // Call accept but don't fetch the message
-  StringMessageBuilder builder(inputs);
-  descriptor.Accept(builder);
 }

@@ -29,6 +29,7 @@
 namespace ola {
 
 namespace messaging {
+  class Descriptor;
   class MessageFieldInterface;
   class Message;
 }
@@ -44,10 +45,12 @@ using std::vector;
  */
 class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
   public:
-    explicit StringMessageBuilder(const vector<string> &inputs);
+    StringMessageBuilder();
     ~StringMessageBuilder();
 
-    const ola::messaging::Message *GetMessage();
+    const ola::messaging::Message *GetMessage(
+        const vector<string> &inputs,
+        const class ola::messaging::Descriptor*);
     const string GetError() const { return m_error_string; }
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);
@@ -62,7 +65,7 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     void PostVisit(const ola::messaging::FieldDescriptorGroup*);
 
   private:
-    const vector<string> m_inputs;
+    vector<string> m_inputs;
     std::stack<vector<const ola::messaging::MessageFieldInterface*> > m_groups;
     unsigned int m_offset, m_input_size;
     bool m_error;
@@ -73,6 +76,9 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
 
     template<typename type>
     void VisitInt(const ola::messaging::IntegerFieldDescriptor<type> *);
+
+    void InitVars(const vector<string> &inputs);
+    void CleanUpVector();
 };
 }  // rdm
 }  // ola

@@ -33,14 +33,10 @@ namespace rdm {
 using ola::messaging::MessageFieldInterface;
 
 
-StringMessageBuilder::StringMessageBuilder(const vector<string> &inputs)
-    : m_inputs(inputs),
-      m_offset(0),
-      m_input_size(inputs.size()),
+StringMessageBuilder::StringMessageBuilder()
+    : m_offset(0),
+      m_input_size(0),
       m_error(false) {
-  // add the first fields vector to the stack
-  vector<const MessageFieldInterface*> fields;
-  m_groups.push(fields);
 }
 
 
@@ -48,21 +44,25 @@ StringMessageBuilder::StringMessageBuilder(const vector<string> &inputs)
  * Clean up
  */
 StringMessageBuilder::~StringMessageBuilder() {
-  while (!m_groups.empty()) {
-    const vector<const MessageFieldInterface*> &fields = m_groups.top();
-    vector<const MessageFieldInterface*>::const_iterator iter = fields.begin();
-    for (; iter != fields.end(); ++iter) {
-      delete *iter;
-    }
-    m_groups.pop();
-  }
+  CleanUpVector();
 }
 
 
 /**
  * Get the Message object that this Builder created
+ *
+ * This method is *not* re-entrant.
+ * @param descriptor The descriptor to use to build the Message
+ * @returns A Message object, or NULL if the inputs failed.
  */
-const ola::messaging::Message *StringMessageBuilder::GetMessage() {
+const ola::messaging::Message *StringMessageBuilder::GetMessage(
+    const vector<string> &inputs,
+    const ola::messaging::Descriptor *descriptor) {
+
+  InitVars(inputs);
+
+  descriptor->Accept(*this);
+
   if (m_error)
     return NULL;
 
@@ -226,6 +226,30 @@ void StringMessageBuilder::VisitInt(
         new ola::messaging::BasicMessageField<type>(descriptor, int_value));
   } else {
     SetError(descriptor->Name());
+  }
+}
+
+
+void StringMessageBuilder::InitVars(const vector<string> &inputs) {
+  // add the first fields vector to the stack
+  vector<const MessageFieldInterface*> fields;
+  m_groups.push(fields);
+
+  m_inputs = inputs;
+  m_input_size = inputs.size();
+  m_error = false;
+  m_offset = 0;
+}
+
+
+void StringMessageBuilder::CleanUpVector() {
+  while (!m_groups.empty()) {
+    const vector<const MessageFieldInterface*> &fields = m_groups.top();
+    vector<const MessageFieldInterface*>::const_iterator iter = fields.begin();
+    for (; iter != fields.end(); ++iter) {
+      delete *iter;
+    }
+    m_groups.pop();
   }
 }
 }  // rdm
