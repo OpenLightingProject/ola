@@ -58,8 +58,8 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     void Visit(const ola::messaging::Int8FieldDescriptor*);
     void Visit(const ola::messaging::Int16FieldDescriptor*);
     void Visit(const ola::messaging::Int32FieldDescriptor*);
-    void Visit(const ola::messaging::GroupFieldDescriptor*);
-    void PostVisit(const ola::messaging::GroupFieldDescriptor*);
+    void Visit(const ola::messaging::FieldDescriptorGroup*);
+    void PostVisit(const ola::messaging::FieldDescriptorGroup*);
 
   private:
     const vector<string> m_inputs;

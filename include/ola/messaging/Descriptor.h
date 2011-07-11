@@ -36,32 +36,6 @@ namespace messaging {
 
 class FieldDescriptorVisitor;
 
-class Descriptor {
-  public:
-    // Ownership of the fields is transferred
-    Descriptor(const string &name,
-               const vector<const class FieldDescriptor*> &fields)
-        : m_name(name),
-          m_fields(fields) {
-    }
-    ~Descriptor();
-
-    const string &Name() const { return m_name; }
-    unsigned int FieldCount() const { return m_fields.size(); }
-    const class FieldDescriptor *GetField(unsigned int index) const {
-      if (index < m_fields.size())
-        return m_fields[index];
-      return NULL;
-    }
-
-    void Accept(FieldDescriptorVisitor &visitor) const;
-
-  private:
-    string m_name;
-    vector<const class FieldDescriptor *> m_fields;
-};
-
-
 
 /**
  * Describes a field, which may be a group of sub fields.
@@ -240,9 +214,9 @@ typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
 /**
  * A FieldDescriptor that consists of a group of fields
  */
-class GroupFieldDescriptor: public FieldDescriptor {
+class FieldDescriptorGroup: public FieldDescriptor {
   public:
-    GroupFieldDescriptor(const string &name,
+    FieldDescriptorGroup(const string &name,
                          const vector<const FieldDescriptor*> &fields,
                          uint8_t min_size,
                          uint8_t max_size)
@@ -251,28 +225,43 @@ class GroupFieldDescriptor: public FieldDescriptor {
         m_min_size(min_size),
         m_max_size(max_size) {
     }
-    ~GroupFieldDescriptor();
+    virtual ~FieldDescriptorGroup();
 
     bool FixedSize() const { return m_min_size == m_max_size; }
     unsigned int Size() const { return m_max_size; }
 
     unsigned int MinSize() const { return m_min_size; }
-
     // A max size of 0 means no restrictions
     unsigned int MaxSize() const { return m_max_size; }
 
     unsigned int FieldCount() const { return m_fields.size(); }
-    const FieldDescriptor *GetField(unsigned int index) const {
+
+    const class FieldDescriptor *GetField(unsigned int index) const {
       if (index < m_fields.size())
         return m_fields[index];
       return NULL;
     }
 
-    void Accept(FieldDescriptorVisitor &visitor) const;
+    virtual void Accept(FieldDescriptorVisitor &visitor) const;
+
+  protected:
+    vector<const class FieldDescriptor *> m_fields;
 
   private:
-    vector<const FieldDescriptor*> m_fields;
     uint8_t m_min_size, m_max_size;
+};
+
+
+/**
+ * A descriptor is a group of fields which can't be repeated
+ */
+class Descriptor: public FieldDescriptorGroup {
+  public:
+    Descriptor(const string &name,
+               const vector<const FieldDescriptor*> &fields)
+        : FieldDescriptorGroup(name, fields, 1, 1) {}
+
+    void Accept(FieldDescriptorVisitor &visitor) const;
 };
 }  // messaging
 }  // ola

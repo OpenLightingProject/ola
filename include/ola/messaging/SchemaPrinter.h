@@ -55,8 +55,8 @@ class SchemaPrinter: public FieldDescriptorVisitor {
     void Visit(const Int8FieldDescriptor*);
     void Visit(const Int16FieldDescriptor*);
     void Visit(const Int32FieldDescriptor*);
-    void Visit(const GroupFieldDescriptor*);
-    void PostVisit(const GroupFieldDescriptor*);
+    void Visit(const FieldDescriptorGroup*);
+    void PostVisit(const FieldDescriptorGroup*);
 
   private:
     bool m_include_intervals, m_include_labels;

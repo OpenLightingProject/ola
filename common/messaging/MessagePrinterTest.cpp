@@ -33,7 +33,7 @@ using std::vector;
 using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::BoolMessageField;
 using ola::messaging::FieldDescriptor;
-using ola::messaging::GroupFieldDescriptor;
+using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::GroupMessageField;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
@@ -139,7 +139,7 @@ void MessagePrinterTest::testNestedPrinter() {
   person_fields.push_back(string_descriptor);
   person_fields.push_back(bool_descriptor);
   person_fields.push_back(uint8_descriptor);
-  GroupFieldDescriptor group_descriptor("Person", person_fields, 0, 10);
+  FieldDescriptorGroup group_descriptor("Person", person_fields, 0, 10);
 
   // setup the first person
   vector<const MessageFieldInterface*> person1;

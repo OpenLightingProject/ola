@@ -32,7 +32,7 @@ using std::vector;
 using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
-using ola::messaging::GroupFieldDescriptor;
+using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::SchemaPrinter;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
@@ -99,7 +99,7 @@ void SchemaPrinterTest::testGroupPrinter() {
   fields.push_back(uint8_descriptor);
 
   // now do a descriptor which contains a GroupDescriptor
-  GroupFieldDescriptor *group_descriptor = new GroupFieldDescriptor(
+  FieldDescriptorGroup *group_descriptor = new FieldDescriptorGroup(
       "Group 1", fields, 0, 2);
   vector<const FieldDescriptor*> fields2;
   fields2.push_back(string_descriptor2);

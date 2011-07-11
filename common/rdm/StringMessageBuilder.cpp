@@ -181,7 +181,7 @@ void StringMessageBuilder::Visit(
 
 
 void StringMessageBuilder::Visit(
-    const ola::messaging::GroupFieldDescriptor *descriptor) {
+    const ola::messaging::FieldDescriptorGroup *descriptor) {
   vector<const MessageFieldInterface*> fields;
   m_groups.push(fields);
   (void) descriptor;
@@ -189,7 +189,7 @@ void StringMessageBuilder::Visit(
 
 
 void StringMessageBuilder::PostVisit(
-    const ola::messaging::GroupFieldDescriptor *descriptor) {
+    const ola::messaging::FieldDescriptorGroup *descriptor) {
   if (m_groups.empty()) {
     OLA_FATAL << "Mismatched group exit call, this is a programming bug!";
     return;

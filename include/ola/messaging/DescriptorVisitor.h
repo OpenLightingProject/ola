@@ -29,7 +29,7 @@ namespace messaging {
 
 class BoolFieldDescriptor;
 class StringFieldDescriptor;
-class GroupFieldDescriptor;
+class FieldDescriptorGroup;
 
 template <typename type>
 class IntegerFieldDescriptor;
@@ -49,8 +49,8 @@ class FieldDescriptorVisitor {
     virtual void Visit(const IntegerFieldDescriptor<int8_t>*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<int16_t>*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<int32_t>*) = 0;
-    virtual void Visit(const GroupFieldDescriptor*) = 0;
-    virtual void PostVisit(const GroupFieldDescriptor*) = 0;
+    virtual void Visit(const FieldDescriptorGroup*) = 0;
+    virtual void PostVisit(const FieldDescriptorGroup*) = 0;
 };
 }  // messaging
 }  // ola

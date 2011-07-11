@@ -34,7 +34,7 @@
 using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
-using ola::messaging::GroupFieldDescriptor;
+using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
@@ -172,7 +172,7 @@ void StringBuilderTest::testBuilderWithGroups() {
   group_fields.push_back(new UInt8FieldDescriptor("uint8"));
 
   vector<const FieldDescriptor*> fields;
-  fields.push_back(new GroupFieldDescriptor("group", group_fields, 0, 5));
+  fields.push_back(new FieldDescriptorGroup("group", group_fields, 0, 5));
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the inputs
@@ -302,7 +302,7 @@ void StringBuilderTest::testBadUsage() {
   group_fields.push_back(new UInt8FieldDescriptor("uint8"));
 
   vector<const FieldDescriptor*> fields;
-  fields.push_back(new GroupFieldDescriptor("group", group_fields, 0, 5));
+  fields.push_back(new FieldDescriptorGroup("group", group_fields, 0, 5));
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the inputs

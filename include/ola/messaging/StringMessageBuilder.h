@@ -39,7 +39,7 @@ using std::vector;
  */
 class StringMessageBuilder: public FieldDescriptorVisitor {
   public:
-    StringMessageBuilder(const vector<string> &input)
+    explicit StringMessageBuilder(const vector<string> &input)
         : m_input(input) {
     }
     ~StringMessageBuilderVisitor() {}
@@ -52,8 +52,8 @@ class StringMessageBuilder: public FieldDescriptorVisitor {
     void Visit(const IntegerFieldDescriptor<int8_t>*);
     void Visit(const IntegerFieldDescriptor<int16_t>*);
     void Visit(const IntegerFieldDescriptor<int32_t>*);
-    void Visit(const GroupFieldDescriptor*);
-    void PostVisit(const GroupFieldDescriptor*);
+    void Visit(const FieldDescriptorGroup*);
+    void PostVisit(const FieldDescriptorGroup*);
 
   private:
     vector<string> m_input;

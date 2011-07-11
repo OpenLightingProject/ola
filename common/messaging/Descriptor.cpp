@@ -26,10 +26,20 @@ namespace messaging {
 
 using std::vector;
 
-Descriptor::~Descriptor() {
+
+FieldDescriptorGroup::~FieldDescriptorGroup() {
   vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
   for (; iter != m_fields.end(); ++iter)
     delete *iter;
+}
+
+
+void FieldDescriptorGroup::Accept(FieldDescriptorVisitor &visitor) const {
+  visitor.Visit(this);
+  vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
+  for (; iter != m_fields.end(); ++iter)
+    (*iter)->Accept(visitor);
+  visitor.PostVisit(this);
 }
 
 
@@ -37,22 +47,6 @@ void Descriptor::Accept(FieldDescriptorVisitor &visitor) const {
   vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
   for (; iter != m_fields.end(); ++iter)
     (*iter)->Accept(visitor);
-}
-
-
-GroupFieldDescriptor::~GroupFieldDescriptor() {
-  vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
-  for (; iter != m_fields.end(); ++iter)
-    delete *iter;
-}
-
-
-void GroupFieldDescriptor::Accept(FieldDescriptorVisitor &visitor) const {
-  visitor.Visit(this);
-  vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
-  for (; iter != m_fields.end(); ++iter)
-    (*iter)->Accept(visitor);
-  visitor.PostVisit(this);
 }
 }  // messaging
 }  // ola

@@ -441,7 +441,7 @@ const FieldDescriptor *PidStoreLoader::GroupFieldToFieldDescriptor(
     return NULL;
   }
 
-  return new ola::messaging::GroupFieldDescriptor(
+  return new ola::messaging::FieldDescriptorGroup(
       field.name(),
       fields,
       min,

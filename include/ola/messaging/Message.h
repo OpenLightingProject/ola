@@ -156,14 +156,14 @@ typedef BasicMessageField<int32_t> Int32MessageField;
  */
 class GroupMessageField: public MessageFieldInterface {
   public:
-    GroupMessageField(const GroupFieldDescriptor *descriptor,
+    GroupMessageField(const FieldDescriptorGroup *descriptor,
                       const vector<const class MessageFieldInterface*> &fields)
       : m_descriptor(descriptor),
         m_fields(fields) {
     }
     ~GroupMessageField();
 
-    const GroupFieldDescriptor *GetDescriptor() const { return m_descriptor; }
+    const FieldDescriptorGroup *GetDescriptor() const { return m_descriptor; }
 
     unsigned int FieldCount() const { return m_fields.size(); }
     const class MessageFieldInterface *GetField(unsigned int index) const {
@@ -175,7 +175,7 @@ class GroupMessageField: public MessageFieldInterface {
     void Accept(MessageVisitor &visitor) const;
 
   private:
-    const GroupFieldDescriptor *m_descriptor;
+    const FieldDescriptorGroup *m_descriptor;
     vector<const class MessageFieldInterface*> m_fields;
 };
 }  // messaging

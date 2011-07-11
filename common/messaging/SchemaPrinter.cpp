@@ -90,13 +90,13 @@ void SchemaPrinter::Visit(const Int32FieldDescriptor *descriptor) {
   m_str << endl;
 }
 
-void SchemaPrinter::Visit(const GroupFieldDescriptor *descriptor) {
+void SchemaPrinter::Visit(const FieldDescriptorGroup *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << " {" << endl;
   m_indent += m_indent_size;
 }
 
 
-void SchemaPrinter::PostVisit(const GroupFieldDescriptor *descriptor) {
+void SchemaPrinter::PostVisit(const FieldDescriptorGroup *descriptor) {
   m_indent -= m_indent_size;
   m_str << string(m_indent, ' ') << "}" << endl;
   (void) descriptor;

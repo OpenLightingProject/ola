@@ -30,7 +30,7 @@ using std::vector;
 
 using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::FieldDescriptor;
-using ola::messaging::GroupFieldDescriptor;
+using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
@@ -39,14 +39,14 @@ using ola::messaging::UInt8FieldDescriptor;
 class DescriptorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DescriptorTest);
   CPPUNIT_TEST(testFieldDescriptors);
-  CPPUNIT_TEST(testGroupFieldDescriptor);
+  CPPUNIT_TEST(testFieldDescriptorGroup);
   CPPUNIT_TEST(testIntervalsAndLabels);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     DescriptorTest() {}
     void testFieldDescriptors();
-    void testGroupFieldDescriptor();
+    void testFieldDescriptorGroup();
     void testIntervalsAndLabels();
 };
 
@@ -135,9 +135,9 @@ void DescriptorTest::testFieldDescriptors() {
 
 
 /**
- * Check GroupFieldDescriptor
+ * Check FieldDescriptorGroup
  */
-void DescriptorTest::testGroupFieldDescriptor() {
+void DescriptorTest::testFieldDescriptorGroup() {
   BoolFieldDescriptor *bool_descriptor = new BoolFieldDescriptor("bool");
   UInt8FieldDescriptor *uint8_descriptor = new UInt8FieldDescriptor(
       "uint8", false, 10);
@@ -147,7 +147,7 @@ void DescriptorTest::testGroupFieldDescriptor() {
   fields.push_back(bool_descriptor);
   fields.push_back(uint8_descriptor);
 
-  GroupFieldDescriptor group_descriptor("group", fields, 0, 3);
+  FieldDescriptorGroup group_descriptor("group", fields, 0, 3);
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
                        group_descriptor.FieldCount());
   CPPUNIT_ASSERT_EQUAL(static_cast<const FieldDescriptor*>(bool_descriptor),
@@ -169,7 +169,7 @@ void DescriptorTest::testGroupFieldDescriptor() {
   fields2.push_back(bool_descriptor2);
   fields2.push_back(uint8_descriptor2);
 
-  GroupFieldDescriptor group_descriptor2("group", fields2, 2, 2);
+  FieldDescriptorGroup group_descriptor2("group", fields2, 2, 2);
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
                        group_descriptor2.MinSize());
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
