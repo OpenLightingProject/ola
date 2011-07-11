@@ -2,13 +2,14 @@ include $(top_srcdir)/common.mk
 
 SUBDIRS = testdata
 
-EXTRA_DIST = Pids.proto PidStoreLoader.h
+EXTRA_DIST = DescriptorConsistencyChecker.h Pids.proto PidStoreLoader.h
 
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
 noinst_LTLIBRARIES = libolardm.la
-libolardm_la_SOURCES = PidStore.cpp PidStoreLoader.cpp RDMAPI.cpp \
-                       RDMCommand.cpp RDMHelper.cpp StringMessageBuilder.cpp \
+libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp PidStore.cpp \
+                       PidStoreLoader.cpp RDMAPI.cpp RDMCommand.cpp \
+                       RDMHelper.cpp StringMessageBuilder.cpp \
                        QueueingRDMController.cpp
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LDFLAGS = $(PROTOBUF_LIBS)
@@ -22,7 +23,8 @@ RDMTester_LDFLAGS = $(CPPUNIT_LIBS)
 RDMTester_LDADD = libolardm.la ../logging/liblogging.la \
                   ../network/libolanetwork.la ../utils/libolautils.la
 
-PidStoreTester_SOURCES = PidStoreTester.cpp PidStoreTest.cpp
+PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \
+                         PidStoreTester.cpp PidStoreTest.cpp
 PidStoreTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
 PidStoreTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
 PidStoreTester_LDADD = libolardm.la ../logging/liblogging.la \

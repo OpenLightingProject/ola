@@ -25,6 +25,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "common/rdm/DescriptorConsistencyChecker.h"
 #include "common/rdm/PidStoreLoader.h"
 #include "common/rdm/Pids.pb.h"
 #include "ola/Logging.h"
@@ -200,7 +201,7 @@ bool PidStoreLoader::GetPidList(vector<const PidDescriptor*> *pids,
  * Build a PidDescriptor from a Pid protobuf object
  */
 PidDescriptor *PidStoreLoader::PidToDescriptor(const ola::rdm::pid::Pid &pid,
-                                             bool validate) {
+                                               bool validate) {
   // populate sub device validators
   PidDescriptor::sub_device_valiator get_validator =
     PidDescriptor::ANY_SUB_DEVICE;
@@ -288,9 +289,17 @@ const Descriptor* PidStoreLoader::FrameFormatToDescriptor(
     return NULL;
   }
 
-  // we don't give these requests names
-  return new Descriptor("", fields);
-  (void) validate;
+  // we don't give these descriptors names
+  const Descriptor *descriptor =  new Descriptor("", fields);
+
+  if (validate) {
+    if (!m_checker.CheckConsistency(descriptor)) {
+      OLA_WARN << "Frame format failed consistency check!";
+      delete descriptor;
+      return NULL;
+    }
+  }
+  return descriptor;
 }
 
 

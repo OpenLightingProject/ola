@@ -28,6 +28,7 @@
 #include <istream>
 #include <string>
 #include <vector>
+#include "common/rdm/DescriptorConsistencyChecker.h"
 #include "common/rdm/Pids.pb.h"
 
 namespace ola {
@@ -52,6 +53,7 @@ class PidStoreLoader {
   private:
     PidStoreLoader(const PidStoreLoader&);
     PidStoreLoader& operator=(const PidStoreLoader&);
+    DescriptorConsistencyChecker m_checker;
 
     const RootPidStore *BuildStore(const ola::rdm::pid::PidStore &store_pb,
                                    bool validate);

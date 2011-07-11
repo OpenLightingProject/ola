@@ -1,0 +1,20 @@
+pid {
+  name: "PROXIED_DEVICES"
+  value: 16
+  get_request {
+  }
+  get_response {
+    field {
+      type: STRING
+      name: "label1"
+      max_size: 32
+    }
+    field {
+      type: STRING
+      name: "label2"
+      max_size: 32
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+version: 1302986774

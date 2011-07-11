@@ -57,6 +57,7 @@ class PidStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testPidStoreLoadDuplicateValue);
   CPPUNIT_TEST(testPidStoreLoadDuplicateName);
   CPPUNIT_TEST(testPidStoreLoadInvalidEstaPid);
+  CPPUNIT_TEST(testInconsistentData);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -69,6 +70,7 @@ class PidStoreTest: public CppUnit::TestFixture {
     void testPidStoreLoadDuplicateValue();
     void testPidStoreLoadDuplicateName();
     void testPidStoreLoadInvalidEstaPid();
+    void testInconsistentData();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
@@ -403,5 +405,16 @@ void PidStoreTest::testPidStoreLoadInvalidEstaPid() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
       "./testdata/invalid_esta_pid.proto");
+  CPPUNIT_ASSERT(!root_store);
+}
+
+
+/**
+ * Check that loading a file with an inconsistent descriptor fails.
+ */
+void PidStoreTest::testInconsistentData() {
+  PidStoreLoader loader;
+  const RootPidStore *root_store = loader.LoadFromFile(
+      "./testdata/inconsistent_pid.proto");
   CPPUNIT_ASSERT(!root_store);
 }
