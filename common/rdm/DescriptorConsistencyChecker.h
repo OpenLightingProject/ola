@@ -44,7 +44,8 @@ class DescriptorConsistencyChecker
     : public ola::messaging::FieldDescriptorVisitor {
   public:
     DescriptorConsistencyChecker()
-        : m_variable_sized_field_count(0) {
+        : m_variable_sized_field_count(0),
+          m_depth(0) {
     }
 
     bool CheckConsistency(const ola::messaging::Descriptor *descriptor);
@@ -61,7 +62,7 @@ class DescriptorConsistencyChecker
     void PostVisit(const ola::messaging::FieldDescriptorGroup*);
 
   private:
-    unsigned int m_variable_sized_field_count;
+    unsigned int m_variable_sized_field_count, m_depth;
 };
 }  // rdm
 }  // ola

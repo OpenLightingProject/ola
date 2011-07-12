@@ -36,12 +36,14 @@ class DescriptorConsistencyCheckerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DescriptorConsistencyCheckerTest);
   CPPUNIT_TEST(testOkDescriptors);
   CPPUNIT_TEST(testDuplicateStrings);
+  CPPUNIT_TEST(testGroups);
   CPPUNIT_TEST(testNestedGroups);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testOkDescriptors();
     void testDuplicateStrings();
+    void testGroups();
     void testNestedGroups();
 
     void setUp() {
@@ -104,13 +106,22 @@ void DescriptorConsistencyCheckerTest::testDuplicateStrings() {
       new ola::messaging::StringFieldDescriptor("string2", 4, 32));
   const Descriptor variable_length_descriptor("Variable", fields2);
   CPPUNIT_ASSERT(!checker.CheckConsistency(&variable_length_descriptor));
+
+  // test one fixed and one variable
+  vector<const class FieldDescriptor*> fields3;
+  fields3.push_back(
+      new ola::messaging::StringFieldDescriptor("string1", 4, 4));
+  fields3.push_back(
+      new ola::messaging::StringFieldDescriptor("string2", 4, 32));
+  const Descriptor combination_descriptor("Variable", fields3);
+  CPPUNIT_ASSERT(checker.CheckConsistency(&combination_descriptor));
 }
 
 
 /**
  * Verify that groups produce the correct results
  */
-void DescriptorConsistencyCheckerTest::testNestedGroups() {
+void DescriptorConsistencyCheckerTest::testGroups() {
   DescriptorConsistencyChecker checker;
 
   // test a single, fixed sized group
@@ -166,4 +177,64 @@ void DescriptorConsistencyCheckerTest::testNestedGroups() {
 
   const Descriptor multiple_variable_descriptor("Variable", fields5);
   CPPUNIT_ASSERT(!checker.CheckConsistency(&multiple_variable_descriptor));
+}
+
+
+/**
+ * Verify that nested groups produce the correct results.
+ */
+void DescriptorConsistencyCheckerTest::testNestedGroups() {
+  DescriptorConsistencyChecker checker;
+
+  // nested, fixed sized groups
+  vector<const class FieldDescriptor*> fields, group_fields1, group_fields2;
+  group_fields1.push_back(new ola::messaging::UInt8FieldDescriptor("uint8"));
+  group_fields1.push_back(new ola::messaging::UInt8FieldDescriptor("uint8"));
+  group_fields2.push_back(new ola::messaging::BoolFieldDescriptor("bool"));
+  group_fields2.push_back(
+      new ola::messaging::FieldDescriptorGroup("", group_fields1, 2, 2));
+  fields.push_back(
+      new ola::messaging::FieldDescriptorGroup("", group_fields2, 2, 2));
+
+  const Descriptor nested_fixed_descriptor("", fields);
+  CPPUNIT_ASSERT(checker.CheckConsistency(&nested_fixed_descriptor));
+
+  // nested, both variable
+  vector<const class FieldDescriptor*> fields2, group_fields3, group_fields4;
+  group_fields3.push_back(new ola::messaging::UInt8FieldDescriptor("uint8"));
+  group_fields3.push_back(new ola::messaging::UInt8FieldDescriptor("uint8"));
+  group_fields4.push_back(new ola::messaging::BoolFieldDescriptor("bool"));
+  group_fields4.push_back(
+      new ola::messaging::FieldDescriptorGroup("", group_fields3, 2, 4));
+  fields2.push_back(
+      new ola::messaging::FieldDescriptorGroup("", group_fields4, 2, 4));
+
+  const Descriptor nested_variable_descriptor("", fields2);
+  CPPUNIT_ASSERT(!checker.CheckConsistency(&nested_variable_descriptor));
+
+  // variable, containing a fixed size group
+  vector<const class FieldDescriptor*> fields3, group_fields5, group_fields6;
+  group_fields5.push_back(new ola::messaging::UInt8FieldDescriptor("uint8"));
+  group_fields5.push_back(new ola::messaging::UInt8FieldDescriptor("uint8"));
+  group_fields6.push_back(new ola::messaging::BoolFieldDescriptor("bool"));
+  group_fields6.push_back(
+      new ola::messaging::FieldDescriptorGroup("", group_fields5, 2, 2));
+  fields3.push_back(
+      new ola::messaging::FieldDescriptorGroup("", group_fields6, 2, 4));
+
+  const Descriptor variable_fixed_descriptor("", fields3);
+  CPPUNIT_ASSERT(checker.CheckConsistency(&variable_fixed_descriptor));
+
+  // fixed, containing a variable sized group
+  vector<const class FieldDescriptor*> fields4, group_fields7, group_fields8;
+  group_fields7.push_back(new ola::messaging::UInt8FieldDescriptor("uint8"));
+  group_fields7.push_back(new ola::messaging::UInt8FieldDescriptor("uint8"));
+  group_fields8.push_back(new ola::messaging::BoolFieldDescriptor("bool"));
+  group_fields8.push_back(
+      new ola::messaging::FieldDescriptorGroup("", group_fields7, 2, 4));
+  fields4.push_back(
+      new ola::messaging::FieldDescriptorGroup("", group_fields8, 2, 2));
+
+  const Descriptor fixed_variable_descriptor("", fields4);
+  CPPUNIT_ASSERT(!checker.CheckConsistency(&fixed_variable_descriptor));
 }
