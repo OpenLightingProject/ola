@@ -27,6 +27,7 @@ namespace rdm {
 bool DescriptorConsistencyChecker::CheckConsistency(
     const ola::messaging::Descriptor *descriptor) {
   m_variable_sized_field_count = 0;
+  m_depth = 0;
   descriptor->Accept(*this);
   return m_variable_sized_field_count <= 1;
 }
@@ -37,8 +38,11 @@ void DescriptorConsistencyChecker::Visit(
 
 void DescriptorConsistencyChecker::Visit(
   const ola::messaging::StringFieldDescriptor *descriptor) {
-    if (!descriptor->FixedSize())
+    if (!descriptor->FixedSize()) {
       m_variable_sized_field_count++;
+      if (m_depth)
+        m_variable_sized_field_count++;
+    }
 }
 
 
@@ -74,13 +78,18 @@ void DescriptorConsistencyChecker::Visit(
 
 void DescriptorConsistencyChecker::Visit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
-  if (!descriptor->FixedSize())
+  if (!descriptor->FixedSize()) {
     m_variable_sized_field_count++;
+    if (m_depth)
+      m_variable_sized_field_count++;
+  }
+  m_depth++;
 }
 
 
 void DescriptorConsistencyChecker::PostVisit(
     const ola::messaging::FieldDescriptorGroup*) {
+  m_depth--;
 }
 }  // rdm
 }  // ola
