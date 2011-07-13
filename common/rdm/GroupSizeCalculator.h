@@ -73,13 +73,13 @@ class StaticGroupTokenCalculator
 class GroupSizeCalculator: public ola::messaging::FieldDescriptorVisitor {
   public:
     typedef enum {
-      INSUFFICIENT_INPUTS,
-      EXTRA_INPUTS,
+      INSUFFICIENT_TOKENS,
+      EXTRA_TOKENS,
       NO_VARIABLE_GROUPS,
       SINGLE_VARIABLE_GROUP,
       MULTIPLE_VARIABLE_GROUPS,
       NESTED_VARIABLE_GROUPS,
-      MISMATCHED_INPUTS,
+      MISMATCHED_TOKENS,
     } calculator_state;
 
     GroupSizeCalculator() {}

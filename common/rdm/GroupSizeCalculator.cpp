@@ -45,63 +45,49 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
   m_non_groups.clear();
 
   // split out the fields into singular fields and groups
-  for (unsigned int i = 0; i < descriptor->FieldCount(); ++i) {
+  for (unsigned int i = 0; i < descriptor->FieldCount(); ++i)
     descriptor->GetField(i)->Accept(*this);
-  }
 
-  unsigned int required_length = m_non_groups.size();
+  unsigned int required_tokens = m_non_groups.size();
 
-  if (required_length > token_count)
-    return INSUFFICIENT_INPUTS;
+  if (required_tokens > token_count)
+    return INSUFFICIENT_TOKENS;
 
   // this takes care of the easy case where there are no groups
   if (!m_groups.size())
-    return required_length == token_count ? NO_VARIABLE_GROUPS : EXTRA_INPUTS;
+    return required_tokens == token_count ? NO_VARIABLE_GROUPS : EXTRA_TOKENS;
 
   // check all groups, looking for multiple non-fixed sized groups
-  unsigned int variable_group_count = 0;
-  const FieldDescriptorGroup *variable_group = NULL;
+  unsigned int variable_group_counter = 0;
+  unsigned int variable_group_token_count = 0;
   vector<const FieldDescriptorGroup*>::const_iterator iter = m_groups.begin();
   for (; iter != m_groups.end(); ++iter) {
-    if (!(*iter)->FixedSize()) {
-      variable_group = *iter;
-      variable_group_count++;
-    }
-  }
-
-  if (variable_group_count > 1)
-    return MULTIPLE_VARIABLE_GROUPS;
-
-  // work out the number of inputs for all fixed sized groups
-  iter = m_groups.begin();
-  for (; iter != m_groups.end(); ++iter) {
-    if (*iter == variable_group)
-      continue;
-    // recursively get group size
     unsigned int group_size;
     if (!m_simple_calculator.CalculateTokensRequired(*iter, &group_size))
       return NESTED_VARIABLE_GROUPS;
-    required_length += (*iter)->Size() * group_size;
+
+    if ((*iter)->FixedSize()) {
+      required_tokens += (*iter)->Size() * group_size;
+    } else {
+      // variable sized group
+      variable_group_token_count = group_size;
+      if (++variable_group_counter > 1)
+        return MULTIPLE_VARIABLE_GROUPS;
+    }
   }
 
-  if (required_length > token_count)
-    return INSUFFICIENT_INPUTS;
+  if (required_tokens > token_count)
+    return INSUFFICIENT_TOKENS;
 
-  if (variable_group_count == 0)
-    return required_length == token_count ? NO_VARIABLE_GROUPS : EXTRA_INPUTS;
+  if (!variable_group_counter)
+    return required_tokens == token_count ? NO_VARIABLE_GROUPS : EXTRA_TOKENS;
 
-  // now we have a single variable sized group and a non-0 number of inputs
-  // remaining.
-  unsigned int group_size;
-  if (!m_simple_calculator.CalculateTokensRequired(variable_group,
-                                                   &group_size))
-    return NESTED_VARIABLE_GROUPS;
+  // now we have a single variable sized group and a 0 or more tokens remaining
+  unsigned int remaining_tokens = token_count - required_tokens;
+  if (remaining_tokens % variable_group_token_count)
+    return MISMATCHED_TOKENS;
 
-  unsigned int remaining_inputs = token_count - required_length;
-  if (remaining_inputs % group_size)
-    return MISMATCHED_INPUTS;
-
-  *group_repeat_count = remaining_inputs / group_size;
+  *group_repeat_count = remaining_tokens / variable_group_token_count;
   return SINGLE_VARIABLE_GROUP;
 }
 

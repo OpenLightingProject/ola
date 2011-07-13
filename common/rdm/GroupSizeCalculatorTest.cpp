@@ -92,14 +92,14 @@ void GroupSizeCalculatorTest::testSimpleCases() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(8), token_count);
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::INSUFFICIENT_INPUTS,
+      GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         1,
         &descriptor,
         &group_repeat_count));
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::INSUFFICIENT_INPUTS,
+      GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         7,
         &descriptor,
@@ -113,7 +113,7 @@ void GroupSizeCalculatorTest::testSimpleCases() {
         &group_repeat_count));
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::EXTRA_INPUTS,
+      GroupSizeCalculator::EXTRA_TOKENS,
       m_calculator.CalculateGroupSize(
         9,
         &descriptor,
@@ -156,21 +156,21 @@ void GroupSizeCalculatorTest::testWithFixedGroups() {
   Descriptor descriptor("Test Descriptor", fields);
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::INSUFFICIENT_INPUTS,
+      GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         4,
         &descriptor,
         &group_repeat_count));
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::INSUFFICIENT_INPUTS,
+      GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         12,
         &descriptor,
         &group_repeat_count));
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::INSUFFICIENT_INPUTS,
+      GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         15,
         &descriptor,
@@ -184,7 +184,7 @@ void GroupSizeCalculatorTest::testWithFixedGroups() {
         &group_repeat_count));
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::EXTRA_INPUTS,
+      GroupSizeCalculator::EXTRA_TOKENS,
       m_calculator.CalculateGroupSize(
         17,
         &descriptor,
@@ -213,14 +213,14 @@ void GroupSizeCalculatorTest::testSingleVariableSizedGroup() {
 
   unsigned int group_repeat_count;
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::INSUFFICIENT_INPUTS,
+      GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         0,
         &descriptor,
         &group_repeat_count));
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::INSUFFICIENT_INPUTS,
+      GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         2,
         &descriptor,
@@ -251,7 +251,7 @@ void GroupSizeCalculatorTest::testSingleVariableSizedGroup() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2), group_repeat_count);
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::MISMATCHED_INPUTS,
+      GroupSizeCalculator::MISMATCHED_TOKENS,
       m_calculator.CalculateGroupSize(
         8,
         &descriptor,
