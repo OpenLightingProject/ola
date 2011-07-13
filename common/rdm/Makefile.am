@@ -2,12 +2,14 @@ include $(top_srcdir)/common.mk
 
 SUBDIRS = testdata
 
-EXTRA_DIST = DescriptorConsistencyChecker.h Pids.proto PidStoreLoader.h
+EXTRA_DIST = DescriptorConsistencyChecker.h GroupSizeCalculator.h Pids.proto \
+             PidStoreLoader.h
 
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
 noinst_LTLIBRARIES = libolardm.la
-libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp PidStore.cpp \
+libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp \
+                       GroupSizeCalculator.cpp PidStore.cpp \
                        PidStoreLoader.cpp RDMAPI.cpp RDMCommand.cpp \
                        RDMHelper.cpp StringMessageBuilder.cpp \
                        QueueingRDMController.cpp
@@ -30,7 +32,8 @@ PidStoreTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
 PidStoreTester_LDADD = libolardm.la ../logging/liblogging.la \
                        ../messaging/libolamessaging.la
 
-RDMMessageTester_SOURCES = RDMMessageTester.cpp StringMessageBuilderTest.cpp
+RDMMessageTester_SOURCES = GroupSizeCalculatorTest.cpp RDMMessageTester.cpp \
+                           StringMessageBuilderTest.cpp
 RDMMessageTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
 RDMMessageTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
 RDMMessageTester_LDADD = libolardm.la ../logging/liblogging.la \

@@ -58,7 +58,6 @@ StringMessageBuilder::~StringMessageBuilder() {
 const ola::messaging::Message *StringMessageBuilder::GetMessage(
     const vector<string> &inputs,
     const ola::messaging::Descriptor *descriptor) {
-
   InitVars(inputs);
 
   descriptor->Accept(*this);
@@ -231,6 +230,7 @@ void StringMessageBuilder::VisitInt(
 
 
 void StringMessageBuilder::InitVars(const vector<string> &inputs) {
+  CleanUpVector();
   // add the first fields vector to the stack
   vector<const MessageFieldInterface*> fields;
   m_groups.push(fields);
