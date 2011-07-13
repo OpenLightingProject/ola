@@ -47,6 +47,7 @@ class DescriptorConsistencyChecker
         : m_variable_sized_field_count(0) {
     }
 
+    bool Descend() const { return true; }
     bool CheckConsistency(const ola::messaging::Descriptor *descriptor);
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);

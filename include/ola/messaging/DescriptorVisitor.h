@@ -41,6 +41,9 @@ class FieldDescriptorVisitor {
   public:
     virtual ~FieldDescriptorVisitor() {}
 
+    // return true if you want groups to be recursively expanded
+    virtual bool Descend() const = 0;
+
     virtual void Visit(const BoolFieldDescriptor*) = 0;
     virtual void Visit(const StringFieldDescriptor*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<uint8_t>*) = 0;

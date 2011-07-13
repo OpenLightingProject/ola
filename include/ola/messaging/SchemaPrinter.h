@@ -44,6 +44,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
     }
     ~SchemaPrinter() {}
 
+    bool Descend() const { return true; }
     string AsString() { return m_str.str(); }
     void Reset() { m_str.str(""); }
 
