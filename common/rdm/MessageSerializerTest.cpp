@@ -311,5 +311,4 @@ void MessageSerializerTest::testBuilderWithNestedGroups() {
               sizeof(expected),
               data,
               packed_length);
-
 }

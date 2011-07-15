@@ -18,11 +18,11 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#include <algorithm>
 #include <ola/messaging/Message.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/MessageSerializer.h>
 #include <string.h>
+#include <algorithm>
 
 namespace ola {
 namespace rdm {

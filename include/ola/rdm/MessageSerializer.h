@@ -18,8 +18,8 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_RDM_MESSAGESERIALIER_H_
-#define INCLUDE_OLA_RDM_MESSAGESERIALIER_H_
+#ifndef INCLUDE_OLA_RDM_MESSAGESERIALIZER_H_
+#define INCLUDE_OLA_RDM_MESSAGESERIALIZER_H_
 
 #include <ola/messaging/MessageVisitor.h>
 
@@ -32,7 +32,7 @@ namespace rdm {
  */
 class MessageSerializer: public ola::messaging::MessageVisitor {
   public:
-    MessageSerializer(unsigned int initial_size = INITIAL_BUFFER_SIZE);
+    explicit MessageSerializer(unsigned int initial_size = INITIAL_BUFFER_SIZE);
     ~MessageSerializer();
 
     const uint8_t *SerializeMessage(const ola::messaging::Message *message,
@@ -62,4 +62,4 @@ class MessageSerializer: public ola::messaging::MessageVisitor {
 };
 }  // rdm
 }  // ola
-#endif  // INCLUDE_OLA_RDM_MESSAGESERIALIER_H_
+#endif  // INCLUDE_OLA_RDM_MESSAGESERIALIZER_H_
