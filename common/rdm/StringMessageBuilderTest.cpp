@@ -53,6 +53,8 @@ class StringBuilderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringBuilderTest);
   CPPUNIT_TEST(testSimpleBuilder);
   CPPUNIT_TEST(testBuilderWithGroups);
+  CPPUNIT_TEST(testBuilderWithNestedGroups);
+  CPPUNIT_TEST(testBuilderWithVariableNestedGroups);
   CPPUNIT_TEST(testBoolFailure);
   CPPUNIT_TEST(testUIntFailure);
   CPPUNIT_TEST(testIntFailure);
@@ -62,6 +64,8 @@ class StringBuilderTest: public CppUnit::TestFixture {
   public:
     void testSimpleBuilder();
     void testBuilderWithGroups();
+    void testBuilderWithNestedGroups();
+    void testBuilderWithVariableNestedGroups();
     void testBoolFailure();
     void testUIntFailure();
     void testIntFailure();
@@ -160,7 +164,7 @@ void StringBuilderTest::testSimpleBuilder() {
 
 
 /**
- * Check the StringBuilder works with groups.
+ * Check the StringBuilder works with variable sized groups.
  */
 void StringBuilderTest::testBuilderWithGroups() {
   // build the descriptor
@@ -169,7 +173,7 @@ void StringBuilderTest::testBuilderWithGroups() {
   group_fields.push_back(new UInt8FieldDescriptor("uint8"));
 
   vector<const FieldDescriptor*> fields;
-  fields.push_back(new FieldDescriptorGroup("group", group_fields, 0, 5));
+  fields.push_back(new FieldDescriptorGroup("group", group_fields, 0, 3));
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the inputs
@@ -200,14 +204,83 @@ void StringBuilderTest::testBuilderWithGroups() {
 
   // verify
   CPPUNIT_ASSERT(message2.get());
-  // TODO(simon): make this pass
-  // CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3), message2->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3), message2->FieldCount());
 
   string expected2 = (
       "group {\n  bool: true\n  uint8: 10\n}\n"
       "group {\n  bool: true\n  uint8: 42\n}\n"
       "group {\n  bool: false\n  uint8: 240\n}\n");
-  // CPPUNIT_ASSERT_EQUAL(expected2, MessageToString(message2.get()));
+  CPPUNIT_ASSERT_EQUAL(expected2, MessageToString(message2.get()));
+
+  // now provide too many inputs
+  inputs2.clear();
+  inputs2.push_back("true");
+  inputs2.push_back("10");
+  inputs2.push_back("true");
+  inputs2.push_back("42");
+  inputs2.push_back("false");
+  inputs2.push_back("240");
+  inputs2.push_back("false");
+  inputs2.push_back("53");
+
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs2));
+}
+
+
+/**
+ * test StringBuilder with nested fixed groups
+ */
+void StringBuilderTest::testBuilderWithNestedGroups() {
+  vector<const FieldDescriptor*> fields, group_fields, group_fields2;
+  group_fields.push_back(new BoolFieldDescriptor("bool"));
+
+  group_fields2.push_back(new Int16FieldDescriptor("int16"));
+  group_fields2.push_back(new FieldDescriptorGroup("bar", group_fields, 2, 2));
+
+  const FieldDescriptorGroup *nested_group = new FieldDescriptorGroup(
+      "", group_fields2, 0, 4);
+
+  fields.push_back(nested_group);
+  Descriptor descriptor("Test Descriptor", fields);
+
+  vector<string> inputs;
+  inputs.push_back("1");
+  inputs.push_back("true");
+  inputs.push_back("true");
+
+  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+
+  // verify
+  CPPUNIT_ASSERT(message.get());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), message->FieldCount());
+
+  string expected = (
+      " {\n  int16: 1\n  bar {\n    bool: true\n  }\n"
+      "  bar {\n    bool: true\n  }\n}\n");
+  CPPUNIT_ASSERT_EQUAL(expected, MessageToString(message.get()));
+}
+
+
+/**
+ * test StringBuilder with nested varible groups.
+ */
+void StringBuilderTest::testBuilderWithVariableNestedGroups() {
+  vector<const FieldDescriptor*> fields, group_fields, group_fields2;
+  group_fields.push_back(new BoolFieldDescriptor("bool"));
+  group_fields.push_back(new UInt8FieldDescriptor("uint8"));
+
+  group_fields2.push_back(new Int16FieldDescriptor("int16"));
+  group_fields2.push_back(new FieldDescriptorGroup("", group_fields, 0, 2));
+
+  const FieldDescriptorGroup *nested_variable_group = new FieldDescriptorGroup(
+      "", group_fields2, 0, 4);
+
+  fields.push_back(new Int16FieldDescriptor("int16"));
+  fields.push_back(nested_variable_group);
+  Descriptor descriptor("Test Descriptor", fields);
+
+  vector<string> inputs;
+  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
 }
 
 

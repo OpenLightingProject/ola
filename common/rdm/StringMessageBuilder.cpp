@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include "common/rdm/GroupSizeCalculator.h"
+
 namespace ola {
 namespace rdm {
 
@@ -60,6 +62,28 @@ const ola::messaging::Message *StringMessageBuilder::GetMessage(
     const ola::messaging::Descriptor *descriptor) {
   InitVars(inputs);
 
+  // first figure out if the number of inputs provided matches the number
+  // expected by the descriptor. This accounts for repeating groups.
+  GroupSizeCalculator calculator;
+  GroupSizeCalculator::calculator_state state = calculator.CalculateGroupSize(
+      inputs.size(),
+      descriptor,
+      &m_group_instance_count);
+
+  switch (state) {
+    case GroupSizeCalculator::INSUFFICIENT_TOKENS:
+    case GroupSizeCalculator::EXTRA_TOKENS:
+    case GroupSizeCalculator::MISMATCHED_TOKENS:
+    case GroupSizeCalculator::MULTIPLE_VARIABLE_GROUPS:
+    case GroupSizeCalculator::NESTED_VARIABLE_GROUPS:
+      return NULL;
+    case GroupSizeCalculator::SINGLE_VARIABLE_GROUP:
+    case GroupSizeCalculator::NO_VARIABLE_GROUPS:
+      break;
+  }
+
+  // now we now that this list of inputs can be parsed, and we know the number
+  // of instances of a repeating group if there is one.
   descriptor->Accept(*this);
 
   if (m_error)
@@ -179,26 +203,39 @@ void StringMessageBuilder::Visit(
 }
 
 
+/**
+ * Visit a group
+ */
 void StringMessageBuilder::Visit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
-  vector<const MessageFieldInterface*> fields;
-  m_groups.push(fields);
-  (void) descriptor;
+
+  unsigned int iterations = descriptor->FixedSize() ? descriptor->Size() :
+    m_group_instance_count;
+
+  for (unsigned int i = 0; i < iterations; ++i) {
+    vector<const MessageFieldInterface*> fields;
+    m_groups.push(fields);
+
+    for (unsigned int j = 0; j < descriptor->FieldCount(); ++j) {
+      descriptor->GetField(j)->Accept(*this);
+    }
+
+    const vector<const MessageFieldInterface*> &populated_fields =
+        m_groups.top();
+    const ola::messaging::MessageFieldInterface *message =
+        new ola::messaging::GroupMessageField(descriptor, populated_fields);
+    m_groups.pop();
+    m_groups.top().push_back(message);
+  }
 }
 
 
+/**
+ * This is a noop since we handle decending ourselfs in Visit()
+ */
 void StringMessageBuilder::PostVisit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
-  if (m_groups.empty()) {
-    OLA_FATAL << "Mismatched group exit call, this is a programming bug!";
-    return;
-  }
-
-  const vector<const MessageFieldInterface*> &fields = m_groups.top();
-  const ola::messaging::MessageFieldInterface *message =
-      new ola::messaging::GroupMessageField(descriptor, fields);
-  m_groups.pop();
-  m_groups.top().push_back(message);
+  (void) descriptor;
 }
 
 

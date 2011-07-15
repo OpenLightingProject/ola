@@ -48,7 +48,8 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     StringMessageBuilder();
     ~StringMessageBuilder();
 
-    bool Descend() const { return true; }
+    // we handle decending into groups ourself
+    bool Descend() const { return false; }
     const ola::messaging::Message *GetMessage(
         const vector<string> &inputs,
         const class ola::messaging::Descriptor*);
@@ -68,7 +69,7 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
   private:
     vector<string> m_inputs;
     std::stack<vector<const ola::messaging::MessageFieldInterface*> > m_groups;
-    unsigned int m_offset, m_input_size;
+    unsigned int m_offset, m_input_size, m_group_instance_count;
     bool m_error;
     string m_error_string;
 
