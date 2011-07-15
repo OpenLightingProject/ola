@@ -51,13 +51,22 @@ int32_t NetworkToHost(int32_t value);
 uint8_t HostToNetwork(uint8_t value);
 uint16_t HostToNetwork(uint16_t value);
 uint32_t HostToNetwork(uint32_t value);
+int8_t HostToNetwork(int8_t value);
+int16_t HostToNetwork(int16_t value);
+int32_t HostToNetwork(int32_t value);
 
 uint8_t HostToLittleEndian(uint8_t value);
 uint16_t HostToLittleEndian(uint16_t value);
 uint32_t HostToLittleEndian(uint32_t value);
+int8_t HostToLittleEndian(int8_t value);
+int16_t HostToLittleEndian(int16_t value);
+int32_t HostToLittleEndian(int32_t value);
 uint8_t LittleEndianToHost(uint8_t value);
 uint16_t LittleEndianToHost(uint16_t value);
 uint32_t LittleEndianToHost(uint32_t value);
+int8_t LittleEndianToHost(int8_t value);
+int16_t LittleEndianToHost(int16_t value);
+int32_t LittleEndianToHost(int32_t value);
 
 std::string FullHostname();
 std::string Hostname();

@@ -147,15 +147,25 @@ int32_t NetworkToHost(int32_t value) {
   return ntohl(value);
 }
 
+
 uint8_t HostToNetwork(uint8_t value) {
   return value;
 }
 
 
+int8_t HostToNetwork(int8_t value) {
+  return value;
+}
+
 /*
  * Convert a uint16_t from network to host byte order
  */
 uint16_t HostToNetwork(uint16_t value) {
+  return htons(value);
+}
+
+
+int16_t HostToNetwork(int16_t value) {
   return htons(value);
 }
 
@@ -168,12 +178,30 @@ uint32_t HostToNetwork(uint32_t value) {
 }
 
 
+int32_t HostToNetwork(int32_t value) {
+  return htonl(value);
+}
+
+
 uint8_t HostToLittleEndian(uint8_t value) {
   return value;
 }
 
 
+int8_t HostToLittleEndian(int8_t value) {
+  return value;
+}
+
+
 uint16_t HostToLittleEndian(uint16_t value) {
+  if (IsBigEndian())
+    return ((value & 0xff) << 8) | (value >> 8);
+  else
+    return value;
+}
+
+
+int16_t HostToLittleEndian(int16_t value) {
   if (IsBigEndian())
     return ((value & 0xff) << 8) | (value >> 8);
   else
@@ -196,7 +224,20 @@ uint32_t HostToLittleEndian(uint32_t value) {
 }
 
 
+int32_t HostToLittleEndian(int32_t value) {
+  if (IsBigEndian())
+    return _ByteSwap(value);
+  else
+    return value;
+}
+
+
 uint8_t LittleEndianToHost(uint8_t value) {
+  return value;
+}
+
+
+int8_t LittleEndianToHost(int8_t value) {
   return value;
 }
 
@@ -209,7 +250,23 @@ uint16_t LittleEndianToHost(uint16_t value) {
 }
 
 
+int16_t LittleEndianToHost(int16_t value) {
+  if (IsBigEndian())
+    return ((value & 0xff) << 8) | (value >> 8);
+  else
+    return value;
+}
+
+
 uint32_t LittleEndianToHost(uint32_t value) {
+  if (IsBigEndian())
+    return _ByteSwap(value);
+  else
+    return value;
+}
+
+
+int32_t LittleEndianToHost(int32_t value) {
   if (IsBigEndian())
     return _ByteSwap(value);
   else
