@@ -60,6 +60,7 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
   // check all groups, looking for multiple non-fixed sized groups
   unsigned int variable_group_counter = 0;
   unsigned int variable_group_token_count = 0;
+  const FieldDescriptorGroup *variable_group = NULL;
   vector<const FieldDescriptorGroup*>::const_iterator iter = m_groups.begin();
   for (; iter != m_groups.end(); ++iter) {
     unsigned int group_size;
@@ -71,6 +72,7 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
     } else {
       // variable sized group
       variable_group_token_count = group_size;
+      variable_group = *iter;
       if (++variable_group_counter > 1)
         return MULTIPLE_VARIABLE_GROUPS;
     }
@@ -84,6 +86,9 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
 
   // now we have a single variable sized group and a 0 or more tokens remaining
   unsigned int remaining_tokens = token_count - required_tokens;
+  if (variable_group->MaxSize() * variable_group_token_count < remaining_tokens)
+    return EXTRA_TOKENS;
+
   if (remaining_tokens % variable_group_token_count)
     return MISMATCHED_TOKENS;
 

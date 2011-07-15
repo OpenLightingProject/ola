@@ -251,7 +251,7 @@ void GroupSizeCalculatorTest::testSingleVariableSizedGroup() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2), group_repeat_count);
 
   CPPUNIT_ASSERT_EQUAL(
-      GroupSizeCalculator::MISMATCHED_TOKENS,
+      GroupSizeCalculator::EXTRA_TOKENS,
       m_calculator.CalculateGroupSize(
         8,
         &descriptor,
