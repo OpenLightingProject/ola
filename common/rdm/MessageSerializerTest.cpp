@@ -52,17 +52,19 @@ using std::vector;
 
 class MessageSerializerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(MessageSerializerTest);
-  CPPUNIT_TEST(testSimpleBuilder);
-  CPPUNIT_TEST(testLittleEndianBuilder);
-  CPPUNIT_TEST(testBuilderWithGroups);
-  CPPUNIT_TEST(testBuilderWithNestedGroups);
+  CPPUNIT_TEST(testSimple);
+  CPPUNIT_TEST(testString);
+  CPPUNIT_TEST(testLittleEndian);
+  CPPUNIT_TEST(testWithGroups);
+  CPPUNIT_TEST(testWithNestedGroups);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testSimpleBuilder();
-    void testLittleEndianBuilder();
-    void testBuilderWithGroups();
-    void testBuilderWithNestedGroups();
+    void testSimple();
+    void testString();
+    void testLittleEndian();
+    void testWithGroups();
+    void testWithNestedGroups();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
@@ -122,7 +124,7 @@ const Message *MessageSerializerTest::BuildMessage(
 /**
  * Check the MessageSerializer works.
  */
-void MessageSerializerTest::testSimpleBuilder() {
+void MessageSerializerTest::testSimple() {
   // build the descriptor
   vector<const FieldDescriptor*> fields;
   fields.push_back(new BoolFieldDescriptor("bool1"));
@@ -170,9 +172,43 @@ void MessageSerializerTest::testSimpleBuilder() {
 
 
 /**
+ * Check that strings do the right thing
+ */
+void MessageSerializerTest::testString() {
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new StringFieldDescriptor("string", 10, 10));
+  fields.push_back(new StringFieldDescriptor("string", 0, 32));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // now setup the inputs
+  vector<string> inputs;
+  inputs.push_back("foo bar");  // this is shorter than the min size
+  inputs.push_back("long long foo bar baz");
+
+  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+
+  // verify
+  CPPUNIT_ASSERT(message.get());
+  MessageSerializer serializer;
+  unsigned int packed_length;
+  const uint8_t *data = serializer.SerializeMessage(message.get(),
+                                                    &packed_length);
+  CPPUNIT_ASSERT(data);
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(31), packed_length);
+
+  uint8_t expected[] = "foo bar\0\0\0long long foo bar baz";
+  ConfirmData(__LINE__,
+              expected,
+              sizeof(expected) - 1,  // ignore the trailing \0
+              data,
+              packed_length);
+}
+
+
+/**
  * Check the MessageSerializer works with little endian fields.
  */
-void MessageSerializerTest::testLittleEndianBuilder() {
+void MessageSerializerTest::testLittleEndian() {
   // build the descriptor
   vector<const FieldDescriptor*> fields;
   fields.push_back(new UInt8FieldDescriptor("uint8", true));
@@ -217,7 +253,7 @@ void MessageSerializerTest::testLittleEndianBuilder() {
 /**
  * Check the MessageSerializer works with variable sized groups.
  */
-void MessageSerializerTest::testBuilderWithGroups() {
+void MessageSerializerTest::testWithGroups() {
   // build the descriptor
   vector<const FieldDescriptor*> group_fields;
   group_fields.push_back(new BoolFieldDescriptor("bool"));
@@ -275,7 +311,7 @@ void MessageSerializerTest::testBuilderWithGroups() {
 /**
  * test MessageSerializer with nested fixed groups
  */
-void MessageSerializerTest::testBuilderWithNestedGroups() {
+void MessageSerializerTest::testWithNestedGroups() {
   vector<const FieldDescriptor*> fields, group_fields, group_fields2;
   group_fields.push_back(new BoolFieldDescriptor("bool"));
 

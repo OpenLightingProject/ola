@@ -74,7 +74,7 @@ void MessageSerializer::Visit(
       message->GetDescriptor()->MaxSize());
   CheckForFreeSpace(size);
   memcpy(m_data + m_offset, message->Value().c_str(), size);
-  m_offset += size;
+  m_offset += std::max(size, message->GetDescriptor()->MinSize());
 }
 
 
