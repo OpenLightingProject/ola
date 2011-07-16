@@ -68,7 +68,7 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
       return NESTED_VARIABLE_GROUPS;
 
     if ((*iter)->FixedSize()) {
-      required_tokens += (*iter)->Size() * group_size;
+      required_tokens += (*iter)->MinBlocks() * group_size;
     } else {
       // variable sized group
       variable_group_token_count = group_size;
@@ -86,7 +86,10 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
 
   // now we have a single variable sized group and a 0 or more tokens remaining
   unsigned int remaining_tokens = token_count - required_tokens;
-  if (variable_group->MaxSize() * variable_group_token_count < remaining_tokens)
+  // some groups limit the number of blocks, check for that here
+  if (variable_group->MaxBlocks() != FieldDescriptorGroup::UNLIMITED_BLOCKS &&
+      variable_group->MaxBlocks() * variable_group_token_count <
+          remaining_tokens)
     return EXTRA_TOKENS;
 
   if (remaining_tokens % variable_group_token_count)
@@ -259,7 +262,7 @@ void StaticGroupTokenCalculator::PostVisit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
   unsigned int group_length = m_token_count.top();
   m_token_count.pop();
-  m_token_count.top() += group_length * descriptor->Size();
+  m_token_count.top() += group_length * descriptor->MinBlocks();
 }
 }  // rdm
 }  // ola

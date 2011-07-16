@@ -209,7 +209,7 @@ void StringMessageBuilder::Visit(
 void StringMessageBuilder::Visit(
     const ola::messaging::FieldDescriptorGroup *descriptor) {
 
-  unsigned int iterations = descriptor->FixedSize() ? descriptor->Size() :
+  unsigned int iterations = descriptor->FixedSize() ? descriptor->MinBlocks() :
     m_group_instance_count;
 
   for (unsigned int i = 0; i < iterations; ++i) {

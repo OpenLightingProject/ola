@@ -71,7 +71,7 @@ void MessageSerializer::Visit(
     const ola::messaging::StringMessageField *message) {
   unsigned int size = std::min(
       static_cast<unsigned int>(message->Value().size()),
-      message->GetDescriptor()->Size());
+      message->GetDescriptor()->MaxSize());
   CheckForFreeSpace(size);
   memcpy(m_data + m_offset, message->Value().c_str(), size);
   m_offset += size;

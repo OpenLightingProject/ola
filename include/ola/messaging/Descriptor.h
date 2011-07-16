@@ -53,13 +53,17 @@ class FieldDescriptorInterface {
     // Returns true if the size of this field is constant
     virtual bool FixedSize() const = 0;
 
-    // Returns the largest size for this field
-    virtual unsigned int Size() const = 0;
+    // True if there is some bound on the field's size.
+    virtual bool LimitedSize() const = 0;
+
+    // This is the max size in bytes of the field. This is only valid if
+    // LimitedSize() is  true, otherwise it returns 0.
+    virtual unsigned int MaxSize() const = 0;
 };
 
 
 /**
- * Describes a field, which may be a group of sub fields
+ * The base implementation of a field.
  */
 class FieldDescriptor: public FieldDescriptorInterface {
   public:
@@ -86,7 +90,8 @@ class BoolFieldDescriptor: public FieldDescriptor {
     }
 
     bool FixedSize() const { return true; }
-    unsigned int Size() const { return 1; }
+    bool LimitedSize() const { return true; }
+    unsigned int MaxSize() const { return 1; }
 
     void Accept(FieldDescriptorVisitor &visitor) const {
       visitor.Visit(this);
@@ -108,7 +113,7 @@ class StringFieldDescriptor: public FieldDescriptor {
     }
 
     bool FixedSize() const { return m_min_size == m_max_size; }
-    unsigned int Size() const { return m_max_size; }
+    bool LimitedSize() const { return true; }
     unsigned int MinSize() const { return m_min_size; }
     unsigned int MaxSize() const { return m_max_size; }
 
@@ -154,7 +159,8 @@ class IntegerFieldDescriptor: public FieldDescriptor {
     }
 
     bool FixedSize() const { return true; }
-    unsigned int Size() const { return sizeof(type); }
+    bool LimitedSize() const { return true; }
+    unsigned int MaxSize() const { return sizeof(type); }
     int8_t Multiplier() const { return m_multipler; }
     bool IsLittleEndian() const { return m_little_endian; }
 
@@ -212,29 +218,103 @@ typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
 
 
 /**
- * A FieldDescriptor that consists of a group of fields
+ * A FieldDescriptor that consists of a group of FieldDescriptors. Groups can
+ * vary in size two ways. First, the group may contain a field which itself is
+ * of variable size (i.e. a string or another group). This type of message
+ * structure requires some other data in the message itself to indicate the
+ * field/group length and as such isn't supported.
+ *
+ * An example of this type of group would be:
+ *
+ * +----------------+
+ * |    bool (1)    |
+ * +----------------+
+ * | string (0, 32) |
+ * +----------------+
+ *
+ *  This could hold data like:
+ *    (true, "foo"),
+ *    (false, "bar)
+ *
+ * The second (and simpler) type is where the group size is fixed (i.e.
+ * contains only fixed length fields) and the number of times the group appears
+ * in the message varies. By knowing the length of the message we can work out
+ * the number of times a group occurs (see VariableFieldSizeCalculator.h which
+ * does this).
+ *
+ * An example of this type of group would be:
+ *
+ * +----------------+
+ * |    bool (1)    |
+ * +----------------+
+ * |   uint16 (2)   |
+ * +----------------+
+ *
+ *  This could hold data like:
+ *    (true, 1000),
+ *    (false, 34)
+ *
+ * DescriptorConsistencyChecker.h checks that a descriptor is the second type,
+ * that is contains at most one variable-sized field.
+ *
+ * We refer to the datatypes within a group as fields, the actual
+ * instantiations of a group as blocks. In the examples above, bool, string and
+ * uint16 are the fields (represented by FieldDescriptorInterface objects) and
+ * (true, "foo") & (true, 1000) are the blocks.
  */
 class FieldDescriptorGroup: public FieldDescriptor {
   public:
+    static const int16_t UNLIMITED_BLOCKS = -1;
+
     FieldDescriptorGroup(const string &name,
                          const vector<const FieldDescriptor*> &fields,
-                         uint8_t min_size,
-                         uint8_t max_size)
+                         uint16_t min_blocks,
+                         int16_t max_blocks)
       : FieldDescriptor(name),
         m_fields(fields),
-        m_min_size(min_size),
-        m_max_size(max_size) {
+        m_min_blocks(min_blocks),
+        m_max_blocks(max_blocks),
+        m_populated(false),
+        m_fixed_size(true),
+        m_limited_size(true),
+        m_block_size(0),
+        m_max_block_size(0) {
     }
     virtual ~FieldDescriptorGroup();
 
-    bool FixedSize() const { return m_min_size == m_max_size; }
-    unsigned int Size() const { return m_max_size; }
+    // This is true iff all fields in a group are of a fixed size and the
+    // number of blocks is fixed
+    bool FixedSize() const { return FixedBlockSize() && FixedBlockCount(); }
 
-    unsigned int MinSize() const { return m_min_size; }
-    // A max size of 0 means no restrictions
-    unsigned int MaxSize() const { return m_max_size; }
+    // True if the number of blocks has some bound, and all fields also have
+    // some bound.
+    bool LimitedSize() const;
 
+    // This is the max size of the group, which is only valid if LimitedSize()
+    // is  true, otherwise it returns 0.
+    unsigned int MaxSize() const;
+
+    // Field information
+    // the number of fields in this group
     unsigned int FieldCount() const { return m_fields.size(); }
+    // True if all the fields in this group are a fixed size. This is then a
+    // type 2 group as described above.
+    bool FixedBlockSize() const;
+    // If this block size is fixed, this returns the size of a single block,
+    // otherwise it returns 0;
+    unsigned int BlockSize() const;
+    // If this block size is bounded, this returns the size of the block.
+    unsigned int MaxBlockSize() const;
+
+    // Blocks
+    // The minimum number of blocks, usually 0 or 1.
+    uint16_t MinBlocks() const { return m_min_blocks; }
+    // A max size of UNLIMITED_BLOCKS means no restrictions on the number of
+    // blocks
+    int16_t MaxBlocks() const { return m_max_blocks; }
+    // True if the block count is fixed.
+    bool FixedBlockCount() const { return m_min_blocks == m_max_blocks; }
+
 
     const class FieldDescriptor *GetField(unsigned int index) const {
       if (index < m_fields.size())
@@ -248,7 +328,13 @@ class FieldDescriptorGroup: public FieldDescriptor {
     vector<const class FieldDescriptor *> m_fields;
 
   private:
-    uint8_t m_min_size, m_max_size;
+    uint16_t m_min_blocks;
+    int16_t m_max_blocks;
+    mutable bool m_populated;
+    mutable bool m_fixed_size, m_limited_size;
+    mutable unsigned int m_block_size, m_max_block_size;
+
+    void PopulateIfRequired() const;
 };
 
 
