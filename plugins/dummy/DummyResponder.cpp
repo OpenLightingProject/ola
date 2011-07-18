@@ -108,7 +108,7 @@ void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
 
 
 void DummyResponder::HandleUnknownPacket(const RDMRequest *request,
-                                    ola::rdm::RDMCallback *callback) {
+                                         ola::rdm::RDMCallback *callback) {
   if (callback) {
     if (request->DestinationUID().IsBroadcast()) {
       // no responses for broadcasts
@@ -125,7 +125,7 @@ void DummyResponder::HandleUnknownPacket(const RDMRequest *request,
 
 
 void DummyResponder::HandleSupportedParams(const RDMRequest *request,
-                                      ola::rdm::RDMCallback *callback) {
+                                           ola::rdm::RDMCallback *callback) {
   if (!CheckForBroadcastSubdeviceOrData(request, callback))
     return;
 
@@ -152,7 +152,7 @@ void DummyResponder::HandleSupportedParams(const RDMRequest *request,
 
 
 void DummyResponder::HandleDeviceInfo(const RDMRequest *request,
-                                 ola::rdm::RDMCallback *callback) {
+                                      ola::rdm::RDMCallback *callback) {
   if (!CheckForBroadcastSubdeviceOrData(request, callback))
     return;
 
@@ -195,7 +195,7 @@ void DummyResponder::HandleDeviceInfo(const RDMRequest *request,
  * Handle a request for PID_PRODUCT_DETAIL_ID_LIST
  */
 void DummyResponder::HandleProductDetailList(const RDMRequest *request,
-                                        ola::rdm::RDMCallback *callback) {
+                                             ola::rdm::RDMCallback *callback) {
   if (!CheckForBroadcastSubdeviceOrData(request, callback))
     return;
 
@@ -220,8 +220,8 @@ void DummyResponder::HandleProductDetailList(const RDMRequest *request,
  * Handle a request that returns a string
  */
 void DummyResponder::HandleStringResponse(const ola::rdm::RDMRequest *request,
-                                     ola::rdm::RDMCallback *callback,
-                                     const string &value) {
+                                          ola::rdm::RDMCallback *callback,
+                                          const string &value) {
   if (!CheckForBroadcastSubdeviceOrData(request, callback))
     return;
 
@@ -238,7 +238,7 @@ void DummyResponder::HandleStringResponse(const ola::rdm::RDMRequest *request,
  * Handle getting/setting the personality.
  */
 void DummyResponder::HandlePersonality(const ola::rdm::RDMRequest *request,
-                                  ola::rdm::RDMCallback *callback) {
+                                       ola::rdm::RDMCallback *callback) {
   RDMResponse *response;
   if (request->SubDevice()) {
     response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
@@ -353,7 +353,7 @@ void DummyResponder::HandlePersonalityDescription(
  * Handle getting/setting the dmx start address
  */
 void DummyResponder::HandleDmxStartAddress(const RDMRequest *request,
-                                      ola::rdm::RDMCallback *callback) {
+                                           ola::rdm::RDMCallback *callback) {
   RDMResponse *response;
   if (request->SubDevice()) {
     response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
@@ -408,7 +408,7 @@ void DummyResponder::HandleDmxStartAddress(const RDMRequest *request,
  * Handle turning identify on/off
  */
 void DummyResponder::HandleIdentifyDevice(const RDMRequest *request,
-                                     ola::rdm::RDMCallback *callback) {
+                                          ola::rdm::RDMCallback *callback) {
   RDMResponse *response;
   if (request->SubDevice()) {
     response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
