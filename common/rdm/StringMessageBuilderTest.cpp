@@ -76,10 +76,10 @@ class StringBuilderTest: public CppUnit::TestFixture {
     }
 
   private:
+    ola::messaging::MessagePrinter m_printer;
+
     const Message *BuildMessage(const Descriptor &descriptor,
                                 const vector<string> &inputs);
-
-    const string MessageToString(const Message *message);
 };
 
 
@@ -98,16 +98,6 @@ const Message *StringBuilderTest::BuildMessage(
   if (!message)
     OLA_WARN << "Error with field: " << builder.GetError();
   return message;
-}
-
-
-/**
- * Convert a message to a string
- */
-const string StringBuilderTest::MessageToString(const Message *message) {
-  ola::messaging::MessagePrinter printer;
-  message->Accept(printer);
-  return printer.AsString();
 }
 
 
@@ -159,7 +149,7 @@ void StringBuilderTest::testSimpleBuilder() {
       "bool1: true\nbool2: false\nbool3: true\nbool4: false\nbool5: true\n"
       "bool6: false\nuint8: 255\nuint16: 300\nuint32: 66000\n"
       "int8: -128\nint16: -300\nint32: -66000\nstring: foo\n");
-  CPPUNIT_ASSERT_EQUAL(expected, MessageToString(message.get()));
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
 }
 
 
@@ -189,7 +179,7 @@ void StringBuilderTest::testBuilderWithGroups() {
 
   string expected = (
       "group {\n  bool: true\n  uint8: 10\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, MessageToString(message.get()));
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
 
   // now do multiple groups
   vector<string> inputs2;
@@ -210,7 +200,7 @@ void StringBuilderTest::testBuilderWithGroups() {
       "group {\n  bool: true\n  uint8: 10\n}\n"
       "group {\n  bool: true\n  uint8: 42\n}\n"
       "group {\n  bool: false\n  uint8: 240\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected2, MessageToString(message2.get()));
+  CPPUNIT_ASSERT_EQUAL(expected2, m_printer.AsString(message2.get()));
 
   // now provide too many inputs
   inputs2.clear();
@@ -257,7 +247,7 @@ void StringBuilderTest::testBuilderWithNestedGroups() {
   string expected = (
       " {\n  int16: 1\n  bar {\n    bool: true\n  }\n"
       "  bar {\n    bool: true\n  }\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, MessageToString(message.get()));
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
 }
 
 

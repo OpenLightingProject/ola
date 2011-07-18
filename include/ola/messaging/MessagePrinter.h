@@ -40,8 +40,7 @@ class MessagePrinter: public MessageVisitor {
     }
     ~MessagePrinter() {}
 
-    std::string AsString() { return m_str.str(); }
-    void Reset() { m_str.str(""); }
+    std::string AsString(const class Message *message);
 
     void Visit(const BoolMessageField*);
     void Visit(const StringMessageField*);

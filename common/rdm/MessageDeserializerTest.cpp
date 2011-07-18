@@ -75,6 +75,7 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
 
   private:
     MessageDeserializer m_deserializer;
+    MessagePrinter m_printer;
 };
 
 
@@ -153,13 +154,10 @@ void MessageDeserializerTest::testSimpleBigEndian() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(7),
                        message->FieldCount());
 
-  MessagePrinter printer;
-  message->Accept(printer);
-
   const string expected = (
       "bool: false\nuint8: 10\nint8: -10\nuint16: 300\nint16: -502\n"
       "uint32: 16909060\nint32: -33159416\n");
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
 }
 
 
@@ -210,13 +208,10 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(7),
                        message->FieldCount());
 
-  MessagePrinter printer;
-  message->Accept(printer);
-
   const string expected = (
       "bool: true\nuint8: 10\nint8: -10\nuint16: 300\nint16: -502\n"
       "uint32: 16909060\nint32: -33159416\n");
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
 }
 
 
@@ -257,12 +252,9 @@ void MessageDeserializerTest::testString() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
                        message->FieldCount());
 
-  MessagePrinter printer;
-  message->Accept(printer);
-
   const string expected = (
       "string: 0123456789\nstring: this is a longer string\n");
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
 
   // now try with different sizes
   auto_ptr<const Message> message2(m_deserializer.InflateMessage(
@@ -273,12 +265,9 @@ void MessageDeserializerTest::testString() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
                        message2->FieldCount());
 
-  printer.Reset();
-  message2->Accept(printer);
-
   const string expected2 = (
       "string: 0123456789\nstring: this is a\n");
-  CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected2, m_printer.AsString(message2.get()));
 }
 
 
@@ -299,7 +288,7 @@ void MessageDeserializerTest::testWithGroups() {
   MessagePrinter printer;
   const uint8_t data[] = {0, 10, 1, 3, 0, 20, 1, 40};
 
-  // an empty mesage
+  // an empty message
   auto_ptr<const Message> message(m_deserializer.InflateMessage(
       &descriptor,
       data,
@@ -323,10 +312,8 @@ void MessageDeserializerTest::testWithGroups() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
                        message2->FieldCount());
 
-  message2->Accept(printer);
-
   const string expected = "group {\n  bool: false\n  uint8: 10\n}\n";
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message2.get()));
 
   // another message with not enough data
   CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
@@ -343,13 +330,10 @@ void MessageDeserializerTest::testWithGroups() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
                        message3->FieldCount());
 
-  printer.Reset();
-  message3->Accept(printer);
-
   const string expected2 = (
       "group {\n  bool: false\n  uint8: 10\n}\n"
       "group {\n  bool: true\n  uint8: 3\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected2, m_printer.AsString(message3.get()));
 
   // trhee instances of the group
   auto_ptr<const Message> message4(m_deserializer.InflateMessage(
@@ -360,14 +344,11 @@ void MessageDeserializerTest::testWithGroups() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3),
                        message4->FieldCount());
 
-  printer.Reset();
-  message4->Accept(printer);
-
   const string expected3 = (
       "group {\n  bool: false\n  uint8: 10\n}\n"
       "group {\n  bool: true\n  uint8: 3\n}\n"
       "group {\n  bool: false\n  uint8: 20\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected3, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected3, m_printer.AsString(message4.get()));
 
   // message with too much data
   CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
@@ -389,7 +370,6 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the inputs
-  MessagePrinter printer;
   const uint8_t data[] = {0, 0, 0, 1, 0, 1, 2, 1, 0, 3, 1, 1};
 
   // an empty mesage
@@ -420,12 +400,10 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
                        message2->FieldCount());
 
-  message2->Accept(printer);
-
   const string expected = (
       " {\n  uint8: 0\n  bar {\n    bool: false\n  }\n  bar {\n"
       "    bool: false\n  }\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message2.get()));
 
   // four instances
   auto_ptr<const Message> message3(m_deserializer.InflateMessage(
@@ -435,8 +413,6 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
   CPPUNIT_ASSERT(message3.get());
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4),
                        message3->FieldCount());
-  printer.Reset();
-  message3->Accept(printer);
 
   const string expected2 = (
       " {\n  uint8: 0\n  bar {\n    bool: false\n  }\n  bar {\n"
@@ -447,7 +423,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       "    bool: false\n  }\n}\n"
       " {\n  uint8: 3\n  bar {\n    bool: true\n  }\n  bar {\n"
       "    bool: true\n  }\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected2, m_printer.AsString(message3.get()));
 
   // too much data
   CPPUNIT_ASSERT(!m_deserializer.InflateMessage(

@@ -32,6 +32,16 @@ using std::string;
 using std::endl;
 
 
+/**
+ * Build the string representation of a message object
+ */
+string MessagePrinter::AsString(const Message *message) {
+  m_str.str("");
+  message->Accept(*this);
+  return m_str.str();
+}
+
+
 void MessagePrinter::Visit(const BoolMessageField *message) {
   m_str << string(m_indent, ' ') << message->GetDescriptor()->Name() << ": " <<
     (message->Value() ? "true" : "false") << endl;

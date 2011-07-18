@@ -62,6 +62,9 @@ class MessagePrinterTest: public CppUnit::TestFixture {
     void testSimplePrinter();
     void testLabeledPrinter();
     void testNestedPrinter();
+
+  private:
+    MessagePrinter m_printer;
 };
 
 
@@ -90,13 +93,10 @@ void MessagePrinterTest::testSimplePrinter() {
   fields.push_back(new Int16MessageField(&int16_descriptor, 10));
 
   Message message(fields);
-  MessagePrinter printer;
-  message.Accept(printer);
-
   string expected = (
       "On/Off: false\nName: foobar\nId: 42\nCount: 4 x 10 ^ -3\n"
       "Delta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n");
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(&message));
 }
 
 
@@ -120,11 +120,8 @@ void MessagePrinterTest::testLabeledPrinter() {
   fields.push_back(new UInt8MessageField(&uint8_descriptor, 2));
 
   Message message(fields);
-  MessagePrinter printer;
-  message.Accept(printer);
-
   string expected = "State: off\nState: on\nState: auto\n";
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(&message));
 }
 
 
@@ -158,11 +155,9 @@ void MessagePrinterTest::testNestedPrinter() {
   messages.push_back(new GroupMessageField(&group_descriptor, person2));
 
   Message message(messages);
-  MessagePrinter printer;
-  message.Accept(printer);
 
   string expected = (
       "Person {\n  Name: Lisa\n  Female: true\n  Age: 21\n}\n"
       "Person {\n  Name: Simon\n  Female: false\n  Age: 26\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(&message));
 }
