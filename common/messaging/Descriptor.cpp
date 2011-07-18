@@ -26,6 +26,7 @@ namespace messaging {
 
 using std::vector;
 
+const int16_t FieldDescriptorGroup::UNLIMITED_BLOCKS = -1;
 
 FieldDescriptorGroup::~FieldDescriptorGroup() {
   vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();

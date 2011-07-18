@@ -264,7 +264,7 @@ typedef IntegerFieldDescriptor<int32_t> Int32FieldDescriptor;
  */
 class FieldDescriptorGroup: public FieldDescriptor {
   public:
-    static const int16_t UNLIMITED_BLOCKS = -1;
+    static const int16_t UNLIMITED_BLOCKS;
 
     FieldDescriptorGroup(const string &name,
                          const vector<const FieldDescriptor*> &fields,

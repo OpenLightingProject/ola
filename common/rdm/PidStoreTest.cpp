@@ -36,6 +36,7 @@
 
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
+using ola::messaging::FieldDescriptorGroup;
 using ola::rdm::PidDescriptor;
 using ola::rdm::PidStore;
 using ola::rdm::PidStoreLoader;
@@ -261,6 +262,29 @@ void PidStoreTest::testPidStoreLoad() {
                        get_response->FieldCount());
   const FieldDescriptor *proxied_group = get_response->GetField(0);
   CPPUNIT_ASSERT(proxied_group);
+
+  // this is ugly but it's a test
+  const FieldDescriptorGroup *group_descriptor =
+    dynamic_cast<const FieldDescriptorGroup*>(proxied_group);  // NOLINT
+  CPPUNIT_ASSERT(group_descriptor);
+
+  // check all the group properties
+  CPPUNIT_ASSERT(!group_descriptor->FixedSize());
+  CPPUNIT_ASSERT(!group_descriptor->LimitedSize());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
+                       group_descriptor->MaxSize());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
+                       group_descriptor->FieldCount());
+  CPPUNIT_ASSERT(group_descriptor->FixedBlockSize());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(6),
+                       group_descriptor->BlockSize());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(6),
+                       group_descriptor->MaxBlockSize());
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0),
+                       group_descriptor->MinBlocks());
+  CPPUNIT_ASSERT_EQUAL(FieldDescriptorGroup::UNLIMITED_BLOCKS,
+                       group_descriptor->MaxBlocks());
+  CPPUNIT_ASSERT(!group_descriptor->FixedBlockCount());
 
   // Check this prints correctly
   ola::messaging::SchemaPrinter printer;

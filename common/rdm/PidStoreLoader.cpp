@@ -427,11 +427,14 @@ const FieldDescriptor *PidStoreLoader::GroupFieldToFieldDescriptor(
   vector<const class FieldDescriptor*> fields;
   bool ok = true;
 
-  uint8_t min = 0;
-  uint8_t max = 0;
+  uint16_t min = 0;
+  int16_t max = ola::messaging::FieldDescriptorGroup::UNLIMITED_BLOCKS;
 
   if (field.has_min_size())
     min = field.min_size();
+
+  if (field.has_max_size())
+    max = field.max_size();
 
   for (int i = 0; i < field.field_size(); ++i) {
     const FieldDescriptor *descriptor = FieldToFieldDescriptor(field.field(i));
