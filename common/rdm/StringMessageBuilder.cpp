@@ -86,8 +86,10 @@ const ola::messaging::Message *StringMessageBuilder::GetMessage(
   // of instances of a repeating group if there is one.
   descriptor->Accept(*this);
 
-  if (m_error)
+  if (m_error) {
+    OLA_WARN << "Error building mesage, field is: " << m_error_string;
     return NULL;
+  }
 
   if (m_groups.size() != 1) {
     OLA_WARN << "Mismatched stack, size was " << m_groups.size();
