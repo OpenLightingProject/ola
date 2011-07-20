@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -126,7 +127,7 @@ bool StringToInt(const string &value, unsigned int *output) {
     return false;
   if (value == end_ptr)
     return false;
-  if (l > UINT32_MAX)
+  if (l > static_cast<long>(UINT32_MAX))
     return false;
   *output = static_cast<unsigned int>(l);
   return true;
