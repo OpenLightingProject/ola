@@ -37,6 +37,7 @@ RDMMessageTester_SOURCES = GroupSizeCalculatorTest.cpp \
                            MessageSerializerTest.cpp \
                            MessageDeserializerTest.cpp \
                            RDMMessageTester.cpp \
+                           RDMMessageInterationTest.cpp \
                            StringMessageBuilderTest.cpp \
                            VariableFieldSizeCalculatorTest.cpp
 RDMMessageTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)

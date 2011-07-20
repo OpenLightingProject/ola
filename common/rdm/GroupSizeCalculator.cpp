@@ -18,6 +18,7 @@
  */
 
 
+#include <ola/Logging.h>
 #include <ola/messaging/Descriptor.h>
 #include <vector>
 #include "common/rdm/GroupSizeCalculator.h"
@@ -30,7 +31,7 @@ using ola::messaging::FieldDescriptorGroup;
 
 
 /**
- * Figure out the number of group repeatitions required.
+ * Figure out the number of group repetitions required.
  *
  * This method is *not* re-entrant.
  * @param descriptor The descriptor to use to build the Message
