@@ -111,7 +111,7 @@ PidStore::~PidStore() {
  * @param a pointer to a vector in which to put the PidDescriptors.
  */
 void PidStore::AllPids(vector<const PidDescriptor*> *pids) const {
-  pids->reserve(m_pid_by_value.size());
+  pids->reserve(pids->size() + m_pid_by_value.size());
 
   PidMap::const_iterator iter = m_pid_by_value.begin();
   for (; iter != m_pid_by_value.end(); ++iter) {
