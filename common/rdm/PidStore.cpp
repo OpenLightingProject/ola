@@ -20,6 +20,7 @@
 
 #include <string>
 #include <vector>
+#include "common/rdm/PidStoreLoader.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
 
@@ -65,6 +66,16 @@ void RootPidStore::CleanStore() {
     delete iter->second;
   }
   m_manufacturer_store.clear();
+}
+
+
+/**
+ * Load a pid store from a file
+ */
+const RootPidStore *LoadFromFile(const std::string &file,
+                                 bool validate) {
+  PidStoreLoader loader;
+  return loader.LoadFromFile(file, validate);
 }
 
 

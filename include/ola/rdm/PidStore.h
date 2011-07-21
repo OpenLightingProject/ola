@@ -66,6 +66,10 @@ class RootPidStore {
     // Holds Manufacturer PID data
     const PidStore *ManufacturerStore(uint16_t esta_id) const;
 
+    // Load a RootPidStore from a file
+    static const RootPidStore *LoadFromFile(const std::string &file,
+                                            bool validate = true);
+
   private:
     const PidStore *m_esta_store;
     ManufacturerMap m_manufacturer_store;

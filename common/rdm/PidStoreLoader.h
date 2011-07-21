@@ -44,7 +44,7 @@ class PidStoreLoader {
 
     // Load information into this store
     const RootPidStore *LoadFromFile(const std::string &file,
-                                 bool validate = true);
+                                     bool validate = true);
 
     // Load information into this store
     const RootPidStore *LoadFromStream(std::istream *data,
