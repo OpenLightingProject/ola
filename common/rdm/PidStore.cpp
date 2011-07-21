@@ -72,8 +72,8 @@ void RootPidStore::CleanStore() {
 /**
  * Load a pid store from a file
  */
-const RootPidStore *LoadFromFile(const std::string &file,
-                                 bool validate) {
+const RootPidStore *RootPidStore::LoadFromFile(const std::string &file,
+                                               bool validate) {
   PidStoreLoader loader;
   return loader.LoadFromFile(file, validate);
 }
