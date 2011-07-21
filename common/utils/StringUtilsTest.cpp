@@ -36,6 +36,7 @@ using ola::StringSplit;
 using ola::StringToInt;
 using ola::StringTrim;
 using ola::ToLower;
+using ola::ToUpper;
 
 class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringUtilsTest);
@@ -52,6 +53,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringToInt8);
   CPPUNIT_TEST(testHexStringToUInt);
   CPPUNIT_TEST(testToLower);
+  CPPUNIT_TEST(testToUpper);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -68,6 +70,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testStringToInt8();
     void testHexStringToUInt();
     void testToLower();
+    void testToUpper();
 };
 
 
@@ -424,4 +427,11 @@ void StringUtilsTest::testToLower() {
   string s = "HelLo There";
   ToLower(&s);
   CPPUNIT_ASSERT_EQUAL(string("hello there"), s);
+}
+
+
+void StringUtilsTest::testToUpper() {
+  string s = "HelLo There";
+  ToUpper(&s);
+  CPPUNIT_ASSERT_EQUAL(string("HELLO THERE"), s);
 }

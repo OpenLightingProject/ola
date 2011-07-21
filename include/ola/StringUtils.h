@@ -47,6 +47,7 @@ bool StringToInt(const string &value, int8_t *output);
 bool HexStringToUInt(const string &value, unsigned int *output);
 bool HexStringToUInt16(const string &value, uint16_t *output);
 void ToLower(string *s);
+void ToUpper(string *s);
 }  // ola
 
 #endif  // INCLUDE_OLA_STRINGUTILS_H_

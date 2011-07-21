@@ -312,4 +312,13 @@ void ToLower(string *s) {
   std::transform(s->begin(), s->end(), s->begin(),
       std::ptr_fun<int, int>(std::tolower));
 }
+
+
+/*
+ * Return an upper case version of this string
+ */
+void ToUpper(string *s) {
+  std::transform(s->begin(), s->end(), s->begin(),
+      std::ptr_fun<int, int>(std::toupper));
+}
 }  // ola
