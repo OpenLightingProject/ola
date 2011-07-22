@@ -467,7 +467,7 @@ bool SlpThread::PerformRegistration(const string &url,
                                     ola::network::timeout_id *timeout) {
   std::stringstream str;
   str << E133_SLP_SERVICE_NAME << "://" << url;
-  SLPError callbackerr;
+  SLPError callbackerr = SLP_OK;
   SLPError err = SLPReg(m_slp_handle,
                         str.str().c_str(),
                         lifetime,
@@ -513,7 +513,7 @@ void SlpThread::DeregisterRequest(slp_registration_callback *callback,
 
   std::stringstream str;
   str << E133_SLP_SERVICE_NAME << "://" << url;
-  SLPError callbackerr;
+  SLPError callbackerr = SLP_OK;
   SLPError err = SLPDereg(m_slp_handle,
                           str.str().c_str(),
                           RegisterCallback,
