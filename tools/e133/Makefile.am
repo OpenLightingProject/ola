@@ -20,6 +20,7 @@ e133_controller_SOURCES = e133-controller.cpp E133Node.cpp \
                           SlpUrlParser.cpp
 e133_controller_LDFLAGS = $(UUID_LIBS) $(OSSP_UUID_LIBS) $(PROTOBUF_LIBS) \
                           $(SLP_LIBS)
+e133_controller_CXXFLAGS = @OLAD_DEFINES@
 e133_controller_LDADD = @LIBS@ \
                         $(top_builddir)/common/libolacommon.la \
                         $(top_builddir)/plugins/e131/e131/libolae131core.la
