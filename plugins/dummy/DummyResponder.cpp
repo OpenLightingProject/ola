@@ -65,6 +65,7 @@ void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
       "expected " << m_uid << ", got " << request->DestinationUID();
     delete request;
     callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    return;
   }
 
   switch (request->ParamId()) {
