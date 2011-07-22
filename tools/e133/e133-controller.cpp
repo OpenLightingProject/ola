@@ -39,6 +39,7 @@
 #include <ola/messaging/Descriptor.h>
 #include <ola/messaging/Message.h>
 #include <ola/messaging/MessagePrinter.h>
+#include <ola/messaging/SchemaPrinter.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
@@ -222,6 +223,8 @@ class RDMPidHelper {
 
     const string MessageToString(const ola::messaging::Message *message);
 
+    const string PrintSchema(const ola::messaging::Descriptor *descriptor);
+
     void SupportedPids(uint16_t manufacturer_id,
                        vector<string> *pid_names) const;
 
@@ -232,6 +235,7 @@ class RDMPidHelper {
     ola::rdm::MessageSerializer m_serializer;
     ola::rdm::MessageDeserializer m_deserializer;
     ola::messaging::MessagePrinter m_message_printer;
+    ola::messaging::SchemaPrinter m_schema_printer;
 };
 
 
@@ -369,6 +373,17 @@ const ola::messaging::Message *RDMPidHelper::DeserializeMessage(
 const string RDMPidHelper::MessageToString(
     const ola::messaging::Message *message) {
   return m_message_printer.AsString(message);
+}
+
+
+/**
+ * Print the schema for a descriptor
+ */
+const string RDMPidHelper::PrintSchema(
+    const ola::messaging::Descriptor *descriptor) {
+  m_schema_printer.Reset();
+  descriptor->Accept(m_schema_printer);
+  return m_schema_printer.AsString();
 }
 
 
@@ -723,9 +738,8 @@ int main(int argc, char *argv[]) {
   }
 
   // attempt to build the message
-  vector<string> inputs;
+  vector<string> inputs(opts.args.size() - 1);
   vector<string>::iterator args_iter = opts.args.begin();
-  inputs.reserve(opts.args.size() - 1);
   copy(++args_iter, opts.args.end(), inputs.begin());
   auto_ptr<const ola::messaging::Message> message(pid_helper.BuildMessage(
       descriptor,
@@ -733,6 +747,7 @@ int main(int argc, char *argv[]) {
 
   if (!message.get()) {
     // print the schema here
+    cout << pid_helper.PrintSchema(descriptor);
     exit(EX_USAGE);
   }
 
