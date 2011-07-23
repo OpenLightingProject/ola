@@ -205,6 +205,6 @@ class RDMAPI(object):
           obj = None
           unpack_exception = e
       else:
-        obj = data
+        obj = response.data
 
     callback(response, obj, unpack_exception)
