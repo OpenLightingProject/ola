@@ -126,6 +126,7 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
   def Test(self):
     self.AddExpectedResults([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.NackGetResult(RDMNack.NR_PACKET_SIZE_UNSUPPORTED),
       self.AckGetResult(),  # some crazy devices continue to ack
       InvalidResponse(),
     ])
