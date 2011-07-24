@@ -1242,7 +1242,8 @@ class GetStartAddress(ResponderTestFixture):
     else:
       results = [
           self.AckGetResult(field_values={'dmx_address': 0xffff}),
-          self.NackGetResult(RDMNack.NR_UNKNOWN_PID)
+          self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
       ]
     self.AddExpectedResults(results)
     self.SendGet(ROOT_DEVICE, self.pid)
@@ -1339,7 +1340,9 @@ class SetZeroStartAddress(ResponderTestFixture):
     if self.Property('dmx_footprint') > 0:
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     else:
-      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults([self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+                               self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+                              ])
     data = struct.pack('!H', 0)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
