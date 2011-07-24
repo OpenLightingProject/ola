@@ -362,7 +362,7 @@ class SetStartAddressMixin(object):
 
   def ResetState(self):
     old_address = self.Property('dmx_address')
-    if not old_address:
+    if not old_address or old_address == 0xffff:
       return
     self._test_state = self.RESET
     self.AddExpectedResults(self.AckSetResult())
