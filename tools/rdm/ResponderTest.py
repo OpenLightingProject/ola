@@ -224,7 +224,8 @@ class ResponderTestFixture(TestFixture):
     self._outstanding_request = None
 
   def SleepAfterBroadcastSet(self):
-    logging.debug('Sleeping after broadcast...')
+    if self._broadcast_write_delay_s:
+      logging.debug('Sleeping after broadcast...')
     time.sleep(self._broadcast_write_delay_s)
 
   def Run(self):
