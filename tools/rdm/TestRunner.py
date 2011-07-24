@@ -164,7 +164,7 @@ class QueuedMessageFetcher(object):
 
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, pid_store, wrapper):
+  def __init__(self, universe, uid, broadcast_write_delay, pid_store, wrapper):
     """Create a new TestRunner.
 
     Args:
@@ -175,6 +175,7 @@ class TestRunner(object):
     """
     self._universe = universe
     self._uid = uid
+    self._broadcast_write_delay = broadcast_write_delay
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
@@ -284,7 +285,8 @@ class TestRunner(object):
                           self._uid,
                           self._pid_store,
                           self._api,
-                          self._wrapper)
+                          self._wrapper,
+                          self._broadcast_write_delay)
 
     new_parents = parents + [test_class]
     dep_classes = []

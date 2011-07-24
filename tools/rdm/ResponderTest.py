@@ -30,6 +30,7 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import logging
+import time
 from ExpectedResults import *
 from TestCategory import TestCategory
 from TestState import TestState
@@ -203,7 +204,8 @@ class ResponderTestFixture(TestFixture):
                uid,
                pid_store,
                rdm_api,
-               wrapper):
+               wrapper,
+               broadcast_write_delay):
     super(ResponderTestFixture, self).__init__(device, uid, pid_store)
     self._api = rdm_api
     self._expected_results = []
@@ -211,11 +213,16 @@ class ResponderTestFixture(TestFixture):
     self._should_run_wrapper = True
     self._universe = universe
     self._wrapper = wrapper
+    self._broadcast_write_delay_s = broadcast_write_delay / 1000.0
 
     # This is set to the tuple of (sub_device, command_class, pid) when we sent
     # a message. It's used to identify the response if we get an ACK_TIMER and
     # use QUEUED_MESSAGEs
     self._outstanding_request = None
+
+  def SleepAfterBroadcastSet(self):
+    logging.debug('Sleeping after broadcast...')
+    time.sleep(self._broadcast_write_delay_s)
 
   def Run(self):
     """Call the test method and then start running the loop wrapper."""
@@ -288,12 +295,15 @@ class ResponderTestFixture(TestFixture):
     logging.debug(' GET: uid: %s, pid: %s, sub device: %d, args: %s' %
         (uid, pid, sub_device, args))
     self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
-    return self._api.Get(self._universe,
-                         uid,
-                         sub_device,
-                         pid,
-                         self._HandleResponse,
-                         args)
+    ret_code = self._api.Get(self._universe,
+                             uid,
+                             sub_device,
+                             pid,
+                             self._HandleResponse,
+                             args)
+    if uid.IsBroadcast():
+      self.SleepAfterBroadcastSet()
+    return ret_code
 
   def SendRawGet(self, sub_device, pid, data = ""):
     """Send a raw GET request.
@@ -335,12 +345,15 @@ class ResponderTestFixture(TestFixture):
     logging.debug(' SET: uid: %s, pid: %s, sub device: %d, args: %s' %
         (uid, pid, sub_device, args))
     self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
-    return self._api.Set(self._universe,
-                         uid,
-                         sub_device,
-                         pid,
-                         self._HandleResponse,
-                         args)
+    ret_code =  self._api.Set(self._universe,
+                              uid,
+                              sub_device,
+                              pid,
+                              self._HandleResponse,
+                              args)
+    if uid.IsBroadcast():
+      self.SleepAfterBroadcastSet()
+    return ret_code
 
   def SendRawSet(self, sub_device, pid, data = ""):
     """Send a raw SET request.

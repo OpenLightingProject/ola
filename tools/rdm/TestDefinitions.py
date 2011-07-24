@@ -745,7 +745,7 @@ class SetVendorcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
 
 
 class SetBroadcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
-                               OptionalParameterTestFixture):
+                              OptionalParameterTestFixture):
   """SET the device label using the broadcast address."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
