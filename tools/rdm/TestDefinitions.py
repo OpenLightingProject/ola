@@ -1320,7 +1320,9 @@ class SetOutOfRangeStartAddress(ResponderTestFixture):
     if self.Property('dmx_footprint') > 0:
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     else:
-      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults([self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+                               self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+                              ])
     data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
