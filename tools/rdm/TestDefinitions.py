@@ -511,6 +511,13 @@ class GetParamDescriptionWithData(ResponderTestFixture):
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
+class SetParamDescription(TestMixins.UnsupportedSetMixin,
+                          ResponderTestFixture):
+  """SET the parameter description."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PARAMETER_DESCRIPTION'
+
+
 # Proxied Device Count
 #------------------------------------------------------------------------------
 class GetProxiedDeviceCount(OptionalParameterTestFixture):
