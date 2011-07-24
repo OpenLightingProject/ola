@@ -2215,9 +2215,9 @@ class GetDevicePowerCyclesWithData(TestMixins.GetWithDataMixin,
   PID = 'DEVICE_POWER_CYCLES'
 
 
-class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
+class ResetDevicePowerCycles(TestMixins.SetUInt32Mixin,
                            OptionalParameterTestFixture):
-  """Attempt to SET the device power_cycles."""
+  """Attempt to SET the device power_cycles to zero."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'DEVICE_POWER_CYCLES'
   EXPECTED_FIELD = 'power_cycles'
@@ -2227,9 +2227,34 @@ class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
   def OldValue(self):
     return self.Property('power_cycles')
 
+  def NewValue(self):
+    return 0
+
   def VerifyResult(self, response, fields):
     self.SetProperty('set_device_power_cycles_supported',
                      response.WasAcked())
+
+
+class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
+                           OptionalParameterTestFixture):
+  """Attempt to SET the device power_cycles."""
+  CATEGORY = TestCategory.POWER_LAMP_SETTINGS
+  PID = 'DEVICE_POWER_CYCLES'
+  EXPECTED_FIELD = 'power_cycles'
+  REQUIRES = ['power_cycles']
+
+  def OldValue(self):
+    return self.Property('power_cycles')
+
+  def Test(self):
+    self.AddIfSetSupported([
+      self.AckSetResult(action=self.VerifySet),
+      self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+      self.NackSetResult(
+        RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+        advisory='SET for %s returned unsupported command class' % self.PID),
+    ])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
 
 class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,
