@@ -81,6 +81,9 @@ class TestFixture(object):
   def LookupPid(self, pid_name):
     return self._pid_store.GetName(pid_name, self._uid)
 
+  def LookupPidValue(self, pid_value):
+    return self._pid_store.GetPid(pid_value)
+
   def Requires(self):
     """Returns a list of the properties this test requires to run."""
     return self.REQUIRES

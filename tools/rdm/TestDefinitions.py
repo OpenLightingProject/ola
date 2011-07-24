@@ -260,9 +260,11 @@ class GetSupportedParameters(ResponderTestFixture):
 
     supported_parameters = []
     manufacturer_parameters = []
+    count_by_pid = {}
 
     for item in fields['params']:
       param_id = item['param_id']
+      count_by_pid[param_id] = count_by_pid.get(param_id, 0) + 1
       if param_id in self.BANNED_PID_VALUES:
         self.AddWarning('%d listed in supported parameters' % param_id)
         continue
@@ -276,10 +278,21 @@ class GetSupportedParameters(ResponderTestFixture):
       if param_id >= 0x8000 and param_id < 0xffe0:
         manufacturer_parameters.append(param_id)
 
+    pid_store = PidStore.GetStore()
+
+    # check for duplicate pids
+    for pid, count in count_by_pid.iteritems():
+      if count > 1:
+        pid_obj = self.LookupPidValue(pid)
+        if pid_obj:
+          self.AddAdvisory('%s listed %d times in supported parameters' %
+                           (pid_obj, count))
+        else:
+          self.AddAdvisory('PID 0x%hx listed %d times in supported parameters' %
+                           (pid, count))
+
     self.SetProperty('manufacturer_parameters', manufacturer_parameters)
     self.SetProperty('supported_parameters', supported_parameters)
-
-    pid_store = PidStore.GetStore()
 
     for pid_names in self.PID_GROUPS:
       supported_pids = []
