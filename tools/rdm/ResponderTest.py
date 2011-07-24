@@ -301,8 +301,6 @@ class ResponderTestFixture(TestFixture):
                              pid,
                              self._HandleResponse,
                              args)
-    if uid.IsBroadcast():
-      self.SleepAfterBroadcastSet()
     return ret_code
 
   def SendRawGet(self, sub_device, pid, data = ""):
