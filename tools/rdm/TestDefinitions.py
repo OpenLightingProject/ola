@@ -1359,7 +1359,10 @@ class SetOversizedStartAddress(ResponderTestFixture):
     if self.Property('dmx_footprint') > 0:
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
     else:
-      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults([
+        self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+        self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+        ])
     self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
 
 
