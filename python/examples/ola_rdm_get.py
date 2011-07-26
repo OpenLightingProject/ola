@@ -91,8 +91,11 @@ class ResponsePrinter(object):
       print uid
 
   def Default(self, uid, response_data):
-    for key, value in response_data.iteritems():
-      print '%s: %r' % (key, value)
+    if isinstance(response_data, dict):
+      for key, value in response_data.iteritems():
+        print '%s: %r' % (key, value)
+    else:
+      print response_data
 
 
 class InteractiveModeController(cmd.Cmd):

@@ -126,6 +126,7 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
   def Test(self):
     self.AddExpectedResults([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
+      self.NackGetResult(RDMNack.NR_PACKET_SIZE_UNSUPPORTED),
       self.AckGetResult(),  # some crazy devices continue to ack
       InvalidResponse(),
     ])
@@ -259,9 +260,11 @@ class GetSupportedParameters(ResponderTestFixture):
 
     supported_parameters = []
     manufacturer_parameters = []
+    count_by_pid = {}
 
     for item in fields['params']:
       param_id = item['param_id']
+      count_by_pid[param_id] = count_by_pid.get(param_id, 0) + 1
       if param_id in self.BANNED_PID_VALUES:
         self.AddWarning('%d listed in supported parameters' % param_id)
         continue
@@ -275,10 +278,21 @@ class GetSupportedParameters(ResponderTestFixture):
       if param_id >= 0x8000 and param_id < 0xffe0:
         manufacturer_parameters.append(param_id)
 
+    pid_store = PidStore.GetStore()
+
+    # check for duplicate pids
+    for pid, count in count_by_pid.iteritems():
+      if count > 1:
+        pid_obj = self.LookupPidValue(pid)
+        if pid_obj:
+          self.AddAdvisory('%s listed %d times in supported parameters' %
+                           (pid_obj, count))
+        else:
+          self.AddAdvisory('PID 0x%hx listed %d times in supported parameters' %
+                           (pid, count))
+
     self.SetProperty('manufacturer_parameters', manufacturer_parameters)
     self.SetProperty('supported_parameters', supported_parameters)
-
-    pid_store = PidStore.GetStore()
 
     for pid_names in self.PID_GROUPS:
       supported_pids = []
@@ -495,6 +509,13 @@ class GetParamDescriptionWithData(ResponderTestFixture):
       results = self.NackGetResult(RDMNack.NR_FORMAT_ERROR)
     self.AddExpectedResults(results)
     self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
+
+
+class SetParamDescription(TestMixins.UnsupportedSetMixin,
+                          ResponderTestFixture):
+  """SET the parameter description."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PARAMETER_DESCRIPTION'
 
 
 # Proxied Device Count
@@ -744,7 +765,7 @@ class SetVendorcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
 
 
 class SetBroadcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
-                               OptionalParameterTestFixture):
+                              OptionalParameterTestFixture):
   """SET the device label using the broadcast address."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_LABEL'
@@ -1221,7 +1242,8 @@ class GetStartAddress(ResponderTestFixture):
     else:
       results = [
           self.AckGetResult(field_values={'dmx_address': 0xffff}),
-          self.NackGetResult(RDMNack.NR_UNKNOWN_PID)
+          self.NackGetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
       ]
     self.AddExpectedResults(results)
     self.SendGet(ROOT_DEVICE, self.pid)
@@ -1299,7 +1321,9 @@ class SetOutOfRangeStartAddress(ResponderTestFixture):
     if self.Property('dmx_footprint') > 0:
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     else:
-      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults([self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+                               self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+                              ])
     data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
@@ -1316,7 +1340,9 @@ class SetZeroStartAddress(ResponderTestFixture):
     if self.Property('dmx_footprint') > 0:
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     else:
-      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults([self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+                               self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+                              ])
     data = struct.pack('!H', 0)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
@@ -1333,7 +1359,10 @@ class SetOversizedStartAddress(ResponderTestFixture):
     if self.Property('dmx_footprint') > 0:
       self.AddExpectedResults(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
     else:
-      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+      self.AddExpectedResults([
+        self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+        self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+        ])
     self.SendRawSet(ROOT_DEVICE, self.pid, 'foo')
 
 
@@ -2192,9 +2221,9 @@ class GetDevicePowerCyclesWithData(TestMixins.GetWithDataMixin,
   PID = 'DEVICE_POWER_CYCLES'
 
 
-class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
+class ResetDevicePowerCycles(TestMixins.SetUInt32Mixin,
                            OptionalParameterTestFixture):
-  """Attempt to SET the device power_cycles."""
+  """Attempt to SET the device power_cycles to zero."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'DEVICE_POWER_CYCLES'
   EXPECTED_FIELD = 'power_cycles'
@@ -2204,9 +2233,34 @@ class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
   def OldValue(self):
     return self.Property('power_cycles')
 
+  def NewValue(self):
+    return 0
+
   def VerifyResult(self, response, fields):
     self.SetProperty('set_device_power_cycles_supported',
                      response.WasAcked())
+
+
+class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
+                           OptionalParameterTestFixture):
+  """Attempt to SET the device power_cycles."""
+  CATEGORY = TestCategory.POWER_LAMP_SETTINGS
+  PID = 'DEVICE_POWER_CYCLES'
+  EXPECTED_FIELD = 'power_cycles'
+  REQUIRES = ['power_cycles']
+
+  def OldValue(self):
+    return self.Property('power_cycles')
+
+  def Test(self):
+    self.AddIfSetSupported([
+      self.AckSetResult(action=self.VerifySet),
+      self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+      self.NackSetResult(
+        RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+        advisory='SET for %s returned unsupported command class' % self.PID),
+    ])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
 
 class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,

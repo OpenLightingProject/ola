@@ -59,6 +59,10 @@ def ParseOptions():
                     help='Skip the check for multiple devices.')
   parser.add_option('-t', '--tests', metavar='TEST1,TEST2',
                     help='A comma separated list of tests to run.')
+  parser.add_option('-w', '--broadcast_write_delay', default=0,
+                    type='int',
+                    help='The time in ms to wait after sending broadcast set'
+                         'commands.')
   parser.add_option('-u', '--universe', default=0,
                     type='int',
                     help='The universe number to use, default is universe 0.')
@@ -207,9 +211,10 @@ def main():
       (options.universe, options.uid))
 
   runner = TestRunner.TestRunner(options.universe,
-                                    options.uid,
-                                    pid_store,
-                                    wrapper)
+                                 options.uid,
+                                 options.broadcast_write_delay,
+                                 pid_store,
+                                 wrapper)
 
   for symbol in dir(TestDefinitions):
     obj = getattr(TestDefinitions, symbol)

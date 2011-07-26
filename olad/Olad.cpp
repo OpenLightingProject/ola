@@ -84,16 +84,16 @@ static void sig_segv(int signo) {
  * Terminate cleanly on interrupt
  */
 static void sig_interupt(int signo) {
-  signo = 0;
   olad->Terminate();
+  (void) signo;
 }
 
 /*
  * Reload plugins
  */
 static void sig_hup(int signo) {
-  signo = 0;
   olad->ReloadPlugins();
+  (void) signo;
 }
 
 /*
@@ -102,8 +102,8 @@ static void sig_hup(int signo) {
  * need to fix race conditions here
  */
 static void sig_user1(int signo) {
-  signo = 0;
   ola::IncrementLogLevel();
+  (void) signo;
 }
 
 
