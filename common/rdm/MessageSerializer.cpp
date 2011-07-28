@@ -72,9 +72,13 @@ void MessageSerializer::Visit(
   unsigned int size = std::min(
       static_cast<unsigned int>(message->Value().size()),
       message->GetDescriptor()->MaxSize());
+  unsigned int used_size = std::max(
+      size,
+      message->GetDescriptor()->MinSize());
   CheckForFreeSpace(size);
   memcpy(m_data + m_offset, message->Value().c_str(), size);
-  m_offset += std::max(size, message->GetDescriptor()->MinSize());
+  memset(m_data + m_offset + size, 0, used_size - size);
+  m_offset += used_size;
 }
 
 
