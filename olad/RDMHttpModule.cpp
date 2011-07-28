@@ -51,6 +51,7 @@ using ola::web::StringItem;
 using ola::web::UIntItem;
 using std::endl;
 using std::pair;
+using std::set;
 using std::string;
 using std::stringstream;
 using std::vector;
@@ -959,8 +960,8 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
 
   bool dmx_address_added = false;
   bool include_software_version = false;
-  vector<uint16_t>::const_iterator iter = pid_list.begin();
-  for (; iter != pid_list.end(); ++iter) {
+  set<uint16_t>::const_iterator iter = pids.begin();
+  for (; iter != pids.end(); ++iter) {
     switch (*iter) {
       case ola::rdm::PID_PROXIED_DEVICES:
         AddSection(&sections, PROXIED_DEVICES_SECTION, "Proxied Devices");
