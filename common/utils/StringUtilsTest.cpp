@@ -353,7 +353,7 @@ void StringUtilsTest::testStringToInt() {
 
   CPPUNIT_ASSERT(!StringToInt("2147483649", &value));
   CPPUNIT_ASSERT(StringToInt("-2147483648", &value));
-  CPPUNIT_ASSERT_EQUAL((int) -2147483648, value);
+  CPPUNIT_ASSERT_EQUAL((int) (-2147483647 - 1), value);
   CPPUNIT_ASSERT(StringToInt("-2147483647", &value));
   CPPUNIT_ASSERT_EQUAL(-2147483647, value);
   CPPUNIT_ASSERT(StringToInt("-1", &value));
