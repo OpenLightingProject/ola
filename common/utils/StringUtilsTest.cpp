@@ -237,7 +237,7 @@ void StringUtilsTest::testStringToUInt() {
   CPPUNIT_ASSERT(StringToInt("65537", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 65537, value);
   CPPUNIT_ASSERT(StringToInt("4294967295", &value));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 4294967295, value);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4294967295U, value);
   CPPUNIT_ASSERT(!StringToInt("4294967296", &value));
   CPPUNIT_ASSERT(!StringToInt("foo", &value));
 }
