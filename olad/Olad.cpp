@@ -270,7 +270,8 @@ static void ParseOptions(int argc, char *argv[], ola_options *opts) {
 
 
 /*
- * Run as a daemon
+ * Run as a daemon, logging has been initialized when this is called.
+ * This means that logging can't use any persistant FDs.
  */
 static int Daemonise() {
   pid_t pid;
@@ -280,13 +281,13 @@ static int Daemonise() {
   struct sigaction sa;
 
   if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
-    cout << "Could not determine file limit" << endl;
+    OLA_FATAL << "Could not determine file limit";
     exit(1);
   }
 
   // fork
   if ((pid = fork()) < 0) {
-    cout << "Could not fork\n" << endl;
+    OLA_FATAL << "Could not fork\n";
     exit(1);
   } else if (pid != 0) {
     exit(0);
@@ -300,15 +301,21 @@ static int Daemonise() {
   sa.sa_flags = 0;
 
   if (sigaction(SIGHUP, &sa, NULL) < 0) {
-    cout << "Could not install signal\n" << endl;
+    OLA_FATAL << "Could not install signal\n";
     exit(1);
   }
 
   if ((pid= fork()) < 0) {
-    cout << "Could not fork\n" << endl;
+    OLA_FATAL << "Could not fork\n";
     exit(1);
   } else if (pid != 0) {
     exit(0);
+  }
+
+  // change the current working directory
+  if (chdir("/") < 0) {
+    OLA_FATAL << "Can't change directory to /";
+    exit(1);
   }
 
   // close all fds
@@ -321,6 +328,12 @@ static int Daemonise() {
   fd0 = open("/dev/null", O_RDWR);
   fd1 = dup(0);
   fd2 = dup(0);
+
+  if (fd0 != 0 || fd1 != 1 || fd2 != 2) {
+    OLA_FATAL << "Unexpected file descriptors: " << fd0 << ", " << fd1 << ", "
+      << fd2;
+    exit(1);
+  }
 
   return 0;
 }

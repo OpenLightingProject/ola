@@ -96,7 +96,7 @@ void MessageSerializerTest::ConfirmData(unsigned long line,
   std::stringstream str;
   str << "Line " << line;
   CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_length, actual_length);
-  for (unsigned int i = 0; i < sizeof(expected); ++i) {
+  for (unsigned int i = 0; i < expected_length; ++i) {
     str.str("");
     str << "line " << line << ", offset " << i << ": " <<
       static_cast<unsigned int>(expected[i]) <<
