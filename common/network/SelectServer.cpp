@@ -107,6 +107,14 @@ SelectServer::~SelectServer() {
 }
 
 
+/**
+ * A thread safe terminate
+ */
+void SelectServer::Terminate() {
+  Execute(NewSingleCallback(this, &SelectServer::SetTerminate));
+}
+
+
 /*
  * Set the default poll delay time
  */
@@ -352,7 +360,7 @@ void SelectServer::RunInLoop(Callback0<void> *closure) {
  * Execute this callback in the main select thread. This method can be called
  * from any thread.
  */
-void SelectServer::Execute(ola::SingleUseCallback0<void> *closure) {
+void SelectServer::Execute(ola::BaseCallback0<void> *closure) {
   if (m_our_thread_id == ola::OlaThread::Self()) {
     closure->Run();
   } else {
@@ -389,7 +397,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
       break;
     }
 
-    ola::SingleUseCallback0<void> *callback = m_incoming_queue.front();
+    ola::BaseCallback0<void> *callback = m_incoming_queue.front();
     m_incoming_queue.pop();
     pthread_mutex_unlock(&m_incoming_mutex);
     callback->Run();

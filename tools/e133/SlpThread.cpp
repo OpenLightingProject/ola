@@ -90,11 +90,6 @@ SlpThread::SlpThread(ola::network::SelectServer *ss,
       m_refresh_time(refresh_time),
       m_discovery_callback(discovery_callback),
       m_discovery_timeout(ola::network::INVALID_TIMEOUT) {
-  m_incoming_socket.SetOnData(ola::NewCallback(this, &SlpThread::NewRequest));
-  m_outgoing_socket.SetOnData(ola::NewCallback(this,
-                                               &SlpThread::RequestComplete));
-  pthread_mutex_init(&m_incoming_mutex, NULL);
-  pthread_mutex_init(&m_outgoing_mutex, NULL);
 }
 
 
@@ -103,8 +98,6 @@ SlpThread::SlpThread(ola::network::SelectServer *ss,
  */
 SlpThread::~SlpThread() {
   Cleanup();
-  pthread_mutex_destroy(&m_incoming_mutex);
-  pthread_mutex_destroy(&m_outgoing_mutex);
   if (m_discovery_callback)
     delete m_discovery_callback;
 }
@@ -117,23 +110,11 @@ bool SlpThread::Init() {
   if (m_init_ok)
     return true;
 
-  if (!m_incoming_socket.Init())
-    return false;
-
-  if (!m_outgoing_socket.Init()) {
-    m_incoming_socket.Close();
-    return false;
-  }
-
   SLPError err = SLPOpen("en", SLP_FALSE, &m_slp_handle);
   if (err != SLP_OK) {
     OLA_INFO << "Error opening slp handle " << err;
-    m_incoming_socket.Close();
-    m_outgoing_socket.Close();
     return false;
   }
-  m_ss.AddSocket(&m_incoming_socket);
-  m_main_ss->AddSocket(&m_outgoing_socket);
   m_init_ok = true;
   return true;
 }
@@ -154,8 +135,6 @@ bool SlpThread::Start() {
  */
 bool SlpThread::Join(void *ptr) {
   m_ss.Terminate();
-  // kick the select server so the wake up is immediate
-  WakeUpSocket(&m_incoming_socket);
   return OlaThread::Join(ptr);
 }
 
@@ -164,19 +143,6 @@ bool SlpThread::Join(void *ptr) {
  * Clean up
  */
 void SlpThread::Cleanup() {
-  if (m_incoming_socket.ReadDescriptor() !=
-      ola::network::Socket::CLOSED_SOCKET) {
-    m_ss.RemoveSocket(&m_incoming_socket);
-    m_incoming_socket.Close();
-  }
-
-
-  if (m_outgoing_socket.ReadDescriptor() !=
-      ola::network::Socket::CLOSED_SOCKET) {
-    m_main_ss->RemoveSocket(&m_outgoing_socket);
-    m_outgoing_socket.Close();
-  }
-
   if (m_init_ok)
     SLPClose(m_slp_handle);
   m_init_ok = false;
@@ -199,11 +165,9 @@ bool SlpThread::Discover() {
     return false;
   }
 
-  ola::SingleUseCallback0<void> *callback = ola::NewSingleCallback(
+  m_ss.Execute(ola::NewSingleCallback(
       this,
-      &SlpThread::DiscoveryRequest);
-  AddToIncomingQueue(callback);
-  WakeUpSocket(&m_incoming_socket);
+      &SlpThread::DiscoveryRequest));
   return true;
 }
 
@@ -225,14 +189,13 @@ void SlpThread::Register(slp_registration_callback *on_complete,
       SLPD_AGING_TIME_S << ", forcing to " << 2 * SLPD_AGING_TIME_S;
     lifetime = 2 * SLPD_AGING_TIME_S;
   }
-  ola::SingleUseCallback0<void> *callback = ola::NewSingleCallback(
+
+  m_ss.Execute(ola::NewSingleCallback(
       this,
       &SlpThread::RegisterRequest,
       on_complete,
       url,
-      lifetime);
-  AddToIncomingQueue(callback);
-  WakeUpSocket(&m_incoming_socket);
+      lifetime));
 }
 
 
@@ -245,13 +208,11 @@ void SlpThread::Register(slp_registration_callback *on_complete,
  */
 void SlpThread::DeRegister(slp_registration_callback *on_complete,
                            const string &url) {
-  ola::SingleUseCallback0<void> *callback = ola::NewSingleCallback(
+  m_ss.Execute(ola::NewSingleCallback(
       this,
       &SlpThread::DeregisterRequest,
       on_complete,
-      url);
-  AddToIncomingQueue(callback);
-  WakeUpSocket(&m_incoming_socket);
+      url));
 }
 
 
@@ -261,92 +222,6 @@ void SlpThread::DeRegister(slp_registration_callback *on_complete,
 void *SlpThread::Run() {
   m_ss.Run();
   return NULL;
-}
-
-
-/**
- * Called when a new request arrives
- */
-void SlpThread::NewRequest() {
-  EmptySocket(&m_incoming_socket);
-
-  while (true) {
-    pthread_mutex_lock(&m_incoming_mutex);
-    if (m_incoming_queue.empty()) {
-      pthread_mutex_unlock(&m_incoming_mutex);
-      return;
-    }
-
-    ola::BaseCallback0<void> *callback = m_incoming_queue.front();
-    m_incoming_queue.pop();
-    pthread_mutex_unlock(&m_incoming_mutex);
-    callback->Run();
-  }
-}
-
-
-/**
- * Called in the main thread when a request completes
- */
-void SlpThread::RequestComplete() {
-  EmptySocket(&m_outgoing_socket);
-
-  while (true) {
-    pthread_mutex_lock(&m_outgoing_mutex);
-    if (m_outgoing_queue.empty()) {
-      pthread_mutex_unlock(&m_outgoing_mutex);
-      return;
-    }
-
-    ola::BaseCallback0<void> *callback = m_outgoing_queue.front();
-    m_outgoing_queue.pop();
-    pthread_mutex_unlock(&m_outgoing_mutex);
-    callback->Run();
-  }
-}
-
-
-/**
- * Wake up the select server on the other end of this socket by sending some
- * data.
- */
-void SlpThread::WakeUpSocket(ola::network::LoopbackSocket *socket) {
-  uint8_t wake_up = 'a';
-  socket->Send(&wake_up, sizeof(wake_up));
-}
-
-
-/**
- * Read (and discard) any pending data on a socket
- */
-void SlpThread::EmptySocket(ola::network::LoopbackSocket *socket) {
-  while (socket->DataRemaining()) {
-    uint8_t message;
-    unsigned int size;
-    socket->Receive(&message, sizeof(message), size);
-  }
-}
-
-
-/**
- * Add a callback to the incoming queue
- */
-void SlpThread::AddToIncomingQueue(ola::SingleUseCallback0<void> *callback) {
-  pthread_mutex_lock(&m_incoming_mutex);
-  m_incoming_queue.push(callback);
-  pthread_mutex_unlock(&m_incoming_mutex);
-}
-
-
-/**
- * Add a callback to the outgoing queue, this also writes to the socket to wake
- * up the remote end
- */
-void SlpThread::AddToOutgoingQueue(ola::BaseCallback0<void> *callback) {
-  pthread_mutex_lock(&m_outgoing_mutex);
-  m_outgoing_queue.push(callback);
-  pthread_mutex_unlock(&m_outgoing_mutex);
-  WakeUpSocket(&m_outgoing_socket);
 }
 
 
@@ -403,7 +278,7 @@ void SlpThread::DiscoveryRequest() {
       ola::NewSingleCallback(this,
                              &SlpThread::DiscoveryTriggered));
 
-  AddToOutgoingQueue(
+  m_main_ss->Execute(
       NewSingleCallback(this,
                         &SlpThread::DiscoveryActionComplete,
                         ok,
@@ -429,7 +304,7 @@ void SlpThread::RegisterRequest(slp_registration_callback *callback,
     if (iter->second.lifetime == lifetime) {
       OLA_INFO << "New lifetime of " << url << " matches current registration,"
         << " ignoring update";
-      AddToOutgoingQueue(
+      m_main_ss->Execute(
           NewSingleCallback(this,
                             &SlpThread::SimpleActionComplete,
                             callback,
@@ -451,7 +326,7 @@ void SlpThread::RegisterRequest(slp_registration_callback *callback,
   bool ok = PerformRegistration(url, lifetime, &(iter->second.timeout));
 
   // mark as done
-  AddToOutgoingQueue(
+  m_main_ss->Execute(
       NewSingleCallback(this,
                         &SlpThread::SimpleActionComplete,
                         callback,
@@ -530,7 +405,7 @@ void SlpThread::DeregisterRequest(slp_registration_callback *callback,
     ok = false;
   }
 
-  AddToOutgoingQueue(
+  m_main_ss->Execute(
       NewSingleCallback(this,
                         &SlpThread::SimpleActionComplete,
                         callback,

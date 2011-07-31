@@ -127,8 +127,8 @@ struct ltevent {
 
 /**
  * This is the core of the event driven system. The SelectServer is responsible
- * for invoking Callbacks when events occur. All methods except Execute() must
- * be called from the thread that Run() was called in.
+ * for invoking Callbacks when events occur. All methods except Execute() and
+ * Terminate() must be called from the thread that Run() was called in.
  */
 class SelectServer: public SelectServerInterface {
   public :
@@ -141,7 +141,7 @@ class SelectServer: public SelectServerInterface {
     bool IsRunning() const { return !m_terminate; }
     const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
 
-    void Terminate() { m_terminate = true; }
+    void Terminate();
     void Restart() { m_terminate = false; }
 
     void SetDefaultInterval(const TimeInterval &poll_interval);
@@ -164,7 +164,7 @@ class SelectServer: public SelectServerInterface {
 
     void RunInLoop(ola::Callback0<void> *closure);
 
-    void Execute(ola::SingleUseCallback0<void> *closure);
+    void Execute(ola::BaseCallback0<void> *closure);
 
     // these are pubic so that the tests can access them
     static const char K_SOCKET_VAR[];
@@ -210,7 +210,7 @@ class SelectServer: public SelectServerInterface {
     TimeStamp *m_wake_up_time;
     LoopClosureSet m_loop_closures;
     ola::ThreadId m_our_thread_id;
-    std::queue<ola::SingleUseCallback0<void>*> m_incoming_queue;
+    std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
     pthread_mutex_t m_incoming_mutex;
     LoopbackSocket m_incoming_socket;
 
@@ -222,6 +222,7 @@ class SelectServer: public SelectServerInterface {
     TimeStamp CheckTimeouts(const TimeStamp &now);
     void UnregisterAll();
     void DrainLoopbackSocket();
+    void SetTerminate() { m_terminate = true; }
 
     static const int K_MS_IN_SECOND = 1000;
     static const int K_US_IN_SECOND = 1000000;
