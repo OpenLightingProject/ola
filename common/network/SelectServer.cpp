@@ -84,6 +84,15 @@ SelectServer::SelectServer(ExportMap *export_map,
     m_wake_up_time = new TimeStamp();
     m_free_wake_up_time = true;
   }
+
+  m_our_thread_id = ola::OlaThread::Self();
+  pthread_mutex_init(&m_incoming_mutex, NULL);
+
+  // TODO(simon): this should really be in an Init() method.
+  if (!m_incoming_socket.Init())
+    OLA_FATAL << "Failed to init loopback socket, Execute() won't work!";
+  m_incoming_socket.SetOnData(
+    ola::NewCallback(this, &SelectServer::DrainLoopbackSocket));
 }
 
 
@@ -94,6 +103,7 @@ SelectServer::~SelectServer() {
   UnregisterAll();
   if (m_free_wake_up_time)
     delete m_wake_up_time;
+  pthread_mutex_destroy(&m_incoming_mutex);
 }
 
 
@@ -109,6 +119,7 @@ void SelectServer::SetDefaultInterval(const TimeInterval &poll_interval) {
  * Run the select server until Terminate() is called.
  */
 void SelectServer::Run() {
+  m_our_thread_id = ola::OlaThread::Self();
   while (!m_terminate) {
     // false indicates an error in CheckForEvents();
     if (!CheckForEvents(m_poll_interval))
@@ -122,6 +133,7 @@ void SelectServer::Run() {
  */
 void SelectServer::RunOnce(unsigned int delay_sec,
                            unsigned int delay_usec) {
+  m_our_thread_id = ola::OlaThread::Self();
   CheckForEvents(TimeInterval(delay_sec, delay_usec));
 }
 
@@ -335,6 +347,26 @@ void SelectServer::RunInLoop(Callback0<void> *closure) {
 }
 
 
+
+/**
+ * Execute this callback in the main select thread. This method can be called
+ * from any thread.
+ */
+void SelectServer::Execute(ola::SingleUseCallback0<void> *closure) {
+  if (m_our_thread_id == ola::OlaThread::Self()) {
+    closure->Run();
+  } else {
+    pthread_mutex_lock(&m_incoming_mutex);
+    m_incoming_queue.push(closure);
+    pthread_mutex_unlock(&m_incoming_mutex);
+
+    // kick select()
+    uint8_t wake_up = 'a';
+    m_incoming_socket.Send(&wake_up, sizeof(wake_up));
+  }
+}
+
+
 /*
  * One iteration of the select() loop.
  * @return false on error, true on success.
@@ -349,6 +381,19 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
        ++loop_iter)
     (*loop_iter)->Run();
+
+  while (true) {
+    pthread_mutex_lock(&m_incoming_mutex);
+    if (m_incoming_queue.empty()) {
+      pthread_mutex_unlock(&m_incoming_mutex);
+      break;
+    }
+
+    ola::SingleUseCallback0<void> *callback = m_incoming_queue.front();
+    m_incoming_queue.pop();
+    pthread_mutex_unlock(&m_incoming_mutex);
+    callback->Run();
+  }
 
   maxsd = 0;
   FD_ZERO(&r_fds);
@@ -458,6 +503,10 @@ void SelectServer::AddSocketsToSet(fd_set *r_set,
       write_iter++;
     }
   }
+
+  // finally add the loopback socket
+  FD_SET(m_incoming_socket.ReadDescriptor(), r_set);
+  *max_sd = max(*max_sd, m_incoming_socket.ReadDescriptor());
 }
 
 
@@ -596,6 +645,16 @@ void SelectServer::UnregisterAll() {
        ++loop_iter)
     delete *loop_iter;
   m_loop_closures.clear();
+}
+
+
+void SelectServer::DrainLoopbackSocket() {
+  OLA_INFO << "draining socket";
+  while (m_incoming_socket.DataRemaining()) {
+    uint8_t message;
+    unsigned int size;
+    m_incoming_socket.Receive(&message, sizeof(message), size);
+  }
 }
 }  // network
 }  // ola

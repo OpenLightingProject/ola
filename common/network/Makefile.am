@@ -16,7 +16,8 @@ TESTS = NetworkTester
 check_PROGRAMS = $(TESTS)
 NetworkTester_SOURCES = IPAddressTest.cpp InterfacePickerTest.cpp \
                         SelectServerTester.cpp SocketTest.cpp \
-                        SelectServerTest.cpp NetworkUtilsTest.cpp
+                        SelectServerTest.cpp NetworkUtilsTest.cpp \
+                        SelectServerThreadTest.cpp
 NetworkTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 NetworkTester_LDFLAGS = $(CPPUNIT_LIBS)
 NetworkTester_LDADD = ./libolanetwork.la \

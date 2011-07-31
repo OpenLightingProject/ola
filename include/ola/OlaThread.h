@@ -25,6 +25,8 @@
 
 namespace ola {
 
+typedef pthread_t ThreadId;
+
 class OlaThread {
   public:
     OlaThread(): m_thread_id(), m_running(false) {}
@@ -34,6 +36,8 @@ class OlaThread {
     virtual bool Join(void *ptr = NULL);
     bool IsRunning() const { return m_running; }
     virtual void *Run() = 0;
+
+    static inline ThreadId Self() { return pthread_self(); }
 
   private:
     pthread_t m_thread_id;
