@@ -306,7 +306,6 @@ void DmxTriWidgetTest::testTod() {
 
   m_expect_uids_in_tod = false;
   dmxtri.RunRDMDiscovery();
-  m_ss.Restart();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 3, m_tod_counter);
   m_widget.Verify();
@@ -331,7 +330,6 @@ void DmxTriWidgetTest::testTod() {
 
   m_expect_uids_in_tod = false;
   dmxtri.RunRDMDiscovery();
-  m_ss.Restart();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4, m_tod_counter);
   m_widget.Verify();

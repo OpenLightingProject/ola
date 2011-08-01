@@ -503,7 +503,6 @@ void SimpleE133Controller::PopulateResponderList() {
     m_slp_thread.Discover();
     // if we don't have a up to date list wait for slp to return
     m_ss.Run();
-    m_ss.Restart();
   }
 }
 

@@ -37,7 +37,8 @@ class TestThread: public ola::OlaThread {
     TestThread(SelectServer *ss,
                ThreadId ss_thread_id)
         : m_ss(ss),
-          m_ss_thread_id(ss_thread_id) {
+          m_ss_thread_id(ss_thread_id),
+          m_callback_executed(false) {
     }
 
     void *Run() {
@@ -48,12 +49,16 @@ class TestThread: public ola::OlaThread {
 
     void TestCallback() {
       CPPUNIT_ASSERT_EQUAL(m_ss_thread_id, ola::OlaThread::Self());
+      m_callback_executed = true;
       m_ss->Terminate();
     }
+
+    bool CallbackRun() const { return m_callback_executed; }
 
   private:
     SelectServer *m_ss;
     ThreadId m_ss_thread_id;
+    bool m_callback_executed;
 };
 
 
@@ -93,7 +98,9 @@ void SelectServerThreadTest::testSameThreadCallback() {
   TestThread test_thread(&m_ss, ola::OlaThread::Self());
   m_ss.Execute(
       NewSingleCallback(&test_thread, &TestThread::TestCallback));
+  CPPUNIT_ASSERT(!test_thread.CallbackRun());
   m_ss.Run();
+  CPPUNIT_ASSERT(test_thread.CallbackRun());
 }
 
 
@@ -104,6 +111,8 @@ void SelectServerThreadTest::testSameThreadCallback() {
 void SelectServerThreadTest::testDifferentThreadCallback() {
   TestThread test_thread(&m_ss, ola::OlaThread::Self());
   test_thread.Start();
+  CPPUNIT_ASSERT(!test_thread.CallbackRun());
   m_ss.Run();
   test_thread.Join();
+  CPPUNIT_ASSERT(test_thread.CallbackRun());
 }

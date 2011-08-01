@@ -66,6 +66,7 @@ using ola::Callback0;
 SelectServer::SelectServer(ExportMap *export_map,
                            TimeStamp *wake_up_time)
     : m_terminate(false),
+      m_is_running(false),
       m_free_wake_up_time(false),
       m_poll_interval(POLL_INTERVAL_SECOND, POLL_INTERVAL_USECOND),
       m_export_map(export_map),
@@ -85,14 +86,13 @@ SelectServer::SelectServer(ExportMap *export_map,
     m_free_wake_up_time = true;
   }
 
-  m_our_thread_id = ola::OlaThread::Self();
   pthread_mutex_init(&m_incoming_mutex, NULL);
 
   // TODO(simon): this should really be in an Init() method.
   if (!m_incoming_socket.Init())
     OLA_FATAL << "Failed to init loopback socket, Execute() won't work!";
   m_incoming_socket.SetOnData(
-    ola::NewCallback(this, &SelectServer::DrainLoopbackSocket));
+      ola::NewCallback(this, &SelectServer::DrainAndExecute));
 }
 
 
@@ -111,7 +111,8 @@ SelectServer::~SelectServer() {
  * A thread safe terminate
  */
 void SelectServer::Terminate() {
-  Execute(NewSingleCallback(this, &SelectServer::SetTerminate));
+  if (m_is_running)
+    Execute(NewSingleCallback(this, &SelectServer::SetTerminate));
 }
 
 
@@ -127,12 +128,19 @@ void SelectServer::SetDefaultInterval(const TimeInterval &poll_interval) {
  * Run the select server until Terminate() is called.
  */
 void SelectServer::Run() {
-  m_our_thread_id = ola::OlaThread::Self();
+  if (m_is_running) {
+    OLA_FATAL << "SelectServer::Run() called recursively";
+    return;
+  }
+
+  m_is_running = true;
+  m_terminate = false;
   while (!m_terminate) {
     // false indicates an error in CheckForEvents();
     if (!CheckForEvents(m_poll_interval))
       break;
   }
+  m_is_running = false;
 }
 
 
@@ -141,8 +149,9 @@ void SelectServer::Run() {
  */
 void SelectServer::RunOnce(unsigned int delay_sec,
                            unsigned int delay_usec) {
-  m_our_thread_id = ola::OlaThread::Self();
+  m_is_running = true;
   CheckForEvents(TimeInterval(delay_sec, delay_usec));
+  m_is_running = false;
 }
 
 
@@ -358,20 +367,20 @@ void SelectServer::RunInLoop(Callback0<void> *closure) {
 
 /**
  * Execute this callback in the main select thread. This method can be called
- * from any thread.
+ * from any thread. The callback will never execute immediately, this can be
+ * used to perform delayed deletion of objects.
  */
 void SelectServer::Execute(ola::BaseCallback0<void> *closure) {
-  if (m_our_thread_id == ola::OlaThread::Self()) {
-    closure->Run();
-  } else {
-    pthread_mutex_lock(&m_incoming_mutex);
-    m_incoming_queue.push(closure);
-    pthread_mutex_unlock(&m_incoming_mutex);
+  pthread_mutex_lock(&m_incoming_mutex);
+  m_incoming_queue.push(closure);
+  pthread_mutex_unlock(&m_incoming_mutex);
 
-    // kick select()
-    uint8_t wake_up = 'a';
-    m_incoming_socket.Send(&wake_up, sizeof(wake_up));
-  }
+  // kick select(), we do this even if we're in the same thread as select() is
+  // called. If we don't do this there is a race condition because a callback
+  // may be added just prior to select(). Without this kick, select() will
+  // sleep for the poll_interval before executing the callback.
+  uint8_t wake_up = 'a';
+  m_incoming_socket.Send(&wake_up, sizeof(wake_up));
 }
 
 
@@ -383,25 +392,13 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   int maxsd;
   fd_set r_fds, w_fds;
   TimeStamp now;
+  TimeInterval sleep_interval = poll_interval;
   struct timeval tv;
 
   LoopClosureSet::iterator loop_iter;
   for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
        ++loop_iter)
     (*loop_iter)->Run();
-
-  while (true) {
-    pthread_mutex_lock(&m_incoming_mutex);
-    if (m_incoming_queue.empty()) {
-      pthread_mutex_unlock(&m_incoming_mutex);
-      break;
-    }
-
-    ola::BaseCallback0<void> *callback = m_incoming_queue.front();
-    m_incoming_queue.pop();
-    pthread_mutex_unlock(&m_incoming_mutex);
-    callback->Run();
-  }
 
   maxsd = 0;
   FD_ZERO(&r_fds);
@@ -422,16 +419,18 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
       (*m_loop_iterations)++;
   }
 
-  if (m_terminate)
-    return true;
-
-  poll_interval.AsTimeval(&tv);
   if (!m_events.empty()) {
     TimeInterval interval = m_events.top()->NextTime() - now;
-    if (interval < poll_interval)
-      interval.AsTimeval(&tv);
+    sleep_interval = std::min(interval, sleep_interval);
   }
 
+  // if we've already been told to terminate set the timeout to something
+  // very small (1ms). This ensures we at least make a pass through the
+  // sockets.
+  if (m_terminate)
+    sleep_interval = std::min(sleep_interval, TimeInterval(0, 1000));
+
+  sleep_interval.AsTimeval(&tv);
   switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
@@ -587,6 +586,9 @@ void SelectServer::CheckSockets(fd_set *r_set, fd_set *w_set) {
     closure->Run();
     write_ready_queue.pop();
   }
+
+  if (FD_ISSET(m_incoming_socket.ReadDescriptor(), r_set))
+    DrainAndExecute();
 }
 
 
@@ -656,12 +658,24 @@ void SelectServer::UnregisterAll() {
 }
 
 
-void SelectServer::DrainLoopbackSocket() {
-  OLA_INFO << "draining socket";
+void SelectServer::DrainAndExecute() {
   while (m_incoming_socket.DataRemaining()) {
     uint8_t message;
     unsigned int size;
     m_incoming_socket.Receive(&message, sizeof(message), size);
+  }
+
+  while (true) {
+    pthread_mutex_lock(&m_incoming_mutex);
+    if (m_incoming_queue.empty()) {
+      pthread_mutex_unlock(&m_incoming_mutex);
+      break;
+    }
+
+    ola::BaseCallback0<void> *callback = m_incoming_queue.front();
+    m_incoming_queue.pop();
+    pthread_mutex_unlock(&m_incoming_mutex);
+    callback->Run();
   }
 }
 }  // network

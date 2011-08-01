@@ -237,7 +237,6 @@ void SimpleE133Node::Run() {
   m_slp_thread.DeRegister(
     ola::NewSingleCallback(this, &SimpleE133Node::DeRegisterCallback),
     m_service_name);
-  m_ss.Restart();
   m_ss.Run();
 }
 

@@ -142,7 +142,6 @@ class SelectServer: public SelectServerInterface {
     const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
 
     void Terminate();
-    void Restart() { m_terminate = false; }
 
     void SetDefaultInterval(const TimeInterval &poll_interval);
     void Run();
@@ -193,7 +192,7 @@ class SelectServer: public SelectServerInterface {
       ConnectedSocketSet;
     typedef std::set<ola::Callback0<void>*> LoopClosureSet;
 
-    bool m_terminate;
+    bool m_terminate, m_is_running;
     bool m_free_wake_up_time;
     TimeInterval m_poll_interval;
     unsigned int m_next_id;
@@ -209,7 +208,6 @@ class SelectServer: public SelectServerInterface {
     CounterVariable *m_loop_time;
     TimeStamp *m_wake_up_time;
     LoopClosureSet m_loop_closures;
-    ola::ThreadId m_our_thread_id;
     std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
     pthread_mutex_t m_incoming_mutex;
     LoopbackSocket m_incoming_socket;
@@ -221,7 +219,7 @@ class SelectServer: public SelectServerInterface {
     void AddSocketsToSet(fd_set *r_set, fd_set *w_set, int *max_sd);
     TimeStamp CheckTimeouts(const TimeStamp &now);
     void UnregisterAll();
-    void DrainLoopbackSocket();
+    void DrainAndExecute();
     void SetTerminate() { m_terminate = true; }
 
     static const int K_MS_IN_SECOND = 1000;
