@@ -36,6 +36,7 @@ class OlaThread {
     virtual bool Join(void *ptr = NULL);
     bool IsRunning() const { return m_running; }
     virtual void *Run() = 0;
+    ThreadId Id() const { return m_thread_id; }
 
     static inline ThreadId Self() { return pthread_self(); }
 
