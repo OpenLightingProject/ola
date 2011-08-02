@@ -27,6 +27,7 @@
 #include <fstream>
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -257,6 +258,66 @@ bool MemoryPreferences::GetValueAsBool(const string &key) const {
 }
 
 
+
+// FilePreferenceSaverThread
+//-----------------------------------------------------------------------------
+
+void FilePreferenceSaverThread::SavePreferences(
+    const string &file_name,
+    const PreferencesMap &preferences) {
+  const string *file_name_ptr = new string(file_name);
+  const PreferencesMap *save_map = new PreferencesMap(preferences);
+  SingleUseCallback0<void> *cb = NewSingleCallback(
+                                 this,
+                                 &FilePreferenceSaverThread::SaveToFile,
+                                 file_name_ptr,
+                                 save_map);
+  m_ss.Execute(cb);
+}
+
+
+/**
+ * Called by the new thread.
+ */
+void *FilePreferenceSaverThread::Run() {
+  m_ss.Run();
+  return NULL;
+}
+
+
+/**
+ * Stop the saving thread
+ */
+bool FilePreferenceSaverThread::Join(void *ptr) {
+  m_ss.Terminate();
+  return OlaThread::Join(ptr);
+}
+
+
+
+/**
+ * Perform the save
+ */
+void FilePreferenceSaverThread::SaveToFile(
+    const string *filename_ptr,
+    const PreferencesMap *pref_map_ptr) {
+  std::auto_ptr<const string> filename(filename_ptr);
+  std::auto_ptr<const PreferencesMap> pref_map(pref_map_ptr);
+
+  PreferencesMap::const_iterator iter;
+  ofstream pref_file(filename->data());
+
+  if (!pref_file.is_open()) {
+    OLA_INFO << "Could not open " << *filename_ptr << ": " << strerror(errno);
+  }
+
+  for (iter = pref_map->begin(); iter != pref_map->end(); ++iter) {
+    pref_file << iter->first << " = " << iter->second << std::endl;
+  }
+  pref_file.close();
+}
+
+
 // FileBackedPreferences
 //-----------------------------------------------------------------------------
 
@@ -272,7 +333,8 @@ bool FileBackedPreferences::Load() {
  * Save the preferences to storage
  */
 bool FileBackedPreferences::Save() const {
-  return SaveToFile(FileName());
+  m_saver_thread->SavePreferences(FileName(), m_pref_map);
+  return true;
 }
 
 
@@ -320,28 +382,6 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
     StringTrim(&value);
     m_pref_map.insert(pair<string, string>(key, value));
   }
-  pref_file.close();
-  return true;
-}
-
-
-/*
- * Save the preferences to a file
- * @param filename - the name of the file to save to
- */
-bool FileBackedPreferences::SaveToFile(const string &filename) const {
-  map<string, string>::const_iterator iter;
-  ofstream pref_file(filename.data());
-
-  if (!pref_file.is_open()) {
-    OLA_INFO << "Missing " << filename << ": " << strerror(errno);
-    return false;
-  }
-
-  for (iter = m_pref_map.begin(); iter != m_pref_map.end(); ++iter) {
-    pref_file << iter->first << " = " << iter->second << std::endl;
-  }
-
   pref_file.close();
   return true;
 }

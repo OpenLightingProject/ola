@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "ola/Logging.h"
 #include "olad/Preferences.h"
 
 using ola::BoolValidator;
@@ -49,6 +50,9 @@ class PreferencesTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
   public:
+    void setUp() {
+      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
+    }
     void testValidators();
     void testGetSetRemove();
     void testBool();
@@ -184,7 +188,8 @@ void PreferencesTest::testFactory() {
  * Check that we can load from a file
  */
 void PreferencesTest::testLoad() {
-  FileBackedPreferences *preferences = new FileBackedPreferences("", "dummy");
+  FileBackedPreferences *preferences = new FileBackedPreferences(
+      "", "dummy", NULL);
   preferences->Clear();
   preferences->SetValue("foo", "bad");
   preferences->LoadFromFile("./testdata/test_preferences.conf");
@@ -202,11 +207,15 @@ void PreferencesTest::testLoad() {
 
 
 void PreferencesTest::testSave() {
+  ola::FilePreferenceSaverThread saver_thread;
+  saver_thread.Start();
   FileBackedPreferencesFactory factory("");
-  FileBackedPreferences *preferences = new FileBackedPreferences("", "dummy");
+  FileBackedPreferences *preferences = new FileBackedPreferences(
+      "./testdata", "output", &saver_thread);
   preferences->Clear();
 
-  string data_path = "./testdata/preferences.output";
+  string data_path = "./testdata/ola-output.conf";
+  unlink(data_path.c_str());
   string key1 = "foo";
   string key2 = "bat";
   string value1 = "bar";
@@ -217,10 +226,12 @@ void PreferencesTest::testSave() {
   preferences->SetMultipleValue(multi_key, "1");
   preferences->SetMultipleValue(multi_key, "2");
   preferences->SetMultipleValue(multi_key, "3");
-  preferences->SaveToFile(data_path);
+  preferences->Save();
+
+  saver_thread.Join();
 
   FileBackedPreferences *input_preferences = new
-    FileBackedPreferences("", "input");
+    FileBackedPreferences("", "input", NULL);
   input_preferences->LoadFromFile(data_path);
   CPPUNIT_ASSERT(*preferences == *input_preferences);
   delete preferences;

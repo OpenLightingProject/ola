@@ -22,6 +22,10 @@
 #ifndef INCLUDE_OLAD_PREFERENCES_H_
 #define INCLUDE_OLAD_PREFERENCES_H_
 
+#include <ola/Logging.h>
+#include <ola/OlaThread.h>
+#include <ola/network/SelectServer.h>
+
 #include <map>
 #include <vector>
 #include <set>
@@ -197,7 +201,8 @@ class MemoryPreferences: public Preferences {
     }
 
   protected:
-    multimap<string, string> m_pref_map;
+    typedef multimap<string, string> PreferencesMap;
+    PreferencesMap m_pref_map;
 };
 
 
@@ -209,22 +214,45 @@ class MemoryPreferencesFactory: public PreferencesFactory {
 };
 
 
+/**
+ * The thread that saves preferences
+ */
+class FilePreferenceSaverThread: public OlaThread {
+  public:
+    typedef multimap<string, string> PreferencesMap;
+    FilePreferenceSaverThread() {}
+
+    void SavePreferences(const string &filename,
+                         const PreferencesMap &preferences);
+
+    void *Run();
+    bool Join(void *ptr = NULL);
+
+  private:
+    ola::network::SelectServer m_ss;
+
+    void SaveToFile(const string *filename, const PreferencesMap *preferences);
+};
+
+
 /*
  * FilePreferences uses one file per namespace
  */
 class FileBackedPreferences: public MemoryPreferences {
   public:
     explicit FileBackedPreferences(const string &directory,
-                                   const string &name)
+                                   const string &name,
+                                   FilePreferenceSaverThread *saver_thread)
         : MemoryPreferences(name),
-          m_directory(directory) {}
+          m_directory(directory),
+          m_saver_thread(saver_thread) {}
     virtual bool Load();
     virtual bool Save() const;
     bool LoadFromFile(const string &filename);
-    bool SaveToFile(const string &filename) const;
 
   private:
     const string m_directory;
+    FilePreferenceSaverThread *m_saver_thread;
 
     bool ChangeDir() const;
     const string FileName() const;
@@ -232,16 +260,24 @@ class FileBackedPreferences: public MemoryPreferences {
     static const char OLA_CONFIG_SUFFIX[];
 };
 
+
 class FileBackedPreferencesFactory: public PreferencesFactory {
   public:
     explicit FileBackedPreferencesFactory(const string &directory)
-        : m_directory(directory) {}
+        : m_directory(directory) {
+      m_saver_thread.Start();
+    }
+
+    ~FileBackedPreferencesFactory() {
+      m_saver_thread.Join();
+    }
 
   private:
     const string m_directory;
+    FilePreferenceSaverThread m_saver_thread;
 
     FileBackedPreferences *Create(const string &name) {
-      return new FileBackedPreferences(m_directory, name);
+      return new FileBackedPreferences(m_directory, name, &m_saver_thread);
     }
 };
 }  // ola
