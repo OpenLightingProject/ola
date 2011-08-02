@@ -75,6 +75,8 @@ StreamRpcChannel::StreamRpcChannel(Service *service,
 
 
 StreamRpcChannel::~StreamRpcChannel() {
+  if (m_on_close)
+    delete m_on_close;
   free(m_buffer);
 }
 
