@@ -21,9 +21,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <sstream>
 
+#include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
-#include "ola/Callback.h"
+#include "ola/Logging.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 
@@ -90,6 +91,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SelectServerTest);
 
 
 void SelectServerTest::setUp() {
+  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_map = new ExportMap();
   m_ss = new SelectServer(m_map);
   m_timeout_counter = 0;
@@ -166,7 +168,6 @@ void SelectServerTest::testTimeout() {
 
   // now check a timeout that adds another timeout
   m_timeout_counter = 0;
-  m_ss->Restart();
 
   m_ss->RegisterSingleTimeout(
       10,
@@ -187,7 +188,6 @@ void SelectServerTest::testTimeout() {
   m_ss->RegisterSingleTimeout(
       980,
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
-  m_ss->Restart();
   m_ss->Run();
   // This seems to go as low as 7
   std::stringstream str;
@@ -203,7 +203,6 @@ void SelectServerTest::testTimeout() {
       20,
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->RemoveTimeout(timeout1);
-  m_ss->Restart();
   m_ss->Run();
 }
 
@@ -214,7 +213,7 @@ void SelectServerTest::testTimeout() {
 void SelectServerTest::testLoopCallbacks() {
   m_ss->SetDefaultInterval(ola::TimeInterval(0, 100000));  // poll every 100ms
   m_ss->RunInLoop(ola::NewCallback(this,
-                                  &SelectServerTest::IncrementLoopCounter));
+                                   &SelectServerTest::IncrementLoopCounter));
   m_ss->RegisterSingleTimeout(
       500,
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));

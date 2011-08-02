@@ -282,7 +282,6 @@ int main(int argc, char *argv[]) {
   thread->DeRegister(ola::NewSingleCallback(&DeRegisterCallback, &ss),
                      *iter);
   }
-  ss.Restart();
   ss.Run();
 
   thread->Join();

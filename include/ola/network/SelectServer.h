@@ -26,9 +26,10 @@
 #include <string>
 #include <vector>
 
-#include <ola/Clock.h>  // NOLINT
 #include <ola/Callback.h>  // NOLINT
+#include <ola/Clock.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
+#include <ola/OlaThread.h>  // NOLINT
 #include <ola/network/SelectServerInterface.h>  // NOLINT
 #include <ola/network/Socket.h>  // NOLINT
 
@@ -126,7 +127,8 @@ struct ltevent {
 
 /**
  * This is the core of the event driven system. The SelectServer is responsible
- * for invoking Callbacks when events occur.
+ * for invoking Callbacks when events occur. All methods except Execute() and
+ * Terminate() must be called from the thread that Run() was called in.
  */
 class SelectServer: public SelectServerInterface {
   public :
@@ -139,8 +141,7 @@ class SelectServer: public SelectServerInterface {
     bool IsRunning() const { return !m_terminate; }
     const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
 
-    void Terminate() { m_terminate = true; }
-    void Restart() { m_terminate = false; }
+    void Terminate();
 
     void SetDefaultInterval(const TimeInterval &poll_interval);
     void Run();
@@ -161,6 +162,8 @@ class SelectServer: public SelectServerInterface {
     void RemoveTimeout(timeout_id id);
 
     void RunInLoop(ola::Callback0<void> *closure);
+
+    void Execute(ola::BaseCallback0<void> *closure);
 
     // these are pubic so that the tests can access them
     static const char K_SOCKET_VAR[];
@@ -189,7 +192,7 @@ class SelectServer: public SelectServerInterface {
       ConnectedSocketSet;
     typedef std::set<ola::Callback0<void>*> LoopClosureSet;
 
-    bool m_terminate;
+    bool m_terminate, m_is_running;
     bool m_free_wake_up_time;
     TimeInterval m_poll_interval;
     unsigned int m_next_id;
@@ -205,6 +208,9 @@ class SelectServer: public SelectServerInterface {
     CounterVariable *m_loop_time;
     TimeStamp *m_wake_up_time;
     LoopClosureSet m_loop_closures;
+    std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
+    pthread_mutex_t m_incoming_mutex;
+    LoopbackSocket m_incoming_socket;
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
@@ -213,6 +219,8 @@ class SelectServer: public SelectServerInterface {
     void AddSocketsToSet(fd_set *r_set, fd_set *w_set, int *max_sd);
     TimeStamp CheckTimeouts(const TimeStamp &now);
     void UnregisterAll();
+    void DrainAndExecute();
+    void SetTerminate() { m_terminate = true; }
 
     static const int K_MS_IN_SECOND = 1000;
     static const int K_US_IN_SECOND = 1000000;

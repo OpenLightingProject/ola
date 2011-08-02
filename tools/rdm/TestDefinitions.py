@@ -1859,7 +1859,10 @@ class ResetSensorValue(OptionalParameterTestFixture):
       self._ResetSensor()
     else:
       # no sensors found, make sure we get a NR_DATA_OUT_OF_RANGE
-      self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.AddIfSetSupported(
+          [self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+          ])
       self.SendSet(ROOT_DEVICE, self.pid, [0])
 
   def _ResetSensor(self):
@@ -1868,7 +1871,11 @@ class ResetSensorValue(OptionalParameterTestFixture):
       self.Stop()
       return
 
-    self.AddExpectedResults(self.AckSetResult(action=self._ResetNextSensor))
+    self.AddExpectedResults([
+        self.AckSetResult(action=self._ResetNextSensor),
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+                           action=self._ResetNextSensor),
+    ])
     self.SendSet(ROOT_DEVICE, self.pid, [self._sensors[0]['sensor_number']])
 
   def _ResetNextSensor(self):
@@ -1897,10 +1904,18 @@ class ResetAllSensorValues(OptionalParameterTestFixture):
       supports_recording |= (
           sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
 
+    # some devices don't have set
+    results = [self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
     if supports_recording:
-      self.AddIfSetSupported(self.AckSetResult())
+      results = [self.AckSetResult(),
+                 self.NackSetResult(
+                    RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+                    warning="One or more recorded sensors found but Set"
+                            " SENSOR_VALUE wasn't supported")]
     else:
-      self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      results = [self.AckSetResult(),
+                 self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS)]
+    self.AddIfSetSupported(results)
     self.SendSet(ROOT_DEVICE, self.pid, [self.ALL_SENSORS])
 
 
@@ -1912,11 +1927,17 @@ class ResetUndefinedSensorValues(TestMixins.SetUndefinedSensorValues,
   REQUIRES = ['sensor_definitions']
 
 
-class ResetSensorValueWithNoData(TestMixins.SetWithNoDataMixin,
-                                 OptionalParameterTestFixture):
+class ResetSensorValueWithNoData(OptionalParameterTestFixture):
   """SET sensor value without any sensor number."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'SENSOR_VALUE'
+
+  def Test(self):
+    self.AddIfSetSupported([
+        self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ])
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
 # Record Sensors

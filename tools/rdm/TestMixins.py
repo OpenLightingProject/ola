@@ -457,7 +457,11 @@ class SetUndefinedSensorValues(object):
       self.Stop()
       return
 
-    self.AddIfSetSupported(
+    self.AddIfSetSupported([
         self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
-                           action=self._DoAction))
+                           action=self._DoAction),
+        # SET SENSOR_VALUE may not be supported
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+                           action=self._DoAction),
+                           ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self._missing_sensors.pop(0)])
