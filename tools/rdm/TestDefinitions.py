@@ -2601,6 +2601,25 @@ class SetIdentifyDevice(ResponderTestFixture):
     self._wrapper.Run()
 
 
+class SetOutOfRangeIdentifyDevice(ResponderTestFixture):
+  """Set the identify state to a value which is out of range."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'IDENTIFY_DEVICE'
+  REQUIRES = ['identify_state']
+
+  def Test(self):
+    self.AddExpectedResults(
+        self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [2])
+
+  def ResetState(self):
+    # reset back to the old value
+    self.SendSet(PidStore.ROOT_DEVICE,
+                 self.pid,
+                 [self.Property('identify_state')])
+    self._wrapper.Run()
+
+
 class SetVendorcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
                                   ResponderTestFixture):
   """Set the identify state using the vendorcast uid."""
