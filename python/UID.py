@@ -44,8 +44,8 @@ class UID(object):
     if other is None:
       return 1
     if self._manufacturer_id == other._manufacturer_id:
-      return self._device_id - other._device_id
-    return self.manufacturer_id - other.manufacturer_id
+      return cmp(self._device_id, other._device_id)
+    return cmp(self.manufacturer_id, other.manufacturer_id)
 
   @staticmethod
   def AllDevices():

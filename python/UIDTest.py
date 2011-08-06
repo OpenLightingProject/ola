@@ -57,6 +57,14 @@ class UIDTest(unittest.TestCase):
     self.assertEquals(0x12345678, uid.device_id)
     self.assertEquals('00a0:12345678', str(uid))
 
+  def testSorting(self):
+    u1 = UID(0x4845, 0xfffffffe)
+    u2 = UID(0x4845, 0x0000022e)
+    u3 = UID(0x4844, 0x0000022e)
+    u4 = UID(0x4846, 0x0000022e)
+    uids = [u1, u2, u3, u4]
+    uids.sort()
+    self.assertEquals([u3, u2, u1, u4], uids)
 
 if __name__ == '__main__':
   unittest.main()
