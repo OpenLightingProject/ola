@@ -2243,7 +2243,7 @@ class GetDevicePowerCyclesWithData(TestMixins.GetWithDataMixin,
 
 
 class ResetDevicePowerCycles(TestMixins.SetUInt32Mixin,
-                           OptionalParameterTestFixture):
+                             OptionalParameterTestFixture):
   """Attempt to SET the device power_cycles to zero."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'DEVICE_POWER_CYCLES'
@@ -2258,8 +2258,9 @@ class ResetDevicePowerCycles(TestMixins.SetUInt32Mixin,
     return 0
 
   def VerifyResult(self, response, fields):
-    self.SetProperty('set_device_power_cycles_supported',
-                     response.WasAcked())
+    if response.command_class == PidStore.RDM_SET:
+      self.SetProperty('set_device_power_cycles_supported',
+                       response.WasAcked())
 
 
 class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
