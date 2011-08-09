@@ -220,7 +220,7 @@ class MemoryPreferencesFactory: public PreferencesFactory {
 class FilePreferenceSaverThread: public OlaThread {
   public:
     typedef multimap<string, string> PreferencesMap;
-    FilePreferenceSaverThread() {}
+    FilePreferenceSaverThread();
 
     void SavePreferences(const string &filename,
                          const PreferencesMap &preferences);

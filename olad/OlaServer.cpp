@@ -64,7 +64,7 @@ using std::pair;
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
 const char OlaServer::K_CLIENT_VAR[] = "clients-connected";
 const char OlaServer::K_UID_VAR[] = "server-uid";
-const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 1000;
+const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 10000;
 
 
 /*
