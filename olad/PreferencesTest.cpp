@@ -228,7 +228,7 @@ void PreferencesTest::testSave() {
   preferences->SetMultipleValue(multi_key, "3");
   preferences->Save();
 
-  saver_thread.Join();
+  saver_thread.Syncronize();
 
   FileBackedPreferences *input_preferences = new
     FileBackedPreferences("", "input", NULL);
@@ -236,4 +236,6 @@ void PreferencesTest::testSave() {
   CPPUNIT_ASSERT(*preferences == *input_preferences);
   delete preferences;
   delete input_preferences;
+
+  saver_thread.Join();
 }

@@ -17,12 +17,13 @@
  * This class stores preferences in files
  * Copyright (C) 2005-2008 Simon Newton
  */
-#include <string.h>
 #include <dirent.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/stat.h>
 #include <errno.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <fstream>
 #include <list>
@@ -294,6 +295,22 @@ bool FilePreferenceSaverThread::Join(void *ptr) {
 }
 
 
+/**
+ * This can be used to syncronize with the file saving thread. Useful if you
+ * want to make sure the files have been written to disk before continuing.
+ * This blocks until all pending save requests are complete.
+ */
+void FilePreferenceSaverThread::Syncronize() {
+  pthread_mutex_t syncronize_mutex = PTHREAD_MUTEX_INITIALIZER;
+  pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
+  pthread_mutex_lock(&syncronize_mutex);
+  m_ss.Execute(NewSingleCallback(
+        this,
+        &FilePreferenceSaverThread::CompleteSyncronization,
+        &condition_var));
+  pthread_cond_wait(&condition_var, &syncronize_mutex);
+}
+
 
 /**
  * Perform the save
@@ -315,6 +332,15 @@ void FilePreferenceSaverThread::SaveToFile(
     pref_file << iter->first << " = " << iter->second << std::endl;
   }
   pref_file.close();
+}
+
+
+/**
+ * Notify the blocked thread we're done
+ */
+void FilePreferenceSaverThread::CompleteSyncronization(
+    pthread_cond_t *condition) {
+  pthread_cond_signal(condition);
 }
 
 
