@@ -231,8 +231,8 @@ bool ArtNetNodeImpl::SetSubnetAddress(uint8_t subnet_address) {
  * Set the universe for a port
  */
 bool ArtNetNodeImpl::SetPortUniverse(artnet_port_type type,
-                                 uint8_t port_id,
-                                 uint8_t universe_id) {
+                                     uint8_t port_id,
+                                     uint8_t universe_id) {
   if (port_id > ARTNET_MAX_PORTS) {
     OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
       ARTNET_MAX_PORTS;
@@ -550,8 +550,8 @@ bool ArtNetNodeImpl::SetInputPortRDMHandlers(
  * Ownership of the closure is transferred to the node.
  */
 bool ArtNetNodeImpl::SetDMXHandler(uint8_t port_id,
-                               DmxBuffer *buffer,
-                               Callback0<void> *on_data) {
+                                   DmxBuffer *buffer,
+                                   Callback0<void> *on_data) {
   if (port_id > ARTNET_MAX_PORTS) {
     OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
       ARTNET_MAX_PORTS;
@@ -740,8 +740,8 @@ bool ArtNetNodeImpl::SendIPReply(const IPV4Address &destination) {
  * Handle a artnet packet
  */
 void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
-                              const artnet_packet &packet,
-                              unsigned int packet_size) {
+                                  const artnet_packet &packet,
+                                  unsigned int packet_size) {
   unsigned int header_size = sizeof(packet) - sizeof(packet.data);
 
   if (packet_size <= header_size) {
@@ -804,8 +804,8 @@ void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
  * Handle an ArtPoll packet
  */
 void ArtNetNodeImpl::HandlePollPacket(const IPV4Address &source_address,
-                                  const artnet_poll_t &packet,
-                                  unsigned int packet_size) {
+                                      const artnet_poll_t &packet,
+                                      unsigned int packet_size) {
   if (!CheckPacketSize(source_address, "ArtPoll", packet_size, sizeof(packet)))
     return;
 
@@ -823,8 +823,8 @@ void ArtNetNodeImpl::HandlePollPacket(const IPV4Address &source_address,
  * Handle an ArtPollReply packet
  */
 void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
-                                   const artnet_reply_t &packet,
-                                   unsigned int packet_size) {
+                                       const artnet_reply_t &packet,
+                                       unsigned int packet_size) {
   // older versions don't have the bind_ip and the extra filler, make sure we
   // support these
   unsigned int minimum_reply_size = (
@@ -860,8 +860,8 @@ void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
  * Handle a DMX Data packet, this takes care of the merging
  */
 void ArtNetNodeImpl::HandleDataPacket(const IPV4Address &source_address,
-                                  const artnet_dmx_t &packet,
-                                  unsigned int packet_size) {
+                                      const artnet_dmx_t &packet,
+                                      unsigned int packet_size) {
   // The data section needs to be at least 2 bytes according to the spec
   unsigned int header_size = sizeof(artnet_dmx_t) - DMX_UNIVERSE_SIZE;
   if (!CheckPacketSize(source_address, "ArtDmx", packet_size, header_size + 2))
@@ -975,8 +975,8 @@ void ArtNetNodeImpl::HandleTodData(const IPV4Address &source_address,
  * Handle a TOD Control packet
  */
 void ArtNetNodeImpl::HandleTodControl(const IPV4Address &source_address,
-                                  const artnet_todcontrol_t &packet,
-                                  unsigned int packet_size) {
+                                      const artnet_todcontrol_t &packet,
+                                      unsigned int packet_size) {
   if (!CheckPacketSize(source_address, "ArtTodControl", packet_size,
                        sizeof(packet)))
     return;
@@ -1206,7 +1206,7 @@ void ArtNetNodeImpl::HandleIPProgram(const IPV4Address &source_address,
  * Fill in the header for a packet
  */
 void ArtNetNodeImpl::PopulatePacketHeader(artnet_packet *packet,
-                                      uint16_t op_code) {
+                                          uint16_t op_code) {
   strncpy(reinterpret_cast<char*>(packet->id), ARTNET_ID, sizeof(packet->id));
   packet->op_code = HostToLittleEndian(op_code);
 }
@@ -1232,8 +1232,8 @@ void ArtNetNodeImpl::IncrementUIDCounts(uint8_t port_id) {
  * @param destination where to send the packet to
  */
 bool ArtNetNodeImpl::SendPacket(const artnet_packet &packet,
-                            unsigned int size,
-                            const IPV4Address &ip_destination) {
+                                unsigned int size,
+                                const IPV4Address &ip_destination) {
   size += sizeof(packet.id) + sizeof(packet.op_code);
   unsigned int bytes_sent = m_socket->SendTo(
       reinterpret_cast<const uint8_t*>(&packet),
@@ -1359,8 +1359,8 @@ void ArtNetNodeImpl::UpdatePortFromSource(OutputPort *port,
  * Check the version number of a incomming packet
  */
 bool ArtNetNodeImpl::CheckPacketVersion(const IPV4Address &source_address,
-                                    const string &packet_type,
-                                    uint16_t version) {
+                                        const string &packet_type,
+                                        uint16_t version) {
   if (NetworkToHost(version) != ARTNET_VERSION) {
     OLA_INFO << packet_type << " version mismatch, was " <<
       NetworkToHost(version) << " from " << source_address;
@@ -1374,9 +1374,9 @@ bool ArtNetNodeImpl::CheckPacketVersion(const IPV4Address &source_address,
  * Check the size of an incoming packet
  */
 bool ArtNetNodeImpl::CheckPacketSize(const IPV4Address &source_address,
-                                 const string &packet_type,
-                                 unsigned int actual_size,
-                                 unsigned int expected_size) {
+                                     const string &packet_type,
+                                     unsigned int actual_size,
+                                     unsigned int expected_size) {
   if (actual_size < expected_size) {
     OLA_INFO << packet_type << " from " << source_address <<
       " was too small, got " << actual_size <<
@@ -1409,8 +1409,8 @@ bool ArtNetNodeImpl::CheckOutputPortState(uint8_t port_id,
  * Check if a port is available for sending
  */
 bool ArtNetNodeImpl::CheckPortState(uint8_t port_id,
-                                const string &action,
-                                bool is_output) {
+                                    const string &action,
+                                    bool is_output) {
   if (!m_running)
     return false;
 
