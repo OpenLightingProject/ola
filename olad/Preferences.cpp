@@ -262,6 +262,11 @@ bool MemoryPreferences::GetValueAsBool(const string &key) const {
 
 // FilePreferenceSaverThread
 //-----------------------------------------------------------------------------
+FilePreferenceSaverThread::FilePreferenceSaverThread() {
+  // set a long poll interval so we don't spin
+  m_ss.SetDefaultInterval(TimeInterval(60, 0));
+}
+
 
 void FilePreferenceSaverThread::SavePreferences(
     const string &file_name,

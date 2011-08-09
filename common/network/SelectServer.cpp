@@ -443,7 +443,6 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
       return false;
     default:
       Clock::CurrentTime(m_wake_up_time);
-      CheckTimeouts(*m_wake_up_time);
       CheckSockets(&r_fds, &w_fds);
       Clock::CurrentTime(m_wake_up_time);
       CheckTimeouts(*m_wake_up_time);

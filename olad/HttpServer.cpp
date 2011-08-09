@@ -415,6 +415,8 @@ void *HttpServer::Run() {
 
   OLA_INFO << "HTTP Server started on port " << m_port;
 
+  // set a long poll interval so we don't spin
+  m_select_server.SetDefaultInterval(TimeInterval(60, 0));
   m_select_server.Run();
 
   // clean up any remaining sockets

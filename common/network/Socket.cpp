@@ -25,6 +25,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #ifdef WIN32
 #include <winsock2.h>
 #include <winioctl.h>
@@ -111,7 +115,7 @@ bool ConnectedSocket::SetNonBlocking(int fd) {
  * Turn off the SIGPIPE for this socket
  */
 bool ConnectedSocket::SetNoSigPipe(int fd) {
-  #ifdef HAVE_DECL_SO_NOSIGPIPE
+  #if HAVE_DECL_SO_NOSIGPIPE
   int sig_pipe_flag = 1;
   int ok = setsockopt(fd,
                       SOL_SOCKET,
@@ -167,7 +171,7 @@ ssize_t ConnectedSocket::FDSend(int fd,
   if (fd == CLOSED_SOCKET)
     return 0;
 
-#ifdef HAVE_DECL_MSG_NOSIGNAL
+#if HAVE_DECL_MSG_NOSIGNAL
   ssize_t bytes_sent = send(fd, buffer, size, MSG_NOSIGNAL);
 #else
   ssize_t bytes_sent = write(fd, buffer, size);
@@ -447,7 +451,7 @@ bool UdpSocket::Bind(unsigned short port) {
   if (m_fd == CLOSED_SOCKET)
     return false;
 
-  #ifdef HAVE_DECL_SO_REUSEPORT
+  #if HAVE_DECL_SO_REUSEPORT
   // turn on REUSEPORT if we can
   int reuse_flag = 1;
   int ok = setsockopt(m_fd,
