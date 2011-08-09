@@ -111,7 +111,7 @@ bool ConnectedSocket::SetNonBlocking(int fd) {
  * Turn off the SIGPIPE for this socket
  */
 bool ConnectedSocket::SetNoSigPipe(int fd) {
-  #ifdef SO_NOSIGPIPE
+  #ifdef HAVE_DECL_SO_NOSIGPIPE
   int sig_pipe_flag = 1;
   int ok = setsockopt(fd,
                       SOL_SOCKET,
@@ -446,6 +446,21 @@ bool UdpSocket::Init() {
 bool UdpSocket::Bind(unsigned short port) {
   if (m_fd == CLOSED_SOCKET)
     return false;
+
+  #ifdef HAVE_DECL_SO_REUSEPORT
+  // turn on REUSEPORT if we can
+  int reuse_flag = 1;
+  int ok = setsockopt(m_fd,
+                      SOL_SOCKET,
+                      SO_REUSEPORT,
+                      reinterpret_cast<char*>(&reuse_flag),
+                      sizeof(reuse_flag));
+  if (ok < 0) {
+    OLA_WARN << "can't set SO_REUSEPORT for " << m_fd << ", " <<
+      strerror(errno);
+    return false;
+  }
+  #endif
 
   struct sockaddr_in servAddr;
   memset(&servAddr, 0x00, sizeof(servAddr));
