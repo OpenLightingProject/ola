@@ -451,14 +451,28 @@ bool UdpSocket::Bind(unsigned short port) {
   if (m_fd == CLOSED_SOCKET)
     return false;
 
+  #if HAVE_DECL_SO_REUSEADDR
+  int reuse_addr_flag = 1;
+  int addr_ok = setsockopt(m_fd,
+                           SOL_SOCKET,
+                           SO_REUSEADDR,
+                           reinterpret_cast<char*>(&reuse_addr_flag),
+                           sizeof(reuse_addr_flag));
+  if (addr_ok < 0) {
+    OLA_WARN << "can't set SO_REUSEADDR for " << m_fd << ", " <<
+      strerror(errno);
+    return false;
+  }
+  #endif
+
   #if HAVE_DECL_SO_REUSEPORT
   // turn on REUSEPORT if we can
-  int reuse_flag = 1;
+  int reuse_port_flag = 1;
   int ok = setsockopt(m_fd,
                       SOL_SOCKET,
                       SO_REUSEPORT,
-                      reinterpret_cast<char*>(&reuse_flag),
-                      sizeof(reuse_flag));
+                      reinterpret_cast<char*>(&reuse_port_flag),
+                      sizeof(reuse_port_flag));
   if (ok < 0) {
     OLA_WARN << "can't set SO_REUSEPORT for " << m_fd << ", " <<
       strerror(errno);

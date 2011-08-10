@@ -131,6 +131,12 @@ AC_CHECK_DECLS(SO_NOSIGPIPE,
                [#include <sys/types.h>
                 #include <sys/socket.h>])
 
+AC_CHECK_DECLS(SO_REUSEADDR,
+               ,
+               have_so_reuseaddr=no,
+               [#include <sys/types.h>
+                #include <sys/socket.h>])
+
 AC_CHECK_DECLS(SO_REUSEPORT,
                ,
                have_so_reuseport=no,
