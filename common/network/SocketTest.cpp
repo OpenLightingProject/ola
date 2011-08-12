@@ -24,6 +24,7 @@
 #include <string>
 
 #include "ola/Callback.h"
+#include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
@@ -47,6 +48,7 @@ static const int ABORT_TIMEOUT_IN_MS = 1000;
 
 class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SocketTest);
+
   CPPUNIT_TEST(testLoopbackSocket);
   CPPUNIT_TEST(testPipeSocketClientClose);
   CPPUNIT_TEST(testPipeSocketServerClose);
@@ -100,6 +102,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SocketTest);
  * Setup the select server
  */
 void SocketTest::setUp() {
+  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &SocketTest::Timeout);
   CPPUNIT_ASSERT(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
