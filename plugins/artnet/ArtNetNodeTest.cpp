@@ -153,12 +153,6 @@ void ArtNetNodeTest::testBasicBehaviour() {
   CPPUNIT_ASSERT(IPV4Address::FromString("10.255.255.255",
                                          &bcast_destination));
 
-  socket->AddExpectedData(
-    static_cast<const uint8_t*>(POLL_REPLY_MESSAGE),
-    sizeof(POLL_REPLY_MESSAGE),
-    bcast_destination,
-    ARTNET_PORT);
-
   CPPUNIT_ASSERT(node.Start());
   socket->Verify();
   CPPUNIT_ASSERT(socket->CheckNetworkParamsMatch(true, true, 6454, true));

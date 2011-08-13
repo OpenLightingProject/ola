@@ -131,8 +131,6 @@ bool ArtNetNodeImpl::Start() {
 
   m_running = true;
 
-  SendPoll();  // send a poll, this will result in us repling as well
-  SendPollReply(m_interface.bcast_address);
   return true;
 }
 
@@ -160,8 +158,10 @@ bool ArtNetNodeImpl::Stop() {
 
     if (port.rdm_request_callback)
       port.rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
-    if (port.pending_request)
+    if (port.pending_request) {
       delete port.pending_request;
+      port.pending_request = NULL;
+    }
   }
 
   m_ss->RemoveSocket(m_socket);
@@ -658,9 +658,7 @@ void ArtNetNodeImpl::SocketReady() {
                           source))
     return;
 
-  // skip packets sent by us
-  if (source != m_interface.ip_address)
-    HandlePacket(source, packet, packet_size);
+  HandlePacket(source, packet, packet_size);
 }
 
 
@@ -1258,6 +1256,7 @@ void ArtNetNodeImpl::TimeoutRDMRequest(uint8_t port_id) {
   m_input_ports[port_id].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
   InputPort &port = m_input_ports[port_id];
   delete port.pending_request;
+  port.pending_request = NULL;
   ola::rdm::RDMCallback *callback = port.rdm_request_callback;
   port.rdm_request_callback = NULL;
   std::vector<std::string> packets;
