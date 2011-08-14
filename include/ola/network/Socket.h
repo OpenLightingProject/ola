@@ -298,6 +298,36 @@ class PipeSocket: public ConnectedSocket {
 
 
 /*
+ * A unix domain socket pair.
+ */
+class UnixSocket: public ConnectedSocket {
+  public:
+    UnixSocket():
+      m_other_end(NULL) {
+      m_fd = CLOSED_SOCKET;
+    }
+    ~UnixSocket() { Close(); }
+
+    bool Init();
+    UnixSocket *OppositeEnd();
+    int ReadDescriptor() const { return m_fd; }
+    int WriteDescriptor() const { return m_fd; }
+    bool Close();
+    bool CloseClient();
+
+  private:
+    int m_fd;
+    UnixSocket *m_other_end;
+    UnixSocket(int socket, UnixSocket *other_end) {
+      m_fd = socket;
+      m_other_end = other_end;
+    }
+    UnixSocket(const UnixSocket &other);
+    UnixSocket& operator=(const UnixSocket &other);
+};
+
+
+/*
  * A TcpSocket
  */
 class TcpSocket: public ConnectedSocket {

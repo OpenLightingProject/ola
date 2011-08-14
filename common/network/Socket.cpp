@@ -176,9 +176,9 @@ ssize_t ConnectedSocket::FDSend(int fd,
   ssize_t bytes_sent = send(fd, buffer, size, MSG_NOSIGNAL);
 #else
 */
-  //TODO(simon): sort out MSG_NOSIGNAL
+  // TODO(simon): sort out MSG_NOSIGNAL
   ssize_t bytes_sent = write(fd, buffer, size);
-//#endif
+// #endif
 
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
     OLA_WARN << "Failed to send on " << fd << ": " << strerror(errno);
@@ -350,6 +350,65 @@ bool PipeSocket::CloseClient() {
     close(m_out_pair[1]);
 
   m_out_pair[1] = CLOSED_SOCKET;
+  return true;
+}
+
+
+// UnixSocket
+// ------------------------------------------------
+
+/*
+ * Create a new unix socket
+ */
+bool UnixSocket::Init() {
+  int pair[2];
+  if (m_fd != CLOSED_SOCKET || m_other_end)
+    return false;
+
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, pair)) {
+    OLA_WARN << "socketpair() failed, " << strerror(errno);
+    return false;
+  }
+
+  m_fd = pair[0];
+  SetReadNonBlocking();
+  SetNoSigPipe(WriteDescriptor());
+  m_other_end = new UnixSocket(pair[1], this);
+  m_other_end->SetReadNonBlocking();
+  return true;
+}
+
+
+/*
+ * Fetch the other end of the unix socket. The caller now owns the new
+ * UnixSocket.
+ * @returns NULL if the socket wasn't initialized correctly.
+ */
+UnixSocket *UnixSocket::OppositeEnd() {
+  return m_other_end;
+}
+
+
+/*
+ * Close this UnixSocket
+ */
+bool UnixSocket::Close() {
+  if (m_fd != CLOSED_SOCKET)
+    close(m_fd);
+
+  m_fd = CLOSED_SOCKET;
+  return true;
+}
+
+
+/*
+ * Close the write portion of this UnixSocket
+ */
+bool UnixSocket::CloseClient() {
+  if (m_fd != CLOSED_SOCKET)
+    shutdown(m_fd, SHUT_WR);
+
+  m_fd = CLOSED_SOCKET;
   return true;
 }
 

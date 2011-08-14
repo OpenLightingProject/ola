@@ -38,6 +38,7 @@ using ola::network::LoopbackSocket;
 using ola::network::PipeSocket;
 using ola::network::SelectServer;
 using ola::network::StringToAddress;
+using ola::network::UnixSocket;
 using ola::network::TcpAcceptingSocket;
 using ola::network::TcpSocket;
 using ola::network::UdpSocket;
@@ -52,6 +53,8 @@ class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testLoopbackSocket);
   CPPUNIT_TEST(testPipeSocketClientClose);
   CPPUNIT_TEST(testPipeSocketServerClose);
+  CPPUNIT_TEST(testUnixSocketClientClose);
+  CPPUNIT_TEST(testUnixSocketServerClose);
   CPPUNIT_TEST(testTcpSocketClientClose);
   CPPUNIT_TEST(testTcpSocketServerClose);
   CPPUNIT_TEST(testUdpSocket);
@@ -63,6 +66,8 @@ class SocketTest: public CppUnit::TestFixture {
     void testLoopbackSocket();
     void testPipeSocketClientClose();
     void testPipeSocketServerClose();
+    void testUnixSocketClientClose();
+    void testUnixSocketServerClose();
     void testTcpSocketClientClose();
     void testTcpSocketServerClose();
     void testUdpSocket();
@@ -93,6 +98,9 @@ class SocketTest: public CppUnit::TestFixture {
     SelectServer *m_ss;
     AcceptingSocket *m_accepting_socket;
     ola::SingleUseCallback0<void> *m_timeout_closure;
+
+    void SocketClientClose(ConnectedSocket *socket, ConnectedSocket *socket2);
+    void SocketServerClose(ConnectedSocket *socket, ConnectedSocket *socket2);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SocketTest);
@@ -147,29 +155,7 @@ void SocketTest::testPipeSocketClientClose() {
   PipeSocket socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
-
-  socket.SetOnData(
-      ola::NewCallback(this, &SocketTest::ReceiveAndClose,
-                      static_cast<ConnectedSocket*>(&socket)));
-  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
-
-  PipeSocket *other_end = socket.OppositeEnd();
-  CPPUNIT_ASSERT(other_end);
-  other_end->SetOnData(
-      ola::NewCallback(this, &SocketTest::ReceiveAndSend,
-                      static_cast<ConnectedSocket*>(other_end)));
-  other_end->SetOnClose(ola::NewSingleCallback(this,
-                                              &SocketTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
-
-  ssize_t bytes_sent = socket.Send(
-      static_cast<const uint8_t*>(test_cstring),
-      sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
-  m_ss->Run();
-  m_ss->RemoveSocket(&socket);
-  m_ss->RemoveSocket(other_end);
-  delete other_end;
+  SocketClientClose(&socket, socket.OppositeEnd());
 }
 
 
@@ -183,28 +169,33 @@ void SocketTest::testPipeSocketServerClose() {
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
 
-  socket.SetOnData(ola::NewCallback(
-        this, &SocketTest::Receive,
-        static_cast<ConnectedSocket*>(&socket)));
-  socket.SetOnClose(
-      ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
+  SocketServerClose(&socket, socket.OppositeEnd());
+}
 
-  PipeSocket *other_end = socket.OppositeEnd();
-  CPPUNIT_ASSERT(other_end);
-  other_end->SetOnData(ola::NewCallback(
-        this, &SocketTest::ReceiveSendAndClose,
-        static_cast<ConnectedSocket*>(other_end)));
-  CPPUNIT_ASSERT(m_ss->AddSocket(other_end));
 
-  ssize_t bytes_sent = socket.Send(
-      static_cast<const uint8_t*>(test_cstring),
-      sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
-  m_ss->Run();
-  m_ss->RemoveSocket(&socket);
-  m_ss->RemoveSocket(other_end);
-  delete other_end;
+/*
+ * Test a unix socket works correctly.
+ * The client sends some data and expects the same data to be returned. The
+ * client then closes the connection.
+ */
+void SocketTest::testUnixSocketClientClose() {
+  UnixSocket socket;
+  CPPUNIT_ASSERT(socket.Init());
+  CPPUNIT_ASSERT(!socket.Init());
+  SocketClientClose(&socket, socket.OppositeEnd());
+}
+
+
+/*
+ * Test a unix socket works correctly.
+ * The client sends some data. The server echos the data and closes the
+ * connection.
+ */
+void SocketTest::testUnixSocketServerClose() {
+  UnixSocket socket;
+  CPPUNIT_ASSERT(socket.Init());
+  CPPUNIT_ASSERT(!socket.Init());
+  SocketServerClose(&socket, socket.OppositeEnd());
 }
 
 
@@ -439,4 +430,63 @@ void SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
       src_address,
       src_port);
   CPPUNIT_ASSERT_EQUAL(data_read, data_sent);
+}
+
+
+/**
+ * Generic method to test client initiated close
+ */
+void SocketTest::SocketClientClose(ConnectedSocket *socket,
+                                   ConnectedSocket *socket2) {
+  CPPUNIT_ASSERT(socket);
+  socket->SetOnData(
+      ola::NewCallback(this, &SocketTest::ReceiveAndClose,
+                       static_cast<ConnectedSocket*>(socket)));
+  CPPUNIT_ASSERT(m_ss->AddSocket(socket));
+
+  CPPUNIT_ASSERT(socket2);
+  socket2->SetOnData(ola::NewCallback(this, &SocketTest::ReceiveAndSend,
+                                      static_cast<ConnectedSocket*>(socket2)));
+  socket2->SetOnClose(ola::NewSingleCallback(this,
+                                             &SocketTest::TerminateOnClose));
+  CPPUNIT_ASSERT(m_ss->AddSocket(socket2));
+
+  ssize_t bytes_sent = socket->Send(
+      static_cast<const uint8_t*>(test_cstring),
+      sizeof(test_cstring));
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  m_ss->Run();
+  m_ss->RemoveSocket(socket);
+  m_ss->RemoveSocket(socket2);
+  delete socket2;
+}
+
+
+/**
+ * Generic method to test server initiated close
+ */
+void SocketTest::SocketServerClose(ConnectedSocket *socket,
+                                   ConnectedSocket *socket2) {
+  CPPUNIT_ASSERT(socket);
+  socket->SetOnData(ola::NewCallback(
+        this, &SocketTest::Receive,
+        static_cast<ConnectedSocket*>(socket)));
+  socket->SetOnClose(
+      ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
+  CPPUNIT_ASSERT(m_ss->AddSocket(socket));
+
+  CPPUNIT_ASSERT(socket2);
+  socket2->SetOnData(ola::NewCallback(
+        this, &SocketTest::ReceiveSendAndClose,
+        static_cast<ConnectedSocket*>(socket2)));
+  CPPUNIT_ASSERT(m_ss->AddSocket(socket2));
+
+  ssize_t bytes_sent = socket->Send(
+      static_cast<const uint8_t*>(test_cstring),
+      sizeof(test_cstring));
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  m_ss->Run();
+  m_ss->RemoveSocket(socket);
+  m_ss->RemoveSocket(socket2);
+  delete socket2;
 }
