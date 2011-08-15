@@ -1,7 +1,7 @@
-SOURCES = MessageDeserializer.h MessageSerializer.h PidStore.h RDMAPI.h \
-          RDMAPIImplInterface.h RDMCommand.h RDMControllerInterface.h \
-          RDMEnums.h RDMHelper.h StringMessageBuilder.h \
-          QueueingRDMController.h UID.h UIDSet.h
+SOURCES = MessageDeserializer.h MessageSerializer.h PidStore.h \
+          PidStoreHelper.h RDMAPI.h RDMAPIImplInterface.h RDMCommand.h \
+          RDMControllerInterface.h RDMEnums.h RDMHelper.h \
+          StringMessageBuilder.h QueueingRDMController.h UID.h UIDSet.h
 
 BUILT_SOURCES = RDMResponseCodes.h
 

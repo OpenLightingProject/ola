@@ -10,7 +10,7 @@ noinst_LTLIBRARIES = libolardm.la
 libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp \
                        GroupSizeCalculator.cpp \
                        MessageSerializer.cpp MessageDeserializer.cpp \
-                       PidStore.cpp PidStoreLoader.cpp \
+                       PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
                        RDMAPI.cpp RDMCommand.cpp RDMHelper.cpp \
                        StringMessageBuilder.cpp QueueingRDMController.cpp \
                        VariableFieldSizeCalculator.cpp

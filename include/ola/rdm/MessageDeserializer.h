@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_RDM_MESSAGEDESERIALIZER_H_
 
 #include <ola/messaging/DescriptorVisitor.h>
+#include <ola/messaging/Message.h>
 #include <stack>
 #include <vector>
 

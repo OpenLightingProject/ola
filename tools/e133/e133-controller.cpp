@@ -35,21 +35,13 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
-#include <ola/StringUtils.h>
-#include <ola/messaging/Descriptor.h>
-#include <ola/messaging/Message.h>
-#include <ola/messaging/MessagePrinter.h>
-#include <ola/messaging/SchemaPrinter.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
-#include <ola/rdm/MessageDeserializer.h>
-#include <ola/rdm/MessageSerializer.h>
-#include <ola/rdm/PidStore.h>
+#include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
-#include <ola/rdm/StringMessageBuilder.h>
 #include <ola/rdm/UID.h>
 
 #include <algorithm>
@@ -66,6 +58,7 @@
 #include "tools/e133/SlpUrlParser.h"
 
 using ola::network::IPV4Address;
+using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using std::auto_ptr;
@@ -194,224 +187,6 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
-/**
- * A class which manages the RDM PIDs
- */
-class RDMPidHelper {
-  public:
-    explicit RDMPidHelper(const string &pid_file);
-    ~RDMPidHelper();
-
-    bool Init();
-
-    const ola::rdm::PidDescriptor *GetDescriptor(uint16_t manufacturer,
-                                                 const string &pid_name) const;
-    const ola::rdm::PidDescriptor *GetDescriptor(uint16_t manufacturer,
-                                                 uint16_t param_id) const;
-
-    const ola::messaging::Message *BuildMessage(
-        const ola::messaging::Descriptor *descriptor,
-        const vector<string> &inputs);
-
-    const uint8_t *SerializeMessage(const ola::messaging::Message *message,
-                                    unsigned int *data_length);
-
-    const ola::messaging::Message *DeserializeMessage(
-        const ola::messaging::Descriptor *descriptor,
-        const uint8_t *data,
-        unsigned int data_length);
-
-    const string MessageToString(const ola::messaging::Message *message);
-
-    const string PrintSchema(const ola::messaging::Descriptor *descriptor);
-
-    void SupportedPids(uint16_t manufacturer_id,
-                       vector<string> *pid_names) const;
-
-  private:
-    const string m_pid_file;
-    const ola::rdm::RootPidStore *m_root_store;
-    ola::rdm::StringMessageBuilder m_string_builder;
-    ola::rdm::MessageSerializer m_serializer;
-    ola::rdm::MessageDeserializer m_deserializer;
-    ola::messaging::MessagePrinter m_message_printer;
-    ola::messaging::SchemaPrinter m_schema_printer;
-};
-
-
-/**
- * Set up a new RDMPidHelper object
- */
-RDMPidHelper::RDMPidHelper(const string &pid_file)
-    : m_pid_file(pid_file),
-      m_root_store(NULL) {
-}
-
-
-/**
- * Clean up
- */
-RDMPidHelper::~RDMPidHelper() {
-  if (m_root_store)
-    delete m_root_store;
-}
-
-
-/**
- * Init the RDMPidHelper, this loads the pid store
- */
-bool RDMPidHelper::Init() {
-  if (m_root_store) {
-    OLA_WARN << "Root Pid Store already loaded: " << m_pid_file;
-    return false;
-  }
-
-  m_root_store = ola::rdm::RootPidStore::LoadFromFile(m_pid_file);
-  return m_root_store;
-}
-
-
-const ola::rdm::PidDescriptor *RDMPidHelper::GetDescriptor(
-    uint16_t manufacturer_id,
-    const string &pid_name) const {
-  if (!m_root_store)
-    return NULL;
-
-  string canonical_pid_name = pid_name;
-  ola::ToUpper(&canonical_pid_name);
-
-  const ola::rdm::PidStore *store = m_root_store->EstaStore();
-  if (store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      store->LookupPID(canonical_pid_name);
-    if (descriptor)
-      return descriptor;
-  }
-
-  // now try the specific manufacturer store
-  store = m_root_store->ManufacturerStore(manufacturer_id);
-  if (store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      store->LookupPID(canonical_pid_name);
-    if (descriptor)
-      return descriptor;
-  }
-  return NULL;
-}
-
-
-/**
- * Get a RDM descriptor by value
- */
-const ola::rdm::PidDescriptor *RDMPidHelper::GetDescriptor(
-    uint16_t manufacturer_id,
-    uint16_t param_id) const {
-  if (!m_root_store)
-    return NULL;
-
-  const ola::rdm::PidStore *store = m_root_store->EstaStore();
-  if (store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      store->LookupPID(param_id);
-    if (descriptor)
-      return descriptor;
-  }
-
-  // now try the specific manufacturer store
-  store = m_root_store->ManufacturerStore(manufacturer_id);
-  if (store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      store->LookupPID(param_id);
-    if (descriptor)
-      return descriptor;
-  }
-  return NULL;
-}
-
-
-/**
- * Build a Message object from a series of input strings
- */
-const ola::messaging::Message *RDMPidHelper::BuildMessage(
-    const ola::messaging::Descriptor *descriptor,
-    const vector<string> &inputs) {
-
-  const ola::messaging::Message *message = m_string_builder.GetMessage(
-      inputs,
-      descriptor);
-  if (!message)
-    OLA_WARN << "Error building message: " << m_string_builder.GetError();
-  return message;
-}
-
-
-/**
- * Serialize a message to binary format
- */
-const uint8_t *RDMPidHelper::SerializeMessage(
-    const ola::messaging::Message *message,
-    unsigned int *data_length) {
-  return m_serializer.SerializeMessage(message, data_length);
-}
-
-
-
-/**
- * DeSerialize a message
- */
-const ola::messaging::Message *RDMPidHelper::DeserializeMessage(
-    const ola::messaging::Descriptor *descriptor,
-    const uint8_t *data,
-    unsigned int data_length) {
-  return m_deserializer.InflateMessage(descriptor, data, data_length);
-}
-
-
-/**
- * Convert a message to a string
- */
-const string RDMPidHelper::MessageToString(
-    const ola::messaging::Message *message) {
-  return m_message_printer.AsString(message);
-}
-
-
-/**
- * Print the schema for a descriptor
- */
-const string RDMPidHelper::PrintSchema(
-    const ola::messaging::Descriptor *descriptor) {
-  m_schema_printer.Reset();
-  descriptor->Accept(m_schema_printer);
-  return m_schema_printer.AsString();
-}
-
-
-/**
- * Return the list of pids supported including manufacturer pids.
- */
-void RDMPidHelper::SupportedPids(uint16_t manufacturer_id,
-                                 vector<string> *pid_names) const {
-  if (!m_root_store)
-    return;
-
-  vector<const ola::rdm::PidDescriptor*> descriptors;
-  const ola::rdm::PidStore *store = m_root_store->EstaStore();
-  if (store)
-    store->AllPids(&descriptors);
-
-  store = m_root_store->ManufacturerStore(manufacturer_id);
-  if (store)
-    store->AllPids(&descriptors);
-
-  vector<const ola::rdm::PidDescriptor*>::const_iterator iter;
-  for (iter = descriptors.begin(); iter != descriptors.end(); ++iter) {
-    string name = (*iter)->Name();
-    ola::ToLower(&name);
-    pid_names->push_back(name);
-  }
-}
-
 
 /**
  * A very simple E1.33 Controller
@@ -419,7 +194,7 @@ void RDMPidHelper::SupportedPids(uint16_t manufacturer_id,
 class SimpleE133Controller {
   public:
     explicit SimpleE133Controller(const options &opts,
-                                  RDMPidHelper *pid_helper);
+                                  PidStoreHelper *pid_helper);
     ~SimpleE133Controller();
 
     bool Init();
@@ -439,7 +214,7 @@ class SimpleE133Controller {
                         unsigned int data_length);
 
   private:
-    RDMPidHelper *m_pid_helper;
+    PidStoreHelper *m_pid_helper;
     ola::network::SelectServer m_ss;
     SlpThread m_slp_thread;
     E133Node m_e133_node;
@@ -459,7 +234,7 @@ class SimpleE133Controller {
 
 SimpleE133Controller::SimpleE133Controller(
     const options &opts,
-    RDMPidHelper *pid_helper)
+    PidStoreHelper *pid_helper)
     : m_pid_helper(pid_helper),
       m_slp_thread(
         &m_ss,
@@ -656,7 +431,7 @@ void SimpleE133Controller::SendSetRequest(const UID &dst_uid,
 /**
  * List the available pids for a device
  */
-void ListPids(uint16_t manufacturer_id, const RDMPidHelper &pid_helper) {
+void ListPids(uint16_t manufacturer_id, const PidStoreHelper &pid_helper) {
   vector<string> pid_names;
   pid_helper.SupportedPids(manufacturer_id, &pid_names);
   sort(pid_names.begin(), pid_names.end());
@@ -680,7 +455,7 @@ int main(int argc, char *argv[]) {
   opts.rdm_set = false;
   opts.uid = NULL;
   ParseOptions(argc, argv, &opts);
-  RDMPidHelper pid_helper(PID_DATA_FILE);
+  PidStoreHelper pid_helper(PID_DATA_FILE);
 
   if (opts.help)
     DisplayHelpAndExit(argv);
@@ -746,7 +521,7 @@ int main(int argc, char *argv[]) {
 
   if (!message.get()) {
     // print the schema here
-    cout << pid_helper.PrintSchema(descriptor);
+    cout << pid_helper.SchemaAsString(descriptor);
     exit(EX_USAGE);
   }
 
