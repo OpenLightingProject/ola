@@ -39,11 +39,18 @@ class SelectServerInterface {
     SelectServerInterface() {}
     virtual ~SelectServerInterface() {}
 
-    virtual bool AddSocket(class Socket *socket) = 0;
-    virtual bool AddSocket(class ConnectedSocket *socket,
-                   bool delete_on_close = false) = 0;
-    virtual bool RemoveSocket(class Socket *socket) = 0;
-    virtual bool RemoveSocket(class ConnectedSocket *socket) = 0;
+    virtual bool AddReadDescriptor(class ReadFileDescriptor *descriptor) = 0;
+    virtual bool AddReadDescriptor(class ConnectedDescriptor *socket,
+                                   bool delete_on_close = false) = 0;
+    virtual bool RemoveReadDescriptor(
+        class ReadFileDescriptor *descriptor) = 0;
+    virtual bool RemoveReadDescriptor(class ConnectedDescriptor *socket) = 0;
+
+    virtual bool AddWriteDescriptor(
+        class WriteFileDescriptor *descriptor) = 0;
+    virtual bool RemoveWriteDescriptor(
+        class WriteFileDescriptor *descriptor) = 0;
+
     virtual timeout_id RegisterRepeatingTimeout(
         unsigned int ms,
         Callback0<bool> *closure) = 0;

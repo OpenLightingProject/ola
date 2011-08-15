@@ -46,8 +46,8 @@ using std::vector;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 
-OlaClientCore::OlaClientCore(ConnectedSocket *socket)
-    : m_socket(socket),
+OlaClientCore::OlaClientCore(ConnectedDescriptor *descriptor)
+    : m_descriptor(descriptor),
       m_dmx_callback(NULL),
       m_channel(NULL),
       m_stub(NULL),
@@ -73,7 +73,7 @@ bool OlaClientCore::Setup() {
   if (m_connected)
     return false;
 
-  m_channel = new StreamRpcChannel(this, m_socket);
+  m_channel = new StreamRpcChannel(this, m_descriptor);
 
   if (!m_channel) {
     return false;
@@ -95,7 +95,7 @@ bool OlaClientCore::Setup() {
  */
 bool OlaClientCore::Stop() {
   if (m_connected) {
-    m_socket->Close();
+    m_descriptor->Close();
     delete m_channel;
     delete m_stub;
   }

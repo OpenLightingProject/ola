@@ -109,7 +109,7 @@ const char RDMHttpModule::TILT_INVERT_SECTION[] = "tilt_invert";
 /**
  * Create a new OLA HTTP server
  * @param export_map the ExportMap to display when /debug is called
- * @param client_socket A ConnectedSocket which is used to communicate with the
+ * @param client_socket A ConnectedDescriptor which is used to communicate with the
  *   server.
  * @param
  */

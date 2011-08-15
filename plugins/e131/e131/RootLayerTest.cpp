@@ -95,7 +95,7 @@ void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
   ola::network::Interface interface;
   UDPTransport transport;
   CPPUNIT_ASSERT(transport.Init(interface));
-  CPPUNIT_ASSERT(m_ss->AddSocket(transport.GetSocket()));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(transport.GetSocket()));
   RootLayer layer(&transport, root_cid);
 
   Callback0<void> *stop_closure = NewCallback(this, &RootLayerTest::Stop);

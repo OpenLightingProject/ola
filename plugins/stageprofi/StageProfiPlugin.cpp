@@ -74,7 +74,7 @@ bool StageProfiPlugin::StartHook() {
       continue;
     }
 
-    m_plugin_adaptor->AddSocket(device->GetSocket());
+    m_plugin_adaptor->AddReadDescriptor(device->GetSocket());
     m_plugin_adaptor->RegisterDevice(device);
     m_devices.insert(m_devices.end(), device);
   }
@@ -89,7 +89,7 @@ bool StageProfiPlugin::StartHook() {
 bool StageProfiPlugin::StopHook() {
   vector<StageProfiDevice*>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    m_plugin_adaptor->RemoveSocket((*iter)->GetSocket());
+    m_plugin_adaptor->RemoveReadDescriptor((*iter)->GetSocket());
     DeleteDevice(*iter);
   }
   m_devices.clear();
@@ -119,7 +119,7 @@ string StageProfiPlugin::Description() const {
 /*
  * Called when the file descriptor is closed.
  */
-int StageProfiPlugin::SocketClosed(ConnectedSocket *socket) {
+int StageProfiPlugin::SocketClosed(ConnectedDescriptor *socket) {
   vector<StageProfiDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {

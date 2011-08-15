@@ -28,7 +28,7 @@
 #include "common/rpc/TestService.pb.h"
 
 using google::protobuf::NewCallback;
-using ola::network::LoopbackSocket;
+using ola::network::LoopbackDescriptor;
 using ola::network::SelectServer;
 using ola::rpc::EchoReply;
 using ola::rpc::EchoRequest;
@@ -92,7 +92,7 @@ class StreamRpcChannelTest: public CppUnit::TestFixture {
     SelectServer m_ss;
     TestServiceImpl *m_service;
     StreamRpcChannel *m_channel;
-    LoopbackSocket *m_socket;
+    LoopbackDescriptor *m_socket;
 };
 
 
@@ -134,18 +134,18 @@ void TestServiceImpl::Stream(::google::protobuf::RpcController* controller,
 
 
 void StreamRpcChannelTest::setUp() {
-  m_socket = new LoopbackSocket();
+  m_socket = new LoopbackDescriptor();
   m_socket->Init();
 
   m_service = new TestServiceImpl(&m_ss);
   m_channel = new StreamRpcChannel(m_service, m_socket);
-  m_ss.AddSocket(m_socket);
+  m_ss.AddReadDescriptor(m_socket);
   m_stub = new TestService_Stub(m_channel);
 }
 
 
 void StreamRpcChannelTest::tearDown() {
-  m_ss.RemoveSocket(m_socket);
+  m_ss.RemoveReadDescriptor(m_socket);
   delete m_socket;
   delete m_stub;
   delete m_channel;

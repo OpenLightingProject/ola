@@ -100,7 +100,7 @@ bool StageProfiWidget::DetectDevice() {
 
   m_got_response = false;
   m_ss = new SelectServer();
-  m_ss->AddSocket(m_socket, NULL);
+  m_ss->AddReadDescriptor(m_socket, NULL);
   m_ss->RegisterSingleTimeout(
       100,
       ola::NewSingleCallback(this, &StageProfiWidget::Timeout));

@@ -394,9 +394,9 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
     OLA_WARN << "Invalid shutdown message, length was " << length;
   } else {
     OLA_INFO << "Received shutdown message from Dmxter";
-    // this closed socket will be detected the the ss, which will then
+    // this closed descriptor will be detected the the ss, which will then
     // invoke the on_close callback, removing the device.
-    m_widget->CloseSocket();
+    m_widget->CloseDescriptor();
   }
 }
 

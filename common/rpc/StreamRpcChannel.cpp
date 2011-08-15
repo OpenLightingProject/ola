@@ -43,12 +43,13 @@ const char StreamRpcChannel::K_RPC_SENT_ERROR_VAR[] = "rpc-send-errors";
 const char StreamRpcChannel::K_RPC_SENT_VAR[] = "rpc-sent";
 const char StreamRpcChannel::STREAMING_NO_RESPONSE[] = "STREAMING_NO_RESPONSE";
 
-StreamRpcChannel::StreamRpcChannel(Service *service,
-                                   ola::network::ConnectedSocket *socket,
-                                   ExportMap *export_map)
+StreamRpcChannel::StreamRpcChannel(
+    Service *service,
+    ola::network::ConnectedDescriptor *descriptor,
+    ExportMap *export_map)
     : m_service(service),
       m_on_close(NULL),
-      m_socket(socket),
+      m_descriptor(descriptor),
       m_seq(0),
       m_buffer(NULL),
       m_buffer_size(0),
@@ -56,7 +57,8 @@ StreamRpcChannel::StreamRpcChannel(Service *service,
       m_current_size(0),
       m_export_map(export_map),
       m_recv_type_map(NULL) {
-  socket->SetOnData(ola::NewCallback(this, &StreamRpcChannel::SocketReady));
+  descriptor->SetOnData(
+      ola::NewCallback(this, &StreamRpcChannel::DescriptorReady));
 
   // init the counters
   const char *vars[] = {
@@ -83,9 +85,9 @@ StreamRpcChannel::~StreamRpcChannel() {
 
 /*
  * Receive a message for this RPCChannel. Called when data is available on the
- * socket.
+ * descriptor.
  */
-void StreamRpcChannel::SocketReady() {
+void StreamRpcChannel::DescriptorReady() {
   if (!m_expected_size) {
     // this is a new msg
     unsigned int version;
@@ -111,10 +113,10 @@ void StreamRpcChannel::SocketReady() {
   }
 
   unsigned int data_read;
-  if (m_socket->Receive(m_buffer + m_current_size,
+  if (m_descriptor->Receive(m_buffer + m_current_size,
                         m_expected_size - m_current_size,
                         data_read) < 0) {
-    OLA_WARN << "something went wrong in socket recv\n";
+    OLA_WARN << "something went wrong in descriptor recv\n";
     return;
   }
 
@@ -125,7 +127,7 @@ void StreamRpcChannel::SocketReady() {
     if (!HandleNewMsg(m_buffer, m_expected_size)) {
       // this probably means we've messed the framing up, close the channel
       OLA_WARN << "Errors detected on RPC channel, closing";
-      m_socket->Close();
+      m_descriptor->Close();
     }
     m_expected_size = 0;
   }
@@ -135,7 +137,7 @@ void StreamRpcChannel::SocketReady() {
 
 /*
  * Set the Closure to be called if a write on this channel fails. This is
- * different from the Socket on close handler which is called when reads hit
+ * different from the Descriptor on close handler which is called when reads hit
  * EOF/
  */
 void StreamRpcChannel::SetOnClose(SingleUseCallback0<void> *closure) {
@@ -232,11 +234,11 @@ void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
 //-----------------------------------------------------------------------------
 
 /*
- * Write an RpcMessage to the write socket.
+ * Write an RpcMessage to the write descriptor.
  */
 bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
-  if (m_socket->ReadDescriptor() == ola::network::Socket::CLOSED_SOCKET) {
-    OLA_WARN << "RPC Socket closed, not sending messages";
+  if (!m_descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "RPC descriptor closed, not sending messages";
     return false;
   }
 
@@ -246,10 +248,10 @@ bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
   uint32_t header;
   StreamRpcHeader::EncodeHeader(&header, PROTOCOL_VERSION, length);
 
-  ssize_t ret = m_socket->Send(reinterpret_cast<const uint8_t*>(&header),
-                               sizeof(header));
-  ret = m_socket->Send(reinterpret_cast<const uint8_t*>(output.data()),
-                       length);
+  ssize_t ret = m_descriptor->Send(reinterpret_cast<const uint8_t*>(&header),
+                                   sizeof(header));
+  ret = m_descriptor->Send(reinterpret_cast<const uint8_t*>(output.data()),
+                           length);
 
   if (ret != length) {
     if (ret == -1)
@@ -257,7 +259,7 @@ bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
     else
       OLA_WARN << "Failed to send full datagram, closing channel";
     // At the point framing is screwed and we should shut the channel down
-    m_socket->Close();
+    m_descriptor->Close();
     if (m_on_close)
       m_on_close->Run();
 
@@ -310,8 +312,8 @@ int StreamRpcChannel::ReadHeader(unsigned int *version,
   unsigned int data_read = 0;
   *version = *size = 0;
 
-  if (m_socket->Receive(reinterpret_cast<uint8_t*>(&header),
-                        sizeof(header), data_read)) {
+  if (m_descriptor->Receive(reinterpret_cast<uint8_t*>(&header),
+                            sizeof(header), data_read)) {
     OLA_WARN << "read header error: " << strerror(errno);
     return -1;
   }

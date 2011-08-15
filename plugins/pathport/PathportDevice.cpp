@@ -108,7 +108,7 @@ bool PathportDevice::StartHook() {
     AddPort(port);
   }
 
-  m_plugin_adaptor->AddSocket(m_node->GetSocket());
+  m_plugin_adaptor->AddReadDescriptor(m_node->GetSocket());
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
       ADVERTISTMENT_PERIOD_MS,
       NewCallback(this, &PathportDevice::SendArpReply));
@@ -121,7 +121,7 @@ bool PathportDevice::StartHook() {
  * Stop this device
  */
 void PathportDevice::PrePortStop() {
-  m_plugin_adaptor->RemoveSocket(m_node->GetSocket());
+  m_plugin_adaptor->RemoveReadDescriptor(m_node->GetSocket());
 
   if (m_timeout_id != ola::network::INVALID_TIMEOUT) {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);

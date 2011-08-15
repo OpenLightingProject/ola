@@ -38,11 +38,14 @@ class PluginAdaptor: public ola::network::SelectServerInterface {
                   class PortBrokerInterface *port_broker);
 
     // The following methods are part of the SelectServerInterface
-    bool AddSocket(ola::network::Socket *socket);
-    bool AddSocket(ola::network::ConnectedSocket *socket,
+    bool AddReadDescriptor(ola::network::ReadFileDescriptor *descriptor);
+    bool AddReadDescriptor(ola::network::ConnectedDescriptor *descriptor,
                    bool delete_on_close = false);
-    bool RemoveSocket(ola::network::Socket *socket);
-    bool RemoveSocket(ola::network::ConnectedSocket *socket);
+    bool RemoveReadDescriptor(ola::network::ReadFileDescriptor *descriptor);
+    bool RemoveReadDescriptor(ola::network::ConnectedDescriptor *descriptor);
+    bool AddWriteDescriptor(ola::network::WriteFileDescriptor *descriptor);
+    bool RemoveWriteDescriptor(ola::network::WriteFileDescriptor *descriptor);
+
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                         Callback0<bool> *closure);
     timeout_id RegisterSingleTimeout(unsigned int ms,

@@ -148,12 +148,14 @@ class SelectServer: public SelectServerInterface {
     void RunOnce(unsigned int delay_sec = POLL_INTERVAL_SECOND,
                  unsigned int delay_usec = POLL_INTERVAL_USECOND);
 
-    bool AddSocket(Socket *socket);
-    bool AddSocket(ConnectedSocket *socket, bool delete_on_close = false);
-    bool RemoveSocket(Socket *socket);
-    bool RemoveSocket(ConnectedSocket *socket);
-    bool RegisterWriteSocket(BidirectionalSocket *socket);
-    bool UnRegisterWriteSocket(BidirectionalSocket *socket);
+    bool AddReadDescriptor(ReadFileDescriptor *descriptor);
+    bool AddReadDescriptor(ConnectedDescriptor *descriptor,
+                           bool delete_on_close = false);
+    bool RemoveReadDescriptor(ReadFileDescriptor *descriptor);
+    bool RemoveReadDescriptor(ConnectedDescriptor *descriptor);
+
+    bool AddWriteDescriptor(WriteFileDescriptor *descriptor);
+    bool RemoveWriteDescriptor(WriteFileDescriptor *descriptor);
 
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                         ola::Callback0<bool> *closure);
@@ -166,39 +168,40 @@ class SelectServer: public SelectServerInterface {
     void Execute(ola::BaseCallback0<void> *closure);
 
     // these are pubic so that the tests can access them
-    static const char K_SOCKET_VAR[];
-    static const char K_WRITE_SOCKET_VAR[];
-    static const char K_CONNECTED_SOCKET_VAR[];
+    static const char K_READ_DESCRIPTOR_VAR[];
+    static const char K_WRITE_DESCRIPTOR_VAR[];
+    static const char K_CONNECTED_DESCRIPTORS_VAR[];
     static const char K_TIMER_VAR[];
     static const char K_LOOP_TIME[];
     static const char K_LOOP_COUNT[];
 
   private :
     typedef struct {
-      ConnectedSocket *socket;
+      ConnectedDescriptor *descriptor;
       bool delete_on_close;
-    } connected_socket_t;
+    } connected_descriptor_t;
 
-    struct connected_socket_t_lt {
-      bool operator()(const connected_socket_t &c1,
-                      const connected_socket_t &c2) const {
-        return c1.socket->ReadDescriptor() < c2.socket->ReadDescriptor();
+    struct connected_descriptor_t_lt {
+      bool operator()(const connected_descriptor_t &c1,
+                      const connected_descriptor_t &c2) const {
+        return c1.descriptor->ReadDescriptor() <
+            c2.descriptor->ReadDescriptor();
       }
     };
 
-    typedef std::set<Socket*> SocketSet;
-    typedef std::set<BidirectionalSocket*> BidirectionalSocketSet;
-    typedef std::set<connected_socket_t, connected_socket_t_lt>
-      ConnectedSocketSet;
+    typedef std::set<ReadFileDescriptor*> ReadDescriptorSet;
+    typedef std::set<WriteFileDescriptor*> WriteDescriptorSet;
+    typedef std::set<connected_descriptor_t, connected_descriptor_t_lt>
+      ConnectedDescriptorSet;
     typedef std::set<ola::Callback0<void>*> LoopClosureSet;
 
     bool m_terminate, m_is_running;
     bool m_free_wake_up_time;
     TimeInterval m_poll_interval;
     unsigned int m_next_id;
-    SocketSet m_sockets;
-    ConnectedSocketSet m_connected_sockets;
-    BidirectionalSocketSet m_write_sockets;
+    ReadDescriptorSet m_read_descriptors;
+    ConnectedDescriptorSet m_connected_read_descriptors;
+    WriteDescriptorSet m_write_descriptors;
     std::set<timeout_id> m_removed_timeouts;
     ExportMap *m_export_map;
 
@@ -210,13 +213,13 @@ class SelectServer: public SelectServerInterface {
     LoopClosureSet m_loop_closures;
     std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
     pthread_mutex_t m_incoming_mutex;
-    LoopbackSocket m_incoming_socket;
+    LoopbackDescriptor m_incoming_descriptor;
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
     bool CheckForEvents(const TimeInterval &poll_interval);
-    void CheckSockets(fd_set *r_set, fd_set *w_set);
-    void AddSocketsToSet(fd_set *r_set, fd_set *w_set, int *max_sd);
+    void CheckDescriptors(fd_set *r_set, fd_set *w_set);
+    void AddDescriptorsToSet(fd_set *r_set, fd_set *w_set, int *max_sd);
     TimeStamp CheckTimeouts(const TimeStamp &now);
     void UnregisterAll();
     void DrainAndExecute();

@@ -164,7 +164,7 @@ bool ArtNetNodeImpl::Stop() {
     }
   }
 
-  m_ss->RemoveSocket(m_socket);
+  m_ss->RemoveReadDescriptor(m_socket);
 
   if (m_socket) {
     delete m_socket;
@@ -1454,7 +1454,7 @@ bool ArtNetNodeImpl::InitNetwork() {
   }
 
   m_socket->SetOnData(NewCallback(this, &ArtNetNodeImpl::SocketReady));
-  m_ss->AddSocket(m_socket);
+  m_ss->AddReadDescriptor(m_socket);
   return true;
 }
 

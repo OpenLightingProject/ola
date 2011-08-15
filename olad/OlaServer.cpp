@@ -137,7 +137,7 @@ OlaServer::~OlaServer() {
     // TODO(simon): close the socket here
 
     /*Socket *socket = ;
-    m_ss->RemoveSocket(socket);
+    m_ss->RemoveReadDescriptor(socket);
     socket->Close();
     */
   }
@@ -149,9 +149,8 @@ OlaServer::~OlaServer() {
     delete m_port_broker;
 
   if (m_accepting_socket &&
-      m_accepting_socket->ReadDescriptor() !=
-      ola::network::Socket::CLOSED_SOCKET)
-    m_ss->RemoveSocket(m_accepting_socket);
+      m_accepting_socket->ValidReadDescriptor())
+    m_ss->RemoveReadDescriptor(m_accepting_socket);
 
   if (m_universe_store) {
     m_universe_store->DeleteAll();
@@ -194,10 +193,9 @@ bool OlaServer::Init() {
         "another instance of olad running";
       return false;
     }
-    m_accepting_socket->SetOnData(
-      ola::NewCallback(this, &OlaServer::AcceptNewConnection,
-                      m_accepting_socket));
-    m_ss->AddSocket(m_accepting_socket);
+    m_accepting_socket->SetOnAccept(
+      ola::NewCallback(this, &OlaServer::NewConnection));
+    m_ss->AddReadDescriptor(m_accepting_socket);
   }
 
 #ifndef WIN32
@@ -284,25 +282,12 @@ void OlaServer::ReloadPlugins() {
 
 
 /*
- * Add a new ConnectedSocket to this Server.
- * @param accepting_socket the AcceptingSocket with the new connection pending.
+ * Add a new ConnectedDescriptor to this Server.
+ * @param socket the new ConnectedDescriptor
  */
-void OlaServer::AcceptNewConnection(
-    ola::network::AcceptingSocket *accepting_socket) {
-  ola::network::ConnectedSocket *socket = accepting_socket->Accept();
-
-  if (socket)
-    NewConnection(socket);
-}
-
-
-/*
- * Add a new ConnectedSocket to this Server.
- * @param socket the new ConnectedSocket
- */
-bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
+void OlaServer::NewConnection(ola::network::ConnectedDescriptor *socket) {
   if (!socket)
-    return false;
+    return;
 
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
   socket->SetOnClose(NewSingleCallback(this, &OlaServer::SocketClosed, socket));
@@ -322,16 +307,15 @@ bool OlaServer::NewConnection(ola::network::ConnectedSocket *socket) {
   m_sd_to_service.insert(pair);
 
   // This hands off ownership to the select server
-  m_ss->AddSocket(socket, true);
+  m_ss->AddReadDescriptor(socket, true);
   (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
-  return 0;
 }
 
 
 /*
  * Called when a socket is closed
  */
-void OlaServer::SocketClosed(ola::network::ConnectedSocket *socket) {
+void OlaServer::SocketClosed(ola::network::ConnectedDescriptor *socket) {
   map<int, OlaClientService*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
@@ -378,15 +362,16 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
 
   // create a pipe socket for the http server to communicate with the main
   // server on.
-  ola::network::PipeSocket *socket = new ola::network::PipeSocket();
-  if (!socket->Init()) {
-    delete socket;
+  ola::network::PipeDescriptor *pipe_descriptor =
+    new ola::network::PipeDescriptor();
+  if (!pipe_descriptor->Init()) {
+    delete pipe_descriptor;
     return false;
   }
 
-  // ownership of the socket is transferred here.
+  // ownership of the pipe_descriptor is transferred here.
   m_httpd = new OlaHttpServer(m_export_map,
-                              socket->OppositeEnd(),
+                              pipe_descriptor->OppositeEnd(),
                               this,
                               m_options.http_port,
                               m_options.http_enable_quit,
@@ -395,12 +380,12 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
 
   if (m_httpd->Init()) {
     m_httpd->Start();
-    // register the pipe socket as a client
-    NewConnection(socket);
+    // register the pipe descriptor as a client
+    NewConnection(pipe_descriptor);
     return true;
   } else {
-    socket->Close();
-    delete socket;
+    pipe_descriptor->Close();
+    delete pipe_descriptor;
     delete m_httpd;
     m_httpd = NULL;
     return false;

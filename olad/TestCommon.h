@@ -189,25 +189,35 @@ class MockSelectServer: public ola::network::SelectServerInterface {
       m_wake_up(wake_up) {}
     ~MockSelectServer() {}
 
-    bool AddSocket(ola::network::Socket *socket) {
-      (void) socket;
+    bool AddReadDescriptor(ola::network::ReadFileDescriptor *descriptor) {
+      (void) descriptor;
       return true;
     }
 
-    bool AddSocket(ola::network::ConnectedSocket *socket,
+    bool AddReadDescriptor(ola::network::ConnectedDescriptor *descriptor,
                    bool delete_on_close = false) {
-      (void) socket;
+      (void) descriptor;
       (void) delete_on_close;
       return true;
     }
 
-    bool RemoveSocket(ola::network::Socket *socket) {
-      (void) socket;
+    bool RemoveReadDescriptor(ola::network::ReadFileDescriptor *descriptor) {
+      (void) descriptor;
       return true;
     }
 
-    bool RemoveSocket(ola::network::ConnectedSocket *socket) {
-      (void) socket;
+    bool RemoveReadDescriptor(ola::network::ConnectedDescriptor *descriptor) {
+      (void) descriptor;
+      return true;
+    }
+
+    bool AddWriteDescriptor(ola::network::WriteFileDescriptor *descriptor) {
+      (void) descriptor;
+      return true;
+    }
+
+    bool RemoveWriteDescriptor(ola::network::WriteFileDescriptor *descriptor) {
+      (void) descriptor;
       return true;
     }
 

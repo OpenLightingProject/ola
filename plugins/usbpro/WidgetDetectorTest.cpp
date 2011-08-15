@@ -31,8 +31,8 @@
 #include "plugins/usbpro/WidgetDetector.h"
 
 
-using ola::network::ConnectedSocket;
-using ola::network::PipeSocket;
+using ola::network::ConnectedDescriptor;
+using ola::network::PipeDescriptor;
 using ola::plugin::usbpro::DeviceInformation;
 using ola::plugin::usbpro::UsbWidget;
 using ola::plugin::usbpro::WidgetDetector;
@@ -57,8 +57,8 @@ class WidgetDetectorTest: public CppUnit::TestFixture {
   private:
     ola::network::SelectServer m_ss;
     WidgetDetector *m_detector;
-    PipeSocket m_socket;
-    PipeSocket *m_other_end;
+    PipeDescriptor m_descriptor;
+    PipeDescriptor *m_other_end;
     UsbWidget *m_widget;
     UsbWidget *m_responder;
     DeviceInformation m_device_info;
@@ -106,12 +106,12 @@ void WidgetDetectorTest::setUp() {
       ola::NewCallback(this, &WidgetDetectorTest::NewWidget));
   m_detector->SetFailureHandler(
       ola::NewCallback(this, &WidgetDetectorTest::FailedWidget));
-  m_socket.Init();
-  m_other_end = m_socket.OppositeEnd();
+  m_descriptor.Init();
+  m_other_end = m_descriptor.OppositeEnd();
 
-  m_ss.AddSocket(&m_socket);
-  m_ss.AddSocket(m_other_end, true);
-  m_widget = new UsbWidget(&m_socket);
+  m_ss.AddReadDescriptor(&m_descriptor);
+  m_ss.AddReadDescriptor(m_other_end, true);
+  m_widget = new UsbWidget(&m_descriptor);
 
   // we fake another widget at the other end of the pipe
   m_responder = new UsbWidget(m_other_end);

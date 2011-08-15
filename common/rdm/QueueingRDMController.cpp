@@ -28,7 +28,6 @@
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
-#include "plugins/usbpro/UsbWidget.h"
 
 namespace ola {
 namespace rdm {

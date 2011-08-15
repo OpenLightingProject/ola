@@ -46,7 +46,7 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-using ola::network::DeviceSocket;
+using ola::network::DeviceDescriptor;
 
 const char UsbDmxPlugin::PLUGIN_NAME[] = "USB";
 const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";
@@ -56,23 +56,23 @@ int UsbDmxPlugin::LIBUSB_MAX_DEBUG_LEVEL = 3;
 
 
 /*
- * Called by libusb when a new socket is created.
+ * Called by libusb when a new descriptor is created.
  */
 void libusb_fd_added(int fd, short events, void *data) {
   UsbDmxPlugin *plugin = static_cast<UsbDmxPlugin*>(data);
 
   OLA_INFO << "USB new FD: " << fd;
-  plugin->AddDeviceSocket(fd);
+  plugin->AddDeviceDescriptor(fd);
 }
 
 
 /*
- * Called by libusb when a socket is no longer needed.
+ * Called by libusb when a descriptor is no longer needed.
  */
 void libusb_fd_removed(int fd, void *data) {
   UsbDmxPlugin *plugin = static_cast<UsbDmxPlugin*>(data);
   OLA_INFO << "USB rm FD: " << fd;
-  plugin->RemoveDeviceSocket(fd);
+  plugin->RemoveDeviceDescriptor(fd);
 }
 
 
@@ -115,7 +115,7 @@ bool UsbDmxPlugin::StartHook() {
   const libusb_pollfd **pollfds = libusb_get_pollfds(m_usb_context);
   while (*pollfds) {
     OLA_WARN << "poll fd " << (*pollfds)->fd;
-    AddDeviceSocket((*pollfds)->fd);
+    AddDeviceDescriptor((*pollfds)->fd);
     pollfds++;
   }
   */
@@ -220,8 +220,8 @@ bool UsbDmxPlugin::StopHook() {
 
   libusb_exit(NULL);
 
-  if (!m_sockets.empty()) {
-    OLA_WARN << "libusb is still using sockets, this is a bug";
+  if (!m_descriptors.empty()) {
+    OLA_WARN << "libusb is still using descriptor, this is a bug";
   }
   return true;
 }
@@ -265,26 +265,26 @@ bool UsbDmxPlugin::SetDefaultPreferences() {
 }
 
 
-bool UsbDmxPlugin::AddDeviceSocket(int fd) {
-  vector<DeviceSocket*>::const_iterator iter = m_sockets.begin();
-  for (; iter != m_sockets.end(); ++iter) {
+bool UsbDmxPlugin::AddDeviceDescriptor(int fd) {
+  vector<DeviceDescriptor*>::const_iterator iter = m_descriptors.begin();
+  for (; iter != m_descriptors.end(); ++iter) {
     if ((*iter)->ReadDescriptor() == fd)
       return true;
   }
-  DeviceSocket *socket = new DeviceSocket(fd);
+  DeviceDescriptor *socket = new DeviceDescriptor(fd);
   socket->SetOnData(NewCallback(this, &UsbDmxPlugin::SocketReady));
-  m_plugin_adaptor->AddSocket(socket);
-  m_sockets.push_back(socket);
+  m_plugin_adaptor->AddReadDescriptor(socket);
+  m_descriptors.push_back(socket);
 }
 
 
-bool UsbDmxPlugin::RemoveDeviceSocket(int fd) {
-  vector<DeviceSocket*>::iterator iter = m_sockets.begin();
-  for (; iter != m_sockets.end(); ++iter) {
+bool UsbDmxPlugin::RemoveDeviceDescriptor(int fd) {
+  vector<DeviceDescriptor*>::iterator iter = m_descriptors.begin();
+  for (; iter != m_descriptors.end(); ++iter) {
     if ((*iter)->ReadDescriptor() == fd) {
-      m_plugin_adaptor->RemoveSocket(*iter);
+      m_plugin_adaptor->RemoveReadDescriptor(*iter);
       delete *iter;
-      m_sockets.erase(iter);
+      m_descriptors.erase(iter);
       return true;
     }
   }

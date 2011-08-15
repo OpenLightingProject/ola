@@ -24,11 +24,11 @@
 
 namespace ola {
 
-using ola::network::ConnectedSocket;
+using ola::network::ConnectedDescriptor;
 
-OlaClient::OlaClient(ConnectedSocket *socket)
+OlaClient::OlaClient(ConnectedDescriptor *descriptor)
     : m_observer(NULL) {
-  m_core = new OlaClientCore(socket);
+  m_core = new OlaClientCore(descriptor);
 }
 
 OlaClient::~OlaClient() {

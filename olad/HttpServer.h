@@ -161,20 +161,21 @@ class HttpServer: public OlaThread {
     HttpServer& operator=(const HttpServer&);
 
     struct unmanaged_socket_lt {
-      bool operator()(const ola::network::UnmanagedSocket *s1,
-                      const ola::network::UnmanagedSocket *s2) const {
+      bool operator()(const ola::network::UnmanagedFileDescriptor *s1,
+                      const ola::network::UnmanagedFileDescriptor *s2) const {
         return s1->ReadDescriptor() < s2->ReadDescriptor();
       }
     };
 
-    ola::network::UnmanagedSocket *NewSocket(fd_set *r_set,
-                                             fd_set *w_set,
-                                             int fd);
+    ola::network::UnmanagedFileDescriptor *NewSocket(fd_set *r_set,
+                                                     fd_set *w_set,
+                                                     int fd);
 
     struct MHD_Daemon *m_httpd;
     ola::network::SelectServer m_select_server;
 
-    std::set<ola::network::UnmanagedSocket*, unmanaged_socket_lt> m_sockets;
+    std::set<ola::network::UnmanagedFileDescriptor*, unmanaged_socket_lt>
+        m_sockets;
 
     map<string, BaseHttpCallback*> m_handlers;
     map<string, static_file_info> m_static_content;

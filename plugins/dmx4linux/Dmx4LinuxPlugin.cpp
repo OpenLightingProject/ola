@@ -65,7 +65,7 @@ const char Dmx4LinuxPlugin::PLUGIN_PREFIX[] = "dmx4linux";
 
 
 Dmx4LinuxPlugin::~Dmx4LinuxPlugin() {
-  CleanupSockets();
+  CleanupDescriptors();
 }
 
 
@@ -73,21 +73,21 @@ Dmx4LinuxPlugin::~Dmx4LinuxPlugin() {
  * Start the plugin
  */
 bool Dmx4LinuxPlugin::StartHook() {
-  if (!SetupSockets())
+  if (!SetupDescriptors())
     return false;
 
   if (!SetupDevices()) {
-    CleanupSockets();
+    CleanupDescriptors();
     return false;
   }
 
   if (!m_devices.empty()) {
-    m_in_socket->SetOnData(
+    m_in_descriptor->SetOnData(
         ola::NewCallback(this, &Dmx4LinuxPlugin::SocketReady));
-    m_plugin_adaptor->AddSocket(m_in_socket);
+    m_plugin_adaptor->AddReadDescriptor(m_in_descriptor);
     return true;
   } else {
-    CleanupSockets();
+    CleanupDescriptors();
     return false;
   }
 }
@@ -99,14 +99,14 @@ bool Dmx4LinuxPlugin::StartHook() {
  */
 bool Dmx4LinuxPlugin::StopHook() {
   vector<Dmx4LinuxDevice*>::iterator it;
-  m_plugin_adaptor->RemoveSocket(m_in_socket);
+  m_plugin_adaptor->RemoveReadDescriptor(m_in_descriptor);
 
   for (it = m_devices.begin(); it != m_devices.end(); ++it) {
     m_plugin_adaptor->UnregisterDevice(*it);
     (*it)->Stop();
     delete *it;
   }
-  CleanupSockets();
+  CleanupDescriptors();
   m_devices.clear();
   m_in_ports.clear();
   return 0;
@@ -138,11 +138,11 @@ int Dmx4LinuxPlugin::SocketReady() {
   unsigned int data_read, offset;
   int ret;
 
-  if (lseek(m_in_socket->ReadDescriptor(), 0, SEEK_SET) != 0) {
+  if (lseek(m_in_descriptor->ReadDescriptor(), 0, SEEK_SET) != 0) {
     OLA_WARN << "failed to seek: " << strerror(errno);
     return -1;
   }
-  ret = m_in_socket->Receive(m_in_buffer,
+  ret = m_in_descriptor->Receive(m_in_buffer,
                              DMX_UNIVERSE_SIZE * m_in_devices_count,
                              data_read);
   iter = m_in_ports.begin();
@@ -185,23 +185,23 @@ bool Dmx4LinuxPlugin::SetDefaultPreferences() {
 /*
  * Open the input and output fds
  */
-bool Dmx4LinuxPlugin::SetupSockets() {
-  if (!m_in_socket && !m_out_socket) {
+bool Dmx4LinuxPlugin::SetupDescriptors() {
+  if (!m_in_descriptor && !m_out_descriptor) {
     int fd = open(m_out_dev.c_str(), O_WRONLY);
 
     if (fd < 0) {
       OLA_WARN << "failed to open " << m_out_dev << " " << strerror(errno);
       return false;
     }
-    m_out_socket = new Dmx4LinuxSocket(fd);
+    m_out_descriptor = new Dmx4LinuxSocket(fd);
 
     fd = open(m_in_dev.c_str(), O_RDONLY | O_NONBLOCK);
     if (fd < 0) {
       OLA_WARN << "failed to open " << m_in_dev << " " << strerror(errno);
-      CleanupSockets();
+      CleanupDescriptors();
       return false;
     }
-    m_in_socket = new Dmx4LinuxSocket(fd);
+    m_in_descriptor = new Dmx4LinuxSocket(fd);
     return true;
   }
   return false;
@@ -211,15 +211,15 @@ bool Dmx4LinuxPlugin::SetupSockets() {
 /*
  * Close all fds
  */
-int Dmx4LinuxPlugin::CleanupSockets() {
-  if (m_in_socket) {
-    delete m_in_socket;
-    m_in_socket = NULL;
+int Dmx4LinuxPlugin::CleanupDescriptors() {
+  if (m_in_descriptor) {
+    delete m_in_descriptor;
+    m_in_descriptor = NULL;
   }
 
-  if (m_out_socket) {
-    delete m_out_socket;
-    m_out_socket = NULL;
+  if (m_out_descriptor) {
+    delete m_out_descriptor;
+    m_out_descriptor = NULL;
   }
 
   if (m_in_buffer) {
@@ -256,7 +256,7 @@ bool Dmx4LinuxPlugin::SetupDevice(string family, int d4l_uni, int dir) {
     dev->AddPort(port);
   } else {
     Dmx4LinuxOutputPort *port = new Dmx4LinuxOutputPort(dev,
-                                                        m_out_socket,
+                                                        m_out_descriptor,
                                                         d4l_uni);
     dev->AddPort(port);
   }
@@ -273,7 +273,7 @@ bool Dmx4LinuxPlugin::SetupDevices() {
   struct dmx_capabilities cap;
   struct dmx_info info;
 
-  if (ioctl(m_in_socket->ReadDescriptor(), DMX_IOCTL_GET_INFO, &info) < 0) {
+  if (ioctl(m_in_descriptor->ReadDescriptor(), DMX_IOCTL_GET_INFO, &info) < 0) {
     OLA_WARN << "failed to fetch universe list";
     return false;
   }
@@ -291,7 +291,7 @@ bool Dmx4LinuxPlugin::SetupDevices() {
     cap.direction = DMX_DIRECTION_INPUT;
     cap.universe = i;
 
-    if (ioctl(m_in_socket->ReadDescriptor(), DMX_IOCTL_GET_CAP, &cap) >= 0) {
+    if (ioctl(m_in_descriptor->ReadDescriptor(), DMX_IOCTL_GET_CAP, &cap) >= 0) {
       if (cap.maxSlots > 0) {
         SetupDevice(cap.family, cap.universe, cap.direction);
       }
@@ -302,7 +302,7 @@ bool Dmx4LinuxPlugin::SetupDevices() {
     cap.direction = DMX_DIRECTION_OUTPUT;
     cap.universe = i;
 
-    if (ioctl(m_in_socket->ReadDescriptor(), DMX_IOCTL_GET_CAP, &cap) >= 0) {
+    if (ioctl(m_in_descriptor->ReadDescriptor(), DMX_IOCTL_GET_CAP, &cap) >= 0) {
       if (cap.maxSlots > 0) {
         SetupDevice(cap.family, cap.universe, cap.direction);
       }

@@ -37,12 +37,12 @@ namespace plugin {
 namespace usbpro {
 
 
-UsbWidget::UsbWidget(ola::network::ConnectedSocket *socket)
+UsbWidget::UsbWidget(ola::network::ConnectedDescriptor *descriptor)
     : m_callback(NULL),
-      m_socket(socket),
+      m_descriptor(descriptor),
       m_state(PRE_SOM),
       m_bytes_received(0) {
-  m_socket->SetOnData(NewCallback(this, &UsbWidget::SocketReady));
+  m_descriptor->SetOnData(NewCallback(this, &UsbWidget::DescriptorReady));
 }
 
 
@@ -50,11 +50,11 @@ UsbWidget::~UsbWidget() {
   if (m_callback)
     delete m_callback;
   // don't delete because ownership is transferred to the ss so that device
-  // removal works correctly. If you delete the socket the OnClose closure will
-  // be deleted, which breaks if it's already running.
-  m_socket->SetOnClose(NULL);
-  m_socket->Close();
-  m_socket = NULL;
+  // removal works correctly. If you delete the descriptor the OnClose closure
+  // will be deleted, which breaks if it's already running.
+  m_descriptor->SetOnClose(NULL);
+  m_descriptor->Close();
+  m_descriptor = NULL;
 }
 
 
@@ -74,15 +74,15 @@ void UsbWidget::SetMessageHandler(
  * Set the onRemove handler
  */
 void UsbWidget::SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
-  m_socket->SetOnClose(on_close);
+  m_descriptor->SetOnClose(on_close);
 }
 
 
 /*
  * Read data from the widget
  */
-void UsbWidget::SocketReady() {
-  while (m_socket->DataRemaining() > 0) {
+void UsbWidget::DescriptorReady() {
+  while (m_descriptor->DataRemaining() > 0) {
     ReceiveMessage();
   }
 }
@@ -105,36 +105,36 @@ bool UsbWidget::SendMessage(uint8_t label,
   header.len_hi = (length & 0xFF00) >> 8;
 
   // should really use writev here instead
-  ssize_t bytes_sent = m_socket->Send(reinterpret_cast<uint8_t*>(&header),
+  ssize_t bytes_sent = m_descriptor->Send(reinterpret_cast<uint8_t*>(&header),
                                       sizeof(header));
   if (bytes_sent != sizeof(header))
     // we've probably screwed framing at this point
     return false;
 
   if (length) {
-    unsigned int bytes_sent = m_socket->Send(data, length);
+    unsigned int bytes_sent = m_descriptor->Send(data, length);
     if (bytes_sent != length)
       // we've probably screwed framing at this point
       return false;
   }
 
   uint8_t eom = EOM;
-  bytes_sent = m_socket->Send(&eom, sizeof(EOM));
+  bytes_sent = m_descriptor->Send(&eom, sizeof(EOM));
   if (bytes_sent != sizeof(EOM))
     return false;
   return true;
 }
 
 
-void UsbWidget::CloseSocket() {
-  m_socket->Close();
+void UsbWidget::CloseDescriptor() {
+  m_descriptor->Close();
 }
 
 
 /**
  * Open a path and apply the settings required for talking to widgets.
  */
-ola::network::ConnectedSocket *UsbWidget::OpenDevice(
+ola::network::ConnectedDescriptor *UsbWidget::OpenDevice(
     const string &path) {
   struct termios newtio;
   int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
@@ -149,7 +149,7 @@ ola::network::ConnectedSocket *UsbWidget::OpenDevice(
   cfsetospeed(&newtio, B115200);
   tcsetattr(fd, TCSANOW, &newtio);
 
-  return new ola::network::DeviceSocket(fd);
+  return new ola::network::DeviceDescriptor(fd);
 }
 
 
@@ -162,23 +162,23 @@ void UsbWidget::ReceiveMessage() {
   switch (m_state) {
     case PRE_SOM:
       do {
-        m_socket->Receive(&m_header.som, 1, count);
+        m_descriptor->Receive(&m_header.som, 1, count);
         if (count != 1)
           return;
       } while (m_header.som != SOM);
       m_state = RECV_LABEL;
     case RECV_LABEL:
-      m_socket->Receive(&m_header.label, 1, count);
+      m_descriptor->Receive(&m_header.label, 1, count);
       if (count != 1)
         return;
       m_state = RECV_SIZE_LO;
     case RECV_SIZE_LO:
-      m_socket->Receive(&m_header.len, 1, count);
+      m_descriptor->Receive(&m_header.len, 1, count);
       if (count != 1)
         return;
       m_state = RECV_SIZE_HI;
     case RECV_SIZE_HI:
-      m_socket->Receive(&m_header.len_hi, 1, count);
+      m_descriptor->Receive(&m_header.len_hi, 1, count);
       if (count != 1)
         return;
 
@@ -195,7 +195,7 @@ void UsbWidget::ReceiveMessage() {
       m_state = RECV_BODY;
     case RECV_BODY:
       packet_length = (m_header.len_hi << 8) + m_header.len;
-      m_socket->Receive(
+      m_descriptor->Receive(
           reinterpret_cast<uint8_t*>(&m_recv_buffer) + m_bytes_received,
           packet_length - m_bytes_received,
           count);
@@ -211,7 +211,7 @@ void UsbWidget::ReceiveMessage() {
     case RECV_EOM:
       // check this is a valid frame with an end byte
       uint8_t eom;
-      m_socket->Receive(&eom, 1, count);
+      m_descriptor->Receive(&eom, 1, count);
       if (count != 1)
         return;
 

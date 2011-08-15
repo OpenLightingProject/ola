@@ -36,7 +36,7 @@ namespace plugin {
 
 namespace usbdmx {
 
-using ola::network::ConnectedSocket;
+using ola::network::ConnectedDescriptor;
 
 class UsbDmxPlugin: public ola::Plugin {
   public:
@@ -49,8 +49,8 @@ class UsbDmxPlugin: public ola::Plugin {
     ola_plugin_id Id() const { return OLA_PLUGIN_USBDMX; }
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-    bool AddDeviceSocket(int fd);
-    bool RemoveDeviceSocket(int fd);
+    bool AddDeviceDescriptor(int fd);
+    bool RemoveDeviceDescriptor(int fd);
     void SocketReady();
 
   private:
@@ -61,7 +61,7 @@ class UsbDmxPlugin: public ola::Plugin {
     bool SetDefaultPreferences();
     vector<UsbDevice*> m_devices;  // list of our devices
     struct libusb_context *m_usb_context;
-    vector<ola::network::DeviceSocket*> m_sockets;
+    vector<ola::network::DeviceDescriptor*> m_descriptors;
     set<pair<uint8_t, uint8_t> > m_registered_devices;
 
     static const char PLUGIN_NAME[];

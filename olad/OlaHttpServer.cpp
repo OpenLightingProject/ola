@@ -37,7 +37,7 @@
 
 namespace ola {
 
-using ola::network::ConnectedSocket;
+using ola::network::ConnectedDescriptor;
 using std::cout;
 using std::endl;
 using std::string;
@@ -55,12 +55,12 @@ const char OlaHttpServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
 /**
  * Create a new OLA HTTP server
  * @param export_map the ExportMap to display when /debug is called
- * @param client_socket A ConnectedSocket which is used to communicate with the
+ * @param client_socket A ConnectedDescriptor which is used to communicate with the
  *   server.
  * @param
  */
 OlaHttpServer::OlaHttpServer(ExportMap *export_map,
-                             ConnectedSocket *client_socket,
+                             ConnectedDescriptor *client_socket,
                              OlaServer *ola_server,
                              unsigned int port,
                              bool enable_quit,
@@ -126,7 +126,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
  */
 OlaHttpServer::~OlaHttpServer() {
   if (m_client_socket)
-    m_server.SelectServer()->RemoveSocket(m_client_socket);
+    m_server.SelectServer()->RemoveReadDescriptor(m_client_socket);
   m_client.Stop();
   if (m_client_socket)
     delete m_client_socket;
@@ -148,7 +148,7 @@ bool OlaHttpServer::Init() {
     m_socket->SetOnClose(
       ola::NewSingleCallback(this, &SimpleClient::SocketClosed));
     */
-    m_server.SelectServer()->AddSocket(m_client_socket);
+    m_server.SelectServer()->AddReadDescriptor(m_client_socket);
   }
   return ret;
 }

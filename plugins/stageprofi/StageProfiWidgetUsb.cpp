@@ -47,7 +47,7 @@ bool StageProfiWidgetUsb::Connect(const std::string &path) {
   tcgetattr(fd, &newtio);
   cfsetospeed(&newtio, B38400);
   tcsetattr(fd, TCSANOW, &newtio);
-  m_socket = new ola::network::DeviceSocket(fd);
+  m_socket = new ola::network::DeviceDescriptor(fd);
   m_socket->SetOnData(
       NewCallback<StageProfiWidget>(this, &StageProfiWidget::SocketReady));
   return true;

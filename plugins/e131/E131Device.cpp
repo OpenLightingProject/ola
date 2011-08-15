@@ -98,7 +98,7 @@ bool E131Device::StartHook() {
     AddPort(output_port);
   }
 
-  m_plugin_adaptor->AddSocket(m_node->GetSocket());
+  m_plugin_adaptor->AddReadDescriptor(m_node->GetSocket());
   return true;
 }
 
@@ -107,7 +107,7 @@ bool E131Device::StartHook() {
  * Stop this device
  */
 void E131Device::PrePortStop() {
-  m_plugin_adaptor->RemoveSocket(m_node->GetSocket());
+  m_plugin_adaptor->RemoveReadDescriptor(m_node->GetSocket());
 }
 
 

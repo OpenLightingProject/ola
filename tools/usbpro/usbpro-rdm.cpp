@@ -372,12 +372,13 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(argv);
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
-  ola::network::ConnectedSocket *socket = UsbWidget::OpenDevice(opts.device);
+  ola::network::ConnectedDescriptor *socket =
+      UsbWidget::OpenDevice(opts.device);
   if (!socket)
     exit(EX_UNAVAILABLE);
 
   ola::network::SelectServer ss;
-  ss.AddSocket(socket);
+  ss.AddReadDescriptor(socket);
   UsbWidget widget(socket);
   RDMSniffer sniffer(&widget, &ss, opts.dump_all, opts.verbose);
 

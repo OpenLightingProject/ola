@@ -32,10 +32,10 @@
 
 using std::string;
 using ola::network::AcceptingSocket;
-using ola::network::ConnectedSocket;
+using ola::network::ConnectedDescriptor;
 using ola::network::IPV4Address;
-using ola::network::LoopbackSocket;
-using ola::network::PipeSocket;
+using ola::network::LoopbackDescriptor;
+using ola::network::PipeDescriptor;
 using ola::network::SelectServer;
 using ola::network::StringToAddress;
 using ola::network::UnixSocket;
@@ -50,9 +50,9 @@ static const int ABORT_TIMEOUT_IN_MS = 1000;
 class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SocketTest);
 
-  CPPUNIT_TEST(testLoopbackSocket);
-  CPPUNIT_TEST(testPipeSocketClientClose);
-  CPPUNIT_TEST(testPipeSocketServerClose);
+  CPPUNIT_TEST(testLoopbackDescriptor);
+  CPPUNIT_TEST(testPipeDescriptorClientClose);
+  CPPUNIT_TEST(testPipeDescriptorServerClose);
   CPPUNIT_TEST(testUnixSocketClientClose);
   CPPUNIT_TEST(testUnixSocketServerClose);
   CPPUNIT_TEST(testTcpSocketClientClose);
@@ -63,9 +63,9 @@ class SocketTest: public CppUnit::TestFixture {
   public:
     void setUp();
     void tearDown();
-    void testLoopbackSocket();
-    void testPipeSocketClientClose();
-    void testPipeSocketServerClose();
+    void testLoopbackDescriptor();
+    void testPipeDescriptorClientClose();
+    void testPipeDescriptorServerClose();
     void testUnixSocketClientClose();
     void testUnixSocketServerClose();
     void testTcpSocketClientClose();
@@ -79,13 +79,13 @@ class SocketTest: public CppUnit::TestFixture {
     }
 
     // Socket data actions
-    void ReceiveAndClose(ConnectedSocket *socket);
-    void ReceiveAndTerminate(ConnectedSocket *socket);
-    void Receive(ConnectedSocket *socket);
-    void ReceiveAndSend(ConnectedSocket *socket);
-    void ReceiveSendAndClose(ConnectedSocket *socket);
-    void AcceptAndSend(TcpAcceptingSocket *socket);
-    void AcceptSendAndClose(TcpAcceptingSocket *socket);
+    void ReceiveAndClose(ConnectedDescriptor *socket);
+    void ReceiveAndTerminate(ConnectedDescriptor *socket);
+    void Receive(ConnectedDescriptor *socket);
+    void ReceiveAndSend(ConnectedDescriptor *socket);
+    void ReceiveSendAndClose(ConnectedDescriptor *socket);
+    void NewConnectionSend(ConnectedDescriptor *socket);
+    void NewConnectionSendAndClose(ConnectedDescriptor *socket);
     void UdpReceiveAndTerminate(UdpSocket *socket);
     void UdpReceiveAndSend(UdpSocket *socket);
 
@@ -99,8 +99,10 @@ class SocketTest: public CppUnit::TestFixture {
     AcceptingSocket *m_accepting_socket;
     ola::SingleUseCallback0<void> *m_timeout_closure;
 
-    void SocketClientClose(ConnectedSocket *socket, ConnectedSocket *socket2);
-    void SocketServerClose(ConnectedSocket *socket, ConnectedSocket *socket2);
+    void SocketClientClose(ConnectedDescriptor *socket,
+                           ConnectedDescriptor *socket2);
+    void SocketServerClose(ConnectedDescriptor *socket,
+                           ConnectedDescriptor *socket2);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SocketTest);
@@ -129,20 +131,20 @@ void SocketTest::tearDown() {
 /*
  * Test a loopback socket works correctly
  */
-void SocketTest::testLoopbackSocket() {
-  LoopbackSocket socket;
+void SocketTest::testLoopbackDescriptor() {
+  LoopbackDescriptor socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
   socket.SetOnData(ola::NewCallback(this, &SocketTest::ReceiveAndTerminate,
-                                   static_cast<ConnectedSocket*>(&socket)));
-  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
+                                   static_cast<ConnectedDescriptor*>(&socket)));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   ssize_t bytes_sent = socket.Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
-  m_ss->RemoveSocket(&socket);
+  m_ss->RemoveReadDescriptor(&socket);
 }
 
 
@@ -151,8 +153,8 @@ void SocketTest::testLoopbackSocket() {
  * The client sends some data and expects the same data to be returned. The
  * client then closes the connection.
  */
-void SocketTest::testPipeSocketClientClose() {
-  PipeSocket socket;
+void SocketTest::testPipeDescriptorClientClose() {
+  PipeDescriptor socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
   SocketClientClose(&socket, socket.OppositeEnd());
@@ -164,8 +166,8 @@ void SocketTest::testPipeSocketClientClose() {
  * The client sends some data. The server echos the data and closes the
  * connection.
  */
-void SocketTest::testPipeSocketServerClose() {
-  PipeSocket socket;
+void SocketTest::testPipeDescriptorServerClose() {
+  PipeDescriptor socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
 
@@ -211,18 +213,18 @@ void SocketTest::testTcpSocketClientClose() {
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
-  socket.SetOnData(ola::NewCallback(this, &SocketTest::AcceptAndSend, &socket));
-  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
+  socket.SetOnAccept(ola::NewCallback(this, &SocketTest::NewConnectionSend));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::ReceiveAndClose,
-        static_cast<ConnectedSocket*>(client_socket)));
-  CPPUNIT_ASSERT(m_ss->AddSocket(client_socket));
+        static_cast<ConnectedDescriptor*>(client_socket)));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(client_socket));
   m_ss->Run();
-  m_ss->RemoveSocket(&socket);
-  m_ss->RemoveSocket(client_socket);
+  m_ss->RemoveReadDescriptor(&socket);
+  m_ss->RemoveReadDescriptor(client_socket);
   delete client_socket;
 }
 
@@ -239,9 +241,9 @@ void SocketTest::testTcpSocketServerClose() {
   CPPUNIT_ASSERT(socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
-  socket.SetOnData(
-      ola::NewCallback(this, &SocketTest::AcceptSendAndClose, &socket));
-  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
+  socket.SetOnAccept(
+      ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   // The client socket checks the response and terminates on close
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
@@ -249,14 +251,14 @@ void SocketTest::testTcpSocketServerClose() {
 
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::Receive,
-        static_cast<ConnectedSocket*>(client_socket)));
+        static_cast<ConnectedDescriptor*>(client_socket)));
   client_socket->SetOnClose(
       ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddSocket(client_socket));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(client_socket));
 
   m_ss->Run();
-  m_ss->RemoveSocket(&socket);
-  m_ss->RemoveSocket(client_socket);
+  m_ss->RemoveReadDescriptor(&socket);
+  m_ss->RemoveReadDescriptor(client_socket);
   delete client_socket;
 }
 
@@ -278,7 +280,7 @@ void SocketTest::testUdpSocket() {
 
   socket.SetOnData(
       ola::NewCallback(this, &SocketTest::UdpReceiveAndSend, &socket));
-  CPPUNIT_ASSERT(m_ss->AddSocket(&socket));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   UdpSocket client_socket;
   CPPUNIT_ASSERT(client_socket.Init());
@@ -288,7 +290,7 @@ void SocketTest::testUdpSocket() {
       ola::NewCallback(
         this, &SocketTest::UdpReceiveAndTerminate,
         static_cast<UdpSocket*>(&client_socket)));
-  CPPUNIT_ASSERT(m_ss->AddSocket(&client_socket));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&client_socket));
 
   ssize_t bytes_sent = client_socket.SendTo(
       static_cast<const uint8_t*>(test_cstring),
@@ -297,8 +299,8 @@ void SocketTest::testUdpSocket() {
       server_port);
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
-  m_ss->RemoveSocket(&socket);
-  m_ss->RemoveSocket(&client_socket);
+  m_ss->RemoveReadDescriptor(&socket);
+  m_ss->RemoveReadDescriptor(&client_socket);
 }
 
 
@@ -306,9 +308,9 @@ void SocketTest::testUdpSocket() {
 /*
  * Receive some data and close the socket
  */
-void SocketTest::ReceiveAndClose(ConnectedSocket *socket) {
+void SocketTest::ReceiveAndClose(ConnectedDescriptor *socket) {
   Receive(socket);
-  m_ss->RemoveSocket(socket);
+  m_ss->RemoveReadDescriptor(socket);
   socket->Close();
 }
 
@@ -316,7 +318,7 @@ void SocketTest::ReceiveAndClose(ConnectedSocket *socket) {
 /*
  * Receive some data and terminate
  */
-void SocketTest::ReceiveAndTerminate(ConnectedSocket *socket) {
+void SocketTest::ReceiveAndTerminate(ConnectedDescriptor *socket) {
   Receive(socket);
   m_ss->Terminate();
 }
@@ -325,7 +327,7 @@ void SocketTest::ReceiveAndTerminate(ConnectedSocket *socket) {
 /*
  * Receive some data and check it's what we expected.
  */
-void SocketTest::Receive(ConnectedSocket *socket) {
+void SocketTest::Receive(ConnectedDescriptor *socket) {
   // try to read more than what we sent to test non-blocking
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
@@ -340,7 +342,7 @@ void SocketTest::Receive(ConnectedSocket *socket) {
 /*
  * Receive some data and send it back
  */
-void SocketTest::ReceiveAndSend(ConnectedSocket *socket) {
+void SocketTest::ReceiveAndSend(ConnectedDescriptor *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
   socket->Receive(buffer, sizeof(buffer), data_read);
@@ -354,9 +356,9 @@ void SocketTest::ReceiveAndSend(ConnectedSocket *socket) {
 /*
  * Receive some data, send the same data and close
  */
-void SocketTest::ReceiveSendAndClose(ConnectedSocket *socket) {
+void SocketTest::ReceiveSendAndClose(ConnectedDescriptor *socket) {
   ReceiveAndSend(socket);
-  m_ss->RemoveSocket(socket);
+  m_ss->RemoveReadDescriptor(socket);
   socket->Close();
 }
 
@@ -364,8 +366,7 @@ void SocketTest::ReceiveSendAndClose(ConnectedSocket *socket) {
 /*
  * Accept a new connection and send some test data
  */
-void SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
-  ConnectedSocket *new_socket = socket->Accept();
+void SocketTest::NewConnectionSend(ConnectedDescriptor *new_socket) {
   CPPUNIT_ASSERT(new_socket);
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
@@ -373,15 +374,14 @@ void SocketTest::AcceptAndSend(TcpAcceptingSocket *socket) {
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   new_socket->SetOnClose(ola::NewSingleCallback(this,
                                                &SocketTest::TerminateOnClose));
-  m_ss->AddSocket(new_socket, true);
+  m_ss->AddReadDescriptor(new_socket, true);
 }
 
 
 /*
  * Accept a new connect, send some data and close
  */
-void SocketTest::AcceptSendAndClose(TcpAcceptingSocket *socket) {
-  ConnectedSocket *new_socket = socket->Accept();
+void SocketTest::NewConnectionSendAndClose(ConnectedDescriptor *new_socket) {
   CPPUNIT_ASSERT(new_socket);
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
@@ -436,28 +436,29 @@ void SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
 /**
  * Generic method to test client initiated close
  */
-void SocketTest::SocketClientClose(ConnectedSocket *socket,
-                                   ConnectedSocket *socket2) {
+void SocketTest::SocketClientClose(ConnectedDescriptor *socket,
+                                   ConnectedDescriptor *socket2) {
   CPPUNIT_ASSERT(socket);
   socket->SetOnData(
       ola::NewCallback(this, &SocketTest::ReceiveAndClose,
-                       static_cast<ConnectedSocket*>(socket)));
-  CPPUNIT_ASSERT(m_ss->AddSocket(socket));
+                       static_cast<ConnectedDescriptor*>(socket)));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket));
 
   CPPUNIT_ASSERT(socket2);
-  socket2->SetOnData(ola::NewCallback(this, &SocketTest::ReceiveAndSend,
-                                      static_cast<ConnectedSocket*>(socket2)));
+  socket2->SetOnData(
+      ola::NewCallback(this, &SocketTest::ReceiveAndSend,
+                       static_cast<ConnectedDescriptor*>(socket2)));
   socket2->SetOnClose(ola::NewSingleCallback(this,
                                              &SocketTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddSocket(socket2));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket2));
 
   ssize_t bytes_sent = socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
-  m_ss->RemoveSocket(socket);
-  m_ss->RemoveSocket(socket2);
+  m_ss->RemoveReadDescriptor(socket);
+  m_ss->RemoveReadDescriptor(socket2);
   delete socket2;
 }
 
@@ -465,28 +466,28 @@ void SocketTest::SocketClientClose(ConnectedSocket *socket,
 /**
  * Generic method to test server initiated close
  */
-void SocketTest::SocketServerClose(ConnectedSocket *socket,
-                                   ConnectedSocket *socket2) {
+void SocketTest::SocketServerClose(ConnectedDescriptor *socket,
+                                   ConnectedDescriptor *socket2) {
   CPPUNIT_ASSERT(socket);
   socket->SetOnData(ola::NewCallback(
         this, &SocketTest::Receive,
-        static_cast<ConnectedSocket*>(socket)));
+        static_cast<ConnectedDescriptor*>(socket)));
   socket->SetOnClose(
       ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddSocket(socket));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket));
 
   CPPUNIT_ASSERT(socket2);
   socket2->SetOnData(ola::NewCallback(
         this, &SocketTest::ReceiveSendAndClose,
-        static_cast<ConnectedSocket*>(socket2)));
-  CPPUNIT_ASSERT(m_ss->AddSocket(socket2));
+        static_cast<ConnectedDescriptor*>(socket2)));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket2));
 
   ssize_t bytes_sent = socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
-  m_ss->RemoveSocket(socket);
-  m_ss->RemoveSocket(socket2);
+  m_ss->RemoveReadDescriptor(socket);
+  m_ss->RemoveReadDescriptor(socket2);
   delete socket2;
 }

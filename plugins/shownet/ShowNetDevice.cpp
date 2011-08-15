@@ -81,7 +81,7 @@ bool ShowNetDevice::StartHook() {
     AddPort(output_port);
   }
 
-  m_plugin_adaptor->AddSocket(m_node->GetSocket());
+  m_plugin_adaptor->AddReadDescriptor(m_node->GetSocket());
   return true;
 }
 
@@ -90,7 +90,7 @@ bool ShowNetDevice::StartHook() {
  * Stop this device
  */
 void ShowNetDevice::PrePortStop() {
-  m_plugin_adaptor->RemoveSocket(m_node->GetSocket());
+  m_plugin_adaptor->RemoveReadDescriptor(m_node->GetSocket());
 }
 
 

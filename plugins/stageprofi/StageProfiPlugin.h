@@ -31,7 +31,7 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
-using ola::network::ConnectedSocket;
+using ola::network::ConnectedDescriptor;
 using std::string;
 
 class StageProfiDevice;
@@ -45,7 +45,7 @@ class StageProfiPlugin: public Plugin {
     string Name() const { return PLUGIN_NAME; }
     ola_plugin_id Id() const { return OLA_PLUGIN_STAGEPROFI; }
     string Description() const;
-    int SocketClosed(ConnectedSocket *socket);
+    int SocketClosed(ConnectedDescriptor *socket);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
   private:

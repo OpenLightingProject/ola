@@ -34,7 +34,7 @@ using std::ifstream;
 using std::pair;
 using std::set;
 using std::string;
-using ola::network::UnmanagedSocket;
+using ola::network::UnmanagedFileDescriptor;
 
 const char HttpServer::CONTENT_TYPE_PLAIN[] = "text/plain";
 const char HttpServer::CONTENT_TYPE_HTML[] = "text/html";
@@ -420,11 +420,11 @@ void *HttpServer::Run() {
   m_select_server.Run();
 
   // clean up any remaining sockets
-  set<UnmanagedSocket*, unmanaged_socket_lt>::iterator iter =
+  set<UnmanagedFileDescriptor*, unmanaged_socket_lt>::iterator iter =
     m_sockets.begin();
   for (; iter != m_sockets.end(); ++iter) {
-    m_select_server.RemoveSocket(*iter);
-    m_select_server.UnRegisterWriteSocket(*iter);
+    m_select_server.RemoveReadDescriptor(*iter);
+    m_select_server.RemoveWriteDescriptor(*iter);
     delete *iter;
   }
   return NULL;
@@ -468,7 +468,7 @@ void HttpServer::UpdateSockets() {
     return;
   }
 
-  set<UnmanagedSocket*, unmanaged_socket_lt>::iterator iter =
+  set<UnmanagedFileDescriptor*, unmanaged_socket_lt>::iterator iter =
     m_sockets.begin();
 
   // This isn't the best plan, talk to the MHD devs about exposing the list of
@@ -478,28 +478,28 @@ void HttpServer::UpdateSockets() {
     if ((*iter)->ReadDescriptor() < i) {
       // this socket is no longer required so remove it
       OLA_DEBUG << "Removing unsed socket " << (*iter)->ReadDescriptor();
-      m_select_server.RemoveSocket(*iter);
-      m_select_server.UnRegisterWriteSocket(*iter);
+      m_select_server.RemoveReadDescriptor(*iter);
+      m_select_server.RemoveWriteDescriptor(*iter);
       delete *iter;
       m_sockets.erase(iter++);
     } else if ((*iter)->ReadDescriptor() == i) {
       // this socket may need to be updated
       if (FD_ISSET(i, &r_set))
-        m_select_server.AddSocket(*iter);
+        m_select_server.AddReadDescriptor(*iter);
       else
-        m_select_server.RemoveSocket(*iter);
+        m_select_server.RemoveReadDescriptor(*iter);
 
       if (FD_ISSET(i, &w_set))
-        m_select_server.RegisterWriteSocket(*iter);
+        m_select_server.AddWriteDescriptor(*iter);
       else
-        m_select_server.UnRegisterWriteSocket(*iter);
+        m_select_server.RemoveWriteDescriptor(*iter);
       iter++;
       i++;
     } else {
       // this is a new socket
       if (FD_ISSET(i, &r_set) || FD_ISSET(i, &w_set)) {
         OLA_DEBUG << "Adding new socket " << i;
-        UnmanagedSocket *socket = NewSocket(&r_set, &w_set, i);
+        UnmanagedFileDescriptor *socket = NewSocket(&r_set, &w_set, i);
         m_sockets.insert(socket);
       }
       i++;
@@ -509,8 +509,8 @@ void HttpServer::UpdateSockets() {
   while (iter != m_sockets.end()) {
     OLA_DEBUG << "Removing " << (*iter)->ReadDescriptor() <<
       " as it's not longer needed";
-    m_select_server.UnRegisterWriteSocket(*iter);
-    m_select_server.RemoveSocket(*iter);
+    m_select_server.RemoveWriteDescriptor(*iter);
+    m_select_server.RemoveReadDescriptor(*iter);
     delete *iter;
     m_sockets.erase(iter++);
   }
@@ -519,7 +519,7 @@ void HttpServer::UpdateSockets() {
     // add the remaining sockets to the SS
     if (FD_ISSET(i, &r_set) || FD_ISSET(i, &w_set)) {
       OLA_DEBUG << "Adding " << i << " as a new socket";
-      UnmanagedSocket *socket = NewSocket(&r_set, &w_set, i);
+      UnmanagedFileDescriptor *socket = NewSocket(&r_set, &w_set, i);
       m_sockets.insert(socket);
     }
   }
@@ -708,18 +708,18 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
 }
 
 
-UnmanagedSocket *HttpServer::NewSocket(fd_set *r_set,
+UnmanagedFileDescriptor *HttpServer::NewSocket(fd_set *r_set,
                                        fd_set *w_set,
                                        int fd) {
-  UnmanagedSocket *socket = new UnmanagedSocket(fd);
+  UnmanagedFileDescriptor *socket = new UnmanagedFileDescriptor(fd);
   socket->SetOnData(NewCallback(this, &HttpServer::HandleHTTPIO));
   socket->SetOnWritable(NewCallback(this, &HttpServer::HandleHTTPIO));
 
   if (FD_ISSET(fd, r_set))
-    m_select_server.AddSocket(socket);
+    m_select_server.AddReadDescriptor(socket);
 
   if (FD_ISSET(fd, w_set))
-    m_select_server.RegisterWriteSocket(socket);
+    m_select_server.AddWriteDescriptor(socket);
   return socket;
 }
 }  // ola

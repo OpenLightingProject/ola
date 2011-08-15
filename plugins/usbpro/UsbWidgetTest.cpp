@@ -31,8 +31,8 @@
 
 
 using ola::plugin::usbpro::UsbWidget;
-using ola::network::ConnectedSocket;
-using ola::network::PipeSocket;
+using ola::network::ConnectedDescriptor;
+using ola::network::PipeDescriptor;
 using std::string;
 using std::queue;
 
@@ -54,8 +54,8 @@ class UsbWidgetTest: public CppUnit::TestFixture {
 
   private:
     ola::network::SelectServer m_ss;
-    PipeSocket m_socket;
-    PipeSocket *m_other_end;
+    PipeDescriptor m_descriptor;
+    PipeDescriptor *m_other_end;
     UsbWidget *m_widget;
     string m_expected;
     bool m_removed;
@@ -88,12 +88,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UsbWidgetTest);
 
 
 void UsbWidgetTest::setUp() {
-  m_socket.Init();
-  m_other_end = m_socket.OppositeEnd();
+  m_descriptor.Init();
+  m_other_end = m_descriptor.OppositeEnd();
 
-  m_ss.AddSocket(&m_socket);
-  m_ss.AddSocket(m_other_end, true);
-  m_widget = new UsbWidget(&m_socket);
+  m_ss.AddReadDescriptor(&m_descriptor);
+  m_ss.AddReadDescriptor(m_other_end, true);
+  m_widget = new UsbWidget(&m_descriptor);
   m_removed = false;
 
   m_ss.RegisterSingleTimeout(

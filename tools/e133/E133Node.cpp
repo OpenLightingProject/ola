@@ -72,7 +72,7 @@ bool E133Node::Init() {
   m_v4_address = interface.ip_address;
 
   ola::network::UdpSocket *socket = m_transport.GetSocket();
-  m_ss->AddSocket(socket);
+  m_ss->AddReadDescriptor(socket);
   m_e133_layer.SetInflator(&m_dmp_inflator);
 
   m_timeout_event = m_ss->RegisterRepeatingTimeout(

@@ -24,13 +24,8 @@
  *   supported and even if they were, you can't have more than one operation
  *   pending at once so the need for serialization still exists).
  *
- *   Each call to Discover(), Register() & DeRegister() adds an action to the
- *   queue and then sends data (is doesn't matter what data really) on a
- *   loopback socket to wake up the thread's select server. The SLP thread then
- *   performs each action in turn and once complete, adds the action to the
- *   completed queue. Finally the thread then writes data to another loopback
- *   socket, which wakes up the main select server and causes the callbacks to
- *   be run in the main thread.
+ *   Each call to Discover(), Register() & DeRegister() executes the callback
+ *   in the SLP thread.
  *
  *   Summary: The callbacks passed to the SLP methods are run in the
  *   thread that contains the SelectServer passed to the SlpThread constructor.
@@ -105,8 +100,6 @@ class SlpThread: public ola::OlaThread {
     url_state_map m_url_map;
 
     void RequestComplete();
-    void WakeUpSocket(ola::network::LoopbackSocket *socket);
-    void EmptySocket(ola::network::LoopbackSocket *socket);
     void AddToOutgoingQueue(ola::BaseCallback0<void> *callback);
 
     void DiscoveryRequest();

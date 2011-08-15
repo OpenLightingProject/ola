@@ -87,15 +87,15 @@ class StreamRpcHeader {
 
 class StreamRpcChannel: public RpcChannel {
   /*
-   * Implements a RpcChannel over a pipe or socket.
+   * Implements a RpcChannel over a descriptor.
    */
   public :
     StreamRpcChannel(Service *service,
-                     ola::network::ConnectedSocket *socket,
+                     ola::network::ConnectedDescriptor *descriptor,
                      ExportMap *export_map = NULL);
     ~StreamRpcChannel();
 
-    void SocketReady();
+    void DescriptorReady();
     void SetOnClose(SingleUseCallback0<void> *closure);
 
     void CallMethod(
@@ -132,8 +132,8 @@ class StreamRpcChannel: public RpcChannel {
 
     Service *m_service;  // service to dispatch requests to
     SingleUseCallback0<void> *m_on_close;
-    // the socket to read/write to.
-    class ola::network::ConnectedSocket *m_socket;
+    // the descriptor to read/write to.
+    class ola::network::ConnectedDescriptor *m_descriptor;
     uint32_t m_seq;  // sequence number
     uint8_t *m_buffer;  // buffer for incomming msgs
     unsigned int m_buffer_size;  // size of the buffer

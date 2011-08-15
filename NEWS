@@ -1,6 +1,10 @@
 X/Y/2011 ola-0.8.12
  * Add the generic messaging framework and use it in handle RDM PIDs
  * Further improvements of the RDM test suite
+ * fixed compiler warnings on newer versions of gcc
+ * fixed sorting of Sensors in the RDM web UI
+ * improvements to the threading model
+ * enabled SO_REUSEPORT so that local ArtNet applications work
 
 28/6/2011 ola-0.8.11
  * Fix bugs on big endian systems

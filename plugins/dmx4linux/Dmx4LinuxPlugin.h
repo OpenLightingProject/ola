@@ -40,8 +40,8 @@ class Dmx4LinuxPlugin: public ola::Plugin {
   public:
     explicit Dmx4LinuxPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
-      m_in_socket(NULL),
-      m_out_socket(NULL),
+      m_in_descriptor(NULL),
+      m_out_descriptor(NULL),
       m_in_devices_count(0),
       m_in_buffer(NULL) {}
     ~Dmx4LinuxPlugin();
@@ -58,8 +58,8 @@ class Dmx4LinuxPlugin: public ola::Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
 
-    bool SetupSockets();
-    int CleanupSockets();
+    bool SetupDescriptors();
+    int CleanupDescriptors();
     bool SetupDevice(string family, int d4l_uni, int dir);
     bool SetupDevices();
 
@@ -67,8 +67,8 @@ class Dmx4LinuxPlugin: public ola::Plugin {
     vector<Dmx4LinuxInputPort*>  m_in_ports;  // list of in ports
     string m_out_dev;  // path to the dmx output device
     string m_in_dev;   // path to the dmx input device
-    Dmx4LinuxSocket *m_in_socket;
-    Dmx4LinuxSocket *m_out_socket;
+    Dmx4LinuxSocket *m_in_descriptor;
+    Dmx4LinuxSocket *m_out_descriptor;
     int m_in_devices_count;  // number of input devices
     uint8_t *m_in_buffer;  // input buffer
 

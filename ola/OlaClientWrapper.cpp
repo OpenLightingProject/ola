@@ -64,7 +64,7 @@ bool BaseClientWrapper::Setup() {
   }
 
   CreateClient();
-  m_ss->AddSocket(m_socket);
+  m_ss->AddReadDescriptor(m_socket);
   return StartupClient();
 }
 

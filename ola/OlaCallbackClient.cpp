@@ -41,10 +41,10 @@ namespace ola {
 using std::string;
 using std::vector;
 using ola::rdm::RDMAPIImplInterface;
-using ola::network::ConnectedSocket;
+using ola::network::ConnectedDescriptor;
 
-OlaCallbackClient::OlaCallbackClient(ConnectedSocket *socket) {
-  m_core = new OlaClientCore(socket);
+OlaCallbackClient::OlaCallbackClient(ConnectedDescriptor *descriptor) {
+  m_core = new OlaClientCore(descriptor);
 }
 
 

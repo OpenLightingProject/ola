@@ -40,7 +40,7 @@
 namespace ola {
 
 namespace network {
-class ConnectedSocket;
+class ConnectedDescriptor;
 }
 
 using std::string;
@@ -157,7 +157,7 @@ class OlaClientObserver {
  */
 class OlaClient: public ola::rdm::RDMAPIImplInterface {
   public:
-    explicit OlaClient(ola::network::ConnectedSocket *socket);
+    explicit OlaClient(ola::network::ConnectedDescriptor *descriptor);
     ~OlaClient();
 
     bool Setup();

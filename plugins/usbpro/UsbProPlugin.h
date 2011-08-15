@@ -33,7 +33,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using ola::network::ConnectedSocket;
+using ola::network::ConnectedDescriptor;
 
 class UsbProPlugin: public ola::Plugin {
   public:

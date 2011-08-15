@@ -104,7 +104,7 @@ bool SandNetDevice::StartHook() {
 
   sockets = m_node->GetSockets();
   for (iter = sockets.begin(); iter != sockets.end(); ++iter)
-    m_plugin_adaptor->AddSocket(*iter);
+    m_plugin_adaptor->AddReadDescriptor(*iter);
 
   m_timeout_id = m_plugin_adaptor->RegisterRepeatingTimeout(
       ADVERTISTMENT_PERIOD_MS,
@@ -121,7 +121,7 @@ void SandNetDevice::PrePortStop() {
   vector<ola::network::UdpSocket*> sockets = m_node->GetSockets();
   vector<ola::network::UdpSocket*>::iterator iter;
   for (iter = sockets.begin(); iter != sockets.end(); ++iter)
-    m_plugin_adaptor->RemoveSocket(*iter);
+    m_plugin_adaptor->RemoveReadDescriptor(*iter);
 
   if (m_timeout_id != ola::network::INVALID_TIMEOUT) {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);

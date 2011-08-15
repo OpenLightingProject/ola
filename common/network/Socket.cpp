@@ -45,12 +45,6 @@
 namespace ola {
 namespace network {
 
-#ifdef WIN32
-const int Socket::CLOSED_SOCKET = static_cast<int>(CLOSED_SOCKET);
-#else
-const int Socket::CLOSED_SOCKET = -1;
-#endif
-
 
 /**
  * Helper function to create a annonymous pipe
@@ -84,7 +78,28 @@ bool CreatePipe(int fd_pair[2]) {
 }
 
 
-// ConnectedSocket
+
+// BidirectionalFileDescriptor
+// ------------------------------------------------
+void BidirectionalFileDescriptor::PerformRead() {
+  if (m_on_read)
+    m_on_read->Run();
+  else
+    OLA_FATAL << "FileDescriptor " << ReadDescriptor() <<
+      "is ready but no handler attached, this is bad!";
+}
+
+
+void BidirectionalFileDescriptor::PerformWrite() {
+  if (m_on_write)
+    m_on_write->Run();
+  else
+    OLA_FATAL << "FileDescriptor " << WriteDescriptor() <<
+      "is ready but no write handler attached, this is bad!";
+}
+
+
+// ConnectedDescriptor
 // ------------------------------------------------
 
 /*
@@ -92,8 +107,8 @@ bool CreatePipe(int fd_pair[2]) {
  * @param fd the descriptor to enable non-blocking on
  * @return true if it worked, false otherwise
  */
-bool ConnectedSocket::SetNonBlocking(int fd) {
-  if (fd == CLOSED_SOCKET)
+bool ConnectedDescriptor::SetNonBlocking(int fd) {
+  if (fd == INVALID_DESCRIPTOR)
     return false;
 
 #ifdef WIN32
@@ -114,7 +129,10 @@ bool ConnectedSocket::SetNonBlocking(int fd) {
 /*
  * Turn off the SIGPIPE for this socket
  */
-bool ConnectedSocket::SetNoSigPipe(int fd) {
+bool ConnectedDescriptor::SetNoSigPipe(int fd) {
+  if (!IsSocket())
+    return true;
+
   #if HAVE_DECL_SO_NOSIGPIPE
   int sig_pipe_flag = 1;
   int ok = setsockopt(fd,
@@ -138,8 +156,8 @@ bool ConnectedSocket::SetNoSigPipe(int fd) {
  * Find out how much data is left to read
  * @return the amount of unread data for the socket
  */
-int ConnectedSocket::DataRemaining() const {
-  if (ReadDescriptor() == CLOSED_SOCKET)
+int ConnectedDescriptor::DataRemaining() const {
+  if (!ValidReadDescriptor())
     return 0;
 
 #ifdef WIN32
@@ -159,54 +177,49 @@ int ConnectedSocket::DataRemaining() const {
 
 
 /*
- * Write data to this socket.
- * @param fd the descriptor to write to
+ * Write data to this descriptor.
  * @param buffer the data to write
  * @param size the length of the data
  * @return the number of bytes sent
  */
-ssize_t ConnectedSocket::FDSend(int fd,
-                                const uint8_t *buffer,
-                                unsigned int size) const {
-  if (fd == CLOSED_SOCKET)
+ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
+                                  unsigned int size) const {
+  if (!ValidWriteDescriptor())
     return 0;
 
-/*
 #if HAVE_DECL_MSG_NOSIGNAL
-  ssize_t bytes_sent = send(fd, buffer, size, MSG_NOSIGNAL);
-#else
-*/
-  // TODO(simon): sort out MSG_NOSIGNAL
-  ssize_t bytes_sent = write(fd, buffer, size);
-// #endif
+  if (IsSocket())
+    ssize_t bytes_sent = send(WriteDescriptor(), buffer, size, MSG_NOSIGNAL);
+  else
+#endif
+    ssize_t bytes_sent = write(WriteDescriptor(), buffer, size);
 
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
-    OLA_WARN << "Failed to send on " << fd << ": " << strerror(errno);
+    OLA_WARN << "Failed to send on " << WriteDescriptor() << ": " <<
+      strerror(errno);
   return bytes_sent;
 }
 
 
 /*
- * Read data from this socket.
- * @param fd the descriptor to read from
+ * Read data from this descriptor.
  * @param buffer a pointer to the buffer to store new data in
  * @param size the size of the buffer
  * @param data_read a value result argument which returns the amount of data
  * copied into the buffer
  * @returns -1 on error, 0 on success.
  */
-int ConnectedSocket::FDReceive(int fd,
-                               uint8_t *buffer,
-                               unsigned int size,
-                               unsigned int &data_read) {
+int ConnectedDescriptor::Receive(uint8_t *buffer,
+                                 unsigned int size,
+                                 unsigned int &data_read) {
   int ret;
   uint8_t *data = buffer;
   data_read = 0;
-  if (fd == CLOSED_SOCKET)
+  if (!ValidReadDescriptor())
     return -1;
 
   while (data_read < size) {
-    if ((ret = read(fd, data, size - data_read)) < 0) {
+    if ((ret = read(ReadDescriptor(), data, size - data_read)) < 0) {
       if (errno == EAGAIN)
         return 0;
       if (errno != EINTR) {
@@ -227,20 +240,21 @@ int ConnectedSocket::FDReceive(int fd,
  * Check if the remote end has closed the connection.
  * @return true if the socket is closed, false otherwise
  */
-bool ConnectedSocket::IsClosed() const {
+bool ConnectedDescriptor::IsClosed() const {
   return DataRemaining() == 0;
 }
 
 
-// LoopbackSocket
+// LoopbackDescriptor
 // ------------------------------------------------
 
 
 /*
  * Setup this loopback socket
  */
-bool LoopbackSocket::Init() {
-  if (m_fd_pair[0] != CLOSED_SOCKET || m_fd_pair[1] != CLOSED_SOCKET)
+bool LoopbackDescriptor::Init() {
+  if (m_fd_pair[0] != INVALID_DESCRIPTOR ||
+      m_fd_pair[1] != INVALID_DESCRIPTOR)
     return false;
 
   if (!CreatePipe(m_fd_pair))
@@ -256,15 +270,15 @@ bool LoopbackSocket::Init() {
  * Close the loopback socket
  * @return true if close succeeded, false otherwise
  */
-bool LoopbackSocket::Close() {
-  if (m_fd_pair[0] != CLOSED_SOCKET)
+bool LoopbackDescriptor::Close() {
+  if (m_fd_pair[0] != INVALID_DESCRIPTOR)
     close(m_fd_pair[0]);
 
-  if (m_fd_pair[1] != CLOSED_SOCKET)
+  if (m_fd_pair[1] != INVALID_DESCRIPTOR)
     close(m_fd_pair[1]);
 
-  m_fd_pair[0] = CLOSED_SOCKET;
-  m_fd_pair[1] = CLOSED_SOCKET;
+  m_fd_pair[0] = INVALID_DESCRIPTOR;
+  m_fd_pair[1] = INVALID_DESCRIPTOR;
   return true;
 }
 
@@ -273,24 +287,25 @@ bool LoopbackSocket::Close() {
  * Close the write portion of the loopback socket
  * @return true if close succeeded, false otherwise
  */
-bool LoopbackSocket::CloseClient() {
-  if (m_fd_pair[1] != CLOSED_SOCKET)
+bool LoopbackDescriptor::CloseClient() {
+  if (m_fd_pair[1] != INVALID_DESCRIPTOR)
     close(m_fd_pair[1]);
 
-  m_fd_pair[1] = CLOSED_SOCKET;
+  m_fd_pair[1] = INVALID_DESCRIPTOR;
   return true;
 }
 
 
 
-// PipeSocket
+// PipeDescriptor
 // ------------------------------------------------
 
 /*
  * Create a new pipe socket
  */
-bool PipeSocket::Init() {
-  if (m_in_pair[0] != CLOSED_SOCKET || m_out_pair[1] != CLOSED_SOCKET)
+bool PipeDescriptor::Init() {
+  if (m_in_pair[0] != INVALID_DESCRIPTOR ||
+      m_out_pair[1] != INVALID_DESCRIPTOR)
     return false;
 
   if (!CreatePipe(m_in_pair))
@@ -299,7 +314,7 @@ bool PipeSocket::Init() {
   if (!CreatePipe(m_out_pair)) {
     close(m_in_pair[0]);
     close(m_in_pair[1]);
-    m_in_pair[0] = m_in_pair[1] = CLOSED_SOCKET;
+    m_in_pair[0] = m_in_pair[1] = INVALID_DESCRIPTOR;
     return false;
   }
 
@@ -311,15 +326,16 @@ bool PipeSocket::Init() {
 
 /*
  * Fetch the other end of the pipe socket. The caller now owns the new
- * PipeSocket.
+ * PipeDescriptor.
  * @returns NULL if the socket wasn't initialized correctly.
  */
-PipeSocket *PipeSocket::OppositeEnd() {
-  if (m_in_pair[0] == CLOSED_SOCKET || m_out_pair[1] == CLOSED_SOCKET)
+PipeDescriptor *PipeDescriptor::OppositeEnd() {
+  if (m_in_pair[0] == INVALID_DESCRIPTOR ||
+      m_out_pair[1] == INVALID_DESCRIPTOR)
     return NULL;
 
   if (!m_other_end) {
-    m_other_end = new PipeSocket(m_out_pair, m_in_pair, this);
+    m_other_end = new PipeDescriptor(m_out_pair, m_in_pair, this);
     m_other_end->SetReadNonBlocking();
   }
   return m_other_end;
@@ -327,29 +343,29 @@ PipeSocket *PipeSocket::OppositeEnd() {
 
 
 /*
- * Close this PipeSocket
+ * Close this PipeDescriptor
  */
-bool PipeSocket::Close() {
-  if (m_in_pair[0] != CLOSED_SOCKET)
+bool PipeDescriptor::Close() {
+  if (m_in_pair[0] != INVALID_DESCRIPTOR)
     close(m_in_pair[0]);
 
-  if (m_out_pair[1] != CLOSED_SOCKET)
+  if (m_out_pair[1] != INVALID_DESCRIPTOR)
     close(m_out_pair[1]);
 
-  m_in_pair[0] = CLOSED_SOCKET;
-  m_out_pair[1] = CLOSED_SOCKET;
+  m_in_pair[0] = INVALID_DESCRIPTOR;
+  m_out_pair[1] = INVALID_DESCRIPTOR;
   return true;
 }
 
 
 /*
- * Close the write portion of this PipeSocket
+ * Close the write portion of this PipeDescriptor
  */
-bool PipeSocket::CloseClient() {
-  if (m_out_pair[1] != CLOSED_SOCKET)
+bool PipeDescriptor::CloseClient() {
+  if (m_out_pair[1] != INVALID_DESCRIPTOR)
     close(m_out_pair[1]);
 
-  m_out_pair[1] = CLOSED_SOCKET;
+  m_out_pair[1] = INVALID_DESCRIPTOR;
   return true;
 }
 
@@ -362,7 +378,7 @@ bool PipeSocket::CloseClient() {
  */
 bool UnixSocket::Init() {
   int pair[2];
-  if (m_fd != CLOSED_SOCKET || m_other_end)
+  if (m_fd != INVALID_DESCRIPTOR || m_other_end)
     return false;
 
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, pair)) {
@@ -393,10 +409,10 @@ UnixSocket *UnixSocket::OppositeEnd() {
  * Close this UnixSocket
  */
 bool UnixSocket::Close() {
-  if (m_fd != CLOSED_SOCKET)
+  if (m_fd != INVALID_DESCRIPTOR)
     close(m_fd);
 
-  m_fd = CLOSED_SOCKET;
+  m_fd = INVALID_DESCRIPTOR;
   return true;
 }
 
@@ -405,10 +421,10 @@ bool UnixSocket::Close() {
  * Close the write portion of this UnixSocket
  */
 bool UnixSocket::CloseClient() {
-  if (m_fd != CLOSED_SOCKET)
+  if (m_fd != INVALID_DESCRIPTOR)
     shutdown(m_fd, SHUT_WR);
 
-  m_fd = CLOSED_SOCKET;
+  m_fd = INVALID_DESCRIPTOR;
   return true;
 }
 
@@ -457,19 +473,19 @@ TcpSocket* TcpSocket::Connect(const std::string &ip_address,
  * Close this TcpSocket
  */
 bool TcpSocket::Close() {
-  if (m_sd != CLOSED_SOCKET) {
+  if (m_sd != INVALID_DESCRIPTOR) {
     close(m_sd);
-    m_sd = CLOSED_SOCKET;
+    m_sd = INVALID_DESCRIPTOR;
   }
   return true;
 }
 
 
-// DeviceSocket
+// DeviceDescriptor
 // ------------------------------------------------
 
-bool DeviceSocket::Close() {
-  if (m_fd == CLOSED_SOCKET)
+bool DeviceDescriptor::Close() {
+  if (m_fd == INVALID_DESCRIPTOR)
     return true;
 
 #ifdef WIN32
@@ -478,7 +494,7 @@ bool DeviceSocket::Close() {
 #else
   int ret = close(m_fd);
 #endif
-  m_fd = CLOSED_SOCKET;
+  m_fd = INVALID_DESCRIPTOR;
   return ret == 0;
 }
 
@@ -491,7 +507,7 @@ bool DeviceSocket::Close() {
  * @return true if it succeeded, false otherwise
  */
 bool UdpSocket::Init() {
-  if (m_fd != CLOSED_SOCKET)
+  if (m_fd != INVALID_DESCRIPTOR)
     return false;
 
   int sd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -510,7 +526,7 @@ bool UdpSocket::Init() {
  * Bind this socket to an external address/port
  */
 bool UdpSocket::Bind(unsigned short port) {
-  if (m_fd == CLOSED_SOCKET)
+  if (m_fd == INVALID_DESCRIPTOR)
     return false;
 
   #if HAVE_DECL_SO_REUSEADDR
@@ -564,11 +580,11 @@ bool UdpSocket::Bind(unsigned short port) {
  * Close this socket
  */
 bool UdpSocket::Close() {
-  if (m_fd == CLOSED_SOCKET)
+  if (m_fd == INVALID_DESCRIPTOR)
     return false;
 
   int fd = m_fd;
-  m_fd = CLOSED_SOCKET;
+  m_fd = INVALID_DESCRIPTOR;
   m_bound_to_port = false;
 #ifdef WIN32
   if (closesocket(fd)) {
@@ -675,7 +691,7 @@ bool UdpSocket::RecvFrom(uint8_t *buffer,
  * @return true if it worked, false otherwise
  */
 bool UdpSocket::EnableBroadcast() {
-  if (m_fd == CLOSED_SOCKET)
+  if (m_fd == INVALID_DESCRIPTOR)
     return false;
 
   int broadcast_flag = 1;
@@ -821,12 +837,23 @@ bool UdpSocket::SetTos(uint8_t tos) {
  */
 TcpAcceptingSocket::TcpAcceptingSocket(const std::string &address,
                                        unsigned short port,
-                                       int backlog):
-    AcceptingSocket(),
-    m_address(address),
-    m_port(port),
-    m_sd(CLOSED_SOCKET),
-    m_backlog(backlog) {
+                                       int backlog)
+    : AcceptingSocket(),
+      m_address(address),
+      m_port(port),
+      m_sd(INVALID_DESCRIPTOR),
+      m_backlog(backlog),
+      m_on_accept(NULL) {
+}
+
+
+/**
+ * Clean up
+ */
+TcpAcceptingSocket::~TcpAcceptingSocket() {
+  Close();
+  if (m_on_accept)
+    delete m_on_accept;
 }
 
 
@@ -838,7 +865,7 @@ bool TcpAcceptingSocket::Listen() {
   struct sockaddr_in server_address;
   int reuse_flag = 1;
 
-  if (m_sd != CLOSED_SOCKET)
+  if (m_sd != INVALID_DESCRIPTOR)
     return false;
 
   // setup
@@ -889,12 +916,12 @@ bool TcpAcceptingSocket::Listen() {
  */
 bool TcpAcceptingSocket::Close() {
   bool ret = true;
-  if (m_sd != CLOSED_SOCKET)
+  if (m_sd != INVALID_DESCRIPTOR)
     if (close(m_sd)) {
       OLA_WARN << "close() failed " << strerror(errno);
       ret = false;
     }
-  m_sd = CLOSED_SOCKET;
+  m_sd = INVALID_DESCRIPTOR;
   return ret;
 }
 
@@ -903,22 +930,28 @@ bool TcpAcceptingSocket::Close() {
  * Accept new connections
  * @return a new connected socket
  */
-ConnectedSocket *TcpAcceptingSocket::Accept() {
+void TcpAcceptingSocket::PerformRead() {
   struct sockaddr_in cli_address;
   socklen_t length = sizeof(cli_address);
 
-  if (m_sd == CLOSED_SOCKET)
-    return NULL;
+  if (m_sd == INVALID_DESCRIPTOR)
+    return;
 
   int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);
   if (sd < 0) {
     OLA_WARN << "accept() failed, " << strerror(errno);
-    return NULL;
+    return;
   }
 
-  TcpSocket *socket = new TcpSocket(sd);
-  socket->SetReadNonBlocking();
-  return socket;
+  if (m_on_accept) {
+    TcpSocket *socket = new TcpSocket(sd);
+    socket->SetReadNonBlocking();
+    m_on_accept->Run(socket);
+  } else {
+    OLA_WARN <<
+      "Accepted new TCP Connection but no OnAccept handler registered";
+    close(sd);
+  }
 }
 }  // network
 }  // ola

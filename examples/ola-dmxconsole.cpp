@@ -652,8 +652,8 @@ int main (int argc, char *argv[]) {
 
   /* set up ola connection */
   SimpleClient ola_client;
-  ola::network::UnmanagedSocket stdin_socket(0);
-  stdin_socket.SetOnData(ola::NewCallback(&stdin_ready));
+  ola::network::UnmanagedFileDescriptor stdin_descriptor(0);
+  stdin_descriptor.SetOnData(ola::NewCallback(&stdin_ready));
 
   if (!ola_client.Setup()) {
     printf("error: %s", strerror(errno));
@@ -662,7 +662,7 @@ int main (int argc, char *argv[]) {
 
   client = ola_client.GetClient();
   ss = ola_client.GetSelectServer();
-  ss->AddSocket(&stdin_socket);
+  ss->AddReadDescriptor(&stdin_descriptor);
 
   /* init curses */
   w = initscr();

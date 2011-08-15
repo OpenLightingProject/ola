@@ -30,13 +30,13 @@
 
 using ola::ExportMap;
 using ola::IntegerVariable;
-using ola::network::LoopbackSocket;
+using ola::network::LoopbackDescriptor;
 using ola::network::SelectServer;
 using ola::network::UdpSocket;
 
 class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SelectServerTest);
-  CPPUNIT_TEST(testAddRemoveSocket);
+  CPPUNIT_TEST(testAddRemoveReadDescriptor);
   CPPUNIT_TEST(testTimeout);
   CPPUNIT_TEST(testLoopCallbacks);
   CPPUNIT_TEST_SUITE_END();
@@ -44,7 +44,7 @@ class SelectServerTest: public CppUnit::TestFixture {
   public:
     void setUp();
     void tearDown();
-    void testAddRemoveSocket();
+    void testAddRemoveReadDescriptor();
     void testTimeout();
     void testLoopCallbacks();
 
@@ -106,49 +106,49 @@ void SelectServerTest::tearDown() {
 
 
 /*
- * Check AddSocket/RemoveSocket works correctly and that the export map is
- * updated.
+ * Check AddReadDescriptor/RemoveReadDescriptor works correctly and that the
+ * export map is updated.
  */
-void SelectServerTest::testAddRemoveSocket() {
-  LoopbackSocket bad_socket;
+void SelectServerTest::testAddRemoveReadDescriptor() {
+  LoopbackDescriptor bad_socket;
   IntegerVariable *connected_socket_count =
-    m_map->GetIntegerVar(SelectServer::K_CONNECTED_SOCKET_VAR);
+    m_map->GetIntegerVar(SelectServer::K_CONNECTED_DESCRIPTORS_VAR);
   IntegerVariable *socket_count =
-    m_map->GetIntegerVar(SelectServer::K_SOCKET_VAR);
+    m_map->GetIntegerVar(SelectServer::K_READ_DESCRIPTOR_VAR);
   CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
   CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
   // adding and removin a non-connected socket should fail
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&bad_socket));
-  CPPUNIT_ASSERT(!m_ss->RemoveSocket(&bad_socket));
+  CPPUNIT_ASSERT(!m_ss->AddReadDescriptor(&bad_socket));
+  CPPUNIT_ASSERT(!m_ss->RemoveReadDescriptor(&bad_socket));
 
-  LoopbackSocket loopback_socket;
+  LoopbackDescriptor loopback_socket;
   loopback_socket.Init();
   CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
   CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
-  CPPUNIT_ASSERT(m_ss->AddSocket(&loopback_socket));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&loopback_socket));
   // Adding a second time should fail
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&loopback_socket));
+  CPPUNIT_ASSERT(!m_ss->AddReadDescriptor(&loopback_socket));
   CPPUNIT_ASSERT_EQUAL(1, connected_socket_count->Get());
   CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
 
   // Add a udp socket
   UdpSocket udp_socket;
   CPPUNIT_ASSERT(udp_socket.Init());
-  CPPUNIT_ASSERT(m_ss->AddSocket(&udp_socket));
-  CPPUNIT_ASSERT(!m_ss->AddSocket(&udp_socket));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&udp_socket));
+  CPPUNIT_ASSERT(!m_ss->AddReadDescriptor(&udp_socket));
   CPPUNIT_ASSERT_EQUAL(1, connected_socket_count->Get());
   CPPUNIT_ASSERT_EQUAL(1, socket_count->Get());
 
   // Check remove works
-  CPPUNIT_ASSERT(m_ss->RemoveSocket(&loopback_socket));
+  CPPUNIT_ASSERT(m_ss->RemoveReadDescriptor(&loopback_socket));
   CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
   CPPUNIT_ASSERT_EQUAL(1, socket_count->Get());
-  CPPUNIT_ASSERT(m_ss->RemoveSocket(&udp_socket));
+  CPPUNIT_ASSERT(m_ss->RemoveReadDescriptor(&udp_socket));
   CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
   CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
 
   // Remove again should fail
-  CPPUNIT_ASSERT(!m_ss->RemoveSocket(&loopback_socket));
+  CPPUNIT_ASSERT(!m_ss->RemoveReadDescriptor(&loopback_socket));
 }
 
 

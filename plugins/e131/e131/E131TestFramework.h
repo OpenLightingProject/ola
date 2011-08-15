@@ -318,7 +318,7 @@ class StateManager {
         m_node2(NULL),
         m_ss(NULL),
         m_states(states),
-        m_stdin_socket(STDIN_FILENO) {
+        m_stdin_descriptor(STDIN_FILENO) {
     }
     ~StateManager();
     bool Init();
@@ -336,7 +336,7 @@ class StateManager {
     E131Node *m_local_node, *m_node1, *m_node2;
     SelectServer *m_ss;
     std::vector<TestState*> m_states;
-    ola::network::UnmanagedSocket m_stdin_socket;
+    ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
     DmxBuffer m_recv_buffer;
     std::vector<TestState*> m_failed_tests;
 

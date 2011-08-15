@@ -43,13 +43,13 @@ namespace ola {
 class OlaClientCoreServiceImpl;
 
 using std::string;
-using ola::network::ConnectedSocket;
+using ola::network::ConnectedDescriptor;
 using ola::rpc::SimpleRpcController;
 using ola::rpc::StreamRpcChannel;
 
 class OlaClientCore: public ola::proto::OlaClientService {
   public:
-    explicit OlaClientCore(ConnectedSocket *socket);
+    explicit OlaClientCore(ConnectedDescriptor *descriptor);
     ~OlaClientCore();
 
     bool Setup();
@@ -337,7 +337,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
     template <typename arg_type>
     void FreeArgs(arg_type *args);
 
-    ConnectedSocket *m_socket;
+    ConnectedDescriptor *m_descriptor;
     Callback3<void, unsigned int, const DmxBuffer&, const string&>
       *m_dmx_callback;
     StreamRpcChannel *m_channel;

@@ -57,7 +57,7 @@ bool StateManager::Init() {
     CID local_cid = CID::Generate();
     m_local_node = new E131Node("", local_cid);
     assert(m_local_node->Start());
-    assert(m_ss->AddSocket(m_local_node->GetSocket()));
+    assert(m_ss->AddReadDescriptor(m_local_node->GetSocket()));
 
     assert(m_local_node->SetHandler(
           UNIVERSE_ID,
@@ -70,14 +70,14 @@ bool StateManager::Init() {
   m_node2 = new E131Node("", m_cid2, false, true, 0, 5569);
   assert(m_node1->Start());
   assert(m_node2->Start());
-  assert(m_ss->AddSocket(m_node1->GetSocket()));
-  assert(m_ss->AddSocket(m_node2->GetSocket()));
+  assert(m_ss->AddReadDescriptor(m_node1->GetSocket()));
+  assert(m_ss->AddReadDescriptor(m_node2->GetSocket()));
   m_node1->SetSourceName(UNIVERSE_ID, "E1.31 Merge Test Node 1");
   m_node2->SetSourceName(UNIVERSE_ID, "E1.31 Merge Test Node 2");
 
   // setup notifications for stdin & turn off buffering
-  m_stdin_socket.SetOnData(ola::NewCallback(this, &StateManager::Input));
-  m_ss->AddSocket(&m_stdin_socket);
+  m_stdin_descriptor.SetOnData(ola::NewCallback(this, &StateManager::Input));
+  m_ss->AddReadDescriptor(&m_stdin_descriptor);
   tcgetattr(STDIN_FILENO, &m_old_tc);
   termios new_tc = m_old_tc;
   new_tc.c_lflag &= (~ICANON & ~ECHO);
@@ -102,11 +102,11 @@ bool StateManager::Init() {
 
 StateManager::~StateManager() {
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
-  assert(m_ss->RemoveSocket(m_node1->GetSocket()));
-  assert(m_ss->RemoveSocket(m_node2->GetSocket()));
+  assert(m_ss->RemoveReadDescriptor(m_node1->GetSocket()));
+  assert(m_ss->RemoveReadDescriptor(m_node2->GetSocket()));
 
   if (m_local_node) {
-    assert(m_ss->RemoveSocket(m_local_node->GetSocket()));
+    assert(m_ss->RemoveReadDescriptor(m_local_node->GetSocket()));
     delete m_local_node;
   }
 

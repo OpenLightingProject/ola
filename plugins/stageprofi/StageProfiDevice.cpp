@@ -103,7 +103,7 @@ void StageProfiDevice::PrePortStop() {
 /*
  * return the sd for this device
  */
-ConnectedSocket *StageProfiDevice::GetSocket() const {
+ConnectedDescriptor *StageProfiDevice::GetSocket() const {
   return m_widget->GetSocket();
 }
 }  // stageprofi

@@ -69,9 +69,8 @@ class OlaServer {
     bool Init();
     void ReloadPlugins();
     void StopServer() { m_ss->Terminate(); }
-    void AcceptNewConnection(ola::network::AcceptingSocket *socket);
-    bool NewConnection(ola::network::ConnectedSocket *socket);
-    void SocketClosed(ola::network::ConnectedSocket *socket);
+    void NewConnection(ola::network::ConnectedDescriptor *socket);
+    void SocketClosed(ola::network::ConnectedDescriptor *socket);
     bool RunHousekeeping();
     void CheckForReload();
 

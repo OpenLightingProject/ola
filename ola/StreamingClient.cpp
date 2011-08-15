@@ -64,7 +64,7 @@ bool StreamingClient::Setup() {
     return false;
 
   m_ss = new SelectServer();
-  m_ss->AddSocket(m_socket);
+  m_ss->AddReadDescriptor(m_socket);
 
   m_channel = new StreamRpcChannel(NULL, m_socket);
 
@@ -123,8 +123,7 @@ void StreamingClient::Stop() {
  */
 bool StreamingClient::SendDmx(unsigned int universe,
                               const DmxBuffer &data) {
-  if (!m_stub ||
-      m_socket->ReadDescriptor() == ola::network::Socket::CLOSED_SOCKET)
+  if (!m_stub || !m_socket->ValidReadDescriptor())
     return false;
 
   // We select() on the fd here to see if the remove end has closed the

@@ -40,12 +40,13 @@
 namespace ola {
 namespace network {
 
-// # of sockets registered
-const char SelectServer::K_SOCKET_VAR[] = "ss-sockets";
-// # of sockets registered for writing
-const char SelectServer::K_WRITE_SOCKET_VAR[] = "ss-write-sockets";
-// # of connected sockets registered
-const char SelectServer::K_CONNECTED_SOCKET_VAR[] = "ss-connections";
+// # of descriptors registered
+const char SelectServer::K_READ_DESCRIPTOR_VAR[] = "ss-read-descriptors";
+// # of descriptors registered for writing
+const char SelectServer::K_WRITE_DESCRIPTOR_VAR[] = "ss-write-descriptor";
+// # of connected descriptors registered
+const char SelectServer::K_CONNECTED_DESCRIPTORS_VAR[] =
+    "ss-connected-descriptors";
 // # of timer functions registered
 const char SelectServer::K_TIMER_VAR[] = "ss-timers";
 // time spent processing events/timeouts in microseconds
@@ -75,7 +76,7 @@ SelectServer::SelectServer(ExportMap *export_map,
       m_wake_up_time(wake_up_time) {
 
   if (m_export_map) {
-    m_export_map->GetIntegerVar(K_SOCKET_VAR);
+    m_export_map->GetIntegerVar(K_READ_DESCRIPTOR_VAR);
     m_export_map->GetIntegerVar(K_TIMER_VAR);
     m_loop_time = m_export_map->GetCounterVar(K_LOOP_TIME);
     m_loop_iterations = m_export_map->GetCounterVar(K_LOOP_COUNT);
@@ -89,9 +90,9 @@ SelectServer::SelectServer(ExportMap *export_map,
   pthread_mutex_init(&m_incoming_mutex, NULL);
 
   // TODO(simon): this should really be in an Init() method.
-  if (!m_incoming_socket.Init())
-    OLA_FATAL << "Failed to init loopback socket, Execute() won't work!";
-  m_incoming_socket.SetOnData(
+  if (!m_incoming_descriptor.Init())
+    OLA_FATAL << "Failed to init LoopbackDescriptor, Execute() won't work!";
+  m_incoming_descriptor.SetOnData(
       ola::NewCallback(this, &SelectServer::DrainAndExecute));
 }
 
@@ -156,76 +157,75 @@ void SelectServer::RunOnce(unsigned int delay_sec,
 
 
 /*
- * Register a Socket with the select server.
- * @param Socket the socket to register. The OnData closure of this socket will
- *   be called when there is data available for reading.
+ * Register a ReadFileDescriptor with the select server.
+ * @param descriptor the ReadFileDescriptor to register. The OnData method of
+ * this descriptor will be called when there is data available for reading.
  * @return true on success, false on failure.
  */
-bool SelectServer::AddSocket(Socket *socket) {
-  if (socket->ReadDescriptor() == Socket::CLOSED_SOCKET) {
-    OLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
+bool SelectServer::AddReadDescriptor(ReadFileDescriptor *descriptor) {
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "AddReadDescriptor called with invalid descriptor";
     return false;
   }
 
-  SocketSet::const_iterator iter = m_sockets.find(socket);
-  if (iter != m_sockets.end())
+  if (m_read_descriptors.find(descriptor) != m_read_descriptors.end())
     return false;
 
-  m_sockets.insert(socket);
+  m_read_descriptors.insert(descriptor);
   if (m_export_map)
-    (*m_export_map->GetIntegerVar(K_SOCKET_VAR))++;
+    (*m_export_map->GetIntegerVar(K_READ_DESCRIPTOR_VAR))++;
   return true;
 }
 
 
 /*
- * Register a ConnectedSocket with the select server.
- * @param socket the socket to register. The OnData method will be called when
- * there is data available for reading. Additionally, OnClose will be called
- *   if the other end closes the connection
- * @param delete_on_close controls whether the select server deletes the socket
- *   once it's closed.
+ * Register a ConnectedDescriptor with the select server for read events.
+ * @param descriptor the ConnectedDescriptor to register. The OnData method
+ * will be called when there is data available for reading. Additionally,
+ * OnClose will be called if the other end closes the connection.
+ * @param delete_on_close controls whether the select server deletes the
+ *   descriptor once it's closed.
  * @return true on success, false on failure.
  */
-bool SelectServer::AddSocket(ConnectedSocket *socket,
-                             bool delete_on_close) {
-  if (socket->ReadDescriptor() == Socket::CLOSED_SOCKET) {
-    OLA_WARN << "AddSocket failed, fd: " << socket->ReadDescriptor();
+bool SelectServer::AddReadDescriptor(ConnectedDescriptor *descriptor,
+                                     bool delete_on_close) {
+  if (!descriptor->ValidReadDescriptor()) {
+    OLA_WARN << "AddReadDescriptor called with invalid descriptor";
     return false;
   }
 
-  connected_socket_t registered_socket;
-  registered_socket.socket = socket;
-  registered_socket.delete_on_close = delete_on_close;
-
-  ConnectedSocketSet::const_iterator iter;
-  for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
-       ++iter) {
-    if (iter->socket->ReadDescriptor() == socket->ReadDescriptor())
+  ConnectedDescriptorSet::const_iterator iter =
+      m_connected_read_descriptors.begin();
+  for (; iter != m_connected_read_descriptors.end(); ++iter) {
+    if (iter->descriptor == descriptor)
       return false;
   }
 
-  m_connected_sockets.insert(registered_socket);
+  connected_descriptor_t registered_descriptor;
+  registered_descriptor.descriptor = descriptor;
+  registered_descriptor.delete_on_close = delete_on_close;
+
+  m_connected_read_descriptors.insert(registered_descriptor);
   if (m_export_map)
-    (*m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR))++;
+    (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))++;
   return true;
 }
 
 
 /*
- * Unregister a Socket with the select server
- * @param socket the Socket to remove
+ * Unregister a ReadFileDescriptor with the select server
+ * @param descriptor the ReadFileDescriptor to remove
  * @return true if removed successfully, false otherwise
  */
-bool SelectServer::RemoveSocket(Socket *socket) {
-  if (socket->ReadDescriptor() == Socket::CLOSED_SOCKET)
-    OLA_WARN << "Removing a closed socket: " << socket->ReadDescriptor();
+bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
+  if (!descriptor->ValidReadDescriptor())
+    OLA_WARN << "Removing a invalid file descriptor";
 
-  SocketSet::iterator iter = m_sockets.find(socket);
-  if (iter != m_sockets.end()) {
-    m_sockets.erase(iter);
+  ReadDescriptorSet::iterator iter = m_read_descriptors.find(descriptor);
+  if (iter != m_read_descriptors.end()) {
+    m_read_descriptors.erase(iter);
     if (m_export_map)
-      (*m_export_map->GetIntegerVar(K_SOCKET_VAR))--;
+      (*m_export_map->GetIntegerVar(K_READ_DESCRIPTOR_VAR))--;
     return true;
   }
   return false;
@@ -233,21 +233,21 @@ bool SelectServer::RemoveSocket(Socket *socket) {
 
 
 /*
- * Unregister a ConnectedSocket with the select server
- * @param socket the Socket to remove
+ * Unregister a ConnectedDescriptor with the select server
+ * @param descriptor the ConnectedDescriptor to remove
  * @return true if removed successfully, false otherwise
  */
-bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
-  if (socket->ReadDescriptor() == Socket::CLOSED_SOCKET)
-    OLA_WARN << "Removing a closed socket: " << socket;
+bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
+  if (!descriptor->ValidReadDescriptor())
+    OLA_WARN << "Removing a invalid file descriptor";
 
-  ConnectedSocketSet::iterator iter;
-  for (iter = m_connected_sockets.begin(); iter != m_connected_sockets.end();
-       ++iter) {
-    if (iter->socket->ReadDescriptor() == socket->ReadDescriptor()) {
-      m_connected_sockets.erase(iter);
+  ConnectedDescriptorSet::iterator iter =
+      m_connected_read_descriptors.begin();
+  for (; iter != m_connected_read_descriptors.end(); ++iter) {
+    if (iter->descriptor == descriptor) {
+      m_connected_read_descriptors.erase(iter);
       if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR))--;
+        (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
       return true;
     }
   }
@@ -256,42 +256,42 @@ bool SelectServer::RemoveSocket(ConnectedSocket *socket) {
 
 
 /*
- * Register a socket to receive ready-to-write event notifications
- * @param socket the socket to register. The PerformWrite method will be called
- * when the socket is ready for writing.
+ * Register a WriteFileDescriptor to receive ready-to-write event notifications
+ * @param descriptor the WriteFileDescriptor to register. The PerformWrite
+ * method will be called when the descriptor is ready for writing.
  * @return true on success, false on failure.
  */
-bool SelectServer::RegisterWriteSocket(class BidirectionalSocket *socket) {
-  if (socket->WriteDescriptor() == Socket::CLOSED_SOCKET) {
-    OLA_WARN << "AddSocket failed, fd: " << socket->WriteDescriptor();
+bool SelectServer::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
+  if (!descriptor->ValidWriteDescriptor()) {
+    OLA_WARN << "AddWriteDescriptor called with invalid descriptor";
     return false;
   }
 
-  BidirectionalSocketSet::const_iterator iter = m_write_sockets.find(socket);
-  if (iter != m_write_sockets.end())
+  if (m_write_descriptors.find(descriptor) != m_write_descriptors.end())
     return false;
 
-  m_write_sockets.insert(socket);
+  m_write_descriptors.insert(descriptor);
   if (m_export_map)
-    (*m_export_map->GetIntegerVar(K_WRITE_SOCKET_VAR))++;
+    (*m_export_map->GetIntegerVar(K_WRITE_DESCRIPTOR_VAR))++;
   return true;
 }
 
 
 /*
- * UnRegister a socket from receiving ready-to-write event notifications
- * @param socket the socket to register.
+ * UnRegister a WriteFileDescriptor from receiving ready-to-write event
+ * notifications
+ * @param descriptor the WriteFileDescriptor to register.
  * @return true on success, false on failure.
  */
-bool SelectServer::UnRegisterWriteSocket(class BidirectionalSocket *socket) {
-  if (socket->WriteDescriptor() == Socket::CLOSED_SOCKET)
-    OLA_WARN << "Removing a closed socket: " << socket->WriteDescriptor();
+bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
+  if (!descriptor->ValidWriteDescriptor())
+    OLA_WARN << "Removing a closed descriptor";
 
-  BidirectionalSocketSet::iterator iter = m_write_sockets.find(socket);
-  if (iter != m_write_sockets.end()) {
-    m_write_sockets.erase(iter);
+  WriteDescriptorSet::iterator iter = m_write_descriptors.find(descriptor);
+  if (iter != m_write_descriptors.end()) {
+    m_write_descriptors.erase(iter);
     if (m_export_map)
-      (*m_export_map->GetIntegerVar(K_WRITE_SOCKET_VAR))--;
+      (*m_export_map->GetIntegerVar(K_WRITE_DESCRIPTOR_VAR))--;
     return true;
   }
   return false;
@@ -380,7 +380,7 @@ void SelectServer::Execute(ola::BaseCallback0<void> *closure) {
   // may be added just prior to select(). Without this kick, select() will
   // sleep for the poll_interval before executing the callback.
   uint8_t wake_up = 'a';
-  m_incoming_socket.Send(&wake_up, sizeof(wake_up));
+  m_incoming_descriptor.Send(&wake_up, sizeof(wake_up));
 }
 
 
@@ -406,9 +406,9 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   Clock::CurrentTime(&now);
   now = CheckTimeouts(now);
 
-  // adding sockets should be the last thing we do, they may have changed due
-  // to timeouts above.
-  AddSocketsToSet(&r_fds, &w_fds, &maxsd);
+  // adding descriptors should be the last thing we do, they may have changed
+  // due to timeouts above.
+  AddDescriptorsToSet(&r_fds, &w_fds, &maxsd);
 
   if (m_wake_up_time->IsSet()) {
     TimeInterval loop_time = now - *m_wake_up_time;
@@ -426,7 +426,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
 
   // if we've already been told to terminate set the timeout to something
   // very small (1ms). This ensures we at least make a pass through the
-  // sockets.
+  // descriptors.
   if (m_terminate)
     sleep_interval = std::min(sleep_interval, TimeInterval(0, 1000));
 
@@ -443,7 +443,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
       return false;
     default:
       Clock::CurrentTime(m_wake_up_time);
-      CheckSockets(&r_fds, &w_fds);
+      CheckDescriptors(&r_fds, &w_fds);
       Clock::CurrentTime(m_wake_up_time);
       CheckTimeouts(*m_wake_up_time);
   }
@@ -452,141 +452,135 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
 
 
 /*
- * Add all the read sockets to the FD_SET
+ * Add all the descriptors to the FD_SET
  */
-void SelectServer::AddSocketsToSet(fd_set *r_set,
-                                   fd_set *w_set,
-                                   int *max_sd) {
-  SocketSet::iterator iter = m_sockets.begin();
-  while (iter != m_sockets.end()) {
-    if ((*iter)->ReadDescriptor() == Socket::CLOSED_SOCKET) {
-      // The socket was probably closed without removing it from the select
+void SelectServer::AddDescriptorsToSet(fd_set *r_set,
+                                       fd_set *w_set,
+                                       int *max_sd) {
+  ReadDescriptorSet::iterator iter = m_read_descriptors.begin();
+  while (iter != m_read_descriptors.end()) {
+    ReadDescriptorSet::iterator this_iter = iter;
+    iter++;
+
+    if ((*this_iter)->ValidReadDescriptor()) {
+      *max_sd = max(*max_sd, (*this_iter)->ReadDescriptor());
+      FD_SET((*this_iter)->ReadDescriptor(), r_set);
+    } else {
+      // The descriptor was probably closed without removing it from the select
       // server
       if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_SOCKET_VAR))--;
-      m_sockets.erase(iter++);
-      OLA_WARN << "Removed a disconnected socket from the select server";
-    } else {
-      *max_sd = max(*max_sd, (*iter)->ReadDescriptor());
-      FD_SET((*iter)->ReadDescriptor(), r_set);
-      iter++;
+        (*m_export_map->GetIntegerVar(K_READ_DESCRIPTOR_VAR))--;
+      m_read_descriptors.erase(this_iter);
+      OLA_WARN << "Removed a inactive descriptor from the select server";
     }
   }
 
-  ConnectedSocketSet::iterator con_iter = m_connected_sockets.begin();
-  while (con_iter != m_connected_sockets.end()) {
-    if (con_iter->socket->ReadDescriptor() == Socket::CLOSED_SOCKET) {
-      // The socket was closed without removing it from the select server
-      ConnectedSocket::OnCloseCallback *on_close =
-        con_iter->socket->TransferOnClose();
+  ConnectedDescriptorSet::iterator con_iter =
+      m_connected_read_descriptors.begin();
+  while (con_iter != m_connected_read_descriptors.end()) {
+    ConnectedDescriptorSet::iterator this_iter = con_iter;
+    con_iter++;
+
+    if (this_iter->descriptor->ValidReadDescriptor()) {
+      *max_sd = max(*max_sd, this_iter->descriptor->ReadDescriptor());
+      FD_SET(this_iter->descriptor->ReadDescriptor(), r_set);
+    } else {
+      // The descriptor was closed without removing it from the select server
+      ConnectedDescriptor::OnCloseCallback *on_close =
+        this_iter->descriptor->TransferOnClose();
       if (on_close)
         on_close->Run();
-      if (con_iter->delete_on_close)
-        delete con_iter->socket;
+      if (this_iter->delete_on_close)
+        delete this_iter->descriptor;
       if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR))--;
-      m_connected_sockets.erase(con_iter++);
-      OLA_WARN << "Removed a disconnected socket from the select server";
-    } else {
-      *max_sd = max(*max_sd, con_iter->socket->ReadDescriptor());
-      FD_SET(con_iter->socket->ReadDescriptor(), r_set);
-      con_iter++;
+        (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+      m_connected_read_descriptors.erase(this_iter);
+      OLA_WARN << "Removed a disconnected descriptor from the select server";
     }
   }
 
-  BidirectionalSocketSet::iterator write_iter = m_write_sockets.begin();
-  while (write_iter != m_write_sockets.end()) {
-    if ((*write_iter)->WriteDescriptor() == Socket::CLOSED_SOCKET) {
-      // The socket was probably closed without removing it from the select
+  WriteDescriptorSet::iterator write_iter = m_write_descriptors.begin();
+  while (write_iter != m_write_descriptors.end()) {
+    WriteDescriptorSet::iterator this_iter = write_iter;
+    write_iter++;
+
+    if ((*this_iter)->ValidWriteDescriptor()) {
+      *max_sd = max(*max_sd, (*this_iter)->WriteDescriptor());
+      FD_SET((*this_iter)->WriteDescriptor(), w_set);
+    } else {
+      // The descriptor was probably closed without removing it from the select
       // server
       if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_WRITE_SOCKET_VAR))--;
-      m_write_sockets.erase(write_iter++);
-      OLA_WARN << "Removed a disconnected socket from the select server";
-    } else {
-      *max_sd = max(*max_sd, (*write_iter)->WriteDescriptor());
-      FD_SET((*write_iter)->WriteDescriptor(), w_set);
-      write_iter++;
+        (*m_export_map->GetIntegerVar(K_WRITE_DESCRIPTOR_VAR))--;
+      m_write_descriptors.erase(this_iter);
+      OLA_WARN << "Removed a disconnected descriptor from the select server";
     }
   }
 
-  // finally add the loopback socket
-  FD_SET(m_incoming_socket.ReadDescriptor(), r_set);
-  *max_sd = max(*max_sd, m_incoming_socket.ReadDescriptor());
+  // finally add the loopback descriptor
+  FD_SET(m_incoming_descriptor.ReadDescriptor(), r_set);
+  *max_sd = max(*max_sd, m_incoming_descriptor.ReadDescriptor());
 }
 
 
 /*
- * Check all the registered sockets:
- *  - Execute the callback for sockets with data
+ * Check all the registered descriptors:
+ *  - Execute the callback for descriptors with data
  *  - Excute OnClose if a remote end closed the connection
  */
-void SelectServer::CheckSockets(fd_set *r_set, fd_set *w_set) {
-  // Because the callbacks can add or remove sockets from the select server, we
-  // have to call them after we've used the iterators.
-  std::queue<Callback0<void>*> read_ready_queue;
-  std::queue<Callback0<void>*> write_ready_queue;
+void SelectServer::CheckDescriptors(fd_set *r_set, fd_set *w_set) {
+  // Because the callbacks can add or remove descriptors from the select
+  // server, we have to call them after we've used the iterators.
+  std::queue<ReadFileDescriptor*> read_ready_queue;
+  std::queue<WriteFileDescriptor*> write_ready_queue;
 
-  SocketSet::iterator iter;
-  for (iter = m_sockets.begin(); iter != m_sockets.end(); ++iter) {
-    if (FD_ISSET((*iter)->ReadDescriptor(), r_set)) {
-      if ((*iter)->OnData())
-        read_ready_queue.push((*iter)->OnData());
-      else
-        OLA_FATAL << "Socket " << (*iter)->ReadDescriptor() <<
-          "is ready but no handler attached, this is bad!";
-    }
+  ReadDescriptorSet::iterator iter = m_read_descriptors.begin();
+  for (; iter != m_read_descriptors.end(); ++iter) {
+    if (FD_ISSET((*iter)->ReadDescriptor(), r_set))
+      read_ready_queue.push(*iter);
   }
 
-  ConnectedSocketSet::iterator con_iter = m_connected_sockets.begin();
-  while (con_iter != m_connected_sockets.end()) {
-    if (FD_ISSET(con_iter->socket->ReadDescriptor(), r_set)) {
-      if (con_iter->socket->IsClosed()) {
-        ConnectedSocket::OnCloseCallback *on_close =
-          con_iter->socket->TransferOnClose();
+  ConnectedDescriptorSet::iterator con_iter =
+      m_connected_read_descriptors.begin();
+  while (con_iter != m_connected_read_descriptors.end()) {
+    if (FD_ISSET(con_iter->descriptor->ReadDescriptor(), r_set)) {
+      if (con_iter->descriptor->IsClosed()) {
+        ConnectedDescriptor::OnCloseCallback *on_close =
+          con_iter->descriptor->TransferOnClose();
         if (on_close)
           on_close->Run();
         if (con_iter->delete_on_close)
-          delete con_iter->socket;
+          delete con_iter->descriptor;
         if (m_export_map)
-          (*m_export_map->GetIntegerVar(K_CONNECTED_SOCKET_VAR))--;
-        m_connected_sockets.erase(con_iter++);
+          (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+        m_connected_read_descriptors.erase(con_iter++);
         continue;
       } else {
-        if (con_iter->socket->OnData())
-          read_ready_queue.push(con_iter->socket->OnData());
-        else
-          OLA_FATAL << "Socket " << con_iter->socket->ReadDescriptor() <<
-            "is ready but no handler attached, this is bad!";
+        read_ready_queue.push(con_iter->descriptor);
       }
     }
     con_iter++;
   }
 
-  BidirectionalSocketSet::iterator write_iter = m_write_sockets.begin();
-  for (;write_iter != m_write_sockets.end(); write_iter++) {
-    if (FD_ISSET((*write_iter)->WriteDescriptor(), w_set)) {
-      if ((*write_iter)->PerformWrite())
-        write_ready_queue.push((*write_iter)->PerformWrite());
-      else
-        OLA_FATAL << "Socket " << (*write_iter)->WriteDescriptor() <<
-          "is ready but no write handler attached, this is bad!";
-    }
+  WriteDescriptorSet::iterator write_iter = m_write_descriptors.begin();
+  for (; write_iter != m_write_descriptors.end(); write_iter++) {
+    if (FD_ISSET((*write_iter)->WriteDescriptor(), w_set))
+      write_ready_queue.push(*write_iter);
   }
 
   while (!read_ready_queue.empty()) {
-    Callback0<void> *closure = read_ready_queue.front();
-    closure->Run();
+    ReadFileDescriptor *descriptor = read_ready_queue.front();
+    descriptor->PerformRead();
     read_ready_queue.pop();
   }
 
   while (!write_ready_queue.empty()) {
-    Callback0<void> *closure = write_ready_queue.front();
-    closure->Run();
+    WriteFileDescriptor *descriptor = write_ready_queue.front();
+    descriptor->PerformWrite();
     write_ready_queue.pop();
   }
 
-  if (FD_ISSET(m_incoming_socket.ReadDescriptor(), r_set))
+  if (FD_ISSET(m_incoming_descriptor.ReadDescriptor(), r_set))
     DrainAndExecute();
 }
 
@@ -633,15 +627,15 @@ TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
  * Remove all registrations.
  */
 void SelectServer::UnregisterAll() {
-  ConnectedSocketSet::iterator iter = m_connected_sockets.begin();
-  for (; iter != m_connected_sockets.end(); ++iter) {
+  ConnectedDescriptorSet::iterator iter = m_connected_read_descriptors.begin();
+  for (; iter != m_connected_read_descriptors.end(); ++iter) {
     if (iter->delete_on_close) {
-      delete iter->socket;
+      delete iter->descriptor;
     }
   }
-  m_sockets.clear();
-  m_connected_sockets.clear();
-  m_write_sockets.clear();
+  m_read_descriptors.clear();
+  m_connected_read_descriptors.clear();
+  m_write_descriptors.clear();
   m_removed_timeouts.clear();
 
   while (!m_events.empty()) {
@@ -658,10 +652,10 @@ void SelectServer::UnregisterAll() {
 
 
 void SelectServer::DrainAndExecute() {
-  while (m_incoming_socket.DataRemaining()) {
+  while (m_incoming_descriptor.DataRemaining()) {
     uint8_t message;
     unsigned int size;
-    m_incoming_socket.Receive(&message, sizeof(message), size);
+    m_incoming_descriptor.Receive(&message, sizeof(message), size);
   }
 
   while (true) {

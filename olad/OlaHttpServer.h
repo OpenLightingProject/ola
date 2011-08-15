@@ -41,7 +41,7 @@ using std::string;
 class OlaHttpServer {
   public:
     OlaHttpServer(ExportMap *export_map,
-                  ola::network::ConnectedSocket *client_socket,
+                  ola::network::ConnectedDescriptor *client_socket,
                   class OlaServer *ola_server,
                   unsigned int port,
                   bool enable_quit,
@@ -112,7 +112,7 @@ class OlaHttpServer {
   private:
     class HttpServer m_server;
     ExportMap *m_export_map;
-    class ola::network::ConnectedSocket *m_client_socket;
+    class ola::network::ConnectedDescriptor *m_client_socket;
     ola::OlaCallbackClient m_client;
     class OlaServer *m_ola_server;
     bool m_enable_quit;

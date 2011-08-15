@@ -35,7 +35,7 @@ class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
   public:
     MockUsbWidget():
       m_callback(NULL),
-      m_socket_closed(false) {}
+      m_descriptor_closed(false) {}
     ~MockUsbWidget() {
       if (m_callback)
         delete m_callback;
@@ -54,8 +54,8 @@ class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
       delete on_close;
     }
 
-    void CloseSocket() {
-      m_socket_closed = true;
+    void CloseDescriptor() {
+      m_descriptor_closed = true;
     }
 
     bool SendMessage(uint8_t label,
@@ -81,11 +81,11 @@ class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_expected_calls.size());
     }
 
-    bool IsClosed() const { return m_socket_closed; }
+    bool IsClosed() const { return m_descriptor_closed; }
 
   private:
     ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *m_callback;
-    bool m_socket_closed;
+    bool m_descriptor_closed;
 
     typedef struct {
       uint8_t label;

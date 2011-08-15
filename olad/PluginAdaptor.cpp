@@ -48,38 +48,60 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
 
 
 /*
- * Register a socket with the select server.
- * @param socket the socket to register
+ * Register a descriptor with the select server.
+ * @param descriptor the descriptor to register
  * @return true on sucess, false on failure.
  */
-bool PluginAdaptor::AddSocket(ola::network::Socket *socket) {
-  return m_ss->AddSocket(socket);
+bool PluginAdaptor::AddReadDescriptor(
+    ola::network::ReadFileDescriptor *descriptor) {
+  return m_ss->AddReadDescriptor(descriptor);
 }
 
 /*
- * Register a connected socket with the select server.
- * @param socket the socket to register
+ * Register a connected descriptor with the select server.
+ * @param descriptor the descriptor to register
  * @return true on sucess, false on failure.
  */
-bool PluginAdaptor::AddSocket(ola::network::ConnectedSocket *socket,
-                              bool delete_on_close) {
-  return m_ss->AddSocket(socket, delete_on_close);
+bool PluginAdaptor::AddReadDescriptor(
+    ola::network::ConnectedDescriptor *descriptor,
+    bool delete_on_close) {
+  return m_ss->AddReadDescriptor(descriptor, delete_on_close);
 }
 
 
 /*
- * Remove a socket from the select server
+ * Remove a descriptor from the select server
  */
-bool PluginAdaptor::RemoveSocket(ola::network::Socket *socket) {
-  return m_ss->RemoveSocket(socket);
+bool PluginAdaptor::RemoveReadDescriptor(
+    ola::network::ReadFileDescriptor *descriptor) {
+  return m_ss->RemoveReadDescriptor(descriptor);
 }
 
 
 /*
- * Remove a socket from the select server
+ * Remove a descriptor from the select server
  */
-bool PluginAdaptor::RemoveSocket(ola::network::ConnectedSocket *socket) {
-  return m_ss->RemoveSocket(socket);
+bool PluginAdaptor::RemoveReadDescriptor(
+    ola::network::ConnectedDescriptor *descriptor) {
+  return m_ss->RemoveReadDescriptor(descriptor);
+}
+
+
+/**
+ * Register a WriteFileDescriptor with the SelectServer
+ */
+bool PluginAdaptor::AddWriteDescriptor(
+    ola::network::WriteFileDescriptor *descriptor) {
+  return m_ss->AddWriteDescriptor(descriptor);
+}
+
+
+/*
+ * Remove a descriptor from the select server
+ */
+bool PluginAdaptor::RemoveWriteDescriptor(
+    ola::network::WriteFileDescriptor *descriptor) {
+  return m_ss->RemoveWriteDescriptor(descriptor);
 }
 
 

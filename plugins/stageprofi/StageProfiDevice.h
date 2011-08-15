@@ -34,7 +34,6 @@ namespace plugin {
 namespace stageprofi {
 
 using ola::Device;
-using ola::network::Socket;
 
 class StageProfiDevice: public Device {
   public:
@@ -46,7 +45,7 @@ class StageProfiDevice: public Device {
     // I don't think this get us full stickiness because USB devices may
     // appear as different devices.
     string DeviceId() const { return m_path; }
-    ola::network::ConnectedSocket *GetSocket() const;
+    ola::network::ConnectedDescriptor *GetSocket() const;
 
   protected:
     bool StartHook();

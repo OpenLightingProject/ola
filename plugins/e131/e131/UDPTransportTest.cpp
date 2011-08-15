@@ -79,7 +79,7 @@ void UDPTransportTest::testUDPTransport() {
   ola::network::Interface interface;
   UDPTransport transport(&inflator);
   CPPUNIT_ASSERT(transport.Init(interface));
-  m_ss->AddSocket(transport.GetSocket());
+  m_ss->AddReadDescriptor(transport.GetSocket());
 
   PDUBlock<PDU> pdu_block;
   MockPDU mock_pdu(4, 8);

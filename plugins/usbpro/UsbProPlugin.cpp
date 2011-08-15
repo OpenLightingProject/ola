@@ -220,12 +220,12 @@ bool UsbProPlugin::StartHook() {
 
   for (it = device_paths.begin(); it != device_paths.end(); ++it) {
     // NewWidget (above) will be called when discovery completes.
-    ola::network::ConnectedSocket *socket = UsbWidget::OpenDevice(*it);
-    if (!socket)
+    ola::network::ConnectedDescriptor *descriptor = UsbWidget::OpenDevice(*it);
+    if (!descriptor)
       continue;
 
-    m_plugin_adaptor->AddSocket(socket, true);
-    UsbWidget *widget = new UsbWidget(socket);
+    m_plugin_adaptor->AddReadDescriptor(descriptor, true);
+    UsbWidget *widget = new UsbWidget(descriptor);
     m_detector.Discover(widget);
   }
   return true;

@@ -96,7 +96,7 @@ class DmxMonitor {
         : m_universe(universe),
           m_counter(0),
           m_palette_number(0),
-          m_stdin_socket(STDIN_FILENO),
+          m_stdin_descriptor(STDIN_FILENO),
           m_window(NULL),
           m_data_loss_window(NULL),
           m_channels_offset(true) {
@@ -124,7 +124,7 @@ class DmxMonitor {
     unsigned int m_universe;
     unsigned int m_counter;
     int m_palette_number;
-    ola::network::UnmanagedSocket m_stdin_socket;
+    ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
     struct timeval m_last_data;
     WINDOW *m_window;
     WINDOW *m_data_loss_window;
@@ -170,8 +170,9 @@ bool DmxMonitor::Init() {
   raw();
   keypad(m_window, TRUE);
 
-  m_client.GetSelectServer()->AddSocket(&m_stdin_socket);
-  m_stdin_socket.SetOnData(ola::NewCallback(this, &DmxMonitor::StdinReady));
+  m_client.GetSelectServer()->AddReadDescriptor(&m_stdin_descriptor);
+  m_stdin_descriptor.SetOnData(
+      ola::NewCallback(this, &DmxMonitor::StdinReady));
   m_client.GetSelectServer()->RegisterRepeatingTimeout(
       500,
       ola::NewCallback(this, &DmxMonitor::CheckDataLoss));
@@ -191,7 +192,6 @@ bool DmxMonitor::Init() {
 void DmxMonitor::NewDmx(unsigned int universe,
                         const DmxBuffer &buffer,
                         const string &error) {
-
   m_buffer.Set(buffer);
 
   if (m_data_loss_window) {
