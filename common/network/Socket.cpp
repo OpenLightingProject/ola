@@ -187,12 +187,13 @@ ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
   if (!ValidWriteDescriptor())
     return 0;
 
+ssize_t bytes_sent;
 #if HAVE_DECL_MSG_NOSIGNAL
   if (IsSocket())
-    ssize_t bytes_sent = send(WriteDescriptor(), buffer, size, MSG_NOSIGNAL);
+    bytes_sent = send(WriteDescriptor(), buffer, size, MSG_NOSIGNAL);
   else
 #endif
-    ssize_t bytes_sent = write(WriteDescriptor(), buffer, size);
+    bytes_sent = write(WriteDescriptor(), buffer, size);
 
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
     OLA_WARN << "Failed to send on " << WriteDescriptor() << ": " <<
