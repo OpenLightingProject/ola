@@ -13,7 +13,8 @@ ola_artnet_LDADD = libolaconfig.la \
                    $(top_builddir)/plugins/artnet/messages/libolaartnetconf.la
 
 ola_dev_info_SOURCES = ola-client.cpp
-ola_dev_info_LDADD = $(top_builddir)/ola/libola.la
+ola_dev_info_LDADD = $(top_builddir)/ola/libola.la \
+                     $(top_builddir)/common/libolacommon.la
 
 ola_e131_SOURCES = ola-e131.cpp
 ola_e131_LDADD = libolaconfig.la \
@@ -21,7 +22,8 @@ ola_e131_LDADD = libolaconfig.la \
                  $(top_builddir)/plugins/e131/messages/libolae131conf.la
 
 ola_streaming_client_SOURCES = ola-streaming-client.cpp
-ola_streaming_client_LDADD = $(top_builddir)/ola/libola.la
+ola_streaming_client_LDADD = $(top_builddir)/ola/libola.la \
+                             $(top_builddir)/common/libolacommon.la
 
 ola_usbpro_SOURCES = ola-usbpro.cpp
 ola_usbpro_LDADD = libolaconfig.la \
@@ -29,19 +31,23 @@ ola_usbpro_LDADD = libolaconfig.la \
                    $(top_builddir)/plugins/usbpro/messages/libolausbproconf.la
 
 ola_rdm_get_SOURCES = RDMController.cpp RDMHandler.cpp ola-rdm.cpp
-ola_rdm_get_LDADD = $(top_builddir)/ola/libola.la
+ola_rdm_get_LDADD = $(top_builddir)/ola/libola.la \
+                    $(top_builddir)/common/libolacommon.la
 
 ola_rdm_discover_SOURCES = ola-rdm-discover.cpp
-ola_rdm_discover_LDADD = $(top_builddir)/ola/libola.la
+ola_rdm_discover_LDADD = $(top_builddir)/ola/libola.la \
+                         $(top_builddir)/common/libolacommon.la
 
 if HAVE_NCURSES
 bin_PROGRAMS += ola_dmxconsole ola_dmxmonitor
 ola_dmxconsole_SOURCES = ola-dmxconsole.cpp
 ola_dmxconsole_LDADD = @LIBS@ -lcurses \
-                       $(top_builddir)/ola/libola.la
+                       $(top_builddir)/ola/libola.la \
+                       $(top_builddir)/common/libolacommon.la
 ola_dmxmonitor_SOURCES = ola-dmxmonitor.cpp
 ola_dmxmonitor_LDADD = @LIBS@ -lcurses \
-                       $(top_builddir)/ola/libola.la
+                       $(top_builddir)/ola/libola.la \
+                       $(top_builddir)/common/libolacommon.la
 endif
 
 
