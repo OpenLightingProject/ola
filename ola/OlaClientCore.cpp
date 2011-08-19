@@ -706,36 +706,8 @@ bool OlaClientCore::RDMGet(
     uint16_t pid,
     const uint8_t *data,
     unsigned int data_length) {
-  if (!callback) {
-    OLA_WARN << "RDM callback was null, command to " << uid << " won't be sent";
-    return false;
-  }
-
-  if (!m_connected) {
-    delete callback;
-    return false;
-  }
-
-  ola::proto::RDMRequest request;
-  SimpleRpcController *controller = new SimpleRpcController();
-  ola::proto::RDMResponse *reply = new ola::proto::RDMResponse();
-
-  request.set_universe(universe);
-  ola::proto::UID *pb_uid = request.mutable_uid();
-  pb_uid->set_esta_id(uid.ManufacturerId());
-  pb_uid->set_device_id(uid.DeviceId());
-  request.set_sub_device(sub_device);
-  request.set_param_id(pid);
-  request.set_is_set(false);
-  request.set_data(string(reinterpret_cast<const char*>(data), data_length));
-
-  google::protobuf::Closure *cb = google::protobuf::NewCallback(
-      this,
-      &ola::OlaClientCore::HandleRDMWithPID,
-      NewArgs<rdm_pid_response_args>(controller, reply, callback));
-
-  m_stub->RDMCommand(controller, &request, reply, cb);
-  return true;
+  return RDMCommandWithPid(callback, false, universe, uid, sub_device, pid,
+      data, data_length);
 }
 
 
@@ -760,6 +732,30 @@ bool OlaClientCore::RDMSet(
     unsigned int data_length) {
   return RDMCommand(callback, true, universe, uid, sub_device, pid, data,
                     data_length);
+}
+
+
+/*
+ * Send an RDM Set Command
+ * @param callback the Callback to invoke when this completes
+ * @param universe the universe to send the command on
+ * @param uid the UID to send the command to
+ * @param sub_device the sub device index
+ * @param pid the PID to address
+ * @param data the optional data to send
+ * @param data_length the length of the data
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::RDMSet(
+    ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
+    unsigned int universe,
+    const UID &uid,
+    uint16_t sub_device,
+    uint16_t pid,
+    const uint8_t *data,
+    unsigned int data_length) {
+  return RDMCommandWithPid(callback, true, universe, uid, sub_device, pid,
+      data, data_length);
 }
 
 
@@ -1191,6 +1187,51 @@ bool OlaClientCore::RDMCommand(
       this,
       &ola::OlaClientCore::HandleRDM,
       NewArgs<rdm_response_args>(controller, reply, callback));
+
+  m_stub->RDMCommand(controller, &request, reply, cb);
+  return true;
+}
+
+
+/**
+ * Set a generic RDM command with the pid handler
+ */
+bool OlaClientCore::RDMCommandWithPid(
+    ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
+    bool is_set,
+    unsigned int universe,
+    const ola::rdm::UID &uid,
+    uint16_t sub_device,
+    uint16_t pid,
+    const uint8_t *data,
+    unsigned int data_length) {
+  if (!callback) {
+    OLA_WARN << "RDM callback was null, command to " << uid << " won't be sent";
+    return false;
+  }
+
+  if (!m_connected) {
+    delete callback;
+    return false;
+  }
+
+  ola::proto::RDMRequest request;
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::RDMResponse *reply = new ola::proto::RDMResponse();
+
+  request.set_universe(universe);
+  ola::proto::UID *pb_uid = request.mutable_uid();
+  pb_uid->set_esta_id(uid.ManufacturerId());
+  pb_uid->set_device_id(uid.DeviceId());
+  request.set_sub_device(sub_device);
+  request.set_param_id(pid);
+  request.set_is_set(is_set);
+  request.set_data(string(reinterpret_cast<const char*>(data), data_length));
+
+  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+      this,
+      &ola::OlaClientCore::HandleRDMWithPID,
+      NewArgs<rdm_pid_response_args>(controller, reply, callback));
 
   m_stub->RDMCommand(controller, &request, reply, cb);
   return true;
