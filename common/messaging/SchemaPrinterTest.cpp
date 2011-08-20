@@ -38,12 +38,16 @@ using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
+using ola::messaging::Int16FieldDescriptor;
+using ola::messaging::Int32FieldDescriptor;
+using ola::messaging::Int8FieldDescriptor;
 
 class SchemaPrinterTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SchemaPrinterTest);
   CPPUNIT_TEST(testPrinter);
   CPPUNIT_TEST(testGroupPrinter);
   CPPUNIT_TEST(testIntervalsAndLabels);
+  CPPUNIT_TEST(testIntervalTypes);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -51,6 +55,11 @@ class SchemaPrinterTest: public CppUnit::TestFixture {
     void testPrinter();
     void testGroupPrinter();
     void testIntervalsAndLabels();
+    void testIntervalTypes();
+
+  private:
+    template<typename field_descriptor_class, typename int_type>
+    string GenerateIntervalString(int_type min, int_type max);
 };
 
 
@@ -125,10 +134,10 @@ void SchemaPrinterTest::testIntervalsAndLabels() {
   labels["dozen"] = 12;
   labels["bakers_dozen"] = 13;
 
-  UInt16FieldDescriptor *uint8_descriptor = new UInt16FieldDescriptor(
+  UInt16FieldDescriptor *uint16_descriptor = new UInt16FieldDescriptor(
       "Count", intervals, labels);
   vector<const FieldDescriptor*> fields;
-  fields.push_back(uint8_descriptor);
+  fields.push_back(uint16_descriptor);
   Descriptor test_descriptor("Test Descriptor", fields);
 
   SchemaPrinter interval_printer(true, false);
@@ -147,3 +156,41 @@ void SchemaPrinterTest::testIntervalsAndLabels() {
       "Count: uint16, (2, 8) (12, 14)\n  bakers_dozen: 13\n  dozen: 12\n");
   CPPUNIT_ASSERT_EQUAL(expected3, interval_label_printer.AsString());
 }
+
+
+template<typename field_descriptor_class, typename int_type>
+string SchemaPrinterTest::GenerateIntervalString(int_type min, int_type max) {
+  typename field_descriptor_class::IntervalVector intervals;
+  intervals.push_back(typename field_descriptor_class::Interval(min, max));
+  typename field_descriptor_class::LabeledValues labels;
+
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new field_descriptor_class("Count", intervals, labels));
+  Descriptor test_descriptor("Test Descriptor", fields);
+
+  SchemaPrinter interval_printer(true, false);
+  test_descriptor.Accept(interval_printer);
+
+  return interval_printer.AsString();
+}
+
+
+void SchemaPrinterTest::testIntervalTypes() {
+  CPPUNIT_ASSERT_EQUAL(string("Count: uint8, (2, 8)\n"),
+                       GenerateIntervalString<UInt8FieldDescriptor>(2, 8));
+  CPPUNIT_ASSERT_EQUAL(string("Count: uint16, (2, 8256)\n"),
+                       GenerateIntervalString<UInt16FieldDescriptor>(2, 8256));
+  CPPUNIT_ASSERT_EQUAL(
+      string("Count: uint32, (2, 82560)\n"),
+      GenerateIntervalString<UInt32FieldDescriptor>(2, 82560));
+
+  CPPUNIT_ASSERT_EQUAL(string("Count: int8, (-2, 8)\n"),
+                       GenerateIntervalString<Int8FieldDescriptor>(-2, 8));
+  CPPUNIT_ASSERT_EQUAL(
+      string("Count: int16, (-300, 8256)\n"),
+      GenerateIntervalString<Int16FieldDescriptor>(-300, 8256));
+  CPPUNIT_ASSERT_EQUAL(
+      string("Count: int32, (-70000, 82560)\n"),
+      GenerateIntervalString<Int32FieldDescriptor>(-70000, 82560));
+}
+

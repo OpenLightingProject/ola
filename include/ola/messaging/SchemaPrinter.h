@@ -73,7 +73,8 @@ class SchemaPrinter: public FieldDescriptorVisitor {
       typename vector_class::const_iterator iter = intervals.begin();
       for (; iter != intervals.end(); ++iter) {
         m_str << (iter != intervals.begin() ? " " : ", ");
-        m_str << "(" << iter->first << ", " << iter->second << ")";
+        m_str << "(" << static_cast<int64_t>(iter->first) << ", " <<
+          static_cast<int64_t>(iter->second) << ")";
       }
     }
 
