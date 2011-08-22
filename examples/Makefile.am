@@ -9,6 +9,7 @@ bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
 
 ola_artnet_SOURCES = ola-artnet.cpp
 ola_artnet_LDADD = libolaconfig.la \
+                   $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
                    $(top_builddir)/plugins/artnet/messages/libolaartnetconf.la
 
@@ -18,6 +19,7 @@ ola_dev_info_LDADD = $(top_builddir)/ola/libola.la \
 
 ola_e131_SOURCES = ola-e131.cpp
 ola_e131_LDADD = libolaconfig.la \
+                 $(top_builddir)/common/libolacommon.la \
                  $(top_builddir)/ola/libola.la \
                  $(top_builddir)/plugins/e131/messages/libolae131conf.la
 
@@ -27,6 +29,7 @@ ola_streaming_client_LDADD = $(top_builddir)/ola/libola.la \
 
 ola_usbpro_SOURCES = ola-usbpro.cpp
 ola_usbpro_LDADD = libolaconfig.la \
+                   $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
                    $(top_builddir)/plugins/usbpro/messages/libolausbproconf.la
 
