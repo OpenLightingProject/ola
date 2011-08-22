@@ -343,6 +343,10 @@ class OlaClientCore: public ola::proto::OlaClientService {
         ola::proto::RDMResponse *reply,
         ola::rdm::ResponseStatus *new_status);
 
+    void UpdateResponseAckData(
+        ola::proto::RDMResponse *reply,
+        ola::rdm::ResponseStatus *new_status);
+
     template <typename arg_type, typename reply_type, typename callback_type>
     arg_type *NewArgs(
         SimpleRpcController *controller,

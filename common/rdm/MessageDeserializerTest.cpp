@@ -39,7 +39,7 @@ using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::Message;
-using ola::messaging::MessagePrinter;
+using ola::messaging::GenericMessagePrinter;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
@@ -75,7 +75,7 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
 
   private:
     MessageDeserializer m_deserializer;
-    MessagePrinter m_printer;
+    GenericMessagePrinter m_printer;
 };
 
 
@@ -285,7 +285,6 @@ void MessageDeserializerTest::testWithGroups() {
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the inputs
-  MessagePrinter printer;
   const uint8_t data[] = {0, 10, 1, 3, 0, 20, 1, 40};
 
   // an empty message

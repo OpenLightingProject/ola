@@ -41,7 +41,7 @@ using ola::messaging::Int8MessageField;
 using ola::messaging::Int16MessageField;
 using ola::messaging::Message;
 using ola::messaging::MessageFieldInterface;
-using ola::messaging::MessagePrinter;
+using ola::messaging::GenericMessagePrinter;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::StringMessageField;
 using ola::messaging::UInt32FieldDescriptor;
@@ -50,31 +50,31 @@ using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::UInt8MessageField;
 
 
-class MessagePrinterTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(MessagePrinterTest);
+class GenericMessagePrinterTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(GenericMessagePrinterTest);
   CPPUNIT_TEST(testSimplePrinter);
   CPPUNIT_TEST(testLabeledPrinter);
   CPPUNIT_TEST(testNestedPrinter);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    MessagePrinterTest() {}
+    GenericMessagePrinterTest() {}
     void testSimplePrinter();
     void testLabeledPrinter();
     void testNestedPrinter();
 
   private:
-    MessagePrinter m_printer;
+    GenericMessagePrinter m_printer;
 };
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION(MessagePrinterTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(GenericMessagePrinterTest);
 
 
 /*
  * Test the MessagePrinter
  */
-void MessagePrinterTest::testSimplePrinter() {
+void GenericMessagePrinterTest::testSimplePrinter() {
   // setup some fields
   BoolFieldDescriptor bool_descriptor("On/Off");
   StringFieldDescriptor string_descriptor("Name", 0, 32);
@@ -103,7 +103,7 @@ void MessagePrinterTest::testSimplePrinter() {
 /**
  * Check that labels are added
  */
-void MessagePrinterTest::testLabeledPrinter() {
+void GenericMessagePrinterTest::testLabeledPrinter() {
   UInt8FieldDescriptor::IntervalVector intervals;
   intervals.push_back(UInt8FieldDescriptor::Interval(0, 2));
 
@@ -125,7 +125,7 @@ void MessagePrinterTest::testLabeledPrinter() {
 }
 
 
-void MessagePrinterTest::testNestedPrinter() {
+void GenericMessagePrinterTest::testNestedPrinter() {
   // this holds some information on people
   StringFieldDescriptor *string_descriptor = new StringFieldDescriptor(
       "Name", 0, 32);

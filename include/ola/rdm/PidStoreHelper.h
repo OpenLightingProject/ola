@@ -79,7 +79,7 @@ class PidStoreHelper {
     ola::rdm::StringMessageBuilder m_string_builder;
     ola::rdm::MessageSerializer m_serializer;
     ola::rdm::MessageDeserializer m_deserializer;
-    ola::messaging::MessagePrinter m_message_printer;
+    ola::messaging::GenericMessagePrinter m_message_printer;
     ola::messaging::SchemaPrinter m_schema_printer;
 };
 }  // rdm

@@ -42,19 +42,19 @@ string MessagePrinter::AsString(const Message *message) {
 }
 
 
-void MessagePrinter::Visit(const BoolMessageField *message) {
-  m_str << string(m_indent, ' ') << message->GetDescriptor()->Name() << ": " <<
-    (message->Value() ? "true" : "false") << endl;
+void GenericMessagePrinter::Visit(const BoolMessageField *message) {
+  Stream() << string(m_indent, ' ') << message->GetDescriptor()->Name() << ": "
+    << (message->Value() ? "true" : "false") << endl;
 }
 
 
-void MessagePrinter::Visit(const StringMessageField *message) {
-  m_str << string(m_indent, ' ') << message->GetDescriptor()->Name() << ": " <<
-    message->Value()<< endl;
+void GenericMessagePrinter::Visit(const StringMessageField *message) {
+  Stream() << string(m_indent, ' ') << message->GetDescriptor()->Name() << ": "
+    << message->Value()<< endl;
 }
 
 
-void MessagePrinter::Visit(const BasicMessageField<uint8_t> *message) {
+void GenericMessagePrinter::Visit(const BasicMessageField<uint8_t> *message) {
   const UInt8FieldDescriptor *descriptor = message->GetDescriptor();
   AppendUInt(descriptor->Name(),
              message->Value(),
@@ -63,7 +63,7 @@ void MessagePrinter::Visit(const BasicMessageField<uint8_t> *message) {
 }
 
 
-void MessagePrinter::Visit(const BasicMessageField<uint16_t> *message) {
+void GenericMessagePrinter::Visit(const BasicMessageField<uint16_t> *message) {
   const UInt16FieldDescriptor *descriptor = message->GetDescriptor();
   AppendUInt(descriptor->Name(),
              message->Value(),
@@ -72,7 +72,7 @@ void MessagePrinter::Visit(const BasicMessageField<uint16_t> *message) {
 }
 
 
-void MessagePrinter::Visit(const BasicMessageField<uint32_t> *message) {
+void GenericMessagePrinter::Visit(const BasicMessageField<uint32_t> *message) {
   const UInt32FieldDescriptor *descriptor = message->GetDescriptor();
   AppendUInt(descriptor->Name(),
              message->Value(),
@@ -81,7 +81,7 @@ void MessagePrinter::Visit(const BasicMessageField<uint32_t> *message) {
 }
 
 
-void MessagePrinter::Visit(const BasicMessageField<int8_t> *message) {
+void GenericMessagePrinter::Visit(const BasicMessageField<int8_t> *message) {
   const Int8FieldDescriptor *descriptor = message->GetDescriptor();
   AppendInt(descriptor->Name(),
             message->Value(),
@@ -90,7 +90,7 @@ void MessagePrinter::Visit(const BasicMessageField<int8_t> *message) {
 }
 
 
-void MessagePrinter::Visit(const BasicMessageField<int16_t> *message) {
+void GenericMessagePrinter::Visit(const BasicMessageField<int16_t> *message) {
   const Int16FieldDescriptor *descriptor = message->GetDescriptor();
   AppendInt(descriptor->Name(),
             message->Value(),
@@ -99,7 +99,7 @@ void MessagePrinter::Visit(const BasicMessageField<int16_t> *message) {
 }
 
 
-void MessagePrinter::Visit(const BasicMessageField<int32_t> *message) {
+void GenericMessagePrinter::Visit(const BasicMessageField<int32_t> *message) {
   const Int32FieldDescriptor *descriptor = message->GetDescriptor();
   AppendInt(descriptor->Name(),
             message->Value(),
@@ -108,53 +108,53 @@ void MessagePrinter::Visit(const BasicMessageField<int32_t> *message) {
 }
 
 
-void MessagePrinter::Visit(const GroupMessageField *message) {
-  m_str << string(m_indent, ' ') << message->GetDescriptor()->Name() << " {"
+void GenericMessagePrinter::Visit(const GroupMessageField *message) {
+  Stream() << string(m_indent, ' ') << message->GetDescriptor()->Name() << " {"
     << endl;
   m_indent += m_indent_size;
 }
 
 
-void MessagePrinter::PostVisit(const GroupMessageField *message) {
+void GenericMessagePrinter::PostVisit(const GroupMessageField *message) {
   m_indent -= m_indent_size;
-  m_str << string(m_indent, ' ') << "}" << endl;
+  Stream() << string(m_indent, ' ') << "}" << endl;
   (void) message;
 }
 
 
-void MessagePrinter::AppendUInt(const string &name,
+void GenericMessagePrinter::AppendUInt(const string &name,
                                 unsigned int value,
                                 const string &label,
                                 int8_t multipler) {
-  m_str << string(m_indent, ' ') << name << ": ";
+  Stream() << string(m_indent, ' ') << name << ": ";
   if (label.empty()) {
-    m_str << value;
+    Stream() << value;
     AppendMultipler(multipler);
   } else {
-    m_str << label;
+    Stream() << label;
   }
-  m_str << endl;
+  Stream() << endl;
 }
 
 
-void MessagePrinter::AppendInt(const string &name,
+void GenericMessagePrinter::AppendInt(const string &name,
                                int value,
                                const string &label,
                                int8_t multipler) {
-  m_str << string(m_indent, ' ') << name << ": ";
+  Stream() << string(m_indent, ' ') << name << ": ";
   if (label.empty()) {
-    m_str << value;
+    Stream() << value;
     AppendMultipler(multipler);
   } else {
-    m_str << label;
+    Stream() << label;
   }
-  m_str << endl;
+  Stream() << endl;
 }
 
 
-void MessagePrinter::AppendMultipler(int8_t multipler) {
+void GenericMessagePrinter::AppendMultipler(int8_t multipler) {
   if (multipler)
-    m_str << " x 10 ^ " << static_cast<int>(multipler);
+    Stream() << " x 10 ^ " << static_cast<int>(multipler);
 }
 }  // messaging
 }  // ola

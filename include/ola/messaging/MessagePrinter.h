@@ -30,17 +30,32 @@ namespace messaging {
 
 
 /**
- * This visitor prints the message as a string.
+ * The base class for all message printers.
  */
 class MessagePrinter: public MessageVisitor {
   public:
-    explicit MessagePrinter(unsigned int indent_size = DEFAULT_INDENT)
+    virtual ~MessagePrinter() {}
+
+    std::string AsString(const class Message *message);
+
+  protected:
+    std::stringstream& Stream() { return m_str; }
+
+  private:
+    std::stringstream m_str;
+};
+
+
+/**
+ * This visitor prints the message as a string.
+ */
+class GenericMessagePrinter: public MessagePrinter {
+  public:
+    explicit GenericMessagePrinter(unsigned int indent_size = DEFAULT_INDENT)
         : m_indent(0),
           m_indent_size(indent_size) {
     }
-    ~MessagePrinter() {}
-
-    std::string AsString(const class Message *message);
+    ~GenericMessagePrinter() {}
 
     void Visit(const BoolMessageField*);
     void Visit(const StringMessageField*);
@@ -54,7 +69,6 @@ class MessagePrinter: public MessageVisitor {
     void PostVisit(const GroupMessageField*);
 
   private:
-    std::stringstream m_str;
     unsigned int m_indent, m_indent_size;
 
     void AppendUInt(const string &name,

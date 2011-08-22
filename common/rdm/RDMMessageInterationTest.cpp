@@ -72,7 +72,7 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
     const ola::rdm::RootPidStore *m_store;
     const ola::rdm::PidStore *m_esta_store;
     ola::rdm::StringMessageBuilder m_builder;
-    ola::messaging::MessagePrinter m_printer;
+    ola::messaging::GenericMessagePrinter m_printer;
     ola::rdm::MessageSerializer m_serializer;
     ola::rdm::MessageDeserializer m_deserializer;
 };

@@ -50,6 +50,8 @@ class ResponseStatus {
     uint8_t response_type;  // The RDM response type
     uint8_t message_count;  // Number of queued messages
     uint16_t m_param;
+    bool set_command;
+    uint16_t pid_value;
 
     // helper methods
     bool WasAcked() const {
@@ -67,6 +69,7 @@ class ResponseStatus {
 
     // Returns the time (in ms) to wait before re-trying
     unsigned int AckTimer() const { return 100 * m_param; }
+
 };
 
 

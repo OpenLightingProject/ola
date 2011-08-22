@@ -76,7 +76,7 @@ class StringBuilderTest: public CppUnit::TestFixture {
     }
 
   private:
-    ola::messaging::MessagePrinter m_printer;
+    ola::messaging::GenericMessagePrinter m_printer;
 
     const Message *BuildMessage(const Descriptor &descriptor,
                                 const vector<string> &inputs);

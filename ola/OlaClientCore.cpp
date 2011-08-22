@@ -1274,7 +1274,8 @@ void OlaClientCore::CheckRDMResponseStatus(
     stringstream str;
     switch (new_status->response_type) {
       case ola::rdm::RDM_ACK:
-        // noop
+        // update set_command (bool) and pid_value
+        UpdateResponseAckData(reply, new_status);
         break;
       case ola::rdm::RDM_ACK_TIMER:
         GetParamFromReply("ack timer", reply, new_status);
@@ -1307,5 +1308,26 @@ void OlaClientCore::GetParamFromReply(const string &message_type,
     memcpy(&param, reply->data().data(), sizeof(param));
     new_status->m_param = ola::network::NetworkToHost(param);
   }
+}
+
+
+/**
+ * For an ACK response, update the command_class and pid_value members in the
+ * ResponseStatus object.
+ */
+void OlaClientCore::UpdateResponseAckData(
+    ola::proto::RDMResponse *reply,
+    ola::rdm::ResponseStatus *new_status) {
+  if (!reply->has_command_class()) {
+    new_status->error = "Missing Command Class in RPC response";
+  }
+
+  if (!reply->has_param_id()) {
+    new_status->error = "Missing PID in RPC Response";
+  }
+
+  new_status->set_command = (
+      reply->command_class() == ola::proto::RDM_SET_RESPONSE);
+  new_status->pid_value = reply->param_id();
 }
 }  // ola
