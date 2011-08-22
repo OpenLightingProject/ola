@@ -177,6 +177,13 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length);
+    bool RDMSet(ola::rdm::RDMAPIImplInterface::rdm_pid_callback *callback,
+                unsigned int universe,
+                const ola::rdm::UID &uid,
+                uint16_t sub_device,
+                uint16_t pid,
+                const uint8_t *data,
+                unsigned int data_length);
 
   private:
     OlaCallbackClient(const OlaCallbackClient&);
