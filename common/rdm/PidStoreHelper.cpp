@@ -24,6 +24,8 @@
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/rdm/PidStoreHelper.h"
+#include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/RDMMessagePrinters.h"
 
 namespace ola {
 namespace rdm {
@@ -63,63 +65,32 @@ bool PidStoreHelper::Init() {
 
 
 /**
- * Lookup a descriptor by name.
+ * Lookup a PidDescriptor by name.
+ * @param manufacturer_id the ESTA id of the manufacturer_id
+ * @param pid_name the name of the pid
+ * @return a PidDescriptor or NULL if the pid wasn't found.
  */
 const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
-    uint16_t manufacturer_id,
-    const string &pid_name) const {
+    const string &pid_name,
+    uint16_t manufacturer_id) const {
   if (!m_root_store)
     return NULL;
-
-  string canonical_pid_name = pid_name;
-  ola::ToUpper(&canonical_pid_name);
-
-  const ola::rdm::PidStore *store = m_root_store->EstaStore();
-  if (store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      store->LookupPID(canonical_pid_name);
-    if (descriptor)
-      return descriptor;
-  }
-
-  // now try the specific manufacturer store
-  store = m_root_store->ManufacturerStore(manufacturer_id);
-  if (store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      store->LookupPID(canonical_pid_name);
-    if (descriptor)
-      return descriptor;
-  }
-  return NULL;
+  return m_root_store->GetDescriptor(pid_name, manufacturer_id);
 }
 
 
 /**
- * Get a RDM descriptor by value
+ * Lookup a PidDescriptor by pid value.
+ * @param manufacturer_id the ESTA id of the manufacturer_id
+ * @param pid_value the pid to lookup
+ * @return a PidDescriptor or NULL if the pid wasn't found.
  */
 const ola::rdm::PidDescriptor *PidStoreHelper::GetDescriptor(
-    uint16_t manufacturer_id,
-    uint16_t param_id) const {
+    uint16_t pid_value,
+    uint16_t manufacturer_id) const {
   if (!m_root_store)
     return NULL;
-
-  const ola::rdm::PidStore *store = m_root_store->EstaStore();
-  if (store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      store->LookupPID(param_id);
-    if (descriptor)
-      return descriptor;
-  }
-
-  // now try the specific manufacturer store
-  store = m_root_store->ManufacturerStore(manufacturer_id);
-  if (store) {
-    const ola::rdm::PidDescriptor *descriptor =
-      store->LookupPID(param_id);
-    if (descriptor)
-      return descriptor;
-  }
-  return NULL;
+  return m_root_store->GetDescriptor(pid_value, manufacturer_id);
 }
 
 
@@ -163,9 +134,64 @@ const ola::messaging::Message *PidStoreHelper::DeserializeMessage(
 
 /**
  * Convert a message to a string
+ * @param message the Message object to print
+ * @returns a formatted string representation of the message.
  */
 const string PidStoreHelper::MessageToString(
     const ola::messaging::Message *message) {
+  return m_message_printer.AsString(message);
+}
+
+
+/**
+ * Pretty print a RDM message based on the PID, if we can't find a custom
+ * MessagePrinter we default to the GenericMessagePrinter.
+ * @param pid the pid value
+ * @param message the Message object to print
+ * @returns a formatted string representation of the message.
+ */
+const string PidStoreHelper::PrettyPrintMessage(
+    uint16_t manufacturer_id,
+    bool is_set,
+    uint16_t pid,
+    const ola::messaging::Message *message) {
+
+  // switch based on command class and pid
+  if (is_set) {
+    { }
+  } else {
+    switch (pid) {
+      case PID_PROXIED_DEVICES: {
+        ProxiedDevicesPrinter printer;
+        return printer.AsString(message);
+      }
+      case PID_SUPPORTED_PARAMETERS: {
+        SupportedParamsPrinter printer(manufacturer_id, m_root_store);
+        return printer.AsString(message);
+      }
+      case PID_DEVICE_INFO: {
+        DeviceInfoPrinter printer;
+        return printer.AsString(message);
+      }
+      case PID_PRODUCT_DETAIL_ID_LIST: {
+        ProductIdPrinter printer;
+        return printer.AsString(message);
+      }
+      case PID_DEVICE_MODEL_DESCRIPTION:
+      case PID_MANUFACTURER_LABEL:
+      case PID_DEVICE_LABEL:
+      case PID_SOFTWARE_VERSION_LABEL:
+      case PID_BOOT_SOFTWARE_VERSION_LABEL: {
+        LabelPrinter printer;
+        return printer.AsString(message);
+      }
+      case PID_LANGUAGE_CAPABILITIES: {
+        LanguageCapabilityPrinter printer;
+        return printer.AsString(message);
+      }
+    }
+  }
+
   return m_message_printer.AsString(message);
 }
 

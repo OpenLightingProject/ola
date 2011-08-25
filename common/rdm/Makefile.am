@@ -31,7 +31,8 @@ PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \
 PidStoreTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
 PidStoreTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
 PidStoreTester_LDADD = libolardm.la ../logging/liblogging.la \
-                       ../messaging/libolamessaging.la
+                       ../messaging/libolamessaging.la \
+                       ../utils/libolautils.la
 
 RDMMessageTester_SOURCES = GroupSizeCalculatorTest.cpp \
                            MessageSerializerTest.cpp \

@@ -30,9 +30,10 @@ ola_usbpro_LDADD = libolaconfig.la \
                    $(top_builddir)/ola/libola.la \
                    $(top_builddir)/plugins/usbpro/messages/libolausbproconf.la
 
-ola_rdm_get_SOURCES = RDMController.cpp RDMHandler.cpp ola-rdm.cpp
+ola_rdm_get_SOURCES = ola-rdm.cpp
 ola_rdm_get_LDADD = $(top_builddir)/ola/libola.la \
                     $(top_builddir)/common/libolacommon.la
+ola_rdm_get_CXXFLAGS = @OLAD_DEFINES@
 
 ola_rdm_discover_SOURCES = ola-rdm-discover.cpp
 ola_rdm_discover_LDADD = $(top_builddir)/ola/libola.la \

@@ -38,8 +38,20 @@ class MessagePrinter: public MessageVisitor {
 
     std::string AsString(const class Message *message);
 
+    virtual void Visit(const BoolMessageField*) {}
+    virtual void Visit(const StringMessageField*) {}
+    virtual void Visit(const BasicMessageField<uint8_t>*) {}
+    virtual void Visit(const BasicMessageField<uint16_t>*) {}
+    virtual void Visit(const BasicMessageField<uint32_t>*) {}
+    virtual void Visit(const BasicMessageField<int8_t>*) {}
+    virtual void Visit(const BasicMessageField<int16_t>*) {}
+    virtual void Visit(const BasicMessageField<int32_t>*) {}
+    virtual void Visit(const GroupMessageField*) {}
+    virtual void PostVisit(const GroupMessageField*) {}
+
   protected:
     std::stringstream& Stream() { return m_str; }
+    virtual void PostStringHook() {}
 
   private:
     std::stringstream m_str;
@@ -47,7 +59,7 @@ class MessagePrinter: public MessageVisitor {
 
 
 /**
- * This visitor prints the message as a string.
+ * The generic printer returns key: value fields.
  */
 class GenericMessagePrinter: public MessagePrinter {
   public:
@@ -57,16 +69,16 @@ class GenericMessagePrinter: public MessagePrinter {
     }
     ~GenericMessagePrinter() {}
 
-    void Visit(const BoolMessageField*);
-    void Visit(const StringMessageField*);
-    void Visit(const BasicMessageField<uint8_t>*);
-    void Visit(const BasicMessageField<uint16_t>*);
-    void Visit(const BasicMessageField<uint32_t>*);
-    void Visit(const BasicMessageField<int8_t>*);
-    void Visit(const BasicMessageField<int16_t>*);
-    void Visit(const BasicMessageField<int32_t>*);
-    void Visit(const GroupMessageField*);
-    void PostVisit(const GroupMessageField*);
+    virtual void Visit(const BoolMessageField*);
+    virtual void Visit(const StringMessageField*);
+    virtual void Visit(const BasicMessageField<uint8_t>*);
+    virtual void Visit(const BasicMessageField<uint16_t>*);
+    virtual void Visit(const BasicMessageField<uint32_t>*);
+    virtual void Visit(const BasicMessageField<int8_t>*);
+    virtual void Visit(const BasicMessageField<int16_t>*);
+    virtual void Visit(const BasicMessageField<int32_t>*);
+    virtual void Visit(const GroupMessageField*);
+    virtual void PostVisit(const GroupMessageField*);
 
   private:
     unsigned int m_indent, m_indent_size;

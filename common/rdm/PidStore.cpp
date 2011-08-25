@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include "common/rdm/PidStoreLoader.h"
+#include "ola/StringUtils.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
 
@@ -28,6 +29,14 @@ namespace ola {
 namespace rdm {
 
 using std::vector;
+
+
+/**
+ * Clean up
+ */
+RootPidStore::~RootPidStore() {
+  CleanStore();
+}
 
 
 /**
@@ -44,10 +53,98 @@ const PidStore *RootPidStore::ManufacturerStore(uint16_t esta_id) const {
 
 
 /**
- * Clean up
+ * Lookup a PidDescriptor by name.
+ * @param pid_name the name of the pid
+ * @return a PidDescriptor or NULL if the pid wasn't found.
  */
-RootPidStore::~RootPidStore() {
-  CleanStore();
+const PidDescriptor *RootPidStore::GetDescriptor(
+    const string &pid_name) const {
+  string canonical_pid_name = pid_name;
+  ola::ToUpper(&canonical_pid_name);
+  return InternalESTANameLookup(canonical_pid_name);
+}
+
+
+/**
+ * Lookup a PidDescriptor by name in both the ESTA PIDs and any manufacturer
+ * PIDs.
+ * @param manufacturer_id the ESTA id of the manufacturer_id
+ * @param pid_name the name of the pid
+ * @return a PidDescriptor or NULL if the pid wasn't found.
+ */
+const PidDescriptor *RootPidStore::GetDescriptor(
+    const string &pid_name,
+    uint16_t manufacturer_id) const {
+  string canonical_pid_name = pid_name;
+  ola::ToUpper(&canonical_pid_name);
+
+  const PidDescriptor *descriptor = InternalESTANameLookup(canonical_pid_name);
+  if (descriptor)
+    return descriptor;
+
+  // now try the specific manufacturer store
+  const PidStore *store = ManufacturerStore(manufacturer_id);
+  if (store)
+    return store->LookupPID(canonical_pid_name);
+  return NULL;
+}
+
+
+/**
+ * Lookup a PidDescriptor by pid value.
+ * @param pid_value the pid to lookup
+ * @return a PidDescriptor or NULL if the pid wasn't found.
+ */
+const PidDescriptor *RootPidStore::GetDescriptor(uint16_t pid_value) const {
+  if (m_esta_store) {
+    const ola::rdm::PidDescriptor *descriptor =
+      m_esta_store->LookupPID(pid_value);
+    if (descriptor)
+      return descriptor;
+  }
+  return NULL;
+}
+
+
+/**
+ * Lookup a PidDescriptor by pid value in both the ESTA PIDs and any
+ * manufacturer PIDs.
+ * @param manufacturer_id the ESTA id of the manufacturer_id
+ * @param pid_value the pid to lookup
+ * @return a PidDescriptor or NULL if the pid wasn't found.
+ */
+const PidDescriptor *RootPidStore::GetDescriptor(
+    uint16_t pid_value,
+    uint16_t manufacturer_id) const {
+  const PidDescriptor *descriptor = GetDescriptor(pid_value);
+  if (descriptor)
+    return descriptor;
+
+  // now try the specific manufacturer store
+  const PidStore *store = ManufacturerStore(manufacturer_id);
+  if (store) {
+    const ola::rdm::PidDescriptor *descriptor =
+      store->LookupPID(pid_value);
+    if (descriptor)
+      return descriptor;
+  }
+  return NULL;
+}
+
+
+
+/**
+ * Lookup an ESTA Pid by canonical name.
+ */
+const PidDescriptor *RootPidStore::InternalESTANameLookup(
+    const string &canonical_pid_name) const {
+  if (m_esta_store) {
+    const ola::rdm::PidDescriptor *descriptor =
+      m_esta_store->LookupPID(canonical_pid_name);
+    if (descriptor)
+      return descriptor;
+  }
+  return NULL;
 }
 
 

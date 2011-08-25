@@ -336,8 +336,8 @@ void SimpleE133Controller::RequestCallback(
 
   if (rdm_code == ola::rdm::RDM_COMPLETED_OK) {
     const ola::rdm::PidDescriptor *pid_descriptor = m_pid_helper->GetDescriptor(
-        response->SourceUID().ManufacturerId(),
-        response->ParamId());
+        response->ParamId(),
+        response->SourceUID().ManufacturerId());
     const ola::messaging::Descriptor *descriptor = NULL;
     const ola::messaging::Message *message = NULL;
 
@@ -490,8 +490,8 @@ int main(int argc, char *argv[]) {
 
   // get the pid descriptor
   const ola::rdm::PidDescriptor *pid_descriptor = pid_helper.GetDescriptor(
-      dst_uid.ManufacturerId(),
-      opts.args[0]);
+      opts.args[0],
+      dst_uid.ManufacturerId());
 
   if (!pid_descriptor) {
     OLA_WARN << "Unknown PID: " << opts.args[0] << ".";

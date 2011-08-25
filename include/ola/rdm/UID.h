@@ -122,9 +122,9 @@ class UID {
 
       uint16_t esta_id;
       unsigned int device_id;
-      if (!ola::HexStringToUInt16(tokens[0], &esta_id))
+      if (!ola::HexStringToInt(tokens[0], &esta_id))
         return NULL;
-      if (!ola::HexStringToUInt(tokens[1], &device_id))
+      if (!ola::HexStringToInt(tokens[1], &device_id))
         return NULL;
 
       return new UID(esta_id, device_id);

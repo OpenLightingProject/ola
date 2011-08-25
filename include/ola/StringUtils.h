@@ -44,8 +44,12 @@ bool StringToInt(const string &value, uint8_t *output);
 bool StringToInt(const string &value, int *output);
 bool StringToInt(const string &value, int16_t *output);
 bool StringToInt(const string &value, int8_t *output);
-bool HexStringToUInt(const string &value, unsigned int *output);
-bool HexStringToUInt16(const string &value, uint16_t *output);
+bool HexStringToInt(const string &value, uint8_t *output);
+bool HexStringToInt(const string &value, uint16_t *output);
+bool HexStringToInt(const string &value, uint32_t *output);
+bool HexStringToInt(const string &value, int8_t *output);
+bool HexStringToInt(const string &value, int16_t *output);
+bool HexStringToInt(const string &value, int32_t *output);
 void ToLower(string *s);
 void ToUpper(string *s);
 }  // ola

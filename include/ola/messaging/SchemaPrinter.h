@@ -72,9 +72,14 @@ class SchemaPrinter: public FieldDescriptorVisitor {
         return;
       typename vector_class::const_iterator iter = intervals.begin();
       for (; iter != intervals.end(); ++iter) {
-        m_str << (iter != intervals.begin() ? " " : ", ");
-        m_str << "(" << static_cast<int64_t>(iter->first) << ", " <<
-          static_cast<int64_t>(iter->second) << ")";
+        if (iter->first == iter->second) {
+          m_str << (iter == intervals.begin() ? ": " : ", ") <<
+            static_cast<int64_t>(iter->first);
+        } else {
+          m_str << (iter == intervals.begin() ? ": " : ", ") << "(" <<
+            static_cast<int64_t>(iter->first) << ", " <<
+            static_cast<int64_t>(iter->second) << ")";
+        }
       }
     }
 
@@ -85,7 +90,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
       typename map_class::const_iterator iter = labels.begin();
       for (; iter != labels.end(); ++iter) {
         m_str << std::endl << string(m_indent + m_indent_size, ' ') <<
-            iter->first << ": " << iter->second;
+            iter->first << ": " << static_cast<int64_t>(iter->second);
       }
     }
 

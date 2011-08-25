@@ -229,10 +229,24 @@ void PidStoreTest::testPidStoreLoad() {
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
                        open_lighting_store->PidCount());
 
+  // lookup by value
+  CPPUNIT_ASSERT(root_store->GetDescriptor(16));
+  CPPUNIT_ASSERT(!root_store->GetDescriptor(17));
+  CPPUNIT_ASSERT(root_store->GetDescriptor(16, OPEN_LIGHTING_ESTA_CODE));
+  CPPUNIT_ASSERT(!root_store->GetDescriptor(17, OPEN_LIGHTING_ESTA_CODE));
+
+  // lookup by name
+  CPPUNIT_ASSERT(root_store->GetDescriptor("PROXIED_DEVICES"));
+  CPPUNIT_ASSERT(!root_store->GetDescriptor("DEVICE_INFO"));
+  CPPUNIT_ASSERT(root_store->GetDescriptor("PROXIED_DEVICES",
+                                           OPEN_LIGHTING_ESTA_CODE));
+  CPPUNIT_ASSERT(!root_store->GetDescriptor("DEVICE_INFO",
+                                            OPEN_LIGHTING_ESTA_CODE));
+
+  // check lookups
   const PidStore *esta_store = root_store->EstaStore();
   CPPUNIT_ASSERT(esta_store);
 
-  // check lookups
   const PidDescriptor *pid_descriptor = esta_store->LookupPID(16);
   CPPUNIT_ASSERT(pid_descriptor);
   const PidDescriptor *pid_descriptor2 = esta_store->LookupPID(

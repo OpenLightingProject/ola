@@ -25,35 +25,33 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
-#include <ola/network/SelectServer.h>
-#include <ola/rdm/RDMAPI.h>
+#include <ola/rdm/PidStoreHelper.h>
+#include <ola/rdm/RDMAPIImplInterface.h>
+#include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
 
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "examples/RDMController.h"
-#include "examples/RDMHandler.h"
-
+using ola::rdm::PidStoreHelper;
+using ola::rdm::UID;
+using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-using ola::rdm::UID;
-using ola::OlaCallbackClient;
-using ola::OlaCallbackClientWrapper;
-using ola::network::SelectServer;
-using ola::rdm::RDMAPI;
 
 typedef struct {
   bool set_mode;
   bool help;       // show the help
   bool list_pids;  // show the pid list
-  int uni;         // universe id
+  int universe;         // universe id
   UID *uid;         // uid
   uint16_t sub_device;  // the sub device
   string pid;      // pid to get/set
@@ -71,7 +69,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   opts->set_mode = false;
   opts->list_pids = false;
   opts->help = false;
-  opts->uni = 1;
+  opts->universe = 1;
   opts->uid = NULL;
   opts->sub_device = 0;
 
@@ -114,7 +112,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         opts->list_pids = true;
         break;
       case 'u':
-        opts->uni = atoi(optarg);
+        opts->universe = atoi(optarg);
         break;
       default:
         break;
@@ -178,96 +176,275 @@ void DisplayHelpAndExit(const options &opts) {
 }
 
 
-void PopulatePidMap(map<string, uint16_t> *pid_map) {
-  // populate the name -> pid map
-  (*pid_map)["proxied_devices"] = ola::rdm::PID_PROXIED_DEVICES;
-  (*pid_map)["proxied_device_count"] = ola::rdm::PID_PROXIED_DEVICE_COUNT;
-  (*pid_map)["comms_status"] = ola::rdm::PID_COMMS_STATUS;
-  (*pid_map)["queued_message"] = ola::rdm::PID_QUEUED_MESSAGE;
-  (*pid_map)["status_messages"] = ola::rdm::PID_STATUS_MESSAGES;
-  (*pid_map)["status_id_description"] =
-    ola::rdm::PID_STATUS_ID_DESCRIPTION;
-  (*pid_map)["clear_status_id"] = ola::rdm::PID_CLEAR_STATUS_ID;
-  (*pid_map)["sub_device_status_report_threshold"] =
-    ola::rdm::PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD;
-  (*pid_map)["supported_parameters"] = ola::rdm::PID_SUPPORTED_PARAMETERS;
-  (*pid_map)["param_description"] = ola::rdm::PID_PARAMETER_DESCRIPTION;
-  (*pid_map)["device_info"] = ola::rdm::PID_DEVICE_INFO;
-  (*pid_map)["product_detail_id_list"] =
-    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST;
-  (*pid_map)["device_model_description"] =
-    ola::rdm::PID_DEVICE_MODEL_DESCRIPTION;
-  (*pid_map)["manufacturer_label"] = ola::rdm::PID_MANUFACTURER_LABEL;
-  (*pid_map)["device_label"] = ola::rdm::PID_DEVICE_LABEL;
-  (*pid_map)["factory_defaults"] = ola::rdm::PID_FACTORY_DEFAULTS;
-  (*pid_map)["language_capabilities"] =
-    ola::rdm::PID_LANGUAGE_CAPABILITIES;
-  (*pid_map)["language"] = ola::rdm::PID_LANGUAGE;
-  (*pid_map)["software_version_label"] =
-    ola::rdm::PID_SOFTWARE_VERSION_LABEL;
-  (*pid_map)["boot_software_version_id"] =
-    ola::rdm::PID_BOOT_SOFTWARE_VERSION_ID;
-  (*pid_map)["boot_software_version_label"] =
-    ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL;
-  (*pid_map)["dmx_personality"] = ola::rdm::PID_DMX_PERSONALITY;
-  (*pid_map)["dmx_personality_description"] =
-    ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION;
-  (*pid_map)["dmx_start_address"] = ola::rdm::PID_DMX_START_ADDRESS;
-  (*pid_map)["slot_info"] = ola::rdm::PID_SLOT_INFO;
-  (*pid_map)["slot_description"] = ola::rdm::PID_SLOT_DESCRIPTION;
-  (*pid_map)["default_slot_value"] = ola::rdm::PID_DEFAULT_SLOT_VALUE;
-  (*pid_map)["sensor_definition"] = ola::rdm::PID_SENSOR_DEFINITION;
-  (*pid_map)["sensor_value"] = ola::rdm::PID_SENSOR_VALUE;
-  (*pid_map)["record_sensors"] = ola::rdm::PID_RECORD_SENSORS;
-  (*pid_map)["device_hours"] = ola::rdm::PID_DEVICE_HOURS;
-  (*pid_map)["lamp_hours"] = ola::rdm::PID_LAMP_HOURS;
-  (*pid_map)["lamp_strikes"] = ola::rdm::PID_LAMP_STRIKES;
-  (*pid_map)["lamp_state"] = ola::rdm::PID_LAMP_STATE;
-  (*pid_map)["lamp_on_mode"] = ola::rdm::PID_LAMP_ON_MODE;
-  (*pid_map)["device_power_cycles"] = ola::rdm::PID_DEVICE_POWER_CYCLES;
-  (*pid_map)["display_invert"] = ola::rdm::PID_DISPLAY_INVERT;
-  (*pid_map)["display_level"] = ola::rdm::PID_DISPLAY_LEVEL;
-  (*pid_map)["pan_invert"] = ola::rdm::PID_PAN_INVERT;
-  (*pid_map)["tilt_invert"] = ola::rdm::PID_TILT_INVERT;
-  (*pid_map)["pan_tilt_swap"] = ola::rdm::PID_PAN_TILT_SWAP;
-  (*pid_map)["real_time_clock"] = ola::rdm::PID_REAL_TIME_CLOCK;
-  (*pid_map)["identify_device"] = ola::rdm::PID_IDENTIFY_DEVICE;
-  (*pid_map)["reset_device"] = ola::rdm::PID_RESET_DEVICE;
-  (*pid_map)["power_state"] = ola::rdm::PID_POWER_STATE;
-  (*pid_map)["perform_self_test"] = ola::rdm::PID_PERFORM_SELFTEST;
-  (*pid_map)["self_test_description"] =
-    ola::rdm::PID_SELF_TEST_DESCRIPTION;
-  (*pid_map)["capture_preset"] = ola::rdm::PID_CAPTURE_PRESET;
-  (*pid_map)["preset_playback"] = ola::rdm::PID_PRESET_PLAYBACK;
-}
-
-
 /*
  * Dump the list of known pids
  */
-void DisplayPIDsAndExit(const map<string, uint16_t> &pid_map) {
-  vector<string> pids;
-  map<string, uint16_t>::const_iterator map_iter = pid_map.begin();
-  for (; map_iter != pid_map.end(); ++map_iter)
-    pids.push_back(map_iter->first);
+void DisplayPIDsAndExit(uint16_t manufacturer_id,
+                        const PidStoreHelper &pid_helper) {
+  vector<string> pid_names;
+  pid_helper.SupportedPids(manufacturer_id, &pid_names);
+  sort(pid_names.begin(), pid_names.end());
 
-  sort(pids.begin(), pids.end());
-  vector<string>::const_iterator iter = pids.begin();
-  for (; iter != pids.end(); ++iter) {
-    std::cout << *iter << std::endl;
+  vector<string>::const_iterator iter = pid_names.begin();
+  for (; iter != pid_names.end(); ++iter) {
+    cout << *iter << endl;
   }
   exit(EX_OK);
 }
 
 
-/*
- * Build a pid -> name map so we can nicely display pids for the user
+class RDMController {
+  public:
+    RDMController();
+
+    bool InitPidHelper();
+    bool Setup();
+    const PidStoreHelper& PidHelper() const { return m_pid_helper; }
+
+    int PerformRequestAndWait(unsigned int universe,
+                              const UID &uid,
+                              uint16_t sub_device,
+                              const string &pid_name,
+                              bool is_set,
+                              const vector<string> &inputs);
+
+    void HandleResponse(const ola::rdm::ResponseStatus &response_status,
+                        const string &rdm_data);
+
+  private:
+    typedef struct {
+      unsigned int universe;
+      const UID *uid;
+      uint16_t sub_device;
+      uint16_t pid_value;
+    } pending_request_t;
+
+    ola::OlaCallbackClientWrapper m_ola_client;
+    PidStoreHelper m_pid_helper;
+    pending_request_t m_pending_request;
+
+    void FetchQueuedMessage();
+    void PrintRemainingMessages(uint8_t message_count);
+    void HandleAckResponse(uint16_t manufacturer_id,
+                           bool is_set,
+                           uint16_t pid,
+                           const string &rdm_data);
+};
+
+
+RDMController::RDMController()
+    : m_pid_helper(PID_DATA_FILE) {
+}
+
+
+bool RDMController::InitPidHelper() {
+  return m_pid_helper.Init();
+}
+
+
+bool RDMController::Setup() {
+  return m_ola_client.Setup();
+}
+
+
+/**
+ * Handle the RDM response
  */
-void ReversePidMap(const map<string, uint16_t> &pid_map,
-                   map<uint16_t, string> *reverse_map) {
-  map<string, uint16_t>::const_iterator map_iter = pid_map.begin();
-  for (; map_iter != pid_map.end(); ++map_iter)
-    (*reverse_map)[map_iter->second] = map_iter->first;
+void RDMController::HandleResponse(
+    const ola::rdm::ResponseStatus &response_status,
+    const string &rdm_data) {
+  if (!response_status.error.empty()) {
+    cout << "Error: " << response_status.error << endl;
+    m_ola_client.GetSelectServer()->Terminate();
+    return;
+  }
+
+  if (response_status.response_code == ola::rdm::RDM_WAS_BROADCAST) {
+    m_ola_client.GetSelectServer()->Terminate();
+    return;
+  } else if (response_status.response_code != ola::rdm::RDM_COMPLETED_OK) {
+    cout << "Error: " <<
+      ola::rdm::ResponseCodeToString(response_status.response_code) << endl;
+    m_ola_client.GetSelectServer()->Terminate();
+    return;
+  }
+
+  if (response_status.response_type == ola::rdm::RDM_ACK_TIMER) {
+    m_ola_client.GetSelectServer()->RegisterSingleTimeout(
+      response_status.AckTimer(),
+      ola::NewSingleCallback(this, &RDMController::FetchQueuedMessage));
+    return;
+  }
+
+  if (response_status.response_type == ola::rdm::RDM_ACK) {
+    if (response_status.pid_value == m_pending_request.pid_value) {
+      HandleAckResponse(m_pending_request.uid->ManufacturerId(),
+                        response_status.set_command,
+                        response_status.pid_value,
+                        rdm_data);
+    } else {
+      // this is not the message we were looking for...
+      FetchQueuedMessage();
+      return;
+    }
+  } else if (response_status.response_type == ola::rdm::RDM_NACK_REASON) {
+    cout << "Request NACKed: " <<
+      ola::rdm::NackReasonToString(response_status.NackReason()) << endl;
+  } else {
+    cout << "Unknown RDM response type " << std::hex <<
+        static_cast<int>(response_status.response_type) << endl;
+  }
+  PrintRemainingMessages(response_status.message_count);
+  m_ola_client.GetSelectServer()->Terminate();
+}
+
+
+/**
+ * Build a RDM Request from the options provided and send it to the daemon.
+ */
+int RDMController::PerformRequestAndWait(unsigned int universe,
+                                         const UID &uid,
+                                         uint16_t sub_device,
+                                         const string &pid_name,
+                                         bool is_set,
+                                         const vector<string> &inputs) {
+  // get the pid descriptor
+  const ola::rdm::PidDescriptor *pid_descriptor = m_pid_helper.GetDescriptor(
+      pid_name,
+      uid.ManufacturerId());
+
+  if (!pid_descriptor) {
+    cout << "Unknown PID: " << pid_name << endl;
+    cout << "Use --list_pids to list the available PIDs." << endl;
+    return EX_USAGE;
+  }
+
+  const ola::messaging::Descriptor *descriptor = NULL;
+  if (is_set)
+    descriptor = pid_descriptor->SetRequest();
+  else
+    descriptor = pid_descriptor->GetRequest();
+
+  if (!descriptor) {
+    cout << (is_set ? "SET" : "GET") << " command not supported for "
+      << pid_name << endl;
+    exit(EX_USAGE);
+  }
+
+  // attempt to build the message
+  auto_ptr<const ola::messaging::Message> message(m_pid_helper.BuildMessage(
+      descriptor,
+      inputs));
+
+  if (!message.get()) {
+    cout << m_pid_helper.SchemaAsString(descriptor);
+    return EX_USAGE;
+  }
+
+  m_pending_request.universe = universe;
+  m_pending_request.uid = &uid;
+  m_pending_request.sub_device = sub_device;
+  m_pending_request.pid_value = pid_descriptor->Value();
+
+  unsigned int param_data_length;
+  const uint8_t *param_data = m_pid_helper.SerializeMessage(
+      message.get(),
+      &param_data_length);
+
+  if (is_set) {
+    m_ola_client.GetClient()->RDMSet(
+      ola::NewSingleCallback(this, &RDMController::HandleResponse),
+      m_pending_request.universe,
+      *m_pending_request.uid,
+      m_pending_request.sub_device,
+      pid_descriptor->Value(),
+      param_data,
+      param_data_length);
+  } else {
+    m_ola_client.GetClient()->RDMGet(
+      ola::NewSingleCallback(this, &RDMController::HandleResponse),
+      m_pending_request.universe,
+      *m_pending_request.uid,
+      m_pending_request.sub_device,
+      pid_descriptor->Value(),
+      param_data,
+      param_data_length);
+  }
+
+  m_ola_client.GetSelectServer()->Run();
+  return EX_OK;
+}
+
+
+/**
+ * Called after the ack timer expires. This resends the request.
+ */
+void RDMController::FetchQueuedMessage() {
+  m_ola_client.GetClient()->RDMGet(
+    ola::NewSingleCallback(this, &RDMController::HandleResponse),
+    m_pending_request.universe,
+    *m_pending_request.uid,
+    m_pending_request.sub_device,
+    ola::rdm::PID_QUEUED_MESSAGE,
+    NULL,
+    0);
+}
+
+
+/**
+ * Print the number of messages remaining if it is non-0.
+ */
+void RDMController::PrintRemainingMessages(uint8_t message_count) {
+  if (!message_count)
+    return;
+  cout << "-----------------------------------------------------" << endl;
+  cout << "Messages remaining: " << static_cast<int>(message_count) << endl;
+}
+
+
+/**
+ * Handle an ACK response
+ */
+void RDMController::HandleAckResponse(uint16_t manufacturer_id,
+                                      bool is_set,
+                                      uint16_t pid,
+                                      const string &rdm_data) {
+  const ola::rdm::PidDescriptor *pid_descriptor = m_pid_helper.GetDescriptor(
+      pid,
+      m_pending_request.uid->ManufacturerId());
+
+  if (!pid_descriptor) {
+    OLA_WARN << "Unknown PID: " << pid << ".";
+    return;
+  }
+
+  const ola::messaging::Descriptor *descriptor = NULL;
+  if (is_set)
+    descriptor = pid_descriptor->SetResponse();
+  else
+    descriptor = pid_descriptor->GetResponse();
+
+  if (!descriptor) {
+    OLA_WARN << "Unknown response message: " << (is_set ? "SET" : "GET") <<
+        " " << pid_descriptor->Name();
+    return;
+  }
+
+  auto_ptr<const ola::messaging::Message> message(
+      m_pid_helper.DeserializeMessage(
+          descriptor,
+          reinterpret_cast<const uint8_t*>(rdm_data.data()),
+          rdm_data.size()));
+
+  if (!message.get()) {
+    OLA_WARN << "Unable to inflate RDM response";
+    return;
+  }
+
+  cout << m_pid_helper.PrettyPrintMessage(manufacturer_id,
+                                          is_set,
+                                          pid,
+                                          message.get());
 }
 
 
@@ -275,61 +452,49 @@ void ReversePidMap(const map<string, uint16_t> &pid_map,
  * Main
  */
 int main(int argc, char *argv[]) {
-  // map pid names to numbers
-  map<string, uint16_t> pid_name_map;
-  map<uint16_t, string> reverse_pid_name_map;
-  PopulatePidMap(&pid_name_map);
-  ReversePidMap(pid_name_map, &reverse_pid_name_map);
-
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
-  OlaCallbackClientWrapper ola_client;
   options opts;
   ParseOptions(argc, argv, &opts);
+  RDMController controller;
 
-  if (opts.list_pids)
-    DisplayPIDsAndExit(pid_name_map);
-
-  if (opts.help || opts.args.size() == 0)
+  if (opts.help)
     DisplayHelpAndExit(opts);
 
+  if (!controller.InitPidHelper())
+    exit(EX_OSFILE);
+
   if (!opts.uid) {
-    OLA_FATAL << "Invalid UID";
-    exit(EX_USAGE);
+    if (opts.list_pids) {
+      DisplayPIDsAndExit(0, controller.PidHelper());
+    } else {
+      OLA_FATAL << "Invalid UID";
+      exit(EX_USAGE);
+    }
   }
 
-  if (!ola_client.Setup()) {
+  UID dest_uid(*opts.uid);
+  delete opts.uid;
+
+  if (opts.list_pids)
+    DisplayPIDsAndExit(dest_uid.ManufacturerId(), controller.PidHelper());
+
+  if (opts.args.empty())
+    DisplayHelpAndExit(opts);
+
+  if (!controller.Setup()) {
     OLA_FATAL << "Setup failed";
     exit(EX_UNAVAILABLE);
   }
 
-  map<const string, uint16_t>::const_iterator name_iter =
-    pid_name_map.find(opts.args[0]);
+  // split out rdm message params from the pid name
+  vector<string> inputs(opts.args.size() - 1);
+  vector<string>::iterator args_iter = opts.args.begin();
+  copy(++args_iter, opts.args.end(), inputs.begin());
 
-  if (name_iter == pid_name_map.end()) {
-    cout << "Invalid pid name: " << opts.args[0] << endl;
-    exit(EX_USAGE);
-  }
-
-  SelectServer *ss = ola_client.GetSelectServer();
-  RDMAPI rdm_api(ola_client.GetClient());
-
-  ResponseHandler handler(&rdm_api, ss, reverse_pid_name_map);
-  RDMController controller(opts.uni, &rdm_api, &handler);
-
-  string error;
-  vector<string> params(opts.args.size()-1);
-  copy(opts.args.begin() + 1, opts.args.end(), params.begin());
-  if (controller.RequestPID(*opts.uid,
-                            opts.sub_device,
-                            opts.set_mode,
-                            name_iter->second,
-                            params,
-                            &error))
-    ss->Run();
-  else
-    std::cerr << error << endl;
-
-  if (opts.uid)
-    delete opts.uid;
-  return handler.ExitCode();
+  return controller.PerformRequestAndWait(opts.universe,
+                                          dest_uid,
+                                          opts.sub_device,
+                                          opts.args[0],
+                                          opts.set_mode,
+                                          inputs);
 }

@@ -277,9 +277,37 @@ string EscapeString(const string &original) {
 
 
 /*
- * Convert a hex string to a unsigned int
+ * Convert a hex string to a uint8_t
  */
-bool HexStringToUInt(const string &value, unsigned int *output) {
+bool HexStringToInt(const string &value, uint8_t *output) {
+  uint32_t temp;
+  if (!HexStringToInt(value, &temp))
+    return false;
+  if (temp > 0xff)
+    return false;
+  *output = static_cast<uint8_t>(temp);
+  return true;
+}
+
+
+/*
+ * Convert a hex string to a uint16_t
+ */
+bool HexStringToInt(const string &value, uint16_t *output) {
+  uint32_t temp;
+  if (!HexStringToInt(value, &temp))
+    return false;
+  if (temp > UINT16_MAX)
+    return false;
+  *output = static_cast<uint16_t>(temp);
+  return true;
+}
+
+
+/*
+ * Convert a hex string to a uint32_t
+ */
+bool HexStringToInt(const string &value, uint32_t *output) {
   if (value.empty())
     return false;
 
@@ -292,15 +320,44 @@ bool HexStringToUInt(const string &value, unsigned int *output) {
 
 
 /*
- * Convert a hex string to a uint16_t
+ * Convert a hex string to a int8_t
  */
-bool HexStringToUInt16(const string &value, uint16_t *output) {
-  unsigned int v;
-  if (!HexStringToUInt(value, &v))
+bool HexStringToInt(const string &value, int8_t *output) {
+  int32_t temp;
+  if (!HexStringToInt(value, &temp))
     return false;
-  if (v > 0xffff)
+  if (temp < 0 || temp > UINT8_MAX)
     return false;
-  *output = static_cast<uint16_t>(v);
+  *output = static_cast<int8_t>(temp);
+  return true;
+}
+
+
+/*
+ * Convert a hex string to a int16_t
+ */
+bool HexStringToInt(const string &value, int16_t *output) {
+  int32_t temp;
+  if (!HexStringToInt(value, &temp))
+    return false;
+  if (temp < 0 || temp > UINT16_MAX)
+    return false;
+  *output = static_cast<int16_t>(temp);
+  return true;
+}
+
+
+/*
+ * Convert a hex string to a int32_t
+ */
+bool HexStringToInt(const string &value, int32_t *output) {
+  if (value.empty())
+    return false;
+
+  size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
+  if (found != string::npos)
+    return false;
+  *output = strtol(value.data(), NULL, 16);
   return true;
 }
 

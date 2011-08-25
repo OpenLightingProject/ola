@@ -28,8 +28,7 @@ using std::string;
 using std::vector;
 using ola::Escape;
 using ola::EscapeString;
-using ola::HexStringToUInt16;
-using ola::HexStringToUInt;
+using ola::HexStringToInt;
 using ola::IntToString;
 using ola::ShortenString;
 using ola::StringSplit;
@@ -51,7 +50,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringToInt);
   CPPUNIT_TEST(testStringToInt16);
   CPPUNIT_TEST(testStringToInt8);
-  CPPUNIT_TEST(testHexStringToUInt);
+  CPPUNIT_TEST(testHexStringToInt);
   CPPUNIT_TEST(testToLower);
   CPPUNIT_TEST(testToUpper);
   CPPUNIT_TEST_SUITE_END();
@@ -68,7 +67,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testStringToInt();
     void testStringToInt16();
     void testStringToInt8();
-    void testHexStringToUInt();
+    void testHexStringToInt();
     void testToLower();
     void testToUpper();
 };
@@ -243,70 +242,136 @@ void StringUtilsTest::testStringToUInt() {
 }
 
 
-void StringUtilsTest::testHexStringToUInt() {
+void StringUtilsTest::testHexStringToInt() {
   unsigned int value;
-  CPPUNIT_ASSERT(!HexStringToUInt("", &value));
-  CPPUNIT_ASSERT(!HexStringToUInt("-1", &value));
+  CPPUNIT_ASSERT(!HexStringToInt("", &value));
+  CPPUNIT_ASSERT(!HexStringToInt("-1", &value));
 
-  CPPUNIT_ASSERT(HexStringToUInt("0", &value));
+  CPPUNIT_ASSERT(HexStringToInt("0", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, value);
-  CPPUNIT_ASSERT(HexStringToUInt("1", &value));
+  CPPUNIT_ASSERT(HexStringToInt("1", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, value);
-  CPPUNIT_ASSERT(HexStringToUInt("a", &value));
+  CPPUNIT_ASSERT(HexStringToInt("a", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 10, value);
-  CPPUNIT_ASSERT(HexStringToUInt("f", &value));
+  CPPUNIT_ASSERT(HexStringToInt("f", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 15, value);
-  CPPUNIT_ASSERT(HexStringToUInt("a1", &value));
+  CPPUNIT_ASSERT(HexStringToInt("a1", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 161, value);
-  CPPUNIT_ASSERT(HexStringToUInt("ff", &value));
+  CPPUNIT_ASSERT(HexStringToInt("ff", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 255, value);
-  CPPUNIT_ASSERT(HexStringToUInt("a1", &value));
+  CPPUNIT_ASSERT(HexStringToInt("a1", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 161, value);
-  CPPUNIT_ASSERT(HexStringToUInt("ff", &value));
+  CPPUNIT_ASSERT(HexStringToInt("ff", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 255, value);
-  CPPUNIT_ASSERT(HexStringToUInt("ffff", &value));
+  CPPUNIT_ASSERT(HexStringToInt("ffff", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 65535, value);
 
-  CPPUNIT_ASSERT(HexStringToUInt("ffffff", &value));
+  CPPUNIT_ASSERT(HexStringToInt("ffffff", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 16777215, value);
-  CPPUNIT_ASSERT(HexStringToUInt("ffffffff", &value));
+  CPPUNIT_ASSERT(HexStringToInt("ffffffff", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4294967295UL, value);
-  CPPUNIT_ASSERT(HexStringToUInt("ef123456", &value));
+  CPPUNIT_ASSERT(HexStringToInt("ef123456", &value));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4010947670UL, value);
-  CPPUNIT_ASSERT(!HexStringToUInt("fz", &value));
-  CPPUNIT_ASSERT(!HexStringToUInt("zfff", &value));
-  CPPUNIT_ASSERT(!HexStringToUInt("0xf", &value));
+  CPPUNIT_ASSERT(!HexStringToInt("fz", &value));
+  CPPUNIT_ASSERT(!HexStringToInt("zfff", &value));
+  CPPUNIT_ASSERT(!HexStringToInt("0xf", &value));
 
-  // test HexStringToUInt16
+  // uint16_t
   uint16_t value2;
-  CPPUNIT_ASSERT(!HexStringToUInt16("", &value2));
-  CPPUNIT_ASSERT(!HexStringToUInt16("-1", &value2));
+  CPPUNIT_ASSERT(!HexStringToInt("", &value2));
+  CPPUNIT_ASSERT(!HexStringToInt("-1", &value2));
 
-  CPPUNIT_ASSERT(HexStringToUInt16("0", &value2));
+  CPPUNIT_ASSERT(HexStringToInt("0", &value2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 0, value2);
-  CPPUNIT_ASSERT(HexStringToUInt16("1", &value2));
+  CPPUNIT_ASSERT(HexStringToInt("1", &value2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 1, value2);
-  CPPUNIT_ASSERT(HexStringToUInt16("a", &value2));
+  CPPUNIT_ASSERT(HexStringToInt("a", &value2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 10, value2);
-  CPPUNIT_ASSERT(HexStringToUInt16("f", &value2));
+  CPPUNIT_ASSERT(HexStringToInt("f", &value2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 15, value2);
-  CPPUNIT_ASSERT(HexStringToUInt16("a1", &value2));
+  CPPUNIT_ASSERT(HexStringToInt("a1", &value2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 161, value2);
-  CPPUNIT_ASSERT(HexStringToUInt16("ff", &value2));
+  CPPUNIT_ASSERT(HexStringToInt("ff", &value2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 255, value2);
-  CPPUNIT_ASSERT(HexStringToUInt16("a1", &value2));
+  CPPUNIT_ASSERT(HexStringToInt("a1", &value2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 161, value2);
-  CPPUNIT_ASSERT(HexStringToUInt16("ff", &value2));
+  CPPUNIT_ASSERT(HexStringToInt("ff", &value2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 255, value2);
-  CPPUNIT_ASSERT(HexStringToUInt16("ffff", &value2));
+  CPPUNIT_ASSERT(HexStringToInt("400", &value2));
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 1024, value2);
+  CPPUNIT_ASSERT(HexStringToInt("ffff", &value2));
   CPPUNIT_ASSERT_EQUAL((uint16_t) 65535, value2);
 
-  CPPUNIT_ASSERT(!HexStringToUInt16("ffffff", &value2));
-  CPPUNIT_ASSERT(!HexStringToUInt16("ffffffff", &value2));
-  CPPUNIT_ASSERT(!HexStringToUInt16("ef123456", &value2));
-  CPPUNIT_ASSERT(!HexStringToUInt16("fz", &value2));
-  CPPUNIT_ASSERT(!HexStringToUInt16("zfff", &value2));
-  CPPUNIT_ASSERT(!HexStringToUInt16("0xf", &value2));
+  CPPUNIT_ASSERT(!HexStringToInt("ffffff", &value2));
+  CPPUNIT_ASSERT(!HexStringToInt("ffffffff", &value2));
+  CPPUNIT_ASSERT(!HexStringToInt("ef123456", &value2));
+  CPPUNIT_ASSERT(!HexStringToInt("fz", &value2));
+  CPPUNIT_ASSERT(!HexStringToInt("zfff", &value2));
+  CPPUNIT_ASSERT(!HexStringToInt("0xf", &value2));
+
+  // int8_t
+  int8_t value3;
+  CPPUNIT_ASSERT(!HexStringToInt("", &value3));
+  CPPUNIT_ASSERT(!HexStringToInt("-1", &value3));
+
+  CPPUNIT_ASSERT(HexStringToInt("0", &value3));
+  CPPUNIT_ASSERT_EQUAL((int8_t) 0, value3);
+  CPPUNIT_ASSERT(HexStringToInt("1", &value3));
+  CPPUNIT_ASSERT_EQUAL((int8_t) 1, value3);
+  CPPUNIT_ASSERT(HexStringToInt("a", &value3));
+  CPPUNIT_ASSERT_EQUAL((int8_t) 10, value3);
+  CPPUNIT_ASSERT(HexStringToInt("f", &value3));
+  CPPUNIT_ASSERT_EQUAL((int8_t) 15, value3);
+  CPPUNIT_ASSERT(HexStringToInt("7f", &value3));
+  CPPUNIT_ASSERT_EQUAL((int8_t) 127, value3);
+  CPPUNIT_ASSERT(HexStringToInt("a1", &value3));
+  CPPUNIT_ASSERT_EQUAL((int8_t) -95, value3);
+  CPPUNIT_ASSERT(HexStringToInt("80", &value3));
+  CPPUNIT_ASSERT_EQUAL((int8_t) -128, value3);
+  CPPUNIT_ASSERT(HexStringToInt("ff", &value3));
+  CPPUNIT_ASSERT_EQUAL((int8_t) -1, value3);
+
+  CPPUNIT_ASSERT(!HexStringToInt("ffff", &value3));
+  CPPUNIT_ASSERT(!HexStringToInt("fff0", &value3));
+  CPPUNIT_ASSERT(!HexStringToInt("ffffff", &value3));
+  CPPUNIT_ASSERT(!HexStringToInt("ffffffff", &value3));
+  CPPUNIT_ASSERT(!HexStringToInt("ef123456", &value3));
+  CPPUNIT_ASSERT(!HexStringToInt("fz", &value3));
+  CPPUNIT_ASSERT(!HexStringToInt("zfff", &value3));
+  CPPUNIT_ASSERT(!HexStringToInt("0xf", &value3));
+
+  // int16_t
+  int16_t value4;
+  CPPUNIT_ASSERT(!HexStringToInt("", &value4));
+  CPPUNIT_ASSERT(!HexStringToInt("-1", &value4));
+
+  CPPUNIT_ASSERT(HexStringToInt("0", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 0, value4);
+  CPPUNIT_ASSERT(HexStringToInt("1", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 1, value4);
+  CPPUNIT_ASSERT(HexStringToInt("a", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 10, value4);
+  CPPUNIT_ASSERT(HexStringToInt("f", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 15, value4);
+  CPPUNIT_ASSERT(HexStringToInt("a1", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 161, value4);
+  CPPUNIT_ASSERT(HexStringToInt("ff", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 255, value4);
+  CPPUNIT_ASSERT(HexStringToInt("7fff", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) 32767, value4);
+  CPPUNIT_ASSERT(HexStringToInt("ffff", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) -1, value4);
+  CPPUNIT_ASSERT(HexStringToInt("fff0", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) -16, value4);
+  CPPUNIT_ASSERT(HexStringToInt("8000", &value4));
+  CPPUNIT_ASSERT_EQUAL((int16_t) -32768, value4);
+
+  CPPUNIT_ASSERT(!HexStringToInt("ffffff", &value4));
+  CPPUNIT_ASSERT(!HexStringToInt("ffffffff", &value4));
+  CPPUNIT_ASSERT(!HexStringToInt("ef123456", &value4));
+  CPPUNIT_ASSERT(!HexStringToInt("fz", &value4));
+  CPPUNIT_ASSERT(!HexStringToInt("zfff", &value4));
+  CPPUNIT_ASSERT(!HexStringToInt("0xf", &value4));
 }
 
 

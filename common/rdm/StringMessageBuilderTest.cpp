@@ -120,6 +120,7 @@ void StringBuilderTest::testSimpleBuilder() {
   fields.push_back(new Int16FieldDescriptor("int16"));
   fields.push_back(new Int32FieldDescriptor("int32"));
   fields.push_back(new StringFieldDescriptor("string", 0, 32));
+  fields.push_back(new UInt16FieldDescriptor("hex uint16"));
   Descriptor descriptor("Test Descriptor", fields);
 
   // now setup the inputs
@@ -137,6 +138,7 @@ void StringBuilderTest::testSimpleBuilder() {
   inputs.push_back("-300");
   inputs.push_back("-66000");
   inputs.push_back("foo");
+  inputs.push_back("0x400");
 
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
@@ -148,7 +150,8 @@ void StringBuilderTest::testSimpleBuilder() {
   string expected = (
       "bool1: true\nbool2: false\nbool3: true\nbool4: false\nbool5: true\n"
       "bool6: false\nuint8: 255\nuint16: 300\nuint32: 66000\n"
-      "int8: -128\nint16: -300\nint32: -66000\nstring: foo\n");
+      "int8: -128\nint16: -300\nint32: -66000\nstring: foo\n"
+      "hex uint16: 1024\n");
   CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
 }
 

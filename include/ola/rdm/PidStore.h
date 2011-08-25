@@ -66,6 +66,15 @@ class RootPidStore {
     // Holds Manufacturer PID data
     const PidStore *ManufacturerStore(uint16_t esta_id) const;
 
+    // Lookup Descriptors by name
+    const PidDescriptor *GetDescriptor(const string &pid_name) const;
+    const PidDescriptor *GetDescriptor(const string &pid_name,
+                                       uint16_t manufacturer_id) const;
+    // Lookup Descriptors by pid value
+    const PidDescriptor *GetDescriptor(uint16_t pid_value) const;
+    const PidDescriptor *GetDescriptor(uint16_t pid_value,
+                                       uint16_t manufacturer_id) const;
+
     // Load a RootPidStore from a file
     static const RootPidStore *LoadFromFile(const std::string &file,
                                             bool validate = true);
@@ -77,6 +86,7 @@ class RootPidStore {
 
     RootPidStore(const RootPidStore&);
     RootPidStore& operator=(const RootPidStore&);
+    const PidDescriptor *InternalESTANameLookup(const string &pid_name) const;
     void CleanStore();
 };
 

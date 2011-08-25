@@ -49,10 +49,12 @@ class PidStoreHelper {
 
     bool Init();
 
-    const ola::rdm::PidDescriptor *GetDescriptor(uint16_t manufacturer,
-                                                 const string &pid_name) const;
-    const ola::rdm::PidDescriptor *GetDescriptor(uint16_t manufacturer,
-                                                 uint16_t param_id) const;
+    const ola::rdm::PidDescriptor *GetDescriptor(
+        const string &pid_name,
+        uint16_t manufacturer_id) const;
+    const ola::rdm::PidDescriptor *GetDescriptor(
+        uint16_t param_id,
+        uint16_t manufacturer_id) const;
 
     const ola::messaging::Message *BuildMessage(
         const ola::messaging::Descriptor *descriptor,
@@ -67,6 +69,12 @@ class PidStoreHelper {
         unsigned int data_length);
 
     const string MessageToString(const ola::messaging::Message *message);
+
+    const string PrettyPrintMessage(
+        uint16_t manufacturer_id,
+        bool is_set,
+        uint16_t pid,
+        const ola::messaging::Message *message);
 
     const string SchemaAsString(const ola::messaging::Descriptor *descriptor);
 

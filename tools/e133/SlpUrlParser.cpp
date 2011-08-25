@@ -77,9 +77,9 @@ bool ParseSlpUrl(const string &url,
 
   uint16_t esta_id;
   unsigned int device_id;
-  if (!ola::HexStringToUInt16(uid_str.substr(0, 4), &esta_id))
+  if (!ola::HexStringToInt(uid_str.substr(0, 4), &esta_id))
     return false;
-  if (!ola::HexStringToUInt(uid_str.substr(4, 8), &device_id))
+  if (!ola::HexStringToInt(uid_str.substr(4, 8), &device_id))
     return false;
 
   ola::rdm::UID temp_uid(esta_id, device_id);

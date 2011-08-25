@@ -46,6 +46,7 @@ class SchemaPrinterTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SchemaPrinterTest);
   CPPUNIT_TEST(testPrinter);
   CPPUNIT_TEST(testGroupPrinter);
+  CPPUNIT_TEST(testLabels);
   CPPUNIT_TEST(testIntervalsAndLabels);
   CPPUNIT_TEST(testIntervalTypes);
   CPPUNIT_TEST_SUITE_END();
@@ -54,6 +55,7 @@ class SchemaPrinterTest: public CppUnit::TestFixture {
     SchemaPrinterTest() {}
     void testPrinter();
     void testGroupPrinter();
+    void testLabels();
     void testIntervalsAndLabels();
     void testIntervalTypes();
 
@@ -125,6 +127,27 @@ void SchemaPrinterTest::testGroupPrinter() {
 }
 
 
+void SchemaPrinterTest::testLabels() {
+  UInt16FieldDescriptor::IntervalVector intervals;
+  intervals.push_back(UInt16FieldDescriptor::Interval(12, 12));
+  intervals.push_back(UInt16FieldDescriptor::Interval(13, 13));
+  UInt16FieldDescriptor::LabeledValues labels;
+  labels["dozen"] = 12;
+  labels["bakers_dozen"] = 13;
+
+  UInt16FieldDescriptor *uint16_descriptor = new UInt16FieldDescriptor(
+      "Count", intervals, labels);
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(uint16_descriptor);
+  Descriptor test_descriptor("Test Descriptor", fields);
+
+  SchemaPrinter interval_printer(true, false);
+  test_descriptor.Accept(interval_printer);
+  string expected = "Count: uint16: 12, 13\n";
+  CPPUNIT_ASSERT_EQUAL(expected, interval_printer.AsString());
+}
+
+
 void SchemaPrinterTest::testIntervalsAndLabels() {
   UInt16FieldDescriptor::IntervalVector intervals;
   intervals.push_back(UInt16FieldDescriptor::Interval(2, 8));
@@ -142,7 +165,7 @@ void SchemaPrinterTest::testIntervalsAndLabels() {
 
   SchemaPrinter interval_printer(true, false);
   test_descriptor.Accept(interval_printer);
-  string expected = "Count: uint16, (2, 8) (12, 14)\n";
+  string expected = "Count: uint16: (2, 8), (12, 14)\n";
   CPPUNIT_ASSERT_EQUAL(expected, interval_printer.AsString());
 
   SchemaPrinter label_printer(false, true);
@@ -153,7 +176,7 @@ void SchemaPrinterTest::testIntervalsAndLabels() {
   SchemaPrinter interval_label_printer(true, true);
   test_descriptor.Accept(interval_label_printer);
   string expected3 = (
-      "Count: uint16, (2, 8) (12, 14)\n  bakers_dozen: 13\n  dozen: 12\n");
+      "Count: uint16: (2, 8), (12, 14)\n  bakers_dozen: 13\n  dozen: 12\n");
   CPPUNIT_ASSERT_EQUAL(expected3, interval_label_printer.AsString());
 }
 
@@ -176,21 +199,21 @@ string SchemaPrinterTest::GenerateIntervalString(int_type min, int_type max) {
 
 
 void SchemaPrinterTest::testIntervalTypes() {
-  CPPUNIT_ASSERT_EQUAL(string("Count: uint8, (2, 8)\n"),
+  CPPUNIT_ASSERT_EQUAL(string("Count: uint8: (2, 8)\n"),
                        GenerateIntervalString<UInt8FieldDescriptor>(2, 8));
-  CPPUNIT_ASSERT_EQUAL(string("Count: uint16, (2, 8256)\n"),
+  CPPUNIT_ASSERT_EQUAL(string("Count: uint16: (2, 8256)\n"),
                        GenerateIntervalString<UInt16FieldDescriptor>(2, 8256));
   CPPUNIT_ASSERT_EQUAL(
-      string("Count: uint32, (2, 82560)\n"),
+      string("Count: uint32: (2, 82560)\n"),
       GenerateIntervalString<UInt32FieldDescriptor>(2, 82560));
 
-  CPPUNIT_ASSERT_EQUAL(string("Count: int8, (-2, 8)\n"),
+  CPPUNIT_ASSERT_EQUAL(string("Count: int8: (-2, 8)\n"),
                        GenerateIntervalString<Int8FieldDescriptor>(-2, 8));
   CPPUNIT_ASSERT_EQUAL(
-      string("Count: int16, (-300, 8256)\n"),
+      string("Count: int16: (-300, 8256)\n"),
       GenerateIntervalString<Int16FieldDescriptor>(-300, 8256));
   CPPUNIT_ASSERT_EQUAL(
-      string("Count: int32, (-70000, 82560)\n"),
+      string("Count: int32: (-70000, 82560)\n"),
       GenerateIntervalString<Int32FieldDescriptor>(-70000, 82560));
 }
 

@@ -38,6 +38,7 @@ using std::endl;
 string MessagePrinter::AsString(const Message *message) {
   m_str.str("");
   message->Accept(*this);
+  PostStringHook();
   return m_str.str();
 }
 
@@ -123,9 +124,9 @@ void GenericMessagePrinter::PostVisit(const GroupMessageField *message) {
 
 
 void GenericMessagePrinter::AppendUInt(const string &name,
-                                unsigned int value,
-                                const string &label,
-                                int8_t multipler) {
+                                       unsigned int value,
+                                       const string &label,
+                                       int8_t multipler) {
   Stream() << string(m_indent, ' ') << name << ": ";
   if (label.empty()) {
     Stream() << value;
@@ -138,9 +139,9 @@ void GenericMessagePrinter::AppendUInt(const string &name,
 
 
 void GenericMessagePrinter::AppendInt(const string &name,
-                               int value,
-                               const string &label,
-                               int8_t multipler) {
+                                      int value,
+                                      const string &label,
+                                      int8_t multipler) {
   Stream() << string(m_indent, ' ') << name << ": ";
   if (label.empty()) {
     Stream() << value;

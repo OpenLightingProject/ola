@@ -259,7 +259,18 @@ void StringMessageBuilder::VisitInt(
     return;
 
   type int_value;
-  if (ola::StringToInt(m_inputs[m_offset++], &int_value)) {
+  string input = m_inputs[m_offset++];
+  if (input.find("0x") == 0) {
+    input = input.substr(2);
+    if (HexStringToInt(input, &int_value))
+      m_groups.top().push_back(
+          new ola::messaging::BasicMessageField<type>(descriptor, int_value));
+    else
+      SetError(descriptor->Name());
+    return;
+  }
+
+  if (ola::StringToInt(input, &int_value)) {
     m_groups.top().push_back(
         new ola::messaging::BasicMessageField<type>(descriptor, int_value));
   } else {
