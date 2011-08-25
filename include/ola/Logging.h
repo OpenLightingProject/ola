@@ -41,7 +41,8 @@
 #include <string>
 #include <sstream>
 
-#define OLA_LOG(level) ola::LogLine(__FILE__, __LINE__, level).stream()
+#define OLA_LOG(level) (level <= ola::LogLevel()) && \
+                       ola::LogLine(__FILE__, __LINE__, level).stream()
 #define OLA_FATAL OLA_LOG(ola::OLA_LOG_FATAL)
 #define OLA_WARN OLA_LOG(ola::OLA_LOG_WARN)
 #define OLA_INFO OLA_LOG(ola::OLA_LOG_INFO)
@@ -62,6 +63,8 @@ enum log_level {
   OLA_LOG_DEBUG,
   OLA_LOG_MAX,
 };
+
+extern log_level logging_level;
 
 /*
  * The log outputs
@@ -119,6 +122,7 @@ class LogLine {
 };
 
 void SetLogLevel(log_level level);
+inline log_level LogLevel() { return logging_level; }
 void IncrementLogLevel();
 bool InitLogging(log_level level, log_output output);
 void InitLogging(log_level level, LogDestination *destination);

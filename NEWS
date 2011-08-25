@@ -1,11 +1,13 @@
 X/Y/2011 ola-0.8.12
  * Add the generic messaging framework and use it to handle RDM PIDs
+ * Add support for manufacturer specific PIDs in the C++ RDM CLI tools - #93
+ * Add proper ACK_TIMER handling the in C++ RDM CLI tools - #112
  * Further improvements of the RDM test suite
- * fixed compiler warnings on newer versions of gcc
- * fixed sorting of Sensors in the RDM web UI
- * improvements to the threading model
- * enabled SO_REUSEPORT so that local ArtNet applications work
- * reduced the cost of logging
+ * Fixed link errors with the new version of gcc - #142, #145
+ * Fixed sorting of Sensors in the RDM web UI - #137
+ * Improvements to the threading model
+ * Enabled SO_REUSEPORT so that local ArtNet applications work - #141
+ * Reduced the cost of logging by using lazy evaluation
 
 28/6/2011 ola-0.8.11
  * Fix bugs on big endian systems

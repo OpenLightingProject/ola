@@ -4,30 +4,30 @@ EXTRA_DIST = OlaConfigurator.h RDMController.h RDMHandler.h
 
 if BUILD_EXAMPLES
 
+# The following should match what pkg-config --libs libola returns
+COMMON_LIBS = $(top_builddir)/common/libolacommon.la \
+              $(top_builddir)/ola/libola.la
+AM_LDFLAGS = -lprotobuf
+LDADD = $(COMMON_LIBS)
+
 bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
                ola_streaming_client ola_rdm_discover ola_rdm_get
 
 ola_artnet_SOURCES = ola-artnet.cpp
-ola_artnet_LDADD = libolaconfig.la \
-                   $(top_builddir)/ola/libola.la \
+ola_artnet_LDADD = $(COMMON_LIBS) libolaconfig.la \
                    $(top_builddir)/plugins/artnet/messages/libolaartnetconf.la
+ola_artnet_LDFLAGS = -lprotobuf
 
 ola_dev_info_SOURCES = ola-client.cpp
-ola_dev_info_LDADD = $(top_builddir)/ola/libola.la \
-                     $(top_builddir)/common/libolacommon.la
 
 ola_e131_SOURCES = ola-e131.cpp
-ola_e131_LDADD = libolaconfig.la \
-                 $(top_builddir)/ola/libola.la \
+ola_e131_LDADD = $(COMMON_LIBS) libolaconfig.la \
                  $(top_builddir)/plugins/e131/messages/libolae131conf.la
 
 ola_streaming_client_SOURCES = ola-streaming-client.cpp
-ola_streaming_client_LDADD = $(top_builddir)/ola/libola.la \
-                             $(top_builddir)/common/libolacommon.la
 
 ola_usbpro_SOURCES = ola-usbpro.cpp
-ola_usbpro_LDADD = libolaconfig.la \
-                   $(top_builddir)/ola/libola.la \
+ola_usbpro_LDADD = $(COMMON_LIBS) libolaconfig.la \
                    $(top_builddir)/plugins/usbpro/messages/libolausbproconf.la
 
 ola_rdm_get_SOURCES = ola-rdm.cpp
@@ -36,25 +36,18 @@ ola_rdm_get_LDADD = $(top_builddir)/ola/libola.la \
 ola_rdm_get_CXXFLAGS = @OLAD_DEFINES@
 
 ola_rdm_discover_SOURCES = ola-rdm-discover.cpp
-ola_rdm_discover_LDADD = $(top_builddir)/ola/libola.la \
-                         $(top_builddir)/common/libolacommon.la
 
 if HAVE_NCURSES
 bin_PROGRAMS += ola_dmxconsole ola_dmxmonitor
 ola_dmxconsole_SOURCES = ola-dmxconsole.cpp
-ola_dmxconsole_LDADD = @LIBS@ -lcurses \
-                       $(top_builddir)/ola/libola.la \
-                       $(top_builddir)/common/libolacommon.la
+ola_dmxconsole_LDADD = @LIBS@ -lcurses $(COMMON_LIBS)
 ola_dmxmonitor_SOURCES = ola-dmxmonitor.cpp
-ola_dmxmonitor_LDADD = @LIBS@ -lcurses \
-                       $(top_builddir)/ola/libola.la \
-                       $(top_builddir)/common/libolacommon.la
+ola_dmxmonitor_LDADD = @LIBS@ -lcurses $(COMMON_LIBS)
 endif
 
 
 noinst_PROGRAMS = ola_throughput
 ola_throughput_SOURCES = ola-throughput.cpp
-ola_throughput_LDADD = $(top_builddir)/ola/libola.la
 
 noinst_LTLIBRARIES = libolaconfig.la
 libolaconfig_la_SOURCES = OlaConfigurator.cpp

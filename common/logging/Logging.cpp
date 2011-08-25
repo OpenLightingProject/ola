@@ -47,6 +47,7 @@ void SetLogLevel(log_level level) {
   logging_level = level;
 }
 
+
 /*
  * Increment the log level, We reset to OLA_LOG_FATAL when we wrap.
  */
@@ -55,7 +56,6 @@ void IncrementLogLevel() {
   if (logging_level == OLA_LOG_MAX)
     logging_level = OLA_LOG_NONE;
 }
-
 
 
 /*
