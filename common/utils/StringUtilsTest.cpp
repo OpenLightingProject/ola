@@ -26,6 +26,7 @@
 
 using std::string;
 using std::vector;
+using ola::CapitalizeLabel;
 using ola::Escape;
 using ola::EscapeString;
 using ola::HexStringToInt;
@@ -55,6 +56,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testPrefixedHexStringToInt);
   CPPUNIT_TEST(testToLower);
   CPPUNIT_TEST(testToUpper);
+  CPPUNIT_TEST(testCapitalizeLabel);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -73,6 +75,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testPrefixedHexStringToInt();
     void testToLower();
     void testToUpper();
+    void testCapitalizeLabel();
 };
 
 
@@ -522,3 +525,10 @@ void StringUtilsTest::testToUpper() {
   ToUpper(&s);
   CPPUNIT_ASSERT_EQUAL(string("HELLO THERE"), s);
 }
+
+
+void StringUtilsTest::testCapitalizeLabel() {
+  string label = "this-is_a_test";
+  CapitalizeLabel(&label);
+  CPPUNIT_ASSERT_EQUAL(string("This Is A Test"), label);
+};

@@ -52,6 +52,7 @@ bool HexStringToInt(const string &value, int16_t *output);
 bool HexStringToInt(const string &value, int32_t *output);
 void ToLower(string *s);
 void ToUpper(string *s);
+void CapitalizeLabel(string *s);
 
 /**
  * Convert a hex string, prefixed with 0x to an int type.

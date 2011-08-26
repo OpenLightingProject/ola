@@ -378,4 +378,28 @@ void ToUpper(string *s) {
   std::transform(s->begin(), s->end(), s->begin(),
       std::ptr_fun<int, int>(std::toupper));
 }
+
+
+/**
+ * Given a label in the form ([a-zA-Z0-9][-_])?[a-zA-Z0-9], return the string
+ * with the transform s/-_/ / and words capitalized
+ * @param s a string to transform.
+ */
+void CapitalizeLabel(string *s) {
+  bool capitalize = true;
+  for (string::iterator iter = s->begin(); iter != s->end(); ++iter) {
+    switch (*iter) {
+      case '-':
+      case '_':
+        *iter = ' ';
+      case ' ':
+        capitalize = true;
+        break;
+      default:
+        if (capitalize && *iter >= 'a' && *iter <= 'z')
+          *iter = toupper(*iter);
+        capitalize = false;
+    }
+  }
+}
 }  // ola
