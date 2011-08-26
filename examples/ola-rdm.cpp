@@ -313,6 +313,14 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
       pid_name,
       uid.ManufacturerId());
 
+  uint16_t pid_value;
+  if (!pid_descriptor &&
+      ola::PrefixedHexStringToInt(pid_name, &pid_value)) {
+    pid_descriptor = m_pid_helper.GetDescriptor(
+        pid_value,
+        uid.ManufacturerId());
+  }
+
   if (!pid_descriptor) {
     cout << "Unknown PID: " << pid_name << endl;
     cout << "Use --list_pids to list the available PIDs." << endl;

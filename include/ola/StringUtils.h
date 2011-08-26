@@ -52,6 +52,17 @@ bool HexStringToInt(const string &value, int16_t *output);
 bool HexStringToInt(const string &value, int32_t *output);
 void ToLower(string *s);
 void ToUpper(string *s);
+
+/**
+ * Convert a hex string, prefixed with 0x to an int type.
+ */
+template <typename int_type>
+bool PrefixedHexStringToInt(const string &input, int_type *output) {
+  if (input.find("0x") != 0)
+    return false;
+  string modified_input = input.substr(2);
+  return HexStringToInt(modified_input, output);
+}
 }  // ola
 
 #endif  // INCLUDE_OLA_STRINGUTILS_H_

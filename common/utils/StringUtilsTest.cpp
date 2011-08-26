@@ -30,6 +30,7 @@ using ola::Escape;
 using ola::EscapeString;
 using ola::HexStringToInt;
 using ola::IntToString;
+using ola::PrefixedHexStringToInt;
 using ola::ShortenString;
 using ola::StringSplit;
 using ola::StringToInt;
@@ -51,6 +52,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testStringToInt16);
   CPPUNIT_TEST(testStringToInt8);
   CPPUNIT_TEST(testHexStringToInt);
+  CPPUNIT_TEST(testPrefixedHexStringToInt);
   CPPUNIT_TEST(testToLower);
   CPPUNIT_TEST(testToUpper);
   CPPUNIT_TEST_SUITE_END();
@@ -68,6 +70,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testStringToInt16();
     void testStringToInt8();
     void testHexStringToInt();
+    void testPrefixedHexStringToInt();
     void testToLower();
     void testToUpper();
 };
@@ -372,6 +375,25 @@ void StringUtilsTest::testHexStringToInt() {
   CPPUNIT_ASSERT(!HexStringToInt("fz", &value4));
   CPPUNIT_ASSERT(!HexStringToInt("zfff", &value4));
   CPPUNIT_ASSERT(!HexStringToInt("0xf", &value4));
+}
+
+
+void StringUtilsTest::testPrefixedHexStringToInt() {
+  int value;
+  CPPUNIT_ASSERT(!PrefixedHexStringToInt("", &value));
+  CPPUNIT_ASSERT(!PrefixedHexStringToInt("-1", &value));
+  CPPUNIT_ASSERT(!PrefixedHexStringToInt("0", &value));
+  CPPUNIT_ASSERT(!PrefixedHexStringToInt("2000", &value));
+  CPPUNIT_ASSERT(!PrefixedHexStringToInt("0x", &value));
+
+  CPPUNIT_ASSERT(PrefixedHexStringToInt("0x1", &value));
+  CPPUNIT_ASSERT_EQUAL(1, value);
+  CPPUNIT_ASSERT(PrefixedHexStringToInt("0xff", &value));
+  CPPUNIT_ASSERT_EQUAL(255, value);
+  CPPUNIT_ASSERT(PrefixedHexStringToInt("0x70ff", &value));
+  CPPUNIT_ASSERT_EQUAL(28927, value);
+  CPPUNIT_ASSERT(PrefixedHexStringToInt("0xffffffff", &value));
+  CPPUNIT_ASSERT_EQUAL(-1, value);
 }
 
 
