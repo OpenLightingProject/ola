@@ -25,6 +25,7 @@
 #include <ola/rdm/PidStore.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
+#include <ola/StringUtils.h>
 #include <set>
 #include <string>
 
@@ -46,6 +47,19 @@ using ola::messaging::UInt8MessageField;
 using std::endl;
 using std::set;
 using std::string;
+
+
+/**
+ * A RDM specific printer that transforms field names
+ */
+class RDMMessagePrinter: public GenericMessagePrinter {
+  protected:
+    string TransformLabel(const string &label) {
+      string new_label = label;
+      ola::CustomCapitalizeLabel(&new_label);
+      return new_label;
+    }
+};
 
 
 /**
@@ -124,10 +138,17 @@ class DeviceInfoPrinter: public GenericMessagePrinter {
     void Visit(const UInt16MessageField *message) {
       const string name = message->GetDescriptor()->Name();
       if (name == "product_category")
-        Stream() << name << ": " << ProductCategoryToString(message->Value())
-          << endl;
+        Stream() << TransformLabel(name) << ": " <<
+          ProductCategoryToString(message->Value()) << endl;
       else
         GenericMessagePrinter::Visit(message);
+    }
+
+  protected:
+    string TransformLabel(const string &label) {
+      string new_label = label;
+      ola::CustomCapitalizeLabel(&new_label);
+      return new_label;
     }
 };
 

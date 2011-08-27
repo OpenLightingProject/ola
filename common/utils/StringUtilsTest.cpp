@@ -27,6 +27,7 @@
 using std::string;
 using std::vector;
 using ola::CapitalizeLabel;
+using ola::CustomCapitalizeLabel;
 using ola::Escape;
 using ola::EscapeString;
 using ola::HexStringToInt;
@@ -57,6 +58,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToLower);
   CPPUNIT_TEST(testToUpper);
   CPPUNIT_TEST(testCapitalizeLabel);
+  CPPUNIT_TEST(testCustomCapitalizeLabel);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -76,6 +78,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testToLower();
     void testToUpper();
     void testCapitalizeLabel();
+    void testCustomCapitalizeLabel();
 };
 
 
@@ -531,4 +534,23 @@ void StringUtilsTest::testCapitalizeLabel() {
   string label = "this-is_a_test";
   CapitalizeLabel(&label);
   CPPUNIT_ASSERT_EQUAL(string("This Is A Test"), label);
+};
+
+
+void StringUtilsTest::testCustomCapitalizeLabel() {
+  string label1 = "dmx_start_address";
+  CustomCapitalizeLabel(&label1);
+  CPPUNIT_ASSERT_EQUAL(string("DMX Start Address"), label1);
+
+  string label2 = "foo-dmx";
+  CustomCapitalizeLabel(&label2);
+  CPPUNIT_ASSERT_EQUAL(string("Foo DMX"), label2);
+
+  string label3 = "mini_dmxter_device";
+  CustomCapitalizeLabel(&label3);
+  CPPUNIT_ASSERT_EQUAL(string("Mini Dmxter Device"), label3);
+
+  string label4 = "this-is_a_test";
+  CapitalizeLabel(&label4);
+  CPPUNIT_ASSERT_EQUAL(string("This Is A Test"), label4);
 };

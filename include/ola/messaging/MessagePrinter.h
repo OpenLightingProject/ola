@@ -52,6 +52,7 @@ class MessagePrinter: public MessageVisitor {
   protected:
     std::stringstream& Stream() { return m_str; }
     virtual void PostStringHook() {}
+    virtual string TransformLabel(const string &label) { return label; }
 
   private:
     std::stringstream m_str;

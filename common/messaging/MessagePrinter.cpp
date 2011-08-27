@@ -44,13 +44,15 @@ string MessagePrinter::AsString(const Message *message) {
 
 
 void GenericMessagePrinter::Visit(const BoolMessageField *message) {
-  Stream() << string(m_indent, ' ') << message->GetDescriptor()->Name() << ": "
+  Stream() << string(m_indent, ' ') <<
+    TransformLabel(message->GetDescriptor()->Name()) << ": "
     << (message->Value() ? "true" : "false") << endl;
 }
 
 
 void GenericMessagePrinter::Visit(const StringMessageField *message) {
-  Stream() << string(m_indent, ' ') << message->GetDescriptor()->Name() << ": "
+  Stream() << string(m_indent, ' ') <<
+    TransformLabel(message->GetDescriptor()->Name()) << ": "
     << message->Value()<< endl;
 }
 
@@ -110,8 +112,8 @@ void GenericMessagePrinter::Visit(const BasicMessageField<int32_t> *message) {
 
 
 void GenericMessagePrinter::Visit(const GroupMessageField *message) {
-  Stream() << string(m_indent, ' ') << message->GetDescriptor()->Name() << " {"
-    << endl;
+  Stream() << string(m_indent, ' ') <<
+    TransformLabel(message->GetDescriptor()->Name()) << " {" << endl;
   m_indent += m_indent_size;
 }
 
@@ -127,7 +129,7 @@ void GenericMessagePrinter::AppendUInt(const string &name,
                                        unsigned int value,
                                        const string &label,
                                        int8_t multipler) {
-  Stream() << string(m_indent, ' ') << name << ": ";
+  Stream() << string(m_indent, ' ') << TransformLabel(name) << ": ";
   if (label.empty()) {
     Stream() << value;
     AppendMultipler(multipler);
@@ -142,7 +144,7 @@ void GenericMessagePrinter::AppendInt(const string &name,
                                       int value,
                                       const string &label,
                                       int8_t multipler) {
-  Stream() << string(m_indent, ' ') << name << ": ";
+  Stream() << string(m_indent, ' ') << TransformLabel(name) << ": ";
   if (label.empty()) {
     Stream() << value;
     AppendMultipler(multipler);

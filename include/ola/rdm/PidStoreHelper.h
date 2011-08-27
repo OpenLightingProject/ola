@@ -24,11 +24,11 @@
 
 #include <stdint.h>
 #include <ola/messaging/Descriptor.h>
-#include <ola/messaging/MessagePrinter.h>
 #include <ola/messaging/SchemaPrinter.h>
 #include <ola/rdm/MessageDeserializer.h>
 #include <ola/rdm/MessageSerializer.h>
 #include <ola/rdm/PidStore.h>
+#include <ola/rdm/RDMMessagePrinters.h>
 #include <ola/rdm/StringMessageBuilder.h>
 
 #include <string>
@@ -87,7 +87,7 @@ class PidStoreHelper {
     ola::rdm::StringMessageBuilder m_string_builder;
     ola::rdm::MessageSerializer m_serializer;
     ola::rdm::MessageDeserializer m_deserializer;
-    ola::messaging::GenericMessagePrinter m_message_printer;
+    ola::rdm::RDMMessagePrinter m_message_printer;
     ola::messaging::SchemaPrinter m_schema_printer;
 };
 }  // rdm

@@ -396,10 +396,42 @@ void CapitalizeLabel(string *s) {
         capitalize = true;
         break;
       default:
-        if (capitalize && *iter >= 'a' && *iter <= 'z')
+        if (capitalize && islower(*iter))
           *iter = toupper(*iter);
         capitalize = false;
     }
   }
+}
+
+
+/**
+ * Given a label in the form ([a-zA-Z0-9][-_])?[a-zA-Z0-9], return the string
+ * with the transform s/-_/ / and words capitalized.
+ * This also capitalizes ancronyns like DMX
+ * @param s a string to transform.
+ */
+void CustomCapitalizeLabel(string *s) {
+  size_t last_match = 0;
+  size_t size = s->size();
+
+  const string ancronym = "dmx";
+  size_t ancronym_size = ancronym.size();
+
+  while (true) {
+    size_t match_position = s->find(ancronym, last_match);
+    if (match_position == string::npos)
+      break;
+    last_match = match_position + 1;
+    size_t end_position = match_position + ancronym_size;
+
+    if ((match_position == 0 || ispunct(s->at(match_position - 1))) &&
+        (end_position == size || ispunct(s->at(end_position)))) {
+      while (match_position < end_position) {
+        s->at(match_position) = toupper(s->at(match_position));
+        match_position++;
+      }
+    }
+  }
+  CapitalizeLabel(s);
 }
 }  // ola
