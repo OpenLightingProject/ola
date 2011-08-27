@@ -2539,17 +2539,24 @@ class SetRealTimeClock(OptionalParameterTestFixture):
 
   def Test(self):
     n = datetime.datetime.now()
-    self.AddIfSetSupported(self.AckSetResult())
+    self.AddIfSetSupported(
+        [self.AckSetResult(),
+         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ])
     args = [n.year, n.month, n.day, n.hour, n.minute, n.second]
     self.SendSet(ROOT_DEVICE, self.pid,
                  args)
 
 
-class SetRealTimeClockWithNoData(TestMixins.SetWithNoDataMixin,
-                                 OptionalParameterTestFixture):
+class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
   """Set the real time clock without any data."""
   CATEGORY = TestCategory.CONFIGURATION
   PID = 'REAL_TIME_CLOCK'
+
+  def Test(self):
+    self.AddIfSetSupported(
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
 # Identify Device

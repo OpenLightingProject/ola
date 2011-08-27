@@ -206,7 +206,8 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_DMX_PERSONALITY,
     ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
     ola::rdm::PID_MANUFACTURER_LABEL,
-    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST
+    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
+    ola::rdm::PID_REAL_TIME_CLOCK
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)

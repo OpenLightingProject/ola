@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include "ola/BaseTypes.h"
+#include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/network/NetworkUtils.h"
@@ -102,6 +103,9 @@ void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
     case ola::rdm::PID_IDENTIFY_DEVICE:
       HandleIdentifyDevice(request, callback);
       break;
+    case ola::rdm::PID_REAL_TIME_CLOCK:
+      HandleRealTimeClock(request, callback);
+      break;
     default:
       HandleUnknownPacket(request, callback);
   }
@@ -136,7 +140,8 @@ void DummyResponder::HandleSupportedParams(const RDMRequest *request,
     ola::rdm::PID_DMX_PERSONALITY,
     ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
     ola::rdm::PID_MANUFACTURER_LABEL,
-    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST
+    ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
+    ola::rdm::PID_REAL_TIME_CLOCK
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
@@ -456,6 +461,61 @@ void DummyResponder::HandleIdentifyDevice(const RDMRequest *request,
   }
   delete request;
 }
+
+
+/**
+ * Handle the Real Time Clock
+ */
+void DummyResponder::HandleRealTimeClock(const RDMRequest *request,
+                                         ola::rdm::RDMCallback *callback) {
+  if (request->DestinationUID().IsBroadcast()) {
+    delete request;
+    vector<string> packets;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    return;
+  }
+
+  RDMResponse *response = NULL;
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
+  } else if (request->SubDevice()) {
+    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+  } else if (request->ParamDataSize()) {
+    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  }
+
+  if (!response) {
+    struct clock_s {
+      uint16_t year;
+      uint8_t month;
+      uint8_t day;
+      uint8_t hour;
+      uint8_t minute;
+      uint8_t second;
+    } __attribute__((packed));
+
+    time_t now;
+    now = time(NULL);
+    struct tm tm_now;
+    localtime_r(&now, &tm_now);
+
+    struct clock_s clock;
+    clock.year = HostToNetwork(static_cast<uint16_t>(1900 + tm_now.tm_year));
+    clock.month = tm_now.tm_mon + 1;
+    clock.day = tm_now.tm_mday;
+    clock.hour = tm_now.tm_hour;
+    clock.minute = tm_now.tm_min;
+    clock.second = tm_now.tm_sec;
+
+    response = GetResponseFromData(
+        request,
+        reinterpret_cast<uint8_t*>(&clock),
+        sizeof(clock));
+  }
+  RunRDMCallback(callback, response);
+  delete request;
+}
+
 
 /**
  * Check for the following:

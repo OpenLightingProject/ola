@@ -189,6 +189,10 @@ const string PidStoreHelper::PrettyPrintMessage(
         LanguageCapabilityPrinter printer;
         return printer.AsString(message);
       }
+      case PID_REAL_TIME_CLOCK: {
+        ClockPrinter printer;
+        return printer.AsString(message);
+      }
     }
   }
 

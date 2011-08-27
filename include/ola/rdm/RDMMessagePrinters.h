@@ -26,6 +26,7 @@
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
 #include <ola/StringUtils.h>
+#include <iomanip>
 #include <set>
 #include <string>
 
@@ -201,6 +202,42 @@ class LanguageCapabilityPrinter: public MessagePrinter {
     }
   private:
     set<string> m_languages;
+};
+
+
+/**
+ * Print the real time clock info
+ */
+class ClockPrinter: public MessagePrinter {
+  public:
+    ClockPrinter() : MessagePrinter(), m_offset(0) {}
+    void Visit(const UInt16MessageField *message) {
+      m_year = message->Value();
+    }
+
+    void Visit(const UInt8MessageField *message) {
+      if (m_offset < CLOCK_FIELDS)
+        m_fields[m_offset] = message->Value();
+      m_offset++;
+    }
+
+    void PostStringHook() {
+      if (m_offset != CLOCK_FIELDS) {
+        Stream() << "Malformed packet";
+      }
+      Stream() << std::setfill('0') << std::setw(2) <<
+        static_cast<int>(m_fields[1]) << "/" <<
+        static_cast<int>(m_fields[0]) << "/" <<
+        m_year << " " <<
+        static_cast<int>(m_fields[2]) << ":" <<
+        static_cast<int>(m_fields[3]) << ":" <<
+        static_cast<int>(m_fields[4]) << endl;
+    }
+  private:
+    enum { CLOCK_FIELDS = 5};
+    uint16_t m_year;
+    uint8_t m_fields[CLOCK_FIELDS];
+    unsigned int m_offset;
 };
 }  // rdm
 }  // ola

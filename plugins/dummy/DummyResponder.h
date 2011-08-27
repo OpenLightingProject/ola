@@ -74,6 +74,8 @@ class DummyResponder: public ola::rdm::RDMControllerInterface {
                                ola::rdm::RDMCallback *callback);
     void HandleIdentifyDevice(const ola::rdm::RDMRequest *request,
                               ola::rdm::RDMCallback *callback);
+    void HandleRealTimeClock(const ola::rdm::RDMRequest *request,
+                             ola::rdm::RDMCallback *callback);
     bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request,
                                           ola::rdm::RDMCallback *callback);
     void RunRDMCallback(ola::rdm::RDMCallback *callback,
