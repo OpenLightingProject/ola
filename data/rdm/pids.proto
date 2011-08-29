@@ -534,7 +534,7 @@ pid {
       type: UINT8
       name: "personality"
       range {
-        min: 0
+        min: 1
         max: 255
       }
     }
@@ -551,7 +551,7 @@ pid {
       type: UINT8
       name: "personality"
       range {
-        min: 0
+        min: 1
         max: 255
       }
     }
@@ -951,6 +951,14 @@ pid {
         value: 127
         label: "Error"
       }
+      range {
+        min: 0
+        max: 4
+      }
+      range {
+        min: 127
+        max: 223
+      }
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -997,6 +1005,30 @@ pid {
     field {
       type: UINT8
       name: "mode"
+      label {
+        value: 0
+        label: "Off"
+      }
+      label {
+        value: 1
+        label: "DMX"
+      }
+      label {
+        value: 2
+        label: "On"
+      }
+      label {
+        value: 3
+        label: "On After Calibration"
+      }
+      range {
+        min: 0
+        max: 3
+      }
+      range {
+        min: 128
+        max: 223
+      }
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -1065,6 +1097,18 @@ pid {
     field {
       type: UINT8
       name: "invert_status"
+      label {
+        value: 0
+        label: "Off"
+      }
+      label {
+        value: 1
+        label: "On"
+      }
+      label {
+        value: 2
+        label: "Auto"
+      }
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -1316,6 +1360,22 @@ pid {
     field {
       type: UINT8
       name: "power_state"
+      label {
+        value: 0
+        label: "Full Off"
+      }
+      label {
+        value: 1
+        label: "Shutdown"
+      }
+      label {
+        value: 2
+        label: "Standby"
+      }
+      label {
+        value: 255
+        label: "Normal"
+      }
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
@@ -3257,6 +3317,732 @@ manufacturer {
   }
 }
 manufacturer {
+  manufacturer_id: 25972
+  manufacturer_name: "Electronic Theatre Controls Inc. (ETC)"
+  pid {
+    name: "ETC_LED_CURVE"
+    value: 33025
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "curve_setting"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Incandescent"
+        }
+        label {
+          value: 2
+          label: "Linear Response"
+        }
+        label {
+          value: 3
+          label: "Quick Curve (No Smoothing)"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "curve_setting"
+        label {
+          value: 0
+          label: "Standard"
+        }
+        label {
+          value: 1
+          label: "Incandescent"
+        }
+        label {
+          value: 2
+          label: "Linear Response"
+        }
+        label {
+          value: 3
+          label: "Quick Curve (No Smoothing)"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_CURVE_DESCRIPTION"
+    value: 33026
+    get_request {
+      field {
+        type: UINT8
+        name: "curve"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "curve_number"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_STROBE"
+    value: 33027
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "strobe_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "strobe_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_OUTPUT_MODE"
+    value: 33028
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "output_mode"
+        label {
+          value: 0
+          label: "Regulated mode, droop com, LEDs dim at high temps"
+        }
+        label {
+          value: 1
+          label: "Boost mode, no droop comp, LEDs dim at high temps"
+        }
+        label {
+          value: 2
+          label: "Protected mode, LEDs are always dim to prevent overtemp."
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "output_mode"
+        label {
+          value: 0
+          label: "Regulated"
+        }
+        label {
+          value: 1
+          label: "Boost"
+        }
+        label {
+          value: 2
+          label: "Protected"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_OUTPUT_MODE_DESCRIPTION"
+    value: 33029
+    get_request {
+      field {
+        type: UINT8
+        name: "output_mode"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "output_mode"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_RED_SHIFT"
+    value: 33030
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "red_shift_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "red_shift_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_WHITE_POINT"
+    value: 33031
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "white_point"
+        label {
+          value: 0
+          label: "2950K"
+        }
+        label {
+          value: 1
+          label: "3200K"
+        }
+        label {
+          value: 2
+          label: "5600K"
+        }
+        label {
+          value: 3
+          label: "6500K"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "white_point"
+        label {
+          value: 0
+          label: "2950K"
+        }
+        label {
+          value: 1
+          label: "3200K"
+        }
+        label {
+          value: 2
+          label: "5600K"
+        }
+        label {
+          value: 3
+          label: "6500K"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_WHITE_POINT_DESCRIPTION"
+    value: 33032
+    get_request {
+      field {
+        type: UINT8
+        name: "white_point"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "white_point"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_FREQUENCY"
+    value: 33033
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT16
+        name: "frequency"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT16
+        name: "frequency"
+        range {
+          min: 900
+          max: 1500
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DMX_LOSS_BEHAVIOR"
+    value: 33034
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "loss_behavior"
+        label {
+          value: 0
+          label: "Instant go dark."
+        }
+        label {
+          value: 1
+          label: "Hold for 2 mins"
+        }
+        label {
+          value: 2
+          label: "Hold forever"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "loss_behavior"
+        label {
+          value: 0
+          label: "Instant go dark."
+        }
+        label {
+          value: 1
+          label: "Hold for 2 mins"
+        }
+        label {
+          value: 2
+          label: "Hold forever"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_DMX_LOSS_BEHAVIOR_DESCRIPTION"
+    value: 33035
+    get_request {
+      field {
+        type: UINT8
+        name: "loss_behavior"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "loss_behavior"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_PLUS_SEVEN"
+    value: 33036
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "plus_seven_enabled"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "plus_seven_enabled"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_BACKLIGHT_BRIGHTNESS"
+    value: 33037
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "backlight_brightness"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "backlight_brightness"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_BACKLIGHT_TIMEOUT"
+    value: 33038
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "backlight_timeout"
+        label {
+          value: 0
+          label: "Never"
+        }
+        label {
+          value: 1
+          label: "30 seconds"
+        }
+        label {
+          value: 2
+          label: "1 minute"
+        }
+        label {
+          value: 3
+          label: "5 minutes"
+        }
+        label {
+          value: 4
+          label: "15 minutes"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "backlight_timeout"
+        label {
+          value: 0
+          label: "Never"
+        }
+        label {
+          value: 1
+          label: "30 seconds"
+        }
+        label {
+          value: 2
+          label: "1 minute"
+        }
+        label {
+          value: 3
+          label: "5 minutes"
+        }
+        label {
+          value: 4
+          label: "15 minutes"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_STATUS_INDICATORS"
+    value: 33039
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "status_indicators"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "status_indicators"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_RECALIBRATE_FIXTURE"
+    value: 33040
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_OVER_TEMP_MODE"
+    value: 33041
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "over_temperature_mode"
+        label {
+          value: 0
+          label: "Dark"
+        }
+        label {
+          value: 1
+          label: "Red"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "over_temperature_mode"
+        label {
+          value: 0
+          label: "Dark"
+        }
+        label {
+          value: 1
+          label: "Red"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_SIMPLE_SETUP_MODE"
+    value: 33042
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "quick_setup_mode"
+        label {
+          value: 0
+          label: "General Use"
+        }
+        label {
+          value: 1
+          label: "State Setup"
+        }
+        label {
+          value: 2
+          label: "Architectural Setup"
+        }
+        label {
+          value: 3
+          label: "Effects Setup"
+        }
+        label {
+          value: 4
+          label: "Studio Setup"
+        }
+        label {
+          value: 5
+          label: "Advanced Setup"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "quick_setup_mode"
+        label {
+          value: 0
+          label: "General Use"
+        }
+        label {
+          value: 1
+          label: "State Setup"
+        }
+        label {
+          value: 2
+          label: "Architectural Setup"
+        }
+        label {
+          value: 3
+          label: "Effects Setup"
+        }
+        label {
+          value: 4
+          label: "Studio Setup"
+        }
+        label {
+          value: 5
+          label: "Advanced Setup"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_STROBE_DESCRIPTION"
+    value: 33043
+    get_request {
+      field {
+        type: UINT8
+        name: "strobe_number"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "strobe_number"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_RED_SHIFT_DESCRIPTION"
+    value: 33044
+    get_request {
+      field {
+        type: UINT8
+        name: "red_shift_value"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "red_shift_value"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_LED_PLUS_SEVEN_DESCRIPTION"
+    value: 33045
+    get_request {
+      field {
+        type: UINT8
+        name: "plus_seven_mode"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "plus_seven_mode"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_BACKLIGHT_TIMEOUT_DESCRIPTION"
+    value: 33046
+    get_request {
+      field {
+        type: UINT8
+        name: "backlight_timeout"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "backlight_timeout"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_SIMPLE_SETUP_MODE_DESCRIPTION"
+    value: 33047
+    get_request {
+      field {
+        type: UINT8
+        name: "simple_setup_mode"
+      }
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "simple_setup_mode"
+      }
+      field {
+        type: STRING
+        name: "description"
+        max_size: 32
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+  }
+  pid {
+    name: "ETC_PREPARE_FOR_SOFTWARE_DOWNLOAD"
+    value: 61440
+    set_request {
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
   manufacturer_id: 31344
   manufacturer_name: "Open Lighting"
   pid {
@@ -3273,4 +4059,4 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
-version: 1302986774
+version: 1314583313
