@@ -381,6 +381,34 @@ void StringUtilsTest::testHexStringToInt() {
   CPPUNIT_ASSERT(!HexStringToInt("fz", &value4));
   CPPUNIT_ASSERT(!HexStringToInt("zfff", &value4));
   CPPUNIT_ASSERT(!HexStringToInt("0xf", &value4));
+
+  // int32
+  int32_t value5;
+  CPPUNIT_ASSERT(!HexStringToInt("", &value5));
+  CPPUNIT_ASSERT(!HexStringToInt("-1", &value5));
+
+  CPPUNIT_ASSERT(HexStringToInt("0", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) 0, value5);
+  CPPUNIT_ASSERT(HexStringToInt("1", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) 1, value5);
+  CPPUNIT_ASSERT(HexStringToInt("a", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) 10, value5);
+  CPPUNIT_ASSERT(HexStringToInt("f", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) 15, value5);
+  CPPUNIT_ASSERT(HexStringToInt("a1", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) 161, value5);
+  CPPUNIT_ASSERT(HexStringToInt("ff", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) 255, value5);
+  CPPUNIT_ASSERT(HexStringToInt("7fff", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) 32767, value5);
+  CPPUNIT_ASSERT(HexStringToInt("ffff", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) 65535, value5);
+  CPPUNIT_ASSERT(HexStringToInt("ffffffff", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) -1, value5);
+  CPPUNIT_ASSERT(HexStringToInt("fffffff0", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) -16, value5);
+  CPPUNIT_ASSERT(HexStringToInt("80000000", &value5));
+  CPPUNIT_ASSERT_EQUAL((int32_t) -2147483648, value5);
 }
 
 
