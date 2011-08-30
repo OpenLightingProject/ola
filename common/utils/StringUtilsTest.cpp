@@ -408,7 +408,7 @@ void StringUtilsTest::testHexStringToInt() {
   CPPUNIT_ASSERT(HexStringToInt("fffffff0", &value5));
   CPPUNIT_ASSERT_EQUAL((int32_t) -16, value5);
   CPPUNIT_ASSERT(HexStringToInt("80000000", &value5));
-  CPPUNIT_ASSERT_EQUAL((int32_t) -2147483648, value5);
+  CPPUNIT_ASSERT_EQUAL((int32_t) -2147483647 - 1, value5);
 }
 
 

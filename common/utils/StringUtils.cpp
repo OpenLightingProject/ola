@@ -357,7 +357,7 @@ bool HexStringToInt(const string &value, int32_t *output) {
   size_t found = value.find_first_not_of("ABCDEFabcdef0123456789");
   if (found != string::npos)
     return false;
-  *output = strtol(value.data(), NULL, 16);
+  *output = strtoll(value.data(), NULL, 16);
   return true;
 }
 
