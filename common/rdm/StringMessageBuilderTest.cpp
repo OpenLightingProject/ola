@@ -52,6 +52,7 @@ using std::vector;
 class StringBuilderTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringBuilderTest);
   CPPUNIT_TEST(testSimpleBuilder);
+  CPPUNIT_TEST(testBuilderWithLabels);
   CPPUNIT_TEST(testBuilderWithGroups);
   CPPUNIT_TEST(testBuilderWithNestedGroups);
   CPPUNIT_TEST(testBuilderWithVariableNestedGroups);
@@ -63,6 +64,7 @@ class StringBuilderTest: public CppUnit::TestFixture {
 
   public:
     void testSimpleBuilder();
+    void testBuilderWithLabels();
     void testBuilderWithGroups();
     void testBuilderWithNestedGroups();
     void testBuilderWithVariableNestedGroups();
@@ -152,6 +154,35 @@ void StringBuilderTest::testSimpleBuilder() {
       "bool6: false\nuint8: 255\nuint16: 300\nuint32: 66000\n"
       "int8: -128\nint16: -300\nint32: -66000\nstring: foo\n"
       "hex uint16: 1024\n");
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
+}
+
+
+/**
+ * Check the builder accepts labels
+ */
+void StringBuilderTest::testBuilderWithLabels() {
+  // build the descriptor
+  UInt8FieldDescriptor::IntervalVector intervals;
+  UInt8FieldDescriptor::LabeledValues labels;
+  labels["dozen"] = 12;
+  labels["bakers_dozen"] = 13;
+
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new UInt8FieldDescriptor("uint8", intervals, labels));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // now setup the inputs
+  vector<string> inputs;
+  inputs.push_back("dozen");
+  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+
+  // verify
+  CPPUNIT_ASSERT(message.get());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(fields.size()),
+                       message->FieldCount());
+
+  string expected = "uint8: dozen\n";
   CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
 }
 

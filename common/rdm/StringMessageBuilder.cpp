@@ -260,10 +260,9 @@ void StringMessageBuilder::VisitInt(
 
   type int_value;
   string input = m_inputs[m_offset++];
-  if (ola::PrefixedHexStringToInt(input, &int_value)) {
-    m_groups.top().push_back(
-        new ola::messaging::BasicMessageField<type>(descriptor, int_value));
-  } else if (ola::StringToInt(input, &int_value)) {
+  if (descriptor->LookupLabel(input, &int_value) ||
+      ola::PrefixedHexStringToInt(input, &int_value) ||
+      ola::StringToInt(input, &int_value)) {
     m_groups.top().push_back(
         new ola::messaging::BasicMessageField<type>(descriptor, int_value));
   } else {
