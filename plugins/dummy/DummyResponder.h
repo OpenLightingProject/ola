@@ -37,6 +37,7 @@ class DummyResponder: public ola::rdm::RDMControllerInterface {
       m_start_address(1),
       m_personality(0),
       m_identify_mode(0),
+      m_lamp_strikes(0),
       m_uid(uid) {}
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
@@ -53,6 +54,7 @@ class DummyResponder: public ola::rdm::RDMControllerInterface {
     uint16_t m_start_address;
     uint8_t m_personality;
     uint8_t m_identify_mode;
+    uint32_t m_lamp_strikes;
     ola::rdm::UID m_uid;
 
     void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
@@ -74,6 +76,8 @@ class DummyResponder: public ola::rdm::RDMControllerInterface {
                                       ola::rdm::RDMCallback *callback);
     void HandleDmxStartAddress(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback);
+    void HandleLampStrikes(const ola::rdm::RDMRequest *request,
+                           ola::rdm::RDMCallback *callback);
     void HandleIdentifyDevice(const ola::rdm::RDMRequest *request,
                               ola::rdm::RDMCallback *callback);
     void HandleRealTimeClock(const ola::rdm::RDMRequest *request,

@@ -103,6 +103,9 @@ void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
     case ola::rdm::PID_DMX_START_ADDRESS:
       HandleDmxStartAddress(request, callback);
       break;
+    case ola::rdm::PID_LAMP_STRIKES:
+      HandleLampStrikes(request, callback);
+      break;
     case ola::rdm::PID_IDENTIFY_DEVICE:
       HandleIdentifyDevice(request, callback);
       break;
@@ -145,6 +148,7 @@ void DummyResponder::HandleSupportedParams(const RDMRequest *request,
     ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
     ola::rdm::PID_MANUFACTURER_LABEL,
     ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
+    ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK
   };
 
@@ -465,6 +469,55 @@ void DummyResponder::HandleDmxStartAddress(const RDMRequest *request,
   }
   delete request;
 }
+
+
+/**
+ * Handle a LAMP_STRIKES request
+ */
+void DummyResponder::HandleLampStrikes(const ola::rdm::RDMRequest *request,
+                                       ola::rdm::RDMCallback *callback) {
+  RDMResponse *response;
+  if (request->SubDevice()) {
+    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+  } else if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    // do set
+    if (request->ParamDataSize() != sizeof(m_lamp_strikes)) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    } else {
+      m_lamp_strikes =
+        NetworkToHost(*(reinterpret_cast<uint32_t*>(request->ParamData())));
+      response = new ola::rdm::RDMSetResponse(
+        request->DestinationUID(),
+        request->SourceUID(),
+        request->TransactionNumber(),
+        ola::rdm::RDM_ACK,
+        0,
+        request->SubDevice(),
+        request->ParamId(),
+        NULL,
+        0);
+    }
+  } else {
+    if (request->ParamDataSize()) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    } else {
+      uint32_t strikes = HostToNetwork(m_lamp_strikes);
+      response = GetResponseFromData(
+        request,
+        reinterpret_cast<const uint8_t*>(&strikes),
+        sizeof(strikes));
+    }
+  }
+  if (request->DestinationUID().IsBroadcast()) {
+    vector<string> packets;
+    delete response;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+  } else {
+    RunRDMCallback(callback, response);
+  }
+  delete request;
+}
+
 
 
 /*
