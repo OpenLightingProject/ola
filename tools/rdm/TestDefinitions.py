@@ -1037,7 +1037,8 @@ class GetZeroPersonalityDescription(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendGet(ROOT_DEVICE, self.pid, [0])
+    data = struct.pack('!B', 0)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
 
 class GetOutOfRangePersonalityDescription(OptionalParameterTestFixture):
@@ -1202,7 +1203,8 @@ class SetZeroPersonality(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(ROOT_DEVICE, self.pid, [0])
+    data = struct.pack('!B', 0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 
 class SetOutOfRangePersonality(OptionalParameterTestFixture):
