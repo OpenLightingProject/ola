@@ -388,14 +388,15 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
  * Called after the ack timer expires. This resends the request.
  */
 void RDMController::FetchQueuedMessage() {
+  uint8_t status_type = 4;
   m_ola_client.GetClient()->RDMGet(
     ola::NewSingleCallback(this, &RDMController::HandleResponse),
     m_pending_request.universe,
     *m_pending_request.uid,
     m_pending_request.sub_device,
     ola::rdm::PID_QUEUED_MESSAGE,
-    NULL,
-    0);
+    &status_type,
+    sizeof(status_type));
 }
 
 
