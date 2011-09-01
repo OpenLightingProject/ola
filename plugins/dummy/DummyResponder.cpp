@@ -76,6 +76,9 @@ void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
     case ola::rdm::PID_DEVICE_INFO:
       HandleDeviceInfo(request, callback);
       break;
+    case ola::rdm::PID_FACTORY_DEFAULTS:
+      HandleFactoryDefaults(request, callback);
+      break;
     case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
       HandleProductDetailList(request, callback);
       break;
@@ -136,6 +139,7 @@ void DummyResponder::HandleSupportedParams(const RDMRequest *request,
 
   uint16_t supported_params[] = {
     ola::rdm::PID_DEVICE_LABEL,
+    ola::rdm::PID_FACTORY_DEFAULTS,
     ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
     ola::rdm::PID_DMX_PERSONALITY,
     ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
@@ -198,6 +202,59 @@ void DummyResponder::HandleDeviceInfo(const RDMRequest *request,
 
 
 /**
+ * Reset to factory defaults
+ */
+void DummyResponder::HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
+                                           ola::rdm::RDMCallback *callback) {
+  RDMResponse *response;
+  if (request->SubDevice()) {
+    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+  } else if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    // do set
+    if (request->ParamDataSize()) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    } else {
+      m_start_address = 1;
+      m_personality = 0;
+      m_identify_mode = 0;
+
+      response = new ola::rdm::RDMSetResponse(
+        request->DestinationUID(),
+        request->SourceUID(),
+        request->TransactionNumber(),
+        ola::rdm::RDM_ACK,
+        0,
+        request->SubDevice(),
+        request->ParamId(),
+        NULL,
+        0);
+    }
+  } else {
+    if (request->ParamDataSize()) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    } else {
+      uint8_t using_defaults = (
+          m_start_address == 1 &&
+          m_personality == 0 &&
+          m_identify_mode == false);
+      response = GetResponseFromData(
+        request,
+        &using_defaults,
+        sizeof(using_defaults));
+    }
+  }
+  if (request->DestinationUID().IsBroadcast()) {
+    vector<string> packets;
+    delete response;
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+  } else {
+    RunRDMCallback(callback, response);
+  }
+  delete request;
+}
+
+
+/**
  * Handle a request for PID_PRODUCT_DETAIL_ID_LIST
  */
 void DummyResponder::HandleProductDetailList(const RDMRequest *request,
@@ -253,14 +310,14 @@ void DummyResponder::HandlePersonality(const ola::rdm::RDMRequest *request,
     if (request->ParamDataSize() != 1) {
       response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
     } else {
-      uint8_t personality = *request->ParamData() - 1;
-      if (personality >= PERSONALITY_COUNT) {
+      uint8_t personality = *request->ParamData();
+      if (personality > PERSONALITY_COUNT || personality == 0) {
         response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
-      } else if (m_start_address + PERSONALITIES[personality].footprint - 1 >
-          DMX_UNIVERSE_SIZE) {
+      } else if (m_start_address + PERSONALITIES[personality - 1].footprint - 1
+                 > DMX_UNIVERSE_SIZE) {
         response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
       } else {
-        m_personality = personality;
+        m_personality = personality - 1;
         response = new ola::rdm::RDMSetResponse(
           request->DestinationUID(),
           request->SourceUID(),

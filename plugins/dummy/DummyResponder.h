@@ -61,6 +61,8 @@ class DummyResponder: public ola::rdm::RDMControllerInterface {
                                ola::rdm::RDMCallback *callback);
     void HandleDeviceInfo(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *callback);
+    void HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
+                               ola::rdm::RDMCallback *callback);
     void HandleProductDetailList(const ola::rdm::RDMRequest *request,
                                  ola::rdm::RDMCallback *callback);
     void HandleStringResponse(const ola::rdm::RDMRequest *request,

@@ -202,6 +202,7 @@ void DummyPortTest::testSupportedParams() {
 
   uint16_t supported_params[] = {
     ola::rdm::PID_DEVICE_LABEL,
+    ola::rdm::PID_FACTORY_DEFAULTS,
     ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
     ola::rdm::PID_DMX_PERSONALITY,
     ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
