@@ -284,9 +284,16 @@ void RDMController::HandleResponse(
                         response_status.pid_value,
                         rdm_data);
     } else {
-      // this is not the message we were looking for...
-      FetchQueuedMessage();
-      return;
+      // we got something other than an empty status message, this means there
+      // there are probably more messages to fetch
+      if (response_status.pid_value != ola::rdm::PID_STATUS_MESSAGES ||
+          rdm_data.size() != 0) {
+        FetchQueuedMessage();
+        return;
+      }
+      // this is just an empty status message, the device probably doesn't
+      // support queued messages.
+      cout << "Empty STATUS_MESSAGE returned." << endl;
     }
   } else if (response_status.response_type == ola::rdm::RDM_NACK_REASON) {
     cout << "Request NACKed: " <<
