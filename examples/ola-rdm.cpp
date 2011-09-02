@@ -277,7 +277,8 @@ void RDMController::HandleResponse(
   }
 
   if (response_status.response_type == ola::rdm::RDM_ACK) {
-    if (response_status.pid_value == m_pending_request.pid_value) {
+    if (response_status.pid_value == m_pending_request.pid_value ||
+        m_pending_request.pid_value == ola::rdm::PID_QUEUED_MESSAGE) {
       HandleAckResponse(m_pending_request.uid->ManufacturerId(),
                         response_status.set_command,
                         response_status.pid_value,
