@@ -165,6 +165,10 @@ const string PidStoreHelper::PrettyPrintMessage(
         ProxiedDevicesPrinter printer;
         return printer.AsString(message);
       }
+      case PID_STATUS_MESSAGES: {
+        StatusMessagePrinter printer;
+        return printer.AsString(message);
+      }
       case PID_SUPPORTED_PARAMETERS: {
         SupportedParamsPrinter printer(manufacturer_id, m_root_store);
         return printer.AsString(message);

@@ -21,11 +21,12 @@
 #ifndef INCLUDE_OLA_RDM_RDMMESSAGEPRINTERS_H_
 #define INCLUDE_OLA_RDM_RDMMESSAGEPRINTERS_H_
 
+#include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/messaging/MessagePrinter.h>
 #include <ola/rdm/PidStore.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
-#include <ola/StringUtils.h>
 #include <iomanip>
 #include <set>
 #include <string>
@@ -91,6 +92,62 @@ class ProxiedDevicesPrinter: public MessagePrinter {
     uint16_t m_manufacturer_id;
     uint32_t m_device_id;
     set<UID> m_uids;
+};
+
+
+/**
+ * Print a status message.
+ */
+class StatusMessagePrinter: public MessagePrinter {
+  public:
+    void Visit(const UInt8MessageField *field) {
+      if (m_messages.empty())
+        return;
+      m_messages.back().status_type = field->Value();
+    }
+
+    void Visit(const UInt16MessageField *field) {
+      if (m_messages.empty())
+        return;
+      status_message &message = m_messages.back();
+      if (message.offset < MAX_16_FIELDS)
+        message.uint16_fields[message.offset] = field->Value();
+      message.offset++;
+    }
+
+    void PreVisit(const GroupMessageField*) {
+      status_message message;
+      message.status_type = 0;
+      message.offset = 0;
+      message.status_type_defined = false;
+      m_messages.push_back(message);
+    }
+
+  protected:
+    void PostStringHook() {
+      vector<status_message>::const_iterator iter = m_messages.begin();
+      for (; iter != m_messages.end(); ++iter) {
+        if (!iter->status_type_defined || iter->offset != MAX_16_FIELDS) {
+          OLA_WARN << "Invalid status message";
+          continue;
+        }
+
+        Stream() << "Sub device: " << iter->uint16_fields[0] << ", type: " <<
+          StatusTypeToString(iter->status_type) << ", msg id: " <<
+          iter->uint16_fields[1] << ", data1: " << iter->uint16_fields[2] <<
+          ", data2: " << iter->uint16_fields[3];
+      }
+    }
+
+  private:
+    enum { MAX_16_FIELDS = 4 };
+    typedef struct {
+      uint8_t status_type;
+      bool status_type_defined;
+      uint16_t uint16_fields[MAX_16_FIELDS];
+      uint8_t offset;
+    }  status_message;
+    vector<status_message> m_messages;
 };
 
 
