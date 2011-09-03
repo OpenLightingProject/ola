@@ -810,52 +810,76 @@ string StatusMessageIdToString(uint16_t message_id,
   switch (message_id) {
     case STS_CAL_FAIL:
       str << "Slot " << data1 << " failed calibration";
+      break;
     case STS_SENS_NOT_FOUND:
       str << "Sensor " << data1 << " not found";
+      break;
     case STS_SENS_ALWAYS_ON:
       str << "Sensor " << data1 << " always on";
+      break;
     case STS_LAMP_DOUSED:
       str << "Lamp doused";
+      break;
     case STS_LAMP_STRIKE:
       str<< "Lamp failed to strike";
+      break;
     case STS_OVERTEMP:
       str << "Sensor " << data1 << " over temp at " << data2 << " degrees C";
+      break;
     case STS_UNDERTEMP:
       str << "Sensor " << data1 << " under temp at " << data2 << " degrees C";
+      break;
     case STS_SENS_OUT_RANGE:
       str << "Sensor " << data1 << " out of range";
+      break;
     case STS_OVERVOLTAGE_PHASE:
       str << "Phase " << data1 << " over voltage at " << data2 << "V";
+      break;
     case STS_UNDERVOLTAGE_PHASE:
       str << "Phase " << data1 << " under voltage at " << data2 << "V";
+      break;
     case STS_OVERCURRENT:
       str << "Phase " << data1 << " over current at " << data2 << "V";
+      break;
     case STS_UNDERCURRENT:
       str << "Phase " << data1 << " under current at " << data2 << "V";
+      break;
     case STS_PHASE:
       str << "Phase " << data1 << " is at " << data2 << " degrees";
+      break;
     case STS_PHASE_ERROR:
       str << "Phase " << data1 << " error";
+      break;
     case STS_AMPS:
       str << data1 <<  " Amps";
+      break;
     case STS_VOLTS:
       str << data1 <<  " Volts";
+      break;
     case STS_DIMSLOT_OCCUPIED:
       str << "No Dimmer";
+      break;
     case STS_BREAKER_TRIP:
       str <<  "Tripped Breaker";
+      break;
     case STS_WATTS:
       str << data1 <<  " Watts";
+      break;
     case STS_DIM_FAILURE:
       str << "Dimmer Failure";
+      break;
     case STS_DIM_PANIC:
       str << "Dimmer panic mode";
+      break;
     case STS_READY:
       str << "Slot " << data1 << " ready";
+      break;
     case STS_NOT_READY:
       str << "Slot " << data1 << " not ready";
+      break;
     case STS_LOW_FLUID:
       str << "Slot " << data1 << " low fluid";
+      break;
   }
   return str.str();
 }
