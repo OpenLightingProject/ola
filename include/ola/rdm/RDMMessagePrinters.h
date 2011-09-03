@@ -105,6 +105,7 @@ class StatusMessagePrinter: public MessagePrinter {
       if (m_messages.empty())
         return;
       m_messages.back().status_type = field->Value();
+      m_messages.back().status_type_defined = true;
     }
 
     void Visit(const Int16MessageField *field) {
@@ -146,13 +147,13 @@ class StatusMessagePrinter: public MessagePrinter {
         Stream() << "Sub device: " << iter->uint16_fields[0] << ", type: " <<
           StatusTypeToString(iter->status_type) << ", msg id: " <<
           iter->uint16_fields[1] << ", data1: " << iter->int16_fields[0] <<
-          ", data2: " << iter->int16_fields[1];
+          ", data2: " << iter->int16_fields[1] << endl;
       }
     }
 
   private:
-    enum { MAX_INT_FIELDS = 4 };
-    enum { MAX_UINT_FIELDS = 4 };
+    enum { MAX_INT_FIELDS = 2 };
+    enum { MAX_UINT_FIELDS = 2 };
     typedef struct {
       uint16_t uint16_fields[MAX_UINT_FIELDS];
       int16_t int16_fields[MAX_INT_FIELDS];
