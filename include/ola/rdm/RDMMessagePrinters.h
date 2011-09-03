@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <set>
 #include <string>
+#include <vector>
 
 
 namespace ola {
@@ -106,19 +107,27 @@ class StatusMessagePrinter: public MessagePrinter {
       m_messages.back().status_type = field->Value();
     }
 
+    void Visit(const Int16MessageField *field) {
+      if (m_messages.empty())
+        return;
+      status_message &message = m_messages.back();
+      if (message.int_offset < MAX_INT_FIELDS)
+        message.int16_fields[message.int_offset++] = field->Value();
+    }
+
     void Visit(const UInt16MessageField *field) {
       if (m_messages.empty())
         return;
       status_message &message = m_messages.back();
-      if (message.offset < MAX_16_FIELDS)
-        message.uint16_fields[message.offset] = field->Value();
-      message.offset++;
+      if (message.uint_offset < MAX_UINT_FIELDS)
+        message.uint16_fields[message.uint_offset++] = field->Value();
     }
 
-    void PreVisit(const GroupMessageField*) {
+    void Visit(const GroupMessageField*) {
       status_message message;
       message.status_type = 0;
-      message.offset = 0;
+      message.int_offset = 0;
+      message.uint_offset = 0;
       message.status_type_defined = false;
       m_messages.push_back(message);
     }
@@ -127,25 +136,30 @@ class StatusMessagePrinter: public MessagePrinter {
     void PostStringHook() {
       vector<status_message>::const_iterator iter = m_messages.begin();
       for (; iter != m_messages.end(); ++iter) {
-        if (!iter->status_type_defined || iter->offset != MAX_16_FIELDS) {
+        if (!iter->status_type_defined ||
+            iter->uint_offset != MAX_UINT_FIELDS ||
+            iter->int_offset != MAX_INT_FIELDS) {
           OLA_WARN << "Invalid status message";
           continue;
         }
 
         Stream() << "Sub device: " << iter->uint16_fields[0] << ", type: " <<
           StatusTypeToString(iter->status_type) << ", msg id: " <<
-          iter->uint16_fields[1] << ", data1: " << iter->uint16_fields[2] <<
-          ", data2: " << iter->uint16_fields[3];
+          iter->uint16_fields[1] << ", data1: " << iter->int16_fields[0] <<
+          ", data2: " << iter->int16_fields[1];
       }
     }
 
   private:
-    enum { MAX_16_FIELDS = 4 };
+    enum { MAX_INT_FIELDS = 4 };
+    enum { MAX_UINT_FIELDS = 4 };
     typedef struct {
+      uint16_t uint16_fields[MAX_UINT_FIELDS];
+      int16_t int16_fields[MAX_INT_FIELDS];
+      uint8_t uint_offset;
+      uint8_t int_offset;
       uint8_t status_type;
       bool status_type_defined;
-      uint16_t uint16_fields[MAX_16_FIELDS];
-      uint8_t offset;
     }  status_message;
     vector<status_message> m_messages;
 };
