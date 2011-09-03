@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = OlaConfigurator.h RDMController.h RDMHandler.h
+EXTRA_DIST = OlaConfigurator.h
 
 if BUILD_EXAMPLES
 
