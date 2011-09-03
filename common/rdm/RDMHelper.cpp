@@ -803,61 +803,61 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
  * Convert a uint16_t representing a status message to a human-readable string.
  * @param message_id the status message value
  */
-string StatusMessageIdToString(uint16_t message_id) {
+string StatusMessageIdToString(uint16_t message_id,
+                               int16_t data1,
+                               int16_t data2) {
+  stringstream str;
   switch (message_id) {
     case STS_CAL_FAIL:
-      return "Failed calibration";
+      str << "Slot " << data1 << " failed calibration";
     case STS_SENS_NOT_FOUND:
-      return "sensor not found";
+      str << "Sensor " << data1 << " not found";
     case STS_SENS_ALWAYS_ON:
-      return "sensor always on";
+      str << "Sensor " << data1 << " always on";
     case STS_LAMP_DOUSED:
-      return "sensor lamp doused";
+      str << "Lamp doused";
     case STS_LAMP_STRIKE:
-      return "sensor lamp failed to strike";
+      str<< "Lamp failed to strike";
     case STS_OVERTEMP:
-      return "over temp";
+      str << "Sensor " << data1 << " over temp at " << data2 << " degrees C";
     case STS_UNDERTEMP:
-      return "under temp";
+      str << "Sensor " << data1 << " under temp at " << data2 << " degrees C";
     case STS_SENS_OUT_RANGE:
-      return "sensor out of range";
+      str << "Sensor " << data1 << " out of range";
     case STS_OVERVOLTAGE_PHASE:
-      return "phase over voltage";
+      str << "Phase " << data1 << " over voltage at " << data2 << "V";
     case STS_UNDERVOLTAGE_PHASE:
-      return "phase under voltage";
+      str << "Phase " << data1 << " under voltage at " << data2 << "V";
     case STS_OVERCURRENT:
-      return "over current";
+      str << "Phase " << data1 << " over current at " << data2 << "V";
     case STS_UNDERCURRENT:
-      return "under current";
+      str << "Phase " << data1 << " under current at " << data2 << "V";
     case STS_PHASE:
-      return "out of phase";
+      str << "Phase " << data1 << " is at " << data2 << " degrees";
     case STS_PHASE_ERROR:
-      return "phase error";
+      str << "Phase " << data1 << " error";
     case STS_AMPS:
-      return "amps";
+      str << data1 <<  " Amps";
     case STS_VOLTS:
-      return "volts";
+      str << data1 <<  " Volts";
     case STS_DIMSLOT_OCCUPIED:
-      return "no dimmer";
+      str << "No Dimmer";
     case STS_BREAKER_TRIP:
-      return "breaker tripped";
+      str <<  "Tripped Breaker";
     case STS_WATTS:
-      return "watts";
+      str << data1 <<  " Watts";
     case STS_DIM_FAILURE:
-      return "dimmer failure";
+      str << "Dimmer Failure";
     case STS_DIM_PANIC:
-      return "dimmer panic mode";
+      str << "Dimmer panic mode";
     case STS_READY:
-      return "ready";
+      str << "Slot " << data1 << " ready";
     case STS_NOT_READY:
-      return "not ready";
+      str << "Slot " << data1 << " not ready";
     case STS_LOW_FLUID:
-      return "low fluid";
-    default:
-      stringstream str;
-      str << "Unknown, was " << message_id;
-      return str.str();
+      str << "Slot " << data1 << " low fluid";
   }
+  return str.str();
 }
 
 

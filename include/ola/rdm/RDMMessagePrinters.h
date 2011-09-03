@@ -144,10 +144,22 @@ class StatusMessagePrinter: public MessagePrinter {
           continue;
         }
 
-        Stream() << "Sub device: " << iter->uint16_fields[0] << ", type: " <<
-          StatusTypeToString(iter->status_type) << ", msg id: " <<
-          iter->uint16_fields[1] << ", data1: " << iter->int16_fields[0] <<
-          ", data2: " << iter->int16_fields[1] << endl;
+        const string message = StatusMessageIdToString(
+            iter->uint16_fields[1],
+            iter->int16_fields[0],
+            iter->int16_fields[1]);
+
+        Stream() << StatusTypeToString(iter->status_type) << ": ";
+        if (iter->uint16_fields[0])
+          Stream() << "Sub-device " << iter->uint16_fields[0] << ": ";
+
+        if (message.empty()) {
+          Stream() << " message-id: " <<
+            iter->uint16_fields[1] << ", data1: " << iter->int16_fields[0] <<
+            ", data2: " << iter->int16_fields[1] << endl;
+        } else {
+          Stream() << message << endl;
+        }
       }
     }
 
