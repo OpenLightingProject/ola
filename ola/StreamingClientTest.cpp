@@ -30,6 +30,8 @@
 
 static unsigned int TEST_UNIVERSE = 1;
 
+using ola::ConditionVariable;
+using ola::Mutex;
 using ola::OlaDaemon;
 
 
@@ -58,15 +60,22 @@ class OlaServerThread: public ola::OlaThread {
   public:
     OlaServerThread() :
         OlaThread(),
-        m_olad(NULL) {
+        m_olad(NULL),
+        m_is_running(false) {
     }
     ~OlaServerThread();
     bool Setup();
     void *Run();
     void Terminate();
+    void WaitForStart();
 
   private:
     OlaDaemon *m_olad;
+    bool m_is_running;
+    Mutex m_mutex;
+    ConditionVariable m_condition;
+
+    void MarkAsStarted();
 };
 
 
@@ -101,6 +110,8 @@ bool OlaServerThread::Setup() {
  */
 void *OlaServerThread::Run() {
   if (m_olad) {
+    m_olad->GetSelectServer()->Execute(
+        NewCallback(this, &OlaServerThread::MarkAsStarted));
     m_olad->Run();
     m_olad->Shutdown();
   }
@@ -116,6 +127,24 @@ void OlaServerThread::Terminate() {
     m_olad->Terminate();
 }
 
+
+/**
+ * Block until the OLA Server is running
+ */
+void OlaServerThread::WaitForStart() {
+  m_mutex.Lock();
+  if (!m_is_running)
+    m_condition.Wait(&m_mutex);
+  m_mutex.Unlock();
+}
+
+
+void OlaServerThread::MarkAsStarted() {
+  m_mutex.Lock();
+  m_is_running = true;
+  m_mutex.Unlock();
+  m_condition.Signal();
+}
 
 
 /*
@@ -143,6 +172,7 @@ void StreamingClientTest::tearDown() {
  * Check that the SendDMX method works correctly.
  */
 void StreamingClientTest::testSendDMX() {
+  m_server_thread->WaitForStart();
   ola::StreamingClient ola_client(false);
 
   ola::DmxBuffer buffer;
