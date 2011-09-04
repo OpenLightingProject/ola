@@ -87,8 +87,6 @@ SelectServer::SelectServer(ExportMap *export_map,
     m_free_wake_up_time = true;
   }
 
-  pthread_mutex_init(&m_incoming_mutex, NULL);
-
   // TODO(simon): this should really be in an Init() method.
   if (!m_incoming_descriptor.Init())
     OLA_FATAL << "Failed to init LoopbackDescriptor, Execute() won't work!";
@@ -104,7 +102,6 @@ SelectServer::~SelectServer() {
   UnregisterAll();
   if (m_free_wake_up_time)
     delete m_wake_up_time;
-  pthread_mutex_destroy(&m_incoming_mutex);
 }
 
 
@@ -371,9 +368,10 @@ void SelectServer::RunInLoop(Callback0<void> *closure) {
  * used to perform delayed deletion of objects.
  */
 void SelectServer::Execute(ola::BaseCallback0<void> *closure) {
-  pthread_mutex_lock(&m_incoming_mutex);
-  m_incoming_queue.push(closure);
-  pthread_mutex_unlock(&m_incoming_mutex);
+  {
+    MutexLocker locker(&m_incoming_mutex);
+    m_incoming_queue.push(closure);
+  }
 
   // kick select(), we do this even if we're in the same thread as select() is
   // called. If we don't do this there is a race condition because a callback
@@ -669,15 +667,15 @@ void SelectServer::DrainAndExecute() {
   }
 
   while (true) {
-    pthread_mutex_lock(&m_incoming_mutex);
+    m_incoming_mutex.Lock();
     if (m_incoming_queue.empty()) {
-      pthread_mutex_unlock(&m_incoming_mutex);
+      m_incoming_mutex.Unlock();
       break;
     }
 
     ola::BaseCallback0<void> *callback = m_incoming_queue.front();
     m_incoming_queue.pop();
-    pthread_mutex_unlock(&m_incoming_mutex);
+    m_incoming_mutex.Unlock();
     callback->Run();
   }
 }

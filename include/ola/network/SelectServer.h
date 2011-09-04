@@ -212,7 +212,7 @@ class SelectServer: public SelectServerInterface {
     TimeStamp *m_wake_up_time;
     LoopClosureSet m_loop_closures;
     std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
-    pthread_mutex_t m_incoming_mutex;
+    ola::Mutex m_incoming_mutex;
     LoopbackDescriptor m_incoming_descriptor;
 
     SelectServer(const SelectServer&);
