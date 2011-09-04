@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "ola/Logging.h"
+#include "ola/OlaThread.h"
 #include "ola/StringUtils.h"
 #include "olad/Preferences.h"
 
@@ -306,14 +307,14 @@ bool FilePreferenceSaverThread::Join(void *ptr) {
  * This blocks until all pending save requests are complete.
  */
 void FilePreferenceSaverThread::Syncronize() {
-  pthread_mutex_t syncronize_mutex = PTHREAD_MUTEX_INITIALIZER;
-  pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
-  pthread_mutex_lock(&syncronize_mutex);
+  Mutex syncronize_mutex;
+  ConditionVariable condition_var;
+  syncronize_mutex.Lock();
   m_ss.Execute(NewSingleCallback(
         this,
         &FilePreferenceSaverThread::CompleteSyncronization,
         &condition_var));
-  pthread_cond_wait(&condition_var, &syncronize_mutex);
+  condition_var.Wait(&syncronize_mutex);
 }
 
 
@@ -344,8 +345,8 @@ void FilePreferenceSaverThread::SaveToFile(
  * Notify the blocked thread we're done
  */
 void FilePreferenceSaverThread::CompleteSyncronization(
-    pthread_cond_t *condition) {
-  pthread_cond_signal(condition);
+    ConditionVariable *condition) {
+  condition->Signal();
 }
 
 
