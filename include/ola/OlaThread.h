@@ -99,6 +99,7 @@ class ConditionVariable {
     ~ConditionVariable();
 
     void Wait(Mutex *mutex);
+    bool TimedWait(Mutex *mutex, struct timespec *wait_time);
 
     void Signal();
     void Broadcast();

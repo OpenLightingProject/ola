@@ -136,12 +136,27 @@ ConditionVariable::~ConditionVariable() {
   pthread_cond_destroy(&m_condition);
 }
 
+
 /**
  * Wait on a condition variable
+ * @param mutex the mutex that is locked
  */
 void ConditionVariable::Wait(Mutex *mutex) {
   pthread_cond_wait(&m_condition, &mutex->m_mutex);
 }
+
+
+/**
+ * Timed Wait
+ * @param mutex the mutex that is locked
+ * @param wait_time the time to sleep
+ * @returns true if we received a signal, false if the timeout expired.
+ */
+bool ConditionVariable::TimedWait(Mutex *mutex, struct timespec *wait_time) {
+  int i = pthread_cond_timedwait(&m_condition, &mutex->m_mutex, wait_time);
+  return i == 0;
+}
+
 
 /**
  * Wake up a single listener
