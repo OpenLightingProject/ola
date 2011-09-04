@@ -44,8 +44,6 @@ SunliteOutputPort::SunliteOutputPort(SunliteDevice *parent,
       m_new_data(false),
       m_usb_device(usb_device),
       m_usb_handle(NULL) {
-  pthread_mutex_init(&m_data_mutex, NULL);
-  pthread_mutex_init(&m_term_mutex, NULL);
   InitPacket();
 }
 
@@ -54,13 +52,11 @@ SunliteOutputPort::SunliteOutputPort(SunliteDevice *parent,
  * Cleanup
  */
 SunliteOutputPort::~SunliteOutputPort() {
-  pthread_mutex_lock(&m_term_mutex);
-  m_term = true;
-  pthread_mutex_unlock(&m_term_mutex);
+  {
+    ola::MutexLocker locker(&m_term_mutex);
+    m_term = true;
+  }
   Join();
-
-  pthread_mutex_destroy(&m_term_mutex);
-  pthread_mutex_destroy(&m_data_mutex);
 }
 
 
@@ -104,18 +100,18 @@ void *SunliteOutputPort::Run() {
     return NULL;
 
   while (true) {
-    pthread_mutex_lock(&m_term_mutex);
-    if (m_term) {
-      pthread_mutex_unlock(&m_term_mutex);
-      break;
+    {
+      ola::MutexLocker locker(&m_term_mutex);
+      if (m_term)
+        break;
     }
-    pthread_mutex_unlock(&m_term_mutex);
 
-    pthread_mutex_lock(&m_data_mutex);
-    buffer.Set(m_buffer);
-    new_data = m_new_data;
-    m_new_data = false;
-    pthread_mutex_unlock(&m_data_mutex);
+    {
+      ola::MutexLocker locker(&m_data_mutex);
+      buffer.Set(m_buffer);
+      new_data = m_new_data;
+      m_new_data = false;
+    }
 
     if (new_data) {
       if (!SendDMX(buffer)) {
@@ -137,10 +133,9 @@ void *SunliteOutputPort::Run() {
  * Store the data in the shared buffer
  */
 bool SunliteOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-  pthread_mutex_lock(&m_data_mutex);
+  ola::MutexLocker locker(&m_data_mutex);
   m_buffer.Set(buffer);
   m_new_data = true;
-  pthread_mutex_unlock(&m_data_mutex);
   return true;
 }
 

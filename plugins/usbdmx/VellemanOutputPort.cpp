@@ -48,8 +48,6 @@ VellemanOutputPort::VellemanOutputPort(VellemanDevice *parent,
       m_chunk_size(8),  // the standard unit uses 8
       m_usb_device(usb_device),
       m_usb_handle(NULL) {
-  pthread_mutex_init(&m_data_mutex, NULL);
-  pthread_mutex_init(&m_term_mutex, NULL);
 }
 
 
@@ -57,13 +55,11 @@ VellemanOutputPort::VellemanOutputPort(VellemanDevice *parent,
  * Cleanup
  */
 VellemanOutputPort::~VellemanOutputPort() {
-  pthread_mutex_lock(&m_term_mutex);
-  m_term = true;
-  pthread_mutex_unlock(&m_term_mutex);
+  {
+    ola::MutexLocker locker(&m_term_mutex);
+    m_term = true;
+  }
   Join();
-
-  pthread_mutex_destroy(&m_term_mutex);
-  pthread_mutex_destroy(&m_data_mutex);
 }
 
 
@@ -144,16 +140,16 @@ void *VellemanOutputPort::Run() {
     return NULL;
 
   while (1) {
-    pthread_mutex_lock(&m_term_mutex);
-    if (m_term) {
-      pthread_mutex_unlock(&m_term_mutex);
-      break;
+    {
+      ola::MutexLocker locker(&m_term_mutex);
+      if (m_term)
+        break;
     }
-    pthread_mutex_unlock(&m_term_mutex);
 
-    pthread_mutex_lock(&m_data_mutex);
-    buffer.Set(m_buffer);
-    pthread_mutex_unlock(&m_data_mutex);
+    {
+      ola::MutexLocker locker(&m_data_mutex);
+      buffer.Set(m_buffer);
+    }
 
     if (buffer.Size()) {
       if (!SendDMX(buffer)) {
@@ -175,9 +171,8 @@ void *VellemanOutputPort::Run() {
  * Store the data in the shared buffer
  */
 bool VellemanOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-  pthread_mutex_lock(&m_data_mutex);
+  ola::MutexLocker locker(&m_data_mutex);
   m_buffer.Set(buffer);
-  pthread_mutex_unlock(&m_data_mutex);
   return true;
 }
 

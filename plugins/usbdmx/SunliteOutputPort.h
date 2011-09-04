@@ -66,8 +66,8 @@ class SunliteOutputPort: public BasicOutputPort, OlaThread {
     libusb_device *m_usb_device;
     libusb_device_handle *m_usb_handle;
     DmxBuffer m_buffer;
-    pthread_mutex_t m_data_mutex;
-    pthread_mutex_t m_term_mutex;
+    ola::Mutex m_data_mutex;
+    ola::Mutex m_term_mutex;
 
     void InitPacket();
     bool SendDMX(const DmxBuffer &buffer);
