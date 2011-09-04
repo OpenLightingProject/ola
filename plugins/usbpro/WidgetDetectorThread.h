@@ -82,7 +82,7 @@ class WidgetDetectorThread: public ola::OlaThread {
     void WidgetReady(UsbWidget *widget, const WidgetInformation *info);
     void InternalFreeWidget(UsbWidget *widget);
 
-    static const unsigned int SCAN_INTERVAL_MS = 5000;
+    static const unsigned int SCAN_INTERVAL_MS = 20000;
 };
 }  // usbpro
 }  // plugin
