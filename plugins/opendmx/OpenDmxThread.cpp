@@ -49,19 +49,6 @@ OpenDmxThread::OpenDmxThread(const string &path)
     m_fd(INVALID_FD),
     m_path(path),
     m_term(false) {
-  pthread_mutex_init(&m_mutex, NULL);
-  pthread_mutex_init(&m_term_mutex, NULL);
-  pthread_cond_init(&m_term_cond, NULL);
-}
-
-
-/*
- *
- */
-OpenDmxThread::~OpenDmxThread() {
-  pthread_cond_destroy(&m_term_cond);
-  pthread_mutex_destroy(&m_term_mutex);
-  pthread_mutex_destroy(&m_mutex);
 }
 
 
@@ -81,12 +68,11 @@ void *OpenDmxThread::Run() {
   m_fd = open(m_path.c_str(), O_WRONLY);
 
   while (true) {
-    pthread_mutex_lock(&m_term_mutex);
-    if (m_term) {
-      pthread_mutex_unlock(&m_term_mutex);
-      break;
+    {
+      MutexLocker lock(&m_term_mutex);
+      if (m_term)
+        break;
     }
-    pthread_mutex_unlock(&m_term_mutex);
 
     if (m_fd == INVALID_FD) {
       if (gettimeofday(&tv, NULL) < 0) {
@@ -96,8 +82,12 @@ void *OpenDmxThread::Run() {
       ts.tv_sec = tv.tv_sec + 1;
       ts.tv_nsec = tv.tv_usec * 1000;
 
-      pthread_cond_timedwait(&m_term_cond, &m_term_mutex, &ts);
-      pthread_mutex_unlock(&m_term_mutex);
+      // wait for either a signal that we should terminate, or ts seconds
+      m_term_mutex.Lock();
+      if (m_term)
+        break;
+      m_term_cond.TimedWait(&m_term_mutex, &ts);
+      m_term_mutex.Unlock();
 
       m_fd = open(m_path.c_str(), O_WRONLY);
 
@@ -106,9 +96,10 @@ void *OpenDmxThread::Run() {
 
     } else {
       length = DMX_UNIVERSE_SIZE;
-      pthread_mutex_lock(&m_mutex);
-      m_buffer.Get(buffer + 1, &length);
-      pthread_mutex_unlock(&m_mutex);
+      {
+        MutexLocker locker(&m_mutex);
+        m_buffer.Get(buffer + 1, &length);
+      }
 
       if (write(m_fd, buffer, length + 1) < 0) {
         // if you unplug the dongle
@@ -128,11 +119,11 @@ void *OpenDmxThread::Run() {
  * Stop the thread
  */
 bool OpenDmxThread::Stop() {
-  pthread_mutex_lock(&m_term_mutex);
-  m_term = true;
-  pthread_mutex_unlock(&m_term_mutex);
-
-  pthread_cond_signal(&m_term_cond);
+  {
+    ola::MutexLocker locker(&m_mutex);
+    m_term = true;
+  }
+  m_term_cond.Signal();
   return Join();
 }
 
@@ -142,9 +133,8 @@ bool OpenDmxThread::Stop() {
  *
  */
 bool OpenDmxThread::WriteDmx(const DmxBuffer &buffer) {
-  pthread_mutex_lock(&m_mutex);
+  ola::MutexLocker locker(&m_mutex);
   m_buffer = buffer;
-  pthread_mutex_unlock(&m_mutex);
   return true;
 }
 }  // opendmx

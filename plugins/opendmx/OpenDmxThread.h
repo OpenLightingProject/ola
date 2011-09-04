@@ -32,7 +32,7 @@ namespace opendmx {
 class OpenDmxThread: public ola::OlaThread {
   public:
     explicit OpenDmxThread(const string &path);
-    ~OpenDmxThread();
+    ~OpenDmxThread() {}
 
     bool Stop();
     bool WriteDmx(const DmxBuffer &buffer);
@@ -42,10 +42,10 @@ class OpenDmxThread: public ola::OlaThread {
     int m_fd;
     string m_path;
     DmxBuffer m_buffer;
-    pthread_mutex_t m_mutex;
     bool m_term;
-    pthread_mutex_t m_term_mutex;
-    pthread_cond_t m_term_cond;
+    ola::Mutex m_mutex;
+    ola::Mutex m_term_mutex;
+    ola::ConditionVariable m_term_cond;
 
     static const int INVALID_FD = -1;
 };
