@@ -533,6 +533,7 @@ void SelectServer::CheckDescriptors(fd_set *r_set, fd_set *w_set) {
   // server, we have to call them after we've used the iterators.
   std::queue<ReadFileDescriptor*> read_ready_queue;
   std::queue<WriteFileDescriptor*> write_ready_queue;
+  std::queue<connected_descriptor_t> closed_queue;
 
   ReadDescriptorSet::iterator iter = m_read_descriptors.begin();
   for (; iter != m_read_descriptors.end(); ++iter) {
@@ -540,34 +541,30 @@ void SelectServer::CheckDescriptors(fd_set *r_set, fd_set *w_set) {
       read_ready_queue.push(*iter);
   }
 
+  // check the read sockets
   ConnectedDescriptorSet::iterator con_iter =
       m_connected_read_descriptors.begin();
   while (con_iter != m_connected_read_descriptors.end()) {
-    if (FD_ISSET(con_iter->descriptor->ReadDescriptor(), r_set)) {
-      if (con_iter->descriptor->IsClosed()) {
-        ConnectedDescriptor::OnCloseCallback *on_close =
-          con_iter->descriptor->TransferOnClose();
-        if (on_close)
-          on_close->Run();
-        if (con_iter->delete_on_close)
-          delete con_iter->descriptor;
-        if (m_export_map)
-          (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
-        m_connected_read_descriptors.erase(con_iter++);
-        continue;
+    ConnectedDescriptorSet::iterator this_iter = con_iter;
+    con_iter++;
+    if (FD_ISSET(this_iter->descriptor->ReadDescriptor(), r_set)) {
+      if (this_iter->descriptor->IsClosed()) {
+        closed_queue.push(*this_iter);
+        m_connected_read_descriptors.erase(this_iter);
       } else {
-        read_ready_queue.push(con_iter->descriptor);
+        read_ready_queue.push(this_iter->descriptor);
       }
     }
-    con_iter++;
   }
 
+  // check the write sockets
   WriteDescriptorSet::iterator write_iter = m_write_descriptors.begin();
   for (; write_iter != m_write_descriptors.end(); write_iter++) {
     if (FD_ISSET((*write_iter)->WriteDescriptor(), w_set))
       write_ready_queue.push(*write_iter);
   }
 
+  // deal with anything that needs an action
   while (!read_ready_queue.empty()) {
     ReadFileDescriptor *descriptor = read_ready_queue.front();
     descriptor->PerformRead();
@@ -578,6 +575,19 @@ void SelectServer::CheckDescriptors(fd_set *r_set, fd_set *w_set) {
     WriteFileDescriptor *descriptor = write_ready_queue.front();
     descriptor->PerformWrite();
     write_ready_queue.pop();
+  }
+
+  while (!closed_queue.empty()) {
+    const connected_descriptor_t &connected_descriptor = closed_queue.front();
+    ConnectedDescriptor::OnCloseCallback *on_close =
+      connected_descriptor.descriptor->TransferOnClose();
+    if (on_close)
+      on_close->Run();
+    if (connected_descriptor.delete_on_close)
+      delete connected_descriptor.descriptor;
+    if (m_export_map)
+      (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+    closed_queue.pop();
   }
 
   if (FD_ISSET(m_incoming_descriptor.ReadDescriptor(), r_set))
