@@ -27,7 +27,7 @@
 #include "ola/plugin_id.h"
 #include "olad/Plugin.h"
 #include "plugins/usbpro/UsbDevice.h"
-#include "plugins/usbpro/WidgetDetector.h"
+#include "plugins/usbpro/WidgetDetectorThread.h"
 
 namespace ola {
 namespace plugin {
@@ -37,9 +37,7 @@ using ola::network::ConnectedDescriptor;
 
 class UsbProPlugin: public ola::Plugin {
   public:
-    explicit UsbProPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor),
-      m_detector(plugin_adaptor) {}
+    explicit UsbProPlugin(PluginAdaptor *plugin_adaptor);
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
@@ -47,8 +45,9 @@ class UsbProPlugin: public ola::Plugin {
     void DeviceRemoved(UsbDevice *device);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
+    // Called by a separate thread, takes ownership of widget & information
     void NewWidget(class UsbWidget *widget,
-                   const DeviceInformation &information);
+                   const WidgetInformation *information);
     void AddDevice(UsbDevice *device);
 
   private:
@@ -56,11 +55,12 @@ class UsbProPlugin: public ola::Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
     void DeleteDevice(UsbDevice *device);
-    vector<string> FindCandiateDevices();
+    void InternalNewWidget(class UsbWidget *widget,
+                           const WidgetInformation *information);
     unsigned int GetProFrameLimit();
 
     vector<UsbDevice*> m_devices;  // list of our devices
-    WidgetDetector m_detector;
+    WidgetDetectorThread m_detector_thread;
 
     static const char DEFAULT_DEVICE_DIR[];
     static const char DEFAULT_PRO_FPS_LIMIT[];

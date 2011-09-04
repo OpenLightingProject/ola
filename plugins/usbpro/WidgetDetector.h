@@ -36,14 +36,21 @@ namespace usbpro {
 /*
  * Contains information about a usb device.
  */
-class DeviceInformation {
+class WidgetInformation {
   public:
-    DeviceInformation():
+    WidgetInformation():
         esta_id(0),
         device_id(0),
         serial(0) {
     }
-    DeviceInformation& operator=(const DeviceInformation &other);
+    WidgetInformation(const WidgetInformation &other):
+        esta_id(other.esta_id),
+        device_id(other.device_id),
+        serial(other.serial),
+        manufactuer(other.manufactuer),
+        device(other.device) {
+    }
+    WidgetInformation& operator=(const WidgetInformation &other);
     enum {SERIAL_LENGTH = 4};
 
     uint16_t esta_id;
@@ -71,7 +78,7 @@ class DiscoveryState {
       SERIAL_SENT,
     } widget_state;
 
-    DeviceInformation information;
+    WidgetInformation information;
     widget_state discovery_state;
     ola::network::timeout_id timeout_id;
 };
@@ -82,26 +89,15 @@ class DiscoveryState {
  */
 class WidgetDetector {
   public:
-    explicit WidgetDetector(ola::network::SelectServerInterface *ss,
-                            unsigned int timeout = 200):
-        m_ss(ss),
-        m_callback(NULL),
-        m_failure_callback(NULL),
-        m_timeout_ms(timeout) {
-    }
+    WidgetDetector(
+        ola::network::SelectServerInterface *ss,
+        ola::Callback2<void, UsbWidget*, const WidgetInformation*> *on_success,
+        ola::Callback1<void, UsbWidget*> *on_failure,
+        unsigned int message_interval = 200);
     ~WidgetDetector();
 
-    void SetSuccessHandler(
-        ola::Callback2<void, UsbWidget*, const DeviceInformation&> *callback);
-    void SetFailureHandler(
-        ola::Callback1<void, UsbWidget*> *callback);
     bool Discover(UsbWidget *widget);
 
-    // called by the widgets
-    void HandleMessage(UsbWidget *widget, uint8_t label, const uint8_t *data,
-                       unsigned int length);
-    void DiscoveryTimeout(UsbWidget *widget);
-    int DeviceClosed(UsbWidget *widget);
 
   private:
     typedef struct {
@@ -112,15 +108,23 @@ class WidgetDetector {
     } id_response;
 
     ola::network::SelectServerInterface *m_ss;
-    ola::Callback2<void, UsbWidget*, const DeviceInformation&> *m_callback;
+    ola::Callback2<void, UsbWidget*, const WidgetInformation*> *m_callback;
     ola::Callback1<void, UsbWidget*> *m_failure_callback;
-    std::map<UsbWidget*, DiscoveryState> m_widgets;
+
+    typedef std::map<UsbWidget*, DiscoveryState> WidgetStateMap;
+    WidgetStateMap m_widgets;
     unsigned int m_timeout_ms;
 
+    void HandleMessage(UsbWidget *widget,
+                       uint8_t label,
+                       const uint8_t *data,
+                       unsigned int length);
+    void WidgetRemoved(UsbWidget *widget);
     void SetupTimeout(UsbWidget *widget, DiscoveryState *discovery_state);
     void RemoveTimeout(DiscoveryState *discovery_state);
     void SendNameRequest(UsbWidget *widget);
     void SendSerialRequest(UsbWidget *widget);
+    void DiscoveryTimeout(UsbWidget *widget);
     void HandleIdResponse(UsbWidget *widget, unsigned int length,
                           const uint8_t *data, bool is_device);
     void HandleSerialResponse(UsbWidget *widget, unsigned int length,

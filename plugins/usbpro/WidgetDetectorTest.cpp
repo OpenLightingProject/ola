@@ -33,7 +33,7 @@
 
 using ola::network::ConnectedDescriptor;
 using ola::network::PipeDescriptor;
-using ola::plugin::usbpro::DeviceInformation;
+using ola::plugin::usbpro::WidgetInformation;
 using ola::plugin::usbpro::UsbWidget;
 using ola::plugin::usbpro::WidgetDetector;
 using std::string;
@@ -61,14 +61,14 @@ class WidgetDetectorTest: public CppUnit::TestFixture {
     PipeDescriptor *m_other_end;
     UsbWidget *m_widget;
     UsbWidget *m_responder;
-    DeviceInformation m_device_info;
+    WidgetInformation m_device_info;
     bool m_found_widget;
     bool m_failed_widget;
     bool m_send_manufacturer;
     bool m_send_device;
     bool m_send_serial;
 
-    void NewWidget(UsbWidget *widget, const DeviceInformation &info);
+    void NewWidget(UsbWidget *widget, const WidgetInformation *info);
     void FailedWidget(UsbWidget *widget);
 
     void ResponderHandler(uint8_t label,
@@ -101,11 +101,11 @@ void WidgetDetectorTest::setUp() {
   m_send_manufacturer = true;
   m_send_device = true;
   m_send_serial = true;
-  m_detector = new WidgetDetector(&m_ss, 10);
-  m_detector->SetSuccessHandler(
-      ola::NewCallback(this, &WidgetDetectorTest::NewWidget));
-  m_detector->SetFailureHandler(
-      ola::NewCallback(this, &WidgetDetectorTest::FailedWidget));
+  m_detector = new WidgetDetector(
+      &m_ss,
+      ola::NewCallback(this, &WidgetDetectorTest::NewWidget),
+      ola::NewCallback(this, &WidgetDetectorTest::FailedWidget),
+      10);
   m_descriptor.Init();
   m_other_end = m_descriptor.OppositeEnd();
 
@@ -132,11 +132,12 @@ void WidgetDetectorTest::tearDown() {
 
 
 void WidgetDetectorTest::NewWidget(UsbWidget *widget,
-                                   const DeviceInformation &info) {
+                                   const WidgetInformation *info) {
   CPPUNIT_ASSERT_EQUAL(m_widget, widget);
   m_found_widget = true;
-  m_device_info = info;
+  m_device_info = *info;
   m_ss.Terminate();
+  delete info;
 }
 
 

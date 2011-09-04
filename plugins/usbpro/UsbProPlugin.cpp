@@ -18,10 +18,9 @@
  * Copyright (C) 2006-2010 Simon Newton
  */
 
-#include <dirent.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -43,6 +42,8 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using std::auto_ptr;
+
 const char UsbProPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
 const char UsbProPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";
 const char UsbProPlugin::DEVICE_DIR_KEY[] = "device_dir";
@@ -54,6 +55,11 @@ const char UsbProPlugin::PLUGIN_PREFIX[] = "usbpro";
 const char UsbProPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbProPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
 const char UsbProPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
+
+UsbProPlugin::UsbProPlugin(PluginAdaptor *plugin_adaptor)
+    : Plugin(plugin_adaptor),
+      m_detector_thread(ola::NewCallback(this, &UsbProPlugin::NewWidget)) {
+}
 
 
 /*
@@ -106,88 +112,17 @@ void UsbProPlugin::DeviceRemoved(UsbDevice *device) {
 
 
 /*
- * Called when a new widget is detected
+ * Called when a new widget is detected by the discovery thread.
  * @param widget a pointer to a UsbWidget whose ownership is transferred to us.
- * @param information A DeviceInformation struct for this widget
+ * @param information A WidgetInformation struct for this widget
  */
 void UsbProPlugin::NewWidget(class UsbWidget *widget,
-                             const DeviceInformation &information) {
-  string device_name = information.manufactuer;
-  if (!(information.manufactuer.empty() ||
-        information.device.empty()))
-    device_name += " - ";
-  device_name += information.device;
-  widget->SetMessageHandler(NULL);
-
-  switch (information.esta_id) {
-    case DMX_KING_ESTA_ID:
-      if (information.device_id == DMX_KING_DEVICE_ID) {
-        // DMxKing devices are drop in replacements for a Usb Pro
-        AddDevice(new UsbProDevice(
-            m_plugin_adaptor,
-            this,
-            device_name,
-            widget,
-            information.esta_id,
-            information.device_id,
-            information.serial,
-            GetProFrameLimit()));
-        return;
-      }
-    case GODDARD_ESTA_ID:
-      if (information.device_id == GODDARD_DMXTER4_ID ||
-          information.device_id == GODDARD_MINI_DMXTER4_ID) {
-        AddDevice(new DmxterDevice(
-            this,
-            device_name,
-            widget,
-            information.esta_id,
-            information.device_id,
-            information.serial));
-        return;
-      }
-      break;
-    case JESE_ESTA_ID:
-      if (information.device_id == JESE_DMX_TRI_ID ||
-          information.device_id == JESE_RDM_TRI_ID) {
-        AddDevice(new DmxTriDevice(
-            m_plugin_adaptor,
-            this,
-            device_name,
-            widget,
-            information.esta_id,
-            information.device_id,
-            information.serial,
-            m_preferences->GetValueAsBool(TRI_USE_RAW_RDM_KEY)));
-        return;
-      }
-      break;
-    case OPEN_LIGHTING_ESTA_CODE:
-      if (information.device_id == OPEN_LIGHTING_RGB_MIXER_ID ||
-          information.device_id == OPEN_LIGHTING_PACKETHEADS_ID) {
-        AddDevice(new ArduinoRGBDevice(
-            m_plugin_adaptor,
-            this,
-            device_name,
-            widget,
-            information.esta_id,
-            information.device_id,
-            information.serial));
-        return;
-      }
-      break;
-  }
-  OLA_WARN << "Defaulting to a Usb Pro device";
-  device_name = USBPRO_DEVICE_NAME;
-  AddDevice(new UsbProDevice(
-        m_plugin_adaptor,
-        this,
-        device_name,
-        widget,
-        ENTTEC_ESTA_ID,
-        0,  // assume device id is 0
-        information.serial,
-        GetProFrameLimit()));
+                             const WidgetInformation *information_ptr) {
+  m_plugin_adaptor->Execute(
+      ola::NewSingleCallback(this,
+                             &UsbProPlugin::InternalNewWidget,
+                             widget,
+                             information_ptr));
 }
 
 
@@ -213,20 +148,13 @@ void UsbProPlugin::AddDevice(UsbDevice *device) {
  * Start the plugin
  */
 bool UsbProPlugin::StartHook() {
-  m_detector.SetSuccessHandler(
-      ola::NewCallback(this, &UsbProPlugin::NewWidget));
-  vector<string>::iterator it;
-  vector<string> device_paths = FindCandiateDevices();
-
-  for (it = device_paths.begin(); it != device_paths.end(); ++it) {
-    // NewWidget (above) will be called when discovery completes.
-    ola::network::ConnectedDescriptor *descriptor = UsbWidget::OpenDevice(*it);
-    if (!descriptor)
-      continue;
-
-    m_plugin_adaptor->AddReadDescriptor(descriptor, true);
-    UsbWidget *widget = new UsbWidget(descriptor);
-    m_detector.Discover(widget);
+  m_detector_thread.SetDeviceDirectory(
+      m_preferences->GetValue(DEVICE_DIR_KEY));
+  m_detector_thread.SetDevicePrefixes(
+      m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY));
+  if (!m_detector_thread.Start()) {
+    OLA_FATAL << "Failed to start the widget discovery thread";
+    return false;
   }
   return true;
 }
@@ -240,6 +168,7 @@ bool UsbProPlugin::StopHook() {
   vector<UsbDevice*>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter)
     DeleteDevice(*iter);
+  m_detector_thread.Join(NULL);
   m_devices.clear();
   return true;
 }
@@ -284,49 +213,98 @@ bool UsbProPlugin::SetDefaultPreferences() {
 
 
 void UsbProPlugin::DeleteDevice(UsbDevice *device) {
+  UsbWidget *widget = device->GetWidget();
   m_plugin_adaptor->UnregisterDevice(device);
   device->Stop();
   delete device;
+  m_detector_thread.FreeWidget(widget);
 }
 
 
-/*
- * Look for candidate devices in /dev
- * @returns a list of paths that may be usb pro devices
+/**
+ * Handle a new Widget. This is called within the main thread
  */
-vector<string> UsbProPlugin::FindCandiateDevices() {
-  vector<string> device_paths;
+void UsbProPlugin::InternalNewWidget(
+    class UsbWidget *widget,
+    const WidgetInformation *information_ptr) {
+  m_plugin_adaptor->AddReadDescriptor(widget->GetDescriptor());
+  auto_ptr<const WidgetInformation> information(information_ptr);
+  string device_name = information->manufactuer;
+  if (!(information->manufactuer.empty() ||
+        information->device.empty()))
+    device_name += " - ";
+  device_name += information->device;
+  widget->SetMessageHandler(NULL);
 
-  vector<string> device_prefixes =
-    m_preferences->GetMultipleValue(DEVICE_PREFIX_KEY);
-  string device_dir = m_preferences->GetValue(DEVICE_DIR_KEY);
-
-  if (!device_prefixes.empty()) {
-    DIR *dp;
-    struct dirent dir_ent;
-    struct dirent *dir_ent_p;
-    if ((dp  = opendir(device_dir.data())) == NULL) {
-        OLA_WARN << "Could not open " << device_dir << ":" << strerror(errno);
-        return device_paths;
-    }
-
-    readdir_r(dp, &dir_ent, &dir_ent_p);
-    while (dir_ent_p != NULL) {
-      vector<string>::const_iterator iter;
-      for (iter = device_prefixes.begin(); iter != device_prefixes.end();
-           ++iter) {
-        if (!strncmp(dir_ent_p->d_name, iter->data(), iter->size())) {
-          stringstream str;
-          str << device_dir << "/" << dir_ent_p->d_name;
-          device_paths.push_back(str.str());
-          OLA_INFO << "Found potential USB Pro like device at " << str.str();
-        }
+  switch (information->esta_id) {
+    case DMX_KING_ESTA_ID:
+      if (information->device_id == DMX_KING_DEVICE_ID) {
+        // DMxKing devices are drop in replacements for a Usb Pro
+        AddDevice(new UsbProDevice(
+            m_plugin_adaptor,
+            this,
+            device_name,
+            widget,
+            information->esta_id,
+            information->device_id,
+            information->serial,
+            GetProFrameLimit()));
+        return;
       }
-      readdir_r(dp, &dir_ent, &dir_ent_p);
-    }
-    closedir(dp);
+    case GODDARD_ESTA_ID:
+      if (information->device_id == GODDARD_DMXTER4_ID ||
+          information->device_id == GODDARD_MINI_DMXTER4_ID) {
+        AddDevice(new DmxterDevice(
+            this,
+            device_name,
+            widget,
+            information->esta_id,
+            information->device_id,
+            information->serial));
+        return;
+      }
+      break;
+    case JESE_ESTA_ID:
+      if (information->device_id == JESE_DMX_TRI_ID ||
+          information->device_id == JESE_RDM_TRI_ID) {
+        AddDevice(new DmxTriDevice(
+            m_plugin_adaptor,
+            this,
+            device_name,
+            widget,
+            information->esta_id,
+            information->device_id,
+            information->serial,
+            m_preferences->GetValueAsBool(TRI_USE_RAW_RDM_KEY)));
+        return;
+      }
+      break;
+    case OPEN_LIGHTING_ESTA_CODE:
+      if (information->device_id == OPEN_LIGHTING_RGB_MIXER_ID ||
+          information->device_id == OPEN_LIGHTING_PACKETHEADS_ID) {
+        AddDevice(new ArduinoRGBDevice(
+            m_plugin_adaptor,
+            this,
+            device_name,
+            widget,
+            information->esta_id,
+            information->device_id,
+            information->serial));
+        return;
+      }
+      break;
   }
-  return device_paths;
+  OLA_WARN << "Defaulting to a Usb Pro device";
+  device_name = USBPRO_DEVICE_NAME;
+  AddDevice(
+      new UsbProDevice(m_plugin_adaptor,
+                       this,
+                       device_name,
+                       widget,
+                       ENTTEC_ESTA_ID,
+                       0,  // assume device id is 0
+                       information->serial,
+                       GetProFrameLimit()));
 }
 
 

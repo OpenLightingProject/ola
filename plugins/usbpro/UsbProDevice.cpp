@@ -66,7 +66,7 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
   std::stringstream str;
   str << std::setfill('0');
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
-  for (int i = DeviceInformation::SERIAL_LENGTH - 1; i >= 0; i--) {
+  for (int i = WidgetInformation::SERIAL_LENGTH - 1; i >= 0; i--) {
     int digit = (10 * (ptr[i] & 0xf0) >> 4) + (ptr[i] & 0x0f);
     str <<  std::setw(2)  << digit;
   }

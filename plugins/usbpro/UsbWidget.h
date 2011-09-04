@@ -66,6 +66,9 @@ class UsbWidget: public UsbWidgetInterface {
       ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *callback);
     void SetOnRemove(ola::SingleUseCallback0<void> *on_close);
 
+    ola::network::ConnectedDescriptor *GetDescriptor() const {
+      return m_descriptor;
+    }
     void DescriptorReady();
 
     bool SendMessage(uint8_t label, const uint8_t *data,

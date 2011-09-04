@@ -41,13 +41,13 @@ class UsbDevice: public ola::Device {
       Device(owner, name),
       m_widget(widget) {}
 
-    virtual ~UsbDevice() {
-      delete m_widget;
-    }
+    virtual ~UsbDevice() {}
 
     void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
       m_widget->SetOnRemove(on_close);
     }
+
+    UsbWidget *GetWidget() const { return m_widget; }
 
   protected:
     UsbWidget *m_widget;
