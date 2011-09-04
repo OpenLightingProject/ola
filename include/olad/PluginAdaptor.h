@@ -52,6 +52,8 @@ class PluginAdaptor: public ola::network::SelectServerInterface {
                                      SingleUseCallback0<void> *closure);
     void RemoveTimeout(timeout_id id);
 
+    void Execute(ola::BaseCallback0<void> *closure);
+
     const TimeStamp *WakeUpTime() const;
 
     // These are the extra bits for the plugins

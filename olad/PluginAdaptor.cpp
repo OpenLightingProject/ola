@@ -141,6 +141,15 @@ void PluginAdaptor::RemoveTimeout(timeout_id id) {
 
 
 /*
+ * Execute a closure in the main thread.
+ * @param closure the closure to execute.
+ */
+void PluginAdaptor::Execute(ola::BaseCallback0<void> *closure) {
+  m_ss->Execute(closure);
+}
+
+
+/*
  * Register a device
  * @param dev  the device to register
  * @return true on success, false on error

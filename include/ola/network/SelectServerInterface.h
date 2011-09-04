@@ -59,6 +59,8 @@ class SelectServerInterface {
         SingleUseCallback0<void> *closure) = 0;
     virtual void RemoveTimeout(timeout_id id) = 0;
 
+    virtual void Execute(ola::BaseCallback0<void> *closure) = 0;
+
     virtual const TimeStamp *WakeUpTime() const = 0;
 };
 }  // network
