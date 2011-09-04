@@ -27,6 +27,9 @@ namespace ola {
 
 typedef pthread_t ThreadId;
 
+/**
+ * A thread object to be subclassed.
+ */
 class OlaThread {
   public:
     OlaThread(): m_thread_id(), m_running(false) {}
@@ -35,6 +38,8 @@ class OlaThread {
     virtual bool Start();
     virtual bool Join(void *ptr = NULL);
     bool IsRunning() const { return m_running; }
+
+    // Sub classes implement this.
     virtual void *Run() = 0;
     ThreadId Id() const { return m_thread_id; }
 
@@ -43,6 +48,66 @@ class OlaThread {
   private:
     pthread_t m_thread_id;
     bool m_running;
+};
+
+
+/**
+ * A Mutex object
+ */
+class Mutex {
+  public:
+    friend class ConditionVariable;
+
+    Mutex();
+    ~Mutex();
+
+    void Lock();
+    bool TryLock();
+    void Unlock();
+
+  private:
+    pthread_mutex_t m_mutex;
+
+    Mutex(const Mutex&);
+    Mutex& operator=(const Mutex&);
+};
+
+
+/**
+ * A convenience class to lock mutexes. The mutex is unlocked when this object
+ * is destroyed.
+ */
+class MutexLocker {
+  public:
+    explicit MutexLocker(Mutex *mutex);
+    ~MutexLocker();
+
+  private:
+    Mutex *m_mutex;
+
+    MutexLocker(const MutexLocker&);
+    MutexLocker& operator=(const MutexLocker&);
+};
+
+
+/**
+ * A condition variable
+ */
+class ConditionVariable {
+  public:
+    ConditionVariable();
+    ~ConditionVariable();
+
+    void Wait(Mutex *mutex);
+
+    void Signal();
+    void Broadcast();
+
+  private:
+    pthread_cond_t m_condition;
+
+    ConditionVariable(const ConditionVariable&);
+    ConditionVariable& operator=(const ConditionVariable&);
 };
 }  // ola
 #endif  // INCLUDE_OLA_OLATHREAD_H_

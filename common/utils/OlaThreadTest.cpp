@@ -22,31 +22,46 @@
 
 #include "ola/OlaThread.h"
 
+using ola::ConditionVariable;
+using ola::Mutex;
+using ola::MutexLocker;
 using ola::OlaThread;
 
 class OlaThreadTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(OlaThreadTest);
   CPPUNIT_TEST(testOlaThread);
+  CPPUNIT_TEST(testConditionVariable);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testOlaThread();
+    void testConditionVariable();
 };
+
 
 class MockThread: public OlaThread {
   public:
     MockThread()
         : OlaThread(),
-          thread_ran(false) {
+          m_thread_ran(false),
+          m_mutex() {
     }
     ~MockThread() {}
 
     void *Run() {
-      thread_ran = true;
+      MutexLocker locker(&m_mutex);
+      m_thread_ran = true;
       return NULL;
     }
 
-    bool thread_ran;
+    bool HasRan() {
+      MutexLocker locker(&m_mutex);
+      return m_thread_ran;
+    }
+
+  private:
+    bool m_thread_ran;
+    Mutex m_mutex;
 };
 
 
@@ -58,9 +73,51 @@ CPPUNIT_TEST_SUITE_REGISTRATION(OlaThreadTest);
  */
 void OlaThreadTest::testOlaThread() {
   MockThread thread;
-  CPPUNIT_ASSERT(!thread.thread_ran);
+  CPPUNIT_ASSERT(!thread.HasRan());
   thread.Start();
   CPPUNIT_ASSERT(thread.IsRunning());
   CPPUNIT_ASSERT(thread.Join());
-  CPPUNIT_ASSERT(thread.thread_ran);
+  CPPUNIT_ASSERT(thread.HasRan());
+}
+
+
+class MockConditionThread: public OlaThread {
+  public:
+    MockConditionThread(
+        Mutex *mutex,
+        ConditionVariable *condition)
+        : m_mutex(mutex),
+          m_condition(condition) {}
+
+    void *Run() {
+      m_mutex->Lock();
+      i = 10;
+      m_mutex->Unlock();
+      m_condition->Signal();
+      return NULL;
+    }
+
+    int i;
+
+  private:
+    Mutex *m_mutex;
+    ConditionVariable *m_condition;
+};
+
+
+/**
+ * Check that a condition variable works
+ */
+void OlaThreadTest::testConditionVariable() {
+  Mutex mutex;
+  ConditionVariable condition;
+  MockConditionThread thread(&mutex, &condition);
+  thread.Start();
+
+  mutex.Lock();
+  condition.Wait(&mutex);
+  CPPUNIT_ASSERT_EQUAL(10, thread.i);
+  mutex.Unlock();
+
+  thread.Join();
 }
