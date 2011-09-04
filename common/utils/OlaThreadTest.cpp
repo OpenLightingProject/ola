@@ -91,13 +91,15 @@ class MockConditionThread: public OlaThread {
 
     void *Run() {
       m_mutex->Lock();
-      i = 10;
+      i = EXPECTED;
       m_mutex->Unlock();
       m_condition->Signal();
       return NULL;
     }
 
     int i;
+
+    static const int EXPECTED = 10;
 
   private:
     Mutex *m_mutex;
@@ -115,7 +117,8 @@ void OlaThreadTest::testConditionVariable() {
   thread.Start();
 
   mutex.Lock();
-  condition.Wait(&mutex);
+  if (thread.i != MockConditionThread::EXPECTED)
+    condition.Wait(&mutex);
   CPPUNIT_ASSERT_EQUAL(10, thread.i);
   mutex.Unlock();
 
