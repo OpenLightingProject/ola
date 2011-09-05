@@ -58,6 +58,7 @@ const char ArtNetDevice::K_ALWAYS_BROADCAST_KEY[] = "always_broadcast";
 const char ArtNetDevice::K_DEVICE_NAME[] = "ArtNet";
 const char ArtNetDevice::K_IP_KEY[] = "ip";
 const char ArtNetDevice::K_LONG_NAME_KEY[] = "long_name";
+const char ArtNetDevice::K_NET_KEY[] = "net";
 const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
 const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
 
@@ -83,7 +84,12 @@ bool ArtNetDevice::StartHook() {
   string value = m_preferences->GetValue(K_SUBNET_KEY);
   unsigned int subnet;
   if (!ola::StringToInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet))
-      subnet = 0;
+    subnet = 0;
+
+  value = m_preferences->GetValue(K_NET_KEY);
+  unsigned int net;
+  if (!ola::StringToInt(m_preferences->GetValue(K_NET_KEY), &net))
+    net = 0;
 
   ola::network::Interface interface;
   ola::network::InterfacePicker *picker =
@@ -99,6 +105,7 @@ bool ArtNetDevice::StartHook() {
       interface,
       m_plugin_adaptor,
       m_preferences->GetValueAsBool(K_ALWAYS_BROADCAST_KEY));
+  m_node->SetNetAddress(net);
   m_node->SetSubnetAddress(subnet);
   m_node->SetShortName(m_preferences->GetValue(K_SHORT_NAME_KEY));
   m_node->SetLongName(m_preferences->GetValue(K_LONG_NAME_KEY));
@@ -188,6 +195,9 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
     if (options.has_subnet()) {
       status &= m_node->SetSubnetAddress(options.subnet());
     }
+    if (options.has_net()) {
+      status &= m_node->SetNetAddress(options.net());
+    }
   }
 
   ola::plugin::artnet::Reply reply;
@@ -197,6 +207,7 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
   options_reply->set_short_name(m_node->ShortName());
   options_reply->set_long_name(m_node->LongName());
   options_reply->set_subnet(m_node->SubnetAddress());
+  options_reply->set_net(m_node->NetAddress());
   reply.SerializeToString(response);
 }
 }  // artnet

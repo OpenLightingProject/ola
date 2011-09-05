@@ -58,6 +58,7 @@ class ArtNetDevice: public Device {
     static const char K_DEVICE_NAME[];
     static const char K_IP_KEY[];
     static const char K_LONG_NAME_KEY[];
+    static const char K_NET_KEY[];
     static const char K_SHORT_NAME_KEY[];
     static const char K_SUBNET_KEY[];
     // 10s between polls when we're sending data, DMX-workshop uses 8s;

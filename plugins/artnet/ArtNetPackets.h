@@ -71,7 +71,8 @@ struct artnet_reply_s {
   uint8_t  ip[ola::network::IPV4Address::LENGTH];
   uint16_t port;
   uint16_t version;
-  uint8_t  subnet_address[2];
+  uint8_t  net_address;
+  uint8_t  subnet_address;
   uint16_t oem;
   uint8_t  ubea;
   uint8_t  status1;
@@ -106,7 +107,8 @@ struct artnet_dmx_s {
   uint16_t version;
   uint8_t  sequence;
   uint8_t  physical;
-  uint16_t universe;
+  uint8_t  universe;
+  uint8_t  net;
   uint8_t  length[2];
   uint8_t  data[DMX_UNIVERSE_SIZE];
 } __attribute__((packed));
@@ -125,7 +127,7 @@ struct artnet_todrequest_s {
   uint8_t  spare5;
   uint8_t  spare6;
   uint8_t  spare7;
-  uint8_t  spare8;
+  uint8_t  net;
   uint8_t  command;
   uint8_t  address_count;
   uint8_t  addresses[ARTNET_MAX_RDM_ADDRESS_COUNT];
@@ -145,7 +147,7 @@ struct artnet_toddata_s {
   uint8_t  spare5;
   uint8_t  spare6;
   uint8_t  spare7;
-  uint8_t  spare8;
+  uint8_t  net;
   uint8_t  command_response;
   uint8_t  address;
   uint16_t  uid_total;
@@ -167,7 +169,7 @@ struct artnet_todcontrol_s {
   uint8_t  spare5;
   uint8_t  spare6;
   uint8_t  spare7;
-  uint8_t  spare8;
+  uint8_t  net;
   uint8_t  command;
   uint8_t  address;
 } __attribute__((packed));
@@ -185,7 +187,7 @@ struct artnet_rdm_s {
   uint8_t spare5;
   uint8_t spare6;
   uint8_t spare7;
-  uint8_t spare8;
+  uint8_t net;
   uint8_t command;
   uint8_t address;
   uint8_t data[ARTNET_MAX_RDM_DATA];

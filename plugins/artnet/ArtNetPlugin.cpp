@@ -42,6 +42,7 @@ namespace artnet {
 
 const char ArtNetPlugin::ARTNET_LONG_NAME[] = "OLA - ArtNet node";
 const char ArtNetPlugin::ARTNET_SHORT_NAME[] = "OLA - ArtNet node";
+const char ArtNetPlugin::ARTNET_NET[] = "0";
 const char ArtNetPlugin::ARTNET_SUBNET[] = "0";
 const char ArtNetPlugin::PLUGIN_NAME[] = "ArtNet";
 const char ArtNetPlugin::PLUGIN_PREFIX[] = "artnet";
@@ -90,22 +91,39 @@ string ArtNetPlugin::Description() const {
 "ArtNet Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin creates a single device with four input and four output ports.\n"
+"This plugin creates a single device with four input and four output ports \n"
+"and supports ArtNet, ArtNet 2 and ArtNet 3.\n"
 "\n"
 "ArtNet limits a single device (identified by a unique IP) to four input and\n"
-"four output ports, each bound to a separate ArtNet universe address. The \n"
-"universe address is built from the subnet address as the upper for bits, \n"
-"and the OLA universe number as the lower four bits.\n\n"
-" ArtNet Subnet | Bound Universe | ArtNet Universe\n"
-" 0             | 0              | 0\n"
-" 0             | 1              | 1\n"
-" 0             | 15             | 15\n"
-" 0             | 16             | 0\n"
-" 0             | 17             | 1\n"
-" 1             | 0              | 16\n"
-" 1             | 1              | 17\n"
-" 15            | 0              | 240\n"
-" 15            | 15             | 255\n\n"
+"four output ports, each bound to a separate ArtNet Port Address (see the \n"
+"ArtNet spec for more details). The ArtNet Port Address is a 16 bits int, \n"
+"defined as follows: \n"
+"\n"
+" Bit 15 | Bits 14 - 8 | Bits 7 - 4 | Bits 3 - 0\n"
+" 0      |   Net       | Sub-Net    | Universe\n"
+"\n"
+"For OLA, the Net and Sub-Net values can be controlled by the config file.\n"
+"The Universe bits are the OLA Universe number modulo 16.\n"
+"\n"
+" ArtNet Net | ArtNet Subnet | OLA Universe | ArtNet Port Address\n"
+" 0          | 0             | 0            | 0\n"
+" 0          | 0             | 1            | 1\n"
+" 0          | 0             | 15           | 15\n"
+" 0          | 0             | 16           | 0\n"
+" 0          | 0             | 17           | 1\n"
+" 0          | 1             | 0            | 16\n"
+" 0          | 1             | 1            | 17\n"
+" 0          | 15            | 0            | 240\n"
+" 0          | 15            | 15           | 255\n"
+" 1          | 0             | 0            | 256\n"
+" 1          | 0             | 1            | 257\n"
+" 1          | 0             | 15           | 271\n"
+" 1          | 1             | 0            | 272\n"
+" 1          | 15            | 0            | 496\n"
+" 1          | 15            | 15           | 511\n"
+"\n"
+"That is Port Address = (Net << 8) + (Subnet << 4) + (Universe % 4)\n"
+"\n"
 "--- Config file : ola-artnet.conf ---\n"
 "\n"
 "always_broadcast = [true|false]\n"
@@ -118,6 +136,9 @@ string ArtNetPlugin::Description() const {
 "\n"
 "long_name = ola - ArtNet node\n"
 "The long name of the node.\n"
+"\n"
+"net = 0\n"
+"The ArtNet Net to use (0-127).\n"
 "\n"
 "short_name = ola - ArtNet node\n"
 "The short name of the node (first 17 chars will be used)\n"
@@ -144,6 +165,9 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_LONG_NAME_KEY,
                                          StringValidator(),
                                          ARTNET_LONG_NAME);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_NET_KEY,
+                                         IntValidator(0, 127),
+                                         ARTNET_NET);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SUBNET_KEY,
                                          IntValidator(0, 15),
                                          ARTNET_SUBNET);
@@ -158,7 +182,8 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   // we don't want to use it if null
   if (m_preferences->GetValue(ArtNetDevice::K_SHORT_NAME_KEY).empty() ||
       m_preferences->GetValue(ArtNetDevice::K_LONG_NAME_KEY).empty() ||
-      m_preferences->GetValue(ArtNetDevice::K_SUBNET_KEY).empty())
+      m_preferences->GetValue(ArtNetDevice::K_SUBNET_KEY).empty() ||
+      m_preferences->GetValue(ArtNetDevice::K_NET_KEY).empty())
     return false;
 
   return true;

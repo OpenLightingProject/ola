@@ -61,6 +61,7 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
                                bool always_broadcast,
                                ola::network::UdpSocketInterface *socket)
     : m_running(false),
+      m_net_address(0),
       m_send_reply_on_change(true),
       m_short_name(""),
       m_long_name(""),
@@ -194,6 +195,27 @@ bool ArtNetNodeImpl::SetShortName(const string &name) {
  */
 bool ArtNetNodeImpl::SetLongName(const string &name) {
   m_long_name = name;
+  if (m_running && m_send_reply_on_change) {
+    m_unsolicited_replies++;
+    return SendPollReply(m_interface.bcast_address);
+  }
+  return true;
+}
+
+
+
+/*
+ * The the net address for this node
+ */
+bool ArtNetNodeImpl::SetNetAddress(uint8_t net_address) {
+  if (net_address & 0x80) {
+    OLA_WARN << "Artnet net address > 127, truncating";
+    net_address = net_address & 0x7f;
+  }
+  if (net_address == m_net_address)
+    return true;
+
+  m_net_address = net_address;
   if (m_running && m_send_reply_on_change) {
     m_unsolicited_replies++;
     return SendPollReply(m_interface.bcast_address);
@@ -359,6 +381,7 @@ bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
   packet.data.dmx.sequence = m_input_ports[port_id].sequence_number;
   packet.data.dmx.physical = 1 + port_id;
   packet.data.dmx.universe = m_input_ports[port_id].universe_address;
+  packet.data.dmx.net = m_net_address;
   unsigned int buffer_size = sizeof(packet.data.dmx.data);
   packet.data.dmx.length[0] = buffer_size >> 8;
   packet.data.dmx.length[1] = buffer_size & 0xff;
@@ -424,6 +447,7 @@ bool ArtNetNodeImpl::SendTodRequest(uint8_t port_id) {
   PopulatePacketHeader(&packet, ARTNET_TODREQUEST);
   memset(&packet.data.tod_request, 0, sizeof(packet.data.tod_request));
   packet.data.tod_request.version = HostToNetwork(ARTNET_VERSION);
+  packet.data.tod_request.net = m_net_address;
   packet.data.tod_request.address_count = 1;  // only one universe address
   packet.data.tod_request.addresses[0] =
     m_input_ports[port_id].universe_address;
@@ -448,6 +472,7 @@ bool ArtNetNodeImpl::ForceDiscovery(uint8_t port_id) {
   PopulatePacketHeader(&packet, ARTNET_TODCONTROL);
   memset(&packet.data.tod_control, 0, sizeof(packet.data.tod_control));
   packet.data.tod_control.version = HostToNetwork(ARTNET_VERSION);
+  packet.data.tod_control.net = m_net_address;
   packet.data.tod_control.command = TOD_FLUSH_COMMAND;
   packet.data.tod_control.address = m_input_ports[port_id].universe_address;
   unsigned int size = sizeof(packet.data.tod_control);
@@ -580,6 +605,7 @@ bool ArtNetNodeImpl::SendTod(uint8_t port_id, const UIDSet &uid_set) {
   packet.data.tod_data.version = HostToNetwork(ARTNET_VERSION);
   packet.data.tod_data.rdm_version = RDM_VERSION;
   packet.data.tod_data.port = 1 + port_id;
+  packet.data.tod_request.net = m_net_address;
   packet.data.tod_data.address = m_output_ports[port_id].universe_address;
   uint16_t uids = std::min(uid_set.Size(),
                            (unsigned int) MAX_UIDS_PER_UNIVERSE);
@@ -672,7 +698,8 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
 
   m_interface.ip_address.Get(packet.data.reply.ip);
   packet.data.reply.port = HostToLittleEndian(ARTNET_PORT);
-  packet.data.reply.subnet_address[1] = m_input_ports[0].universe_address >> 4;
+  packet.data.reply.net_address = m_net_address;
+  packet.data.reply.subnet_address = m_input_ports[0].universe_address >> 4;
   packet.data.reply.oem = HostToNetwork(OEM_CODE);
   packet.data.reply.status1 = 0xd2;  // normal indicators, rdm enabled
   packet.data.reply.esta_id = HostToLittleEndian(OPEN_LIGHTING_ESTA_CODE);
@@ -705,6 +732,7 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
          ola::network::MAC_LENGTH);
   m_interface.ip_address.Get(packet.data.reply.bind_ip);
   // maybe set status2 here if the web UI is enabled
+  packet.data.reply.status2 = 0x08;  // node supports 15 bit port addresses
   if (!SendPacket(packet, sizeof(packet.data.reply), destination)) {
     OLA_INFO << "Failed to send ArtPollReply";
     return false;
@@ -835,6 +863,13 @@ void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
         minimum_reply_size))
     return;
 
+  if (packet.net_address != m_net_address) {
+    OLA_DEBUG << "Received ArtPollReply for net " << (int) packet.net_address
+      << " which doesn't match our net address " << (int) m_net_address <<
+      ", discarding";
+    return;
+  }
+
   // Update the subscribed nodes list
   unsigned int port_limit = std::min((uint8_t) ARTNET_MAX_PORTS,
                                      packet.number_ports[1]);
@@ -867,6 +902,13 @@ void ArtNetNodeImpl::HandleDataPacket(const IPV4Address &source_address,
 
   if (!CheckPacketVersion(source_address, "ArtDmx", packet.version))
     return;
+
+  if (packet.net != m_net_address) {
+    OLA_DEBUG << "Received ArtDmx for net " << (int) packet.net
+      << " which doesn't match our net address " << (int) m_net_address <<
+      ", discarding";
+    return;
+  }
 
   uint16_t universe_id = LittleEndianToHost(packet.universe);
   uint16_t data_size = std::min(
@@ -903,6 +945,13 @@ void ArtNetNodeImpl::HandleTodRequest(const IPV4Address &source_address,
   if (!CheckPacketVersion(source_address, "ArtTodRequest", packet.version))
     return;
 
+  if (packet.net != m_net_address) {
+    OLA_DEBUG << "Received ArtTodRequest for net " << (int) packet.net
+      << " which doesn't match our net address " << (int) m_net_address <<
+      ", discarding";
+    return;
+  }
+
   if (packet.command) {
     OLA_INFO << "ArtTodRequest received but command field was " <<
       static_cast<int>(packet.command);
@@ -938,8 +987,8 @@ void ArtNetNodeImpl::HandleTodRequest(const IPV4Address &source_address,
  * Handle a TOD data packet
  */
 void ArtNetNodeImpl::HandleTodData(const IPV4Address &source_address,
-                               const artnet_toddata_t &packet,
-                               unsigned int packet_size) {
+                                   const artnet_toddata_t &packet,
+                                   unsigned int packet_size) {
   unsigned int expected_size = sizeof(packet) - sizeof(packet.tod);
   if (!CheckPacketSize(source_address, "ArtTodData", packet_size,
                        expected_size))
@@ -951,6 +1000,13 @@ void ArtNetNodeImpl::HandleTodData(const IPV4Address &source_address,
   if (packet.rdm_version != RDM_VERSION) {
     OLA_WARN << "Dropping non standard RDM version: " <<
       static_cast<int>(packet.rdm_version);
+    return;
+  }
+
+  if (packet.net != m_net_address) {
+    OLA_DEBUG << "Received ArtTodData for net " << (int) packet.net
+      << " which doesn't match our net address " << (int) m_net_address <<
+      ", discarding";
     return;
   }
 
@@ -981,6 +1037,13 @@ void ArtNetNodeImpl::HandleTodControl(const IPV4Address &source_address,
 
   if (!CheckPacketVersion(source_address, "ArtTodControl", packet.version))
     return;
+
+  if (packet.net != m_net_address) {
+    OLA_DEBUG << "Received ArtTodControl for net " << (int) packet.net
+      << " which doesn't match our net address " << (int) m_net_address <<
+      ", discarding";
+    return;
+  }
 
   if (packet.command != TOD_FLUSH_COMMAND)
     return;
@@ -1016,6 +1079,13 @@ void ArtNetNodeImpl::HandleRdm(const IPV4Address &source_address,
 
   if (packet.command) {
     OLA_WARN << "Unknown RDM command " << static_cast<int>(packet.command);
+    return;
+  }
+
+  if (packet.net != m_net_address) {
+    OLA_DEBUG << "Received ArtRDM for net " << (int) packet.net
+      << " which doesn't match our net address " << (int) m_net_address <<
+      ", discarding";
     return;
   }
 
@@ -1275,6 +1345,7 @@ bool ArtNetNodeImpl::SendRDMCommand(const RDMCommand &command,
   memset(&packet.data.rdm, 0, sizeof(packet.data.rdm));
   packet.data.rdm.version = HostToNetwork(ARTNET_VERSION);
   packet.data.rdm.rdm_version = RDM_VERSION;
+  packet.data.rdm.net = m_net_address;
   packet.data.rdm.address = universe;
   unsigned int rdm_size = ARTNET_MAX_RDM_DATA;
   command.Pack(packet.data.rdm.data, &rdm_size);

@@ -89,6 +89,9 @@ class ArtNetNodeImpl {
     bool SetLongName(const string &name);
     string LongName() const { return m_long_name; }
 
+    uint8_t NetAddress() const { return m_net_address; }
+    bool SetNetAddress(uint8_t net_address);
+
     bool SetSubnetAddress(uint8_t subnet_address);
     uint8_t SubnetAddress() const {
       return m_input_ports[0].universe_address >> 4;
@@ -182,6 +185,7 @@ class ArtNetNodeImpl {
     };
 
     bool m_running;
+    uint8_t m_net_address;  // this is the 'net' portion of the Artnet address
     bool m_send_reply_on_change;
     string m_short_name;
     string m_long_name;
@@ -338,6 +342,10 @@ class ArtNetNode {
     bool SetLongName(const string &name) { return m_impl.SetLongName(name); }
     string LongName() const { return m_impl.LongName(); }
 
+    uint8_t NetAddress() const { return m_impl.NetAddress(); }
+    bool SetNetAddress(uint8_t net_address) {
+      return m_impl.SetNetAddress(net_address);
+    }
     bool SetSubnetAddress(uint8_t subnet_address) {
       return m_impl.SetSubnetAddress(subnet_address);
     }

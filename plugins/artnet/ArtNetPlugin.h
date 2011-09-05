@@ -55,6 +55,7 @@ class ArtNetPlugin : public Plugin {
 
     ArtNetDevice *m_device;  // only have one device
 
+    static const char ARTNET_NET[];
     static const char ARTNET_SUBNET[];
     static const char ARTNET_LONG_NAME[];
     static const char ARTNET_SHORT_NAME[];

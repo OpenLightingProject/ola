@@ -40,6 +40,8 @@ typedef struct {
   string long_name;  // long name
   bool has_subnet;
   int subnet;       // the subnet
+  bool has_net;
+  int net;  // the net address
 } options;
 
 
@@ -99,6 +101,8 @@ void ArtnetConfigurator::SendConfigRequest() {
     options->set_long_name(m_options.long_name);
   if (m_options.has_subnet)
     options->set_subnet(m_options.subnet);
+  if (m_options.has_net)
+    options->set_net(m_options.net);
   SendMessage(request);
 }
 
@@ -111,6 +115,7 @@ void ArtnetConfigurator::DisplayOptions(
   cout << "Name: " << reply.short_name() << endl;
   cout << "Long Name: " << reply.long_name() << endl;
   cout << "Subnet: " << reply.subnet() << endl;
+  cout << "Net: " << reply.net() << endl;
 }
 
 
@@ -124,6 +129,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
       {"long_name", required_argument,  0, 'l'},
       {"name",      required_argument,  0, 'n'},
       {"subnet",    required_argument,  0, 's'},
+      {"net",       required_argument,  0, 'e'},
       {0, 0, 0, 0}
     };
 
@@ -131,7 +137,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "d:hl:n:s:v", long_options, &option_index);
+    c = getopt_long(argc, argv, "d:e:hl:n:s:v", long_options, &option_index);
     if (c == -1)
       break;
 
@@ -140,6 +146,10 @@ int ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'd':
         opts->device_id = atoi(optarg);
+        break;
+      case 'e':
+        opts->net = atoi(optarg);
+        opts->has_net = true;
         break;
       case 'h':
         opts->help = true;
@@ -171,6 +181,7 @@ void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     " -d <dev_id> -n <name> -l <long_name> -s <subnet>\n\n"
     "Configure ArtNet Devices managed by OLA.\n\n"
+    "  -e, --net       Set the net paramenter of the ArtNet device\n"
     "  -h, --help      Display this help message and exit.\n"
     "  -l, --long_name Set the long name of the ArtNet device\n"
     "  -n, --name      Set the name of the ArtNet device\n"
@@ -191,6 +202,7 @@ int main(int argc, char*argv[]) {
   opts.has_name = false;
   opts.has_long_name = false;
   opts.has_subnet = false;
+  opts.has_net = false;
 
   ParseOptions(argc, argv, &opts);
 
