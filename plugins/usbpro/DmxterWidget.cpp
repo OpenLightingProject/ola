@@ -74,6 +74,11 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
   if (m_rdm_request_callback)
     m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
 
+  if (m_discovery_callback) {
+    ola::rdm::UIDSet uids;
+    m_discovery_callback->Run(uids);
+  }
+
   if (m_pending_request)
     delete m_pending_request;
 }

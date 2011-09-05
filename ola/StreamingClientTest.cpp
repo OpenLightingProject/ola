@@ -111,7 +111,7 @@ bool OlaServerThread::Setup() {
 void *OlaServerThread::Run() {
   if (m_olad) {
     m_olad->GetSelectServer()->Execute(
-        NewCallback(this, &OlaServerThread::MarkAsStarted));
+        NewSingleCallback(this, &OlaServerThread::MarkAsStarted));
     m_olad->Run();
     m_olad->Shutdown();
   }

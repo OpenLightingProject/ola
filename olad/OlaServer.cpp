@@ -257,7 +257,7 @@ bool OlaServer::Init() {
 
   // The plugin load procedure can take a while so we run it in the main loop.
   m_ss->Execute(
-      ola::NewCallback(m_plugin_manager, &PluginManager::LoadAll));
+      ola::NewSingleCallback(m_plugin_manager, &PluginManager::LoadAll));
 
 #ifdef HAVE_LIBMICROHTTPD
   if (!StartHttpServer(iface))
