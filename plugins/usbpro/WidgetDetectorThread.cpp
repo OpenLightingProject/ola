@@ -43,10 +43,7 @@ namespace usbpro {
  */
 WidgetDetectorThread::WidgetDetectorThread(
     ola::Callback2<void, UsbWidget*, const WidgetInformation*> *callback)
-    : m_detector(
-        &m_ss,
-        ola::NewCallback(this, &WidgetDetectorThread::WidgetReady),
-        ola::NewCallback(this, &WidgetDetectorThread::InternalFreeWidget)),
+    : m_detector(NULL),
       m_callback(callback) {
   if (!m_callback)
     OLA_FATAL << "No callback registered for the WidgetDetectorThread";
@@ -86,11 +83,18 @@ void WidgetDetectorThread::SetDevicePrefixes(const vector<string> &prefixes) {
  * Run the discovery thread.
  */
 void *WidgetDetectorThread::Run() {
+  m_detector = new WidgetDetector(
+    &m_ss,
+    ola::NewCallback(this, &WidgetDetectorThread::WidgetReady),
+    ola::NewCallback(this, &WidgetDetectorThread::InternalFreeWidget));
   RunScan();
   m_ss.RegisterRepeatingTimeout(
       SCAN_INTERVAL_MS,
       ola::NewCallback(this, &WidgetDetectorThread::RunScan));
   m_ss.Run();
+  // this will cal InternalFreeWidget for any remaining widgets
+  delete m_detector;
+  m_detector = NULL;
   return NULL;
 }
 
@@ -138,7 +142,7 @@ bool WidgetDetectorThread::RunScan() {
     m_active_widgets[widget] = PathDescriptorPair(*it, descriptor);
     m_active_paths.insert(*it);
     m_ss.AddReadDescriptor(descriptor);
-    m_detector.Discover(widget);
+    m_detector->Discover(widget);
   }
   return true;
 }
@@ -226,6 +230,7 @@ void WidgetDetectorThread::InternalFreeWidget(UsbWidget *widget) {
 
     // remove from active paths
     m_active_paths.erase(iter->second.first);
+    m_active_widgets.erase(iter);
   }
   delete widget;
   if (descriptor)

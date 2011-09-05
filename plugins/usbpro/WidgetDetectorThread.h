@@ -65,7 +65,7 @@ class WidgetDetectorThread: public ola::OlaThread {
 
   private:
     ola::network::SelectServer m_ss;
-    WidgetDetector m_detector;
+    WidgetDetector *m_detector;
     string m_directory;
     vector<string> m_prefixes;
     ola::Callback2<void, UsbWidget*, const WidgetInformation*> *m_callback;
