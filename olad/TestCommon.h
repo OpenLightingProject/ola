@@ -238,6 +238,11 @@ class MockSelectServer: public ola::network::SelectServerInterface {
     void RemoveTimeout(ola::network::timeout_id id) { (void) id; }
     const TimeStamp *WakeUpTime() const { return m_wake_up; }
 
+    void Execute(ola::BaseCallback0<void> *callback) {
+      callback->Run();
+    }
+
+
   private:
     const TimeStamp *m_wake_up;
 };
