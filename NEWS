@@ -1,3 +1,7 @@
+X/Y/2011 ola-0.8.13
+ * Attempt to reconnect to usb devices periodically - 143
+ * Add support for ArtNet 3 - #144
+
 3/9/2011 ola-0.8.12
  * Add the generic messaging framework and use it to handle RDM PIDs
  * Add support for manufacturer specific PIDs in the C++ RDM CLI tools - #112
