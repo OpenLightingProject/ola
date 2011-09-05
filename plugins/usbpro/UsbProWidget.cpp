@@ -82,6 +82,14 @@ UsbProWidgetImpl::~UsbProWidgetImpl() {
 
   if (m_dmx_callback)
     delete m_dmx_callback;
+
+  // empty params struct
+  usb_pro_parameters params;
+  while (!m_outstanding_param_callbacks.empty()) {
+    usb_pro_params_callback* &callback = m_outstanding_param_callbacks.front();
+    callback->Run(false, params);
+    m_outstanding_param_callbacks.pop_front();
+  }
 }
 
 
