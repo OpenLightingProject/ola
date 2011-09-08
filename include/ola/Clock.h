@@ -38,6 +38,7 @@ namespace ola {
 using std::ostream;
 
 static const int USEC_IN_SECONDS = 1000000;
+static const int ONE_THOUSAND = 1000;
 
 
 /*
@@ -96,6 +97,11 @@ class TimeInterval {
     int64_t AsInt() const {
       return (m_interval.tv_sec * static_cast<uint64_t>(USEC_IN_SECONDS) +
               m_interval.tv_usec);
+    }
+
+    int64_t InMilliSeconds() const {
+      return (m_interval.tv_sec * static_cast<uint64_t>(ONE_THOUSAND) +
+              m_interval.tv_usec / ONE_THOUSAND);
     }
 
     time_t Seconds() const {
