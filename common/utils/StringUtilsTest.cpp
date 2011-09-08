@@ -248,6 +248,13 @@ void StringUtilsTest::testStringToUInt() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 4294967295U, value);
   CPPUNIT_ASSERT(!StringToInt("4294967296", &value));
   CPPUNIT_ASSERT(!StringToInt("foo", &value));
+
+  // same tests with strict mode on
+  CPPUNIT_ASSERT(!StringToInt("-1 foo", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("0 ", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("1 bar baz", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("65537cat", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("4294967295bat bar", &value, true));
 }
 
 
@@ -489,6 +496,17 @@ void StringUtilsTest::testStringToInt() {
   CPPUNIT_ASSERT(StringToInt("2147483647", &value));
   CPPUNIT_ASSERT_EQUAL(2147483647, value);
   CPPUNIT_ASSERT(!StringToInt("2147483648", &value));
+
+  // strict mode on
+  CPPUNIT_ASSERT(!StringToInt("2147483649 ", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("-2147483648bar", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("-2147483647 baz", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("-1.", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("0!", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("1 this is a test", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("143car", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("2147483647 !@#", &value, true));
+  CPPUNIT_ASSERT(!StringToInt("2147483648mm", &value, true));
 }
 
 

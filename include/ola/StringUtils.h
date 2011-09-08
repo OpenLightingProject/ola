@@ -38,12 +38,14 @@ string IntToString(int i);
 string IntToString(unsigned int i);
 void Escape(string *original);
 string EscapeString(const string &original);
-bool StringToInt(const string &value, unsigned int *output);
-bool StringToInt(const string &value, uint16_t *output);
-bool StringToInt(const string &value, uint8_t *output);
-bool StringToInt(const string &value, int *output);
-bool StringToInt(const string &value, int16_t *output);
-bool StringToInt(const string &value, int8_t *output);
+bool StringToInt(const string &value,
+                 unsigned int *output,
+                 bool strict = false);
+bool StringToInt(const string &value, uint16_t *output, bool strict = false);
+bool StringToInt(const string &value, uint8_t *output, bool strict = false);
+bool StringToInt(const string &value, int *output, bool strict = false);
+bool StringToInt(const string &value, int16_t *output, bool strict = false);
+bool StringToInt(const string &value, int8_t *output, bool strict = false);
 bool HexStringToInt(const string &value, uint8_t *output);
 bool HexStringToInt(const string &value, uint16_t *output);
 bool HexStringToInt(const string &value, uint32_t *output);

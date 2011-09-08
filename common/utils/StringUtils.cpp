@@ -117,7 +117,7 @@ string IntToString(unsigned int i) {
  * Convert a string to a unsigned int.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToInt(const string &value, unsigned int *output) {
+bool StringToInt(const string &value, unsigned int *output, bool strict) {
   if (value.empty())
     return false;
   char *end_ptr;
@@ -126,6 +126,8 @@ bool StringToInt(const string &value, unsigned int *output) {
   if (l < 0 || (l == 0 && errno != 0))
     return false;
   if (value == end_ptr)
+    return false;
+  if (strict && *end_ptr != 0)
     return false;
   if (l > static_cast<long long>(UINT32_MAX))
     return false;
@@ -138,9 +140,9 @@ bool StringToInt(const string &value, unsigned int *output) {
  * Convert a string to a uint16_t.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToInt(const string &value, uint16_t *output) {
+bool StringToInt(const string &value, uint16_t *output, bool strict) {
   unsigned int v;
-  if (!StringToInt(value, &v))
+  if (!StringToInt(value, &v, strict))
     return false;
   if (v > 0xffff)
     return false;
@@ -153,9 +155,9 @@ bool StringToInt(const string &value, uint16_t *output) {
  * Convert a string to a uint8_t.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToInt(const string &value, uint8_t *output) {
+bool StringToInt(const string &value, uint8_t *output, bool strict) {
   unsigned int v;
-  if (!StringToInt(value, &v))
+  if (!StringToInt(value, &v, strict))
     return false;
   if (v > 0xff)
     return false;
@@ -168,7 +170,7 @@ bool StringToInt(const string &value, uint8_t *output) {
  * Convert a string to a int.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToInt(const string &value, int *output) {
+bool StringToInt(const string &value, int *output, bool strict) {
   if (value.empty())
     return false;
   char *end_ptr;
@@ -177,6 +179,8 @@ bool StringToInt(const string &value, int *output) {
   if (l == 0 && errno != 0)
     return false;
   if (value == end_ptr)
+    return false;
+  if (strict && *end_ptr != 0)
     return false;
   if (l < INT32_MIN || l > INT32_MAX)
     return false;
@@ -189,9 +193,9 @@ bool StringToInt(const string &value, int *output) {
  * Convert a string to a int16_t.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToInt(const string &value, int16_t *output) {
+bool StringToInt(const string &value, int16_t *output, bool strict) {
   int v;
-  if (!StringToInt(value, &v))
+  if (!StringToInt(value, &v, strict))
     return false;
   if (v < INT16_MIN || v > INT16_MAX)
     return false;
@@ -204,9 +208,9 @@ bool StringToInt(const string &value, int16_t *output) {
  * Convert a string to a int16_t.
  * @returns true if sucessfull, false otherwise
  */
-bool StringToInt(const string &value, int8_t *output) {
+bool StringToInt(const string &value, int8_t *output, bool strict) {
   int v;
-  if (!StringToInt(value, &v))
+  if (!StringToInt(value, &v, strict))
     return false;
   if (v < INT8_MIN || v > INT8_MAX)
     return false;
