@@ -147,6 +147,7 @@ class OlaClientCore: public ola::proto::OlaClientService {
         unsigned int universe,
         const DmxBuffer &data,
         Callback1<void, const string&> *callback);
+    bool SendDmx(unsigned int universe, const DmxBuffer &data);
     bool FetchDmx(
         unsigned int universe,
         SingleUseCallback2<void, const DmxBuffer&, const string&> *callback);
