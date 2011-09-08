@@ -56,8 +56,6 @@ class StreamingClient {
     bool SendDmx(unsigned int universe, const DmxBuffer &data);
     void SocketClosed();
 
-    SelectServer *GetSelectServer() const { return m_ss; }
-
   private:
     StreamingClient(const StreamingClient&);
     StreamingClient operator=(const StreamingClient&);
