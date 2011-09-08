@@ -26,15 +26,15 @@
 
 using std::string;
 
-#ifndef SRC_SHOWSAVER_H
-#define SRC_SHOWSAVER_H
+#ifndef EXAMPLES_SHOWSAVER_H_
+#define EXAMPLES_SHOWSAVER_H_
 
 /**
  * Write show data to a file.
  */
 class ShowSaver {
   public:
-    ShowSaver(const string &filename);
+    explicit ShowSaver(const string &filename);
     ~ShowSaver();
 
     bool Open();
@@ -51,4 +51,4 @@ class ShowSaver {
 
     static const char OLA_SHOW_HEADER[];
 };
-#endif  // SRC_SHOWSAVER_H
+#endif  // EXAMPLES_SHOWSAVER_H_

@@ -41,8 +41,8 @@
 using std::string;
 using std::vector;
 
-#ifndef SRC_OLACONFIGURATOR_H_
-#define SRC_OLACONFIGURATOR_H_
+#ifndef EXAMPLES_OLACONFIGURATOR_H_
+#define EXAMPLES_OLACONFIGURATOR_H_
 
 class OlaConfigurator;
 
@@ -88,4 +88,4 @@ class OlaConfigurator {
     ola::OlaCallbackClient *m_client;
     ola::network::SelectServer *m_ss;
 };
-#endif  // SRC_OLACONFIGURATOR_H_
+#endif  // EXAMPLES_OLACONFIGURATOR_H_

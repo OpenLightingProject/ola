@@ -21,23 +21,24 @@
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClientWrapper.h>
 
-#include "ShowLoader.h"
-
 #include <string>
 #include <fstream>
+
+#include "examples/ShowLoader.h"
+
 
 using std::string;
 
 
-#ifndef SRC_SHOWPLAYER_H
-#define SRC_SHOWPLAYER_H
+#ifndef EXAMPLES_SHOWPLAYER_H_
+#define EXAMPLES_SHOWPLAYER_H_
 
 /**
  * The show player class
  */
 class ShowPlayer {
   public:
-    ShowPlayer(const string &filename);
+    explicit ShowPlayer(const string &filename);
     ~ShowPlayer();
 
     int Init();
@@ -52,4 +53,4 @@ class ShowPlayer {
     bool RegisterNextTimeout();
     bool ReadNextFrame(unsigned int *universe, ola::DmxBuffer *data);
 };
-#endif  // SRC_SHOWPLAYER_H
+#endif  // EXAMPLES_SHOWPLAYER_H_

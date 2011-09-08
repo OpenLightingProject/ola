@@ -25,15 +25,15 @@
 
 using std::string;
 
-#ifndef SRC_SHOWLOADER_H
-#define SRC_SHOWLOADER_H
+#ifndef EXAMPLES_SHOWLOADER_H_
+#define EXAMPLES_SHOWLOADER_H_
 
 /**
  * Loads a show file and reads the DMX data.
  */
 class ShowLoader {
   public:
-    ShowLoader(const string &filename);
+    explicit ShowLoader(const string &filename);
     ~ShowLoader();
 
     bool Load();
@@ -50,4 +50,4 @@ class ShowLoader {
 
     void ReadLine(string *line);
 };
-#endif  // SRC_SHOWLOADER_H
+#endif  // EXAMPLES_SHOWLOADER_H_

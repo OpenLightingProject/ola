@@ -20,18 +20,17 @@
 
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClientWrapper.h>
-
-#include "ShowSaver.h"
-
 #include <string>
 #include <fstream>
 #include <vector>
 
+#include "examples/ShowSaver.h"
+
 using std::string;
 
 
-#ifndef SRC_SHOWRECORDER_H
-#define SRC_SHOWRECORDER_H
+#ifndef EXAMPLES_SHOWRECORDER_H_
+#define EXAMPLES_SHOWRECORDER_H_
 
 /**
  * The show player class
@@ -55,4 +54,4 @@ class ShowRecorder {
                   const string &error);
     void RegisterComplete(const string &error);
 };
-#endif  // SRC_SHOWRECORDER_H
+#endif  // EXAMPLES_SHOWRECORDER_H_
