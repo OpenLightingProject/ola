@@ -1,6 +1,7 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = OlaConfigurator.h
+EXTRA_DIST = OlaConfigurator.h ShowLoader.h ShowPlayer.h ShowRecorder.h \
+             ShowSaver.h
 
 if BUILD_EXAMPLES
 
@@ -11,7 +12,8 @@ AM_LDFLAGS = -lprotobuf
 LDADD = $(COMMON_LIBS)
 
 bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
-               ola_streaming_client ola_rdm_discover ola_rdm_get
+               ola_streaming_client ola_rdm_discover ola_rdm_get \
+               ola_recorder
 
 ola_artnet_SOURCES = ola-artnet.cpp
 ola_artnet_LDADD = $(COMMON_LIBS) libolaconfig.la \
@@ -36,6 +38,9 @@ ola_rdm_get_LDADD = $(top_builddir)/ola/libola.la \
 ola_rdm_get_CXXFLAGS = @OLAD_DEFINES@
 
 ola_rdm_discover_SOURCES = ola-rdm-discover.cpp
+
+ola_recorder_SOURCES = ola-recorder.cpp ShowLoader.cpp ShowPlayer.cpp \
+                       ShowRecorder.cpp ShowSaver.cpp
 
 if HAVE_NCURSES
 bin_PROGRAMS += ola_dmxconsole ola_dmxmonitor

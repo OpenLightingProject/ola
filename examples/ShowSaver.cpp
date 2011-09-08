@@ -27,12 +27,11 @@
 #include <string.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
-
-#include "ShowSaver.h"
-
 #include <fstream>
 #include <iostream>
 #include <string>
+
+#include "examples/ShowSaver.h"
 
 using std::string;
 using ola::DmxBuffer;

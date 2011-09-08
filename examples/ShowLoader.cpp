@@ -28,14 +28,13 @@
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
-
-#include "ShowLoader.h"
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "examples/ShowLoader.h"
 
 using std::vector;
 using std::string;

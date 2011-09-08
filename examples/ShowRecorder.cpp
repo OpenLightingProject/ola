@@ -33,13 +33,12 @@
 #include <ola/OlaClientWrapper.h>
 #include <ola/OlaDevice.h>
 #include <ola/StringUtils.h>
-
-#include "ShowRecorder.h"
-
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "examples/ShowRecorder.h"
 
 using std::vector;
 using std::string;
@@ -88,7 +87,6 @@ int ShowRecorder::Init() {
  * Playback the show
  */
 int ShowRecorder::Record() {
-
   m_client.GetSelectServer()->Run();
   return EX_OK;
 }

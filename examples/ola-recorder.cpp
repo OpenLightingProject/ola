@@ -24,17 +24,15 @@
 #include <sysexits.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
-
 #include <ola/StringUtils.h>
-
-#include "ShowPlayer.h"
-#include "ShowLoader.h"
-#include "ShowRecorder.h"
-
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+
+#include "examples/ShowPlayer.h"
+#include "examples/ShowLoader.h"
+#include "examples/ShowRecorder.h"
 
 using std::cout;
 using std::endl;
@@ -198,7 +196,7 @@ int VerifyShow(const string &filename) {
     return EX_NOINPUT;
 
   map<unsigned int, unsigned int> frames_by_universe;
-  long total_time = 0;
+  uint64_t total_time = 0;
 
   unsigned int universe;
   ola::DmxBuffer buffer;
@@ -242,7 +240,9 @@ int main(int argc, char *argv[]) {
   if (opts.help)
     DisplayHelpAndExit(opts);
 
-  int check = (int) opts.playback + (int) opts.record + (int) opts.verify;
+  int check = static_cast<int>(opts.playback) +
+              static_cast<int>(opts.record) +
+              static_cast<int>(opts.verify);
 
   if (check > 1) {
     OLA_FATAL << "Only one of --record or --playback must be provided";

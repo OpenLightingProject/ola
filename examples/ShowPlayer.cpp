@@ -32,13 +32,12 @@
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/StringUtils.h>
-
-#include "ShowPlayer.h"
-
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "examples/ShowPlayer.h"
 
 using std::vector;
 using std::string;
@@ -74,7 +73,6 @@ int ShowPlayer::Init() {
  * Playback the show
  */
 int ShowPlayer::Playback() {
-
   SendNextFrame();
   m_client.GetSelectServer()->Run();
   return EX_OK;
