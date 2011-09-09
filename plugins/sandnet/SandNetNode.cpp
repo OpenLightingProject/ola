@@ -456,7 +456,7 @@ bool SandNetNode::SendPacket(const sandnet_packet &packet,
       is_control ? CONTROL_PORT : DATA_PORT);
 
   if (bytes_sent != static_cast<ssize_t>(size)) {
-    OLA_WARN << "Only sent " << bytes_sent << " of " << size;
+    OLA_INFO << "Only sent " << bytes_sent << " of " << size;
     return false;
   }
   return true;

@@ -196,7 +196,7 @@ ssize_t bytes_sent;
     bytes_sent = write(WriteDescriptor(), buffer, size);
 
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
-    OLA_WARN << "Failed to send on " << WriteDescriptor() << ": " <<
+    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
       strerror(errno);
   return bytes_sent;
 }

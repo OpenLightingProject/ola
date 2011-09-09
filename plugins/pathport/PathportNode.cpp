@@ -447,7 +447,7 @@ bool PathportNode::SendPacket(const pathport_packet_s &packet,
       PATHPORT_PORT);
 
   if (bytes_sent != static_cast<ssize_t>(size)) {
-    OLA_WARN << "Only sent " << bytes_sent << " of " << size;
+    OLA_INFO << "Only sent " << bytes_sent << " of " << size;
     return false;
   }
   return true;

@@ -1310,7 +1310,7 @@ bool ArtNetNodeImpl::SendPacket(const artnet_packet &packet,
       ARTNET_PORT);
 
   if (bytes_sent != size) {
-    OLA_WARN << "Only sent " << bytes_sent << " of " << size;
+    OLA_INFO << "Only sent " << bytes_sent << " of " << size;
     return false;
   }
   return true;
