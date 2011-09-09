@@ -625,7 +625,7 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
     reinterpret_cast<const struct sockaddr*>(&destination),
     sizeof(struct sockaddr));
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
-    OLA_WARN << "Failed to send, " << strerror(errno);
+    OLA_INFO << "Failed to send, " << strerror(errno);
   return bytes_sent;
 }
 
