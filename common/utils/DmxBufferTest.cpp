@@ -503,8 +503,8 @@ void DmxBufferTest::testToString() {
   CPPUNIT_ASSERT_EQUAL(string(""), buffer.ToString());
 
   buffer.SetFromString("1,2,3,4");
-  CPPUNIT_ASSERT_EQUAL(string("4: 1,2,3,4"), buffer.ToString());
+  CPPUNIT_ASSERT_EQUAL(string("1,2,3,4"), buffer.ToString());
 
   buffer.SetRangeToValue(0, 255, 5);
-  CPPUNIT_ASSERT_EQUAL(string("5: 255,255,255,255,255"), buffer.ToString());
+  CPPUNIT_ASSERT_EQUAL(string("255,255,255,255,255"), buffer.ToString());
 }
