@@ -1057,17 +1057,23 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
   """GET the personality description for the current personality."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_PERSONALITY_DESCRIPTION'
-  REQUIRES = ['current_personality', 'dmx_footprint']
+  REQUIRES = ['current_personality', 'dmx_footprint', 'personality_count']
 
   def Test(self):
+    personality_count = self.Property('personality_count')
     current_personality = self.Property('current_personality')
     footprint = self.Property('dmx_footprint')
-    # cross check against what we got from device info
-    self.AddIfGetSupported(self.AckGetResult(field_values={
-        'personality': current_personality,
-        'slots_required': footprint,
-      }))
-    self.SendGet(ROOT_DEVICE, self.pid, [current_personality])
+
+    if personality_count > 0:
+      # cross check against what we got from device info
+      self.AddIfGetSupported(self.AckGetResult(field_values={
+          'personality': current_personality,
+          'slots_required': footprint,
+        }))
+      self.SendGet(ROOT_DEVICE, self.pid, [current_personality])
+    else:
+      self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.SendGet(ROOT_DEVICE, self.pid, [1])
 
 
 class GetPersonality(OptionalParameterTestFixture):
