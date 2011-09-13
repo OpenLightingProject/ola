@@ -13,8 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * WidgetDetectorTest.cpp
- * Test fixture for the WidgetDetector class
+ * UsbProWidgetDetectorTest.cpp
+ * Test fixture for the UsbProWidgetDetector class
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -28,19 +28,19 @@
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "plugins/usbpro/UsbWidget.h"
-#include "plugins/usbpro/WidgetDetector.h"
+#include "plugins/usbpro/UsbProWidgetDetector.h"
 
 
 using ola::network::ConnectedDescriptor;
 using ola::network::PipeDescriptor;
 using ola::plugin::usbpro::WidgetInformation;
 using ola::plugin::usbpro::UsbWidget;
-using ola::plugin::usbpro::WidgetDetector;
+using ola::plugin::usbpro::UsbProWidgetDetector;
 using std::string;
 
 
-class WidgetDetectorTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(WidgetDetectorTest);
+class UsbProWidgetDetectorTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(UsbProWidgetDetectorTest);
   CPPUNIT_TEST(testExtendedDiscovery);
   CPPUNIT_TEST(testDiscovery);
   CPPUNIT_TEST(testTimeout);
@@ -56,7 +56,7 @@ class WidgetDetectorTest: public CppUnit::TestFixture {
 
   private:
     ola::network::SelectServer m_ss;
-    WidgetDetector *m_detector;
+    UsbProWidgetDetector *m_detector;
     PipeDescriptor m_descriptor;
     PipeDescriptor *m_other_end;
     UsbWidget *m_widget;
@@ -85,26 +85,26 @@ class WidgetDetectorTest: public CppUnit::TestFixture {
 };
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION(WidgetDetectorTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(UsbProWidgetDetectorTest);
 
-const uint32_t WidgetDetectorTest::SERIAL = 0x12345678;
-const uint16_t WidgetDetectorTest::MANUFACTURER_ID = 0x7a70;
-const uint16_t WidgetDetectorTest::DEVICE_ID = 0x2010;
-const char WidgetDetectorTest::MANUFACTURER_NAME[] = "Open Lighting";
-const char WidgetDetectorTest::DEVICE_NAME[] = "Unittest Device";
+const uint32_t UsbProWidgetDetectorTest::SERIAL = 0x12345678;
+const uint16_t UsbProWidgetDetectorTest::MANUFACTURER_ID = 0x7a70;
+const uint16_t UsbProWidgetDetectorTest::DEVICE_ID = 0x2010;
+const char UsbProWidgetDetectorTest::MANUFACTURER_NAME[] = "Open Lighting";
+const char UsbProWidgetDetectorTest::DEVICE_NAME[] = "Unittest Device";
 
 
-void WidgetDetectorTest::setUp() {
+void UsbProWidgetDetectorTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_found_widget = false;
   m_failed_widget = false;
   m_send_manufacturer = true;
   m_send_device = true;
   m_send_serial = true;
-  m_detector = new WidgetDetector(
+  m_detector = new UsbProWidgetDetector(
       &m_ss,
-      ola::NewCallback(this, &WidgetDetectorTest::NewWidget),
-      ola::NewCallback(this, &WidgetDetectorTest::FailedWidget),
+      ola::NewCallback(this, &UsbProWidgetDetectorTest::NewWidget),
+      ola::NewCallback(this, &UsbProWidgetDetectorTest::FailedWidget),
       10);
   m_descriptor.Init();
   m_other_end = m_descriptor.OppositeEnd();
@@ -116,22 +116,22 @@ void WidgetDetectorTest::setUp() {
   // we fake another widget at the other end of the pipe
   m_responder = new UsbWidget(m_other_end);
   m_responder->SetMessageHandler(
-      ola::NewCallback(this, &WidgetDetectorTest::ResponderHandler));
+      ola::NewCallback(this, &UsbProWidgetDetectorTest::ResponderHandler));
 
   m_ss.RegisterSingleTimeout(
       40,  // 40ms should be enough
-      ola::NewSingleCallback(this, &WidgetDetectorTest::Timeout));
+      ola::NewSingleCallback(this, &UsbProWidgetDetectorTest::Timeout));
 }
 
 
-void WidgetDetectorTest::tearDown() {
+void UsbProWidgetDetectorTest::tearDown() {
   delete m_detector;
   delete m_widget;
   delete m_responder;
 }
 
 
-void WidgetDetectorTest::NewWidget(UsbWidget *widget,
+void UsbProWidgetDetectorTest::NewWidget(UsbWidget *widget,
                                    const WidgetInformation *info) {
   CPPUNIT_ASSERT_EQUAL(m_widget, widget);
   m_found_widget = true;
@@ -141,7 +141,7 @@ void WidgetDetectorTest::NewWidget(UsbWidget *widget,
 }
 
 
-void WidgetDetectorTest::FailedWidget(UsbWidget *widget) {
+void UsbProWidgetDetectorTest::FailedWidget(UsbWidget *widget) {
   CPPUNIT_ASSERT_EQUAL(m_widget, widget);
   m_failed_widget = true;
   m_ss.Terminate();
@@ -151,7 +151,7 @@ void WidgetDetectorTest::FailedWidget(UsbWidget *widget) {
 /**
  * Called when a new message arrives
  */
-void WidgetDetectorTest::ResponderHandler(uint8_t label,
+void UsbProWidgetDetectorTest::ResponderHandler(uint8_t label,
                                           const uint8_t *data,
                                           unsigned int size) {
   if (label == UsbWidget::MANUFACTURER_LABEL) {
@@ -182,7 +182,7 @@ void WidgetDetectorTest::ResponderHandler(uint8_t label,
 }
 
 
-void WidgetDetectorTest::SendMessage(uint8_t label,
+void UsbProWidgetDetectorTest::SendMessage(uint8_t label,
                                      uint16_t id,
                                      const string &description) {
     struct {
@@ -201,7 +201,7 @@ void WidgetDetectorTest::SendMessage(uint8_t label,
  * Test that discovery works for a device that implements the extended set of
  * messages.
  */
-void WidgetDetectorTest::testExtendedDiscovery() {
+void UsbProWidgetDetectorTest::testExtendedDiscovery() {
   m_detector->Discover(m_widget);
   m_ss.Run();
 
@@ -219,7 +219,7 @@ void WidgetDetectorTest::testExtendedDiscovery() {
 /**
  * Check that discovery works for a device that just implements the serial #
  */
-void WidgetDetectorTest::testDiscovery() {
+void UsbProWidgetDetectorTest::testDiscovery() {
   m_send_manufacturer = false;
   m_send_device = false;
   m_detector->Discover(m_widget);
@@ -239,7 +239,7 @@ void WidgetDetectorTest::testDiscovery() {
 /**
  * Check a widget that fails to respond
  */
-void WidgetDetectorTest::testTimeout() {
+void UsbProWidgetDetectorTest::testTimeout() {
   m_send_manufacturer = false;
   m_send_device = false;
   m_send_serial = false;

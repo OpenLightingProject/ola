@@ -29,7 +29,7 @@
 #include "ola/Callback.h"
 #include "ola/OlaThread.h"
 #include "ola/network/SelectServer.h"
-#include "plugins/usbpro/WidgetDetector.h"
+#include "plugins/usbpro/UsbProWidgetDetector.h"
 
 namespace ola {
 namespace plugin {
@@ -65,7 +65,7 @@ class WidgetDetectorThread: public ola::OlaThread {
 
   private:
     ola::network::SelectServer m_ss;
-    WidgetDetector *m_detector;
+    UsbProWidgetDetector *m_detector;
     string m_directory;
     vector<string> m_prefixes;
     ola::Callback2<void, UsbWidget*, const WidgetInformation*> *m_callback;

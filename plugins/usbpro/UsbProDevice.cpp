@@ -33,7 +33,7 @@
 #include "olad/PortDecorators.h"
 #include "olad/Preferences.h"
 #include "plugins/usbpro/UsbProDevice.h"
-#include "plugins/usbpro/WidgetDetector.h"
+#include "plugins/usbpro/UsbProWidgetDetector.h"
 
 namespace ola {
 namespace plugin {

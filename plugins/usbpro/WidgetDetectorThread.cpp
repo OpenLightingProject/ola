@@ -83,7 +83,7 @@ void WidgetDetectorThread::SetDevicePrefixes(const vector<string> &prefixes) {
  * Run the discovery thread.
  */
 void *WidgetDetectorThread::Run() {
-  m_detector = new WidgetDetector(
+  m_detector = new UsbProWidgetDetector(
     &m_ss,
     ola::NewCallback(this, &WidgetDetectorThread::WidgetReady),
     ola::NewCallback(this, &WidgetDetectorThread::InternalFreeWidget));

@@ -13,13 +13,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * WidgetDetector.h
+ * UsbProWidgetDetector.h
  * Handles creating UsbWidget objects.
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_WIDGETDETECTOR_H_
-#define PLUGINS_USBPRO_WIDGETDETECTOR_H_
+#ifndef PLUGINS_USBPRO_USBPROWIDGETDETECTOR_H_
+#define PLUGINS_USBPRO_USBPROWIDGETDETECTOR_H_
 
 #include <string.h>
 #include <ola/network/SelectServerInterface.h>
@@ -87,14 +87,14 @@ class DiscoveryState {
 /*
  * Handles widget discovery
  */
-class WidgetDetector {
+class UsbProWidgetDetector {
   public:
-    WidgetDetector(
+    UsbProWidgetDetector(
         ola::network::SelectServerInterface *ss,
         ola::Callback2<void, UsbWidget*, const WidgetInformation*> *on_success,
         ola::Callback1<void, UsbWidget*> *on_failure,
         unsigned int message_interval = 200);
-    ~WidgetDetector();
+    ~UsbProWidgetDetector();
 
     bool Discover(UsbWidget *widget);
 
@@ -133,4 +133,4 @@ class WidgetDetector {
 }  // usbpro
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBPRO_WIDGETDETECTOR_H_
+#endif  // PLUGINS_USBPRO_USBPROWIDGETDETECTOR_H_

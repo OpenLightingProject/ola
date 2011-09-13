@@ -5,7 +5,7 @@ SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h DmxTriDevice.h DmxTriWidget.h \
              DmxterDevice.h DmxterWidget.h MockUsbWidget.h RobeUsbWidget.h \
              UsbDevice.h UsbProDevice.h UsbProPlugin.h UsbProWidget.h \
-             UsbWidget.h UsbWidgetInterface.h WidgetDetector.h \
+             UsbProWidgetDetector.h UsbWidget.h UsbWidgetInterface.h \
              WidgetDetectorThread.h
 
 # This is a library which doesn't contain any coupling to olad
@@ -13,7 +13,8 @@ noinst_LTLIBRARIES = libolausbprowidget.la
 libolausbprowidget_la_SOURCES = ArduinoWidget.cpp DmxTriWidget.cpp \
                                 DmxterWidget.cpp RobeUsbWidget.cpp \
                                 UsbProWidget.cpp UsbWidget.cpp \
-                                WidgetDetector.cpp WidgetDetectorThread.cpp
+                                UsbProWidgetDetector.cpp \
+                                WidgetDetectorThread.cpp
 
 lib_LTLIBRARIES = libolausbpro.la
 libolausbpro_la_SOURCES = ArduinoRGBDevice.cpp DmxTriDevice.cpp \
@@ -31,9 +32,9 @@ UsbProTester_SOURCES = ArduinoWidgetTest.cpp \
                        MockUsbWidget.cpp \
                        RobeUsbWidgetTest.cpp \
                        UsbProTester.cpp \
+                       UsbProWidgetDetectorTest.cpp \
                        UsbProWidgetTest.cpp \
-                       UsbWidgetTest.cpp \
-                       WidgetDetectorTest.cpp
+                       UsbWidgetTest.cpp
 
 UsbProTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 UsbProTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
