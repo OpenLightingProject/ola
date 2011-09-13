@@ -5,7 +5,8 @@ SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h DmxTriDevice.h DmxTriWidget.h \
              DmxterDevice.h DmxterWidget.h MockUsbWidget.h RobeUsbWidget.h \
              UsbDevice.h UsbProDevice.h UsbProPlugin.h UsbProWidget.h \
-             UsbWidget.h WidgetDetector.h WidgetDetectorThread.h
+             UsbWidget.h UsbWidgetInterface.h WidgetDetector.h \
+             WidgetDetectorThread.h
 
 # This is a library which doesn't contain any coupling to olad
 noinst_LTLIBRARIES = libolausbprowidget.la

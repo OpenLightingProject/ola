@@ -25,32 +25,11 @@
 #include <ola/Callback.h>
 #include <string>
 #include "ola/network/Socket.h"
+#include "plugins/usbpro/UsbWidgetInterface.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
-
-
-/*
- * The UsbWidgetInterface, this is an interface so we can mock it out for
- * testing.
- */
-class UsbWidgetInterface {
-  public:
-    UsbWidgetInterface() {}
-    virtual ~UsbWidgetInterface() {}
-
-    virtual void SetMessageHandler(
-      ola::Callback3<void, uint8_t, const uint8_t*,
-                     unsigned int> *callback) = 0;
-
-    virtual void SetOnRemove(ola::SingleUseCallback0<void> *on_close) = 0;
-
-    virtual bool SendMessage(uint8_t label, const uint8_t *data,
-                             unsigned int length) const = 0;
-
-    virtual void CloseDescriptor() = 0;
-};
 
 
 /*
