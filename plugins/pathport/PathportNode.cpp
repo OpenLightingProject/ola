@@ -152,7 +152,8 @@ void PathportNode::SocketReady(UdpSocket *socket) {
       destination != PATHPORT_STATUS_GROUP &&
       destination != PATHPORT_CONFIG_GROUP &&
       destination != PATHPORT_DATA_GROUP) {
-    OLA_WARN << "pathport destination not set to us: " << destination;
+    ola::network::IPV4Address addr(destination);
+    OLA_WARN << "pathport destination not set to us: " << addr;
     return;
   }
 
