@@ -32,7 +32,6 @@
 
 
 using ola::plugin::usbpro::DmxterWidget;
-using ola::plugin::usbpro::UsbWidget;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using std::string;

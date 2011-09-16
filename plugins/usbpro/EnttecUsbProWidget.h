@@ -18,8 +18,8 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_USBPROWIDGET_H_
-#define PLUGINS_USBPRO_USBPROWIDGET_H_
+#ifndef PLUGINS_USBPRO_ENTTECUSBPROWIDGET_H_
+#define PLUGINS_USBPRO_ENTTECUSBPROWIDGET_H_
 
 #include <deque>
 #include <string>
@@ -29,7 +29,7 @@
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -50,12 +50,12 @@ typedef ola::SingleUseCallback2<void, bool, const usb_pro_parameters&>
  * A DMX USB PRO Widget implementation. We separate the Widget from the
  * implementation so we can leverage the QueueingRDMController.
  */
-class UsbProWidgetImpl {
+class EnttecUsbProWidgetImpl {
   // : public ola::rdm::RDMControllerInterface {
   public:
-    UsbProWidgetImpl(ola::network::SelectServerInterface *ss,
-                     UsbWidgetInterface *widget);
-    ~UsbProWidgetImpl();
+    EnttecUsbProWidgetImpl(ola::network::SelectServerInterface *ss,
+                           BaseUsbProWidget *widget);
+    ~EnttecUsbProWidgetImpl();
 
     void SetDMXCallback(ola::Callback0<void> *callback);
     void Stop();
@@ -80,7 +80,7 @@ class UsbProWidgetImpl {
 
   private:
     ola::network::SelectServerInterface *m_ss;
-    UsbWidgetInterface *m_widget;
+    BaseUsbProWidget *m_widget;
     bool m_active;
     ola::network::timeout_id m_rdm_timeout_id;
     DmxBuffer m_input_buffer;
@@ -133,12 +133,12 @@ class UsbProWidgetImpl {
 /*
  * An Usb Pro Widget
  */
-class UsbProWidget {
+class EnttecUsbProWidget {
   public:
-    UsbProWidget(ola::network::SelectServerInterface *ss,
-                 UsbWidgetInterface *widget,
-                 unsigned int queue_size = 20);
-    ~UsbProWidget() {}
+    EnttecUsbProWidget(ola::network::SelectServerInterface *ss,
+                       BaseUsbProWidget *widget,
+                       unsigned int queue_size = 20);
+    ~EnttecUsbProWidget() {}
 
     void Stop() { m_impl.Stop(); }
 
@@ -190,7 +190,7 @@ class UsbProWidget {
     */
 
   private:
-    UsbProWidgetImpl m_impl;
+    EnttecUsbProWidgetImpl m_impl;
     //  ola::rdm::QueueingRDMController m_controller;
 
     /*
@@ -202,4 +202,4 @@ class UsbProWidget {
 }  // usbpro
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBPRO_USBPROWIDGET_H_
+#endif  // PLUGINS_USBPRO_ENTTECUSBPROWIDGET_H_

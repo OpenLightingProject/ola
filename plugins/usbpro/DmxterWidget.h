@@ -26,7 +26,7 @@
 #include "ola/rdm/UIDSet.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/QueueingRDMController.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -39,7 +39,7 @@ namespace usbpro {
  */
 class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    DmxterWidgetImpl(UsbWidgetInterface *widget,
+    DmxterWidgetImpl(BaseUsbProWidget *widget,
                      uint16_t esta_id,
                      uint32_t serial);
     ~DmxterWidgetImpl();
@@ -58,7 +58,7 @@ class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
 
   private:
     ola::rdm::UID m_uid;
-    UsbWidgetInterface *m_widget;
+    BaseUsbProWidget *m_widget;
     ola::rdm::UIDSet m_uids;
     ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
     const ola::rdm::RDMRequest *m_pending_request;
@@ -127,7 +127,7 @@ class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
  */
 class DmxterWidget: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    DmxterWidget(UsbWidgetInterface *widget,
+    DmxterWidget(BaseUsbProWidget *widget,
                  uint16_t esta_id,
                  uint32_t serial,
                  unsigned int queue_size = 20);

@@ -27,7 +27,7 @@
 #include "ola/rdm/UIDSet.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/QueueingRDMController.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -40,7 +40,7 @@ namespace usbpro {
  */
 class ArduinoWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    ArduinoWidgetImpl(UsbWidgetInterface *widget,
+    ArduinoWidgetImpl(BaseUsbProWidget *widget,
                       uint16_t esta_id,
                       uint32_t serial);
     ~ArduinoWidgetImpl();
@@ -65,7 +65,7 @@ class ArduinoWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
   private:
     uint8_t m_transaction_id;
     ola::rdm::UID m_uid;
-    UsbWidgetInterface *m_widget;
+    BaseUsbProWidget *m_widget;
     const ola::rdm::RDMRequest *m_pending_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
 
@@ -89,7 +89,7 @@ class ArduinoWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
  */
 class ArduinoWidget: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    ArduinoWidget(UsbWidgetInterface *widget,
+    ArduinoWidget(BaseUsbProWidget *widget,
                   uint16_t esta_id,
                   uint32_t serial,
                   unsigned int queue_size = 20);

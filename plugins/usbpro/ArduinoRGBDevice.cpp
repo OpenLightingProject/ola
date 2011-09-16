@@ -40,7 +40,7 @@ using std::string;
 ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
                                    ola::AbstractPlugin *owner,
                                    const string &name,
-                                   UsbWidget *widget,
+                                   BaseUsbProWidget *widget,
                                    uint16_t esta_id,
                                    uint16_t device_id,
                                    uint32_t serial):
@@ -59,7 +59,7 @@ ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
 
 
 ArduinoRGBOutputPort::ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
-                                           UsbWidget *widget,
+                                           BaseUsbProWidget *widget,
                                            uint16_t esta_id,
                                            uint32_t serial)
     : BasicOutputPort(parent, 0, true),

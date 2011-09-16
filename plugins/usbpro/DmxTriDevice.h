@@ -24,6 +24,7 @@
 #include <string>
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMControllerInterface.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/UsbDevice.h"
 
 namespace ola {
@@ -42,7 +43,7 @@ class DmxTriDevice: public UsbDevice {
     DmxTriDevice(ola::network::SelectServerInterface *ss,
                  ola::AbstractPlugin *owner,
                  const string &name,
-                 UsbWidget *widget,
+                 BaseUsbProWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
                  uint32_t serial,

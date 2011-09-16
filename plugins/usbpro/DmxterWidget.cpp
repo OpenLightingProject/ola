@@ -51,7 +51,7 @@ const uint8_t DmxterWidgetImpl::SHUTDOWN_LABAEL = 0xf0;
  * @param esta_id the ESTA id, should normally be GODDARD Design
  * @param serial the 4 byte serial which forms part of the UID
  */
-DmxterWidgetImpl::DmxterWidgetImpl(UsbWidgetInterface *widget,
+DmxterWidgetImpl::DmxterWidgetImpl(BaseUsbProWidget *widget,
                                    uint16_t esta_id,
                                    uint32_t serial):
     m_uid(esta_id, serial),
@@ -409,7 +409,7 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
 /**
  * DmxterWidget Constructor
  */
-DmxterWidget::DmxterWidget(UsbWidgetInterface *widget,
+DmxterWidget::DmxterWidget(BaseUsbProWidget *widget,
                            uint16_t esta_id,
                            uint32_t serial,
                            unsigned int queue_size) {

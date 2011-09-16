@@ -14,43 +14,44 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProWidgetDetector.h
- * Handles creating UsbWidget objects.
+ * Performs the Usb Pro style discovery routine. See the
+ * UsbProWidgetDetector.cpp for details.
  * Copyright (C) 2010 Simon Newton
  */
 
 #ifndef PLUGINS_USBPRO_USBPROWIDGETDETECTOR_H_
 #define PLUGINS_USBPRO_USBPROWIDGETDETECTOR_H_
 
-#include <string.h>
 #include <ola/network/SelectServerInterface.h>
 #include <map>
 #include <string>
 #include "ola/Callback.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/WidgetDetectorInterface.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
 
+class BaseUsbProWidget;
 
 /*
- * Contains information about a usb device.
+ * Contains information about a USB Pro like device.
  */
-class WidgetInformation {
+class UsbProWidgetInformation {
   public:
-    WidgetInformation():
+    UsbProWidgetInformation():
         esta_id(0),
         device_id(0),
         serial(0) {
     }
-    WidgetInformation(const WidgetInformation &other):
+    UsbProWidgetInformation(const UsbProWidgetInformation &other):
         esta_id(other.esta_id),
         device_id(other.device_id),
         serial(other.serial),
         manufactuer(other.manufactuer),
         device(other.device) {
     }
-    WidgetInformation& operator=(const WidgetInformation &other);
+    UsbProWidgetInformation& operator=(const UsbProWidgetInformation &other);
     enum {SERIAL_LENGTH = 4};
 
     uint16_t esta_id;
@@ -61,43 +62,25 @@ class WidgetInformation {
 };
 
 
-/**
- * Hold the discovery state for a widget
- */
-class DiscoveryState {
-  public:
-    DiscoveryState():
-      discovery_state(MANUFACTURER_SENT),
-      timeout_id(ola::network::INVALID_TIMEOUT) {
-    }
-    ~DiscoveryState() {}
-
-    typedef enum {
-      MANUFACTURER_SENT,
-      DEVICE_SENT,
-      SERIAL_SENT,
-    } widget_state;
-
-    WidgetInformation information;
-    widget_state discovery_state;
-    ola::network::timeout_id timeout_id;
-};
-
-
 /*
- * Handles widget discovery
+ * Handles the discovery routine for devices that behave like a Enttec Usb Pro.
  */
-class UsbProWidgetDetector {
+class UsbProWidgetDetector: public WidgetDetectorInterface {
   public:
+    typedef ola::Callback2<void,
+                           BaseUsbProWidget*,
+                           const UsbProWidgetInformation*> SuccessHandler;
+    typedef ola::Callback1<void,
+                           ola::network::ConnectedDescriptor*> FailureHandler;
+
     UsbProWidgetDetector(
         ola::network::SelectServerInterface *ss,
-        ola::Callback2<void, UsbWidget*, const WidgetInformation*> *on_success,
-        ola::Callback1<void, UsbWidget*> *on_failure,
+        SuccessHandler *on_success,
+        FailureHandler *on_failure,
         unsigned int message_interval = 200);
     ~UsbProWidgetDetector();
 
-    bool Discover(UsbWidget *widget);
-
+    bool Discover(ola::network::ConnectedDescriptor *descriptor);
 
   private:
     typedef struct {
@@ -107,27 +90,51 @@ class UsbProWidgetDetector {
       uint8_t terminator;
     } id_response;
 
-    ola::network::SelectServerInterface *m_ss;
-    ola::Callback2<void, UsbWidget*, const WidgetInformation*> *m_callback;
-    ola::Callback1<void, UsbWidget*> *m_failure_callback;
+    // Hold the discovery state for a widget
+    class DiscoveryState {
+      public:
+        DiscoveryState():
+          discovery_state(MANUFACTURER_SENT),
+          timeout_id(ola::network::INVALID_TIMEOUT) {
+        }
+        ~DiscoveryState() {}
 
-    typedef std::map<UsbWidget*, DiscoveryState> WidgetStateMap;
+        typedef enum {
+          MANUFACTURER_SENT,
+          DEVICE_SENT,
+          SERIAL_SENT,
+        } widget_state;
+
+        UsbProWidgetInformation information;
+        widget_state discovery_state;
+        ola::network::timeout_id timeout_id;
+    };
+
+    ola::network::SelectServerInterface *m_ss;
+    SuccessHandler *m_callback;
+    FailureHandler *m_failure_callback;
+
+    typedef std::map<BaseUsbProWidget*, DiscoveryState> WidgetStateMap;
     WidgetStateMap m_widgets;
     unsigned int m_timeout_ms;
 
-    void HandleMessage(UsbWidget *widget,
+    void HandleMessage(BaseUsbProWidget *widget,
                        uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
-    void WidgetRemoved(UsbWidget *widget);
-    void SetupTimeout(UsbWidget *widget, DiscoveryState *discovery_state);
+    void WidgetRemoved(BaseUsbProWidget *widget);
+    void SetupTimeout(BaseUsbProWidget *widget,
+                      DiscoveryState *discovery_state);
     void RemoveTimeout(DiscoveryState *discovery_state);
-    void SendNameRequest(UsbWidget *widget);
-    void SendSerialRequest(UsbWidget *widget);
-    void DiscoveryTimeout(UsbWidget *widget);
-    void HandleIdResponse(UsbWidget *widget, unsigned int length,
-                          const uint8_t *data, bool is_device);
-    void HandleSerialResponse(UsbWidget *widget, unsigned int length,
+    void SendNameRequest(BaseUsbProWidget *widget);
+    void SendSerialRequest(BaseUsbProWidget *widget);
+    void DiscoveryTimeout(BaseUsbProWidget *widget);
+    void HandleIdResponse(BaseUsbProWidget *widget,
+                          unsigned int length,
+                          const uint8_t *data,
+                          bool is_device);
+    void HandleSerialResponse(BaseUsbProWidget *widget,
+                              unsigned int length,
                               const uint8_t *data);
 };
 }  // usbpro

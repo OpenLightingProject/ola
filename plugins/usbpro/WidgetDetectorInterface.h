@@ -13,46 +13,37 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbDevice.h
- * Interface for the usb devices
- * Copyright (C) 2010 Simon Newton
+ * WidgetDetectorInterface.h
+ * The interface for WidgetDetectors.
+ * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_USBDEVICE_H_
-#define PLUGINS_USBPRO_USBDEVICE_H_
+#ifndef PLUGINS_USBPRO_WIDGETDETECTORINTERFACE_H_
+#define PLUGINS_USBPRO_WIDGETDETECTORINTERFACE_H_
 
-#include <string>
-#include "ola/Callback.h"
-#include "olad/Device.h"
-#include "plugins/usbpro/UsbWidgetInterface.h"
 
 namespace ola {
+namespace network {
+  class ConnectedDescriptor;
+}
+
 namespace plugin {
 namespace usbpro {
 
+
 /*
- * A USB device
+ * A WidgetDetector takes a ConnectedDescriptor and performs a discovery
+ * routine on it. Individual WidgetDetector specify the behaviour when the
+ * discovery routine passes or fails.
  */
-class UsbDevice: public ola::Device {
+class WidgetDetectorInterface {
   public:
-    UsbDevice(ola::AbstractPlugin *owner,
-              const string &name,
-              UsbWidgetInterface *widget):
-      Device(owner, name),
-      m_widget(widget) {}
+    WidgetDetectorInterface() {}
+    virtual ~WidgetDetectorInterface() {}
 
-    virtual ~UsbDevice() {}
-
-    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
-      m_widget->SetOnRemove(on_close);
-    }
-
-    UsbWidgetInterface *GetWidget() const { return m_widget; }
-
-  protected:
-    UsbWidgetInterface *m_widget;
+    virtual bool Discover(ola::network::ConnectedDescriptor *descriptor) = 0;
 };
 }  // usbpro
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBPRO_USBDEVICE_H_
+#endif  // PLUGINS_USBPRO_WIDGETDETECTORINTERFACE_H_

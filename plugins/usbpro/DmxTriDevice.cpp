@@ -38,7 +38,7 @@ using std::string;
 DmxTriDevice::DmxTriDevice(ola::network::SelectServerInterface *ss,
                            ola::AbstractPlugin *owner,
                            const string &name,
-                           UsbWidget *widget,
+                           BaseUsbProWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
                            uint32_t serial,

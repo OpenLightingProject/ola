@@ -40,19 +40,11 @@ class UsbWidgetInterface {
     UsbWidgetInterface() {}
     virtual ~UsbWidgetInterface() {}
 
-    virtual void SetMessageHandler(
-      ola::Callback3<void, uint8_t, const uint8_t*,
-                     unsigned int> *callback) = 0;
+    virtual ola::network::ConnectedDescriptor *GetDescriptor() const = 0;
 
     virtual void SetOnRemove(ola::SingleUseCallback0<void> *on_close) = 0;
-
-    virtual bool SendMessage(uint8_t label, const uint8_t *data,
-                             unsigned int length) const = 0;
-
     virtual void CloseDescriptor() = 0;
 };
-
-
 }  // usbpro
 }  // plugin
 }  // ola

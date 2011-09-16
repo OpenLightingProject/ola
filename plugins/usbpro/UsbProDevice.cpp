@@ -52,7 +52,7 @@ using ola::plugin::usbpro::Reply;
 UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                            ola::AbstractPlugin *owner,
                            const string &name,
-                           UsbWidget *widget,
+                           BaseUsbProWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
                            uint32_t serial,
@@ -61,12 +61,12 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
     m_pro_widget(NULL),
     m_serial(),
     m_got_parameters(false) {
-  m_pro_widget = new UsbProWidget(plugin_adaptor, widget);
+  m_pro_widget = new EnttecUsbProWidget(plugin_adaptor, widget);
 
   std::stringstream str;
   str << std::setfill('0');
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
-  for (int i = WidgetInformation::SERIAL_LENGTH - 1; i >= 0; i--) {
+  for (int i = UsbProWidgetInformation::SERIAL_LENGTH - 1; i >= 0; i--) {
     int digit = (10 * (ptr[i] & 0xf0) >> 4) + (ptr[i] & 0x0f);
     str <<  std::setw(2)  << digit;
   }

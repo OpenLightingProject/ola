@@ -26,7 +26,7 @@
 #include "ola/network/SelectServerInterface.h"
 #include "plugins/usbpro/DmxterWidget.h"
 #include "plugins/usbpro/UsbDevice.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -41,7 +41,7 @@ class DmxterDevice: public UsbDevice {
   public:
     DmxterDevice(ola::AbstractPlugin *owner,
                  const string &name,
-                 UsbWidget *widget,
+                 BaseUsbProWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
                  uint32_t serial);

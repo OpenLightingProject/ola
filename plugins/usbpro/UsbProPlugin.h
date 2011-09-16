@@ -46,8 +46,10 @@ class UsbProPlugin: public ola::Plugin {
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
     // Called by a separate thread, takes ownership of widget & information
-    void NewWidget(class UsbWidget *widget,
-                   const WidgetInformation *information);
+    void NewUsbProWidget(class BaseUsbProWidget *widget,
+                         const UsbProWidgetInformation *information);
+    void NewRobeWidget(class RobeWidget *widget,
+                       const RobeWidgetInformation *information);
     void AddDevice(UsbDevice *device);
 
   private:
@@ -55,8 +57,10 @@ class UsbProPlugin: public ola::Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
     void DeleteDevice(UsbDevice *device);
-    void InternalNewWidget(class UsbWidget *widget,
-                           const WidgetInformation *information);
+    void InternalNewUsbProWidget(class BaseUsbProWidget *widget,
+                                 const UsbProWidgetInformation *information);
+    void InternalNewRobeWidget(class RobeWidget *widget,
+                               const RobeWidgetInformation *information);
     unsigned int GetProFrameLimit();
 
     vector<UsbDevice*> m_devices;  // list of our devices
@@ -70,6 +74,7 @@ class UsbProPlugin: public ola::Plugin {
     static const char MAC_DEVICE_PREFIX[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
+    static const char ROBE_DEVICE_NAME[];
     static const char TRI_USE_RAW_RDM_KEY[];
     static const char USBPRO_DEVICE_NAME[];
     static const char USB_PRO_FPS_LIMIT_KEY[];

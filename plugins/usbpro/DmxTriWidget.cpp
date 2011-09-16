@@ -31,7 +31,7 @@
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/DmxTriWidget.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -51,7 +51,7 @@ using ola::rdm::UIDSet;
  * New DMX TRI device
  */
 DmxTriWidgetImpl::DmxTriWidgetImpl(ola::network::SelectServerInterface *ss,
-                                   UsbWidgetInterface *widget,
+                                   BaseUsbProWidget *widget,
                                    bool use_raw_rdm):
     m_ss(ss),
     m_widget(widget),
@@ -143,7 +143,7 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
   widget_dmx.start_code = 0;
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
-  return m_widget->SendMessage(UsbWidget::DMX_LABEL,
+  return m_widget->SendMessage(BaseUsbProWidget::DMX_LABEL,
                                reinterpret_cast<uint8_t*>(&widget_dmx),
                                length + 1);
 }
@@ -922,7 +922,7 @@ bool DmxTriWidgetImpl::ReturnCodeToNackReason(
  * DmxTriWidget Constructor
  */
 DmxTriWidget::DmxTriWidget(ola::network::SelectServerInterface *ss,
-                           UsbWidgetInterface *widget,
+                           BaseUsbProWidget *widget,
                            unsigned int queue_size,
                            bool use_raw_rdm) {
   m_impl = new DmxTriWidgetImpl(ss, widget, use_raw_rdm);

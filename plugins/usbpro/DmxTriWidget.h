@@ -30,7 +30,7 @@
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -46,7 +46,7 @@ using std::queue;
 class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
   public:
     DmxTriWidgetImpl(ola::network::SelectServerInterface *ss,
-                     UsbWidgetInterface *widget,
+                     BaseUsbProWidget *widget,
                      bool use_raw_rdm);
     ~DmxTriWidgetImpl();
 
@@ -70,7 +70,7 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
 
   private:
     ola::network::SelectServerInterface *m_ss;
-    UsbWidgetInterface *m_widget;
+    BaseUsbProWidget *m_widget;
     ola::network::timeout_id m_rdm_timeout_id;
     std::map<const ola::rdm::UID, uint8_t> m_uid_index_map;
     unsigned int m_uid_count;
@@ -183,7 +183,7 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
 class DmxTriWidget {
   public:
     DmxTriWidget(ola::network::SelectServerInterface *ss,
-                 UsbWidgetInterface *widget,
+                 BaseUsbProWidget *widget,
                  unsigned int queue_size = 20,
                  bool use_raw_rdm = false);
     ~DmxTriWidget();

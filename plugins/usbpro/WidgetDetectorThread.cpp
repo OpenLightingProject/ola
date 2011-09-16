@@ -30,7 +30,10 @@
 #include "ola/Logging.h"
 #include "ola/Callback.h"
 #include "ola/network/Socket.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/RobeWidget.h"
+#include "plugins/usbpro/RobeWidgetDetector.h"
+#include "plugins/usbpro/UsbProWidgetDetector.h"
 #include "plugins/usbpro/WidgetDetectorThread.h"
 
 namespace ola {
@@ -42,10 +45,13 @@ namespace usbpro {
  * Constructor
  */
 WidgetDetectorThread::WidgetDetectorThread(
-    ola::Callback2<void, UsbWidget*, const WidgetInformation*> *callback)
-    : m_detector(NULL),
-      m_callback(callback) {
-  if (!m_callback)
+  UsbProCallback *usb_pro_callback,
+  RobeCallback *robe_callback)
+    : m_usb_pro_callback(usb_pro_callback),
+      m_robe_callback(robe_callback) {
+  if (!m_usb_pro_callback)
+    OLA_FATAL << "No callback registered for the WidgetDetectorThread";
+  if (!m_robe_callback)
     OLA_FATAL << "No callback registered for the WidgetDetectorThread";
 }
 
@@ -54,8 +60,10 @@ WidgetDetectorThread::WidgetDetectorThread(
  * Clean up
  */
 WidgetDetectorThread::~WidgetDetectorThread() {
-  if (m_callback)
-    delete m_callback;
+  if (m_usb_pro_callback)
+    delete m_usb_pro_callback;
+  if (m_robe_callback)
+    delete m_robe_callback;
 }
 
 
@@ -83,18 +91,38 @@ void WidgetDetectorThread::SetDevicePrefixes(const vector<string> &prefixes) {
  * Run the discovery thread.
  */
 void *WidgetDetectorThread::Run() {
-  m_detector = new UsbProWidgetDetector(
-    &m_ss,
-    ola::NewCallback(this, &WidgetDetectorThread::WidgetReady),
-    ola::NewCallback(this, &WidgetDetectorThread::InternalFreeWidget));
+  if (!m_widget_detectors.empty()) {
+    OLA_WARN << "List of widget detectors isn't empty!";
+  } else {
+    m_widget_detectors.push_back(new UsbProWidgetDetector(
+        &m_ss,
+        ola::NewCallback(this, &WidgetDetectorThread::UsbProWidgetReady),
+        ola::NewCallback(this, &WidgetDetectorThread::DescriptorFailed)));
+    m_widget_detectors.push_back(new RobeWidgetDetector(
+        &m_ss,
+        ola::NewCallback(this, &WidgetDetectorThread::RobeWidgetReady),
+        ola::NewCallback(this, &WidgetDetectorThread::DescriptorFailed)));
+  }
   RunScan();
   m_ss.RegisterRepeatingTimeout(
       SCAN_INTERVAL_MS,
       ola::NewCallback(this, &WidgetDetectorThread::RunScan));
   m_ss.Run();
-  // this will cal InternalFreeWidget for any remaining widgets
-  delete m_detector;
-  m_detector = NULL;
+
+  vector<WidgetDetectorInterface*>::const_iterator iter =
+  m_widget_detectors.begin();
+  for (;iter != m_widget_detectors.end(); ++iter)
+    // this will trigger a call to InternalFreeWidget for any remaining widgets
+    delete *iter;
+
+  if (!m_active_descriptors.empty())
+    OLA_WARN << m_active_descriptors.size() << " are still active";
+
+  ActiveDescriptors::const_iterator iter2 = m_active_descriptors.begin();
+  for (; iter2 != m_active_descriptors.end(); ++iter2) {
+    OLA_INFO  << iter2->first;
+  }
+  m_widget_detectors.clear();
   return NULL;
 }
 
@@ -112,7 +140,7 @@ bool WidgetDetectorThread::Join(void *ptr) {
  * Indicate that this widget is no longer is use and can be deleted.
  * This can be called from any thread.
  */
-void WidgetDetectorThread::FreeWidget(UsbWidget *widget) {
+void WidgetDetectorThread::FreeWidget(UsbWidgetInterface *widget) {
   m_ss.Execute(
       ola::NewSingleCallback(this,
                              &WidgetDetectorThread::InternalFreeWidget,
@@ -133,16 +161,15 @@ bool WidgetDetectorThread::RunScan() {
     if (m_active_paths.find(*it) != m_active_paths.end())
       continue;
     OLA_INFO << "Found potential USB Pro like device at " << *it;
-    ola::network::ConnectedDescriptor *descriptor = UsbWidget::OpenDevice(*it);
+    ola::network::ConnectedDescriptor *descriptor =
+      BaseUsbProWidget::OpenDevice(*it);
     if (!descriptor)
       continue;
 
-    UsbWidget *widget = new UsbWidget(descriptor);
-
-    m_active_widgets[widget] = PathDescriptorPair(*it, descriptor);
+    OLA_INFO << "new descriptor @ " << descriptor << " for " << *it;
+    m_active_descriptors[descriptor] = DescriptorInfo(*it, -1);
     m_active_paths.insert(*it);
-    m_ss.AddReadDescriptor(descriptor);
-    m_detector->Discover(widget);
+    PerformNextDiscoveryStep(descriptor);
   }
   return true;
 }
@@ -185,31 +212,80 @@ void WidgetDetectorThread::FindCandiateDevices(vector<string> *device_paths) {
  * Called when a new widget becomes ready. Ownership of both objects transferrs
  * to use.
  */
-void WidgetDetectorThread::WidgetReady(UsbWidget *widget,
-                                       const WidgetInformation *info) {
-  ola::network::ConnectedDescriptor *descriptor = NULL;
+void WidgetDetectorThread::UsbProWidgetReady(
+    BaseUsbProWidget *widget,
+    const UsbProWidgetInformation *info) {
+  // we're no longer interested in events from this widget
+  m_ss.RemoveReadDescriptor(widget->GetDescriptor());
 
-  ActiveWidgets::iterator iter = m_active_widgets.find(widget);
-  if (iter == m_active_widgets.end()) {
-    OLA_WARN << "Missing widget " << widget << " in active map";
-  } else {
-    // remove descriptor from our ss
-    descriptor = iter->second.second;
-    m_ss.RemoveReadDescriptor(descriptor);
-  }
-
-  if (m_callback) {
+  if (m_usb_pro_callback) {
     // default the remove handler to us.
     widget->SetOnRemove(NewSingleCallback(this,
                         &WidgetDetectorThread::FreeWidget,
-                        widget));
-    m_callback->Run(widget, info);
+                        reinterpret_cast<UsbWidgetInterface*>(widget)));
+    m_usb_pro_callback->Run(widget, info);
   } else {
-    OLA_WARN << "No callback defined for new Usb widgets.";
-    delete widget;
+    OLA_WARN << "No callback defined for new Usb Pro Widgets.";
+    InternalFreeWidget(widget);
     delete info;
-    if (descriptor)
-      delete descriptor;
+  }
+}
+
+
+/**
+ * Called when we discovery a robe widget.
+ */
+void WidgetDetectorThread::RobeWidgetReady(
+    RobeWidget *widget,
+    const RobeWidgetInformation *info) {
+  // we're no longer interested in events from this widget
+  m_ss.RemoveReadDescriptor(widget->GetDescriptor());
+
+  if (m_robe_callback) {
+    // default the remove handler to us.
+    widget->SetOnRemove(NewSingleCallback(this,
+                        &WidgetDetectorThread::FreeWidget,
+                        reinterpret_cast<UsbWidgetInterface*>(widget)));
+    m_robe_callback->Run(widget, info);
+  } else {
+    OLA_WARN << "No callback defined for new Robe Widgets.";
+    InternalFreeWidget(widget);
+    delete info;
+  }
+}
+
+
+/**
+ * Called when this descriptor fails discovery
+ */
+void WidgetDetectorThread::DescriptorFailed(
+    ola::network::ConnectedDescriptor *descriptor) {
+  m_ss.RemoveReadDescriptor(descriptor);
+  PerformNextDiscoveryStep(descriptor);
+}
+
+
+/**
+ * Perform the next step in discovery for this descriptor.
+ * @pre the descriptor exists in m_active_descriptors
+ */
+void WidgetDetectorThread::PerformNextDiscoveryStep(
+    ola::network::ConnectedDescriptor *descriptor) {
+
+  DescriptorInfo &descriptor_info = m_active_descriptors[descriptor];
+  descriptor_info.second++;
+
+  if (static_cast<unsigned int>(descriptor_info.second) ==
+      m_widget_detectors.size()) {
+    OLA_INFO << "no more detectors to try for  " << descriptor;
+    FreeDescriptor(descriptor);
+  } else {
+    OLA_INFO << "trying stage " << descriptor_info.second << " for " <<
+      descriptor;
+    m_ss.AddReadDescriptor(descriptor);
+    bool ok = m_widget_detectors[descriptor_info.second]->Discover(descriptor);
+    if (!ok)
+      FreeDescriptor(descriptor);
   }
 }
 
@@ -217,24 +293,27 @@ void WidgetDetectorThread::WidgetReady(UsbWidget *widget,
 /**
  * Free the widget and the associated descriptor.
  */
-void WidgetDetectorThread::InternalFreeWidget(UsbWidget *widget) {
-  ola::network::ConnectedDescriptor *descriptor = NULL;
-
-  ActiveWidgets::iterator iter = m_active_widgets.find(widget);
-  if (iter == m_active_widgets.end()) {
-    OLA_WARN << "Missing widget " << widget << " in active map";
-  } else {
-    // remove descriptor from our ss if it's there
-    descriptor = iter->second.second;
-    m_ss.RemoveReadDescriptor(descriptor);
-
-    // remove from active paths
-    m_active_paths.erase(iter->second.first);
-    m_active_widgets.erase(iter);
-  }
+void WidgetDetectorThread::InternalFreeWidget(UsbWidgetInterface *widget) {
+  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  // remove descriptor from our ss if it's there
+  OLA_INFO << "removing descriptor " << descriptor;
+  m_ss.RemoveReadDescriptor(descriptor);
   delete widget;
-  if (descriptor)
-    delete descriptor;
+
+  FreeDescriptor(descriptor);
+  OLA_INFO << "internal free done";
+}
+
+
+/**
+ * Free a descriptor and remove it from the map.
+ * @param descriptor the ConnectedDescriptor to free
+ */
+void WidgetDetectorThread::FreeDescriptor(ConnectedDescriptor *descriptor) {
+  DescriptorInfo &descriptor_info = m_active_descriptors[descriptor];
+  m_active_paths.erase(descriptor_info.first);
+  m_active_descriptors.erase(descriptor);
+  delete descriptor;
 }
 }  // usbpro
 }  // plugin

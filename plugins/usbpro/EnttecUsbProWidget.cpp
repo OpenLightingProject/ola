@@ -25,8 +25,9 @@
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
-#include "plugins/usbpro/UsbProWidget.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/EnttecUsbProWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -41,8 +42,9 @@ using ola::rdm::UIDSet;
 /*
  * New DMX TRI device
  */
-UsbProWidgetImpl::UsbProWidgetImpl(ola::network::SelectServerInterface *ss,
-                                   UsbWidgetInterface *widget):
+EnttecUsbProWidgetImpl::EnttecUsbProWidgetImpl(
+  ola::network::SelectServerInterface *ss,
+  BaseUsbProWidget *widget):
     m_ss(ss),
     m_widget(widget),
     m_active(true),
@@ -56,14 +58,14 @@ UsbProWidgetImpl::UsbProWidgetImpl(ola::network::SelectServerInterface *ss,
     m_transaction_number(0)
     */ {
   m_widget->SetMessageHandler(
-      NewCallback(this, &UsbProWidgetImpl::HandleMessage));
+      NewCallback(this, &EnttecUsbProWidgetImpl::HandleMessage));
 }
 
 
 /*
  * Shutdown
  */
-UsbProWidgetImpl::~UsbProWidgetImpl() {
+EnttecUsbProWidgetImpl::~EnttecUsbProWidgetImpl() {
   Stop();
 
   // timeout any existing message
@@ -96,7 +98,7 @@ UsbProWidgetImpl::~UsbProWidgetImpl() {
 /**
  * Set the callback to run when new DMX data arrives
  */
-void UsbProWidgetImpl::SetDMXCallback(ola::Callback0<void> *callback) {
+void EnttecUsbProWidgetImpl::SetDMXCallback(ola::Callback0<void> *callback) {
   if (m_dmx_callback)
     delete m_dmx_callback;
   m_dmx_callback = callback;
@@ -105,7 +107,7 @@ void UsbProWidgetImpl::SetDMXCallback(ola::Callback0<void> *callback) {
 
 /**
  * Set the callback used when the UIDSet changes
-void UsbProWidgetImpl::SetUIDListCallback(
+void EnttecUsbProWidgetImpl::SetUIDListCallback(
     ola::Callback1<void, const ola::rdm::UIDSet&> *callback) {
   if (m_uid_set_callback)
     delete m_uid_set_callback;
@@ -114,7 +116,7 @@ void UsbProWidgetImpl::SetUIDListCallback(
 
 
  * Set the callback to be run when discovery completes
-void UsbProWidgetImpl::SetDiscoveryCallback(ola::Callback0<void> *callback) {
+void EnttecUsbProWidgetImpl::SetDiscoveryCallback(ola::Callback0<void> *callback) {
   if (m_discovery_callback)
     delete m_discovery_callback;
   m_discovery_callback = callback;
@@ -125,7 +127,7 @@ void UsbProWidgetImpl::SetDiscoveryCallback(ola::Callback0<void> *callback) {
 /**
  * Stop the rdm discovery process if it's running
  */
-void UsbProWidgetImpl::Stop() {
+void EnttecUsbProWidgetImpl::Stop() {
   m_active = false;
   /*
   if (m_rdm_timeout_id != ola::network::INVALID_TIMEOUT) {
@@ -140,7 +142,7 @@ void UsbProWidgetImpl::Stop() {
  * Send a DMX message
  * @returns true if we sent ok, false otherwise
  */
-bool UsbProWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
+bool EnttecUsbProWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
   if (!m_active)
     return false;
 
@@ -152,7 +154,7 @@ bool UsbProWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
   widget_dmx.start_code = 0;
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
-  return m_widget->SendMessage(UsbWidget::DMX_LABEL,
+  return m_widget->SendMessage(BaseUsbProWidget::DMX_LABEL,
                                reinterpret_cast<uint8_t*>(&widget_dmx),
                                length + 1);
 }
@@ -162,7 +164,7 @@ bool UsbProWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
  * Put the device back into recv mode
  * @return true on success, false on failure
  */
-bool UsbProWidgetImpl::ChangeToReceiveMode(bool change_only) {
+bool EnttecUsbProWidgetImpl::ChangeToReceiveMode(bool change_only) {
   if (!m_active)
     return false;
 
@@ -178,7 +180,7 @@ bool UsbProWidgetImpl::ChangeToReceiveMode(bool change_only) {
 /**
  * Return the latest DMX data
  */
-const DmxBuffer &UsbProWidgetImpl::FetchDMX() const {
+const DmxBuffer &EnttecUsbProWidgetImpl::FetchDMX() const {
   return m_input_buffer;
 }
 
@@ -187,7 +189,7 @@ const DmxBuffer &UsbProWidgetImpl::FetchDMX() const {
  * Send a request for the widget's parameters.
  * TODO(simon): add timers to these
  */
-void UsbProWidgetImpl::GetParameters(usb_pro_params_callback *callback) {
+void EnttecUsbProWidgetImpl::GetParameters(usb_pro_params_callback *callback) {
   m_outstanding_param_callbacks.push_back(callback);
 
   uint16_t user_size = 0;
@@ -208,9 +210,9 @@ void UsbProWidgetImpl::GetParameters(usb_pro_params_callback *callback) {
  * Set the widget's parameters. Due to the lack of confirmation, this returns
  * immediately.
  */
-bool UsbProWidgetImpl::SetParameters(uint8_t break_time,
-                                     uint8_t mab_time,
-                                     uint8_t rate) {
+bool EnttecUsbProWidgetImpl::SetParameters(uint8_t break_time,
+                                           uint8_t mab_time,
+                                           uint8_t rate) {
   struct widget_params_s {
     uint16_t length;
     uint8_t break_time;
@@ -238,9 +240,9 @@ bool UsbProWidgetImpl::SetParameters(uint8_t break_time,
 /*
  * Handle a message received from the widget
  */
-void UsbProWidgetImpl::HandleMessage(uint8_t label,
-                                     const uint8_t *data,
-                                     unsigned int length) {
+void EnttecUsbProWidgetImpl::HandleMessage(uint8_t label,
+                                           const uint8_t *data,
+                                           unsigned int length) {
   switch (label) {
     case REPROGRAM_FIRMWARE_LABEL:
       break;
@@ -253,7 +255,7 @@ void UsbProWidgetImpl::HandleMessage(uint8_t label,
     case DMX_CHANGED_LABEL:
       HandleDMXDiff(data, length);
       break;
-    case UsbWidget::SERIAL_LABEL:
+    case BaseUsbProWidget::SERIAL_LABEL:
       break;
     default:
       OLA_WARN << "Unknown message type " << label;
@@ -264,8 +266,8 @@ void UsbProWidgetImpl::HandleMessage(uint8_t label,
 /*
  * Called when we get new parameters from the widget.
  */
-void UsbProWidgetImpl::HandleParameters(const uint8_t *data,
-                                        unsigned int length) {
+void EnttecUsbProWidgetImpl::HandleParameters(const uint8_t *data,
+                                              unsigned int length) {
   if (m_outstanding_param_callbacks.empty())
     return;
 
@@ -294,7 +296,8 @@ void UsbProWidgetImpl::HandleParameters(const uint8_t *data,
 /*
  * Handle the dmx frame
  */
-void UsbProWidgetImpl::HandleDMX(const uint8_t *data, unsigned int length) {
+void EnttecUsbProWidgetImpl::HandleDMX(const uint8_t *data,
+                                       unsigned int length) {
   typedef struct {
     uint8_t status;
     uint8_t dmx[DMX_UNIVERSE_SIZE + 1];
@@ -325,8 +328,8 @@ void UsbProWidgetImpl::HandleDMX(const uint8_t *data, unsigned int length) {
 /*
  * Handle the dmx change of state frame
  */
-void UsbProWidgetImpl::HandleDMXDiff(const uint8_t *data,
-                                     unsigned int length) {
+void EnttecUsbProWidgetImpl::HandleDMXDiff(const uint8_t *data,
+                                           unsigned int length) {
   typedef struct {
     uint8_t start;
     uint8_t changed[5];
@@ -370,10 +373,11 @@ void UsbProWidgetImpl::HandleDMXDiff(const uint8_t *data,
 /**
  * UsbProWidget Constructor
  */
-UsbProWidget::UsbProWidget(ola::network::SelectServerInterface *ss,
-                           UsbWidgetInterface *widget,
-                           unsigned int queue_size):
-    m_impl(ss, widget) {
+EnttecUsbProWidget::EnttecUsbProWidget(
+    ola::network::SelectServerInterface *ss,
+    BaseUsbProWidget *widget,
+    unsigned int queue_size)
+    : m_impl(ss, widget) {
     // m_controller(&m_impl, queue_size) {
   /*
   m_impl.SetDiscoveryCallback(

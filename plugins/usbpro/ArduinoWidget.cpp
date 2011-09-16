@@ -28,6 +28,7 @@
 #include "ola/rdm/RDMCommand.h"
 #include "olad/PortDecorators.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -51,7 +52,7 @@ const uint8_t ArduinoWidgetImpl::RESPONSE_INVALID_COMMAND = 5;
  * @param esta_id the ESTA id.
  * @param serial the 4 byte serial which forms part of the UID
  */
-ArduinoWidgetImpl::ArduinoWidgetImpl(UsbWidgetInterface *widget,
+ArduinoWidgetImpl::ArduinoWidgetImpl(BaseUsbProWidget *widget,
                                      uint16_t esta_id,
                                      uint32_t serial):
     m_transaction_id(0),
@@ -91,7 +92,7 @@ bool ArduinoWidgetImpl::SendDMX(const DmxBuffer &buffer) {
   widget_dmx.start_code = 0;
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
-  return m_widget->SendMessage(UsbWidget::DMX_LABEL,
+  return m_widget->SendMessage(BaseUsbProWidget::DMX_LABEL,
                                reinterpret_cast<uint8_t*>(&widget_dmx),
                                length + 1);
 }
@@ -254,7 +255,7 @@ bool ArduinoWidgetImpl::GetUidSet(ola::rdm::RDMDiscoveryCallback *callback) {
 /**
  * ArduinoWidget Constructor
  */
-ArduinoWidget::ArduinoWidget(UsbWidgetInterface *widget,
+ArduinoWidget::ArduinoWidget(BaseUsbProWidget *widget,
                              uint16_t esta_id,
                              uint32_t serial,
                              unsigned int queue_size) {

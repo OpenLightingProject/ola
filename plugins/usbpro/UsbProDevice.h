@@ -27,8 +27,8 @@
 #include "olad/Port.h"
 
 #include "plugins/usbpro/UsbDevice.h"
-#include "plugins/usbpro/UsbWidget.h"
-#include "plugins/usbpro/UsbProWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/messages/UsbProConfigMessages.pb.h"
 
 namespace ola {
@@ -47,7 +47,7 @@ class UsbProDevice: public UsbDevice {
     UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                  ola::AbstractPlugin *owner,
                  const string &name,
-                 UsbWidget *widget,
+                 BaseUsbProWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
                  uint32_t serial,
@@ -83,7 +83,7 @@ class UsbProDevice: public UsbDevice {
                              string *response,
                              google::protobuf::Closure *done);
 
-    UsbProWidget *m_pro_widget;
+    EnttecUsbProWidget *m_pro_widget;
     string m_serial;
 
     bool m_got_parameters;
@@ -99,7 +99,7 @@ class UsbProDevice: public UsbDevice {
 class UsbProInputPort: public BasicInputPort {
   public:
     UsbProInputPort(UsbProDevice *parent,
-                    UsbProWidget *widget,
+                    EnttecUsbProWidget *widget,
                     unsigned int id,
                     ola::PluginAdaptor *plugin_adaptor,
                     const string &path)
@@ -115,7 +115,7 @@ class UsbProInputPort: public BasicInputPort {
 
   private:
     string m_path;
-    UsbProWidget *m_widget;
+    EnttecUsbProWidget *m_widget;
 };
 
 
@@ -125,7 +125,7 @@ class UsbProInputPort: public BasicInputPort {
 class UsbProOutputPort: public BasicOutputPort {
   public:
     UsbProOutputPort(UsbProDevice *parent,
-                     UsbProWidget *widget,
+                     EnttecUsbProWidget *widget,
                      unsigned int id,
                      const string &path)
         : BasicOutputPort(parent, id),
@@ -147,7 +147,7 @@ class UsbProOutputPort: public BasicOutputPort {
 
   private:
     string m_path;
-    UsbProWidget *m_widget;
+    EnttecUsbProWidget *m_widget;
 };
 }  // usbpro
 }  // plugin

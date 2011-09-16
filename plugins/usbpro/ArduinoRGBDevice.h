@@ -39,7 +39,7 @@ class ArduinoRGBDevice: public UsbDevice {
     ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
                      ola::AbstractPlugin *owner,
                      const string &name,
-                     UsbWidget *widget,
+                     BaseUsbProWidget *widget,
                      uint16_t esta_id,
                      uint16_t device_id,
                      uint32_t serial);
@@ -57,7 +57,7 @@ class ArduinoRGBDevice: public UsbDevice {
 class ArduinoRGBOutputPort: public BasicOutputPort {
   public:
     ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
-                         UsbWidget *widget,
+                         BaseUsbProWidget *widget,
                          uint16_t esta_id,
                          uint32_t serial);
 

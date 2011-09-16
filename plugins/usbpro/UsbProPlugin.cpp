@@ -32,8 +32,9 @@
 #include "olad/Preferences.h"
 
 #include "plugins/usbpro/ArduinoRGBDevice.h"
-#include "plugins/usbpro/DmxterDevice.h"
 #include "plugins/usbpro/DmxTriDevice.h"
+#include "plugins/usbpro/DmxterDevice.h"
+#include "plugins/usbpro/RobeDevice.h"
 #include "plugins/usbpro/UsbProDevice.h"
 #include "plugins/usbpro/UsbProPlugin.h"
 
@@ -50,6 +51,7 @@ const char UsbProPlugin::DEVICE_DIR_KEY[] = "device_dir";
 const char UsbProPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
 const char UsbProPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
 const char UsbProPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
+const char UsbProPlugin::ROBE_DEVICE_NAME[] = "Robe Universal Interface";
 const char UsbProPlugin::PLUGIN_NAME[] = "Enttec USB Pro";
 const char UsbProPlugin::PLUGIN_PREFIX[] = "usbpro";
 const char UsbProPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
@@ -58,7 +60,9 @@ const char UsbProPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
 
 UsbProPlugin::UsbProPlugin(PluginAdaptor *plugin_adaptor)
     : Plugin(plugin_adaptor),
-      m_detector_thread(ola::NewCallback(this, &UsbProPlugin::NewWidget)) {
+      m_detector_thread(
+          ola::NewCallback(this, &UsbProPlugin::NewUsbProWidget),
+          ola::NewCallback(this, &UsbProPlugin::NewRobeWidget)) {
 }
 
 
@@ -112,15 +116,32 @@ void UsbProPlugin::DeviceRemoved(UsbDevice *device) {
 
 
 /*
- * Called when a new widget is detected by the discovery thread.
+ * Called when a new usb pro widget is detected by the discovery thread.
  * @param widget a pointer to a UsbWidget whose ownership is transferred to us.
  * @param information A WidgetInformation struct for this widget
  */
-void UsbProPlugin::NewWidget(class UsbWidget *widget,
-                             const WidgetInformation *information_ptr) {
+void UsbProPlugin::NewUsbProWidget(
+    BaseUsbProWidget *widget,
+    const UsbProWidgetInformation *information_ptr) {
   m_plugin_adaptor->Execute(
       ola::NewSingleCallback(this,
-                             &UsbProPlugin::InternalNewWidget,
+                             &UsbProPlugin::InternalNewUsbProWidget,
+                             widget,
+                             information_ptr));
+}
+
+
+/*
+ * Called when a new robe widget is detected by the discovery thread.
+ * @param widget a pointer to a UsbWidget whose ownership is transferred to us.
+ * @param information A WidgetInformation struct for this widget
+ */
+void UsbProPlugin::NewRobeWidget(
+    RobeWidget *widget,
+    const RobeWidgetInformation *information_ptr) {
+  m_plugin_adaptor->Execute(
+      ola::NewSingleCallback(this,
+                             &UsbProPlugin::InternalNewRobeWidget,
                              widget,
                              information_ptr));
 }
@@ -213,7 +234,7 @@ bool UsbProPlugin::SetDefaultPreferences() {
 
 
 void UsbProPlugin::DeleteDevice(UsbDevice *device) {
-  UsbWidget *widget = device->GetWidget();
+  UsbWidgetInterface *widget = device->GetWidget();
   m_plugin_adaptor->UnregisterDevice(device);
   device->Stop();
   delete device;
@@ -222,13 +243,13 @@ void UsbProPlugin::DeleteDevice(UsbDevice *device) {
 
 
 /**
- * Handle a new Widget. This is called within the main thread
+ * Handle a new Usb Pro Widget. This is called within the main thread
  */
-void UsbProPlugin::InternalNewWidget(
-    class UsbWidget *widget,
-    const WidgetInformation *information_ptr) {
+void UsbProPlugin::InternalNewUsbProWidget(
+  class BaseUsbProWidget *widget,
+  const UsbProWidgetInformation *information_ptr) {
   m_plugin_adaptor->AddReadDescriptor(widget->GetDescriptor());
-  auto_ptr<const WidgetInformation> information(information_ptr);
+  auto_ptr<const UsbProWidgetInformation> information(information_ptr);
   string device_name = information->manufactuer;
   if (!(information->manufactuer.empty() ||
         information->device.empty()))
@@ -306,6 +327,21 @@ void UsbProPlugin::InternalNewWidget(
                        information->serial,
                        GetProFrameLimit()));
 }
+
+
+/**
+ * Handle a new Robe Widget. This is called within the main thread
+ */
+void UsbProPlugin::InternalNewRobeWidget(
+    RobeWidget *widget,
+    const RobeWidgetInformation *information) {
+  AddDevice(new RobeDevice(m_plugin_adaptor,
+                           this,
+                           ROBE_DEVICE_NAME,
+                           widget));
+  (void) information;
+}
+
 
 
 /*

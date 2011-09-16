@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * WidgetDetectorThread.h
- * A thread that periodically looks for usb pro devices, and runs the callback
- * if they are valid widgets.
+ * A thread that periodically looks for usb serial devices, and runs the
+ * callbacks if they are valid widgets.
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -29,7 +29,12 @@
 #include "ola/Callback.h"
 #include "ola/OlaThread.h"
 #include "ola/network/SelectServer.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/RobeWidget.h"
+#include "plugins/usbpro/RobeWidgetDetector.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
+#include "plugins/usbpro/UsbWidgetInterface.h"
+#include "plugins/usbpro/WidgetDetectorInterface.h"
 
 namespace ola {
 namespace plugin {
@@ -38,14 +43,22 @@ namespace usbpro {
 using std::set;
 using std::string;
 using std::vector;
+using ola::network::ConnectedDescriptor;
 
 /*
  * Discovers new Usb Pro like widgets and runs the callback.
  */
 class WidgetDetectorThread: public ola::OlaThread {
   public:
+    typedef ola::Callback2<void,
+                           BaseUsbProWidget*,
+                           const UsbProWidgetInformation*> UsbProCallback;
+    typedef ola::Callback2<void,
+                           RobeWidget*,
+                           const RobeWidgetInformation*> RobeCallback;
     WidgetDetectorThread(
-        ola::Callback2<void, UsbWidget*, const WidgetInformation*> *callback);
+        UsbProCallback *usb_pro_callback,
+        RobeCallback *robe_callback);
     ~WidgetDetectorThread();
 
     // Must be called before Run()
@@ -61,26 +74,40 @@ class WidgetDetectorThread: public ola::OlaThread {
     bool Join(void *ptr);
 
     // Can be called from any thread.
-    void FreeWidget(UsbWidget *widget);
+    void FreeWidget(UsbWidgetInterface *widget);
 
   private:
-    ola::network::SelectServer m_ss;
-    UsbProWidgetDetector *m_detector;
-    string m_directory;
-    vector<string> m_prefixes;
-    ola::Callback2<void, UsbWidget*, const WidgetInformation*> *m_callback;
+    ola::network::SelectServer m_ss;  // ss for this thread
+    vector<WidgetDetectorInterface*> m_widget_detectors;
+    string m_directory;  // directory to look for widgets in
+    vector<string> m_prefixes;  // prefixes to try
+
+    UsbProCallback *m_usb_pro_callback;
+    RobeCallback *m_robe_callback;
+
     // those paths that are either in discovery, or in use
     set<string> m_active_paths;
-    // a map of UsbWidget to (path, descriptor)
-    typedef std::pair<string, ola::network::ConnectedDescriptor*>
-      PathDescriptorPair;
-    typedef map<UsbWidget*, PathDescriptorPair> ActiveWidgets;
-    ActiveWidgets m_active_widgets;
+    // holds the path and current widget detector offset
+    typedef std::pair<string, int> DescriptorInfo;
+    // map of descriptor to DescriptorInfo
+    typedef map<ConnectedDescriptor*, DescriptorInfo>
+      ActiveDescriptors;
+    // the descriptors that are in the discovery process
+    ActiveDescriptors m_active_descriptors;
 
     bool RunScan();
     void FindCandiateDevices(vector<string> *device_paths);
-    void WidgetReady(UsbWidget *widget, const WidgetInformation *info);
-    void InternalFreeWidget(UsbWidget *widget);
+
+    // called when we find new widgets of a particular type
+    void UsbProWidgetReady(BaseUsbProWidget *widget,
+                           const UsbProWidgetInformation *info);
+    void RobeWidgetReady(RobeWidget *widget,
+                         const RobeWidgetInformation *info);
+
+    void DescriptorFailed(ConnectedDescriptor *descriptor);
+    void PerformNextDiscoveryStep(ConnectedDescriptor *descriptor);
+    void InternalFreeWidget(UsbWidgetInterface *widget);
+    void FreeDescriptor(ConnectedDescriptor *descriptor);
 
     static const unsigned int SCAN_INTERVAL_MS = 20000;
 };

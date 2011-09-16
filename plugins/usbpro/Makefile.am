@@ -3,16 +3,22 @@ include $(top_srcdir)/common.mk
 libdir = $(plugindir)
 SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h DmxTriDevice.h DmxTriWidget.h \
-             DmxterDevice.h DmxterWidget.h MockUsbWidget.h RobeUsbWidget.h \
-             UsbDevice.h UsbProDevice.h UsbProPlugin.h UsbProWidget.h \
-             UsbProWidgetDetector.h UsbWidget.h UsbWidgetInterface.h \
-             WidgetDetectorThread.h
+             BaseUsbProUsbWidget.h DmxterDevice.h DmxterWidget.h \
+             MockUsbWidget.h RobeDevice.h RobeWidget.h RobeWidgetDetector.h \
+             UsbDevice.h UsbProDevice.h UsbProPlugin.h EnttecUsbProWidget.h \
+             UsbProWidgetDetector.h UsbWidgetInterface.h \
+             WidgetDetectorInterface.h WidgetDetectorThread.h
 
 # This is a library which doesn't contain any coupling to olad
 noinst_LTLIBRARIES = libolausbprowidget.la
-libolausbprowidget_la_SOURCES = ArduinoWidget.cpp DmxTriWidget.cpp \
-                                DmxterWidget.cpp RobeUsbWidget.cpp \
-                                UsbProWidget.cpp UsbWidget.cpp \
+libolausbprowidget_la_SOURCES = ArduinoWidget.cpp \
+                                DmxTriWidget.cpp \
+                                BaseUsbProWidget.cpp \
+                                DmxterWidget.cpp \
+                                RobeDevice.cpp \
+                                RobeWidget.cpp \
+                                RobeWidgetDetector.cpp \
+                                EnttecUsbProWidget.cpp \
                                 UsbProWidgetDetector.cpp \
                                 WidgetDetectorThread.cpp
 
@@ -30,7 +36,7 @@ UsbProTester_SOURCES = ArduinoWidgetTest.cpp \
                        DmxTriWidgetTest.cpp \
                        DmxterWidgetTest.cpp \
                        MockUsbWidget.cpp \
-                       RobeUsbWidgetTest.cpp \
+                       RobeWidgetTest.cpp \
                        UsbProTester.cpp \
                        UsbProWidgetDetectorTest.cpp \
                        UsbProWidgetTest.cpp \
