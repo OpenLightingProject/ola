@@ -33,7 +33,7 @@
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
-#include "plugins/usbpro/UsbWidgetInterface.h"
+#include "plugins/usbpro/SerialWidgetInterface.h"
 #include "plugins/usbpro/WidgetDetectorInterface.h"
 
 namespace ola {
@@ -74,7 +74,7 @@ class WidgetDetectorThread: public ola::OlaThread {
     bool Join(void *ptr);
 
     // Can be called from any thread.
-    void FreeWidget(UsbWidgetInterface *widget);
+    void FreeWidget(SerialWidgetInterface *widget);
 
   private:
     ola::network::SelectServer m_ss;  // ss for this thread
@@ -106,7 +106,7 @@ class WidgetDetectorThread: public ola::OlaThread {
 
     void DescriptorFailed(ConnectedDescriptor *descriptor);
     void PerformNextDiscoveryStep(ConnectedDescriptor *descriptor);
-    void InternalFreeWidget(UsbWidgetInterface *widget);
+    void InternalFreeWidget(SerialWidgetInterface *widget);
     void FreeDescriptor(ConnectedDescriptor *descriptor);
 
     static const unsigned int SCAN_INTERVAL_MS = 20000;

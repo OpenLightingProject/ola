@@ -4,10 +4,11 @@ libdir = $(plugindir)
 SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h DmxTriDevice.h DmxTriWidget.h \
              BaseUsbProUsbWidget.h DmxterDevice.h DmxterWidget.h \
-             MockUsbWidget.h RobeDevice.h RobeWidget.h RobeWidgetDetector.h \
-             UsbDevice.h UsbProDevice.h UsbProPlugin.h EnttecUsbProWidget.h \
-             UsbProWidgetDetector.h UsbWidgetInterface.h \
-             WidgetDetectorInterface.h WidgetDetectorThread.h
+             EnttecUsbProWidget.h MockUsbWidget.h RobeDevice.h RobeWidget.h \
+             RobeWidgetDetector.h SerialWidgetInterface.h UsbDevice.h \
+             UsbProDevice.h UsbProPlugin.h UsbProWidgetDetector.h \
+             SerialWidgetInterface.h WidgetDetectorInterface.h \
+             WidgetDetectorThread.h
 
 # This is a library which doesn't contain any coupling to olad
 noinst_LTLIBRARIES = libolausbprowidget.la

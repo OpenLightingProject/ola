@@ -13,13 +13,14 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbWidgetInterface.h
- * Read and Write to a USB Widget.
+ * SerialWidgetInterface.h
+ * The base class for USB Serial widgets. These are devices that appear as a
+ * serial (COM) port, most of them use the FTDI chip.
  * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_USBWIDGETINTERFACE_H_
-#define PLUGINS_USBPRO_USBWIDGETINTERFACE_H_
+#ifndef PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_
+#define PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_
 
 #include <stdint.h>
 #include <ola/Callback.h>
@@ -32,13 +33,12 @@ namespace usbpro {
 
 
 /*
- * The UsbWidgetInterface, this is an interface so we can mock it out for
- * testing.
+ * The SerialWidgetInterface.
  */
-class UsbWidgetInterface {
+class SerialWidgetInterface {
   public:
-    UsbWidgetInterface() {}
-    virtual ~UsbWidgetInterface() {}
+    SerialWidgetInterface() {}
+    virtual ~SerialWidgetInterface() {}
 
     virtual ola::network::ConnectedDescriptor *GetDescriptor() const = 0;
 
@@ -48,4 +48,4 @@ class UsbWidgetInterface {
 }  // usbpro
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBPRO_USBWIDGETINTERFACE_H_
+#endif  // PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_

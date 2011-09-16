@@ -234,7 +234,7 @@ bool UsbProPlugin::SetDefaultPreferences() {
 
 
 void UsbProPlugin::DeleteDevice(UsbDevice *device) {
-  UsbWidgetInterface *widget = device->GetWidget();
+  SerialWidgetInterface *widget = device->GetWidget();
   m_plugin_adaptor->UnregisterDevice(device);
   device->Stop();
   delete device;

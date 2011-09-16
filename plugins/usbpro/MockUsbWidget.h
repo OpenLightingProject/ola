@@ -25,20 +25,25 @@
 #include <queue>
 
 #include "ola/Callback.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 
 /**
  * The MockUsbWidget, used to verify calls.
  */
-class MockUsbWidget: public ola::plugin::usbpro::UsbWidgetInterface {
+class MockUsbWidget: public ola::plugin::usbpro::BaseUsbProWidget {
   public:
-    MockUsbWidget():
-      m_callback(NULL),
-      m_descriptor_closed(false) {}
+    MockUsbWidget()
+        : BaseUsbProWidget(NULL),
+          m_callback(NULL),
+          m_descriptor_closed(false) {}
     ~MockUsbWidget() {
       if (m_callback)
         delete m_callback;
+    }
+
+    ola::network::ConnectedDescriptor *GetDescriptor() const {
+      return NULL;
     }
 
     void SetMessageHandler(

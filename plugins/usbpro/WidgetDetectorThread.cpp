@@ -140,7 +140,7 @@ bool WidgetDetectorThread::Join(void *ptr) {
  * Indicate that this widget is no longer is use and can be deleted.
  * This can be called from any thread.
  */
-void WidgetDetectorThread::FreeWidget(UsbWidgetInterface *widget) {
+void WidgetDetectorThread::FreeWidget(SerialWidgetInterface *widget) {
   m_ss.Execute(
       ola::NewSingleCallback(this,
                              &WidgetDetectorThread::InternalFreeWidget,
@@ -222,7 +222,7 @@ void WidgetDetectorThread::UsbProWidgetReady(
     // default the remove handler to us.
     widget->SetOnRemove(NewSingleCallback(this,
                         &WidgetDetectorThread::FreeWidget,
-                        reinterpret_cast<UsbWidgetInterface*>(widget)));
+                        reinterpret_cast<SerialWidgetInterface*>(widget)));
     m_usb_pro_callback->Run(widget, info);
   } else {
     OLA_WARN << "No callback defined for new Usb Pro Widgets.";
@@ -245,7 +245,7 @@ void WidgetDetectorThread::RobeWidgetReady(
     // default the remove handler to us.
     widget->SetOnRemove(NewSingleCallback(this,
                         &WidgetDetectorThread::FreeWidget,
-                        reinterpret_cast<UsbWidgetInterface*>(widget)));
+                        reinterpret_cast<SerialWidgetInterface*>(widget)));
     m_robe_callback->Run(widget, info);
   } else {
     OLA_WARN << "No callback defined for new Robe Widgets.";
@@ -293,7 +293,7 @@ void WidgetDetectorThread::PerformNextDiscoveryStep(
 /**
  * Free the widget and the associated descriptor.
  */
-void WidgetDetectorThread::InternalFreeWidget(UsbWidgetInterface *widget) {
+void WidgetDetectorThread::InternalFreeWidget(SerialWidgetInterface *widget) {
   ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   // remove descriptor from our ss if it's there
   OLA_INFO << "removing descriptor " << descriptor;

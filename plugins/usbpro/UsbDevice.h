@@ -24,7 +24,7 @@
 #include <string>
 #include "ola/Callback.h"
 #include "olad/Device.h"
-#include "plugins/usbpro/UsbWidgetInterface.h"
+#include "plugins/usbpro/SerialWidgetInterface.h"
 
 namespace ola {
 namespace plugin {
@@ -37,7 +37,7 @@ class UsbDevice: public ola::Device {
   public:
     UsbDevice(ola::AbstractPlugin *owner,
               const string &name,
-              UsbWidgetInterface *widget):
+              SerialWidgetInterface *widget):
       Device(owner, name),
       m_widget(widget) {}
 
@@ -47,10 +47,10 @@ class UsbDevice: public ola::Device {
       m_widget->SetOnRemove(on_close);
     }
 
-    UsbWidgetInterface *GetWidget() const { return m_widget; }
+    SerialWidgetInterface *GetWidget() const { return m_widget; }
 
   protected:
-    UsbWidgetInterface *m_widget;
+    SerialWidgetInterface *m_widget;
 };
 }  // usbpro
 }  // plugin
