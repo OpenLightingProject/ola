@@ -36,9 +36,10 @@
 namespace ola {
 namespace network {
 
-using std::string;
-using std::priority_queue;
 using ola::ExportMap;
+using ola::thread::timeout_id;
+using std::priority_queue;
+using std::string;
 
 
 /*

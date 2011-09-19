@@ -49,7 +49,7 @@ SandNetDevice::SandNetDevice(SandNetPlugin *owner,
   m_preferences(prefs),
   m_plugin_adaptor(plugin_adaptor),
   m_node(NULL),
-  m_timeout_id(ola::network::INVALID_TIMEOUT) {
+  m_timeout_id(ola::thread::INVALID_TIMEOUT) {
 }
 
 
@@ -123,9 +123,9 @@ void SandNetDevice::PrePortStop() {
   for (iter = sockets.begin(); iter != sockets.end(); ++iter)
     m_plugin_adaptor->RemoveReadDescriptor(*iter);
 
-  if (m_timeout_id != ola::network::INVALID_TIMEOUT) {
+  if (m_timeout_id != ola::thread::INVALID_TIMEOUT) {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);
-    m_timeout_id = ola::network::INVALID_TIMEOUT;
+    m_timeout_id = ola::thread::INVALID_TIMEOUT;
   }
 }
 

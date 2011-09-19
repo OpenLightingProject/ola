@@ -41,7 +41,7 @@ using ola::rdm::UID;
  */
 DmxterDevice::DmxterDevice(ola::AbstractPlugin *owner,
                            const string &name,
-                           BaseUsbProWidget *widget,
+                           DmxterWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
                            uint32_t serial):
@@ -50,8 +50,7 @@ DmxterDevice::DmxterDevice(ola::AbstractPlugin *owner,
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
-  DmxterWidget *dmxter_widget = new DmxterWidget(widget, esta_id, serial);
-  ola::BasicOutputPort *port = new DmxterOutputPort(this, dmxter_widget);
+  ola::BasicOutputPort *port = new DmxterOutputPort(this, widget);
   AddPort(port);
 }
 }  // usbpro

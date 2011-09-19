@@ -15,28 +15,23 @@
  *
  * RobeWidgetDetector.cpp
  * Handles creating RobeWidget objects.
- * Copyright (C) 2010 Simon Newton
+ * Copyright (C) 2011 Simon Newton
  *
- * This class accepts RobeWidget objects and runs the discovery process
+ * This class accepts a ConnectedDescriptor and runs the discovery process
  * to determine if the widget behaves like a Robe device.
  *
  * The discovery process sends the following request messages:
  *   - INFO_REQUEST
- *
  */
 
 
 #include <string.h>
-
 #include <map>
-#include <string>
 
 #include "ola/Logging.h"
 #include "ola/network/Socket.h"
-#include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
-#include "plugins/usbpro/RobeWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -45,17 +40,17 @@ namespace usbpro {
 
 /**
  * Constructor
- * @param ss a SelectServerInterface to use to register events.
+ * @param scheduler a instance of SchedulerInterface used to register events.
  * @param on_success A callback to run if discovery succeeds.
  * @param on_failure A callback to run if discovery fails.
  * @param timeout the time in ms between each discovery message.
  */
 RobeWidgetDetector::RobeWidgetDetector(
-    ola::network::SelectServerInterface *ss,
+    ola::thread::SchedulingExecutorInterface *scheduler,
     SuccessHandler *on_success,
     FailureHandler *on_failure,
     unsigned int timeout)
-    : m_ss(ss),
+    : m_scheduler(scheduler),
       m_timeout_ms(timeout),
       m_callback(on_success),
       m_failure_callback(on_failure) {
@@ -70,9 +65,9 @@ RobeWidgetDetector::RobeWidgetDetector(
  * Fail any widgets that are still in the discovery process.
  */
 RobeWidgetDetector::~RobeWidgetDetector() {
-  WidgetStateMap::iterator iter;
+  WidgetTimeoutMap::iterator iter;
   for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter) {
-    RemoveTimeout(&iter->second);
+    m_scheduler->RemoveTimeout(iter->second);
     CleanupWidget(iter->first);
   }
   m_widgets.clear();
@@ -101,13 +96,12 @@ bool RobeWidgetDetector::Discover(
   }
 
   // Set the onclose handler so we can mark this as failed.
-  widget->SetOnRemove(NewSingleCallback(this,
-                      &RobeWidgetDetector::FailWidget,
-                      widget));
+  descriptor->SetOnClose(NewSingleCallback(this,
+                         &RobeWidgetDetector::WidgetRemoved,
+                         widget));
 
-  // register a timeout for this widget
-  WidgetDiscoveryState &state = m_widgets[widget];
-  state.timeout_id = m_ss->RegisterSingleTimeout(
+  // Register a timeout for this widget
+  m_widgets[widget] = m_scheduler->RegisterSingleTimeout(
       m_timeout_ms,
       NewSingleCallback(this,
                         &RobeWidgetDetector::FailWidget, widget));
@@ -124,21 +118,20 @@ void RobeWidgetDetector::HandleMessage(RobeWidget *widget,
                                        unsigned int length) {
   if (label != RobeWidget::INFO_RESPONSE) {
     OLA_WARN << "Unknown response label: 0x" << std::hex <<
-      (int) label << ", size is " << length;
-    FailWidget(widget);
+      static_cast<int>(label) << ", size is " << length;
     return;
   }
 
-  WidgetStateMap::iterator iter = m_widgets.find(widget);
+  WidgetTimeoutMap::iterator iter = m_widgets.find(widget);
   if (iter == m_widgets.end()) {
     OLA_WARN << "Can't find robe widget in active map";
-    FailWidget(widget);
-    return;
+  } else {
+    m_scheduler->RemoveTimeout(iter->second);
+    m_widgets.erase(iter);
   }
 
-  RemoveTimeout(&iter->second);
   info_response_t info_response;
-  RobeWidgetInformation information = iter->second.information;
+  RobeWidgetInformation information = {0, 0, 0};
 
   if (length == sizeof(info_response)) {
     memcpy(reinterpret_cast<uint8_t*>(&info_response),
@@ -152,21 +145,29 @@ void RobeWidgetDetector::HandleMessage(RobeWidget *widget,
       sizeof(info_response);
   }
 
-  m_widgets.erase(iter);
-
   OLA_INFO << "Detected Robe Device: Hardware version: 0x" << std::hex <<
-    (int) information.hardware_version  << ", software version: 0x" <<
-    (int) information.software_version << ", eeprom version 0x" <<
-    (int) information.eeprom_version;
+    static_cast<int>(information.hardware_version) << ", software version: 0x"
+    << static_cast<int>(information.software_version) << ", eeprom version 0x"
+    << static_cast<int>(information.eeprom_version);
 
-  if (m_callback) {
-    widget->SetOnRemove(NULL);
-    RobeWidgetInformation *info = new RobeWidgetInformation(information);
-    m_callback->Run(widget, info);
-  } else {
-    OLA_WARN << "No listener provided";
-    FailWidget(widget);
-  }
+  const RobeWidgetInformation *widget_info = new RobeWidgetInformation(
+      information);
+  // given that we've been called via the widget's stack, schedule execution of
+  // the method that deletes the widget.
+  m_scheduler->Execute(
+      NewSingleCallback(this,
+                        &RobeWidgetDetector::DispatchWidget,
+                        widget,
+                        widget_info));
+}
+
+
+/**
+ * Called if a widget is removed.
+ */
+void RobeWidgetDetector::WidgetRemoved(RobeWidget *widget) {
+  widget->GetDescriptor()->Close();
+  FailWidget(widget);
 }
 
 
@@ -175,10 +176,9 @@ void RobeWidgetDetector::HandleMessage(RobeWidget *widget,
  * invalid message.
  */
 void RobeWidgetDetector::FailWidget(RobeWidget *widget) {
-  // remove from the active map
-  WidgetStateMap::iterator iter = m_widgets.find(widget);
+  WidgetTimeoutMap::iterator iter = m_widgets.find(widget);
   if (iter != m_widgets.end()) {
-    RemoveTimeout(&(iter->second));
+    m_scheduler->RemoveTimeout(iter->second);
     m_widgets.erase(iter);
   }
   CleanupWidget(widget);
@@ -189,19 +189,27 @@ void RobeWidgetDetector::FailWidget(RobeWidget *widget) {
  * Delete a widget and run the failure callback.
  */
 void RobeWidgetDetector::CleanupWidget(RobeWidget *widget) {
-  widget->SetOnRemove(NULL);
-  if (m_failure_callback)
-    m_failure_callback->Run(widget->GetDescriptor());
+  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  descriptor->SetOnClose(NULL);
   delete widget;
+  if (m_failure_callback)
+    m_failure_callback->Run(descriptor);
 }
 
 
 /**
- * Remove a timeout associated with this widget discovery state.
+ * Called once we have confirmed a new widget
  */
-void RobeWidgetDetector::RemoveTimeout(WidgetDiscoveryState *discovery_state) {
-  if (discovery_state->timeout_id != ola::network::INVALID_TIMEOUT)
-    m_ss->RemoveTimeout(discovery_state->timeout_id);
+void RobeWidgetDetector::DispatchWidget(
+    RobeWidget *widget,
+    const RobeWidgetInformation *info) {
+  if (m_callback) {
+    widget->GetDescriptor()->SetOnClose(NULL);
+    m_callback->Run(widget, info);
+  } else {
+    OLA_FATAL << "No listener provided, leaking descriptor";
+    FailWidget(widget);
+  }
 }
 }  // usbpro
 }  // plugin

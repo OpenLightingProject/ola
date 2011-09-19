@@ -37,13 +37,13 @@
 #include <fstream>
 #include <string>
 
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 using std::cout;
 using std::endl;
 using std::string;
 using ola::network::SelectServerInterface;
-using ola::plugin::usbpro::UsbWidget;
+using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -61,8 +61,7 @@ typedef struct {
 
 class RDMSniffer {
   public:
-    RDMSniffer(UsbWidget *widget,
-               SelectServerInterface *ss,
+    RDMSniffer(SelectServerInterface *ss,
                bool dump_all,
                bool verbose);
 
@@ -71,7 +70,6 @@ class RDMSniffer {
                        unsigned int length);
 
   private:
-    UsbWidget *m_widget;
     SelectServerInterface *m_ss;
     bool m_dump_all;
     bool m_verbose;
@@ -86,16 +84,12 @@ class RDMSniffer {
 };
 
 
-RDMSniffer::RDMSniffer(UsbWidget *widget,
-                       SelectServerInterface *ss,
+RDMSniffer::RDMSniffer(SelectServerInterface *ss,
                        bool dump_all,
                        bool verbose):
-    m_widget(widget),
     m_ss(ss),
     m_dump_all(dump_all),
     m_verbose(verbose) {
-  widget->SetMessageHandler(
-      ola::NewCallback(this, &RDMSniffer::HandleMessage));
 }
 
 
@@ -372,17 +366,19 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(argv);
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
-  ola::network::ConnectedDescriptor *socket =
-      UsbWidget::OpenDevice(opts.device);
-  if (!socket)
+  ola::network::ConnectedDescriptor *descriptor =
+      ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(opts.device);
+  if (!descriptor)
     exit(EX_UNAVAILABLE);
 
   ola::network::SelectServer ss;
-  ss.AddReadDescriptor(socket);
-  UsbWidget widget(socket);
-  RDMSniffer sniffer(&widget, &ss, opts.dump_all, opts.verbose);
+  descriptor->SetOnClose(ola::NewSingleCallback(&Stop, &ss));
+  ss.AddReadDescriptor(descriptor);
+  RDMSniffer sniffer(&ss, opts.dump_all, opts.verbose);
+  DispatchingUsbProWidget widget(
+      descriptor,
+      ola::NewCallback(&sniffer, &RDMSniffer::HandleMessage));
 
-  widget.SetOnRemove(ola::NewSingleCallback(&Stop, &ss));
   ss.Run();
 
   return EX_OK;

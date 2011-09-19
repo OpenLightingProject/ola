@@ -39,7 +39,7 @@ class ArduinoRGBDevice: public UsbDevice {
     ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
                      ola::AbstractPlugin *owner,
                      const string &name,
-                     BaseUsbProWidget *widget,
+                     ArduinoWidget *widget,
                      uint16_t esta_id,
                      uint16_t device_id,
                      uint32_t serial);
@@ -57,38 +57,37 @@ class ArduinoRGBDevice: public UsbDevice {
 class ArduinoRGBOutputPort: public BasicOutputPort {
   public:
     ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
-                         BaseUsbProWidget *widget,
-                         uint16_t esta_id,
+                         ArduinoWidget *widget,
                          uint32_t serial);
 
     string Description() const { return m_description; }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_widget.SendDMX(buffer);
+      return m_widget->SendDMX(buffer);
       (void) priority;
     }
 
     void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *callback) {
-      return m_widget.SendRDMRequest(request, callback);
+      return m_widget->SendRDMRequest(request, callback);
     }
 
     void RunFullDiscovery() {
       ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
           static_cast<BasicOutputPort*>(this),
           &ArduinoRGBOutputPort::NewUIDList);
-      m_widget.RunFullDiscovery(callback);
+      m_widget->RunFullDiscovery(callback);
     }
 
     void RunIncrementalDiscovery() {
       ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
           static_cast<BasicOutputPort*>(this),
           &ArduinoRGBOutputPort::NewUIDList);
-      m_widget.RunIncrementalDiscovery(callback);
+      m_widget->RunIncrementalDiscovery(callback);
     }
 
   private:
-    ArduinoWidget m_widget;
+    ArduinoWidget *m_widget;
     string m_description;
 };
 }  // usbpro

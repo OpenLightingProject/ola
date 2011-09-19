@@ -55,7 +55,7 @@ class SandNetDevice: public ola::Device {
     class Preferences *m_preferences;
     class PluginAdaptor *m_plugin_adaptor;
     SandNetNode *m_node;
-    ola::network::timeout_id m_timeout_id;
+    ola::thread::timeout_id m_timeout_id;
 
     static const char SANDNET_DEVICE_NAME[];
     // the number of input ports to create

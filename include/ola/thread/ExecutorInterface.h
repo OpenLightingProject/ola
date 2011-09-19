@@ -13,23 +13,28 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbProTester.cpp
- * Runs all the UsbPro tests
- * Copyright (C) 2010 Simon Newton
+ * ExecutorInterface.h
+ * The executor interface provides a single method:
+ *   Execute() which takes a no-argument, void Callback and executes it at some
+ *   point the in future. Scheduling details are left to the implementation.
+ * Copyright (C) 2011 Simon Newton
  */
 
-#include <cppunit/CompilerOutputter.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
+#ifndef INCLUDE_OLA_THREAD_EXECUTORINTERFACE_H_
+#define INCLUDE_OLA_THREAD_EXECUTORINTERFACE_H_
 
-int main(int argc, char* argv[]) {
-  CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
-  CppUnit::TextUi::TestRunner runner;
-  runner.addTest(suite);
-  runner.setOutputter(
-      new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
-  bool wasSucessful = runner.run();
-  return wasSucessful ? 0 : 1;
-  (void) argc;
-  (void) argv;
-}
+#include <ola/Callback.h>
+
+namespace ola {
+namespace thread {
+
+class ExecutorInterface {
+  public :
+    ExecutorInterface() {}
+    virtual ~ExecutorInterface() {}
+
+    virtual void Execute(ola::BaseCallback0<void> *closure) = 0;
+};
+}  // thread
+}  // ola
+#endif  // INCLUDE_OLA_THREAD_EXECUTORINTERFACE_H_

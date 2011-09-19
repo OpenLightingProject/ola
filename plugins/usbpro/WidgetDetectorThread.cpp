@@ -27,10 +27,15 @@
 #include <string>
 #include <vector>
 
+#include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/Callback.h"
 #include "ola/network/Socket.h"
+#include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/DmxTriWidget.h"
+#include "plugins/usbpro/DmxterWidget.h"
+#include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
@@ -43,27 +48,18 @@ namespace usbpro {
 
 /**
  * Constructor
+ * @param handler the NewWidgetHandler object to call when we find new widgets.
+ * @param ss the SelectServer to use when calling the handler object. This is
+ * also used by some of the widgets so it should be the same SelectServer that
+ * you intend to use the Widgets with.
  */
 WidgetDetectorThread::WidgetDetectorThread(
-  UsbProCallback *usb_pro_callback,
-  RobeCallback *robe_callback)
-    : m_usb_pro_callback(usb_pro_callback),
-      m_robe_callback(robe_callback) {
-  if (!m_usb_pro_callback)
-    OLA_FATAL << "No callback registered for the WidgetDetectorThread";
-  if (!m_robe_callback)
-    OLA_FATAL << "No callback registered for the WidgetDetectorThread";
-}
-
-
-/**
- * Clean up
- */
-WidgetDetectorThread::~WidgetDetectorThread() {
-  if (m_usb_pro_callback)
-    delete m_usb_pro_callback;
-  if (m_robe_callback)
-    delete m_robe_callback;
+  NewWidgetHandler *handler,
+  ola::network::SelectServerInterface *ss)
+    : m_other_ss(ss),
+      m_handler(handler) {
+  if (!m_handler)
+    OLA_FATAL << "No new widget handler registered.";
 }
 
 
@@ -160,7 +156,7 @@ bool WidgetDetectorThread::RunScan() {
   for (it = device_paths.begin(); it != device_paths.end(); ++it) {
     if (m_active_paths.find(*it) != m_active_paths.end())
       continue;
-    OLA_INFO << "Found potential USB Pro like device at " << *it;
+    OLA_INFO << "Found potential USB Serial device at " << *it;
     ola::network::ConnectedDescriptor *descriptor =
       BaseUsbProWidget::OpenDevice(*it);
     if (!descriptor)
@@ -213,22 +209,71 @@ void WidgetDetectorThread::FindCandiateDevices(vector<string> *device_paths) {
  * to use.
  */
 void WidgetDetectorThread::UsbProWidgetReady(
-    BaseUsbProWidget *widget,
-    const UsbProWidgetInformation *info) {
+    ConnectedDescriptor *descriptor,
+    const UsbProWidgetInformation *information) {
   // we're no longer interested in events from this widget
-  m_ss.RemoveReadDescriptor(widget->GetDescriptor());
+  m_ss.RemoveReadDescriptor(descriptor);
 
-  if (m_usb_pro_callback) {
-    // default the remove handler to us.
-    widget->SetOnRemove(NewSingleCallback(this,
-                        &WidgetDetectorThread::FreeWidget,
-                        reinterpret_cast<SerialWidgetInterface*>(widget)));
-    m_usb_pro_callback->Run(widget, info);
-  } else {
+  if (!m_handler) {
     OLA_WARN << "No callback defined for new Usb Pro Widgets.";
-    InternalFreeWidget(widget);
-    delete info;
+    FreeDescriptor(descriptor);
+    delete information;
+    return;
   }
+
+  switch (information->esta_id) {
+    case DMX_KING_ESTA_ID:
+      if (information->device_id == DMX_KING_DEVICE_ID) {
+        // DMXKing devices are drop in replacements for a Usb Pro
+        DispatchWidget(
+            new EnttecUsbProWidget(
+              m_other_ss,
+              descriptor),
+            information);
+        return;
+      }
+    case GODDARD_ESTA_ID:
+      if (information->device_id == GODDARD_DMXTER4_ID ||
+          information->device_id == GODDARD_MINI_DMXTER4_ID) {
+        DispatchWidget(
+            new DmxterWidget(
+              descriptor,
+              information->esta_id,
+              information->serial),
+            information);
+        return;
+      }
+      break;
+    case JESE_ESTA_ID:
+      if (information->device_id == JESE_DMX_TRI_ID ||
+          information->device_id == JESE_RDM_TRI_ID) {
+        DispatchWidget(
+            new DmxTriWidget(
+              m_other_ss,
+              descriptor),
+            information);
+        return;
+      }
+      break;
+    case OPEN_LIGHTING_ESTA_CODE:
+      if (information->device_id == OPEN_LIGHTING_RGB_MIXER_ID ||
+          information->device_id == OPEN_LIGHTING_PACKETHEADS_ID) {
+        DispatchWidget(
+            new ArduinoWidget(
+              descriptor,
+              information->esta_id,
+              information->serial),
+            information);
+        return;
+      }
+      break;
+  }
+  OLA_WARN << "Defaulting to a Usb Pro device";
+  DispatchWidget(
+      new EnttecUsbProWidget(
+        m_other_ss,
+        descriptor),
+      information);
 }
 
 
@@ -241,12 +286,8 @@ void WidgetDetectorThread::RobeWidgetReady(
   // we're no longer interested in events from this widget
   m_ss.RemoveReadDescriptor(widget->GetDescriptor());
 
-  if (m_robe_callback) {
-    // default the remove handler to us.
-    widget->SetOnRemove(NewSingleCallback(this,
-                        &WidgetDetectorThread::FreeWidget,
-                        reinterpret_cast<SerialWidgetInterface*>(widget)));
-    m_robe_callback->Run(widget, info);
+  if (m_handler) {
+    DispatchWidget(widget, info);
   } else {
     OLA_WARN << "No callback defined for new Robe Widgets.";
     InternalFreeWidget(widget);
@@ -261,7 +302,11 @@ void WidgetDetectorThread::RobeWidgetReady(
 void WidgetDetectorThread::DescriptorFailed(
     ola::network::ConnectedDescriptor *descriptor) {
   m_ss.RemoveReadDescriptor(descriptor);
-  PerformNextDiscoveryStep(descriptor);
+  if (descriptor->ValidReadDescriptor()) {
+    PerformNextDiscoveryStep(descriptor);
+  } else {
+    FreeDescriptor(descriptor);
+  }
 }
 
 
@@ -284,8 +329,10 @@ void WidgetDetectorThread::PerformNextDiscoveryStep(
       descriptor;
     m_ss.AddReadDescriptor(descriptor);
     bool ok = m_widget_detectors[descriptor_info.second]->Discover(descriptor);
-    if (!ok)
+    if (!ok) {
+      m_ss.RemoveReadDescriptor(descriptor);
       FreeDescriptor(descriptor);
+    }
   }
 }
 
@@ -296,12 +343,9 @@ void WidgetDetectorThread::PerformNextDiscoveryStep(
 void WidgetDetectorThread::InternalFreeWidget(SerialWidgetInterface *widget) {
   ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   // remove descriptor from our ss if it's there
-  OLA_INFO << "removing descriptor " << descriptor;
   m_ss.RemoveReadDescriptor(descriptor);
   delete widget;
-
   FreeDescriptor(descriptor);
-  OLA_INFO << "internal free done";
 }
 
 
@@ -314,6 +358,40 @@ void WidgetDetectorThread::FreeDescriptor(ConnectedDescriptor *descriptor) {
   m_active_paths.erase(descriptor_info.first);
   m_active_descriptors.erase(descriptor);
   delete descriptor;
+}
+
+
+/**
+ * Dispatch the widget to the caller's thread
+ */
+template<typename WidgetType, typename InfoType>
+void WidgetDetectorThread::DispatchWidget(WidgetType *widget,
+                                          const InfoType *information) {
+  // default the on remove to us
+  widget->GetDescriptor()->SetOnClose(NewSingleCallback(
+        this,
+        &WidgetDetectorThread::FreeWidget,
+        reinterpret_cast<SerialWidgetInterface*>(widget)));
+  ola::SingleUseCallback0<void> *cb =
+    ola::NewSingleCallback(
+         this,
+         &WidgetDetectorThread::SignalNewWidget<WidgetType, InfoType>,
+         widget,
+         information);
+  m_other_ss->Execute(cb);
+}
+
+
+/**
+ * Call the handler to indicate there is a new widget available.
+ */
+template<typename WidgetType, typename InfoType>
+void WidgetDetectorThread::SignalNewWidget(WidgetType *widget,
+                                           const InfoType *information) {
+  const InfoType info(*information);
+  delete information;
+  m_other_ss->AddReadDescriptor(widget->GetDescriptor());
+  m_handler->NewWidget(widget, info);
 }
 }  // usbpro
 }  // plugin

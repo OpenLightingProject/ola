@@ -24,7 +24,6 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
-#include "ola/network/SelectServerInterface.h"
 #include "ola/rdm/RDMCommand.h"
 #include "olad/PortDecorators.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
@@ -48,20 +47,19 @@ const uint8_t ArduinoWidgetImpl::RESPONSE_INVALID_COMMAND = 5;
 
 /*
  * New ArduinoWidget device
- * @param widget the underlying UsbWidget
+ * @param descriptor the ConnectedDescriptor for this widget.
  * @param esta_id the ESTA id.
  * @param serial the 4 byte serial which forms part of the UID
  */
-ArduinoWidgetImpl::ArduinoWidgetImpl(BaseUsbProWidget *widget,
-                                     uint16_t esta_id,
-                                     uint32_t serial):
-    m_transaction_id(0),
-    m_uid(esta_id, serial),
-    m_widget(widget),
-    m_pending_request(NULL),
-    m_rdm_request_callback(NULL) {
-  m_widget->SetMessageHandler(
-      NewCallback(this, &ArduinoWidgetImpl::HandleMessage));
+ArduinoWidgetImpl::ArduinoWidgetImpl(
+    ola::network::ConnectedDescriptor *descriptor,
+    uint16_t esta_id,
+    uint32_t serial)
+    : BaseUsbProWidget(descriptor),
+      m_transaction_id(0),
+      m_uid(esta_id, serial),
+      m_pending_request(NULL),
+      m_rdm_request_callback(NULL) {
 }
 
 
@@ -92,28 +90,10 @@ bool ArduinoWidgetImpl::SendDMX(const DmxBuffer &buffer) {
   widget_dmx.start_code = 0;
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
-  return m_widget->SendMessage(BaseUsbProWidget::DMX_LABEL,
-                               reinterpret_cast<uint8_t*>(&widget_dmx),
-                               length + 1);
+  return SendMessage(BaseUsbProWidget::DMX_LABEL,
+                     reinterpret_cast<uint8_t*>(&widget_dmx),
+                     length + 1);
 }
-
-
-/**
- * Called when a new packet arrives
- */
-void ArduinoWidgetImpl::HandleMessage(uint8_t label,
-                                      const uint8_t *data,
-                                      unsigned int length) {
-  switch (label) {
-    case RDM_REQUEST_LABEL:
-      HandleRDMResponse(data, length);
-      break;
-    default:
-      OLA_WARN << "Unknown label: 0x" << std::hex <<
-        static_cast<int>(label);
-  }
-}
-
 
 
 /**
@@ -144,7 +124,7 @@ void ArduinoWidgetImpl::SendRDMRequest(
     data_size++;
     m_rdm_request_callback = on_complete;
     m_pending_request = request;
-    if (m_widget->SendMessage(RDM_REQUEST_LABEL, data, data_size)) {
+    if (SendMessage(RDM_REQUEST_LABEL, data, data_size)) {
       delete[] data;
       return;
     }
@@ -159,6 +139,26 @@ void ArduinoWidgetImpl::SendRDMRequest(
 }
 
 
+/**
+ * Called when a new packet arrives
+ */
+void ArduinoWidgetImpl::HandleMessage(uint8_t label,
+                                      const uint8_t *data,
+                                      unsigned int length) {
+  switch (label) {
+    case RDM_REQUEST_LABEL:
+      HandleRDMResponse(data, length);
+      break;
+    default:
+      OLA_WARN << "Unknown label: 0x" << std::hex <<
+        static_cast<int>(label);
+  }
+}
+
+
+/**
+ * Handle a RDM response.
+ */
 void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                           unsigned int length) {
   std::vector<std::string> packets;
@@ -255,11 +255,11 @@ bool ArduinoWidgetImpl::GetUidSet(ola::rdm::RDMDiscoveryCallback *callback) {
 /**
  * ArduinoWidget Constructor
  */
-ArduinoWidget::ArduinoWidget(BaseUsbProWidget *widget,
+ArduinoWidget::ArduinoWidget(ola::network::ConnectedDescriptor *descriptor,
                              uint16_t esta_id,
                              uint32_t serial,
                              unsigned int queue_size) {
-  m_impl = new ArduinoWidgetImpl(widget, esta_id, serial);
+  m_impl = new ArduinoWidgetImpl(descriptor, esta_id, serial);
   m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
                                                                  queue_size);
 }

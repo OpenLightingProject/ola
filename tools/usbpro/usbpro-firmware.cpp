@@ -31,13 +31,13 @@
 #include <fstream>
 #include <string>
 
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
 
 using std::cout;
 using std::endl;
 using std::ifstream;
 using std::string;
-using ola::plugin::usbpro::UsbWidget;
+using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::network::SelectServer;
 
 static const char DEFAULT_DEVICE[] = "/dev/ttyUSB0";
@@ -56,14 +56,12 @@ typedef struct {
 class FirmwareTransferer {
   public:
     FirmwareTransferer(ifstream *file,
-                       UsbWidget *widget,
+                       DispatchingUsbProWidget *widget,
                        ola::network::SelectServer *ss):
         m_sucessful(false),
         m_firmware(file),
         m_widget(widget),
         m_ss(ss) {
-      widget->SetMessageHandler(
-          ola::NewCallback(this, &FirmwareTransferer::HandleMessage));
     }
 
     bool SendReprogram();
@@ -86,7 +84,7 @@ class FirmwareTransferer {
 
     bool m_sucessful;
     ifstream *m_firmware;
-    UsbWidget *m_widget;
+    DispatchingUsbProWidget *m_widget;
     SelectServer *m_ss;
 
     static const uint8_t REPROGRAM_LABEL = 1;
@@ -232,6 +230,11 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
+void Stop(ola::network::SelectServer *ss) {
+  ss->Terminate();
+}
+
+
 /*
  * Flashes the device
  */
@@ -257,15 +260,17 @@ int main(int argc, char *argv[]) {
 
   ola::network::SelectServer ss;
 
-  ola::network::ConnectedDescriptor *socket =
-     UsbWidget::OpenDevice(opts.device);
-  if (!socket)
+  ola::network::ConnectedDescriptor *descriptor =
+     ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(opts.device);
+  if (!descriptor)
     exit(EX_UNAVAILABLE);
 
-  ss.AddReadDescriptor(socket);
-  UsbWidget widget(socket);
-
+  descriptor->SetOnClose(ola::NewSingleCallback(&Stop, &ss));
+  ss.AddReadDescriptor(descriptor);
+  DispatchingUsbProWidget widget(descriptor, NULL);
   FirmwareTransferer transferer(&firmware_file, &widget, &ss);
+  widget.SetHandler(
+      ola::NewCallback(&transferer, &FirmwareTransferer::HandleMessage));
 
   if (!transferer.SendReprogram()) {
     OLA_FATAL << "Send message failed";

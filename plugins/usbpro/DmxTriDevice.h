@@ -23,8 +23,7 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
-#include "ola/rdm/RDMControllerInterface.h"
-#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/UsbDevice.h"
 
 namespace ola {
@@ -40,26 +39,17 @@ class DmxTriWidget;
  */
 class DmxTriDevice: public UsbDevice {
   public:
-    DmxTriDevice(ola::network::SelectServerInterface *ss,
-                 ola::AbstractPlugin *owner,
+    DmxTriDevice(ola::AbstractPlugin *owner,
                  const string &name,
-                 BaseUsbProWidget *widget,
+                 DmxTriWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
-                 uint32_t serial,
-                 bool use_raw_rdm);
-    ~DmxTriDevice();
+                 uint32_t serial);
+    ~DmxTriDevice() {}
 
     string DeviceId() const { return m_device_id; }
     bool StartHook();
     void PrePortStop();
-    bool SendDMX(const DmxBuffer &buffer) const;
-
-    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback);
-
-    void RunRDMDiscovery();
-    void SendUIDUpdate();
 
   private:
     string m_device_id;
@@ -72,38 +62,28 @@ class DmxTriDevice: public UsbDevice {
  */
 class DmxTriOutputPort: public BasicOutputPort {
   public:
-    explicit DmxTriOutputPort(DmxTriDevice *parent)
-        : BasicOutputPort(parent, 0),
-          m_device(parent) {}
+    DmxTriOutputPort(DmxTriDevice *parent,
+                     DmxTriWidget *widget);
+    ~DmxTriOutputPort();
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_device->SendDMX(buffer);
-      (void) priority;
-    }
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return ""; }
 
     void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback) {
-      return m_device->HandleRDMRequest(request, callback);
-    }
+                          ola::rdm::RDMCallback *callback);
 
     void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
       if (new_universe)
-        m_device->SendUIDUpdate();
+        m_tri_widget->SendUIDUpdate();
       (void) old_universe;
     }
 
-    void RunFullDiscovery() {
-      m_device->RunRDMDiscovery();
-    }
-
-    void RunIncrementalDiscovery() {
-      // incremental isn't supported
-      m_device->RunRDMDiscovery();
-    }
+    void RunRDMDiscovery();
+    void RunIncrementalDiscovery();
 
   private:
     DmxTriDevice *m_device;
+    DmxTriWidget *m_tri_widget;
 };
 }  // usbpro
 }  // plugin

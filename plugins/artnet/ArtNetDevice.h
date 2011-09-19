@@ -72,7 +72,7 @@ class ArtNetDevice: public Device {
     class Preferences *m_preferences;
     ArtNetNode *m_node;
     class PluginAdaptor *m_plugin_adaptor;
-    ola::network::timeout_id m_timeout_id;
+    ola::thread::timeout_id m_timeout_id;
 
     void HandleOptions(Request *request, string *response);
 };

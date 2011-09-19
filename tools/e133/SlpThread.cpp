@@ -89,7 +89,7 @@ SlpThread::SlpThread(ola::network::SelectServer *ss,
       m_init_ok(false),
       m_refresh_time(refresh_time),
       m_discovery_callback(discovery_callback),
-      m_discovery_timeout(ola::network::INVALID_TIMEOUT) {
+      m_discovery_timeout(ola::thread::INVALID_TIMEOUT) {
 }
 
 
@@ -229,7 +229,7 @@ void *SlpThread::Run() {
  * Perform the discovery routine.
  */
 void SlpThread::DiscoveryRequest() {
-  if (m_discovery_timeout != ola::network::INVALID_TIMEOUT) {
+  if (m_discovery_timeout != ola::thread::INVALID_TIMEOUT) {
     m_ss.RemoveTimeout(m_discovery_timeout);
   }
 
@@ -312,12 +312,12 @@ void SlpThread::RegisterRequest(slp_registration_callback *callback,
       return;
     }
     iter->second.lifetime = lifetime;
-    if (iter->second.timeout != ola::network::INVALID_TIMEOUT)
+    if (iter->second.timeout != ola::thread::INVALID_TIMEOUT)
       m_ss.RemoveTimeout(iter->second.timeout);
   } else {
     url_registration_state url_state = {
       lifetime,
-      ola::network::INVALID_TIMEOUT
+      ola::thread::INVALID_TIMEOUT
     };
     pair <string, url_registration_state> p(url, url_state);
     iter = m_url_map.insert(p).first;
@@ -381,7 +381,7 @@ void SlpThread::DeregisterRequest(slp_registration_callback *callback,
   url_state_map::iterator iter = m_url_map.find(url);
   if (iter != m_url_map.end()) {
     OLA_INFO << "erasing " << url << " from map";
-    if (iter->second.timeout != ola::network::INVALID_TIMEOUT)
+    if (iter->second.timeout != ola::thread::INVALID_TIMEOUT)
       m_ss.RemoveTimeout(iter->second.timeout);
     m_url_map.erase(iter);
   }
@@ -433,7 +433,7 @@ void SlpThread::DiscoveryTriggered() {
   OLA_INFO << "scheduled next discovery run";
   // set the discovery_timeout to invalid so we don't try and remove it while
   // it's running.
-  m_discovery_timeout = ola::network::INVALID_TIMEOUT;
+  m_discovery_timeout = ola::thread::INVALID_TIMEOUT;
   DiscoveryRequest();
 }
 

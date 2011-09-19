@@ -13,38 +13,37 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SerialWidgetInterface.h
- * The base class for USB Serial widgets. These are devices that appear as a
- * serial (COM) port, most of them use the FTDI chip.
+ * SchedulerInterface.h
+ * The scheduler interface provides methods to schedule the execution of
+ * callbacks at some point in the future.
  * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_
-#define PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_
+#ifndef INCLUDE_OLA_THREAD_SCHEDULERINTERFACE_H_
+#define INCLUDE_OLA_THREAD_SCHEDULERINTERFACE_H_
 
-#include <stdint.h>
 #include <ola/Callback.h>
-#include <string>
-#include "ola/network/Socket.h"
 
 namespace ola {
-namespace plugin {
-namespace usbpro {
+namespace thread {
+
+typedef void* timeout_id;
+static const timeout_id INVALID_TIMEOUT = NULL;
 
 
-/*
- * The SerialWidgetInterface.
- */
-class SerialWidgetInterface {
-  public:
-    SerialWidgetInterface() {}
-    virtual ~SerialWidgetInterface() {}
+class SchedulerInterface {
+  public :
+    SchedulerInterface() {}
+    virtual ~SchedulerInterface() {}
 
-    virtual ola::network::ConnectedDescriptor *GetDescriptor() const = 0;
-    virtual void SetOnRemove(ola::SingleUseCallback0<void> *on_close) = 0;
-    virtual void CloseDescriptor() = 0;
+    virtual timeout_id RegisterRepeatingTimeout(
+        unsigned int ms,
+        Callback0<bool> *closure) = 0;
+    virtual timeout_id RegisterSingleTimeout(
+        unsigned int ms,
+        SingleUseCallback0<void> *closure) = 0;
+    virtual void RemoveTimeout(timeout_id id) = 0;
 };
-}  // usbpro
-}  // plugin
+}  // thread
 }  // ola
-#endif  // PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_
+#endif  // INCLUDE_OLA_THREAD_SCHEDULERINTERFACE_H_

@@ -13,8 +13,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbProWidget.h
+ * EnttecUsbProWidget.h
  * The Enttec USB Pro Widget
+ * TODO(simon): implement RDM for this device - bug #146.
+ * It doesn't do discovery onboard through which makes thing pretty difficult.
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -27,7 +29,6 @@
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
-#include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -40,25 +41,24 @@ using ola::rdm::UIDSet;
 
 
 /*
- * New DMX TRI device
+ * New Enttec Usb Pro Device.
+ * This also works for the RDM Pro with the standard firmware loaded.
  */
 EnttecUsbProWidgetImpl::EnttecUsbProWidgetImpl(
-  ola::network::SelectServerInterface *ss,
-  BaseUsbProWidget *widget):
-    m_ss(ss),
-    m_widget(widget),
-    m_active(true),
-    m_rdm_timeout_id(ola::network::INVALID_TIMEOUT),
-    m_dmx_callback(NULL)
-    /*
-    m_uid_set_callback(NULL),
-    m_discovery_callback(NULL),
-    m_rdm_request_callback(NULL),
-    m_pending_request(NULL),
-    m_transaction_number(0)
-    */ {
-  m_widget->SetMessageHandler(
-      NewCallback(this, &EnttecUsbProWidgetImpl::HandleMessage));
+  ola::thread::SchedulerInterface *scheduler,
+  ola::network::ConnectedDescriptor *descriptor)
+    : BaseUsbProWidget(descriptor),
+      m_scheduler(scheduler),
+      m_active(true),
+      // m_rdm_timeout_id(ola::thread::INVALID_TIMEOUT),
+      m_dmx_callback(NULL)
+      /*
+      m_uid_set_callback(NULL),
+      m_discovery_callback(NULL),
+      m_rdm_request_callback(NULL),
+      m_pending_request(NULL),
+      m_transaction_number(0)
+      */ {
 }
 
 
@@ -154,9 +154,9 @@ bool EnttecUsbProWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
   widget_dmx.start_code = 0;
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
-  return m_widget->SendMessage(BaseUsbProWidget::DMX_LABEL,
-                               reinterpret_cast<uint8_t*>(&widget_dmx),
-                               length + 1);
+  return SendMessage(BaseUsbProWidget::DMX_LABEL,
+                     reinterpret_cast<uint8_t*>(&widget_dmx),
+                     length + 1);
 }
 
 
@@ -169,7 +169,7 @@ bool EnttecUsbProWidgetImpl::ChangeToReceiveMode(bool change_only) {
     return false;
 
   uint8_t mode = change_only;
-  bool status = m_widget->SendMessage(DMX_RX_MODE_LABEL, &mode, sizeof(mode));
+  bool status = SendMessage(DMX_RX_MODE_LABEL, &mode, sizeof(mode));
 
   if (status && change_only)
     m_input_buffer.Blackout();
@@ -193,9 +193,9 @@ void EnttecUsbProWidgetImpl::GetParameters(usb_pro_params_callback *callback) {
   m_outstanding_param_callbacks.push_back(callback);
 
   uint16_t user_size = 0;
-  bool r = m_widget->SendMessage(PARAMETERS_LABEL,
-                                 reinterpret_cast<uint8_t*>(&user_size),
-                                 sizeof(user_size));
+  bool r = SendMessage(PARAMETERS_LABEL,
+                       reinterpret_cast<uint8_t*>(&user_size),
+                       sizeof(user_size));
 
   if (!r) {
     // failed
@@ -226,7 +226,7 @@ bool EnttecUsbProWidgetImpl::SetParameters(uint8_t break_time,
     mab_time,
     rate};
 
-  bool ret = m_widget->SendMessage(
+  bool ret = SendMessage(
       SET_PARAMETERS_LABEL,
       reinterpret_cast<uint8_t*>(&widget_parameters),
       sizeof(widget_parameters));
@@ -348,7 +348,7 @@ void EnttecUsbProWidgetImpl::HandleDMXDiff(const uint8_t *data,
   unsigned int offset = 0;
 
   // skip non-0 start codes, this code is pretty messed up because the USB Pro
-  // doesn't seem to provide a guarentee on the ordering of packets. Packets
+  // doesn't seem to provide a guarantee on the ordering of packets. Packets
   // with non-0 start codes are almost certainly going to cause problems.
   if (start_channel == 0 && (widget_reply->changed[0] & 0x01) &&
       widget_reply->data[offset])
@@ -371,13 +371,13 @@ void EnttecUsbProWidgetImpl::HandleDMXDiff(const uint8_t *data,
 
 
 /**
- * UsbProWidget Constructor
+ * EnttecUsbProWidget Constructor
  */
 EnttecUsbProWidget::EnttecUsbProWidget(
-    ola::network::SelectServerInterface *ss,
-    BaseUsbProWidget *widget,
+    ola::thread::SchedulerInterface *scheduler,
+    ola::network::ConnectedDescriptor *descriptor,
     unsigned int queue_size)
-    : m_impl(ss, widget) {
+    : m_impl(scheduler, descriptor) {
     // m_controller(&m_impl, queue_size) {
   /*
   m_impl.SetDiscoveryCallback(

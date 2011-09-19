@@ -47,12 +47,11 @@ class UsbProDevice: public UsbDevice {
     UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                  ola::AbstractPlugin *owner,
                  const string &name,
-                 BaseUsbProWidget *widget,
+                 EnttecUsbProWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
                  uint32_t serial,
                  unsigned int fps_limit);
-    ~UsbProDevice();
 
     string DeviceId() const { return m_serial; }
 

@@ -38,7 +38,7 @@ E133Node::E133Node(ola::network::SelectServerInterface *ss,
                    uint16_t port)
     : m_preferred_ip(preferred_ip),
       m_ss(ss),
-      m_timeout_event(ola::network::INVALID_TIMEOUT),
+      m_timeout_event(ola::thread::INVALID_TIMEOUT),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_transport(port),
       m_root_layer(&m_transport, m_cid),

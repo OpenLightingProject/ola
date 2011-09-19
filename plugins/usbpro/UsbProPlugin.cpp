@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -33,8 +32,10 @@
 
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 #include "plugins/usbpro/DmxTriDevice.h"
+#include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/DmxterDevice.h"
 #include "plugins/usbpro/RobeDevice.h"
+#include "plugins/usbpro/RobeWidgetDetector.h"
 #include "plugins/usbpro/UsbProDevice.h"
 #include "plugins/usbpro/UsbProPlugin.h"
 
@@ -60,9 +61,7 @@ const char UsbProPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
 
 UsbProPlugin::UsbProPlugin(PluginAdaptor *plugin_adaptor)
     : Plugin(plugin_adaptor),
-      m_detector_thread(
-          ola::NewCallback(this, &UsbProPlugin::NewUsbProWidget),
-          ola::NewCallback(this, &UsbProPlugin::NewRobeWidget)) {
+      m_detector_thread(this, plugin_adaptor) {
 }
 
 
@@ -74,8 +73,9 @@ string UsbProPlugin::Description() const {
 "Enttec USB Pro Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin supports devices that implement the Enttec USB Pro specfication\n"
-"including the DMX USB Pro, the DMXking USB DMX512-A & the DMX-TRI. See\n"
+"This plugin supports USB devices that emulate a serial port. This includes\n"
+" Enttec DMX USB Pro, the DMXking USB DMX512-A & the DMX-TRI, Dmxter, \n"
+" Robe Universe Interface. See\n"
 "http://opendmx.net/index.php/USB_Protocol_Extensions for more info.\n"
 "\n"
 "--- Config file : ola-usbpro.conf ---\n"
@@ -115,35 +115,89 @@ void UsbProPlugin::DeviceRemoved(UsbDevice *device) {
 }
 
 
-/*
- * Called when a new usb pro widget is detected by the discovery thread.
- * @param widget a pointer to a UsbWidget whose ownership is transferred to us.
- * @param information A WidgetInformation struct for this widget
+/**
+ * Handle a new ArduinoWidget.
  */
-void UsbProPlugin::NewUsbProWidget(
-    BaseUsbProWidget *widget,
-    const UsbProWidgetInformation *information_ptr) {
-  m_plugin_adaptor->Execute(
-      ola::NewSingleCallback(this,
-                             &UsbProPlugin::InternalNewUsbProWidget,
-                             widget,
-                             information_ptr));
+void UsbProPlugin::NewWidget(
+    ArduinoWidget *widget,
+    const UsbProWidgetInformation &information) {
+  AddDevice(new ArduinoRGBDevice(
+      m_plugin_adaptor,
+      this,
+      GetDeviceName(information),
+      widget,
+      information.esta_id,
+      information.device_id,
+      information.serial));
 }
 
 
-/*
- * Called when a new robe widget is detected by the discovery thread.
- * @param widget a pointer to a UsbWidget whose ownership is transferred to us.
- * @param information A WidgetInformation struct for this widget
+/**
+ * Handle a new Enttec Usb Pro Widget.
  */
-void UsbProPlugin::NewRobeWidget(
+void UsbProPlugin::NewWidget(
+    EnttecUsbProWidget *widget,
+    const UsbProWidgetInformation &information) {
+  string device_name = GetDeviceName(information);
+  if (device_name.empty())
+    device_name = USBPRO_DEVICE_NAME;
+
+  AddDevice(new UsbProDevice(
+      m_plugin_adaptor,
+      this,
+      device_name,
+      widget,
+      information.esta_id ? information.esta_id : ENTTEC_ESTA_ID,
+      information.device_id ? information.device_id : 0,
+      information.serial,
+      GetProFrameLimit()));
+}
+
+
+/**
+ * Handle a new Dmx-Tri Widget.
+ */
+void UsbProPlugin::NewWidget(
+    DmxTriWidget *widget,
+    const UsbProWidgetInformation &information) {
+  widget->UseRawRDM(
+      m_preferences->GetValueAsBool(TRI_USE_RAW_RDM_KEY));
+  AddDevice(new DmxTriDevice(
+      this,
+      GetDeviceName(information),
+      widget,
+      information.esta_id,
+      information.device_id,
+      information.serial));
+}
+
+
+/**
+ * Handle a new Dmxter.
+ */
+void UsbProPlugin::NewWidget(
+    DmxterWidget *widget,
+    const UsbProWidgetInformation &information) {
+  AddDevice(new DmxterDevice(
+      this,
+      GetDeviceName(information),
+      widget,
+      information.esta_id,
+      information.device_id,
+      information.serial));
+}
+
+
+/**
+ * New Robe Universal Interface.
+ */
+void UsbProPlugin::NewWidget(
     RobeWidget *widget,
-    const RobeWidgetInformation *information_ptr) {
-  m_plugin_adaptor->Execute(
-      ola::NewSingleCallback(this,
-                             &UsbProPlugin::InternalNewRobeWidget,
-                             widget,
-                             information_ptr));
+    const RobeWidgetInformation&) {
+  AddDevice(new RobeDevice(m_plugin_adaptor,
+                           this,
+                           ROBE_DEVICE_NAME,
+                           widget));
 }
 
 
@@ -243,105 +297,17 @@ void UsbProPlugin::DeleteDevice(UsbDevice *device) {
 
 
 /**
- * Handle a new Usb Pro Widget. This is called within the main thread
+ * Get a nicely formatted device name from the widget information.
  */
-void UsbProPlugin::InternalNewUsbProWidget(
-  class BaseUsbProWidget *widget,
-  const UsbProWidgetInformation *information_ptr) {
-  m_plugin_adaptor->AddReadDescriptor(widget->GetDescriptor());
-  auto_ptr<const UsbProWidgetInformation> information(information_ptr);
-  string device_name = information->manufactuer;
-  if (!(information->manufactuer.empty() ||
-        information->device.empty()))
+string UsbProPlugin::GetDeviceName(
+    const UsbProWidgetInformation &information) {
+  string device_name = information.manufacturer;
+  if (!(information.manufacturer.empty() ||
+        information.device.empty()))
     device_name += " - ";
-  device_name += information->device;
-  widget->SetMessageHandler(NULL);
-
-  switch (information->esta_id) {
-    case DMX_KING_ESTA_ID:
-      if (information->device_id == DMX_KING_DEVICE_ID) {
-        // DMxKing devices are drop in replacements for a Usb Pro
-        AddDevice(new UsbProDevice(
-            m_plugin_adaptor,
-            this,
-            device_name,
-            widget,
-            information->esta_id,
-            information->device_id,
-            information->serial,
-            GetProFrameLimit()));
-        return;
-      }
-    case GODDARD_ESTA_ID:
-      if (information->device_id == GODDARD_DMXTER4_ID ||
-          information->device_id == GODDARD_MINI_DMXTER4_ID) {
-        AddDevice(new DmxterDevice(
-            this,
-            device_name,
-            widget,
-            information->esta_id,
-            information->device_id,
-            information->serial));
-        return;
-      }
-      break;
-    case JESE_ESTA_ID:
-      if (information->device_id == JESE_DMX_TRI_ID ||
-          information->device_id == JESE_RDM_TRI_ID) {
-        AddDevice(new DmxTriDevice(
-            m_plugin_adaptor,
-            this,
-            device_name,
-            widget,
-            information->esta_id,
-            information->device_id,
-            information->serial,
-            m_preferences->GetValueAsBool(TRI_USE_RAW_RDM_KEY)));
-        return;
-      }
-      break;
-    case OPEN_LIGHTING_ESTA_CODE:
-      if (information->device_id == OPEN_LIGHTING_RGB_MIXER_ID ||
-          information->device_id == OPEN_LIGHTING_PACKETHEADS_ID) {
-        AddDevice(new ArduinoRGBDevice(
-            m_plugin_adaptor,
-            this,
-            device_name,
-            widget,
-            information->esta_id,
-            information->device_id,
-            information->serial));
-        return;
-      }
-      break;
-  }
-  OLA_WARN << "Defaulting to a Usb Pro device";
-  device_name = USBPRO_DEVICE_NAME;
-  AddDevice(
-      new UsbProDevice(m_plugin_adaptor,
-                       this,
-                       device_name,
-                       widget,
-                       ENTTEC_ESTA_ID,
-                       0,  // assume device id is 0
-                       information->serial,
-                       GetProFrameLimit()));
+  device_name += information.device;
+  return device_name;
 }
-
-
-/**
- * Handle a new Robe Widget. This is called within the main thread
- */
-void UsbProPlugin::InternalNewRobeWidget(
-    RobeWidget *widget,
-    const RobeWidgetInformation *information) {
-  AddDevice(new RobeDevice(m_plugin_adaptor,
-                           this,
-                           ROBE_DEVICE_NAME,
-                           widget));
-  (void) information;
-}
-
 
 
 /*

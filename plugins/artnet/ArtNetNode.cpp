@@ -71,7 +71,7 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
       m_always_broadcast(always_broadcast),
       m_interface(interface),
       m_socket(socket),
-      m_discovery_timeout(ola::network::INVALID_TIMEOUT) {
+      m_discovery_timeout(ola::thread::INVALID_TIMEOUT) {
 
   // reset all the port structures
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
@@ -82,7 +82,7 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
     m_input_ports[i].discovery_running = false;
     m_input_ports[i].rdm_request_callback = NULL;
     m_input_ports[i].pending_request = NULL;
-    m_input_ports[i].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
+    m_input_ports[i].rdm_send_timeout = ola::thread::INVALID_TIMEOUT;
 
     m_output_ports[i].universe_address = 0;
     m_output_ports[i].sequence_number = 0;
@@ -143,18 +143,18 @@ bool ArtNetNodeImpl::Stop() {
   if (!m_running)
     return false;
 
-  if (m_discovery_timeout != ola::network::INVALID_TIMEOUT) {
+  if (m_discovery_timeout != ola::thread::INVALID_TIMEOUT) {
     m_ss->RemoveTimeout(m_discovery_timeout);
-    m_discovery_timeout = ola::network::INVALID_TIMEOUT;
+    m_discovery_timeout = ola::thread::INVALID_TIMEOUT;
   }
 
   // clean up any in-flight rdm requests
   std::vector<std::string> packets;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     InputPort &port = m_input_ports[i];
-    if (port.rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
+    if (port.rdm_send_timeout != ola::thread::INVALID_TIMEOUT) {
       m_ss->RemoveTimeout(port.rdm_send_timeout);
-      port.rdm_send_timeout = ola::network::INVALID_TIMEOUT;
+      port.rdm_send_timeout = ola::thread::INVALID_TIMEOUT;
     }
 
     if (port.rdm_request_callback)
@@ -1244,9 +1244,9 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
   packets.push_back(response_data);
 
   // remove the timeout
-  if (input_port.rdm_send_timeout != ola::network::INVALID_TIMEOUT) {
+  if (input_port.rdm_send_timeout != ola::thread::INVALID_TIMEOUT) {
     m_ss->RemoveTimeout(input_port.rdm_send_timeout);
-    input_port.rdm_send_timeout = ola::network::INVALID_TIMEOUT;
+    input_port.rdm_send_timeout = ola::thread::INVALID_TIMEOUT;
   }
 
   callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
@@ -1323,7 +1323,7 @@ bool ArtNetNodeImpl::SendPacket(const artnet_packet &packet,
  */
 void ArtNetNodeImpl::TimeoutRDMRequest(uint8_t port_id) {
   OLA_INFO << "RDM Request timed out.";
-  m_input_ports[port_id].rdm_send_timeout = ola::network::INVALID_TIMEOUT;
+  m_input_ports[port_id].rdm_send_timeout = ola::thread::INVALID_TIMEOUT;
   InputPort &port = m_input_ports[port_id];
   delete port.pending_request;
   port.pending_request = NULL;
@@ -1621,7 +1621,7 @@ bool ArtNetNodeImpl::GrabDiscoveryLock(uint8_t port_id) {
  */
 void ArtNetNodeImpl::ReleaseDiscoveryLock(uint8_t port_id) {
   OLA_INFO << "Discovery process timeout";
-  m_discovery_timeout = ola::network::INVALID_TIMEOUT;
+  m_discovery_timeout = ola::thread::INVALID_TIMEOUT;
 
   // delete all uids that have reached the max count
   bool changed = false;

@@ -1,4 +1,4 @@
-SUBDIRS = network rdm web messaging
+SUBDIRS = network rdm thread web messaging
 
 SOURCES = ActionQueue.h BaseTypes.h Callback.h Clock.h DmxBuffer.h \
           ExportMap.h Logging.h OlaThread.h RunLengthEncoder.h StringUtils.h

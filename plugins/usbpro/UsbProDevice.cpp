@@ -52,17 +52,15 @@ using ola::plugin::usbpro::Reply;
 UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                            ola::AbstractPlugin *owner,
                            const string &name,
-                           BaseUsbProWidget *widget,
+                           EnttecUsbProWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
                            uint32_t serial,
                            unsigned int fps_limit):
     UsbDevice(owner, name, widget),
-    m_pro_widget(NULL),
+    m_pro_widget(widget),
     m_serial(),
     m_got_parameters(false) {
-  m_pro_widget = new EnttecUsbProWidget(plugin_adaptor, widget);
-
   std::stringstream str;
   str << std::setfill('0');
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
@@ -99,11 +97,6 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
   Start();  // this does nothing but set IsEnabled() to true
   (void) esta_id;
   (void) device_id;
-}
-
-
-UsbProDevice::~UsbProDevice() {
-  delete m_pro_widget;
 }
 
 

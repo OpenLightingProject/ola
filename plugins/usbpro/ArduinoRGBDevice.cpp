@@ -40,7 +40,7 @@ using std::string;
 ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
                                    ola::AbstractPlugin *owner,
                                    const string &name,
-                                   BaseUsbProWidget *widget,
+                                   ArduinoWidget *widget,
                                    uint16_t esta_id,
                                    uint16_t device_id,
                                    uint32_t serial):
@@ -50,7 +50,7 @@ ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
   m_device_id = str.str();
 
   OutputPort *output_port = new ThrottledOutputPortDecorator(
-      new ArduinoRGBOutputPort(this, widget, esta_id, serial),
+      new ArduinoRGBOutputPort(this, widget, serial),
       ss->WakeUpTime(),
       5,  // start with 5 tokens in the bucket
       20);  // 22 frames per second seems to be the limit
@@ -59,12 +59,10 @@ ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
 
 
 ArduinoRGBOutputPort::ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
-                                           BaseUsbProWidget *widget,
-                                           uint16_t esta_id,
+                                           ArduinoWidget *widget,
                                            uint32_t serial)
     : BasicOutputPort(parent, 0, true),
-      m_widget(widget, esta_id, serial) {
-
+      m_widget(widget) {
   std::stringstream str;
   str << "Serial #: 0x" <<  std::setfill('0') << std::setw(8) << std::hex <<
     serial;

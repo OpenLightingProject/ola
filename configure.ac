@@ -409,9 +409,10 @@ AC_OUTPUT( Makefile\
     debian/Makefile\
     include/Makefile\
     include/ola/Makefile\
-    include/ola/network/Makefile\
     include/ola/messaging/Makefile\
+    include/ola/network/Makefile\
     include/ola/rdm/Makefile\
+    include/ola/thread/Makefile\
     include/ola/web/Makefile\
     include/olad/Makefile\
     ola/Makefile \

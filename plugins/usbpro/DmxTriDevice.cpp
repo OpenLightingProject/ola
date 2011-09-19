@@ -35,35 +35,20 @@ using std::string;
 /*
  * New DMX TRI device
  */
-DmxTriDevice::DmxTriDevice(ola::network::SelectServerInterface *ss,
-                           ola::AbstractPlugin *owner,
+DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
                            const string &name,
-                           BaseUsbProWidget *widget,
+                           DmxTriWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
-                           uint32_t serial,
-                           bool use_raw_rdm):
+                           uint32_t serial):
     UsbDevice(owner, name, widget),
-    m_tri_widget(NULL) {
+    m_tri_widget(widget) {
   std::stringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
-  m_tri_widget = new DmxTriWidget(ss, widget, 20, use_raw_rdm);
-
-  ola::BasicOutputPort *output_port = new DmxTriOutputPort(this);
+  ola::BasicOutputPort *output_port = new DmxTriOutputPort(this, widget);
   AddPort(output_port);
-
-  m_tri_widget->SetUIDListCallback(
-      ola::NewCallback(output_port, &DmxTriOutputPort::NewUIDList));
-}
-
-
-/*
- * Shutdown
- */
-DmxTriDevice::~DmxTriDevice() {
-  delete m_tri_widget;
 }
 
 
@@ -76,11 +61,6 @@ bool DmxTriDevice::StartHook() {
 }
 
 
-void DmxTriDevice::SendUIDUpdate() {
-  m_tri_widget->SendUIDUpdate();
-}
-
-
 /*
  * Remove the rdm timeout if it's still running
  */
@@ -89,20 +69,46 @@ void DmxTriDevice::PrePortStop() {
 }
 
 
+
+
+/**
+ * New DmxTriOutputPort
+ */
+DmxTriOutputPort::DmxTriOutputPort(DmxTriDevice *parent,
+                                   DmxTriWidget *widget)
+    : BasicOutputPort(parent, 0),
+      m_device(parent),
+      m_tri_widget(widget) {
+  m_tri_widget->SetUIDListCallback(
+      ola::NewCallback(
+        static_cast<BasicOutputPort*>(this), &DmxTriOutputPort::NewUIDList));
+}
+
+
 /*
- * Send a dmx msg
+ * Shutdown
+ */
+DmxTriOutputPort::~DmxTriOutputPort() {
+  m_tri_widget->SetUIDListCallback(NULL);
+}
+
+
+/*
+ * Send a dmx frame
  * @returns true if we sent ok, false otherwise
  */
-bool DmxTriDevice::SendDMX(const DmxBuffer &buffer) const {
+bool DmxTriOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                uint8_t priority) {
   return m_tri_widget->SendDMX(buffer);
+  (void) priority;
 }
 
 
 /*
  * Handle an RDM Request, ownership of the request object is transferred to us.
  */
-void DmxTriDevice::HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                                    ola::rdm::RDMCallback *callback) {
+void DmxTriOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                                        ola::rdm::RDMCallback *callback) {
   m_tri_widget->SendRDMRequest(request, callback);
 }
 
@@ -110,7 +116,15 @@ void DmxTriDevice::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 /*
  * Kick off the discovery process if it's not already running
  */
-void DmxTriDevice::RunRDMDiscovery() {
+void DmxTriOutputPort::RunRDMDiscovery() {
+  m_tri_widget->RunRDMDiscovery();
+}
+
+
+/**
+ * Incremental discovery isn't supported
+ */
+void DmxTriOutputPort::RunIncrementalDiscovery() {
   m_tri_widget->RunRDMDiscovery();
 }
 }  // usbpro

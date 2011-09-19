@@ -14,15 +14,15 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProWidgetDetector.h
- * Performs the Usb Pro style discovery routine. See the
- * UsbProWidgetDetector.cpp for details.
+ * Handles the discovery process for widgets that implement the Usb Pro frame
+ * format.
  * Copyright (C) 2010 Simon Newton
  */
 
 #ifndef PLUGINS_USBPRO_USBPROWIDGETDETECTOR_H_
 #define PLUGINS_USBPRO_USBPROWIDGETDETECTOR_H_
 
-#include <ola/network/SelectServerInterface.h>
+#include <ola/thread/SchedulingExecutorInterface.h>
 #include <map>
 #include <string>
 #include "ola/Callback.h"
@@ -32,7 +32,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-class BaseUsbProWidget;
+class DispatchingUsbProWidget;
 
 /*
  * Contains information about a USB Pro like device.
@@ -48,7 +48,7 @@ class UsbProWidgetInformation {
         esta_id(other.esta_id),
         device_id(other.device_id),
         serial(other.serial),
-        manufactuer(other.manufactuer),
+        manufacturer(other.manufacturer),
         device(other.device) {
     }
     UsbProWidgetInformation& operator=(const UsbProWidgetInformation &other);
@@ -57,7 +57,7 @@ class UsbProWidgetInformation {
     uint16_t esta_id;
     uint16_t device_id;
     uint32_t serial;
-    string manufactuer;
+    string manufacturer;
     string device;
 };
 
@@ -68,13 +68,13 @@ class UsbProWidgetInformation {
 class UsbProWidgetDetector: public WidgetDetectorInterface {
   public:
     typedef ola::Callback2<void,
-                           BaseUsbProWidget*,
+                           ola::network::ConnectedDescriptor*,
                            const UsbProWidgetInformation*> SuccessHandler;
     typedef ola::Callback1<void,
                            ola::network::ConnectedDescriptor*> FailureHandler;
 
     UsbProWidgetDetector(
-        ola::network::SelectServerInterface *ss,
+        ola::thread::SchedulingExecutorInterface *scheduler,
         SuccessHandler *on_success,
         FailureHandler *on_failure,
         unsigned int message_interval = 200);
@@ -95,7 +95,7 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
       public:
         DiscoveryState():
           discovery_state(MANUFACTURER_SENT),
-          timeout_id(ola::network::INVALID_TIMEOUT) {
+          timeout_id(ola::thread::INVALID_TIMEOUT) {
         }
         ~DiscoveryState() {}
 
@@ -107,35 +107,37 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
 
         UsbProWidgetInformation information;
         widget_state discovery_state;
-        ola::network::timeout_id timeout_id;
+        ola::thread::timeout_id timeout_id;
     };
 
-    ola::network::SelectServerInterface *m_ss;
+    ola::thread::SchedulingExecutorInterface *m_scheduler;
     SuccessHandler *m_callback;
     FailureHandler *m_failure_callback;
 
-    typedef std::map<BaseUsbProWidget*, DiscoveryState> WidgetStateMap;
+    typedef std::map<DispatchingUsbProWidget*, DiscoveryState> WidgetStateMap;
     WidgetStateMap m_widgets;
     unsigned int m_timeout_ms;
 
-    void HandleMessage(BaseUsbProWidget *widget,
+    void HandleMessage(DispatchingUsbProWidget *widget,
                        uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
-    void WidgetRemoved(BaseUsbProWidget *widget);
-    void SetupTimeout(BaseUsbProWidget *widget,
+    void WidgetRemoved(DispatchingUsbProWidget *widget);
+    void SetupTimeout(DispatchingUsbProWidget *widget,
                       DiscoveryState *discovery_state);
     void RemoveTimeout(DiscoveryState *discovery_state);
-    void SendNameRequest(BaseUsbProWidget *widget);
-    void SendSerialRequest(BaseUsbProWidget *widget);
-    void DiscoveryTimeout(BaseUsbProWidget *widget);
-    void HandleIdResponse(BaseUsbProWidget *widget,
+    void SendNameRequest(DispatchingUsbProWidget *widget);
+    void SendSerialRequest(DispatchingUsbProWidget *widget);
+    void DiscoveryTimeout(DispatchingUsbProWidget *widget);
+    void HandleIdResponse(DispatchingUsbProWidget *widget,
                           unsigned int length,
                           const uint8_t *data,
                           bool is_device);
-    void HandleSerialResponse(BaseUsbProWidget *widget,
+    void HandleSerialResponse(DispatchingUsbProWidget *widget,
                               unsigned int length,
                               const uint8_t *data);
+    void DispatchWidget(DispatchingUsbProWidget *widget,
+                        const UsbProWidgetInformation *info);
 };
 }  // usbpro
 }  // plugin

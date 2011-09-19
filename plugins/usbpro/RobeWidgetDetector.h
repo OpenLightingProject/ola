@@ -21,10 +21,10 @@
 #ifndef PLUGINS_USBPRO_ROBEWIDGETDETECTOR_H_
 #define PLUGINS_USBPRO_ROBEWIDGETDETECTOR_H_
 
-#include <ola/network/SelectServerInterface.h>
+#include <ola/Callback.h>
+#include <ola/thread/SchedulingExecutorInterface.h>
 #include <map>
 #include <string>
-#include "ola/Callback.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/WidgetDetectorInterface.h"
 
@@ -55,7 +55,7 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
                            ola::network::ConnectedDescriptor*> FailureHandler;
 
     RobeWidgetDetector(
-        ola::network::SelectServerInterface *ss,
+        ola::thread::SchedulingExecutorInterface *scheduler,
         SuccessHandler *on_success,
         FailureHandler *on_failure,
         unsigned int timeout = 200);
@@ -72,33 +72,22 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
       uint8_t empty2;
     } info_response_t;
 
-    // Holds the discovery state for a robe widget
-    struct WidgetDiscoveryState {
-      public:
-        WidgetDiscoveryState():
-          timeout_id(ola::network::INVALID_TIMEOUT) {
-        }
-        ~WidgetDiscoveryState() {}
-
-        RobeWidgetInformation information;
-        ola::network::timeout_id timeout_id;
-    };
-
-    ola::network::SelectServerInterface *m_ss;
-    unsigned int m_timeout_ms;
+    ola::thread::SchedulingExecutorInterface *m_scheduler;
+    const unsigned int m_timeout_ms;
     SuccessHandler *m_callback;
     FailureHandler *m_failure_callback;
 
-    typedef std::map<RobeWidget*, WidgetDiscoveryState> WidgetStateMap;
-    WidgetStateMap m_widgets;
+    typedef std::map<RobeWidget*, ola::thread::timeout_id> WidgetTimeoutMap;
+    WidgetTimeoutMap m_widgets;
 
     void HandleMessage(RobeWidget *widget,
                        uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
+    void WidgetRemoved(RobeWidget *widget);
     void FailWidget(RobeWidget *widget);
     void CleanupWidget(RobeWidget *widget);
-    void RemoveTimeout(WidgetDiscoveryState *discovery_state);
+    void DispatchWidget(RobeWidget *widget, const RobeWidgetInformation *info);
 };
 }  // usbpro
 }  // plugin

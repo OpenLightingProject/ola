@@ -26,10 +26,10 @@
 #include <queue>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/network/SelectServerInterface.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/thread/SchedulerInterface.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
 namespace ola {
@@ -43,10 +43,11 @@ using std::queue;
  * A DMX TRI Widget implementation. We separate the Widget from the
  * implementation so we can leverage the QueueingRDMController.
  */
-class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
+class DmxTriWidgetImpl: public BaseUsbProWidget,
+                        public ola::rdm::RDMControllerInterface {
   public:
-    DmxTriWidgetImpl(ola::network::SelectServerInterface *ss,
-                     BaseUsbProWidget *widget,
+    DmxTriWidgetImpl(ola::thread::SchedulerInterface *executor,
+                     ola::network::ConnectedDescriptor *descriptor,
                      bool use_raw_rdm);
     ~DmxTriWidgetImpl();
 
@@ -54,6 +55,8 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
         ola::Callback1<void, const ola::rdm::UIDSet&> *callback);
     void SetDiscoveryCallback(
         ola::Callback0<void> *callback);
+    void UseRawRDM(bool use_raw_rdm) { m_use_raw_rdm = use_raw_rdm; }
+
     void Stop();
 
     bool SendDMX(const DmxBuffer &buffer) const;
@@ -64,14 +67,9 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
     void SendUIDUpdate();
     bool CheckDiscoveryStatus();
 
-    void HandleMessage(uint8_t label,
-                       const uint8_t *data,
-                       unsigned int length);
-
   private:
-    ola::network::SelectServerInterface *m_ss;
-    BaseUsbProWidget *m_widget;
-    ola::network::timeout_id m_rdm_timeout_id;
+    ola::thread::SchedulerInterface *m_scheduler;
+    ola::thread::timeout_id m_rdm_timeout_id;
     std::map<const ola::rdm::UID, uint8_t> m_uid_index_map;
     unsigned int m_uid_count;
     uint16_t m_last_esta_id;
@@ -83,6 +81,9 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
     const ola::rdm::RDMRequest *m_pending_request;
     uint8_t m_transaction_number;
 
+    void HandleMessage(uint8_t label,
+                       const uint8_t *data,
+                       unsigned int length);
     bool InDiscoveryMode() const;
     bool SendDiscoveryStart();
     bool SendDiscoveryStat();
@@ -178,15 +179,16 @@ class DmxTriWidgetImpl: public ola::rdm::RDMControllerInterface {
 
 
 /*
- * A DMX TRI Device
+ * A DMX TRI Widget
  */
-class DmxTriWidget {
+class DmxTriWidget: public SerialWidgetInterface {
   public:
-    DmxTriWidget(ola::network::SelectServerInterface *ss,
-                 BaseUsbProWidget *widget,
+    DmxTriWidget(ola::thread::SchedulerInterface *ss,
+                 ola::network::ConnectedDescriptor *descriptor,
                  unsigned int queue_size = 20,
                  bool use_raw_rdm = false);
     ~DmxTriWidget();
+    void UseRawRDM(bool use_raw_rdm) { m_impl->UseRawRDM(use_raw_rdm); }
 
     void Stop() { m_impl->Stop(); }
 
@@ -213,6 +215,16 @@ class DmxTriWidget {
     void SendUIDUpdate() {
       m_impl->SendUIDUpdate();
     }
+
+    ola::network::ConnectedDescriptor *GetDescriptor() const {
+      return m_impl->GetDescriptor();
+    }
+
+    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
+      m_impl->SetOnRemove(on_close);
+    }
+
+    void CloseDescriptor() { m_impl->CloseDescriptor(); }
 
   private:
     // we need to control the order of construction & destruction here so these

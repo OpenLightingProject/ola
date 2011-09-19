@@ -22,7 +22,6 @@
 #define PLUGINS_USBPRO_ARDUINOWIDGET_H_
 
 #include "ola/DmxBuffer.h"
-#include "ola/network/SelectServerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/rdm/RDMControllerInterface.h"
@@ -38,18 +37,15 @@ namespace usbpro {
  * A Arduino Widget implementation. We separate the Widget from the
  * implementation so we can leverage the QueueingRDMController.
  */
-class ArduinoWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
+class ArduinoWidgetImpl: public BaseUsbProWidget,
+                         public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    ArduinoWidgetImpl(BaseUsbProWidget *widget,
+    ArduinoWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
                       uint16_t esta_id,
                       uint32_t serial);
     ~ArduinoWidgetImpl();
 
     bool SendDMX(const DmxBuffer &buffer);
-
-    void HandleMessage(uint8_t label,
-                       const uint8_t *data,
-                       unsigned int length);
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
@@ -65,10 +61,12 @@ class ArduinoWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
   private:
     uint8_t m_transaction_id;
     ola::rdm::UID m_uid;
-    BaseUsbProWidget *m_widget;
     const ola::rdm::RDMRequest *m_pending_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
 
+    void HandleMessage(uint8_t label,
+                       const uint8_t *data,
+                       unsigned int length);
     void HandleRDMResponse(const uint8_t *data, unsigned int length);
     bool GetUidSet(ola::rdm::RDMDiscoveryCallback *callback);
 
@@ -87,9 +85,10 @@ class ArduinoWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
 /*
  * A Arduino Widget. This mostly just wraps the implementation.
  */
-class ArduinoWidget: public ola::rdm::DiscoverableRDMControllerInterface {
+class ArduinoWidget: public SerialWidgetInterface,
+                     public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    ArduinoWidget(BaseUsbProWidget *widget,
+    ArduinoWidget(ola::network::ConnectedDescriptor *descriptor,
                   uint16_t esta_id,
                   uint32_t serial,
                   unsigned int queue_size = 20);
@@ -111,6 +110,16 @@ class ArduinoWidget: public ola::rdm::DiscoverableRDMControllerInterface {
     bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
       return m_impl->RunIncrementalDiscovery(callback);
     }
+
+    ola::network::ConnectedDescriptor *GetDescriptor() const {
+      return m_impl->GetDescriptor();
+    }
+
+    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
+      m_impl->SetOnRemove(on_close);
+    }
+
+    void CloseDescriptor() { m_impl->CloseDescriptor(); }
 
   private:
     // we need to control the order of construction & destruction here so these

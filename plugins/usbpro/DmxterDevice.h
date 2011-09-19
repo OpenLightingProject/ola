@@ -41,11 +41,10 @@ class DmxterDevice: public UsbDevice {
   public:
     DmxterDevice(ola::AbstractPlugin *owner,
                  const string &name,
-                 BaseUsbProWidget *widget,
+                 DmxterWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
                  uint32_t serial);
-    ~DmxterDevice() {}
     string DeviceId() const { return m_device_id; }
 
   private:
@@ -61,10 +60,6 @@ class DmxterOutputPort: public BasicOutputPort {
     DmxterOutputPort(DmxterDevice *parent, DmxterWidget *widget)
         : BasicOutputPort(parent, 0),
           m_widget(widget) {}
-
-    ~DmxterOutputPort() {
-      delete m_widget;
-    }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       // this device can't output DMX

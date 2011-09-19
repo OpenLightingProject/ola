@@ -98,7 +98,7 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
       m_reload_plugins(false),
       m_init_run(false),
       m_free_export_map(false),
-      m_housekeeping_timeout(ola::network::INVALID_TIMEOUT),
+      m_housekeeping_timeout(ola::thread::INVALID_TIMEOUT),
       m_httpd(NULL),
       m_options(*ola_options),
       m_default_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
@@ -126,7 +126,7 @@ OlaServer::~OlaServer() {
   }
 #endif
 
-  if (m_housekeeping_timeout != ola::network::INVALID_TIMEOUT)
+  if (m_housekeeping_timeout != ola::thread::INVALID_TIMEOUT)
     m_ss->RemoveTimeout(m_housekeeping_timeout);
 
   StopPlugins();

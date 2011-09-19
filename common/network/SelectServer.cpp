@@ -54,9 +54,11 @@ const char SelectServer::K_LOOP_TIME[] = "ss-loop-time";
 // iterations through the select server
 const char SelectServer::K_LOOP_COUNT[] = "ss-loop-count";
 
-using std::max;
-using ola::ExportMap;
 using ola::Callback0;
+using ola::ExportMap;
+using ola::thread::INVALID_TIMEOUT;
+using ola::thread::timeout_id;
+using std::max;
 
 /*
  * Constructor
@@ -346,6 +348,9 @@ timeout_id SelectServer::RegisterSingleTimeout(
  * @param timeout_id the id of the timeout
  */
 void SelectServer::RemoveTimeout(timeout_id id) {
+  if (id == INVALID_TIMEOUT)
+    return;
+
   if (!m_removed_timeouts.insert(id).second)
     OLA_WARN << "timeout " << id << " already in remove set";
 }

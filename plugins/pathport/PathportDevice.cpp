@@ -54,7 +54,7 @@ PathportDevice::PathportDevice(PathportPlugin *owner,
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor),
       m_node(NULL),
-      m_timeout_id(ola::network::INVALID_TIMEOUT) {
+      m_timeout_id(ola::thread::INVALID_TIMEOUT) {
 }
 
 
@@ -123,9 +123,9 @@ bool PathportDevice::StartHook() {
 void PathportDevice::PrePortStop() {
   m_plugin_adaptor->RemoveReadDescriptor(m_node->GetSocket());
 
-  if (m_timeout_id != ola::network::INVALID_TIMEOUT) {
+  if (m_timeout_id != ola::thread::INVALID_TIMEOUT) {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);
-    m_timeout_id = ola::network::INVALID_TIMEOUT;
+    m_timeout_id = ola::thread::INVALID_TIMEOUT;
   }
 }
 

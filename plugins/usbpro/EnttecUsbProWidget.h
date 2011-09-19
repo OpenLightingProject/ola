@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbProWidget.h
+ * EnttecUsbProWidget.h
  * The Enttec USB Pro Widget
  * Copyright (C) 2010 Simon Newton
  */
@@ -25,7 +25,7 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/network/SelectServerInterface.h"
+#include "ola/thread/SchedulerInterface.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
@@ -47,14 +47,15 @@ typedef ola::SingleUseCallback2<void, bool, const usb_pro_parameters&>
   usb_pro_params_callback;
 
 /*
- * A DMX USB PRO Widget implementation. We separate the Widget from the
- * implementation so we can leverage the QueueingRDMController.
+ * An Enttec DMX USB PRO Widget implementation. We separate the Widget from the
+ * implementation so we can leverage the QueueingRDMController when we add RDM
+ * support one day.
  */
-class EnttecUsbProWidgetImpl {
+class EnttecUsbProWidgetImpl: public BaseUsbProWidget {
   // : public ola::rdm::RDMControllerInterface {
   public:
-    EnttecUsbProWidgetImpl(ola::network::SelectServerInterface *ss,
-                           BaseUsbProWidget *widget);
+    EnttecUsbProWidgetImpl(ola::thread::SchedulerInterface *scheduler,
+                           ola::network::ConnectedDescriptor *descriptor);
     ~EnttecUsbProWidgetImpl();
 
     void SetDMXCallback(ola::Callback0<void> *callback);
@@ -79,14 +80,11 @@ class EnttecUsbProWidgetImpl {
     */
 
   private:
-    ola::network::SelectServerInterface *m_ss;
-    BaseUsbProWidget *m_widget;
+    ola::thread::SchedulerInterface *m_scheduler;
     bool m_active;
-    ola::network::timeout_id m_rdm_timeout_id;
+    // ola::thread::timeout_id m_rdm_timeout_id;
     DmxBuffer m_input_buffer;
-
     ola::Callback0<void> *m_dmx_callback;
-
     std::deque<usb_pro_params_callback*> m_outstanding_param_callbacks;
     /*
     ola::Callback1<void, const ola::rdm::UIDSet&> *m_uid_set_callback;
@@ -103,7 +101,6 @@ class EnttecUsbProWidgetImpl {
     void HandleParameters(const uint8_t *data, unsigned int length);
     void HandleDMX(const uint8_t *data, unsigned int length);
     void HandleDMXDiff(const uint8_t *data, unsigned int length);
-
 
     /*
     bool InDiscoveryMode() const;
@@ -133,10 +130,10 @@ class EnttecUsbProWidgetImpl {
 /*
  * An Usb Pro Widget
  */
-class EnttecUsbProWidget {
+class EnttecUsbProWidget: public SerialWidgetInterface {
   public:
-    EnttecUsbProWidget(ola::network::SelectServerInterface *ss,
-                       BaseUsbProWidget *widget,
+    EnttecUsbProWidget(ola::thread::SchedulerInterface *scheduler,
+                       ola::network::ConnectedDescriptor *descriptor,
                        unsigned int queue_size = 20);
     ~EnttecUsbProWidget() {}
 
@@ -188,6 +185,16 @@ class EnttecUsbProWidget {
       m_controller.RunIncrementalDiscovery(callback);
     }
     */
+
+    ola::network::ConnectedDescriptor *GetDescriptor() const {
+      return m_impl.GetDescriptor();
+    }
+
+    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
+      m_impl.SetOnRemove(on_close);
+    }
+
+    void CloseDescriptor() { m_impl.CloseDescriptor(); }
 
   private:
     EnttecUsbProWidgetImpl m_impl;

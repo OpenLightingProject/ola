@@ -13,38 +13,25 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SerialWidgetInterface.h
- * The base class for USB Serial widgets. These are devices that appear as a
- * serial (COM) port, most of them use the FTDI chip.
+ * SchedulingExecutorInterface.h
+ * An interface that implements both the Scheduling & Executor methods.
  * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_
-#define PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_
+#ifndef INCLUDE_OLA_THREAD_SCHEDULINGEXECUTORINTERFACE_H_
+#define INCLUDE_OLA_THREAD_SCHEDULINGEXECUTORINTERFACE_H_
 
-#include <stdint.h>
-#include <ola/Callback.h>
-#include <string>
-#include "ola/network/Socket.h"
+#include <ola/thread/ExecutorInterface.h>
+#include <ola/thread/SchedulerInterface.h>
 
 namespace ola {
-namespace plugin {
-namespace usbpro {
+namespace thread {
 
-
-/*
- * The SerialWidgetInterface.
- */
-class SerialWidgetInterface {
+class SchedulingExecutorInterface: public ExecutorInterface,
+                                   public SchedulerInterface {
   public:
-    SerialWidgetInterface() {}
-    virtual ~SerialWidgetInterface() {}
-
-    virtual ola::network::ConnectedDescriptor *GetDescriptor() const = 0;
-    virtual void SetOnRemove(ola::SingleUseCallback0<void> *on_close) = 0;
-    virtual void CloseDescriptor() = 0;
+    virtual ~SchedulingExecutorInterface() {}
 };
-}  // usbpro
-}  // plugin
+}  // thread
 }  // ola
-#endif  // PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_
+#endif  // INCLUDE_OLA_THREAD_SCHEDULINGEXECUTORINTERFACE_H_

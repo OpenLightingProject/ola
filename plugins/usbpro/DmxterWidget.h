@@ -37,16 +37,13 @@ namespace usbpro {
  * A DMXter Widget implementation. We separate the Widget from the
  * implementation so we can leverage the QueueingRDMController.
  */
-class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
+class DmxterWidgetImpl: public BaseUsbProWidget,
+                        public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    DmxterWidgetImpl(BaseUsbProWidget *widget,
+    DmxterWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
                      uint16_t esta_id,
                      uint32_t serial);
     ~DmxterWidgetImpl();
-
-    void HandleMessage(uint8_t label,
-                       const uint8_t *data,
-                       unsigned int length);
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
@@ -58,13 +55,15 @@ class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
 
   private:
     ola::rdm::UID m_uid;
-    BaseUsbProWidget *m_widget;
     ola::rdm::UIDSet m_uids;
     ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
     const ola::rdm::RDMRequest *m_pending_request;
     ola::rdm::RDMCallback *m_rdm_request_callback;
     uint8_t m_transaction_number;
 
+    void HandleMessage(uint8_t label,
+                       const uint8_t *data,
+                       unsigned int length);
     void HandleTodResponse(const uint8_t *data, unsigned int length);
     void HandleRDMResponse(const uint8_t *data, unsigned int length);
     void HandleBroadcastRDMResponse(const uint8_t *data, unsigned int length);
@@ -125,9 +124,10 @@ class DmxterWidgetImpl: public ola::rdm::DiscoverableRDMControllerInterface {
 /*
  * A DMXter Widget. This mostly just wraps the implementation.
  */
-class DmxterWidget: public ola::rdm::DiscoverableRDMControllerInterface {
+class DmxterWidget: public SerialWidgetInterface,
+                    public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    DmxterWidget(BaseUsbProWidget *widget,
+    DmxterWidget(ola::network::ConnectedDescriptor *descriptor,
                  uint16_t esta_id,
                  uint32_t serial,
                  unsigned int queue_size = 20);
@@ -153,6 +153,16 @@ class DmxterWidget: public ola::rdm::DiscoverableRDMControllerInterface {
     void SendTodRequest() {
       return m_impl->SendTodRequest();
     }
+
+    ola::network::ConnectedDescriptor *GetDescriptor() const {
+      return m_impl->GetDescriptor();
+    }
+
+    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
+      m_impl->SetOnRemove(on_close);
+    }
+
+    void CloseDescriptor() { m_impl->CloseDescriptor(); }
 
   private:
     // we need to control the order of construction & destruction here so these

@@ -160,7 +160,7 @@ class ArtNetNodeImpl {
       IPV4Address rdm_ip_destination;
 
       // these control the sending of RDM requests.
-      ola::network::timeout_id rdm_send_timeout;
+      ola::thread::timeout_id rdm_send_timeout;
     };
 
     enum { MAX_MERGE_SOURCES = 2 };
@@ -198,7 +198,7 @@ class ArtNetNodeImpl {
     OutputPort m_output_ports[ARTNET_MAX_PORTS];
     ola::network::Interface m_interface;
     ola::network::UdpSocketInterface *m_socket;
-    ola::network::timeout_id m_discovery_timeout;
+    ola::thread::timeout_id m_discovery_timeout;
 
     ArtNetNodeImpl(const ArtNetNodeImpl&);
     ArtNetNodeImpl& operator=(const ArtNetNodeImpl&);

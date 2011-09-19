@@ -28,7 +28,7 @@
 
 namespace ola {
 
-using ola::network::timeout_id;
+using ola::thread::timeout_id;
 
 class PluginAdaptor: public ola::network::SelectServerInterface {
   public:

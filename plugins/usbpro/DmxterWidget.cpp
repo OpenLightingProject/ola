@@ -51,17 +51,16 @@ const uint8_t DmxterWidgetImpl::SHUTDOWN_LABAEL = 0xf0;
  * @param esta_id the ESTA id, should normally be GODDARD Design
  * @param serial the 4 byte serial which forms part of the UID
  */
-DmxterWidgetImpl::DmxterWidgetImpl(BaseUsbProWidget *widget,
-                                   uint16_t esta_id,
-                                   uint32_t serial):
-    m_uid(esta_id, serial),
-    m_widget(widget),
-    m_discovery_callback(NULL),
-    m_pending_request(NULL),
-    m_rdm_request_callback(NULL),
-    m_transaction_number(0) {
-  m_widget->SetMessageHandler(
-      NewCallback(this, &DmxterWidgetImpl::HandleMessage));
+DmxterWidgetImpl::DmxterWidgetImpl(
+    ola::network::ConnectedDescriptor *descriptor,
+    uint16_t esta_id,
+    uint32_t serial)
+    : BaseUsbProWidget(descriptor),
+      m_uid(esta_id, serial),
+      m_discovery_callback(NULL),
+      m_pending_request(NULL),
+      m_rdm_request_callback(NULL),
+      m_transaction_number(0) {
 }
 
 
@@ -81,32 +80,6 @@ DmxterWidgetImpl::~DmxterWidgetImpl() {
 
   if (m_pending_request)
     delete m_pending_request;
-}
-
-
-/**
- * Called when a new packet arrives
- */
-void DmxterWidgetImpl::HandleMessage(uint8_t label,
-                                     const uint8_t *data,
-                                     unsigned int length) {
-  switch (label) {
-    case TOD_LABEL:
-      HandleTodResponse(data, length);
-      break;
-    case RDM_REQUEST_LABEL:
-      HandleRDMResponse(data, length);
-      break;
-    case RDM_BCAST_REQUEST_LABEL:
-      HandleBroadcastRDMResponse(data, length);
-      break;
-    case SHUTDOWN_LABAEL:
-      HandleShutdown(data, length);
-      break;
-    default:
-      OLA_WARN << "Unknown label: 0x" << std::hex <<
-        static_cast<int>(label);
-  }
 }
 
 
@@ -141,7 +114,7 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
 
     m_rdm_request_callback = on_complete;
     m_pending_request = request;
-    if (m_widget->SendMessage(label, data, data_size + 1)) {
+    if (SendMessage(label, data, data_size + 1)) {
       delete[] data;
       return;
     }
@@ -162,7 +135,7 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
 bool DmxterWidgetImpl::RunFullDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   m_discovery_callback = callback;
-  if (!m_widget->SendMessage(FULL_DISCOVERY_LABEL, NULL, 0)) {
+  if (!SendMessage(FULL_DISCOVERY_LABEL, NULL, 0)) {
     OLA_WARN << "Failed to send full dmxter discovery command";
     delete callback;
     m_discovery_callback = NULL;
@@ -178,7 +151,7 @@ bool DmxterWidgetImpl::RunFullDiscovery(
 bool DmxterWidgetImpl::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   m_discovery_callback = callback;
-  if (!m_widget->SendMessage(INCREMENTAL_DISCOVERY_LABEL, NULL, 0)) {
+  if (!SendMessage(INCREMENTAL_DISCOVERY_LABEL, NULL, 0)) {
     OLA_WARN << "Failed to send incremental dmxter discovery command";
     m_discovery_callback = NULL;
     delete callback;
@@ -203,8 +176,34 @@ void DmxterWidgetImpl::SendUIDUpdate() {
  * Send a TOD request to the widget
  */
 void DmxterWidgetImpl::SendTodRequest() {
-  m_widget->SendMessage(TOD_LABEL, NULL, 0);
+  SendMessage(TOD_LABEL, NULL, 0);
   OLA_INFO << "Sent TOD request";
+}
+
+
+/**
+ * Called when a new packet arrives
+ */
+void DmxterWidgetImpl::HandleMessage(uint8_t label,
+                                     const uint8_t *data,
+                                     unsigned int length) {
+  switch (label) {
+    case TOD_LABEL:
+      HandleTodResponse(data, length);
+      break;
+    case RDM_REQUEST_LABEL:
+      HandleRDMResponse(data, length);
+      break;
+    case RDM_BCAST_REQUEST_LABEL:
+      HandleBroadcastRDMResponse(data, length);
+      break;
+    case SHUTDOWN_LABAEL:
+      HandleShutdown(data, length);
+      break;
+    default:
+      OLA_WARN << "Unknown label: 0x" << std::hex <<
+        static_cast<int>(label);
+  }
 }
 
 
@@ -401,7 +400,7 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
     OLA_INFO << "Received shutdown message from Dmxter";
     // this closed descriptor will be detected the the ss, which will then
     // invoke the on_close callback, removing the device.
-    m_widget->CloseDescriptor();
+    CloseDescriptor();
   }
 }
 
@@ -409,11 +408,11 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
 /**
  * DmxterWidget Constructor
  */
-DmxterWidget::DmxterWidget(BaseUsbProWidget *widget,
+DmxterWidget::DmxterWidget(ola::network::ConnectedDescriptor *descriptor,
                            uint16_t esta_id,
                            uint32_t serial,
                            unsigned int queue_size) {
-  m_impl = new DmxterWidgetImpl(widget, esta_id, serial);
+  m_impl = new DmxterWidgetImpl(descriptor, esta_id, serial);
   m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
                                                                  queue_size);
 }

@@ -23,18 +23,12 @@
 
 #include <ola/Clock.h>  // NOLINT
 #include <ola/Callback.h>  // NOLINT
+#include <ola/thread/SchedulingExecutorInterface.h>  // NOLINT
 
 namespace ola {
 namespace network {
 
-
-class Event;
-typedef Event* timeout_id;
-
-static const timeout_id INVALID_TIMEOUT = 0;
-
-
-class SelectServerInterface {
+class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
   public :
     SelectServerInterface() {}
     virtual ~SelectServerInterface() {}
@@ -51,15 +45,13 @@ class SelectServerInterface {
     virtual bool RemoveWriteDescriptor(
         class WriteFileDescriptor *descriptor) = 0;
 
-    virtual timeout_id RegisterRepeatingTimeout(
+    virtual ola::thread::timeout_id RegisterRepeatingTimeout(
         unsigned int ms,
         Callback0<bool> *closure) = 0;
-    virtual timeout_id RegisterSingleTimeout(
+    virtual ola::thread::timeout_id RegisterSingleTimeout(
         unsigned int ms,
         SingleUseCallback0<void> *closure) = 0;
-    virtual void RemoveTimeout(timeout_id id) = 0;
-
-    virtual void Execute(ola::BaseCallback0<void> *closure) = 0;
+    virtual void RemoveTimeout(ola::thread::timeout_id id) = 0;
 
     virtual const TimeStamp *WakeUpTime() const = 0;
 };

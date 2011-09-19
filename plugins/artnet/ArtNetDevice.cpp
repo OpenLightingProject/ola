@@ -72,7 +72,7 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
   m_preferences(preferences),
   m_node(NULL),
   m_plugin_adaptor(plugin_adaptor),
-  m_timeout_id(ola::network::INVALID_TIMEOUT) {
+  m_timeout_id(ola::thread::INVALID_TIMEOUT) {
 }
 
 
@@ -140,9 +140,9 @@ bool ArtNetDevice::StartHook() {
  * Stop this device
  */
 void ArtNetDevice::PostPortStop() {
-  if (m_timeout_id != ola::network::INVALID_TIMEOUT) {
+  if (m_timeout_id != ola::thread::INVALID_TIMEOUT) {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);
-    m_timeout_id = ola::network::INVALID_TIMEOUT;
+    m_timeout_id = ola::thread::INVALID_TIMEOUT;
   }
   m_node->Stop();
   delete m_node;

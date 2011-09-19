@@ -67,7 +67,7 @@ class E133Node {
     const string m_preferred_ip;
     ola::network::SelectServerInterface *m_ss;
     ola::network::IPV4Address m_v4_address;
-    ola::network::timeout_id m_timeout_event;
+    ola::thread::timeout_id m_timeout_event;
     component_map m_component_map;
 
     ola::plugin::e131::CID m_cid;

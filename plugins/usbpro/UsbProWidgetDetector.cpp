@@ -14,7 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProWidgetDetector.cpp
- * Handles creating BaseUsbProWidget objects.
+ * Handles the discovery process for widgets that implement the Usb Pro frame
+ * format.
  * Copyright (C) 2010 Simon Newton
  *
  * This class accepts a ConnectedDescriptor objects and runs the discovery
@@ -31,9 +32,9 @@
  * (http://www.opendmx.net/index.php/USB_Protocol_Extensions) and allow us to
  * determine more specfically what type of device this is.
  *
- * If the widget responses to SERIAL_LABEL the on_success callback is run.
+ * If the widget responds to SERIAL_LABEL the on_success callback is run.
  * Otherwise on_failure is run. It's important you register callbacks for each
- * of these otherwise you'll leak BaseUsbProWidget objects.
+ * of these otherwise you'll leak ConnectedDescriptor objects.
  */
 
 
@@ -56,7 +57,7 @@ UsbProWidgetInformation& UsbProWidgetInformation::operator=(
     const UsbProWidgetInformation &other) {
   esta_id = other.esta_id;
   device_id = other.device_id;
-  manufactuer = other.manufactuer;
+  manufacturer = other.manufacturer;
   device = other.device;
   serial = other.serial;
   return *this;
@@ -65,21 +66,20 @@ UsbProWidgetInformation& UsbProWidgetInformation::operator=(
 
 /**
  * Constructor
- * @param ss a SelectServerInterface to use to register events.
+ * @param scheduler a SchedulingExecutorInterface to use to register events.
  * @param on_success A callback to run if discovery succeeds.
  * @param on_failure A callback to run if discovery fails.
  * @param timeout the time in ms between each discovery message.
  */
 UsbProWidgetDetector::UsbProWidgetDetector(
-    ola::network::SelectServerInterface *ss,
+    ola::thread::SchedulingExecutorInterface *scheduler,
     SuccessHandler *on_success,
     FailureHandler *on_failure,
     unsigned int message_interval)
-    : m_ss(ss),
+    : m_scheduler(scheduler),
       m_callback(on_success),
       m_failure_callback(on_failure),
       m_timeout_ms(message_interval) {
-
   if (!m_callback)
     OLA_WARN << "on_success callback not set, this will leak memory!";
   if (!m_failure_callback)
@@ -93,7 +93,7 @@ UsbProWidgetDetector::UsbProWidgetDetector(
 UsbProWidgetDetector::~UsbProWidgetDetector() {
   WidgetStateMap::iterator iter;
   for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter) {
-    iter->first->SetOnRemove(NULL);
+    iter->first->GetDescriptor()->SetOnClose(NULL);
     if (m_failure_callback)
       m_failure_callback->Run(iter->first->GetDescriptor());
     RemoveTimeout(&iter->second);
@@ -109,14 +109,16 @@ UsbProWidgetDetector::~UsbProWidgetDetector() {
 
 /*
  * Start the discovery process for a widget
- * @param widget, the BaseUsbProWidget to run discovery on.
+ * @param widget, the DispatchingUsbProWidget to run discovery on.
  * @return true if the process started ok, false otherwise.
  */
 bool UsbProWidgetDetector::Discover(
     ola::network::ConnectedDescriptor *descriptor) {
-  BaseUsbProWidget *widget = new BaseUsbProWidget(descriptor);
-  widget->SetMessageHandler(
-    NewCallback(this, &UsbProWidgetDetector::HandleMessage, widget));
+  DispatchingUsbProWidget *widget = new DispatchingUsbProWidget(
+      descriptor,
+      NULL);
+  widget->SetHandler(
+      NewCallback(this, &UsbProWidgetDetector::HandleMessage, widget));
 
   if (!widget->SendMessage(BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0)) {
     delete widget;
@@ -124,9 +126,10 @@ bool UsbProWidgetDetector::Discover(
   }
 
   // Set the onclose handler so we can mark this as failed.
-  widget->SetOnRemove(NewSingleCallback(this,
-                      &UsbProWidgetDetector::WidgetRemoved,
-                      widget));
+  descriptor->SetOnClose(
+      NewSingleCallback(this,
+                        &UsbProWidgetDetector::WidgetRemoved,
+                        widget));
 
   // register a timeout for this widget
   SetupTimeout(widget, &m_widgets[widget]);
@@ -137,7 +140,7 @@ bool UsbProWidgetDetector::Discover(
 /*
  * Called by the widgets when they receive a response.
  */
-void UsbProWidgetDetector::HandleMessage(BaseUsbProWidget *widget,
+void UsbProWidgetDetector::HandleMessage(DispatchingUsbProWidget *widget,
                                          uint8_t label,
                                          const uint8_t *data,
                                          unsigned int length) {
@@ -160,7 +163,7 @@ void UsbProWidgetDetector::HandleMessage(BaseUsbProWidget *widget,
 /**
  * Called if the widget is removed mid-discovery process
  */
-void UsbProWidgetDetector::WidgetRemoved(BaseUsbProWidget *widget) {
+void UsbProWidgetDetector::WidgetRemoved(DispatchingUsbProWidget *widget) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
   if (iter == m_widgets.end()) {
     OLA_FATAL << "Widget " << widget <<
@@ -170,19 +173,21 @@ void UsbProWidgetDetector::WidgetRemoved(BaseUsbProWidget *widget) {
     m_widgets.erase(iter);
   }
 
-  widget->SetOnRemove(NULL);
-  if (m_failure_callback)
-    m_failure_callback->Run(widget->GetDescriptor());
+  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   delete widget;
+  descriptor->SetOnClose(NULL);
+  descriptor->Close();
+  if (m_failure_callback)
+    m_failure_callback->Run(descriptor);
 }
 
 
 /**
  * Setup a timeout for a widget
  */
-void UsbProWidgetDetector::SetupTimeout(BaseUsbProWidget *widget,
+void UsbProWidgetDetector::SetupTimeout(DispatchingUsbProWidget *widget,
                                         DiscoveryState *discovery_state) {
-  discovery_state->timeout_id = m_ss->RegisterSingleTimeout(
+  discovery_state->timeout_id = m_scheduler->RegisterSingleTimeout(
       m_timeout_ms,
       NewSingleCallback(this,
                         &UsbProWidgetDetector::DiscoveryTimeout, widget));
@@ -193,16 +198,16 @@ void UsbProWidgetDetector::SetupTimeout(BaseUsbProWidget *widget,
  * Remove a timeout for a widget.
  */
 void UsbProWidgetDetector::RemoveTimeout(DiscoveryState *discovery_state) {
-  if (discovery_state->timeout_id != ola::network::INVALID_TIMEOUT)
-    m_ss->RemoveTimeout(discovery_state->timeout_id);
+  if (discovery_state->timeout_id != ola::thread::INVALID_TIMEOUT)
+    m_scheduler->RemoveTimeout(discovery_state->timeout_id);
 }
 
 
 /**
  * Send a DEVICE_LABEL request
  */
-void UsbProWidgetDetector::SendNameRequest(BaseUsbProWidget *widget) {
-  widget->SendMessage(BaseUsbProWidget::DEVICE_LABEL, NULL, 0);
+void UsbProWidgetDetector::SendNameRequest(DispatchingUsbProWidget *widget) {
+  widget->SendMessage(DispatchingUsbProWidget::DEVICE_LABEL, NULL, 0);
   DiscoveryState &discovery_state = m_widgets[widget];
   discovery_state.discovery_state = DiscoveryState::DEVICE_SENT;
   SetupTimeout(widget, &discovery_state);
@@ -212,8 +217,8 @@ void UsbProWidgetDetector::SendNameRequest(BaseUsbProWidget *widget) {
 /**
  * Set a SERIAL_LABEL request
  */
-void UsbProWidgetDetector::SendSerialRequest(BaseUsbProWidget *widget) {
-  widget->SendMessage(BaseUsbProWidget::SERIAL_LABEL, NULL, 0);
+void UsbProWidgetDetector::SendSerialRequest(DispatchingUsbProWidget *widget) {
+  widget->SendMessage(DispatchingUsbProWidget::SERIAL_LABEL, NULL, 0);
   DiscoveryState &discovery_state = m_widgets[widget];
   discovery_state.discovery_state = DiscoveryState::SERIAL_SENT;
   SetupTimeout(widget, &discovery_state);
@@ -223,12 +228,11 @@ void UsbProWidgetDetector::SendSerialRequest(BaseUsbProWidget *widget) {
 /*
  * Called if a widget fails to respond in a given interval
  */
-void UsbProWidgetDetector::DiscoveryTimeout(BaseUsbProWidget *widget) {
+void UsbProWidgetDetector::DiscoveryTimeout(DispatchingUsbProWidget *widget) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
 
   if (iter != m_widgets.end()) {
-    iter->second.timeout_id = ola::network::INVALID_TIMEOUT;
-
+    iter->second.timeout_id = ola::thread::INVALID_TIMEOUT;
     switch (iter->second.discovery_state) {
       case DiscoveryState::MANUFACTURER_SENT:
         SendNameRequest(widget);
@@ -240,11 +244,13 @@ void UsbProWidgetDetector::DiscoveryTimeout(BaseUsbProWidget *widget) {
         OLA_WARN << "Usb Widget didn't respond to messages, esta id " <<
           iter->second.information.esta_id << ", device id " <<
           iter->second.information.device_id;
-        widget->SetOnRemove(NULL);
-        if (m_failure_callback)
-          m_failure_callback->Run(widget->GetDescriptor());
-        m_widgets.erase(iter);
+        ola::network::ConnectedDescriptor *descriptor =
+          widget->GetDescriptor();
+        descriptor->SetOnClose(NULL);
         delete widget;
+        if (m_failure_callback)
+          m_failure_callback->Run(descriptor);
+        m_widgets.erase(iter);
     }
   }
 }
@@ -252,13 +258,13 @@ void UsbProWidgetDetector::DiscoveryTimeout(BaseUsbProWidget *widget) {
 
 /*
  * Handle a Device Manufacturer or Device Name response.
- * @param widget the BaseUsbProWidget
+ * @param widget the DispatchingUsbProWidget
  * @param length length of the response
  * @param data pointer to the response data
  * @param is_device true if this is a device response, false if it's a
- *   manufactuer response.
+ *   manufacturer response.
  */
-void UsbProWidgetDetector::HandleIdResponse(BaseUsbProWidget *widget,
+void UsbProWidgetDetector::HandleIdResponse(DispatchingUsbProWidget *widget,
                                             unsigned int length,
                                             const uint8_t *data,
                                             bool is_device) {
@@ -286,7 +292,7 @@ void UsbProWidgetDetector::HandleIdResponse(BaseUsbProWidget *widget,
     }
   } else {
     iter->second.information.esta_id = id;
-    iter->second.information.manufactuer = string(response.text);
+    iter->second.information.manufacturer = string(response.text);
     if (iter->second.discovery_state == DiscoveryState::MANUFACTURER_SENT) {
       RemoveTimeout(&iter->second);
       SendNameRequest(widget);
@@ -298,9 +304,10 @@ void UsbProWidgetDetector::HandleIdResponse(BaseUsbProWidget *widget,
 /*
  * Handle a serial response, this ends the device detection phase.
  */
-void UsbProWidgetDetector::HandleSerialResponse(BaseUsbProWidget *widget,
-                                                unsigned int length,
-                                                const uint8_t *data) {
+void UsbProWidgetDetector::HandleSerialResponse(
+    DispatchingUsbProWidget *widget,
+    unsigned int length,
+    const uint8_t *data) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
 
   if (iter == m_widgets.end())
@@ -321,17 +328,36 @@ void UsbProWidgetDetector::HandleSerialResponse(BaseUsbProWidget *widget,
   m_widgets.erase(iter);
 
   OLA_INFO << "Detected USB Device: ESTA Id: 0x" << std::hex <<
-    information.esta_id  << " (" << information.manufactuer << "), device: "
+    information.esta_id  << " (" << information.manufacturer << "), device: "
     << information.device_id << " (" << information.device << "), serial: " <<
     "0x" << information.serial;
 
+  const UsbProWidgetInformation *widget_info = new UsbProWidgetInformation(
+      information);
+  // given that we've been called via the widget's stack, schedule execution of
+  // the method that deletes the widget.
+  m_scheduler->Execute(
+      NewSingleCallback(this,
+                        &UsbProWidgetDetector::DispatchWidget,
+                        widget,
+                        widget_info));
+}
+
+
+/**
+ * Called once we have confirmed a new widget
+ */
+void UsbProWidgetDetector::DispatchWidget(
+    DispatchingUsbProWidget *widget,
+    const UsbProWidgetInformation *info) {
+  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  descriptor->SetOnClose(NULL);
+  delete widget;
   if (m_callback) {
-    widget->SetOnRemove(NULL);
-    UsbProWidgetInformation *device_info = new UsbProWidgetInformation(
-        information);
-    m_callback->Run(widget, device_info);
+    m_callback->Run(descriptor, info);
   } else {
-    OLA_WARN << "No listener provided";
+    delete info;
+    OLA_FATAL << "No listener provided, leaking descriptors";
   }
 }
 }  // usbpro

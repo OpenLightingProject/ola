@@ -45,21 +45,39 @@ using std::string;
 using std::vector;
 using ola::network::ConnectedDescriptor;
 
+
+/**
+ * The interface to implement to catch new widgets from the
+ * WidgetDetectorThread.
+ *
+ * We overload the NewWidget method based on the type of widget
+ * discovered.
+ */
+class NewWidgetHandler {
+  public:
+    virtual ~NewWidgetHandler() {}
+
+    virtual void NewWidget(class ArduinoWidget *widget,
+                           const UsbProWidgetInformation &information) = 0;
+    virtual void NewWidget(class EnttecUsbProWidget *widget,
+                           const UsbProWidgetInformation &information) = 0;
+    virtual void NewWidget(class DmxTriWidget *widget,
+                           const UsbProWidgetInformation &information) = 0;
+    virtual void NewWidget(class DmxterWidget *widget,
+                           const UsbProWidgetInformation &information) = 0;
+    virtual void NewWidget(class RobeWidget *widget,
+                           const RobeWidgetInformation &information) = 0;
+};
+
+
 /*
- * Discovers new Usb Pro like widgets and runs the callback.
+ * Discovers new USB Serial widgets and calls the handler.
  */
 class WidgetDetectorThread: public ola::OlaThread {
   public:
-    typedef ola::Callback2<void,
-                           BaseUsbProWidget*,
-                           const UsbProWidgetInformation*> UsbProCallback;
-    typedef ola::Callback2<void,
-                           RobeWidget*,
-                           const RobeWidgetInformation*> RobeCallback;
-    WidgetDetectorThread(
-        UsbProCallback *usb_pro_callback,
-        RobeCallback *robe_callback);
-    ~WidgetDetectorThread();
+    explicit WidgetDetectorThread(NewWidgetHandler *widget_handler,
+                                  ola::network::SelectServerInterface *ss);
+    ~WidgetDetectorThread() {}
 
     // Must be called before Run()
     void SetDeviceDirectory(const string &directory);
@@ -77,13 +95,12 @@ class WidgetDetectorThread: public ola::OlaThread {
     void FreeWidget(SerialWidgetInterface *widget);
 
   private:
+    ola::network::SelectServerInterface *m_other_ss;
     ola::network::SelectServer m_ss;  // ss for this thread
     vector<WidgetDetectorInterface*> m_widget_detectors;
     string m_directory;  // directory to look for widgets in
     vector<string> m_prefixes;  // prefixes to try
-
-    UsbProCallback *m_usb_pro_callback;
-    RobeCallback *m_robe_callback;
+    NewWidgetHandler *m_handler;
 
     // those paths that are either in discovery, or in use
     set<string> m_active_paths;
@@ -99,7 +116,7 @@ class WidgetDetectorThread: public ola::OlaThread {
     void FindCandiateDevices(vector<string> *device_paths);
 
     // called when we find new widgets of a particular type
-    void UsbProWidgetReady(BaseUsbProWidget *widget,
+    void UsbProWidgetReady(ConnectedDescriptor *descriptor,
                            const UsbProWidgetInformation *info);
     void RobeWidgetReady(RobeWidget *widget,
                          const RobeWidgetInformation *info);
@@ -109,7 +126,28 @@ class WidgetDetectorThread: public ola::OlaThread {
     void InternalFreeWidget(SerialWidgetInterface *widget);
     void FreeDescriptor(ConnectedDescriptor *descriptor);
 
+    template<typename WidgetType, typename InfoType>
+    void DispatchWidget(WidgetType *widget, const InfoType *information);
+
+    // All of these are called in a separate thread.
+    template<typename WidgetType, typename InfoType>
+    void SignalNewWidget(WidgetType *widget, const InfoType *information);
+
     static const unsigned int SCAN_INTERVAL_MS = 20000;
+
+    // This is how device identification is done, see
+    // http://opendmx.net/index.php/USB_Protocol_Extensions
+    // OPEN_LIGHTING_ESTA_CODE is in BaseTypes.h
+    static const uint16_t DMX_KING_DEVICE_ID = 0;
+    static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
+    static const uint16_t GODDARD_DMXTER4_ID = 0x444d;
+    static const uint16_t GODDARD_ESTA_ID = 0x4744;
+    static const uint16_t GODDARD_MINI_DMXTER4_ID = 0x4d49;
+    static const uint16_t JESE_DMX_TRI_ID = 1;
+    static const uint16_t JESE_ESTA_ID = 0x6864;
+    static const uint16_t JESE_RDM_TRI_ID = 2;
+    static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
+    static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
 };
 }  // usbpro
 }  // plugin
