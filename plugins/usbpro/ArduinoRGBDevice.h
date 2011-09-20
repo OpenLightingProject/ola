@@ -23,8 +23,8 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
-#include "plugins/usbpro/UsbDevice.h"
 #include "plugins/usbpro/ArduinoWidget.h"
+#include "plugins/usbpro/UsbSerialDevice.h"
 
 namespace ola {
 namespace plugin {
@@ -34,7 +34,7 @@ namespace usbpro {
 /*
  * An Arduino RGB Mixer Device
  */
-class ArduinoRGBDevice: public UsbDevice {
+class ArduinoRGBDevice: public UsbSerialDevice {
   public:
     ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
                      ola::AbstractPlugin *owner,

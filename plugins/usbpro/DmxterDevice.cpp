@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DmxterDevice.h
- * The Ardunio RGB Mixer device.
+ * A Goddard Design Dmxter.
  * Copyright (C) 2010 Simon Newton
  */
 
@@ -45,7 +45,7 @@ DmxterDevice::DmxterDevice(ola::AbstractPlugin *owner,
                            uint16_t esta_id,
                            uint16_t device_id,
                            uint32_t serial):
-    UsbDevice(owner, name, widget) {
+    UsbSerialDevice(owner, name, widget) {
   std::stringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();

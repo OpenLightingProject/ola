@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProDevice.h
- * Interface for the Enttec USB Pro device
+ * A Enttec USB Pro device
  * Copyright (C) 2006-2007 Simon Newton
  */
 
@@ -26,9 +26,8 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
 
-#include "plugins/usbpro/UsbDevice.h"
-#include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
+#include "plugins/usbpro/UsbSerialDevice.h"
 #include "plugins/usbpro/messages/UsbProConfigMessages.pb.h"
 
 namespace ola {
@@ -42,7 +41,7 @@ using ola::plugin::usbpro::Request;
 /*
  * An Enttec Usb Pro device
  */
-class UsbProDevice: public UsbDevice {
+class UsbProDevice: public UsbSerialDevice {
   public:
     UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                  ola::AbstractPlugin *owner,

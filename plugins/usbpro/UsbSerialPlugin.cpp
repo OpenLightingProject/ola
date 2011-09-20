@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbProPlugin.cpp
+ * UsbSerialPlugin.cpp
  * The UsbPro plugin for ola
  * Copyright (C) 2006-2010 Simon Newton
  */
@@ -37,7 +37,7 @@
 #include "plugins/usbpro/RobeDevice.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
 #include "plugins/usbpro/UsbProDevice.h"
-#include "plugins/usbpro/UsbProPlugin.h"
+#include "plugins/usbpro/UsbSerialPlugin.h"
 
 
 namespace ola {
@@ -46,20 +46,20 @@ namespace usbpro {
 
 using std::auto_ptr;
 
-const char UsbProPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
-const char UsbProPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";
-const char UsbProPlugin::DEVICE_DIR_KEY[] = "device_dir";
-const char UsbProPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
-const char UsbProPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
-const char UsbProPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
-const char UsbProPlugin::ROBE_DEVICE_NAME[] = "Robe Universal Interface";
-const char UsbProPlugin::PLUGIN_NAME[] = "Enttec USB Pro";
-const char UsbProPlugin::PLUGIN_PREFIX[] = "usbpro";
-const char UsbProPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
-const char UsbProPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
-const char UsbProPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
+const char UsbSerialPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
+const char UsbSerialPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";
+const char UsbSerialPlugin::DEVICE_DIR_KEY[] = "device_dir";
+const char UsbSerialPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
+const char UsbSerialPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
+const char UsbSerialPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
+const char UsbSerialPlugin::ROBE_DEVICE_NAME[] = "Robe Universal Interface";
+const char UsbSerialPlugin::PLUGIN_NAME[] = "Serial USB";
+const char UsbSerialPlugin::PLUGIN_PREFIX[] = "usbserial";
+const char UsbSerialPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
+const char UsbSerialPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
+const char UsbSerialPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
 
-UsbProPlugin::UsbProPlugin(PluginAdaptor *plugin_adaptor)
+UsbSerialPlugin::UsbSerialPlugin(PluginAdaptor *plugin_adaptor)
     : Plugin(plugin_adaptor),
       m_detector_thread(this, plugin_adaptor) {
 }
@@ -68,17 +68,23 @@ UsbProPlugin::UsbProPlugin(PluginAdaptor *plugin_adaptor)
 /*
  * Return the description for this plugin
  */
-string UsbProPlugin::Description() const {
+string UsbSerialPlugin::Description() const {
     return
-"Enttec USB Pro Plugin\n"
+"Serial USB Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin supports USB devices that emulate a serial port. This includes\n"
-" Enttec DMX USB Pro, the DMXking USB DMX512-A & the DMX-TRI, Dmxter, \n"
-" Robe Universe Interface. See\n"
-"http://opendmx.net/index.php/USB_Protocol_Extensions for more info.\n"
+"This plugin supports DMX USB devices that emulate a serial port. This \n"
+"includes:\n"
+" - Arduino RGB Mixer\n"
+" - DMX-TRI & RDM-TRI\n"
+" - DMXking USB DMX512-A\n"
+" - DMXter4 & mini DMXter\n"
+" - Enttec DMX USB Pro\n"
+" - Robe Universe Interface\n"
 "\n"
-"--- Config file : ola-usbpro.conf ---\n"
+"See http://opendmx.net/index.php/USB_Protocol_Extensions for more info.\n"
+"\n"
+"--- Config file : ola-usbserial.conf ---\n"
 "\n"
 "device_dir = /dev\n"
 "The directory to look for devices in\n"
@@ -96,8 +102,8 @@ string UsbProPlugin::Description() const {
 /*
  * Called when a device is removed
  */
-void UsbProPlugin::DeviceRemoved(UsbDevice *device) {
-  vector<UsbDevice*>::iterator iter;
+void UsbSerialPlugin::DeviceRemoved(UsbSerialDevice *device) {
+  vector<UsbSerialDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     if (*iter == device) {
@@ -118,7 +124,7 @@ void UsbProPlugin::DeviceRemoved(UsbDevice *device) {
 /**
  * Handle a new ArduinoWidget.
  */
-void UsbProPlugin::NewWidget(
+void UsbSerialPlugin::NewWidget(
     ArduinoWidget *widget,
     const UsbProWidgetInformation &information) {
   AddDevice(new ArduinoRGBDevice(
@@ -135,7 +141,7 @@ void UsbProPlugin::NewWidget(
 /**
  * Handle a new Enttec Usb Pro Widget.
  */
-void UsbProPlugin::NewWidget(
+void UsbSerialPlugin::NewWidget(
     EnttecUsbProWidget *widget,
     const UsbProWidgetInformation &information) {
   string device_name = GetDeviceName(information);
@@ -157,7 +163,7 @@ void UsbProPlugin::NewWidget(
 /**
  * Handle a new Dmx-Tri Widget.
  */
-void UsbProPlugin::NewWidget(
+void UsbSerialPlugin::NewWidget(
     DmxTriWidget *widget,
     const UsbProWidgetInformation &information) {
   widget->UseRawRDM(
@@ -175,7 +181,7 @@ void UsbProPlugin::NewWidget(
 /**
  * Handle a new Dmxter.
  */
-void UsbProPlugin::NewWidget(
+void UsbSerialPlugin::NewWidget(
     DmxterWidget *widget,
     const UsbProWidgetInformation &information) {
   AddDevice(new DmxterDevice(
@@ -191,7 +197,7 @@ void UsbProPlugin::NewWidget(
 /**
  * New Robe Universal Interface.
  */
-void UsbProPlugin::NewWidget(
+void UsbSerialPlugin::NewWidget(
     RobeWidget *widget,
     const RobeWidgetInformation&) {
   AddDevice(new RobeDevice(m_plugin_adaptor,
@@ -203,16 +209,16 @@ void UsbProPlugin::NewWidget(
 
 /*
  * Add a new device to the list
- * @param device the new UsbDevice
+ * @param device the new UsbSerialDevice
  */
-void UsbProPlugin::AddDevice(UsbDevice *device) {
+void UsbSerialPlugin::AddDevice(UsbSerialDevice *device) {
   if (!device->Start()) {
     delete device;
     return;
   }
 
   device->SetOnRemove(NewSingleCallback(this,
-                                        &UsbProPlugin::DeviceRemoved,
+                                        &UsbSerialPlugin::DeviceRemoved,
                                         device));
   m_devices.push_back(device);
   m_plugin_adaptor->RegisterDevice(device);
@@ -222,7 +228,7 @@ void UsbProPlugin::AddDevice(UsbDevice *device) {
 /*
  * Start the plugin
  */
-bool UsbProPlugin::StartHook() {
+bool UsbSerialPlugin::StartHook() {
   m_detector_thread.SetDeviceDirectory(
       m_preferences->GetValue(DEVICE_DIR_KEY));
   m_detector_thread.SetDevicePrefixes(
@@ -239,8 +245,8 @@ bool UsbProPlugin::StartHook() {
  * Stop the plugin
  * @return true on sucess, false on failure
  */
-bool UsbProPlugin::StopHook() {
-  vector<UsbDevice*>::iterator iter;
+bool UsbSerialPlugin::StopHook() {
+  vector<UsbSerialDevice*>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter)
     DeleteDevice(*iter);
   m_detector_thread.Join(NULL);
@@ -252,7 +258,7 @@ bool UsbProPlugin::StopHook() {
 /*
  * Default to sensible values
  */
-bool UsbProPlugin::SetDefaultPreferences() {
+bool UsbSerialPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
@@ -287,7 +293,7 @@ bool UsbProPlugin::SetDefaultPreferences() {
 }
 
 
-void UsbProPlugin::DeleteDevice(UsbDevice *device) {
+void UsbSerialPlugin::DeleteDevice(UsbSerialDevice *device) {
   SerialWidgetInterface *widget = device->GetWidget();
   m_plugin_adaptor->UnregisterDevice(device);
   device->Stop();
@@ -299,7 +305,7 @@ void UsbProPlugin::DeleteDevice(UsbDevice *device) {
 /**
  * Get a nicely formatted device name from the widget information.
  */
-string UsbProPlugin::GetDeviceName(
+string UsbSerialPlugin::GetDeviceName(
     const UsbProWidgetInformation &information) {
   string device_name = information.manufacturer;
   if (!(information.manufacturer.empty() ||
@@ -313,7 +319,7 @@ string UsbProPlugin::GetDeviceName(
 /*
  * Get the Frames per second limit for a pro device
  */
-unsigned int UsbProPlugin::GetProFrameLimit() {
+unsigned int UsbSerialPlugin::GetProFrameLimit() {
   unsigned int fps_limit;
   if (!StringToInt(m_preferences->GetValue(USB_PRO_FPS_LIMIT_KEY) ,
                    &fps_limit))

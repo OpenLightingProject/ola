@@ -23,21 +23,17 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
-#include "ola/network/SelectServerInterface.h"
 #include "plugins/usbpro/DmxterWidget.h"
-#include "plugins/usbpro/UsbDevice.h"
-#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/UsbSerialDevice.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
 
-class DmxterWidget;
-
 /*
  * An DMXter Device
  */
-class DmxterDevice: public UsbDevice {
+class DmxterDevice: public UsbSerialDevice {
   public:
     DmxterDevice(ola::AbstractPlugin *owner,
                  const string &name,

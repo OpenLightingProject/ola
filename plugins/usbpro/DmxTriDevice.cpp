@@ -21,7 +21,6 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/network/SelectServerInterface.h"
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 
@@ -41,7 +40,7 @@ DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
                            uint16_t esta_id,
                            uint16_t device_id,
                            uint32_t serial):
-    UsbDevice(owner, name, widget),
+    UsbSerialDevice(owner, name, widget),
     m_tri_widget(widget) {
   std::stringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" << serial;

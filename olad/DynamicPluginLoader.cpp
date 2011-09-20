@@ -35,7 +35,7 @@
 #include "plugins/sandnet/SandNetPlugin.h"
 #include "plugins/shownet/ShowNetPlugin.h"
 #include "plugins/stageprofi/StageProfiPlugin.h"
-#include "plugins/usbpro/UsbProPlugin.h"
+#include "plugins/usbpro/UsbSerialPlugin.h"
 
 #ifdef HAVE_LIBUSB
 #include "plugins/usbdmx/UsbDmxPlugin.h"
@@ -76,7 +76,8 @@ vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
       new ola::plugin::shownet::ShowNetPlugin(m_plugin_adaptor));
   plugins.push_back(
       new ola::plugin::stageprofi::StageProfiPlugin(m_plugin_adaptor));
-  plugins.push_back(new ola::plugin::usbpro::UsbProPlugin(m_plugin_adaptor));
+  plugins.push_back(
+      new ola::plugin::usbpro::UsbSerialPlugin(m_plugin_adaptor));
 #ifdef HAVE_LIBUSB
   plugins.push_back(new ola::plugin::usbdmx::UsbDmxPlugin(m_plugin_adaptor));
 #endif

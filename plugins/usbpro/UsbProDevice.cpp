@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProDevice.cpp
- * UsbPro device
+ * An Enttec Usb Pro device
  * Copyright (C) 2006-2007 Simon Newton
  *
  * The device creates two ports, one in and one out, but you can only use one
@@ -57,7 +57,7 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                            uint16_t device_id,
                            uint32_t serial,
                            unsigned int fps_limit):
-    UsbDevice(owner, name, widget),
+    UsbSerialDevice(owner, name, widget),
     m_pro_widget(widget),
     m_serial(),
     m_got_parameters(false) {

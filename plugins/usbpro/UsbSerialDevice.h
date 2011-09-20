@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbDevice.h
+ * UsbSerialDevice.h
  * Interface for the usb devices
  * Copyright (C) 2010 Simon Newton
  */
@@ -33,15 +33,15 @@ namespace usbpro {
 /*
  * A USB device
  */
-class UsbDevice: public ola::Device {
+class UsbSerialDevice: public ola::Device {
   public:
-    UsbDevice(ola::AbstractPlugin *owner,
+    UsbSerialDevice(ola::AbstractPlugin *owner,
               const string &name,
               SerialWidgetInterface *widget):
       Device(owner, name),
       m_widget(widget) {}
 
-    virtual ~UsbDevice() {}
+    virtual ~UsbSerialDevice() {}
 
     void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
       m_widget->SetOnRemove(on_close);

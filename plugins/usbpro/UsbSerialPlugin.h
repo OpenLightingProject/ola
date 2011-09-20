@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbProPlugin.h
+ * UsbSerialPlugin.h
  * Interface for the usbpro plugin class
  * Copyright (C) 2006  Simon Newton
  */
@@ -26,7 +26,7 @@
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
 #include "olad/Plugin.h"
-#include "plugins/usbpro/UsbDevice.h"
+#include "plugins/usbpro/UsbSerialDevice.h"
 #include "plugins/usbpro/WidgetDetectorThread.h"
 
 namespace ola {
@@ -35,14 +35,14 @@ namespace usbpro {
 
 using ola::network::ConnectedDescriptor;
 
-class UsbProPlugin: public ola::Plugin, public NewWidgetHandler {
+class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
   public:
-    explicit UsbProPlugin(PluginAdaptor *plugin_adaptor);
+    explicit UsbSerialPlugin(PluginAdaptor *plugin_adaptor);
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
     ola_plugin_id Id() const { return OLA_PLUGIN_USBPRO; }
-    void DeviceRemoved(UsbDevice *device);
+    void DeviceRemoved(UsbSerialDevice *device);
     string PluginPrefix() const { return PLUGIN_PREFIX; }
 
     void NewWidget(ArduinoWidget *widget,
@@ -57,15 +57,15 @@ class UsbProPlugin: public ola::Plugin, public NewWidgetHandler {
                    const RobeWidgetInformation &information);
 
   private:
-    void AddDevice(UsbDevice *device);
+    void AddDevice(UsbSerialDevice *device);
     bool StartHook();
     bool StopHook();
     bool SetDefaultPreferences();
-    void DeleteDevice(UsbDevice *device);
+    void DeleteDevice(UsbSerialDevice *device);
     string GetDeviceName(const UsbProWidgetInformation &information);
     unsigned int GetProFrameLimit();
 
-    vector<UsbDevice*> m_devices;  // list of our devices
+    vector<UsbSerialDevice*> m_devices;  // list of our devices
     WidgetDetectorThread m_detector_thread;
 
     static const char DEFAULT_DEVICE_DIR[];

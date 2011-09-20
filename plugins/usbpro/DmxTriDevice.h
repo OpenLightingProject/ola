@@ -24,20 +24,17 @@
 #include <string>
 #include "ola/DmxBuffer.h"
 #include "plugins/usbpro/DmxTriWidget.h"
-#include "plugins/usbpro/UsbDevice.h"
+#include "plugins/usbpro/UsbSerialDevice.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
 
 
-class DmxTriWidget;
-
-
 /*
  * An DMX TRI Device
  */
-class DmxTriDevice: public UsbDevice {
+class DmxTriDevice: public UsbSerialDevice {
   public:
     DmxTriDevice(ola::AbstractPlugin *owner,
                  const string &name,
